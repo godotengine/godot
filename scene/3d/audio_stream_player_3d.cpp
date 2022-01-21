@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -282,7 +282,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 			ERR_FAIL_COND_MSG(new_playback.is_null(), "Failed to instantiate playback.");
 			Map<StringName, Vector<AudioFrame>> bus_map;
 			bus_map[_get_actual_bus()] = volume_vector;
-			AudioServer::get_singleton()->start_playback_stream(new_playback, bus_map, setplay.get(), linear_attenuation, attenuation_filter_cutoff_hz, actual_pitch_scale);
+			AudioServer::get_singleton()->start_playback_stream(new_playback, bus_map, setplay.get(), actual_pitch_scale, linear_attenuation, attenuation_filter_cutoff_hz);
 			stream_playbacks.push_back(new_playback);
 			setplay.set(-1);
 		}
@@ -292,7 +292,6 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 			Vector<Ref<AudioStreamPlayback>> playbacks_to_remove;
 			for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
 				if (playback.is_valid() && !AudioServer::get_singleton()->is_playback_active(playback) && !AudioServer::get_singleton()->is_playback_paused(playback)) {
-					emit_signal(SNAME("finished"));
 					playbacks_to_remove.push_back(playback);
 				}
 			}
@@ -305,11 +304,14 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				active.clear();
 				set_physics_process_internal(false);
 			}
+			if (!playbacks_to_remove.is_empty()) {
+				emit_signal(SNAME("finished"));
+			}
 		}
 
 		while (stream_playbacks.size() > max_polyphony) {
 			AudioServer::get_singleton()->stop_playback_stream(stream_playbacks[0]);
-			stream_playbacks.remove(0);
+			stream_playbacks.remove_at(0);
 		}
 	}
 }
@@ -325,7 +327,13 @@ Area3D *AudioStreamPlayer3D::_get_overriding_area() {
 
 	PhysicsDirectSpaceState3D::ShapeResult sr[MAX_INTERSECT_AREAS];
 
-	int areas = space_state->intersect_point(global_pos, sr, MAX_INTERSECT_AREAS, Set<RID>(), area_mask, false, true);
+	PhysicsDirectSpaceState3D::PointParameters point_params;
+	point_params.position = global_pos;
+	point_params.collision_mask = area_mask;
+	point_params.collide_with_bodies = false;
+	point_params.collide_with_areas = true;
+
+	int areas = space_state->intersect_point(point_params, sr, MAX_INTERSECT_AREAS);
 
 	for (int i = 0; i < areas; i++) {
 		if (!sr[i].collider) {
@@ -383,7 +391,13 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 	PhysicsDirectSpaceState3D *space_state = PhysicsServer3D::get_singleton()->space_get_direct_state(world_3d->get_space());
 
 	for (Camera3D *camera : cameras) {
+		if (!camera) {
+			continue;
+		}
 		Viewport *vp = camera->get_viewport();
+		if (!vp) {
+			continue;
+		}
 		if (!vp->is_audio_listener_3d()) {
 			continue;
 		}
@@ -638,6 +652,8 @@ void AudioStreamPlayer3D::_validate_property(PropertyInfo &property) const {
 
 		property.hint_string = options;
 	}
+
+	Node3D::_validate_property(property);
 }
 
 void AudioStreamPlayer3D::_bus_layout_changed() {
@@ -835,7 +851,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_stream_playback"), &AudioStreamPlayer3D::get_stream_playback);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "attenuation_model", PROPERTY_HINT_ENUM, "Inverse,Inverse Square,Log,Disabled"), "set_attenuation_model", "get_attenuation_model");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "attenuation_model", PROPERTY_HINT_ENUM, "Inverse,Inverse Square,Logarithmic,Disabled"), "set_attenuation_model", "get_attenuation_model");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "unit_db", PROPERTY_HINT_RANGE, "-80,80"), "set_unit_db", "get_unit_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "unit_size", PROPERTY_HINT_RANGE, "0.1,100,0.01,or_greater"), "set_unit_size", "get_unit_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_db", PROPERTY_HINT_RANGE, "-24,6"), "set_max_db", "get_max_db");
@@ -843,7 +859,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_playing", "is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "is_autoplay_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stream_paused", PROPERTY_HINT_NONE, ""), "set_stream_paused", "get_stream_paused");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "0,4096,1,or_greater,exp"), "set_max_distance", "get_max_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "0,4096,0.01,or_greater"), "set_max_distance", "get_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "area_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_area_mask", "get_area_mask");

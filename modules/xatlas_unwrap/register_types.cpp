@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -114,7 +114,7 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 		input_mesh.vertexPositionStride = sizeof(float) * 3;
 		input_mesh.vertexNormalData = p_normals;
 		input_mesh.vertexNormalStride = sizeof(uint32_t) * 3;
-		input_mesh.vertexUvData = NULL;
+		input_mesh.vertexUvData = nullptr;
 		input_mesh.vertexUvStride = 0;
 
 		xatlas::ChartOptions chart_options;

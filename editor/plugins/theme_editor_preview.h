@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,6 +55,7 @@
 class ThemeEditorPreview : public VBoxContainer {
 	GDCLASS(ThemeEditorPreview, VBoxContainer);
 
+	ScrollContainer *preview_container;
 	ColorRect *preview_bg;
 	MarginContainer *preview_overlay;
 	Control *picker_overlay;
@@ -65,6 +66,7 @@ class ThemeEditorPreview : public VBoxContainer {
 		Color preview_picker_overlay_color;
 		Ref<StyleBox> preview_picker_label;
 		Ref<Font> preview_picker_font;
+		int font_size = 16;
 	} theme_cache;
 
 	double time_left = 0;

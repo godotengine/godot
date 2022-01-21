@@ -4,7 +4,7 @@
  *
  *   FreeType PFR data structures (specification only).
  *
- * Copyright (C) 2002-2020 by
+ * Copyright (C) 2002-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -109,7 +109,7 @@ FT_BEGIN_HEADER
 #define PFR_BITMAP_2BYTE_SIZE      0x02U
 #define PFR_BITMAP_3BYTE_OFFSET    0x04U
 
-  /*not part of the specification but used for implementation */
+  /* not part of the specification but used for implementation */
 #define PFR_BITMAP_CHARCODES_VALIDATED  0x40U
 #define PFR_BITMAP_VALID_CHARCODES      0x80U
 

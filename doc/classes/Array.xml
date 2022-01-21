@@ -44,83 +44,85 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-		<method name="Array" qualifiers="constructor">
+	<constructors>
+		<constructor name="Array">
 			<return type="Array" />
 			<description>
 				Constructs an empty [Array].
 			</description>
-		</method>
-		<method name="Array" qualifiers="constructor">
+		</constructor>
+		<constructor name="Array">
 			<return type="Array" />
 			<argument index="0" name="from" type="Array" />
 			<description>
 				Constructs an [Array] as a copy of the given [Array].
 			</description>
-		</method>
-		<method name="Array" qualifiers="constructor">
+		</constructor>
+		<constructor name="Array">
 			<return type="Array" />
 			<argument index="0" name="from" type="PackedByteArray" />
 			<description>
 				Constructs an array from a [PackedByteArray].
 			</description>
-		</method>
-		<method name="Array" qualifiers="constructor">
+		</constructor>
+		<constructor name="Array">
 			<return type="Array" />
 			<argument index="0" name="from" type="PackedColorArray" />
 			<description>
 				Constructs an array from a [PackedColorArray].
 			</description>
-		</method>
-		<method name="Array" qualifiers="constructor">
+		</constructor>
+		<constructor name="Array">
 			<return type="Array" />
 			<argument index="0" name="from" type="PackedFloat32Array" />
 			<description>
 				Constructs an array from a [PackedFloat32Array].
 			</description>
-		</method>
-		<method name="Array" qualifiers="constructor">
+		</constructor>
+		<constructor name="Array">
 			<return type="Array" />
 			<argument index="0" name="from" type="PackedFloat64Array" />
 			<description>
 				Constructs an array from a [PackedFloat64Array].
 			</description>
-		</method>
-		<method name="Array" qualifiers="constructor">
+		</constructor>
+		<constructor name="Array">
 			<return type="Array" />
 			<argument index="0" name="from" type="PackedInt32Array" />
 			<description>
 				Constructs an array from a [PackedInt32Array].
 			</description>
-		</method>
-		<method name="Array" qualifiers="constructor">
+		</constructor>
+		<constructor name="Array">
 			<return type="Array" />
 			<argument index="0" name="from" type="PackedInt64Array" />
 			<description>
 				Constructs an array from a [PackedInt64Array].
 			</description>
-		</method>
-		<method name="Array" qualifiers="constructor">
+		</constructor>
+		<constructor name="Array">
 			<return type="Array" />
 			<argument index="0" name="from" type="PackedStringArray" />
 			<description>
 				Constructs an array from a [PackedStringArray].
 			</description>
-		</method>
-		<method name="Array" qualifiers="constructor">
+		</constructor>
+		<constructor name="Array">
 			<return type="Array" />
 			<argument index="0" name="from" type="PackedVector2Array" />
 			<description>
 				Constructs an array from a [PackedVector2Array].
 			</description>
-		</method>
-		<method name="Array" qualifiers="constructor">
+		</constructor>
+		<constructor name="Array">
 			<return type="Array" />
 			<argument index="0" name="from" type="PackedVector3Array" />
 			<description>
 				Constructs an array from a [PackedVector3Array].
 			</description>
-		</method>
+		</constructor>
+	</constructors>
+	<methods>
 		<method name="append">
 			<return type="void" />
 			<argument index="0" name="value" type="Variant" />
@@ -192,7 +194,7 @@
 			<return type="void" />
 			<argument index="0" name="value" type="Variant" />
 			<description>
-				Removes the first occurrence of a value from the array. To remove an element by index, use [method remove] instead.
+				Removes the first occurrence of a value from the array. To remove an element by index, use [method remove_at] instead.
 				[b]Note:[/b] This method acts in-place and doesn't return a value.
 				[b]Note:[/b] On large arrays, this method will be slower if the removed element is close to the beginning of the array (index 0). This is because all elements placed after the removed element have to be reindexed.
 			</description>
@@ -345,64 +347,6 @@
 				Returns the minimum value contained in the array if all elements are of comparable types. If the elements can't be compared, [code]null[/code] is returned.
 			</description>
 		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Array" />
-			<description>
-			</description>
-		</method>
-		<method name="operator +" qualifiers="operator">
-			<return type="Array" />
-			<argument index="0" name="right" type="Array" />
-			<description>
-			</description>
-		</method>
-		<method name="operator &lt;" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Array" />
-			<description>
-			</description>
-		</method>
-		<method name="operator &lt;=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Array" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Array" />
-			<description>
-			</description>
-		</method>
-		<method name="operator &gt;" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Array" />
-			<description>
-			</description>
-		</method>
-		<method name="operator &gt;=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Array" />
-			<description>
-			</description>
-		</method>
-		<method name="operator []" qualifiers="operator">
-			<return type="void" />
-			<argument index="0" name="index" type="int" />
-			<description>
-			</description>
-		</method>
 		<method name="pop_at">
 			<return type="Variant" />
 			<argument index="0" name="position" type="int" />
@@ -456,7 +400,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="remove">
+		<method name="remove_at">
 			<return type="void" />
 			<argument index="0" name="position" type="int" />
 			<description>
@@ -501,11 +445,15 @@
 		<method name="slice" qualifiers="const">
 			<return type="Array" />
 			<argument index="0" name="begin" type="int" />
-			<argument index="1" name="end" type="int" />
+			<argument index="1" name="end" type="int" default="2147483647" />
 			<argument index="2" name="step" type="int" default="1" />
 			<argument index="3" name="deep" type="bool" default="false" />
 			<description>
-				Duplicates the subset described in the function and returns it in an array, deeply copying the array if [code]deep[/code] is [code]true[/code]. Lower and upper index are inclusive, with the [code]step[/code] describing the change between indices while slicing. Wraps around if [code]begin[/code] or [code]end[/code] are out of bounds or negative. Returns an empty array for invalid parameters.
+				Returns the slice of the [Array], from [code]begin[/code] (inclusive) to [code]end[/code] (exclusive), as a new [Array].
+				The absolute value of [code]begin[/code] and [code]end[/code] will be clamped to the array size, so the default value for [code]end[/code] makes it slice to the size of the array by default (i.e. [code]arr.slice(1)[/code] is a shorthand for [code]arr.slice(1, arr.size())[/code]).
+				If either [code]begin[/code] or [code]end[/code] are negative, they will be relative to the end of the array (i.e. [code]arr.slice(0, -2)[/code] is a shorthand for [code]arr.slice(0, arr.size() - 2)[/code]).
+				If specified, [code]step[/code] is the relative index between source elements. It can be negative, then [code]begin[/code] must be higher than [code]end[/code]. For example, [code][0, 1, 2, 3, 4, 5].slice(5, 1, -2)[/code] returns [code][5, 3][/code]).
+				If [code]deep[/code] is true, each element will be copied by value rather than by reference.
 			</description>
 		</method>
 		<method name="sort">
@@ -523,6 +471,12 @@
 				// There is no sort support for Godot.Collections.Array
 				[/csharp]
 				[/codeblocks]
+				To perform natural order sorting, you can use [method sort_custom] with [method String.naturalnocasecmp_to] as follows:
+				[codeblock]
+				var strings = ["string1", "string2", "string10", "string11"]
+				strings.sort_custom(func(a, b): return a.naturalnocasecmp_to(b) &lt; 0)
+				print(strings) # Prints [string1, string2, string10, string11]
+				[/codeblock]
 			</description>
 		</method>
 		<method name="sort_custom">
@@ -533,15 +487,19 @@
 				[b]Note:[/b] You cannot randomize the return value as the heapsort algorithm expects a deterministic result. Doing so will result in unexpected behavior.
 				[codeblocks]
 				[gdscript]
-				class MyCustomSorter:
-				    static func sort_ascending(a, b):
-				        if a[0] &lt; b[0]:
-				            return true
-				        return false
+				func sort_ascending(a, b):
+				    if a[0] &lt; b[0]:
+				        return true
+				    return false
 
-				var my_items = [[5, "Potato"], [9, "Rice"], [4, "Tomato"]]
-				my_items.sort_custom(MyCustomSorter.sort_ascending)
-				print(my_items) # Prints [[4, Tomato], [5, Potato], [9, Rice]].
+				func _ready():
+				    var my_items = [[5, "Potato"], [9, "Rice"], [4, "Tomato"]]
+				    my_items.sort_custom(sort_ascending)
+				    print(my_items) # Prints [[4, Tomato], [5, Potato], [9, Rice]].
+
+				    # Descending, lambda version.
+				    my_items.sort_custom(func(a, b): return a[0] &gt; b[0])
+				    print(my_items) # Prints [[9, Rice], [5, Potato], [4, Tomato]].
 				[/gdscript]
 				[csharp]
 				// There is no custom sort support for Godot.Collections.Array
@@ -550,4 +508,64 @@
 			</description>
 		</method>
 	</methods>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="Array" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="Array" />
+			<argument index="0" name="right" type="Array" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &lt;">
+			<return type="bool" />
+			<argument index="0" name="right" type="Array" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &lt;=">
+			<return type="bool" />
+			<argument index="0" name="right" type="Array" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="Array" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &gt;">
+			<return type="bool" />
+			<argument index="0" name="right" type="Array" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &gt;=">
+			<return type="bool" />
+			<argument index="0" name="right" type="Array" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<description>
+			</description>
+		</operator>
+	</operators>
 </class>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -148,6 +148,10 @@ String GDScriptWarning::get_message() const {
 		case EMPTY_FILE: {
 			return "Empty script file.";
 		}
+		case SHADOWED_GLOBAL_IDENTIFIER: {
+			CHECK_SYMBOLS(3);
+			return vformat(R"(The %s '%s' has the same name as a %s.)", symbols[0], symbols[1], symbols[2]);
+		}
 		case WARNING_MAX:
 			break; // Can't happen, but silences warning
 	}
@@ -194,6 +198,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"ASSERT_ALWAYS_FALSE",
 		"REDUNDANT_AWAIT",
 		"EMPTY_FILE",
+		"SHADOWED_GLOBAL_IDENTIFIER",
 	};
 
 	static_assert((sizeof(names) / sizeof(*names)) == WARNING_MAX, "Amount of warning types don't match the amount of warning names.");
@@ -208,7 +213,7 @@ GDScriptWarning::Code GDScriptWarning::get_code_from_name(const String &p_name) 
 		}
 	}
 
-	ERR_FAIL_V_MSG(WARNING_MAX, "Invalid GDScript warning name: " + p_name);
+	return WARNING_MAX;
 }
 
 #endif // DEBUG_ENABLED

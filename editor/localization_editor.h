@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,18 +33,15 @@
 
 #include "core/object/undo_redo.h"
 #include "editor_file_dialog.h"
+#include "editor_locale_dialog.h"
 #include "scene/gui/tree.h"
 
 class LocalizationEditor : public VBoxContainer {
 	GDCLASS(LocalizationEditor, VBoxContainer);
 
-	enum LocaleFilter {
-		SHOW_ALL_LOCALES,
-		SHOW_ONLY_SELECTED_LOCALES,
-	};
-
 	Tree *translation_list;
 
+	EditorLocaleDialog *locale_select;
 	EditorFileDialog *translation_file_open;
 
 	Button *translation_res_option_add_button;
@@ -52,11 +49,6 @@ class LocalizationEditor : public VBoxContainer {
 	EditorFileDialog *translation_res_option_file_open_dialog;
 	Tree *translation_remap;
 	Tree *translation_remap_options;
-	Tree *translation_filter;
-	bool translation_locales_list_created;
-	OptionButton *translation_locale_filter_mode;
-	Vector<TreeItem *> translation_filter_treeitems;
-	Vector<int> translation_locales_idxs_remap;
 
 	Tree *translation_pot_list;
 	EditorFileDialog *pot_file_open_dialog;
@@ -78,9 +70,8 @@ class LocalizationEditor : public VBoxContainer {
 	void _translation_res_option_add(const PackedStringArray &p_paths);
 	void _translation_res_option_changed();
 	void _translation_res_option_delete(Object *p_item, int p_column, int p_button);
-
-	void _translation_filter_option_changed();
-	void _translation_filter_mode_changed(int p_mode);
+	void _translation_res_option_popup(bool p_arrow_clicked);
+	void _translation_res_option_selected(const String &p_locale);
 
 	void _pot_add(const PackedStringArray &p_paths);
 	void _pot_delete(Object *p_item, int p_column, int p_button);

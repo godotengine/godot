@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -165,7 +165,7 @@ public:
 
 	virtual bool show_members_overview() = 0;
 
-	virtual void set_tooltip_request_func(String p_method, Object *p_obj) = 0;
+	virtual void set_tooltip_request_func(const Callable &p_toolip_callback) = 0;
 	virtual Control *get_edit_menu() = 0;
 	virtual void clear_edit_menu() = 0;
 	virtual void set_find_replace_bar(FindReplaceBar *p_bar) = 0;
@@ -365,20 +365,18 @@ class ScriptEditor : public PanelContainer {
 
 	void _add_callback(Object *p_obj, const String &p_function, const PackedStringArray &p_args);
 	void _res_saved_callback(const Ref<Resource> &p_res);
+	void _scene_saved_callback(const String &p_path);
 
 	bool open_textfile_after_create = true;
 	bool trim_trailing_whitespace_on_save;
 	bool use_space_indentation;
 	bool convert_indent_on_save;
 
-	void _trim_trailing_whitespace(TextEdit *tx);
-
 	void _goto_script_line2(int p_line);
 	void _goto_script_line(REF p_script, int p_line);
 	void _set_execution(REF p_script, int p_line);
 	void _clear_execution(REF p_script);
 	void _breaked(bool p_breaked, bool p_can_debug);
-	void _update_window_menu();
 	void _script_created(Ref<Script> p_script);
 	void _set_breakpoint(REF p_scrpt, int p_line, bool p_enabled);
 	void _clear_breakpoints();
@@ -430,7 +428,6 @@ class ScriptEditor : public PanelContainer {
 	void _make_script_list_context_menu();
 
 	void _help_search(String p_text);
-	void _help_index(String p_text);
 
 	void _history_forward();
 	void _history_back();
@@ -453,7 +450,8 @@ class ScriptEditor : public PanelContainer {
 	Ref<Script> _get_current_script();
 	Array _get_open_scripts() const;
 
-	Ref<TextFile> _load_text_file(const String &p_path, Error *r_error);
+	Set<String> textfile_extensions;
+	Ref<TextFile> _load_text_file(const String &p_path, Error *r_error) const;
 	Error _save_text_file(Ref<TextFile> p_text_file, const String &p_path);
 
 	void _on_find_in_files_requested(String text);

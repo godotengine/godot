@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #ifndef VARIANT_H
 #define VARIANT_H
 
+#include "core/input/input_enums.h"
 #include "core/io/ip_address.h"
 #include "core/math/aabb.h"
 #include "core/math/basis.h"
@@ -43,6 +44,7 @@
 #include "core/math/vector3.h"
 #include "core/math/vector3i.h"
 #include "core/object/object_id.h"
+#include "core/os/keyboard.h"
 #include "core/string/node_path.h"
 #include "core/string/ustring.h"
 #include "core/templates/rid.h"
@@ -285,7 +287,7 @@ public:
 	static bool can_convert(Type p_type_from, Type p_type_to);
 	static bool can_convert_strict(Type p_type_from, Type p_type_to);
 
-	bool is_ref() const;
+	bool is_ref_counted() const;
 	_FORCE_INLINE_ bool is_num() const {
 		return type == INT || type == FLOAT;
 	}
@@ -430,6 +432,21 @@ public:
 
 	Variant(const IPAddress &p_address);
 
+#define VARIANT_ENUM_CLASS_CONSTRUCTOR(m_enum) \
+	Variant(const m_enum &p_value) {           \
+		type = INT;                            \
+		_data._int = (int64_t)p_value;         \
+	}
+
+	// Only enum classes that need to be bound need this to be defined.
+	VARIANT_ENUM_CLASS_CONSTRUCTOR(JoyAxis)
+	VARIANT_ENUM_CLASS_CONSTRUCTOR(JoyButton)
+	VARIANT_ENUM_CLASS_CONSTRUCTOR(Key)
+	VARIANT_ENUM_CLASS_CONSTRUCTOR(MIDIMessage)
+	VARIANT_ENUM_CLASS_CONSTRUCTOR(MouseButton)
+
+#undef VARIANT_ENUM_CLASS_CONSTRUCTOR
+
 	// If this changes the table in variant_op must be updated
 	enum Operator {
 		//comparison
@@ -481,7 +498,8 @@ public:
 	static PTROperatorEvaluator get_ptr_operator_evaluator(Operator p_operator, Type p_type_a, Type p_type_b);
 
 	void zero();
-	Variant duplicate(bool deep = false) const;
+	Variant duplicate(bool p_deep = false) const;
+	Variant recursive_duplicate(bool p_deep, int recursion_count) const;
 	static void blend(const Variant &a, const Variant &b, float c, Variant &r_dst);
 	static void interpolate(const Variant &a, const Variant &b, float c, Variant &r_dst);
 
@@ -641,6 +659,7 @@ public:
 
 	static UtilityFunctionType get_utility_function_type(const StringName &p_name);
 
+	static MethodInfo get_utility_function_info(const StringName &p_name);
 	static int get_utility_function_argument_count(const StringName &p_name);
 	static Variant::Type get_utility_function_argument_type(const StringName &p_name, int p_arg);
 	static String get_utility_function_argument_name(const StringName &p_name, int p_arg);
@@ -658,10 +677,11 @@ public:
 	bool operator!=(const Variant &p_variant) const;
 	bool operator<(const Variant &p_variant) const;
 	uint32_t hash() const;
+	uint32_t recursive_hash(int recursion_count) const;
 
-	bool hash_compare(const Variant &p_variant) const;
+	bool hash_compare(const Variant &p_variant, int recursion_count = 0) const;
 	bool booleanize() const;
-	String stringify(List<const void *> &stack) const;
+	String stringify(int recursion_count = 0) const;
 	String to_json_string() const;
 
 	void static_assign(const Variant &p_variant);

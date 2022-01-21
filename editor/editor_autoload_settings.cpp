@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -117,7 +117,7 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 		for (const String &E : keywords) {
 			if (E == p_name) {
 				if (r_error) {
-					*r_error = TTR("Invalid name.") + " " + TTR("Keyword cannot be used as an autoload name.");
+					*r_error = TTR("Invalid name.") + " " + TTR("Keyword cannot be used as an AutoLoad name.");
 				}
 
 				return false;
@@ -340,22 +340,22 @@ void EditorAutoloadSettings::_autoload_file_callback(const String &p_path) {
 }
 
 void EditorAutoloadSettings::_autoload_text_submitted(const String p_name) {
-	if (autoload_add_path->get_text() != "" && _autoload_name_is_valid(p_name, nullptr)) {
+	if (!autoload_add_path->get_text().is_empty() && _autoload_name_is_valid(p_name, nullptr)) {
 		_autoload_add();
 	}
 }
 
 void EditorAutoloadSettings::_autoload_path_text_changed(const String p_path) {
 	add_autoload->set_disabled(
-			p_path == "" || !_autoload_name_is_valid(autoload_add_name->get_text(), nullptr));
+			p_path.is_empty() || !_autoload_name_is_valid(autoload_add_name->get_text(), nullptr));
 }
 
 void EditorAutoloadSettings::_autoload_text_changed(const String p_name) {
 	String error_string;
 	bool is_name_valid = _autoload_name_is_valid(p_name, &error_string);
-	add_autoload->set_disabled(autoload_add_path->get_text() == "" || !is_name_valid);
+	add_autoload->set_disabled(autoload_add_path->get_text().is_empty() || !is_name_valid);
 	error_message->set_text(error_string);
-	error_message->set_visible(autoload_add_name->get_text() != "" && !is_name_valid);
+	error_message->set_visible(!autoload_add_name->get_text().is_empty() && !is_name_valid);
 }
 
 Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
@@ -373,13 +373,13 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 
 		Object *obj = ClassDB::instantiate(ibt);
 
-		ERR_FAIL_COND_V_MSG(obj == nullptr, nullptr, "Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt) + ".");
+		ERR_FAIL_COND_V_MSG(obj == nullptr, nullptr, "Cannot instance script for AutoLoad, expected 'Node' inheritance, got: " + String(ibt) + ".");
 
 		n = Object::cast_to<Node>(obj);
 		n->set_script(s);
 	}
 
-	ERR_FAIL_COND_V_MSG(!n, nullptr, "Path in autoload not a node or script: " + p_path + ".");
+	ERR_FAIL_COND_V_MSG(!n, nullptr, "Path in AutoLoad not a node or script: " + p_path + ".");
 
 	return n;
 }
@@ -692,18 +692,18 @@ bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 
 	String error;
 	if (!_autoload_name_is_valid(name, &error)) {
-		EditorNode::get_singleton()->show_warning(TTR("Can't add autoload:") + "\n" + error);
+		EditorNode::get_singleton()->show_warning(TTR("Can't add AutoLoad:") + "\n" + error);
 		return false;
 	}
 
 	const String &path = p_path;
 	if (!FileAccess::exists(path)) {
-		EditorNode::get_singleton()->show_warning(TTR("Can't add autoload:") + "\n" + vformat(TTR("%s is an invalid path. File does not exist."), path));
+		EditorNode::get_singleton()->show_warning(TTR("Can't add AutoLoad:") + "\n" + vformat(TTR("%s is an invalid path. File does not exist."), path));
 		return false;
 	}
 
 	if (!path.begins_with("res://")) {
-		EditorNode::get_singleton()->show_warning(TTR("Can't add autoload:") + "\n" + vformat(TTR("%s is an invalid path. Not in resource path (res://)."), path));
+		EditorNode::get_singleton()->show_warning(TTR("Can't add AutoLoad:") + "\n" + vformat(TTR("%s is an invalid path. Not in resource path (res://)."), path));
 		return false;
 	}
 
@@ -838,7 +838,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	error_message = memnew(Label);
 	error_message->hide();
-	error_message->set_align(Label::Align::ALIGN_RIGHT);
+	error_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	error_message->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 	add_child(error_message);
 

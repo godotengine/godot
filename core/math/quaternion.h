@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@
 #include "core/math/vector3.h"
 #include "core/string/ustring.h"
 
-class Quaternion {
+class _NO_DISCARD_ Quaternion {
 public:
 	union {
 		struct {
@@ -72,6 +72,9 @@ public:
 	Quaternion slerpni(const Quaternion &p_to, const real_t &p_weight) const;
 	Quaternion cubic_slerp(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, const real_t &p_weight) const;
 
+	Vector3 get_axis() const;
+	float get_angle() const;
+
 	_FORCE_INLINE_ void get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 		r_angle = 2 * Math::acos(w);
 		real_t r = ((real_t)1) / Math::sqrt(1 - w * w);
@@ -82,13 +85,6 @@ public:
 
 	void operator*=(const Quaternion &p_q);
 	Quaternion operator*(const Quaternion &p_q) const;
-
-	Quaternion operator*(const Vector3 &v) const {
-		return Quaternion(w * v.x + y * v.z - z * v.y,
-				w * v.y + z * v.x - x * v.z,
-				w * v.z + x * v.y - y * v.x,
-				-x * v.x - y * v.y - z * v.z);
-	}
 
 	_FORCE_INLINE_ Vector3 xform(const Vector3 &v) const {
 #ifdef MATH_CHECKS
@@ -138,12 +134,11 @@ public:
 			w(p_q.w) {
 	}
 
-	Quaternion &operator=(const Quaternion &p_q) {
+	void operator=(const Quaternion &p_q) {
 		x = p_q.x;
 		y = p_q.y;
 		z = p_q.z;
 		w = p_q.w;
-		return *this;
 	}
 
 	Quaternion(const Vector3 &v0, const Vector3 &v1) // shortest arc

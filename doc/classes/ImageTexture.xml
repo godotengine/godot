@@ -28,7 +28,7 @@
 		[b]Note:[/b] The maximum texture size is 16384×16384 pixels due to graphics hardware limitations.
 	</description>
 	<tutorials>
-		<link title="Importing images">https://docs.godotengine.org/en/latest/tutorials/assets_pipeline/importing_images.html</link>
+		<link title="Importing images">$DOCS_URL/tutorials/assets_pipeline/importing_images.html</link>
 	</tutorials>
 	<methods>
 		<method name="create_from_image">

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -257,7 +257,7 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 
 	Platform arch = (Platform)(int)p_preset->get("architecture/target");
 
-	if (src_appx == "") {
+	if (src_appx.is_empty()) {
 		String err, infix;
 		switch (arch) {
 			case ARM: {
@@ -275,7 +275,7 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 		} else {
 			src_appx = find_export_template("uwp" + infix + "release.zip", &err);
 		}
-		if (src_appx == "") {
+		if (src_appx.is_empty()) {
 			EditorNode::add_io_error(err);
 			return ERR_FILE_NOT_FOUND;
 		}
@@ -325,7 +325,7 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 		char fname[16834];
 		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16834, nullptr, 0, nullptr, 0);
 
-		String path = fname;
+		String path = String::utf8(fname);
 
 		if (path.ends_with("/")) {
 			// Ignore directories
@@ -376,7 +376,7 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 	Vector<String> cl = ((String)p_preset->get("command_line/extra_args")).strip_edges().split(" ");
 	for (int i = 0; i < cl.size(); i++) {
 		if (cl[i].strip_edges().length() == 0) {
-			cl.remove(i);
+			cl.remove_at(i);
 			i--;
 		}
 	}
@@ -431,7 +431,7 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 #ifdef WINDOWS_ENABLED
 	// Sign with signtool
 	String signtool_path = EditorSettings::get_singleton()->get("export/uwp/signtool");
-	if (signtool_path == String()) {
+	if (signtool_path.is_empty()) {
 		return OK;
 	}
 
@@ -452,7 +452,7 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 		cert_alg = p_preset->get("signing/algorithm");
 	}
 
-	if (cert_path == String()) {
+	if (cert_path.is_empty()) {
 		return OK; // Certificate missing, don't try to sign
 	}
 

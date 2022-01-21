@@ -56,7 +56,7 @@ static WebPMuxError ChunkVerifyAndAssign(WebPChunk* chunk,
   uint32_t chunk_size;
   WebPData chunk_data;
 
-  // Sanity checks.
+  // Correctness checks.
   if (data_size < CHUNK_HEADER_SIZE) return WEBP_MUX_NOT_ENOUGH_DATA;
   chunk_size = GetLE32(data + TAG_SIZE);
   if (chunk_size > MAX_CHUNK_PAYLOAD) return WEBP_MUX_BAD_DATA;
@@ -155,7 +155,6 @@ static int MuxImageParse(const WebPChunk* const chunk, int copy_data,
         break;
       default:
         goto Fail;
-        break;
     }
     subchunk_size = ChunkDiskSize(&subchunk);
     bytes += subchunk_size;
@@ -187,7 +186,6 @@ WebPMux* WebPMuxCreateInternal(const WebPData* bitstream, int copy_data,
   WebPChunk** chunk_list_ends[WEBP_CHUNK_NIL + 1] = { NULL };
   ChunkInit(&chunk);
 
-  // Sanity checks.
   if (WEBP_ABI_IS_INCOMPATIBLE(version, WEBP_MUX_ABI_VERSION)) {
     return NULL;  // version mismatch
   }
@@ -264,7 +262,6 @@ WebPMux* WebPMuxCreateInternal(const WebPData* bitstream, int copy_data,
         if (!MuxImageParse(&chunk, copy_data, wpi)) goto Err;
         ChunkRelease(&chunk);
         goto PushImage;
-        break;
       default:  // A non-image chunk.
         if (wpi->is_partial_) goto Err;  // Encountered a non-image chunk before
                                          // getting all chunks of an image.
@@ -483,7 +480,6 @@ WebPMuxError WebPMuxGetFrame(
   WebPMuxError err;
   WebPMuxImage* wpi;
 
-  // Sanity checks.
   if (mux == NULL || frame == NULL) {
     return WEBP_MUX_INVALID_ARGUMENT;
   }

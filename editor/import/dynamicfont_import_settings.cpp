@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -442,398 +442,6 @@ void DynamicFontImportSettings::_add_glyph_range_item(int32_t p_start, int32_t p
 }
 
 /*************************************************************************/
-/* Languages and scripts                                                 */
-/*************************************************************************/
-
-struct CodeInfo {
-	String name;
-	String code;
-};
-
-static CodeInfo langs[] = {
-	{ U"Custom", U"xx" },
-	{ U"-", U"-" },
-	{ U"Abkhazian", U"ab" },
-	{ U"Afar", U"aa" },
-	{ U"Afrikaans", U"af" },
-	{ U"Akan", U"ak" },
-	{ U"Albanian", U"sq" },
-	{ U"Amharic", U"am" },
-	{ U"Arabic", U"ar" },
-	{ U"Aragonese", U"an" },
-	{ U"Armenian", U"hy" },
-	{ U"Assamese", U"as" },
-	{ U"Avaric", U"av" },
-	{ U"Avestan", U"ae" },
-	{ U"Aymara", U"ay" },
-	{ U"Azerbaijani", U"az" },
-	{ U"Bambara", U"bm" },
-	{ U"Bashkir", U"ba" },
-	{ U"Basque", U"eu" },
-	{ U"Belarusian", U"be" },
-	{ U"Bengali", U"bn" },
-	{ U"Bihari", U"bh" },
-	{ U"Bislama", U"bi" },
-	{ U"Bosnian", U"bs" },
-	{ U"Breton", U"br" },
-	{ U"Bulgarian", U"bg" },
-	{ U"Burmese", U"my" },
-	{ U"Catalan", U"ca" },
-	{ U"Chamorro", U"ch" },
-	{ U"Chechen", U"ce" },
-	{ U"Chichewa", U"ny" },
-	{ U"Chinese", U"zh" },
-	{ U"Chuvash", U"cv" },
-	{ U"Cornish", U"kw" },
-	{ U"Corsican", U"co" },
-	{ U"Cree", U"cr" },
-	{ U"Croatian", U"hr" },
-	{ U"Czech", U"cs" },
-	{ U"Danish", U"da" },
-	{ U"Divehi", U"dv" },
-	{ U"Dutch", U"nl" },
-	{ U"Dzongkha", U"dz" },
-	{ U"English", U"en" },
-	{ U"Esperanto", U"eo" },
-	{ U"Estonian", U"et" },
-	{ U"Ewe", U"ee" },
-	{ U"Faroese", U"fo" },
-	{ U"Fijian", U"fj" },
-	{ U"Finnish", U"fi" },
-	{ U"French", U"fr" },
-	{ U"Fulah", U"ff" },
-	{ U"Galician", U"gl" },
-	{ U"Georgian", U"ka" },
-	{ U"German", U"de" },
-	{ U"Greek", U"el" },
-	{ U"Guarani", U"gn" },
-	{ U"Gujarati", U"gu" },
-	{ U"Haitian", U"ht" },
-	{ U"Hausa", U"ha" },
-	{ U"Hebrew", U"he" },
-	{ U"Herero", U"hz" },
-	{ U"Hindi", U"hi" },
-	{ U"Hiri Motu", U"ho" },
-	{ U"Hungarian", U"hu" },
-	{ U"Interlingua", U"ia" },
-	{ U"Indonesian", U"id" },
-	{ U"Interlingue", U"ie" },
-	{ U"Irish", U"ga" },
-	{ U"Igbo", U"ig" },
-	{ U"Inupiaq", U"ik" },
-	{ U"Ido", U"io" },
-	{ U"Icelandic", U"is" },
-	{ U"Italian", U"it" },
-	{ U"Inuktitut", U"iu" },
-	{ U"Japanese", U"ja" },
-	{ U"Javanese", U"jv" },
-	{ U"Kalaallisut", U"kl" },
-	{ U"Kannada", U"kn" },
-	{ U"Kanuri", U"kr" },
-	{ U"Kashmiri", U"ks" },
-	{ U"Kazakh", U"kk" },
-	{ U"Central Khmer", U"km" },
-	{ U"Kikuyu", U"ki" },
-	{ U"Kinyarwanda", U"rw" },
-	{ U"Kirghiz", U"ky" },
-	{ U"Komi", U"kv" },
-	{ U"Kongo", U"kg" },
-	{ U"Korean", U"ko" },
-	{ U"Kurdish", U"ku" },
-	{ U"Kuanyama", U"kj" },
-	{ U"Latin", U"la" },
-	{ U"Luxembourgish", U"lb" },
-	{ U"Ganda", U"lg" },
-	{ U"Limburgan", U"li" },
-	{ U"Lingala", U"ln" },
-	{ U"Lao", U"lo" },
-	{ U"Lithuanian", U"lt" },
-	{ U"Luba-Katanga", U"lu" },
-	{ U"Latvian", U"lv" },
-	{ U"Man", U"gv" },
-	{ U"Macedonian", U"mk" },
-	{ U"Malagasy", U"mg" },
-	{ U"Malay", U"ms" },
-	{ U"Malayalam", U"ml" },
-	{ U"Maltese", U"mt" },
-	{ U"Maori", U"mi" },
-	{ U"Marathi", U"mr" },
-	{ U"Marshallese", U"mh" },
-	{ U"Mongolian", U"mn" },
-	{ U"Nauru", U"na" },
-	{ U"Navajo", U"nv" },
-	{ U"North Ndebele", U"nd" },
-	{ U"Nepali", U"ne" },
-	{ U"Ndonga", U"ng" },
-	{ U"Norwegian Bokmål", U"nb" },
-	{ U"Norwegian Nynorsk", U"nn" },
-	{ U"Norwegian", U"no" },
-	{ U"Sichuan Yi, Nuosu", U"ii" },
-	{ U"South Ndebele", U"nr" },
-	{ U"Occitan", U"oc" },
-	{ U"Ojibwa", U"oj" },
-	{ U"Church Slavic", U"cu" },
-	{ U"Oromo", U"om" },
-	{ U"Oriya", U"or" },
-	{ U"Ossetian", U"os" },
-	{ U"Punjabi", U"pa" },
-	{ U"Pali", U"pi" },
-	{ U"Persian", U"fa" },
-	{ U"Polish", U"pl" },
-	{ U"Pashto", U"ps" },
-	{ U"Portuguese", U"pt" },
-	{ U"Quechua", U"qu" },
-	{ U"Romansh", U"rm" },
-	{ U"Rundi", U"rn" },
-	{ U"Romanian", U"ro" },
-	{ U"Russian", U"ru" },
-	{ U"Sanskrit", U"sa" },
-	{ U"Sardinian", U"sc" },
-	{ U"Sindhi", U"sd" },
-	{ U"Northern Sami", U"se" },
-	{ U"Samoan", U"sm" },
-	{ U"Sango", U"sg" },
-	{ U"Serbian", U"sr" },
-	{ U"Gaelic", U"gd" },
-	{ U"Shona", U"sn" },
-	{ U"Sinhala", U"si" },
-	{ U"Slovak", U"sk" },
-	{ U"Slovenian", U"sl" },
-	{ U"Somali", U"so" },
-	{ U"Southern Sotho", U"st" },
-	{ U"Spanish", U"es" },
-	{ U"Sundanese", U"su" },
-	{ U"Swahili", U"sw" },
-	{ U"Swati", U"ss" },
-	{ U"Swedish", U"sv" },
-	{ U"Tamil", U"ta" },
-	{ U"Telugu", U"te" },
-	{ U"Tajik", U"tg" },
-	{ U"Thai", U"th" },
-	{ U"Tigrinya", U"ti" },
-	{ U"Tibetan", U"bo" },
-	{ U"Turkmen", U"tk" },
-	{ U"Tagalog", U"tl" },
-	{ U"Tswana", U"tn" },
-	{ U"Tonga", U"to" },
-	{ U"Turkish", U"tr" },
-	{ U"Tsonga", U"ts" },
-	{ U"Tatar", U"tt" },
-	{ U"Twi", U"tw" },
-	{ U"Tahitian", U"ty" },
-	{ U"Uighur", U"ug" },
-	{ U"Ukrainian", U"uk" },
-	{ U"Urdu", U"ur" },
-	{ U"Uzbek", U"uz" },
-	{ U"Venda", U"ve" },
-	{ U"Vietnamese", U"vi" },
-	{ U"Volapük", U"vo" },
-	{ U"Walloon", U"wa" },
-	{ U"Welsh", U"cy" },
-	{ U"Wolof", U"wo" },
-	{ U"Western Frisian", U"fy" },
-	{ U"Xhosa", U"xh" },
-	{ U"Yiddish", U"yi" },
-	{ U"Yoruba", U"yo" },
-	{ U"Zhuang", U"za" },
-	{ U"Zulu", U"zu" },
-	{ String(), String() }
-};
-
-static CodeInfo scripts[] = {
-	{ U"Custom", U"Qaaa" },
-	{ U"-", U"-" },
-	{ U"Adlam", U"Adlm" },
-	{ U"Afaka", U"Afak" },
-	{ U"Caucasian Albanian", U"Aghb" },
-	{ U"Ahom", U"Ahom" },
-	{ U"Arabic", U"Arab" },
-	{ U"Imperial Aramaic", U"Armi" },
-	{ U"Armenian", U"Armn" },
-	{ U"Avestan", U"Avst" },
-	{ U"Balinese", U"Bali" },
-	{ U"Bamum", U"Bamu" },
-	{ U"Bassa Vah", U"Bass" },
-	{ U"Batak", U"Batk" },
-	{ U"Bengali", U"Beng" },
-	{ U"Bhaiksuki", U"Bhks" },
-	{ U"Blissymbols", U"Blis" },
-	{ U"Bopomofo", U"Bopo" },
-	{ U"Brahmi", U"Brah" },
-	{ U"Braille", U"Brai" },
-	{ U"Buginese", U"Bugi" },
-	{ U"Buhid", U"Buhd" },
-	{ U"Chakma", U"Cakm" },
-	{ U"Unified Canadian Aboriginal", U"Cans" },
-	{ U"Carian", U"Cari" },
-	{ U"Cham", U"Cham" },
-	{ U"Cherokee", U"Cher" },
-	{ U"Chorasmian", U"Chrs" },
-	{ U"Cirth", U"Cirt" },
-	{ U"Coptic", U"Copt" },
-	{ U"Cypro-Minoan", U"Cpmn" },
-	{ U"Cypriot", U"Cprt" },
-	{ U"Cyrillic", U"Cyrl" },
-	{ U"Devanagari", U"Deva" },
-	{ U"Dives Akuru", U"Diak" },
-	{ U"Dogra", U"Dogr" },
-	{ U"Deseret", U"Dsrt" },
-	{ U"Duployan", U"Dupl" },
-	{ U"Egyptian demotic", U"Egyd" },
-	{ U"Egyptian hieratic", U"Egyh" },
-	{ U"Egyptian hieroglyphs", U"Egyp" },
-	{ U"Elbasan", U"Elba" },
-	{ U"Elymaic", U"Elym" },
-	{ U"Ethiopic", U"Ethi" },
-	{ U"Khutsuri", U"Geok" },
-	{ U"Georgian", U"Geor" },
-	{ U"Glagolitic", U"Glag" },
-	{ U"Gunjala Gondi", U"Gong" },
-	{ U"Masaram Gondi", U"Gonm" },
-	{ U"Gothic", U"Goth" },
-	{ U"Grantha", U"Gran" },
-	{ U"Greek", U"Grek" },
-	{ U"Gujarati", U"Gujr" },
-	{ U"Gurmukhi", U"Guru" },
-	{ U"Hangul", U"Hang" },
-	{ U"Han", U"Hani" },
-	{ U"Hanunoo", U"Hano" },
-	{ U"Hatran", U"Hatr" },
-	{ U"Hebrew", U"Hebr" },
-	{ U"Hiragana", U"Hira" },
-	{ U"Anatolian Hieroglyphs", U"Hluw" },
-	{ U"Pahawh Hmong", U"Hmng" },
-	{ U"Nyiakeng Puachue Hmong", U"Hmnp" },
-	{ U"Old Hungarian", U"Hung" },
-	{ U"Indus", U"Inds" },
-	{ U"Old Italic", U"Ital" },
-	{ U"Javanese", U"Java" },
-	{ U"Jurchen", U"Jurc" },
-	{ U"Kayah Li", U"Kali" },
-	{ U"Katakana", U"Kana" },
-	{ U"Kharoshthi", U"Khar" },
-	{ U"Khmer", U"Khmr" },
-	{ U"Khojki", U"Khoj" },
-	{ U"Khitan large script", U"Kitl" },
-	{ U"Khitan small script", U"Kits" },
-	{ U"Kannada", U"Knda" },
-	{ U"Kpelle", U"Kpel" },
-	{ U"Kaithi", U"Kthi" },
-	{ U"Tai Tham", U"Lana" },
-	{ U"Lao", U"Laoo" },
-	{ U"Latin", U"Latn" },
-	{ U"Leke", U"Leke" },
-	{ U"Lepcha", U"Lepc" },
-	{ U"Limbu", U"Limb" },
-	{ U"Linear A", U"Lina" },
-	{ U"Linear B", U"Linb" },
-	{ U"Lisu", U"Lisu" },
-	{ U"Loma", U"Loma" },
-	{ U"Lycian", U"Lyci" },
-	{ U"Lydian", U"Lydi" },
-	{ U"Mahajani", U"Mahj" },
-	{ U"Makasar", U"Maka" },
-	{ U"Mandaic", U"Mand" },
-	{ U"Manichaean", U"Mani" },
-	{ U"Marchen", U"Marc" },
-	{ U"Mayan Hieroglyphs", U"Maya" },
-	{ U"Medefaidrin", U"Medf" },
-	{ U"Mende Kikakui", U"Mend" },
-	{ U"Meroitic Cursive", U"Merc" },
-	{ U"Meroitic Hieroglyphs", U"Mero" },
-	{ U"Malayalam", U"Mlym" },
-	{ U"Modi", U"Modi" },
-	{ U"Mongolian", U"Mong" },
-	{ U"Moon", U"Moon" },
-	{ U"Mro", U"Mroo" },
-	{ U"Meitei Mayek", U"Mtei" },
-	{ U"Multani", U"Mult" },
-	{ U"Myanmar (Burmese)", U"Mymr" },
-	{ U"Nandinagari", U"Nand" },
-	{ U"Old North Arabian", U"Narb" },
-	{ U"Nabataean", U"Nbat" },
-	{ U"Newa", U"Newa" },
-	{ U"Naxi Dongba", U"Nkdb" },
-	{ U"Nakhi Geba", U"Nkgb" },
-	{ U"N’Ko", U"Nkoo" },
-	{ U"Nüshu", U"Nshu" },
-	{ U"Ogham", U"Ogam" },
-	{ U"Ol Chiki", U"Olck" },
-	{ U"Old Turkic", U"Orkh" },
-	{ U"Oriya", U"Orya" },
-	{ U"Osage", U"Osge" },
-	{ U"Osmanya", U"Osma" },
-	{ U"Old Uyghur", U"Ougr" },
-	{ U"Palmyrene", U"Palm" },
-	{ U"Pau Cin Hau", U"Pauc" },
-	{ U"Proto-Cuneiform", U"Pcun" },
-	{ U"Proto-Elamite", U"Pelm" },
-	{ U"Old Permic", U"Perm" },
-	{ U"Phags-pa", U"Phag" },
-	{ U"Inscriptional Pahlavi", U"Phli" },
-	{ U"Psalter Pahlavi", U"Phlp" },
-	{ U"Book Pahlavi", U"Phlv" },
-	{ U"Phoenician", U"Phnx" },
-	{ U"Klingon", U"Piqd" },
-	{ U"Miao", U"Plrd" },
-	{ U"Inscriptional Parthian", U"Prti" },
-	{ U"Proto-Sinaitic", U"Psin" },
-	{ U"Ranjana", U"Ranj" },
-	{ U"Rejang", U"Rjng" },
-	{ U"Hanifi Rohingya", U"Rohg" },
-	{ U"Rongorongo", U"Roro" },
-	{ U"Runic", U"Runr" },
-	{ U"Samaritan", U"Samr" },
-	{ U"Sarati", U"Sara" },
-	{ U"Old South Arabian", U"Sarb" },
-	{ U"Saurashtra", U"Saur" },
-	{ U"SignWriting", U"Sgnw" },
-	{ U"Shavian", U"Shaw" },
-	{ U"Sharada", U"Shrd" },
-	{ U"Shuishu", U"Shui" },
-	{ U"Siddham", U"Sidd" },
-	{ U"Khudawadi", U"Sind" },
-	{ U"Sinhala", U"Sinh" },
-	{ U"Sogdian", U"Sogd" },
-	{ U"Old Sogdian", U"Sogo" },
-	{ U"Sora Sompeng", U"Sora" },
-	{ U"Soyombo", U"Soyo" },
-	{ U"Sundanese", U"Sund" },
-	{ U"Syloti Nagri", U"Sylo" },
-	{ U"Syriac", U"Syrc" },
-	{ U"Tagbanwa", U"Tagb" },
-	{ U"Takri", U"Takr" },
-	{ U"Tai Le", U"Tale" },
-	{ U"New Tai Lue", U"Talu" },
-	{ U"Tamil", U"Taml" },
-	{ U"Tangut", U"Tang" },
-	{ U"Tai Viet", U"Tavt" },
-	{ U"Telugu", U"Telu" },
-	{ U"Tengwar", U"Teng" },
-	{ U"Tifinagh", U"Tfng" },
-	{ U"Tagalog", U"Tglg" },
-	{ U"Thaana", U"Thaa" },
-	{ U"Thai", U"Thai" },
-	{ U"Tibetan", U"Tibt" },
-	{ U"Tirhuta", U"Tirh" },
-	{ U"Tangsa", U"Tnsa" },
-	{ U"Toto", U"Toto" },
-	{ U"Ugaritic", U"Ugar" },
-	{ U"Vai", U"Vaii" },
-	{ U"Visible Speech", U"Visp" },
-	{ U"Vithkuqi", U"Vith" },
-	{ U"Warang Citi", U"Wara" },
-	{ U"Wancho", U"Wcho" },
-	{ U"Woleai", U"Wole" },
-	{ U"Old Persian", U"Xpeo" },
-	{ U"Cuneiform", U"Xsux" },
-	{ U"Yezidi", U"Yezi" },
-	{ U"Yi", U"Yiii" },
-	{ U"Zanabazar Square", U"Zanb" },
-	{ String(), String() }
-};
-
-/*************************************************************************/
 /* Page 1 callbacks: Rendering Options                                   */
 /*************************************************************************/
 
@@ -1083,7 +691,7 @@ void DynamicFontImportSettings::_edit_range(int32_t p_start, int32_t p_end) {
 			item = glyph_table->create_item(root);
 			ERR_FAIL_NULL(item);
 			item->set_text(0, _pad_zeros(String::num_int64(c, 16)));
-			item->set_text_align(0, TreeItem::ALIGN_LEFT);
+			item->set_text_alignment(0, HORIZONTAL_ALIGNMENT_LEFT);
 			item->set_selectable(0, false);
 			item->set_custom_bg_color(0, glyph_table->get_theme_color("dark_color_3", "Editor"));
 		}
@@ -1101,7 +709,7 @@ void DynamicFontImportSettings::_edit_range(int32_t p_start, int32_t p_end) {
 			item->set_custom_bg_color(col + 1, glyph_table->get_theme_color("dark_color_2", "Editor"));
 		}
 		item->set_metadata(col + 1, c);
-		item->set_text_align(col + 1, TreeItem::ALIGN_CENTER);
+		item->set_text_alignment(col + 1, HORIZONTAL_ALIGNMENT_CENTER);
 		item->set_selectable(col + 1, true);
 		item->set_custom_font(col + 1, font_main);
 		item->set_custom_font_size(col + 1, get_theme_font_size("font_size") * 2);
@@ -1159,19 +767,17 @@ void DynamicFontImportSettings::_range_update(int32_t p_start, int32_t p_end) {
 /*************************************************************************/
 
 void DynamicFontImportSettings::_lang_add() {
-	menu_langs->set_position(lang_list->get_screen_transform().xform(lang_list->get_local_mouse_position()));
-	menu_langs->set_size(Vector2(1, 1));
-	menu_langs->popup();
+	locale_select->popup_locale_dialog();
 }
 
-void DynamicFontImportSettings::_lang_add_item(int p_option) {
+void DynamicFontImportSettings::_lang_add_item(const String &p_locale) {
 	TreeItem *lang_item = lang_list->create_item(lang_list_root);
 	ERR_FAIL_NULL(lang_item);
 
 	lang_item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 	lang_item->set_editable(0, true);
 	lang_item->set_checked(0, false);
-	lang_item->set_text(1, langs[p_option].code);
+	lang_item->set_text(1, p_locale);
 	lang_item->set_editable(1, true);
 	lang_item->add_button(2, lang_list->get_theme_icon("Remove", "EditorIcons"), BUTTON_REMOVE_VAR, false, TTR("Remove"));
 	lang_item->set_button_color(2, 0, Color(1, 1, 1, 0.75));
@@ -1185,9 +791,41 @@ void DynamicFontImportSettings::_lang_remove(Object *p_item, int p_column, int p
 	memdelete(lang_item);
 }
 
+void DynamicFontImportSettings::_ot_add() {
+	menu_ot->set_position(ot_list->get_screen_transform().xform(ot_list->get_local_mouse_position()));
+	menu_ot->set_size(Vector2(1, 1));
+	menu_ot->popup();
+}
+
+void DynamicFontImportSettings::_ot_add_item(int p_option) {
+	String name = TS->tag_to_name(p_option);
+	for (TreeItem *ot_item = ot_list_root->get_first_child(); ot_item; ot_item = ot_item->get_next()) {
+		if (ot_item->get_text(0) == name) {
+			return;
+		}
+	}
+	TreeItem *ot_item = ot_list->create_item(ot_list_root);
+	ERR_FAIL_NULL(ot_item);
+
+	ot_item->set_text(0, name);
+	ot_item->set_editable(0, false);
+	ot_item->set_text(1, "1");
+	ot_item->set_editable(1, true);
+	ot_item->add_button(2, ot_list->get_theme_icon("Remove", "EditorIcons"), BUTTON_REMOVE_VAR, false, TTR("Remove"));
+	ot_item->set_button_color(2, 0, Color(1, 1, 1, 0.75));
+}
+
+void DynamicFontImportSettings::_ot_remove(Object *p_item, int p_column, int p_id) {
+	TreeItem *ot_item = (TreeItem *)p_item;
+	ERR_FAIL_NULL(ot_item);
+
+	ot_list_root->remove_child(ot_item);
+	memdelete(ot_item);
+}
+
 void DynamicFontImportSettings::_script_add() {
-	menu_scripts->set_position(script_list->get_screen_transform().xform(script_list->get_local_mouse_position()));
-	menu_scripts->set_size(Vector2(1, 1));
+	menu_scripts->set_position(script_list->get_screen_position() + script_list->get_local_mouse_position());
+	menu_scripts->reset_size();
 	menu_scripts->popup();
 }
 
@@ -1198,7 +836,7 @@ void DynamicFontImportSettings::_script_add_item(int p_option) {
 	script_item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 	script_item->set_editable(0, true);
 	script_item->set_checked(0, false);
-	script_item->set_text(1, scripts[p_option].code);
+	script_item->set_text(1, script_codes[p_option]);
 	script_item->set_editable(1, true);
 	script_item->add_button(2, lang_list->get_theme_icon("Remove", "EditorIcons"), BUTTON_REMOVE_VAR, false, TTR("Remove"));
 	script_item->set_button_color(2, 0, Color(1, 1, 1, 0.75));
@@ -1230,6 +868,7 @@ void DynamicFontImportSettings::_notification(int p_what) {
 		add_lang->set_icon(add_var->get_theme_icon("Add", "EditorIcons"));
 		add_script->set_icon(add_var->get_theme_icon("Add", "EditorIcons"));
 		add_var->set_icon(add_var->get_theme_icon("Add", "EditorIcons"));
+		add_ot->set_icon(add_var->get_theme_icon("Add", "EditorIcons"));
 	}
 }
 
@@ -1317,6 +956,14 @@ void DynamicFontImportSettings::_re_import() {
 		main_settings["preload/glyph_ranges"] = ranges;
 	}
 
+	Dictionary ot_ov;
+	for (TreeItem *ot_item = ot_list_root->get_first_child(); ot_item; ot_item = ot_item->get_next()) {
+		String tag = ot_item->get_text(0);
+		int32_t value = ot_item->get_text(1).to_int();
+		ot_ov[tag] = value;
+	}
+	main_settings["opentype_feature_overrides"] = ot_ov;
+
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		print_line("Import settings:");
 		for (Map<StringName, Variant>::Element *E = main_settings.front(); E; E = E->next()) {
@@ -1373,6 +1020,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 	vars_list->clear();
 	lang_list->clear();
 	script_list->clear();
+	ot_list->clear();
 
 	selected_chars.clear();
 	selected_glyphs.clear();
@@ -1381,6 +1029,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 	vars_list_root = vars_list->create_item();
 	lang_list_root = lang_list->create_item();
 	script_list_root = script_list->create_item();
+	ot_list_root = ot_list->create_item();
 
 	options_variations.clear();
 	Dictionary var_list = dfont_main->get_supported_variation_list();
@@ -1546,6 +1195,23 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 					script_item->set_editable(1, true);
 					script_item->add_button(2, lang_list->get_theme_icon("Remove", "EditorIcons"), BUTTON_REMOVE_VAR, false, TTR("Remove"));
 				}
+			} else if (key == "opentype_feature_overrides") {
+				Dictionary features = config->get_value("params", key);
+				for (const Variant *ftr = features.next(nullptr); ftr != nullptr; ftr = features.next(ftr)) {
+					TreeItem *ot_item = ot_list->create_item(ot_list_root);
+					ERR_FAIL_NULL(ot_item);
+					int32_t value = features[*ftr];
+					if (ftr->get_type() == Variant::STRING) {
+						ot_item->set_text(0, *ftr);
+					} else {
+						ot_item->set_text(0, TS->tag_to_name(*ftr));
+					}
+					ot_item->set_editable(0, false);
+					ot_item->set_text(1, itos(value));
+					ot_item->set_editable(1, true);
+					ot_item->add_button(2, ot_list->get_theme_icon("Remove", "EditorIcons"), BUTTON_REMOVE_VAR, false, TTR("Remove"));
+					ot_item->set_button_color(2, 0, Color(1, 1, 1, 0.75));
+				}
 			} else {
 				Variant value = config->get_value("params", key);
 				import_settings_data->defaults[key] = value;
@@ -1569,6 +1235,39 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 	}
 	font_preview_label->add_theme_font_override("font", font_preview);
 	font_preview_label->update();
+
+	menu_ot->clear();
+	menu_ot_ss->clear();
+	menu_ot_cv->clear();
+	menu_ot_cu->clear();
+	bool have_ss = false;
+	bool have_cv = false;
+	bool have_cu = false;
+	Dictionary features = font_preview->get_feature_list();
+	for (const Variant *ftr = features.next(nullptr); ftr != nullptr; ftr = features.next(ftr)) {
+		String ftr_name = TS->tag_to_name(*ftr);
+		if (ftr_name.begins_with("stylistic_set_")) {
+			menu_ot_ss->add_item(ftr_name.capitalize(), (int32_t)*ftr);
+			have_ss = true;
+		} else if (ftr_name.begins_with("character_variant_")) {
+			menu_ot_cv->add_item(ftr_name.capitalize(), (int32_t)*ftr);
+			have_cv = true;
+		} else if (ftr_name.begins_with("custom_")) {
+			menu_ot_cu->add_item(ftr_name.replace("custom_", ""), (int32_t)*ftr);
+			have_cu = true;
+		} else {
+			menu_ot->add_item(ftr_name.capitalize(), (int32_t)*ftr);
+		}
+	}
+	if (have_ss) {
+		menu_ot->add_submenu_item(RTR("Stylistic Sets"), "SSMenu");
+	}
+	if (have_cv) {
+		menu_ot->add_submenu_item(RTR("Character Variants"), "CVMenu");
+	}
+	if (have_cu) {
+		menu_ot->add_submenu_item(RTR("Custom"), "CUMenu");
+	}
 
 	_variations_validate();
 
@@ -1595,29 +1294,37 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 
 	// Popup menus
 
-	menu_langs = memnew(PopupMenu);
-	menu_langs->set_name("Language");
-	for (int i = 0; langs[i].name != String(); i++) {
-		if (langs[i].name == "-") {
-			menu_langs->add_separator();
-		} else {
-			menu_langs->add_item(langs[i].name + " (" + langs[i].code + ")", i);
-		}
-	}
-	add_child(menu_langs);
-	menu_langs->connect("id_pressed", callable_mp(this, &DynamicFontImportSettings::_lang_add_item));
+	locale_select = memnew(EditorLocaleDialog);
+	locale_select->connect("locale_selected", callable_mp(this, &DynamicFontImportSettings::_lang_add_item));
+	add_child(locale_select);
 
 	menu_scripts = memnew(PopupMenu);
 	menu_scripts->set_name("Script");
-	for (int i = 0; scripts[i].name != String(); i++) {
-		if (scripts[i].name == "-") {
-			menu_scripts->add_separator();
-		} else {
-			menu_scripts->add_item(scripts[i].name + " (" + scripts[i].code + ")", i);
-		}
+	script_codes = TranslationServer::get_singleton()->get_all_scripts();
+	for (int i = 0; i < script_codes.size(); i++) {
+		menu_scripts->add_item(TranslationServer::get_singleton()->get_script_name(script_codes[i]) + " (" + script_codes[i] + ")", i);
 	}
 	add_child(menu_scripts);
 	menu_scripts->connect("id_pressed", callable_mp(this, &DynamicFontImportSettings::_script_add_item));
+
+	menu_ot = memnew(PopupMenu);
+	add_child(menu_ot);
+	menu_ot->connect("id_pressed", callable_mp(this, &DynamicFontImportSettings::_ot_add_item));
+
+	menu_ot_cv = memnew(PopupMenu);
+	menu_ot_cv->set_name("CVMenu");
+	menu_ot->add_child(menu_ot_cv);
+	menu_ot_cv->connect("id_pressed", callable_mp(this, &DynamicFontImportSettings::_ot_add_item));
+
+	menu_ot_ss = memnew(PopupMenu);
+	menu_ot_ss->set_name("SSMenu");
+	menu_ot->add_child(menu_ot_ss);
+	menu_ot_ss->connect("id_pressed", callable_mp(this, &DynamicFontImportSettings::_ot_add_item));
+
+	menu_ot_cu = memnew(PopupMenu);
+	menu_ot_cu->set_name("CUMenu");
+	menu_ot->add_child(menu_ot_cu);
+	menu_ot_cu->connect("id_pressed", callable_mp(this, &DynamicFontImportSettings::_ot_add_item));
 
 	Color warn_color = (EditorNode::get_singleton()) ? EditorNode::get_singleton()->get_gui_base()->get_theme_color("warning_color", "Editor") : Color(1, 1, 0);
 
@@ -1632,7 +1339,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	root_vb->add_child(main_pages);
 
 	label_warn = memnew(Label);
-	label_warn->set_align(Label::ALIGN_CENTER);
+	label_warn->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	label_warn->set_text("");
 	root_vb->add_child(label_warn);
 	label_warn->add_theme_color_override("font_color", warn_color);
@@ -1656,8 +1363,8 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 
 	font_preview_label = memnew(Label);
 	font_preview_label->add_theme_font_size_override("font_size", 200 * EDSCALE);
-	font_preview_label->set_align(Label::ALIGN_CENTER);
-	font_preview_label->set_valign(Label::VALIGN_CENTER);
+	font_preview_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	font_preview_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	font_preview_label->set_autowrap_mode(Label::AUTOWRAP_ARBITRARY);
 	font_preview_label->set_clip_text(true);
 	font_preview_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1694,7 +1401,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 
 	label_vars = memnew(Label);
 	page2_hb_vars->add_child(label_vars);
-	label_vars->set_align(Label::ALIGN_CENTER);
+	label_vars->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	label_vars->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	label_vars->set_text(TTR("Configuration:"));
 
@@ -1826,7 +1533,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	glyph_tree->connect("item_selected", callable_mp(this, &DynamicFontImportSettings::_range_selected));
 	glyph_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	glyph_root = glyph_tree->create_item();
-	for (int i = 0; unicode_ranges[i].name != String(); i++) {
+	for (int i = 0; !unicode_ranges[i].name.is_empty(); i++) {
 		_add_glyph_range_item(unicode_ranges[i].start, unicode_ranges[i].end, unicode_ranges[i].name);
 	}
 
@@ -1845,7 +1552,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	page5_vb->add_child(hb_lang);
 
 	label_langs = memnew(Label);
-	label_langs->set_align(Label::ALIGN_CENTER);
+	label_langs->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	label_langs->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	label_langs->set_text(TTR("Language support overrides"));
 	hb_lang->add_child(label_langs);
@@ -1873,7 +1580,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	page5_vb->add_child(hb_script);
 
 	label_script = memnew(Label);
-	label_script->set_align(Label::ALIGN_CENTER);
+	label_script->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	label_script->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	label_script->set_text(TTR("Script support overrides"));
 	hb_script->add_child(label_script);
@@ -1896,6 +1603,34 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	script_list->set_column_custom_minimum_width(2, 50 * EDSCALE);
 	script_list->connect("button_pressed", callable_mp(this, &DynamicFontImportSettings::_script_remove));
 	script_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+
+	HBoxContainer *hb_ot = memnew(HBoxContainer);
+	page5_vb->add_child(hb_ot);
+
+	label_ot = memnew(Label);
+	label_ot->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	label_ot->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	label_ot->set_text(TTR("OpenType feature overrides"));
+	hb_ot->add_child(label_ot);
+
+	add_ot = memnew(Button);
+	hb_ot->add_child(add_ot);
+	add_ot->set_tooltip(TTR("Add feature override"));
+	add_ot->set_icon(add_var->get_theme_icon("Add", "EditorIcons"));
+	add_ot->connect("pressed", callable_mp(this, &DynamicFontImportSettings::_ot_add));
+
+	ot_list = memnew(Tree);
+	page5_vb->add_child(ot_list);
+	ot_list->set_hide_root(true);
+	ot_list->set_columns(3);
+	ot_list->set_column_expand(0, true);
+	ot_list->set_column_custom_minimum_width(0, 80 * EDSCALE);
+	ot_list->set_column_expand(1, true);
+	ot_list->set_column_custom_minimum_width(1, 80 * EDSCALE);
+	ot_list->set_column_expand(2, false);
+	ot_list->set_column_custom_minimum_width(2, 50 * EDSCALE);
+	ot_list->connect("button_pressed", callable_mp(this, &DynamicFontImportSettings::_ot_remove));
+	ot_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	// Common
 

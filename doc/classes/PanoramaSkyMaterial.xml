@@ -11,6 +11,9 @@
 	<tutorials>
 	</tutorials>
 	<members>
+		<member name="filter" type="bool" setter="set_filtering_enabled" getter="is_filtering_enabled" default="true">
+			A boolean value to determine if the background texture should be filtered or not.
+		</member>
 		<member name="panorama" type="Texture2D" setter="set_panorama" getter="get_panorama">
 			[Texture2D] to be applied to the [PanoramaSkyMaterial].
 		</member>

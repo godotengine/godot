@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -128,11 +128,26 @@ Error rename_and_store_file_in_gradle_project(void *p_userdata, const String &p_
 	return err;
 }
 
+String _android_xml_escape(const String &p_string) {
+	// Android XML requires strings to be both valid XML (`xml_escape()`) but also
+	// to escape characters which are valid XML but have special meaning in Android XML.
+	// https://developer.android.com/guide/topics/resources/string-resource.html#FormattingAndStyling
+	// Note: Didn't handle U+XXXX unicode chars, could be done if needed.
+	return p_string
+			.replace("@", "\\@")
+			.replace("?", "\\?")
+			.replace("'", "\\'")
+			.replace("\"", "\\\"")
+			.replace("\n", "\\n")
+			.replace("\t", "\\t")
+			.xml_escape(false);
+}
+
 // Creates strings.xml files inside the gradle project for different locales.
 Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset, const String &project_name) {
 	print_verbose("Creating strings resources for supported locales for project " + project_name);
 	// Stores the string into the default values directory.
-	String processed_default_xml_string = vformat(godot_project_name_xml_string, project_name.xml_escape(true));
+	String processed_default_xml_string = vformat(godot_project_name_xml_string, _android_xml_escape(project_name));
 	store_string_at_path("res://android/build/res/values/godot_project_name_string.xml", processed_default_xml_string);
 
 	// Searches the Gradle project res/ directory to find all supported locales
@@ -146,7 +161,7 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 	da->list_dir_begin();
 	while (true) {
 		String file = da->get_next();
-		if (file == "") {
+		if (file.is_empty()) {
 			break;
 		}
 		if (!file.begins_with("values-")) {
@@ -158,7 +173,7 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 		String locale_directory = "res://android/build/res/" + file + "/godot_project_name_string.xml";
 		if (ProjectSettings::get_singleton()->has_setting(property_name)) {
 			String locale_project_name = ProjectSettings::get_singleton()->get(property_name);
-			String processed_xml_string = vformat(godot_project_name_xml_string, locale_project_name.xml_escape(true));
+			String processed_xml_string = vformat(godot_project_name_xml_string, _android_xml_escape(locale_project_name));
 			print_verbose("Storing project name for locale " + locale + " under " + locale_directory);
 			store_string_at_path(locale_directory, processed_xml_string);
 		} else {
@@ -176,7 +191,7 @@ String bool_to_string(bool v) {
 
 String _get_gles_tag() {
 	bool min_gles3 = ProjectSettings::get_singleton()->get("rendering/driver/driver_name") == "GLES3" &&
-					 !ProjectSettings::get_singleton()->get("rendering/driver/fallback_to_gles2");
+			!ProjectSettings::get_singleton()->get("rendering/driver/fallback_to_gles2");
 	return min_gles3 ? "    <uses-feature android:glEsVersion=\"0x00030000\" android:required=\"true\" />\n" : "";
 }
 
@@ -196,15 +211,23 @@ String _get_screen_sizes_tag(const Ref<EditorExportPreset> &p_preset) {
 
 String _get_xr_features_tag(const Ref<EditorExportPreset> &p_preset) {
 	String manifest_xr_features;
-	bool uses_xr = (int)(p_preset->get("xr_features/xr_mode")) == 1;
+	int xr_mode_index = (int)(p_preset->get("xr_features/xr_mode"));
+	bool uses_xr = xr_mode_index == XR_MODE_OPENXR;
 	if (uses_xr) {
 		manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"android.hardware.vr.headtracking\" android:required=\"true\" android:version=\"1\" />\n";
 
 		int hand_tracking_index = p_preset->get("xr_features/hand_tracking"); // 0: none, 1: optional, 2: required
-		if (hand_tracking_index == 1) {
+		if (hand_tracking_index == XR_HAND_TRACKING_OPTIONAL) {
 			manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"oculus.software.handtracking\" android:required=\"false\" />\n";
-		} else if (hand_tracking_index == 2) {
+		} else if (hand_tracking_index == XR_HAND_TRACKING_REQUIRED) {
 			manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"oculus.software.handtracking\" android:required=\"true\" />\n";
+		}
+
+		int passthrough_mode = p_preset->get("xr_features/passthrough");
+		if (passthrough_mode == XR_PASSTHROUGH_OPTIONAL) {
+			manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"com.oculus.feature.PASSTHROUGH\" android:required=\"false\" />\n";
+		} else if (passthrough_mode == XR_PASSTHROUGH_REQUIRED) {
+			manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"com.oculus.feature.PASSTHROUGH\" android:required=\"true\" />\n";
 		}
 	}
 	return manifest_xr_features;
@@ -224,12 +247,15 @@ String _get_instrumentation_tag(const Ref<EditorExportPreset> &p_preset) {
 }
 
 String _get_activity_tag(const Ref<EditorExportPreset> &p_preset) {
-	bool uses_xr = (int)(p_preset->get("xr_features/xr_mode")) == 1;
+	int xr_mode_index = (int)(p_preset->get("xr_features/xr_mode"));
+	bool uses_xr = xr_mode_index == XR_MODE_OPENXR;
 	String orientation = _get_android_orientation_label(DisplayServer::ScreenOrientation(int(GLOBAL_GET("display/window/handheld/orientation"))));
 	String manifest_activity_text = vformat(
 			"        <activity android:name=\"com.godot.game.GodotApp\" "
-			"tools:replace=\"android:screenOrientation\" "
+			"tools:replace=\"android:screenOrientation,android:excludeFromRecents\" "
+			"android:excludeFromRecents=\"%s\" "
 			"android:screenOrientation=\"%s\">\n",
+			bool_to_string(p_preset->get("package/exclude_from_recents")),
 			orientation);
 	if (uses_xr) {
 		manifest_activity_text += "            <meta-data tools:node=\"replace\" android:name=\"com.oculus.vr.focusaware\" android:value=\"true\" />\n";
@@ -241,6 +267,8 @@ String _get_activity_tag(const Ref<EditorExportPreset> &p_preset) {
 }
 
 String _get_application_tag(const Ref<EditorExportPreset> &p_preset, bool p_has_storage_permission) {
+	int xr_mode_index = (int)(p_preset->get("xr_features/xr_mode"));
+	bool uses_xr = xr_mode_index == XR_MODE_OPENXR;
 	String manifest_application_text = vformat(
 			"    <application android:label=\"@string/godot_project_name_string\"\n"
 			"        android:allowBackup=\"%s\"\n"
@@ -249,12 +277,26 @@ String _get_application_tag(const Ref<EditorExportPreset> &p_preset, bool p_has_
 			"        android:hasFragileUserData=\"%s\"\n"
 			"        android:requestLegacyExternalStorage=\"%s\"\n"
 			"        tools:replace=\"android:allowBackup,android:isGame,android:hasFragileUserData,android:requestLegacyExternalStorage\"\n"
-			"        tools:ignore=\"GoogleAppIndexingWarning\">\n\n",
+			"        tools:ignore=\"GoogleAppIndexingWarning\">\n\n"
+			"        <meta-data tools:node=\"remove\" android:name=\"xr_mode_metadata_name\" />\n"
+			"        <meta-data tools:node=\"remove\" android:name=\"xr_hand_tracking_metadata_name\" />\n",
 			bool_to_string(p_preset->get("user_data_backup/allow")),
 			bool_to_string(p_preset->get("package/classify_as_game")),
 			bool_to_string(p_preset->get("package/retain_data_on_uninstall")),
 			bool_to_string(p_has_storage_permission));
 
+	if (uses_xr) {
+		manifest_application_text += "        <meta-data tools:node=\"replace\" android:name=\"com.samsung.android.vr.application.mode\" android:value=\"vr_only\" />\n";
+
+		bool hand_tracking_enabled = (int)(p_preset->get("xr_features/hand_tracking")) > XR_HAND_TRACKING_NONE;
+		if (hand_tracking_enabled) {
+			int hand_tracking_frequency_index = p_preset->get("xr_features/hand_tracking_frequency");
+			String hand_tracking_frequency = hand_tracking_frequency_index == XR_HAND_TRACKING_FREQUENCY_LOW ? "LOW" : "HIGH";
+			manifest_application_text += vformat(
+					"        <meta-data tools:node=\"replace\" android:name=\"com.oculus.handtracking.frequency\" android:value=\"%s\" />\n",
+					hand_tracking_frequency);
+		}
+	}
 	manifest_application_text += _get_activity_tag(p_preset);
 	manifest_application_text += "    </application>\n";
 	return manifest_application_text;

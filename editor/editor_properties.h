@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 
 #include "editor/create_dialog.h"
 #include "editor/editor_inspector.h"
+#include "editor/editor_locale_dialog.h"
 #include "editor/editor_resource_picker.h"
 #include "editor/editor_spin_slider.h"
 #include "editor/property_selector.h"
@@ -151,6 +152,26 @@ public:
 	void set_save_mode();
 	virtual void update_property() override;
 	EditorPropertyPath();
+};
+
+class EditorPropertyLocale : public EditorProperty {
+	GDCLASS(EditorPropertyLocale, EditorProperty);
+	EditorLocaleDialog *dialog;
+	LineEdit *locale;
+	Button *locale_edit;
+
+	void _locale_selected(const String &p_locale);
+	void _locale_pressed();
+	void _locale_focus_exited();
+
+protected:
+	static void _bind_methods();
+	void _notification(int p_what);
+
+public:
+	void setup(const String &p_hit_string);
+	virtual void update_property() override;
+	EditorPropertyLocale();
 };
 
 class EditorPropertyClassName : public EditorProperty {
@@ -625,6 +646,10 @@ class EditorPropertyNodePath : public EditorProperty {
 	void _node_assign();
 	void _node_clear();
 
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+	bool is_drop_valid(const Dictionary &p_drag_data) const;
+
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 	static void _bind_methods();
@@ -657,18 +682,19 @@ class EditorPropertyResource : public EditorProperty {
 	bool updating_theme = false;
 	bool opened_editor = false;
 
-	void _resource_selected(const RES &p_resource);
+	void _resource_selected(const RES &p_resource, bool p_edit);
 	void _resource_changed(const RES &p_resource);
 
 	void _viewport_selected(const NodePath &p_path);
 
-	void _sub_inspector_property_keyed(const String &p_property, const Variant &p_value, bool);
+	void _sub_inspector_property_keyed(const String &p_property, const Variant &p_value, bool p_advance);
 	void _sub_inspector_resource_selected(const RES &p_resource, const String &p_property);
 	void _sub_inspector_object_id_selected(int p_id);
 
 	void _open_editor_pressed();
 	void _fold_other_editors(Object *p_self);
 	void _update_property_bg();
+	void _update_preferred_shader();
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
@@ -695,9 +721,7 @@ class EditorInspectorDefaultPlugin : public EditorInspectorPlugin {
 
 public:
 	virtual bool can_handle(Object *p_object) override;
-	virtual void parse_begin(Object *p_object) override;
 	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false) override;
-	virtual void parse_end() override;
 
 	static EditorProperty *get_editor_for_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false);
 };

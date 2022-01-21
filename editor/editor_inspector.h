@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,11 +43,10 @@ class UndoRedo;
 
 class EditorPropertyRevert {
 public:
-	static bool may_node_be_in_instance(Node *p_node);
 	static bool get_instantiated_node_original_property(Node *p_node, const StringName &p_prop, Variant &value, bool p_check_class_default = true);
 	static bool is_node_property_different(Node *p_node, const Variant &p_current, const Variant &p_orig);
 	static bool is_property_value_different(const Variant &p_a, const Variant &p_b);
-	static Variant get_property_revert_value(Object *p_object, const StringName &p_property);
+	static Variant get_property_revert_value(Object *p_object, const StringName &p_property, bool *r_is_valid);
 
 	static bool can_property_revert(Object *p_object, const StringName &p_property);
 };
@@ -60,6 +59,7 @@ public:
 		MENU_COPY_PROPERTY,
 		MENU_PASTE_PROPERTY,
 		MENU_COPY_PROPERTY_PATH,
+		MENU_PIN_VALUE,
 	};
 
 private:
@@ -74,7 +74,7 @@ private:
 	bool read_only;
 	bool checkable;
 	bool checked;
-	bool draw_red;
+	bool draw_warning;
 	bool keying;
 	bool deletable;
 
@@ -91,13 +91,14 @@ private:
 	bool delete_hover = false;
 
 	bool can_revert;
+	bool can_pin;
+	bool pin_hidden;
+	bool pinned;
 
 	bool use_folding;
 	bool draw_top_bg;
 
-	void _ensure_popup();
-	bool _is_property_different(const Variant &p_current, const Variant &p_orig);
-	bool _get_instantiated_node_original_property(const StringName &p_prop, Variant &value);
+	void _update_popup();
 	void _focusable_focused(int p_index);
 
 	bool selectable;
@@ -116,6 +117,8 @@ private:
 	Map<StringName, Variant> cache;
 
 	GDVIRTUAL0(_update_property)
+	void _update_pin_flags();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -140,7 +143,7 @@ public:
 	StringName get_edited_property();
 
 	virtual void update_property();
-	void update_reload_status();
+	void update_revert_and_pin_status();
 
 	virtual bool use_keying_next() const;
 
@@ -150,8 +153,8 @@ public:
 	void set_checked(bool p_checked);
 	bool is_checked() const;
 
-	void set_draw_red(bool p_draw_red);
-	bool is_draw_red() const;
+	void set_draw_warning(bool p_draw_warning);
+	bool is_draw_warning() const;
 
 	void set_keying(bool p_keying);
 	bool is_keying() const;
@@ -212,10 +215,11 @@ protected:
 	static void _bind_methods();
 
 	GDVIRTUAL1RC(bool, _can_handle, Variant)
-	GDVIRTUAL0(_parse_begin)
+	GDVIRTUAL1(_parse_begin, Object *)
 	GDVIRTUAL2(_parse_category, Object *, String)
+	GDVIRTUAL2(_parse_group, Object *, String)
 	GDVIRTUAL7R(bool, _parse_property, Object *, int, String, int, String, int, bool)
-	GDVIRTUAL0(_parse_end)
+	GDVIRTUAL1(_parse_end, Object *)
 
 public:
 	void add_custom_control(Control *control);
@@ -224,9 +228,10 @@ public:
 
 	virtual bool can_handle(Object *p_object);
 	virtual void parse_begin(Object *p_object);
-	virtual void parse_category(Object *p_object, const String &p_parse_category);
+	virtual void parse_category(Object *p_object, const String &p_category);
+	virtual void parse_group(Object *p_object, const String &p_group);
 	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false);
-	virtual void parse_end();
+	virtual void parse_end(Object *p_object);
 };
 
 class EditorInspectorCategory : public Control {
@@ -280,8 +285,6 @@ public:
 	VBoxContainer *get_vbox();
 	void unfold();
 	void fold();
-
-	Object *get_edited_object();
 
 	EditorInspectorSection();
 	~EditorInspectorSection();
@@ -463,8 +466,8 @@ class EditorInspector : public ScrollContainer {
 	void _property_keyed(const String &p_path, bool p_advance);
 	void _property_keyed_with_value(const String &p_path, const Variant &p_value, bool p_advance);
 	void _property_deleted(const String &p_path);
-
 	void _property_checked(const String &p_path, bool p_checked);
+	void _property_pinned(const String &p_path, bool p_pinned);
 
 	void _resource_selected(const String &p_path, RES p_resource);
 	void _property_selected(const String &p_path, int p_focusable);

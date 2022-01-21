@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -82,9 +82,9 @@
 @implementation GodotApplicationDelegate
 
 - (void)forceUnbundledWindowActivationHackStep1 {
-	// Step1: Switch focus to macOS Dock.
+	// Step 1: Switch focus to macOS SystemUIServer process.
 	// Required to perform step 2, TransformProcessType will fail if app is already the in focus.
-	for (NSRunningApplication *app in [NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.apple.dock"]) {
+	for (NSRunningApplication *app in [NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.apple.systemuiserver"]) {
 		[app activateWithOptions:NSApplicationActivateIgnoringOtherApps];
 		break;
 	}
@@ -107,8 +107,8 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notice {
 	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
-	if (nsappname == nil) {
-		// If executable is not a bundled, macOS WindowServer won't register and activate app window correctly (menu and title bar are grayed out and input ignored).
+	if (nsappname == nil || isatty(STDOUT_FILENO) || isatty(STDIN_FILENO) || isatty(STDERR_FILENO)) {
+		// If the executable is started from terminal or is not bundled, macOS WindowServer won't register and activate app window correctly (menu and title bar are grayed out and input ignored).
 		[self performSelector:@selector(forceUnbundledWindowActivationHackStep1) withObject:nil afterDelay:0.02];
 	}
 }
@@ -178,7 +178,7 @@
 
 class OSXTerminalLogger : public StdLogger {
 public:
-	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type = ERR_ERROR) {
+	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, ErrorType p_type = ERR_ERROR) {
 		if (!should_log(true)) {
 			return;
 		}
@@ -491,13 +491,88 @@ String OS_OSX::get_executable_path() const {
 	}
 }
 
+Error OS_OSX::create_instance(const List<String> &p_arguments, ProcessID *r_child_id) {
+	// If executable is bundled, always execute editor instances as an app bundle to ensure app window is registered and activated correctly.
+	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
+	if (nsappname != nil) {
+		String path;
+		path.parse_utf8([[[NSBundle mainBundle] bundlePath] UTF8String]);
+		return create_process(path, p_arguments, r_child_id, false);
+	} else {
+		return create_process(get_executable_path(), p_arguments, r_child_id, false);
+	}
+}
+
+Error OS_OSX::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
+	if (@available(macOS 10.15, *)) {
+		// Use NSWorkspace if path is an .app bundle.
+		NSURL *url = [NSURL fileURLWithPath:@(p_path.utf8().get_data())];
+		NSBundle *bundle = [NSBundle bundleWithURL:url];
+		if (bundle) {
+			NSMutableArray *arguments = [[NSMutableArray alloc] init];
+			for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
+				[arguments addObject:[NSString stringWithUTF8String:E->get().utf8().get_data()]];
+			}
+			NSWorkspaceOpenConfiguration *configuration = [[NSWorkspaceOpenConfiguration alloc] init];
+			[configuration setArguments:arguments];
+			[configuration setCreatesNewApplicationInstance:YES];
+			__block dispatch_semaphore_t lock = dispatch_semaphore_create(0);
+			__block Error err = ERR_TIMEOUT;
+			__block pid_t pid = 0;
+			[[NSWorkspace sharedWorkspace] openApplicationAtURL:url
+												  configuration:configuration
+											  completionHandler:^(NSRunningApplication *app, NSError *error) {
+												  if (error) {
+													  err = ERR_CANT_FORK;
+													  NSLog(@"Failed to execute: %@", error.localizedDescription);
+												  } else {
+													  pid = [app processIdentifier];
+													  err = OK;
+												  }
+												  dispatch_semaphore_signal(lock);
+											  }];
+			dispatch_semaphore_wait(lock, dispatch_time(DISPATCH_TIME_NOW, 20000000000)); // 20 sec timeout, wait for app to launch.
+			dispatch_release(lock);
+
+			if (err == OK) {
+				if (r_child_id) {
+					*r_child_id = (ProcessID)pid;
+				}
+			}
+
+			return err;
+		} else {
+			return OS_Unix::create_process(p_path, p_arguments, r_child_id, p_open_console);
+		}
+	} else {
+		return OS_Unix::create_process(p_path, p_arguments, r_child_id, p_open_console);
+	}
+}
+
+void OS_OSX::pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context) {
+	// Prevent main loop from sleeping and redraw window during resize / modal popups.
+
+	if (get_singleton()->get_main_loop()) {
+		Main::force_redraw();
+		if (!Main::is_iterating()) { // Avoid cyclic loop.
+			Main::iteration();
+		}
+	}
+
+	CFRunLoopWakeUp(CFRunLoopGetCurrent()); // Prevent main loop from sleeping.
+}
+
 void OS_OSX::run() {
 	force_quit = false;
 
-	if (!main_loop)
+	if (!main_loop) {
 		return;
+	}
 
 	main_loop->initialize();
+
+	CFRunLoopObserverRef pre_wait_observer = CFRunLoopObserverCreate(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true, 0, &pre_wait_observer_cb, nullptr);
+	CFRunLoopAddObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
 
 	bool quit = false;
 	while (!force_quit && !quit) {
@@ -511,9 +586,13 @@ void OS_OSX::run() {
 				quit = true;
 			}
 		} @catch (NSException *exception) {
-			ERR_PRINT("NSException: " + String([exception reason].UTF8String));
+			ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
 		}
 	};
+
+	CFRunLoopRemoveObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
+	CFRelease(pre_wait_observer);
+
 	main_loop->finalize();
 }
 
@@ -523,7 +602,7 @@ Error OS_OSX::move_to_trash(const String &p_path) {
 	NSError *err;
 
 	if (![fm trashItemAtURL:url resultingItemURL:nil error:&err]) {
-		ERR_PRINT("trashItemAtURL error: " + String(err.localizedDescription.UTF8String));
+		ERR_PRINT("trashItemAtURL error: " + String::utf8(err.localizedDescription.UTF8String));
 		return FAILED;
 	}
 

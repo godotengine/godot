@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,9 @@
 
 #include "platform/javascript/display_server_javascript.h"
 
+#ifdef GLES3_ENABLED
+#include "drivers/gles3/rasterizer_gles3.h"
+#endif
 #include "platform/javascript/os_javascript.h"
 #include "servers/rendering/rasterizer_dummy.h"
 
@@ -50,14 +53,6 @@ DisplayServerJavaScript *DisplayServerJavaScript::get_singleton() {
 }
 
 // Window (canvas)
-void DisplayServerJavaScript::focus_canvas() {
-	godot_js_display_canvas_focus();
-}
-
-bool DisplayServerJavaScript::is_canvas_focused() {
-	return godot_js_display_canvas_is_focused() != 0;
-}
-
 bool DisplayServerJavaScript::check_size_force_redraw() {
 	return godot_js_display_size_update() != 0;
 }
@@ -141,29 +136,30 @@ void DisplayServerJavaScript::key_callback(int p_pressed, int p_repeat, int p_mo
 int DisplayServerJavaScript::mouse_button_callback(int p_pressed, int p_button, double p_x, double p_y, int p_modifiers) {
 	DisplayServerJavaScript *ds = get_singleton();
 
+	Point2 pos(p_x, p_y);
+	Input::get_singleton()->set_mouse_position(pos);
 	Ref<InputEventMouseButton> ev;
 	ev.instantiate();
-	ev->set_pressed(p_pressed);
-	ev->set_position(Point2(p_x, p_y));
-	ev->set_global_position(ev->get_position());
+	ev->set_position(pos);
+	ev->set_global_position(pos);
 	ev->set_pressed(p_pressed);
 	dom2godot_mod(ev, p_modifiers);
 
 	switch (p_button) {
 		case DOM_BUTTON_LEFT:
-			ev->set_button_index(MOUSE_BUTTON_LEFT);
+			ev->set_button_index(MouseButton::LEFT);
 			break;
 		case DOM_BUTTON_MIDDLE:
-			ev->set_button_index(MOUSE_BUTTON_MIDDLE);
+			ev->set_button_index(MouseButton::MIDDLE);
 			break;
 		case DOM_BUTTON_RIGHT:
-			ev->set_button_index(MOUSE_BUTTON_RIGHT);
+			ev->set_button_index(MouseButton::RIGHT);
 			break;
 		case DOM_BUTTON_XBUTTON1:
-			ev->set_button_index(MOUSE_BUTTON_XBUTTON1);
+			ev->set_button_index(MouseButton::MB_XBUTTON1);
 			break;
 		case DOM_BUTTON_XBUTTON2:
-			ev->set_button_index(MOUSE_BUTTON_XBUTTON2);
+			ev->set_button_index(MouseButton::MB_XBUTTON2);
 			break;
 		default:
 			return false;
@@ -176,7 +172,7 @@ int DisplayServerJavaScript::mouse_button_callback(int p_pressed, int p_button, 
 			if (diff < 400 && Point2(ds->last_click_pos).distance_to(ev->get_position()) < 5) {
 				ds->last_click_ms = 0;
 				ds->last_click_pos = Point2(-100, -100);
-				ds->last_click_button_index = -1;
+				ds->last_click_button_index = MouseButton::NONE;
 				ev->set_double_click(true);
 			}
 
@@ -190,11 +186,11 @@ int DisplayServerJavaScript::mouse_button_callback(int p_pressed, int p_button, 
 		}
 	}
 
-	int mask = Input::get_singleton()->get_mouse_button_mask();
-	int button_flag = 1 << (ev->get_button_index() - 1);
+	MouseButton mask = Input::get_singleton()->get_mouse_button_mask();
+	MouseButton button_flag = mouse_button_to_mask(ev->get_button_index());
 	if (ev->is_pressed()) {
 		mask |= button_flag;
-	} else if (mask & button_flag) {
+	} else if ((mask & button_flag) != MouseButton::NONE) {
 		mask &= ~button_flag;
 	} else {
 		// Received release event, but press was outside the canvas, so ignore.
@@ -215,23 +211,26 @@ int DisplayServerJavaScript::mouse_button_callback(int p_pressed, int p_button, 
 }
 
 void DisplayServerJavaScript::mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers) {
-	int input_mask = Input::get_singleton()->get_mouse_button_mask();
+	MouseButton input_mask = Input::get_singleton()->get_mouse_button_mask();
 	// For motion outside the canvas, only read mouse movement if dragging
 	// started inside the canvas; imitating desktop app behaviour.
-	if (!get_singleton()->cursor_inside_canvas && !input_mask)
+	if (!get_singleton()->cursor_inside_canvas && input_mask == MouseButton::NONE) {
 		return;
+	}
 
+	Point2 pos(p_x, p_y);
+	Input::get_singleton()->set_mouse_position(pos);
 	Ref<InputEventMouseMotion> ev;
 	ev.instantiate();
 	dom2godot_mod(ev, p_modifiers);
 	ev->set_button_mask(input_mask);
 
-	ev->set_position(Point2(p_x, p_y));
-	ev->set_global_position(ev->get_position());
+	ev->set_position(pos);
+	ev->set_global_position(pos);
 
 	ev->set_relative(Vector2(p_rel_x, p_rel_y));
 	Input::get_singleton()->set_mouse_position(ev->get_position());
-	ev->set_speed(Input::get_singleton()->get_last_mouse_speed());
+	ev->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
 
 	Input::get_singleton()->parse_input_event(ev);
 }
@@ -396,6 +395,10 @@ DisplayServer::MouseMode DisplayServerJavaScript::mouse_get_mode() const {
 	return MOUSE_MODE_VISIBLE;
 }
 
+Point2i DisplayServerJavaScript::mouse_get_position() const {
+	return Input::get_singleton()->get_mouse_position();
+}
+
 // Wheel
 int DisplayServerJavaScript::mouse_wheel_callback(double p_delta_x, double p_delta_y) {
 	if (!godot_js_display_canvas_is_focused()) {
@@ -412,19 +415,19 @@ int DisplayServerJavaScript::mouse_wheel_callback(double p_delta_x, double p_del
 	ev->set_position(input->get_mouse_position());
 	ev->set_global_position(ev->get_position());
 
-	ev->set_shift_pressed(input->is_key_pressed(KEY_SHIFT));
-	ev->set_alt_pressed(input->is_key_pressed(KEY_ALT));
-	ev->set_ctrl_pressed(input->is_key_pressed(KEY_CTRL));
-	ev->set_meta_pressed(input->is_key_pressed(KEY_META));
+	ev->set_shift_pressed(input->is_key_pressed(Key::SHIFT));
+	ev->set_alt_pressed(input->is_key_pressed(Key::ALT));
+	ev->set_ctrl_pressed(input->is_key_pressed(Key::CTRL));
+	ev->set_meta_pressed(input->is_key_pressed(Key::META));
 
 	if (p_delta_y < 0) {
-		ev->set_button_index(MOUSE_BUTTON_WHEEL_UP);
+		ev->set_button_index(MouseButton::WHEEL_UP);
 	} else if (p_delta_y > 0) {
-		ev->set_button_index(MOUSE_BUTTON_WHEEL_DOWN);
+		ev->set_button_index(MouseButton::WHEEL_DOWN);
 	} else if (p_delta_x > 0) {
-		ev->set_button_index(MOUSE_BUTTON_WHEEL_LEFT);
+		ev->set_button_index(MouseButton::WHEEL_LEFT);
 	} else if (p_delta_x < 0) {
-		ev->set_button_index(MOUSE_BUTTON_WHEEL_RIGHT);
+		ev->set_button_index(MouseButton::WHEEL_RIGHT);
 	} else {
 		return false;
 	}
@@ -432,7 +435,7 @@ int DisplayServerJavaScript::mouse_wheel_callback(double p_delta_x, double p_del
 	// Different browsers give wildly different delta values, and we can't
 	// interpret deltaMode, so use default value for wheel events' factor.
 
-	int button_flag = 1 << (ev->get_button_index() - 1);
+	MouseButton button_flag = mouse_button_to_mask(ev->get_button_index());
 
 	ev->set_pressed(true);
 	ev->set_button_mask(input->get_mouse_button_mask() | button_flag);
@@ -497,7 +500,7 @@ void DisplayServerJavaScript::vk_input_text_callback(const char *p_text, int p_c
 		return;
 	}
 	// Call input_text
-	Variant event = String(p_text);
+	Variant event = String::utf8(p_text);
 	Variant *eventp = &event;
 	Variant ret;
 	Callable::CallError ce;
@@ -509,12 +512,12 @@ void DisplayServerJavaScript::vk_input_text_callback(const char *p_text, int p_c
 		k.instantiate();
 		k->set_pressed(true);
 		k->set_echo(false);
-		k->set_keycode(KEY_RIGHT);
+		k->set_keycode(Key::RIGHT);
 		input->parse_input_event(k);
 		k.instantiate();
 		k->set_pressed(false);
 		k->set_echo(false);
-		k->set_keycode(KEY_RIGHT);
+		k->set_keycode(Key::RIGHT);
 		input->parse_input_event(k);
 	}
 }
@@ -555,37 +558,31 @@ void DisplayServerJavaScript::process_joypads() {
 			continue;
 		}
 		for (int b = 0; b < s_btns_num; b++) {
-			float value = s_btns[b];
 			// Buttons 6 and 7 in the standard mapping need to be
-			// axis to be handled as JOY_AXIS_TRIGGER by Godot.
+			// axis to be handled as JoyAxis::TRIGGER by Godot.
 			if (s_standard && (b == 6 || b == 7)) {
-				Input::JoyAxisValue joy_axis;
-				joy_axis.min = 0;
-				joy_axis.value = value;
-				JoyAxis a = b == 6 ? JOY_AXIS_TRIGGER_LEFT : JOY_AXIS_TRIGGER_RIGHT;
-				input->joy_axis(idx, a, joy_axis);
+				input->joy_axis(idx, (JoyAxis)b, s_btns[b]);
 			} else {
-				input->joy_button(idx, (JoyButton)b, value);
+				input->joy_button(idx, (JoyButton)b, s_btns[b]);
 			}
 		}
 		for (int a = 0; a < s_axes_num; a++) {
-			Input::JoyAxisValue joy_axis;
-			joy_axis.min = -1;
-			joy_axis.value = s_axes[a];
-			input->joy_axis(idx, (JoyAxis)a, joy_axis);
+			input->joy_axis(idx, (JoyAxis)a, s_axes[a]);
 		}
 	}
 }
 
 Vector<String> DisplayServerJavaScript::get_rendering_drivers_func() {
 	Vector<String> drivers;
-	drivers.push_back("dummy");
+#ifdef GLES3_ENABLED
+	drivers.push_back("opengl3");
+#endif
 	return drivers;
 }
 
 // Clipboard
 void DisplayServerJavaScript::update_clipboard_callback(const char *p_text) {
-	get_singleton()->clipboard = p_text;
+	get_singleton()->clipboard = String::utf8(p_text);
 }
 
 void DisplayServerJavaScript::clipboard_set(const String &p_text) {
@@ -677,40 +674,34 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 	// Expose method for requesting quit.
 	godot_js_os_request_quit_cb(request_quit_callback);
 
-	RasterizerDummy::make_current(); // TODO GLES2 in Godot 4.0... or webgpu?
-#if 0
-	EmscriptenWebGLContextAttributes attributes;
-	emscripten_webgl_init_context_attributes(&attributes);
-	attributes.alpha = GLOBAL_GET("display/window/per_pixel_transparency/allowed");
-	attributes.antialias = false;
-	ERR_FAIL_INDEX_V(p_video_driver, VIDEO_DRIVER_MAX, ERR_INVALID_PARAMETER);
+#ifdef GLES3_ENABLED
+	// TODO "vulkan" defaults to webgl2 for now.
+	bool wants_webgl2 = p_rendering_driver == "opengl3" || p_rendering_driver == "vulkan";
+	bool webgl2_init_failed = wants_webgl2 && !godot_js_display_has_webgl(2);
+	if (wants_webgl2 && !webgl2_init_failed) {
+		EmscriptenWebGLContextAttributes attributes;
+		emscripten_webgl_init_context_attributes(&attributes);
+		//attributes.alpha = GLOBAL_GET("display/window/per_pixel_transparency/allowed");
+		attributes.alpha = true;
+		attributes.antialias = false;
+		attributes.majorVersion = 2;
 
-	if (p_desired.layered) {
-		set_window_per_pixel_transparency_enabled(true);
+		webgl_ctx = emscripten_webgl_create_context(canvas_id, &attributes);
+		if (emscripten_webgl_make_context_current(webgl_ctx) != EMSCRIPTEN_RESULT_SUCCESS) {
+			webgl2_init_failed = true;
+		} else {
+			RasterizerGLES3::make_current();
+		}
 	}
-
-	bool gl_initialization_error = false;
-
-	if (RasterizerGLES2::is_viable() == OK) {
-		attributes.majorVersion = 1;
-		RasterizerGLES2::register_config();
-		RasterizerGLES2::make_current();
-	} else {
-		gl_initialization_error = true;
-	}
-
-	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(canvas_id, &attributes);
-	if (emscripten_webgl_make_context_current(ctx) != EMSCRIPTEN_RESULT_SUCCESS) {
-		gl_initialization_error = true;
-	}
-
-	if (gl_initialization_error) {
-		OS::get_singleton()->alert("Your browser does not seem to support WebGL. Please update your browser version.",
+	if (webgl2_init_failed) {
+		OS::get_singleton()->alert("Your browser does not seem to support WebGL2. Please update your browser version.",
 				"Unable to initialize video driver");
-		return ERR_UNAVAILABLE;
 	}
-
-	video_driver_index = p_video_driver;
+	if (!wants_webgl2 || webgl2_init_failed) {
+		RasterizerDummy::make_current();
+	}
+#else
+	RasterizerDummy::make_current();
 #endif
 
 	// JS Input interface (js/libs/library_godot_input.js)
@@ -737,13 +728,16 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 }
 
 DisplayServerJavaScript::~DisplayServerJavaScript() {
-	//emscripten_webgl_commit_frame();
-	//emscripten_webgl_destroy_context(webgl_ctx);
+#ifdef GLES3_ENABLED
+	if (webgl_ctx) {
+		emscripten_webgl_commit_frame();
+		emscripten_webgl_destroy_context(webgl_ctx);
+	}
+#endif
 }
 
 bool DisplayServerJavaScript::has_feature(Feature p_feature) const {
 	switch (p_feature) {
-		//case FEATURE_CONSOLE_WINDOW:
 		//case FEATURE_GLOBAL_MENU:
 		//case FEATURE_HIDPI:
 		//case FEATURE_IME:
@@ -967,5 +961,9 @@ bool DisplayServerJavaScript::get_swap_cancel_ok() {
 }
 
 void DisplayServerJavaScript::swap_buffers() {
-	//emscripten_webgl_commit_frame();
+#ifdef GLES3_ENABLED
+	if (webgl_ctx) {
+		emscripten_webgl_commit_frame();
+	}
+#endif
 }

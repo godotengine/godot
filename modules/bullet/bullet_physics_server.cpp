@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,10 +44,6 @@
 #include <LinearMath/btVector3.h>
 
 #include <assert.h>
-
-/**
-	@author AndreaCatania
-*/
 
 #define CreateThenReturnRID(owner, ridData) \
 	RID rid = owner.make_rid(ridData);      \
@@ -413,18 +409,18 @@ void BulletPhysicsServer3D::area_set_monitorable(RID p_area, bool p_monitorable)
 	area->set_monitorable(p_monitorable);
 }
 
-void BulletPhysicsServer3D::area_set_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method) {
+void BulletPhysicsServer3D::area_set_monitor_callback(RID p_area, const Callable &p_callback) {
 	AreaBullet *area = area_owner.get_or_null(p_area);
 	ERR_FAIL_COND(!area);
 
-	area->set_event_callback(CollisionObjectBullet::TYPE_RIGID_BODY, p_receiver ? p_receiver->get_instance_id() : ObjectID(), p_method);
+	area->set_event_callback(CollisionObjectBullet::TYPE_RIGID_BODY, p_callback.is_valid() ? p_callback : Callable());
 }
 
-void BulletPhysicsServer3D::area_set_area_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method) {
+void BulletPhysicsServer3D::area_set_area_monitor_callback(RID p_area, const Callable &p_callback) {
 	AreaBullet *area = area_owner.get_or_null(p_area);
 	ERR_FAIL_COND(!area);
 
-	area->set_event_callback(CollisionObjectBullet::TYPE_AREA, p_receiver ? p_receiver->get_instance_id() : ObjectID(), p_method);
+	area->set_event_callback(CollisionObjectBullet::TYPE_AREA, p_callback.is_valid() ? p_callback : Callable());
 }
 
 void BulletPhysicsServer3D::area_set_ray_pickable(RID p_area, bool p_enable) {
@@ -837,8 +833,17 @@ void BulletPhysicsServer3D::body_set_ray_pickable(RID p_body, bool p_enable) {
 }
 
 PhysicsDirectBodyState3D *BulletPhysicsServer3D::body_get_direct_state(RID p_body) {
+	if (!rigid_body_owner.owns(p_body)) {
+		return nullptr;
+	}
+
 	RigidBodyBullet *body = rigid_body_owner.get_or_null(p_body);
 	ERR_FAIL_COND_V(!body, nullptr);
+
+	if (!body->get_space()) {
+		return nullptr;
+	}
+
 	return BulletPhysicsDirectBodyState3D::get_singleton(body);
 }
 

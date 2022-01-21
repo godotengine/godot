@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -265,8 +265,7 @@ public:
 		}
 
 		int32_t get_sign() const {
-			return ((int64_t)high < 0) ? -1 : (high || low) ? 1 :
-																0;
+			return ((int64_t)high < 0) ? -1 : ((high || low) ? 1 : 0);
 		}
 
 		bool operator<(const Int128 &b) const {
@@ -594,8 +593,6 @@ private:
 
 		IntermediateHull() {
 		}
-
-		void print();
 	};
 
 	enum Orientation { NONE,
@@ -609,9 +606,9 @@ private:
 	PagedAllocator<Face> face_pool;
 	LocalVector<Vertex *> original_vertices;
 	int32_t merge_stamp = 0;
-	int32_t min_axis = 0;
-	int32_t med_axis = 0;
-	int32_t max_axis = 0;
+	Vector3::Axis min_axis = Vector3::Axis::AXIS_X;
+	Vector3::Axis med_axis = Vector3::Axis::AXIS_X;
+	Vector3::Axis max_axis = Vector3::Axis::AXIS_X;
 	int32_t used_edge_pairs = 0;
 	int32_t max_used_edge_pairs = 0;
 
@@ -737,8 +734,6 @@ int32_t ConvexHullInternal::Rational64::compare(const Rational64 &b) const {
 		return 0;
 	}
 
-	//	return (numerator * b.denominator > b.numerator * denominator) ? sign : (numerator * b.denominator < b.numerator * denominator) ? -sign : 0;
-
 #ifdef USE_X86_64_ASM
 
 	int32_t result;
@@ -759,10 +754,9 @@ int32_t ConvexHullInternal::Rational64::compare(const Rational64 &b) const {
 			: "=&b"(result), [tmp] "=&r"(tmp), "=a"(dummy)
 			: "a"(denominator), [bn] "g"(b.numerator), [tn] "g"(numerator), [bd] "g"(b.denominator)
 			: "%rdx", "cc");
-	return result ? result ^ sign // if sign is +1, only bit 0 of result is inverted, which does not change the sign of result (and cannot result in zero)
-					// if sign is -1, all bits of result are inverted, which changes the sign of result (and again cannot result in zero)
-					:
-					  0;
+	// if sign is +1, only bit 0 of result is inverted, which does not change the sign of result (and cannot result in zero)
+	// if sign is -1, all bits of result are inverted, which changes the sign of result (and again cannot result in zero)
+	return result ? result ^ sign : 0;
 
 #else
 
@@ -795,8 +789,7 @@ int32_t ConvexHullInternal::Rational128::compare(const Rational128 &b) const {
 int32_t ConvexHullInternal::Rational128::compare(int64_t b) const {
 	if (is_int_64) {
 		int64_t a = sign * (int64_t)numerator.low;
-		return (a > b) ? 1 : (a < b) ? -1 :
-										 0;
+		return (a > b) ? 1 : ((a < b) ? -1 : 0);
 	}
 	if (b > 0) {
 		if (sign <= 0) {
@@ -1448,8 +1441,7 @@ void ConvexHullInternal::merge(IntermediateHull &p_h0, IntermediateHull &p_h1) {
 			c1->edges = e;
 			return;
 		} else {
-			int32_t cmp = !min0 ? 1 : !min1 ? -1 :
-												min_cot0.compare(min_cot1);
+			int32_t cmp = !min0 ? 1 : (!min1 ? -1 : min_cot0.compare(min_cot1));
 #ifdef DEBUG_CONVEX_HULL
 			printf("    -> Result %d\n", cmp);
 #endif
@@ -1593,12 +1585,12 @@ void ConvexHullInternal::compute(const Vector3 *p_coords, int32_t p_count) {
 	}
 
 	Vector3 s = aabb.size;
-	max_axis = s.max_axis();
-	min_axis = s.min_axis();
+	max_axis = s.max_axis_index();
+	min_axis = s.min_axis_index();
 	if (min_axis == max_axis) {
-		min_axis = (max_axis + 1) % 3;
+		min_axis = Vector3::Axis((max_axis + 1) % 3);
 	}
-	med_axis = 3 - max_axis - min_axis;
+	med_axis = Vector3::Axis(3 - max_axis - min_axis);
 
 	s /= real_t(10216);
 	if (((med_axis + 1) % 3) != max_axis) {
@@ -1696,7 +1688,7 @@ real_t ConvexHullInternal::shrink(real_t p_amount, real_t p_clamp_amount) {
 
 	while (stack.size() > 0) {
 		Vertex *v = stack[stack.size() - 1];
-		stack.remove(stack.size() - 1);
+		stack.remove_at(stack.size() - 1);
 		Edge *e = v->edges;
 		if (e) {
 			do {

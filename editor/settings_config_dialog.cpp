@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -148,7 +148,7 @@ void EditorSettingsDialog::unhandled_input(const Ref<InputEvent> &p_event) {
 
 		if (ED_IS_SHORTCUT("ui_undo", p_event)) {
 			String action = undo_redo->get_current_action_name();
-			if (action != "") {
+			if (!action.is_empty()) {
 				EditorNode::get_log()->add_message("Undo: " + action, EditorLog::MSG_TYPE_EDITOR);
 			}
 			undo_redo->undo();
@@ -158,13 +158,13 @@ void EditorSettingsDialog::unhandled_input(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("ui_redo", p_event)) {
 			undo_redo->redo();
 			String action = undo_redo->get_current_action_name();
-			if (action != "") {
+			if (!action.is_empty()) {
 				EditorNode::get_log()->add_message("Redo: " + action, EditorLog::MSG_TYPE_EDITOR);
 			}
 			handled = true;
 		}
 
-		if (k->get_keycode_with_modifiers() == (KEY_MASK_CMD | KEY_F)) {
+		if (k->get_keycode_with_modifiers() == (KeyModifierMask::CMD | Key::F)) {
 			_focus_current_search_box();
 			handled = true;
 		}
@@ -433,7 +433,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 		}
 
 		Array original = sc->get_meta("original");
-		Array shortcuts_array = sc->get_events();
+		Array shortcuts_array = sc->get_events().duplicate(true);
 		bool same_as_defaults = Shortcut::is_event_array_equal(original, shortcuts_array);
 		bool collapse = !collapsed.has(E) || (collapsed.has(E) && collapsed[E]);
 
@@ -486,7 +486,7 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 					_update_shortcut_events(current_edited_identifier, Array());
 				}
 			} else if (type == "event") {
-				current_events.remove(current_event_index);
+				current_events.remove_at(current_event_index);
 
 				if (is_editing_action) {
 					_update_builtin_action(current_edited_identifier, current_events);
@@ -564,7 +564,7 @@ void EditorSettingsDialog::drop_data_fw(const Point2 &p_point, const Variant &p_
 	Array events = selected->get_parent()->get_meta("events");
 
 	Variant event_moved = events[index_moving_from];
-	events.remove(index_moving_from);
+	events.remove_at(index_moving_from);
 	events.insert(target_event_index, event_moved);
 
 	String ident = selected->get_parent()->get_meta("shortcut_identifier");
@@ -622,7 +622,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	undo_redo = memnew(UndoRedo);
 
 	tabs = memnew(TabContainer);
-	tabs->set_tab_align(TabContainer::ALIGN_LEFT);
+	tabs->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
 	tabs->connect("tab_changed", callable_mp(this, &EditorSettingsDialog::_tabs_tab_changed));
 	add_child(tabs);
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,7 +64,6 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 
 	int idx = 0;
 	int total_compression_size = 0;
-	int total_string_size = 0;
 
 	for (const StringName &E : keys) {
 		//hash string
@@ -102,7 +101,6 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 
 		compressed.write[idx] = ps;
 		total_compression_size += ps.compressed.size();
-		total_string_size += src_s.size();
 		idx++;
 	}
 
@@ -147,15 +145,12 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 	uint32_t *btw = (uint32_t *)&btwb[0];
 
 	int btindex = 0;
-	int collisions = 0;
 
 	for (int i = 0; i < size; i++) {
 		const Map<uint32_t, int> &t = table[i];
 		if (t.size() == 0) {
 			htw[i] = 0xFFFFFFFF; //nothing
 			continue;
-		} else if (t.size() > 1) {
-			collisions += t.size() - 1;
 		}
 
 		htw[i] = btindex;

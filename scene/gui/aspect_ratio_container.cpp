@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,12 +60,12 @@ void AspectRatioContainer::set_stretch_mode(StretchMode p_mode) {
 	queue_sort();
 }
 
-void AspectRatioContainer::set_alignment_horizontal(AlignMode p_alignment_horizontal) {
+void AspectRatioContainer::set_alignment_horizontal(AlignmentMode p_alignment_horizontal) {
 	alignment_horizontal = p_alignment_horizontal;
 	queue_sort();
 }
 
-void AspectRatioContainer::set_alignment_vertical(AlignMode p_alignment_vertical) {
+void AspectRatioContainer::set_alignment_vertical(AlignmentMode p_alignment_vertical) {
 	alignment_vertical = p_alignment_vertical;
 	queue_sort();
 }
@@ -107,25 +107,25 @@ void AspectRatioContainer::_notification(int p_what) {
 
 				float align_x = 0.5;
 				switch (alignment_horizontal) {
-					case ALIGN_BEGIN: {
+					case ALIGNMENT_BEGIN: {
 						align_x = 0.0;
 					} break;
-					case ALIGN_CENTER: {
+					case ALIGNMENT_CENTER: {
 						align_x = 0.5;
 					} break;
-					case ALIGN_END: {
+					case ALIGNMENT_END: {
 						align_x = 1.0;
 					} break;
 				}
 				float align_y = 0.5;
 				switch (alignment_vertical) {
-					case ALIGN_BEGIN: {
+					case ALIGNMENT_BEGIN: {
 						align_y = 0.0;
 					} break;
-					case ALIGN_CENTER: {
+					case ALIGNMENT_CENTER: {
 						align_y = 0.5;
 					} break;
-					case ALIGN_END: {
+					case ALIGNMENT_END: {
 						align_y = 1.0;
 					} break;
 				}
@@ -166,7 +166,7 @@ void AspectRatioContainer::_bind_methods() {
 	BIND_ENUM_CONSTANT(STRETCH_FIT);
 	BIND_ENUM_CONSTANT(STRETCH_COVER);
 
-	BIND_ENUM_CONSTANT(ALIGN_BEGIN);
-	BIND_ENUM_CONSTANT(ALIGN_CENTER);
-	BIND_ENUM_CONSTANT(ALIGN_END);
+	BIND_ENUM_CONSTANT(ALIGNMENT_BEGIN);
+	BIND_ENUM_CONSTANT(ALIGNMENT_CENTER);
+	BIND_ENUM_CONSTANT(ALIGNMENT_END);
 }

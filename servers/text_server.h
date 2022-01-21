@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -109,7 +109,8 @@ public:
 		FEATURE_BREAK_ITERATORS = 1 << 4,
 		FEATURE_FONT_SYSTEM = 1 << 5,
 		FEATURE_FONT_VARIABLE = 1 << 6,
-		FEATURE_USE_SUPPORT_DATA = 1 << 7
+		FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION = 1 << 7,
+		FEATURE_USE_SUPPORT_DATA = 1 << 8,
 	};
 
 	enum ContourPointTag {
@@ -123,6 +124,12 @@ public:
 		SPACING_SPACE,
 		SPACING_TOP,
 		SPACING_BOTTOM,
+	};
+
+	enum FontStyle {
+		FONT_BOLD = 1 << 0,
+		FONT_ITALIC = 1 << 1,
+		FONT_FIXED_WIDTH = 1 << 2,
 	};
 
 	void _draw_hex_code_box_number(RID p_canvas, int p_size, const Vector2 &p_pos, uint8_t p_index, const Color &p_color) const;
@@ -144,6 +151,7 @@ protected:
 		int end = 0; // Substring end offset in the parent string.
 
 		String text;
+		String custom_punct;
 		TextServer::Direction direction = DIRECTION_LTR; // Desired text direction.
 		TextServer::Orientation orientation = ORIENTATION_HORIZONTAL;
 
@@ -163,7 +171,7 @@ protected:
 
 		struct EmbeddedObject {
 			int pos = 0;
-			InlineAlign inline_align = INLINE_ALIGN_CENTER;
+			InlineAlignment inline_align = INLINE_ALIGNMENT_CENTER;
 			Rect2 rect;
 		};
 		Map<Variant, EmbeddedObject> objects;
@@ -194,6 +202,10 @@ protected:
 		Vector<Glyph> glyphs_logical;
 	};
 
+	Map<char32_t, char32_t> diacritics_map;
+	void _diacritics_map_add(const String &p_from, char32_t p_to);
+	void _init_diacritics_map();
+
 	static void _bind_methods();
 
 public:
@@ -219,6 +231,15 @@ public:
 
 	virtual void font_set_data(RID p_font_rid, const PackedByteArray &p_data) = 0;
 	virtual void font_set_data_ptr(RID p_font_rid, const uint8_t *p_data_ptr, size_t p_data_size) = 0;
+
+	virtual void font_set_style(RID p_font_rid, uint32_t /*FontStyle*/ p_style) = 0;
+	virtual uint32_t /*FontStyle*/ font_get_style(RID p_font_rid) const = 0;
+
+	virtual void font_set_name(RID p_font_rid, const String &p_name) = 0;
+	virtual String font_get_name(RID p_font_rid) const = 0;
+
+	virtual void font_set_style_name(RID p_font_rid, const String &p_name) = 0;
+	virtual String font_get_style_name(RID p_font_rid) const = 0;
 
 	virtual void font_set_antialiased(RID p_font_rid, bool p_antialiased) = 0;
 	virtual bool font_is_antialiased(RID p_font_rid) const = 0;
@@ -330,6 +351,9 @@ public:
 	virtual void font_remove_script_support_override(RID p_font_rid, const String &p_script) = 0;
 	virtual Vector<String> font_get_script_support_overrides(RID p_font_rid) = 0;
 
+	virtual void font_set_opentype_feature_overrides(RID p_font_rid, const Dictionary &p_overrides) = 0;
+	virtual Dictionary font_get_opentype_feature_overrides(RID p_font_rid) const = 0;
+
 	virtual Dictionary font_supported_feature_list(RID p_font_rid) const = 0;
 	virtual Dictionary font_supported_variation_list(RID p_font_rid) const = 0;
 
@@ -347,8 +371,12 @@ public:
 
 	virtual void shaped_text_set_direction(RID p_shaped, Direction p_direction = DIRECTION_AUTO) = 0;
 	virtual Direction shaped_text_get_direction(RID p_shaped) const = 0;
+	virtual Direction shaped_text_get_inferred_direction(RID p_shaped) const = 0;
 
 	virtual void shaped_text_set_bidi_override(RID p_shaped, const Array &p_override) = 0;
+
+	virtual void shaped_text_set_custom_punctuation(RID p_shaped, const String &p_punct) = 0;
+	virtual String shaped_text_get_custom_punctuation(RID p_shaped) const = 0;
 
 	virtual void shaped_text_set_orientation(RID p_shaped, Orientation p_orientation = ORIENTATION_HORIZONTAL) = 0;
 	virtual Orientation shaped_text_get_orientation(RID p_shaped) const = 0;
@@ -360,8 +388,8 @@ public:
 	virtual bool shaped_text_get_preserve_control(RID p_shaped) const = 0;
 
 	virtual bool shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "") = 0;
-	virtual bool shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER, int p_length = 1) = 0;
-	virtual bool shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER) = 0;
+	virtual bool shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int p_length = 1) = 0;
+	virtual bool shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER) = 0;
 
 	virtual RID shaped_text_substr(RID p_shaped, int p_start, int p_length) const = 0; // Copy shaped substring (e.g. line break) without reshaping, but correctly reordered, preservers range.
 	virtual RID shaped_text_get_parent(RID p_shaped) const = 0;
@@ -415,6 +443,7 @@ public:
 	virtual int shaped_text_hit_test_grapheme(RID p_shaped, float p_coords) const; // Return grapheme index.
 	virtual int shaped_text_hit_test_position(RID p_shaped, float p_coords) const; // Return caret/selection position.
 
+	virtual Vector2 shaped_text_get_grapheme_bounds(RID p_shaped, int p_pos) const;
 	virtual int shaped_text_next_grapheme_pos(RID p_shaped, int p_pos) const;
 	virtual int shaped_text_prev_grapheme_pos(RID p_shaped, int p_pos) const;
 
@@ -426,6 +455,12 @@ public:
 	virtual String format_number(const String &p_string, const String &p_language = "") const { return p_string; };
 	virtual String parse_number(const String &p_string, const String &p_language = "") const { return p_string; };
 	virtual String percent_sign(const String &p_language = "") const { return "%"; };
+
+	virtual String strip_diacritics(const String &p_string) const;
+
+	// Other string operations.
+	virtual String string_to_upper(const String &p_string, const String &p_language = "") const = 0;
+	virtual String string_to_lower(const String &p_string, const String &p_language = "") const = 0;
 
 	TextServer();
 	~TextServer();
@@ -509,7 +544,6 @@ public:
 	_FORCE_INLINE_ Ref<TextServer> get_primary_interface() const {
 		return primary_interface;
 	}
-	Ref<TextServer> _get_primary_interface() const;
 	void set_primary_interface(const Ref<TextServer> &p_primary_interface);
 
 	TextServerManager();
@@ -530,6 +564,7 @@ VARIANT_ENUM_CAST(TextServer::Hinting);
 VARIANT_ENUM_CAST(TextServer::Feature);
 VARIANT_ENUM_CAST(TextServer::ContourPointTag);
 VARIANT_ENUM_CAST(TextServer::SpacingType);
+VARIANT_ENUM_CAST(TextServer::FontStyle);
 
 GDVIRTUAL_NATIVE_PTR(Glyph);
 GDVIRTUAL_NATIVE_PTR(Glyph *);

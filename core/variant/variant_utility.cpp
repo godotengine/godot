@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -151,10 +151,10 @@ struct VariantUtilityFunctions {
 		r_error.error = Callable::CallError::CALL_OK;
 		switch (x.get_type()) {
 			case Variant::INT: {
-				return SGN(VariantInternalAccessor<int64_t>::get(&x));
+				return SIGN(VariantInternalAccessor<int64_t>::get(&x));
 			} break;
 			case Variant::FLOAT: {
-				return SGN(VariantInternalAccessor<double>::get(&x));
+				return SIGN(VariantInternalAccessor<double>::get(&x));
 			} break;
 			case Variant::VECTOR2: {
 				return VariantInternalAccessor<Vector2>::get(&x).sign();
@@ -176,11 +176,11 @@ struct VariantUtilityFunctions {
 	}
 
 	static inline double signf(double x) {
-		return SGN(x);
+		return SIGN(x);
 	}
 
 	static inline int64_t signi(int64_t x) {
-		return SGN(x);
+		return SIGN(x);
 	}
 
 	static inline double pow(double x, double y) {
@@ -273,6 +273,10 @@ struct VariantUtilityFunctions {
 
 	static inline double wrapf(double value, double min, double max) {
 		return Math::wrapf(value, min, max);
+	}
+
+	static inline double pingpong(double value, double length) {
+		return Math::pingpong(value, length);
 	}
 
 	static inline Variant max(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -399,6 +403,10 @@ struct VariantUtilityFunctions {
 		return Math::randf();
 	}
 
+	static inline double randfn(double mean, double deviation) {
+		return Math::randfn(mean, deviation);
+	}
+
 	static inline int64_t randi_range(int64_t from, int64_t to) {
 		return Math::random((int32_t)from, (int32_t)to);
 	}
@@ -425,7 +433,7 @@ struct VariantUtilityFunctions {
 	static inline Variant weakref(const Variant &obj, Callable::CallError &r_error) {
 		if (obj.get_type() == Variant::OBJECT) {
 			r_error.error = Callable::CallError::CALL_OK;
-			if (obj.is_ref()) {
+			if (obj.is_ref_counted()) {
 				Ref<WeakRef> wref = memnew(WeakRef);
 				REF r = obj;
 				if (r.is_valid()) {
@@ -1226,6 +1234,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(clampf, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(nearest_po2, sarray("value"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(pingpong, sarray("value", "length"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	// Random
 
@@ -1234,6 +1243,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(randf, sarray(), Variant::UTILITY_FUNC_TYPE_RANDOM);
 	FUNCBINDR(randi_range, sarray("from", "to"), Variant::UTILITY_FUNC_TYPE_RANDOM);
 	FUNCBINDR(randf_range, sarray("from", "to"), Variant::UTILITY_FUNC_TYPE_RANDOM);
+	FUNCBINDR(randfn, sarray("mean", "deviation"), Variant::UTILITY_FUNC_TYPE_RANDOM);
 	FUNCBIND(seed, sarray("base"), Variant::UTILITY_FUNC_TYPE_RANDOM);
 	FUNCBINDR(rand_from_seed, sarray("seed"), Variant::UTILITY_FUNC_TYPE_RANDOM);
 
@@ -1331,6 +1341,28 @@ Variant::UtilityFunctionType Variant::get_utility_function_type(const StringName
 	}
 
 	return bfi->type;
+}
+
+MethodInfo Variant::get_utility_function_info(const StringName &p_name) {
+	MethodInfo info;
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
+	if (bfi) {
+		info.name = p_name;
+		if (bfi->returns_value && bfi->return_type == Variant::NIL) {
+			info.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+		}
+		info.return_val.type = bfi->return_type;
+		if (bfi->is_vararg) {
+			info.flags |= METHOD_FLAG_VARARG;
+		}
+		for (int i = 0; i < bfi->argnames.size(); ++i) {
+			PropertyInfo arg;
+			arg.type = bfi->get_arg_type(i);
+			arg.name = bfi->argnames[i];
+			info.arguments.push_back(arg);
+		}
+	}
+	return info;
 }
 
 int Variant::get_utility_function_argument_count(const StringName &p_name) {

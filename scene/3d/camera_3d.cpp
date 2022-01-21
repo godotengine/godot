@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,17 +60,19 @@ void Camera3D::_update_camera_mode() {
 void Camera3D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "fov") {
 		if (mode != PROJECTION_PERSPECTIVE) {
-			p_property.usage = PROPERTY_USAGE_NOEDITOR;
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	} else if (p_property.name == "size") {
 		if (mode != PROJECTION_ORTHOGONAL && mode != PROJECTION_FRUSTUM) {
-			p_property.usage = PROPERTY_USAGE_NOEDITOR;
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	} else if (p_property.name == "frustum_offset") {
 		if (mode != PROJECTION_FRUSTUM) {
-			p_property.usage = PROPERTY_USAGE_NOEDITOR;
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
+
+	Node3D::_validate_property(p_property);
 }
 
 void Camera3D::_update_camera() {
@@ -329,11 +331,13 @@ Vector<Vector3> Camera3D::get_near_plane_points() const {
 	Vector3 endpoints[8];
 	cm.get_endpoints(Transform3D(), endpoints);
 
-	Vector<Vector3> points;
-	points.push_back(Vector3());
-	for (int i = 0; i < 4; i++) {
-		points.push_back(endpoints[i + 4]);
-	}
+	Vector<Vector3> points = {
+		Vector3(),
+		endpoints[4],
+		endpoints[5],
+		endpoints[6],
+		endpoints[7]
+	};
 	return points;
 }
 
@@ -656,6 +660,7 @@ Vector3 Camera3D::get_doppler_tracked_velocity() const {
 }
 
 RID Camera3D::get_pyramid_shape_rid() {
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), RID(), "Camera is not inside scene.");
 	if (pyramid_shape == RID()) {
 		pyramid_shape_points = get_near_plane_points();
 		pyramid_shape = PhysicsServer3D::get_singleton()->convex_polygon_shape_create();

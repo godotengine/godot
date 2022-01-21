@@ -140,7 +140,7 @@ vec4 texture2D_bicubic(sampler2D tex, vec2 uv, int p_lod) {
 	vec2 p3 = (vec2(iuv.x + h1x, iuv.y + h1y) - vec2(0.5f)) * pixel_size;
 
 	return (g0(fuv.y) * (g0x * textureLod(tex, p0, lod) + g1x * textureLod(tex, p1, lod))) +
-		   (g1(fuv.y) * (g0x * textureLod(tex, p2, lod) + g1x * textureLod(tex, p3, lod)));
+			(g1(fuv.y) * (g0x * textureLod(tex, p2, lod) + g1x * textureLod(tex, p3, lod)));
 }
 
 #define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) texture2D_bicubic(m_tex, m_uv, m_lod)
@@ -341,14 +341,14 @@ vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 	dir.y = ((lumaNW + lumaSW) - (lumaNE + lumaSE));
 
 	float dirReduce = max((lumaNW + lumaNE + lumaSW + lumaSE) *
-								  (0.25 * FXAA_REDUCE_MUL),
+					(0.25 * FXAA_REDUCE_MUL),
 			FXAA_REDUCE_MIN);
 
 	float rcpDirMin = 1.0 / (min(abs(dir.x), abs(dir.y)) + dirReduce);
 	dir = min(vec2(FXAA_SPAN_MAX, FXAA_SPAN_MAX),
 				  max(vec2(-FXAA_SPAN_MAX, -FXAA_SPAN_MAX),
 						  dir * rcpDirMin)) *
-		  params.pixel_size;
+			params.pixel_size;
 
 #ifdef MULTIVIEW
 	vec3 rgbA = 0.5 * exposure * (textureLod(source_color, vec3(uv_interp + dir * (1.0 / 3.0 - 0.5), ViewIndex), 0.0).xyz + textureLod(source_color, vec3(uv_interp + dir * (2.0 / 3.0 - 0.5), ViewIndex), 0.0).xyz) * params.luminance_multiplier;

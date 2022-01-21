@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -114,7 +114,7 @@ void Node::_notification(int p_notification) {
 				get_multiplayer()->scene_enter_exit_notify(data.scene_file_path, this, false);
 			}
 		} break;
-		case NOTIFICATION_PATH_CHANGED: {
+		case NOTIFICATION_PATH_RENAMED: {
 			if (data.path_cache) {
 				memdelete(data.path_cache);
 				data.path_cache = nullptr;
@@ -152,12 +152,6 @@ void Node::_notification(int p_notification) {
 			data.in_constructor = false;
 		} break;
 		case NOTIFICATION_PREDELETE: {
-			set_owner(nullptr);
-
-			while (data.owned.size()) {
-				data.owned.front()->get()->set_owner(nullptr);
-			}
-
 			if (data.parent) {
 				data.parent->remove_child(this);
 			}
@@ -165,10 +159,8 @@ void Node::_notification(int p_notification) {
 			// kill children as cleanly as possible
 			while (data.children.size()) {
 				Node *child = data.children[data.children.size() - 1]; //begin from the end because its faster and more consistent with creation
-				remove_child(child);
 				memdelete(child);
 			}
-
 		} break;
 	}
 }
@@ -237,11 +229,32 @@ void Node::_propagate_enter_tree() {
 }
 
 void Node::_propagate_after_exit_tree() {
+	// Clear owner if it was not part of the pruned branch
+	if (data.owner) {
+		bool found = false;
+		Node *parent = data.parent;
+
+		while (parent) {
+			if (parent == data.owner) {
+				found = true;
+				break;
+			}
+
+			parent = parent->data.parent;
+		}
+
+		if (!found) {
+			data.owner->data.owned.erase(data.OW);
+			data.owner = nullptr;
+		}
+	}
+
 	data.blocked++;
-	for (int i = 0; i < data.children.size(); i++) {
+	for (int i = data.children.size() - 1; i >= 0; i--) {
 		data.children[i]->_propagate_after_exit_tree();
 	}
 	data.blocked--;
+
 	emit_signal(SceneStringNames::get_singleton()->tree_exited);
 }
 
@@ -332,7 +345,7 @@ void Node::_move_child(Node *p_child, int p_pos, bool p_ignore_end) {
 	int motion_from = MIN(p_pos, p_child->data.pos);
 	int motion_to = MAX(p_pos, p_child->data.pos);
 
-	data.children.remove(p_child->data.pos);
+	data.children.remove_at(p_child->data.pos);
 	data.children.insert(p_pos, p_child);
 
 	if (data.tree) {
@@ -892,14 +905,14 @@ void Node::_set_name_nocheck(const StringName &p_name) {
 void Node::set_name(const String &p_name) {
 	String name = p_name.validate_node_name();
 
-	ERR_FAIL_COND(name == "");
+	ERR_FAIL_COND(name.is_empty());
 	data.name = name;
 
 	if (data.parent) {
-		data.parent->_validate_child_name(this);
+		data.parent->_validate_child_name(this, true);
 	}
 
-	propagate_notification(NOTIFICATION_PATH_CHANGED);
+	propagate_notification(NOTIFICATION_PATH_RENAMED);
 
 	if (is_inside_tree()) {
 		emit_signal(SNAME("renamed"));
@@ -908,15 +921,10 @@ void Node::set_name(const String &p_name) {
 	}
 }
 
-static bool node_hrcr = false;
 static SafeRefCount node_hrcr_count;
 
 void Node::init_node_hrcr() {
 	node_hrcr_count.init(1);
-}
-
-void Node::set_human_readable_collision_renaming(bool p_enabled) {
-	node_hrcr = p_enabled;
 }
 
 #ifdef TOOLS_ENABLED
@@ -930,9 +938,8 @@ String Node::validate_child_name(Node *p_child) {
 void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 	/* Make sure the name is unique */
 
-	if (node_hrcr || p_force_human_readable) {
+	if (p_force_human_readable) {
 		//this approach to autoset node names is human readable but very slow
-		//it's turned on while running in the editor
 
 		StringName name = p_child->data.name;
 		_generate_serial_child_name(p_child, name);
@@ -1150,31 +1157,6 @@ void Node::add_sibling(Node *p_sibling, bool p_legible_unique_name) {
 	data.parent->_move_child(p_sibling, get_index() + 1);
 }
 
-void Node::_propagate_validate_owner() {
-	if (data.owner) {
-		bool found = false;
-		Node *parent = data.parent;
-
-		while (parent) {
-			if (parent == data.owner) {
-				found = true;
-				break;
-			}
-
-			parent = parent->data.parent;
-		}
-
-		if (!found) {
-			data.owner->data.owned.erase(data.OW);
-			data.owner = nullptr;
-		}
-	}
-
-	for (int i = 0; i < data.children.size(); i++) {
-		data.children[i]->_propagate_validate_owner();
-	}
-}
-
 void Node::remove_child(Node *p_child) {
 	ERR_FAIL_NULL(p_child);
 	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, remove_node() failed. Consider using call_deferred(\"remove_child\", child) instead.");
@@ -1214,7 +1196,7 @@ void Node::remove_child(Node *p_child) {
 	remove_child_notify(p_child);
 	p_child->notification(NOTIFICATION_UNPARENTED);
 
-	data.children.remove(idx);
+	data.children.remove_at(idx);
 
 	//update pointer and size
 	child_count = data.children.size();
@@ -1227,9 +1209,6 @@ void Node::remove_child(Node *p_child) {
 
 	p_child->data.parent = nullptr;
 	p_child->data.pos = -1;
-
-	// validate owner
-	p_child->_propagate_validate_owner();
 
 	if (data.inside_tree) {
 		p_child->_propagate_after_exit_tree();
@@ -1337,12 +1316,14 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 Node *Node::get_node(const NodePath &p_path) const {
 	Node *node = get_node_or_null(p_path);
 
-	if (p_path.is_absolute()) {
-		ERR_FAIL_COND_V_MSG(!node, nullptr,
-				vformat(R"(Node not found: "%s" (absolute path attempted from "%s").)", p_path, get_path()));
-	} else {
-		ERR_FAIL_COND_V_MSG(!node, nullptr,
-				vformat(R"(Node not found: "%s" (relative to "%s").)", p_path, get_path()));
+	if (unlikely(!node)) {
+		if (p_path.is_absolute()) {
+			ERR_FAIL_V_MSG(nullptr,
+					vformat(R"(Node not found: "%s" (absolute path attempted from "%s").)", p_path, get_path()));
+		} else {
+			ERR_FAIL_V_MSG(nullptr,
+					vformat(R"(Node not found: "%s" (relative to "%s").)", p_path, get_path()));
+		}
 	}
 
 	return node;
@@ -1899,6 +1880,56 @@ Node *Node::get_deepest_editable_node(Node *p_start_node) const {
 	return node;
 }
 
+#ifdef TOOLS_ENABLED
+void Node::set_property_pinned(const String &p_property, bool p_pinned) {
+	bool current_pinned = false;
+	bool has_pinned = has_meta("_edit_pinned_properties_");
+	Array pinned;
+	String psa = get_property_store_alias(p_property);
+	if (has_pinned) {
+		pinned = get_meta("_edit_pinned_properties_");
+		current_pinned = pinned.has(psa);
+	}
+
+	if (current_pinned != p_pinned) {
+		if (p_pinned) {
+			pinned.append(psa);
+			if (!has_pinned) {
+				set_meta("_edit_pinned_properties_", pinned);
+			}
+		} else {
+			pinned.erase(psa);
+			if (pinned.is_empty()) {
+				remove_meta("_edit_pinned_properties_");
+			}
+		}
+	}
+}
+
+bool Node::is_property_pinned(const StringName &p_property) const {
+	if (!has_meta("_edit_pinned_properties_")) {
+		return false;
+	}
+	Array pinned = get_meta("_edit_pinned_properties_");
+	String psa = get_property_store_alias(p_property);
+	return pinned.has(psa);
+}
+
+StringName Node::get_property_store_alias(const StringName &p_property) const {
+	return p_property;
+}
+#endif
+
+void Node::get_storable_properties(Set<StringName> &r_storable_properties) const {
+	List<PropertyInfo> pi;
+	get_property_list(&pi);
+	for (List<PropertyInfo>::Element *E = pi.front(); E; E = E->next()) {
+		if ((E->get().usage & PROPERTY_USAGE_STORAGE)) {
+			r_storable_properties.insert(E->get().name);
+		}
+	}
+}
+
 String Node::to_string() {
 	if (get_script_instance()) {
 		bool valid;
@@ -1946,7 +1977,7 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 		nip->set_instance_path(ip->get_instance_path());
 		node = nip;
 
-	} else if ((p_flags & DUPLICATE_USE_INSTANCING) && get_scene_file_path() != String()) {
+	} else if ((p_flags & DUPLICATE_USE_INSTANCING) && !get_scene_file_path().is_empty()) {
 		Ref<PackedScene> res = ResourceLoader::load(get_scene_file_path());
 		ERR_FAIL_COND_V(res.is_null(), nullptr);
 		PackedScene::GenEditState ges = PackedScene::GEN_EDIT_STATE_DISABLED;
@@ -1957,6 +1988,7 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 #endif
 		node = res->instantiate(ges);
 		ERR_FAIL_COND_V(!node, nullptr);
+		node->set_scene_instance_load_placeholder(get_scene_instance_load_placeholder());
 
 		instantiated = true;
 
@@ -1970,7 +2002,7 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 		ERR_FAIL_COND_V(!node, nullptr);
 	}
 
-	if (get_scene_file_path() != "") { //an instance
+	if (!get_scene_file_path().is_empty()) { //an instance
 		node->set_scene_file_path(get_scene_file_path());
 		node->data.editable_instance = data.editable_instance;
 	}
@@ -2002,7 +2034,7 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 
 				node_tree.push_back(descendant);
 
-				if (descendant->get_scene_file_path() != "" && instance_roots.has(descendant->get_owner())) {
+				if (!descendant->get_scene_file_path().is_empty() && instance_roots.has(descendant->get_owner())) {
 					instance_roots.push_back(descendant);
 				}
 			}
@@ -2156,7 +2188,7 @@ void Node::remap_node_resources(Node *p_node, const Map<RES, RES> &p_resource_re
 		}
 
 		Variant v = p_node->get(E.name);
-		if (v.is_ref()) {
+		if (v.is_ref_counted()) {
 			RES res = v;
 			if (res.is_valid()) {
 				if (p_resource_remap.has(res)) {
@@ -2182,7 +2214,7 @@ void Node::remap_nested_resources(RES p_resource, const Map<RES, RES> &p_resourc
 		}
 
 		Variant v = p_resource->get(E.name);
-		if (v.is_ref()) {
+		if (v.is_ref_counted()) {
 			RES res = v;
 			if (res.is_valid()) {
 				if (p_resource_remap.has(res)) {
@@ -2750,7 +2782,11 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_import_path", "import_path"), &Node::set_import_path);
 	ClassDB::bind_method(D_METHOD("_get_import_path"), &Node::get_import_path);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "_import_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_import_path", "_get_import_path");
+#ifdef TOOLS_ENABLED
+	ClassDB::bind_method(D_METHOD("_set_property_pinned", "property", "pinned"), &Node::set_property_pinned);
+#endif
+
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "_import_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_import_path", "_get_import_path");
 
 	{
 		MethodInfo mi;
@@ -2781,7 +2817,7 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_INSTANCED);
 	BIND_CONSTANT(NOTIFICATION_DRAG_BEGIN);
 	BIND_CONSTANT(NOTIFICATION_DRAG_END);
-	BIND_CONSTANT(NOTIFICATION_PATH_CHANGED);
+	BIND_CONSTANT(NOTIFICATION_PATH_RENAMED);
 	BIND_CONSTANT(NOTIFICATION_INTERNAL_PROCESS);
 	BIND_CONSTANT(NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 	BIND_CONSTANT(NOTIFICATION_POST_ENTER_TREE);
@@ -2841,7 +2877,7 @@ void Node::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_priority"), "set_process_priority", "get_process_priority");
 
 	ADD_GROUP("Editor Description", "editor_");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_INTERNAL), "set_editor_description", "get_editor_description");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT), "set_editor_description", "get_editor_description");
 
 	GDVIRTUAL_BIND(_process, "delta");
 	GDVIRTUAL_BIND(_physics_process, "delta");

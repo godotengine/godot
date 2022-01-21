@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,7 +45,6 @@ void AudioStreamPlayer::_notification(int p_what) {
 		Vector<Ref<AudioStreamPlayback>> playbacks_to_remove;
 		for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
 			if (playback.is_valid() && !AudioServer::get_singleton()->is_playback_active(playback) && !AudioServer::get_singleton()->is_playback_paused(playback)) {
-				emit_signal(SNAME("finished"));
 				playbacks_to_remove.push_back(playback);
 			}
 		}
@@ -57,6 +56,9 @@ void AudioStreamPlayer::_notification(int p_what) {
 			// This node is no longer actively playing audio.
 			active.clear();
 			set_process_internal(false);
+		}
+		if (!playbacks_to_remove.is_empty()) {
+			emit_signal(SNAME("finished"));
 		}
 	}
 
@@ -135,13 +137,13 @@ void AudioStreamPlayer::play(float p_from_pos) {
 	Ref<AudioStreamPlayback> stream_playback = stream->instance_playback();
 	ERR_FAIL_COND_MSG(stream_playback.is_null(), "Failed to instantiate playback.");
 
-	AudioServer::get_singleton()->start_playback_stream(stream_playback, bus, _get_volume_vector(), p_from_pos);
+	AudioServer::get_singleton()->start_playback_stream(stream_playback, bus, _get_volume_vector(), p_from_pos, pitch_scale);
 	stream_playbacks.push_back(stream_playback);
 	active.set();
 	set_process_internal(true);
 	while (stream_playbacks.size() > max_polyphony) {
 		AudioServer::get_singleton()->stop_playback_stream(stream_playbacks[0]);
-		stream_playbacks.remove(0);
+		stream_playbacks.remove_at(0);
 	}
 }
 
@@ -292,6 +294,8 @@ void AudioStreamPlayer::_validate_property(PropertyInfo &property) const {
 
 		property.hint_string = options;
 	}
+
+	Node::_validate_property(property);
 }
 
 void AudioStreamPlayer::_bus_layout_changed() {

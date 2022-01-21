@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XRAnchor3D" inherits="Node3D" version="4.0">
+<class name="XRAnchor3D" inherits="XRNode3D" version="4.0">
 	<brief_description>
 		An anchor point in AR space.
 	</brief_description>
@@ -11,24 +11,6 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_anchor_name" qualifiers="const">
-			<return type="String" />
-			<description>
-				Returns the name given to this anchor.
-			</description>
-		</method>
-		<method name="get_is_active" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if the anchor is being tracked and [code]false[/code] if no anchor with this ID is currently known.
-			</description>
-		</method>
-		<method name="get_mesh" qualifiers="const">
-			<return type="Mesh" />
-			<description>
-				If provided by the [XRInterface], this returns a mesh object for the anchor. For an anchor, this can be a shape related to the object being tracked or it can be a mesh that provides topology related to the anchor and can be used to create shadows/reflections on surfaces or for generating collision shapes.
-			</description>
-		</method>
 		<method name="get_plane" qualifiers="const">
 			<return type="Plane" />
 			<description>
@@ -42,17 +24,4 @@
 			</description>
 		</method>
 	</methods>
-	<members>
-		<member name="anchor_id" type="int" setter="set_anchor_id" getter="get_anchor_id" default="1">
-			The anchor's ID. You can set this before the anchor itself exists. The first anchor gets an ID of [code]1[/code], the second an ID of [code]2[/code], etc. When anchors get removed, the engine can then assign the corresponding ID to new anchors. The most common situation where anchors "disappear" is when the AR server identifies that two anchors represent different parts of the same plane and merges them.
-		</member>
-	</members>
-	<signals>
-		<signal name="mesh_updated">
-			<argument index="0" name="mesh" type="Mesh" />
-			<description>
-				Emitted when the mesh associated with the anchor changes or when one becomes available. This is especially important for topology that is constantly being [code]mesh_updated[/code].
-			</description>
-		</signal>
-	</signals>
 </class>

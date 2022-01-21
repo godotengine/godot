@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -113,7 +113,7 @@ void VisualScriptNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_default_input_values", "values"), &VisualScriptNode::_set_default_input_values);
 	ClassDB::bind_method(D_METHOD("_get_default_input_values"), &VisualScriptNode::_get_default_input_values);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_default_input_values", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_default_input_values", "_get_default_input_values");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_default_input_values", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_default_input_values", "_get_default_input_values");
 	ADD_SIGNAL(MethodInfo("ports_changed"));
 }
 
@@ -661,7 +661,7 @@ void VisualScript::custom_signal_remove_argument(const StringName &p_func, int p
 	ERR_FAIL_COND(instances.size());
 	ERR_FAIL_COND(!custom_signals.has(p_func));
 	ERR_FAIL_INDEX(p_argidx, custom_signals[p_func].size());
-	custom_signals[p_func].remove(p_argidx);
+	custom_signals[p_func].remove_at(p_argidx);
 }
 
 int VisualScript::custom_signal_get_argument_count(const StringName &p_func) const {
@@ -1172,7 +1172,7 @@ void VisualScript::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &VisualScript::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"), &VisualScript::_get_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 
 	ADD_SIGNAL(MethodInfo("node_ports_changed", PropertyInfo(Variant::INT, "id")));
 }
@@ -1665,8 +1665,8 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 		String err_func = p_method;
 		int err_line = current_node_id; // Not a line but it works as one.
 
-		if (node && (r_error.error != Callable::CallError::CALL_ERROR_INVALID_METHOD || error_str == String())) {
-			if (error_str != String()) {
+		if (node && (r_error.error != Callable::CallError::CALL_ERROR_INVALID_METHOD || error_str.is_empty())) {
+			if (!error_str.is_empty()) {
 				error_str += " ";
 			}
 
@@ -1688,7 +1688,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 		// debugger break did not happen
 
 		if (!VisualScriptLanguage::singleton->debug_break(error_str, false)) {
-			_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, error_str.utf8().get_data(), ERR_HANDLER_SCRIPT);
+			_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, error_str.utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 		}
 
 		//}
@@ -2241,20 +2241,15 @@ void VisualScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) co
 void VisualScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 }
 
-Ref<Script> VisualScriptLanguage::get_template(const String &p_class_name, const String &p_base_class_name) const {
+bool VisualScriptLanguage::is_using_templates() {
+	return false;
+}
+
+Ref<Script> VisualScriptLanguage::make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const {
 	Ref<VisualScript> script;
 	script.instantiate();
 	script->set_instance_base_type(p_base_class_name);
 	return script;
-}
-
-bool VisualScriptLanguage::is_using_templates() {
-	return true;
-}
-
-void VisualScriptLanguage::make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script) {
-	Ref<VisualScript> script = p_script;
-	script->set_instance_base_type(p_base_class_name);
 }
 
 bool VisualScriptLanguage::validate(const String &p_script, const String &p_path, List<String> *r_functions, List<ScriptLanguage::ScriptError> *r_errors, List<ScriptLanguage::Warning> *r_warnings, Set<int> *r_safe_lines) const {
@@ -2370,7 +2365,6 @@ void VisualScriptLanguage::debug_get_stack_level_locals(int p_level, List<String
 	const StringName *f = _call_stack[l].function;
 
 	ERR_FAIL_COND(!_call_stack[l].instance->functions.has(*f));
-	//VisualScriptInstance::Function *func = &_call_stack[l].instance->functions[*f];
 
 	VisualScriptNodeInstance *node = _call_stack[l].instance->instances[*_call_stack[l].current_id];
 	ERR_FAIL_COND(!node);
@@ -2380,7 +2374,7 @@ void VisualScriptLanguage::debug_get_stack_level_locals(int p_level, List<String
 
 	for (int i = 0; i < node->input_port_count; i++) {
 		String name = node->get_base_node()->get_input_value_port_info(i).name;
-		if (name == String()) {
+		if (name.is_empty()) {
 			name = "in_" + itos(i);
 		}
 
@@ -2400,7 +2394,7 @@ void VisualScriptLanguage::debug_get_stack_level_locals(int p_level, List<String
 
 	for (int i = 0; i < node->output_port_count; i++) {
 		String name = node->get_base_node()->get_output_value_port_info(i).name;
-		if (name == String()) {
+		if (name.is_empty()) {
 			name = "out_" + itos(i);
 		}
 
@@ -2416,21 +2410,6 @@ void VisualScriptLanguage::debug_get_stack_level_locals(int p_level, List<String
 		p_locals->push_back("working_mem/mem_" + itos(i));
 		p_values->push_back((*_call_stack[l].work_mem)[i]);
 	}
-
-	/*
-    ERR_FAIL_INDEX(p_level,_debug_call_stack_pos);
-
-
-    VisualFunction *f = _call_stack[l].function;
-
-    List<Pair<StringName,int> > locals;
-
-    f->debug_get_stack_member_state(*_call_stack[l].line,&locals);
-    for( List<Pair<StringName,int> >::Element *E = locals.front();E;E=E->next() ) {
-	p_locals->push_back(E->get().first);
-	p_values->push_back(_call_stack[l].stack[E->get().second]);
-    }
-*/
 }
 
 void VisualScriptLanguage::debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {

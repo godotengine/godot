@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,10 +42,10 @@ void OccluderInstance3DEditorPlugin::_bake_select_file(const String &p_file) {
 		switch (err) {
 			case OccluderInstance3D::BAKE_ERROR_NO_SAVE_PATH: {
 				String scene_path = occluder_instance->get_scene_file_path();
-				if (scene_path == String()) {
+				if (scene_path.is_empty()) {
 					scene_path = occluder_instance->get_owner()->get_scene_file_path();
 				}
-				if (scene_path == String()) {
+				if (scene_path.is_empty()) {
 					EditorNode::get_singleton()->show_warning(TTR("Can't determine a save path for the occluder.\nSave your scene and try again."));
 					break;
 				}

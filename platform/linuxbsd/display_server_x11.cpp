@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/string/print_string.h"
+#include "core/string/ustring.h"
 #include "detect_prime_x11.h"
 #include "key_mapping_x11.h"
 #include "main/main.h"
@@ -41,6 +42,10 @@
 
 #if defined(VULKAN_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
+#endif
+
+#if defined(GLES3_ENABLED)
+#include "drivers/gles3/rasterizer_gles3.h"
 #endif
 
 #include <limits.h>
@@ -59,7 +64,6 @@
 // EWMH
 #define _NET_WM_STATE_REMOVE 0L // remove/unset property
 #define _NET_WM_STATE_ADD 1L // add/set property
-#define _NET_WM_STATE_TOGGLE 2L // toggle property
 
 #include <dlfcn.h>
 #include <fcntl.h>
@@ -124,6 +128,7 @@ bool DisplayServerX11::has_feature(Feature p_feature) const {
 #ifdef DBUS_ENABLED
 		case FEATURE_KEEP_SCREEN_ON:
 #endif
+		case FEATURE_CLIPBOARD_PRIMARY:
 			return true;
 		default: {
 		}
@@ -219,7 +224,7 @@ bool DisplayServerX11::_refresh_device_info() {
 				if (class_info->number == VALUATOR_ABSX && class_info->mode == XIModeAbsolute) {
 					resolution_x = class_info->resolution;
 					abs_x_min = class_info->min;
-					abs_y_max = class_info->max;
+					abs_x_max = class_info->max;
 					absolute_mode = true;
 				} else if (class_info->number == VALUATOR_ABSY && class_info->mode == XIModeAbsolute) {
 					resolution_y = class_info->resolution;
@@ -233,8 +238,8 @@ bool DisplayServerX11::_refresh_device_info() {
 					tilt_x_min = class_info->min;
 					tilt_x_max = class_info->max;
 				} else if (class_info->number == VALUATOR_TILTY && class_info->mode == XIModeAbsolute) {
-					tilt_x_min = class_info->min;
-					tilt_x_max = class_info->max;
+					tilt_y_min = class_info->min;
+					tilt_y_max = class_info->max;
 				}
 			}
 		}
@@ -280,7 +285,7 @@ void DisplayServerX11::_flush_mouse_motion() {
 			XIDeviceEvent *event_data = (XIDeviceEvent *)event.xcookie.data;
 			if (event_data->evtype == XI_RawMotion) {
 				XFreeEventData(x11_display, &event.xcookie);
-				polled_events.remove(event_index--);
+				polled_events.remove_at(event_index--);
 				continue;
 			}
 			XFreeEventData(x11_display, &event.xcookie);
@@ -359,21 +364,6 @@ void DisplayServerX11::mouse_warp_to_position(const Point2i &p_to) {
 }
 
 Point2i DisplayServerX11::mouse_get_position() const {
-	int root_x, root_y;
-	int win_x, win_y;
-	unsigned int mask_return;
-	Window window_returned;
-
-	Bool result = XQueryPointer(x11_display, RootWindow(x11_display, DefaultScreen(x11_display)), &window_returned,
-			&window_returned, &root_x, &root_y, &win_x, &win_y,
-			&mask_return);
-	if (result == True) {
-		return Point2i(root_x, root_y);
-	}
-	return Point2i();
-}
-
-Point2i DisplayServerX11::mouse_get_absolute_position() const {
 	int number_of_screens = XScreenCount(x11_display);
 	for (int i = 0; i < number_of_screens; i++) {
 		Window root, child;
@@ -406,6 +396,20 @@ void DisplayServerX11::clipboard_set(const String &p_text) {
 	XSetSelectionOwner(x11_display, XInternAtom(x11_display, "CLIPBOARD", 0), windows[MAIN_WINDOW_ID].x11_window, CurrentTime);
 }
 
+void DisplayServerX11::clipboard_set_primary(const String &p_text) {
+	_THREAD_SAFE_METHOD_
+	if (!p_text.is_empty()) {
+		{
+			// The clipboard content can be accessed while polling for events.
+			MutexLock mutex_lock(events_mutex);
+			internal_clipboard_primary = p_text;
+		}
+
+		XSetSelectionOwner(x11_display, XA_PRIMARY, windows[MAIN_WINDOW_ID].x11_window, CurrentTime);
+		XSetSelectionOwner(x11_display, XInternAtom(x11_display, "PRIMARY", 0), windows[MAIN_WINDOW_ID].x11_window, CurrentTime);
+	}
+}
+
 Bool DisplayServerX11::_predicate_clipboard_selection(Display *display, XEvent *event, XPointer arg) {
 	if (event->type == SelectionNotify && event->xselection.requestor == *(Window *)arg) {
 		return True;
@@ -427,7 +431,12 @@ String DisplayServerX11::_clipboard_get_impl(Atom p_source, Window x11_window, A
 
 	Window selection_owner = XGetSelectionOwner(x11_display, p_source);
 	if (selection_owner == x11_window) {
-		return internal_clipboard;
+		static const char *target_type = "PRIMARY";
+		if (p_source != None && String(XGetAtomName(x11_display, p_source)) == target_type) {
+			return internal_clipboard_primary;
+		} else {
+			return internal_clipboard;
+		}
 	}
 
 	if (selection_owner != None) {
@@ -580,10 +589,23 @@ String DisplayServerX11::clipboard_get() const {
 	return ret;
 }
 
+String DisplayServerX11::clipboard_get_primary() const {
+	_THREAD_SAFE_METHOD_
+
+	String ret;
+	ret = _clipboard_get(XInternAtom(x11_display, "PRIMARY", 0), windows[MAIN_WINDOW_ID].x11_window);
+
+	if (ret.is_empty()) {
+		ret = _clipboard_get(XA_PRIMARY, windows[MAIN_WINDOW_ID].x11_window);
+	}
+
+	return ret;
+}
+
 Bool DisplayServerX11::_predicate_clipboard_save_targets(Display *display, XEvent *event, XPointer arg) {
 	if (event->xany.window == *(Window *)arg) {
 		return (event->type == SelectionRequest) ||
-			   (event->type == SelectionNotify);
+				(event->type == SelectionNotify);
 	} else {
 		return False;
 	}
@@ -650,35 +672,59 @@ int DisplayServerX11::get_screen_count() const {
 	return count;
 }
 
-Point2i DisplayServerX11::screen_get_position(int p_screen) const {
-	_THREAD_SAFE_METHOD_
+Rect2i DisplayServerX11::_screen_get_rect(int p_screen) const {
+	Rect2i rect(0, 0, 0, 0);
 
 	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
 		p_screen = window_get_current_screen();
 	}
 
-	// Using Xinerama Extension
+	ERR_FAIL_COND_V(p_screen < 0, rect);
+
+	// Using Xinerama Extension.
 	int event_base, error_base;
-	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
-	if (!ext_okay) {
-		return Point2i(0, 0);
+	if (XineramaQueryExtension(x11_display, &event_base, &error_base)) {
+		int count;
+		XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
+
+		// Check if screen is valid.
+		if (p_screen < count) {
+			rect.position.x = xsi[p_screen].x_org;
+			rect.position.y = xsi[p_screen].y_org;
+			rect.size.width = xsi[p_screen].width;
+			rect.size.height = xsi[p_screen].height;
+		} else {
+			ERR_PRINT("Invalid screen index: " + itos(p_screen) + "(count: " + itos(count) + ").");
+		}
+
+		if (xsi) {
+			XFree(xsi);
+		}
 	}
 
-	int count;
-	XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
+	return rect;
+}
 
-	// Check if screen is valid
-	ERR_FAIL_INDEX_V(p_screen, count, Point2i(0, 0));
+Point2i DisplayServerX11::screen_get_position(int p_screen) const {
+	_THREAD_SAFE_METHOD_
 
-	Point2i position = Point2i(xsi[p_screen].x_org, xsi[p_screen].y_org);
-
-	XFree(xsi);
-
-	return position;
+	return _screen_get_rect(p_screen).position;
 }
 
 Size2i DisplayServerX11::screen_get_size(int p_screen) const {
-	return screen_get_usable_rect(p_screen).size;
+	_THREAD_SAFE_METHOD_
+
+	return _screen_get_rect(p_screen).size;
+}
+
+bool g_bad_window = false;
+int bad_window_error_handler(Display *display, XErrorEvent *error) {
+	if (error->error_code == BadWindow) {
+		g_bad_window = true;
+	} else {
+		ERR_PRINT("Unhandled XServer error code: " + itos(error->error_code));
+	}
+	return 0;
 }
 
 Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
@@ -688,21 +734,276 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 		p_screen = window_get_current_screen();
 	}
 
-	// Using Xinerama Extension
-	int event_base, error_base;
-	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
-	if (!ext_okay) {
-		return Rect2i(0, 0, 0, 0);
+	int screen_count = get_screen_count();
+
+	// Check if screen is valid.
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i(0, 0, 0, 0));
+
+	bool is_multiscreen = screen_count > 1;
+
+	// Use full monitor size as fallback.
+	Rect2i rect = _screen_get_rect(p_screen);
+
+	// There's generally only one screen reported by xlib even in multi-screen setup,
+	// in this case it's just one virtual screen composed of all physical monitors.
+	int x11_screen_count = ScreenCount(x11_display);
+	Window x11_window = RootWindow(x11_display, p_screen < x11_screen_count ? p_screen : 0);
+
+	Atom type;
+	int format = 0;
+	unsigned long remaining = 0;
+
+	// Find active desktop for the root window.
+	unsigned int desktop_index = 0;
+	Atom desktop_prop = XInternAtom(x11_display, "_NET_CURRENT_DESKTOP", True);
+	if (desktop_prop != None) {
+		unsigned long desktop_len = 0;
+		unsigned char *desktop_data = nullptr;
+		if (XGetWindowProperty(x11_display, x11_window, desktop_prop, 0, LONG_MAX, False, XA_CARDINAL, &type, &format, &desktop_len, &remaining, &desktop_data) == Success) {
+			if ((format == 32) && (desktop_len > 0) && desktop_data) {
+				desktop_index = (unsigned int)desktop_data[0];
+			}
+			if (desktop_data) {
+				XFree(desktop_data);
+			}
+		}
 	}
 
-	int count;
-	XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
+	bool use_simple_method = true;
 
-	// Check if screen is valid
-	ERR_FAIL_INDEX_V(p_screen, count, Rect2i(0, 0, 0, 0));
+	// First check for GTK work area, which is more accurate for multi-screen setup.
+	if (is_multiscreen) {
+		// Use already calculated work area when available.
+		Atom gtk_workareas_prop = XInternAtom(x11_display, "_GTK_WORKAREAS", False);
+		if (gtk_workareas_prop != None) {
+			char gtk_workarea_prop_name[32];
+			snprintf(gtk_workarea_prop_name, 32, "_GTK_WORKAREAS_D%d", desktop_index);
+			Atom gtk_workarea_prop = XInternAtom(x11_display, gtk_workarea_prop_name, True);
+			if (gtk_workarea_prop != None) {
+				unsigned long workarea_len = 0;
+				unsigned char *workarea_data = nullptr;
+				if (XGetWindowProperty(x11_display, x11_window, gtk_workarea_prop, 0, LONG_MAX, False, XA_CARDINAL, &type, &format, &workarea_len, &remaining, &workarea_data) == Success) {
+					if ((format == 32) && (workarea_len % 4 == 0) && workarea_data) {
+						long *rect_data = (long *)workarea_data;
+						for (uint32_t data_offset = 0; data_offset < workarea_len; data_offset += 4) {
+							Rect2i workarea_rect;
+							workarea_rect.position.x = rect_data[data_offset];
+							workarea_rect.position.y = rect_data[data_offset + 1];
+							workarea_rect.size.x = rect_data[data_offset + 2];
+							workarea_rect.size.y = rect_data[data_offset + 3];
 
-	Rect2i rect = Rect2i(xsi[p_screen].x_org, xsi[p_screen].y_org, xsi[p_screen].width, xsi[p_screen].height);
-	XFree(xsi);
+							// Intersect with actual monitor size to find the correct area,
+							// because areas are not in the same order as screens from Xinerama.
+							if (rect.grow(-1).intersects(workarea_rect)) {
+								rect = rect.intersection(workarea_rect);
+								XFree(workarea_data);
+								return rect;
+							}
+						}
+					}
+				}
+				if (workarea_data) {
+					XFree(workarea_data);
+				}
+			}
+		}
+
+		// Fallback to calculating work area by hand from struts.
+		Atom client_list_prop = XInternAtom(x11_display, "_NET_CLIENT_LIST", True);
+		if (client_list_prop != None) {
+			unsigned long clients_len = 0;
+			unsigned char *clients_data = nullptr;
+			if (XGetWindowProperty(x11_display, x11_window, client_list_prop, 0, LONG_MAX, False, XA_WINDOW, &type, &format, &clients_len, &remaining, &clients_data) == Success) {
+				if ((format == 32) && (clients_len > 0) && clients_data) {
+					Window *windows_data = (Window *)clients_data;
+
+					Rect2i desktop_rect;
+					bool desktop_valid = false;
+
+					// Get full desktop size.
+					{
+						Atom desktop_geometry_prop = XInternAtom(x11_display, "_NET_DESKTOP_GEOMETRY", True);
+						if (desktop_geometry_prop != None) {
+							unsigned long geom_len = 0;
+							unsigned char *geom_data = nullptr;
+							if (XGetWindowProperty(x11_display, x11_window, desktop_geometry_prop, 0, LONG_MAX, False, XA_CARDINAL, &type, &format, &geom_len, &remaining, &geom_data) == Success) {
+								if ((format == 32) && (geom_len >= 2) && geom_data) {
+									desktop_valid = true;
+									long *size_data = (long *)geom_data;
+									desktop_rect.size.x = size_data[0];
+									desktop_rect.size.y = size_data[1];
+								}
+							}
+							if (geom_data) {
+								XFree(geom_data);
+							}
+						}
+					}
+
+					// Get full desktop position.
+					if (desktop_valid) {
+						Atom desktop_viewport_prop = XInternAtom(x11_display, "_NET_DESKTOP_VIEWPORT", True);
+						if (desktop_viewport_prop != None) {
+							unsigned long viewport_len = 0;
+							unsigned char *viewport_data = nullptr;
+							if (XGetWindowProperty(x11_display, x11_window, desktop_viewport_prop, 0, LONG_MAX, False, XA_CARDINAL, &type, &format, &viewport_len, &remaining, &viewport_data) == Success) {
+								if ((format == 32) && (viewport_len >= 2) && viewport_data) {
+									desktop_valid = true;
+									long *pos_data = (long *)viewport_data;
+									desktop_rect.position.x = pos_data[0];
+									desktop_rect.position.y = pos_data[1];
+								}
+							}
+							if (viewport_data) {
+								XFree(viewport_data);
+							}
+						}
+					}
+
+					if (desktop_valid) {
+						use_simple_method = false;
+
+						// Handle bad window errors silently because there's no other way to check
+						// that one of the windows has been destroyed in the meantime.
+						int (*oldHandler)(Display *, XErrorEvent *) = XSetErrorHandler(&bad_window_error_handler);
+
+						for (unsigned long win_index = 0; win_index < clients_len; ++win_index) {
+							g_bad_window = false;
+
+							// Remove strut size from desktop size to get a more accurate result.
+							bool strut_found = false;
+							unsigned long strut_len = 0;
+							unsigned char *strut_data = nullptr;
+							Atom strut_partial_prop = XInternAtom(x11_display, "_NET_WM_STRUT_PARTIAL", True);
+							if (strut_partial_prop != None) {
+								if (XGetWindowProperty(x11_display, windows_data[win_index], strut_partial_prop, 0, LONG_MAX, False, XA_CARDINAL, &type, &format, &strut_len, &remaining, &strut_data) == Success) {
+									strut_found = true;
+								}
+							}
+							// Fallback to older strut property.
+							if (!g_bad_window && !strut_found) {
+								Atom strut_prop = XInternAtom(x11_display, "_NET_WM_STRUT", True);
+								if (strut_prop != None) {
+									if (XGetWindowProperty(x11_display, windows_data[win_index], strut_prop, 0, LONG_MAX, False, XA_CARDINAL, &type, &format, &strut_len, &remaining, &strut_data) == Success) {
+										strut_found = true;
+									}
+								}
+							}
+							if (!g_bad_window && strut_found && (format == 32) && (strut_len >= 4) && strut_data) {
+								long *struts = (long *)strut_data;
+
+								long left = struts[0];
+								long right = struts[1];
+								long top = struts[2];
+								long bottom = struts[3];
+
+								long left_start_y, left_end_y, right_start_y, right_end_y;
+								long top_start_x, top_end_x, bottom_start_x, bottom_end_x;
+
+								if (strut_len >= 12) {
+									left_start_y = struts[4];
+									left_end_y = struts[5];
+									right_start_y = struts[6];
+									right_end_y = struts[7];
+									top_start_x = struts[8];
+									top_end_x = struts[9];
+									bottom_start_x = struts[10];
+									bottom_end_x = struts[11];
+								} else {
+									left_start_y = 0;
+									left_end_y = desktop_rect.size.y;
+									right_start_y = 0;
+									right_end_y = desktop_rect.size.y;
+									top_start_x = 0;
+									top_end_x = desktop_rect.size.x;
+									bottom_start_x = 0;
+									bottom_end_x = desktop_rect.size.x;
+								}
+
+								const Point2i &pos = desktop_rect.position;
+								const Size2i &size = desktop_rect.size;
+
+								Rect2i left_rect(pos.x, pos.y + left_start_y, left, left_end_y - left_start_y);
+								if (left_rect.size.x > 0) {
+									Rect2i intersection = rect.intersection(left_rect);
+									if (!intersection.has_no_area() && intersection.size.x < rect.size.x) {
+										rect.position.x = left_rect.size.x;
+										rect.size.x = rect.size.x - intersection.size.x;
+									}
+								}
+
+								Rect2i right_rect(pos.x + size.x - right, pos.y + right_start_y, right, right_end_y - right_start_y);
+								if (right_rect.size.x > 0) {
+									Rect2i intersection = rect.intersection(right_rect);
+									if (!intersection.has_no_area() && right_rect.size.x < rect.size.x) {
+										rect.size.x = intersection.position.x - rect.position.x;
+									}
+								}
+
+								Rect2i top_rect(pos.x + top_start_x, pos.y, top_end_x - top_start_x, top);
+								if (top_rect.size.y > 0) {
+									Rect2i intersection = rect.intersection(top_rect);
+									if (!intersection.has_no_area() && intersection.size.y < rect.size.y) {
+										rect.position.y = top_rect.size.y;
+										rect.size.y = rect.size.y - intersection.size.y;
+									}
+								}
+
+								Rect2i bottom_rect(pos.x + bottom_start_x, pos.y + size.y - bottom, bottom_end_x - bottom_start_x, bottom);
+								if (bottom_rect.size.y > 0) {
+									Rect2i intersection = rect.intersection(bottom_rect);
+									if (!intersection.has_no_area() && right_rect.size.y < rect.size.y) {
+										rect.size.y = intersection.position.y - rect.position.y;
+									}
+								}
+							}
+							if (strut_data) {
+								XFree(strut_data);
+							}
+						}
+
+						// Restore default error handler.
+						XSetErrorHandler(oldHandler);
+					}
+				}
+			}
+			if (clients_data) {
+				XFree(clients_data);
+			}
+		}
+	}
+
+	// Single screen or fallback for multi screen.
+	if (use_simple_method) {
+		// Get desktop available size from the global work area.
+		Atom workarea_prop = XInternAtom(x11_display, "_NET_WORKAREA", True);
+		if (workarea_prop != None) {
+			unsigned long workarea_len = 0;
+			unsigned char *workarea_data = nullptr;
+			if (XGetWindowProperty(x11_display, x11_window, workarea_prop, 0, LONG_MAX, False, XA_CARDINAL, &type, &format, &workarea_len, &remaining, &workarea_data) == Success) {
+				if ((format == 32) && (workarea_len >= ((desktop_index + 1) * 4)) && workarea_data) {
+					long *rect_data = (long *)workarea_data;
+					int data_offset = desktop_index * 4;
+					Rect2i workarea_rect;
+					workarea_rect.position.x = rect_data[data_offset];
+					workarea_rect.position.y = rect_data[data_offset + 1];
+					workarea_rect.size.x = rect_data[data_offset + 2];
+					workarea_rect.size.y = rect_data[data_offset + 3];
+
+					// Intersect with actual monitor size to get a proper approximation in multi-screen setup.
+					if (!is_multiscreen) {
+						rect = workarea_rect;
+					} else if (rect.intersects(workarea_rect)) {
+						rect = rect.intersection(workarea_rect);
+					}
+				}
+			}
+			if (workarea_data) {
+				XFree(workarea_data);
+			}
+		}
+	}
+
 	return rect;
 }
 
@@ -833,10 +1134,16 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	}
 
 #ifdef VULKAN_ENABLED
-	if (rendering_driver == "vulkan") {
+	if (context_vulkan) {
 		context_vulkan->window_destroy(p_id);
 	}
 #endif
+#ifdef GLES3_ENABLED
+	if (gl_manager) {
+		gl_manager->window_destroy(p_id);
+	}
+#endif
+
 	XUnmapWindow(x11_display, wd.x11_window);
 	XDestroyWindow(x11_display, wd.x11_window);
 	if (wd.xic) {
@@ -978,22 +1285,38 @@ void DisplayServerX11::window_set_drop_files_callback(const Callable &p_callable
 int DisplayServerX11::window_get_current_screen(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND_V(!windows.has(p_window), -1);
+	int count = get_screen_count();
+	if (count < 2) {
+		// Early exit with single monitor.
+		return 0;
+	}
+
+	ERR_FAIL_COND_V(!windows.has(p_window), 0);
 	const WindowData &wd = windows[p_window];
 
-	int x, y;
-	Window child;
-	XTranslateCoordinates(x11_display, wd.x11_window, DefaultRootWindow(x11_display), 0, 0, &x, &y, &child);
+	const Rect2i window_rect(wd.position, wd.size);
 
-	int count = get_screen_count();
+	// Find which monitor has the largest overlap with the given window.
+	int screen_index = 0;
+	int max_area = 0;
 	for (int i = 0; i < count; i++) {
-		Point2i pos = screen_get_position(i);
-		Size2i size = screen_get_size(i);
-		if ((x >= pos.x && x < pos.x + size.width) && (y >= pos.y && y < pos.y + size.height)) {
-			return i;
+		Rect2i screen_rect = _screen_get_rect(i);
+		Rect2i intersection = screen_rect.intersection(window_rect);
+		int area = intersection.get_area();
+		if (area > max_area) {
+			max_area = area;
+			screen_index = i;
 		}
 	}
-	return 0;
+
+	return screen_index;
+}
+
+void DisplayServerX11::gl_window_make_current(DisplayServer::WindowID p_window_id) {
+#if defined(GLES3_ENABLED)
+	if (gl_manager)
+		gl_manager->window_make_current(p_window_id);
+#endif
 }
 
 void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window) {
@@ -2069,9 +2392,9 @@ String DisplayServerX11::keyboard_get_layout_name(int p_index) const {
 }
 
 Key DisplayServerX11::keyboard_get_keycode_from_physical(Key p_keycode) const {
-	unsigned int modifiers = p_keycode & KEY_MODIFIER_MASK;
-	unsigned int keycode_no_mod = p_keycode & KEY_CODE_MASK;
-	unsigned int xkeycode = KeyMappingX11::get_xlibcode((Key)keycode_no_mod);
+	Key modifiers = p_keycode & KeyModifierMask::MODIFIER_MASK;
+	Key keycode_no_mod = p_keycode & KeyModifierMask::CODE_MASK;
+	unsigned int xkeycode = KeyMappingX11::get_xlibcode(keycode_no_mod);
 	KeySym xkeysym = XkbKeycodeToKeysym(x11_display, xkeycode, 0, 0);
 	if (xkeysym >= 'a' && xkeysym <= 'z') {
 		xkeysym -= ('a' - 'A');
@@ -2080,7 +2403,7 @@ Key DisplayServerX11::keyboard_get_keycode_from_physical(Key p_keycode) const {
 	Key key = KeyMappingX11::get_keycode(xkeysym);
 	// If not found, fallback to QWERTY.
 	// This should match the behavior of the event pump
-	if (key == KEY_NONE) {
+	if (key == Key::NONE) {
 		return p_keycode;
 	}
 	return (Key)(key | modifiers);
@@ -2154,12 +2477,12 @@ void DisplayServerX11::_get_key_modifier_state(unsigned int p_x11_state, Ref<Inp
 }
 
 MouseButton DisplayServerX11::_get_mouse_button_state(MouseButton p_x11_button, int p_x11_type) {
-	MouseButton mask = MouseButton(1 << (p_x11_button - 1));
+	MouseButton mask = mouse_button_to_mask(p_x11_button);
 
 	if (p_x11_type == ButtonPress) {
 		last_button_state |= mask;
 	} else {
-		last_button_state &= MouseButton(~mask);
+		last_button_state &= ~mask;
 	}
 
 	return last_button_state;
@@ -2226,9 +2549,9 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 		if (status == XLookupChars) {
 			bool keypress = xkeyevent->type == KeyPress;
 			Key keycode = KeyMappingX11::get_keycode(keysym_keycode);
-			unsigned int physical_keycode = KeyMappingX11::get_scancode(xkeyevent->keycode);
+			Key physical_keycode = KeyMappingX11::get_scancode(xkeyevent->keycode);
 
-			if (keycode >= 'a' && keycode <= 'z') {
+			if (keycode >= Key::A + 32 && keycode <= Key::Z + 32) {
 				keycode -= 'a' - 'A';
 			}
 
@@ -2237,11 +2560,11 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 			for (int i = 0; i < tmp.length(); i++) {
 				Ref<InputEventKey> k;
 				k.instantiate();
-				if (physical_keycode == 0 && keycode == 0 && tmp[i] == 0) {
+				if (physical_keycode == Key::NONE && keycode == Key::NONE && tmp[i] == 0) {
 					continue;
 				}
 
-				if (keycode == 0) {
+				if (keycode == Key::NONE) {
 					keycode = (Key)physical_keycode;
 				}
 
@@ -2258,10 +2581,10 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 
 				k->set_echo(false);
 
-				if (k->get_keycode() == KEY_BACKTAB) {
+				if (k->get_keycode() == Key::BACKTAB) {
 					//make it consistent across platforms.
-					k->set_keycode(KEY_TAB);
-					k->set_physical_keycode(KEY_TAB);
+					k->set_keycode(Key::TAB);
+					k->set_physical_keycode(Key::TAB);
 					k->set_shift_pressed(true);
 				}
 
@@ -2290,7 +2613,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	// keysym, so it works in all platforms the same.
 
 	Key keycode = KeyMappingX11::get_keycode(keysym_keycode);
-	unsigned int physical_keycode = KeyMappingX11::get_scancode(xkeyevent->keycode);
+	Key physical_keycode = KeyMappingX11::get_scancode(xkeyevent->keycode);
 
 	/* Phase 3, obtain a unicode character from the keysym */
 
@@ -2310,11 +2633,11 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 
 	bool keypress = xkeyevent->type == KeyPress;
 
-	if (physical_keycode == 0 && keycode == KEY_NONE && unicode == 0) {
+	if (physical_keycode == Key::NONE && keycode == Key::NONE && unicode == 0) {
 		return;
 	}
 
-	if (keycode == KEY_NONE) {
+	if (keycode == Key::NONE) {
 		keycode = (Key)physical_keycode;
 	}
 
@@ -2377,7 +2700,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 
 	k->set_pressed(keypress);
 
-	if (keycode >= 'a' && keycode <= 'z') {
+	if (keycode >= Key::A + 32 && keycode <= Key::Z + 32) {
 		keycode -= int('a' - 'A');
 	}
 
@@ -2386,23 +2709,23 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	k->set_unicode(unicode);
 	k->set_echo(p_echo);
 
-	if (k->get_keycode() == KEY_BACKTAB) {
+	if (k->get_keycode() == Key::BACKTAB) {
 		//make it consistent across platforms.
-		k->set_keycode(KEY_TAB);
-		k->set_physical_keycode(KEY_TAB);
+		k->set_keycode(Key::TAB);
+		k->set_physical_keycode(Key::TAB);
 		k->set_shift_pressed(true);
 	}
 
 	//don't set mod state if modifier keys are released by themselves
 	//else event.is_action() will not work correctly here
 	if (!k->is_pressed()) {
-		if (k->get_keycode() == KEY_SHIFT) {
+		if (k->get_keycode() == Key::SHIFT) {
 			k->set_shift_pressed(false);
-		} else if (k->get_keycode() == KEY_CTRL) {
+		} else if (k->get_keycode() == Key::CTRL) {
 			k->set_ctrl_pressed(false);
-		} else if (k->get_keycode() == KEY_ALT) {
+		} else if (k->get_keycode() == Key::ALT) {
 			k->set_alt_pressed(false);
-		} else if (k->get_keycode() == KEY_META) {
+		} else if (k->get_keycode() == Key::META) {
 			k->set_meta_pressed(false);
 		}
 	}
@@ -2417,7 +2740,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	Input::get_singleton()->parse_input_event(k);
 }
 
-Atom DisplayServerX11::_process_selection_request_target(Atom p_target, Window p_requestor, Atom p_property) const {
+Atom DisplayServerX11::_process_selection_request_target(Atom p_target, Window p_requestor, Atom p_property, Atom p_selection) const {
 	if (p_target == XInternAtom(x11_display, "TARGETS", 0)) {
 		// Request to list all supported targets.
 		Atom data[9];
@@ -2452,14 +2775,20 @@ Atom DisplayServerX11::_process_selection_request_target(Atom p_target, Window p
 				0);
 		return p_property;
 	} else if (p_target == XInternAtom(x11_display, "UTF8_STRING", 0) ||
-			   p_target == XInternAtom(x11_display, "COMPOUND_TEXT", 0) ||
-			   p_target == XInternAtom(x11_display, "TEXT", 0) ||
-			   p_target == XA_STRING ||
-			   p_target == XInternAtom(x11_display, "text/plain;charset=utf-8", 0) ||
-			   p_target == XInternAtom(x11_display, "text/plain", 0)) {
+			p_target == XInternAtom(x11_display, "COMPOUND_TEXT", 0) ||
+			p_target == XInternAtom(x11_display, "TEXT", 0) ||
+			p_target == XA_STRING ||
+			p_target == XInternAtom(x11_display, "text/plain;charset=utf-8", 0) ||
+			p_target == XInternAtom(x11_display, "text/plain", 0)) {
 		// Directly using internal clipboard because we know our window
 		// is the owner during a selection request.
-		CharString clip = internal_clipboard.utf8();
+		CharString clip;
+		static const char *target_type = "PRIMARY";
+		if (p_selection != None && String(XGetAtomName(x11_display, p_selection)) == target_type) {
+			clip = internal_clipboard_primary.utf8();
+		} else {
+			clip = internal_clipboard.utf8();
+		}
 		XChangeProperty(x11_display,
 				p_requestor,
 				p_property,
@@ -2497,7 +2826,7 @@ void DisplayServerX11::_handle_selection_request_event(XSelectionRequestEvent *p
 				for (uint64_t i = 0; i < len; i += 2) {
 					Atom target = targets[i];
 					Atom &property = targets[i + 1];
-					property = _process_selection_request_target(target, p_event->requestor, property);
+					property = _process_selection_request_target(target, p_event->requestor, property, p_event->selection);
 				}
 
 				XChangeProperty(x11_display,
@@ -2515,7 +2844,7 @@ void DisplayServerX11::_handle_selection_request_event(XSelectionRequestEvent *p
 		}
 	} else {
 		// Request for target conversion.
-		respond.xselection.property = _process_selection_request_target(p_event->target, p_event->requestor, p_event->property);
+		respond.xselection.property = _process_selection_request_target(p_event->target, p_event->requestor, p_event->property, p_event->selection);
 	}
 
 	respond.xselection.type = SelectionNotify;
@@ -2582,8 +2911,13 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 	wd.size = new_rect.size;
 
 #if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
+	if (context_vulkan) {
 		context_vulkan->window_resize(window_id, wd.size.width, wd.size.height);
+	}
+#endif
+#if defined(GLES3_ENABLED)
+	if (gl_manager) {
+		gl_manager->window_resize(window_id, wd.size.width, wd.size.height);
 	}
 #endif
 
@@ -2686,27 +3020,34 @@ void DisplayServerX11::_poll_events() {
 		{
 			MutexLock mutex_lock(events_mutex);
 
-			// Non-blocking wait for next event and remove it from the queue.
-			XEvent ev;
-			while (XCheckIfEvent(x11_display, &ev, _predicate_all_events, nullptr)) {
-				// Check if the input manager wants to process the event.
-				if (XFilterEvent(&ev, None)) {
-					// Event has been filtered by the Input Manager,
-					// it has to be ignored and a new one will be received.
-					continue;
-				}
-
-				// Handle selection request events directly in the event thread, because
-				// communication through the x server takes several events sent back and forth
-				// and we don't want to block other programs while processing only one each frame.
-				if (ev.type == SelectionRequest) {
-					_handle_selection_request_event(&(ev.xselectionrequest));
-					continue;
-				}
-
-				polled_events.push_back(ev);
-			}
+			_check_pending_events(polled_events);
 		}
+	}
+}
+
+void DisplayServerX11::_check_pending_events(LocalVector<XEvent> &r_events) {
+	// Flush to make sure to gather all pending events.
+	XFlush(x11_display);
+
+	// Non-blocking wait for next event and remove it from the queue.
+	XEvent ev;
+	while (XCheckIfEvent(x11_display, &ev, _predicate_all_events, nullptr)) {
+		// Check if the input manager wants to process the event.
+		if (XFilterEvent(&ev, None)) {
+			// Event has been filtered by the Input Manager,
+			// it has to be ignored and a new one will be received.
+			continue;
+		}
+
+		// Handle selection request events directly in the event thread, because
+		// communication through the x server takes several events sent back and forth
+		// and we don't want to block other programs while processing only one each frame.
+		if (ev.type == SelectionRequest) {
+			_handle_selection_request_event(&(ev.xselectionrequest));
+			continue;
+		}
+
+		r_events.push_back(ev);
 	}
 }
 
@@ -2759,6 +3100,9 @@ void DisplayServerX11::process_events() {
 		MutexLock mutex_lock(events_mutex);
 		events = polled_events;
 		polled_events.clear();
+
+		// Check for more pending events to avoid an extra frame delay.
+		_check_pending_events(events);
 	}
 
 	for (uint32_t event_index = 0; event_index < events.size(); ++event_index) {
@@ -2818,7 +3162,7 @@ void DisplayServerX11::process_events() {
 								if (pen_pressure_range != Vector2()) {
 									xi.pressure_supported = true;
 									xi.pressure = (*values - pen_pressure_range[0]) /
-												  (pen_pressure_range[1] - pen_pressure_range[0]);
+											(pen_pressure_range[1] - pen_pressure_range[0]);
 								}
 							}
 
@@ -2829,8 +3173,10 @@ void DisplayServerX11::process_events() {
 							Map<int, Vector2>::Element *pen_tilt_x = xi.pen_tilt_x_range.find(device_id);
 							if (pen_tilt_x) {
 								Vector2 pen_tilt_x_range = pen_tilt_x->value();
-								if (pen_tilt_x_range != Vector2()) {
-									xi.tilt.x = ((*values - pen_tilt_x_range[0]) / (pen_tilt_x_range[1] - pen_tilt_x_range[0])) * 2 - 1;
+								if (pen_tilt_x_range[0] != 0 && *values < 0) {
+									xi.tilt.x = *values / -pen_tilt_x_range[0];
+								} else if (pen_tilt_x_range[1] != 0) {
+									xi.tilt.x = *values / pen_tilt_x_range[1];
 								}
 							}
 
@@ -2841,8 +3187,10 @@ void DisplayServerX11::process_events() {
 							Map<int, Vector2>::Element *pen_tilt_y = xi.pen_tilt_y_range.find(device_id);
 							if (pen_tilt_y) {
 								Vector2 pen_tilt_y_range = pen_tilt_y->value();
-								if (pen_tilt_y_range != Vector2()) {
-									xi.tilt.y = ((*values - pen_tilt_y_range[0]) / (pen_tilt_y_range[1] - pen_tilt_y_range[0])) * 2 - 1;
+								if (pen_tilt_y_range[0] != 0 && *values < 0) {
+									xi.tilt.y = *values / -pen_tilt_y_range[0];
+								} else if (pen_tilt_y_range[1] != 0) {
+									xi.tilt.y = *values / pen_tilt_y_range[1];
 								}
 							}
 
@@ -2877,10 +3225,7 @@ void DisplayServerX11::process_events() {
 						xi.last_relative_time = raw_event->time;
 					} break;
 #ifdef TOUCH_ENABLED
-					case XI_TouchBegin: // Fall-through
-							// Disabled hand-in-hand with the grabbing
-							//XIAllowTouchEvents(x11_display, event_data->deviceid, event_data->detail, x11_window, XIAcceptTouch);
-
+					case XI_TouchBegin:
 					case XI_TouchEnd: {
 						bool is_begin = event_data->evtype == XI_TouchBegin;
 
@@ -3055,7 +3400,7 @@ void DisplayServerX11::process_events() {
 
 				if (mouse_mode_grab) {
 					for (const KeyValue<WindowID, WindowData> &E : windows) {
-						//dear X11, I try, I really try, but you never work, you do whathever you want.
+						//dear X11, I try, I really try, but you never work, you do whatever you want.
 						if (mouse_mode == MOUSE_MODE_CAPTURED) {
 							// Show the cursor if we're in captured mode so it doesn't look weird.
 							XUndefineCursor(x11_display, E.value.x11_window);
@@ -3112,10 +3457,10 @@ void DisplayServerX11::process_events() {
 				mb->set_window_id(window_id);
 				_get_key_modifier_state(event.xbutton.state, mb);
 				mb->set_button_index((MouseButton)event.xbutton.button);
-				if (mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
-					mb->set_button_index(MOUSE_BUTTON_MIDDLE);
-				} else if (mb->get_button_index() == MOUSE_BUTTON_MIDDLE) {
-					mb->set_button_index(MOUSE_BUTTON_RIGHT);
+				if (mb->get_button_index() == MouseButton::RIGHT) {
+					mb->set_button_index(MouseButton::MIDDLE);
+				} else if (mb->get_button_index() == MouseButton::MIDDLE) {
+					mb->set_button_index(MouseButton::RIGHT);
 				}
 				mb->set_button_mask(_get_mouse_button_state(mb->get_button_index(), event.xbutton.type));
 				mb->set_position(Vector2(event.xbutton.x, event.xbutton.y));
@@ -3141,11 +3486,11 @@ void DisplayServerX11::process_events() {
 						if (diff < 400 && Vector2(last_click_pos).distance_to(Vector2(event.xbutton.x, event.xbutton.y)) < 5) {
 							last_click_ms = 0;
 							last_click_pos = Point2i(-100, -100);
-							last_click_button_index = -1;
+							last_click_button_index = MouseButton::NONE;
 							mb->set_double_click(true);
 						}
 
-					} else if (mb->get_button_index() < 4 || mb->get_button_index() > 7) {
+					} else if (mb->get_button_index() < MouseButton::WHEEL_UP || mb->get_button_index() > MouseButton::WHEEL_RIGHT) {
 						last_click_button_index = mb->get_button_index();
 					}
 
@@ -3278,16 +3623,16 @@ void DisplayServerX11::process_events() {
 				if (xi.pressure_supported) {
 					mm->set_pressure(xi.pressure);
 				} else {
-					mm->set_pressure((mouse_get_button_state() & MOUSE_BUTTON_MASK_LEFT) ? 1.0f : 0.0f);
+					mm->set_pressure(bool(mouse_get_button_state() & MouseButton::MASK_LEFT) ? 1.0f : 0.0f);
 				}
 				mm->set_tilt(xi.tilt);
 
 				_get_key_modifier_state(event.xmotion.state, mm);
-				mm->set_button_mask(mouse_get_button_state());
+				mm->set_button_mask((MouseButton)mouse_get_button_state());
 				mm->set_position(pos);
 				mm->set_global_position(pos);
 				Input::get_singleton()->set_mouse_position(pos);
-				mm->set_speed(Input::get_singleton()->get_last_mouse_speed());
+				mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
 
 				mm->set_relative(rel);
 
@@ -3317,7 +3662,7 @@ void DisplayServerX11::process_events() {
 							mm->set_window_id(E.key);
 							mm->set_position(pos_focused);
 							mm->set_global_position(pos_focused);
-							mm->set_speed(Input::get_singleton()->get_last_mouse_speed());
+							mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
 							Input::get_singleton()->parse_input_event(mm);
 
 							break;
@@ -3328,11 +3673,18 @@ void DisplayServerX11::process_events() {
 			} break;
 			case KeyPress:
 			case KeyRelease: {
+#ifdef DISPLAY_SERVER_X11_DEBUG_LOGS_ENABLED
+				if (event.type == KeyPress) {
+					DEBUG_LOG_X11("[%u] KeyPress window=%lu (%u), keycode=%u, time=%lu \n", frame, event.xkey.window, window_id, event.xkey.keycode, event.xkey.time);
+				} else {
+					DEBUG_LOG_X11("[%u] KeyRelease window=%lu (%u), keycode=%u, time=%lu \n", frame, event.xkey.window, window_id, event.xkey.keycode, event.xkey.time);
+				}
+#endif
 				last_timestamp = event.xkey.time;
 
 				// key event is a little complex, so
 				// it will be handled in its own function.
-				_handle_key_event(window_id, (XKeyEvent *)&event, events, event_index);
+				_handle_key_event(window_id, &event.xkey, events, event_index);
 			} break;
 
 			case SelectionNotify:
@@ -3455,12 +3807,23 @@ void DisplayServerX11::process_events() {
 }
 
 void DisplayServerX11::release_rendering_thread() {
+#if defined(GLES3_ENABLED)
+//	gl_manager->release_current();
+#endif
 }
 
 void DisplayServerX11::make_rendering_thread() {
+#if defined(GLES3_ENABLED)
+//	gl_manager->make_current();
+#endif
 }
 
 void DisplayServerX11::swap_buffers() {
+#if defined(GLES3_ENABLED)
+	if (gl_manager) {
+		gl_manager->swap_buffers();
+	}
+#endif
 }
 
 void DisplayServerX11::_update_context(WindowData &wd) {
@@ -3602,17 +3965,31 @@ void DisplayServerX11::set_icon(const Ref<Image> &p_icon) {
 void DisplayServerX11::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 #if defined(VULKAN_ENABLED)
-	context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+	if (context_vulkan) {
+		context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+	}
+#endif
+
+#if defined(GLES3_ENABLED)
+	if (gl_manager) {
+		gl_manager->set_use_vsync(p_vsync_mode == DisplayServer::VSYNC_ENABLED);
+	}
 #endif
 }
 
 DisplayServer::VSyncMode DisplayServerX11::window_get_vsync_mode(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 #if defined(VULKAN_ENABLED)
-	return context_vulkan->get_vsync_mode(p_window);
-#else
-	return DisplayServer::VSYNC_ENABLED;
+	if (context_vulkan) {
+		return context_vulkan->get_vsync_mode(p_window);
+	}
 #endif
+#if defined(GLES3_ENABLED)
+	if (gl_manager) {
+		return gl_manager->is_using_vsync() ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
+	}
+#endif
+	return DisplayServer::VSYNC_ENABLED;
 }
 
 Vector<String> DisplayServerX11::get_rendering_drivers_func() {
@@ -3621,8 +3998,8 @@ Vector<String> DisplayServerX11::get_rendering_drivers_func() {
 #ifdef VULKAN_ENABLED
 	drivers.push_back("vulkan");
 #endif
-#ifdef OPENGL_ENABLED
-	drivers.push_back("opengl");
+#ifdef GLES3_ENABLED
+	drivers.push_back("opengl3");
 #endif
 
 	return drivers;
@@ -3631,7 +4008,7 @@ Vector<String> DisplayServerX11::get_rendering_drivers_func() {
 DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	DisplayServer *ds = memnew(DisplayServerX11(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error));
 	if (r_error != OK) {
-		OS::get_singleton()->alert("Your video card driver does not support any of the supported Vulkan versions.\n"
+		OS::get_singleton()->alert("Your video card driver does not support any of the supported Vulkan or OpenGL versions.\n"
 								   "Please update your drivers or if you have a very old or integrated GPU, upgrade it.\n"
 								   "If you have updated your graphics drivers recently, try rebooting.",
 				"Unable to initialize Video driver");
@@ -3707,18 +4084,18 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 			XSetWindowAttributes new_attr;
 
 			new_attr.event_mask = KeyPressMask | KeyReleaseMask | ButtonPressMask |
-								  ButtonReleaseMask | EnterWindowMask |
-								  LeaveWindowMask | PointerMotionMask |
-								  Button1MotionMask |
-								  Button2MotionMask | Button3MotionMask |
-								  Button4MotionMask | Button5MotionMask |
-								  ButtonMotionMask | KeymapStateMask |
-								  ExposureMask | VisibilityChangeMask |
-								  StructureNotifyMask |
-								  SubstructureNotifyMask | SubstructureRedirectMask |
-								  FocusChangeMask | PropertyChangeMask |
-								  ColormapChangeMask | OwnerGrabButtonMask |
-								  im_event_mask;
+					ButtonReleaseMask | EnterWindowMask |
+					LeaveWindowMask | PointerMotionMask |
+					Button1MotionMask |
+					Button2MotionMask | Button3MotionMask |
+					Button4MotionMask | Button5MotionMask |
+					ButtonMotionMask | KeymapStateMask |
+					ExposureMask | VisibilityChangeMask |
+					StructureNotifyMask |
+					SubstructureNotifyMask | SubstructureRedirectMask |
+					FocusChangeMask | PropertyChangeMask |
+					ColormapChangeMask | OwnerGrabButtonMask |
+					im_event_mask;
 
 			XChangeWindowAttributes(x11_display, wd.x11_window, CWEventMask, &new_attr);
 
@@ -3807,6 +4184,12 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create a Vulkan window");
 		}
 #endif
+#ifdef GLES3_ENABLED
+		if (gl_manager) {
+			Error err = gl_manager->window_create(id, wd.x11_window, x11_display, p_rect.size.width, p_rect.size.height);
+			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL window");
+		}
+#endif
 
 		//set_class_hint(x11_display, wd.x11_window);
 		XFlush(x11_display);
@@ -3856,7 +4239,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	xmbstring = nullptr;
 
 	last_click_ms = 0;
-	last_click_button_index = -1;
+	last_click_button_index = MouseButton::NONE;
 	last_click_pos = Point2i(-100, -100);
 
 	last_timestamp = 0;
@@ -3988,14 +4371,10 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	xdnd_selection = XInternAtom(x11_display, "XdndSelection", False);
 
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!
-	//TODO - do Vulkan and GLES2 support checks, driver selection and fallback
+	//TODO - do Vulkan and OpenGL support checks, driver selection and fallback
 	rendering_driver = p_rendering_driver;
 
-#ifndef _MSC_VER
-#warning Forcing vulkan rendering driver because OpenGL not implemented yet
-#endif
-	rendering_driver = "vulkan";
-
+	bool driver_found = false;
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
 		context_vulkan = memnew(VulkanContextX11);
@@ -4005,11 +4384,12 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 			r_error = ERR_CANT_CREATE;
 			ERR_FAIL_MSG("Could not initialize Vulkan");
 		}
+		driver_found = true;
 	}
 #endif
-	// Init context and rendering device
-#if defined(OPENGL_ENABLED)
-	if (rendering_driver == "opengl_es") {
+	// Initialize context and rendering device.
+#if defined(GLES3_ENABLED)
+	if (rendering_driver == "opengl3") {
 		if (getenv("DRI_PRIME") == nullptr) {
 			int use_prime = -1;
 
@@ -4051,28 +4431,37 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 			}
 		}
 
-		ContextGL_X11::ContextType opengl_api_type = ContextGL_X11::GLES_2_0_COMPATIBLE;
+		GLManager_X11::ContextType opengl_api_type = GLManager_X11::GLES_3_0_COMPATIBLE;
 
-		context_gles2 = memnew(ContextGL_X11(x11_display, x11_window, current_videomode, opengl_api_type));
+		gl_manager = memnew(GLManager_X11(p_resolution, opengl_api_type));
 
-		if (context_gles2->initialize() != OK) {
-			memdelete(context_gles2);
-			context_gles2 = nullptr;
-			ERR_FAIL_V(ERR_UNAVAILABLE);
+		if (gl_manager->initialize() != OK) {
+			memdelete(gl_manager);
+			gl_manager = nullptr;
+			r_error = ERR_UNAVAILABLE;
+			return;
 		}
+		driver_found = true;
 
-		context_gles2->set_use_vsync(current_videomode.use_vsync);
+		//		gl_manager->set_use_vsync(current_videomode.use_vsync);
 
-		if (RasterizerGLES2::is_viable() == OK) {
-			RasterizerGLES2::register_config();
-			RasterizerGLES2::make_current();
+		if (true) {
+			//		if (RasterizerGLES3::is_viable() == OK) {
+			//		RasterizerGLES3::register_config();
+			RasterizerGLES3::make_current();
 		} else {
-			memdelete(context_gles2);
-			context_gles2 = nullptr;
-			ERR_FAIL_V(ERR_UNAVAILABLE);
+			memdelete(gl_manager);
+			gl_manager = nullptr;
+			r_error = ERR_UNAVAILABLE;
+			return;
 		}
 	}
 #endif
+	if (!driver_found) {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Video driver not found");
+	}
+
 	Point2i window_position(
 			(screen_get_size(0).width - p_resolution.width) / 2,
 			(screen_get_size(0).height - p_resolution.height) / 2);
@@ -4088,7 +4477,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 	show_window(main_window);
 
-//create RenderingDevice if used
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
 		//temporary
@@ -4098,13 +4486,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		RendererCompositorRD::make_current();
 	}
 #endif
-
-	/*
-	rendering_server = memnew(RenderingServerDefault);
-	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
-		rendering_server = memnew(RenderingServerWrapMT(rendering_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
-	}
-	*/
 
 	{
 		//set all event master mask
@@ -4117,15 +4498,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		XISetMask(all_master_event_mask.mask, XI_RawMotion);
 		XISelectEvents(x11_display, DefaultRootWindow(x11_display), &all_master_event_mask, 1);
 	}
-
-	// Disabled by now since grabbing also blocks mouse events
-	// (they are received as extended events instead of standard events)
-	/*XIClearMask(xi.touch_event_mask.mask, XI_TouchOwnership);
-
-	// Grab touch devices to avoid OS gesture interference
-	for (int i = 0; i < xi.touch_devices.size(); ++i) {
-		XIGrabDevice(x11_display, xi.touch_devices[i], x11_window, CurrentTime, None, XIGrabModeAsync, XIGrabModeAsync, False, &xi.touch_event_mask);
-	}*/
 
 	cursor_size = XcursorGetDefaultSize(x11_display);
 	cursor_theme = XcursorGetTheme(x11_display);
@@ -4288,8 +4660,13 @@ DisplayServerX11::~DisplayServerX11() {
 	//destroy all windows
 	for (KeyValue<WindowID, WindowData> &E : windows) {
 #ifdef VULKAN_ENABLED
-		if (rendering_driver == "vulkan") {
+		if (context_vulkan) {
 			context_vulkan->window_destroy(E.key);
+		}
+#endif
+#ifdef GLES3_ENABLED
+		if (gl_manager) {
+			gl_manager->window_destroy(E.key);
 		}
 #endif
 
@@ -4304,15 +4681,22 @@ DisplayServerX11::~DisplayServerX11() {
 
 	//destroy drivers
 #if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
-		if (rendering_device_vulkan) {
-			rendering_device_vulkan->finalize();
-			memdelete(rendering_device_vulkan);
-		}
+	if (rendering_device_vulkan) {
+		rendering_device_vulkan->finalize();
+		memdelete(rendering_device_vulkan);
+		rendering_device_vulkan = nullptr;
+	}
 
-		if (context_vulkan) {
-			memdelete(context_vulkan);
-		}
+	if (context_vulkan) {
+		memdelete(context_vulkan);
+		context_vulkan = nullptr;
+	}
+#endif
+
+#ifdef GLES3_ENABLED
+	if (gl_manager) {
+		memdelete(gl_manager);
+		gl_manager = nullptr;
 	}
 #endif
 

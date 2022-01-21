@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,7 @@
 #include "core/templates/thread_work_pool.h"
 #include "scene/resources/texture.h"
 
-#include "modules/modules_enabled.gen.h"
+#include "modules/modules_enabled.gen.h" // For freetype, msdfgen.
 
 #ifdef MODULE_FREETYPE_ENABLED
 #include <ft2build.h>
@@ -54,12 +54,18 @@
 #include FT_BBOX_H
 #endif
 
+#define OT_TAG(c1, c2, c3, c4) ((int32_t)((((uint32_t)(c1)&0xFF) << 24) | (((uint32_t)(c2)&0xFF) << 16) | (((uint32_t)(c3)&0xFF) << 8) | ((uint32_t)(c4)&0xFF)))
+
 class TextServerFallback : public TextServer {
 	GDCLASS(TextServerFallback, TextServer);
 	_THREAD_SAFE_CLASS_
 
 	static String interface_name;
 	static uint32_t interface_features;
+
+	Map<StringName, int32_t> feature_sets;
+
+	void _insert_feature_sets();
 
 	// Font cache data.
 
@@ -136,10 +142,15 @@ class TextServerFallback : public TextServer {
 		Dictionary variation_coordinates;
 		float oversampling = 0.f;
 
+		uint32_t style_flags = 0;
+		String font_name;
+		String style_name;
+
 		Map<Vector2i, FontDataForSizeFallback *> cache;
 
 		bool face_init = false;
 		Dictionary supported_varaitions;
+		Dictionary feature_overrides;
 
 		// Language/script support override.
 		Map<String, bool> language_support_overrides;
@@ -227,6 +238,15 @@ public:
 
 	virtual void font_set_data(RID p_font_rid, const PackedByteArray &p_data) override;
 	virtual void font_set_data_ptr(RID p_font_rid, const uint8_t *p_data_ptr, size_t p_data_size) override;
+
+	virtual void font_set_style(RID p_font_rid, uint32_t /*FontStyle*/ p_style) override;
+	virtual uint32_t /*FontStyle*/ font_get_style(RID p_font_rid) const override;
+
+	virtual void font_set_style_name(RID p_font_rid, const String &p_name) override;
+	virtual String font_get_style_name(RID p_font_rid) const override;
+
+	virtual void font_set_name(RID p_font_rid, const String &p_name) override;
+	virtual String font_get_name(RID p_font_rid) const override;
 
 	virtual void font_set_antialiased(RID p_font_rid, bool p_antialiased) override;
 	virtual bool font_is_antialiased(RID p_font_rid) const override;
@@ -338,6 +358,9 @@ public:
 	virtual void font_remove_script_support_override(RID p_font_rid, const String &p_script) override;
 	virtual Vector<String> font_get_script_support_overrides(RID p_font_rid) override;
 
+	virtual void font_set_opentype_feature_overrides(RID p_font_rid, const Dictionary &p_overrides) override;
+	virtual Dictionary font_get_opentype_feature_overrides(RID p_font_rid) const override;
+
 	virtual Dictionary font_supported_feature_list(RID p_font_rid) const override;
 	virtual Dictionary font_supported_variation_list(RID p_font_rid) const override;
 
@@ -352,8 +375,12 @@ public:
 
 	virtual void shaped_text_set_direction(RID p_shaped, Direction p_direction = DIRECTION_AUTO) override;
 	virtual Direction shaped_text_get_direction(RID p_shaped) const override;
+	virtual Direction shaped_text_get_inferred_direction(RID p_shaped) const override;
 
 	virtual void shaped_text_set_bidi_override(RID p_shaped, const Array &p_override) override;
+
+	virtual void shaped_text_set_custom_punctuation(RID p_shaped, const String &p_punct) override;
+	virtual String shaped_text_get_custom_punctuation(RID p_shaped) const override;
 
 	virtual void shaped_text_set_orientation(RID p_shaped, Orientation p_orientation = ORIENTATION_HORIZONTAL) override;
 	virtual Orientation shaped_text_get_orientation(RID p_shaped) const override;
@@ -365,8 +392,8 @@ public:
 	virtual bool shaped_text_get_preserve_control(RID p_shaped) const override;
 
 	virtual bool shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "") override;
-	virtual bool shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER, int p_length = 1) override;
-	virtual bool shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER) override;
+	virtual bool shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int p_length = 1) override;
+	virtual bool shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER) override;
 
 	virtual RID shaped_text_substr(RID p_shaped, int p_start, int p_length) const override;
 	virtual RID shaped_text_get_parent(RID p_shaped) const override;
@@ -402,6 +429,9 @@ public:
 	virtual float shaped_text_get_width(RID p_shaped) const override;
 	virtual float shaped_text_get_underline_position(RID p_shaped) const override;
 	virtual float shaped_text_get_underline_thickness(RID p_shaped) const override;
+
+	virtual String string_to_upper(const String &p_string, const String &p_language = "") const override;
+	virtual String string_to_lower(const String &p_string, const String &p_language = "") const override;
 
 	TextServerFallback();
 	~TextServerFallback();

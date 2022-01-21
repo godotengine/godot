@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@
 
 void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> key = p_event;
-	if (key.is_valid() && key->is_pressed() && key->get_keycode() == KEY_ESCAPE) {
+	if (key.is_valid() && key->is_pressed() && key->get_keycode() == Key::ESCAPE) {
 		_close_pressed();
 	}
 }
@@ -105,8 +105,6 @@ void Popup::_close_pressed() {
 	_deinitialize_visible_parents();
 
 	call_deferred(SNAME("hide"));
-
-	emit_signal(SNAME("cancelled"));
 }
 
 void Popup::set_as_minsize() {

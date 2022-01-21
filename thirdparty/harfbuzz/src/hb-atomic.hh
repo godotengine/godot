@@ -102,19 +102,11 @@ _hb_atomic_ptr_impl_cmplexch (const void **P, const void *O_, const void *N)
 #define hb_atomic_ptr_impl_cmpexch(P,O,N)	_hb_atomic_ptr_impl_cmplexch ((const void **) (P), (O), (N))
 
 
-#elif defined(HB_NO_MT)
+#else /* defined(HB_NO_MT) */
 
 #define hb_atomic_int_impl_add(AI, V)		((*(AI) += (V)) - (V))
-
 #define _hb_memory_barrier()			do {} while (0)
-
 #define hb_atomic_ptr_impl_cmpexch(P,O,N)	(* (void **) (P) == (void *) (O) ? (* (void **) (P) = (void *) (N), true) : false)
-
-
-#else
-
-#error "Could not find any system to define atomic_int macros."
-#error "Check hb-atomic.hh for possible resolutions."
 
 #endif
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,8 +57,6 @@ public:
 
 	Vector<Input> inputs;
 
-	real_t process_input(int p_input, real_t p_time, bool p_seek, real_t p_blend);
-
 	friend class AnimationTree;
 
 	struct AnimationState {
@@ -68,6 +66,7 @@ public:
 		const Vector<real_t> *track_blends = nullptr;
 		real_t blend = 0.0;
 		bool seeked = false;
+		int pingponged = 0;
 	};
 
 	struct State {
@@ -85,7 +84,6 @@ public:
 	State *state = nullptr;
 
 	real_t _pre_process(const StringName &p_base_path, AnimationNode *p_parent, State *p_state, real_t p_time, bool p_seek, const Vector<StringName> &p_connections);
-	void _pre_update_animations(HashMap<NodePath, int> *track_map);
 
 	//all this is temporary
 	StringName base_path;
@@ -101,16 +99,15 @@ public:
 	real_t _blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, real_t p_time, bool p_seek, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true, real_t *r_max = nullptr);
 
 protected:
-	void blend_animation(const StringName &p_animation, real_t p_time, real_t p_delta, bool p_seeked, real_t p_blend);
+	void blend_animation(const StringName &p_animation, real_t p_time, real_t p_delta, bool p_seeked, real_t p_blend, int p_pingponged = 0);
 	real_t blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, real_t p_time, bool p_seek, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true);
 	real_t blend_input(int p_input, real_t p_time, bool p_seek, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true);
+
 	void make_invalid(const String &p_reason);
 
 	static void _bind_methods();
 
 	void _validate_property(PropertyInfo &property) const override;
-
-	void _set_parent(Object *p_parent);
 
 	GDVIRTUAL0RC(Dictionary, _get_child_nodes)
 	GDVIRTUAL0RC(Array, _get_parameter_list)
@@ -197,14 +194,24 @@ private:
 		Skeleton3D *skeleton = nullptr;
 #endif // _3D_DISABLED
 		int bone_idx = -1;
+		bool loc_used = false;
+		bool rot_used = false;
+		bool scale_used = false;
 		Vector3 loc;
 		Quaternion rot;
 		real_t rot_blend_accum = 0.0;
 		Vector3 scale;
 
 		TrackCacheTransform() {
-			type = Animation::TYPE_TRANSFORM3D;
+			type = Animation::TYPE_POSITION_3D;
 		}
+	};
+
+	struct TrackCacheBlendShape : public TrackCache {
+		MeshInstance3D *mesh_3d = nullptr;
+		float value = 0;
+		int shape_index = -1;
+		TrackCacheBlendShape() { type = Animation::TYPE_BLEND_SHAPE; }
 	};
 
 	struct TrackCacheValue : public TrackCache {
@@ -255,7 +262,6 @@ private:
 	AnimationNode::State state;
 	bool cache_valid = false;
 	void _node_removed(Node *p_node);
-	void _caches_cleared();
 
 	void _clear_caches();
 	bool _update_caches(AnimationPlayer *player);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -139,16 +139,12 @@ void DisplayServer::mouse_warp_to_position(const Point2i &p_to) {
 	WARN_PRINT("Mouse warping is not supported by this display server.");
 }
 
-Point2i DisplayServer::mouse_get_absolute_position() const {
-	ERR_FAIL_V_MSG(Point2i(), "Mouse is not supported by this display server.");
-}
-
 Point2i DisplayServer::mouse_get_position() const {
 	ERR_FAIL_V_MSG(Point2i(), "Mouse is not supported by this display server.");
 }
 
 MouseButton DisplayServer::mouse_get_button_state() const {
-	ERR_FAIL_V_MSG(MOUSE_BUTTON_NONE, "Mouse is not supported by this display server.");
+	ERR_FAIL_V_MSG(MouseButton::NONE, "Mouse is not supported by this display server.");
 }
 
 void DisplayServer::clipboard_set(const String &p_text) {
@@ -157,6 +153,18 @@ void DisplayServer::clipboard_set(const String &p_text) {
 
 String DisplayServer::clipboard_get() const {
 	ERR_FAIL_V_MSG(String(), "Clipboard is not supported by this display server.");
+}
+
+bool DisplayServer::clipboard_has() const {
+	return !clipboard_get().is_empty();
+}
+
+void DisplayServer::clipboard_set_primary(const String &p_text) {
+	WARN_PRINT("Primary clipboard is not supported by this display server.");
+}
+
+String DisplayServer::clipboard_get_primary() const {
+	ERR_FAIL_V_MSG(String(), "Primary clipboard is not supported by this display server.");
 }
 
 void DisplayServer::screen_set_orientation(ScreenOrientation p_orientation, int p_screen) {
@@ -200,6 +208,10 @@ void DisplayServer::window_set_mouse_passthrough(const Vector<Vector2> &p_region
 	ERR_FAIL_MSG("Mouse passthrough not supported by this display server.");
 }
 
+void DisplayServer::gl_window_make_current(DisplayServer::WindowID p_window_id) {
+	// noop except in gles
+}
+
 void DisplayServer::window_set_ime_active(const bool p_active, WindowID p_window) {
 	WARN_PRINT("IME not supported by this display server.");
 }
@@ -214,14 +226,6 @@ Point2i DisplayServer::ime_get_selection() const {
 
 String DisplayServer::ime_get_text() const {
 	ERR_FAIL_V_MSG(String(), "IME or NOTIFICATION_WM_IME_UPDATEnot supported by this display server.");
-}
-
-void DisplayServer::console_set_visible(bool p_enabled) {
-	WARN_PRINT("Console window not supported by this display server.");
-}
-
-bool DisplayServer::is_console_visible() const {
-	return false;
 }
 
 void DisplayServer::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, bool p_multiline, int p_max_length, int p_cursor_start, int p_cursor_end) {
@@ -355,11 +359,13 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("mouse_warp_to_position", "position"), &DisplayServer::mouse_warp_to_position);
 	ClassDB::bind_method(D_METHOD("mouse_get_position"), &DisplayServer::mouse_get_position);
-	ClassDB::bind_method(D_METHOD("mouse_get_absolute_position"), &DisplayServer::mouse_get_absolute_position);
 	ClassDB::bind_method(D_METHOD("mouse_get_button_state"), &DisplayServer::mouse_get_button_state);
 
 	ClassDB::bind_method(D_METHOD("clipboard_set", "clipboard"), &DisplayServer::clipboard_set);
 	ClassDB::bind_method(D_METHOD("clipboard_get"), &DisplayServer::clipboard_get);
+	ClassDB::bind_method(D_METHOD("clipboard_has"), &DisplayServer::clipboard_has);
+	ClassDB::bind_method(D_METHOD("clipboard_set_primary", "clipboard_primary"), &DisplayServer::clipboard_set_primary);
+	ClassDB::bind_method(D_METHOD("clipboard_get_primary"), &DisplayServer::clipboard_get_primary);
 
 	ClassDB::bind_method(D_METHOD("get_screen_count"), &DisplayServer::get_screen_count);
 	ClassDB::bind_method(D_METHOD("screen_get_position", "screen"), &DisplayServer::screen_get_position, DEFVAL(SCREEN_OF_MAIN_WINDOW));
@@ -432,9 +438,6 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("ime_get_selection"), &DisplayServer::ime_get_selection);
 	ClassDB::bind_method(D_METHOD("ime_get_text"), &DisplayServer::ime_get_text);
 
-	ClassDB::bind_method(D_METHOD("console_set_visible", "console_visible"), &DisplayServer::console_set_visible);
-	ClassDB::bind_method(D_METHOD("is_console_visible"), &DisplayServer::is_console_visible);
-
 	ClassDB::bind_method(D_METHOD("virtual_keyboard_show", "existing_text", "position", "multiline", "max_length", "cursor_start", "cursor_end"), &DisplayServer::virtual_keyboard_show, DEFVAL(Rect2i()), DEFVAL(false), DEFVAL(-1), DEFVAL(-1), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("virtual_keyboard_hide"), &DisplayServer::virtual_keyboard_hide);
 
@@ -479,7 +482,6 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_CURSOR_SHAPE);
 	BIND_ENUM_CONSTANT(FEATURE_CUSTOM_CURSOR_SHAPE);
 	BIND_ENUM_CONSTANT(FEATURE_NATIVE_DIALOG);
-	BIND_ENUM_CONSTANT(FEATURE_CONSOLE_WINDOW);
 	BIND_ENUM_CONSTANT(FEATURE_IME);
 	BIND_ENUM_CONSTANT(FEATURE_WINDOW_TRANSPARENCY);
 	BIND_ENUM_CONSTANT(FEATURE_HIDPI);
@@ -487,6 +489,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_NATIVE_ICON);
 	BIND_ENUM_CONSTANT(FEATURE_ORIENTATION);
 	BIND_ENUM_CONSTANT(FEATURE_SWAP_BUFFERS);
+	BIND_ENUM_CONSTANT(FEATURE_CLIPBOARD_PRIMARY);
 
 	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -73,8 +73,8 @@ Dictionary Control::_edit_get_state() const {
 
 void Control::_edit_set_state(const Dictionary &p_state) {
 	ERR_FAIL_COND((p_state.size() <= 0) ||
-				  !p_state.has("rotation") || !p_state.has("scale") ||
-				  !p_state.has("pivot") || !p_state.has("anchors") || !p_state.has("offsets"));
+			!p_state.has("rotation") || !p_state.has("scale") ||
+			!p_state.has("pivot") || !p_state.has("anchors") || !p_state.has("offsets"));
 	Dictionary state = p_state;
 
 	set_rotation(state["rotation"]);
@@ -192,7 +192,7 @@ void Control::set_custom_minimum_size(const Size2 &p_custom) {
 		return;
 	}
 	data.custom_minimum_size = p_custom;
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 Size2 Control::get_custom_minimum_size() const {
@@ -213,7 +213,7 @@ void Control::_update_minimum_size_cache() {
 	data.minimum_size_valid = true;
 
 	if (size_changed) {
-		minimum_size_changed();
+		update_minimum_size();
 	}
 }
 
@@ -400,7 +400,7 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::INT, "theme_override_font_sizes/" + E, PROPERTY_HINT_NONE, "", usage));
+			p_list->push_back(PropertyInfo(Variant::INT, "theme_override_font_sizes/" + E, PROPERTY_HINT_RANGE, "1,256,1,or_greater", usage));
 		}
 	}
 	{
@@ -589,6 +589,7 @@ void Control::_notification(int p_notification) {
 			_size_changed();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
+			release_focus();
 			get_viewport()->_gui_remove_control(this);
 		} break;
 		case NOTIFICATION_READY: {
@@ -637,7 +638,9 @@ void Control::_notification(int p_notification) {
 				}
 			} else {
 				//is a regular root control or top_level
-				data.RI = get_viewport()->_gui_add_root_control(this);
+				Viewport *viewport = get_viewport();
+				ERR_FAIL_COND(!viewport);
+				data.RI = viewport->_gui_add_root_control(this);
 			}
 
 			data.parent_canvas_item = get_parent_item();
@@ -646,7 +649,9 @@ void Control::_notification(int p_notification) {
 				data.parent_canvas_item->connect("item_rect_changed", callable_mp(this, &Control::_size_changed));
 			} else {
 				//connect viewport
-				get_viewport()->connect("size_changed", callable_mp(this, &Control::_size_changed));
+				Viewport *viewport = get_viewport();
+				ERR_FAIL_COND(!viewport);
+				viewport->connect("size_changed", callable_mp(this, &Control::_size_changed));
 			}
 		} break;
 		case NOTIFICATION_EXIT_CANVAS: {
@@ -655,7 +660,9 @@ void Control::_notification(int p_notification) {
 				data.parent_canvas_item = nullptr;
 			} else if (!is_set_as_top_level()) {
 				//disconnect viewport
-				get_viewport()->disconnect("size_changed", callable_mp(this, &Control::_size_changed));
+				Viewport *viewport = get_viewport();
+				ERR_FAIL_COND(!viewport);
+				viewport->disconnect("size_changed", callable_mp(this, &Control::_size_changed));
 			}
 
 			if (data.RI) {
@@ -707,7 +714,7 @@ void Control::_notification(int p_notification) {
 			update();
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			minimum_size_changed();
+			update_minimum_size();
 			update();
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -726,8 +733,10 @@ void Control::_notification(int p_notification) {
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
-			data.is_rtl_dirty = true;
-			_size_changed();
+			if (is_inside_tree()) {
+				data.is_rtl_dirty = true;
+				_size_changed();
+			}
 		} break;
 	}
 }
@@ -740,7 +749,7 @@ bool Control::has_point(const Point2 &p_point) const {
 	return Rect2(Point2(), get_size()).has_point(p_point);
 }
 
-void Control::set_drag_forwarding(Node *p_target) {
+void Control::set_drag_forwarding(Object *p_target) {
 	if (p_target) {
 		data.drag_owner = p_target->get_instance_id();
 	} else {
@@ -802,6 +811,10 @@ void Control::set_drag_preview(Control *p_control) {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND(!get_viewport()->gui_is_dragging());
 	get_viewport()->_gui_set_drag_preview(this, p_control);
+}
+
+bool Control::is_drag_successful() const {
+	return is_inside_tree() && get_viewport()->gui_is_drag_successful();
 }
 
 void Control::_call_gui_input(const Ref<InputEvent> &p_event) {
@@ -979,7 +992,7 @@ Ref<StyleBox> Control::get_theme_stylebox(const StringName &p_name, const String
 Ref<Font> Control::get_theme_font(const StringName &p_name, const StringName &p_theme_type) const {
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		const Ref<Font> *font = data.font_override.getptr(p_name);
-		if (font) {
+		if (font && (*font)->get_data_count() > 0) {
 			return *font;
 		}
 	}
@@ -992,7 +1005,7 @@ Ref<Font> Control::get_theme_font(const StringName &p_name, const StringName &p_
 int Control::get_theme_font_size(const StringName &p_name, const StringName &p_theme_type) const {
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		const int *font_size = data.font_size_override.getptr(p_name);
-		if (font_size) {
+		if (font_size && (*font_size) > 0) {
 			return *font_size;
 		}
 	}
@@ -1138,12 +1151,12 @@ float Control::fetch_theme_default_base_scale(Control *p_theme_owner, Window *p_
 	Window *theme_owner_window = p_theme_owner_window;
 
 	while (theme_owner || theme_owner_window) {
-		if (theme_owner && theme_owner->data.theme->has_default_theme_base_scale()) {
-			return theme_owner->data.theme->get_default_theme_base_scale();
+		if (theme_owner && theme_owner->data.theme->has_default_base_scale()) {
+			return theme_owner->data.theme->get_default_base_scale();
 		}
 
-		if (theme_owner_window && theme_owner_window->theme->has_default_theme_base_scale()) {
-			return theme_owner_window->theme->get_default_theme_base_scale();
+		if (theme_owner_window && theme_owner_window->theme->has_default_base_scale()) {
+			return theme_owner_window->theme->get_default_base_scale();
 		}
 
 		Node *parent = theme_owner ? theme_owner->get_parent() : theme_owner_window->get_parent();
@@ -1165,13 +1178,16 @@ float Control::fetch_theme_default_base_scale(Control *p_theme_owner, Window *p_
 
 	// Secondly, check the project-defined Theme resource.
 	if (Theme::get_project_default().is_valid()) {
-		if (Theme::get_project_default()->has_default_theme_base_scale()) {
-			return Theme::get_project_default()->get_default_theme_base_scale();
+		if (Theme::get_project_default()->has_default_base_scale()) {
+			return Theme::get_project_default()->get_default_base_scale();
 		}
 	}
 
 	// Lastly, fall back on the default Theme.
-	return Theme::get_default()->get_default_theme_base_scale();
+	if (Theme::get_default()->has_default_base_scale()) {
+		return Theme::get_default()->get_default_base_scale();
+	}
+	return Theme::get_fallback_base_scale();
 }
 
 float Control::get_theme_default_base_scale() const {
@@ -1186,12 +1202,12 @@ Ref<Font> Control::fetch_theme_default_font(Control *p_theme_owner, Window *p_th
 	Window *theme_owner_window = p_theme_owner_window;
 
 	while (theme_owner || theme_owner_window) {
-		if (theme_owner && theme_owner->data.theme->has_default_theme_font()) {
-			return theme_owner->data.theme->get_default_theme_font();
+		if (theme_owner && theme_owner->data.theme->has_default_font()) {
+			return theme_owner->data.theme->get_default_font();
 		}
 
-		if (theme_owner_window && theme_owner_window->theme->has_default_theme_font()) {
-			return theme_owner_window->theme->get_default_theme_font();
+		if (theme_owner_window && theme_owner_window->theme->has_default_font()) {
+			return theme_owner_window->theme->get_default_font();
 		}
 
 		Node *parent = theme_owner ? theme_owner->get_parent() : theme_owner_window->get_parent();
@@ -1213,13 +1229,16 @@ Ref<Font> Control::fetch_theme_default_font(Control *p_theme_owner, Window *p_th
 
 	// Secondly, check the project-defined Theme resource.
 	if (Theme::get_project_default().is_valid()) {
-		if (Theme::get_project_default()->has_default_theme_font()) {
-			return Theme::get_project_default()->get_default_theme_font();
+		if (Theme::get_project_default()->has_default_font()) {
+			return Theme::get_project_default()->get_default_font();
 		}
 	}
 
 	// Lastly, fall back on the default Theme.
-	return Theme::get_default()->get_default_theme_font();
+	if (Theme::get_default()->has_default_font()) {
+		return Theme::get_default()->get_default_font();
+	}
+	return Theme::get_fallback_font();
 }
 
 Ref<Font> Control::get_theme_default_font() const {
@@ -1234,12 +1253,12 @@ int Control::fetch_theme_default_font_size(Control *p_theme_owner, Window *p_the
 	Window *theme_owner_window = p_theme_owner_window;
 
 	while (theme_owner || theme_owner_window) {
-		if (theme_owner && theme_owner->data.theme->has_default_theme_font_size()) {
-			return theme_owner->data.theme->get_default_theme_font_size();
+		if (theme_owner && theme_owner->data.theme->has_default_font_size()) {
+			return theme_owner->data.theme->get_default_font_size();
 		}
 
-		if (theme_owner_window && theme_owner_window->theme->has_default_theme_font_size()) {
-			return theme_owner_window->theme->get_default_theme_font_size();
+		if (theme_owner_window && theme_owner_window->theme->has_default_font_size()) {
+			return theme_owner_window->theme->get_default_font_size();
 		}
 
 		Node *parent = theme_owner ? theme_owner->get_parent() : theme_owner_window->get_parent();
@@ -1261,13 +1280,16 @@ int Control::fetch_theme_default_font_size(Control *p_theme_owner, Window *p_the
 
 	// Secondly, check the project-defined Theme resource.
 	if (Theme::get_project_default().is_valid()) {
-		if (Theme::get_project_default()->has_default_theme_font_size()) {
-			return Theme::get_project_default()->get_default_theme_font_size();
+		if (Theme::get_project_default()->has_default_font_size()) {
+			return Theme::get_project_default()->get_default_font_size();
 		}
 	}
 
 	// Lastly, fall back on the default Theme.
-	return Theme::get_default()->get_default_theme_font_size();
+	if (Theme::get_default()->has_default_font_size()) {
+		return Theme::get_default()->get_default_font_size();
+	}
+	return Theme::get_fallback_font_size();
 }
 
 int Control::get_theme_default_font_size() const {
@@ -1286,7 +1308,7 @@ Rect2 Control::get_parent_anchorable_rect() const {
 #ifdef TOOLS_ENABLED
 		Node *edited_root = get_tree()->get_edited_scene_root();
 		if (edited_root && (this == edited_root || edited_root->is_ancestor_of(this))) {
-			parent_rect.size = Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height"));
+			parent_rect.size = Size2(ProjectSettings::get_singleton()->get("display/window/size/viewport_width"), ProjectSettings::get_singleton()->get("display/window/size/viewport_height"));
 		} else {
 			parent_rect = get_viewport()->get_visible_rect();
 		}
@@ -1813,6 +1835,10 @@ Size2 Control::get_position() const {
 
 Size2 Control::get_size() const {
 	return data.size_cache;
+}
+
+void Control::reset_size() {
+	set_size(Size2());
 }
 
 Rect2 Control::get_global_rect() const {
@@ -2520,7 +2546,7 @@ void Control::grab_click_focus() {
 	get_viewport()->_gui_grab_click_focus(this);
 }
 
-void Control::minimum_size_changed() {
+void Control::update_minimum_size() {
 	if (!is_inside_tree() || data.block_minimum_size_adjust) {
 		return;
 	}
@@ -2580,20 +2606,10 @@ void Control::warp_mouse(const Point2 &p_to_pos) {
 }
 
 bool Control::is_text_field() const {
-	/*
-    if (get_script_instance()) {
-        Variant v=p_point;
-        const Variant *p[2]={&v,&p_data};
-        Callable::CallError ce;
-        Variant ret = get_script_instance()->call("is_text_field",p,2,ce);
-        if (ce.error==Callable::CallError::CALL_OK)
-            return ret;
-    }
-  */
 	return false;
 }
 
-Array Control::structured_text_parser(StructuredTextParser p_theme_type, const Array &p_args, const String p_text) const {
+Array Control::structured_text_parser(StructuredTextParser p_theme_type, const Array &p_args, const String &p_text) const {
 	Array ret;
 	switch (p_theme_type) {
 		case STRUCTURED_TEXT_URI: {
@@ -2692,7 +2708,7 @@ real_t Control::get_rotation() const {
 void Control::_override_changed() {
 	notification(NOTIFICATION_THEME_CHANGED);
 	emit_signal(SceneStringNames::get_singleton()->theme_changed);
-	minimum_size_changed(); // overrides are likely to affect minimum size
+	update_minimum_size(); // Overrides are likely to affect minimum size.
 }
 
 void Control::set_pivot_offset(const Vector2 &p_pivot) {
@@ -2787,7 +2803,7 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 TypedArray<String> Control::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
-	if (data.mouse_filter == MOUSE_FILTER_IGNORE && data.tooltip != "") {
+	if (data.mouse_filter == MOUSE_FILTER_IGNORE && !data.tooltip.is_empty()) {
 		warnings.push_back(TTR("The Hint Tooltip won't be displayed as the control's Mouse Filter is set to \"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."));
 	}
 
@@ -2845,6 +2861,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_position", "position", "keep_offsets"), &Control::set_position, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("_set_position", "position"), &Control::_set_position);
 	ClassDB::bind_method(D_METHOD("set_size", "size", "keep_offsets"), &Control::set_size, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("reset_size"), &Control::reset_size);
 	ClassDB::bind_method(D_METHOD("_set_size", "size"), &Control::_set_size);
 	ClassDB::bind_method(D_METHOD("set_custom_minimum_size", "size"), &Control::set_custom_minimum_size);
 	ClassDB::bind_method(D_METHOD("set_global_position", "position", "keep_offsets"), &Control::set_global_position, DEFVAL(false));
@@ -2968,10 +2985,11 @@ void Control::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_drag_forwarding", "target"), &Control::set_drag_forwarding);
 	ClassDB::bind_method(D_METHOD("set_drag_preview", "control"), &Control::set_drag_preview);
+	ClassDB::bind_method(D_METHOD("is_drag_successful"), &Control::is_drag_successful);
 
 	ClassDB::bind_method(D_METHOD("warp_mouse", "to_position"), &Control::warp_mouse);
 
-	ClassDB::bind_method(D_METHOD("minimum_size_changed"), &Control::minimum_size_changed);
+	ClassDB::bind_method(D_METHOD("update_minimum_size"), &Control::update_minimum_size);
 
 	ClassDB::bind_method(D_METHOD("set_layout_direction", "direction"), &Control::set_layout_direction);
 	ClassDB::bind_method(D_METHOD("get_layout_direction"), &Control::get_layout_direction);

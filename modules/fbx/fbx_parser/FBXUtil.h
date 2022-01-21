@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -87,34 +87,34 @@ namespace Util {
 const char *TokenTypeString(TokenType t);
 
 /** Decode a single Base64-encoded character.
-*
-*  @param ch Character to decode (from base64 to binary).
-*  @return decoded byte value*/
+ *
+ *  @param ch Character to decode (from base64 to binary).
+ *  @return decoded byte value*/
 uint8_t DecodeBase64(char ch);
 
 /** Compute decoded size of a Base64-encoded string
-*
-*  @param in Characters to decode.
-*  @param inLength Number of characters to decode.
-*  @return size of the decoded data (number of bytes)*/
+ *
+ *  @param in Characters to decode.
+ *  @param inLength Number of characters to decode.
+ *  @return size of the decoded data (number of bytes)*/
 size_t ComputeDecodedSizeBase64(const char *in, size_t inLength);
 
 /** Decode a Base64-encoded string
-*
-*  @param in Characters to decode.
-*  @param inLength Number of characters to decode.
-*  @param out Pointer where we will store the decoded data.
-*  @param maxOutLength Size of output buffer.
-*  @return size of the decoded data (number of bytes)*/
+ *
+ *  @param in Characters to decode.
+ *  @param inLength Number of characters to decode.
+ *  @param out Pointer where we will store the decoded data.
+ *  @param maxOutLength Size of output buffer.
+ *  @return size of the decoded data (number of bytes)*/
 size_t DecodeBase64(const char *in, size_t inLength, uint8_t *out, size_t maxOutLength);
 
 char EncodeBase64(char byte);
 
 /** Encode bytes in base64-encoding
-*
-*  @param data Binary data to encode.
-*  @param inLength Number of bytes to encode.
-*  @return base64-encoded string*/
+ *
+ *  @param data Binary data to encode.
+ *  @param inLength Number of bytes to encode.
+ *  @return base64-encoded string*/
 std::string EncodeBase64(const char *data, size_t length);
 } // namespace Util
 } // namespace FBXDocParser

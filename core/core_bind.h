@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -119,8 +119,8 @@ protected:
 
 public:
 	enum VideoDriver {
-		VIDEO_DRIVER_GLES2,
 		VIDEO_DRIVER_VULKAN,
+		VIDEO_DRIVER_OPENGL_3,
 	};
 
 	enum Weekday {
@@ -161,10 +161,12 @@ public:
 	int get_low_processor_usage_mode_sleep_usec() const;
 
 	void alert(const String &p_alert, const String &p_title = "ALERT!");
+	void crash(const String &p_message);
 
 	String get_executable_path() const;
-	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = Array(), bool p_read_stderr = false);
-	int create_process(const String &p_path, const Vector<String> &p_arguments);
+	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = Array(), bool p_read_stderr = false, bool p_open_console = false);
+	int create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console = false);
+	int create_instance(const Vector<String> &p_arguments);
 	Error kill(int p_pid);
 	Error shell_open(String p_uri);
 
@@ -194,9 +196,9 @@ public:
 
 	String get_unique_id() const;
 
-	String get_keycode_string(uint32_t p_code) const;
-	bool is_keycode_unicode(uint32_t p_unicode) const;
-	int find_keycode_from_string(const String &p_code) const;
+	String get_keycode_string(Key p_code) const;
+	bool is_keycode_unicode(char32_t p_unicode) const;
+	Key find_keycode_from_string(const String &p_code) const;
 
 	void set_use_file_access_save_and_swap(bool p_enable);
 
@@ -205,7 +207,7 @@ public:
 
 	void delay_usec(int p_usec) const;
 	void delay_msec(int p_msec) const;
-	uint32_t get_ticks_msec() const;
+	uint64_t get_ticks_msec() const;
 	uint64_t get_ticks_usec() const;
 
 	bool can_use_threads() const;
@@ -236,6 +238,7 @@ public:
 
 	Error set_thread_name(const String &p_name);
 	Thread::ID get_thread_caller_id() const;
+	Thread::ID get_main_thread_id() const;
 
 	bool has_feature(const String &p_feature) const;
 
@@ -441,7 +444,10 @@ public:
 class Directory : public RefCounted {
 	GDCLASS(Directory, RefCounted);
 	DirAccess *d;
+
 	bool dir_open = false;
+	bool include_navigational = false;
+	bool include_hidden = false;
 
 protected:
 	static void _bind_methods();
@@ -451,11 +457,19 @@ public:
 
 	bool is_open() const;
 
-	Error list_dir_begin(bool p_show_navigational = false, bool p_show_hidden = false); // This starts dir listing.
+	Error list_dir_begin();
 	String get_next();
 	bool current_is_dir() const;
-
 	void list_dir_end();
+
+	PackedStringArray get_files();
+	PackedStringArray get_directories();
+	PackedStringArray _get_contents(bool p_directories);
+
+	void set_include_navigational(bool p_enable);
+	bool get_include_navigational() const;
+	void set_include_hidden(bool p_enable);
+	bool get_include_hidden() const;
 
 	int get_drive_count();
 	String get_drive(int p_drive);
@@ -478,10 +492,6 @@ public:
 
 	Directory();
 	virtual ~Directory();
-
-private:
-	bool _list_skip_navigational = false;
-	bool _list_skip_hidden = false;
 };
 
 class Marshalls : public Object {

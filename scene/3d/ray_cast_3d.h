@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,17 +65,22 @@ class RayCast3D : public Node3D {
 	bool collide_with_areas = false;
 	bool collide_with_bodies = true;
 
+	bool hit_from_inside = false;
+
 protected:
 	void _notification(int p_what);
 	void _update_raycast_state();
 	static void _bind_methods();
 
 public:
-	void set_collide_with_areas(bool p_clip);
+	void set_collide_with_areas(bool p_enabled);
 	bool is_collide_with_areas_enabled() const;
 
-	void set_collide_with_bodies(bool p_clip);
+	void set_collide_with_bodies(bool p_enabled);
 	bool is_collide_with_bodies_enabled() const;
+
+	void set_hit_from_inside(bool p_enabled);
+	bool is_hit_from_inside_enabled() const;
 
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
@@ -100,8 +105,8 @@ public:
 
 	Ref<StandardMaterial3D> get_debug_material();
 
-	float get_debug_shape_thickness() const;
-	void set_debug_shape_thickness(const float p_debug_thickness);
+	int get_debug_shape_thickness() const;
+	void set_debug_shape_thickness(const int p_debug_thickness);
 
 	void force_raycast_update();
 	bool is_colliding() const;

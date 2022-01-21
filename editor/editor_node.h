@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,6 +37,7 @@
 #include "editor/editor_folding.h"
 #include "editor/editor_native_shader_source_visualizer.h"
 #include "editor/editor_run.h"
+#include "editor/editor_toaster.h"
 #include "editor/inspector_dock.h"
 #include "editor/property_editor.h"
 #include "editor/scene_tree_dock.h"
@@ -84,7 +85,7 @@ class ProjectSettingsEditor;
 class RunSettingsDialog;
 class ScriptCreateDialog;
 class TabContainer;
-class Tabs;
+class TabBar;
 class TextureProgressBar;
 class Button;
 class VSplitContainer;
@@ -166,9 +167,10 @@ private:
 		RUN_PLAY_SCENE,
 		RUN_PLAY_CUSTOM_SCENE,
 		RUN_SETTINGS,
-		RUN_PROJECT_DATA_FOLDER,
+		RUN_USER_DATA_FOLDER,
 		RUN_RELOAD_CURRENT_PROJECT,
 		RUN_PROJECT_MANAGER,
+		RUN_VCS_METADATA,
 		RUN_VCS_SETTINGS,
 		RUN_VCS_SHUT_DOWN,
 		SETTINGS_UPDATE_CONTINUOUSLY,
@@ -186,7 +188,6 @@ private:
 		SETTINGS_MANAGE_FEATURE_PROFILES,
 		SETTINGS_INSTALL_ANDROID_BUILD_TEMPLATE,
 		SETTINGS_PICK_MAIN_SCENE,
-		SETTINGS_TOGGLE_CONSOLE,
 		SETTINGS_TOGGLE_FULLSCREEN,
 		SETTINGS_HELP,
 		SCENE_TAB_CLOSE,
@@ -205,7 +206,7 @@ private:
 		HELP_ABOUT,
 		HELP_SUPPORT_GODOT_DEVELOPMENT,
 
-		SET_VIDEO_DRIVER_SAVE_AND_RESTART,
+		SET_RENDERING_DRIVER_SAVE_AND_RESTART,
 
 		GLOBAL_NEW_WINDOW,
 		GLOBAL_SCENE,
@@ -215,20 +216,26 @@ private:
 		TOOL_MENU_BASE = 1000
 	};
 
-	SubViewport *scene_root; //root of the scene being edited
+	enum ScriptNameCasing {
+		SCENE_NAME_CASING_AUTO,
+		SCENE_NAME_CASING_PASCAL_CASE,
+		SCENE_NAME_CASING_SNAKE_CASE
+	};
+
+	SubViewport *scene_root; // root of the scene being edited
 
 	PanelContainer *scene_root_parent;
 	Control *theme_base;
 	Control *gui_base;
 	VBoxContainer *main_vbox;
-	OptionButton *video_driver;
+	OptionButton *rendering_driver;
 
 	ConfirmationDialog *video_restart_dialog;
 
-	int video_driver_current;
-	String video_driver_request;
-	void _video_driver_selected(int);
-	void _update_video_driver_color();
+	int rendering_driver_current;
+	String rendering_driver_request;
+	void _rendering_driver_selected(int);
+	void _update_rendering_driver_color();
 
 	// Split containers
 
@@ -249,7 +256,7 @@ private:
 
 	// Main tabs
 
-	Tabs *scene_tabs;
+	TabBar *scene_tabs;
 	PopupMenu *scene_tabs_context_menu;
 	Panel *tab_preview_panel;
 	TextureRect *tab_preview;
@@ -295,11 +302,6 @@ private:
 	Ref<Theme> theme;
 
 	PopupMenu *recent_scenes;
-	SceneTreeDock *scene_tree_dock;
-	InspectorDock *inspector_dock;
-	NodeDock *node_dock;
-	ImportDock *import_dock;
-	FileSystemDock *filesystem_dock;
 	EditorRunNative *run_native;
 
 	ConfirmationDialog *confirmation;
@@ -323,7 +325,7 @@ private:
 
 	EditorSettingsDialog *settings_config_dialog;
 	ProjectSettingsEditor *project_settings;
-	bool settings_changed = true; //make it update settings on first frame
+	bool settings_changed = true; // make it update settings on first frame
 	void _update_from_settings();
 
 	PopupMenu *vcs_actions_menu;
@@ -406,7 +408,7 @@ private:
 
 	bool waiting_for_sources_changed;
 
-	uint32_t update_spinner_step_msec;
+	uint64_t update_spinner_step_msec;
 	uint64_t update_spinner_step_frame;
 	int update_spinner_step;
 
@@ -438,6 +440,7 @@ private:
 	HBoxContainer *bottom_panel_hb;
 	HBoxContainer *bottom_panel_hb_editors;
 	VBoxContainer *bottom_panel_vb;
+	EditorToaster *editor_toaster;
 	LinkButton *version_btn;
 	Button *bottom_panel_raise;
 
@@ -456,7 +459,7 @@ private:
 
 	void _dialog_action(String p_file);
 
-	void _edit_current();
+	void _edit_current(bool p_skip_foreign = false);
 	void _dialog_display_save_error(String p_file, Error p_error);
 	void _dialog_display_load_error(String p_file, Error p_error);
 
@@ -518,9 +521,6 @@ private:
 	void _run(bool p_current = false, const String &p_custom = "");
 	void _run_native(const Ref<EditorExportPreset> &p_preset);
 
-	void _save_optimized();
-	void _import_action(const String &p_action);
-	void _import(const String &p_file);
 	void _add_to_recent_scenes(const String &p_scene);
 	void _update_recent_scenes();
 	void _open_recent_scene(int p_idx);
@@ -530,7 +530,7 @@ private:
 	void _add_dropped_files_recursive(const Vector<String> &p_files, String to_path);
 	String _recent_scene;
 
-	void _exit_editor();
+	void _exit_editor(int p_exit_code);
 
 	bool convert_old;
 
@@ -558,7 +558,6 @@ private:
 	static void _editor_file_dialog_register(EditorFileDialog *p_dialog);
 	static void _editor_file_dialog_unregister(EditorFileDialog *p_dialog);
 
-	void _cleanup_scene();
 	void _remove_edited_scene(bool p_change_tab = true);
 	void _remove_scene(int index, bool p_change_tab = true);
 	bool _find_and_save_resource(RES p_res, Map<RES, bool> &processed, int32_t flags);
@@ -656,8 +655,6 @@ private:
 	static int build_callback_count;
 	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
 
-	void _license_tree_selected();
-
 	void _update_update_spinner();
 
 	Vector<Ref<EditorResourceConversionPlugin>> resource_conversion_plugins;
@@ -715,9 +712,6 @@ public:
 	EditorPluginList *get_editor_plugins_over() { return editor_plugins_over; }
 	EditorPluginList *get_editor_plugins_force_over() { return editor_plugins_force_over; }
 	EditorPluginList *get_editor_plugins_force_input_forwarding() { return editor_plugins_force_input_forwarding; }
-	EditorInspector *get_inspector() { return inspector_dock->get_inspector(); }
-	Container *get_inspector_dock_addon_area() { return inspector_dock->get_addon_area(); }
-	ScriptCreateDialog *get_script_create_dialog() { return scene_tree_dock->get_script_create_dialog(); }
 
 	ProjectSettingsEditor *get_project_settings() { return project_settings; }
 
@@ -741,8 +735,7 @@ public:
 	bool is_addon_plugin_enabled(const String &p_addon) const;
 
 	void edit_node(Node *p_node);
-	void edit_resource(const Ref<Resource> &p_resource) { inspector_dock->edit_resource(p_resource); };
-	void open_resource(const String &p_type) { inspector_dock->open_resource(p_type); };
+	void edit_resource(const Ref<Resource> &p_resource) { InspectorDock::get_singleton()->edit_resource(p_resource); };
 
 	void save_resource_in_path(const Ref<Resource> &p_resource, const String &p_path);
 	void save_resource(const Ref<Resource> &p_resource);
@@ -773,10 +766,9 @@ public:
 
 	Node *get_edited_scene() { return editor_data.get_edited_scene_root(); }
 
-	SubViewport *get_scene_root() { return scene_root; } //root of the scene being edited
+	SubViewport *get_scene_root() { return scene_root; } // root of the scene being edited
 
 	void fix_dependencies(const String &p_for_file);
-	void clear_scene() { _cleanup_scene(); }
 	int new_scene();
 	Error load_scene(const String &p_scene, bool p_ignore_broken_deps = false, bool p_set_inherited = false, bool p_clear_errors = true, bool p_force_open_imported = false, bool p_silent_change_tab = false);
 	Error load_resource(const String &p_resource, bool p_ignore_broken_deps = false);
@@ -794,10 +786,6 @@ public:
 
 	void request_instance_scene(const String &p_path);
 	void request_instantiate_scenes(const Vector<String> &p_files);
-	FileSystemDock *get_filesystem_dock();
-	ImportDock *get_import_dock();
-	SceneTreeDock *get_scene_tree_dock();
-	InspectorDock *get_inspector_dock();
 	static UndoRedo *get_undo_redo() { return &singleton->editor_data.get_undo_redo(); }
 
 	EditorSelection *get_editor_selection() { return editor_selection; }
@@ -849,8 +837,6 @@ public:
 
 	bool is_scene_in_use(const String &p_path);
 
-	void scan_import_changes();
-
 	void save_layout();
 
 	void open_export_template_manager();
@@ -885,14 +871,12 @@ public:
 
 	void edit_current() { _edit_current(); };
 
-	void update_keying() const { inspector_dock->update_keying(); };
 	bool has_scenes_in_session();
 
 	int execute_and_show_output(const String &p_title, const String &p_path, const List<String> &p_arguments, bool p_close_on_ok = true, bool p_close_on_errors = false);
 
 	EditorNode();
 	~EditorNode();
-	void get_singleton(const char *arg1, bool arg2);
 
 	void add_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
 	void remove_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,7 +60,7 @@ private:
 	AmbientMode ambient_mode = AMBIENT_ENVIRONMENT;
 	Color ambient_color = Color(0, 0, 0);
 	float ambient_color_energy = 1.0;
-	float lod_threshold = 1.0;
+	float mesh_lod_threshold = 1.0;
 
 	uint32_t cull_mask = (1 << 20) - 1;
 	UpdateMode update_mode = UPDATE_ONCE;
@@ -88,8 +88,8 @@ public:
 	void set_max_distance(float p_distance);
 	float get_max_distance() const;
 
-	void set_lod_threshold(float p_pixels);
-	float get_lod_threshold() const;
+	void set_mesh_lod_threshold(float p_pixels);
+	float get_mesh_lod_threshold() const;
 
 	void set_extents(const Vector3 &p_extents);
 	Vector3 get_extents() const;

@@ -8,34 +8,34 @@
 		For more information, read the "Matrices and transforms" documentation article.
 	</description>
 	<tutorials>
-		<link title="Math documentation index">https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
-		<link title="Matrices and transforms">https://docs.godotengine.org/en/latest/tutorials/math/matrices_and_transforms.html</link>
+		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
+		<link title="Matrices and transforms">$DOCS_URL/tutorials/math/matrices_and_transforms.html</link>
 		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/584</link>
 		<link title="2.5D Demo">https://godotengine.org/asset-library/asset/583</link>
 	</tutorials>
-	<methods>
-		<method name="Transform2D" qualifiers="constructor">
+	<constructors>
+		<constructor name="Transform2D">
 			<return type="Transform2D" />
 			<description>
 				Constructs a default-initialized [Transform2D] set to [constant IDENTITY].
 			</description>
-		</method>
-		<method name="Transform2D" qualifiers="constructor">
+		</constructor>
+		<constructor name="Transform2D">
 			<return type="Transform2D" />
 			<argument index="0" name="from" type="Transform2D" />
 			<description>
 				Constructs a [Transform2D] as a copy of the given [Transform2D].
 			</description>
-		</method>
-		<method name="Transform2D" qualifiers="constructor">
+		</constructor>
+		<constructor name="Transform2D">
 			<return type="Transform2D" />
 			<argument index="0" name="rotation" type="float" />
 			<argument index="1" name="position" type="Vector2" />
 			<description>
 				Constructs the transform from a given angle (in radians) and position.
 			</description>
-		</method>
-		<method name="Transform2D" qualifiers="constructor">
+		</constructor>
+		<constructor name="Transform2D">
 			<return type="Transform2D" />
 			<argument index="0" name="rotation" type="float" />
 			<argument index="1" name="scale" type="Vector2" />
@@ -44,8 +44,8 @@
 			<description>
 				Constructs the transform from a given angle (in radians), scale, skew (in radians) and position.
 			</description>
-		</method>
-		<method name="Transform2D" qualifiers="constructor">
+		</constructor>
+		<constructor name="Transform2D">
 			<return type="Transform2D" />
 			<argument index="0" name="x_axis" type="Vector2" />
 			<argument index="1" name="y_axis" type="Vector2" />
@@ -53,7 +53,9 @@
 			<description>
 				Constructs the transform from 3 [Vector2] values representing [member x], [member y], and the [member origin] (the three column vectors).
 			</description>
-		</method>
+		</constructor>
+	</constructors>
+	<methods>
 		<method name="affine_inverse" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
@@ -129,72 +131,6 @@
 				Operations take place in global space.
 			</description>
 		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Transform2D" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="PackedVector2Array" />
-			<argument index="0" name="right" type="PackedVector2Array" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Transform2D" />
-			<argument index="0" name="right" type="Transform2D" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Rect2" />
-			<argument index="0" name="right" type="Rect2" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Vector2" />
-			<argument index="0" name="right" type="Vector2" />
-			<description>
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Transform2D" />
-			<argument index="0" name="right" type="float" />
-			<description>
-				This operator multiplies all components of the [Transform2D], including the origin vector, which scales it uniformly.
-			</description>
-		</method>
-		<method name="operator *" qualifiers="operator">
-			<return type="Transform2D" />
-			<argument index="0" name="right" type="int" />
-			<description>
-				This operator multiplies all components of the [Transform2D], including the origin vector, which scales it uniformly.
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Transform2D" />
-			<description>
-			</description>
-		</method>
-		<method name="operator []" qualifiers="operator">
-			<return type="Vector2" />
-			<argument index="0" name="index" type="int" />
-			<description>
-			</description>
-		</method>
 		<method name="orthonormalized" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
@@ -267,4 +203,81 @@
 			The [Transform2D] that will flip something along the Y axis.
 		</constant>
 	</constants>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="Transform2D" />
+			<description>
+				Returns [code]true[/code] if the transforms are not equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="PackedVector2Array" />
+			<argument index="0" name="right" type="PackedVector2Array" />
+			<description>
+				Transforms (multiplies) each element of the [Vector2] array by the given [Transform2D] matrix.
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Rect2" />
+			<argument index="0" name="right" type="Rect2" />
+			<description>
+				Transforms (multiplies) the [Rect2] by the given [Transform2D] matrix.
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Transform2D" />
+			<argument index="0" name="right" type="Transform2D" />
+			<description>
+				Composes these two transformation matrices by multiplying them together. This has the effect of transforming the second transform (the child) by the first transform (the parent).
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector2" />
+			<argument index="0" name="right" type="Vector2" />
+			<description>
+				Transforms (multiplies) the [Vector2] by the given [Transform2D] matrix.
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Transform2D" />
+			<argument index="0" name="right" type="float" />
+			<description>
+				This operator multiplies all components of the [Transform2D], including the origin vector, which scales it uniformly.
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Transform2D" />
+			<argument index="0" name="right" type="int" />
+			<description>
+				This operator multiplies all components of the [Transform2D], including the origin vector, which scales it uniformly.
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="Transform2D" />
+			<description>
+				Returns [code]true[/code] if the transforms are exactly equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="Vector2" />
+			<argument index="0" name="index" type="int" />
+			<description>
+				Access transform components using their index. [code]t[0][/code] is equivalent to [code]t.x[/code], [code]t[1][/code] is equivalent to [code]t.y[/code], and [code]t[2][/code] is equivalent to [code]t.origin[/code].
+			</description>
+		</operator>
+	</operators>
 </class>

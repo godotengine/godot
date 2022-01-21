@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -69,11 +69,6 @@ class SceneState : public RefCounted {
 		Vector<int> groups;
 	};
 
-	struct PackState {
-		Ref<SceneState> state;
-		int node = -1;
-	};
-
 	Vector<NodeData> nodes;
 
 	struct ConnectionData {
@@ -82,6 +77,7 @@ class SceneState : public RefCounted {
 		int signal = 0;
 		int method = 0;
 		int flags = 0;
+		int unbinds = 0;
 		Vector<int> binds;
 	};
 
@@ -93,8 +89,6 @@ class SceneState : public RefCounted {
 	String path;
 
 	uint64_t last_modified_time = 0;
-
-	_FORCE_INLINE_ Ref<SceneState> _get_base_scene_state() const;
 
 	static bool disable_placeholders;
 
@@ -117,6 +111,12 @@ public:
 		GEN_EDIT_STATE_DISABLED,
 		GEN_EDIT_STATE_INSTANCE,
 		GEN_EDIT_STATE_MAIN,
+		GEN_EDIT_STATE_MAIN_INHERITED,
+	};
+
+	struct PackState {
+		Ref<SceneState> state;
+		int node = -1;
 	};
 
 	static void set_disable_placeholders(bool p_disable);
@@ -138,6 +138,8 @@ public:
 
 	bool can_instantiate() const;
 	Node *instantiate(GenEditState p_edit_state) const;
+
+	Ref<SceneState> get_base_scene_state() const;
 
 	//unbuild API
 
@@ -162,6 +164,7 @@ public:
 	NodePath get_connection_target(int p_idx) const;
 	StringName get_connection_method(int p_idx) const;
 	int get_connection_flags(int p_idx) const;
+	int get_connection_unbinds(int p_idx) const;
 	Array get_connection_binds(int p_idx) const;
 
 	bool has_connection(const NodePath &p_node_from, const StringName &p_signal, const NodePath &p_node_to, const StringName &p_method);
@@ -177,7 +180,7 @@ public:
 	void add_node_property(int p_node, int p_name, int p_value);
 	void add_node_group(int p_node, int p_group);
 	void set_base_scene(int p_idx);
-	void add_connection(int p_from, int p_to, int p_signal, int p_method, int p_flags, const Vector<int> &p_binds);
+	void add_connection(int p_from, int p_to, int p_signal, int p_method, int p_flags, int p_unbinds, const Vector<int> &p_binds);
 	void add_editable_instance(const NodePath &p_path);
 
 	virtual void set_last_modified_time(uint64_t p_time) { last_modified_time = p_time; }
@@ -207,6 +210,7 @@ public:
 		GEN_EDIT_STATE_DISABLED,
 		GEN_EDIT_STATE_INSTANCE,
 		GEN_EDIT_STATE_MAIN,
+		GEN_EDIT_STATE_MAIN_INHERITED,
 	};
 
 	Error pack(Node *p_scene);

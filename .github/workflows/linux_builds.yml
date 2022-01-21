@@ -18,23 +18,27 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Editor (target=release_debug, tools=yes, tests=yes)
-            cache-name: linux-editor
+          - name: Editor w/ Mono (target=release_debug, tools=yes, tests=yes)
+            cache-name: linux-editor-mono
             target: release_debug
             tools: true
-            tests: true
+            tests: false # Disabled due freeze caused by mix Mono build and CI
+            sconsflags: module_mono_enabled=yes mono_glue=no
             doc-test: true
-            bin: "./bin/godot.linuxbsd.opt.tools.64"
+            bin: "./bin/godot.linuxbsd.opt.tools.64.mono"
+            build-mono: true
             artifact: true
 
-          - name: Editor and sanitizers (target=debug, tools=yes, tests=yes, use_asan=yes, use_ubsan=yes)
-            cache-name: linux-editor-sanitizers
+          - name: Editor with doubles and sanitizers (target=debug, tools=yes, float=64, tests=yes, use_asan=yes, use_ubsan=yes)
+            cache-name: linux-editor-double-sanitizers
             target: debug
             tools: true
             tests: true
-            sconsflags: use_asan=yes use_ubsan=yes
+            sconsflags: float=64 use_asan=yes use_ubsan=yes
             proj-test: true
-            bin: "./bin/godot.linuxbsd.tools.64s"
+            godot-cpp-test: true
+            bin: "./bin/godot.linuxbsd.double.tools.64.san"
+            build-mono: false
             # Skip 2GiB artifact speeding up action.
             artifact: false
 
@@ -44,6 +48,15 @@ jobs:
             tools: false
             tests: false
             sconsflags: module_mono_enabled=yes mono_glue=no debug_symbols=no
+            build-mono: false
+            artifact: true
+
+          - name: Minimal Template (target=release, tools=no, everything disabled)
+            cache-name: linux-template-minimal
+            target: release
+            tools: false
+            tests: false
+            sconsflags: modules_enabled_by_default=no disable_3d=yes disable_advanced_gui=yes deprecated=no minizip=no
             artifact: true
 
     steps:
@@ -79,21 +92,26 @@ jobs:
           tools: ${{ matrix.tools }}
           tests: ${{ matrix.tests }}
 
+      - name: Generate Mono glue
+        if: ${{ matrix.build-mono }}
+        run: |
+          ${{ matrix.bin }} --headless --generate-mono-glue modules/mono/glue || true
+
+      # Rebuild with mono
+      - name: Compilation (mono_glue=yes)
+        uses: ./.github/actions/godot-build
+        if: ${{ matrix.build-mono }}
+        with:
+          sconsflags: ${{ env.SCONSFLAGS }} ${{ matrix.sconsflags }} mono_glue=yes
+          platform: linuxbsd
+          target: ${{ matrix.target }}
+          tools: ${{ matrix.tools }}
+
       # Execute unit tests for the editor
       - name: Unit tests
         if: ${{ matrix.tests }}
         run: |
-          ${{ matrix.bin }} --test
-
-      # Download, unzip and setup SwiftShader library [4466040]
-      - name: Download SwiftShader
-        if: ${{ matrix.tests }}
-        run: |
-          wget https://github.com/qarmin/gtk_library_store/releases/download/3.24.0/swiftshader2.zip
-          unzip swiftshader2.zip
-          rm swiftshader2.zip
-          curr="$(pwd)/libvk_swiftshader.so"
-          sed -i "s|PATH_TO_CHANGE|$curr|" vk_swiftshader_icd.json
+          ${{ matrix.bin }} --test --headless
 
       # Check class reference
       - name: Check for class reference updates
@@ -101,16 +119,26 @@ jobs:
         run: |
           echo "Running --doctool to see if this changes the public API without updating the documentation."
           echo -e "If a diff is shown, it means that your code/doc changes are incomplete and you should update the class reference with --doctool.\n\n"
-          VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run ${{ matrix.bin }} --doctool . 2>&1 > /dev/null || true
+          ${{ matrix.bin }} --doctool --headless 2>&1 > /dev/null || true
           git diff --color --exit-code && ! git ls-files --others --exclude-standard | sed -e 's/^/New doc file missing in PR: /' | grep 'xml$'
+
+      # Download, unzip and setup SwiftShader library
+      # See https://github.com/godotengine/regression-test-project/releases/tag/_ci-deps for details
+      - name: Download SwiftShader
+        if: ${{ matrix.tests }}
+        run: |
+          wget https://github.com/godotengine/regression-test-project/releases/download/_ci-deps/swiftshader-ubuntu20.04-20211002.zip
+          unzip swiftshader-ubuntu20.04-20211002.zip
+          curr="$(pwd)/libvk_swiftshader.so"
+          sed -i "s|PATH_TO_CHANGE|$curr|" vk_swiftshader_icd.json
 
       # Download and extract zip archive with project, folder is renamed to be able to easy change used project
       - name: Download test project
         if: ${{ matrix.proj-test }}
         run: |
-          wget https://github.com/qarmin/RegressionTestProject/archive/4.0.zip
+          wget https://github.com/godotengine/regression-test-project/archive/4.0.zip
           unzip 4.0.zip
-          mv "RegressionTestProject-4.0" "test_project"
+          mv "regression-test-project-4.0" "test_project"
 
       # Editor is quite complicated piece of software, so it is easy to introduce bug here
       - name: Open and close editor
@@ -125,6 +153,46 @@ jobs:
         run: |
           VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run ${{ matrix.bin }} 40 --audio-driver Dummy --path test_project 2>&1 | tee sanitizers_log.txt || true
           misc/scripts/check_ci_log.py sanitizers_log.txt
+
+      # Checkout godot-cpp
+      - name: Checkout godot-cpp
+        if: ${{ matrix.godot-cpp-test }}
+        uses: actions/checkout@v2
+        with:
+          repository: godotengine/godot-cpp
+          submodules: 'recursive'
+          path: 'godot-cpp'
+
+      # Check extension API
+      - name: Check for extension api updates
+        if: ${{ matrix.godot-cpp-test }}
+        run: |
+          echo "Running --dump-extension-api to create extensions api."
+          VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run ${{ matrix.bin }} --audio-driver Dummy --dump-extension-api 2>&1 > /dev/null || true
+          misc/scripts/compare_extension_api.py godot-cpp/godot-headers/extension_api.json extension_api.json
+
+      # Copy new extension API files into place
+      - name: Copy new extension API files into place
+        if: ${{ matrix.godot-cpp-test }}
+        run: |
+          cp -f extension_api.json godot-cpp/godot-headers/
+          cp -f core/extension/gdnative_interface.h godot-cpp/godot-headers/godot/
+
+      # Build godot-cpp library
+      - name: Build godot-cpp library
+        if: ${{ matrix.godot-cpp-test }}
+        run: |
+          cd godot-cpp
+          scons target=${{ matrix.target }} generate_bindings=yes -j2
+          cd ..
+
+      # Build godot-cpp test extension
+      - name: Build godot-cpp test extension
+        if: ${{ matrix.godot-cpp-test }}
+        run: |
+          cd godot-cpp/test
+          scons target=${{ matrix.target }} -j2
+          cd ../..
 
       - name: Prepare artifact
         if: ${{ matrix.artifact }}

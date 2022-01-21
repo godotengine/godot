@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,7 @@ void TextServerManager::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("find_interface", "name"), &TextServerManager::find_interface);
 
 	ClassDB::bind_method(D_METHOD("set_primary_interface", "index"), &TextServerManager::set_primary_interface);
-	ClassDB::bind_method(D_METHOD("get_primary_interface"), &TextServerManager::_get_primary_interface);
+	ClassDB::bind_method(D_METHOD("get_primary_interface"), &TextServerManager::get_primary_interface);
 
 	ADD_SIGNAL(MethodInfo("interface_added", PropertyInfo(Variant::STRING_NAME, "interface_name")));
 	ADD_SIGNAL(MethodInfo("interface_removed", PropertyInfo(Variant::STRING_NAME, "interface_name")));
@@ -78,7 +78,7 @@ void TextServerManager::remove_interface(const Ref<TextServer> &p_interface) {
 	ERR_FAIL_COND(idx == -1);
 	print_verbose("TextServer: Removed interface \"" + p_interface->get_name() + "\"");
 	emit_signal(SNAME("interface_removed"), p_interface->get_name());
-	interfaces.remove(idx);
+	interfaces.remove_at(idx);
 }
 
 int TextServerManager::get_interface_count() const {
@@ -118,10 +118,6 @@ Array TextServerManager::get_interfaces() const {
 	return ret;
 }
 
-Ref<TextServer> TextServerManager::_get_primary_interface() const {
-	return primary_interface;
-}
-
 void TextServerManager::set_primary_interface(const Ref<TextServer> &p_primary_interface) {
 	if (p_primary_interface.is_null()) {
 		print_verbose("TextServer: Clearing primary interface");
@@ -145,7 +141,7 @@ TextServerManager::~TextServerManager() {
 		primary_interface.unref();
 	}
 	while (interfaces.size() > 0) {
-		interfaces.remove(0);
+		interfaces.remove_at(0);
 	}
 	singleton = nullptr;
 }
@@ -211,6 +207,15 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_font"), &TextServer::create_font);
 
 	ClassDB::bind_method(D_METHOD("font_set_data", "font_rid", "data"), &TextServer::font_set_data);
+
+	ClassDB::bind_method(D_METHOD("font_set_style", "font_rid", "style"), &TextServer::font_set_style);
+	ClassDB::bind_method(D_METHOD("font_get_style", "font_rid"), &TextServer::font_get_style);
+
+	ClassDB::bind_method(D_METHOD("font_set_name", "font_rid", "name"), &TextServer::font_set_name);
+	ClassDB::bind_method(D_METHOD("font_get_name", "font_rid"), &TextServer::font_get_name);
+
+	ClassDB::bind_method(D_METHOD("font_set_style_name", "font_rid", "name"), &TextServer::font_set_style_name);
+	ClassDB::bind_method(D_METHOD("font_get_style_name", "font_rid"), &TextServer::font_get_style_name);
 
 	ClassDB::bind_method(D_METHOD("font_set_antialiased", "font_rid", "antialiased"), &TextServer::font_set_antialiased);
 	ClassDB::bind_method(D_METHOD("font_is_antialiased", "font_rid"), &TextServer::font_is_antialiased);
@@ -322,6 +327,9 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_remove_script_support_override", "font_rid", "script"), &TextServer::font_remove_script_support_override);
 	ClassDB::bind_method(D_METHOD("font_get_script_support_overrides", "font_rid"), &TextServer::font_get_script_support_overrides);
 
+	ClassDB::bind_method(D_METHOD("font_set_opentype_feature_overrides", "font_rid", "overrides"), &TextServer::font_set_opentype_feature_overrides);
+	ClassDB::bind_method(D_METHOD("font_get_opentype_feature_overrides", "font_rid"), &TextServer::font_get_opentype_feature_overrides);
+
 	ClassDB::bind_method(D_METHOD("font_supported_feature_list", "font_rid"), &TextServer::font_supported_feature_list);
 	ClassDB::bind_method(D_METHOD("font_supported_variation_list", "font_rid"), &TextServer::font_supported_variation_list);
 
@@ -339,8 +347,12 @@ void TextServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("shaped_text_set_direction", "shaped", "direction"), &TextServer::shaped_text_set_direction, DEFVAL(DIRECTION_AUTO));
 	ClassDB::bind_method(D_METHOD("shaped_text_get_direction", "shaped"), &TextServer::shaped_text_get_direction);
+	ClassDB::bind_method(D_METHOD("shaped_text_get_inferred_direction", "shaped"), &TextServer::shaped_text_get_inferred_direction);
 
 	ClassDB::bind_method(D_METHOD("shaped_text_set_bidi_override", "shaped", "override"), &TextServer::shaped_text_set_bidi_override);
+
+	ClassDB::bind_method(D_METHOD("shaped_text_set_custom_punctuation", "shaped", "punct"), &TextServer::shaped_text_set_custom_punctuation);
+	ClassDB::bind_method(D_METHOD("shaped_text_get_custom_punctuation", "shaped"), &TextServer::shaped_text_get_custom_punctuation);
 
 	ClassDB::bind_method(D_METHOD("shaped_text_set_orientation", "shaped", "orientation"), &TextServer::shaped_text_set_orientation, DEFVAL(ORIENTATION_HORIZONTAL));
 	ClassDB::bind_method(D_METHOD("shaped_text_get_orientation", "shaped"), &TextServer::shaped_text_get_orientation);
@@ -352,8 +364,8 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_text_get_preserve_control", "shaped"), &TextServer::shaped_text_get_preserve_control);
 
 	ClassDB::bind_method(D_METHOD("shaped_text_add_string", "shaped", "text", "fonts", "size", "opentype_features", "language"), &TextServer::shaped_text_add_string, DEFVAL(Dictionary()), DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("shaped_text_add_object", "shaped", "key", "size", "inline_align", "length"), &TextServer::shaped_text_add_object, DEFVAL(INLINE_ALIGN_CENTER), DEFVAL(1));
-	ClassDB::bind_method(D_METHOD("shaped_text_resize_object", "shaped", "key", "size", "inline_align"), &TextServer::shaped_text_resize_object, DEFVAL(INLINE_ALIGN_CENTER));
+	ClassDB::bind_method(D_METHOD("shaped_text_add_object", "shaped", "key", "size", "inline_align", "length"), &TextServer::shaped_text_add_object, DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("shaped_text_resize_object", "shaped", "key", "size", "inline_align"), &TextServer::shaped_text_resize_object, DEFVAL(INLINE_ALIGNMENT_CENTER));
 
 	ClassDB::bind_method(D_METHOD("shaped_text_substr", "shaped", "start", "length"), &TextServer::shaped_text_substr);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_parent", "shaped"), &TextServer::shaped_text_get_parent);
@@ -395,6 +407,7 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_text_hit_test_grapheme", "shaped", "coords"), &TextServer::shaped_text_hit_test_grapheme);
 	ClassDB::bind_method(D_METHOD("shaped_text_hit_test_position", "shaped", "coords"), &TextServer::shaped_text_hit_test_position);
 
+	ClassDB::bind_method(D_METHOD("shaped_text_get_grapheme_bounds", "shaped", "pos"), &TextServer::shaped_text_get_grapheme_bounds);
 	ClassDB::bind_method(D_METHOD("shaped_text_next_grapheme_pos", "shaped", "pos"), &TextServer::shaped_text_next_grapheme_pos);
 	ClassDB::bind_method(D_METHOD("shaped_text_prev_grapheme_pos", "shaped", "pos"), &TextServer::shaped_text_prev_grapheme_pos);
 
@@ -406,6 +419,11 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("format_number", "number", "language"), &TextServer::format_number, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("parse_number", "number", "language"), &TextServer::parse_number, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("percent_sign", "language"), &TextServer::percent_sign, DEFVAL(""));
+
+	ClassDB::bind_method(D_METHOD("strip_diacritics", "string"), &TextServer::strip_diacritics);
+
+	ClassDB::bind_method(D_METHOD("string_to_upper", "string", "language"), &TextServer::string_to_upper, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("string_to_lower", "string", "language"), &TextServer::string_to_lower, DEFVAL(""));
 
 	/* Direction */
 	BIND_ENUM_CONSTANT(DIRECTION_AUTO);
@@ -465,6 +483,7 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_BREAK_ITERATORS);
 	BIND_ENUM_CONSTANT(FEATURE_FONT_SYSTEM);
 	BIND_ENUM_CONSTANT(FEATURE_FONT_VARIABLE);
+	BIND_ENUM_CONSTANT(FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION);
 	BIND_ENUM_CONSTANT(FEATURE_USE_SUPPORT_DATA);
 
 	/* FT Contour Point Types */
@@ -472,17 +491,22 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONTOUR_CURVE_TAG_OFF_CONIC);
 	BIND_ENUM_CONSTANT(CONTOUR_CURVE_TAG_OFF_CUBIC);
 
-	/* Font Spacing*/
+	/* Font Spacing */
 	BIND_ENUM_CONSTANT(SPACING_GLYPH);
 	BIND_ENUM_CONSTANT(SPACING_SPACE);
 	BIND_ENUM_CONSTANT(SPACING_TOP);
 	BIND_ENUM_CONSTANT(SPACING_BOTTOM);
+
+	/* Font Style */
+	BIND_ENUM_CONSTANT(FONT_BOLD);
+	BIND_ENUM_CONSTANT(FONT_ITALIC);
+	BIND_ENUM_CONSTANT(FONT_FIXED_WIDTH);
 }
 
 Vector2 TextServer::get_hex_code_box_size(int p_size, char32_t p_index) const {
 	int w = ((p_index <= 0xFF) ? 1 : ((p_index <= 0xFFFF) ? 2 : 3));
 	int sp = MAX(0, w - 1);
-	int sz = MAX(1, p_size / 15);
+	int sz = MAX(1, Math::round(p_size / 15.f));
 
 	return Vector2(4 + 3 * w + sp + 1, 15) * sz;
 }
@@ -520,7 +544,7 @@ void TextServer::draw_hex_code_box(RID p_canvas, int p_size, const Vector2 &p_po
 
 	int w = ((p_index <= 0xFF) ? 1 : ((p_index <= 0xFFFF) ? 2 : 3));
 	int sp = MAX(0, w - 1);
-	int sz = MAX(1, p_size / 15);
+	int sz = MAX(1, Math::round(p_size / 15.f));
 
 	Size2 size = Vector2(4 + 3 * w + sp, 15) * sz;
 	Point2 pos = p_pos - Point2i(0, size.y * 0.85);
@@ -633,13 +657,13 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(RID p_shaped, const
 	return lines;
 }
 
-PackedInt32Array TextServer::shaped_text_get_line_breaks(RID p_shaped, real_t p_width, int p_start, uint16_t /*TextBreakFlag*/ p_break_flags) const {
+PackedInt32Array TextServer::shaped_text_get_line_breaks(RID p_shaped, float p_width, int p_start, uint16_t /*TextBreakFlag*/ p_break_flags) const {
 	PackedInt32Array lines;
 
 	const_cast<TextServer *>(this)->shaped_text_update_breaks(p_shaped);
 	const Vector2i &range = shaped_text_get_range(p_shaped);
 
-	real_t width = 0.f;
+	float width = 0.f;
 	int line_start = MAX(p_start, range.x);
 	int last_safe_break = -1;
 	int word_count = 0;
@@ -973,9 +997,9 @@ Vector<Vector2> TextServer::shaped_text_get_selection(RID p_shaped, int p_start,
 						}
 						real_t char_adv = advance / (real_t)(glyphs[i].end - glyphs[i].start);
 						if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
-							ranges.push_back(Vector2(off, off + char_adv * (start - glyphs[i].start)));
+							ranges.push_back(Vector2(off, off + char_adv * (glyphs[i].end - start)));
 						} else {
-							ranges.push_back(Vector2(off + char_adv * (glyphs[i].end - start), off + advance));
+							ranges.push_back(Vector2(off + char_adv * (start - glyphs[i].start), off + advance));
 						}
 					}
 					// Selection range is within grapheme.
@@ -1008,7 +1032,7 @@ Vector<Vector2> TextServer::shaped_text_get_selection(RID p_shaped, int p_start,
 		while (j < ranges.size()) {
 			if (Math::is_equal_approx(ranges[i].y, ranges[j].x, (real_t)UNIT_EPSILON)) {
 				ranges.write[i].y = ranges[j].y;
-				ranges.remove(j);
+				ranges.remove_at(j);
 				continue;
 			}
 			j++;
@@ -1019,9 +1043,9 @@ Vector<Vector2> TextServer::shaped_text_get_selection(RID p_shaped, int p_start,
 	return ranges;
 }
 
-int TextServer::shaped_text_hit_test_grapheme(RID p_shaped, real_t p_coords) const {
+int TextServer::shaped_text_hit_test_grapheme(RID p_shaped, float p_coords) const {
 	// Exact grapheme hit test, return -1 if missed.
-	real_t off = 0.0f;
+	float off = 0.0f;
 
 	int v_size = shaped_text_get_glyph_count(p_shaped);
 	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
@@ -1037,7 +1061,7 @@ int TextServer::shaped_text_hit_test_grapheme(RID p_shaped, real_t p_coords) con
 	return -1;
 }
 
-int TextServer::shaped_text_hit_test_position(RID p_shaped, real_t p_coords) const {
+int TextServer::shaped_text_hit_test_position(RID p_shaped, float p_coords) const {
 	int v_size = shaped_text_get_glyph_count(p_shaped);
 	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
 
@@ -1083,6 +1107,31 @@ int TextServer::shaped_text_hit_test_position(RID p_shaped, real_t p_coords) con
 					return glyphs[i].start;
 				}
 			}
+			// Ligature, handle mid-grapheme hit.
+			if (p_coords >= off && p_coords < off + advance && glyphs[i].end > glyphs[i].start + 1) {
+				int cnt = glyphs[i].end - glyphs[i].start;
+				real_t char_adv = advance / (real_t)(cnt);
+				real_t sub_off = off;
+				for (int j = 0; j < cnt; j++) {
+					// Place caret to the left of clicked sub-grapheme.
+					if (p_coords >= sub_off && p_coords < sub_off + char_adv / 2) {
+						if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
+							return glyphs[i].end - j;
+						} else {
+							return glyphs[i].start + j;
+						}
+					}
+					// Place caret to the right of clicked sub-grapheme.
+					if (p_coords >= sub_off + char_adv / 2 && p_coords < sub_off + char_adv) {
+						if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
+							return glyphs[i].start + (cnt - 1) - j;
+						} else {
+							return glyphs[i].end - (cnt - 1) + j;
+						}
+					}
+					sub_off += char_adv;
+				}
+			}
 			// Place caret to the left of clicked grapheme.
 			if (p_coords >= off && p_coords < off + advance / 2) {
 				if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
@@ -1103,6 +1152,27 @@ int TextServer::shaped_text_hit_test_position(RID p_shaped, real_t p_coords) con
 		off += glyphs[i].advance * glyphs[i].repeat;
 	}
 	return 0;
+}
+
+Vector2 TextServer::shaped_text_get_grapheme_bounds(RID p_shaped, int p_pos) const {
+	int v_size = shaped_text_get_glyph_count(p_shaped);
+	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
+
+	real_t off = 0.0f;
+	for (int i = 0; i < v_size; i++) {
+		if ((glyphs[i].count > 0) && ((glyphs[i].index != 0) || ((glyphs[i].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE))) {
+			if (glyphs[i].start <= p_pos && glyphs[i].end >= p_pos) {
+				real_t advance = 0.f;
+				for (int j = 0; j < glyphs[i].count; j++) {
+					advance += glyphs[i + j].advance;
+				}
+				return Vector2(off, off + advance);
+			}
+		}
+		off += glyphs[i].advance * glyphs[i].repeat;
+	}
+
+	return Vector2();
 }
 
 int TextServer::shaped_text_next_grapheme_pos(RID p_shaped, int p_pos) const {
@@ -1128,7 +1198,7 @@ int TextServer::shaped_text_prev_grapheme_pos(RID p_shaped, int p_pos) const {
 	return p_pos;
 }
 
-void TextServer::shaped_text_draw(RID p_shaped, RID p_canvas, const Vector2 &p_pos, real_t p_clip_l, real_t p_clip_r, const Color &p_color) const {
+void TextServer::shaped_text_draw(RID p_shaped, RID p_canvas, const Vector2 &p_pos, float p_clip_l, float p_clip_r, const Color &p_color) const {
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
 	bool hex_codes = shaped_text_get_preserve_control(p_shaped) || shaped_text_get_preserve_invalid(p_shaped);
 
@@ -1159,6 +1229,17 @@ void TextServer::shaped_text_draw(RID p_shaped, RID p_canvas, const Vector2 &p_p
 	}
 	// Draw at the baseline.
 	for (int i = 0; i < v_size; i++) {
+		if (trim_pos >= 0) {
+			if (rtl) {
+				if (i < trim_pos) {
+					continue;
+				}
+			} else {
+				if (i >= trim_pos) {
+					break;
+				}
+			}
+		}
 		for (int j = 0; j < glyphs[i].repeat; j++) {
 			if (p_clip_r > 0) {
 				// Clip right / bottom.
@@ -1183,17 +1264,6 @@ void TextServer::shaped_text_draw(RID p_shaped, RID p_canvas, const Vector2 &p_p
 					if (ofs.y - p_pos.y < p_clip_l) {
 						ofs.y += glyphs[i].advance;
 						continue;
-					}
-				}
-			}
-			if (trim_pos >= 0) {
-				if (rtl) {
-					if (i < trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
-						continue;
-					}
-				} else {
-					if (i >= trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
-						break;
 					}
 				}
 			}
@@ -1225,10 +1295,10 @@ void TextServer::shaped_text_draw(RID p_shaped, RID p_canvas, const Vector2 &p_p
 	}
 }
 
-void TextServer::shaped_text_draw_outline(RID p_shaped, RID p_canvas, const Vector2 &p_pos, real_t p_clip_l, real_t p_clip_r, int p_outline_size, const Color &p_color) const {
+void TextServer::shaped_text_draw_outline(RID p_shaped, RID p_canvas, const Vector2 &p_pos, float p_clip_l, float p_clip_r, int p_outline_size, const Color &p_color) const {
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
 
-	bool rtl = (shaped_text_get_direction(p_shaped) == DIRECTION_RTL);
+	bool rtl = (shaped_text_get_inferred_direction(p_shaped) == DIRECTION_RTL);
 
 	int ellipsis_pos = shaped_text_get_ellipsis_pos(p_shaped);
 	int trim_pos = shaped_text_get_trim_pos(p_shaped);
@@ -1254,6 +1324,17 @@ void TextServer::shaped_text_draw_outline(RID p_shaped, RID p_canvas, const Vect
 	}
 	// Draw at the baseline.
 	for (int i = 0; i < v_size; i++) {
+		if (trim_pos >= 0) {
+			if (rtl) {
+				if (i < trim_pos) {
+					continue;
+				}
+			} else {
+				if (i >= trim_pos) {
+					break;
+				}
+			}
+		}
 		for (int j = 0; j < glyphs[i].repeat; j++) {
 			if (p_clip_r > 0) {
 				// Clip right / bottom.
@@ -1281,17 +1362,6 @@ void TextServer::shaped_text_draw_outline(RID p_shaped, RID p_canvas, const Vect
 					}
 				}
 			}
-			if (trim_pos >= 0) {
-				if (rtl) {
-					if (i < trim_pos) {
-						continue;
-					}
-				} else {
-					if (i >= trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
-						break;
-					}
-				}
-			}
 			if (glyphs[i].font_rid != RID()) {
 				font_draw_glyph_outline(glyphs[i].font_rid, p_canvas, glyphs[i].font_size, p_outline_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, p_color);
 			}
@@ -1315,6 +1385,134 @@ void TextServer::shaped_text_draw_outline(RID p_shaped, RID p_canvas, const Vect
 			}
 		}
 	}
+}
+
+void TextServer::_diacritics_map_add(const String &p_from, char32_t p_to) {
+	for (int i = 0; i < p_from.size(); i++) {
+		diacritics_map[p_from[i]] = p_to;
+	}
+}
+
+void TextServer::_init_diacritics_map() {
+	diacritics_map.clear();
+
+	// Latin.
+	_diacritics_map_add(U"ÀÁÂÃÄÅĀĂĄǍǞǠǺȀȂȦḀẠẢẤẦẨẪẬẮẰẲẴẶ", U'A');
+	_diacritics_map_add(U"àáâãäåāăąǎǟǡǻȁȃȧḁẚạảấầẩẫậắằẳẵặ", U'a');
+	_diacritics_map_add(U"ǢǼ", U'Æ');
+	_diacritics_map_add(U"ǣǽ", U'æ');
+	_diacritics_map_add(U"ḂḄḆ", U'B');
+	_diacritics_map_add(U"ḃḅḇ", U'b');
+	_diacritics_map_add(U"ÇĆĈĊČḈ", U'C');
+	_diacritics_map_add(U"çćĉċčḉ", U'c');
+	_diacritics_map_add(U"ĎḊḌḎḐḒ", U'D');
+	_diacritics_map_add(U"ďḋḍḏḑḓ", U'd');
+	_diacritics_map_add(U"ÈÉÊËĒĔĖĘĚȆȨḔḖḘḚḜẸẺẼẾỀỂỄỆ", U'E');
+	_diacritics_map_add(U"èéêëēĕėęěȇȩḕḗḙḛḝẹẻẽếềểễệ", U'e');
+	_diacritics_map_add(U"Ḟ", U'F');
+	_diacritics_map_add(U"ḟ", U'f');
+	_diacritics_map_add(U"ĜĞĠĢǦǴḠ", U'G');
+	_diacritics_map_add(U"ĝğġģǧǵḡ", U'g');
+	_diacritics_map_add(U"ĤȞḢḤḦḨḪ", U'H');
+	_diacritics_map_add(U"ĥȟḣḥḧḩḫẖ", U'h');
+	_diacritics_map_add(U"ÌÍÎÏĨĪĬĮİǏȈȊḬḮỈỊ", U'I');
+	_diacritics_map_add(U"ìíîïĩīĭįıǐȉȋḭḯỉị", U'i');
+	_diacritics_map_add(U"Ĵ", U'J');
+	_diacritics_map_add(U"ĵ", U'j');
+	_diacritics_map_add(U"ĶǨḰḲḴ", U'K');
+	_diacritics_map_add(U"ķĸǩḱḳḵ", U'k');
+	_diacritics_map_add(U"ĹĻĽĿḶḸḺḼ", U'L');
+	_diacritics_map_add(U"ĺļľŀḷḹḻḽ", U'l');
+	_diacritics_map_add(U"ḾṀṂ", U'M');
+	_diacritics_map_add(U"ḿṁṃ", U'm');
+	_diacritics_map_add(U"ÑŃŅŇǸṄṆṈṊ", U'N');
+	_diacritics_map_add(U"ñńņňŉǹṅṇṉṋ", U'n');
+	_diacritics_map_add(U"ÒÓÔÕÖŌŎŐƠǑǪǬȌȎȪȬȮȰṌṎṐṒỌỎỐỒỔỖỘỚỜỞỠỢ", U'O');
+	_diacritics_map_add(U"òóôõöōŏőơǒǫǭȍȏȫȭȯȱṍṏṑṓọỏốồổỗộớờởỡợ", U'o');
+	_diacritics_map_add(U"ṔṖ", U'P');
+	_diacritics_map_add(U"ṗṕ", U'p');
+	_diacritics_map_add(U"ŔŖŘȐȒṘṚṜṞ", U'R');
+	_diacritics_map_add(U"ŕŗřȑȓṙṛṝṟ", U'r');
+	_diacritics_map_add(U"ŚŜŞŠȘṠṢṤṦṨ", U'S');
+	_diacritics_map_add(U"śŝşšſșṡṣṥṧṩẛẜẝ", U's');
+	_diacritics_map_add(U"ŢŤȚṪṬṮṰ", U'T');
+	_diacritics_map_add(U"ţťțṫṭṯṱẗ", U't');
+	_diacritics_map_add(U"ÙÚÛÜŨŪŬŮŰŲƯǓǕǗǙǛȔȖṲṴṶṸṺỤỦỨỪỬỮỰ", U'U');
+	_diacritics_map_add(U"ùúûüũūŭůűųưǔǖǘǚǜȕȗṳṵṷṹṻụủứừửữự", U'u');
+	_diacritics_map_add(U"ṼṾ", U'V');
+	_diacritics_map_add(U"ṽṿ", U'v');
+	_diacritics_map_add(U"ŴẀẂẄẆẈ", U'W');
+	_diacritics_map_add(U"ŵẁẃẅẇẉẘ", U'w');
+	_diacritics_map_add(U"ẊẌ", U'X');
+	_diacritics_map_add(U"ẋẍ", U'x');
+	_diacritics_map_add(U"ÝŶẎỲỴỶỸỾ", U'Y');
+	_diacritics_map_add(U"ýÿŷẏẙỳỵỷỹỿ", U'y');
+	_diacritics_map_add(U"ŹŻŽẐẒẔ", U'Z');
+	_diacritics_map_add(U"źżžẑẓẕ", U'z');
+
+	// Greek.
+	_diacritics_map_add(U"ΆἈἉἊἋἌἍἎἏᾈᾉᾊᾋᾌᾍᾎᾏᾸᾹᾺΆᾼ", U'Α');
+	_diacritics_map_add(U"άἀἁἂἃἄἅἆἇὰάᾀᾁᾂᾃᾄᾅᾆᾇᾰᾱᾲᾳᾴᾶᾷ", U'α');
+	_diacritics_map_add(U"ΈἘἙἚἛἜἝῈΈ", U'Ε');
+	_diacritics_map_add(U"έἐἑἒἓἔἕὲέ", U'ε');
+	_diacritics_map_add(U"ΉἨἩἪἫἬἭἮἯᾘᾙᾚᾛᾜᾝᾞᾟῊΉῌ", U'Η');
+	_diacritics_map_add(U"ήἠἡἢἣἤἥἦἧὴήᾐᾑᾒᾓᾔᾕᾖᾗῂῃῄῆῇ", U'η');
+	_diacritics_map_add(U"ΊΪἸἹἺἻἼἽἾἿῘῙῚΊ", U'Ι');
+	_diacritics_map_add(U"ίΐϊἰἱἲἳἴἵἶἷὶίῐῑῒΐῖῗ", U'ι');
+	_diacritics_map_add(U"ΌὈὉὊὋὌὍῸΌ", U'Ο');
+	_diacritics_map_add(U"όὀὁὂὃὄὅὸό", U'ο');
+	_diacritics_map_add(U"Ῥ", U'Ρ');
+	_diacritics_map_add(U"ῤῥ", U'ρ');
+	_diacritics_map_add(U"ΎΫϓϔὙὛὝὟῨῩῪΎ", U'Υ');
+	_diacritics_map_add(U"ΰϋύὐὑὒὓὔὕὖὗὺύῠῡῢΰῦῧ", U'υ');
+	_diacritics_map_add(U"ΏὨὩὪὫὬὭὮὯᾨᾩᾪᾫᾬᾭᾮᾯῺΏῼ", U'Ω');
+	_diacritics_map_add(U"ώὠὡὢὣὤὥὦὧὼώᾠᾡᾢᾣᾤᾥᾦᾧῲῳῴῶῷ", U'ω');
+
+	// Cyrillic.
+	_diacritics_map_add(U"ӐӒ", U'А');
+	_diacritics_map_add(U"ӑӓ", U'а');
+	_diacritics_map_add(U"ЀЁӖ", U'Е');
+	_diacritics_map_add(U"ѐёӗ", U'е');
+	_diacritics_map_add(U"Ӛ", U'Ә');
+	_diacritics_map_add(U"ӛ", U'ә');
+	_diacritics_map_add(U"Ӝ", U'Ж');
+	_diacritics_map_add(U"ӝ", U'ж');
+	_diacritics_map_add(U"Ӟ", U'З');
+	_diacritics_map_add(U"ӟ", U'з');
+	_diacritics_map_add(U"Ѓ", U'Г');
+	_diacritics_map_add(U"ѓ", U'г');
+	_diacritics_map_add(U"Ї", U'І');
+	_diacritics_map_add(U"ї", U'і');
+	_diacritics_map_add(U"ЍӢӤЙ", U'И');
+	_diacritics_map_add(U"ѝӣӥй", U'и');
+	_diacritics_map_add(U"Ќ", U'К');
+	_diacritics_map_add(U"ќ", U'к');
+	_diacritics_map_add(U"Ӧ", U'О');
+	_diacritics_map_add(U"ӧ", U'о');
+	_diacritics_map_add(U"Ӫ", U'Ө');
+	_diacritics_map_add(U"ӫ", U'ө');
+	_diacritics_map_add(U"Ӭ", U'Э');
+	_diacritics_map_add(U"ӭ", U'э');
+	_diacritics_map_add(U"ЎӮӰӲ", U'У');
+	_diacritics_map_add(U"ўӯӱӳ", U'у');
+	_diacritics_map_add(U"Ӵ", U'Ч');
+	_diacritics_map_add(U"ӵ", U'ч');
+	_diacritics_map_add(U"Ӹ", U'Ы');
+	_diacritics_map_add(U"ӹ", U'ы');
+}
+
+String TextServer::strip_diacritics(const String &p_string) const {
+	String result;
+	for (int i = 0; i < p_string.length(); i++) {
+		if (p_string[i] < 0x02B0 || p_string[i] > 0x036F) { // Skip combining diacritics.
+			if (diacritics_map.has(p_string[i])) {
+				result += diacritics_map[p_string[i]];
+			} else {
+				result += p_string[i];
+			}
+		}
+	}
+	return result;
 }
 
 Array TextServer::_shaped_text_get_glyphs_wrapper(RID p_shaped) const {
@@ -1393,6 +1591,7 @@ Array TextServer::_shaped_text_get_ellipsis_glyphs_wrapper(RID p_shaped) const {
 }
 
 TextServer::TextServer() {
+	_init_diacritics_map();
 }
 
 TextServer::~TextServer() {

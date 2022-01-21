@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 
 #include "core/math/rect2.h" // also includes vector2, math_funcs, and ustring
 
-struct Transform2D {
+struct _NO_DISCARD_ Transform2D {
 	// Warning #1: basis of Transform2D is stored differently from Basis. In terms of elements array, the basis matrix looks like "on paper":
 	// M = (elements[0][0] elements[1][0])
 	//     (elements[0][1] elements[1][1])
@@ -164,7 +164,7 @@ Vector2 Transform2D::xform(const Vector2 &p_vec) const {
 	return Vector2(
 				   tdotx(p_vec),
 				   tdoty(p_vec)) +
-		   elements[2];
+			elements[2];
 }
 
 Vector2 Transform2D::xform_inv(const Vector2 &p_vec) const {

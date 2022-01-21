@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,30 +45,27 @@ class Joint;
 class PhysicalBone3D;
 class Skeleton3DEditorPlugin;
 class Button;
-class CheckBox;
 
 class BoneTransformEditor : public VBoxContainer {
 	GDCLASS(BoneTransformEditor, VBoxContainer);
 
 	EditorInspectorSection *section = nullptr;
 
-	EditorPropertyVector3 *translation_property = nullptr;
-	EditorPropertyVector3 *rotation_property = nullptr;
+	EditorPropertyCheck *enabled_checkbox = nullptr;
+	EditorPropertyVector3 *position_property = nullptr;
+	EditorPropertyQuaternion *rotation_property = nullptr;
 	EditorPropertyVector3 *scale_property = nullptr;
-	EditorInspectorSection *transform_section = nullptr;
-	EditorPropertyTransform3D *transform_property = nullptr;
+
+	EditorInspectorSection *rest_section = nullptr;
+	EditorPropertyTransform3D *rest_matrix = nullptr;
 
 	Rect2 background_rects[5];
 
 	Skeleton3D *skeleton;
-	String property;
+	// String property;
 
 	UndoRedo *undo_redo;
 
-	Button *key_button = nullptr;
-	CheckBox *enabled_checkbox = nullptr;
-
-	bool keyable = false;
 	bool toggle_enabled = false;
 	bool updating = false;
 
@@ -76,20 +73,9 @@ class BoneTransformEditor : public VBoxContainer {
 
 	void create_editors();
 
-	// Called when one of the EditorSpinSliders are changed.
-	void _value_changed(const double p_value);
-	// Called when the one of the EditorPropertyVector3 are updated.
-	void _value_changed_vector3(const String p_property_name, const Vector3 p_vector, const StringName p_edited_property_name, const bool p_boolean);
-	// Called when the transform_property is updated.
-	void _value_changed_transform(const String p_property_name, const Transform3D p_transform, const StringName p_edited_property_name, const bool p_boolean);
-	// Changes the transform to the given transform and updates the UI accordingly.
-	void _change_transform(Transform3D p_new_transform);
-	// Update it is truely keyable then.
-	void _update_key_button(const bool p_keyable);
-	// Creates a Transform using the EditorPropertyVector3 properties.
-	Transform3D compute_transform_from_vector3s() const;
+	void _value_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing);
 
-	void update_enabled_checkbox();
+	void _property_keyed(const String &p_path, bool p_advance);
 
 protected:
 	void _notification(int p_what);
@@ -100,26 +86,9 @@ public:
 	// Which transform target to modify.
 	void set_target(const String &p_prop);
 	void set_label(const String &p_label) { label = p_label; }
-
-	void _update_properties();
-	void _update_custom_pose_properties();
-	void _update_transform_properties(Transform3D p_transform);
-
-	// Transform can be keyed, whether or not to show the button.
 	void set_keyable(const bool p_keyable);
 
-	// When rest mode, pose and custom_pose editor are diasbled.
-	void set_properties_read_only(const bool p_readonly);
-	void set_transform_read_only(const bool p_readonly);
-
-	// Bone can be toggled enabled or disabled, whether or not to show the checkbox.
-	void set_toggle_enabled(const bool p_enabled);
-
-	// Key Transform Button pressed.
-	void _key_button_pressed();
-
-	// Bone Enabled Checkbox toggled.
-	void _checkbox_pressed();
+	void _update_properties();
 };
 
 class Skeleton3DEditor : public VBoxContainer {
@@ -128,14 +97,11 @@ class Skeleton3DEditor : public VBoxContainer {
 	friend class Skeleton3DEditorPlugin;
 
 	enum SkeletonOption {
-		SKELETON_OPTION_INIT_POSE,
-		SKELETON_OPTION_INSERT_KEYS,
-		SKELETON_OPTION_INSERT_KEYS_EXISTED,
-		SKELETON_OPTION_CREATE_PHYSICAL_SKELETON
-	};
-
-	enum RestOption {
-		REST_OPTION_POSE_TO_REST
+		SKELETON_OPTION_INIT_ALL_POSES,
+		SKELETON_OPTION_INIT_SELECTED_POSES,
+		SKELETON_OPTION_ALL_POSES_TO_RESTS,
+		SKELETON_OPTION_SELECTED_POSES_TO_RESTS,
+		SKELETON_OPTION_CREATE_PHYSICAL_SKELETON,
 	};
 
 	struct BoneInfo {
@@ -151,14 +117,19 @@ class Skeleton3DEditor : public VBoxContainer {
 	Tree *joint_tree = nullptr;
 	BoneTransformEditor *rest_editor = nullptr;
 	BoneTransformEditor *pose_editor = nullptr;
-	BoneTransformEditor *custom_pose_editor = nullptr;
 
 	VSeparator *separator;
 	MenuButton *skeleton_options = nullptr;
-	MenuButton *rest_options = nullptr;
 	Button *edit_mode_button;
 
 	bool edit_mode = false;
+
+	HBoxContainer *animation_hb;
+	Button *key_loc_button;
+	Button *key_rot_button;
+	Button *key_scale_button;
+	Button *key_insert_button;
+	Button *key_insert_all_button;
 
 	EditorFileDialog *file_dialog = nullptr;
 
@@ -167,7 +138,6 @@ class Skeleton3DEditor : public VBoxContainer {
 	static Skeleton3DEditor *singleton;
 
 	void _on_click_skeleton_option(int p_skeleton_option);
-	void _on_click_rest_option(int p_rest_option);
 	void _file_selected(const String &p_file);
 	TreeItem *_find(TreeItem *p_node, const NodePath &p_path);
 	void edit_mode_toggled(const bool pressed);
@@ -179,9 +149,10 @@ class Skeleton3DEditor : public VBoxContainer {
 
 	void create_editors();
 
-	void init_pose();
-	void insert_keys(bool p_all_bones);
-	void pose_to_rest();
+	void init_pose(const bool p_all_bones);
+	void pose_to_rest(const bool p_all_bones);
+
+	void insert_keys(const bool p_all_bones);
 
 	void create_physical_skeleton();
 	PhysicalBone3D *create_physical_bone(int bone_id, int bone_child_id, const Vector<BoneInfo> &bones_infos);
@@ -191,7 +162,7 @@ class Skeleton3DEditor : public VBoxContainer {
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 	void set_keyable(const bool p_keyable);
-	void set_rest_options_enabled(const bool p_rest_options_enabled);
+	void set_bone_options_enabled(const bool p_bone_options_enabled);
 
 	// Handle.
 	MeshInstance3D *handles_mesh_instance;
@@ -199,13 +170,12 @@ class Skeleton3DEditor : public VBoxContainer {
 	Ref<ShaderMaterial> handle_material;
 	Ref<Shader> handle_shader;
 
-	Transform3D bone_original;
+	Vector3 bone_original_position;
+	Quaternion bone_original_rotation;
+	Vector3 bone_original_scale;
 
-	void _update_pose_enabled(int p_bone = -1);
-	void _update_show_rest_only();
-
-	void _update_gizmo_transform();
 	void _update_gizmo_visible();
+	void _bone_enabled_changed(const int p_bone_id);
 
 	void _hide_handles();
 
@@ -239,7 +209,9 @@ public:
 	bool is_edit_mode() const { return edit_mode; }
 
 	void update_bone_original();
-	Transform3D get_bone_original() { return bone_original; };
+	Vector3 get_bone_original_position() const { return bone_original_position; };
+	Quaternion get_bone_original_rotation() const { return bone_original_rotation; };
+	Vector3 get_bone_original_scale() const { return bone_original_scale; };
 
 	Skeleton3DEditor(EditorInspectorPluginSkeleton *e_plugin, EditorNode *p_editor, Skeleton3D *skeleton);
 	~Skeleton3DEditor();

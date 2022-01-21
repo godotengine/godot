@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,6 +49,11 @@ void VersionControlEditorPlugin::_bind_methods() {
 	BIND_ENUM_CONSTANT(CHANGE_TYPE_TYPECHANGE);
 }
 
+void VersionControlEditorPlugin::_create_vcs_metadata_files() {
+	String dir = "res://";
+	EditorVCSInterface::create_vcs_metadata_files(EditorVCSInterface::VCSMetadata(metadata_selection->get_selected()), dir);
+}
+
 void VersionControlEditorPlugin::_selected_a_vcs(int p_id) {
 	List<StringName> available_addons = get_available_vcs_names();
 	const StringName selected_vcs = set_up_choice->get_item_text(p_id);
@@ -69,6 +74,10 @@ void VersionControlEditorPlugin::_populate_available_vcs_names() {
 
 VersionControlEditorPlugin *VersionControlEditorPlugin::get_singleton() {
 	return singleton ? singleton : memnew(VersionControlEditorPlugin);
+}
+
+void VersionControlEditorPlugin::popup_vcs_metadata_dialog() {
+	metadata_dialog->popup_centered();
 }
 
 void VersionControlEditorPlugin::popup_vcs_set_up_dialog(const Control *p_gui_base) {
@@ -257,7 +266,7 @@ void VersionControlEditorPlugin::_display_file_diff(String p_file_path) {
 
 void VersionControlEditorPlugin::_refresh_file_diff() {
 	String open_file = diff_file_name->get_text();
-	if (open_file != "") {
+	if (!open_file.is_empty()) {
 		_display_file_diff(diff_file_name->get_text());
 	}
 }
@@ -290,7 +299,7 @@ void VersionControlEditorPlugin::_update_commit_status() {
 }
 
 void VersionControlEditorPlugin::_update_commit_button() {
-	commit_button->set_disabled(commit_message->get_text().strip_edges() == "");
+	commit_button->set_disabled(commit_message->get_text().strip_edges().is_empty());
 }
 
 void VersionControlEditorPlugin::_commit_message_gui_input(const Ref<InputEvent> &p_event) {
@@ -374,6 +383,30 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	version_control_actions = memnew(PopupMenu);
 
+	metadata_dialog = memnew(ConfirmationDialog);
+	metadata_dialog->set_title(TTR("Create Version Control Metadata"));
+	metadata_dialog->set_min_size(Size2(200, 40));
+	version_control_actions->add_child(metadata_dialog);
+
+	VBoxContainer *metadata_vb = memnew(VBoxContainer);
+	HBoxContainer *metadata_hb = memnew(HBoxContainer);
+	metadata_hb->set_custom_minimum_size(Size2(200, 20));
+	Label *l = memnew(Label);
+	l->set_text(TTR("Create VCS metadata files for:"));
+	metadata_hb->add_child(l);
+	metadata_selection = memnew(OptionButton);
+	metadata_selection->set_custom_minimum_size(Size2(100, 20));
+	metadata_selection->add_item("None", (int)EditorVCSInterface::VCSMetadata::NONE);
+	metadata_selection->add_item("Git", (int)EditorVCSInterface::VCSMetadata::GIT);
+	metadata_selection->select((int)EditorVCSInterface::VCSMetadata::GIT);
+	metadata_dialog->get_ok_button()->connect("pressed", callable_mp(this, &VersionControlEditorPlugin::_create_vcs_metadata_files));
+	metadata_hb->add_child(metadata_selection);
+	metadata_vb->add_child(metadata_hb);
+	l = memnew(Label);
+	l->set_text(TTR("Existing VCS metadata files will be overwritten."));
+	metadata_vb->add_child(l);
+	metadata_dialog->add_child(metadata_vb);
+
 	set_up_dialog = memnew(AcceptDialog);
 	set_up_dialog->set_title(TTR("Set Up Version Control"));
 	set_up_dialog->set_min_size(Size2(400, 100));
@@ -383,11 +416,11 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_ok_button->set_text(TTR("Close"));
 
 	set_up_vbc = memnew(VBoxContainer);
-	set_up_vbc->set_alignment(VBoxContainer::ALIGN_CENTER);
+	set_up_vbc->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	set_up_dialog->add_child(set_up_vbc);
 
 	set_up_hbc = memnew(HBoxContainer);
-	set_up_hbc->set_h_size_flags(HBoxContainer::SIZE_EXPAND_FILL);
+	set_up_hbc->set_h_size_flags(BoxContainer::SIZE_EXPAND_FILL);
 	set_up_vbc->add_child(set_up_hbc);
 
 	set_up_vcs_status = memnew(RichTextLabel);
@@ -414,7 +447,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	version_commit_dock->set_visible(false);
 
 	commit_box_vbc = memnew(VBoxContainer);
-	commit_box_vbc->set_alignment(VBoxContainer::ALIGN_BEGIN);
+	commit_box_vbc->set_alignment(VBoxContainer::ALIGNMENT_BEGIN);
 	commit_box_vbc->set_h_size_flags(VBoxContainer::SIZE_EXPAND_FILL);
 	commit_box_vbc->set_v_size_flags(VBoxContainer::SIZE_EXPAND_FILL);
 	version_commit_dock->add_child(commit_box_vbc);
@@ -488,7 +521,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_message->connect("text_changed", callable_mp(this, &VersionControlEditorPlugin::_update_commit_button));
 	commit_message->connect("gui_input", callable_mp(this, &VersionControlEditorPlugin::_commit_message_gui_input));
 	commit_box_vbc->add_child(commit_message);
-	ED_SHORTCUT("version_control/commit", TTR("Commit"), KEY_MASK_CMD | KEY_ENTER);
+	ED_SHORTCUT("version_control/commit", TTR("Commit"), KeyModifierMask::CMD | Key::ENTER);
 
 	commit_button = memnew(Button);
 	commit_button->set_text(TTR("Commit Changes"));
@@ -497,7 +530,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_box_vbc->add_child(commit_button);
 
 	commit_status = memnew(Label);
-	commit_status->set_align(Label::ALIGN_CENTER);
+	commit_status->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	commit_box_vbc->add_child(commit_status);
 
 	version_control_dock = memnew(PanelContainer);
@@ -522,7 +555,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	diff_file_name = memnew(Label);
 	diff_file_name->set_text(TTR("No file diff is active"));
 	diff_file_name->set_h_size_flags(Label::SIZE_EXPAND_FILL);
-	diff_file_name->set_align(Label::ALIGN_RIGHT);
+	diff_file_name->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	diff_hbc->add_child(diff_file_name);
 
 	diff_refresh_button = memnew(Button);

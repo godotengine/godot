@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,8 +47,7 @@ private:
 
 	bool use_apk_expansion;
 
-#if defined(OPENGL_ENABLED)
-	bool use_16bits_fbo;
+#if defined(GLES3_ENABLED)
 	const char *gl_extensions;
 #endif
 
@@ -103,7 +102,6 @@ public:
 	void set_display_size(const Size2i &p_size);
 	Size2i get_display_size() const;
 
-	void set_context_is_16_bits(bool p_is_16);
 	void set_opengl_extensions(const char *p_gl_extensions);
 
 	void set_native_window(ANativeWindow *p_native_window);

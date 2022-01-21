@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -337,9 +337,9 @@ void Sprite2DEditor::_convert_to_mesh_2d_node() {
 
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 	ur->create_action(TTR("Convert to Mesh2D"));
-	ur->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", node, mesh_instance, true, false);
+	ur->add_do_method(SceneTreeDock::get_singleton(), "replace_node", node, mesh_instance, true, false);
 	ur->add_do_reference(mesh_instance);
-	ur->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", mesh_instance, node, false, false);
+	ur->add_undo_method(SceneTreeDock::get_singleton(), "replace_node", mesh_instance, node, false, false);
 	ur->add_undo_reference(node);
 	ur->commit_action();
 }
@@ -395,9 +395,9 @@ void Sprite2DEditor::_convert_to_polygon_2d_node() {
 
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 	ur->create_action(TTR("Convert to Polygon2D"));
-	ur->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", node, polygon_2d_instance, true, false);
+	ur->add_do_method(SceneTreeDock::get_singleton(), "replace_node", node, polygon_2d_instance, true, false);
 	ur->add_do_reference(polygon_2d_instance);
-	ur->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", polygon_2d_instance, node, false, false);
+	ur->add_undo_method(SceneTreeDock::get_singleton(), "replace_node", polygon_2d_instance, node, false, false);
 	ur->add_undo_reference(node);
 	ur->commit_action();
 }
@@ -526,8 +526,6 @@ Sprite2DEditor::Sprite2DEditor() {
 	debug_uv_dialog->add_child(vb);
 	ScrollContainer *scroll = memnew(ScrollContainer);
 	scroll->set_custom_minimum_size(Size2(800, 500) * EDSCALE);
-	scroll->set_enable_h_scroll(true);
-	scroll->set_enable_v_scroll(true);
 	vb->add_margin_child(TTR("Preview:"), scroll, true);
 	debug_uv = memnew(Control);
 	debug_uv->connect("draw", callable_mp(this, &Sprite2DEditor::_debug_uv_draw));

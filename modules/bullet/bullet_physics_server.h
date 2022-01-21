@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,10 +40,6 @@
 #include "shape_bullet.h"
 #include "soft_body_bullet.h"
 #include "space_bullet.h"
-
-/**
-	@author AndreaCatania
-*/
 
 class BulletPhysicsServer3D : public PhysicsServer3D {
 	GDCLASS(BulletPhysicsServer3D, PhysicsServer3D);
@@ -160,8 +156,8 @@ public:
 	virtual void area_set_collision_layer(RID p_area, uint32_t p_layer) override;
 
 	virtual void area_set_monitorable(RID p_area, bool p_monitorable) override;
-	virtual void area_set_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method) override;
-	virtual void area_set_area_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method) override;
+	virtual void area_set_monitor_callback(RID p_area, const Callable &p_callback) override;
+	virtual void area_set_area_monitor_callback(RID p_area, const Callable &p_callback) override;
 	virtual void area_set_ray_pickable(RID p_area, bool p_enable) override;
 
 	/* RIGID BODY API */
@@ -395,4 +391,4 @@ public:
 	JointBullet *get_joint(RID p_rid) const;
 };
 
-#endif
+#endif // BULLET_PHYSICS_SERVER_H

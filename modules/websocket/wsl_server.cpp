@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -58,17 +58,17 @@ bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols, St
 			headers[name] = value;
 		}
 	}
-#define _WSL_CHECK(NAME, VALUE)                                                         \
+#define WSL_CHECK(NAME, VALUE)                                                          \
 	ERR_FAIL_COND_V_MSG(!headers.has(NAME) || headers[NAME].to_lower() != VALUE, false, \
 			"Missing or invalid header '" + String(NAME) + "'. Expected value '" + VALUE + "'.");
-#define _WSL_CHECK_EX(NAME) \
+#define WSL_CHECK_EX(NAME) \
 	ERR_FAIL_COND_V_MSG(!headers.has(NAME), false, "Missing header '" + String(NAME) + "'.");
-	_WSL_CHECK("upgrade", "websocket");
-	_WSL_CHECK("sec-websocket-version", "13");
-	_WSL_CHECK_EX("sec-websocket-key");
-	_WSL_CHECK_EX("connection");
-#undef _WSL_CHECK_EX
-#undef _WSL_CHECK
+	WSL_CHECK("upgrade", "websocket");
+	WSL_CHECK("sec-websocket-version", "13");
+	WSL_CHECK_EX("sec-websocket-key");
+	WSL_CHECK_EX("connection");
+#undef WSL_CHECK_EX
+#undef WSL_CHECK
 	key = headers["sec-websocket-key"];
 	if (headers.has("sec-websocket-protocol")) {
 		Vector<String> protos = headers["sec-websocket-protocol"].split(",");
@@ -83,11 +83,11 @@ bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols, St
 				break;
 			}
 			// Found a protocol
-			if (protocol != "") {
+			if (!protocol.is_empty()) {
 				break;
 			}
 		}
-		if (protocol == "") { // Invalid protocol(s) requested
+		if (protocol.is_empty()) { // Invalid protocol(s) requested
 			return false;
 		}
 	} else if (p_protocols.size() > 0) { // No protocol requested, but we need one
@@ -138,7 +138,7 @@ Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols, uin
 				s += "Upgrade: websocket\r\n";
 				s += "Connection: Upgrade\r\n";
 				s += "Sec-WebSocket-Accept: " + WSLPeer::compute_key_response(key) + "\r\n";
-				if (protocol != "") {
+				if (!protocol.is_empty()) {
 					s += "Sec-WebSocket-Protocol: " + protocol + "\r\n";
 				}
 				s += "\r\n";

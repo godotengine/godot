@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -704,7 +704,7 @@ struct VariantIndexedSetGet_String {
 		String *b = VariantGetInternalPtr<String>::get_ptr(base);
 		const String *v = VariantInternal::get_string(value);
 		if (v->length() == 0) {
-			b->remove(index);
+			b->remove_at(index);
 		} else {
 			b->set(index, v->get(0));
 		}
@@ -723,7 +723,7 @@ struct VariantIndexedSetGet_String {
 		String *b = VariantGetInternalPtr<String>::get_ptr(base);
 		const String *v = VariantInternal::get_string(value);
 		if (v->length() == 0) {
-			b->remove(index);
+			b->remove_at(index);
 		} else {
 			b->set(index, v->get(0));
 		}
@@ -738,7 +738,7 @@ struct VariantIndexedSetGet_String {
 		OOB_TEST(index, v.length());
 		const String &m = *reinterpret_cast<const String *>(member);
 		if (unlikely(m.length() == 0)) {
-			v.remove(index);
+			v.remove_at(index);
 		} else {
 			v.set(index, m.unicode_at(0));
 		}
@@ -1824,11 +1824,15 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 	return Variant();
 }
 
-Variant Variant::duplicate(bool deep) const {
+Variant Variant::duplicate(bool p_deep) const {
+	return recursive_duplicate(p_deep, 0);
+}
+
+Variant Variant::recursive_duplicate(bool p_deep, int recursion_count) const {
 	switch (type) {
 		case OBJECT: {
 			/*  breaks stuff :(
-			if (deep && !_get_obj().ref.is_null()) {
+			if (p_deep && !_get_obj().ref.is_null()) {
 				Ref<Resource> resource = _get_obj().ref;
 				if (resource.is_valid()) {
 					return resource->duplicate(true);
@@ -1838,9 +1842,9 @@ Variant Variant::duplicate(bool deep) const {
 			return *this;
 		} break;
 		case DICTIONARY:
-			return operator Dictionary().duplicate(deep);
+			return operator Dictionary().recursive_duplicate(p_deep, recursion_count);
 		case ARRAY:
-			return operator Array().duplicate(deep);
+			return operator Array().recursive_duplicate(p_deep, recursion_count);
 		case PACKED_BYTE_ARRAY:
 			return operator Vector<uint8_t>().duplicate();
 		case PACKED_INT32_ARRAY:
@@ -2116,7 +2120,7 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		}
 			return;
 		case BASIS: {
-			r_dst = Transform3D(*a._data._basis).interpolate_with(Transform3D(*b._data._basis), c).basis;
+			r_dst = a._data._basis->lerp(*b._data._basis, c);
 		}
 			return;
 		case TRANSFORM3D: {

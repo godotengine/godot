@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -61,7 +61,7 @@ void MeshLibraryEditor::_menu_update_confirm(bool p_apply_xforms) {
 	cd_update->hide();
 	apply_xforms = p_apply_xforms;
 	String existing = mesh_library->get_meta("_editor_source_scene");
-	ERR_FAIL_COND(existing == "");
+	ERR_FAIL_COND(existing.is_empty());
 	_import_scene_cbk(existing);
 }
 
@@ -136,9 +136,11 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 					continue;
 				}
 
-				//Transform3D shape_transform = sb->shape_owner_get_transform(E);
-
-				//shape_transform.set_origin(shape_transform.get_origin() - phys_offset);
+				Transform3D shape_transform;
+				if (p_apply_xforms) {
+					shape_transform = mi->get_transform();
+				}
+				shape_transform *= sb->get_transform() * sb->shape_owner_get_transform(E);
 
 				for (int k = 0; k < sb->shape_owner_get_shape_count(E); k++) {
 					Ref<Shape3D> collision = sb->shape_owner_get_shape(E, k);
@@ -147,7 +149,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 					}
 					MeshLibrary::ShapeData shape_data;
 					shape_data.shape = collision;
-					shape_data.local_transform = sb->get_transform() * sb->shape_owner_get_transform(E);
+					shape_data.local_transform = shape_transform;
 					collisions.push_back(shape_data);
 				}
 			}
@@ -226,7 +228,7 @@ void MeshLibraryEditor::_menu_cbk(int p_option) {
 			mesh_library->create_item(mesh_library->get_last_unused_item_id());
 		} break;
 		case MENU_OPTION_REMOVE_ITEM: {
-			String p = editor->get_inspector()->get_selected_path();
+			String p = InspectorDock::get_inspector_singleton()->get_selected_path();
 			if (p.begins_with("/MeshLibrary/item") && p.get_slice_count("/") >= 3) {
 				to_erase = p.get_slice("/", 3).to_int();
 				cd_remove->set_text(vformat(TTR("Remove item %d?"), to_erase));

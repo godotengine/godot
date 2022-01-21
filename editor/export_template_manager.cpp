@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +53,7 @@ void ExportTemplateManager::_update_template_status() {
 	da->list_dir_begin();
 	if (err == OK) {
 		String c = da->get_next();
-		while (c != String()) {
+		while (!c.is_empty()) {
 			if (da->current_is_dir() && !c.begins_with(".")) {
 				templates.insert(c);
 			}
@@ -146,6 +146,11 @@ void ExportTemplateManager::_download_template(const String &p_url, bool p_skip_
 
 	download_templates->set_download_file(EditorPaths::get_singleton()->get_cache_dir().plus_file("tmp_templates.tpz"));
 	download_templates->set_use_threads(true);
+
+	const String proxy_host = EDITOR_DEF("network/http_proxy/host", "");
+	const int proxy_port = EDITOR_DEF("network/http_proxy/port", -1);
+	download_templates->set_http_proxy(proxy_host, proxy_port);
+	download_templates->set_https_proxy(proxy_host, proxy_port);
 
 	Error err = download_templates->request(p_url);
 	if (err != OK) {
@@ -391,7 +396,7 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 		char fname[16384];
 		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
-		String file = fname;
+		String file = String::utf8(fname);
 		if (file.ends_with("version.txt")) {
 			Vector<uint8_t> data;
 			data.resize(info.uncompressed_size);
@@ -424,7 +429,7 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 		ret = unzGoToNextFile(pkg);
 	}
 
-	if (version == String()) {
+	if (version.is_empty()) {
 		EditorNode::get_singleton()->show_warning(TTR("No version.txt found inside the export templates file."));
 		unzClose(pkg);
 		return false;
@@ -452,7 +457,7 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 		char fname[16384];
 		unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
-		String file_path(String(fname).simplify_path());
+		String file_path(String::utf8(fname).simplify_path());
 
 		String file = file_path.get_file();
 
@@ -693,7 +698,7 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 		char fpath[16384];
 		ret = unzGetCurrentFileInfo(pkg, &info, fpath, 16384, nullptr, 0, nullptr, 0);
 
-		String path = fpath;
+		String path = String::utf8(fpath);
 		String base_dir = path.get_base_dir();
 
 		if (!path.ends_with("/")) {
@@ -827,7 +832,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	current_missing_label->set_theme_type_variation("HeaderSmall");
 
 	current_missing_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	current_missing_label->set_align(Label::ALIGN_RIGHT);
+	current_missing_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	current_missing_label->set_text(TTR("Export templates are missing. Download them or install from a file."));
 	current_hb->add_child(current_missing_label);
 
@@ -835,7 +840,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	current_installed_label = memnew(Label);
 	current_installed_label->set_theme_type_variation("HeaderSmall");
 	current_installed_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	current_installed_label->set_align(Label::ALIGN_RIGHT);
+	current_installed_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	current_installed_label->set_text(TTR("Export templates are installed and ready to be used."));
 	current_hb->add_child(current_installed_label);
 	current_installed_label->hide();
@@ -909,7 +914,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	}
 
 	HBoxContainer *install_file_hb = memnew(HBoxContainer);
-	install_file_hb->set_alignment(BoxContainer::ALIGN_END);
+	install_file_hb->set_alignment(BoxContainer::ALIGNMENT_END);
 	install_options_vb->add_child(install_file_hb);
 
 	install_file_button = memnew(Button);

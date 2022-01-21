@@ -8,4 +8,12 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<members>
+		<member name="estimate_radius" type="bool" setter="set_estimate_radius" getter="is_radius_estimated" default="true">
+			Enables radius estimation algorithm which uses parent's collision shapes to determine the obstacle radius.
+		</member>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="1.0">
+			The radius of the agent. Used only if [member estimate_radius] is set to false.
+		</member>
+	</members>
 </class>

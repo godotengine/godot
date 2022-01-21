@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -100,12 +100,11 @@ SoftDynamicBody3D::PinnedPoint::PinnedPoint(const PinnedPoint &obj_tocopy) {
 	offset = obj_tocopy.offset;
 }
 
-SoftDynamicBody3D::PinnedPoint &SoftDynamicBody3D::PinnedPoint::operator=(const PinnedPoint &obj) {
+void SoftDynamicBody3D::PinnedPoint::operator=(const PinnedPoint &obj) {
 	point_index = obj.point_index;
 	spatial_attachment_path = obj.spatial_attachment_path;
 	spatial_attachment = obj.spatial_attachment;
 	offset = obj.offset;
-	return *this;
 }
 
 void SoftDynamicBody3D::_update_pickable() {
@@ -250,7 +249,7 @@ void SoftDynamicBody3D::_notification(int p_what) {
 
 			RID space = get_world_3d()->get_space();
 			PhysicsServer3D::get_singleton()->soft_body_set_space(physics_rid, space);
-			prepare_physics_server();
+			_prepare_physics_server();
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -284,13 +283,13 @@ void SoftDynamicBody3D::_notification(int p_what) {
 
 		case NOTIFICATION_DISABLED: {
 			if (is_inside_tree() && (disable_mode == DISABLE_MODE_REMOVE)) {
-				prepare_physics_server();
+				_prepare_physics_server();
 			}
 		} break;
 
 		case NOTIFICATION_ENABLED: {
 			if (is_inside_tree() && (disable_mode == DISABLE_MODE_REMOVE)) {
-				prepare_physics_server();
+				_prepare_physics_server();
 			}
 		} break;
 
@@ -378,7 +377,7 @@ void SoftDynamicBody3D::_bind_methods() {
 TypedArray<String> SoftDynamicBody3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
-	if (get_mesh().is_null()) {
+	if (mesh.is_null()) {
 		warnings.push_back(TTR("This body will be ignored until you set a mesh."));
 	}
 
@@ -407,11 +406,17 @@ void SoftDynamicBody3D::_update_physics_server() {
 }
 
 void SoftDynamicBody3D::_draw_soft_mesh() {
-	if (get_mesh().is_null()) {
+	if (mesh.is_null()) {
 		return;
 	}
 
-	const RID mesh_rid = get_mesh()->get_rid();
+	RID mesh_rid = mesh->get_rid();
+	if (owned_mesh != mesh_rid) {
+		_become_mesh_owner();
+		mesh_rid = mesh->get_rid();
+		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, mesh_rid);
+	}
+
 	if (!rendering_server_handler.is_ready(mesh_rid)) {
 		rendering_server_handler.prepare(mesh_rid, 0);
 
@@ -430,11 +435,11 @@ void SoftDynamicBody3D::_draw_soft_mesh() {
 	rendering_server_handler.commit_changes();
 }
 
-void SoftDynamicBody3D::prepare_physics_server() {
+void SoftDynamicBody3D::_prepare_physics_server() {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		if (get_mesh().is_valid()) {
-			PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh()->get_rid());
+		if (mesh.is_valid()) {
+			PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, mesh->get_rid());
 		} else {
 			PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, RID());
 		}
@@ -443,9 +448,13 @@ void SoftDynamicBody3D::prepare_physics_server() {
 	}
 #endif
 
-	if (get_mesh().is_valid() && (is_enabled() || (disable_mode != DISABLE_MODE_REMOVE))) {
-		become_mesh_owner();
-		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh()->get_rid());
+	if (mesh.is_valid() && (is_enabled() || (disable_mode != DISABLE_MODE_REMOVE))) {
+		RID mesh_rid = mesh->get_rid();
+		if (owned_mesh != mesh_rid) {
+			_become_mesh_owner();
+			mesh_rid = mesh->get_rid();
+		}
+		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, mesh_rid);
 		RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &SoftDynamicBody3D::_draw_soft_mesh));
 	} else {
 		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, RID());
@@ -455,38 +464,32 @@ void SoftDynamicBody3D::prepare_physics_server() {
 	}
 }
 
-void SoftDynamicBody3D::become_mesh_owner() {
-	if (mesh.is_null()) {
-		return;
+void SoftDynamicBody3D::_become_mesh_owner() {
+	Vector<Ref<Material>> copy_materials;
+	copy_materials.append_array(surface_override_materials);
+
+	ERR_FAIL_COND(!mesh->get_surface_count());
+
+	// Get current mesh array and create new mesh array with necessary flag for SoftDynamicBody
+	Array surface_arrays = mesh->surface_get_arrays(0);
+	Array surface_blend_arrays = mesh->surface_get_blend_shape_arrays(0);
+	Dictionary surface_lods = mesh->surface_get_lods(0);
+	uint32_t surface_format = mesh->surface_get_format(0);
+
+	surface_format |= Mesh::ARRAY_FLAG_USE_DYNAMIC_UPDATE;
+
+	Ref<ArrayMesh> soft_mesh;
+	soft_mesh.instantiate();
+	soft_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surface_arrays, surface_blend_arrays, surface_lods, surface_format);
+	soft_mesh->surface_set_material(0, mesh->surface_get_material(0));
+
+	set_mesh(soft_mesh);
+
+	for (int i = copy_materials.size() - 1; 0 <= i; --i) {
+		set_surface_override_material(i, copy_materials[i]);
 	}
 
-	if (!mesh_owner) {
-		mesh_owner = true;
-
-		Vector<Ref<Material>> copy_materials;
-		copy_materials.append_array(surface_override_materials);
-
-		ERR_FAIL_COND(!mesh->get_surface_count());
-
-		// Get current mesh array and create new mesh array with necessary flag for SoftDynamicBody
-		Array surface_arrays = mesh->surface_get_arrays(0);
-		Array surface_blend_arrays = mesh->surface_get_blend_shape_arrays(0);
-		Dictionary surface_lods = mesh->surface_get_lods(0);
-		uint32_t surface_format = mesh->surface_get_format(0);
-
-		surface_format |= Mesh::ARRAY_FLAG_USE_DYNAMIC_UPDATE;
-
-		Ref<ArrayMesh> soft_mesh;
-		soft_mesh.instantiate();
-		soft_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surface_arrays, surface_blend_arrays, surface_lods, surface_format);
-		soft_mesh->surface_set_material(0, mesh->surface_get_material(0));
-
-		set_mesh(soft_mesh);
-
-		for (int i = copy_materials.size() - 1; 0 <= i; --i) {
-			set_surface_override_material(i, copy_materials[i]);
-		}
-	}
+	owned_mesh = soft_mesh->get_rid();
 }
 
 void SoftDynamicBody3D::set_collision_mask(uint32_t p_mask) {
@@ -548,16 +551,10 @@ void SoftDynamicBody3D::set_disable_mode(DisableMode p_mode) {
 		return;
 	}
 
-	bool inside_tree = is_inside_tree();
-
-	if (inside_tree && (disable_mode == DISABLE_MODE_REMOVE)) {
-		prepare_physics_server();
-	}
-
 	disable_mode = p_mode;
 
-	if (inside_tree && (disable_mode == DISABLE_MODE_REMOVE)) {
-		prepare_physics_server();
+	if (mesh.is_valid() && is_inside_tree() && !is_enabled()) {
+		_prepare_physics_server();
 	}
 }
 
@@ -775,7 +772,7 @@ void SoftDynamicBody3D::_reset_points_offsets() {
 void SoftDynamicBody3D::_remove_pinned_point(int p_point_index) {
 	const int id(_has_pinned_point(p_point_index));
 	if (-1 != id) {
-		pinned_points.remove(id);
+		pinned_points.remove_at(id);
 	}
 }
 

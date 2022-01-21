@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,13 +31,7 @@
 #ifndef GODOT_COLLISION_DISPATCHER_H
 #define GODOT_COLLISION_DISPATCHER_H
 
-#include <cstdint>
-
 #include <btBulletDynamicsCommon.h>
-
-/**
-	@author AndreaCatania
-*/
 
 /// This class is required to implement custom collision behaviour in the narrowphase
 class GodotCollisionDispatcher : public btCollisionDispatcher {
@@ -49,4 +43,5 @@ public:
 	virtual bool needsCollision(const btCollisionObject *body0, const btCollisionObject *body1);
 	virtual bool needsResponse(const btCollisionObject *body0, const btCollisionObject *body1);
 };
-#endif
+
+#endif // GODOT_COLLISION_DISPATCHER_H

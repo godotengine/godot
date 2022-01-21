@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,6 +45,7 @@
 #include "servers/rendering/renderer_rd/shaders/cubemap_filter_raster.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/cubemap_roughness.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/cubemap_roughness_raster.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/fsr_upscale.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/luminance_reduce.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/luminance_reduce_raster.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/resolve.glsl.gen.h"
@@ -54,11 +55,15 @@
 #include "servers/rendering/renderer_rd/shaders/screen_space_reflection_scale.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/sort.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/specular_merge.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/ss_effects_downsample.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/ssao.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/ssao_blur.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/ssao_downsample.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/ssao_importance_map.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/ssao_interleave.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/ssil.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/ssil_blur.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/ssil_importance_map.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/ssil_interleave.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/subsurface_scattering.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/tonemap.glsl.gen.h"
 #include "servers/rendering/renderer_scene_render.h"
@@ -68,6 +73,28 @@
 class EffectsRD {
 private:
 	bool prefer_raster_effects;
+
+	enum FSRUpscalePass {
+		FSR_UPSCALE_PASS_EASU = 0,
+		FSR_UPSCALE_PASS_RCAS = 1
+	};
+
+	struct FSRUpscalePushConstant {
+		float resolution_width;
+		float resolution_height;
+		float upscaled_width;
+		float upscaled_height;
+		float sharpness;
+		int pass;
+		int _unused0, _unused1;
+	};
+
+	struct FSRUpscale {
+		FSRUpscalePushConstant push_constant;
+		FsrUpscaleShaderRD shader;
+		RID shader_version;
+		RID pipeline;
+	} FSR_upscale;
 
 	enum BlurRasterMode {
 		BLUR_MIPMAP,
@@ -376,13 +403,47 @@ private:
 		PipelineCacheRD raster_pipelines[BOKEH_MAX];
 	} bokeh;
 
+	struct SSEffectsDownsamplePushConstant {
+		float pixel_size[2];
+		float z_far;
+		float z_near;
+		uint32_t orthogonal;
+		float radius_sq;
+		uint32_t pad[2];
+	};
+
+	enum SSEffectsMode {
+		SS_EFFECTS_DOWNSAMPLE,
+		SS_EFFECTS_DOWNSAMPLE_HALF_RES,
+		SS_EFFECTS_DOWNSAMPLE_MIPMAP,
+		SS_EFFECTS_DOWNSAMPLE_MIPMAP_HALF_RES,
+		SS_EFFECTS_DOWNSAMPLE_HALF,
+		SS_EFFECTS_DOWNSAMPLE_HALF_RES_HALF,
+		SS_EFFECTS_DOWNSAMPLE_FULL_MIPS,
+		SS_EFFECTS_MAX
+	};
+
+	struct SSEffectsGatherConstants {
+		float rotation_matrices[80]; //5 vec4s * 4
+	};
+
+	struct SSEffects {
+		SSEffectsDownsamplePushConstant downsample_push_constant;
+		SsEffectsDownsampleShaderRD downsample_shader;
+		RID downsample_shader_version;
+		RID downsample_uniform_set;
+		bool used_half_size_last_frame = false;
+		bool used_mips_last_frame = false;
+		bool used_full_mips_last_frame = false;
+
+		RID gather_constants_buffer;
+
+		RID mirror_sampler;
+
+		RID pipelines[SS_EFFECTS_MAX];
+	} ss_effects;
+
 	enum SSAOMode {
-		SSAO_DOWNSAMPLE,
-		SSAO_DOWNSAMPLE_HALF_RES,
-		SSAO_DOWNSAMPLE_MIPMAP,
-		SSAO_DOWNSAMPLE_MIPMAP_HALF_RES,
-		SSAO_DOWNSAMPLE_HALF,
-		SSAO_DOWNSAMPLE_HALF_RES_HALF,
 		SSAO_GATHER,
 		SSAO_GATHER_BASE,
 		SSAO_GATHER_ADAPTIVE,
@@ -396,15 +457,6 @@ private:
 		SSAO_INTERLEAVE_SMART,
 		SSAO_INTERLEAVE_HALF,
 		SSAO_MAX
-	};
-
-	struct SSAODownsamplePushConstant {
-		float pixel_size[2];
-		float z_far;
-		float z_near;
-		uint32_t orthogonal;
-		float radius_sq;
-		uint32_t pad[2];
 	};
 
 	struct SSAOGatherPushConstant {
@@ -432,17 +484,13 @@ private:
 		float horizon_angle_threshold;
 		float inv_radius_near_limit;
 
-		bool is_orthogonal;
+		uint32_t is_orthogonal;
 		float neg_inv_radius;
 		float load_counter_avg_div;
 		float adaptive_sample_limit;
 
 		int32_t pass_coord_offset[2];
 		float pass_uv_offset[2];
-	};
-
-	struct SSAOGatherConstants {
-		float rotation_matrices[80]; //5 vec4s * 4
 	};
 
 	struct SSAOImportanceMapPushConstant {
@@ -464,15 +512,9 @@ private:
 	};
 
 	struct SSAO {
-		SSAODownsamplePushConstant downsample_push_constant;
-		SsaoDownsampleShaderRD downsample_shader;
-		RID downsample_shader_version;
-
 		SSAOGatherPushConstant gather_push_constant;
 		SsaoShaderRD gather_shader;
 		RID gather_shader_version;
-		RID gather_constants_buffer;
-		bool gather_initialized = false;
 
 		SSAOImportanceMapPushConstant importance_map_push_constant;
 		SsaoImportanceMapShaderRD importance_map_shader;
@@ -488,9 +530,103 @@ private:
 		SsaoInterleaveShaderRD interleave_shader;
 		RID interleave_shader_version;
 
-		RID mirror_sampler;
 		RID pipelines[SSAO_MAX];
 	} ssao;
+
+	enum SSILMode {
+		SSIL_GATHER,
+		SSIL_GATHER_BASE,
+		SSIL_GATHER_ADAPTIVE,
+		SSIL_GENERATE_IMPORTANCE_MAP,
+		SSIL_PROCESS_IMPORTANCE_MAPA,
+		SSIL_PROCESS_IMPORTANCE_MAPB,
+		SSIL_BLUR_PASS,
+		SSIL_BLUR_PASS_SMART,
+		SSIL_BLUR_PASS_WIDE,
+		SSIL_INTERLEAVE,
+		SSIL_INTERLEAVE_SMART,
+		SSIL_INTERLEAVE_HALF,
+		SSIL_MAX
+	};
+
+	struct SSILGatherPushConstant {
+		int32_t screen_size[2];
+		int pass;
+		int quality;
+
+		float half_screen_pixel_size[2];
+		float half_screen_pixel_size_x025[2];
+
+		float NDC_to_view_mul[2];
+		float NDC_to_view_add[2];
+
+		float pad2[2];
+		float z_near;
+		float z_far;
+
+		float radius;
+		float intensity;
+		int size_multiplier;
+		int pad;
+
+		float fade_out_mul;
+		float fade_out_add;
+		float normal_rejection_amount;
+		float inv_radius_near_limit;
+
+		uint32_t is_orthogonal;
+		float neg_inv_radius;
+		float load_counter_avg_div;
+		float adaptive_sample_limit;
+
+		int32_t pass_coord_offset[2];
+		float pass_uv_offset[2];
+	};
+
+	struct SSILImportanceMapPushConstant {
+		float half_screen_pixel_size[2];
+		float intensity;
+		float pad;
+	};
+
+	struct SSILBlurPushConstant {
+		float edge_sharpness;
+		float pad;
+		float half_screen_pixel_size[2];
+	};
+
+	struct SSILInterleavePushConstant {
+		float inv_sharpness;
+		uint32_t size_modifier;
+		float pixel_size[2];
+	};
+
+	struct SSILProjectionUniforms {
+		float inv_last_frame_projection_matrix[16];
+	};
+
+	struct SSIL {
+		SSILGatherPushConstant gather_push_constant;
+		SsilShaderRD gather_shader;
+		RID gather_shader_version;
+		RID projection_uniform_buffer;
+
+		SSILImportanceMapPushConstant importance_map_push_constant;
+		SsilImportanceMapShaderRD importance_map_shader;
+		RID importance_map_shader_version;
+		RID importance_map_load_counter;
+		RID counter_uniform_set;
+
+		SSILBlurPushConstant blur_push_constant;
+		SsilBlurShaderRD blur_shader;
+		RID blur_shader_version;
+
+		SSILInterleavePushConstant interleave_push_constant;
+		SsilInterleaveShaderRD interleave_shader;
+		RID interleave_shader_version;
+
+		RID pipelines[SSIL_MAX];
+	} ssil;
 
 	struct RoughnessLimiterPushConstant {
 		int32_t screen_size[2];
@@ -754,6 +890,7 @@ private:
 public:
 	bool get_prefer_raster_effects();
 
+	void fsr_upscale(RID p_source_rd_texture, RID p_secondary_texture, RID p_destination_texture, const Size2i &p_internal_size, const Size2i &p_size, float p_fsr_upscale_sharpness);
 	void copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y = false, bool p_force_luminance = false, bool p_alpha_to_zero = false, bool p_srgb = false, RID p_secondary = RID());
 	void copy_to_rect(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y = false, bool p_force_luminance = false, bool p_all_source = false, bool p_8_bit_dst = false, bool p_alpha_to_one = false);
 	void copy_cubemap_to_panorama(RID p_source_cube, RID p_dest_panorama, const Size2i &p_panorama_size, float p_lod, bool p_is_array);
@@ -762,8 +899,8 @@ public:
 	void copy_to_atlas_fb(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_uv_rect, RD::DrawListID p_draw_list, bool p_flip_y = false, bool p_panorama = false);
 	void gaussian_blur(RID p_source_rd_texture, RID p_texture, RID p_back_texture, const Rect2i &p_region, bool p_8bit_dst = false);
 	void set_color(RID p_dest_texture, const Color &p_color, const Rect2i &p_region, bool p_8bit_dst = false);
-	void gaussian_glow(RID p_source_rd_texture, RID p_back_texture, const Size2i &p_size, float p_strength = 1.0, bool p_high_quality = false, bool p_first_pass = false, float p_luminance_cap = 16.0, float p_exposure = 1.0, float p_bloom = 0.0, float p_hdr_bleed_treshold = 1.0, float p_hdr_bleed_scale = 1.0, RID p_auto_exposure = RID(), float p_auto_exposure_grey = 1.0);
-	void gaussian_glow_raster(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, float p_strength = 1.0, bool p_high_quality = false, bool p_first_pass = false, float p_luminance_cap = 16.0, float p_exposure = 1.0, float p_bloom = 0.0, float p_hdr_bleed_treshold = 1.0, float p_hdr_bleed_scale = 1.0, RID p_auto_exposure = RID(), float p_auto_exposure_grey = 1.0);
+	void gaussian_glow(RID p_source_rd_texture, RID p_back_texture, const Size2i &p_size, float p_strength = 1.0, bool p_high_quality = false, bool p_first_pass = false, float p_luminance_cap = 16.0, float p_exposure = 1.0, float p_bloom = 0.0, float p_hdr_bleed_threshold = 1.0, float p_hdr_bleed_scale = 1.0, RID p_auto_exposure = RID(), float p_auto_exposure_grey = 1.0);
+	void gaussian_glow_raster(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, float p_strength = 1.0, bool p_high_quality = false, bool p_first_pass = false, float p_luminance_cap = 16.0, float p_exposure = 1.0, float p_bloom = 0.0, float p_hdr_bleed_threshold = 1.0, float p_hdr_bleed_scale = 1.0, RID p_auto_exposure = RID(), float p_auto_exposure_grey = 1.0);
 
 	void cubemap_roughness(RID p_source_rd_texture, RID p_dest_texture, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size);
 	void cubemap_roughness_raster(RID p_source_rd_texture, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size);
@@ -855,11 +992,34 @@ public:
 		Size2i quarter_screen_size = Size2i();
 	};
 
+	struct SSILSettings {
+		float radius = 1.0;
+		float intensity = 2.0;
+		float sharpness = 0.98;
+		float normal_rejection = 1.0;
+
+		RS::EnvironmentSSILQuality quality = RS::ENV_SSIL_QUALITY_MEDIUM;
+		bool half_size = true;
+		float adaptive_target = 0.5;
+		int blur_passes = 4;
+		float fadeout_from = 50.0;
+		float fadeout_to = 300.0;
+
+		Size2i full_screen_size = Size2i();
+		Size2i half_screen_size = Size2i();
+		Size2i quarter_screen_size = Size2i();
+	};
+
 	void tonemapper(RID p_source_color, RID p_dst_framebuffer, const TonemapSettings &p_settings);
 	void tonemapper(RD::DrawListID p_subpass_draw_list, RID p_source_color, RD::FramebufferFormatID p_dst_format_id, const TonemapSettings &p_settings);
 
+	void downsample_depth(RID p_depth_buffer, const Vector<RID> &p_depth_mipmaps, RS::EnvironmentSSAOQuality p_ssao_quality, RS::EnvironmentSSILQuality p_ssil_quality, bool p_invalidate_uniform_set, bool p_ssao_half_size, bool p_ssil_half_size, Size2i p_full_screen_size, const CameraMatrix &p_projection);
+
 	void gather_ssao(RD::ComputeListID p_compute_list, const Vector<RID> p_ao_slices, const SSAOSettings &p_settings, bool p_adaptive_base_pass, RID p_gather_uniform_set, RID p_importance_map_uniform_set);
-	void generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_depth_mipmaps_texture, const Vector<RID> &depth_mipmaps, RID p_ao, const Vector<RID> p_ao_slices, RID p_ao_pong, const Vector<RID> p_ao_pong_slices, RID p_upscale_buffer, RID p_importance_map, RID p_importance_map_pong, const CameraMatrix &p_projection, const SSAOSettings &p_settings, bool p_invalidate_uniform_sets, RID &r_downsample_uniform_set, RID &r_gather_uniform_set, RID &r_importance_map_uniform_set);
+	void generate_ssao(RID p_normal_buffer, RID p_depth_mipmaps_texture, RID p_ao, const Vector<RID> p_ao_slices, RID p_ao_pong, const Vector<RID> p_ao_pong_slices, RID p_upscale_buffer, RID p_importance_map, RID p_importance_map_pong, const CameraMatrix &p_projection, const SSAOSettings &p_settings, bool p_invalidate_uniform_sets, RID &r_gather_uniform_set, RID &r_importance_map_uniform_set);
+
+	void gather_ssil(RD::ComputeListID p_compute_list, const Vector<RID> p_ssil_slices, const Vector<RID> p_edges_slices, const SSILSettings &p_settings, bool p_adaptive_base_pass, RID p_gather_uniform_set, RID p_importance_map_uniform_set, RID p_projection_uniform_set);
+	void screen_space_indirect_lighting(RID p_diffuse, RID p_destination, RID p_normal_buffer, RID p_depth_mipmaps_texture, RID p_ao, const Vector<RID> p_ao_slices, RID p_ao_pong, const Vector<RID> p_ao_pong_slices, RID p_importance_map, RID p_importance_map_pong, RID p_edges, const Vector<RID> p_edges_slices, const CameraMatrix &p_projection, const CameraMatrix &p_last_projection, const SSILSettings &p_settings, bool p_invalidate_uniform_sets, RID &r_gather_uniform_set, RID &r_importance_map_uniform_set, RID &r_projection_uniform_set);
 
 	void roughness_limit(RID p_source_normal, RID p_roughness, const Size2i &p_size, float p_curve);
 	void cubemap_downsample(RID p_source_cubemap, RID p_dest_cubemap, const Size2i &p_size);

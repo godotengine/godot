@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,6 +54,7 @@
 #include "script_create_dialog.h"
 
 class EditorNode;
+class ShaderCreateDialog;
 
 class FileSystemDock : public VBoxContainer {
 	GDCLASS(FileSystemDock, VBoxContainer);
@@ -158,6 +159,7 @@ private:
 	LineEdit *make_scene_dialog_text;
 	ConfirmationDialog *overwrite_dialog;
 	ScriptCreateDialog *make_script_dialog;
+	ShaderCreateDialog *make_shader_dialog;
 	CreateDialog *new_resource_dialog;
 
 	bool always_show_folders;
@@ -205,8 +207,6 @@ private:
 	void _set_file_display(bool p_active);
 	void _fs_changed();
 
-	void _tree_toggle_collapsed();
-
 	void _select_file(const String &p_path, bool p_select_in_favorites = false);
 	void _tree_activate_file();
 	void _file_list_activate_file(int p_idx);
@@ -228,8 +228,6 @@ private:
 
 	void _file_removed(String p_file);
 	void _folder_removed(String p_folder);
-	void _files_moved(String p_old_file, String p_new_file);
-	void _folder_moved(String p_old_folder, String p_new_folder);
 
 	void _resource_created();
 	void _make_dir_confirm();
@@ -305,6 +303,12 @@ private:
 
 	void _feature_profile_changed();
 	Vector<String> _remove_self_included_paths(Vector<String> selected_strings);
+
+private:
+	static FileSystemDock *singleton;
+
+public:
+	static FileSystemDock *get_singleton() { return singleton; }
 
 protected:
 	void _notification(int p_what);

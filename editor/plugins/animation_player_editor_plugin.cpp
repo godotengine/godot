@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,6 +41,8 @@
 #include "editor/plugins/canvas_item_editor_plugin.h" // For onion skinning.
 #include "editor/plugins/node_3d_editor_plugin.h" // For onion skinning.
 #include "scene/main/window.h"
+#include "scene/resources/animation.h"
+#include "scene/scene_string_names.h"
 #include "servers/rendering_server.h"
 
 void AnimationPlayerEditor::_node_removed(Node *p_node) {
@@ -72,7 +74,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 					if (player->has_animation(animname)) {
 						Ref<Animation> anim = player->get_animation(animname);
 						if (!anim.is_null()) {
-							frame->set_max(anim->get_length());
+							frame->set_max((double)anim->get_length());
 						}
 					}
 				}
@@ -188,7 +190,7 @@ void AnimationPlayerEditor::_play_pressed() {
 		current = animation->get_item_text(animation->get_selected());
 	}
 
-	if (current != "") {
+	if (!current.is_empty()) {
 		if (current == player->get_assigned_animation()) {
 			player->stop(); //so it won't blend with itself
 		}
@@ -205,7 +207,7 @@ void AnimationPlayerEditor::_play_from_pressed() {
 		current = animation->get_item_text(animation->get_selected());
 	}
 
-	if (current != "") {
+	if (!current.is_empty()) {
 		float time = player->get_current_animation_position();
 
 		if (current == player->get_assigned_animation() && player->is_playing()) {
@@ -226,7 +228,7 @@ void AnimationPlayerEditor::_play_bw_pressed() {
 		current = animation->get_item_text(animation->get_selected());
 	}
 
-	if (current != "") {
+	if (!current.is_empty()) {
 		if (current == player->get_assigned_animation()) {
 			player->stop(); //so it won't blend with itself
 		}
@@ -243,7 +245,7 @@ void AnimationPlayerEditor::_play_bw_from_pressed() {
 		current = animation->get_item_text(animation->get_selected());
 	}
 
-	if (current != "") {
+	if (!current.is_empty()) {
 		float time = player->get_current_animation_position();
 		if (current == player->get_assigned_animation()) {
 			player->stop(); //so it won't blend with itself
@@ -278,7 +280,7 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 		current = animation->get_item_text(animation->get_selected());
 	}
 
-	if (current != "") {
+	if (!current.is_empty()) {
 		player->set_assigned_animation(current);
 
 		Ref<Animation> anim = player->get_animation(current);
@@ -289,7 +291,7 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 				track_editor->set_root(root);
 			}
 		}
-		frame->set_max(anim->get_length());
+		frame->set_max((double)anim->get_length());
 
 	} else {
 		track_editor->set_animation(Ref<Animation>());
@@ -299,7 +301,6 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 	autoplay->set_pressed(current == player->get_autoplay());
 
 	AnimationPlayerEditor::get_singleton()->get_track_editor()->update_keying();
-	EditorNode::get_singleton()->update_keying();
 	_animation_key_editor_seek(timeline_position, false);
 }
 
@@ -395,7 +396,7 @@ void AnimationPlayerEditor::_animation_save_as(const Ref<Resource> &p_resource) 
 
 	String path;
 	//file->set_current_path(current_path);
-	if (p_resource->get_path() != "") {
+	if (!p_resource->get_path().is_empty()) {
 		path = p_resource->get_path();
 		if (extensions.size()) {
 			if (extensions.find(p_resource->get_path().get_extension().to_lower()) == nullptr) {
@@ -404,7 +405,7 @@ void AnimationPlayerEditor::_animation_save_as(const Ref<Resource> &p_resource) 
 		}
 	} else {
 		if (extensions.size()) {
-			if (p_resource->get_name() != "") {
+			if (!p_resource->get_name().is_empty()) {
 				path = p_resource->get_name() + "." + extensions.front()->get().to_lower();
 			} else {
 				String resource_name_snake_case = p_resource->get_class().camelcase_to_underscore();
@@ -474,7 +475,7 @@ double AnimationPlayerEditor::_get_editor_step() const {
 		ERR_FAIL_COND_V(!anim.is_valid(), 0.0);
 
 		// Use more precise snapping when holding Shift
-		return Input::get_singleton()->is_key_pressed(KEY_SHIFT) ? anim->get_step() * 0.25 : anim->get_step();
+		return Input::get_singleton()->is_key_pressed(Key::SHIFT) ? anim->get_step() * 0.25 : anim->get_step();
 	}
 
 	return 0.0;
@@ -484,7 +485,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 	player->stop();
 
 	String new_name = name->get_text();
-	if (new_name == "" || new_name.find(":") != -1 || new_name.find("/") != -1) {
+	if (new_name.is_empty() || new_name.find(":") != -1 || new_name.find("/") != -1) {
 		error_dialog->set_text(TTR("Invalid animation name!"));
 		error_dialog->popup_centered();
 		return;
@@ -718,7 +719,7 @@ void AnimationPlayerEditor::_animation_edit() {
 
 void AnimationPlayerEditor::_save_animation(String p_file) {
 	String current = animation->get_item_text(animation->get_selected());
-	if (current != "") {
+	if (!current.is_empty()) {
 		Ref<Animation> anim = player->get_animation(current);
 
 		ERR_FAIL_COND(!Object::cast_to<Resource>(*anim));
@@ -827,7 +828,6 @@ void AnimationPlayerEditor::_update_player() {
 
 	if (!player) {
 		AnimationPlayerEditor::get_singleton()->get_track_editor()->update_keying();
-		EditorNode::get_singleton()->update_keying();
 		return;
 	}
 
@@ -835,12 +835,12 @@ void AnimationPlayerEditor::_update_player() {
 	for (const StringName &E : animlist) {
 		Ref<Texture2D> icon;
 		if (E == player->get_autoplay()) {
-			if (E == "RESET") {
+			if (E == SceneStringNames::get_singleton()->RESET) {
 				icon = autoplay_reset_icon;
 			} else {
 				icon = autoplay_icon;
 			}
-		} else if (E == "RESET") {
+		} else if (E == SceneStringNames::get_singleton()->RESET) {
 			icon = reset_icon;
 		}
 		animation->add_icon_item(icon, E);
@@ -965,16 +965,7 @@ void AnimationPlayerEditor::_animation_duplicate() {
 		return;
 	}
 
-	Ref<Animation> new_anim = memnew(Animation);
-	List<PropertyInfo> plist;
-	anim->get_property_list(&plist);
-	for (const PropertyInfo &E : plist) {
-		if (E.usage & PROPERTY_USAGE_STORAGE) {
-			new_anim->set(E.name, anim->get(E.name));
-		}
-	}
-	new_anim->set_path("");
-
+	Ref<Animation> new_anim = _animation_clone(anim);
 	String new_name = current;
 	while (player->has_animation(new_name)) {
 		new_name = new_name + " (copy)";
@@ -998,6 +989,44 @@ void AnimationPlayerEditor::_animation_duplicate() {
 	}
 }
 
+Ref<Animation> AnimationPlayerEditor::_animation_clone(Ref<Animation> p_anim) {
+	Ref<Animation> new_anim = memnew(Animation);
+	List<PropertyInfo> plist;
+	p_anim->get_property_list(&plist);
+
+	for (const PropertyInfo &E : plist) {
+		if (E.usage & PROPERTY_USAGE_STORAGE) {
+			new_anim->set(E.name, p_anim->get(E.name));
+		}
+	}
+	new_anim->set_path("");
+
+	return new_anim;
+}
+
+void AnimationPlayerEditor::_animation_paste(Ref<Animation> p_anim) {
+	String name = p_anim->get_name();
+	if (name.is_empty()) {
+		name = TTR("Pasted Animation");
+	}
+
+	int idx = 1;
+	String base = name;
+	while (player->has_animation(name)) {
+		idx++;
+		name = base + " " + itos(idx);
+	}
+
+	undo_redo->create_action(TTR("Paste Animation"));
+	undo_redo->add_do_method(player, "add_animation", name, p_anim);
+	undo_redo->add_undo_method(player, "remove_animation", name);
+	undo_redo->add_do_method(this, "_animation_player_changed", player);
+	undo_redo->add_undo_method(this, "_animation_player_changed", player);
+	undo_redo->commit_action();
+
+	_select_anim_by_name(name);
+}
+
 void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set, bool p_timeline_only) {
 	if (updating || !player || player->is_playing()) {
 		return;
@@ -1005,7 +1034,7 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set, bool 
 
 	updating = true;
 	String current = player->get_assigned_animation();
-	if (current == "" || !player->has_animation(current)) {
+	if (current.is_empty() || !player->has_animation(current)) {
 		updating = false;
 		current = "";
 		return;
@@ -1014,7 +1043,7 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set, bool 
 	Ref<Animation> anim;
 	anim = player->get_animation(current);
 
-	float pos = CLAMP(anim->get_length() * (p_value / frame->get_max()), 0, anim->get_length());
+	float pos = CLAMP((double)anim->get_length() * (p_value / frame->get_max()), 0, (double)anim->get_length());
 	if (track_editor->is_snap_enabled()) {
 		pos = Math::snapped(pos, _get_editor_step());
 	}
@@ -1084,7 +1113,7 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 	}
 
 	Ref<Animation> anim;
-	if (current != String()) {
+	if (!current.is_empty()) {
 		anim = player->get_animation(current);
 	}
 
@@ -1133,31 +1162,22 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 		case TOOL_PASTE_ANIM: {
 			Ref<Animation> anim2 = EditorSettings::get_singleton()->get_resource_clipboard();
 			if (!anim2.is_valid()) {
-				error_dialog->set_text(TTR("No animation resource on clipboard!"));
+				error_dialog->set_text(TTR("No animation resource in clipboard!"));
+				error_dialog->popup_centered();
+				return;
+			}
+			Ref<Animation> new_anim = _animation_clone(anim2);
+			_animation_paste(new_anim);
+		} break;
+		case TOOL_PASTE_ANIM_REF: {
+			Ref<Animation> anim2 = EditorSettings::get_singleton()->get_resource_clipboard();
+			if (!anim2.is_valid()) {
+				error_dialog->set_text(TTR("No animation resource in clipboard!"));
 				error_dialog->popup_centered();
 				return;
 			}
 
-			String name = anim2->get_name();
-			if (name == "") {
-				name = TTR("Pasted Animation");
-			}
-
-			int idx = 1;
-			String base = name;
-			while (player->has_animation(name)) {
-				idx++;
-				name = base + " " + itos(idx);
-			}
-
-			undo_redo->create_action(TTR("Paste Animation"));
-			undo_redo->add_do_method(player, "add_animation", name, anim2);
-			undo_redo->add_undo_method(player, "remove_animation", name);
-			undo_redo->add_do_method(this, "_animation_player_changed", player);
-			undo_redo->add_undo_method(this, "_animation_player_changed", player);
-			undo_redo->commit_action();
-
-			_select_anim_by_name(name);
+			_animation_paste(anim2);
 		} break;
 		case TOOL_EDIT_RESOURCE: {
 			if (!animation->get_item_count()) {
@@ -1228,7 +1248,7 @@ void AnimationPlayerEditor::unhandled_key_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventKey> k = p_ev;
 	if (is_visible_in_tree() && k.is_valid() && k->is_pressed() && !k->is_echo() && !k->is_alt_pressed() && !k->is_ctrl_pressed() && !k->is_meta_pressed()) {
 		switch (k->get_keycode()) {
-			case KEY_A: {
+			case Key::A: {
 				if (!k->is_shift_pressed()) {
 					_play_bw_from_pressed();
 				} else {
@@ -1236,11 +1256,11 @@ void AnimationPlayerEditor::unhandled_key_input(const Ref<InputEvent> &p_ev) {
 				}
 				accept_event();
 			} break;
-			case KEY_S: {
+			case Key::S: {
 				_stop_pressed();
 				accept_event();
 			} break;
-			case KEY_D: {
+			case Key::D: {
 				if (!k->is_shift_pressed()) {
 					_play_from_pressed();
 				} else {
@@ -1424,7 +1444,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 
 		float pos = cpos + step_off * anim->get_step();
 
-		bool valid = anim->has_loop() || (pos >= 0 && pos <= anim->get_length());
+		bool valid = anim->get_loop_mode() != Animation::LoopMode::LOOP_NONE || (pos >= 0 && pos <= anim->get_length());
 		onion.captures_valid.write[cidx] = valid;
 		if (valid) {
 			player->seek(pos, true);
@@ -1485,7 +1505,7 @@ void AnimationPlayerEditor::_stop_onion_skinning() {
 }
 
 void AnimationPlayerEditor::_pin_pressed() {
-	EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor()->update_tree();
+	SceneTreeDock::get_singleton()->get_tree_editor()->update_tree();
 }
 
 void AnimationPlayerEditor::_bind_methods() {
@@ -1585,6 +1605,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	tool_anim->get_popup()->add_separator();
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/copy_animation", TTR("Copy")), TOOL_COPY_ANIM);
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/paste_animation", TTR("Paste")), TOOL_PASTE_ANIM);
+	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/paste_animation_as_reference", TTR("Paste As Reference")), TOOL_PASTE_ANIM_REF);
 	tool_anim->get_popup()->add_separator();
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/duplicate_animation", TTR("Duplicate")), TOOL_DUPLICATE_ANIM);
 	tool_anim->get_popup()->add_separator();
@@ -1772,9 +1793,37 @@ AnimationPlayerEditor::~AnimationPlayerEditor() {
 void AnimationPlayerEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
+			Node3DEditor::get_singleton()->connect("transform_key_request", callable_mp(this, &AnimationPlayerEditorPlugin::_transform_key_request));
+			InspectorDock::get_singleton()->connect("property_keyed", callable_mp(this, &AnimationPlayerEditorPlugin::_property_keyed));
+			anim_editor->get_track_editor()->connect("keying_changed", callable_mp(this, &AnimationPlayerEditorPlugin::_update_keying));
+			InspectorDock::get_singleton()->connect("edited_object_changed", callable_mp(anim_editor->get_track_editor(), &AnimationTrackEditor::update_keying));
 			set_force_draw_over_forwarding_enabled();
 		} break;
 	}
+}
+
+void AnimationPlayerEditorPlugin::_property_keyed(const String &p_keyed, const Variant &p_value, bool p_advance) {
+	if (!anim_editor->get_track_editor()->has_keying()) {
+		return;
+	}
+	anim_editor->get_track_editor()->insert_value_key(p_keyed, p_value, p_advance);
+}
+
+void AnimationPlayerEditorPlugin::_transform_key_request(Object *sp, const String &p_sub, const Transform3D &p_key) {
+	if (!anim_editor->get_track_editor()->has_keying()) {
+		return;
+	}
+	Node3D *s = Object::cast_to<Node3D>(sp);
+	if (!s) {
+		return;
+	}
+	anim_editor->get_track_editor()->insert_transform_key(s, p_sub, Animation::TYPE_POSITION_3D, p_key.origin);
+	anim_editor->get_track_editor()->insert_transform_key(s, p_sub, Animation::TYPE_ROTATION_3D, p_key.basis.get_rotation_quaternion());
+	anim_editor->get_track_editor()->insert_transform_key(s, p_sub, Animation::TYPE_SCALE_3D, p_key.basis.get_scale());
+}
+
+void AnimationPlayerEditorPlugin::_update_keying() {
+	InspectorDock::get_inspector_singleton()->set_keying(anim_editor->get_track_editor()->has_keying());
 }
 
 void AnimationPlayerEditorPlugin::edit(Object *p_object) {

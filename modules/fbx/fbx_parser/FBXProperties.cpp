@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -114,12 +114,12 @@ PropertyPtr ReadTypedProperty(const ElementPtr element) {
 	} else if (!strcmp(cs, "KTime")) {
 		return new TypedProperty<int64_t>(ParseTokenAsInt64(tok[4]));
 	} else if (!strcmp(cs, "Vector3D") ||
-			   !strcmp(cs, "ColorRGB") ||
-			   !strcmp(cs, "Vector") ||
-			   !strcmp(cs, "Color") ||
-			   !strcmp(cs, "Lcl Translation") ||
-			   !strcmp(cs, "Lcl Rotation") ||
-			   !strcmp(cs, "Lcl Scaling")) {
+			!strcmp(cs, "ColorRGB") ||
+			!strcmp(cs, "Vector") ||
+			!strcmp(cs, "Color") ||
+			!strcmp(cs, "Lcl Translation") ||
+			!strcmp(cs, "Lcl Rotation") ||
+			!strcmp(cs, "Lcl Scaling")) {
 		return new TypedProperty<Vector3>(Vector3(
 				ParseTokenAsFloat(tok[4]),
 				ParseTokenAsFloat(tok[5]),

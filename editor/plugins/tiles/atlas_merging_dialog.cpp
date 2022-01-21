@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -118,6 +118,7 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 		output_image_texture.instantiate();
 		output_image_texture->create_from_image(output_image);
 
+		merged->set_name(p_atlas_sources[0]->get_name());
 		merged->set_texture(output_image_texture);
 		merged->set_texture_region_size(new_texture_region_size);
 	}
@@ -300,7 +301,7 @@ AtlasMergingDialog::AtlasMergingDialog() {
 	preview = memnew(TextureRect);
 	preview->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	preview->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	preview->set_expand(true);
+	preview->set_ignore_texture_size(true);
 	preview->hide();
 	preview->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
 	atlas_merging_right_panel->add_child(preview);
@@ -308,8 +309,8 @@ AtlasMergingDialog::AtlasMergingDialog() {
 	select_2_atlases_label = memnew(Label);
 	select_2_atlases_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	select_2_atlases_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	select_2_atlases_label->set_align(Label::ALIGN_CENTER);
-	select_2_atlases_label->set_valign(Label::VALIGN_CENTER);
+	select_2_atlases_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	select_2_atlases_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	select_2_atlases_label->set_text(TTR("Please select two atlases or more."));
 	atlas_merging_right_panel->add_child(select_2_atlases_label);
 

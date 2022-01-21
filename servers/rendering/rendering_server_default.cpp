@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,14 +64,8 @@ void RenderingServerDefault::_free(RID p_rid) {
 
 /* EVENT QUEUING */
 
-void RenderingServerDefault::request_frame_drawn_callback(Object *p_where, const StringName &p_method, const Variant &p_userdata) {
-	ERR_FAIL_NULL(p_where);
-	FrameDrawnCallbacks fdc;
-	fdc.object = p_where->get_instance_id();
-	fdc.method = p_method;
-	fdc.param = p_userdata;
-
-	frame_drawn_callbacks.push_back(fdc);
+void RenderingServerDefault::request_frame_drawn_callback(const Callable &p_callable) {
+	frame_drawn_callbacks.push_back(p_callable);
 }
 
 void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
@@ -103,15 +97,13 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	RSG::scene->update_visibility_notifiers();
 
 	while (frame_drawn_callbacks.front()) {
-		Object *obj = ObjectDB::get_instance(frame_drawn_callbacks.front()->get().object);
-		if (obj) {
-			Callable::CallError ce;
-			const Variant *v = &frame_drawn_callbacks.front()->get().param;
-			obj->call(frame_drawn_callbacks.front()->get().method, &v, 1, ce);
-			if (ce.error != Callable::CallError::CALL_OK) {
-				String err = Variant::get_call_error_text(obj, frame_drawn_callbacks.front()->get().method, &v, 1, ce);
-				ERR_PRINT("Error calling frame drawn function: " + err);
-			}
+		Callable c = frame_drawn_callbacks.front()->get();
+		Variant result;
+		Callable::CallError ce;
+		c.call(nullptr, 0, result, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			String err = Variant::get_callable_error_text(c, nullptr, 0, ce);
+			ERR_PRINT("Error calling frame drawn function: " + err);
 		}
 
 		frame_drawn_callbacks.pop_front();
@@ -261,6 +253,10 @@ String RenderingServerDefault::get_video_adapter_name() const {
 
 String RenderingServerDefault::get_video_adapter_vendor() const {
 	return RSG::storage->get_video_adapter_vendor();
+}
+
+RenderingDevice::DeviceType RenderingServerDefault::get_video_adapter_type() const {
+	return RSG::storage->get_video_adapter_type();
 }
 
 void RenderingServerDefault::set_frame_profiling_enabled(bool p_enable) {

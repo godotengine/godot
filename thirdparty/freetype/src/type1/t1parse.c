@@ -4,7 +4,7 @@
  *
  *   Type 1 parser (body).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -221,7 +221,7 @@
     else
     {
       /* read segment in memory -- this is clumsy, but so does the format */
-      if ( FT_ALLOC( parser->base_dict, size )       ||
+      if ( FT_QALLOC( parser->base_dict, size )      ||
            FT_STREAM_READ( parser->base_dict, size ) )
         goto Exit;
       parser->base_len = size;
@@ -302,8 +302,8 @@
         goto Fail;
       }
 
-      if ( FT_STREAM_SEEK( start_pos )                           ||
-           FT_ALLOC( parser->private_dict, parser->private_len ) )
+      if ( FT_STREAM_SEEK( start_pos )                            ||
+           FT_QALLOC( parser->private_dict, parser->private_len ) )
         goto Fail;
 
       parser->private_len = 0;
@@ -450,7 +450,7 @@
       if ( parser->in_memory )
       {
         /* note that we allocate one more byte to put a terminating `0' */
-        if ( FT_ALLOC( parser->private_dict, size + 1 ) )
+        if ( FT_QALLOC( parser->private_dict, size + 1 ) )
           goto Fail;
         parser->private_len = size;
       }

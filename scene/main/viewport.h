@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -89,6 +89,12 @@ class Viewport : public Node {
 	GDCLASS(Viewport, Node);
 
 public:
+	enum Scaling3DMode {
+		SCALING_3D_MODE_BILINEAR,
+		SCALING_3D_MODE_FSR,
+		SCALING_3D_MODE_MAX
+	};
+
 	enum ShadowAtlasQuadrantSubdiv {
 		SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED,
 		SHADOW_ATLAS_QUADRANT_SUBDIV_1,
@@ -142,6 +148,7 @@ public:
 		DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS,
 		DEBUG_DRAW_SCENE_LUMINANCE,
 		DEBUG_DRAW_SSAO,
+		DEBUG_DRAW_SSIL,
 		DEBUG_DRAW_PSSM_SPLITS,
 		DEBUG_DRAW_DECAL_ATLAS,
 		DEBUG_DRAW_SDFGI,
@@ -244,7 +251,7 @@ private:
 		bool control = false;
 		bool shift = false;
 		bool meta = false;
-		int mouse_mask = 0;
+		MouseButton mouse_mask = MouseButton::NONE;
 
 	} physics_last_mouse_state;
 
@@ -284,8 +291,13 @@ private:
 
 	MSAA msaa = MSAA_DISABLED;
 	ScreenSpaceAA screen_space_aa = SCREEN_SPACE_AA_DISABLED;
+
+	Scaling3DMode scaling_3d_mode = SCALING_3D_MODE_BILINEAR;
+	float scaling_3d_scale = 1.0;
+	float fsr_sharpness = 0.2f;
+	float fsr_mipmap_bias = 0.0f;
 	bool use_debanding = false;
-	float lod_threshold = 1.0;
+	float mesh_lod_threshold = 1.0;
 	bool use_occlusion_culling = false;
 
 	Ref<ViewportTexture> default_texture;
@@ -327,7 +339,7 @@ private:
 		Control *mouse_focus = nullptr;
 		Control *last_mouse_focus = nullptr;
 		Control *mouse_click_grabber = nullptr;
-		int mouse_focus_mask = 0;
+		MouseButton mouse_focus_mask = MouseButton::NONE;
 		Control *key_focus = nullptr;
 		Control *mouse_over = nullptr;
 		Control *drag_mouse_over = nullptr;
@@ -348,8 +360,8 @@ private:
 		List<Control *> roots;
 		int canvas_sort_index = 0; //for sorting items with canvas as root
 		bool dragging = false;
+		bool drag_successful = false;
 		bool embed_subwindows_hint = false;
-		bool embedding_subwindows = false;
 
 		Window *subwindow_focused = nullptr;
 		SubWindowDrag subwindow_drag = SUB_WINDOW_DRAG_DISABLED;
@@ -360,7 +372,7 @@ private:
 		SubWindowResize subwindow_resize_mode;
 		Rect2i subwindow_resize_from_rect;
 
-		Vector<SubWindow> sub_windows;
+		Vector<SubWindow> sub_windows; // Don't obtain references or pointers to the elements, as their location can change.
 	} gui;
 
 	DefaultCanvasItemTextureFilter default_canvas_item_texture_filter = DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
@@ -503,11 +515,23 @@ public:
 	void set_screen_space_aa(ScreenSpaceAA p_screen_space_aa);
 	ScreenSpaceAA get_screen_space_aa() const;
 
+	void set_scaling_3d_mode(Scaling3DMode p_scaling_3d_mode);
+	Scaling3DMode get_scaling_3d_mode() const;
+
+	void set_scaling_3d_scale(float p_scaling_3d_scale);
+	float get_scaling_3d_scale() const;
+
+	void set_fsr_sharpness(float p_fsr_sharpness);
+	float get_fsr_sharpness() const;
+
+	void set_fsr_mipmap_bias(float p_fsr_mipmap_bias);
+	float get_fsr_mipmap_bias() const;
+
 	void set_use_debanding(bool p_use_debanding);
 	bool is_using_debanding() const;
 
-	void set_lod_threshold(float p_pixels);
-	float get_lod_threshold() const;
+	void set_mesh_lod_threshold(float p_pixels);
+	float get_mesh_lod_threshold() const;
 
 	void set_use_occlusion_culling(bool p_us_occlusion_culling);
 	bool is_using_occlusion_culling() const;
@@ -556,6 +580,7 @@ public:
 	bool is_handling_input_locally() const;
 
 	bool gui_is_dragging() const;
+	bool gui_is_drag_successful() const;
 
 	Control *gui_find_control(const Point2 &p_global);
 
@@ -584,7 +609,6 @@ public:
 
 #ifndef _3D_DISABLED
 	bool use_xr = false;
-	float scale_3d = 1.0;
 	friend class AudioListener3D;
 	AudioListener3D *audio_listener_3d = nullptr;
 	Set<AudioListener3D *> audio_listener_3d_set;
@@ -655,9 +679,6 @@ public:
 
 	void set_use_xr(bool p_use_xr);
 	bool is_using_xr();
-
-	void set_scale_3d(float p_scale_3d);
-	float get_scale_3d() const;
 #endif // _3D_DISABLED
 
 	Viewport();
@@ -712,6 +733,7 @@ public:
 	SubViewport();
 	~SubViewport();
 };
+VARIANT_ENUM_CAST(Viewport::Scaling3DMode);
 VARIANT_ENUM_CAST(SubViewport::UpdateMode);
 VARIANT_ENUM_CAST(Viewport::ShadowAtlasQuadrantSubdiv);
 VARIANT_ENUM_CAST(Viewport::MSAA);

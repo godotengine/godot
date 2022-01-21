@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -144,8 +144,8 @@ void GroupDialog::_add_pressed() {
 	undo_redo->add_undo_method(this, "emit_signal", "group_edited");
 
 	// To force redraw of scene tree.
-	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
-	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+	undo_redo->add_do_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
+	undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
 
 	undo_redo->commit_action();
 }
@@ -173,8 +173,8 @@ void GroupDialog::_removed_pressed() {
 	undo_redo->add_undo_method(this, "emit_signal", "group_edited");
 
 	// To force redraw of scene tree.
-	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
-	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+	undo_redo->add_do_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
+	undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
 
 	undo_redo->commit_action();
 }
@@ -204,7 +204,8 @@ void GroupDialog::_add_group(String p_name) {
 
 	TreeItem *new_group = groups->create_item(groups_root);
 	new_group->set_text(0, name);
-	new_group->add_button(0, groups->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), 0);
+	new_group->add_button(0, groups->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), DELETE_GROUP);
+	new_group->add_button(0, groups->get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), COPY_GROUP);
 	new_group->set_editable(0, true);
 	new_group->select(0);
 	groups->ensure_cursor_is_visible();
@@ -226,7 +227,7 @@ void GroupDialog::_group_renamed() {
 		}
 	}
 
-	if (name == "") {
+	if (name.is_empty()) {
 		renamed_group->set_text(0, selected_group);
 		error->set_text(TTR("Invalid group name."));
 		error->popup_centered();
@@ -297,43 +298,50 @@ void GroupDialog::_load_groups(Node *p_current) {
 	}
 }
 
-void GroupDialog::_delete_group_pressed(Object *p_item, int p_column, int p_id) {
+void GroupDialog::_modify_group_pressed(Object *p_item, int p_column, int p_id) {
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 	if (!ti) {
 		return;
 	}
 
-	String name = ti->get_text(0);
+	switch (p_id) {
+		case DELETE_GROUP: {
+			String name = ti->get_text(0);
 
-	undo_redo->create_action(TTR("Delete Group"));
+			undo_redo->create_action(TTR("Delete Group"));
 
-	List<Node *> nodes;
-	scene_tree->get_nodes_in_group(name, &nodes);
-	bool removed_all = true;
-	for (Node *E : nodes) {
-		if (_can_edit(E, name)) {
-			undo_redo->add_do_method(E, "remove_from_group", name);
-			undo_redo->add_undo_method(E, "add_to_group", name, true);
-		} else {
-			removed_all = false;
-		}
+			List<Node *> nodes;
+			scene_tree->get_nodes_in_group(name, &nodes);
+			bool removed_all = true;
+			for (Node *E : nodes) {
+				if (_can_edit(E, name)) {
+					undo_redo->add_do_method(E, "remove_from_group", name);
+					undo_redo->add_undo_method(E, "add_to_group", name, true);
+				} else {
+					removed_all = false;
+				}
+			}
+
+			if (removed_all) {
+				undo_redo->add_do_method(this, "_delete_group_item", name);
+				undo_redo->add_undo_method(this, "_add_group", name);
+			}
+
+			undo_redo->add_do_method(this, "_group_selected");
+			undo_redo->add_undo_method(this, "_group_selected");
+			undo_redo->add_do_method(this, "emit_signal", "group_edited");
+			undo_redo->add_undo_method(this, "emit_signal", "group_edited");
+
+			// To force redraw of scene tree.
+			undo_redo->add_do_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
+			undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
+
+			undo_redo->commit_action();
+		} break;
+		case COPY_GROUP: {
+			DisplayServer::get_singleton()->clipboard_set(ti->get_text(p_column));
+		} break;
 	}
-
-	if (removed_all) {
-		undo_redo->add_do_method(this, "_delete_group_item", name);
-		undo_redo->add_undo_method(this, "_add_group", name);
-	}
-
-	undo_redo->add_do_method(this, "_group_selected");
-	undo_redo->add_undo_method(this, "_group_selected");
-	undo_redo->add_do_method(this, "emit_signal", "group_edited");
-	undo_redo->add_undo_method(this, "emit_signal", "group_edited");
-
-	// To force redraw of scene tree.
-	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
-	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
-
-	undo_redo->commit_action();
 }
 
 void GroupDialog::_delete_group_item(const String &p_name) {
@@ -362,7 +370,8 @@ void GroupDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
 			if (is_layout_rtl()) {
 				add_button->set_icon(groups->get_theme_icon(SNAME("Back"), SNAME("EditorIcons")));
 				remove_button->set_icon(groups->get_theme_icon(SNAME("Forward"), SNAME("EditorIcons")));
@@ -437,7 +446,7 @@ GroupDialog::GroupDialog() {
 	groups->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	groups->add_theme_constant_override("draw_guides", 1);
 	groups->connect("item_selected", callable_mp(this, &GroupDialog::_group_selected));
-	groups->connect("button_pressed", callable_mp(this, &GroupDialog::_delete_group_pressed));
+	groups->connect("button_pressed", callable_mp(this, &GroupDialog::_modify_group_pressed));
 	groups->connect("item_edited", callable_mp(this, &GroupDialog::_group_renamed));
 
 	HBoxContainer *chbc = memnew(HBoxContainer);
@@ -536,8 +545,8 @@ GroupDialog::GroupDialog() {
 	group_empty->set_theme_type_variation("HeaderSmall");
 
 	group_empty->set_text(TTR("Empty groups will be automatically removed."));
-	group_empty->set_valign(Label::VALIGN_CENTER);
-	group_empty->set_align(Label::ALIGN_CENTER);
+	group_empty->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	group_empty->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	group_empty->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
 	group_empty->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	nodes_to_remove->add_child(group_empty);
@@ -574,15 +583,15 @@ void GroupsEditor::_add_group(const String &p_group) {
 	undo_redo->add_undo_method(this, "update_tree");
 
 	// To force redraw of scene tree.
-	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
-	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+	undo_redo->add_do_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
+	undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
 
 	undo_redo->commit_action();
 
 	group_name->clear();
 }
 
-void GroupsEditor::_remove_group(Object *p_item, int p_column, int p_id) {
+void GroupsEditor::_modify_group(Object *p_item, int p_column, int p_id) {
 	if (!node) {
 		return;
 	}
@@ -591,21 +600,26 @@ void GroupsEditor::_remove_group(Object *p_item, int p_column, int p_id) {
 	if (!ti) {
 		return;
 	}
+	switch (p_id) {
+		case DELETE_GROUP: {
+			String name = ti->get_text(0);
+			undo_redo->create_action(TTR("Remove from Group"));
 
-	String name = ti->get_text(0);
+			undo_redo->add_do_method(node, "remove_from_group", name);
+			undo_redo->add_undo_method(node, "add_to_group", name, true);
+			undo_redo->add_do_method(this, "update_tree");
+			undo_redo->add_undo_method(this, "update_tree");
 
-	undo_redo->create_action(TTR("Remove from Group"));
+			// To force redraw of scene tree.
+			undo_redo->add_do_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
+			undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
 
-	undo_redo->add_do_method(node, "remove_from_group", name);
-	undo_redo->add_undo_method(node, "add_to_group", name, true);
-	undo_redo->add_do_method(this, "update_tree");
-	undo_redo->add_undo_method(this, "update_tree");
-
-	// To force redraw of scene tree.
-	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
-	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
-
-	undo_redo->commit_action();
+			undo_redo->commit_action();
+		} break;
+		case COPY_GROUP: {
+			DisplayServer::get_singleton()->clipboard_set(ti->get_text(p_column));
+		} break;
+	}
 }
 
 struct _GroupInfoComparator {
@@ -653,7 +667,8 @@ void GroupsEditor::update_tree() {
 		TreeItem *item = tree->create_item(root);
 		item->set_text(0, gi.name);
 		if (can_be_deleted) {
-			item->add_button(0, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), 0);
+			item->add_button(0, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), DELETE_GROUP);
+			item->add_button(0, get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), COPY_GROUP);
 		} else {
 			item->set_selectable(0, false);
 		}
@@ -706,7 +721,7 @@ GroupsEditor::GroupsEditor() {
 	tree->set_hide_root(true);
 	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbc->add_child(tree);
-	tree->connect("button_pressed", callable_mp(this, &GroupsEditor::_remove_group));
+	tree->connect("button_pressed", callable_mp(this, &GroupsEditor::_modify_group));
 	tree->add_theme_constant_override("draw_guides", 1);
 	add_theme_constant_override("separation", 3 * EDSCALE);
 }

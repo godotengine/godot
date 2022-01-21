@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -89,7 +89,7 @@ public:
 
 	enum GIMode {
 		GI_MODE_DISABLED,
-		GI_MODE_BAKED,
+		GI_MODE_STATIC,
 		GI_MODE_DYNAMIC
 	};
 
@@ -101,16 +101,24 @@ public:
 		LIGHTMAP_SCALE_MAX,
 	};
 
+	enum VisibilityRangeFadeMode {
+		VISIBILITY_RANGE_FADE_DISABLED = RS::VISIBILITY_RANGE_FADE_DISABLED,
+		VISIBILITY_RANGE_FADE_SELF = RS::VISIBILITY_RANGE_FADE_SELF,
+		VISIBILITY_RANGE_FADE_DEPENDENCIES = RS::VISIBILITY_RANGE_FADE_DEPENDENCIES,
+	};
+
 private:
 	ShadowCastingSetting shadow_casting_setting = SHADOW_CASTING_SETTING_ON;
 	Ref<Material> material_override;
+	Ref<Material> material_overlay;
 
 	float visibility_range_begin = 0.0;
 	float visibility_range_end = 0.0;
 	float visibility_range_begin_margin = 0.0;
 	float visibility_range_end_margin = 0.0;
+	VisibilityRangeFadeMode visibility_range_fade_mode = VISIBILITY_RANGE_FADE_DISABLED;
 
-	Vector<NodePath> visibility_range_children;
+	float transparency = 0.0f;
 
 	float lod_bias = 1.0;
 
@@ -136,6 +144,9 @@ public:
 	void set_cast_shadows_setting(ShadowCastingSetting p_shadow_casting_setting);
 	ShadowCastingSetting get_cast_shadows_setting() const;
 
+	void set_transparecy(float p_transparency);
+	float get_transparency() const;
+
 	void set_visibility_range_begin(float p_dist);
 	float get_visibility_range_begin() const;
 
@@ -148,11 +159,14 @@ public:
 	void set_visibility_range_end_margin(float p_dist);
 	float get_visibility_range_end_margin() const;
 
-	void set_visibility_range_parent(const Node *p_parent);
-	void clear_visibility_range_parent();
+	void set_visibility_range_fade_mode(VisibilityRangeFadeMode p_mode);
+	VisibilityRangeFadeMode get_visibility_range_fade_mode() const;
 
 	void set_material_override(const Ref<Material> &p_material);
 	Ref<Material> get_material_override() const;
+
+	void set_material_overlay(const Ref<Material> &p_material);
+	Ref<Material> get_material_overlay() const;
 
 	void set_extra_cull_margin(float p_margin);
 	float get_extra_cull_margin() const;
@@ -181,5 +195,6 @@ public:
 VARIANT_ENUM_CAST(GeometryInstance3D::ShadowCastingSetting);
 VARIANT_ENUM_CAST(GeometryInstance3D::LightmapScale);
 VARIANT_ENUM_CAST(GeometryInstance3D::GIMode);
+VARIANT_ENUM_CAST(GeometryInstance3D::VisibilityRangeFadeMode);
 
 #endif

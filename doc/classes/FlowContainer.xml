@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FlowContainer" inherits="Container" version="4.0">
+	<brief_description>
+		Base class for flow containers.
+	</brief_description>
+	<description>
+		Arranges child [Control] nodes vertically or horizontally in a left-to-right or top-to-bottom flow.
+		A line is filled with [Control] nodes until no more fit on the same line, similar to text in an autowrapped label.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_line_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the current line count.
+			</description>
+		</method>
+	</methods>
+</class>

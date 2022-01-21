@@ -81,3 +81,7 @@ layout(set = 0, binding = 8) uniform texture2DArray albedo_tex;
 layout(set = 0, binding = 9) uniform texture2DArray emission_tex;
 
 layout(set = 0, binding = 10) uniform sampler linear_sampler;
+
+// Fragment action constants
+const uint FA_NONE = 0;
+const uint FA_SMOOTHEN_POSITION = 1;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,9 +54,13 @@ void GDScriptWorkspace::_bind_methods() {
 }
 
 void GDScriptWorkspace::apply_new_signal(Object *obj, String function, PackedStringArray args) {
-	String function_signature = "func " + function;
 	Ref<Script> script = obj->get_script();
 
+	if (script->get_language()->get_name() != "GDScript") {
+		return;
+	}
+
+	String function_signature = "func " + function;
 	String source = script->get_source_code();
 
 	if (source.find(function_signature) != -1) {
@@ -338,7 +342,9 @@ Error GDScriptWorkspace::initialize() {
 		}
 
 		Vector<DocData::MethodDoc> methods_signals;
+		methods_signals.append_array(class_data.constructors);
 		methods_signals.append_array(class_data.methods);
+		methods_signals.append_array(class_data.operators);
 		const int signal_start_idx = methods_signals.size();
 		methods_signals.append_array(class_data.signals);
 

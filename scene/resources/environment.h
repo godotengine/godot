@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -70,12 +70,6 @@ public:
 		TONE_MAPPER_ACES,
 	};
 
-	enum SDFGICascades {
-		SDFGI_CASCADES_4,
-		SDFGI_CASCADES_6,
-		SDFGI_CASCADES_8,
-	};
-
 	enum SDFGIYScale {
 		SDFGI_Y_SCALE_DISABLED,
 		SDFGI_Y_SCALE_75_PERCENT,
@@ -88,13 +82,6 @@ public:
 		GLOW_BLEND_MODE_SOFTLIGHT,
 		GLOW_BLEND_MODE_REPLACE,
 		GLOW_BLEND_MODE_MIX,
-	};
-
-	enum VolumetricFogShadowFilter {
-		VOLUMETRIC_FOG_SHADOW_FILTER_DISABLED,
-		VOLUMETRIC_FOG_SHADOW_FILTER_LOW,
-		VOLUMETRIC_FOG_SHADOW_FILTER_MEDIUM,
-		VOLUMETRIC_FOG_SHADOW_FILTER_HIGH,
 	};
 
 private:
@@ -149,9 +136,18 @@ private:
 	float ssao_ao_channel_affect = 0.0;
 	void _update_ssao();
 
+	// SSIL
+	bool ssil_enabled = false;
+	float ssil_radius = 5.0;
+	float ssil_intensity = 1.0;
+	float ssil_sharpness = 0.98;
+	float ssil_normal_rejection = 1.0;
+
+	void _update_ssil();
+
 	// SDFGI
 	bool sdfgi_enabled = false;
-	SDFGICascades sdfgi_cascades = SDFGI_CASCADES_6;
+	int sdfgi_cascades = 6;
 	float sdfgi_min_cell_size = 0.2;
 	SDFGIYScale sdfgi_y_scale = SDFGI_Y_SCALE_DISABLED;
 	bool sdfgi_use_occlusion = false;
@@ -190,12 +186,15 @@ private:
 
 	// Volumetric Fog
 	bool volumetric_fog_enabled = false;
-	float volumetric_fog_density = 0.01;
-	Color volumetric_fog_light = Color(0.0, 0.0, 0.0);
-	float volumetric_fog_light_energy = 1.0;
+	float volumetric_fog_density = 0.05;
+	Color volumetric_fog_albedo = Color(1.0, 1.0, 1.0);
+	Color volumetric_fog_emission = Color(0.0, 0.0, 0.0);
+	float volumetric_fog_emission_energy = 1.0;
+	float volumetric_fog_anisotropy = 0.2;
 	float volumetric_fog_length = 64.0;
 	float volumetric_fog_detail_spread = 2.0;
 	float volumetric_fog_gi_inject = 0.0;
+	float volumetric_fog_ambient_inject = false;
 	bool volumetric_fog_temporal_reproject = true;
 	float volumetric_fog_temporal_reproject_amount = 0.9;
 	void _update_volumetric_fog();
@@ -300,11 +299,23 @@ public:
 	void set_ssao_ao_channel_affect(float p_ao_channel_affect);
 	float get_ssao_ao_channel_affect() const;
 
+	// SSIL
+	void set_ssil_enabled(bool p_enabled);
+	bool is_ssil_enabled() const;
+	void set_ssil_radius(float p_radius);
+	float get_ssil_radius() const;
+	void set_ssil_intensity(float p_intensity);
+	float get_ssil_intensity() const;
+	void set_ssil_sharpness(float p_sharpness);
+	float get_ssil_sharpness() const;
+	void set_ssil_normal_rejection(float p_normal_rejection);
+	float get_ssil_normal_rejection() const;
+
 	// SDFGI
 	void set_sdfgi_enabled(bool p_enabled);
 	bool is_sdfgi_enabled() const;
-	void set_sdfgi_cascades(SDFGICascades p_cascades);
-	SDFGICascades get_sdfgi_cascades() const;
+	void set_sdfgi_cascades(int p_cascades);
+	int get_sdfgi_cascades() const;
 	void set_sdfgi_min_cell_size(float p_size);
 	float get_sdfgi_min_cell_size() const;
 	void set_sdfgi_max_distance(float p_distance);
@@ -375,16 +386,22 @@ public:
 	bool is_volumetric_fog_enabled() const;
 	void set_volumetric_fog_density(float p_density);
 	float get_volumetric_fog_density() const;
-	void set_volumetric_fog_light(Color p_color);
-	Color get_volumetric_fog_light() const;
-	void set_volumetric_fog_light_energy(float p_begin);
-	float get_volumetric_fog_light_energy() const;
+	void set_volumetric_fog_albedo(Color p_color);
+	Color get_volumetric_fog_albedo() const;
+	void set_volumetric_fog_emission(Color p_color);
+	Color get_volumetric_fog_emission() const;
+	void set_volumetric_fog_emission_energy(float p_begin);
+	float get_volumetric_fog_emission_energy() const;
+	void set_volumetric_fog_anisotropy(float p_anisotropy);
+	float get_volumetric_fog_anisotropy() const;
 	void set_volumetric_fog_length(float p_length);
 	float get_volumetric_fog_length() const;
 	void set_volumetric_fog_detail_spread(float p_detail_spread);
 	float get_volumetric_fog_detail_spread() const;
 	void set_volumetric_fog_gi_inject(float p_gi_inject);
 	float get_volumetric_fog_gi_inject() const;
+	void set_volumetric_fog_ambient_inject(float p_ambient_inject);
+	float get_volumetric_fog_ambient_inject() const;
 	void set_volumetric_fog_temporal_reprojection_enabled(bool p_enable);
 	bool is_volumetric_fog_temporal_reprojection_enabled() const;
 	void set_volumetric_fog_temporal_reprojection_amount(float p_amount);
@@ -410,9 +427,7 @@ VARIANT_ENUM_CAST(Environment::BGMode)
 VARIANT_ENUM_CAST(Environment::AmbientSource)
 VARIANT_ENUM_CAST(Environment::ReflectionSource)
 VARIANT_ENUM_CAST(Environment::ToneMapper)
-VARIANT_ENUM_CAST(Environment::SDFGICascades)
 VARIANT_ENUM_CAST(Environment::SDFGIYScale)
 VARIANT_ENUM_CAST(Environment::GlowBlendMode)
-VARIANT_ENUM_CAST(Environment::VolumetricFogShadowFilter)
 
 #endif // ENVIRONMENT_H

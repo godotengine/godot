@@ -74,17 +74,17 @@
 		</method>
 		<method name="interpolate_value">
 			<return type="Variant" />
-			<argument index="0" name="trans_type" type="Variant" />
-			<argument index="1" name="ease_type" type="Variant" />
+			<argument index="0" name="initial_value" type="Variant" />
+			<argument index="1" name="delta_value" type="Variant" />
 			<argument index="2" name="elapsed_time" type="float" />
-			<argument index="3" name="initial_value" type="float" />
-			<argument index="4" name="delta_value" type="int" enum="Tween.TransitionType" />
-			<argument index="5" name="duration" type="int" enum="Tween.EaseType" />
+			<argument index="3" name="duration" type="float" />
+			<argument index="4" name="trans_type" type="int" enum="Tween.TransitionType" />
+			<argument index="5" name="ease_type" type="int" enum="Tween.EaseType" />
 			<description>
 				This method can be used for manual interpolation of a value, when you don't want [Tween] to do animating for you. It's similar to [method @GlobalScope.lerp], but with support for custom transition and easing.
-				[code]elapsed_time[/code] is the time in seconds that passed after the interping started and it's used to control the position of the interpolation. E.g. when it's equal to half of the [code]duration[/code], the interpolated value will be halfway between initial and final values. This value can also be greater than [code]duration[/code] or lower than 0, which will extrapolate the value.
 				[code]initial_value[/code] is the starting value of the interpolation.
 				[code]delta_value[/code] is the change of the value in the interpolation, i.e. it's equal to [code]final_value - initial_value[/code].
+				[code]elapsed_time[/code] is the time in seconds that passed after the interpolation started and it's used to control the position of the interpolation. E.g. when it's equal to half of the [code]duration[/code], the interpolated value will be halfway between initial and final values. This value can also be greater than [code]duration[/code] or lower than 0, which will extrapolate the value.
 				[code]duration[/code] is the total time of the interpolation.
 				[b]Note:[/b] If [code]duration[/code] is equal to [code]0[/code], the method will always return the final value, regardless of [code]elapsed_time[/code] provided.
 			</description>
@@ -146,6 +146,7 @@
 			<description>
 				Sets the number of times the tweening sequence will be repeated, i.e. [code]set_loops(2)[/code] will run the animation twice.
 				Calling this method without arguments will make the [Tween] run infinitely, until it is either killed by [method kill] or by freeing bound node, or all the animated objects have been freed (which makes further animation impossible).
+				[b]Warning:[/b] Make sure to always add some duration/delay when using infinite loops. 0-duration looped animations (e.g. single [CallbackTweener] with no delay) are equivalent to infinite [code]while[/code] loops and will freeze your game.
 			</description>
 		</method>
 		<method name="set_parallel">
@@ -302,46 +303,64 @@
 	</signals>
 	<constants>
 		<constant name="TWEEN_PROCESS_PHYSICS" value="0" enum="TweenProcessMode">
-			The [Tween] updates during physics frame.
+			The [Tween] updates during the physics frame.
 		</constant>
 		<constant name="TWEEN_PROCESS_IDLE" value="1" enum="TweenProcessMode">
-			The [Tween] updates during idle
+			The [Tween] updates during the idle frame.
 		</constant>
 		<constant name="TWEEN_PAUSE_BOUND" value="0" enum="TweenPauseMode">
+			If the [Tween] has a bound node, it will process when that node can process (see [member Node.process_mode]). Otherwise it's the same as [constant TWEEN_PAUSE_STOP].
 		</constant>
 		<constant name="TWEEN_PAUSE_STOP" value="1" enum="TweenPauseMode">
+			If [SceneTree] is paused, the [Tween] will also pause.
 		</constant>
 		<constant name="TWEEN_PAUSE_PROCESS" value="2" enum="TweenPauseMode">
+			The [Tween] will process regardless of whether [SceneTree] is paused.
 		</constant>
 		<constant name="TRANS_LINEAR" value="0" enum="TransitionType">
+			The animation is interpolated linearly.
 		</constant>
 		<constant name="TRANS_SINE" value="1" enum="TransitionType">
+			The animation is interpolated using a sine function.
 		</constant>
 		<constant name="TRANS_QUINT" value="2" enum="TransitionType">
+			The animation is interpolated with a quintic (to the power of 5) function.
 		</constant>
 		<constant name="TRANS_QUART" value="3" enum="TransitionType">
+			The animation is interpolated with a quartic (to the power of 4) function.
 		</constant>
 		<constant name="TRANS_QUAD" value="4" enum="TransitionType">
+			The animation is interpolated with a quadratic (to the power of 2) function.
 		</constant>
 		<constant name="TRANS_EXPO" value="5" enum="TransitionType">
+			The animation is interpolated with an exponential (to the power of x) function.
 		</constant>
 		<constant name="TRANS_ELASTIC" value="6" enum="TransitionType">
+			The animation is interpolated with elasticity, wiggling around the edges.
 		</constant>
 		<constant name="TRANS_CUBIC" value="7" enum="TransitionType">
+			The animation is interpolated with a cubic (to the power of 3) function.
 		</constant>
 		<constant name="TRANS_CIRC" value="8" enum="TransitionType">
+			The animation is interpolated with a function using square roots.
 		</constant>
 		<constant name="TRANS_BOUNCE" value="9" enum="TransitionType">
+			The animation is interpolated by bouncing at the end.
 		</constant>
 		<constant name="TRANS_BACK" value="10" enum="TransitionType">
+			The animation is interpolated backing out at ends.
 		</constant>
 		<constant name="EASE_IN" value="0" enum="EaseType">
+			The interpolation starts slowly and speeds up towards the end.
 		</constant>
 		<constant name="EASE_OUT" value="1" enum="EaseType">
+			The interpolation starts quickly and slows down towards the end.
 		</constant>
 		<constant name="EASE_IN_OUT" value="2" enum="EaseType">
+			A combination of [constant EASE_IN] and [constant EASE_OUT]. The interpolation is slowest at both ends.
 		</constant>
 		<constant name="EASE_OUT_IN" value="3" enum="EaseType">
+			A combination of [constant EASE_IN] and [constant EASE_OUT]. The interpolation is fastest at both ends.
 		</constant>
 	</constants>
 </class>

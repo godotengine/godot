@@ -4,7 +4,7 @@
  *
  *   Objects manager (body).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -140,7 +140,31 @@
 
     return error;
   }
-#endif /* TT_USE_BYTECODE_INTERPRETER */
+
+
+  /*
+   * Fonts embedded in PDFs are made unique by prepending randomization
+   * prefixes to their names: as defined in Section 5.5.3, 'Font Subsets',
+   * of the PDF Reference, they consist of 6 uppercase letters followed by
+   * the `+` sign.  For safety, we do not skip prefixes violating this rule.
+   */
+
+  static const FT_String*
+  tt_skip_pdffont_random_tag( const FT_String*  name )
+  {
+    unsigned int  i;
+
+
+    if ( ft_strlen( name ) < 8 || name[6] != '+' )
+      return name;
+
+    for ( i = 0; i < 6; i++ )
+      if ( !ft_isupper( name[i] ) )
+        return name;
+
+    FT_TRACE7(( "name without randomization tag: %s\n", name + 7 ));
+    return name + 7;
+  }
 
 
   /* Compare the face with a list of well-known `tricky' fonts. */
@@ -151,7 +175,7 @@
   {
 
 #define TRICK_NAMES_MAX_CHARACTERS  19
-#define TRICK_NAMES_COUNT           26
+#define TRICK_NAMES_COUNT           20
 
     static const char trick_names[TRICK_NAMES_COUNT]
                                  [TRICK_NAMES_MAX_CHARACTERS + 1] =
@@ -171,22 +195,28 @@
       "DFGirl-W6-WIN-BF",   /* dftt-h6.ttf; version 1.00, 1993 */
       "DFGothic-EB",        /* DynaLab Inc. 1992-1995 */
       "DFGyoSho-Lt",        /* DynaLab Inc. 1992-1995 */
-      "DFHei-Md-HK-BF",     /* maybe DynaLab Inc. */
+      "DFHei",              /* DynaLab Inc. 1992-1995 [DFHei-Bd-WIN-HK-BF] */
+                            /* covers "DFHei-Md-HK-BF", maybe DynaLab Inc. */
+
       "DFHSGothic-W5",      /* DynaLab Inc. 1992-1995 */
       "DFHSMincho-W3",      /* DynaLab Inc. 1992-1995 */
       "DFHSMincho-W7",      /* DynaLab Inc. 1992-1995 */
       "DFKaiSho-SB",        /* dfkaisb.ttf */
-      "DFKaiShu",
-      "DFKaiShu-Md-HK-BF",  /* maybe DynaLab Inc. */
+      "DFKaiShu",           /* covers "DFKaiShu-Md-HK-BF", maybe DynaLab Inc. */
       "DFKai-SB",           /* kaiu.ttf; version 3.00, 1998 [DFKaiShu-SB-Estd-BF] */
-      "DFMing-Bd-HK-BF",    /* maybe DynaLab Inc. */
+
+      "DFMing",             /* DynaLab Inc. 1992-1995 [DFMing-Md-WIN-HK-BF] */
+                            /* covers "DFMing-Bd-HK-BF", maybe DynaLab Inc. */
+
       "DLC",                /* dftt-m7.ttf; version 1.00, 1993 [DLCMingBold] */
                             /* dftt-f5.ttf; version 1.00, 1993 [DLCFongSung] */
-      "DLCHayMedium",       /* dftt-b5.ttf; version 1.00, 1993 */
-      "DLCHayBold",         /* dftt-b7.ttf; version 1.00, 1993 */
-      "DLCKaiMedium",       /* dftt-k5.ttf; version 1.00, 1992 */
-      "DLCLiShu",           /* dftt-l5.ttf; version 1.00, 1992 */
-      "DLCRoundBold",       /* dftt-r7.ttf; version 1.00, 1993 */
+                            /* covers following */
+                            /* "DLCHayMedium", dftt-b5.ttf; version 1.00, 1993 */
+                            /* "DLCHayBold",   dftt-b7.ttf; version 1.00, 1993 */
+                            /* "DLCKaiMedium", dftt-k5.ttf; version 1.00, 1992 */
+                            /* "DLCLiShu",     dftt-l5.ttf; version 1.00, 1992 */
+                            /* "DLCRoundBold", dftt-r7.ttf; version 1.00, 1993 */
+
       "HuaTianKaiTi?",      /* htkt2.ttf */
       "HuaTianSongTi?",     /* htst3.ttf */
       "Ming(for ISO10646)", /* hkscsiic.ttf; version 0.12, 2007 [Ming] */
@@ -199,10 +229,12 @@
     };
 
     int  nn;
+    const FT_String*  name_without_tag;
 
 
+    name_without_tag = tt_skip_pdffont_random_tag( name );
     for ( nn = 0; nn < TRICK_NAMES_COUNT; nn++ )
-      if ( ft_strstr( name, trick_names[nn] ) )
+      if ( ft_strstr( name_without_tag, trick_names[nn] ) )
         return TRUE;
 
     return FALSE;
@@ -277,7 +309,7 @@
   tt_check_trickyness_sfnt_ids( TT_Face  face )
   {
 #define TRICK_SFNT_IDS_PER_FACE   3
-#define TRICK_SFNT_IDS_NUM_FACES  29
+#define TRICK_SFNT_IDS_NUM_FACES  31
 
     static const tt_sfnt_id_rec sfnt_id[TRICK_SFNT_IDS_NUM_FACES]
                                        [TRICK_SFNT_IDS_PER_FACE] = {
@@ -430,6 +462,16 @@
         { 0x00170003UL, 0x00000060UL }, /* cvt  */
         { 0xDBB4306EUL, 0x000058AAUL }, /* fpgm */
         { 0xD643482AUL, 0x00000035UL }  /* prep */
+      },
+        { /* DFHei-Bd-WIN-HK-BF, issue #1087 */
+        { 0x1269EB58UL, 0x00000350UL }, /* cvt  */
+        { 0x5CD5957AUL, 0x00006A4EUL }, /* fpgm */
+        { 0xF758323AUL, 0x00000380UL }  /* prep */
+      },
+        { /* DFMing-Md-WIN-HK-BF, issue #1087 */
+        { 0x122FEB0BUL, 0x00000350UL }, /* cvt  */
+        { 0x7F10919AUL, 0x000070A9UL }, /* fpgm */
+        { 0x7CD7E7B7UL, 0x0000025CUL }  /* prep */
       }
     };
 
@@ -510,16 +552,26 @@
     /* For first, check the face name for quick check. */
     if ( face->family_name                               &&
          tt_check_trickyness_family( face->family_name ) )
+    {
+      FT_TRACE3(( "found as a tricky font"
+                  " by its family name: %s\n", face->family_name ));
       return TRUE;
+    }
 
     /* Type42 fonts may lack `name' tables, we thus try to identify */
     /* tricky fonts by checking the checksums of Type42-persistent  */
     /* sfnt tables (`cvt', `fpgm', and `prep').                     */
     if ( tt_check_trickyness_sfnt_ids( (TT_Face)face ) )
+    {
+      FT_TRACE3(( "found as a tricky font"
+                  " by its cvt/fpgm/prep table checksum\n" ));
       return TRUE;
+    }
 
     return FALSE;
   }
+
+#endif /* TT_USE_BYTECODE_INTERPRETER */
 
 
   /* Check whether `.notdef' is the only glyph in the `loca' table. */
@@ -666,8 +718,10 @@
     if ( error )
       goto Exit;
 
+#ifdef TT_USE_BYTECODE_INTERPRETER
     if ( tt_check_trickyness( ttface ) )
       ttface->face_flags |= FT_FACE_FLAG_TRICKY;
+#endif
 
     error = tt_face_load_hdmx( face, stream );
     if ( error )
@@ -712,8 +766,8 @@
              tt_check_single_notdef( ttface ) )
         {
           FT_TRACE5(( "tt_face_init:"
-                      " Only the `.notdef' glyph has an outline.\n"
-                      "             "
+                      " Only the `.notdef' glyph has an outline.\n" ));
+          FT_TRACE5(( "             "
                       " Resetting scalable flag to FALSE.\n" ));
 
           ttface->face_flags &= ~FT_FACE_FLAG_SCALABLE;
@@ -1190,11 +1244,11 @@
     /* rescale CVT when needed */
     if ( size->cvt_ready < 0 )
     {
-      FT_UInt  i;
+      FT_UShort  i;
 
 
       /* all twilight points are originally zero */
-      for ( i = 0; i < (FT_UInt)size->twilight.n_points; i++ )
+      for ( i = 0; i < size->twilight.n_points; i++ )
       {
         size->twilight.org[i].x = 0;
         size->twilight.org[i].y = 0;
@@ -1203,7 +1257,7 @@
       }
 
       /* clear storage area */
-      for ( i = 0; i < (FT_UInt)size->storage_size; i++ )
+      for ( i = 0; i < size->storage_size; i++ )
         size->storage[i] = 0;
 
       size->GS = tt_default_graphics_state;

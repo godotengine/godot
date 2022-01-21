@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -387,14 +387,6 @@ const VkFormat RenderingDeviceVulkan::vulkan_formats[RenderingDevice::DATA_FORMA
 	VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM,
 	VK_FORMAT_G16_B16R16_2PLANE_422_UNORM,
 	VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM,
-	VK_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG,
-	VK_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG,
-	VK_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG,
-	VK_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG,
-	VK_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG,
-	VK_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG,
-	VK_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG,
-	VK_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG,
 };
 
 const char *RenderingDeviceVulkan::named_formats[RenderingDevice::DATA_FORMAT_MAX] = {
@@ -616,14 +608,6 @@ const char *RenderingDeviceVulkan::named_formats[RenderingDevice::DATA_FORMAT_MA
 	"G16_B16_R16_3Plane_422_Unorm",
 	"G16_B16R16_2Plane_422_Unorm",
 	"G16_B16_R16_3Plane_444_Unorm",
-	"Pvrtc1_2Bpp_Unorm_Block_Img",
-	"Pvrtc1_4Bpp_Unorm_Block_Img",
-	"Pvrtc2_2Bpp_Unorm_Block_Img",
-	"Pvrtc2_4Bpp_Unorm_Block_Img",
-	"Pvrtc1_2Bpp_Srgb_Block_Img",
-	"Pvrtc1_4Bpp_Srgb_Block_Img",
-	"Pvrtc2_2Bpp_Srgb_Block_Img",
-	"Pvrtc2_4Bpp_Srgb_Block_Img"
 };
 
 int RenderingDeviceVulkan::get_format_vertex_size(DataFormat p_format) {
@@ -970,15 +954,6 @@ uint32_t RenderingDeviceVulkan::get_image_format_pixel_size(DataFormat p_format)
 		case DATA_FORMAT_G16_B16R16_2PLANE_422_UNORM:
 		case DATA_FORMAT_G16_B16_R16_3PLANE_444_UNORM:
 			return 8;
-		case DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG:
-			return 1;
 		default: {
 			ERR_PRINT("Format not handled, bug");
 		}
@@ -1046,20 +1021,6 @@ void RenderingDeviceVulkan::get_compressed_image_format_block_dimensions(DataFor
 		case DATA_FORMAT_ASTC_12x12_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_12x12_SRGB_BLOCK:
 			r_w = 4;
-			r_h = 4;
-			return;
-		case DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG:
-			r_w = 4;
-			r_h = 4;
-			return;
-		case DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG:
-			r_w = 8;
 			r_h = 4;
 			return;
 		default: {
@@ -1138,15 +1099,6 @@ uint32_t RenderingDeviceVulkan::get_compressed_image_format_block_byte_size(Data
 		case DATA_FORMAT_ASTC_12x12_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_12x12_SRGB_BLOCK:
 			return 8; //wrong
-		case DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG:
-			return 8; //what varies is resolution
 		default: {
 		}
 	}
@@ -1167,16 +1119,7 @@ uint32_t RenderingDeviceVulkan::get_compressed_image_format_pixel_rshift(DataFor
 		case DATA_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK:
 		case DATA_FORMAT_EAC_R11_UNORM_BLOCK:
 		case DATA_FORMAT_EAC_R11_SNORM_BLOCK:
-		case DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG:
 			return 1;
-		case DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG: //these formats are quarter byte size, so rshift is 1
-		case DATA_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG:
-			return 2;
 		default: {
 		}
 	}
@@ -2170,7 +2113,7 @@ RID RenderingDeviceVulkan::texture_create_shared(const TextureView &p_view, RID 
 	return id;
 }
 
-RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, TextureSliceType p_slice_type) {
+RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps, TextureSliceType p_slice_type) {
 	_THREAD_SAFE_METHOD_
 
 	Texture *src_texture = texture_owner.get_or_null(p_with_texture);
@@ -2194,6 +2137,7 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 	//create view
 
 	ERR_FAIL_UNSIGNED_INDEX_V(p_mipmap, src_texture->mipmaps, RID());
+	ERR_FAIL_COND_V(p_mipmap + p_mipmaps > src_texture->mipmaps, RID());
 	ERR_FAIL_UNSIGNED_INDEX_V(p_layer, src_texture->layers, RID());
 
 	int slice_layers = 1;
@@ -2206,7 +2150,7 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 
 	Texture texture = *src_texture;
 	get_image_format_required_size(texture.format, texture.width, texture.height, texture.depth, p_mipmap + 1, &texture.width, &texture.height);
-	texture.mipmaps = 1;
+	texture.mipmaps = p_mipmaps;
 	texture.layers = slice_layers;
 	texture.base_mipmap = p_mipmap;
 	texture.base_layer = p_layer;
@@ -2269,7 +2213,7 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 				"Specified layer must be a multiple of 6.");
 	}
 	image_view_create_info.subresourceRange.baseMipLevel = p_mipmap;
-	image_view_create_info.subresourceRange.levelCount = 1;
+	image_view_create_info.subresourceRange.levelCount = p_mipmaps;
 	image_view_create_info.subresourceRange.layerCount = slice_layers;
 	image_view_create_info.subresourceRange.baseArrayLayer = p_layer;
 
@@ -2520,7 +2464,7 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 		image_memory_barrier.subresourceRange.baseArrayLayer = p_layer;
 		image_memory_barrier.subresourceRange.layerCount = 1;
 
-		vkCmdPipelineBarrier(command_buffer, VK_ACCESS_TRANSFER_WRITE_BIT, barrier_flags, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+		vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, barrier_flags, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
 	}
 
 	if (texture->used_in_frame != frames_drawn) {
@@ -3273,10 +3217,10 @@ bool RenderingDeviceVulkan::texture_is_format_supported_for_usage(DataFormat p_f
 VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentFormat> &p_attachments, const Vector<FramebufferPass> &p_passes, InitialAction p_initial_action, FinalAction p_final_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, uint32_t p_view_count, Vector<TextureSamples> *r_samples) {
 	// Set up dependencies from/to external equivalent to the default (implicit) one, and then amend them
 	const VkPipelineStageFlags default_access_mask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT |
-													 VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
-													 VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
-													 VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
-													 VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT; // From Section 7.1 of Vulkan API Spec v1.1.148
+			VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+			VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT; // From Section 7.1 of Vulkan API Spec v1.1.148
 
 	VkPipelineStageFlags reading_stages = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT;
 	VkSubpassDependency dependencies[2] = { { VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, 0, default_access_mask, 0 },
@@ -4249,7 +4193,7 @@ String RenderingDeviceVulkan::_shader_uniform_debug(RID p_shader, int p_set) {
 		}
 		for (int j = 0; j < shader->sets[i].uniform_info.size(); j++) {
 			const UniformInfo &ui = shader->sets[i].uniform_info[j];
-			if (ret != String()) {
+			if (!ret.is_empty()) {
 				ret += "\n";
 			}
 			ret += "Set: " + itos(i) + " Binding: " + itos(ui.binding) + " Type: " + shader_uniform_names[ui.type] + " Length: " + itos(ui.length);
@@ -8049,12 +7993,15 @@ void RenderingDeviceVulkan::compute_list_dispatch(ComputeListID p_list, uint32_t
 	ComputeList *cl = compute_list;
 
 #ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_MSG(p_x_groups == 0, "Dispatch amount of X compute groups (" + itos(p_x_groups) + ") is zero.");
+	ERR_FAIL_COND_MSG(p_z_groups == 0, "Dispatch amount of Z compute groups (" + itos(p_z_groups) + ") is zero.");
+	ERR_FAIL_COND_MSG(p_y_groups == 0, "Dispatch amount of Y compute groups (" + itos(p_y_groups) + ") is zero.");
 	ERR_FAIL_COND_MSG(p_x_groups > limits.maxComputeWorkGroupCount[0],
 			"Dispatch amount of X compute groups (" + itos(p_x_groups) + ") is larger than device limit (" + itos(limits.maxComputeWorkGroupCount[0]) + ")");
 	ERR_FAIL_COND_MSG(p_y_groups > limits.maxComputeWorkGroupCount[1],
-			"Dispatch amount of Y compute groups (" + itos(p_x_groups) + ") is larger than device limit (" + itos(limits.maxComputeWorkGroupCount[0]) + ")");
+			"Dispatch amount of Y compute groups (" + itos(p_y_groups) + ") is larger than device limit (" + itos(limits.maxComputeWorkGroupCount[1]) + ")");
 	ERR_FAIL_COND_MSG(p_z_groups > limits.maxComputeWorkGroupCount[2],
-			"Dispatch amount of Z compute groups (" + itos(p_x_groups) + ") is larger than device limit (" + itos(limits.maxComputeWorkGroupCount[0]) + ")");
+			"Dispatch amount of Z compute groups (" + itos(p_z_groups) + ") is larger than device limit (" + itos(limits.maxComputeWorkGroupCount[2]) + ")");
 
 	ERR_FAIL_COND_MSG(!cl->validation.active, "Submitted Compute Lists can no longer be modified.");
 #endif
@@ -8102,6 +8049,12 @@ void RenderingDeviceVulkan::compute_list_dispatch(ComputeListID p_list, uint32_t
 void RenderingDeviceVulkan::compute_list_dispatch_threads(ComputeListID p_list, uint32_t p_x_threads, uint32_t p_y_threads, uint32_t p_z_threads) {
 	ERR_FAIL_COND(p_list != ID_TYPE_COMPUTE_LIST);
 	ERR_FAIL_COND(!compute_list);
+
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_MSG(p_x_threads == 0, "Dispatch amount of X compute threads (" + itos(p_x_threads) + ") is zero.");
+	ERR_FAIL_COND_MSG(p_y_threads == 0, "Dispatch amount of Y compute threads (" + itos(p_y_threads) + ") is zero.");
+	ERR_FAIL_COND_MSG(p_z_threads == 0, "Dispatch amount of Z compute threads (" + itos(p_z_threads) + ") is zero.");
+#endif
 
 	ComputeList *cl = compute_list;
 
@@ -8419,11 +8372,11 @@ void RenderingDeviceVulkan::_free_internal(RID p_id) {
 	} else if (uniform_set_owner.owns(p_id)) {
 		UniformSet *uniform_set = uniform_set_owner.get_or_null(p_id);
 		frames[frame].uniform_sets_to_dispose_of.push_back(*uniform_set);
-		if (uniform_set->invalidated_callback != nullptr) {
-			uniform_set->invalidated_callback(p_id, uniform_set->invalidated_callback_userdata);
-		}
-
 		uniform_set_owner.free(p_id);
+
+		if (uniform_set->invalidated_callback != nullptr) {
+			uniform_set->invalidated_callback(uniform_set->invalidated_callback_userdata);
+		}
 	} else if (render_pipeline_owner.owns(p_id)) {
 		RenderPipeline *pipeline = render_pipeline_owner.get_or_null(p_id);
 		frames[frame].render_pipelines_to_dispose_of.push_back(*pipeline);
@@ -8516,6 +8469,11 @@ String RenderingDeviceVulkan::get_device_vendor_name() const {
 String RenderingDeviceVulkan::get_device_name() const {
 	return context->get_device_name();
 }
+
+RenderingDevice::DeviceType RenderingDeviceVulkan::get_device_type() const {
+	return context->get_device_type();
+}
+
 String RenderingDeviceVulkan::get_device_pipeline_cache_uuid() const {
 	return context->get_device_pipeline_cache_uuid();
 }
@@ -8813,6 +8771,7 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 		// get info about further features
 		VulkanContext::MultiviewCapabilities multiview_capabilies = p_context->get_multiview_capabilities();
 		device_capabilities.supports_multiview = multiview_capabilies.is_supported && multiview_capabilies.max_view_count > 1;
+		device_capabilities.supports_fsr_half_float = p_context->get_shader_capabilities().shader_float16_is_supported && p_context->get_storage_buffer_capabilities().storage_buffer_16_bit_access_is_supported;
 	}
 
 	context = p_context;
@@ -8913,6 +8872,8 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 		}
 	}
 
+	// Note: If adding new project settings here, also duplicate their definition in
+	// rendering_server.cpp for headless doctool.
 	staging_buffer_block_size = GLOBAL_DEF("rendering/vulkan/staging_buffer/block_size_kb", 256);
 	staging_buffer_block_size = MAX(4, staging_buffer_block_size);
 	staging_buffer_block_size *= 1024; //kb -> bytes
@@ -8968,7 +8929,7 @@ void RenderingDeviceVulkan::_free_rids(T &p_owner, const char *p_type) {
 }
 
 void RenderingDeviceVulkan::capture_timestamp(const String &p_name) {
-	ERR_FAIL_COND_MSG(draw_list != nullptr, "Capturing timestamps during draw list creation is not allowed. Offending timestap was: " + p_name);
+	ERR_FAIL_COND_MSG(draw_list != nullptr, "Capturing timestamps during draw list creation is not allowed. Offending timestamp was: " + p_name);
 	ERR_FAIL_COND(frames[frame].timestamp_count >= max_timestamp_query_elements);
 
 	//this should be optional for profiling, else it will slow things down
@@ -8978,35 +8939,35 @@ void RenderingDeviceVulkan::capture_timestamp(const String &p_name) {
 		memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
 		memoryBarrier.pNext = nullptr;
 		memoryBarrier.srcAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT |
-									  VK_ACCESS_INDEX_READ_BIT |
-									  VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT |
-									  VK_ACCESS_UNIFORM_READ_BIT |
-									  VK_ACCESS_INPUT_ATTACHMENT_READ_BIT |
-									  VK_ACCESS_SHADER_READ_BIT |
-									  VK_ACCESS_SHADER_WRITE_BIT |
-									  VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
-									  VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
-									  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
-									  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
-									  VK_ACCESS_TRANSFER_READ_BIT |
-									  VK_ACCESS_TRANSFER_WRITE_BIT |
-									  VK_ACCESS_HOST_READ_BIT |
-									  VK_ACCESS_HOST_WRITE_BIT;
+				VK_ACCESS_INDEX_READ_BIT |
+				VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT |
+				VK_ACCESS_UNIFORM_READ_BIT |
+				VK_ACCESS_INPUT_ATTACHMENT_READ_BIT |
+				VK_ACCESS_SHADER_READ_BIT |
+				VK_ACCESS_SHADER_WRITE_BIT |
+				VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+				VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+				VK_ACCESS_TRANSFER_READ_BIT |
+				VK_ACCESS_TRANSFER_WRITE_BIT |
+				VK_ACCESS_HOST_READ_BIT |
+				VK_ACCESS_HOST_WRITE_BIT;
 		memoryBarrier.dstAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT |
-									  VK_ACCESS_INDEX_READ_BIT |
-									  VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT |
-									  VK_ACCESS_UNIFORM_READ_BIT |
-									  VK_ACCESS_INPUT_ATTACHMENT_READ_BIT |
-									  VK_ACCESS_SHADER_READ_BIT |
-									  VK_ACCESS_SHADER_WRITE_BIT |
-									  VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
-									  VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
-									  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
-									  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
-									  VK_ACCESS_TRANSFER_READ_BIT |
-									  VK_ACCESS_TRANSFER_WRITE_BIT |
-									  VK_ACCESS_HOST_READ_BIT |
-									  VK_ACCESS_HOST_WRITE_BIT;
+				VK_ACCESS_INDEX_READ_BIT |
+				VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT |
+				VK_ACCESS_UNIFORM_READ_BIT |
+				VK_ACCESS_INPUT_ATTACHMENT_READ_BIT |
+				VK_ACCESS_SHADER_READ_BIT |
+				VK_ACCESS_SHADER_WRITE_BIT |
+				VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+				VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+				VK_ACCESS_TRANSFER_READ_BIT |
+				VK_ACCESS_TRANSFER_WRITE_BIT |
+				VK_ACCESS_HOST_READ_BIT |
+				VK_ACCESS_HOST_WRITE_BIT;
 
 		vkCmdPipelineBarrier(frames[frame].draw_command_buffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
 	}

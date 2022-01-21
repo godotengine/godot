@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -208,19 +208,19 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 				} break;
 				case OBJ_MENU_NEW_SCRIPT: {
 					if (Object::cast_to<Node>(owner)) {
-						EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(Object::cast_to<Node>(owner), false);
+						SceneTreeDock::get_singleton()->open_script_dialog(Object::cast_to<Node>(owner), false);
 					}
 
 				} break;
 				case OBJ_MENU_EXTEND_SCRIPT: {
 					if (Object::cast_to<Node>(owner)) {
-						EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(Object::cast_to<Node>(owner), true);
+						SceneTreeDock::get_singleton()->open_script_dialog(Object::cast_to<Node>(owner), true);
 					}
 
 				} break;
 				case OBJ_MENU_SHOW_IN_FILE_SYSTEM: {
 					RES r = v;
-					FileSystemDock *file_system_dock = EditorNode::get_singleton()->get_filesystem_dock();
+					FileSystemDock *file_system_dock = FileSystemDock::get_singleton();
 					file_system_dock->navigate_to_path(r->get_path());
 					// Ensure that the FileSystem dock is visible.
 					TabContainer *tab_container = (TabContainer *)file_system_dock->get_parent_control();
@@ -312,7 +312,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 	spinbox->hide();
 	slider->hide();
 	menu->clear();
-	menu->set_size(Size2(1, 1) * EDSCALE);
+	menu->reset_size();
 
 	for (int i = 0; i < MAX_VALUE_EDITORS; i++) {
 		if (i < MAX_VALUE_EDITORS / 4) {
@@ -407,11 +407,11 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				return false;
 
 			} else if (hint == PROPERTY_HINT_LAYERS_2D_PHYSICS ||
-					   hint == PROPERTY_HINT_LAYERS_2D_RENDER ||
-					   hint == PROPERTY_HINT_LAYERS_2D_NAVIGATION ||
-					   hint == PROPERTY_HINT_LAYERS_3D_PHYSICS ||
-					   hint == PROPERTY_HINT_LAYERS_3D_RENDER ||
-					   hint == PROPERTY_HINT_LAYERS_3D_NAVIGATION) {
+					hint == PROPERTY_HINT_LAYERS_2D_RENDER ||
+					hint == PROPERTY_HINT_LAYERS_2D_NAVIGATION ||
+					hint == PROPERTY_HINT_LAYERS_3D_PHYSICS ||
+					hint == PROPERTY_HINT_LAYERS_3D_RENDER ||
+					hint == PROPERTY_HINT_LAYERS_3D_NAVIGATION) {
 				String basename;
 				switch (hint) {
 					case PROPERTY_HINT_LAYERS_2D_RENDER:
@@ -482,7 +482,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				Vector<String> flags = hint_text.split(",");
 				for (int i = 0; i < flags.size(); i++) {
 					String flag = flags[i];
-					if (flag == "") {
+					if (flag.is_empty()) {
 						continue;
 					}
 					menu->add_check_item(flag, i);
@@ -506,12 +506,16 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 		} break;
 		case Variant::STRING: {
-			if (hint == PROPERTY_HINT_FILE || hint == PROPERTY_HINT_GLOBAL_FILE) {
+			if (hint == PROPERTY_HINT_LOCALE_ID) {
+				List<String> names;
+				names.push_back(TTR("Locale..."));
+				names.push_back(TTR("Clear"));
+				config_action_buttons(names);
+			} else if (hint == PROPERTY_HINT_FILE || hint == PROPERTY_HINT_GLOBAL_FILE) {
 				List<String> names;
 				names.push_back(TTR("File..."));
 				names.push_back(TTR("Clear"));
 				config_action_buttons(names);
-
 			} else if (hint == PROPERTY_HINT_DIR || hint == PROPERTY_HINT_GLOBAL_DIR) {
 				List<String> names;
 				names.push_back(TTR("Dir..."));
@@ -552,7 +556,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 					add_child(create_dialog);
 				}
 
-				if (hint_text != String()) {
+				if (!hint_text.is_empty()) {
 					create_dialog->set_base_type(hint_text);
 				} else {
 					create_dialog->set_base_type("Object");
@@ -810,7 +814,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				//late init for performance
 				color_picker = memnew(ColorPicker);
 				color_picker->set_deferred_mode(true);
-				add_child(color_picker);
+				value_vbox->add_child(color_picker);
 				color_picker->hide();
 				color_picker->connect("color_changed", callable_mp(this, &CustomPropertyEditor::_color_changed));
 
@@ -853,7 +857,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			if (p_name == "script" && hint_text == "Script" && Object::cast_to<Node>(owner)) {
 				menu->add_item(TTR("New Script"), OBJ_MENU_NEW_SCRIPT);
 				menu->add_separator();
-			} else if (hint_text != "") {
+			} else if (!hint_text.is_empty()) {
 				int idx = 0;
 
 				Vector<EditorData::CustomType> custom_resources;
@@ -933,7 +937,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			RES cb = EditorSettings::get_singleton()->get_resource_clipboard();
 			bool paste_valid = false;
 			if (cb.is_valid()) {
-				if (hint_text == "") {
+				if (hint_text.is_empty()) {
 					paste_valid = true;
 				} else {
 					for (int i = 0; i < hint_text.get_slice_count(","); i++) {
@@ -1034,6 +1038,14 @@ void CustomPropertyEditor::_file_selected(String p_file) {
 	}
 }
 
+void CustomPropertyEditor::_locale_selected(String p_locale) {
+	if (type == Variant::STRING && hint == PROPERTY_HINT_LOCALE_ID) {
+		v = p_locale;
+		emit_signal(SNAME("variant_changed"));
+		hide();
+	}
+}
+
 void CustomPropertyEditor::_type_create_selected(int p_idx) {
 	if (type == Variant::INT || type == Variant::FLOAT) {
 		float newval = 0;
@@ -1108,7 +1120,7 @@ void CustomPropertyEditor::_node_path_selected(NodePath p_path) {
 		return;
 	}
 
-	if (hint == PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE && hint_text != String()) {
+	if (hint == PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE && !hint_text.is_empty()) {
 		Node *node = get_node(hint_text);
 		if (node) {
 			Node *tonode = node->get_node(p_path);
@@ -1177,7 +1189,8 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 		case Variant::STRING: {
 			if (hint == PROPERTY_HINT_MULTILINE_TEXT) {
 				hide();
-
+			} else if (hint == PROPERTY_HINT_LOCALE_ID) {
+				locale->popup_locale_dialog();
 			} else if (hint == PROPERTY_HINT_FILE || hint == PROPERTY_HINT_GLOBAL_FILE) {
 				if (p_which == 0) {
 					if (hint == PROPERTY_HINT_FILE) {
@@ -1191,7 +1204,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 
 					file->clear_filters();
 
-					if (hint_text != "") {
+					if (!hint_text.is_empty()) {
 						Vector<String> extensions = hint_text.split(",");
 						for (int i = 0; i < extensions.size(); i++) {
 							String filter = extensions[i];
@@ -1243,7 +1256,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 				if (owner->is_class("Node") && (v.get_type() == Variant::NODE_PATH) && Object::cast_to<Node>(owner)->has_node(v)) {
 					Node *target_node = Object::cast_to<Node>(owner)->get_node(v);
 					EditorNode::get_singleton()->get_editor_selection()->clear();
-					EditorNode::get_singleton()->get_scene_tree_dock()->set_selected(target_node);
+					SceneTreeDock::get_singleton()->set_selected(target_node);
 				}
 
 				hide();
@@ -1343,7 +1356,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 void CustomPropertyEditor::_drag_easing(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseMotion> mm = p_ev;
 
-	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
+	if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
 		float rel = mm->get_relative().x;
 		if (rel == 0) {
 			return;
@@ -1410,7 +1423,7 @@ void CustomPropertyEditor::_draw_easing() {
 		prev = h;
 	}
 
-	f->draw_string(ci, Point2(10, 10 + f->get_ascent(font_size)), String::num(exp, 2), HALIGN_LEFT, -1, font_size, color);
+	f->draw_string(ci, Point2(10, 10 + f->get_ascent(font_size)), String::num(exp, 2), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color);
 }
 
 void CustomPropertyEditor::_text_edit_changed() {
@@ -1628,7 +1641,7 @@ real_t CustomPropertyEditor::_parse_real_expression(String text) {
 }
 
 void CustomPropertyEditor::_emit_changed_whole_or_field() {
-	if (!Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	if (!Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 		emit_signal(SNAME("variant_changed"));
 	} else {
 		emit_signal(SNAME("variant_field_changed"), field_names[focused_value_editor]);
@@ -1671,7 +1684,7 @@ void CustomPropertyEditor::_focus_exit() {
 }
 
 void CustomPropertyEditor::config_action_buttons(const List<String> &p_strings) {
-	Ref<StyleBox> sb = action_buttons[0]->get_theme_stylebox(SNAME("panel"));
+	Ref<StyleBox> sb = action_buttons[0]->get_theme_stylebox(SNAME("button"));
 	int margin_top = sb->get_margin(SIDE_TOP);
 	int margin_left = sb->get_margin(SIDE_LEFT);
 	int margin_bottom = sb->get_margin(SIDE_BOTTOM);
@@ -1804,72 +1817,82 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	}
 
 	text_edit = memnew(TextEdit);
-	add_child(text_edit);
+	value_vbox->add_child(text_edit);
 	text_edit->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 5);
+	text_edit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	text_edit->set_offset(SIDE_BOTTOM, -30);
 
 	text_edit->hide();
 	text_edit->connect("text_changed", callable_mp(this, &CustomPropertyEditor::_text_edit_changed));
 
-	for (int i = 0; i < MAX_ACTION_BUTTONS; i++) {
-		action_buttons[i] = memnew(Button);
-		action_buttons[i]->hide();
-		add_child(action_buttons[i]);
-		Vector<Variant> binds;
-		binds.push_back(i);
-		action_buttons[i]->connect("pressed", callable_mp(this, &CustomPropertyEditor::_action_pressed), binds);
-	}
-
 	color_picker = nullptr;
 
 	file = memnew(EditorFileDialog);
-	add_child(file);
+	value_vbox->add_child(file);
 	file->hide();
 
 	file->connect("file_selected", callable_mp(this, &CustomPropertyEditor::_file_selected));
 	file->connect("dir_selected", callable_mp(this, &CustomPropertyEditor::_file_selected));
 
+	locale = memnew(EditorLocaleDialog);
+	value_vbox->add_child(locale);
+	locale->hide();
+
+	locale->connect("locale_selected", callable_mp(this, &CustomPropertyEditor::_locale_selected));
+
 	error = memnew(ConfirmationDialog);
 	error->set_title(TTR("Error!"));
-	add_child(error);
+	value_vbox->add_child(error);
 
 	scene_tree = memnew(SceneTreeDialog);
-	add_child(scene_tree);
+	value_vbox->add_child(scene_tree);
 	scene_tree->connect("selected", callable_mp(this, &CustomPropertyEditor::_node_path_selected));
 	scene_tree->get_scene_tree()->set_show_enabled_subscene(true);
 
 	texture_preview = memnew(TextureRect);
-	add_child(texture_preview);
+	value_vbox->add_child(texture_preview);
 	texture_preview->hide();
 
 	easing_draw = memnew(Control);
-	add_child(easing_draw);
+	value_vbox->add_child(easing_draw);
 	easing_draw->hide();
 	easing_draw->connect("draw", callable_mp(this, &CustomPropertyEditor::_draw_easing));
 	easing_draw->connect("gui_input", callable_mp(this, &CustomPropertyEditor::_drag_easing));
 	easing_draw->set_default_cursor_shape(Control::CURSOR_MOVE);
 
 	type_button = memnew(MenuButton);
-	add_child(type_button);
+	value_vbox->add_child(type_button);
 	type_button->hide();
 	type_button->get_popup()->connect("id_pressed", callable_mp(this, &CustomPropertyEditor::_type_create_selected));
 
 	menu = memnew(PopupMenu);
 	//	menu->set_pass_on_modal_close_click(false);
-	add_child(menu);
+	value_vbox->add_child(menu);
 	menu->connect("id_pressed", callable_mp(this, &CustomPropertyEditor::_menu_option));
 
 	evaluator = nullptr;
 
 	spinbox = memnew(SpinBox);
-	add_child(spinbox);
+	value_vbox->add_child(spinbox);
 	spinbox->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 5);
 	spinbox->connect("value_changed", callable_mp(this, &CustomPropertyEditor::_range_modified));
 
 	slider = memnew(HSlider);
-	add_child(slider);
+	value_vbox->add_child(slider);
 	slider->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 5);
 	slider->connect("value_changed", callable_mp(this, &CustomPropertyEditor::_range_modified));
+
+	action_hboxes = memnew(HBoxContainer);
+	action_hboxes->set_alignment(BoxContainer::ALIGNMENT_CENTER);
+	value_vbox->add_child(action_hboxes);
+	for (int i = 0; i < MAX_ACTION_BUTTONS; i++) {
+		action_buttons[i] = memnew(Button);
+		action_buttons[i]->hide();
+		action_hboxes->add_child(action_buttons[i]);
+		Vector<Variant> binds;
+		binds.push_back(i);
+		action_buttons[i]->connect("pressed", callable_mp(this, &CustomPropertyEditor::_action_pressed), binds);
+	}
 
 	create_dialog = nullptr;
 	property_select = nullptr;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,6 +42,17 @@ FileDialog::RegisterFunc FileDialog::unregister_func = nullptr;
 
 void FileDialog::popup_file_dialog() {
 	popup_centered_clamped(Size2i(700, 500), 0.8f);
+	_focus_file_text();
+}
+
+void FileDialog::_focus_file_text() {
+	int lp = file->get_text().rfind(".");
+	if (lp != -1) {
+		file->select(0, lp);
+		if (file->is_inside_tree() && !get_tree()->is_node_being_edited(file)) {
+			file->grab_focus();
+		}
+	}
 }
 
 VBoxContainer *FileDialog::get_vbox() {
@@ -51,26 +62,32 @@ VBoxContainer *FileDialog::get_vbox() {
 void FileDialog::_theme_changed() {
 	Color font_color = vbox->get_theme_color(SNAME("font_color"), SNAME("Button"));
 	Color font_hover_color = vbox->get_theme_color(SNAME("font_hover_color"), SNAME("Button"));
+	Color font_focus_color = vbox->get_theme_color(SNAME("font_focus_color"), SNAME("Button"));
 	Color font_pressed_color = vbox->get_theme_color(SNAME("font_pressed_color"), SNAME("Button"));
 
 	dir_up->add_theme_color_override("icon_normal_color", font_color);
 	dir_up->add_theme_color_override("icon_hover_color", font_hover_color);
+	dir_up->add_theme_color_override("icon_focus_color", font_focus_color);
 	dir_up->add_theme_color_override("icon_pressed_color", font_pressed_color);
 
 	dir_prev->add_theme_color_override("icon_color_normal", font_color);
 	dir_prev->add_theme_color_override("icon_color_hover", font_hover_color);
+	dir_prev->add_theme_color_override("icon_focus_color", font_focus_color);
 	dir_prev->add_theme_color_override("icon_color_pressed", font_pressed_color);
 
 	dir_next->add_theme_color_override("icon_color_normal", font_color);
 	dir_next->add_theme_color_override("icon_color_hover", font_hover_color);
+	dir_next->add_theme_color_override("icon_focus_color", font_focus_color);
 	dir_next->add_theme_color_override("icon_color_pressed", font_pressed_color);
 
 	refresh->add_theme_color_override("icon_normal_color", font_color);
 	refresh->add_theme_color_override("icon_hover_color", font_hover_color);
+	refresh->add_theme_color_override("icon_focus_color", font_focus_color);
 	refresh->add_theme_color_override("icon_pressed_color", font_pressed_color);
 
 	show_hidden->add_theme_color_override("icon_normal_color", font_color);
 	show_hidden->add_theme_color_override("icon_hover_color", font_hover_color);
+	show_hidden->add_theme_color_override("icon_focus_color", font_focus_color);
 	show_hidden->add_theme_color_override("icon_pressed_color", font_pressed_color);
 }
 
@@ -104,7 +121,7 @@ void FileDialog::unhandled_input(const Ref<InputEvent> &p_event) {
 			bool handled = true;
 
 			switch (k->get_keycode()) {
-				case KEY_H: {
+				case Key::H: {
 					if (k->is_command_pressed()) {
 						set_show_hidden_files(!show_hidden_files);
 					} else {
@@ -112,10 +129,10 @@ void FileDialog::unhandled_input(const Ref<InputEvent> &p_event) {
 					}
 
 				} break;
-				case KEY_F5: {
+				case Key::F5: {
 					invalidate();
 				} break;
-				case KEY_BACKSPACE: {
+				case Key::BACKSPACE: {
 					_dir_submitted("..");
 				} break;
 				default: {
@@ -342,7 +359,7 @@ bool FileDialog::_is_open_should_be_disabled() {
 
 	// Opening a file, but selected a folder? Forbidden.
 	return ((mode == FILE_MODE_OPEN_FILE || mode == FILE_MODE_OPEN_FILES) && d["dir"]) || // Flipped case, also forbidden.
-		   (mode == FILE_MODE_OPEN_DIR && !d["dir"]);
+			(mode == FILE_MODE_OPEN_DIR && !d["dir"]);
 }
 
 void FileDialog::_go_up() {
@@ -467,6 +484,13 @@ void FileDialog::update_file_list() {
 
 	dir_access->list_dir_begin();
 
+	if (dir_access->is_readable(dir_access->get_current_dir().utf8().get_data())) {
+		message->hide();
+	} else {
+		message->set_text(TTRC("You don't have permission to access contents of this folder."));
+		message->show();
+	}
+
 	TreeItem *root = tree->create_item();
 	Ref<Texture2D> folder = vbox->get_theme_icon(SNAME("folder"), SNAME("FileDialog"));
 	Ref<Texture2D> file_icon = vbox->get_theme_icon(SNAME("file"), SNAME("FileDialog"));
@@ -476,17 +500,11 @@ void FileDialog::update_file_list() {
 	List<String> dirs;
 
 	bool is_hidden;
-	String item;
+	String item = dir_access->get_next();
 
-	if (dir_access->is_readable(dir_access->get_current_dir().utf8().get_data())) {
-		message->hide();
-	} else {
-		message->set_text(TTRC("You don't have permission to access contents of this folder."));
-		message->show();
-	}
-
-	while ((item = dir_access->get_next()) != "") {
+	while (!item.is_empty()) {
 		if (item == "." || item == "..") {
+			item = dir_access->get_next();
 			continue;
 		}
 
@@ -499,6 +517,7 @@ void FileDialog::update_file_list() {
 				dirs.push_back(item);
 			}
 		}
+		item = dir_access->get_next();
 	}
 
 	dirs.sort_custom<NaturalNoCaseComparator>();
@@ -641,6 +660,7 @@ void FileDialog::clear_filters() {
 }
 
 void FileDialog::add_filter(const String &p_filter) {
+	ERR_FAIL_COND_MSG(p_filter.begins_with("."), "Filter must be \"filename.extension\", can't start with dot.");
 	filters.push_back(p_filter);
 	update_filters();
 	invalidate();
@@ -679,13 +699,7 @@ void FileDialog::set_current_file(const String &p_file) {
 	file->set_text(p_file);
 	update_dir();
 	invalidate();
-	int lp = p_file.rfind(".");
-	if (lp != -1) {
-		file->select(0, lp);
-		if (file->is_inside_tree() && !get_tree()->is_node_being_edited(file)) {
-			file->grab_focus();
-		}
-	}
+	_focus_file_text();
 }
 
 void FileDialog::set_current_path(const String &p_path) {
@@ -992,8 +1006,8 @@ FileDialog::FileDialog() {
 	message = memnew(Label);
 	message->hide();
 	message->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
-	message->set_align(Label::ALIGN_CENTER);
-	message->set_valign(Label::VALIGN_CENTER);
+	message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	message->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	tree->add_child(message);
 
 	file_box = memnew(HBoxContainer);

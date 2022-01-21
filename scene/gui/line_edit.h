@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,13 +38,6 @@ class LineEdit : public Control {
 	GDCLASS(LineEdit, Control);
 
 public:
-	enum Align {
-		ALIGN_LEFT,
-		ALIGN_CENTER,
-		ALIGN_RIGHT,
-		ALIGN_FILL
-	};
-
 	enum MenuItems {
 		MENU_CUT,
 		MENU_COPY,
@@ -78,7 +71,7 @@ public:
 	};
 
 private:
-	Align align = ALIGN_LEFT;
+	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
 
 	bool editable = false;
 	bool pass = false;
@@ -97,13 +90,14 @@ private:
 	float full_width = 0.0;
 
 	bool selecting_enabled = true;
+	bool deselect_on_focus_loss_enabled = true;
 
 	bool context_menu_enabled = true;
 	PopupMenu *menu = nullptr;
 	PopupMenu *menu_dir = nullptr;
 	PopupMenu *menu_ctl = nullptr;
 
-	bool caret_mid_grapheme_enabled = false;
+	bool caret_mid_grapheme_enabled = true;
 
 	int caret_column = 0;
 	int scroll_offset = 0;
@@ -126,7 +120,13 @@ private:
 
 	bool virtual_keyboard_enabled = true;
 
+	bool middle_mouse_paste_enabled = true;
+
+	bool drag_action = false;
+	bool drag_caret_force_displayed = false;
+
 	Ref<Texture2D> right_icon;
+	bool flat = false;
 
 	struct Selection {
 		int begin = 0;
@@ -166,7 +166,7 @@ private:
 	void _clear_redo();
 	void _create_undo_state();
 
-	int _get_menu_action_accelerator(const String &p_action);
+	Key _get_menu_action_accelerator(const String &p_action);
 
 	void _shape();
 	void _fit_to_width();
@@ -187,7 +187,6 @@ private:
 	void _toggle_draw_caret();
 
 	void clear_internal();
-	void changed_internal();
 
 	void _editor_settings_changed();
 
@@ -212,8 +211,8 @@ protected:
 	void _validate_property(PropertyInfo &property) const override;
 
 public:
-	void set_align(Align p_align);
-	Align get_align() const;
+	void set_horizontal_alignment(HorizontalAlignment p_alignment);
+	HorizontalAlignment get_horizontal_alignment() const;
 
 	virtual Variant get_drag_data(const Point2 &p_point) override;
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
@@ -318,11 +317,20 @@ public:
 	void set_virtual_keyboard_enabled(bool p_enable);
 	bool is_virtual_keyboard_enabled() const;
 
+	void set_middle_mouse_paste_enabled(bool p_enabled);
+	bool is_middle_mouse_paste_enabled() const;
+
 	void set_selecting_enabled(bool p_enabled);
 	bool is_selecting_enabled() const;
 
+	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
+	bool is_deselect_on_focus_loss_enabled() const;
+
 	void set_right_icon(const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_right_icon();
+
+	void set_flat(bool p_enabled);
+	bool is_flat() const;
 
 	virtual bool is_text_field() const override;
 
@@ -332,7 +340,6 @@ public:
 	~LineEdit();
 };
 
-VARIANT_ENUM_CAST(LineEdit::Align);
 VARIANT_ENUM_CAST(LineEdit::MenuItems);
 
 #endif

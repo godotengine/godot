@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,9 +36,8 @@
 #include "core/input/input.h"
 #include "servers/display_server.h"
 
-#if defined(OPENGL_ENABLED)
-#include "context_gl_osx.h"
-//TODO - reimplement OpenGLES
+#if defined(GLES3_ENABLED)
+#include "gl_manager_osx.h"
 #endif
 
 #if defined(VULKAN_ENABLED)
@@ -64,12 +63,12 @@ public:
 	NSMenu *_get_dock_menu() const;
 	void _menu_callback(id p_sender);
 
-#if defined(OPENGL_ENABLED)
-	ContextGL_OSX *context_gles2;
+#if defined(GLES3_ENABLED)
+	GLManager_OSX *gl_manager = nullptr;
 #endif
 #if defined(VULKAN_ENABLED)
-	VulkanContextOSX *context_vulkan;
-	RenderingDeviceVulkan *rendering_device_vulkan;
+	VulkanContextOSX *context_vulkan = nullptr;
+	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
 #endif
 
 	const NSMenu *_get_menu_root(const String &p_menu_root) const;
@@ -85,8 +84,8 @@ public:
 		bool pressed = false;
 		bool echo = false;
 		bool raw = false;
-		Key keycode = KEY_NONE;
-		uint32_t physical_keycode = 0;
+		Key keycode = Key::NONE;
+		Key physical_keycode = Key::NONE;
 		uint32_t unicode = 0;
 	};
 
@@ -99,6 +98,8 @@ public:
 	NSTimeInterval last_warp = 0;
 	bool ignore_warp = false;
 
+	float display_max_scale = 1.f;
+
 	Vector<KeyEvent> key_event_buffer;
 	int key_event_pos;
 
@@ -109,9 +110,6 @@ public:
 
 		Vector<Vector2> mpath;
 
-#if defined(OPENGL_ENABLED)
-		ContextGL_OSX *context_gles2 = nullptr;
-#endif
 		Point2i mouse_pos;
 
 		Size2i min_size;
@@ -176,7 +174,7 @@ public:
 
 	MouseMode mouse_mode;
 	Point2i last_mouse_pos;
-	MouseButton last_button_state = MOUSE_BUTTON_NONE;
+	MouseButton last_button_state = MouseButton::NONE;
 
 	bool window_focused;
 	bool drop_events;
@@ -218,7 +216,6 @@ public:
 
 	virtual void mouse_warp_to_position(const Point2i &p_to) override;
 	virtual Point2i mouse_get_position() const override;
-	virtual Point2i mouse_get_absolute_position() const override;
 	virtual MouseButton mouse_get_button_state() const override;
 
 	virtual void clipboard_set(const String &p_text) override;
@@ -287,6 +284,7 @@ public:
 
 	virtual void window_attach_instance_id(ObjectID p_instance, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual ObjectID window_get_attached_instance_id(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual void gl_window_make_current(DisplayServer::WindowID p_window_id) override;
 
 	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;
@@ -316,9 +314,6 @@ public:
 
 	virtual void set_native_icon(const String &p_filename) override;
 	virtual void set_icon(const Ref<Image> &p_icon) override;
-
-	virtual void console_set_visible(bool p_enabled) override;
-	virtual bool is_console_visible() const override;
 
 	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();

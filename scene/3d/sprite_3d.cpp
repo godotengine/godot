@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -139,15 +139,6 @@ void SpriteBase3D::set_pixel_size(real_t p_amount) {
 
 real_t SpriteBase3D::get_pixel_size() const {
 	return pixel_size;
-}
-
-void SpriteBase3D::set_opacity(float p_amount) {
-	opacity = p_amount;
-	_queue_update();
-}
-
-float SpriteBase3D::get_opacity() const {
-	return opacity;
 }
 
 void SpriteBase3D::set_axis(Vector3::Axis p_axis) {
@@ -295,9 +286,6 @@ void SpriteBase3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_modulate", "modulate"), &SpriteBase3D::set_modulate);
 	ClassDB::bind_method(D_METHOD("get_modulate"), &SpriteBase3D::get_modulate);
 
-	ClassDB::bind_method(D_METHOD("set_opacity", "opacity"), &SpriteBase3D::set_opacity);
-	ClassDB::bind_method(D_METHOD("get_opacity"), &SpriteBase3D::get_opacity);
-
 	ClassDB::bind_method(D_METHOD("set_pixel_size", "pixel_size"), &SpriteBase3D::set_pixel_size);
 	ClassDB::bind_method(D_METHOD("get_pixel_size"), &SpriteBase3D::get_pixel_size);
 
@@ -324,7 +312,6 @@ void SpriteBase3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "opacity", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_opacity", "get_opacity");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0001"), "set_pixel_size", "get_pixel_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis", PROPERTY_HINT_ENUM, "X-Axis,Y-Axis,Z-Axis"), "set_axis", "get_axis");
 	ADD_GROUP("Flags", "");
@@ -468,7 +455,6 @@ void Sprite3D::_draw() {
 	}
 
 	Color color = _get_color_accum();
-	color.a *= get_opacity();
 
 	real_t pixel_size = get_pixel_size();
 
@@ -625,6 +611,7 @@ void Sprite3D::set_texture(const Ref<Texture2D> &p_texture) {
 		texture->connect(CoreStringNames::get_singleton()->changed, Callable(this, "_queue_update"));
 	}
 	_queue_update();
+	emit_signal(SceneStringNames::get_singleton()->texture_changed);
 }
 
 Ref<Texture2D> Sprite3D::get_texture() const {
@@ -743,6 +730,8 @@ void Sprite3D::_validate_property(PropertyInfo &property) const {
 	if (property.name == "frame_coords") {
 		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
+
+	SpriteBase3D::_validate_property(property);
 }
 
 void Sprite3D::_bind_methods() {
@@ -778,6 +767,7 @@ void Sprite3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect"), "set_region_rect", "get_region_rect");
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
+	ADD_SIGNAL(MethodInfo("texture_changed"));
 }
 
 Sprite3D::Sprite3D() {
@@ -833,7 +823,6 @@ void AnimatedSprite3D::_draw() {
 	}
 
 	Color color = _get_color_accum();
-	color.a *= get_opacity();
 
 	real_t pixel_size = get_pixel_size();
 
@@ -994,13 +983,13 @@ void AnimatedSprite3D::_validate_property(PropertyInfo &property) const {
 			}
 
 			property.hint_string += String(E->get());
-			if (animation == E) {
+			if (animation == E->get()) {
 				current_found = true;
 			}
 		}
 
 		if (!current_found) {
-			if (property.hint_string == String()) {
+			if (property.hint_string.is_empty()) {
 				property.hint_string = String(animation);
 			} else {
 				property.hint_string = String(animation) + "," + property.hint_string;
@@ -1015,6 +1004,8 @@ void AnimatedSprite3D::_validate_property(PropertyInfo &property) const {
 		}
 		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
+
+	SpriteBase3D::_validate_property(property);
 }
 
 void AnimatedSprite3D::_notification(int p_what) {

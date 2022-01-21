@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -93,6 +93,10 @@ void Path2D::_notification(int p_what) {
 			return;
 		}
 
+		if (curve->get_point_count() < 2) {
+			return;
+		}
+
 #ifdef TOOLS_ENABLED
 		const real_t line_width = 2 * EDSCALE;
 #else
@@ -100,16 +104,18 @@ void Path2D::_notification(int p_what) {
 #endif
 		const Color color = Color(0.5, 0.6, 1.0, 0.7);
 
-		for (int i = 0; i < curve->get_point_count(); i++) {
-			Vector2 prev_p = curve->get_point_position(i);
+		_cached_draw_pts.resize(curve->get_point_count() * 8);
+		int count = 0;
 
-			for (int j = 1; j <= 8; j++) {
-				real_t frac = j / 8.0;
+		for (int i = 0; i < curve->get_point_count(); i++) {
+			for (int j = 0; j < 8; j++) {
+				real_t frac = j * (1.0 / 8.0);
 				Vector2 p = curve->interpolate(i, frac);
-				draw_line(prev_p, p, color, line_width);
-				prev_p = p;
+				_cached_draw_pts.set(count++, p);
 			}
 		}
+
+		draw_polyline(_cached_draw_pts, color, line_width, true);
 	}
 }
 

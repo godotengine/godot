@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
-    <PackageVersion_Godot_NET_Sdk>4.0.0-dev5</PackageVersion_Godot_NET_Sdk>
-    <PackageVersion_Godot_SourceGenerators>4.0.0-dev2</PackageVersion_Godot_SourceGenerators>
+    <PackageFloatingVersion_Godot>4.0.*-*</PackageFloatingVersion_Godot>
+    <PackageVersion_Godot_NET_Sdk>4.0.0-dev6</PackageVersion_Godot_NET_Sdk>
+    <PackageVersion_Godot_SourceGenerators>4.0.0-dev3</PackageVersion_Godot_SourceGenerators>
   </PropertyGroup>
 </Project>

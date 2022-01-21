@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -660,13 +660,6 @@ void ParseVectorDataArray(std::vector<Vector3> &out, const ElementPtr el) {
 						static_cast<real_t>(d[1]),
 						static_cast<real_t>(d[2])));
 			}
-			// for debugging
-			/*for ( size_t i = 0; i < out.size(); i++ ) {
-                aiVector3D vec3( out[ i ] );
-                std::stringstream stream;
-                stream << " vec3.x = " << vec3.x << " vec3.y = " << vec3.y << " vec3.z = " << vec3.z << std::endl;
-                DefaultLogger::get()->info( stream.str() );
-            }*/
 		} else if (type == 'f') {
 			const float *f = reinterpret_cast<const float *>(&buff[0]);
 			for (unsigned int i = 0; i < count3; ++i, f += 3) {

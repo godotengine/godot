@@ -235,7 +235,6 @@ WebPMuxError WebPMuxSetImage(WebPMux* mux, const WebPData* bitstream,
   WebPMuxImage wpi;
   WebPMuxError err;
 
-  // Sanity checks.
   if (mux == NULL || bitstream == NULL || bitstream->bytes == NULL ||
       bitstream->size > MAX_CHUNK_PAYLOAD) {
     return WEBP_MUX_INVALID_ARGUMENT;
@@ -267,7 +266,6 @@ WebPMuxError WebPMuxPushFrame(WebPMux* mux, const WebPMuxFrameInfo* info,
   WebPMuxImage wpi;
   WebPMuxError err;
 
-  // Sanity checks.
   if (mux == NULL || info == NULL) return WEBP_MUX_INVALID_ARGUMENT;
 
   if (info->id != WEBP_CHUNK_ANMF) return WEBP_MUX_INVALID_ARGUMENT;

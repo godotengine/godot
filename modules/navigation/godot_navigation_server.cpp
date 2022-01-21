@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,10 +35,6 @@
 #ifndef _3D_DISABLED
 #include "navigation_mesh_generator.h"
 #endif
-
-/**
-	@author AndreaCatania
-*/
 
 /// Creates a struct for each function and a function that once called creates
 /// an instance of that struct with the submitted parameters.
@@ -150,8 +146,8 @@ COMMAND_2(map_set_active, RID, p_map, bool, p_active) {
 	} else {
 		int map_index = active_maps.find(map);
 		ERR_FAIL_COND(map_index < 0);
-		active_maps.remove(map_index);
-		active_maps_update_id.remove(map_index);
+		active_maps.remove_at(map_index);
+		active_maps_update_id.remove_at(map_index);
 	}
 }
 
@@ -469,8 +465,8 @@ COMMAND_1(free, RID, p_object) {
 		}
 
 		int map_index = active_maps.find(map);
-		active_maps.remove(map_index);
-		active_maps_update_id.remove(map_index);
+		active_maps.remove_at(map_index);
+		active_maps_update_id.remove_at(map_index);
 		map_owner.free(p_object);
 
 	} else if (region_owner.owns(p_object)) {

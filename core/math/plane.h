@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,7 @@
 
 class Variant;
 
-class Plane {
+class _NO_DISCARD_ Plane {
 public:
 	Vector3 normal;
 	real_t d = 0;
@@ -85,8 +85,8 @@ public:
 			normal(p_a, p_b, p_c),
 			d(p_d) {}
 
-	_FORCE_INLINE_ Plane(const Vector3 &p_normal, real_t p_d);
-	_FORCE_INLINE_ Plane(const Vector3 &p_point, const Vector3 &p_normal);
+	_FORCE_INLINE_ Plane(const Vector3 &p_normal, real_t p_d = 0.0);
+	_FORCE_INLINE_ Plane(const Vector3 &p_normal, const Vector3 &p_point);
 	_FORCE_INLINE_ Plane(const Vector3 &p_point1, const Vector3 &p_point2, const Vector3 &p_point3, ClockDirection p_dir = CLOCKWISE);
 };
 
@@ -109,7 +109,7 @@ Plane::Plane(const Vector3 &p_normal, real_t p_d) :
 		d(p_d) {
 }
 
-Plane::Plane(const Vector3 &p_point, const Vector3 &p_normal) :
+Plane::Plane(const Vector3 &p_normal, const Vector3 &p_point) :
 		normal(p_normal),
 		d(p_normal.dot(p_point)) {
 }

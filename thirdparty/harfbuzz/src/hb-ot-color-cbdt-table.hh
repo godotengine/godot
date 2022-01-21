@@ -508,8 +508,8 @@ struct IndexSubtableRecord
 						   offset, length, format);
   }
 
-  HBGlyphID			firstGlyphIndex;
-  HBGlyphID			lastGlyphIndex;
+  HBGlyphID16			firstGlyphIndex;
+  HBGlyphID16			lastGlyphIndex;
   Offset32To<IndexSubtable>	offsetToSubtable;
   public:
   DEFINE_SIZE_STATIC (8);
@@ -679,8 +679,8 @@ struct BitmapSizeTable
   HBUINT32		colorRef;
   SBitLineMetrics	horizontal;
   SBitLineMetrics	vertical;
-  HBGlyphID		startGlyphIndex;
-  HBGlyphID		endGlyphIndex;
+  HBGlyphID16		startGlyphIndex;
+  HBGlyphID16		endGlyphIndex;
   HBUINT8		ppemX;
   HBUINT8		ppemY;
   HBUINT8		bitDepth;

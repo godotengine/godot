@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,26 +38,34 @@
 #include "scene/animation/animation_player.h"
 #include "scene/resources/animation.h"
 
-uint32_t EditorSceneImporterGLTF::get_import_flags() const {
+uint32_t EditorSceneFormatImporterGLTF::get_import_flags() const {
 	return ImportFlags::IMPORT_SCENE | ImportFlags::IMPORT_ANIMATION;
 }
 
-void EditorSceneImporterGLTF::get_extensions(List<String> *r_extensions) const {
+void EditorSceneFormatImporterGLTF::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("gltf");
 	r_extensions->push_back("glb");
 }
 
-Node *EditorSceneImporterGLTF::import_scene(const String &p_path,
-		uint32_t p_flags, int p_bake_fps,
+Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path,
+		uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps,
 		List<String> *r_missing_deps,
 		Error *r_err) {
 	Ref<GLTFDocument> doc;
 	doc.instantiate();
-	return doc->import_scene_gltf(p_path, p_flags, p_bake_fps, Ref<GLTFState>(), r_missing_deps, r_err);
+	Ref<GLTFState> state;
+	state.instantiate();
+	Error err = doc->append_from_file(p_path, state, p_flags, p_bake_fps);
+	if (err != OK) {
+		*r_err = err;
+		return nullptr;
+	}
+	Node *root = doc->generate_scene(state, p_bake_fps);
+	return root;
 }
 
-Ref<Animation> EditorSceneImporterGLTF::import_animation(const String &p_path,
-		uint32_t p_flags,
+Ref<Animation> EditorSceneFormatImporterGLTF::import_animation(const String &p_path,
+		uint32_t p_flags, const Map<StringName, Variant> &p_options,
 		int p_bake_fps) {
 	return Ref<Animation>();
 }

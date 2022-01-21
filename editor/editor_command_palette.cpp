@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -128,7 +128,7 @@ void EditorCommandPalette::_update_command_search(const String &search_text) {
 		String shortcut_text = entries[i].shortcut_text == "None" ? "" : entries[i].shortcut_text;
 		ti->set_text(0, entries[i].display_name);
 		ti->set_metadata(0, entries[i].key_name);
-		ti->set_text_align(1, TreeItem::TextAlign::ALIGN_RIGHT);
+		ti->set_text_alignment(1, HORIZONTAL_ALIGNMENT_RIGHT);
 		ti->set_text(1, shortcut_text);
 		Color c = Color(1, 1, 1, 0.5);
 		ti->set_custom_color(1, c);
@@ -149,10 +149,10 @@ void EditorCommandPalette::_sbox_input(const Ref<InputEvent> &p_ie) {
 	Ref<InputEventKey> k = p_ie;
 	if (k.is_valid()) {
 		switch (k->get_keycode()) {
-			case KEY_UP:
-			case KEY_DOWN:
-			case KEY_PAGEUP:
-			case KEY_PAGEDOWN: {
+			case Key::UP:
+			case Key::DOWN:
+			case Key::PAGEUP:
+			case Key::PAGEDOWN: {
 				search_options->gui_input(k);
 			} break;
 			default:
@@ -164,7 +164,7 @@ void EditorCommandPalette::_sbox_input(const Ref<InputEvent> &p_ie) {
 void EditorCommandPalette::_confirmed() {
 	TreeItem *selected_option = search_options->get_selected();
 	String command_key = selected_option != nullptr ? selected_option->get_metadata(0) : "";
-	if (command_key != "") {
+	if (!command_key.is_empty()) {
 		hide();
 		execute_command(command_key);
 	}
@@ -212,6 +212,12 @@ void EditorCommandPalette::_add_command(String p_command_name, String p_key_name
 	command.callable = p_binded_action;
 	command.shortcut = p_shortcut_text;
 
+	// Commands added from plugins don't exist yet when the history is loaded, so we assign the last use time here if it was recorded.
+	Dictionary command_history = EditorSettings::get_singleton()->get_project_metadata("command_palette", "command_history", Dictionary());
+	if (command_history.has(p_key_name)) {
+		command.last_used = command_history[p_key_name];
+	}
+
 	commands[p_key_name] = command;
 }
 
@@ -242,7 +248,9 @@ void EditorCommandPalette::register_shortcuts_as_command() {
 	Array history_entries = command_history.keys();
 	for (int i = 0; i < history_entries.size(); i++) {
 		const String &history_key = history_entries[i];
-		commands[history_key].last_used = command_history[history_key];
+		if (commands.has(history_key)) {
+			commands[history_key].last_used = command_history[history_key];
+		}
 	}
 }
 

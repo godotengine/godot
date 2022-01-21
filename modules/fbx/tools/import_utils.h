@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,7 @@
 /**
  * Import Utils
  * Conversion tools / glue code to convert from FBX to Godot
-*/
+ */
 class ImportUtils {
 public:
 	///	Convert a vector from degrees to radians.
@@ -201,7 +201,7 @@ public:
 	};
 
 	/** Get fbx fps for time mode meta data
-     */
+	 */
 	static float get_fbx_fps(int32_t time_mode) {
 		switch (time_mode) {
 			case AssetImportFbx::TIME_MODE_DEFAULT:
@@ -258,13 +258,13 @@ public:
 	}
 
 	/**
-	  * Find hardcoded textures from assimp which could be in many different directories
-	  */
+	 * Find hardcoded textures from assimp which could be in many different directories
+	 */
 
 	/**
-	  * set_texture_mapping_mode
-	  * Helper to check the mapping mode of the texture (repeat, clamp and mirror)
-	  */
+	 * set_texture_mapping_mode
+	 * Helper to check the mapping mode of the texture (repeat, clamp and mirror)
+	 */
 	// static void set_texture_mapping_mode(aiTextureMapMode *map_mode, Ref<ImageTexture> texture) {
 	// 	ERR_FAIL_COND(texture.is_null());
 	// 	ERR_FAIL_COND(map_mode == nullptr);
@@ -282,9 +282,9 @@ public:
 	// }
 
 	/**
-	  * Load or load from cache image :)
-	  * We need to upgrade this in the later version :) should not be hard
-	  */
+	 * Load or load from cache image :)
+	 * We need to upgrade this in the later version :) should not be hard
+	 */
 	//static Ref<Image> load_image(ImportState &state, const aiScene *p_scene, String p_path){
 	// Map<String, Ref<Image> >::Element *match = state.path_to_image_cache.find(p_path);
 

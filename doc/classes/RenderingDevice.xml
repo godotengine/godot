@@ -305,7 +305,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="free">
+		<method name="free_rid">
 			<return type="void" />
 			<argument index="0" name="rid" type="RID" />
 			<description>
@@ -560,7 +560,8 @@
 			<argument index="1" name="with_texture" type="RID" />
 			<argument index="2" name="layer" type="int" />
 			<argument index="3" name="mipmap" type="int" />
-			<argument index="4" name="slice_type" type="int" enum="RenderingDevice.TextureSliceType" default="0" />
+			<argument index="4" name="mipmaps" type="int" default="1" />
+			<argument index="5" name="slice_type" type="int" enum="RenderingDevice.TextureSliceType" default="0" />
 			<description>
 			</description>
 		</method>
@@ -653,6 +654,24 @@
 		<constant name="BARRIER_MASK_ALL" value="7">
 		</constant>
 		<constant name="BARRIER_MASK_NO_BARRIER" value="8">
+		</constant>
+		<constant name="DEVICE_TYPE_OTHER" value="0" enum="DeviceType">
+			Rendering device type does not match any of the other enum values or is unknown.
+		</constant>
+		<constant name="DEVICE_TYPE_INTEGRATED_GPU" value="1" enum="DeviceType">
+			Rendering device is an integrated GPU, which is typically [i](but not always)[/i] slower than dedicated GPUs ([constant DEVICE_TYPE_DISCRETE_GPU]). On Android and iOS, the rendering device type is always considered to be [constant DEVICE_TYPE_INTEGRATED_GPU].
+		</constant>
+		<constant name="DEVICE_TYPE_DISCRETE_GPU" value="2" enum="DeviceType">
+			Rendering device is a dedicated GPU, which is typically [i](but not always)[/i] faster than integrated GPUs ([constant DEVICE_TYPE_INTEGRATED_GPU]).
+		</constant>
+		<constant name="DEVICE_TYPE_VIRTUAL_GPU" value="3" enum="DeviceType">
+			Rendering device is an emulated GPU in a virtual environment. This is typically much slower than the host GPU, which means the expected performance level on a dedicated GPU will be roughly equivalent to [constant DEVICE_TYPE_INTEGRATED_GPU]. Virtual machine GPU passthrough (such as VFIO) will not report the device type as [constant DEVICE_TYPE_VIRTUAL_GPU]. Instead, the host GPU's device type will be reported as if the GPU was not emulated.
+		</constant>
+		<constant name="DEVICE_TYPE_CPU" value="4" enum="DeviceType">
+			Rendering device is provided by software emulation (such as Lavapipe or [url=https://github.com/google/swiftshader]SwiftShader[/url]). This is the slowest kind of rendering device available; it's typically much slower than [constant DEVICE_TYPE_INTEGRATED_GPU].
+		</constant>
+		<constant name="DEVICE_TYPE_MAX" value="5" enum="DeviceType">
+			Represents the size of the [enum DeviceType] enum.
 		</constant>
 		<constant name="DRIVER_RESOURCE_VULKAN_DEVICE" value="0" enum="DriverResource">
 		</constant>
@@ -1116,23 +1135,7 @@
 		</constant>
 		<constant name="DATA_FORMAT_G16_B16_R16_3PLANE_444_UNORM" value="217" enum="DataFormat">
 		</constant>
-		<constant name="DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG" value="218" enum="DataFormat">
-		</constant>
-		<constant name="DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG" value="219" enum="DataFormat">
-		</constant>
-		<constant name="DATA_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG" value="220" enum="DataFormat">
-		</constant>
-		<constant name="DATA_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG" value="221" enum="DataFormat">
-		</constant>
-		<constant name="DATA_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG" value="222" enum="DataFormat">
-		</constant>
-		<constant name="DATA_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG" value="223" enum="DataFormat">
-		</constant>
-		<constant name="DATA_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG" value="224" enum="DataFormat">
-		</constant>
-		<constant name="DATA_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG" value="225" enum="DataFormat">
-		</constant>
-		<constant name="DATA_FORMAT_MAX" value="226" enum="DataFormat">
+		<constant name="DATA_FORMAT_MAX" value="218" enum="DataFormat">
 		</constant>
 		<constant name="TEXTURE_TYPE_1D" value="0" enum="TextureType">
 		</constant>

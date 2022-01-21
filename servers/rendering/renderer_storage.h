@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -183,8 +183,8 @@ public:
 	virtual String shader_get_code(RID p_shader) const = 0;
 	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const = 0;
 
-	virtual void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture) = 0;
-	virtual RID shader_get_default_texture_param(RID p_shader, const StringName &p_name) const = 0;
+	virtual void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index) = 0;
+	virtual RID shader_get_default_texture_param(RID p_shader, const StringName &p_name, int p_index) const = 0;
 	virtual Variant shader_get_param_default(RID p_material, const StringName &p_param) const = 0;
 
 	virtual RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const = 0;
@@ -366,7 +366,7 @@ public:
 	virtual void reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) = 0;
 	virtual void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) = 0;
 	virtual void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) = 0;
-	virtual void reflection_probe_set_lod_threshold(RID p_probe, float p_ratio) = 0;
+	virtual void reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio) = 0;
 
 	virtual AABB reflection_probe_get_aabb(RID p_probe) const = 0;
 	virtual RS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const = 0;
@@ -375,7 +375,7 @@ public:
 	virtual Vector3 reflection_probe_get_origin_offset(RID p_probe) const = 0;
 	virtual float reflection_probe_get_origin_max_distance(RID p_probe) const = 0;
 	virtual bool reflection_probe_renders_shadows(RID p_probe) const = 0;
-	virtual float reflection_probe_get_lod_threshold(RID p_probe) const = 0;
+	virtual float reflection_probe_get_mesh_lod_threshold(RID p_probe) const = 0;
 
 	virtual void base_update_dependency(RID p_base, DependencyTracker *p_instance) = 0;
 	virtual void skeleton_update_dependency(RID p_base, DependencyTracker *p_instance) = 0;
@@ -535,6 +535,19 @@ public:
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const = 0;
 	virtual RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const = 0;
 
+	/* FOG VOLUMES */
+
+	virtual RID fog_volume_allocate() = 0;
+	virtual void fog_volume_initialize(RID p_rid) = 0;
+
+	virtual void fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) = 0;
+	virtual void fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents) = 0;
+	virtual void fog_volume_set_material(RID p_fog_volume, RID p_material) = 0;
+	virtual AABB fog_volume_get_aabb(RID p_fog_volume) const = 0;
+	virtual RS::FogVolumeShape fog_volume_get_shape(RID p_fog_volume) const = 0;
+
+	/* VISIBILITY NOTIFIER */
+
 	virtual RID visibility_notifier_allocate() = 0;
 	virtual void visibility_notifier_initialize(RID p_notifier) = 0;
 	virtual void visibility_notifier_set_aabb(RID p_notifier, const AABB &p_aabb) = 0;
@@ -607,6 +620,7 @@ public:
 	virtual uint64_t get_rendering_info(RS::RenderingInfo p_info) = 0;
 	virtual String get_video_adapter_name() const = 0;
 	virtual String get_video_adapter_vendor() const = 0;
+	virtual RenderingDevice::DeviceType get_video_adapter_type() const = 0;
 
 	static RendererStorage *base_singleton;
 

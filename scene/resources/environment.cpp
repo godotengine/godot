@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -426,6 +426,64 @@ void Environment::_update_ssao() {
 			ssao_ao_channel_affect);
 }
 
+// SSIL
+
+void Environment::set_ssil_enabled(bool p_enabled) {
+	ssil_enabled = p_enabled;
+	_update_ssil();
+	notify_property_list_changed();
+}
+
+bool Environment::is_ssil_enabled() const {
+	return ssil_enabled;
+}
+
+void Environment::set_ssil_radius(float p_radius) {
+	ssil_radius = p_radius;
+	_update_ssil();
+}
+
+float Environment::get_ssil_radius() const {
+	return ssil_radius;
+}
+
+void Environment::set_ssil_intensity(float p_intensity) {
+	ssil_intensity = p_intensity;
+	_update_ssil();
+}
+
+float Environment::get_ssil_intensity() const {
+	return ssil_intensity;
+}
+
+void Environment::set_ssil_sharpness(float p_sharpness) {
+	ssil_sharpness = p_sharpness;
+	_update_ssil();
+}
+
+float Environment::get_ssil_sharpness() const {
+	return ssil_sharpness;
+}
+
+void Environment::set_ssil_normal_rejection(float p_normal_rejection) {
+	ssil_normal_rejection = p_normal_rejection;
+	_update_ssil();
+}
+
+float Environment::get_ssil_normal_rejection() const {
+	return ssil_normal_rejection;
+}
+
+void Environment::_update_ssil() {
+	RS::get_singleton()->environment_set_ssil(
+			environment,
+			ssil_enabled,
+			ssil_radius,
+			ssil_intensity,
+			ssil_sharpness,
+			ssil_normal_rejection);
+}
+
 // SDFGI
 
 void Environment::set_sdfgi_enabled(bool p_enabled) {
@@ -438,13 +496,13 @@ bool Environment::is_sdfgi_enabled() const {
 	return sdfgi_enabled;
 }
 
-void Environment::set_sdfgi_cascades(SDFGICascades p_cascades) {
-	ERR_FAIL_INDEX(p_cascades, SDFGI_CASCADES_8 + 1);
+void Environment::set_sdfgi_cascades(int p_cascades) {
+	ERR_FAIL_COND_MSG(p_cascades < 1 || p_cascades > 8, "Invalid number of SDFGI cascades (must be between 1 and 8).");
 	sdfgi_cascades = p_cascades;
 	_update_sdfgi();
 }
 
-Environment::SDFGICascades Environment::get_sdfgi_cascades() const {
+int Environment::get_sdfgi_cascades() const {
 	return sdfgi_cascades;
 }
 
@@ -459,9 +517,7 @@ float Environment::get_sdfgi_min_cell_size() const {
 
 void Environment::set_sdfgi_max_distance(float p_distance) {
 	p_distance /= 64.0;
-	int cc[3] = { 4, 6, 8 };
-	int cascades = cc[sdfgi_cascades];
-	for (int i = 0; i < cascades; i++) {
+	for (int i = 0; i < sdfgi_cascades; i++) {
 		p_distance *= 0.5; //halve for each cascade
 	}
 	sdfgi_min_cell_size = p_distance;
@@ -471,9 +527,7 @@ void Environment::set_sdfgi_max_distance(float p_distance) {
 float Environment::get_sdfgi_max_distance() const {
 	float md = sdfgi_min_cell_size;
 	md *= 64.0;
-	int cc[3] = { 4, 6, 8 };
-	int cascades = cc[sdfgi_cascades];
-	for (int i = 0; i < cascades; i++) {
+	for (int i = 0; i < sdfgi_cascades; i++) {
 		md *= 2.0;
 	}
 	return md;
@@ -554,7 +608,7 @@ void Environment::_update_sdfgi() {
 	RS::get_singleton()->environment_set_sdfgi(
 			environment,
 			sdfgi_enabled,
-			RS::EnvironmentSDFGICascades(sdfgi_cascades),
+			sdfgi_cascades,
 			sdfgi_min_cell_size,
 			RS::EnvironmentSDFGIYScale(sdfgi_y_scale),
 			sdfgi_use_occlusion,
@@ -782,7 +836,7 @@ void Environment::_update_fog() {
 // Volumetric Fog
 
 void Environment::_update_volumetric_fog() {
-	RS::get_singleton()->environment_set_volumetric_fog(environment, volumetric_fog_enabled, volumetric_fog_density, volumetric_fog_light, volumetric_fog_light_energy, volumetric_fog_length, volumetric_fog_detail_spread, volumetric_fog_gi_inject, volumetric_fog_temporal_reproject, volumetric_fog_temporal_reproject_amount);
+	RS::get_singleton()->environment_set_volumetric_fog(environment, volumetric_fog_enabled, volumetric_fog_density, volumetric_fog_albedo, volumetric_fog_emission, volumetric_fog_emission_energy, volumetric_fog_anisotropy, volumetric_fog_length, volumetric_fog_detail_spread, volumetric_fog_gi_inject, volumetric_fog_temporal_reproject, volumetric_fog_temporal_reproject_amount, volumetric_fog_ambient_inject);
 }
 
 void Environment::set_volumetric_fog_enabled(bool p_enable) {
@@ -795,26 +849,39 @@ bool Environment::is_volumetric_fog_enabled() const {
 	return volumetric_fog_enabled;
 }
 void Environment::set_volumetric_fog_density(float p_density) {
-	p_density = CLAMP(p_density, 0.0000001, 1.0);
 	volumetric_fog_density = p_density;
 	_update_volumetric_fog();
 }
 float Environment::get_volumetric_fog_density() const {
 	return volumetric_fog_density;
 }
-void Environment::set_volumetric_fog_light(Color p_color) {
-	volumetric_fog_light = p_color;
+void Environment::set_volumetric_fog_albedo(Color p_color) {
+	volumetric_fog_albedo = p_color;
 	_update_volumetric_fog();
 }
-Color Environment::get_volumetric_fog_light() const {
-	return volumetric_fog_light;
+Color Environment::get_volumetric_fog_albedo() const {
+	return volumetric_fog_albedo;
 }
-void Environment::set_volumetric_fog_light_energy(float p_begin) {
-	volumetric_fog_light_energy = p_begin;
+void Environment::set_volumetric_fog_emission(Color p_color) {
+	volumetric_fog_emission = p_color;
 	_update_volumetric_fog();
 }
-float Environment::get_volumetric_fog_light_energy() const {
-	return volumetric_fog_light_energy;
+Color Environment::get_volumetric_fog_emission() const {
+	return volumetric_fog_emission;
+}
+void Environment::set_volumetric_fog_emission_energy(float p_begin) {
+	volumetric_fog_emission_energy = p_begin;
+	_update_volumetric_fog();
+}
+float Environment::get_volumetric_fog_emission_energy() const {
+	return volumetric_fog_emission_energy;
+}
+void Environment::set_volumetric_fog_anisotropy(float p_anisotropy) {
+	volumetric_fog_anisotropy = p_anisotropy;
+	_update_volumetric_fog();
+}
+float Environment::get_volumetric_fog_anisotropy() const {
+	return volumetric_fog_anisotropy;
 }
 void Environment::set_volumetric_fog_length(float p_length) {
 	volumetric_fog_length = p_length;
@@ -824,6 +891,7 @@ float Environment::get_volumetric_fog_length() const {
 	return volumetric_fog_length;
 }
 void Environment::set_volumetric_fog_detail_spread(float p_detail_spread) {
+	p_detail_spread = CLAMP(p_detail_spread, 0.5, 6.0);
 	volumetric_fog_detail_spread = p_detail_spread;
 	_update_volumetric_fog();
 }
@@ -837,6 +905,13 @@ void Environment::set_volumetric_fog_gi_inject(float p_gi_inject) {
 }
 float Environment::get_volumetric_fog_gi_inject() const {
 	return volumetric_fog_gi_inject;
+}
+void Environment::set_volumetric_fog_ambient_inject(float p_ambient_inject) {
+	volumetric_fog_ambient_inject = p_ambient_inject;
+	_update_volumetric_fog();
+}
+float Environment::get_volumetric_fog_ambient_inject() const {
+	return volumetric_fog_ambient_inject;
 }
 
 void Environment::set_volumetric_fog_temporal_reprojection_enabled(bool p_enable) {
@@ -896,7 +971,7 @@ float Environment::get_adjustment_saturation() const {
 
 void Environment::set_adjustment_color_correction(Ref<Texture> p_color_correction) {
 	adjustment_color_correction = p_color_correction;
-	Ref<GradientTexture> grad_tex = p_color_correction;
+	Ref<GradientTexture1D> grad_tex = p_color_correction;
 	if (grad_tex.is_valid()) {
 		if (!grad_tex->is_connected(CoreStringNames::get_singleton()->changed, callable_mp(this, &Environment::_update_adjustment))) {
 			grad_tex->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Environment::_update_adjustment));
@@ -933,39 +1008,39 @@ void Environment::_update_adjustment() {
 void Environment::_validate_property(PropertyInfo &property) const {
 	if (property.name == "sky" || property.name == "sky_custom_fov" || property.name == "sky_rotation" || property.name == "ambient_light/sky_contribution") {
 		if (bg_mode != BG_SKY && ambient_source != AMBIENT_SOURCE_SKY && reflection_source != REFLECTION_SOURCE_SKY) {
-			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
 
 	if (property.name == "fog_aerial_perspective") {
 		if (bg_mode != BG_SKY) {
-			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
 
 	if (property.name == "glow_intensity" && glow_blend_mode == GLOW_BLEND_MODE_MIX) {
-		property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+		property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 	}
 
 	if (property.name == "glow_mix" && glow_blend_mode != GLOW_BLEND_MODE_MIX) {
-		property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+		property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 	}
 
 	if (property.name == "background_color") {
 		if (bg_mode != BG_COLOR && ambient_source != AMBIENT_SOURCE_COLOR) {
-			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
 
 	if (property.name == "background_canvas_max_layer") {
 		if (bg_mode != BG_CANVAS) {
-			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
 
 	if (property.name == "background_camera_feed_id") {
 		if (bg_mode != BG_CAMERA_FEED) {
-			property.usage = PROPERTY_USAGE_NOEDITOR;
+			property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 
@@ -997,7 +1072,7 @@ void Environment::_validate_property(PropertyInfo &property) const {
 
 		String enabled = prefix + "enabled";
 		if (property.name.begins_with(prefix) && property.name != enabled && !bool(get(enabled))) {
-			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 			return;
 		}
 
@@ -1010,7 +1085,7 @@ void Environment::_validate_property(PropertyInfo &property) const {
 			String prefix = String(*prefixes);
 
 			if (property.name.begins_with(prefix)) {
-				property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+				property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 				return;
 			}
 
@@ -1143,7 +1218,6 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ss_reflections_depth_tolerance", PROPERTY_HINT_RANGE, "0.01,128,0.1"), "set_ssr_depth_tolerance", "get_ssr_depth_tolerance");
 
 	// SSAO
-
 	ClassDB::bind_method(D_METHOD("set_ssao_enabled", "enabled"), &Environment::set_ssao_enabled);
 	ClassDB::bind_method(D_METHOD("is_ssao_enabled"), &Environment::is_ssao_enabled);
 	ClassDB::bind_method(D_METHOD("set_ssao_radius", "radius"), &Environment::set_ssao_radius);
@@ -1173,6 +1247,25 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_sharpness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ssao_sharpness", "get_ssao_sharpness");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_light_affect", PROPERTY_HINT_RANGE, "0.00,1,0.01"), "set_ssao_direct_light_affect", "get_ssao_direct_light_affect");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_ao_channel_affect", PROPERTY_HINT_RANGE, "0.00,1,0.01"), "set_ssao_ao_channel_affect", "get_ssao_ao_channel_affect");
+
+	// SSIL
+	ClassDB::bind_method(D_METHOD("set_ssil_enabled", "enabled"), &Environment::set_ssil_enabled);
+	ClassDB::bind_method(D_METHOD("is_ssil_enabled"), &Environment::is_ssil_enabled);
+	ClassDB::bind_method(D_METHOD("set_ssil_radius", "radius"), &Environment::set_ssil_radius);
+	ClassDB::bind_method(D_METHOD("get_ssil_radius"), &Environment::get_ssil_radius);
+	ClassDB::bind_method(D_METHOD("set_ssil_intensity", "intensity"), &Environment::set_ssil_intensity);
+	ClassDB::bind_method(D_METHOD("get_ssil_intensity"), &Environment::get_ssil_intensity);
+	ClassDB::bind_method(D_METHOD("set_ssil_sharpness", "sharpness"), &Environment::set_ssil_sharpness);
+	ClassDB::bind_method(D_METHOD("get_ssil_sharpness"), &Environment::get_ssil_sharpness);
+	ClassDB::bind_method(D_METHOD("set_ssil_normal_rejection", "normal_rejection"), &Environment::set_ssil_normal_rejection);
+	ClassDB::bind_method(D_METHOD("get_ssil_normal_rejection"), &Environment::get_ssil_normal_rejection);
+
+	ADD_GROUP("SSIL", "ssil_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ssil_enabled"), "set_ssil_enabled", "is_ssil_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssil_radius", PROPERTY_HINT_RANGE, "0.01,16,0.01,or_greater"), "set_ssil_radius", "get_ssil_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssil_intensity", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_ssil_intensity", "get_ssil_intensity");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssil_sharpness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ssil_sharpness", "get_ssil_sharpness");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssil_normal_rejection", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ssil_normal_rejection", "get_ssil_normal_rejection");
 
 	// SDFGI
 
@@ -1206,7 +1299,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sdfgi_use_occlusion"), "set_sdfgi_use_occlusion", "is_sdfgi_using_occlusion");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sdfgi_read_sky_light"), "set_sdfgi_read_sky_light", "is_sdfgi_reading_sky_light");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_bounce_feedback", PROPERTY_HINT_RANGE, "0,1.99,0.01"), "set_sdfgi_bounce_feedback", "get_sdfgi_bounce_feedback");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdfgi_cascades", PROPERTY_HINT_ENUM, "4 Cascades,6 Cascades,8 Cascades"), "set_sdfgi_cascades", "get_sdfgi_cascades");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdfgi_cascades", PROPERTY_HINT_RANGE, "1,8,1"), "set_sdfgi_cascades", "get_sdfgi_cascades");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_min_cell_size", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_sdfgi_min_cell_size", "get_sdfgi_min_cell_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_cascade0_distance", PROPERTY_HINT_RANGE, "0.1,16384,0.1,or_greater"), "set_sdfgi_cascade0_distance", "get_sdfgi_cascade0_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_max_distance", PROPERTY_HINT_RANGE, "0.1,16384,0.1,or_greater"), "set_sdfgi_max_distance", "get_sdfgi_max_distance");
@@ -1291,22 +1384,28 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_density", PROPERTY_HINT_RANGE, "0,16,0.0001"), "set_fog_density", "get_fog_density");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_aerial_perspective", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_fog_aerial_perspective", "get_fog_aerial_perspective");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_height", PROPERTY_HINT_RANGE, "-1024,1024,0.01,or_lesser,or_greater"), "set_fog_height", "get_fog_height");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_height_density", PROPERTY_HINT_RANGE, "0,128,0.001,or_greater"), "set_fog_height_density", "get_fog_height_density");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_height_density", PROPERTY_HINT_RANGE, "-16,16,0.0001,or_lesser,or_greater"), "set_fog_height_density", "get_fog_height_density");
 
 	ClassDB::bind_method(D_METHOD("set_volumetric_fog_enabled", "enabled"), &Environment::set_volumetric_fog_enabled);
 	ClassDB::bind_method(D_METHOD("is_volumetric_fog_enabled"), &Environment::is_volumetric_fog_enabled);
-	ClassDB::bind_method(D_METHOD("set_volumetric_fog_light", "color"), &Environment::set_volumetric_fog_light);
-	ClassDB::bind_method(D_METHOD("get_volumetric_fog_light"), &Environment::get_volumetric_fog_light);
+	ClassDB::bind_method(D_METHOD("set_volumetric_fog_emission", "color"), &Environment::set_volumetric_fog_emission);
+	ClassDB::bind_method(D_METHOD("get_volumetric_fog_emission"), &Environment::get_volumetric_fog_emission);
+	ClassDB::bind_method(D_METHOD("set_volumetric_fog_albedo", "color"), &Environment::set_volumetric_fog_albedo);
+	ClassDB::bind_method(D_METHOD("get_volumetric_fog_albedo"), &Environment::get_volumetric_fog_albedo);
 	ClassDB::bind_method(D_METHOD("set_volumetric_fog_density", "density"), &Environment::set_volumetric_fog_density);
 	ClassDB::bind_method(D_METHOD("get_volumetric_fog_density"), &Environment::get_volumetric_fog_density);
-	ClassDB::bind_method(D_METHOD("set_volumetric_fog_light_energy", "begin"), &Environment::set_volumetric_fog_light_energy);
-	ClassDB::bind_method(D_METHOD("get_volumetric_fog_light_energy"), &Environment::get_volumetric_fog_light_energy);
+	ClassDB::bind_method(D_METHOD("set_volumetric_fog_emission_energy", "begin"), &Environment::set_volumetric_fog_emission_energy);
+	ClassDB::bind_method(D_METHOD("get_volumetric_fog_emission_energy"), &Environment::get_volumetric_fog_emission_energy);
+	ClassDB::bind_method(D_METHOD("set_volumetric_fog_anisotropy", "anisotropy"), &Environment::set_volumetric_fog_anisotropy);
+	ClassDB::bind_method(D_METHOD("get_volumetric_fog_anisotropy"), &Environment::get_volumetric_fog_anisotropy);
 	ClassDB::bind_method(D_METHOD("set_volumetric_fog_length", "length"), &Environment::set_volumetric_fog_length);
 	ClassDB::bind_method(D_METHOD("get_volumetric_fog_length"), &Environment::get_volumetric_fog_length);
 	ClassDB::bind_method(D_METHOD("set_volumetric_fog_detail_spread", "detail_spread"), &Environment::set_volumetric_fog_detail_spread);
 	ClassDB::bind_method(D_METHOD("get_volumetric_fog_detail_spread"), &Environment::get_volumetric_fog_detail_spread);
 	ClassDB::bind_method(D_METHOD("set_volumetric_fog_gi_inject", "gi_inject"), &Environment::set_volumetric_fog_gi_inject);
 	ClassDB::bind_method(D_METHOD("get_volumetric_fog_gi_inject"), &Environment::get_volumetric_fog_gi_inject);
+	ClassDB::bind_method(D_METHOD("set_volumetric_fog_ambient_inject", "enabled"), &Environment::set_volumetric_fog_ambient_inject);
+	ClassDB::bind_method(D_METHOD("get_volumetric_fog_ambient_inject"), &Environment::get_volumetric_fog_ambient_inject);
 	ClassDB::bind_method(D_METHOD("set_volumetric_fog_temporal_reprojection_enabled", "enabled"), &Environment::set_volumetric_fog_temporal_reprojection_enabled);
 	ClassDB::bind_method(D_METHOD("is_volumetric_fog_temporal_reprojection_enabled"), &Environment::is_volumetric_fog_temporal_reprojection_enabled);
 	ClassDB::bind_method(D_METHOD("set_volumetric_fog_temporal_reprojection_amount", "temporal_reprojection_amount"), &Environment::set_volumetric_fog_temporal_reprojection_amount);
@@ -1315,11 +1414,14 @@ void Environment::_bind_methods() {
 	ADD_GROUP("Volumetric Fog", "volumetric_fog_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "volumetric_fog_enabled"), "set_volumetric_fog_enabled", "is_volumetric_fog_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_density", PROPERTY_HINT_RANGE, "0,1,0.0001,or_greater"), "set_volumetric_fog_density", "get_volumetric_fog_density");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "volumetric_fog_light", PROPERTY_HINT_COLOR_NO_ALPHA), "set_volumetric_fog_light", "get_volumetric_fog_light");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_light_energy", PROPERTY_HINT_RANGE, "0,1024,0.01,or_greater"), "set_volumetric_fog_light_energy", "get_volumetric_fog_light_energy");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_gi_inject", PROPERTY_HINT_RANGE, "0.00,16,0.01,exp"), "set_volumetric_fog_gi_inject", "get_volumetric_fog_gi_inject");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "volumetric_fog_albedo", PROPERTY_HINT_COLOR_NO_ALPHA), "set_volumetric_fog_albedo", "get_volumetric_fog_albedo");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "volumetric_fog_emission", PROPERTY_HINT_COLOR_NO_ALPHA), "set_volumetric_fog_emission", "get_volumetric_fog_emission");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_emission_energy", PROPERTY_HINT_RANGE, "0,1024,0.01,or_greater"), "set_volumetric_fog_emission_energy", "get_volumetric_fog_emission_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_gi_inject", PROPERTY_HINT_RANGE, "0.0,16,0.01,exp"), "set_volumetric_fog_gi_inject", "get_volumetric_fog_gi_inject");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_anisotropy", PROPERTY_HINT_RANGE, "-0.9,0.9,0.01"), "set_volumetric_fog_anisotropy", "get_volumetric_fog_anisotropy");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_length", PROPERTY_HINT_RANGE, "0,1024,0.01,or_greater"), "set_volumetric_fog_length", "get_volumetric_fog_length");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_detail_spread", PROPERTY_HINT_EXP_EASING, "0.01,16,0.01"), "set_volumetric_fog_detail_spread", "get_volumetric_fog_detail_spread");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_detail_spread", PROPERTY_HINT_EXP_EASING), "set_volumetric_fog_detail_spread", "get_volumetric_fog_detail_spread");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_ambient_inject", PROPERTY_HINT_RANGE, "0.0,16,0.01,exp"), "set_volumetric_fog_ambient_inject", "get_volumetric_fog_ambient_inject");
 	ADD_SUBGROUP("Temporal Reprojection", "volumetric_fog_temporal_reprojection_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "volumetric_fog_temporal_reprojection_enabled"), "set_volumetric_fog_temporal_reprojection_enabled", "is_volumetric_fog_temporal_reprojection_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_temporal_reprojection_amount", PROPERTY_HINT_RANGE, "0.0,0.999,0.001"), "set_volumetric_fog_temporal_reprojection_amount", "get_volumetric_fog_temporal_reprojection_amount");
@@ -1374,18 +1476,9 @@ void Environment::_bind_methods() {
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_REPLACE);
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_MIX);
 
-	BIND_ENUM_CONSTANT(SDFGI_CASCADES_4);
-	BIND_ENUM_CONSTANT(SDFGI_CASCADES_6);
-	BIND_ENUM_CONSTANT(SDFGI_CASCADES_8);
-
 	BIND_ENUM_CONSTANT(SDFGI_Y_SCALE_DISABLED);
 	BIND_ENUM_CONSTANT(SDFGI_Y_SCALE_75_PERCENT);
 	BIND_ENUM_CONSTANT(SDFGI_Y_SCALE_50_PERCENT);
-
-	BIND_ENUM_CONSTANT(VOLUMETRIC_FOG_SHADOW_FILTER_DISABLED);
-	BIND_ENUM_CONSTANT(VOLUMETRIC_FOG_SHADOW_FILTER_LOW);
-	BIND_ENUM_CONSTANT(VOLUMETRIC_FOG_SHADOW_FILTER_MEDIUM);
-	BIND_ENUM_CONSTANT(VOLUMETRIC_FOG_SHADOW_FILTER_HIGH);
 }
 
 Environment::Environment() {
@@ -1406,6 +1499,7 @@ Environment::Environment() {
 	_update_tonemap();
 	_update_ssr();
 	_update_ssao();
+	_update_ssil();
 	_update_sdfgi();
 	_update_glow();
 	_update_fog();

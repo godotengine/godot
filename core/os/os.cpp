@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,12 +75,12 @@ void OS::add_logger(Logger *p_logger) {
 	}
 }
 
-void OS::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, Logger::ErrorType p_type) {
+void OS::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, Logger::ErrorType p_type) {
 	if (!_stderr_enabled) {
 		return;
 	}
 
-	_logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_type);
+	_logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type);
 }
 
 void OS::print(const char *p_format, ...) {
@@ -190,8 +190,8 @@ static void _OS_printres(Object *p_obj) {
 }
 
 void OS::print_all_resources(String p_to_file) {
-	ERR_FAIL_COND(p_to_file != "" && _OSPRF);
-	if (p_to_file != "") {
+	ERR_FAIL_COND(!p_to_file.is_empty() && _OSPRF);
+	if (!p_to_file.is_empty()) {
 		Error err;
 		_OSPRF = FileAccess::open(p_to_file, FileAccess::WRITE, &err);
 		if (err != OK) {
@@ -202,7 +202,7 @@ void OS::print_all_resources(String p_to_file) {
 
 	ObjectDB::debug_objects(_OS_printres);
 
-	if (p_to_file != "") {
+	if (!p_to_file.is_empty()) {
 		if (_OSPRF) {
 			memdelete(_OSPRF);
 		}
@@ -346,7 +346,7 @@ String OS::get_model_name() const {
 }
 
 void OS::set_cmdline(const char *p_execpath, const List<String> &p_args) {
-	_execpath = p_execpath;
+	_execpath = String::utf8(p_execpath);
 	_cmdline = p_args;
 }
 
@@ -429,6 +429,24 @@ bool OS::has_feature(const String &p_feature) {
 	}
 #endif
 	if (p_feature == "arm") {
+		return true;
+	}
+#elif defined(__riscv)
+#if __riscv_xlen == 8
+	if (p_feature == "rv64") {
+		return true;
+	}
+#endif
+	if (p_feature == "riscv") {
+		return true;
+	}
+#elif defined(__powerpc__)
+#if defined(__powerpc64__)
+	if (p_feature == "ppc64") {
+		return true;
+	}
+#endif
+	if (p_feature == "ppc") {
 		return true;
 	}
 #endif

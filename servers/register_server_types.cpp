@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -59,12 +59,12 @@
 #include "display_server.h"
 #include "navigation_server_2d.h"
 #include "navigation_server_3d.h"
-#include "physics_2d/physics_server_2d_sw.h"
-#include "physics_2d/physics_server_2d_wrap_mt.h"
-#include "physics_3d/physics_server_3d_sw.h"
-#include "physics_3d/physics_server_3d_wrap_mt.h"
+#include "physics_2d/godot_physics_server_2d.h"
+#include "physics_3d/godot_physics_server_3d.h"
 #include "physics_server_2d.h"
+#include "physics_server_2d_wrap_mt.h"
 #include "physics_server_3d.h"
+#include "physics_server_3d_wrap_mt.h"
 #include "rendering/renderer_compositor.h"
 #include "rendering/rendering_device.h"
 #include "rendering/rendering_device_binds.h"
@@ -82,7 +82,7 @@ ShaderTypes *shader_types = nullptr;
 PhysicsServer3D *_createGodotPhysics3DCallback() {
 	bool using_threads = GLOBAL_GET("physics/3d/run_on_thread");
 
-	PhysicsServer3D *physics_server = memnew(PhysicsServer3DSW(using_threads));
+	PhysicsServer3D *physics_server = memnew(GodotPhysicsServer3D(using_threads));
 
 	return memnew(PhysicsServer3DWrapMT(physics_server, using_threads));
 }
@@ -90,7 +90,7 @@ PhysicsServer3D *_createGodotPhysics3DCallback() {
 PhysicsServer2D *_createGodotPhysics2DCallback() {
 	bool using_threads = GLOBAL_GET("physics/2d/run_on_thread");
 
-	PhysicsServer2D *physics_server = memnew(PhysicsServer2DSW(using_threads));
+	PhysicsServer2D *physics_server = memnew(GodotPhysicsServer2D(using_threads));
 
 	return memnew(PhysicsServer2DWrapMT(physics_server, using_threads));
 }
@@ -133,6 +133,7 @@ void register_server_types() {
 
 	GDREGISTER_VIRTUAL_CLASS(XRInterface);
 	GDREGISTER_CLASS(XRInterfaceExtension); // can't register this as virtual because we need a creation function for our extensions.
+	GDREGISTER_CLASS(XRPose);
 	GDREGISTER_CLASS(XRPositionalTracker);
 
 	GDREGISTER_CLASS(AudioStream);
@@ -208,13 +209,17 @@ void register_server_types() {
 
 	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectBodyState2D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectSpaceState2D);
+	GDREGISTER_CLASS(PhysicsRayQueryParameters2D);
+	GDREGISTER_CLASS(PhysicsPointQueryParameters2D);
+	GDREGISTER_CLASS(PhysicsShapeQueryParameters2D);
 	GDREGISTER_CLASS(PhysicsTestMotionParameters2D);
 	GDREGISTER_CLASS(PhysicsTestMotionResult2D);
-	GDREGISTER_CLASS(PhysicsShapeQueryParameters2D);
 
-	GDREGISTER_CLASS(PhysicsShapeQueryParameters3D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectBodyState3D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectSpaceState3D);
+	GDREGISTER_CLASS(PhysicsRayQueryParameters3D);
+	GDREGISTER_CLASS(PhysicsPointQueryParameters3D);
+	GDREGISTER_CLASS(PhysicsShapeQueryParameters3D);
 	GDREGISTER_CLASS(PhysicsTestMotionParameters3D);
 	GDREGISTER_CLASS(PhysicsTestMotionResult3D);
 

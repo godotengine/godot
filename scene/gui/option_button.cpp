@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -71,7 +71,11 @@ void OptionButton::_notification(int p_what) {
 						clr = get_theme_color(SNAME("font_disabled_color"));
 						break;
 					default:
-						clr = get_theme_color(SNAME("font_color"));
+						if (has_focus()) {
+							clr = get_theme_color(SNAME("font_focus_color"));
+						} else {
+							clr = get_theme_color(SNAME("font_color"));
+						}
 				}
 			}
 
@@ -106,6 +110,63 @@ void OptionButton::_notification(int p_what) {
 	}
 }
 
+bool OptionButton::_set(const StringName &p_name, const Variant &p_value) {
+	Vector<String> components = String(p_name).split("/", true, 2);
+	if (components.size() >= 2 && components[0] == "popup") {
+		bool valid;
+		popup->set(String(p_name).trim_prefix("popup/"), p_value, &valid);
+
+		int idx = components[1].get_slice("_", 1).to_int();
+		if (idx == current) {
+			// Force refreshing currently displayed item.
+			current = -1;
+			_select(idx, false);
+		}
+
+		return valid;
+	}
+	return false;
+}
+
+bool OptionButton::_get(const StringName &p_name, Variant &r_ret) const {
+	Vector<String> components = String(p_name).split("/", true, 2);
+	if (components.size() >= 2 && components[0] == "popup") {
+		bool valid;
+		r_ret = popup->get(String(p_name).trim_prefix("popup/"), &valid);
+		return valid;
+	}
+	return false;
+}
+
+void OptionButton::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (int i = 0; i < popup->get_item_count(); i++) {
+		p_list->push_back(PropertyInfo(Variant::STRING, vformat("popup/item_%d/text", i)));
+
+		PropertyInfo pi = PropertyInfo(Variant::OBJECT, vformat("popup/item_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
+		pi.usage &= ~(popup->get_item_icon(i).is_null() ? PROPERTY_USAGE_STORAGE : 0);
+		p_list->push_back(pi);
+
+		pi = PropertyInfo(Variant::INT, vformat("popup/item_%d/checkable", i), PROPERTY_HINT_ENUM, "No,As checkbox,As radio button");
+		pi.usage &= ~(!popup->is_item_checkable(i) ? PROPERTY_USAGE_STORAGE : 0);
+		p_list->push_back(pi);
+
+		pi = PropertyInfo(Variant::BOOL, vformat("popup/item_%d/checked", i));
+		pi.usage &= ~(!popup->is_item_checked(i) ? PROPERTY_USAGE_STORAGE : 0);
+		p_list->push_back(pi);
+
+		pi = PropertyInfo(Variant::INT, vformat("popup/item_%d/id", i), PROPERTY_HINT_RANGE, "1,10,1,or_greater");
+		p_list->push_back(pi);
+
+		pi = PropertyInfo(Variant::BOOL, vformat("popup/item_%d/disabled", i));
+		pi.usage &= ~(!popup->is_item_disabled(i) ? PROPERTY_USAGE_STORAGE : 0);
+		p_list->push_back(pi);
+
+		pi = PropertyInfo(Variant::BOOL, vformat("popup/item_%d/separator", i));
+		pi.usage &= ~(!popup->is_item_separator(i) ? PROPERTY_USAGE_STORAGE : 0);
+		p_list->push_back(pi);
+	}
+}
+
 void OptionButton::_focused(int p_which) {
 	emit_signal(SNAME("item_focused"), p_which);
 }
@@ -118,6 +179,7 @@ void OptionButton::pressed() {
 	Size2 size = get_size() * get_viewport()->get_canvas_transform().get_scale();
 	popup->set_position(get_screen_position() + Size2(0, size.height * get_global_transform().get_scale().y));
 	popup->set_size(Size2(size.width, 0));
+	popup->set_current_index(current);
 	popup->popup();
 }
 
@@ -185,6 +247,12 @@ Variant OptionButton::get_item_metadata(int p_idx) const {
 
 bool OptionButton::is_item_disabled(int p_idx) const {
 	return popup->is_item_disabled(p_idx);
+}
+
+void OptionButton::set_item_count(int p_count) {
+	ERR_FAIL_COND(p_count < 0);
+	popup->set_item_count(p_count);
+	notify_property_list_changed();
 }
 
 int OptionButton::get_item_count() const {
@@ -263,38 +331,6 @@ PopupMenu *OptionButton::get_popup() const {
 	return popup;
 }
 
-Array OptionButton::_get_items() const {
-	Array items;
-	for (int i = 0; i < get_item_count(); i++) {
-		items.push_back(get_item_text(i));
-		items.push_back(get_item_icon(i));
-		items.push_back(is_item_disabled(i));
-		items.push_back(get_item_id(i));
-		items.push_back(get_item_metadata(i));
-	}
-
-	return items;
-}
-
-void OptionButton::_set_items(const Array &p_items) {
-	ERR_FAIL_COND(p_items.size() % 5);
-	clear();
-
-	for (int i = 0; i < p_items.size(); i += 5) {
-		String text = p_items[i + 0];
-		Ref<Texture2D> icon = p_items[i + 1];
-		bool disabled = p_items[i + 2];
-		int id = p_items[i + 3];
-		Variant meta = p_items[i + 4];
-
-		int idx = get_item_count();
-		add_item(text, id);
-		set_item_icon(idx, icon);
-		set_item_disabled(idx, disabled);
-		set_item_metadata(idx, meta);
-	}
-}
-
 void OptionButton::get_translatable_strings(List<String> *p_strings) const {
 	popup->get_translatable_strings(p_strings);
 }
@@ -313,7 +349,6 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_index", "id"), &OptionButton::get_item_index);
 	ClassDB::bind_method(D_METHOD("get_item_metadata", "idx"), &OptionButton::get_item_metadata);
 	ClassDB::bind_method(D_METHOD("is_item_disabled", "idx"), &OptionButton::is_item_disabled);
-	ClassDB::bind_method(D_METHOD("get_item_count"), &OptionButton::get_item_count);
 	ClassDB::bind_method(D_METHOD("add_separator"), &OptionButton::add_separator);
 	ClassDB::bind_method(D_METHOD("clear"), &OptionButton::clear);
 	ClassDB::bind_method(D_METHOD("select", "idx"), &OptionButton::select);
@@ -325,11 +360,11 @@ void OptionButton::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_popup"), &OptionButton::get_popup);
 
-	ClassDB::bind_method(D_METHOD("_set_items"), &OptionButton::_set_items);
-	ClassDB::bind_method(D_METHOD("_get_items"), &OptionButton::_get_items);
+	ClassDB::bind_method(D_METHOD("set_item_count", "count"), &OptionButton::set_item_count);
+	ClassDB::bind_method(D_METHOD("get_item_count"), &OptionButton::get_item_count);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "items", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_items", "_get_items");
-	// "selected" property must come after "items", otherwise GH-10213 occurs.
+	// "selected" property must come after "item_count", otherwise GH-10213 occurs.
+	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "selected"), "_select_int", "get_selected");
 	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "index")));
 	ADD_SIGNAL(MethodInfo("item_focused", PropertyInfo(Variant::INT, "index")));
@@ -337,7 +372,7 @@ void OptionButton::_bind_methods() {
 
 OptionButton::OptionButton() {
 	set_toggle_mode(true);
-	set_text_align(ALIGN_LEFT);
+	set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 	if (is_layout_rtl()) {
 		if (has_theme_icon(SNAME("arrow"))) {
 			_set_internal_margin(SIDE_LEFT, Control::get_theme_icon(SNAME("arrow"))->get_width());

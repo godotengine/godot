@@ -76,21 +76,21 @@
 			<return type="bool" />
 			<argument index="0" name="start_key" type="String" />
 			<description>
-				Return [code]true[/code] if the start key exists, else [code]false[/code].
+				Returns [code]true[/code] if the start key exists, else [code]false[/code].
 			</description>
 		</method>
 		<method name="has_keyword_color" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="keyword" type="String" />
 			<description>
-				Return [code]true[/code] if the keyword exists, else [code]false[/code].
+				Returns [code]true[/code] if the keyword exists, else [code]false[/code].
 			</description>
 		</method>
 		<method name="has_member_keyword_color" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="member_keyword" type="String" />
 			<description>
-				Return [code]true[/code] if the member keyword exists, else [code]false[/code].
+				Returns [code]true[/code] if the member keyword exists, else [code]false[/code].
 			</description>
 		</method>
 		<method name="remove_color_region">

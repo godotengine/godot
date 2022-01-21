@@ -146,6 +146,7 @@ env.core_sources += thirdparty_obj
 # Godot source files
 
 env.add_source_files(env.core_sources, "*.cpp")
+env.add_source_files(env.core_sources, "script_encryption_key.gen.cpp")
 
 # Certificates
 env.Depends(

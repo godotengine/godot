@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -124,7 +124,7 @@ void MultiplayerReplicator::_process_default_sync(const ResourceUID::ID &p_id, c
 	ERR_FAIL_COND_MSG(p_packet_len < SYNC_CMD_OFFSET + 5, "Invalid spawn packet received");
 	ERR_FAIL_COND_MSG(!replications.has(p_id), "Invalid spawn ID received " + itos(p_id));
 	SceneConfig &cfg = replications[p_id];
-	ERR_FAIL_COND_MSG(cfg.mode != REPLICATION_MODE_SERVER || multiplayer->is_server(), "The defualt implementation only allows sync packets from the server");
+	ERR_FAIL_COND_MSG(cfg.mode != REPLICATION_MODE_SERVER || multiplayer->is_server(), "The default implementation only allows sync packets from the server");
 	const bool same_size = p_packet[0] & BYTE_OR_ZERO_FLAG;
 	int ofs = SYNC_CMD_OFFSET;
 	int time = p_packet[ofs];
@@ -207,7 +207,7 @@ Error MultiplayerReplicator::_send_default_spawn_despawn(int p_peer_id, const Re
 	const Vector<StringName> names = rel_path.get_names();
 	ERR_FAIL_COND_V(names.size() < 2, ERR_INVALID_PARAMETER);
 
-	NodePath parent = NodePath(names.subarray(0, names.size() - 2), false);
+	NodePath parent = NodePath(names.slice(0, names.size() - 1), false);
 	ERR_FAIL_COND_V_MSG(!root_node->has_node(parent), ERR_INVALID_PARAMETER, "Path not found: " + parent);
 
 	int path_id = 0;
@@ -572,7 +572,7 @@ Error MultiplayerReplicator::_spawn_despawn(ResourceUID::ID p_scene_id, Object *
 		args[0] = p_peer;
 		args[1] = p_scene_id;
 		args[2] = p_obj;
-		args[3] = true;
+		args[3] = p_spawn;
 		const Variant *argp[] = { &args[0], &args[1], &args[2], &args[3] };
 		Callable::CallError ce;
 		Variant ret;

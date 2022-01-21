@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -171,12 +171,15 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 		/* color regions */
 		if (is_a_symbol || in_region != -1) {
 			int from = j;
-			for (; from < line_length; from++) {
-				if (str[from] == '\\') {
-					from++;
-					continue;
+
+			if (in_region == -1) {
+				for (; from < line_length; from++) {
+					if (str[from] == '\\') {
+						from++;
+						continue;
+					}
+					break;
 				}
-				break;
 			}
 
 			if (from != line_length) {
@@ -208,6 +211,12 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 
 						/* check if it's the whole line */
 						if (end_key_length == 0 || color_regions[c].line_only || from + end_key_length > line_length) {
+							if (from + end_key_length > line_length && (color_regions[in_region].start_key == "\"" || color_regions[in_region].start_key == "\'")) {
+								// If it's key length and there is a '\', dont skip to highlight esc chars.
+								if (str.find("\\", from) >= 0) {
+									break;
+								}
+							}
 							prev_color = color_regions[in_region].color;
 							highlighter_info["color"] = color_regions[c].color;
 							color_map[j] = highlighter_info;
@@ -227,13 +236,23 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 
 				/* if we are in one find the end key */
 				if (in_region != -1) {
+					bool is_string = (color_regions[in_region].start_key == "\"" || color_regions[in_region].start_key == "\'");
+
+					Color region_color = color_regions[in_region].color;
+					prev_color = region_color;
+					highlighter_info["color"] = region_color;
+					color_map[j] = highlighter_info;
+
 					/* search the line */
 					int region_end_index = -1;
 					int end_key_length = color_regions[in_region].end_key.length();
 					const char32_t *end_key = color_regions[in_region].end_key.get_data();
 					for (; from < line_length; from++) {
 						if (line_length - from < end_key_length) {
-							break;
+							// Don't break if '\' to highlight esc chars.
+							if (!is_string || str.find("\\", from) < 0) {
+								break;
+							}
 						}
 
 						if (!is_symbol(str[from])) {
@@ -241,7 +260,20 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 						}
 
 						if (str[from] == '\\') {
+							if (is_string) {
+								Dictionary escape_char_highlighter_info;
+								escape_char_highlighter_info["color"] = symbol_color;
+								color_map[from] = escape_char_highlighter_info;
+							}
+
 							from++;
+
+							if (is_string) {
+								Dictionary region_continue_highlighter_info;
+								prev_color = region_color;
+								region_continue_highlighter_info["color"] = region_color;
+								color_map[from + 1] = region_continue_highlighter_info;
+							}
 							continue;
 						}
 
@@ -257,10 +289,6 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 							break;
 						}
 					}
-
-					prev_color = color_regions[in_region].color;
-					highlighter_info["color"] = color_regions[in_region].color;
-					color_map[j] = highlighter_info;
 
 					j = from + (end_key_length - 1);
 					if (region_end_index == -1) {
@@ -493,7 +521,7 @@ void CodeHighlighter::add_color_region(const String &p_start_key, const String &
 	color_region.color = p_color;
 	color_region.start_key = p_start_key;
 	color_region.end_key = p_end_key;
-	color_region.line_only = p_line_only || p_end_key == "";
+	color_region.line_only = p_line_only || p_end_key.is_empty();
 	color_regions.insert(at, color_region);
 	clear_highlighting_cache();
 }
@@ -501,7 +529,7 @@ void CodeHighlighter::add_color_region(const String &p_start_key, const String &
 void CodeHighlighter::remove_color_region(const String &p_start_key) {
 	for (int i = 0; i < color_regions.size(); i++) {
 		if (color_regions[i].start_key == p_start_key) {
-			color_regions.remove(i);
+			color_regions.remove_at(i);
 			break;
 		}
 	}
@@ -529,7 +557,7 @@ void CodeHighlighter::set_color_regions(const Dictionary &p_color_regions) {
 		String start_key = key.get_slice(" ", 0);
 		String end_key = key.get_slice_count(" ") > 1 ? key.get_slice(" ", 1) : String();
 
-		add_color_region(start_key, end_key, p_color_regions[key], end_key == "");
+		add_color_region(start_key, end_key, p_color_regions[key], end_key.is_empty());
 	}
 	clear_highlighting_cache();
 }

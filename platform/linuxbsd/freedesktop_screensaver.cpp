@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,6 +50,7 @@ void FreeDesktopScreenSaver::inhibit() {
 
 	DBusConnection *bus = dbus_bus_get(DBUS_BUS_SESSION, &error);
 	if (dbus_error_is_set(&error)) {
+		dbus_error_free(&error);
 		unsupported = true;
 		return;
 	}
@@ -72,6 +73,7 @@ void FreeDesktopScreenSaver::inhibit() {
 	DBusMessage *reply = dbus_connection_send_with_reply_and_block(bus, message, 50, &error);
 	dbus_message_unref(message);
 	if (dbus_error_is_set(&error)) {
+		dbus_error_free(&error);
 		dbus_connection_unref(bus);
 		unsupported = false;
 		return;
@@ -96,6 +98,7 @@ void FreeDesktopScreenSaver::uninhibit() {
 
 	DBusConnection *bus = dbus_bus_get(DBUS_BUS_SESSION, &error);
 	if (dbus_error_is_set(&error)) {
+		dbus_error_free(&error);
 		unsupported = true;
 		return;
 	}
@@ -110,6 +113,7 @@ void FreeDesktopScreenSaver::uninhibit() {
 
 	DBusMessage *reply = dbus_connection_send_with_reply_and_block(bus, message, 50, &error);
 	if (dbus_error_is_set(&error)) {
+		dbus_error_free(&error);
 		dbus_connection_unref(bus);
 		unsupported = true;
 		return;

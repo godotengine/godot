@@ -7,7 +7,7 @@
 		An Omnidirectional light is a type of [Light3D] that emits light in all directions. The light is attenuated by distance and this attenuation can be configured by changing its energy, radius, and attenuation parameters.
 	</description>
 	<tutorials>
-		<link title="3D lights and shadows">https://docs.godotengine.org/en/latest/tutorials/3d/lights_and_shadows.html</link>
+		<link title="3D lights and shadows">$DOCS_URL/tutorials/3d/lights_and_shadows.html</link>
 	</tutorials>
 	<members>
 		<member name="omni_attenuation" type="float" setter="set_param" getter="get_param" default="1.0">

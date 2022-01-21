@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,11 @@
 #ifndef THEME_EDITOR_PLUGIN_H
 #define THEME_EDITOR_PLUGIN_H
 
+#include "scene/gui/dialogs.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/scroll_container.h"
-#include "scene/gui/tabs.h"
+#include "scene/gui/tab_bar.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/theme.h"
 #include "theme_editor_preview.h"
@@ -148,9 +149,9 @@ class ThemeItemImportTree : public VBoxContainer {
 	void _update_total_selected(Theme::DataType p_data_type);
 
 	void _tree_item_edited();
+	void _check_propagated_to_tree_item(Object *p_obj, int p_column);
 	void _select_all_subitems(TreeItem *p_root_item, bool p_select_with_data);
 	void _deselect_all_subitems(TreeItem *p_root_item, bool p_deselect_completely);
-	void _update_parent_items(TreeItem *p_root_item);
 
 	void _select_all_items_pressed();
 	void _select_full_items_pressed();
@@ -176,8 +177,12 @@ public:
 	ThemeItemImportTree();
 };
 
+class ThemeTypeEditor;
+
 class ThemeItemEditorDialog : public AcceptDialog {
 	GDCLASS(ThemeItemEditorDialog, AcceptDialog);
+
+	ThemeTypeEditor *theme_type_editor;
 
 	Ref<Theme> edited_theme;
 
@@ -257,11 +262,12 @@ class ThemeItemEditorDialog : public AcceptDialog {
 
 protected:
 	void _notification(int p_what);
+	static void _bind_methods();
 
 public:
 	void set_edited_theme(const Ref<Theme> &p_theme);
 
-	ThemeItemEditorDialog();
+	ThemeItemEditorDialog(ThemeTypeEditor *p_theme_editor);
 };
 
 class ThemeTypeDialog : public ConfirmationDialog {
@@ -270,8 +276,11 @@ class ThemeTypeDialog : public ConfirmationDialog {
 	Ref<Theme> edited_theme;
 	bool include_own_types = false;
 
+	String pre_submitted_value;
+
 	LineEdit *add_type_filter;
 	ItemList *add_type_options;
+	ConfirmationDialog *add_type_confirmation;
 
 	void _dialog_about_to_show();
 	void ok_pressed() override;
@@ -282,6 +291,9 @@ class ThemeTypeDialog : public ConfirmationDialog {
 	void _add_type_options_cbk(int p_index);
 	void _add_type_dialog_entered(const String &p_value);
 	void _add_type_dialog_activated(int p_index);
+
+	void _add_type_selected(const String &p_type_name);
+	void _add_type_confirmed();
 
 protected:
 	void _notification(int p_what);
@@ -347,7 +359,6 @@ class ThemeTypeEditor : public MarginContainer {
 	void _update_type_items();
 
 	void _list_type_selected(int p_index);
-	void _select_type(String p_type_name);
 	void _add_type_button_cbk();
 	void _add_default_type_items();
 
@@ -363,11 +374,14 @@ class ThemeTypeEditor : public MarginContainer {
 	void _color_item_changed(Color p_value, String p_item_name);
 	void _constant_item_changed(float p_value, String p_item_name);
 	void _font_size_item_changed(float p_value, String p_item_name);
-	void _edit_resource_item(RES p_resource);
+	void _edit_resource_item(RES p_resource, bool p_edit);
 	void _font_item_changed(Ref<Font> p_value, String p_item_name);
 	void _icon_item_changed(Ref<Texture2D> p_value, String p_item_name);
 	void _stylebox_item_changed(Ref<StyleBox> p_value, String p_item_name);
-	void _pin_leading_stylebox(Control *p_editor, String p_item_name);
+	void _change_pinned_stylebox();
+	void _on_pin_leader_button_pressed(Control *p_editor, String p_item_name);
+	void _pin_leading_stylebox(String p_item_name, Ref<StyleBox> p_stylebox);
+	void _on_unpin_leader_button_pressed();
 	void _unpin_leading_stylebox();
 	void _update_stylebox_from_leading();
 
@@ -378,10 +392,12 @@ class ThemeTypeEditor : public MarginContainer {
 
 protected:
 	void _notification(int p_what);
+	static void _bind_methods();
 
 public:
 	void set_edited_theme(const Ref<Theme> &p_theme);
 	void select_type(String p_type_name);
+	bool is_stylebox_pinned(Ref<StyleBox> p_stylebox);
 
 	ThemeTypeEditor();
 };
@@ -391,7 +407,7 @@ class ThemeEditor : public VBoxContainer {
 
 	Ref<Theme> theme;
 
-	Tabs *preview_tabs;
+	TabBar *preview_tabs;
 	PanelContainer *preview_tabs_content;
 	Button *add_preview_button;
 	EditorFileDialog *preview_scene_dialog;

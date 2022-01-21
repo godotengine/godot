@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -104,10 +104,14 @@ const GodotInputGamepads = {
 				}
 			}
 			GodotEventListeners.add(window, 'gamepadconnected', function (evt) {
-				add(evt.gamepad);
+				if (evt.gamepad) {
+					add(evt.gamepad);
+				}
 			}, false);
 			GodotEventListeners.add(window, 'gamepaddisconnected', function (evt) {
-				onchange(evt.gamepad.index, 0);
+				if (evt.gamepad) {
+					onchange(evt.gamepad.index, 0);
+				}
 			}, false);
 		},
 
@@ -258,7 +262,7 @@ const GodotInputDragDrop = {
 				const DROP = `/tmp/drop-${parseInt(Math.random() * (1 << 30), 10)}/`;
 				const drops = [];
 				const files = [];
-				FS.mkdir(DROP);
+				FS.mkdir(DROP.slice(0, -1)); // Without trailing slash
 				GodotInputDragDrop.pending_files.forEach((elem) => {
 					const path = elem['path'];
 					GodotFS.copy_to_fs(DROP + path, elem['data']);
@@ -389,6 +393,11 @@ const GodotInput = {
 			const rect = canvas.getBoundingClientRect();
 			const pos = GodotInput.computePosition(evt, rect);
 			const modifiers = GodotInput.getModifiers(evt);
+			// Since the event is consumed, focus manually.
+			// NOTE: The iframe container may not have focus yet, so focus even when already active.
+			if (p_pressed) {
+				GodotConfig.canvas.focus();
+			}
 			if (func(p_pressed, evt.button, pos[0], pos[1], modifiers)) {
 				evt.preventDefault();
 			}
@@ -405,14 +414,19 @@ const GodotInput = {
 		const func = GodotRuntime.get_func(callback);
 		const canvas = GodotConfig.canvas;
 		function touch_cb(type, evt) {
+			// Since the event is consumed, focus manually.
+			// NOTE: The iframe container may not have focus yet, so focus even when already active.
+			if (type === 0) {
+				GodotConfig.canvas.focus();
+			}
 			const rect = canvas.getBoundingClientRect();
 			const touches = evt.changedTouches;
 			for (let i = 0; i < touches.length; i++) {
 				const touch = touches[i];
 				const pos = GodotInput.computePosition(touch, rect);
-				GodotRuntime.setHeapValue(coords + (i * 2), pos[0], 'double');
-				GodotRuntime.setHeapValue(coords + (i * 2 + 8), pos[1], 'double');
-				GodotRuntime.setHeapValue(ids + i, touch.identifier, 'i32');
+				GodotRuntime.setHeapValue(coords + (i * 2) * 8, pos[0], 'double');
+				GodotRuntime.setHeapValue(coords + (i * 2 + 1) * 8, pos[1], 'double');
+				GodotRuntime.setHeapValue(ids + i * 4, touch.identifier, 'i32');
 			}
 			func(type, touches.length);
 			if (evt.cancelable) {

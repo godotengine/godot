@@ -11,6 +11,13 @@
 		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/524</link>
 	</tutorials>
 	<methods>
+		<method name="get_contact_body" qualifiers="const">
+			<return type="Node3D" />
+			<description>
+				Returns the contacting body node if valid in the tree, as [Node3D]. At the moment, [GridMap] is not supported so the node will be always of type [PhysicsBody3D].
+				Returns [code]null[/code] if the wheel is not in contact with a surface, or the contact body is not a [PhysicsBody3D].
+			</description>
+		</method>
 		<method name="get_rpm" qualifiers="const">
 			<return type="float" />
 			<description>

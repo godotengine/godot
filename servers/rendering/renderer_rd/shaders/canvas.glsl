@@ -91,7 +91,6 @@ void main() {
 	uint instancing = draw_data.flags & FLAGS_INSTANCING_MASK;
 
 #ifdef USE_ATTRIBUTES
-
 	if (instancing > 1) {
 		// trails
 
@@ -128,37 +127,37 @@ void main() {
 
 		vertex = new_vertex;
 		color *= pcolor;
-
 	} else
 #endif // USE_ATTRIBUTES
+	{
+		if (instancing == 1) {
+			uint stride = 2;
+			{
+				if (bool(draw_data.flags & FLAGS_INSTANCING_HAS_COLORS)) {
+					stride += 1;
+				}
+				if (bool(draw_data.flags & FLAGS_INSTANCING_HAS_CUSTOM_DATA)) {
+					stride += 1;
+				}
+			}
 
-			if (instancing == 1) {
-		uint stride = 2;
-		{
+			uint offset = stride * gl_InstanceIndex;
+
+			mat4 matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
+			offset += 2;
+
 			if (bool(draw_data.flags & FLAGS_INSTANCING_HAS_COLORS)) {
-				stride += 1;
+				color *= transforms.data[offset];
+				offset += 1;
 			}
+
 			if (bool(draw_data.flags & FLAGS_INSTANCING_HAS_CUSTOM_DATA)) {
-				stride += 1;
+				instance_custom = transforms.data[offset];
 			}
+
+			matrix = transpose(matrix);
+			world_matrix = world_matrix * matrix;
 		}
-
-		uint offset = stride * gl_InstanceIndex;
-
-		mat4 matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
-		offset += 2;
-
-		if (bool(draw_data.flags & FLAGS_INSTANCING_HAS_COLORS)) {
-			color *= transforms.data[offset];
-			offset += 1;
-		}
-
-		if (bool(draw_data.flags & FLAGS_INSTANCING_HAS_CUSTOM_DATA)) {
-			instance_custom = transforms.data[offset];
-		}
-
-		matrix = transpose(matrix);
-		world_matrix = world_matrix * matrix;
 	}
 
 #if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)

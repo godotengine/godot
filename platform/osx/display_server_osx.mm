@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,8 +45,8 @@
 #include <IOKit/hid/IOHIDKeys.h>
 #include <IOKit/hid/IOHIDLib.h>
 
-#if defined(OPENGL_ENABLED)
-//TODO - reimplement OpenGLES
+#if defined(GLES3_ENABLED)
+#include "drivers/gles3/rasterizer_gles3.h"
 
 #import <AppKit/NSOpenGLView.h>
 #endif
@@ -158,21 +158,16 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 	}
 
 	if (wd.transient_parent != DisplayServerOSX::INVALID_WINDOW_ID) {
-		DisplayServerOSX::WindowData &pwd = DS_OSX->windows[wd.transient_parent];
-		[pwd.window_object makeKeyAndOrderFront:nil]; // Move focus back to parent.
 		DS_OSX->window_set_transient(window_id, DisplayServerOSX::INVALID_WINDOW_ID);
-	} else if ((window_id != DisplayServerOSX::MAIN_WINDOW_ID) && (DS_OSX->windows.size() == 1)) {
-		DisplayServerOSX::WindowData &pwd = DS_OSX->windows[DisplayServerOSX::MAIN_WINDOW_ID];
-		[pwd.window_object makeKeyAndOrderFront:nil]; // Move focus back to main window if there is no parent or other windows left.
 	}
 
-#if defined(OPENGL_ENABLED)
-	if (DS_OSX->rendering_driver == "opengl_es") {
-		//TODO - reimplement OpenGLES
+#if defined(GLES3_ENABLED)
+	if (DS_OSX->gl_manager) {
+		DS_OSX->gl_manager->window_destroy(window_id);
 	}
 #endif
 #ifdef VULKAN_ENABLED
-	if (DS_OSX->rendering_driver == "vulkan") {
+	if (DS_OSX->context_vulkan) {
 		DS_OSX->context_vulkan->window_destroy(window_id);
 	}
 #endif
@@ -271,13 +266,13 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 		layer.contentsScale = scale;
 	}
 
-#if defined(OPENGL_ENABLED)
-	if (DS_OSX->rendering_driver == "opengl_es") {
-		//TODO - reimplement OpenGLES
+#if defined(GLES3_ENABLED)
+	if (DS_OSX->gl_manager) {
+		DS_OSX->gl_manager->window_resize(window_id, wd.size.width, wd.size.height);
 	}
 #endif
 #if defined(VULKAN_ENABLED)
-	if (DS_OSX->rendering_driver == "vulkan") {
+	if (DS_OSX->context_vulkan) {
 		DS_OSX->context_vulkan->window_resize(window_id, wd.size.width, wd.size.height);
 	}
 #endif
@@ -288,14 +283,6 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 		Variant ret;
 		Callable::CallError ce;
 		wd.rect_changed_callback.call((const Variant **)&sizep, 1, ret, ce);
-	}
-
-	if (OS_OSX::get_singleton()->get_main_loop()) {
-		Main::force_redraw();
-		//Event retrieval blocks until resize is over. Call Main::iteration() directly.
-		if (!Main::is_iterating()) { //avoid cyclic loop
-			Main::iteration();
-		}
 	}
 }
 
@@ -329,7 +316,7 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 		CGPoint lMouseWarpPos = { pointOnScreen.x, CGDisplayBounds(CGMainDisplayID()).size.height - pointOnScreen.y };
 		CGWarpMouseCursorPosition(lMouseWarpPos);
 	} else {
-		_get_mouse_pos(wd, [wd.window_object mouseLocationOutsideOfEventStream]);
+		_ALLOW_DISCARD_ _get_mouse_pos(wd, [wd.window_object mouseLocationOutsideOfEventStream]);
 		Input::get_singleton()->set_mouse_position(wd.mouse_pos);
 	}
 
@@ -377,7 +364,12 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 /* GodotContentView                                                      */
 /*************************************************************************/
 
+#if defined(GLES3_ENABLED)
+@interface GodotContentView : NSOpenGLView <NSTextInputClient> {
+#else
 @interface GodotContentView : NSView <NSTextInputClient> {
+#endif
+
 	DisplayServerOSX::WindowID window_id;
 	NSTrackingArea *trackingArea;
 	NSMutableAttributedString *markedText;
@@ -405,14 +397,8 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 }
 
 - (CALayer *)makeBackingLayer {
-#if defined(OPENGL_ENABLED)
-	if (DS_OSX->rendering_driver == "opengl_es") {
-		CALayer *layer = [[NSOpenGLLayer class] layer];
-		return layer;
-	}
-#endif
 #if defined(VULKAN_ENABLED)
-	if (DS_OSX->rendering_driver == "vulkan") {
+	if (DS_OSX->context_vulkan) {
 		CALayer *layer = [[CAMetalLayer class] layer];
 		return layer;
 	}
@@ -421,14 +407,13 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 }
 
 - (void)updateLayer {
-#if defined(OPENGL_ENABLED)
-	if (DS_OSX->rendering_driver == "opengl_es") {
-		[super updateLayer];
-		//TODO - reimplement OpenGLES
+#if defined(GLES3_ENABLED)
+	if (DS_OSX->gl_manager) {
+		DS_OSX->gl_manager->window_update(window_id);
 	}
 #endif
 #if defined(VULKAN_ENABLED)
-	if (DS_OSX->rendering_driver == "vulkan") {
+	if (DS_OSX->context_vulkan) {
 		[super updateLayer];
 	}
 #endif
@@ -589,8 +574,8 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 		ke.pressed = true;
 		ke.echo = false;
 		ke.raw = false; // IME input event
-		ke.keycode = KEY_NONE;
-		ke.physical_keycode = 0;
+		ke.keycode = Key::NONE;
+		ke.physical_keycode = Key::NONE;
 		ke.unicode = codepoint;
 
 		_push_to_key_event_buffer(ke);
@@ -690,7 +675,7 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, M
 	mb->set_position(pos);
 	mb->set_global_position(pos);
 	mb->set_button_mask(DS_OSX->last_button_state);
-	if (index == MOUSE_BUTTON_LEFT && pressed) {
+	if (index == MouseButton::LEFT && pressed) {
 		mb->set_double_click([event clickCount] == 2);
 	}
 
@@ -703,10 +688,10 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, M
 
 	if (([event modifierFlags] & NSEventModifierFlagControl)) {
 		wd.mouse_down_control = true;
-		_mouseDownEvent(window_id, event, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MASK_RIGHT, true);
+		_mouseDownEvent(window_id, event, MouseButton::RIGHT, MouseButton::MASK_RIGHT, true);
 	} else {
 		wd.mouse_down_control = false;
-		_mouseDownEvent(window_id, event, MOUSE_BUTTON_LEFT, MOUSE_BUTTON_MASK_LEFT, true);
+		_mouseDownEvent(window_id, event, MouseButton::LEFT, MouseButton::MASK_LEFT, true);
 	}
 }
 
@@ -719,9 +704,9 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, M
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
 	if (wd.mouse_down_control) {
-		_mouseDownEvent(window_id, event, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MASK_RIGHT, false);
+		_mouseDownEvent(window_id, event, MouseButton::RIGHT, MouseButton::MASK_RIGHT, false);
 	} else {
-		_mouseDownEvent(window_id, event, MOUSE_BUTTON_LEFT, MOUSE_BUTTON_MASK_LEFT, false);
+		_mouseDownEvent(window_id, event, MouseButton::LEFT, MouseButton::MASK_LEFT, false);
 	}
 }
 
@@ -797,7 +782,7 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, M
 		mm->set_tilt(Vector2(p.x, p.y));
 	}
 	mm->set_global_position(pos);
-	mm->set_speed(Input::get_singleton()->get_last_mouse_speed());
+	mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
 	const Vector2i relativeMotion = Vector2i(delta.x, delta.y) * DS_OSX->screen_get_max_scale();
 	mm->set_relative(relativeMotion);
 	_get_key_modifier_state([event modifierFlags], mm);
@@ -807,7 +792,7 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, M
 }
 
 - (void)rightMouseDown:(NSEvent *)event {
-	_mouseDownEvent(window_id, event, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MASK_RIGHT, true);
+	_mouseDownEvent(window_id, event, MouseButton::RIGHT, MouseButton::MASK_RIGHT, true);
 }
 
 - (void)rightMouseDragged:(NSEvent *)event {
@@ -815,16 +800,16 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, M
 }
 
 - (void)rightMouseUp:(NSEvent *)event {
-	_mouseDownEvent(window_id, event, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MASK_RIGHT, false);
+	_mouseDownEvent(window_id, event, MouseButton::RIGHT, MouseButton::MASK_RIGHT, false);
 }
 
 - (void)otherMouseDown:(NSEvent *)event {
 	if ((int)[event buttonNumber] == 2) {
-		_mouseDownEvent(window_id, event, MOUSE_BUTTON_MIDDLE, MOUSE_BUTTON_MASK_MIDDLE, true);
+		_mouseDownEvent(window_id, event, MouseButton::MIDDLE, MouseButton::MASK_MIDDLE, true);
 	} else if ((int)[event buttonNumber] == 3) {
-		_mouseDownEvent(window_id, event, MOUSE_BUTTON_XBUTTON1, MOUSE_BUTTON_MASK_XBUTTON1, true);
+		_mouseDownEvent(window_id, event, MouseButton::MB_XBUTTON1, MouseButton::MASK_XBUTTON1, true);
 	} else if ((int)[event buttonNumber] == 4) {
-		_mouseDownEvent(window_id, event, MOUSE_BUTTON_XBUTTON2, MOUSE_BUTTON_MASK_XBUTTON2, true);
+		_mouseDownEvent(window_id, event, MouseButton::MB_XBUTTON2, MouseButton::MASK_XBUTTON2, true);
 	} else {
 		return;
 	}
@@ -836,11 +821,11 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, M
 
 - (void)otherMouseUp:(NSEvent *)event {
 	if ((int)[event buttonNumber] == 2) {
-		_mouseDownEvent(window_id, event, MOUSE_BUTTON_MIDDLE, MOUSE_BUTTON_MASK_MIDDLE, false);
+		_mouseDownEvent(window_id, event, MouseButton::MIDDLE, MouseButton::MASK_MIDDLE, false);
 	} else if ((int)[event buttonNumber] == 3) {
-		_mouseDownEvent(window_id, event, MOUSE_BUTTON_XBUTTON1, MOUSE_BUTTON_MASK_XBUTTON1, false);
+		_mouseDownEvent(window_id, event, MouseButton::MB_XBUTTON1, MouseButton::MASK_XBUTTON1, false);
 	} else if ((int)[event buttonNumber] == 4) {
-		_mouseDownEvent(window_id, event, MOUSE_BUTTON_XBUTTON2, MOUSE_BUTTON_MASK_XBUTTON2, false);
+		_mouseDownEvent(window_id, event, MouseButton::MB_XBUTTON2, MouseButton::MASK_XBUTTON2, false);
 	} else {
 		return;
 	}
@@ -932,140 +917,140 @@ static bool isNumpadKey(unsigned int key) {
 
 // Keyboard symbol translation table
 static const Key _osx_to_godot_table[128] = {
-	/* 00 */ KEY_A,
-	/* 01 */ KEY_S,
-	/* 02 */ KEY_D,
-	/* 03 */ KEY_F,
-	/* 04 */ KEY_H,
-	/* 05 */ KEY_G,
-	/* 06 */ KEY_Z,
-	/* 07 */ KEY_X,
-	/* 08 */ KEY_C,
-	/* 09 */ KEY_V,
-	/* 0a */ KEY_SECTION, /* ISO Section */
-	/* 0b */ KEY_B,
-	/* 0c */ KEY_Q,
-	/* 0d */ KEY_W,
-	/* 0e */ KEY_E,
-	/* 0f */ KEY_R,
-	/* 10 */ KEY_Y,
-	/* 11 */ KEY_T,
-	/* 12 */ KEY_1,
-	/* 13 */ KEY_2,
-	/* 14 */ KEY_3,
-	/* 15 */ KEY_4,
-	/* 16 */ KEY_6,
-	/* 17 */ KEY_5,
-	/* 18 */ KEY_EQUAL,
-	/* 19 */ KEY_9,
-	/* 1a */ KEY_7,
-	/* 1b */ KEY_MINUS,
-	/* 1c */ KEY_8,
-	/* 1d */ KEY_0,
-	/* 1e */ KEY_BRACERIGHT,
-	/* 1f */ KEY_O,
-	/* 20 */ KEY_U,
-	/* 21 */ KEY_BRACELEFT,
-	/* 22 */ KEY_I,
-	/* 23 */ KEY_P,
-	/* 24 */ KEY_ENTER,
-	/* 25 */ KEY_L,
-	/* 26 */ KEY_J,
-	/* 27 */ KEY_APOSTROPHE,
-	/* 28 */ KEY_K,
-	/* 29 */ KEY_SEMICOLON,
-	/* 2a */ KEY_BACKSLASH,
-	/* 2b */ KEY_COMMA,
-	/* 2c */ KEY_SLASH,
-	/* 2d */ KEY_N,
-	/* 2e */ KEY_M,
-	/* 2f */ KEY_PERIOD,
-	/* 30 */ KEY_TAB,
-	/* 31 */ KEY_SPACE,
-	/* 32 */ KEY_QUOTELEFT,
-	/* 33 */ KEY_BACKSPACE,
-	/* 34 */ KEY_UNKNOWN,
-	/* 35 */ KEY_ESCAPE,
-	/* 36 */ KEY_META,
-	/* 37 */ KEY_META,
-	/* 38 */ KEY_SHIFT,
-	/* 39 */ KEY_CAPSLOCK,
-	/* 3a */ KEY_ALT,
-	/* 3b */ KEY_CTRL,
-	/* 3c */ KEY_SHIFT,
-	/* 3d */ KEY_ALT,
-	/* 3e */ KEY_CTRL,
-	/* 3f */ KEY_UNKNOWN, /* Function */
-	/* 40 */ KEY_UNKNOWN, /* F17 */
-	/* 41 */ KEY_KP_PERIOD,
-	/* 42 */ KEY_UNKNOWN,
-	/* 43 */ KEY_KP_MULTIPLY,
-	/* 44 */ KEY_UNKNOWN,
-	/* 45 */ KEY_KP_ADD,
-	/* 46 */ KEY_UNKNOWN,
-	/* 47 */ KEY_NUMLOCK, /* Really KeypadClear... */
-	/* 48 */ KEY_VOLUMEUP, /* VolumeUp */
-	/* 49 */ KEY_VOLUMEDOWN, /* VolumeDown */
-	/* 4a */ KEY_VOLUMEMUTE, /* Mute */
-	/* 4b */ KEY_KP_DIVIDE,
-	/* 4c */ KEY_KP_ENTER,
-	/* 4d */ KEY_UNKNOWN,
-	/* 4e */ KEY_KP_SUBTRACT,
-	/* 4f */ KEY_UNKNOWN, /* F18 */
-	/* 50 */ KEY_UNKNOWN, /* F19 */
-	/* 51 */ KEY_EQUAL, /* KeypadEqual */
-	/* 52 */ KEY_KP_0,
-	/* 53 */ KEY_KP_1,
-	/* 54 */ KEY_KP_2,
-	/* 55 */ KEY_KP_3,
-	/* 56 */ KEY_KP_4,
-	/* 57 */ KEY_KP_5,
-	/* 58 */ KEY_KP_6,
-	/* 59 */ KEY_KP_7,
-	/* 5a */ KEY_UNKNOWN, /* F20 */
-	/* 5b */ KEY_KP_8,
-	/* 5c */ KEY_KP_9,
-	/* 5d */ KEY_YEN, /* JIS Yen */
-	/* 5e */ KEY_UNDERSCORE, /* JIS Underscore */
-	/* 5f */ KEY_COMMA, /* JIS KeypadComma */
-	/* 60 */ KEY_F5,
-	/* 61 */ KEY_F6,
-	/* 62 */ KEY_F7,
-	/* 63 */ KEY_F3,
-	/* 64 */ KEY_F8,
-	/* 65 */ KEY_F9,
-	/* 66 */ KEY_UNKNOWN, /* JIS Eisu */
-	/* 67 */ KEY_F11,
-	/* 68 */ KEY_UNKNOWN, /* JIS Kana */
-	/* 69 */ KEY_F13,
-	/* 6a */ KEY_F16,
-	/* 6b */ KEY_F14,
-	/* 6c */ KEY_UNKNOWN,
-	/* 6d */ KEY_F10,
-	/* 6e */ KEY_MENU,
-	/* 6f */ KEY_F12,
-	/* 70 */ KEY_UNKNOWN,
-	/* 71 */ KEY_F15,
-	/* 72 */ KEY_INSERT, /* Really Help... */
-	/* 73 */ KEY_HOME,
-	/* 74 */ KEY_PAGEUP,
-	/* 75 */ KEY_DELETE,
-	/* 76 */ KEY_F4,
-	/* 77 */ KEY_END,
-	/* 78 */ KEY_F2,
-	/* 79 */ KEY_PAGEDOWN,
-	/* 7a */ KEY_F1,
-	/* 7b */ KEY_LEFT,
-	/* 7c */ KEY_RIGHT,
-	/* 7d */ KEY_DOWN,
-	/* 7e */ KEY_UP,
-	/* 7f */ KEY_UNKNOWN,
+	/* 00 */ Key::A,
+	/* 01 */ Key::S,
+	/* 02 */ Key::D,
+	/* 03 */ Key::F,
+	/* 04 */ Key::H,
+	/* 05 */ Key::G,
+	/* 06 */ Key::Z,
+	/* 07 */ Key::X,
+	/* 08 */ Key::C,
+	/* 09 */ Key::V,
+	/* 0a */ Key::SECTION, /* ISO Section */
+	/* 0b */ Key::B,
+	/* 0c */ Key::Q,
+	/* 0d */ Key::W,
+	/* 0e */ Key::E,
+	/* 0f */ Key::R,
+	/* 10 */ Key::Y,
+	/* 11 */ Key::T,
+	/* 12 */ Key::KEY_1,
+	/* 13 */ Key::KEY_2,
+	/* 14 */ Key::KEY_3,
+	/* 15 */ Key::KEY_4,
+	/* 16 */ Key::KEY_6,
+	/* 17 */ Key::KEY_5,
+	/* 18 */ Key::EQUAL,
+	/* 19 */ Key::KEY_9,
+	/* 1a */ Key::KEY_7,
+	/* 1b */ Key::MINUS,
+	/* 1c */ Key::KEY_8,
+	/* 1d */ Key::KEY_0,
+	/* 1e */ Key::BRACERIGHT,
+	/* 1f */ Key::O,
+	/* 20 */ Key::U,
+	/* 21 */ Key::BRACELEFT,
+	/* 22 */ Key::I,
+	/* 23 */ Key::P,
+	/* 24 */ Key::ENTER,
+	/* 25 */ Key::L,
+	/* 26 */ Key::J,
+	/* 27 */ Key::APOSTROPHE,
+	/* 28 */ Key::K,
+	/* 29 */ Key::SEMICOLON,
+	/* 2a */ Key::BACKSLASH,
+	/* 2b */ Key::COMMA,
+	/* 2c */ Key::SLASH,
+	/* 2d */ Key::N,
+	/* 2e */ Key::M,
+	/* 2f */ Key::PERIOD,
+	/* 30 */ Key::TAB,
+	/* 31 */ Key::SPACE,
+	/* 32 */ Key::QUOTELEFT,
+	/* 33 */ Key::BACKSPACE,
+	/* 34 */ Key::UNKNOWN,
+	/* 35 */ Key::ESCAPE,
+	/* 36 */ Key::META,
+	/* 37 */ Key::META,
+	/* 38 */ Key::SHIFT,
+	/* 39 */ Key::CAPSLOCK,
+	/* 3a */ Key::ALT,
+	/* 3b */ Key::CTRL,
+	/* 3c */ Key::SHIFT,
+	/* 3d */ Key::ALT,
+	/* 3e */ Key::CTRL,
+	/* 3f */ Key::UNKNOWN, /* Function */
+	/* 40 */ Key::UNKNOWN, /* F17 */
+	/* 41 */ Key::KP_PERIOD,
+	/* 42 */ Key::UNKNOWN,
+	/* 43 */ Key::KP_MULTIPLY,
+	/* 44 */ Key::UNKNOWN,
+	/* 45 */ Key::KP_ADD,
+	/* 46 */ Key::UNKNOWN,
+	/* 47 */ Key::NUMLOCK, /* Really KeypadClear... */
+	/* 48 */ Key::VOLUMEUP, /* VolumeUp */
+	/* 49 */ Key::VOLUMEDOWN, /* VolumeDown */
+	/* 4a */ Key::VOLUMEMUTE, /* Mute */
+	/* 4b */ Key::KP_DIVIDE,
+	/* 4c */ Key::KP_ENTER,
+	/* 4d */ Key::UNKNOWN,
+	/* 4e */ Key::KP_SUBTRACT,
+	/* 4f */ Key::UNKNOWN, /* F18 */
+	/* 50 */ Key::UNKNOWN, /* F19 */
+	/* 51 */ Key::EQUAL, /* KeypadEqual */
+	/* 52 */ Key::KP_0,
+	/* 53 */ Key::KP_1,
+	/* 54 */ Key::KP_2,
+	/* 55 */ Key::KP_3,
+	/* 56 */ Key::KP_4,
+	/* 57 */ Key::KP_5,
+	/* 58 */ Key::KP_6,
+	/* 59 */ Key::KP_7,
+	/* 5a */ Key::UNKNOWN, /* F20 */
+	/* 5b */ Key::KP_8,
+	/* 5c */ Key::KP_9,
+	/* 5d */ Key::YEN, /* JIS Yen */
+	/* 5e */ Key::UNDERSCORE, /* JIS Underscore */
+	/* 5f */ Key::COMMA, /* JIS KeypadComma */
+	/* 60 */ Key::F5,
+	/* 61 */ Key::F6,
+	/* 62 */ Key::F7,
+	/* 63 */ Key::F3,
+	/* 64 */ Key::F8,
+	/* 65 */ Key::F9,
+	/* 66 */ Key::UNKNOWN, /* JIS Eisu */
+	/* 67 */ Key::F11,
+	/* 68 */ Key::UNKNOWN, /* JIS Kana */
+	/* 69 */ Key::F13,
+	/* 6a */ Key::F16,
+	/* 6b */ Key::F14,
+	/* 6c */ Key::UNKNOWN,
+	/* 6d */ Key::F10,
+	/* 6e */ Key::MENU,
+	/* 6f */ Key::F12,
+	/* 70 */ Key::UNKNOWN,
+	/* 71 */ Key::F15,
+	/* 72 */ Key::INSERT, /* Really Help... */
+	/* 73 */ Key::HOME,
+	/* 74 */ Key::PAGEUP,
+	/* 75 */ Key::KEY_DELETE,
+	/* 76 */ Key::F4,
+	/* 77 */ Key::END,
+	/* 78 */ Key::F2,
+	/* 79 */ Key::PAGEDOWN,
+	/* 7a */ Key::F1,
+	/* 7b */ Key::LEFT,
+	/* 7c */ Key::RIGHT,
+	/* 7d */ Key::DOWN,
+	/* 7e */ Key::UP,
+	/* 7f */ Key::UNKNOWN,
 };
 
 // Translates a OS X keycode to a Godot keycode
 static Key translateKey(unsigned int key) {
 	if (key >= 128) {
-		return KEY_UNKNOWN;
+		return Key::UNKNOWN;
 	}
 
 	return _osx_to_godot_table[key];
@@ -1087,61 +1072,61 @@ struct _KeyCodeMap {
 };
 
 static const _KeyCodeMap _keycodes[55] = {
-	{ '`', KEY_QUOTELEFT },
-	{ '~', KEY_ASCIITILDE },
-	{ '0', KEY_0 },
-	{ '1', KEY_1 },
-	{ '2', KEY_2 },
-	{ '3', KEY_3 },
-	{ '4', KEY_4 },
-	{ '5', KEY_5 },
-	{ '6', KEY_6 },
-	{ '7', KEY_7 },
-	{ '8', KEY_8 },
-	{ '9', KEY_9 },
-	{ '-', KEY_MINUS },
-	{ '_', KEY_UNDERSCORE },
-	{ '=', KEY_EQUAL },
-	{ '+', KEY_PLUS },
-	{ 'q', KEY_Q },
-	{ 'w', KEY_W },
-	{ 'e', KEY_E },
-	{ 'r', KEY_R },
-	{ 't', KEY_T },
-	{ 'y', KEY_Y },
-	{ 'u', KEY_U },
-	{ 'i', KEY_I },
-	{ 'o', KEY_O },
-	{ 'p', KEY_P },
-	{ '[', KEY_BRACELEFT },
-	{ ']', KEY_BRACERIGHT },
-	{ '{', KEY_BRACELEFT },
-	{ '}', KEY_BRACERIGHT },
-	{ 'a', KEY_A },
-	{ 's', KEY_S },
-	{ 'd', KEY_D },
-	{ 'f', KEY_F },
-	{ 'g', KEY_G },
-	{ 'h', KEY_H },
-	{ 'j', KEY_J },
-	{ 'k', KEY_K },
-	{ 'l', KEY_L },
-	{ ';', KEY_SEMICOLON },
-	{ ':', KEY_COLON },
-	{ '\'', KEY_APOSTROPHE },
-	{ '\"', KEY_QUOTEDBL },
-	{ '\\', KEY_BACKSLASH },
-	{ '#', KEY_NUMBERSIGN },
-	{ 'z', KEY_Z },
-	{ 'x', KEY_X },
-	{ 'c', KEY_C },
-	{ 'v', KEY_V },
-	{ 'b', KEY_B },
-	{ 'n', KEY_N },
-	{ 'm', KEY_M },
-	{ ',', KEY_COMMA },
-	{ '.', KEY_PERIOD },
-	{ '/', KEY_SLASH }
+	{ '`', Key::QUOTELEFT },
+	{ '~', Key::ASCIITILDE },
+	{ '0', Key::KEY_0 },
+	{ '1', Key::KEY_1 },
+	{ '2', Key::KEY_2 },
+	{ '3', Key::KEY_3 },
+	{ '4', Key::KEY_4 },
+	{ '5', Key::KEY_5 },
+	{ '6', Key::KEY_6 },
+	{ '7', Key::KEY_7 },
+	{ '8', Key::KEY_8 },
+	{ '9', Key::KEY_9 },
+	{ '-', Key::MINUS },
+	{ '_', Key::UNDERSCORE },
+	{ '=', Key::EQUAL },
+	{ '+', Key::PLUS },
+	{ 'q', Key::Q },
+	{ 'w', Key::W },
+	{ 'e', Key::E },
+	{ 'r', Key::R },
+	{ 't', Key::T },
+	{ 'y', Key::Y },
+	{ 'u', Key::U },
+	{ 'i', Key::I },
+	{ 'o', Key::O },
+	{ 'p', Key::P },
+	{ '[', Key::BRACELEFT },
+	{ ']', Key::BRACERIGHT },
+	{ '{', Key::BRACELEFT },
+	{ '}', Key::BRACERIGHT },
+	{ 'a', Key::A },
+	{ 's', Key::S },
+	{ 'd', Key::D },
+	{ 'f', Key::F },
+	{ 'g', Key::G },
+	{ 'h', Key::H },
+	{ 'j', Key::J },
+	{ 'k', Key::K },
+	{ 'l', Key::L },
+	{ ';', Key::SEMICOLON },
+	{ ':', Key::COLON },
+	{ '\'', Key::APOSTROPHE },
+	{ '\"', Key::QUOTEDBL },
+	{ '\\', Key::BACKSLASH },
+	{ '#', Key::NUMBERSIGN },
+	{ 'z', Key::Z },
+	{ 'x', Key::X },
+	{ 'c', Key::C },
+	{ 'v', Key::V },
+	{ 'b', Key::B },
+	{ 'n', Key::N },
+	{ 'm', Key::M },
+	{ ',', Key::COMMA },
+	{ '.', Key::PERIOD },
+	{ '/', Key::SLASH }
 };
 
 static Key remapKey(unsigned int key, unsigned int state) {
@@ -1355,7 +1340,7 @@ inline void sendScrollEvent(DisplayServer::WindowID window_id, MouseButton butto
 	ERR_FAIL_COND(!DS_OSX->windows.has(window_id));
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
-	MouseButton mask = MouseButton(1 << (button - 1));
+	MouseButton mask = mouse_button_to_mask(button);
 
 	Ref<InputEventMouseButton> sc;
 	sc.instantiate();
@@ -1406,7 +1391,7 @@ inline void sendPanEvent(DisplayServer::WindowID window_id, double dx, double dy
 
 	double deltaX, deltaY;
 
-	_get_mouse_pos(wd, [event locationInWindow]);
+	_ALLOW_DISCARD_ _get_mouse_pos(wd, [event locationInWindow]);
 
 	deltaX = [event scrollingDeltaX];
 	deltaY = [event scrollingDeltaY];
@@ -1428,10 +1413,10 @@ inline void sendPanEvent(DisplayServer::WindowID window_id, double dx, double dy
 		sendPanEvent(window_id, deltaX, deltaY, [event modifierFlags]);
 	} else {
 		if (fabs(deltaX)) {
-			sendScrollEvent(window_id, 0 > deltaX ? MOUSE_BUTTON_WHEEL_RIGHT : MOUSE_BUTTON_WHEEL_LEFT, fabs(deltaX * 0.3), [event modifierFlags]);
+			sendScrollEvent(window_id, 0 > deltaX ? MouseButton::WHEEL_RIGHT : MouseButton::WHEEL_LEFT, fabs(deltaX * 0.3), [event modifierFlags]);
 		}
 		if (fabs(deltaY)) {
-			sendScrollEvent(window_id, 0 < deltaY ? MOUSE_BUTTON_WHEEL_UP : MOUSE_BUTTON_WHEEL_DOWN, fabs(deltaY * 0.3), [event modifierFlags]);
+			sendScrollEvent(window_id, 0 < deltaY ? MouseButton::WHEEL_UP : MouseButton::WHEEL_DOWN, fabs(deltaY * 0.3), [event modifierFlags]);
 		}
 	}
 }
@@ -1490,7 +1475,6 @@ bool DisplayServerOSX::has_feature(Feature p_feature) const {
 		case FEATURE_CURSOR_SHAPE:
 		case FEATURE_CUSTOM_CURSOR_SHAPE:
 		case FEATURE_NATIVE_DIALOG:
-		//case FEATURE_CONSOLE_WINDOW:
 		case FEATURE_IME:
 		case FEATURE_WINDOW_TRANSPARENCY:
 		case FEATURE_HIDPI:
@@ -1930,6 +1914,7 @@ void DisplayServerOSX::mouse_set_mode(MouseMode p_mode) {
 		return;
 	}
 
+	WindowData &wd = windows[MAIN_WINDOW_ID];
 	if (p_mode == MOUSE_MODE_CAPTURED) {
 		// Apple Docs state that the display parameter is not used.
 		// "This parameter is not used. By default, you may pass kCGDirectMainDisplay."
@@ -1938,7 +1923,7 @@ void DisplayServerOSX::mouse_set_mode(MouseMode p_mode) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
 		}
 		CGAssociateMouseAndMouseCursorPosition(false);
-		WindowData &wd = windows[MAIN_WINDOW_ID];
+		[wd.window_object setMovable:NO];
 		const NSRect contentRect = [wd.window_view frame];
 		NSRect pointInWindowRect = NSMakeRect(contentRect.size.width / 2, contentRect.size.height / 2, 0, 0);
 		NSPoint pointOnScreen = [[wd.window_view window] convertRectToScreen:pointInWindowRect].origin;
@@ -1948,17 +1933,21 @@ void DisplayServerOSX::mouse_set_mode(MouseMode p_mode) {
 		if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
 		}
+		[wd.window_object setMovable:YES];
 		CGAssociateMouseAndMouseCursorPosition(true);
 	} else if (p_mode == MOUSE_MODE_CONFINED) {
 		CGDisplayShowCursor(kCGDirectMainDisplay);
+		[wd.window_object setMovable:NO];
 		CGAssociateMouseAndMouseCursorPosition(false);
 	} else if (p_mode == MOUSE_MODE_CONFINED_HIDDEN) {
 		if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
 		}
+		[wd.window_object setMovable:NO];
 		CGAssociateMouseAndMouseCursorPosition(false);
 	} else { // MOUSE_MODE_VISIBLE
 		CGDisplayShowCursor(kCGDirectMainDisplay);
+		[wd.window_object setMovable:YES];
 		CGAssociateMouseAndMouseCursorPosition(true);
 	}
 
@@ -2007,10 +1996,6 @@ void DisplayServerOSX::mouse_warp_to_position(const Point2i &p_to) {
 }
 
 Point2i DisplayServerOSX::mouse_get_position() const {
-	return last_mouse_pos;
-}
-
-Point2i DisplayServerOSX::mouse_get_absolute_position() const {
 	_THREAD_SAFE_METHOD_
 
 	const NSPoint mouse_pos = [NSEvent mouseLocation];
@@ -2077,10 +2062,8 @@ int DisplayServerOSX::get_screen_count() const {
 // to convert between OS X native screen coordinates and the ones expected by Godot
 
 static bool displays_arrangement_dirty = true;
-static bool displays_scale_dirty = true;
 static void displays_arrangement_changed(CGDirectDisplayID display_id, CGDisplayChangeSummaryFlags flags, void *user_info) {
 	displays_arrangement_dirty = true;
-	displays_scale_dirty = true;
 }
 
 Point2i DisplayServerOSX::_get_screens_origin() const {
@@ -2191,15 +2174,8 @@ float DisplayServerOSX::screen_get_scale(int p_screen) const {
 float DisplayServerOSX::screen_get_max_scale() const {
 	_THREAD_SAFE_METHOD_
 
-	static float scale = 1.f;
-	if (displays_scale_dirty) {
-		int screen_count = get_screen_count();
-		for (int i = 0; i < screen_count; i++) {
-			scale = fmax(scale, screen_get_scale(i));
-		}
-		displays_scale_dirty = false;
-	}
-	return scale;
+	// Note: Do not update max display scale on screen configuration change, existing editor windows can't be rescaled on the fly.
+	return display_max_scale;
 }
 
 Rect2i DisplayServerOSX::screen_get_usable_rect(int p_screen) const {
@@ -2386,8 +2362,24 @@ int DisplayServerOSX::window_get_current_screen(WindowID p_window) const {
 
 void DisplayServerOSX::window_set_current_screen(int p_screen, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	bool was_fullscreen = false;
+	if (wd.fullscreen) {
+		// Temporary exit fullscreen mode to move window.
+		[wd.window_object toggleFullScreen:nil];
+		was_fullscreen = true;
+	}
+
 	Point2i wpos = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));
 	window_set_position(wpos + screen_get_position(p_screen), p_window);
+
+	if (was_fullscreen) {
+		// Re-enter fullscreen mode.
+		[wd.window_object toggleFullScreen:nil];
+	}
 }
 
 void DisplayServerOSX::window_set_transient(WindowID p_window, WindowID p_parent) {
@@ -2410,7 +2402,7 @@ void DisplayServerOSX::window_set_transient(WindowID p_window, WindowID p_parent
 		wd_window.transient_parent = INVALID_WINDOW_ID;
 		wd_parent.transient_children.erase(p_window);
 
-		[wd_parent.window_object removeChildWindow:wd_window.window_object];
+		[wd_window.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
 	} else {
 		ERR_FAIL_COND(!windows.has(p_parent));
 		ERR_FAIL_COND_MSG(wd_window.transient_parent != INVALID_WINDOW_ID, "Window already has a transient parent");
@@ -2419,7 +2411,7 @@ void DisplayServerOSX::window_set_transient(WindowID p_window, WindowID p_parent
 		wd_window.transient_parent = p_parent;
 		wd_parent.transient_children.insert(p_window);
 
-		[wd_parent.window_object addChildWindow:wd_window.window_object ordered:NSWindowAbove];
+		[wd_window.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
 	}
 }
 
@@ -2429,7 +2421,9 @@ Point2i DisplayServerOSX::window_get_position(WindowID p_window) const {
 	ERR_FAIL_COND_V(!windows.has(p_window), Point2i());
 	const WindowData &wd = windows[p_window];
 
-	NSRect nsrect = [wd.window_object frame];
+	// Use content rect position (without titlebar / window border).
+	const NSRect contentRect = [wd.window_view frame];
+	const NSRect nsrect = [wd.window_object convertRectToScreen:contentRect];
 	Point2i pos;
 
 	// Return the position of the top-left corner, for OS X the y starts at the bottom
@@ -2457,10 +2451,19 @@ void DisplayServerOSX::window_set_position(const Point2i &p_position, WindowID p
 	position += _get_screens_origin();
 	position /= screen_get_max_scale();
 
-	[wd.window_object setFrameTopLeftPoint:NSMakePoint(position.x, position.y)];
+	// Remove titlebar / window border size.
+	const NSRect contentRect = [wd.window_view frame];
+	const NSRect windowRect = [wd.window_object frame];
+	const NSRect nsrect = [wd.window_object convertRectToScreen:contentRect];
+	Point2i offset;
+	offset.x = (nsrect.origin.x - windowRect.origin.x);
+	offset.y = (nsrect.origin.y + nsrect.size.height);
+	offset.y -= (windowRect.origin.y + windowRect.size.height);
+
+	[wd.window_object setFrameTopLeftPoint:NSMakePoint(position.x - offset.x, position.y - offset.y)];
 
 	_update_window(wd);
-	_get_mouse_pos(wd, [wd.window_object mouseLocationOutsideOfEventStream]);
+	_ALLOW_DISCARD_ _get_mouse_pos(wd, [wd.window_object mouseLocationOutsideOfEventStream]);
 }
 
 void DisplayServerOSX::window_set_max_size(const Size2i p_size, WindowID p_window) {
@@ -2582,12 +2585,12 @@ void DisplayServerOSX::_set_window_per_pixel_transparency_enabled(bool p_enabled
 				[layer setOpaque:NO];
 			}
 #if defined(VULKAN_ENABLED)
-			if (rendering_driver == "vulkan") {
+			if (context_vulkan) {
 				//TODO - implement transparency for Vulkan
 			}
 #endif
-#if defined(OPENGL_ENABLED)
-			if (rendering_driver == "opengl_es") {
+#if defined(GLES3_ENABLED)
+			if (gl_manager) {
 				//TODO - reimplement OpenGLES
 			}
 #endif
@@ -2601,24 +2604,24 @@ void DisplayServerOSX::_set_window_per_pixel_transparency_enabled(bool p_enabled
 				[layer setOpaque:YES];
 			}
 #if defined(VULKAN_ENABLED)
-			if (rendering_driver == "vulkan") {
+			if (context_vulkan) {
 				//TODO - implement transparency for Vulkan
 			}
 #endif
-#if defined(OPENGL_ENABLED)
-			if (rendering_driver == "opengl_es") {
+#if defined(GLES3_ENABLED)
+			if (gl_manager) {
 				//TODO - reimplement OpenGLES
 			}
 #endif
 			wd.layered_window = false;
 		}
-#if defined(OPENGL_ENABLED)
-		if (rendering_driver == "opengl_es") {
+#if defined(GLES3_ENABLED)
+		if (gl_manager) {
 			//TODO - reimplement OpenGLES
 		}
 #endif
 #if defined(VULKAN_ENABLED)
-		if (rendering_driver == "vulkan") {
+		if (context_vulkan) {
 			//TODO - implement transparency for Vulkan
 		}
 #endif
@@ -3014,7 +3017,7 @@ void DisplayServerOSX::cursor_set_custom_image(const RES &p_cursor, CursorShape 
 		ERR_FAIL_COND(!image.is_valid());
 
 		NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc]
-				initWithBitmapDataPlanes:NULL
+				initWithBitmapDataPlanes:nullptr
 							  pixelsWide:int(texture_size.width)
 							  pixelsHigh:int(texture_size.height)
 						   bitsPerSample:8
@@ -3210,12 +3213,12 @@ String DisplayServerOSX::keyboard_get_layout_name(int p_index) const {
 }
 
 Key DisplayServerOSX::keyboard_get_keycode_from_physical(Key p_keycode) const {
-	if (p_keycode == KEY_PAUSE) {
+	if (p_keycode == Key::PAUSE) {
 		return p_keycode;
 	}
 
-	unsigned int modifiers = p_keycode & KEY_MODIFIER_MASK;
-	unsigned int keycode_no_mod = p_keycode & KEY_CODE_MASK;
+	Key modifiers = p_keycode & KeyModifierMask::MODIFIER_MASK;
+	Key keycode_no_mod = p_keycode & KeyModifierMask::CODE_MASK;
 	unsigned int osx_keycode = unmapKey((Key)keycode_no_mod);
 	return (Key)(remapKey(osx_keycode, 0) | modifiers);
 }
@@ -3273,8 +3276,8 @@ void DisplayServerOSX::_send_event(NSEvent *p_event) {
 			_get_key_modifier_state([p_event modifierFlags], k);
 			k->set_window_id(DisplayServerOSX::INVALID_WINDOW_ID);
 			k->set_pressed(true);
-			k->set_keycode(KEY_PERIOD);
-			k->set_physical_keycode(KEY_PERIOD);
+			k->set_keycode(Key::PERIOD);
+			k->set_physical_keycode(Key::PERIOD);
 			k->set_echo([p_event isARepeat]);
 
 			Input::get_singleton()->parse_input_event(k);
@@ -3301,20 +3304,20 @@ void DisplayServerOSX::_process_key_events() {
 			_push_input(k);
 		} else {
 			// IME input
-			if ((i == 0 && ke.keycode == 0) || (i > 0 && key_event_buffer[i - 1].keycode == 0)) {
+			if ((i == 0 && ke.keycode == Key::NONE) || (i > 0 && key_event_buffer[i - 1].keycode == Key::NONE)) {
 				k.instantiate();
 
 				k->set_window_id(ke.window_id);
 				_get_key_modifier_state(ke.osx_state, k);
 				k->set_pressed(ke.pressed);
 				k->set_echo(ke.echo);
-				k->set_keycode(KEY_NONE);
-				k->set_physical_keycode(KEY_NONE);
+				k->set_keycode(Key::NONE);
+				k->set_physical_keycode(Key::NONE);
 				k->set_unicode(ke.unicode);
 
 				_push_input(k);
 			}
-			if (ke.keycode != 0) {
+			if (ke.keycode != Key::NONE) {
 				k.instantiate();
 
 				k->set_window_id(ke.window_id);
@@ -3324,7 +3327,7 @@ void DisplayServerOSX::_process_key_events() {
 				k->set_keycode(ke.keycode);
 				k->set_physical_keycode((Key)ke.physical_keycode);
 
-				if (i + 1 < key_event_pos && key_event_buffer[i + 1].keycode == 0) {
+				if (i + 1 < key_event_pos && key_event_buffer[i + 1].keycode == Key::NONE) {
 					k->set_unicode(key_event_buffer[i + 1].unicode);
 				}
 
@@ -3418,7 +3421,7 @@ void DisplayServerOSX::set_icon(const Ref<Image> &p_icon) {
 	img = img->duplicate();
 	img->convert(Image::FORMAT_RGBA8);
 	NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc]
-			initWithBitmapDataPlanes:NULL
+			initWithBitmapDataPlanes:nullptr
 						  pixelsWide:img->get_width()
 						  pixelsHigh:img->get_height()
 					   bitsPerSample:8
@@ -3455,18 +3458,31 @@ void DisplayServerOSX::set_icon(const Ref<Image> &p_icon) {
 
 void DisplayServerOSX::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
+#if defined(GLES3_ENABLED)
+	if (gl_manager) {
+		gl_manager->swap_buffers();
+	}
+#endif
 #if defined(VULKAN_ENABLED)
-	context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+	if (context_vulkan) {
+		context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+	}
 #endif
 }
 
 DisplayServer::VSyncMode DisplayServerOSX::window_get_vsync_mode(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
-#if defined(VULKAN_ENABLED)
-	return context_vulkan->get_vsync_mode(p_window);
-#else
-	return DisplayServer::VSYNC_ENABLED;
+#if defined(GLES3_ENABLED)
+	if (gl_manager) {
+		return (gl_manager->is_using_vsync() ? DisplayServer::VSyncMode::VSYNC_ENABLED : DisplayServer::VSyncMode::VSYNC_DISABLED);
+	}
 #endif
+#if defined(VULKAN_ENABLED)
+	if (context_vulkan) {
+		return context_vulkan->get_vsync_mode(p_window);
+	}
+#endif
+	return DisplayServer::VSYNC_ENABLED;
 }
 
 Vector<String> DisplayServerOSX::get_rendering_drivers_func() {
@@ -3475,11 +3491,17 @@ Vector<String> DisplayServerOSX::get_rendering_drivers_func() {
 #if defined(VULKAN_ENABLED)
 	drivers.push_back("vulkan");
 #endif
-#if defined(OPENGL_ENABLED)
-	drivers.push_back("opengl_es");
+#if defined(GLES3_ENABLED)
+	drivers.push_back("opengl3");
 #endif
 
 	return drivers;
+}
+
+void DisplayServerOSX::gl_window_make_current(DisplayServer::WindowID p_window_id) {
+#if defined(GLES3_ENABLED)
+	gl_manager->window_make_current(p_window_id);
+#endif
 }
 
 Point2i DisplayServerOSX::ime_get_selection() const {
@@ -3522,7 +3544,7 @@ ObjectID DisplayServerOSX::window_get_attached_instance_id(WindowID p_window) co
 DisplayServer *DisplayServerOSX::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	DisplayServer *ds = memnew(DisplayServerOSX(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error));
 	if (r_error != OK) {
-		OS::get_singleton()->alert("Your video card driver does not support any of the supported Metal versions.", "Unable to initialize Video driver");
+		OS::get_singleton()->alert("Your video card driver does not support any of the supported Vulkan or OpenGL versions.", "Unable to initialize Video driver");
 	}
 	return ds;
 }
@@ -3561,6 +3583,7 @@ DisplayServerOSX::WindowID DisplayServerOSX::_create_window(WindowMode p_mode, V
 		[wd.window_object setDelegate:wd.window_delegate];
 		[wd.window_object setAcceptsMouseMovedEvents:YES];
 		[wd.window_object setRestorable:NO];
+		[wd.window_object setColorSpace:[NSColorSpace sRGBColorSpace]];
 
 		if ([wd.window_object respondsToSelector:@selector(setTabbingMode:)]) {
 			[wd.window_object setTabbingMode:NSWindowTabbingModeDisallowed];
@@ -3572,16 +3595,15 @@ DisplayServerOSX::WindowID DisplayServerOSX::_create_window(WindowMode p_mode, V
 		}
 
 #if defined(VULKAN_ENABLED)
-		if (rendering_driver == "vulkan") {
-			if (context_vulkan) {
-				Error err = context_vulkan->window_create(window_id_counter, p_vsync_mode, wd.window_view, p_rect.size.width, p_rect.size.height);
-				ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create a Vulkan context");
-			}
+		if (context_vulkan) {
+			Error err = context_vulkan->window_create(window_id_counter, p_vsync_mode, wd.window_view, p_rect.size.width, p_rect.size.height);
+			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create a Vulkan context");
 		}
 #endif
-#if defined(OPENGL_ENABLED)
-		if (rendering_driver == "opengl_es") {
-			//TODO - reimplement OpenGLES
+#if defined(GLES3_ENABLED)
+		if (gl_manager) {
+			Error err = gl_manager->window_create(window_id_counter, wd.window_view, p_rect.size.width, p_rect.size.height);
+			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL context");
 		}
 #endif
 		id = window_id_counter++;
@@ -3600,13 +3622,13 @@ DisplayServerOSX::WindowID DisplayServerOSX::_create_window(WindowMode p_mode, V
 		layer.contentsScale = scale;
 	}
 
-#if defined(OPENGL_ENABLED)
-	if (rendering_driver == "opengl_es") {
-		//TODO - reimplement OpenGLES
+#if defined(GLES3_ENABLED)
+	if (gl_manager) {
+		gl_manager->window_resize(id, wd.size.width, wd.size.height);
 	}
 #endif
 #if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
+	if (context_vulkan) {
 		context_vulkan->window_resize(id, wd.size.width, wd.size.height);
 	}
 #endif
@@ -3654,23 +3676,15 @@ void DisplayServerOSX::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 }
 
 void DisplayServerOSX::release_rendering_thread() {
-	//TODO - reimplement OpenGLES
 }
 
 void DisplayServerOSX::make_rendering_thread() {
-	//TODO - reimplement OpenGLES
 }
 
 void DisplayServerOSX::swap_buffers() {
-	//TODO - reimplement OpenGLES
-}
-
-void DisplayServerOSX::console_set_visible(bool p_enabled) {
-	//TODO - open terminal and redirect
-}
-
-bool DisplayServerOSX::is_console_visible() const {
-	return isatty(STDIN_FILENO);
+#if defined(GLES3_ENABLED)
+	gl_manager->swap_buffers();
+#endif
 }
 
 DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
@@ -3694,7 +3708,11 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 
 	keyboard_layout_dirty = true;
 	displays_arrangement_dirty = true;
-	displays_scale_dirty = true;
+
+	int screen_count = get_screen_count();
+	for (int i = 0; i < screen_count; i++) {
+		display_max_scale = fmax(display_max_scale, screen_get_scale(i));
+	}
 
 	// Register to be notified on keyboard layout changes
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDistributedCenter(),
@@ -3750,17 +3768,20 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 	[main_menu setSubmenu:apple_menu forItem:menu_item];
 
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!
-	//TODO - do Vulkan and GLES2 support checks, driver selection and fallback
+	//TODO - do Vulkan and OpenGL support checks, driver selection and fallback
 	rendering_driver = p_rendering_driver;
 
-#ifndef _MSC_VER
-#warning Forcing vulkan rendering driver because OpenGL not implemented yet
-#endif
-	rendering_driver = "vulkan";
-
-#if defined(OPENGL_ENABLED)
-	if (rendering_driver == "opengl_es") {
-		//TODO - reimplement OpenGLES
+#if defined(GLES3_ENABLED)
+	if (rendering_driver == "opengl3") {
+		GLManager_OSX::ContextType opengl_api_type = GLManager_OSX::GLES_3_0_COMPATIBLE;
+		gl_manager = memnew(GLManager_OSX(opengl_api_type));
+		if (gl_manager->initialize() != OK) {
+			memdelete(gl_manager);
+			gl_manager = nullptr;
+			r_error = ERR_UNAVAILABLE;
+			ERR_FAIL_MSG("Could not initialize OpenGL");
+			return;
+		}
 	}
 #endif
 #if defined(VULKAN_ENABLED)
@@ -3787,9 +3808,9 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 	}
 	show_window(MAIN_WINDOW_ID);
 
-#if defined(OPENGL_ENABLED)
-	if (rendering_driver == "opengl_es") {
-		//TODO - reimplement OpenGLES
+#if defined(GLES3_ENABLED)
+	if (rendering_driver == "opengl3") {
+		RasterizerGLES3::make_current();
 	}
 #endif
 #if defined(VULKAN_ENABLED)
@@ -3820,21 +3841,22 @@ DisplayServerOSX::~DisplayServerOSX() {
 	}
 
 	//destroy drivers
-#if defined(OPENGL_ENABLED)
-	if (rendering_driver == "opengl_es") {
-		//TODO - reimplement OpenGLES
+#if defined(GLES3_ENABLED)
+	if (gl_manager) {
+		memdelete(gl_manager);
+		gl_manager = nullptr;
 	}
 #endif
 #if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
-		if (rendering_device_vulkan) {
-			rendering_device_vulkan->finalize();
-			memdelete(rendering_device_vulkan);
-		}
+	if (rendering_device_vulkan) {
+		rendering_device_vulkan->finalize();
+		memdelete(rendering_device_vulkan);
+		rendering_device_vulkan = nullptr;
+	}
 
-		if (context_vulkan) {
-			memdelete(context_vulkan);
-		}
+	if (context_vulkan) {
+		memdelete(context_vulkan);
+		context_vulkan = nullptr;
 	}
 #endif
 

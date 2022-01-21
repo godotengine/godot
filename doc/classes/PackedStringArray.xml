@@ -9,27 +9,29 @@
 	<tutorials>
 		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
-	<methods>
-		<method name="PackedStringArray" qualifiers="constructor">
+	<constructors>
+		<constructor name="PackedStringArray">
 			<return type="PackedStringArray" />
 			<description>
 				Constructs an empty [PackedStringArray].
 			</description>
-		</method>
-		<method name="PackedStringArray" qualifiers="constructor">
+		</constructor>
+		<constructor name="PackedStringArray">
 			<return type="PackedStringArray" />
 			<argument index="0" name="from" type="PackedStringArray" />
 			<description>
 				Constructs a [PackedStringArray] as a copy of the given [PackedStringArray].
 			</description>
-		</method>
-		<method name="PackedStringArray" qualifiers="constructor">
+		</constructor>
+		<constructor name="PackedStringArray">
 			<return type="PackedStringArray" />
 			<argument index="0" name="from" type="Array" />
 			<description>
 				Constructs a new [PackedStringArray]. Optionally, you can pass in a generic [Array] that will be converted.
 			</description>
-		</method>
+		</constructor>
+	</constructors>
+	<methods>
 		<method name="append">
 			<return type="bool" />
 			<argument index="0" name="value" type="String" />
@@ -97,40 +99,6 @@
 				Returns [code]true[/code] if the array is empty.
 			</description>
 		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="PackedStringArray" />
-			<description>
-			</description>
-		</method>
-		<method name="operator +" qualifiers="operator">
-			<return type="PackedStringArray" />
-			<argument index="0" name="right" type="PackedStringArray" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="PackedStringArray" />
-			<description>
-			</description>
-		</method>
-		<method name="operator []" qualifiers="operator">
-			<return type="String" />
-			<argument index="0" name="index" type="int" />
-			<description>
-			</description>
-		</method>
 		<method name="push_back">
 			<return type="bool" />
 			<argument index="0" name="value" type="String" />
@@ -138,7 +106,7 @@
 				Appends a string element at end of the array.
 			</description>
 		</method>
-		<method name="remove">
+		<method name="remove_at">
 			<return type="void" />
 			<argument index="0" name="index" type="int" />
 			<description>
@@ -169,7 +137,17 @@
 		<method name="size" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the size of the array.
+				Returns the number of elements in the array.
+			</description>
+		</method>
+		<method name="slice" qualifiers="const">
+			<return type="PackedStringArray" />
+			<argument index="0" name="begin" type="int" />
+			<argument index="1" name="end" type="int" default="2147483647" />
+			<description>
+				Returns the slice of the [PackedStringArray], from [code]begin[/code] (inclusive) to [code]end[/code] (exclusive), as a new [PackedStringArray].
+				The absolute value of [code]begin[/code] and [code]end[/code] will be clamped to the array size, so the default value for [code]end[/code] makes it slice to the size of the array by default (i.e. [code]arr.slice(1)[/code] is a shorthand for [code]arr.slice(1, arr.size())[/code]).
+				If either [code]begin[/code] or [code]end[/code] are negative, they will be relative to the end of the array (i.e. [code]arr.slice(0, -2)[/code] is a shorthand for [code]arr.slice(0, arr.size() - 2)[/code]).
 			</description>
 		</method>
 		<method name="sort">
@@ -203,8 +181,6 @@
 			<return type="PackedStringArray" />
 			<argument index="0" name="from" type="int" />
 			<argument index="1" name="to" type="int" />
-			<description>
-			</description>
 		</method>
 		<method name="to_byte_array" qualifiers="const">
 			<return type="PackedByteArray" />
@@ -212,4 +188,40 @@
 			</description>
 		</method>
 	</methods>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="PackedStringArray" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="PackedStringArray" />
+			<argument index="0" name="right" type="PackedStringArray" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="PackedStringArray" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="String" />
+			<argument index="0" name="index" type="int" />
+			<description>
+			</description>
+		</operator>
+	</operators>
 </class>

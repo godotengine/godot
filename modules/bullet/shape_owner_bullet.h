@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,10 +33,6 @@
 
 #include "rid_bullet.h"
 
-/**
-	@author AndreaCatania
-*/
-
 class ShapeBullet;
 class btCollisionShape;
 class CollisionObjectBullet;
@@ -51,4 +47,5 @@ public:
 	virtual void remove_shape_full(class ShapeBullet *p_shape) = 0;
 	virtual ~ShapeOwnerBullet() {}
 };
-#endif
+
+#endif // SHAPE_OWNER_BULLET_H

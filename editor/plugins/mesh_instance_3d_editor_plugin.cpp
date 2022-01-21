@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -79,7 +79,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				Node *owner = node == get_tree()->get_edited_scene_root() ? node : node->get_owner();
 
 				ur->create_action(TTR("Create Static Trimesh Body"));
-				ur->add_do_method(node, "add_child", body);
+				ur->add_do_method(node, "add_child", body, true);
 				ur->add_do_method(body, "set_owner", owner);
 				ur->add_do_method(cshape, "set_owner", owner);
 				ur->add_do_reference(body);
@@ -113,7 +113,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 				Node *owner = instance == get_tree()->get_edited_scene_root() ? instance : instance->get_owner();
 
-				ur->add_do_method(instance, "add_child", body);
+				ur->add_do_method(instance, "add_child", body, true);
 				ur->add_do_method(body, "set_owner", owner);
 				ur->add_do_method(cshape, "set_owner", owner);
 				ur->add_do_reference(body);
@@ -146,7 +146,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			ur->create_action(TTR("Create Trimesh Static Shape"));
 
-			ur->add_do_method(node->get_parent(), "add_child", cshape);
+			ur->add_do_method(node->get_parent(), "add_child", cshape, true);
 			ur->add_do_method(node->get_parent(), "move_child", cshape, node->get_index() + 1);
 			ur->add_do_method(cshape, "set_owner", owner);
 			ur->add_do_reference(cshape);
@@ -185,7 +185,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			Node *owner = node->get_owner();
 
-			ur->add_do_method(node->get_parent(), "add_child", cshape);
+			ur->add_do_method(node->get_parent(), "add_child", cshape, true);
 			ur->add_do_method(node->get_parent(), "move_child", cshape, node->get_index() + 1);
 			ur->add_do_method(cshape, "set_owner", owner);
 			ur->add_do_reference(cshape);
@@ -247,7 +247,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 			ur->create_action(TTR("Create Navigation Mesh"));
 
-			ur->add_do_method(node, "add_child", nmi);
+			ur->add_do_method(node, "add_child", nmi, true);
 			ur->add_do_method(nmi, "set_owner", owner);
 
 			ur->add_do_reference(nmi);
@@ -398,7 +398,7 @@ void MeshInstance3DEditor::_create_outline_mesh() {
 	}
 
 	if (mesh->get_surface_count() == 0) {
-		err_dialog->set_text(TTR("Mesh has not surface to create outlines from."));
+		err_dialog->set_text(TTR("Mesh has no surface to create outlines from."));
 		err_dialog->popup_centered();
 		return;
 	} else if (mesh->get_surface_count() == 1 && mesh->surface_get_primitive_type(0) != Mesh::PRIMITIVE_TRIANGLES) {
@@ -426,7 +426,7 @@ void MeshInstance3DEditor::_create_outline_mesh() {
 
 	ur->create_action(TTR("Create Outline"));
 
-	ur->add_do_method(node, "add_child", mi);
+	ur->add_do_method(node, "add_child", mi, true);
 	ur->add_do_method(mi, "set_owner", owner);
 
 	ur->add_do_reference(mi);

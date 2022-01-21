@@ -52,6 +52,7 @@
 #include "hb-ot-layout-gpos-table.hh"
 #include "hb-ot-var-gvar-table.hh"
 #include "hb-ot-var-hvar-table.hh"
+#include "hb-ot-math-table.hh"
 #include "hb-repacker.hh"
 
 /**
@@ -103,20 +104,16 @@ _repack (hb_tag_t tag, const hb_serialize_context_t& c)
   if (!c.offset_overflow ())
     return c.copy_blob ();
 
-  hb_vector_t<char> buf;
-  int buf_size = c.end - c.start;
-  if (unlikely (!buf.alloc (buf_size)))
+  hb_blob_t* result = hb_resolve_overflows (c.object_graph (), tag);
+
+  if (unlikely (!result))
+  {
+    DEBUG_MSG (SUBSET, nullptr, "OT::%c%c%c%c offset overflow resolution failed.",
+               HB_UNTAG (tag));
     return nullptr;
+  }
 
-  hb_serialize_context_t repacked ((void *) buf, buf_size);
-  hb_resolve_overflows (c.object_graph (), &repacked);
-
-  if (unlikely (repacked.in_error ()))
-    // TODO(garretrieger): refactor so we can share the resize/retry logic with the subset
-    //                     portion.
-    return nullptr;
-
-  return repacked.copy_blob ();
+  return result;
 }
 
 template<typename TableType>
@@ -305,6 +302,7 @@ _subset_table (hb_subset_plan_t *plan, hb_tag_t tag)
   case HB_OT_TAG_CPAL: return _subset<const OT::CPAL> (plan);
   case HB_OT_TAG_CBLC: return _subset<const OT::CBLC> (plan);
   case HB_OT_TAG_CBDT: return true; /* skip CBDT, handled by CBLC */
+  case HB_OT_TAG_MATH: return _subset<const OT::MATH> (plan);
 
 #ifndef HB_NO_SUBSET_CFF
   case HB_OT_TAG_cff1: return _subset<const OT::cff1> (plan);

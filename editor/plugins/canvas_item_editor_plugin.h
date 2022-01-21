@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -235,11 +235,6 @@ private:
 	PanelContainer *context_menu_container;
 	HBoxContainer *hbc_context_menu;
 
-	Map<Control *, Timer *> popup_temporarily_timers;
-
-	Label *warning_child_of_container;
-	VBoxContainer *info_overlay;
-
 	Transform2D transform;
 	bool show_grid;
 	bool show_rulers;
@@ -421,8 +416,6 @@ private:
 
 	CanvasItem *ref_item;
 
-	void _add_canvas_item(CanvasItem *p_canvas_item);
-
 	void _save_canvas_item_state(List<CanvasItem *> p_canvas_items, bool save_bones = false);
 	void _restore_canvas_item_state(List<CanvasItem *> p_canvas_items, bool restore_bones = false);
 	void _commit_canvas_item_state(List<CanvasItem *> p_canvas_items, String action_name, bool commit_bones = false);
@@ -434,7 +427,6 @@ private:
 	bool updating_scroll;
 	void _update_scroll(real_t);
 	void _update_scrollbars();
-	void _append_canvas_item(CanvasItem *p_item);
 	void _snap_changed();
 	void _selection_result_pressed(int);
 	void _selection_menu_hide();
@@ -519,7 +511,6 @@ private:
 			const Node *p_current);
 
 	void _set_anchors_preset(Control::LayoutPreset p_preset);
-	void _set_offsets_preset(Control::LayoutPreset p_preset);
 	void _set_anchors_and_offsets_preset(Control::LayoutPreset p_preset);
 	void _set_anchors_and_offsets_to_keep_ratio();
 
@@ -536,12 +527,11 @@ private:
 
 	void _update_override_camera_button(bool p_game_running);
 
-	HSplitContainer *palette_split;
+	HSplitContainer *left_panel_split;
+	HSplitContainer *right_panel_split;
 	VSplitContainer *bottom_split;
 
 	void _update_context_menu_stylebox();
-	void _popup_warning_temporarily(Control *p_control, const double p_duration);
-	void _popup_warning_depop(Control *p_control);
 
 	void _set_owner_for_node_and_children(Node *p_node, Node *p_owner);
 
@@ -551,14 +541,8 @@ protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
-	void end_drag();
-	void box_selection_start(Point2 &click);
-	bool box_selection_end();
 
 	HBoxContainer *get_panel_hb() { return hb; }
-
-	template <class P, class C>
-	void space_selected_items();
 
 	static CanvasItemEditor *singleton;
 
@@ -588,10 +572,12 @@ public:
 	void add_control_to_menu_panel(Control *p_control);
 	void remove_control_from_menu_panel(Control *p_control);
 
-	void add_control_to_info_overlay(Control *p_control);
-	void remove_control_from_info_overlay(Control *p_control);
+	void add_control_to_left_panel(Control *p_control);
+	void remove_control_from_left_panel(Control *p_control);
 
-	HSplitContainer *get_palette_split();
+	void add_control_to_right_panel(Control *p_control);
+	void remove_control_from_right_panel(Control *p_control);
+
 	VSplitContainer *get_bottom_split();
 
 	Control *get_viewport_control() { return viewport; }

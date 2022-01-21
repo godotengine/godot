@@ -10,9 +10,14 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="scroll_horizontal_enabled" type="bool" setter="set_enable_h_scroll" getter="is_h_scroll_enabled" override="true" default="false" />
+		<member name="horizontal_scroll_mode" type="int" setter="set_horizontal_scroll_mode" getter="get_horizontal_scroll_mode" overrides="ScrollContainer" enum="ScrollContainer.ScrollMode" default="0" />
 	</members>
 	<signals>
+		<signal name="edited_object_changed">
+			<description>
+				Emitted when the object being edited by the inspector has changed.
+			</description>
+		</signal>
 		<signal name="object_id_selected">
 			<argument index="0" name="id" type="int" />
 			<description>
@@ -33,6 +38,8 @@
 		</signal>
 		<signal name="property_keyed">
 			<argument index="0" name="property" type="String" />
+			<argument index="1" name="value" type="Variant" />
+			<argument index="2" name="advance" type="bool" />
 			<description>
 				Emitted when a property is keyed in the inspector. Properties can be keyed by clicking the "key" icon next to a property when the Animation panel is toggled.
 			</description>

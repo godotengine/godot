@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,6 +38,7 @@
 #include "core/io/resource_saver.h"
 #include "core/os/os.h"
 #include "core/string/optimized_translation.h"
+#include "core/version_generated.gen.h"
 #include "editor_data.h"
 #include "editor_node.h"
 #include "editor_scale.h"
@@ -177,7 +178,7 @@ void ProjectExportDialog::_update_export_all() {
 		Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_export_preset(i);
 		bool needs_templates;
 		String error;
-		if (preset->get_export_path() == "" || !preset->get_platform()->can_export(preset, error, needs_templates)) {
+		if (preset->get_export_path().is_empty() || !preset->get_platform()->can_export(preset, error, needs_templates)) {
 			can_export = false;
 			break;
 		}
@@ -243,7 +244,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	bool needs_templates;
 	String error;
 	if (!current->get_platform()->can_export(current, error, needs_templates)) {
-		if (error != String()) {
+		if (!error.is_empty()) {
 			Vector<String> items = error.split("\n", false);
 			error = "";
 			for (int i = 0; i < items.size(); i++) {
@@ -264,10 +265,25 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 			export_templates_error->hide();
 		}
 
+		export_warning->hide();
 		export_button->set_disabled(true);
 		get_ok_button()->set_disabled(true);
-
 	} else {
+		if (error != String()) {
+			Vector<String> items = error.split("\n", false);
+			error = "";
+			for (int i = 0; i < items.size(); i++) {
+				if (i > 0) {
+					error += "\n";
+				}
+				error += " - " + items[i];
+			}
+			export_warning->set_text(error);
+			export_warning->show();
+		} else {
+			export_warning->hide();
+		}
+
 		export_error->hide();
 		export_templates_error->hide();
 		export_button->set_disabled(false);
@@ -335,7 +351,7 @@ void ProjectExportDialog::_update_feature_list() {
 	Vector<String> custom_list = custom.split(",");
 	for (int i = 0; i < custom_list.size(); i++) {
 		String f = custom_list[i].strip_edges();
-		if (f != String()) {
+		if (!f.is_empty()) {
 			features.push_back(f);
 		}
 	}
@@ -456,7 +472,7 @@ void ProjectExportDialog::_enc_filters_changed(const String &p_filters) {
 }
 
 void ProjectExportDialog::_open_key_help_link() {
-	OS::get_singleton()->shell_open("https://docs.godotengine.org/en/latest/development/compiling/compiling_with_script_encryption_key.html");
+	OS::get_singleton()->shell_open(vformat("%s/development/compiling/compiling_with_script_encryption_key.html", VERSION_DOCS_URL));
 }
 
 void ProjectExportDialog::_enc_pck_changed(bool p_pressed) {
@@ -736,12 +752,10 @@ bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem 
 	p_item->set_metadata(0, p_dir->get_path());
 
 	bool used = false;
-	bool checked = true;
 	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
 		TreeItem *subdir = include_files->create_item(p_item);
 		if (_fill_tree(p_dir->get_subdir(i), subdir, current, p_only_scenes)) {
 			used = true;
-			checked = checked && subdir->is_checked(0);
 		} else {
 			memdelete(subdir);
 		}
@@ -766,12 +780,10 @@ bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem 
 		file->set_editable(0, true);
 		file->set_checked(0, current->has_export_file(path));
 		file->set_metadata(0, path);
-		checked = checked && file->is_checked(0);
+		file->propagate_check(0);
 
 		used = true;
 	}
-
-	p_item->set_checked(0, checked);
 	return used;
 }
 
@@ -790,54 +802,24 @@ void ProjectExportDialog::_tree_changed() {
 		return;
 	}
 
-	String path = item->get_metadata(0);
-	bool added = item->is_checked(0);
+	item->propagate_check(0);
+}
 
-	if (path.ends_with("/")) {
-		_check_dir_recursive(item, added);
-	} else {
+void ProjectExportDialog::_check_propagated_to_item(Object *p_obj, int column) {
+	Ref<EditorExportPreset> current = get_current_preset();
+	if (current.is_null()) {
+		return;
+	}
+	TreeItem *item = Object::cast_to<TreeItem>(p_obj);
+	String path = item->get_metadata(0);
+	if (item && !path.ends_with("/")) {
+		bool added = item->is_checked(0);
 		if (added) {
 			current->add_export_file(path);
 		} else {
 			current->remove_export_file(path);
 		}
 	}
-	_refresh_parent_checks(item); // Makes parent folder checked if all files/folders are checked.
-}
-
-void ProjectExportDialog::_check_dir_recursive(TreeItem *p_dir, bool p_checked) {
-	for (TreeItem *child = p_dir->get_first_child(); child; child = child->get_next()) {
-		String path = child->get_metadata(0);
-
-		child->set_checked(0, p_checked);
-		if (path.ends_with("/")) {
-			_check_dir_recursive(child, p_checked);
-		} else {
-			if (p_checked) {
-				get_current_preset()->add_export_file(path);
-			} else {
-				get_current_preset()->remove_export_file(path);
-			}
-		}
-	}
-}
-
-void ProjectExportDialog::_refresh_parent_checks(TreeItem *p_item) {
-	TreeItem *parent = p_item->get_parent();
-	if (!parent) {
-		return;
-	}
-
-	bool checked = true;
-	for (TreeItem *child = parent->get_first_child(); child; child = child->get_next()) {
-		checked = checked && child->is_checked(0);
-		if (!checked) {
-			break;
-		}
-	}
-	parent->set_checked(0, checked);
-
-	_refresh_parent_checks(parent);
 }
 
 void ProjectExportDialog::_export_pck_zip() {
@@ -870,7 +852,7 @@ void ProjectExportDialog::_open_export_template_manager() {
 
 void ProjectExportDialog::_validate_export_path(const String &p_path) {
 	// Disable export via OK button or Enter key if LineEdit has an empty filename
-	bool invalid_path = (p_path.get_file().get_basename() == "");
+	bool invalid_path = (p_path.get_file().get_basename().is_empty());
 
 	// Check if state change before needlessly messing with signals
 	if (invalid_path && export_project->get_ok_button()->is_disabled()) {
@@ -903,7 +885,7 @@ void ProjectExportDialog::_export_project() {
 		export_project->add_filter("*." + extension_list[i] + " ; " + platform->get_name() + " Export");
 	}
 
-	if (current->get_export_path() != "") {
+	if (!current->get_export_path().is_empty()) {
 		export_project->set_current_path(current->get_export_path());
 	} else {
 		if (extension_list.size() >= 1) {
@@ -1072,7 +1054,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	// Subsections.
 
 	sections = memnew(TabContainer);
-	sections->set_tab_align(TabContainer::ALIGN_LEFT);
+	sections->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
 	sections->set_use_hidden_tabs_for_min_size(true);
 	settings_vb->add_child(sections);
 	sections->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1110,6 +1092,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	include_files = memnew(Tree);
 	include_margin->add_child(include_files);
 	include_files->connect("item_edited", callable_mp(this, &ProjectExportDialog::_tree_changed));
+	include_files->connect("check_propagated_to_item", callable_mp(this, &ProjectExportDialog::_check_propagated_to_item));
 
 	include_filters = memnew(LineEdit);
 	resources_vb->add_margin_child(
@@ -1246,6 +1229,11 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_error->hide();
 	export_error->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 
+	export_warning = memnew(Label);
+	main_vb->add_child(export_warning);
+	export_warning->hide();
+	export_warning->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+
 	export_templates_error = memnew(HBoxContainer);
 	main_vb->add_child(export_templates_error);
 	export_templates_error->hide();
@@ -1276,11 +1264,13 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_debug = memnew(CheckBox);
 	export_debug->set_text(TTR("Export With Debug"));
 	export_debug->set_pressed(true);
+	export_debug->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 	export_project->get_vbox()->add_child(export_debug);
 
 	export_pck_zip_debug = memnew(CheckBox);
 	export_pck_zip_debug->set_text(TTR("Export With Debug"));
 	export_pck_zip_debug->set_pressed(true);
+	export_pck_zip_debug->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 	export_pck_zip->get_vbox()->add_child(export_pck_zip_debug);
 
 	set_hide_on_ok(false);
@@ -1289,10 +1279,10 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	default_filename = EditorSettings::get_singleton()->get_project_metadata("export_options", "default_filename", "");
 	// If no default set, use project name
-	if (default_filename == "") {
+	if (default_filename.is_empty()) {
 		// If no project name defined, use a sane default
 		default_filename = ProjectSettings::get_singleton()->get("application/config/name");
-		if (default_filename == "") {
+		if (default_filename.is_empty()) {
 			default_filename = "UnnamedProject";
 		}
 	}

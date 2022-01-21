@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -76,15 +76,23 @@ private:
 		bool enabled;
 		int parent;
 
-		bool disable_rest = false;
 		Transform3D rest;
 
-		Transform3D pose;
+		_FORCE_INLINE_ void update_pose_cache() {
+			if (pose_cache_dirty) {
+				pose_cache.basis.set_quaternion_scale(pose_rotation, pose_scale);
+				pose_cache.origin = pose_position;
+				pose_cache_dirty = false;
+			}
+		}
+		bool pose_cache_dirty = true;
+		Transform3D pose_cache;
+		Vector3 pose_position;
+		Quaternion pose_rotation;
+		Vector3 pose_scale = Vector3(1, 1, 1);
+
 		Transform3D pose_global;
 		Transform3D pose_global_no_override;
-
-		bool custom_pose_enable = false;
-		Transform3D custom_pose;
 
 		real_t global_pose_override_amount = 0.0;
 		bool global_pose_override_reset = false;
@@ -107,8 +115,6 @@ private:
 		Bone() {
 			parent = -1;
 			enabled = true;
-			disable_rest = false;
-			custom_pose_enable = false;
 			global_pose_override_amount = 0;
 			global_pose_override_reset = false;
 #ifndef _3D_DISABLED
@@ -147,6 +153,7 @@ protected:
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -187,9 +194,6 @@ public:
 	void remove_bone_child(int p_bone, int p_child);
 	Vector<int> get_parentless_bones();
 
-	void set_bone_disable_rest(int p_bone, bool p_disable);
-	bool is_bone_rest_disabled(int p_bone) const;
-
 	int get_bone_count() const;
 
 	void set_bone_rest(int p_bone, const Transform3D &p_rest);
@@ -206,11 +210,15 @@ public:
 
 	// posing api
 
-	void set_bone_pose(int p_bone, const Transform3D &p_pose);
+	void set_bone_pose_position(int p_bone, const Vector3 &p_position);
+	void set_bone_pose_rotation(int p_bone, const Quaternion &p_rotation);
+	void set_bone_pose_scale(int p_bone, const Vector3 &p_scale);
+
 	Transform3D get_bone_pose(int p_bone) const;
 
-	void set_bone_custom_pose(int p_bone, const Transform3D &p_custom_pose);
-	Transform3D get_bone_custom_pose(int p_bone) const;
+	Vector3 get_bone_pose_position(int p_bone) const;
+	Quaternion get_bone_pose_rotation(int p_bone) const;
+	Vector3 get_bone_pose_scale(int p_bone) const;
 
 	void clear_bones_global_pose_override();
 	Transform3D get_bone_global_pose_override(int p_bone) const;
@@ -221,6 +229,8 @@ public:
 	void set_bone_local_pose_override(int p_bone, const Transform3D &p_pose, real_t p_amount, bool p_persistent = false);
 
 	void localize_rests(); // used for loaders and tools
+
+	Ref<Skin> create_skin_from_rest_transforms();
 
 	Ref<SkinReference> register_skin(const Ref<Skin> &p_skin);
 

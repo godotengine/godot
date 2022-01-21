@@ -1,6 +1,6 @@
 # Romanian translation of the Godot Engine editor
-# Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.
-# Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
+# Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.
+# Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 # Calin Sopterean <csopterean@gmail.com>, 2018.
 # Filip <filipanton@tutanota.com>, 2018, 2020.
@@ -15,12 +15,15 @@
 # f0roots <f0rootss@gmail.com>, 2020.
 # Gigel2 <mihalacher02@gmail.com>, 2020.
 # R3ktGamerRO <bluegamermc1@gmail.com>, 2021.
+# FlooferLand <yunaflarf@gmail.com>, 2021.
+# N3mEee <n3mebusiness@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-03-20 04:18+0000\n"
-"Last-Translator: R3ktGamerRO <bluegamermc1@gmail.com>\n"
+"PO-Revision-Date: 2021-12-14 15:28+0000\n"
+"Last-Translator: N3mEee <n3mebusiness@gmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
@@ -29,7 +32,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Weblate 4.5.2-dev\n"
+"X-Generator: Weblate 4.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -52,7 +55,8 @@ msgstr "Intrare invalida %i (nu a fost transmisă) in expresie"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "insuși nu poate fi folosit deoarece instanța este nulă (nu a trecut)"
+msgstr ""
+"self nu poate fi folosit deoarece instanța este nulă (nu a fost trecută)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -332,6 +336,10 @@ msgid "Duplicate Key(s)"
 msgstr "Clonare Chei"
 
 #: editor/animation_track_editor.cpp
+msgid "Add RESET Value(s)"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
 msgstr "Ștergeți Cheile"
 
@@ -366,6 +374,7 @@ msgstr "Creați %d piste NOI și inserați cheie?"
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -378,15 +387,13 @@ msgstr "Anim Inserați"
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "node '%s'"
-msgstr "Mod Snap (%s)"
+msgstr "nodul '%s'"
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "animation"
-msgstr "Animație"
+msgstr "animație"
 
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
@@ -394,9 +401,8 @@ msgstr "AnimationPlayer nu se poate anima singur, doar alți jucători."
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "property '%s'"
-msgstr "Proprietate"
+msgstr "proprietatea '%s'"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -485,7 +491,7 @@ msgstr "Anim Mutați Cheie"
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Clipboard is empty!"
-msgstr ""
+msgstr "Clipboardul este gol!"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -501,6 +507,11 @@ msgid ""
 msgstr ""
 "Această opțiune nu funcționează pentru editarea Bezier, din moment ce e o "
 "singură pistă."
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Add RESET Keys"
+msgstr "Anim Scalați Cheile"
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -607,9 +618,8 @@ msgid "Go to Previous Step"
 msgstr "Mergeți la Pasul Anterior"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Apply Reset"
-msgstr "Resetați Zoom-area"
+msgstr "Resetați"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize Animation"
@@ -628,9 +638,8 @@ msgid "Use Bezier Curves"
 msgstr "Folosește curbe Bezier"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Create RESET Track(s)"
-msgstr "Lipiţi Piste"
+msgstr "Creați o pista RESET"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
@@ -834,6 +843,7 @@ msgstr "Adăugați"
 #: editor/groups_editor.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp
 msgid "Remove"
@@ -884,8 +894,7 @@ msgstr "Nu se poate conecta semnalul"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
-#: editor/plugins/version_control_editor_plugin.cpp editor/project_export.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 #: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -972,11 +981,11 @@ msgstr "Creați %s Nou"
 
 #: editor/create_dialog.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "No results for \"%s\"."
-msgstr ""
+msgstr "Niciun rezultat pentru \"%s\"."
 
 #: editor/create_dialog.cpp editor/property_selector.cpp
 msgid "No description available for %s."
-msgstr ""
+msgstr "Nu exista o descriere pentru %s."
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
@@ -1076,14 +1085,14 @@ msgid "Owners Of:"
 msgstr "Stăpâni La:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove the selected files from the project? (Cannot be undone.)\n"
 "Depending on your filesystem configuration, the files will either be moved "
 "to the system trash or deleted permanently."
 msgstr ""
 "Ștergeți fișierele selectate din proiect? (Acțiune ireversibilă)\n"
-"Poți gasi fișierele șterse in coșul de gunoi dacă vrei să le restabilești."
+"Bazat pe configurarea sistemului de fișiere, fișierele vor fi mutate în "
+"coșul de gunoi al sistemului, ori vor fi șterse definitiv."
 
 #: editor/dependency_editor.cpp
 #, fuzzy
@@ -1169,7 +1178,7 @@ msgstr "Mulțumesc din partea comunităţii Godot!"
 
 #: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
 msgid "Click to copy."
-msgstr ""
+msgstr "Apasă click sa copiezi."
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -1267,41 +1276,38 @@ msgid "Licenses"
 msgstr "Licențe"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
-msgstr "Eroare la deschiderea fişierului pachet, nu este în format ZIP."
+msgstr ""
+"Eroare la deschiderea fişierului pachet \"%s\" (nu este în formatul ZIP)."
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "%s (already exists)"
-msgstr "%s (Există deja)"
+msgstr "%s (deja există)"
 
 #: editor/editor_asset_installer.cpp
 msgid "Contents of asset \"%s\" - %d file(s) conflict with your project:"
-msgstr ""
+msgstr "Conținutul pachetului \"%s\" - %d fișiere conflictă cu proiectul tău:"
 
 #: editor/editor_asset_installer.cpp
 msgid "Contents of asset \"%s\" - No files conflict with your project:"
 msgstr ""
+"Conținutul pachetului \"%s\" - Niciun fișier nu conflictă cu proiectul tău:"
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "Decomprimare Asset-uri"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "The following files failed extraction from asset \"%s\":"
-msgstr "Următoarele file au eșuat extragerea din pachet:"
+msgstr "Următoarele fișiere au eșuat extragerea din pachetul \"%s\":"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "(and %s more files)"
-msgstr "și %d alte fișiere."
+msgstr "(și %s alte fișiere)"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Asset \"%s\" installed successfully!"
-msgstr "Pachet instalat cu succes!"
+msgstr "Pachetul \"%s\" sa instalat cu succes!"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -1494,6 +1500,10 @@ msgid "Invalid name."
 msgstr "Nume nevalid."
 
 #: editor/editor_autoload_settings.cpp
+msgid "Cannot begin with a digit."
+msgstr ""
+
+#: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
 msgstr "Caractere valide:"
 
@@ -1550,13 +1560,12 @@ msgid "Can't add autoload:"
 msgstr "Nu pot adaugă încărcare automata:"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "%s is an invalid path. File does not exist."
-msgstr "Fișierul nu există."
+msgstr "%s este o cale invalidă. Fișierul nu există."
 
 #: editor/editor_autoload_settings.cpp
 msgid "%s is an invalid path. Not in resource path (res://)."
-msgstr ""
+msgstr "%s este o cale invalida. Nu este în calea resurselor (res://)."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -1581,7 +1590,7 @@ msgstr "Nume"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Global Variable"
-msgstr ""
+msgstr "Variabil Global"
 
 #: editor/editor_data.cpp
 msgid "Paste Params"
@@ -1603,7 +1612,9 @@ msgstr "Scena se Actualizează..."
 msgid "[empty]"
 msgstr "[gol]"
 
-#: editor/editor_data.cpp
+#: editor/editor_data.cpp editor/plugins/script_text_editor.cpp
+#: editor/plugins/text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "[unsaved]"
 msgstr "[nesalvat]"
 
@@ -1624,6 +1635,7 @@ msgstr "Creare folder"
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp editor/filesystem_dock.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
+#: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp scene/gui/file_dialog.cpp
 msgid "Name:"
 msgstr "Nume:"
@@ -1760,7 +1772,7 @@ msgstr "Importă Bară"
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to view and edit 3D scenes."
-msgstr ""
+msgstr "Permite vizualizarea și editarea scenelor 3D."
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to edit scripts using the integrated script editor."
@@ -1782,7 +1794,7 @@ msgstr ""
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to browse the local file system via a dedicated dock."
-msgstr ""
+msgstr "Permite navigarea sistemului local de fișiere printr-un dock dedicat."
 
 #: editor/editor_feature_profile.cpp
 msgid ""
@@ -1791,17 +1803,16 @@ msgid ""
 msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "(current)"
-msgstr "(Curent)"
+msgstr "(actual)"
 
 #: editor/editor_feature_profile.cpp
 msgid "(none)"
-msgstr ""
+msgstr "(nici unul)"
 
 #: editor/editor_feature_profile.cpp
 msgid "Remove currently selected profile, '%s'? Cannot be undone."
-msgstr ""
+msgstr "Șterge profilul actual selectat, '%s'? Nu poate fi anulat."
 
 #: editor/editor_feature_profile.cpp
 msgid "Profile must be a valid filename and must not contain '.'"
@@ -1833,9 +1844,8 @@ msgid "Enable Contextual Editor"
 msgstr "Activează Editorul Contextual"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Class Properties:"
-msgstr "Reduceți toate proprietățile"
+msgstr "Proprietățile clasei:"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -1843,9 +1853,8 @@ msgid "Main Features:"
 msgstr "Caracteristici active:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Nodes and Classes:"
-msgstr "Clase Activate:"
+msgstr "Noduri și Clase:"
 
 #: editor/editor_feature_profile.cpp
 msgid "File '%s' format is invalid, import aborted."
@@ -1873,14 +1882,12 @@ msgid "Current Profile:"
 msgstr "Profil Curent:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Create Profile"
-msgstr "Ștergere Profil"
+msgstr "Creează un Profil"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Remove Profile"
-msgstr "Elimină Șablon"
+msgstr "Șterge Profil"
 
 #: editor/editor_feature_profile.cpp
 msgid "Available Profiles:"
@@ -1900,14 +1907,12 @@ msgid "Export"
 msgstr "Exportare"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Configure Selected Profile:"
-msgstr "Profil Curent:"
+msgstr "Configură Profilul Selectat:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Extra Options:"
-msgstr "Opțiuni Clasă:"
+msgstr "Opțiunii Extra:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Create or import a profile to edit available classes and properties."
@@ -1938,9 +1943,8 @@ msgid "Select Current Folder"
 msgstr "Selectaţi directorul curent"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "File exists, overwrite?"
-msgstr "Fișierul există, suprascrieţi?"
+msgstr "Fișierul există, înlocuiți?"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Select This Folder"
@@ -1964,7 +1968,6 @@ msgid "New Folder..."
 msgstr "Director Nou..."
 
 #: editor/editor_file_dialog.cpp editor/find_in_files.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "Reîmprospătare"
 
@@ -2081,7 +2084,8 @@ msgstr "Directoare și Fişiere:"
 msgid "Preview:"
 msgstr "Previzualizați:"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "File:"
 msgstr "Fișier:"
 
@@ -2131,7 +2135,8 @@ msgid "Properties"
 msgstr "Proprietăți"
 
 #: editor/editor_help.cpp
-msgid "override:"
+#, fuzzy
+msgid "overrides %s:"
 msgstr "extindere:"
 
 #: editor/editor_help.cpp
@@ -2146,13 +2151,29 @@ msgstr "Metode"
 msgid "Theme Properties"
 msgstr "Proprietățile Temei"
 
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Enumerări"
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Colors"
+msgstr ""
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
 msgstr "Constante"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Fonts"
+msgstr ""
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Icons"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Styles"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Enumerări"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -2240,7 +2261,7 @@ msgstr "Metodă"
 msgid "Signal"
 msgstr "Semnal"
 
-#: editor/editor_help_search.cpp
+#: editor/editor_help_search.cpp modules/visual_script/visual_script_nodes.cpp
 msgid "Constant"
 msgstr "Permanent"
 
@@ -2256,14 +2277,54 @@ msgstr "Proprietate Temă"
 msgid "Property:"
 msgstr "Proprietate:"
 
-#: editor/editor_inspector.cpp editor/scene_tree_dock.cpp
-#: modules/visual_script/visual_script_property_selector.cpp
-msgid "Set %s"
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Pin value"
+msgstr "(valoare)"
+
+#: editor/editor_inspector.cpp
+msgid ""
+"Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
+
+#: editor/editor_inspector.cpp
+msgid "Pin value [Disabled because '%s' is editor-only]"
+msgstr ""
+
+#: editor/editor_inspector.cpp editor/scene_tree_dock.cpp
+#: modules/visual_script/visual_script_func_nodes.cpp
+#: modules/visual_script/visual_script_nodes.cpp
+#: modules/visual_script/visual_script_property_selector.cpp
+#, fuzzy
+msgid "Set %s"
+msgstr "Setați %s"
 
 #: editor/editor_inspector.cpp
 msgid "Set Multiple:"
 msgstr "Seteaza Multiple:"
+
+#: editor/editor_inspector.cpp
+msgid "Pinned %s"
+msgstr ""
+
+#: editor/editor_inspector.cpp
+msgid "Unpinned %s"
+msgstr ""
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Copy Property"
+msgstr "Proprietăți"
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Paste Property"
+msgstr "Proprietăți"
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Copy Property Path"
+msgstr "Proprietăți"
 
 #: editor/editor_log.cpp
 msgid "Output:"
@@ -2434,6 +2495,14 @@ msgstr ""
 "Nu am putut salva scena. Probabil dependenţe (instanţe sau moşteniri) nu au "
 "putut fi satisfăcute."
 
+#: editor/editor_node.cpp
+msgid "Could not save one or more scenes!"
+msgstr "Nu s-au putut salva una sau mai multe scene!"
+
+#: editor/editor_node.cpp
+msgid "Save All Scenes"
+msgstr "Salvați toate scenele"
+
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "Can't overwrite scene that is still open!"
 msgstr "Nu pot salva peste scena care este înca deschisă!"
@@ -2533,7 +2602,7 @@ msgstr "Nu există nici o scenă definită pentru a execuție."
 
 #: editor/editor_node.cpp
 msgid "Save scene before running..."
-msgstr ""
+msgstr "Salvați scena înainte de a rula..."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -2566,6 +2635,10 @@ msgstr "Salvează și închide"
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
 msgstr "Salvează schimbările la ’%s’ înainte de ieșire?"
+
+#: editor/editor_node.cpp
+msgid "%s no longer exists! Please specify a new save location."
+msgstr "%s nu mai există! Vă rugăm să specificați o nouă locație de salvare."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2918,10 +2991,6 @@ msgid "Save Scene"
 msgstr "Salvează Scena"
 
 #: editor/editor_node.cpp
-msgid "Save All Scenes"
-msgstr "Salvați toate scenele"
-
-#: editor/editor_node.cpp
 msgid "Convert To..."
 msgstr "Convertește În..."
 
@@ -2980,8 +3049,9 @@ msgid "Install Android Build Template..."
 msgstr "Instalare șablon compilare Android..."
 
 #: editor/editor_node.cpp
-msgid "Open Project Data Folder"
-msgstr "Deschideți folderul datelor proiectului"
+#, fuzzy
+msgid "Open User Data Folder"
+msgstr "Deschidere dosarul de date editor"
 
 #: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
@@ -3067,6 +3137,20 @@ msgstr ""
 "dacă această opțiune este activată."
 
 #: editor/editor_node.cpp
+msgid "Force Shader Fallbacks"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
+"When this option is enabled, shaders will be used in their fallback form "
+"(either visible via an ubershader or hidden) during all the run time.\n"
+"This is useful for verifying the look and performance of fallbacks, which "
+"are normally displayed briefly.\n"
+"Asynchronous shader compilation must be enabled in the project settings for "
+"this option to make a difference."
+msgstr ""
+
+#: editor/editor_node.cpp
 #, fuzzy
 msgid "Synchronize Scene Changes"
 msgstr "Sincronizează Modificările Scenei"
@@ -3125,10 +3209,6 @@ msgstr "Capturile de ecran sunt stocate în folderul Date/Setări editor."
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "Comutare ecran complet"
-
-#: editor/editor_node.cpp
-msgid "Toggle System Console"
-msgstr "Cumutează Consola de Sistem"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data/Settings Folder"
@@ -3356,6 +3436,7 @@ msgid "Load Errors"
 msgstr "Încarcă Erorile"
 
 #: editor/editor_node.cpp editor/plugins/tile_map_editor_plugin.cpp
+#: modules/visual_script/visual_script_nodes.cpp
 msgid "Select"
 msgstr "Selectează"
 
@@ -3436,7 +3517,6 @@ msgid "Author"
 msgstr "Autori"
 
 #: editor/editor_plugin_settings.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Status"
 msgstr ""
@@ -3667,6 +3747,12 @@ msgstr "Calea Scenei:"
 #: editor/editor_sub_scene.cpp
 msgid "Import From Node:"
 msgstr "Importă Din Nod:"
+
+#. TRANSLATORS: %s refers to the name of a version control system (e.g. "Git").
+#: editor/editor_vcs_interface.cpp
+#, fuzzy
+msgid "%s Error"
+msgstr "Eroare!"
 
 #: editor/export_template_manager.cpp
 msgid "Open the folder containing these templates."
@@ -4186,6 +4272,11 @@ msgstr "Caută în fișiere"
 msgid "Find:"
 msgstr "Găsiți:"
 
+#: editor/find_in_files.cpp editor/rename_dialog.cpp
+#, fuzzy
+msgid "Replace:"
+msgstr "Înlocuiți:"
+
 #: editor/find_in_files.cpp
 msgid "Folder:"
 msgstr "Folderul:"
@@ -4209,6 +4300,11 @@ msgstr ""
 msgid "Replace..."
 msgstr ""
 
+#: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Replace in Files"
+msgstr "Înlocuiți Tot"
+
 #: editor/find_in_files.cpp
 msgid "Find: "
 msgstr "Găsiți: "
@@ -4218,8 +4314,9 @@ msgid "Replace: "
 msgstr "Înlocuiți: "
 
 #: editor/find_in_files.cpp
-msgid "Replace all (no undo)"
-msgstr "Înlocuiește tot (fără anulare)"
+#, fuzzy
+msgid "Replace All (NO UNDO)"
+msgstr "Înlocuiți Tot"
 
 #: editor/find_in_files.cpp
 msgid "Searching..."
@@ -4405,16 +4502,24 @@ msgid "Clear Default for '%s'"
 msgstr "Curăță setarea Implicită pentru '%s'"
 
 #: editor/import_dock.cpp
+msgid "Reimport"
+msgstr "Reimportă"
+
+#: editor/import_dock.cpp
+msgid ""
+"You have pending changes that haven't been applied yet. Click Reimport to "
+"apply changes made to the import options.\n"
+"Selecting another resource in the FileSystem dock without clicking Reimport "
+"first will discard changes made in the Import dock."
+msgstr ""
+
+#: editor/import_dock.cpp
 msgid "Import As:"
 msgstr "Importă Ca:"
 
 #: editor/import_dock.cpp
 msgid "Preset"
 msgstr "Presetare"
-
-#: editor/import_dock.cpp
-msgid "Reimport"
-msgstr "Reimportă"
 
 #: editor/import_dock.cpp
 msgid "Save Scenes, Re-Import, and Restart"
@@ -4427,6 +4532,12 @@ msgstr "Modificarea tipului de fișier importat necesită repornirea editorului.
 #: editor/import_dock.cpp
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
+msgstr ""
+
+#: editor/import_dock.cpp
+msgid ""
+"Select a resource file in the filesystem or in the inspector to adjust "
+"import settings."
 msgstr ""
 
 #: editor/inspector_dock.cpp
@@ -4544,6 +4655,7 @@ msgid "Subfolder:"
 msgstr ""
 
 #: editor/plugin_config_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Author:"
 msgstr "Autor:"
 
@@ -5949,6 +6061,11 @@ msgstr "Alt+Trage: Mutare"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
+msgid "Alt+Drag: Scale selected node."
+msgstr "Alt+Trage: Mutare"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "V: Set selected node's pivot position."
 msgstr "Ștergeți pista selectată."
 
@@ -5979,6 +6096,10 @@ msgstr "Mod Rotație"
 #, fuzzy
 msgid "Scale Mode"
 msgstr "Mod Redimensionare (R)"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Shift: Scale proportionally."
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6088,8 +6209,20 @@ msgstr "Imobilizează obiectul selectat (nu poate fi mișcat)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Lock Selected Node(s)"
+msgstr "Selectează"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unlock the selected object (can be moved)."
 msgstr "Remobilizează obiectul selectat (poate fi mișcat)."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Unlock Selected Node(s)"
+msgstr "Selectează"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6098,8 +6231,20 @@ msgstr "Asigură-te că nu pot fi selectați copiii obiectului."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Group Selected Node(s)"
+msgstr "Elminați Selecția"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Restores the object's children's ability to be selected."
 msgstr "Restaurează abilitatea copiilor obiectului de a fi selectați."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Ungroup Selected Node(s)"
+msgstr "Elminați Selecția"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
@@ -6281,6 +6426,7 @@ msgid "Zoom to 1600%"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Add %s"
 msgstr "Adaugă %s"
 
@@ -7489,12 +7635,14 @@ msgid "Move Down"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Next script"
-msgstr ""
+#, fuzzy
+msgid "Next Script"
+msgstr "Extinde Script"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Previous script"
-msgstr ""
+#, fuzzy
+msgid "Previous Script"
+msgstr "Fila anterioară"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "File"
@@ -7794,6 +7942,11 @@ msgid "Find in Files..."
 msgstr "Filtrează fișierele..."
 
 #: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Replace in Files..."
+msgstr "Filtrează fișierele..."
+
+#: editor/plugins/script_text_editor.cpp
 msgid "Contextual Help"
 msgstr ""
 
@@ -7859,13 +8012,13 @@ msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr ""
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
+msgid "Set Rest Pose to Bones"
+msgstr ""
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
 #, fuzzy
 msgid "Create Rest Pose from Bones"
 msgstr "Creează Puncte de Emisie Din Mesh"
-
-#: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Set Rest Pose to Bones"
-msgstr ""
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 #, fuzzy
@@ -7930,11 +8083,16 @@ msgid "Left Orthogonal"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Right Perspective"
-msgstr ""
+#, fuzzy
+msgid "Left Perspective"
+msgstr "Mod Rotație"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Right Orthogonal"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Right Perspective"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -8291,6 +8449,26 @@ msgid "Right View"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Down"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Left"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Right"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Up"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View 180"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Switch Perspective/Orthogonal View"
 msgstr ""
 
@@ -8309,6 +8487,19 @@ msgstr ""
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Toggle Freelook"
 msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Decrease Field of View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Increase Field of View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Reset Field of View to Default"
+msgstr "Încărcați Implicit"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8707,18 +8898,6 @@ msgid "TextureRegion"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Colors"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Fonts"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Icons"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Styleboxes"
 msgstr ""
 
@@ -9102,6 +9281,30 @@ msgstr "Membri"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
+msgid "Add Type"
+msgstr "Adaugă Obiect"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Filter the list of types or create a new custom type:"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Available Node-based types:"
+msgstr "Profile Disponibile:"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Type name is empty!"
+msgstr "Numele fișierului este gol."
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Are you sure you want to create an empty type?"
+msgstr "Ești sigur că vrei să ștergi toate conexiunile de la acest semnal?"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Confirm Item Rename"
 msgstr "Redenumește Pista Anim"
 
@@ -9127,21 +9330,6 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
-msgid "Add Type"
-msgstr "Adaugă Obiect"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Add Item Type"
-msgstr "Adaugă Obiect"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Node Types:"
-msgstr "Tip nod"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Show Default"
 msgstr "Încărcați Implicit"
 
@@ -9157,6 +9345,11 @@ msgstr "extindere:"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Override all default type items."
 msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Add Item Type"
+msgstr "Adaugă Obiect"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -9765,7 +9958,7 @@ msgid "TileSet"
 msgstr "Set de dale"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No VCS addons are available."
+msgid "No VCS plugins are available."
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -9773,8 +9966,14 @@ msgid "Error"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No files added to stage"
+msgid ""
+"Remote settings are empty. VCS features that use the network may not work."
 msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "No commit message was provided."
+msgstr "Niciun nume furnizat."
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -9782,8 +9981,41 @@ msgid "Commit"
 msgstr "Comunitate"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "VCS Addon is not initialized"
+#, fuzzy
+msgid "Staged Changes"
+msgstr "Schimbați"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Unstaged Changes"
+msgstr "Schimbați"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Commit:"
+msgstr "Comunitate"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Date:"
 msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Subtitle:"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Do you want to remove the %s branch?"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Do you want to remove the %s remote?"
+msgstr "Ești sigur că vrei să ștergi toate conexiunile de la acest semnal?"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Apply"
+msgstr "Resetați"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Version Control System"
@@ -9794,7 +10026,37 @@ msgid "Initialize"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "Staging area"
+#, fuzzy
+msgid "Remote Login"
+msgstr "Elimină punct"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Username"
+msgstr "Redenumește"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Password"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "SSH Public Key Path"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Select SSH public key path"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "SSH Private Key Path"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Select SSH private key path"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "SSH Passphrase"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -9804,8 +10066,110 @@ msgstr "Creați %s Nou"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
-msgid "Changes"
-msgstr "Schimbați"
+msgid "Discard all changes"
+msgstr "Modificări ale Actualizării"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Stage all changes"
+msgstr "Modificările locale se stochează..."
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Unstage all changes"
+msgstr "Modificări ale Actualizării"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Commit Message"
+msgstr "Sincronizează Modificările Scriptului"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Commit Changes"
+msgstr "Sincronizează Modificările Scriptului"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Commit List"
+msgstr "Comunitate"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Commit list size"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "10"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "20"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "30"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Branches"
+msgstr "Potriviri:"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Create New Branch"
+msgstr "Creați %s Nou"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Branch"
+msgstr "Elimină Pista Anim"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Branch Name"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Remotes"
+msgstr "Ștergeți"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Create New Remote"
+msgstr "Creați %s Nou"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Remote"
+msgstr "Elimină Șablon"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Remote Name"
+msgstr "Nume Nod:"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Remote URL"
+msgstr "Ștergeți"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Fetch"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Pull"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Push"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Force Push"
+msgstr "Mesh Sursă:"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Modified"
@@ -9827,30 +10191,21 @@ msgid "Typechange"
 msgstr "Schimbați"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
-msgid "Stage Selected"
-msgstr "Scalați Selecția"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
-msgid "Stage All"
-msgstr "Înlocuiți Tot"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
-msgid "Commit Changes"
-msgstr "Sincronizează Modificările Scriptului"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "View file diffs before committing them to the latest version"
+msgid "Unmerged"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No file diff is active"
-msgstr ""
+#, fuzzy
+msgid "View:"
+msgstr "Perspectivă"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "Detect changes in file diff"
+#, fuzzy
+msgid "Split"
+msgstr "Divizare cale"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Unified"
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -11225,11 +11580,11 @@ msgid ""
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Key "
+msgid "Physical Key"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Physical Key"
+msgid "Key "
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -11619,11 +11974,6 @@ msgid "Batch Rename"
 msgstr "Redenumește"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
-msgid "Replace:"
-msgstr "Înlocuiți:"
-
-#: editor/rename_dialog.cpp
 msgid "Prefix:"
 msgstr ""
 
@@ -11900,6 +12250,20 @@ msgid ""
 "Can't save the branch of an already instanced scene.\n"
 "To create a variation of a scene, you can make an inherited scene based on "
 "the instanced scene using Scene > New Inherited Scene... instead."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"Can't save a branch which is a child of an already instantiated scene.\n"
+"To save this branch into its own scene, open the original scene, right click "
+"on this branch, and select \"Save Branch as Scene\"."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"Can't save a branch which is part of an inherited scene.\n"
+"To save this branch into its own scene, open the original scene, right click "
+"on this branch, and select \"Save Branch as Scene\"."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -12438,6 +12802,7 @@ msgid "Export list to a CSV file"
 msgstr "Exportă Profil"
 
 #: editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_nodes.cpp
 msgid "Resource Path"
 msgstr ""
 
@@ -12882,63 +13247,68 @@ msgstr "Toată selecția"
 msgid "End of inner exception stack trace"
 msgstr ""
 
-#: modules/recast/navigation_mesh_editor_plugin.cpp
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
+#: scene/3d/navigation_mesh_instance.cpp
+msgid "A NavigationMesh resource must be set or created for this node to work."
+msgstr ""
+
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
 msgid "Bake NavMesh"
 msgstr ""
 
-#: modules/recast/navigation_mesh_editor_plugin.cpp
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
 msgstr "Curăță mesh-ul de navigare."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Setting up Configuration..."
 msgstr "Inițializarea configurației..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Calculating grid size..."
 msgstr "Calcularea mărimii grilei..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Creating heightfield..."
 msgstr "Crearea câmpului de înălțare..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Marking walkable triangles..."
 msgstr "Marcarea triunghiurilor traversabile..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Constructing compact heightfield..."
 msgstr "Construcție câmp de înălțare compact..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Eroding walkable area..."
 msgstr "Reducerea zonei traversabile..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Partitioning..."
 msgstr "Partiționare..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Creating contours..."
 msgstr "Crearea conturilor..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Creating polymesh..."
 msgstr "Crearea plasei de contur..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Converting to native navigation mesh..."
 msgstr "Se convertește în mesh nativ de navigare..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Navigation Mesh Generator Setup:"
 msgstr "Setup Generare Mesh de Navigare:"
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Parsing Geometry..."
 msgstr "Analiza geometriei..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Done!"
 msgstr "Efectuat!"
 
@@ -13301,6 +13671,40 @@ msgstr "Reîmprospătați"
 msgid "Edit Member"
 msgstr "Membri"
 
+#: modules/visual_script/visual_script_expression.cpp
+#, fuzzy
+msgid "Expression"
+msgstr "Setare expresie"
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Return"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+#, fuzzy
+msgid "Condition"
+msgstr "animație"
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "if (cond) is:"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "While"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "while (cond):"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Iterator"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "for (elem) in (input):"
+msgstr ""
+
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
 msgstr ""
@@ -13311,6 +13715,86 @@ msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator became invalid: "
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Sequence"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+#, fuzzy
+msgid "in order:"
+msgstr "Redenumind directorul:"
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Switch"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "'input' is:"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Type Cast"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Is %s?"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "On %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "On Self"
+msgstr "Propriu"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "Subtract %s"
+msgstr "La caracterul %s"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Multiply %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Divide %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "Mod %s"
+msgstr "Adaugă %s"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "ShiftLeft %s"
+msgstr "Setați %s"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "ShiftRight %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "BitAnd %s"
+msgstr "Adaugă %s"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "BitOr %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "BitXor %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#: modules/visual_script/visual_script_nodes.cpp
+#: modules/visual_script/visual_script_property_selector.cpp
+msgid "Get %s"
 msgstr ""
 
 #: modules/visual_script/visual_script_func_nodes.cpp
@@ -13329,12 +13813,31 @@ msgstr ""
 msgid "Invalid index property name '%s' in node %s."
 msgstr ""
 
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "Emit %s"
+msgstr "Setați %s"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Function"
+msgstr "Funcții"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Compose Array"
+msgstr "Redimensionați Array-ul"
+
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid argument of type: "
 msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid arguments: "
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "a if cond, else b"
 msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -13346,6 +13849,64 @@ msgid "VariableSet not found in script: "
 msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
+msgid "Preload"
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Get Index"
+msgstr "Mod În Jur"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Set Index"
+msgstr "Mod În Jur"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Global Constant"
+msgstr "Permanent"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Class Constant"
+msgstr "Permanent"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Basic Constant"
+msgstr "Permanent"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Math Constant"
+msgstr "Permanent"
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "Get Engine Singleton"
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Get Scene Node"
+msgstr "Nod CăutareTimp"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Get Scene Tree"
+msgstr "Editează Arborele Scenei"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Get Self"
+msgstr "Propriu"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "CustomNode"
+msgstr "Creează Nod"
+
+#: modules/visual_script/visual_script_nodes.cpp
 msgid "Custom node has no _step() method, can't process graph."
 msgstr ""
 
@@ -13355,14 +13916,76 @@ msgid ""
 "(error)."
 msgstr ""
 
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "SubCall"
+msgstr "Apeluri"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Construct %s"
+msgstr "Constante"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Get Local Var"
+msgstr "Creează Oase"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Set Local Var"
+msgstr "Creează Oase"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Action %s"
+msgstr "Acțiune"
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "Deconstruct %s"
+msgstr ""
+
 #: modules/visual_script/visual_script_property_selector.cpp
 #, fuzzy
 msgid "Search VisualScript"
 msgstr "Curăță Scriptul"
 
-#: modules/visual_script/visual_script_property_selector.cpp
-msgid "Get %s"
+#: modules/visual_script/visual_script_yield_nodes.cpp
+msgid "Yield"
 msgstr ""
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+msgid "Wait"
+msgstr ""
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+#, fuzzy
+msgid "Next Frame"
+msgstr "Mod Mutare"
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+#, fuzzy
+msgid "Next Physics Frame"
+msgstr "Cadru Fizic %"
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+msgid "%s sec(s)"
+msgstr ""
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+#, fuzzy
+msgid "WaitSignal"
+msgstr "Semnal"
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+#, fuzzy
+msgid "WaitNodeSignal"
+msgstr "Semnal"
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+#, fuzzy
+msgid "WaitInstanceSignal"
+msgstr "Instanță"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Package name is missing."
@@ -13504,11 +14127,31 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"or \"OpenXR\"."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
+"enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
@@ -13898,6 +14541,16 @@ msgstr ""
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr ""
 
+#: scene/2d/navigation_agent_2d.cpp
+msgid "The NavigationAgent2D can be used only under a Node2D node."
+msgstr ""
+
+#: scene/2d/navigation_obstacle_2d.cpp
+msgid ""
+"The NavigationObstacle2D only serves to provide collision avoidance to a "
+"Node2D object."
+msgstr ""
+
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
@@ -13919,7 +14572,16 @@ msgstr ""
 msgid ""
 "GPU-based particles are not supported by the GLES2 video driver.\n"
 "Use the CPUParticles2D node instead. You can use the \"Convert to "
-"CPUParticles\" option for this purpose."
+"CPUParticles2D\" toolbar option for this purpose."
+msgstr ""
+
+#: scene/2d/particles_2d.cpp
+msgid ""
+"On macOS, Particles2D rendering is much slower than CPUParticles2D due to "
+"transform feedback being implemented on the CPU instead of the GPU.\n"
+"Consider using CPUParticles2D instead when targeting macOS.\n"
+"You can use the \"Convert to CPUParticles2D\" toolbar option for this "
+"purpose."
 msgstr ""
 
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
@@ -14106,14 +14768,20 @@ msgstr ""
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr ""
 
-#: scene/3d/navigation_mesh.cpp
-msgid "A NavigationMesh resource must be set or created for this node to work."
+#: scene/3d/navigation_agent.cpp
+msgid "The NavigationAgent can be used only under a spatial node."
 msgstr ""
 
-#: scene/3d/navigation_mesh.cpp
+#: scene/3d/navigation_mesh_instance.cpp
 msgid ""
 "NavigationMeshInstance must be a child or grandchild to a Navigation node. "
 "It only provides navigation data."
+msgstr ""
+
+#: scene/3d/navigation_obstacle.cpp
+msgid ""
+"The NavigationObstacle only serves to provide collision avoidance to a "
+"spatial object."
 msgstr ""
 
 #: scene/3d/occluder.cpp
@@ -14128,7 +14796,15 @@ msgstr ""
 msgid ""
 "GPU-based particles are not supported by the GLES2 video driver.\n"
 "Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
-"\" option for this purpose."
+"\" toolbar option for this purpose."
+msgstr ""
+
+#: scene/3d/particles.cpp
+msgid ""
+"On macOS, Particles rendering is much slower than CPUParticles due to "
+"transform feedback being implemented on the CPU instead of the GPU.\n"
+"Consider using CPUParticles instead when targeting macOS.\n"
+"You can use the \"Convert to CPUParticles\" toolbar option for this purpose."
 msgstr ""
 
 #: scene/3d/particles.cpp
@@ -14452,6 +15128,14 @@ msgid ""
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
 
+#: scene/main/timer.cpp
+msgid ""
+"Very low timer wait times (< 0.05 seconds) may behave in significantly "
+"different ways depending on the rendered or physics frame rate.\n"
+"Consider using a script's process loop instead of relying on a Timer for "
+"very low wait times."
+msgstr ""
+
 #: scene/main/viewport.cpp
 msgid ""
 "This viewport is not set as render target. If you intend for it to display "
@@ -14461,7 +15145,9 @@ msgid ""
 msgstr ""
 
 #: scene/main/viewport.cpp
-msgid "Viewport size must be greater than 0 to render anything."
+msgid ""
+"The Viewport size must be greater than or equal to 2 pixels on both "
+"dimensions to render anything."
 msgstr ""
 
 #: scene/resources/occluder_shape.cpp
@@ -14503,10 +15189,6 @@ msgid ""
 msgstr ""
 
 #: servers/visual/shader_language.cpp
-msgid "Fragment-stage varying could not been accessed in custom function!"
-msgstr ""
-
-#: servers/visual/shader_language.cpp
 msgid "Assignment to function."
 msgstr ""
 
@@ -14517,589 +15199,3 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
-
-#~ msgid "Package Contents:"
-#~ msgstr "Conținutul pachetului:"
-
-#~ msgid "Singleton"
-#~ msgstr "Singleton (Unicat)"
-
-#~ msgid "Erase profile '%s'? (no undo)"
-#~ msgstr "Ștergeți profilul '%s'?(ireversibil)"
-
-#~ msgid "Enabled Properties:"
-#~ msgstr "Proprietăți Activate:"
-
-#~ msgid "Unset"
-#~ msgstr "Nesetat(ă)"
-
-#~ msgid "Class Options"
-#~ msgstr "Opțiuni Clase"
-
-#~ msgid "Set"
-#~ msgstr "Stabilește"
-
-#~ msgid "Saved %s modified resource(s)."
-#~ msgstr "Resurse modificate %s salvate."
-
-#~ msgid "Q&A"
-#~ msgstr "Întrebări și Răspunsuri"
-
-#~ msgid "Status:"
-#~ msgstr "Stare:"
-
-#~ msgid "Edit:"
-#~ msgstr "Editare:"
-
-#~ msgid "Redownload"
-#~ msgstr "Descarcă din nou"
-
-#~ msgid "(Installed)"
-#~ msgstr "(Instalat)"
-
-#~ msgid "(Missing)"
-#~ msgstr "(Lipsește)"
-
-#~ msgid "Request Failed."
-#~ msgstr "Cerere Eșuată."
-
-#~ msgid "Redirect Loop."
-#~ msgstr "Buclă de Redirecționare."
-
-#~ msgid "Download Complete."
-#~ msgstr "Descărcare Completă."
-
-#~ msgid "Remove Template"
-#~ msgstr "Elimină Șablon"
-
-#~ msgid "Download Templates"
-#~ msgstr "Descarcă Șabloane"
-
-#~ msgid "Select mirror from list: (Shift+Click: Open in Browser)"
-#~ msgstr "Selectează oglinda din listă: (Shift+Click: Deschide in Browser)"
-
-#, fuzzy
-#~ msgid "Move to Trash"
-#~ msgstr "Mutați Autoload"
-
-#~ msgid "Expand All Properties"
-#~ msgstr "Extindeți toate proprietățile"
-
-#~ msgid "Copy Params"
-#~ msgstr "Copie Parametrii"
-
-#~ msgid "Open in Help"
-#~ msgstr "Deschideți în Ajutor"
-
-#~ msgid "Drag: Rotate"
-#~ msgstr "Trage: Rotire"
-
-#~ msgid "Press 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving)."
-#~ msgstr ""
-#~ "Apasă 'v' pentru a Schimba Pivotul, 'Shift+v' pentru a Trage Pivotul (în "
-#~ "timpul mișcării)."
-
-#~ msgid "Alt+RMB: Depth list selection"
-#~ msgstr "Alt+RMB: Selecție adâncime listă"
-
-#, fuzzy
-#~ msgid "Theme File"
-#~ msgstr "Deschideți un Fișier"
-
-#~ msgid "An animation player can't animate itself, only other players."
-#~ msgstr ""
-#~ "Un player de animatie nu se poate anima insusi, doar alti playeri de "
-#~ "animatie."
-
-#~ msgid "Clipboard is empty"
-#~ msgstr "Clip-board de resurse gol"
-
-#~ msgid "No"
-#~ msgstr "Nu"
-
-#~ msgid "This scene has never been saved. Save before running?"
-#~ msgstr ""
-#~ "Această scenă nu a fost salvată niciodata. Salvați înainte de rulare?"
-
-#~ msgid "Search complete"
-#~ msgstr "Căutare completă"
-
-#, fuzzy
-#~ msgid "No commit message was provided"
-#~ msgstr "Niciun nume furnizat"
-
-#~ msgid "There is already file or folder with the same name in this location."
-#~ msgstr ""
-#~ "Există deja un fișier sau un dosar cu același nume în această locație."
-
-#~ msgid "Error trying to save layout!"
-#~ msgstr "Eroare la încercarea de a salva schema!"
-
-#~ msgid "Default editor layout overridden."
-#~ msgstr "Schemă implicită de editor suprascrisă."
-
-#, fuzzy
-#~ msgid "Move pivot"
-#~ msgstr "Mută Pivot"
-
-#, fuzzy
-#~ msgid "Move anchor"
-#~ msgstr "Acțiune de Mutare"
-
-#, fuzzy
-#~ msgid "Resize CanvasItem"
-#~ msgstr "Editează ObiectulPânză"
-
-#~ msgid "Polygon->UV"
-#~ msgstr "Poligon->UV"
-
-#~ msgid "UV->Polygon"
-#~ msgstr "UV->Poligon"
-
-#~ msgid "Add initial export..."
-#~ msgstr "Adăugare export inițial..."
-
-#~ msgid "Pack File"
-#~ msgstr "Împachetează Fișierul"
-
-#~ msgid "FileSystem and Import Docks"
-#~ msgstr "Sistemul De Fișiere și încărcare Bare"
-
-#~ msgid ""
-#~ "When exporting or deploying, the resulting executable will attempt to "
-#~ "connect to the IP of this computer in order to be debugged."
-#~ msgstr ""
-#~ "Când exporți sau lansezi, executabilul rezultat va încerca să se "
-#~ "conecteze la IP-ul acestui computer pentru a putea fi depanat."
-
-#~ msgid "Current scene was never saved, please save it prior to running."
-#~ msgstr ""
-#~ "Scena curentă nu a fost salvată niciodată, salvați-o înainte de rulare."
-
-#~ msgid "Revert"
-#~ msgstr "Întoarcere"
-
-#~ msgid "This action cannot be undone. Revert anyway?"
-#~ msgstr "Această acțiune nu poate fi recuperată. Te reîntorci oricum?"
-
-#~ msgid "Revert Scene"
-#~ msgstr "Restabilește Scena"
-
-#~ msgid "Issue Tracker"
-#~ msgstr "Agent de Monitorizare al Problemelor"
-
-#~ msgid "Replaced %d occurrence(s)."
-#~ msgstr "Înlocuit %d potriviri."
-
-#~ msgid "Create Static Convex Body"
-#~ msgstr "Creează un Corp Static Convex"
-
-#~ msgid ""
-#~ "There are currently no tutorials for this class, you can [color=$color]"
-#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
-#~ "$url2]request one[/url][/color]."
-#~ msgstr ""
-#~ "Nu există în prezent nici un tutorial pentru această clasă, puteţi "
-#~ "[culoare = $color] [url = $url] contribui unul [/ URL] [/ color] sau "
-#~ "[culoare = $color] [url = $url2] cerere unul[/ URL] [/ color]."
-
-#~ msgid "enum  "
-#~ msgstr "enum  "
-
-#, fuzzy
-#~ msgid "Brief Description"
-#~ msgstr "Descriere Scurtă:"
-
-#, fuzzy
-#~ msgid "Class Description"
-#~ msgstr "Descriere"
-
-#~ msgid "Project export failed with error code %d."
-#~ msgstr "Exportul de proiect nu a reuşit cu un cod de eroare %d."
-
-#~ msgid "Password:"
-#~ msgstr "Parola:"
-
-#~ msgid "Pause the scene"
-#~ msgstr "Întrerupe scena"
-
-#, fuzzy
-#~ msgid "Snap to Grid"
-#~ msgstr "Snap pe grilă"
-
-#, fuzzy
-#~ msgid "Add input +"
-#~ msgstr "Adaugă Intrare(Input)"
-
-#, fuzzy
-#~ msgid "Input"
-#~ msgstr "Adaugă Intrare(Input)"
-
-#, fuzzy
-#~ msgid "Methods:"
-#~ msgstr "Metode"
-
-#, fuzzy
-#~ msgid "Theme Properties:"
-#~ msgstr "Proprietăți"
-
-#~ msgid "Constants:"
-#~ msgstr "Constante:"
-
-#, fuzzy
-#~ msgid "Class Description:"
-#~ msgstr "Descriere:"
-
-#, fuzzy
-#~ msgid "Property Descriptions:"
-#~ msgstr "Descriere Proprietate:"
-
-#, fuzzy
-#~ msgid "Method Descriptions:"
-#~ msgstr "Descrierea metodei:"
-
-#, fuzzy
-#~ msgid "Reverse sorting."
-#~ msgstr "Se Solicită..."
-
-#~ msgid ""
-#~ "Can't open file_type_cache.cch for writing, not saving file type cache!"
-#~ msgstr ""
-#~ "Nu se poate deschide file_type_cache.cch pentru scriere, nu se salvează "
-#~ "fișierul tip cache!"
-
-#~ msgid "Cannot navigate to '%s' as it has not been found in the file system!"
-#~ msgstr ""
-#~ "Nu se poate naviga către '%s' pentru că nu a fost găsit în sistemul de "
-#~ "fișiere!"
-
-#~ msgid "Error loading image:"
-#~ msgstr "Eroare la încărcarea imaginii:"
-
-#~ msgid "No pixels with transparency > 128 in image..."
-#~ msgstr "Nici un pixel cu transparența > 128 în imagine..."
-
-#~ msgid "Parent has no solid faces to populate."
-#~ msgstr "Părintele nu are fețe solide pentru a fi populate."
-
-#~ msgid "Couldn't map area."
-#~ msgstr "Nu s-a putut mapa zona."
-
-#~ msgid "Faces contain no area!"
-#~ msgstr "Unele fețe nu conțin zonă!"
-
-#~ msgid "No faces!"
-#~ msgstr "Nici o zonă!"
-
-#, fuzzy
-#~ msgid "Error: could not load file."
-#~ msgstr "Directorul nu a putut fi creat."
-
-#~ msgid "Doppler Enable"
-#~ msgstr "Activare mod Doppler"
-
-#~ msgid "Scale Mode (R)"
-#~ msgstr "Mod Redimensionare (R)"
-
-#~ msgid "Tool Scale"
-#~ msgstr "Unealtă Dimensiune"
-
-#, fuzzy
-#~ msgid "Previous Folder"
-#~ msgstr "Fila anterioară"
-
-#, fuzzy
-#~ msgid "Next Folder"
-#~ msgstr "Creați Director"
-
-#, fuzzy
-#~ msgid "Open in an external image editor."
-#~ msgstr "Deschide Editorul următor"
-
-#~ msgid "Reverse"
-#~ msgstr "Revers"
-
-#~ msgid "View log"
-#~ msgstr "Vizualizează fișiere log"
-
-#, fuzzy
-#~ msgid "Enabled Classes"
-#~ msgstr "Căutare Clase"
-
-#~ msgid "Update Always"
-#~ msgstr "Actualizează Întotdeauna"
-
-#~ msgid "Path to Node:"
-#~ msgstr "Drum la Nod:"
-
-#~ msgid "Delete selected files?"
-#~ msgstr "Ştergeți fişierele selectate?"
-
-#~ msgid "There is no 'res://default_bus_layout.tres' file."
-#~ msgstr "Nu există nici un fişier 'res://default_bus_layout.tres'."
-
-#~ msgid "Go to parent folder"
-#~ msgstr "Accesați Directorul Părinte"
-
-#~ msgid "Open Scene(s)"
-#~ msgstr "Deschide Scena(ele)"
-
-#~ msgid "Previous Directory"
-#~ msgstr "Directorul Anterior"
-
-#~ msgid "Next Directory"
-#~ msgstr "Directorul Urmator"
-
-#~ msgid "Ease in"
-#~ msgstr "Facilitare în"
-
-#~ msgid "Ease out"
-#~ msgstr "Facilitare din"
-
-#~ msgid "Create Convex Static Body"
-#~ msgstr "Creează un Corp Static Convex"
-
-#, fuzzy
-#~ msgid "Snap (s): "
-#~ msgstr "Pas (s):"
-
-#, fuzzy
-#~ msgid "Insert keys."
-#~ msgstr "Inserează Note"
-
-#~ msgid "Instance the selected scene(s) as child of the selected node."
-#~ msgstr "Instanțiază scena(ele) selectată ca un copil al nodului selectat."
-
-#~ msgid "Line:"
-#~ msgstr "Linie:"
-
-#~ msgid "Col:"
-#~ msgstr "Col:"
-
-#, fuzzy
-#~ msgid "Add Split"
-#~ msgstr "Adaugă punct"
-
-#, fuzzy
-#~ msgid "Remove Split"
-#~ msgstr "Elimină punct"
-
-#, fuzzy
-#~ msgid "Poly"
-#~ msgstr "Editează Poligon"
-
-#, fuzzy
-#~ msgid "Splits"
-#~ msgstr "Divizare cale"
-
-#~ msgid "Create Poly"
-#~ msgstr "Crează Poligon"
-
-#~ msgid "Create a new polygon from scratch"
-#~ msgstr "Crează un nou poligon de la zero"
-
-#, fuzzy
-#~ msgid "Zoom out"
-#~ msgstr "Zoom-ați  Afară"
-
-#, fuzzy
-#~ msgid "Zoom in"
-#~ msgstr "Zoom-ați  În"
-
-#~ msgid "Create Poly3D"
-#~ msgstr "Creează Poligon3D"
-
-#~ msgid ""
-#~ "No OccluderPolygon2D resource on this node.\n"
-#~ "Create and assign one?"
-#~ msgstr ""
-#~ "Nicio resursă OccluderPolygon2D în acest nod.\n"
-#~ "Vrei să creezi și să atribui una?"
-
-#~ msgid "LMB: Move Point."
-#~ msgstr "LMB: Mișcă Punctul."
-
-#~ msgid "Ctrl+LMB: Split Segment."
-#~ msgstr "Ctrl+LMB: Despică Segmentul."
-
-#~ msgid "RMB: Erase Point."
-#~ msgstr "RMB: Șterge Punctul."
-
-#, fuzzy
-#~ msgid "Zoom:"
-#~ msgstr "Zoom-ați  În"
-
-#~ msgid "Class List:"
-#~ msgstr "Listă de Clase:"
-
-#~ msgid "Public Methods"
-#~ msgstr "Metode Publice"
-
-#~ msgid "Public Methods:"
-#~ msgstr "Metode Publice:"
-
-#~ msgid "GUI Theme Items:"
-#~ msgstr "Obiecte Tema Interfața Grafică:"
-
-#, fuzzy
-#~ msgid "Toggle folder status as Favorite."
-#~ msgstr "Marchează statutul directorului ca Favorit"
-
-#, fuzzy
-#~ msgid "Whole words"
-#~ msgstr "Cuvinte Complete"
-
-#, fuzzy
-#~ msgid "Match case"
-#~ msgstr "Potrivește Caz-ul"
-
-#~ msgid "Ok"
-#~ msgstr "Bine"
-
-#, fuzzy
-#~ msgid "Search in files"
-#~ msgstr "Căutare Clase"
-
-#~ msgid "Bake!"
-#~ msgstr "Coacere!"
-
-#~ msgid "Bake the navigation mesh."
-#~ msgstr "Procesează mesh-ul de navigare."
-
-#~ msgid "Modify Color Ramp"
-#~ msgstr "Modifică Rampa de Culori"
-
-#~ msgid "Move Anim Track Up"
-#~ msgstr "Mută Pista Anim Sus"
-
-#~ msgid "Move Anim Track Down"
-#~ msgstr "Mută Pista Anim Jos"
-
-#~ msgid "Anim Track Change Interpolation"
-#~ msgstr "Anim Schimbați Interpolarea Pistei"
-
-#~ msgid "Anim Track Change Value Mode"
-#~ msgstr "Anim Schimbați Modul Valorii Pistei"
-
-#~ msgid "Anim Track Change Wrap Mode"
-#~ msgstr "Anim Schimbați Modul Învelirii Pistei"
-
-#~ msgid "Edit Node Curve"
-#~ msgstr "Editați Curba Nodului"
-
-#~ msgid "Edit Selection Curve"
-#~ msgstr "Editați Curba Selecției"
-
-#~ msgid "Anim Add Key"
-#~ msgstr "Anim Adaugați Cheie"
-
-#~ msgid "In"
-#~ msgstr "În"
-
-#~ msgid "Out"
-#~ msgstr "Afară"
-
-#~ msgid "In-Out"
-#~ msgstr "Înăuntru-Afară"
-
-#~ msgid "Out-In"
-#~ msgstr "Afară-Înăuntru"
-
-#~ msgid "Anim Create Typed Value Key"
-#~ msgstr "Anim Creați Cheie Valoare Typed"
-
-#~ msgid "Anim Add Call Track"
-#~ msgstr "Anim Adăugați Pistă Chemare"
-
-#~ msgid "Length (s):"
-#~ msgstr "Lungime (s):"
-
-#~ msgid "Cursor step snap (in seconds)."
-#~ msgstr "Pas de Cursor Snap (în secunde)."
-
-#~ msgid "Enable/Disable looping in animation."
-#~ msgstr "Activați / Dezactivați Repetiția în Animație."
-
-#~ msgid "Add new tracks."
-#~ msgstr "Adăugați piste noi."
-
-#~ msgid "Move current track up."
-#~ msgstr "Mișcați pista curentă sus."
-
-#~ msgid "Move current track down."
-#~ msgstr "Mișcați pista curentă jos."
-
-#~ msgid "Track tools"
-#~ msgstr "Unelte Pistă"
-
-#~ msgid "Enable editing of individual keys by clicking them."
-#~ msgstr "Activați editarea de chei individuale prin clic."
-
-#~ msgid "Key"
-#~ msgstr "Cheie"
-
-#~ msgid "Call Functions in Which Node?"
-#~ msgstr "Chemați Funcții în Care Nod?"
-
-#~ msgid "Thanks!"
-#~ msgstr "Mulţumiri!"
-
-#~ msgid "I see..."
-#~ msgstr "Am înțeles..."
-
-#~ msgid "Ugh"
-#~ msgstr "Uh"
-
-#~ msgid "Stop Profiling"
-#~ msgstr "Oprește Profilarea"
-
-#~ msgid "Start Profiling"
-#~ msgstr "Pornește Profilarea"
-
-#~ msgid "Default (Same as Editor)"
-#~ msgstr "Implicit (Asemănător ca Editor)"
-
-#~ msgid "Create new animation in player."
-#~ msgstr "Creează o nouă animație în player."
-
-#~ msgid "Load animation from disk."
-#~ msgstr "Încarcă animație de pe disc."
-
-#~ msgid "Load an animation from disk."
-#~ msgstr "Încarcă o animație de pe disc."
-
-#~ msgid "Save the current animation"
-#~ msgstr "Salvează actuala animație"
-
-#~ msgid "Edit Target Blend Times"
-#~ msgstr "Editează Timpul de Amestecare al Țintei"
-
-#~ msgid "Copy Animation"
-#~ msgstr "Copiză Animație"
-
-#~ msgid "Fetching:"
-#~ msgstr "Se Preia(u):"
-
-#~ msgid "prev"
-#~ msgstr "anterior"
-
-#~ msgid "next"
-#~ msgstr "următorul"
-
-#~ msgid "last"
-#~ msgstr "ultimul"
-
-#~ msgid "Edit IK Chain"
-#~ msgstr "Editează Lanț IK"
-
-#~ msgid "Drag pivot from mouse position"
-#~ msgstr "Trage pivotul de la poziția mouse-ului"
-
-#~ msgid "Set pivot at mouse position"
-#~ msgstr "Setează pivotul la poziția mouse-ului"
-
-#~ msgid "Add/Remove Color Ramp Point"
-#~ msgstr "Adaugă/Elimină Punctul Rampei de Culori"
-
-#~ msgid "Clear!"
-#~ msgstr "Curăță!"

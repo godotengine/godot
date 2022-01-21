@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -86,6 +86,10 @@ void Window::set_size(const Size2i &p_size) {
 
 Size2i Window::get_size() const {
 	return size;
+}
+
+void Window::reset_size() {
+	set_size(Size2i());
 }
 
 Size2i Window::get_real_size() const {
@@ -276,6 +280,11 @@ void Window::_clear_window() {
 
 	DisplayServer::get_singleton()->delete_sub_window(window_id);
 	window_id = DisplayServer::INVALID_WINDOW_ID;
+
+	// If closing window was focused and has a parent, return focus.
+	if (focused && transient_parent) {
+		transient_parent->grab_focus();
+	}
 
 	_update_viewport_size();
 	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
@@ -556,9 +565,12 @@ void Window::_update_viewport_size() {
 	float font_oversampling = 1.0;
 
 	if (content_scale_mode == CONTENT_SCALE_MODE_DISABLED || content_scale_size.x == 0 || content_scale_size.y == 0) {
-		stretch_transform = Transform2D();
+		font_oversampling = content_scale_factor;
 		final_size = size;
+		final_size_override = Size2(size) / content_scale_factor;
 
+		stretch_transform = Transform2D();
+		stretch_transform.scale(Size2(content_scale_factor, content_scale_factor));
 	} else {
 		//actual screen video mode
 		Size2 video_mode = size;
@@ -630,9 +642,9 @@ void Window::_update_viewport_size() {
 			} break;
 			case CONTENT_SCALE_MODE_CANVAS_ITEMS: {
 				final_size = screen_size;
-				final_size_override = viewport_size;
+				final_size_override = viewport_size / content_scale_factor;
 				attach_to_screen_rect = Rect2(margin, screen_size);
-				font_oversampling = screen_size.x / viewport_size.x;
+				font_oversampling = (screen_size.x / viewport_size.x) * content_scale_factor;
 
 				Size2 scale = Vector2(screen_size) / Vector2(final_size_override);
 				stretch_transform.scale(scale);
@@ -821,6 +833,16 @@ Window::ContentScaleAspect Window::get_content_scale_aspect() const {
 	return content_scale_aspect;
 }
 
+void Window::set_content_scale_factor(real_t p_factor) {
+	ERR_FAIL_COND(p_factor <= 0);
+	content_scale_factor = p_factor;
+	_update_viewport_size();
+}
+
+real_t Window::get_content_scale_factor() const {
+	return content_scale_factor;
+}
+
 void Window::set_use_font_oversampling(bool p_oversampling) {
 	if (is_inside_tree() && window_id != DisplayServer::MAIN_WINDOW_ID) {
 		ERR_FAIL_MSG("Only the root window can set and use font oversampling.");
@@ -895,7 +917,7 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	if (EngineDebugger::is_active()) {
 		//quit from game window using F8
 		Ref<InputEventKey> k = p_ev;
-		if (k.is_valid() && k->is_pressed() && !k->is_echo() && k->get_keycode() == KEY_F8) {
+		if (k.is_valid() && k->is_pressed() && !k->is_echo() && k->get_keycode() == Key::F8) {
 			EngineDebugger::get_singleton()->send_message("request_quit", Array());
 		}
 	}
@@ -1410,6 +1432,7 @@ void Window::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &Window::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &Window::get_size);
+	ClassDB::bind_method(D_METHOD("reset_size"), &Window::reset_size);
 
 	ClassDB::bind_method(D_METHOD("get_real_size"), &Window::get_real_size);
 
@@ -1462,6 +1485,9 @@ void Window::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_content_scale_aspect", "aspect"), &Window::set_content_scale_aspect);
 	ClassDB::bind_method(D_METHOD("get_content_scale_aspect"), &Window::get_content_scale_aspect);
+
+	ClassDB::bind_method(D_METHOD("set_content_scale_factor", "factor"), &Window::set_content_scale_factor);
+	ClassDB::bind_method(D_METHOD("get_content_scale_factor"), &Window::get_content_scale_factor);
 
 	ClassDB::bind_method(D_METHOD("set_use_font_oversampling", "enable"), &Window::set_use_font_oversampling);
 	ClassDB::bind_method(D_METHOD("is_using_font_oversampling"), &Window::is_using_font_oversampling);
@@ -1534,6 +1560,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "content_scale_size"), "set_content_scale_size", "get_content_scale_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_mode", PROPERTY_HINT_ENUM, "Disabled,Canvas Items,Viewport"), "set_content_scale_mode", "get_content_scale_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_aspect", PROPERTY_HINT_ENUM, "Ignore,Keep,Keep Width,Keep Height,Expand"), "set_content_scale_aspect", "get_content_scale_aspect");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "content_scale_factor"), "set_content_scale_factor", "get_content_scale_factor");
 
 	ADD_GROUP("Theme", "theme_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
@@ -1552,6 +1579,7 @@ void Window::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("go_back_requested"));
 	ADD_SIGNAL(MethodInfo("visibility_changed"));
 	ADD_SIGNAL(MethodInfo("about_to_popup"));
+	ADD_SIGNAL(MethodInfo("theme_changed"));
 
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
 

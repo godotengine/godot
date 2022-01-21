@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -67,10 +67,10 @@ void EditorHelpSearch::_search_box_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> key = p_event;
 	if (key.is_valid()) {
 		switch (key->get_keycode()) {
-			case KEY_UP:
-			case KEY_DOWN:
-			case KEY_PAGEUP:
-			case KEY_PAGEDOWN: {
+			case Key::UP:
+			case Key::DOWN:
+			case Key::PAGEUP:
+			case Key::PAGEDOWN: {
 				results_tree->gui_input(key);
 				search_box->accept_event();
 			} break;
@@ -161,7 +161,7 @@ void EditorHelpSearch::popup_dialog(const String &p_term) {
 		popup_centered_ratio(0.5F);
 	}
 
-	if (p_term == "") {
+	if (p_term.is_empty()) {
 		search_box->clear();
 	} else {
 		if (old_term == p_term) {
@@ -226,7 +226,9 @@ EditorHelpSearch::EditorHelpSearch() {
 	filter_combo->add_item(TTR("Display All"), SEARCH_ALL);
 	filter_combo->add_separator();
 	filter_combo->add_item(TTR("Classes Only"), SEARCH_CLASSES);
+	filter_combo->add_item(TTR("Constructors Only"), SEARCH_CONSTRUCTORS);
 	filter_combo->add_item(TTR("Methods Only"), SEARCH_METHODS);
+	filter_combo->add_item(TTR("Operators Only"), SEARCH_OPERATORS);
 	filter_combo->add_item(TTR("Signals Only"), SEARCH_SIGNALS);
 	filter_combo->add_item(TTR("Constants Only"), SEARCH_CONSTANTS);
 	filter_combo->add_item(TTR("Properties Only"), SEARCH_PROPERTIES);
@@ -329,11 +331,22 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 
 		// Match class name.
 		if (search_flags & SEARCH_CLASSES) {
-			match.name = term == "" || _match_string(term, class_doc.name);
+			match.name = term.is_empty() || _match_string(term, class_doc.name);
 		}
 
 		// Match members if the term is long enough.
 		if (term.length() > 1) {
+			if (search_flags & SEARCH_CONSTRUCTORS) {
+				for (int i = 0; i < class_doc.constructors.size(); i++) {
+					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.constructors[i].name : class_doc.constructors[i].name.to_lower();
+					if (method_name.find(term) > -1 ||
+							(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
+							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
+							(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
+						match.constructors.push_back(const_cast<DocData::MethodDoc *>(&class_doc.constructors[i]));
+					}
+				}
+			}
 			if (search_flags & SEARCH_METHODS) {
 				for (int i = 0; i < class_doc.methods.size(); i++) {
 					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.methods[i].name : class_doc.methods[i].name.to_lower();
@@ -342,6 +355,17 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
 							(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
 						match.methods.push_back(const_cast<DocData::MethodDoc *>(&class_doc.methods[i]));
+					}
+				}
+			}
+			if (search_flags & SEARCH_OPERATORS) {
+				for (int i = 0; i < class_doc.operators.size(); i++) {
+					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.operators[i].name : class_doc.operators[i].name.to_lower();
+					if (method_name.find(term) > -1 ||
+							(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
+							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
+							(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
+						match.operators.push_back(const_cast<DocData::MethodDoc *>(&class_doc.operators[i]));
 					}
 				}
 			}
@@ -489,7 +513,7 @@ TreeItem *EditorHelpSearch::Runner::_create_class_hierarchy(const ClassMatch &p_
 
 	// Ensure parent nodes are created first.
 	TreeItem *parent = root_item;
-	if (p_match.doc->inherits != "") {
+	if (!p_match.doc->inherits.is_empty()) {
 		if (class_items.has(p_match.doc->inherits)) {
 			parent = class_items[p_match.doc->inherits];
 		} else {
@@ -534,7 +558,7 @@ TreeItem *EditorHelpSearch::Runner::_create_method_item(TreeItem *p_parent, cons
 	for (int i = 0; i < p_doc->arguments.size(); i++) {
 		const DocData::ArgumentDoc &arg = p_doc->arguments[i];
 		tooltip += arg.type + " " + arg.name;
-		if (arg.default_value != "") {
+		if (!arg.default_value.is_empty()) {
 			tooltip += " = " + arg.default_value;
 		}
 		if (i < p_doc->arguments.size() - 1) {
@@ -550,7 +574,7 @@ TreeItem *EditorHelpSearch::Runner::_create_signal_item(TreeItem *p_parent, cons
 	for (int i = 0; i < p_doc->arguments.size(); i++) {
 		const DocData::ArgumentDoc &arg = p_doc->arguments[i];
 		tooltip += arg.type + " " + arg.name;
-		if (arg.default_value != "") {
+		if (!arg.default_value.is_empty()) {
 			tooltip += " = " + arg.default_value;
 		}
 		if (i < p_doc->arguments.size() - 1) {

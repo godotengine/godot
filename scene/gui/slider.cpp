@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,7 +55,7 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
 				Ref<Texture2D> grabber = get_theme_icon(mouse_inside || has_focus() ? "grabber_highlight" : "grabber");
 				grab.pos = orientation == VERTICAL ? mb->get_position().y : mb->get_position().x;
@@ -70,14 +70,19 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				grab.active = true;
 				grab.uvalue = get_as_ratio();
+
+				emit_signal(SNAME("drag_started"));
 			} else {
 				grab.active = false;
+
+				const bool value_changed = !Math::is_equal_approx((double)grab.uvalue, get_as_ratio());
+				emit_signal(SNAME("drag_ended"), value_changed);
 			}
 		} else if (scrollable) {
-			if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
+			if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
 				grab_focus();
 				set_value(get_value() + get_step());
-			} else if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
+			} else if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 				grab_focus();
 				set_value(get_value() - get_step());
 			}
@@ -142,7 +147,7 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 void Slider::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			minimum_size_changed();
+			update_minimum_size();
 			update();
 		} break;
 		case NOTIFICATION_MOUSE_ENTER: {
@@ -263,6 +268,9 @@ void Slider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_editable"), &Slider::is_editable);
 	ClassDB::bind_method(D_METHOD("set_scrollable", "scrollable"), &Slider::set_scrollable);
 	ClassDB::bind_method(D_METHOD("is_scrollable"), &Slider::is_scrollable);
+
+	ADD_SIGNAL(MethodInfo("drag_started"));
+	ADD_SIGNAL(MethodInfo("drag_ended", PropertyInfo(Variant::BOOL, "value_changed")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrollable"), "set_scrollable", "is_scrollable");

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,6 +38,15 @@
 
 #include <avrt.h>
 
+#if defined(GLES3_ENABLED)
+#include "drivers/gles3/rasterizer_gles3.h"
+#endif
+
+#if defined(__GNUC__)
+// Workaround GCC warning from -Wcast-function-type.
+#define GetProcAddress (void *)GetProcAddress
+#endif
+
 static String format_error_message(DWORD id) {
 	LPWSTR messageBuffer = nullptr;
 	size_t size = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -50,6 +59,15 @@ static String format_error_message(DWORD id) {
 	return msg;
 }
 
+static void track_mouse_leave_event(HWND hWnd) {
+	TRACKMOUSEEVENT tme;
+	tme.cbSize = sizeof(TRACKMOUSEEVENT);
+	tme.dwFlags = TME_LEAVE;
+	tme.hwndTrack = hWnd;
+	tme.dwHoverTime = HOVER_DEFAULT;
+	TrackMouseEvent(&tme);
+}
+
 bool DisplayServerWindows::has_feature(Feature p_feature) const {
 	switch (p_feature) {
 		case FEATURE_SUBWINDOWS:
@@ -59,7 +77,6 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 		case FEATURE_CLIPBOARD:
 		case FEATURE_CURSOR_SHAPE:
 		case FEATURE_CUSTOM_CURSOR_SHAPE:
-		case FEATURE_CONSOLE_WINDOW:
 		case FEATURE_IME:
 		case FEATURE_WINDOW_TRANSPARENCY:
 		case FEATURE_HIDPI:
@@ -529,8 +546,13 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 	}
 
 #ifdef VULKAN_ENABLED
-	if (rendering_driver == "vulkan") {
+	if (context_vulkan) {
 		context_vulkan->window_destroy(p_window);
+	}
+#endif
+#ifdef GLES3_ENABLED
+	if (gl_manager) {
+		gl_manager->window_destroy(p_window);
 	}
 #endif
 
@@ -540,6 +562,12 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 	}
 	DestroyWindow(windows[p_window].hWnd);
 	windows.erase(p_window);
+}
+
+void DisplayServerWindows::gl_window_make_current(DisplayServer::WindowID p_window_id) {
+#if defined(GLES3_ENABLED)
+	gl_manager->window_make_current(p_window_id);
+#endif
 }
 
 void DisplayServerWindows::window_attach_instance_id(ObjectID p_instance, WindowID p_window) {
@@ -646,8 +674,20 @@ void DisplayServerWindows::window_set_current_screen(int p_screen, WindowID p_wi
 	ERR_FAIL_COND(!windows.has(p_window));
 	ERR_FAIL_INDEX(p_screen, get_screen_count());
 
-	Vector2 ofs = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));
-	window_set_position(ofs + screen_get_position(p_screen), p_window);
+	const WindowData &wd = windows[p_window];
+	if (wd.fullscreen) {
+		int cs = window_get_current_screen(p_window);
+		if (cs == p_screen) {
+			return;
+		}
+		Point2 pos = screen_get_position(p_screen);
+		Size2 size = screen_get_size(p_screen);
+
+		MoveWindow(wd.hWnd, pos.x, pos.y, size.width, size.height, TRUE);
+	} else {
+		Vector2 ofs = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));
+		window_set_position(ofs + screen_get_position(p_screen), p_window);
+	}
 }
 
 Point2i DisplayServerWindows::window_get_position(WindowID p_window) const {
@@ -808,8 +848,13 @@ void DisplayServerWindows::window_set_size(const Size2i p_size, WindowID p_windo
 	wd.height = h;
 
 #if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
+	if (context_vulkan) {
 		context_vulkan->window_resize(p_window, w, h);
+	}
+#endif
+#if defined(GLES3_ENABLED)
+	if (gl_manager) {
+		gl_manager->window_resize(p_window, w, h);
 	}
 #endif
 
@@ -1173,20 +1218,6 @@ void DisplayServerWindows::window_set_ime_position(const Point2i &p_pos, WindowI
 	ImmReleaseContext(wd.hWnd, himc);
 }
 
-void DisplayServerWindows::console_set_visible(bool p_enabled) {
-	_THREAD_SAFE_METHOD_
-
-	if (console_visible == p_enabled) {
-		return;
-	}
-	ShowWindow(GetConsoleWindow(), p_enabled ? SW_SHOW : SW_HIDE);
-	console_visible = p_enabled;
-}
-
-bool DisplayServerWindows::is_console_visible() const {
-	return console_visible;
-}
-
 void DisplayServerWindows::cursor_set_shape(CursorShape p_shape) {
 	_THREAD_SAFE_METHOD_
 
@@ -1475,13 +1506,13 @@ String DisplayServerWindows::keyboard_get_layout_language(int p_index) const {
 }
 
 Key DisplayServerWindows::keyboard_get_keycode_from_physical(Key p_keycode) const {
-	unsigned int modifiers = p_keycode & KEY_MODIFIER_MASK;
-	Key keycode_no_mod = (Key)(p_keycode & KEY_CODE_MASK);
+	Key modifiers = p_keycode & KeyModifierMask::MODIFIER_MASK;
+	Key keycode_no_mod = (Key)(p_keycode & KeyModifierMask::CODE_MASK);
 
-	if (keycode_no_mod == KEY_PRINT ||
-			keycode_no_mod == KEY_KP_ADD ||
-			keycode_no_mod == KEY_KP_5 ||
-			(keycode_no_mod >= KEY_0 && keycode_no_mod <= KEY_9)) {
+	if (keycode_no_mod == Key::PRINT ||
+			keycode_no_mod == Key::KP_ADD ||
+			keycode_no_mod == Key::KP_5 ||
+			(keycode_no_mod >= Key::KEY_0 && keycode_no_mod <= Key::KEY_9)) {
 		return p_keycode;
 	}
 
@@ -1501,10 +1532,10 @@ Key DisplayServerWindows::keyboard_get_keycode_from_physical(Key p_keycode) cons
 	// we limit these to ASCII to fix some layouts, including Arabic ones
 	if (char_code >= 32 && char_code <= 127) {
 		// Godot uses 'braces' instead of 'brackets'
-		if (char_code == KEY_BRACKETLEFT || char_code == KEY_BRACKETRIGHT) {
+		if (char_code == (unsigned int)Key::BRACKETLEFT || char_code == (unsigned int)Key::BRACKETRIGHT) {
 			char_code += 32;
 		}
-		return (Key)(char_code | modifiers);
+		return (Key)(char_code | (unsigned int)modifiers);
 	}
 
 	return (Key)(KeyMappingWindows::get_keysym(vk) | modifiers);
@@ -1540,7 +1571,7 @@ String DisplayServerWindows::keyboard_get_layout_name(int p_index) const {
 	GetKeyboardLayoutList(layout_count, layouts);
 
 	String ret = _get_full_layout_name_from_registry(layouts[p_index]); // Try reading full name from Windows registry, fallback to locale name if failed (e.g. on Wine).
-	if (ret == String()) {
+	if (ret.is_empty()) {
 		WCHAR buf[LOCALE_NAME_MAX_LENGTH];
 		memset(buf, 0, LOCALE_NAME_MAX_LENGTH * sizeof(WCHAR));
 		LCIDToLocaleName(MAKELCID(LOWORD(layouts[p_index]), SORT_DEFAULT), buf, LOCALE_NAME_MAX_LENGTH, 0);
@@ -1591,6 +1622,9 @@ void DisplayServerWindows::make_rendering_thread() {
 }
 
 void DisplayServerWindows::swap_buffers() {
+#if defined(GLES3_ENABLED)
+	gl_manager->swap_buffers();
+#endif
 }
 
 void DisplayServerWindows::set_native_icon(const String &p_filename) {
@@ -1742,17 +1776,18 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 void DisplayServerWindows::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 #if defined(VULKAN_ENABLED)
-	context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+	// TODO disabling for now
+	//context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
 #endif
 }
 
 DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 #if defined(VULKAN_ENABLED)
-	return context_vulkan->get_vsync_mode(p_window);
-#else
-	return DisplayServer::VSYNC_ENABLED;
+	//TODO disabling for now
+	//return context_vulkan->get_vsync_mode(p_window);
 #endif
+	return DisplayServer::VSYNC_ENABLED;
 }
 
 void DisplayServerWindows::set_context(Context p_context) {
@@ -1944,6 +1979,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				// Run a timer to prevent event catching warning if the focused window is closing.
 				windows[window_id].focus_timer_id = SetTimer(windows[window_id].hWnd, 2, USER_TIMER_MINIMUM, (TIMERPROC) nullptr);
 			}
+			if (wParam != WA_INACTIVE) {
+				track_mouse_leave_event(hWnd);
+			}
 			return 0; // Return to the message loop.
 		} break;
 		case WM_GETMINMAXINFO: {
@@ -2035,7 +2073,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				mm->set_position(c);
 				mm->set_global_position(c);
 				Input::get_singleton()->set_mouse_position(c);
-				mm->set_speed(Vector2(0, 0));
+				mm->set_velocity(Vector2(0, 0));
 
 				if (raw->data.mouse.usFlags == MOUSE_MOVE_RELATIVE) {
 					mm->set_relative(Vector2(raw->data.mouse.lLastX, raw->data.mouse.lLastY));
@@ -2140,7 +2178,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					}
 
 					Input::get_singleton()->set_mouse_position(mm->get_position());
-					mm->set_speed(Input::get_singleton()->get_last_mouse_speed());
+					mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
 
 					if (old_invalid) {
 						old_x = mm->get_position().x;
@@ -2228,12 +2266,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				outside = false;
 
 				// Once-off notification, must call again.
-				TRACKMOUSEEVENT tme;
-				tme.cbSize = sizeof(TRACKMOUSEEVENT);
-				tme.dwFlags = TME_LEAVE;
-				tme.hwndTrack = hWnd;
-				tme.dwHoverTime = HOVER_DEFAULT;
-				TrackMouseEvent(&tme);
+				track_mouse_leave_event(hWnd);
 			}
 
 			// Don't calculate relative mouse movement if we don't have focus in CAPTURED mode.
@@ -2287,7 +2320,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			Input::get_singleton()->set_mouse_position(mm->get_position());
-			mm->set_speed(Input::get_singleton()->get_last_mouse_speed());
+			mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
 
 			if (old_invalid) {
 				old_x = mm->get_position().x;
@@ -2334,12 +2367,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				outside = false;
 
 				// Once-off notification, must call again.
-				TRACKMOUSEEVENT tme;
-				tme.cbSize = sizeof(TRACKMOUSEEVENT);
-				tme.dwFlags = TME_LEAVE;
-				tme.hwndTrack = hWnd;
-				tme.dwHoverTime = HOVER_DEFAULT;
-				TrackMouseEvent(&tme);
+				track_mouse_leave_event(hWnd);
 			}
 
 			// Don't calculate relative mouse movement if we don't have focus in CAPTURED mode.
@@ -2393,7 +2421,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			Input::get_singleton()->set_mouse_position(mm->get_position());
-			mm->set_speed(Input::get_singleton()->get_last_mouse_speed());
+			mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
 
 			if (old_invalid) {
 				old_x = mm->get_position().x;
@@ -2437,41 +2465,41 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			switch (uMsg) {
 				case WM_LBUTTONDOWN: {
 					mb->set_pressed(true);
-					mb->set_button_index(MOUSE_BUTTON_LEFT);
+					mb->set_button_index(MouseButton::LEFT);
 				} break;
 				case WM_LBUTTONUP: {
 					mb->set_pressed(false);
-					mb->set_button_index(MOUSE_BUTTON_LEFT);
+					mb->set_button_index(MouseButton::LEFT);
 				} break;
 				case WM_MBUTTONDOWN: {
 					mb->set_pressed(true);
-					mb->set_button_index(MOUSE_BUTTON_MIDDLE);
+					mb->set_button_index(MouseButton::MIDDLE);
 				} break;
 				case WM_MBUTTONUP: {
 					mb->set_pressed(false);
-					mb->set_button_index(MOUSE_BUTTON_MIDDLE);
+					mb->set_button_index(MouseButton::MIDDLE);
 				} break;
 				case WM_RBUTTONDOWN: {
 					mb->set_pressed(true);
-					mb->set_button_index(MOUSE_BUTTON_RIGHT);
+					mb->set_button_index(MouseButton::RIGHT);
 				} break;
 				case WM_RBUTTONUP: {
 					mb->set_pressed(false);
-					mb->set_button_index(MOUSE_BUTTON_RIGHT);
+					mb->set_button_index(MouseButton::RIGHT);
 				} break;
 				case WM_LBUTTONDBLCLK: {
 					mb->set_pressed(true);
-					mb->set_button_index(MOUSE_BUTTON_LEFT);
+					mb->set_button_index(MouseButton::LEFT);
 					mb->set_double_click(true);
 				} break;
 				case WM_RBUTTONDBLCLK: {
 					mb->set_pressed(true);
-					mb->set_button_index(MOUSE_BUTTON_RIGHT);
+					mb->set_button_index(MouseButton::RIGHT);
 					mb->set_double_click(true);
 				} break;
 				case WM_MBUTTONDBLCLK: {
 					mb->set_pressed(true);
-					mb->set_button_index(MOUSE_BUTTON_MIDDLE);
+					mb->set_button_index(MouseButton::MIDDLE);
 					mb->set_double_click(true);
 				} break;
 				case WM_MOUSEWHEEL: {
@@ -2482,9 +2510,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					}
 
 					if (motion > 0) {
-						mb->set_button_index(MOUSE_BUTTON_WHEEL_UP);
+						mb->set_button_index(MouseButton::WHEEL_UP);
 					} else {
-						mb->set_button_index(MOUSE_BUTTON_WHEEL_DOWN);
+						mb->set_button_index(MouseButton::WHEEL_DOWN);
 					}
 					mb->set_factor(fabs((double)motion / (double)WHEEL_DELTA));
 				} break;
@@ -2496,34 +2524,34 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					}
 
 					if (motion < 0) {
-						mb->set_button_index(MOUSE_BUTTON_WHEEL_LEFT);
+						mb->set_button_index(MouseButton::WHEEL_LEFT);
 					} else {
-						mb->set_button_index(MOUSE_BUTTON_WHEEL_RIGHT);
+						mb->set_button_index(MouseButton::WHEEL_RIGHT);
 					}
 					mb->set_factor(fabs((double)motion / (double)WHEEL_DELTA));
 				} break;
 				case WM_XBUTTONDOWN: {
 					mb->set_pressed(true);
 					if (HIWORD(wParam) == XBUTTON1) {
-						mb->set_button_index(MOUSE_BUTTON_XBUTTON1);
+						mb->set_button_index(MouseButton::MB_XBUTTON1);
 					} else {
-						mb->set_button_index(MOUSE_BUTTON_XBUTTON2);
+						mb->set_button_index(MouseButton::MB_XBUTTON2);
 					}
 				} break;
 				case WM_XBUTTONUP: {
 					mb->set_pressed(false);
 					if (HIWORD(wParam) == XBUTTON1) {
-						mb->set_button_index(MOUSE_BUTTON_XBUTTON1);
+						mb->set_button_index(MouseButton::MB_XBUTTON1);
 					} else {
-						mb->set_button_index(MOUSE_BUTTON_XBUTTON2);
+						mb->set_button_index(MouseButton::MB_XBUTTON2);
 					}
 				} break;
 				case WM_XBUTTONDBLCLK: {
 					mb->set_pressed(true);
 					if (HIWORD(wParam) == XBUTTON1) {
-						mb->set_button_index(MOUSE_BUTTON_XBUTTON1);
+						mb->set_button_index(MouseButton::MB_XBUTTON1);
 					} else {
-						mb->set_button_index(MOUSE_BUTTON_XBUTTON2);
+						mb->set_button_index(MouseButton::MB_XBUTTON2);
 					}
 					mb->set_double_click(true);
 				} break;
@@ -2537,9 +2565,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mb->set_alt_pressed(alt_mem);
 			// mb->is_alt_pressed()=(wParam&MK_MENU)!=0;
 			if (mb->is_pressed()) {
-				last_button_state |= MouseButton(1 << (mb->get_button_index() - 1));
+				last_button_state |= mouse_button_to_mask(mb->get_button_index());
 			} else {
-				last_button_state &= (MouseButton) ~(1 << (mb->get_button_index() - 1));
+				last_button_state &= ~mouse_button_to_mask(mb->get_button_index());
 			}
 			mb->set_button_mask(last_button_state);
 
@@ -2575,11 +2603,11 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mb->set_global_position(mb->get_position());
 
 			Input::get_singleton()->parse_input_event(mb);
-			if (mb->is_pressed() && mb->get_button_index() > 3 && mb->get_button_index() < 8) {
+			if (mb->is_pressed() && mb->get_button_index() >= MouseButton::WHEEL_UP && mb->get_button_index() <= MouseButton::WHEEL_RIGHT) {
 				// Send release for mouse wheel.
 				Ref<InputEventMouseButton> mbd = mb->duplicate();
 				mbd->set_window_id(window_id);
-				last_button_state &= (MouseButton) ~(1 << (mbd->get_button_index() - 1));
+				last_button_state &= ~mouse_button_to_mask(mbd->get_button_index());
 				mbd->set_button_mask(last_button_state);
 				mbd->set_pressed(false);
 				Input::get_singleton()->parse_input_event(mbd);
@@ -2614,7 +2642,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					windows[window_id].height = window_h;
 
 #if defined(VULKAN_ENABLED)
-					if ((rendering_driver == "vulkan") && window_created) {
+					if (context_vulkan && window_created) {
 						context_vulkan->window_resize(window_id, windows[window_id].width, windows[window_id].height);
 					}
 #endif
@@ -2785,6 +2813,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_DEVICECHANGE: {
 			joypad->probe_joypads();
 		} break;
+		case WM_DESTROY: {
+			Input::get_singleton()->flush_buffered_events();
+		} break;
 		case WM_SETCURSOR: {
 			if (LOWORD(lParam) == HTCLIENT) {
 				if (windows[window_id].window_has_focus && (mouse_mode == MOUSE_MODE_HIDDEN || mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN)) {
@@ -2929,7 +2960,7 @@ void DisplayServerWindows::_process_key_events() {
 
 				if ((ke.lParam & (1 << 24)) && (ke.wParam == VK_RETURN)) {
 					// Special case for Numpad Enter key.
-					k->set_keycode(KEY_KP_ENTER);
+					k->set_keycode(Key::KP_ENTER);
 				} else {
 					k->set_keycode((Key)KeyMappingWindows::get_keysym(ke.wParam));
 				}
@@ -3076,7 +3107,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		}
 
 #ifdef VULKAN_ENABLED
-		if (rendering_driver == "vulkan") {
+		if (context_vulkan) {
 			if (context_vulkan->window_create(id, p_vsync_mode, wd.hWnd, hInstance, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top) == -1) {
 				memdelete(context_vulkan);
 				context_vulkan = nullptr;
@@ -3086,15 +3117,14 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		}
 #endif
 
+#ifdef GLES3_ENABLED
+		if (gl_manager) {
+			Error err = gl_manager->window_create(id, wd.hWnd, hInstance, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top);
+			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Failed to create an OpenGL window.");
+		}
+#endif
+
 		RegisterTouchWindow(wd.hWnd, 0);
-
-		TRACKMOUSEEVENT tme;
-		tme.cbSize = sizeof(TRACKMOUSEEVENT);
-		tme.dwFlags = TME_LEAVE;
-		tme.hwndTrack = wd.hWnd;
-		tme.dwHoverTime = HOVER_DEFAULT;
-		TrackMouseEvent(&tme);
-
 		DragAcceptFiles(wd.hWnd, true);
 
 		if ((tablet_get_current_driver() == "wintab") && wintab_available) {
@@ -3207,7 +3237,6 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	shift_mem = false;
 	control_mem = false;
 	meta_mem = false;
-	console_visible = IsWindowVisible(GetConsoleWindow());
 	hInstance = ((OS_Windows *)OS::get_singleton())->get_hinstance();
 
 	pressrc = 0;
@@ -3215,6 +3244,8 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	mouse_mode = MOUSE_MODE_VISIBLE;
 
 	outside = true;
+
+	rendering_driver = p_rendering_driver;
 
 	// Note: Wacom WinTab driver API for pen input, for devices incompatible with Windows Ink.
 	HMODULE wintab_lib = LoadLibraryW(L"wintab32.dll");
@@ -3292,8 +3323,6 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		use_raw_input = false;
 	}
 
-	rendering_driver = "vulkan";
-
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
 		context_vulkan = memnew(VulkanContextWindows);
@@ -3305,27 +3334,23 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 	}
 #endif
+	// Init context and rendering device
+#if defined(GLES3_ENABLED)
 
-#if defined(OPENGL_ENABLED)
-	if (rendering_driver_index == VIDEO_DRIVER_GLES2) {
-		context_gles2 = memnew(ContextGL_Windows(hWnd, false));
+	if (rendering_driver == "opengl3") {
+		GLManager_Windows::ContextType opengl_api_type = GLManager_Windows::GLES_3_0_COMPATIBLE;
 
-		if (context_gles2->initialize() != OK) {
-			memdelete(context_gles2);
-			context_gles2 = nullptr;
-			ERR_FAIL_V(ERR_UNAVAILABLE);
+		gl_manager = memnew(GLManager_Windows(opengl_api_type));
+
+		if (gl_manager->initialize() != OK) {
+			memdelete(gl_manager);
+			gl_manager = nullptr;
+			r_error = ERR_UNAVAILABLE;
+			return;
 		}
 
-		context_gles2->set_use_vsync(video_mode.use_vsync);
-
-		if (RasterizerGLES2::is_viable() == OK) {
-			RasterizerGLES2::register_config();
-			RasterizerGLES2::make_current();
-		} else {
-			memdelete(context_gles2);
-			context_gles2 = nullptr;
-			ERR_FAIL_V(ERR_UNAVAILABLE);
-		}
+		//		gl_manager->set_use_vsync(current_videomode.use_vsync);
+		RasterizerGLES3::make_current();
 	}
 #endif
 
@@ -3386,8 +3411,8 @@ Vector<String> DisplayServerWindows::get_rendering_drivers_func() {
 #ifdef VULKAN_ENABLED
 	drivers.push_back("vulkan");
 #endif
-#ifdef OPENGL_ENABLED
-	drivers.push_back("opengl");
+#ifdef GLES3_ENABLED
+	drivers.push_back("opengl3");
 #endif
 
 	return drivers;
@@ -3396,7 +3421,7 @@ Vector<String> DisplayServerWindows::get_rendering_drivers_func() {
 DisplayServer *DisplayServerWindows::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	DisplayServer *ds = memnew(DisplayServerWindows(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error));
 	if (r_error != OK) {
-		OS::get_singleton()->alert("Your video card driver does not support any of the supported Vulkan versions.\n"
+		OS::get_singleton()->alert("Your video card driver does not support any of the supported Vulkan or OpenGL versions.\n"
 								   "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
 				"Unable to initialize Video driver");
 	}
@@ -3417,9 +3442,13 @@ DisplayServerWindows::~DisplayServerWindows() {
 		SetWindowLongPtr(windows[MAIN_WINDOW_ID].hWnd, GWLP_WNDPROC, (LONG_PTR)user_proc);
 	};
 
+#ifdef GLES3_ENABLED
+		// destroy windows .. NYI?
+#endif
+
 	if (windows.has(MAIN_WINDOW_ID)) {
 #ifdef VULKAN_ENABLED
-		if (rendering_driver == "vulkan") {
+		if (context_vulkan) {
 			context_vulkan->window_destroy(MAIN_WINDOW_ID);
 		}
 #endif
@@ -3431,18 +3460,25 @@ DisplayServerWindows::~DisplayServerWindows() {
 	}
 
 #if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
-		if (rendering_device_vulkan) {
-			rendering_device_vulkan->finalize();
-			memdelete(rendering_device_vulkan);
-		}
+	if (rendering_device_vulkan) {
+		rendering_device_vulkan->finalize();
+		memdelete(rendering_device_vulkan);
+		rendering_device_vulkan = nullptr;
+	}
 
-		if (context_vulkan)
-			memdelete(context_vulkan);
+	if (context_vulkan) {
+		memdelete(context_vulkan);
+		context_vulkan = nullptr;
 	}
 #endif
 
 	if (restore_mouse_trails > 1) {
 		SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, 0, 0);
 	}
+#ifdef GLES3_ENABLED
+	if (gl_manager) {
+		memdelete(gl_manager);
+		gl_manager = nullptr;
+	}
+#endif
 }

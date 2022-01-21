@@ -124,8 +124,11 @@ task zipCustomBuild(type: Zip) {
 def templateExcludedBuildTask() {
     // We exclude these gradle tasks so we can run the scons command manually.
     def excludedTasks = []
-    for (String buildType : supportedTargets) {
-        excludedTasks += ":lib:" + getSconsTaskName(buildType)
+    if (!isAndroidStudio()) {
+        logger.lifecycle("Excluding Android studio build tasks")
+        for (String buildType : supportedTargets) {
+            excludedTasks += ":lib:" + getSconsTaskName(buildType)
+        }
     }
     return excludedTasks
 }
@@ -155,12 +158,17 @@ def templateBuildTasks() {
     return tasks
 }
 
+def isAndroidStudio() {
+    def sysProps = System.getProperties()
+    return sysProps != null && sysProps['idea.platform.prefix'] != null
+}
+
 /**
  * Master task used to coordinate the tasks defined above to generate the set of Godot templates.
  */
-task generateGodotTemplates(type: GradleBuild) {
-    startParameter.excludedTaskNames = templateExcludedBuildTask()
-    tasks = templateBuildTasks()
+task generateGodotTemplates {
+    gradle.startParameter.excludedTaskNames += templateExcludedBuildTask()
+    dependsOn = templateBuildTasks()
 
     finalizedBy 'zipCustomBuild'
 }
@@ -168,12 +176,12 @@ task generateGodotTemplates(type: GradleBuild) {
 /**
  * Generates the same output as generateGodotTemplates but with dev symbols
  */
-task generateDevTemplate (type: GradleBuild) {
+task generateDevTemplate {
     // add parameter to set symbols to true
-    startParameter.projectProperties += [doNotStrip: true]
+    gradle.startParameter.projectProperties += [doNotStrip: true]
 
-    startParameter.excludedTaskNames = templateExcludedBuildTask()
-    tasks = templateBuildTasks()
+    gradle.startParameter.excludedTaskNames += templateExcludedBuildTask()
+    dependsOn = templateBuildTasks()
 
     finalizedBy 'zipCustomBuild'
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,10 +65,6 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 	"BPTC_RGBA",
 	"BPTC_RGBF",
 	"BPTC_RGBFU",
-	"PVRTC1_2", //pvrtc
-	"PVRTC1_2A",
-	"PVRTC1_4",
-	"PVRTC1_4A",
 	"ETC", //etc1
 	"ETC2_R11", //etc2
 	"ETC2_R11S", //signed", NOT srgb.
@@ -86,20 +82,14 @@ SaveEXRFunc Image::save_exr_func = nullptr;
 
 SavePNGBufferFunc Image::save_png_buffer_func = nullptr;
 
-void Image::_put_pixelb(int p_x, int p_y, uint32_t p_pixelsize, uint8_t *p_data, const uint8_t *p_pixel) {
-	uint32_t ofs = (p_y * width + p_x) * p_pixelsize;
-
-	for (uint32_t i = 0; i < p_pixelsize; i++) {
-		p_data[ofs + i] = p_pixel[i];
-	}
+void Image::_put_pixelb(int p_x, int p_y, uint32_t p_pixel_size, uint8_t *p_data, const uint8_t *p_pixel) {
+	uint32_t ofs = (p_y * width + p_x) * p_pixel_size;
+	memcpy(p_data + ofs, p_pixel, p_pixel_size);
 }
 
-void Image::_get_pixelb(int p_x, int p_y, uint32_t p_pixelsize, const uint8_t *p_data, uint8_t *p_pixel) {
-	uint32_t ofs = (p_y * width + p_x) * p_pixelsize;
-
-	for (uint32_t i = 0; i < p_pixelsize; i++) {
-		p_pixel[i] = p_data[ofs + i];
-	}
+void Image::_get_pixelb(int p_x, int p_y, uint32_t p_pixel_size, const uint8_t *p_data, uint8_t *p_pixel) {
+	uint32_t ofs = (p_y * width + p_x) * p_pixel_size;
+	memcpy(p_pixel, p_data + ofs, p_pixel_size);
 }
 
 int Image::get_format_pixel_size(Format p_format) {
@@ -154,14 +144,6 @@ int Image::get_format_pixel_size(Format p_format) {
 			return 1; //float /
 		case FORMAT_BPTC_RGBFU:
 			return 1; //unsigned float
-		case FORMAT_PVRTC1_2:
-			return 1; //pvrtc
-		case FORMAT_PVRTC1_2A:
-			return 1;
-		case FORMAT_PVRTC1_4:
-			return 1;
-		case FORMAT_PVRTC1_4A:
-			return 1;
 		case FORMAT_ETC:
 			return 1; //etc1
 		case FORMAT_ETC2_R11:
@@ -199,16 +181,6 @@ void Image::get_format_min_pixel_size(Format p_format, int &r_w, int &r_h) {
 			r_w = 4;
 			r_h = 4;
 		} break;
-		case FORMAT_PVRTC1_2:
-		case FORMAT_PVRTC1_2A: {
-			r_w = 16;
-			r_h = 8;
-		} break;
-		case FORMAT_PVRTC1_4A:
-		case FORMAT_PVRTC1_4: {
-			r_w = 8;
-			r_h = 8;
-		} break;
 		case FORMAT_ETC: {
 			r_w = 4;
 			r_h = 4;
@@ -241,10 +213,8 @@ void Image::get_format_min_pixel_size(Format p_format, int &r_w, int &r_h) {
 }
 
 int Image::get_format_pixel_rshift(Format p_format) {
-	if (p_format == FORMAT_DXT1 || p_format == FORMAT_RGTC_R || p_format == FORMAT_PVRTC1_4 || p_format == FORMAT_PVRTC1_4A || p_format == FORMAT_ETC || p_format == FORMAT_ETC2_R11 || p_format == FORMAT_ETC2_R11S || p_format == FORMAT_ETC2_RGB8 || p_format == FORMAT_ETC2_RGB8A1) {
+	if (p_format == FORMAT_DXT1 || p_format == FORMAT_RGTC_R || p_format == FORMAT_ETC || p_format == FORMAT_ETC2_R11 || p_format == FORMAT_ETC2_R11S || p_format == FORMAT_ETC2_RGB8 || p_format == FORMAT_ETC2_RGB8A1) {
 		return 1;
-	} else if (p_format == FORMAT_PVRTC1_2 || p_format == FORMAT_PVRTC1_2A) {
-		return 2;
 	} else {
 		return 0;
 	}
@@ -258,14 +228,6 @@ int Image::get_format_block_size(Format p_format) {
 		case FORMAT_RGTC_R: //bc4
 		case FORMAT_RGTC_RG: { //bc5		case case FORMAT_DXT1:
 
-			return 4;
-		}
-		case FORMAT_PVRTC1_2:
-		case FORMAT_PVRTC1_2A: {
-			return 4;
-		}
-		case FORMAT_PVRTC1_4A:
-		case FORMAT_PVRTC1_4: {
 			return 4;
 		}
 		case FORMAT_ETC: {
@@ -797,7 +759,7 @@ static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict
 					uint32_t interp_down = p01 + (((p11 - p01) * src_xofs_frac) >> FRAC_BITS);
 					uint32_t interp = interp_up + (((interp_down - interp_up) * src_yofs_frac) >> FRAC_BITS);
 					interp >>= FRAC_BITS;
-					p_dst[i * p_dst_width * CC + j * CC + l] = interp;
+					p_dst[i * p_dst_width * CC + j * CC + l] = uint8_t(interp);
 				} else if (sizeof(T) == 2) { //half float
 
 					float xofs_frac = float(src_xofs_frac) / (1 << FRAC_BITS);
@@ -2228,8 +2190,6 @@ bool Image::is_invisible() const {
 
 		} break;
 
-		case FORMAT_PVRTC1_2A:
-		case FORMAT_PVRTC1_4A:
 		case FORMAT_DXT3:
 		case FORMAT_DXT5: {
 			detected = true;
@@ -2270,8 +2230,6 @@ Image::AlphaMode Image::detect_alpha() const {
 			}
 
 		} break;
-		case FORMAT_PVRTC1_2A:
-		case FORMAT_PVRTC1_4A:
 		case FORMAT_DXT3:
 		case FORMAT_DXT5: {
 			detected = true;
@@ -2367,8 +2325,6 @@ Error Image::decompress() {
 		_image_decompress_bc(this);
 	} else if (format >= FORMAT_BPTC_RGBA && format <= FORMAT_BPTC_RGBFU && _image_decompress_bptc) {
 		_image_decompress_bptc(this);
-	} else if (format >= FORMAT_PVRTC1_2 && format <= FORMAT_PVRTC1_4A && _image_decompress_pvrtc) {
-		_image_decompress_pvrtc(this);
 	} else if (format == FORMAT_ETC && _image_decompress_etc1) {
 		_image_decompress_etc1(this);
 	} else if (format >= FORMAT_ETC2_R11 && format <= FORMAT_ETC2_RA_AS_RG && _image_decompress_etc2) {
@@ -2390,10 +2346,6 @@ Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels
 		case COMPRESS_S3TC: {
 			ERR_FAIL_COND_V(!_image_compress_bc_func, ERR_UNAVAILABLE);
 			_image_compress_bc_func(this, p_lossy_quality, p_channels);
-		} break;
-		case COMPRESS_PVRTC1_4: {
-			ERR_FAIL_COND_V(!_image_compress_pvrtc1_4bpp_func, ERR_UNAVAILABLE);
-			_image_compress_pvrtc1_4bpp_func(this);
 		} break;
 		case COMPRESS_ETC: {
 			ERR_FAIL_COND_V(!_image_compress_etc1_func, ERR_UNAVAILABLE);
@@ -2697,24 +2649,55 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 	}
 }
 
-void Image::fill(const Color &c) {
+// Repeats `p_pixel` `p_count` times in consecutive memory.
+// Results in the original pixel and `p_count - 1` subsequent copies of it.
+void Image::_repeat_pixel_over_subsequent_memory(uint8_t *p_pixel, int p_pixel_size, int p_count) {
+	int offset = 1;
+	for (int stride = 1; offset + stride <= p_count; stride *= 2) {
+		memcpy(p_pixel + offset * p_pixel_size, p_pixel, stride * p_pixel_size);
+		offset += stride;
+	}
+	if (offset < p_count) {
+		memcpy(p_pixel + offset * p_pixel_size, p_pixel, (p_count - offset) * p_pixel_size);
+	}
+}
+
+void Image::fill(const Color &p_color) {
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot fill in compressed or custom image formats.");
 
-	uint8_t *wp = data.ptrw();
-	uint8_t *dst_data_ptr = wp;
+	uint8_t *dst_data_ptr = data.ptrw();
 
 	int pixel_size = get_format_pixel_size(format);
 
-	// put first pixel with the format-aware API
-	set_pixel(0, 0, c);
+	// Put first pixel with the format-aware API.
+	_set_color_at_ofs(dst_data_ptr, 0, p_color);
 
-	for (int y = 0; y < height; y++) {
-		for (int x = 0; x < width; x++) {
-			uint8_t *dst = &dst_data_ptr[(y * width + x) * pixel_size];
+	_repeat_pixel_over_subsequent_memory(dst_data_ptr, pixel_size, width * height);
+}
 
-			for (int k = 0; k < pixel_size; k++) {
-				dst[k] = dst_data_ptr[k];
-			}
+void Image::fill_rect(const Rect2 &p_rect, const Color &p_color) {
+	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot fill rect in compressed or custom image formats.");
+
+	Rect2i r = Rect2i(0, 0, width, height).intersection(p_rect.abs());
+	if (r.has_no_area()) {
+		return;
+	}
+
+	uint8_t *dst_data_ptr = data.ptrw();
+
+	int pixel_size = get_format_pixel_size(format);
+
+	// Put first pixel with the format-aware API.
+	uint8_t *rect_first_pixel_ptr = &dst_data_ptr[(r.position.y * width + r.position.x) * pixel_size];
+	_set_color_at_ofs(rect_first_pixel_ptr, 0, p_color);
+
+	if (r.size.x == width) {
+		// No need to fill rows separately.
+		_repeat_pixel_over_subsequent_memory(rect_first_pixel_ptr, pixel_size, width * r.size.y);
+	} else {
+		_repeat_pixel_over_subsequent_memory(rect_first_pixel_ptr, pixel_size, r.size.x);
+		for (int y = 1; y < r.size.y; y++) {
+			memcpy(rect_first_pixel_ptr + y * width * pixel_size, rect_first_pixel_ptr, r.size.x * pixel_size);
 		}
 	}
 }
@@ -2727,10 +2710,8 @@ ImageMemLoadFunc Image::_bmp_mem_loader_func = nullptr;
 
 void (*Image::_image_compress_bc_func)(Image *, float, Image::UsedChannels) = nullptr;
 void (*Image::_image_compress_bptc_func)(Image *, float, Image::UsedChannels) = nullptr;
-void (*Image::_image_compress_pvrtc1_4bpp_func)(Image *) = nullptr;
 void (*Image::_image_compress_etc1_func)(Image *, float) = nullptr;
 void (*Image::_image_compress_etc2_func)(Image *, float, Image::UsedChannels) = nullptr;
-void (*Image::_image_decompress_pvrtc)(Image *) = nullptr;
 void (*Image::_image_decompress_bc)(Image *) = nullptr;
 void (*Image::_image_decompress_bptc)(Image *) = nullptr;
 void (*Image::_image_decompress_etc1)(Image *) = nullptr;
@@ -3160,6 +3141,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("blend_rect", "src", "src_rect", "dst"), &Image::blend_rect);
 	ClassDB::bind_method(D_METHOD("blend_rect_mask", "src", "mask", "src_rect", "dst"), &Image::blend_rect_mask);
 	ClassDB::bind_method(D_METHOD("fill", "color"), &Image::fill);
+	ClassDB::bind_method(D_METHOD("fill_rect", "rect", "color"), &Image::fill_rect);
 
 	ClassDB::bind_method(D_METHOD("get_used_rect"), &Image::get_used_rect);
 	ClassDB::bind_method(D_METHOD("get_rect", "rect"), &Image::get_rect);
@@ -3212,10 +3194,6 @@ void Image::_bind_methods() {
 	BIND_ENUM_CONSTANT(FORMAT_BPTC_RGBA); //btpc bc6h
 	BIND_ENUM_CONSTANT(FORMAT_BPTC_RGBF); //float /
 	BIND_ENUM_CONSTANT(FORMAT_BPTC_RGBFU); //unsigned float
-	BIND_ENUM_CONSTANT(FORMAT_PVRTC1_2); //pvrtc
-	BIND_ENUM_CONSTANT(FORMAT_PVRTC1_2A);
-	BIND_ENUM_CONSTANT(FORMAT_PVRTC1_4);
-	BIND_ENUM_CONSTANT(FORMAT_PVRTC1_4A);
 	BIND_ENUM_CONSTANT(FORMAT_ETC); //etc1
 	BIND_ENUM_CONSTANT(FORMAT_ETC2_R11); //etc2
 	BIND_ENUM_CONSTANT(FORMAT_ETC2_R11S); //signed ); NOT srgb.
@@ -3239,7 +3217,6 @@ void Image::_bind_methods() {
 	BIND_ENUM_CONSTANT(ALPHA_BLEND);
 
 	BIND_ENUM_CONSTANT(COMPRESS_S3TC);
-	BIND_ENUM_CONSTANT(COMPRESS_PVRTC1_4);
 	BIND_ENUM_CONSTANT(COMPRESS_ETC);
 	BIND_ENUM_CONSTANT(COMPRESS_ETC2);
 	BIND_ENUM_CONSTANT(COMPRESS_BPTC);

@@ -7,7 +7,7 @@
 		A singleton that deals with inputs. This includes key presses, mouse buttons and movement, joypads, and input actions. Actions and their events can be set in the [b]Input Map[/b] tab in the [b]Project &gt; Project Settings[/b], or with the [InputMap] class.
 	</description>
 	<tutorials>
-		<link title="Inputs documentation index">https://docs.godotengine.org/en/latest/tutorials/inputs/index.html</link>
+		<link title="Inputs documentation index">$DOCS_URL/tutorials/inputs/index.html</link>
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
@@ -35,6 +35,13 @@
 			<argument index="1" name="update_existing" type="bool" default="false" />
 			<description>
 				Adds a new mapping entry (in SDL2 format) to the mapping database. Optionally update already connected devices.
+			</description>
+		</method>
+		<method name="flush_buffered_events">
+			<return type="void" />
+			<description>
+				Sends all input events which are in the current buffer to the game loop. These events may have been buffered as a result of accumulated input ([method set_use_accumulated_input]) or agile input flushing ([member ProjectSettings.input_devices/buffering/agile_event_flushing]).
+				The engine will already do this itself at key execution points (at least once per frame). However, this can be useful in advanced cases where you want precise control over the timing of event handling.
 			</description>
 		</method>
 		<method name="get_accelerometer" qualifiers="const">
@@ -134,10 +141,10 @@
 				Returns the strength of the joypad vibration: x is the strength of the weak motor, and y is the strength of the strong motor.
 			</description>
 		</method>
-		<method name="get_last_mouse_speed" qualifiers="const">
+		<method name="get_last_mouse_velocity" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the mouse speed for the last time the cursor was moved, and this until the next frame where the mouse moves. This means that even if the mouse is not moving, this function will still return the value of the last motion.
+				Returns the mouse velocity for the last time the cursor was moved, and this until the next frame where the mouse moves. This means that even if the mouse is not moving, this function will still return the value of the last motion.
 			</description>
 		</method>
 		<method name="get_magnetometer" qualifiers="const">
@@ -148,7 +155,7 @@
 			</description>
 		</method>
 		<method name="get_mouse_button_mask" qualifiers="const">
-			<return type="int" />
+			<return type="int" enum="MouseButton" />
 			<description>
 				Returns mouse buttons as a bitmask. If multiple mouse buttons are pressed at the same time, the bits are added together.
 			</description>
@@ -180,6 +187,7 @@
 				Returns [code]true[/code] when the user starts pressing the action event, meaning it's [code]true[/code] only on the frame that the user pressed down the button.
 				This is useful for code that needs to run only once when an action is pressed, instead of every frame while it's pressed.
 				If [code]exact_match[/code] is [code]false[/code], it ignores the input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
+				[b]Note:[/b] Due to keyboard ghosting, [method is_action_just_pressed] may return [code]false[/code] even if one of the action's keys is pressed. See [url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input examples[/url] in the documentation for more information.
 			</description>
 		</method>
 		<method name="is_action_just_released" qualifiers="const">
@@ -198,6 +206,13 @@
 			<description>
 				Returns [code]true[/code] if you are pressing the action event. Note that if an action has multiple buttons assigned and more than one of them is pressed, releasing one button will release the action, even if some other button assigned to this action is still pressed.
 				If [code]exact_match[/code] is [code]false[/code], it ignores the input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
+				[b]Note:[/b] Due to keyboard ghosting, [method is_action_pressed] may return [code]false[/code] even if one of the action's keys is pressed. See [url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input examples[/url] in the documentation for more information.
+			</description>
+		</method>
+		<method name="is_anything_pressed" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if any action, key, joypad button, or mouse button is being pressed. This will also return [code]true[/code] if any action is simulated via code by calling [method action_press].
 			</description>
 		</method>
 		<method name="is_joy_button_pressed" qualifiers="const">
@@ -220,6 +235,8 @@
 			<argument index="0" name="keycode" type="int" enum="Key" />
 			<description>
 				Returns [code]true[/code] if you are pressing the key in the current keyboard layout. You can pass a [enum Key] constant.
+				[method is_key_pressed] is only recommended over [method is_physical_key_pressed] in non-game applications. This ensures that shortcut keys behave as expected depending on the user's keyboard layout, as keyboard shortcuts are generally dependent on the keyboard layout in non-game applications. If in doubt, use [method is_physical_key_pressed].
+				[b]Note:[/b] Due to keyboard ghosting, [method is_key_pressed] may return [code]false[/code] even if one of the action's keys is pressed. See [url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input examples[/url] in the documentation for more information.
 			</description>
 		</method>
 		<method name="is_mouse_button_pressed" qualifiers="const">
@@ -229,15 +246,13 @@
 				Returns [code]true[/code] if you are pressing the mouse button specified with [enum MouseButton].
 			</description>
 		</method>
-		<method name="joy_connection_changed">
-			<return type="void" />
-			<argument index="0" name="device" type="int" />
-			<argument index="1" name="connected" type="bool" />
-			<argument index="2" name="name" type="String" />
-			<argument index="3" name="guid" type="String" />
+		<method name="is_physical_key_pressed" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="keycode" type="int" enum="Key" />
 			<description>
-				Notifies the [Input] singleton that a connection has changed, to update the state for the [code]device[/code] index.
-				This is used internally and should not have to be called from user scripts. See [signal joy_connection_changed] for the signal emitted when this is triggered internally.
+				Returns [code]true[/code] if you are pressing the key in the physical location on the 101/102-key US QWERTY keyboard. You can pass a [enum Key] constant.
+				[method is_physical_key_pressed] is recommended over [method is_key_pressed] for in-game actions, as it will make [kbd]W[/kbd]/[kbd]A[/kbd]/[kbd]S[/kbd]/[kbd]D[/kbd] layouts work regardless of the user's keyboard layout. [method is_physical_key_pressed] will also ensure that the top row number keys work on any keyboard layout. If in doubt, use [method is_physical_key_pressed].
+				[b]Note:[/b] Due to keyboard ghosting, [method is_physical_key_pressed] may return [code]false[/code] even if one of the action's keys is pressed. See [url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input examples[/url] in the documentation for more information.
 			</description>
 		</method>
 		<method name="parse_input_event">
@@ -269,6 +284,14 @@
 				Removes all mappings from the internal database that match the given GUID.
 			</description>
 		</method>
+		<method name="set_accelerometer">
+			<return type="void" />
+			<argument index="0" name="value" type="Vector3" />
+			<description>
+				Sets the acceleration value of the accelerometer sensor. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.
+				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
+			</description>
+		</method>
 		<method name="set_custom_mouse_cursor">
 			<return type="void" />
 			<argument index="0" name="image" type="Resource" />
@@ -289,6 +312,30 @@
 				Sets the default cursor shape to be used in the viewport instead of [constant CURSOR_ARROW].
 				[b]Note:[/b] If you want to change the default cursor shape for [Control]'s nodes, use [member Control.mouse_default_cursor_shape] instead.
 				[b]Note:[/b] This method generates an [InputEventMouseMotion] to update cursor immediately.
+			</description>
+		</method>
+		<method name="set_gravity">
+			<return type="void" />
+			<argument index="0" name="value" type="Vector3" />
+			<description>
+				Sets the gravity value of the accelerometer sensor. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.
+				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
+			</description>
+		</method>
+		<method name="set_gyroscope">
+			<return type="void" />
+			<argument index="0" name="value" type="Vector3" />
+			<description>
+				Sets the value of the rotation rate of the gyroscope sensor. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.
+				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
+			</description>
+		</method>
+		<method name="set_magnetometer">
+			<return type="void" />
+			<argument index="0" name="value" type="Vector3" />
+			<description>
+				Sets the value of the magnetic field of the magnetometer sensor. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.
+				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
 			</description>
 		</method>
 		<method name="set_mouse_mode">

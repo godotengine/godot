@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,6 +57,27 @@ void GPUParticles2DEditorPlugin::_file_selected(const String &p_file) {
 	emission_mask->popup_centered();
 }
 
+void GPUParticles2DEditorPlugin::_selection_changed() {
+	List<Node *> selected_nodes = editor->get_editor_selection()->get_selected_node_list();
+
+	if (selected_particles.is_empty() && selected_nodes.is_empty()) {
+		return;
+	}
+
+	for (GPUParticles2D *SP : selected_particles) {
+		SP->set_show_visibility_rect(false);
+	}
+	selected_particles.clear();
+
+	for (Node *P : selected_nodes) {
+		GPUParticles2D *selected_particle = Object::cast_to<GPUParticles2D>(P);
+		if (selected_particle != nullptr) {
+			selected_particle->set_show_visibility_rect(true);
+			selected_particles.push_back(selected_particle);
+		}
+	}
+}
+
 void GPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 	switch (p_idx) {
 		case MENU_GENERATE_VISIBILITY_RECT: {
@@ -89,9 +110,9 @@ void GPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 			ur->create_action(TTR("Convert to CPUParticles2D"));
-			ur->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", particles, cpu_particles, true, false);
+			ur->add_do_method(SceneTreeDock::get_singleton(), "replace_node", particles, cpu_particles, true, false);
 			ur->add_do_reference(cpu_particles);
-			ur->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", cpu_particles, particles, false, false);
+			ur->add_undo_method(SceneTreeDock::get_singleton(), "replace_node", cpu_particles, particles, false, false);
 			ur->add_undo_reference(particles);
 			ur->commit_action();
 
@@ -334,6 +355,7 @@ void GPUParticles2DEditorPlugin::_notification(int p_what) {
 		menu->get_popup()->connect("id_pressed", callable_mp(this, &GPUParticles2DEditorPlugin::_menu_callback));
 		menu->set_icon(menu->get_theme_icon(SNAME("GPUParticles2D"), SNAME("EditorIcons")));
 		file->connect("file_selected", callable_mp(this, &GPUParticles2DEditorPlugin::_file_selected));
+		EditorNode::get_singleton()->get_editor_selection()->connect("selection_changed", callable_mp(this, &GPUParticles2DEditorPlugin::_selection_changed));
 	}
 }
 

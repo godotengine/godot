@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,6 +40,7 @@ class EditorDebuggerServerWebSocket : public EditorDebuggerServer {
 private:
 	Ref<WebSocketServer> server;
 	List<int> pending_peers;
+	String endpoint;
 
 public:
 	static EditorDebuggerServer *create(const String &p_protocol);
@@ -47,12 +48,13 @@ public:
 	void _peer_connected(int p_peer, String p_protocol);
 	void _peer_disconnected(int p_peer, bool p_was_clean);
 
-	void poll() override;
-	Error start(const String &p_uri) override;
-	void stop() override;
-	bool is_active() const override;
-	bool is_connection_available() const override;
-	Ref<RemoteDebuggerPeer> take_connection() override;
+	virtual void poll() override;
+	virtual String get_uri() const override;
+	virtual Error start(const String &p_uri = "") override;
+	virtual void stop() override;
+	virtual bool is_active() const override;
+	virtual bool is_connection_available() const override;
+	virtual Ref<RemoteDebuggerPeer> take_connection() override;
 
 	EditorDebuggerServerWebSocket();
 	~EditorDebuggerServerWebSocket();

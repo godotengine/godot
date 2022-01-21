@@ -293,8 +293,8 @@
 				Returns the given column's text.
 			</description>
 		</method>
-		<method name="get_text_align" qualifiers="const">
-			<return type="int" enum="TreeItem.TextAlign" />
+		<method name="get_text_alignment" qualifiers="const">
+			<return type="int" enum="HorizontalAlignment" />
 			<argument index="0" name="column" type="int" />
 			<description>
 				Returns the given column's text alignment.
@@ -383,6 +383,14 @@
 			<description>
 				Moves this TreeItem right before the given [code]item[/code].
 				[b]Note:[/b] You can't move to the root or move the root.
+			</description>
+		</method>
+		<method name="propagate_check">
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="emit_signal" type="bool" default="true" />
+			<description>
+				Propagates this item's checked status to its children and parents for the given [code]column[/code]. It is possible to process the items affected by this method call by connecting to [signal Tree.check_propagated_to_item]. The order that the items affected will be processed is as follows: the item invoking this method, children of that item, and finally parents of that item. If [code]emit_signal[/code] is set to false, then [signal Tree.check_propagated_to_item] will not be emitted.
 			</description>
 		</method>
 		<method name="remove_child">
@@ -623,12 +631,12 @@
 				Sets the given column's text value.
 			</description>
 		</method>
-		<method name="set_text_align">
+		<method name="set_text_alignment">
 			<return type="void" />
 			<argument index="0" name="column" type="int" />
-			<argument index="1" name="text_align" type="int" enum="TreeItem.TextAlign" />
+			<argument index="1" name="text_alignment" type="int" enum="HorizontalAlignment" />
 			<description>
-				Sets the given column's text alignment. See [enum TextAlign] for possible values.
+				Sets the given column's text alignment. See [enum HorizontalAlignment] for possible values.
 			</description>
 		</method>
 		<method name="set_text_direction">
@@ -678,15 +686,6 @@
 			Cell contains an icon.
 		</constant>
 		<constant name="CELL_MODE_CUSTOM" value="4" enum="TreeCellMode">
-		</constant>
-		<constant name="ALIGN_LEFT" value="0" enum="TextAlign">
-			Align text to the left. See [code]set_text_align()[/code].
-		</constant>
-		<constant name="ALIGN_CENTER" value="1" enum="TextAlign">
-			Center text. See [code]set_text_align()[/code].
-		</constant>
-		<constant name="ALIGN_RIGHT" value="2" enum="TextAlign">
-			Align text to the right. See [code]set_text_align()[/code].
 		</constant>
 	</constants>
 </class>

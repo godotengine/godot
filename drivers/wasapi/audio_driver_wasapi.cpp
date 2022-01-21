@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -121,6 +121,12 @@ const IID IID_IAudioCaptureClient = __uuidof(IAudioCaptureClient);
 static bool default_render_device_changed = false;
 static bool default_capture_device_changed = false;
 
+// Silence warning due to a COM API weirdness (GH-35194).
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#endif
+
 class CMMNotificationClient : public IMMNotificationClient {
 	LONG _cRef = 1;
 	IMMDeviceEnumerator *_pEnumerator = nullptr;
@@ -162,7 +168,7 @@ public:
 
 	HRESULT STDMETHODCALLTYPE OnDeviceAdded(LPCWSTR pwstrDeviceId) {
 		return S_OK;
-	};
+	}
 
 	HRESULT STDMETHODCALLTYPE OnDeviceRemoved(LPCWSTR pwstrDeviceId) {
 		return S_OK;
@@ -188,6 +194,10 @@ public:
 		return S_OK;
 	}
 };
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 static CMMNotificationClient notif_client;
 
@@ -373,18 +383,21 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_c
 		hr = p_device->audio_client->Initialize(AUDCLNT_SHAREMODE_SHARED, streamflags, p_capture ? REFTIMES_PER_SEC : 0, 0, pwfex, nullptr);
 		ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_CANT_OPEN, "WASAPI: Initialize failed with error 0x" + String::num_uint64(hr, 16) + ".");
 		UINT32 max_frames;
-		HRESULT hr = p_device->audio_client->GetBufferSize(&max_frames);
+		hr = p_device->audio_client->GetBufferSize(&max_frames);
 		ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
 
 		// Due to WASAPI Shared Mode we have no control of the buffer size
-		buffer_frames = max_frames;
+		if (!p_capture) {
+			buffer_frames = max_frames;
 
-		int64_t latency = 0;
-		audio_output.audio_client->GetStreamLatency(&latency);
-		// WASAPI REFERENCE_TIME units are 100 nanoseconds per unit
-		// https://docs.microsoft.com/en-us/windows/win32/directshow/reference-time
-		// Convert REFTIME to seconds as godot uses for latency
-		real_latency = (float)latency / (float)REFTIMES_PER_SEC;
+			int64_t latency = 0;
+			audio_output.audio_client->GetStreamLatency(&latency);
+			// WASAPI REFERENCE_TIME units are 100 nanoseconds per unit
+			// https://docs.microsoft.com/en-us/windows/win32/directshow/reference-time
+			// Convert REFTIME to seconds as godot uses for latency
+			real_latency = (float)latency / (float)REFTIMES_PER_SEC;
+		}
+
 	} else {
 		IAudioClient3 *device_audio_client_3 = (IAudioClient3 *)p_device->audio_client;
 

@@ -7,7 +7,7 @@
 		Node for 2D tile-based maps. Tilemaps use a [TileSet] which contain a list of tiles which are used to create grid-based maps. A TileMap may have several layers, layouting tiles on top of each other.
 	</description>
 	<tutorials>
-		<link title="Using Tilemaps">https://docs.godotengine.org/en/latest/tutorials/2d/using_tilemaps.html</link>
+		<link title="Using Tilemaps">$DOCS_URL/tutorials/2d/using_tilemaps.html</link>
 		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/120</link>
 		<link title="2D Isometric Demo">https://godotengine.org/asset-library/asset/112</link>
 		<link title="2D Hexagonal Demo">https://godotengine.org/asset-library/asset/111</link>
@@ -16,6 +16,27 @@
 		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/113</link>
 	</tutorials>
 	<methods>
+		<method name="_tile_data_runtime_update" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="layer" type="int" />
+			<argument index="1" name="coords" type="Vector2i" />
+			<argument index="2" name="tile_data" type="TileData" />
+			<description>
+				Called with a TileData object about to be used internally by the TileMap, allowing its modification at runtime.
+				This method is only called if [method _use_tile_data_runtime_update] is implemented and returns [code]true[/code] for the given tile [code]coords[/coords] and [code]layer[/code].
+				[b]Warning:[/b] The [code]tile_data[/code] object's sub-resources are the same as the one in the TileSet. Modifying them might impact the whole TileSet. Instead, make sure to duplicate those resources.
+				[b]Note:[/b] If the properties of [code]tile_data[/code] object should change over time, use [method force_update] to trigger a TileMap update.
+			</description>
+		</method>
+		<method name="_use_tile_data_runtime_update" qualifiers="virtual">
+			<return type="bool" />
+			<argument index="0" name="layer" type="int" />
+			<argument index="1" name="coords" type="Vector2i" />
+			<description>
+				Should return [code]true[/code] if the tile at coordinates [code]coords[/coords] on layer [code]layer[/code] requires a runtime update.
+				[b]Warning:[/b] Make sure this function only return [code]true[/code] when needed. Any tile processed at runtime without a need for it will imply a significant performance penalty.
+			</description>
+		</method>
 		<method name="add_layer">
 			<return type="void" />
 			<argument index="0" name="to_position" type="int" />
@@ -40,6 +61,15 @@
 			<return type="void" />
 			<description>
 				Clears cells that do not exist in the tileset.
+			</description>
+		</method>
+		<method name="force_update">
+			<return type="void" />
+			<argument index="0" name="layer" type="int" default="-1" />
+			<description>
+				Triggers an update of the TileMap. If [code]layer[/code] is provided, only updates the given layer.
+				[b]Note:[/b] The TileMap node updates automatically when one of its properties is modified. A manual update is only needed if runtime modifications (implemented in [method _tile_data_runtime_update]) need to be applied.
+				[b]Warning:[/b] Updating the TileMap is a performance demanding task. Limit occurrences of those updates to the minimum and limit the amount tiles they impact (by segregating tiles updated often to a dedicated layer for example).
 			</description>
 		</method>
 		<method name="get_cell_alternative_tile" qualifiers="const">
@@ -73,7 +103,14 @@
 			<return type="Vector2i" />
 			<argument index="0" name="body" type="RID" />
 			<description>
-				Returns the coodinates of the tile for given physics body RID. Such RID can be retrieved from [method KinematicCollision2D.get_collider_rid], when colliding with a tile.
+				Returns the coordinates of the tile for given physics body RID. Such RID can be retrieved from [method KinematicCollision2D.get_collider_rid], when colliding with a tile.
+			</description>
+		</method>
+		<method name="get_layer_modulate" qualifiers="const">
+			<return type="Color" />
+			<argument index="0" name="layer" type="int" />
+			<description>
+				Returns a TileMap layer's modulate.
 			</description>
 		</method>
 		<method name="get_layer_name" qualifiers="const">
@@ -107,7 +144,15 @@
 			<argument index="0" name="coords" type="Vector2i" />
 			<argument index="1" name="neighbor" type="int" enum="TileSet.CellNeighbor" />
 			<description>
-				Returns the neighboring cell to the one at coordinates [code]coords[/code], indentified by the [code]neighbor[/code] direction. This method takes into account the different layouts a TileMap can take.
+				Returns the neighboring cell to the one at coordinates [code]coords[/code], identified by the [code]neighbor[/code] direction. This method takes into account the different layouts a TileMap can take.
+			</description>
+		</method>
+		<method name="get_pattern">
+			<return type="TileMapPattern" />
+			<argument index="0" name="layer" type="int" />
+			<argument index="1" name="coords_array" type="Vector2i[]" />
+			<description>
+				Creates a new [TileMapPattern] from the given layer and set of cells.
 			</description>
 		</method>
 		<method name="get_surrounding_tiles">
@@ -144,6 +189,15 @@
 				Returns if a layer Y-sorts its tiles.
 			</description>
 		</method>
+		<method name="map_pattern">
+			<return type="Vector2i" />
+			<argument index="0" name="position_in_tilemap" type="Vector2i" />
+			<argument index="1" name="coords_in_pattern" type="Vector2i" />
+			<argument index="2" name="pattern" type="TileMapPattern" />
+			<description>
+				Returns for the given coordinate [code]coords_in_pattern[/code] in a [TileMapPattern] the corresponding cell coordinates if the pattern was pasted at the [code]position_in_tilemap[/code] coordinates (see [method set_pattern]). This mapping is required as in half-offset tile shapes, the mapping might not work by calculating [code]position_in_tile_map + coords_in_pattern[/code]
+			</description>
+		</method>
 		<method name="map_to_world" qualifiers="const">
 			<return type="Vector2" />
 			<argument index="0" name="map_position" type="Vector2i" />
@@ -175,9 +229,20 @@
 			<argument index="4" name="alternative_tile" type="int" default="-1" />
 			<description>
 				Sets the tile indentifiers for the cell on layer [code]layer[/code] at coordinates [code]coords[/code]. Each tile of the [TileSet] is identified using three parts:
-				- The source indentifier [code]source_id[/code] identifies a [TileSetSource] identifier. See [method TileSet.set_source_id],
+				- The source identifier [code]source_id[/code] identifies a [TileSetSource] identifier. See [method TileSet.set_source_id],
 				- The atlas coordinates identifier [code]atlas_coords[/code] identifies a tile coordinates in the atlas (if the source is a [TileSetAtlasSource]. For [TileSetScenesCollectionSource] it should be 0),
 				- The alternative tile identifier [code]alternative_tile[/code] identifies a tile alternative the source is a [TileSetAtlasSource], and the scene for a [TileSetScenesCollectionSource].
+			</description>
+		</method>
+		<method name="set_cells_from_surrounding_terrains">
+			<return type="void" />
+			<argument index="0" name="layer" type="int" />
+			<argument index="1" name="cells" type="Vector2i[]" />
+			<argument index="2" name="terrain_set" type="int" />
+			<argument index="3" name="ignore_empty_terrains" type="bool" default="true" />
+			<description>
+				Updates all the cells in the [code]cells[/code] coordinates array and replace them by tiles that matches the surrounding cells terrains. Only cells form the given [code]terrain_set[/code] are considered.
+				If [code]ignore_empty_terrains[/code] is true, zones with no terrain defined are ignored to select the tiles.
 			</description>
 		</method>
 		<method name="set_layer_enabled">
@@ -186,6 +251,14 @@
 			<argument index="1" name="enabled" type="bool" />
 			<description>
 				Enables or disables the layer [code]layer[/code]. A disabled layer is not processed at all (no rendering, no physics, etc...).
+			</description>
+		</method>
+		<method name="set_layer_modulate">
+			<return type="void" />
+			<argument index="0" name="layer" type="int" />
+			<argument index="1" name="enabled" type="Color" />
+			<description>
+				Sets a layer's color. It will be multiplied by tile's color and TileMap's modulate.
 			</description>
 		</method>
 		<method name="set_layer_name">
@@ -220,6 +293,15 @@
 			<argument index="1" name="z_index" type="int" />
 			<description>
 				Sets a layers Z-index value. This Z-index is added to each tile's Z-index value.
+			</description>
+		</method>
+		<method name="set_pattern">
+			<return type="void" />
+			<argument index="0" name="layer" type="int" />
+			<argument index="1" name="position" type="Vector2i" />
+			<argument index="2" name="pattern" type="TileMapPattern" />
+			<description>
+				Paste the given [TileMapPattern] at the given [code]position[/code] and [code]layer[/code] in the tile map.
 			</description>
 		</method>
 		<method name="world_to_map" qualifiers="const">

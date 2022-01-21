@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -59,15 +59,11 @@ JoypadLinux::Joypad::~Joypad() {
 }
 
 void JoypadLinux::Joypad::reset() {
-	dpad = 0;
+	dpad = HatMask::CENTER;
 	fd = -1;
-
-	Input::JoyAxisValue jx;
-	jx.min = -1;
-	jx.value = 0.0f;
 	for (int i = 0; i < MAX_ABS; i++) {
 		abs_map[i] = -1;
-		curr_axis[i] = jx;
+		curr_axis[i] = 0;
 	}
 }
 
@@ -253,7 +249,7 @@ void JoypadLinux::close_joypad(int p_id) {
 	if (joy.fd != -1) {
 		close(joy.fd);
 		joy.fd = -1;
-		attached_devices.remove(attached_devices.find(joy.devpath));
+		attached_devices.remove_at(attached_devices.find(joy.devpath));
 		input->joy_connection_changed(p_id, false, "");
 	};
 }
@@ -429,23 +425,11 @@ void JoypadLinux::joypad_vibration_stop(int p_id, uint64_t p_timestamp) {
 	joy.ff_effect_timestamp = p_timestamp;
 }
 
-Input::JoyAxisValue JoypadLinux::axis_correct(const input_absinfo *p_abs, int p_value) const {
+float JoypadLinux::axis_correct(const input_absinfo *p_abs, int p_value) const {
 	int min = p_abs->minimum;
 	int max = p_abs->maximum;
-	Input::JoyAxisValue jx;
-
-	if (min < 0) {
-		jx.min = -1;
-		if (p_value < 0) {
-			jx.value = (float)-p_value / min;
-		} else {
-			jx.value = (float)p_value / max;
-		}
-	} else if (min == 0) {
-		jx.min = 0;
-		jx.value = 0.0f + (float)p_value / max;
-	}
-	return jx;
+	// Convert to a value between -1.0f and 1.0f.
+	return 2.0f * (p_value - min) / (max - min) - 1.0f;
 }
 
 void JoypadLinux::process_joypads() {
@@ -484,12 +468,12 @@ void JoypadLinux::process_joypads() {
 							case ABS_HAT0X:
 								if (ev.value != 0) {
 									if (ev.value < 0) {
-										joy->dpad = (HatMask)((joy->dpad | HatMask::HAT_MASK_LEFT) & ~HatMask::HAT_MASK_RIGHT);
+										joy->dpad = (HatMask)((joy->dpad | HatMask::LEFT) & ~HatMask::RIGHT);
 									} else {
-										joy->dpad = (HatMask)((joy->dpad | HatMask::HAT_MASK_RIGHT) & ~HatMask::HAT_MASK_LEFT);
+										joy->dpad = (HatMask)((joy->dpad | HatMask::RIGHT) & ~HatMask::LEFT);
 									}
 								} else {
-									joy->dpad &= ~(HatMask::HAT_MASK_LEFT | HatMask::HAT_MASK_RIGHT);
+									joy->dpad &= ~(HatMask::LEFT | HatMask::RIGHT);
 								}
 
 								input->joy_hat(i, (HatMask)joy->dpad);
@@ -498,12 +482,12 @@ void JoypadLinux::process_joypads() {
 							case ABS_HAT0Y:
 								if (ev.value != 0) {
 									if (ev.value < 0) {
-										joy->dpad = (HatMask)((joy->dpad | HatMask::HAT_MASK_UP) & ~HatMask::HAT_MASK_DOWN);
+										joy->dpad = (HatMask)((joy->dpad | HatMask::UP) & ~HatMask::DOWN);
 									} else {
-										joy->dpad = (HatMask)((joy->dpad | HatMask::HAT_MASK_DOWN) & ~HatMask::HAT_MASK_UP);
+										joy->dpad = (HatMask)((joy->dpad | HatMask::DOWN) & ~HatMask::UP);
 									}
 								} else {
-									joy->dpad &= ~(HatMask::HAT_MASK_UP | HatMask::HAT_MASK_DOWN);
+									joy->dpad &= ~(HatMask::UP | HatMask::DOWN);
 								}
 
 								input->joy_hat(i, (HatMask)joy->dpad);
@@ -514,7 +498,7 @@ void JoypadLinux::process_joypads() {
 									return;
 								}
 								if (joy->abs_map[ev.code] != -1 && joy->abs_info[ev.code]) {
-									Input::JoyAxisValue value = axis_correct(joy->abs_info[ev.code], ev.value);
+									float value = axis_correct(joy->abs_info[ev.code], ev.value);
 									joy->curr_axis[joy->abs_map[ev.code]] = value;
 								}
 								break;

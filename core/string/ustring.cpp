@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,6 +38,7 @@
 #include "core/string/translation.h"
 #include "core/string/ucaps.h"
 #include "core/variant/variant.h"
+#include "core/version_generated.gen.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -129,9 +130,8 @@ Char16String &Char16String::operator+=(char16_t p_char) {
 	return *this;
 }
 
-Char16String &Char16String::operator=(const char16_t *p_cstr) {
+void Char16String::operator=(const char16_t *p_cstr) {
 	copy_from(p_cstr);
-	return *this;
 }
 
 const char16_t *Char16String::get_data() const {
@@ -185,9 +185,8 @@ CharString &CharString::operator+=(char p_char) {
 	return *this;
 }
 
-CharString &CharString::operator=(const char *p_cstr) {
+void CharString::operator=(const char *p_cstr) {
 	copy_from(p_cstr);
-	return *this;
 }
 
 const char *CharString::get_data() const {
@@ -952,10 +951,6 @@ const char32_t *String::get_data() const {
 	return size() ? &operator[](0) : &zero;
 }
 
-void String::erase(int p_pos, int p_chars) {
-	*this = left(MAX(p_pos, 0)) + substr(p_pos + p_chars, length() - ((p_pos + p_chars)));
-}
-
 String String::capitalize() const {
 	String aux = this->camelcase_to_underscore(true).replace("_", " ").strip_edges();
 	String cap;
@@ -1532,115 +1527,24 @@ String String::num_uint64(uint64_t p_num, int base, bool capitalize_hex) {
 }
 
 String String::num_real(double p_num, bool p_trailing) {
-	if (Math::is_nan(p_num)) {
-		return "nan";
-	}
-
-	if (Math::is_inf(p_num)) {
-		if (signbit(p_num)) {
-			return "-inf";
+	if (p_num == (double)(int64_t)p_num) {
+		if (p_trailing) {
+			return num_int64((int64_t)p_num) + ".0";
 		} else {
-			return "inf";
+			return num_int64((int64_t)p_num);
 		}
 	}
-
-	String s;
-	String sd;
-
-	// Integer part.
-
-	bool neg = p_num < 0;
-	p_num = ABS(p_num);
-	int64_t intn = (int64_t)p_num;
-
-	// Decimal part.
-
-	if (intn != p_num) {
-		double dec = p_num - (double)intn;
-
-		int digit = 0;
-
 #ifdef REAL_T_IS_DOUBLE
-		int decimals = 14;
-		double tolerance = 1e-14;
+	int decimals = 14;
 #else
-		int decimals = 6;
-		double tolerance = 1e-6;
+	int decimals = 6;
 #endif
-		// We want to align the digits to the above sane default, so we only
-		// need to subtract log10 for numbers with a positive power of ten.
-		if (p_num > 10) {
-			decimals -= (int)floor(log10(p_num));
-		}
-
-		if (decimals > MAX_DECIMALS) {
-			decimals = MAX_DECIMALS;
-		}
-
-		// In case the value ends up ending in "99999", we want to add a
-		// tiny bit to the value we're checking when deciding when to stop,
-		// so we multiply by slightly above 1 (1 + 1e-7 or 1e-15).
-		double check_multiplier = 1 + tolerance / 10;
-
-		int64_t dec_int = 0;
-		int64_t dec_max = 0;
-
-		while (true) {
-			dec *= 10.0;
-			dec_int = dec_int * 10 + (int64_t)dec % 10;
-			dec_max = dec_max * 10 + 9;
-			digit++;
-
-			if ((dec - (double)(int64_t)(dec * check_multiplier)) < tolerance) {
-				break;
-			}
-
-			if (digit == decimals) {
-				break;
-			}
-		}
-
-		dec *= 10;
-		int last = (int64_t)dec % 10;
-
-		if (last > 5) {
-			if (dec_int == dec_max) {
-				dec_int = 0;
-				intn++;
-			} else {
-				dec_int++;
-			}
-		}
-
-		String decimal;
-		for (int i = 0; i < digit; i++) {
-			char num[2] = { 0, 0 };
-			num[0] = '0' + dec_int % 10;
-			decimal = num + decimal;
-			dec_int /= 10;
-		}
-		sd = '.' + decimal;
-	} else if (p_trailing) {
-		sd = ".0";
-	} else {
-		sd = "";
+	// We want to align the digits to the above sane default, so we only
+	// need to subtract log10 for numbers with a positive power of ten.
+	if (p_num > 10) {
+		decimals -= (int)floor(log10(p_num));
 	}
-
-	if (intn == 0) {
-		s = "0";
-	} else {
-		while (intn) {
-			char32_t num = '0' + (intn % 10);
-			intn /= 10;
-			s = num + s;
-		}
-	}
-
-	s = s + sd;
-	if (neg) {
-		s = "-" + s;
-	}
-	return s;
+	return num(p_num, decimals);
 }
 
 String String::num_scientific(double p_num) {
@@ -1728,7 +1632,7 @@ String String::utf8(const char *p_utf8, int p_len) {
 }
 
 bool String::parse_utf8(const char *p_utf8, int p_len) {
-#define _UNICERROR(m_err) print_error("Unicode parsing error: " + String(m_err) + ". Is the string valid UTF-8?");
+#define UNICERROR(m_err) print_error("Unicode parsing error: " + String(m_err) + ". Is the string valid UTF-8?");
 
 	if (!p_utf8) {
 		return true;
@@ -1769,12 +1673,12 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 				} else if ((c & 0xf8) == 0xf0) {
 					skip = 3;
 				} else {
-					_UNICERROR("invalid skip at " + num_int64(cstr_size));
+					UNICERROR("invalid skip at " + num_int64(cstr_size));
 					return true; //invalid utf8
 				}
 
 				if (skip == 1 && (c & 0x1e) == 0) {
-					_UNICERROR("overlong rejected at " + num_int64(cstr_size));
+					UNICERROR("overlong rejected at " + num_int64(cstr_size));
 					return true; //reject overlong
 				}
 
@@ -1789,7 +1693,7 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 		}
 
 		if (skip) {
-			_UNICERROR("no space left");
+			UNICERROR("no space left");
 			return true; //not enough space
 		}
 	}
@@ -1816,17 +1720,17 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 		} else if ((*p_utf8 & 0xf8) == 0xf0) {
 			len = 4;
 		} else {
-			_UNICERROR("invalid len");
+			UNICERROR("invalid len");
 			return true; //invalid UTF8
 		}
 
 		if (len > cstr_size) {
-			_UNICERROR("no space left");
+			UNICERROR("no space left");
 			return true; //not enough space
 		}
 
 		if (len == 2 && (*p_utf8 & 0x1E) == 0) {
-			_UNICERROR("no space left");
+			UNICERROR("no space left");
 			return true; //reject overlong
 		}
 
@@ -1841,18 +1745,18 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 
 			for (int i = 1; i < len; i++) {
 				if ((p_utf8[i] & 0xc0) != 0x80) {
-					_UNICERROR("invalid utf8");
+					UNICERROR("invalid utf8");
 					return true; //invalid utf8
 				}
 				if (unichar == 0 && i == 2 && ((p_utf8[i] & 0x7f) >> (7 - len)) == 0) {
-					_UNICERROR("invalid utf8 overlong");
+					UNICERROR("invalid utf8 overlong");
 					return true; //no overlong
 				}
 				unichar = (unichar << 6) | (p_utf8[i] & 0x3f);
 			}
 		}
 		if (unichar >= 0xd800 && unichar <= 0xdfff) {
-			_UNICERROR("invalid code point");
+			UNICERROR("invalid code point");
 			return CharString();
 		}
 
@@ -1862,7 +1766,7 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 	}
 
 	return false;
-#undef _UNICERROR
+#undef UNICERROR
 }
 
 CharString String::utf8() const {
@@ -1936,7 +1840,7 @@ String String::utf16(const char16_t *p_utf16, int p_len) {
 }
 
 bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
-#define _UNICERROR(m_err) print_error("Unicode parsing error: " + String(m_err) + ". Is the string valid UTF-16?");
+#define UNICERROR(m_err) print_error("Unicode parsing error: " + String(m_err) + ". Is the string valid UTF-16?");
 
 	if (!p_utf16) {
 		return true;
@@ -1976,7 +1880,7 @@ bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
 				if ((c & 0xfffffc00) == 0xd800) {
 					skip = 1; // lead surrogate
 				} else if ((c & 0xfffffc00) == 0xdc00) {
-					_UNICERROR("invalid utf16 surrogate at " + num_int64(cstr_size));
+					UNICERROR("invalid utf16 surrogate at " + num_int64(cstr_size));
 					return true; // invalid UTF16
 				} else {
 					skip = 0;
@@ -1986,7 +1890,7 @@ bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
 				if ((c & 0xfffffc00) == 0xdc00) { // trail surrogate
 					--skip;
 				} else {
-					_UNICERROR("invalid utf16 surrogate at " + num_int64(cstr_size));
+					UNICERROR("invalid utf16 surrogate at " + num_int64(cstr_size));
 					return true; // invalid UTF16
 				}
 			}
@@ -1996,7 +1900,7 @@ bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
 		}
 
 		if (skip) {
-			_UNICERROR("no space left");
+			UNICERROR("no space left");
 			return true; // not enough space
 		}
 	}
@@ -2021,7 +1925,7 @@ bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
 		}
 
 		if (len > cstr_size) {
-			_UNICERROR("no space left");
+			UNICERROR("no space left");
 			return true; //not enough space
 		}
 
@@ -2039,7 +1943,7 @@ bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
 	}
 
 	return false;
-#undef _UNICERROR
+#undef UNICERROR
 }
 
 Char16String String::utf16() const {
@@ -2137,7 +2041,7 @@ int64_t String::hex_to_int() const {
 		s++;
 	}
 
-	if (len > 2 && s[0] == '0' && s[1] == 'x') {
+	if (len > 2 && s[0] == '0' && lower_case(s[1]) == 'x') {
 		s += 2;
 	}
 
@@ -2151,7 +2055,7 @@ int64_t String::hex_to_int() const {
 		} else if (c >= 'a' && c <= 'f') {
 			n = (c - 'a') + 10;
 		} else {
-			return 0;
+			ERR_FAIL_COND_V_MSG(true, 0, "Invalid hexadecimal notation character \"" + chr(*s) + "\" in string \"" + *this + "\".");
 		}
 		// Check for overflow/underflow, with special case to ensure INT64_MIN does not result in error
 		bool overflow = ((hex > INT64_MAX / 16) && (sign == 1 || (sign == -1 && hex != (INT64_MAX >> 4) + 1))) || (sign == -1 && hex == (INT64_MAX >> 4) + 1 && c > '0');
@@ -2178,7 +2082,7 @@ int64_t String::bin_to_int() const {
 		s++;
 	}
 
-	if (len > 2 && s[0] == '0' && s[1] == 'b') {
+	if (len > 2 && s[0] == '0' && lower_case(s[1]) == 'b') {
 		s += 2;
 	}
 
@@ -2317,28 +2221,33 @@ bool String::is_numeric() const {
 }
 
 template <class C>
-static double built_in_strtod(const C *string, /* A decimal ASCII floating-point number,
-				 * optionally preceded by white space. Must
-				 * have form "-I.FE-X", where I is the integer
-				 * part of the mantissa, F is the fractional
-				 * part of the mantissa, and X is the
-				 * exponent. Either of the signs may be "+",
-				 * "-", or omitted. Either I or F may be
-				 * omitted, or both. The decimal point isn't
-				 * necessary unless F is present. The "E" may
-				 * actually be an "e". E and X may both be
-				 * omitted (but not just one). */
-		C **endPtr = nullptr) /* If non-nullptr, store terminating Cacter's
-				 * address here. */
-{
-	static const int maxExponent = 511; /* Largest possible base 10 exponent.  Any
-					 * exponent larger than this will already
-					 * produce underflow or overflow, so there's
-					 * no need to worry about additional digits.
-					 */
-	static const double powersOf10[] = { /* Table giving binary powers of 10.  Entry */
-		10., /* is 10^2^i.  Used to convert decimal */
-		100., /* exponents into floating-point numbers. */
+static double built_in_strtod(
+		/* A decimal ASCII floating-point number,
+		 * optionally preceded by white space. Must
+		 * have form "-I.FE-X", where I is the integer
+		 * part of the mantissa, F is the fractional
+		 * part of the mantissa, and X is the
+		 * exponent. Either of the signs may be "+",
+		 * "-", or omitted. Either I or F may be
+		 * omitted, or both. The decimal point isn't
+		 * necessary unless F is present. The "E" may
+		 * actually be an "e". E and X may both be
+		 * omitted (but not just one). */
+		const C *string,
+		/* If non-nullptr, store terminating Cacter's
+		 * address here. */
+		C **endPtr = nullptr) {
+	/* Largest possible base 10 exponent. Any
+	 * exponent larger than this will already
+	 * produce underflow or overflow, so there's
+	 * no need to worry about additional digits. */
+	static const int maxExponent = 511;
+	/* Table giving binary powers of 10. Entry
+	 * is 10^2^i. Used to convert decimal
+	 * exponents into floating-point numbers. */
+	static const double powersOf10[] = {
+		10.,
+		100.,
 		1.0e4,
 		1.0e8,
 		1.0e16,
@@ -2353,25 +2262,28 @@ static double built_in_strtod(const C *string, /* A decimal ASCII floating-point
 	const double *d;
 	const C *p;
 	int c;
-	int exp = 0; /* Exponent read from "EX" field. */
-	int fracExp = 0; /* Exponent that derives from the fractional
-				 * part. Under normal circumstances, it is
-				 * the negative of the number of digits in F.
-				 * However, if I is very long, the last digits
-				 * of I get dropped (otherwise a long I with a
-				 * large negative exponent could cause an
-				 * unnecessary overflow on I alone). In this
-				 * case, fracExp is incremented one for each
-				 * dropped digit. */
-	int mantSize; /* Number of digits in mantissa. */
-	int decPt; /* Number of mantissa digits BEFORE decimal
-				 * point. */
-	const C *pExp; /* Temporarily holds location of exponent in
-				 * string. */
+	/* Exponent read from "EX" field. */
+	int exp = 0;
+	/* Exponent that derives from the fractional
+	 * part. Under normal circumstances, it is
+	 * the negative of the number of digits in F.
+	 * However, if I is very long, the last digits
+	 * of I get dropped (otherwise a long I with a
+	 * large negative exponent could cause an
+	 * unnecessary overflow on I alone). In this
+	 * case, fracExp is incremented one for each
+	 * dropped digit. */
+	int fracExp = 0;
+	/* Number of digits in mantissa. */
+	int mantSize;
+	/* Number of mantissa digits BEFORE decimal point. */
+	int decPt;
+	/* Temporarily holds location of exponent in string. */
+	const C *pExp;
 
 	/*
-     * Strip off leading blanks and check for a sign.
-     */
+	 * Strip off leading blanks and check for a sign.
+	 */
 
 	p = string;
 	while (*p == ' ' || *p == '\t' || *p == '\n') {
@@ -2388,9 +2300,9 @@ static double built_in_strtod(const C *string, /* A decimal ASCII floating-point
 	}
 
 	/*
-     * Count the number of digits in the mantissa (including the decimal
-     * point), and also locate the decimal point.
-     */
+	 * Count the number of digits in the mantissa (including the decimal
+	 * point), and also locate the decimal point.
+	 */
 
 	decPt = -1;
 	for (mantSize = 0;; mantSize += 1) {
@@ -2405,11 +2317,11 @@ static double built_in_strtod(const C *string, /* A decimal ASCII floating-point
 	}
 
 	/*
-     * Now suck up the digits in the mantissa. Use two integers to collect 9
-     * digits each (this is faster than using floating-point). If the mantissa
-     * has more than 18 digits, ignore the extras, since they can't affect the
-     * value anyway.
-     */
+	 * Now suck up the digits in the mantissa. Use two integers to collect 9
+	 * digits each (this is faster than using floating-point). If the mantissa
+	 * has more than 18 digits, ignore the extras, since they can't affect the
+	 * value anyway.
+	 */
 
 	pExp = p;
 	p -= mantSize;
@@ -2455,8 +2367,8 @@ static double built_in_strtod(const C *string, /* A decimal ASCII floating-point
 	}
 
 	/*
-     * Skim off the exponent.
-     */
+	 * Skim off the exponent.
+	 */
 
 	p = pExp;
 	if ((*p == 'E') || (*p == 'e')) {
@@ -2486,10 +2398,10 @@ static double built_in_strtod(const C *string, /* A decimal ASCII floating-point
 	}
 
 	/*
-     * Generate a floating-point number that represents the exponent. Do this
-     * by processing the exponent one bit at a time to combine many powers of
-     * 2 of 10. Then combine the exponent with the fraction.
-     */
+	 * Generate a floating-point number that represents the exponent. Do this
+	 * by processing the exponent one bit at a time to combine many powers of
+	 * 2 of 10. Then combine the exponent with the fraction.
+	 */
 
 	if (exp < 0) {
 		expSign = true;
@@ -3504,6 +3416,27 @@ char32_t String::unicode_at(int p_idx) const {
 	return operator[](p_idx);
 }
 
+String String::indent(const String &p_prefix) const {
+	String new_string;
+	int line_start = 0;
+
+	for (int i = 0; i < length(); i++) {
+		const char32_t c = operator[](i);
+		if (c == '\n') {
+			if (i == line_start) {
+				new_string += c; // Leave empty lines empty.
+			} else {
+				new_string += p_prefix + substr(line_start, i - line_start + 1);
+			}
+			line_start = i + 1;
+		}
+	}
+	if (line_start != length()) {
+		new_string += p_prefix + substr(line_start);
+	}
+	return new_string;
+}
+
 String String::dedent() const {
 	String new_string;
 	String indent;
@@ -3665,15 +3598,15 @@ String String::simplify_path() const {
 	for (int i = 0; i < dirs.size(); i++) {
 		String d = dirs[i];
 		if (d == ".") {
-			dirs.remove(i);
+			dirs.remove_at(i);
 			i--;
 		} else if (d == "..") {
 			if (i == 0) {
-				dirs.remove(i);
+				dirs.remove_at(i);
 				i--;
 			} else {
-				dirs.remove(i);
-				dirs.remove(i - 1);
+				dirs.remove_at(i);
+				dirs.remove_at(i - 1);
 				i -= 2;
 			}
 		}
@@ -4280,7 +4213,7 @@ bool String::is_valid_filename() const {
 		return false;
 	}
 
-	if (stripped == String()) {
+	if (stripped.is_empty()) {
 		return false;
 	}
 
@@ -4412,7 +4345,7 @@ String String::property_name_encode() const {
 	// as well as '"', '=' or ' ' (32)
 	const char32_t *cstr = get_data();
 	for (int i = 0; cstr[i]; i++) {
-		if (cstr[i] == '=' || cstr[i] == '"' || cstr[i] < 33 || cstr[i] > 126) {
+		if (cstr[i] == '=' || cstr[i] == '"' || cstr[i] == ';' || cstr[i] == '[' || cstr[i] == ']' || cstr[i] < 33 || cstr[i] > 126) {
 			return "\"" + c_escape_multiline() + "\"";
 		}
 	}
@@ -4864,15 +4797,20 @@ String TTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 	return p_text_plural;
 }
 
+/* DTR and DTRN are used for the documentation, handling descriptions extracted
+ * from the XML.
+ * They also replace `$DOCS_URL` with the actual URL to the documentation's branch,
+ * to allow dehardcoding it in the XML and doing proper substitutions everywhere.
+ */
 String DTR(const String &p_text, const String &p_context) {
 	// Comes straight from the XML, so remove indentation and any trailing whitespace.
 	const String text = p_text.dedent().strip_edges();
 
 	if (TranslationServer::get_singleton()) {
-		return TranslationServer::get_singleton()->doc_translate(text, p_context);
+		return String(TranslationServer::get_singleton()->doc_translate(text, p_context)).replace("$DOCS_URL", VERSION_DOCS_URL);
 	}
 
-	return text;
+	return text.replace("$DOCS_URL", VERSION_DOCS_URL);
 }
 
 String DTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context) {
@@ -4880,21 +4818,21 @@ String DTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 	const String text_plural = p_text_plural.dedent().strip_edges();
 
 	if (TranslationServer::get_singleton()) {
-		return TranslationServer::get_singleton()->doc_translate_plural(text, text_plural, p_n, p_context);
+		return String(TranslationServer::get_singleton()->doc_translate_plural(text, text_plural, p_n, p_context)).replace("$DOCS_URL", VERSION_DOCS_URL);
 	}
 
 	// Return message based on English plural rule if translation is not possible.
 	if (p_n == 1) {
-		return text;
+		return text.replace("$DOCS_URL", VERSION_DOCS_URL);
 	}
-	return text_plural;
+	return text_plural.replace("$DOCS_URL", VERSION_DOCS_URL);
 }
 #endif
 
 String RTR(const String &p_text, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
 		String rtr = TranslationServer::get_singleton()->tool_translate(p_text, p_context);
-		if (rtr == String() || rtr == p_text) {
+		if (rtr.is_empty() || rtr == p_text) {
 			return TranslationServer::get_singleton()->translate(p_text, p_context);
 		} else {
 			return rtr;
@@ -4907,7 +4845,7 @@ String RTR(const String &p_text, const String &p_context) {
 String RTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
 		String rtr = TranslationServer::get_singleton()->tool_translate_plural(p_text, p_text_plural, p_n, p_context);
-		if (rtr == String() || rtr == p_text || rtr == p_text_plural) {
+		if (rtr.is_empty() || rtr == p_text || rtr == p_text_plural) {
 			return TranslationServer::get_singleton()->translate_plural(p_text, p_text_plural, p_n, p_context);
 		} else {
 			return rtr;

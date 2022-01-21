@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -110,7 +110,7 @@ void GDNativeLibraryEditor::_update_tree() {
 
 		TreeItem *new_arch = tree->create_item(platform);
 		new_arch->set_text(0, TTR("Double click to create a new entry"));
-		new_arch->set_text_align(0, TreeItem::ALIGN_CENTER);
+		new_arch->set_text_alignment(0, HORIZONTAL_ALIGNMENT_CENTER);
 		new_arch->set_custom_color(0, get_theme_color(SNAME("accent_color"), SNAME("Editor")));
 		new_arch->set_expand_right(0, true);
 		new_arch->set_metadata(1, E->key());
@@ -335,7 +335,7 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 	hbox->add_child(label);
 	filter = memnew(MenuButton);
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
-	filter->set_text_align(filter->ALIGN_LEFT);
+	filter->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 	hbox->add_child(filter);
 	PopupMenu *filter_list = filter->get_popup();
 	filter_list->set_hide_on_checkable_item_selection(false);

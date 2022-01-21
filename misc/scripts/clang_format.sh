@@ -23,13 +23,11 @@ while IFS= read -rd '' f; do
     for extension in ${CLANG_FORMAT_FILE_EXTS[@]}; do
         if [[ "$f" == *"$extension" ]]; then
             # Run clang-format.
-            clang-format -i "$f"
+            clang-format --Wno-error=unknown -i "$f"
             # Fix copyright headers, but not all files get them.
             if [[ "$f" == *"inc" ]]; then
                 continue 2
             elif [[ "$f" == *"glsl" ]]; then
-                continue 2
-            elif [[ "$f" == *"theme_data.h" ]]; then
                 continue 2
             elif [[ "$f" == "platform/android/java/lib/src/org/godotengine/godot/input/InputManager"* ]]; then
                 continue 2

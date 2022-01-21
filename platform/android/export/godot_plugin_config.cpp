@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -78,14 +78,13 @@ Vector<PluginConfigAndroid> PluginConfigAndroid::get_prebuilt_plugins(String plu
 bool PluginConfigAndroid::is_plugin_config_valid(PluginConfigAndroid plugin_config) {
 	bool valid_name = !plugin_config.name.is_empty();
 	bool valid_binary_type = plugin_config.binary_type == PluginConfigAndroid::BINARY_TYPE_LOCAL ||
-							 plugin_config.binary_type == PluginConfigAndroid::BINARY_TYPE_REMOTE;
+			plugin_config.binary_type == PluginConfigAndroid::BINARY_TYPE_REMOTE;
 
 	bool valid_binary = false;
 	if (valid_binary_type) {
 		valid_binary = !plugin_config.binary.is_empty() &&
-					   (plugin_config.binary_type == PluginConfigAndroid::BINARY_TYPE_REMOTE ||
-
-							   FileAccess::exists(plugin_config.binary));
+				(plugin_config.binary_type == PluginConfigAndroid::BINARY_TYPE_REMOTE ||
+						FileAccess::exists(plugin_config.binary));
 	}
 
 	bool valid_local_dependencies = true;

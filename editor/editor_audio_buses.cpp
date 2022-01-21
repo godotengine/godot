@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -303,7 +303,7 @@ void EditorAudioBus::_volume_changed(float p_normalized) {
 
 	const float p_db = this->_normalized_volume_to_scaled_db(p_normalized);
 
-	if (Input::get_singleton()->is_key_pressed(KEY_CTRL)) {
+	if (Input::get_singleton()->is_key_pressed(Key::CTRL)) {
 		// Snap the value when holding Ctrl for easier editing.
 		// To do so, it needs to be converted back to normalized volume (as the slider uses that unit).
 		slider->set_value(_scaled_db_to_normalized_volume(Math::round(p_db)));
@@ -324,7 +324,7 @@ float EditorAudioBus::_normalized_volume_to_scaled_db(float normalized) {
 	/* There are three different formulas for the conversion from normalized
 	 * values to relative decibal values.
 	 * One formula is an exponential graph which intends to counteract
-	 * the logorithmic nature of human hearing. This is an approximation
+	 * the logarithmic nature of human hearing. This is an approximation
 	 * of the behaviour of a 'logarithmic potentiometer' found on most
 	 * musical instruments and also emulated in popular software.
 	 * The other two equations are hand-tuned linear tapers that intend to
@@ -363,7 +363,7 @@ float EditorAudioBus::_scaled_db_to_normalized_volume(float db) {
 
 void EditorAudioBus::_show_value(float slider_value) {
 	float db;
-	if (Input::get_singleton()->is_key_pressed(KEY_CTRL)) {
+	if (Input::get_singleton()->is_key_pressed(Key::CTRL)) {
 		// Display the correct (snapped) value when holding Ctrl
 		db = Math::round(_normalized_volume_to_scaled_db(slider_value));
 	} else {
@@ -487,7 +487,8 @@ void EditorAudioBus::_effect_edited() {
 	if (effect->get_metadata(0) == Variant()) {
 		Rect2 area = effects->get_item_rect(effect);
 
-		effect_options->set_position(effects->get_global_position() + area.position + Vector2(0, area.size.y));
+		effect_options->set_position(effects->get_screen_position() + area.position + Vector2(0, area.size.y));
+		effect_options->reset_size();
 		effect_options->popup();
 		//add effect
 	} else {
@@ -534,16 +535,16 @@ void EditorAudioBus::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_RIGHT && mb->is_pressed()) {
-		Vector2 pos = mb->get_position();
-		bus_popup->set_position(get_global_position() + pos);
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
+		bus_popup->set_position(get_screen_position() + mb->get_position());
+		bus_popup->reset_size();
 		bus_popup->popup();
 	}
 }
 
 void EditorAudioBus::_effects_gui_input(Ref<InputEvent> p_event) {
 	Ref<InputEventKey> k = p_event;
-	if (k.is_valid() && k->is_pressed() && !k->is_echo() && k->get_keycode() == KEY_DELETE) {
+	if (k.is_valid() && k->is_pressed() && !k->is_echo() && k->get_keycode() == Key::KEY_DELETE) {
 		TreeItem *current_effect = effects->get_selected();
 		if (current_effect && current_effect->get_metadata(0).get_type() == Variant::INT) {
 			_delete_effect_pressed(0);
@@ -737,7 +738,8 @@ void EditorAudioBus::_effect_rmb(const Vector2 &p_pos) {
 		return;
 	}
 
-	delete_effect_popup->set_position(get_global_mouse_position());
+	delete_effect_popup->set_position(get_screen_position() + get_local_mouse_position());
+	delete_effect_popup->reset_size();
 	delete_effect_popup->popup();
 }
 
@@ -925,8 +927,8 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	hbc->add_child(bus_options);
 
 	bus_popup = bus_options->get_popup();
-	bus_popup->add_shortcut(ED_SHORTCUT("audio_bus_editor/duplicate_selected_bus", TTR("Duplicate Bus"), KEY_MASK_CMD | KEY_D));
-	bus_popup->add_shortcut(ED_SHORTCUT("audio_bus_editor/delete_selected_bus", TTR("Delete Bus"), KEY_DELETE));
+	bus_popup->add_shortcut(ED_SHORTCUT("audio_bus_editor/duplicate_selected_bus", TTR("Duplicate Bus"), KeyModifierMask::CMD | Key::D));
+	bus_popup->add_shortcut(ED_SHORTCUT("audio_bus_editor/delete_selected_bus", TTR("Delete Bus"), Key::KEY_DELETE));
 	bus_popup->set_item_disabled(1, is_master);
 	bus_popup->add_item(TTR("Reset Volume"));
 	bus_popup->connect("index_pressed", callable_mp(this, &EditorAudioBus::_bus_popup_pressed));
@@ -1161,7 +1163,7 @@ void EditorAudioBuses::_server_save() {
 }
 
 void EditorAudioBuses::_select_layout() {
-	EditorNode::get_singleton()->get_filesystem_dock()->select_file(edited_path);
+	FileSystemDock::get_singleton()->select_file(edited_path);
 }
 
 void EditorAudioBuses::_save_as_layout() {
@@ -1296,8 +1298,7 @@ EditorAudioBuses::EditorAudioBuses() {
 
 	bus_scroll = memnew(ScrollContainer);
 	bus_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
-	bus_scroll->set_enable_h_scroll(true);
-	bus_scroll->set_enable_v_scroll(false);
+	bus_scroll->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	add_child(bus_scroll);
 	bus_hb = memnew(HBoxContainer);
 	bus_hb->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1421,7 +1422,7 @@ void EditorAudioMeterNotches::_draw_audio_notches() {
 					Vector2((line_length + label_space) * EDSCALE,
 							(1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + (font_height / 4) + top_padding),
 					String::num(Math::abs(n.db_value)) + "dB",
-					HALIGN_LEFT, -1, font_size,
+					HORIZONTAL_ALIGNMENT_LEFT, -1, font_size,
 					notch_color);
 		}
 	}

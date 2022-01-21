@@ -1,2 +1,2 @@
 GDTEST_PARSER_ERROR
-Used "\t" for indentation instead " " as used before in the file.
+Used tab character for indentation instead of space as used before in the file.

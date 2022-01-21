@@ -23,8 +23,7 @@
 			<argument index="0" name="primitive" type="int" enum="Mesh.PrimitiveType" />
 			<argument index="1" name="arrays" type="Array" />
 			<argument index="2" name="blend_shapes" type="Array" default="[]" />
-			<argument index="3" name="lods" type="Dictionary" default="{
-}" />
+			<argument index="3" name="lods" type="Dictionary" default="{}" />
 			<argument index="4" name="material" type="Material" default="null" />
 			<argument index="5" name="name" type="String" default="&quot;&quot;" />
 			<argument index="6" name="flags" type="int" default="0" />
@@ -178,7 +177,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="_data" type="Dictionary" setter="_set_data" getter="_get_data" default="{&quot;surfaces&quot;: []}">
+		<member name="_data" type="Dictionary" setter="_set_data" getter="_get_data" default="{ &quot;surfaces&quot;: [] }">
 		</member>
 	</members>
 </class>

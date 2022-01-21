@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,8 +37,6 @@
 #include "core/templates/vector.h"
 
 class Geometry2D {
-	Geometry2D();
-
 public:
 	static real_t get_closest_points_between_segments(const Vector2 &p1, const Vector2 &q1, const Vector2 &p2, const Vector2 &q2, Vector2 &c1, Vector2 &c2) {
 		Vector2 d1 = q1 - p1; // Direction vector of segment S1.
@@ -183,8 +181,7 @@ public:
 		D = Vector2(D.x * Bn.x + D.y * Bn.y, D.y * Bn.x - D.x * Bn.y);
 
 		// Fail if C x B and D x B have the same sign (segments don't intersect).
-		// (equivalent to condition (C.y < 0 && D.y < CMP_EPSILON) || (C.y > 0 && D.y > CMP_EPSILON))
-		if (C.y * D.y > CMP_EPSILON) {
+		if ((C.y < -CMP_EPSILON && D.y < -CMP_EPSILON) || (C.y > CMP_EPSILON && D.y > CMP_EPSILON)) {
 			return false;
 		}
 

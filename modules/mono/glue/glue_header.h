@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,7 @@ void godot_register_collections_icalls();
 void godot_register_gd_icalls();
 void godot_register_string_name_icalls();
 void godot_register_nodepath_icalls();
+void godot_register_callable_icalls();
 void godot_register_object_icalls();
 void godot_register_rid_icalls();
 void godot_register_string_icalls();
@@ -50,6 +51,7 @@ void godot_register_glue_header_icalls() {
 	godot_register_gd_icalls();
 	godot_register_string_name_icalls();
 	godot_register_nodepath_icalls();
+	godot_register_callable_icalls();
 	godot_register_object_icalls();
 	godot_register_rid_icalls();
 	godot_register_string_icalls();

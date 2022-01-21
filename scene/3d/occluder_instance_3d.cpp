@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -130,8 +130,8 @@ void Occluder3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_indices", "indices"), &Occluder3D::set_indices);
 	ClassDB::bind_method(D_METHOD("get_indices"), &Occluder3D::get_indices);
 
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_vertices", "get_vertices");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "indices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_indices", "get_indices");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_vertices", "get_vertices");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "indices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_indices", "get_indices");
 }
 
 Occluder3D::Occluder3D() {
@@ -291,7 +291,7 @@ void OccluderInstance3D::_bake_node(Node *p_node, PackedVector3Array &r_vertices
 }
 
 OccluderInstance3D::BakeError OccluderInstance3D::bake(Node *p_from_node, String p_occluder_path) {
-	if (p_occluder_path == "") {
+	if (p_occluder_path.is_empty()) {
 		if (get_occluder().is_null()) {
 			return BAKE_ERROR_NO_SAVE_PATH;
 		}
@@ -329,9 +329,6 @@ TypedArray<String> OccluderInstance3D::get_configuration_warnings() const {
 	}
 
 	if (bake_mask == 0) {
-		// NOTE: This warning will not be emitted if none of the 20 checkboxes
-		// exposed in the editor are checked. This is because there are
-		// currently 12 unexposed layers in the editor inspector.
 		warnings.push_back(TTR("The Bake Mask has no bits enabled, which means baking will not produce any occluder meshes for this OccluderInstance3D.\nTo resolve this, enable at least one bit in the Bake Mask property."));
 	}
 

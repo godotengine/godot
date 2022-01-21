@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,8 +52,6 @@
 #include <regstr.h>
 #include <shlobj.h>
 
-static const WORD MAX_CONSOLE_LINES = 1500;
-
 extern "C" {
 __declspec(dllexport) DWORD NvOptimusEnablement = 1;
 __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
@@ -86,65 +84,17 @@ static String format_error_message(DWORD id) {
 }
 
 void RedirectIOToConsole() {
-	int hConHandle;
+	if (AttachConsole(ATTACH_PARENT_PROCESS)) {
+		FILE *fpstdin = stdin;
+		FILE *fpstdout = stdout;
+		FILE *fpstderr = stderr;
 
-	intptr_t lStdHandle;
+		freopen_s(&fpstdin, "CONIN$", "r", stdin);
+		freopen_s(&fpstdout, "CONOUT$", "w", stdout);
+		freopen_s(&fpstderr, "CONOUT$", "w", stderr);
 
-	CONSOLE_SCREEN_BUFFER_INFO coninfo;
-
-	FILE *fp;
-
-	// allocate a console for this app
-
-	AllocConsole();
-
-	// set the screen buffer to be big enough to let us scroll text
-
-	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &coninfo);
-
-	coninfo.dwSize.Y = MAX_CONSOLE_LINES;
-
-	SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), coninfo.dwSize);
-
-	// redirect unbuffered STDOUT to the console
-
-	lStdHandle = (intptr_t)GetStdHandle(STD_OUTPUT_HANDLE);
-
-	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-
-	fp = _fdopen(hConHandle, "w");
-
-	*stdout = *fp;
-
-	setvbuf(stdout, nullptr, _IONBF, 0);
-
-	// redirect unbuffered STDIN to the console
-
-	lStdHandle = (intptr_t)GetStdHandle(STD_INPUT_HANDLE);
-
-	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-
-	fp = _fdopen(hConHandle, "r");
-
-	*stdin = *fp;
-
-	setvbuf(stdin, nullptr, _IONBF, 0);
-
-	// redirect unbuffered STDERR to the console
-
-	lStdHandle = (intptr_t)GetStdHandle(STD_ERROR_HANDLE);
-
-	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-
-	fp = _fdopen(hConHandle, "w");
-
-	*stderr = *fp;
-
-	setvbuf(stderr, nullptr, _IONBF, 0);
-
-	// make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog
-
-	// point to console as well
+		printf("\n"); // Make sure our output is starting from the new line.
+	}
 }
 
 BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType) {
@@ -172,7 +122,9 @@ void OS_Windows::initialize_debugging() {
 void OS_Windows::initialize() {
 	crash_handler.initialize();
 
-	//RedirectIOToConsole();
+#ifndef WINDOWS_SUBSYSTEM_CONSOLE
+	RedirectIOToConsole();
+#endif
 
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_USERDATA);
@@ -184,12 +136,8 @@ void OS_Windows::initialize() {
 	NetSocketPosix::make_default();
 
 	// We need to know how often the clock is updated
-	if (!QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second))
-		ticks_per_second = 1000;
-	// If timeAtGameStart is 0 then we get the time since
-	// the start of the computer when we call GetGameTime()
-	ticks_start = 0;
-	ticks_start = get_ticks_usec();
+	QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second);
+	QueryPerformanceCounter((LARGE_INTEGER *)&ticks_start);
 
 	// set minimum resolution for periodic timers, otherwise Sleep(n) may wait at least as
 	//  long as the windows scheduler resolution (~16-30ms) even for calls like Sleep(1)
@@ -290,12 +238,13 @@ String OS_Windows::get_name() const {
 	return "Windows";
 }
 
-OS::Date OS_Windows::get_date(bool utc) const {
+OS::Date OS_Windows::get_date(bool p_utc) const {
 	SYSTEMTIME systemtime;
-	if (utc)
+	if (p_utc) {
 		GetSystemTime(&systemtime);
-	else
+	} else {
 		GetLocalTime(&systemtime);
+	}
 
 	Date date;
 	date.day = systemtime.wDay;
@@ -306,12 +255,13 @@ OS::Date OS_Windows::get_date(bool utc) const {
 	return date;
 }
 
-OS::Time OS_Windows::get_time(bool utc) const {
+OS::Time OS_Windows::get_time(bool p_utc) const {
 	SYSTEMTIME systemtime;
-	if (utc)
+	if (p_utc) {
 		GetSystemTime(&systemtime);
-	else
+	} else {
 		GetLocalTime(&systemtime);
+	}
 
 	Time time;
 	time.hour = systemtime.wHour;
@@ -367,8 +317,10 @@ uint64_t OS_Windows::get_ticks_usec() const {
 	uint64_t ticks;
 
 	// This is the number of clock ticks since start
-	if (!QueryPerformanceCounter((LARGE_INTEGER *)&ticks))
-		ticks = (UINT64)timeGetTime();
+	QueryPerformanceCounter((LARGE_INTEGER *)&ticks);
+	// Subtract the ticks at game start to get
+	// the ticks since the game started
+	ticks -= ticks_start;
 
 	// Divide by frequency to get the time in seconds
 	// original calculation shown below is subject to overflow
@@ -388,9 +340,6 @@ uint64_t OS_Windows::get_ticks_usec() const {
 	// seconds
 	time += seconds * 1000000L;
 
-	// Subtract the time at game start to get
-	// the time since the game started
-	time -= ticks_start;
 	return time;
 }
 
@@ -404,39 +353,11 @@ String OS_Windows::_quote_command_line_argument(const String &p_text) const {
 	return p_text;
 }
 
-Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
 	String path = p_path.replace("/", "\\");
 	String command = _quote_command_line_argument(path);
 	for (const String &E : p_arguments) {
 		command += " " + _quote_command_line_argument(E);
-	}
-
-	if (r_pipe) {
-		if (read_stderr) {
-			command += " 2>&1"; // Include stderr
-		}
-		// Add extra quotes around the full command, to prevent it from stripping quotes in the command,
-		// because _wpopen calls command as "cmd.exe /c command", instead of executing it directly
-		command = _quote_command_line_argument(command);
-
-		FILE *f = _wpopen((LPCWSTR)(command.utf16().get_data()), L"r");
-		ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot create pipe from command: " + command);
-		char buf[65535];
-		while (fgets(buf, 65535, f)) {
-			if (p_pipe_mutex) {
-				p_pipe_mutex->lock();
-			}
-			(*r_pipe) += String::utf8(buf);
-			if (p_pipe_mutex) {
-				p_pipe_mutex->unlock();
-			}
-		}
-		int rv = _pclose(f);
-
-		if (r_exitcode) {
-			*r_exitcode = rv;
-		}
-		return OK;
 	}
 
 	ProcessInfo pi;
@@ -445,22 +366,74 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
 	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
 
-	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, false, NORMAL_PRIORITY_CLASS & CREATE_NO_WINDOW, nullptr, nullptr, si_w, &pi.pi);
+	bool inherit_handles = false;
+	HANDLE pipe[2] = { nullptr, nullptr };
+	if (r_pipe) {
+		// Create pipe for StdOut and StdErr.
+		SECURITY_ATTRIBUTES sa;
+		sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+		sa.bInheritHandle = true;
+		sa.lpSecurityDescriptor = nullptr;
+
+		ERR_FAIL_COND_V(!CreatePipe(&pipe[0], &pipe[1], &sa, 0), ERR_CANT_FORK);
+		ERR_FAIL_COND_V(!SetHandleInformation(pipe[0], HANDLE_FLAG_INHERIT, 0), ERR_CANT_FORK); // Read handle is for host process only and should not be inherited.
+
+		pi.si.dwFlags |= STARTF_USESTDHANDLES;
+		pi.si.hStdOutput = pipe[1];
+		if (read_stderr) {
+			pi.si.hStdError = pipe[1];
+		}
+		inherit_handles = true;
+	}
+	DWORD creaton_flags = NORMAL_PRIORITY_CLASS;
+	if (p_open_console) {
+		creaton_flags |= CREATE_NEW_CONSOLE;
+	} else {
+		creaton_flags |= CREATE_NO_WINDOW;
+	}
+
+	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, inherit_handles, creaton_flags, nullptr, nullptr, si_w, &pi.pi);
+	if (!ret && r_pipe) {
+		CloseHandle(pipe[0]); // Cleanup pipe handles.
+		CloseHandle(pipe[1]);
+	}
 	ERR_FAIL_COND_V_MSG(ret == 0, ERR_CANT_FORK, "Could not create child process: " + command);
 
-	WaitForSingleObject(pi.pi.hProcess, INFINITE);
+	if (r_pipe) {
+		CloseHandle(pipe[1]); // Close pipe write handle (only child process is writing).
+		char buf[4096];
+		DWORD read = 0;
+		for (;;) { // Read StdOut and StdErr from pipe.
+			bool success = ReadFile(pipe[0], buf, 4096, &read, NULL);
+			if (!success || read == 0) {
+				break;
+			}
+			if (p_pipe_mutex) {
+				p_pipe_mutex->lock();
+			}
+			(*r_pipe) += String::utf8(buf, read);
+			if (p_pipe_mutex) {
+				p_pipe_mutex->unlock();
+			}
+		};
+		CloseHandle(pipe[0]); // Close pipe read handle.
+	} else {
+		WaitForSingleObject(pi.pi.hProcess, INFINITE);
+	}
+
 	if (r_exitcode) {
 		DWORD ret2;
 		GetExitCodeProcess(pi.pi.hProcess, &ret2);
 		*r_exitcode = ret2;
 	}
+
 	CloseHandle(pi.pi.hProcess);
 	CloseHandle(pi.pi.hThread);
 
 	return OK;
 };
 
-Error OS_Windows::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
+Error OS_Windows::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
 	String path = p_path.replace("/", "\\");
 	String command = _quote_command_line_argument(path);
 	for (const String &E : p_arguments) {
@@ -473,7 +446,14 @@ Error OS_Windows::create_process(const String &p_path, const List<String> &p_arg
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
 	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
 
-	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, false, NORMAL_PRIORITY_CLASS & CREATE_NO_WINDOW, nullptr, nullptr, si_w, &pi.pi);
+	DWORD creaton_flags = NORMAL_PRIORITY_CLASS;
+	if (p_open_console) {
+		creaton_flags |= CREATE_NEW_CONSOLE;
+	} else {
+		creaton_flags |= CREATE_NO_WINDOW;
+	}
+
+	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, false, creaton_flags, nullptr, nullptr, si_w, &pi.pi);
 	ERR_FAIL_COND_V_MSG(ret == 0, ERR_CANT_FORK, "Could not create child process: " + command);
 
 	ProcessID pid = pi.pi.dwProcessId;
@@ -594,7 +574,7 @@ String OS_Windows::get_locale() const {
 		wl++;
 	}
 
-	if (neutral != "")
+	if (!neutral.is_empty())
 		return String(neutral).replace("-", "_");
 
 	return "en";
@@ -745,11 +725,11 @@ String OS_Windows::get_system_dir(SystemDir p_dir, bool p_shared_storage) const 
 
 String OS_Windows::get_user_data_dir() const {
 	String appname = get_safe_dir_name(ProjectSettings::get_singleton()->get("application/config/name"));
-	if (appname != "") {
+	if (!appname.is_empty()) {
 		bool use_custom_dir = ProjectSettings::get_singleton()->get("application/config/use_custom_user_dir");
 		if (use_custom_dir) {
 			String custom_dir = get_safe_dir_name(ProjectSettings::get_singleton()->get("application/config/custom_user_dir_name"), true);
-			if (custom_dir == "") {
+			if (custom_dir.is_empty()) {
 				custom_dir = appname;
 			}
 			return get_data_path().plus_file(custom_dir).replace("\\", "/");
@@ -758,7 +738,7 @@ String OS_Windows::get_user_data_dir() const {
 		}
 	}
 
-	return ProjectSettings::get_singleton()->get_resource_path();
+	return get_data_path().plus_file(get_godot_dir_name()).plus_file("app_userdata").plus_file("[unnamed project]");
 }
 
 String OS_Windows::get_unique_id() const {

@@ -34,6 +34,9 @@
 #include "hb-null.hh"
 #include "hb-number.hh"
 
+#include <algorithm>
+#include <initializer_list>
+#include <new>
 
 /*
  * Flags
@@ -125,7 +128,7 @@ struct BEInt<Type, 2>
 template <typename Type>
 struct BEInt<Type, 3>
 {
-  static_assert (!hb_is_signed (Type), "");
+  static_assert (!std::is_signed<Type>::value, "");
   public:
   BEInt () = default;
   constexpr BEInt (Type V) : v {uint8_t ((V >> 16) & 0xFF),
@@ -179,7 +182,7 @@ struct
 {
   /* Note.  This is dangerous in that if it's passed an rvalue, it returns rvalue-reference. */
   template <typename T> constexpr auto
-  operator () (T&& v) const HB_AUTO_RETURN ( hb_forward<T> (v) )
+  operator () (T&& v) const HB_AUTO_RETURN ( std::forward<T> (v) )
 }
 HB_FUNCOBJ (hb_identity);
 struct
@@ -203,7 +206,7 @@ HB_FUNCOBJ (hb_ridentity);
 struct
 {
   template <typename T> constexpr bool
-  operator () (T&& v) const { return bool (hb_forward<T> (v)); }
+  operator () (T&& v) const { return bool (std::forward<T> (v)); }
 }
 HB_FUNCOBJ (hb_bool);
 
@@ -215,7 +218,7 @@ struct
   impl (const T& v, hb_priority<1>) const HB_RETURN (uint32_t, hb_deref (v).hash ())
 
   template <typename T,
-	    hb_enable_if (hb_is_integral (T))> constexpr auto
+	    hb_enable_if (std::is_integral<T>::value)> constexpr auto
   impl (const T& v, hb_priority<0>) const HB_AUTO_RETURN
   (
     /* Knuth's multiplicative method: */
@@ -237,26 +240,26 @@ struct
   /* Pointer-to-member-function. */
   template <typename Appl, typename T, typename ...Ts> auto
   impl (Appl&& a, hb_priority<2>, T &&v, Ts&&... ds) const HB_AUTO_RETURN
-  ((hb_deref (hb_forward<T> (v)).*hb_forward<Appl> (a)) (hb_forward<Ts> (ds)...))
+  ((hb_deref (std::forward<T> (v)).*std::forward<Appl> (a)) (std::forward<Ts> (ds)...))
 
   /* Pointer-to-member. */
   template <typename Appl, typename T> auto
   impl (Appl&& a, hb_priority<1>, T &&v) const HB_AUTO_RETURN
-  ((hb_deref (hb_forward<T> (v))).*hb_forward<Appl> (a))
+  ((hb_deref (std::forward<T> (v))).*std::forward<Appl> (a))
 
   /* Operator(). */
   template <typename Appl, typename ...Ts> auto
   impl (Appl&& a, hb_priority<0>, Ts&&... ds) const HB_AUTO_RETURN
-  (hb_deref (hb_forward<Appl> (a)) (hb_forward<Ts> (ds)...))
+  (hb_deref (std::forward<Appl> (a)) (std::forward<Ts> (ds)...))
 
   public:
 
   template <typename Appl, typename ...Ts> auto
   operator () (Appl&& a, Ts&&... ds) const HB_AUTO_RETURN
   (
-    impl (hb_forward<Appl> (a),
+    impl (std::forward<Appl> (a),
 	  hb_prioritize,
-	  hb_forward<Ts> (ds)...)
+	  std::forward<Ts> (ds)...)
   )
 }
 HB_FUNCOBJ (hb_invoke);
@@ -275,9 +278,9 @@ struct hb_partial_t
 						   hb_declval (V),
 						   hb_declval (Ts)...))
   {
-    return hb_invoke (hb_forward<Appl> (a),
-		      hb_forward<V> (v),
-		      hb_forward<Ts> (ds)...);
+    return hb_invoke (std::forward<Appl> (a),
+		      std::forward<V> (v),
+		      std::forward<Ts> (ds)...);
   }
   template <typename T0, typename ...Ts,
 	    unsigned P = Pos,
@@ -287,10 +290,10 @@ struct hb_partial_t
 							    hb_declval (V),
 							    hb_declval (Ts)...))
   {
-    return hb_invoke (hb_forward<Appl> (a),
-		      hb_forward<T0> (d0),
-		      hb_forward<V> (v),
-		      hb_forward<Ts> (ds)...);
+    return hb_invoke (std::forward<Appl> (a),
+		      std::forward<T0> (d0),
+		      std::forward<V> (v),
+		      std::forward<Ts> (ds)...);
   }
 
   private:
@@ -324,14 +327,14 @@ auto hb_partial (Appl&& a, V&& v) HB_AUTO_RETURN
 #define HB_PARTIALIZE(Pos) \
   template <typename _T> \
   decltype(auto) operator () (_T&& _v) const \
-  { return hb_partial<Pos> (this, hb_forward<_T> (_v)); } \
+  { return hb_partial<Pos> (this, std::forward<_T> (_v)); } \
   static_assert (true, "")
 #else
 /* https://github.com/harfbuzz/harfbuzz/issues/1724 */
 #define HB_PARTIALIZE(Pos) \
   template <typename _T> \
   auto operator () (_T&& _v) const HB_AUTO_RETURN \
-  (hb_partial<Pos> (+this, hb_forward<_T> (_v))) \
+  (hb_partial<Pos> (+this, std::forward<_T> (_v))) \
   static_assert (true, "")
 #endif
 
@@ -343,22 +346,22 @@ struct
   template <typename Pred, typename Val> auto
   impl (Pred&& p, Val &&v, hb_priority<1>) const HB_AUTO_RETURN
   (
-    hb_deref (hb_forward<Pred> (p)).has (hb_forward<Val> (v))
+    hb_deref (std::forward<Pred> (p)).has (std::forward<Val> (v))
   )
 
   template <typename Pred, typename Val> auto
   impl (Pred&& p, Val &&v, hb_priority<0>) const HB_AUTO_RETURN
   (
-    hb_invoke (hb_forward<Pred> (p),
-	       hb_forward<Val> (v))
+    hb_invoke (std::forward<Pred> (p),
+	       std::forward<Val> (v))
   )
 
   public:
 
   template <typename Pred, typename Val> auto
   operator () (Pred&& p, Val &&v) const HB_RETURN (bool,
-    impl (hb_forward<Pred> (p),
-	  hb_forward<Val> (v),
+    impl (std::forward<Pred> (p),
+	  std::forward<Val> (v),
 	  hb_prioritize)
   )
 }
@@ -371,22 +374,22 @@ struct
   template <typename Pred, typename Val> auto
   impl (Pred&& p, Val &&v, hb_priority<1>) const HB_AUTO_RETURN
   (
-    hb_has (hb_forward<Pred> (p),
-	    hb_forward<Val> (v))
+    hb_has (std::forward<Pred> (p),
+	    std::forward<Val> (v))
   )
 
   template <typename Pred, typename Val> auto
   impl (Pred&& p, Val &&v, hb_priority<0>) const HB_AUTO_RETURN
   (
-    hb_forward<Pred> (p) == hb_forward<Val> (v)
+    std::forward<Pred> (p) == std::forward<Val> (v)
   )
 
   public:
 
   template <typename Pred, typename Val> auto
   operator () (Pred&& p, Val &&v) const HB_RETURN (bool,
-    impl (hb_forward<Pred> (p),
-	  hb_forward<Val> (v),
+    impl (std::forward<Pred> (p),
+	  std::forward<Val> (v),
 	  hb_prioritize)
   )
 }
@@ -399,20 +402,20 @@ struct
   template <typename Proj, typename Val> auto
   impl (Proj&& f, Val &&v, hb_priority<2>) const HB_AUTO_RETURN
   (
-    hb_deref (hb_forward<Proj> (f)).get (hb_forward<Val> (v))
+    hb_deref (std::forward<Proj> (f)).get (std::forward<Val> (v))
   )
 
   template <typename Proj, typename Val> auto
   impl (Proj&& f, Val &&v, hb_priority<1>) const HB_AUTO_RETURN
   (
-    hb_invoke (hb_forward<Proj> (f),
-	       hb_forward<Val> (v))
+    hb_invoke (std::forward<Proj> (f),
+	       std::forward<Val> (v))
   )
 
   template <typename Proj, typename Val> auto
   impl (Proj&& f, Val &&v, hb_priority<0>) const HB_AUTO_RETURN
   (
-    hb_forward<Proj> (f)[hb_forward<Val> (v)]
+    std::forward<Proj> (f)[std::forward<Val> (v)]
   )
 
   public:
@@ -420,8 +423,8 @@ struct
   template <typename Proj, typename Val> auto
   operator () (Proj&& f, Val &&v) const HB_AUTO_RETURN
   (
-    impl (hb_forward<Proj> (f),
-	  hb_forward<Val> (v),
+    impl (std::forward<Proj> (f),
+	  std::forward<Val> (v),
 	  hb_prioritize)
   )
 }
@@ -434,19 +437,19 @@ struct
   template <typename T1, typename T2> auto
   impl (T1&& v1, T2 &&v2, hb_priority<2>) const HB_AUTO_RETURN
   (
-    hb_forward<T2> (v2).cmp (hb_forward<T1> (v1)) == 0
+    std::forward<T2> (v2).cmp (std::forward<T1> (v1)) == 0
   )
 
   template <typename T1, typename T2> auto
   impl (T1&& v1, T2 &&v2, hb_priority<1>) const HB_AUTO_RETURN
   (
-    hb_forward<T1> (v1).cmp (hb_forward<T2> (v2)) == 0
+    std::forward<T1> (v1).cmp (std::forward<T2> (v2)) == 0
   )
 
   template <typename T1, typename T2> auto
   impl (T1&& v1, T2 &&v2, hb_priority<0>) const HB_AUTO_RETURN
   (
-    hb_forward<T1> (v1) == hb_forward<T2> (v2)
+    std::forward<T1> (v1) == std::forward<T2> (v2)
   )
 
   public:
@@ -454,8 +457,8 @@ struct
   template <typename T1, typename T2> auto
   operator () (T1&& v1, T2 &&v2) const HB_AUTO_RETURN
   (
-    impl (hb_forward<T1> (v1),
-	  hb_forward<T2> (v2),
+    impl (std::forward<T1> (v1),
+	  std::forward<T2> (v2),
 	  hb_prioritize)
   )
 }
@@ -515,24 +518,34 @@ struct
 {
   template <typename T, typename T2> constexpr auto
   operator () (T&& a, T2&& b) const HB_AUTO_RETURN
-  (a <= b ? hb_forward<T> (a) : hb_forward<T2> (b))
+  (a <= b ? std::forward<T> (a) : std::forward<T2> (b))
 }
 HB_FUNCOBJ (hb_min);
 struct
 {
   template <typename T, typename T2> constexpr auto
   operator () (T&& a, T2&& b) const HB_AUTO_RETURN
-  (a >= b ? hb_forward<T> (a) : hb_forward<T2> (b))
+  (a >= b ? std::forward<T> (a) : std::forward<T2> (b))
 }
 HB_FUNCOBJ (hb_max);
 struct
 {
   template <typename T, typename T2, typename T3> constexpr auto
   operator () (T&& x, T2&& min, T3&& max) const HB_AUTO_RETURN
-  (hb_min (hb_max (hb_forward<T> (x), hb_forward<T2> (min)), hb_forward<T3> (max)))
+  (hb_min (hb_max (std::forward<T> (x), std::forward<T2> (min)), std::forward<T3> (max)))
 }
 HB_FUNCOBJ (hb_clamp);
 
+struct
+{
+  template <typename T> void
+  operator () (T& a, T& b) const
+  {
+    using std::swap; // allow ADL
+    swap (a, b);
+  }
+}
+HB_FUNCOBJ (hb_swap);
 
 /*
  * Bithacks.
@@ -795,7 +808,7 @@ hb_ceil_to_4 (unsigned int v)
 template <typename T> static inline bool
 hb_in_range (T u, T lo, T hi)
 {
-  static_assert (!hb_is_signed<T>::value, "");
+  static_assert (!std::is_signed<T>::value, "");
 
   /* The casts below are important as if T is smaller than int,
    * the subtract results will become a signed int! */

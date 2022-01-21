@@ -84,7 +84,7 @@
 		<member name="agent/max_slope" type="float" setter="set_agent_max_slope" getter="get_agent_max_slope" default="45.0">
 			The maximum slope that is considered walkable, in degrees.
 		</member>
-		<member name="agent/radius" type="float" setter="set_agent_radius" getter="get_agent_radius" default="0.6">
+		<member name="agent/radius" type="float" setter="set_agent_radius" getter="get_agent_radius" default="1.0">
 			The distance to erode/shrink the walkable area of the heightfield away from obstructions.
 			[b]Note:[/b] While baking, this value will be rounded up to the nearest multiple of [member cell/size].
 		</member>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -596,7 +596,7 @@ enum OldArrayFormat {
 	OLD_ARRAY_FLAG_USE_2D_VERTICES = OLD_ARRAY_COMPRESS_INDEX << 1,
 	OLD_ARRAY_FLAG_USE_16_BIT_BONES = OLD_ARRAY_COMPRESS_INDEX << 2,
 	OLD_ARRAY_FLAG_USE_DYNAMIC_UPDATE = OLD_ARRAY_COMPRESS_INDEX << 3,
-
+	OLD_ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION = OLD_ARRAY_COMPRESS_INDEX << 4,
 };
 
 #ifndef DISABLE_DEPRECATED
@@ -625,6 +625,27 @@ static Mesh::PrimitiveType _old_primitives[7] = {
 	Mesh::PRIMITIVE_TRIANGLE_STRIP
 };
 #endif // DISABLE_DEPRECATED
+
+// Convert Octahedron-mapped normalized vector back to Cartesian
+// Assumes normalized format (elements of v within range [-1, 1])
+Vector3 _oct_to_norm(const Vector2 v) {
+	Vector3 res(v.x, v.y, 1 - (Math::absf(v.x) + Math::absf(v.y)));
+	float t = MAX(-res.z, 0.0f);
+	res.x += t * -SIGN(res.x);
+	res.y += t * -SIGN(res.y);
+	return res.normalized();
+}
+
+// Convert Octahedron-mapped normalized tangent vector back to Cartesian
+// out_sign provides the direction for the original cartesian tangent
+// Assumes normalized format (elements of v within range [-1, 1])
+Vector3 _oct_to_tangent(const Vector2 v, float *out_sign) {
+	Vector2 v_decompressed = v;
+	v_decompressed.y = Math::absf(v_decompressed.y) * 2 - 1;
+	Vector3 res = _oct_to_norm(v_decompressed);
+	*out_sign = SIGN(v[1]);
+	return res;
+}
 
 void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint32_t p_old_format, uint32_t p_new_format, uint32_t p_elements, Vector<uint8_t> &vertex_data, Vector<uint8_t> &attribute_data, Vector<uint8_t> &skin_data) {
 	uint32_t dst_vertex_stride;
@@ -692,66 +713,133 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint32_t p_old_forma
 				}
 			} break;
 			case OLD_ARRAY_NORMAL: {
-				if (p_old_format & OLD_ARRAY_COMPRESS_NORMAL) {
-					const float multiplier = 1.f / 127.f * 1023.0f;
+				if (p_old_format & OLD_ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
+					if ((p_old_format & OLD_ARRAY_COMPRESS_NORMAL) && (p_old_format & OLD_ARRAY_FORMAT_TANGENT) && (p_old_format & OLD_ARRAY_COMPRESS_TANGENT)) {
+						for (uint32_t i = 0; i < p_elements; i++) {
+							const int8_t *src = (const int8_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
+							uint32_t *dst = (uint32_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+							const Vector2 src_vec(src[0] / 127.0f, src[1] / 127.0f);
 
-					for (uint32_t i = 0; i < p_elements; i++) {
-						const int8_t *src = (const int8_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-						uint32_t *dst = (uint32_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+							const Vector3 res = _oct_to_norm(src_vec) * Vector3(0.5, 0.5, 0.5) + Vector3(0.5, 0.5, 0.5);
+							*dst = 0;
+							*dst |= CLAMP(int(res.x * 1023.0f), 0, 1023);
+							*dst |= CLAMP(int(res.y * 1023.0f), 0, 1023) << 10;
+							*dst |= CLAMP(int(res.z * 1023.0f), 0, 1023) << 20;
+						}
+						src_offset += sizeof(int8_t) * 2;
+					} else {
+						for (uint32_t i = 0; i < p_elements; i++) {
+							const int16_t *src = (const int16_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
+							uint32_t *dst = (uint32_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+							const Vector2 src_vec(src[0] / 32767.0f, src[1] / 32767.0f);
 
-						*dst = 0;
-						*dst |= CLAMP(int(src[0] * multiplier), 0, 1023);
-						*dst |= CLAMP(int(src[1] * multiplier), 0, 1023) << 10;
-						*dst |= CLAMP(int(src[2] * multiplier), 0, 1023) << 20;
+							const Vector3 res = _oct_to_norm(src_vec) * Vector3(0.5, 0.5, 0.5) + Vector3(0.5, 0.5, 0.5);
+							*dst = 0;
+							*dst |= CLAMP(int(res.x * 1023.0f), 0, 1023);
+							*dst |= CLAMP(int(res.y * 1023.0f), 0, 1023) << 10;
+							*dst |= CLAMP(int(res.z * 1023.0f), 0, 1023) << 20;
+						}
+						src_offset += sizeof(int16_t) * 2;
 					}
-					src_offset += sizeof(uint32_t);
-				} else {
-					for (uint32_t i = 0; i < p_elements; i++) {
-						const float *src = (const float *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-						uint32_t *dst = (uint32_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+				} else { // No Octahedral compression
+					if (p_old_format & OLD_ARRAY_COMPRESS_NORMAL) {
+						const float multiplier = 1.f / 127.f * 1023.0f;
 
-						*dst = 0;
-						*dst |= CLAMP(int(src[0] * 1023.0), 0, 1023);
-						*dst |= CLAMP(int(src[1] * 1023.0), 0, 1023) << 10;
-						*dst |= CLAMP(int(src[2] * 1023.0), 0, 1023) << 20;
+						for (uint32_t i = 0; i < p_elements; i++) {
+							const int8_t *src = (const int8_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
+							uint32_t *dst = (uint32_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+
+							*dst = 0;
+							*dst |= CLAMP(int(src[0] * multiplier), 0, 1023);
+							*dst |= CLAMP(int(src[1] * multiplier), 0, 1023) << 10;
+							*dst |= CLAMP(int(src[2] * multiplier), 0, 1023) << 20;
+						}
+						src_offset += sizeof(uint32_t);
+					} else {
+						for (uint32_t i = 0; i < p_elements; i++) {
+							const float *src = (const float *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
+							uint32_t *dst = (uint32_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+
+							*dst = 0;
+							*dst |= CLAMP(int(src[0] * 1023.0), 0, 1023);
+							*dst |= CLAMP(int(src[1] * 1023.0), 0, 1023) << 10;
+							*dst |= CLAMP(int(src[2] * 1023.0), 0, 1023) << 20;
+						}
+						src_offset += sizeof(float) * 3;
 					}
-					src_offset += sizeof(float) * 3;
 				}
 
 			} break;
 			case OLD_ARRAY_TANGENT: {
-				if (p_old_format & OLD_ARRAY_COMPRESS_TANGENT) {
-					const float multiplier = 1.f / 127.f * 1023.0f;
+				if (p_old_format & OLD_ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
+					if (p_old_format & OLD_ARRAY_COMPRESS_TANGENT) { // int8
+						for (uint32_t i = 0; i < p_elements; i++) {
+							const int8_t *src = (const int8_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
+							uint32_t *dst = (uint32_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_TANGENT]];
+							const Vector2 src_vec(src[0] / 127.0f, src[1] / 127.0f);
+							float out_sign;
+							const Vector3 res = _oct_to_tangent(src_vec, &out_sign) * Vector3(0.5, 0.5, 0.5) + Vector3(0.5, 0.5, 0.5);
 
-					for (uint32_t i = 0; i < p_elements; i++) {
-						const int8_t *src = (const int8_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-						uint32_t *dst = (uint32_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_TANGENT]];
-
-						*dst = 0;
-						*dst |= CLAMP(int(src[0] * multiplier), 0, 1023);
-						*dst |= CLAMP(int(src[1] * multiplier), 0, 1023) << 10;
-						*dst |= CLAMP(int(src[2] * multiplier), 0, 1023) << 20;
-						if (src[3] > 0) {
-							*dst |= 3 << 30;
+							*dst = 0;
+							*dst |= CLAMP(int(res.x * 1023.0), 0, 1023);
+							*dst |= CLAMP(int(res.y * 1023.0), 0, 1023) << 10;
+							*dst |= CLAMP(int(res.z * 1023.0), 0, 1023) << 20;
+							if (out_sign > 0) {
+								*dst |= 3 << 30;
+							}
 						}
-					}
-					src_offset += sizeof(uint32_t);
-				} else {
-					for (uint32_t i = 0; i < p_elements; i++) {
-						const float *src = (const float *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-						uint32_t *dst = (uint32_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_TANGENT]];
+						src_offset += sizeof(int8_t) * 2;
+					} else { // int16
+						for (uint32_t i = 0; i < p_elements; i++) {
+							const int16_t *src = (const int16_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
+							uint32_t *dst = (uint32_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_TANGENT]];
+							const Vector2 src_vec(src[0] / 32767.0f, src[1] / 32767.0f);
+							float out_sign;
+							Vector3 res = _oct_to_tangent(src_vec, &out_sign) * Vector3(0.5, 0.5, 0.5) + Vector3(0.5, 0.5, 0.5);
 
-						*dst = 0;
-						*dst |= CLAMP(int(src[0] * 1023.0), 0, 1023);
-						*dst |= CLAMP(int(src[1] * 1023.0), 0, 1023) << 10;
-						*dst |= CLAMP(int(src[2] * 1023.0), 0, 1023) << 20;
-						if (src[3] > 0) {
-							*dst |= 3 << 30;
+							*dst = 0;
+							*dst |= CLAMP(int(res.x * 1023.0), 0, 1023);
+							*dst |= CLAMP(int(res.y * 1023.0), 0, 1023) << 10;
+							*dst |= CLAMP(int(res.z * 1023.0), 0, 1023) << 20;
+							if (out_sign > 0) {
+								*dst |= 3 << 30;
+							}
 						}
+						src_offset += sizeof(int16_t) * 2;
 					}
-					src_offset += sizeof(float) * 4;
+				} else { // No Octahedral compression
+					if (p_old_format & OLD_ARRAY_COMPRESS_TANGENT) {
+						const float multiplier = 1.f / 127.f * 1023.0f;
+
+						for (uint32_t i = 0; i < p_elements; i++) {
+							const int8_t *src = (const int8_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
+							uint32_t *dst = (uint32_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_TANGENT]];
+
+							*dst = 0;
+							*dst |= CLAMP(int(src[0] * multiplier), 0, 1023);
+							*dst |= CLAMP(int(src[1] * multiplier), 0, 1023) << 10;
+							*dst |= CLAMP(int(src[2] * multiplier), 0, 1023) << 20;
+							if (src[3] > 0) {
+								*dst |= 3 << 30;
+							}
+						}
+						src_offset += sizeof(uint32_t);
+					} else {
+						for (uint32_t i = 0; i < p_elements; i++) {
+							const float *src = (const float *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
+							uint32_t *dst = (uint32_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_TANGENT]];
+
+							*dst = 0;
+							*dst |= CLAMP(int(src[0] * 1023.0), 0, 1023);
+							*dst |= CLAMP(int(src[1] * 1023.0), 0, 1023) << 10;
+							*dst |= CLAMP(int(src[2] * 1023.0), 0, 1023) << 20;
+							if (src[3] > 0) {
+								*dst |= 3 << 30;
+							}
+						}
+						src_offset += sizeof(float) * 4;
+					}
 				}
-
 			} break;
 			case OLD_ARRAY_COLOR: {
 				if (p_old_format & OLD_ARRAY_COMPRESS_COLOR) {
@@ -898,7 +986,9 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 		return false;
 	}
 
-	WARN_DEPRECATED_MSG("Mesh uses old surface format, which is deprecated (and loads slower). Consider re-importing or re-saving the scene.");
+	WARN_DEPRECATED_MSG(vformat(
+			"Mesh uses old surface format, which is deprecated (and loads slower). Consider re-importing or re-saving the scene. Path: \"%s\"",
+			get_path()));
 
 	int idx = sname.get_slicec('/', 1).to_int();
 	String what = sname.get_slicec('/', 2);
@@ -994,9 +1084,9 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 			}
 
 			//clear unused flags
-			print_line("format pre: " + itos(old_format));
+			print_verbose("Mesh format pre-conversion: " + itos(old_format));
 
-			print_line("format post: " + itos(new_format));
+			print_verbose("Mesh format post-conversion: " + itos(new_format));
 
 			ERR_FAIL_COND_V(!d.has("aabb"), false);
 			AABB aabb = d["aabb"];
@@ -1104,7 +1194,7 @@ Array ArrayMesh::_get_surfaces() const {
 			data["material"] = surfaces[i].material;
 		}
 
-		if (surfaces[i].name != String()) {
+		if (!surfaces[i].name.is_empty()) {
 			data["name"] = surfaces[i].name;
 		}
 
@@ -1577,7 +1667,7 @@ void ArrayMesh::regen_normal_maps() {
 }
 
 //dirty hack
-bool (*array_mesh_lightmap_unwrap_callback)(float p_texel_size, const float *p_vertices, const float *p_normals, int p_vertex_count, const int *p_indices, int p_index_count, const uint8_t *p_cache_data, bool *r_use_cache, uint8_t **r_mesh_cache, int *r_mesh_cache_size, float **r_uv, int **r_vertex, int *r_vertex_count, int **r_index, int *r_index_count, int *r_size_hint_x, int *r_size_hint_y) = NULL;
+bool (*array_mesh_lightmap_unwrap_callback)(float p_texel_size, const float *p_vertices, const float *p_normals, int p_vertex_count, const int *p_indices, int p_index_count, const uint8_t *p_cache_data, bool *r_use_cache, uint8_t **r_mesh_cache, int *r_mesh_cache_size, float **r_uv, int **r_vertex, int *r_vertex_count, int **r_index, int *r_index_count, int *r_size_hint_x, int *r_size_hint_y) = nullptr;
 
 struct ArrayMeshLightmapSurface {
 	Ref<Material> material;
@@ -1842,8 +1932,8 @@ void ArrayMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_surfaces", "surfaces"), &ArrayMesh::_set_surfaces);
 	ClassDB::bind_method(D_METHOD("_get_surfaces"), &ArrayMesh::_get_surfaces);
 
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "_blend_shape_names", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_blend_shape_names", "_get_blend_shape_names");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_surfaces", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_surfaces", "_get_surfaces");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "_blend_shape_names", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_blend_shape_names", "_get_blend_shape_names");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_surfaces", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_surfaces", "_get_surfaces");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_shape_mode", PROPERTY_HINT_ENUM, "Normalized,Relative"), "set_blend_shape_mode", "get_blend_shape_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, ""), "set_custom_aabb", "get_custom_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shadow_mesh", PROPERTY_HINT_RESOURCE_TYPE, "ArrayMesh"), "set_shadow_mesh", "get_shadow_mesh");

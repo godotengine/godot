@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -510,7 +510,7 @@ bool SceneTree::process(double p_time) {
 			cpath = fallback->get_path();
 		}
 		if (cpath != env_path) {
-			if (env_path != String()) {
+			if (!env_path.is_empty()) {
 				fallback = ResourceLoader::load(env_path);
 				if (fallback.is_null()) {
 					//could not load fallback, set as empty
@@ -535,7 +535,7 @@ void SceneTree::process_tweens(float p_delta, bool p_physics) {
 	for (List<Ref<Tween>>::Element *E = tweens.front(); E;) {
 		List<Ref<Tween>>::Element *N = E->next();
 		// Don't process if paused or process mode doesn't match.
-		if ((paused && E->get()->should_pause()) || (p_physics == (E->get()->get_process_mode() == Tween::TWEEN_PROCESS_IDLE))) {
+		if (!E->get()->can_process(paused) || (p_physics == (E->get()->get_process_mode() == Tween::TWEEN_PROCESS_IDLE))) {
 			if (E == L) {
 				break;
 			}
@@ -1290,7 +1290,7 @@ void SceneTree::get_argument_options(const StringName &p_function, int p_idx, Li
 			dir_access->list_dir_begin();
 			String filename = dir_access->get_next();
 
-			while (filename != "") {
+			while (!filename.is_empty()) {
 				if (filename == "." || filename == "..") {
 					filename = dir_access->get_next();
 					continue;
@@ -1355,9 +1355,9 @@ SceneTree::SceneTree() {
 	const bool use_occlusion_culling = GLOBAL_DEF("rendering/occlusion_culling/use_occlusion_culling", false);
 	root->set_use_occlusion_culling(use_occlusion_culling);
 
-	float lod_threshold = GLOBAL_DEF("rendering/mesh_lod/lod_change/threshold_pixels", 1.0);
+	float mesh_lod_threshold = GLOBAL_DEF("rendering/mesh_lod/lod_change/threshold_pixels", 1.0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/mesh_lod/lod_change/threshold_pixels", PropertyInfo(Variant::FLOAT, "rendering/mesh_lod/lod_change/threshold_pixels", PROPERTY_HINT_RANGE, "0,1024,0.1"));
-	root->set_lod_threshold(lod_threshold);
+	root->set_mesh_lod_threshold(mesh_lod_threshold);
 
 	bool snap_2d_transforms = GLOBAL_DEF("rendering/2d/snap/snap_2d_transforms_to_pixel", false);
 	root->set_snap_2d_transforms_to_pixel(snap_2d_transforms);
@@ -1400,7 +1400,7 @@ SceneTree::SceneTree() {
 		ResourceLoader::get_recognized_extensions_for_type("Environment", &exts);
 		String ext_hint;
 		for (const String &E : exts) {
-			if (ext_hint != String()) {
+			if (!ext_hint.is_empty()) {
 				ext_hint += ",";
 			}
 			ext_hint += "*." + E;
@@ -1410,7 +1410,7 @@ SceneTree::SceneTree() {
 		// Setup property.
 		ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/defaults/default_environment", PropertyInfo(Variant::STRING, "rendering/viewport/default_environment", PROPERTY_HINT_FILE, ext_hint));
 		env_path = env_path.strip_edges();
-		if (env_path != String()) {
+		if (!env_path.is_empty()) {
 			Ref<Environment> env = ResourceLoader::load(env_path);
 			if (env.is_valid()) {
 				root->get_world_3d()->set_fallback_environment(env);

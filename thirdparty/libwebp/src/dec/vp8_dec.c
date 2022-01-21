@@ -335,7 +335,7 @@ int VP8GetHeaders(VP8Decoder* const dec, VP8Io* const io) {
     io->scaled_width = io->width;
     io->scaled_height = io->height;
 
-    io->mb_w = io->width;   // sanity check
+    io->mb_w = io->width;   // for soundness
     io->mb_h = io->height;  // ditto
 
     VP8ResetProba(&dec->proba_);
@@ -494,13 +494,11 @@ static int GetCoeffsAlt(VP8BitReader* const br,
   return 16;
 }
 
-static WEBP_TSAN_IGNORE_FUNCTION void InitGetCoeffs(void) {
-  if (GetCoeffs == NULL) {
-    if (VP8GetCPUInfo != NULL && VP8GetCPUInfo(kSlowSSSE3)) {
-      GetCoeffs = GetCoeffsAlt;
-    } else {
-      GetCoeffs = GetCoeffsFast;
-    }
+WEBP_DSP_INIT_FUNC(InitGetCoeffs) {
+  if (VP8GetCPUInfo != NULL && VP8GetCPUInfo(kSlowSSSE3)) {
+    GetCoeffs = GetCoeffsAlt;
+  } else {
+    GetCoeffs = GetCoeffsFast;
   }
 }
 

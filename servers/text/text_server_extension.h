@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -83,6 +83,21 @@ public:
 	virtual void font_set_data_ptr(RID p_font_rid, const uint8_t *p_data_ptr, size_t p_data_size) override;
 	GDVIRTUAL2(_font_set_data, RID, const PackedByteArray &);
 	GDVIRTUAL3(_font_set_data_ptr, RID, GDNativeConstPtr<const uint8_t>, uint64_t);
+
+	virtual void font_set_style(RID p_font_rid, uint32_t /*FontStyle*/ p_style) override;
+	virtual uint32_t /*FontStyle*/ font_get_style(RID p_font_rid) const override;
+	GDVIRTUAL2(_font_set_style, RID, uint32_t);
+	GDVIRTUAL1RC(uint32_t, _font_get_style, RID);
+
+	virtual void font_set_name(RID p_font_rid, const String &p_name) override;
+	virtual String font_get_name(RID p_font_rid) const override;
+	GDVIRTUAL2(_font_set_name, RID, const String &);
+	GDVIRTUAL1RC(String, _font_get_name, RID);
+
+	virtual void font_set_style_name(RID p_font_rid, const String &p_name) override;
+	virtual String font_get_style_name(RID p_font_rid) const override;
+	GDVIRTUAL2(_font_set_style_name, RID, const String &);
+	GDVIRTUAL1RC(String, _font_get_style_name, RID);
 
 	virtual void font_set_antialiased(RID p_font_rid, bool p_antialiased) override;
 	virtual bool font_is_antialiased(RID p_font_rid) const override;
@@ -270,6 +285,11 @@ public:
 	GDVIRTUAL2(_font_remove_script_support_override, RID, const String &);
 	GDVIRTUAL1R(Vector<String>, _font_get_script_support_overrides, RID);
 
+	virtual void font_set_opentype_feature_overrides(RID p_font_rid, const Dictionary &p_overrides) override;
+	virtual Dictionary font_get_opentype_feature_overrides(RID p_font_rid) const override;
+	GDVIRTUAL2(_font_set_opentype_feature_overrides, RID, const Dictionary &);
+	GDVIRTUAL1RC(Dictionary, _font_get_opentype_feature_overrides, RID);
+
 	virtual Dictionary font_supported_feature_list(RID p_font_rid) const override;
 	virtual Dictionary font_supported_variation_list(RID p_font_rid) const override;
 	GDVIRTUAL1RC(Dictionary, _font_supported_feature_list, RID);
@@ -295,11 +315,18 @@ public:
 
 	virtual void shaped_text_set_direction(RID p_shaped, Direction p_direction = DIRECTION_AUTO) override;
 	virtual Direction shaped_text_get_direction(RID p_shaped) const override;
+	virtual Direction shaped_text_get_inferred_direction(RID p_shaped) const override;
 	GDVIRTUAL2(_shaped_text_set_direction, RID, Direction);
 	GDVIRTUAL1RC(/*Direction*/ int, _shaped_text_get_direction, RID);
+	GDVIRTUAL1RC(/*Direction*/ int, _shaped_text_get_inferred_direction, RID);
 
 	virtual void shaped_text_set_bidi_override(RID p_shaped, const Array &p_override) override;
 	GDVIRTUAL2(_shaped_text_set_bidi_override, RID, const Array &);
+
+	virtual void shaped_text_set_custom_punctuation(RID p_shaped, const String &p_punct) override;
+	virtual String shaped_text_get_custom_punctuation(RID p_shaped) const override;
+	GDVIRTUAL2(_shaped_text_set_custom_punctuation, RID, String);
+	GDVIRTUAL1RC(String, _shaped_text_get_custom_punctuation, RID);
 
 	virtual void shaped_text_set_orientation(RID p_shaped, Orientation p_orientation = ORIENTATION_HORIZONTAL) override;
 	virtual Orientation shaped_text_get_orientation(RID p_shaped) const override;
@@ -317,11 +344,11 @@ public:
 	GDVIRTUAL1RC(bool, _shaped_text_get_preserve_control, RID);
 
 	virtual bool shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "") override;
-	virtual bool shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER, int p_length = 1) override;
-	virtual bool shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER) override;
+	virtual bool shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int p_length = 1) override;
+	virtual bool shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER) override;
 	GDVIRTUAL6R(bool, _shaped_text_add_string, RID, const String &, const Array &, int, const Dictionary &, const String &);
-	GDVIRTUAL5R(bool, _shaped_text_add_object, RID, Variant, const Size2 &, InlineAlign, int);
-	GDVIRTUAL4R(bool, _shaped_text_resize_object, RID, Variant, const Size2 &, InlineAlign);
+	GDVIRTUAL5R(bool, _shaped_text_add_object, RID, Variant, const Size2 &, InlineAlignment, int);
+	GDVIRTUAL4R(bool, _shaped_text_resize_object, RID, Variant, const Size2 &, InlineAlignment);
 
 	virtual RID shaped_text_substr(RID p_shaped, int p_start, int p_length) const override;
 	virtual RID shaped_text_get_parent(RID p_shaped) const override;
@@ -408,8 +435,10 @@ public:
 	GDVIRTUAL6C(_shaped_text_draw, RID, RID, const Vector2 &, float, float, const Color &);
 	GDVIRTUAL7C(_shaped_text_draw_outline, RID, RID, const Vector2 &, float, float, int, const Color &);
 
+	virtual Vector2 shaped_text_get_grapheme_bounds(RID p_shaped, int p_pos) const override;
 	virtual int shaped_text_next_grapheme_pos(RID p_shaped, int p_pos) const override;
 	virtual int shaped_text_prev_grapheme_pos(RID p_shaped, int p_pos) const override;
+	GDVIRTUAL2RC(Vector2, _shaped_text_get_grapheme_bounds, RID, int);
 	GDVIRTUAL2RC(int, _shaped_text_next_grapheme_pos, RID, int);
 	GDVIRTUAL2RC(int, _shaped_text_prev_grapheme_pos, RID, int);
 
@@ -419,6 +448,11 @@ public:
 	GDVIRTUAL2RC(String, _format_number, const String &, const String &);
 	GDVIRTUAL2RC(String, _parse_number, const String &, const String &);
 	GDVIRTUAL1RC(String, _percent_sign, const String &);
+
+	virtual String string_to_upper(const String &p_string, const String &p_language = "") const override;
+	virtual String string_to_lower(const String &p_string, const String &p_language = "") const override;
+	GDVIRTUAL2RC(String, _string_to_upper, const String &, const String &);
+	GDVIRTUAL2RC(String, _string_to_lower, const String &, const String &);
 
 	TextServerExtension();
 	~TextServerExtension();

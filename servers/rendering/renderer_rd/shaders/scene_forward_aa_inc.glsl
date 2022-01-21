@@ -2,7 +2,7 @@
 
 float hash_2d(vec2 p) {
 	return fract(1.0e4 * sin(17.0 * p.x + 0.1 * p.y) *
-				 (0.1 + abs(sin(13.0 * p.y + p.x))));
+			(0.1 + abs(sin(13.0 * p.y + p.x))));
 }
 
 float hash_3d(vec3 p) {
@@ -29,8 +29,7 @@ float compute_alpha_hash_threshold(vec3 pos, float hash_scale) {
 
 	vec3 cases = vec3(a_interp * a_interp / (2.0 * min_lerp * (1.0 - min_lerp)),
 			(a_interp - 0.5 * min_lerp) / (1.0 - min_lerp),
-			1.0 - ((1.0 - a_interp) * (1.0 - a_interp) /
-						  (2.0 * min_lerp * (1.0 - min_lerp))));
+			1.0 - ((1.0 - a_interp) * (1.0 - a_interp) / (2.0 * min_lerp * (1.0 - min_lerp))));
 
 	float alpha_hash_threshold =
 			(lerp_factor < (1.0 - min_lerp)) ? ((lerp_factor < min_lerp) ? cases.x : cases.y) : cases.z;

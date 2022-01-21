@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -117,14 +117,15 @@ Error AudioDriverJavaScript::init() {
 	if (output_rb) {
 		memdelete_arr(output_rb);
 	}
-	output_rb = memnew_arr(float, buffer_length *channel_count);
+	const size_t array_size = buffer_length * (size_t)channel_count;
+	output_rb = memnew_arr(float, array_size);
 	if (!output_rb) {
 		return ERR_OUT_OF_MEMORY;
 	}
 	if (input_rb) {
 		memdelete_arr(input_rb);
 	}
-	input_rb = memnew_arr(float, buffer_length *channel_count);
+	input_rb = memnew_arr(float, array_size);
 	if (!input_rb) {
 		return ERR_OUT_OF_MEMORY;
 	}

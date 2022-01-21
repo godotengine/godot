@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -96,8 +96,10 @@ void SkeletonModification3DLookAt::_execute(real_t p_delta) {
 	if (_print_execution_error(bone_idx <= -1, "Bone index is invalid. Cannot execute modification!")) {
 		return;
 	}
-
 	Transform3D new_bone_trans = stack->skeleton->get_bone_local_pose_override(bone_idx);
+	if (new_bone_trans == Transform3D()) {
+		new_bone_trans = stack->skeleton->get_bone_pose(bone_idx);
+	}
 	Vector3 target_pos = stack->skeleton->global_pose_to_local_pose(bone_idx, stack->skeleton->world_transform_to_global_pose(target->get_global_transform())).origin;
 
 	// Lock the rotation to a plane relative to the bone by changing the target position

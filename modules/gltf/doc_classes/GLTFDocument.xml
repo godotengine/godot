@@ -3,30 +3,57 @@
 	<brief_description>
 	</brief_description>
 	<description>
+		Append a glTF2 3d format from a file, buffer or scene and then write to the filesystem, buffer or scene.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="import_scene">
-			<return type="Node" />
-			<argument index="0" name="path" type="String" />
-			<argument index="1" name="flags" type="int" default="0" />
-			<argument index="2" name="bake_fps" type="int" default="30" />
-			<argument index="3" name="state" type="GLTFState" default="null" />
+		<method name="append_from_buffer">
+			<return type="int" enum="Error" />
+			<argument index="0" name="bytes" type="PackedByteArray" />
+			<argument index="1" name="base_path" type="String" />
+			<argument index="2" name="state" type="GLTFState" />
+			<argument index="3" name="flags" type="int" default="0" />
+			<argument index="4" name="bake_fps" type="int" default="30" />
 			<description>
-				Import a scene from glTF2 ".gltf" or ".glb" file.
 			</description>
 		</method>
-		<method name="save_scene">
+		<method name="append_from_file">
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="state" type="GLTFState" />
+			<argument index="2" name="flags" type="int" default="0" />
+			<argument index="3" name="bake_fps" type="int" default="30" />
+			<description>
+			</description>
+		</method>
+		<method name="append_from_scene">
 			<return type="int" enum="Error" />
 			<argument index="0" name="node" type="Node" />
-			<argument index="1" name="path" type="String" />
-			<argument index="2" name="src_path" type="String" />
-			<argument index="3" name="flags" type="int" default="0" />
-			<argument index="4" name="bake_fps" type="float" default="30" />
-			<argument index="5" name="state" type="GLTFState" default="null" />
+			<argument index="1" name="state" type="GLTFState" />
+			<argument index="2" name="flags" type="int" default="0" />
+			<argument index="3" name="bake_fps" type="int" default="30" />
 			<description>
-				Save a scene as a glTF2 ".glb" or ".gltf" file.
+			</description>
+		</method>
+		<method name="generate_buffer">
+			<return type="PackedByteArray" />
+			<argument index="0" name="state" type="GLTFState" />
+			<description>
+			</description>
+		</method>
+		<method name="generate_scene">
+			<return type="Node" />
+			<argument index="0" name="state" type="GLTFState" />
+			<argument index="1" name="bake_fps" type="int" default="30" />
+			<description>
+			</description>
+		</method>
+		<method name="write_to_filesystem">
+			<return type="int" enum="Error" />
+			<argument index="0" name="state" type="GLTFState" />
+			<argument index="1" name="path" type="String" />
+			<description>
 			</description>
 		</method>
 	</methods>

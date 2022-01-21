@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -134,8 +134,13 @@ static void handle_crash(int sig) {
 
 				args.push_back("-o");
 				args.push_back(_execpath);
+#if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__)
 				args.push_back("-arch");
 				args.push_back("x86_64");
+#elif defined(__aarch64__)
+				args.push_back("-arch");
+				args.push_back("arm64");
+#endif
 				args.push_back("-l");
 				snprintf(str, 1024, "%p", load_addr);
 				args.push_back(str);
@@ -146,7 +151,7 @@ static void handle_crash(int sig) {
 				String out = "";
 				Error err = OS::get_singleton()->execute(String("atos"), args, &out, &ret);
 				if (err == OK && out.substr(0, 2) != "0x") {
-					out.erase(out.length() - 1, 1);
+					out = out.substr(0, out.length() - 1);
 					output = out;
 				}
 			}

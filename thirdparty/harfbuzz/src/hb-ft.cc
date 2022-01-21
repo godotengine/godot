@@ -361,6 +361,7 @@ hb_ft_get_glyph_h_advances (hb_font_t* font, void* font_data,
   }
 }
 
+#ifndef HB_NO_VERTICAL
 static hb_position_t
 hb_ft_get_glyph_v_advance (hb_font_t *font,
 			   void *font_data,
@@ -381,7 +382,9 @@ hb_ft_get_glyph_v_advance (hb_font_t *font,
    * have a Y growing upward.  Hence the extra negation. */
   return (-v + (1<<9)) >> 10;
 }
+#endif
 
+#ifndef HB_NO_VERTICAL
 static hb_bool_t
 hb_ft_get_glyph_v_origin (hb_font_t *font,
 			  void *font_data,
@@ -409,6 +412,7 @@ hb_ft_get_glyph_v_origin (hb_font_t *font,
 
   return true;
 }
+#endif
 
 #ifndef HB_NO_OT_SHAPE_FALLBACK
 static hb_position_t
@@ -569,15 +573,20 @@ static struct hb_ft_font_funcs_lazy_loader_t : hb_font_funcs_lazy_loader_t<hb_ft
   {
     hb_font_funcs_t *funcs = hb_font_funcs_create ();
 
-    hb_font_funcs_set_font_h_extents_func (funcs, hb_ft_get_font_h_extents, nullptr, nullptr);
-    //hb_font_funcs_set_font_v_extents_func (funcs, hb_ft_get_font_v_extents, nullptr, nullptr);
     hb_font_funcs_set_nominal_glyph_func (funcs, hb_ft_get_nominal_glyph, nullptr, nullptr);
     hb_font_funcs_set_nominal_glyphs_func (funcs, hb_ft_get_nominal_glyphs, nullptr, nullptr);
     hb_font_funcs_set_variation_glyph_func (funcs, hb_ft_get_variation_glyph, nullptr, nullptr);
+
+    hb_font_funcs_set_font_h_extents_func (funcs, hb_ft_get_font_h_extents, nullptr, nullptr);
     hb_font_funcs_set_glyph_h_advances_func (funcs, hb_ft_get_glyph_h_advances, nullptr, nullptr);
-    hb_font_funcs_set_glyph_v_advance_func (funcs, hb_ft_get_glyph_v_advance, nullptr, nullptr);
     //hb_font_funcs_set_glyph_h_origin_func (funcs, hb_ft_get_glyph_h_origin, nullptr, nullptr);
+
+#ifndef HB_NO_VERTICAL
+    //hb_font_funcs_set_font_v_extents_func (funcs, hb_ft_get_font_v_extents, nullptr, nullptr);
+    hb_font_funcs_set_glyph_v_advance_func (funcs, hb_ft_get_glyph_v_advance, nullptr, nullptr);
     hb_font_funcs_set_glyph_v_origin_func (funcs, hb_ft_get_glyph_v_origin, nullptr, nullptr);
+#endif
+
 #ifndef HB_NO_OT_SHAPE_FALLBACK
     hb_font_funcs_set_glyph_h_kerning_func (funcs, hb_ft_get_glyph_h_kerning, nullptr, nullptr);
 #endif

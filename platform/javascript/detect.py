@@ -77,11 +77,9 @@ def configure(env):
             env.Append(LINKFLAGS=["-Os"])
 
         if env["target"] == "release_debug":
-            env.Append(CPPDEFINES=["DEBUG_ENABLED"])
             # Retain function names for backtraces at the cost of file size.
             env.Append(LINKFLAGS=["--profiling-funcs"])
     else:  # "debug"
-        env.Append(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(CCFLAGS=["-O1", "-g"])
         env.Append(LINKFLAGS=["-O1", "-g"])
         env["use_assertions"] = True
@@ -91,10 +89,10 @@ def configure(env):
 
     if env["tools"]:
         if not env["threads_enabled"]:
-            print("Threads must be enabled to build the editor. Please add the 'threads_enabled=yes' option")
-            sys.exit(255)
+            print('Note: Forcing "threads_enabled=yes" as it is required for the web editor.')
+            env["threads_enabled"] = "yes"
         if env["initial_memory"] < 64:
-            print("Editor build requires at least 64MiB of initial memory. Forcing it.")
+            print('Note: Forcing "initial_memory=64" as it is required for the web editor.')
             env["initial_memory"] = 64
         env.Append(CCFLAGS=["-frtti"])
     elif env["builtin_icu"]:
@@ -182,6 +180,13 @@ def configure(env):
     env.Prepend(CPPPATH=["#platform/javascript"])
     env.Append(CPPDEFINES=["JAVASCRIPT_ENABLED", "UNIX_ENABLED"])
 
+    if env["opengl3"]:
+        env.AppendUnique(CPPDEFINES=["GLES3_ENABLED"])
+        # This setting just makes WebGL 2 APIs available, it does NOT disable WebGL 1.
+        env.Append(LINKFLAGS=["-s", "USE_WEBGL2=1"])
+        # Allow use to take control of swapping WebGL buffers.
+        env.Append(LINKFLAGS=["-s", "OFFSCREEN_FRAMEBUFFER=1"])
+
     if env["javascript_eval"]:
         env.Append(CPPDEFINES=["JAVASCRIPT_EVAL_ENABLED"])
 
@@ -220,25 +225,11 @@ def configure(env):
     # us since we don't know requirements at compile-time.
     env.Append(LINKFLAGS=["-s", "ALLOW_MEMORY_GROWTH=1"])
 
-    # This setting just makes WebGL 2 APIs available, it does NOT disable WebGL 1.
-    env.Append(LINKFLAGS=["-s", "USE_WEBGL2=1"])
-
     # Do not call main immediately when the support code is ready.
     env.Append(LINKFLAGS=["-s", "INVOKE_RUN=0"])
-
-    # Allow use to take control of swapping WebGL buffers.
-    env.Append(LINKFLAGS=["-s", "OFFSCREEN_FRAMEBUFFER=1"])
 
     # callMain for manual start, cwrap for the mono version.
     env.Append(LINKFLAGS=["-s", "EXPORTED_RUNTIME_METHODS=['callMain','cwrap']"])
 
     # Add code that allow exiting runtime.
     env.Append(LINKFLAGS=["-s", "EXIT_RUNTIME=1"])
-
-    # TODO remove once we have GLES support back (temporary fix undefined symbols due to dead code elimination).
-    env.Append(
-        LINKFLAGS=[
-            "-s",
-            "EXPORTED_FUNCTIONS=['_main', '_emscripten_webgl_get_current_context']",
-        ]
-    )

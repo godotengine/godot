@@ -76,11 +76,11 @@ fi
 
 # To get consistent formatting, we recommend contributors to use the same
 # clang-format version as CI.
-RECOMMENDED_CLANG_FORMAT_MAJOR_MIN="11"
-RECOMMENDED_CLANG_FORMAT_MAJOR_MAX="12"
+RECOMMENDED_CLANG_FORMAT_MAJOR_MIN="12"
+RECOMMENDED_CLANG_FORMAT_MAJOR_MAX="13"
 
 if [ ! -x "$CLANG_FORMAT" ] ; then
-	message="Error: clang-format executable not found. Please install clang-format $RECOMMENDED_CLANG_FORMAT_MAJOR.x.x."
+	message="Error: clang-format executable not found. Please install clang-format $RECOMMENDED_CLANG_FORMAT_MAJOR_MAX."
 
     if [ ! -t 1 ] ; then
         if [ -x "$ZENITY" ] ; then
@@ -108,7 +108,7 @@ CLANG_FORMAT_VERSION="$(clang-format --version | sed "s/[^0-9\.]*\([0-9\.]*\).*/
 CLANG_FORMAT_MAJOR="$(echo "$CLANG_FORMAT_VERSION" | cut -d. -f1)"
 
 if [[ "$CLANG_FORMAT_MAJOR" -lt "$RECOMMENDED_CLANG_FORMAT_MAJOR_MIN" || "$CLANG_FORMAT_MAJOR" -gt "$RECOMMENDED_CLANG_FORMAT_MAJOR_MAX" ]]; then
-    echo "Warning: Your clang-format binary is the wrong version ($CLANG_FORMAT_VERSION, expected between $RECOMMENDED_CLANG_FORMAT_MAJOR_MIN.x.x and $RECOMMENDED_CLANG_FORMAT_MAJOR_MAX.x.x)."
+    echo "Warning: Your clang-format binary is the wrong version ($CLANG_FORMAT_VERSION, expected between $RECOMMENDED_CLANG_FORMAT_MAJOR_MIN and $RECOMMENDED_CLANG_FORMAT_MAJOR_MAX)."
     echo "         Consider upgrading or downgrading clang-format as formatting may not be applied correctly."
 fi
 
@@ -146,7 +146,7 @@ do
     #    +++ - timestamp
     # to both lines working on the same file and having a/ and b/ prefix.
     # Else it can not be applied with 'git apply'.
-    "$CLANG_FORMAT" -style=file "$file" | \
+    "$CLANG_FORMAT" -style=file "$file" --Wno-error=unknown | \
         diff -u "$file" - | \
         sed -e "1s|--- |--- a/|" -e "2s|+++ -|+++ b/$file|" >> "$patch"
 done

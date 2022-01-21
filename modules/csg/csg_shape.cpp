@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -192,7 +192,7 @@ CSGBrush *CSGShape3D::_get_brush() {
 						bop.merge_brushes(CSGBrushOperation::OPERATION_INTERSECTION, *n, *nn2, *nn, snap);
 						break;
 					case CSGShape3D::OPERATION_SUBTRACTION:
-						bop.merge_brushes(CSGBrushOperation::OPERATION_SUBSTRACTION, *n, *nn2, *nn, snap);
+						bop.merge_brushes(CSGBrushOperation::OPERATION_SUBTRACTION, *n, *nn2, *nn, snap);
 						break;
 				}
 				memdelete(n);
@@ -572,10 +572,11 @@ void CSGShape3D::_validate_property(PropertyInfo &property) const {
 	bool is_collision_prefixed = property.name.begins_with("collision_");
 	if ((is_collision_prefixed || property.name.begins_with("use_collision")) && is_inside_tree() && !is_root_shape()) {
 		//hide collision if not root
-		property.usage = PROPERTY_USAGE_NOEDITOR;
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	} else if (is_collision_prefixed && !bool(get("use_collision"))) {
-		property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+		property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 	}
+	GeometryInstance3D::_validate_property(property);
 }
 
 Array CSGShape3D::get_meshes() const {
@@ -1759,7 +1760,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 	}
 	int face_count = extrusions * extrusion_face_count + end_count * shape_face_count;
 
-	// Intialize variables used to create the mesh.
+	// Initialize variables used to create the mesh.
 	Ref<Material> material = get_material();
 
 	Vector<Vector3> faces;

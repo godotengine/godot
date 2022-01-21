@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -62,13 +62,24 @@
 #endif
 #endif
 
-// Should always inline, except in debug builds because it makes debugging harder.
+// Should always inline, except in dev builds because it makes debugging harder.
 #ifndef _FORCE_INLINE_
-#ifdef DISABLE_FORCED_INLINE
+#ifdef DEV_ENABLED
 #define _FORCE_INLINE_ inline
 #else
 #define _FORCE_INLINE_ _ALWAYS_INLINE_
 #endif
+#endif
+
+// No discard allows the compiler to flag warnings if we don't use the return value of functions / classes
+#ifndef _NO_DISCARD_
+#define _NO_DISCARD_ [[nodiscard]]
+#endif
+
+// In some cases _NO_DISCARD_ will get false positives,
+// we can prevent the warning in specific cases by preceding the call with a cast.
+#ifndef _ALLOW_DISCARD_
+#define _ALLOW_DISCARD_ (void)
 #endif
 
 // Windows badly defines a lot of stuff we'll never use. Undefine it.
@@ -91,8 +102,8 @@
 #define ABS(m_v) (((m_v) < 0) ? (-(m_v)) : (m_v))
 #endif
 
-#ifndef SGN
-#define SGN(m_v) (((m_v) == 0) ? (0.0) : (((m_v) < 0) ? (-1.0) : (+1.0)))
+#ifndef SIGN
+#define SIGN(m_v) (((m_v) == 0) ? (0.0) : (((m_v) < 0) ? (-1.0) : (+1.0)))
 #endif
 
 #ifndef MIN
@@ -276,6 +287,9 @@ struct BuildIndexSequence : BuildIndexSequence<N - 1, N - 1, Is...> {};
 
 template <size_t... Is>
 struct BuildIndexSequence<0, Is...> : IndexSequence<Is...> {};
+
+// Limit the depth of recursive algorithms when dealing with Array/Dictionary
+#define MAX_RECURSION 100
 
 #ifdef DEBUG_ENABLED
 #define DEBUG_METHODS_ENABLED

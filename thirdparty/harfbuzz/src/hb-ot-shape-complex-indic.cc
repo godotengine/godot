@@ -202,9 +202,6 @@ collect_features_indic (hb_ot_shape_planner_t *plan)
   for (; i < INDIC_NUM_FEATURES; i++)
     map->add_feature (indic_features[i]);
 
-  map->enable_feature (HB_TAG('c','a','l','t'));
-  map->enable_feature (HB_TAG('c','l','i','g'));
-
   map->add_gsub_pause (_hb_clear_syllables);
 }
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,6 +41,7 @@
 #include "scene/gui/texture_rect.h"
 
 class GraphEdit;
+class ViewPanner;
 
 class GraphEditFilter : public Control {
 	GDCLASS(GraphEditFilter, Control);
@@ -103,6 +104,12 @@ public:
 		float activity = 0.0;
 	};
 
+	// Should be in sync with ControlScheme in ViewPanner.
+	enum PanningScheme {
+		SCROLL_ZOOMS,
+		SCROLL_PANS,
+	};
+
 private:
 	Label *zoom_label;
 	Button *zoom_minus;
@@ -122,6 +129,11 @@ private:
 	float port_grab_distance_horizontal = 0.0;
 	float port_grab_distance_vertical;
 
+	Ref<ViewPanner> panner;
+	void _scroll_callback(Vector2 p_scroll_vec);
+	void _pan_callback(Vector2 p_scroll_vec);
+	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin);
+
 	bool connecting = false;
 	String connecting_from;
 	bool connecting_out = false;
@@ -136,6 +148,7 @@ private:
 	bool connecting_valid = false;
 	Vector2 click_pos;
 
+	PanningScheme panning_scheme = SCROLL_ZOOMS;
 	bool dragging = false;
 	bool just_selected = false;
 	bool moving_selection = false;
@@ -183,7 +196,9 @@ private:
 	GraphEditMinimap *minimap;
 	void _top_layer_input(const Ref<InputEvent> &p_ev);
 
-	bool is_in_hot_zone(const Vector2 &pos, const Vector2 &p_mouse_pos, const Vector2i &p_port_size, bool p_left);
+	bool is_in_input_hotzone(GraphNode *p_graph_node, int p_slot_index, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
+	bool is_in_output_hotzone(GraphNode *p_graph_node, int p_slot_index, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
+	bool is_in_port_hotzone(const Vector2 &pos, const Vector2 &p_mouse_pos, const Vector2i &p_port_size, bool p_left);
 
 	void _top_layer_draw();
 	void _connections_layer_draw();
@@ -216,6 +231,11 @@ private:
 	Set<ConnType> valid_connection_types;
 	Set<int> valid_left_disconnect_types;
 	Set<int> valid_right_disconnect_types;
+
+	HashMap<StringName, Vector<GraphNode *>> comment_enclosed_nodes;
+	void _update_comment_enclosed_nodes_list(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes);
+	void _set_drag_comment_enclosed_nodes(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes, bool p_drag);
+	void _set_position_of_comment_enclosed_nodes(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes, Vector2 p_pos);
 
 	HBoxContainer *zoom_hb;
 
@@ -254,18 +274,24 @@ protected:
 	void _notification(int p_what);
 
 	GDVIRTUAL2RC(Vector<Vector2>, _get_connection_line, Vector2, Vector2)
+	GDVIRTUAL3R(bool, _is_in_input_hotzone, Object *, int, Vector2)
+	GDVIRTUAL3R(bool, _is_in_output_hotzone, Object *, int, Vector2)
 
 public:
 	Error connect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	bool is_node_connected(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	void disconnect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	void clear_connections();
+	void force_connection_drag_end();
 
 	void set_connection_activity(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port, float p_activity);
 
 	void add_valid_connection_type(int p_type, int p_with_type);
 	void remove_valid_connection_type(int p_type, int p_with_type);
 	bool is_valid_connection_type(int p_type, int p_with_type) const;
+
+	void set_panning_scheme(PanningScheme p_scheme);
+	PanningScheme get_panning_scheme() const;
 
 	void set_zoom(float p_zoom);
 	void set_zoom_custom(float p_zoom, const Vector2 &p_center);
@@ -327,5 +353,7 @@ public:
 
 	GraphEdit();
 };
+
+VARIANT_ENUM_CAST(GraphEdit::PanningScheme);
 
 #endif // GRAPHEdit_H

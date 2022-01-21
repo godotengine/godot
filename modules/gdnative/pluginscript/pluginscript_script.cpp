@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -232,8 +232,7 @@ bool PluginScript::instance_has(const Object *p_this) const {
 }
 
 bool PluginScript::has_source_code() const {
-	bool has = _source != "";
-	return has;
+	return !_source.is_empty();
 }
 
 String PluginScript::get_source_code() const {
@@ -257,11 +256,11 @@ Error PluginScript::reload(bool p_keep_state) {
 	_valid = false;
 	String basedir = _path;
 
-	if (basedir == "") {
+	if (basedir.is_empty()) {
 		basedir = get_path();
 	}
 
-	if (basedir != "") {
+	if (!basedir.is_empty()) {
 		basedir = basedir.get_base_dir();
 	}
 
@@ -360,13 +359,6 @@ Error PluginScript::reload(bool p_keep_state) {
 		_properties_info[pi.name] = pi;
 		_properties_default_values[pi.name] = v["default_value"];
 	}
-
-#ifdef TOOLS_ENABLED
-/*for (Set<PlaceHolderScriptInstance*>::Element *E=placeholders.front();E;E=E->next()) {
-
-        _update_placeholder(E->get());
-    }*/
-#endif
 
 	FREE_SCRIPT_MANIFEST(manifest);
 	return OK;

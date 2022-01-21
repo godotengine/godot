@@ -31,6 +31,7 @@ def get_opts():
         BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
         BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN)", False),
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
+        BoolVariable("use_coverage", "Use instrumentation codes in the binary (e.g. for code coverage)", False),
     ]
 
 
@@ -57,13 +58,11 @@ def configure(env):
             env.Prepend(CCFLAGS=["-O2"])
         elif env["optimize"] == "size":  # optimize for size
             env.Prepend(CCFLAGS=["-Os"])
-        env.Prepend(CPPDEFINES=["DEBUG_ENABLED"])
         if env["debug_symbols"]:
             env.Prepend(CCFLAGS=["-g2"])
 
     elif env["target"] == "debug":
         env.Prepend(CCFLAGS=["-g3"])
-        env.Prepend(CPPDEFINES=["DEBUG_ENABLED"])
         env.Prepend(LINKFLAGS=["-Xlinker", "-no_deduplicate"])
 
     ## Architecture
@@ -83,7 +82,7 @@ def configure(env):
         env.Append(CCFLAGS=["-arch", "arm64", "-mmacosx-version-min=10.15"])
         env.Append(LINKFLAGS=["-arch", "arm64", "-mmacosx-version-min=10.15"])
     else:
-        print("Building for macOS 10.12+, platform x86-64.")
+        print("Building for macOS 10.12+, platform x86_64.")
         env.Append(CCFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.12"])
         env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.12"])
 
@@ -96,7 +95,6 @@ def configure(env):
             env["AR"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-ar"
             env["RANLIB"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-ranlib"
             env["AS"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-as"
-            env.Append(CPPDEFINES=["__MACPORTS__"])  # hack to fix libvpx MM256_BROADCASTSI128_SI256 define
         else:
             env["CC"] = "clang"
             env["CXX"] = "clang++"
@@ -124,10 +122,9 @@ def configure(env):
         env["AR"] = basecmd + "ar"
         env["RANLIB"] = basecmd + "ranlib"
         env["AS"] = basecmd + "as"
-        env.Append(CPPDEFINES=["__MACPORTS__"])  # hack to fix libvpx MM256_BROADCASTSI128_SI256 define
 
     if env["use_ubsan"] or env["use_asan"] or env["use_tsan"]:
-        env.extra_suffix += "s"
+        env.extra_suffix += ".san"
 
         if env["use_ubsan"]:
             env.Append(
@@ -145,6 +142,10 @@ def configure(env):
         if env["use_tsan"]:
             env.Append(CCFLAGS=["-fsanitize=thread"])
             env.Append(LINKFLAGS=["-fsanitize=thread"])
+
+    if env["use_coverage"]:
+        env.Append(CCFLAGS=["-ftest-coverage", "-fprofile-arcs"])
+        env.Append(LINKFLAGS=["-ftest-coverage", "-fprofile-arcs"])
 
     ## Dependencies
 
@@ -182,10 +183,13 @@ def configure(env):
     )
     env.Append(LIBS=["pthread", "z"])
 
+    if env["opengl3"]:
+        env.Append(CPPDEFINES=["GLES_ENABLED", "GLES3_ENABLED"])
+        env.Append(CCFLAGS=["-Wno-deprecated-declarations"])  # Disable deprecation warnings
+        env.Append(LINKFLAGS=["-framework", "OpenGL"])
+
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED"])
         env.Append(LINKFLAGS=["-framework", "Metal", "-framework", "QuartzCore", "-framework", "IOSurface"])
         if not env["use_volk"]:
             env.Append(LINKFLAGS=["-L$VULKAN_SDK_PATH/MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/", "-lMoltenVK"])
-
-    # env.Append(CPPDEFINES=['GLES_ENABLED', 'OPENGL_ENABLED'])

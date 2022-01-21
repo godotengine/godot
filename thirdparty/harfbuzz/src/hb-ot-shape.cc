@@ -150,23 +150,25 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
    */
 
 #ifndef HB_NO_AAT_SHAPE
-  bool has_gsub = hb_ot_layout_has_substitution (face);
+  bool has_kerx = hb_aat_layout_has_positioning (face);
+  bool has_gsub = !apply_morx && hb_ot_layout_has_substitution (face);
 #endif
   bool has_gpos = !disable_gpos && hb_ot_layout_has_positioning (face);
   if (false)
     ;
 #ifndef HB_NO_AAT_SHAPE
-  else if (hb_aat_layout_has_positioning (face) && !(has_gsub && has_gpos))
+  /* Prefer GPOS over kerx if GSUB is present;
+   * https://github.com/harfbuzz/harfbuzz/issues/3008 */
+  else if (has_kerx && !(has_gsub && has_gpos))
     plan.apply_kerx = true;
 #endif
-  else if (!apply_morx && has_gpos)
+  else if (has_gpos)
     plan.apply_gpos = true;
 
   if (!plan.apply_kerx && (!has_gpos_kern || !plan.apply_gpos))
   {
-    /* Apparently Apple applies kerx if GPOS kern was not applied. */
 #ifndef HB_NO_AAT_SHAPE
-    if (hb_aat_layout_has_positioning (face))
+    if (has_kerx)
       plan.apply_kerx = true;
     else
 #endif
@@ -626,20 +628,7 @@ hb_ensure_native_direction (hb_buffer_t *buffer)
       (HB_DIRECTION_IS_VERTICAL   (direction) &&
        direction != HB_DIRECTION_TTB))
   {
-
-    if (buffer->cluster_level == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS)
-      foreach_grapheme (buffer, start, end)
-      {
-	buffer->merge_clusters (start, end);
-	buffer->reverse_range (start, end);
-      }
-    else
-      foreach_grapheme (buffer, start, end)
-	/* form_clusters() merged clusters already, we don't merge. */
-	buffer->reverse_range (start, end);
-
-    buffer->reverse ();
-
+    _hb_ot_layout_reverse_graphemes (buffer);
     buffer->props.direction = HB_DIRECTION_REVERSE (buffer->props.direction);
   }
 }
@@ -649,6 +638,7 @@ hb_ensure_native_direction (hb_buffer_t *buffer)
  * Substitute
  */
 
+#ifndef HB_NO_VERTICAL
 static hb_codepoint_t
 hb_vert_char_for (hb_codepoint_t u)
 {
@@ -699,6 +689,7 @@ hb_vert_char_for (hb_codepoint_t u)
 
   return u;
 }
+#endif
 
 static inline void
 hb_ot_rotate_chars (const hb_ot_shape_context_t *c)
@@ -721,6 +712,7 @@ hb_ot_rotate_chars (const hb_ot_shape_context_t *c)
     }
   }
 
+#ifndef HB_NO_VERTICAL
   if (HB_DIRECTION_IS_VERTICAL (c->target_direction) && !c->plan->has_vert)
   {
     for (unsigned int i = 0; i < count; i++) {
@@ -729,6 +721,7 @@ hb_ot_rotate_chars (const hb_ot_shape_context_t *c)
 	info[i].codepoint = codepoint;
     }
   }
+#endif
 }
 
 static inline void

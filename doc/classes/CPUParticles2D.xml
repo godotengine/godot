@@ -8,7 +8,7 @@
 		See also [GPUParticles2D], which provides the same functionality with hardware acceleration, but may not run on older devices.
 	</description>
 	<tutorials>
-		<link title="Particle systems (2D)">https://docs.godotengine.org/en/latest/tutorials/2d/particle_systems_2d.html</link>
+		<link title="Particle systems (2D)">$DOCS_URL/tutorials/2d/particle_systems_2d.html</link>
 	</tutorials>
 	<methods>
 		<method name="convert_from_particles">
@@ -115,6 +115,9 @@
 		</member>
 		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
 			Each particle's initial color. If [member texture] is defined, it will be multiplied by this color.
+		</member>
+		<member name="color_initial_ramp" type="Gradient" setter="set_color_initial_ramp" getter="get_color_initial_ramp">
+			Each particle's initial color will vary along this [GradientTexture1D] (multiplied with [member color]).
 		</member>
 		<member name="color_ramp" type="Gradient" setter="set_color_ramp" getter="get_color_ramp">
 			Each particle's color will vary along this [Gradient] (multiplied with [member color]).

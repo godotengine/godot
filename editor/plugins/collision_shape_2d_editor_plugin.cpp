@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -183,7 +183,7 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 					size.y = p_point.y * RECT_HANDLES[idx].y * 2;
 				}
 
-				if (Input::get_singleton()->is_key_pressed(KEY_ALT)) {
+				if (Input::get_singleton()->is_key_pressed(Key::ALT)) {
 					rect->set_size(size.abs());
 					node->set_global_position(original_transform.get_origin());
 				} else {
@@ -333,7 +333,7 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 	if (mb.is_valid()) {
 		Vector2 gpoint = mb->get_position();
 
-		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
 				for (int i = 0; i < handles.size(); i++) {
 					if (xform.xform(handles[i]).distance_to(gpoint) < 8) {
@@ -394,7 +394,7 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 			return false;
 		}
 
-		if (shape_type == RECTANGLE_SHAPE && k->get_keycode() == KEY_ALT) {
+		if (shape_type == RECTANGLE_SHAPE && k->get_keycode() == Key::ALT) {
 			set_handle(edit_handle, last_point); // Update handle when Alt key is toggled.
 		}
 	}

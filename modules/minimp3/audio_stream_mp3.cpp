@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -112,7 +112,7 @@ void AudioStreamPlaybackMP3::seek(float p_time) {
 	}
 
 	frames_mixed = uint32_t(mp3_stream->sample_rate * p_time);
-	mp3dec_ex_seek(mp3d, frames_mixed * mp3_stream->channels);
+	mp3dec_ex_seek(mp3d, (uint64_t)frames_mixed * mp3_stream->channels);
 }
 
 AudioStreamPlaybackMP3::~AudioStreamPlaybackMP3() {
@@ -125,7 +125,7 @@ AudioStreamPlaybackMP3::~AudioStreamPlaybackMP3() {
 Ref<AudioStreamPlayback> AudioStreamMP3::instance_playback() {
 	Ref<AudioStreamPlaybackMP3> mp3s;
 
-	ERR_FAIL_COND_V_MSG(data == nullptr, mp3s,
+	ERR_FAIL_COND_V_MSG(data.is_empty(), mp3s,
 			"This AudioStreamMP3 does not have an audio file assigned "
 			"to it. AudioStreamMP3 should not be created from the "
 			"inspector or with `.new()`. Instead, load an audio file.");
@@ -134,7 +134,7 @@ Ref<AudioStreamPlayback> AudioStreamMP3::instance_playback() {
 	mp3s->mp3_stream = Ref<AudioStreamMP3>(this);
 	mp3s->mp3d = (mp3dec_ex_t *)memalloc(sizeof(mp3dec_ex_t));
 
-	int errorcode = mp3dec_ex_open_buf(mp3s->mp3d, (const uint8_t *)data, data_len, MP3D_SEEK_TO_SAMPLE);
+	int errorcode = mp3dec_ex_open_buf(mp3s->mp3d, data.ptr(), data_len, MP3D_SEEK_TO_SAMPLE);
 
 	mp3s->frames_mixed = 0;
 	mp3s->active = false;
@@ -152,11 +152,7 @@ String AudioStreamMP3::get_stream_name() const {
 }
 
 void AudioStreamMP3::clear_data() {
-	if (data) {
-		memfree(data);
-		data = nullptr;
-		data_len = 0;
-	}
+	data.clear();
 }
 
 void AudioStreamMP3::set_data(const Vector<uint8_t> &p_data) {
@@ -165,7 +161,7 @@ void AudioStreamMP3::set_data(const Vector<uint8_t> &p_data) {
 
 	mp3dec_ex_t mp3d;
 	int err = mp3dec_ex_open_buf(&mp3d, src_datar, src_data_len, MP3D_SEEK_TO_SAMPLE);
-	ERR_FAIL_COND(err != 0);
+	ERR_FAIL_COND_MSG(err || mp3d.info.hz == 0, "Failed to decode mp3 file. Make sure it is a valid mp3 audio file.");
 
 	channels = mp3d.info.channels;
 	sample_rate = mp3d.info.hz;
@@ -175,23 +171,13 @@ void AudioStreamMP3::set_data(const Vector<uint8_t> &p_data) {
 
 	clear_data();
 
-	data = memalloc(src_data_len);
-	memcpy(data, src_datar, src_data_len);
+	data.resize(src_data_len);
+	memcpy(data.ptrw(), src_datar, src_data_len);
 	data_len = src_data_len;
 }
 
 Vector<uint8_t> AudioStreamMP3::get_data() const {
-	Vector<uint8_t> vdata;
-
-	if (data_len && data) {
-		vdata.resize(data_len);
-		{
-			uint8_t *w = vdata.ptrw();
-			memcpy(w, data, data_len);
-		}
-	}
-
-	return vdata;
+	return data;
 }
 
 void AudioStreamMP3::set_loop(bool p_enable) {
@@ -228,9 +214,9 @@ void AudioStreamMP3::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_loop_offset", "seconds"), &AudioStreamMP3::set_loop_offset);
 	ClassDB::bind_method(D_METHOD("get_loop_offset"), &AudioStreamMP3::get_loop_offset);
 
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_data", "get_data");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_loop", "has_loop");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "loop_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_loop_offset", "get_loop_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_data", "get_data");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "loop_offset"), "set_loop_offset", "get_loop_offset");
 }
 
 AudioStreamMP3::AudioStreamMP3() {

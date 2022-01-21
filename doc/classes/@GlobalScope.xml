@@ -1,19 +1,41 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="@GlobalScope" version="4.0">
 	<brief_description>
-		Global scope constants and variables.
+		Global scope constants and functions.
 	</brief_description>
 	<description>
-		Global scope constants and variables. This is all that resides in the globals, constants regarding error codes, keycodes, property hints, etc.
+		A list of global scope enumerated constants and built-in functions. This is all that resides in the globals, constants regarding error codes, keycodes, property hints, etc.
 		Singletons are also documented here, since they can be accessed from anywhere.
+		For the entries related to GDScript which can be accessed in any script see [@GDScript].
 	</description>
 	<tutorials>
+		<link title="Random number generation">$DOCS_URL/tutorials/math/random_number_generation.html</link>
 	</tutorials>
 	<methods>
 		<method name="abs">
 			<return type="Variant" />
 			<argument index="0" name="x" type="Variant" />
 			<description>
+				Returns the absolute value of a [Variant] parameter [code]x[/code] (i.e. non-negative value). Variant types [int], [float] (real), [Vector2], [Vector2i], [Vector3] and [Vector3i] are supported.
+				[codeblock]
+				var a = abs(-1)
+				# a is 1
+
+				var b = abs(-1.2)
+				# b is 1.2
+
+				var c = abs(Vector2(-3.5, -4))
+				# c is (3.5, 4)
+
+				var d = abs(Vector2i(-5, -6))
+				# d is (5, 6)
+
+				var e = abs(Vector3(-7, 8.5, -3.8))
+				# e is (7, 8.5, 3.8)
+
+				var f = abs(Vector3i(-7, -8, -9))
+				# f is (7, 8, 9)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="absf">
@@ -118,6 +140,26 @@
 			<argument index="1" name="min" type="Variant" />
 			<argument index="2" name="max" type="Variant" />
 			<description>
+				Clamps the [Variant] [code]value[/code] and returns a value not less than [code]min[/code] and not more than [code]max[/code]. Variant types [int], [float] (real), [Vector2], [Vector2i], [Vector3] and [Vector3i] are supported.
+				[codeblock]
+				var a = clamp(-10, -1, 5)
+				# a is -1
+
+				var b = clamp(8.1, 0.9, 5.5)
+				# b is 5.5
+
+				var c = clamp(Vector2(-3.5, -4), Vector2(-3.2, -2), Vector2(2, 6.5))
+				# c is (-3.2, -2)
+
+				var d = clamp(Vector2i(7, 8), Vector2i(-3, -2), Vector2i(2, 6))
+				# d is (2, 6)
+
+				var e = clamp(Vector3(-7, 8.5, -3.8), Vector3(-3, -2, 5.4), Vector3(-2, 6, -4.1))
+				# e is (-3, -2, 5.4)
+
+				var f = clamp(Vector3i(-7, -8, -9), Vector3i(-1, 2, 3), Vector3i(-4, -5, -6))
+				# f is (-4, -5, -6)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="clampf">
@@ -208,9 +250,9 @@
 				- 1.0: Linear
 				- Between -1.0 and 0.0 (exclusive): Ease out-in
 				- 0.0: Constant
-				- Between 0.0 to 1.0 (exclusive): Ease in
+				- Between 0.0 to 1.0 (exclusive): Ease out
 				- 1.0: Linear
-				- Greater than 1.0 (exclusive): Ease out
+				- Greater than 1.0 (exclusive): Ease in
 				[/codeblock]
 				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/ease_cheatsheet.png]ease() curve values cheatsheet[/url]
 				See also [method smoothstep]. If you need to perform more advanced transitions, use [Tween] or [AnimationPlayer].
@@ -316,14 +358,16 @@
 			<argument index="1" name="to" type="float" />
 			<argument index="2" name="weight" type="float" />
 			<description>
-				Returns a normalized value considering the given range. This is the opposite of [method lerp].
+				Returns an interpolation or extrapolation factor considering the range specified in [code]from[/code] and [code]to[/code], and the interpolated value specified in [code]weight[/code]. The returned value will be between [code]0.0[/code] and [code]1.0[/code] if [code]weight[/code] is between [code]from[/code] and [code]to[/code] (inclusive). If [code]weight[/code] is located outside this range, then an extrapolation factor will be returned (return value lower than [code]0.0[/code] or greater than [code]1.0[/code]).
 				[codeblock]
+				# The interpolation ratio in the `lerp()` call below is 0.75.
 				var middle = lerp(20, 30, 0.75)
 				# `middle` is now 27.5.
 				# Now, we pretend to have forgotten the original ratio and want to get it back.
 				var ratio = inverse_lerp(20, 30, 27.5)
 				# `ratio` is now 0.75.
 				[/codeblock]
+				See also [method lerp] which performs the reverse of this operation.
 			</description>
 		</method>
 		<method name="is_equal_approx">
@@ -347,6 +391,7 @@
 			<return type="bool" />
 			<argument index="0" name="id" type="int" />
 			<description>
+				Returns [code]true[/code] if the Object that corresponds to [code]instance_id[/code] is a valid object (e.g. has not been deleted from memory). All Objects have a unique instance ID.
 			</description>
 		</method>
 		<method name="is_instance_valid">
@@ -377,10 +422,11 @@
 			<argument index="1" name="to" type="float" />
 			<argument index="2" name="weight" type="float" />
 			<description>
-				Linearly interpolates between two values by a normalized value. This is the opposite of [method inverse_lerp].
+				Linearly interpolates between two values by the factor defined in [code]weight[/code]. To perform interpolation, [code]weight[/code] should be between [code]0.0[/code] and [code]1.0[/code] (inclusive). However, values outside this range are allowed and can be used to perform [i]extrapolation[/i].
 				[codeblock]
 				lerp(0, 4, 0.75) # Returns 3.0
 				[/codeblock]
+				See also [method inverse_lerp] which performs the reverse of this operation. To perform eased interpolation with [method lerp], combine it with [method ease] or [method smoothstep].
 			</description>
 		</method>
 		<method name="lerp_angle">
@@ -390,7 +436,7 @@
 			<argument index="2" name="weight" type="float" />
 			<description>
 				Linearly interpolates between two angles (in radians) by a normalized value.
-				Similar to [method lerp], but interpolates correctly when the angles wrap around [constant @GDScript.TAU].
+				Similar to [method lerp], but interpolates correctly when the angles wrap around [constant @GDScript.TAU]. To perform eased interpolation with [method lerp_angle], combine it with [method ease] or [method smoothstep].
 				[codeblock]
 				extends Sprite
 				var elapsed = 0.0
@@ -523,6 +569,26 @@
 				nearest_po2(-1) # Returns 0 (this may not be what you expect)
 				[/codeblock]
 				[b]Warning:[/b] Due to the way it is implemented, this function returns [code]0[/code] rather than [code]1[/code] for non-positive values of [code]value[/code] (in reality, 1 is the smallest integer power of 2).
+			</description>
+		</method>
+		<method name="pingpong">
+			<return type="float" />
+			<argument index="0" name="value" type="float" />
+			<argument index="1" name="length" type="float" />
+			<description>
+				Returns the [code]value[/code] wrapped between [code]0[/code] and the [code]length[/code]. If the limit is reached, the next value the function returned is decreased to the [code]0[/code] side or increased to the [code]length[/code] side (like a triangle wave). If [code]length[/code] is less than zero, it becomes positive.
+				[codeblock]
+				pingpong(-3.0, 3.0) # Returns 3
+				pingpong(-2.0, 3.0) # Returns 2
+				pingpong(-1.0, 3.0) # Returns 1
+				pingpong(0.0, 3.0) # Returns 0
+				pingpong(1.0, 3.0) # Returns 1
+				pingpong(2.0, 3.0) # Returns 2
+				pingpong(3.0, 3.0) # Returns 3
+				pingpong(4.0, 3.0) # Returns 2
+				pingpong(5.0, 3.0) # Returns 1
+				pingpong(6.0, 3.0) # Returns 0
+				[/codeblock]
 			</description>
 		</method>
 		<method name="posmod">
@@ -662,6 +728,14 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="randfn">
+			<return type="float" />
+			<argument index="0" name="mean" type="float" />
+			<argument index="1" name="deviation" type="float" />
+			<description>
+				Returns a normally-distributed pseudo-random floating point value using Box-Muller transform with the specified [code]mean[/code] and a standard [code]deviation[/code]. This is also called Gaussian distribution.
+			</description>
+		</method>
 		<method name="randi">
 			<return type="int" />
 			<description>
@@ -750,6 +824,14 @@
 			<return type="Variant" />
 			<argument index="0" name="x" type="Variant" />
 			<description>
+				Returns the sign of [code]x[/code] as same type of [Variant] as [code]x[/code] with each component being -1, 0 and 1 for each negative, zero and positive values respectivelu. Variant types [int], [float] (real), [Vector2], [Vector2i], [Vector3] and [Vector3i] are supported.
+				[codeblock]
+				sign(-6.0) # Returns -1
+				sign(0.0)  # Returns 0
+				sign(6.0)  # Returns 1
+
+				sign(Vector3(-6.0, 0.0, 6.0) # Returns (-1, 0, 1)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="signf">
@@ -1131,58 +1213,61 @@
 		</constant>
 		<constant name="COUNTERCLOCKWISE" value="1" enum="ClockDirection">
 		</constant>
-		<constant name="HALIGN_LEFT" value="0" enum="HAlign">
+		<constant name="HORIZONTAL_ALIGNMENT_LEFT" value="0" enum="HorizontalAlignment">
 			Horizontal left alignment, usually for text-derived classes.
 		</constant>
-		<constant name="HALIGN_CENTER" value="1" enum="HAlign">
+		<constant name="HORIZONTAL_ALIGNMENT_CENTER" value="1" enum="HorizontalAlignment">
 			Horizontal center alignment, usually for text-derived classes.
 		</constant>
-		<constant name="HALIGN_RIGHT" value="2" enum="HAlign">
+		<constant name="HORIZONTAL_ALIGNMENT_RIGHT" value="2" enum="HorizontalAlignment">
 			Horizontal right alignment, usually for text-derived classes.
 		</constant>
-		<constant name="HALIGN_FILL" value="3" enum="HAlign">
+		<constant name="HORIZONTAL_ALIGNMENT_FILL" value="3" enum="HorizontalAlignment">
 			Expand row to fit width, usually for text-derived classes.
 		</constant>
-		<constant name="VALIGN_TOP" value="0" enum="VAlign">
+		<constant name="VERTICAL_ALIGNMENT_TOP" value="0" enum="VerticalAlignment">
 			Vertical top alignment, usually for text-derived classes.
 		</constant>
-		<constant name="VALIGN_CENTER" value="1" enum="VAlign">
+		<constant name="VERTICAL_ALIGNMENT_CENTER" value="1" enum="VerticalAlignment">
 			Vertical center alignment, usually for text-derived classes.
 		</constant>
-		<constant name="VALIGN_BOTTOM" value="2" enum="VAlign">
+		<constant name="VERTICAL_ALIGNMENT_BOTTOM" value="2" enum="VerticalAlignment">
 			Vertical bottom alignment, usually for text-derived classes.
 		</constant>
-		<constant name="INLINE_ALIGN_TOP_TO" value="0" enum="InlineAlign">
-			Aligns the top of the inline object (e.g. image, table) to the position of the text specified by [code]INLINE_ALIGN_TO_*[/code] constant.
+		<constant name="VERTICAL_ALIGNMENT_FILL" value="3" enum="VerticalAlignment">
+			Expand rows to fit height, usually for text-derived classes.
 		</constant>
-		<constant name="INLINE_ALIGN_CENTER_TO" value="1" enum="InlineAlign">
-			Aligns the center of the inline object (e.g. image, table) to the position of the text specified by [code]INLINE_ALIGN_TO_*[/code] constant.
+		<constant name="INLINE_ALIGNMENT_TOP_TO" value="0" enum="InlineAlignment">
+			Aligns the top of the inline object (e.g. image, table) to the position of the text specified by [code]INLINE_ALIGNMENT_TO_*[/code] constant.
 		</constant>
-		<constant name="INLINE_ALIGN_BOTTOM_TO" value="2" enum="InlineAlign">
-			Aligns the bottom of the inline object (e.g. image, table) to the position of the text specified by [code]INLINE_ALIGN_TO_*[/code] constant.
+		<constant name="INLINE_ALIGNMENT_CENTER_TO" value="1" enum="InlineAlignment">
+			Aligns the center of the inline object (e.g. image, table) to the position of the text specified by [code]INLINE_ALIGNMENT_TO_*[/code] constant.
 		</constant>
-		<constant name="INLINE_ALIGN_TO_TOP" value="0" enum="InlineAlign">
-			Aligns the position of the inline object (e.g. image, table) specified by [code]INLINE_ALIGN_*_TO[/code] constant to the top of the text.
+		<constant name="INLINE_ALIGNMENT_BOTTOM_TO" value="2" enum="InlineAlignment">
+			Aligns the bottom of the inline object (e.g. image, table) to the position of the text specified by [code]INLINE_ALIGNMENT_TO_*[/code] constant.
 		</constant>
-		<constant name="INLINE_ALIGN_TO_CENTER" value="4" enum="InlineAlign">
-			Aligns the position of the inline object (e.g. image, table) specified by [code]INLINE_ALIGN_*_TO[/code] constant to the center of the text.
+		<constant name="INLINE_ALIGNMENT_TO_TOP" value="0" enum="InlineAlignment">
+			Aligns the position of the inline object (e.g. image, table) specified by [code]INLINE_ALIGNMENT_*_TO[/code] constant to the top of the text.
 		</constant>
-		<constant name="INLINE_ALIGN_TO_BASELINE" value="8" enum="InlineAlign">
-			Aligns the position of the inline object (e.g. image, table) specified by [code]INLINE_ALIGN_*_TO[/code] constant to the baseline of the text.
+		<constant name="INLINE_ALIGNMENT_TO_CENTER" value="4" enum="InlineAlignment">
+			Aligns the position of the inline object (e.g. image, table) specified by [code]INLINE_ALIGNMENT_*_TO[/code] constant to the center of the text.
 		</constant>
-		<constant name="INLINE_ALIGN_TO_BOTTOM" value="12" enum="InlineAlign">
+		<constant name="INLINE_ALIGNMENT_TO_BASELINE" value="8" enum="InlineAlignment">
+			Aligns the position of the inline object (e.g. image, table) specified by [code]INLINE_ALIGNMENT_*_TO[/code] constant to the baseline of the text.
+		</constant>
+		<constant name="INLINE_ALIGNMENT_TO_BOTTOM" value="12" enum="InlineAlignment">
 			Aligns inline object (e.g. image, table) to the bottom of the text.
 		</constant>
-		<constant name="INLINE_ALIGN_TOP" value="0" enum="InlineAlign">
-			Aligns top of the inline object (e.g. image, table) to the top of the text. Equvalent to [code]INLINE_ALIGN_TOP_TO | INLINE_ALIGN_TO_TOP[/code].
+		<constant name="INLINE_ALIGNMENT_TOP" value="0" enum="InlineAlignment">
+			Aligns top of the inline object (e.g. image, table) to the top of the text. Equivalent to [code]INLINE_ALIGNMENT_TOP_TO | INLINE_ALIGNMENT_TO_TOP[/code].
 		</constant>
-		<constant name="INLINE_ALIGN_CENTER" value="5" enum="InlineAlign">
-			Aligns center of the inline object (e.g. image, table) to the center of the text. Equvalent to [code]INLINE_ALIGN_CENTER_TO | INLINE_ALIGN_TO_CENTER[/code].
+		<constant name="INLINE_ALIGNMENT_CENTER" value="5" enum="InlineAlignment">
+			Aligns center of the inline object (e.g. image, table) to the center of the text. Equivalent to [code]INLINE_ALIGNMENT_CENTER_TO | INLINE_ALIGNMENT_TO_CENTER[/code].
 		</constant>
-		<constant name="INLINE_ALIGN_BOTTOM" value="14" enum="InlineAlign">
-			Aligns bottom of the inline object (e.g. image, table) to the bottom of the text. Equvalent to [code]INLINE_ALIGN_BOTTOM_TO | INLINE_ALIGN_TO_BOTTOM[/code].
+		<constant name="INLINE_ALIGNMENT_BOTTOM" value="14" enum="InlineAlignment">
+			Aligns bottom of the inline object (e.g. image, table) to the bottom of the text. Equivalent to [code]INLINE_ALIGNMENT_BOTTOM_TO | INLINE_ALIGNMENT_TO_BOTTOM[/code].
 		</constant>
-		<constant name="SPKEY" value="16777216">
+		<constant name="KEY_SPECIAL" value="16777216" enum="Key">
 			Keycodes with this bit applied are non-printable.
 		</constant>
 		<constant name="KEY_ESCAPE" value="16777217" enum="Key">
@@ -1947,12 +2032,6 @@
 		<constant name="MOUSE_BUTTON_MIDDLE" value="3" enum="MouseButton">
 			Middle mouse button.
 		</constant>
-		<constant name="MOUSE_BUTTON_XBUTTON1" value="8" enum="MouseButton">
-			Extra mouse button 1 (only present on some mice).
-		</constant>
-		<constant name="MOUSE_BUTTON_XBUTTON2" value="9" enum="MouseButton">
-			Extra mouse button 2 (only present on some mice).
-		</constant>
 		<constant name="MOUSE_BUTTON_WHEEL_UP" value="4" enum="MouseButton">
 			Mouse wheel up.
 		</constant>
@@ -1964,6 +2043,12 @@
 		</constant>
 		<constant name="MOUSE_BUTTON_WHEEL_RIGHT" value="7" enum="MouseButton">
 			Mouse wheel right button (only present on some mice).
+		</constant>
+		<constant name="MOUSE_BUTTON_XBUTTON1" value="8" enum="MouseButton">
+			Extra mouse button 1 (only present on some mice).
+		</constant>
+		<constant name="MOUSE_BUTTON_XBUTTON2" value="9" enum="MouseButton">
+			Extra mouse button 2 (only present on some mice).
 		</constant>
 		<constant name="MOUSE_BUTTON_MASK_LEFT" value="1" enum="MouseButton">
 			Left mouse button mask.
@@ -2049,8 +2134,11 @@
 		<constant name="JOY_BUTTON_SDL_MAX" value="21" enum="JoyButton">
 			The number of SDL game controller buttons.
 		</constant>
-		<constant name="JOY_BUTTON_MAX" value="36" enum="JoyButton">
-			The maximum number of game controller buttons: Android supports up to 36 buttons.
+		<constant name="JOY_BUTTON_MAX" value="128" enum="JoyButton">
+			The maximum number of game controller buttons supported by the engine. The actual limit may be lower on specific platforms:
+			- Android: Up to 36 buttons.
+			- Linux: Up to 80 buttons.
+			- Windows and macOS: Up to 128 buttons.
 		</constant>
 		<constant name="JOY_AXIS_INVALID" value="-1" enum="JoyAxis">
 			An invalid game controller axis.
@@ -2080,25 +2168,58 @@
 			The maximum number of game controller axes: OpenVR supports up to 5 Joysticks making a total of 10 axes.
 		</constant>
 		<constant name="MIDI_MESSAGE_NOTE_OFF" value="8" enum="MIDIMessage">
-			MIDI note OFF message.
+			MIDI note OFF message. See the documentation of [InputEventMIDI] for information of how to use MIDI inputs.
 		</constant>
 		<constant name="MIDI_MESSAGE_NOTE_ON" value="9" enum="MIDIMessage">
-			MIDI note ON message.
+			MIDI note ON message. See the documentation of [InputEventMIDI] for information of how to use MIDI inputs.
 		</constant>
 		<constant name="MIDI_MESSAGE_AFTERTOUCH" value="10" enum="MIDIMessage">
-			MIDI aftertouch message.
+			MIDI aftertouch message. This message is most often sent by pressing down on the key after it "bottoms out".
 		</constant>
 		<constant name="MIDI_MESSAGE_CONTROL_CHANGE" value="11" enum="MIDIMessage">
-			MIDI control change message.
+			MIDI control change message. This message is sent when a controller value changes. Controllers include devices such as pedals and levers.
 		</constant>
 		<constant name="MIDI_MESSAGE_PROGRAM_CHANGE" value="12" enum="MIDIMessage">
-			MIDI program change message.
+			MIDI program change message. This message sent when the program patch number changes.
 		</constant>
 		<constant name="MIDI_MESSAGE_CHANNEL_PRESSURE" value="13" enum="MIDIMessage">
-			MIDI channel pressure message.
+			MIDI channel pressure message. This message is most often sent by pressing down on the key after it "bottoms out". This message is different from polyphonic after-touch as it indicates the highest pressure across all keys.
 		</constant>
 		<constant name="MIDI_MESSAGE_PITCH_BEND" value="14" enum="MIDIMessage">
-			MIDI pitch bend message.
+			MIDI pitch bend message. This message is sent to indicate a change in the pitch bender (wheel or lever, typically).
+		</constant>
+		<constant name="MIDI_MESSAGE_SYSTEM_EXCLUSIVE" value="240" enum="MIDIMessage">
+			MIDI system exclusive message. This has behavior exclusive to the device you're receiving input from. Getting this data is not implemented in Godot.
+		</constant>
+		<constant name="MIDI_MESSAGE_QUARTER_FRAME" value="241" enum="MIDIMessage">
+			MIDI quarter frame message. Contains timing information that is used to synchronize MIDI devices. Getting this data is not implemented in Godot.
+		</constant>
+		<constant name="MIDI_MESSAGE_SONG_POSITION_POINTER" value="242" enum="MIDIMessage">
+			MIDI song position pointer message. Gives the number of 16th notes since the start of the song. Getting this data is not implemented in Godot.
+		</constant>
+		<constant name="MIDI_MESSAGE_SONG_SELECT" value="243" enum="MIDIMessage">
+			MIDI song select message. Specifies which sequence or song is to be played. Getting this data is not implemented in Godot.
+		</constant>
+		<constant name="MIDI_MESSAGE_TUNE_REQUEST" value="246" enum="MIDIMessage">
+			MIDI tune request message. Upon receiving a tune request, all analog synthesizers should tune their oscillators.
+		</constant>
+		<constant name="MIDI_MESSAGE_TIMING_CLOCK" value="248" enum="MIDIMessage">
+			MIDI timing clock message. Sent 24 times per quarter note when synchronization is required.
+		</constant>
+		<constant name="MIDI_MESSAGE_START" value="250" enum="MIDIMessage">
+			MIDI start message. Start the current sequence playing. This message will be followed with Timing Clocks.
+		</constant>
+		<constant name="MIDI_MESSAGE_CONTINUE" value="251" enum="MIDIMessage">
+			MIDI continue message. Continue at the point the sequence was stopped.
+		</constant>
+		<constant name="MIDI_MESSAGE_STOP" value="252" enum="MIDIMessage">
+			MIDI stop message. Stop the current sequence.
+		</constant>
+		<constant name="MIDI_MESSAGE_ACTIVE_SENSING" value="254" enum="MIDIMessage">
+			MIDI active sensing message. This message is intended to be sent repeatedly to tell the receiver that a connection is alive.
+		</constant>
+		<constant name="MIDI_MESSAGE_SYSTEM_RESET" value="255" enum="MIDIMessage">
+			MIDI system reset message. Reset all receivers in the system to power-up status. It should not be sent on power-up itself.
 		</constant>
 		<constant name="OK" value="0" enum="Error">
 			Methods that return [enum Error] return [constant OK] when no error occurred. Note that many functions don't return an error code but will print error messages to standard output.
@@ -2372,7 +2493,10 @@
 		</constant>
 		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="39" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="41" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LOCALE_ID" value="41" enum="PropertyHint">
+			Hints that a string property is a locale code. Editing it will show a locale dialog for picking language and country.
+		</constant>
+		<constant name="PROPERTY_HINT_MAX" value="42" enum="PropertyHint">
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags">
 		</constant>
@@ -2453,7 +2577,7 @@
 		<constant name="PROPERTY_USAGE_DEFAULT_INTL" value="71" enum="PropertyUsageFlags">
 			Default usage for translatable strings (storage, editor, network and internationalized).
 		</constant>
-		<constant name="PROPERTY_USAGE_NOEDITOR" value="5" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_NO_EDITOR" value="5" enum="PropertyUsageFlags">
 			Default usage but without showing the property in the editor (storage, network).
 		</constant>
 		<constant name="METHOD_FLAG_NORMAL" value="1" enum="MethodFlags">
@@ -2581,31 +2705,31 @@
 		<constant name="TYPE_ARRAY" value="25" enum="Variant.Type">
 			Variable is of type [Array].
 		</constant>
-		<constant name="TYPE_RAW_ARRAY" value="26" enum="Variant.Type">
+		<constant name="TYPE_PACKED_BYTE_ARRAY" value="26" enum="Variant.Type">
 			Variable is of type [PackedByteArray].
 		</constant>
-		<constant name="TYPE_INT32_ARRAY" value="27" enum="Variant.Type">
+		<constant name="TYPE_PACKED_INT32_ARRAY" value="27" enum="Variant.Type">
 			Variable is of type [PackedInt32Array].
 		</constant>
-		<constant name="TYPE_INT64_ARRAY" value="28" enum="Variant.Type">
+		<constant name="TYPE_PACKED_INT64_ARRAY" value="28" enum="Variant.Type">
 			Variable is of type [PackedInt64Array].
 		</constant>
-		<constant name="TYPE_FLOAT32_ARRAY" value="29" enum="Variant.Type">
+		<constant name="TYPE_PACKED_FLOAT32_ARRAY" value="29" enum="Variant.Type">
 			Variable is of type [PackedFloat32Array].
 		</constant>
-		<constant name="TYPE_FLOAT64_ARRAY" value="30" enum="Variant.Type">
+		<constant name="TYPE_PACKED_FLOAT64_ARRAY" value="30" enum="Variant.Type">
 			Variable is of type [PackedFloat64Array].
 		</constant>
-		<constant name="TYPE_STRING_ARRAY" value="31" enum="Variant.Type">
+		<constant name="TYPE_PACKED_STRING_ARRAY" value="31" enum="Variant.Type">
 			Variable is of type [PackedStringArray].
 		</constant>
-		<constant name="TYPE_VECTOR2_ARRAY" value="32" enum="Variant.Type">
+		<constant name="TYPE_PACKED_VECTOR2_ARRAY" value="32" enum="Variant.Type">
 			Variable is of type [PackedVector2Array].
 		</constant>
-		<constant name="TYPE_VECTOR3_ARRAY" value="33" enum="Variant.Type">
+		<constant name="TYPE_PACKED_VECTOR3_ARRAY" value="33" enum="Variant.Type">
 			Variable is of type [PackedVector3Array].
 		</constant>
-		<constant name="TYPE_COLOR_ARRAY" value="34" enum="Variant.Type">
+		<constant name="TYPE_PACKED_COLOR_ARRAY" value="34" enum="Variant.Type">
 			Variable is of type [PackedColorArray].
 		</constant>
 		<constant name="TYPE_MAX" value="35" enum="Variant.Type">

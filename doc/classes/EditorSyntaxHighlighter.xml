@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		Base syntax highlighter resource all editor syntax highlighters extend from, it is used in the [ScriptEditor].
-		Add a syntax highlighter to an individual script by calling ScriptEditorBase._add_syntax_highlighter (currently not working). To apply to all scripts on open, call [method ScriptEditor.register_syntax_highlighter]
+		Add a syntax highlighter to an individual script by calling [method ScriptEditorBase.add_syntax_highlighter]. To apply to all scripts on open, call [method ScriptEditor.register_syntax_highlighter]
 	</description>
 	<tutorials>
 	</tutorials>

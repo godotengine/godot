@@ -30,8 +30,8 @@ void _split_leaf_sort_groups_simple(int &num_a, int &num_b, uint16_t *group_a, u
 
 	int order[Point::AXIS_COUNT];
 
-	order[0] = size.min_axis();
-	order[Point::AXIS_COUNT - 1] = size.max_axis();
+	order[0] = size.min_axis_index();
+	order[Point::AXIS_COUNT - 1] = size.max_axis_index();
 
 	static_assert(Point::AXIS_COUNT <= 3);
 	if (Point::AXIS_COUNT == 3) {

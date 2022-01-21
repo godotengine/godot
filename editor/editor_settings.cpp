@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,21 +33,17 @@
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"
 #include "core/io/certs_compressed.gen.h"
-#include "core/io/compression.h"
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
-#include "core/io/file_access_memory.h"
 #include "core/io/ip.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/io/translation_loader_po.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/version.h"
-#include "editor/doc_translations.gen.h"
 #include "editor/editor_node.h"
-#include "editor/editor_translations.gen.h"
+#include "editor/editor_translation.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
@@ -140,31 +136,36 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 
 	if (p_name == "shortcuts") {
 		Array save_array;
+		const OrderedHashMap<String, List<Ref<InputEvent>>> &builtin_list = InputMap::get_singleton()->get_builtins();
 		for (const KeyValue<String, Ref<Shortcut>> &shortcut_definition : shortcuts) {
 			Ref<Shortcut> sc = shortcut_definition.value;
 
-			if (builtin_action_overrides.has(shortcut_definition.key)) {
+			if (builtin_list.has(shortcut_definition.key)) {
 				// This shortcut was auto-generated from built in actions: don't save.
+				// If the builtin is overridden, it will be saved in the "builtin_action_overrides" section below.
 				continue;
 			}
 
-			if (optimize_save) {
-				if (!sc->has_meta("original")) {
-					continue; //this came from settings but is not any longer used
-				}
+			Array shortcut_events = sc->get_events();
+
+			Dictionary dict;
+			dict["name"] = shortcut_definition.key;
+			dict["shortcuts"] = shortcut_events;
+
+			if (!sc->has_meta("original")) {
+				// Getting the meta when it doesn't exist will return an empty array. If the 'shortcut_events' have been cleared,
+				// we still want save the shortcut in this case so that shortcuts that the user has customised are not reset,
+				// even if the 'original' has not been populated yet. This can happen when calling save() from the Project Manager.
+				save_array.push_back(dict);
+				continue;
 			}
 
 			Array original_events = sc->get_meta("original");
-			Array shortcut_events = sc->get_events();
 
 			bool is_same = Shortcut::is_event_array_equal(original_events, shortcut_events);
 			if (is_same) {
 				continue; // Not changed from default; don't save.
 			}
-
-			Dictionary dict;
-			dict["name"] = shortcut_definition.key;
-			dict["shortcuts"] = shortcut_events;
 
 			save_array.push_back(dict);
 		}
@@ -288,8 +289,8 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(pi);
 	}
 
-	p_list->push_back(PropertyInfo(Variant::ARRAY, "shortcuts", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL)); //do not edit
-	p_list->push_back(PropertyInfo(Variant::ARRAY, "builtin_action_overrides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+	p_list->push_back(PropertyInfo(Variant::ARRAY, "shortcuts", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL)); //do not edit
+	p_list->push_back(PropertyInfo(Variant::ARRAY, "builtin_action_overrides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 }
 
 void EditorSettings::_add_property_info_bind(const Dictionary &p_info) {
@@ -338,7 +339,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	{
 		String lang_hint = "en";
 		String host_lang = OS::get_singleton()->get_locale();
-		host_lang = TranslationServer::standardize_locale(host_lang);
 
 		// Skip locales if Text server lack required features.
 		Vector<String> locales_to_skip;
@@ -364,34 +364,28 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		}
 
 		String best;
-		EditorTranslationList *etl = _editor_translations;
-
-		while (etl->data) {
-			const String &locale = etl->lang;
-
+		int best_score = 0;
+		for (const String &locale : get_editor_locales()) {
 			// Skip locales which we can't render properly (see above comment).
 			// Test against language code without regional variants (e.g. ur_PK).
 			String lang_code = locale.get_slice("_", 0);
 			if (locales_to_skip.find(lang_code) != -1) {
-				etl++;
 				continue;
 			}
 
 			lang_hint += ",";
 			lang_hint += locale;
 
-			if (host_lang == locale) {
+			int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);
+			if (score > best_score) {
 				best = locale;
+				best_score = score;
+				if (score == 10) {
+					break; // Exact match, skip the rest.
+				}
 			}
-
-			if (best == String() && host_lang.begins_with(locale)) {
-				best = locale;
-			}
-
-			etl++;
 		}
-
-		if (best == String()) {
+		if (best_score == 0) {
 			best = "en";
 		}
 
@@ -434,9 +428,13 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/editor/separate_distraction_mode", false);
 	_initial_set("interface/editor/automatically_open_screenshots", true);
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/single_window_mode", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
-	_initial_set("interface/editor/hide_console_window", false);
 	_initial_set("interface/editor/mouse_extra_buttons_navigate_history", true);
 	_initial_set("interface/editor/save_each_scene_on_quit", true); // Regression
+#ifdef DEV_ENABLED
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/show_internal_errors_in_toast_notifications", 0, "Auto (Enabled),Enabled,Disabled")
+#else
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/show_internal_errors_in_toast_notifications", 0, "Auto (Disabled),Enabled,Disabled")
+#endif
 
 	// Inspector
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "interface/inspector/max_array_dictionary_items_per_page", 20, "10,100,1")
@@ -786,43 +784,6 @@ bool EditorSettings::_is_default_text_editor_theme(String p_theme_name) {
 	return p_theme_name == "default" || p_theme_name == "godot 2" || p_theme_name == "custom";
 }
 
-static Dictionary _get_builtin_script_templates() {
-	Dictionary templates;
-
-	// No Comments
-	templates["no_comments.gd"] =
-			"extends %BASE%\n"
-			"\n"
-			"\n"
-			"func _ready()%VOID_RETURN%:\n"
-			"%TS%pass\n";
-
-	// Empty
-	templates["empty.gd"] =
-			"extends %BASE%"
-			"\n"
-			"\n";
-
-	return templates;
-}
-
-static void _create_script_templates(const String &p_path) {
-	Dictionary templates = _get_builtin_script_templates();
-	List<Variant> keys;
-	templates.get_key_list(&keys);
-	FileAccessRef file = FileAccess::create(FileAccess::ACCESS_FILESYSTEM);
-	DirAccessRef dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	dir->change_dir(p_path);
-	for (int i = 0; i < keys.size(); i++) {
-		if (!dir->file_exists(keys[i])) {
-			Error err = file->reopen(p_path.plus_file((String)keys[i]), FileAccess::WRITE);
-			ERR_FAIL_COND(err != OK);
-			file->store_string(templates[keys[i]]);
-			file->close();
-		}
-	}
-}
-
 // PUBLIC METHODS
 
 EditorSettings *EditorSettings::get_singleton() {
@@ -857,10 +818,7 @@ void EditorSettings::create() {
 	}
 
 	if (EditorPaths::get_singleton()->are_paths_valid()) {
-		_create_script_templates(EditorPaths::get_singleton()->get_config_dir().plus_file("script_templates"));
-
 		// Validate editor config file.
-
 		DirAccessRef dir = DirAccess::open(EditorPaths::get_singleton()->get_config_dir());
 		String config_file_name = "editor_settings-" + itos(VERSION_MAJOR) + ".tres";
 		config_file_path = EditorPaths::get_singleton()->get_config_dir().plus_file(config_file_name);
@@ -916,50 +874,10 @@ void EditorSettings::setup_language() {
 		return; // Default, nothing to do.
 	}
 	// Load editor translation for configured/detected locale.
-	EditorTranslationList *etl = _editor_translations;
-	while (etl->data) {
-		if (etl->lang == lang) {
-			Vector<uint8_t> data;
-			data.resize(etl->uncomp_size);
-			Compression::decompress(data.ptrw(), etl->uncomp_size, etl->data, etl->comp_size, Compression::MODE_DEFLATE);
-
-			FileAccessMemory *fa = memnew(FileAccessMemory);
-			fa->open_custom(data.ptr(), data.size());
-
-			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa);
-
-			if (tr.is_valid()) {
-				tr->set_locale(etl->lang);
-				TranslationServer::get_singleton()->set_tool_translation(tr);
-				break;
-			}
-		}
-
-		etl++;
-	}
+	load_editor_translations(lang);
 
 	// Load class reference translation.
-	DocTranslationList *dtl = _doc_translations;
-	while (dtl->data) {
-		if (dtl->lang == lang) {
-			Vector<uint8_t> data;
-			data.resize(dtl->uncomp_size);
-			Compression::decompress(data.ptrw(), dtl->uncomp_size, dtl->data, dtl->comp_size, Compression::MODE_DEFLATE);
-
-			FileAccessMemory *fa = memnew(FileAccessMemory);
-			fa->open_custom(data.ptr(), data.size());
-
-			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa);
-
-			if (tr.is_valid()) {
-				tr->set_locale(dtl->lang);
-				TranslationServer::get_singleton()->set_doc_translation(tr);
-				break;
-			}
-		}
-
-		dtl++;
-	}
+	load_doc_translations(lang);
 }
 
 void EditorSettings::setup_network() {
@@ -983,7 +901,7 @@ void EditorSettings::setup_network() {
 		if (ip == current) {
 			selected = ip;
 		}
-		if (hint != "") {
+		if (!hint.is_empty()) {
 			hint += ",";
 		}
 		hint += ip;
@@ -1002,7 +920,7 @@ void EditorSettings::save() {
 		return;
 	}
 
-	if (singleton->config_file_path == "") {
+	if (singleton->config_file_path.is_empty()) {
 		ERR_PRINT("Cannot save EditorSettings config, no valid path");
 		return;
 	}
@@ -1212,7 +1130,7 @@ void EditorSettings::load_favorites() {
 	FileAccess *f = FileAccess::open(get_project_settings_dir().plus_file("favorites"), FileAccess::READ);
 	if (f) {
 		String line = f->get_line().strip_edges();
-		while (line != "") {
+		while (!line.is_empty()) {
 			favorites.push_back(line);
 			line = f->get_line().strip_edges();
 		}
@@ -1222,7 +1140,7 @@ void EditorSettings::load_favorites() {
 	f = FileAccess::open(get_project_settings_dir().plus_file("recent_dirs"), FileAccess::READ);
 	if (f) {
 		String line = f->get_line().strip_edges();
-		while (line != "") {
+		while (!line.is_empty()) {
 			recent_dirs.push_back(line);
 			line = f->get_line().strip_edges();
 		}
@@ -1235,7 +1153,7 @@ bool EditorSettings::is_dark_theme() {
 	int LIGHT_COLOR = 2;
 	Color base_color = get("interface/theme/base_color");
 	int icon_font_color_setting = get("interface/theme/icon_and_font_color");
-	return (icon_font_color_setting == AUTO_COLOR && ((base_color.r + base_color.g + base_color.b) / 3.0) < 0.5) || icon_font_color_setting == LIGHT_COLOR;
+	return (icon_font_color_setting == AUTO_COLOR && base_color.get_luminance() < 0.5) || icon_font_color_setting == LIGHT_COLOR;
 }
 
 void EditorSettings::list_text_editor_themes() {
@@ -1246,7 +1164,7 @@ void EditorSettings::list_text_editor_themes() {
 		List<String> custom_themes;
 		d->list_dir_begin();
 		String file = d->get_next();
-		while (file != String()) {
+		while (!file.is_empty()) {
 			if (file.get_extension() == "tet" && !_is_default_text_editor_theme(file.get_basename().to_lower())) {
 				custom_themes.push_back(file.get_basename());
 			}
@@ -1365,7 +1283,7 @@ Vector<String> EditorSettings::get_script_templates(const String &p_extension, c
 	if (d) {
 		d->list_dir_begin();
 		String file = d->get_next();
-		while (file != String()) {
+		while (!file.is_empty()) {
 			if (file.get_extension() == p_extension) {
 				templates.push_back(file.get_basename());
 			}
@@ -1476,7 +1394,7 @@ void ED_SHORTCUT_OVERRIDE(const String &p_path, const String &p_feature, Key p_k
 	ERR_FAIL_COND_MSG(!sc.is_valid(), "Used ED_SHORTCUT_OVERRIDE with invalid shortcut: " + p_path + ".");
 
 	PackedInt32Array arr;
-	arr.push_back(p_keycode);
+	arr.push_back((int32_t)p_keycode);
 
 	ED_SHORTCUT_OVERRIDE_ARRAY(p_path, p_feature, arr);
 }
@@ -1497,13 +1415,12 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 
 #ifdef OSX_ENABLED
 		// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
-		if (keycode == KEY_DELETE) {
-			keycode = KEY_MASK_CMD | KEY_BACKSPACE;
+		if (keycode == Key::KEY_DELETE) {
+			keycode = KeyModifierMask::CMD | Key::BACKSPACE;
 		}
 #endif
-
 		Ref<InputEventKey> ie;
-		if (keycode) {
+		if (keycode != Key::NONE) {
 			ie = InputEventKey::create_reference(keycode);
 			events.push_back(ie);
 		}
@@ -1511,12 +1428,12 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 
 	// Directly override the existing shortcut.
 	sc->set_events(events);
-	sc->set_meta("original", events);
+	sc->set_meta("original", events.duplicate(true));
 }
 
 Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, Key p_keycode) {
 	PackedInt32Array arr;
-	arr.push_back(p_keycode);
+	arr.push_back((int32_t)p_keycode);
 	return ED_SHORTCUT_ARRAY(p_path, p_name, arr);
 }
 
@@ -1528,13 +1445,13 @@ Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, cons
 
 #ifdef OSX_ENABLED
 		// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
-		if (keycode == KEY_DELETE) {
-			keycode = KEY_MASK_CMD | KEY_BACKSPACE;
+		if (keycode == Key::KEY_DELETE) {
+			keycode = KeyModifierMask::CMD | Key::BACKSPACE;
 		}
 #endif
 
 		Ref<InputEventKey> ie;
-		if (keycode) {
+		if (keycode != Key::NONE) {
 			ie = InputEventKey::create_reference(keycode);
 			events.push_back(ie);
 		}
@@ -1545,21 +1462,21 @@ Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, cons
 		sc.instantiate();
 		sc->set_name(p_name);
 		sc->set_events(events);
-		sc->set_meta("original", events);
+		sc->set_meta("original", events.duplicate(true));
 		return sc;
 	}
 
 	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 	if (sc.is_valid()) {
 		sc->set_name(p_name); //keep name (the ones that come from disk have no name)
-		sc->set_meta("original", events); //to compare against changes
+		sc->set_meta("original", events.duplicate(true)); //to compare against changes
 		return sc;
 	}
 
 	sc.instantiate();
 	sc->set_name(p_name);
 	sc->set_events(events);
-	sc->set_meta("original", events); //to compare against changes
+	sc->set_meta("original", events.duplicate(true)); //to compare against changes
 	EditorSettings::get_singleton()->add_shortcut(p_path, sc);
 
 	return sc;

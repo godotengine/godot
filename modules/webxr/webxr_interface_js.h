@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,8 +36,6 @@
 #include "webxr_interface.h"
 
 /**
-	@author David Snopek <david.snopek@snopekgames.com>
-
 	The WebXR interface is a VR/AR interface that can be used on the web.
 */
 
@@ -46,6 +44,7 @@ class WebXRInterfaceJS : public WebXRInterface {
 
 private:
 	bool initialized;
+	Ref<XRPositionalTracker> head_tracker;
 
 	String session_mode;
 	String required_features;
@@ -53,7 +52,9 @@ private:
 	String requested_reference_space_types;
 	String reference_space_type;
 
+	// TODO maybe turn into a vector to support more then 2 controllers...
 	bool controllers_state[2];
+	Ref<XRPositionalTracker> controllers[2];
 	Size2 render_targetsize;
 
 	Transform3D _js_matrix_to_transform(float *p_js_matrix);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,7 +54,7 @@ private:
 		Ref<Texture2D> icon;
 		bool icon_transposed = false;
 		Rect2i icon_region;
-		Color icon_modulate;
+		Color icon_modulate = Color(1, 1, 1, 1);
 		Ref<Texture2D> tag_icon;
 		String text;
 		Ref<TextParagraph> text_buf;
@@ -62,14 +62,14 @@ private:
 		String language;
 		TextDirection text_direction = TEXT_DIRECTION_AUTO;
 
-		bool selectable = false;
+		bool selectable = true;
 		bool selected = false;
 		bool disabled = false;
-		bool tooltip_enabled = false;
+		bool tooltip_enabled = true;
 		Variant metadata;
 		String tooltip;
 		Color custom_fg;
-		Color custom_bg;
+		Color custom_bg = Color(0.0, 0.0, 0.0, 0.0);
 
 		Rect2 rect_cache;
 		Rect2 min_rect_cache;
@@ -77,6 +77,10 @@ private:
 		Size2 get_icon_size() const;
 
 		bool operator<(const Item &p_another) const { return text < p_another.text; }
+
+		Item() {
+			text_buf.instantiate();
+		}
 	};
 
 	int current = -1;
@@ -119,14 +123,14 @@ private:
 
 	bool do_autoscroll_to_bottom = false;
 
-	Array _get_items() const;
-	void _set_items(const Array &p_items);
-
 	void _scroll_changed(double);
 	void _shape(int p_idx);
 
 protected:
 	void _notification(int p_what);
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
 
 public:
@@ -199,6 +203,7 @@ public:
 
 	void move_item(int p_from_idx, int p_to_idx);
 
+	void set_item_count(int p_count);
 	int get_item_count() const;
 	void remove_item(int p_idx);
 
@@ -250,7 +255,7 @@ public:
 
 	void set_autoscroll_to_bottom(const bool p_enable);
 
-	VScrollBar *get_v_scroll() { return scroll_bar; }
+	VScrollBar *get_v_scroll_bar() { return scroll_bar; }
 
 	ItemList();
 	~ItemList();

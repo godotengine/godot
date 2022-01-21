@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,16 +55,23 @@ void EditorQuickOpen::_build_search_cache(EditorFileSystemDirectory *p_efsd) {
 		_build_search_cache(p_efsd->get_subdir(i));
 	}
 
+	Vector<String> base_types = String(base_type).split(String(","));
 	for (int i = 0; i < p_efsd->get_file_count(); i++) {
 		String file_type = p_efsd->get_file_type(i);
-		if (ClassDB::is_parent_class(file_type, base_type)) {
-			String file = p_efsd->get_file_path(i);
-			files.push_back(file.substr(6, file.length()));
+		// Iterate all possible base types.
+		for (String &parent_type : base_types) {
+			if (ClassDB::is_parent_class(file_type, parent_type)) {
+				String file = p_efsd->get_file_path(i);
+				files.push_back(file.substr(6, file.length()));
 
-			// Store refs to used icons.
-			String ext = file.get_extension();
-			if (!icons.has(ext)) {
-				icons.insert(ext, get_theme_icon((has_theme_icon(file_type, SNAME("EditorIcons")) ? file_type : String("Object")), SNAME("EditorIcons")));
+				// Store refs to used icons.
+				String ext = file.get_extension();
+				if (!icons.has(ext)) {
+					icons.insert(ext, get_theme_icon((has_theme_icon(file_type, SNAME("EditorIcons")) ? file_type : String("Object")), SNAME("EditorIcons")));
+				}
+
+				// Stop testing base types as soon as we got a match.
+				break;
 			}
 		}
 	}
@@ -72,7 +79,7 @@ void EditorQuickOpen::_build_search_cache(EditorFileSystemDirectory *p_efsd) {
 
 void EditorQuickOpen::_update_search() {
 	const String search_text = search_box->get_text();
-	const bool empty_search = search_text == "";
+	const bool empty_search = search_text.is_empty();
 
 	// Filter possible candidates.
 	Vector<Entry> entries;
@@ -160,10 +167,10 @@ void EditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_ie) {
 	Ref<InputEventKey> k = p_ie;
 	if (k.is_valid()) {
 		switch (k->get_keycode()) {
-			case KEY_UP:
-			case KEY_DOWN:
-			case KEY_PAGEUP:
-			case KEY_PAGEDOWN: {
+			case Key::UP:
+			case Key::DOWN:
+			case Key::PAGEUP:
+			case Key::PAGEDOWN: {
 				search_options->gui_input(k);
 				search_box->accept_event();
 

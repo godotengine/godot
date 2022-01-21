@@ -415,6 +415,10 @@ namespace Godot
         /// <summary>
         /// Find the first occurrence of a substring. Optionally, the search starting position can be passed.
         /// </summary>
+        /// <seealso cref="Find(string, char, int, bool)"/>
+        /// <seealso cref="FindLast(string, string, bool)"/>
+        /// <seealso cref="FindLast(string, string, int, bool)"/>
+        /// <seealso cref="FindN(string, string, int)"/>
         /// <param name="instance">The string that will be searched.</param>
         /// <param name="what">The substring to find.</param>
         /// <param name="from">The search starting position.</param>
@@ -690,7 +694,7 @@ namespace Godot
 
         /// <summary>
         /// Returns <see langword="true"/> if the string is a path to a file or
-        /// directory and its startign point is explicitly defined. This includes
+        /// directory and its starting point is explicitly defined. This includes
         /// <c>res://</c>, <c>user://</c>, <c>C:\</c>, <c>/</c>, etc.
         /// </summary>
         /// <seealso cref="IsRelativePath(string)"/>
@@ -1345,7 +1349,7 @@ namespace Godot
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static string godot_icall_String_simplify_path(string str);
+        internal static extern string godot_icall_String_simplify_path(string str);
 
         /// <summary>
         /// Split the string by a divisor string, return an array of the substrings.

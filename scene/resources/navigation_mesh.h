@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -85,7 +85,7 @@ protected:
 	float cell_size = 0.3f;
 	float cell_height = 0.2f;
 	float agent_height = 2.0f;
-	float agent_radius = 0.6f;
+	float agent_radius = 1.0f;
 	float agent_max_climb = 0.9f;
 	float agent_max_slope = 45.0f;
 	float region_min_size = 8.0f;

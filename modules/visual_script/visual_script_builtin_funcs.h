@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -71,8 +71,9 @@ public:
 		MATH_RANDOMIZE,
 		MATH_RANDI,
 		MATH_RANDF,
-		MATH_RANDF_RANGE,
 		MATH_RANDI_RANGE,
+		MATH_RANDF_RANGE,
+		MATH_RANDFN,
 		MATH_SEED,
 		MATH_RANDSEED,
 		MATH_DEG2RAD,
@@ -81,6 +82,7 @@ public:
 		MATH_DB2LINEAR,
 		MATH_WRAP,
 		MATH_WRAPF,
+		MATH_PINGPONG,
 		LOGIC_MAX,
 		LOGIC_MIN,
 		LOGIC_CLAMP,

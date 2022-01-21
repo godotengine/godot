@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -494,15 +494,10 @@ String VisualShaderNodeTexture::get_input_port_default_hint(int p_port) const {
 	return "";
 }
 
-static String make_unique_id(VisualShader::Type p_type, int p_id, const String &p_name) {
-	static const char *typepf[VisualShader::TYPE_MAX] = { "vtx", "frg", "lgt" };
-	return p_name + "_" + String(typepf[p_type]) + "_" + itos(p_id);
-}
-
 Vector<VisualShader::DefaultTextureParam> VisualShaderNodeTexture::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
 	VisualShader::DefaultTextureParam dtp;
 	dtp.name = make_unique_id(p_type, p_id, "tex");
-	dtp.param = texture;
+	dtp.params.push_back(texture);
 	Vector<VisualShader::DefaultTextureParam> ret;
 	ret.push_back(dtp);
 	return ret;
@@ -540,15 +535,15 @@ String VisualShaderNodeTexture::generate_code(Shader::Mode p_mode, VisualShader:
 	if (source == SOURCE_TEXTURE) {
 		String id = make_unique_id(p_type, p_id, "tex");
 		String code;
-		if (p_input_vars[0] == String()) { // Use UV by default.
+		if (p_input_vars[0].is_empty()) { // Use UV by default.
 
-			if (p_input_vars[1] == String()) {
+			if (p_input_vars[1].is_empty()) {
 				code += "	vec4 " + id + "_read = texture(" + id + ", " + default_uv + ");\n";
 			} else {
 				code += "	vec4 " + id + "_read = textureLod(" + id + ", " + default_uv + ", " + p_input_vars[1] + ");\n";
 			}
 
-		} else if (p_input_vars[1] == String()) {
+		} else if (p_input_vars[1].is_empty()) {
 			//no lod
 			code += "	vec4 " + id + "_read = texture(" + id + ", " + p_input_vars[0] + ".xy);\n";
 		} else {
@@ -565,18 +560,18 @@ String VisualShaderNodeTexture::generate_code(Shader::Mode p_mode, VisualShader:
 
 		String code;
 		code += "	{\n";
-		if (id == String()) {
+		if (id.is_empty()) {
 			code += "		vec4 " + id + "_tex_read = vec4(0.0);\n";
 		} else {
-			if (p_input_vars[0] == String()) { // Use UV by default.
+			if (p_input_vars[0].is_empty()) { // Use UV by default.
 
-				if (p_input_vars[1] == String()) {
+				if (p_input_vars[1].is_empty()) {
 					code += "		vec4 " + id + "_tex_read = texture(" + id + ", " + default_uv + ");\n";
 				} else {
 					code += "		vec4 " + id + "_tex_read = textureLod(" + id + ", " + default_uv + ", " + p_input_vars[1] + ");\n";
 				}
 
-			} else if (p_input_vars[1] == String()) {
+			} else if (p_input_vars[1].is_empty()) {
 				//no lod
 				code += "		vec4 " + id + "_tex_read = texture(" + id + ", " + p_input_vars[0] + ".xy);\n";
 			} else {
@@ -592,15 +587,15 @@ String VisualShaderNodeTexture::generate_code(Shader::Mode p_mode, VisualShader:
 
 	if (source == SOURCE_SCREEN && (p_mode == Shader::MODE_SPATIAL || p_mode == Shader::MODE_CANVAS_ITEM) && p_type == VisualShader::TYPE_FRAGMENT) {
 		String code = "	{\n";
-		if (p_input_vars[0] == String() || p_for_preview) { // Use UV by default.
+		if (p_input_vars[0].is_empty() || p_for_preview) { // Use UV by default.
 
-			if (p_input_vars[1] == String()) {
+			if (p_input_vars[1].is_empty()) {
 				code += "		vec4 _tex_read = textureLod(SCREEN_TEXTURE, " + default_uv + ", 0.0 );\n";
 			} else {
 				code += "		vec4 _tex_read = textureLod(SCREEN_TEXTURE, " + default_uv + ", " + p_input_vars[1] + ");\n";
 			}
 
-		} else if (p_input_vars[1] == String()) {
+		} else if (p_input_vars[1].is_empty()) {
 			//no lod
 			code += "		vec4 _tex_read = textureLod(SCREEN_TEXTURE, " + p_input_vars[0] + ".xy, 0.0);\n";
 		} else {
@@ -615,15 +610,15 @@ String VisualShaderNodeTexture::generate_code(Shader::Mode p_mode, VisualShader:
 
 	if (source == SOURCE_2D_TEXTURE && p_mode == Shader::MODE_CANVAS_ITEM && p_type == VisualShader::TYPE_FRAGMENT) {
 		String code = "	{\n";
-		if (p_input_vars[0] == String()) { // Use UV by default.
+		if (p_input_vars[0].is_empty()) { // Use UV by default.
 
-			if (p_input_vars[1] == String()) {
+			if (p_input_vars[1].is_empty()) {
 				code += "		vec4 _tex_read = texture(TEXTURE, " + default_uv + ");\n";
 			} else {
 				code += "		vec4 _tex_read = textureLod(TEXTURE, " + default_uv + ", " + p_input_vars[1] + ");\n";
 			}
 
-		} else if (p_input_vars[1] == String()) {
+		} else if (p_input_vars[1].is_empty()) {
 			//no lod
 			code += "		vec4 _tex_read = texture(TEXTURE, " + p_input_vars[0] + ".xy);\n";
 		} else {
@@ -638,15 +633,15 @@ String VisualShaderNodeTexture::generate_code(Shader::Mode p_mode, VisualShader:
 
 	if (source == SOURCE_2D_NORMAL && p_mode == Shader::MODE_CANVAS_ITEM && p_type == VisualShader::TYPE_FRAGMENT) {
 		String code = "	{\n";
-		if (p_input_vars[0] == String()) { // Use UV by default.
+		if (p_input_vars[0].is_empty()) { // Use UV by default.
 
-			if (p_input_vars[1] == String()) {
+			if (p_input_vars[1].is_empty()) {
 				code += "		vec4 _tex_read = texture(NORMAL_TEXTURE, " + default_uv + ");\n";
 			} else {
 				code += "		vec4 _tex_read = textureLod(NORMAL_TEXTURE, " + default_uv + ", " + p_input_vars[1] + ");\n";
 			}
 
-		} else if (p_input_vars[1] == String()) {
+		} else if (p_input_vars[1].is_empty()) {
 			//no lod
 			code += "		vec4 _tex_read = texture(NORMAL_TEXTURE, " + p_input_vars[0] + ".xy);\n";
 		} else {
@@ -671,15 +666,15 @@ String VisualShaderNodeTexture::generate_code(Shader::Mode p_mode, VisualShader:
 
 	if (source == SOURCE_DEPTH && p_mode == Shader::MODE_SPATIAL && p_type == VisualShader::TYPE_FRAGMENT) {
 		String code = "	{\n";
-		if (p_input_vars[0] == String()) { // Use UV by default.
+		if (p_input_vars[0].is_empty()) { // Use UV by default.
 
-			if (p_input_vars[1] == String()) {
+			if (p_input_vars[1].is_empty()) {
 				code += "		float _depth = texture(DEPTH_TEXTURE, " + default_uv + ").r;\n";
 			} else {
 				code += "		float _depth = textureLod(DEPTH_TEXTURE, " + default_uv + ", " + p_input_vars[1] + ").r;\n";
 			}
 
-		} else if (p_input_vars[1] == String()) {
+		} else if (p_input_vars[1].is_empty()) {
 			//no lod
 			code += "		float _depth = texture(DEPTH_TEXTURE, " + p_input_vars[0] + ".xy).r;\n";
 		} else {
@@ -888,7 +883,7 @@ String VisualShaderNodeCurveTexture::generate_global(Shader::Mode p_mode, Visual
 }
 
 String VisualShaderNodeCurveTexture::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	if (p_input_vars[0] == String()) {
+	if (p_input_vars[0].is_empty()) {
 		return "	" + p_output_vars[0] + " = 0.0;\n";
 	}
 	String id = make_unique_id(p_type, p_id, "curve");
@@ -900,7 +895,7 @@ String VisualShaderNodeCurveTexture::generate_code(Shader::Mode p_mode, VisualSh
 Vector<VisualShader::DefaultTextureParam> VisualShaderNodeCurveTexture::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
 	VisualShader::DefaultTextureParam dtp;
 	dtp.name = make_unique_id(p_type, p_id, "curve");
-	dtp.param = texture;
+	dtp.params.push_back(texture);
 	Vector<VisualShader::DefaultTextureParam> ret;
 	ret.push_back(dtp);
 	return ret;
@@ -918,6 +913,7 @@ bool VisualShaderNodeCurveTexture::is_use_prop_slots() const {
 }
 
 VisualShaderNodeCurveTexture::VisualShaderNodeCurveTexture() {
+	set_input_port_default_value(0, 0.0);
 	simple_decl = true;
 	allow_v_resize = false;
 }
@@ -972,7 +968,7 @@ String VisualShaderNodeCurveXYZTexture::generate_global(Shader::Mode p_mode, Vis
 }
 
 String VisualShaderNodeCurveXYZTexture::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	if (p_input_vars[0] == String()) {
+	if (p_input_vars[0].is_empty()) {
 		return "	" + p_output_vars[0] + " = vec3(0.0);\n";
 	}
 	String id = make_unique_id(p_type, p_id, "curve3d");
@@ -984,7 +980,7 @@ String VisualShaderNodeCurveXYZTexture::generate_code(Shader::Mode p_mode, Visua
 Vector<VisualShader::DefaultTextureParam> VisualShaderNodeCurveXYZTexture::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
 	VisualShader::DefaultTextureParam dtp;
 	dtp.name = make_unique_id(p_type, p_id, "curve3d");
-	dtp.param = texture;
+	dtp.params.push_back(texture);
 	Vector<VisualShader::DefaultTextureParam> ret;
 	ret.push_back(dtp);
 	return ret;
@@ -1002,6 +998,7 @@ bool VisualShaderNodeCurveXYZTexture::is_use_prop_slots() const {
 }
 
 VisualShaderNodeCurveXYZTexture::VisualShaderNodeCurveXYZTexture() {
+	set_input_port_default_value(0, 0.0);
 	simple_decl = true;
 	allow_v_resize = false;
 }
@@ -1079,14 +1076,14 @@ String VisualShaderNodeSample3D::generate_code(Shader::Mode p_mode, VisualShader
 		} else {
 			id = p_input_vars[2];
 		}
-		if (id != String()) {
-			if (p_input_vars[0] == String()) { // Use UV by default.
-				if (p_input_vars[1] == String()) {
+		if (!id.is_empty()) {
+			if (p_input_vars[0].is_empty()) { // Use UV by default.
+				if (p_input_vars[1].is_empty()) {
 					code += "		vec4 " + id + "_tex_read = texture(" + id + ", " + default_uv + ");\n";
 				} else {
 					code += "		vec4 " + id + "_tex_read = textureLod(" + id + ", " + default_uv + ", " + p_input_vars[1] + ");\n";
 				}
-			} else if (p_input_vars[1] == String()) {
+			} else if (p_input_vars[1].is_empty()) {
 				//no lod
 				code += "		vec4 " + id + "_tex_read = texture(" + id + ", " + p_input_vars[0] + ");\n";
 			} else {
@@ -1165,7 +1162,7 @@ String VisualShaderNodeTexture2DArray::get_input_port_name(int p_port) const {
 Vector<VisualShader::DefaultTextureParam> VisualShaderNodeTexture2DArray::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
 	VisualShader::DefaultTextureParam dtp;
 	dtp.name = make_unique_id(p_type, p_id, "tex3d");
-	dtp.param = texture_array;
+	dtp.params.push_back(texture_array);
 	Vector<VisualShader::DefaultTextureParam> ret;
 	ret.push_back(dtp);
 	return ret;
@@ -1222,7 +1219,7 @@ String VisualShaderNodeTexture3D::get_input_port_name(int p_port) const {
 Vector<VisualShader::DefaultTextureParam> VisualShaderNodeTexture3D::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
 	VisualShader::DefaultTextureParam dtp;
 	dtp.name = make_unique_id(p_type, p_id, "tex3d");
-	dtp.param = texture;
+	dtp.params.push_back(texture);
 	Vector<VisualShader::DefaultTextureParam> ret;
 	ret.push_back(dtp);
 	return ret;
@@ -1321,7 +1318,7 @@ bool VisualShaderNodeCubemap::is_output_port_expandable(int p_port) const {
 Vector<VisualShader::DefaultTextureParam> VisualShaderNodeCubemap::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
 	VisualShader::DefaultTextureParam dtp;
 	dtp.name = make_unique_id(p_type, p_id, "cube");
-	dtp.param = cube_map;
+	dtp.params.push_back(cube_map);
 	Vector<VisualShader::DefaultTextureParam> ret;
 	ret.push_back(dtp);
 	return ret;
@@ -1367,7 +1364,7 @@ String VisualShaderNodeCubemap::generate_code(Shader::Mode p_mode, VisualShader:
 
 	code += "	{\n";
 
-	if (id == String()) {
+	if (id.is_empty()) {
 		code += "		vec4 " + id + "_read = vec4(0.0);\n";
 		code += "		" + p_output_vars[0] + " = " + id + "_read.rgb;\n";
 		code += "		" + p_output_vars[1] + " = " + id + "_read.a;\n";
@@ -1375,15 +1372,15 @@ String VisualShaderNodeCubemap::generate_code(Shader::Mode p_mode, VisualShader:
 		return code;
 	}
 
-	if (p_input_vars[0] == String()) { // Use UV by default.
+	if (p_input_vars[0].is_empty()) { // Use UV by default.
 
-		if (p_input_vars[1] == String()) {
+		if (p_input_vars[1].is_empty()) {
 			code += "		vec4 " + id + "_read = texture(" + id + ", " + default_uv + ");\n";
 		} else {
 			code += "		vec4 " + id + "_read = textureLod(" + id + ", " + default_uv + ", " + p_input_vars[1] + " );\n";
 		}
 
-	} else if (p_input_vars[1] == String()) {
+	} else if (p_input_vars[1].is_empty()) {
 		//no lod
 		code += "		vec4 " + id + "_read = texture(" + id + ", " + p_input_vars[0] + ");\n";
 	} else {
@@ -1650,6 +1647,21 @@ String VisualShaderNodeIntOp::generate_code(Shader::Mode p_mode, VisualShader::T
 		case OP_MIN:
 			code += "min(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n";
 			break;
+		case OP_BITWISE_AND:
+			code += p_input_vars[0] + " & " + p_input_vars[1] + ";\n";
+			break;
+		case OP_BITWISE_OR:
+			code += p_input_vars[0] + " | " + p_input_vars[1] + ";\n";
+			break;
+		case OP_BITWISE_XOR:
+			code += p_input_vars[0] + " ^ " + p_input_vars[1] + ";\n";
+			break;
+		case OP_BITWISE_LEFT_SHIFT:
+			code += p_input_vars[0] + " << " + p_input_vars[1] + ";\n";
+			break;
+		case OP_BITWISE_RIGHT_SHIFT:
+			code += p_input_vars[0] + " >> " + p_input_vars[1] + ";\n";
+			break;
 		default:
 			break;
 	}
@@ -1680,7 +1692,7 @@ void VisualShaderNodeIntOp::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_operator", "op"), &VisualShaderNodeIntOp::set_operator);
 	ClassDB::bind_method(D_METHOD("get_operator"), &VisualShaderNodeIntOp::get_operator);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "operator", PROPERTY_HINT_ENUM, "Add,Subtract,Multiply,Divide,Remainder,Max,Min"), "set_operator", "get_operator");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "operator", PROPERTY_HINT_ENUM, "Add,Subtract,Multiply,Divide,Remainder,Max,Min,Bitwise AND,Bitwise OR,Bitwise XOR,Bitwise Left Shift,Bitwise Right Shift"), "set_operator", "get_operator");
 
 	BIND_ENUM_CONSTANT(OP_ADD);
 	BIND_ENUM_CONSTANT(OP_SUB);
@@ -1689,6 +1701,11 @@ void VisualShaderNodeIntOp::_bind_methods() {
 	BIND_ENUM_CONSTANT(OP_MOD);
 	BIND_ENUM_CONSTANT(OP_MAX);
 	BIND_ENUM_CONSTANT(OP_MIN);
+	BIND_ENUM_CONSTANT(OP_BITWISE_AND);
+	BIND_ENUM_CONSTANT(OP_BITWISE_OR);
+	BIND_ENUM_CONSTANT(OP_BITWISE_XOR);
+	BIND_ENUM_CONSTANT(OP_BITWISE_LEFT_SHIFT);
+	BIND_ENUM_CONSTANT(OP_BITWISE_RIGHT_SHIFT);
 	BIND_ENUM_CONSTANT(OP_ENUM_SIZE);
 }
 
@@ -2336,7 +2353,8 @@ String VisualShaderNodeIntFunc::generate_code(Shader::Mode p_mode, VisualShader:
 	static const char *functions[FUNC_MAX] = {
 		"abs($)",
 		"-($)",
-		"sign($)"
+		"sign($)",
+		"~($)"
 	};
 
 	return "	" + p_output_vars[0] + " = " + String(functions[func]).replace("$", p_input_vars[0]) + ";\n";
@@ -2365,11 +2383,12 @@ void VisualShaderNodeIntFunc::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_function", "func"), &VisualShaderNodeIntFunc::set_function);
 	ClassDB::bind_method(D_METHOD("get_function"), &VisualShaderNodeIntFunc::get_function);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "function", PROPERTY_HINT_ENUM, "Abs,Negate,Sign"), "set_function", "get_function");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "function", PROPERTY_HINT_ENUM, "Abs,Negate,Sign,Bitwise NOT"), "set_function", "get_function");
 
 	BIND_ENUM_CONSTANT(FUNC_ABS);
 	BIND_ENUM_CONSTANT(FUNC_NEGATE);
 	BIND_ENUM_CONSTANT(FUNC_SIGN);
+	BIND_ENUM_CONSTANT(FUNC_BITWISE_NOT);
 	BIND_ENUM_CONSTANT(FUNC_MAX);
 }
 
@@ -4838,34 +4857,106 @@ String VisualShaderNodeTextureUniform::get_output_port_name(int p_port) const {
 }
 
 String VisualShaderNodeTextureUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	bool has_colon = false;
 	String code = _get_qual_str() + "uniform sampler2D " + get_uniform_name();
 
-	switch (texture_type) {
-		case TYPE_DATA:
-			if (color_default == COLOR_DEFAULT_BLACK) {
-				code += " : hint_black;\n";
-			} else {
-				code += ";\n";
-			}
-			break;
-		case TYPE_COLOR:
-			if (color_default == COLOR_DEFAULT_BLACK) {
-				code += " : hint_black_albedo;\n";
-			} else {
-				code += " : hint_albedo;\n";
-			}
-			break;
-		case TYPE_NORMAL_MAP:
-			code += " : hint_normal;\n";
-			break;
-		case TYPE_ANISO:
-			code += " : hint_aniso;\n";
-			break;
-		default:
-			code += ";\n";
-			break;
+	// type
+	{
+		String type_code;
+
+		switch (texture_type) {
+			case TYPE_DATA:
+				if (color_default == COLOR_DEFAULT_BLACK) {
+					type_code = "hint_black";
+				}
+				break;
+			case TYPE_COLOR:
+				if (color_default == COLOR_DEFAULT_BLACK) {
+					type_code = "hint_black_albedo";
+				} else {
+					type_code = "hint_albedo";
+				}
+				break;
+			case TYPE_NORMAL_MAP:
+				type_code = "hint_normal";
+				break;
+			case TYPE_ANISOTROPY:
+				type_code = "hint_anisotropy";
+				break;
+			default:
+				break;
+		}
+
+		if (!type_code.is_empty()) {
+			code += " : " + type_code;
+			has_colon = true;
+		}
 	}
 
+	// filter
+	{
+		String filter_code;
+
+		switch (texture_filter) {
+			case FILTER_NEAREST:
+				filter_code = "filter_nearest";
+				break;
+			case FILTER_LINEAR:
+				filter_code = "filter_linear";
+				break;
+			case FILTER_NEAREST_MIPMAP:
+				filter_code = "filter_nearest_mipmap";
+				break;
+			case FILTER_LINEAR_MIPMAP:
+				filter_code = "filter_linear_mipmap";
+				break;
+			case FILTER_NEAREST_MIPMAP_ANISOTROPIC:
+				filter_code = "filter_nearest_mipmap_anisotropic";
+				break;
+			case FILTER_LINEAR_MIPMAP_ANISOTROPIC:
+				filter_code = "filter_linear_mipmap_anisotropic";
+				break;
+			default:
+				break;
+		}
+
+		if (!filter_code.is_empty()) {
+			if (!has_colon) {
+				code += " : ";
+				has_colon = true;
+			} else {
+				code += ", ";
+			}
+			code += filter_code;
+		}
+	}
+
+	// repeat
+	{
+		String repeat_code;
+
+		switch (texture_repeat) {
+			case REPEAT_ENABLED:
+				repeat_code = "repeat_enable";
+				break;
+			case REPEAT_DISABLED:
+				repeat_code = "repeat_disable";
+				break;
+			default:
+				break;
+		}
+
+		if (!repeat_code.is_empty()) {
+			if (!has_colon) {
+				code += " : ";
+			} else {
+				code += ", ";
+			}
+			code += repeat_code;
+		}
+	}
+
+	code += ";\n";
 	return code;
 }
 
@@ -4883,13 +4974,13 @@ String VisualShaderNodeTextureUniform::generate_code(Shader::Mode p_mode, Visual
 
 	String id = get_uniform_name();
 	String code = "	{\n";
-	if (p_input_vars[0] == String()) { // Use UV by default.
-		if (p_input_vars[1] == String()) {
+	if (p_input_vars[0].is_empty()) { // Use UV by default.
+		if (p_input_vars[1].is_empty()) {
 			code += "		vec4 n_tex_read = texture(" + id + ", " + default_uv + ");\n";
 		} else {
 			code += "		vec4 n_tex_read = textureLod(" + id + ", " + default_uv + ", " + p_input_vars[1] + ");\n";
 		}
-	} else if (p_input_vars[1] == String()) {
+	} else if (p_input_vars[1].is_empty()) {
 		//no lod
 		code += "		vec4 n_tex_read = texture(" + id + ", " + p_input_vars[0] + ".xy);\n";
 	} else {
@@ -4928,11 +5019,54 @@ VisualShaderNodeTextureUniform::ColorDefault VisualShaderNodeTextureUniform::get
 	return color_default;
 }
 
+void VisualShaderNodeTextureUniform::set_texture_filter(TextureFilter p_filter) {
+	ERR_FAIL_INDEX(int(p_filter), int(FILTER_MAX));
+	if (texture_filter == p_filter) {
+		return;
+	}
+	texture_filter = p_filter;
+	emit_changed();
+}
+
+VisualShaderNodeTextureUniform::TextureFilter VisualShaderNodeTextureUniform::get_texture_filter() const {
+	return texture_filter;
+}
+
+void VisualShaderNodeTextureUniform::set_texture_repeat(TextureRepeat p_repeat) {
+	ERR_FAIL_INDEX(int(p_repeat), int(REPEAT_MAX));
+	if (texture_repeat == p_repeat) {
+		return;
+	}
+	texture_repeat = p_repeat;
+	emit_changed();
+}
+
+VisualShaderNodeTextureUniform::TextureRepeat VisualShaderNodeTextureUniform::get_texture_repeat() const {
+	return texture_repeat;
+}
+
 Vector<StringName> VisualShaderNodeTextureUniform::get_editable_properties() const {
 	Vector<StringName> props = VisualShaderNodeUniform::get_editable_properties();
 	props.push_back("texture_type");
-	props.push_back("color_default");
+	if (texture_type == TYPE_DATA || texture_type == TYPE_COLOR) {
+		props.push_back("color_default");
+	}
+	props.push_back("texture_filter");
+	props.push_back("texture_repeat");
 	return props;
+}
+
+bool VisualShaderNodeTextureUniform::is_show_prop_names() const {
+	return true;
+}
+
+Map<StringName, String> VisualShaderNodeTextureUniform::get_editable_properties_names() const {
+	Map<StringName, String> names;
+	names.insert("texture_type", TTR("Type"));
+	names.insert("color_default", TTR("Default Color"));
+	names.insert("texture_filter", TTR("Filter"));
+	names.insert("texture_repeat", TTR("Repeat"));
+	return names;
 }
 
 void VisualShaderNodeTextureUniform::_bind_methods() {
@@ -4942,18 +5076,40 @@ void VisualShaderNodeTextureUniform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_color_default", "type"), &VisualShaderNodeTextureUniform::set_color_default);
 	ClassDB::bind_method(D_METHOD("get_color_default"), &VisualShaderNodeTextureUniform::get_color_default);
 
+	ClassDB::bind_method(D_METHOD("set_texture_filter", "filter"), &VisualShaderNodeTextureUniform::set_texture_filter);
+	ClassDB::bind_method(D_METHOD("get_texture_filter"), &VisualShaderNodeTextureUniform::get_texture_filter);
+
+	ClassDB::bind_method(D_METHOD("set_texture_repeat", "type"), &VisualShaderNodeTextureUniform::set_texture_repeat);
+	ClassDB::bind_method(D_METHOD("get_texture_repeat"), &VisualShaderNodeTextureUniform::get_texture_repeat);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_type", PROPERTY_HINT_ENUM, "Data,Color,Normal Map,Anisotropic"), "set_texture_type", "get_texture_type");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "color_default", PROPERTY_HINT_ENUM, "White Default,Black Default"), "set_color_default", "get_color_default");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "color_default", PROPERTY_HINT_ENUM, "White,Black"), "set_color_default", "get_color_default");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Default,Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_repeat", PROPERTY_HINT_ENUM, "Default,Enabled,Disabled"), "set_texture_repeat", "get_texture_repeat");
 
 	BIND_ENUM_CONSTANT(TYPE_DATA);
 	BIND_ENUM_CONSTANT(TYPE_COLOR);
 	BIND_ENUM_CONSTANT(TYPE_NORMAL_MAP);
-	BIND_ENUM_CONSTANT(TYPE_ANISO);
+	BIND_ENUM_CONSTANT(TYPE_ANISOTROPY);
 	BIND_ENUM_CONSTANT(TYPE_MAX);
 
 	BIND_ENUM_CONSTANT(COLOR_DEFAULT_WHITE);
 	BIND_ENUM_CONSTANT(COLOR_DEFAULT_BLACK);
 	BIND_ENUM_CONSTANT(COLOR_DEFAULT_MAX);
+
+	BIND_ENUM_CONSTANT(FILTER_DEFAULT);
+	BIND_ENUM_CONSTANT(FILTER_NEAREST);
+	BIND_ENUM_CONSTANT(FILTER_LINEAR);
+	BIND_ENUM_CONSTANT(FILTER_NEAREST_MIPMAP);
+	BIND_ENUM_CONSTANT(FILTER_LINEAR_MIPMAP);
+	BIND_ENUM_CONSTANT(FILTER_NEAREST_MIPMAP_ANISOTROPIC);
+	BIND_ENUM_CONSTANT(FILTER_LINEAR_MIPMAP_ANISOTROPIC);
+	BIND_ENUM_CONSTANT(FILTER_MAX);
+
+	BIND_ENUM_CONSTANT(REPEAT_DEFAULT);
+	BIND_ENUM_CONSTANT(REPEAT_ENABLED);
+	BIND_ENUM_CONSTANT(REPEAT_DISABLED);
+	BIND_ENUM_CONSTANT(REPEAT_MAX);
 }
 
 String VisualShaderNodeTextureUniform::get_input_port_default_hint(int p_port) const {
@@ -5051,11 +5207,11 @@ String VisualShaderNodeTextureUniformTriplanar::generate_code(Shader::Mode p_mod
 	String id = get_uniform_name();
 	String code = "	{\n";
 
-	if (p_input_vars[0] == String() && p_input_vars[1] == String()) {
+	if (p_input_vars[0].is_empty() && p_input_vars[1].is_empty()) {
 		code += "		vec4 n_tex_read = triplanar_texture(" + id + ", triplanar_power_normal, triplanar_pos);\n";
-	} else if (p_input_vars[0] != String() && p_input_vars[1] == String()) {
+	} else if (!p_input_vars[0].is_empty() && p_input_vars[1].is_empty()) {
 		code += "		vec4 n_tex_read = triplanar_texture(" + id + ", " + p_input_vars[0] + ", triplanar_pos);\n";
-	} else if (p_input_vars[0] == String() && p_input_vars[1] != String()) {
+	} else if (p_input_vars[0].is_empty() && !p_input_vars[1].is_empty()) {
 		code += "		vec4 n_tex_read = triplanar_texture(" + id + ", triplanar_power_normal, " + p_input_vars[1] + ");\n";
 	} else {
 		code += "		vec4 n_tex_read = triplanar_texture(" + id + ", " + p_input_vars[0] + ", " + p_input_vars[1] + ");\n";
@@ -5135,8 +5291,8 @@ String VisualShaderNodeTexture2DArrayUniform::generate_global(Shader::Mode p_mod
 		case TYPE_NORMAL_MAP:
 			code += " : hint_normal;\n";
 			break;
-		case TYPE_ANISO:
-			code += " : hint_aniso;\n";
+		case TYPE_ANISOTROPY:
+			code += " : hint_anisotropy;\n";
 			break;
 		default:
 			code += ";\n";
@@ -5208,8 +5364,8 @@ String VisualShaderNodeTexture3DUniform::generate_global(Shader::Mode p_mode, Vi
 		case TYPE_NORMAL_MAP:
 			code += " : hint_normal;\n";
 			break;
-		case TYPE_ANISO:
-			code += " : hint_aniso;\n";
+		case TYPE_ANISOTROPY:
+			code += " : hint_anisotropy;\n";
 			break;
 		default:
 			code += ";\n";
@@ -5281,8 +5437,8 @@ String VisualShaderNodeCubemapUniform::generate_global(Shader::Mode p_mode, Visu
 		case TYPE_NORMAL_MAP:
 			code += " : hint_normal;\n";
 			break;
-		case TYPE_ANISO:
-			code += " : hint_aniso;\n";
+		case TYPE_ANISOTROPY:
+			code += " : hint_anisotropy;\n";
 			break;
 		default:
 			code += ";\n";
@@ -5581,12 +5737,12 @@ bool VisualShaderNodeFresnel::is_generate_input_var(int p_port) const {
 String VisualShaderNodeFresnel::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String normal;
 	String view;
-	if (p_input_vars[0] == String()) {
+	if (p_input_vars[0].is_empty()) {
 		normal = "NORMAL";
 	} else {
 		normal = p_input_vars[0];
 	}
-	if (p_input_vars[1] == String()) {
+	if (p_input_vars[1].is_empty()) {
 		view = "VIEW";
 	} else {
 		view = p_input_vars[1];

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -127,9 +127,9 @@ void OGGPacketSequence::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_length"), &OGGPacketSequence::get_length);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "packet_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_packet_data", "get_packet_data");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "granule_positions", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_packet_granule_positions", "get_packet_granule_positions");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sampling_rate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_sampling_rate", "get_sampling_rate");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "packet_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_packet_data", "get_packet_data");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "granule_positions", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_packet_granule_positions", "get_packet_granule_positions");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sampling_rate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_sampling_rate", "get_sampling_rate");
 }
 
 bool OGGPacketSequencePlayback::next_ogg_packet(ogg_packet **p_packet) const {

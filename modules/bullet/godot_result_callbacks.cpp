@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,11 +34,8 @@
 #include "bullet_types_converter.h"
 #include "collision_object_bullet.h"
 #include "rigid_body_bullet.h"
-#include <BulletCollision/CollisionDispatch/btInternalEdgeUtility.h>
 
-/**
-	@author AndreaCatania
-*/
+#include <BulletCollision/CollisionDispatch/btInternalEdgeUtility.h>
 
 bool godotContactAddedCallback(btManifoldPoint &cp, const btCollisionObjectWrapper *colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper *colObj1Wrap, int partId1, int index1) {
 	if (!colObj1Wrap->getCollisionObject()->getCollisionShape()->isCompound()) {
@@ -107,7 +104,14 @@ btScalar GodotAllConvexResultCallback::addSingleResult(btCollisionWorld::LocalCo
 
 	PhysicsDirectSpaceState3D::ShapeResult &result = m_results[count];
 
-	result.shape = convexResult.m_localShapeInfo->m_triangleIndex; // "m_triangleIndex" Is an odd name but contains the compound shape ID
+	// Triangle index is an odd name but contains the compound shape ID.
+	// A shape part of -1 indicates the index is a shape index and not a triangle index.
+	if (convexResult.m_localShapeInfo && convexResult.m_localShapeInfo->m_shapePart == -1) {
+		result.shape = convexResult.m_localShapeInfo->m_triangleIndex;
+	} else {
+		result.shape = 0;
+	}
+
 	result.rid = gObj->get_self();
 	result.collider_id = gObj->get_instance_id();
 	result.collider = result.collider_id.is_null() ? nullptr : ObjectDB::get_instance(result.collider_id);
@@ -171,11 +175,14 @@ bool GodotClosestConvexResultCallback::needsCollision(btBroadphaseProxy *proxy0)
 }
 
 btScalar GodotClosestConvexResultCallback::addSingleResult(btCollisionWorld::LocalConvexResult &convexResult, bool normalInWorldSpace) {
-	if (convexResult.m_localShapeInfo) {
-		m_shapeId = convexResult.m_localShapeInfo->m_triangleIndex; // "m_triangleIndex" Is an odd name but contains the compound shape ID
+	// Triangle index is an odd name but contains the compound shape ID.
+	// A shape part of -1 indicates the index is a shape index and not a triangle index.
+	if (convexResult.m_localShapeInfo && convexResult.m_localShapeInfo->m_shapePart == -1) {
+		m_shapeId = convexResult.m_localShapeInfo->m_triangleIndex;
 	} else {
 		m_shapeId = 0;
 	}
+
 	return btCollisionWorld::ClosestConvexResultCallback::addSingleResult(convexResult, normalInWorldSpace);
 }
 
@@ -219,10 +226,22 @@ btScalar GodotAllContactResultCallback::addSingleResult(btManifoldPoint &cp, con
 		CollisionObjectBullet *colObj;
 		if (m_self_object == colObj0Wrap->getCollisionObject()) {
 			colObj = static_cast<CollisionObjectBullet *>(colObj1Wrap->getCollisionObject()->getUserPointer());
-			result.shape = cp.m_index1;
+			// Checking for compound shape because the index might be uninitialized otherwise.
+			// A partId of -1 indicates the index is a shape index and not a triangle index.
+			if (colObj1Wrap->getCollisionObject()->getCollisionShape()->isCompound() && cp.m_partId1 == -1) {
+				result.shape = cp.m_index1;
+			} else {
+				result.shape = 0;
+			}
 		} else {
 			colObj = static_cast<CollisionObjectBullet *>(colObj0Wrap->getCollisionObject()->getUserPointer());
-			result.shape = cp.m_index0;
+			// Checking for compound shape because the index might be uninitialized otherwise.
+			// A partId of -1 indicates the index is a shape index and not a triangle index.
+			if (colObj0Wrap->getCollisionObject()->getCollisionShape()->isCompound() && cp.m_partId0 == -1) {
+				result.shape = cp.m_index0;
+			} else {
+				result.shape = 0;
+			}
 		}
 
 		result.collider_id = colObj->get_instance_id();
@@ -311,14 +330,26 @@ btScalar GodotRestInfoContactResultCallback::addSingleResult(btManifoldPoint &cp
 		CollisionObjectBullet *colObj;
 		if (m_self_object == colObj0Wrap->getCollisionObject()) {
 			colObj = static_cast<CollisionObjectBullet *>(colObj1Wrap->getCollisionObject()->getUserPointer());
-			m_result->shape = cp.m_index1;
+			// Checking for compound shape because the index might be uninitialized otherwise.
+			// A partId of -1 indicates the index is a shape index and not a triangle index.
+			if (colObj1Wrap->getCollisionObject()->getCollisionShape()->isCompound() && cp.m_partId1 == -1) {
+				m_result->shape = cp.m_index1;
+			} else {
+				m_result->shape = 0;
+			}
 			B_TO_G(cp.getPositionWorldOnB(), m_result->point);
 			B_TO_G(cp.m_normalWorldOnB, m_result->normal);
 			m_rest_info_bt_point = cp.getPositionWorldOnB();
 			m_rest_info_collision_object = colObj1Wrap->getCollisionObject();
 		} else {
 			colObj = static_cast<CollisionObjectBullet *>(colObj0Wrap->getCollisionObject()->getUserPointer());
-			m_result->shape = cp.m_index0;
+			// Checking for compound shape because the index might be uninitialized otherwise.
+			// A partId of -1 indicates the index is a shape index and not a triangle index.
+			if (colObj0Wrap->getCollisionObject()->getCollisionShape()->isCompound() && cp.m_partId0 == -1) {
+				m_result->shape = cp.m_index0;
+			} else {
+				m_result->shape = 0;
+			}
 			B_TO_G(cp.m_normalWorldOnB * -1, m_result->normal);
 			m_rest_info_bt_point = cp.getPositionWorldOnA();
 			m_rest_info_collision_object = colObj0Wrap->getCollisionObject();

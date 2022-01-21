@@ -13,7 +13,7 @@
 		See the functions to add new layers for more information.
 	</description>
 	<tutorials>
-		<link title="Using Tilemaps">https://docs.godotengine.org/en/latest/tutorials/2d/using_tilemaps.html</link>
+		<link title="Using Tilemaps">$DOCS_URL/tutorials/2d/using_tilemaps.html</link>
 		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/120</link>
 		<link title="2D Isometric Demo">https://godotengine.org/asset-library/asset/112</link>
 		<link title="2D Hexagonal Demo">https://godotengine.org/asset-library/asset/111</link>
@@ -44,6 +44,14 @@
 			<description>
 				Adds an occlusion layer to the TileSet at the given position [code]to_position[/code] in the array. If [code]to_position[/code] is -1, adds it at the end of the array.
 				Occlusion layers allow assigning occlusion polygons to atlas tiles.
+			</description>
+		</method>
+		<method name="add_pattern">
+			<return type="int" />
+			<argument index="0" name="pattern" type="TileMapPattern" />
+			<argument index="1" name="index" type="int" default="-1" />
+			<description>
+				Adds a [TileMapPattern] to be stored in the TileSet resource. If provided, insert it at the given [code]index[/code].
 			</description>
 		</method>
 		<method name="add_physics_layer">
@@ -152,6 +160,19 @@
 			<return type="int" />
 			<description>
 				Returns the occlusion layers count.
+			</description>
+		</method>
+		<method name="get_pattern">
+			<return type="TileMapPattern" />
+			<argument index="0" name="index" type="int" default="-1" />
+			<description>
+				Returns the [TileMapPattern] at the given [code]index[/code].
+			</description>
+		</method>
+		<method name="get_patterns_count">
+			<return type="int" />
+			<description>
+				Returns the number of [TileMapPattern] this tile set handles.
 			</description>
 		</method>
 		<method name="get_physics_layer_collision_layer" qualifiers="const">
@@ -374,6 +395,13 @@
 				Removes the occlusion layer at index [code]layer_index[/code]. Also updates the atlas tiles accordingly.
 			</description>
 		</method>
+		<method name="remove_pattern">
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<description>
+				Remove the [TileMapPattern] at the given index.
+			</description>
+		</method>
 		<method name="remove_physics_layer">
 			<return type="void" />
 			<argument index="0" name="layer_index" type="int" />
@@ -554,7 +582,7 @@
 			Diamond tile shape (for isometric look).
 		</constant>
 		<constant name="TILE_SHAPE_HALF_OFFSET_SQUARE" value="2" enum="TileShape">
-			Rectangular tile shape with one row/colum out of two offset by half a tile.
+			Rectangular tile shape with one row/column out of two offset by half a tile.
 		</constant>
 		<constant name="TILE_SHAPE_HEXAGON" value="3" enum="TileShape">
 			Hexagonal tile shape.

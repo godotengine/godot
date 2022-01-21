@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,12 +30,12 @@
 
 #include "resource_importer_dynamicfont.h"
 
-#include "dynamicfont_import_settings.h"
-
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
+#include "dynamicfont_import_settings.h"
 #include "editor/editor_node.h"
-#include "modules/modules_enabled.gen.h"
+
+#include "modules/modules_enabled.gen.h" // For freetype.
 
 String ResourceImporterDynamicFont::get_importer_name() const {
 	return "font_data_dynamic";
@@ -66,7 +66,7 @@ String ResourceImporterDynamicFont::get_resource_type() const {
 	return "FontData";
 }
 
-bool ResourceImporterDynamicFont::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterDynamicFont::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
 	if (p_option == "msdf_pixel_range" && !bool(p_options["multichannel_signed_distance_field"])) {
 		return false;
 	}
@@ -94,7 +94,7 @@ String ResourceImporterDynamicFont::get_preset_name(int p_idx) const {
 	}
 }
 
-void ResourceImporterDynamicFont::get_import_options(List<ImportOption> *r_options, int p_preset) const {
+void ResourceImporterDynamicFont::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	bool msdf = p_preset == PRESET_MSDF;
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "antialiased"), true));
@@ -107,6 +107,7 @@ void ResourceImporterDynamicFont::get_import_options(List<ImportOption> *r_optio
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_RANGE, "0,10,0.1"), 0.0));
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "compress"), true));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::DICTIONARY, "opentype_feature_overrides"), Dictionary()));
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "preload/char_ranges"), Vector<String>()));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "preload/glyph_ranges"), Vector<String>()));
@@ -174,6 +175,7 @@ Error ResourceImporterDynamicFont::import(const String &p_source_file, const Str
 	bool msdf = p_options["multichannel_signed_distance_field"];
 	int px_range = p_options["msdf_pixel_range"];
 	int px_size = p_options["msdf_size"];
+	Dictionary ot_ov = p_options["opentype_feature_overrides"];
 
 	bool autohinter = p_options["force_autohinter"];
 	int hinting = p_options["hinting"];
@@ -190,6 +192,7 @@ Error ResourceImporterDynamicFont::import(const String &p_source_file, const Str
 	font->set_multichannel_signed_distance_field(msdf);
 	font->set_msdf_pixel_range(px_range);
 	font->set_msdf_size(px_size);
+	font->set_opentype_feature_overrides(ot_ov);
 	font->set_fixed_size(0);
 	font->set_force_autohinter(autohinter);
 	font->set_hinting((TextServer::Hinting)hinting);

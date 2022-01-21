@@ -234,7 +234,7 @@
 		<method name="get_folded_lines" qualifiers="const">
 			<return type="int[]" />
 			<description>
-				Return all lines that are current folded.
+				Returns all lines that are current folded.
 			</description>
 		</method>
 		<method name="get_text_for_code_completion" qualifiers="const">
@@ -288,7 +288,7 @@
 			<argument index="0" name="line" type="int" />
 			<argument index="1" name="column" type="int" default="-1" />
 			<description>
-				Return delimiter index if [code]line[/code] [code]column[/code] is in a comment. If [code]column[/code] is not provided, will return delimiter index if the entire [code]line[/code] is a comment. Otherwise [code]-1[/code].
+				Returns delimiter index if [code]line[/code] [code]column[/code] is in a comment. If [code]column[/code] is not provided, will return delimiter index if the entire [code]line[/code] is a comment. Otherwise [code]-1[/code].
 			</description>
 		</method>
 		<method name="is_in_string" qualifiers="const">
@@ -296,7 +296,7 @@
 			<argument index="0" name="line" type="int" />
 			<argument index="1" name="column" type="int" default="-1" />
 			<description>
-				Return the delimiter index if [code]line[/code] [code]column[/code] is in a string. If [code]column[/code] is not provided, will return the delimiter index if the entire [code]line[/code] is a string. Otherwise [code]-1[/code].
+				Returns the delimiter index if [code]line[/code] [code]column[/code] is in a string. If [code]column[/code] is not provided, will return the delimiter index if the entire [code]line[/code] is a string. Otherwise [code]-1[/code].
 			</description>
 		</method>
 		<method name="is_line_bookmarked" qualifiers="const">
@@ -442,7 +442,7 @@
 		<member name="auto_brace_completion_highlight_matching" type="bool" setter="set_highlight_matching_braces_enabled" getter="is_highlight_matching_braces_enabled" default="false">
 			Highlight mismatching brace pairs.
 		</member>
-		<member name="auto_brace_completion_pairs" type="Dictionary" setter="set_auto_brace_completion_pairs" getter="get_auto_brace_completion_pairs" default="{&quot;\&quot;&quot;: &quot;\&quot;&quot;,&quot;&apos;&quot;: &quot;&apos;&quot;,&quot;(&quot;: &quot;)&quot;,&quot;[&quot;: &quot;]&quot;,&quot;{&quot;: &quot;}&quot;}">
+		<member name="auto_brace_completion_pairs" type="Dictionary" setter="set_auto_brace_completion_pairs" getter="get_auto_brace_completion_pairs" default="{ &quot;\&quot;&quot;: &quot;\&quot;&quot;, &quot;&apos;&quot;: &quot;&apos;&quot;, &quot;(&quot;: &quot;)&quot;, &quot;[&quot;: &quot;]&quot;, &quot;{&quot;: &quot;}&quot; }">
 			Sets the brace pairs to be autocompleted.
 		</member>
 		<member name="code_completion_enabled" type="bool" setter="set_code_completion_enabled" getter="is_code_completion_enabled" default="false">
@@ -487,18 +487,17 @@
 		<member name="indent_use_spaces" type="bool" setter="set_indent_using_spaces" getter="is_indent_using_spaces" default="false">
 			Use spaces instead of tabs for indentation.
 		</member>
-		<member name="layout_direction" type="int" setter="set_layout_direction" getter="get_layout_direction" override="true" enum="Control.LayoutDirection" default="2" />
+		<member name="layout_direction" type="int" setter="set_layout_direction" getter="get_layout_direction" overrides="Control" enum="Control.LayoutDirection" default="2" />
 		<member name="line_folding" type="bool" setter="set_line_folding_enabled" getter="is_line_folding_enabled" default="false">
 			Sets whether line folding is allowed.
 		</member>
 		<member name="line_length_guidelines" type="int[]" setter="set_line_length_guidelines" getter="get_line_length_guidelines" default="[]">
 			Draws vertical lines at the provided columns. The first entry is considered a main hard guideline and is draw more prominently
 		</member>
-		<member name="structured_text_bidi_override_options" type="Array" setter="set_structured_text_bidi_override_options" getter="get_structured_text_bidi_override_options" override="true" default="[]" />
 		<member name="symbol_lookup_on_click" type="bool" setter="set_symbol_lookup_on_click_enabled" getter="is_symbol_lookup_on_click_enabled" default="false">
 			Set when a validated word from [signal symbol_validate] is clicked, the [signal symbol_lookup] should be emitted.
 		</member>
-		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" override="true" enum="Control.TextDirection" default="1" />
+		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" overrides="TextEdit" enum="Control.TextDirection" default="1" />
 	</members>
 	<signals>
 		<signal name="breakpoint_toggled">
@@ -563,35 +562,23 @@
 		<theme_item name="background_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
 			Sets the background [Color].
 		</theme_item>
-		<theme_item name="bookmark" data_type="icon" type="Texture2D">
-			Sets a custom [Texture2D] to draw in the bookmark gutter for bookmarked lines.
-		</theme_item>
 		<theme_item name="bookmark_color" data_type="color" type="Color" default="Color(0.5, 0.64, 1, 0.8)">
 			[Color] of the bookmark icon for bookmarked lines.
 		</theme_item>
 		<theme_item name="brace_mismatch_color" data_type="color" type="Color" default="Color(1, 0.2, 0.2, 1)">
 			[Color] of the text to highlight mismatched braces.
 		</theme_item>
-		<theme_item name="breakpoint" data_type="icon" type="Texture2D">
-			Sets a custom [Texture2D] to draw in the breakpoint gutter for breakpointed lines.
-		</theme_item>
 		<theme_item name="breakpoint_color" data_type="color" type="Color" default="Color(0.9, 0.29, 0.3, 1)">
 			[Color] of the breakpoint icon for bookmarked lines.
-		</theme_item>
-		<theme_item name="can_fold" data_type="icon" type="Texture2D">
-			Sets a custom [Texture2D] to draw in the line folding gutter when a line can be folded.
 		</theme_item>
 		<theme_item name="caret_background_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			[Color] of the text behind the caret when block caret is enabled.
 		</theme_item>
-		<theme_item name="caret_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
+		<theme_item name="caret_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			[Color] of the caret.
 		</theme_item>
 		<theme_item name="code_folding_color" data_type="color" type="Color" default="Color(0.8, 0.8, 0.8, 0.8)">
 			[Color] for all icons related to line folding.
-		</theme_item>
-		<theme_item name="completion" data_type="style" type="StyleBox">
-			[StyleBox] for the code completion popup.
 		</theme_item>
 		<theme_item name="completion_background_color" data_type="color" type="Color" default="Color(0.17, 0.16, 0.2, 1)">
 			Sets the background [Color] for the code completion popup.
@@ -602,17 +589,8 @@
 		<theme_item name="completion_font_color" data_type="color" type="Color" default="Color(0.67, 0.67, 0.67, 1)">
 			Font [Color] for the code completion popup.
 		</theme_item>
-		<theme_item name="completion_lines" data_type="constant" type="int" default="7">
-			Max number of options to display in the code completion popup at any one time.
-		</theme_item>
-		<theme_item name="completion_max_width" data_type="constant" type="int" default="50">
-			Max width of options in the code completion popup. Options longer then this will be cut off.
-		</theme_item>
 		<theme_item name="completion_scroll_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			[Color] of the scrollbar in the code completion popup.
-		</theme_item>
-		<theme_item name="completion_scroll_width" data_type="constant" type="int" default="3">
-			Width of the scrollbar in the code completion popup.
 		</theme_item>
 		<theme_item name="completion_selected_color" data_type="color" type="Color" default="Color(0.26, 0.26, 0.27, 1)">
 			Background highlight [Color] for the current selected option item in the code completion popup.
@@ -620,38 +598,20 @@
 		<theme_item name="current_line_color" data_type="color" type="Color" default="Color(0.25, 0.25, 0.26, 0.8)">
 			Background [Color] of the line containing the caret.
 		</theme_item>
-		<theme_item name="executing_line" data_type="icon" type="Texture2D">
-			Icon to draw in the executing gutter for executing lines.
-		</theme_item>
 		<theme_item name="executing_line_color" data_type="color" type="Color" default="Color(0.98, 0.89, 0.27, 1)">
 			[Color] of the executing icon for executing lines.
 		</theme_item>
-		<theme_item name="focus" data_type="style" type="StyleBox">
-			Sets the [StyleBox] when in focus.
-		</theme_item>
-		<theme_item name="folded" data_type="icon" type="Texture2D">
-			Sets a custom [Texture2D] to draw in the line folding gutter when a line is folded and can be unfolded.
-		</theme_item>
-		<theme_item name="folded_eol_icon" data_type="icon" type="Texture2D">
-			Sets a custom [Texture2D] to draw at the end of a folded line.
-		</theme_item>
-		<theme_item name="font" data_type="font" type="Font">
-			Sets the default [Font].
-		</theme_item>
-		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
+		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			Sets the font [Color].
 		</theme_item>
 		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The tint of text outline of the [CodeEdit].
 		</theme_item>
-		<theme_item name="font_readonly_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 0.5)">
+		<theme_item name="font_readonly_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
 			Sets the font [Color] when [member TextEdit.editable] is disabled.
 		</theme_item>
 		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			Sets the [Color] of the selected text. [member TextEdit.override_selected_font_color] has to be enabled.
-		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Sets default font size.
 		</theme_item>
 		<theme_item name="line_length_guideline_color" data_type="color" type="Color" default="Color(0.3, 0.5, 0.8, 0.1)">
 			[Color] of the main line length guideline, secondary guidelines will have 50% alpha applied.
@@ -659,26 +619,56 @@
 		<theme_item name="line_number_color" data_type="color" type="Color" default="Color(0.67, 0.67, 0.67, 0.4)">
 			Sets the [Color] of line numbers.
 		</theme_item>
-		<theme_item name="line_spacing" data_type="constant" type="int" default="4">
-			Sets the spacing between the lines.
-		</theme_item>
-		<theme_item name="normal" data_type="style" type="StyleBox">
-			Sets the [StyleBox].
-		</theme_item>
-		<theme_item name="outline_size" data_type="constant" type="int" default="0">
-			The size of the text outline.
-		</theme_item>
-		<theme_item name="read_only" data_type="style" type="StyleBox">
-			Sets the [StyleBox] when [member TextEdit.editable] is disabled.
-		</theme_item>
 		<theme_item name="search_result_border_color" data_type="color" type="Color" default="Color(0.3, 0.3, 0.3, 0.4)">
 			[Color] of the border around text that matches the search query.
 		</theme_item>
 		<theme_item name="search_result_color" data_type="color" type="Color" default="Color(0.3, 0.3, 0.3, 1)">
 			[Color] behind the text that matches the search query.
 		</theme_item>
-		<theme_item name="selection_color" data_type="color" type="Color" default="Color(0.49, 0.49, 0.49, 1)">
+		<theme_item name="selection_color" data_type="color" type="Color" default="Color(0.5, 0.5, 0.5, 1)">
 			Sets the highlight [Color] of text selections.
+		</theme_item>
+		<theme_item name="word_highlighted_color" data_type="color" type="Color" default="Color(0.8, 0.9, 0.9, 0.15)">
+			Sets the highlight [Color] of multiple occurrences. [member TextEdit.highlight_all_occurrences] has to be enabled.
+		</theme_item>
+		<theme_item name="completion_lines" data_type="constant" type="int" default="7">
+			Max number of options to display in the code completion popup at any one time.
+		</theme_item>
+		<theme_item name="completion_max_width" data_type="constant" type="int" default="50">
+			Max width of options in the code completion popup. Options longer then this will be cut off.
+		</theme_item>
+		<theme_item name="completion_scroll_width" data_type="constant" type="int" default="3">
+			Width of the scrollbar in the code completion popup.
+		</theme_item>
+		<theme_item name="line_spacing" data_type="constant" type="int" default="4">
+			Sets the spacing between the lines.
+		</theme_item>
+		<theme_item name="outline_size" data_type="constant" type="int" default="0">
+			The size of the text outline.
+		</theme_item>
+		<theme_item name="font" data_type="font" type="Font">
+			Sets the default [Font].
+		</theme_item>
+		<theme_item name="font_size" data_type="font_size" type="int">
+			Sets default font size.
+		</theme_item>
+		<theme_item name="bookmark" data_type="icon" type="Texture2D">
+			Sets a custom [Texture2D] to draw in the bookmark gutter for bookmarked lines.
+		</theme_item>
+		<theme_item name="breakpoint" data_type="icon" type="Texture2D">
+			Sets a custom [Texture2D] to draw in the breakpoint gutter for breakpointed lines.
+		</theme_item>
+		<theme_item name="can_fold" data_type="icon" type="Texture2D">
+			Sets a custom [Texture2D] to draw in the line folding gutter when a line can be folded.
+		</theme_item>
+		<theme_item name="executing_line" data_type="icon" type="Texture2D">
+			Icon to draw in the executing gutter for executing lines.
+		</theme_item>
+		<theme_item name="folded" data_type="icon" type="Texture2D">
+			Sets a custom [Texture2D] to draw in the line folding gutter when a line is folded and can be unfolded.
+		</theme_item>
+		<theme_item name="folded_eol_icon" data_type="icon" type="Texture2D">
+			Sets a custom [Texture2D] to draw at the end of a folded line.
 		</theme_item>
 		<theme_item name="space" data_type="icon" type="Texture2D">
 			Sets a custom [Texture2D] for space text characters.
@@ -686,8 +676,17 @@
 		<theme_item name="tab" data_type="icon" type="Texture2D">
 			Sets a custom [Texture2D] for tab text characters.
 		</theme_item>
-		<theme_item name="word_highlighted_color" data_type="color" type="Color" default="Color(0.8, 0.9, 0.9, 0.15)">
-			Sets the highlight [Color] of multiple occurrences. [member TextEdit.highlight_all_occurrences] has to be enabled.
+		<theme_item name="completion" data_type="style" type="StyleBox">
+			[StyleBox] for the code completion popup.
+		</theme_item>
+		<theme_item name="focus" data_type="style" type="StyleBox">
+			Sets the [StyleBox] when in focus. The [code]focus[/code] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
+		</theme_item>
+		<theme_item name="normal" data_type="style" type="StyleBox">
+			Sets the [StyleBox].
+		</theme_item>
+		<theme_item name="read_only" data_type="style" type="StyleBox">
+			Sets the [StyleBox] when [member TextEdit.editable] is disabled.
 		</theme_item>
 	</theme_items>
 </class>

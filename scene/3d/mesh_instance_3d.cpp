@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,10 +42,9 @@ bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 		return false;
 	}
 
-	Map<StringName, BlendShapeTrack>::Element *E = blend_shape_tracks.find(p_name);
+	Map<StringName, int>::Element *E = blend_shape_properties.find(p_name);
 	if (E) {
-		E->get().value = p_value;
-		RenderingServer::get_singleton()->instance_set_blend_shape_weight(get_instance(), E->get().idx, E->get().value);
+		set_blend_shape_value(E->get(), p_value);
 		return true;
 	}
 
@@ -67,9 +66,9 @@ bool MeshInstance3D::_get(const StringName &p_name, Variant &r_ret) const {
 		return false;
 	}
 
-	const Map<StringName, BlendShapeTrack>::Element *E = blend_shape_tracks.find(p_name);
+	const Map<StringName, int>::Element *E = blend_shape_properties.find(p_name);
 	if (E) {
-		r_ret = E->get().value;
+		r_ret = get_blend_shape_value(E->get());
 		return true;
 	}
 
@@ -86,7 +85,7 @@ bool MeshInstance3D::_get(const StringName &p_name, Variant &r_ret) const {
 
 void MeshInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	List<String> ls;
-	for (const KeyValue<StringName, BlendShapeTrack> &E : blend_shape_tracks) {
+	for (const KeyValue<StringName, int> &E : blend_shape_properties) {
 		ls.push_back(E.key);
 	}
 
@@ -114,24 +113,16 @@ void MeshInstance3D::set_mesh(const Ref<Mesh> &p_mesh) {
 
 	mesh = p_mesh;
 
-	blend_shape_tracks.clear();
 	if (mesh.is_valid()) {
-		for (int i = 0; i < mesh->get_blend_shape_count(); i++) {
-			BlendShapeTrack mt;
-			mt.idx = i;
-			mt.value = 0;
-			blend_shape_tracks["blend_shapes/" + String(mesh->get_blend_shape_name(i))] = mt;
-		}
-
 		mesh->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &MeshInstance3D::_mesh_changed));
-		surface_override_materials.resize(mesh->get_surface_count());
-
+		_mesh_changed();
 		set_base(mesh->get_rid());
 	} else {
+		blend_shape_tracks.clear();
+		blend_shape_properties.clear();
 		set_base(RID());
+		update_gizmos();
 	}
-
-	update_gizmos();
 
 	notify_property_list_changed();
 }
@@ -140,17 +131,48 @@ Ref<Mesh> MeshInstance3D::get_mesh() const {
 	return mesh;
 }
 
+int MeshInstance3D::get_blend_shape_count() const {
+	if (mesh.is_null()) {
+		return 0;
+	}
+	return mesh->get_blend_shape_count();
+}
+int MeshInstance3D::find_blend_shape_by_name(const StringName &p_name) {
+	if (mesh.is_null()) {
+		return -1;
+	}
+	for (int i = 0; i < mesh->get_blend_shape_count(); i++) {
+		if (mesh->get_blend_shape_name(i) == p_name) {
+			return i;
+		}
+	}
+	return -1;
+}
+float MeshInstance3D::get_blend_shape_value(int p_blend_shape) const {
+	ERR_FAIL_COND_V(mesh.is_null(), 0.0);
+	ERR_FAIL_INDEX_V(p_blend_shape, (int)blend_shape_tracks.size(), 0);
+	return blend_shape_tracks[p_blend_shape];
+}
+void MeshInstance3D::set_blend_shape_value(int p_blend_shape, float p_value) {
+	ERR_FAIL_COND(mesh.is_null());
+	ERR_FAIL_INDEX(p_blend_shape, (int)blend_shape_tracks.size());
+	blend_shape_tracks[p_blend_shape] = p_value;
+	RenderingServer::get_singleton()->instance_set_blend_shape_weight(get_instance(), p_blend_shape, p_value);
+}
+
 void MeshInstance3D::_resolve_skeleton_path() {
 	Ref<SkinReference> new_skin_reference;
 
 	if (!skeleton_path.is_empty()) {
 		Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(get_node(skeleton_path));
 		if (skeleton) {
-			new_skin_reference = skeleton->register_skin(skin_internal);
 			if (skin_internal.is_null()) {
+				new_skin_reference = skeleton->register_skin(skeleton->create_skin_from_rest_transforms());
 				//a skin was created for us
 				skin_internal = new_skin_reference->get_skin();
 				notify_property_list_changed();
+			} else {
+				new_skin_reference = skeleton->register_skin(skin_internal);
 			}
 		}
 	}
@@ -222,7 +244,7 @@ Node *MeshInstance3D::create_trimesh_collision_node() {
 	StaticBody3D *static_body = memnew(StaticBody3D);
 	CollisionShape3D *cshape = memnew(CollisionShape3D);
 	cshape->set_shape(shape);
-	static_body->add_child(cshape);
+	static_body->add_child(cshape, true);
 	return static_body;
 }
 
@@ -231,7 +253,7 @@ void MeshInstance3D::create_trimesh_collision() {
 	ERR_FAIL_COND(!static_body);
 	static_body->set_name(String(get_name()) + "_col");
 
-	add_child(static_body);
+	add_child(static_body, true);
 	if (get_owner()) {
 		CollisionShape3D *cshape = Object::cast_to<CollisionShape3D>(static_body->get_child(0));
 		static_body->set_owner(get_owner());
@@ -252,7 +274,7 @@ Node *MeshInstance3D::create_convex_collision_node(bool p_clean, bool p_simplify
 	StaticBody3D *static_body = memnew(StaticBody3D);
 	CollisionShape3D *cshape = memnew(CollisionShape3D);
 	cshape->set_shape(shape);
-	static_body->add_child(cshape);
+	static_body->add_child(cshape, true);
 	return static_body;
 }
 
@@ -261,7 +283,7 @@ void MeshInstance3D::create_convex_collision(bool p_clean, bool p_simplify) {
 	ERR_FAIL_COND(!static_body);
 	static_body->set_name(String(get_name()) + "_col");
 
-	add_child(static_body);
+	add_child(static_body, true);
 	if (get_owner()) {
 		CollisionShape3D *cshape = Object::cast_to<CollisionShape3D>(static_body->get_child(0));
 		static_body->set_owner(get_owner());
@@ -284,7 +306,7 @@ Node *MeshInstance3D::create_multiple_convex_collisions_node() {
 	for (int i = 0; i < shapes.size(); i++) {
 		CollisionShape3D *cshape = memnew(CollisionShape3D);
 		cshape->set_shape(shapes[i]);
-		static_body->add_child(cshape);
+		static_body->add_child(cshape, true);
 	}
 	return static_body;
 }
@@ -294,7 +316,7 @@ void MeshInstance3D::create_multiple_convex_collisions() {
 	ERR_FAIL_COND(!static_body);
 	static_body->set_name(String(get_name()) + "_col");
 
-	add_child(static_body);
+	add_child(static_body, true);
 	if (get_owner()) {
 		static_body->set_owner(get_owner());
 		int count = static_body->get_child_count();
@@ -355,6 +377,19 @@ Ref<Material> MeshInstance3D::get_active_material(int p_surface) const {
 void MeshInstance3D::_mesh_changed() {
 	ERR_FAIL_COND(mesh.is_null());
 	surface_override_materials.resize(mesh->get_surface_count());
+
+	uint32_t initialize_bs_from = blend_shape_tracks.size();
+	blend_shape_tracks.resize(mesh->get_blend_shape_count());
+
+	for (uint32_t i = 0; i < blend_shape_tracks.size(); i++) {
+		blend_shape_properties["blend_shapes/" + String(mesh->get_blend_shape_name(i))] = i;
+		if (i < initialize_bs_from) {
+			set_blend_shape_value(i, blend_shape_tracks[i]);
+		} else {
+			set_blend_shape_value(i, 0);
+		}
+	}
+
 	update_gizmos();
 }
 
@@ -425,7 +460,7 @@ void MeshInstance3D::create_debug_tangents() {
 		MeshInstance3D *mi = memnew(MeshInstance3D);
 		mi->set_mesh(am);
 		mi->set_name("DebugTangents");
-		add_child(mi);
+		add_child(mi, true);
 #ifdef TOOLS_ENABLED
 
 		if (is_inside_tree() && this == get_tree()->get_edited_scene_root()) {
@@ -456,6 +491,11 @@ void MeshInstance3D::_bind_methods() {
 	ClassDB::set_method_flags("MeshInstance3D", "create_convex_collision", METHOD_FLAGS_DEFAULT);
 	ClassDB::bind_method(D_METHOD("create_multiple_convex_collisions"), &MeshInstance3D::create_multiple_convex_collisions);
 	ClassDB::set_method_flags("MeshInstance3D", "create_multiple_convex_collisions", METHOD_FLAGS_DEFAULT);
+
+	ClassDB::bind_method(D_METHOD("get_blend_shape_count"), &MeshInstance3D::get_blend_shape_count);
+	ClassDB::bind_method(D_METHOD("find_blend_shape_by_name", "name"), &MeshInstance3D::find_blend_shape_by_name);
+	ClassDB::bind_method(D_METHOD("get_blend_shape_value", "blend_shape_idx"), &MeshInstance3D::get_blend_shape_value);
+	ClassDB::bind_method(D_METHOD("set_blend_shape_value", "blend_shape_idx", "value"), &MeshInstance3D::set_blend_shape_value);
 
 	ClassDB::bind_method(D_METHOD("create_debug_tangents"), &MeshInstance3D::create_debug_tangents);
 	ClassDB::set_method_flags("MeshInstance3D", "create_debug_tangents", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);

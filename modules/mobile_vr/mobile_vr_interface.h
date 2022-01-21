@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,8 +35,6 @@
 #include "servers/xr/xr_positional_tracker.h"
 
 /**
-	@author Bastiaan Olij <mux213@gmail.com>
-
 	The mobile interface is a native VR interface that can be used on Android and iOS phones.
 	It contains a basic implementation supporting 3DOF tracking if a gyroscope and accelerometer are
 	present and sets up the proper projection matrices based on the values provided.
@@ -53,7 +51,7 @@ class MobileVRInterface : public XRInterface {
 private:
 	bool initialized = false;
 	XRInterface::TrackingStatus tracking_state;
-	Basis orientation;
+	XRPose::TrackingConfidence tracking_confidence = XRPose::XR_TRACKING_CONFIDENCE_NONE;
 
 	// Just set some defaults for these. At some point we need to look at adding a lookup table for common device + headset combos and/or support reading cardboard QR codes
 	double eye_height = 1.85;
@@ -67,6 +65,10 @@ private:
 	double k1 = 0.215;
 	double k2 = 0.215;
 	double aspect = 1.0;
+
+	// at a minimum we need a tracker for our head
+	Ref<XRPositionalTracker> head;
+	Transform3D head_transform;
 
 	/*
 		logic for processing our sensor data, this was originally in our positional tracker logic but I think
@@ -140,6 +142,10 @@ public:
 	virtual bool initialize() override;
 	virtual void uninitialize() override;
 
+	virtual bool supports_play_area_mode(XRInterface::PlayAreaMode p_mode) override;
+	virtual XRInterface::PlayAreaMode get_play_area_mode() const override;
+	virtual bool set_play_area_mode(XRInterface::PlayAreaMode p_mode) override;
+
 	virtual Size2 get_render_target_size() override;
 	virtual uint32_t get_view_count() override;
 	virtual Transform3D get_camera_transform() override;
@@ -153,4 +159,4 @@ public:
 	~MobileVRInterface();
 };
 
-#endif // !MOBILE_VR_INTERFACE_H
+#endif // MOBILE_VR_INTERFACE_H

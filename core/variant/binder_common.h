@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -80,14 +80,18 @@ struct VariantCaster<const T &> {
 		}                                                                    \
 		typedef int64_t EncodeT;                                             \
 		_FORCE_INLINE_ static void encode(m_enum p_val, const void *p_ptr) { \
-			*(int64_t *)p_ptr = p_val;                                       \
+			*(int64_t *)p_ptr = (int64_t)p_val;                              \
 		}                                                                    \
 	};
 
 // Object enum casts must go here
 VARIANT_ENUM_CAST(Object::ConnectFlags);
 
+VARIANT_ENUM_CAST(Vector2::Axis);
+VARIANT_ENUM_CAST(Vector2i::Axis);
 VARIANT_ENUM_CAST(Vector3::Axis);
+VARIANT_ENUM_CAST(Vector3i::Axis);
+VARIANT_ENUM_CAST(Basis::EulerOrder);
 
 VARIANT_ENUM_CAST(Error);
 VARIANT_ENUM_CAST(Side);
@@ -102,9 +106,9 @@ VARIANT_ENUM_CAST(KeyModifierMask);
 VARIANT_ENUM_CAST(MIDIMessage);
 VARIANT_ENUM_CAST(MouseButton);
 VARIANT_ENUM_CAST(Orientation);
-VARIANT_ENUM_CAST(HAlign);
-VARIANT_ENUM_CAST(VAlign);
-VARIANT_ENUM_CAST(InlineAlign);
+VARIANT_ENUM_CAST(HorizontalAlignment);
+VARIANT_ENUM_CAST(VerticalAlignment);
+VARIANT_ENUM_CAST(InlineAlignment);
 VARIANT_ENUM_CAST(PropertyHint);
 VARIANT_ENUM_CAST(PropertyUsageFlags);
 VARIANT_ENUM_CAST(Variant::Type);

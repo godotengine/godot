@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -79,7 +79,7 @@ real_t Vector2::angle_to(const Vector2 &p_vector2) const {
 }
 
 real_t Vector2::angle_to_point(const Vector2 &p_vector2) const {
-	return (*this - p_vector2).angle();
+	return (p_vector2 - *this).angle();
 }
 
 real_t Vector2::dot(const Vector2 &p_other) const {
@@ -91,7 +91,7 @@ real_t Vector2::cross(const Vector2 &p_other) const {
 }
 
 Vector2 Vector2::sign() const {
-	return Vector2(SGN(x), SGN(y));
+	return Vector2(SIGN(x), SIGN(y));
 }
 
 Vector2 Vector2::floor() const {
@@ -160,10 +160,11 @@ Vector2 Vector2::cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, c
 	real_t t3 = t2 * t;
 
 	Vector2 out;
-	out = 0.5 * ((p1 * 2.0) +
-						(-p0 + p2) * t +
-						(2.0 * p0 - 5.0 * p1 + 4 * p2 - p3) * t2 +
-						(-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3);
+	out = 0.5 *
+			((p1 * 2.0) +
+					(-p0 + p2) * t +
+					(2.0 * p0 - 5.0 * p1 + 4 * p2 - p3) * t2 +
+					(-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3);
 	return out;
 }
 
@@ -207,6 +208,14 @@ Vector2i Vector2i::clamp(const Vector2i &p_min, const Vector2i &p_max) const {
 	return Vector2i(
 			CLAMP(x, p_min.x, p_max.x),
 			CLAMP(y, p_min.y, p_max.y));
+}
+
+int64_t Vector2i::length_squared() const {
+	return x * (int64_t)x + y * (int64_t)y;
+}
+
+double Vector2i::length() const {
+	return Math::sqrt((double)length_squared());
 }
 
 Vector2i Vector2i::operator+(const Vector2i &p_v) const {

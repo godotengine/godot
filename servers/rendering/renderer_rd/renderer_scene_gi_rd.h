@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -495,7 +495,7 @@ public:
 		float solid_cell_ratio = 0;
 		uint32_t solid_cell_count = 0;
 
-		RS::EnvironmentSDFGICascades cascade_mode;
+		int num_cascades = 6;
 		float min_cell_size = 0;
 		uint32_t probe_axis_count = 0; //amount of probes per axis, this is an odd number because it encloses endpoints
 
@@ -602,19 +602,15 @@ public:
 	};
 
 	struct VoxelGIData {
-		float xform[16];
-		float bounds[3];
-		float dynamic_range;
+		float xform[16]; // 64 - 64
 
-		float bias;
-		float normal_bias;
-		uint32_t blend_ambient;
-		uint32_t texture_slot;
+		float bounds[3]; // 12 - 76
+		float dynamic_range; // 4 - 80
 
-		uint32_t pad0;
-		uint32_t pad1;
-		uint32_t pad2;
-		uint32_t mipmaps;
+		float bias; // 4 - 84
+		float normal_bias; // 4 - 88
+		uint32_t blend_ambient; // 4 - 92
+		uint32_t mipmaps; // 4 - 96
 	};
 
 	struct PushConstant {

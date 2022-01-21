@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,6 +51,8 @@ class RayCast2D : public Node2D {
 	bool collide_with_areas = false;
 	bool collide_with_bodies = true;
 
+	bool hit_from_inside = false;
+
 	void _draw_debug_shape();
 
 protected:
@@ -64,6 +66,9 @@ public:
 
 	void set_collide_with_bodies(bool p_clip);
 	bool is_collide_with_bodies_enabled() const;
+
+	void set_hit_from_inside(bool p_enable);
+	bool is_hit_from_inside_enabled() const;
 
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;

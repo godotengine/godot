@@ -105,14 +105,12 @@ def configure(env):
             env.Prepend(CCFLAGS=["-O2"])
         elif env["optimize"] == "size":  # optimize for size
             env.Prepend(CCFLAGS=["-Os"])
-        env.Prepend(CPPDEFINES=["DEBUG_ENABLED"])
 
         if env["debug_symbols"]:
             env.Prepend(CCFLAGS=["-g2"])
 
     elif env["target"] == "debug":
         env.Prepend(CCFLAGS=["-g3"])
-        env.Prepend(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(LINKFLAGS=["-rdynamic"])
 
     ## Architecture
@@ -120,6 +118,21 @@ def configure(env):
     is64 = sys.maxsize > 2 ** 32
     if env["bits"] == "default":
         env["bits"] = "64" if is64 else "32"
+
+    machines = {
+        "riscv64": "rv64",
+        "ppc64le": "ppc64",
+        "ppc64": "ppc64",
+        "ppcle": "ppc",
+        "ppc": "ppc",
+    }
+
+    if env["arch"] == "" and platform.machine() in machines:
+        env["arch"] = machines[platform.machine()]
+
+    if env["arch"] == "rv64":
+        # G = General-purpose extensions, C = Compression extension (very common).
+        env.Append(CCFLAGS=["-march=rv64gc"])
 
     ## Compiler configuration
 
@@ -148,7 +161,7 @@ def configure(env):
         env.Append(LINKFLAGS=["-ftest-coverage", "-fprofile-arcs"])
 
     if env["use_ubsan"] or env["use_asan"] or env["use_lsan"] or env["use_tsan"] or env["use_msan"]:
-        env.extra_suffix += "s"
+        env.extra_suffix += ".san"
 
         if env["use_ubsan"]:
             env.Append(
@@ -290,16 +303,9 @@ def configure(env):
         if any(platform.machine() in s for s in list_of_x86):
             env["x86_libtheora_opt_gcc"] = True
 
-    if not env["builtin_libvpx"]:
-        env.ParseConfig("pkg-config vpx --cflags --libs")
-
     if not env["builtin_libvorbis"]:
         env["builtin_libogg"] = False  # Needed to link against system libvorbis
         env.ParseConfig("pkg-config vorbis vorbisfile --cflags --libs")
-
-    if not env["builtin_opus"]:
-        env["builtin_libogg"] = False  # Needed to link against system opus
-        env.ParseConfig("pkg-config opus opusfile --cflags --libs")
 
     if not env["builtin_libogg"]:
         env.ParseConfig("pkg-config ogg --cflags --libs")
@@ -383,8 +389,8 @@ def configure(env):
             # No pkgconfig file for glslang so far
             env.Append(LIBS=["glslang", "SPIRV"])
 
-        # env.Append(CPPDEFINES=['OPENGL_ENABLED'])
-        env.Append(LIBS=["GL"])
+    env.Append(CPPDEFINES=["GLES3_ENABLED"])
+    env.Append(LIBS=["GL"])
 
     env.Append(LIBS=["pthread"])
 

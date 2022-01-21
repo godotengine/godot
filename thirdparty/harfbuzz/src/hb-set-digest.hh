@@ -168,15 +168,17 @@ struct hb_set_digest_combiner_t
  * There is not much science to this: it's a result of intuition
  * and testing.
  */
-typedef hb_set_digest_combiner_t
-<
-  hb_set_digest_lowest_bits_t<unsigned long, 4>,
+using hb_set_digest_t =
   hb_set_digest_combiner_t
   <
-    hb_set_digest_lowest_bits_t<unsigned long, 0>,
-    hb_set_digest_lowest_bits_t<unsigned long, 9>
+    hb_set_digest_lowest_bits_t<unsigned long, 4>,
+    hb_set_digest_combiner_t
+    <
+      hb_set_digest_lowest_bits_t<unsigned long, 0>,
+      hb_set_digest_lowest_bits_t<unsigned long, 9>
+    >
   >
-> hb_set_digest_t;
+;
 
 
 #endif /* HB_SET_DIGEST_HH */

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,11 +50,12 @@
 #include <unicode/udata.h>
 #include <unicode/uiter.h>
 #include <unicode/uloc.h>
+#include <unicode/unorm2.h>
 #include <unicode/uscript.h>
 #include <unicode/ustring.h>
 #include <unicode/utypes.h>
 
-#include "modules/modules_enabled.gen.h"
+#include "modules/modules_enabled.gen.h" // For freetype, msdfgen.
 
 #ifdef MODULE_FREETYPE_ENABLED
 #include <ft2build.h>
@@ -78,6 +79,19 @@ class TextServerAdvanced : public TextServer {
 
 	static String interface_name;
 	static uint32_t interface_features;
+
+	struct NumSystemData {
+		Set<StringName> lang;
+		String digits;
+		String percent_sign;
+		String exp;
+	};
+
+	Vector<NumSystemData> num_systems;
+	Map<StringName, int32_t> feature_sets;
+
+	void _insert_num_systems_lang();
+	void _insert_feature_sets();
 
 	// ICU support data.
 
@@ -163,12 +177,17 @@ class TextServerAdvanced : public TextServer {
 		Dictionary variation_coordinates;
 		float oversampling = 0.f;
 
+		uint32_t style_flags = 0;
+		String font_name;
+		String style_name;
+
 		Map<Vector2i, FontDataForSizeAdvanced *> cache;
 
 		bool face_init = false;
 		Set<uint32_t> supported_scripts;
 		Dictionary supported_features;
 		Dictionary supported_varaitions;
+		Dictionary feature_overrides;
 
 		// Language/script support override.
 		Map<String, bool> language_support_overrides;
@@ -251,31 +270,33 @@ class TextServerAdvanced : public TextServer {
 
 	int _convert_pos(const ShapedTextDataAdvanced *p_sd, int p_pos) const;
 	int _convert_pos_inv(const ShapedTextDataAdvanced *p_sd, int p_pos) const;
+	bool _shape_substr(ShapedTextDataAdvanced *p_new_sd, const ShapedTextDataAdvanced *p_sd, int p_start, int p_length) const;
 	void _shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_start, int32_t p_end, hb_script_t p_script, hb_direction_t p_direction, Vector<RID> p_fonts, int p_span, int p_fb_index);
 	Glyph _shape_single_glyph(ShapedTextDataAdvanced *p_sd, char32_t p_char, hb_script_t p_script, hb_direction_t p_direction, RID p_font, int p_font_size);
+	_FORCE_INLINE_ void _add_featuers(const Dictionary &p_source, Vector<hb_feature_t> &r_ftrs);
 
 	// HarfBuzz bitmap font interface.
 
 	static hb_font_funcs_t *funcs;
 
-	struct hb_bmp_font_t {
+	struct bmp_font_t {
 		TextServerAdvanced::FontDataForSizeAdvanced *face = nullptr;
 		bool unref = false; /* Whether to destroy bm_face when done. */
 	};
 
-	static hb_bmp_font_t *_hb_bmp_font_create(TextServerAdvanced::FontDataForSizeAdvanced *p_face, bool p_unref);
-	static void _hb_bmp_font_destroy(void *p_data);
-	static hb_bool_t hb_bmp_get_nominal_glyph(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_unicode, hb_codepoint_t *r_glyph, void *p_user_data);
-	static hb_position_t hb_bmp_get_glyph_h_advance(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, void *p_user_data);
-	static hb_position_t hb_bmp_get_glyph_v_advance(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, void *p_user_data);
-	static hb_position_t hb_bmp_get_glyph_h_kerning(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_left_glyph, hb_codepoint_t p_right_glyph, void *p_user_data);
-	static hb_bool_t hb_bmp_get_glyph_v_origin(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, hb_position_t *r_x, hb_position_t *r_y, void *p_user_data);
-	static hb_bool_t hb_bmp_get_glyph_extents(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, hb_glyph_extents_t *r_extents, void *p_user_data);
-	static hb_bool_t hb_bmp_get_font_h_extents(hb_font_t *p_font, void *p_font_data, hb_font_extents_t *r_metrics, void *p_user_data);
-	static void hb_bmp_create_font_funcs();
-	static void hb_bmp_free_font_funcs();
-	static void _hb_bmp_font_set_funcs(hb_font_t *p_font, TextServerAdvanced::FontDataForSizeAdvanced *p_face, bool p_unref);
-	static hb_font_t *hb_bmp_font_create(TextServerAdvanced::FontDataForSizeAdvanced *p_face, hb_destroy_func_t p_destroy);
+	static bmp_font_t *_bmp_font_create(TextServerAdvanced::FontDataForSizeAdvanced *p_face, bool p_unref);
+	static void _bmp_font_destroy(void *p_data);
+	static hb_bool_t _bmp_get_nominal_glyph(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_unicode, hb_codepoint_t *r_glyph, void *p_user_data);
+	static hb_position_t _bmp_get_glyph_h_advance(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, void *p_user_data);
+	static hb_position_t _bmp_get_glyph_v_advance(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, void *p_user_data);
+	static hb_position_t _bmp_get_glyph_h_kerning(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_left_glyph, hb_codepoint_t p_right_glyph, void *p_user_data);
+	static hb_bool_t _bmp_get_glyph_v_origin(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, hb_position_t *r_x, hb_position_t *r_y, void *p_user_data);
+	static hb_bool_t _bmp_get_glyph_extents(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, hb_glyph_extents_t *r_extents, void *p_user_data);
+	static hb_bool_t _bmp_get_font_h_extents(hb_font_t *p_font, void *p_font_data, hb_font_extents_t *r_metrics, void *p_user_data);
+	static void _bmp_create_font_funcs();
+	static void _bmp_free_font_funcs();
+	static void _bmp_font_set_funcs(hb_font_t *p_font, TextServerAdvanced::FontDataForSizeAdvanced *p_face, bool p_unref);
+	static hb_font_t *_bmp_font_create(TextServerAdvanced::FontDataForSizeAdvanced *p_face, hb_destroy_func_t p_destroy);
 
 protected:
 	static void _bind_methods(){};
@@ -306,6 +327,15 @@ public:
 
 	virtual void font_set_data(RID p_font_rid, const PackedByteArray &p_data) override;
 	virtual void font_set_data_ptr(RID p_font_rid, const uint8_t *p_data_ptr, size_t p_data_size) override;
+
+	virtual void font_set_style(RID p_font_rid, uint32_t /*FontStyle*/ p_style) override;
+	virtual uint32_t /*FontStyle*/ font_get_style(RID p_font_rid) const override;
+
+	virtual void font_set_style_name(RID p_font_rid, const String &p_name) override;
+	virtual String font_get_style_name(RID p_font_rid) const override;
+
+	virtual void font_set_name(RID p_font_rid, const String &p_name) override;
+	virtual String font_get_name(RID p_font_rid) const override;
 
 	virtual void font_set_antialiased(RID p_font_rid, bool p_antialiased) override;
 	virtual bool font_is_antialiased(RID p_font_rid) const override;
@@ -419,6 +449,9 @@ public:
 	virtual void font_remove_script_support_override(RID p_font_rid, const String &p_script) override;
 	virtual Vector<String> font_get_script_support_overrides(RID p_font_rid) override;
 
+	virtual void font_set_opentype_feature_overrides(RID p_font_rid, const Dictionary &p_overrides) override;
+	virtual Dictionary font_get_opentype_feature_overrides(RID p_font_rid) const override;
+
 	virtual Dictionary font_supported_feature_list(RID p_font_rid) const override;
 	virtual Dictionary font_supported_variation_list(RID p_font_rid) const override;
 
@@ -433,8 +466,12 @@ public:
 
 	virtual void shaped_text_set_direction(RID p_shaped, Direction p_direction = DIRECTION_AUTO) override;
 	virtual Direction shaped_text_get_direction(RID p_shaped) const override;
+	virtual Direction shaped_text_get_inferred_direction(RID p_shaped) const override;
 
 	virtual void shaped_text_set_bidi_override(RID p_shaped, const Array &p_override) override;
+
+	virtual void shaped_text_set_custom_punctuation(RID p_shaped, const String &p_punct) override;
+	virtual String shaped_text_get_custom_punctuation(RID p_shaped) const override;
 
 	virtual void shaped_text_set_orientation(RID p_shaped, Orientation p_orientation = ORIENTATION_HORIZONTAL) override;
 	virtual Orientation shaped_text_get_orientation(RID p_shaped) const override;
@@ -446,8 +483,8 @@ public:
 	virtual bool shaped_text_get_preserve_control(RID p_shaped) const override;
 
 	virtual bool shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "") override;
-	virtual bool shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER, int p_length = 1) override;
-	virtual bool shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER) override;
+	virtual bool shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int p_length = 1) override;
+	virtual bool shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER) override;
 
 	virtual RID shaped_text_substr(RID p_shaped, int p_start, int p_length) const override;
 	virtual RID shaped_text_get_parent(RID p_shaped) const override;
@@ -487,6 +524,11 @@ public:
 	virtual String format_number(const String &p_string, const String &p_language = "") const override;
 	virtual String parse_number(const String &p_string, const String &p_language = "") const override;
 	virtual String percent_sign(const String &p_language = "") const override;
+
+	virtual String strip_diacritics(const String &p_string) const override;
+
+	virtual String string_to_upper(const String &p_string, const String &p_language = "") const override;
+	virtual String string_to_lower(const String &p_string, const String &p_language = "") const override;
 
 	TextServerAdvanced();
 	~TextServerAdvanced();

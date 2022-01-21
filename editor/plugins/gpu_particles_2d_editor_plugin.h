@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,6 +56,7 @@ class GPUParticles2DEditorPlugin : public EditorPlugin {
 	};
 
 	GPUParticles2D *particles;
+	List<GPUParticles2D *> selected_particles;
 
 	EditorFileDialog *file;
 	EditorNode *editor;
@@ -79,6 +80,7 @@ class GPUParticles2DEditorPlugin : public EditorPlugin {
 	void _menu_callback(int p_idx);
 	void _generate_visibility_rect();
 	void _generate_emission_mask();
+	void _selection_changed();
 
 protected:
 	void _notification(int p_what);

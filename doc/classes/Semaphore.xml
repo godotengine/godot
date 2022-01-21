@@ -7,7 +7,7 @@
 		A synchronization semaphore which can be used to synchronize multiple [Thread]s. Initialized to zero on creation. Be careful to avoid deadlocks. For a binary version, see [Mutex].
 	</description>
 	<tutorials>
-		<link title="Using multiple threads">https://docs.godotengine.org/en/latest/tutorials/performance/using_multiple_threads.html</link>
+		<link title="Using multiple threads">$DOCS_URL/tutorials/performance/using_multiple_threads.html</link>
 	</tutorials>
 	<methods>
 		<method name="post">

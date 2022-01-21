@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,7 @@
 void TextureProgressBar::set_under_texture(const Ref<Texture2D> &p_texture) {
 	under = p_texture;
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 Ref<Texture2D> TextureProgressBar::get_under_texture() const {
@@ -46,7 +46,7 @@ void TextureProgressBar::set_over_texture(const Ref<Texture2D> &p_texture) {
 	over = p_texture;
 	update();
 	if (under.is_null()) {
-		minimum_size_changed();
+		update_minimum_size();
 	}
 }
 
@@ -58,7 +58,7 @@ void TextureProgressBar::set_stretch_margin(Side p_side, int p_size) {
 	ERR_FAIL_INDEX((int)p_side, 4);
 	stretch_margin[p_side] = p_size;
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 int TextureProgressBar::get_stretch_margin(Side p_side) const {
@@ -69,7 +69,7 @@ int TextureProgressBar::get_stretch_margin(Side p_side) const {
 void TextureProgressBar::set_nine_patch_stretch(bool p_stretch) {
 	nine_patch_stretch = p_stretch;
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 bool TextureProgressBar::get_nine_patch_stretch() const {
@@ -93,7 +93,7 @@ Size2 TextureProgressBar::get_minimum_size() const {
 void TextureProgressBar::set_progress_texture(const Ref<Texture2D> &p_texture) {
 	progress = p_texture;
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 Ref<Texture2D> TextureProgressBar::get_progress_texture() const {
@@ -341,7 +341,11 @@ void TextureProgressBar::draw_nine_patch_stretched(const Ref<Texture2D> &p_textu
 			} break;
 			case FILL_BILINEAR_LEFT_AND_RIGHT: {
 				double center_mapped_from_real_width = (width_total * 0.5 - topleft.x) / max_middle_real_size * max_middle_texture_size + topleft.x;
-				double drift_from_unscaled_center = (src_rect.size.x * 0.5 - center_mapped_from_real_width) * (last_section_size - first_section_size) / (bottomright.x - topleft.x);
+				double drift_from_unscaled_center = 0;
+				if (bottomright.y != topleft.y) { // To avoid division by zero.
+					drift_from_unscaled_center = (src_rect.size.x * 0.5 - center_mapped_from_real_width) * (last_section_size - first_section_size) / (bottomright.x - topleft.x);
+				}
+
 				src_rect.position.x += center_mapped_from_real_width + drift_from_unscaled_center - width_texture * 0.5;
 				src_rect.size.x = width_texture;
 				dst_rect.position.x += (width_total - width_filled) * 0.5;
@@ -351,7 +355,11 @@ void TextureProgressBar::draw_nine_patch_stretched(const Ref<Texture2D> &p_textu
 			} break;
 			case FILL_BILINEAR_TOP_AND_BOTTOM: {
 				double center_mapped_from_real_width = (width_total * 0.5 - topleft.y) / max_middle_real_size * max_middle_texture_size + topleft.y;
-				double drift_from_unscaled_center = (src_rect.size.y * 0.5 - center_mapped_from_real_width) * (last_section_size - first_section_size) / (bottomright.y - topleft.y);
+				double drift_from_unscaled_center = 0;
+				if (bottomright.y != topleft.y) { // To avoid division by zero.
+					drift_from_unscaled_center = (src_rect.size.y * 0.5 - center_mapped_from_real_width) * (last_section_size - first_section_size) / (bottomright.y - topleft.y);
+				}
+
 				src_rect.position.y += center_mapped_from_real_width + drift_from_unscaled_center - width_texture * 0.5;
 				src_rect.size.y = width_texture;
 				dst_rect.position.y += (width_total - width_filled) * 0.5;
@@ -379,7 +387,6 @@ void TextureProgressBar::draw_nine_patch_stretched(const Ref<Texture2D> &p_textu
 }
 
 void TextureProgressBar::_notification(int p_what) {
-	const float corners[12] = { -0.125, -0.375, -0.625, -0.875, 0.125, 0.375, 0.625, 0.875, 1.125, 1.375, 1.625, 1.875 };
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
 			if (nine_patch_stretch && (mode == FILL_LEFT_TO_RIGHT || mode == FILL_RIGHT_TO_LEFT || mode == FILL_TOP_TO_BOTTOM || mode == FILL_BOTTOM_TO_TOP || mode == FILL_BILINEAR_LEFT_AND_RIGHT || mode == FILL_BILINEAR_TOP_AND_BOTTOM)) {
@@ -444,7 +451,7 @@ void TextureProgressBar::_notification(int p_what) {
 							float val = get_as_ratio() * rad_max_degrees / 360;
 							if (val == 1) {
 								Rect2 region = Rect2(progress_offset, s);
-								Rect2 source = Rect2(Point2(), s);
+								Rect2 source = Rect2(Point2(), progress->get_size());
 								draw_texture_rect_region(progress, region, source, tint_progress);
 							} else if (val != 0) {
 								Array pts;
@@ -458,16 +465,14 @@ void TextureProgressBar::_notification(int p_what) {
 								}
 
 								float end = start + direction * val;
-								pts.append(start);
-								pts.append(end);
 								float from = MIN(start, end);
 								float to = MAX(start, end);
-								for (int i = 0; i < 12; i++) {
-									if (corners[i] > from && corners[i] < to) {
-										pts.append(corners[i]);
-									}
+								pts.append(from);
+								for (float corner = Math::floor(from * 4 + 0.5) * 0.25 + 0.125; corner < to; corner += 0.25) {
+									pts.append(corner);
 								}
-								pts.sort();
+								pts.append(to);
+
 								Vector<Point2> uvs;
 								Vector<Point2> points;
 								uvs.push_back(get_relative_center());
@@ -484,6 +489,8 @@ void TextureProgressBar::_notification(int p_what) {
 								colors.push_back(tint_progress);
 								draw_polygon(points, colors, uvs, progress);
 							}
+
+							// Draw a reference cross.
 							if (Engine::get_singleton()->is_editor_hint()) {
 								Point2 p;
 
@@ -494,6 +501,7 @@ void TextureProgressBar::_notification(int p_what) {
 								}
 
 								p *= get_relative_center();
+								p += progress_offset;
 								p = p.floor();
 								draw_line(p - Point2(8, 0), p + Point2(8, 0), Color(0.9, 0.5, 0.5), 2);
 								draw_line(p - Point2(0, 8), p + Point2(0, 8), Color(0.9, 0.5, 0.5), 2);

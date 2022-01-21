@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -187,7 +187,7 @@ void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base
 #ifdef DEBUG_ENABLED
 			String fullname = method->get_ret_type_full_name() + " " + name + "(" + method->get_signature_desc(true) + ")";
 			WARN_PRINT("Method '" + fullname + "' is hidden by Godot API method. Should be '" +
-					   method->get_full_name_no_class() + "'. In class '" + namespace_name + "." + class_name + "'.");
+					method->get_full_name_no_class() + "'. In class '" + namespace_name + "." + class_name + "'.");
 #endif
 			continue;
 		}
@@ -205,7 +205,7 @@ void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base
 					// found
 					String fullname = m->get_ret_type_full_name() + " " + name + "(" + m->get_signature_desc(true) + ")";
 					WARN_PRINT("Method '" + fullname + "' should be '" + m->get_full_name_no_class() +
-							   "'. In class '" + namespace_name + "." + class_name + "'.");
+							"'. In class '" + namespace_name + "." + class_name + "'.");
 					break;
 				}
 
@@ -464,9 +464,18 @@ const Vector<GDMonoClass *> &GDMonoClass::get_all_delegates() {
 		return delegates_list;
 	}
 
+	// If the class is generic we must use the generic type definition.
+	MonoClass *klass = mono_class;
+	if (mono_type_get_type(get_mono_type()) == MONO_TYPE_GENERICINST) {
+		MonoReflectionType *reftype = mono_type_get_object(mono_domain_get(), get_mono_type());
+		GDMonoUtils::Marshal::get_generic_type_definition(reftype, &reftype);
+		MonoType *type = mono_reflection_type_get_type(reftype);
+		klass = mono_class_from_mono_type(type);
+	}
+
 	void *iter = nullptr;
 	MonoClass *raw_class = nullptr;
-	while ((raw_class = mono_class_get_nested_types(mono_class, &iter)) != nullptr) {
+	while ((raw_class = mono_class_get_nested_types(klass, &iter)) != nullptr) {
 		if (mono_class_is_delegate(raw_class)) {
 			StringName name = String::utf8(mono_class_get_name(raw_class));
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -127,6 +127,11 @@ public:
 		CENTER_OF_MASS_MODE_CUSTOM,
 	};
 
+	enum DampMode {
+		DAMP_MODE_COMBINE,
+		DAMP_MODE_REPLACE,
+	};
+
 	enum CCDMode {
 		CCD_MODE_DISABLED,
 		CCD_MODE_CAST_RAY,
@@ -146,8 +151,12 @@ private:
 
 	Ref<PhysicsMaterial> physics_material_override;
 	real_t gravity_scale = 1.0;
-	real_t linear_damp = -1.0;
-	real_t angular_damp = -1.0;
+
+	DampMode linear_damp_mode = DAMP_MODE_COMBINE;
+	DampMode angular_damp_mode = DAMP_MODE_COMBINE;
+
+	real_t linear_damp = 0.0;
+	real_t angular_damp = 0.0;
 
 	Vector2 linear_velocity;
 	real_t angular_velocity = 0.0;
@@ -241,6 +250,12 @@ public:
 	void set_gravity_scale(real_t p_gravity_scale);
 	real_t get_gravity_scale() const;
 
+	void set_linear_damp_mode(DampMode p_mode);
+	DampMode get_linear_damp_mode() const;
+
+	void set_angular_damp_mode(DampMode p_mode);
+	DampMode get_angular_damp_mode() const;
+
 	void set_linear_damp(real_t p_linear_damp);
 	real_t get_linear_damp() const;
 
@@ -277,15 +292,19 @@ public:
 	void apply_impulse(const Vector2 &p_impulse, const Vector2 &p_position = Vector2());
 	void apply_torque_impulse(real_t p_torque);
 
-	void set_applied_force(const Vector2 &p_force);
-	Vector2 get_applied_force() const;
+	void apply_central_force(const Vector2 &p_force);
+	void apply_force(const Vector2 &p_force, const Vector2 &p_position = Vector2());
+	void apply_torque(real_t p_torque);
 
-	void set_applied_torque(const real_t p_torque);
-	real_t get_applied_torque() const;
+	void add_constant_central_force(const Vector2 &p_force);
+	void add_constant_force(const Vector2 &p_force, const Vector2 &p_position = Vector2());
+	void add_constant_torque(real_t p_torque);
 
-	void add_central_force(const Vector2 &p_force);
-	void add_force(const Vector2 &p_force, const Vector2 &p_position = Vector2());
-	void add_torque(real_t p_torque);
+	void set_constant_force(const Vector2 &p_force);
+	Vector2 get_constant_force() const;
+
+	void set_constant_torque(real_t p_torque);
+	real_t get_constant_torque() const;
 
 	TypedArray<Node2D> get_colliding_bodies() const; //function for script
 
@@ -300,6 +319,7 @@ private:
 
 VARIANT_ENUM_CAST(RigidDynamicBody2D::FreezeMode);
 VARIANT_ENUM_CAST(RigidDynamicBody2D::CenterOfMassMode);
+VARIANT_ENUM_CAST(RigidDynamicBody2D::DampMode);
 VARIANT_ENUM_CAST(RigidDynamicBody2D::CCDMode);
 
 class CharacterBody2D : public PhysicsBody2D {
@@ -416,7 +436,7 @@ private:
 	MovingPlatformApplyVelocityOnLeave get_moving_platform_apply_velocity_on_leave() const;
 
 	void _move_and_slide_free(double p_delta);
-	void _move_and_slide_grounded(double p_delta, bool p_was_on_floor, const Vector2 &p_prev_platform_velocity);
+	void _move_and_slide_grounded(double p_delta, bool p_was_on_floor);
 
 	Ref<KinematicCollision2D> _get_slide_collision(int p_bounce);
 	Ref<KinematicCollision2D> _get_last_slide_collision();

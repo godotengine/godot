@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,8 +36,8 @@
 
 /////////////////////////////////////////
 
-// Maps to 2*axis if value is neg, or + 1 if value is pos.
-static const char *_joy_axis_descriptions[JOY_AXIS_MAX * 2] = {
+// Maps to 2*axis if value is neg, or 2*axis+1 if value is pos.
+static const char *_joy_axis_descriptions[(size_t)JoyAxis::MAX * 2] = {
 	TTRC("Left Stick Left, Joystick 0 Left"),
 	TTRC("Left Stick Right, Joystick 0 Right"),
 	TTRC("Left Stick Up, Joystick 0 Up"),
@@ -67,11 +67,11 @@ String InputEventConfigurationDialog::get_event_text(const Ref<InputEvent> &p_ev
 	Ref<InputEventJoypadMotion> jpmotion = p_event;
 	if (jpmotion.is_valid()) {
 		String desc = TTR("Unknown Joypad Axis");
-		if (jpmotion->get_axis() < JOY_AXIS_MAX) {
-			desc = RTR(_joy_axis_descriptions[2 * jpmotion->get_axis() + (jpmotion->get_axis_value() < 0 ? 0 : 1)]);
+		if (jpmotion->get_axis() < JoyAxis::MAX) {
+			desc = RTR(_joy_axis_descriptions[2 * (size_t)jpmotion->get_axis() + (jpmotion->get_axis_value() < 0 ? 0 : 1)]);
 		}
 
-		return vformat("Joypad Axis %s %s (%s)", itos(jpmotion->get_axis()), jpmotion->get_axis_value() < 0 ? "-" : "+", desc);
+		return vformat("Joypad Axis %s %s (%s)", itos((int64_t)jpmotion->get_axis()), jpmotion->get_axis_value() < 0 ? "-" : "+", desc);
 	} else {
 		return p_event->as_text();
 	}
@@ -108,7 +108,7 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event) {
 
 		if (k.is_valid()) {
 			show_phys_key = true;
-			physical_key_checkbox->set_pressed(k->get_physical_keycode() != 0 && k->get_keycode() == 0);
+			physical_key_checkbox->set_pressed(k->get_physical_keycode() != Key::NONE && k->get_keycode() == Key::NONE);
 
 		} else if (joyb.is_valid() || joym.is_valid() || mb.is_valid()) {
 			show_device = true;
@@ -238,10 +238,16 @@ void InputEventConfigurationDialog::_listen_window_input(const Ref<InputEvent> &
 	Ref<InputEventJoypadButton> joyb = p_event;
 	Ref<InputEventJoypadMotion> joym = p_event;
 
-	int type = k.is_valid() ? INPUT_KEY : joyb.is_valid() ? INPUT_JOY_BUTTON :
-								  joym.is_valid()		  ? INPUT_JOY_MOTION :
-								  mb.is_valid()			  ? INPUT_MOUSE_BUTTON :
-															  0;
+	int type = 0;
+	if (k.is_valid()) {
+		type = INPUT_KEY;
+	} else if (joyb.is_valid()) {
+		type = INPUT_JOY_BUTTON;
+	} else if (joym.is_valid()) {
+		type = INPUT_JOY_MOTION;
+	} else if (mb.is_valid()) {
+		type = INPUT_MOUSE_BUTTON;
+	}
 
 	if (!(allowed_input_types & type)) {
 		return;
@@ -254,7 +260,7 @@ void InputEventConfigurationDialog::_listen_window_input(const Ref<InputEvent> &
 			return;
 		} else {
 			// Always make the value 1 or -1 for display consistency
-			joym->set_axis_value(SGN(axis_value));
+			joym->set_axis_value(SIGN(axis_value));
 		}
 	}
 
@@ -262,9 +268,9 @@ void InputEventConfigurationDialog::_listen_window_input(const Ref<InputEvent> &
 		k->set_pressed(false); // to avoid serialisation of 'pressed' property - doesn't matter for actions anyway.
 		// Maintain physical keycode option state
 		if (physical_key_checkbox->is_pressed()) {
-			k->set_keycode(KEY_NONE);
+			k->set_keycode(Key::NONE);
 		} else {
-			k->set_physical_keycode(KEY_NONE);
+			k->set_physical_keycode(Key::NONE);
 		}
 	}
 
@@ -319,7 +325,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 		mouse_root->set_collapsed(collapse);
 		mouse_root->set_meta("__type", INPUT_MOUSE_BUTTON);
 
-		MouseButton mouse_buttons[9] = { MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE, MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN, MOUSE_BUTTON_WHEEL_LEFT, MOUSE_BUTTON_WHEEL_RIGHT, MOUSE_BUTTON_XBUTTON1, MOUSE_BUTTON_XBUTTON2 };
+		MouseButton mouse_buttons[9] = { MouseButton::LEFT, MouseButton::RIGHT, MouseButton::MIDDLE, MouseButton::WHEEL_UP, MouseButton::WHEEL_DOWN, MouseButton::WHEEL_LEFT, MouseButton::WHEEL_RIGHT, MouseButton::MB_XBUTTON1, MouseButton::MB_XBUTTON2 };
 		for (int i = 0; i < 9; i++) {
 			Ref<InputEventMouseButton> mb;
 			mb.instantiate();
@@ -343,7 +349,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 		joyb_root->set_collapsed(collapse);
 		joyb_root->set_meta("__type", INPUT_JOY_BUTTON);
 
-		for (int i = 0; i < JOY_BUTTON_MAX; i++) {
+		for (int i = 0; i < (int)JoyButton::MAX; i++) {
 			Ref<InputEventJoypadButton> joyb;
 			joyb.instantiate();
 			joyb->set_button_index((JoyButton)i);
@@ -366,7 +372,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 		joya_root->set_collapsed(collapse);
 		joya_root->set_meta("__type", INPUT_JOY_MOTION);
 
-		for (int i = 0; i < JOY_AXIS_MAX * 2; i++) {
+		for (int i = 0; i < (int)JoyAxis::MAX * 2; i++) {
 			int axis = i / 2;
 			int direction = (i & 1) ? 1 : -1;
 			Ref<InputEventJoypadMotion> joym;
@@ -447,10 +453,10 @@ void InputEventConfigurationDialog::_physical_keycode_toggled(bool p_checked) {
 
 	if (p_checked) {
 		k->set_physical_keycode(k->get_keycode());
-		k->set_keycode(KEY_NONE);
+		k->set_keycode(Key::NONE);
 	} else {
 		k->set_keycode((Key)k->get_physical_keycode());
-		k->set_physical_keycode(KEY_NONE);
+		k->set_physical_keycode(Key::NONE);
 	}
 
 	_set_event(k);
@@ -474,9 +480,9 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 
 			if (physical_key_checkbox->is_pressed()) {
 				k->set_physical_keycode(keycode);
-				k->set_keycode(KEY_NONE);
+				k->set_keycode(Key::NONE);
 			} else {
-				k->set_physical_keycode(KEY_NONE);
+				k->set_physical_keycode(Key::NONE);
 				k->set_keycode(keycode);
 			}
 
@@ -571,7 +577,13 @@ void InputEventConfigurationDialog::popup_and_configure(const Ref<InputEvent> &p
 		for (int i = 0; i < MOD_MAX; i++) {
 			mod_checkboxes[i]->set_pressed(false);
 		}
-		physical_key_checkbox->set_pressed(false);
+
+		// Enable the Physical Key checkbox by default to encourage its use.
+		// Physical Key should be used for most game inputs as it allows keys to work
+		// on non-QWERTY layouts out of the box.
+		// This is especially important for WASD movement layouts.
+		physical_key_checkbox->set_pressed(true);
+
 		store_command_checkbox->set_pressed(true);
 		_set_current_device(0);
 
@@ -600,7 +612,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	add_child(main_vbox);
 
 	tab_container = memnew(TabContainer);
-	tab_container->set_tab_align(TabContainer::TabAlign::ALIGN_LEFT);
+	tab_container->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
 	tab_container->set_use_hidden_tabs_for_min_size(true);
 	tab_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tab_container->connect("tab_selected", callable_mp(this, &InputEventConfigurationDialog::_tab_selected));
@@ -610,7 +622,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	VBoxContainer *vb = memnew(VBoxContainer);
 	vb->set_name(TTR("Listen for Input"));
 	event_as_text = memnew(Label);
-	event_as_text->set_align(Label::ALIGN_CENTER);
+	event_as_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	vb->add_child(event_as_text);
 	// Mouse button detection rect (Mouse button event outside this ColorRect will be ignored)
 	mouse_detection_rect = memnew(ColorRect);
@@ -702,7 +714,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 
 	physical_key_checkbox = memnew(CheckBox);
 	physical_key_checkbox->set_text(TTR("Use Physical Keycode"));
-	physical_key_checkbox->set_tooltip(TTR("Stores the physical position of the key on the keyboard rather than the keys value. Used for compatibility with non-latin layouts."));
+	physical_key_checkbox->set_tooltip(TTR("Stores the physical position of the key on the keyboard rather than the key's value. Used for compatibility with non-latin layouts.\nThis should generally be enabled for most game shortcuts, but not in non-game applications."));
 	physical_key_checkbox->connect("toggled", callable_mp(this, &InputEventConfigurationDialog::_physical_keycode_toggled));
 	physical_key_checkbox->hide();
 	additional_options_container->add_child(physical_key_checkbox);
@@ -730,7 +742,7 @@ void ActionMapEditor::_event_config_confirmed() {
 	Ref<InputEvent> ev = event_config_dialog->get_event();
 
 	Dictionary new_action = current_action.duplicate();
-	Array events = new_action["events"];
+	Array events = new_action["events"].duplicate();
 
 	if (current_action_event_index == -1) {
 		// Add new event
@@ -748,9 +760,23 @@ void ActionMapEditor::_add_action_pressed() {
 	_add_action(add_edit->get_text());
 }
 
+bool ActionMapEditor::_has_action(const String &p_name) const {
+	for (const ActionInfo &action_info : actions_cache) {
+		if (p_name == action_info.name) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void ActionMapEditor::_add_action(const String &p_name) {
-	if (p_name == "" || !_is_action_name_valid(p_name)) {
+	if (p_name.is_empty() || !_is_action_name_valid(p_name)) {
 		show_message(TTR("Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or '\"'"));
+		return;
+	}
+
+	if (_has_action(p_name)) {
+		show_message(vformat(TTR("An action with the name '%s' already exists."), p_name));
 		return;
 	}
 
@@ -773,9 +799,15 @@ void ActionMapEditor::_action_edited() {
 			return;
 		}
 
-		if (new_name == "" || !_is_action_name_valid(new_name)) {
+		if (new_name.is_empty() || !_is_action_name_valid(new_name)) {
 			ti->set_text(0, old_name);
 			show_message(TTR("Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or '\"'"));
+			return;
+		}
+
+		if (_has_action(new_name)) {
+			ti->set_text(0, old_name);
+			show_message(vformat(TTR("An action with the name '%s' already exists."), new_name));
 			return;
 		}
 
@@ -807,7 +839,6 @@ void ActionMapEditor::_tree_button_pressed(Object *p_item, int p_column, int p_i
 			current_action_event_index = -1;
 
 			event_config_dialog->popup_and_configure();
-
 		} break;
 		case ActionMapEditor::BUTTON_EDIT_EVENT: {
 			// Action and Action name is located on the parent of the event.
@@ -820,7 +851,6 @@ void ActionMapEditor::_tree_button_pressed(Object *p_item, int p_column, int p_i
 			if (ie.is_valid()) {
 				event_config_dialog->popup_and_configure(ie);
 			}
-
 		} break;
 		case ActionMapEditor::BUTTON_REMOVE_ACTION: {
 			// Send removed action name
@@ -829,13 +859,13 @@ void ActionMapEditor::_tree_button_pressed(Object *p_item, int p_column, int p_i
 		} break;
 		case ActionMapEditor::BUTTON_REMOVE_EVENT: {
 			// Remove event and send updated action
-			Dictionary action = item->get_parent()->get_meta("__action");
+			Dictionary action = item->get_parent()->get_meta("__action").duplicate();
 			String action_name = item->get_parent()->get_meta("__name");
 
 			int event_index = item->get_meta("__index");
 
-			Array events = action["events"];
-			events.remove(event_index);
+			Array events = action["events"].duplicate();
+			events.remove_at(event_index);
 			action["events"] = events;
 
 			emit_signal(SNAME("action_edited"), action_name, action);

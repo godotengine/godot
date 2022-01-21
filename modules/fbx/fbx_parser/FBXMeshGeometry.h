@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -226,7 +226,7 @@ public:
 	const std::vector<Vector3> &GetVertices() const;
 
 	/** Get a list of all vertex normals or an empty array if
-    *  no normals are specified. */
+	 *  no normals are specified. */
 	const std::vector<Vector3> &GetNormals() const;
 
 	/** Return list of vertex indices. */
@@ -238,8 +238,8 @@ private:
 	std::vector<unsigned int> m_indices;
 };
 /**
-*  DOM class for FBX geometry of type "Line"
-*/
+ *  DOM class for FBX geometry of type "Line"
+ */
 class LineGeometry : public Geometry {
 public:
 	/** The class constructor */

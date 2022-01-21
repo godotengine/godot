@@ -3,6 +3,8 @@ import re
 import glob
 import subprocess
 from collections import OrderedDict
+from collections.abc import Mapping
+from typing import Iterator
 
 # We need to define our own `Action` method to control the verbosity of output
 # and whenever we need to run those commands in a subprocess on some platforms.
@@ -14,7 +16,7 @@ from SCons.Variables.BoolVariable import _text2bool
 from platform_methods import run_in_subprocess
 
 
-def add_source_files(self, sources, files, warn_duplicates=True):
+def add_source_files(self, sources, files):
     # Convert string to list of absolute paths (including expanding wildcard)
     if isinstance(files, (str, bytes)):
         # Keep SCons project-absolute path as they are (no wildcard support)
@@ -24,17 +26,20 @@ def add_source_files(self, sources, files, warn_duplicates=True):
                 return
             files = [files]
         else:
+            # Exclude .gen.cpp files from globbing, to avoid including obsolete ones.
+            # They should instead be added manually.
+            skip_gen_cpp = "*" in files
             dir_path = self.Dir(".").abspath
             files = sorted(glob.glob(dir_path + "/" + files))
+            if skip_gen_cpp:
+                files = [f for f in files if not f.endswith(".gen.cpp")]
 
     # Add each path as compiled Object following environment (self) configuration
     for path in files:
         obj = self.Object(path)
         if obj in sources:
-            if warn_duplicates:
-                print('WARNING: Object "{}" already included in environment sources.'.format(obj))
-            else:
-                continue
+            print('WARNING: Object "{}" already included in environment sources.'.format(obj))
+            continue
         sources.append(obj)
 
 
@@ -100,6 +105,8 @@ def update_version(module_version_string=""):
     f.write('#define VERSION_MODULE_CONFIG "' + str(version.module_config) + module_version_string + '"\n')
     f.write("#define VERSION_YEAR " + str(version.year) + "\n")
     f.write('#define VERSION_WEBSITE "' + str(version.website) + '"\n')
+    f.write('#define VERSION_DOCS_BRANCH "' + str(version.docs) + '"\n')
+    f.write('#define VERSION_DOCS_URL "https://docs.godotengine.org/en/" VERSION_DOCS_BRANCH\n')
     f.write("#endif // VERSION_GENERATED_GEN_H\n")
     f.close()
 
@@ -447,45 +454,39 @@ def no_verbose(sys, env):
     # Colors are disabled in non-TTY environments such as pipes. This means
     # that if output is redirected to a file, it will not contain color codes
     if sys.stdout.isatty():
-        colors["cyan"] = "\033[96m"
-        colors["purple"] = "\033[95m"
-        colors["blue"] = "\033[94m"
-        colors["green"] = "\033[92m"
-        colors["yellow"] = "\033[93m"
-        colors["red"] = "\033[91m"
-        colors["end"] = "\033[0m"
+        colors["blue"] = "\033[0;94m"
+        colors["bold_blue"] = "\033[1;94m"
+        colors["reset"] = "\033[0m"
     else:
-        colors["cyan"] = ""
-        colors["purple"] = ""
         colors["blue"] = ""
-        colors["green"] = ""
-        colors["yellow"] = ""
-        colors["red"] = ""
-        colors["end"] = ""
+        colors["bold_blue"] = ""
+        colors["reset"] = ""
 
-    compile_source_message = "{}Compiling {}==> {}$SOURCE{}".format(
-        colors["blue"], colors["purple"], colors["yellow"], colors["end"]
+    # There is a space before "..." to ensure that source file names can be
+    # Ctrl + clicked in the VS Code terminal.
+    compile_source_message = "{}Compiling {}$SOURCE{} ...{}".format(
+        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
     )
-    java_compile_source_message = "{}Compiling {}==> {}$SOURCE{}".format(
-        colors["blue"], colors["purple"], colors["yellow"], colors["end"]
+    java_compile_source_message = "{}Compiling {}$SOURCE{} ...{}".format(
+        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
     )
-    compile_shared_source_message = "{}Compiling shared {}==> {}$SOURCE{}".format(
-        colors["blue"], colors["purple"], colors["yellow"], colors["end"]
+    compile_shared_source_message = "{}Compiling shared {}$SOURCE{} ...{}".format(
+        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
     )
-    link_program_message = "{}Linking Program        {}==> {}$TARGET{}".format(
-        colors["red"], colors["purple"], colors["yellow"], colors["end"]
+    link_program_message = "{}Linking Program {}$TARGET{} ...{}".format(
+        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
     )
-    link_library_message = "{}Linking Static Library {}==> {}$TARGET{}".format(
-        colors["red"], colors["purple"], colors["yellow"], colors["end"]
+    link_library_message = "{}Linking Static Library {}$TARGET{} ...{}".format(
+        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
     )
-    ranlib_library_message = "{}Ranlib Library         {}==> {}$TARGET{}".format(
-        colors["red"], colors["purple"], colors["yellow"], colors["end"]
+    ranlib_library_message = "{}Ranlib Library {}$TARGET{} ...{}".format(
+        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
     )
-    link_shared_library_message = "{}Linking Shared Library {}==> {}$TARGET{}".format(
-        colors["red"], colors["purple"], colors["yellow"], colors["end"]
+    link_shared_library_message = "{}Linking Shared Library {}$TARGET{} ...{}".format(
+        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
     )
-    java_library_message = "{}Creating Java Archive  {}==> {}$TARGET{}".format(
-        colors["red"], colors["purple"], colors["yellow"], colors["end"]
+    java_library_message = "{}Creating Java Archive {}$TARGET{} ...{}".format(
+        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
     )
 
     env.Append(CXXCOMSTR=[compile_source_message])
@@ -601,7 +602,11 @@ def detect_visual_c_compiler_version(tools_env):
 
 
 def find_visual_c_batch_file(env):
-    from SCons.Tool.MSCommon.vc import get_default_version, get_host_target, find_batch_file
+    from SCons.Tool.MSCommon.vc import (
+        get_default_version,
+        get_host_target,
+        find_batch_file,
+    )
 
     version = get_default_version(env)
     (host_platform, target_platform, _) = get_host_target(env)
@@ -653,36 +658,107 @@ def generate_vs_project(env, num_jobs):
     batch_file = find_visual_c_batch_file(env)
     if batch_file:
 
-        def build_commandline(commands):
-            common_build_prefix = [
-                'cmd /V /C set "plat=$(PlatformTarget)"',
-                '(if "$(PlatformTarget)"=="x64" (set "plat=x86_amd64"))',
-                'set "tools=%s"' % env["tools"],
-                '(if "$(Configuration)"=="release" (set "tools=no"))',
-                'call "' + batch_file + '" !plat!',
-            ]
+        class ModuleConfigs(Mapping):
+            # This version information (Win32, x64, Debug, Release, Release_Debug seems to be
+            # required for Visual Studio to understand that it needs to generate an NMAKE
+            # project. Do not modify without knowing what you are doing.
+            PLATFORMS = ["Win32", "x64"]
+            PLATFORM_IDS = ["32", "64"]
+            CONFIGURATIONS = ["debug", "release", "release_debug"]
+            CONFIGURATION_IDS = ["tools", "opt", "opt.tools"]
 
-            # Windows allows us to have spaces in paths, so we need
-            # to double quote off the directory. However, the path ends
-            # in a backslash, so we need to remove this, lest it escape the
-            # last double quote off, confusing MSBuild
-            common_build_postfix = [
-                "--directory=\"$(ProjectDir.TrimEnd('\\'))\"",
-                "platform=windows",
-                "target=$(Configuration)",
-                "progress=no",
-                "tools=!tools!",
-                "-j%s" % num_jobs,
-            ]
+            @staticmethod
+            def for_every_variant(value):
+                return [value for _ in range(len(ModuleConfigs.CONFIGURATIONS) * len(ModuleConfigs.PLATFORMS))]
 
-            if env["tests"]:
-                common_build_postfix.append("tests=yes")
+            def __init__(self):
 
-            if env["custom_modules"]:
-                common_build_postfix.append("custom_modules=%s" % env["custom_modules"])
+                shared_targets_array = []
+                self.names = []
+                self.arg_dict = {
+                    "variant": [],
+                    "runfile": shared_targets_array,
+                    "buildtarget": shared_targets_array,
+                    "cpppaths": [],
+                    "cppdefines": [],
+                    "cmdargs": [],
+                }
+                self.add_mode()  # default
 
-            result = " ^& ".join(common_build_prefix + [" ".join([commands] + common_build_postfix)])
-            return result
+            def add_mode(
+                self,
+                name: str = "",
+                includes: str = "",
+                cli_args: str = "",
+                defines=None,
+            ):
+                if defines is None:
+                    defines = []
+                self.names.append(name)
+                self.arg_dict["variant"] += [
+                    f'{config}{f"_[{name}]" if name else ""}|{platform}'
+                    for config in ModuleConfigs.CONFIGURATIONS
+                    for platform in ModuleConfigs.PLATFORMS
+                ]
+                self.arg_dict["runfile"] += [
+                    f'bin\\godot.windows.{config_id}.{plat_id}{f".{name}" if name else ""}.exe'
+                    for config_id in ModuleConfigs.CONFIGURATION_IDS
+                    for plat_id in ModuleConfigs.PLATFORM_IDS
+                ]
+                self.arg_dict["cpppaths"] += ModuleConfigs.for_every_variant(env["CPPPATH"] + [includes])
+                self.arg_dict["cppdefines"] += ModuleConfigs.for_every_variant(env["CPPDEFINES"] + defines)
+                self.arg_dict["cmdargs"] += ModuleConfigs.for_every_variant(cli_args)
+
+            def build_commandline(self, commands):
+
+                configuration_getter = (
+                    "$(Configuration"
+                    + "".join([f'.Replace("{name}", "")' for name in self.names[1:]])
+                    + '.Replace("_[]", "")'
+                    + ")"
+                )
+
+                common_build_prefix = [
+                    'cmd /V /C set "plat=$(PlatformTarget)"',
+                    '(if "$(PlatformTarget)"=="x64" (set "plat=x86_amd64"))',
+                    'set "tools=%s"' % env["tools"],
+                    f'(if "{configuration_getter}"=="release" (set "tools=no"))',
+                    'call "' + batch_file + '" !plat!',
+                ]
+
+                # Windows allows us to have spaces in paths, so we need
+                # to double quote off the directory. However, the path ends
+                # in a backslash, so we need to remove this, lest it escape the
+                # last double quote off, confusing MSBuild
+                common_build_postfix = [
+                    "--directory=\"$(ProjectDir.TrimEnd('\\'))\"",
+                    "platform=windows",
+                    f"target={configuration_getter}",
+                    "progress=no",
+                    "tools=!tools!",
+                    "-j%s" % num_jobs,
+                ]
+
+                if env["tests"]:
+                    common_build_postfix.append("tests=yes")
+
+                if env["custom_modules"]:
+                    common_build_postfix.append("custom_modules=%s" % env["custom_modules"])
+
+                result = " ^& ".join(common_build_prefix + [" ".join([commands] + common_build_postfix)])
+                return result
+
+            # Mappings interface definitions
+
+            def __iter__(self) -> Iterator[str]:
+                for x in self.arg_dict:
+                    yield x
+
+            def __len__(self) -> int:
+                return len(self.names)
+
+            def __getitem__(self, k: str):
+                return self.arg_dict[k]
 
         add_to_vs_project(env, env.core_sources)
         add_to_vs_project(env, env.drivers_sources)
@@ -697,21 +773,25 @@ def generate_vs_project(env, num_jobs):
         for header in glob_recursive("**/*.h"):
             env.vs_incs.append(str(header))
 
-        env["MSVSBUILDCOM"] = build_commandline("scons")
-        env["MSVSREBUILDCOM"] = build_commandline("scons vsproj=yes")
-        env["MSVSCLEANCOM"] = build_commandline("scons --clean")
+        module_configs = ModuleConfigs()
 
-        # This version information (Win32, x64, Debug, Release, Release_Debug seems to be
-        # required for Visual Studio to understand that it needs to generate an NMAKE
-        # project. Do not modify without knowing what you are doing.
-        debug_variants = ["debug|Win32"] + ["debug|x64"]
-        release_variants = ["release|Win32"] + ["release|x64"]
-        release_debug_variants = ["release_debug|Win32"] + ["release_debug|x64"]
-        variants = debug_variants + release_variants + release_debug_variants
-        debug_targets = ["bin\\godot.windows.tools.32.exe"] + ["bin\\godot.windows.tools.64.exe"]
-        release_targets = ["bin\\godot.windows.opt.32.exe"] + ["bin\\godot.windows.opt.64.exe"]
-        release_debug_targets = ["bin\\godot.windows.opt.tools.32.exe"] + ["bin\\godot.windows.opt.tools.64.exe"]
-        targets = debug_targets + release_targets + release_debug_targets
+        if env.get("module_mono_enabled"):
+            import modules.mono.build_scripts.mono_reg_utils as mono_reg
+
+            mono_root = env.get("mono_prefix") or mono_reg.find_mono_root_dir(env["bits"])
+            if mono_root:
+                module_configs.add_mode(
+                    "mono",
+                    includes=os.path.join(mono_root, "include", "mono-2.0"),
+                    cli_args="module_mono_enabled=yes mono_glue=yes",
+                    defines=[("MONO_GLUE_ENABLED",)],
+                )
+            else:
+                print("Mono installation directory not found. Generated project will not have build variants for Mono.")
+
+        env["MSVSBUILDCOM"] = module_configs.build_commandline("scons")
+        env["MSVSREBUILDCOM"] = module_configs.build_commandline("scons vsproj=yes")
+        env["MSVSCLEANCOM"] = module_configs.build_commandline("scons --clean")
         if not env.get("MSVS"):
             env["MSVS"]["PROJECTSUFFIX"] = ".vcxproj"
             env["MSVS"]["SOLUTIONSUFFIX"] = ".sln"
@@ -719,10 +799,8 @@ def generate_vs_project(env, num_jobs):
             target=["#godot" + env["MSVSPROJECTSUFFIX"]],
             incs=env.vs_incs,
             srcs=env.vs_srcs,
-            runfile=targets,
-            buildtarget=targets,
             auto_build_solution=1,
-            variant=variants,
+            **module_configs,
         )
     else:
         print("Could not locate Visual Studio batch file to set up the build environment. Not generating VS project.")

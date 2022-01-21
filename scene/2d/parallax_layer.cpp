@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -123,12 +123,12 @@ void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, real_t p_s
 	Point2 new_ofs = (screen_offset + (p_offset - screen_offset) * motion_scale) + motion_offset * p_scale + orig_offset * p_scale;
 
 	if (mirroring.x) {
-		double den = mirroring.x * p_scale;
+		real_t den = mirroring.x * p_scale;
 		new_ofs.x -= den * ceil(new_ofs.x / den);
 	}
 
 	if (mirroring.y) {
-		double den = mirroring.y * p_scale;
+		real_t den = mirroring.y * p_scale;
 		new_ofs.y -= den * ceil(new_ofs.y / den);
 	}
 

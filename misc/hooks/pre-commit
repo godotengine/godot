@@ -14,7 +14,7 @@
 # as this script. Hooks should return 0 if successful and nonzero to cancel the
 # commit. They are executed in the order in which they are listed.
 #HOOKS="pre-commit-compile pre-commit-uncrustify"
-HOOKS="pre-commit-clang-format pre-commit-black pre-commit-makerst"
+HOOKS="pre-commit-clang-format pre-commit-black pre-commit-make-rst"
 ###########################################################
 # There should be no need to change anything below this line.
 

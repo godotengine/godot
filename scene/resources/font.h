@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,6 +63,12 @@ class FontData : public Resource {
 	_FORCE_INLINE_ void _clear_cache();
 	_FORCE_INLINE_ void _ensure_rid(int p_cache_index) const;
 
+	void _convert_packed_8bit(Ref<Image> &p_source, int p_page, int p_sz);
+	void _convert_packed_4bit(Ref<Image> &p_source, int p_page, int p_sz);
+	void _convert_rgba_4bit(Ref<Image> &p_source, int p_page, int p_sz);
+	void _convert_mono_8bit(Ref<Image> &p_source, int p_page, int p_ch, int p_sz, int p_ol);
+	void _convert_mono_4bit(Ref<Image> &p_source, int p_page, int p_ch, int p_sz, int p_ol);
+
 protected:
 	static void _bind_methods();
 
@@ -73,12 +79,24 @@ protected:
 	virtual void reset_state() override;
 
 public:
+	Error load_bitmap_font(const String &p_path);
+	Error load_dynamic_font(const String &p_path);
+
 	// Font source data.
 	virtual void set_data_ptr(const uint8_t *p_data, size_t p_size);
 	virtual void set_data(const PackedByteArray &p_data);
 	virtual PackedByteArray get_data() const;
 
 	// Common properties.
+	virtual void set_font_name(const String &p_name);
+	virtual String get_font_name() const;
+
+	virtual void set_font_style_name(const String &p_name);
+	virtual String get_font_style_name() const;
+
+	virtual void set_font_style(uint32_t p_style);
+	virtual uint32_t get_font_style() const;
+
 	virtual void set_antialiased(bool p_antialiased);
 	virtual bool is_antialiased() const;
 
@@ -189,6 +207,9 @@ public:
 	virtual void remove_script_support_override(const String &p_script);
 	virtual Vector<String> get_script_support_overrides() const;
 
+	virtual void set_opentype_feature_overrides(const Dictionary &p_overrides);
+	virtual Dictionary get_opentype_feature_overrides() const;
+
 	// Base font properties.
 	virtual bool has_char(char32_t p_char) const;
 	virtual String get_supported_chars() const;
@@ -219,7 +240,6 @@ class Font : public Resource {
 	mutable Vector<RID> rids;
 
 	// Font config.
-	int base_size = 16;
 	Dictionary variation_coordinates;
 	int spacing_bottom = 0;
 	int spacing_top = 0;
@@ -237,6 +257,8 @@ protected:
 	virtual void reset_state() override;
 
 public:
+	static const int DEFAULT_FONT_SIZE = 16;
+
 	Dictionary get_feature_list() const;
 
 	// Font data.
@@ -249,9 +271,6 @@ public:
 	virtual void remove_data(int p_idx);
 
 	// Font configuration.
-	virtual void set_base_size(int p_size);
-	virtual int get_base_size() const;
-
 	virtual void set_variation_coordinates(const Dictionary &p_variation_coordinates);
 	virtual Dictionary get_variation_coordinates() const;
 
@@ -259,26 +278,26 @@ public:
 	virtual int get_spacing(TextServer::SpacingType p_spacing) const;
 
 	// Font metrics.
-	virtual real_t get_height(int p_size = -1) const;
-	virtual real_t get_ascent(int p_size = -1) const;
-	virtual real_t get_descent(int p_size = -1) const;
-	virtual real_t get_underline_position(int p_size = -1) const;
-	virtual real_t get_underline_thickness(int p_size = -1) const;
+	virtual real_t get_height(int p_size = DEFAULT_FONT_SIZE) const;
+	virtual real_t get_ascent(int p_size = DEFAULT_FONT_SIZE) const;
+	virtual real_t get_descent(int p_size = DEFAULT_FONT_SIZE) const;
+	virtual real_t get_underline_position(int p_size = DEFAULT_FONT_SIZE) const;
+	virtual real_t get_underline_thickness(int p_size = DEFAULT_FONT_SIZE) const;
 
 	// Drawing string.
-	virtual Size2 get_string_size(const String &p_text, int p_size = -1, HAlign p_align = HALIGN_LEFT, real_t p_width = -1, uint16_t p_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND) const;
-	virtual Size2 get_multiline_string_size(const String &p_text, real_t p_width = -1, int p_size = -1, uint16_t p_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND) const;
+	virtual Size2 get_string_size(const String &p_text, int p_size = DEFAULT_FONT_SIZE, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, uint16_t p_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND) const;
+	virtual Size2 get_multiline_string_size(const String &p_text, float p_width = -1, int p_size = DEFAULT_FONT_SIZE, uint16_t p_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND) const;
 
-	virtual void draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HAlign p_align = HALIGN_LEFT, real_t p_width = -1, int p_size = -1, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, const Color &p_outline_modulate = Color(1, 1, 1, 0), uint16_t p_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND) const;
-	virtual void draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HAlign p_align = HALIGN_LEFT, real_t p_width = -1, int p_max_lines = -1, int p_size = -1, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, const Color &p_outline_modulate = Color(1, 1, 1, 0), uint16_t p_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND) const;
+	virtual void draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_size = DEFAULT_FONT_SIZE, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, const Color &p_outline_modulate = Color(1, 1, 1, 0), uint16_t p_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND) const;
+	virtual void draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_max_lines = -1, int p_size = DEFAULT_FONT_SIZE, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, const Color &p_outline_modulate = Color(1, 1, 1, 0), uint16_t p_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND) const;
 
 	// Helper functions.
 	virtual bool has_char(char32_t p_char) const;
 	virtual String get_supported_chars() const;
 
 	// Drawing char.
-	virtual Size2 get_char_size(char32_t p_char, char32_t p_next = 0, int p_size = -1) const;
-	virtual real_t draw_char(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, char32_t p_next = 0, int p_size = -1, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, const Color &p_outline_modulate = Color(1, 1, 1, 0)) const;
+	virtual Size2 get_char_size(char32_t p_char, char32_t p_next = 0, int p_size = DEFAULT_FONT_SIZE) const;
+	virtual real_t draw_char(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, char32_t p_next = 0, int p_size = DEFAULT_FONT_SIZE, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, const Color &p_outline_modulate = Color(1, 1, 1, 0)) const;
 
 	Vector<RID> get_rids() const;
 

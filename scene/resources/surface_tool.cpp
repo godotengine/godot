@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,6 @@
 
 #include "surface_tool.h"
 
-#define _VERTEX_SNAP 0.0001
 #define EQ_VERTEX_DIST 0.00001
 
 SurfaceTool::OptimizeVertexCacheFunc SurfaceTool::optimize_vertex_cache_func = nullptr;
@@ -1174,9 +1173,11 @@ Vector<int> SurfaceTool::generate_lod(float p_threshold, int p_target_index_coun
 	Vector<int> lod;
 
 	ERR_FAIL_COND_V(simplify_func == nullptr, lod);
+	ERR_FAIL_COND_V(p_target_index_count < 0, lod);
 	ERR_FAIL_COND_V(vertex_array.size() == 0, lod);
 	ERR_FAIL_COND_V(index_array.size() == 0, lod);
 	ERR_FAIL_COND_V(index_array.size() % 3 != 0, lod);
+	ERR_FAIL_COND_V(index_array.size() < (unsigned int)p_target_index_count, lod);
 
 	lod.resize(index_array.size());
 	LocalVector<float> vertices; //uses floats

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,7 +52,7 @@
 #ifndef _3D_DISABLED
 #ifdef TOOLS_ENABLED
 static void _editor_init() {
-	Ref<EditorSceneImporterGLTF> import_gltf;
+	Ref<EditorSceneFormatImporterGLTF> import_gltf;
 	import_gltf.instantiate();
 	ResourceImporterScene::get_singleton()->add_importer(import_gltf);
 }
@@ -64,7 +64,7 @@ void register_gltf_types() {
 #ifdef TOOLS_ENABLED
 	ClassDB::APIType prev_api = ClassDB::get_current_api();
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
-	GDREGISTER_CLASS(EditorSceneImporterGLTF);
+	GDREGISTER_CLASS(EditorSceneFormatImporterGLTF);
 	GDREGISTER_CLASS(GLTFMesh);
 	EditorPlugins::add_by_type<SceneExporterGLTFPlugin>();
 	ClassDB::set_current_api(prev_api);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 
 #include "editor/editor_node.h"
 #include "editor_scale.h"
+#include "scene/gui/view_panner.h"
 #include "scene/resources/text_line.h"
 
 float AnimationBezierTrackEdit::_bezier_h_to_pixel(float p_h) {
@@ -187,7 +188,7 @@ void AnimationBezierTrackEdit::_draw_line_clipped(const Vector2 &p_from, const V
 	Vector2 from = p_from;
 	Vector2 to = p_to;
 
-	if (from.x == to.x) {
+	if (from.x == to.x && from.y == to.y) {
 		return;
 	}
 	if (to.x < from.x) {
@@ -216,17 +217,15 @@ void AnimationBezierTrackEdit::_draw_line_clipped(const Vector2 &p_from, const V
 }
 
 void AnimationBezierTrackEdit::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+		panner->set_control_scheme((ViewPanner::ControlScheme)EDITOR_GET("interface/editors/animation_editors_panning_scheme").operator int());
+	}
 	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
 		close_button->set_icon(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
 
 		bezier_icon = get_theme_icon(SNAME("KeyBezierPoint"), SNAME("EditorIcons"));
 		bezier_handle_icon = get_theme_icon(SNAME("KeyBezierHandle"), SNAME("EditorIcons"));
 		selected_icon = get_theme_icon(SNAME("KeyBezierSelected"), SNAME("EditorIcons"));
-		if (handle_mode_option->get_item_count() == 0) {
-			handle_mode_option->add_icon_item(get_theme_icon(SNAME("BezierHandlesFree"), SNAME("EditorIcons")), TTR("Free"), HANDLE_MODE_FREE);
-			handle_mode_option->add_icon_item(get_theme_icon(SNAME("BezierHandlesBalanced"), SNAME("EditorIcons")), TTR("Balanced"), HANDLE_MODE_BALANCED);
-			handle_mode_option->add_icon_item(get_theme_icon(SNAME("BezierHandlesMirror"), SNAME("EditorIcons")), TTR("Mirror"), HANDLE_MODE_MIRROR);
-		}
 	}
 	if (p_what == NOTIFICATION_RESIZED) {
 		int right_limit = get_size().width - timeline->get_buttons_width();
@@ -386,7 +385,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					draw_line(Point2(limit, i), Point2(right_limit, i), lc, Math::round(EDSCALE));
 					Color c = color;
 					c.a *= 0.5;
-					draw_string(font, Point2(limit + 8, i - 2), TS->format_number(rtos(Math::snapped((iv + 1) * scale, step))), HALIGN_LEFT, -1, font_size, c);
+					draw_string(font, Point2(limit + 8, i - 2), TS->format_number(rtos(Math::snapped((iv + 1) * scale, step))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, c);
 				}
 
 				first = false;
@@ -420,9 +419,9 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 
 		//draw editor handles
 		{
-			float scale = timeline->get_zoom_scale();
 			edit_points.clear();
 
+			float scale = timeline->get_zoom_scale();
 			for (int i = 0; i < animation->track_get_key_count(track); i++) {
 				float offset = animation->track_get_key_time(track, i);
 				float value = animation->bezier_track_get_key_value(track, i);
@@ -438,7 +437,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 				if (moving_handle != 0 && moving_handle_key == i) {
 					in_vec = moving_handle_left;
 				}
-				Vector2 pos_in = Vector2(((offset + in_vec.x) - timeline->get_value()) * scale + limit, _bezier_h_to_pixel(value + in_vec.y));
+				Vector2 pos_in(((offset + in_vec.x) - timeline->get_value()) * scale + limit, _bezier_h_to_pixel(value + in_vec.y));
 
 				Vector2 out_vec = animation->bezier_track_get_key_out_handle(track, i);
 
@@ -446,7 +445,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					out_vec = moving_handle_right;
 				}
 
-				Vector2 pos_out = Vector2(((offset + out_vec.x) - timeline->get_value()) * scale + limit, _bezier_h_to_pixel(value + out_vec.y));
+				Vector2 pos_out(((offset + out_vec.x) - timeline->get_value()) * scale + limit, _bezier_h_to_pixel(value + out_vec.y));
 
 				_draw_line_clipped(pos, pos_in, accent, limit, right_limit);
 				_draw_line_clipped(pos, pos_out, accent, limit, right_limit);
@@ -457,8 +456,8 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					ep.point_rect.size = bezier_icon->get_size();
 					if (selection.has(i)) {
 						draw_texture(selected_icon, ep.point_rect.position);
-						draw_string(font, ep.point_rect.position + Vector2(8, -font->get_height(font_size) - 8), TTR("Time:") + " " + TS->format_number(rtos(Math::snapped(offset, 0.001))), HALIGN_LEFT, -1, font_size, accent);
-						draw_string(font, ep.point_rect.position + Vector2(8, -8), TTR("Value:") + " " + TS->format_number(rtos(Math::snapped(value, 0.001))), HALIGN_LEFT, -1, font_size, accent);
+						draw_string(font, ep.point_rect.position + Vector2(8, -font->get_height(font_size) - 8), TTR("Time:") + " " + TS->format_number(rtos(Math::snapped(offset, 0.001))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, accent);
+						draw_string(font, ep.point_rect.position + Vector2(8, -8), TTR("Value:") + " " + TS->format_number(rtos(Math::snapped(value, 0.001))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, accent);
 					} else {
 						draw_texture(bezier_icon, ep.point_rect.position);
 					}
@@ -581,11 +580,21 @@ void AnimationBezierTrackEdit::_clear_selection() {
 	update();
 }
 
+void AnimationBezierTrackEdit::_change_selected_keys_handle_mode(Animation::HandleMode p_mode) {
+	undo_redo->create_action(TTR("Update Selected Key Handles"));
+	double ratio = timeline->get_zoom_scale() * v_zoom;
+	for (Set<int>::Element *E = selection.back(); E; E = E->prev()) {
+		const int key_index = E->get();
+		undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_handle_mode", track, key_index, animation->bezier_track_get_key_handle_mode(track, key_index), ratio);
+		undo_redo->add_do_method(animation.ptr(), "bezier_track_set_key_handle_mode", track, key_index, p_mode, ratio);
+	}
+	undo_redo->commit_action();
+}
+
 void AnimationBezierTrackEdit::_clear_selection_for_anim(const Ref<Animation> &p_anim) {
 	if (!(animation == p_anim)) {
 		return;
 	}
-	//selection.clear();
 	_clear_selection();
 }
 
@@ -605,6 +614,11 @@ void AnimationBezierTrackEdit::_select_at_anim(const Ref<Animation> &p_anim, int
 void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
+	if (panner->gui_input(p_event)) {
+		accept_event();
+		return;
+	}
+
 	if (p_event->is_pressed()) {
 		if (ED_GET_SHORTCUT("animation_editor/duplicate_selection")->matches_event(p_event)) {
 			duplicate_selection();
@@ -618,47 +632,31 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
-		const float v_zoom_orig = v_zoom;
-		if (mb->is_command_pressed()) {
-			timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() / 1.05);
-		} else {
+	if (mb.is_valid() && mb->is_pressed() && mb->is_alt_pressed()) {
+		// Alternate zoom (doesn't affect timeline).
+		if (mb->get_button_index() == MouseButton::WHEEL_DOWN) {
+			const float v_zoom_orig = v_zoom;
 			if (v_zoom < 100000) {
 				v_zoom *= 1.2;
 			}
+			v_scroll = v_scroll + (mb->get_position().y - get_size().y / 2) * (v_zoom - v_zoom_orig);
+			update();
 		}
-		v_scroll = v_scroll + (mb->get_position().y - get_size().y / 2) * (v_zoom - v_zoom_orig);
-		update();
-	}
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
-		const float v_zoom_orig = v_zoom;
-		if (mb->is_command_pressed()) {
-			timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() * 1.05);
-		} else {
+		if (mb->get_button_index() == MouseButton::WHEEL_UP) {
+			const float v_zoom_orig = v_zoom;
 			if (v_zoom > 0.000001) {
 				v_zoom /= 1.2;
 			}
-		}
-		v_scroll = v_scroll + (mb->get_position().y - get_size().y / 2) * (v_zoom - v_zoom_orig);
-		update();
-	}
-
-	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_MIDDLE) {
-		if (mb->is_pressed()) {
-			int x = mb->get_position().x - timeline->get_name_limit();
-			panning_timeline_from = x / timeline->get_zoom_scale();
-			panning_timeline = true;
-			panning_timeline_at = timeline->get_value();
-		} else {
-			panning_timeline = false;
+			v_scroll = v_scroll + (mb->get_position().y - get_size().y / 2) * (v_zoom - v_zoom_orig);
+			update();
 		}
 	}
 
-	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_RIGHT && mb->is_pressed()) {
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 		menu_insert_key = mb->get_position();
 		if (menu_insert_key.x >= timeline->get_name_limit() && menu_insert_key.x <= get_size().width - timeline->get_buttons_width()) {
-			Vector2 popup_pos = get_global_transform().xform(mb->get_position());
+			Vector2 popup_pos = get_screen_position() + mb->get_position();
 
 			menu->clear();
 			menu->add_icon_item(bezier_icon, TTR("Insert Key Here"), MENU_KEY_INSERT);
@@ -667,6 +665,9 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				menu->add_icon_item(get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")), TTR("Duplicate Selected Key(s)"), MENU_KEY_DUPLICATE);
 				menu->add_separator();
 				menu->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Delete Selected Key(s)"), MENU_KEY_DELETE);
+				menu->add_separator();
+				menu->add_icon_item(get_theme_icon(SNAME("BezierHandlesFree"), SNAME("EditorIcons")), TTR("Make Handles Free"), MENU_KEY_SET_HANDLE_FREE);
+				menu->add_icon_item(get_theme_icon(SNAME("BezierHandlesBalanced"), SNAME("EditorIcons")), TTR("Make Handles Balanced"), MENU_KEY_SET_HANDLE_BALANCED);
 			}
 
 			menu->set_as_minsize();
@@ -675,11 +676,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
-		if (close_icon_rect.has_point(mb->get_position())) {
-			emit_signal(SNAME("close_request"));
-			return;
-		}
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		for (const KeyValue<int, Rect2> &E : subtracks) {
 			if (E.value.has_point(mb->get_position())) {
 				set_animation_and_track(animation, E.key);
@@ -746,7 +743,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		//insert new point
 		if (mb->is_command_pressed() && mb->get_position().x >= timeline->get_name_limit() && mb->get_position().x < get_size().width - timeline->get_buttons_width()) {
 			Array new_point;
-			new_point.resize(5);
+			new_point.resize(6);
 
 			float h = (get_size().height / 2 - mb->get_position().y) * v_zoom + v_scroll;
 
@@ -755,6 +752,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			new_point[2] = 0;
 			new_point[3] = 0.25;
 			new_point[4] = 0;
+			new_point[5] = 0;
 
 			float time = ((mb->get_position().x - timeline->get_name_limit()) / timeline->get_zoom_scale()) + timeline->get_value();
 			while (animation->track_find_key(track, time, true) != -1) {
@@ -792,7 +790,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (box_selecting_attempt && mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+	if (box_selecting_attempt && mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		if (box_selecting) {
 			//do actual select
 			if (!box_selecting_add) {
@@ -822,7 +820,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		update();
 	}
 
-	if (moving_handle != 0 && mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+	if (moving_handle != 0 && mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		undo_redo->create_action(TTR("Move Bezier Points"));
 		undo_redo->add_do_method(animation.ptr(), "bezier_track_set_key_in_handle", track, moving_handle_key, moving_handle_left);
 		undo_redo->add_do_method(animation.ptr(), "bezier_track_set_key_out_handle", track, moving_handle_key, moving_handle_right);
@@ -834,7 +832,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		update();
 	}
 
-	if (moving_selection_attempt && mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+	if (moving_selection_attempt && mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		if (moving_selection) {
 			//combit it
 
@@ -929,22 +927,6 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_MIDDLE) {
-		v_scroll += mm->get_relative().y * v_zoom;
-		if (v_scroll > 100000) {
-			v_scroll = 100000;
-		}
-		if (v_scroll < -100000) {
-			v_scroll = -100000;
-		}
-
-		int x = mm->get_position().x - timeline->get_name_limit();
-		float ofs = x / timeline->get_zoom_scale();
-		float diff = ofs - panning_timeline_from;
-		timeline->set_value(panning_timeline_at - diff);
-
-		update();
-	}
 	if (moving_selection_attempt && mm.is_valid()) {
 		if (!moving_selection) {
 			moving_selection = true;
@@ -986,42 +968,80 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 		if (moving_handle == -1) {
 			moving_handle_left = moving_handle_value;
-			if (moving_handle_left.x > 0) {
-				moving_handle_left.x = 0;
+
+			if (animation->bezier_track_get_key_handle_mode(track, moving_handle_key) == Animation::HANDLE_MODE_BALANCED) {
+				double ratio = timeline->get_zoom_scale() * v_zoom;
+				Transform2D xform;
+				xform.set_scale(Vector2(1.0, 1.0 / ratio));
+
+				Vector2 vec_out = xform.xform(moving_handle_right);
+				Vector2 vec_in = xform.xform(moving_handle_left);
+
+				moving_handle_right = xform.affine_inverse().xform(-vec_in.normalized() * vec_out.length());
 			}
-
-			if (handle_mode_option->get_selected() == HANDLE_MODE_BALANCED) {
-				Vector2 scale = Vector2(timeline->get_zoom_scale(), v_zoom);
-				moving_handle_right = (-(moving_handle_left * scale).normalized() * (moving_handle_right * scale).length()) / scale;
-
-			} else if (handle_mode_option->get_selected() == HANDLE_MODE_MIRROR) {
-				moving_handle_right = -moving_handle_left;
-			}
-		}
-
-		if (moving_handle == 1) {
+		} else if (moving_handle == 1) {
 			moving_handle_right = moving_handle_value;
-			if (moving_handle_right.x < 0) {
-				moving_handle_right.x = 0;
-			}
 
-			if (handle_mode_option->get_selected() == HANDLE_MODE_BALANCED) {
-				Vector2 scale = Vector2(timeline->get_zoom_scale(), v_zoom);
-				moving_handle_left = (-(moving_handle_right * scale).normalized() * (moving_handle_left * scale).length()) / scale;
-			} else if (handle_mode_option->get_selected() == HANDLE_MODE_MIRROR) {
-				moving_handle_left = -moving_handle_right;
+			if (animation->bezier_track_get_key_handle_mode(track, moving_handle_key) == Animation::HANDLE_MODE_BALANCED) {
+				double ratio = timeline->get_zoom_scale() * v_zoom;
+				Transform2D xform;
+				xform.set_scale(Vector2(1.0, 1.0 / ratio));
+
+				Vector2 vec_in = xform.xform(moving_handle_left);
+				Vector2 vec_out = xform.xform(moving_handle_right);
+
+				moving_handle_left = xform.affine_inverse().xform(-vec_out.normalized() * vec_in.length());
 			}
 		}
-
 		update();
 	}
+
+	bool is_finishing_key_handle_drag = moving_handle != 0 && mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT;
+	if (is_finishing_key_handle_drag) {
+		undo_redo->create_action(TTR("Move Bezier Points"));
+		if (moving_handle == -1) {
+			double ratio = timeline->get_zoom_scale() * v_zoom;
+			undo_redo->add_do_method(animation.ptr(), "bezier_track_set_key_in_handle", track, moving_handle_key, moving_handle_left, ratio);
+			undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_in_handle", track, moving_handle_key, animation->bezier_track_get_key_in_handle(track, moving_handle_key), ratio);
+		} else if (moving_handle == 1) {
+			double ratio = timeline->get_zoom_scale() * v_zoom;
+			undo_redo->add_do_method(animation.ptr(), "bezier_track_set_key_out_handle", track, moving_handle_key, moving_handle_right, ratio);
+			undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_out_handle", track, moving_handle_key, animation->bezier_track_get_key_out_handle(track, moving_handle_key), ratio);
+		}
+		undo_redo->commit_action();
+
+		moving_handle = 0;
+		update();
+	}
+}
+
+void AnimationBezierTrackEdit::_scroll_callback(Vector2 p_scroll_vec) {
+	_pan_callback(-p_scroll_vec * 32);
+}
+
+void AnimationBezierTrackEdit::_pan_callback(Vector2 p_scroll_vec) {
+	v_scroll += p_scroll_vec.y * v_zoom;
+	v_scroll = CLAMP(v_scroll, -100000, 100000);
+	timeline->set_value(timeline->get_value() - p_scroll_vec.x / timeline->get_zoom_scale());
+	update();
+}
+
+void AnimationBezierTrackEdit::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin) {
+	const float v_zoom_orig = v_zoom;
+	if (p_scroll_vec.y > 0) {
+		timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() / 1.05);
+	} else {
+		timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() * 1.05);
+	}
+	v_scroll = v_scroll + (p_origin.y - get_size().y / 2) * (v_zoom - v_zoom_orig);
+	update();
 }
 
 void AnimationBezierTrackEdit::_menu_selected(int p_index) {
 	switch (p_index) {
 		case MENU_KEY_INSERT: {
 			Array new_point;
-			new_point.resize(5);
+			new_point.resize(6);
 
 			float h = (get_size().height / 2 - menu_insert_key.y) * v_zoom + v_scroll;
 
@@ -1030,6 +1050,7 @@ void AnimationBezierTrackEdit::_menu_selected(int p_index) {
 			new_point[2] = 0;
 			new_point[3] = 0.25;
 			new_point[4] = 0;
+			new_point[5] = Animation::HANDLE_MODE_BALANCED;
 
 			float time = ((menu_insert_key.x - timeline->get_name_limit()) / timeline->get_zoom_scale()) + timeline->get_value();
 			while (animation->track_find_key(track, time, true) != -1) {
@@ -1047,6 +1068,12 @@ void AnimationBezierTrackEdit::_menu_selected(int p_index) {
 		} break;
 		case MENU_KEY_DELETE: {
 			delete_selection();
+		} break;
+		case MENU_KEY_SET_HANDLE_FREE: {
+			_change_selected_keys_handle_mode(Animation::HANDLE_MODE_FREE);
+		} break;
+		case MENU_KEY_SET_HANDLE_BALANCED: {
+			_change_selected_keys_handle_mode(Animation::HANDLE_MODE_BALANCED);
 		} break;
 	}
 }
@@ -1118,6 +1145,7 @@ void AnimationBezierTrackEdit::delete_selection() {
 		undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
 		undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
 		undo_redo->commit_action();
+
 		//selection.clear();
 	}
 }
@@ -1142,6 +1170,11 @@ void AnimationBezierTrackEdit::_bind_methods() {
 }
 
 AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
+	panner.instantiate();
+	panner->set_callbacks(callable_mp(this, &AnimationBezierTrackEdit::_scroll_callback), callable_mp(this, &AnimationBezierTrackEdit::_pan_callback), callable_mp(this, &AnimationBezierTrackEdit::_zoom_callback));
+	panner->set_disable_rmb(true);
+	panner->set_control_scheme(ViewPanner::SCROLL_PANS);
+
 	play_position = memnew(Control);
 	play_position->set_mouse_filter(MOUSE_FILTER_PASS);
 	add_child(play_position);
@@ -1150,8 +1183,6 @@ AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
 	set_focus_mode(FOCUS_CLICK);
 
 	set_clip_contents(true);
-	handle_mode = HANDLE_MODE_FREE;
-	handle_mode_option = memnew(OptionButton);
 
 	close_button = memnew(Button);
 	close_button->connect("pressed", Callable(this, SNAME("emit_signal")), varray(SNAME("close_request")));
@@ -1160,7 +1191,6 @@ AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
 	right_column = memnew(VBoxContainer);
 	right_column->add_child(close_button);
 	right_column->add_spacer();
-	right_column->add_child(handle_mode_option);
 	add_child(right_column);
 
 	menu = memnew(PopupMenu);

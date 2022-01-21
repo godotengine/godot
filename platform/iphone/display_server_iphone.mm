@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,18 +51,20 @@ DisplayServerIPhone *DisplayServerIPhone::get_singleton() {
 DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	rendering_driver = p_rendering_driver;
 
-#if defined(OPENGL_ENABLED)
-	// FIXME: Add support for both GLES2 and Vulkan when GLES2 is implemented
+#if defined(GLES3_ENABLED)
+	// FIXME: Add support for both OpenGL and Vulkan when OpenGL is implemented
 	// again,
+	// Note that we should be checking "opengl3" as the driver, might never enable this seeing OpenGL is deprecated on iOS
+	// We are hardcoding the rendering_driver to "vulkan" down below
 
 	if (rendering_driver == "opengl_es") {
 		bool gl_initialization_error = false;
 
 		// FIXME: Add Vulkan support via MoltenVK. Add fallback code back?
 
-		if (RasterizerGLES2::is_viable() == OK) {
-			RasterizerGLES2::register_config();
-			RasterizerGLES2::make_current();
+		if (RasterizerGLES3::is_viable() == OK) {
+			RasterizerGLES3::register_config();
+			RasterizerGLES3::make_current();
 		} else {
 			gl_initialization_error = true;
 		}
@@ -83,7 +85,7 @@ DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, Windo
 
 		// reset this to what it should be, it will have been set to 0 after
 		// rendering_server->init() is called
-		//    RasterizerStorageGLES2::system_fbo = gl_view_base_fb;
+		//    RasterizerStorageGLES3system_fbo = gl_view_base_fb;
 	}
 #endif
 
@@ -131,18 +133,16 @@ DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, Windo
 
 DisplayServerIPhone::~DisplayServerIPhone() {
 #if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
-		if (rendering_device_vulkan) {
-			rendering_device_vulkan->finalize();
-			memdelete(rendering_device_vulkan);
-			rendering_device_vulkan = nullptr;
-		}
+	if (rendering_device_vulkan) {
+		rendering_device_vulkan->finalize();
+		memdelete(rendering_device_vulkan);
+		rendering_device_vulkan = nullptr;
+	}
 
-		if (context_vulkan) {
-			context_vulkan->window_destroy(MAIN_WINDOW_ID);
-			memdelete(context_vulkan);
-			context_vulkan = nullptr;
-		}
+	if (context_vulkan) {
+		context_vulkan->window_destroy(MAIN_WINDOW_ID);
+		memdelete(context_vulkan);
+		context_vulkan = nullptr;
 	}
 #endif
 }
@@ -157,7 +157,7 @@ Vector<String> DisplayServerIPhone::get_rendering_drivers_func() {
 #if defined(VULKAN_ENABLED)
 	drivers.push_back("vulkan");
 #endif
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 	drivers.push_back("opengl_es");
 #endif
 
@@ -261,7 +261,7 @@ void DisplayServerIPhone::key(Key p_key, bool p_pressed) {
 	ev->set_pressed(p_pressed);
 	ev->set_keycode(p_key);
 	ev->set_physical_keycode(p_key);
-	ev->set_unicode(p_key);
+	ev->set_unicode((char32_t)p_key);
 	perform_event(ev);
 };
 
@@ -293,7 +293,6 @@ void DisplayServerIPhone::update_gyroscope(float p_x, float p_y, float p_z) {
 
 bool DisplayServerIPhone::has_feature(Feature p_feature) const {
 	switch (p_feature) {
-		// case FEATURE_CONSOLE_WINDOW:
 		// case FEATURE_CURSOR_SHAPE:
 		// case FEATURE_CUSTOM_CURSOR_SHAPE:
 		// case FEATURE_GLOBAL_MENU:
@@ -565,10 +564,8 @@ void DisplayServerIPhone::resize_window(CGSize viewSize) {
 	Size2i size = Size2i(viewSize.width, viewSize.height) * screen_get_max_scale();
 
 #if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
-		if (context_vulkan) {
-			context_vulkan->window_resize(MAIN_WINDOW_ID, size.x, size.y);
-		}
+	if (context_vulkan) {
+		context_vulkan->window_resize(MAIN_WINDOW_ID, size.x, size.y);
 	}
 #endif
 

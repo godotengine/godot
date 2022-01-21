@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -188,8 +188,9 @@ public:
 	void set_camera_override(CameraOverride p_override);
 	CameraOverride get_camera_override();
 
-	Error start(const String &p_uri = "tcp://");
+	String get_server_uri() const;
 
+	Error start(const String &p_uri = "tcp://");
 	void stop();
 
 	void add_debugger_plugin(const Ref<Script> &p_script);

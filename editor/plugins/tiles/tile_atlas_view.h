@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,6 +41,8 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/tile_set.h"
 
+class ViewPanner;
+
 class TileAtlasView : public Control {
 	GDCLASS(TileAtlasView, Control);
 
@@ -63,6 +65,11 @@ private:
 	void _zoom_widget_changed();
 	void _center_view();
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
+	Ref<ViewPanner> panner;
+	void _scroll_callback(Vector2 p_scroll_vec);
+	void _pan_callback(Vector2 p_scroll_vec);
+	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin);
 
 	Map<Vector2, Map<int, Rect2i>> alternative_tiles_rect_cache;
 	void _update_alternative_tiles_rect_cache();
@@ -93,9 +100,6 @@ private:
 	Control *base_tiles_shape_grid;
 	void _draw_base_tiles_shape_grid();
 
-	Control *base_tiles_dark;
-	void _draw_base_tiles_dark();
-
 	Size2i _compute_base_tiles_control_size();
 
 	// Right side.
@@ -124,7 +128,6 @@ public:
 
 	// Left side.
 	void set_texture_grid_visible(bool p_visible) { base_tiles_texture_grid->set_visible(p_visible); };
-	void set_dark_visible(bool p_visible) { base_tiles_dark->set_visible(p_visible); };
 	void set_tile_shape_grid_visible(bool p_visible) { base_tiles_shape_grid->set_visible(p_visible); };
 
 	Vector2i get_atlas_tile_coords_at_pos(const Vector2 p_pos) const;

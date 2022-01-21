@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,6 @@
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/effects_rd.h"
-#include "servers/rendering/renderer_rd/shader_compiler_rd.h"
 #include "servers/rendering/renderer_rd/shaders/canvas_sdf.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/particles.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/particles_copy.glsl.gen.h"
@@ -44,6 +43,7 @@
 #include "servers/rendering/renderer_rd/shaders/voxel_gi_sdf.glsl.gen.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
+#include "servers/rendering/shader_compiler.h"
 class RendererStorageRD : public RendererStorage {
 public:
 	static _FORCE_INLINE_ void store_transform(const Transform3D &p_mtx, float *p_array) {
@@ -129,12 +129,13 @@ public:
 		SHADER_TYPE_3D,
 		SHADER_TYPE_PARTICLES,
 		SHADER_TYPE_SKY,
+		SHADER_TYPE_FOG,
 		SHADER_TYPE_MAX
 	};
 
 	struct ShaderData {
 		virtual void set_code(const String &p_Code) = 0;
-		virtual void set_default_texture_param(const StringName &p_name, RID p_texture) = 0;
+		virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index) = 0;
 		virtual void get_param_list(List<PropertyInfo> *p_param_list) const = 0;
 
 		virtual void get_instance_param_list(List<InstanceShaderParam> *p_param_list) const = 0;
@@ -151,7 +152,7 @@ public:
 
 	struct MaterialData {
 		void update_uniform_buffer(const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Map<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size, bool p_use_linear_color);
-		void update_textures(const Map<StringName, Variant> &p_parameters, const Map<StringName, RID> &p_default_textures, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color);
+		void update_textures(const Map<StringName, Variant> &p_parameters, const Map<StringName, Map<int, RID>> &p_default_textures, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color);
 
 		virtual void set_render_priority(int p_priority) = 0;
 		virtual void set_next_pass(RID p_pass) = 0;
@@ -159,7 +160,7 @@ public:
 		virtual ~MaterialData();
 
 		//to be used internally by update_parameters, in the most common configuration of material parameters
-		bool update_parameters_uniform_set(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, const Map<StringName, RID> &p_default_texture_params, uint32_t p_ubo_size, RID &uniform_set, RID p_shader, uint32_t p_shader_uniform_set, uint32_t p_barrier = RD::BARRIER_MASK_ALL);
+		bool update_parameters_uniform_set(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, const Map<StringName, Map<int, RID>> &p_default_texture_params, uint32_t p_ubo_size, RID &uniform_set, RID p_shader, uint32_t p_shader_uniform_set, uint32_t p_barrier = RD::BARRIER_MASK_ALL);
 		void free_parameters_uniform_set(RID p_uniform_set);
 
 	private:
@@ -176,7 +177,7 @@ public:
 		Vector<RID> texture_cache;
 	};
 	typedef MaterialData *(*MaterialDataRequestFunction)(ShaderData *);
-	static void _material_uniform_set_erased(const RID &p_set, void *p_material);
+	static void _material_uniform_set_erased(void *p_material);
 
 	enum DefaultRDTexture {
 		DEFAULT_RD_TEXTURE_WHITE,
@@ -188,6 +189,7 @@ public:
 		DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK,
 		DEFAULT_RD_TEXTURE_CUBEMAP_WHITE,
 		DEFAULT_RD_TEXTURE_3D_WHITE,
+		DEFAULT_RD_TEXTURE_3D_BLACK,
 		DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE,
 		DEFAULT_RD_TEXTURE_2D_UINT,
 		DEFAULT_RD_TEXTURE_MAX
@@ -318,6 +320,7 @@ private:
 
 	RID default_rd_textures[DEFAULT_RD_TEXTURE_MAX];
 	RID default_rd_samplers[RS::CANVAS_ITEM_TEXTURE_FILTER_MAX][RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX];
+	RID custom_rd_samplers[RS::CANVAS_ITEM_TEXTURE_FILTER_MAX][RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX];
 	RID default_rd_storage_buffer;
 
 	/* DECAL ATLAS */
@@ -372,7 +375,7 @@ private:
 		ShaderData *data;
 		String code;
 		ShaderType type;
-		Map<StringName, RID> default_texture_parameter;
+		Map<StringName, Map<int, RID>> default_texture_parameter;
 		Set<Material *> owners;
 	};
 
@@ -823,7 +826,7 @@ private:
 		};
 
 		ParticlesShaderRD shader;
-		ShaderCompilerRD compiler;
+		ShaderCompiler compiler;
 
 		RID default_shader;
 		RID default_material;
@@ -874,21 +877,21 @@ private:
 
 		//PipelineCacheRD pipelines[SKY_VERSION_MAX];
 		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
-		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
+		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
 		uint32_t ubo_size;
 
 		String path;
 		String code;
-		Map<StringName, RID> default_texture_params;
+		Map<StringName, Map<int, RID>> default_texture_params;
 
 		RID pipeline;
 
 		bool uses_time;
 
 		virtual void set_code(const String &p_Code);
-		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
+		virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
 		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
 		virtual void get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const;
 		virtual bool is_param_texture(const StringName &p_param) const;
@@ -907,10 +910,8 @@ private:
 	}
 
 	struct ParticlesMaterialData : public MaterialData {
-		uint64_t last_frame = 0;
 		ParticlesShaderData *shader_data = nullptr;
 		RID uniform_set;
-		bool uniform_set_updated = false;
 
 		virtual void set_render_priority(int p_priority) {}
 		virtual void set_next_pass(RID p_pass) {}
@@ -956,6 +957,19 @@ private:
 	};
 
 	mutable RID_Owner<ParticlesCollisionInstance> particles_collision_instance_owner;
+
+	/* FOG VOLUMES */
+
+	struct FogVolume {
+		RID material;
+		Vector3 extents = Vector3(1, 1, 1);
+
+		RS::FogVolumeShape shape = RS::FOG_VOLUME_SHAPE_BOX;
+
+		Dependency dependency;
+	};
+
+	mutable RID_Owner<FogVolume, true> fog_volume_owner;
 
 	/* visibility_notifier */
 
@@ -1037,7 +1051,7 @@ private:
 		bool box_projection = false;
 		bool enable_shadows = false;
 		uint32_t cull_mask = (1 << 20) - 1;
-		float lod_threshold = 0.01;
+		float mesh_lod_threshold = 0.01;
 
 		Dependency dependency;
 	};
@@ -1083,7 +1097,7 @@ private:
 		AABB bounds;
 		Vector3i octree_size;
 
-		float dynamic_range = 4.0;
+		float dynamic_range = 2.0;
 		float energy = 1.0;
 		float bias = 1.4;
 		float normal_bias = 0.0;
@@ -1284,7 +1298,7 @@ private:
 	void _update_global_variables();
 	/* EFFECTS */
 
-	EffectsRD *effects = NULL;
+	EffectsRD *effects = nullptr;
 
 public:
 	virtual bool can_create_resources_async() const;
@@ -1376,6 +1390,13 @@ public:
 	_FORCE_INLINE_ RID sampler_rd_get_default(RS::CanvasItemTextureFilter p_filter, RS::CanvasItemTextureRepeat p_repeat) {
 		return default_rd_samplers[p_filter][p_repeat];
 	}
+	_FORCE_INLINE_ RID sampler_rd_get_custom(RS::CanvasItemTextureFilter p_filter, RS::CanvasItemTextureRepeat p_repeat) {
+		return custom_rd_samplers[p_filter][p_repeat];
+	}
+
+	void sampler_rd_configure_custom(float mipmap_bias);
+
+	void sampler_rd_set_default(float p_mipmap_bias);
 
 	/* CANVAS TEXTURE API */
 
@@ -1399,8 +1420,8 @@ public:
 	String shader_get_code(RID p_shader) const;
 	void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const;
 
-	void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture);
-	RID shader_get_default_texture_param(RID p_shader, const StringName &p_name) const;
+	void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index);
+	RID shader_get_default_texture_param(RID p_shader, const StringName &p_name, int p_index) const;
 	Variant shader_get_param_default(RID p_shader, const StringName &p_param) const;
 	void shader_set_data_request_function(ShaderType p_shader_type, ShaderDataRequestFunction p_function);
 
@@ -1425,7 +1446,6 @@ public:
 	void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters);
 
 	void material_update_dependency(RID p_material, DependencyTracker *p_instance);
-	void material_force_update_textures(RID p_material, ShaderType p_shader_type);
 
 	void material_set_data_request_function(ShaderType p_shader_type, MaterialDataRequestFunction p_function);
 
@@ -1534,7 +1554,7 @@ public:
 		return s->index_count ? s->index_count : s->vertex_count;
 	}
 
-	_FORCE_INLINE_ uint32_t mesh_surface_get_lod(void *p_surface, float p_model_scale, float p_distance_threshold, float p_lod_threshold, uint32_t *r_index_count = nullptr) const {
+	_FORCE_INLINE_ uint32_t mesh_surface_get_lod(void *p_surface, float p_model_scale, float p_distance_threshold, float p_mesh_lod_threshold, uint32_t *r_index_count = nullptr) const {
 		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
 
 		int32_t current_lod = -1;
@@ -1543,7 +1563,7 @@ public:
 		}
 		for (uint32_t i = 0; i < s->lod_count; i++) {
 			float screen_size = s->lods[i].edge_length * p_model_scale / p_distance_threshold;
-			if (screen_size > p_lod_threshold) {
+			if (screen_size > p_mesh_lod_threshold) {
 				break;
 			}
 			current_lod = i;
@@ -1932,7 +1952,7 @@ public:
 	void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable);
 	void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers);
 	void reflection_probe_set_resolution(RID p_probe, int p_resolution);
-	void reflection_probe_set_lod_threshold(RID p_probe, float p_ratio);
+	void reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio);
 
 	AABB reflection_probe_get_aabb(RID p_probe) const;
 	RS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const;
@@ -1940,7 +1960,7 @@ public:
 	Vector3 reflection_probe_get_extents(RID p_probe) const;
 	Vector3 reflection_probe_get_origin_offset(RID p_probe) const;
 	float reflection_probe_get_origin_max_distance(RID p_probe) const;
-	float reflection_probe_get_lod_threshold(RID p_probe) const;
+	float reflection_probe_get_mesh_lod_threshold(RID p_probe) const;
 
 	int reflection_probe_get_resolution(RID p_probe) const;
 	bool reflection_probe_renders_shadows(RID p_probe) const;
@@ -2259,6 +2279,21 @@ public:
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const;
 	RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const;
 
+	/* FOG VOLUMES */
+
+	virtual RID fog_volume_allocate();
+	virtual void fog_volume_initialize(RID p_rid);
+
+	virtual void fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape);
+	virtual void fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents);
+	virtual void fog_volume_set_material(RID p_fog_volume, RID p_material);
+	virtual RS::FogVolumeShape fog_volume_get_shape(RID p_fog_volume) const;
+	virtual RID fog_volume_get_material(RID p_fog_volume) const;
+	virtual AABB fog_volume_get_aabb(RID p_fog_volume) const;
+	virtual Vector3 fog_volume_get_extents(RID p_fog_volume) const;
+
+	/* VISIBILITY NOTIFIER */
+
 	virtual RID visibility_notifier_allocate();
 	virtual void visibility_notifier_initialize(RID p_notifier);
 	virtual void visibility_notifier_set_aabb(RID p_notifier, const AABB &p_aabb);
@@ -2355,6 +2390,7 @@ public:
 
 	String get_video_adapter_name() const;
 	String get_video_adapter_vendor() const;
+	RenderingDevice::DeviceType get_video_adapter_type() const;
 
 	virtual void capture_timestamps_begin();
 	virtual void capture_timestamp(const String &p_name);

@@ -7,15 +7,17 @@
 		This class allows you to define a custom shader program that can be used by a [ShaderMaterial]. Shaders allow you to write your own custom behavior for rendering objects or updating particle information. For a detailed explanation and usage, please see the tutorials linked below.
 	</description>
 	<tutorials>
-		<link title="Shaders documentation index">https://docs.godotengine.org/en/latest/tutorials/shaders/index.html</link>
+		<link title="Shaders documentation index">$DOCS_URL/tutorials/shaders/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_default_texture_param" qualifiers="const">
 			<return type="Texture2D" />
 			<argument index="0" name="param" type="StringName" />
+			<argument index="1" name="index" type="int" default="0" />
 			<description>
 				Returns the texture that is set as default for the specified parameter.
 				[b]Note:[/b] [code]param[/code] must match the name of the uniform in the code exactly.
+				[b]Note:[/b] If the sampler array is used use [code]index[/code] to access the specified texture.
 			</description>
 		</method>
 		<method name="get_mode" qualifiers="const">
@@ -36,9 +38,11 @@
 			<return type="void" />
 			<argument index="0" name="param" type="StringName" />
 			<argument index="1" name="texture" type="Texture2D" />
+			<argument index="2" name="index" type="int" default="0" />
 			<description>
 				Sets the default texture to be used with a texture uniform. The default is used if a texture is not set in the [ShaderMaterial].
 				[b]Note:[/b] [code]param[/code] must match the name of the uniform in the code exactly.
+				[b]Note:[/b] If the sampler array is used use [code]index[/code] to access the specified texture.
 			</description>
 		</method>
 	</methods>
@@ -59,6 +63,9 @@
 		</constant>
 		<constant name="MODE_SKY" value="3" enum="Mode">
 			Mode used for drawing skies. Only works with shaders attached to [Sky] objects.
+		</constant>
+		<constant name="MODE_FOG" value="4" enum="Mode">
+			Mode used for setting the color and density of volumetric fog effect.
 		</constant>
 	</constants>
 </class>

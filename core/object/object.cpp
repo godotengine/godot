@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -628,7 +628,10 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 		script_instance->get_property_list(p_list);
 	}
 
-	_get_property_listv(p_list, p_reversed);
+	if (_extension) {
+		p_list->push_back(PropertyInfo(Variant::NIL, _extension->class_name, PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));
+		ClassDB::get_property_list(_extension->class_name, p_list, true, this);
+	}
 
 	if (_extension && _extension->get_property_list) {
 		uint32_t pcount;
@@ -641,11 +644,13 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 		}
 	}
 
+	_get_property_listv(p_list, p_reversed);
+
 	if (!is_class("Script")) { // can still be set, but this is for user-friendliness
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_DEFAULT));
 	}
 	if (!metadata.is_empty()) {
-		p_list->push_back(PropertyInfo(Variant::DICTIONARY, "__meta__", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(Variant::DICTIONARY, "__meta__", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 	}
 	if (script_instance && !p_reversed) {
 		p_list->push_back(PropertyInfo(Variant::NIL, "Script Variables", PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));
@@ -985,7 +990,7 @@ void Object::get_meta_list(List<StringName> *p_list) const {
 }
 
 void Object::add_user_signal(const MethodInfo &p_signal) {
-	ERR_FAIL_COND_MSG(p_signal.name == "", "Signal name cannot be empty.");
+	ERR_FAIL_COND_MSG(p_signal.name.is_empty(), "Signal name cannot be empty.");
 	ERR_FAIL_COND_MSG(ClassDB::has_signal(get_class_name(), p_signal.name), "User signal's name conflicts with a built-in signal of '" + get_class_name() + "'.");
 	ERR_FAIL_COND_MSG(signal_map.has(p_signal.name), "Trying to add already existing signal '" + p_signal.name + "'.");
 	SignalData s;
@@ -1248,7 +1253,7 @@ void Object::get_signal_list(List<MethodInfo> *p_signals) const {
 	const StringName *S = nullptr;
 
 	while ((S = signal_map.next(S))) {
-		if (signal_map[*S].user.name != "") {
+		if (!signal_map[*S].user.name.is_empty()) {
 			//user signal
 			p_signals->push_back(signal_map[*S].user);
 		}
@@ -1398,14 +1403,14 @@ void Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
 		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal) ||
-							   (!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal));
+				(!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal));
 		ERR_FAIL_COND_MSG(signal_is_valid, "Attempt to disconnect a nonexistent connection from '" + to_string() + "'. Signal: '" + p_signal + "', callable: '" + p_callable + "'.");
 	}
 	ERR_FAIL_COND_MSG(!s, vformat("Disconnecting nonexistent signal '%s' in %s.", p_signal, to_string()));
 
 	ERR_FAIL_COND_MSG(!s->slot_map.has(*p_callable.get_base_comparator()), "Disconnecting nonexistent signal '" + p_signal + "', callable: " + p_callable + ".");
 
-	SignalData::Slot *slot = &s->slot_map[p_callable];
+	SignalData::Slot *slot = &s->slot_map[*p_callable.get_base_comparator()];
 
 	if (!p_force) {
 		slot->reference_count--; // by default is zero, if it was not referenced it will go below it
@@ -1475,7 +1480,7 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 				return;
 			}
 
-			if (!r->get_path().begins_with("res://") || r->get_path().find("::") == -1) {
+			if (!r->is_built_in()) {
 				return; //not an internal resource
 			}
 
@@ -1675,7 +1680,7 @@ void Object::get_translatable_strings(List<String> *p_strings) const {
 
 		String text = get(E.name);
 
-		if (text == "") {
+		if (text.is_empty()) {
 			continue;
 		}
 
@@ -1832,8 +1837,6 @@ bool Object::has_instance_binding(void *p_token) {
 void Object::_construct_object(bool p_reference) {
 	type_is_reference = p_reference;
 	_instance_id = ObjectDB::add_instance(this);
-
-	ClassDB::instance_get_native_extension_data(&_extension, &_extension_instance, this);
 
 #ifdef DEBUG_ENABLED
 	_lock_index.init(1);

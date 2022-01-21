@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,7 +52,7 @@ bool ResourceFormatLoader::recognize_path(const String &p_path, const String &p_
 	String extension = p_path.get_extension();
 
 	List<String> extensions;
-	if (p_for_type == String()) {
+	if (p_for_type.is_empty()) {
 		get_recognized_extensions(&extensions);
 	} else {
 		get_recognized_extensions_for_type(p_for_type, &extensions);
@@ -96,7 +96,7 @@ ResourceUID::ID ResourceFormatLoader::get_resource_uid(const String &p_path) con
 }
 
 void ResourceFormatLoader::get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const {
-	if (p_type == "" || handles_type(p_type)) {
+	if (p_type.is_empty() || handles_type(p_type)) {
 		get_recognized_extensions(p_extensions);
 	}
 }
@@ -194,7 +194,7 @@ RES ResourceLoader::_load(const String &p_path, const String &p_original_path, c
 			continue;
 		}
 		found = true;
-		RES res = loader[i]->load(p_path, p_original_path != String() ? p_original_path : p_path, r_error, p_use_sub_threads, r_progress, p_cache_mode);
+		RES res = loader[i]->load(p_path, !p_original_path.is_empty() ? p_original_path : p_path, r_error, p_use_sub_threads, r_progress, p_cache_mode);
 		if (res.is_null()) {
 			continue;
 		}
@@ -289,7 +289,7 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 
 	thread_load_mutex->lock();
 
-	if (p_source_resource != String()) {
+	if (!p_source_resource.is_empty()) {
 		//must be loading from this resource
 		if (!thread_load_tasks.has(p_source_resource)) {
 			thread_load_mutex->unlock();
@@ -310,7 +310,7 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 
 	if (thread_load_tasks.has(local_path)) {
 		thread_load_tasks[local_path].requests++;
-		if (p_source_resource != String()) {
+		if (!p_source_resource.is_empty()) {
 			thread_load_tasks[p_source_resource].sub_tasks.insert(local_path);
 		}
 		thread_load_mutex->unlock();
@@ -354,7 +354,7 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 			ResourceCache::lock.read_unlock();
 		}
 
-		if (p_source_resource != String()) {
+		if (!p_source_resource.is_empty()) {
 			thread_load_tasks[p_source_resource].sub_tasks.insert(local_path);
 		}
 
@@ -574,7 +574,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, Resour
 		bool xl_remapped = false;
 		String path = _path_remap(local_path, &xl_remapped);
 
-		if (path == "") {
+		if (path.is_empty()) {
 			ERR_FAIL_V_MSG(RES(), "Remapping '" + local_path + "' failed.");
 		}
 
@@ -776,7 +776,7 @@ String ResourceLoader::get_resource_type(const String &p_path) {
 
 	for (int i = 0; i < loader_count; i++) {
 		String result = loader[i]->get_resource_type(local_path);
-		if (result != "") {
+		if (!result.is_empty()) {
 			return result;
 		}
 	}
@@ -806,38 +806,26 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 
 		// To find the path of the remapped resource, we extract the locale name after
 		// the last ':' to match the project locale.
-		// We also fall back in case of regional locales as done in TranslationServer::translate
-		// (e.g. 'ru_RU' -> 'ru' if the former has no specific mapping).
 
 		String locale = TranslationServer::get_singleton()->get_locale();
 		ERR_FAIL_COND_V_MSG(locale.length() < 2, p_path, "Could not remap path '" + p_path + "' for translation as configured locale '" + locale + "' is invalid.");
-		String lang = TranslationServer::get_language_code(locale);
 
 		Vector<String> &res_remaps = *translation_remaps.getptr(new_path);
-		bool near_match = false;
 
+		int best_score = 0;
 		for (int i = 0; i < res_remaps.size(); i++) {
 			int split = res_remaps[i].rfind(":");
 			if (split == -1) {
 				continue;
 			}
-
 			String l = res_remaps[i].substr(split + 1).strip_edges();
-			if (l == locale) { // Exact match.
+			int score = TranslationServer::get_singleton()->compare_locales(locale, l);
+			if (score > best_score) {
 				new_path = res_remaps[i].left(split);
-				break;
-			} else if (near_match) {
-				continue; // Already found near match, keep going for potential exact match.
-			}
-
-			// No exact match (e.g. locale 'ru_RU' but remap is 'ru'), let's look further
-			// for a near match (same language code, i.e. first 2 or 3 letters before
-			// regional code, if included).
-			if (TranslationServer::get_language_code(l) == lang) {
-				// Language code matches, that's a near match. Keep looking for exact match.
-				near_match = true;
-				new_path = res_remaps[i].left(split);
-				continue;
+				best_score = score;
+				if (score == 10) {
+					break; // Exact match, skip the rest.
+				}
 			}
 		}
 

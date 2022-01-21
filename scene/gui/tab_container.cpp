@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -78,7 +78,7 @@ void TabContainer::gui_input(const Ref<InputEvent> &p_event) {
 
 	Popup *popup = get_popup();
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		Point2 pos = mb->get_position();
 		Size2 size = get_size();
 
@@ -406,14 +406,14 @@ void TabContainer::_notification(int p_what) {
 			}
 
 			// Find the offset at which to draw tabs, according to the alignment.
-			switch (align) {
-				case ALIGN_LEFT:
+			switch (alignment) {
+				case ALIGNMENT_LEFT:
 					tabs_ofs_cache = header_x;
 					break;
-				case ALIGN_CENTER:
+				case ALIGNMENT_CENTER:
 					tabs_ofs_cache = header_x + (header_width / 2) - (all_tabs_width / 2);
 					break;
-				case ALIGN_RIGHT:
+				case ALIGNMENT_RIGHT:
 					tabs_ofs_cache = header_x + header_width - all_tabs_width;
 					break;
 			}
@@ -561,7 +561,7 @@ void TabContainer::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, in
 		if (icon.is_valid()) {
 			int y = y_center - (icon->get_height() / 2);
 			icon->draw(canvas, Point2i(x_content, y));
-			if (text != "") {
+			if (!text.is_empty()) {
 				x_content += icon->get_width() + icon_text_distance;
 			}
 		}
@@ -600,7 +600,7 @@ void TabContainer::_on_theme_changed() {
 
 	_refresh_texts();
 
-	minimum_size_changed();
+	update_minimum_size();
 	if (get_tab_count() > 0) {
 		_repaint();
 		update();
@@ -656,7 +656,7 @@ int TabContainer::_get_tab_width(int p_index) const {
 		Ref<Texture2D> icon = control->get_meta("_tab_icon");
 		if (icon.is_valid()) {
 			width += icon->get_width();
-			if (text != "") {
+			if (!text.is_empty()) {
 				width += get_theme_constant(SNAME("icon_separation"));
 			}
 		}
@@ -703,30 +703,16 @@ void TabContainer::add_child_notify(Node *p_child) {
 		return;
 	}
 
-	Vector<Control *> tabs = _get_tabs();
 	_refresh_texts();
+	call_deferred("_repaint");
+	update();
 
-	bool first = false;
-
-	if (tabs.size() != 1) {
-		c->hide();
-	} else {
-		c->show();
-		//call_deferred(SNAME("set_current_tab"),0);
-		first = true;
+	bool first = (_get_tabs().size() == 1);
+	if (first) {
 		current = 0;
 		previous = 0;
 	}
-	c->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
-	if (tabs_visible) {
-		c->set_offset(SIDE_TOP, _get_top_margin());
-	}
-	Ref<StyleBox> sb = get_theme_stylebox(SNAME("panel"));
-	c->set_offset(SIDE_TOP, c->get_offset(SIDE_TOP) + sb->get_margin(SIDE_TOP));
-	c->set_offset(SIDE_LEFT, c->get_offset(SIDE_LEFT) + sb->get_margin(SIDE_LEFT));
-	c->set_offset(SIDE_RIGHT, c->get_offset(SIDE_RIGHT) - sb->get_margin(SIDE_RIGHT));
-	c->set_offset(SIDE_BOTTOM, c->get_offset(SIDE_BOTTOM) - sb->get_margin(SIDE_BOTTOM));
-	update();
+
 	p_child->connect("renamed", callable_mp(this, &TabContainer::_child_renamed_callback));
 	if (first && is_inside_tree()) {
 		emit_signal(SNAME("tab_changed"), current);
@@ -967,14 +953,14 @@ int TabContainer::get_tab_idx_at_point(const Point2 &p_point) const {
 	return -1;
 }
 
-void TabContainer::set_tab_align(TabAlign p_align) {
-	ERR_FAIL_INDEX(p_align, 3);
-	align = p_align;
+void TabContainer::set_tab_alignment(AlignmentMode p_alignment) {
+	ERR_FAIL_INDEX(p_alignment, 3);
+	alignment = p_alignment;
 	update();
 }
 
-TabContainer::TabAlign TabContainer::get_tab_align() const {
-	return align;
+TabContainer::AlignmentMode TabContainer::get_tab_alignment() const {
+	return alignment;
 }
 
 void TabContainer::set_tabs_visible(bool p_visible) {
@@ -995,7 +981,7 @@ void TabContainer::set_tabs_visible(bool p_visible) {
 	}
 
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 bool TabContainer::are_tabs_visible() const {
@@ -1108,7 +1094,7 @@ void TabContainer::get_translatable_strings(List<String> *p_strings) const {
 
 		String name = c->get_meta("_tab_name");
 
-		if (name != "") {
+		if (!name.is_empty()) {
 			p_strings->push_back(name);
 		}
 	}
@@ -1198,8 +1184,8 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_previous_tab"), &TabContainer::get_previous_tab);
 	ClassDB::bind_method(D_METHOD("get_current_tab_control"), &TabContainer::get_current_tab_control);
 	ClassDB::bind_method(D_METHOD("get_tab_control", "tab_idx"), &TabContainer::get_tab_control);
-	ClassDB::bind_method(D_METHOD("set_tab_align", "align"), &TabContainer::set_tab_align);
-	ClassDB::bind_method(D_METHOD("get_tab_align"), &TabContainer::get_tab_align);
+	ClassDB::bind_method(D_METHOD("set_tab_alignment", "alignment"), &TabContainer::set_tab_alignment);
+	ClassDB::bind_method(D_METHOD("get_tab_alignment"), &TabContainer::get_tab_alignment);
 	ClassDB::bind_method(D_METHOD("set_tabs_visible", "visible"), &TabContainer::set_tabs_visible);
 	ClassDB::bind_method(D_METHOD("are_tabs_visible"), &TabContainer::are_tabs_visible);
 	ClassDB::bind_method(D_METHOD("set_all_tabs_in_front", "is_front"), &TabContainer::set_all_tabs_in_front);
@@ -1223,6 +1209,7 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_hidden_tabs_for_min_size", "enabled"), &TabContainer::set_use_hidden_tabs_for_min_size);
 	ClassDB::bind_method(D_METHOD("get_use_hidden_tabs_for_min_size"), &TabContainer::get_use_hidden_tabs_for_min_size);
 
+	ClassDB::bind_method(D_METHOD("_repaint"), &TabContainer::_repaint);
 	ClassDB::bind_method(D_METHOD("_on_theme_changed"), &TabContainer::_on_theme_changed);
 	ClassDB::bind_method(D_METHOD("_update_current_tab"), &TabContainer::_update_current_tab);
 
@@ -1230,16 +1217,16 @@ void TabContainer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tab_selected", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("pre_popup_pressed"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_align", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_align", "get_tab_align");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_alignment", "get_tab_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1", PROPERTY_USAGE_EDITOR), "set_current_tab", "get_current_tab");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tabs_visible"), "set_tabs_visible", "are_tabs_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "all_tabs_in_front"), "set_all_tabs_in_front", "is_all_tabs_in_front");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hidden_tabs_for_min_size"), "set_use_hidden_tabs_for_min_size", "get_use_hidden_tabs_for_min_size");
 
-	BIND_ENUM_CONSTANT(ALIGN_LEFT);
-	BIND_ENUM_CONSTANT(ALIGN_CENTER);
-	BIND_ENUM_CONSTANT(ALIGN_RIGHT);
+	BIND_ENUM_CONSTANT(ALIGNMENT_LEFT);
+	BIND_ENUM_CONSTANT(ALIGNMENT_CENTER);
+	BIND_ENUM_CONSTANT(ALIGNMENT_RIGHT);
 }
 
 TabContainer::TabContainer() {

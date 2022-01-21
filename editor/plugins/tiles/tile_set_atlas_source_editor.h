@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,7 @@ class TileSet;
 class TileSetAtlasSourceEditor : public HBoxContainer {
 	GDCLASS(TileSetAtlasSourceEditor, HBoxContainer);
 
-private:
+public:
 	// A class to store which tiles are selected.
 	struct TileSelection {
 		Vector2i tile = TileSetSource::INVALID_ATLAS_COORDS;
@@ -78,6 +78,7 @@ private:
 		int get_id();
 
 		void edit(Ref<TileSet> p_tile_set, TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id);
+		TileSetAtlasSource *get_edited() { return tile_set_atlas_source; };
 	};
 
 	// -- Proxy object for a tile, needed by the inspector --
@@ -98,6 +99,9 @@ private:
 		static void _bind_methods();
 
 	public:
+		TileSetAtlasSource *get_edited_tile_set_atlas_source() const { return tile_set_atlas_source; };
+		Set<TileSelection> get_edited_tiles() const { return tiles; };
+
 		// Update the proxyed object.
 		void edit(TileSetAtlasSource *p_tile_set_atlas_source, Set<TileSelection> p_tiles = Set<TileSelection>());
 
@@ -106,13 +110,14 @@ private:
 		}
 	};
 
+private:
 	Ref<TileSet> tile_set;
 	TileSetAtlasSource *tile_set_atlas_source = nullptr;
 	int tile_set_atlas_source_id = TileSet::INVALID_SOURCE;
 
 	UndoRedo *undo_redo = EditorNode::get_undo_redo();
 
-	bool tile_set_atlas_source_changed_needs_update = false;
+	bool tile_set_changed_needs_update = false;
 
 	// -- Properties painting --
 	VBoxContainer *tile_data_painting_editor_container;
@@ -189,7 +194,6 @@ private:
 		TILE_CREATE_ALTERNATIVE,
 		TILE_DELETE,
 
-		ADVANCED_CLEANUP_TILES_OUTSIDE_TEXTURE,
 		ADVANCED_AUTO_CREATE_TILES,
 		ADVANCED_AUTO_REMOVE_TILES,
 	};
@@ -263,7 +267,7 @@ private:
 	void _auto_remove_tiles();
 	AcceptDialog *confirm_auto_create_tiles;
 
-	void _tile_set_atlas_source_changed();
+	void _tile_set_changed();
 	void _tile_proxy_object_changed(String p_what);
 	void _atlas_source_proxy_object_changed(String p_what);
 
@@ -279,6 +283,36 @@ public:
 
 	TileSetAtlasSourceEditor();
 	~TileSetAtlasSourceEditor();
+};
+
+class EditorPropertyTilePolygon : public EditorProperty {
+	GDCLASS(EditorPropertyTilePolygon, EditorProperty);
+
+	StringName count_property;
+	String element_pattern;
+	String base_type;
+
+	void _add_focusable_children(Node *p_node);
+
+	GenericTilePolygonEditor *generic_tile_polygon_editor;
+	void _polygons_changed();
+
+public:
+	virtual void update_property() override;
+	void setup_single_mode(const StringName &p_property, const String &p_base_type);
+	void setup_multiple_mode(const StringName &p_property, const StringName &p_count_property, const String &p_element_pattern, const String &p_base_type);
+	EditorPropertyTilePolygon();
+};
+
+class EditorInspectorPluginTileData : public EditorInspectorPlugin {
+	GDCLASS(EditorInspectorPluginTileData, EditorInspectorPlugin);
+
+	void _occlusion_polygon_set_callback();
+	void _polygons_changed(Object *p_generic_tile_polygon_editor, Object *p_object, const String &p_path);
+
+public:
+	virtual bool can_handle(Object *p_object) override;
+	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false) override;
 };
 
 #endif // TILE_SET_ATLAS_SOURCE_EDITOR_H

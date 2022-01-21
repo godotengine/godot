@@ -14,13 +14,7 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
- *
- *  This file is provided under the Apache License 2.0, or the
- *  GNU General Public License v2.0 or later.
- *
- *  **********
- *  Apache License 2.0:
+ *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -33,51 +27,23 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  **********
- *
- *  **********
- *  GNU General Public License v2.0 or later:
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- *  **********
  */
 
 #ifndef MBEDTLS_ECDH_H
 #define MBEDTLS_ECDH_H
 
 #if !defined(MBEDTLS_CONFIG_FILE)
-#include "config.h"
+#include "mbedtls/config.h"
 #else
 #include MBEDTLS_CONFIG_FILE
 #endif
 
-#include "ecp.h"
+#include "mbedtls/ecp.h"
 
-/*
- * Use a backward compatible ECDH context.
- *
- * This flag is always enabled for now and future versions might add a
- * configuration option that conditionally undefines this flag.
- * The configuration option in question may have a different name.
- *
- * Features undefining this flag, must have a warning in their description in
- * config.h stating that the feature breaks backward compatibility.
- */
-#define MBEDTLS_ECDH_LEGACY_CONTEXT
+#if defined(MBEDTLS_ECDH_VARIANT_EVEREST_ENABLED)
+#undef MBEDTLS_ECDH_LEGACY_CONTEXT
+#include "everest/everest.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -103,6 +69,9 @@ typedef enum
 {
     MBEDTLS_ECDH_VARIANT_NONE = 0,   /*!< Implementation not defined. */
     MBEDTLS_ECDH_VARIANT_MBEDTLS_2_0,/*!< The default Mbed TLS implementation */
+#if defined(MBEDTLS_ECDH_VARIANT_EVEREST_ENABLED)
+    MBEDTLS_ECDH_VARIANT_EVEREST     /*!< Everest implementation */
+#endif
 } mbedtls_ecdh_variant;
 
 /**
@@ -156,6 +125,9 @@ typedef struct mbedtls_ecdh_context
     union
     {
         mbedtls_ecdh_context_mbed   mbed_ecdh;
+#if defined(MBEDTLS_ECDH_VARIANT_EVEREST_ENABLED)
+        mbedtls_ecdh_context_everest everest_ecdh;
+#endif
     } ctx;                      /*!< Implementation-specific context. The
                                   context in use is specified by the \c var
                                   field. */
@@ -169,6 +141,15 @@ typedef struct mbedtls_ecdh_context
 #endif /* MBEDTLS_ECDH_LEGACY_CONTEXT */
 }
 mbedtls_ecdh_context;
+
+/**
+ * \brief          Check whether a given group can be used for ECDH.
+ *
+ * \param gid      The ECP group ID to check.
+ *
+ * \return         \c 1 if the group can be used, \c 0 otherwise
+ */
+int mbedtls_ecdh_can_do( mbedtls_ecp_group_id gid );
 
 /**
  * \brief           This function generates an ECDH keypair on an elliptic

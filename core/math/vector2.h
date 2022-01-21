@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@
 
 struct Vector2i;
 
-struct Vector2 {
+struct _NO_DISCARD_ Vector2 {
 	static const int AXIS_COUNT = 2;
 
 	enum Axis {
@@ -70,12 +70,12 @@ struct Vector2 {
 		x = y = p_value;
 	}
 
-	_FORCE_INLINE_ int min_axis() const {
-		return x < y ? 0 : 1;
+	_FORCE_INLINE_ Vector2::Axis min_axis_index() const {
+		return x < y ? Vector2::AXIS_X : Vector2::AXIS_Y;
 	}
 
-	_FORCE_INLINE_ int max_axis() const {
-		return x < y ? 1 : 0;
+	_FORCE_INLINE_ Vector2::Axis max_axis_index() const {
+		return x < y ? Vector2::AXIS_Y : Vector2::AXIS_X;
 	}
 
 	void normalize();
@@ -261,11 +261,16 @@ Vector2 Vector2::lerp(const Vector2 &p_to, const real_t p_weight) const {
 }
 
 Vector2 Vector2::slerp(const Vector2 &p_to, const real_t p_weight) const {
-#ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_normalized(), Vector2(), "The start Vector2 must be normalized.");
-#endif
-	real_t theta = angle_to(p_to);
-	return rotated(theta * p_weight);
+	real_t start_length_sq = length_squared();
+	real_t end_length_sq = p_to.length_squared();
+	if (unlikely(start_length_sq == 0.0 || end_length_sq == 0.0)) {
+		// Zero length vectors have no angle, so the best we can do is either lerp or throw an error.
+		return lerp(p_to, p_weight);
+	}
+	real_t start_length = Math::sqrt(start_length_sq);
+	real_t result_length = Math::lerp(start_length, Math::sqrt(end_length_sq), p_weight);
+	real_t angle = angle_to(p_to);
+	return rotated(angle * p_weight) * (result_length / start_length);
 }
 
 Vector2 Vector2::direction_to(const Vector2 &p_to) const {
@@ -279,7 +284,7 @@ typedef Vector2 Point2;
 
 /* INTEGER STUFF */
 
-struct Vector2i {
+struct _NO_DISCARD_ Vector2i {
 	enum Axis {
 		AXIS_X,
 		AXIS_Y,
@@ -301,12 +306,12 @@ struct Vector2i {
 		return p_idx ? y : x;
 	}
 
-	_FORCE_INLINE_ int min_axis() const {
-		return x < y ? 0 : 1;
+	_FORCE_INLINE_ Vector2i::Axis min_axis_index() const {
+		return x < y ? Vector2i::AXIS_X : Vector2i::AXIS_Y;
 	}
 
-	_FORCE_INLINE_ int max_axis() const {
-		return x < y ? 1 : 0;
+	_FORCE_INLINE_ Vector2i::Axis max_axis_index() const {
+		return x < y ? Vector2i::AXIS_Y : Vector2i::AXIS_X;
 	}
 
 	Vector2i min(const Vector2i &p_vector2i) const {
@@ -344,8 +349,11 @@ struct Vector2i {
 	bool operator==(const Vector2i &p_vec2) const;
 	bool operator!=(const Vector2i &p_vec2) const;
 
+	int64_t length_squared() const;
+	double length() const;
+
 	real_t aspect() const { return width / (real_t)height; }
-	Vector2i sign() const { return Vector2i(SGN(x), SGN(y)); }
+	Vector2i sign() const { return Vector2i(SIGN(x), SIGN(y)); }
 	Vector2i abs() const { return Vector2i(ABS(x), ABS(y)); }
 	Vector2i clamp(const Vector2i &p_min, const Vector2i &p_max) const;
 

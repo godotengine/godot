@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -160,10 +160,10 @@ double OS_Unix::get_unix_time() const {
 	return (double)tv_now.tv_sec + double(tv_now.tv_usec) / 1000000;
 };
 
-OS::Date OS_Unix::get_date(bool utc) const {
+OS::Date OS_Unix::get_date(bool p_utc) const {
 	time_t t = time(nullptr);
 	struct tm lt;
-	if (utc) {
+	if (p_utc) {
 		gmtime_r(&t, &lt);
 	} else {
 		localtime_r(&t, &lt);
@@ -181,10 +181,10 @@ OS::Date OS_Unix::get_date(bool utc) const {
 	return ret;
 }
 
-OS::Time OS_Unix::get_time(bool utc) const {
+OS::Time OS_Unix::get_time(bool p_utc) const {
 	time_t t = time(nullptr);
 	struct tm lt;
-	if (utc) {
+	if (p_utc) {
 		gmtime_r(&t, &lt);
 	} else {
 		localtime_r(&t, &lt);
@@ -249,7 +249,7 @@ uint64_t OS_Unix::get_ticks_usec() const {
 	return longtime;
 }
 
-Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
 #ifdef __EMSCRIPTEN__
 	// Don't compile this code at all to avoid undefined references.
 	// Actual virtual call goes to OS_JavaScript.
@@ -318,7 +318,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 #endif
 }
 
-Error OS_Unix::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
+Error OS_Unix::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
 #ifdef __EMSCRIPTEN__
 	// Don't compile this code at all to avoid undefined references.
 	// Actual virtual call goes to OS_JavaScript.
@@ -460,11 +460,11 @@ int OS_Unix::get_processor_count() const {
 
 String OS_Unix::get_user_data_dir() const {
 	String appname = get_safe_dir_name(ProjectSettings::get_singleton()->get("application/config/name"));
-	if (appname != "") {
+	if (!appname.is_empty()) {
 		bool use_custom_dir = ProjectSettings::get_singleton()->get("application/config/use_custom_user_dir");
 		if (use_custom_dir) {
 			String custom_dir = get_safe_dir_name(ProjectSettings::get_singleton()->get("application/config/custom_user_dir_name"), true);
-			if (custom_dir == "") {
+			if (custom_dir.is_empty()) {
 				custom_dir = appname;
 			}
 			return get_data_path().plus_file(custom_dir);
@@ -473,7 +473,7 @@ String OS_Unix::get_user_data_dir() const {
 		}
 	}
 
-	return ProjectSettings::get_singleton()->get_resource_path();
+	return get_data_path().plus_file(get_godot_dir_name()).plus_file("app_userdata").plus_file("[unnamed project]");
 }
 
 String OS_Unix::get_executable_path() const {
@@ -486,7 +486,7 @@ String OS_Unix::get_executable_path() const {
 	if (len > 0) {
 		b.parse_utf8(buf, len);
 	}
-	if (b == "") {
+	if (b.is_empty()) {
 		WARN_PRINT("Couldn't get executable path from /proc/self/exe, using argv[0]");
 		return OS::get_executable_path();
 	}
@@ -528,7 +528,7 @@ String OS_Unix::get_executable_path() const {
 #endif
 }
 
-void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
+void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type) {
 	if (!should_log(true)) {
 		return;
 	}

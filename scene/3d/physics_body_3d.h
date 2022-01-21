@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -143,6 +143,11 @@ public:
 		CENTER_OF_MASS_MODE_CUSTOM,
 	};
 
+	enum DampMode {
+		DAMP_MODE_COMBINE,
+		DAMP_MODE_REPLACE,
+	};
+
 private:
 	bool can_sleep = true;
 	bool lock_rotation = false;
@@ -160,8 +165,12 @@ private:
 	Vector3 angular_velocity;
 	Basis inverse_inertia_tensor;
 	real_t gravity_scale = 1.0;
-	real_t linear_damp = -1.0;
-	real_t angular_damp = -1.0;
+
+	DampMode linear_damp_mode = DAMP_MODE_COMBINE;
+	DampMode angular_damp_mode = DAMP_MODE_COMBINE;
+
+	real_t linear_damp = 0.0;
+	real_t angular_damp = 0.0;
 
 	bool sleeping = false;
 	bool ccd = false;
@@ -265,6 +274,12 @@ public:
 	void set_gravity_scale(real_t p_gravity_scale);
 	real_t get_gravity_scale() const;
 
+	void set_linear_damp_mode(DampMode p_mode);
+	DampMode get_linear_damp_mode() const;
+
+	void set_angular_damp_mode(DampMode p_mode);
+	DampMode get_angular_damp_mode() const;
+
 	void set_linear_damp(real_t p_linear_damp);
 	real_t get_linear_damp() const;
 
@@ -291,13 +306,23 @@ public:
 
 	Array get_colliding_bodies() const;
 
-	void add_central_force(const Vector3 &p_force);
-	void add_force(const Vector3 &p_force, const Vector3 &p_position = Vector3());
-	void add_torque(const Vector3 &p_torque);
-
 	void apply_central_impulse(const Vector3 &p_impulse);
 	void apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3());
 	void apply_torque_impulse(const Vector3 &p_impulse);
+
+	void apply_central_force(const Vector3 &p_force);
+	void apply_force(const Vector3 &p_force, const Vector3 &p_position = Vector3());
+	void apply_torque(const Vector3 &p_torque);
+
+	void add_constant_central_force(const Vector3 &p_force);
+	void add_constant_force(const Vector3 &p_force, const Vector3 &p_position = Vector3());
+	void add_constant_torque(const Vector3 &p_torque);
+
+	void set_constant_force(const Vector3 &p_force);
+	Vector3 get_constant_force() const;
+
+	void set_constant_torque(const Vector3 &p_torque);
+	Vector3 get_constant_torque() const;
 
 	virtual TypedArray<String> get_configuration_warnings() const override;
 
@@ -310,6 +335,7 @@ private:
 
 VARIANT_ENUM_CAST(RigidDynamicBody3D::FreezeMode);
 VARIANT_ENUM_CAST(RigidDynamicBody3D::CenterOfMassMode);
+VARIANT_ENUM_CAST(RigidDynamicBody3D::DampMode);
 
 class KinematicCollision3D;
 
@@ -494,6 +520,11 @@ class PhysicalBone3D : public PhysicsBody3D {
 	GDCLASS(PhysicalBone3D, PhysicsBody3D);
 
 public:
+	enum DampMode {
+		DAMP_MODE_COMBINE,
+		DAMP_MODE_REPLACE,
+	};
+
 	enum JointType {
 		JOINT_TYPE_NONE,
 		JOINT_TYPE_PIN,
@@ -632,9 +663,13 @@ private:
 	real_t mass = 1.0;
 	real_t friction = 1.0;
 	real_t gravity_scale = 1.0;
-	real_t linear_damp = -1.0;
-	real_t angular_damp = -1.0;
 	bool can_sleep = true;
+
+	DampMode linear_damp_mode = DAMP_MODE_COMBINE;
+	DampMode angular_damp_mode = DAMP_MODE_COMBINE;
+
+	real_t linear_damp = 0.0;
+	real_t angular_damp = 0.0;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -698,6 +733,12 @@ public:
 	void set_gravity_scale(real_t p_gravity_scale);
 	real_t get_gravity_scale() const;
 
+	void set_linear_damp_mode(DampMode p_mode);
+	DampMode get_linear_damp_mode() const;
+
+	void set_angular_damp_mode(DampMode p_mode);
+	DampMode get_angular_damp_mode() const;
+
 	void set_linear_damp(real_t p_linear_damp);
 	real_t get_linear_damp() const;
 
@@ -725,5 +766,6 @@ private:
 };
 
 VARIANT_ENUM_CAST(PhysicalBone3D::JointType);
+VARIANT_ENUM_CAST(PhysicalBone3D::DampMode);
 
 #endif // PHYSICS_BODY__H

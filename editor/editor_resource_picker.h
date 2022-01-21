@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -102,6 +102,9 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
+	GDVIRTUAL1(_set_create_options, Object *)
+	GDVIRTUAL1R(bool, _handle_menu_selected, int)
+
 public:
 	static void clear_caches();
 
@@ -156,6 +159,7 @@ class EditorShaderPicker : public EditorResourcePicker {
 	};
 
 	ShaderMaterial *edited_material = nullptr;
+	int preferred_mode = -1;
 
 public:
 	virtual void set_create_options(Object *p_menu_node) override;
@@ -163,6 +167,7 @@ public:
 
 	void set_edited_material(ShaderMaterial *p_material);
 	ShaderMaterial *get_edited_material() const;
+	void set_preferred_mode(int p_preferred_mode);
 
 	EditorShaderPicker();
 };

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -133,8 +133,8 @@ Ref<CameraEffects> WorldEnvironment::get_camera_effects() const {
 TypedArray<String> WorldEnvironment::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
-	if (!environment.is_valid()) {
-		warnings.push_back(TTR("WorldEnvironment requires its \"Environment\" property to contain an Environment to have a visible effect."));
+	if (!environment.is_valid() && !camera_effects.is_valid()) {
+		warnings.push_back(TTR("To have any visible effect, WorldEnvironment requires its \"Environment\" property to contain an Environment, its \"Camera Effects\" property to contain a CameraEffects resource, or both."));
 	}
 
 	if (!is_inside_tree()) {

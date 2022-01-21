@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A simplified interface to a scene file. Provides access to operations and checks that can be performed on the scene resource itself.
-		Can be used to save a node to a file. When saving, the node as well as all the nodes it owns get saved (see [code]owner[/code] property on [Node]).
+		Can be used to save a node to a file. When saving, the node as well as all the nodes it owns get saved (see [member Node.owner] property).
 		[b]Note:[/b] The node doesn't need to own itself.
 		[b]Example of loading a saved scene:[/b]
 		[codeblocks]
@@ -22,7 +22,7 @@
 		AddChild(scene);
 		[/csharp]
 		[/codeblocks]
-		[b]Example of saving a node with different owners:[/b] The following example creates 3 objects: [code]Node2D[/code] ([code]node[/code]), [code]RigidDynamicBody2D[/code] ([code]body[/code]) and [code]CollisionObject2D[/code] ([code]collision[/code]). [code]collision[/code] is a child of [code]body[/code] which is a child of [code]node[/code]. Only [code]body[/code] is owned by [code]node[/code] and [code]pack[/code] will therefore only save those two nodes, but not [code]collision[/code].
+		[b]Example of saving a node with different owners:[/b] The following example creates 3 objects: [Node2D] ([code]node[/code]), [RigidDynamicBody2D] ([code]body[/code]) and [CollisionObject2D] ([code]collision[/code]). [code]collision[/code] is a child of [code]body[/code] which is a child of [code]node[/code]. Only [code]body[/code] is owned by [code]node[/code] and [code]pack[/code] will therefore only save those two nodes, but not [code]collision[/code].
 		[codeblocks]
 		[gdscript]
 		# Create the objects.
@@ -104,7 +104,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="_bundled" type="Dictionary" setter="_set_bundled_scene" getter="_get_bundled_scene" default="{&quot;conn_count&quot;: 0,&quot;conns&quot;: PackedInt32Array(),&quot;editable_instances&quot;: [],&quot;names&quot;: PackedStringArray(),&quot;node_count&quot;: 0,&quot;node_paths&quot;: [],&quot;nodes&quot;: PackedInt32Array(),&quot;variants&quot;: [],&quot;version&quot;: 2}">
+		<member name="_bundled" type="Dictionary" setter="_set_bundled_scene" getter="_get_bundled_scene" default="{ &quot;conn_count&quot;: 0, &quot;conns&quot;: PackedInt32Array(), &quot;editable_instances&quot;: [], &quot;names&quot;: PackedStringArray(), &quot;node_count&quot;: 0, &quot;node_paths&quot;: [], &quot;nodes&quot;: PackedInt32Array(), &quot;variants&quot;: [], &quot;version&quot;: 2 }">
 			A dictionary representation of the scene contents.
 			Available keys include "rnames" and "variants" for resources, "node_count", "nodes", "node_paths" for nodes, "editable_instances" for base scene children overrides, "conn_count" and "conns" for signal connections, and "version" for the format style of the PackedScene.
 		</member>
@@ -119,6 +119,10 @@
 		</constant>
 		<constant name="GEN_EDIT_STATE_MAIN" value="2" enum="GenEditState">
 			If passed to [method instantiate], provides local scene resources to the local scene. Only the main scene should receive the main edit state.
+			[b]Note:[/b] Only available in editor builds.
+		</constant>
+		<constant name="GEN_EDIT_STATE_MAIN_INHERITED" value="3" enum="GenEditState">
+			It's similar to [constant GEN_EDIT_STATE_MAIN], but for the case where the scene is being instantiated to be the base of another one.
 			[b]Note:[/b] Only available in editor builds.
 		</constant>
 	</constants>

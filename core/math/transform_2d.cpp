@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -69,12 +69,12 @@ void Transform2D::rotate(const real_t p_phi) {
 
 real_t Transform2D::get_skew() const {
 	real_t det = basis_determinant();
-	return Math::acos(elements[0].normalized().dot(SGN(det) * elements[1].normalized())) - Math_PI * 0.5;
+	return Math::acos(elements[0].normalized().dot(SIGN(det) * elements[1].normalized())) - Math_PI * 0.5;
 }
 
 void Transform2D::set_skew(const real_t p_angle) {
 	real_t det = basis_determinant();
-	elements[1] = SGN(det) * elements[0].rotated((Math_PI * 0.5 + p_angle)).normalized() * elements[1].length();
+	elements[1] = SIGN(det) * elements[0].rotated((Math_PI * 0.5 + p_angle)).normalized() * elements[1].length();
 }
 
 real_t Transform2D::get_rotation() const {
@@ -111,7 +111,7 @@ Transform2D::Transform2D(const real_t p_rot, const Size2 &p_scale, const real_t 
 }
 
 Size2 Transform2D::get_scale() const {
-	real_t det_sign = SGN(basis_determinant());
+	real_t det_sign = SIGN(basis_determinant());
 	return Size2(elements[0].length(), det_sign * elements[1].length());
 }
 
@@ -298,6 +298,6 @@ Transform2D Transform2D::operator*(const real_t p_val) const {
 
 Transform2D::operator String() const {
 	return "[X: " + elements[0].operator String() +
-		   ", Y: " + elements[1].operator String() +
-		   ", O: " + elements[2].operator String() + "]";
+			", Y: " + elements[1].operator String() +
+			", O: " + elements[2].operator String() + "]";
 }

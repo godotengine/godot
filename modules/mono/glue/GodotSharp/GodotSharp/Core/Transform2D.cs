@@ -23,7 +23,6 @@ namespace Godot
         /// <summary>
         /// The basis matrix's X vector (column 0). Equivalent to array index <c>[0]</c>.
         /// </summary>
-        /// <value></value>
         public Vector2 x;
 
         /// <summary>
@@ -420,12 +419,12 @@ namespace Godot
         /// Constructs a transformation matrix from the given components.
         /// Arguments are named such that xy is equal to calling x.y
         /// </summary>
-        /// <param name="xx">The X component of the X column vector, accessed via <c>t.x.x</c> or <c>[0][0]</c></param>
-        /// <param name="xy">The Y component of the X column vector, accessed via <c>t.x.y</c> or <c>[0][1]</c></param>
-        /// <param name="yx">The X component of the Y column vector, accessed via <c>t.y.x</c> or <c>[1][0]</c></param>
-        /// <param name="yy">The Y component of the Y column vector, accessed via <c>t.y.y</c> or <c>[1][1]</c></param>
-        /// <param name="ox">The X component of the origin vector, accessed via <c>t.origin.x</c> or <c>[2][0]</c></param>
-        /// <param name="oy">The Y component of the origin vector, accessed via <c>t.origin.y</c> or <c>[2][1]</c></param>
+        /// <param name="xx">The X component of the X column vector, accessed via <c>t.x.x</c> or <c>[0][0]</c>.</param>
+        /// <param name="xy">The Y component of the X column vector, accessed via <c>t.x.y</c> or <c>[0][1]</c>.</param>
+        /// <param name="yx">The X component of the Y column vector, accessed via <c>t.y.x</c> or <c>[1][0]</c>.</param>
+        /// <param name="yy">The Y component of the Y column vector, accessed via <c>t.y.y</c> or <c>[1][1]</c>.</param>
+        /// <param name="ox">The X component of the origin vector, accessed via <c>t.origin.x</c> or <c>[2][0]</c>.</param>
+        /// <param name="oy">The Y component of the origin vector, accessed via <c>t.origin.y</c> or <c>[2][1]</c>.</param>
         public Transform2D(real_t xx, real_t xy, real_t yx, real_t yy, real_t ox, real_t oy)
         {
             x = new Vector2(xx, xy);
@@ -447,6 +446,14 @@ namespace Godot
             this.origin = origin;
         }
 
+        /// <summary>
+        /// Composes these two transformation matrices by multiplying them
+        /// together. This has the effect of transforming the second transform
+        /// (the child) by the first transform (the parent).
+        /// </summary>
+        /// <param name="left">The parent transform.</param>
+        /// <param name="right">The child transform.</param>
+        /// <returns>The composed transform.</returns>
         public static Transform2D operator *(Transform2D left, Transform2D right)
         {
             left.origin = left * right.origin;
@@ -554,31 +561,52 @@ namespace Godot
             return newArray;
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the transforms are exactly equal.
+        /// Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
+        /// </summary>
+        /// <param name="left">The left transform.</param>
+        /// <param name="right">The right transform.</param>
+        /// <returns>Whether or not the transforms are exactly equal.</returns>
         public static bool operator ==(Transform2D left, Transform2D right)
         {
             return left.Equals(right);
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the transforms are not equal.
+        /// Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
+        /// </summary>
+        /// <param name="left">The left transform.</param>
+        /// <param name="right">The right transform.</param>
+        /// <returns>Whether or not the transforms are not equal.</returns>
         public static bool operator !=(Transform2D left, Transform2D right)
         {
             return !left.Equals(right);
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if this transform and <paramref name="obj"/> are equal.
+        /// Returns <see langword="true"/> if the transform is exactly equal
+        /// to the given object (<see paramref="obj"/>).
+        /// Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
         /// </summary>
-        /// <param name="obj">The other object to compare.</param>
-        /// <returns>Whether or not the transform and the other object are equal.</returns>
+        /// <param name="obj">The object to compare with.</param>
+        /// <returns>Whether or not the transform and the object are exactly equal.</returns>
         public override bool Equals(object obj)
         {
             return obj is Transform2D transform2D && Equals(transform2D);
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if this transform and <paramref name="other"/> are equal.
+        /// Returns <see langword="true"/> if the transforms are exactly equal.
+        /// Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
         /// </summary>
         /// <param name="other">The other transform to compare.</param>
-        /// <returns>Whether or not the matrices are equal.</returns>
+        /// <returns>Whether or not the matrices are exactly equal.</returns>
         public bool Equals(Transform2D other)
         {
             return x.Equals(other.x) && y.Equals(other.y) && origin.Equals(other.origin);

@@ -35,10 +35,20 @@
 struct hb_bit_set_invertible_t
 {
   hb_bit_set_t s;
-  bool inverted;
+  bool inverted = false;
 
-  hb_bit_set_invertible_t () { init (); }
-  ~hb_bit_set_invertible_t () { fini (); }
+  hb_bit_set_invertible_t () = default;
+  hb_bit_set_invertible_t (hb_bit_set_invertible_t& o) = default;
+  hb_bit_set_invertible_t (hb_bit_set_invertible_t&& o) = default;
+  hb_bit_set_invertible_t& operator= (const hb_bit_set_invertible_t& o) = default;
+  hb_bit_set_invertible_t& operator= (hb_bit_set_invertible_t&& o) = default;
+  friend void swap (hb_bit_set_invertible_t &a, hb_bit_set_invertible_t &b)
+  {
+    if (likely (!a.s.successful || !b.s.successful))
+      return;
+    hb_swap (a.inverted, b.inverted);
+    hb_swap (a.s, b.s);
+  }
 
   void init () { s.init (); inverted = false; }
   void fini () { s.fini (); }

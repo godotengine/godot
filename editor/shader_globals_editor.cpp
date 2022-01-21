@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,7 @@
 
 #include "shader_globals_editor.h"
 #include "editor_node.h"
+#include "servers/rendering/shader_language.h"
 
 static const char *global_var_type_names[RS::GLOBAL_VAR_TYPE_MAX] = {
 	"bool",
@@ -372,7 +373,7 @@ static Variant create_var(RS::GlobalVariableType p_type) {
 
 void ShaderGlobalsEditor::_variable_added() {
 	String var = variable_name->get_text().strip_edges();
-	if (var == "" || !var.is_valid_identifier()) {
+	if (var.is_empty() || !var.is_valid_identifier()) {
 		EditorNode::get_singleton()->show_warning(TTR("Please specify a valid variable identifier name."));
 		return;
 	}

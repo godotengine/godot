@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -233,12 +233,12 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 			const int *top_heights = bitmaps[i].top_heights.ptr();
 			const int *bottom_heights = bitmaps[i].bottom_heights.ptr();
 
-			for (int j = 0; j < atlas_w - w; j++) {
+			for (int j = 0; j <= atlas_w - w; j++) {
 				int height = 0;
 
 				for (int k = 0; k < w; k++) {
 					int pixmap_h = bottom_heights[k];
-					if (pixmap_h == -1) {
+					if (pixmap_h == 0x7FFFFFFF) {
 						continue; //no pixel here, anything is fine
 					}
 

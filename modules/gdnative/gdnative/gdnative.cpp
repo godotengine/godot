@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -129,13 +129,13 @@ void GDAPI godot_free(void *p_ptr) {
 
 // Helper print functions.
 void GDAPI godot_print_error(const char *p_description, const char *p_function, const char *p_file, int p_line) {
-	_err_print_error(p_function, p_file, p_line, p_description, ERR_HANDLER_ERROR);
+	_err_print_error(p_function, p_file, p_line, p_description, false, ERR_HANDLER_ERROR);
 }
 void GDAPI godot_print_warning(const char *p_description, const char *p_function, const char *p_file, int p_line) {
-	_err_print_error(p_function, p_file, p_line, p_description, ERR_HANDLER_WARNING);
+	_err_print_error(p_function, p_file, p_line, p_description, false, ERR_HANDLER_WARNING);
 }
 void GDAPI godot_print_script_error(const char *p_description, const char *p_function, const char *p_file, int p_line) {
-	_err_print_error(p_function, p_file, p_line, p_description, ERR_HANDLER_SCRIPT);
+	_err_print_error(p_function, p_file, p_line, p_description, false, ERR_HANDLER_SCRIPT);
 }
 
 void _gdnative_report_version_mismatch(const godot_object *p_library, const char *p_ext, godot_gdnative_api_version p_want, godot_gdnative_api_version p_have) {

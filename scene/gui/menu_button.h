@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,15 +44,15 @@ class MenuButton : public Button {
 
 	Vector2i mouse_pos_adjusted;
 
-	Array _get_items() const;
-	void _set_items(const Array &p_items);
-
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 	void _popup_visibility_changed(bool p_visible);
 
 protected:
 	void _notification(int p_what);
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
 	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 
@@ -63,6 +63,9 @@ public:
 	void set_switch_on_hover(bool p_enabled);
 	bool is_switch_on_hover();
 	void set_disable_shortcuts(bool p_disabled);
+
+	void set_item_count(int p_count);
+	int get_item_count() const;
 
 	MenuButton();
 	~MenuButton();

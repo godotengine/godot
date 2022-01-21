@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   height="10"
+   viewBox="0 0 10 10"
+   width="10"
+   version="1.1"
+   id="svg12"
+   sodipodi:docname="KeyTrackBlendShape.svg"
+   inkscape:version="1.1 (1:1.1+202106031931+af4d65493e)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs16" />
+  <sodipodi:namedview
+     id="namedview14"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="29.839906"
+     inkscape:cx="-3.5690461"
+     inkscape:cy="9.0985541"
+     inkscape:window-width="1848"
+     inkscape:window-height="1016"
+     inkscape:window-x="72"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg12" />
+  <ellipse
+     style="fill:none;fill-opacity:0.401212;stroke:none;stroke-width:4.7811;stroke-linejoin:round"
+     id="path921"
+     cx="-0.88986981"
+     cy="6.0959954"
+     rx="1.2495773"
+     ry="1.0867468" />
+  <path
+     id="path1910"
+     style="color:#000000;fill:#5ad5c4;stroke-linejoin:round;-inkscape-stroke:none"
+     d="m 4.5230825,1.1341567 c -2.1310744,0.017055 -3.86718737,1.7635044 -3.86718737,3.8984375 0,1.8778511 1.34348597,3.4523891 3.11718737,3.8164061 L 3.95277,7.5794693 C 2.7929991,7.3095662 1.9351921,6.2780435 1.9351921,5.0325942 c 0,-1.4262775 1.123493,-2.5732858 2.5390622,-2.6152344 v 0.017578 h 0.2011719 l 0.1796875,-1.28125 H 4.5230825 v -0.011719 c 0,-0.00263 -2.64e-5,-0.00518 0,-0.00781 z m 1.6816406,0.019531 -0.1796875,1.28125 h 1.3085937 c 0.078866,0 0.1230469,0.044181 0.1230469,0.1230469 v 4.9882815 c 0,0.07887 -0.044181,0.121093 -0.1230469,0.121094 H 5.2887075 L 5.10902,8.9486103 h 2.2246093 c 0.7663818,0 1.4042969,-0.635962 1.4042969,-1.402344 V 2.5579848 c 0,-0.7663818 -0.637915,-1.4042969 -1.4042969,-1.4042969 z" />
+</svg>

@@ -36,7 +36,8 @@ if env["builtin_libpng"]:
     # Currently .ASM filter_neon.S does not compile on NT.
     import os
 
-    use_neon = "neon_enabled" in env and env["neon_enabled"] and os.name != "nt"
+    # Enable ARM NEON instructions on 32-bit Android to compile more optimized code.
+    use_neon = "android_arch" in env and env["android_arch"] == "armv7" and os.name != "nt"
     if use_neon:
         env_png.Append(CPPDEFINES=[("PNG_ARM_NEON_OPT", 2)])
     else:

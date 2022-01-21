@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,6 +57,7 @@ public:
 		TYPE_START_CUSTOM,
 		TYPE_PROCESS_CUSTOM,
 		TYPE_SKY,
+		TYPE_FOG,
 		TYPE_MAX
 	};
 
@@ -69,7 +70,7 @@ public:
 
 	struct DefaultTextureParam {
 		StringName name;
-		Ref<Texture2D> param;
+		List<Ref<Texture2D>> params;
 	};
 
 private:
@@ -100,8 +101,6 @@ private:
 
 	HashMap<String, int> modes;
 	Set<StringName> flags;
-
-	static RenderModeEnums render_mode_enums[];
 
 	mutable SafeFlag dirty;
 	void _queue_update();
@@ -254,6 +253,8 @@ public:
 	void set_input_port_connected(int p_port, bool p_connected);
 	virtual bool is_generate_input_var(int p_port) const;
 
+	virtual bool has_output_port_preview(int p_port) const;
+
 	virtual bool is_output_port_expandable(int p_port) const;
 	void _set_output_ports_expanded(const Array &p_data);
 	Array _get_output_ports_expanded() const;
@@ -269,6 +270,7 @@ public:
 	void set_disabled(bool p_disabled = true);
 
 	virtual Vector<StringName> get_editable_properties() const;
+	virtual Map<StringName, String> get_editable_properties_names() const;
 
 	virtual Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const;
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
@@ -324,8 +326,8 @@ protected:
 	GDVIRTUAL0RC(int, _get_output_port_count)
 	GDVIRTUAL1RC(int, _get_output_port_type, int)
 	GDVIRTUAL1RC(String, _get_output_port_name, int)
-	GDVIRTUAL4RC(String, _get_code, Vector<String>, TypedArray<String>, int, int)
-	GDVIRTUAL1RC(String, _get_global_code, int)
+	GDVIRTUAL4RC(String, _get_code, TypedArray<String>, TypedArray<String>, Shader::Mode, VisualShader::Type)
+	GDVIRTUAL1RC(String, _get_global_code, Shader::Mode)
 	GDVIRTUAL0RC(bool, _is_highend)
 
 protected:
@@ -692,5 +694,7 @@ public:
 
 	VisualShaderNodeGlobalExpression();
 };
+
+extern String make_unique_id(VisualShader::Type p_type, int p_id, const String &p_name);
 
 #endif // VISUAL_SHADER_H

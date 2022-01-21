@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -125,6 +125,7 @@ Ref<SkeletonModification3D> SkeletonModificationStack3D::get_modification(int p_
 }
 
 void SkeletonModificationStack3D::add_modification(Ref<SkeletonModification3D> p_mod) {
+	ERR_FAIL_NULL(p_mod);
 	p_mod->_setup_modification(this);
 	modifications.push_back(p_mod);
 }
@@ -132,7 +133,7 @@ void SkeletonModificationStack3D::add_modification(Ref<SkeletonModification3D> p
 void SkeletonModificationStack3D::delete_modification(int p_mod_idx) {
 	const int modifications_size = modifications.size();
 	ERR_FAIL_INDEX(p_mod_idx, modifications_size);
-	modifications.remove(p_mod_idx);
+	modifications.remove_at(p_mod_idx);
 }
 
 void SkeletonModificationStack3D::set_modification(int p_mod_idx, Ref<SkeletonModification3D> p_mod) {
@@ -140,7 +141,7 @@ void SkeletonModificationStack3D::set_modification(int p_mod_idx, Ref<SkeletonMo
 	ERR_FAIL_INDEX(p_mod_idx, modifications_size);
 
 	if (p_mod == nullptr) {
-		modifications.remove(p_mod_idx);
+		modifications.remove_at(p_mod_idx);
 	} else {
 		p_mod->_setup_modification(this);
 		modifications[p_mod_idx] = p_mod;
@@ -148,6 +149,7 @@ void SkeletonModificationStack3D::set_modification(int p_mod_idx, Ref<SkeletonMo
 }
 
 void SkeletonModificationStack3D::set_modification_count(int p_count) {
+	ERR_FAIL_COND_MSG(p_count < 0, "Modification count cannot be less than zero.");
 	modifications.resize(p_count);
 	notify_property_list_changed();
 }

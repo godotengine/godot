@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 #include "core/config/engine.h"
 #include "core/core_constants.h"
 #include "core/io/file_access.h"
+#include "editor_templates/templates.gen.h"
 #include "gdscript_analyzer.h"
 #include "gdscript_compiler.h"
 #include "gdscript_parser.h"
@@ -55,68 +56,44 @@ void GDScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 	p_delimiters->push_back("\"\"\" \"\"\"");
 }
 
-String GDScriptLanguage::_get_processed_template(const String &p_template, const String &p_base_class_name) const {
-	String processed_template = p_template;
-
-#ifdef TOOLS_ENABLED
-	if (EDITOR_DEF("text_editor/completion/add_type_hints", false)) {
-		processed_template = processed_template.replace("%INT_TYPE%", ": int");
-		processed_template = processed_template.replace("%STRING_TYPE%", ": String");
-		processed_template = processed_template.replace("%FLOAT_TYPE%", ": float");
-		processed_template = processed_template.replace("%VOID_RETURN%", " -> void");
-	} else {
-		processed_template = processed_template.replace("%INT_TYPE%", "");
-		processed_template = processed_template.replace("%STRING_TYPE%", "");
-		processed_template = processed_template.replace("%FLOAT_TYPE%", "");
-		processed_template = processed_template.replace("%VOID_RETURN%", "");
-	}
-#else
-	processed_template = processed_template.replace("%INT_TYPE%", "");
-	processed_template = processed_template.replace("%STRING_TYPE%", "");
-	processed_template = processed_template.replace("%FLOAT_TYPE%", "");
-	processed_template = processed_template.replace("%VOID_RETURN%", "");
-#endif
-
-	processed_template = processed_template.replace("%BASE%", p_base_class_name);
-	processed_template = processed_template.replace("%TS%", _get_indentation());
-
-	return processed_template;
-}
-
-Ref<Script> GDScriptLanguage::get_template(const String &p_class_name, const String &p_base_class_name) const {
-	String _template = "extends %BASE%\n"
-					   "\n"
-					   "\n"
-					   "# Declare member variables here. Examples:\n"
-					   "# var a%INT_TYPE% = 2\n"
-					   "# var b%STRING_TYPE% = \"text\"\n"
-					   "\n"
-					   "\n"
-					   "# Called when the node enters the scene tree for the first time.\n"
-					   "func _ready()%VOID_RETURN%:\n"
-					   "%TS%pass # Replace with function body.\n"
-					   "\n"
-					   "\n"
-					   "# Called every frame. 'delta' is the elapsed time since the previous frame.\n"
-					   "#func _process(delta%FLOAT_TYPE%)%VOID_RETURN%:\n"
-					   "#%TS%pass\n";
-
-	_template = _get_processed_template(_template, p_base_class_name);
-
-	Ref<GDScript> script;
-	script.instantiate();
-	script->set_source_code(_template);
-
-	return script;
-}
-
 bool GDScriptLanguage::is_using_templates() {
 	return true;
 }
 
-void GDScriptLanguage::make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script) {
-	String _template = _get_processed_template(p_script->get_source_code(), p_base_class_name);
-	p_script->set_source_code(_template);
+Ref<Script> GDScriptLanguage::make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const {
+	Ref<GDScript> script;
+	script.instantiate();
+	String processed_template = p_template;
+#ifdef TOOLS_ENABLED
+	if (!EDITOR_DEF("text_editor/completion/add_type_hints", false)) {
+		processed_template = processed_template.replace(": int", "")
+									 .replace(": String", "")
+									 .replace(": float", "")
+									 .replace(":=", "=")
+									 .replace(" -> void", "");
+	}
+#else
+	processed_template = processed_template.replace(": int", "")
+								 .replace(": String", "")
+								 .replace(": float", "")
+								 .replace(" -> void", "");
+#endif
+
+	processed_template = processed_template.replace("_BASE_", p_base_class_name)
+								 .replace("_CLASS_", p_class_name)
+								 .replace("_TS_", _get_indentation());
+	script->set_source_code(processed_template);
+	return script;
+}
+
+Vector<ScriptLanguage::ScriptTemplate> GDScriptLanguage::get_built_in_templates(StringName p_object) {
+	Vector<ScriptLanguage::ScriptTemplate> templates;
+	for (int i = 0; i < TEMPLATES_ARRAY_SIZE; i++) {
+		if (TEMPLATES[i].inherit == p_object) {
+			templates.append(TEMPLATES[i]);
+		}
+	}
+	return templates;
 }
 
 static void get_function_names_recursively(const GDScriptParser::ClassNode *p_class, const String &p_prefix, Map<int, String> &r_funcs) {
@@ -236,7 +213,7 @@ Script *GDScriptLanguage::create_script() const {
 /* DEBUGGER FUNCTIONS */
 
 bool GDScriptLanguage::debug_break_parse(const String &p_file, int p_line, const String &p_error) {
-	//break because of parse error
+	// break because of parse error
 
 	if (EngineDebugger::is_active() && Thread::get_caller_id() == Thread::get_main_id()) {
 		_debug_parse_err_line = p_line;
@@ -603,12 +580,50 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 
 		if (par->default_value) {
 			String def_val = "<unknown>";
-			if (par->default_value->type == GDScriptParser::Node::LITERAL) {
-				const GDScriptParser::LiteralNode *literal = static_cast<const GDScriptParser::LiteralNode *>(par->default_value);
-				def_val = literal->value.get_construct_string();
-			} else if (par->default_value->type == GDScriptParser::Node::IDENTIFIER) {
-				const GDScriptParser::IdentifierNode *id = static_cast<const GDScriptParser::IdentifierNode *>(par->default_value);
-				def_val = id->name.operator String();
+			switch (par->default_value->type) {
+				case GDScriptParser::Node::LITERAL: {
+					const GDScriptParser::LiteralNode *literal = static_cast<const GDScriptParser::LiteralNode *>(par->default_value);
+					def_val = literal->value.get_construct_string();
+				} break;
+				case GDScriptParser::Node::IDENTIFIER: {
+					const GDScriptParser::IdentifierNode *id = static_cast<const GDScriptParser::IdentifierNode *>(par->default_value);
+					def_val = id->name.operator String();
+				} break;
+				case GDScriptParser::Node::CALL: {
+					const GDScriptParser::CallNode *call = static_cast<const GDScriptParser::CallNode *>(par->default_value);
+					if (call->is_constant && call->reduced) {
+						def_val = call->function_name.operator String() + call->reduced_value.operator String();
+					}
+				} break;
+				case GDScriptParser::Node::ARRAY: {
+					const GDScriptParser::ArrayNode *arr = static_cast<const GDScriptParser::ArrayNode *>(par->default_value);
+					if (arr->is_constant && arr->reduced) {
+						def_val = arr->reduced_value.operator String();
+					}
+				} break;
+				case GDScriptParser::Node::DICTIONARY: {
+					const GDScriptParser::DictionaryNode *dict = static_cast<const GDScriptParser::DictionaryNode *>(par->default_value);
+					if (dict->is_constant && dict->reduced) {
+						def_val = dict->reduced_value.operator String();
+					}
+				} break;
+				case GDScriptParser::Node::SUBSCRIPT: {
+					const GDScriptParser::SubscriptNode *sub = static_cast<const GDScriptParser::SubscriptNode *>(par->default_value);
+					if (sub->is_constant) {
+						if (sub->datatype.kind == GDScriptParser::DataType::ENUM_VALUE) {
+							def_val = sub->get_datatype().to_string();
+						} else if (sub->reduced) {
+							const Variant::Type vt = sub->reduced_value.get_type();
+							if (vt == Variant::Type::NIL || vt == Variant::Type::FLOAT || vt == Variant::Type::INT || vt == Variant::Type::STRING || vt == Variant::Type::STRING_NAME || vt == Variant::Type::BOOL || vt == Variant::Type::NODE_PATH) {
+								def_val = sub->reduced_value.operator String();
+							} else {
+								def_val = sub->get_datatype().to_string() + sub->reduced_value.operator String();
+							}
+						}
+					}
+				} break;
+				default:
+					break;
 			}
 			arghint += " = " + def_val;
 		}
@@ -668,6 +683,11 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 			}
 			ScriptCodeCompletionOption option(E, ScriptCodeCompletionOption::KIND_CLASS);
 			r_result.insert(option.display, option);
+		}
+	} else if (p_annotation->name == "@warning_ignore") {
+		for (int warning_code = 0; warning_code < GDScriptWarning::WARNING_MAX; warning_code++) {
+			ScriptCodeCompletionOption warning(GDScriptWarning::get_name_from_code((GDScriptWarning::Code)warning_code).to_lower(), ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
+			r_result.insert(warning.display, warning);
 		}
 	}
 }
@@ -946,8 +966,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 
 				if (!_static || Engine::get_singleton()->has_singleton(type)) {
 					List<MethodInfo> methods;
-					bool is_autocompleting_getters = GLOBAL_GET("debug/gdscript/completion/autocomplete_setters_and_getters").booleanize();
-					ClassDB::get_method_list(type, &methods, false, !is_autocompleting_getters);
+					ClassDB::get_method_list(type, &methods, false, true);
 					for (const MethodInfo &E : methods) {
 						if (E.name.begins_with("_")) {
 							continue;
@@ -1089,6 +1108,15 @@ static void _find_identifiers(GDScriptParser::CompletionContext &p_context, bool
 		kwa++;
 	}
 
+	List<StringName> utility_func_names;
+	Variant::get_utility_function_list(&utility_func_names);
+
+	for (List<StringName>::Element *E = utility_func_names.front(); E; E = E->next()) {
+		ScriptCodeCompletionOption option(E->get(), ScriptCodeCompletionOption::KIND_FUNCTION);
+		option.insert_text += "(";
+		r_result.insert(option.display, option);
+	}
+
 	OrderedHashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
 	for (OrderedHashMap<StringName, ProjectSettings::AutoloadInfo>::Element E = autoloads.front(); E; E = E.next()) {
 		if (!E.value().is_singleton) {
@@ -1172,6 +1200,10 @@ static bool _guess_method_return_type_from_base(GDScriptParser::CompletionContex
 
 static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context, const GDScriptParser::ExpressionNode *p_expression, GDScriptCompletionIdentifier &r_type) {
 	bool found = false;
+
+	if (p_expression == nullptr) {
+		return false;
+	}
 
 	if (p_expression->is_constant) {
 		// Already has a value, so just use that.
@@ -1356,7 +1388,7 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 									String arg1 = args[0];
 									if (arg1.begins_with("/root/")) {
 										String which = arg1.get_slice("/", 2);
-										if (which != "") {
+										if (!which.is_empty()) {
 											// Try singletons first
 											if (GDScriptLanguage::get_singleton()->get_named_globals_map().has(which)) {
 												r_type = _type_from_variant(GDScriptLanguage::get_singleton()->get_named_globals_map()[which]);
@@ -1374,8 +1406,8 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 														}
 
 														if (!script.ends_with(".gd")) {
-															//not a script, try find the script anyway,
-															//may have some success
+															// not a script, try find the script anyway,
+															// may have some success
 															script = script.get_basename() + ".gd";
 														}
 
@@ -2325,7 +2357,11 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 	GDScriptCompletionIdentifier connect_base;
 
-	if (GDScriptUtilityFunctions::function_exists(call->function_name)) {
+	if (Variant::has_utility_function(call->function_name)) {
+		MethodInfo info = Variant::get_utility_function_info(call->function_name);
+		r_arghint = _make_arguments_hint(info, p_argidx);
+		return;
+	} else if (GDScriptUtilityFunctions::function_exists(call->function_name)) {
 		MethodInfo info = GDScriptUtilityFunctions::get_function_info(call->function_name);
 		r_arghint = _make_arguments_hint(info, p_argidx);
 		return;
@@ -2740,7 +2776,7 @@ void GDScriptLanguage::auto_indent_code(String &p_code, int p_from_line, int p_t
 		}
 
 		String st = l.substr(tc, l.length()).strip_edges();
-		if (st == "" || st.begins_with("#")) {
+		if (st.is_empty() || st.begins_with("#")) {
 			continue; //ignore!
 		}
 
@@ -2757,7 +2793,7 @@ void GDScriptLanguage::auto_indent_code(String &p_code, int p_from_line, int p_t
 			}
 
 			if (indent_stack.size() && indent_stack.back()->get() != tc) {
-				indent_stack.push_back(tc); //this is not right but gets the job done
+				indent_stack.push_back(tc); // this is not right but gets the job done
 			}
 		}
 
@@ -2797,6 +2833,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 						r_result.type = ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
 						r_result.location = base_type.class_type->get_member(p_symbol).get_line();
 						r_result.class_path = base_type.script_path;
+						r_result.script = GDScriptCache::get_shallow_script(r_result.class_path);
 						return OK;
 					}
 					base_type = base_type.class_type->base_type;

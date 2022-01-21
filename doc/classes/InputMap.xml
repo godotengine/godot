@@ -7,7 +7,7 @@
 		Manages all [InputEventAction] which can be created/modified from the project settings menu [b]Project &gt; Project Settings &gt; Input Map[/b] or in code with [method add_action] and [method action_add_event]. See [method Node._input].
 	</description>
 	<tutorials>
-		<link title="InputEvent: InputMap">https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html#inputmap</link>
+		<link title="InputEvent: InputMap">$DOCS_URL/tutorials/inputs/inputevent.html#inputmap</link>
 	</tutorials>
 	<methods>
 		<method name="action_add_event">

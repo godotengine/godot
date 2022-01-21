@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,10 +52,6 @@
 #define VARIANT_ARGPTRS_PASS *argptr[0], *argptr[1], *argptr[2], *argptr[3], *argptr[4], *argptr[5], *argptr[6]], *argptr[7]
 #define VARIANT_ARGS_FROM_ARRAY(m_arr) m_arr[0], m_arr[1], m_arr[2], m_arr[3], m_arr[4], m_arr[5], m_arr[6], m_arr[7]
 
-/**
-@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 enum PropertyHint {
 	PROPERTY_HINT_NONE, ///< no hint provided.
 	PROPERTY_HINT_RANGE, ///< hint_text = "min,max[,step][,or_greater][,or_lesser][,noslider][,radians][,degrees][,exp][,suffix:<keyword>] range.
@@ -98,6 +94,7 @@ enum PropertyHint {
 	PROPERTY_HINT_INT_IS_OBJECTID,
 	PROPERTY_HINT_ARRAY_TYPE,
 	PROPERTY_HINT_INT_IS_POINTER,
+	PROPERTY_HINT_LOCALE_ID,
 	PROPERTY_HINT_MAX,
 	// When updating PropertyHint, also sync the hardcoded list in VisualScriptEditorVariableEdit
 };
@@ -137,7 +134,7 @@ enum PropertyUsageFlags {
 
 	PROPERTY_USAGE_DEFAULT = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_NETWORK,
 	PROPERTY_USAGE_DEFAULT_INTL = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_NETWORK | PROPERTY_USAGE_INTERNATIONALIZED,
-	PROPERTY_USAGE_NOEDITOR = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_NETWORK,
+	PROPERTY_USAGE_NO_EDITOR = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_NETWORK,
 };
 
 #define ADD_SIGNAL(m_signal) ::ClassDB::add_signal(get_class_static(), m_signal)
@@ -284,7 +281,6 @@ struct ObjectNativeExtension {
 
 	GDNativeExtensionClassCreateInstance create_instance;
 	GDNativeExtensionClassFreeInstance free_instance;
-	GDNativeExtensionClassObjectInstance set_object_instance;
 	GDNativeExtensionClassGetVirtual get_virtual;
 };
 
@@ -353,15 +349,12 @@ public:                                                                         
 	static String get_category_static() {                                                                                                        \
 		String category = m_inherits::get_category_static();                                                                                     \
 		if (_get_category != m_inherits::_get_category) {                                                                                        \
-			if (category != "") {                                                                                                                \
+			if (!category.is_empty()) {                                                                                                          \
 				category += "/";                                                                                                                 \
 			}                                                                                                                                    \
 			category += _get_category();                                                                                                         \
 		}                                                                                                                                        \
 		return category;                                                                                                                         \
-	}                                                                                                                                            \
-	static String inherits_static() {                                                                                                            \
-		return String(#m_inherits);                                                                                                              \
 	}                                                                                                                                            \
 	virtual bool is_class(const String &p_class) const override {                                                                                \
 		if (_get_extension() && _get_extension()->is_class(p_class)) {                                                                           \
@@ -403,7 +396,7 @@ protected:                                                                      
 		initialize_class();                                                                                                                      \
 	}                                                                                                                                            \
 	_FORCE_INLINE_ bool (Object::*_get_get() const)(const StringName &p_name, Variant &) const {                                                 \
-		return (bool (Object::*)(const StringName &, Variant &) const) & m_class::_get;                                                          \
+		return (bool(Object::*)(const StringName &, Variant &) const) & m_class::_get;                                                           \
 	}                                                                                                                                            \
 	virtual bool _getv(const StringName &p_name, Variant &r_ret) const override {                                                                \
 		if (m_class::_get_get() != m_inherits::_get_get()) {                                                                                     \
@@ -414,7 +407,7 @@ protected:                                                                      
 		return m_inherits::_getv(p_name, r_ret);                                                                                                 \
 	}                                                                                                                                            \
 	_FORCE_INLINE_ bool (Object::*_get_set() const)(const StringName &p_name, const Variant &p_property) {                                       \
-		return (bool (Object::*)(const StringName &, const Variant &)) & m_class::_set;                                                          \
+		return (bool(Object::*)(const StringName &, const Variant &)) & m_class::_set;                                                           \
 	}                                                                                                                                            \
 	virtual bool _setv(const StringName &p_name, const Variant &p_property) override {                                                           \
 		if (m_inherits::_setv(p_name, p_property)) {                                                                                             \
@@ -426,7 +419,7 @@ protected:                                                                      
 		return false;                                                                                                                            \
 	}                                                                                                                                            \
 	_FORCE_INLINE_ void (Object::*_get_get_property_list() const)(List<PropertyInfo> * p_list) const {                                           \
-		return (void (Object::*)(List<PropertyInfo> *) const) & m_class::_get_property_list;                                                     \
+		return (void(Object::*)(List<PropertyInfo> *) const) & m_class::_get_property_list;                                                      \
 	}                                                                                                                                            \
 	virtual void _get_property_listv(List<PropertyInfo> *p_list, bool p_reversed) const override {                                               \
 		if (!p_reversed) {                                                                                                                       \
@@ -447,7 +440,7 @@ protected:                                                                      
 		}                                                                                                                                        \
 	}                                                                                                                                            \
 	_FORCE_INLINE_ void (Object::*_get_notification() const)(int) {                                                                              \
-		return (void (Object::*)(int)) & m_class::_notification;                                                                                 \
+		return (void(Object::*)(int)) & m_class::_notification;                                                                                  \
 	}                                                                                                                                            \
 	virtual void _notificationv(int p_notification, bool p_reversed) override {                                                                  \
 		if (!p_reversed) {                                                                                                                       \

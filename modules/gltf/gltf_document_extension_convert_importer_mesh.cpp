@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "gltf_document_extension_convert_importer_mesh.h"
+#include "core/error/error_macros.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/importer_mesh.h"
 
@@ -38,6 +39,8 @@ void GLTFDocumentExtensionConvertImporterMesh::_bind_methods() {
 }
 
 Error GLTFDocumentExtensionConvertImporterMesh::import_post(Ref<GLTFDocument> p_document, Node *p_node) {
+	ERR_FAIL_NULL_V(p_document, ERR_INVALID_PARAMETER);
+	ERR_FAIL_NULL_V(p_node, ERR_INVALID_PARAMETER);
 	List<Node *> queue;
 	queue.push_back(p_node);
 	List<Node *> delete_queue;

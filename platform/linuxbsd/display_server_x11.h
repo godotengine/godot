@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,8 +46,8 @@
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering_server.h"
 
-#if defined(OPENGL_ENABLED)
-#include "context_gl_x11.h"
+#if defined(GLES3_ENABLED)
+#include "gl_manager_x11.h"
 #endif
 
 #if defined(VULKAN_ENABLED)
@@ -99,12 +99,12 @@ class DisplayServerX11 : public DisplayServer {
 	Atom requested;
 	int xdnd_version;
 
-#if defined(OPENGL_ENABLED)
-	ContextGL_X11 *context_gles2;
+#if defined(GLES3_ENABLED)
+	GLManager_X11 *gl_manager = nullptr;
 #endif
 #if defined(VULKAN_ENABLED)
-	VulkanContextX11 *context_vulkan;
-	RenderingDeviceVulkan *rendering_device_vulkan;
+	VulkanContextX11 *context_vulkan = nullptr;
+	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
 #endif
 
 #if defined(DBUS_ENABLED)
@@ -155,6 +155,7 @@ class DisplayServerX11 : public DisplayServer {
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
 
 	String internal_clipboard;
+	String internal_clipboard_primary;
 	Window xdnd_source_window;
 	::Display *x11_display;
 	char *xmbstring;
@@ -170,8 +171,8 @@ class DisplayServerX11 : public DisplayServer {
 	bool last_mouse_pos_valid;
 	Point2i last_click_pos;
 	uint64_t last_click_ms;
-	int last_click_button_index;
-	MouseButton last_button_state = MOUSE_BUTTON_NONE;
+	MouseButton last_click_button_index = MouseButton::NONE;
+	MouseButton last_button_state = MouseButton::NONE;
 	bool app_focused = false;
 	uint64_t time_since_no_focus = 0;
 
@@ -196,6 +197,8 @@ class DisplayServerX11 : public DisplayServer {
 
 	bool _refresh_device_info();
 
+	Rect2i _screen_get_rect(int p_screen) const;
+
 	MouseButton _get_mouse_button_state(MouseButton p_x11_button, int p_x11_type);
 	void _get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state);
 	void _flush_mouse_motion();
@@ -205,7 +208,7 @@ class DisplayServerX11 : public DisplayServer {
 
 	void _handle_key_event(WindowID p_window, XKeyEvent *p_event, LocalVector<XEvent> &p_events, uint32_t &p_event_index, bool p_echo = false);
 
-	Atom _process_selection_request_target(Atom p_target, Window p_requestor, Atom p_property) const;
+	Atom _process_selection_request_target(Atom p_target, Window p_requestor, Atom p_property, Atom p_selection) const;
 	void _handle_selection_request_event(XSelectionRequestEvent *p_event) const;
 
 	String _clipboard_get_impl(Atom p_source, Window x11_window, Atom target) const;
@@ -267,6 +270,7 @@ class DisplayServerX11 : public DisplayServer {
 	static void _poll_events_thread(void *ud);
 	bool _wait_for_events() const;
 	void _poll_events();
+	void _check_pending_events(LocalVector<XEvent> &r_events);
 
 	static Bool _predicate_all_events(Display *display, XEvent *event, XPointer arg);
 	static Bool _predicate_clipboard_selection(Display *display, XEvent *event, XPointer arg);
@@ -285,11 +289,12 @@ public:
 
 	virtual void mouse_warp_to_position(const Point2i &p_to) override;
 	virtual Point2i mouse_get_position() const override;
-	virtual Point2i mouse_get_absolute_position() const override;
 	virtual MouseButton mouse_get_button_state() const override;
 
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;
+	virtual void clipboard_set_primary(const String &p_text) override;
+	virtual String clipboard_get_primary() const override;
 
 	virtual int get_screen_count() const override;
 	virtual Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
@@ -331,6 +336,7 @@ public:
 
 	virtual void window_set_max_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual Size2i window_get_max_size(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual void gl_window_make_current(DisplayServer::WindowID p_window_id) override;
 
 	virtual void window_set_transient(WindowID p_window, WindowID p_parent) override;
 

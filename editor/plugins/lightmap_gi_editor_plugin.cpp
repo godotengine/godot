@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,21 +33,22 @@
 void LightmapGIEditorPlugin::_bake_select_file(const String &p_file) {
 	if (lightmap) {
 		LightmapGI::BakeError err;
+		const uint64_t time_started = OS::get_singleton()->get_ticks_msec();
 		if (get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root() == lightmap) {
 			err = lightmap->bake(lightmap, p_file, bake_func_step);
 		} else {
 			err = lightmap->bake(lightmap->get_parent(), p_file, bake_func_step);
 		}
 
-		bake_func_end();
+		bake_func_end(time_started);
 
 		switch (err) {
 			case LightmapGI::BAKE_ERROR_NO_SAVE_PATH: {
 				String scene_path = lightmap->get_scene_file_path();
-				if (scene_path == String()) {
+				if (scene_path.is_empty()) {
 					scene_path = lightmap->get_owner()->get_scene_file_path();
 				}
-				if (scene_path == String()) {
+				if (scene_path.is_empty()) {
 					EditorNode::get_singleton()->show_warning(TTR("Can't determine a save path for lightmap images.\nSave your scene and try again."));
 					break;
 				}
@@ -104,11 +105,18 @@ bool LightmapGIEditorPlugin::bake_func_step(float p_progress, const String &p_de
 	return tmp_progress->step(p_description, p_progress * 1000, p_refresh);
 }
 
-void LightmapGIEditorPlugin::bake_func_end() {
+void LightmapGIEditorPlugin::bake_func_end(uint64_t p_time_started) {
 	if (tmp_progress != nullptr) {
 		memdelete(tmp_progress);
 		tmp_progress = nullptr;
 	}
+
+	const int time_taken = (OS::get_singleton()->get_ticks_msec() - p_time_started) * 0.001;
+	print_line(vformat("Done baking lightmaps in %02d:%02d:%02d.", time_taken / 3600, (time_taken % 3600) / 60, time_taken % 60));
+	// Request attention in case the user was doing something else.
+	// Baking lightmaps is likely the editor task that can take the most time,
+	// so only request the attention for baking lightmaps.
+	DisplayServer::get_singleton()->window_request_attention();
 }
 
 void LightmapGIEditorPlugin::_bind_methods() {

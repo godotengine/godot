@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,10 +38,6 @@
 #include "space_bullet.h"
 
 #include <btBulletCollisionCommon.h>
-
-/**
-	@author AndreaCatania
-*/
 
 // We enable dynamic AABB tree so that we can actually perform a broadphase on bodies with compound collision shapes.
 // This is crucial for the performance of kinematic bodies and for bodies with transforming shapes.
@@ -93,11 +89,9 @@ CollisionObjectBullet::CollisionObjectBullet(Type p_type) :
 		type(p_type) {}
 
 CollisionObjectBullet::~CollisionObjectBullet() {
-	// Remove all overlapping, notify is not required since godot take care of it
-	for (int i = areasOverlapped.size() - 1; 0 <= i; --i) {
-		areasOverlapped[i]->remove_overlap(this, /*Notify*/ false);
+	for (int i = 0; i < areasOverlapped.size(); i++) {
+		areasOverlapped[i]->remove_object_overlaps(this);
 	}
-
 	destroyBulletCollisionObject();
 }
 
@@ -178,7 +172,9 @@ bool CollisionObjectBullet::is_collisions_response_enabled() {
 }
 
 void CollisionObjectBullet::notify_new_overlap(AreaBullet *p_area) {
-	areasOverlapped.push_back(p_area);
+	if (areasOverlapped.find(p_area) == -1) {
+		areasOverlapped.push_back(p_area);
+	}
 }
 
 void CollisionObjectBullet::on_exit_area(AreaBullet *p_area) {
@@ -187,6 +183,7 @@ void CollisionObjectBullet::on_exit_area(AreaBullet *p_area) {
 
 void CollisionObjectBullet::set_godot_object_flags(int flags) {
 	bt_collision_object->setUserIndex2(flags);
+	updated = true;
 }
 
 int CollisionObjectBullet::get_godot_object_flags() const {
@@ -220,7 +217,7 @@ const btTransform &CollisionObjectBullet::get_transform__bullet() const {
 }
 
 void CollisionObjectBullet::notify_transform_changed() {
-	isTransformChanged = true;
+	updated = true;
 }
 
 RigidCollisionObjectBullet::~RigidCollisionObjectBullet() {
@@ -272,7 +269,7 @@ void RigidCollisionObjectBullet::remove_shape_full(ShapeBullet *p_shape) {
 	for (int i = shapes.size() - 1; 0 <= i; --i) {
 		if (p_shape == shapes[i].shape) {
 			internal_shape_destroy(i);
-			shapes.remove(i);
+			shapes.remove_at(i);
 		}
 	}
 	reload_shapes();
@@ -281,7 +278,7 @@ void RigidCollisionObjectBullet::remove_shape_full(ShapeBullet *p_shape) {
 void RigidCollisionObjectBullet::remove_shape_full(int p_index) {
 	ERR_FAIL_INDEX(p_index, get_shape_count());
 	internal_shape_destroy(p_index);
-	shapes.remove(p_index);
+	shapes.remove_at(p_index);
 	reload_shapes();
 }
 

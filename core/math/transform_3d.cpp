@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -80,8 +80,10 @@ void Transform3D::set_look_at(const Vector3 &p_eye, const Vector3 &p_target, con
 	origin = p_eye;
 }
 
-Transform3D Transform3D::interpolate_with(const Transform3D &p_transform, real_t p_c) const {
+Transform3D Transform3D::sphere_interpolate_with(const Transform3D &p_transform, real_t p_c) const {
 	/* not sure if very "efficient" but good enough? */
+
+	Transform3D interp;
 
 	Vector3 src_scale = basis.get_scale();
 	Quaternion src_rot = basis.get_rotation_quaternion();
@@ -91,9 +93,17 @@ Transform3D Transform3D::interpolate_with(const Transform3D &p_transform, real_t
 	Quaternion dst_rot = p_transform.basis.get_rotation_quaternion();
 	Vector3 dst_loc = p_transform.origin;
 
-	Transform3D interp;
 	interp.basis.set_quaternion_scale(src_rot.slerp(dst_rot, p_c).normalized(), src_scale.lerp(dst_scale, p_c));
 	interp.origin = src_loc.lerp(dst_loc, p_c);
+
+	return interp;
+}
+
+Transform3D Transform3D::interpolate_with(const Transform3D &p_transform, real_t p_c) const {
+	Transform3D interp;
+
+	interp.basis = basis.lerp(p_transform.basis, p_c);
+	interp.origin = origin.lerp(p_transform.origin, p_c);
 
 	return interp;
 }
@@ -139,6 +149,16 @@ Transform3D Transform3D::orthonormalized() const {
 	return _copy;
 }
 
+void Transform3D::orthogonalize() {
+	basis.orthogonalize();
+}
+
+Transform3D Transform3D::orthogonalized() const {
+	Transform3D _copy = *this;
+	_copy.orthogonalize();
+	return _copy;
+}
+
 bool Transform3D::is_equal_approx(const Transform3D &p_transform) const {
 	return basis.is_equal_approx(p_transform.basis) && origin.is_equal_approx(p_transform.origin);
 }
@@ -175,9 +195,9 @@ Transform3D Transform3D::operator*(const real_t p_val) const {
 
 Transform3D::operator String() const {
 	return "[X: " + basis.get_axis(0).operator String() +
-		   ", Y: " + basis.get_axis(1).operator String() +
-		   ", Z: " + basis.get_axis(2).operator String() +
-		   ", O: " + origin.operator String() + "]";
+			", Y: " + basis.get_axis(1).operator String() +
+			", Z: " + basis.get_axis(2).operator String() +
+			", O: " + origin.operator String() + "]";
 }
 
 Transform3D::Transform3D(const Basis &p_basis, const Vector3 &p_origin) :
