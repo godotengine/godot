@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Godot
 {
@@ -190,6 +191,49 @@ namespace Godot
         public T GetParentOrNull<T>() where T : class
         {
             return GetParent() as T;
+        }
+
+        /**
+        *   <summary>Finds a Node of type T starting at the root of the tree</summary>
+        */
+        public T FindNodeOfType<T>() where T : class
+        {
+            // find the root node
+            Node parent = this;
+            Node tempParent = parent;
+            while (tempParent != null)
+            {
+                tempParent = parent.GetParent();
+                if (tempParent != null)
+                {
+                    parent = tempParent;
+                }
+            }
+
+            return this.FindNodeOfType(parent);
+        }
+
+        /**
+        *   <summary>Finds a Node of type T starting at the root of the specified parent Node</summary>
+        */
+        public T FindNodeOfType<T>(Node parent) where T : class
+        {
+            Queue<Node> children = new Queue<Node>();
+            children.Enqueue(parent);
+            while (children.Count > 0)
+            {
+                var currentNode = children.Dequeue();
+                if (currentNode is T)
+                {
+                    return (T)currentNode;
+                }
+                var nodeChildren = currentNode.GetChildren();
+                foreach (var child in nodeChildren)
+                {
+                    children.Enqueue((Node)child);
+                }
+            }
+            return null;
         }
     }
 }
