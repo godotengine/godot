@@ -3232,6 +3232,8 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		{ 0, VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, default_access_mask, 0, 0 } };
 	VkSubpassDependency &dependency_from_external = dependencies[0];
 	VkSubpassDependency &dependency_to_external = dependencies[1];
+	bool dependency_from_external_used = false;
+	bool dependency_to_external_used = false;
 	LocalVector<int32_t> attachment_last_pass;
 	attachment_last_pass.resize(p_attachments.size());
 
@@ -3269,11 +3271,13 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 					description.initialLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 					dependency_from_external.srcStageMask |= reading_stages;
+					dependency_from_external_used = true;
 				} else {
 					description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 					description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
 					dependency_from_external.srcStageMask |= reading_stages;
+					dependency_from_external_used = true;
 				}
 			} break;
 			case INITIAL_ACTION_KEEP: {
@@ -3286,11 +3290,13 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 					description.initialLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 					dependency_from_external.srcStageMask |= reading_stages;
+					dependency_to_external_used = true;
 				} else {
 					description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 					description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
 					dependency_from_external.srcStageMask |= reading_stages;
+					dependency_from_external_used = true;
 				}
 			} break;
 			case INITIAL_ACTION_DROP: {
@@ -3303,11 +3309,13 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 					description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
 					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 					dependency_from_external.srcStageMask |= reading_stages;
+					dependency_to_external_used = true;
 				} else {
 					description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 					description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
 					dependency_from_external.srcStageMask |= reading_stages;
+					dependency_from_external_used = true;
 				}
 			} break;
 			case INITIAL_ACTION_CLEAR_REGION_CONTINUE:
@@ -3325,6 +3333,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 					description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
 					dependency_from_external.srcStageMask |= reading_stages;
+					dependency_from_external_used = true;
 				}
 			} break;
 			default: {
@@ -3390,11 +3399,13 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 					description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 					description.finalLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 					update_external_dependency_for_store(dependency_to_external, is_sampled, is_storage, false);
+					dependency_to_external_used = true;
 				} else if (p_attachments[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 					description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 					description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
 					description.finalLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 					update_external_dependency_for_store(dependency_to_external, is_sampled, is_storage, true);
+					dependency_to_external_used = true;
 				} else {
 					description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -3649,10 +3660,19 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 	render_pass_create_info.pAttachments = attachments.ptr();
 	render_pass_create_info.subpassCount = subpasses.size();
 	render_pass_create_info.pSubpasses = subpasses.ptr();
+
 	// Commenting this because it seems it just avoids raster and compute to work at the same time.
 	// Other barriers seem to be protecting the render pass fine.
 	//	render_pass_create_info.dependencyCount = 2;
 	//	render_pass_create_info.pDependencies = dependencies;
+
+	// Well, at least include them is there are serious clues they are needed
+	if (dependency_from_external_used) {
+		subpass_dependencies.push_back(dependency_from_external);
+	}
+	if (dependency_to_external_used) {
+		subpass_dependencies.push_back(dependency_to_external);
+	}
 
 	render_pass_create_info.dependencyCount = subpass_dependencies.size();
 	if (subpass_dependencies.size()) {
