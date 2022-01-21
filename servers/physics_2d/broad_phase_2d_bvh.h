@@ -37,7 +37,34 @@
 #include "core/math/vector2.h"
 
 class BroadPhase2DBVH : public BroadPhase2DSW {
-	BVH_Manager<CollisionObject2DSW, true, 128, Rect2, Vector2> bvh;
+	template <class T>
+	class UserPairTestFunction {
+	public:
+		static bool user_pair_check(const T *p_a, const T *p_b) {
+			// return false if no collision, decided by masks etc
+			return p_a->test_collision_mask(p_b);
+		}
+	};
+
+	template <class T>
+	class UserCullTestFunction {
+	public:
+		static bool user_cull_check(const T *p_a, const T *p_b) {
+			return true;
+		}
+	};
+
+	enum Tree {
+		TREE_STATIC = 0,
+		TREE_DYNAMIC = 1,
+	};
+
+	enum TreeFlag {
+		TREE_FLAG_STATIC = 1 << TREE_STATIC,
+		TREE_FLAG_DYNAMIC = 1 << TREE_DYNAMIC,
+	};
+
+	BVH_Manager<CollisionObject2DSW, 2, true, 128, UserPairTestFunction<CollisionObject2DSW>, UserCullTestFunction<CollisionObject2DSW>, Rect2, Vector2> bvh;
 
 	static void *_pair_callback(void *p_self, uint32_t p_id_A, CollisionObject2DSW *p_object_A, int p_subindex_A, uint32_t p_id_B, CollisionObject2DSW *p_object_B, int p_subindex_B);
 	static void _unpair_callback(void *p_self, uint32_t p_id_A, CollisionObject2DSW *p_object_A, int p_subindex_A, uint32_t p_id_B, CollisionObject2DSW *p_object_B, int p_subindex_B, void *p_pair_data);

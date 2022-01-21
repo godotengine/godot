@@ -84,6 +84,25 @@ void *BroadPhaseOctree::_pair_callback(void *self, OctreeElementID p_A, Collisio
 		return nullptr;
 	}
 
+	bool valid_collision_pair = p_object_A->test_collision_mask(p_object_B);
+	void *pair_data = bpo->pair_userdata;
+
+	if (pair_data) {
+		// Checking an existing pair.
+		if (valid_collision_pair) {
+			// Nothing to do, pair is still valid.
+			return pair_data;
+		} else {
+			// Logical collision not valid anymore, unpair.
+			_unpair_callback(self, p_A, p_object_A, subindex_A, p_B, p_object_B, subindex_B, pair_data);
+			return nullptr;
+		}
+	}
+
+	if (!valid_collision_pair) {
+		return nullptr;
+	}
+
 	return bpo->pair_callback(p_object_A, subindex_A, p_object_B, subindex_B, nullptr, bpo->pair_userdata);
 }
 
