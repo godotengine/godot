@@ -43,6 +43,8 @@ class PortalGameplayMonitor {
 public:
 	PortalGameplayMonitor();
 
+	void unload(PortalRenderer &p_portal_renderer);
+
 	// entering and exiting gameplay notifications (requires PVS)
 	void update_gameplay(PortalRenderer &p_portal_renderer, const int *p_source_room_ids, int p_num_source_rooms);
 	void set_params(bool p_use_secondary_pvs, bool p_use_signals);

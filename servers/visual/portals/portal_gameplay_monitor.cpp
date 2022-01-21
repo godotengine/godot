@@ -74,6 +74,95 @@ bool PortalGameplayMonitor::_source_rooms_changed(const int *p_source_room_ids, 
 	return source_rooms_changed;
 }
 
+void PortalGameplayMonitor::unload(PortalRenderer &p_portal_renderer) {
+	// First : send gameplay exit signals for any objects still in gameplay
+	////////////////////////////////////////////////////////////////////
+	// lock output
+	VisualServerCallbacks *callbacks = VSG::scene->get_callbacks();
+	callbacks->lock();
+
+	// Remove any movings
+	for (int n = 0; n < _active_moving_pool_ids_prev->size(); n++) {
+		int pool_id = (*_active_moving_pool_ids_prev)[n];
+		PortalRenderer::Moving &moving = p_portal_renderer.get_pool_moving(pool_id);
+		moving.last_gameplay_tick_hit = 0;
+
+		VisualServerCallbacks::Message msg;
+		msg.object_id = VSG::scene->_instance_get_object_ID(moving.instance);
+		msg.type = _exit_callback_type;
+		callbacks->push_message(msg);
+	}
+
+	// Remove any roaming ghosts
+	for (int n = 0; n < _active_rghost_pool_ids_prev->size(); n++) {
+		int pool_id = (*_active_rghost_pool_ids_prev)[n];
+		PortalRenderer::RGhost &moving = p_portal_renderer.get_pool_rghost(pool_id);
+		moving.last_gameplay_tick_hit = 0;
+
+		VisualServerCallbacks::Message msg;
+		msg.object_id = moving.object_id;
+		msg.type = VisualServerCallbacks::CALLBACK_NOTIFICATION_EXIT_GAMEPLAY;
+		callbacks->push_message(msg);
+	}
+
+	// Rooms
+	for (int n = 0; n < _active_room_ids_prev->size(); n++) {
+		int room_id = (*_active_room_ids_prev)[n];
+		VSRoom &room = p_portal_renderer.get_room(room_id);
+		room.last_gameplay_tick_hit = 0;
+
+		VisualServerCallbacks::Message msg;
+		msg.object_id = room._godot_instance_ID;
+		msg.type = _exit_callback_type;
+		callbacks->push_message(msg);
+	}
+
+	// RoomGroups
+	for (int n = 0; n < _active_roomgroup_ids_prev->size(); n++) {
+		int roomgroup_id = (*_active_roomgroup_ids_prev)[n];
+		VSRoomGroup &roomgroup = p_portal_renderer.get_roomgroup(roomgroup_id);
+		roomgroup.last_gameplay_tick_hit = 0;
+
+		VisualServerCallbacks::Message msg;
+		msg.object_id = roomgroup._godot_instance_ID;
+		msg.type = _exit_callback_type;
+		callbacks->push_message(msg);
+	}
+
+	// Static Ghosts
+	for (int n = 0; n < _active_sghost_ids_prev->size(); n++) {
+		int id = (*_active_sghost_ids_prev)[n];
+		VSStaticGhost &ghost = p_portal_renderer.get_static_ghost(id);
+		ghost.last_gameplay_tick_hit = 0;
+
+		VisualServerCallbacks::Message msg;
+		msg.object_id = ghost.object_id;
+		msg.type = VisualServerCallbacks::CALLBACK_NOTIFICATION_EXIT_GAMEPLAY;
+		callbacks->push_message(msg);
+	}
+
+	// unlock
+	callbacks->unlock();
+
+	// Clear all remaining data
+	for (int n = 0; n < 2; n++) {
+		_active_moving_pool_ids[n].clear();
+		_active_rghost_pool_ids[n].clear();
+		_active_room_ids[n].clear();
+		_active_roomgroup_ids[n].clear();
+		_active_sghost_ids[n].clear();
+	}
+
+	_source_rooms_prev.clear();
+
+	// Lets not reset this just in case because it may be possible to have a moving outside the room system
+	// which is preserved between levels, and has a stored gameplay tick. And with uint32_t this should take
+	// a *long* time to rollover... (828 days?). And I don't think a rollover would actually cause a problem in practice.
+	// But can revisit this in the case of e.g. servers running continuously.
+	// We could alternatively go through all movings (not just active) etc and reset the last_gameplay_tick_hit to 0.
+	// _gameplay_tick = 1;
+}
+
 void PortalGameplayMonitor::set_params(bool p_use_secondary_pvs, bool p_use_signals) {
 	_use_secondary_pvs = p_use_secondary_pvs;
 	_use_signals = p_use_signals;
