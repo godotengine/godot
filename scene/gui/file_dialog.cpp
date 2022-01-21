@@ -110,6 +110,9 @@ void FileDialog::_notification(int p_what) {
 		show_hidden->set_icon(vbox->get_theme_icon(SNAME("toggle_hidden"), SNAME("FileDialog")));
 		_theme_changed();
 	}
+	if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
+		update_filters();
+	}
 }
 
 void FileDialog::unhandled_input(const Ref<InputEvent> &p_event) {
@@ -638,7 +641,7 @@ void FileDialog::update_filters() {
 			all_filters += ", ...";
 		}
 
-		filter->add_item(String(TTRC("All Recognized")) + " (" + all_filters + ")");
+		filter->add_item(RTR("All Recognized") + " (" + all_filters + ")");
 	}
 	for (int i = 0; i < filters.size(); i++) {
 		String flt = filters[i].get_slice(";", 0).strip_edges();
@@ -650,7 +653,7 @@ void FileDialog::update_filters() {
 		}
 	}
 
-	filter->add_item(TTRC("All Files (*)"));
+	filter->add_item(RTR("All Files") + " (*)");
 }
 
 void FileDialog::clear_filters() {
