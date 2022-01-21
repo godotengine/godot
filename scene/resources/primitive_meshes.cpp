@@ -1580,12 +1580,12 @@ PointMesh::PointMesh() {
 }
 // TUBE TRAIL
 
-void TubeTrailMesh::set_radius(const float p_radius) {
-	radius = p_radius;
+void TubeTrailMesh::set_size(const float p_size) {
+	size = p_size;
 	_request_update();
 }
-float TubeTrailMesh::get_radius() const {
-	return radius;
+float TubeTrailMesh::get_size() const {
+	return size;
 }
 
 void TubeTrailMesh::set_radial_steps(const int p_radial_steps) {
@@ -1694,7 +1694,7 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 			float u = i;
 			u /= radial_steps;
 
-			float r = radius;
+			float r = size * 0.5;
 			if (curve.is_valid() && curve->get_point_count() > 0) {
 				r *= curve->interpolate_baked(v);
 			}
@@ -1760,7 +1760,7 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 		bone_weights.push_back(0);
 		bone_weights.push_back(0);
 
-		float rm = radius * scale_pos;
+		float rm = size * 0.5 * scale_pos;
 
 		for (int i = 0; i <= radial_steps; i++) {
 			float r = i;
@@ -1823,7 +1823,7 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 		bone_weights.push_back(0);
 		bone_weights.push_back(0);
 
-		float rm = radius * scale_neg;
+		float rm = size * 0.5 * scale_neg;
 
 		for (int i = 0; i <= radial_steps; i++) {
 			float r = i;
@@ -1870,8 +1870,8 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 }
 
 void TubeTrailMesh::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &TubeTrailMesh::set_radius);
-	ClassDB::bind_method(D_METHOD("get_radius"), &TubeTrailMesh::get_radius);
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &TubeTrailMesh::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"), &TubeTrailMesh::get_size);
 
 	ClassDB::bind_method(D_METHOD("set_radial_steps", "radial_steps"), &TubeTrailMesh::set_radial_steps);
 	ClassDB::bind_method(D_METHOD("get_radial_steps"), &TubeTrailMesh::get_radial_steps);
@@ -1888,7 +1888,7 @@ void TubeTrailMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &TubeTrailMesh::set_curve);
 	ClassDB::bind_method(D_METHOD("get_curve"), &TubeTrailMesh::get_curve);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "size", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater"), "set_size", "get_size");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "radial_steps", PROPERTY_HINT_RANGE, "3,128,1"), "set_radial_steps", "get_radial_steps");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sections", PROPERTY_HINT_RANGE, "2,128,1"), "set_sections", "get_sections");

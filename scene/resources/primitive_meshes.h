@@ -349,7 +349,7 @@ class TubeTrailMesh : public PrimitiveMesh {
 	GDCLASS(TubeTrailMesh, PrimitiveMesh);
 
 private:
-	float radius = 1.0;
+	float size = 1.0;
 	int radial_steps = 8;
 	int sections = 5;
 	float section_length = 0.2;
@@ -364,8 +364,8 @@ protected:
 	virtual void _create_mesh_array(Array &p_arr) const override;
 
 public:
-	void set_radius(const float p_radius);
-	float get_radius() const;
+	void set_size(const float p_size);
+	float get_size() const;
 
 	void set_radial_steps(const int p_radial_steps);
 	int get_radial_steps() const;
