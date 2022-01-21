@@ -26,7 +26,7 @@ _lib_msdf = static_library('msdf',
     _msdf_srcs,
     include_directories: _msdf_incdirs,
     c_args: _freetype_dep_defines + _freetype_c_defines,
-    dependencies: [DEP_ZLIB, DEP_LIBPNG, DEP_NANOSVG],
+    dependencies: [DEP_ZLIB, DEP_LIBPNG],
 )
 
 DEP_MSDF = declare_dependency(link_with: _lib_msdf,
