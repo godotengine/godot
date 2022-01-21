@@ -2794,6 +2794,7 @@ Variant ScriptEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 	if (!preview_icon.is_null()) {
 		TextureRect *tf = memnew(TextureRect);
 		tf->set_texture(preview_icon);
+		tf->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 		drag_preview->add_child(tf);
 	}
 	Label *label = memnew(Label(preview_name));
