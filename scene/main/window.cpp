@@ -41,7 +41,16 @@ void Window::set_title(const String &p_title) {
 	if (embedder) {
 		embedder->_sub_window_update(this);
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-		DisplayServer::get_singleton()->window_set_title(atr(p_title), window_id);
+		String tr_title = atr(p_title);
+#ifdef DEBUG_ENABLED
+		if (window_id == DisplayServer::MAIN_WINDOW_ID) {
+			// Append a suffix to the window title to denote that the project is running
+			// from a debug build (including the editor). Since this results in lower performance,
+			// this should be clearly presented to the user.
+			tr_title = vformat("%s (DEBUG)", tr_title);
+		}
+#endif
+		DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
 	}
 }
 
@@ -234,7 +243,16 @@ void Window::_make_window() {
 	DisplayServer::get_singleton()->window_set_current_screen(current_screen, window_id);
 	DisplayServer::get_singleton()->window_set_max_size(max_size, window_id);
 	DisplayServer::get_singleton()->window_set_min_size(min_size, window_id);
-	DisplayServer::get_singleton()->window_set_title(atr(title), window_id);
+	String tr_title = atr(title);
+#ifdef DEBUG_ENABLED
+	if (window_id == DisplayServer::MAIN_WINDOW_ID) {
+		// Append a suffix to the window title to denote that the project is running
+		// from a debug build (including the editor). Since this results in lower performance,
+		// this should be clearly presented to the user.
+		tr_title = vformat("%s (DEBUG)", tr_title);
+	}
+#endif
+	DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
 	DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
 
 	_update_window_size();
@@ -773,7 +791,16 @@ void Window::_notification(int p_what) {
 			if (embedder) {
 				embedder->_sub_window_update(this);
 			} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-				DisplayServer::get_singleton()->window_set_title(atr(title), window_id);
+				String tr_title = atr(title);
+#ifdef DEBUG_ENABLED
+				if (window_id == DisplayServer::MAIN_WINDOW_ID) {
+					// Append a suffix to the window title to denote that the project is running
+					// from a debug build (including the editor). Since this results in lower performance,
+					// this should be clearly presented to the user.
+					tr_title = vformat("%s (DEBUG)", tr_title);
+				}
+#endif
+				DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
 			}
 
 			child_controls_changed();
