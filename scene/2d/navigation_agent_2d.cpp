@@ -35,6 +35,8 @@
 #include "servers/navigation_2d_server.h"
 
 void NavigationAgent2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationAgent2D::get_rid);
+
 	ClassDB::bind_method(D_METHOD("set_target_desired_distance", "desired_distance"), &NavigationAgent2D::set_target_desired_distance);
 	ClassDB::bind_method(D_METHOD("get_target_desired_distance"), &NavigationAgent2D::get_target_desired_distance);
 
