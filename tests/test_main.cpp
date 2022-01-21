@@ -73,6 +73,7 @@
 #include "tests/core/variant/test_array.h"
 #include "tests/core/variant/test_dictionary.h"
 #include "tests/core/variant/test_variant.h"
+#include "tests/scene/test_animation.h"
 #include "tests/scene/test_code_edit.h"
 #include "tests/scene/test_curve.h"
 #include "tests/scene/test_gradient.h"
