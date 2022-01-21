@@ -52,6 +52,15 @@ EditorFileDialog::RegisterFunc EditorFileDialog::unregister_func = nullptr;
 
 void EditorFileDialog::popup_file_dialog() {
 	popup_centered_clamped(Size2(1050, 700) * EDSCALE, 0.8);
+	_focus_file_text();
+}
+
+void EditorFileDialog::_focus_file_text() {
+	int lp = file->get_text().rfind(".");
+	if (lp != -1) {
+		file->select(0, lp);
+		file->grab_focus();
+	}
 }
 
 VBoxContainer *EditorFileDialog::get_vbox() {
@@ -120,6 +129,18 @@ void EditorFileDialog::_notification(int p_what) {
 	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 		if (!is_visible()) {
 			set_process_unhandled_input(false);
+		}
+	} else if (p_what == NOTIFICATION_WM_WINDOW_FOCUS_IN) {
+		// Check if the current directory was removed externally (much less likely to happen while editor window is focused).
+		String previous_dir = get_current_dir();
+		while (!dir_access->dir_exists(get_current_dir())) {
+			_go_up();
+
+			// In case we can't go further up, use some fallback and break.
+			if (get_current_dir() == previous_dir) {
+				_dir_submitted(OS::get_singleton()->get_user_data_dir());
+				break;
+			}
 		}
 	}
 }
@@ -974,11 +995,7 @@ void EditorFileDialog::set_current_file(const String &p_file) {
 	file->set_text(p_file);
 	update_dir();
 	invalidate();
-	int lp = p_file.rfind(".");
-	if (lp != -1) {
-		file->select(0, lp);
-		file->grab_focus();
-	}
+	_focus_file_text();
 
 	if (is_visible()) {
 		_request_single_thumbnail(get_current_dir().plus_file(get_current_file()));
@@ -1301,7 +1318,7 @@ void EditorFileDialog::_recent_selected(int p_idx) {
 }
 
 void EditorFileDialog::_go_up() {
-	dir_access->change_dir("..");
+	dir_access->change_dir(get_current_dir().get_base_dir());
 	update_file_list();
 	update_dir();
 	_push_history();

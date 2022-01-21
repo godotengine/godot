@@ -1527,115 +1527,24 @@ String String::num_uint64(uint64_t p_num, int base, bool capitalize_hex) {
 }
 
 String String::num_real(double p_num, bool p_trailing) {
-	if (Math::is_nan(p_num)) {
-		return "nan";
-	}
-
-	if (Math::is_inf(p_num)) {
-		if (signbit(p_num)) {
-			return "-inf";
+	if (p_num == (double)(int64_t)p_num) {
+		if (p_trailing) {
+			return num_int64((int64_t)p_num) + ".0";
 		} else {
-			return "inf";
+			return num_int64((int64_t)p_num);
 		}
 	}
-
-	String s;
-	String sd;
-
-	// Integer part.
-
-	bool neg = p_num < 0;
-	p_num = ABS(p_num);
-	int64_t intn = (int64_t)p_num;
-
-	// Decimal part.
-
-	if (intn != p_num) {
-		double dec = p_num - (double)intn;
-
-		int digit = 0;
-
 #ifdef REAL_T_IS_DOUBLE
-		int decimals = 14;
-		double tolerance = 1e-14;
+	int decimals = 14;
 #else
-		int decimals = 6;
-		double tolerance = 1e-6;
+	int decimals = 6;
 #endif
-		// We want to align the digits to the above sane default, so we only
-		// need to subtract log10 for numbers with a positive power of ten.
-		if (p_num > 10) {
-			decimals -= (int)floor(log10(p_num));
-		}
-
-		if (decimals > MAX_DECIMALS) {
-			decimals = MAX_DECIMALS;
-		}
-
-		// In case the value ends up ending in "99999", we want to add a
-		// tiny bit to the value we're checking when deciding when to stop,
-		// so we multiply by slightly above 1 (1 + 1e-7 or 1e-15).
-		double check_multiplier = 1 + tolerance / 10;
-
-		int64_t dec_int = 0;
-		int64_t dec_max = 0;
-
-		while (true) {
-			dec *= 10.0;
-			dec_int = dec_int * 10 + (int64_t)dec % 10;
-			dec_max = dec_max * 10 + 9;
-			digit++;
-
-			if ((dec - (double)(int64_t)(dec * check_multiplier)) < tolerance) {
-				break;
-			}
-
-			if (digit == decimals) {
-				break;
-			}
-		}
-
-		dec *= 10;
-		int last = (int64_t)dec % 10;
-
-		if (last > 5) {
-			if (dec_int == dec_max) {
-				dec_int = 0;
-				intn++;
-			} else {
-				dec_int++;
-			}
-		}
-
-		String decimal;
-		for (int i = 0; i < digit; i++) {
-			char num[2] = { 0, 0 };
-			num[0] = '0' + dec_int % 10;
-			decimal = num + decimal;
-			dec_int /= 10;
-		}
-		sd = '.' + decimal;
-	} else if (p_trailing) {
-		sd = ".0";
-	} else {
-		sd = "";
+	// We want to align the digits to the above sane default, so we only
+	// need to subtract log10 for numbers with a positive power of ten.
+	if (p_num > 10) {
+		decimals -= (int)floor(log10(p_num));
 	}
-
-	if (intn == 0) {
-		s = "0";
-	} else {
-		while (intn) {
-			char32_t num = '0' + (intn % 10);
-			intn /= 10;
-			s = num + s;
-		}
-	}
-
-	s = s + sd;
-	if (neg) {
-		s = "-" + s;
-	}
-	return s;
+	return num(p_num, decimals);
 }
 
 String String::num_scientific(double p_num) {
@@ -1723,7 +1632,7 @@ String String::utf8(const char *p_utf8, int p_len) {
 }
 
 bool String::parse_utf8(const char *p_utf8, int p_len) {
-#define _UNICERROR(m_err) print_error("Unicode parsing error: " + String(m_err) + ". Is the string valid UTF-8?");
+#define UNICERROR(m_err) print_error("Unicode parsing error: " + String(m_err) + ". Is the string valid UTF-8?");
 
 	if (!p_utf8) {
 		return true;
@@ -1764,12 +1673,12 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 				} else if ((c & 0xf8) == 0xf0) {
 					skip = 3;
 				} else {
-					_UNICERROR("invalid skip at " + num_int64(cstr_size));
+					UNICERROR("invalid skip at " + num_int64(cstr_size));
 					return true; //invalid utf8
 				}
 
 				if (skip == 1 && (c & 0x1e) == 0) {
-					_UNICERROR("overlong rejected at " + num_int64(cstr_size));
+					UNICERROR("overlong rejected at " + num_int64(cstr_size));
 					return true; //reject overlong
 				}
 
@@ -1784,7 +1693,7 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 		}
 
 		if (skip) {
-			_UNICERROR("no space left");
+			UNICERROR("no space left");
 			return true; //not enough space
 		}
 	}
@@ -1811,17 +1720,17 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 		} else if ((*p_utf8 & 0xf8) == 0xf0) {
 			len = 4;
 		} else {
-			_UNICERROR("invalid len");
+			UNICERROR("invalid len");
 			return true; //invalid UTF8
 		}
 
 		if (len > cstr_size) {
-			_UNICERROR("no space left");
+			UNICERROR("no space left");
 			return true; //not enough space
 		}
 
 		if (len == 2 && (*p_utf8 & 0x1E) == 0) {
-			_UNICERROR("no space left");
+			UNICERROR("no space left");
 			return true; //reject overlong
 		}
 
@@ -1836,18 +1745,18 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 
 			for (int i = 1; i < len; i++) {
 				if ((p_utf8[i] & 0xc0) != 0x80) {
-					_UNICERROR("invalid utf8");
+					UNICERROR("invalid utf8");
 					return true; //invalid utf8
 				}
 				if (unichar == 0 && i == 2 && ((p_utf8[i] & 0x7f) >> (7 - len)) == 0) {
-					_UNICERROR("invalid utf8 overlong");
+					UNICERROR("invalid utf8 overlong");
 					return true; //no overlong
 				}
 				unichar = (unichar << 6) | (p_utf8[i] & 0x3f);
 			}
 		}
 		if (unichar >= 0xd800 && unichar <= 0xdfff) {
-			_UNICERROR("invalid code point");
+			UNICERROR("invalid code point");
 			return CharString();
 		}
 
@@ -1857,7 +1766,7 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 	}
 
 	return false;
-#undef _UNICERROR
+#undef UNICERROR
 }
 
 CharString String::utf8() const {
@@ -1931,7 +1840,7 @@ String String::utf16(const char16_t *p_utf16, int p_len) {
 }
 
 bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
-#define _UNICERROR(m_err) print_error("Unicode parsing error: " + String(m_err) + ". Is the string valid UTF-16?");
+#define UNICERROR(m_err) print_error("Unicode parsing error: " + String(m_err) + ". Is the string valid UTF-16?");
 
 	if (!p_utf16) {
 		return true;
@@ -1971,7 +1880,7 @@ bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
 				if ((c & 0xfffffc00) == 0xd800) {
 					skip = 1; // lead surrogate
 				} else if ((c & 0xfffffc00) == 0xdc00) {
-					_UNICERROR("invalid utf16 surrogate at " + num_int64(cstr_size));
+					UNICERROR("invalid utf16 surrogate at " + num_int64(cstr_size));
 					return true; // invalid UTF16
 				} else {
 					skip = 0;
@@ -1981,7 +1890,7 @@ bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
 				if ((c & 0xfffffc00) == 0xdc00) { // trail surrogate
 					--skip;
 				} else {
-					_UNICERROR("invalid utf16 surrogate at " + num_int64(cstr_size));
+					UNICERROR("invalid utf16 surrogate at " + num_int64(cstr_size));
 					return true; // invalid UTF16
 				}
 			}
@@ -1991,7 +1900,7 @@ bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
 		}
 
 		if (skip) {
-			_UNICERROR("no space left");
+			UNICERROR("no space left");
 			return true; // not enough space
 		}
 	}
@@ -2016,7 +1925,7 @@ bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
 		}
 
 		if (len > cstr_size) {
-			_UNICERROR("no space left");
+			UNICERROR("no space left");
 			return true; //not enough space
 		}
 
@@ -2034,7 +1943,7 @@ bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
 	}
 
 	return false;
-#undef _UNICERROR
+#undef UNICERROR
 }
 
 Char16String String::utf16() const {

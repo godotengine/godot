@@ -649,8 +649,8 @@ void ConnectionsDock::_connect(ConnectDialog::ConnectionData p_cd) {
 	undo_redo->add_undo_method(source, "disconnect", p_cd.signal, callable);
 	undo_redo->add_do_method(this, "update_tree");
 	undo_redo->add_undo_method(this, "update_tree");
-	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree"); // To force redraw of scene tree.
-	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+	undo_redo->add_do_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree"); // To force redraw of scene tree.
+	undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
 
 	undo_redo->commit_action();
 }
@@ -671,8 +671,8 @@ void ConnectionsDock::_disconnect(TreeItem &p_item) {
 	undo_redo->add_undo_method(selected_node, "connect", cd.signal, callable, cd.binds, cd.flags);
 	undo_redo->add_do_method(this, "update_tree");
 	undo_redo->add_undo_method(this, "update_tree");
-	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree"); // To force redraw of scene tree.
-	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+	undo_redo->add_do_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree"); // To force redraw of scene tree.
+	undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
 
 	undo_redo->commit_action();
 }
@@ -702,8 +702,8 @@ void ConnectionsDock::_disconnect_all() {
 
 	undo_redo->add_do_method(this, "update_tree");
 	undo_redo->add_undo_method(this, "update_tree");
-	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
-	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+	undo_redo->add_do_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
+	undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
 
 	undo_redo->commit_action();
 }
@@ -922,8 +922,14 @@ void ConnectionsDock::_connect_pressed() {
 }
 
 void ConnectionsDock::_notification(int p_what) {
-	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		update_tree();
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+		} break;
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			update_tree();
+		} break;
 	}
 }
 
@@ -1135,7 +1141,6 @@ ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 	search_box = memnew(LineEdit);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_box->set_placeholder(TTR("Filter signals"));
-	search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 	search_box->set_clear_button_enabled(true);
 	search_box->connect("text_changed", callable_mp(this, &ConnectionsDock::_filter_changed));
 	vbc->add_child(search_box);

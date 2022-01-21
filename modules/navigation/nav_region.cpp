@@ -32,10 +32,6 @@
 
 #include "nav_map.h"
 
-/**
-	@author AndreaCatania
-*/
-
 void NavRegion::set_map(NavMap *p_map) {
 	map = p_map;
 	polygons_dirty = true;

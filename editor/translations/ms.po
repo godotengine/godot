@@ -8,16 +8,16 @@
 # Nafis Ibrahim <thepreciousnafis@gmail.com>, 2018.
 # Muhammad Hazim bin Hafizalshah <muhammadhazimhafizalshah@gmail.com>, 2020.
 # keviinx <keviinx@yahoo.com>, 2020.
-# Keviindran Ramachandran <keviinx@yahoo.com>, 2020, 2021.
+# Keviindran Ramachandran <keviinx@yahoo.com>, 2020, 2021, 2022.
 # Jacque Fresco <aidter@use.startmail.com>, 2021.
-# Lemoney <railkill@gmail.com>, 2021.
+# Lemoney <railkill@gmail.com>, 2021, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-10-10 10:18+0000\n"
-"Last-Translator: Lemoney <railkill@gmail.com>\n"
+"PO-Revision-Date: 2022-01-12 16:52+0000\n"
+"Last-Translator: Keviindran Ramachandran <keviinx@yahoo.com>\n"
 "Language-Team: Malay <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ms/>\n"
 "Language: ms\n"
@@ -25,7 +25,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.9-dev\n"
+"X-Generator: Weblate 4.10.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -328,7 +328,7 @@ msgstr "Menduakan Kunci"
 
 #: editor/animation_track_editor.cpp
 msgid "Add RESET Value(s)"
-msgstr ""
+msgstr "Tambah Nilai-nilai RESET"
 
 #: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
@@ -365,6 +365,7 @@ msgstr "Cipta %d BARU trek dan masukkan kunci?"
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -499,9 +500,8 @@ msgstr ""
 "trek."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Add RESET Keys"
-msgstr "Kunci Skala Anim"
+msgstr "Anim Tambah Kekunci RESET"
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -832,6 +832,7 @@ msgstr "Tambah"
 #: editor/groups_editor.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp
 msgid "Remove"
@@ -883,8 +884,7 @@ msgstr "Tidak dapat menyambungkan isyarat"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
-#: editor/plugins/version_control_editor_plugin.cpp editor/project_export.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 #: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -1489,7 +1489,7 @@ msgstr "Nama tidak sah."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Cannot begin with a digit."
-msgstr ""
+msgstr "Tidak boleh bermula dengan digit."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
@@ -1857,9 +1857,8 @@ msgid "Error saving profile to path: '%s'."
 msgstr "Ralat menyimpan profil ke laluan: '%s'."
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Reset to Default"
-msgstr "Set Semula ke Lalai"
+msgstr "Pulih ke Keadaan Asal"
 
 #: editor/editor_feature_profile.cpp
 msgid "Current Profile:"
@@ -1954,7 +1953,6 @@ msgid "New Folder..."
 msgstr "Folder Baru..."
 
 #: editor/editor_file_dialog.cpp editor/find_in_files.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "Muat Semula"
 
@@ -2071,7 +2069,8 @@ msgstr "Direktori & Fail:"
 msgid "Preview:"
 msgstr "Pratonton:"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "File:"
 msgstr "Fail:"
 
@@ -2121,9 +2120,8 @@ msgid "Properties"
 msgstr "Sifat-sifat"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "overrides %s:"
-msgstr "ganti:"
+msgstr "ganti %s:"
 
 #: editor/editor_help.cpp
 msgid "default:"
@@ -2139,7 +2137,7 @@ msgstr "Sifat Tema"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Colors"
-msgstr ""
+msgstr "Warna"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
@@ -2147,15 +2145,15 @@ msgstr "Pemalar"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Fonts"
-msgstr ""
+msgstr "Fon"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Icons"
-msgstr ""
+msgstr "Ikon"
 
 #: editor/editor_help.cpp
 msgid "Styles"
-msgstr ""
+msgstr "Gaya"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
@@ -2246,7 +2244,7 @@ msgstr "Kaedah"
 msgid "Signal"
 msgstr "Isyarat"
 
-#: editor/editor_help_search.cpp
+#: editor/editor_help_search.cpp modules/visual_script/visual_script_nodes.cpp
 msgid "Constant"
 msgstr "Pemalar"
 
@@ -2263,20 +2261,22 @@ msgid "Property:"
 msgstr "Sifat:"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Pin value"
-msgstr "(nilai)"
+msgstr "Nilai pin"
 
 #: editor/editor_inspector.cpp
 msgid ""
 "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
+"Menyemat nilai memaksanya untuk disimpan walaupun ia sama dengan nilai asal."
 
 #: editor/editor_inspector.cpp
 msgid "Pin value [Disabled because '%s' is editor-only]"
-msgstr ""
+msgstr "Nilai pin [Dinyahdayakan kerana '%s' adalah editor sahaja]"
 
 #: editor/editor_inspector.cpp editor/scene_tree_dock.cpp
+#: modules/visual_script/visual_script_func_nodes.cpp
+#: modules/visual_script/visual_script_nodes.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Set %s"
 msgstr "Tetapkan %s"
@@ -2287,26 +2287,23 @@ msgstr "Tetapkan Pelbagai:"
 
 #: editor/editor_inspector.cpp
 msgid "Pinned %s"
-msgstr ""
+msgstr "Dipinkan %s"
 
 #: editor/editor_inspector.cpp
 msgid "Unpinned %s"
-msgstr ""
+msgstr "%s tidak dipinkan"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Copy Property"
-msgstr "Sifat-sifat"
+msgstr "Salin Sifat"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Paste Property"
-msgstr "Sifat-sifat"
+msgstr "Tampal Sifat"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Copy Property Path"
-msgstr "Sifat-sifat"
+msgstr "Salin Laluan Sifat"
 
 #: editor/editor_log.cpp
 msgid "Output:"
@@ -2483,9 +2480,8 @@ msgstr ""
 "warisan) tidak dapat dipenuhi."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Could not save one or more scenes!"
-msgstr "Tidak dapat memulakan subproses!"
+msgstr "Tidak dapat menyimpan satu atau lebih adegan!"
 
 #: editor/editor_node.cpp
 msgid "Save All Scenes"
@@ -2628,20 +2624,23 @@ msgstr "Simpan perubahan pada '%s' sebelum menutup?"
 
 #: editor/editor_node.cpp
 msgid "%s no longer exists! Please specify a new save location."
-msgstr ""
+msgstr "%s tidak lagi wujud! Sila nyatakan lokasi simpan baru."
 
 #: editor/editor_node.cpp
 msgid ""
 "The current scene has no root node, but %d modified external resource(s) "
 "were saved anyway."
 msgstr ""
+"Adegan semasa tidak mempunyai nod akar, tetapi %d sumber luaran yang diubah "
+"suai telah disimpan juga."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
-msgstr "Nod akar diperlukan untuk menyimpan adegan."
+msgstr ""
+"Nod akar diperlukan untuk menyimpan adegan. Anda boleh menambah nod akar "
+"menggunakan dok pokok Adegan."
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
@@ -2673,29 +2672,27 @@ msgstr "Adegan semasa tidak disimpan. Masih buka?"
 
 #: editor/editor_node.cpp
 msgid "Can't undo while mouse buttons are pressed."
-msgstr ""
+msgstr "Tidak boleh buat asal semasa butang tetikus ditekan."
 
 #: editor/editor_node.cpp
 msgid "Nothing to undo."
-msgstr ""
+msgstr "Tiada apa yang perlu dibuat asal."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Undo: %s"
-msgstr "Buat Asal"
+msgstr "Buat asal: %s"
 
 #: editor/editor_node.cpp
 msgid "Can't redo while mouse buttons are pressed."
-msgstr ""
+msgstr "Tidak boleh buat semula semasa butang tetikus ditekan."
 
 #: editor/editor_node.cpp
 msgid "Nothing to redo."
-msgstr ""
+msgstr "Tiada apa yang perlu dibuat semula."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Redo: %s"
-msgstr "Buat Semula"
+msgstr "Buat semula: %s"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
@@ -3035,8 +3032,9 @@ msgid "Install Android Build Template..."
 msgstr "Pasang Templat Binaan Android..."
 
 #: editor/editor_node.cpp
-msgid "Open Project Data Folder"
-msgstr "Buka Folder Data Projek"
+#, fuzzy
+msgid "Open User Data Folder"
+msgstr "Buka Folder Data Editor"
 
 #: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
@@ -3126,7 +3124,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Force Shader Fallbacks"
-msgstr ""
+msgstr "Paksa Shader Fallbacks"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3137,6 +3135,13 @@ msgid ""
 "Asynchronous shader compilation must be enabled in the project settings for "
 "this option to make a difference."
 msgstr ""
+"Apabila pilihan ini didayakan, shader akan digunakan dalam bentuk fallback "
+"mereka (sama ada boleh dilihat melalui ubershader atau tersembunyi) "
+"sepanjang masa berjalan.\n"
+"Ini berguna untuk mengesahkan rup dan prestasi fallback, yang biasanya "
+"diaparkan secara ringkas.\n"
+"Kompilasi shader tak segerak mesti didayakan dalam tetapan projek untuk "
+"pilihan ini membuat perubahan."
 
 #: editor/editor_node.cpp
 msgid "Synchronize Scene Changes"
@@ -3195,10 +3200,6 @@ msgid "Toggle Fullscreen"
 msgstr "Togol Skrin Penuh"
 
 #: editor/editor_node.cpp
-msgid "Toggle System Console"
-msgstr "Togol Konsol Sistem"
-
-#: editor/editor_node.cpp
 msgid "Open Editor Data/Settings Folder"
 msgstr "Buka Folder Data/Tetapan Editor"
 
@@ -3223,13 +3224,12 @@ msgid "Help"
 msgstr "Bantuan"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Online Documentation"
-msgstr "Dokumen Dalam Talian"
+msgstr "Dokumentasi Dalam Talian"
 
 #: editor/editor_node.cpp
 msgid "Questions & Answers"
-msgstr ""
+msgstr "Soalan & Jawapan"
 
 #: editor/editor_node.cpp
 msgid "Report a Bug"
@@ -3237,7 +3237,7 @@ msgstr "Laporkan Pepijat"
 
 #: editor/editor_node.cpp
 msgid "Suggest a Feature"
-msgstr ""
+msgstr "Cadangkan Ciri"
 
 #: editor/editor_node.cpp
 msgid "Send Docs Feedback"
@@ -3248,9 +3248,8 @@ msgid "Community"
 msgstr "Komuniti"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "About Godot"
-msgstr "Tentang"
+msgstr "Tentang Godot"
 
 #: editor/editor_node.cpp
 msgid "Support Godot Development"
@@ -3342,13 +3341,12 @@ msgid "Manage Templates"
 msgstr "Urus Templat-templat"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Install from file"
-msgstr "Pasang Dari Fail"
+msgstr "Pasang dari fail"
 
 #: editor/editor_node.cpp
 msgid "Select android sources file"
-msgstr ""
+msgstr "Pilih fail sumber android"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3398,9 +3396,8 @@ msgid "Merge With Existing"
 msgstr "Gabung Dengan Sedia Ada"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Apply MeshInstance Transforms"
-msgstr "Anim Ubah Perubahan"
+msgstr "Gunakan MeshInstance Transforms"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -3433,13 +3430,13 @@ msgid "Load Errors"
 msgstr "Muatkan Ralat-ralat"
 
 #: editor/editor_node.cpp editor/plugins/tile_map_editor_plugin.cpp
+#: modules/visual_script/visual_script_nodes.cpp
 msgid "Select"
 msgstr "Pilih"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Select Current"
-msgstr "Pilih Folder Semasa"
+msgstr "Pilih Semasa"
 
 #: editor/editor_node.cpp
 msgid "Open 2D Editor"
@@ -3474,9 +3471,8 @@ msgid "No sub-resources found."
 msgstr "Tiada sub-sumber dijumpai."
 
 #: editor/editor_path.cpp
-#, fuzzy
 msgid "Open a list of sub-resources."
-msgstr "Tiada sub-sumber dijumpai."
+msgstr "Buka senarai sub-sumber."
 
 #: editor/editor_plugin.cpp
 msgid "Creating Mesh Previews"
@@ -3507,29 +3503,25 @@ msgid "Version"
 msgstr "Versi"
 
 #: editor/editor_plugin_settings.cpp
-#, fuzzy
 msgid "Author"
 msgstr "Pengarang"
 
 #: editor/editor_plugin_settings.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Status"
-msgstr ""
+msgstr "Status"
 
 #: editor/editor_profiler.cpp
 msgid "Measure:"
 msgstr "Ukur:"
 
 #: editor/editor_profiler.cpp
-#, fuzzy
 msgid "Frame Time (ms)"
-msgstr "Masa Bingkai (saat)"
+msgstr "Masa Bingkai (ms)"
 
 #: editor/editor_profiler.cpp
-#, fuzzy
 msgid "Average Time (ms)"
-msgstr "Masa Purata (saat)"
+msgstr "Masa Purata (ms)"
 
 #: editor/editor_profiler.cpp
 msgid "Frame %"
@@ -3556,6 +3548,13 @@ msgid ""
 "functions called by that function.\n"
 "Use this to find individual functions to optimize."
 msgstr ""
+"Inklusif: Termasuk masa daripada fungsi lain yang dipanggil oleh fungsi "
+"ini.\n"
+"Gunakan ini untuk mengesan kesesakan.\n"
+"\n"
+"Diri: Hanya kira masa yang dihabiskan dalam fungsi itu sendiri, bukan dalam "
+"fungsi lain yang dipanggil oleh fungsi itu.\n"
+"Gunakan ini untuk mencari fungsi individu untuk dioptimumkan."
 
 #: editor/editor_profiler.cpp
 msgid "Frame #:"
@@ -3661,7 +3660,7 @@ msgstr ""
 
 #: editor/editor_resource_picker.cpp
 msgid "Quick Load"
-msgstr ""
+msgstr "Muatan Cepat"
 
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
 msgid "Make Unique"
@@ -3682,9 +3681,8 @@ msgid "Paste"
 msgstr "Tampal"
 
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
-#, fuzzy
 msgid "Convert to %s"
-msgstr "Tukar Kepada %s"
+msgstr "Tukar ke %s"
 
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
 msgid "New %s"
@@ -3733,10 +3731,9 @@ msgid "Did you forget the '_run' method?"
 msgstr "Adakah anda lupa kaedah '_run'?"
 
 #: editor/editor_spin_slider.cpp
-#, fuzzy
 msgid "Hold %s to round to integers. Hold Shift for more precise changes."
 msgstr ""
-"Tahan Ctrl untuk bundarkan ke integer. Tahan Shift untuk perubahan yang "
+"Tahan %s untuk membundarkan ke integer. Tahan Shift untuk perubahan yang "
 "lebih tepat."
 
 #: editor/editor_sub_scene.cpp
@@ -3755,67 +3752,68 @@ msgstr "Laluan Adegan:"
 msgid "Import From Node:"
 msgstr "Import Dari Nod:"
 
+#. TRANSLATORS: %s refers to the name of a version control system (e.g. "Git").
+#: editor/editor_vcs_interface.cpp
+#, fuzzy
+msgid "%s Error"
+msgstr "Ralat!"
+
 #: editor/export_template_manager.cpp
 msgid "Open the folder containing these templates."
-msgstr ""
+msgstr "Buka folder yang mengandungi templat ini."
 
 #: editor/export_template_manager.cpp
 msgid "Uninstall these templates."
-msgstr ""
+msgstr "Nyahpasang templat ini."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "There are no mirrors available."
-msgstr "Tiada fail '%s'."
+msgstr "Tiada mirror tersedia."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Retrieving the mirror list..."
-msgstr "Mengambil maklumat cermin, sila tunggu..."
+msgstr "Mendapatkan semula senarai mirror..."
 
 #: editor/export_template_manager.cpp
 msgid "Starting the download..."
-msgstr ""
+msgstr "Memulakan muat turun..."
 
 #: editor/export_template_manager.cpp
 msgid "Error requesting URL:"
 msgstr "Ralat semasa meminta URL:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Connecting to the mirror..."
-msgstr "Menyambung ke Cermin..."
+msgstr "Menyambung ke mirror..."
 
 #: editor/export_template_manager.cpp
 msgid "Can't resolve the requested address."
-msgstr ""
+msgstr "Tidak dapat menyelesaikan alamat yang diminta."
 
 #: editor/export_template_manager.cpp
 msgid "Can't connect to the mirror."
 msgstr "Tidak dapat menyambung ke tapak web."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "No response from the mirror."
-msgstr "Tiada jawapan."
+msgstr "Tiada jawapan dari mirror."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed."
-msgstr ""
+msgstr "Permintaan gagal."
 
 #: editor/export_template_manager.cpp
 msgid "Request ended up in a redirect loop."
-msgstr ""
+msgstr "Permintaan berakhir dalam loop pengalihan."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Request failed:"
-msgstr "Permintaan Gagal."
+msgstr "Permintaan gagal:"
 
 #: editor/export_template_manager.cpp
 msgid "Download complete; extracting templates..."
-msgstr ""
+msgstr "Muat turun selesai; mengekstrak templat..."
 
 #: editor/export_template_manager.cpp
 msgid "Cannot remove temporary file:"
@@ -3834,13 +3832,12 @@ msgid "Error getting the list of mirrors."
 msgstr "Ralat mendapatkan senarai cermin-cermin."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error parsing JSON with the list of mirrors. Please report this issue!"
-msgstr "Ralat menghuraikan JSON senarai cermin. Sila laporkan isu ini!"
+msgstr "Ralat menghuraikan JSON dengan senarai mirror. Sila laporkan isu ini!"
 
 #: editor/export_template_manager.cpp
 msgid "Best available mirror"
-msgstr ""
+msgstr "Mirror terbaik yang tersedia"
 
 #: editor/export_template_manager.cpp
 msgid ""
@@ -3893,24 +3890,20 @@ msgid "SSL Handshake Error"
 msgstr "Ralat Jabat Tangan SSL"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Can't open the export templates file."
-msgstr "Tidak dapat membuka zip templat eksport."
+msgstr "Tidak dapat membuka fail templat eksport."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Invalid version.txt format inside the export templates file: %s."
-msgstr "Format version.txt tidak sah di dalam templat: %s."
+msgstr "Format version.txt tidak sah di dalam fail templat eksport: %s."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "No version.txt found inside the export templates file."
-msgstr "Tiada version.txt dijumpai di dalam templat."
+msgstr "Tiada version.txt dijumpai di dalam fail templat eksport."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error creating path for extracting templates:"
-msgstr "Ralat mencipta laluan untuk templat-templat:"
+msgstr "Ralat mencipta laluan untuk mengekstrak templat:"
 
 #: editor/export_template_manager.cpp
 msgid "Extracting Export Templates"
@@ -3921,9 +3914,8 @@ msgid "Importing:"
 msgstr "Mengimport:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Remove templates for the version '%s'?"
-msgstr "Alih keluar versi templat '%s'?"
+msgstr "Alih keluar templat versi '%s'?"
 
 #: editor/export_template_manager.cpp
 msgid "Uncompressing Android Build Sources"
@@ -3939,20 +3931,19 @@ msgstr "Versi Terkini:"
 
 #: editor/export_template_manager.cpp
 msgid "Export templates are missing. Download them or install from a file."
-msgstr ""
+msgstr "Templat eksport tiada. Muat turun atau pasang dari fail."
 
 #: editor/export_template_manager.cpp
 msgid "Export templates are installed and ready to be used."
-msgstr ""
+msgstr "Templat eksport dipasang dan sedia untuk digunakan."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Open Folder"
-msgstr "Buka Fail"
+msgstr "Buka Folder"
 
 #: editor/export_template_manager.cpp
 msgid "Open the folder containing installed templates for the current version."
-msgstr ""
+msgstr "Buka folder yang mengandungi templat yang dipasang untuk versi semasa."
 
 #: editor/export_template_manager.cpp
 msgid "Uninstall"
@@ -3960,45 +3951,41 @@ msgstr "Nyahpasang"
 
 #: editor/export_template_manager.cpp
 msgid "Uninstall templates for the current version."
-msgstr ""
+msgstr "Nyahpasang templat untuk versi semasa."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Download from:"
-msgstr "Muat turun"
+msgstr "Muat turun dari:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Open in Web Browser"
-msgstr "Buka dalam Pengurus Fail"
+msgstr "Buka dalam Pelayar Web"
 
 #: editor/export_template_manager.cpp
 msgid "Copy Mirror URL"
-msgstr ""
+msgstr "Salin URL Mirror"
 
 #: editor/export_template_manager.cpp
 msgid "Download and Install"
-msgstr ""
+msgstr "Muat Turun dan Pasang"
 
 #: editor/export_template_manager.cpp
 msgid ""
 "Download and install templates for the current version from the best "
 "possible mirror."
-msgstr ""
+msgstr "Muat turun dan pasang templat untuk versi semasa dari mirror terbaik."
 
 #: editor/export_template_manager.cpp
 msgid "Official export templates aren't available for development builds."
 msgstr "Templat eksport rasmi tidak tersedia untuk binaan pembangunan."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Install from File"
-msgstr "Pasang Dari Fail"
+msgstr "Pasang dari Fail"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Install templates from a local file."
-msgstr "Import Templat Dari Fail ZIP"
+msgstr "Pasang templat dari fail tempatan."
 
 #: editor/export_template_manager.cpp editor/find_in_files.cpp
 #: editor/progress_dialog.cpp scene/gui/dialogs.cpp
@@ -4006,19 +3993,16 @@ msgid "Cancel"
 msgstr "Batal"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Cancel the download of the templates."
-msgstr "Tidak dapat membuka zip templat eksport."
+msgstr "Batalkan muat turun templat."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Other Installed Versions:"
-msgstr "Versi-versi Yang Dipasang:"
+msgstr "Versi Terpasang Lain:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Uninstall Template"
-msgstr "Nyahpasang"
+msgstr "Nyahpasang Templat"
 
 #: editor/export_template_manager.cpp
 msgid "Select Template File"
@@ -4033,6 +4017,8 @@ msgid ""
 "The templates will continue to download.\n"
 "You may experience a short editor freeze when they finish."
 msgstr ""
+"Templat akan terus dimuat turun.\n"
+"Anda mungkin mengalami pembekuan editor pendek apabila ia selesai."
 
 #: editor/filesystem_dock.cpp
 msgid "Favorites"
@@ -4180,33 +4166,32 @@ msgid "Collapse All"
 msgstr "Runtuhkan Semua"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Sort files"
-msgstr "Cari fail"
+msgstr "Susun fail-fail"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by Name (Ascending)"
-msgstr ""
+msgstr "Susun mengikut Nama (Menaik)"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by Name (Descending)"
-msgstr ""
+msgstr "Susun mengikut Nama (Menurun)"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by Type (Ascending)"
-msgstr ""
+msgstr "Susun mengikut Jenis (Menaik)"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by Type (Descending)"
-msgstr ""
+msgstr "Susun mengikut Jenis (Menurun)"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by Last Modified"
-msgstr ""
+msgstr "Susun mengikut Terakhir Diubah Suai"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by First Modified"
-msgstr ""
+msgstr "Susun mengikut Pertama Diubah Suai"
 
 #: editor/filesystem_dock.cpp
 msgid "Duplicate..."
@@ -4218,7 +4203,7 @@ msgstr "Namakan semula..."
 
 #: editor/filesystem_dock.cpp
 msgid "Focus the search box"
-msgstr ""
+msgstr "Fokuskan kotak carian"
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Folder/File"
@@ -4309,9 +4294,8 @@ msgid "Replace..."
 msgstr "Ganti..."
 
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Replace in Files"
-msgstr "Ganti Semua"
+msgstr "Gantikan dalam Fail-fail"
 
 #: editor/find_in_files.cpp
 msgid "Find: "
@@ -4322,9 +4306,8 @@ msgid "Replace: "
 msgstr "Ganti: "
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Replace All (NO UNDO)"
-msgstr "Ganti Semua"
+msgstr "Gantikan Semua (TIADA BUAT ASAL)"
 
 #: editor/find_in_files.cpp
 msgid "Searching..."
@@ -4517,6 +4500,10 @@ msgid ""
 "Selecting another resource in the FileSystem dock without clicking Reimport "
 "first will discard changes made in the Import dock."
 msgstr ""
+"Anda mempunyai perubahan belum selesai yang belum digunakan lagi.Klik Import "
+"Semula untuk menggunakan perubahan yang dibuat pada pilihan import.\n"
+"Memilih sumber lain dalam dok FileSystem tampa mengklik Import Semula "
+"terlebih dahulu akan membuang perubahan yang dibuat dalam dok Import."
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -4546,20 +4533,20 @@ msgid ""
 "Select a resource file in the filesystem or in the inspector to adjust "
 "import settings."
 msgstr ""
+"Pilih fail sumber dalam sistem fail atau dalam pemeriksa untuk melaraskan "
+"tetapan import."
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
 msgstr "Gagal untuk memuatkan sumber."
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Copy Properties"
-msgstr "Sifat-sifat"
+msgstr "Salin Sifat-sifat"
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Paste Properties"
-msgstr "Sifat-sifat"
+msgstr "Tampal Sifat-sifat"
 
 #: editor/inspector_dock.cpp
 msgid "Make Sub-Resources Unique"
@@ -4585,21 +4572,19 @@ msgstr "Simpan Sebagai..."
 
 #: editor/inspector_dock.cpp
 msgid "Extra resource options."
-msgstr ""
+msgstr "Pilihan sumber tambahan."
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Edit Resource from Clipboard"
-msgstr "Sunting Papan Klip Sumber"
+msgstr "Edit Sumber dari Papan Klip"
 
 #: editor/inspector_dock.cpp
 msgid "Copy Resource"
 msgstr "Salin Sumber"
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Make Resource Built-In"
-msgstr "Buat Terbina Dalaman"
+msgstr "Buat Sumber Terbina Dalam"
 
 #: editor/inspector_dock.cpp
 msgid "Go to the previous edited object in history."
@@ -4615,20 +4600,19 @@ msgstr "Sejarah objek-objek yang baru disunting."
 
 #: editor/inspector_dock.cpp
 msgid "Open documentation for this object."
-msgstr ""
+msgstr "Buka dokumentasi untuk objek ini."
 
 #: editor/inspector_dock.cpp editor/scene_tree_dock.cpp
 msgid "Open Documentation"
-msgstr ""
+msgstr "Buka Dokumentasi"
 
 #: editor/inspector_dock.cpp
 msgid "Filter properties"
 msgstr "Tapis sifat-sifat"
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Manage object properties."
-msgstr "Sifat-sifat objek."
+msgstr "Urus sifat objek."
 
 #: editor/inspector_dock.cpp
 msgid "Changes may be lost!"
@@ -4659,6 +4643,7 @@ msgid "Subfolder:"
 msgstr "Subfolder:"
 
 #: editor/plugin_config_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Author:"
 msgstr "Pengarang:"
 
@@ -4843,7 +4828,6 @@ msgid "Remove BlendSpace2D Triangle"
 msgstr "Keluarkan Segi tiga BlendSpace2D"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "BlendSpace2D does not belong to an AnimationTree node."
 msgstr "BlendSpace2D bukan milik nod AnimationTree."
 
@@ -4874,9 +4858,8 @@ msgid "Blend:"
 msgstr "Adun:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Parameter Changed:"
-msgstr "Parameter Berubah"
+msgstr "Parameter Berubah:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -4885,29 +4868,31 @@ msgstr "Sunting Filters"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Output node can't be added to the blend tree."
-msgstr ""
+msgstr "Nod keluaran tidak boleh ditambah ke pokok adunan."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Add Node to BlendTree"
-msgstr ""
+msgstr "Tambah Nod ke BlendTree"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Node Moved"
-msgstr ""
+msgstr "Nod Dialihkan"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Unable to connect, port may be in use or connection may be invalid."
 msgstr ""
+"Tidak dapat menyambung, port mungkin sedang digunakan atau sambungan mungkin "
+"tidak sah."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Nodes Connected"
-msgstr ""
+msgstr "Nod Bersambung"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Nodes Disconnected"
-msgstr ""
+msgstr "Nod Diputuskan"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Set Animation"
@@ -4915,30 +4900,32 @@ msgstr "Tetapkan Animasi"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Node"
-msgstr "Semua Pilihan"
+msgstr "Padam Nod"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)"
-msgstr ""
+msgstr "Padam Nod(-nod)"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Toggle Filter On/Off"
-msgstr ""
+msgstr "Togol Filter Hidup/Mati"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Change Filter"
-msgstr ""
+msgstr "Tukar Filter"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "No animation player set, so unable to retrieve track names."
 msgstr ""
+"Tiada pemain animasi ditetapkan, jadi tidak dapat memperolehi semula nama "
+"trek."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Player path set is invalid, so unable to retrieve track names."
 msgstr ""
+"Set laluan pemain tidak sah, jadi tidak dapat mendapatkan semula nama trek."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/root_motion_editor_plugin.cpp
@@ -4946,15 +4933,16 @@ msgid ""
 "Animation player has no valid root node path, so unable to retrieve track "
 "names."
 msgstr ""
+"Pemain animasi tidak mempunyai laluan nod akar yang sah, jadi tidak dapat "
+"mendapatkan semula nama trek."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Anim Clips"
-msgstr ""
+msgstr "Klip Anim"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Audio Clips"
-msgstr "Anim Tambah Trek"
+msgstr "Klip Audio"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Functions"
@@ -4963,132 +4951,132 @@ msgstr "Fungsi"
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Node Renamed"
-msgstr ""
+msgstr "Nod Diubah Nama"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add Node..."
-msgstr ""
+msgstr "Tambah Nod..."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/root_motion_editor_plugin.cpp
 msgid "Edit Filtered Tracks:"
-msgstr ""
+msgstr "Edit Trek Difilter:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Enable Filtering"
-msgstr ""
+msgstr "Dayakan Penapisan"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Toggle Autoplay"
-msgstr ""
+msgstr "Togol Automain"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "New Animation Name:"
-msgstr ""
+msgstr "Nama Animasi Baru:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "New Anim"
-msgstr ""
+msgstr "Anim Baru"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Animation Name:"
-msgstr ""
+msgstr "Tukar Nama Animasi:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Delete Animation?"
-msgstr ""
+msgstr "Padam Animasi?"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Remove Animation"
-msgstr ""
+msgstr "Alih Keluar Animasi"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Invalid animation name!"
-msgstr ""
+msgstr "Nama animasi tidak sah!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation name already exists!"
-msgstr ""
+msgstr "Nama animasi sudah wujud!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Rename Animation"
-msgstr ""
+msgstr "Namakan Semula Animasi"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Next Changed"
-msgstr ""
+msgstr "Adun Berubah Seterusnya"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Blend Time"
-msgstr ""
+msgstr "Tukar Masa Blend"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
-msgstr ""
+msgstr "Muatkan Animasi"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate Animation"
-msgstr ""
+msgstr "Gandakan Animasi"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "No animation to copy!"
-msgstr ""
+msgstr "Tiada animasi untuk disalin!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "No animation resource on clipboard!"
-msgstr ""
+msgstr "Tiada sumber animasi pada papan klip!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pasted Animation"
-msgstr ""
+msgstr "Animasi Ditampal"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Paste Animation"
-msgstr ""
+msgstr "Tampal Animasi"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "No animation to edit!"
-msgstr ""
+msgstr "Tiada animasi untuk disunting!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation backwards from current pos. (A)"
-msgstr ""
+msgstr "Mainkan animasi terpilih ke belakang dari pos semasa. (A)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation backwards from end. (Shift+A)"
-msgstr ""
+msgstr "Mainkan animasi terpillih ke belakang dari hujung. (Shift+A)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Stop animation playback. (S)"
-msgstr ""
+msgstr "Hentikan playback animasi. (S)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation from start. (Shift+D)"
-msgstr ""
+msgstr "Mainkan animasi terpilih dari awal. (Shift+D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation from current pos. (D)"
-msgstr ""
+msgstr "Mainkan animasi terpilih dar pos semasa. (D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation position (in seconds)."
-msgstr ""
+msgstr "Kedudukan animasi (dalam saat)."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Scale animation playback globally for the node."
-msgstr ""
+msgstr "Skala main balik animasi secara global untuk nod."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Tools"
-msgstr ""
+msgstr "Alat Animasi"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation"
-msgstr ""
+msgstr "Animasi"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -5101,39 +5089,39 @@ msgstr "Sunting Peralihan..."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Open in Inspector"
-msgstr ""
+msgstr "Buka dalam Inspektor"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Display list of animations in player."
-msgstr ""
+msgstr "Paparkan senarai animasi dalam pemain."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Autoplay on Load"
-msgstr ""
+msgstr "Automain semasa Muatkan"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Enable Onion Skinning"
-msgstr ""
+msgstr "Aktifkan Kulit Bawang"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Onion Skinning Options"
-msgstr ""
+msgstr "Pilihan Kulit Bawang"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Directions"
-msgstr ""
+msgstr "Arah"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Past"
-msgstr ""
+msgstr "Sebelum"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
-msgstr ""
+msgstr "Masa depan"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Depth"
-msgstr ""
+msgstr "Kedalaman"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "1 step"
@@ -5149,50 +5137,50 @@ msgstr "3 langkah"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Differences Only"
-msgstr ""
+msgstr "Perbezaan Sahaja"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Force White Modulate"
-msgstr ""
+msgstr "Paksa Modulasi Putih"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Include Gizmos (3D)"
-msgstr ""
+msgstr "Sertakan Gizmos (3D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pin AnimationPlayer"
-msgstr ""
+msgstr "Pin AnimationPlayer"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
-msgstr ""
+msgstr "Cipta Animasi Baru"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Name:"
-msgstr ""
+msgstr "Nama Animasi:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 msgid "Error!"
-msgstr ""
+msgstr "Ralat!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Times:"
-msgstr ""
+msgstr "Masa Adunan:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Next (Auto Queue):"
-msgstr ""
+msgstr "Seterusnya (Baris Gilir Automatik):"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Cross-Animation Blend Times"
-msgstr ""
+msgstr "Masa Adunan Animasi Silang"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Move Node"
-msgstr ""
+msgstr "Pindahkan Nod"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Transition exists!"
@@ -5205,39 +5193,39 @@ msgstr "Tambah Peralihan"
 #: editor/plugins/animation_state_machine_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node"
-msgstr ""
+msgstr "Tambah Nod"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "End"
-msgstr ""
+msgstr "Akhir"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Immediate"
-msgstr ""
+msgstr "Segera"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Sync"
-msgstr ""
+msgstr "Segerak"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "At End"
-msgstr ""
+msgstr "Pada Akhir"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Travel"
-msgstr ""
+msgstr "Perjalanan"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Start and end nodes are needed for a sub-transition."
-msgstr ""
+msgstr "Nod mula dan tamat diperlukan untuk sub-peralihan."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "No playback resource set at path: %s."
-msgstr ""
+msgstr "Tiada sumber main balik ditetapkan pada laluan: %s."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Node Removed"
-msgstr ""
+msgstr "Nod Dikeluarkan"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Transition Removed"
@@ -5245,7 +5233,7 @@ msgstr "Peralihan Dikeluarkan"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Set Start Node (Autoplay)"
-msgstr ""
+msgstr "Tetapkan Nod Mula (Automain)"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid ""
@@ -5253,26 +5241,30 @@ msgid ""
 "RMB to add new nodes.\n"
 "Shift+LMB to create connections."
 msgstr ""
+"Pilih dan pindah nod.\n"
+"RMB untuk menambah nod baru.\n"
+"Shift+LMB untuk membuat sambungan."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Create new nodes."
-msgstr ""
+msgstr "Cipta nod baru."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Connect nodes."
-msgstr ""
+msgstr "Hubungkan nod-nod."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Remove selected node or transition."
-msgstr ""
+msgstr "Alih keluar nod atau peralihan yang dipilih."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Toggle autoplay this animation on start, restart or seek to zero."
 msgstr ""
+"Togol automain animasi ini semasa mula, mulakan semula atau cari ke sifar."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Set the end animation. This is useful for sub-transitions."
-msgstr ""
+msgstr "Tetapkan hujung animasi. Ini adalah berguna untuk sub-peralihan."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Transition: "
@@ -5280,7 +5272,7 @@ msgstr "Peralihan: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Play Mode:"
-msgstr ""
+msgstr "Mod Main:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -5289,115 +5281,115 @@ msgstr "AnimationTree"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
-msgstr ""
+msgstr "Nama baru:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Scale:"
-msgstr ""
+msgstr "Skala:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade In (s):"
-msgstr ""
+msgstr "Pudar Masuk (s):"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade Out (s):"
-msgstr ""
+msgstr "Pudar Keluar (s):"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend"
-msgstr ""
+msgstr "Adun"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Mix"
-msgstr ""
+msgstr "Campur"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Auto Restart:"
-msgstr ""
+msgstr "Mula Semula Auto:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Restart (s):"
-msgstr ""
+msgstr "Mula Semula (s):"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Random Restart (s):"
-msgstr ""
+msgstr "Mula Semula Rawak (s):"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Start!"
-msgstr ""
+msgstr "Mula!"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Amount:"
-msgstr ""
+msgstr "Jumlah:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend 0:"
-msgstr ""
+msgstr "Adun 0:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend 1:"
-msgstr ""
+msgstr "Adun 1:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "X-Fade Time (s):"
-msgstr ""
+msgstr "Masa X-Fade (s):"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Current:"
-msgstr ""
+msgstr "Semasa:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Input"
-msgstr ""
+msgstr "Tambah Input"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Clear Auto-Advance"
-msgstr ""
+msgstr "Kosongkan Auto-Advance"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Set Auto-Advance"
-msgstr ""
+msgstr "Tetapkan Auto-Advance"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Delete Input"
-msgstr ""
+msgstr "Padam Input"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation tree is valid."
-msgstr ""
+msgstr "Pokok animasi sah."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation tree is invalid."
-msgstr ""
+msgstr "Pokok animasi tidak sah."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation Node"
-msgstr ""
+msgstr "Nod Animasi"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "OneShot Node"
-msgstr ""
+msgstr "Nod OneShot"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Mix Node"
-msgstr ""
+msgstr "Campur Nod"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend2 Node"
-msgstr ""
+msgstr "Nod Blend2"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend3 Node"
-msgstr ""
+msgstr "Nod Blend3"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend4 Node"
-msgstr ""
+msgstr "Nod Blend4"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "TimeScale Node"
@@ -6336,6 +6328,7 @@ msgid "Zoom to 1600%"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Add %s"
 msgstr ""
 
@@ -9700,7 +9693,7 @@ msgid "TileSet"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No VCS addons are available."
+msgid "No VCS plugins are available."
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -9708,8 +9701,14 @@ msgid "Error"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No files added to stage"
+msgid ""
+"Remote settings are empty. VCS features that use the network may not work."
 msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "No commit message was provided."
+msgstr "Tidak ada nama yang diberikan."
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -9717,8 +9716,42 @@ msgid "Commit"
 msgstr "Komuniti"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "VCS Addon is not initialized"
+#, fuzzy
+msgid "Staged Changes"
+msgstr "Parameter Berubah"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Unstaged Changes"
+msgstr "Parameter Berubah"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Commit:"
+msgstr "Komuniti"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Date:"
 msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Subtitle:"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Do you want to remove the %s branch?"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Do you want to remove the %s remote?"
+msgstr ""
+"Adakah anda pasti anda mahu mengeluarkan semua sambungan dari isyarat ini?"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Apply"
+msgstr "Guna Set Semula"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Version Control System"
@@ -9729,7 +9762,37 @@ msgid "Initialize"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "Staging area"
+#, fuzzy
+msgid "Remote Login"
+msgstr "Buang Trek Anim"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Username"
+msgstr "Namakan Semula"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Password"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "SSH Public Key Path"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Select SSH public key path"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "SSH Private Key Path"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Select SSH private key path"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "SSH Passphrase"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -9737,7 +9800,108 @@ msgid "Detect new changes"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "Changes"
+#, fuzzy
+msgid "Discard all changes"
+msgstr "Parameter Berubah"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Stage all changes"
+msgstr "Menyimpan perubahan tempatan..."
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Unstage all changes"
+msgstr "Parameter Berubah"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Commit Message"
+msgstr "Komuniti"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Commit Changes"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Commit List"
+msgstr "Komuniti"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Commit list size"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "10"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "20"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "30"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Branches"
+msgstr "Padanan:"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Create New Branch"
+msgstr "Cipta %s Baru"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Branch"
+msgstr "Keluarkan Trek Anim"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Branch Name"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Remotes"
+msgstr "Keluarkan"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Create New Remote"
+msgstr "Cipta %s Baru"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Remote"
+msgstr "Keluarkan Item"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Remote Name"
+msgstr "Nama Nod:"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Remote URL"
+msgstr "Keluarkan"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Fetch"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Pull"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Push"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Force Push"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -9759,28 +9923,20 @@ msgid "Typechange"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
+msgid "Unmerged"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
-msgid "Stage Selected"
-msgstr "Semua Pilihan"
+msgid "View:"
+msgstr "Pratonton:"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "Stage All"
+msgid "Split"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "Commit Changes"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "View file diffs before committing them to the latest version"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "No file diff is active"
-msgstr ""
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Detect changes in file diff"
+msgid "Unified"
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -12308,6 +12464,7 @@ msgid "Export list to a CSV file"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_nodes.cpp
 msgid "Resource Path"
 msgstr ""
 
@@ -13151,6 +13308,39 @@ msgstr ""
 msgid "Edit Member"
 msgstr ""
 
+#: modules/visual_script/visual_script_expression.cpp
+msgid "Expression"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Return"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+#, fuzzy
+msgid "Condition"
+msgstr "animasi"
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "if (cond) is:"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "While"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "while (cond):"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Iterator"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "for (elem) in (input):"
+msgstr ""
+
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
 msgstr ""
@@ -13161,6 +13351,84 @@ msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator became invalid: "
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Sequence"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+#, fuzzy
+msgid "in order:"
+msgstr "Menamakan semula folder:"
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Switch"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "'input' is:"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Type Cast"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Is %s?"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "On %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "On Self"
+msgstr "Diri"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Subtract %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Multiply %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Divide %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Mod %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "ShiftLeft %s"
+msgstr "Tetapkan %s"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "ShiftRight %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "BitAnd %s"
+msgstr "Dipinkan %s"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "BitOr %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "BitXor %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#: modules/visual_script/visual_script_nodes.cpp
+#: modules/visual_script/visual_script_property_selector.cpp
+msgid "Get %s"
 msgstr ""
 
 #: modules/visual_script/visual_script_func_nodes.cpp
@@ -13179,12 +13447,31 @@ msgstr ""
 msgid "Invalid index property name '%s' in node %s."
 msgstr ""
 
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "Emit %s"
+msgstr "Tetapkan %s"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Function"
+msgstr "Fungsi"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Compose Array"
+msgstr "Ubah saiz Array"
+
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid argument of type: "
 msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid arguments: "
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "a if cond, else b"
 msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -13196,6 +13483,63 @@ msgid "VariableSet not found in script: "
 msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Preload"
+msgstr "Muatkan Semula"
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "Get Index"
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "Set Index"
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Global Constant"
+msgstr "Pemalar"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Class Constant"
+msgstr "Pemalar"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Basic Constant"
+msgstr "Pemalar"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Math Constant"
+msgstr "Pemalar"
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "Get Engine Singleton"
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Get Scene Node"
+msgstr "Padam Nod"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Get Scene Tree"
+msgstr "Penyuntingan Pokok Adegan"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Get Self"
+msgstr "Diri"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "CustomNode"
+msgstr "Potong Nod"
+
+#: modules/visual_script/visual_script_nodes.cpp
 msgid "Custom node has no _step() method, can't process graph."
 msgstr ""
 
@@ -13205,13 +13549,73 @@ msgid ""
 "(error)."
 msgstr ""
 
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "SubCall"
+msgstr "Panggilan"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Construct %s"
+msgstr "Pemalar"
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "Get Local Var"
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "Set Local Var"
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Action %s"
+msgstr "Aksi"
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "Deconstruct %s"
+msgstr ""
+
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search VisualScript"
 msgstr ""
 
-#: modules/visual_script/visual_script_property_selector.cpp
-msgid "Get %s"
+#: modules/visual_script/visual_script_yield_nodes.cpp
+msgid "Yield"
 msgstr ""
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+msgid "Wait"
+msgstr ""
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+#, fuzzy
+msgid "Next Frame"
+msgstr "Tab seterusnya"
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+#, fuzzy
+msgid "Next Physics Frame"
+msgstr "Bingkai Fizik %"
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+msgid "%s sec(s)"
+msgstr ""
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+#, fuzzy
+msgid "WaitSignal"
+msgstr "Isyarat"
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+#, fuzzy
+msgid "WaitNodeSignal"
+msgstr "Isyarat"
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+#, fuzzy
+msgid "WaitInstanceSignal"
+msgstr "Contoh"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Package name is missing."
@@ -13789,7 +14193,16 @@ msgstr ""
 msgid ""
 "GPU-based particles are not supported by the GLES2 video driver.\n"
 "Use the CPUParticles2D node instead. You can use the \"Convert to "
-"CPUParticles\" option for this purpose."
+"CPUParticles2D\" toolbar option for this purpose."
+msgstr ""
+
+#: scene/2d/particles_2d.cpp
+msgid ""
+"On macOS, Particles2D rendering is much slower than CPUParticles2D due to "
+"transform feedback being implemented on the CPU instead of the GPU.\n"
+"Consider using CPUParticles2D instead when targeting macOS.\n"
+"You can use the \"Convert to CPUParticles2D\" toolbar option for this "
+"purpose."
 msgstr ""
 
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
@@ -14002,7 +14415,15 @@ msgstr ""
 msgid ""
 "GPU-based particles are not supported by the GLES2 video driver.\n"
 "Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
-"\" option for this purpose."
+"\" toolbar option for this purpose."
+msgstr ""
+
+#: scene/3d/particles.cpp
+msgid ""
+"On macOS, Particles rendering is much slower than CPUParticles due to "
+"transform feedback being implemented on the CPU instead of the GPU.\n"
+"Consider using CPUParticles instead when targeting macOS.\n"
+"You can use the \"Convert to CPUParticles\" toolbar option for this purpose."
 msgstr ""
 
 #: scene/3d/particles.cpp

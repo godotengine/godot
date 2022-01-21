@@ -34,10 +34,6 @@
 #include <BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h>
 #include <BulletSoftBody/btSoftBodyRigidBodyCollisionConfiguration.h>
 
-/**
-	@author AndreaCatania
-*/
-
 class btDiscreteDynamicsWorld;
 
 class GodotCollisionConfiguration : public btDefaultCollisionConfiguration {
@@ -63,4 +59,5 @@ public:
 	virtual btCollisionAlgorithmCreateFunc *getCollisionAlgorithmCreateFunc(int proxyType0, int proxyType1);
 	virtual btCollisionAlgorithmCreateFunc *getClosestPointsAlgorithmCreateFunc(int proxyType0, int proxyType1);
 };
-#endif
+
+#endif // GODOT_COLLISION_CONFIGURATION_H

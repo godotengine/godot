@@ -33,10 +33,6 @@
 
 #include "joint_bullet.h"
 
-/**
-	@author AndreaCatania
-*/
-
 class RigidBodyBullet;
 
 class SliderJointBullet : public JointBullet {
@@ -118,4 +114,5 @@ public:
 	void set_param(PhysicsServer3D::SliderJointParam p_param, real_t p_value);
 	real_t get_param(PhysicsServer3D::SliderJointParam p_param) const;
 };
-#endif
+
+#endif // SLIDER_JOINT_BULLET_H

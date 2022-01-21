@@ -36,11 +36,8 @@
 #include "core/math/math_defs.h"
 #include "core/templates/map.h"
 #include "nav_utils.h"
-#include <KdTree.h>
 
-/**
-	@author AndreaCatania
-*/
+#include <KdTree.h>
 
 class NavRegion;
 class RvoAgent;

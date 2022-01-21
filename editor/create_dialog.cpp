@@ -170,7 +170,7 @@ void CreateDialog::_update_search() {
 	root->set_text(0, base_type);
 	root->set_icon(0, search_options->get_theme_icon(icon_fallback, SNAME("EditorIcons")));
 	search_options_types[base_type] = root;
-	_configure_search_option_item(root, base_type, ClassDB::class_exists(base_type));
+	_configure_search_option_item(root, base_type, ClassDB::class_exists(base_type) ? TypeCategory::CPP_TYPE : TypeCategory::OTHER_TYPE);
 
 	const String search_text = search_box->get_text();
 	bool empty_search = search_text.is_empty();
@@ -185,7 +185,7 @@ void CreateDialog::_update_search() {
 
 	// Build the type tree.
 	for (int i = 0; i < candidates.size(); i++) {
-		_add_type(candidates[i], ClassDB::class_exists(candidates[i]));
+		_add_type(candidates[i], ClassDB::class_exists(candidates[i]) ? TypeCategory::CPP_TYPE : TypeCategory::OTHER_TYPE);
 	}
 
 	// Select the best result.
@@ -202,31 +202,80 @@ void CreateDialog::_update_search() {
 	}
 }
 
-void CreateDialog::_add_type(const String &p_type, bool p_cpp_type) {
+void CreateDialog::_add_type(const String &p_type, const TypeCategory p_type_category) {
 	if (search_options_types.has(p_type)) {
 		return;
 	}
 
 	String inherits;
-	if (p_cpp_type) {
+
+	TypeCategory inherited_type = TypeCategory::OTHER_TYPE;
+
+	if (p_type_category == TypeCategory::CPP_TYPE) {
 		inherits = ClassDB::get_parent_class(p_type);
-	} else if (ScriptServer::is_global_class(p_type)) {
-		inherits = EditorNode::get_editor_data().script_class_get_base(p_type);
+		inherited_type = TypeCategory::CPP_TYPE;
+	} else if (p_type_category == TypeCategory::PATH_TYPE) {
+		ERR_FAIL_COND(!ResourceLoader::exists(p_type, "Script"));
+		Ref<Script> script = ResourceLoader::load(p_type, "Script");
+		ERR_FAIL_COND(script.is_null());
+
+		Ref<Script> base = script->get_base_script();
+		if (base.is_null()) {
+			String extends;
+			script->get_language()->get_global_class_name(script->get_path(), &extends);
+
+			inherits = extends;
+			inherited_type = TypeCategory::CPP_TYPE;
+		} else {
+			inherits = script->get_language()->get_global_class_name(base->get_path());
+			if (inherits.is_empty()) {
+				inherits = base->get_path();
+				inherited_type = TypeCategory::PATH_TYPE;
+			}
+		}
 	} else {
-		inherits = custom_type_parents[p_type];
+		if (ScriptServer::is_global_class(p_type)) {
+			inherits = EditorNode::get_editor_data().script_class_get_base(p_type);
+			if (inherits.is_empty()) {
+				Ref<Script> script = EditorNode::get_editor_data().script_class_load_script(p_type);
+				ERR_FAIL_COND(script.is_null());
+
+				Ref<Script> base = script->get_base_script();
+				if (base.is_null()) {
+					String extends;
+					script->get_language()->get_global_class_name(script->get_path(), &extends);
+
+					inherits = extends;
+					inherited_type = TypeCategory::CPP_TYPE;
+				} else {
+					inherits = base->get_path();
+					inherited_type = TypeCategory::PATH_TYPE;
+				}
+			}
+		} else {
+			inherits = custom_type_parents[p_type];
+			if (ClassDB::class_exists(inherits)) {
+				inherited_type = TypeCategory::CPP_TYPE;
+			}
+		}
 	}
 
-	_add_type(inherits, p_cpp_type || ClassDB::class_exists(inherits));
+	// Should never happen, but just in case...
+	ERR_FAIL_COND(inherits.is_empty());
+
+	_add_type(inherits, inherited_type);
 
 	TreeItem *item = search_options->create_item(search_options_types[inherits]);
 	search_options_types[p_type] = item;
-	_configure_search_option_item(item, p_type, p_cpp_type);
+	_configure_search_option_item(item, p_type, p_type_category);
 }
 
-void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String &p_type, const bool p_cpp_type) {
+void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String &p_type, const TypeCategory p_type_category) {
 	bool script_type = ScriptServer::is_global_class(p_type);
-	if (p_cpp_type) {
+	if (p_type_category == TypeCategory::CPP_TYPE) {
 		r_item->set_text(0, p_type);
+	} else if (p_type_category == TypeCategory::PATH_TYPE) {
+		r_item->set_text(0, "\"" + p_type + "\"");
 	} else if (script_type) {
 		r_item->set_metadata(0, p_type);
 		r_item->set_text(0, p_type + " (" + ScriptServer::get_global_class_path(p_type).get_file() + ")");
@@ -235,7 +284,9 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 		r_item->set_text(0, p_type);
 	}
 
-	bool can_instantiate = (p_cpp_type && ClassDB::can_instantiate(p_type)) || !p_cpp_type;
+	bool can_instantiate = (p_type_category == TypeCategory::CPP_TYPE && ClassDB::can_instantiate(p_type)) ||
+			p_type_category == TypeCategory::OTHER_TYPE;
+
 	if (!can_instantiate) {
 		r_item->set_custom_color(0, search_options->get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
 		r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, "NodeDisabled"));
@@ -259,7 +310,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 	const String &description = DTR(EditorHelp::get_doc_data()->class_list[p_type].brief_description);
 	r_item->set_tooltip(0, description);
 
-	if (!p_cpp_type && !script_type) {
+	if (p_type_category == TypeCategory::OTHER_TYPE && !script_type) {
 		Ref<Texture2D> icon = EditorNode::get_editor_data().get_custom_types()[custom_type_parents[p_type]][custom_type_indices[p_type]].icon;
 		if (icon.is_valid()) {
 			r_item->set_icon(0, icon);
@@ -367,13 +418,16 @@ void CreateDialog::_sbox_input(const Ref<InputEvent> &p_ie) {
 	}
 }
 
+void CreateDialog::_update_theme() {
+	search_box->set_right_icon(search_options->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+	favorite->set_icon(search_options->get_theme_icon(SNAME("Favorites"), SNAME("EditorIcons")));
+}
+
 void CreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			connect("confirmed", callable_mp(this, &CreateDialog::_confirmed));
-			search_box->set_right_icon(search_options->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-			search_box->set_clear_button_enabled(true);
-			favorite->set_icon(search_options->get_theme_icon(SNAME("Favorites"), SNAME("EditorIcons")));
+			_update_theme();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("confirmed", callable_mp(this, &CreateDialog::_confirmed));
@@ -385,6 +439,9 @@ void CreateDialog::_notification(int p_what) {
 			} else {
 				EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "create_new_node", Rect2(get_position(), get_size()));
 			}
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+			_update_theme();
 		} break;
 	}
 }
@@ -711,6 +768,7 @@ CreateDialog::CreateDialog() {
 	hsc->add_child(vbc);
 
 	search_box = memnew(LineEdit);
+	search_box->set_clear_button_enabled(true);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_box->connect("text_changed", callable_mp(this, &CreateDialog::_text_changed));
 	search_box->connect("gui_input", callable_mp(this, &CreateDialog::_sbox_input));

@@ -375,6 +375,7 @@ public:
 
 	virtual void shaped_text_set_direction(RID p_shaped, Direction p_direction = DIRECTION_AUTO) override;
 	virtual Direction shaped_text_get_direction(RID p_shaped) const override;
+	virtual Direction shaped_text_get_inferred_direction(RID p_shaped) const override;
 
 	virtual void shaped_text_set_bidi_override(RID p_shaped, const Array &p_override) override;
 
@@ -428,6 +429,9 @@ public:
 	virtual float shaped_text_get_width(RID p_shaped) const override;
 	virtual float shaped_text_get_underline_position(RID p_shaped) const override;
 	virtual float shaped_text_get_underline_thickness(RID p_shaped) const override;
+
+	virtual String string_to_upper(const String &p_string, const String &p_language = "") const override;
+	virtual String string_to_lower(const String &p_string, const String &p_language = "") const override;
 
 	TextServerFallback();
 	~TextServerFallback();

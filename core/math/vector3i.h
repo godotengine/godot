@@ -35,7 +35,7 @@
 #include "core/string/ustring.h"
 #include "core/typedefs.h"
 
-struct Vector3i {
+struct _NO_DISCARD_ Vector3i {
 	enum Axis {
 		AXIS_X,
 		AXIS_Y,

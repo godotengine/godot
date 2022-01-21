@@ -4,7 +4,7 @@
  *
  *   FreeType path stroker (body).
  *
- * Copyright (C) 2002-2020 by
+ * Copyright (C) 2002-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -974,7 +974,8 @@
     FT_StrokeBorder  border = stroker->borders + side;
     FT_Angle         phi, theta, rotate;
     FT_Fixed         length;
-    FT_Vector        sigma, delta;
+    FT_Vector        sigma = { 0, 0 };
+    FT_Vector        delta;
     FT_Error         error = FT_Err_Ok;
     FT_Bool          intersect;          /* use intersection of lines? */
 
@@ -1048,7 +1049,7 @@
     {
       /* this is a mitered (pointed) or beveled (truncated) corner */
       FT_Fixed   radius = stroker->radius;
-      FT_Vector  sigma;
+      FT_Vector  sigma = { 0, 0 };
       FT_Angle   theta = 0, phi = 0;
       FT_Bool    bevel, fixed_bevel;
 
@@ -1528,7 +1529,8 @@
       stroker->angle_in = angle_out;
     }
 
-    stroker->center = *to;
+    stroker->center      = *to;
+    stroker->line_length = 0;
 
   Exit:
     return error;
@@ -1744,7 +1746,8 @@
       stroker->angle_in = angle_out;
     }
 
-    stroker->center = *to;
+    stroker->center      = *to;
+    stroker->line_length = 0;
 
   Exit:
     return error;
@@ -1897,13 +1900,9 @@
     }
     else
     {
-      FT_Angle  turn;
-      FT_Int    inside_side;
-
-
       /* close the path if needed */
-      if ( stroker->center.x != stroker->subpath_start.x ||
-           stroker->center.y != stroker->subpath_start.y )
+      if ( !FT_IS_SMALL( stroker->center.x - stroker->subpath_start.x ) ||
+           !FT_IS_SMALL( stroker->center.y - stroker->subpath_start.y ) )
       {
          error = FT_Stroker_LineTo( stroker, &stroker->subpath_start );
          if ( error )
@@ -1912,29 +1911,11 @@
 
       /* process the corner */
       stroker->angle_out = stroker->subpath_angle;
-      turn               = FT_Angle_Diff( stroker->angle_in,
-                                          stroker->angle_out );
 
-      /* no specific corner processing is required if the turn is 0 */
-      if ( turn != 0 )
-      {
-        /* when we turn to the right, the inside side is 0 */
-        /* otherwise, the inside side is 1 */
-        inside_side = ( turn < 0 );
-
-        error = ft_stroker_inside( stroker,
-                                   inside_side,
-                                   stroker->subpath_line_length );
-        if ( error )
-          goto Exit;
-
-        /* process the outside side */
-        error = ft_stroker_outside( stroker,
-                                    !inside_side,
-                                    stroker->subpath_line_length );
-        if ( error )
-          goto Exit;
-      }
+      error = ft_stroker_process_corner( stroker,
+                                         stroker->subpath_line_length );
+      if ( error )
+        goto Exit;
 
       /* then end our two subpaths */
       ft_stroke_border_close( stroker->borders + 0, FALSE );

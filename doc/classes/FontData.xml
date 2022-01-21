@@ -306,6 +306,22 @@
 				Returns [code]true[/code], if font supports given script ([url=https://en.wikipedia.org/wiki/ISO_15924]ISO 15924[/url] code).
 			</description>
 		</method>
+		<method name="load_bitmap_font">
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
+			<description>
+				Loads an AngelCode BMFont (.fnt, .font) bitmap font from file [code]path[/code].
+				[b]Warning:[/b] This method should only be used in the editor or in cases when you need to load external fonts at run-time, such as fonts located at the [code]user://[/code] directory.
+			</description>
+		</method>
+		<method name="load_dynamic_font">
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
+			<description>
+				Loads a TrueType (.ttf), OpenType (.otf), WOFF (.woff) or Type 1 (.pfb, .pfm) dynamic font from file [code]path[/code].
+				[b]Warning:[/b] This method should only be used in the editor or in cases when you need to load external fonts at run-time, such as fonts located at the [code]user://[/code] directory.
+			</description>
+		</method>
 		<method name="remove_cache">
 			<return type="void" />
 			<argument index="0" name="cache_index" type="int" />

@@ -109,7 +109,8 @@ public:
 		FEATURE_BREAK_ITERATORS = 1 << 4,
 		FEATURE_FONT_SYSTEM = 1 << 5,
 		FEATURE_FONT_VARIABLE = 1 << 6,
-		FEATURE_USE_SUPPORT_DATA = 1 << 7
+		FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION = 1 << 7,
+		FEATURE_USE_SUPPORT_DATA = 1 << 8,
 	};
 
 	enum ContourPointTag {
@@ -370,6 +371,7 @@ public:
 
 	virtual void shaped_text_set_direction(RID p_shaped, Direction p_direction = DIRECTION_AUTO) = 0;
 	virtual Direction shaped_text_get_direction(RID p_shaped) const = 0;
+	virtual Direction shaped_text_get_inferred_direction(RID p_shaped) const = 0;
 
 	virtual void shaped_text_set_bidi_override(RID p_shaped, const Array &p_override) = 0;
 
@@ -455,6 +457,10 @@ public:
 	virtual String percent_sign(const String &p_language = "") const { return "%"; };
 
 	virtual String strip_diacritics(const String &p_string) const;
+
+	// Other string operations.
+	virtual String string_to_upper(const String &p_string, const String &p_language = "") const = 0;
+	virtual String string_to_lower(const String &p_string, const String &p_language = "") const = 0;
 
 	TextServer();
 	~TextServer();

@@ -346,6 +346,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform3D &p_transform
 	 */
 
 	Vector<Plane> planes;
+	planes.resize(6);
 
 	const real_t *matrix = (const real_t *)this->matrix;
 
@@ -360,7 +361,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform3D &p_transform
 	new_plane.normal = -new_plane.normal;
 	new_plane.normalize();
 
-	planes.push_back(p_transform.xform(new_plane));
+	planes.write[0] = p_transform.xform(new_plane);
 
 	///////--- Far Plane ---///////
 	new_plane = Plane(matrix[3] - matrix[2],
@@ -371,7 +372,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform3D &p_transform
 	new_plane.normal = -new_plane.normal;
 	new_plane.normalize();
 
-	planes.push_back(p_transform.xform(new_plane));
+	planes.write[1] = p_transform.xform(new_plane);
 
 	///////--- Left Plane ---///////
 	new_plane = Plane(matrix[3] + matrix[0],
@@ -382,7 +383,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform3D &p_transform
 	new_plane.normal = -new_plane.normal;
 	new_plane.normalize();
 
-	planes.push_back(p_transform.xform(new_plane));
+	planes.write[2] = p_transform.xform(new_plane);
 
 	///////--- Top Plane ---///////
 	new_plane = Plane(matrix[3] - matrix[1],
@@ -393,7 +394,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform3D &p_transform
 	new_plane.normal = -new_plane.normal;
 	new_plane.normalize();
 
-	planes.push_back(p_transform.xform(new_plane));
+	planes.write[3] = p_transform.xform(new_plane);
 
 	///////--- Right Plane ---///////
 	new_plane = Plane(matrix[3] - matrix[0],
@@ -404,7 +405,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform3D &p_transform
 	new_plane.normal = -new_plane.normal;
 	new_plane.normalize();
 
-	planes.push_back(p_transform.xform(new_plane));
+	planes.write[4] = p_transform.xform(new_plane);
 
 	///////--- Bottom Plane ---///////
 	new_plane = Plane(matrix[3] + matrix[1],
@@ -415,7 +416,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform3D &p_transform
 	new_plane.normal = -new_plane.normal;
 	new_plane.normalize();
 
-	planes.push_back(p_transform.xform(new_plane));
+	planes.write[5] = p_transform.xform(new_plane);
 
 	return planes;
 }

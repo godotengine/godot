@@ -134,13 +134,12 @@ void JoypadUWP::OnGamepadRemoved(Platform::Object ^ sender, Windows::Gaming::Inp
 	input->joy_connection_changed(idx, false, "Xbox Controller");
 }
 
-InputDefault::JoyAxisValue JoypadUWP::axis_correct(double p_val, bool p_negate, bool p_trigger) const {
-	InputDefault::JoyAxisValue jx;
-
-	jx.min = p_trigger ? 0 : -1;
-	jx.value = (float)(p_negate ? -p_val : p_val);
-
-	return jx;
+float JoypadUWP::axis_correct(double p_val, bool p_negate, bool p_trigger) const {
+	if (p_trigger) {
+		// Convert to a value between -1.0f and 1.0f.
+		return 2.0f * p_val - 1.0f;
+	}
+	return (float)(p_negate ? -p_val : p_val);
 }
 
 void JoypadUWP::joypad_vibration_start(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp) {

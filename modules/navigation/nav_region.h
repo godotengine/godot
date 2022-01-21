@@ -35,11 +35,8 @@
 
 #include "nav_rid.h"
 #include "nav_utils.h"
-#include <vector>
 
-/**
-	@author AndreaCatania
-*/
+#include <vector>
 
 class NavMap;
 class NavRegion;

@@ -28,10 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-/**
-	@author AndreaCatania
-*/
-
 #include "navigation_server_3d.h"
 
 NavigationServer3D *NavigationServer3D::singleton = nullptr;

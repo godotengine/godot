@@ -281,16 +281,16 @@ static inline void _plot_face(uint8_t ***p_cell_status, int x, int y, int z, int
 	int div_y = len_y > 1 ? 2 : 1;
 	int div_z = len_z > 1 ? 2 : 1;
 
-#define _SPLIT(m_i, m_div, m_v, m_len_v, m_new_v, m_new_len_v) \
-	if (m_div == 1) {                                          \
-		m_new_v = m_v;                                         \
-		m_new_len_v = 1;                                       \
-	} else if (m_i == 0) {                                     \
-		m_new_v = m_v;                                         \
-		m_new_len_v = m_len_v / 2;                             \
-	} else {                                                   \
-		m_new_v = m_v + m_len_v / 2;                           \
-		m_new_len_v = m_len_v - m_len_v / 2;                   \
+#define SPLIT_DIV(m_i, m_div, m_v, m_len_v, m_new_v, m_new_len_v) \
+	if (m_div == 1) {                                             \
+		m_new_v = m_v;                                            \
+		m_new_len_v = 1;                                          \
+	} else if (m_i == 0) {                                        \
+		m_new_v = m_v;                                            \
+		m_new_len_v = m_len_v / 2;                                \
+	} else {                                                      \
+		m_new_v = m_v + m_len_v / 2;                              \
+		m_new_len_v = m_len_v - m_len_v / 2;                      \
 	}
 
 	int new_x;
@@ -301,18 +301,20 @@ static inline void _plot_face(uint8_t ***p_cell_status, int x, int y, int z, int
 	int new_len_z;
 
 	for (int i = 0; i < div_x; i++) {
-		_SPLIT(i, div_x, x, len_x, new_x, new_len_x);
+		SPLIT_DIV(i, div_x, x, len_x, new_x, new_len_x);
 
 		for (int j = 0; j < div_y; j++) {
-			_SPLIT(j, div_y, y, len_y, new_y, new_len_y);
+			SPLIT_DIV(j, div_y, y, len_y, new_y, new_len_y);
 
 			for (int k = 0; k < div_z; k++) {
-				_SPLIT(k, div_z, z, len_z, new_z, new_len_z);
+				SPLIT_DIV(k, div_z, z, len_z, new_z, new_len_z);
 
 				_plot_face(p_cell_status, new_x, new_y, new_z, new_len_x, new_len_y, new_len_z, voxelsize, p_face);
 			}
 		}
 	}
+
+#undef SPLIT_DIV
 }
 
 static inline void _mark_outside(uint8_t ***p_cell_status, int x, int y, int z, int len_x, int len_y, int len_z) {
@@ -491,11 +493,10 @@ static inline void _build_faces(uint8_t ***p_cell_status, int x, int y, int z, i
 }
 
 Vector<Face3> Geometry3D::wrap_geometry(Vector<Face3> p_array, real_t *p_error) {
-#define _MIN_SIZE 1.0
-#define _MAX_LENGTH 20
-
 	int face_count = p_array.size();
 	const Face3 *faces = p_array.ptr();
+	constexpr double min_size = 1.0;
+	constexpr int max_length = 20;
 
 	AABB global_aabb;
 
@@ -512,22 +513,22 @@ Vector<Face3> Geometry3D::wrap_geometry(Vector<Face3> p_array, real_t *p_error) 
 	// Determine amount of cells in grid axis.
 	int div_x, div_y, div_z;
 
-	if (global_aabb.size.x / _MIN_SIZE < _MAX_LENGTH) {
-		div_x = (int)(global_aabb.size.x / _MIN_SIZE) + 1;
+	if (global_aabb.size.x / min_size < max_length) {
+		div_x = (int)(global_aabb.size.x / min_size) + 1;
 	} else {
-		div_x = _MAX_LENGTH;
+		div_x = max_length;
 	}
 
-	if (global_aabb.size.y / _MIN_SIZE < _MAX_LENGTH) {
-		div_y = (int)(global_aabb.size.y / _MIN_SIZE) + 1;
+	if (global_aabb.size.y / min_size < max_length) {
+		div_y = (int)(global_aabb.size.y / min_size) + 1;
 	} else {
-		div_y = _MAX_LENGTH;
+		div_y = max_length;
 	}
 
-	if (global_aabb.size.z / _MIN_SIZE < _MAX_LENGTH) {
-		div_z = (int)(global_aabb.size.z / _MIN_SIZE) + 1;
+	if (global_aabb.size.z / min_size < max_length) {
+		div_z = (int)(global_aabb.size.z / min_size) + 1;
 	} else {
-		div_z = _MAX_LENGTH;
+		div_z = max_length;
 	}
 
 	Vector3 voxelsize = global_aabb.size;

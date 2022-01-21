@@ -1061,6 +1061,13 @@
 				Returns composite character's bounds as offsets from the start of the line.
 			</description>
 		</method>
+		<method name="_shaped_text_get_inferred_direction" qualifiers="virtual const">
+			<return type="int" />
+			<argument index="0" name="shaped" type="RID" />
+			<description>
+				Returns direction of the text, inferred by the BiDi algorithm.
+			</description>
+		</method>
 		<method name="_shaped_text_get_line_breaks" qualifiers="virtual const">
 			<return type="PackedInt32Array" />
 			<argument index="0" name="shaped" type="RID" />
@@ -1339,6 +1346,22 @@
 			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Updates justification opportunities (spaces, kashidas, etc.).
+			</description>
+		</method>
+		<method name="_string_to_lower" qualifiers="virtual const">
+			<return type="String" />
+			<argument index="0" name="string" type="String" />
+			<argument index="1" name="language" type="String" />
+			<description>
+				Returns the string converted to lowercase. Casing is locale dependent and context sensitive. The result may be longer or shorter than the original.
+			</description>
+		</method>
+		<method name="_string_to_upper" qualifiers="virtual const">
+			<return type="String" />
+			<argument index="0" name="string" type="String" />
+			<argument index="1" name="language" type="String" />
+			<description>
+				Returns the string converted to uppercase. Casing is locale dependent and context sensitive. The result may be longer or shorter than the original.
 			</description>
 		</method>
 		<method name="_tag_to_name" qualifiers="virtual const">

@@ -527,7 +527,8 @@ private:
 
 	void _update_override_camera_button(bool p_game_running);
 
-	HSplitContainer *palette_split;
+	HSplitContainer *left_panel_split;
+	HSplitContainer *right_panel_split;
 	VSplitContainer *bottom_split;
 
 	void _update_context_menu_stylebox();
@@ -571,7 +572,12 @@ public:
 	void add_control_to_menu_panel(Control *p_control);
 	void remove_control_from_menu_panel(Control *p_control);
 
-	HSplitContainer *get_palette_split();
+	void add_control_to_left_panel(Control *p_control);
+	void remove_control_from_left_panel(Control *p_control);
+
+	void add_control_to_right_panel(Control *p_control);
+	void remove_control_from_right_panel(Control *p_control);
+
 	VSplitContainer *get_bottom_split();
 
 	Control *get_viewport_control() { return viewport; }

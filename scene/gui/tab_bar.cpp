@@ -303,149 +303,52 @@ void TabBar::_notification(int p_what) {
 				return;
 			}
 
-			RID ci = get_canvas_item();
-
 			Ref<StyleBox> tab_unselected = get_theme_stylebox(SNAME("tab_unselected"));
 			Ref<StyleBox> tab_selected = get_theme_stylebox(SNAME("tab_selected"));
 			Ref<StyleBox> tab_disabled = get_theme_stylebox(SNAME("tab_disabled"));
 			Color font_selected_color = get_theme_color(SNAME("font_selected_color"));
 			Color font_unselected_color = get_theme_color(SNAME("font_unselected_color"));
 			Color font_disabled_color = get_theme_color(SNAME("font_disabled_color"));
-			Ref<Texture2D> close = get_theme_icon(SNAME("close"));
 			Ref<Texture2D> incr = get_theme_icon(SNAME("increment"));
 			Ref<Texture2D> decr = get_theme_icon(SNAME("decrement"));
 			Ref<Texture2D> incr_hl = get_theme_icon(SNAME("increment_highlight"));
 			Ref<Texture2D> decr_hl = get_theme_icon(SNAME("decrement_highlight"));
-			Color font_outline_color = get_theme_color(SNAME("font_outline_color"));
-			int outline_size = get_theme_constant(SNAME("outline_size"));
 
-			Vector2 size = get_size();
 			bool rtl = is_layout_rtl();
-			int limit = get_size().width;
-			int limit_minus_buttons = limit - incr->get_width() - decr->get_width();
+			Vector2 size = get_size();
+			int limit_minus_buttons = size.width - incr->get_width() - decr->get_width();
 
-			int h = get_size().height;
-			int w = tabs[offset].ofs_cache;
+			int ofs = tabs[offset].ofs_cache;
 
+			// Draw unselected tabs in the back.
 			for (int i = offset; i <= max_drawn_tab; i++) {
-				Ref<StyleBox> sb;
-				Color col;
+				if (i != current) {
+					Ref<StyleBox> sb;
+					Color col;
 
-				if (tabs[i].disabled) {
-					sb = tab_disabled;
-					col = font_disabled_color;
-				} else if (i == current) {
-					sb = tab_selected;
-					col = font_selected_color;
-				} else {
-					sb = tab_unselected;
-					col = font_unselected_color;
-				}
-
-				Rect2 sb_rect;
-				if (rtl) {
-					sb_rect = Rect2(size.width - w - tabs[i].size_cache, 0, tabs[i].size_cache, h);
-				} else {
-					sb_rect = Rect2(w, 0, tabs[i].size_cache, h);
-				}
-				sb->draw(ci, sb_rect);
-
-				w += sb->get_margin(SIDE_LEFT);
-
-				Size2i sb_ms = sb->get_minimum_size();
-				Ref<Texture2D> icon = tabs[i].icon;
-				if (icon.is_valid()) {
-					if (rtl) {
-						icon->draw(ci, Point2i(size.width - w - icon->get_width(), sb->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - icon->get_height()) / 2));
+					if (tabs[i].disabled) {
+						sb = tab_disabled;
+						col = font_disabled_color;
+					} else if (i == current) {
+						sb = tab_selected;
+						col = font_selected_color;
 					} else {
-						icon->draw(ci, Point2i(w, sb->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - icon->get_height()) / 2));
+						sb = tab_unselected;
+						col = font_unselected_color;
 					}
-					if (!tabs[i].text.is_empty()) {
-						w += icon->get_width() + get_theme_constant(SNAME("hseparation"));
-					}
+
+					_draw_tab(sb, col, i, rtl ? size.width - ofs - tabs[i].size_cache : ofs);
 				}
 
-				if (rtl) {
-					Vector2 text_pos = Point2i(size.width - w - tabs[i].text_buf->get_size().x, sb->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - tabs[i].text_buf->get_size().y) / 2);
-					if (outline_size > 0 && font_outline_color.a > 0) {
-						tabs[i].text_buf->draw_outline(ci, text_pos, outline_size, font_outline_color);
-					}
-					tabs[i].text_buf->draw(ci, text_pos, col);
-				} else {
-					Vector2 text_pos = Point2i(w, sb->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - tabs[i].text_buf->get_size().y) / 2);
-					if (outline_size > 0 && font_outline_color.a > 0) {
-						tabs[i].text_buf->draw_outline(ci, text_pos, outline_size, font_outline_color);
-					}
-					tabs[i].text_buf->draw(ci, text_pos, col);
-				}
+				ofs += tabs[i].size_cache;
+			}
 
-				w += tabs[i].size_text;
+			// Draw selected tab in the front, but only if it's visible.
+			if (current >= offset && current <= max_drawn_tab) {
+				Ref<StyleBox> sb = tabs[current].disabled ? tab_disabled : tab_selected;
+				float x = rtl ? size.width - tabs[current].ofs_cache - tabs[current].size_cache : tabs[current].ofs_cache;
 
-				if (tabs[i].right_button.is_valid()) {
-					Ref<StyleBox> style = get_theme_stylebox(SNAME("close_bg_highlight"));
-					Ref<Texture2D> rb = tabs[i].right_button;
-
-					w += get_theme_constant(SNAME("hseparation"));
-
-					Rect2 rb_rect;
-					rb_rect.size = style->get_minimum_size() + rb->get_size();
-					if (rtl) {
-						rb_rect.position.x = size.width - w - rb_rect.size.x;
-					} else {
-						rb_rect.position.x = w;
-					}
-					rb_rect.position.y = sb->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - (rb_rect.size.y)) / 2;
-
-					if (rb_hover == i) {
-						if (rb_pressing) {
-							get_theme_stylebox(SNAME("button_pressed"))->draw(ci, rb_rect);
-						} else {
-							style->draw(ci, rb_rect);
-						}
-					}
-
-					if (rtl) {
-						rb->draw(ci, Point2i(size.width - w - rb_rect.size.x + style->get_margin(SIDE_LEFT), rb_rect.position.y + style->get_margin(SIDE_TOP)));
-					} else {
-						rb->draw(ci, Point2i(w + style->get_margin(SIDE_LEFT), rb_rect.position.y + style->get_margin(SIDE_TOP)));
-					}
-					w += rb->get_width();
-					tabs.write[i].rb_rect = rb_rect;
-				}
-
-				if (cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && i == current)) {
-					Ref<StyleBox> style = get_theme_stylebox(SNAME("close_bg_highlight"));
-					Ref<Texture2D> cb = close;
-
-					w += get_theme_constant(SNAME("hseparation"));
-
-					Rect2 cb_rect;
-					cb_rect.size = style->get_minimum_size() + cb->get_size();
-					if (rtl) {
-						cb_rect.position.x = size.width - w - cb_rect.size.x;
-					} else {
-						cb_rect.position.x = w;
-					}
-					cb_rect.position.y = sb->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - (cb_rect.size.y)) / 2;
-
-					if (!tabs[i].disabled && cb_hover == i) {
-						if (cb_pressing) {
-							get_theme_stylebox(SNAME("close_bg_pressed"))->draw(ci, cb_rect);
-						} else {
-							style->draw(ci, cb_rect);
-						}
-					}
-
-					if (rtl) {
-						cb->draw(ci, Point2i(size.width - w - cb_rect.size.x + style->get_margin(SIDE_LEFT), cb_rect.position.y + style->get_margin(SIDE_TOP)));
-					} else {
-						cb->draw(ci, Point2i(w + style->get_margin(SIDE_LEFT), cb_rect.position.y + style->get_margin(SIDE_TOP)));
-					}
-					w += cb->get_width();
-					tabs.write[i].cb_rect = cb_rect;
-				}
-
-				w += sb->get_margin(SIDE_RIGHT);
+				_draw_tab(sb, font_selected_color, current, x);
 			}
 
 			if (offset > 0 || missing_right) {
@@ -478,6 +381,87 @@ void TabBar::_notification(int p_what) {
 				}
 			}
 		} break;
+	}
+}
+
+void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x) {
+	RID ci = get_canvas_item();
+
+	Color font_outline_color = get_theme_color(SNAME("font_outline_color"));
+	int outline_size = get_theme_constant(SNAME("outline_size"));
+
+	Tab tab = tabs[p_index];
+
+	Rect2 sb_rect = Rect2(p_x, 0, tab.size_cache, get_size().height);
+	p_tab_style->draw(ci, sb_rect);
+
+	p_x += p_tab_style->get_margin(SIDE_LEFT);
+
+	Size2i sb_ms = p_tab_style->get_minimum_size();
+
+	Ref<Texture2D> icon = tab.icon;
+	if (icon.is_valid()) {
+		icon->draw(ci, Point2i(p_x, p_tab_style->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - icon->get_height()) / 2));
+
+		if (!tab.text.is_empty()) {
+			p_x += icon->get_width() + get_theme_constant(SNAME("hseparation"));
+		}
+	}
+
+	Vector2 text_pos = Point2i(p_x, p_tab_style->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - tab.text_buf->get_size().y) / 2);
+	if (outline_size > 0 && font_outline_color.a > 0) {
+		tab.text_buf->draw_outline(ci, text_pos, outline_size, font_outline_color);
+	}
+	tab.text_buf->draw(ci, text_pos, p_font_color);
+
+	p_x += tab.size_text;
+
+	if (tab.right_button.is_valid()) {
+		Ref<StyleBox> style = get_theme_stylebox(SNAME("close_bg_highlight"));
+		Ref<Texture2D> rb = tab.right_button;
+
+		p_x += get_theme_constant(SNAME("hseparation"));
+
+		Rect2 rb_rect;
+		rb_rect.size = style->get_minimum_size() + rb->get_size();
+		rb_rect.position.x = p_x;
+		rb_rect.position.y = p_tab_style->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - (rb_rect.size.y)) / 2;
+
+		if (rb_hover == p_index) {
+			if (rb_pressing) {
+				get_theme_stylebox(SNAME("button_pressed"))->draw(ci, rb_rect);
+			} else {
+				style->draw(ci, rb_rect);
+			}
+		}
+
+		rb->draw(ci, Point2i(p_x + style->get_margin(SIDE_LEFT), rb_rect.position.y + style->get_margin(SIDE_TOP)));
+		p_x += rb->get_width();
+		tabs.write[p_index].rb_rect = rb_rect;
+	}
+
+	if (cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && p_index == current)) {
+		Ref<StyleBox> style = get_theme_stylebox(SNAME("close_bg_highlight"));
+		Ref<Texture2D> cb = get_theme_icon(SNAME("close"));
+
+		p_x += get_theme_constant(SNAME("hseparation"));
+
+		Rect2 cb_rect;
+		cb_rect.size = style->get_minimum_size() + cb->get_size();
+		cb_rect.position.x = p_x;
+		cb_rect.position.y = p_tab_style->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - (cb_rect.size.y)) / 2;
+
+		if (!tab.disabled && cb_hover == p_index) {
+			if (cb_pressing) {
+				get_theme_stylebox(SNAME("close_bg_pressed"))->draw(ci, cb_rect);
+			} else {
+				style->draw(ci, cb_rect);
+			}
+		}
+
+		cb->draw(ci, Point2i(p_x + style->get_margin(SIDE_LEFT), cb_rect.position.y + style->get_margin(SIDE_TOP)));
+		p_x += cb->get_width();
+		tabs.write[p_index].cb_rect = cb_rect;
 	}
 }
 

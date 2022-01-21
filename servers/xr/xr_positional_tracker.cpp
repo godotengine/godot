@@ -56,7 +56,7 @@ void XRPositionalTracker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_pose", "name"), &XRPositionalTracker::has_pose);
 	ClassDB::bind_method(D_METHOD("get_pose", "name"), &XRPositionalTracker::get_pose);
 	ClassDB::bind_method(D_METHOD("invalidate_pose", "name"), &XRPositionalTracker::invalidate_pose);
-	ClassDB::bind_method(D_METHOD("set_pose", "name", "transform", "linear_velocity", "angular_velocity"), &XRPositionalTracker::set_pose);
+	ClassDB::bind_method(D_METHOD("set_pose", "name", "transform", "linear_velocity", "angular_velocity", "tracking_confidence"), &XRPositionalTracker::set_pose);
 	ADD_SIGNAL(MethodInfo("pose_changed", PropertyInfo(Variant::OBJECT, "pose", PROPERTY_HINT_RESOURCE_TYPE, "XRPose")));
 
 	ClassDB::bind_method(D_METHOD("get_input", "name"), &XRPositionalTracker::get_input);
@@ -137,7 +137,7 @@ void XRPositionalTracker::invalidate_pose(const StringName &p_action_name) {
 	}
 }
 
-void XRPositionalTracker::set_pose(const StringName &p_action_name, const Transform3D &p_transform, const Vector3 &p_linear_velocity, const Vector3 &p_angular_velocity) {
+void XRPositionalTracker::set_pose(const StringName &p_action_name, const Transform3D &p_transform, const Vector3 &p_linear_velocity, const Vector3 &p_angular_velocity, const XRPose::TrackingConfidence p_tracking_confidence) {
 	Ref<XRPose> new_pose;
 
 	new_pose.instantiate();
@@ -146,6 +146,7 @@ void XRPositionalTracker::set_pose(const StringName &p_action_name, const Transf
 	new_pose->set_transform(p_transform);
 	new_pose->set_linear_velocity(p_linear_velocity);
 	new_pose->set_angular_velocity(p_angular_velocity);
+	new_pose->set_tracking_confidence(p_tracking_confidence);
 
 	poses[p_action_name] = new_pose;
 	emit_signal("pose_changed", new_pose);

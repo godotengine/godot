@@ -466,6 +466,7 @@ public:
 
 	virtual void shaped_text_set_direction(RID p_shaped, Direction p_direction = DIRECTION_AUTO) override;
 	virtual Direction shaped_text_get_direction(RID p_shaped) const override;
+	virtual Direction shaped_text_get_inferred_direction(RID p_shaped) const override;
 
 	virtual void shaped_text_set_bidi_override(RID p_shaped, const Array &p_override) override;
 
@@ -525,6 +526,9 @@ public:
 	virtual String percent_sign(const String &p_language = "") const override;
 
 	virtual String strip_diacritics(const String &p_string) const override;
+
+	virtual String string_to_upper(const String &p_string, const String &p_language = "") const override;
+	virtual String string_to_lower(const String &p_string, const String &p_language = "") const override;
 
 	TextServerAdvanced();
 	~TextServerAdvanced();

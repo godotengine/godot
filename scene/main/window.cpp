@@ -281,6 +281,11 @@ void Window::_clear_window() {
 	DisplayServer::get_singleton()->delete_sub_window(window_id);
 	window_id = DisplayServer::INVALID_WINDOW_ID;
 
+	// If closing window was focused and has a parent, return focus.
+	if (focused && transient_parent) {
+		transient_parent->grab_focus();
+	}
+
 	_update_viewport_size();
 	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
 }
@@ -1574,6 +1579,7 @@ void Window::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("go_back_requested"));
 	ADD_SIGNAL(MethodInfo("visibility_changed"));
 	ADD_SIGNAL(MethodInfo("about_to_popup"));
+	ADD_SIGNAL(MethodInfo("theme_changed"));
 
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
 

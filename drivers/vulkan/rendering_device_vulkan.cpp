@@ -387,14 +387,6 @@ const VkFormat RenderingDeviceVulkan::vulkan_formats[RenderingDevice::DATA_FORMA
 	VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM,
 	VK_FORMAT_G16_B16R16_2PLANE_422_UNORM,
 	VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM,
-	VK_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG,
-	VK_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG,
-	VK_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG,
-	VK_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG,
-	VK_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG,
-	VK_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG,
-	VK_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG,
-	VK_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG,
 };
 
 const char *RenderingDeviceVulkan::named_formats[RenderingDevice::DATA_FORMAT_MAX] = {
@@ -616,14 +608,6 @@ const char *RenderingDeviceVulkan::named_formats[RenderingDevice::DATA_FORMAT_MA
 	"G16_B16_R16_3Plane_422_Unorm",
 	"G16_B16R16_2Plane_422_Unorm",
 	"G16_B16_R16_3Plane_444_Unorm",
-	"Pvrtc1_2Bpp_Unorm_Block_Img",
-	"Pvrtc1_4Bpp_Unorm_Block_Img",
-	"Pvrtc2_2Bpp_Unorm_Block_Img",
-	"Pvrtc2_4Bpp_Unorm_Block_Img",
-	"Pvrtc1_2Bpp_Srgb_Block_Img",
-	"Pvrtc1_4Bpp_Srgb_Block_Img",
-	"Pvrtc2_2Bpp_Srgb_Block_Img",
-	"Pvrtc2_4Bpp_Srgb_Block_Img"
 };
 
 int RenderingDeviceVulkan::get_format_vertex_size(DataFormat p_format) {
@@ -970,15 +954,6 @@ uint32_t RenderingDeviceVulkan::get_image_format_pixel_size(DataFormat p_format)
 		case DATA_FORMAT_G16_B16R16_2PLANE_422_UNORM:
 		case DATA_FORMAT_G16_B16_R16_3PLANE_444_UNORM:
 			return 8;
-		case DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG:
-			return 1;
 		default: {
 			ERR_PRINT("Format not handled, bug");
 		}
@@ -1046,20 +1021,6 @@ void RenderingDeviceVulkan::get_compressed_image_format_block_dimensions(DataFor
 		case DATA_FORMAT_ASTC_12x12_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_12x12_SRGB_BLOCK:
 			r_w = 4;
-			r_h = 4;
-			return;
-		case DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG:
-			r_w = 4;
-			r_h = 4;
-			return;
-		case DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG:
-			r_w = 8;
 			r_h = 4;
 			return;
 		default: {
@@ -1138,15 +1099,6 @@ uint32_t RenderingDeviceVulkan::get_compressed_image_format_block_byte_size(Data
 		case DATA_FORMAT_ASTC_12x12_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_12x12_SRGB_BLOCK:
 			return 8; //wrong
-		case DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG:
-			return 8; //what varies is resolution
 		default: {
 		}
 	}
@@ -1167,16 +1119,7 @@ uint32_t RenderingDeviceVulkan::get_compressed_image_format_pixel_rshift(DataFor
 		case DATA_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK:
 		case DATA_FORMAT_EAC_R11_UNORM_BLOCK:
 		case DATA_FORMAT_EAC_R11_SNORM_BLOCK:
-		case DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG:
 			return 1;
-		case DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG: //these formats are quarter byte size, so rshift is 1
-		case DATA_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG:
-			return 2;
 		default: {
 		}
 	}
@@ -8429,11 +8372,11 @@ void RenderingDeviceVulkan::_free_internal(RID p_id) {
 	} else if (uniform_set_owner.owns(p_id)) {
 		UniformSet *uniform_set = uniform_set_owner.get_or_null(p_id);
 		frames[frame].uniform_sets_to_dispose_of.push_back(*uniform_set);
-		if (uniform_set->invalidated_callback != nullptr) {
-			uniform_set->invalidated_callback(p_id, uniform_set->invalidated_callback_userdata);
-		}
-
 		uniform_set_owner.free(p_id);
+
+		if (uniform_set->invalidated_callback != nullptr) {
+			uniform_set->invalidated_callback(uniform_set->invalidated_callback_userdata);
+		}
 	} else if (render_pipeline_owner.owns(p_id)) {
 		RenderPipeline *pipeline = render_pipeline_owner.get_or_null(p_id);
 		frames[frame].render_pipelines_to_dispose_of.push_back(*pipeline);
@@ -8986,7 +8929,7 @@ void RenderingDeviceVulkan::_free_rids(T &p_owner, const char *p_type) {
 }
 
 void RenderingDeviceVulkan::capture_timestamp(const String &p_name) {
-	ERR_FAIL_COND_MSG(draw_list != nullptr, "Capturing timestamps during draw list creation is not allowed. Offending timestap was: " + p_name);
+	ERR_FAIL_COND_MSG(draw_list != nullptr, "Capturing timestamps during draw list creation is not allowed. Offending timestamp was: " + p_name);
 	ERR_FAIL_COND(frames[frame].timestamp_count >= max_timestamp_query_elements);
 
 	//this should be optional for profiling, else it will slow things down

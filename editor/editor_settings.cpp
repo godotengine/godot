@@ -339,7 +339,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	{
 		String lang_hint = "en";
 		String host_lang = OS::get_singleton()->get_locale();
-		host_lang = TranslationServer::standardize_locale(host_lang);
 
 		// Skip locales if Text server lack required features.
 		Vector<String> locales_to_skip;
@@ -365,6 +364,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		}
 
 		String best;
+		int best_score = 0;
 		for (const String &locale : get_editor_locales()) {
 			// Skip locales which we can't render properly (see above comment).
 			// Test against language code without regional variants (e.g. ur_PK).
@@ -376,16 +376,16 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 			lang_hint += ",";
 			lang_hint += locale;
 
-			if (host_lang == locale) {
+			int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);
+			if (score > best_score) {
 				best = locale;
-			}
-
-			if (best.is_empty() && host_lang.begins_with(locale)) {
-				best = locale;
+				best_score = score;
+				if (score == 10) {
+					break; // Exact match, skip the rest.
+				}
 			}
 		}
-
-		if (best.is_empty()) {
+		if (best_score == 0) {
 			best = "en";
 		}
 
@@ -428,7 +428,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/editor/separate_distraction_mode", false);
 	_initial_set("interface/editor/automatically_open_screenshots", true);
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/single_window_mode", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
-	_initial_set("interface/editor/hide_console_window", false);
 	_initial_set("interface/editor/mouse_extra_buttons_navigate_history", true);
 	_initial_set("interface/editor/save_each_scene_on_quit", true); // Regression
 #ifdef DEV_ENABLED

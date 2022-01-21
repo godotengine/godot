@@ -35,10 +35,6 @@
 #include <BulletCollision/CollisionDispatch/btCollisionCreateFunc.h>
 #include <BulletCollision/CollisionDispatch/btCollisionDispatcher.h>
 
-/**
-	@author AndreaCatania
-*/
-
 class btDiscreteDynamicsWorld;
 
 class GodotRayWorldAlgorithm : public btActivatingCollisionAlgorithm {

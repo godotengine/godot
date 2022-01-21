@@ -54,10 +54,6 @@
 
 #include <assert.h>
 
-/**
-	@author AndreaCatania
-*/
-
 BulletPhysicsDirectSpaceState::BulletPhysicsDirectSpaceState(SpaceBullet *p_space) :
 		PhysicsDirectSpaceState3D(),
 		space(p_space) {}

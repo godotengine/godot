@@ -446,7 +446,7 @@ void EffectsRD::set_color(RID p_dest_texture, const Color &p_color, const Rect2i
 }
 
 void EffectsRD::gaussian_blur(RID p_source_rd_texture, RID p_texture, RID p_back_texture, const Rect2i &p_region, bool p_8bit_dst) {
-	ERR_FAIL_COND_MSG(!prefer_raster_effects, "Can't use the compute version of the gaussian blur with the mobile renderer.");
+	ERR_FAIL_COND_MSG(prefer_raster_effects, "Can't use the compute version of the gaussian blur with the mobile renderer.");
 
 	memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
 

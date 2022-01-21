@@ -117,12 +117,13 @@ class SceneTreeDock : public VBoxContainer {
 	Button *button_instance;
 	Button *button_create_script;
 	Button *button_detach_script;
-	Button *button_tree_menu;
+	MenuButton *button_tree_menu;
 
 	Button *button_2d;
 	Button *button_3d;
 	Button *button_ui;
 	Button *button_custom;
+	Button *button_clipboard;
 
 	HBoxContainer *button_hb;
 	Button *edit_local, *edit_remote;
@@ -241,7 +242,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _quick_open();
 
 	void _tree_rmb(const Vector2 &p_menu_pos);
-	void _open_tree_menu();
+	void _update_tree_menu();
 
 	void _filter_changed(const String &p_filter);
 
@@ -263,11 +264,16 @@ class SceneTreeDock : public VBoxContainer {
 	bool profile_allow_editing;
 	bool profile_allow_script_editing;
 
-	static SceneTreeDock *singleton;
 	static void _update_configuration_warning();
 
 	bool _update_node_path(Node *p_root_node, NodePath &r_node_path, Map<Node *, NodePath> *p_renames) const;
 	bool _check_node_path_recursive(Node *p_root_node, Variant &r_variant, Map<Node *, NodePath> *p_renames) const;
+
+private:
+	static SceneTreeDock *singleton;
+
+public:
+	static SceneTreeDock *get_singleton() { return singleton; }
 
 protected:
 	void _notification(int p_what);
@@ -307,6 +313,8 @@ public:
 
 	void open_add_child_dialog();
 	void open_instance_child_dialog();
+
+	List<Node *> paste_nodes();
 
 	ScriptCreateDialog *get_script_create_dialog() { return script_create_dialog; }
 

@@ -34,10 +34,6 @@
 #include "core/config/project_settings.h"
 #include "core/object/class_db.h"
 
-/**
-	@author AndreaCatania
-*/
-
 #ifndef _3D_DISABLED
 PhysicsServer3D *_createBulletPhysicsCallback() {
 	return memnew(BulletPhysicsServer3D);

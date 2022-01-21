@@ -91,6 +91,7 @@
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/graph_node.h"
 #include "scene/gui/grid_container.h"
@@ -353,6 +354,9 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CenterContainer);
 	GDREGISTER_CLASS(ScrollContainer);
 	GDREGISTER_CLASS(PanelContainer);
+	GDREGISTER_VIRTUAL_CLASS(FlowContainer);
+	GDREGISTER_CLASS(HFlowContainer);
+	GDREGISTER_CLASS(VFlowContainer);
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -390,6 +394,7 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(SplitContainer);
 	GDREGISTER_CLASS(HSplitContainer);
 	GDREGISTER_CLASS(VSplitContainer);
+
 	GDREGISTER_CLASS(GraphNode);
 	GDREGISTER_CLASS(GraphEdit);
 
@@ -1046,8 +1051,9 @@ void register_scene_types() {
 }
 
 void initialize_theme() {
-	bool default_theme_hidpi = GLOBAL_DEF("gui/theme/use_hidpi", false);
-	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/use_hidpi", PropertyInfo(Variant::BOOL, "gui/theme/use_hidpi", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
+	// Allow creating the default theme at a different scale to suit higher/lower base resolutions.
+	float default_theme_scale = GLOBAL_DEF("gui/theme/default_theme_scale", 1.0);
+	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/default_theme_scale", PropertyInfo(Variant::FLOAT, "gui/theme/default_theme_scale", PROPERTY_HINT_RANGE, "0.5,8,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
 	String theme_path = GLOBAL_DEF_RST("gui/theme/custom", "");
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/custom", PropertyInfo(Variant::STRING, "gui/theme/custom", PROPERTY_HINT_FILE, "*.tres,*.res,*.theme", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
 	String font_path = GLOBAL_DEF_RST("gui/theme/custom_font", "");
@@ -1063,7 +1069,7 @@ void initialize_theme() {
 
 	// Always make the default theme to avoid invalid default font/icon/style in the given theme.
 	if (RenderingServer::get_singleton()) {
-		make_default_theme(default_theme_hidpi, font);
+		make_default_theme(default_theme_scale, font);
 	}
 
 	if (!theme_path.is_empty()) {

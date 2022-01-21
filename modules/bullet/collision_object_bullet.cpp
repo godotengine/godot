@@ -39,10 +39,6 @@
 
 #include <btBulletCollisionCommon.h>
 
-/**
-	@author AndreaCatania
-*/
-
 // We enable dynamic AABB tree so that we can actually perform a broadphase on bodies with compound collision shapes.
 // This is crucial for the performance of kinematic bodies and for bodies with transforming shapes.
 #define enableDynamicAabbTree true

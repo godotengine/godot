@@ -382,7 +382,7 @@ AABB ImmediateMesh::get_aabb() const {
 		if (i == 0) {
 			aabb = surfaces[i].aabb;
 		} else {
-			aabb.merge(surfaces[i].aabb);
+			aabb = aabb.merge(surfaces[i].aabb);
 		}
 	}
 	return aabb;

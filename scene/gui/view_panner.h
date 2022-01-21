@@ -38,6 +38,13 @@ class InputEvent;
 class ViewPanner : public RefCounted {
 	GDCLASS(ViewPanner, RefCounted);
 
+public:
+	enum ControlScheme {
+		SCROLL_ZOOMS,
+		SCROLL_PANS,
+	};
+
+private:
 	bool is_dragging = false;
 	bool disable_rmb = false;
 
@@ -46,17 +53,15 @@ class ViewPanner : public RefCounted {
 	Callable zoom_callback;
 
 	void callback_helper(Callable p_callback, Vector2 p_arg1, Vector2 p_arg2 = Vector2());
-
-public:
-	enum ControlScheme {
-		SCROLL_ZOOMS,
-		SCROLL_PANS,
-	};
 	ControlScheme control_scheme = SCROLL_ZOOMS;
 
+public:
 	void set_callbacks(Callable p_scroll_callback, Callable p_pan_callback, Callable p_zoom_callback);
 	void set_control_scheme(ControlScheme p_scheme);
 	void set_disable_rmb(bool p_disable);
+
+	bool is_panning() const { return is_dragging; }
+
 	bool gui_input(const Ref<InputEvent> &p_ev, Rect2 p_canvas_rect = Rect2());
 };
 

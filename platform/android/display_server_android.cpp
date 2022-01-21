@@ -47,7 +47,6 @@ DisplayServerAndroid *DisplayServerAndroid::get_singleton() {
 
 bool DisplayServerAndroid::has_feature(Feature p_feature) const {
 	switch (p_feature) {
-		//case FEATURE_CONSOLE_WINDOW:
 		case FEATURE_CURSOR_SHAPE:
 		//case FEATURE_CUSTOM_CURSOR_SHAPE:
 		//case FEATURE_GLOBAL_MENU:
@@ -93,6 +92,17 @@ String DisplayServerAndroid::clipboard_get() const {
 		return godot_java->get_clipboard();
 	} else {
 		return DisplayServer::clipboard_get();
+	}
+}
+
+bool DisplayServerAndroid::clipboard_has() const {
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_COND_V(!godot_java, false);
+
+	if (godot_java->has_has_clipboard()) {
+		return godot_java->has_clipboard();
+	} else {
+		return DisplayServer::clipboard_has();
 	}
 }
 

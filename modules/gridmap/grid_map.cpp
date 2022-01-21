@@ -35,6 +35,7 @@
 #include "scene/3d/light_3d.h"
 #include "scene/resources/mesh_library.h"
 #include "scene/resources/physics_material.h"
+#include "scene/resources/primitive_meshes.h"
 #include "scene/resources/surface_tool.h"
 #include "scene/scene_string_names.h"
 #include "servers/navigation_server_3d.h"
@@ -195,6 +196,24 @@ bool GridMap::get_collision_mask_value(int p_layer_number) const {
 	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Collision layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Collision layer number must be between 1 and 32 inclusive.");
 	return get_collision_mask() & (1 << (p_layer_number - 1));
+}
+
+Array GridMap::get_collision_shapes() const {
+	Array shapes;
+	for (const KeyValue<OctantKey, Octant *> &E : octant_map) {
+		Octant *g = E.value;
+		RID body = g->static_body;
+		Transform3D body_xform = PhysicsServer3D::get_singleton()->body_get_state(body, PhysicsServer3D::BODY_STATE_TRANSFORM);
+		int nshapes = PhysicsServer3D::get_singleton()->body_get_shape_count(body);
+		for (int i = 0; i < nshapes; i++) {
+			RID shape = PhysicsServer3D::get_singleton()->body_get_shape(body, i);
+			Transform3D xform = PhysicsServer3D::get_singleton()->body_get_shape_transform(body, i);
+			shapes.push_back(body_xform * xform);
+			shapes.push_back(shape);
+		}
+	}
+
+	return shapes;
 }
 
 void GridMap::set_bake_navigation(bool p_bake_navigation) {
@@ -930,7 +949,7 @@ Array GridMap::get_used_cells() const {
 	return a;
 }
 
-Array GridMap::get_meshes() {
+Array GridMap::get_meshes() const {
 	if (mesh_library.is_null()) {
 		return Array();
 	}
@@ -938,7 +957,7 @@ Array GridMap::get_meshes() {
 	Vector3 ofs = _get_offset();
 	Array meshes;
 
-	for (KeyValue<IndexKey, Cell> &E : cell_map) {
+	for (const KeyValue<IndexKey, Cell> &E : cell_map) {
 		int id = E.value.item;
 		if (!mesh_library->has_item(id)) {
 			continue;

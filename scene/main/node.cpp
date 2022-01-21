@@ -1316,12 +1316,14 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 Node *Node::get_node(const NodePath &p_path) const {
 	Node *node = get_node_or_null(p_path);
 
-	if (p_path.is_absolute()) {
-		ERR_FAIL_COND_V_MSG(!node, nullptr,
-				vformat(R"(Node not found: "%s" (absolute path attempted from "%s").)", p_path, get_path()));
-	} else {
-		ERR_FAIL_COND_V_MSG(!node, nullptr,
-				vformat(R"(Node not found: "%s" (relative to "%s").)", p_path, get_path()));
+	if (unlikely(!node)) {
+		if (p_path.is_absolute()) {
+			ERR_FAIL_V_MSG(nullptr,
+					vformat(R"(Node not found: "%s" (absolute path attempted from "%s").)", p_path, get_path()));
+		} else {
+			ERR_FAIL_V_MSG(nullptr,
+					vformat(R"(Node not found: "%s" (relative to "%s").)", p_path, get_path()));
+		}
 	}
 
 	return node;
@@ -1986,6 +1988,7 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 #endif
 		node = res->instantiate(ges);
 		ERR_FAIL_COND_V(!node, nullptr);
+		node->set_scene_instance_load_placeholder(get_scene_instance_load_placeholder());
 
 		instantiated = true;
 
@@ -2185,7 +2188,7 @@ void Node::remap_node_resources(Node *p_node, const Map<RES, RES> &p_resource_re
 		}
 
 		Variant v = p_node->get(E.name);
-		if (v.is_ref()) {
+		if (v.is_ref_counted()) {
 			RES res = v;
 			if (res.is_valid()) {
 				if (p_resource_remap.has(res)) {
@@ -2211,7 +2214,7 @@ void Node::remap_nested_resources(RES p_resource, const Map<RES, RES> &p_resourc
 		}
 
 		Variant v = p_resource->get(E.name);
-		if (v.is_ref()) {
+		if (v.is_ref_counted()) {
 			RES res = v;
 			if (res.is_valid()) {
 				if (p_resource_remap.has(res)) {

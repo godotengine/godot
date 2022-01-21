@@ -48,23 +48,23 @@ const StringName &ShaderWarning::get_subject() const {
 String ShaderWarning::get_message() const {
 	switch (code) {
 		case FLOAT_COMPARISON:
-			return vformat("Direct floating-point comparison (this may not evaluate to `true` as you expect). Instead, use `abs(a - b) < 0.0001` for an approximate but predictable comparison.");
+			return vformat(RTR("Direct floating-point comparison (this may not evaluate to `true` as you expect). Instead, use `abs(a - b) < 0.0001` for an approximate but predictable comparison."));
 		case UNUSED_CONSTANT:
-			return vformat("The const '%s' is declared but never used.", subject);
+			return vformat(RTR("The const '%s' is declared but never used."), subject);
 		case UNUSED_FUNCTION:
-			return vformat("The function '%s' is declared but never used.", subject);
+			return vformat(RTR("The function '%s' is declared but never used."), subject);
 		case UNUSED_STRUCT:
-			return vformat("The struct '%s' is declared but never used.", subject);
+			return vformat(RTR("The struct '%s' is declared but never used."), subject);
 		case UNUSED_UNIFORM:
-			return vformat("The uniform '%s' is declared but never used.", subject);
+			return vformat(RTR("The uniform '%s' is declared but never used."), subject);
 		case UNUSED_VARYING:
-			return vformat("The varying '%s' is declared but never used.", subject);
+			return vformat(RTR("The varying '%s' is declared but never used."), subject);
 		case UNUSED_LOCAL_VARIABLE:
-			return vformat("The local variable '%s' is declared but never used.", subject);
+			return vformat(RTR("The local variable '%s' is declared but never used."), subject);
 		case FORMATTING_ERROR:
 			return subject;
 		case DEVICE_LIMIT_EXCEEDED:
-			return vformat("The total size of the %s for this shader on this device has been exceeded (%s/%s). The shader may not work correctly.", subject, (int)extra_args[0], (int)extra_args[1]);
+			return vformat(RTR("The total size of the %s for this shader on this device has been exceeded (%d/%d). The shader may not work correctly."), subject, (int)extra_args[0], (int)extra_args[1]);
 		default:
 			break;
 	}

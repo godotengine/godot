@@ -292,25 +292,25 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="close_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+		<theme_item name="close_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			The color modulation applied to the close button icon.
 		</theme_item>
-		<theme_item name="resizer_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+		<theme_item name="resizer_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			The color modulation applied to the resizer icon.
 		</theme_item>
-		<theme_item name="title_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+		<theme_item name="title_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			Color of the title text.
 		</theme_item>
-		<theme_item name="close_offset" data_type="constant" type="int" default="18">
+		<theme_item name="close_offset" data_type="constant" type="int" default="22">
 			The vertical offset of the close button.
 		</theme_item>
-		<theme_item name="port_offset" data_type="constant" type="int" default="3">
+		<theme_item name="port_offset" data_type="constant" type="int" default="0">
 			Horizontal offset for the ports.
 		</theme_item>
-		<theme_item name="separation" data_type="constant" type="int" default="1">
+		<theme_item name="separation" data_type="constant" type="int" default="2">
 			The vertical distance between ports.
 		</theme_item>
-		<theme_item name="title_offset" data_type="constant" type="int" default="20">
+		<theme_item name="title_offset" data_type="constant" type="int" default="26">
 			Vertical offset of the title text.
 		</theme_item>
 		<theme_item name="title_font" data_type="font" type="Font">
@@ -333,10 +333,6 @@
 		</theme_item>
 		<theme_item name="commentfocus" data_type="style" type="StyleBox">
 			The [StyleBox] used when [member comment] is enabled and the [GraphNode] is focused.
-		</theme_item>
-		<theme_item name="defaultfocus" data_type="style" type="StyleBox">
-		</theme_item>
-		<theme_item name="defaultframe" data_type="style" type="StyleBox">
 		</theme_item>
 		<theme_item name="frame" data_type="style" type="StyleBox">
 			The default background for [GraphNode].

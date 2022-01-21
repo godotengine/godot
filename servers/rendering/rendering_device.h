@@ -392,14 +392,6 @@ public:
 		DATA_FORMAT_G16_B16_R16_3PLANE_422_UNORM,
 		DATA_FORMAT_G16_B16R16_2PLANE_422_UNORM,
 		DATA_FORMAT_G16_B16_R16_3PLANE_444_UNORM,
-		DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG,
-		DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG,
-		DATA_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG,
-		DATA_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG,
-		DATA_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG,
-		DATA_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG,
-		DATA_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG,
-		DATA_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG,
 		DATA_FORMAT_MAX
 	};
 
@@ -750,7 +742,7 @@ public:
 
 	virtual RID uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set) = 0;
 	virtual bool uniform_set_is_valid(RID p_uniform_set) = 0;
-	typedef void (*UniformSetInvalidatedCallback)(const RID &, void *);
+	typedef void (*UniformSetInvalidatedCallback)(void *);
 	virtual void uniform_set_set_invalidation_callback(RID p_uniform_set, UniformSetInvalidatedCallback p_callback, void *p_userdata) = 0;
 
 	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL) = 0;

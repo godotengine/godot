@@ -37,9 +37,7 @@
 #include "core/templates/oa_hash_map.h"
 
 /**
-	A* pathfinding algorithm
-
-	@author Juan Linietsky <reduzio@gmail.com>
+	A* pathfinding algorithm.
 */
 
 class AStar : public RefCounted {

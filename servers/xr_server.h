@@ -41,8 +41,6 @@ class XRInterface;
 class XRPositionalTracker;
 
 /**
-	@author Bastiaan Olij <mux213@gmail.com>
-
 	The XR server is a singleton object that gives access to the various
 	objects and SDKs that are available on the system.
 	Because there can be multiple SDKs active this is exposed as an array
@@ -193,4 +191,4 @@ public:
 VARIANT_ENUM_CAST(XRServer::TrackerType);
 VARIANT_ENUM_CAST(XRServer::RotationMode);
 
-#endif
+#endif // XR_SERVER_H

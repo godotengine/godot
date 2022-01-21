@@ -28,17 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-// Author: reduzio@gmail.com (C) 2006
-
 #ifndef EQ_FILTER_H
 #define EQ_FILTER_H
 
 #include "core/templates/vector.h"
 #include "core/typedefs.h"
-
-/**
-@author Juan Linietsky
-*/
 
 class EQ {
 public:
@@ -105,4 +99,4 @@ inline void EQ::BandProcess::process_one(float &p_data) {
 	history.b2 = history.b1;
 }
 
-#endif
+#endif // EQ_FILTER_H

@@ -33,6 +33,10 @@
 #include "servers/xr_server.h"
 
 void XRPose::_bind_methods() {
+	BIND_ENUM_CONSTANT(XR_TRACKING_CONFIDENCE_NONE);
+	BIND_ENUM_CONSTANT(XR_TRACKING_CONFIDENCE_LOW);
+	BIND_ENUM_CONSTANT(XR_TRACKING_CONFIDENCE_HIGH);
+
 	ClassDB::bind_method(D_METHOD("set_has_tracking_data", "has_tracking_data"), &XRPose::set_has_tracking_data);
 	ClassDB::bind_method(D_METHOD("get_has_tracking_data"), &XRPose::get_has_tracking_data);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "has_tracking_data"), "set_has_tracking_data", "get_has_tracking_data");
@@ -53,6 +57,10 @@ void XRPose::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_angular_velocity", "velocity"), &XRPose::set_angular_velocity);
 	ClassDB::bind_method(D_METHOD("get_angular_velocity"), &XRPose::get_angular_velocity);
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "angular_velocity"), "set_angular_velocity", "get_angular_velocity");
+
+	ClassDB::bind_method(D_METHOD("set_tracking_confidence", "tracking_confidence"), &XRPose::set_tracking_confidence);
+	ClassDB::bind_method(D_METHOD("get_tracking_confidence"), &XRPose::get_tracking_confidence);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tracking_confidence"), "set_tracking_confidence", "get_tracking_confidence");
 }
 
 void XRPose::set_has_tracking_data(const bool p_has_tracking_data) {
@@ -107,4 +115,12 @@ void XRPose::set_angular_velocity(const Vector3 p_velocity) {
 
 Vector3 XRPose::get_angular_velocity() const {
 	return angular_velocity;
+}
+
+void XRPose::set_tracking_confidence(const XRPose::TrackingConfidence p_tracking_confidence) {
+	tracking_confidence = p_tracking_confidence;
+}
+
+XRPose::TrackingConfidence XRPose::get_tracking_confidence() const {
+	return tracking_confidence;
 }

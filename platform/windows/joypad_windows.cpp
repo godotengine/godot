@@ -448,33 +448,27 @@ void JoypadWindows::post_hat(int p_device, DWORD p_dpad) {
 	input->joy_hat(p_device, dpad_val);
 };
 
-Input::JoyAxisValue JoypadWindows::axis_correct(int p_val, bool p_xinput, bool p_trigger, bool p_negate) const {
-	Input::JoyAxisValue jx;
+float JoypadWindows::axis_correct(int p_val, bool p_xinput, bool p_trigger, bool p_negate) const {
 	if (Math::abs(p_val) < MIN_JOY_AXIS) {
-		jx.min = p_trigger ? 0 : -1;
-		jx.value = 0.0f;
-		return jx;
+		return p_trigger ? -1.0f : 0.0f;
 	}
-	if (p_xinput) {
-		if (p_trigger) {
-			jx.min = 0;
-			jx.value = (float)p_val / MAX_TRIGGER;
-			return jx;
-		}
-		jx.min = -1;
-		if (p_val < 0) {
-			jx.value = (float)p_val / MAX_JOY_AXIS;
-		} else {
-			jx.value = (float)p_val / (MAX_JOY_AXIS - 1);
-		}
-		if (p_negate) {
-			jx.value = -jx.value;
-		}
-		return jx;
+	if (!p_xinput) {
+		return (float)p_val / MAX_JOY_AXIS;
 	}
-	jx.min = -1;
-	jx.value = (float)p_val / MAX_JOY_AXIS;
-	return jx;
+	if (p_trigger) {
+		// Convert to a value between -1.0f and 1.0f.
+		return 2.0f * p_val / MAX_TRIGGER - 1.0f;
+	}
+	float value;
+	if (p_val < 0) {
+		value = (float)p_val / MAX_JOY_AXIS;
+	} else {
+		value = (float)p_val / (MAX_JOY_AXIS - 1);
+	}
+	if (p_negate) {
+		value = -value;
+	}
+	return value;
 }
 
 void JoypadWindows::joypad_vibration_start_xinput(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp) {

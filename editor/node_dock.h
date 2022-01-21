@@ -48,13 +48,17 @@ class NodeDock : public VBoxContainer {
 
 	Label *select_a_node;
 
+private:
+	static NodeDock *singleton;
+
+public:
+	static NodeDock *get_singleton() { return singleton; }
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
-	static NodeDock *singleton;
-
 	void set_node(Node *p_node);
 
 	void show_groups();
@@ -63,6 +67,7 @@ public:
 	void update_lists();
 
 	NodeDock();
+	~NodeDock();
 };
 
 #endif // NODE_DOCK_H

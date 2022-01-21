@@ -194,6 +194,7 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_shaped_text_set_direction, "shaped", "direction");
 	GDVIRTUAL_BIND(_shaped_text_get_direction, "shaped");
+	GDVIRTUAL_BIND(_shaped_text_get_inferred_direction, "shaped");
 
 	GDVIRTUAL_BIND(_shaped_text_set_bidi_override, "shaped", "override");
 
@@ -270,6 +271,9 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_format_number, "string", "language");
 	GDVIRTUAL_BIND(_parse_number, "string", "language");
 	GDVIRTUAL_BIND(_percent_sign, "language");
+
+	GDVIRTUAL_BIND(_string_to_upper, "string", "language");
+	GDVIRTUAL_BIND(_string_to_lower, "string", "language");
 }
 
 bool TextServerExtension::has_feature(Feature p_feature) const {
@@ -954,6 +958,14 @@ TextServer::Direction TextServerExtension::shaped_text_get_direction(RID p_shape
 	return TextServer::Direction::DIRECTION_AUTO;
 }
 
+TextServer::Direction TextServerExtension::shaped_text_get_inferred_direction(RID p_shaped) const {
+	int ret;
+	if (GDVIRTUAL_CALL(_shaped_text_get_inferred_direction, p_shaped, ret)) {
+		return (TextServer::Direction)ret;
+	}
+	return TextServer::Direction::DIRECTION_LTR;
+}
+
 void TextServerExtension::shaped_text_set_orientation(RID p_shaped, TextServer::Orientation p_orientation) {
 	GDVIRTUAL_CALL(_shaped_text_set_orientation, p_shaped, p_orientation);
 }
@@ -1354,6 +1366,22 @@ String TextServerExtension::percent_sign(const String &p_language) const {
 		return ret;
 	}
 	return TextServer::percent_sign(p_language);
+}
+
+String TextServerExtension::string_to_upper(const String &p_string, const String &p_language) const {
+	String ret;
+	if (GDVIRTUAL_CALL(_string_to_upper, p_string, p_language, ret)) {
+		return ret;
+	}
+	return p_string;
+}
+
+String TextServerExtension::string_to_lower(const String &p_string, const String &p_language) const {
+	String ret;
+	if (GDVIRTUAL_CALL(_string_to_lower, p_string, p_language, ret)) {
+		return ret;
+	}
+	return p_string;
 }
 
 TextServerExtension::TextServerExtension() {

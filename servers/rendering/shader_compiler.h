@@ -33,7 +33,6 @@
 
 #include "core/templates/pair.h"
 #include "servers/rendering/shader_language.h"
-#include "servers/rendering/shader_types.h"
 #include "servers/rendering_server.h"
 
 class ShaderCompiler {

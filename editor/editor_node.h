@@ -167,7 +167,7 @@ private:
 		RUN_PLAY_SCENE,
 		RUN_PLAY_CUSTOM_SCENE,
 		RUN_SETTINGS,
-		RUN_PROJECT_DATA_FOLDER,
+		RUN_USER_DATA_FOLDER,
 		RUN_RELOAD_CURRENT_PROJECT,
 		RUN_PROJECT_MANAGER,
 		RUN_VCS_METADATA,
@@ -188,7 +188,6 @@ private:
 		SETTINGS_MANAGE_FEATURE_PROFILES,
 		SETTINGS_INSTALL_ANDROID_BUILD_TEMPLATE,
 		SETTINGS_PICK_MAIN_SCENE,
-		SETTINGS_TOGGLE_CONSOLE,
 		SETTINGS_TOGGLE_FULLSCREEN,
 		SETTINGS_HELP,
 		SCENE_TAB_CLOSE,
@@ -215,6 +214,12 @@ private:
 		IMPORT_PLUGIN_BASE = 100,
 
 		TOOL_MENU_BASE = 1000
+	};
+
+	enum ScriptNameCasing {
+		SCENE_NAME_CASING_AUTO,
+		SCENE_NAME_CASING_PASCAL_CASE,
+		SCENE_NAME_CASING_SNAKE_CASE
 	};
 
 	SubViewport *scene_root; // root of the scene being edited
@@ -297,11 +302,6 @@ private:
 	Ref<Theme> theme;
 
 	PopupMenu *recent_scenes;
-	SceneTreeDock *scene_tree_dock;
-	InspectorDock *inspector_dock;
-	NodeDock *node_dock;
-	ImportDock *import_dock;
-	FileSystemDock *filesystem_dock;
 	EditorRunNative *run_native;
 
 	ConfirmationDialog *confirmation;
@@ -530,7 +530,7 @@ private:
 	void _add_dropped_files_recursive(const Vector<String> &p_files, String to_path);
 	String _recent_scene;
 
-	void _exit_editor();
+	void _exit_editor(int p_exit_code);
 
 	bool convert_old;
 
@@ -712,9 +712,6 @@ public:
 	EditorPluginList *get_editor_plugins_over() { return editor_plugins_over; }
 	EditorPluginList *get_editor_plugins_force_over() { return editor_plugins_force_over; }
 	EditorPluginList *get_editor_plugins_force_input_forwarding() { return editor_plugins_force_input_forwarding; }
-	EditorInspector *get_inspector() { return inspector_dock->get_inspector(); }
-	Container *get_inspector_dock_addon_area() { return inspector_dock->get_addon_area(); }
-	ScriptCreateDialog *get_script_create_dialog() { return scene_tree_dock->get_script_create_dialog(); }
 
 	ProjectSettingsEditor *get_project_settings() { return project_settings; }
 
@@ -738,8 +735,7 @@ public:
 	bool is_addon_plugin_enabled(const String &p_addon) const;
 
 	void edit_node(Node *p_node);
-	void edit_resource(const Ref<Resource> &p_resource) { inspector_dock->edit_resource(p_resource); };
-	void open_resource(const String &p_type) { inspector_dock->open_resource(p_type); };
+	void edit_resource(const Ref<Resource> &p_resource) { InspectorDock::get_singleton()->edit_resource(p_resource); };
 
 	void save_resource_in_path(const Ref<Resource> &p_resource, const String &p_path);
 	void save_resource(const Ref<Resource> &p_resource);
@@ -790,10 +786,6 @@ public:
 
 	void request_instance_scene(const String &p_path);
 	void request_instantiate_scenes(const Vector<String> &p_files);
-	FileSystemDock *get_filesystem_dock();
-	ImportDock *get_import_dock();
-	SceneTreeDock *get_scene_tree_dock();
-	InspectorDock *get_inspector_dock();
 	static UndoRedo *get_undo_redo() { return &singleton->editor_data.get_undo_redo(); }
 
 	EditorSelection *get_editor_selection() { return editor_selection; }
@@ -879,7 +871,6 @@ public:
 
 	void edit_current() { _edit_current(); };
 
-	void update_keying() const { inspector_dock->update_keying(); };
 	bool has_scenes_in_session();
 
 	int execute_and_show_output(const String &p_title, const String &p_path, const List<String> &p_arguments, bool p_close_on_ok = true, bool p_close_on_errors = false);

@@ -182,16 +182,16 @@
 		</signal>
 	</signals>
 	<theme_items>
-		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
+		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			Default text [Color] of the [OptionButton].
 		</theme_item>
-		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0.9, 0.9, 0.9, 0.2)">
+		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
 			Text [Color] used when the [OptionButton] is disabled.
 		</theme_item>
-		<theme_item name="font_focus_color" data_type="color" type="Color" default="Color(0.94, 0.94, 0.94, 1)">
+		<theme_item name="font_focus_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
 			Text [Color] used when the [OptionButton] is focused. Only replaces the normal text color of the button. Disabled, hovered, and pressed states take precedence over this color.
 		</theme_item>
-		<theme_item name="font_hover_color" data_type="color" type="Color" default="Color(0.94, 0.94, 0.94, 1)">
+		<theme_item name="font_hover_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
 			Text [Color] used when the [OptionButton] is being hovered.
 		</theme_item>
 		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
@@ -200,7 +200,7 @@
 		<theme_item name="font_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Text [Color] used when the [OptionButton] is being pressed.
 		</theme_item>
-		<theme_item name="arrow_margin" data_type="constant" type="int" default="2">
+		<theme_item name="arrow_margin" data_type="constant" type="int" default="4">
 			The horizontal space between the arrow icon and the right edge of the button.
 		</theme_item>
 		<theme_item name="hseparation" data_type="constant" type="int" default="2">

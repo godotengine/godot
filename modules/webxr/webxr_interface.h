@@ -35,8 +35,6 @@
 #include "servers/xr/xr_positional_tracker.h"
 
 /**
-	@author David Snopek <david.snopek@snopekgames.com>
-
 	The WebXR interface is a VR/AR interface that can be used on the web.
 */
 

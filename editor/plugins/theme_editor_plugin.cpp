@@ -81,8 +81,6 @@ void ThemeItemImportTree::_update_items_tree() {
 
 		bool is_matching_filter = (filter_text.is_empty() || type_name.findn(filter_text) > -1);
 		bool has_filtered_items = false;
-		bool any_checked = false;
-		bool any_checked_with_data = false;
 
 		for (int i = 0; i < Theme::DATA_TYPE_MAX; i++) {
 			Theme::DataType dt = (Theme::DataType)i;
@@ -178,9 +176,6 @@ void ThemeItemImportTree::_update_items_tree() {
 					break; // Can't happen, but silences warning.
 			}
 
-			bool data_type_any_checked = false;
-			bool data_type_any_checked_with_data = false;
-
 			filtered_names.sort_custom<StringName::AlphCompare>();
 			for (const StringName &F : filtered_names) {
 				TreeItem *item_node = import_items_tree->create_item(data_type_node);
@@ -194,20 +189,11 @@ void ThemeItemImportTree::_update_items_tree() {
 				item_node->set_editable(IMPORT_ITEM_DATA, true);
 
 				_restore_selected_item(item_node);
-				if (item_node->is_checked(IMPORT_ITEM)) {
-					data_type_any_checked = true;
-					any_checked = true;
-				}
-				if (item_node->is_checked(IMPORT_ITEM_DATA)) {
-					data_type_any_checked_with_data = true;
-					any_checked_with_data = true;
-				}
+				item_node->propagate_check(IMPORT_ITEM, false);
+				item_node->propagate_check(IMPORT_ITEM_DATA, false);
 
 				item_list->push_back(item_node);
 			}
-
-			data_type_node->set_checked(IMPORT_ITEM, data_type_any_checked);
-			data_type_node->set_checked(IMPORT_ITEM_DATA, data_type_any_checked && data_type_any_checked_with_data);
 		}
 
 		// Remove the item if it doesn't match the filter in any way.
@@ -221,9 +207,6 @@ void ThemeItemImportTree::_update_items_tree() {
 		if (!filter_text.is_empty() && has_filtered_items) {
 			type_node->set_collapsed(false);
 		}
-
-		type_node->set_checked(IMPORT_ITEM, any_checked);
-		type_node->set_checked(IMPORT_ITEM_DATA, any_checked && any_checked_with_data);
 	}
 
 	if (color_amount > 0) {
@@ -471,21 +454,24 @@ void ThemeItemImportTree::_tree_item_edited() {
 	if (is_checked) {
 		if (edited_column == IMPORT_ITEM_DATA) {
 			edited_item->set_checked(IMPORT_ITEM, true);
+			edited_item->propagate_check(IMPORT_ITEM);
 		}
-
-		_select_all_subitems(edited_item, (edited_column == IMPORT_ITEM_DATA));
 	} else {
 		if (edited_column == IMPORT_ITEM) {
 			edited_item->set_checked(IMPORT_ITEM_DATA, false);
+			edited_item->propagate_check(IMPORT_ITEM_DATA);
 		}
-
-		_deselect_all_subitems(edited_item, (edited_column == IMPORT_ITEM));
 	}
-
-	_update_parent_items(edited_item);
-	_store_selected_item(edited_item);
-
+	edited_item->propagate_check(edited_column);
 	updating_tree = false;
+}
+
+void ThemeItemImportTree::_check_propagated_to_tree_item(Object *p_obj, int p_column) {
+	TreeItem *item = Object::cast_to<TreeItem>(p_obj);
+	// Skip "category" tree items by checking for children.
+	if (item && !item->get_first_child()) {
+		_store_selected_item(item);
+	}
 }
 
 void ThemeItemImportTree::_select_all_subitems(TreeItem *p_root_item, bool p_select_with_data) {
@@ -514,32 +500,6 @@ void ThemeItemImportTree::_deselect_all_subitems(TreeItem *p_root_item, bool p_d
 		_deselect_all_subitems(child_item, p_deselect_completely);
 		child_item = child_item->get_next();
 	}
-}
-
-void ThemeItemImportTree::_update_parent_items(TreeItem *p_root_item) {
-	TreeItem *parent_item = p_root_item->get_parent();
-	if (!parent_item) {
-		return;
-	}
-
-	bool any_checked = false;
-	bool any_checked_with_data = false;
-
-	TreeItem *child_item = parent_item->get_first_child();
-	while (child_item) {
-		if (child_item->is_checked(IMPORT_ITEM)) {
-			any_checked = true;
-		}
-		if (child_item->is_checked(IMPORT_ITEM_DATA)) {
-			any_checked_with_data = true;
-		}
-
-		child_item = child_item->get_next();
-	}
-
-	parent_item->set_checked(IMPORT_ITEM, any_checked);
-	parent_item->set_checked(IMPORT_ITEM_DATA, any_checked && any_checked_with_data);
-	_update_parent_items(parent_item);
 }
 
 void ThemeItemImportTree::_select_all_items_pressed() {
@@ -629,7 +589,7 @@ void ThemeItemImportTree::_select_all_data_type_pressed(int p_data_type) {
 		}
 
 		child_item->set_checked(IMPORT_ITEM, true);
-		_update_parent_items(child_item);
+		child_item->propagate_check(IMPORT_ITEM, false);
 		_store_selected_item(child_item);
 	}
 
@@ -685,7 +645,8 @@ void ThemeItemImportTree::_select_full_data_type_pressed(int p_data_type) {
 
 		child_item->set_checked(IMPORT_ITEM, true);
 		child_item->set_checked(IMPORT_ITEM_DATA, true);
-		_update_parent_items(child_item);
+		child_item->propagate_check(IMPORT_ITEM, false);
+		child_item->propagate_check(IMPORT_ITEM_DATA, false);
 		_store_selected_item(child_item);
 	}
 
@@ -741,7 +702,8 @@ void ThemeItemImportTree::_deselect_all_data_type_pressed(int p_data_type) {
 
 		child_item->set_checked(IMPORT_ITEM, false);
 		child_item->set_checked(IMPORT_ITEM_DATA, false);
-		_update_parent_items(child_item);
+		child_item->propagate_check(IMPORT_ITEM, false);
+		child_item->propagate_check(IMPORT_ITEM_DATA, false);
 		_store_selected_item(child_item);
 	}
 
@@ -937,6 +899,7 @@ ThemeItemImportTree::ThemeItemImportTree() {
 	import_items_tree->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	import_main_hb->add_child(import_items_tree);
 	import_items_tree->connect("item_edited", callable_mp(this, &ThemeItemImportTree::_tree_item_edited));
+	import_items_tree->connect("check_propagated_to_item", callable_mp(this, &ThemeItemImportTree::_check_propagated_to_tree_item));
 
 	import_items_tree->set_columns(3);
 	import_items_tree->set_column_titles_visible(true);

@@ -224,7 +224,9 @@ private:
 			const char *pMessage,
 			void *pUserData);
 
-	Error _create_physical_device();
+	Error _create_instance();
+
+	Error _create_physical_device(VkSurfaceKHR p_surface);
 
 	Error _initialize_queues(VkSurfaceKHR p_surface);
 

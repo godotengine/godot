@@ -45,10 +45,10 @@ class Path3DGizmo : public EditorNode3DGizmo {
 	mutable float orig_out_length;
 
 public:
-	virtual String get_handle_name(int p_idx) const override;
-	virtual Variant get_handle_value(int p_id) const override;
-	virtual void set_handle(int p_id, Camera3D *p_camera, const Point2 &p_point) override;
-	virtual void commit_handle(int p_id, const Variant &p_restore, bool p_cancel = false) override;
+	virtual String get_handle_name(int p_id, bool p_secondary) const override;
+	virtual Variant get_handle_value(int p_id, bool p_secondary) const override;
+	virtual void set_handle(int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) override;
+	virtual void commit_handle(int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel = false) override;
 
 	virtual void redraw() override;
 	Path3DGizmo(Path3D *p_path = nullptr);

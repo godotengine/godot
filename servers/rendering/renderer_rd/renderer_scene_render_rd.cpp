@@ -65,7 +65,7 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 	static const uint32_t history_frames_to_converge[RS::ENV_SDFGI_CONVERGE_MAX] = { 5, 10, 15, 20, 25, 30 };
 	uint32_t requested_history_size = history_frames_to_converge[gi.sdfgi_frames_to_converge];
 
-	if (rb->sdfgi && (rb->sdfgi->cascade_mode != env->sdfgi_cascades || rb->sdfgi->min_cell_size != env->sdfgi_min_cell_size || requested_history_size != rb->sdfgi->history_size || rb->sdfgi->uses_occlusion != env->sdfgi_use_occlusion || rb->sdfgi->y_scale_mode != env->sdfgi_y_scale)) {
+	if (rb->sdfgi && (rb->sdfgi->num_cascades != env->sdfgi_cascades || rb->sdfgi->min_cell_size != env->sdfgi_min_cell_size || requested_history_size != rb->sdfgi->history_size || rb->sdfgi->uses_occlusion != env->sdfgi_use_occlusion || rb->sdfgi->y_scale_mode != env->sdfgi_y_scale)) {
 		//configuration changed, erase
 		rb->sdfgi->erase();
 		memdelete(rb->sdfgi);
@@ -303,7 +303,7 @@ void RendererSceneRenderRD::environment_glow_set_use_high_quality(bool p_enable)
 	glow_high_quality = p_enable;
 }
 
-void RendererSceneRenderRD::environment_set_sdfgi(RID p_env, bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) {
+void RendererSceneRenderRD::environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) {
 	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND(!env);
 
@@ -514,7 +514,7 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 		ambient_color_sky_mix = env->ambient_sky_contribution;
 		const float ambient_energy = env->ambient_light_energy;
 		ambient_color = env->ambient_light;
-		ambient_color.to_linear();
+		ambient_color = ambient_color.to_linear();
 		ambient_color.r *= ambient_energy;
 		ambient_color.g *= ambient_energy;
 		ambient_color.b *= ambient_energy;
@@ -533,7 +533,7 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 	} else {
 		const float bg_energy = env->bg_energy;
 		Color panorama_color = ((environment_background == RS::ENV_BG_CLEAR_COLOR) ? storage->get_default_clear_color() : env->bg_color);
-		panorama_color.to_linear();
+		panorama_color = panorama_color.to_linear();
 		panorama_color.r *= bg_energy;
 		panorama_color.g *= bg_energy;
 		panorama_color.b *= bg_energy;
@@ -3993,7 +3993,6 @@ RendererStorageRD::ShaderData *RendererSceneRenderRD::_create_fog_shader_funcs()
 RendererStorageRD::MaterialData *RendererSceneRenderRD::_create_fog_material_func(FogShaderData *p_shader) {
 	FogMaterialData *material_data = memnew(FogMaterialData);
 	material_data->shader_data = p_shader;
-	material_data->last_frame = false;
 	//update will happen later anyway so do nothing.
 	return material_data;
 }
@@ -4011,6 +4010,9 @@ void RendererSceneRenderRD::_volumetric_fog_erase(RenderBuffers *rb) {
 	RD::get_singleton()->free(rb->volumetric_fog->prev_light_density_map);
 	RD::get_singleton()->free(rb->volumetric_fog->light_density_map);
 	RD::get_singleton()->free(rb->volumetric_fog->fog_map);
+	RD::get_singleton()->free(rb->volumetric_fog->density_map);
+	RD::get_singleton()->free(rb->volumetric_fog->light_map);
+	RD::get_singleton()->free(rb->volumetric_fog->emissive_map);
 
 	if (rb->volumetric_fog->fog_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(rb->volumetric_fog->fog_uniform_set)) {
 		RD::get_singleton()->free(rb->volumetric_fog->fog_uniform_set);

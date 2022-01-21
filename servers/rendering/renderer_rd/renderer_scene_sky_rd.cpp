@@ -750,7 +750,6 @@ RendererStorageRD::ShaderData *RendererSceneSkyRD::_create_sky_shader_funcs() {
 RendererStorageRD::MaterialData *RendererSceneSkyRD::_create_sky_material_func(SkyShaderData *p_shader) {
 	SkyMaterialData *material_data = memnew(SkyMaterialData);
 	material_data->shader_data = p_shader;
-	material_data->last_frame = false;
 	//update will happen later anyway so do nothing.
 	return material_data;
 }

@@ -23,13 +23,14 @@
 # duniyal ras <duniyalr@gmail.com>, 2021.
 # عبدالرئوف عابدی <abdolraoofabedi@gmail.com>, 2021.
 # Alireza Khodabande <alirezakhodabande74@gmail.com>, 2021.
+# Seyed Fazel Alavi <fazel8195@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-09-29 02:21+0000\n"
-"Last-Translator: Alireza Khodabande <alirezakhodabande74@gmail.com>\n"
+"PO-Revision-Date: 2022-01-12 16:52+0000\n"
+"Last-Translator: Seyed Fazel Alavi <fazel8195@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
 "Language: fa\n"
@@ -37,7 +38,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.9-dev\n"
+"X-Generator: Weblate 4.10.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -62,7 +63,7 @@ msgstr "ورودی نامعتبر i% (تایید نشده) در عبارت"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "نمی توان self را بکار گرفت چون instance = null هست (تایید نشده)"
+msgstr "از self نمی‌توان استفاده کرد زیرا نمونه صفر است (رد نشده است)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -342,7 +343,7 @@ msgstr "تکرار کلید(ها)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add RESET Value(s)"
-msgstr ""
+msgstr "اضافه کردن مقدار(های) ریست"
 
 #: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
@@ -379,6 +380,7 @@ msgstr "ساختن %d قطعه جدید و درج کلیدها؟"
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -391,9 +393,8 @@ msgstr "در انیمیشن درج کن"
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "node '%s'"
-msgstr "در حال اتصال..."
+msgstr "گره '%s'"
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
@@ -512,9 +513,8 @@ msgid ""
 msgstr "این گزینه برای اصلاح بِزیِر کار نمی کند, چون تنها یک مسیر واحد است."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Add RESET Keys"
-msgstr "اندازه کلید های متحرک"
+msgstr "اضافه کردن کلید های ریست انیمیشن"
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -844,6 +844,7 @@ msgstr "افزودن"
 #: editor/groups_editor.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp
 msgid "Remove"
@@ -895,8 +896,7 @@ msgstr "نمی توان سیگنال را متصل کرد"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
-#: editor/plugins/version_control_editor_plugin.cpp editor/project_export.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 #: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -947,7 +947,7 @@ msgstr ""
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
-msgstr "سیگنال‌ها"
+msgstr "سیگنال ها"
 
 #: editor/connections_dialog.cpp
 msgid "Filter signals"
@@ -983,9 +983,8 @@ msgid "Create New %s"
 msgstr "ساختن %s جدید"
 
 #: editor/create_dialog.cpp editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "No results for \"%s\"."
-msgstr "هیچ نتیجه ای برای \"٪ s\" وجود ندارد."
+msgstr "هیچ نتیجه ای برای \"%s\" وجود ندارد."
 
 #: editor/create_dialog.cpp editor/property_selector.cpp
 msgid "No description available for %s."
@@ -1089,18 +1088,16 @@ msgid "Owners Of:"
 msgstr "مالکانِ:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove the selected files from the project? (Cannot be undone.)\n"
 "Depending on your filesystem configuration, the files will either be moved "
 "to the system trash or deleted permanently."
 msgstr ""
-"فایلهای انتخابی از پروژه حذف شوند؟ (قابل واگرد نیست.)\n"
+"فایلهای انتخابی از پروژه حذف شوند؟ (قابل برگشت نیست.)\n"
 "بسته به پیکربندی سیستم فایل شما ، فایل ها یا به سطل زباله سیستم منتقل می "
 "شوند و یا برای همیشه حذف می شوند."
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
@@ -1280,41 +1277,36 @@ msgid "Licenses"
 msgstr "گواهینامه"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
-msgstr "خطای گشودن بسته بندی پرونده، به شکل ZIP نیست."
+msgstr "خطا در بازکردن فایل برای \"%s\" (فرمت ZIP نمیباشد)."
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "%s (already exists)"
-msgstr "%s (موجود است)"
+msgstr "\"%s\" (در حال حاضر موجود است)"
 
 #: editor/editor_asset_installer.cpp
 msgid "Contents of asset \"%s\" - %d file(s) conflict with your project:"
-msgstr ""
+msgstr "محتوای دارایی \"%s\" - %d فایل(ها) با پروژه شما تضاد دارد:"
 
 #: editor/editor_asset_installer.cpp
 msgid "Contents of asset \"%s\" - No files conflict with your project:"
-msgstr ""
+msgstr "محتویات دارایی \"%s\" - هیچ فایلی با پروژه شما مغایرت ندارد:"
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "فشرده نشدن اَسِت ها"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "The following files failed extraction from asset \"%s\":"
-msgstr "استخراج پرونده های زیر از بسته بندی انجام نشد:"
+msgstr "فایل‌های زیر از دارایی \"%s\" استخراج نشدند:"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "(and %s more files)"
-msgstr "و %s بیش تر پرونده ها."
+msgstr "(و %s دیگر فایل ها)"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Asset \"%s\" installed successfully!"
-msgstr "بسته با موفقیت نصب شد!"
+msgstr "دارایی \"%s\" با موفقیت نصب شد!"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -1326,9 +1318,8 @@ msgid "Install"
 msgstr "نصب کردن"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Asset Installer"
-msgstr "نصب کننده پکیج ها"
+msgstr "نصب کننده دارایی"
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
@@ -1391,7 +1382,6 @@ msgid "Bypass"
 msgstr "‌گذرگاه فرعی"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Bus Options"
 msgstr "گزینه های اتوبوس"
 
@@ -1508,7 +1498,7 @@ msgstr "نام نامعتبر."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Cannot begin with a digit."
-msgstr ""
+msgstr "نمی توان با یک رقم شروع کرد."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
@@ -1563,13 +1553,12 @@ msgid "Can't add autoload:"
 msgstr "اضافه کردن خودکار امکان پذیر نیست:"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "%s is an invalid path. File does not exist."
-msgstr "پرونده موجود نیست."
+msgstr "%s یک مسیر نامعتبر است. فایل موجود نمیباشد."
 
 #: editor/editor_autoload_settings.cpp
 msgid "%s is an invalid path. Not in resource path (res://)."
-msgstr ""
+msgstr "%s یک مسیر نامعتبر است. در مسیر منبع نیست (//:res)."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -1593,9 +1582,8 @@ msgid "Name"
 msgstr "نام"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Global Variable"
-msgstr "تغییر متغیر"
+msgstr "متغیر عمومی"
 
 #: editor/editor_data.cpp
 msgid "Paste Params"
@@ -1671,12 +1659,16 @@ msgid ""
 "Target platform requires 'ETC' texture compression for GLES2. Enable 'Import "
 "Etc' in Project Settings."
 msgstr ""
+"پلتفرم مورد نظر به فشرده سازی تکستچر 'ETC'  برای GLES2 نیاز دارد . 'واردکردن "
+"ETC' را در تنظیمات پروژه فعال کنید."
 
 #: editor/editor_export.cpp
 msgid ""
 "Target platform requires 'ETC2' texture compression for GLES3. Enable "
 "'Import Etc 2' in Project Settings."
 msgstr ""
+"پلتفرم مورد نظر به فشرده سازی تکستچر 'ETC'  برای GLES2 نیاز دارد . 'واردکردن "
+"ETC' را در تنظیمات پروژه فعال کنید."
 
 #: editor/editor_export.cpp
 msgid ""
@@ -1685,18 +1677,26 @@ msgid ""
 "Enable 'Import Etc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
+"پلتفرم هدف به فشرده‌سازی بافت 'ETC' برای بازگرداندن درایور به GLES2 نیاز "
+"دارد.\n"
+"'استخراج Etc' را در تنظیمات پروژه فعال کنید یا \"Driver Fallback Enabled\" "
+"را غیرفعال کنید."
 
 #: editor/editor_export.cpp
 msgid ""
 "Target platform requires 'PVRTC' texture compression for GLES2. Enable "
 "'Import Pvrtc' in Project Settings."
 msgstr ""
+"پلت فرم هدف به فشرده سازی بافت 'PVRTC' برای GLES2 نیاز دارد. 'استخراج Pvrtc' "
+"را در تنظیمات پروژه فعال کنید."
 
 #: editor/editor_export.cpp
 msgid ""
 "Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
 "Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
 msgstr ""
+"پلت فرم هدف برای GLES3 به فشرده سازی بافت 'ETC2' یا 'PVRTC' نیاز دارد. "
+"\"Import Etc 2\" یا \"Import Pvrtc\" را در تنظیمات پروژه فعال کنید."
 
 #: editor/editor_export.cpp
 msgid ""
@@ -1957,7 +1957,6 @@ msgid "New Folder..."
 msgstr "ساختن پوشه..."
 
 #: editor/editor_file_dialog.cpp editor/find_in_files.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr ""
 
@@ -2074,7 +2073,8 @@ msgstr "پوشه‌ها و پرونده‌ها:"
 msgid "Preview:"
 msgstr ""
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "File:"
 msgstr "پرونده:"
 
@@ -2131,7 +2131,7 @@ msgstr "پیش فرض:"
 
 #: editor/editor_help.cpp
 msgid "Methods"
-msgstr "توابع"
+msgstr "روش ها"
 
 #: editor/editor_help.cpp
 msgid "Theme Properties"
@@ -2242,7 +2242,7 @@ msgstr "روش"
 msgid "Signal"
 msgstr "سیگنال‌"
 
-#: editor/editor_help_search.cpp
+#: editor/editor_help_search.cpp modules/visual_script/visual_script_nodes.cpp
 msgid "Constant"
 msgstr "ثابت"
 
@@ -2273,6 +2273,8 @@ msgid "Pin value [Disabled because '%s' is editor-only]"
 msgstr ""
 
 #: editor/editor_inspector.cpp editor/scene_tree_dock.cpp
+#: modules/visual_script/visual_script_func_nodes.cpp
+#: modules/visual_script/visual_script_nodes.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Set %s"
 msgstr "تنظیم %s"
@@ -2972,7 +2974,8 @@ msgid "Install Android Build Template..."
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Open Project Data Folder"
+#, fuzzy
+msgid "Open User Data Folder"
 msgstr "گشودن پوشه اطلاعات طرح"
 
 #: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
@@ -3109,11 +3112,6 @@ msgstr "ویرایشگر ترجیحات"
 #, fuzzy
 msgid "Toggle Fullscreen"
 msgstr "حالت تمام صفحه"
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Toggle System Console"
-msgstr "یک Breakpoint درج کن"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -3348,6 +3346,7 @@ msgid "Load Errors"
 msgstr "خطاهای بارگذاری"
 
 #: editor/editor_node.cpp editor/plugins/tile_map_editor_plugin.cpp
+#: modules/visual_script/visual_script_nodes.cpp
 msgid "Select"
 msgstr ""
 
@@ -3431,7 +3430,6 @@ msgid "Author"
 msgstr "مؤلفان"
 
 #: editor/editor_plugin_settings.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 #, fuzzy
 msgid "Status"
@@ -3664,6 +3662,12 @@ msgstr ""
 #: editor/editor_sub_scene.cpp
 msgid "Import From Node:"
 msgstr "وارد کردن از گره:"
+
+#. TRANSLATORS: %s refers to the name of a version control system (e.g. "Git").
+#: editor/editor_vcs_interface.cpp
+#, fuzzy
+msgid "%s Error"
+msgstr "بازتاب"
 
 #: editor/export_template_manager.cpp
 msgid "Open the folder containing these templates."
@@ -4600,6 +4604,7 @@ msgid "Subfolder:"
 msgstr ""
 
 #: editor/plugin_config_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Author:"
 msgstr "خالق:"
 
@@ -6360,6 +6365,7 @@ msgid "Zoom to 1600%"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Add %s"
 msgstr ""
 
@@ -6489,7 +6495,7 @@ msgstr ""
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Flat 1"
-msgstr ""
+msgstr "تخت 1"
 
 #: editor/plugins/curve_editor_plugin.cpp editor/property_editor.cpp
 msgid "Ease In"
@@ -9917,7 +9923,7 @@ msgid "TileSet"
 msgstr "صدور مجموعه کاشی"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No VCS addons are available."
+msgid "No VCS plugins are available."
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -9925,7 +9931,12 @@ msgid "Error"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No files added to stage"
+msgid ""
+"Remote settings are empty. VCS features that use the network may not work."
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "No commit message was provided."
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -9934,8 +9945,41 @@ msgid "Commit"
 msgstr "انجمن"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "VCS Addon is not initialized"
+#, fuzzy
+msgid "Staged Changes"
+msgstr "تغییر بده"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Unstaged Changes"
+msgstr "تغییر بده"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Commit:"
+msgstr "انجمن"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Date:"
 msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Subtitle:"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Do you want to remove the %s branch?"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Do you want to remove the %s remote?"
+msgstr "آیا مطمئن هستید که می خواهید همه اتصالات را از این سیگنال حذف کنید؟"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Apply"
+msgstr "بازنشانی را اعمال کنید"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Version Control System"
@@ -9946,7 +9990,37 @@ msgid "Initialize"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "Staging area"
+#, fuzzy
+msgid "Remote Login"
+msgstr "برداشتن نقطه"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Username"
+msgstr "تغییر نام"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Password"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "SSH Public Key Path"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Select SSH public key path"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "SSH Private Key Path"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Select SSH private key path"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "SSH Passphrase"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -9956,8 +10030,109 @@ msgstr "ساختن %s جدید"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
-msgid "Changes"
+msgid "Discard all changes"
 msgstr "تغییر بده"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Stage all changes"
+msgstr "ذخیره تغییرات محلی ..."
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Unstage all changes"
+msgstr "تغییر بده"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Commit Message"
+msgstr "تغییر بده"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Commit Changes"
+msgstr "تغییر بده"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Commit List"
+msgstr "انجمن"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Commit list size"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "10"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "20"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "30"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Branches"
+msgstr "تطبیق‌ها:"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Create New Branch"
+msgstr "ساختن پروژه جدید"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Branch"
+msgstr "حذف ترک انیمشین"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Branch Name"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Remotes"
+msgstr "از راه دور"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Create New Remote"
+msgstr "ساختن پروژه جدید"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Remote"
+msgstr "حذف قالب"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Remote Name"
+msgstr "برداشتن"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Remote URL"
+msgstr "برداشتن"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Fetch"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Pull"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Push"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Force Push"
+msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Modified"
@@ -9979,30 +10154,21 @@ msgid "Typechange"
 msgstr "تغییر بده"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
-msgid "Stage Selected"
-msgstr "انتخاب شده را حذف کن"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
-msgid "Stage All"
-msgstr "انتخاب همه"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
-msgid "Commit Changes"
-msgstr "تغییر بده"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "View file diffs before committing them to the latest version"
+msgid "Unmerged"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No file diff is active"
-msgstr ""
+#, fuzzy
+msgid "View:"
+msgstr "پرونده:"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "Detect changes in file diff"
+#, fuzzy
+msgid "Split"
+msgstr "ویرایش منحنی گره"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Unified"
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -12666,6 +12832,7 @@ msgid "Export list to a CSV file"
 msgstr "صدور پروژه"
 
 #: editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_nodes.cpp
 msgid "Resource Path"
 msgstr ""
 
@@ -13566,6 +13733,40 @@ msgstr ""
 msgid "Edit Member"
 msgstr "عضوها"
 
+#: modules/visual_script/visual_script_expression.cpp
+#, fuzzy
+msgid "Expression"
+msgstr "انتقال را در انیمیشن تغییر بده"
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Return"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+#, fuzzy
+msgid "Condition"
+msgstr "انیمیشن"
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "if (cond) is:"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "While"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "while (cond):"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Iterator"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "for (elem) in (input):"
+msgstr ""
+
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
 msgstr "نوع ورودی قابل تکرار نیست: "
@@ -13579,6 +13780,85 @@ msgstr "تکرارگر نامعتبر شد"
 #, fuzzy
 msgid "Iterator became invalid: "
 msgstr "تکرارگر نامعتبر شد: "
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Sequence"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+#, fuzzy
+msgid "in order:"
+msgstr "ساختن پوشه"
+
+#: modules/visual_script/visual_script_flow_control.cpp
+#, fuzzy
+msgid "Switch"
+msgstr "سوییچ"
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "'input' is:"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+#, fuzzy
+msgid "Type Cast"
+msgstr "نوع پایه:"
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Is %s?"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "On %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "On Self"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "Subtract %s"
+msgstr "کاراکترهای معتبر:"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Multiply %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Divide %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Mod %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "ShiftLeft %s"
+msgstr "تنظیم %s"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "ShiftRight %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "BitAnd %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "BitOr %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "BitXor %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#: modules/visual_script/visual_script_nodes.cpp
+#: modules/visual_script/visual_script_property_selector.cpp
+msgid "Get %s"
+msgstr "گرفتن %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name."
@@ -13596,6 +13876,21 @@ msgstr "مسیر به یک نود نمیرسد!"
 msgid "Invalid index property name '%s' in node %s."
 msgstr "نام دارایی ایندکس نامعتبر '%s' در نود %s."
 
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "Emit %s"
+msgstr "تنظیم %s"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Function"
+msgstr "توابع"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Compose Array"
+msgstr "آرایه را تغییر اندازه بده"
+
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid argument of type: "
 msgstr ": آرگومان نوع نامعتبر "
@@ -13605,12 +13900,74 @@ msgid ": Invalid arguments: "
 msgstr ": آرگومان‌های نامعتبر: "
 
 #: modules/visual_script/visual_script_nodes.cpp
+msgid "a if cond, else b"
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableGet not found in script: "
 msgstr "VariableGet در اسکریپت پیدا نشد: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableSet not found in script: "
 msgstr "VariableSet در اسکریپت پیدا نشد: "
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Preload"
+msgstr "افزودن گره"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Get Index"
+msgstr "اندیس:"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Set Index"
+msgstr "اندیس:"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Global Constant"
+msgstr "ثابت"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Class Constant"
+msgstr "ثابت"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Basic Constant"
+msgstr "ثابت"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Math Constant"
+msgstr "ثابت"
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "Get Engine Singleton"
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Get Scene Node"
+msgstr "صحنه جدید"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Get Scene Tree"
+msgstr "ساختن گره"
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "Get Self"
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "CustomNode"
+msgstr "ساختن گره"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Custom node has no _step() method, can't process graph."
@@ -13625,14 +13982,74 @@ msgstr ""
 "مقدار بازگشتی نامعتبر از ()step_ ، باید integer (seq out) ، یا string "
 "(error) باشد."
 
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "SubCall"
+msgstr "فراخوانی"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Construct %s"
+msgstr "ثابت ها"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Get Local Var"
+msgstr "محلی"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Set Local Var"
+msgstr "محلی"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Action %s"
+msgstr "افزودن وظیفه"
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "Deconstruct %s"
+msgstr ""
+
 #: modules/visual_script/visual_script_property_selector.cpp
 #, fuzzy
 msgid "Search VisualScript"
 msgstr "حذف گره اسکریپتِ دیداری"
 
-#: modules/visual_script/visual_script_property_selector.cpp
-msgid "Get %s"
-msgstr "گرفتن %s"
+#: modules/visual_script/visual_script_yield_nodes.cpp
+msgid "Yield"
+msgstr ""
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+msgid "Wait"
+msgstr ""
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+#, fuzzy
+msgid "Next Frame"
+msgstr "حرکت دادن گره(ها)"
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+msgid "Next Physics Frame"
+msgstr ""
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+msgid "%s sec(s)"
+msgstr ""
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+#, fuzzy
+msgid "WaitSignal"
+msgstr "سیگنال‌"
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+#, fuzzy
+msgid "WaitNodeSignal"
+msgstr "سیگنال‌"
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+msgid "WaitInstanceSignal"
+msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid "Package name is missing."
@@ -14248,7 +14665,16 @@ msgstr ""
 msgid ""
 "GPU-based particles are not supported by the GLES2 video driver.\n"
 "Use the CPUParticles2D node instead. You can use the \"Convert to "
-"CPUParticles\" option for this purpose."
+"CPUParticles2D\" toolbar option for this purpose."
+msgstr ""
+
+#: scene/2d/particles_2d.cpp
+msgid ""
+"On macOS, Particles2D rendering is much slower than CPUParticles2D due to "
+"transform feedback being implemented on the CPU instead of the GPU.\n"
+"Consider using CPUParticles2D instead when targeting macOS.\n"
+"You can use the \"Convert to CPUParticles2D\" toolbar option for this "
+"purpose."
 msgstr ""
 
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
@@ -14484,7 +14910,15 @@ msgstr ""
 msgid ""
 "GPU-based particles are not supported by the GLES2 video driver.\n"
 "Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
-"\" option for this purpose."
+"\" toolbar option for this purpose."
+msgstr ""
+
+#: scene/3d/particles.cpp
+msgid ""
+"On macOS, Particles rendering is much slower than CPUParticles due to "
+"transform feedback being implemented on the CPU instead of the GPU.\n"
+"Consider using CPUParticles instead when targeting macOS.\n"
+"You can use the \"Convert to CPUParticles\" toolbar option for this purpose."
 msgstr ""
 
 #: scene/3d/particles.cpp

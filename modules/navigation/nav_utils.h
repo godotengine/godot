@@ -35,10 +35,6 @@
 
 #include <vector>
 
-/**
-	@author AndreaCatania
-*/
-
 class NavRegion;
 
 namespace gd {

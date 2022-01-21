@@ -51,9 +51,6 @@
 #endif
 
 #include <stdio.h>
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class ShaderGLES3 {
 protected:

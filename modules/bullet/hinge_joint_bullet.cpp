@@ -36,10 +36,6 @@
 
 #include <BulletDynamics/ConstraintSolver/btHingeConstraint.h>
 
-/**
-	@author AndreaCatania
-*/
-
 HingeJointBullet::HingeJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform3D &frameA, const Transform3D &frameB) :
 		JointBullet() {
 	Transform3D scaled_AFrame(frameA.scaled(rbA->get_body_scale()));

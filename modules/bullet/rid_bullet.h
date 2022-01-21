@@ -33,10 +33,6 @@
 
 #include "core/templates/rid.h"
 
-/**
-	@author AndreaCatania
-*/
-
 class BulletPhysicsServer3D;
 
 class RIDBullet {
@@ -50,4 +46,5 @@ public:
 	_FORCE_INLINE_ void _set_physics_server(BulletPhysicsServer3D *p_physicsServer) { physicsServer = p_physicsServer; }
 	_FORCE_INLINE_ BulletPhysicsServer3D *get_physics_server() const { return physicsServer; }
 };
-#endif
+
+#endif // RID_BULLET_H

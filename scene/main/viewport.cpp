@@ -2348,7 +2348,7 @@ void Viewport::push_text_input(const String &p_text) {
 }
 
 Viewport::SubWindowResize Viewport::_sub_window_get_resize_margin(Window *p_subwindow, const Point2 &p_point) {
-	if (p_subwindow->get_flag(Window::FLAG_BORDERLESS)) {
+	if (p_subwindow->get_flag(Window::FLAG_BORDERLESS) || p_subwindow->get_flag(Window::FLAG_RESIZE_DISABLED)) {
 		return SUB_WINDOW_RESIZE_DISABLED;
 	}
 

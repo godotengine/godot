@@ -52,7 +52,6 @@ _complete_godot_options() {
 --always-on-top
 --resolution
 --position
---low-dpi
 --headless
 --debug
 --breakpoints

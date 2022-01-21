@@ -3256,7 +3256,7 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 	return false;
 }
 
-bool Variant::is_ref() const {
+bool Variant::is_ref_counted() const {
 	return type == OBJECT && _get_obj().id.is_ref_counted();
 }
 

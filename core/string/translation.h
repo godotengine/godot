@@ -78,8 +78,6 @@ class TranslationServer : public Object {
 	Ref<Translation> tool_translation;
 	Ref<Translation> doc_translation;
 
-	Map<String, String> locale_name_map;
-
 	bool enabled = true;
 
 	bool pseudolocalization_enabled = false;
@@ -109,6 +107,23 @@ class TranslationServer : public Object {
 
 	static void _bind_methods();
 
+	struct LocaleScriptInfo {
+		String name;
+		String script;
+		String default_country;
+		Set<String> supported_countries;
+	};
+	static Vector<LocaleScriptInfo> locale_script_info;
+
+	static Map<String, String> language_map;
+	static Map<String, String> script_map;
+	static Map<String, String> locale_rename_map;
+	static Map<String, String> country_name_map;
+	static Map<String, String> country_rename_map;
+	static Map<String, String> variant_map;
+
+	void init_locale_info();
+
 public:
 	_FORCE_INLINE_ static TranslationServer *get_singleton() { return singleton; }
 
@@ -118,6 +133,15 @@ public:
 	void set_locale(const String &p_locale);
 	String get_locale() const;
 	Ref<Translation> get_translation_object(const String &p_locale);
+
+	Vector<String> get_all_languages() const;
+	String get_language_name(const String &p_language) const;
+
+	Vector<String> get_all_scripts() const;
+	String get_script_name(const String &p_script) const;
+
+	Vector<String> get_all_countries() const;
+	String get_country_name(const String &p_country) const;
 
 	String get_locale_name(const String &p_locale) const;
 
@@ -136,11 +160,9 @@ public:
 	void set_editor_pseudolocalization(bool p_enabled);
 	void reload_pseudolocalization();
 
-	static Vector<String> get_all_locales();
-	static Vector<String> get_all_locale_names();
-	static bool is_locale_valid(const String &p_locale);
-	static String standardize_locale(const String &p_locale);
-	static String get_language_code(const String &p_locale);
+	String standardize_locale(const String &p_locale) const;
+
+	int compare_locales(const String &p_locale_a, const String &p_locale_b) const;
 
 	String get_tool_locale();
 	void set_tool_translation(const Ref<Translation> &p_translation);

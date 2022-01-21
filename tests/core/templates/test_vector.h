@@ -257,27 +257,42 @@ TEST_CASE("[Vector] Slice") {
 	vector.push_back(3);
 	vector.push_back(4);
 
+	Vector<int> slice0 = vector.slice(0, 0);
+	CHECK(slice0.size() == 0);
+
 	Vector<int> slice1 = vector.slice(1, 3);
 	CHECK(slice1.size() == 2);
 	CHECK(slice1[0] == 1);
 	CHECK(slice1[1] == 2);
 
 	Vector<int> slice2 = vector.slice(1, -1);
-	CHECK(slice2.size() == 4);
+	CHECK(slice2.size() == 3);
 	CHECK(slice2[0] == 1);
 	CHECK(slice2[1] == 2);
 	CHECK(slice2[2] == 3);
-	CHECK(slice2[3] == 4);
 
-	Vector<int> slice3 = vector.slice(3, -1);
+	Vector<int> slice3 = vector.slice(3);
 	CHECK(slice3.size() == 2);
 	CHECK(slice3[0] == 3);
 	CHECK(slice3[1] == 4);
 
 	Vector<int> slice4 = vector.slice(2, -2);
-	CHECK(slice4.size() == 2);
+	CHECK(slice4.size() == 1);
 	CHECK(slice4[0] == 2);
-	CHECK(slice4[1] == 3);
+
+	Vector<int> slice5 = vector.slice(-2);
+	CHECK(slice5.size() == 2);
+	CHECK(slice5[0] == 3);
+	CHECK(slice5[1] == 4);
+
+	Vector<int> slice6 = vector.slice(2, 42);
+	CHECK(slice6.size() == 3);
+	CHECK(slice6[0] == 2);
+	CHECK(slice6[1] == 3);
+	CHECK(slice6[2] == 4);
+
+	Vector<int> slice7 = vector.slice(5, 1);
+	CHECK(slice7.size() == 0);
 }
 
 TEST_CASE("[Vector] Find, has") {
