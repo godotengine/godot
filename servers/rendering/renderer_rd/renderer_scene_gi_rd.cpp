@@ -3121,7 +3121,6 @@ void RendererSceneGIRD::process_gi(RID p_render_buffers, RID p_normal_roughness_
 
 	RendererSceneRenderRD::RenderBuffers *rb = p_scene_render->render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND(rb == nullptr);
-	RendererSceneEnvironmentRD *env = p_scene_render->environment_owner.get_or_null(p_environment);
 
 	if (rb->ambient_buffer.is_null() || rb->gi.using_half_size_gi != half_resolution) {
 		if (rb->ambient_buffer.is_valid()) {
@@ -3159,16 +3158,6 @@ void RendererSceneGIRD::process_gi(RID p_render_buffers, RID p_normal_roughness_
 
 	bool use_sdfgi = rb->sdfgi != nullptr;
 	bool use_voxel_gi_instances = push_constant.max_voxel_gi_instances > 0;
-
-	if (env) {
-		push_constant.ao_color[0] = env->ao_color.r;
-		push_constant.ao_color[1] = env->ao_color.g;
-		push_constant.ao_color[2] = env->ao_color.b;
-	} else {
-		push_constant.ao_color[0] = 0;
-		push_constant.ao_color[1] = 0;
-		push_constant.ao_color[2] = 0;
-	}
 
 	push_constant.cam_rotation[0] = p_transform.basis[0][0];
 	push_constant.cam_rotation[1] = p_transform.basis[1][0];

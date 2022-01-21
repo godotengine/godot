@@ -466,7 +466,7 @@ public:
 	int get_multiplayer_authority() const;
 	bool is_multiplayer_authority() const;
 
-	uint16_t rpc_config(const StringName &p_method, Multiplayer::RPCMode p_rpc_mode, Multiplayer::TransferMode p_transfer_mode, int p_channel = 0); // config a local method for RPC
+	uint16_t rpc_config(const StringName &p_method, Multiplayer::RPCMode p_rpc_mode, bool p_call_local = false, Multiplayer::TransferMode p_transfer_mode = Multiplayer::TRANSFER_MODE_RELIABLE, int p_channel = 0); // config a local method for RPC
 	Vector<Multiplayer::RPCConfig> get_node_rpc_methods() const;
 
 	void rpc(const StringName &p_method, VARIANT_ARG_LIST); // RPC, honors RPCMode, TransferMode, channel

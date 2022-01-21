@@ -35,7 +35,9 @@
 #include "core/object/method_bind.h"
 #include "core/os/os.h"
 
-const char *NativeExtension::EXTENSION_LIST_CONFIG_FILE = "res://.godot/extension_list.cfg";
+String NativeExtension::get_extension_list_config_file() {
+	return ProjectSettings::get_singleton()->get_project_data_path().plus_file("extension_list.cfg");
+}
 
 class NativeExtensionMethodBind : public MethodBind {
 	GDNativeExtensionClassMethodCall call_func;

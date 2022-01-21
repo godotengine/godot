@@ -577,15 +577,10 @@
 		<method name="body_test_motion">
 			<return type="bool" />
 			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="from" type="Transform3D" />
-			<argument index="2" name="motion" type="Vector3" />
-			<argument index="3" name="margin" type="float" default="0.001" />
-			<argument index="4" name="result" type="PhysicsTestMotionResult3D" default="null" />
-			<argument index="5" name="collide_separation_ray" type="bool" default="false" />
-			<argument index="6" name="exclude" type="Array" default="[]" />
-			<argument index="7" name="max_collisions" type="int" default="1" />
+			<argument index="1" name="parameters" type="PhysicsTestMotionParameters3D" />
+			<argument index="2" name="result" type="PhysicsTestMotionResult3D" default="null" />
 			<description>
-				Returns [code]true[/code] if a collision would result from moving in the given direction from a given point in space. Margin increases the size of the shapes involved in the collision detection. [PhysicsTestMotionResult3D] can be passed to return additional information in.
+				Returns [code]true[/code] if a collision would result from moving along a motion vector from a given point in space. [PhysicsTestMotionParameters3D] is passed to set motion parameters. [PhysicsTestMotionResult3D] can be passed to return additional information.
 			</description>
 		</method>
 		<method name="box_shape_create">

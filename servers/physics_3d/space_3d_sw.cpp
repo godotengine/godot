@@ -620,7 +620,7 @@ int Space3DSW::_cull_aabb_for_body(Body3DSW *p_body, const AABB &p_aabb) {
 	return amount;
 }
 
-bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin, PhysicsServer3D::MotionResult *r_result, int p_max_collisions, bool p_collide_separation_ray, const Set<RID> &p_exclude) {
+bool Space3DSW::test_body_motion(Body3DSW *p_body, const PhysicsServer3D::MotionParameters &p_parameters, PhysicsServer3D::MotionResult *r_result) {
 	//give me back regular physics engine logic
 	//this is madness
 	//and most people using this function will think
@@ -628,7 +628,7 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, co
 	//this took about a week to get right..
 	//but is it right? who knows at this point..
 
-	ERR_FAIL_INDEX_V(p_max_collisions, PhysicsServer3D::MotionResult::MAX_COLLISIONS, false);
+	ERR_FAIL_INDEX_V(p_parameters.max_collisions, PhysicsServer3D::MotionResult::MAX_COLLISIONS, false);
 
 	if (r_result) {
 		*r_result = PhysicsServer3D::MotionResult();
@@ -652,22 +652,22 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, co
 
 	if (!shapes_found) {
 		if (r_result) {
-			r_result->travel = p_motion;
+			r_result->travel = p_parameters.motion;
 		}
 
 		return false;
 	}
 
 	// Undo the currently transform the physics server is aware of and apply the provided one
-	body_aabb = p_from.xform(p_body->get_inv_transform().xform(body_aabb));
-	body_aabb = body_aabb.grow(p_margin);
+	body_aabb = p_parameters.from.xform(p_body->get_inv_transform().xform(body_aabb));
+	body_aabb = body_aabb.grow(p_parameters.margin);
 
-	real_t min_contact_depth = p_margin * TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR;
+	real_t min_contact_depth = p_parameters.margin * TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR;
 
-	real_t motion_length = p_motion.length();
-	Vector3 motion_normal = p_motion / motion_length;
+	real_t motion_length = p_parameters.motion.length();
+	Vector3 motion_normal = p_parameters.motion / motion_length;
 
-	Transform3D body_transform = p_from;
+	Transform3D body_transform = p_parameters.from;
 
 	bool recovered = false;
 
@@ -701,13 +701,16 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, co
 
 				for (int i = 0; i < amount; i++) {
 					const CollisionObject3DSW *col_obj = intersection_query_results[i];
-					if (p_exclude.has(col_obj->get_self())) {
+					if (p_parameters.exclude_bodies.has(col_obj->get_self())) {
+						continue;
+					}
+					if (p_parameters.exclude_objects.has(col_obj->get_instance_id())) {
 						continue;
 					}
 
 					int shape_idx = intersection_query_subindex_results[i];
 
-					if (CollisionSolver3DSW::solve_static(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), cbkres, cbkptr, nullptr, p_margin)) {
+					if (CollisionSolver3DSW::solve_static(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), cbkres, cbkptr, nullptr, p_parameters.margin)) {
 						collided = cbk.amount > 0;
 					}
 				}
@@ -757,7 +760,7 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, co
 		// STEP 2 ATTEMPT MOTION
 
 		AABB motion_aabb = body_aabb;
-		motion_aabb.position += p_motion;
+		motion_aabb.position += p_parameters.motion;
 		motion_aabb = motion_aabb.merge(body_aabb);
 
 		int amount = _cull_aabb_for_body(p_body, motion_aabb);
@@ -771,7 +774,7 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, co
 
 			// Colliding separation rays allows to properly snap to the ground,
 			// otherwise it's not needed in regular motion.
-			if (!p_collide_separation_ray && (body_shape->get_type() == PhysicsServer3D::SHAPE_SEPARATION_RAY)) {
+			if (!p_parameters.collide_separation_ray && (body_shape->get_type() == PhysicsServer3D::SHAPE_SEPARATION_RAY)) {
 				// When slide on slope is on, separation ray shape acts like a regular shape.
 				if (!static_cast<SeparationRayShape3DSW *>(body_shape)->get_slide_on_slope()) {
 					continue;
@@ -783,7 +786,7 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, co
 			Transform3D body_shape_xform_inv = body_shape_xform.affine_inverse();
 			MotionShape3DSW mshape;
 			mshape.shape = body_shape;
-			mshape.motion = body_shape_xform_inv.basis.xform(p_motion);
+			mshape.motion = body_shape_xform_inv.basis.xform(p_parameters.motion);
 
 			bool stuck = false;
 
@@ -792,7 +795,10 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, co
 
 			for (int i = 0; i < amount; i++) {
 				const CollisionObject3DSW *col_obj = intersection_query_results[i];
-				if (p_exclude.has(col_obj->get_self())) {
+				if (p_parameters.exclude_bodies.has(col_obj->get_self())) {
+					continue;
+				}
+				if (p_parameters.exclude_objects.has(col_obj->get_instance_id())) {
 					continue;
 				}
 
@@ -821,7 +827,7 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, co
 				for (int k = 0; k < 8; k++) { //steps should be customizable..
 					real_t fraction = low + (hi - low) * fraction_coeff;
 
-					mshape.motion = body_shape_xform_inv.basis.xform(p_motion * fraction);
+					mshape.motion = body_shape_xform_inv.basis.xform(p_parameters.motion * fraction);
 
 					Vector3 lA, lB;
 					Vector3 sep = motion_normal; //important optimization for this to work fast enough
@@ -883,13 +889,13 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, co
 
 		//it collided, let's get the rest info in unsafe advance
 		Transform3D ugt = body_transform;
-		ugt.origin += p_motion * unsafe;
+		ugt.origin += p_parameters.motion * unsafe;
 
 		_RestResultData results[PhysicsServer3D::MotionResult::MAX_COLLISIONS];
 
 		_RestCallbackData rcd;
-		if (p_max_collisions > 1) {
-			rcd.max_results = p_max_collisions;
+		if (p_parameters.max_collisions > 1) {
+			rcd.max_results = p_parameters.max_collisions;
 			rcd.other_results = results;
 		}
 
@@ -907,20 +913,24 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, co
 			Transform3D body_shape_xform = ugt * p_body->get_shape_transform(j);
 			Shape3DSW *body_shape = p_body->get_shape(j);
 
-			body_aabb.position += p_motion * unsafe;
+			body_aabb.position += p_parameters.motion * unsafe;
 
 			int amount = _cull_aabb_for_body(p_body, body_aabb);
 
 			for (int i = 0; i < amount; i++) {
 				const CollisionObject3DSW *col_obj = intersection_query_results[i];
-				if (p_exclude.has(col_obj->get_self())) {
+				if (p_parameters.exclude_bodies.has(col_obj->get_self())) {
 					continue;
 				}
+				if (p_parameters.exclude_objects.has(col_obj->get_instance_id())) {
+					continue;
+				}
+
 				int shape_idx = intersection_query_subindex_results[i];
 
 				rcd.object = col_obj;
 				rcd.shape = shape_idx;
-				bool sc = CollisionSolver3DSW::solve_static(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), _rest_cbk_result, &rcd, nullptr, p_margin);
+				bool sc = CollisionSolver3DSW::solve_static(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), _rest_cbk_result, &rcd, nullptr, p_parameters.margin);
 				if (!sc) {
 					continue;
 				}
@@ -948,12 +958,12 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, co
 					collision.collider_velocity = body->get_linear_velocity() + (body->get_angular_velocity()).cross(rel_vec);
 				}
 
-				r_result->travel = safe * p_motion;
-				r_result->remainder = p_motion - safe * p_motion;
-				r_result->travel += (body_transform.get_origin() - p_from.get_origin());
+				r_result->travel = safe * p_parameters.motion;
+				r_result->remainder = p_parameters.motion - safe * p_parameters.motion;
+				r_result->travel += (body_transform.get_origin() - p_parameters.from.get_origin());
 
-				r_result->safe_fraction = safe;
-				r_result->unsafe_fraction = unsafe;
+				r_result->collision_safe_fraction = safe;
+				r_result->collision_unsafe_fraction = unsafe;
 
 				r_result->collision_count = rcd.result_count;
 			}
@@ -963,12 +973,12 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform3D &p_from, co
 	}
 
 	if (!collided && r_result) {
-		r_result->travel = p_motion;
+		r_result->travel = p_parameters.motion;
 		r_result->remainder = Vector3();
-		r_result->travel += (body_transform.get_origin() - p_from.get_origin());
+		r_result->travel += (body_transform.get_origin() - p_parameters.from.get_origin());
 
-		r_result->safe_fraction = 1.0;
-		r_result->unsafe_fraction = 1.0;
+		r_result->collision_safe_fraction = 1.0;
+		r_result->collision_unsafe_fraction = 1.0;
 	}
 
 	return collided;

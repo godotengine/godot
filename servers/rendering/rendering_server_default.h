@@ -526,7 +526,7 @@ public:
 	FUNCRIDSPLIT(viewport)
 
 	FUNC2(viewport_set_use_xr, RID, bool)
-	FUNC2(viewport_set_scale_3d, RID, ViewportScale3D)
+	FUNC2(viewport_set_scale_3d, RID, float)
 	FUNC3(viewport_set_size, RID, int, int)
 
 	FUNC2(viewport_set_active, RID, bool)
@@ -608,7 +608,7 @@ public:
 	FUNC2(environment_set_bg_color, RID, const Color &)
 	FUNC2(environment_set_bg_energy, RID, float)
 	FUNC2(environment_set_canvas_max_layer, RID, int)
-	FUNC7(environment_set_ambient_light, RID, const Color &, EnvironmentAmbientSource, float, float, EnvironmentReflectionSource, const Color &)
+	FUNC6(environment_set_ambient_light, RID, const Color &, EnvironmentAmbientSource, float, float, EnvironmentReflectionSource)
 
 // FIXME: Disabled during Vulkan refactoring, should be ported.
 #if 0

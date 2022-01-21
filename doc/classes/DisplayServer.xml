@@ -10,12 +10,14 @@
 		<method name="clipboard_get" qualifiers="const">
 			<return type="String" />
 			<description>
+				Returns the user's clipboard as a string if possible.
 			</description>
 		</method>
 		<method name="clipboard_set">
 			<return type="void" />
 			<argument index="0" name="clipboard" type="String" />
 			<description>
+				Sets the user's clipboard content to the given string.
 			</description>
 		</method>
 		<method name="console_set_visible">
@@ -333,6 +335,7 @@
 		<method name="mouse_get_position" qualifiers="const">
 			<return type="Vector2i" />
 			<description>
+				Returns the mouse cursor's current position.
 			</description>
 		</method>
 		<method name="mouse_set_mode">
@@ -345,6 +348,7 @@
 			<return type="void" />
 			<argument index="0" name="position" type="Vector2i" />
 			<description>
+				Sets the mouse cursor position to the given [code]position[/code].
 			</description>
 		</method>
 		<method name="process_events">
@@ -538,6 +542,7 @@
 			<argument index="0" name="flag" type="int" enum="DisplayServer.WindowFlags" />
 			<argument index="1" name="window_id" type="int" default="0" />
 			<description>
+				Returns the current value of the given window's [code]flag[/code].
 			</description>
 		</method>
 		<method name="window_get_max_size" qualifiers="const">
@@ -556,12 +561,14 @@
 			<return type="int" enum="DisplayServer.WindowMode" />
 			<argument index="0" name="window_id" type="int" default="0" />
 			<description>
+				Returns the mode of the given window.
 			</description>
 		</method>
 		<method name="window_get_position" qualifiers="const">
 			<return type="Vector2i" />
 			<argument index="0" name="window_id" type="int" default="0" />
 			<description>
+				Returns the position of the given window to on the screen.
 			</description>
 		</method>
 		<method name="window_get_real_size" qualifiers="const">
@@ -615,6 +622,7 @@
 			<argument index="1" name="enabled" type="bool" />
 			<argument index="2" name="window_id" type="int" default="0" />
 			<description>
+				Enables or disables the given window's given [code]flag[/code]. See [enum WindowFlags] for possible values and their behavior.
 			</description>
 		</method>
 		<method name="window_set_ime_active">
@@ -666,6 +674,8 @@
 			<argument index="0" name="mode" type="int" enum="DisplayServer.WindowMode" />
 			<argument index="1" name="window_id" type="int" default="0" />
 			<description>
+				Sets window mode for the given window to [code]mode[/code]. See [enum WindowMode] for possible values and how each mode behaves.
+				[b]Note:[/b] Setting the window to fullscreen forcibly sets the borderless flag to [code]true[/code], so make sure to set it back to [code]false[/code] when not wanted.
 			</description>
 		</method>
 		<method name="window_set_mouse_passthrough">
@@ -706,6 +716,7 @@
 			<argument index="0" name="position" type="Vector2i" />
 			<argument index="1" name="window_id" type="int" default="0" />
 			<description>
+				Sets the position of the given window to [code]position[/code].
 			</description>
 		</method>
 		<method name="window_set_rect_changed_callback">
@@ -720,6 +731,7 @@
 			<argument index="0" name="size" type="Vector2i" />
 			<argument index="1" name="window_id" type="int" default="0" />
 			<description>
+				Sets the size of the given window to [code]size[/code].
 			</description>
 		</method>
 		<method name="window_set_title">
@@ -727,6 +739,7 @@
 			<argument index="0" name="title" type="String" />
 			<argument index="1" name="window_id" type="int" default="0" />
 			<description>
+				Sets the title of the given window to [code]title[/code].
 			</description>
 		</method>
 		<method name="window_set_transient">

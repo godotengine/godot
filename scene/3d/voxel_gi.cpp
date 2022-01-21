@@ -398,7 +398,7 @@ void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
 
 	baker.end_bake();
 
-	//create the data for visual server
+	//create the data for rendering server
 
 	if (p_create_visual_debug) {
 		MultiMeshInstance3D *mmi = memnew(MultiMeshInstance3D);

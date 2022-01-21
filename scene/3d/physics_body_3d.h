@@ -50,11 +50,11 @@ protected:
 
 	uint16_t locked_axis = 0;
 
-	Ref<KinematicCollision3D> _move(const Vector3 &p_motion, bool p_test_only = false, real_t p_margin = 0.001, int p_max_collisions = 1);
+	Ref<KinematicCollision3D> _move(const Vector3 &p_linear_velocity, bool p_test_only = false, real_t p_margin = 0.001, int p_max_collisions = 1);
 
 public:
-	bool move_and_collide(const Vector3 &p_motion, PhysicsServer3D::MotionResult &r_result, real_t p_margin, bool p_test_only = false, int p_max_collisions = 1, bool p_cancel_sliding = true, bool p_collide_separation_ray = false, const Set<RID> &p_exclude = Set<RID>());
-	bool test_move(const Transform3D &p_from, const Vector3 &p_motion, const Ref<KinematicCollision3D> &r_collision = Ref<KinematicCollision3D>(), real_t p_margin = 0.001, int p_max_collisions = 1);
+	bool move_and_collide(const PhysicsServer3D::MotionParameters &p_parameters, PhysicsServer3D::MotionResult &r_result, bool p_test_only = false, bool p_cancel_sliding = true);
+	bool test_move(const Transform3D &p_from, const Vector3 &p_linear_velocity, const Ref<KinematicCollision3D> &r_collision = Ref<KinematicCollision3D>(), real_t p_margin = 0.001, int p_max_collisions = 1);
 
 	void set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock);
 	bool get_axis_lock(PhysicsServer3D::BodyAxis p_axis) const;
@@ -383,6 +383,7 @@ private:
 	int max_slides = 6;
 	int platform_layer = 0;
 	RID platform_rid;
+	ObjectID platform_object_id;
 	uint32_t moving_platform_floor_layers = UINT32_MAX;
 	uint32_t moving_platform_wall_layers = 0;
 	real_t floor_snap_length = 0.1;
@@ -487,16 +488,6 @@ public:
 	Object *get_collider_shape(int p_collision_index = 0) const;
 	int get_collider_shape_index(int p_collision_index = 0) const;
 	Vector3 get_collider_velocity(int p_collision_index = 0) const;
-
-	Vector3 get_best_position() const;
-	Vector3 get_best_normal() const;
-	Object *get_best_local_shape() const;
-	Object *get_best_collider() const;
-	ObjectID get_best_collider_id() const;
-	RID get_best_collider_rid() const;
-	Object *get_best_collider_shape() const;
-	int get_best_collider_shape_index() const;
-	Vector3 get_best_collider_velocity() const;
 };
 
 class PhysicalBone3D : public PhysicsBody3D {

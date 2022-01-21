@@ -374,7 +374,7 @@
 		</method>
 		<method name="get_memory_usage" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="arg0" type="int" enum="RenderingDevice.MemoryType" />
+			<argument index="0" name="type" type="int" enum="RenderingDevice.MemoryType" />
 			<description>
 			</description>
 		</method>

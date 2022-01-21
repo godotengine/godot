@@ -102,7 +102,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_PIN) {
 		if (n->is_class("AnimationPlayer")) {
-			AnimationPlayerEditor::singleton->unpin();
+			AnimationPlayerEditor::get_singleton()->unpin();
 			_update_tree();
 		}
 
@@ -386,7 +386,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll
 
 			_update_visibility_color(p_node, item);
 		} else if (p_node->is_class("AnimationPlayer")) {
-			bool is_pinned = AnimationPlayerEditor::singleton->get_player() == p_node && AnimationPlayerEditor::singleton->is_pinned();
+			bool is_pinned = AnimationPlayerEditor::get_singleton()->get_player() == p_node && AnimationPlayerEditor::get_singleton()->is_pinned();
 
 			if (is_pinned) {
 				item->add_button(0, get_theme_icon(SNAME("Pin"), SNAME("EditorIcons")), BUTTON_PIN, false, TTR("AnimationPlayer is pinned.\nClick to unpin."));
@@ -527,7 +527,7 @@ void SceneTreeEditor::_node_removed(Node *p_node) {
 }
 
 void SceneTreeEditor::_node_renamed(Node *p_node) {
-	if (!get_scene_node()->is_ancestor_of(p_node)) {
+	if (p_node != get_scene_node() && !get_scene_node()->is_ancestor_of(p_node)) {
 		return;
 	}
 
@@ -737,17 +737,18 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 	TreeItem *item = p_node ? _find(tree->get_root(), p_node->get_path()) : nullptr;
 
 	if (item) {
-		// make visible when it's collapsed
-		TreeItem *node = item->get_parent();
-		while (node && node != tree->get_root()) {
-			node->set_collapsed(false);
-			node = node->get_parent();
+		if (auto_expand_selected) {
+			// Make visible when it's collapsed.
+			TreeItem *node = item->get_parent();
+			while (node && node != tree->get_root()) {
+				node->set_collapsed(false);
+				node = node->get_parent();
+			}
+			item->select(0);
+			item->set_as_cursor(0);
+			selected = p_node;
+			tree->ensure_cursor_is_visible();
 		}
-		item->select(0);
-		item->set_as_cursor(0);
-		selected = p_node;
-		tree->ensure_cursor_is_visible();
-
 	} else {
 		if (!p_node) {
 			selected = nullptr;
@@ -1127,9 +1128,17 @@ void SceneTreeEditor::_rmb_select(const Vector2 &p_pos) {
 void SceneTreeEditor::update_warning() {
 	_warning_changed(nullptr);
 }
+
 void SceneTreeEditor::_warning_changed(Node *p_for_node) {
 	//should use a timer
 	update_timer->start();
+}
+
+void SceneTreeEditor::set_auto_expand_selected(bool p_auto, bool p_update_settings) {
+	if (p_update_settings) {
+		EditorSettings::get_singleton()->set("docks/scene_tree/auto_expand_to_selected", p_auto);
+	}
+	auto_expand_selected = p_auto;
 }
 
 void SceneTreeEditor::set_connect_to_script_mode(bool p_enable) {

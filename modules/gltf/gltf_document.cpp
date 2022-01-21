@@ -33,6 +33,8 @@
 #include "gltf_accessor.h"
 #include "gltf_animation.h"
 #include "gltf_camera.h"
+#include "gltf_document_extension.h"
+#include "gltf_document_extension_convert_importer_mesh.h"
 #include "gltf_light.h"
 #include "gltf_mesh.h"
 #include "gltf_node.h"
@@ -49,6 +51,7 @@
 #include "core/io/json.h"
 #include "core/math/disjoint_set.h"
 #include "core/math/vector2.h"
+#include "core/variant/dictionary.h"
 #include "core/variant/typed_array.h"
 #include "core/variant/variant.h"
 #include "core/version.h"
@@ -57,8 +60,12 @@
 #include "editor/import/resource_importer_scene.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/camera_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
 #include "scene/animation/animation_player.h"
+#include "scene/resources/importer_mesh.h"
+#include "scene/resources/mesh.h"
+#include "scene/resources/multimesh.h"
 #include "scene/resources/surface_tool.h"
 
 #include "modules/modules_enabled.gen.h"
@@ -2101,7 +2108,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 	Array meshes;
 	for (GLTFMeshIndex gltf_mesh_i = 0; gltf_mesh_i < state->meshes.size(); gltf_mesh_i++) {
 		print_verbose("glTF: Serializing mesh: " + itos(gltf_mesh_i));
-		Ref<EditorSceneImporterMesh> import_mesh = state->meshes.write[gltf_mesh_i]->get_mesh();
+		Ref<ImporterMesh> import_mesh = state->meshes.write[gltf_mesh_i]->get_mesh();
 		if (import_mesh.is_null()) {
 			continue;
 		}
@@ -2493,7 +2500,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 		Array primitives = d["primitives"];
 		const Dictionary &extras = d.has("extras") ? (Dictionary)d["extras"] :
 													   Dictionary();
-		Ref<EditorSceneImporterMesh> import_mesh;
+		Ref<ImporterMesh> import_mesh;
 		import_mesh.instantiate();
 		String mesh_name = "mesh";
 		if (d.has("name") && !String(d["name"]).is_empty()) {
@@ -2732,17 +2739,18 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 
 			bool generate_tangents = (primitive == Mesh::PRIMITIVE_TRIANGLES && !a.has("TANGENT") && a.has("TEXCOORD_0") && a.has("NORMAL"));
 
+			Ref<SurfaceTool> mesh_surface_tool;
+			mesh_surface_tool.instantiate();
+			mesh_surface_tool->create_from_triangle_arrays(array);
+			if (a.has("JOINTS_0") && a.has("JOINTS_1")) {
+				mesh_surface_tool->set_skin_weight_count(SurfaceTool::SKIN_8_WEIGHTS);
+			}
+			mesh_surface_tool->index();
 			if (generate_tangents) {
 				//must generate mikktspace tangents.. ergh..
-				Ref<SurfaceTool> st;
-				st.instantiate();
-				st->create_from_triangle_arrays(array);
-				if (a.has("JOINTS_0") && a.has("JOINTS_1")) {
-					st->set_skin_weight_count(SurfaceTool::SKIN_8_WEIGHTS);
-				}
-				st->generate_tangents();
-				array = st->commit_to_arrays();
+				mesh_surface_tool->generate_tangents();
 			}
+			array = mesh_surface_tool->commit_to_arrays();
 
 			Array morphs;
 			//blend shapes
@@ -2771,8 +2779,6 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 					for (int l = 0; l < Mesh::ARRAY_MAX; l++) {
 						array_copy[l] = array[l];
 					}
-
-					array_copy[Mesh::ARRAY_INDEX] = Variant();
 
 					if (t.has("POSITION")) {
 						Vector<Vector3> varr = _decode_accessor_as_vec3(state, t["POSITION"], true);
@@ -2852,17 +2858,17 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 						array_copy[Mesh::ARRAY_TANGENT] = tangents_v4;
 					}
 
-					if (generate_tangents) {
-						Ref<SurfaceTool> st;
-						st.instantiate();
-						st->create_from_triangle_arrays(array_copy);
-						if (a.has("JOINTS_0") && a.has("JOINTS_1")) {
-							st->set_skin_weight_count(SurfaceTool::SKIN_8_WEIGHTS);
-						}
-						st->deindex();
-						st->generate_tangents();
-						array_copy = st->commit_to_arrays();
+					Ref<SurfaceTool> blend_surface_tool;
+					blend_surface_tool.instantiate();
+					blend_surface_tool->create_from_triangle_arrays(array_copy);
+					if (a.has("JOINTS_0") && a.has("JOINTS_1")) {
+						blend_surface_tool->set_skin_weight_count(SurfaceTool::SKIN_8_WEIGHTS);
 					}
+					blend_surface_tool->index();
+					if (generate_tangents) {
+						blend_surface_tool->generate_tangents();
+					}
+					array_copy = blend_surface_tool->commit_to_arrays();
 
 					morphs.push_back(array_copy);
 				}
@@ -2875,19 +2881,23 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 				const int material = p["material"];
 				ERR_FAIL_INDEX_V(material, state->materials.size(), ERR_FILE_CORRUPT);
 				Ref<BaseMaterial3D> mat3d = state->materials[material];
+				ERR_FAIL_NULL_V(mat3d, ERR_FILE_CORRUPT);
 				if (has_vertex_color) {
 					mat3d->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 				}
 				mat = mat3d;
 
-			} else if (has_vertex_color) {
+			} else {
 				Ref<StandardMaterial3D> mat3d;
 				mat3d.instantiate();
-				mat3d->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+				if (has_vertex_color) {
+					mat3d->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+				}
 				mat = mat3d;
 			}
-
-			import_mesh->add_surface(primitive, array, morphs, Dictionary(), mat, mat.is_valid() ? mat->get_name() : String(), flags);
+			ERR_FAIL_NULL_V(mat, ERR_FILE_CORRUPT);
+			import_mesh->add_surface(primitive, array, morphs,
+					Dictionary(), mat, mat->get_name(), flags);
 		}
 
 		Vector<float> blend_weights;
@@ -3610,7 +3620,6 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> state) {
 				material->set_cull_mode(BaseMaterial3D::CULL_DISABLED);
 			}
 		}
-
 		if (d.has("alphaMode")) {
 			const String &am = d["alphaMode"];
 			if (am == "BLEND") {
@@ -5007,72 +5016,65 @@ GLTFMeshIndex GLTFDocument::_convert_mesh_to_gltf(Ref<GLTFState> state, MeshInst
 	if (p_mesh_instance->get_mesh().is_null()) {
 		return -1;
 	}
-	Ref<EditorSceneImporterMesh> import_mesh;
-	import_mesh.instantiate();
-	Ref<Mesh> godot_mesh = p_mesh_instance->get_mesh();
-	if (godot_mesh.is_null()) {
-		return -1;
-	}
+	Ref<ImporterMesh> current_mesh;
+	current_mesh.instantiate();
 	Vector<float> blend_weights;
-	Vector<String> blend_names;
-	int32_t blend_count = godot_mesh->get_blend_shape_count();
-	blend_names.resize(blend_count);
-	blend_weights.resize(blend_count);
-	for (int32_t blend_i = 0; blend_i < godot_mesh->get_blend_shape_count(); blend_i++) {
-		String blend_name = godot_mesh->get_blend_shape_name(blend_i);
-		blend_names.write[blend_i] = blend_name;
-		import_mesh->add_blend_shape(blend_name);
-	}
-	for (int32_t surface_i = 0; surface_i < godot_mesh->get_surface_count(); surface_i++) {
-		Mesh::PrimitiveType primitive_type = godot_mesh->surface_get_primitive_type(surface_i);
-		Array arrays = godot_mesh->surface_get_arrays(surface_i);
-		Array blend_shape_arrays = godot_mesh->surface_get_blend_shape_arrays(surface_i);
-		Ref<Material> mat = godot_mesh->surface_get_material(surface_i);
-		Ref<ArrayMesh> godot_array_mesh = godot_mesh;
-		String surface_name;
-		if (godot_array_mesh.is_valid()) {
-			surface_name = godot_array_mesh->surface_get_name(surface_i);
+	{
+		Ref<Mesh> import_mesh = p_mesh_instance->get_mesh();
+		Ref<ArrayMesh> import_array_mesh = p_mesh_instance->get_mesh();
+		if (import_mesh->get_blend_shape_count()) {
+			ArrayMesh::BlendShapeMode shape_mode = ArrayMesh::BLEND_SHAPE_MODE_NORMALIZED;
+			if (import_array_mesh.is_valid()) {
+				shape_mode = import_array_mesh->get_blend_shape_mode();
+			}
+			current_mesh->set_blend_shape_mode(shape_mode);
+			for (int morph_i = 0; morph_i < import_mesh->get_blend_shape_count(); morph_i++) {
+				current_mesh->add_blend_shape(import_mesh->get_blend_shape_name(morph_i));
+			}
 		}
-		if (p_mesh_instance->get_surface_override_material(surface_i).is_valid()) {
-			mat = p_mesh_instance->get_surface_override_material(surface_i);
+		for (int32_t surface_i = 0; surface_i < import_mesh->get_surface_count(); surface_i++) {
+			Array array = import_mesh->surface_get_arrays(surface_i);
+			Ref<Material> mat = import_mesh->surface_get_material(surface_i);
+			String mat_name;
+			if (mat.is_valid()) {
+				mat_name = mat->get_name();
+			}
+			current_mesh->add_surface(import_mesh->surface_get_primitive_type(surface_i),
+					array, import_mesh->surface_get_blend_shape_arrays(surface_i), import_mesh->surface_get_lods(surface_i), mat,
+					mat_name, import_mesh->surface_get_format(surface_i));
 		}
-		if (p_mesh_instance->get_material_override().is_valid()) {
-			mat = p_mesh_instance->get_material_override();
+		int32_t blend_count = import_mesh->get_blend_shape_count();
+		blend_weights.resize(blend_count);
+		for (int32_t blend_i = 0; blend_i < blend_count; blend_i++) {
+			blend_weights.write[blend_i] = 0.0f;
 		}
-		import_mesh->add_surface(primitive_type, arrays, blend_shape_arrays, Dictionary(), mat, surface_name, godot_mesh->surface_get_format(surface_i));
-	}
-	for (int32_t blend_i = 0; blend_i < blend_count; blend_i++) {
-		blend_weights.write[blend_i] = 0.0f;
 	}
 	Ref<GLTFMesh> gltf_mesh;
 	gltf_mesh.instantiate();
-	gltf_mesh->set_mesh(import_mesh);
+	gltf_mesh->set_mesh(current_mesh);
 	gltf_mesh->set_blend_weights(blend_weights);
 	GLTFMeshIndex mesh_i = state->meshes.size();
 	state->meshes.push_back(gltf_mesh);
 	return mesh_i;
 }
 
-EditorSceneImporterMeshNode3D *GLTFDocument::_generate_mesh_instance(Ref<GLTFState> state, Node *scene_parent, const GLTFNodeIndex node_index) {
+ImporterMeshInstance3D *GLTFDocument::_generate_mesh_instance(Ref<GLTFState> state, Node *parent_node, const GLTFNodeIndex node_index) {
 	Ref<GLTFNode> gltf_node = state->nodes[node_index];
 
 	ERR_FAIL_INDEX_V(gltf_node->mesh, state->meshes.size(), nullptr);
 
-	EditorSceneImporterMeshNode3D *mi = memnew(EditorSceneImporterMeshNode3D);
+	ImporterMeshInstance3D *mi = memnew(ImporterMeshInstance3D);
 	print_verbose("glTF: Creating mesh for: " + gltf_node->get_name());
 
 	Ref<GLTFMesh> mesh = state->meshes.write[gltf_node->mesh];
 	if (mesh.is_null()) {
 		return mi;
 	}
-	Ref<EditorSceneImporterMesh> import_mesh = mesh->get_mesh();
+	Ref<ImporterMesh> import_mesh = mesh->get_mesh();
 	if (import_mesh.is_null()) {
 		return mi;
 	}
 	mi->set_mesh(import_mesh);
-	for (int i = 0; i < mesh->get_blend_weights().size(); i++) {
-		mi->set("blend_shapes/" + mesh->get_mesh()->get_blend_shape_name(i), mesh->get_blend_weights()[i]);
-	}
 	return mi;
 }
 
@@ -5241,7 +5243,7 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> state, Node *p_current, co
 		return;
 	} else if (cast_to<MultiMeshInstance3D>(p_current)) {
 		MultiMeshInstance3D *multi = cast_to<MultiMeshInstance3D>(p_current);
-		_convert_mult_mesh_instance_to_gltf(multi, p_gltf_parent, p_gltf_root, gltf_node, state);
+		_convert_multi_mesh_instance_to_gltf(multi, p_gltf_parent, p_gltf_root, gltf_node, state);
 #ifdef MODULE_CSG_ENABLED
 	} else if (cast_to<CSGShape3D>(p_current)) {
 		CSGShape3D *shape = cast_to<CSGShape3D>(p_current);
@@ -5292,13 +5294,8 @@ void GLTFDocument::_convert_csg_shape_to_gltf(CSGShape3D *p_current, GLTFNodeInd
 	}
 	Ref<GLTFMesh> gltf_mesh;
 	gltf_mesh.instantiate();
-	Ref<EditorSceneImporterMesh> import_mesh;
-	import_mesh.instantiate();
-	Ref<ArrayMesh> array_mesh = csg->get_meshes()[1];
-	for (int32_t surface_i = 0; surface_i < array_mesh->get_surface_count(); surface_i++) {
-		import_mesh->add_surface(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, array_mesh->surface_get_arrays(surface_i), Array(), Dictionary(), mat, array_mesh->surface_get_name(surface_i));
-	}
-	gltf_mesh->set_mesh(import_mesh);
+	Ref<ImporterMesh> array_mesh = csg->get_meshes()[1];
+	gltf_mesh->set_mesh(array_mesh);
 	GLTFMeshIndex mesh_i = state->meshes.size();
 	state->meshes.push_back(gltf_mesh);
 	gltf_node->mesh = mesh_i;
@@ -5364,7 +5361,7 @@ void GLTFDocument::_convert_grid_map_to_gltf(GridMap *p_grid_map, GLTFNodeIndex 
 		Vector3 cell_location = cells[k];
 		int32_t cell = p_grid_map->get_cell_item(
 				Vector3(cell_location.x, cell_location.y, cell_location.z));
-		EditorSceneImporterMeshNode3D *import_mesh_node = memnew(EditorSceneImporterMeshNode3D);
+		ImporterMeshInstance3D *import_mesh_node = memnew(ImporterMeshInstance3D);
 		import_mesh_node->set_mesh(p_grid_map->get_mesh_library()->get_item_mesh(cell));
 		Transform3D cell_xform;
 		cell_xform.basis.set_orthogonal_index(
@@ -5386,49 +5383,72 @@ void GLTFDocument::_convert_grid_map_to_gltf(GridMap *p_grid_map, GLTFNodeIndex 
 }
 #endif // MODULE_GRIDMAP_ENABLED
 
-void GLTFDocument::_convert_mult_mesh_instance_to_gltf(MultiMeshInstance3D *p_multi_mesh_instance, GLTFNodeIndex p_parent_node_index, GLTFNodeIndex p_root_node_index, Ref<GLTFNode> gltf_node, Ref<GLTFState> state) {
+void GLTFDocument::_convert_multi_mesh_instance_to_gltf(
+		MultiMeshInstance3D *p_multi_mesh_instance,
+		GLTFNodeIndex p_parent_node_index,
+		GLTFNodeIndex p_root_node_index,
+		Ref<GLTFNode> gltf_node, Ref<GLTFState> state) {
+	ERR_FAIL_COND(!p_multi_mesh_instance);
 	Ref<MultiMesh> multi_mesh = p_multi_mesh_instance->get_multimesh();
-	if (multi_mesh.is_valid()) {
-		for (int32_t instance_i = 0; instance_i < multi_mesh->get_instance_count();
-				instance_i++) {
-			GLTFNode *new_gltf_node = memnew(GLTFNode);
-			Transform3D transform;
-			if (multi_mesh->get_transform_format() == MultiMesh::TRANSFORM_2D) {
-				Transform2D xform_2d = multi_mesh->get_instance_transform_2d(instance_i);
-				transform.origin =
-						Vector3(xform_2d.get_origin().x, 0, xform_2d.get_origin().y);
-				real_t rotation = xform_2d.get_rotation();
-				Quaternion quaternion(Vector3(0, 1, 0), rotation);
-				Size2 scale = xform_2d.get_scale();
-				transform.basis.set_quaternion_scale(quaternion,
-						Vector3(scale.x, 0, scale.y));
-				transform =
-						p_multi_mesh_instance->get_transform() * transform;
-			} else if (multi_mesh->get_transform_format() == MultiMesh::TRANSFORM_3D) {
-				transform = p_multi_mesh_instance->get_transform() *
-							multi_mesh->get_instance_transform(instance_i);
-			}
-			Ref<ArrayMesh> mm = multi_mesh->get_mesh();
-			if (mm.is_valid()) {
-				Ref<EditorSceneImporterMesh> mesh;
-				mesh.instantiate();
-				for (int32_t surface_i = 0; surface_i < mm->get_surface_count(); surface_i++) {
-					Array surface = mm->surface_get_arrays(surface_i);
-					mesh->add_surface(mm->surface_get_primitive_type(surface_i), surface, Array(), Dictionary(),
-							mm->surface_get_material(surface_i), mm->get_name());
-				}
-				Ref<GLTFMesh> gltf_mesh;
-				gltf_mesh.instantiate();
-				gltf_mesh->set_name(multi_mesh->get_name());
-				gltf_mesh->set_mesh(mesh);
-				new_gltf_node->mesh = state->meshes.size();
-				state->meshes.push_back(gltf_mesh);
-			}
-			new_gltf_node->xform = transform;
-			new_gltf_node->set_name(_gen_unique_name(state, p_multi_mesh_instance->get_name()));
-			gltf_node->children.push_back(state->nodes.size());
-			state->nodes.push_back(new_gltf_node);
+	if (multi_mesh.is_null()) {
+		return;
+	}
+	Ref<GLTFMesh> gltf_mesh;
+	gltf_mesh.instantiate();
+	Ref<Mesh> mesh = multi_mesh->get_mesh();
+	if (mesh.is_null()) {
+		return;
+	}
+	gltf_mesh->set_name(multi_mesh->get_name());
+	Ref<ImporterMesh> importer_mesh;
+	importer_mesh.instantiate();
+	Ref<ArrayMesh> array_mesh = multi_mesh->get_mesh();
+	if (array_mesh.is_valid()) {
+		importer_mesh->set_blend_shape_mode(array_mesh->get_blend_shape_mode());
+		for (int32_t blend_i = 0; blend_i < array_mesh->get_blend_shape_count(); blend_i++) {
+			importer_mesh->add_blend_shape(array_mesh->get_blend_shape_name(blend_i));
 		}
+	}
+	for (int32_t surface_i = 0; surface_i < mesh->get_surface_count(); surface_i++) {
+		Ref<Material> mat = mesh->surface_get_material(surface_i);
+		String material_name;
+		if (mat.is_valid()) {
+			material_name = mat->get_name();
+		}
+		Array blend_arrays;
+		if (array_mesh.is_valid()) {
+			blend_arrays = array_mesh->surface_get_blend_shape_arrays(surface_i);
+		}
+		importer_mesh->add_surface(mesh->surface_get_primitive_type(surface_i), mesh->surface_get_arrays(surface_i),
+				blend_arrays, mesh->surface_get_lods(surface_i), mat, material_name, mesh->surface_get_format(surface_i));
+	}
+	gltf_mesh->set_mesh(importer_mesh);
+	GLTFMeshIndex mesh_index = state->meshes.size();
+	state->meshes.push_back(gltf_mesh);
+	for (int32_t instance_i = 0; instance_i < multi_mesh->get_instance_count();
+			instance_i++) {
+		Transform3D transform;
+		if (multi_mesh->get_transform_format() == MultiMesh::TRANSFORM_2D) {
+			Transform2D xform_2d = multi_mesh->get_instance_transform_2d(instance_i);
+			transform.origin =
+					Vector3(xform_2d.get_origin().x, 0, xform_2d.get_origin().y);
+			real_t rotation = xform_2d.get_rotation();
+			Quaternion quaternion(Vector3(0, 1, 0), rotation);
+			Size2 scale = xform_2d.get_scale();
+			transform.basis.set_quaternion_scale(quaternion,
+					Vector3(scale.x, 0, scale.y));
+			transform = p_multi_mesh_instance->get_transform() * transform;
+		} else if (multi_mesh->get_transform_format() == MultiMesh::TRANSFORM_3D) {
+			transform = p_multi_mesh_instance->get_transform() *
+						multi_mesh->get_instance_transform(instance_i);
+		}
+		Ref<GLTFNode> new_gltf_node;
+		new_gltf_node.instantiate();
+		new_gltf_node->mesh = mesh_index;
+		new_gltf_node->xform = transform;
+		new_gltf_node->set_name(_gen_unique_name(state, p_multi_mesh_instance->get_name()));
+		gltf_node->children.push_back(state->nodes.size());
+		state->nodes.push_back(new_gltf_node);
 	}
 }
 
@@ -6106,8 +6126,8 @@ void GLTFDocument::_process_mesh_instances(Ref<GLTFState> state, Node *scene_roo
 			Map<GLTFNodeIndex, Node *>::Element *mi_element = state->scene_nodes.find(node_i);
 			ERR_CONTINUE_MSG(mi_element == nullptr, vformat("Unable to find node %d", node_i));
 
-			EditorSceneImporterMeshNode3D *mi = Object::cast_to<EditorSceneImporterMeshNode3D>(mi_element->get());
-			ERR_CONTINUE_MSG(mi == nullptr, vformat("Unable to cast node %d of type %s to EditorSceneImporterMeshNode3D", node_i, mi_element->get()->get_class_name()));
+			ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(mi_element->get());
+			ERR_CONTINUE_MSG(mi == nullptr, vformat("Unable to cast node %d of type %s to ImporterMeshInstance3D", node_i, mi_element->get()->get_class_name()));
 
 			const GLTFSkeletonIndex skel_i = state->skins.write[node->skin]->skeleton;
 			Ref<GLTFSkeleton> gltf_skeleton = state->skeletons.write[skel_i];
@@ -6748,10 +6768,25 @@ Error GLTFDocument::save_scene(Node *p_node, const String &p_path,
 
 	Ref<GLTFDocument> gltf_document;
 	gltf_document.instantiate();
+	for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
+		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
+		ERR_CONTINUE(ext.is_null());
+		Error err = ext->export_preflight(this, p_node);
+		ERR_FAIL_COND_V(err != OK, err);
+	}
+
 	if (r_state == Ref<GLTFState>()) {
 		r_state.instantiate();
 	}
-	return gltf_document->serialize(r_state, p_node, p_path);
+	Error err = gltf_document->serialize(r_state, p_node, p_path);
+	ERR_FAIL_COND_V(err != OK, err);
+	for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
+		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
+		ERR_CONTINUE(ext.is_null());
+		err = ext->export_post(this);
+		ERR_FAIL_COND_V(err != OK, err);
+	}
+	return OK;
 }
 
 Node *GLTFDocument::import_scene_gltf(const String &p_path, uint32_t p_flags, int32_t p_bake_fps, Ref<GLTFState> r_state, List<String> *r_missing_deps, Error *r_err) {
@@ -6764,6 +6799,15 @@ Node *GLTFDocument::import_scene_gltf(const String &p_path, uint32_t p_flags, in
 
 	Ref<GLTFDocument> gltf_document;
 	gltf_document.instantiate();
+	for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
+		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
+		ERR_CONTINUE(ext.is_null());
+		Error err = ext->import_preflight(this);
+		if (r_err) {
+			*r_err = err;
+		}
+		ERR_FAIL_COND_V(err != OK, nullptr);
+	}
 	Error err = gltf_document->parse(r_state, p_path);
 	if (r_err) {
 		*r_err = err;
@@ -6783,7 +6827,15 @@ Node *GLTFDocument::import_scene_gltf(const String &p_path, uint32_t p_flags, in
 			gltf_document->_import_animation(r_state, ap, i, p_bake_fps);
 		}
 	}
-
+	for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
+		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
+		ERR_CONTINUE(ext.is_null());
+		err = ext->import_post(this, root);
+		if (r_err) {
+			*r_err = err;
+		}
+		ERR_FAIL_COND_V(err != OK, nullptr);
+	}
 	return root;
 }
 
@@ -6792,6 +6844,14 @@ void GLTFDocument::_bind_methods() {
 			&GLTFDocument::save_scene, DEFVAL(0), DEFVAL(30), DEFVAL(Ref<GLTFState>()));
 	ClassDB::bind_method(D_METHOD("import_scene", "path", "flags", "bake_fps", "state"),
 			&GLTFDocument::import_scene, DEFVAL(0), DEFVAL(30), DEFVAL(Ref<GLTFState>()));
+	ClassDB::bind_method(D_METHOD("set_extensions", "extensions"),
+			&GLTFDocument::set_extensions);
+	ClassDB::bind_method(D_METHOD("get_extensions"),
+			&GLTFDocument::get_extensions);
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "extensions", PROPERTY_HINT_ARRAY_TYPE,
+						 vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "GLTFDocumentExtension"),
+						 PROPERTY_USAGE_DEFAULT),
+			"set_extensions", "get_extensions");
 }
 
 void GLTFDocument::_build_parent_hierachy(Ref<GLTFState> state) {
@@ -6816,4 +6876,22 @@ Node *GLTFDocument::import_scene(const String &p_path, uint32_t p_flags, int32_t
 		return nullptr;
 	}
 	return node;
+}
+
+void GLTFDocument::set_extensions(TypedArray<GLTFDocumentExtension> p_extensions) {
+	document_extensions = p_extensions;
+}
+
+TypedArray<GLTFDocumentExtension> GLTFDocument::get_extensions() const {
+	return document_extensions;
+}
+
+GLTFDocument::GLTFDocument() {
+	bool is_editor = ::Engine::get_singleton()->is_editor_hint();
+	if (is_editor) {
+		return;
+	}
+	Ref<GLTFDocumentExtensionConvertImporterMesh> extension_editor;
+	extension_editor.instantiate();
+	document_extensions.push_back(extension_editor);
 }

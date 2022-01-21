@@ -38,7 +38,6 @@
 
 #include <avrt.h>
 
-#ifdef DEBUG_ENABLED
 static String format_error_message(DWORD id) {
 	LPWSTR messageBuffer = nullptr;
 	size_t size = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -50,7 +49,6 @@ static String format_error_message(DWORD id) {
 
 	return msg;
 }
-#endif // DEBUG_ENABLED
 
 bool DisplayServerWindows::has_feature(Feature p_feature) const {
 	switch (p_feature) {
@@ -1210,7 +1208,7 @@ void DisplayServerWindows::cursor_set_shape(CursorShape p_shape) {
 		IDC_CROSS,
 		IDC_WAIT,
 		IDC_APPSTARTING,
-		IDC_ARROW,
+		IDC_SIZEALL,
 		IDC_ARROW,
 		IDC_NO,
 		IDC_SIZENS,

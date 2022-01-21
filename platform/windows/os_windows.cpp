@@ -28,15 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-// Must include Winsock before windows.h (included by os_windows.h)
-#include "drivers/unix/net_socket_posix.h"
-
 #include "os_windows.h"
 
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/marshalls.h"
 #include "core/version_generated.gen.h"
+#include "drivers/unix/net_socket_posix.h"
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
 #include "joypad_windows.h"
@@ -75,7 +73,6 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 #define GetProcAddress (void *)GetProcAddress
 #endif
 
-#ifdef DEBUG_ENABLED
 static String format_error_message(DWORD id) {
 	LPWSTR messageBuffer = nullptr;
 	size_t size = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -87,7 +84,6 @@ static String format_error_message(DWORD id) {
 
 	return msg;
 }
-#endif // DEBUG_ENABLED
 
 void RedirectIOToConsole() {
 	int hConHandle;
@@ -681,18 +677,27 @@ String OS_Windows::get_data_path() const {
 }
 
 String OS_Windows::get_cache_path() const {
-	// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on Windows as well.
-	if (has_environment("XDG_CACHE_HOME")) {
-		if (get_environment("XDG_CACHE_HOME").is_absolute_path()) {
-			return get_environment("XDG_CACHE_HOME").replace("\\", "/");
-		} else {
-			WARN_PRINT_ONCE("`XDG_CACHE_HOME` is a relative path. Ignoring its value and falling back to `%TEMP%` or `get_config_path()` per the XDG Base Directory specification.");
+	static String cache_path_cache;
+	if (cache_path_cache.is_empty()) {
+		// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on Windows as well.
+		if (has_environment("XDG_CACHE_HOME")) {
+			if (get_environment("XDG_CACHE_HOME").is_absolute_path()) {
+				cache_path_cache = get_environment("XDG_CACHE_HOME").replace("\\", "/");
+			} else {
+				WARN_PRINT_ONCE("`XDG_CACHE_HOME` is a relative path. Ignoring its value and falling back to `%LOCALAPPDATA%\\cache`, `%TEMP%` or `get_config_path()` per the XDG Base Directory specification.");
+			}
+		}
+		if (cache_path_cache.is_empty() && has_environment("LOCALAPPDATA")) {
+			cache_path_cache = get_environment("LOCALAPPDATA").replace("\\", "/");
+		}
+		if (cache_path_cache.is_empty() && has_environment("TEMP")) {
+			cache_path_cache = get_environment("TEMP").replace("\\", "/");
+		}
+		if (cache_path_cache.is_empty()) {
+			cache_path_cache = get_config_path();
 		}
 	}
-	if (has_environment("TEMP")) {
-		return get_environment("TEMP").replace("\\", "/");
-	}
-	return get_config_path();
+	return cache_path_cache;
 }
 
 // Get properly capitalized engine name for system paths

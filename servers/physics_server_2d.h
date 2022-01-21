@@ -198,6 +198,7 @@ public:
 	PhysicsDirectSpaceState2D();
 };
 
+class PhysicsTestMotionParameters2D;
 class PhysicsTestMotionResult2D;
 
 class PhysicsServer2D : public Object {
@@ -205,7 +206,7 @@ class PhysicsServer2D : public Object {
 
 	static PhysicsServer2D *singleton;
 
-	virtual bool _body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, real_t p_margin = 0.08, const Ref<PhysicsTestMotionResult2D> &p_result = Ref<PhysicsTestMotionResult2D>(), bool p_collide_separation_ray = false, const Vector<RID> &p_exclude = Vector<RID>());
+	virtual bool _body_test_motion(RID p_body, const Ref<PhysicsTestMotionParameters2D> &p_parameters, const Ref<PhysicsTestMotionResult2D> &p_result = Ref<PhysicsTestMotionResult2D>());
 
 protected:
 	static void _bind_methods();
@@ -465,6 +466,22 @@ public:
 	// this function only works on physics process, errors and returns null otherwise
 	virtual PhysicsDirectBodyState2D *body_get_direct_state(RID p_body) = 0;
 
+	struct MotionParameters {
+		Transform2D from;
+		Vector2 motion;
+		real_t margin = 0.08;
+		bool collide_separation_ray = false;
+		Set<RID> exclude_bodies;
+		Set<ObjectID> exclude_objects;
+
+		MotionParameters() {}
+
+		MotionParameters(const Transform2D &p_from, const Vector2 &p_motion, real_t p_margin = 0.08) :
+				from(p_from),
+				motion(p_motion),
+				margin(p_margin) {}
+	};
+
 	struct MotionResult {
 		Vector2 travel;
 		Vector2 remainder;
@@ -485,18 +502,7 @@ public:
 		}
 	};
 
-	virtual bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, real_t p_margin = 0.08, MotionResult *r_result = nullptr, bool p_collide_separation_ray = false, const Set<RID> &p_exclude = Set<RID>()) = 0;
-
-	struct SeparationResult {
-		real_t collision_depth;
-		Vector2 collision_point;
-		Vector2 collision_normal;
-		Vector2 collider_velocity;
-		int collision_local_shape;
-		ObjectID collider_id;
-		RID collider;
-		int collider_shape;
-	};
+	virtual bool body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result = nullptr) = 0;
 
 	/* JOINT API */
 
@@ -579,11 +585,40 @@ public:
 	~PhysicsServer2D();
 };
 
+class PhysicsTestMotionParameters2D : public RefCounted {
+	GDCLASS(PhysicsTestMotionParameters2D, RefCounted);
+
+	PhysicsServer2D::MotionParameters parameters;
+
+protected:
+	static void _bind_methods();
+
+public:
+	const PhysicsServer2D::MotionParameters &get_parameters() const { return parameters; }
+
+	const Transform2D &get_from() const { return parameters.from; }
+	void set_from(const Transform2D &p_from) { parameters.from = p_from; }
+
+	const Vector2 &get_motion() const { return parameters.motion; }
+	void set_motion(const Vector2 &p_motion) { parameters.motion = p_motion; }
+
+	real_t get_margin() const { return parameters.margin; }
+	void set_margin(real_t p_margin) { parameters.margin = p_margin; }
+
+	bool is_collide_separation_ray_enabled() const { return parameters.collide_separation_ray; }
+	void set_collide_separation_ray_enabled(bool p_enabled) { parameters.collide_separation_ray = p_enabled; }
+
+	Vector<RID> get_exclude_bodies() const;
+	void set_exclude_bodies(const Vector<RID> &p_exclude);
+
+	Array get_exclude_objects() const;
+	void set_exclude_objects(const Array &p_exclude);
+};
+
 class PhysicsTestMotionResult2D : public RefCounted {
 	GDCLASS(PhysicsTestMotionResult2D, RefCounted);
 
 	PhysicsServer2D::MotionResult result;
-	friend class PhysicsServer2D;
 
 protected:
 	static void _bind_methods();
@@ -601,6 +636,7 @@ public:
 	RID get_collider_rid() const;
 	Object *get_collider() const;
 	int get_collider_shape() const;
+	int get_collision_local_shape() const;
 	real_t get_collision_depth() const;
 	real_t get_collision_safe_fraction() const;
 	real_t get_collision_unsafe_fraction() const;

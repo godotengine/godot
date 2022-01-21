@@ -87,6 +87,9 @@ void Container::_sort_children() {
 		return;
 	}
 
+	notification(NOTIFICATION_PRE_SORT_CHILDREN);
+	emit_signal(SceneStringNames::get_singleton()->pre_sort_children);
+
 	notification(NOTIFICATION_SORT_CHILDREN);
 	emit_signal(SceneStringNames::get_singleton()->sort_children);
 	pending_sort = false;
@@ -174,7 +177,10 @@ void Container::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("queue_sort"), &Container::queue_sort);
 	ClassDB::bind_method(D_METHOD("fit_child_in_rect", "child", "rect"), &Container::fit_child_in_rect);
 
+	BIND_CONSTANT(NOTIFICATION_PRE_SORT_CHILDREN);
 	BIND_CONSTANT(NOTIFICATION_SORT_CHILDREN);
+
+	ADD_SIGNAL(MethodInfo("pre_sort_children"));
 	ADD_SIGNAL(MethodInfo("sort_children"));
 }
 

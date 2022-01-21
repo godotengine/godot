@@ -16,7 +16,7 @@
 			<argument index="0" name="color" type="Color" />
 			<description>
 				Adds the given color to a list of color presets. The presets are displayed in the color picker and the user will be able to select them.
-				[b]Note:[/b] the presets list is only for [i]this[/i] color picker.
+				[b]Note:[/b] The presets list is only for [i]this[/i] color picker.
 			</description>
 		</method>
 		<method name="erase_preset">

@@ -253,14 +253,14 @@ String SpinBox::get_prefix() const {
 	return prefix;
 }
 
-void SpinBox::set_update_on_text_changed(bool p_update) {
-	if (update_on_text_changed == p_update) {
+void SpinBox::set_update_on_text_changed(bool p_enabled) {
+	if (update_on_text_changed == p_enabled) {
 		return;
 	}
 
-	update_on_text_changed = p_update;
+	update_on_text_changed = p_enabled;
 
-	if (p_update) {
+	if (p_enabled) {
 		line_edit->connect("text_changed", callable_mp(this, &SpinBox::_text_changed), Vector<Variant>(), CONNECT_DEFERRED);
 	} else {
 		line_edit->disconnect("text_changed", callable_mp(this, &SpinBox::_text_changed));
@@ -271,8 +271,8 @@ bool SpinBox::get_update_on_text_changed() const {
 	return update_on_text_changed;
 }
 
-void SpinBox::set_editable(bool p_editable) {
-	line_edit->set_editable(p_editable);
+void SpinBox::set_editable(bool p_enabled) {
+	line_edit->set_editable(p_enabled);
 }
 
 bool SpinBox::is_editable() const {
@@ -284,17 +284,15 @@ void SpinBox::apply() {
 }
 
 void SpinBox::_bind_methods() {
-	//ClassDB::bind_method(D_METHOD("_value_changed"),&SpinBox::_value_changed);
-
 	ClassDB::bind_method(D_METHOD("set_align", "align"), &SpinBox::set_align);
 	ClassDB::bind_method(D_METHOD("get_align"), &SpinBox::get_align);
 	ClassDB::bind_method(D_METHOD("set_suffix", "suffix"), &SpinBox::set_suffix);
 	ClassDB::bind_method(D_METHOD("get_suffix"), &SpinBox::get_suffix);
 	ClassDB::bind_method(D_METHOD("set_prefix", "prefix"), &SpinBox::set_prefix);
 	ClassDB::bind_method(D_METHOD("get_prefix"), &SpinBox::get_prefix);
-	ClassDB::bind_method(D_METHOD("set_editable", "editable"), &SpinBox::set_editable);
+	ClassDB::bind_method(D_METHOD("set_editable", "enabled"), &SpinBox::set_editable);
 	ClassDB::bind_method(D_METHOD("is_editable"), &SpinBox::is_editable);
-	ClassDB::bind_method(D_METHOD("set_update_on_text_changed"), &SpinBox::set_update_on_text_changed);
+	ClassDB::bind_method(D_METHOD("set_update_on_text_changed", "enabled"), &SpinBox::set_update_on_text_changed);
 	ClassDB::bind_method(D_METHOD("get_update_on_text_changed"), &SpinBox::get_update_on_text_changed);
 	ClassDB::bind_method(D_METHOD("apply"), &SpinBox::apply);
 	ClassDB::bind_method(D_METHOD("get_line_edit"), &SpinBox::get_line_edit);

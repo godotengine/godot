@@ -32,15 +32,6 @@
 
 #include "core/os/keyboard.h"
 
-#ifdef TOOLS_ENABLED
-#include "editor/editor_scale.h"
-#define SPACING (3 * EDSCALE)
-#define POINT_WIDTH (8 * EDSCALE)
-#else
-#define SPACING 3
-#define POINT_WIDTH 8
-#endif
-
 GradientEdit::GradientEdit() {
 	set_focus_mode(FOCUS_ALL);
 
@@ -53,12 +44,12 @@ GradientEdit::GradientEdit() {
 
 int GradientEdit::_get_point_from_pos(int x) {
 	int result = -1;
-	int total_w = get_size().width - get_size().height - SPACING;
+	int total_w = get_size().width - get_size().height - draw_spacing;
 	float min_distance = 1e20;
 	for (int i = 0; i < points.size(); i++) {
 		//Check if we clicked at point
 		float distance = ABS(x - points[i].offset * total_w);
-		float min = (POINT_WIDTH / 2 * 1.7); //make it easier to grab
+		float min = (draw_point_width / 2 * 1.7); //make it easier to grab
 		if (distance <= min && distance < min_distance) {
 			result = i;
 			min_distance = distance;
@@ -129,7 +120,7 @@ void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 		grabbed = _get_point_from_pos(x);
 
 		if (grabbed != -1) {
-			int total_w = get_size().width - get_size().height - SPACING;
+			int total_w = get_size().width - get_size().height - draw_spacing;
 			Gradient::Point newPoint = points[grabbed];
 			newPoint.offset = CLAMP(x / float(total_w), 0, 1);
 
@@ -151,10 +142,10 @@ void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {
 		update();
 		int x = mb->get_position().x;
-		int total_w = get_size().width - get_size().height - SPACING;
+		int total_w = get_size().width - get_size().height - draw_spacing;
 
 		//Check if color selector was clicked.
-		if (x > total_w + SPACING) {
+		if (x > total_w + draw_spacing) {
 			_show_color_picker();
 			return;
 		}
@@ -225,7 +216,7 @@ void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid() && grabbing) {
-		int total_w = get_size().width - get_size().height - SPACING;
+		int total_w = get_size().width - get_size().height - draw_spacing;
 
 		int x = mm->get_position().x;
 
@@ -297,6 +288,12 @@ void GradientEdit::_notification(int p_what) {
 			picker->connect("color_changed", callable_mp(this, &GradientEdit::_color_changed));
 		}
 	}
+
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		draw_spacing = BASE_SPACING * get_theme_default_base_scale();
+		draw_point_width = BASE_POINT_WIDTH * get_theme_default_base_scale();
+	}
+
 	if (p_what == NOTIFICATION_DRAW) {
 		int w = get_size().x;
 		int h = get_size().y;
@@ -305,7 +302,7 @@ void GradientEdit::_notification(int p_what) {
 			return; //Safety check. We have division by 'h'. And in any case there is nothing to draw with such size
 		}
 
-		int total_w = get_size().width - get_size().height - SPACING;
+		int total_w = get_size().width - get_size().height - draw_spacing;
 
 		//Draw checker pattern for ramp
 		draw_texture_rect(get_theme_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")), Rect2(0, 0, total_w, h), true);
@@ -358,7 +355,7 @@ void GradientEdit::_notification(int p_what) {
 			col.a = 0.9;
 
 			draw_line(Vector2(points[i].offset * total_w, 0), Vector2(points[i].offset * total_w, h / 2), col);
-			Rect2 rect = Rect2(points[i].offset * total_w - POINT_WIDTH / 2, h / 2, POINT_WIDTH, h / 2);
+			Rect2 rect = Rect2(points[i].offset * total_w - draw_point_width / 2, h / 2, draw_point_width, h / 2);
 			draw_rect(rect, points[i].color, true);
 			draw_rect(rect, col, false);
 			if (grabbed == i) {
@@ -375,15 +372,15 @@ void GradientEdit::_notification(int p_what) {
 		}
 
 		//Draw "button" for color selector
-		draw_texture_rect(get_theme_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")), Rect2(total_w + SPACING, 0, h, h), true);
+		draw_texture_rect(get_theme_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")), Rect2(total_w + draw_spacing, 0, h, h), true);
 		if (grabbed != -1) {
 			//Draw with selection color
-			draw_rect(Rect2(total_w + SPACING, 0, h, h), points[grabbed].color);
+			draw_rect(Rect2(total_w + draw_spacing, 0, h, h), points[grabbed].color);
 		} else {
 			//if no color selected draw grey color with 'X' on top.
-			draw_rect(Rect2(total_w + SPACING, 0, h, h), Color(0.5, 0.5, 0.5, 1));
-			draw_line(Vector2(total_w + SPACING, 0), Vector2(total_w + SPACING + h, h), Color(1, 1, 1, 0.6));
-			draw_line(Vector2(total_w + SPACING, h), Vector2(total_w + SPACING + h, 0), Color(1, 1, 1, 0.6));
+			draw_rect(Rect2(total_w + draw_spacing, 0, h, h), Color(0.5, 0.5, 0.5, 1));
+			draw_line(Vector2(total_w + draw_spacing, 0), Vector2(total_w + draw_spacing + h, h), Color(1, 1, 1, 0.6));
+			draw_line(Vector2(total_w + draw_spacing, h), Vector2(total_w + draw_spacing + h, 0), Color(1, 1, 1, 0.6));
 		}
 
 		//Draw borders around color ramp if in focus

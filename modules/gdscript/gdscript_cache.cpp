@@ -58,27 +58,27 @@ Error GDScriptParserRef::raise_status(Status p_new_status) {
 	while (p_new_status > status) {
 		switch (status) {
 			case EMPTY:
-				result = parser->parse(GDScriptCache::get_source_code(path), path, false);
 				status = PARSED;
+				result = parser->parse(GDScriptCache::get_source_code(path), path, false);
 				break;
 			case PARSED: {
 				analyzer = memnew(GDScriptAnalyzer(parser));
-				Error inheritance_result = analyzer->resolve_inheritance();
 				status = INHERITANCE_SOLVED;
+				Error inheritance_result = analyzer->resolve_inheritance();
 				if (result == OK) {
 					result = inheritance_result;
 				}
 			} break;
 			case INHERITANCE_SOLVED: {
-				Error interface_result = analyzer->resolve_interface();
 				status = INTERFACE_SOLVED;
+				Error interface_result = analyzer->resolve_interface();
 				if (result == OK) {
 					result = interface_result;
 				}
 			} break;
 			case INTERFACE_SOLVED: {
-				Error body_result = analyzer->resolve_body();
 				status = FULLY_SOLVED;
+				Error body_result = analyzer->resolve_body();
 				if (result == OK) {
 					result = body_result;
 				}

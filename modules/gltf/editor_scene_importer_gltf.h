@@ -30,8 +30,10 @@
 
 #ifndef EDITOR_SCENE_IMPORTER_GLTF_H
 #define EDITOR_SCENE_IMPORTER_GLTF_H
-
+#ifdef TOOLS_ENABLED
 #include "gltf_state.h"
+
+#include "gltf_document_extension.h"
 
 #include "editor/import/resource_importer_scene.h"
 #include "scene/main/node.h"
@@ -39,7 +41,6 @@
 
 class Animation;
 
-#ifdef TOOLS_ENABLED
 class EditorSceneImporterGLTF : public EditorSceneImporter {
 	GDCLASS(EditorSceneImporterGLTF, EditorSceneImporter);
 
@@ -50,5 +51,5 @@ public:
 	virtual Ref<Animation> import_animation(const String &p_path,
 			uint32_t p_flags, int p_bake_fps) override;
 };
-#endif
+#endif // TOOLS_ENABLED
 #endif // EDITOR_SCENE_IMPORTER_GLTF_H

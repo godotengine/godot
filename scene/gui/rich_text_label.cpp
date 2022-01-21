@@ -41,10 +41,6 @@
 #include "modules/regex/regex.h"
 #endif
 
-#ifdef TOOLS_ENABLED
-#include "editor/editor_scale.h"
-#endif
-
 RichTextLabel::Item *RichTextLabel::_get_next_item(Item *p_item, bool p_free) const {
 	if (p_free) {
 		if (p_item->subitems.size()) {
@@ -995,19 +991,13 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				Color uc = font_color;
 				uc.a *= 0.5;
 				float y_off = TS->shaped_text_get_underline_position(rid);
-				float underline_width = TS->shaped_text_get_underline_thickness(rid);
-#ifdef TOOLS_ENABLED
-				underline_width *= EDSCALE;
-#endif
+				float underline_width = TS->shaped_text_get_underline_thickness(rid) * get_theme_default_base_scale();
 				draw_line(p_ofs + Vector2(off.x, off.y + y_off), p_ofs + Vector2(off.x + glyphs[i].advance * glyphs[i].repeat, off.y + y_off), uc, underline_width);
 			} else if (_find_strikethrough(it)) {
 				Color uc = font_color;
 				uc.a *= 0.5;
 				float y_off = -TS->shaped_text_get_ascent(rid) + TS->shaped_text_get_size(rid).y / 2;
-				float underline_width = TS->shaped_text_get_underline_thickness(rid);
-#ifdef TOOLS_ENABLED
-				underline_width *= EDSCALE;
-#endif
+				float underline_width = TS->shaped_text_get_underline_thickness(rid) * get_theme_default_base_scale();
 				draw_line(p_ofs + Vector2(off.x, off.y + y_off), p_ofs + Vector2(off.x + glyphs[i].advance * glyphs[i].repeat, off.y + y_off), uc, underline_width);
 			}
 

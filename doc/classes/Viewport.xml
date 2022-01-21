@@ -12,8 +12,8 @@
 		Finally, viewports can also behave as render targets, in which case they will not be visible unless the associated texture is used to draw.
 	</description>
 	<tutorials>
+		<link title="Using Viewports">https://docs.godotengine.org/en/latest/tutorials/rendering/viewports.html</link>
 		<link title="Viewport and canvas transforms">https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html</link>
-		<link title="Viewports tutorial index">https://docs.godotengine.org/en/latest/tutorials/viewports/index.html</link>
 		<link title="GUI in 3D Demo">https://godotengine.org/asset-library/asset/127</link>
 		<link title="3D in 2D Demo">https://godotengine.org/asset-library/asset/128</link>
 		<link title="2D in 3D Demo">https://godotengine.org/asset-library/asset/129</link>
@@ -204,7 +204,7 @@
 		<member name="lod_threshold" type="float" setter="set_lod_threshold" getter="get_lod_threshold" default="1.0">
 		</member>
 		<member name="msaa" type="int" setter="set_msaa" getter="get_msaa" enum="Viewport.MSAA" default="0">
-			The multisample anti-aliasing mode. A higher number results in smoother edges at the cost of significantly worse performance. A value of 4 is best unless targeting very high-end systems.
+			The multisample anti-aliasing mode. A higher number results in smoother edges at the cost of significantly worse performance. A value of 2 or 4 is best unless targeting very high-end systems. See also [member scale_3d] for supersampling, which provides higher quality but is much more expensive.
 		</member>
 		<member name="own_world_3d" type="bool" setter="set_use_own_world_3d" getter="is_using_own_world_3d" default="false">
 			If [code]true[/code], the viewport will use the [World3D] defined in [member world_3d].
@@ -212,8 +212,9 @@
 		<member name="physics_object_picking" type="bool" setter="set_physics_object_picking" getter="get_physics_object_picking" default="false">
 			If [code]true[/code], the objects rendered by viewport become subjects of mouse picking process.
 		</member>
-		<member name="scale_3d" type="int" setter="set_scale_3d" getter="get_scale_3d" enum="Viewport.Scale3D" default="0">
-			The scale at which 3D content is rendered.
+		<member name="scale_3d" type="float" setter="set_scale_3d" getter="get_scale_3d" default="1.0">
+			Scales the 3D render buffer based on the viewport size and displays the result with linear filtering. Values lower than [code]1.0[/code] can be used to speed up 3D rendering at the cost of quality (undersampling). Values greater than [code]1.0[/code] can be used to improve 3D rendering quality at a high performance cost (supersampling). See also [member msaa] for multi-sample antialiasing, which is significantly cheaper but only smoothens the edges of polygons.
+			To control this property on the root viewport, set the [member ProjectSettings.rendering/3d/viewport/scale] project setting.
 		</member>
 		<member name="screen_space_aa" type="int" setter="set_screen_space_aa" getter="get_screen_space_aa" enum="Viewport.ScreenSpaceAA" default="0">
 			Sets the screen-space antialiasing method used. Screen-space antialiasing works by selectively blurring edges in a post-process shader. It differs from MSAA which takes multiple coverage samples while rendering objects. Screen-space AA methods are typically faster than MSAA and will smooth out specular aliasing, but tend to make scenes appear blurry.
@@ -275,16 +276,6 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="SCALE_3D_DISABLED" value="0" enum="Scale3D">
-		</constant>
-		<constant name="SCALE_3D_75_PERCENT" value="1" enum="Scale3D">
-		</constant>
-		<constant name="SCALE_3D_50_PERCENT" value="2" enum="Scale3D">
-		</constant>
-		<constant name="SCALE_3D_33_PERCENT" value="3" enum="Scale3D">
-		</constant>
-		<constant name="SCALE_3D_25_PERCENT" value="4" enum="Scale3D">
-		</constant>
 		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED" value="0" enum="ShadowAtlasQuadrantSubdiv">
 			This quadrant will not be used.
 		</constant>

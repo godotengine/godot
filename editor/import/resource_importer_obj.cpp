@@ -32,10 +32,10 @@
 
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
-#include "editor/import/scene_importer_mesh.h"
-#include "editor/import/scene_importer_mesh_node_3d.h"
+#include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
+#include "scene/resources/importer_mesh.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/surface_tool.h"
 
@@ -439,13 +439,13 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, in
 	Node3D *scene = memnew(Node3D);
 
 	for (const Ref<Mesh> &m : meshes) {
-		Ref<EditorSceneImporterMesh> mesh;
+		Ref<ImporterMesh> mesh;
 		mesh.instantiate();
 		for (int i = 0; i < m->get_surface_count(); i++) {
 			mesh->add_surface(m->surface_get_primitive_type(i), m->surface_get_arrays(i), Array(), Dictionary(), m->surface_get_material(i));
 		}
 
-		EditorSceneImporterMeshNode3D *mi = memnew(EditorSceneImporterMeshNode3D);
+		ImporterMeshInstance3D *mi = memnew(ImporterMeshInstance3D);
 		mi->set_mesh(mesh);
 		mi->set_name(m->get_name());
 		scene->add_child(mi);

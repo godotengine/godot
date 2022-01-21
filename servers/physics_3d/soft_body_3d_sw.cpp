@@ -318,11 +318,13 @@ void SoftBody3DSW::apply_nodes_transform(const Transform3D &p_transform) {
 }
 
 Vector3 SoftBody3DSW::get_vertex_position(int p_index) const {
+	ERR_FAIL_COND_V(p_index < 0, Vector3());
+
 	if (soft_mesh.is_null()) {
 		return Vector3();
 	}
 
-	ERR_FAIL_INDEX_V(p_index, (int)map_visual_to_physics.size(), Vector3());
+	ERR_FAIL_COND_V(p_index >= (int)map_visual_to_physics.size(), Vector3());
 	uint32_t node_index = map_visual_to_physics[p_index];
 
 	ERR_FAIL_COND_V(node_index >= nodes.size(), Vector3());
@@ -330,11 +332,13 @@ Vector3 SoftBody3DSW::get_vertex_position(int p_index) const {
 }
 
 void SoftBody3DSW::set_vertex_position(int p_index, const Vector3 &p_position) {
+	ERR_FAIL_COND(p_index < 0);
+
 	if (soft_mesh.is_null()) {
 		return;
 	}
 
-	ERR_FAIL_INDEX(p_index, (int)map_visual_to_physics.size());
+	ERR_FAIL_COND(p_index >= (int)map_visual_to_physics.size());
 	uint32_t node_index = map_visual_to_physics[p_index];
 
 	ERR_FAIL_COND(node_index >= nodes.size());
@@ -344,6 +348,8 @@ void SoftBody3DSW::set_vertex_position(int p_index, const Vector3 &p_position) {
 }
 
 void SoftBody3DSW::pin_vertex(int p_index) {
+	ERR_FAIL_COND(p_index < 0);
+
 	if (is_vertex_pinned(p_index)) {
 		return;
 	}
@@ -351,7 +357,7 @@ void SoftBody3DSW::pin_vertex(int p_index) {
 	pinned_vertices.push_back(p_index);
 
 	if (!soft_mesh.is_null()) {
-		ERR_FAIL_INDEX(p_index, (int)map_visual_to_physics.size());
+		ERR_FAIL_COND(p_index >= (int)map_visual_to_physics.size());
 		uint32_t node_index = map_visual_to_physics[p_index];
 
 		ERR_FAIL_COND(node_index >= nodes.size());
@@ -361,13 +367,15 @@ void SoftBody3DSW::pin_vertex(int p_index) {
 }
 
 void SoftBody3DSW::unpin_vertex(int p_index) {
+	ERR_FAIL_COND(p_index < 0);
+
 	uint32_t pinned_count = pinned_vertices.size();
 	for (uint32_t i = 0; i < pinned_count; ++i) {
 		if (p_index == pinned_vertices[i]) {
 			pinned_vertices.remove(i);
 
 			if (!soft_mesh.is_null()) {
-				ERR_FAIL_INDEX(p_index, (int)map_visual_to_physics.size());
+				ERR_FAIL_COND(p_index >= (int)map_visual_to_physics.size());
 				uint32_t node_index = map_visual_to_physics[p_index];
 
 				ERR_FAIL_COND(node_index >= nodes.size());
@@ -387,10 +395,10 @@ void SoftBody3DSW::unpin_all_vertices() {
 		real_t inv_node_mass = nodes.size() * inv_total_mass;
 		uint32_t pinned_count = pinned_vertices.size();
 		for (uint32_t i = 0; i < pinned_count; ++i) {
-			uint32_t vertex_index = pinned_vertices[i];
+			int pinned_vertex = pinned_vertices[i];
 
-			ERR_CONTINUE(vertex_index >= map_visual_to_physics.size());
-			uint32_t node_index = map_visual_to_physics[vertex_index];
+			ERR_CONTINUE(pinned_vertex >= (int)map_visual_to_physics.size());
+			uint32_t node_index = map_visual_to_physics[pinned_vertex];
 
 			ERR_CONTINUE(node_index >= nodes.size());
 			Node &node = nodes[node_index];
@@ -402,6 +410,8 @@ void SoftBody3DSW::unpin_all_vertices() {
 }
 
 bool SoftBody3DSW::is_vertex_pinned(int p_index) const {
+	ERR_FAIL_COND_V(p_index < 0, false);
+
 	uint32_t pinned_count = pinned_vertices.size();
 	for (uint32_t i = 0; i < pinned_count; ++i) {
 		if (p_index == pinned_vertices[i]) {

@@ -87,7 +87,7 @@ OSIPhone *OSIPhone::get_singleton() {
 	return (OSIPhone *)OS::get_singleton();
 }
 
-OSIPhone::OSIPhone(String p_data_dir) {
+OSIPhone::OSIPhone(String p_data_dir, String p_cache_dir) {
 	for (int i = 0; i < ios_init_callbacks_count; ++i) {
 		ios_init_callbacks[i]();
 	}
@@ -101,6 +101,7 @@ OSIPhone::OSIPhone(String p_data_dir) {
 	// can't call set_data_dir from here, since it requires DirAccess
 	// which is initialized in initialize_core
 	user_data_dir = p_data_dir;
+	cache_dir = p_cache_dir;
 
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(SyslogLogger));
@@ -264,6 +265,10 @@ void OSIPhone::set_user_data_dir(String p_dir) {
 
 String OSIPhone::get_user_data_dir() const {
 	return user_data_dir;
+}
+
+String OSIPhone::get_cache_path() const {
+	return cache_dir;
 }
 
 String OSIPhone::get_locale() const {

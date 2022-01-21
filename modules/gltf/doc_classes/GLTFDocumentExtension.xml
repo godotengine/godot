@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GLTFDocumentExtension" inherits="Resource" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="export_post">
+			<return type="int" enum="Error" />
+			<argument index="0" name="document" type="GLTFDocument" />
+			<description>
+			</description>
+		</method>
+		<method name="export_preflight">
+			<return type="int" enum="Error" />
+			<argument index="0" name="document" type="GLTFDocument" />
+			<argument index="1" name="node" type="Node" />
+			<description>
+			</description>
+		</method>
+		<method name="get_export_setting" qualifiers="const">
+			<return type="Variant" />
+			<argument index="0" name="key" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="get_export_setting_keys" qualifiers="const">
+			<return type="Array" />
+			<description>
+			</description>
+		</method>
+		<method name="get_import_setting" qualifiers="const">
+			<return type="Variant" />
+			<argument index="0" name="key" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="get_import_setting_keys" qualifiers="const">
+			<return type="Array" />
+			<description>
+			</description>
+		</method>
+		<method name="import_post">
+			<return type="int" enum="Error" />
+			<argument index="0" name="document" type="GLTFDocument" />
+			<argument index="1" name="node" type="Node" />
+			<description>
+			</description>
+		</method>
+		<method name="import_preflight">
+			<return type="int" enum="Error" />
+			<argument index="0" name="document" type="GLTFDocument" />
+			<description>
+			</description>
+		</method>
+		<method name="set_export_setting">
+			<return type="void" />
+			<argument index="0" name="key" type="StringName" />
+			<argument index="1" name="value" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="set_import_setting">
+			<return type="void" />
+			<argument index="0" name="key" type="StringName" />
+			<argument index="1" name="value" type="Variant" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

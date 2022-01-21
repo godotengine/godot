@@ -91,11 +91,13 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 		// the data width in case of 8/4/1 bit images
 		const uint32_t w = bits_per_pixel >= 24 ? width : width_bytes;
 		const uint8_t *line = p_buffer + (line_width * (height - 1));
+		const uint8_t *end_buffer = p_buffer + p_header.bmp_file_header.bmp_file_size - p_header.bmp_file_header.bmp_file_offset;
 
 		for (uint64_t i = 0; i < height; i++) {
 			const uint8_t *line_ptr = line;
 
 			for (unsigned int j = 0; j < w; j++) {
+				ERR_FAIL_COND_V(line_ptr >= end_buffer, ERR_FILE_CORRUPT);
 				switch (bits_per_pixel) {
 					case 1: {
 						uint8_t color_index = *line_ptr;

@@ -376,6 +376,18 @@ void Node3D::update_gizmos() {
 #endif
 }
 
+void Node3D::set_subgizmo_selection(Ref<Node3DGizmo> p_gizmo, int p_id, Transform3D p_transform) {
+#ifdef TOOLS_ENABLED
+	if (!is_inside_world()) {
+		return;
+	}
+
+	if (Engine::get_singleton()->is_editor_hint() && get_tree()->is_node_being_edited(this)) {
+		get_tree()->call_group_flags(0, SceneStringNames::get_singleton()->_spatial_editor_group, SceneStringNames::get_singleton()->_set_subgizmo_selection, this, p_gizmo, p_id, p_transform);
+	}
+#endif
+}
+
 void Node3D::clear_subgizmo_selection() {
 #ifdef TOOLS_ENABLED
 	if (!is_inside_world()) {
@@ -792,6 +804,7 @@ void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_gizmo", "gizmo"), &Node3D::add_gizmo);
 	ClassDB::bind_method(D_METHOD("get_gizmos"), &Node3D::get_gizmos_bind);
 	ClassDB::bind_method(D_METHOD("clear_gizmos"), &Node3D::clear_gizmos);
+	ClassDB::bind_method(D_METHOD("set_subgizmo_selection", "gizmo", "id", "transform"), &Node3D::set_subgizmo_selection);
 	ClassDB::bind_method(D_METHOD("clear_subgizmo_selection"), &Node3D::clear_subgizmo_selection);
 
 	ClassDB::bind_method(D_METHOD("set_visible", "visible"), &Node3D::set_visible);

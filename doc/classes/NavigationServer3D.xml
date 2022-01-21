@@ -8,7 +8,7 @@
 		Maps are made up of regions, which are made of navigation meshes. Together, they define the navigable areas in the 3D world. For two regions to be connected to each other, they must share a similar edge. An edge is considered connected to another if both of its two vertices are at a distance less than [code]edge_connection_margin[/code] to the respective other edge's vertex.
 		You may assign navigation layers to regions with [method NavigationServer3D.region_set_layers], which then can be checked upon when requesting a path with [method NavigationServer3D.map_get_path]. This allows allowing or forbidding some areas to 3D objects.
 		To use the collision avoidance system, you may use agents. You can set an agent's target velocity, then the servers will emit a callback with a modified velocity.
-		[b]Note:[/b] the collision avoidance system ignores regions. Using the modified velocity as-is might lead to pushing and agent outside of a navigable area. This is a limitation of the collision avoidance system, any more complex situation may require the use of the physics engine.
+		[b]Note:[/b] The collision avoidance system ignores regions. Using the modified velocity as-is might lead to pushing and agent outside of a navigable area. This is a limitation of the collision avoidance system, any more complex situation may require the use of the physics engine.
 		This server keeps tracks of any call and executes them during the sync phase. This means that you can request any change to the map, using any thread, without worrying.
 	</description>
 	<tutorials>
@@ -234,7 +234,7 @@
 			<description>
 				Process the collision avoidance agents.
 				The result of this process is needed by the physics server, so this must be called in the main thread.
-				Note: This function is not thread safe.
+				[b]Note:[/b] This function is not thread safe.
 			</description>
 		</method>
 		<method name="region_bake_navmesh" qualifiers="const">

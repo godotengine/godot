@@ -38,7 +38,7 @@
 #include "renderer_scene_cull.h"
 #include "rendering_server_globals.h"
 
-// careful, these may run in different threads than the visual server
+// careful, these may run in different threads than the rendering server
 
 int RenderingServerDefault::changes = 0;
 

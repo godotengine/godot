@@ -538,7 +538,7 @@ class Thread : public RefCounted {
 protected:
 	Variant ret;
 	Variant userdata;
-	SafeFlag active;
+	SafeFlag running;
 	Callable target_callable;
 	::Thread thread;
 	static void _bind_methods();
@@ -554,7 +554,8 @@ public:
 
 	Error start(const Callable &p_callable, const Variant &p_userdata = Variant(), Priority p_priority = PRIORITY_NORMAL);
 	String get_id() const;
-	bool is_active() const;
+	bool is_started() const;
+	bool is_alive() const;
 	Variant wait_to_finish();
 };
 

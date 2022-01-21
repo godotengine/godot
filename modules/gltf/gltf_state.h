@@ -36,6 +36,7 @@
 #include "gltf_buffer_view.h"
 #include "gltf_camera.h"
 #include "gltf_document.h"
+#include "gltf_document_extension.h"
 #include "gltf_light.h"
 #include "gltf_mesh.h"
 #include "gltf_node.h"

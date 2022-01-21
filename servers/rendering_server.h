@@ -752,19 +752,10 @@ public:
 		CANVAS_ITEM_TEXTURE_REPEAT_MAX,
 	};
 
-	enum ViewportScale3D {
-		VIEWPORT_SCALE_3D_DISABLED,
-		VIEWPORT_SCALE_3D_75_PERCENT,
-		VIEWPORT_SCALE_3D_50_PERCENT,
-		VIEWPORT_SCALE_3D_33_PERCENT,
-		VIEWPORT_SCALE_3D_25_PERCENT,
-		VIEWPORT_SCALE_3D_MAX,
-	};
-
 	virtual RID viewport_create() = 0;
 
 	virtual void viewport_set_use_xr(RID p_viewport, bool p_use_xr) = 0;
-	virtual void viewport_set_scale_3d(RID p_viewport, ViewportScale3D p_scale_3d) = 0;
+	virtual void viewport_set_scale_3d(RID p_viewport, float p_scale_3d) = 0;
 	virtual void viewport_set_size(RID p_viewport, int p_width, int p_height) = 0;
 	virtual void viewport_set_active(RID p_viewport, bool p_active) = 0;
 	virtual void viewport_set_parent_viewport(RID p_viewport, RID p_parent_viewport) = 0;
@@ -961,7 +952,7 @@ public:
 	virtual void environment_set_bg_color(RID p_env, const Color &p_color) = 0;
 	virtual void environment_set_bg_energy(RID p_env, float p_energy) = 0;
 	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer) = 0;
-	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, EnvironmentAmbientSource p_ambient = ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, EnvironmentReflectionSource p_reflection_source = ENV_REFLECTION_SOURCE_BG, const Color &p_ao_color = Color()) = 0;
+	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, EnvironmentAmbientSource p_ambient = ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, EnvironmentReflectionSource p_reflection_source = ENV_REFLECTION_SOURCE_BG) = 0;
 
 	enum EnvironmentGlowBlendMode {
 		ENV_GLOW_BLEND_MODE_ADDITIVE,
@@ -1416,7 +1407,7 @@ public:
 
 	/* FREE */
 
-	virtual void free(RID p_rid) = 0; ///< free RIDs associated with the visual server
+	virtual void free(RID p_rid) = 0; ///< free RIDs associated with the rendering server
 
 	virtual void request_frame_drawn_callback(Object *p_where, const StringName &p_method, const Variant &p_userdata) = 0;
 
@@ -1553,7 +1544,6 @@ VARIANT_ENUM_CAST(RenderingServer::ViewportDebugDraw);
 VARIANT_ENUM_CAST(RenderingServer::ViewportOcclusionCullingBuildQuality);
 VARIANT_ENUM_CAST(RenderingServer::ViewportSDFOversize);
 VARIANT_ENUM_CAST(RenderingServer::ViewportSDFScale);
-VARIANT_ENUM_CAST(RenderingServer::ViewportScale3D);
 VARIANT_ENUM_CAST(RenderingServer::SkyMode);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentBG);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentAmbientSource);

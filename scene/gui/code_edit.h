@@ -240,6 +240,7 @@ private:
 	int line_spacing = 1;
 
 	/* Callbacks */
+	int lines_edited_changed = 0;
 	int lines_edited_from = -1;
 	int lines_edited_to = -1;
 

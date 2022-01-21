@@ -433,10 +433,12 @@ void ScriptTextEditor::_validate_script() {
 	int warning_nb = warnings.size();
 	warnings_panel->clear();
 
+	bool has_connections_table = false;
 	// Add missing connections.
 	if (GLOBAL_GET("debug/gdscript/warnings/enable").booleanize()) {
 		Node *base = get_tree()->get_edited_scene_root();
 		if (base && missing_connections.size() > 0) {
+			has_connections_table = true;
 			warnings_panel->push_table(1);
 			for (const Connection &connection : missing_connections) {
 				String base_path = base->get_name();
@@ -457,6 +459,10 @@ void ScriptTextEditor::_validate_script() {
 
 	code_editor->set_error_count(errors.size());
 	code_editor->set_warning_count(warning_nb);
+
+	if (has_connections_table) {
+		warnings_panel->add_newline();
+	}
 
 	// Add script warnings.
 	warnings_panel->push_table(3);
@@ -1701,7 +1707,6 @@ void ScriptTextEditor::_enable_code_editor() {
 	code_editor->connect("show_warnings_panel", callable_mp(this, &ScriptTextEditor::_show_warnings_panel));
 	code_editor->connect("validate_script", callable_mp(this, &ScriptTextEditor::_validate_script));
 	code_editor->connect("load_theme_settings", callable_mp(this, &ScriptTextEditor::_load_theme_settings));
-	code_editor->get_text_editor()->connect("breakpoint_toggled", callable_mp(this, &ScriptTextEditor::_breakpoint_toggled));
 	code_editor->get_text_editor()->connect("symbol_lookup", callable_mp(this, &ScriptTextEditor::_lookup_symbol));
 	code_editor->get_text_editor()->connect("symbol_validate", callable_mp(this, &ScriptTextEditor::_validate_symbol));
 	code_editor->get_text_editor()->connect("gutter_added", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
@@ -1841,6 +1846,7 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	code_editor->get_text_editor()->set_draw_breakpoints_gutter(true);
 	code_editor->get_text_editor()->set_draw_executing_lines_gutter(true);
+	code_editor->get_text_editor()->connect("breakpoint_toggled", callable_mp(this, &ScriptTextEditor::_breakpoint_toggled));
 
 	connection_gutter = 1;
 	code_editor->get_text_editor()->add_gutter(connection_gutter);

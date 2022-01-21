@@ -82,7 +82,7 @@ public:
 	void set_align(LineEdit::Align p_align);
 	LineEdit::Align get_align() const;
 
-	void set_editable(bool p_editable);
+	void set_editable(bool p_enabled);
 	bool is_editable() const;
 
 	void set_suffix(const String &p_suffix);
@@ -91,7 +91,7 @@ public:
 	void set_prefix(const String &p_prefix);
 	String get_prefix() const;
 
-	void set_update_on_text_changed(bool p_update);
+	void set_update_on_text_changed(bool p_enabled);
 	bool get_update_on_text_changed() const;
 
 	void apply();

@@ -31,7 +31,8 @@
 #include "scene_import_settings.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
-#include "editor/import/scene_importer_mesh_node_3d.h"
+#include "scene/3d/importer_mesh_instance_3d.h"
+#include "scene/resources/importer_mesh.h"
 #include "scene/resources/surface_tool.h"
 
 class SceneImportSettingsData : public Object {
@@ -240,7 +241,7 @@ void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 		p_node->set_meta("import_id", import_id);
 	}
 
-	EditorSceneImporterMeshNode3D *src_mesh_node = Object::cast_to<EditorSceneImporterMeshNode3D>(p_node);
+	ImporterMeshInstance3D *src_mesh_node = Object::cast_to<ImporterMeshInstance3D>(p_node);
 
 	if (src_mesh_node) {
 		MeshInstance3D *mesh_node = memnew(MeshInstance3D);
@@ -249,7 +250,7 @@ void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 		mesh_node->set_skin(src_mesh_node->get_skin());
 		mesh_node->set_skeleton_path(src_mesh_node->get_skeleton_path());
 		if (src_mesh_node->get_mesh().is_valid()) {
-			Ref<EditorSceneImporterMesh> editor_mesh = src_mesh_node->get_mesh();
+			Ref<ImporterMesh> editor_mesh = src_mesh_node->get_mesh();
 			mesh_node->set_mesh(editor_mesh->get_mesh());
 		}
 

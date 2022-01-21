@@ -1046,17 +1046,19 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			return err;
 		}
 	}
-	if (FileAccess::exists(ResourceUID::CACHE_FILE)) {
-		Vector<uint8_t> array = FileAccess::get_file_as_array(ResourceUID::CACHE_FILE);
-		err = p_func(p_udata, ResourceUID::CACHE_FILE, array, idx, total, enc_in_filters, enc_ex_filters, key);
+	String resource_cache_file = ResourceUID::get_cache_file();
+	if (FileAccess::exists(resource_cache_file)) {
+		Vector<uint8_t> array = FileAccess::get_file_as_array(resource_cache_file);
+		err = p_func(p_udata, resource_cache_file, array, idx, total, enc_in_filters, enc_ex_filters, key);
 		if (err != OK) {
 			return err;
 		}
 	}
 
-	if (FileAccess::exists(NativeExtension::EXTENSION_LIST_CONFIG_FILE)) {
-		Vector<uint8_t> array = FileAccess::get_file_as_array(NativeExtension::EXTENSION_LIST_CONFIG_FILE);
-		err = p_func(p_udata, NativeExtension::EXTENSION_LIST_CONFIG_FILE, array, idx, total, enc_in_filters, enc_ex_filters, key);
+	String extension_list_config_file = NativeExtension::get_extension_list_config_file();
+	if (FileAccess::exists(extension_list_config_file)) {
+		Vector<uint8_t> array = FileAccess::get_file_as_array(extension_list_config_file);
+		err = p_func(p_udata, extension_list_config_file, array, idx, total, enc_in_filters, enc_ex_filters, key);
 		if (err != OK) {
 			return err;
 		}

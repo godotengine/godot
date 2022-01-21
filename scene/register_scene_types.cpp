@@ -215,6 +215,7 @@
 #include "scene/3d/decal.h"
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/3d/gpu_particles_collision_3d.h"
+#include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/joint_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/lightmap_gi.h"
@@ -244,6 +245,7 @@
 #include "scene/3d/world_environment.h"
 #include "scene/3d/xr_nodes.h"
 #include "scene/resources/environment.h"
+#include "scene/resources/importer_mesh.h"
 #include "scene/resources/mesh_library.h"
 #endif
 
@@ -441,10 +443,11 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Skin);
 	GDREGISTER_VIRTUAL_CLASS(SkinReference);
 	GDREGISTER_CLASS(Skeleton3D);
+	GDREGISTER_CLASS(ImporterMesh);
+	GDREGISTER_CLASS(ImporterMeshInstance3D);
 	GDREGISTER_VIRTUAL_CLASS(VisualInstance3D);
 	GDREGISTER_VIRTUAL_CLASS(GeometryInstance3D);
 	GDREGISTER_CLASS(Camera3D);
-	GDREGISTER_CLASS(ClippedCamera3D);
 	GDREGISTER_CLASS(AudioListener3D);
 	GDREGISTER_CLASS(XRCamera3D);
 	GDREGISTER_CLASS(XRController3D);

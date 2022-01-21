@@ -189,6 +189,13 @@
 				This is helper function to make using [method Transform3D.looking_at] easier with bone poses.
 			</description>
 		</method>
+		<method name="is_bone_enabled" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="bone_idx" type="int" />
+			<description>
+				Returns whether the bone pose for the bone at [code]bone_idx[/code] is enabled.
+			</description>
+		</method>
 		<method name="is_bone_rest_disabled" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="bone_idx" type="int" />
@@ -282,6 +289,14 @@
 				Disables the rest pose for the bone at [code]bone_idx[/code] if [code]true[/code], enables the bone rest if [code]false[/code].
 			</description>
 		</method>
+		<method name="set_bone_enabled">
+			<return type="void" />
+			<argument index="0" name="bone_idx" type="int" />
+			<argument index="1" name="enabled" type="bool" default="true" />
+			<description>
+				Disables the pose for the bone at [code]bone_idx[/code] if [code]false[/code], enables the bone pose if [code]true[/code].
+			</description>
+		</method>
 		<method name="set_bone_global_pose_override">
 			<return type="void" />
 			<argument index="0" name="bone_idx" type="int" />
@@ -365,8 +380,15 @@
 	<members>
 		<member name="animate_physical_bones" type="bool" setter="set_animate_physical_bones" getter="get_animate_physical_bones" default="true">
 		</member>
+		<member name="show_rest_only" type="bool" setter="set_show_rest_only" getter="is_show_rest_only" default="false">
+		</member>
 	</members>
 	<signals>
+		<signal name="bone_enabled_changed">
+			<argument index="0" name="bone_idx" type="int" />
+			<description>
+			</description>
+		</signal>
 		<signal name="bone_pose_changed">
 			<argument index="0" name="bone_idx" type="int" />
 			<description>
@@ -374,6 +396,10 @@
 			</description>
 		</signal>
 		<signal name="pose_updated">
+			<description>
+			</description>
+		</signal>
+		<signal name="show_rest_only_changed">
 			<description>
 			</description>
 		</signal>

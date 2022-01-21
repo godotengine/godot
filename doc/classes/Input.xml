@@ -7,7 +7,7 @@
 		A singleton that deals with inputs. This includes key presses, mouse buttons and movement, joypads, and input actions. Actions and their events can be set in the [b]Input Map[/b] tab in the [b]Project &gt; Project Settings[/b], or with the [InputMap] class.
 	</description>
 	<tutorials>
-		<link title="Inputs tutorial index">https://docs.godotengine.org/en/latest/tutorials/inputs/index.html</link>
+		<link title="Inputs documentation index">https://docs.godotengine.org/en/latest/tutorials/inputs/index.html</link>
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
@@ -386,6 +386,7 @@
 		</constant>
 		<constant name="CURSOR_DRAG" value="6" enum="CursorShape">
 			Drag cursor. Usually displayed when dragging something.
+			[b]Note:[/b] Windows lacks a dragging cursor, so [constant CURSOR_DRAG] is the same as [constant CURSOR_MOVE] for this platform.
 		</constant>
 		<constant name="CURSOR_CAN_DROP" value="7" enum="CursorShape">
 			Can drop cursor. Usually displayed when dragging something to indicate that it can be dropped at the current position.

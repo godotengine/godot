@@ -15,7 +15,7 @@
 		In 2D, all visible objects are some form of canvas item. In order to be visible, a canvas item needs to be the child of a canvas attached to a viewport, or it needs to be the child of another canvas item that is eventually attached to the canvas.
 	</description>
 	<tutorials>
-		<link title="Optimization using Servers">https://docs.godotengine.org/en/latest/tutorials/optimization/using_servers.html</link>
+		<link title="Optimization using Servers">https://docs.godotengine.org/en/latest/tutorials/performance/using_servers.html</link>
 	</tutorials>
 	<methods>
 		<method name="bake_render_uv2">
@@ -932,7 +932,6 @@
 			<argument index="3" name="energy" type="float" default="1.0" />
 			<argument index="4" name="sky_contibution" type="float" default="0.0" />
 			<argument index="5" name="reflection_source" type="int" enum="RenderingServer.EnvironmentReflectionSource" default="0" />
-			<argument index="6" name="ao_color" type="Color" default="Color(0, 0, 0, 1)" />
 			<description>
 			</description>
 		</method>
@@ -2351,7 +2350,8 @@
 			<argument index="0" name="particles" type="RID" />
 			<argument index="1" name="material" type="RID" />
 			<description>
-				Sets the material for processing the particles. Note: this is not the material used to draw the materials. Equivalent to [member GPUParticles3D.process_material].
+				Sets the material for processing the particles.
+				[b]Note:[/b] This is not the material used to draw the materials. Equivalent to [member GPUParticles3D.process_material].
 			</description>
 		</method>
 		<method name="particles_set_randomness_ratio">
@@ -3102,7 +3102,7 @@
 		<method name="viewport_set_scale_3d">
 			<return type="void" />
 			<argument index="0" name="viewport" type="RID" />
-			<argument index="1" name="scale" type="int" enum="RenderingServer.ViewportScale3D" />
+			<argument index="1" name="scale" type="float" />
 			<description>
 				Sets the scale at which we render 3D contents.
 			</description>
@@ -3917,16 +3917,6 @@
 		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES" value="22" enum="ViewportDebugDraw">
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_OCCLUDERS" value="23" enum="ViewportDebugDraw">
-		</constant>
-		<constant name="VIEWPORT_SCALE_3D_DISABLED" value="0" enum="ViewportScale3D">
-		</constant>
-		<constant name="VIEWPORT_SCALE_3D_75_PERCENT" value="1" enum="ViewportScale3D">
-		</constant>
-		<constant name="VIEWPORT_SCALE_3D_50_PERCENT" value="2" enum="ViewportScale3D">
-		</constant>
-		<constant name="VIEWPORT_SCALE_3D_33_PERCENT" value="3" enum="ViewportScale3D">
-		</constant>
-		<constant name="VIEWPORT_SCALE_3D_25_PERCENT" value="4" enum="ViewportScale3D">
 		</constant>
 		<constant name="SKY_MODE_AUTOMATIC" value="0" enum="SkyMode">
 		</constant>

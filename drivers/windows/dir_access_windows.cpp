@@ -37,6 +37,7 @@
 
 #include <stdio.h>
 #include <wchar.h>
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 /*

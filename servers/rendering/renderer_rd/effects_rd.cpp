@@ -1400,6 +1400,7 @@ void EffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_dep
 		ssao.gather_push_constant.half_screen_pixel_size_x025[0] = ssao.gather_push_constant.half_screen_pixel_size[0] * 0.25;
 		ssao.gather_push_constant.half_screen_pixel_size_x025[1] = ssao.gather_push_constant.half_screen_pixel_size[1] * 0.25;
 
+		ssao.gather_push_constant.radius = p_settings.radius;
 		float radius_near_limit = (p_settings.radius * 1.2f);
 		if (p_settings.quality <= RS::ENV_SSAO_QUALITY_LOW) {
 			radius_near_limit *= 1.50f;
@@ -1407,12 +1408,8 @@ void EffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer, RID p_dep
 			if (p_settings.quality == RS::ENV_SSAO_QUALITY_VERY_LOW) {
 				ssao.gather_push_constant.radius *= 0.8f;
 			}
-			if (p_settings.half_size) {
-				ssao.gather_push_constant.radius *= 0.5f;
-			}
 		}
 		radius_near_limit /= tan_half_fov_y;
-		ssao.gather_push_constant.radius = p_settings.radius;
 		ssao.gather_push_constant.intensity = p_settings.intensity;
 		ssao.gather_push_constant.shadow_power = p_settings.power;
 		ssao.gather_push_constant.shadow_clamp = 0.98;

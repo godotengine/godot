@@ -121,7 +121,7 @@ public:
 					ret = STEP_EXIT_FUNCTION_BIT;
 					break; //return the yield
 				case VisualScriptYield::YIELD_FRAME:
-					state->connect_to_signal(tree, "idle_frame", Array());
+					state->connect_to_signal(tree, "process_frame", Array());
 					break;
 				case VisualScriptYield::YIELD_PHYSICS_FRAME:
 					state->connect_to_signal(tree, "physics_frame", Array());

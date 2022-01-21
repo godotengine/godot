@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  scene_importer_mesh_node_3d.h                                        */
+/*  importer_mesh_instance_3d.h                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,19 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_SCENE_IMPORTER_MESH_NODE_3D_H
-#define EDITOR_SCENE_IMPORTER_MESH_NODE_3D_H
+#ifndef SCENE_IMPORTER_MESH_INSTANCE_3D_H
+#define SCENE_IMPORTER_MESH_INSTANCE_3D_H
 
-#include "editor/import/scene_importer_mesh.h"
 #include "scene/3d/node_3d.h"
+#include "scene/resources/immediate_mesh.h"
 #include "scene/resources/skin.h"
 
-class EditorSceneImporterMesh;
+class ImporterMesh;
 
-class EditorSceneImporterMeshNode3D : public Node3D {
-	GDCLASS(EditorSceneImporterMeshNode3D, Node3D)
+class ImporterMeshInstance3D : public Node3D {
+	GDCLASS(ImporterMeshInstance3D, Node3D)
 
-	Ref<EditorSceneImporterMesh> mesh;
+	Ref<ImporterMesh> mesh;
 	Ref<Skin> skin;
 	NodePath skeleton_path;
 	Vector<Ref<Material>> surface_materials;
@@ -49,8 +49,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_mesh(const Ref<EditorSceneImporterMesh> &p_mesh);
-	Ref<EditorSceneImporterMesh> get_mesh() const;
+	void set_mesh(const Ref<ImporterMesh> &p_mesh);
+	Ref<ImporterMesh> get_mesh() const;
 
 	void set_skin(const Ref<Skin> &p_skin);
 	Ref<Skin> get_skin() const;

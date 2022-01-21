@@ -62,7 +62,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	static const char *EXTENSION_LIST_CONFIG_FILE;
+	static String get_extension_list_config_file();
 
 	Error open_library(const String &p_path, const String &p_entry_symbol);
 	void close_library();

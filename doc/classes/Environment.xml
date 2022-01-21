@@ -56,8 +56,6 @@
 		<member name="ambient_light_energy" type="float" setter="set_ambient_light_energy" getter="get_ambient_light_energy" default="1.0">
 			The ambient light's energy. The higher the value, the stronger the light.
 		</member>
-		<member name="ambient_light_occlusion_color" type="Color" setter="set_ao_color" getter="get_ao_color" default="Color(0, 0, 0, 1)">
-		</member>
 		<member name="ambient_light_sky_contribution" type="float" setter="set_ambient_light_sky_contribution" getter="get_ambient_light_sky_contribution" default="1.0">
 			Defines the amount of light that the sky brings on the scene. A value of 0 means that the sky's light emission has no effect on the scene illumination, thus all ambient illumination is provided by the ambient light. On the contrary, a value of 1 means that all the light that affects the scene is provided by the sky, thus the ambient light parameter has no effect on the scene.
 		</member>
@@ -204,10 +202,10 @@
 			If [code]true[/code], screen-space reflections are enabled. Screen-space reflections are more accurate than reflections from [VoxelGI]s or [ReflectionProbe]s, but are slower and can't reflect surfaces occluded by others.
 		</member>
 		<member name="ss_reflections_fade_in" type="float" setter="set_ssr_fade_in" getter="get_ssr_fade_in" default="0.15">
-			The fade-in distance for screen-space reflections. Affects the area from the reflected material to the screen-space reflection).
+			The fade-in distance for screen-space reflections. Affects the area from the reflected material to the screen-space reflection). Only positive values are valid (negative values will be clamped to [code]0.0[/code]).
 		</member>
 		<member name="ss_reflections_fade_out" type="float" setter="set_ssr_fade_out" getter="get_ssr_fade_out" default="2.0">
-			The fade-out distance for screen-space reflections. Affects the area from the screen-space reflection to the "global" reflection.
+			The fade-out distance for screen-space reflections. Affects the area from the screen-space reflection to the "global" reflection. Only positive values are valid (negative values will be clamped to [code]0.0[/code]).
 		</member>
 		<member name="ss_reflections_max_steps" type="int" setter="set_ssr_max_steps" getter="get_ssr_max_steps" default="64">
 			The maximum number of steps for screen-space reflections. Higher values are slower.

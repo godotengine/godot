@@ -329,11 +329,17 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 			}
 		} else {
 			// teleport to start
-			path.clear();
-			current = start_request;
-			playing = true;
-			play_start = true;
-			start_request = StringName(); //clear start request
+			if (p_state_machine->states.has(start_request)) {
+				path.clear();
+				current = start_request;
+				playing = true;
+				play_start = true;
+				start_request = StringName(); //clear start request
+			} else {
+				StringName node = start_request;
+				start_request = StringName(); //clear start request
+				ERR_FAIL_V_MSG(0, "No such node: '" + node + "'");
+			}
 		}
 	}
 

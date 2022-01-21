@@ -315,4 +315,4 @@ public:
 	~RendererCanvasCull();
 };
 
-#endif // VISUALSERVERCANVAS_H
+#endif // RENDERING_SERVER_CANVAS_CULL_H

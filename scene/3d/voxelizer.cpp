@@ -618,7 +618,6 @@ void Voxelizer::begin_bake(int p_subdiv, const AABB &p_bounds) {
 	bake_cells.resize(1);
 	material_cache.clear();
 
-	print_line("subdiv: " + itos(p_subdiv));
 	//find out the actual real bounds, power of 2, which gets the highest subdivision
 	po2_bounds = p_bounds;
 	int longest_axis = po2_bounds.get_longest_axis_index();
@@ -661,7 +660,7 @@ void Voxelizer::end_bake() {
 	_fixup_plot(0, 0);
 }
 
-//create the data for visual server
+//create the data for rendering server
 
 int Voxelizer::get_voxel_gi_octree_depth() const {
 	return cell_subdiv;

@@ -131,6 +131,7 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_set(const StringName &p_na
 		return false;
 	}
 
+	// ID and size related properties.
 	if (tiles.size() == 1) {
 		const Vector2i &coords = tiles.front()->get().tile;
 		const int &alternative = tiles.front()->get().alternative;
@@ -160,36 +161,6 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_set(const StringName &p_na
 				tile_set_atlas_source->move_tile_in_atlas(coords, TileSetSource::INVALID_ATLAS_COORDS, as_vector2i);
 				emit_signal(SNAME("changed"), "size_in_atlas");
 				return true;
-			} else if (p_name == "animation_columns") {
-				bool has_room_for_tile = tile_set_atlas_source->has_room_for_tile(coords, tile_set_atlas_source->get_tile_size_in_atlas(coords), p_value, tile_set_atlas_source->get_tile_animation_separation(coords), tile_set_atlas_source->get_tile_animation_frames_count(coords), coords);
-				ERR_FAIL_COND_V(!has_room_for_tile, false);
-				tile_set_atlas_source->set_tile_animation_columns(coords, p_value);
-				emit_signal(SNAME("changed"), "animation_columns");
-				return true;
-			} else if (p_name == "animation_separation") {
-				bool has_room_for_tile = tile_set_atlas_source->has_room_for_tile(coords, tile_set_atlas_source->get_tile_size_in_atlas(coords), tile_set_atlas_source->get_tile_animation_columns(coords), p_value, tile_set_atlas_source->get_tile_animation_frames_count(coords), coords);
-				ERR_FAIL_COND_V(!has_room_for_tile, false);
-				tile_set_atlas_source->set_tile_animation_separation(coords, p_value);
-				emit_signal(SNAME("changed"), "animation_separation");
-				return true;
-			} else if (p_name == "animation_speed") {
-				tile_set_atlas_source->set_tile_animation_speed(coords, p_value);
-				emit_signal(SNAME("changed"), "animation_speed");
-				return true;
-			} else if (p_name == "animation_frames_count") {
-				bool has_room_for_tile = tile_set_atlas_source->has_room_for_tile(coords, tile_set_atlas_source->get_tile_size_in_atlas(coords), tile_set_atlas_source->get_tile_animation_columns(coords), tile_set_atlas_source->get_tile_animation_separation(coords), p_value, coords);
-				ERR_FAIL_COND_V(!has_room_for_tile, false);
-				tile_set_atlas_source->set_tile_animation_frames_count(coords, p_value);
-				notify_property_list_changed();
-				emit_signal(SNAME("changed"), "animation_separation");
-				return true;
-			} else if (components.size() == 2 && components[0].begins_with("animation_frame_") && components[0].trim_prefix("animation_frame_").is_valid_int()) {
-				int frame = components[0].trim_prefix("animation_frame_").to_int();
-				ERR_FAIL_INDEX_V(frame, tile_set_atlas_source->get_tile_animation_frames_count(coords), false);
-				if (components[1] == "duration") {
-					tile_set_atlas_source->set_tile_animation_frame_duration(coords, frame, p_value);
-					return true;
-				}
 			}
 		} else if (alternative > 0) {
 			if (p_name == "alternative_id") {
@@ -213,6 +184,74 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_set(const StringName &p_na
 		}
 	}
 
+	// Animation.
+	// Check if all tiles have an alternative_id of 0.
+	bool all_alternatve_id_zero = true;
+	for (TileSelection tile : tiles) {
+		if (tile.alternative != 0) {
+			all_alternatve_id_zero = false;
+			break;
+		}
+	}
+
+	if (all_alternatve_id_zero) {
+		Vector<String> components = String(p_name).split("/", true, 2);
+		if (p_name == "animation_columns") {
+			for (TileSelection tile : tiles) {
+				bool has_room_for_tile = tile_set_atlas_source->has_room_for_tile(tile.tile, tile_set_atlas_source->get_tile_size_in_atlas(tile.tile), p_value, tile_set_atlas_source->get_tile_animation_separation(tile.tile), tile_set_atlas_source->get_tile_animation_frames_count(tile.tile), tile.tile);
+				if (!has_room_for_tile) {
+					ERR_PRINT("No room for tile");
+				} else {
+					tile_set_atlas_source->set_tile_animation_columns(tile.tile, p_value);
+				}
+			}
+			emit_signal(SNAME("changed"), "animation_columns");
+			return true;
+		} else if (p_name == "animation_separation") {
+			for (TileSelection tile : tiles) {
+				bool has_room_for_tile = tile_set_atlas_source->has_room_for_tile(tile.tile, tile_set_atlas_source->get_tile_size_in_atlas(tile.tile), tile_set_atlas_source->get_tile_animation_columns(tile.tile), p_value, tile_set_atlas_source->get_tile_animation_frames_count(tile.tile), tile.tile);
+				if (!has_room_for_tile) {
+					ERR_PRINT("No room for tile");
+				} else {
+					tile_set_atlas_source->set_tile_animation_separation(tile.tile, p_value);
+				}
+			}
+			emit_signal(SNAME("changed"), "animation_separation");
+			return true;
+		} else if (p_name == "animation_speed") {
+			for (TileSelection tile : tiles) {
+				tile_set_atlas_source->set_tile_animation_speed(tile.tile, p_value);
+			}
+			emit_signal(SNAME("changed"), "animation_speed");
+			return true;
+		} else if (p_name == "animation_frames_count") {
+			for (TileSelection tile : tiles) {
+				bool has_room_for_tile = tile_set_atlas_source->has_room_for_tile(tile.tile, tile_set_atlas_source->get_tile_size_in_atlas(tile.tile), tile_set_atlas_source->get_tile_animation_columns(tile.tile), tile_set_atlas_source->get_tile_animation_separation(tile.tile), p_value, tile.tile);
+				if (!has_room_for_tile) {
+					ERR_PRINT("No room for tile");
+				} else {
+					tile_set_atlas_source->set_tile_animation_frames_count(tile.tile, p_value);
+				}
+			}
+			notify_property_list_changed();
+			emit_signal(SNAME("changed"), "animation_separation");
+			return true;
+		} else if (components.size() == 2 && components[0].begins_with("animation_frame_") && components[0].trim_prefix("animation_frame_").is_valid_int()) {
+			for (TileSelection tile : tiles) {
+				int frame = components[0].trim_prefix("animation_frame_").to_int();
+				if (frame < 0 || frame >= tile_set_atlas_source->get_tile_animation_frames_count(tile.tile)) {
+					ERR_PRINT(vformat("No tile animation frame with index %d", frame));
+				} else {
+					if (components[1] == "duration") {
+						tile_set_atlas_source->set_tile_animation_frame_duration(tile.tile, frame, p_value);
+						return true;
+					}
+				}
+			}
+		}
+	}
+
+	// Other properties.
 	bool any_valid = false;
 	for (Set<TileSelection>::Element *E = tiles.front(); E; E = E->next()) {
 		const Vector2i &coords = E->get().tile;
@@ -238,6 +277,7 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_get(const StringName &p_na
 		return false;
 	}
 
+	// ID and size related properties.s
 	if (tiles.size() == 1) {
 		const Vector2i &coords = tiles.front()->get().tile;
 		const int &alternative = tiles.front()->get().alternative;
@@ -250,31 +290,48 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_get(const StringName &p_na
 			} else if (p_name == "size_in_atlas") {
 				r_ret = tile_set_atlas_source->get_tile_size_in_atlas(coords);
 				return true;
-			} else if (p_name == "animation_columns") {
-				r_ret = tile_set_atlas_source->get_tile_animation_columns(coords);
-				return true;
-			} else if (p_name == "animation_separation") {
-				r_ret = tile_set_atlas_source->get_tile_animation_separation(coords);
-				return true;
-			} else if (p_name == "animation_speed") {
-				r_ret = tile_set_atlas_source->get_tile_animation_speed(coords);
-				return true;
-			} else if (p_name == "animation_frames_count") {
-				r_ret = tile_set_atlas_source->get_tile_animation_frames_count(coords);
-				return true;
-			} else if (components.size() == 2 && components[0].begins_with("animation_frame_") && components[0].trim_prefix("animation_frame_").is_valid_int()) {
-				int frame = components[0].trim_prefix("animation_frame_").to_int();
-				if (components[1] == "duration") {
-					if (frame < 0 || frame >= tile_set_atlas_source->get_tile_animation_frames_count(coords)) {
-						return false;
-					}
-					r_ret = tile_set_atlas_source->get_tile_animation_frame_duration(coords, frame);
-					return true;
-				}
 			}
 		} else if (alternative > 0) {
 			if (p_name == "alternative_id") {
 				r_ret = alternative;
+				return true;
+			}
+		}
+	}
+
+	// Animation.
+	// Check if all tiles have an alternative_id of 0.
+	bool all_alternatve_id_zero = true;
+	for (TileSelection tile : tiles) {
+		if (tile.alternative != 0) {
+			all_alternatve_id_zero = false;
+			break;
+		}
+	}
+
+	if (all_alternatve_id_zero) {
+		const Vector2i &coords = tiles.front()->get().tile;
+
+		Vector<String> components = String(p_name).split("/", true, 2);
+		if (p_name == "animation_columns") {
+			r_ret = tile_set_atlas_source->get_tile_animation_columns(coords);
+			return true;
+		} else if (p_name == "animation_separation") {
+			r_ret = tile_set_atlas_source->get_tile_animation_separation(coords);
+			return true;
+		} else if (p_name == "animation_speed") {
+			r_ret = tile_set_atlas_source->get_tile_animation_speed(coords);
+			return true;
+		} else if (p_name == "animation_frames_count") {
+			r_ret = tile_set_atlas_source->get_tile_animation_frames_count(coords);
+			return true;
+		} else if (components.size() == 2 && components[0].begins_with("animation_frame_") && components[0].trim_prefix("animation_frame_").is_valid_int()) {
+			int frame = components[0].trim_prefix("animation_frame_").to_int();
+			if (components[1] == "duration") {
+				if (frame < 0 || frame >= tile_set_atlas_source->get_tile_animation_frames_count(coords)) {
+					return false;
+				}
+				r_ret = tile_set_atlas_source->get_tile_animation_frame_duration(coords, frame);
 				return true;
 			}
 		}
@@ -304,26 +361,39 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::_get_property_list(List<Pro
 		return;
 	}
 
+	// ID and size related properties.
 	if (tiles.size() == 1) {
 		if (tiles.front()->get().alternative == 0) {
 			p_list->push_back(PropertyInfo(Variant::VECTOR2I, "atlas_coords", PROPERTY_HINT_NONE, ""));
 			p_list->push_back(PropertyInfo(Variant::VECTOR2I, "size_in_atlas", PROPERTY_HINT_NONE, ""));
-
-			// Animation.
-			p_list->push_back(PropertyInfo(Variant::NIL, "Animation", PROPERTY_HINT_NONE, "animation_", PROPERTY_USAGE_GROUP));
-			p_list->push_back(PropertyInfo(Variant::INT, "animation_columns", PROPERTY_HINT_NONE, ""));
-			p_list->push_back(PropertyInfo(Variant::VECTOR2I, "animation_separation", PROPERTY_HINT_NONE, ""));
-			p_list->push_back(PropertyInfo(Variant::FLOAT, "animation_speed", PROPERTY_HINT_NONE, ""));
-			p_list->push_back(PropertyInfo(Variant::INT, "animation_frames_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, "Frames,animation_frame_"));
-			if (tile_set_atlas_source->get_tile_animation_frames_count(tiles.front()->get().tile) == 1) {
-				p_list->push_back(PropertyInfo(Variant::FLOAT, "animation_frame_0/duration", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY));
-			} else {
-				for (int i = 0; i < tile_set_atlas_source->get_tile_animation_frames_count(tiles.front()->get().tile); i++) {
-					p_list->push_back(PropertyInfo(Variant::FLOAT, vformat("animation_frame_%d/duration", i), PROPERTY_HINT_NONE, ""));
-				}
-			}
 		} else {
 			p_list->push_back(PropertyInfo(Variant::INT, "alternative_id", PROPERTY_HINT_NONE, ""));
+		}
+	}
+
+	// Animation.
+	// Check if all tiles have an alternative_id of 0.
+	bool all_alternatve_id_zero = true;
+	for (TileSelection tile : tiles) {
+		if (tile.alternative != 0) {
+			all_alternatve_id_zero = false;
+			break;
+		}
+	}
+
+	if (all_alternatve_id_zero) {
+		p_list->push_back(PropertyInfo(Variant::NIL, "Animation", PROPERTY_HINT_NONE, "animation_", PROPERTY_USAGE_GROUP));
+		p_list->push_back(PropertyInfo(Variant::INT, "animation_columns", PROPERTY_HINT_NONE, ""));
+		p_list->push_back(PropertyInfo(Variant::VECTOR2I, "animation_separation", PROPERTY_HINT_NONE, ""));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "animation_speed", PROPERTY_HINT_NONE, ""));
+		p_list->push_back(PropertyInfo(Variant::INT, "animation_frames_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, "Frames,animation_frame_"));
+		// Not optimal, but returns value for the first tile. This is similar to what MultiNodeEdit does.
+		if (tile_set_atlas_source->get_tile_animation_frames_count(tiles.front()->get().tile) == 1) {
+			p_list->push_back(PropertyInfo(Variant::FLOAT, "animation_frame_0/duration", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY));
+		} else {
+			for (int i = 0; i < tile_set_atlas_source->get_tile_animation_frames_count(tiles.front()->get().tile); i++) {
+				p_list->push_back(PropertyInfo(Variant::FLOAT, vformat("animation_frame_%d/duration", i), PROPERTY_HINT_NONE, ""));
+			}
 		}
 	}
 

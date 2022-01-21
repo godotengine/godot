@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#if TOOLS_ENABLED
 #include "editor_scene_importer_gltf.h"
 
 #include "gltf_document.h"
@@ -60,3 +61,5 @@ Ref<Animation> EditorSceneImporterGLTF::import_animation(const String &p_path,
 		int p_bake_fps) {
 	return Ref<Animation>();
 }
+
+#endif // TOOLS_ENABLED

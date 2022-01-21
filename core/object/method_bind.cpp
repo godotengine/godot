@@ -63,12 +63,15 @@ uint32_t MethodBind::get_hash() const {
 	return hash;
 }
 
-#ifdef DEBUG_METHODS_ENABLED
 PropertyInfo MethodBind::get_argument_info(int p_argument) const {
 	ERR_FAIL_INDEX_V(p_argument, get_argument_count(), PropertyInfo());
 
 	PropertyInfo info = _gen_argument_type_info(p_argument);
+#ifdef DEBUG_METHODS_ENABLED
 	info.name = p_argument < arg_names.size() ? String(arg_names[p_argument]) : String("arg" + itos(p_argument));
+#else
+	info.name = String("arg" + itos(p_argument));
+#endif
 	return info;
 }
 
@@ -76,7 +79,6 @@ PropertyInfo MethodBind::get_return_info() const {
 	return _gen_argument_type_info(-1);
 }
 
-#endif
 void MethodBind::_set_const(bool p_const) {
 	_const = p_const;
 }
@@ -109,7 +111,6 @@ void MethodBind::set_default_arguments(const Vector<Variant> &p_defargs) {
 	default_argument_count = default_arguments.size();
 }
 
-#ifdef DEBUG_METHODS_ENABLED
 void MethodBind::_generate_argument_types(int p_count) {
 	set_argument_count(p_count);
 
@@ -122,8 +123,6 @@ void MethodBind::_generate_argument_types(int p_count) {
 
 	argument_types = argt;
 }
-
-#endif
 
 MethodBind::MethodBind() {
 	static int last_id = 0;

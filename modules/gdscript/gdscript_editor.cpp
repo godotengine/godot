@@ -2222,8 +2222,11 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 						if (obj) {
 							List<String> options;
 							obj->get_argument_options(p_method, p_argidx, &options);
-							for (const String &F : options) {
-								ScriptCodeCompletionOption option(F, ScriptCodeCompletionOption::KIND_FUNCTION);
+							for (String &opt : options) {
+								if (opt.is_quoted()) {
+									opt = opt.unquote().quote(quote_style); // Handle user preference.
+								}
+								ScriptCodeCompletionOption option(opt, ScriptCodeCompletionOption::KIND_FUNCTION);
 								r_result.insert(option.display, option);
 							}
 						}
@@ -2643,23 +2646,26 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 			}
 		} break;
 		case GDScriptParser::COMPLETION_GET_NODE: {
+			// Handles the `$Node/Path` or `$"Some NodePath"` syntax specifically.
 			if (p_owner) {
 				List<String> opts;
 				p_owner->get_argument_options("get_node", 0, &opts);
 
 				for (const String &E : opts) {
+					r_forced = true;
 					String opt = E.strip_edges();
 					if (opt.is_quoted()) {
-						r_forced = true;
-						String idopt = opt.unquote();
-						if (idopt.replace("/", "_").is_valid_identifier()) {
-							ScriptCodeCompletionOption option(idopt, ScriptCodeCompletionOption::KIND_NODE_PATH);
-							options.insert(option.display, option);
-						} else {
-							ScriptCodeCompletionOption option(opt, ScriptCodeCompletionOption::KIND_NODE_PATH);
-							options.insert(option.display, option);
-						}
+						// Remove quotes so that we can handle user preferred quote style,
+						// or handle NodePaths which are valid identifiers and don't need quotes.
+						opt = opt.unquote();
 					}
+					// The path needs quotes if it's not a valid identifier (with an exception
+					// for "/" as path separator, which also doesn't require quotes).
+					if (!opt.replace("/", "_").is_valid_identifier()) {
+						opt = opt.quote(quote_style); // Handle user preference.
+					}
+					ScriptCodeCompletionOption option(opt, ScriptCodeCompletionOption::KIND_NODE_PATH);
+					options.insert(option.display, option);
 				}
 
 				// Get autoloads.

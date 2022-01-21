@@ -41,7 +41,7 @@ XRServer *XRServer::get_singleton() {
 
 void XRServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_world_scale"), &XRServer::get_world_scale);
-	ClassDB::bind_method(D_METHOD("set_world_scale"), &XRServer::set_world_scale);
+	ClassDB::bind_method(D_METHOD("set_world_scale", "scale"), &XRServer::set_world_scale);
 	ClassDB::bind_method(D_METHOD("get_reference_frame"), &XRServer::get_reference_frame);
 	ClassDB::bind_method(D_METHOD("center_on_hmd", "rotation_mode", "keep_height"), &XRServer::center_on_hmd);
 	ClassDB::bind_method(D_METHOD("get_hmd_transform"), &XRServer::get_hmd_transform);

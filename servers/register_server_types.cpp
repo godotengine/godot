@@ -122,8 +122,6 @@ void register_server_types() {
 	GDREGISTER_VIRTUAL_CLASS(RenderingServer);
 	GDREGISTER_CLASS(AudioServer);
 
-	TextServer::initialize_hex_code_box_fonts();
-
 	GDREGISTER_VIRTUAL_CLASS(PhysicsServer2D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsServer3D);
 	GDREGISTER_VIRTUAL_CLASS(NavigationServer2D);
@@ -210,12 +208,14 @@ void register_server_types() {
 
 	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectBodyState2D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectSpaceState2D);
+	GDREGISTER_CLASS(PhysicsTestMotionParameters2D);
 	GDREGISTER_CLASS(PhysicsTestMotionResult2D);
 	GDREGISTER_CLASS(PhysicsShapeQueryParameters2D);
 
 	GDREGISTER_CLASS(PhysicsShapeQueryParameters3D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectBodyState3D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectSpaceState3D);
+	GDREGISTER_CLASS(PhysicsTestMotionParameters3D);
 	GDREGISTER_CLASS(PhysicsTestMotionResult3D);
 
 	// Physics 2D
@@ -239,7 +239,6 @@ void unregister_server_types() {
 	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
 
 	memdelete(shader_types);
-	TextServer::finish_hex_code_box_fonts();
 }
 
 void register_server_singletons() {

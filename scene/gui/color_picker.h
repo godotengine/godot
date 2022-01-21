@@ -81,6 +81,7 @@ private:
 	Control *uv_edit = memnew(Control);
 	Control *w_edit = memnew(Control);
 	AspectRatioContainer *wheel_edit = memnew(AspectRatioContainer);
+	MarginContainer *wheel_margin = memnew(MarginContainer);
 	Ref<ShaderMaterial> wheel_mat;
 	Ref<ShaderMaterial> circle_mat;
 	Control *wheel = memnew(Control);

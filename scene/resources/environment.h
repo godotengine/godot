@@ -116,7 +116,6 @@ private:
 	float ambient_energy = 1.0;
 	float ambient_sky_contribution = 1.0;
 	ReflectionSource reflection_source = REFLECTION_SOURCE_BG;
-	Color ao_color;
 	void _update_ambient_light();
 
 	// Tonemap
@@ -250,8 +249,6 @@ public:
 	float get_ambient_light_sky_contribution() const;
 	void set_reflection_source(ReflectionSource p_source);
 	ReflectionSource get_reflection_source() const;
-	void set_ao_color(const Color &p_color);
-	Color get_ao_color() const;
 
 	// Tonemap
 	void set_tonemapper(ToneMapper p_tone_mapper);

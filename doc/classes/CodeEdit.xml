@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		CodeEdit is a specialised [TextEdit] designed for editing plain text code files. It contains a bunch of features commonly found in code editors such as line numbers, line folding, code completion, indent management and string / comment management.
-		[b]Note[/b]: By default [CodeEdit] always use left-to-right text direction to correctly display source code.
+		[b]Note:[/b] By default [CodeEdit] always use left-to-right text direction to correctly display source code.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -51,7 +51,7 @@
 			<argument index="5" name="value" type="Variant" default="0" />
 			<description>
 				Submits an item to the queue of potential candidates for the autocomplete menu. Call [method update_code_completion_options] to update the list.
-				[b]Note[/b]: This list will replace all current candidates.
+				[b]Note:[/b] This list will replace all current candidates.
 			</description>
 		</method>
 		<method name="add_comment_delimiter">
@@ -431,7 +431,7 @@
 			<argument index="0" name="force" type="bool" />
 			<description>
 				Submits all completion options added with [method add_code_completion_option]. Will try to force the autoccomplete menu to popup, if [code]force[/code] is [code]true[/code].
-				[b]Note[/b]: This will replace all current candidates.
+				[b]Note:[/b] This will replace all current candidates.
 			</description>
 		</method>
 	</methods>

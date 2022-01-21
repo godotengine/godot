@@ -37,7 +37,6 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "scene/2d/skeleton_2d.h"
 
 void AnimatedValuesBackup::update_skeletons() {
@@ -1493,18 +1492,12 @@ NodePath AnimationPlayer::get_root() const {
 }
 
 void AnimationPlayer::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-#ifdef TOOLS_ENABLED
-	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
-#else
-	const String quote_style = "\"";
-#endif
-
 	String pf = p_function;
 	if (p_idx == 0 && (p_function == "play" || p_function == "play_backwards" || p_function == "remove_animation" || p_function == "has_animation" || p_function == "queue")) {
 		List<StringName> al;
 		get_animation_list(&al);
 		for (const StringName &name : al) {
-			r_options->push_back(String(name).quote(quote_style));
+			r_options->push_back(String(name).quote());
 		}
 	}
 	Node::get_argument_options(p_function, p_idx, r_options);

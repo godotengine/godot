@@ -72,6 +72,7 @@ void TileSet::set_tile_shape(TileSet::TileShape p_shape) {
 
 	terrain_bits_meshes_dirty = true;
 	tile_meshes_dirty = true;
+	notify_property_list_changed();
 	emit_changed();
 }
 TileSet::TileShape TileSet::get_tile_shape() const {
@@ -2683,6 +2684,14 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "tile_proxies/source_level", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "tile_proxies/coords_level", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "tile_proxies/alternative_level", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+}
+
+void TileSet::_validate_property(PropertyInfo &property) const {
+	if (property.name == "tile_layout" && tile_shape == TILE_SHAPE_SQUARE) {
+		property.usage ^= PROPERTY_USAGE_READ_ONLY;
+	} else if (property.name == "tile_offset_axis" && tile_shape == TILE_SHAPE_SQUARE) {
+		property.usage ^= PROPERTY_USAGE_READ_ONLY;
+	}
 }
 
 void TileSet::_bind_methods() {

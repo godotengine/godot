@@ -32,13 +32,12 @@
 
 uint64_t RendererSceneEnvironmentRD::auto_exposure_counter = 2;
 
-void RendererSceneEnvironmentRD::set_ambient_light(const Color &p_color, RS::EnvironmentAmbientSource p_ambient, float p_energy, float p_sky_contribution, RS::EnvironmentReflectionSource p_reflection_source, const Color &p_ao_color) {
+void RendererSceneEnvironmentRD::set_ambient_light(const Color &p_color, RS::EnvironmentAmbientSource p_ambient, float p_energy, float p_sky_contribution, RS::EnvironmentReflectionSource p_reflection_source) {
 	ambient_light = p_color;
 	ambient_source = p_ambient;
 	ambient_light_energy = p_energy;
 	ambient_sky_contribution = p_sky_contribution;
 	reflection_source = p_reflection_source;
-	ao_color = p_ao_color;
 }
 
 void RendererSceneEnvironmentRD::set_tonemap(RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) {

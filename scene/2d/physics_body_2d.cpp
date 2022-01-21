@@ -54,13 +54,14 @@ PhysicsBody2D::~PhysicsBody2D() {
 	}
 }
 
-Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_motion, bool p_test_only, real_t p_margin) {
-	PhysicsServer2D::MotionResult result;
-
+Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_linear_velocity, bool p_test_only, real_t p_margin) {
 	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky.
 	double delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
 
-	if (move_and_collide(p_motion * delta, result, p_margin, p_test_only)) {
+	PhysicsServer2D::MotionParameters parameters(get_global_transform(), p_linear_velocity * delta, p_margin);
+
+	PhysicsServer2D::MotionResult result;
+	if (move_and_collide(parameters, result, p_test_only)) {
 		// Create a new instance when the cached reference is invalid or still in use in script.
 		if (motion_cache.is_null() || motion_cache->reference_get_count() > 1) {
 			motion_cache.instantiate();
@@ -74,18 +75,18 @@ Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_motion, bool p_t
 	return Ref<KinematicCollision2D>();
 }
 
-bool PhysicsBody2D::move_and_collide(const Vector2 &p_motion, PhysicsServer2D::MotionResult &r_result, real_t p_margin, bool p_test_only, bool p_cancel_sliding, bool p_collide_separation_ray, const Set<RID> &p_exclude) {
+bool PhysicsBody2D::move_and_collide(const PhysicsServer2D::MotionParameters &p_parameters, PhysicsServer2D::MotionResult &r_result, bool p_test_only, bool p_cancel_sliding) {
 	if (is_only_update_transform_changes_enabled()) {
 		ERR_PRINT("Move functions do not work together with 'sync to physics' option. Please read the documentation.");
 	}
-	Transform2D gt = get_global_transform();
-	bool colliding = PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_margin, &r_result, p_collide_separation_ray, p_exclude);
+
+	bool colliding = PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), p_parameters, &r_result);
 
 	// Restore direction of motion to be along original motion,
 	// in order to avoid sliding due to recovery,
 	// but only if collision depth is low enough to avoid tunneling.
 	if (p_cancel_sliding) {
-		real_t motion_length = p_motion.length();
+		real_t motion_length = p_parameters.motion.length();
 		real_t precision = 0.001;
 
 		if (colliding) {
@@ -93,7 +94,7 @@ bool PhysicsBody2D::move_and_collide(const Vector2 &p_motion, PhysicsServer2D::M
 			// so even in normal resting cases the depth can be a bit more than the margin.
 			precision += motion_length * (r_result.collision_unsafe_fraction - r_result.collision_safe_fraction);
 
-			if (r_result.collision_depth > (real_t)p_margin + precision) {
+			if (r_result.collision_depth > p_parameters.margin + precision) {
 				p_cancel_sliding = false;
 			}
 		}
@@ -102,7 +103,7 @@ bool PhysicsBody2D::move_and_collide(const Vector2 &p_motion, PhysicsServer2D::M
 			// When motion is null, recovery is the resulting motion.
 			Vector2 motion_normal;
 			if (motion_length > CMP_EPSILON) {
-				motion_normal = p_motion / motion_length;
+				motion_normal = p_parameters.motion / motion_length;
 			}
 
 			// Check depth of recovery.
@@ -111,15 +112,16 @@ bool PhysicsBody2D::move_and_collide(const Vector2 &p_motion, PhysicsServer2D::M
 			real_t recovery_length = recovery.length();
 			// Fixes cases where canceling slide causes the motion to go too deep into the ground,
 			// because we're only taking rest information into account and not general recovery.
-			if (recovery_length < (real_t)p_margin + precision) {
+			if (recovery_length < p_parameters.margin + precision) {
 				// Apply adjustment to motion.
 				r_result.travel = motion_normal * projected_length;
-				r_result.remainder = p_motion - r_result.travel;
+				r_result.remainder = p_parameters.motion - r_result.travel;
 			}
 		}
 	}
 
 	if (!p_test_only) {
+		Transform2D gt = p_parameters.from;
 		gt.elements[2] += r_result.travel;
 		set_global_transform(gt);
 	}
@@ -127,7 +129,7 @@ bool PhysicsBody2D::move_and_collide(const Vector2 &p_motion, PhysicsServer2D::M
 	return colliding;
 }
 
-bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_motion, const Ref<KinematicCollision2D> &r_collision, real_t p_margin) {
+bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_linear_velocity, const Ref<KinematicCollision2D> &r_collision, real_t p_margin) {
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
 	PhysicsServer2D::MotionResult *r = nullptr;
@@ -139,7 +141,9 @@ bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_motion
 	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky.
 	double delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
 
-	return PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), p_from, p_motion * delta, p_margin, r);
+	PhysicsServer2D::MotionParameters parameters(p_from, p_linear_velocity * delta, p_margin);
+
+	return PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), parameters, r);
 }
 
 TypedArray<PhysicsBody2D> PhysicsBody2D::get_collision_exceptions() {
@@ -1083,10 +1087,14 @@ bool CharacterBody2D::move_and_slide() {
 	on_wall = false;
 
 	if (!current_platform_velocity.is_equal_approx(Vector2())) {
+		PhysicsServer2D::MotionParameters parameters(get_global_transform(), current_platform_velocity * delta, margin);
+		parameters.exclude_bodies.insert(platform_rid);
+		if (platform_object_id.is_valid()) {
+			parameters.exclude_objects.insert(platform_object_id);
+		}
+
 		PhysicsServer2D::MotionResult floor_result;
-		Set<RID> exclude;
-		exclude.insert(platform_rid);
-		if (move_and_collide(current_platform_velocity * delta, floor_result, margin, false, false, false, exclude)) {
+		if (move_and_collide(parameters, floor_result, false, false)) {
 			motion_results.push_back(floor_result);
 			_set_collision_direction(floor_result);
 		}
@@ -1120,9 +1128,11 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 
 	Vector2 prev_floor_normal = floor_normal;
 	RID prev_platform_rid = platform_rid;
+	ObjectID prev_platform_object_id = platform_object_id;
 	int prev_platform_layer = platform_layer;
 
 	platform_rid = RID();
+	platform_object_id = ObjectID();
 	floor_normal = Vector2();
 	platform_velocity = Vector2();
 
@@ -1138,11 +1148,13 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 	Vector2 last_travel;
 
 	for (int iteration = 0; iteration < max_slides; ++iteration) {
+		PhysicsServer2D::MotionParameters parameters(get_global_transform(), motion, margin);
+
+		Vector2 prev_position = parameters.from.elements[2];
+
 		PhysicsServer2D::MotionResult result;
+		bool collided = move_and_collide(parameters, result, false, !sliding_enabled);
 
-		Vector2 prev_position = get_global_transform().elements[2];
-
-		bool collided = move_and_collide(motion, result, margin, false, !sliding_enabled);
 		last_motion = result.travel;
 
 		if (collided) {
@@ -1192,6 +1204,7 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 					}
 					on_floor = true;
 					platform_rid = prev_platform_rid;
+					platform_object_id = prev_platform_object_id;
 					platform_layer = prev_platform_layer;
 					platform_velocity = p_prev_platform_velocity;
 					floor_normal = prev_floor_normal;
@@ -1278,14 +1291,17 @@ void CharacterBody2D::_move_and_slide_free(double p_delta) {
 	Vector2 motion = motion_velocity * p_delta;
 
 	platform_rid = RID();
+	platform_object_id = ObjectID();
 	floor_normal = Vector2();
 	platform_velocity = Vector2();
 
 	bool first_slide = true;
 	for (int iteration = 0; iteration < max_slides; ++iteration) {
-		PhysicsServer2D::MotionResult result;
+		PhysicsServer2D::MotionParameters parameters(get_global_transform(), motion, margin);
 
-		bool collided = move_and_collide(motion, result, margin, false, false);
+		PhysicsServer2D::MotionResult result;
+		bool collided = move_and_collide(parameters, result, false, false);
+
 		last_motion = result.travel;
 
 		if (collided) {
@@ -1327,10 +1343,11 @@ void CharacterBody2D::_snap_on_floor(bool was_on_floor, bool vel_dir_facing_up) 
 	// Snap by at least collision margin to keep floor state consistent.
 	real_t length = MAX(floor_snap_length, margin);
 
-	Transform2D gt = get_global_transform();
+	PhysicsServer2D::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
+	parameters.collide_separation_ray = true;
+
 	PhysicsServer2D::MotionResult result;
-	if (move_and_collide(-up_direction * length, result, margin, true, false, true)) {
-		bool apply = true;
+	if (move_and_collide(parameters, result, true, false)) {
 		if (result.get_angle(up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
 			on_floor = true;
 			floor_normal = result.collision_normal;
@@ -1345,13 +1362,9 @@ void CharacterBody2D::_snap_on_floor(bool was_on_floor, bool vel_dir_facing_up) 
 					result.travel = Vector2();
 				}
 			}
-		} else {
-			apply = false;
-		}
 
-		if (apply) {
-			gt.elements[2] += result.travel;
-			set_global_transform(gt);
+			parameters.from.elements[2] += result.travel;
+			set_global_transform(parameters.from);
 		}
 	}
 }
@@ -1364,8 +1377,11 @@ bool CharacterBody2D::_on_floor_if_snapped(bool was_on_floor, bool vel_dir_facin
 	// Snap by at least collision margin to keep floor state consistent.
 	real_t length = MAX(floor_snap_length, margin);
 
+	PhysicsServer2D::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
+	parameters.collide_separation_ray = true;
+
 	PhysicsServer2D::MotionResult result;
-	if (move_and_collide(-up_direction * length, result, margin, true, false, true)) {
+	if (move_and_collide(parameters, result, true, false)) {
 		if (result.get_angle(up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
 			return true;
 		}
@@ -1393,6 +1409,7 @@ void CharacterBody2D::_set_collision_direction(const PhysicsServer2D::MotionResu
 
 void CharacterBody2D::_set_platform_data(const PhysicsServer2D::MotionResult &p_result) {
 	platform_rid = p_result.collider;
+	platform_object_id = p_result.collider_id;
 	platform_velocity = p_result.collider_velocity;
 	platform_layer = PhysicsServer2D::get_singleton()->body_get_collision_layer(platform_rid);
 }
@@ -1611,6 +1628,7 @@ void CharacterBody2D::_notification(int p_what) {
 			// Reset move_and_slide() data.
 			on_floor = false;
 			platform_rid = RID();
+			platform_object_id = ObjectID();
 			on_ceiling = false;
 			on_wall = false;
 			motion_results.clear();
@@ -1806,16 +1824,4 @@ void KinematicCollision2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collider_shape"), &KinematicCollision2D::get_collider_shape);
 	ClassDB::bind_method(D_METHOD("get_collider_shape_index"), &KinematicCollision2D::get_collider_shape_index);
 	ClassDB::bind_method(D_METHOD("get_collider_velocity"), &KinematicCollision2D::get_collider_velocity);
-
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "", "get_position");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "normal"), "", "get_normal");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "travel"), "", "get_travel");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "remainder"), "", "get_remainder");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "local_shape"), "", "get_local_shape");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "collider"), "", "get_collider");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_id"), "", "get_collider_id");
-	ADD_PROPERTY(PropertyInfo(Variant::RID, "collider_rid"), "", "get_collider_rid");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "collider_shape"), "", "get_collider_shape");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_shape_index"), "", "get_collider_shape_index");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "collider_velocity"), "", "get_collider_velocity");
 }

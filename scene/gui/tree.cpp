@@ -41,10 +41,6 @@
 
 #include "box_container.h"
 
-#ifdef TOOLS_ENABLED
-#include "editor/editor_scale.h"
-#endif
-
 #include <limits.h>
 
 Size2 TreeItem::Cell::get_icon_size() const {
@@ -1377,6 +1373,8 @@ void Tree::update_cache() {
 	cache.title_button_hover = get_theme_stylebox(SNAME("title_button_hover"));
 	cache.title_button_color = get_theme_color(SNAME("title_button_color"));
 
+	cache.base_scale = get_theme_default_base_scale();
+
 	v_scroll->set_custom_step(cache.font->get_height(cache.font_size));
 }
 
@@ -2046,15 +2044,9 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						root_pos -= Point2i(cache.arrow->get_width(), 0);
 					}
 
-					float line_width = cache.relationship_line_width;
-					float parent_line_width = cache.parent_hl_line_width;
-					float children_line_width = cache.children_hl_line_width;
-
-#ifdef TOOLS_ENABLED
-					line_width *= Math::round(EDSCALE);
-					parent_line_width *= Math::round(EDSCALE);
-					children_line_width *= Math::round(EDSCALE);
-#endif
+					float line_width = cache.relationship_line_width * Math::round(cache.base_scale);
+					float parent_line_width = cache.parent_hl_line_width * Math::round(cache.base_scale);
+					float children_line_width = cache.children_hl_line_width * Math::round(cache.base_scale);
 
 					Point2i parent_pos = Point2i(parent_ofs - cache.arrow->get_width() / 2, p_pos.y + label_h / 2 + cache.arrow->get_height() / 2) - cache.offset + p_draw_ofs;
 

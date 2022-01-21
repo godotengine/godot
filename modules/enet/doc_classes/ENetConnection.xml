@@ -51,7 +51,7 @@
 			<argument index="3" name="data" type="int" default="0" />
 			<description>
 				Initiates a connection to a foreign [code]address[/code] using the specified [code]port[/code] and allocting the requested [code]channels[/code]. Optional [code]data[/code] can be passed during connection in the form of a 32 bit integer.
-				Note: You must call either [method create_host] or [method create_host_bound] before calling this method.
+				[b]Note:[/b] You must call either [method create_host] or [method create_host_bound] before calling this method.
 			</description>
 		</method>
 		<method name="create_host">
@@ -121,7 +121,7 @@
 			<return type="Array" />
 			<description>
 				Returns the list of peers associated with this host.
-				Note: This list might include some peers that are not fully connected or are still being disconnected.
+				[b]Note:[/b] This list might include some peers that are not fully connected or are still being disconnected.
 			</description>
 		</method>
 		<method name="pop_statistic">
@@ -136,7 +136,7 @@
 			<argument index="0" name="refuse" type="bool" />
 			<description>
 				Configures the DTLS server to automatically drop new connections.
-				Note: This method is only relevant after calling [method dtls_server_setup].
+				[b]Note:[/b] This method is only relevant after calling [method dtls_server_setup].
 			</description>
 		</method>
 		<method name="service">

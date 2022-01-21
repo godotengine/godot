@@ -92,6 +92,7 @@ class Node3D : public Node {
 		Vector<Ref<Node3DGizmo>> gizmos;
 		bool gizmos_disabled = false;
 		bool gizmos_dirty = false;
+		bool transform_gizmo_visible = true;
 #endif
 
 	} data;
@@ -145,6 +146,8 @@ public:
 #ifdef TOOLS_ENABLED
 	virtual Transform3D get_global_gizmo_transform() const;
 	virtual Transform3D get_local_gizmo_transform() const;
+	virtual void set_transform_gizmo_visible(bool p_enabled) { data.transform_gizmo_visible = p_enabled; };
+	virtual bool is_transform_gizmo_visible() const { return data.transform_gizmo_visible; };
 #endif
 
 	void set_as_top_level(bool p_enabled);
@@ -155,6 +158,7 @@ public:
 
 	void set_disable_gizmos(bool p_enabled);
 	void update_gizmos();
+	void set_subgizmo_selection(Ref<Node3DGizmo> p_gizmo, int p_id, Transform3D p_transform = Transform3D());
 	void clear_subgizmo_selection();
 	Vector<Ref<Node3DGizmo>> get_gizmos() const;
 	Array get_gizmos_bind() const;

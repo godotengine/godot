@@ -137,6 +137,8 @@ private:
 	void _make_dirty();
 	bool dirty = false;
 
+	bool show_rest_only = false;
+
 	uint64_t version = 1;
 
 	void _update_process_order();
@@ -197,6 +199,9 @@ public:
 
 	void set_bone_enabled(int p_bone, bool p_enabled);
 	bool is_bone_enabled(int p_bone) const;
+
+	void set_show_rest_only(bool p_enabled);
+	bool is_show_rest_only() const;
 	void clear_bones();
 
 	// posing api
@@ -219,6 +224,7 @@ public:
 
 	Ref<SkinReference> register_skin(const Ref<Skin> &p_skin);
 
+	void force_update_all_dirty_bones();
 	void force_update_all_bone_transforms();
 	void force_update_bone_children_transforms(int bone_idx);
 
@@ -244,7 +250,7 @@ public:
 
 	// Physical bone API
 
-	void set_animate_physical_bones(bool p_animate);
+	void set_animate_physical_bones(bool p_enabled);
 	bool get_animate_physical_bones() const;
 
 	void bind_physical_bone_to_bone(int p_bone, PhysicalBone3D *p_physical_bone);

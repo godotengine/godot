@@ -121,6 +121,7 @@ namespace GodotTools.IdeMessaging
             this.messageHandler = messageHandler;
             this.logger = logger;
 
+            // TODO: Need to fetch the project data dir name from ProjectSettings instead of defaulting to ".godot"
             string projectMetadataDir = Path.Combine(godotProjectDir, ".godot", "mono", "metadata");
 
             MetaFilePath = Path.Combine(projectMetadataDir, GodotIdeMetadata.DefaultFileName);

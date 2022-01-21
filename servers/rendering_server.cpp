@@ -934,7 +934,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 				}
 			}
 
-			ERR_FAIL_COND_V((bsformat) != (format & (RS::ARRAY_FORMAT_INDEX - 1)), ERR_INVALID_PARAMETER);
+			ERR_FAIL_COND_V_MSG((bsformat & RS::ARRAY_FORMAT_BLEND_SHAPE_MASK) != (format & RS::ARRAY_FORMAT_BLEND_SHAPE_MASK), ERR_INVALID_PARAMETER, "Blend shape format must match the main array format for Vertex, Normal and Tangent arrays.");
 		}
 	}
 
@@ -2269,12 +2269,6 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_OCCLUDERS);
 
-	BIND_ENUM_CONSTANT(VIEWPORT_SCALE_3D_DISABLED);
-	BIND_ENUM_CONSTANT(VIEWPORT_SCALE_3D_75_PERCENT);
-	BIND_ENUM_CONSTANT(VIEWPORT_SCALE_3D_50_PERCENT);
-	BIND_ENUM_CONSTANT(VIEWPORT_SCALE_3D_33_PERCENT);
-	BIND_ENUM_CONSTANT(VIEWPORT_SCALE_3D_25_PERCENT);
-
 	/* SKY API */
 
 	ClassDB::bind_method(D_METHOD("sky_create"), &RenderingServer::sky_create);
@@ -2298,7 +2292,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("environment_set_bg_color", "env", "color"), &RenderingServer::environment_set_bg_color);
 	ClassDB::bind_method(D_METHOD("environment_set_bg_energy", "env", "energy"), &RenderingServer::environment_set_bg_energy);
 	ClassDB::bind_method(D_METHOD("environment_set_canvas_max_layer", "env", "max_layer"), &RenderingServer::environment_set_canvas_max_layer);
-	ClassDB::bind_method(D_METHOD("environment_set_ambient_light", "env", "color", "ambient", "energy", "sky_contibution", "reflection_source", "ao_color"), &RenderingServer::environment_set_ambient_light, DEFVAL(RS::ENV_AMBIENT_SOURCE_BG), DEFVAL(1.0), DEFVAL(0.0), DEFVAL(RS::ENV_REFLECTION_SOURCE_BG), DEFVAL(Color()));
+	ClassDB::bind_method(D_METHOD("environment_set_ambient_light", "env", "color", "ambient", "energy", "sky_contibution", "reflection_source"), &RenderingServer::environment_set_ambient_light, DEFVAL(RS::ENV_AMBIENT_SOURCE_BG), DEFVAL(1.0), DEFVAL(0.0), DEFVAL(RS::ENV_REFLECTION_SOURCE_BG));
 	ClassDB::bind_method(D_METHOD("environment_set_glow", "env", "enable", "levels", "intensity", "strength", "mix", "bloom_threshold", "blend_mode", "hdr_bleed_threshold", "hdr_bleed_scale", "hdr_luminance_cap"), &RenderingServer::environment_set_glow);
 	ClassDB::bind_method(D_METHOD("environment_set_tonemap", "env", "tone_mapper", "exposure", "white", "auto_exposure", "min_luminance", "max_luminance", "auto_exp_speed", "auto_exp_grey"), &RenderingServer::environment_set_tonemap);
 	ClassDB::bind_method(D_METHOD("environment_set_adjustment", "env", "enable", "brightness", "contrast", "saturation", "use_1d_color_correction", "color_correction"), &RenderingServer::environment_set_adjustment);
@@ -2817,11 +2811,11 @@ RenderingServer::RenderingServer() {
 					"rendering/vulkan/rendering/back_end",
 					PROPERTY_HINT_ENUM, "Forward Clustered (Supports Desktop Only),Forward Mobile (Supports Desktop and Mobile)"));
 
-	GLOBAL_DEF("rendering/3d/viewport/scale", 0);
+	GLOBAL_DEF("rendering/3d/viewport/scale", 1.0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/3d/viewport/scale",
-			PropertyInfo(Variant::INT,
+			PropertyInfo(Variant::FLOAT,
 					"rendering/3d/viewport/scale",
-					PROPERTY_HINT_ENUM, "Disabled,75%,50%,33%,25%"));
+					PROPERTY_HINT_RANGE, "0.25,2.0,0.01"));
 
 	GLOBAL_DEF("rendering/shader_compiler/shader_cache/enabled", true);
 	GLOBAL_DEF("rendering/shader_compiler/shader_cache/compress", true);

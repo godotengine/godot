@@ -29,6 +29,11 @@
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" override="true" enum="Control.MouseFilter" default="1" />
 	</members>
 	<signals>
+		<signal name="pre_sort_children">
+			<description>
+				Emitted when children are going to be sorted.
+			</description>
+		</signal>
 		<signal name="sort_children">
 			<description>
 				Emitted when sorting the children is needed.
@@ -36,7 +41,10 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="NOTIFICATION_SORT_CHILDREN" value="50">
+		<constant name="NOTIFICATION_PRE_SORT_CHILDREN" value="50">
+			Notification just before children are going to be sorted, in case there's something to process beforehand.
+		</constant>
+		<constant name="NOTIFICATION_SORT_CHILDREN" value="51">
 			Notification for when sorting the children, it must be obeyed immediately.
 		</constant>
 	</constants>

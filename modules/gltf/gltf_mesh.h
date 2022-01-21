@@ -33,22 +33,23 @@
 
 #include "core/io/resource.h"
 #include "editor/import/resource_importer_scene.h"
-#include "editor/import/scene_importer_mesh.h"
+#include "scene/3d/importer_mesh_instance_3d.h"
+#include "scene/resources/importer_mesh.h"
 #include "scene/resources/mesh.h"
 
 class GLTFMesh : public Resource {
 	GDCLASS(GLTFMesh, Resource);
 
 private:
-	Ref<EditorSceneImporterMesh> mesh;
+	Ref<ImporterMesh> mesh;
 	Vector<float> blend_weights;
 
 protected:
 	static void _bind_methods();
 
 public:
-	Ref<EditorSceneImporterMesh> get_mesh();
-	void set_mesh(Ref<EditorSceneImporterMesh> p_mesh);
+	Ref<ImporterMesh> get_mesh();
+	void set_mesh(Ref<ImporterMesh> p_mesh);
 	Vector<float> get_blend_weights();
 	void set_blend_weights(Vector<float> p_blend_weights);
 };

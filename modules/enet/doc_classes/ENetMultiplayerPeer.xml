@@ -18,7 +18,7 @@
 			<argument index="1" name="host" type="ENetConnection" />
 			<description>
 				Add a new remote peer with the given [code]peer_id[/code] connected to the given [code]host[/code].
-				Note: The [code]host[/code] must have exactly one peer in the [constant ENetPacketPeer.STATE_CONNECTED] state.
+				[b]Note:[/b] The [code]host[/code] must have exactly one peer in the [constant ENetPacketPeer.STATE_CONNECTED] state.
 			</description>
 		</method>
 		<method name="close_connection">

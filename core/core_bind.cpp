@@ -1771,6 +1771,7 @@ void Thread::_start_func(void *ud) {
 
 	Object *target_instance = t->target_callable.get_object();
 	if (!target_instance) {
+		t->running.clear();
 		ERR_FAIL_MSG(vformat("Could not call function '%s' on previously freed instance to start thread %s.", t->target_callable.get_method(), t->get_id()));
 	}
 
@@ -1813,19 +1814,22 @@ void Thread::_start_func(void *ud) {
 
 	t->target_callable.call(arg, argc, t->ret, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
+		t->running.clear();
 		ERR_FAIL_MSG("Could not call function '" + t->target_callable.get_method().operator String() + "' to start thread " + t->get_id() + ": " + Variant::get_callable_error_text(t->target_callable, arg, argc, ce) + ".");
 	}
+
+	t->running.clear();
 }
 
 Error Thread::start(const Callable &p_callable, const Variant &p_userdata, Priority p_priority) {
-	ERR_FAIL_COND_V_MSG(active.is_set(), ERR_ALREADY_IN_USE, "Thread already started.");
+	ERR_FAIL_COND_V_MSG(is_started(), ERR_ALREADY_IN_USE, "Thread already started.");
 	ERR_FAIL_COND_V(p_callable.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_INDEX_V(p_priority, PRIORITY_MAX, ERR_INVALID_PARAMETER);
 
 	ret = Variant();
 	target_callable = p_callable;
 	userdata = p_userdata;
-	active.set();
+	running.set();
 
 	Ref<Thread> *ud = memnew(Ref<Thread>(this));
 
@@ -1840,15 +1844,18 @@ String Thread::get_id() const {
 	return itos(thread.get_id());
 }
 
-bool Thread::is_active() const {
-	return active.is_set();
+bool Thread::is_started() const {
+	return thread.is_started();
+}
+
+bool Thread::is_alive() const {
+	return running.is_set();
 }
 
 Variant Thread::wait_to_finish() {
-	ERR_FAIL_COND_V_MSG(!active.is_set(), Variant(), "Thread must be active to wait for its completion.");
+	ERR_FAIL_COND_V_MSG(!is_started(), Variant(), "Thread must have been started to wait for its completion.");
 	thread.wait_to_finish();
 	Variant r = ret;
-	active.clear();
 	target_callable = Callable();
 	userdata = Variant();
 
@@ -1858,7 +1865,8 @@ Variant Thread::wait_to_finish() {
 void Thread::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start", "callable", "userdata", "priority"), &Thread::start, DEFVAL(Variant()), DEFVAL(PRIORITY_NORMAL));
 	ClassDB::bind_method(D_METHOD("get_id"), &Thread::get_id);
-	ClassDB::bind_method(D_METHOD("is_active"), &Thread::is_active);
+	ClassDB::bind_method(D_METHOD("is_started"), &Thread::is_started);
+	ClassDB::bind_method(D_METHOD("is_alive"), &Thread::is_alive);
 	ClassDB::bind_method(D_METHOD("wait_to_finish"), &Thread::wait_to_finish);
 
 	BIND_ENUM_CONSTANT(PRIORITY_LOW);

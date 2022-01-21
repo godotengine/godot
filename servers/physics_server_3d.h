@@ -203,6 +203,7 @@ public:
 	virtual ~RenderingServerHandler() {}
 };
 
+class PhysicsTestMotionParameters3D;
 class PhysicsTestMotionResult3D;
 
 class PhysicsServer3D : public Object {
@@ -210,7 +211,7 @@ class PhysicsServer3D : public Object {
 
 	static PhysicsServer3D *singleton;
 
-	virtual bool _body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin = 0.001, const Ref<PhysicsTestMotionResult3D> &p_result = Ref<PhysicsTestMotionResult3D>(), bool p_collide_separation_ray = false, const Vector<RID> &p_exclude = Vector<RID>(), int p_max_collisions = 1);
+	virtual bool _body_test_motion(RID p_body, const Ref<PhysicsTestMotionParameters3D> &p_parameters, const Ref<PhysicsTestMotionResult3D> &p_result = Ref<PhysicsTestMotionResult3D>());
 
 protected:
 	static void _bind_methods();
@@ -483,6 +484,23 @@ public:
 	// this function only works on physics process, errors and returns null otherwise
 	virtual PhysicsDirectBodyState3D *body_get_direct_state(RID p_body) = 0;
 
+	struct MotionParameters {
+		Transform3D from;
+		Vector3 motion;
+		real_t margin = 0.001;
+		int max_collisions = 1;
+		bool collide_separation_ray = false;
+		Set<RID> exclude_bodies;
+		Set<ObjectID> exclude_objects;
+
+		MotionParameters() {}
+
+		MotionParameters(const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin = 0.001) :
+				from(p_from),
+				motion(p_motion),
+				margin(p_margin) {}
+	};
+
 	struct MotionCollision {
 		Vector3 position;
 		Vector3 normal;
@@ -501,15 +519,15 @@ public:
 	struct MotionResult {
 		Vector3 travel;
 		Vector3 remainder;
-		real_t safe_fraction = 0.0;
-		real_t unsafe_fraction = 0.0;
+		real_t collision_safe_fraction = 0.0;
+		real_t collision_unsafe_fraction = 0.0;
 
 		static const int MAX_COLLISIONS = 32;
 		MotionCollision collisions[MAX_COLLISIONS];
 		int collision_count = 0;
 	};
 
-	virtual bool body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, real_t p_margin = 0.001, MotionResult *r_result = nullptr, int p_max_collisions = 1, bool p_collide_separation_ray = false, const Set<RID> &p_exclude = Set<RID>()) = 0;
+	virtual bool body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result = nullptr) = 0;
 
 	/* SOFT BODY */
 
@@ -760,11 +778,43 @@ public:
 	~PhysicsServer3D();
 };
 
+class PhysicsTestMotionParameters3D : public RefCounted {
+	GDCLASS(PhysicsTestMotionParameters3D, RefCounted);
+
+	PhysicsServer3D::MotionParameters parameters;
+
+protected:
+	static void _bind_methods();
+
+public:
+	const PhysicsServer3D::MotionParameters &get_parameters() const { return parameters; }
+
+	const Transform3D &get_from() const { return parameters.from; }
+	void set_from(const Transform3D &p_from) { parameters.from = p_from; }
+
+	const Vector3 &get_motion() const { return parameters.motion; }
+	void set_motion(const Vector3 &p_motion) { parameters.motion = p_motion; }
+
+	real_t get_margin() const { return parameters.margin; }
+	void set_margin(real_t p_margin) { parameters.margin = p_margin; }
+
+	int get_max_collisions() const { return parameters.max_collisions; }
+	void set_max_collisions(int p_max_collisions) { parameters.max_collisions = p_max_collisions; }
+
+	bool is_collide_separation_ray_enabled() const { return parameters.collide_separation_ray; }
+	void set_collide_separation_ray_enabled(bool p_enabled) { parameters.collide_separation_ray = p_enabled; }
+
+	Vector<RID> get_exclude_bodies() const;
+	void set_exclude_bodies(const Vector<RID> &p_exclude);
+
+	Array get_exclude_objects() const;
+	void set_exclude_objects(const Array &p_exclude);
+};
+
 class PhysicsTestMotionResult3D : public RefCounted {
 	GDCLASS(PhysicsTestMotionResult3D, RefCounted);
 
 	PhysicsServer3D::MotionResult result;
-	friend class PhysicsServer3D;
 
 protected:
 	static void _bind_methods();
@@ -774,8 +824,8 @@ public:
 
 	Vector3 get_travel() const;
 	Vector3 get_remainder() const;
-	real_t get_safe_fraction() const;
-	real_t get_unsafe_fraction() const;
+	real_t get_collision_safe_fraction() const;
+	real_t get_collision_unsafe_fraction() const;
 
 	int get_collision_count() const;
 
@@ -786,16 +836,8 @@ public:
 	RID get_collider_rid(int p_collision_index = 0) const;
 	Object *get_collider(int p_collision_index = 0) const;
 	int get_collider_shape(int p_collision_index = 0) const;
+	int get_collision_local_shape(int p_collision_index = 0) const;
 	real_t get_collision_depth(int p_collision_index = 0) const;
-
-	Vector3 get_best_collision_point() const;
-	Vector3 get_best_collision_normal() const;
-	Vector3 get_best_collider_velocity() const;
-	ObjectID get_best_collider_id() const;
-	RID get_best_collider_rid() const;
-	Object *get_best_collider() const;
-	int get_best_collider_shape() const;
-	real_t get_best_collision_depth() const;
 };
 
 typedef PhysicsServer3D *(*CreatePhysicsServer3DCallback)();

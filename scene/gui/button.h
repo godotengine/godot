@@ -91,13 +91,13 @@ public:
 	void set_icon(const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_icon() const;
 
-	void set_expand_icon(bool p_expand_icon);
+	void set_expand_icon(bool p_enabled);
 	bool is_expand_icon() const;
 
-	void set_flat(bool p_flat);
+	void set_flat(bool p_enabled);
 	bool is_flat() const;
 
-	void set_clip_text(bool p_clip_text);
+	void set_clip_text(bool p_enabled);
 	bool get_clip_text() const;
 
 	void set_text_align(TextAlign p_align);

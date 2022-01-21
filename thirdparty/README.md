@@ -28,7 +28,7 @@ Files extracted from upstream source:
 - `src/*` apart from CMakeLists.txt and premake4.lua files
 - `LICENSE.txt`, and `VERSION` as `VERSION.txt`
 
-Includes a warning fix which should be upstreamed soon (see patch in `patches`).
+Includes some patches in the `patches` folder which have been sent upstream.
 
 
 ## certs
@@ -138,11 +138,6 @@ Files extracted from upstream source:
   * Upstream: https://fonts.google.com/specimen/Open+Sans
   * Version: 1.10 (downloaded from Google Fonts in February 2021)
   * License: Apache 2.0
-- `Tamsyn*.png`:
-  * Upstream: http://www.fial.com/~scott/tamsyn-font/
-  * Version: 1.11 (2015)
-  * License: Tamsyn
-  * Comment: Extracted "0..9,A..F" characters for hex code printing.
 
 
 ## freetype

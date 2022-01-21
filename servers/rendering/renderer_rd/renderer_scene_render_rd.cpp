@@ -205,10 +205,10 @@ void RendererSceneRenderRD::environment_set_canvas_max_layer(RID p_env, int p_ma
 	env->canvas_max_layer = p_max_layer;
 }
 
-void RendererSceneRenderRD::environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient, float p_energy, float p_sky_contribution, RS::EnvironmentReflectionSource p_reflection_source, const Color &p_ao_color) {
+void RendererSceneRenderRD::environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient, float p_energy, float p_sky_contribution, RS::EnvironmentReflectionSource p_reflection_source) {
 	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND(!env);
-	env->set_ambient_light(p_color, p_ambient, p_energy, p_sky_contribution, p_reflection_source, p_ao_color);
+	env->set_ambient_light(p_color, p_ambient, p_energy, p_sky_contribution, p_reflection_source);
 }
 
 RS::EnvironmentBG RendererSceneRenderRD::environment_get_background(RID p_env) const {
@@ -281,12 +281,6 @@ RS::EnvironmentReflectionSource RendererSceneRenderRD::environment_get_reflectio
 	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, RS::ENV_REFLECTION_SOURCE_DISABLED);
 	return env->reflection_source;
-}
-
-Color RendererSceneRenderRD::environment_get_ao_color(RID p_env) const {
-	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, Color());
-	return env->ao_color;
 }
 
 void RendererSceneRenderRD::environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) {

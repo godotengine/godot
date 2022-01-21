@@ -41,10 +41,6 @@
 #include "scene/scene_string_names.h"
 #include "viewport.h"
 
-#ifdef TOOLS_ENABLED
-#include "editor/editor_settings.h"
-#endif
-
 #include <stdint.h>
 
 VARIANT_ENUM_CAST(Node::ProcessMode);
@@ -540,12 +536,13 @@ bool Node::is_multiplayer_authority() const {
 
 /***** RPC CONFIG ********/
 
-uint16_t Node::rpc_config(const StringName &p_method, Multiplayer::RPCMode p_rpc_mode, Multiplayer::TransferMode p_transfer_mode, int p_channel) {
+uint16_t Node::rpc_config(const StringName &p_method, Multiplayer::RPCMode p_rpc_mode, bool p_call_local, Multiplayer::TransferMode p_transfer_mode, int p_channel) {
 	for (int i = 0; i < data.rpc_methods.size(); i++) {
 		if (data.rpc_methods[i].name == p_method) {
 			Multiplayer::RPCConfig &nd = data.rpc_methods.write[i];
 			nd.rpc_mode = p_rpc_mode;
 			nd.transfer_mode = p_transfer_mode;
+			nd.call_local = p_call_local;
 			nd.channel = p_channel;
 			return i | (1 << 15);
 		}
@@ -556,6 +553,7 @@ uint16_t Node::rpc_config(const StringName &p_method, Multiplayer::RPCMode p_rpc
 	nd.rpc_mode = p_rpc_mode;
 	nd.transfer_mode = p_transfer_mode;
 	nd.channel = p_channel;
+	nd.call_local = p_call_local;
 	data.rpc_methods.push_back(nd);
 	return ((uint16_t)data.rpc_methods.size() - 1) | (1 << 15);
 }
@@ -2536,17 +2534,11 @@ NodePath Node::get_import_path() const {
 }
 
 static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<String> *r_options) {
-#ifdef TOOLS_ENABLED
-	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
-#else
-	const String quote_style = "\"";
-#endif
-
 	if (p_node != p_base && !p_node->get_owner()) {
 		return;
 	}
 	String n = p_base->get_path_to(p_node);
-	r_options->push_back(n.quote(quote_style));
+	r_options->push_back(n.quote());
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_add_nodes_to_options(p_base, p_node->get_child(i), r_options);
 	}
@@ -2750,7 +2742,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_multiplayer"), &Node::get_multiplayer);
 	ClassDB::bind_method(D_METHOD("get_custom_multiplayer"), &Node::get_custom_multiplayer);
 	ClassDB::bind_method(D_METHOD("set_custom_multiplayer", "api"), &Node::set_custom_multiplayer);
-	ClassDB::bind_method(D_METHOD("rpc_config", "method", "rpc_mode", "transfer_mode", "channel"), &Node::rpc_config, DEFVAL(Multiplayer::TRANSFER_MODE_RELIABLE), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("rpc_config", "method", "rpc_mode", "call_local", "transfer_mode", "channel"), &Node::rpc_config, DEFVAL(false), DEFVAL(Multiplayer::TRANSFER_MODE_RELIABLE), DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("set_editor_description", "editor_description"), &Node::set_editor_description);
 	ClassDB::bind_method(D_METHOD("get_editor_description"), &Node::get_editor_description);

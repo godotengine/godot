@@ -9,8 +9,8 @@
 		[SceneTree] is the default [MainLoop] implementation used by scenes, and is thus in charge of the game loop.
 	</description>
 	<tutorials>
-		<link title="SceneTree">https://docs.godotengine.org/en/latest/getting_started/step_by_step/scene_tree.html</link>
-		<link title="Multiple resolutions">https://docs.godotengine.org/en/latest/tutorials/viewports/multiple_resolutions.html</link>
+		<link title="SceneTree">https://docs.godotengine.org/en/latest/tutorials/scripting/scene_tree.html</link>
+		<link title="Multiple resolutions">https://docs.godotengine.org/en/latest/tutorials/rendering/multiple_resolutions.html</link>
 	</tutorials>
 	<methods>
 		<method name="call_group" qualifiers="vararg">
@@ -19,6 +19,7 @@
 			<argument index="1" name="method" type="StringName" />
 			<description>
 				Calls [code]method[/code] on each member of the given group. You can pass arguments to [code]method[/code] by specifying them at the end of the method call. This method is equivalent of calling [method call_group_flags] with [constant GROUP_CALL_DEFAULT] flag.
+				[b]Note:[/b] Due to design limitations, [method call_group] will fail silently if one of the arguments is [code]null[/code].
 				[b]Note:[/b] [method call_group] will always call methods with an one-frame delay, in a way similar to [method Object.call_deferred]. To call methods immediately, use [method call_group_flags] with the [constant GROUP_CALL_REALTIME] flag.
 			</description>
 		</method>
@@ -29,8 +30,10 @@
 			<argument index="2" name="method" type="StringName" />
 			<description>
 				Calls [code]method[/code] on each member of the given group, respecting the given [enum GroupCallFlags]. You can pass arguments to [code]method[/code] by specifying them at the end of the method call.
+				[b]Note:[/b] Due to design limitations, [method call_group_flags] will fail silently if one of the arguments is [code]null[/code].
 				[codeblock]
-				get_tree().call_group_flags(SceneTree.GROUP_CALL_REALTIME | SceneTree.GROUP_CALL_REVERSE, "bases", "destroy") # Call the method immediately and in reverse order.
+				# Call the method immediately and in reverse order.
+				get_tree().call_group_flags(SceneTree.GROUP_CALL_REALTIME | SceneTree.GROUP_CALL_REVERSE, "bases", "destroy")
 				[/codeblock]
 			</description>
 		</method>

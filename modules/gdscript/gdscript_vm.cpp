@@ -1719,6 +1719,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #define OPCODE_CALL_PTR(m_type)                                                   \
 	OPCODE(OPCODE_CALL_PTRCALL_##m_type) {                                        \
 		CHECK_SPACE(3 + instr_arg_count);                                         \
+		ip += instr_arg_count;                                                    \
 		int argc = _code_ptr[ip + 1];                                             \
 		GET_INSTRUCTION_ARG(base, argc);                                          \
 		MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];                     \

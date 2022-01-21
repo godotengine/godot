@@ -17,7 +17,7 @@
 		[b]Networking with nodes:[/b] After connecting to a server (or making one, see [ENetMultiplayerPeer]), it is possible to use the built-in RPC (remote procedure call) system to communicate over the network. By calling [method rpc] with a method name, it will be called locally and in all connected peers (peers = clients and the server that accepts connections). To identify which node receives the RPC call, Godot will use its [NodePath] (make sure node names are the same on all peers). Also, take a look at the high-level networking tutorial and corresponding demos.
 	</description>
 	<tutorials>
-		<link title="Scenes and nodes">https://docs.godotengine.org/en/latest/getting_started/step_by_step/scenes_and_nodes.html</link>
+		<link title="Nodes and scenes">https://docs.godotengine.org/en/latest/getting_started/step_by_step/nodes_and_scenes.htmltml</link>
 		<link title="All Demos">https://github.com/godotengine/godot-demo-projects/</link>
 	</tutorials>
 	<methods>
@@ -587,8 +587,9 @@
 			<return type="int" />
 			<argument index="0" name="method" type="StringName" />
 			<argument index="1" name="rpc_mode" type="int" enum="RPCMode" />
-			<argument index="2" name="transfer_mode" type="int" enum="TransferMode" default="2" />
-			<argument index="3" name="channel" type="int" default="0" />
+			<argument index="2" name="call_local" type="bool" default="false" />
+			<argument index="3" name="transfer_mode" type="int" enum="TransferMode" default="2" />
+			<argument index="4" name="channel" type="int" default="0" />
 			<description>
 				Changes the RPC mode for the given [code]method[/code] to the given [code]rpc_mode[/code], optionally specifying the [code]transfer_mode[/code] and [code]channel[/code] (on supported peers). See [enum RPCMode] and [enum TransferMode]. An alternative is annotating methods and properties with the corresponding annotation ([code]@rpc(any)[/code], [code]@rpc(auth)[/code]). By default, methods are not exposed to networking (and RPCs).
 			</description>

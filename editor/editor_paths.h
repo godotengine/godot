@@ -41,7 +41,7 @@ class EditorPaths : public Object {
 	String data_dir; // Editor data (templates, shader cache, etc.).
 	String config_dir; // Editor config (settings, profiles, themes, etc.).
 	String cache_dir; // Editor cache (thumbnails, tmp generated files).
-	String project_data_dir = "res://.godot"; // Project-specific data (metadata, shader cache, etc.).
+	String project_data_dir; // Project-specific data (metadata, shader cache, etc.).
 	bool self_contained = false; // Self-contained means everything goes to `editor_data` dir.
 	String self_contained_file; // Self-contained file with configuration.
 

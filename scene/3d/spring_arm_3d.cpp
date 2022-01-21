@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "spring_arm_3d.h"
+#include "scene/3d/camera_3d.h"
 
 void SpringArm3D::_notification(int p_what) {
 	switch (p_what) {
@@ -133,17 +134,32 @@ void SpringArm3D::process_spring() {
 	Vector3 motion;
 	const Vector3 cast_direction(get_global_transform().basis.xform(Vector3(0, 0, 1)));
 
+	motion = Vector3(cast_direction * (spring_length));
+
 	if (shape.is_null()) {
-		motion = Vector3(cast_direction * (spring_length));
-		PhysicsDirectSpaceState3D::RayResult r;
-		bool intersected = get_world_3d()->get_direct_space_state()->intersect_ray(get_global_transform().origin, get_global_transform().origin + motion, r, excluded_objects, mask);
-		if (intersected) {
-			real_t dist = get_global_transform().origin.distance_to(r.position);
-			dist -= margin;
-			motion_delta = dist / (spring_length);
+		Camera3D *camera = nullptr;
+		for (int i = get_child_count() - 1; 0 <= i; --i) {
+			camera = Object::cast_to<Camera3D>(get_child(i));
+			if (camera) {
+				break;
+			}
+		}
+
+		if (camera != nullptr) {
+			//use camera rotation, but spring arm position
+			Transform3D base_transform = camera->get_global_transform();
+			base_transform.origin = get_global_transform().origin;
+			get_world_3d()->get_direct_space_state()->cast_motion(camera->get_pyramid_shape_rid(), base_transform, motion, 0, motion_delta, motion_delta_unsafe, excluded_objects, mask);
+		} else {
+			PhysicsDirectSpaceState3D::RayResult r;
+			bool intersected = get_world_3d()->get_direct_space_state()->intersect_ray(get_global_transform().origin, get_global_transform().origin + motion, r, excluded_objects, mask);
+			if (intersected) {
+				real_t dist = get_global_transform().origin.distance_to(r.position);
+				dist -= margin;
+				motion_delta = dist / (spring_length);
+			}
 		}
 	} else {
-		motion = Vector3(cast_direction * spring_length);
 		get_world_3d()->get_direct_space_state()->cast_motion(shape->get_rid(), get_global_transform(), motion, 0, motion_delta, motion_delta_unsafe, excluded_objects, mask);
 	}
 

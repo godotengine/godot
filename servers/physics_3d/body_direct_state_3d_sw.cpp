@@ -66,7 +66,7 @@ Basis PhysicsDirectBodyState3DSW::get_inverse_inertia_tensor() const {
 }
 
 void PhysicsDirectBodyState3DSW::set_linear_velocity(const Vector3 &p_velocity) {
-	body->set_active(true);
+	body->wakeup();
 	body->set_linear_velocity(p_velocity);
 }
 
@@ -75,7 +75,7 @@ Vector3 PhysicsDirectBodyState3DSW::get_linear_velocity() const {
 }
 
 void PhysicsDirectBodyState3DSW::set_angular_velocity(const Vector3 &p_velocity) {
-	body->set_active(true);
+	body->wakeup();
 	body->set_angular_velocity(p_velocity);
 }
 
@@ -96,32 +96,32 @@ Vector3 PhysicsDirectBodyState3DSW::get_velocity_at_local_position(const Vector3
 }
 
 void PhysicsDirectBodyState3DSW::add_central_force(const Vector3 &p_force) {
-	body->set_active(true);
+	body->wakeup();
 	body->add_central_force(p_force);
 }
 
 void PhysicsDirectBodyState3DSW::add_force(const Vector3 &p_force, const Vector3 &p_position) {
-	body->set_active(true);
+	body->wakeup();
 	body->add_force(p_force, p_position);
 }
 
 void PhysicsDirectBodyState3DSW::add_torque(const Vector3 &p_torque) {
-	body->set_active(true);
+	body->wakeup();
 	body->add_torque(p_torque);
 }
 
 void PhysicsDirectBodyState3DSW::apply_central_impulse(const Vector3 &p_impulse) {
-	body->set_active(true);
+	body->wakeup();
 	body->apply_central_impulse(p_impulse);
 }
 
 void PhysicsDirectBodyState3DSW::apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position) {
-	body->set_active(true);
+	body->wakeup();
 	body->apply_impulse(p_impulse, p_position);
 }
 
 void PhysicsDirectBodyState3DSW::apply_torque_impulse(const Vector3 &p_impulse) {
-	body->set_active(true);
+	body->wakeup();
 	body->apply_torque_impulse(p_impulse);
 }
 

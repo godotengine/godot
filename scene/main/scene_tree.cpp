@@ -570,7 +570,11 @@ void SceneTree::finalize() {
 		root = nullptr;
 	}
 
-	// cleanup timers
+	// In case deletion of some objects was queued when destructing the `root`.
+	// E.g. if `queue_free()` was called for some node outside the tree when handling NOTIFICATION_PREDELETE for some node in the tree.
+	_flush_delete_queue();
+
+	// Cleanup timers.
 	for (Ref<SceneTreeTimer> &timer : timers) {
 		timer->release_connections();
 	}

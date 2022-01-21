@@ -476,9 +476,9 @@ void RPCManager::rpcp(Node *p_node, int p_peer_id, const StringName &p_method, c
 			vformat("Unable to get the RPC configuration for the function \"%s\" at path: \"%s\". This happens when the method is not marked for RPCs.", p_method, p_node->get_path()));
 	if (p_peer_id == 0 || p_peer_id == node_id || (p_peer_id < 0 && p_peer_id != -node_id)) {
 		if (rpc_id & (1 << 15)) {
-			call_local_native = config.sync;
+			call_local_native = config.call_local;
 		} else {
-			call_local_script = config.sync;
+			call_local_script = config.call_local;
 		}
 	}
 
@@ -521,5 +521,5 @@ void RPCManager::rpcp(Node *p_node, int p_peer_id, const StringName &p_method, c
 		}
 	}
 
-	ERR_FAIL_COND_MSG(p_peer_id == node_id && !config.sync, "RPC '" + p_method + "' on yourself is not allowed by selected mode.");
+	ERR_FAIL_COND_MSG(p_peer_id == node_id && !config.call_local, "RPC '" + p_method + "' on yourself is not allowed by selected mode.");
 }

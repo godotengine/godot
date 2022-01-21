@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "servers/text_server.h"
-#include "scene/main/canvas_item.h"
+#include "servers/rendering_server.h"
 
 TextServerManager *TextServerManager::singleton = nullptr;
 
@@ -479,110 +479,57 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(SPACING_BOTTOM);
 }
 
-Vector3 TextServer::hex_code_box_font_size[2] = { Vector3(5, 5, 1), Vector3(10, 10, 2) };
-Ref<CanvasTexture> TextServer::hex_code_box_font_tex[2] = { nullptr, nullptr };
-
-void TextServer::initialize_hex_code_box_fonts() {
-	static unsigned int tamsyn5x9_png_len = 175;
-	static unsigned char tamsyn5x9_png[] = {
-		0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
-		0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x50, 0x00, 0x00, 0x00, 0x05,
-		0x04, 0x03, 0x00, 0x00, 0x00, 0x20, 0x7c, 0x76, 0xda, 0x00, 0x00, 0x00,
-		0x0f, 0x50, 0x4c, 0x54, 0x45, 0xfd, 0x07, 0x00, 0x00, 0x00, 0x00, 0x06,
-		0x7e, 0x74, 0x00, 0x40, 0xc6, 0xff, 0xff, 0xff, 0x47, 0x9a, 0xd4, 0xc7,
-		0x00, 0x00, 0x00, 0x01, 0x74, 0x52, 0x4e, 0x53, 0x00, 0x40, 0xe6, 0xd8,
-		0x66, 0x00, 0x00, 0x00, 0x4e, 0x49, 0x44, 0x41, 0x54, 0x08, 0x1d, 0x05,
-		0xc1, 0x21, 0x01, 0x00, 0x00, 0x00, 0x83, 0x30, 0x04, 0xc1, 0x10, 0xef,
-		0x9f, 0xe9, 0x1b, 0x86, 0x2c, 0x17, 0xb9, 0xcc, 0x65, 0x0c, 0x73, 0x38,
-		0xc7, 0xe6, 0x22, 0x19, 0x88, 0x98, 0x10, 0x48, 0x4a, 0x29, 0x85, 0x14,
-		0x02, 0x89, 0x10, 0xa3, 0x1c, 0x0b, 0x31, 0xd6, 0xe6, 0x08, 0x69, 0x39,
-		0x48, 0x44, 0xa0, 0x0d, 0x4a, 0x22, 0xa1, 0x94, 0x42, 0x0a, 0x01, 0x63,
-		0x6d, 0x0e, 0x72, 0x18, 0x61, 0x8c, 0x74, 0x38, 0xc7, 0x26, 0x1c, 0xf3,
-		0x71, 0x16, 0x15, 0x27, 0x6a, 0xc2, 0x2f, 0x00, 0x00, 0x00, 0x00, 0x49,
-		0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82
-	};
-
-	static unsigned int tamsyn10x20_png_len = 270;
-	static unsigned char tamsyn10x20_png[] = {
-		0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
-		0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0xa0, 0x00, 0x00, 0x00, 0x0a,
-		0x04, 0x03, 0x00, 0x00, 0x00, 0xc1, 0x66, 0x48, 0x96, 0x00, 0x00, 0x00,
-		0x0f, 0x50, 0x4c, 0x54, 0x45, 0x00, 0x00, 0x00, 0xf9, 0x07, 0x00, 0x5d,
-		0x71, 0xa5, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0x49, 0xdb, 0xcb, 0x7f,
-		0x00, 0x00, 0x00, 0x01, 0x74, 0x52, 0x4e, 0x53, 0x00, 0x40, 0xe6, 0xd8,
-		0x66, 0x00, 0x00, 0x00, 0xad, 0x49, 0x44, 0x41, 0x54, 0x28, 0xcf, 0xa5,
-		0x92, 0x4b, 0x0e, 0x03, 0x31, 0x08, 0x43, 0xdf, 0x82, 0x83, 0x79, 0xe1,
-		0xfb, 0x9f, 0xa9, 0x0b, 0x3e, 0x61, 0xa6, 0x1f, 0x55, 0xad, 0x14, 0x31,
-		0x66, 0x42, 0x1c, 0x70, 0x0c, 0xb6, 0x00, 0x01, 0xb6, 0x08, 0xdb, 0x00,
-		0x8d, 0xc2, 0x14, 0xb2, 0x55, 0xa1, 0xfe, 0x09, 0xc2, 0x26, 0xdc, 0x25,
-		0x75, 0x22, 0x97, 0x1a, 0x25, 0x77, 0x28, 0x31, 0x02, 0x80, 0xc8, 0xdd,
-		0x2c, 0x11, 0x1a, 0x54, 0x9f, 0xc8, 0xa2, 0x8a, 0x06, 0xa9, 0x93, 0x22,
-		0xbd, 0xd4, 0xd0, 0x0c, 0xcf, 0x81, 0x2b, 0xca, 0xbb, 0x83, 0xe0, 0x10,
-		0xe6, 0xad, 0xff, 0x10, 0x2a, 0x66, 0x34, 0x41, 0x58, 0x35, 0x54, 0x49,
-		0x5a, 0x63, 0xa5, 0xc2, 0x87, 0xab, 0x52, 0x76, 0x9a, 0xba, 0xc6, 0xf4,
-		0x75, 0x7a, 0x9e, 0x3c, 0x46, 0x86, 0x5c, 0xa3, 0xfd, 0x87, 0x0e, 0x75,
-		0x08, 0x7b, 0xee, 0x7e, 0xea, 0x21, 0x5c, 0x4f, 0xf6, 0xc5, 0xc8, 0x4b,
-		0xb9, 0x11, 0xf2, 0xd6, 0xe1, 0x8f, 0x84, 0x62, 0x7b, 0x67, 0xf9, 0x24,
-		0xde, 0x6d, 0xbc, 0xb2, 0xcd, 0xb1, 0xf3, 0xf2, 0x2f, 0xe8, 0xe2, 0xe4,
-		0xae, 0x4b, 0x4f, 0xcf, 0x2b, 0xdc, 0x8d, 0x0d, 0xf0, 0x00, 0x8f, 0x22,
-		0x26, 0x65, 0x75, 0x8a, 0xe6, 0x84, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45,
-		0x4e, 0x44, 0xae, 0x42, 0x60, 0x82
-	};
-
-	if (RenderingServer::get_singleton() != nullptr) {
-		Vector<uint8_t> hex_box_data;
-
-		Ref<Image> image;
-		image.instantiate();
-
-		Ref<ImageTexture> hex_code_image_tex[2];
-
-		hex_box_data.resize(tamsyn5x9_png_len);
-		memcpy(hex_box_data.ptrw(), tamsyn5x9_png, tamsyn5x9_png_len);
-		image->load_png_from_buffer(hex_box_data);
-		hex_code_image_tex[0].instantiate();
-		hex_code_image_tex[0]->create_from_image(image);
-		hex_code_box_font_tex[0].instantiate();
-		hex_code_box_font_tex[0]->set_diffuse_texture(hex_code_image_tex[0]);
-		hex_code_box_font_tex[0]->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
-		hex_box_data.clear();
-
-		hex_box_data.resize(tamsyn10x20_png_len);
-		memcpy(hex_box_data.ptrw(), tamsyn10x20_png, tamsyn10x20_png_len);
-		image->load_png_from_buffer(hex_box_data);
-		hex_code_image_tex[1].instantiate();
-		hex_code_image_tex[1]->create_from_image(image);
-		hex_code_box_font_tex[1].instantiate();
-		hex_code_box_font_tex[1]->set_diffuse_texture(hex_code_image_tex[1]);
-		hex_code_box_font_tex[1]->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
-		hex_box_data.clear();
-	}
-}
-
-void TextServer::finish_hex_code_box_fonts() {
-	if (hex_code_box_font_tex[0].is_valid()) {
-		hex_code_box_font_tex[0].unref();
-	}
-	if (hex_code_box_font_tex[1].is_valid()) {
-		hex_code_box_font_tex[1].unref();
-	}
-}
-
 Vector2 TextServer::get_hex_code_box_size(int p_size, char32_t p_index) const {
-	int fnt = (p_size < 20) ? 0 : 1;
+	int w = ((p_index <= 0xFF) ? 1 : ((p_index <= 0xFFFF) ? 2 : 3));
+	int sp = MAX(0, w - 1);
+	int sz = MAX(1, p_size / 15);
 
-	real_t w = ((p_index <= 0xFF) ? 1 : ((p_index <= 0xFFFF) ? 2 : 3)) * hex_code_box_font_size[fnt].x;
-	real_t h = 2 * hex_code_box_font_size[fnt].y;
-	return Vector2(w + 4, h + 3 + 2 * hex_code_box_font_size[fnt].z);
+	return Vector2(4 + 3 * w + sp + 1, 15) * sz;
+}
+
+void TextServer::_draw_hex_code_box_number(RID p_canvas, int p_size, const Vector2 &p_pos, uint8_t p_index, const Color &p_color) const {
+	static uint8_t chars[] = { 0x7E, 0x30, 0x6D, 0x79, 0x33, 0x5B, 0x5F, 0x70, 0x7F, 0x7B, 0x77, 0x1F, 0x4E, 0x3D, 0x4F, 0x47, 0x00 };
+	uint8_t x = chars[p_index];
+	if (x & (1 << 6)) {
+		RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas, Rect2(p_pos, Size2(3, 1) * p_size), p_color);
+	}
+	if (x & (1 << 5)) {
+		RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas, Rect2(p_pos + Point2(2, 0) * p_size, Size2(1, 3) * p_size), p_color);
+	}
+	if (x & (1 << 4)) {
+		RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas, Rect2(p_pos + Point2(2, 2) * p_size, Size2(1, 3) * p_size), p_color);
+	}
+	if (x & (1 << 3)) {
+		RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas, Rect2(p_pos + Point2(0, 4) * p_size, Size2(3, 1) * p_size), p_color);
+	}
+	if (x & (1 << 2)) {
+		RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas, Rect2(p_pos + Point2(0, 2) * p_size, Size2(1, 3) * p_size), p_color);
+	}
+	if (x & (1 << 1)) {
+		RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas, Rect2(p_pos, Size2(1, 3) * p_size), p_color);
+	}
+	if (x & (1 << 0)) {
+		RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas, Rect2(p_pos + Point2(0, 2) * p_size, Size2(3, 1) * p_size), p_color);
+	}
 }
 
 void TextServer::draw_hex_code_box(RID p_canvas, int p_size, const Vector2 &p_pos, char32_t p_index, const Color &p_color) const {
-	int fnt = (p_size < 20) ? 0 : 1;
-
-	ERR_FAIL_COND(hex_code_box_font_tex[fnt].is_null());
 	if (p_index == 0) {
 		return;
 	}
+
+	int w = ((p_index <= 0xFF) ? 1 : ((p_index <= 0xFFFF) ? 2 : 3));
+	int sp = MAX(0, w - 1);
+	int sz = MAX(1, p_size / 15);
+
+	Size2 size = Vector2(4 + 3 * w + sp, 15) * sz;
+	Point2 pos = p_pos - Point2i(0, size.y * 0.85);
+
+	// Draw frame.
+	RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas, Rect2(pos + Point2(0, 0), Size2(sz, size.y)), p_color);
+	RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas, Rect2(pos + Point2(size.x - sz, 0), Size2(sz, size.y)), p_color);
+	RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas, Rect2(pos + Point2(0, 0), Size2(size.x, sz)), p_color);
+	RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas, Rect2(pos + Point2(0, size.y - sz), Size2(size.x, sz)), p_color);
 
 	uint8_t a = p_index & 0x0F;
 	uint8_t b = (p_index >> 4) & 0x0F;
@@ -591,47 +538,22 @@ void TextServer::draw_hex_code_box(RID p_canvas, int p_size, const Vector2 &p_po
 	uint8_t e = (p_index >> 16) & 0x0F;
 	uint8_t f = (p_index >> 20) & 0x0F;
 
-	Vector2 pos = p_pos;
-	Rect2 dest = Rect2(Vector2(), Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y));
-
-	real_t w = ((p_index <= 0xFF) ? 1 : ((p_index <= 0xFFFF) ? 2 : 3)) * hex_code_box_font_size[fnt].x;
-	real_t h = 2 * hex_code_box_font_size[fnt].y;
-
-	pos.y -= Math::floor((h + 3 + hex_code_box_font_size[fnt].z));
-
-	RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas, Rect2(pos + Point2(0, 0), Size2(1, h + 2 + 2 * hex_code_box_font_size[fnt].z)), p_color);
-	RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas, Rect2(pos + Point2(w + 2, 0), Size2(1, h + 2 + 2 * hex_code_box_font_size[fnt].z)), p_color);
-	RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas, Rect2(pos + Point2(0, 0), Size2(w + 3, 1)), p_color);
-	RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas, Rect2(pos + Point2(0, h + 2 + 2 * hex_code_box_font_size[fnt].z), Size2(w + 3, 1)), p_color);
-
-	pos += Point2(2, 2);
+	// Draw hex code.
 	if (p_index <= 0xFF) {
-		dest.position = pos + Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y) * Point2(0, 0);
-		RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, dest, hex_code_box_font_tex[fnt]->get_rid(), Rect2(Point2(b * hex_code_box_font_size[fnt].x, 0), dest.size), p_color, false, false);
-		dest.position = pos + Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y) * Point2(0, 1) + Point2(0, hex_code_box_font_size[fnt].z);
-		RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, dest, hex_code_box_font_tex[fnt]->get_rid(), Rect2(Point2(a * hex_code_box_font_size[fnt].x, 0), dest.size), p_color, false, false);
+		_draw_hex_code_box_number(p_canvas, sz, pos + Point2(2, 2) * sz, b, p_color);
+		_draw_hex_code_box_number(p_canvas, sz, pos + Point2(2, 8) * sz, a, p_color);
 	} else if (p_index <= 0xFFFF) {
-		dest.position = pos + Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y) * Point2(0, 0);
-		RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, dest, hex_code_box_font_tex[fnt]->get_rid(), Rect2(Point2(d * hex_code_box_font_size[fnt].x, 0), dest.size), p_color, false, false);
-		dest.position = pos + Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y) * Point2(1, 0);
-		RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, dest, hex_code_box_font_tex[fnt]->get_rid(), Rect2(Point2(c * hex_code_box_font_size[fnt].x, 0), dest.size), p_color, false, false);
-		dest.position = pos + Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y) * Point2(0, 1) + Point2(0, hex_code_box_font_size[fnt].z);
-		RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, dest, hex_code_box_font_tex[fnt]->get_rid(), Rect2(Point2(b * hex_code_box_font_size[fnt].x, 0), dest.size), p_color, false, false);
-		dest.position = pos + Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y) * Point2(1, 1) + Point2(0, hex_code_box_font_size[fnt].z);
-		RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, dest, hex_code_box_font_tex[fnt]->get_rid(), Rect2(Point2(a * hex_code_box_font_size[fnt].x, 0), dest.size), p_color, false, false);
+		_draw_hex_code_box_number(p_canvas, sz, pos + Point2(2, 2) * sz, d, p_color);
+		_draw_hex_code_box_number(p_canvas, sz, pos + Point2(6, 2) * sz, c, p_color);
+		_draw_hex_code_box_number(p_canvas, sz, pos + Point2(2, 8) * sz, b, p_color);
+		_draw_hex_code_box_number(p_canvas, sz, pos + Point2(6, 8) * sz, a, p_color);
 	} else {
-		dest.position = pos + Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y) * Point2(0, 0);
-		RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, dest, hex_code_box_font_tex[fnt]->get_rid(), Rect2(Point2(f * hex_code_box_font_size[fnt].x, 0), dest.size), p_color, false, false);
-		dest.position = pos + Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y) * Point2(1, 0);
-		RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, dest, hex_code_box_font_tex[fnt]->get_rid(), Rect2(Point2(e * hex_code_box_font_size[fnt].x, 0), dest.size), p_color, false, false);
-		dest.position = pos + Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y) * Point2(2, 0);
-		RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, dest, hex_code_box_font_tex[fnt]->get_rid(), Rect2(Point2(d * hex_code_box_font_size[fnt].x, 0), dest.size), p_color, false, false);
-		dest.position = pos + Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y) * Point2(0, 1) + Point2(0, hex_code_box_font_size[fnt].z);
-		RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, dest, hex_code_box_font_tex[fnt]->get_rid(), Rect2(Point2(c * hex_code_box_font_size[fnt].x, 0), dest.size), p_color, false, false);
-		dest.position = pos + Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y) * Point2(1, 1) + Point2(0, hex_code_box_font_size[fnt].z);
-		RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, dest, hex_code_box_font_tex[fnt]->get_rid(), Rect2(Point2(b * hex_code_box_font_size[fnt].x, 0), dest.size), p_color, false, false);
-		dest.position = pos + Vector2(hex_code_box_font_size[fnt].x, hex_code_box_font_size[fnt].y) * Point2(2, 1) + Point2(0, hex_code_box_font_size[fnt].z);
-		RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, dest, hex_code_box_font_tex[fnt]->get_rid(), Rect2(Point2(a * hex_code_box_font_size[fnt].x, 0), dest.size), p_color, false, false);
+		_draw_hex_code_box_number(p_canvas, sz, pos + Point2(2, 2) * sz, f, p_color);
+		_draw_hex_code_box_number(p_canvas, sz, pos + Point2(6, 2) * sz, e, p_color);
+		_draw_hex_code_box_number(p_canvas, sz, pos + Point2(10, 2) * sz, d, p_color);
+		_draw_hex_code_box_number(p_canvas, sz, pos + Point2(2, 8) * sz, c, p_color);
+		_draw_hex_code_box_number(p_canvas, sz, pos + Point2(6, 8) * sz, b, p_color);
+		_draw_hex_code_box_number(p_canvas, sz, pos + Point2(10, 8) * sz, a, p_color);
 	}
 }
 

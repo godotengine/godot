@@ -72,6 +72,7 @@ private:
 	virtual void finalize() override;
 
 	String user_data_dir;
+	String cache_dir;
 
 	bool is_focused = false;
 
@@ -80,7 +81,7 @@ private:
 public:
 	static OSIPhone *get_singleton();
 
-	OSIPhone(String p_data_dir);
+	OSIPhone(String p_data_dir, String p_cache_dir);
 	~OSIPhone();
 
 	void initialize_modules();
@@ -102,6 +103,8 @@ public:
 
 	void set_user_data_dir(String p_dir);
 	virtual String get_user_data_dir() const override;
+
+	virtual String get_cache_path() const override;
 
 	virtual String get_locale() const override;
 

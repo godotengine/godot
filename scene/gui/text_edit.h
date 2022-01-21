@@ -182,7 +182,7 @@ private:
 		void set_font_size(int p_font_size);
 		void set_font_features(const Dictionary &p_features);
 		void set_direction_and_language(TextServer::Direction p_direction, const String &p_language);
-		void set_draw_control_chars(bool p_draw_control_chars);
+		void set_draw_control_chars(bool p_enabled);
 
 		int get_line_height() const;
 		int get_line_width(int p_line, int p_wrap_index = -1) const;
@@ -330,7 +330,7 @@ private:
 	int _get_column_pos_of_word(const String &p_key, const String &p_search, uint32_t p_search_flags, int p_from_column) const;
 
 	/* Tooltip. */
-	Object *tooltip_obj = nullptr;
+	ObjectID tooltip_obj_id;
 	StringName tooltip_func;
 	Variant tooltip_ud;
 
@@ -631,13 +631,13 @@ public:
 	void set_overtype_mode_enabled(const bool p_enabled);
 	bool is_overtype_mode_enabled() const;
 
-	void set_context_menu_enabled(bool p_enable);
+	void set_context_menu_enabled(bool p_enabled);
 	bool is_context_menu_enabled() const;
 
 	void set_shortcut_keys_enabled(bool p_enabled);
 	bool is_shortcut_keys_enabled() const;
 
-	void set_virtual_keyboard_enabled(bool p_enable);
+	void set_virtual_keyboard_enabled(bool p_enabled);
 	bool is_virtual_keyboard_enabled() const;
 
 	// Text manipulation
@@ -723,7 +723,7 @@ public:
 	void set_caret_blink_speed(const float p_speed);
 	float get_caret_blink_speed() const;
 
-	void set_move_caret_on_right_click_enabled(const bool p_enable);
+	void set_move_caret_on_right_click_enabled(const bool p_enabled);
 	bool is_move_caret_on_right_click_enabled() const;
 
 	void set_caret_mid_grapheme_enabled(const bool p_enabled);
@@ -783,7 +783,7 @@ public:
 
 	/* Viewport. */
 	// Scrolling.
-	void set_smooth_scroll_enabled(const bool p_enable);
+	void set_smooth_scroll_enabled(const bool p_enabled);
 	bool is_smooth_scroll_enabled() const;
 
 	void set_scroll_past_end_of_file_enabled(const bool p_enabled);
@@ -818,7 +818,7 @@ public:
 	void center_viewport_to_caret();
 
 	// Minimap
-	void set_draw_minimap(bool p_draw);
+	void set_draw_minimap(bool p_enabled);
 	bool is_drawing_minimap() const;
 
 	void set_minimap_width(int p_minimap_width);
@@ -885,13 +885,13 @@ public:
 	void set_highlight_all_occurrences(const bool p_enabled);
 	bool is_highlight_all_occurrences_enabled() const;
 
-	void set_draw_control_chars(bool p_draw_control_chars);
+	void set_draw_control_chars(bool p_enabled);
 	bool get_draw_control_chars() const;
 
-	void set_draw_tabs(bool p_draw);
+	void set_draw_tabs(bool p_enabled);
 	bool is_drawing_tabs() const;
 
-	void set_draw_spaces(bool p_draw);
+	void set_draw_spaces(bool p_enabled);
 	bool is_drawing_spaces() const;
 
 	TextEdit();

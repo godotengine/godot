@@ -128,6 +128,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	bool updating_blends;
 
 	AnimationTrackEditor *track_editor;
+	static AnimationPlayerEditor *singleton;
 
 	// Onion skinning.
 	struct {
@@ -226,7 +227,8 @@ protected:
 
 public:
 	AnimationPlayer *get_player() const;
-	static AnimationPlayerEditor *singleton;
+
+	static AnimationPlayerEditor *get_singleton() { return singleton; }
 
 	bool is_pinned() const { return pin->is_pressed(); }
 	void unpin() { pin->set_pressed(false); }
