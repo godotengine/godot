@@ -191,6 +191,10 @@ void GroupDialog::_add_group_pressed(const String &p_name) {
 	add_group_text->clear();
 }
 
+void GroupDialog::_add_group_text_changed(const String &p_new_text) {
+	add_group_button->set_disabled(p_new_text.strip_edges().empty());
+}
+
 void GroupDialog::_add_group(String p_name) {
 	if (!is_visible()) {
 		return; // No need to edit the dialog if it's not being used.
@@ -368,6 +372,7 @@ void GroupDialog::_delete_group_item(const String &p_name) {
 
 void GroupDialog::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
 			add_button->set_icon(get_icon("Forward", "EditorIcons"));
 			remove_button->set_icon(get_icon("Back", "EditorIcons"));
@@ -405,6 +410,7 @@ void GroupDialog::_bind_methods() {
 	ClassDB::bind_method("_group_selected", &GroupDialog::_group_selected);
 	ClassDB::bind_method("_add_group_pressed", &GroupDialog::_add_group_pressed);
 	ClassDB::bind_method("_add_group", &GroupDialog::_add_group);
+	ClassDB::bind_method("_add_group_text_changed", &GroupDialog::_add_group_text_changed);
 
 	ClassDB::bind_method("_add_filter_changed", &GroupDialog::_add_filter_changed);
 	ClassDB::bind_method("_remove_filter_changed", &GroupDialog::_remove_filter_changed);
@@ -456,8 +462,9 @@ GroupDialog::GroupDialog() {
 	chbc->add_child(add_group_text);
 	add_group_text->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_group_text->connect("text_entered", this, "_add_group_pressed");
+	add_group_text->connect("text_changed", this, "_add_group_text_changed");
 
-	Button *add_group_button = memnew(Button);
+	add_group_button = memnew(Button);
 	add_group_button->set_text(TTR("Add"));
 	chbc->add_child(add_group_button);
 	add_group_button->connect("pressed", this, "_add_group_pressed", varray(String()));
@@ -552,6 +559,8 @@ GroupDialog::GroupDialog() {
 	error = memnew(ConfirmationDialog);
 	add_child(error);
 	error->get_ok()->set_text(TTR("Close"));
+
+	_add_group_text_changed("");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -566,6 +575,7 @@ void GroupsEditor::_add_group(const String &p_group) {
 		return;
 	}
 
+	group_name->clear();
 	if (node->is_in_group(name)) {
 		return;
 	}
@@ -582,8 +592,6 @@ void GroupsEditor::_add_group(const String &p_group) {
 	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
 
 	undo_redo->commit_action();
-
-	group_name->clear();
 }
 
 void GroupsEditor::_modify_group(Object *p_item, int p_column, int p_id) {
@@ -617,6 +625,10 @@ void GroupsEditor::_modify_group(Object *p_item, int p_column, int p_id) {
 			OS::get_singleton()->set_clipboard(ti->get_text(p_column));
 		} break;
 	}
+}
+
+void GroupsEditor::_group_name_changed(const String &p_new_text) {
+	add->set_disabled(p_new_text.strip_edges().empty());
 }
 
 struct _GroupInfoComparator {
@@ -686,6 +698,7 @@ void GroupsEditor::_show_group_dialog() {
 void GroupsEditor::_bind_methods() {
 	ClassDB::bind_method("_add_group", &GroupsEditor::_add_group);
 	ClassDB::bind_method("_modify_group", &GroupsEditor::_modify_group);
+	ClassDB::bind_method("_group_name_changed", &GroupsEditor::_group_name_changed);
 	ClassDB::bind_method("update_tree", &GroupsEditor::update_tree);
 
 	ClassDB::bind_method("_show_group_dialog", &GroupsEditor::_show_group_dialog);
@@ -713,6 +726,7 @@ GroupsEditor::GroupsEditor() {
 	group_name->set_h_size_flags(SIZE_EXPAND_FILL);
 	hbc->add_child(group_name);
 	group_name->connect("text_entered", this, "_add_group");
+	group_name->connect("text_changed", this, "_group_name_changed");
 
 	add = memnew(Button);
 	add->set_text(TTR("Add"));
@@ -726,6 +740,8 @@ GroupsEditor::GroupsEditor() {
 	tree->connect("button_pressed", this, "_modify_group");
 	tree->add_constant_override("draw_guides", 1);
 	add_constant_override("separation", 3 * EDSCALE);
+
+	_group_name_changed("");
 }
 
 GroupsEditor::~GroupsEditor() {
