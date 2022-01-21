@@ -1,0 +1,5 @@
+thorvg_sources += files(run_command(GLOB, 'raw/*.cpp').stdout().split('\n'))
+thorvg_sources += files(run_command(GLOB, 'png/*.cpp').stdout().split('\n'))
+thorvg_sources += files(run_command(GLOB, 'jpg/*.cpp').stdout().split('\n'))
+thorvg_sources += files(run_command(GLOB, 'svg/*.cpp').stdout().split('\n'))
+thorvg_sources += files(run_command(GLOB, 'tvg/*.cpp').stdout().split('\n'))
