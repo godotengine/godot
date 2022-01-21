@@ -193,10 +193,9 @@ namespace Godot
             return GetParent() as T;
         }
 
-        /**
-        *   <summary>Finds a Node of type T starting at the root of the tree</summary>
-        */
-        public T FindNodeOfType<T>() where T : class
+        /// <summary>Finds a <see cref="Node"/> of type T starting at the root of the tree. Returns <see langword="null"/> if none is found</summary>
+        /// <typeparam name="T">Any type which inherits from <see cref="Node"/></typeparam>
+        public T FindNodeOfType<T>() where T : Node
         {
             // find the root node
             Node parent = this;
@@ -213,10 +212,10 @@ namespace Godot
             return this.FindNodeOfType(parent);
         }
 
-        /**
-        *   <summary>Finds a Node of type T starting at the root of the specified parent Node</summary>
-        */
-        public T FindNodeOfType<T>(Node parent) where T : class
+        /// <summary>Finds a <see cref="Node"/> of type T starting at the specified parent. Returns <see langword="null"/> if none is found</summary>
+        /// <param name="parent">A object that inherits from <see cref="Node"/></param>
+        /// <typeparam name="T">Any type which inherits from <see cref="Node"/></typeparam>
+        public T FindNodeOfType<T>(Node parent) where T : Node
         {
             Queue<Node> children = new Queue<Node>();
             children.Enqueue(parent);
