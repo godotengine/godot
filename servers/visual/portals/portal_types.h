@@ -257,6 +257,7 @@ struct VSRoom {
 		_secondary_pvs_size = 0;
 		_priority = 0;
 		_contains_internal_rooms = false;
+		last_gameplay_tick_hit = 0;
 	}
 
 	void cleanup_after_conversion() {

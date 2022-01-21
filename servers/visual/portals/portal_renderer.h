@@ -87,6 +87,9 @@ public:
 		void destroy() {
 			_rooms.clear();
 			room_id = -1;
+
+			last_tick_hit = 0;
+			last_gameplay_tick_hit = 0;
 		}
 
 		// the expanded aabb allows objects to move on most frames
