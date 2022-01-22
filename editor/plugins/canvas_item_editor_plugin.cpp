@@ -1171,6 +1171,8 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 			return true;
 		}
 
+		bool was_panning = panning;
+
 		if (!panning) {
 			if (b->is_pressed() &&
 					(b->get_button_index() == MouseButton::MIDDLE ||
@@ -1186,6 +1188,11 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 				// Stop panning the viewport (for any mouse button press except zooming)
 				panning = false;
 			}
+		}
+
+		if (was_panning != panning) {
+			pan_pressed = panning;
+			_update_cursor();
 		}
 	}
 
@@ -1243,7 +1250,9 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 			// Pan the viewport
 			Point2i relative;
 			if (bool(EditorSettings::get_singleton()->get("editors/2d/warped_mouse_panning"))) {
-				relative = Input::get_singleton()->warp_mouse_motion(m, viewport->get_global_rect());
+				// Take into account the viewport border and scrollbars since these prevent warping when using simple_panning
+				Rect2 warp_rect = Rect2(viewport->get_global_position() + Point2(20, 20), viewport->get_size() - Point2(40, 40));
+				relative = Input::get_singleton()->warp_mouse_motion(m, warp_rect);
 			} else {
 				relative = m->get_relative();
 			}
