@@ -4495,7 +4495,6 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("ObjectPosition", "Input", "Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "object_position"), "object_position", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FOG, Shader::MODE_FOG));
 	add_options.push_back(AddOption("UVW", "Input", "Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "uvw"), "uvw", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FOG, Shader::MODE_FOG));
 	add_options.push_back(AddOption("Extents", "Input", "Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "extents"), "extents", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FOG, Shader::MODE_FOG));
-	add_options.push_back(AddOption("Transform", "Input", "Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "transform"), "transform", VisualShaderNode::PORT_TYPE_TRANSFORM, TYPE_FLAGS_FOG, Shader::MODE_FOG));
 	add_options.push_back(AddOption("SDF", "Input", "Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "sdf"), "sdf", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FOG, Shader::MODE_FOG));
 	add_options.push_back(AddOption("Time", "Input", "Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "time"), "time", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FOG, Shader::MODE_FOG));
 
