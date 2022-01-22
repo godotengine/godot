@@ -84,13 +84,11 @@ real_t CapsuleShape2D::get_height() const {
 
 void CapsuleShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	Vector<Vector2> points = _get_points();
-	Vector<Color> col;
-	col.push_back(p_color);
+	Vector<Color> col = { p_color };
 	RenderingServer::get_singleton()->canvas_item_add_polygon(p_to_rid, points, col);
 	if (is_collision_outline_enabled()) {
+		points.push_back(points[0]);
 		RenderingServer::get_singleton()->canvas_item_add_polyline(p_to_rid, points, col);
-		// Draw the last segment as it's not drawn by `canvas_item_add_polyline()`.
-		RenderingServer::get_singleton()->canvas_item_add_line(p_to_rid, points[points.size() - 1], points[0], p_color);
 	}
 }
 
