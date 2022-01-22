@@ -278,6 +278,10 @@ public:
 
 	RID_Owner<ShadowAtlas> shadow_atlas_owner;
 
+	int directional_shadow_size;
+
+	void directional_shadow_create();
+
 	RID shadow_atlas_create();
 	void shadow_atlas_set_size(RID p_atlas, int p_size);
 	void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision);
