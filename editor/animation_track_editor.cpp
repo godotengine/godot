@@ -1459,7 +1459,7 @@ int AnimationTimelineEdit::get_name_limit() const {
 
 void AnimationTimelineEdit::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		panner->set_control_scheme((ViewPanner::ControlScheme)EDITOR_GET("interface/editors/animation_editors_panning_scheme").operator int());
+		panner->setup((ViewPanner::ControlScheme)EDITOR_GET("interface/editors/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
 	}
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
@@ -1843,7 +1843,7 @@ void AnimationTimelineEdit::_pan_callback(Vector2 p_scroll_vec) {
 	set_value(get_value() - p_scroll_vec.x / get_zoom_scale());
 }
 
-void AnimationTimelineEdit::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin) {
+void AnimationTimelineEdit::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt) {
 	if (p_scroll_vec.y < 0) {
 		get_zoom()->set_value(get_zoom()->get_value() * 1.05);
 	} else {
@@ -1932,8 +1932,6 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 
 	panner.instantiate();
 	panner->set_callbacks(callable_mp(this, &AnimationTimelineEdit::_scroll_callback), callable_mp(this, &AnimationTimelineEdit::_pan_callback), callable_mp(this, &AnimationTimelineEdit::_zoom_callback));
-	panner->set_disable_rmb(true);
-	panner->set_control_scheme(ViewPanner::SCROLL_PANS);
 
 	set_layout_direction(Control::LAYOUT_DIRECTION_LTR);
 }
@@ -4512,7 +4510,7 @@ MenuButton *AnimationTrackEditor::get_edit_menu() {
 
 void AnimationTrackEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		panner->set_control_scheme((ViewPanner::ControlScheme)EDITOR_GET("interface/editors/animation_editors_panning_scheme").operator int());
+		panner->setup((ViewPanner::ControlScheme)EDITOR_GET("interface/editors/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
 	}
 
 	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
@@ -5315,7 +5313,7 @@ void AnimationTrackEditor::_pan_callback(Vector2 p_scroll_vec) {
 	scroll->set_v_scroll(scroll->get_v_scroll() - p_scroll_vec.y);
 }
 
-void AnimationTrackEditor::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin) {
+void AnimationTrackEditor::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt) {
 	if (p_scroll_vec.y < 0) {
 		timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() * 1.05);
 	} else {
@@ -6111,8 +6109,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	panner.instantiate();
 	panner->set_callbacks(callable_mp(this, &AnimationTrackEditor::_scroll_callback), callable_mp(this, &AnimationTrackEditor::_pan_callback), callable_mp(this, &AnimationTrackEditor::_zoom_callback));
-	panner->set_disable_rmb(true);
-	panner->set_control_scheme(ViewPanner::SCROLL_PANS);
 
 	scroll = memnew(ScrollContainer);
 	timeline_vbox->add_child(scroll);
@@ -6120,7 +6116,9 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	VScrollBar *sb = scroll->get_v_scroll_bar();
 	scroll->remove_child(sb);
 	timeline_scroll->add_child(sb); // Move here so timeline and tracks are always aligned.
+	scroll->set_focus_mode(FOCUS_CLICK);
 	scroll->connect("gui_input", callable_mp(this, &AnimationTrackEditor::_scroll_input));
+	scroll->connect("focus_exited", callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
 
 	bezier_edit = memnew(AnimationBezierTrackEdit);
 	timeline_vbox->add_child(bezier_edit);

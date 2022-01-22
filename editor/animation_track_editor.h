@@ -84,7 +84,7 @@ class AnimationTimelineEdit : public Range {
 	Ref<ViewPanner> panner;
 	void _scroll_callback(Vector2 p_scroll_vec);
 	void _pan_callback(Vector2 p_scroll_vec);
-	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin);
+	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
 
 	bool dragging_timeline;
 	bool dragging_hsize;
@@ -379,7 +379,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	Ref<ViewPanner> panner;
 	void _scroll_callback(Vector2 p_scroll_vec);
 	void _pan_callback(Vector2 p_scroll_vec);
-	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin);
+	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
 
 	void _timeline_value_changed(double);
 

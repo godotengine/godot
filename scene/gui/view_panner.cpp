@@ -31,22 +31,18 @@
 #include "view_panner.h"
 
 #include "core/input/input.h"
+#include "core/input/shortcut.h"
 #include "core/os/keyboard.h"
 
 bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) {
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
-		// Alt modifier is unused, so ignore such events.
-		if (mb->is_alt_pressed()) {
-			return false;
-		}
-
 		Vector2i scroll_vec = Vector2((mb->get_button_index() == MouseButton::WHEEL_RIGHT) - (mb->get_button_index() == MouseButton::WHEEL_LEFT), (mb->get_button_index() == MouseButton::WHEEL_DOWN) - (mb->get_button_index() == MouseButton::WHEEL_UP));
 		if (scroll_vec != Vector2()) {
 			if (control_scheme == SCROLL_PANS) {
 				if (mb->is_ctrl_pressed()) {
 					scroll_vec.y *= mb->get_factor();
-					callback_helper(zoom_callback, scroll_vec, mb->get_position());
+					callback_helper(zoom_callback, varray(scroll_vec, mb->get_position(), mb->is_alt_pressed()));
 					return true;
 				} else {
 					Vector2 panning;
@@ -57,7 +53,7 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 						panning.y += mb->get_factor() * scroll_vec.y;
 						panning.x += mb->get_factor() * scroll_vec.x;
 					}
-					callback_helper(scroll_callback, panning);
+					callback_helper(scroll_callback, varray(panning));
 					return true;
 				}
 			} else {
@@ -70,23 +66,28 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 						panning.y += mb->get_factor() * scroll_vec.y;
 						panning.x += mb->get_factor() * scroll_vec.x;
 					}
-					callback_helper(scroll_callback, panning);
+					callback_helper(scroll_callback, varray(panning));
 					return true;
 				} else if (!mb->is_shift_pressed()) {
 					scroll_vec.y *= mb->get_factor();
-					callback_helper(zoom_callback, scroll_vec, mb->get_position());
+					callback_helper(zoom_callback, varray(scroll_vec, mb->get_position(), mb->is_alt_pressed()));
 					return true;
 				}
 			}
 		}
 
-		if (mb->get_button_index() == MouseButton::MIDDLE || (mb->get_button_index() == MouseButton::RIGHT && !disable_rmb) || (mb->get_button_index() == MouseButton::LEFT && (Input::get_singleton()->is_key_pressed(Key::SPACE) || (is_dragging && !mb->is_pressed())))) {
+		// Use Alt only for scrolling.
+		if (mb->is_alt_pressed()) {
+			return false;
+		}
+
+		if (mb->get_button_index() == MouseButton::MIDDLE || (enable_rmb && mb->get_button_index() == MouseButton::RIGHT) || (!simple_panning_enabled && mb->get_button_index() == MouseButton::LEFT && is_panning())) {
 			if (mb->is_pressed()) {
 				is_dragging = true;
 			} else {
 				is_dragging = false;
 			}
-			return true;
+			return mb->get_button_index() != MouseButton::LEFT || mb->is_pressed(); // Don't consume LMB release events (it fixes some selection problems).
 		}
 	}
 
@@ -94,9 +95,20 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 	if (mm.is_valid()) {
 		if (is_dragging) {
 			if (p_canvas_rect != Rect2()) {
-				callback_helper(pan_callback, Input::get_singleton()->warp_mouse_motion(mm, p_canvas_rect));
+				callback_helper(pan_callback, varray(Input::get_singleton()->warp_mouse_motion(mm, p_canvas_rect)));
 			} else {
-				callback_helper(pan_callback, mm->get_relative());
+				callback_helper(pan_callback, varray(mm->get_relative()));
+			}
+			return true;
+		}
+	}
+
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid()) {
+		if (pan_view_shortcut.is_valid() && pan_view_shortcut->matches_event(k)) {
+			pan_key_pressed = k->is_pressed();
+			if (simple_panning_enabled || (Input::get_singleton()->get_mouse_button_mask() & MouseButton::LEFT) != MouseButton::NONE) {
+				is_dragging = pan_key_pressed;
 			}
 			return true;
 		}
@@ -105,26 +117,20 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 	return false;
 }
 
-void ViewPanner::callback_helper(Callable p_callback, Vector2 p_arg1, Vector2 p_arg2) {
-	if (p_callback == zoom_callback) {
-		const Variant **argptr = (const Variant **)alloca(sizeof(Variant *) * 2);
-		Variant var1 = p_arg1;
-		argptr[0] = &var1;
-		Variant var2 = p_arg2;
-		argptr[1] = &var2;
+void ViewPanner::release_pan_key() {
+	pan_key_pressed = false;
+	is_dragging = false;
+}
 
-		Variant result;
-		Callable::CallError ce;
-		p_callback.call(argptr, 2, result, ce);
-	} else {
-		const Variant **argptr = (const Variant **)alloca(sizeof(Variant *));
-		Variant var = p_arg1;
-		argptr[0] = &var;
-
-		Variant result;
-		Callable::CallError ce;
-		p_callback.call(argptr, 1, result, ce);
+void ViewPanner::callback_helper(Callable p_callback, Vector<Variant> p_args) {
+	const Variant **argptr = (const Variant **)alloca(sizeof(Variant *) * p_args.size());
+	for (int i = 0; i < p_args.size(); i++) {
+		argptr[i] = &p_args[i];
 	}
+
+	Variant result;
+	Callable::CallError ce;
+	p_callback.call(argptr, p_args.size(), result, ce);
 }
 
 void ViewPanner::set_callbacks(Callable p_scroll_callback, Callable p_pan_callback, Callable p_zoom_callback) {
@@ -137,6 +143,33 @@ void ViewPanner::set_control_scheme(ControlScheme p_scheme) {
 	control_scheme = p_scheme;
 }
 
-void ViewPanner::set_disable_rmb(bool p_disable) {
-	disable_rmb = p_disable;
+void ViewPanner::set_enable_rmb(bool p_enable) {
+	enable_rmb = p_enable;
+}
+
+void ViewPanner::set_pan_shortcut(Ref<Shortcut> p_shortcut) {
+	pan_view_shortcut = p_shortcut;
+	pan_key_pressed = false;
+}
+
+void ViewPanner::set_simple_panning_enabled(bool p_enabled) {
+	simple_panning_enabled = p_enabled;
+}
+
+void ViewPanner::setup(ControlScheme p_scheme, Ref<Shortcut> p_shortcut, bool p_simple_panning) {
+	set_control_scheme(p_scheme);
+	set_pan_shortcut(p_shortcut);
+	set_simple_panning_enabled(p_simple_panning);
+}
+
+bool ViewPanner::is_panning() const {
+	return is_dragging || pan_key_pressed;
+}
+
+ViewPanner::ViewPanner() {
+	Array inputs;
+	inputs.append(InputEventKey::create_reference(Key::SPACE));
+
+	pan_view_shortcut.instantiate();
+	pan_view_shortcut->set_events(inputs);
 }

@@ -218,7 +218,7 @@ void AnimationBezierTrackEdit::_draw_line_clipped(const Vector2 &p_from, const V
 
 void AnimationBezierTrackEdit::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		panner->set_control_scheme((ViewPanner::ControlScheme)EDITOR_GET("interface/editors/animation_editors_panning_scheme").operator int());
+		panner->setup((ViewPanner::ControlScheme)EDITOR_GET("interface/editors/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
 	}
 	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
 		close_button->set_icon(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
@@ -632,27 +632,6 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->is_pressed() && mb->is_alt_pressed()) {
-		// Alternate zoom (doesn't affect timeline).
-		if (mb->get_button_index() == MouseButton::WHEEL_DOWN) {
-			const float v_zoom_orig = v_zoom;
-			if (v_zoom < 100000) {
-				v_zoom *= 1.2;
-			}
-			v_scroll = v_scroll + (mb->get_position().y - get_size().y / 2) * (v_zoom - v_zoom_orig);
-			update();
-		}
-
-		if (mb->get_button_index() == MouseButton::WHEEL_UP) {
-			const float v_zoom_orig = v_zoom;
-			if (v_zoom > 0.000001) {
-				v_zoom /= 1.2;
-			}
-			v_scroll = v_scroll + (mb->get_position().y - get_size().y / 2) * (v_zoom - v_zoom_orig);
-			update();
-		}
-	}
-
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 		menu_insert_key = mb->get_position();
 		if (menu_insert_key.x >= timeline->get_name_limit() && menu_insert_key.x <= get_size().width - timeline->get_buttons_width()) {
@@ -1026,12 +1005,21 @@ void AnimationBezierTrackEdit::_pan_callback(Vector2 p_scroll_vec) {
 	update();
 }
 
-void AnimationBezierTrackEdit::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin) {
+void AnimationBezierTrackEdit::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt) {
 	const float v_zoom_orig = v_zoom;
-	if (p_scroll_vec.y > 0) {
-		timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() / 1.05);
+	if (p_alt) {
+		// Alternate zoom (doesn't affect timeline).
+		if (p_scroll_vec.y > 0) {
+			v_zoom = MIN(v_zoom * 1.2, 100000);
+		} else {
+			v_zoom = MAX(v_zoom / 1.2, 0.000001);
+		}
 	} else {
-		timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() * 1.05);
+		if (p_scroll_vec.y > 0) {
+			timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() / 1.05);
+		} else {
+			timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() * 1.05);
+		}
 	}
 	v_scroll = v_scroll + (p_origin.y - get_size().y / 2) * (v_zoom - v_zoom_orig);
 	update();
@@ -1172,8 +1160,6 @@ void AnimationBezierTrackEdit::_bind_methods() {
 AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
 	panner.instantiate();
 	panner->set_callbacks(callable_mp(this, &AnimationBezierTrackEdit::_scroll_callback), callable_mp(this, &AnimationBezierTrackEdit::_pan_callback), callable_mp(this, &AnimationBezierTrackEdit::_zoom_callback));
-	panner->set_disable_rmb(true);
-	panner->set_control_scheme(ViewPanner::SCROLL_PANS);
 
 	play_position = memnew(Control);
 	play_position->set_mouse_filter(MOUSE_FILTER_PASS);

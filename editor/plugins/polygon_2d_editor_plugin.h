@@ -83,7 +83,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	Ref<ViewPanner> uv_panner;
 	void _uv_scroll_callback(Vector2 p_scroll_vec);
 	void _uv_pan_callback(Vector2 p_scroll_vec);
-	void _uv_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin);
+	void _uv_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
 
 	VBoxContainer *bone_scroll_main_vb;
 	ScrollContainer *bone_scroll;

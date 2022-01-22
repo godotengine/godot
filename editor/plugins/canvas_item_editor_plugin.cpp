@@ -51,6 +51,7 @@
 #include "scene/gui/grid_container.h"
 #include "scene/gui/nine_patch_rect.h"
 #include "scene/gui/subviewport_container.h"
+#include "scene/gui/view_panner.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
@@ -1116,77 +1117,14 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 }
 
 bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bool p_already_accepted) {
-	Ref<InputEventMouseButton> b = p_event;
-	if (b.is_valid() && !p_already_accepted) {
-		const bool pan_on_scroll = bool(EditorSettings::get_singleton()->get("editors/2d/scroll_to_pan")) && !b->is_ctrl_pressed();
+	bool panner_active = panner->gui_input(p_event, warped_panning ? viewport->get_global_rect() : Rect2());
+	if (panner->is_panning() != pan_pressed) {
+		pan_pressed = panner->is_panning();
+		_update_cursor();
+	}
 
-		if (pan_on_scroll) {
-			// Perform horizontal scrolling first so we can check for Shift being held.
-			if (b->is_pressed() &&
-					(b->get_button_index() == MouseButton::WHEEL_LEFT || (b->is_shift_pressed() && b->get_button_index() == MouseButton::WHEEL_UP))) {
-				// Pan left
-				view_offset.x -= int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
-				update_viewport();
-				return true;
-			}
-
-			if (b->is_pressed() &&
-					(b->get_button_index() == MouseButton::WHEEL_RIGHT || (b->is_shift_pressed() && b->get_button_index() == MouseButton::WHEEL_DOWN))) {
-				// Pan right
-				view_offset.x += int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
-				update_viewport();
-				return true;
-			}
-		}
-
-		if (b->is_pressed() && b->get_button_index() == MouseButton::WHEEL_DOWN) {
-			// Scroll or pan down
-			if (pan_on_scroll) {
-				view_offset.y += int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
-				update_viewport();
-			} else {
-				zoom_widget->set_zoom_by_increments(-1, Input::get_singleton()->is_key_pressed(Key::ALT));
-				if (!Math::is_equal_approx(b->get_factor(), 1.0f)) {
-					// Handle high-precision (analog) scrolling.
-					zoom_widget->set_zoom(zoom * ((zoom_widget->get_zoom() / zoom - 1.f) * b->get_factor() + 1.f));
-				}
-				_zoom_on_position(zoom_widget->get_zoom(), b->get_position());
-			}
-			return true;
-		}
-
-		if (b->is_pressed() && b->get_button_index() == MouseButton::WHEEL_UP) {
-			// Scroll or pan up
-			if (pan_on_scroll) {
-				view_offset.y -= int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
-				update_viewport();
-			} else {
-				zoom_widget->set_zoom_by_increments(1, Input::get_singleton()->is_key_pressed(Key::ALT));
-				if (!Math::is_equal_approx(b->get_factor(), 1.0f)) {
-					// Handle high-precision (analog) scrolling.
-					zoom_widget->set_zoom(zoom * ((zoom_widget->get_zoom() / zoom - 1.f) * b->get_factor() + 1.f));
-				}
-				_zoom_on_position(zoom_widget->get_zoom(), b->get_position());
-			}
-			return true;
-		}
-
-		if (!panning) {
-			if (b->is_pressed() &&
-					(b->get_button_index() == MouseButton::MIDDLE ||
-							(b->get_button_index() == MouseButton::LEFT && tool == TOOL_PAN) ||
-							(b->get_button_index() == MouseButton::LEFT && !EditorSettings::get_singleton()->get("editors/2d/simple_panning") && pan_pressed))) {
-				// Pan the viewport
-				panning = true;
-			}
-		}
-
-		if (panning) {
-			if (!b->is_pressed() && (pan_on_scroll || (b->get_button_index() != MouseButton::WHEEL_DOWN && b->get_button_index() != MouseButton::WHEEL_UP))) {
-				// Stop panning the viewport (for any mouse button press except zooming)
-				panning = false;
-			}
-		}
+	if (panner_active) {
+		return true;
 	}
 
 	Ref<InputEventKey> k = p_event;
@@ -1214,44 +1152,6 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 				_update_zoom(16.0 * MAX(1, EDSCALE));
 			}
 		}
-
-		bool is_pan_key = pan_view_shortcut.is_valid() && pan_view_shortcut->matches_event(p_event);
-
-		if (is_pan_key && (EditorSettings::get_singleton()->get("editors/2d/simple_panning") || drag_type != DRAG_NONE)) {
-			if (!panning) {
-				if (k->is_pressed() && !k->is_echo()) {
-					//Pan the viewport
-					panning = true;
-				}
-			} else {
-				if (!k->is_pressed()) {
-					// Stop panning the viewport (for any mouse button press)
-					panning = false;
-				}
-			}
-		}
-
-		if (is_pan_key && pan_pressed != k->is_pressed()) {
-			pan_pressed = k->is_pressed();
-			_update_cursor();
-		}
-	}
-
-	Ref<InputEventMouseMotion> m = p_event;
-	if (m.is_valid()) {
-		if (panning) {
-			// Pan the viewport
-			Point2i relative;
-			if (bool(EditorSettings::get_singleton()->get("editors/2d/warped_mouse_panning"))) {
-				relative = Input::get_singleton()->warp_mouse_motion(m, viewport->get_global_rect());
-			} else {
-				relative = m->get_relative();
-			}
-			view_offset.x -= relative.x / zoom;
-			view_offset.y -= relative.y / zoom;
-			update_viewport();
-			return true;
-		}
 	}
 
 	Ref<InputEventMagnifyGesture> magnify_gesture = p_event;
@@ -1277,7 +1177,7 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 		}
 
 		// Pan gesture
-		const Vector2 delta = (int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom) * pan_gesture->get_delta();
+		const Vector2 delta = (pan_speed / zoom) * pan_gesture->get_delta();
 		view_offset.x += delta.x;
 		view_offset.y += delta.y;
 		update_viewport();
@@ -1285,6 +1185,25 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 	}
 
 	return false;
+}
+
+void CanvasItemEditor::_scroll_callback(Vector2 p_scroll_vec) {
+	_pan_callback(-p_scroll_vec * pan_speed);
+}
+
+void CanvasItemEditor::_pan_callback(Vector2 p_scroll_vec) {
+	view_offset.x -= p_scroll_vec.x / zoom;
+	view_offset.y -= p_scroll_vec.y / zoom;
+	update_viewport();
+}
+
+void CanvasItemEditor::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt) {
+	zoom_widget->set_zoom_by_increments(-1, p_alt);
+	if (!Math::is_equal_approx(p_scroll_vec.y, (real_t)1.0)) {
+		// Handle high-precision (analog) scrolling.
+		zoom_widget->set_zoom(zoom * ((zoom_widget->get_zoom() / zoom - 1.f) * p_scroll_vec.y + 1.f));
+	}
+	_zoom_on_position(zoom_widget->get_zoom(), p_origin);
 }
 
 bool CanvasItemEditor::_gui_input_pivot(const Ref<InputEvent> &p_event) {
@@ -2281,7 +2200,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			return true;
 		}
 
-		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed() && tool == TOOL_SELECT) {
+		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed() && tool == TOOL_SELECT && !panner->is_panning()) {
 			// Single item selection
 			Point2 click = transform.affine_inverse().xform(b->get_position());
 
@@ -2498,31 +2417,34 @@ bool CanvasItemEditor::_gui_input_hover(const Ref<InputEvent> &p_event) {
 void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 	bool accepted = false;
 
-	if (EditorSettings::get_singleton()->get("editors/2d/simple_panning") || !pan_pressed) {
+	Ref<InputEventMouseButton> mb = p_event;
+	bool release_lmb = (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT); // Required to properly release some stuff (e.g. selection box) while panning.
+
+	if (EditorSettings::get_singleton()->get("editors/panning/simple_panning") || !pan_pressed || release_lmb) {
 		if ((accepted = _gui_input_rulers_and_guides(p_event))) {
-			//printf("Rulers and guides\n");
+			// print_line("Rulers and guides");
 		} else if ((accepted = editor->get_editor_plugins_over()->forward_gui_input(p_event))) {
-			//printf("Plugin\n");
+			// print_line("Plugin");
 		} else if ((accepted = _gui_input_open_scene_on_double_click(p_event))) {
-			//printf("Open scene on double click\n");
+			// print_line("Open scene on double click");
 		} else if ((accepted = _gui_input_scale(p_event))) {
-			//printf("Set scale\n");
+			// print_line("Set scale");
 		} else if ((accepted = _gui_input_pivot(p_event))) {
-			//printf("Set pivot\n");
+			// print_line("Set pivot");
 		} else if ((accepted = _gui_input_resize(p_event))) {
-			//printf("Resize\n");
+			// print_line("Resize");
 		} else if ((accepted = _gui_input_rotate(p_event))) {
-			//printf("Rotate\n");
+			// print_line("Rotate");
 		} else if ((accepted = _gui_input_move(p_event))) {
-			//printf("Move\n");
+			// print_line("Move");
 		} else if ((accepted = _gui_input_anchors(p_event))) {
-			//printf("Anchors\n");
+			// print_line("Anchors");
 		} else if ((accepted = _gui_input_select(p_event))) {
-			//printf("Selection\n");
+			// print_line("Selection");
 		} else if ((accepted = _gui_input_ruler_tool(p_event))) {
-			//printf("Measure\n");
+			// print_line("Measure");
 		} else {
-			//printf("Not accepted\n");
+			// print_line("Not accepted");
 		}
 	}
 
@@ -3935,6 +3857,10 @@ void CanvasItemEditor::_notification(int p_what) {
 		anchors_popup->add_icon_item(get_theme_icon(SNAME("ControlAlignWide"), SNAME("EditorIcons")), TTR("Full Rect"), ANCHORS_PRESET_WIDE);
 
 		anchor_mode_button->set_icon(get_theme_icon(SNAME("Anchor"), SNAME("EditorIcons")));
+
+		panner->setup((ViewPanner::ControlScheme)EDITOR_GET("interface/editors/2d_editor_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
+		pan_speed = int(EditorSettings::get_singleton()->get("editors/panning/2d_editor_pan_speed"));
+		warped_panning = bool(EditorSettings::get_singleton()->get("editors/panning/warped_mouse_panning"));
 	}
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
@@ -5205,7 +5131,6 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	dragged_guide_index = -1;
 	is_hovering_h_guide = false;
 	is_hovering_v_guide = false;
-	panning = false;
 	pan_pressed = false;
 
 	ruler_tool_active = false;
@@ -5260,6 +5185,9 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	controls_vb = memnew(VBoxContainer);
 	controls_vb->set_begin(Point2(5, 5));
 
+	panner.instantiate();
+	panner->set_callbacks(callable_mp(this, &CanvasItemEditor::_scroll_callback), callable_mp(this, &CanvasItemEditor::_pan_callback), callable_mp(this, &CanvasItemEditor::_zoom_callback));
+
 	viewport = memnew(CanvasItemEditorViewport(p_editor, this));
 	viewport_scrollable->add_child(viewport);
 	viewport->set_mouse_filter(MOUSE_FILTER_PASS);
@@ -5268,6 +5196,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	viewport->set_focus_mode(FOCUS_ALL);
 	viewport->connect("draw", callable_mp(this, &CanvasItemEditor::_draw_viewport));
 	viewport->connect("gui_input", callable_mp(this, &CanvasItemEditor::_gui_input_viewport));
+	viewport->connect("focus_exited", callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
 
 	h_scroll = memnew(HScrollBar);
 	viewport->add_child(h_scroll);
@@ -5624,7 +5553,6 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	multiply_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/multiply_grid_step", TTR("Multiply grid step by 2"), Key::KP_MULTIPLY);
 	divide_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/divide_grid_step", TTR("Divide grid step by 2"), Key::KP_DIVIDE);
-	pan_view_shortcut = ED_SHORTCUT("canvas_item_editor/pan_view", TTR("Pan View"), Key::SPACE);
 
 	skeleton_menu->get_popup()->set_item_checked(skeleton_menu->get_popup()->get_item_index(SKELETON_SHOW_BONES), true);
 	singleton = this;

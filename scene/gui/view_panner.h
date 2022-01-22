@@ -34,6 +34,7 @@
 #include "core/object/ref_counted.h"
 
 class InputEvent;
+class Shortcut;
 
 class ViewPanner : public RefCounted {
 	GDCLASS(ViewPanner, RefCounted);
@@ -46,23 +47,34 @@ public:
 
 private:
 	bool is_dragging = false;
-	bool disable_rmb = false;
+	bool pan_key_pressed = false;
+	bool enable_rmb = false;
+	bool simple_panning_enabled = false;
+
+	Ref<Shortcut> pan_view_shortcut;
 
 	Callable scroll_callback;
 	Callable pan_callback;
 	Callable zoom_callback;
 
-	void callback_helper(Callable p_callback, Vector2 p_arg1, Vector2 p_arg2 = Vector2());
+	void callback_helper(Callable p_callback, Vector<Variant> p_args);
 	ControlScheme control_scheme = SCROLL_ZOOMS;
 
 public:
 	void set_callbacks(Callable p_scroll_callback, Callable p_pan_callback, Callable p_zoom_callback);
 	void set_control_scheme(ControlScheme p_scheme);
-	void set_disable_rmb(bool p_disable);
+	void set_enable_rmb(bool p_enable);
+	void set_pan_shortcut(Ref<Shortcut> p_shortcut);
+	void set_simple_panning_enabled(bool p_enabled);
 
-	bool is_panning() const { return is_dragging; }
+	void setup(ControlScheme p_scheme, Ref<Shortcut> p_shortcut, bool p_simple_panning);
+
+	bool is_panning() const;
 
 	bool gui_input(const Ref<InputEvent> &p_ev, Rect2 p_canvas_rect = Rect2());
+	void release_pan_key();
+
+	ViewPanner();
 };
 
 #endif // VIEW_PANNER_H
