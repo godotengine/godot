@@ -32,8 +32,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "servers/rendering/shader_types.h"
 #include "servers/rendering/shader_preprocessor.h"
+#include "servers/rendering/shader_types.h"
 #include "servers/rendering_server.h"
 
 #define SL ShaderLanguage

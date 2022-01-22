@@ -41,8 +41,8 @@
 #include "scene/gui/tree.h"
 #include "scene/main/timer.h"
 #include "scene/resources/shader.h"
-#include "servers/rendering/shader_warnings.h"
 #include "servers/rendering/shader_preprocessor.h"
+#include "servers/rendering/shader_warnings.h"
 
 class ShaderEditor;
 

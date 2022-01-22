@@ -145,9 +145,6 @@ public:
 			if (c == 0xFFFF) {
 				// cursor. maintain.
 				stripped.push_back(c);
-			} else if (c < 0) {
-				// skip invalid chars.
-				continue;
 			} else if (c == '"') {
 				if (strings_open <= 0) {
 					strings_open++;
