@@ -390,7 +390,7 @@
 			<argument index="0" name="column" type="int" />
 			<argument index="1" name="emit_signal" type="bool" default="true" />
 			<description>
-				Propagates this item's checked status to its children and parents for the given [code]column[/code]. It is possible to process the items affected by this method call by connecting to [signal Tree.check_propagated_to_item]. The order that the items affected will be processed is as follows: the item invoking this method, children of that item, and finally parents of that item. If [code]emit_signal[/code] is set to false, then [signal Tree.check_propagated_to_item] will not be emitted.
+				Propagates this item's checked status to its children and parents for the given [code]column[/code]. It is possible to process the items affected by this method call by connecting to [signal Tree.check_propagated_to_item]. The order that the items affected will be processed is as follows: the item invoking this method, children of that item, and finally parents of that item. If [code]emit_signal[/code] is [code]false[/code], then [signal Tree.check_propagated_to_item] will not be emitted.
 			</description>
 		</method>
 		<method name="remove_child">
