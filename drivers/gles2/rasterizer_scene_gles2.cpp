@@ -4099,7 +4099,6 @@ void RasterizerSceneGLES2::finalize() {
 RasterizerSceneGLES2::RasterizerSceneGLES2() {
 	_light_counter = 0;
 	directional_shadow_size = next_power_of_2(int(GLOBAL_GET("rendering/quality/directional_shadow/size")));
-
 }
 
 RasterizerSceneGLES2::~RasterizerSceneGLES2() {
