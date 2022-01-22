@@ -404,6 +404,11 @@ String ShaderPreprocessor::preprocess(PreprocessorState *p_state) {
 		}
 	}
 
+	if (state->condition_depth != 0) {
+		set_error("Unmatched conditional statement.", p_tokenizer.line);
+		return "<error>"; // return generic error string as actual error is stored internally.
+	}
+
 	expand_output_macros(last_size, p_tokenizer.get_line());
 
 	String result = vector_to_string(output);
@@ -734,6 +739,9 @@ void ShaderPreprocessor::process_pragma(PreprocessorTokenizer *p_tokenizer) {
 	// if more pragma options are created, then refactor into a more defined structure.
 	if (label == "disable_preprocessor") {
 		state->disabled = true;
+	} else {
+		set_error("Invalid pragma value", line);
+		return;
 	}
 
 	p_tokenizer->advance('\n');
