@@ -7518,6 +7518,9 @@ Error RenderingDeviceVulkan::draw_list_switch_to_next_pass_split(uint32_t p_spli
 }
 
 Error RenderingDeviceVulkan::_draw_list_allocate(const Rect2i &p_viewport, uint32_t p_splits, uint32_t p_subpass) {
+	// Lock while draw_list is active
+	_THREAD_SAFE_LOCK_
+
 	if (p_splits == 0) {
 		draw_list = memnew(DrawList);
 		draw_list->command_buffer = frames[frame].draw_command_buffer;
@@ -7628,6 +7631,9 @@ void RenderingDeviceVulkan::_draw_list_free(Rect2i *r_last_viewport) {
 		memdelete(draw_list);
 		draw_list = nullptr;
 	}
+
+	// draw_list is no longer active
+	_THREAD_SAFE_UNLOCK_
 }
 
 void RenderingDeviceVulkan::draw_list_end(uint32_t p_post_barrier) {
@@ -7740,6 +7746,9 @@ void RenderingDeviceVulkan::draw_list_end(uint32_t p_post_barrier) {
 RenderingDevice::ComputeListID RenderingDeviceVulkan::compute_list_begin(bool p_allow_draw_overlap) {
 	ERR_FAIL_COND_V_MSG(!p_allow_draw_overlap && draw_list != nullptr, INVALID_ID, "Only one draw list can be active at the same time.");
 	ERR_FAIL_COND_V_MSG(compute_list != nullptr, INVALID_ID, "Only one draw/compute list can be active at the same time.");
+
+	// Lock while compute_list is active
+	_THREAD_SAFE_LOCK_
 
 	compute_list = memnew(ComputeList);
 	compute_list->command_buffer = frames[frame].draw_command_buffer;
@@ -8214,6 +8223,9 @@ void RenderingDeviceVulkan::compute_list_end(uint32_t p_post_barrier) {
 
 	memdelete(compute_list);
 	compute_list = nullptr;
+
+	// compute_list is no longer active
+	_THREAD_SAFE_UNLOCK_
 }
 
 void RenderingDeviceVulkan::barrier(uint32_t p_from, uint32_t p_to) {
