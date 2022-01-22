@@ -3848,10 +3848,12 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 		disk_changed_list->set_v_size_flags(SIZE_EXPAND_FILL);
 
 		disk_changed->connect("confirmed", callable_mp(this, &ScriptEditor::_reload_scripts));
-		disk_changed->get_ok_button()->set_text(TTR("Reload"));
+		disk_changed->get_ok_button()->set_text(TTR("Reload From Disk (Discard Local Changes)"));
 
-		disk_changed->add_button(TTR("Resave"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
+		disk_changed->add_button(TTR("Save Local Changes"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
 		disk_changed->connect("custom_action", callable_mp(this, &ScriptEditor::_resave_scripts));
+
+		disk_changed->get_cancel_button()->set_text(TTR("Do Nothing"))
 	}
 
 	add_child(disk_changed);

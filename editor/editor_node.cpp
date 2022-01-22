@@ -6926,10 +6926,12 @@ EditorNode::EditorNode() {
 
 		disk_changed->connect("confirmed", callable_mp(this, &EditorNode::_reload_modified_scenes));
 		disk_changed->connect("confirmed", callable_mp(this, &EditorNode::_reload_project_settings));
-		disk_changed->get_ok_button()->set_text(TTR("Reload"));
+		disk_changed->get_ok_button()->set_text(TTR("Reload From Disk (Discard Local Changes)"));
 
-		disk_changed->add_button(TTR("Resave"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
+		disk_changed->add_button(TTR("Save Local Changes"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
 		disk_changed->connect("custom_action", callable_mp(this, &EditorNode::_resave_scenes));
+
+		disk_changed->get_cancel_button()->set_text(TTR("Do Nothing"))
 	}
 
 	gui_base->add_child(disk_changed);
