@@ -70,8 +70,9 @@
 		</method>
 		<method name="c_escape" qualifiers="const">
 			<return type="String" />
+			<argument index="0" name="escape_single_quotes" type="bool" />
 			<description>
-				Returns a copy of the string with special characters escaped using the C language standard.
+				Returns a copy of the string with special characters escaped using the C language standard. Does not escape single quotes if argument [code]is_single_quotes[/code] is false.
 			</description>
 		</method>
 		<method name="c_unescape" qualifiers="const">

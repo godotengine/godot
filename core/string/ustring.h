@@ -410,7 +410,7 @@ public:
 	String xml_unescape() const;
 	String uri_encode() const;
 	String uri_decode() const;
-	String c_escape() const;
+	String c_escape(bool escape_single_quotes = true) const;
 	String c_escape_multiline() const;
 	String c_unescape() const;
 	String json_escape() const;

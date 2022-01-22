@@ -1430,6 +1430,10 @@ static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const
 void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 
+	bool is_single_quotes = false;
+	if (quote_style == "'")
+		is_single_quotes = true;
+
 	Dictionary d = p_data;
 
 	CodeEdit *te = code_editor->get_text_editor();
@@ -1464,9 +1468,9 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 			}
 
 			if (preload) {
-				text_to_drop += "preload(" + String(files[i]).c_escape().quote(quote_style) + ")";
+				text_to_drop += "preload(" + String(files[i]).c_escape(is_single_quotes).quote(quote_style) + ")";
 			} else {
-				text_to_drop += String(files[i]).c_escape().quote(quote_style);
+				text_to_drop += String(files[i]).c_escape(is_single_quotes).quote(quote_style);
 			}
 		}
 
@@ -1497,7 +1501,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 			}
 
 			String path = sn->get_path_to(node);
-			text_to_drop += path.c_escape().quote(quote_style);
+			text_to_drop += path.c_escape(is_single_quotes).quote(quote_style);
 		}
 
 		te->set_caret_line(row);
@@ -1506,7 +1510,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	}
 
 	if (d.has("type") && String(d["type"]) == "obj_property") {
-		const String text_to_drop = String(d["property"]).c_escape().quote(quote_style);
+		const String text_to_drop = String(d["property"]).c_escape(is_single_quotes).quote(quote_style);
 
 		te->set_caret_line(row);
 		te->set_caret_column(col);

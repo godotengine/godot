@@ -3767,7 +3767,7 @@ String String::c_unescape() const {
 	return escaped;
 }
 
-String String::c_escape() const {
+String String::c_escape(bool escape_single_quotes) const {
 	String escaped = *this;
 	escaped = escaped.replace("\\", "\\\\");
 	escaped = escaped.replace("\a", "\\a");
@@ -3777,7 +3777,8 @@ String String::c_escape() const {
 	escaped = escaped.replace("\r", "\\r");
 	escaped = escaped.replace("\t", "\\t");
 	escaped = escaped.replace("\v", "\\v");
-	escaped = escaped.replace("\'", "\\'");
+	if (escape_single_quotes == true)
+		escaped = escaped.replace("\'", "\\'");
 	escaped = escaped.replace("\?", "\\?");
 	escaped = escaped.replace("\"", "\\\"");
 
