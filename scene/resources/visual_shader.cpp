@@ -231,8 +231,8 @@ String VisualShaderNode::get_warning(Shader::Mode p_mode, VisualShader::Type p_t
 	return String();
 }
 
-String VisualShaderNode::get_input_port_default_hint(int p_port) const {
-	return "";
+bool VisualShaderNode::is_input_port_default(int p_port, Shader::Mode p_mode) const {
+	return false;
 }
 
 void VisualShaderNode::_bind_methods() {
