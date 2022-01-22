@@ -142,7 +142,10 @@ public:
 		while (index < code.size()) {
 			CharType c = code[index++];
 
-			if (c < 0) {
+			if (c == 0xFFFF) {
+				// cursor. maintain.
+				stripped.push_back(c);
+			} else if (c < 0) {
 				// skip invalid chars.
 				continue;
 			} else if (c == '"') {
@@ -294,7 +297,10 @@ public:
 
 			CharType n = next();
 			if (started) {
-				text.push_back(n);
+				// 0xFFFF is cursor, skip it when creating identifier.
+				if (n != 0xFFFF) {
+					text.push_back(n);
+				}
 			}
 		}
 

@@ -44,7 +44,7 @@
 class PreprocessorTokenizer;
 struct PPToken;
 
-typedef char CharType;
+typedef char32_t CharType;
 
 struct PreprocessorDefine {
 	Vector<String> arguments;
