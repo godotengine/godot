@@ -1692,8 +1692,6 @@ String Variant::stringify(int recursion_count) const {
 				pairs.push_back(sp);
 			}
 
-			pairs.sort();
-
 			for (int i = 0; i < pairs.size(); i++) {
 				if (i > 0) {
 					str += ", ";
