@@ -350,7 +350,7 @@ namespace GodotTools.Build
 
             if (_issuesListContextMenu.ItemCount > 0)
             {
-                _issuesListContextMenu.Position = (Vector2i)(_issuesList.RectGlobalPosition + atPosition);
+                _issuesListContextMenu.Position = (Vector2i)(_issuesList.GlobalPosition + atPosition);
                 _issuesListContextMenu.Popup();
             }
         }

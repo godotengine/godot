@@ -126,7 +126,7 @@ namespace GodotTools.Build
         {
             base._Ready();
 
-            RectMinSize = new Vector2(0, 228) * EditorScale;
+            MinimumSize = new Vector2(0, 228) * EditorScale;
             SizeFlagsVertical = (int)SizeFlags.ExpandFill;
 
             var toolBarHBox = new HBoxContainer { SizeFlagsHorizontal = (int)SizeFlags.ExpandFill };
