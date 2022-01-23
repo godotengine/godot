@@ -611,7 +611,7 @@ Error HTTPClient::poll() {
 	return OK;
 }
 
-int HTTPClient::get_response_body_length() const {
+int64_t HTTPClient::get_response_body_length() const {
 	return body_size;
 }
 
