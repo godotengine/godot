@@ -384,6 +384,7 @@ private:
 	HBoxContainer *tabbar_container;
 	Button *distraction_free;
 	Button *scene_tab_add;
+	Control *scene_tab_add_ph;
 
 	bool scene_distraction;
 	bool script_distraction;
