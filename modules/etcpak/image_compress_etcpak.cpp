@@ -132,8 +132,35 @@ void _compress_etcpak(EtcpakType p_compresstype, Image *r_img, float p_lossy_qua
 	// Compress image data and (if required) mipmaps.
 
 	const bool mipmaps = r_img->has_mipmaps();
-	const int width = r_img->get_width();
-	const int height = r_img->get_height();
+	int width = r_img->get_width();
+	int height = r_img->get_height();
+
+	/*
+	The first mipmap level of a compressed texture must be a multiple of 4. Quote from D3D11.3 spec:
+
+	BC format surfaces are always multiples of full blocks, each block representing 4x4 pixels.
+	For mipmaps, the top level map is required to be a multiple of 4 size in all dimensions.
+	The sizes for the lower level maps are computed as they are for all mipmapped surfaces,
+	and thus may not be a multiple of 4, for example a top level map of 20 results in a second level
+	map size of 10. For these cases, there is a differing 'physical' size and a 'virtual' size.
+	The virtual size is that computed for each mip level without adjustment, which is 10 for the example.
+	The physical size is the virtual size rounded up to the next multiple of 4, which is 12 for the example,
+	and this represents the actual memory size. The sampling hardware will apply texture address
+	processing based on the virtual size (using, for example, border color if specified for accesses
+	beyond 10), and thus for the example case will not access the 11th and 12th row of the resource.
+	So for mipmap chains when an axis becomes < 4 in size, only texels 'a','b','e','f'
+	are used for a 2x2 map, and texel 'a' is used for 1x1. Note that this is similar to, but distinct from,
+	the surface pitch, which can encompass additional padding beyond the physical surface size.
+	*/
+	int next_width = (width + 3) & ~3;
+	int next_height = (height + 3) & ~3;
+	if (next_width != width || next_height != height) {
+		r_img->resize(next_width, next_height, Image::INTERPOLATE_LANCZOS);
+		width = r_img->get_width();
+		height = r_img->get_height();
+	}
+	ERR_FAIL_COND(width % 4 != 0 || height % 4 != 0); // Should be guaranteed by above
+
 	const uint8_t *src_read = r_img->get_data().ptr();
 
 	print_verbose(vformat("ETCPAK: Encoding image size %dx%d to format %s.", width, height, Image::get_format_name(target_format)));
@@ -144,24 +171,48 @@ void _compress_etcpak(EtcpakType p_compresstype, Image *r_img, float p_lossy_qua
 	uint8_t *dest_write = dest_data.ptrw();
 
 	int mip_count = mipmaps ? Image::get_image_required_mipmaps(width, height, target_format) : 0;
+	Vector<uint32_t> padded_src;
 
 	for (int i = 0; i < mip_count + 1; i++) {
 		// Get write mip metrics for target image.
-		int mip_w, mip_h;
-		int mip_ofs = Image::get_image_mipmap_offset_and_dimensions(width, height, target_format, i, mip_w, mip_h);
+		int orig_mip_w, orig_mip_h;
+		int mip_ofs = Image::get_image_mipmap_offset_and_dimensions(width, height, target_format, i, orig_mip_w, orig_mip_h);
 		// Ensure that mip offset is a multiple of 8 (etcpak expects uint64_t pointer).
 		ERR_FAIL_COND(mip_ofs % 8 != 0);
 		uint64_t *dest_mip_write = (uint64_t *)&dest_write[mip_ofs];
 
 		// Block size. Align stride to multiple of 4 (RGBA8).
-		mip_w = (mip_w + 3) & ~3;
-		mip_h = (mip_h + 3) & ~3;
+		int mip_w = (orig_mip_w + 3) & ~3;
+		int mip_h = (orig_mip_h + 3) & ~3;
 		const uint32_t blocks = mip_w * mip_h / 16;
 
 		// Get mip data from source image for reading.
 		int src_mip_ofs = r_img->get_mipmap_offset(i);
 		const uint32_t *src_mip_read = (const uint32_t *)&src_read[src_mip_ofs];
 
+		// Pad textures to nearest block by smearing.
+		if (mip_w != orig_mip_w || mip_h != orig_mip_h) {
+			padded_src.resize(mip_w * mip_h);
+			uint32_t *ptrw = padded_src.ptrw();
+			int x = 0, y = 0;
+			for (y = 0; y < orig_mip_h; y++) {
+				for (x = 0; x < orig_mip_w; x++) {
+					ptrw[mip_w * y + x] = src_mip_read[orig_mip_w * y + x];
+				}
+				// First, smear in x.
+				for (; x < mip_w; x++) {
+					ptrw[mip_w * y + x] = ptrw[mip_w * y + x - 1];
+				}
+			}
+			// Then, smear in y.
+			for (; y < mip_h; y++) {
+				for (x = 0; x < mip_w; x++) {
+					ptrw[mip_w * y + x] = ptrw[mip_w * y + x - mip_w];
+				}
+			}
+			// Override the src_mip_read pointer to our temporary Vector.
+			src_mip_read = padded_src.ptr();
+		}
 		if (p_compresstype == EtcpakType::ETCPAK_TYPE_ETC1) {
 			CompressEtc1RgbDither(src_mip_read, dest_mip_write, blocks, mip_w);
 		} else if (p_compresstype == EtcpakType::ETCPAK_TYPE_ETC2 || p_compresstype == EtcpakType::ETCPAK_TYPE_ETC2_RA_AS_RG) {

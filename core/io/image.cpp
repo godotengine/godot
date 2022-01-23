@@ -1434,12 +1434,11 @@ int Image::_get_dst_image_size(int p_width, int p_height, Format p_format, int &
 		}
 
 		// Set mipmap size.
-		// It might be necessary to put this after the minimum mipmap size check because of the possible occurrence of "1 >> 1".
 		if (r_mm_width) {
-			*r_mm_width = bw >> 1;
+			*r_mm_width = w;
 		}
 		if (r_mm_height) {
-			*r_mm_height = bh >> 1;
+			*r_mm_height = h;
 		}
 
 		// Reach target mipmap.
