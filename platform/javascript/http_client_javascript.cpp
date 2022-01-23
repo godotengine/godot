@@ -185,7 +185,7 @@ Error HTTPClient::get_response_headers(List<String> *r_response) {
 	return OK;
 }
 
-int HTTPClient::get_response_body_length() const {
+int64_t HTTPClient::get_response_body_length() const {
 	return godot_js_fetch_body_length_get(js_id);
 }
 
