@@ -48,7 +48,7 @@ void TileAtlasView::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void TileAtlasView::_scroll_callback(Vector2 p_scroll_vec) {
+void TileAtlasView::_scroll_callback(Vector2 p_scroll_vec, bool p_alt) {
 	_pan_callback(-p_scroll_vec * 32);
 }
 
@@ -524,7 +524,7 @@ void TileAtlasView::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED:
-			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editor_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
+			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
 			break;
 
 		case NOTIFICATION_READY:

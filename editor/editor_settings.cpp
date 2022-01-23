@@ -647,7 +647,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Panning
 	// Enum should be in sync with ControlScheme in ViewPanner.
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/panning/2d_editor_panning_scheme", 0, "Scroll Zooms,Scroll Pans");
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/panning/sub_editor_panning_scheme", 0, "Scroll Zooms,Scroll Pans");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/panning/sub_editors_panning_scheme", 0, "Scroll Zooms,Scroll Pans");
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/panning/animation_editors_panning_scheme", 1, "Scroll Zooms,Scroll Pans");
 	_initial_set("editors/panning/simple_panning", false);
 	_initial_set("editors/panning/warped_mouse_panning", true);
