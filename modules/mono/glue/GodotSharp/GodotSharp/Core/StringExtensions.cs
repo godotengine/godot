@@ -266,7 +266,7 @@ namespace Godot
         /// <returns>The capitalized string.</returns>
         public static string Capitalize(this string instance)
         {
-            string aux = instance.Replace("_", " ").ToLower();
+            string aux = instance.CamelcaseToUnderscore(true).Replace("_", " ").Trim();
             string cap = string.Empty;
 
             for (int i = 0; i < aux.GetSliceCount(" "); i++)
@@ -282,6 +282,51 @@ namespace Godot
             }
 
             return cap;
+        }
+
+        private static string CamelcaseToUnderscore(this string instance, bool lowerCase)
+        {
+            string newString = string.Empty;
+            int startIndex = 0;
+
+            for (int i = 1; i < instance.Length; i++)
+            {
+                bool isUpper = char.IsUpper(instance[i]);
+                bool isNumber = char.IsDigit(instance[i]);
+
+                bool areNext2Lower = false;
+                bool isNextLower = false;
+                bool isNextNumber = false;
+                bool wasPrecedentUpper = char.IsUpper(instance[i - 1]);
+                bool wasPrecedentNumber = char.IsDigit(instance[i - 1]);
+
+                if (i + 2 < instance.Length)
+                {
+                    areNext2Lower = char.IsLower(instance[i + 1]) && char.IsLower(instance[i + 2]);
+                }
+
+                if (i + 1 < instance.Length)
+                {
+                    isNextLower = char.IsLower(instance[i + 1]);
+                    isNextNumber = char.IsDigit(instance[i + 1]);
+                }
+
+                bool condA = isUpper && !wasPrecedentUpper && !wasPrecedentNumber;
+                bool condB = wasPrecedentUpper && isUpper && areNext2Lower;
+                bool condC = isNumber && !wasPrecedentNumber;
+                bool canBreakNumberLetter = isNumber && !wasPrecedentNumber && isNextLower;
+                bool canBreakLetterNumber = !isNumber && wasPrecedentNumber && (isNextLower || isNextNumber);
+
+                bool shouldSplit = condA || condB || condC || canBreakNumberLetter || canBreakLetterNumber;
+                if (shouldSplit)
+                {
+                    newString += instance.Substring(startIndex, i - startIndex) + "_";
+                    startIndex = i;
+                }
+            }
+
+            newString += instance.Substring(startIndex, instance.Length - startIndex);
+            return lowerCase ? newString.ToLower() : newString;
         }
 
         /// <summary>
