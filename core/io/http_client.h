@@ -180,7 +180,7 @@ public:
 	virtual bool is_response_chunked() const = 0;
 	virtual int get_response_code() const = 0;
 	virtual Error get_response_headers(List<String> *r_response) = 0;
-	virtual int get_response_body_length() const = 0;
+	virtual int64_t get_response_body_length() const = 0;
 
 	virtual PackedByteArray read_response_body_chunk() = 0; // Can't get body as partial text because of most encodings UTF8, gzip, etc.
 
