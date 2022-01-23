@@ -87,7 +87,7 @@ public:
 	bool is_response_chunked() const override;
 	int get_response_code() const override;
 	Error get_response_headers(List<String> *r_response) override;
-	int get_response_body_length() const override;
+	int64_t get_response_body_length() const override;
 	PackedByteArray read_response_body_chunk() override;
 	void set_blocking_mode(bool p_enable) override;
 	bool is_blocking_mode_enabled() const override;
