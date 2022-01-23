@@ -152,14 +152,18 @@ void _compress_etcpak(EtcpakType p_compresstype, Image *r_img, float p_lossy_qua
 	are used for a 2x2 map, and texel 'a' is used for 1x1. Note that this is similar to, but distinct from,
 	the surface pitch, which can encompass additional padding beyond the physical surface size.
 	*/
-	int next_width = (width + 3) & ~3;
-	int next_height = (height + 3) & ~3;
+	int next_width = width <= 2 ? width : (width + 3) & ~3;
+	int next_height = height <= 2 ? height : (height + 3) & ~3;
 	if (next_width != width || next_height != height) {
 		r_img->resize(next_width, next_height, Image::INTERPOLATE_LANCZOS);
 		width = r_img->get_width();
 		height = r_img->get_height();
 	}
-	ERR_FAIL_COND(width % 4 != 0 || height % 4 != 0); // Should be guaranteed by above
+	// ERR_FAIL_COND(width % 4 != 0 || height % 4 != 0); // FIXME: No longer guaranteed.
+	// Multiple-of-4 should be guaranteed by above.
+	// However, power-of-two 3d textures will create Nx2 and Nx1 mipmap levels,
+	// which are individually compressed Image objects that violate the above rule.
+	// Hence, we allow Nx1 and Nx2 images through without forcing to multiple-of-4.
 
 	const uint8_t *src_read = r_img->get_data().ptr();
 
