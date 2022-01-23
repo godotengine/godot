@@ -165,9 +165,6 @@
 			If [code]true[/code], the body will not slide on slopes when calling [method move_and_slide] when the body is standing still.
 			If [code]false[/code], the body will slide on floor's slopes when [member motion_velocity] applies a downward force.
 		</member>
-		<member name="free_mode_min_slide_angle" type="float" setter="set_free_mode_min_slide_angle" getter="get_free_mode_min_slide_angle" default="0.261799">
-			Minimum angle (in radians) where the body is allowed to slide when it encounters a slope. The default value equals 15 degrees.
-		</member>
 		<member name="max_slides" type="int" setter="set_max_slides" getter="get_max_slides" default="4">
 			Maximum number of times the body can change direction before it stops when calling [method move_and_slide].
 		</member>
@@ -192,12 +189,15 @@
 		<member name="up_direction" type="Vector2" setter="set_up_direction" getter="get_up_direction" default="Vector2(0, -1)">
 			Direction vector used to determine what is a wall and what is a floor (or a ceiling), rather than a wall, when calling [method move_and_slide]. Defaults to [code]Vector2.UP[/code]. If set to [code]Vector2(0, 0)[/code], everything is considered a wall. This is useful for topdown games.
 		</member>
+		<member name="wall_min_slide_angle" type="float" setter="set_wall_min_slide_angle" getter="get_wall_min_slide_angle" default="0.261799">
+			Minimum angle (in radians) where the body is allowed to slide when it encounters a slope. The default value equals 15 degrees. This property only affects movement when [member motion_mode] is [constant MOTION_MODE_FLOATING].
+		</member>
 	</members>
 	<constants>
 		<constant name="MOTION_MODE_GROUNDED" value="0" enum="MotionMode">
 			Apply when notions of walls, ceiling and floor are relevant. In this mode the body motion will react to slopes (acceleration/slowdown). This mode is suitable for sided games like platformers.
 		</constant>
-		<constant name="MOTION_MODE_FREE" value="1" enum="MotionMode">
+		<constant name="MOTION_MODE_FLOATING" value="1" enum="MotionMode">
 			Apply when there is no notion of floor or ceiling. All collisions will be reported as [code]on_wall[/code]. In this mode, when you slide, the speed will always be constant. This mode is suitable for top-down games.
 		</constant>
 		<constant name="PLATFORM_VEL_ON_LEAVE_ALWAYS" value="0" enum="MovingPlatformApplyVelocityOnLeave">

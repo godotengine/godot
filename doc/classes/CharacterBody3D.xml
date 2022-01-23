@@ -175,14 +175,14 @@
 			Direction vector used to determine what is a wall and what is a floor (or a ceiling), rather than a wall, when calling [method move_and_slide]. Defaults to [code]Vector3.UP[/code]. If set to [code]Vector3(0, 0, 0)[/code], everything is considered a wall. This is useful for topdown games.
 		</member>
 		<member name="wall_min_slide_angle" type="float" setter="set_wall_min_slide_angle" getter="get_wall_min_slide_angle" default="0.261799">
-			Minimum angle (in radians) where the body is allowed to slide when it encounters a slope. The default value equals 15 degrees. In [code]MOTION_MODE_GROUNDED[/code], it works only when [member floor_block_on_wall] is [code]true[/code].
+			Minimum angle (in radians) where the body is allowed to slide when it encounters a slope. The default value equals 15 degrees. When [member motion_mode] is [constant MOTION_MODE_GROUNDED], it only affects movement if [member floor_block_on_wall] is [code]true[/code].
 		</member>
 	</members>
 	<constants>
 		<constant name="MOTION_MODE_GROUNDED" value="0" enum="MotionMode">
 			Apply when notions of walls, ceiling and floor are relevant. In this mode the body motion will react to slopes (acceleration/slowdown). This mode is suitable for grounded games like platformers.
 		</constant>
-		<constant name="MOTION_MODE_FREE" value="1" enum="MotionMode">
+		<constant name="MOTION_MODE_FLOATING" value="1" enum="MotionMode">
 			Apply when there is no notion of floor or ceiling. All collisions will be reported as [code]on_wall[/code]. In this mode, when you slide, the speed will always be constant. This mode is suitable for games without ground like space games.
 		</constant>
 		<constant name="PLATFORM_VEL_ON_LEAVE_ALWAYS" value="0" enum="MovingPlatformApplyVelocityOnLeave">
