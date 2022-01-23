@@ -677,6 +677,7 @@ void ScriptEditor::_update_recent_scripts() {
 
 	recent_scripts->add_separator();
 	recent_scripts->add_shortcut(ED_SHORTCUT("script_editor/clear_recent", TTR("Clear Recent Files")));
+	recent_scripts->set_item_disabled(recent_scripts->get_item_id(recent_scripts->get_item_count() - 1), rc.is_empty());
 
 	recent_scripts->set_as_minsize();
 }
@@ -1540,6 +1541,51 @@ void ScriptEditor::_show_save_theme_as_dialog() {
 	file_dialog->set_title(TTR("Save Theme As..."));
 }
 
+bool ScriptEditor::_has_docs_tab() const {
+	const int child_count = tab_container->get_child_count();
+	for (int i = 0; i < child_count; i++) {
+		if (Object::cast_to<EditorHelp>(tab_container->get_child(i))) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool ScriptEditor::_has_script_tab() const {
+	const int child_count = tab_container->get_child_count();
+	for (int i = 0; i < child_count; i++) {
+		if (Object::cast_to<ScriptEditorBase>(tab_container->get_child(i))) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void ScriptEditor::_prepare_file_menu() {
+	PopupMenu *menu = file_menu->get_popup();
+	const bool current_is_doc = _get_current_editor() == nullptr;
+
+	menu->set_item_disabled(menu->get_item_index(FILE_REOPEN_CLOSED), previous_scripts.is_empty());
+
+	menu->set_item_disabled(menu->get_item_index(FILE_SAVE), current_is_doc);
+	menu->set_item_disabled(menu->get_item_index(FILE_SAVE_AS), current_is_doc);
+	menu->set_item_disabled(menu->get_item_index(FILE_SAVE_ALL), !_has_script_tab());
+
+	menu->set_item_disabled(menu->get_item_index(FILE_TOOL_RELOAD_SOFT), current_is_doc);
+	menu->set_item_disabled(menu->get_item_index(FILE_COPY_PATH), current_is_doc);
+	menu->set_item_disabled(menu->get_item_index(SHOW_IN_FILE_SYSTEM), current_is_doc);
+
+	menu->set_item_disabled(menu->get_item_index(WINDOW_PREV), history_pos <= 0);
+	menu->set_item_disabled(menu->get_item_index(WINDOW_NEXT), history_pos >= history.size() - 1);
+
+	menu->set_item_disabled(menu->get_item_index(FILE_CLOSE), tab_container->get_child_count() < 1);
+	menu->set_item_disabled(menu->get_item_index(CLOSE_ALL), tab_container->get_child_count() < 1);
+	menu->set_item_disabled(menu->get_item_index(CLOSE_OTHER_TABS), tab_container->get_child_count() <= 1);
+	menu->set_item_disabled(menu->get_item_index(CLOSE_DOCS), !_has_docs_tab());
+
+	menu->set_item_disabled(menu->get_item_index(FILE_RUN), current_is_doc);
+}
+
 void ScriptEditor::_tab_changed(int p_which) {
 	ensure_select_current();
 }
@@ -2122,8 +2168,6 @@ void ScriptEditor::_update_script_names() {
 	_update_members_overview_visibility();
 	_update_help_overview_visibility();
 	_update_script_colors();
-
-	file_menu->get_popup()->set_item_disabled(file_menu->get_popup()->get_item_index(FILE_REOPEN_CLOSED), previous_scripts.is_empty());
 }
 
 void ScriptEditor::_update_script_connections() {
@@ -3068,6 +3112,12 @@ void ScriptEditor::_make_script_list_context_menu() {
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_sort"), WINDOW_SORT);
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/toggle_scripts_panel"), TOGGLE_SCRIPTS_PANEL);
 
+	context_menu->set_item_disabled(context_menu->get_item_index(CLOSE_ALL), tab_container->get_child_count() <= 0);
+	context_menu->set_item_disabled(context_menu->get_item_index(CLOSE_OTHER_TABS), tab_container->get_child_count() <= 1);
+	context_menu->set_item_disabled(context_menu->get_item_index(WINDOW_MOVE_UP), tab_container->get_current_tab() <= 0);
+	context_menu->set_item_disabled(context_menu->get_item_index(WINDOW_MOVE_DOWN), tab_container->get_current_tab() >= tab_container->get_child_count() - 1);
+	context_menu->set_item_disabled(context_menu->get_item_index(WINDOW_SORT), tab_container->get_child_count() <= 1);
+
 	context_menu->set_position(get_screen_position() + get_local_mouse_position());
 	context_menu->reset_size();
 	context_menu->popup();
@@ -3749,6 +3799,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/toggle_scripts_panel", TTR("Toggle Scripts Panel"), KeyModifierMask::CMD | Key::BACKSLASH), TOGGLE_SCRIPTS_PANEL);
 	file_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptEditor::_menu_option));
+	file_menu->get_popup()->connect("about_to_popup", callable_mp(this, &ScriptEditor::_prepare_file_menu));
 
 	script_search_menu = memnew(MenuButton);
 	script_search_menu->set_text(TTR("Search"));
