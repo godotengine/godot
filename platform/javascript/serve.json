@@ -1,0 +1,21 @@
+{
+    "public": "../../bin",
+    "headers": [{
+        "source": "**/*",
+        "headers": [
+            {
+                "key": "Cross-Origin-Embedder-Policy",
+                "value": "require-corp"
+            }, {
+                "key": "Cross-Origin-Opener-Policy",
+                "value": "same-origin"
+            }, {
+                "key":  "Access-Control-Allow-Origin",
+                "value": "*"
+            }, {
+                "key": "Cache-Control",
+                "value": "no-store, max-age=0"
+            }
+        ]
+    }]
+}
