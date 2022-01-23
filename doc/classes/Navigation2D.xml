@@ -41,10 +41,10 @@
 		</method>
 	</methods>
 	<members>
-		<member name="cell_size" type="float" setter="set_cell_size" getter="get_cell_size" default="10.0">
+		<member name="cell_size" type="float" setter="set_cell_size" getter="get_cell_size" default="1.0">
 			The XY plane cell size to use for fields.
 		</member>
-		<member name="edge_connection_margin" type="float" setter="set_edge_connection_margin" getter="get_edge_connection_margin" default="100.0">
+		<member name="edge_connection_margin" type="float" setter="set_edge_connection_margin" getter="get_edge_connection_margin" default="1.0">
 			This value is used to detect the near edges to connect compatible regions.
 		</member>
 	</members>
