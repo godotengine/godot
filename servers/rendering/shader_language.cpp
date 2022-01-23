@@ -5208,9 +5208,15 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 #ifdef DEBUG_ENABLED
 				if (check_warnings) {
 					StringName func_name;
+					BlockNode *b = p_block;
 
-					if (p_block && p_block->parent_function) {
-						func_name = p_block->parent_function->name;
+					while (b) {
+						if (b->parent_function) {
+							func_name = b->parent_function->name;
+							break;
+						} else {
+							b = b->parent_block;
+						}
 					}
 
 					_parse_used_identifier(identifier, ident_type, func_name);
