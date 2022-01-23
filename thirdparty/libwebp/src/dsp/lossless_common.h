@@ -179,7 +179,7 @@ static void PREDICTOR_ADD(const uint32_t* in, const uint32_t* upper, \
   int x;                                                             \
   assert(upper != NULL);                                             \
   for (x = 0; x < num_pixels; ++x) {                                 \
-    const uint32_t pred = (PREDICTOR)(out[x - 1], upper + x);        \
+    const uint32_t pred = (PREDICTOR)(&out[x - 1], upper + x);       \
     out[x] = VP8LAddPixels(in[x], pred);                             \
   }                                                                  \
 }

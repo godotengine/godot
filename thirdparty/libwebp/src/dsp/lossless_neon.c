@@ -188,17 +188,21 @@ static WEBP_INLINE uint32_t Average3_NEON(uint32_t a0, uint32_t a1,
   return avg;
 }
 
-static uint32_t Predictor5_NEON(uint32_t left, const uint32_t* const top) {
-  return Average3_NEON(left, top[0], top[1]);
+static uint32_t Predictor5_NEON(const uint32_t* const left,
+                                const uint32_t* const top) {
+  return Average3_NEON(*left, top[0], top[1]);
 }
-static uint32_t Predictor6_NEON(uint32_t left, const uint32_t* const top) {
-  return Average2_NEON(left, top[-1]);
+static uint32_t Predictor6_NEON(const uint32_t* const left,
+                                const uint32_t* const top) {
+  return Average2_NEON(*left, top[-1]);
 }
-static uint32_t Predictor7_NEON(uint32_t left, const uint32_t* const top) {
-  return Average2_NEON(left, top[0]);
+static uint32_t Predictor7_NEON(const uint32_t* const left,
+                                const uint32_t* const top) {
+  return Average2_NEON(*left, top[0]);
 }
-static uint32_t Predictor13_NEON(uint32_t left, const uint32_t* const top) {
-  return ClampedAddSubtractHalf_NEON(left, top[0], top[-1]);
+static uint32_t Predictor13_NEON(const uint32_t* const left,
+                                 const uint32_t* const top) {
+  return ClampedAddSubtractHalf_NEON(*left, top[0], top[-1]);
 }
 
 // Batch versions of those functions.

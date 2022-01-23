@@ -403,7 +403,7 @@ static const uint8_t kZigzag[16] = {
   0, 1, 4, 8,  5, 2, 3, 6,  9, 12, 13, 10,  7, 11, 14, 15
 };
 
-// See section 13-2: http://tools.ietf.org/html/rfc6386#section-13.2
+// See section 13-2: https://datatracker.ietf.org/doc/html/rfc6386#section-13.2
 static int GetLargeValue(VP8BitReader* const br, const uint8_t* const p) {
   int v;
   if (!VP8GetBit(br, p[3], "coeffs")) {

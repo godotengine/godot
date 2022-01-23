@@ -138,42 +138,51 @@ static WEBP_INLINE uint32_t Average4_SSE2(uint32_t a0, uint32_t a1,
   return output;
 }
 
-static uint32_t Predictor5_SSE2(uint32_t left, const uint32_t* const top) {
-  const uint32_t pred = Average3_SSE2(left, top[0], top[1]);
+static uint32_t Predictor5_SSE2(const uint32_t* const left,
+                                const uint32_t* const top) {
+  const uint32_t pred = Average3_SSE2(*left, top[0], top[1]);
   return pred;
 }
-static uint32_t Predictor6_SSE2(uint32_t left, const uint32_t* const top) {
-  const uint32_t pred = Average2_SSE2(left, top[-1]);
+static uint32_t Predictor6_SSE2(const uint32_t* const left,
+                                const uint32_t* const top) {
+  const uint32_t pred = Average2_SSE2(*left, top[-1]);
   return pred;
 }
-static uint32_t Predictor7_SSE2(uint32_t left, const uint32_t* const top) {
-  const uint32_t pred = Average2_SSE2(left, top[0]);
+static uint32_t Predictor7_SSE2(const uint32_t* const left,
+                                const uint32_t* const top) {
+  const uint32_t pred = Average2_SSE2(*left, top[0]);
   return pred;
 }
-static uint32_t Predictor8_SSE2(uint32_t left, const uint32_t* const top) {
+static uint32_t Predictor8_SSE2(const uint32_t* const left,
+                                const uint32_t* const top) {
   const uint32_t pred = Average2_SSE2(top[-1], top[0]);
   (void)left;
   return pred;
 }
-static uint32_t Predictor9_SSE2(uint32_t left, const uint32_t* const top) {
+static uint32_t Predictor9_SSE2(const uint32_t* const left,
+                                const uint32_t* const top) {
   const uint32_t pred = Average2_SSE2(top[0], top[1]);
   (void)left;
   return pred;
 }
-static uint32_t Predictor10_SSE2(uint32_t left, const uint32_t* const top) {
-  const uint32_t pred = Average4_SSE2(left, top[-1], top[0], top[1]);
+static uint32_t Predictor10_SSE2(const uint32_t* const left,
+                                 const uint32_t* const top) {
+  const uint32_t pred = Average4_SSE2(*left, top[-1], top[0], top[1]);
   return pred;
 }
-static uint32_t Predictor11_SSE2(uint32_t left, const uint32_t* const top) {
-  const uint32_t pred = Select_SSE2(top[0], left, top[-1]);
+static uint32_t Predictor11_SSE2(const uint32_t* const left,
+                                 const uint32_t* const top) {
+  const uint32_t pred = Select_SSE2(top[0], *left, top[-1]);
   return pred;
 }
-static uint32_t Predictor12_SSE2(uint32_t left, const uint32_t* const top) {
-  const uint32_t pred = ClampedAddSubtractFull_SSE2(left, top[0], top[-1]);
+static uint32_t Predictor12_SSE2(const uint32_t* const left,
+                                 const uint32_t* const top) {
+  const uint32_t pred = ClampedAddSubtractFull_SSE2(*left, top[0], top[-1]);
   return pred;
 }
-static uint32_t Predictor13_SSE2(uint32_t left, const uint32_t* const top) {
-  const uint32_t pred = ClampedAddSubtractHalf_SSE2(left, top[0], top[-1]);
+static uint32_t Predictor13_SSE2(const uint32_t* const left,
+                                 const uint32_t* const top) {
+  const uint32_t pred = ClampedAddSubtractHalf_SSE2(*left, top[0], top[-1]);
   return pred;
 }
 

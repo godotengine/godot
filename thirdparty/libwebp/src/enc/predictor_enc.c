@@ -249,7 +249,7 @@ static WEBP_INLINE void GetResidual(
       } else if (x == 0) {
         predict = upper_row[x];  // Top.
       } else {
-        predict = pred_func(current_row[x - 1], upper_row + x);
+        predict = pred_func(&current_row[x - 1], upper_row + x);
       }
 #if (WEBP_NEAR_LOSSLESS == 1)
       if (max_quantization == 1 || mode == 0 || y == 0 || y == height - 1 ||

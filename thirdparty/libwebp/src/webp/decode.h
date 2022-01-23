@@ -85,7 +85,7 @@ WEBP_EXTERN uint8_t* WebPDecodeBGR(const uint8_t* data, size_t data_size,
 // Upon return, the Y buffer has a stride returned as '*stride', while U and V
 // have a common stride returned as '*uv_stride'.
 // Return NULL in case of error.
-// (*) Also named Y'CbCr. See: http://en.wikipedia.org/wiki/YCbCr
+// (*) Also named Y'CbCr. See: https://en.wikipedia.org/wiki/YCbCr
 WEBP_EXTERN uint8_t* WebPDecodeYUV(const uint8_t* data, size_t data_size,
                                    int* width, int* height,
                                    uint8_t** u, uint8_t** v,

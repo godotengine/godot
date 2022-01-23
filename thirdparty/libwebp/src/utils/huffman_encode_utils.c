@@ -161,7 +161,7 @@ static void SetBitDepths(const HuffmanTree* const tree,
 // especially when population counts are longer than 2**tree_limit, but
 // we are not planning to use this with extremely long blocks.
 //
-// See http://en.wikipedia.org/wiki/Huffman_coding
+// See https://en.wikipedia.org/wiki/Huffman_coding
 static void GenerateOptimalTree(const uint32_t* const histogram,
                                 int histogram_size,
                                 HuffmanTree* tree, int tree_depth_limit,
