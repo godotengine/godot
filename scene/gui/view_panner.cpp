@@ -53,7 +53,7 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 						panning.y += mb->get_factor() * scroll_vec.y;
 						panning.x += mb->get_factor() * scroll_vec.x;
 					}
-					callback_helper(scroll_callback, varray(panning));
+					callback_helper(scroll_callback, varray(panning, mb->is_alt_pressed()));
 					return true;
 				}
 			} else {
@@ -66,7 +66,7 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 						panning.y += mb->get_factor() * scroll_vec.y;
 						panning.x += mb->get_factor() * scroll_vec.x;
 					}
-					callback_helper(scroll_callback, varray(panning));
+					callback_helper(scroll_callback, varray(panning, mb->is_alt_pressed()));
 					return true;
 				} else if (!mb->is_shift_pressed()) {
 					scroll_vec.y *= mb->get_factor();
@@ -76,7 +76,7 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 			}
 		}
 
-		// Use Alt only for scrolling.
+		// Alt is not used for button presses, so ignore it.
 		if (mb->is_alt_pressed()) {
 			return false;
 		}

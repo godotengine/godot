@@ -1356,7 +1356,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 	}
 }
 
-void GraphEdit::_scroll_callback(Vector2 p_scroll_vec) {
+void GraphEdit::_scroll_callback(Vector2 p_scroll_vec, bool p_alt) {
 	if (p_scroll_vec.x != 0) {
 		h_scroll->set_value(h_scroll->get_value() + (h_scroll->get_page() * Math::abs(p_scroll_vec.x) / 8) * SIGN(p_scroll_vec.x));
 	} else {

@@ -1187,7 +1187,7 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 	return false;
 }
 
-void CanvasItemEditor::_scroll_callback(Vector2 p_scroll_vec) {
+void CanvasItemEditor::_scroll_callback(Vector2 p_scroll_vec, bool p_alt) {
 	_pan_callback(-p_scroll_vec * pan_speed);
 }
 
@@ -3858,7 +3858,7 @@ void CanvasItemEditor::_notification(int p_what) {
 
 		anchor_mode_button->set_icon(get_theme_icon(SNAME("Anchor"), SNAME("EditorIcons")));
 
-		panner->setup((ViewPanner::ControlScheme)EDITOR_GET("interface/editors/2d_editor_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
+		panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/2d_editor_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
 		pan_speed = int(EditorSettings::get_singleton()->get("editors/panning/2d_editor_pan_speed"));
 		warped_panning = bool(EditorSettings::get_singleton()->get("editors/panning/warped_mouse_panning"));
 	}
