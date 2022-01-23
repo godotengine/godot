@@ -84,8 +84,8 @@ RID Navigation2D::get_closest_point_owner(const Vector2 &p_point) const {
 
 Navigation2D::Navigation2D() {
 	map = Navigation2DServer::get_singleton()->map_create();
-	set_cell_size(10); // Ten pixels
-	set_edge_connection_margin(100);
+	set_cell_size(1); // One pixel
+	set_edge_connection_margin(1);
 }
 
 Navigation2D::~Navigation2D() {
