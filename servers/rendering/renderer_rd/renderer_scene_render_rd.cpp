@@ -3244,7 +3244,6 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 	r_directional_light_count = 0;
 	r_positional_light_count = 0;
-	sky.sky_scene_state.ubo.directional_light_count = 0;
 
 	Plane camera_plane(-p_camera_transform.basis.get_axis(Vector3::AXIS_Z).normalized(), p_camera_transform.origin);
 
@@ -3265,43 +3264,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 		RS::LightType type = storage->light_get_type(base);
 		switch (type) {
 			case RS::LIGHT_DIRECTIONAL: {
-				//	Copy to SkyDirectionalLightData
-				if (r_directional_light_count < sky.sky_scene_state.max_directional_lights) {
-					RendererSceneSkyRD::SkyDirectionalLightData &sky_light_data = sky.sky_scene_state.directional_lights[r_directional_light_count];
-					Transform3D light_transform = li->transform;
-					Vector3 world_direction = light_transform.basis.xform(Vector3(0, 0, 1)).normalized();
-
-					sky_light_data.direction[0] = world_direction.x;
-					sky_light_data.direction[1] = world_direction.y;
-					sky_light_data.direction[2] = -world_direction.z;
-
-					float sign = storage->light_is_negative(base) ? -1 : 1;
-					sky_light_data.energy = sign * storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY);
-
-					Color linear_col = storage->light_get_color(base).to_linear();
-					sky_light_data.color[0] = linear_col.r;
-					sky_light_data.color[1] = linear_col.g;
-					sky_light_data.color[2] = linear_col.b;
-
-					sky_light_data.enabled = true;
-
-					float angular_diameter = storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
-					if (angular_diameter > 0.0) {
-						// I know tan(0) is 0, but let's not risk it with numerical precision.
-						// technically this will keep expanding until reaching the sun, but all we care
-						// is expand until we reach the radius of the near plane (there can't be more occluders than that)
-						angular_diameter = Math::tan(Math::deg2rad(angular_diameter));
-						if (storage->light_has_shadow(base)) {
-							r_directional_light_soft_shadows = true;
-						}
-					} else {
-						angular_diameter = 0.0;
-					}
-					sky_light_data.size = angular_diameter;
-					sky.sky_scene_state.ubo.directional_light_count++;
-				}
-
-				if (r_directional_light_count >= cluster.max_directional_lights || storage->light_directional_is_sky_only(base)) {
+				if (r_directional_light_count >= cluster.max_directional_lights) {
 					continue;
 				}
 
@@ -3378,6 +3341,9 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 					// technically this will keep expanding until reaching the sun, but all we care
 					// is expand until we reach the radius of the near plane (there can't be more occluders than that)
 					angular_diameter = Math::tan(Math::deg2rad(angular_diameter));
+					if (storage->light_has_shadow(base)) {
+						r_directional_light_soft_shadows = true;
+					}
 				} else {
 					angular_diameter = 0.0;
 				}
