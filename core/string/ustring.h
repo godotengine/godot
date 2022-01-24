@@ -405,6 +405,7 @@ public:
 	String get_file() const;
 	static String humanize_size(uint64_t p_size);
 	String simplify_path() const;
+	bool is_network_share_path() const;
 
 	String xml_escape(bool p_escape_quotes = false) const;
 	String xml_unescape() const;
