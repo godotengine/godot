@@ -81,7 +81,12 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 			return false;
 		}
 
-		if (mb->get_button_index() == MouseButton::MIDDLE || (enable_rmb && mb->get_button_index() == MouseButton::RIGHT) || (!simple_panning_enabled && mb->get_button_index() == MouseButton::LEFT && is_panning())) {
+		bool is_drag_event = mb->get_button_index() == MouseButton::MIDDLE ||
+				(enable_rmb && mb->get_button_index() == MouseButton::RIGHT) ||
+				(!simple_panning_enabled && mb->get_button_index() == MouseButton::LEFT && is_panning()) ||
+				(force_drag && mb->get_button_index() == MouseButton::LEFT);
+
+		if (is_drag_event) {
 			if (mb->is_pressed()) {
 				is_dragging = true;
 			} else {
@@ -164,6 +169,10 @@ void ViewPanner::setup(ControlScheme p_scheme, Ref<Shortcut> p_shortcut, bool p_
 
 bool ViewPanner::is_panning() const {
 	return is_dragging || pan_key_pressed;
+}
+
+void ViewPanner::set_force_drag(bool p_force) {
+	force_drag = p_force;
 }
 
 ViewPanner::ViewPanner() {
