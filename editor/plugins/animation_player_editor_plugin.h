@@ -61,7 +61,8 @@ class AnimationPlayerEditor : public VBoxContainer {
 		TOOL_COPY_ANIM,
 		TOOL_PASTE_ANIM,
 		TOOL_PASTE_ANIM_REF,
-		TOOL_EDIT_RESOURCE
+		TOOL_EDIT_RESOURCE,
+		TOOL_TOGGLE_UNIQUE,
 	};
 
 	enum {
@@ -110,6 +111,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	Ref<ImageTexture> autoplay_reset_icon;
 	bool last_active;
 	float timeline_position;
+	bool inherits;
 
 	EditorFileDialog *file;
 	ConfirmationDialog *delete_dialog;
@@ -169,6 +171,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _play_bw_from_pressed();
 	void _autoplay_pressed();
 	void _stop_pressed();
+	void _update_inherited(const String current);
 	void _animation_selected(int p_which);
 	void _animation_new();
 	void _animation_rename();
@@ -184,6 +187,8 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _animation_blend();
 	void _animation_edit();
 	void _animation_duplicate();
+	void _animation_make_unique();
+	void _animation_revert_parent();
 	Ref<Animation> _animation_clone(const Ref<Animation> p_anim);
 	void _animation_paste(const Ref<Animation> p_anim);
 	void _animation_resource_edit();

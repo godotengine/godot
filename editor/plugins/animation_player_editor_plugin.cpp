@@ -41,6 +41,7 @@
 #include "editor/plugins/canvas_item_editor_plugin.h" // For onion skinning.
 #include "editor/plugins/node_3d_editor_plugin.h" // For onion skinning.
 #include "scene/main/window.h"
+#include "scene/property_utils.h"
 #include "scene/resources/animation.h"
 #include "scene/scene_string_names.h"
 #include "servers/rendering_server.h"
@@ -269,6 +270,25 @@ void AnimationPlayerEditor::_stop_pressed() {
 	stop->set_pressed(true);
 }
 
+void AnimationPlayerEditor::_update_inherited(const String current) {
+	Ref<Animation> default_anim = PropertyUtils::get_property_default_value(player, "anims/" + current);
+
+	inherits = current.is_empty() || player->get_animation(current) == default_anim;
+	int unique_idx = tool_anim->get_popup()->get_item_index(TOOL_TOGGLE_UNIQUE);
+	//the fallback button text is the "Make Unique"
+	if (!default_anim.is_valid() || inherits) {
+		tool_anim->get_popup()->set_item_shortcut(unique_idx, ED_SHORTCUT("animation_player_editor/make_unique", TTR("Make Unique")));
+		tool_anim->get_popup()->set_item_text(unique_idx, TTR("Make Unique"));
+		tool_anim->get_popup()->set_item_icon(unique_idx, get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")));
+		//disable button if either the animation has no parent or is empty.
+		tool_anim->get_popup()->set_item_disabled(unique_idx, current.is_empty() || !default_anim.is_valid());
+	} else {
+		tool_anim->get_popup()->set_item_shortcut(unique_idx, ED_SHORTCUT("animation_player_editor/revert_to_parent", TTR("Revert to Parent")));
+		tool_anim->get_popup()->set_item_text(unique_idx, TTR("Revert to Parent"));
+		tool_anim->get_popup()->set_item_icon(tool_anim->get_popup()->get_item_index(TOOL_TOGGLE_UNIQUE), get_theme_icon(SNAME("ReloadSmall"), SNAME("EditorIcons")));
+	}
+}
+
 void AnimationPlayerEditor::_animation_selected(int p_which) {
 	if (updating) {
 		return;
@@ -279,6 +299,8 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 	if (animation->get_selected() >= 0 && animation->get_selected() < animation->get_item_count()) {
 		current = animation->get_item_text(animation->get_selected());
 	}
+
+	_update_inherited(current);
 
 	if (!current.is_empty()) {
 		player->set_assigned_animation(current);
@@ -812,6 +834,7 @@ void AnimationPlayerEditor::_update_player() {
 	ITEM_DISABLED(TOOL_EDIT_TRANSITIONS, animlist.size() == 0);
 	ITEM_DISABLED(TOOL_COPY_ANIM, animlist.size() == 0);
 	ITEM_DISABLED(TOOL_REMOVE_ANIM, animlist.size() == 0);
+	ITEM_DISABLED(TOOL_TOGGLE_UNIQUE, animlist.size() == 0);
 
 	stop->set_disabled(animlist.size() == 0);
 	play->set_disabled(animlist.size() == 0);
@@ -989,6 +1012,68 @@ void AnimationPlayerEditor::_animation_duplicate() {
 	}
 }
 
+void AnimationPlayerEditor::_animation_make_unique() {
+	if (!animation->get_item_count()) {
+		return;
+	}
+
+	String current = animation->get_item_text(animation->get_selected());
+	Ref<Animation> anim = player->get_animation(current);
+	if (!anim.is_valid()) {
+		return;
+	}
+	//consider just cloning
+	Ref<Animation> new_anim = _animation_clone(anim);
+
+	undo_redo->create_action(TTR("Make Animation Unique"));
+	undo_redo->add_do_method(player, "remove_animation", current);
+	undo_redo->add_do_method(player, "add_animation", current, new_anim);
+	undo_redo->add_do_method(this, "_animation_player_changed", player);
+	undo_redo->add_undo_method(player, "remove_animation", current);
+	undo_redo->add_undo_method(player, "add_animation", current, anim);
+	undo_redo->add_undo_method(this, "_animation_player_changed", player);
+	undo_redo->commit_action();
+
+	//decide whether to keep this
+	// for (int i = 0; i < animation->get_item_count(); i++) {
+	// 	if (animation->get_item_text(i) == new_name) {
+	// 		animation->select(i);
+	// 		_animation_selected(i);
+	// 		return;
+	// 	}
+	// }
+	// return;
+}
+
+void AnimationPlayerEditor::_animation_revert_parent() {
+	if (!animation->get_item_count()) {
+		return;
+	}
+
+	String current = animation->get_item_text(animation->get_selected());
+	Ref<Animation> anim = player->get_animation(current);
+	if (!anim.is_valid()) {
+		return;
+	}
+
+	String animation_propname = "anims/" + current;
+
+	Ref<Animation> parent_anim;
+
+	bool valid = false;
+	parent_anim = PropertyUtils::get_property_default_value(player, animation_propname, &valid);
+	ERR_FAIL_COND(!valid);
+
+	undo_redo->create_action(TTR("Revert Animation to Parent"));
+	undo_redo->add_do_method(player, "remove_animation", current);
+	undo_redo->add_do_method(player, "add_animation", current, parent_anim);
+	undo_redo->add_do_method(this, "_animation_player_changed", player);
+	undo_redo->add_undo_method(player, "remove_animation", current);
+	undo_redo->add_undo_method(player, "add_animation", current, anim);
+	undo_redo->add_undo_method(this, "_animation_player_changed", player);
+	undo_redo->commit_action();
+}
+
 Ref<Animation> AnimationPlayerEditor::_animation_clone(Ref<Animation> p_anim) {
 	Ref<Animation> new_anim = memnew(Animation);
 	List<PropertyInfo> plist;
@@ -1147,6 +1232,13 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 		} break;
 		case TOOL_REMOVE_ANIM: {
 			_animation_remove();
+		} break;
+		case TOOL_TOGGLE_UNIQUE: {
+			if (inherits) {
+				_animation_make_unique();
+			} else {
+				_animation_revert_parent();
+			}
 		} break;
 		case TOOL_COPY_ANIM: {
 			if (!animation->get_item_count()) {
@@ -1614,6 +1706,8 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/open_animation_in_inspector", TTR("Open in Inspector")), TOOL_EDIT_RESOURCE);
 	tool_anim->get_popup()->add_separator();
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/remove_animation", TTR("Remove")), TOOL_REMOVE_ANIM);
+	tool_anim->get_popup()->add_separator();
+	tool_anim->get_popup()->add_item(TTR("Make Unique"), TOOL_TOGGLE_UNIQUE);
 	hb->add_child(tool_anim);
 
 	animation = memnew(OptionButton);
