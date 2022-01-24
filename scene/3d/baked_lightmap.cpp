@@ -389,7 +389,7 @@ void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound>
 
 			GeometryInstance *gi = Object::cast_to<GeometryInstance>(p_at_node);
 			if (gi) {
-				all_override = mi->get_material_override();
+				all_override = gi->get_material_override();
 			}
 
 			for (int i = 0; i < bmeshes.size(); i += 2) {
@@ -414,8 +414,8 @@ void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound>
 				mf.mesh = mesh;
 
 				if (gi) {
-					mf.cast_shadows = mi->get_cast_shadows_setting() != GeometryInstance::SHADOW_CASTING_SETTING_OFF;
-					mf.generate_lightmap = mi->get_generate_lightmap();
+					mf.cast_shadows = gi->get_cast_shadows_setting() != GeometryInstance::SHADOW_CASTING_SETTING_OFF;
+					mf.generate_lightmap = gi->get_generate_lightmap();
 				} else {
 					mf.cast_shadows = true;
 					mf.generate_lightmap = true;
