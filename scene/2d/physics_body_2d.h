@@ -328,7 +328,7 @@ class CharacterBody2D : public PhysicsBody2D {
 public:
 	enum MotionMode {
 		MOTION_MODE_GROUNDED,
-		MOTION_MODE_FREE,
+		MOTION_MODE_FLOATING,
 	};
 	enum MovingPlatformApplyVelocityOnLeave {
 		PLATFORM_VEL_ON_LEAVE_ALWAYS,
@@ -374,7 +374,7 @@ private:
 	int platform_layer = 0;
 	real_t floor_max_angle = Math::deg2rad((real_t)45.0);
 	real_t floor_snap_length = 1;
-	real_t free_mode_min_slide_angle = Math::deg2rad((real_t)15.0);
+	real_t wall_min_slide_angle = Math::deg2rad((real_t)15.0);
 	Vector2 up_direction = Vector2(0.0, -1.0);
 	uint32_t moving_platform_floor_layers = UINT32_MAX;
 	uint32_t moving_platform_wall_layers = 0;
@@ -420,8 +420,8 @@ private:
 	real_t get_floor_snap_length();
 	void set_floor_snap_length(real_t p_floor_snap_length);
 
-	real_t get_free_mode_min_slide_angle() const;
-	void set_free_mode_min_slide_angle(real_t p_radians);
+	real_t get_wall_min_slide_angle() const;
+	void set_wall_min_slide_angle(real_t p_radians);
 
 	uint32_t get_moving_platform_floor_layers() const;
 	void set_moving_platform_floor_layers(const uint32_t p_exclude_layer);
@@ -435,7 +435,7 @@ private:
 	void set_moving_platform_apply_velocity_on_leave(MovingPlatformApplyVelocityOnLeave p_on_leave_velocity);
 	MovingPlatformApplyVelocityOnLeave get_moving_platform_apply_velocity_on_leave() const;
 
-	void _move_and_slide_free(double p_delta);
+	void _move_and_slide_floating(double p_delta);
 	void _move_and_slide_grounded(double p_delta, bool p_was_on_floor);
 
 	Ref<KinematicCollision2D> _get_slide_collision(int p_bounce);

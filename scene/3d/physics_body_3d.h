@@ -345,7 +345,7 @@ class CharacterBody3D : public PhysicsBody3D {
 public:
 	enum MotionMode {
 		MOTION_MODE_GROUNDED,
-		MOTION_MODE_FREE,
+		MOTION_MODE_FLOATING,
 	};
 	enum MovingPlatformApplyVelocityOnLeave {
 		PLATFORM_VEL_ON_LEAVE_ALWAYS,
@@ -468,7 +468,7 @@ private:
 	void set_moving_platform_apply_velocity_on_leave(MovingPlatformApplyVelocityOnLeave p_on_leave_velocity);
 	MovingPlatformApplyVelocityOnLeave get_moving_platform_apply_velocity_on_leave() const;
 
-	void _move_and_slide_free(double p_delta);
+	void _move_and_slide_floating(double p_delta);
 	void _move_and_slide_grounded(double p_delta, bool p_was_on_floor);
 
 	Ref<KinematicCollision3D> _get_slide_collision(int p_bounce);
