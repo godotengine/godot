@@ -53,7 +53,7 @@ int POOL_resize(POOL_ctx* ctx, size_t numThreads);
  * @return threadpool memory usage
  *  note : compatible with NULL (returns 0 in this case)
  */
-size_t POOL_sizeof(POOL_ctx* ctx);
+size_t POOL_sizeof(const POOL_ctx* ctx);
 
 /*! POOL_function :
  *  The function type that can be added to a thread pool.
@@ -70,7 +70,7 @@ void POOL_add(POOL_ctx* ctx, POOL_function function, void* opaque);
 
 
 /*! POOL_tryAdd() :
- *  Add the job `function(opaque)` to thread pool _if_ a worker is available.
+ *  Add the job `function(opaque)` to thread pool _if_ a queue slot is available.
  *  Returns immediately even if not (does not block).
  * @return : 1 if successful, 0 if not.
  */

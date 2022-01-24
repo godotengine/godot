@@ -65,8 +65,11 @@ size_t ZSTDMT_nextInputSizeHint(const ZSTDMT_CCtx* mtctx);
  *  Private use only. Init streaming operation.
  *  expects params to be valid.
  *  must receive dict, or cdict, or none, but not both.
+ *  mtctx can be freshly constructed or reused from a prior compression.
+ *  If mtctx is reused, memory allocations from the prior compression may not be freed,
+ *  even if they are not needed for the current compression.
  *  @return : 0, or an error code */
-size_t ZSTDMT_initCStream_internal(ZSTDMT_CCtx* zcs,
+size_t ZSTDMT_initCStream_internal(ZSTDMT_CCtx* mtctx,
                     const void* dict, size_t dictSize, ZSTD_dictContentType_e dictContentType,
                     const ZSTD_CDict* cdict,
                     ZSTD_CCtx_params params, unsigned long long pledgedSrcSize);

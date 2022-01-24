@@ -51,6 +51,8 @@ extern "C" {
 #    include <stdint.h> /* intptr_t */
 #  endif
   typedef   uint8_t BYTE;
+  typedef   uint8_t U8;
+  typedef    int8_t S8;
   typedef  uint16_t U16;
   typedef   int16_t S16;
   typedef  uint32_t U32;
@@ -63,6 +65,8 @@ extern "C" {
 #  error "this implementation requires char to be exactly 8-bit type"
 #endif
   typedef unsigned char      BYTE;
+  typedef unsigned char      U8;
+  typedef   signed char      S8;
 #if USHRT_MAX != 65535
 #  error "this implementation requires short to be exactly 16-bit type"
 #endif
@@ -153,8 +157,22 @@ MEM_STATIC unsigned MEM_64bits(void) { return sizeof(size_t)==8; }
 
 MEM_STATIC unsigned MEM_isLittleEndian(void)
 {
+#if defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
+    return 1;
+#elif defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
+    return 0;
+#elif defined(__clang__) && __LITTLE_ENDIAN__
+    return 1;
+#elif defined(__clang__) && __BIG_ENDIAN__
+    return 0;
+#elif defined(_MSC_VER) && (_M_AMD64 || _M_IX86)
+    return 1;
+#elif defined(__DMC__) && defined(_M_IX86)
+    return 1;
+#else
     const union { U32 u; BYTE c[4]; } one = { 1 };   /* don't use static : performance detrimental  */
     return one.c[0];
+#endif
 }
 
 #if defined(MEM_FORCE_MEMORY_ACCESS) && (MEM_FORCE_MEMORY_ACCESS==2)

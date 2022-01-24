@@ -19,10 +19,8 @@
 /*-*************************************
 *  Dependencies
 ***************************************/
-#if !defined(ZSTD_NO_INTRINSICS) && defined(__ARM_NEON)
-#include <arm_neon.h>
-#endif
 #include "compiler.h"
+#include "cpu.h"
 #include "mem.h"
 #include "debug.h"                 /* assert, DEBUGLOG, RAWLOG, g_debuglevel */
 #include "error_private.h"
@@ -60,81 +58,7 @@ extern "C" {
 #undef MAX
 #define MIN(a,b) ((a)<(b) ? (a) : (b))
 #define MAX(a,b) ((a)>(b) ? (a) : (b))
-
-/**
- * Ignore: this is an internal helper.
- *
- * This is a helper function to help force C99-correctness during compilation.
- * Under strict compilation modes, variadic macro arguments can't be empty.
- * However, variadic function arguments can be. Using a function therefore lets
- * us statically check that at least one (string) argument was passed,
- * independent of the compilation flags.
- */
-static INLINE_KEYWORD UNUSED_ATTR
-void _force_has_format_string(const char *format, ...) {
-  (void)format;
-}
-
-/**
- * Ignore: this is an internal helper.
- *
- * We want to force this function invocation to be syntactically correct, but
- * we don't want to force runtime evaluation of its arguments.
- */
-#define _FORCE_HAS_FORMAT_STRING(...) \
-  if (0) { \
-    _force_has_format_string(__VA_ARGS__); \
-  }
-
-/**
- * Return the specified error if the condition evaluates to true.
- *
- * In debug modes, prints additional information.
- * In order to do that (particularly, printing the conditional that failed),
- * this can't just wrap RETURN_ERROR().
- */
-#define RETURN_ERROR_IF(cond, err, ...) \
-  if (cond) { \
-    RAWLOG(3, "%s:%d: ERROR!: check %s failed, returning %s", \
-           __FILE__, __LINE__, ZSTD_QUOTE(cond), ZSTD_QUOTE(ERROR(err))); \
-    _FORCE_HAS_FORMAT_STRING(__VA_ARGS__); \
-    RAWLOG(3, ": " __VA_ARGS__); \
-    RAWLOG(3, "\n"); \
-    return ERROR(err); \
-  }
-
-/**
- * Unconditionally return the specified error.
- *
- * In debug modes, prints additional information.
- */
-#define RETURN_ERROR(err, ...) \
-  do { \
-    RAWLOG(3, "%s:%d: ERROR!: unconditional check failed, returning %s", \
-           __FILE__, __LINE__, ZSTD_QUOTE(ERROR(err))); \
-    _FORCE_HAS_FORMAT_STRING(__VA_ARGS__); \
-    RAWLOG(3, ": " __VA_ARGS__); \
-    RAWLOG(3, "\n"); \
-    return ERROR(err); \
-  } while(0);
-
-/**
- * If the provided expression evaluates to an error code, returns that error code.
- *
- * In debug modes, prints additional information.
- */
-#define FORWARD_IF_ERROR(err, ...) \
-  do { \
-    size_t const err_code = (err); \
-    if (ERR_isError(err_code)) { \
-      RAWLOG(3, "%s:%d: ERROR!: forwarding error in %s: %s", \
-             __FILE__, __LINE__, ZSTD_QUOTE(err), ERR_getErrorName(err_code)); \
-      _FORCE_HAS_FORMAT_STRING(__VA_ARGS__); \
-      RAWLOG(3, ": " __VA_ARGS__); \
-      RAWLOG(3, "\n"); \
-      return err_code; \
-    } \
-  } while(0);
+#define BOUNDED(min,val,max) (MAX(min,MIN(val,max)))
 
 
 /*-*************************************
@@ -143,7 +67,6 @@ void _force_has_format_string(const char *format, ...) {
 #define ZSTD_OPT_NUM    (1<<12)
 
 #define ZSTD_REP_NUM      3                 /* number of repcodes */
-#define ZSTD_REP_MOVE     (ZSTD_REP_NUM-1)
 static UNUSED_ATTR const U32 repStartValue[ZSTD_REP_NUM] = { 1, 4, 8 };
 
 #define KB *(1 <<10)
@@ -195,7 +118,7 @@ typedef enum { set_basic, set_rle, set_compressed, set_repeat } symbolEncodingTy
 /* Each table cannot take more than #symbols * FSELog bits */
 #define ZSTD_MAX_FSE_HEADERS_SIZE (((MaxML + 1) * MLFSELog + (MaxLL + 1) * LLFSELog + (MaxOff + 1) * OffFSELog + 7) / 8)
 
-static UNUSED_ATTR const U32 LL_bits[MaxLL+1] = {
+static UNUSED_ATTR const U8 LL_bits[MaxLL+1] = {
      0, 0, 0, 0, 0, 0, 0, 0,
      0, 0, 0, 0, 0, 0, 0, 0,
      1, 1, 1, 1, 2, 2, 3, 3,
@@ -212,7 +135,7 @@ static UNUSED_ATTR const S16 LL_defaultNorm[MaxLL+1] = {
 #define LL_DEFAULTNORMLOG 6  /* for static allocation */
 static UNUSED_ATTR const U32 LL_defaultNormLog = LL_DEFAULTNORMLOG;
 
-static UNUSED_ATTR const U32 ML_bits[MaxML+1] = {
+static UNUSED_ATTR const U8 ML_bits[MaxML+1] = {
      0, 0, 0, 0, 0, 0, 0, 0,
      0, 0, 0, 0, 0, 0, 0, 0,
      0, 0, 0, 0, 0, 0, 0, 0,
@@ -247,19 +170,30 @@ static UNUSED_ATTR const U32 OF_defaultNormLog = OF_DEFAULTNORMLOG;
 *  Shared functions to include for inlining
 *********************************************/
 static void ZSTD_copy8(void* dst, const void* src) {
-#if !defined(ZSTD_NO_INTRINSICS) && defined(__ARM_NEON)
+#if defined(ZSTD_ARCH_ARM_NEON)
     vst1_u8((uint8_t*)dst, vld1_u8((const uint8_t*)src));
 #else
     ZSTD_memcpy(dst, src, 8);
 #endif
 }
-
 #define COPY8(d,s) { ZSTD_copy8(d,s); d+=8; s+=8; }
+
+/* Need to use memmove here since the literal buffer can now be located within
+   the dst buffer. In circumstances where the op "catches up" to where the
+   literal buffer is, there can be partial overlaps in this call on the final
+   copy if the literal is being shifted by less than 16 bytes. */
 static void ZSTD_copy16(void* dst, const void* src) {
-#if !defined(ZSTD_NO_INTRINSICS) && defined(__ARM_NEON)
+#if defined(ZSTD_ARCH_ARM_NEON)
     vst1q_u8((uint8_t*)dst, vld1q_u8((const uint8_t*)src));
+#elif defined(ZSTD_ARCH_X86_SSE2)
+    _mm_storeu_si128((__m128i*)dst, _mm_loadu_si128((const __m128i*)src));
+#elif defined(__clang__)
+    ZSTD_memmove(dst, src, 16);
 #else
-    ZSTD_memcpy(dst, src, 16);
+    /* ZSTD_memmove is not inlined properly by gcc */
+    BYTE copy16_buf[16];
+    ZSTD_memcpy(copy16_buf, src, 16);
+    ZSTD_memcpy(dst, copy16_buf, 16);
 #endif
 }
 #define COPY16(d,s) { ZSTD_copy16(d,s); d+=16; s+=16; }
@@ -287,8 +221,6 @@ void ZSTD_wildcopy(void* dst, const void* src, ptrdiff_t length, ZSTD_overlap_e 
     const BYTE* ip = (const BYTE*)src;
     BYTE* op = (BYTE*)dst;
     BYTE* const oend = op + length;
-
-    assert(diff >= 8 || (ovtype == ZSTD_no_overlap && diff <= -WILDCOPY_VECLEN));
 
     if (ovtype == ZSTD_overlap_src_before_dst && diff < WILDCOPY_VECLEN) {
         /* Handle short offset copies. */
@@ -352,9 +284,9 @@ typedef enum {
 *  Private declarations
 *********************************************/
 typedef struct seqDef_s {
-    U32 offset;         /* offset == rawOffset + ZSTD_REP_NUM, or equivalently, offCode + 1 */
+    U32 offBase;   /* offBase == Offset + ZSTD_REP_NUM, or repcode 1,2,3 */
     U16 litLength;
-    U16 matchLength;
+    U16 mlBase;    /* mlBase == matchLength - MINMATCH */
 } seqDef;
 
 /* Controls whether seqStore has a single "long" litLength or matchLength. See seqStore_t. */
@@ -396,7 +328,7 @@ MEM_STATIC ZSTD_sequenceLength ZSTD_getSequenceLength(seqStore_t const* seqStore
 {
     ZSTD_sequenceLength seqLen;
     seqLen.litLength = seq->litLength;
-    seqLen.matchLength = seq->matchLength + MINMATCH;
+    seqLen.matchLength = seq->mlBase + MINMATCH;
     if (seqStore->longLengthPos == (U32)(seq - seqStore->sequencesStart)) {
         if (seqStore->longLengthType == ZSTD_llt_literalLength) {
             seqLen.litLength += 0xFFFF;
@@ -436,8 +368,14 @@ MEM_STATIC U32 ZSTD_highbit32(U32 val)   /* compress, dictBuilder, decodeCorpus 
 #       if STATIC_BMI2 == 1
             return _lzcnt_u32(val)^31;
 #       else
-            unsigned long r=0;
-            return _BitScanReverse(&r, val) ? (unsigned)r : 0;
+            if (val != 0) {
+                unsigned long r;
+                _BitScanReverse(&r, val);
+                return (unsigned)r;
+            } else {
+                /* Should not reach this code path */
+                __assume(0);
+            }
 #       endif
 #   elif defined(__GNUC__) && (__GNUC__ >= 3)   /* GCC Intrinsic */
         return __builtin_clz (val) ^ 31;
@@ -453,6 +391,63 @@ MEM_STATIC U32 ZSTD_highbit32(U32 val)   /* compress, dictBuilder, decodeCorpus 
         v |= v >> 16;
         return DeBruijnClz[(v * 0x07C4ACDDU) >> 27];
 #   endif
+    }
+}
+
+/**
+ * Counts the number of trailing zeros of a `size_t`.
+ * Most compilers should support CTZ as a builtin. A backup
+ * implementation is provided if the builtin isn't supported, but
+ * it may not be terribly efficient.
+ */
+MEM_STATIC unsigned ZSTD_countTrailingZeros(size_t val)
+{
+    if (MEM_64bits()) {
+#       if defined(_MSC_VER) && defined(_WIN64)
+#           if STATIC_BMI2
+                return _tzcnt_u64(val);
+#           else
+                if (val != 0) {
+                    unsigned long r;
+                    _BitScanForward64(&r, (U64)val);
+                    return (unsigned)r;
+                } else {
+                    /* Should not reach this code path */
+                    __assume(0);
+                }
+#           endif
+#       elif defined(__GNUC__) && (__GNUC__ >= 4)
+            return __builtin_ctzll((U64)val);
+#       else
+            static const int DeBruijnBytePos[64] = {  0,  1,  2,  7,  3, 13,  8, 19,
+                                                      4, 25, 14, 28,  9, 34, 20, 56,
+                                                      5, 17, 26, 54, 15, 41, 29, 43,
+                                                      10, 31, 38, 35, 21, 45, 49, 57,
+                                                      63,  6, 12, 18, 24, 27, 33, 55,
+                                                      16, 53, 40, 42, 30, 37, 44, 48,
+                                                      62, 11, 23, 32, 52, 39, 36, 47,
+                                                      61, 22, 51, 46, 60, 50, 59, 58 };
+            return DeBruijnBytePos[((U64)((val & -(long long)val) * 0x0218A392CDABBD3FULL)) >> 58];
+#       endif
+    } else { /* 32 bits */
+#       if defined(_MSC_VER)
+            if (val != 0) {
+                unsigned long r;
+                _BitScanForward(&r, (U32)val);
+                return (unsigned)r;
+            } else {
+                /* Should not reach this code path */
+                __assume(0);
+            }
+#       elif defined(__GNUC__) && (__GNUC__ >= 3)
+            return __builtin_ctz((U32)val);
+#       else
+            static const int DeBruijnBytePos[32] = {  0,  1, 28,  2, 29, 14, 24,  3,
+                                                     30, 22, 20, 15, 25, 17,  4,  8,
+                                                     31, 27, 13, 23, 21, 19, 16,  7,
+                                                     26, 12, 18,  6, 11,  5, 10,  9 };
+            return DeBruijnBytePos[((U32)((val & -(S32)val) * 0x077CB531U)) >> 27];
+#       endif
     }
 }
 
@@ -482,6 +477,14 @@ size_t ZSTD_getcBlockSize(const void* src, size_t srcSize,
 size_t ZSTD_decodeSeqHeaders(ZSTD_DCtx* dctx, int* nbSeqPtr,
                        const void* src, size_t srcSize);
 
+/**
+ * @returns true iff the CPU supports dynamic BMI2 dispatch.
+ */
+MEM_STATIC int ZSTD_cpuSupportsBmi2(void)
+{
+    ZSTD_cpuid_t cpuid = ZSTD_cpuid();
+    return ZSTD_cpuid_bmi1(cpuid) && ZSTD_cpuid_bmi2(cpuid);
+}
 
 #if defined (__cplusplus)
 }
