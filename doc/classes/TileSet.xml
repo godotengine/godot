@@ -427,6 +427,7 @@
 			<argument index="1" name="color" type="Color" />
 			<description>
 				Sets the tile's modulation color.
+				[b]Note:[/b] Modulation is performed by setting the tile's vertex color. To access this in a shader, use [code]COLOR[/code] rather than [code]MODULATE[/code] (which instead accesses the [TileMap]'s [member CanvasItem.modulate] property).
 			</description>
 		</method>
 		<method name="tile_set_name">
