@@ -1132,11 +1132,11 @@ bool RendererSceneRenderRD::_shadow_atlas_find_omni_shadows(ShadowAtlas *shadow_
 	return false;
 }
 
-bool RendererSceneRenderRD::shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version) {
+bool RendererSceneRenderRD::shadow_atlas_update_light(RID p_atlas, RID p_light_instance, float p_coverage, uint64_t p_light_version) {
 	ShadowAtlas *shadow_atlas = shadow_atlas_owner.get_or_null(p_atlas);
 	ERR_FAIL_COND_V(!shadow_atlas, false);
 
-	LightInstance *li = light_instance_owner.get_or_null(p_light_intance);
+	LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
 	ERR_FAIL_COND_V(!li, false);
 
 	if (shadow_atlas->size == 0 || shadow_atlas->smallest_subdiv == 0) {
@@ -1185,8 +1185,8 @@ bool RendererSceneRenderRD::shadow_atlas_update_light(RID p_atlas, RID p_light_i
 	bool should_realloc = false;
 	bool should_redraw = false;
 
-	if (shadow_atlas->shadow_owners.has(p_light_intance)) {
-		old_key = shadow_atlas->shadow_owners[p_light_intance];
+	if (shadow_atlas->shadow_owners.has(p_light_instance)) {
+		old_key = shadow_atlas->shadow_owners[p_light_instance];
 		old_quadrant = (old_key >> ShadowAtlas::QUADRANT_SHIFT) & 0x3;
 		old_shadow = old_key & ShadowAtlas::SHADOW_INDEX_MASK;
 
@@ -1230,7 +1230,7 @@ bool RendererSceneRenderRD::shadow_atlas_update_light(RID p_atlas, RID p_light_i
 		ShadowAtlas::Quadrant::Shadow *sh = &shadow_atlas->quadrants[new_quadrant].shadows.write[new_shadow];
 		_shadow_atlas_invalidate_shadow(sh, p_atlas, shadow_atlas, new_quadrant, new_shadow);
 
-		sh->owner = p_light_intance;
+		sh->owner = p_light_instance;
 		sh->alloc_tick = tick;
 		sh->version = p_light_version;
 
@@ -1241,7 +1241,7 @@ bool RendererSceneRenderRD::shadow_atlas_update_light(RID p_atlas, RID p_light_i
 			ShadowAtlas::Quadrant::Shadow *extra_sh = &shadow_atlas->quadrants[new_quadrant].shadows.write[new_omni_shadow];
 			_shadow_atlas_invalidate_shadow(extra_sh, p_atlas, shadow_atlas, new_quadrant, new_omni_shadow);
 
-			extra_sh->owner = p_light_intance;
+			extra_sh->owner = p_light_instance;
 			extra_sh->alloc_tick = tick;
 			extra_sh->version = p_light_version;
 		}
@@ -1249,7 +1249,7 @@ bool RendererSceneRenderRD::shadow_atlas_update_light(RID p_atlas, RID p_light_i
 		li->shadow_atlases.insert(p_atlas);
 
 		//update it in map
-		shadow_atlas->shadow_owners[p_light_intance] = new_key;
+		shadow_atlas->shadow_owners[p_light_instance] = new_key;
 		//make it dirty, as it should redraw anyway
 		return true;
 	}
@@ -1270,10 +1270,10 @@ void RendererSceneRenderRD::_shadow_atlas_invalidate_shadow(RendererSceneRenderR
 			omni_shadow->owner = RID();
 		}
 
+		p_shadow_atlas->shadow_owners.erase(p_shadow->owner);
 		p_shadow->version = 0;
 		p_shadow->owner = RID();
 		sli->shadow_atlases.erase(p_atlas);
-		p_shadow_atlas->shadow_owners.erase(p_shadow->owner);
 	}
 }
 
@@ -2636,8 +2636,12 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(RID p_render_buffers, RID
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS) {
 		if (p_shadow_atlas.is_valid()) {
 			RID shadow_atlas_texture = shadow_atlas_get_texture(p_shadow_atlas);
-			Size2 rtsize = storage->render_target_get_size(rb->render_target);
 
+			if (shadow_atlas_texture.is_null()) {
+				shadow_atlas_texture = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK);
+			}
+
+			Size2 rtsize = storage->render_target_get_size(rb->render_target);
 			effects->copy_to_fb_rect(shadow_atlas_texture, storage->render_target_get_rd_framebuffer(rb->render_target), Rect2i(Vector2(), rtsize / 2), false, true);
 		}
 	}
