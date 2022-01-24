@@ -66,6 +66,11 @@ void Navigation::set_cell_size(float p_cell_size) {
 	NavigationServer::get_singleton()->map_set_cell_size(map, cell_size);
 }
 
+void Navigation::set_cell_height(float p_cell_height) {
+	cell_height = p_cell_height;
+	NavigationServer::get_singleton()->map_set_cell_height(map, cell_height);
+}
+
 void Navigation::set_edge_connection_margin(float p_edge_connection_margin) {
 	edge_connection_margin = p_edge_connection_margin;
 	NavigationServer::get_singleton()->map_set_edge_connection_margin(map, edge_connection_margin);
@@ -86,11 +91,15 @@ void Navigation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_cell_size", "cell_size"), &Navigation::set_cell_size);
 	ClassDB::bind_method(D_METHOD("get_cell_size"), &Navigation::get_cell_size);
 
+	ClassDB::bind_method(D_METHOD("set_cell_height", "cell_height"), &Navigation::set_cell_height);
+	ClassDB::bind_method(D_METHOD("get_cell_height"), &Navigation::get_cell_height);
+
 	ClassDB::bind_method(D_METHOD("set_edge_connection_margin", "margin"), &Navigation::set_edge_connection_margin);
 	ClassDB::bind_method(D_METHOD("get_edge_connection_margin"), &Navigation::get_edge_connection_margin);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "up_vector"), "set_up_vector", "get_up_vector");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "cell_size"), "set_cell_size", "get_cell_size");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "cell_height"), "set_cell_height", "get_cell_height");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "edge_connection_margin"), "set_edge_connection_margin", "get_edge_connection_margin");
 }
 
@@ -109,6 +118,7 @@ Navigation::Navigation() {
 	map = NavigationServer::get_singleton()->map_create();
 
 	set_cell_size(0.3);
+	set_cell_height(0.2);
 	set_edge_connection_margin(5.0); // Five meters, depends alot on the agents radius
 
 	up = Vector3(0, 1, 0);

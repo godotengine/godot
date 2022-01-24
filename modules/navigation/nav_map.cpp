@@ -44,6 +44,7 @@
 NavMap::NavMap() :
 		up(0, 1, 0),
 		cell_size(0.3),
+		cell_height(0.2),
 		edge_connection_margin(5.0),
 		regenerate_polygons(true),
 		regenerate_links(true),
@@ -61,15 +62,20 @@ void NavMap::set_cell_size(float p_cell_size) {
 	regenerate_polygons = true;
 }
 
+void NavMap::set_cell_height(float p_cell_height) {
+	cell_height = p_cell_height;
+	regenerate_polygons = true;
+}
+
 void NavMap::set_edge_connection_margin(float p_edge_connection_margin) {
 	edge_connection_margin = p_edge_connection_margin;
 	regenerate_links = true;
 }
 
 gd::PointKey NavMap::get_point_key(const Vector3 &p_pos) const {
-	const int x = int(Math::floor(p_pos.x / cell_size));
-	const int y = int(Math::floor(p_pos.y / cell_size));
-	const int z = int(Math::floor(p_pos.z / cell_size));
+	const int x = static_cast<int>(Math::round(p_pos.x / cell_size));
+	const int y = static_cast<int>(Math::round(p_pos.y / cell_height));
+	const int z = static_cast<int>(Math::round(p_pos.z / cell_size));
 
 	gd::PointKey p;
 	p.key = 0;
@@ -640,7 +646,7 @@ void NavMap::sync() {
 					connection->get().B->edges[connection->get().B_edge].other_edge = connection->get().A_edge;
 				} else {
 					// The edge is already connected with another edge, skip.
-					ERR_PRINT("Attempted to merge a navigation mesh triangle edge with another already-merged edge. This happens when the Navigation's `cell_size` is different from the one used to generate the navigation mesh. This will cause navigation problem.");
+					ERR_PRINT("Attempted to merge a navigation mesh triangle edge with another already-merged edge. Either the Navigation's `cell_size` is different from the one used to generate the navigation mesh or `detail/sample_max_error` is too small. This will cause navigation problem.");
 				}
 			}
 		}

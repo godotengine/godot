@@ -41,6 +41,7 @@ class Navigation : public Spatial {
 
 	Vector3 up;
 	real_t cell_size;
+	real_t cell_height;
 	real_t edge_connection_margin;
 
 protected:
@@ -58,6 +59,11 @@ public:
 	void set_cell_size(float p_cell_size);
 	float get_cell_size() const {
 		return cell_size;
+	}
+
+	void set_cell_height(float p_cell_height);
+	float get_cell_height() const {
+		return cell_height;
 	}
 
 	void set_edge_connection_margin(float p_edge_connection_margin);

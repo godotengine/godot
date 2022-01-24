@@ -57,6 +57,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="cell_height" type="float" setter="set_cell_height" getter="get_cell_height" default="0.2">
+			The cell height to use for fields.
+		</member>
 		<member name="cell_size" type="float" setter="set_cell_size" getter="get_cell_size" default="0.3">
 			The XZ plane cell size to use for fields.
 		</member>
