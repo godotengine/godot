@@ -435,7 +435,7 @@ void CollisionObject3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ray_pickable", "ray_pickable"), &CollisionObject3D::set_ray_pickable);
 	ClassDB::bind_method(D_METHOD("is_ray_pickable"), &CollisionObject3D::is_ray_pickable);
 	ClassDB::bind_method(D_METHOD("set_capture_input_on_drag", "enable"), &CollisionObject3D::set_capture_input_on_drag);
-	ClassDB::bind_method(D_METHOD("get_capture_input_on_drag"), &CollisionObject3D::get_capture_input_on_drag);
+	ClassDB::bind_method(D_METHOD("is_capturing_input_on_drag"), &CollisionObject3D::is_capturing_input_on_drag);
 	ClassDB::bind_method(D_METHOD("get_rid"), &CollisionObject3D::get_rid);
 	ClassDB::bind_method(D_METHOD("create_shape_owner", "owner"), &CollisionObject3D::create_shape_owner);
 	ClassDB::bind_method(D_METHOD("remove_shape_owner", "owner_id"), &CollisionObject3D::remove_shape_owner);
@@ -467,7 +467,7 @@ void CollisionObject3D::_bind_methods() {
 
 	ADD_GROUP("Input", "input_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_ray_pickable"), "set_ray_pickable", "is_ray_pickable");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_capture_on_drag"), "set_capture_input_on_drag", "get_capture_input_on_drag");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_capture_on_drag"), "set_capture_input_on_drag", "is_capturing_input_on_drag");
 
 	BIND_ENUM_CONSTANT(DISABLE_MODE_REMOVE);
 	BIND_ENUM_CONSTANT(DISABLE_MODE_MAKE_STATIC);
@@ -681,7 +681,7 @@ void CollisionObject3D::set_capture_input_on_drag(bool p_capture) {
 	capture_input_on_drag = p_capture;
 }
 
-bool CollisionObject3D::get_capture_input_on_drag() const {
+bool CollisionObject3D::is_capturing_input_on_drag() const {
 	return capture_input_on_drag;
 }
 

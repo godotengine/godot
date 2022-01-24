@@ -31,6 +31,7 @@
 #ifndef GRID_MAP_H
 #define GRID_MAP_H
 
+#include "scene/3d/camera_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/resources/mesh_library.h"
 #include "scene/resources/multimesh.h"
@@ -113,6 +114,7 @@ class GridMap : public Node3D {
 
 		bool dirty = false;
 		RID static_body;
+		Map<int, Pair<IndexKey, int>> shapes_map;
 		Map<IndexKey, NavMesh> navmesh_ids;
 	};
 
@@ -137,6 +139,10 @@ class GridMap : public Node3D {
 	uint32_t collision_layer = 1;
 	uint32_t collision_mask = 1;
 	Ref<PhysicsMaterial> physics_material;
+	bool capture_input_on_drag = false;
+	bool ray_pickable = true;
+	Map<RID, Map<int, Pair<IndexKey, int>> *> bodies_map;
+
 	bool bake_navigation = false;
 	uint32_t navigation_layers = 1;
 
@@ -186,12 +192,15 @@ class GridMap : public Node3D {
 
 	void _queue_octants_dirty();
 	void _update_octants_callback();
+	void _update_pickable();
 
 	void resource_changed(const RES &p_res);
 
 	void _clear_internal();
 
 	Vector3 _get_offset() const;
+
+	Pair<IndexKey, int> _get_staticbody_shape_data(RID p_body, int p_shape) const;
 
 	struct BakedMesh {
 		Ref<Mesh> mesh;
@@ -209,6 +218,12 @@ protected:
 	void _update_visibility();
 	static void _bind_methods();
 
+	friend class Viewport;
+	virtual void _input_event_call(Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, RID p_rid, int p_shape);
+	virtual void _mouse_enter(RID p_rid, int p_shape);
+	virtual void _mouse_exit(RID p_rid, int p_shape);
+
+	GDVIRTUAL3(_input_event, Camera3D *, Ref<InputEvent>, Dictionary)
 public:
 	enum {
 		INVALID_CELL_ITEM = -1
@@ -228,6 +243,15 @@ public:
 
 	void set_physics_material(Ref<PhysicsMaterial> p_material);
 	Ref<PhysicsMaterial> get_physics_material() const;
+
+	void set_ray_pickable(bool p_ray_pickable);
+	bool is_ray_pickable() const;
+
+	void set_capture_input_on_drag(bool p_capture);
+	bool is_capturing_input_on_drag() const;
+
+	Vector3i static_body_get_shape_cell(RID p_body, int p_shape) const;
+	int static_body_get_item_shape_index(RID p_body, int p_shape) const;
 
 	Array get_collision_shapes() const;
 
