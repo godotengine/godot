@@ -3853,7 +3853,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 		disk_changed->add_button(TTR("Save Local Changes"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
 		disk_changed->connect("custom_action", callable_mp(this, &ScriptEditor::_resave_scripts));
 
-		disk_changed->get_cancel_button()->set_text(TTR("Do Nothing"))
+		disk_changed->get_cancel_button()->set_text(TTR("Do Nothing"));
 	}
 
 	add_child(disk_changed);
