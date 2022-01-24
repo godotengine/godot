@@ -544,7 +544,7 @@ Ref<Translation> TranslationServer::get_translation_object(const String &p_local
 		String l = t->get_locale();
 
 		int score = compare_locales(p_locale, l);
-		if (score > best_score) {
+		if (score > 0 && score >= best_score) {
 			res = t;
 			best_score = score;
 			if (score == 10) {
@@ -566,8 +566,6 @@ StringName TranslationServer::translate(const StringName &p_message, const Strin
 		return p_message;
 	}
 
-	ERR_FAIL_COND_V_MSG(locale.length() < 2, p_message, "Could not translate message as configured locale '" + locale + "' is invalid.");
-
 	StringName res = _get_message_from_translations(p_message, p_context, locale, false);
 
 	if (!res && fallback.length() >= 2) {
@@ -588,8 +586,6 @@ StringName TranslationServer::translate_plural(const StringName &p_message, cons
 		}
 		return p_message_plural;
 	}
-
-	ERR_FAIL_COND_V_MSG(locale.length() < 2, p_message, "Could not translate message as configured locale '" + locale + "' is invalid.");
 
 	StringName res = _get_message_from_translations(p_message, p_context, locale, true, p_message_plural, p_n);
 
@@ -617,13 +613,17 @@ StringName TranslationServer::_get_message_from_translations(const StringName &p
 		String l = t->get_locale();
 
 		int score = compare_locales(p_locale, l);
-		if (score > best_score) {
+		if (score > 0 && score >= best_score) {
 			StringName r;
 			if (!plural) {
-				res = t->get_message(p_message, p_context);
+				r = t->get_message(p_message, p_context);
 			} else {
-				res = t->get_plural_message(p_message, p_message_plural, p_n, p_context);
+				r = t->get_plural_message(p_message, p_message_plural, p_n, p_context);
 			}
+			if (!r) {
+				continue;
+			}
+			res = r;
 			best_score = score;
 			if (score == 10) {
 				break; // Exact match, skip the rest.
