@@ -42,6 +42,7 @@ static const char *locale_renames[][2] = {
 	{ "in", "id" }, //  Indonesian
 	{ "iw", "he" }, //  Hebrew
 	{ "no", "nb" }, //  Norwegian Bokmål
+	{ "C", "en" }, // Locale is not set, fallback to English.
 	{ nullptr, nullptr }
 };
 
