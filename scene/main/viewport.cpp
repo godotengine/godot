@@ -523,6 +523,13 @@ void Viewport::_process_picking() {
 
 	_drop_physics_mouseover(true);
 
+#ifndef _3D_DISABLED
+	Vector2 last_pos(1e20, 1e20);
+	CollisionObject3D *last_object = nullptr;
+	ObjectID last_id;
+	PhysicsDirectSpaceState3D::RayResult result;
+#endif // _3D_DISABLED
+
 	PhysicsDirectSpaceState2D *ss2d = PhysicsServer2D::get_singleton()->space_get_direct_state(find_world_2d()->get_space());
 
 	if (physics_has_last_mousepos) {
@@ -690,10 +697,6 @@ void Viewport::_process_picking() {
 		}
 
 #ifndef _3D_DISABLED
-		Vector2 last_pos(1e20, 1e20);
-		CollisionObject3D *last_object = nullptr;
-		ObjectID last_id;
-		PhysicsDirectSpaceState3D::RayResult result;
 		bool captured = false;
 
 		if (physics_object_capture.is_valid()) {
