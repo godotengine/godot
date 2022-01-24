@@ -277,7 +277,7 @@
 		</method>
 		<method name="duplicate" qualifiers="const">
 			<return type="Node" />
-			<param index="0" name="flags" type="int" default="15" />
+			<param index="0" name="flags" type="int" default="31" />
 			<description>
 				Duplicates the node, returning a new node with all of its properties, signals, groups, and children copied from the original. The behavior can be tweaked through the [param flags] (see [enum DuplicateFlags]). Internal nodes are not duplicated.
 				[b]Note:[/b] For nodes with a [Script] attached, if [method Object._init] has been defined with required parameters, the duplicated node will not have a [Script].
@@ -1396,6 +1396,9 @@
 		</constant>
 		<constant name="DUPLICATE_USE_INSTANTIATION" value="8" enum="DuplicateFlags">
 			Duplicate using [method PackedScene.instantiate]. If the node comes from a scene saved on disk, reuses [method PackedScene.instantiate] as the base for the duplicated node and its children.
+		</constant>
+		<constant name="DUPLICATE_INTERNAL_STATE" value="16" enum="DuplicateFlags">
+			Duplicate also non-serializable variables (i.e. without [constant @GlobalScope.PROPERTY_USAGE_STORAGE]).
 		</constant>
 		<constant name="INTERNAL_MODE_DISABLED" value="0" enum="InternalMode">
 			The node will not be internal.
