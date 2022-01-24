@@ -169,12 +169,15 @@ void EditorHelp::_class_desc_resized() {
 	Ref<Font> doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
 	int font_size = get_theme_font_size(SNAME("doc_source_size"), SNAME("EditorFonts"));
 	real_t char_width = doc_code_font->get_char_size('x', 0, font_size).width;
-	const int display_margin = MAX(30 * EDSCALE, get_parent_anchorable_rect().size.width - char_width * 120 * EDSCALE) * 0.5;
+	const int new_display_margin = MAX(30 * EDSCALE, get_parent_anchorable_rect().size.width - char_width * 120 * EDSCALE) * 0.5;
+	if (display_margin != new_display_margin) {
+		display_margin = new_display_margin;
 
-	Ref<StyleBox> class_desc_stylebox = EditorNode::get_singleton()->get_theme_base()->get_theme_stylebox(SNAME("normal"), SNAME("RichTextLabel"))->duplicate();
-	class_desc_stylebox->set_default_margin(SIDE_LEFT, display_margin);
-	class_desc_stylebox->set_default_margin(SIDE_RIGHT, display_margin);
-	class_desc->add_theme_style_override("normal", class_desc_stylebox);
+		Ref<StyleBox> class_desc_stylebox = EditorNode::get_singleton()->get_theme_base()->get_theme_stylebox(SNAME("normal"), SNAME("RichTextLabel"))->duplicate();
+		class_desc_stylebox->set_default_margin(SIDE_LEFT, display_margin);
+		class_desc_stylebox->set_default_margin(SIDE_RIGHT, display_margin);
+		class_desc->add_theme_style_override("normal", class_desc_stylebox);
+	}
 }
 
 void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
