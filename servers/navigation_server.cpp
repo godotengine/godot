@@ -44,6 +44,8 @@ void NavigationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("map_get_up", "map"), &NavigationServer::map_get_up);
 	ClassDB::bind_method(D_METHOD("map_set_cell_size", "map", "cell_size"), &NavigationServer::map_set_cell_size);
 	ClassDB::bind_method(D_METHOD("map_get_cell_size", "map"), &NavigationServer::map_get_cell_size);
+	ClassDB::bind_method(D_METHOD("map_set_cell_height", "map", "cell_height"), &NavigationServer::map_set_cell_height);
+	ClassDB::bind_method(D_METHOD("map_get_cell_height", "map"), &NavigationServer::map_get_cell_height);
 	ClassDB::bind_method(D_METHOD("map_set_edge_connection_margin", "map", "margin"), &NavigationServer::map_set_edge_connection_margin);
 	ClassDB::bind_method(D_METHOD("map_get_edge_connection_margin", "map"), &NavigationServer::map_get_edge_connection_margin);
 	ClassDB::bind_method(D_METHOD("map_get_path", "map", "origin", "destination", "optimize"), &NavigationServer::map_get_path);

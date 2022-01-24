@@ -542,7 +542,7 @@ NavigationMesh::NavigationMesh() {
 	edge_max_error = 1.3f;
 	verts_per_poly = 6.0f;
 	detail_sample_distance = 6.0f;
-	detail_sample_max_error = 1.0f;
+	detail_sample_max_error = 5.0f;
 
 	partition_type = SAMPLE_PARTITION_WATERSHED;
 	parsed_geometry_type = PARSED_GEOMETRY_MESH_INSTANCES;

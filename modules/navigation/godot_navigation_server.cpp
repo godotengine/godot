@@ -187,6 +187,20 @@ real_t GodotNavigationServer::map_get_cell_size(RID p_map) const {
 	return map->get_cell_size();
 }
 
+COMMAND_2(map_set_cell_height, RID, p_map, real_t, p_cell_height) {
+	NavMap *map = map_owner.get(p_map);
+	ERR_FAIL_COND(map == nullptr);
+
+	map->set_cell_height(p_cell_height);
+}
+
+real_t GodotNavigationServer::map_get_cell_height(RID p_map) const {
+	const NavMap *map = map_owner.getornull(p_map);
+	ERR_FAIL_COND_V(map == nullptr, 0);
+
+	return map->get_cell_height();
+}
+
 COMMAND_2(map_set_edge_connection_margin, RID, p_map, real_t, p_connection_margin) {
 	NavMap *map = map_owner.get(p_map);
 	ERR_FAIL_COND(map == nullptr);

@@ -95,6 +95,9 @@ public:
 	COMMAND_2(map_set_cell_size, RID, p_map, real_t, p_cell_size);
 	virtual real_t map_get_cell_size(RID p_map) const;
 
+	COMMAND_2(map_set_cell_height, RID, p_map, real_t, p_cell_height);
+	virtual real_t map_get_cell_height(RID p_map) const;
+
 	COMMAND_2(map_set_edge_connection_margin, RID, p_map, real_t, p_connection_margin);
 	virtual real_t map_get_edge_connection_margin(RID p_map) const;
 
