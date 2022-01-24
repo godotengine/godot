@@ -2828,7 +2828,6 @@ void OS_X11::process_xevents() {
 				mm->set_button_mask(get_mouse_button_state());
 				mm->set_position(posi);
 				mm->set_global_position(posi);
-				input->set_mouse_position(posi);
 				mm->set_speed(input->get_last_mouse_speed());
 
 				mm->set_relative(rel);

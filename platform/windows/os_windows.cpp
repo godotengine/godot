@@ -397,7 +397,6 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 				mm->set_position(c);
 				mm->set_global_position(c);
-				input->set_mouse_position(c);
 				mm->set_speed(Vector2(0, 0));
 
 				if (raw->data.mouse.usFlags == MOUSE_MOVE_RELATIVE) {
@@ -504,7 +503,6 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 						SetCursorPos(pos.x, pos.y);
 					}
 
-					input->set_mouse_position(mm->get_position());
 					mm->set_speed(input->get_last_mouse_speed());
 
 					if (old_invalid) {
@@ -648,7 +646,6 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				SetCursorPos(pos.x, pos.y);
 			}
 
-			input->set_mouse_position(mm->get_position());
 			mm->set_speed(input->get_last_mouse_speed());
 
 			if (old_invalid) {
@@ -750,7 +747,6 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				SetCursorPos(pos.x, pos.y);
 			}
 
-			input->set_mouse_position(mm->get_position());
 			mm->set_speed(input->get_last_mouse_speed());
 
 			if (old_invalid) {
