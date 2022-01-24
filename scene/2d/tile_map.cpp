@@ -2725,7 +2725,7 @@ void TileMap::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 Vector2 TileMap::map_to_world(const Vector2i &p_pos) const {
-	// SHOULD RETURN THE CENTER OF THE TILE
+	// SHOULD RETURN THE CENTER OF THE CELL
 	ERR_FAIL_COND_V(!tile_set.is_valid(), Vector2());
 
 	Vector2 ret = p_pos;

@@ -202,7 +202,8 @@
 			<return type="Vector2" />
 			<argument index="0" name="map_position" type="Vector2i" />
 			<description>
-				Returns the local position corresponding to the given tilemap (grid-based) coordinates.
+				Returns a local position of the center of the cell at the given tilemap (grid-based) coordinates.
+				[b]Note:[/b] This doesn't correspond to the visual position of the tile, i.e. it ignores the [member TileData.texture_offset] property of individual tiles.
 			</description>
 		</method>
 		<method name="move_layer">
