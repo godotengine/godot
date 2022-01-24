@@ -3248,6 +3248,55 @@ TEST_CASE("[SceneTree][CodeEdit] Backspace delete") {
 	memdelete(code_edit);
 }
 
+TEST_CASE("[SceneTree][CodeEdit] New Line") {
+	CodeEdit *code_edit = memnew(CodeEdit);
+	SceneTree::get_singleton()->get_root()->add_child(code_edit);
+
+	/* Add a new line. */
+	code_edit->set_text("");
+	code_edit->insert_text_at_caret("test new line");
+	code_edit->set_caret_line(0);
+	code_edit->set_caret_column(13);
+	SEND_GUI_ACTION(code_edit, "ui_text_newline");
+	CHECK(code_edit->get_line(0) == "test new line");
+	CHECK(code_edit->get_line(1) == "");
+
+	/* Split line with new line. */
+	code_edit->set_text("");
+	code_edit->insert_text_at_caret("test new line");
+	code_edit->set_caret_line(0);
+	code_edit->set_caret_column(5);
+	SEND_GUI_ACTION(code_edit, "ui_text_newline");
+	CHECK(code_edit->get_line(0) == "test ");
+	CHECK(code_edit->get_line(1) == "new line");
+
+	/* Delete selection and split with new line. */
+	code_edit->set_text("");
+	code_edit->insert_text_at_caret("test new line");
+	code_edit->select(0, 0, 0, 5);
+	SEND_GUI_ACTION(code_edit, "ui_text_newline");
+	CHECK(code_edit->get_line(0) == "");
+	CHECK(code_edit->get_line(1) == "new line");
+
+	/* Blank new line below with selection should not split. */
+	code_edit->set_text("");
+	code_edit->insert_text_at_caret("test new line");
+	code_edit->select(0, 0, 0, 5);
+	SEND_GUI_ACTION(code_edit, "ui_text_newline_blank");
+	CHECK(code_edit->get_line(0) == "test new line");
+	CHECK(code_edit->get_line(1) == "");
+
+	/* Blank new line above with selection should not split. */
+	code_edit->set_text("");
+	code_edit->insert_text_at_caret("test new line");
+	code_edit->select(0, 0, 0, 5);
+	SEND_GUI_ACTION(code_edit, "ui_text_newline_above");
+	CHECK(code_edit->get_line(0) == "");
+	CHECK(code_edit->get_line(1) == "test new line");
+
+	memdelete(code_edit);
+}
+
 } // namespace TestCodeEdit
 
 #endif // TEST_CODE_EDIT_H

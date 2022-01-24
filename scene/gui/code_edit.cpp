@@ -937,8 +937,10 @@ void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 		return;
 	}
 
-	const int cc = get_caret_column();
+	/* When not splitting the line, we need to factor in indentation from the end of the current line. */
+	const int cc = p_split_current_line ? get_caret_column() : get_line(get_caret_line()).length();
 	const int cl = get_caret_line();
+
 	const String line = get_line(cl);
 
 	String ins = "\n";
@@ -1012,6 +1014,8 @@ void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 
 	bool first_line = false;
 	if (!p_split_current_line) {
+		deselect();
+
 		if (p_above) {
 			if (cl > 0) {
 				set_caret_line(cl - 1, false);
