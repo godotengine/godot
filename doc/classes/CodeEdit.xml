@@ -345,7 +345,7 @@
 			<return type="void" />
 			<argument index="0" name="force" type="bool" default="false" />
 			<description>
-				Emits [signal request_code_completion], if [code]force[/code] is true will bypass all checks. Otherwise will check that the caret is in a word or in front of a prefix. Will ignore the request if all current options are of type file path, node path or signal.
+				Emits [signal code_completion_requested], if [code]force[/code] is true will bypass all checks. Otherwise will check that the caret is in a word or in front of a prefix. Will ignore the request if all current options are of type file path, node path or signal.
 			</description>
 		</method>
 		<method name="set_code_completion_selected_index">
@@ -506,7 +506,7 @@
 				Emitted when a breakpoint is added or removed from a line. If the line is moved via backspace a removed is emitted at the old line.
 			</description>
 		</signal>
-		<signal name="request_code_completion">
+		<signal name="code_completion_requested">
 			<description>
 				Emitted when the user requests code completion.
 			</description>

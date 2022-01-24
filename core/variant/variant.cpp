@@ -1692,8 +1692,6 @@ String Variant::stringify(int recursion_count) const {
 				pairs.push_back(sp);
 			}
 
-			pairs.sort();
-
 			for (int i = 0; i < pairs.size(); i++) {
 				if (i > 0) {
 					str += ", ";
@@ -3256,7 +3254,7 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 	return false;
 }
 
-bool Variant::is_ref() const {
+bool Variant::is_ref_counted() const {
 	return type == OBJECT && _get_obj().id.is_ref_counted();
 }
 

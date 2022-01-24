@@ -240,7 +240,7 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 		return false;
 	}
 
-	if (p_value.get_type() == Variant::NIL) {
+	if (p_value.get_type() == Variant::NIL || (p_value.get_type() == Variant::OBJECT && (Object *)p_value == nullptr)) {
 		if (name.begins_with("theme_override_icons/") || name.begins_with("custom_icons/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.icon_override.has(dname)) {

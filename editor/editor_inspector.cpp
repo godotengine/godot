@@ -623,14 +623,17 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 				if (property == "frame_coords" && (object->is_class("Sprite2D") || object->is_class("Sprite3D"))) {
 					Vector2i new_coords = object->get(property);
 					new_coords.x++;
-					if (new_coords.x >= object->get("hframes").operator int64_t()) {
+					if (new_coords.x >= int64_t(object->get("hframes"))) {
 						new_coords.x = 0;
 						new_coords.y++;
 					}
-
-					call_deferred(SNAME("emit_changed"), property, new_coords, "", false);
+					if (new_coords.x < int64_t(object->get("hframes")) && new_coords.y < int64_t(object->get("vframes"))) {
+						call_deferred(SNAME("emit_changed"), property, new_coords, "", false);
+					}
 				} else {
-					call_deferred(SNAME("emit_changed"), property, object->get(property).operator int64_t() + 1, "", false);
+					if (int64_t(object->get(property)) + 1 < (int64_t(object->get("hframes")) * int64_t(object->get("vframes")))) {
+						call_deferred(SNAME("emit_changed"), property, object->get(property).operator int64_t() + 1, "", false);
+					}
 				}
 
 				call_deferred(SNAME("update_property"));
@@ -861,10 +864,10 @@ String EditorProperty::get_tooltip_text() const {
 void EditorProperty::menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_COPY_PROPERTY: {
-			EditorNode::get_singleton()->get_inspector()->set_property_clipboard(object->get(property));
+			InspectorDock::get_inspector_singleton()->set_property_clipboard(object->get(property));
 		} break;
 		case MENU_PASTE_PROPERTY: {
-			emit_changed(property, EditorNode::get_singleton()->get_inspector()->get_property_clipboard());
+			emit_changed(property, InspectorDock::get_inspector_singleton()->get_property_clipboard());
 		} break;
 		case MENU_COPY_PROPERTY_PATH: {
 			DisplayServer::get_singleton()->clipboard_set(property);

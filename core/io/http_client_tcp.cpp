@@ -534,7 +534,7 @@ Error HTTPClientTCP::poll() {
 	return OK;
 }
 
-int HTTPClientTCP::get_response_body_length() const {
+int64_t HTTPClientTCP::get_response_body_length() const {
 	return body_size;
 }
 

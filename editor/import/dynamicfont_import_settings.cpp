@@ -427,6 +427,7 @@ void DynamicFontImportSettings::_add_glyph_range_item(int32_t p_start, int32_t p
 	for (int i = 0; i < pages; i++) {
 		TreeItem *item = glyph_tree->create_item(glyph_root);
 		ERR_FAIL_NULL(item);
+		item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 		item->set_text(0, _pad_zeros(String::num_int64(start, 16)) + " - " + _pad_zeros(String::num_int64(start + page_size, 16)));
 		item->set_text(1, p_name);
 		item->set_metadata(0, Vector2i(start, start + page_size));
@@ -435,6 +436,7 @@ void DynamicFontImportSettings::_add_glyph_range_item(int32_t p_start, int32_t p
 	if (remain > 0) {
 		TreeItem *item = glyph_tree->create_item(glyph_root);
 		ERR_FAIL_NULL(item);
+		item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 		item->set_text(0, _pad_zeros(String::num_int64(start, 16)) + " - " + _pad_zeros(String::num_int64(p_end, 16)));
 		item->set_text(1, p_name);
 		item->set_metadata(0, Vector2i(start, p_end));
@@ -656,6 +658,30 @@ void DynamicFontImportSettings::_glyph_selected() {
 		}
 	}
 	label_glyphs->set_text(TTR("Preloaded glyphs: ") + itos(selected_glyphs.size()));
+
+	item = glyph_tree->get_selected();
+	ERR_FAIL_NULL(item);
+	Vector2i range = item->get_metadata(0);
+
+	int total_chars = range.y - range.x;
+	int selected_count = 0;
+	for (int i = range.x; i < range.y; i++) {
+		if (!font_main->has_char(i)) {
+			total_chars--;
+		}
+
+		if (selected_chars.has(i)) {
+			selected_count++;
+		}
+	}
+
+	if (selected_count == total_chars) {
+		item->set_checked(0, true);
+	} else if (selected_count > 0) {
+		item->set_indeterminate(0, true);
+	} else {
+		item->set_checked(0, false);
+	}
 }
 
 void DynamicFontImportSettings::_range_edited() {
@@ -760,6 +786,10 @@ void DynamicFontImportSettings::_range_update(int32_t p_start, int32_t p_end) {
 		}
 	}
 	_edit_range(p_start, p_end);
+
+	TreeItem *item = glyph_tree->get_selected();
+	ERR_FAIL_NULL(item);
+	item->set_checked(0, !all_selected);
 }
 
 /*************************************************************************/

@@ -2812,7 +2812,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 	}
 
 	SUBCASE("[CodeEdit] autocomplete request") {
-		SIGNAL_WATCH(code_edit, "request_code_completion");
+		SIGNAL_WATCH(code_edit, "code_completion_requested");
 		code_edit->set_code_completion_enabled(true);
 
 		Array signal_args;
@@ -2820,13 +2820,13 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 
 		/* Force request. */
 		code_edit->request_code_completion();
-		SIGNAL_CHECK_FALSE("request_code_completion");
+		SIGNAL_CHECK_FALSE("code_completion_requested");
 		code_edit->request_code_completion(true);
-		SIGNAL_CHECK("request_code_completion", signal_args);
+		SIGNAL_CHECK("code_completion_requested", signal_args);
 
 		/* Manual request should force. */
 		SEND_GUI_ACTION(code_edit, "ui_text_completion_query");
-		SIGNAL_CHECK("request_code_completion", signal_args);
+		SIGNAL_CHECK("code_completion_requested", signal_args);
 
 		/* Insert prefix. */
 		TypedArray<String> completion_prefixes;
@@ -2835,12 +2835,12 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 
 		code_edit->insert_text_at_caret(".");
 		code_edit->request_code_completion();
-		SIGNAL_CHECK("request_code_completion", signal_args);
+		SIGNAL_CHECK("code_completion_requested", signal_args);
 
 		/* Should work with space too. */
 		code_edit->insert_text_at_caret(" ");
 		code_edit->request_code_completion();
-		SIGNAL_CHECK("request_code_completion", signal_args);
+		SIGNAL_CHECK("code_completion_requested", signal_args);
 
 		/* Should work when complete ends with prefix. */
 		code_edit->clear();
@@ -2849,9 +2849,9 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		code_edit->update_code_completion_options();
 		code_edit->confirm_code_completion();
 		CHECK(code_edit->get_line(0) == "test.");
-		SIGNAL_CHECK("request_code_completion", signal_args);
+		SIGNAL_CHECK("code_completion_requested", signal_args);
 
-		SIGNAL_UNWATCH(code_edit, "request_code_completion");
+		SIGNAL_UNWATCH(code_edit, "code_completion_requested");
 	}
 
 	SUBCASE("[CodeEdit] autocomplete completion") {

@@ -1043,7 +1043,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				if (node) {
 					node->set_scene_inherited_state(Ref<SceneState>());
 					scene_tree->update_tree();
-					EditorNode::get_singleton()->get_inspector()->update_tree();
+					InspectorDock::get_inspector_singleton()->update_tree();
 				}
 			}
 		} break;
@@ -2067,7 +2067,7 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 	// Fixes the EditorHistory from still offering deleted notes
 	EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
 	editor_history->cleanup_history();
-	EditorNode::get_singleton()->get_inspector_dock()->call("_prepare_history");
+	InspectorDock::get_singleton()->call("_prepare_history");
 }
 
 void SceneTreeDock::_update_script_button() {
@@ -3214,7 +3214,7 @@ void SceneTreeDock::_create_remap_for_node(Node *p_node, Map<RES, RES> &r_remap)
 		}
 
 		Variant v = p_node->get(E.name);
-		if (v.is_ref()) {
+		if (v.is_ref_counted()) {
 			RES res = v;
 			if (res.is_valid()) {
 				if (!states_stack_ready) {
@@ -3252,7 +3252,7 @@ void SceneTreeDock::_create_remap_for_resource(RES p_resource, Map<RES, RES> &r_
 		}
 
 		Variant v = p_resource->get(E.name);
-		if (v.is_ref()) {
+		if (v.is_ref_counted()) {
 			RES res = v;
 			if (res.is_valid()) {
 				if (res->is_built_in() && !r_remap.has(res)) {

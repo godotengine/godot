@@ -82,9 +82,9 @@ class AnimationTimelineEdit : public Range {
 	bool use_fps;
 
 	Ref<ViewPanner> panner;
-	void _scroll_callback(Vector2 p_scroll_vec);
+	void _scroll_callback(Vector2 p_scroll_vec, bool p_alt);
 	void _pan_callback(Vector2 p_scroll_vec);
-	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin);
+	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
 
 	bool dragging_timeline;
 	bool dragging_hsize;
@@ -316,7 +316,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _update_tracks();
 
 	void _name_limit_changed();
-	void _timeline_changed(float p_new_pos, bool p_drag, bool p_timeline_only = false);
+	void _timeline_changed(float p_new_pos, bool p_drag, bool p_timeline_only);
 	void _track_remove_request(int p_track);
 	void _track_grab_focus(int p_track);
 
@@ -377,9 +377,9 @@ class AnimationTrackEditor : public VBoxContainer {
 	PropertyInfo _find_hint_for_track(int p_idx, NodePath &r_base_path, Variant *r_current_val = nullptr);
 
 	Ref<ViewPanner> panner;
-	void _scroll_callback(Vector2 p_scroll_vec);
+	void _scroll_callback(Vector2 p_scroll_vec, bool p_alt);
 	void _pan_callback(Vector2 p_scroll_vec);
-	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin);
+	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
 
 	void _timeline_value_changed(double);
 

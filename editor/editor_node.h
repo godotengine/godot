@@ -302,11 +302,6 @@ private:
 	Ref<Theme> theme;
 
 	PopupMenu *recent_scenes;
-	SceneTreeDock *scene_tree_dock;
-	InspectorDock *inspector_dock;
-	NodeDock *node_dock;
-	ImportDock *import_dock;
-	FileSystemDock *filesystem_dock;
 	EditorRunNative *run_native;
 
 	ConfirmationDialog *confirmation;
@@ -717,9 +712,6 @@ public:
 	EditorPluginList *get_editor_plugins_over() { return editor_plugins_over; }
 	EditorPluginList *get_editor_plugins_force_over() { return editor_plugins_force_over; }
 	EditorPluginList *get_editor_plugins_force_input_forwarding() { return editor_plugins_force_input_forwarding; }
-	EditorInspector *get_inspector() { return inspector_dock->get_inspector(); }
-	Container *get_inspector_dock_addon_area() { return inspector_dock->get_addon_area(); }
-	ScriptCreateDialog *get_script_create_dialog() { return scene_tree_dock->get_script_create_dialog(); }
 
 	ProjectSettingsEditor *get_project_settings() { return project_settings; }
 
@@ -743,8 +735,7 @@ public:
 	bool is_addon_plugin_enabled(const String &p_addon) const;
 
 	void edit_node(Node *p_node);
-	void edit_resource(const Ref<Resource> &p_resource) { inspector_dock->edit_resource(p_resource); };
-	void open_resource(const String &p_type) { inspector_dock->open_resource(p_type); };
+	void edit_resource(const Ref<Resource> &p_resource) { InspectorDock::get_singleton()->edit_resource(p_resource); };
 
 	void save_resource_in_path(const Ref<Resource> &p_resource, const String &p_path);
 	void save_resource(const Ref<Resource> &p_resource);
@@ -795,10 +786,6 @@ public:
 
 	void request_instance_scene(const String &p_path);
 	void request_instantiate_scenes(const Vector<String> &p_files);
-	FileSystemDock *get_filesystem_dock();
-	ImportDock *get_import_dock();
-	SceneTreeDock *get_scene_tree_dock();
-	InspectorDock *get_inspector_dock();
 	static UndoRedo *get_undo_redo() { return &singleton->editor_data.get_undo_redo(); }
 
 	EditorSelection *get_editor_selection() { return editor_selection; }

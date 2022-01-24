@@ -144,8 +144,8 @@ void GroupDialog::_add_pressed() {
 	undo_redo->add_undo_method(this, "emit_signal", "group_edited");
 
 	// To force redraw of scene tree.
-	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
-	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+	undo_redo->add_do_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
+	undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
 
 	undo_redo->commit_action();
 }
@@ -173,8 +173,8 @@ void GroupDialog::_removed_pressed() {
 	undo_redo->add_undo_method(this, "emit_signal", "group_edited");
 
 	// To force redraw of scene tree.
-	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
-	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+	undo_redo->add_do_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
+	undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
 
 	undo_redo->commit_action();
 }
@@ -209,6 +209,10 @@ void GroupDialog::_add_group(String p_name) {
 	new_group->set_editable(0, true);
 	new_group->select(0);
 	groups->ensure_cursor_is_visible();
+}
+
+void GroupDialog::_add_group_text_changed(const String &p_new_text) {
+	add_group_button->set_disabled(p_new_text.strip_edges().is_empty());
 }
 
 void GroupDialog::_group_renamed() {
@@ -333,8 +337,8 @@ void GroupDialog::_modify_group_pressed(Object *p_item, int p_column, int p_id) 
 			undo_redo->add_undo_method(this, "emit_signal", "group_edited");
 
 			// To force redraw of scene tree.
-			undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
-			undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+			undo_redo->add_do_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
+			undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
 
 			undo_redo->commit_action();
 		} break;
@@ -457,8 +461,9 @@ GroupDialog::GroupDialog() {
 	chbc->add_child(add_group_text);
 	add_group_text->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_group_text->connect("text_submitted", callable_mp(this, &GroupDialog::_add_group_pressed));
+	add_group_text->connect("text_changed", callable_mp(this, &GroupDialog::_add_group_text_changed));
 
-	Button *add_group_button = memnew(Button);
+	add_group_button = memnew(Button);
 	add_group_button->set_text(TTR("Add"));
 	chbc->add_child(add_group_button);
 	add_group_button->connect("pressed", callable_mp(this, &GroupDialog::_add_group_pressed), varray(String()));
@@ -557,6 +562,8 @@ GroupDialog::GroupDialog() {
 	error = memnew(ConfirmationDialog);
 	add_child(error);
 	error->get_ok_button()->set_text(TTR("Close"));
+
+	_add_group_text_changed("");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -571,6 +578,7 @@ void GroupsEditor::_add_group(const String &p_group) {
 		return;
 	}
 
+	group_name->clear();
 	if (node->is_in_group(name)) {
 		return;
 	}
@@ -583,12 +591,10 @@ void GroupsEditor::_add_group(const String &p_group) {
 	undo_redo->add_undo_method(this, "update_tree");
 
 	// To force redraw of scene tree.
-	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
-	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+	undo_redo->add_do_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
+	undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
 
 	undo_redo->commit_action();
-
-	group_name->clear();
 }
 
 void GroupsEditor::_modify_group(Object *p_item, int p_column, int p_id) {
@@ -611,8 +617,8 @@ void GroupsEditor::_modify_group(Object *p_item, int p_column, int p_id) {
 			undo_redo->add_undo_method(this, "update_tree");
 
 			// To force redraw of scene tree.
-			undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
-			undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+			undo_redo->add_do_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
+			undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
 
 			undo_redo->commit_action();
 		} break;
@@ -620,6 +626,10 @@ void GroupsEditor::_modify_group(Object *p_item, int p_column, int p_id) {
 			DisplayServer::get_singleton()->clipboard_set(ti->get_text(p_column));
 		} break;
 	}
+}
+
+void GroupsEditor::_group_name_changed(const String &p_new_text) {
+	add->set_disabled(p_new_text.strip_edges().is_empty());
 }
 
 struct _GroupInfoComparator {
@@ -711,6 +721,7 @@ GroupsEditor::GroupsEditor() {
 	group_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbc->add_child(group_name);
 	group_name->connect("text_submitted", callable_mp(this, &GroupsEditor::_add_group));
+	group_name->connect("text_changed", callable_mp(this, &GroupsEditor::_group_name_changed));
 
 	add = memnew(Button);
 	add->set_text(TTR("Add"));
@@ -724,6 +735,8 @@ GroupsEditor::GroupsEditor() {
 	tree->connect("button_pressed", callable_mp(this, &GroupsEditor::_modify_group));
 	tree->add_theme_constant_override("draw_guides", 1);
 	add_theme_constant_override("separation", 3 * EDSCALE);
+
+	_group_name_changed("");
 }
 
 GroupsEditor::~GroupsEditor() {

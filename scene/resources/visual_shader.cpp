@@ -231,8 +231,8 @@ String VisualShaderNode::get_warning(Shader::Mode p_mode, VisualShader::Type p_t
 	return String();
 }
 
-String VisualShaderNode::get_input_port_default_hint(int p_port) const {
-	return "";
+bool VisualShaderNode::is_input_port_default(int p_port, Shader::Mode p_mode) const {
+	return false;
 }
 
 void VisualShaderNode::_bind_methods() {
@@ -2312,7 +2312,6 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_VECTOR, "object_position", "OBJECT_POSITION" },
 	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_VECTOR, "uvw", "UVW" },
 	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_VECTOR, "extents", "EXTENTS" },
-	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_TRANSFORM, "transform", "TRANSFORM" },
 	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_SCALAR, "sdf", "SDF" },
 	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
 
@@ -3402,7 +3401,6 @@ bool VisualShaderNodeGroupBase::is_valid_port_name(const String &p_name) const {
 }
 
 void VisualShaderNodeGroupBase::add_input_port(int p_id, int p_type, const String &p_name) {
-	ERR_FAIL_COND(has_input_port(p_id));
 	ERR_FAIL_INDEX(p_type, int(PORT_TYPE_MAX));
 	ERR_FAIL_COND(!is_valid_port_name(p_name));
 
@@ -3478,7 +3476,6 @@ bool VisualShaderNodeGroupBase::has_input_port(int p_id) const {
 }
 
 void VisualShaderNodeGroupBase::add_output_port(int p_id, int p_type, const String &p_name) {
-	ERR_FAIL_COND(has_output_port(p_id));
 	ERR_FAIL_INDEX(p_type, int(PORT_TYPE_MAX));
 	ERR_FAIL_COND(!is_valid_port_name(p_name));
 

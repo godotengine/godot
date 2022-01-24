@@ -627,7 +627,7 @@ void EditorPropertyArray::_reorder_button_gui_input(const Ref<InputEvent> &p_eve
 			}
 			vbox->move_child(reorder_selected_element_hbox, reorder_to_index % page_length + 2);
 			// Ensure the moving element is visible.
-			EditorNode::get_singleton()->get_inspector()->ensure_control_visible(reorder_selected_element_hbox);
+			InspectorDock::get_inspector_singleton()->ensure_control_visible(reorder_selected_element_hbox);
 		}
 	}
 }

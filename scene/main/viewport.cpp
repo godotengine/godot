@@ -523,6 +523,13 @@ void Viewport::_process_picking() {
 
 	_drop_physics_mouseover(true);
 
+#ifndef _3D_DISABLED
+	Vector2 last_pos(1e20, 1e20);
+	CollisionObject3D *last_object = nullptr;
+	ObjectID last_id;
+	PhysicsDirectSpaceState3D::RayResult result;
+#endif // _3D_DISABLED
+
 	PhysicsDirectSpaceState2D *ss2d = PhysicsServer2D::get_singleton()->space_get_direct_state(find_world_2d()->get_space());
 
 	if (physics_has_last_mousepos) {
@@ -690,10 +697,6 @@ void Viewport::_process_picking() {
 		}
 
 #ifndef _3D_DISABLED
-		Vector2 last_pos(1e20, 1e20);
-		CollisionObject3D *last_object = nullptr;
-		ObjectID last_id;
-		PhysicsDirectSpaceState3D::RayResult result;
 		bool captured = false;
 
 		if (physics_object_capture.is_valid()) {
@@ -790,7 +793,7 @@ void Viewport::update_canvas_items() {
 }
 
 void Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override, const Rect2i &p_to_screen_rect, const Transform2D &p_stretch_transform, bool p_allocated) {
-	if (size == p_size && size_allocated == p_allocated && stretch_transform == p_stretch_transform && p_size_2d_override == size_2d_override && to_screen_rect != p_to_screen_rect) {
+	if (size == p_size && size_allocated == p_allocated && stretch_transform == p_stretch_transform && p_size_2d_override == size_2d_override && to_screen_rect == p_to_screen_rect) {
 		return;
 	}
 
@@ -1090,7 +1093,7 @@ Transform2D Viewport::_get_input_pre_xform() const {
 
 	if (to_screen_rect.size.x != 0 && to_screen_rect.size.y != 0) {
 		pre_xf.elements[2] = -to_screen_rect.position;
-		pre_xf.scale(size / to_screen_rect.size);
+		pre_xf.scale(Vector2(size) / to_screen_rect.size);
 	}
 
 	return pre_xf;

@@ -1448,22 +1448,22 @@ bool VisualShaderNodeParticleEmit::is_generate_input_var(int p_port) const {
 	return true;
 }
 
-String VisualShaderNodeParticleEmit::get_input_port_default_hint(int p_port) const {
+bool VisualShaderNodeParticleEmit::is_input_port_default(int p_port, Shader::Mode p_mode) const {
 	switch (p_port) {
 		case 1:
-			return "default";
+			return true;
 		case 2:
-			return "default";
+			return true;
 		case 3:
-			return "default";
+			return true;
 		case 4:
-			return "default";
+			return true;
 		case 5:
-			return "default";
+			return true;
 		case 6:
-			return "default";
+			return true;
 	}
-	return String();
+	return false;
 }
 
 String VisualShaderNodeParticleEmit::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {

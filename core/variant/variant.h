@@ -287,7 +287,7 @@ public:
 	static bool can_convert(Type p_type_from, Type p_type_to);
 	static bool can_convert_strict(Type p_type_from, Type p_type_to);
 
-	bool is_ref() const;
+	bool is_ref_counted() const;
 	_FORCE_INLINE_ bool is_num() const {
 		return type == INT || type == FLOAT;
 	}

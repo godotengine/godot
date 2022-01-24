@@ -240,7 +240,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const = 0;
 	virtual String get_output_port_name(int p_port) const = 0;
 
-	virtual String get_input_port_default_hint(int p_port) const;
+	virtual bool is_input_port_default(int p_port, Shader::Mode p_mode) const;
 
 	void set_output_port_for_preview(int p_index);
 	int get_output_port_for_preview() const;

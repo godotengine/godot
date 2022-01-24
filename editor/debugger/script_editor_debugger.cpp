@@ -1121,7 +1121,7 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 		NodePath path = editor->get_edited_scene()->get_path_to(node);
 		int pathid = _get_node_path_cache(path);
 
-		if (p_value.is_ref()) {
+		if (p_value.is_ref_counted()) {
 			Ref<Resource> res = p_value;
 			if (res.is_valid() && !res->get_path().is_empty()) {
 				Array msg;
@@ -1147,7 +1147,7 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 		String respath = res->get_path();
 		int pathid = _get_res_path_cache(respath);
 
-		if (p_value.is_ref()) {
+		if (p_value.is_ref_counted()) {
 			Ref<Resource> res2 = p_value;
 			if (res2.is_valid() && !res2->get_path().is_empty()) {
 				Array msg;

@@ -147,7 +147,7 @@ namespace GodotTools.Build
                 Icon = GetThemeIcon("StatusError", "EditorIcons"),
                 ExpandIcon = false,
                 ToggleMode = true,
-                Pressed = true,
+                ButtonPressed = true,
                 FocusMode = FocusModeEnum.None
             };
             _errorsBtn.Toggled += ErrorsToggled;
@@ -159,7 +159,7 @@ namespace GodotTools.Build
                 Icon = GetThemeIcon("NodeWarning", "EditorIcons"),
                 ExpandIcon = false,
                 ToggleMode = true,
-                Pressed = true,
+                ButtonPressed = true,
                 FocusMode = FocusModeEnum.None
             };
             _warningsBtn.Toggled += WarningsToggled;
@@ -169,7 +169,7 @@ namespace GodotTools.Build
             {
                 Text = "Show Output".TTR(),
                 ToggleMode = true,
-                Pressed = true,
+                ButtonPressed = true,
                 FocusMode = FocusModeEnum.None
             };
             _viewLogBtn.Toggled += ViewLogToggled;

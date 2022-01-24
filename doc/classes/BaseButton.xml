@@ -38,7 +38,7 @@
 			<return type="void" />
 			<argument index="0" name="pressed" type="bool" />
 			<description>
-				Changes the [member pressed] state of the button, without emitting [signal toggled]. Use when you just want to change the state of the button without sending the pressed event (e.g. when initializing scene). Only works if [member toggle_mode] is [code]true[/code].
+				Changes the [member button_pressed] state of the button, without emitting [signal toggled]. Use when you just want to change the state of the button without sending the pressed event (e.g. when initializing scene). Only works if [member toggle_mode] is [code]true[/code].
 				[b]Note:[/b] This method doesn't unpress other buttons in [member button_group].
 			</description>
 		</method>
@@ -54,6 +54,10 @@
 			Binary mask to choose which mouse buttons this button will respond to.
 			To allow both left-click and right-click, use [code]MOUSE_BUTTON_MASK_LEFT | MOUSE_BUTTON_MASK_RIGHT[/code].
 		</member>
+		<member name="button_pressed" type="bool" setter="set_pressed" getter="is_pressed" default="false">
+			If [code]true[/code], the button's state is pressed. Means the button is pressed down or toggled (if [member toggle_mode] is active). Only works if [member toggle_mode] is [code]true[/code].
+			[b]Note:[/b] Setting [member button_pressed] will result in [signal toggled] to be emitted. If you want to change the pressed state without emitting that signal, use [method set_pressed_no_signal].
+		</member>
 		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false">
 			If [code]true[/code], the button is in disabled state and can't be clicked or toggled.
 		</member>
@@ -61,10 +65,6 @@
 		<member name="keep_pressed_outside" type="bool" setter="set_keep_pressed_outside" getter="is_keep_pressed_outside" default="false">
 			If [code]true[/code], the button stays pressed when moving the cursor outside the button while pressing it.
 			[b]Note:[/b] This property only affects the button's visual appearance. Signals will be emitted at the same moment regardless of this property's value.
-		</member>
-		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed" default="false">
-			If [code]true[/code], the button's state is pressed. Means the button is pressed down or toggled (if [member toggle_mode] is active). Only works if [member toggle_mode] is [code]true[/code].
-			[b]Note:[/b] Setting [member pressed] will result in [signal toggled] to be emitted. If you want to change the pressed state without emitting that signal, use [method set_pressed_no_signal].
 		</member>
 		<member name="shortcut" type="Shortcut" setter="set_shortcut" getter="get_shortcut">
 			[Shortcut] associated to the button.
