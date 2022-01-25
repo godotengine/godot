@@ -650,7 +650,7 @@ void TextEdit::_notification(int p_what) {
 				}
 			}
 
-			bool draw_placeholder = text[0].length() == 0;
+			bool draw_placeholder = text.size() == 1 && text[0].length() == 0;
 
 			// Get the highlighted words.
 			String highlighted_text = get_selected_text();
@@ -6020,7 +6020,7 @@ void TextEdit::_update_scrollbars() {
 	h_scroll->set_begin(Point2(0, size.height - hmin.height));
 	h_scroll->set_end(Point2(size.width - vmin.width, size.height));
 
-	bool draw_placeholder = text[0].length() == 0;
+	bool draw_placeholder = text.size() == 1 && text[0].length() == 0;
 
 	int visible_rows = get_visible_line_count();
 	int total_rows = draw_placeholder ? placeholder_wraped_rows.size() - 1 : get_total_visible_line_count();
@@ -6101,7 +6101,7 @@ void TextEdit::_scroll_moved(double p_to_val) {
 	}
 	if (v_scroll->is_visible_in_tree()) {
 		// Set line ofs and wrap ofs.
-		bool draw_placeholder = text[0].length() == 0;
+		bool draw_placeholder = text.size() == 1 && text[0].length() == 0;
 
 		int v_scroll_i = floor(get_v_scroll());
 		int sc = 0;
@@ -6116,7 +6116,7 @@ void TextEdit::_scroll_moved(double p_to_val) {
 			}
 		}
 		n_line = MIN(n_line, text.size() - 1);
-		int line_wrap_amount = (text[0].length() == 0) ? placeholder_wraped_rows.size() - 1 : get_line_wrap_count(n_line);
+		int line_wrap_amount = draw_placeholder ? placeholder_wraped_rows.size() - 1 : get_line_wrap_count(n_line);
 		int wi = line_wrap_amount - (sc - v_scroll_i - 1);
 		wi = CLAMP(wi, 0, line_wrap_amount);
 
