@@ -35,6 +35,7 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/oa_hash_map.h"
 #include "core/templates/rid_owner.h"
+#include "core/templates/self_list.h"
 #include "servers/rendering/rendering_device.h"
 
 #ifdef DEBUG_ENABLED
@@ -197,18 +198,22 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	struct StagingBufferBlock {
 		VkBuffer buffer = VK_NULL_HANDLE;
 		VmaAllocation allocation = nullptr;
-		uint64_t frame_used = 0;
 		uint32_t fill_amount = 0;
+		SelfList<StagingBufferBlock> used_in_frame_list{ this };
+		List<StagingBufferBlock>::Element *list_elem = nullptr;
 	};
 
-	Vector<StagingBufferBlock> staging_buffer_blocks;
-	int staging_buffer_current = 0;
+	List<StagingBufferBlock> staging_buffer_blocks;
+	List<StagingBufferBlock>::Element *staging_buffer_curr_block = nullptr;
+	int staging_blocks_in_flight = 0;
+
 	uint32_t staging_buffer_block_size = 0;
 	uint64_t staging_buffer_max_size = 0;
-	bool staging_buffer_used = false;
 
-	Error _staging_buffer_allocate(uint32_t p_amount, uint32_t p_required_align, uint32_t &r_alloc_offset, uint32_t &r_alloc_size, bool p_can_segment = true);
-	Error _insert_staging_block();
+	void _staging_buffer_allocate(uint32_t p_amount, uint32_t p_required_align, uint32_t &r_alloc_offset, uint32_t &r_alloc_size, bool p_can_segment = true);
+	Error _insert_staging_block(List<StagingBufferBlock>::Element **r_block_elem = nullptr);
+	void _staging_block_commit();
+	List<StagingBufferBlock>::Element *_staging_reset_frame_blocks(int p_frame);
 
 	struct Buffer {
 		uint32_t size = 0;
@@ -986,6 +991,9 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		VkCommandPool draw_command_pool = VK_NULL_HANDLE;
 		VkCommandBuffer transfer_command_buffer = VK_NULL_HANDLE;
 		VkCommandBuffer draw_command_buffer = VK_NULL_HANDLE;
+
+		SelfList<StagingBufferBlock>::List staging_blocks;
+		int staging_block_count = 0;
 
 		struct Timestamp {
 			String description;

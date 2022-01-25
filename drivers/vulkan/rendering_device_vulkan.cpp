@@ -1367,21 +1367,15 @@ Error RenderingDeviceVulkan::_buffer_free(Buffer *p_buffer) {
 	return OK;
 }
 
-VkCommandBuffer RenderingDeviceVulkan::_get_command_buffer_for_transfer(bool p_can_use_transfer) {
-	if (context->has_transfer_queue() && p_can_use_transfer) {
-		if (!transfer_used) {
-			if (local_device.is_null()) {
-				context->set_transfer_command_buffer(frames[frame].transfer_command_buffer);
-			}
-			transfer_used = true;
-		}
-		return frames[frame].transfer_command_buffer;
-	} else {
-		return frames[frame].draw_command_buffer;
+Error RenderingDeviceVulkan::_insert_staging_block(List<StagingBufferBlock>::Element **r_block_elem) {
+	List<StagingBufferBlock>::Element *new_block_elem = staging_buffer_blocks.insert_before(staging_buffer_curr_block, StagingBufferBlock());
+	StagingBufferBlock &block = new_block_elem->get();
+	block.used_in_frame_list = SelfList<StagingBufferBlock>(&block);
+	block.list_elem = new_block_elem;
+	if (r_block_elem) {
+		*r_block_elem = new_block_elem;
 	}
-}
 
-Error RenderingDeviceVulkan::_insert_staging_block() {
 	VkBufferCreateInfo bufferInfo;
 	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	bufferInfo.pNext = nullptr;
@@ -1401,31 +1395,28 @@ Error RenderingDeviceVulkan::_insert_staging_block() {
 	allocInfo.pool = nullptr;
 	allocInfo.pUserData = nullptr;
 
-	StagingBufferBlock block;
-
 	VkResult err = vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &block.buffer, &block.allocation, nullptr);
 	ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "vmaCreateBuffer failed with error " + itos(err) + ".");
 
-	block.frame_used = 0;
-	block.fill_amount = 0;
-
-	staging_buffer_blocks.insert(staging_buffer_current, block);
 	return OK;
 }
 
-Error RenderingDeviceVulkan::_staging_buffer_allocate(uint32_t p_amount, uint32_t p_required_align, uint32_t &r_alloc_offset, uint32_t &r_alloc_size, bool p_can_segment) {
+void RenderingDeviceVulkan::_staging_buffer_allocate(uint32_t p_amount, uint32_t p_required_align, uint32_t &r_alloc_offset, uint32_t &r_alloc_size, bool p_can_segment) {
 	//determine a block to use
 
+	r_alloc_offset = 0;
 	r_alloc_size = p_amount;
 
 	while (true) {
-		r_alloc_offset = 0;
+		for (int i = 0; i < staging_buffer_blocks.size(); i++) {
+			StagingBufferBlock &curr_block = staging_buffer_curr_block->get();
 
-		//see if we can use current block
-		if (staging_buffer_blocks[staging_buffer_current].frame_used == frames_drawn) {
-			//we used this block this frame, let's see if there is still room
+			if (curr_block.used_in_frame_list.in_list()) {
+				continue;
+			}
 
-			uint32_t write_from = staging_buffer_blocks[staging_buffer_current].fill_amount;
+			//see if the current block has enough room
+			uint32_t write_from = curr_block.fill_amount;
 
 			{
 				uint32_t align_remainder = write_from % p_required_align;
@@ -1439,111 +1430,68 @@ Error RenderingDeviceVulkan::_staging_buffer_allocate(uint32_t p_amount, uint32_
 			if ((int32_t)p_amount < available_bytes) {
 				//all is good, we should be ok, all will fit
 				r_alloc_offset = write_from;
+				return;
 			} else if (p_can_segment && available_bytes >= (int32_t)p_required_align) {
 				//ok all won't fit but at least we can fit a chunkie
 				//all is good, update what needs to be written to
 				r_alloc_offset = write_from;
 				r_alloc_size = available_bytes - (available_bytes % p_required_align);
-
+				return;
 			} else {
-				//can't fit it into this buffer.
-				//will need to try next buffer
-
-				staging_buffer_current = (staging_buffer_current + 1) % staging_buffer_blocks.size();
-
-				// before doing anything, though, let's check that we didn't manage to fill all blocks
-				// possible in a single frame
-				if (staging_buffer_blocks[staging_buffer_current].frame_used == frames_drawn) {
-					//guess we did.. ok, let's see if we can insert a new block..
-					if ((uint64_t)staging_buffer_blocks.size() * staging_buffer_block_size < staging_buffer_max_size) {
-						//we can, so we are safe
-						Error err = _insert_staging_block();
-						if (err) {
-							return err;
-						}
-						//claim for this frame
-						staging_buffer_blocks.write[staging_buffer_current].frame_used = frames_drawn;
-					} else {
-						// Ok, worst case scenario, all the staging buffers belong to this frame
-						// and this frame is not even done.
-						// If this is the main thread, it means the user is likely loading a lot of resources at once,
-						// otherwise, the thread should just be blocked until the next frame (currently unimplemented)
-
-						if (false) { //separate thread from render
-
-							//block_until_next_frame()
-							continue;
-						} else {
-							//flush EVERYTHING including setup commands. IF not immediate, also need to flush the draw commands
-							_flush(true);
-
-							//clear the whole staging buffer
-							for (int i = 0; i < staging_buffer_blocks.size(); i++) {
-								staging_buffer_blocks.write[i].frame_used = 0;
-								staging_buffer_blocks.write[i].fill_amount = 0;
-							}
-							//claim current
-							staging_buffer_blocks.write[staging_buffer_current].frame_used = frames_drawn;
-						}
-					}
-
-				} else {
-					//not from current frame, so continue and try again
-					continue;
-				}
+				//this one is already too full
+				_staging_block_commit();
 			}
 
-		} else if (staging_buffer_blocks[staging_buffer_current].frame_used <= frames_drawn - frame_count) {
-			//this is an old block, which was already processed, let's reuse
-			staging_buffer_blocks.write[staging_buffer_current].frame_used = frames_drawn;
-			staging_buffer_blocks.write[staging_buffer_current].fill_amount = 0;
-		} else if (staging_buffer_blocks[staging_buffer_current].frame_used > frames_drawn - frame_count) {
-			//this block may still be in use, let's not touch it unless we have to, so.. can we create a new one?
-			if ((uint64_t)staging_buffer_blocks.size() * staging_buffer_block_size < staging_buffer_max_size) {
-				//we are still allowed to create a new block, so let's do that and insert it for current pos
-				Error err = _insert_staging_block();
-				if (err) {
-					return err;
-				}
-				//claim for this frame
-				staging_buffer_blocks.write[staging_buffer_current].frame_used = frames_drawn;
-			} else {
-				// oops, we are out of room and we can't create more.
-				// let's flush older frames.
-				// The logic here is that if a game is loading a lot of data from the main thread, it will need to be stalled anyway.
-				// If loading from a separate thread, we can block that thread until next frame when more room is made (not currently implemented, though).
+			staging_buffer_curr_block = staging_buffer_curr_block->next() ? staging_buffer_curr_block->next() : staging_buffer_blocks.front();
+		}
 
-				if (false) {
-					//separate thread from render
-					//block_until_next_frame()
-					continue; //and try again
-				} else {
-					_flush(false);
+		//no idle blocks with enough room; let's see if we can insert a new block (better than stalling)
+		if ((uint64_t)staging_buffer_blocks.size() * staging_buffer_block_size < staging_buffer_max_size) {
+			//we can, so we are safe
+			_insert_staging_block(&staging_buffer_curr_block);
+			//re-try with the newly added block
+			continue;
+		}
 
-					for (int i = 0; i < staging_buffer_blocks.size(); i++) {
-						//clear all blocks but the ones from this frame
-						int block_idx = (i + staging_buffer_current) % staging_buffer_blocks.size();
-						if (staging_buffer_blocks[block_idx].frame_used == frames_drawn) {
-							break; //ok, we reached something from this frame, abort
-						}
-
-						staging_buffer_blocks.write[block_idx].frame_used = 0;
-						staging_buffer_blocks.write[block_idx].fill_amount = 0;
-					}
-
-					//claim for current frame
-					staging_buffer_blocks.write[staging_buffer_current].frame_used = frames_drawn;
+		//we have no choice but awaiting for some in-flight blocks to become idle
+		if (!staging_blocks_in_flight) {
+			//all the blocks are in use by the current frame, so put in flight
+			_flush(true);
+			staging_buffer_curr_block = staging_buffer_blocks.front();
+		} else {
+			_flush(false);
+			staging_buffer_curr_block = nullptr;
+			for (int i = 0; i < frame_count - 1; i++) {
+				List<StagingBufferBlock>::Element *new_staging_buffer_block = _staging_reset_frame_blocks((frame + i + 1) % frame_count);
+				if (!staging_buffer_curr_block) {
+					staging_buffer_curr_block = new_staging_buffer_block;
 				}
 			}
 		}
-
-		//all was good, break
-		break;
 	}
+}
 
-	staging_buffer_used = true;
+void RenderingDeviceVulkan::_staging_block_commit() {
+	StagingBufferBlock &block = staging_buffer_curr_block->get();
+#ifdef DEV_ENABLED
+	CRASH_COND(block.used_in_frame_list.in_list());
+#endif
+	frames[frame].staging_blocks.add_last(&block.used_in_frame_list);
+	frames[frame].staging_block_count++;
+}
 
-	return OK;
+VkCommandBuffer RenderingDeviceVulkan::_get_command_buffer_for_transfer(bool p_can_use_transfer) {
+	if (context->has_transfer_queue() && p_can_use_transfer) {
+		if (!transfer_used) {
+			if (local_device.is_null()) {
+				context->set_transfer_command_buffer(frames[frame].transfer_command_buffer);
+			}
+			transfer_used = true;
+		}
+		return frames[frame].transfer_command_buffer;
+	} else {
+		return frames[frame].draw_command_buffer;
+	}
 }
 
 Error RenderingDeviceVulkan::_buffer_update(Buffer *p_buffer, size_t p_offset, const uint8_t *p_data, size_t p_data_size, bool p_can_use_transfer, uint32_t p_required_align) {
@@ -1555,16 +1503,15 @@ Error RenderingDeviceVulkan::_buffer_update(Buffer *p_buffer, size_t p_offset, c
 		uint32_t block_write_offset;
 		uint32_t block_write_amount;
 
-		Error err = _staging_buffer_allocate(MIN(to_submit, staging_buffer_block_size), p_required_align, block_write_offset, block_write_amount);
-		if (err) {
-			return err;
-		}
+		_staging_buffer_allocate(MIN(to_submit, staging_buffer_block_size), p_required_align, block_write_offset, block_write_amount);
+
+		StagingBufferBlock &staging_block = staging_buffer_curr_block->get();
 
 		//map staging buffer (It's CPU and coherent)
 
 		void *data_ptr = nullptr;
 		{
-			VkResult vkerr = vmaMapMemory(allocator, staging_buffer_blocks[staging_buffer_current].allocation, &data_ptr);
+			VkResult vkerr = vmaMapMemory(allocator, staging_block.allocation, &data_ptr);
 			ERR_FAIL_COND_V_MSG(vkerr, ERR_CANT_CREATE, "vmaMapMemory failed with error " + itos(vkerr) + ".");
 		}
 
@@ -1572,7 +1519,7 @@ Error RenderingDeviceVulkan::_buffer_update(Buffer *p_buffer, size_t p_offset, c
 		memcpy(((uint8_t *)data_ptr) + block_write_offset, p_data + submit_from, block_write_amount);
 
 		//unmap
-		vmaUnmapMemory(allocator, staging_buffer_blocks[staging_buffer_current].allocation);
+		vmaUnmapMemory(allocator, staging_block.allocation);
 		//insert a command to copy this
 
 		VkBufferCopy region;
@@ -1580,9 +1527,9 @@ Error RenderingDeviceVulkan::_buffer_update(Buffer *p_buffer, size_t p_offset, c
 		region.dstOffset = submit_from + p_offset;
 		region.size = block_write_amount;
 
-		vkCmdCopyBuffer(_get_command_buffer_for_transfer(p_can_use_transfer), staging_buffer_blocks[staging_buffer_current].buffer, p_buffer->buffer, 1, &region);
+		vkCmdCopyBuffer(_get_command_buffer_for_transfer(p_can_use_transfer), staging_block.buffer, p_buffer->buffer, 1, &region);
 
-		staging_buffer_blocks.write[staging_buffer_current].fill_amount = block_write_offset + block_write_amount;
+		staging_block.fill_amount = block_write_offset + block_write_amount;
 
 		to_submit -= block_write_amount;
 		submit_from += block_write_amount;
@@ -2398,14 +2345,15 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 					to_allocate >>= get_compressed_image_format_pixel_rshift(texture->format);
 
 					uint32_t alloc_offset, alloc_size;
-					Error err = _staging_buffer_allocate(to_allocate, required_align, alloc_offset, alloc_size, false);
-					ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+					_staging_buffer_allocate(to_allocate, required_align, alloc_offset, alloc_size, false);
+
+					StagingBufferBlock &staging_block = staging_buffer_curr_block->get();
 
 					uint8_t *write_ptr;
 
 					{ //map
 						void *data_ptr = nullptr;
-						VkResult vkerr = vmaMapMemory(allocator, staging_buffer_blocks[staging_buffer_current].allocation, &data_ptr);
+						VkResult vkerr = vmaMapMemory(allocator, staging_block.allocation, &data_ptr);
 						ERR_FAIL_COND_V_MSG(vkerr, ERR_CANT_CREATE, "vmaMapMemory failed with error " + itos(vkerr) + ".");
 						write_ptr = (uint8_t *)data_ptr;
 						write_ptr += alloc_offset;
@@ -2437,7 +2385,7 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 					}
 
 					{ //unmap
-						vmaUnmapMemory(allocator, staging_buffer_blocks[staging_buffer_current].allocation);
+						vmaUnmapMemory(allocator, staging_block.allocation);
 					}
 
 					VkBufferImageCopy buffer_image_copy;
@@ -2458,9 +2406,9 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 					buffer_image_copy.imageExtent.height = region_logic_h;
 					buffer_image_copy.imageExtent.depth = 1;
 
-					vkCmdCopyBufferToImage(_get_command_buffer_for_transfer(p_can_use_transfer), staging_buffer_blocks[staging_buffer_current].buffer, texture->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &buffer_image_copy);
+					vkCmdCopyBufferToImage(_get_command_buffer_for_transfer(p_can_use_transfer), staging_block.buffer, texture->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &buffer_image_copy);
 
-					staging_buffer_blocks.write[staging_buffer_current].fill_amount += alloc_size;
+					staging_block.fill_amount += alloc_size;
 				}
 			}
 		}
@@ -8596,12 +8544,50 @@ void RenderingDeviceVulkan::_finalize_command_bufers(bool p_allow_open_list) {
 		ERR_PRINT("Found open compute list at the end of the frame, this should never happen (further compute will likely not work).");
 	}
 
+	if (staging_buffer_curr_block->get().fill_amount && !staging_buffer_curr_block->get().used_in_frame_list.in_list()) {
+		_staging_block_commit();
+		staging_buffer_curr_block = staging_buffer_curr_block->next() ? staging_buffer_curr_block->next() : staging_buffer_blocks.front();
+	}
+
 	{ //complete the setup buffer (that needs to be processed before anything else)
 		if (context->has_transfer_queue()) {
 			vkEndCommandBuffer(frames[frame].transfer_command_buffer);
 		}
 		vkEndCommandBuffer(frames[frame].draw_command_buffer);
 	}
+
+	staging_blocks_in_flight += frames[frame].staging_block_count;
+}
+
+List<RenderingDeviceVulkan::StagingBufferBlock>::Element *RenderingDeviceVulkan::_staging_reset_frame_blocks(int p_frame) {
+	Frame &f = frames[p_frame];
+#ifdef DEV_ENABLED
+	CRASH_COND((bool)f.staging_blocks.first() != (bool)f.staging_block_count);
+#endif
+
+	if (!f.staging_block_count) {
+		return nullptr;
+	}
+
+	SelfList<StagingBufferBlock> *E = f.staging_blocks.first();
+
+	List<StagingBufferBlock>::Element *free_block_elem = E->self()->list_elem;
+
+	do {
+		SelfList<StagingBufferBlock> *next = E->next();
+		E->self()->used_in_frame_list.remove_from_list();
+		E->self()->fill_amount = 0;
+		E = next;
+	} while (E);
+
+#ifdef DEV_ENABLED
+	CRASH_COND(f.staging_blocks.first());
+#endif
+
+	staging_blocks_in_flight -= f.staging_block_count;
+	f.staging_block_count = 0;
+
+	return free_block_elem;
 }
 
 void RenderingDeviceVulkan::_begin_frame() {
@@ -8630,13 +8616,9 @@ void RenderingDeviceVulkan::_begin_frame() {
 		}
 	}
 
-	//advance current frame
 	frames_drawn++;
-	//advance staging buffer if used
-	if (staging_buffer_used) {
-		staging_buffer_current = (staging_buffer_current + 1) % staging_buffer_blocks.size();
-		staging_buffer_used = false;
-	}
+	_staging_reset_frame_blocks(frame);
+	transfer_used = false;
 
 	if (frames[frame].timestamp_count) {
 		vkGetQueryPoolResults(device, frames[frame].timestamp_pool, 0, frames[frame].timestamp_count, sizeof(uint64_t) * max_timestamp_query_elements, frames[frame].timestamp_result_values, sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
@@ -8674,6 +8656,7 @@ void RenderingDeviceVulkan::submit() {
 	VkCommandBuffer command_buffers[1] = { frames[frame].draw_command_buffer };
 	context->local_device_push_command_buffers(local_device, transfer_used ? frames[frame].transfer_command_buffer : VK_NULL_HANDLE, command_buffers, 1);
 
+	_staging_reset_frame_blocks(frame);
 	transfer_used = false;
 
 	local_device_processing = true;
@@ -8864,6 +8847,7 @@ void RenderingDeviceVulkan::_flush(bool p_current_frame) {
 	}
 
 	if (p_current_frame) {
+		_staging_reset_frame_blocks(frame);
 		transfer_used = false;
 	}
 }
@@ -9034,6 +9018,7 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 		Error err = _insert_staging_block();
 		ERR_CONTINUE(err != OK);
 	}
+	staging_buffer_curr_block = staging_buffer_blocks.front();
 
 	max_descriptors_per_pool = GLOBAL_DEF("rendering/vulkan/descriptor_pools/max_descriptors_per_pool", 64);
 
@@ -9337,6 +9322,9 @@ void RenderingDeviceVulkan::finalize() {
 	//free all resources
 
 	_flush(false);
+	for (int i = 0; i < frame_count; i++) {
+		_staging_reset_frame_blocks(i);
+	}
 
 	_free_rids(render_pipeline_owner, "Pipeline");
 	_free_rids(compute_pipeline_owner, "Compute");
