@@ -71,7 +71,7 @@
 				Returns an individual bit on the [member collision_mask].
 			</description>
 		</method>
-		<method name="get_meshes">
+		<method name="get_meshes" qualifiers="const">
 			<return type="Array" />
 			<description>
 				Returns an array of [Transform] and [Mesh] references corresponding to the non-empty cells in the grid. The transforms are specified in world space.
