@@ -113,6 +113,8 @@ protected:
 	bool is_only_update_transform_changes_enabled() const;
 
 	GDVIRTUAL5(_input_event, Camera3D *, Ref<InputEvent>, Vector3, Vector3, int)
+	GDVIRTUAL0(_mouse_enter)
+	GDVIRTUAL0(_mouse_exit)
 public:
 	void set_collision_layer(uint32_t p_layer);
 	uint32_t get_collision_layer() const;
