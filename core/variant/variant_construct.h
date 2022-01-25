@@ -344,7 +344,7 @@ public:
 			return;
 		}
 
-		VariantTypeChanger<Array>::change(&r_ret);
+		r_ret = Array();
 		Array &dst_arr = *VariantGetInternalPtr<Array>::get_ptr(&r_ret);
 		const T &src_arr = *VariantGetInternalPtr<T>::get_ptr(p_args[0]);
 
@@ -356,7 +356,7 @@ public:
 	}
 
 	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
-		VariantTypeChanger<Array>::change(r_ret);
+		*r_ret = Array();
 		Array &dst_arr = *VariantGetInternalPtr<Array>::get_ptr(r_ret);
 		const T &src_arr = *VariantGetInternalPtr<T>::get_ptr(p_args[0]);
 
