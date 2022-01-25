@@ -996,6 +996,7 @@ void PortalRenderer::sprawl_roaming(uint32_t p_mover_pool_id, MovingBase &r_movi
 void PortalRenderer::_ensure_unloaded(String p_reason) {
 	if (_loaded) {
 		_loaded = false;
+		_gameplay_monitor.unload(*this);
 
 		String str;
 		if (p_reason != String()) {
@@ -1014,6 +1015,17 @@ void PortalRenderer::_ensure_unloaded(String p_reason) {
 
 void PortalRenderer::rooms_and_portals_clear() {
 	_loaded = false;
+
+	// N.B. We want to make sure all the tick counters on movings rooms etc to zero,
+	// so that on loading the next level gameplay entered signals etc will be
+	// correctly sent and everything is fresh.
+	// This is mostly done by the gameplay_monitor, but rooms_and_portals_clear()
+	// will also clear tick counters where possible
+	// (there is no TrackedList for the RoomGroup pool for example).
+	// This could be made neater by moving everything to TrackedPooledLists, but this
+	// may be overkill.
+	_gameplay_monitor.unload(*this);
+
 	_statics.clear();
 	_static_ghosts.clear();
 

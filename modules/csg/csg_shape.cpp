@@ -1757,7 +1757,7 @@ CSGBrush *CSGPolygon::_build_brush() {
 	}
 	int shape_sides = shape_polygon.size();
 	Vector<int> shape_faces = Geometry::triangulate_polygon(shape_polygon);
-	ERR_FAIL_COND_V_MSG(shape_faces.size() < 3, brush, "Failed to triangulate CSGPolygon");
+	ERR_FAIL_COND_V_MSG(shape_faces.size() < 3, brush, "Failed to triangulate CSGPolygon. Make sure the polygon doesn't have any intersecting edges.");
 
 	// Get polygon enclosing Rect2.
 	Rect2 shape_rect(shape_polygon[0], Vector2());
