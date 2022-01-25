@@ -109,7 +109,7 @@ void PortalGameplayMonitor::unload(PortalRenderer &p_portal_renderer) {
 	for (int n = 0; n < _active_room_ids_prev->size(); n++) {
 		int room_id = (*_active_room_ids_prev)[n];
 		VSRoom &room = p_portal_renderer.get_room(room_id);
-		room.last_gameplay_tick_hit = 0;
+		room.last_room_tick_hit = 0;
 
 		VisualServerCallbacks::Message msg;
 		msg.object_id = room._godot_instance_ID;
@@ -121,7 +121,7 @@ void PortalGameplayMonitor::unload(PortalRenderer &p_portal_renderer) {
 	for (int n = 0; n < _active_roomgroup_ids_prev->size(); n++) {
 		int roomgroup_id = (*_active_roomgroup_ids_prev)[n];
 		VSRoomGroup &roomgroup = p_portal_renderer.get_roomgroup(roomgroup_id);
-		roomgroup.last_gameplay_tick_hit = 0;
+		roomgroup.last_room_tick_hit = 0;
 
 		VisualServerCallbacks::Message msg;
 		msg.object_id = roomgroup._godot_instance_ID;
@@ -133,7 +133,7 @@ void PortalGameplayMonitor::unload(PortalRenderer &p_portal_renderer) {
 	for (int n = 0; n < _active_sghost_ids_prev->size(); n++) {
 		int id = (*_active_sghost_ids_prev)[n];
 		VSStaticGhost &ghost = p_portal_renderer.get_static_ghost(id);
-		ghost.last_gameplay_tick_hit = 0;
+		ghost.last_room_tick_hit = 0;
 
 		VisualServerCallbacks::Message msg;
 		msg.object_id = ghost.object_id;
@@ -185,6 +185,9 @@ void PortalGameplayMonitor::update_gameplay(PortalRenderer &p_portal_renderer, c
 	// if there is no change in the source room IDs, then we can optimize out a lot of the checks
 	// (anything not to do with roamers)
 	bool source_rooms_changed = _source_rooms_changed(p_source_room_ids, p_num_source_rooms);
+	if (source_rooms_changed) {
+		_room_tick++;
+	}
 
 	// lock output
 	VisualServerCallbacks *callbacks = VSG::scene->get_callbacks();
@@ -249,7 +252,7 @@ void PortalGameplayMonitor::update_gameplay(PortalRenderer &p_portal_renderer, c
 			const VSRoom &room = p_portal_renderer.get_room(room_id);
 
 			// gone out of view
-			if (room.last_gameplay_tick_hit != _gameplay_tick) {
+			if (room.last_room_tick_hit != _room_tick) {
 				VisualServerCallbacks::Message msg;
 				msg.object_id = room._godot_instance_ID;
 				msg.type = _exit_callback_type;
@@ -264,7 +267,7 @@ void PortalGameplayMonitor::update_gameplay(PortalRenderer &p_portal_renderer, c
 			const VSRoomGroup &roomgroup = p_portal_renderer.get_roomgroup(roomgroup_id);
 
 			// gone out of view
-			if (roomgroup.last_gameplay_tick_hit != _gameplay_tick) {
+			if (roomgroup.last_room_tick_hit != _room_tick) {
 				VisualServerCallbacks::Message msg;
 				msg.object_id = roomgroup._godot_instance_ID;
 				msg.type = _exit_callback_type;
@@ -279,7 +282,7 @@ void PortalGameplayMonitor::update_gameplay(PortalRenderer &p_portal_renderer, c
 			VSStaticGhost &ghost = p_portal_renderer.get_static_ghost(id);
 
 			// gone out of view
-			if (ghost.last_gameplay_tick_hit != _gameplay_tick) {
+			if (ghost.last_room_tick_hit != _room_tick) {
 				VisualServerCallbacks::Message msg;
 				msg.object_id = ghost.object_id;
 				msg.type = VisualServerCallbacks::CALLBACK_NOTIFICATION_EXIT_GAMEPLAY;
@@ -293,7 +296,7 @@ void PortalGameplayMonitor::update_gameplay(PortalRenderer &p_portal_renderer, c
 	callbacks->unlock();
 
 	// swap the current and previous lists
-	_swap();
+	_swap(source_rooms_changed);
 }
 
 void PortalGameplayMonitor::_update_gameplay_room(PortalRenderer &p_portal_renderer, int p_room_id, bool p_source_rooms_changed) {
@@ -367,14 +370,14 @@ void PortalGameplayMonitor::_update_gameplay_room(PortalRenderer &p_portal_rende
 	// later tests only relevant if a room has just come into play
 	bool room_came_into_play = false;
 
-	if (room.last_gameplay_tick_hit != _gameplay_tick) {
+	if (room.last_room_tick_hit != _room_tick) {
 		room_came_into_play = true;
 
 		// add the room to the active list
 		_active_room_ids_curr->push_back(p_room_id);
 
 		// if wasn't present in the tick before, add the notification to enter
-		if (room.last_gameplay_tick_hit != (_gameplay_tick - 1)) {
+		if (room.last_room_tick_hit != (_room_tick - 1)) {
 			VisualServerCallbacks::Message msg;
 			msg.object_id = room._godot_instance_ID;
 			msg.type = _enter_callback_type;
@@ -383,7 +386,7 @@ void PortalGameplayMonitor::_update_gameplay_room(PortalRenderer &p_portal_rende
 		}
 
 		// mark as done
-		room.last_gameplay_tick_hit = _gameplay_tick;
+		room.last_room_tick_hit = _room_tick;
 	}
 
 	// no need to do later tests
@@ -398,12 +401,12 @@ void PortalGameplayMonitor::_update_gameplay_room(PortalRenderer &p_portal_rende
 
 		VSRoomGroup &roomgroup = p_portal_renderer.get_roomgroup(roomgroup_id);
 
-		if (roomgroup.last_gameplay_tick_hit != _gameplay_tick) {
+		if (roomgroup.last_room_tick_hit != _room_tick) {
 			// add the room to the active list
 			_active_roomgroup_ids_curr->push_back(roomgroup_id);
 
 			// if wasn't present in the tick before, add the notification to enter
-			if (roomgroup.last_gameplay_tick_hit != (_gameplay_tick - 1)) {
+			if (roomgroup.last_room_tick_hit != (_room_tick - 1)) {
 				VisualServerCallbacks::Message msg;
 				msg.object_id = roomgroup._godot_instance_ID;
 				msg.type = _enter_callback_type;
@@ -412,7 +415,7 @@ void PortalGameplayMonitor::_update_gameplay_room(PortalRenderer &p_portal_rende
 			}
 
 			// mark as done
-			roomgroup.last_gameplay_tick_hit = _gameplay_tick;
+			roomgroup.last_room_tick_hit = _room_tick;
 		}
 	} // for through roomgroups
 
@@ -425,14 +428,14 @@ void PortalGameplayMonitor::_update_gameplay_room(PortalRenderer &p_portal_rende
 		VSStaticGhost &ghost = p_portal_renderer.get_static_ghost(id);
 
 		// done already?
-		if (ghost.last_gameplay_tick_hit == _gameplay_tick)
+		if (ghost.last_room_tick_hit == _room_tick)
 			continue;
 
 		// add to the active list
 		_active_sghost_ids_curr->push_back(id);
 
 		// if wasn't present in the tick before, add the notification to enter
-		if (ghost.last_gameplay_tick_hit != (_gameplay_tick - 1)) {
+		if (ghost.last_room_tick_hit != (_room_tick - 1)) {
 			VisualServerCallbacks::Message msg;
 			msg.object_id = ghost.object_id;
 			msg.type = VisualServerCallbacks::CALLBACK_NOTIFICATION_ENTER_GAMEPLAY;
@@ -441,11 +444,11 @@ void PortalGameplayMonitor::_update_gameplay_room(PortalRenderer &p_portal_rende
 		}
 
 		// mark as done
-		ghost.last_gameplay_tick_hit = _gameplay_tick;
+		ghost.last_room_tick_hit = _room_tick;
 	}
 }
 
-void PortalGameplayMonitor::_swap() {
+void PortalGameplayMonitor::_swap(bool p_source_rooms_changed) {
 	LocalVector<uint32_t, int32_t> *temp = _active_moving_pool_ids_curr;
 	_active_moving_pool_ids_curr = _active_moving_pool_ids_prev;
 	_active_moving_pool_ids_prev = temp;
@@ -456,18 +459,20 @@ void PortalGameplayMonitor::_swap() {
 	_active_rghost_pool_ids_prev = temp;
 	_active_rghost_pool_ids_curr->clear();
 
-	temp = _active_room_ids_curr;
-	_active_room_ids_curr = _active_room_ids_prev;
-	_active_room_ids_prev = temp;
-	_active_room_ids_curr->clear();
+	if (p_source_rooms_changed) {
+		temp = _active_room_ids_curr;
+		_active_room_ids_curr = _active_room_ids_prev;
+		_active_room_ids_prev = temp;
+		_active_room_ids_curr->clear();
 
-	temp = _active_roomgroup_ids_curr;
-	_active_roomgroup_ids_curr = _active_roomgroup_ids_prev;
-	_active_roomgroup_ids_prev = temp;
-	_active_roomgroup_ids_curr->clear();
+		temp = _active_roomgroup_ids_curr;
+		_active_roomgroup_ids_curr = _active_roomgroup_ids_prev;
+		_active_roomgroup_ids_prev = temp;
+		_active_roomgroup_ids_curr->clear();
 
-	temp = _active_sghost_ids_curr;
-	_active_sghost_ids_curr = _active_sghost_ids_prev;
-	_active_sghost_ids_prev = temp;
-	_active_sghost_ids_curr->clear();
+		temp = _active_sghost_ids_curr;
+		_active_sghost_ids_curr = _active_sghost_ids_prev;
+		_active_sghost_ids_prev = temp;
+		_active_sghost_ids_curr->clear();
+	}
 }
