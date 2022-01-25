@@ -382,8 +382,11 @@ Ref<ButtonGroup> BaseButton::get_button_group() const {
 }
 
 void BaseButton::set_shortcut_context(Node *p_node) {
-	ERR_FAIL_NULL_MSG(p_node, "Shortcut context node can't be null.");
-	shortcut_context = p_node->get_instance_id();
+	if (p_node != nullptr) {
+		shortcut_context = p_node->get_instance_id();
+	} else {
+		shortcut_context = ObjectID();
+	}
 }
 
 Node *BaseButton::get_shortcut_context() const {
