@@ -616,6 +616,7 @@ void EditorAssetLibrary::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			_update_repository_options();
+			setup_http_request(request);
 		} break;
 	}
 }
