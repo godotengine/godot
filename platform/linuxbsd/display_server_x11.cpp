@@ -3631,7 +3631,6 @@ void DisplayServerX11::process_events() {
 				mm->set_button_mask((MouseButton)mouse_get_button_state());
 				mm->set_position(pos);
 				mm->set_global_position(pos);
-				Input::get_singleton()->set_mouse_position(pos);
 				mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
 
 				mm->set_relative(rel);

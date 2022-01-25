@@ -54,13 +54,19 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 	return err;
 }
 
+bool EditorExportPlatformWindows::get_export_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+	// This option is not supported by "osslsigncode", used on non-Windows host.
+	if (!OS::get_singleton()->has_feature("windows") && p_option == "codesign/identity_type") {
+		return false;
+	}
+	return true;
+}
+
 void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_options) {
 	EditorExportPlatformPC::get_export_options(r_options);
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/enable"), false));
-#ifdef WINDOWS_ENABLED
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/identity_type", PROPERTY_HINT_ENUM, "Select automatically,Use PKCS12 file (specify *.PFX/*.P12 file),Use certificate store (specify SHA1 hash)"), 0));
-#endif
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/identity", PROPERTY_HINT_GLOBAL_FILE, "*.pfx,*.p12"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/password"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/timestamp"), true));

@@ -270,6 +270,9 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	/* Hack */
 
 	Ref<FontData> dfmono = load_cached_internal_font(_font_JetBrainsMono_Regular, _font_JetBrainsMono_Regular_size, font_hinting, font_antialiased, true);
+	Dictionary opentype_features;
+	opentype_features["calt"] = 0;
+	dfmono->set_opentype_feature_overrides(opentype_features); // Disable contextual alternates (coding ligatures).
 
 	// Default font
 	MAKE_DEFAULT_FONT(df, String());

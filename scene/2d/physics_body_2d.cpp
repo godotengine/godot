@@ -1162,7 +1162,7 @@ bool CharacterBody2D::move_and_slide() {
 	if (motion_mode == MOTION_MODE_GROUNDED) {
 		_move_and_slide_grounded(delta, was_on_floor);
 	} else {
-		_move_and_slide_free(delta);
+		_move_and_slide_floating(delta);
 	}
 
 	// Compute real velocity.
@@ -1350,7 +1350,7 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 	}
 }
 
-void CharacterBody2D::_move_and_slide_free(double p_delta) {
+void CharacterBody2D::_move_and_slide_floating(double p_delta) {
 	Vector2 motion = motion_velocity * p_delta;
 
 	platform_rid = RID();
@@ -1376,7 +1376,7 @@ void CharacterBody2D::_move_and_slide_free(double p_delta) {
 				break;
 			}
 
-			if (free_mode_min_slide_angle != 0 && result.get_angle(-motion_velocity.normalized()) < free_mode_min_slide_angle + FLOOR_ANGLE_THRESHOLD) {
+			if (wall_min_slide_angle != 0 && result.get_angle(-motion_velocity.normalized()) < wall_min_slide_angle + FLOOR_ANGLE_THRESHOLD) {
 				motion = Vector2();
 			} else if (first_slide) {
 				Vector2 motion_slide_norm = result.remainder.slide(result.collision_normal).normalized();
@@ -1668,12 +1668,12 @@ void CharacterBody2D::set_floor_snap_length(real_t p_floor_snap_length) {
 	floor_snap_length = p_floor_snap_length;
 }
 
-real_t CharacterBody2D::get_free_mode_min_slide_angle() const {
-	return free_mode_min_slide_angle;
+real_t CharacterBody2D::get_wall_min_slide_angle() const {
+	return wall_min_slide_angle;
 }
 
-void CharacterBody2D::set_free_mode_min_slide_angle(real_t p_radians) {
-	free_mode_min_slide_angle = p_radians;
+void CharacterBody2D::set_wall_min_slide_angle(real_t p_radians) {
+	wall_min_slide_angle = p_radians;
 }
 
 const Vector2 &CharacterBody2D::get_up_direction() const {
@@ -1681,7 +1681,7 @@ const Vector2 &CharacterBody2D::get_up_direction() const {
 }
 
 void CharacterBody2D::set_up_direction(const Vector2 &p_up_direction) {
-	ERR_FAIL_COND_MSG(p_up_direction == Vector2(), "up_direction can't be equal to Vector2.ZERO, consider using Free motion mode instead.");
+	ERR_FAIL_COND_MSG(p_up_direction == Vector2(), "up_direction can't be equal to Vector2.ZERO, consider using Floating motion mode instead.");
 	up_direction = p_up_direction.normalized();
 }
 
@@ -1728,8 +1728,8 @@ void CharacterBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_floor_max_angle", "radians"), &CharacterBody2D::set_floor_max_angle);
 	ClassDB::bind_method(D_METHOD("get_floor_snap_length"), &CharacterBody2D::get_floor_snap_length);
 	ClassDB::bind_method(D_METHOD("set_floor_snap_length", "floor_snap_length"), &CharacterBody2D::set_floor_snap_length);
-	ClassDB::bind_method(D_METHOD("get_free_mode_min_slide_angle"), &CharacterBody2D::get_free_mode_min_slide_angle);
-	ClassDB::bind_method(D_METHOD("set_free_mode_min_slide_angle", "radians"), &CharacterBody2D::set_free_mode_min_slide_angle);
+	ClassDB::bind_method(D_METHOD("get_wall_min_slide_angle"), &CharacterBody2D::get_wall_min_slide_angle);
+	ClassDB::bind_method(D_METHOD("set_wall_min_slide_angle", "radians"), &CharacterBody2D::set_wall_min_slide_angle);
 	ClassDB::bind_method(D_METHOD("get_up_direction"), &CharacterBody2D::get_up_direction);
 	ClassDB::bind_method(D_METHOD("set_up_direction", "up_direction"), &CharacterBody2D::set_up_direction);
 	ClassDB::bind_method(D_METHOD("set_motion_mode", "mode"), &CharacterBody2D::set_motion_mode);
@@ -1754,14 +1754,12 @@ void CharacterBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_slide_collision", "slide_idx"), &CharacterBody2D::_get_slide_collision);
 	ClassDB::bind_method(D_METHOD("get_last_slide_collision"), &CharacterBody2D::_get_last_slide_collision);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "motion_mode", PROPERTY_HINT_ENUM, "Grounded,Free", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_motion_mode", "get_motion_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "motion_mode", PROPERTY_HINT_ENUM, "Grounded,Floating", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_motion_mode", "get_motion_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "up_direction"), "set_up_direction", "get_up_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "motion_velocity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_motion_velocity", "get_motion_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "slide_on_ceiling"), "set_slide_on_ceiling_enabled", "is_slide_on_ceiling_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_slides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_max_slides", "get_max_slides");
-
-	ADD_GROUP("Free Mode", "free_mode_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "free_mode_min_slide_angle", PROPERTY_HINT_RANGE, "0,180,0.1,radians", PROPERTY_USAGE_DEFAULT), "set_free_mode_min_slide_angle", "get_free_mode_min_slide_angle");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wall_min_slide_angle", PROPERTY_HINT_RANGE, "0,180,0.1,radians", PROPERTY_USAGE_DEFAULT), "set_wall_min_slide_angle", "get_wall_min_slide_angle");
 	ADD_GROUP("Floor", "floor_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "floor_stop_on_slope"), "set_floor_stop_on_slope_enabled", "is_floor_stop_on_slope_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "floor_constant_speed"), "set_floor_constant_speed_enabled", "is_floor_constant_speed_enabled");
@@ -1775,7 +1773,7 @@ void CharacterBody2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision/safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001"), "set_safe_margin", "get_safe_margin");
 
 	BIND_ENUM_CONSTANT(MOTION_MODE_GROUNDED);
-	BIND_ENUM_CONSTANT(MOTION_MODE_FREE);
+	BIND_ENUM_CONSTANT(MOTION_MODE_FLOATING);
 
 	BIND_ENUM_CONSTANT(PLATFORM_VEL_ON_LEAVE_ALWAYS);
 	BIND_ENUM_CONSTANT(PLATFORM_VEL_ON_LEAVE_UPWARD_ONLY);
@@ -1783,12 +1781,12 @@ void CharacterBody2D::_bind_methods() {
 }
 
 void CharacterBody2D::_validate_property(PropertyInfo &property) const {
-	if (motion_mode == MOTION_MODE_FREE) {
+	if (motion_mode == MOTION_MODE_FLOATING) {
 		if (property.name.begins_with("floor_") || property.name == "up_direction" || property.name == "slide_on_ceiling") {
 			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	} else {
-		if (property.name == "free_mode_min_slide_angle") {
+		if (property.name == "wall_min_slide_angle") {
 			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}

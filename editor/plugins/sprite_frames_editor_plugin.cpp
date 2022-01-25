@@ -821,19 +821,30 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 
 	for (int i = 0; i < frames->get_frame_count(edited_anim); i++) {
 		String name;
-		Ref<Texture2D> icon;
+		Ref<Texture> frame = frames->get_frame(edited_anim, i);
 
-		if (frames->get_frame(edited_anim, i).is_null()) {
+		if (frame.is_null()) {
 			name = itos(i) + ": " + TTR("(empty)");
-
 		} else {
-			name = itos(i) + ": " + frames->get_frame(edited_anim, i)->get_name();
-			icon = frames->get_frame(edited_anim, i);
+			name = itos(i) + ": " + frame->get_name();
 		}
 
-		tree->add_item(name, icon);
-		if (frames->get_frame(edited_anim, i).is_valid()) {
-			tree->set_item_tooltip(tree->get_item_count() - 1, frames->get_frame(edited_anim, i)->get_path());
+		tree->add_item(name, frame);
+		if (frame.is_valid()) {
+			String tooltip = frame->get_path();
+
+			// Frame is often saved as an AtlasTexture subresource within a scene/resource file,
+			// thus its path might be not what the user is looking for. So we're also showing
+			// subsequent source texture paths.
+			String prefix = String::utf8("┖╴");
+			Ref<AtlasTexture> at = frame;
+			while (at.is_valid() && at->get_atlas().is_valid()) {
+				tooltip += "\n" + prefix + at->get_atlas()->get_path();
+				prefix = "    " + prefix;
+				at = at->get_atlas();
+			}
+
+			tree->set_item_tooltip(tree->get_item_count() - 1, tooltip);
 		}
 		if (sel == i) {
 			tree->select(tree->get_item_count() - 1);

@@ -2812,7 +2812,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 	}
 
 	SUBCASE("[CodeEdit] autocomplete request") {
-		SIGNAL_WATCH(code_edit, "request_code_completion");
+		SIGNAL_WATCH(code_edit, "code_completion_requested");
 		code_edit->set_code_completion_enabled(true);
 
 		Array signal_args;
@@ -2820,13 +2820,13 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 
 		/* Force request. */
 		code_edit->request_code_completion();
-		SIGNAL_CHECK_FALSE("request_code_completion");
+		SIGNAL_CHECK_FALSE("code_completion_requested");
 		code_edit->request_code_completion(true);
-		SIGNAL_CHECK("request_code_completion", signal_args);
+		SIGNAL_CHECK("code_completion_requested", signal_args);
 
 		/* Manual request should force. */
 		SEND_GUI_ACTION(code_edit, "ui_text_completion_query");
-		SIGNAL_CHECK("request_code_completion", signal_args);
+		SIGNAL_CHECK("code_completion_requested", signal_args);
 
 		/* Insert prefix. */
 		TypedArray<String> completion_prefixes;
@@ -2835,12 +2835,12 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 
 		code_edit->insert_text_at_caret(".");
 		code_edit->request_code_completion();
-		SIGNAL_CHECK("request_code_completion", signal_args);
+		SIGNAL_CHECK("code_completion_requested", signal_args);
 
 		/* Should work with space too. */
 		code_edit->insert_text_at_caret(" ");
 		code_edit->request_code_completion();
-		SIGNAL_CHECK("request_code_completion", signal_args);
+		SIGNAL_CHECK("code_completion_requested", signal_args);
 
 		/* Should work when complete ends with prefix. */
 		code_edit->clear();
@@ -2849,9 +2849,9 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		code_edit->update_code_completion_options();
 		code_edit->confirm_code_completion();
 		CHECK(code_edit->get_line(0) == "test.");
-		SIGNAL_CHECK("request_code_completion", signal_args);
+		SIGNAL_CHECK("code_completion_requested", signal_args);
 
-		SIGNAL_UNWATCH(code_edit, "request_code_completion");
+		SIGNAL_UNWATCH(code_edit, "code_completion_requested");
 	}
 
 	SUBCASE("[CodeEdit] autocomplete completion") {
@@ -3244,6 +3244,55 @@ TEST_CASE("[SceneTree][CodeEdit] Backspace delete") {
 	code_edit->set_caret_column(0);
 	code_edit->backspace();
 	CHECK(code_edit->get_text() == "line 1\nline 2\nline 3");
+
+	memdelete(code_edit);
+}
+
+TEST_CASE("[SceneTree][CodeEdit] New Line") {
+	CodeEdit *code_edit = memnew(CodeEdit);
+	SceneTree::get_singleton()->get_root()->add_child(code_edit);
+
+	/* Add a new line. */
+	code_edit->set_text("");
+	code_edit->insert_text_at_caret("test new line");
+	code_edit->set_caret_line(0);
+	code_edit->set_caret_column(13);
+	SEND_GUI_ACTION(code_edit, "ui_text_newline");
+	CHECK(code_edit->get_line(0) == "test new line");
+	CHECK(code_edit->get_line(1) == "");
+
+	/* Split line with new line. */
+	code_edit->set_text("");
+	code_edit->insert_text_at_caret("test new line");
+	code_edit->set_caret_line(0);
+	code_edit->set_caret_column(5);
+	SEND_GUI_ACTION(code_edit, "ui_text_newline");
+	CHECK(code_edit->get_line(0) == "test ");
+	CHECK(code_edit->get_line(1) == "new line");
+
+	/* Delete selection and split with new line. */
+	code_edit->set_text("");
+	code_edit->insert_text_at_caret("test new line");
+	code_edit->select(0, 0, 0, 5);
+	SEND_GUI_ACTION(code_edit, "ui_text_newline");
+	CHECK(code_edit->get_line(0) == "");
+	CHECK(code_edit->get_line(1) == "new line");
+
+	/* Blank new line below with selection should not split. */
+	code_edit->set_text("");
+	code_edit->insert_text_at_caret("test new line");
+	code_edit->select(0, 0, 0, 5);
+	SEND_GUI_ACTION(code_edit, "ui_text_newline_blank");
+	CHECK(code_edit->get_line(0) == "test new line");
+	CHECK(code_edit->get_line(1) == "");
+
+	/* Blank new line above with selection should not split. */
+	code_edit->set_text("");
+	code_edit->insert_text_at_caret("test new line");
+	code_edit->select(0, 0, 0, 5);
+	SEND_GUI_ACTION(code_edit, "ui_text_newline_above");
+	CHECK(code_edit->get_line(0) == "");
+	CHECK(code_edit->get_line(1) == "test new line");
 
 	memdelete(code_edit);
 }

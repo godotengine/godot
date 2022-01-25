@@ -937,8 +937,10 @@ void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 		return;
 	}
 
-	const int cc = get_caret_column();
+	/* When not splitting the line, we need to factor in indentation from the end of the current line. */
+	const int cc = p_split_current_line ? get_caret_column() : get_line(get_caret_line()).length();
 	const int cl = get_caret_line();
+
 	const String line = get_line(cl);
 
 	String ins = "\n";
@@ -1012,6 +1014,8 @@ void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 
 	bool first_line = false;
 	if (!p_split_current_line) {
+		deselect();
+
 		if (p_above) {
 			if (cl > 0) {
 				set_caret_line(cl - 1, false);
@@ -1793,7 +1797,7 @@ void CodeEdit::request_code_completion(bool p_force) {
 	}
 
 	if (p_force) {
-		emit_signal(SNAME("request_code_completion"));
+		emit_signal(SNAME("code_completion_requested"));
 		return;
 	}
 
@@ -1801,9 +1805,9 @@ void CodeEdit::request_code_completion(bool p_force) {
 	int ofs = CLAMP(get_caret_column(), 0, line.length());
 
 	if (ofs > 0 && (is_in_string(get_caret_line(), ofs) != -1 || _is_char(line[ofs - 1]) || code_completion_prefixes.has(line[ofs - 1]))) {
-		emit_signal(SNAME("request_code_completion"));
+		emit_signal(SNAME("code_completion_requested"));
 	} else if (ofs > 1 && line[ofs - 1] == ' ' && code_completion_prefixes.has(line[ofs - 2])) {
-		emit_signal(SNAME("request_code_completion"));
+		emit_signal(SNAME("code_completion_requested"));
 	}
 }
 
@@ -2261,7 +2265,7 @@ void CodeEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("breakpoint_toggled", PropertyInfo(Variant::INT, "line")));
 
 	/* Code Completion */
-	ADD_SIGNAL(MethodInfo("request_code_completion"));
+	ADD_SIGNAL(MethodInfo("code_completion_requested"));
 
 	/* Symbol lookup */
 	ADD_SIGNAL(MethodInfo("symbol_lookup", PropertyInfo(Variant::STRING, "symbol"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::INT, "column")));

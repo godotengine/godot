@@ -143,7 +143,7 @@ Error HTTPClientJavaScript::get_response_headers(List<String> *r_response) {
 	return OK;
 }
 
-int HTTPClientJavaScript::get_response_body_length() const {
+int64_t HTTPClientJavaScript::get_response_body_length() const {
 	return godot_js_fetch_body_length_get(js_id);
 }
 

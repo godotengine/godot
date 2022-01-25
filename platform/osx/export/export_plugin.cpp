@@ -47,6 +47,23 @@ void EditorExportPlatformOSX::get_preset_features(const Ref<EditorExportPreset> 
 	r_features->push_back("64");
 }
 
+bool EditorExportPlatformOSX::get_export_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+	// These options are not supported by built-in codesign, used on non macOS host.
+	if (!OS::get_singleton()->has_feature("macos")) {
+		if (p_option == "codesign/identity" || p_option == "codesign/timestamp" || p_option == "codesign/hardened_runtime" || p_option == "codesign/custom_options" || p_option.begins_with("notarization/")) {
+			return false;
+		}
+	}
+
+	// These entitlements are required to run managed code, and are always enabled in Mono builds.
+	if (Engine::get_singleton()->has_singleton("GodotSharp")) {
+		if (p_option == "codesign/entitlements/allow_jit_code_execution" || p_option == "codesign/entitlements/allow_unsigned_executable_memory" || p_option == "codesign/entitlements/allow_dyld_environment_variables") {
+			return false;
+		}
+	}
+	return true;
+}
+
 void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) {
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
@@ -74,20 +91,15 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/removable_volumes_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use removable volumes"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/enable"), true));
-#ifdef OSX_ENABLED
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/identity", PROPERTY_HINT_PLACEHOLDER_TEXT, "Type: Name (ID)"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/timestamp"), true));
-#endif
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/replace_existing_signature"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/hardened_runtime"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/entitlements/custom_file", PROPERTY_HINT_GLOBAL_FILE, "*.plist"), ""));
 
-	if (!Engine::get_singleton()->has_singleton("GodotSharp")) {
-		// These entitlements are required to run managed code, and are always enabled in Mono builds.
-		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/allow_jit_code_execution"), false));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/allow_unsigned_executable_memory"), false));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/allow_dyld_environment_variables"), false));
-	}
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/allow_jit_code_execution"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/allow_unsigned_executable_memory"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/allow_dyld_environment_variables"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/disable_library_validation"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/audio_input"), false));
@@ -110,14 +122,12 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/entitlements/app_sandbox/files_movies", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::ARRAY, "codesign/entitlements/app_sandbox/helper_executables", PROPERTY_HINT_ARRAY_TYPE, itos(Variant::STRING) + "/" + itos(PROPERTY_HINT_GLOBAL_FILE) + ":"), Array()));
 
-#ifdef OSX_ENABLED
 	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "codesign/custom_options"), PackedStringArray()));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "notarization/enable"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/apple_id_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Apple ID email"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/apple_id_password", PROPERTY_HINT_PLACEHOLDER_TEXT, "Enable two-factor authentication and provide app-specific password"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/apple_team_id", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide team ID if your Apple ID belongs to multiple teams"), ""));
-#endif
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc"), false));
@@ -443,12 +453,15 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 	if ((!FileAccess::exists("/usr/bin/codesign") && !FileAccess::exists("/bin/codesign")) || force_builtin_codesign) {
 		print_verbose("using built-in codesign...");
 #ifdef MODULE_REGEX_ENABLED
+
+#ifdef OSX_ENABLED
 		if (p_preset->get("codesign/timestamp")) {
 			WARN_PRINT("Timestamping is not compatible with ad-hoc signature, and was disabled!");
 		}
 		if (p_preset->get("codesign/hardened_runtime")) {
 			WARN_PRINT("Hardened Runtime is not compatible with ad-hoc signature, and was disabled!");
 		}
+#endif
 
 		String error_msg;
 		Error err = CodeSign::codesign(false, p_preset->get("codesign/replace_existing_signature"), p_path, p_ent_path, error_msg);
@@ -1170,6 +1183,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			}
 		}
 
+#ifdef OSX_ENABLED
 		bool noto_enabled = p_preset->get("notarization/enable");
 		if (err == OK && noto_enabled) {
 			if (export_format == "app") {
@@ -1181,6 +1195,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				err = _notarize(p_preset, p_path);
 			}
 		}
+#endif
 
 		// Clean up temporary entitlements files.
 		DirAccess::remove_file_or_error(hlp_ent_path);
@@ -1355,17 +1370,17 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 	}
 
 	bool sign_enabled = p_preset->get("codesign/enable");
+
+#ifdef OSX_ENABLED
 	bool noto_enabled = p_preset->get("notarization/enable");
 	bool ad_hoc = ((p_preset->get("codesign/identity") == "") || (p_preset->get("codesign/identity") == "-"));
 
-#ifdef OSX_ENABLED
 	if (!ad_hoc && (bool)EditorSettings::get_singleton()->get("export/macos/force_builtin_codesign")) {
 		err += TTR("Warning: Built-in \"codesign\" is selected in the Editor Settings. Code signing is limited to ad-hoc signature only.") + "\n";
 	}
 	if (!ad_hoc && !FileAccess::exists("/usr/bin/codesign") && !FileAccess::exists("/bin/codesign")) {
 		err += TTR("Warning: Xcode command line tools are not installed, using built-in \"codesign\". Code signing is limited to ad-hoc signature only.") + "\n";
 	}
-#endif
 
 	if (noto_enabled) {
 		if (ad_hoc) {
@@ -1393,11 +1408,7 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 			valid = false;
 		}
 	} else {
-#ifdef OSX_ENABLED
 		err += TTR("Warning: Notarization is disabled. Exported project will be blocked by Gatekeeper, if it's downloaded from an unknown source.") + "\n";
-#else
-		err += TTR("Warning: Notarization is not supported on this OS. Exported project will be blocked by Gatekeeper, if it's downloaded from an unknown source.") + "\n";
-#endif
 		if (!sign_enabled) {
 			err += TTR("Code signing is disabled. Exported project will not run on Macs with enabled Gatekeeper and Apple Silicon powered Macs.") + "\n";
 		} else {
@@ -1409,6 +1420,12 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 			}
 		}
 	}
+#else
+	err += TTR("Warning: Notarization is not supported on this OS. Exported project will be blocked by Gatekeeper, if it's downloaded from an unknown source.") + "\n";
+	if (!sign_enabled) {
+		err += TTR("Code signing is disabled. Exported project will not run on Macs with enabled Gatekeeper and Apple Silicon powered Macs.") + "\n";
+	}
+#endif
 
 	if (sign_enabled) {
 		if ((bool)p_preset->get("codesign/entitlements/audio_input") && ((String)p_preset->get("privacy/microphone_usage_description")).is_empty()) {

@@ -42,6 +42,7 @@
 #include "scene/animation/animation_player.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
+#include "scene/gui/view_panner.h"
 #include "scene/main/window.h"
 #include "scene/resources/visual_shader_nodes.h"
 #include "scene/resources/visual_shader_particle_nodes.h"
@@ -351,6 +352,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 	if (!graph_plugin) {
 		return;
 	}
+	Shader::Mode mode = visual_shader->get_mode();
 
 	Control *offset;
 
@@ -707,9 +709,9 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 					label->add_theme_style_override("normal", label_style); //more compact
 					hb->add_child(label);
 
-					if (vsnode->get_input_port_default_hint(i) != "" && !port_left_used) {
+					if (vsnode->is_input_port_default(i, mode) && !port_left_used) {
 						Label *hint_label = memnew(Label);
-						hint_label->set_text("[" + vsnode->get_input_port_default_hint(i) + "]");
+						hint_label->set_text(TTR("[default]"));
 						hint_label->add_theme_color_override("font_color", editor->get_theme_color(SNAME("font_readonly_color"), SNAME("TextEdit")));
 						hint_label->add_theme_style_override("normal", label_style);
 						hb->add_child(hint_label);
@@ -840,7 +842,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 	offset->set_custom_minimum_size(Size2(0, 4 * EDSCALE));
 	node->add_child(offset);
 
-	String error = vsnode->get_warning(visual_shader->get_mode(), p_type);
+	String error = vsnode->get_warning(mode, p_type);
 	if (!error.is_empty()) {
 		Label *error_label = memnew(Label);
 		error_label->add_theme_color_override("font_color", editor->get_theme_color(SNAME("error_color"), SNAME("Editor")));
@@ -3222,7 +3224,8 @@ void VisualShaderEditor::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		graph->set_panning_scheme((GraphEdit::PanningScheme)EDITOR_GET("interface/editors/sub_editor_panning_scheme").operator int());
+		graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
+		graph->set_warped_panning(bool(EditorSettings::get_singleton()->get("editors/panning/warped_mouse_panning")));
 	}
 
 	if (p_what == NOTIFICATION_DRAG_BEGIN) {
@@ -4495,7 +4498,6 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("ObjectPosition", "Input", "Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "object_position"), "object_position", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FOG, Shader::MODE_FOG));
 	add_options.push_back(AddOption("UVW", "Input", "Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "uvw"), "uvw", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FOG, Shader::MODE_FOG));
 	add_options.push_back(AddOption("Extents", "Input", "Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "extents"), "extents", VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_FOG, Shader::MODE_FOG));
-	add_options.push_back(AddOption("Transform", "Input", "Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "transform"), "transform", VisualShaderNode::PORT_TYPE_TRANSFORM, TYPE_FLAGS_FOG, Shader::MODE_FOG));
 	add_options.push_back(AddOption("SDF", "Input", "Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "sdf"), "sdf", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FOG, Shader::MODE_FOG));
 	add_options.push_back(AddOption("Time", "Input", "Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "time"), "time", VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FOG, Shader::MODE_FOG));
 

@@ -189,6 +189,7 @@ private:
 		int get_max_width() const;
 
 		void set_width(float p_width);
+		float get_width() const;
 		int get_line_wrap_amount(int p_line) const;
 
 		Vector<Vector2i> get_line_wrap_ranges(int p_line) const;
@@ -248,6 +249,19 @@ private:
 	// Text properties.
 	String ime_text = "";
 	Point2 ime_selection;
+
+	// Placeholder
+	float placeholder_alpha = 0.6;
+
+	String placeholder_text = "";
+	Array placeholder_bidi_override;
+	Ref<TextParagraph> placeholder_data_buf;
+	int placeholder_line_height = -1;
+	int placeholder_max_width = -1;
+
+	Vector<String> placeholder_wraped_rows;
+
+	void _update_placeholder();
 
 	/* Initialise to opposite first, so we get past the early-out in set_editable. */
 	bool editable = false;
@@ -666,6 +680,12 @@ public:
 	void set_text(const String &p_text);
 	String get_text() const;
 	int get_line_count() const;
+
+	void set_placeholder(const String &p_text);
+	String get_placeholder() const;
+
+	void set_placeholder_alpha(float p_alpha);
+	float get_placeholder_alpha() const;
 
 	void set_line(int p_line, const String &p_new_text);
 	String get_line(int p_line) const;

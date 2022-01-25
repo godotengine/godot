@@ -53,7 +53,7 @@
 			<argument index="0" name="parent" type="Object" default="null" />
 			<argument index="1" name="idx" type="int" default="-1" />
 			<description>
-				Creates an item in the tree and adds it as a child of [code]parent[/code].
+				Creates an item in the tree and adds it as a child of [code]parent[/code], which can be either a valid [TreeItem] or [code]null[/code].
 				If [code]parent[/code] is [code]null[/code], the root item will be the parent, or the new item will be the root itself if the tree is empty.
 				The new item will be the [code]idx[/code]th child of parent, or it will be the last child if there are not enough siblings.
 			</description>
@@ -173,7 +173,7 @@
 			<argument index="0" name="item" type="Object" />
 			<argument index="1" name="column" type="int" default="-1" />
 			<description>
-				Returns the rectangle area for the specified item. If [code]column[/code] is specified, only get the position and size of that column, otherwise get the rectangle containing all columns.
+				Returns the rectangle area for the specified [TreeItem]. If [code]column[/code] is specified, only get the position and size of that column, otherwise get the rectangle containing all columns.
 			</description>
 		</method>
 		<method name="get_item_at_position" qualifiers="const">
@@ -187,7 +187,7 @@
 			<return type="TreeItem" />
 			<argument index="0" name="from" type="Object" />
 			<description>
-				Returns the next selected item after the given one, or [code]null[/code] if the end is reached.
+				Returns the next selected [TreeItem] after the given one, or [code]null[/code] if the end is reached.
 				If [code]from[/code] is [code]null[/code], this returns the first selected item.
 			</description>
 		</method>
@@ -241,7 +241,7 @@
 			<return type="void" />
 			<argument index="0" name="item" type="Object" />
 			<description>
-				Causes the [Tree] to jump to the specified item.
+				Causes the [Tree] to jump to the specified [TreeItem].
 			</description>
 		</method>
 		<method name="set_column_clip_content">

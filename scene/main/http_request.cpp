@@ -442,30 +442,25 @@ void HTTPRequest::_request_done(int p_status, int p_code, const PackedStringArra
 		is_compressed = false;
 	}
 
-	const PackedByteArray *data = nullptr;
-
 	if (accept_gzip && is_compressed && p_data.size() > 0) {
 		// Decompress request body
-		PackedByteArray *decompressed = memnew(PackedByteArray);
-		int result = Compression::decompress_dynamic(decompressed, body_size_limit, p_data.ptr(), p_data.size(), mode);
+		PackedByteArray decompressed;
+		int result = Compression::decompress_dynamic(&decompressed, body_size_limit, p_data.ptr(), p_data.size(), mode);
 		if (result == OK) {
-			data = decompressed;
+			emit_signal(SNAME("request_completed"), p_status, p_code, p_headers, decompressed);
+			return;
 		} else if (result == -5) {
 			WARN_PRINT("Decompressed size of HTTP response body exceeded body_size_limit");
 			p_status = RESULT_BODY_SIZE_LIMIT_EXCEEDED;
 			// Just return the raw data if we failed to decompress it
-			data = &p_data;
 		} else {
 			WARN_PRINT("Failed to decompress HTTP response body");
 			p_status = RESULT_BODY_DECOMPRESS_FAILED;
 			// Just return the raw data if we failed to decompress it
-			data = &p_data;
 		}
-	} else {
-		data = &p_data;
 	}
 
-	emit_signal(SNAME("request_completed"), p_status, p_code, p_headers, *data);
+	emit_signal(SNAME("request_completed"), p_status, p_code, p_headers, p_data);
 }
 
 void HTTPRequest::_notification(int p_what) {

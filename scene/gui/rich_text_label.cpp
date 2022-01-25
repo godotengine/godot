@@ -330,7 +330,7 @@ void RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 						table->columns.write[column].width = MAX(table->columns.write[column].width, ceil(frame->lines[i].text_buf->get_size().x));
 
 						if (i > 0) {
-							frame->lines.write[i].offset.y = frame->lines[i - 1].offset.y + frame->lines[i - 1].text_buf->get_size().y + get_theme_constant(SNAME("line_separation"));
+							frame->lines.write[i].offset.y = frame->lines[i - 1].offset.y + frame->lines[i - 1].text_buf->get_size().y + frame->lines[i - 1].text_buf->get_line_count() * get_theme_constant(SNAME("line_separation"));
 						} else {
 							frame->lines.write[i].offset.y = 0;
 						}
@@ -370,7 +370,7 @@ void RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 	}
 
 	if (p_line > 0) {
-		l.offset.y = p_frame->lines[p_line - 1].offset.y + p_frame->lines[p_line - 1].text_buf->get_size().y + get_theme_constant(SNAME("line_separation"));
+		l.offset.y = p_frame->lines[p_line - 1].offset.y + p_frame->lines[p_line - 1].text_buf->get_size().y + p_frame->lines[p_line - 1].text_buf->get_line_count() * get_theme_constant(SNAME("line_separation"));
 	} else {
 		l.offset.y = 0;
 	}
@@ -583,7 +583,7 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 						table->columns.write[column].width = MAX(table->columns.write[column].width, ceil(frame->lines[i].text_buf->get_size().x));
 
 						if (i > 0) {
-							frame->lines.write[i].offset.y = frame->lines[i - 1].offset.y + frame->lines[i - 1].text_buf->get_size().y + get_theme_constant(SNAME("line_separation"));
+							frame->lines.write[i].offset.y = frame->lines[i - 1].offset.y + frame->lines[i - 1].text_buf->get_size().y + frame->lines[i - 1].text_buf->get_line_count() * get_theme_constant(SNAME("line_separation"));
 						} else {
 							frame->lines.write[i].offset.y = 0;
 						}
@@ -631,7 +631,7 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 	*r_char_offset = l.char_offset + l.char_count;
 
 	if (p_line > 0) {
-		l.offset.y = p_frame->lines[p_line - 1].offset.y + p_frame->lines[p_line - 1].text_buf->get_size().y + get_theme_constant(SNAME("line_separation"));
+		l.offset.y = p_frame->lines[p_line - 1].offset.y + p_frame->lines[p_line - 1].text_buf->get_size().y + p_frame->lines[p_line - 1].text_buf->get_line_count() * get_theme_constant(SNAME("line_separation"));
 	} else {
 		l.offset.y = 0;
 	}
@@ -1198,7 +1198,7 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 
 	//TODO, change to binary search ?
 	while (from_line < main->lines.size()) {
-		if (main->lines[from_line].offset.y + main->lines[from_line].text_buf->get_size().y >= vofs) {
+		if (main->lines[from_line].offset.y + main->lines[from_line].text_buf->get_size().y + main->lines[from_line].text_buf->get_line_count() * get_theme_constant(SNAME("line_separation")) >= vofs) {
 			break;
 		}
 		from_line++;
@@ -1211,7 +1211,7 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 	Point2 ofs = text_rect.get_position() + Vector2(0, main->lines[from_line].offset.y - vofs);
 	while (ofs.y < size.height && from_line < main->lines.size()) {
 		_find_click_in_line(p_frame, from_line, ofs, text_rect.size.x, p_click, r_click_frame, r_click_line, r_click_item, r_click_char);
-		ofs.y += main->lines[from_line].text_buf->get_size().y + get_theme_constant(SNAME("line_separation"));
+		ofs.y += main->lines[from_line].text_buf->get_size().y + main->lines[from_line].text_buf->get_line_count() * get_theme_constant(SNAME("line_separation"));
 		if (((r_click_item != nullptr) && ((*r_click_item) != nullptr)) || ((r_click_frame != nullptr) && ((*r_click_frame) != nullptr))) {
 			if (r_outside != nullptr) {
 				*r_outside = false;
@@ -1330,7 +1330,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 		if (rect.has_point(p_click) && !table_hit) {
 			char_pos = TS->shaped_text_hit_test_position(rid, p_click.x - rect.position.x);
 		}
-		off.y += TS->shaped_text_get_descent(rid) + l.text_buf->get_spacing_bottom();
+		off.y += TS->shaped_text_get_descent(rid) + l.text_buf->get_spacing_bottom() + get_theme_constant(SNAME("line_separation"));
 	}
 
 	if (char_pos >= 0) {
@@ -1494,7 +1494,7 @@ void RichTextLabel::_notification(int p_what) {
 
 			//TODO, change to binary search ?
 			while (from_line < main->lines.size()) {
-				if (main->lines[from_line].offset.y + main->lines[from_line].text_buf->get_size().y >= vofs) {
+				if (main->lines[from_line].offset.y + main->lines[from_line].text_buf->get_size().y + main->lines[from_line].text_buf->get_line_count() * get_theme_constant(SNAME("line_separation")) >= vofs) {
 					break;
 				}
 				from_line++;
@@ -1520,7 +1520,7 @@ void RichTextLabel::_notification(int p_what) {
 			while (ofs.y < size.height && from_line < main->lines.size()) {
 				visible_paragraph_count++;
 				visible_line_count += _draw_line(main, from_line, ofs, text_rect.size.x, base_color, outline_size, outline_color, font_shadow_color, shadow_outline_size, shadow_ofs, processed_glyphs);
-				ofs.y += main->lines[from_line].text_buf->get_size().y + get_theme_constant(SNAME("line_separation"));
+				ofs.y += main->lines[from_line].text_buf->get_size().y + main->lines[from_line].text_buf->get_line_count() * get_theme_constant(SNAME("line_separation"));
 				from_line++;
 			}
 		} break;
@@ -2208,7 +2208,7 @@ void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 
 		int total_height = 0;
 		if (p_frame->lines.size()) {
-			total_height = p_frame->lines[p_frame->lines.size() - 1].offset.y + p_frame->lines[p_frame->lines.size() - 1].text_buf->get_size().y;
+			total_height = p_frame->lines[p_frame->lines.size() - 1].offset.y + p_frame->lines[p_frame->lines.size() - 1].text_buf->get_size().y * p_frame->lines[p_frame->lines.size() - 1].text_buf->get_line_count() * get_theme_constant(SNAME("line_separation"));
 		}
 
 		p_frame->first_resized_line = p_frame->lines.size();
@@ -2240,7 +2240,7 @@ void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 
 	int total_height = 0;
 	if (p_frame->lines.size()) {
-		total_height = p_frame->lines[p_frame->lines.size() - 1].offset.y + p_frame->lines[p_frame->lines.size() - 1].text_buf->get_size().y;
+		total_height = p_frame->lines[p_frame->lines.size() - 1].offset.y + p_frame->lines[p_frame->lines.size() - 1].text_buf->get_size().y + p_frame->lines[p_frame->lines.size() - 1].text_buf->get_line_count() * get_theme_constant(SNAME("line_separation"));
 	}
 
 	p_frame->first_invalid_line = p_frame->lines.size();
@@ -4066,7 +4066,7 @@ void RichTextLabel::install_effect(const Variant effect) {
 int RichTextLabel::get_content_height() const {
 	int total_height = 0;
 	if (main->lines.size()) {
-		total_height = main->lines[main->lines.size() - 1].offset.y + main->lines[main->lines.size() - 1].text_buf->get_size().y;
+		total_height = main->lines[main->lines.size() - 1].offset.y + main->lines[main->lines.size() - 1].text_buf->get_size().y * main->lines[main->lines.size() - 1].text_buf->get_line_count() * get_theme_constant(SNAME("line_separation"));
 	}
 	return total_height;
 }
