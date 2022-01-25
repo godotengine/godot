@@ -315,6 +315,9 @@ class ScriptEditor : public PanelContainer {
 	void _menu_option(int p_option);
 	void _theme_option(int p_option);
 	void _show_save_theme_as_dialog();
+	bool _has_docs_tab() const;
+	bool _has_script_tab() const;
+	void _prepare_file_menu();
 
 	Tree *disk_changed_list;
 	ConfirmationDialog *disk_changed;

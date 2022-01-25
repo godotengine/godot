@@ -122,6 +122,10 @@ Ref<GDScriptParserRef> GDScriptCache::get_parser(const String &p_path, GDScriptP
 	}
 	if (singleton->parser_map.has(p_path)) {
 		ref = Ref<GDScriptParserRef>(singleton->parser_map[p_path]);
+		if (ref.is_null()) {
+			r_error = ERR_INVALID_DATA;
+			return ref;
+		}
 	} else {
 		if (!FileAccess::exists(p_path)) {
 			r_error = ERR_FILE_NOT_FOUND;
@@ -133,7 +137,6 @@ Ref<GDScriptParserRef> GDScriptCache::get_parser(const String &p_path, GDScriptP
 		ref->path = p_path;
 		singleton->parser_map[p_path] = ref.ptr();
 	}
-
 	r_error = ref->raise_status(p_status);
 
 	return ref;

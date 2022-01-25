@@ -983,7 +983,7 @@ public:
 	virtual RID shadow_atlas_create() override;
 	virtual void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = false) override;
 	virtual void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) override;
-	virtual bool shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version) override;
+	virtual bool shadow_atlas_update_light(RID p_atlas, RID p_light_instance, float p_coverage, uint64_t p_light_version) override;
 	_FORCE_INLINE_ bool shadow_atlas_owns_light_instance(RID p_atlas, RID p_light_intance) {
 		ShadowAtlas *atlas = shadow_atlas_owner.get_or_null(p_atlas);
 		ERR_FAIL_COND_V(!atlas, false);

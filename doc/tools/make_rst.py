@@ -438,7 +438,7 @@ def main():  # type: () -> None
 
     for path in args.path:
         # Cut off trailing slashes so os.path.basename doesn't choke.
-        if path.endswith(os.sep):
+        if path.endswith("/") or path.endswith("\\"):
             path = path[:-1]
 
         if os.path.basename(path) == "modules":

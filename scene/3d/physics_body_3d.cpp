@@ -1233,7 +1233,7 @@ bool CharacterBody3D::move_and_slide() {
 	if (motion_mode == MOTION_MODE_GROUNDED) {
 		_move_and_slide_grounded(delta, was_on_floor);
 	} else {
-		_move_and_slide_free(delta);
+		_move_and_slide_floating(delta);
 	}
 
 	// Compute real velocity.
@@ -1512,7 +1512,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 	}
 }
 
-void CharacterBody3D::_move_and_slide_free(double p_delta) {
+void CharacterBody3D::_move_and_slide_floating(double p_delta) {
 	Vector3 motion = motion_velocity * p_delta;
 
 	platform_rid = RID();
@@ -1929,7 +1929,7 @@ const Vector3 &CharacterBody3D::get_up_direction() const {
 }
 
 void CharacterBody3D::set_up_direction(const Vector3 &p_up_direction) {
-	ERR_FAIL_COND_MSG(p_up_direction == Vector3(), "up_direction can't be equal to Vector3.ZERO, consider using Free motion mode instead.");
+	ERR_FAIL_COND_MSG(p_up_direction == Vector3(), "up_direction can't be equal to Vector3.ZERO, consider using Floating motion mode instead.");
 	up_direction = p_up_direction.normalized();
 }
 
@@ -2000,12 +2000,11 @@ void CharacterBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_slide_collision", "slide_idx"), &CharacterBody3D::_get_slide_collision);
 	ClassDB::bind_method(D_METHOD("get_last_slide_collision"), &CharacterBody3D::_get_last_slide_collision);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "motion_mode", PROPERTY_HINT_ENUM, "Grounded,Free", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_motion_mode", "get_motion_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "motion_mode", PROPERTY_HINT_ENUM, "Grounded,Floating", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_motion_mode", "get_motion_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "up_direction"), "set_up_direction", "get_up_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "slide_on_ceiling"), "set_slide_on_ceiling_enabled", "is_slide_on_ceiling_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "motion_velocity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_motion_velocity", "get_motion_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_slides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_max_slides", "get_max_slides");
-	ADD_GROUP("Free Mode", "free_mode_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wall_min_slide_angle", PROPERTY_HINT_RANGE, "0,180,0.1,radians", PROPERTY_USAGE_DEFAULT), "set_wall_min_slide_angle", "get_wall_min_slide_angle");
 	ADD_GROUP("Floor", "floor_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "floor_stop_on_slope"), "set_floor_stop_on_slope_enabled", "is_floor_stop_on_slope_enabled");
@@ -2020,7 +2019,7 @@ void CharacterBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision/safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001"), "set_safe_margin", "get_safe_margin");
 
 	BIND_ENUM_CONSTANT(MOTION_MODE_GROUNDED);
-	BIND_ENUM_CONSTANT(MOTION_MODE_FREE);
+	BIND_ENUM_CONSTANT(MOTION_MODE_FLOATING);
 
 	BIND_ENUM_CONSTANT(PLATFORM_VEL_ON_LEAVE_ALWAYS);
 	BIND_ENUM_CONSTANT(PLATFORM_VEL_ON_LEAVE_UPWARD_ONLY);
@@ -2028,7 +2027,7 @@ void CharacterBody3D::_bind_methods() {
 }
 
 void CharacterBody3D::_validate_property(PropertyInfo &property) const {
-	if (motion_mode == MOTION_MODE_FREE) {
+	if (motion_mode == MOTION_MODE_FLOATING) {
 		if (property.name.begins_with("floor_") || property.name == "up_direction" || property.name == "slide_on_ceiling") {
 			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		}

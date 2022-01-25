@@ -6843,6 +6843,7 @@ Error GLTFDocument::write_to_filesystem(Ref<GLTFState> state, const String &p_pa
 }
 
 Node *GLTFDocument::generate_scene(Ref<GLTFState> state, int32_t p_bake_fps) {
+	ERR_FAIL_NULL_V(state, nullptr);
 	ERR_FAIL_INDEX_V(0, state->root_nodes.size(), nullptr);
 	GLTFNodeIndex gltf_root = state->root_nodes.write[0];
 	Node *gltf_root_node = state->get_scene_node(gltf_root);

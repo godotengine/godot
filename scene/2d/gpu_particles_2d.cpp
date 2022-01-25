@@ -335,6 +335,42 @@ Ref<Texture2D> GPUParticles2D::get_texture() const {
 void GPUParticles2D::_validate_property(PropertyInfo &property) const {
 }
 
+void GPUParticles2D::emit_particle(const Transform2D &p_transform2d, const Vector2 &p_velocity2d, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
+	Transform3D transform;
+	transform.basis.set_axis(0, Vector3(p_transform2d.get_axis(0).x, p_transform2d.get_axis(0).y, 0));
+	transform.basis.set_axis(1, Vector3(p_transform2d.get_axis(1).x, p_transform2d.get_axis(1).y, 0));
+	transform.set_origin(Vector3(p_transform2d.get_origin().x, p_transform2d.get_origin().y, 0));
+	Vector3 velocity = Vector3(p_velocity2d.x, p_velocity2d.y, 0);
+
+	RS::get_singleton()->particles_emit(particles, transform, velocity, p_color, p_custom, p_emit_flags);
+}
+
+void GPUParticles2D::_attach_sub_emitter() {
+	Node *n = get_node_or_null(sub_emitter);
+	if (n) {
+		GPUParticles2D *sen = Object::cast_to<GPUParticles2D>(n);
+		if (sen && sen != this) {
+			RS::get_singleton()->particles_set_subemitter(particles, sen->particles);
+		}
+	}
+}
+
+void GPUParticles2D::set_sub_emitter(const NodePath &p_path) {
+	if (is_inside_tree()) {
+		RS::get_singleton()->particles_set_subemitter(particles, RID());
+	}
+
+	sub_emitter = p_path;
+
+	if (is_inside_tree() && sub_emitter != NodePath()) {
+		_attach_sub_emitter();
+	}
+}
+
+NodePath GPUParticles2D::get_sub_emitter() const {
+	return sub_emitter;
+}
+
 void GPUParticles2D::restart() {
 	RS::get_singleton()->particles_restart(particles);
 	RS::get_singleton()->particles_set_emitting(particles, true);
@@ -462,6 +498,16 @@ void GPUParticles2D::_notification(int p_what) {
 #endif
 	}
 
+	if (p_what == NOTIFICATION_ENTER_TREE) {
+		if (sub_emitter != NodePath()) {
+			_attach_sub_emitter();
+		}
+	}
+
+	if (p_what == NOTIFICATION_EXIT_TREE) {
+		RS::get_singleton()->particles_set_subemitter(particles, RID());
+	}
+
 	if (p_what == NOTIFICATION_PAUSED || p_what == NOTIFICATION_UNPAUSED) {
 		if (can_process()) {
 			RS::get_singleton()->particles_set_speed_scale(particles, speed_scale);
@@ -523,6 +569,11 @@ void GPUParticles2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("restart"), &GPUParticles2D::restart);
 
+	ClassDB::bind_method(D_METHOD("set_sub_emitter", "path"), &GPUParticles2D::set_sub_emitter);
+	ClassDB::bind_method(D_METHOD("get_sub_emitter"), &GPUParticles2D::get_sub_emitter);
+
+	ClassDB::bind_method(D_METHOD("emit_particle", "xform", "velocity", "color", "custom", "flags"), &GPUParticles2D::emit_particle);
+
 	ClassDB::bind_method(D_METHOD("set_trail_enabled", "enabled"), &GPUParticles2D::set_trail_enabled);
 	ClassDB::bind_method(D_METHOD("set_trail_length", "secs"), &GPUParticles2D::set_trail_length);
 
@@ -538,6 +589,7 @@ void GPUParticles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
 	ADD_PROPERTY_DEFAULT("emitting", true); // Workaround for doctool in headless mode, as dummy rasterizer always returns false.
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1000000,1,exp"), "set_amount", "get_amount");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "sub_emitter", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "GPUParticles2D"), "set_sub_emitter", "get_sub_emitter");
 	ADD_GROUP("Time", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime", PROPERTY_HINT_RANGE, "0.01,600.0,0.01,or_greater"), "set_lifetime", "get_lifetime");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_shot"), "set_one_shot", "get_one_shot");
@@ -566,6 +618,12 @@ void GPUParticles2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(DRAW_ORDER_INDEX);
 	BIND_ENUM_CONSTANT(DRAW_ORDER_LIFETIME);
 	BIND_ENUM_CONSTANT(DRAW_ORDER_REVERSE_LIFETIME);
+
+	BIND_ENUM_CONSTANT(EMIT_FLAG_POSITION);
+	BIND_ENUM_CONSTANT(EMIT_FLAG_ROTATION_SCALE);
+	BIND_ENUM_CONSTANT(EMIT_FLAG_VELOCITY);
+	BIND_ENUM_CONSTANT(EMIT_FLAG_COLOR);
+	BIND_ENUM_CONSTANT(EMIT_FLAG_CUSTOM);
 }
 
 GPUParticles2D::GPUParticles2D() {

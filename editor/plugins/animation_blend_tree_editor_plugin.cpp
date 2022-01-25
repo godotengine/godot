@@ -40,6 +40,7 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/progress_bar.h"
+#include "scene/gui/view_panner.h"
 #include "scene/main/window.h"
 
 void AnimationNodeBlendTreeEditor::add_custom_type(const String &p_name, const Ref<Script> &p_script) {
@@ -733,7 +734,8 @@ void AnimationNodeBlendTreeEditor::_removed_from_graph() {
 
 void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		graph->set_panning_scheme((GraphEdit::PanningScheme)EDITOR_GET("interface/editors/sub_editor_panning_scheme").operator int());
+		graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
+		graph->set_warped_panning(bool(EditorSettings::get_singleton()->get("editors/panning/warped_mouse_panning")));
 	}
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
@@ -896,6 +898,9 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 }
 
 void AnimationNodeBlendTreeEditor::_node_renamed_focus_out(Node *le, Ref<AnimationNode> p_node) {
+	if (le == nullptr) {
+		return; // The text_submitted signal triggered the graph update and freed the LineEdit.
+	}
 	_node_renamed(le->call("get_text"), p_node);
 }
 

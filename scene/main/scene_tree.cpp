@@ -1328,6 +1328,8 @@ SceneTree::SceneTree() {
 	root = memnew(Window);
 	root->set_process_mode(Node::PROCESS_MODE_PAUSABLE);
 	root->set_name("root");
+	root->set_title(ProjectSettings::get_singleton()->get("application/config/name"));
+
 #ifndef _3D_DISABLED
 	if (!root->get_world_3d().is_valid()) {
 		root->set_world_3d(Ref<World3D>(memnew(World3D)));

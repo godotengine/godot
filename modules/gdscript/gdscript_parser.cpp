@@ -2105,7 +2105,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_precedence(Precedence p_pr
 	ExpressionNode *previous_operand = (this->*prefix_rule)(nullptr, p_can_assign);
 
 	while (p_precedence <= get_rule(current.type)->precedence) {
-		if (p_stop_on_assign && current.type == GDScriptTokenizer::Token::EQUAL) {
+		if (previous_operand == nullptr || (p_stop_on_assign && current.type == GDScriptTokenizer::Token::EQUAL)) {
 			return previous_operand;
 		}
 		// Also switch multiline mode on here for infix operators.
@@ -2413,6 +2413,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_ternary_operator(Expressio
 GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	if (!p_can_assign) {
 		push_error("Assignment is not allowed inside an expression.");
+		return parse_expression(false); // Return the following expression.
+	}
+	if (p_previous_operand == nullptr) {
 		return parse_expression(false); // Return the following expression.
 	}
 
