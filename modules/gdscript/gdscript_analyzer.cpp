@@ -1586,7 +1586,7 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 				if (p_match_pattern->dictionary[i].key) {
 					reduce_expression(p_match_pattern->dictionary[i].key);
 					if (!p_match_pattern->dictionary[i].key->is_constant) {
-						push_error(R"(Expression in dictionary pattern key must be a constant.)", p_match_pattern->expression);
+						push_error(R"(Expression in dictionary pattern key must be a constant.)", p_match_pattern->dictionary[i].key);
 					}
 				}
 
