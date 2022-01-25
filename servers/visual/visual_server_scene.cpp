@@ -1569,11 +1569,6 @@ void VisualServerScene::instance_geometry_set_material_overlay(RID p_instance, R
 	}
 }
 
-void VisualServerScene::instance_geometry_set_draw_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin) {
-}
-void VisualServerScene::instance_geometry_set_as_instance_lod(RID p_instance, RID p_as_lod_of_instance) {
-}
-
 void VisualServerScene::_update_instance(Instance *p_instance) {
 	p_instance->version++;
 
