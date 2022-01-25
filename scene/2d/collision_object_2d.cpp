@@ -118,6 +118,15 @@ void CollisionObject2D::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_WORLD_2D_CHANGED: {
+			RID space = get_world_2d()->get_space();
+			if (area) {
+				PhysicsServer2D::get_singleton()->area_set_space(rid, space);
+			} else {
+				PhysicsServer2D::get_singleton()->body_set_space(rid, space);
+			}
+		} break;
+
 		case NOTIFICATION_DISABLED: {
 			_apply_disabled();
 		} break;

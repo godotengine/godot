@@ -1047,7 +1047,11 @@ void Viewport::set_world_2d(const Ref<World2D> &p_world_2d) {
 	}
 
 	if (p_world_2d.is_valid()) {
+		bool do_propagate = world_2d.is_valid() && is_inside_tree();
 		world_2d = p_world_2d;
+		if (do_propagate) {
+			_propagate_world_2d_changed(this);
+		}
 	} else {
 		WARN_PRINT("Invalid world_2d");
 		world_2d = Ref<World2D>(memnew(World2D));
@@ -3806,6 +3810,25 @@ float Viewport::get_texture_mipmap_bias() const {
 }
 
 #endif // _3D_DISABLED
+
+void Viewport::_propagate_world_2d_changed(Node *p_node) {
+	if (p_node != this) {
+		if (Object::cast_to<CanvasItem>(p_node)) {
+			p_node->notification(CanvasItem::NOTIFICATION_WORLD_2D_CHANGED);
+		} else {
+			Viewport *v = Object::cast_to<Viewport>(p_node);
+			if (v) {
+				if (v->world_2d.is_valid()) {
+					return;
+				}
+			}
+		}
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); ++i) {
+		_propagate_world_2d_changed(p_node->get_child(i));
+	}
+}
 
 void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_world_2d", "world_2d"), &Viewport::set_world_2d);

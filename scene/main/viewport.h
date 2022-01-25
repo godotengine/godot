@@ -729,6 +729,8 @@ public:
 	bool is_using_xr();
 #endif // _3D_DISABLED
 
+	void _propagate_world_2d_changed(Node *p_node);
+
 	void _validate_property(PropertyInfo &p_property) const;
 	Viewport();
 	~Viewport();

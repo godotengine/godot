@@ -653,6 +653,9 @@
 		<constant name="NOTIFICATION_EXIT_CANVAS" value="33">
 			The [CanvasItem] has exited the canvas.
 		</constant>
+		<constant name="NOTIFICATION_WORLD_2D_CHANGED" value="36">
+			The [CanvasItem]'s active [World2D] changed.
+		</constant>
 		<constant name="TEXTURE_FILTER_PARENT_NODE" value="0" enum="TextureFilter">
 			The [CanvasItem] will inherit the filter from its parent.
 		</constant>
