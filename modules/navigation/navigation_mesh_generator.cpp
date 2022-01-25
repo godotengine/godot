@@ -657,6 +657,8 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 	if (ep)
 		memdelete(ep);
 #endif
+
+	p_nav_mesh->property_list_changed_notify();
 }
 
 void NavigationMeshGenerator::clear(Ref<NavigationMesh> p_nav_mesh) {
