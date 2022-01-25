@@ -590,6 +590,7 @@ void RendererSceneSkyRD::Sky::free(RendererStorageRD *p_storage) {
 
 	if (material.is_valid()) {
 		p_storage->free(material);
+		material = RID();
 	}
 }
 
