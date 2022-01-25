@@ -51,6 +51,7 @@ struct RenderDataRD {
 	Transform3D cam_transform = Transform3D();
 	CameraMatrix cam_projection = CameraMatrix();
 	bool cam_ortogonal = false;
+	bool cam_vaspect = true;
 
 	// For stereo rendering
 	uint32_t view_count = 1;

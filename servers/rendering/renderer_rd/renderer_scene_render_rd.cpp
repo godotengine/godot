@@ -2362,6 +2362,8 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 	// @TODO IMPLEMENT MULTIVIEW, all effects need to support stereo buffers or effects are only applied to the left eye
 
+	float resolution_factor = p_render_data->cam_vaspect ? (float(rb->internal_width) / 1920.0) : (float(rb->internal_height) / 1080.0);
+
 	if (can_use_effects && camfx && (camfx->dof_blur_near_enabled || camfx->dof_blur_far_enabled) && camfx->dof_blur_amount > 0.0) {
 		RD::get_singleton()->draw_command_begin_label("DOF");
 		if (rb->blur[0].texture.is_null()) {
@@ -2378,7 +2380,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		buffers.half_texture[0] = rb->blur[1].mipmaps[0].texture;
 		buffers.half_texture[1] = rb->blur[0].mipmaps[1].texture;
 
-		float bokeh_size = camfx->dof_blur_amount * 64.0;
+		float bokeh_size = camfx->dof_blur_amount * 64.0 * resolution_factor;
 		if (can_use_storage) {
 			storage->get_effects()->bokeh_dof(buffers, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, bokeh_size, dof_blur_bokeh_shape, dof_blur_quality, dof_blur_use_jitter, p_render_data->z_near, p_render_data->z_far, p_render_data->cam_ortogonal);
 		} else {
@@ -4970,6 +4972,7 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData 
 		render_data.cam_projection = p_camera_data->main_projection;
 		render_data.view_projection[0] = p_camera_data->main_projection;
 		render_data.cam_ortogonal = p_camera_data->is_ortogonal;
+		render_data.cam_vaspect = p_camera_data->vaspect;
 
 		render_data.view_count = p_camera_data->view_count;
 		for (uint32_t v = 0; v < p_camera_data->view_count; v++) {
