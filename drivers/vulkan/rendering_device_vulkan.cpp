@@ -7753,10 +7753,6 @@ void RenderingDeviceVulkan::draw_list_end(uint32_t p_post_barrier) {
 	//  * Some buffer is copied
 	//  * Another render pass happens (since we may be done)
 
-#ifdef FORCE_FULL_BARRIER
-	_full_barrier(true);
-#else
-
 	VkMemoryBarrier mem_barrier;
 	mem_barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
 	mem_barrier.pNext = nullptr;
@@ -7767,6 +7763,8 @@ void RenderingDeviceVulkan::draw_list_end(uint32_t p_post_barrier) {
 		vkCmdPipelineBarrier(frames[frame].draw_command_buffer, src_stage, barrier_flags, 0, 1, &mem_barrier, 0, nullptr, image_barrier_count, image_barriers);
 	}
 
+#ifdef FORCE_FULL_BARRIER
+	_full_barrier(true);
 #endif
 }
 
@@ -8237,9 +8235,6 @@ void RenderingDeviceVulkan::compute_list_end(uint32_t p_post_barrier) {
 		}
 	}
 
-#ifdef FORCE_FULL_BARRIER
-	_full_barrier(true);
-#else
 	VkMemoryBarrier mem_barrier;
 	mem_barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
 	mem_barrier.pNext = nullptr;
@@ -8250,6 +8245,8 @@ void RenderingDeviceVulkan::compute_list_end(uint32_t p_post_barrier) {
 		vkCmdPipelineBarrier(compute_list->command_buffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, barrier_flags, 0, 1, &mem_barrier, 0, nullptr, image_barrier_count, image_barriers);
 	}
 
+#ifdef FORCE_FULL_BARRIER
+	_full_barrier(true);
 #endif
 
 	memdelete(compute_list);
