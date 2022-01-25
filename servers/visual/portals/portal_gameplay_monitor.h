@@ -52,9 +52,16 @@ public:
 private:
 	void _update_gameplay_room(PortalRenderer &p_portal_renderer, int p_room_id, bool p_source_rooms_changed);
 	bool _source_rooms_changed(const int *p_source_room_ids, int p_num_source_rooms);
-	void _swap();
+	void _swap(bool p_source_rooms_changed);
 
+	// gameplay ticks happen every physics tick
 	uint32_t _gameplay_tick = 1;
+
+	// Room ticks only happen when the rooms the cameras are within change.
+	// This is an optimization. This tick needs to be maintained separately from _gameplay_tick
+	// because testing against the previous tick is used to determine whether to send enter or exit
+	// gameplay notifications, and this must be synchronized differently for rooms, roomgroups and static ghosts.
+	uint32_t _room_tick = 1;
 
 	// we need two version, current and previous
 	LocalVector<uint32_t, int32_t> _active_moving_pool_ids[2];
