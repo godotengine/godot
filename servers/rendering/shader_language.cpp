@@ -7799,7 +7799,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				}
 
 				if (uniform) {
-					if (uniform_scope == ShaderNode::Uniform::SCOPE_GLOBAL) {
+					if (uniform_scope == ShaderNode::Uniform::SCOPE_GLOBAL && Engine::get_singleton()->is_editor_hint()) { // Type checking for global uniforms is not allowed outside the editor.
 						//validate global uniform
 						DataType gvtype = global_var_get_type_func(name);
 						if (gvtype == TYPE_MAX) {
