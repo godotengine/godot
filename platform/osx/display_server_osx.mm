@@ -439,12 +439,6 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 	return self;
 }
 
-- (void)dealloc {
-	[trackingArea release];
-	[markedText release];
-	[super dealloc];
-}
-
 static const NSRange kEmptyRange = { NSNotFound, 0 };
 
 - (BOOL)hasMarkedText {
@@ -461,9 +455,9 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 
 - (void)setMarkedText:(id)aString selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange {
 	if ([aString isKindOfClass:[NSAttributedString class]]) {
-		[markedText initWithAttributedString:aString];
+		markedText = [markedText initWithAttributedString:aString];
 	} else {
-		[markedText initWithString:aString];
+		markedText = [markedText initWithString:aString];
 	}
 	if (markedText.length == 0) {
 		[self unmarkText];
@@ -479,12 +473,6 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 		DS_OSX->im_selection = Point2i(selectedRange.location, selectedRange.length);
 
 		OS_OSX::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
-	}
-}
-
-- (void)doCommandBySelector:(SEL)aSelector {
-	if ([self respondsToSelector:aSelector]) {
-		[self performSelector:aSelector];
 	}
 }
 
@@ -875,7 +863,6 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, M
 - (void)updateTrackingAreas {
 	if (trackingArea != nil) {
 		[self removeTrackingArea:trackingArea];
-		[trackingArea release];
 	}
 
 	NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited | NSTrackingActiveInKeyWindow | NSTrackingCursorUpdate | NSTrackingInVisibleRect;
@@ -1544,7 +1531,7 @@ void DisplayServerOSX::global_menu_add_item(const String &p_menu_root, const Str
 	NSMenu *menu = _get_menu_root(p_menu_root);
 	if (menu) {
 		NSMenuItem *menu_item = [menu addItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:@""];
-		GlobalMenuItem *obj = [[[GlobalMenuItem alloc] init] autorelease];
+		GlobalMenuItem *obj = [[GlobalMenuItem alloc] init];
 		obj->callback = p_callback;
 		obj->meta = p_tag;
 		obj->checkable = false;
@@ -1558,7 +1545,7 @@ void DisplayServerOSX::global_menu_add_check_item(const String &p_menu_root, con
 	NSMenu *menu = _get_menu_root(p_menu_root);
 	if (menu) {
 		NSMenuItem *menu_item = [menu addItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:@""];
-		GlobalMenuItem *obj = [[[GlobalMenuItem alloc] init] autorelease];
+		GlobalMenuItem *obj = [[GlobalMenuItem alloc] init];
 		obj->callback = p_callback;
 		obj->meta = p_tag;
 		obj->checkable = true;
@@ -1869,7 +1856,6 @@ Error DisplayServerOSX::dialog_show(String p_title, String p_description, Vector
 		p_callback.call((const Variant **)&buttonp, 1, ret, ce);
 	}
 
-	[window release];
 	return OK;
 }
 
@@ -1904,7 +1890,6 @@ Error DisplayServerOSX::dialog_input_text(String p_title, String p_description, 
 		p_callback.call((const Variant **)&textp, 1, ret, ce);
 	}
 
-	[window release];
 	return OK;
 }
 
@@ -3059,7 +3044,6 @@ void DisplayServerOSX::cursor_set_custom_image(const RES &p_cursor, CursorShape 
 
 		NSCursor *cursor = [[NSCursor alloc] initWithImage:nsimage hotSpot:NSMakePoint(p_hotspot.x, p_hotspot.y)];
 
-		[cursors[p_shape] release];
 		cursors[p_shape] = cursor;
 
 		Vector<Variant> params;
@@ -3072,13 +3056,9 @@ void DisplayServerOSX::cursor_set_custom_image(const RES &p_cursor, CursorShape 
 				[cursor set];
 			}
 		}
-
-		[imgrep release];
-		[nsimage release];
 	} else {
 		// Reset to default system cursor
 		if (cursors[p_shape] != nullptr) {
-			[cursors[p_shape] release];
 			cursors[p_shape] = nullptr;
 		}
 
@@ -3105,46 +3085,42 @@ static void keyboard_layout_changed(CFNotificationCenterRef center, void *observ
 }
 
 void _update_keyboard_layouts() {
-	@autoreleasepool {
-		TISInputSourceRef cur_source = TISCopyCurrentKeyboardInputSource();
-		NSString *cur_name = (NSString *)TISGetInputSourceProperty(cur_source, kTISPropertyLocalizedName);
-		CFRelease(cur_source);
+	TISInputSourceRef cur_source = TISCopyCurrentKeyboardInputSource();
+	NSString *cur_name = (__bridge NSString *)TISGetInputSourceProperty(cur_source, kTISPropertyLocalizedName);
+	CFRelease(cur_source);
 
-		// Enum IME layouts
-		NSDictionary *filter_ime = @{ (NSString *)kTISPropertyInputSourceType : (NSString *)kTISTypeKeyboardInputMode };
-		NSArray *list_ime = (NSArray *)TISCreateInputSourceList((CFDictionaryRef)filter_ime, false);
-		for (NSUInteger i = 0; i < [list_ime count]; i++) {
-			LayoutInfo ly;
-			NSString *name = (NSString *)TISGetInputSourceProperty((TISInputSourceRef)[list_ime objectAtIndex:i], kTISPropertyLocalizedName);
-			ly.name.parse_utf8([name UTF8String]);
+	// Enum IME layouts
+	NSDictionary *filter_ime = @{ (NSString *)kTISPropertyInputSourceType : (NSString *)kTISTypeKeyboardInputMode };
+	NSArray *list_ime = (__bridge NSArray *)TISCreateInputSourceList((__bridge CFDictionaryRef)filter_ime, false);
+	for (NSUInteger i = 0; i < [list_ime count]; i++) {
+		LayoutInfo ly;
+		NSString *name = (__bridge NSString *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_ime objectAtIndex:i], kTISPropertyLocalizedName);
+		ly.name.parse_utf8([name UTF8String]);
 
-			NSArray *langs = (NSArray *)TISGetInputSourceProperty((TISInputSourceRef)[list_ime objectAtIndex:i], kTISPropertyInputSourceLanguages);
-			ly.code.parse_utf8([(NSString *)[langs objectAtIndex:0] UTF8String]);
-			kbd_layouts.push_back(ly);
+		NSArray *langs = (__bridge NSArray *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_ime objectAtIndex:i], kTISPropertyInputSourceLanguages);
+		ly.code.parse_utf8([(NSString *)[langs objectAtIndex:0] UTF8String]);
+		kbd_layouts.push_back(ly);
 
-			if ([name isEqualToString:cur_name]) {
-				current_layout = kbd_layouts.size() - 1;
-			}
+		if ([name isEqualToString:cur_name]) {
+			current_layout = kbd_layouts.size() - 1;
 		}
-		[list_ime release];
+	}
 
-		// Enum plain keyboard layouts
-		NSDictionary *filter_kbd = @{ (NSString *)kTISPropertyInputSourceType : (NSString *)kTISTypeKeyboardLayout };
-		NSArray *list_kbd = (NSArray *)TISCreateInputSourceList((CFDictionaryRef)filter_kbd, false);
-		for (NSUInteger i = 0; i < [list_kbd count]; i++) {
-			LayoutInfo ly;
-			NSString *name = (NSString *)TISGetInputSourceProperty((TISInputSourceRef)[list_kbd objectAtIndex:i], kTISPropertyLocalizedName);
-			ly.name.parse_utf8([name UTF8String]);
+	// Enum plain keyboard layouts
+	NSDictionary *filter_kbd = @{ (NSString *)kTISPropertyInputSourceType : (NSString *)kTISTypeKeyboardLayout };
+	NSArray *list_kbd = (__bridge NSArray *)TISCreateInputSourceList((__bridge CFDictionaryRef)filter_kbd, false);
+	for (NSUInteger i = 0; i < [list_kbd count]; i++) {
+		LayoutInfo ly;
+		NSString *name = (__bridge NSString *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_kbd objectAtIndex:i], kTISPropertyLocalizedName);
+		ly.name.parse_utf8([name UTF8String]);
 
-			NSArray *langs = (NSArray *)TISGetInputSourceProperty((TISInputSourceRef)[list_kbd objectAtIndex:i], kTISPropertyInputSourceLanguages);
-			ly.code.parse_utf8([(NSString *)[langs objectAtIndex:0] UTF8String]);
-			kbd_layouts.push_back(ly);
+		NSArray *langs = (__bridge NSArray *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_kbd objectAtIndex:i], kTISPropertyInputSourceLanguages);
+		ly.code.parse_utf8([(NSString *)[langs objectAtIndex:0] UTF8String]);
+		kbd_layouts.push_back(ly);
 
-			if ([name isEqualToString:cur_name]) {
-				current_layout = kbd_layouts.size() - 1;
-			}
+		if ([name isEqualToString:cur_name]) {
+			current_layout = kbd_layouts.size() - 1;
 		}
-		[list_kbd release];
 	}
 
 	keyboard_layout_dirty = false;
@@ -3167,26 +3143,24 @@ void DisplayServerOSX::keyboard_set_current_layout(int p_index) {
 	NSString *cur_name = [NSString stringWithUTF8String:kbd_layouts[p_index].name.utf8().get_data()];
 
 	NSDictionary *filter_kbd = @{ (NSString *)kTISPropertyInputSourceType : (NSString *)kTISTypeKeyboardLayout };
-	NSArray *list_kbd = (NSArray *)TISCreateInputSourceList((CFDictionaryRef)filter_kbd, false);
+	NSArray *list_kbd = (__bridge NSArray *)TISCreateInputSourceList((__bridge CFDictionaryRef)filter_kbd, false);
 	for (NSUInteger i = 0; i < [list_kbd count]; i++) {
-		NSString *name = (NSString *)TISGetInputSourceProperty((TISInputSourceRef)[list_kbd objectAtIndex:i], kTISPropertyLocalizedName);
+		NSString *name = (__bridge NSString *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_kbd objectAtIndex:i], kTISPropertyLocalizedName);
 		if ([name isEqualToString:cur_name]) {
-			TISSelectInputSource((TISInputSourceRef)[list_kbd objectAtIndex:i]);
+			TISSelectInputSource((__bridge TISInputSourceRef)[list_kbd objectAtIndex:i]);
 			break;
 		}
 	}
-	[list_kbd release];
 
 	NSDictionary *filter_ime = @{ (NSString *)kTISPropertyInputSourceType : (NSString *)kTISTypeKeyboardInputMode };
-	NSArray *list_ime = (NSArray *)TISCreateInputSourceList((CFDictionaryRef)filter_ime, false);
+	NSArray *list_ime = (__bridge NSArray *)TISCreateInputSourceList((__bridge CFDictionaryRef)filter_ime, false);
 	for (NSUInteger i = 0; i < [list_ime count]; i++) {
-		NSString *name = (NSString *)TISGetInputSourceProperty((TISInputSourceRef)[list_ime objectAtIndex:i], kTISPropertyLocalizedName);
+		NSString *name = (__bridge NSString *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_ime objectAtIndex:i], kTISPropertyLocalizedName);
 		if ([name isEqualToString:cur_name]) {
-			TISSelectInputSource((TISInputSourceRef)[list_ime objectAtIndex:i]);
+			TISSelectInputSource((__bridge TISInputSourceRef)[list_ime objectAtIndex:i]);
 			break;
 		}
 	}
-	[list_ime release];
 }
 
 int DisplayServerOSX::keyboard_get_current_layout() const {
@@ -3383,9 +3357,6 @@ void DisplayServerOSX::process_events() {
 			}
 		}
 	}
-
-	[autoreleasePool drain];
-	autoreleasePool = [[NSAutoreleasePool alloc] init];
 }
 
 void DisplayServerOSX::force_process_and_drop_events() {
@@ -3408,10 +3379,10 @@ void DisplayServerOSX::set_native_icon(const String &p_filename) {
 	f->get_buffer((uint8_t *)&data.write[0], len);
 	memdelete(f);
 
-	NSData *icon_data = [[[NSData alloc] initWithBytes:&data.write[0] length:len] autorelease];
+	NSData *icon_data = [[NSData alloc] initWithBytes:&data.write[0] length:len];
 	ERR_FAIL_COND_MSG(!icon_data, "Error reading icon data.");
 
-	NSImage *icon = [[[NSImage alloc] initWithData:icon_data] autorelease];
+	NSImage *icon = [[NSImage alloc] initWithData:icon_data];
 	ERR_FAIL_COND_MSG(!icon, "Error loading icon.");
 
 	[NSApp setApplicationIconImage:icon];
@@ -3454,9 +3425,6 @@ void DisplayServerOSX::set_icon(const Ref<Image> &p_icon) {
 
 	[nsimg addRepresentation:imgrep];
 	[NSApp setApplicationIconImage:nsimg];
-
-	[imgrep release];
-	[nsimg release];
 }
 
 void DisplayServerOSX::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
@@ -3720,8 +3688,6 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 	key_event_pos = 0;
 	mouse_mode = MOUSE_MODE_VISIBLE;
 
-	autoreleasePool = [[NSAutoreleasePool alloc] init];
-
 	eventSource = CGEventSourceCreate(kCGEventSourceStateHIDSystemState);
 	ERR_FAIL_COND(!eventSource);
 
@@ -3756,7 +3722,7 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 	dock_menu = [[NSMenu alloc] initWithTitle:@"_dock"];
 
 	// Setup Apple menu
-	apple_menu = [[[NSMenu alloc] initWithTitle:@""] autorelease];
+	apple_menu = [[NSMenu alloc] initWithTitle:@""];
 	title = [NSString stringWithFormat:NSLocalizedString(@"About %@", nil), nsappname];
 	[apple_menu addItemWithTitle:title action:@selector(showAbout:) keyEquivalent:@""];
 
@@ -3766,7 +3732,6 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 	menu_item = [apple_menu addItemWithTitle:NSLocalizedString(@"Services", nil) action:nil keyEquivalent:@""];
 	[apple_menu setSubmenu:services forItem:menu_item];
 	[NSApp setServicesMenu:services];
-	[services release];
 
 	[apple_menu addItem:[NSMenuItem separatorItem]];
 
@@ -3845,14 +3810,6 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 }
 
 DisplayServerOSX::~DisplayServerOSX() {
-	if (dock_menu) {
-		[dock_menu release];
-	}
-
-	for (Map<String, NSMenu *>::Element *E = submenu.front(); E; E = E->next()) {
-		[E->get() release];
-	}
-
 	//destroy all windows
 	for (Map<WindowID, WindowData>::Element *E = windows.front(); E;) {
 		Map<WindowID, WindowData>::Element *F = E;

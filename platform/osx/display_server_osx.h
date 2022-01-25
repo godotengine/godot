@@ -167,7 +167,6 @@ public:
 
 	String rendering_driver;
 
-	id autoreleasePool;
 	CGEventSourceRef eventSource;
 
 	CursorShape cursor_shape;

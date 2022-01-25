@@ -240,7 +240,7 @@ String OS_OSX::get_unique_id() const {
 
 		NSString *serialNumberAsNSString = nil;
 		if (serialNumberAsCFString) {
-			serialNumberAsNSString = [NSString stringWithString:(NSString *)serialNumberAsCFString];
+			serialNumberAsNSString = [NSString stringWithString:(__bridge NSString *)serialNumberAsCFString];
 			CFRelease(serialNumberAsCFString);
 		}
 
@@ -262,7 +262,6 @@ void OS_OSX::alert(const String &p_alert, const String &p_title) {
 
 	id key_window = [[NSApplication sharedApplication] keyWindow];
 	[window runModal];
-	[window release];
 	if (key_window) {
 		[key_window makeKeyAndOrderFront:nil];
 	}
@@ -532,7 +531,6 @@ Error OS_OSX::create_process(const String &p_path, const List<String> &p_argumen
 												  dispatch_semaphore_signal(lock);
 											  }];
 			dispatch_semaphore_wait(lock, dispatch_time(DISPATCH_TIME_NOW, 20000000000)); // 20 sec timeout, wait for app to launch.
-			dispatch_release(lock);
 
 			if (err == OK) {
 				if (r_child_id) {
@@ -633,7 +631,7 @@ OS_OSX::OS_OSX() {
 	// finishLaunching below, in order to properly emulate the behavior
 	// of NSApplicationMain
 
-	NSMenu *main_menu = [[[NSMenu alloc] initWithTitle:@""] autorelease];
+	NSMenu *main_menu = [[NSMenu alloc] initWithTitle:@""];
 	[NSApp setMainMenu:main_menu];
 	[NSApp finishLaunching];
 
