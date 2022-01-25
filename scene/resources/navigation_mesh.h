@@ -34,9 +34,12 @@
 #include "scene/resources/mesh.h"
 
 class Mesh;
+class NavigationMeshGenerator;
 
 class NavigationMesh : public Resource {
 	GDCLASS(NavigationMesh, Resource);
+
+	friend class NavigationMeshGenerator;
 
 	PoolVector<Vector3> vertices;
 	struct Polygon {
