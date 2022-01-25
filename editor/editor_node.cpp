@@ -2325,7 +2325,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 
 	String run_filename;
 
-	if (p_current || (editor_data.get_edited_scene_root() && !p_custom.is_empty() && p_custom == editor_data.get_edited_scene_root()->get_scene_file_path())) {
+	if (p_current || (editor_data.get_edited_scene_root() && p_custom == editor_data.get_edited_scene_root()->get_scene_file_path())) {
 		Node *scene = editor_data.get_edited_scene_root();
 
 		if (!scene) {
