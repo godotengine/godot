@@ -609,23 +609,6 @@ private:
 protected:
 	static void _bind_methods();
 
-	//bind helpers
-	TreeItem *_create_item(Object *p_parent, int p_idx = -1) {
-		return create_item(Object::cast_to<TreeItem>(p_parent), p_idx);
-	}
-
-	TreeItem *_get_next_selected(Object *p_item) {
-		return get_next_selected(Object::cast_to<TreeItem>(p_item));
-	}
-
-	Rect2 _get_item_rect(Object *p_item, int p_column) const {
-		return get_item_rect(Object::cast_to<TreeItem>(p_item), p_column);
-	}
-
-	void _scroll_to_item(Object *p_item) {
-		scroll_to_item(Object::cast_to<TreeItem>(p_item));
-	}
-
 public:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 

@@ -38,8 +38,6 @@
 #include "core/math/math_funcs.h"
 #include "core/string/print_string.h"
 #include "core/variant/variant_parser.h"
-#include "scene/gui/control.h"
-#include "scene/main/node.h"
 
 String Variant::get_type_name(Variant::Type p_type) {
 	switch (p_type) {
@@ -2006,22 +2004,6 @@ Object *Variant::get_validated_object() const {
 	}
 }
 
-Variant::operator Node *() const {
-	if (type == OBJECT) {
-		return Object::cast_to<Node>(_get_obj().obj);
-	} else {
-		return nullptr;
-	}
-}
-
-Variant::operator Control *() const {
-	if (type == OBJECT) {
-		return Object::cast_to<Control>(_get_obj().obj);
-	} else {
-		return nullptr;
-	}
-}
-
 Variant::operator Dictionary() const {
 	if (type == DICTIONARY) {
 		return *reinterpret_cast<const Dictionary *>(_data._mem);
@@ -3416,7 +3398,7 @@ String Variant::get_call_error_text(Object *p_base, const StringName &p_method, 
 	}
 
 	String class_name = p_base->get_class();
-	Ref<Script> script = p_base->get_script();
+	Ref<Resource> script = p_base->get_script();
 	if (script.is_valid() && script->get_path().is_resource_file()) {
 		class_name += "(" + script->get_path().get_file() + ")";
 	}

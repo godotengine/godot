@@ -2695,7 +2695,7 @@ void EditorPropertyNodePath::_node_selected(const NodePath &p_path) {
 	}
 
 	if (!base_node && get_edited_object()->has_method("get_root_path")) {
-		base_node = get_edited_object()->call("get_root_path");
+		base_node = Object::cast_to<Node>(get_edited_object()->call("get_root_path"));
 	}
 
 	if (!base_node && Object::cast_to<RefCounted>(get_edited_object())) {

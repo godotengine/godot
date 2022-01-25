@@ -6623,7 +6623,7 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 		// For snapping to be performed, there must be solid geometry under at least one of the selected nodes.
 		// We need to check this before snapping to register the undo/redo action only if needed.
 		for (int i = 0; i < keys.size(); i++) {
-			Node *node = keys[i];
+			Node *node = Object::cast_to<Node>(keys[i]);
 			Node3D *sp = Object::cast_to<Node3D>(node);
 			Dictionary d = snap_data[node];
 			Vector3 from = d["from"];
@@ -6645,7 +6645,7 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 
 			// Perform snapping if at least one node can be snapped
 			for (int i = 0; i < keys.size(); i++) {
-				Node *node = keys[i];
+				Node *node = Object::cast_to<Node>(keys[i]);
 				Node3D *sp = Object::cast_to<Node3D>(node);
 				Dictionary d = snap_data[node];
 				Vector3 from = d["from"];

@@ -50,7 +50,7 @@
 		</method>
 		<method name="create_item">
 			<return type="TreeItem" />
-			<argument index="0" name="parent" type="Object" default="null" />
+			<argument index="0" name="parent" type="TreeItem" default="null" />
 			<argument index="1" name="idx" type="int" default="-1" />
 			<description>
 				Creates an item in the tree and adds it as a child of [code]parent[/code].
@@ -170,7 +170,7 @@
 		</method>
 		<method name="get_item_area_rect" qualifiers="const">
 			<return type="Rect2" />
-			<argument index="0" name="item" type="Object" />
+			<argument index="0" name="item" type="TreeItem" />
 			<argument index="1" name="column" type="int" default="-1" />
 			<description>
 				Returns the rectangle area for the specified item. If [code]column[/code] is specified, only get the position and size of that column, otherwise get the rectangle containing all columns.
@@ -185,7 +185,7 @@
 		</method>
 		<method name="get_next_selected">
 			<return type="TreeItem" />
-			<argument index="0" name="from" type="Object" />
+			<argument index="0" name="from" type="TreeItem" />
 			<description>
 				Returns the next selected item after the given one, or [code]null[/code] if the end is reached.
 				If [code]from[/code] is [code]null[/code], this returns the first selected item.
@@ -239,7 +239,7 @@
 		</method>
 		<method name="scroll_to_item">
 			<return type="void" />
-			<argument index="0" name="item" type="Object" />
+			<argument index="0" name="item" type="TreeItem" />
 			<description>
 				Causes the [Tree] to jump to the specified item.
 			</description>
