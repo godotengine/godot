@@ -41,7 +41,11 @@
 #include "thirdparty/misc/smolv.h"
 #include "thirdparty/spirv-reflect/spirv_reflect.h"
 
-//#define FORCE_FULL_BARRIER
+#ifdef DEV_ENABLED
+//#define DEV_FORCE_FULL_BARRIER
+#endif
+
+#define TRANSFER_SIZE_THRESHOLD (8 * 1024)
 
 static const uint32_t SMALL_ALLOCATION_MAX_SIZE = 4096;
 
@@ -1363,6 +1367,20 @@ Error RenderingDeviceVulkan::_buffer_free(Buffer *p_buffer) {
 	return OK;
 }
 
+VkCommandBuffer RenderingDeviceVulkan::_get_command_buffer_for_transfer(bool p_can_use_transfer) {
+	if (context->has_transfer_queue() && p_can_use_transfer) {
+		if (!transfer_used) {
+			if (local_device.is_null()) {
+				context->set_transfer_command_buffer(frames[frame].transfer_command_buffer);
+			}
+			transfer_used = true;
+		}
+		return frames[frame].transfer_command_buffer;
+	} else {
+		return frames[frame].draw_command_buffer;
+	}
+}
+
 Error RenderingDeviceVulkan::_insert_staging_block() {
 	VkBufferCreateInfo bufferInfo;
 	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -1528,7 +1546,7 @@ Error RenderingDeviceVulkan::_staging_buffer_allocate(uint32_t p_amount, uint32_
 	return OK;
 }
 
-Error RenderingDeviceVulkan::_buffer_update(Buffer *p_buffer, size_t p_offset, const uint8_t *p_data, size_t p_data_size, bool p_use_draw_command_buffer, uint32_t p_required_align) {
+Error RenderingDeviceVulkan::_buffer_update(Buffer *p_buffer, size_t p_offset, const uint8_t *p_data, size_t p_data_size, bool p_can_use_transfer, uint32_t p_required_align) {
 	//submitting may get chunked for various reasons, so convert this to a task
 	size_t to_submit = p_data_size;
 	size_t submit_from = 0;
@@ -1562,7 +1580,7 @@ Error RenderingDeviceVulkan::_buffer_update(Buffer *p_buffer, size_t p_offset, c
 		region.dstOffset = submit_from + p_offset;
 		region.size = block_write_amount;
 
-		vkCmdCopyBuffer(p_use_draw_command_buffer ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer, staging_buffer_blocks[staging_buffer_current].buffer, p_buffer->buffer, 1, &region);
+		vkCmdCopyBuffer(_get_command_buffer_for_transfer(p_can_use_transfer), staging_buffer_blocks[staging_buffer_current].buffer, p_buffer->buffer, 1, &region);
 
 		staging_buffer_blocks.write[staging_buffer_current].fill_amount = block_write_offset + block_write_amount;
 
@@ -1573,7 +1591,7 @@ Error RenderingDeviceVulkan::_buffer_update(Buffer *p_buffer, size_t p_offset, c
 	return OK;
 }
 
-void RenderingDeviceVulkan::_memory_barrier(VkPipelineStageFlags p_src_stage_mask, VkPipelineStageFlags p_dst_stage_mask, VkAccessFlags p_src_access, VkAccessFlags p_dst_sccess, bool p_sync_with_draw) {
+void RenderingDeviceVulkan::_memory_barrier(VkPipelineStageFlags p_src_stage_mask, VkPipelineStageFlags p_dst_stage_mask, VkAccessFlags p_src_access, VkAccessFlags p_dst_sccess, bool p_can_use_transfer) {
 	VkMemoryBarrier mem_barrier;
 	mem_barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
 	mem_barrier.pNext = nullptr;
@@ -1583,10 +1601,10 @@ void RenderingDeviceVulkan::_memory_barrier(VkPipelineStageFlags p_src_stage_mas
 	if (p_src_stage_mask == 0 || p_dst_stage_mask == 0) {
 		return; //no barrier, since this is invalid
 	}
-	vkCmdPipelineBarrier(p_sync_with_draw ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer, p_src_stage_mask, p_dst_stage_mask, 0, 1, &mem_barrier, 0, nullptr, 0, nullptr);
+	vkCmdPipelineBarrier(_get_command_buffer_for_transfer(p_can_use_transfer), p_src_stage_mask, p_dst_stage_mask, 0, 1, &mem_barrier, 0, nullptr, 0, nullptr);
 }
 
-void RenderingDeviceVulkan::_full_barrier(bool p_sync_with_draw) {
+void RenderingDeviceVulkan::_full_barrier(bool p_can_use_transfer) {
 	//used for debug
 	_memory_barrier(VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
 			VK_ACCESS_INDIRECT_COMMAND_READ_BIT |
@@ -1619,22 +1637,45 @@ void RenderingDeviceVulkan::_full_barrier(bool p_sync_with_draw) {
 					VK_ACCESS_TRANSFER_WRITE_BIT |
 					VK_ACCESS_HOST_READ_BIT |
 					VK_ACCESS_HOST_WRITE_BIT,
-			p_sync_with_draw);
+			p_can_use_transfer);
 }
 
-void RenderingDeviceVulkan::_buffer_memory_barrier(VkBuffer buffer, uint64_t p_from, uint64_t p_size, VkPipelineStageFlags p_src_stage_mask, VkPipelineStageFlags p_dst_stage_mask, VkAccessFlags p_src_access, VkAccessFlags p_dst_sccess, bool p_sync_with_draw) {
+void RenderingDeviceVulkan::_buffer_memory_barrier(Buffer *p_buffer, uint64_t p_from, uint64_t p_size, VkPipelineStageFlags p_src_stage_mask, VkPipelineStageFlags p_dst_stage_mask, VkAccessFlags p_src_access, VkAccessFlags p_dst_access, bool p_can_use_transfer) {
 	VkBufferMemoryBarrier buffer_mem_barrier;
 	buffer_mem_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
 	buffer_mem_barrier.pNext = nullptr;
-	buffer_mem_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	buffer_mem_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	buffer_mem_barrier.srcAccessMask = p_src_access;
-	buffer_mem_barrier.dstAccessMask = p_dst_sccess;
-	buffer_mem_barrier.buffer = buffer;
+	buffer_mem_barrier.buffer = p_buffer->buffer;
 	buffer_mem_barrier.offset = p_from;
 	buffer_mem_barrier.size = p_size;
 
-	vkCmdPipelineBarrier(p_sync_with_draw ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer, p_src_stage_mask, p_dst_stage_mask, 0, 0, nullptr, 1, &buffer_mem_barrier, 0, nullptr);
+	bool must_do_qot = p_can_use_transfer && context->has_transfer_queue();
+#ifdef DEV_ENABLED
+	// Needed for supporting DEV_TRANSFER_ON_MAIN/SECOND_GRAPHICS_QUEUE
+	if (context->get_transfer_queue_family_index() == context->get_graphics_queue_family_index()) {
+		must_do_qot = false;
+	}
+#endif
+	if (!must_do_qot) {
+		buffer_mem_barrier.srcAccessMask = p_src_access;
+		buffer_mem_barrier.dstAccessMask = p_dst_access;
+		buffer_mem_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		buffer_mem_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+		vkCmdPipelineBarrier(_get_command_buffer_for_transfer(p_can_use_transfer), p_src_stage_mask, p_dst_stage_mask, 0, 0, nullptr, 1, &buffer_mem_barrier, 0, nullptr);
+	} else {
+		buffer_mem_barrier.srcQueueFamilyIndex = context->get_transfer_queue_family_index();
+		buffer_mem_barrier.dstQueueFamilyIndex = context->get_graphics_queue_family_index();
+
+		buffer_mem_barrier.srcAccessMask = p_src_access;
+		buffer_mem_barrier.dstAccessMask = 0;
+
+		vkCmdPipelineBarrier(_get_command_buffer_for_transfer(p_can_use_transfer), p_src_stage_mask, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 1, &buffer_mem_barrier, 0, nullptr);
+
+		buffer_mem_barrier.srcAccessMask = 0;
+		buffer_mem_barrier.dstAccessMask = p_dst_access;
+
+		vkCmdPipelineBarrier(frames[frame].draw_command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, p_dst_stage_mask, 0, 0, nullptr, 1, &buffer_mem_barrier, 0, nullptr);
+	}
 }
 
 /*****************/
@@ -1962,13 +2003,16 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 		ERR_FAIL_V_MSG(RID(), "vkCreateImageView failed with error " + itos(err) + ".");
 	}
 
-	//barrier to set layout
-	{
+	RID id = texture_owner.make_rid(texture);
+
+	if (!p_data.size()) {
+		//no data passed in; let's transition to a usable layout right away since no additional setup will happen in this call
+
 		VkImageMemoryBarrier image_memory_barrier;
 		image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 		image_memory_barrier.pNext = nullptr;
 		image_memory_barrier.srcAccessMask = 0;
-		image_memory_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+		image_memory_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
 		image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		image_memory_barrier.newLayout = texture.layout;
 		image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -1980,14 +2024,14 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 		image_memory_barrier.subresourceRange.baseArrayLayer = 0;
 		image_memory_barrier.subresourceRange.layerCount = image_create_info.arrayLayers;
 
-		vkCmdPipelineBarrier(frames[frame].setup_command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
-	}
+		uint32_t dst_stages = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT;
+		vkCmdPipelineBarrier(frames[frame].draw_command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, dst_stages, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+	} else {
+		//we have data; the update function (in creation mode) will do the appropriate layout transitions
 
-	RID id = texture_owner.make_rid(texture);
-
-	if (p_data.size()) {
+		bool can_use_transfer = (p_data[0].size() * image_create_info.arrayLayers) >= TRANSFER_SIZE_THRESHOLD;
 		for (uint32_t i = 0; i < image_create_info.arrayLayers; i++) {
-			_texture_update(id, i, p_data[i], RD::BARRIER_MASK_ALL, true);
+			_texture_update(id, i, p_data[i], RD::BARRIER_MASK_ALL, can_use_transfer, 0, image_create_info.arrayLayers);
 		}
 	}
 	return id;
@@ -2239,7 +2283,7 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 }
 
 Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, uint32_t p_post_barrier) {
-	return _texture_update(p_texture, p_layer, p_data, p_post_barrier, false);
+	return _texture_update(p_texture, p_layer, p_data, p_post_barrier, false, p_layer, 1);
 }
 
 static _ALWAYS_INLINE_ void _copy_region(uint8_t const *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_x, uint32_t p_src_y, uint32_t p_src_w, uint32_t p_src_h, uint32_t p_src_full_w, uint32_t p_unit_size) {
@@ -2258,10 +2302,10 @@ static _ALWAYS_INLINE_ void _copy_region(uint8_t const *__restrict p_src, uint8_
 	}
 }
 
-Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, uint32_t p_post_barrier, bool p_use_setup_queue) {
+Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, uint32_t p_post_barrier, bool p_can_use_transfer, uint32_t p_start_layer, uint32_t p_total_layers) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND_V_MSG((draw_list || compute_list) && !p_use_setup_queue, ERR_INVALID_PARAMETER,
+	ERR_FAIL_COND_V_MSG((draw_list || compute_list) && !p_can_use_transfer, ERR_INVALID_PARAMETER,
 			"Updating textures is forbidden during creation of a draw or compute list");
 
 	Texture *texture = texture_owner.get_or_null(p_texture);
@@ -2303,16 +2347,14 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 
 	const uint8_t *r = p_data.ptr();
 
-	VkCommandBuffer command_buffer = p_use_setup_queue ? frames[frame].setup_command_buffer : frames[frame].draw_command_buffer;
-
-	//barrier to transfer
-	{
+	//barrier to set layout
+	if (p_layer == p_start_layer) {
 		VkImageMemoryBarrier image_memory_barrier;
 		image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 		image_memory_barrier.pNext = nullptr;
 		image_memory_barrier.srcAccessMask = 0;
 		image_memory_barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		image_memory_barrier.oldLayout = texture->layout;
+		image_memory_barrier.oldLayout = p_can_use_transfer ? VK_IMAGE_LAYOUT_UNDEFINED : texture->layout;
 		image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
 		image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -2321,10 +2363,10 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 		image_memory_barrier.subresourceRange.aspectMask = texture->barrier_aspect_mask;
 		image_memory_barrier.subresourceRange.baseMipLevel = 0;
 		image_memory_barrier.subresourceRange.levelCount = texture->mipmaps;
-		image_memory_barrier.subresourceRange.baseArrayLayer = p_layer;
-		image_memory_barrier.subresourceRange.layerCount = 1;
+		image_memory_barrier.subresourceRange.baseArrayLayer = p_start_layer;
+		image_memory_barrier.subresourceRange.layerCount = p_total_layers;
 
-		vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+		vkCmdPipelineBarrier(_get_command_buffer_for_transfer(p_can_use_transfer), VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
 	}
 
 	uint32_t mipmap_offset = 0;
@@ -2416,7 +2458,7 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 					buffer_image_copy.imageExtent.height = region_logic_h;
 					buffer_image_copy.imageExtent.depth = 1;
 
-					vkCmdCopyBufferToImage(command_buffer, staging_buffer_blocks[staging_buffer_current].buffer, texture->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &buffer_image_copy);
+					vkCmdCopyBufferToImage(_get_command_buffer_for_transfer(p_can_use_transfer), staging_buffer_blocks[staging_buffer_current].buffer, texture->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &buffer_image_copy);
 
 					staging_buffer_blocks.write[staging_buffer_current].fill_amount += alloc_size;
 				}
@@ -2428,8 +2470,16 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 		logic_height = MAX(1, logic_height >> 1);
 	}
 
+	bool must_do_qot = p_can_use_transfer && context->has_transfer_queue();
+#ifdef DEV_ENABLED
+	// Needed for supporting DEV_TRANSFER_ON_MAIN/SECOND_GRAPHICS_QUEUE
+	if (context->get_transfer_queue_family_index() == context->get_graphics_queue_family_index()) {
+		must_do_qot = false;
+	}
+#endif
+
 	//barrier to restore layout
-	{
+	if (p_layer == p_start_layer + p_total_layers - 1) {
 		uint32_t barrier_flags = 0;
 		uint32_t access_flags = 0;
 		if (p_post_barrier & BARRIER_MASK_COMPUTE) {
@@ -2452,28 +2502,46 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 		VkImageMemoryBarrier image_memory_barrier;
 		image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 		image_memory_barrier.pNext = nullptr;
-		image_memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		image_memory_barrier.dstAccessMask = access_flags;
 		image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 		image_memory_barrier.newLayout = texture->layout;
-		image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		image_memory_barrier.image = texture->image;
 		image_memory_barrier.subresourceRange.aspectMask = texture->barrier_aspect_mask;
 		image_memory_barrier.subresourceRange.baseMipLevel = 0;
 		image_memory_barrier.subresourceRange.levelCount = texture->mipmaps;
-		image_memory_barrier.subresourceRange.baseArrayLayer = p_layer;
-		image_memory_barrier.subresourceRange.layerCount = 1;
+		image_memory_barrier.subresourceRange.baseArrayLayer = p_start_layer;
+		image_memory_barrier.subresourceRange.layerCount = p_total_layers;
 
-		vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, barrier_flags, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+		if (!must_do_qot) {
+			image_memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			image_memory_barrier.dstAccessMask = access_flags;
+			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+			vkCmdPipelineBarrier(frames[frame].draw_command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, barrier_flags, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+		} else {
+			image_memory_barrier.srcQueueFamilyIndex = context->get_transfer_queue_family_index();
+			image_memory_barrier.dstQueueFamilyIndex = context->get_graphics_queue_family_index();
+
+			image_memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			image_memory_barrier.dstAccessMask = 0;
+
+			vkCmdPipelineBarrier(_get_command_buffer_for_transfer(p_can_use_transfer), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+
+			image_memory_barrier.srcAccessMask = 0;
+			image_memory_barrier.dstAccessMask = access_flags;
+
+			vkCmdPipelineBarrier(frames[frame].draw_command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, barrier_flags, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+		}
 	}
 
-	if (texture->used_in_frame != frames_drawn) {
-		texture->used_in_raster = false;
-		texture->used_in_compute = false;
-		texture->used_in_frame = frames_drawn;
+	if (!must_do_qot) {
+		if (texture->used_in_frame != frames_drawn) {
+			texture->used_in_raster = false;
+			texture->used_in_compute = false;
+			texture->used_in_frame = frames_drawn;
+		}
+		texture->used_in_transfer = true;
 	}
-	texture->used_in_transfer = true;
 
 	return OK;
 }
@@ -2772,7 +2840,7 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 			image_memory_barrier.pNext = nullptr;
 			image_memory_barrier.srcAccessMask = 0;
 			image_memory_barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-			image_memory_barrier.oldLayout = dst_tex->layout;
+			image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 			image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
 			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -2868,7 +2936,7 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			image_memory_barrier.image = dst_tex->image;
-			image_memory_barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			image_memory_barrier.subresourceRange.aspectMask = dst_tex->barrier_aspect_mask;
 			image_memory_barrier.subresourceRange.baseMipLevel = p_src_mipmap;
 			image_memory_barrier.subresourceRange.levelCount = 1;
 			image_memory_barrier.subresourceRange.baseArrayLayer = p_src_layer;
@@ -3098,7 +3166,7 @@ Error RenderingDeviceVulkan::texture_clear(RID p_texture, const Color &p_color, 
 		image_memory_barrier.pNext = nullptr;
 		image_memory_barrier.srcAccessMask = valid_texture_access;
 		image_memory_barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		image_memory_barrier.oldLayout = src_tex->layout;
+		image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED; //not caring about current contents may unlock some optimization?
 		image_memory_barrier.newLayout = clear_layout;
 
 		image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -3996,8 +4064,9 @@ RID RenderingDeviceVulkan::vertex_buffer_create(uint32_t p_size_bytes, const Vec
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
 		const uint8_t *r = p_data.ptr();
-		_buffer_update(&buffer, 0, r, data_size);
-		_buffer_memory_barrier(buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT, false);
+		bool can_use_transfer = data_size >= TRANSFER_SIZE_THRESHOLD;
+		_buffer_update(&buffer, 0, r, data_size, can_use_transfer);
+		_buffer_memory_barrier(&buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT, can_use_transfer);
 	}
 
 	return vertex_buffer_owner.make_rid(buffer);
@@ -4158,8 +4227,9 @@ RID RenderingDeviceVulkan::index_buffer_create(uint32_t p_index_count, IndexBuff
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
 		const uint8_t *r = p_data.ptr();
-		_buffer_update(&index_buffer, 0, r, data_size);
-		_buffer_memory_barrier(index_buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_INDEX_READ_BIT, false);
+		bool can_use_transfer = data_size >= TRANSFER_SIZE_THRESHOLD;
+		_buffer_update(&index_buffer, 0, r, data_size, can_use_transfer);
+		_buffer_memory_barrier(&index_buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_INDEX_READ_BIT, can_use_transfer);
 	}
 	return index_buffer_owner.make_rid(index_buffer);
 }
@@ -5268,8 +5338,9 @@ RID RenderingDeviceVulkan::uniform_buffer_create(uint32_t p_size_bytes, const Ve
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
 		const uint8_t *r = p_data.ptr();
-		_buffer_update(&buffer, 0, r, data_size);
-		_buffer_memory_barrier(buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_UNIFORM_READ_BIT, false);
+		bool can_use_transfer = data_size >= TRANSFER_SIZE_THRESHOLD;
+		_buffer_update(&buffer, 0, r, data_size, can_use_transfer);
+		_buffer_memory_barrier(&buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_UNIFORM_READ_BIT, can_use_transfer);
 	}
 	return uniform_buffer_owner.make_rid(buffer);
 }
@@ -5295,8 +5366,9 @@ RID RenderingDeviceVulkan::storage_buffer_create(uint32_t p_size_bytes, const Ve
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
 		const uint8_t *r = p_data.ptr();
-		_buffer_update(&buffer, 0, r, data_size);
-		_buffer_memory_barrier(buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT, false);
+		bool can_use_transfer = data_size >= TRANSFER_SIZE_THRESHOLD;
+		_buffer_update(&buffer, 0, r, data_size, can_use_transfer);
+		_buffer_memory_barrier(&buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT, can_use_transfer);
 	}
 	return storage_buffer_owner.make_rid(buffer);
 }
@@ -5321,8 +5393,9 @@ RID RenderingDeviceVulkan::texture_buffer_create(uint32_t p_size_elements, DataF
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
 		const uint8_t *r = p_data.ptr();
-		_buffer_update(&texture_buffer.buffer, 0, r, data_size);
-		_buffer_memory_barrier(texture_buffer.buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, false);
+		bool can_use_transfer = data_size >= TRANSFER_SIZE_THRESHOLD;
+		_buffer_update(&texture_buffer.buffer, 0, r, data_size, can_use_transfer);
+		_buffer_memory_barrier(&texture_buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, can_use_transfer);
 	}
 
 	VkBufferViewCreateInfo view_create_info;
@@ -5969,6 +6042,8 @@ Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint
 		// Protect subsequent updates...
 		dst_stage_mask = VK_PIPELINE_STAGE_TRANSFER_BIT;
 		dst_access = VK_ACCESS_TRANSFER_WRITE_BIT;
+	} else {
+		dst_stage_mask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
 	}
 	Buffer *buffer = _get_buffer_from_owner(p_buffer, dst_stage_mask, dst_access, p_post_barrier);
 	if (!buffer) {
@@ -5979,22 +6054,18 @@ Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint
 			"Attempted to write buffer (" + itos((p_offset + p_size) - buffer->size) + " bytes) past the end.");
 
 	// no barrier should be needed here
-	// _buffer_memory_barrier(buffer->buffer, p_offset, p_size, dst_stage_mask, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_access, VK_ACCESS_TRANSFER_WRITE_BIT, true);
+	// _buffer_memory_barrier(buffer, p_offset, p_size, dst_stage_mask, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_access, VK_ACCESS_TRANSFER_WRITE_BIT);
 
-	Error err = _buffer_update(buffer, p_offset, (uint8_t *)p_data, p_size, p_post_barrier != RD::BARRIER_MASK_NO_BARRIER);
+	Error err = _buffer_update(buffer, p_offset, (uint8_t *)p_data, p_size, false);
 	if (err) {
 		return err;
 	}
 
-#ifdef FORCE_FULL_BARRIER
-	_full_barrier(true);
+#ifdef DEV_FORCE_FULL_BARRIER
+	_full_barrier(false);
 #else
-	if (dst_stage_mask == 0) {
-		dst_stage_mask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-	}
-
 	if (p_post_barrier != RD::BARRIER_MASK_NO_BARRIER) {
-		_buffer_memory_barrier(buffer->buffer, p_offset, p_size, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage_mask, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, true);
+		_buffer_memory_barrier(buffer, p_offset, p_size, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage_mask, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, false);
 	}
 
 #endif
@@ -6028,18 +6099,18 @@ Error RenderingDeviceVulkan::buffer_clear(RID p_buffer, uint32_t p_offset, uint3
 			"Attempted to write buffer (" + itos((p_offset + p_size) - buffer->size) + " bytes) past the end.");
 
 	// should not be needed
-	// _buffer_memory_barrier(buffer->buffer, p_offset, p_size, dst_stage_mask, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_access, VK_ACCESS_TRANSFER_WRITE_BIT, p_post_barrier);
+	// _buffer_memory_barrier(buffer, p_offset, p_size, dst_stage_mask, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_access, VK_ACCESS_TRANSFER_WRITE_BIT, p_post_barrier);
 
 	vkCmdFillBuffer(frames[frame].draw_command_buffer, buffer->buffer, p_offset, p_size, 0);
 
 #ifdef FORCE_FULL_BARRIER
-	_full_barrier(true);
+	_full_barrier(false);
 #else
 	if (dst_stage_mask == 0) {
 		dst_stage_mask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
 	}
 
-	_buffer_memory_barrier(buffer->buffer, p_offset, p_size, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage_mask, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, dst_stage_mask);
+	_buffer_memory_barrier(buffer, p_offset, p_size, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage_mask, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, false);
 
 #endif
 	return OK;
@@ -6058,9 +6129,7 @@ Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
 	}
 
 	// Make sure no one is using the buffer -- the "false" gets us to the same command buffer as below.
-	_buffer_memory_barrier(buffer->buffer, 0, buffer->size, src_stage_mask, src_access_mask, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_READ_BIT, false);
-
-	VkCommandBuffer command_buffer = frames[frame].setup_command_buffer;
+	_buffer_memory_barrier(buffer, 0, buffer->size, src_stage_mask, src_access_mask, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_READ_BIT, false);
 
 	Buffer tmp_buffer;
 	_buffer_allocate(&tmp_buffer, buffer->size, VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
@@ -6068,7 +6137,7 @@ Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
 	region.srcOffset = 0;
 	region.dstOffset = 0;
 	region.size = buffer->size;
-	vkCmdCopyBuffer(command_buffer, buffer->buffer, tmp_buffer.buffer, 1, &region); //dst buffer is in CPU, but I wonder if src buffer needs a barrier for this..
+	vkCmdCopyBuffer(frames[frame].draw_command_buffer, buffer->buffer, tmp_buffer.buffer, 1, &region); //dst buffer is in CPU, but I wonder if src buffer needs a barrier for this..
 	//flush everything so memory can be safely mapped
 	_flush(true);
 
@@ -8168,10 +8237,10 @@ void RenderingDeviceVulkan::compute_list_dispatch_indirect(ComputeListID p_list,
 }
 
 void RenderingDeviceVulkan::compute_list_add_barrier(ComputeListID p_list) {
-#ifdef FORCE_FULL_BARRIER
-	_full_barrier(true);
+#ifdef DEV_FORCE_FULL_BARRIER
+	_full_barrier(false);
 #else
-	_memory_barrier(VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, true);
+	_memory_barrier(VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, false);
 #endif
 }
 
@@ -8295,14 +8364,14 @@ void RenderingDeviceVulkan::barrier(uint32_t p_from, uint32_t p_to) {
 		dst_barrier_flags = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
 	}
 
-	_memory_barrier(src_barrier_flags, dst_barrier_flags, src_access_flags, dst_access_flags, true);
+	_memory_barrier(src_barrier_flags, dst_barrier_flags, src_access_flags, dst_access_flags, false);
 }
 
 void RenderingDeviceVulkan::full_barrier() {
 #ifndef DEBUG_ENABLED
 	ERR_PRINT("Full barrier is debug-only, should not be used in production");
 #endif
-	_full_barrier(true);
+	_full_barrier(false);
 }
 
 #if 0
@@ -8518,7 +8587,7 @@ String RenderingDeviceVulkan::get_device_pipeline_cache_uuid() const {
 	return context->get_device_pipeline_cache_uuid();
 }
 
-void RenderingDeviceVulkan::_finalize_command_bufers() {
+void RenderingDeviceVulkan::_finalize_command_bufers(bool p_allow_open_list) {
 	if (draw_list) {
 		ERR_PRINT("Found open draw list at the end of the frame, this should never happen (further drawing will likely not work).");
 	}
@@ -8528,7 +8597,9 @@ void RenderingDeviceVulkan::_finalize_command_bufers() {
 	}
 
 	{ //complete the setup buffer (that needs to be processed before anything else)
-		vkEndCommandBuffer(frames[frame].setup_command_buffer);
+		if (context->has_transfer_queue()) {
+			vkEndCommandBuffer(frames[frame].transfer_command_buffer);
+		}
 		vkEndCommandBuffer(frames[frame].draw_command_buffer);
 	}
 }
@@ -8546,17 +8617,16 @@ void RenderingDeviceVulkan::_begin_frame() {
 		cmdbuf_begin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 		cmdbuf_begin.pInheritanceInfo = nullptr;
 
-		VkResult err = vkResetCommandBuffer(frames[frame].setup_command_buffer, 0);
-		ERR_FAIL_COND_MSG(err, "vkResetCommandBuffer failed with error " + itos(err) + ".");
+		if (context->has_transfer_queue()) {
+			VkResult err = vkBeginCommandBuffer(frames[frame].transfer_command_buffer, &cmdbuf_begin);
+			ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
+		}
 
-		err = vkBeginCommandBuffer(frames[frame].setup_command_buffer, &cmdbuf_begin);
-		ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
-		err = vkBeginCommandBuffer(frames[frame].draw_command_buffer, &cmdbuf_begin);
+		VkResult err = vkBeginCommandBuffer(frames[frame].draw_command_buffer, &cmdbuf_begin);
 		ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
 
 		if (local_device.is_null()) {
 			context->append_command_buffer(frames[frame].draw_command_buffer);
-			context->set_setup_buffer(frames[frame].setup_command_buffer); //append now so it's added before everything else
 		}
 	}
 
@@ -8570,7 +8640,7 @@ void RenderingDeviceVulkan::_begin_frame() {
 
 	if (frames[frame].timestamp_count) {
 		vkGetQueryPoolResults(device, frames[frame].timestamp_pool, 0, frames[frame].timestamp_count, sizeof(uint64_t) * max_timestamp_query_elements, frames[frame].timestamp_result_values, sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
-		vkCmdResetQueryPool(frames[frame].setup_command_buffer, frames[frame].timestamp_pool, 0, frames[frame].timestamp_count);
+		vkCmdResetQueryPool(frames[frame].draw_command_buffer, frames[frame].timestamp_pool, 0, frames[frame].timestamp_count);
 		SWAP(frames[frame].timestamp_names, frames[frame].timestamp_result_names);
 		SWAP(frames[frame].timestamp_cpu_values, frames[frame].timestamp_cpu_result_values);
 	}
@@ -8601,8 +8671,11 @@ void RenderingDeviceVulkan::submit() {
 
 	_finalize_command_bufers();
 
-	VkCommandBuffer command_buffers[2] = { frames[frame].setup_command_buffer, frames[frame].draw_command_buffer };
-	context->local_device_push_command_buffers(local_device, command_buffers, 2);
+	VkCommandBuffer command_buffers[1] = { frames[frame].draw_command_buffer };
+	context->local_device_push_command_buffers(local_device, transfer_used ? frames[frame].transfer_command_buffer : VK_NULL_HANDLE, command_buffers, 1);
+
+	transfer_used = false;
+
 	local_device_processing = true;
 }
 
@@ -8612,6 +8685,7 @@ void RenderingDeviceVulkan::sync() {
 
 	context->local_device_sync(local_device);
 	_begin_frame();
+
 	local_device_processing = false;
 }
 
@@ -8747,13 +8821,12 @@ void RenderingDeviceVulkan::_flush(bool p_current_frame) {
 	}
 	//not doing this crashes RADV (undefined behavior)
 	if (p_current_frame) {
-		vkEndCommandBuffer(frames[frame].setup_command_buffer);
-		vkEndCommandBuffer(frames[frame].draw_command_buffer);
+		_finalize_command_bufers(true);
 	}
 
 	if (local_device.is_valid()) {
-		VkCommandBuffer command_buffers[2] = { frames[frame].setup_command_buffer, frames[frame].draw_command_buffer };
-		context->local_device_push_command_buffers(local_device, command_buffers, 2);
+		VkCommandBuffer command_buffers[1] = { frames[frame].draw_command_buffer };
+		context->local_device_push_command_buffers(local_device, transfer_used ? frames[frame].transfer_command_buffer : VK_NULL_HANDLE, command_buffers, 1);
 		context->local_device_sync(local_device);
 
 		VkCommandBufferBeginInfo cmdbuf_begin;
@@ -8762,14 +8835,16 @@ void RenderingDeviceVulkan::_flush(bool p_current_frame) {
 		cmdbuf_begin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 		cmdbuf_begin.pInheritanceInfo = nullptr;
 
-		VkResult err = vkBeginCommandBuffer(frames[frame].setup_command_buffer, &cmdbuf_begin);
-		ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
-		err = vkBeginCommandBuffer(frames[frame].draw_command_buffer, &cmdbuf_begin);
+		if (context->has_transfer_queue()) {
+			VkResult err = vkBeginCommandBuffer(frames[frame].transfer_command_buffer, &cmdbuf_begin);
+			ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
+		}
+
+		VkResult err = vkBeginCommandBuffer(frames[frame].draw_command_buffer, &cmdbuf_begin);
 		ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
 
 	} else {
-		context->flush(p_current_frame, p_current_frame);
-		//re-create the setup command
+		context->flush(p_current_frame);
 		if (p_current_frame) {
 			VkCommandBufferBeginInfo cmdbuf_begin;
 			cmdbuf_begin.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -8777,22 +8852,19 @@ void RenderingDeviceVulkan::_flush(bool p_current_frame) {
 			cmdbuf_begin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 			cmdbuf_begin.pInheritanceInfo = nullptr;
 
-			VkResult err = vkBeginCommandBuffer(frames[frame].setup_command_buffer, &cmdbuf_begin);
-			ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
-			context->set_setup_buffer(frames[frame].setup_command_buffer); //append now so it's added before everything else
-		}
-
-		if (p_current_frame) {
-			VkCommandBufferBeginInfo cmdbuf_begin;
-			cmdbuf_begin.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-			cmdbuf_begin.pNext = nullptr;
-			cmdbuf_begin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-			cmdbuf_begin.pInheritanceInfo = nullptr;
+			if (context->has_transfer_queue()) {
+				VkResult err = vkBeginCommandBuffer(frames[frame].transfer_command_buffer, &cmdbuf_begin);
+				ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
+			}
 
 			VkResult err = vkBeginCommandBuffer(frames[frame].draw_command_buffer, &cmdbuf_begin);
 			ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
 			context->append_command_buffer(frames[frame].draw_command_buffer);
 		}
+	}
+
+	if (p_current_frame) {
+		transfer_used = false;
 	}
 }
 
@@ -8854,14 +8926,22 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 	for (int i = 0; i < frame_count; i++) {
 		frames[i].index = 0;
 
-		{ //create command pool, one per frame is recommended
+		{ //create command pools, one per frame is recommended
 			VkCommandPoolCreateInfo cmd_pool_info;
 			cmd_pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 			cmd_pool_info.pNext = nullptr;
-			cmd_pool_info.queueFamilyIndex = p_context->get_graphics_queue_family_index();
 			cmd_pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-			VkResult res = vkCreateCommandPool(device, &cmd_pool_info, nullptr, &frames[i].command_pool);
+			if (context->has_transfer_queue()) {
+				cmd_pool_info.queueFamilyIndex = p_context->get_transfer_queue_family_index();
+
+				VkResult res = vkCreateCommandPool(device, &cmd_pool_info, nullptr, &frames[i].transfer_command_pool);
+				ERR_FAIL_COND_MSG(res, "vkCreateCommandPool failed with error " + itos(res) + ".");
+			}
+
+			cmd_pool_info.queueFamilyIndex = p_context->get_graphics_queue_family_index();
+
+			VkResult res = vkCreateCommandPool(device, &cmd_pool_info, nullptr, &frames[i].draw_command_pool);
 			ERR_FAIL_COND_MSG(res, "vkCreateCommandPool failed with error " + itos(res) + ".");
 		}
 
@@ -8871,14 +8951,19 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 			//no command buffer exists, create it.
 			cmdbuf.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 			cmdbuf.pNext = nullptr;
-			cmdbuf.commandPool = frames[i].command_pool;
 			cmdbuf.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 			cmdbuf.commandBufferCount = 1;
 
-			VkResult err = vkAllocateCommandBuffers(device, &cmdbuf, &frames[i].setup_command_buffer);
-			ERR_CONTINUE_MSG(err, "vkAllocateCommandBuffers failed with error " + itos(err) + ".");
+			if (context->has_transfer_queue()) {
+				cmdbuf.commandPool = frames[i].transfer_command_pool;
 
-			err = vkAllocateCommandBuffers(device, &cmdbuf, &frames[i].draw_command_buffer);
+				VkResult err = vkAllocateCommandBuffers(device, &cmdbuf, &frames[i].transfer_command_buffer);
+				ERR_CONTINUE_MSG(err, "vkAllocateCommandBuffers failed with error " + itos(err) + ".");
+			}
+
+			cmdbuf.commandPool = frames[i].draw_command_pool;
+
+			VkResult err = vkAllocateCommandBuffers(device, &cmdbuf, &frames[i].draw_command_buffer);
 			ERR_CONTINUE_MSG(err, "vkAllocateCommandBuffers failed with error " + itos(err) + ".");
 		}
 
@@ -8913,13 +8998,14 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 		cmdbuf_begin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 		cmdbuf_begin.pInheritanceInfo = nullptr;
 
-		VkResult err = vkBeginCommandBuffer(frames[0].setup_command_buffer, &cmdbuf_begin);
-		ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
+		if (context->has_transfer_queue()) {
+			VkResult err = vkBeginCommandBuffer(frames[0].transfer_command_buffer, &cmdbuf_begin);
+			ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
+		}
 
-		err = vkBeginCommandBuffer(frames[0].draw_command_buffer, &cmdbuf_begin);
+		VkResult err = vkBeginCommandBuffer(frames[0].draw_command_buffer, &cmdbuf_begin);
 		ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
 		if (local_device.is_null()) {
-			context->set_setup_buffer(frames[0].setup_command_buffer); //append now so it's added before everything else
 			context->append_command_buffer(frames[0].draw_command_buffer);
 		}
 	}
@@ -8933,21 +9019,18 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 	staging_buffer_max_size = MAX(1, staging_buffer_max_size);
 	staging_buffer_max_size *= 1024 * 1024;
 
-	if (staging_buffer_max_size < staging_buffer_block_size * 4) {
+	const int MIN_STAGING_BLOCKS_COUNT = 4;
+	if (staging_buffer_max_size < staging_buffer_block_size * MIN_STAGING_BLOCKS_COUNT) {
 		//validate enough blocks
-		staging_buffer_max_size = staging_buffer_block_size * 4;
+		staging_buffer_max_size = staging_buffer_block_size * MIN_STAGING_BLOCKS_COUNT;
 	}
 	texture_upload_region_size_px = GLOBAL_DEF("rendering/vulkan/staging_buffer/texture_upload_region_size_px", 64);
 	texture_upload_region_size_px = nearest_power_of_2_templated(texture_upload_region_size_px);
 
 	frames_drawn = frame_count; //start from frame count, so everything else is immediately old
 
-	//ensure current staging block is valid and at least one per frame exists
-	staging_buffer_current = 0;
-	staging_buffer_used = false;
-
-	for (int i = 0; i < frame_count; i++) {
-		//staging was never used, create a block
+	//ensure staging block has a reasonable initial size
+	for (int i = 0; i < MIN_STAGING_BLOCKS_COUNT; i++) {
 		Error err = _insert_staging_block();
 		ERR_CONTINUE(err != OK);
 	}
@@ -9044,7 +9127,7 @@ uint64_t RenderingDeviceVulkan::get_driver_resource(DriverResource p_resource, R
 			return (uint64_t)context->get_instance();
 		}; break;
 		case DRIVER_RESOURCE_VULKAN_QUEUE: {
-			return (uint64_t)context->get_graphics_queue();
+			return (uint64_t)context->get_graphics_queue(local_device);
 		}; break;
 		case DRIVER_RESOURCE_VULKAN_QUEUE_FAMILY_INDEX: {
 			return context->get_graphics_queue_family_index();
@@ -9298,7 +9381,10 @@ void RenderingDeviceVulkan::finalize() {
 	for (int i = 0; i < frame_count; i++) {
 		int f = (frame + i) % frame_count;
 		_free_pending_resources(f);
-		vkDestroyCommandPool(device, frames[i].command_pool, nullptr);
+		if (context->has_transfer_queue()) {
+			vkDestroyCommandPool(device, frames[i].transfer_command_pool, nullptr);
+		}
+		vkDestroyCommandPool(device, frames[i].draw_command_pool, nullptr);
 		vkDestroyQueryPool(device, frames[i].timestamp_pool, nullptr);
 		memdelete_arr(frames[i].timestamp_names);
 		memdelete_arr(frames[i].timestamp_cpu_values);

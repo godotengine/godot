@@ -111,12 +111,16 @@ private:
 	// Present queue.
 	bool queues_initialized = false;
 	uint32_t graphics_queue_family_index = UINT32_MAX;
+	uint32_t transfer_queue_family_index = UINT32_MAX;
 	uint32_t present_queue_family_index = UINT32_MAX;
+	bool transfer_queue_available = false;
 	bool separate_present_queue = false;
 	VkQueue graphics_queue = VK_NULL_HANDLE;
+	VkQueue transfer_queue = VK_NULL_HANDLE;
 	VkQueue present_queue = VK_NULL_HANDLE;
 	VkColorSpaceKHR color_space;
 	VkFormat format;
+	VkSemaphore transfer_complete_semaphores[FRAME_LAG];
 	VkSemaphore draw_complete_semaphores[FRAME_LAG];
 	VkSemaphore image_ownership_semaphores[FRAME_LAG];
 	int frame_index = 0;
@@ -149,7 +153,8 @@ private:
 	struct LocalDevice {
 		bool waiting = false;
 		VkDevice device = VK_NULL_HANDLE;
-		VkQueue queue = VK_NULL_HANDLE;
+		VkQueue graphics_queue = VK_NULL_HANDLE;
+		VkQueue transfer_queue = VK_NULL_HANDLE;
 	};
 
 	RID_Owner<LocalDevice, true> local_device_owner;
@@ -159,10 +164,9 @@ private:
 
 	// Commands.
 
-	bool prepared = false;
-
+	VkCommandBuffer transfer_command_buffer = VK_NULL_HANDLE;
 	Vector<VkCommandBuffer> command_buffer_queue;
-	int command_buffer_count = 1;
+	int command_buffer_count = 0;
 
 	// Extensions.
 
@@ -230,7 +234,8 @@ private:
 
 	Error _initialize_queues(VkSurfaceKHR p_surface);
 
-	Error _create_device();
+	Error _create_device(bool p_local, VkDevice *r_device);
+	Error _create_main_device();
 
 	Error _clean_up_swap_chain(Window *window);
 
@@ -238,6 +243,8 @@ private:
 
 	Error _create_swap_chain();
 	Error _create_semaphores();
+
+	void _submit(RID p_local_device, VkCommandBuffer p_transfer_buffer, const VkCommandBuffer *p_buffers, uint32_t p_buffer_count, bool p_sync_with_present = false);
 
 protected:
 	virtual const char *_get_platform_surface_extension() const = 0;
@@ -260,8 +267,11 @@ public:
 	VkPhysicalDevice get_physical_device();
 	VkInstance get_instance() { return inst; }
 	int get_swapchain_image_count() const;
-	VkQueue get_graphics_queue() const;
+	VkQueue get_graphics_queue(RID p_local_device);
+	bool has_transfer_queue() const;
+	VkQueue get_transfer_queue(RID p_local_device);
 	uint32_t get_graphics_queue_family_index() const;
+	uint32_t get_transfer_queue_family_index() const;
 
 	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
 	int window_get_width(DisplayServer::WindowID p_window = 0);
@@ -272,17 +282,17 @@ public:
 
 	RID local_device_create();
 	VkDevice local_device_get_vk_device(RID p_local_device);
-	void local_device_push_command_buffers(RID p_local_device, const VkCommandBuffer *p_buffers, int p_count);
+	void local_device_push_command_buffers(RID p_local_device, VkCommandBuffer p_transfer_buffer, const VkCommandBuffer *p_buffers, uint32_t p_count);
 	void local_device_sync(RID p_local_device);
 	void local_device_free(RID p_local_device);
 
 	VkFormat get_screen_format() const;
 	VkPhysicalDeviceLimits get_device_limits() const;
 
-	void set_setup_buffer(VkCommandBuffer p_command_buffer);
+	void set_transfer_command_buffer(VkCommandBuffer p_command_buffer);
 	void append_command_buffer(VkCommandBuffer p_command_buffer);
 	void resize_notify();
-	void flush(bool p_flush_setup = false, bool p_flush_pending = false);
+	void flush(bool p_flush_current = false);
 	Error prepare_buffers();
 	Error swap_buffers();
 	Error initialize();

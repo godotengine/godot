@@ -146,6 +146,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		VkImageLayout layout;
 
 		uint64_t used_in_frame = 0;
+
 		bool used_in_transfer = false;
 		bool used_in_raster = false;
 		bool used_in_compute = false;
@@ -160,7 +161,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	uint32_t texture_upload_region_size_px = 0;
 
 	Vector<uint8_t> _texture_get_data_from_image(Texture *tex, VkImage p_image, VmaAllocation p_allocation, uint32_t p_layer, bool p_2d = false);
-	Error _texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, uint32_t p_post_barrier, bool p_use_setup_queue);
+	Error _texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, uint32_t p_post_barrier, bool p_can_use_transfer, uint32_t p_start_layer, uint32_t p_total_layers);
 
 	/*****************/
 	/**** SAMPLER ****/
@@ -215,17 +216,15 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		VkBuffer buffer = VK_NULL_HANDLE;
 		VmaAllocation allocation = nullptr;
 		VkDescriptorBufferInfo buffer_info; //used for binding
-		Buffer() {
-		}
 	};
 
 	Error _buffer_allocate(Buffer *p_buffer, uint32_t p_size, uint32_t p_usage, VmaMemoryUsage p_mapping);
 	Error _buffer_free(Buffer *p_buffer);
-	Error _buffer_update(Buffer *p_buffer, size_t p_offset, const uint8_t *p_data, size_t p_data_size, bool p_use_draw_command_buffer = false, uint32_t p_required_align = 32);
+	Error _buffer_update(Buffer *p_buffer, size_t p_offset, const uint8_t *p_data, size_t p_data_size, bool p_can_use_transfer, uint32_t p_required_align = 32);
 
-	void _full_barrier(bool p_sync_with_draw);
-	void _memory_barrier(VkPipelineStageFlags p_src_stage_mask, VkPipelineStageFlags p_dst_stage_mask, VkAccessFlags p_src_access, VkAccessFlags p_dst_sccess, bool p_sync_with_draw);
-	void _buffer_memory_barrier(VkBuffer buffer, uint64_t p_from, uint64_t p_size, VkPipelineStageFlags p_src_stage_mask, VkPipelineStageFlags p_dst_stage_mask, VkAccessFlags p_src_access, VkAccessFlags p_dst_sccess, bool p_sync_with_draw);
+	void _full_barrier(bool p_can_use_transfer);
+	void _memory_barrier(VkPipelineStageFlags p_src_stage_mask, VkPipelineStageFlags p_dst_stage_mask, VkAccessFlags p_src_access, VkAccessFlags p_dst_sccess, bool p_can_use_transfer);
+	void _buffer_memory_barrier(Buffer *p_buffer, uint64_t p_from, uint64_t p_size, VkPipelineStageFlags p_src_stage_mask, VkPipelineStageFlags p_dst_stage_mask, VkAccessFlags p_src_access, VkAccessFlags p_dst_access, bool p_can_use_transfer);
 
 	/*********************/
 	/**** FRAMEBUFFER ****/
@@ -983,16 +982,17 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		List<RenderPipeline> render_pipelines_to_dispose_of;
 		List<ComputePipeline> compute_pipelines_to_dispose_of;
 
-		VkCommandPool command_pool = VK_NULL_HANDLE;
-		VkCommandBuffer setup_command_buffer = VK_NULL_HANDLE; //used at the beginning of every frame for set-up
-		VkCommandBuffer draw_command_buffer = VK_NULL_HANDLE; //used at the beginning of every frame for set-up
+		VkCommandPool transfer_command_pool = VK_NULL_HANDLE;
+		VkCommandPool draw_command_pool = VK_NULL_HANDLE;
+		VkCommandBuffer transfer_command_buffer = VK_NULL_HANDLE;
+		VkCommandBuffer draw_command_buffer = VK_NULL_HANDLE;
 
 		struct Timestamp {
 			String description;
 			uint64_t value = 0;
 		};
 
-		VkQueryPool timestamp_pool;
+		VkQueryPool timestamp_pool = VK_NULL_HANDLE;
 
 		String *timestamp_names = nullptr;
 		uint64_t *timestamp_cpu_values = nullptr;
@@ -1012,6 +1012,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	uint64_t frames_drawn = 0;
 	RID local_device;
 	bool local_device_processing = false;
+	bool transfer_used = false;
 
 	void _free_pending_resources(int p_frame);
 
@@ -1031,7 +1032,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	template <class T>
 	void _free_rids(T &p_owner, const char *p_type);
 
-	void _finalize_command_bufers();
+	VkCommandBuffer _get_command_buffer_for_transfer(bool p_can_use_transfer);
+	void _finalize_command_bufers(bool p_allow_open_list = false);
 	void _begin_frame();
 
 public:

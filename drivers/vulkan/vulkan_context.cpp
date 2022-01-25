@@ -43,6 +43,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef DEV_ENABLED
+//#define DEV_FORCE_NO_TRANSFER_QUEUE
+
+//#define DEV_TRANSFER_ON_MAIN_GRAPHICS_QUEUE
+//#define DEV_TRANSFER_ON_SECOND_GRAPHICS_QUEUE
+#if defined(DEV_TRANSFER_ON_MAIN_GRAPHICS_QUEUE) && defined(DEV_TRANSFER_ON_SECOND_GRAPHICS_QUEUE)
+#error "Define at most one of DEV_TRANSFER_ON_MAIN_GRAPHICS_QUEUE and DEV_TRANSFER_ON_SECOND_GRAPHICS_QUEUE"
+#endif
+#endif
+
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #define APP_SHORT_NAME "GodotEngine"
 
@@ -1056,10 +1066,12 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 	return OK;
 }
 
-Error VulkanContext::_create_device() {
+Error VulkanContext::_create_device(bool p_local, VkDevice *r_device) {
+	*r_device = VK_NULL_HANDLE;
+
 	VkResult err;
 	float queue_priorities[1] = { 0.0 };
-	VkDeviceQueueCreateInfo queues[2];
+	VkDeviceQueueCreateInfo queues[3];
 	queues[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 	queues[0].pNext = nullptr;
 	queues[0].queueFamilyIndex = graphics_queue_family_index;
@@ -1080,50 +1092,73 @@ Error VulkanContext::_create_device() {
 		/*pEnabledFeatures*/ &physical_device_features, // If specific features are required, pass them in here
 
 	};
-	if (separate_present_queue) {
-		queues[1].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		queues[1].pNext = nullptr;
-		queues[1].queueFamilyIndex = present_queue_family_index;
-		queues[1].queueCount = 1;
-		queues[1].pQueuePriorities = queue_priorities;
-		queues[1].flags = 0;
-		sdevice.queueCreateInfoCount = 2;
+	if (transfer_queue_available) {
+#if !defined(DEV_TRANSFER_ON_MAIN_GRAPHICS_QUEUE)
+#if !defined(DEV_TRANSFER_ON_SECOND_GRAPHICS_QUEUE)
+		VkDeviceQueueCreateInfo &dqci = queues[sdevice.queueCreateInfoCount];
+		dqci.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		dqci.pNext = nullptr;
+		dqci.queueFamilyIndex = transfer_queue_family_index;
+		dqci.queueCount = 1;
+		dqci.pQueuePriorities = queue_priorities;
+		dqci.flags = 0;
+		sdevice.queueCreateInfoCount++;
+#else
+		queues[0].queueCount++;
+#endif
+#endif
+	}
+	if (!p_local && separate_present_queue) {
+		VkDeviceQueueCreateInfo &dqci = queues[sdevice.queueCreateInfoCount];
+		dqci.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		dqci.pNext = nullptr;
+		dqci.queueFamilyIndex = present_queue_family_index;
+		dqci.queueCount = 1;
+		dqci.pQueuePriorities = queue_priorities;
+		dqci.flags = 0;
+		sdevice.queueCreateInfoCount++;
 	}
 
 	VkPhysicalDeviceVulkan11Features vulkan11features;
 	VkPhysicalDeviceMultiviewFeatures multiview_features;
-	if (vulkan_major > 1 || vulkan_minor >= 2) {
-		vulkan11features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
-		vulkan11features.pNext = nullptr;
-		// !BAS! Need to figure out which ones of these we want enabled...
-		vulkan11features.storageBuffer16BitAccess = 0;
-		vulkan11features.uniformAndStorageBuffer16BitAccess = 0;
-		vulkan11features.storagePushConstant16 = 0;
-		vulkan11features.storageInputOutput16 = 0;
-		vulkan11features.multiview = multiview_capabilities.is_supported;
-		vulkan11features.multiviewGeometryShader = multiview_capabilities.geometry_shader_is_supported;
-		vulkan11features.multiviewTessellationShader = multiview_capabilities.tessellation_shader_is_supported;
-		vulkan11features.variablePointersStorageBuffer = 0;
-		vulkan11features.variablePointers = 0;
-		vulkan11features.protectedMemory = 0;
-		vulkan11features.samplerYcbcrConversion = 0;
-		vulkan11features.shaderDrawParameters = 0;
+	if (!p_local) {
+		if (vulkan_major > 1 || vulkan_minor >= 2) {
+			vulkan11features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+			vulkan11features.pNext = nullptr;
+			// !BAS! Need to figure out which ones of these we want enabled...
+			vulkan11features.storageBuffer16BitAccess = 0;
+			vulkan11features.uniformAndStorageBuffer16BitAccess = 0;
+			vulkan11features.storagePushConstant16 = 0;
+			vulkan11features.storageInputOutput16 = 0;
+			vulkan11features.multiview = multiview_capabilities.is_supported;
+			vulkan11features.multiviewGeometryShader = multiview_capabilities.geometry_shader_is_supported;
+			vulkan11features.multiviewTessellationShader = multiview_capabilities.tessellation_shader_is_supported;
+			vulkan11features.variablePointersStorageBuffer = 0;
+			vulkan11features.variablePointers = 0;
+			vulkan11features.protectedMemory = 0;
+			vulkan11features.samplerYcbcrConversion = 0;
+			vulkan11features.shaderDrawParameters = 0;
 
-		sdevice.pNext = &vulkan11features;
-	} else if (vulkan_major == 1 && vulkan_minor == 1) {
-		multiview_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
-		multiview_features.pNext = nullptr;
-		multiview_features.multiview = multiview_capabilities.is_supported;
-		multiview_features.multiviewGeometryShader = multiview_capabilities.geometry_shader_is_supported;
-		multiview_features.multiviewTessellationShader = multiview_capabilities.tessellation_shader_is_supported;
+			sdevice.pNext = &vulkan11features;
+		} else if (vulkan_major == 1 && vulkan_minor == 1) {
+			multiview_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
+			multiview_features.pNext = nullptr;
+			multiview_features.multiview = multiview_capabilities.is_supported;
+			multiview_features.multiviewGeometryShader = multiview_capabilities.geometry_shader_is_supported;
+			multiview_features.multiviewTessellationShader = multiview_capabilities.tessellation_shader_is_supported;
 
-		sdevice.pNext = &multiview_features;
+			sdevice.pNext = &multiview_features;
+		}
 	}
 
-	err = vkCreateDevice(gpu, &sdevice, nullptr, &device);
+	err = vkCreateDevice(gpu, &sdevice, nullptr, r_device);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 	return OK;
+}
+
+Error VulkanContext::_create_main_device() {
+	return _create_device(false, &device);
 }
 
 Error VulkanContext::_initialize_queues(VkSurfaceKHR p_surface) {
@@ -1168,11 +1203,28 @@ Error VulkanContext::_initialize_queues(VkSurfaceKHR p_surface) {
 	ERR_FAIL_COND_V_MSG(graphicsQueueFamilyIndex == UINT32_MAX || presentQueueFamilyIndex == UINT32_MAX, ERR_CANT_CREATE,
 			"Could not find both graphics and present queues\n");
 
+	// Search for a specialized transfer queue
+	uint32_t transferQueueFamilyIndex = UINT32_MAX;
+	for (uint32_t i = 0; i < queue_family_count; i++) {
+		if ((queue_props[i].queueFlags & (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT)) == VK_QUEUE_TRANSFER_BIT) {
+			transferQueueFamilyIndex = i;
+		}
+	}
+
+#ifdef DEV_FORCE_NO_TRANSFER_QUEUE
+	transferQueueFamilyIndex = UINT32_MAX;
+#endif
+#if defined(DEV_TRANSFER_ON_MAIN_GRAPHICS_QUEUE) || defined(DEV_TRANSFER_ON_SECOND_GRAPHICS_QUEUE)
+	transferQueueFamilyIndex = graphicsQueueFamilyIndex;
+#endif
+
 	graphics_queue_family_index = graphicsQueueFamilyIndex;
+	transfer_queue_family_index = transferQueueFamilyIndex;
 	present_queue_family_index = presentQueueFamilyIndex;
+	transfer_queue_available = (transfer_queue_family_index != UINT32_MAX);
 	separate_present_queue = (graphics_queue_family_index != present_queue_family_index);
 
-	_create_device();
+	_create_main_device();
 
 	static PFN_vkGetDeviceProcAddr g_gdpa = nullptr;
 #define GET_DEVICE_PROC_ADDR(dev, entrypoint)                                                     \
@@ -1195,6 +1247,17 @@ Error VulkanContext::_initialize_queues(VkSurfaceKHR p_surface) {
 	}
 
 	vkGetDeviceQueue(device, graphics_queue_family_index, 0, &graphics_queue);
+
+	if (transfer_queue_available) {
+#if !defined(DEV_TRANSFER_ON_SECOND_GRAPHICS_QUEUE) && !defined(DEV_TRANSFER_ON_MAIN_GRAPHICS_QUEUE)
+		vkGetDeviceQueue(device, transfer_queue_family_index, 0, &transfer_queue);
+#elif defined(DEV_TRANSFER_ON_SECOND_GRAPHICS_QUEUE)
+		CRASH_COND(transfer_queue_family_index != graphics_queue_family_index);
+		vkGetDeviceQueue(device, graphics_queue_family_index, 1, &transfer_queue);
+#else
+		transfer_queue = graphics_queue;
+#endif
+	}
 
 	if (!separate_present_queue) {
 		present_queue = graphics_queue;
@@ -1284,6 +1347,12 @@ Error VulkanContext::_create_semaphores() {
 
 		err = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &draw_complete_semaphores[i]);
 		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+		if (transfer_queue_available) {
+			err = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &transfer_complete_semaphores[i]);
+			ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+		} else {
+			transfer_complete_semaphores[i] = VK_NULL_HANDLE;
+		}
 
 		if (separate_present_queue) {
 			err = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &image_ownership_semaphores[i]);
@@ -1791,8 +1860,8 @@ Error VulkanContext::initialize() {
 	return OK;
 }
 
-void VulkanContext::set_setup_buffer(VkCommandBuffer p_command_buffer) {
-	command_buffer_queue.write[0] = p_command_buffer;
+void VulkanContext::set_transfer_command_buffer(VkCommandBuffer p_command_buffer) {
+	transfer_command_buffer = p_command_buffer;
 }
 
 void VulkanContext::append_command_buffer(VkCommandBuffer p_command_buffer) {
@@ -1804,52 +1873,102 @@ void VulkanContext::append_command_buffer(VkCommandBuffer p_command_buffer) {
 	command_buffer_count++;
 }
 
-void VulkanContext::flush(bool p_flush_setup, bool p_flush_pending) {
-	// ensure everything else pending is executed
-	vkDeviceWaitIdle(device);
+void VulkanContext::_submit(RID p_local_device, VkCommandBuffer p_transfer_buffer, const VkCommandBuffer *p_buffers, uint32_t p_buffer_count, bool p_sync_with_present) {
+	ERR_FAIL_COND(p_transfer_buffer && !transfer_queue_available);
 
-	//flush the pending setup buffer
+	LocalDevice *ld = p_local_device.is_valid() ? local_device_owner.get_or_null(p_local_device) : nullptr;
+	ERR_FAIL_COND(ld && p_sync_with_present);
 
-	bool setup_flushable = p_flush_setup && command_buffer_queue[0];
-	bool pending_flushable = p_flush_pending && command_buffer_count > 1;
-
-	if (setup_flushable) {
-		//use a fence to wait for everything done
+	if (p_transfer_buffer) {
 		VkSubmitInfo submit_info;
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submit_info.pNext = nullptr;
-		submit_info.pWaitDstStageMask = nullptr;
+		submit_info.pWaitDstStageMask = 0;
 		submit_info.waitSemaphoreCount = 0;
 		submit_info.pWaitSemaphores = nullptr;
 		submit_info.commandBufferCount = 1;
-		submit_info.pCommandBuffers = command_buffer_queue.ptr();
-		submit_info.signalSemaphoreCount = pending_flushable ? 1 : 0;
-		submit_info.pSignalSemaphores = pending_flushable ? &draw_complete_semaphores[frame_index] : nullptr;
-		VkResult err = vkQueueSubmit(graphics_queue, 1, &submit_info, VK_NULL_HANDLE);
-		command_buffer_queue.write[0] = nullptr;
+		submit_info.pCommandBuffers = &p_transfer_buffer;
+		submit_info.signalSemaphoreCount = 1;
+		submit_info.pSignalSemaphores = &transfer_complete_semaphores[frame_index];
+		VkResult err = vkQueueSubmit(ld ? ld->transfer_queue : transfer_queue, 1, &submit_info, VK_NULL_HANDLE);
+		if (err == VK_ERROR_OUT_OF_HOST_MEMORY) {
+			print_line("Vulkan: Out of host memory!");
+		}
+		if (err == VK_ERROR_OUT_OF_DEVICE_MEMORY) {
+			print_line("Vulkan: Out of device memory!");
+		}
+		if (err == VK_ERROR_DEVICE_LOST) {
+			print_line("Vulkan: Device lost!");
+		}
 		ERR_FAIL_COND(err);
 	}
 
-	if (pending_flushable) {
-		//use a fence to wait for everything done
+	{
+		uint32_t wait_semaphores_count = (p_sync_with_present ? windows.size() : 0) + (p_transfer_buffer ? 1 : 0);
+
+		VkSemaphore *wait_semaphores = wait_semaphores_count ? (VkSemaphore *)alloca(wait_semaphores_count * sizeof(VkSemaphore)) : nullptr;
+		VkPipelineStageFlags *wait_stages = wait_semaphores_count ? (VkPipelineStageFlags *)alloca(wait_semaphores_count * sizeof(VkPipelineStageFlags)) : nullptr;
+
+		{
+			uint32_t n = 0;
+
+			if (p_sync_with_present) {
+				// Wait for the image acquired semaphore to be signalled to ensure
+				// that the image won't be rendered to until the presentation
+				// engine has fully released ownership to the application, and it is
+				// okay to render to the image.
+
+				for (KeyValue<int, Window> &E : windows) {
+					Window *w = &E.value;
+
+					if (w->semaphore_acquired) {
+						wait_semaphores[n] = w->image_acquired_semaphores[frame_index];
+						wait_stages[n] = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+						n++;
+					}
+				}
+			}
+
+			if (p_transfer_buffer) {
+				wait_semaphores[n] = transfer_complete_semaphores[frame_index];
+				wait_stages[n] = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
+				n++;
+			}
+
+			wait_semaphores_count = n;
+		}
 
 		VkSubmitInfo submit_info;
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submit_info.pNext = nullptr;
-		VkPipelineStageFlags wait_stage_mask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-		submit_info.pWaitDstStageMask = setup_flushable ? &wait_stage_mask : nullptr;
-		submit_info.waitSemaphoreCount = setup_flushable ? 1 : 0;
-		submit_info.pWaitSemaphores = setup_flushable ? &draw_complete_semaphores[frame_index] : nullptr;
-		submit_info.commandBufferCount = command_buffer_count - 1;
-		submit_info.pCommandBuffers = command_buffer_queue.ptr() + 1;
-		submit_info.signalSemaphoreCount = 0;
-		submit_info.pSignalSemaphores = nullptr;
-		VkResult err = vkQueueSubmit(graphics_queue, 1, &submit_info, VK_NULL_HANDLE);
-		command_buffer_count = 1;
+		submit_info.waitSemaphoreCount = wait_semaphores_count;
+		submit_info.pWaitDstStageMask = wait_stages;
+		submit_info.pWaitSemaphores = wait_semaphores;
+		submit_info.commandBufferCount = p_buffer_count;
+		submit_info.pCommandBuffers = p_buffers;
+		submit_info.signalSemaphoreCount = p_sync_with_present ? 1 : 0;
+		submit_info.pSignalSemaphores = p_sync_with_present ? &draw_complete_semaphores[frame_index] : nullptr;
+		VkResult err = vkQueueSubmit(ld ? ld->graphics_queue : graphics_queue, 1, &submit_info, p_sync_with_present ? fences[frame_index] : VK_NULL_HANDLE);
+		if (err == VK_ERROR_OUT_OF_HOST_MEMORY) {
+			print_line("Vulkan: Out of host memory!");
+		}
+		if (err == VK_ERROR_OUT_OF_DEVICE_MEMORY) {
+			print_line("Vulkan: Out of device memory!");
+		}
+		if (err == VK_ERROR_DEVICE_LOST) {
+			print_line("Vulkan: Device lost!");
+		}
 		ERR_FAIL_COND(err);
 	}
+}
 
-	vkDeviceWaitIdle(device);
+void VulkanContext::flush(bool p_flush_pending) {
+	if (p_flush_pending) {
+		_submit(RID(), transfer_command_buffer, command_buffer_queue.ptr(), command_buffer_count);
+		transfer_command_buffer = VK_NULL_HANDLE;
+		command_buffer_count = 0;
+	}
+	vkQueueWaitIdle(graphics_queue);
 }
 
 Error VulkanContext::prepare_buffers() {
@@ -1923,60 +2042,20 @@ Error VulkanContext::swap_buffers() {
 		// simple that it doesn't do either of those.
 	}
 #endif
-	// Wait for the image acquired semaphore to be signalled to ensure
-	// that the image won't be rendered to until the presentation
-	// engine has fully released ownership to the application, and it is
-	// okay to render to the image.
 
-	const VkCommandBuffer *commands_ptr = nullptr;
-	uint32_t commands_to_submit = 0;
-
-	if (command_buffer_queue[0] == nullptr) {
-		//no setup command, but commands to submit, submit from the first and skip command
-		if (command_buffer_count > 1) {
-			commands_ptr = command_buffer_queue.ptr() + 1;
-			commands_to_submit = command_buffer_count - 1;
-		}
-	} else {
-		commands_ptr = command_buffer_queue.ptr();
-		commands_to_submit = command_buffer_count;
-	}
-
-	VkSemaphore *semaphores_to_acquire = (VkSemaphore *)alloca(windows.size() * sizeof(VkSemaphore));
-	VkPipelineStageFlags *pipe_stage_flags = (VkPipelineStageFlags *)alloca(windows.size() * sizeof(VkPipelineStageFlags));
-	uint32_t semaphores_to_acquire_count = 0;
-
-	for (KeyValue<int, Window> &E : windows) {
-		Window *w = &E.value;
-
-		if (w->semaphore_acquired) {
-			semaphores_to_acquire[semaphores_to_acquire_count] = w->image_acquired_semaphores[frame_index];
-			pipe_stage_flags[semaphores_to_acquire_count] = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-			semaphores_to_acquire_count++;
-		}
-	}
-
-	VkSubmitInfo submit_info;
-	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submit_info.pNext = nullptr;
-	submit_info.pWaitDstStageMask = pipe_stage_flags;
-	submit_info.waitSemaphoreCount = semaphores_to_acquire_count;
-	submit_info.pWaitSemaphores = semaphores_to_acquire;
-	submit_info.commandBufferCount = commands_to_submit;
-	submit_info.pCommandBuffers = commands_ptr;
-	submit_info.signalSemaphoreCount = 1;
-	submit_info.pSignalSemaphores = &draw_complete_semaphores[frame_index];
-	err = vkQueueSubmit(graphics_queue, 1, &submit_info, fences[frame_index]);
-	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
-
-	command_buffer_queue.write[0] = nullptr;
-	command_buffer_count = 1;
+	_submit(RID(), transfer_command_buffer, command_buffer_queue.ptr(), command_buffer_count, true);
+	transfer_command_buffer = VK_NULL_HANDLE;
+	command_buffer_count = 0;
 
 	if (separate_present_queue) {
 		// If we are using separate queues, change image ownership to the
 		// present queue before presenting, waiting for the draw complete
 		// semaphore and signalling the ownership released semaphore when finished
-		VkFence nullFence = VK_NULL_HANDLE;
+		VkSubmitInfo submit_info;
+		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submit_info.pNext = nullptr;
+		uint32_t pipe_stage_flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		submit_info.pWaitDstStageMask = &pipe_stage_flags;
 		submit_info.waitSemaphoreCount = 1;
 		submit_info.pWaitSemaphores = &draw_complete_semaphores[frame_index];
 		submit_info.commandBufferCount = 0;
@@ -1996,7 +2075,7 @@ Error VulkanContext::swap_buffers() {
 
 		submit_info.signalSemaphoreCount = 1;
 		submit_info.pSignalSemaphores = &image_ownership_semaphores[frame_index];
-		err = vkQueueSubmit(present_queue, 1, &submit_info, nullFence);
+		err = vkQueueSubmit(present_queue, 1, &submit_info, VK_NULL_HANDLE);
 		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 	}
 
@@ -2137,12 +2216,32 @@ int VulkanContext::get_swapchain_image_count() const {
 	return swapchainImageCount;
 }
 
-VkQueue VulkanContext::get_graphics_queue() const {
-	return graphics_queue;
+VkQueue VulkanContext::get_graphics_queue(RID p_local_device) {
+	if (p_local_device.is_null()) {
+		return graphics_queue;
+	} else {
+		return local_device_owner.get_or_null(p_local_device)->graphics_queue;
+	}
 }
 
 uint32_t VulkanContext::get_graphics_queue_family_index() const {
 	return graphics_queue_family_index;
+}
+
+uint32_t VulkanContext::get_transfer_queue_family_index() const {
+	return transfer_queue_family_index;
+}
+
+bool VulkanContext::has_transfer_queue() const {
+	return transfer_queue_available;
+}
+
+VkQueue VulkanContext::get_transfer_queue(RID p_local_device) {
+	if (p_local_device.is_null()) {
+		return transfer_queue;
+	} else {
+		return local_device_owner.get_or_null(p_local_device)->transfer_queue;
+	}
 }
 
 VkFormat VulkanContext::get_screen_format() const {
@@ -2155,37 +2254,13 @@ VkPhysicalDeviceLimits VulkanContext::get_device_limits() const {
 
 RID VulkanContext::local_device_create() {
 	LocalDevice ld;
+	Error err = _create_device(true, &ld.device);
+	ERR_FAIL_COND_V(err, RID());
 
-	{ //create device
-		VkResult err;
-		float queue_priorities[1] = { 0.0 };
-		VkDeviceQueueCreateInfo queues[2];
-		queues[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		queues[0].pNext = nullptr;
-		queues[0].queueFamilyIndex = graphics_queue_family_index;
-		queues[0].queueCount = 1;
-		queues[0].pQueuePriorities = queue_priorities;
-		queues[0].flags = 0;
+	vkGetDeviceQueue(ld.device, graphics_queue_family_index, 0, &ld.graphics_queue);
 
-		VkDeviceCreateInfo sdevice = {
-			/*sType =*/VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-			/*pNext */ nullptr,
-			/*flags */ 0,
-			/*queueCreateInfoCount */ 1,
-			/*pQueueCreateInfos */ queues,
-			/*enabledLayerCount */ 0,
-			/*ppEnabledLayerNames */ nullptr,
-			/*enabledExtensionCount */ enabled_extension_count,
-			/*ppEnabledExtensionNames */ (const char *const *)extension_names,
-			/*pEnabledFeatures */ &physical_device_features, // If specific features are required, pass them in here
-		};
-		err = vkCreateDevice(gpu, &sdevice, nullptr, &ld.device);
-		ERR_FAIL_COND_V(err, RID());
-	}
-
-	{ //create graphics queue
-
-		vkGetDeviceQueue(ld.device, graphics_queue_family_index, 0, &ld.queue);
+	if (transfer_queue_family_index != UINT32_MAX) {
+		vkGetDeviceQueue(ld.device, transfer_queue_family_index, 0, &ld.transfer_queue);
 	}
 
 	return local_device_owner.make_rid(ld);
@@ -2196,32 +2271,11 @@ VkDevice VulkanContext::local_device_get_vk_device(RID p_local_device) {
 	return ld->device;
 }
 
-void VulkanContext::local_device_push_command_buffers(RID p_local_device, const VkCommandBuffer *p_buffers, int p_count) {
+void VulkanContext::local_device_push_command_buffers(RID p_local_device, VkCommandBuffer p_transfer_buffer, const VkCommandBuffer *p_buffers, uint32_t p_count) {
 	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	ERR_FAIL_COND(ld->waiting);
 
-	VkSubmitInfo submit_info;
-	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submit_info.pNext = nullptr;
-	submit_info.pWaitDstStageMask = nullptr;
-	submit_info.waitSemaphoreCount = 0;
-	submit_info.pWaitSemaphores = nullptr;
-	submit_info.commandBufferCount = p_count;
-	submit_info.pCommandBuffers = p_buffers;
-	submit_info.signalSemaphoreCount = 0;
-	submit_info.pSignalSemaphores = nullptr;
-
-	VkResult err = vkQueueSubmit(ld->queue, 1, &submit_info, VK_NULL_HANDLE);
-	if (err == VK_ERROR_OUT_OF_HOST_MEMORY) {
-		print_line("Vulkan: Out of host memory!");
-	}
-	if (err == VK_ERROR_OUT_OF_DEVICE_MEMORY) {
-		print_line("Vulkan: Out of device memory!");
-	}
-	if (err == VK_ERROR_DEVICE_LOST) {
-		print_line("Vulkan: Device lost!");
-	}
-	ERR_FAIL_COND(err);
+	_submit(p_local_device, p_transfer_buffer, p_buffers, p_count);
 
 	ld->waiting = true;
 }
@@ -2230,7 +2284,8 @@ void VulkanContext::local_device_sync(RID p_local_device) {
 	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	ERR_FAIL_COND(!ld->waiting);
 
-	vkDeviceWaitIdle(ld->device);
+	vkQueueWaitIdle(ld->graphics_queue);
+
 	ld->waiting = false;
 }
 
@@ -2320,10 +2375,7 @@ void VulkanContext::set_vsync_mode(DisplayServer::WindowID p_window, DisplayServ
 	_update_swap_chain(&windows[p_window]);
 }
 
-VulkanContext::VulkanContext() {
-	command_buffer_queue.resize(1); // First one is always the setup command.
-	command_buffer_queue.write[0] = nullptr;
-}
+VulkanContext::VulkanContext() {}
 
 VulkanContext::~VulkanContext() {
 	if (queue_props) {
@@ -2333,6 +2385,9 @@ VulkanContext::~VulkanContext() {
 		for (uint32_t i = 0; i < FRAME_LAG; i++) {
 			vkDestroyFence(device, fences[i], nullptr);
 			vkDestroySemaphore(device, draw_complete_semaphores[i], nullptr);
+			if (transfer_queue_available) {
+				vkDestroySemaphore(device, transfer_complete_semaphores[i], nullptr);
+			}
 			if (separate_present_queue) {
 				vkDestroySemaphore(device, image_ownership_semaphores[i], nullptr);
 			}
