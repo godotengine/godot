@@ -10,19 +10,6 @@
 		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
-	<methods>
-		<method name="get_mix_mode" qualifiers="const">
-			<return type="int" enum="AnimationNodeOneShot.MixMode" />
-			<description>
-			</description>
-		</method>
-		<method name="set_mix_mode">
-			<return type="void" />
-			<argument index="0" name="mode" type="int" enum="AnimationNodeOneShot.MixMode" />
-			<description>
-			</description>
-		</method>
-	</methods>
 	<members>
 		<member name="autorestart" type="bool" setter="set_autorestart" getter="has_autorestart" default="false">
 			If [code]true[/code], the sub-animation will restart automatically after finishing.
@@ -36,6 +23,8 @@
 		<member name="fadein_time" type="float" setter="set_fadein_time" getter="get_fadein_time" default="0.1">
 		</member>
 		<member name="fadeout_time" type="float" setter="set_fadeout_time" getter="get_fadeout_time" default="0.1">
+		</member>
+		<member name="mix_mode" type="int" setter="set_mix_mode" getter="get_mix_mode" enum="AnimationNodeOneShot.MixMode" default="0">
 		</member>
 		<member name="sync" type="bool" setter="set_use_sync" getter="is_using_sync" default="false">
 		</member>
