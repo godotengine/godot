@@ -994,6 +994,8 @@
 			<argument index="8" name="hdr_bleed_threshold" type="float" />
 			<argument index="9" name="hdr_bleed_scale" type="float" />
 			<argument index="10" name="hdr_luminance_cap" type="float" />
+			<argument index="11" name="glow_map_strength" type="float" />
+			<argument index="12" name="glow_map" type="RID" />
 			<description>
 			</description>
 		</method>

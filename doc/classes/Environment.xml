@@ -154,6 +154,13 @@
 		<member name="glow_levels/7" type="float" setter="set_glow_level" getter="get_glow_level" default="0.0">
 			The intensity of the 7th level of glow. This is the most "global" level (blurriest).
 		</member>
+		<member name="glow_map" type="Texture" setter="set_glow_map" getter="get_glow_map">
+			The texture that should be used as a glow map to [i]multiply[/i] the resulting glow color according to [member glow_map_strength]. This can be used to create a "lens dirt" effect. The texture's RGB color channels are used for modulation, but the alpha channel is ignored.
+			[b]Note:[/b] The texture will be stretched to fit the screen. Therefore, it's recommended to use a texture with an aspect ratio that matches your project's base aspect ratio (typically 16:9).
+		</member>
+		<member name="glow_map_strength" type="float" setter="set_glow_map_strength" getter="get_glow_map_strength" default="0.8">
+			How strong of an impact the [member glow_map] should have on the overall glow effect. A strength of [code]0.0[/code] means the glow map has no effect on the overall glow effect. A strength of [code]1.0[/code] means the glow has a full effect on the overall glow effect (and can turn off glow entirely in specific areas of the screen if the glow map has black areas).
+		</member>
 		<member name="glow_mix" type="float" setter="set_glow_mix" getter="get_glow_mix" default="0.05">
 		</member>
 		<member name="glow_normalized" type="bool" setter="set_glow_normalized" getter="is_glow_normalized" default="false">
