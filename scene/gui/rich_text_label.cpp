@@ -3154,7 +3154,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			indent_level++;
 			push_list(indent_level, LIST_NUMBERS, false);
 			pos = brk_end + 1;
-			tag_stack.push_front(tag);
+			tag_stack.push_front("ol");
 		} else if (tag == "ol type=a") {
 			indent_level++;
 			push_list(indent_level, LIST_LETTERS, false);
