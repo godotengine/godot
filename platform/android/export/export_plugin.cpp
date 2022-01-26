@@ -987,14 +987,14 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 
 					if (tname == "meta-data" && attrname == "name" && value == "xr_mode_metadata_name") {
 						// Update the meta-data 'android:name' attribute based on the selected XR mode.
-						if (xr_mode_index == XR_MODE_OVR || xr_mode_index == XR_MODE_OPENXR) {
+						if (xr_mode_index == XR_MODE_OVR) {
 							string_table.write[attr_value] = "com.samsung.android.vr.application.mode";
 						}
 					}
 
 					if (tname == "meta-data" && attrname == "value" && value == "xr_mode_metadata_value") {
 						// Update the meta-data 'android:value' attribute based on the selected XR mode.
-						if (xr_mode_index == XR_MODE_OVR || xr_mode_index == XR_MODE_OPENXR) {
+						if (xr_mode_index == XR_MODE_OVR) {
 							string_table.write[attr_value] = "vr_only";
 						}
 					}
