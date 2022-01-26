@@ -287,7 +287,9 @@ String _get_application_tag(const Ref<EditorExportPreset> &p_preset, bool p_has_
 			bool_to_string(p_has_storage_permission));
 
 	if (uses_xr) {
-		manifest_application_text += "        <meta-data tools:node=\"replace\" android:name=\"com.samsung.android.vr.application.mode\" android:value=\"vr_only\" />\n";
+		if (xr_mode_index == XR_MODE_OVR) {
+			manifest_application_text += "        <meta-data tools:node=\"replace\" android:name=\"com.samsung.android.vr.application.mode\" android:value=\"vr_only\" />\n";
+		}
 
 		bool hand_tracking_enabled = (int)(p_preset->get("xr_features/hand_tracking")) > XR_HAND_TRACKING_NONE;
 		if (hand_tracking_enabled) {
@@ -297,6 +299,8 @@ String _get_application_tag(const Ref<EditorExportPreset> &p_preset, bool p_has_
 					"        <meta-data tools:node=\"replace\" android:name=\"com.oculus.handtracking.frequency\" android:value=\"%s\" />\n",
 					hand_tracking_frequency);
 		}
+	} else {
+		manifest_application_text += "        <meta-data tools:node=\"remove\" android:name=\"com.oculus.supportedDevices\" />\n";
 	}
 	manifest_application_text += _get_activity_tag(p_preset);
 	manifest_application_text += "    </application>\n";
