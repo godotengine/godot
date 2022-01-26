@@ -69,6 +69,11 @@
 		</method>
 	</methods>
 	<signals>
+		<signal name="addons_scanned">
+			<description>
+				Emitted on the first scan of the filesystem, after the addons folder has been scanned, but before [signal filesystem_changed] is emitted.
+			</description>
+		</signal>
 		<signal name="filesystem_changed">
 			<description>
 				Emitted if the filesystem changed.

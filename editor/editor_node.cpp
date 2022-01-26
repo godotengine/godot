@@ -625,19 +625,6 @@ void EditorNode::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			{
-				_initializing_addons = true;
-				Vector<String> addons;
-				if (ProjectSettings::get_singleton()->has_setting("editor_plugins/enabled")) {
-					addons = ProjectSettings::get_singleton()->get("editor_plugins/enabled");
-				}
-
-				for (int i = 0; i < addons.size(); i++) {
-					set_addon_plugin_enabled(addons[i], true);
-				}
-				_initializing_addons = false;
-			}
-
 			RenderingServer::get_singleton()->viewport_set_disable_2d(get_scene_root()->get_viewport_rid(), true);
 			RenderingServer::get_singleton()->viewport_set_disable_environment(get_viewport()->get_viewport_rid(), true);
 
@@ -4120,6 +4107,19 @@ void EditorNode::progress_end_task_bg(const String &p_task) {
 	singleton->progress_hb->end_task(p_task);
 }
 
+void EditorNode::_initialize_addons() {
+	_initializing_addons = true;
+	Vector<String> addons;
+	if (ProjectSettings::get_singleton()->has_setting("editor_plugins/enabled")) {
+		addons = ProjectSettings::get_singleton()->get("editor_plugins/enabled");
+	}
+
+	for (int i = 0; i < addons.size(); i++) {
+		set_addon_plugin_enabled(addons[i], true);
+	}
+	_initializing_addons = false;
+}
+
 Ref<Texture2D> EditorNode::_file_dialog_get_icon(const String &p_path) {
 	EditorFileSystemDirectory *efsd = EditorFileSystem::get_singleton()->get_filesystem_path(p_path.get_base_dir());
 	if (efsd) {
@@ -7134,6 +7134,7 @@ EditorNode::EditorNode() {
 	EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &EditorNode::_fs_changed));
 	EditorFileSystem::get_singleton()->connect("resources_reimported", callable_mp(this, &EditorNode::_resources_reimported));
 	EditorFileSystem::get_singleton()->connect("resources_reload", callable_mp(this, &EditorNode::_resources_changed));
+	EditorFileSystem::get_singleton()->connect("addons_scanned", callable_mp(this, &EditorNode::_initialize_addons));
 
 	_build_icon_type_cache();
 

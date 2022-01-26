@@ -305,6 +305,35 @@ void EditorFileSystem::_scan_filesystem() {
 		d->remove(update_cache); //bye bye update cache
 	}
 
+	DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+
+	Vector<String> addons;
+	addon_root_directories.clear();
+	if (ProjectSettings::get_singleton()->has_setting("editor_plugins/enabled")) {
+		addons = ProjectSettings::get_singleton()->get("editor_plugins/enabled");
+	}
+
+	EditorProgressBG addons_scan_progress("efs_addons", "ScanFSAddons", 1000);
+
+	ScanProgress addons_sp;
+	addons_sp.low = 0;
+	addons_sp.hi = 1;
+	addons_sp.progress = &addons_scan_progress;
+
+	for (int i = 0; i < addons.size(); i++) {
+		String addon_root_directory_path = addons[i].get_base_dir();
+		EditorFileSystemDirectory *addon_root_directory = memnew(EditorFileSystemDirectory);
+		d->change_dir(addon_root_directory_path);
+		PackedStringArray path_parts = addon_root_directory_path.split("/");
+		path_parts.reverse();
+		addon_root_directory->name = path_parts[0];
+		_scan_new_dir(addon_root_directory, d, addons_sp.get_sub(i, addons.size()));
+		addon_root_directories.set(addon_root_directory_path, addon_root_directory);
+	}
+
+	emit_signal("addons_scanned");
+	_update_extensions();
+
 	EditorProgressBG scan_progress("efs", "ScanFS", 1000);
 
 	ScanProgress sp;
@@ -315,7 +344,6 @@ void EditorFileSystem::_scan_filesystem() {
 	new_filesystem = memnew(EditorFileSystemDirectory);
 	new_filesystem->parent = nullptr;
 
-	DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	d->change_dir("res://");
 	_scan_new_dir(new_filesystem, d, sp);
 
@@ -707,6 +735,9 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 
 	p_dir->modified_time = FileAccess::get_modified_time(cd);
 
+	List<String> addon_root_directory_paths;
+	addon_root_directories.get_key_list(&addon_root_directory_paths);
+
 	da->list_dir_begin();
 	while (true) {
 		String f = da->get_next();
@@ -751,10 +782,16 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 			} else {
 				EditorFileSystemDirectory *efd = memnew(EditorFileSystemDirectory);
 
-				efd->parent = p_dir;
-				efd->name = E->get();
-
-				_scan_new_dir(efd, da, p_progress.get_sub(idx, total));
+				// Directories containing addon plugins are scanned separately,
+				// but they still need to be visible in the file system dock.
+				if (addon_root_directory_paths.find(cd.plus_file(E->get()))) {
+					efd = addon_root_directories.get(cd.plus_file(E->get()));
+					efd->parent = p_dir;
+				} else {
+					efd->parent = p_dir;
+					efd->name = E->get();
+					_scan_new_dir(efd, da, p_progress.get_sub(idx, total));
+				}
 
 				int idx2 = 0;
 				for (int i = 0; i < p_dir->subdirs.size(); i++) {
@@ -2342,6 +2379,7 @@ void EditorFileSystem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_file_type", "path"), &EditorFileSystem::get_file_type);
 	ClassDB::bind_method(D_METHOD("update_script_classes"), &EditorFileSystem::update_script_classes);
 
+	ADD_SIGNAL(MethodInfo("addons_scanned"));
 	ADD_SIGNAL(MethodInfo("filesystem_changed"));
 	ADD_SIGNAL(MethodInfo("sources_changed", PropertyInfo(Variant::BOOL, "exist")));
 	ADD_SIGNAL(MethodInfo("resources_reimported", PropertyInfo(Variant::PACKED_STRING_ARRAY, "resources")));

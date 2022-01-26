@@ -551,6 +551,7 @@ private:
 
 	bool _initializing_addons;
 	Map<String, EditorPlugin *> plugin_addons;
+	void _initialize_addons();
 
 	static Ref<Texture2D> _file_dialog_get_icon(const String &p_path);
 	static void _file_dialog_register(FileDialog *p_dialog);
