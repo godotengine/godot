@@ -50,6 +50,12 @@
             android:name="xr_hand_tracking_metadata_name"
             android:value="xr_hand_tracking_metadata_value"/>
 
+        <!-- Supported Meta devices -->
+        <!-- This is removed by the exporter if the xr mode is not VR. -->
+        <meta-data
+            android:name="com.oculus.supportedDevices"
+            android:value="all" />
+
         <activity
             android:name=".GodotApp"
             android:label="@string/godot_project_name_string"
