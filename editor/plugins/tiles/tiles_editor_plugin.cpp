@@ -218,15 +218,29 @@ void TilesEditorPlugin::set_sources_lists_current(int p_current) {
 	atlas_sources_lists_current = p_current;
 }
 
-void TilesEditorPlugin::synchronize_sources_list(Object *p_current) {
-	ItemList *item_list = Object::cast_to<ItemList>(p_current);
+void TilesEditorPlugin::synchronize_sources_list(Object *p_current_list, Object *p_current_sort_button) {
+	ItemList *item_list = Object::cast_to<ItemList>(p_current_list);
+	MenuButton *sorting_button = Object::cast_to<MenuButton>(p_current_sort_button);
 	ERR_FAIL_COND(!item_list);
+	ERR_FAIL_COND(!sorting_button);
+
+	if (sorting_button->is_visible_in_tree()) {
+		for (int i = 0; i != SOURCE_SORT_MAX; i++) {
+			sorting_button->get_popup()->set_item_checked(i, (i == (int)source_sort));
+		}
+	}
 
 	if (item_list->is_visible_in_tree()) {
 		if (atlas_sources_lists_current < 0 || atlas_sources_lists_current >= item_list->get_item_count()) {
 			item_list->deselect_all();
 		} else {
+			// Make sure the selection is not overwritten after sorting.
+			int atlas_sources_lists_current_mem = atlas_sources_lists_current;
+			item_list->emit_signal(SNAME("sort_request"));
+			atlas_sources_lists_current = atlas_sources_lists_current_mem;
+
 			item_list->set_current(atlas_sources_lists_current);
+			item_list->ensure_current_is_visible();
 			item_list->emit_signal(SNAME("item_selected"), atlas_sources_lists_current);
 		}
 	}
@@ -244,6 +258,87 @@ void TilesEditorPlugin::synchronize_atlas_view(Object *p_current) {
 	if (tile_atlas_view->is_visible_in_tree()) {
 		tile_atlas_view->set_transform(atlas_view_zoom, atlas_view_scroll);
 	}
+}
+
+void TilesEditorPlugin::set_sorting_option(int p_option) {
+	source_sort = p_option;
+}
+
+List<int> TilesEditorPlugin::get_sorted_sources(const Ref<TileSet> tile_set) const {
+	SourceNameComparator::tile_set = tile_set;
+	List<int> source_ids;
+
+	for (int i = 0; i < tile_set->get_source_count(); i++) {
+		source_ids.push_back(tile_set->get_source_id(i));
+	}
+
+	switch (source_sort) {
+		case SOURCE_SORT_ID_REVERSE:
+			// Already sorted.
+			source_ids.reverse();
+			break;
+		case SOURCE_SORT_NAME:
+			source_ids.sort_custom<SourceNameComparator>();
+			break;
+		case SOURCE_SORT_NAME_REVERSE:
+			source_ids.sort_custom<SourceNameComparator>();
+			source_ids.reverse();
+			break;
+		default: // SOURCE_SORT_ID
+			break;
+	}
+
+	SourceNameComparator::tile_set.unref();
+	return source_ids;
+}
+
+Ref<TileSet> TilesEditorPlugin::SourceNameComparator::tile_set;
+
+bool TilesEditorPlugin::SourceNameComparator::operator()(const int &p_a, const int &p_b) const {
+	String name_a;
+	String name_b;
+
+	{
+		TileSetSource *source = *tile_set->get_source(p_a);
+
+		if (!source->get_name().is_empty()) {
+			name_a = source->get_name();
+		}
+
+		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
+		if (atlas_source) {
+			Ref<Texture2D> texture = atlas_source->get_texture();
+			if (name_a.is_empty() && texture.is_valid()) {
+				name_a = texture->get_path().get_file();
+			}
+		}
+
+		if (name_a.is_empty()) {
+			name_a = itos(p_a);
+		}
+	}
+
+	{
+		TileSetSource *source = *tile_set->get_source(p_b);
+
+		if (!source->get_name().is_empty()) {
+			name_b = source->get_name();
+		}
+
+		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
+		if (atlas_source) {
+			Ref<Texture2D> texture = atlas_source->get_texture();
+			if (name_b.is_empty() && texture.is_valid()) {
+				name_b = texture->get_path().get_file();
+			}
+		}
+
+		if (name_b.is_empty()) {
+			name_b = itos(p_b);
+		}
+	}
+
+	return NaturalNoCaseComparator()(name_a, name_b);
 }
 
 void TilesEditorPlugin::edit(Object *p_object) {
