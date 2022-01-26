@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_main_osx.mm                                                    */
+/*  godot_window.mm                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,60 +28,42 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "main/main.h"
+#include "godot_window.h"
 
-#include "os_osx.h"
+#include "display_server_osx.h"
 
-#include <string.h>
-#include <unistd.h>
+@implementation GodotWindow
 
-int main(int argc, char **argv) {
-#if defined(VULKAN_ENABLED)
-	// MoltenVK - enable full component swizzling support.
-	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1);
-#endif
+- (id)init {
+	self = [super init];
+	window_id = DisplayServer::INVALID_WINDOW_ID;
+	return self;
+}
 
-	int first_arg = 1;
-	const char *dbg_arg = "-NSDocumentRevisionsDebugMode";
-	printf("arguments\n");
-	for (int i = 0; i < argc; i++) {
-		if (strcmp(dbg_arg, argv[i]) == 0) {
-			first_arg = i + 2;
-		}
-		printf("%i: %s\n", i, argv[i]);
-	};
+- (void)setWindowID:(DisplayServerOSX::WindowID)wid {
+	window_id = wid;
+}
 
-#ifdef DEBUG_ENABLED
-	// Lets report the path we made current after all that.
-	char cwd[4096];
-	getcwd(cwd, 4096);
-	printf("Current path: %s\n", cwd);
-#endif
-
-	OS_OSX os;
-	Error err;
-
-	// We must override main when testing is enabled.
-	TEST_MAIN_OVERRIDE
-
-	if (os.get_open_with_filename() != "") {
-		char *argv_c = (char *)malloc(os.get_open_with_filename().utf8().size());
-		memcpy(argv_c, os.get_open_with_filename().utf8().get_data(), os.get_open_with_filename().utf8().size());
-		err = Main::setup(argv[0], 1, &argv_c);
-		free(argv_c);
-	} else {
-		err = Main::setup(argv[0], argc - first_arg, &argv[first_arg]);
+- (BOOL)canBecomeKeyWindow {
+	// Required for NSBorderlessWindowMask windows.
+	DisplayServerOSX *ds = (DisplayServerOSX *)DisplayServer::get_singleton();
+	if (!ds || !ds->has_window(window_id)) {
+		return YES;
 	}
 
-	if (err != OK) {
-		return 255;
+	DisplayServerOSX::WindowData &wd = ds->get_window(window_id);
+	return !wd.no_focus;
+}
+
+- (BOOL)canBecomeMainWindow {
+	// Required for NSBorderlessWindowMask windows.
+	DisplayServerOSX *ds = (DisplayServerOSX *)DisplayServer::get_singleton();
+	if (!ds || !ds->has_window(window_id)) {
+		return YES;
 	}
 
-	if (Main::start()) {
-		os.run(); // It is actually the OS that decides how to run.
-	}
+	DisplayServerOSX::WindowData &wd = ds->get_window(window_id);
+	return !wd.no_focus;
+}
 
-	Main::cleanup();
-
-	return os.get_exit_code();
-};
+@end

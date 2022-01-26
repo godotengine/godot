@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_main_osx.mm                                                    */
+/*  gl_manager_osx_legacy.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,60 +28,70 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "main/main.h"
+#ifndef GL_MANAGER_OSX_LEGACY_H
+#define GL_MANAGER_OSX_LEGACY_H
 
-#include "os_osx.h"
+#if defined(OSX_ENABLED) && defined(GLES3_ENABLED)
 
-#include <string.h>
-#include <unistd.h>
+#include "core/error/error_list.h"
+#include "core/os/os.h"
+#include "core/templates/local_vector.h"
+#include "servers/display_server.h"
 
-int main(int argc, char **argv) {
-#if defined(VULKAN_ENABLED)
-	// MoltenVK - enable full component swizzling support.
-	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1);
-#endif
+#include <AppKit/AppKit.h>
+#include <ApplicationServices/ApplicationServices.h>
+#include <CoreVideo/CoreVideo.h>
 
-	int first_arg = 1;
-	const char *dbg_arg = "-NSDocumentRevisionsDebugMode";
-	printf("arguments\n");
-	for (int i = 0; i < argc; i++) {
-		if (strcmp(dbg_arg, argv[i]) == 0) {
-			first_arg = i + 2;
-		}
-		printf("%i: %s\n", i, argv[i]);
+class GLManager_OSX {
+public:
+	enum ContextType {
+		GLES_3_0_COMPATIBLE,
 	};
 
-#ifdef DEBUG_ENABLED
-	// Lets report the path we made current after all that.
-	char cwd[4096];
-	getcwd(cwd, 4096);
-	printf("Current path: %s\n", cwd);
-#endif
+private:
+	struct GLWindow {
+		int width = 0;
+		int height = 0;
 
-	OS_OSX os;
-	Error err;
+		id window_view = nullptr;
+		NSOpenGLContext *context = nullptr;
+	};
 
-	// We must override main when testing is enabled.
-	TEST_MAIN_OVERRIDE
+	Map<DisplayServer::WindowID, GLWindow> windows;
 
-	if (os.get_open_with_filename() != "") {
-		char *argv_c = (char *)malloc(os.get_open_with_filename().utf8().size());
-		memcpy(argv_c, os.get_open_with_filename().utf8().get_data(), os.get_open_with_filename().utf8().size());
-		err = Main::setup(argv[0], 1, &argv_c);
-		free(argv_c);
-	} else {
-		err = Main::setup(argv[0], argc - first_arg, &argv[first_arg]);
-	}
+	NSOpenGLContext *shared_context = nullptr;
+	DisplayServer::WindowID current_window = DisplayServer::INVALID_WINDOW_ID;
 
-	if (err != OK) {
-		return 255;
-	}
+	Error create_context(GLWindow &win);
 
-	if (Main::start()) {
-		os.run(); // It is actually the OS that decides how to run.
-	}
+	bool use_vsync = false;
+	ContextType context_type;
 
-	Main::cleanup();
+public:
+	Error window_create(DisplayServer::WindowID p_window_id, id p_view, int p_width, int p_height);
+	void window_destroy(DisplayServer::WindowID p_window_id);
+	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
 
-	return os.get_exit_code();
+	int window_get_width(DisplayServer::WindowID p_window_id = 0);
+	int window_get_height(DisplayServer::WindowID p_window_id = 0);
+
+	void release_current();
+	void make_current();
+	void swap_buffers();
+
+	void window_make_current(DisplayServer::WindowID p_window_id);
+
+	void window_update(DisplayServer::WindowID p_window_id);
+	void window_set_per_pixel_transparency_enabled(DisplayServer::WindowID p_window_id, bool p_enabled);
+
+	Error initialize();
+
+	void set_use_vsync(bool p_use);
+	bool is_using_vsync() const;
+
+	GLManager_OSX(ContextType p_context_type);
+	~GLManager_OSX();
 };
+
+#endif // OSX_ENABLED && GLES3_ENABLED
+#endif // GL_MANAGER_OSX_LEGACY_H

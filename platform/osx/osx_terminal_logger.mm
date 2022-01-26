@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_main_osx.mm                                                    */
+/*  osx_terminal_logger.mm                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,60 +28,54 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "main/main.h"
+#include "osx_terminal_logger.h"
 
-#include "os_osx.h"
+#ifdef OSX_ENABLED
 
-#include <string.h>
-#include <unistd.h>
+#include <os/log.h>
 
-int main(int argc, char **argv) {
-#if defined(VULKAN_ENABLED)
-	// MoltenVK - enable full component swizzling support.
-	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1);
-#endif
-
-	int first_arg = 1;
-	const char *dbg_arg = "-NSDocumentRevisionsDebugMode";
-	printf("arguments\n");
-	for (int i = 0; i < argc; i++) {
-		if (strcmp(dbg_arg, argv[i]) == 0) {
-			first_arg = i + 2;
-		}
-		printf("%i: %s\n", i, argv[i]);
-	};
-
-#ifdef DEBUG_ENABLED
-	// Lets report the path we made current after all that.
-	char cwd[4096];
-	getcwd(cwd, 4096);
-	printf("Current path: %s\n", cwd);
-#endif
-
-	OS_OSX os;
-	Error err;
-
-	// We must override main when testing is enabled.
-	TEST_MAIN_OVERRIDE
-
-	if (os.get_open_with_filename() != "") {
-		char *argv_c = (char *)malloc(os.get_open_with_filename().utf8().size());
-		memcpy(argv_c, os.get_open_with_filename().utf8().get_data(), os.get_open_with_filename().utf8().size());
-		err = Main::setup(argv[0], 1, &argv_c);
-		free(argv_c);
-	} else {
-		err = Main::setup(argv[0], argc - first_arg, &argv[first_arg]);
+void OSXTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type) {
+	if (!should_log(true)) {
+		return;
 	}
 
-	if (err != OK) {
-		return 255;
+	const char *err_details;
+	if (p_rationale && p_rationale[0])
+		err_details = p_rationale;
+	else
+		err_details = p_code;
+
+	switch (p_type) {
+		case ERR_WARNING:
+			os_log_info(OS_LOG_DEFAULT,
+					"WARNING: %{public}s\nat: %{public}s (%{public}s:%i)",
+					err_details, p_function, p_file, p_line);
+			logf_error("\E[1;33mWARNING:\E[0;93m %s\n", err_details);
+			logf_error("\E[0;90m     at: %s (%s:%i)\E[0m\n", p_function, p_file, p_line);
+			break;
+		case ERR_SCRIPT:
+			os_log_error(OS_LOG_DEFAULT,
+					"SCRIPT ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
+					err_details, p_function, p_file, p_line);
+			logf_error("\E[1;35mSCRIPT ERROR:\E[0;95m %s\n", err_details);
+			logf_error("\E[0;90m          at: %s (%s:%i)\E[0m\n", p_function, p_file, p_line);
+			break;
+		case ERR_SHADER:
+			os_log_error(OS_LOG_DEFAULT,
+					"SHADER ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
+					err_details, p_function, p_file, p_line);
+			logf_error("\E[1;36mSHADER ERROR:\E[0;96m %s\n", err_details);
+			logf_error("\E[0;90m          at: %s (%s:%i)\E[0m\n", p_function, p_file, p_line);
+			break;
+		case ERR_ERROR:
+		default:
+			os_log_error(OS_LOG_DEFAULT,
+					"ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
+					err_details, p_function, p_file, p_line);
+			logf_error("\E[1;31mERROR:\E[0;91m %s\n", err_details);
+			logf_error("\E[0;90m   at: %s (%s:%i)\E[0m\n", p_function, p_file, p_line);
+			break;
 	}
+}
 
-	if (Main::start()) {
-		os.run(); // It is actually the OS that decides how to run.
-	}
-
-	Main::cleanup();
-
-	return os.get_exit_code();
-};
+#endif // OSX_ENABLED
