@@ -123,10 +123,13 @@ public:
 
 	// note, external color/depth/vrs texture support will be added here soon.
 
-	virtual Vector<BlitToScreen> commit_views(RID p_render_target, const Rect2 &p_screen_rect) = 0; /* commit rendered views to the XR interface */
-
 	virtual void process() = 0;
-	virtual void notification(int p_what);
+	virtual void pre_render(){};
+	virtual bool pre_draw_viewport(RID p_render_target) { return true; }; /* inform XR interface we are about to start our viewport draw process */
+	virtual Vector<BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) = 0; /* inform XR interface we finished our viewport draw process */
+	virtual void end_frame(){};
+
+	virtual void notification(int p_what){};
 
 	XRInterface();
 	~XRInterface();
