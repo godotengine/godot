@@ -178,7 +178,7 @@ void CreateDialog::_update_search() {
 	// Filter all candidate results.
 	Vector<String> candidates;
 	for (List<StringName>::Element *I = type_list.front(); I; I = I->next()) {
-		if (empty_search || search_text.is_subsequence_ofi(I->get())) {
+		if (empty_search || search_text.is_subsequence_ofn(I->get())) {
 			candidates.push_back(I->get());
 		}
 	}

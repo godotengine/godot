@@ -1382,7 +1382,7 @@ static void _register_variant_builtin_methods() {
 	bind_methodv(String, begins_with, static_cast<bool (String::*)(const String &) const>(&String::begins_with), sarray("text"), varray());
 	bind_method(String, ends_with, sarray("text"), varray());
 	bind_method(String, is_subsequence_of, sarray("text"), varray());
-	bind_method(String, is_subsequence_ofi, sarray("text"), varray());
+	bind_method(String, is_subsequence_ofn, sarray("text"), varray());
 	bind_method(String, bigrams, sarray(), varray());
 	bind_method(String, similarity, sarray("text"), varray());
 

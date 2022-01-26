@@ -285,7 +285,7 @@
 				Returns [code]true[/code] if this string is a subsequence of the given string.
 			</description>
 		</method>
-		<method name="is_subsequence_ofi" qualifiers="const">
+		<method name="is_subsequence_ofn" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="text" type="String" />
 			<description>

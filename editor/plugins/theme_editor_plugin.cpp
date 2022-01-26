@@ -2076,7 +2076,7 @@ void ThemeTypeDialog::_update_add_type_options(const String &p_filter) {
 	Vector<StringName> unique_names;
 	for (const StringName &E : names) {
 		// Filter out undesired values.
-		if (!p_filter.is_subsequence_ofi(String(E))) {
+		if (!p_filter.is_subsequence_ofn(String(E))) {
 			continue;
 		}
 

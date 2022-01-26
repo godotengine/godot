@@ -877,7 +877,7 @@ TEST_CASE("[String] is_subsequence_of") {
 	String a = "is subsequence of";
 	CHECK(String("sub").is_subsequence_of(a));
 	CHECK(!String("Sub").is_subsequence_of(a));
-	CHECK(String("Sub").is_subsequence_ofi(a));
+	CHECK(String("Sub").is_subsequence_ofn(a));
 }
 
 TEST_CASE("[String] match") {

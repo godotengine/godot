@@ -186,7 +186,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 			// Apply filters.
 			while (parent) {
 				const bool had_siblings = item->get_prev() || item->get_next();
-				if (filter.is_subsequence_ofi(item->get_text(0))) {
+				if (filter.is_subsequence_ofn(item->get_text(0))) {
 					break; // Filter matches, must survive.
 				}
 				parent->remove_child(item);
