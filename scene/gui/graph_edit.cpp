@@ -1625,6 +1625,7 @@ float GraphEdit::get_minimap_opacity() const {
 
 void GraphEdit::set_minimap_enabled(bool p_enable) {
 	minimap_button->set_pressed(p_enable);
+	_minimap_toggled();
 	minimap->update();
 }
 
