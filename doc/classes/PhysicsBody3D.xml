@@ -32,12 +32,12 @@
 		</method>
 		<method name="move_and_collide">
 			<return type="KinematicCollision3D" />
-			<argument index="0" name="linear_velocity" type="Vector3" />
+			<argument index="0" name="distance" type="Vector3" />
 			<argument index="1" name="test_only" type="bool" default="false" />
 			<argument index="2" name="safe_margin" type="float" default="0.001" />
 			<argument index="3" name="max_collisions" type="int" default="1" />
 			<description>
-				Moves the body along the vector [code]linear_velocity[/code]. This method should be used in [method Node._physics_process] (or in a method called by [method Node._physics_process]), as it uses the physics step's [code]delta[/code] value automatically in calculations. Otherwise, the simulation will run at an incorrect speed.
+				Moves the body along the vector [code]distance[/code]. In order to be frame rate independent in [method Node._physics_process] or [method Node._process], [code]distance[/code] should be computed using [code]delta[/code].
 				The body will stop if it collides. Returns a [KinematicCollision3D], which contains information about the collision when stopped, or when touching another body along the motion.
 				If [code]test_only[/code] is [code]true[/code], the body does not move but the would-be collision information is given.
 				[code]safe_margin[/code] is the extra margin used for collision recovery (see [member CharacterBody3D.collision/safe_margin] for more details).
@@ -62,13 +62,13 @@
 		<method name="test_move">
 			<return type="bool" />
 			<argument index="0" name="from" type="Transform3D" />
-			<argument index="1" name="linear_velocity" type="Vector3" />
+			<argument index="1" name="distance" type="Vector3" />
 			<argument index="2" name="collision" type="KinematicCollision3D" default="null" />
 			<argument index="3" name="safe_margin" type="float" default="0.001" />
 			<argument index="4" name="max_collisions" type="int" default="1" />
 			<description>
-				Checks for collisions without moving the body. This method should be used in [method Node._physics_process] (or in a method called by [method Node._physics_process]), as it uses the physics step's [code]delta[/code] value automatically in calculations. Otherwise, the simulation will run at an incorrect speed.
-				Virtually sets the node's position, scale and rotation to that of the given [Transform3D], then tries to move the body along the vector [code]linear_velocity[/code]. Returns [code]true[/code] if a collision would stop the body from moving along the whole path.
+				Checks for collisions without moving the body. In order to be frame rate independent in [method Node._physics_process] or [method Node._process], [code]distance[/code] should be computed using [code]delta[/code].
+				Virtually sets the node's position, scale and rotation to that of the given [Transform3D], then tries to move the body along the vector [code]distance[/code]. Returns [code]true[/code] if a collision would stop the body from moving along the whole path.
 				[code]collision[/code] is an optional object of type [KinematicCollision3D], which contains additional information about the collision when stopped, or when touching another body along the motion.
 				[code]safe_margin[/code] is the extra margin used for collision recovery (see [member CharacterBody3D.collision/safe_margin] for more details).
 				[code]max_collisions[/code] allows to retrieve more than one collision result.

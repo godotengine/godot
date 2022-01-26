@@ -34,8 +34,8 @@
 #include "scene/scene_string_names.h"
 
 void PhysicsBody2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("move_and_collide", "linear_velocity", "test_only", "safe_margin"), &PhysicsBody2D::_move, DEFVAL(false), DEFVAL(0.08));
-	ClassDB::bind_method(D_METHOD("test_move", "from", "linear_velocity", "collision", "safe_margin"), &PhysicsBody2D::test_move, DEFVAL(Variant()), DEFVAL(0.08));
+	ClassDB::bind_method(D_METHOD("move_and_collide", "distance", "test_only", "safe_margin"), &PhysicsBody2D::_move, DEFVAL(false), DEFVAL(0.08));
+	ClassDB::bind_method(D_METHOD("test_move", "from", "distance", "collision", "safe_margin"), &PhysicsBody2D::test_move, DEFVAL(Variant()), DEFVAL(0.08));
 
 	ClassDB::bind_method(D_METHOD("get_collision_exceptions"), &PhysicsBody2D::get_collision_exceptions);
 	ClassDB::bind_method(D_METHOD("add_collision_exception_with", "body"), &PhysicsBody2D::add_collision_exception_with);
@@ -54,11 +54,8 @@ PhysicsBody2D::~PhysicsBody2D() {
 	}
 }
 
-Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_linear_velocity, bool p_test_only, real_t p_margin) {
-	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky.
-	double delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
-
-	PhysicsServer2D::MotionParameters parameters(get_global_transform(), p_linear_velocity * delta, p_margin);
+Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_distance, bool p_test_only, real_t p_margin) {
+	PhysicsServer2D::MotionParameters parameters(get_global_transform(), p_distance, p_margin);
 
 	PhysicsServer2D::MotionResult result;
 	if (move_and_collide(parameters, result, p_test_only)) {
@@ -129,7 +126,7 @@ bool PhysicsBody2D::move_and_collide(const PhysicsServer2D::MotionParameters &p_
 	return colliding;
 }
 
-bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_linear_velocity, const Ref<KinematicCollision2D> &r_collision, real_t p_margin) {
+bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_distance, const Ref<KinematicCollision2D> &r_collision, real_t p_margin) {
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
 	PhysicsServer2D::MotionResult *r = nullptr;
@@ -141,10 +138,7 @@ bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_linear
 		r = &temp_result;
 	}
 
-	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky.
-	double delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
-
-	PhysicsServer2D::MotionParameters parameters(p_from, p_linear_velocity * delta, p_margin);
+	PhysicsServer2D::MotionParameters parameters(p_from, p_distance, p_margin);
 
 	bool colliding = PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), parameters, r);
 
