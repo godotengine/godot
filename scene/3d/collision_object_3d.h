@@ -57,7 +57,7 @@ private:
 	PhysicsServer3D::BodyMode body_mode = PhysicsServer3D::BODY_MODE_STATIC;
 
 	struct ShapeData {
-		Object *owner = nullptr;
+		ObjectID owner_id;
 		Transform3D xform;
 		struct ShapeBase {
 			RID debug_shape;
