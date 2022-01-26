@@ -571,6 +571,8 @@ Control::CursorShape CodeEdit::get_cursor_shape(const Point2 &p_pos) const {
 // Overridable actions
 void CodeEdit::_handle_unicode_input_internal(const uint32_t p_unicode) {
 	bool had_selection = has_selection();
+	String selection_text = (had_selection ? get_selected_text() : "");
+
 	if (had_selection) {
 		begin_complex_operation();
 		delete_selection();
@@ -591,27 +593,38 @@ void CodeEdit::_handle_unicode_input_internal(const uint32_t p_unicode) {
 	if (auto_brace_completion_enabled) {
 		int cl = get_caret_line();
 		int cc = get_caret_column();
-		int caret_move_offset = 1;
 
-		int post_brace_pair = cc < get_line(cl).length() ? _get_auto_brace_pair_close_at_pos(cl, cc) : -1;
-
-		if (has_string_delimiter(chr) && cc > 0 && _is_char(get_line(cl)[cc - 1]) && post_brace_pair == -1) {
-			insert_text_at_caret(chr);
-		} else if (cc < get_line(cl).length() && _is_char(get_line(cl)[cc])) {
-			insert_text_at_caret(chr);
-		} else if (post_brace_pair != -1 && auto_brace_completion_pairs[post_brace_pair].close_key[0] == chr[0]) {
-			caret_move_offset = auto_brace_completion_pairs[post_brace_pair].close_key.length();
-		} else if (is_in_comment(cl, cc) != -1 || (is_in_string(cl, cc) != -1 && has_string_delimiter(chr))) {
-			insert_text_at_caret(chr);
-		} else {
+		if (had_selection) {
 			insert_text_at_caret(chr);
 
-			int pre_brace_pair = _get_auto_brace_pair_open_at_pos(cl, cc + 1);
-			if (pre_brace_pair != -1) {
-				insert_text_at_caret(auto_brace_completion_pairs[pre_brace_pair].close_key);
+			String close_key = get_auto_brace_completion_close_key(chr);
+			if (!close_key.is_empty()) {
+				insert_text_at_caret(selection_text + close_key);
+				set_caret_column(get_caret_column() - 1);
 			}
+		} else {
+			int caret_move_offset = 1;
+
+			int post_brace_pair = cc < get_line(cl).length() ? _get_auto_brace_pair_close_at_pos(cl, cc) : -1;
+
+			if (has_string_delimiter(chr) && cc > 0 && _is_char(get_line(cl)[cc - 1]) && post_brace_pair == -1) {
+				insert_text_at_caret(chr);
+			} else if (cc < get_line(cl).length() && _is_char(get_line(cl)[cc])) {
+				insert_text_at_caret(chr);
+			} else if (post_brace_pair != -1 && auto_brace_completion_pairs[post_brace_pair].close_key[0] == chr[0]) {
+				caret_move_offset = auto_brace_completion_pairs[post_brace_pair].close_key.length();
+			} else if (is_in_comment(cl, cc) != -1 || (is_in_string(cl, cc) != -1 && has_string_delimiter(chr))) {
+				insert_text_at_caret(chr);
+			} else {
+				insert_text_at_caret(chr);
+
+				int pre_brace_pair = _get_auto_brace_pair_open_at_pos(cl, cc + 1);
+				if (pre_brace_pair != -1) {
+					insert_text_at_caret(auto_brace_completion_pairs[pre_brace_pair].close_key);
+				}
+			}
+			set_caret_column(cc + caret_move_offset);
 		}
-		set_caret_column(cc + caret_move_offset);
 	} else {
 		insert_text_at_caret(chr);
 	}
