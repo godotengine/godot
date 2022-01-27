@@ -4911,6 +4911,7 @@ void RendererStorageRD::particles_request_process(RID p_particles) {
 
 	if (!particles->dirty) {
 		particles->dirty = true;
+        particles->inactive_time = 0;
 		particles->update_list = particle_update_list;
 		particle_update_list = particles;
 	}
