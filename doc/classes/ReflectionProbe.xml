@@ -47,6 +47,7 @@
 		</member>
 		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance" default="0.0">
 			The maximum distance away from the [ReflectionProbe] an object can be before it is culled. Decrease this to improve performance, especially when using the [constant UPDATE_ALWAYS] [member update_mode].
+			[b]Note:[/b] The maximum reflection distance is always at least equal to the [member extents]. This means that decreasing [member max_distance] will not always cull objects from reflections, especially if the reflection probe's [member extents] are already large.
 		</member>
 		<member name="origin_offset" type="Vector3" setter="set_origin_offset" getter="get_origin_offset" default="Vector3( 0, 0, 0 )">
 			Sets the origin offset to be used when this [ReflectionProbe] is in [member box_projection] mode. This can be set to a non-zero value to ensure a reflection fits a rectangle-shaped room, while reducing the amount of objects that "get in the way" of the reflection.
