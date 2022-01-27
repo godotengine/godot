@@ -139,9 +139,7 @@ void register_core_types() {
 	resource_format_image.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_format_image);
 
-
 	redirect = Redirect::create();
-
 
 	GDREGISTER_CLASS(Object);
 
