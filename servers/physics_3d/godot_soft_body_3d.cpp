@@ -245,7 +245,7 @@ void GodotSoftBody3D::update_area() {
 		const Vector3 a = x1 - x0;
 		const Vector3 b = x2 - x0;
 		const Vector3 cr = vec3_cross(a, b);
-		face.ra = cr.length();
+		face.ra = cr.length() * 0.5;
 	}
 
 	// Node area.
