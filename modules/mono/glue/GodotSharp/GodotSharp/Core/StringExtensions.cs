@@ -727,7 +727,7 @@ namespace Godot
         /// <summary>
         /// Check whether this string is a subsequence of the given string.
         /// </summary>
-        /// <seealso cref="IsSubsequenceOfI(string, string)"/>
+        /// <seealso cref="IsSubsequenceOfN(string, string)"/>
         /// <param name="instance">The subsequence to search.</param>
         /// <param name="text">The string that contains the subsequence.</param>
         /// <param name="caseSensitive">If <see langword="true"/>, the check is case sensitive.</param>
@@ -779,7 +779,7 @@ namespace Godot
         /// <param name="instance">The subsequence to search.</param>
         /// <param name="text">The string that contains the subsequence.</param>
         /// <returns>If the string is a subsequence of the given string.</returns>
-        public static bool IsSubsequenceOfI(this string instance, string text)
+        public static bool IsSubsequenceOfN(this string instance, string text)
         {
             return instance.IsSubsequenceOf(text, caseSensitive: false);
         }
