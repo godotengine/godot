@@ -114,6 +114,24 @@ Ref<Image> OpenSimplexNoise::get_image(int p_width, int p_height, const Vector2 
 	return image;
 }
 
+Ref<Image> OpenSimplexNoise::get_image_z(float z, int p_width, int p_height, const Vector2 &p_noise_offset) const {
+	Vector<uint8_t> data;
+	data.resize(p_width * p_height);
+
+	uint8_t *wd8 = data.ptrw();
+
+	for (int i = 0; i < p_height; i++) {
+		for (int j = 0; j < p_width; j++) {
+			float v = get_noise_2d(float(j) + p_noise_offset.x, float(i) + p_noise_offset.y, z);
+			v = v * 0.5 + 0.5; // Normalize [0..1]
+			wd8[(i * p_width + j)] = uint8_t(CLAMP(v * 255.0, 0, 255));
+		}
+	}
+
+	Ref<Image> image = memnew(Image(p_width, p_height, false, Image::FORMAT_L8, data));
+	return image;
+}
+
 Ref<Image> OpenSimplexNoise::get_seamless_image(int p_size) const {
 	Vector<uint8_t> data;
 	data.resize(p_size * p_size);
