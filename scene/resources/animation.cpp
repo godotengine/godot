@@ -2474,34 +2474,38 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, double p_time, Interpol
 					real_t delta = (length - p_keys[next].time) - (length - p_keys[idx].time);
 					real_t from = (length - p_time) - (length - p_keys[idx].time);
 
-					if (Math::is_zero_approx(delta))
+					if (Math::is_zero_approx(delta)) {
 						c = 0;
-					else
+					} else {
 						c = from / delta;
+					}
 				} else {
 					next = len - 1;
 					real_t delta = p_keys[idx].time + (length - p_keys[next].time);
 					real_t from = (length - p_time) - (length - p_keys[idx].time);
 
-					if (Math::is_zero_approx(delta))
+					if (Math::is_zero_approx(delta)) {
 						c = 0;
-					else
+					} else {
 						c = from / delta;
+					}
 				}
 			} else {
 				// on loop, in front of last key
 				idx = 0;
 				next = len - 1;
 				real_t endtime = p_keys[idx].time;
-				if (endtime > length) // may be keys past the end
+				if (endtime > length) { // may be keys past the end
 					endtime = length;
+				}
 				real_t delta = p_keys[next].time - endtime;
 				real_t from = p_time - endtime;
 
-				if (Math::is_zero_approx(delta))
+				if (Math::is_zero_approx(delta)) {
 					c = 0;
-				else
+				} else {
 					c = from / delta;
+				}
 			}
 		}
 	} else { // no loop

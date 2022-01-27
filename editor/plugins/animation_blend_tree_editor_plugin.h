@@ -75,7 +75,7 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 		String type;
 		Ref<Script> script;
 		int input_port_count;
-		AddOption(const String &p_name = String(), const String &p_type = String(), bool p_input_port_count = 0) :
+		AddOption(const String &p_name = String(), const String &p_type = String(), int p_input_port_count = 0) :
 				name(p_name),
 				type(p_type),
 				input_port_count(p_input_port_count) {

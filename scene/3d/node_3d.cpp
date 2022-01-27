@@ -300,8 +300,9 @@ Node3D *Node3D::get_parent_node_3d() const {
 }
 
 Transform3D Node3D::get_relative_transform(const Node *p_parent) const {
-	if (p_parent == this)
+	if (p_parent == this) {
 		return Transform3D();
+	}
 
 	ERR_FAIL_COND_V(!data.parent, Transform3D());
 

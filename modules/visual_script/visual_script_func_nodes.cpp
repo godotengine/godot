@@ -912,7 +912,7 @@ int VisualScriptPropertySet::get_output_sequence_port_count() const {
 }
 
 bool VisualScriptPropertySet::has_input_sequence_port() const {
-	return 1;
+	return true;
 }
 
 Node *VisualScriptPropertySet::_get_base_node() const {

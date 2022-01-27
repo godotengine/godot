@@ -1332,8 +1332,9 @@ int DisplayServerX11::window_get_current_screen(WindowID p_window) const {
 
 void DisplayServerX11::gl_window_make_current(DisplayServer::WindowID p_window_id) {
 #if defined(GLES3_ENABLED)
-	if (gl_manager)
+	if (gl_manager) {
 		gl_manager->window_make_current(p_window_id);
+	}
 #endif
 }
 

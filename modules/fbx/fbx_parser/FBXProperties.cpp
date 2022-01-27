@@ -145,8 +145,7 @@ std::string PeekPropertyName(const Element &element) {
 } // namespace
 
 // ------------------------------------------------------------------------------------------------
-PropertyTable::PropertyTable() :
-		element(nullptr) {
+PropertyTable::PropertyTable() {
 }
 
 // Is used when dealing with FBX Objects not metadata.

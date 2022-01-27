@@ -1221,8 +1221,9 @@ String InputEventScreenDrag::to_string() {
 
 bool InputEventScreenDrag::accumulate(const Ref<InputEvent> &p_event) {
 	Ref<InputEventScreenDrag> drag = p_event;
-	if (drag.is_null())
+	if (drag.is_null()) {
 		return false;
+	}
 
 	if (get_index() != drag->get_index()) {
 		return false;
