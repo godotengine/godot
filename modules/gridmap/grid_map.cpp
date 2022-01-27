@@ -428,6 +428,75 @@ int GridMap::get_cell_item_orientation(const Vector3i &p_position) const {
 	return cell_map[key].rot;
 }
 
+static const Basis _ortho_bases[24] = {
+	Basis(1, 0, 0, 0, 1, 0, 0, 0, 1),
+	Basis(0, -1, 0, 1, 0, 0, 0, 0, 1),
+	Basis(-1, 0, 0, 0, -1, 0, 0, 0, 1),
+	Basis(0, 1, 0, -1, 0, 0, 0, 0, 1),
+	Basis(1, 0, 0, 0, 0, -1, 0, 1, 0),
+	Basis(0, 0, 1, 1, 0, 0, 0, 1, 0),
+	Basis(-1, 0, 0, 0, 0, 1, 0, 1, 0),
+	Basis(0, 0, -1, -1, 0, 0, 0, 1, 0),
+	Basis(1, 0, 0, 0, -1, 0, 0, 0, -1),
+	Basis(0, 1, 0, 1, 0, 0, 0, 0, -1),
+	Basis(-1, 0, 0, 0, 1, 0, 0, 0, -1),
+	Basis(0, -1, 0, -1, 0, 0, 0, 0, -1),
+	Basis(1, 0, 0, 0, 0, 1, 0, -1, 0),
+	Basis(0, 0, -1, 1, 0, 0, 0, -1, 0),
+	Basis(-1, 0, 0, 0, 0, -1, 0, -1, 0),
+	Basis(0, 0, 1, -1, 0, 0, 0, -1, 0),
+	Basis(0, 0, 1, 0, 1, 0, -1, 0, 0),
+	Basis(0, -1, 0, 0, 0, 1, -1, 0, 0),
+	Basis(0, 0, -1, 0, -1, 0, -1, 0, 0),
+	Basis(0, 1, 0, 0, 0, -1, -1, 0, 0),
+	Basis(0, 0, 1, 0, -1, 0, 1, 0, 0),
+	Basis(0, 1, 0, 0, 0, 1, 1, 0, 0),
+	Basis(0, 0, -1, 0, 1, 0, 1, 0, 0),
+	Basis(0, -1, 0, 0, 0, -1, 1, 0, 0)
+};
+
+Basis GridMap::get_cell_item_basis(const Vector3i &p_position) const {
+	int orientation = get_cell_item_orientation(p_position);
+
+	if (orientation == -1) {
+		return Basis();
+	}
+
+	return get_basis_with_orthogonal_index(orientation);
+}
+
+Basis GridMap::get_basis_with_orthogonal_index(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, 24, Basis());
+
+	return _ortho_bases[p_index];
+}
+
+int GridMap::get_orthogonal_index_from_basis(const Basis &p_basis) const {
+	Basis orth = p_basis;
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			real_t v = orth[i][j];
+			if (v > 0.5) {
+				v = 1.0;
+			} else if (v < -0.5) {
+				v = -1.0;
+			} else {
+				v = 0;
+			}
+
+			orth[i][j] = v;
+		}
+	}
+
+	for (int i = 0; i < 24; i++) {
+		if (_ortho_bases[i] == orth) {
+			return i;
+		}
+	}
+
+	return 0;
+}
+
 Vector3i GridMap::world_to_map(const Vector3 &p_world_position) const {
 	Vector3 map_position = (p_world_position / cell_size).floor();
 	return Vector3i(map_position);
@@ -529,7 +598,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 
 		Transform3D xform;
 
-		xform.basis.set_orthogonal_index(c.rot);
+		xform.basis = _ortho_bases[c.rot];
 		xform.set_origin(cellpos * cell_size + ofs);
 		xform.basis.scale(Vector3(cell_scale, cell_scale, cell_scale));
 		if (baked_meshes.size() == 0) {
@@ -921,6 +990,9 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_cell_item", "position", "item", "orientation"), &GridMap::set_cell_item, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_cell_item", "position"), &GridMap::get_cell_item);
 	ClassDB::bind_method(D_METHOD("get_cell_item_orientation", "position"), &GridMap::get_cell_item_orientation);
+	ClassDB::bind_method(D_METHOD("get_cell_item_basis", "position"), &GridMap::get_cell_item_basis);
+	ClassDB::bind_method(D_METHOD("get_basis_with_orthogonal_index", "index"), &GridMap::get_basis_with_orthogonal_index);
+	ClassDB::bind_method(D_METHOD("get_orthogonal_index_from_basis", "basis"), &GridMap::get_orthogonal_index_from_basis);
 
 	ClassDB::bind_method(D_METHOD("world_to_map", "world_position"), &GridMap::world_to_map);
 	ClassDB::bind_method(D_METHOD("map_to_world", "map_position"), &GridMap::map_to_world);
@@ -1025,7 +1097,7 @@ Array GridMap::get_meshes() const {
 
 		Transform3D xform;
 
-		xform.basis.set_orthogonal_index(E.value.rot);
+		xform.basis = _ortho_bases[E.value.rot];
 
 		xform.set_origin(cellpos * cell_size + ofs);
 		xform.basis.scale(Vector3(cell_scale, cell_scale, cell_scale));
@@ -1079,7 +1151,7 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 
 		Transform3D xform;
 
-		xform.basis.set_orthogonal_index(E.value.rot);
+		xform.basis = _ortho_bases[E.value.rot];
 		xform.set_origin(cellpos * cell_size + ofs);
 		xform.basis.scale(Vector3(cell_scale, cell_scale, cell_scale));
 

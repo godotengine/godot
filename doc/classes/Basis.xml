@@ -87,12 +87,6 @@
 				Consider using the [method get_rotation_quaternion] method instead, which returns a [Quaternion] quaternion instead of Euler angles.
 			</description>
 		</method>
-		<method name="get_orthogonal_index" qualifiers="const">
-			<return type="int" />
-			<description>
-				This function considers a discretization of rotations into 24 points on unit sphere, lying along the vectors (x,y,z) with each component being either -1, 0, or 1, and returns the index of the point best representing the orientation of the object. It is mainly used by the [GridMap] editor. For further details, refer to the Godot source code.
-			</description>
-		</method>
 		<method name="get_rotation_quaternion" qualifiers="const">
 			<return type="Quaternion" />
 			<description>

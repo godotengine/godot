@@ -1916,7 +1916,6 @@ static void _register_variant_builtin_methods() {
 	bind_method(Basis, tdotx, sarray("with"), varray());
 	bind_method(Basis, tdoty, sarray("with"), varray());
 	bind_method(Basis, tdotz, sarray("with"), varray());
-	bind_method(Basis, get_orthogonal_index, sarray(), varray());
 	bind_method(Basis, slerp, sarray("to", "weight"), varray());
 	bind_method(Basis, is_equal_approx, sarray("b"), varray());
 	bind_method(Basis, get_rotation_quaternion, sarray(), varray());
