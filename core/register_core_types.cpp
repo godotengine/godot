@@ -53,6 +53,7 @@
 #include "core/io/packet_peer_dtls.h"
 #include "core/io/packet_peer_udp.h"
 #include "core/io/pck_packer.h"
+#include "core/io/redirect.h"
 #include "core/io/resource_format_binary.h"
 #include "core/io/resource_importer.h"
 #include "core/io/resource_uid.h"
@@ -93,6 +94,7 @@ static core_bind::Engine *_engine = nullptr;
 static core_bind::special::ClassDB *_classdb = nullptr;
 static core_bind::Marshalls *_marshalls = nullptr;
 static core_bind::EngineDebugger *_engine_debugger = nullptr;
+static Redirect *redirect = nullptr;
 
 static IP *ip = nullptr;
 
@@ -136,6 +138,10 @@ void register_core_types() {
 
 	resource_format_image.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_format_image);
+
+
+	redirect = Redirect::create();
+
 
 	GDREGISTER_CLASS(Object);
 
@@ -192,6 +198,7 @@ void register_core_types() {
 	ClassDB::register_custom_instance_class<StreamPeerSSL>();
 	ClassDB::register_custom_instance_class<PacketPeerDTLS>();
 	ClassDB::register_custom_instance_class<DTLSServer>();
+	ClassDB::register_custom_instance_class<Redirect>();
 
 	resource_format_saver_crypto.instantiate();
 	ResourceSaver::add_resource_format_saver(resource_format_saver_crypto);
@@ -306,6 +313,7 @@ void register_core_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Time", Time::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NativeExtensionManager", NativeExtensionManager::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceUID", ResourceUID::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Redirect", Redirect::get_singleton()));
 }
 
 void register_core_extensions() {
