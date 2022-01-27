@@ -84,6 +84,8 @@ public:
 	enum AddNodeOption {
 		ADD_NODE,
 		ADD_INSTANCE,
+		ADD_PASTE,
+		ADD_MOVE,
 	};
 
 private:

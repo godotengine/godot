@@ -3060,6 +3060,10 @@ List<Node *> SceneTreeDock::paste_nodes() {
 	return pasted_nodes;
 }
 
+List<Node *> SceneTreeDock::get_node_clipboard() const {
+	return node_clipboard;
+}
+
 void SceneTreeDock::add_remote_tree_editor(Control *p_remote) {
 	ERR_FAIL_COND(remote_tree != nullptr);
 	add_child(p_remote);
