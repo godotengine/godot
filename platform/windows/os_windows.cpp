@@ -385,14 +385,14 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		}
 		inherit_handles = true;
 	}
-	DWORD creaton_flags = NORMAL_PRIORITY_CLASS;
+	DWORD creation_flags = NORMAL_PRIORITY_CLASS;
 	if (p_open_console) {
-		creaton_flags |= CREATE_NEW_CONSOLE;
+		creation_flags |= CREATE_NEW_CONSOLE;
 	} else {
-		creaton_flags |= CREATE_NO_WINDOW;
+		creation_flags |= CREATE_NO_WINDOW;
 	}
 
-	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, inherit_handles, creaton_flags, nullptr, nullptr, si_w, &pi.pi);
+	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, inherit_handles, creation_flags, nullptr, nullptr, si_w, &pi.pi);
 	if (!ret && r_pipe) {
 		CloseHandle(pipe[0]); // Cleanup pipe handles.
 		CloseHandle(pipe[1]);
@@ -446,14 +446,14 @@ Error OS_Windows::create_process(const String &p_path, const List<String> &p_arg
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
 	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
 
-	DWORD creaton_flags = NORMAL_PRIORITY_CLASS;
+	DWORD creation_flags = NORMAL_PRIORITY_CLASS;
 	if (p_open_console) {
-		creaton_flags |= CREATE_NEW_CONSOLE;
+		creation_flags |= CREATE_NEW_CONSOLE;
 	} else {
-		creaton_flags |= CREATE_NO_WINDOW;
+		creation_flags |= CREATE_NO_WINDOW;
 	}
 
-	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, false, creaton_flags, nullptr, nullptr, si_w, &pi.pi);
+	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, false, creation_flags, nullptr, nullptr, si_w, &pi.pi);
 	ERR_FAIL_COND_V_MSG(ret == 0, ERR_CANT_FORK, "Could not create child process: " + command);
 
 	ProcessID pid = pi.pi.dwProcessId;
