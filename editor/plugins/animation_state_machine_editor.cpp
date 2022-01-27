@@ -854,10 +854,10 @@ void AnimationNodeStateMachineEditor::_state_machine_pos_draw() {
 	}
 	to.y = from.y;
 
-	float len = MAX(0.0001, current_length);
+	double len = MAX(0.0001, current_length);
 
-	float pos = CLAMP(play_pos, 0, len);
-	float c = pos / len;
+	double pos = CLAMP(play_pos, 0, len);
+	double c = pos / len;
 	Color fg = get_theme_color(SNAME("font_color"), SNAME("Label"));
 	Color bg = fg;
 	bg.a *= 0.3;
