@@ -166,8 +166,6 @@ void TilesEditorPlugin::_update_editors() {
 			editor_node->hide_bottom_panel();
 		}
 	}
-	tileset_editor_button->set_visible(tile_set.is_valid());
-	tilemap_editor_button->set_visible(tile_map);
 }
 
 void TilesEditorPlugin::_notification(int p_what) {
