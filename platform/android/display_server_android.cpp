@@ -161,6 +161,16 @@ int DisplayServerAndroid::screen_get_dpi(int p_screen) const {
 	return godot_io_java->get_screen_dpi();
 }
 
+float DisplayServerAndroid::screen_get_refresh_rate(int p_screen) const {
+	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
+	if (!godot_io_java) {
+		ERR_PRINT("An error occured while trying to get the screen refresh rate.");
+		return SCREEN_REFRESH_RATE_FALLBACK;
+	}
+
+	return godot_io_java->get_screen_refresh_rate(SCREEN_REFRESH_RATE_FALLBACK);
+}
+
 bool DisplayServerAndroid::screen_is_touchscreen(int p_screen) const {
 	return true;
 }

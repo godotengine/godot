@@ -794,6 +794,10 @@ float DisplayServerJavaScript::screen_get_scale(int p_screen) const {
 	return godot_js_display_pixel_ratio_get();
 }
 
+float DisplayServerJavaScript::screen_get_refresh_rate(int p_screen) const {
+	return SCREEN_REFRESH_RATE_FALLBACK; // Javascript doesn't have much of a need for the screen refresh rate, and there's no native way to do so.
+}
+
 Vector<DisplayServer::WindowID> DisplayServerJavaScript::get_window_list() const {
 	Vector<WindowID> ret;
 	ret.push_back(MAIN_WINDOW_ID);

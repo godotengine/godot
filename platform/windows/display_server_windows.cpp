@@ -323,6 +323,12 @@ typedef struct {
 	Rect2i rect;
 } EnumRectData;
 
+typedef struct {
+	int count;
+	int screen;
+	float rate;
+} EnumRefreshRateData;
+
 static BOOL CALLBACK _MonitorEnumProcSize(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
 	EnumSizeData *data = (EnumSizeData *)dwData;
 	if (data->count == data->screen) {
@@ -354,6 +360,26 @@ static BOOL CALLBACK _MonitorEnumProcUsableSize(HMONITOR hMonitor, HDC hdcMonito
 		data->rect.position.y = minfo.rcWork.top;
 		data->rect.size.x = minfo.rcWork.right - minfo.rcWork.left;
 		data->rect.size.y = minfo.rcWork.bottom - minfo.rcWork.top;
+	}
+
+	data->count++;
+	return TRUE;
+}
+
+static BOOL CALLBACK _MonitorEnumProcRefreshRate(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
+	EnumRefreshRateData *data = (EnumRefreshRateData *)dwData;
+	if (data->count == data->screen) {
+		MONITORINFOEXW minfo;
+		memset(&minfo, 0, sizeof(minfo));
+		minfo.cbSize = sizeof(minfo);
+		GetMonitorInfoW(hMonitor, &minfo);
+
+		DEVMODEW dm;
+		memset(&dm, 0, sizeof(dm));
+		dm.dmSize = sizeof(dm);
+		EnumDisplaySettingsW(minfo.szDevice, ENUM_CURRENT_SETTINGS, &dm);
+
+		data->rate = dm.dmDisplayFrequency;
 	}
 
 	data->count++;
@@ -442,6 +468,13 @@ int DisplayServerWindows::screen_get_dpi(int p_screen) const {
 	EnumDpiData data = { 0, p_screen == SCREEN_OF_MAIN_WINDOW ? window_get_current_screen() : p_screen, 72 };
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcDpi, (LPARAM)&data);
 	return data.dpi;
+}
+float DisplayServerWindows::screen_get_refresh_rate(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	EnumRefreshRateData data = { 0, p_screen == SCREEN_OF_MAIN_WINDOW ? window_get_current_screen() : p_screen, SCREEN_REFRESH_RATE_FALLBACK };
+	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcRefreshRate, (LPARAM)&data);
+	return data.rate;
 }
 
 bool DisplayServerWindows::screen_is_touchscreen(int p_screen) const {
