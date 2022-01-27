@@ -103,7 +103,7 @@ class MaterialEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const override { return "Material"; }
 
-	MaterialEditorPlugin(EditorNode *p_node);
+	MaterialEditorPlugin();
 };
 
 class StandardMaterial3DConversionPlugin : public EditorResourceConversionPlugin {

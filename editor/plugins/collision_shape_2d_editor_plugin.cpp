@@ -583,12 +583,11 @@ void CollisionShape2DEditor::_bind_methods() {
 	ClassDB::bind_method("_get_current_shape_type", &CollisionShape2DEditor::_get_current_shape_type);
 }
 
-CollisionShape2DEditor::CollisionShape2DEditor(EditorNode *p_editor) {
+CollisionShape2DEditor::CollisionShape2DEditor() {
 	node = nullptr;
 	canvas_item_editor = nullptr;
-	editor = p_editor;
 
-	undo_redo = p_editor->get_undo_redo();
+	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	edit_handle = -1;
 	pressed = false;
@@ -610,11 +609,9 @@ void CollisionShape2DEditorPlugin::make_visible(bool visible) {
 	}
 }
 
-CollisionShape2DEditorPlugin::CollisionShape2DEditorPlugin(EditorNode *p_editor) {
-	editor = p_editor;
-
-	collision_shape_2d_editor = memnew(CollisionShape2DEditor(p_editor));
-	p_editor->get_gui_base()->add_child(collision_shape_2d_editor);
+CollisionShape2DEditorPlugin::CollisionShape2DEditorPlugin() {
+	collision_shape_2d_editor = memnew(CollisionShape2DEditor);
+	EditorNode::get_singleton()->get_gui_base()->add_child(collision_shape_2d_editor);
 }
 
 CollisionShape2DEditorPlugin::~CollisionShape2DEditorPlugin() {

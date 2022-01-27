@@ -278,7 +278,7 @@ void EditorInspectorPluginLayeredTexture::parse_begin(Object *p_object) {
 	add_custom_control(editor);
 }
 
-TextureLayeredEditorPlugin::TextureLayeredEditorPlugin(EditorNode *p_node) {
+TextureLayeredEditorPlugin::TextureLayeredEditorPlugin() {
 	Ref<EditorInspectorPluginLayeredTexture> plugin;
 	plugin.instantiate();
 	add_inspector_plugin(plugin);

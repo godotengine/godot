@@ -803,9 +803,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 				peer->poll();
 
 				if (camera_override == CameraOverride::OVERRIDE_2D) {
-					CanvasItemEditor *editor = CanvasItemEditor::get_singleton();
-
-					Dictionary state = editor->get_state();
+					Dictionary state = CanvasItemEditor::get_singleton()->get_state();
 					float zoom = state["zoom"];
 					Point2 offset = state["ofs"];
 					Transform2D transform;
@@ -861,7 +859,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (tabs->has_theme_stylebox_override("panel")) {
-				tabs->add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
+				tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
 			}
 
 			copy->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
@@ -1066,7 +1064,7 @@ int ScriptEditorDebugger::_get_res_path_cache(const String &p_path) {
 }
 
 void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_name, VARIANT_ARG_DECLARE) {
-	if (!p_base || !live_debug || !is_session_active() || !editor->get_edited_scene()) {
+	if (!p_base || !live_debug || !is_session_active() || !EditorNode::get_singleton()->get_edited_scene()) {
 		return;
 	}
 
@@ -1082,7 +1080,7 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 	}
 
 	if (node) {
-		NodePath path = editor->get_edited_scene()->get_path_to(node);
+		NodePath path = EditorNode::get_singleton()->get_edited_scene()->get_path_to(node);
 		int pathid = _get_node_path_cache(path);
 
 		Array msg;
@@ -1117,14 +1115,14 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 }
 
 void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p_property, const Variant &p_value) {
-	if (!p_base || !live_debug || !editor->get_edited_scene()) {
+	if (!p_base || !live_debug || !EditorNode::get_singleton()->get_edited_scene()) {
 		return;
 	}
 
 	Node *node = Object::cast_to<Node>(p_base);
 
 	if (node) {
-		NodePath path = editor->get_edited_scene()->get_path_to(node);
+		NodePath path = EditorNode::get_singleton()->get_edited_scene()->get_path_to(node);
 		int pathid = _get_node_path_cache(path);
 
 		if (p_value.is_ref_counted()) {
@@ -1242,25 +1240,25 @@ void ScriptEditorDebugger::_live_edit_set() {
 
 	NodePath np = path;
 
-	editor->get_editor_data().set_edited_scene_live_edit_root(np);
+	EditorNode::get_singleton()->get_editor_data().set_edited_scene_live_edit_root(np);
 
 	update_live_edit_root();
 }
 
 void ScriptEditorDebugger::_live_edit_clear() {
 	NodePath np = NodePath("/root");
-	editor->get_editor_data().set_edited_scene_live_edit_root(np);
+	EditorNode::get_singleton()->get_editor_data().set_edited_scene_live_edit_root(np);
 
 	update_live_edit_root();
 }
 
 void ScriptEditorDebugger::update_live_edit_root() {
-	NodePath np = editor->get_editor_data().get_edited_scene_live_edit_root();
+	NodePath np = EditorNode::get_singleton()->get_editor_data().get_edited_scene_live_edit_root();
 
 	Array msg;
 	msg.push_back(np);
-	if (editor->get_edited_scene()) {
-		msg.push_back(editor->get_edited_scene()->get_scene_file_path());
+	if (EditorNode::get_singleton()->get_edited_scene()) {
+		msg.push_back(EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path());
 	} else {
 		msg.push_back("");
 	}
@@ -1657,12 +1655,10 @@ bool ScriptEditorDebugger::has_capture(const StringName &p_name) {
 	return captures.has(p_name);
 }
 
-ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
-	editor = p_editor;
-
+ScriptEditorDebugger::ScriptEditorDebugger() {
 	tabs = memnew(TabContainer);
 	tabs->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
-	tabs->add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
+	tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
 	tabs->connect("tab_changed", callable_mp(this, &ScriptEditorDebugger::_tab_changed));
 
 	add_child(tabs);

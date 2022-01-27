@@ -6701,12 +6701,12 @@ EditorNode::EditorNode() {
 
 	// Instantiate and place editor docks
 
-	memnew(SceneTreeDock(this, scene_root, editor_selection, editor_data));
-	memnew(InspectorDock(this, editor_data));
+	memnew(SceneTreeDock(scene_root, editor_selection, editor_data));
+	memnew(InspectorDock(editor_data));
 	memnew(ImportDock);
 	memnew(NodeDock);
 
-	FileSystemDock *filesystem_dock = memnew(FileSystemDock(this));
+	FileSystemDock *filesystem_dock = memnew(FileSystemDock);
 	filesystem_dock->connect("inherit", callable_mp(this, &EditorNode::_inherit_request));
 	filesystem_dock->connect("instance", callable_mp(this, &EditorNode::_instantiate_request));
 	filesystem_dock->connect("display_mode_changed", callable_mp(this, &EditorNode::_save_docks));
@@ -6926,7 +6926,7 @@ EditorNode::EditorNode() {
 	preview_gen = memnew(AudioStreamPreviewGenerator);
 	add_child(preview_gen);
 
-	add_editor_plugin(memnew(DebuggerEditorPlugin(this, debug_menu)));
+	add_editor_plugin(memnew(DebuggerEditorPlugin(debug_menu)));
 	add_editor_plugin(memnew(DebugAdapterServer()));
 
 	disk_changed = memnew(ConfirmationDialog);
@@ -6952,10 +6952,10 @@ EditorNode::EditorNode() {
 
 	gui_base->add_child(disk_changed);
 
-	add_editor_plugin(memnew(AnimationPlayerEditorPlugin(this)));
-	add_editor_plugin(memnew(CanvasItemEditorPlugin(this)));
-	add_editor_plugin(memnew(Node3DEditorPlugin(this)));
-	add_editor_plugin(memnew(ScriptEditorPlugin(this)));
+	add_editor_plugin(memnew(AnimationPlayerEditorPlugin));
+	add_editor_plugin(memnew(CanvasItemEditorPlugin));
+	add_editor_plugin(memnew(Node3DEditorPlugin));
+	add_editor_plugin(memnew(ScriptEditorPlugin));
 
 	EditorAudioBuses *audio_bus_editor = EditorAudioBuses::register_editor();
 
@@ -6963,7 +6963,7 @@ EditorNode::EditorNode() {
 	TextEditor::register_editor();
 
 	if (StreamPeerSSL::is_available()) {
-		add_editor_plugin(memnew(AssetLibraryEditorPlugin(this)));
+		add_editor_plugin(memnew(AssetLibraryEditorPlugin));
 	} else {
 		WARN_PRINT("Asset Library not available, as it requires SSL to work.");
 	}
@@ -6975,62 +6975,62 @@ EditorNode::EditorNode() {
 
 	// more visually meaningful to have this later
 	raise_bottom_panel_item(AnimationPlayerEditor::get_singleton());
-	add_editor_plugin(memnew(ReplicationEditorPlugin(this)));
+	add_editor_plugin(memnew(ReplicationEditorPlugin));
 
 	add_editor_plugin(VersionControlEditorPlugin::get_singleton());
-	add_editor_plugin(memnew(ShaderEditorPlugin(this)));
-	add_editor_plugin(memnew(ShaderFileEditorPlugin(this)));
-	add_editor_plugin(memnew(VisualShaderEditorPlugin(this)));
+	add_editor_plugin(memnew(ShaderEditorPlugin));
+	add_editor_plugin(memnew(ShaderFileEditorPlugin));
+	add_editor_plugin(memnew(VisualShaderEditorPlugin));
 
-	add_editor_plugin(memnew(Camera3DEditorPlugin(this)));
-	add_editor_plugin(memnew(ThemeEditorPlugin(this)));
-	add_editor_plugin(memnew(MultiMeshEditorPlugin(this)));
-	add_editor_plugin(memnew(MeshInstance3DEditorPlugin(this)));
-	add_editor_plugin(memnew(AnimationTreeEditorPlugin(this)));
-	add_editor_plugin(memnew(MeshLibraryEditorPlugin(this)));
-	add_editor_plugin(memnew(StyleBoxEditorPlugin(this)));
-	add_editor_plugin(memnew(Sprite2DEditorPlugin(this)));
-	add_editor_plugin(memnew(Skeleton2DEditorPlugin(this)));
-	add_editor_plugin(memnew(GPUParticles2DEditorPlugin(this)));
-	add_editor_plugin(memnew(GPUParticles3DEditorPlugin(this)));
-	add_editor_plugin(memnew(CPUParticles2DEditorPlugin(this)));
-	add_editor_plugin(memnew(CPUParticles3DEditorPlugin(this)));
-	add_editor_plugin(memnew(ResourcePreloaderEditorPlugin(this)));
-	add_editor_plugin(memnew(Polygon3DEditorPlugin(this)));
-	add_editor_plugin(memnew(CollisionPolygon2DEditorPlugin(this)));
-	add_editor_plugin(memnew(TilesEditorPlugin(this)));
-	add_editor_plugin(memnew(SpriteFramesEditorPlugin(this)));
-	add_editor_plugin(memnew(TextureRegionEditorPlugin(this)));
-	add_editor_plugin(memnew(VoxelGIEditorPlugin(this)));
-	add_editor_plugin(memnew(LightmapGIEditorPlugin(this)));
-	add_editor_plugin(memnew(OccluderInstance3DEditorPlugin(this)));
-	add_editor_plugin(memnew(Path2DEditorPlugin(this)));
-	add_editor_plugin(memnew(Path3DEditorPlugin(this)));
-	add_editor_plugin(memnew(Line2DEditorPlugin(this)));
-	add_editor_plugin(memnew(Polygon2DEditorPlugin(this)));
-	add_editor_plugin(memnew(LightOccluder2DEditorPlugin(this)));
-	add_editor_plugin(memnew(NavigationPolygonEditorPlugin(this)));
-	add_editor_plugin(memnew(GradientEditorPlugin(this)));
-	add_editor_plugin(memnew(CollisionShape2DEditorPlugin(this)));
-	add_editor_plugin(memnew(CurveEditorPlugin(this)));
-	add_editor_plugin(memnew(FontEditorPlugin(this)));
-	add_editor_plugin(memnew(OpenTypeFeaturesEditorPlugin(this)));
-	add_editor_plugin(memnew(TextureEditorPlugin(this)));
-	add_editor_plugin(memnew(TextureLayeredEditorPlugin(this)));
-	add_editor_plugin(memnew(Texture3DEditorPlugin(this)));
-	add_editor_plugin(memnew(AudioStreamEditorPlugin(this)));
-	add_editor_plugin(memnew(AudioStreamRandomizerEditorPlugin(this)));
+	add_editor_plugin(memnew(Camera3DEditorPlugin));
+	add_editor_plugin(memnew(ThemeEditorPlugin));
+	add_editor_plugin(memnew(MultiMeshEditorPlugin));
+	add_editor_plugin(memnew(MeshInstance3DEditorPlugin));
+	add_editor_plugin(memnew(AnimationTreeEditorPlugin));
+	add_editor_plugin(memnew(MeshLibraryEditorPlugin));
+	add_editor_plugin(memnew(StyleBoxEditorPlugin));
+	add_editor_plugin(memnew(Sprite2DEditorPlugin));
+	add_editor_plugin(memnew(Skeleton2DEditorPlugin));
+	add_editor_plugin(memnew(GPUParticles2DEditorPlugin));
+	add_editor_plugin(memnew(GPUParticles3DEditorPlugin));
+	add_editor_plugin(memnew(CPUParticles2DEditorPlugin));
+	add_editor_plugin(memnew(CPUParticles3DEditorPlugin));
+	add_editor_plugin(memnew(ResourcePreloaderEditorPlugin));
+	add_editor_plugin(memnew(Polygon3DEditorPlugin));
+	add_editor_plugin(memnew(CollisionPolygon2DEditorPlugin));
+	add_editor_plugin(memnew(TilesEditorPlugin));
+	add_editor_plugin(memnew(SpriteFramesEditorPlugin));
+	add_editor_plugin(memnew(TextureRegionEditorPlugin));
+	add_editor_plugin(memnew(VoxelGIEditorPlugin));
+	add_editor_plugin(memnew(LightmapGIEditorPlugin));
+	add_editor_plugin(memnew(OccluderInstance3DEditorPlugin));
+	add_editor_plugin(memnew(Path2DEditorPlugin));
+	add_editor_plugin(memnew(Path3DEditorPlugin));
+	add_editor_plugin(memnew(Line2DEditorPlugin));
+	add_editor_plugin(memnew(Polygon2DEditorPlugin));
+	add_editor_plugin(memnew(LightOccluder2DEditorPlugin));
+	add_editor_plugin(memnew(NavigationPolygonEditorPlugin));
+	add_editor_plugin(memnew(GradientEditorPlugin));
+	add_editor_plugin(memnew(CollisionShape2DEditorPlugin));
+	add_editor_plugin(memnew(CurveEditorPlugin));
+	add_editor_plugin(memnew(FontEditorPlugin));
+	add_editor_plugin(memnew(OpenTypeFeaturesEditorPlugin));
+	add_editor_plugin(memnew(TextureEditorPlugin));
+	add_editor_plugin(memnew(TextureLayeredEditorPlugin));
+	add_editor_plugin(memnew(Texture3DEditorPlugin));
+	add_editor_plugin(memnew(AudioStreamEditorPlugin));
+	add_editor_plugin(memnew(AudioStreamRandomizerEditorPlugin));
 	add_editor_plugin(memnew(AudioBusesEditorPlugin(audio_bus_editor)));
-	add_editor_plugin(memnew(Skeleton3DEditorPlugin(this)));
-	add_editor_plugin(memnew(SkeletonIK3DEditorPlugin(this)));
-	add_editor_plugin(memnew(PhysicalBone3DEditorPlugin(this)));
-	add_editor_plugin(memnew(MeshEditorPlugin(this)));
-	add_editor_plugin(memnew(MaterialEditorPlugin(this)));
-	add_editor_plugin(memnew(GPUParticlesCollisionSDF3DEditorPlugin(this)));
-	add_editor_plugin(memnew(InputEventEditorPlugin(this)));
-	add_editor_plugin(memnew(SubViewportPreviewEditorPlugin(this)));
-	add_editor_plugin(memnew(TextControlEditorPlugin(this)));
-	add_editor_plugin(memnew(ControlEditorPlugin(this)));
+	add_editor_plugin(memnew(Skeleton3DEditorPlugin));
+	add_editor_plugin(memnew(SkeletonIK3DEditorPlugin));
+	add_editor_plugin(memnew(PhysicalBone3DEditorPlugin));
+	add_editor_plugin(memnew(MeshEditorPlugin));
+	add_editor_plugin(memnew(MaterialEditorPlugin));
+	add_editor_plugin(memnew(GPUParticlesCollisionSDF3DEditorPlugin));
+	add_editor_plugin(memnew(InputEventEditorPlugin));
+	add_editor_plugin(memnew(SubViewportPreviewEditorPlugin));
+	add_editor_plugin(memnew(TextControlEditorPlugin));
+	add_editor_plugin(memnew(ControlEditorPlugin));
 
 	for (int i = 0; i < EditorPlugins::get_plugin_count(); i++) {
 		add_editor_plugin(EditorPlugins::create(i, this));

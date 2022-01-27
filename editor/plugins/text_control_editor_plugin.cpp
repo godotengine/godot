@@ -653,8 +653,7 @@ void TextControlEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-TextControlEditorPlugin::TextControlEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
+TextControlEditorPlugin::TextControlEditorPlugin() {
 	text_ctl_editor = memnew(TextControlEditor);
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(text_ctl_editor);
 

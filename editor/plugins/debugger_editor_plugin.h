@@ -64,7 +64,7 @@ public:
 	virtual String get_name() const override { return "Debugger"; }
 	bool has_main_screen() const override { return false; }
 
-	DebuggerEditorPlugin(EditorNode *p_node, MenuButton *p_menu);
+	DebuggerEditorPlugin(MenuButton *p_menu);
 	~DebuggerEditorPlugin();
 };
 

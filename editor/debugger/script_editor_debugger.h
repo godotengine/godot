@@ -155,8 +155,6 @@ private:
 	EditorNetworkProfiler *network_profiler;
 	EditorPerformanceProfiler *performance_profiler;
 
-	EditorNode *editor;
-
 	OS::ProcessID remote_pid = 0;
 	bool breaked = false;
 	bool can_debug = false;
@@ -298,7 +296,7 @@ public:
 	void unregister_message_capture(const StringName &p_name);
 	bool has_capture(const StringName &p_name);
 
-	ScriptEditorDebugger(EditorNode *p_editor = nullptr);
+	ScriptEditorDebugger();
 	~ScriptEditorDebugger();
 };
 

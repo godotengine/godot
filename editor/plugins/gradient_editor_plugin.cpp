@@ -137,7 +137,7 @@ void EditorInspectorPluginGradient::_reverse_button_pressed() {
 	editor->reverse_gradient();
 }
 
-GradientEditorPlugin::GradientEditorPlugin(EditorNode *p_node) {
+GradientEditorPlugin::GradientEditorPlugin() {
 	Ref<EditorInspectorPluginGradient> plugin;
 	plugin.instantiate();
 	add_inspector_plugin(plugin);

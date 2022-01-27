@@ -97,7 +97,6 @@ class AnimationTreeEditorPlugin : public EditorPlugin {
 	GDCLASS(AnimationTreeEditorPlugin, EditorPlugin);
 
 	AnimationTreeEditor *anim_tree_editor;
-	EditorNode *editor;
 	Button *button;
 
 public:
@@ -107,7 +106,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	AnimationTreeEditorPlugin(EditorNode *p_node);
+	AnimationTreeEditorPlugin();
 	~AnimationTreeEditorPlugin();
 };
 

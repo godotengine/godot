@@ -79,8 +79,6 @@ class Path3DEditorPlugin : public EditorPlugin {
 	Button *curve_close;
 	MenuButton *handle_menu;
 
-	EditorNode *editor;
-
 	Path3D *path;
 
 	void _update_theme();
@@ -118,7 +116,7 @@ public:
 	bool is_handle_clicked() { return handle_clicked; }
 	void set_handle_clicked(bool clicked) { handle_clicked = clicked; }
 
-	Path3DEditorPlugin(EditorNode *p_node);
+	Path3DEditorPlugin();
 	~Path3DEditorPlugin();
 };
 

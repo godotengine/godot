@@ -58,7 +58,6 @@ class Camera3DEditorPlugin : public EditorPlugin {
 	GDCLASS(Camera3DEditorPlugin, EditorPlugin);
 
 	//CameraEditor *camera_editor;
-	EditorNode *editor;
 
 public:
 	virtual String get_name() const override { return "Camera3D"; }
@@ -67,7 +66,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	Camera3DEditorPlugin(EditorNode *p_node);
+	Camera3DEditorPlugin();
 	~Camera3DEditorPlugin();
 };
 

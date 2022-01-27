@@ -691,7 +691,7 @@ void ShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) {
 	context_menu->popup();
 }
 
-ShaderEditor::ShaderEditor(EditorNode *p_node) {
+ShaderEditor::ShaderEditor() {
 	GLOBAL_DEF("debug/shader_language/warnings/enable", true);
 	GLOBAL_DEF("debug/shader_language/warnings/treat_warnings_as_errors", false);
 	for (int i = 0; i < (int)ShaderWarning::WARNING_MAX; i++) {
@@ -780,7 +780,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	help_menu = memnew(MenuButton);
 	help_menu->set_text(TTR("Help"));
 	help_menu->set_switch_on_hover(true);
-	help_menu->get_popup()->add_icon_item(p_node->get_gui_base()->get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), TTR("Online Docs"), HELP_DOCS);
+	help_menu->get_popup()->add_icon_item(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), TTR("Online Docs"), HELP_DOCS);
 	help_menu->get_popup()->connect("id_pressed", callable_mp(this, &ShaderEditor::_menu_option));
 
 	add_child(main_container);
@@ -789,7 +789,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	hbc->add_child(edit_menu);
 	hbc->add_child(goto_menu);
 	hbc->add_child(help_menu);
-	hbc->add_theme_style_override("panel", p_node->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditorPanel"), SNAME("EditorStyles")));
+	hbc->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditorPanel"), SNAME("EditorStyles")));
 
 	VSplitContainer *editor_box = memnew(VSplitContainer);
 	main_container->add_child(editor_box);
@@ -849,12 +849,12 @@ bool ShaderEditorPlugin::handles(Object *p_object) const {
 void ShaderEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		button->show();
-		editor->make_bottom_panel_item_visible(shader_editor);
+		EditorNode::get_singleton()->make_bottom_panel_item_visible(shader_editor);
 
 	} else {
 		button->hide();
 		if (shader_editor->is_visible_in_tree()) {
-			editor->hide_bottom_panel();
+			EditorNode::get_singleton()->hide_bottom_panel();
 		}
 		shader_editor->apply_shaders();
 	}
@@ -872,12 +872,11 @@ void ShaderEditorPlugin::apply_changes() {
 	shader_editor->apply_shaders();
 }
 
-ShaderEditorPlugin::ShaderEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
-	shader_editor = memnew(ShaderEditor(p_node));
+ShaderEditorPlugin::ShaderEditorPlugin() {
+	shader_editor = memnew(ShaderEditor);
 
 	shader_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
-	button = editor->add_bottom_panel_item(TTR("Shader"), shader_editor);
+	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Shader"), shader_editor);
 	button->hide();
 
 	_2d = false;

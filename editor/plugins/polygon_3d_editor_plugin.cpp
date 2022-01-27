@@ -523,9 +523,8 @@ void Polygon3DEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_polygon_draw"), &Polygon3DEditor::_polygon_draw);
 }
 
-Polygon3DEditor::Polygon3DEditor(EditorNode *p_editor) {
+Polygon3DEditor::Polygon3DEditor() {
 	node = nullptr;
-	editor = p_editor;
 	undo_redo = EditorNode::get_undo_redo();
 
 	add_child(memnew(VSeparator));
@@ -561,7 +560,7 @@ Polygon3DEditor::Polygon3DEditor(EditorNode *p_editor) {
 	handle_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	handle_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	handle_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-	Ref<Texture2D> handle = editor->get_gui_base()->get_theme_icon(SNAME("Editor3DHandle"), SNAME("EditorIcons"));
+	Ref<Texture2D> handle = EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Editor3DHandle"), SNAME("EditorIcons"));
 	handle_material->set_point_size(handle->get_width());
 	handle_material->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, handle);
 
@@ -595,9 +594,8 @@ void Polygon3DEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-Polygon3DEditorPlugin::Polygon3DEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
-	polygon_editor = memnew(Polygon3DEditor(p_node));
+Polygon3DEditorPlugin::Polygon3DEditorPlugin() {
+	polygon_editor = memnew(Polygon3DEditor);
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(polygon_editor);
 
 	polygon_editor->hide();

@@ -585,10 +585,9 @@ void Sprite2DEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-Sprite2DEditorPlugin::Sprite2DEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
+Sprite2DEditorPlugin::Sprite2DEditorPlugin() {
 	sprite_editor = memnew(Sprite2DEditor);
-	editor->get_main_control()->add_child(sprite_editor);
+	EditorNode::get_singleton()->get_main_control()->add_child(sprite_editor);
 	make_visible(false);
 
 	//sprite_editor->options->hide();

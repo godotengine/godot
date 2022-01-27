@@ -117,7 +117,7 @@ void EditorInspectorPluginInputEvent::parse_begin(Object *p_object) {
 	add_custom_control(picker_controls);
 }
 
-InputEventEditorPlugin::InputEventEditorPlugin(EditorNode *p_node) {
+InputEventEditorPlugin::InputEventEditorPlugin() {
 	Ref<EditorInspectorPluginInputEvent> plugin;
 	plugin.instantiate();
 	add_inspector_plugin(plugin);

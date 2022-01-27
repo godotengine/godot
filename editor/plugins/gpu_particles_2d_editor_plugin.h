@@ -61,7 +61,6 @@ class GPUParticles2DEditorPlugin : public EditorPlugin {
 	List<GPUParticles2D *> selected_particles;
 
 	EditorFileDialog *file;
-	EditorNode *editor;
 
 	HBoxContainer *toolbar;
 	MenuButton *menu;
@@ -95,7 +94,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	GPUParticles2DEditorPlugin(EditorNode *p_node);
+	GPUParticles2DEditorPlugin();
 	~GPUParticles2DEditorPlugin();
 };
 

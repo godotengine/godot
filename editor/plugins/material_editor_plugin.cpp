@@ -303,7 +303,7 @@ EditorInspectorPluginMaterial::EditorInspectorPluginMaterial() {
 	EditorNode::get_singleton()->get_editor_data().add_undo_redo_inspector_hook_callback(callable_mp(this, &EditorInspectorPluginMaterial::_undo_redo_inspector_callback));
 }
 
-MaterialEditorPlugin::MaterialEditorPlugin(EditorNode *p_node) {
+MaterialEditorPlugin::MaterialEditorPlugin() {
 	Ref<EditorInspectorPluginMaterial> plugin;
 	plugin.instantiate();
 	add_inspector_plugin(plugin);

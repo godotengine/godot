@@ -44,7 +44,6 @@ class MeshLibraryEditor : public Control {
 
 	Ref<MeshLibrary> mesh_library;
 
-	EditorNode *editor;
 	MenuButton *menu;
 	ConfirmationDialog *cd_remove;
 	ConfirmationDialog *cd_update;
@@ -77,14 +76,13 @@ public:
 	void edit(const Ref<MeshLibrary> &p_mesh_library);
 	static Error update_library_file(Node *p_base_scene, Ref<MeshLibrary> ml, bool p_merge = true, bool p_apply_xforms = false);
 
-	MeshLibraryEditor(EditorNode *p_editor);
+	MeshLibraryEditor();
 };
 
 class MeshLibraryEditorPlugin : public EditorPlugin {
 	GDCLASS(MeshLibraryEditorPlugin, EditorPlugin);
 
 	MeshLibraryEditor *mesh_library_editor;
-	EditorNode *editor;
 
 public:
 	virtual String get_name() const override { return "MeshLibrary"; }
@@ -93,7 +91,7 @@ public:
 	virtual bool handles(Object *p_node) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	MeshLibraryEditorPlugin(EditorNode *p_node);
+	MeshLibraryEditorPlugin();
 };
 
 #endif // MESH_LIBRARY_EDITOR_PLUGIN_H

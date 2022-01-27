@@ -59,7 +59,6 @@ class CPUParticles2DEditorPlugin : public EditorPlugin {
 	CPUParticles2D *particles;
 
 	EditorFileDialog *file;
-	EditorNode *editor;
 
 	HBoxContainer *toolbar;
 	MenuButton *menu;
@@ -88,7 +87,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	CPUParticles2DEditorPlugin(EditorNode *p_node);
+	CPUParticles2DEditorPlugin();
 	~CPUParticles2DEditorPlugin();
 };
 

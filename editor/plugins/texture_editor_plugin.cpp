@@ -120,7 +120,7 @@ void EditorInspectorPluginTexture::parse_begin(Object *p_object) {
 	add_custom_control(memnew(TexturePreview(texture, true)));
 }
 
-TextureEditorPlugin::TextureEditorPlugin(EditorNode *p_node) {
+TextureEditorPlugin::TextureEditorPlugin() {
 	Ref<EditorInspectorPluginTexture> plugin;
 	plugin.instantiate();
 	add_inspector_plugin(plugin);

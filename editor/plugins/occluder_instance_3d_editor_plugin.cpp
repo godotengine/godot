@@ -101,11 +101,10 @@ void OccluderInstance3DEditorPlugin::_bind_methods() {
 	ClassDB::bind_method("_bake", &OccluderInstance3DEditorPlugin::_bake);
 }
 
-OccluderInstance3DEditorPlugin::OccluderInstance3DEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
+OccluderInstance3DEditorPlugin::OccluderInstance3DEditorPlugin() {
 	bake = memnew(Button);
 	bake->set_flat(true);
-	bake->set_icon(editor->get_gui_base()->get_theme_icon(SNAME("Bake"), SNAME("EditorIcons")));
+	bake->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Bake"), SNAME("EditorIcons")));
 	bake->set_text(TTR("Bake Occluders"));
 	bake->hide();
 	bake->connect("pressed", Callable(this, "_bake"));

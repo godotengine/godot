@@ -170,14 +170,14 @@ protected:
 	Vector2 snap_point(Vector2 p_target) const;
 
 public:
-	Polygon2DEditor(EditorNode *p_editor);
+	Polygon2DEditor();
 };
 
 class Polygon2DEditorPlugin : public AbstractPolygon2DEditorPlugin {
 	GDCLASS(Polygon2DEditorPlugin, AbstractPolygon2DEditorPlugin);
 
 public:
-	Polygon2DEditorPlugin(EditorNode *p_node);
+	Polygon2DEditorPlugin();
 };
 
 #endif // POLYGON_2D_EDITOR_PLUGIN_H

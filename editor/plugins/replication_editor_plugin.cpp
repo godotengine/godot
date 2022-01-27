@@ -37,8 +37,7 @@
 #include "scene/multiplayer/multiplayer_synchronizer.h"
 
 /// ReplicationEditor
-ReplicationEditor::ReplicationEditor(EditorNode *p_editor) {
-	editor = p_editor;
+ReplicationEditor::ReplicationEditor() {
 	set_v_size_flags(SIZE_EXPAND_FILL);
 	set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 
@@ -95,7 +94,7 @@ void ReplicationEditor::_bind_methods() {
 
 void ReplicationEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
+		add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
 	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 		update_keying();
 	}
@@ -120,7 +119,7 @@ void ReplicationEditor::_add_pressed() {
 	if (prop.is_empty()) {
 		return;
 	}
-	UndoRedo *undo_redo = editor->get_undo_redo();
+	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
 	undo_redo->create_action(TTR("Add property"));
 	config = current->get_replication_config();
 	if (config.is_null()) {
@@ -145,7 +144,7 @@ void ReplicationEditor::_tree_item_edited() {
 	int column = tree->get_edited_column();
 	ERR_FAIL_COND(column < 1 || column > 2);
 	const NodePath prop = ti->get_metadata(0);
-	UndoRedo *undo_redo = editor->get_undo_redo();
+	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
 	bool value = ti->is_checked(column);
 	String method;
 	if (column == 1) {
@@ -181,7 +180,7 @@ void ReplicationEditor::_dialog_closed(bool p_confirmed) {
 		int idx = config->property_get_index(prop);
 		bool spawn = config->property_get_spawn(prop);
 		bool sync = config->property_get_sync(prop);
-		UndoRedo *undo_redo = editor->get_undo_redo();
+		UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
 		undo_redo->create_action(TTR("Remove Property"));
 		undo_redo->add_do_method(config.ptr(), "remove_property", prop);
 		undo_redo->add_undo_method(config.ptr(), "add_property", prop, idx);
@@ -300,7 +299,7 @@ void ReplicationEditor::property_keyed(const String &p_property) {
 	ERR_FAIL_COND(!current || config.is_null());
 	Node *root = current->get_node(current->get_root_path());
 	ERR_FAIL_COND(!root);
-	EditorHistory *history = editor->get_editor_history();
+	EditorHistory *history = EditorNode::get_singleton()->get_editor_history();
 	ERR_FAIL_COND(history->get_path_size() == 0);
 	Node *node = Object::cast_to<Node>(ObjectDB::get_instance(history->get_path_object(0)));
 	ERR_FAIL_COND(!node);
@@ -324,7 +323,7 @@ void ReplicationEditor::property_keyed(const String &p_property) {
 	path += ":" + p_property;
 
 	NodePath prop = path;
-	UndoRedo *undo_redo = editor->get_undo_redo();
+	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
 	undo_redo->create_action(TTR("Add property"));
 	undo_redo->add_do_method(config.ptr(), "add_property", prop);
 	undo_redo->add_undo_method(config.ptr(), "remove_property", prop);
@@ -334,10 +333,9 @@ void ReplicationEditor::property_keyed(const String &p_property) {
 }
 
 /// ReplicationEditorPlugin
-ReplicationEditorPlugin::ReplicationEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
-	repl_editor = memnew(ReplicationEditor(editor));
-	editor->add_bottom_panel_item(TTR("Replication"), repl_editor);
+ReplicationEditorPlugin::ReplicationEditorPlugin() {
+	repl_editor = memnew(ReplicationEditor);
+	EditorNode::get_singleton()->add_bottom_panel_item(TTR("Replication"), repl_editor);
 }
 
 ReplicationEditorPlugin::~ReplicationEditorPlugin() {
@@ -370,7 +368,7 @@ void ReplicationEditorPlugin::_node_removed(Node *p_node) {
 	if (p_node && p_node == repl_editor->get_current()) {
 		repl_editor->edit(nullptr);
 		if (repl_editor->is_visible_in_tree()) {
-			editor->hide_bottom_panel();
+			EditorNode::get_singleton()->hide_bottom_panel();
 		}
 	}
 }
@@ -385,6 +383,6 @@ bool ReplicationEditorPlugin::handles(Object *p_object) const {
 
 void ReplicationEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		editor->make_bottom_panel_item_visible(repl_editor);
+		EditorNode::get_singleton()->make_bottom_panel_item_visible(repl_editor);
 	}
 }

@@ -237,19 +237,18 @@ public:
 
 	static ControlEditorToolbar *get_singleton() { return singleton; }
 
-	ControlEditorToolbar(EditorNode *p_editor);
+	ControlEditorToolbar();
 };
 
 class ControlEditorPlugin : public EditorPlugin {
 	GDCLASS(ControlEditorPlugin, EditorPlugin);
 
-	EditorNode *editor;
 	ControlEditorToolbar *toolbar;
 
 public:
 	virtual String get_name() const override { return "Control"; }
 
-	ControlEditorPlugin(EditorNode *p_editor);
+	ControlEditorPlugin();
 };
 
 #endif //CONTROL_EDITOR_PLUGIN_H

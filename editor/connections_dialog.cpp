@@ -640,7 +640,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 	it = nullptr;
 
 	if (add_script_function) {
-		editor->emit_signal(SNAME("script_add_function_request"), target, cd.method, script_function_args);
+		EditorNode::get_singleton()->emit_signal(SNAME("script_add_function_request"), target, cd.method, script_function_args);
 		hide();
 	}
 
@@ -852,7 +852,7 @@ void ConnectionsDock::_go_to_script(TreeItem &p_item) {
 	}
 
 	if (script.is_valid() && ScriptEditor::get_singleton()->script_goto_method(script, cd.method)) {
-		editor->call("_editor_select", EditorNode::EDITOR_SCRIPT);
+		EditorNode::get_singleton()->call("_editor_select", EditorNode::EDITOR_SCRIPT);
 	}
 }
 
@@ -1147,8 +1147,7 @@ void ConnectionsDock::update_tree() {
 	connect_button->set_disabled(true);
 }
 
-ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
-	editor = p_editor;
+ConnectionsDock::ConnectionsDock() {
 	set_name(TTR("Signals"));
 
 	VBoxContainer *vbc = this;

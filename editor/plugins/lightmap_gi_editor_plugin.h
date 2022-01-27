@@ -45,7 +45,6 @@ class LightmapGIEditorPlugin : public EditorPlugin {
 	LightmapGI *lightmap;
 
 	Button *bake;
-	EditorNode *editor;
 
 	EditorFileDialog *file_dialog;
 	static EditorProgress *tmp_progress;
@@ -65,7 +64,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	LightmapGIEditorPlugin(EditorNode *p_node);
+	LightmapGIEditorPlugin();
 	~LightmapGIEditorPlugin();
 };
 

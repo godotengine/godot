@@ -92,8 +92,6 @@ public:
 	};
 
 private:
-	EditorNode *editor;
-
 	enum SnapTarget {
 		SNAP_TARGET_NONE = 0,
 		SNAP_TARGET_PARENT,
@@ -549,14 +547,13 @@ public:
 
 	EditorSelection *editor_selection;
 
-	CanvasItemEditor(EditorNode *p_editor);
+	CanvasItemEditor();
 };
 
 class CanvasItemEditorPlugin : public EditorPlugin {
 	GDCLASS(CanvasItemEditorPlugin, EditorPlugin);
 
 	CanvasItemEditor *canvas_item_editor;
-	EditorNode *editor;
 
 public:
 	virtual String get_name() const override { return "2D"; }
@@ -569,7 +566,7 @@ public:
 
 	CanvasItemEditor *get_canvas_item_editor() { return canvas_item_editor; }
 
-	CanvasItemEditorPlugin(EditorNode *p_node);
+	CanvasItemEditorPlugin();
 	~CanvasItemEditorPlugin();
 };
 
@@ -585,7 +582,6 @@ class CanvasItemEditorViewport : public Control {
 	Node *target_node;
 	Point2 drop_pos;
 
-	EditorNode *editor;
 	EditorData *editor_data;
 	CanvasItemEditor *canvas_item_editor;
 	Control *preview_node;
@@ -622,7 +618,7 @@ public:
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
 
-	CanvasItemEditorViewport(EditorNode *p_node, CanvasItemEditor *p_canvas_item_editor);
+	CanvasItemEditorViewport(CanvasItemEditor *p_canvas_item_editor);
 	~CanvasItemEditorViewport();
 };
 

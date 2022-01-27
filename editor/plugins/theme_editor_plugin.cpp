@@ -3757,21 +3757,20 @@ bool ThemeEditorPlugin::handles(Object *p_node) const {
 void ThemeEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		button->show();
-		editor->make_bottom_panel_item_visible(theme_editor);
+		EditorNode::get_singleton()->make_bottom_panel_item_visible(theme_editor);
 	} else {
 		if (theme_editor->is_visible_in_tree()) {
-			editor->hide_bottom_panel();
+			EditorNode::get_singleton()->hide_bottom_panel();
 		}
 
 		button->hide();
 	}
 }
 
-ThemeEditorPlugin::ThemeEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
+ThemeEditorPlugin::ThemeEditorPlugin() {
 	theme_editor = memnew(ThemeEditor);
 	theme_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 
-	button = editor->add_bottom_panel_item(TTR("Theme"), theme_editor);
+	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Theme"), theme_editor);
 	button->hide();
 }

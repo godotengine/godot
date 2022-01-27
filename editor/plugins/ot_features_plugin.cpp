@@ -202,7 +202,7 @@ bool EditorInspectorPluginOpenTypeFeatures::parse_property(Object *p_object, con
 
 /*************************************************************************/
 
-OpenTypeFeaturesEditorPlugin::OpenTypeFeaturesEditorPlugin(EditorNode *p_node) {
+OpenTypeFeaturesEditorPlugin::OpenTypeFeaturesEditorPlugin() {
 	Ref<EditorInspectorPluginOpenTypeFeatures> ftr_plugin;
 	ftr_plugin.instantiate();
 	EditorInspector::add_inspector_plugin(ftr_plugin);

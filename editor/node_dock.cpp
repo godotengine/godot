@@ -113,7 +113,7 @@ NodeDock::NodeDock() {
 	mode_hb->add_child(groups_button);
 	groups_button->connect("pressed", callable_mp(this, &NodeDock::show_groups));
 
-	connections = memnew(ConnectionsDock(EditorNode::get_singleton()));
+	connections = memnew(ConnectionsDock);
 	connections->set_undoredo(EditorNode::get_undo_redo());
 	add_child(connections);
 	connections->set_v_size_flags(SIZE_EXPAND_FILL);

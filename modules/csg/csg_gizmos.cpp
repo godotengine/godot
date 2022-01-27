@@ -421,7 +421,7 @@ void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	}
 }
 
-EditorPluginCSG::EditorPluginCSG(EditorNode *p_editor) {
+EditorPluginCSG::EditorPluginCSG(EditorNode *_p_editor) {
 	Ref<CSGShape3DGizmoPlugin> gizmo_plugin = Ref<CSGShape3DGizmoPlugin>(memnew(CSGShape3DGizmoPlugin));
 	Node3DEditor::get_singleton()->add_gizmo_plugin(gizmo_plugin);
 }

@@ -84,7 +84,7 @@ class GradientEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const override { return "Gradient"; }
 
-	GradientEditorPlugin(EditorNode *p_node);
+	GradientEditorPlugin();
 };
 
 #endif // GRADIENT_EDITOR_PLUGIN_H

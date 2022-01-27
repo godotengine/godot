@@ -174,14 +174,13 @@ void GPUParticlesCollisionSDF3DEditorPlugin::_sdf_save_path_and_bake(const Strin
 void GPUParticlesCollisionSDF3DEditorPlugin::_bind_methods() {
 }
 
-GPUParticlesCollisionSDF3DEditorPlugin::GPUParticlesCollisionSDF3DEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
+GPUParticlesCollisionSDF3DEditorPlugin::GPUParticlesCollisionSDF3DEditorPlugin() {
 	bake_hb = memnew(HBoxContainer);
 	bake_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	bake_hb->hide();
 	bake = memnew(Button);
 	bake->set_flat(true);
-	bake->set_icon(editor->get_gui_base()->get_theme_icon(SNAME("Bake"), SNAME("EditorIcons")));
+	bake->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Bake"), SNAME("EditorIcons")));
 	bake->set_text(TTR("Bake SDF"));
 	bake->connect("pressed", callable_mp(this, &GPUParticlesCollisionSDF3DEditorPlugin::_bake));
 	bake_hb->add_child(bake);

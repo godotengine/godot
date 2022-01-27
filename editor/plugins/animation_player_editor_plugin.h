@@ -47,7 +47,6 @@ class AnimationPlayerEditorPlugin;
 class AnimationPlayerEditor : public VBoxContainer {
 	GDCLASS(AnimationPlayerEditor, VBoxContainer);
 
-	EditorNode *editor;
 	AnimationPlayerEditorPlugin *plugin;
 	AnimationPlayer *player;
 
@@ -245,14 +244,13 @@ public:
 	void edit(AnimationPlayer *p_player);
 	void forward_force_draw_over_viewport(Control *p_overlay);
 
-	AnimationPlayerEditor(EditorNode *p_editor, AnimationPlayerEditorPlugin *p_plugin);
+	AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plugin);
 };
 
 class AnimationPlayerEditorPlugin : public EditorPlugin {
 	GDCLASS(AnimationPlayerEditorPlugin, EditorPlugin);
 
 	AnimationPlayerEditor *anim_editor;
-	EditorNode *editor;
 
 protected:
 	void _notification(int p_what);
@@ -274,7 +272,7 @@ public:
 	virtual void forward_canvas_force_draw_over_viewport(Control *p_overlay) override { anim_editor->forward_force_draw_over_viewport(p_overlay); }
 	virtual void forward_spatial_force_draw_over_viewport(Control *p_overlay) override { anim_editor->forward_force_draw_over_viewport(p_overlay); }
 
-	AnimationPlayerEditorPlugin(EditorNode *p_node);
+	AnimationPlayerEditorPlugin();
 	~AnimationPlayerEditorPlugin();
 };
 
