@@ -569,6 +569,15 @@
 				Returns the mode of the given window.
 			</description>
 		</method>
+		<method name="window_get_native_handle" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="handle_type" type="int" enum="DisplayServer.HandleType" />
+			<argument index="1" name="window_id" type="int" default="0" />
+			<description>
+				Returns internal structure pointers for use in plugins.
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
+			</description>
+		</method>
 		<method name="window_get_position" qualifiers="const">
 			<return type="Vector2i" />
 			<argument index="0" name="window_id" type="int" default="0" />
@@ -929,6 +938,23 @@
 		<constant name="VSYNC_MAILBOX" value="3" enum="VSyncMode">
 			Displays the most recent image in the queue on vertical blanking intervals, while rendering to the other images (no tearing is visible).
 			Although not guaranteed, the images can be rendered as fast as possible, which may reduce input lag.
+		</constant>
+		<constant name="DISPLAY_HANDLE" value="0" enum="HandleType">
+			Display handle:
+			- Linux: [code]X11::Display*[/code] for the display.
+		</constant>
+		<constant name="WINDOW_HANDLE" value="1" enum="HandleType">
+			Window handle:
+			- Windows: [code]HWND[/code] for the window.
+			- Linux: [code]X11::Window*[/code] for the window.
+			- MacOS: [code]NSWindow*[/code] for the window.
+			- iOS: [code]UIViewController*[/code] for the view controller.
+			- Android: [code]jObject[/code] for the activity.
+		</constant>
+		<constant name="WINDOW_VIEW" value="2" enum="HandleType">
+			Window view:
+			- MacOS: [code]NSView*[/code] for the window main view.
+			- iOS: [code]UIView*[/code] for the window main view.
 		</constant>
 	</constants>
 </class>

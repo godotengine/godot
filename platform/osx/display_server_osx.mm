@@ -3526,6 +3526,24 @@ DisplayServer::WindowID DisplayServerOSX::get_window_at_screen_position(const Po
 	return INVALID_WINDOW_ID;
 }
 
+int64_t DisplayServerOSX::window_get_native_handle(HandleType p_handle_type, WindowID p_window) const {
+	ERR_FAIL_COND_V(!windows.has(p_window), 0);
+	switch (p_handle_type) {
+		case DISPLAY_HANDLE: {
+			return 0; // Not supported.
+		}
+		case WINDOW_HANDLE: {
+			return (int64_t)windows[p_window].window_object;
+		}
+		case WINDOW_VIEW: {
+			return (int64_t)windows[p_window].window_view;
+		}
+		default: {
+			return 0;
+		}
+	}
+}
+
 void DisplayServerOSX::window_attach_instance_id(ObjectID p_instance, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 

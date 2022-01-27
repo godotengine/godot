@@ -253,6 +253,24 @@ DisplayServer::WindowID DisplayServerAndroid::get_window_at_screen_position(cons
 	return MAIN_WINDOW_ID;
 }
 
+int64_t DisplayServerAndroid::window_get_native_handle(HandleType p_handle_type, WindowID p_window) const {
+	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, 0);
+	switch (p_handle_type) {
+		case DISPLAY_HANDLE: {
+			return 0; // Not supported.
+		}
+		case WINDOW_HANDLE: {
+			return (int64_t)((OS_Android *)OS::get_singleton())->get_godot_java()->get_activity();
+		}
+		case WINDOW_VIEW: {
+			return 0; // Not supported.
+		}
+		default: {
+			return 0;
+		}
+	}
+}
+
 void DisplayServerAndroid::window_attach_instance_id(ObjectID p_instance, DisplayServer::WindowID p_window) {
 	window_attached_instance_id = p_instance;
 }
