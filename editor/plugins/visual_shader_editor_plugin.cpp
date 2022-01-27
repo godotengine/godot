@@ -4892,7 +4892,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	highend_label = memnew(Label);
 	desc_hbox->add_child(highend_label);
 	highend_label->set_visible(false);
-	highend_label->set_text("Vulkan");
+	highend_label->set_text("Modern");
 	highend_label->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	highend_label->set_tooltip(TTR("High-end node"));
 

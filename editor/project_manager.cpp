@@ -475,11 +475,11 @@ private:
 					ProjectSettings::CustomMap initial_settings;
 					// Be sure to change this code if/when renderers are changed.
 					int renderer_type = rasterizer_button_group->get_pressed_button()->get_meta(SNAME("driver_name"));
-					initial_settings["rendering/vulkan/rendering/back_end"] = renderer_type;
+					initial_settings["rendering/modern/back_end"] = renderer_type;
 					if (renderer_type == 0) {
-						project_features.push_back("Vulkan Clustered");
+						project_features.push_back("Modern Clustered");
 					} else if (renderer_type == 1) {
-						project_features.push_back("Vulkan Mobile");
+						project_features.push_back("Modern Mobile");
 					} else {
 						WARN_PRINT("Unknown renderer type. Please report this as a bug on GitHub.");
 					}
@@ -861,8 +861,8 @@ public:
 		rshb->add_child(rvb);
 		Button *rs_button = memnew(CheckBox);
 		rs_button->set_button_group(rasterizer_button_group);
-		rs_button->set_text(TTR("Vulkan Clustered"));
-		rs_button->set_meta(SNAME("driver_name"), 0); // Vulkan backend "Forward Clustered"
+		rs_button->set_text(TTR("Modern Clustered (Vulkan)"));
+		rs_button->set_meta(SNAME("driver_name"), 0); // RenderingDevice backend "Forward Clustered"
 		rs_button->set_pressed(true);
 		rvb->add_child(rs_button);
 		l = memnew(Label);
@@ -881,8 +881,8 @@ public:
 		rshb->add_child(rvb);
 		rs_button = memnew(CheckBox);
 		rs_button->set_button_group(rasterizer_button_group);
-		rs_button->set_text(TTR("Vulkan Mobile"));
-		rs_button->set_meta(SNAME("driver_name"), 1); // Vulkan backend "Forward Mobile"
+		rs_button->set_text(TTR("Modern Mobile (Vulkan)"));
+		rs_button->set_meta(SNAME("driver_name"), 1); // RenderingDevice backend "Forward Mobile"
 		rvb->add_child(rs_button);
 		l = memnew(Label);
 		l->set_text(

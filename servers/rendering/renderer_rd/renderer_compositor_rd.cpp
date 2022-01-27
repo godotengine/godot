@@ -295,8 +295,8 @@ RendererCompositorRD::RendererCompositorRD() {
 	storage = memnew(RendererStorageRD);
 	canvas = memnew(RendererCanvasRenderRD(storage));
 
-	back_end = (bool)(int)GLOBAL_GET("rendering/vulkan/rendering/back_end");
-	uint64_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
+	back_end = (bool)(int)GLOBAL_GET("rendering/modern/back_end");
+	uint32_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
 
 	if (back_end || textures_per_stage < 48) {
 		scene = memnew(RendererSceneRenderImplementation::RenderForwardMobile(storage));
