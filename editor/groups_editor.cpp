@@ -71,13 +71,13 @@ void GroupDialog::_load_nodes(Node *p_current) {
 	TreeItem *node = nullptr;
 	NodePath path = scene_tree->get_edited_scene_root()->get_path_to(p_current);
 	if (keep && p_current->is_in_group(selected_group)) {
-		if (remove_filter->get_text().is_subsequence_ofi(String(p_current->get_name()))) {
+		if (remove_filter->get_text().is_subsequence_ofn(String(p_current->get_name()))) {
 			node = nodes_to_remove->create_item(remove_node_root);
 			keep = true;
 		} else {
 			keep = false;
 		}
-	} else if (keep && add_filter->get_text().is_subsequence_ofi(String(p_current->get_name()))) {
+	} else if (keep && add_filter->get_text().is_subsequence_ofn(String(p_current->get_name()))) {
 		node = nodes_to_add->create_item(add_node_root);
 		keep = true;
 	} else {

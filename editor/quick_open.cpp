@@ -84,7 +84,7 @@ void EditorQuickOpen::_update_search() {
 	// Filter possible candidates.
 	Vector<Entry> entries;
 	for (int i = 0; i < files.size(); i++) {
-		if (empty_search || search_text.is_subsequence_ofi(files[i])) {
+		if (empty_search || search_text.is_subsequence_ofn(files[i])) {
 			Entry r;
 			r.path = files[i];
 			r.score = empty_search ? 0 : _score_path(search_text, files[i].to_lower());

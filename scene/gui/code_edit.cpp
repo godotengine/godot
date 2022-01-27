@@ -2857,7 +2857,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 			completion_options_casei.push_back(option);
 		} else if (s.is_subsequence_of(option.display)) {
 			completion_options_subseq.push_back(option);
-		} else if (s.is_subsequence_ofi(option.display)) {
+		} else if (s.is_subsequence_ofn(option.display)) {
 			completion_options_subseq_casei.push_back(option);
 		}
 

@@ -1009,7 +1009,7 @@ void ConnectionsDock::update_tree() {
 			PackedStringArray argnames;
 
 			String filter_text = search_box->get_text();
-			if (!filter_text.is_subsequence_ofi(signal_name)) {
+			if (!filter_text.is_subsequence_ofn(signal_name)) {
 				continue;
 			}
 

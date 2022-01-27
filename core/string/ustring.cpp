@@ -3080,7 +3080,7 @@ bool String::is_subsequence_of(const String &p_string) const {
 	return _base_is_subsequence_of(p_string, false);
 }
 
-bool String::is_subsequence_ofi(const String &p_string) const {
+bool String::is_subsequence_ofn(const String &p_string) const {
 	return _base_is_subsequence_of(p_string, true);
 }
 

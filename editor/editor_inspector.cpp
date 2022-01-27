@@ -2595,7 +2595,7 @@ void EditorInspector::update_tree() {
 
 		// Ignore properties that do not fit the filter.
 		if (use_filter && !filter.is_empty()) {
-			if (!filter.is_subsequence_ofi(path) && !filter.is_subsequence_ofi(property_label_string) && property_prefix.to_lower().find(filter.to_lower()) == -1) {
+			if (!filter.is_subsequence_ofn(path) && !filter.is_subsequence_ofn(property_label_string) && property_prefix.to_lower().find(filter.to_lower()) == -1) {
 				continue;
 			}
 		}
