@@ -585,7 +585,7 @@ void GDScriptWorkspace::completion(const lsp::CompletionParams &p_params, List<S
 			stack.push_back(owner_scene_node);
 
 			while (!stack.is_empty()) {
-				current = stack.pop_back();
+				current = Object::cast_to<Node>(stack.pop_back());
 				Ref<GDScript> script = current->get_script();
 				if (script.is_valid() && script->get_path() == path) {
 					break;

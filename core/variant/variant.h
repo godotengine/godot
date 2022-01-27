@@ -53,8 +53,6 @@
 #include "core/variant/dictionary.h"
 
 class Object;
-class Node; // helper
-class Control; // helper
 
 struct PropertyInfo;
 struct MethodInfo;
@@ -339,8 +337,6 @@ public:
 	operator ::RID() const;
 
 	operator Object *() const;
-	operator Node *() const;
-	operator Control *() const;
 
 	operator Callable() const;
 	operator Signal() const;
