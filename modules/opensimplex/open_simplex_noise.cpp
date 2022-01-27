@@ -180,6 +180,7 @@ void OpenSimplexNoise::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_lacunarity"), &OpenSimplexNoise::get_lacunarity);
 
 	ClassDB::bind_method(D_METHOD("get_image", "width", "height", "noise_offset"), &OpenSimplexNoise::get_image, DEFVAL(Vector2()));
+	ClassDB::bind_method(D_METHOD("get_image_z", "z", "width", "height", "noise_offset"), &OpenSimplexNoise::get_image_z, DEFVAL(Vector2()));
 	ClassDB::bind_method(D_METHOD("get_seamless_image", "size"), &OpenSimplexNoise::get_seamless_image);
 
 	ClassDB::bind_method(D_METHOD("get_noise_1d", "x"), &OpenSimplexNoise::get_noise_1d);
