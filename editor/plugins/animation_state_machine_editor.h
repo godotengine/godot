@@ -159,11 +159,11 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	StringName last_blend_from_node;
 	StringName last_current_node;
 	Vector<StringName> last_travel_path;
-	float last_play_pos;
-	float play_pos;
-	float current_length;
+	double last_play_pos;
+	double play_pos;
+	double current_length;
 
-	float error_time;
+	double error_time;
 	String error_text;
 
 	EditorFileDialog *open_file;
