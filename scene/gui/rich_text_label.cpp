@@ -4353,7 +4353,7 @@ Size2 RichTextLabel::get_minimum_size() const {
 		size.x += fixed_width;
 	}
 
-	if (fixed_width != -1 || fit_content_height) {
+	if (fit_content_height) {
 		const_cast<RichTextLabel *>(this)->_validate_line_caches(main);
 		size.y += get_content_height();
 	}
