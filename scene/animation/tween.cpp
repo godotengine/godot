@@ -249,8 +249,6 @@ bool Tween::custom_step(float p_delta) {
 }
 
 bool Tween::step(float p_delta) {
-	ERR_FAIL_COND_V_MSG(tweeners.is_empty(), false, "Tween started, but has no Tweeners.");
-
 	if (dead) {
 		return false;
 	}
@@ -271,6 +269,7 @@ bool Tween::step(float p_delta) {
 	}
 
 	if (!started) {
+		ERR_FAIL_COND_V_MSG(tweeners.is_empty(), false, "Tween started, but has no Tweeners.");
 		current_step = 0;
 		loops_done = 0;
 		start_tweeners();
