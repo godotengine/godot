@@ -393,6 +393,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Color accent_color = EDITOR_GET("interface/theme/accent_color");
 	Color base_color = EDITOR_GET("interface/theme/base_color");
 	float contrast = EDITOR_GET("interface/theme/contrast");
+	bool draw_extra_borders = EDITOR_GET("interface/theme/draw_extra_borders");
 	float icon_saturation = EDITOR_GET("interface/theme/icon_saturation");
 	float relationship_line_opacity = EDITOR_GET("interface/theme/relationship_line_opacity");
 
@@ -404,6 +405,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Color preset_accent_color;
 	Color preset_base_color;
 	float preset_contrast = 0;
+	bool preset_draw_extra_borders = false;
 
 	const float default_contrast = 0.3;
 
@@ -440,6 +442,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		preset_base_color = Color(0.89, 0.86, 0.79);
 		// A negative contrast rate looks better for light themes, since it better follows the natural order of UI "elevation".
 		preset_contrast = -0.08;
+	} else if (preset == "Black (OLED)") {
+		preset_accent_color = Color(0.45, 0.75, 1.0);
+		preset_base_color = Color(0, 0, 0);
+		// The contrast rate value is irrelevant on a fully black theme.
+		preset_contrast = 0.0;
+		preset_draw_extra_borders = true;
 	} else { // Default
 		preset_accent_color = Color(0.44, 0.73, 0.98);
 		preset_base_color = Color(0.21, 0.24, 0.29);
@@ -450,15 +458,18 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		accent_color = preset_accent_color;
 		base_color = preset_base_color;
 		contrast = preset_contrast;
+		draw_extra_borders = preset_draw_extra_borders;
 		EditorSettings::get_singleton()->set_initial_value("interface/theme/accent_color", accent_color);
 		EditorSettings::get_singleton()->set_initial_value("interface/theme/base_color", base_color);
 		EditorSettings::get_singleton()->set_initial_value("interface/theme/contrast", contrast);
+		EditorSettings::get_singleton()->set_initial_value("interface/theme/draw_extra_borders", draw_extra_borders);
 	}
 
 	EditorSettings::get_singleton()->set_manually("interface/theme/preset", preset);
 	EditorSettings::get_singleton()->set_manually("interface/theme/accent_color", accent_color);
 	EditorSettings::get_singleton()->set_manually("interface/theme/base_color", base_color);
 	EditorSettings::get_singleton()->set_manually("interface/theme/contrast", contrast);
+	EditorSettings::get_singleton()->set_manually("interface/theme/draw_extra_borders", draw_extra_borders);
 
 	// Colors
 	bool dark_theme = EditorSettings::get_singleton()->is_dark_theme();
@@ -477,6 +488,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color dark_color_2 = base_color.lerp(Color(0, 0, 0, 1), contrast * 1.5).clamp();
 	const Color dark_color_3 = base_color.lerp(Color(0, 0, 0, 1), contrast * 2).clamp();
 
+	// Only used when the Draw Extra Borders editor setting is enabled.
+	const Color extra_border_color_1 = Color(0.5, 0.5, 0.5);
+	const Color extra_border_color_2 = dark_theme ? Color(0.3, 0.3, 0.3) : Color(0.7, 0.7, 0.7);
+
 	const Color background_color = dark_color_2;
 
 	// White (dark theme) or black (light theme), will be used to generate the rest of the colors
@@ -489,7 +504,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color font_hover_color = mono_color.lerp(base_color, 0.125);
 	const Color font_focus_color = mono_color.lerp(base_color, 0.125);
 	const Color font_hover_pressed_color = font_hover_color.lerp(accent_color, 0.74);
-	const Color font_disabled_color = Color(mono_color.r, mono_color.g, mono_color.b, 0.3);
+	const Color font_disabled_color = Color(mono_color.r, mono_color.g, mono_color.b, 0.35);
 	const Color font_readonly_color = Color(mono_color.r, mono_color.g, mono_color.b, 0.65);
 	const Color font_placeholder_color = Color(mono_color.r, mono_color.g, mono_color.b, 0.6);
 	const Color selection_color = accent_color * Color(1, 1, 1, 0.4);
@@ -634,10 +649,19 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<StyleBoxFlat> style_widget = style_default->duplicate();
 	style_widget->set_default_margin_individual(widget_default_margin.x, widget_default_margin.y, widget_default_margin.x, widget_default_margin.y);
 	style_widget->set_bg_color(dark_color_1);
-	style_widget->set_border_color(dark_color_2);
+	if (draw_extra_borders) {
+		style_widget->set_border_width_all(Math::round(EDSCALE));
+		style_widget->set_border_color(extra_border_color_1);
+	} else {
+		style_widget->set_border_color(dark_color_2);
+	}
 
 	Ref<StyleBoxFlat> style_widget_disabled = style_widget->duplicate();
-	style_widget_disabled->set_border_color(disabled_color);
+	if (draw_extra_borders) {
+		style_widget_disabled->set_border_color(extra_border_color_2);
+	} else {
+		style_widget_disabled->set_border_color(disabled_color);
+	}
 	style_widget_disabled->set_bg_color(disabled_bg_color);
 
 	Ref<StyleBoxFlat> style_widget_focus = style_widget->duplicate();
@@ -650,7 +674,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	Ref<StyleBoxFlat> style_widget_hover = style_widget->duplicate();
 	style_widget_hover->set_bg_color(mono_color * Color(1, 1, 1, 0.11));
-	style_widget_hover->set_border_color(mono_color * Color(1, 1, 1, 0.05));
+	if (draw_extra_borders) {
+		style_widget_hover->set_border_color(extra_border_color_1);
+	} else {
+		style_widget_hover->set_border_color(mono_color * Color(1, 1, 1, 0.05));
+	}
 
 	// Style for windows, popups, etc..
 	Ref<StyleBoxFlat> style_popup = style_default->duplicate();
@@ -991,7 +1019,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_popup_menu->set_default_margin_individual(EDSCALE, 2 * EDSCALE, EDSCALE, 2 * EDSCALE);
 	// Always display a border for PopupMenus so they can be distinguished from their background.
 	style_popup_menu->set_border_width_all(EDSCALE);
-	style_popup_menu->set_border_color(dark_color_2);
+	if (draw_extra_borders) {
+		style_popup_menu->set_border_color(extra_border_color_2);
+	} else {
+		style_popup_menu->set_border_color(dark_color_2);
+	}
 	theme->set_stylebox("panel", "PopupMenu", style_popup_menu);
 
 	Ref<StyleBoxFlat> style_menu_hover = style_widget_hover->duplicate();
@@ -1111,7 +1143,13 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<StyleBoxFlat> style_tree_bg = style_default->duplicate();
 	// Make Trees easier to distinguish from other controls by using a darker background color.
 	style_tree_bg->set_bg_color(dark_color_1.lerp(dark_color_2, 0.5));
-	style_tree_bg->set_border_color(dark_color_3);
+	if (draw_extra_borders) {
+		style_tree_bg->set_border_width_all(Math::round(EDSCALE));
+		style_tree_bg->set_border_color(extra_border_color_2);
+	} else {
+		style_tree_bg->set_border_color(dark_color_3);
+	}
+
 	theme->set_stylebox("panel", "Tree", style_tree_bg);
 
 	// Tree
@@ -1207,8 +1245,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// ItemList
 	Ref<StyleBoxFlat> style_itemlist_bg = style_default->duplicate();
 	style_itemlist_bg->set_bg_color(dark_color_1);
-	style_itemlist_bg->set_border_width_all(border_width);
-	style_itemlist_bg->set_border_color(dark_color_3);
+
+	if (draw_extra_borders) {
+		style_itemlist_bg->set_border_width_all(Math::round(EDSCALE));
+		style_itemlist_bg->set_border_color(extra_border_color_2);
+	} else {
+		style_itemlist_bg->set_border_width_all(border_width);
+		style_itemlist_bg->set_border_color(dark_color_3);
+	}
 
 	Ref<StyleBoxFlat> style_itemlist_cursor = style_default->duplicate();
 	style_itemlist_cursor->set_draw_center(false);
@@ -1326,13 +1370,20 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// The original style_widget style has an extra 1 pixel offset that makes LineEdits not align with Buttons,
 	// so this compensates for that.
 	style_line_edit->set_default_margin(SIDE_TOP, style_line_edit->get_default_margin(SIDE_TOP) - 1 * EDSCALE);
-	// Add a bottom line to make LineEdits more visible, especially in sectioned inspectors
-	// such as the Project Settings.
-	style_line_edit->set_border_width(SIDE_BOTTOM, Math::round(2 * EDSCALE));
-	style_line_edit->set_border_color(dark_color_2);
+
 	// Don't round the bottom corner to make the line look sharper.
 	style_tab_selected->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
 	style_tab_selected->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
+
+	if (draw_extra_borders) {
+		style_line_edit->set_border_width_all(Math::round(EDSCALE));
+		style_line_edit->set_border_color(extra_border_color_1);
+	} else {
+		// Add a bottom line to make LineEdits more visible, especially in sectioned inspectors
+		// such as the Project Settings.
+		style_line_edit->set_border_width(SIDE_BOTTOM, Math::round(2 * EDSCALE));
+		style_line_edit->set_border_color(dark_color_2);
+	}
 
 	Ref<StyleBoxFlat> style_line_edit_disabled = style_line_edit->duplicate();
 	style_line_edit_disabled->set_border_color(disabled_color);
