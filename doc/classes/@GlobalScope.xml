@@ -1151,6 +1151,9 @@
 		<member name="ProjectSettings" type="ProjectSettings" setter="" getter="">
 			The [ProjectSettings] singleton.
 		</member>
+		<member name="Redirect" type="Redirect" setter="" getter="">
+			The [Redirect] singleton.
+		</member>
 		<member name="RenderingServer" type="RenderingServer" setter="" getter="">
 			The [RenderingServer] singleton.
 		</member>

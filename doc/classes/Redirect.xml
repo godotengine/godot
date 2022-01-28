@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Redirect" inherits="Object" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<signals>
+		<signal name="print_line">
+			<argument index="0" name="scene_root" type="Node" />
+			<description>
+			</description>
+		</signal>
+	</signals>
+</class>
