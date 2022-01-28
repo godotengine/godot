@@ -2609,7 +2609,7 @@ Variant Animation::value_track_interpolate(int p_track, double p_time) const {
 
 void Animation::_value_track_get_key_indices_in_range(const ValueTrack *vt, double from_time, double to_time, List<int> *p_indices) const {
 	if (from_time != length && to_time == length) {
-		to_time = length * 1.001; //include a little more if at the end
+		to_time = length + CMP_EPSILON; //include a little more if at the end
 	}
 	int to = _find(vt->values, to_time);
 
@@ -2730,7 +2730,7 @@ Animation::UpdateMode Animation::value_track_get_update_mode(int p_track) const 
 template <class T>
 void Animation::_track_get_key_indices_in_range(const Vector<T> &p_array, double from_time, double to_time, List<int> *p_indices) const {
 	if (from_time != length && to_time == length) {
-		to_time = length * 1.01; //include a little more if at the end
+		to_time = length + CMP_EPSILON; //include a little more if at the end
 	}
 
 	int to = _find(p_array, to_time);
@@ -3081,7 +3081,7 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 
 void Animation::_method_track_get_key_indices_in_range(const MethodTrack *mt, double from_time, double to_time, List<int> *p_indices) const {
 	if (from_time != length && to_time == length) {
-		to_time = length * 1.01; //include a little more if at the end
+		to_time = length + CMP_EPSILON; //include a little more if at the end
 	}
 
 	int to = _find(mt->methods, to_time);
