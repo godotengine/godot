@@ -279,7 +279,46 @@ public:
 	EditorPropertyFlags();
 };
 
-class EditorPropertyLayersGrid;
+///////////////////// LAYERS /////////////////////////
+
+class EditorPropertyLayersGrid : public Control {
+	GDCLASS(EditorPropertyLayersGrid, Control);
+
+private:
+	Vector<Rect2> flag_rects;
+	Rect2 expand_rect;
+	bool expand_hovered = false;
+	bool expanded = false;
+	int expansion_rows = 0;
+	int hovered_index = -1;
+	bool read_only = false;
+	int renamed_layer_index = -1;
+	PopupMenu *layer_rename;
+	ConfirmationDialog *rename_dialog;
+	LineEdit *rename_dialog_text;
+
+	void _rename_pressed(int p_menu);
+	void _rename_operation_confirm();
+	Size2 get_grid_size() const;
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	uint32_t value = 0;
+	int layer_group_size = 0;
+	int layer_count = 0;
+	Vector<String> names;
+	Vector<String> tooltips;
+
+	void set_read_only(bool p_read_only);
+	virtual Size2 get_minimum_size() const override;
+	virtual String get_tooltip(const Point2 &p_pos) const override;
+	void gui_input(const Ref<InputEvent> &p_ev) override;
+	void set_flag(uint32_t p_flag);
+	EditorPropertyLayersGrid();
+};
 
 class EditorPropertyLayers : public EditorProperty {
 	GDCLASS(EditorPropertyLayers, EditorProperty);
@@ -297,12 +336,14 @@ public:
 private:
 	EditorPropertyLayersGrid *grid;
 	void _grid_changed(uint32_t p_grid);
+	String basename;
 	LayerType layer_type;
 	PopupMenu *layers;
 	Button *button;
 
 	void _button_pressed();
 	void _menu_pressed(int p_menu);
+	void _refresh_names();
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
@@ -310,6 +351,7 @@ protected:
 
 public:
 	void setup(LayerType p_layer_type);
+	void set_layer_name(int p_index, const String &p_name);
 	virtual void update_property() override;
 	EditorPropertyLayers();
 };
