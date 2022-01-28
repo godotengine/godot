@@ -157,7 +157,6 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#478cbf", "#478cbf"); // Godot Blue
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#414042", "#414042"); // Godot Gray
 
-		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#e0e0e0", "#5a5a5a"); // Common icon color
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ffffff", "#414141"); // Pure white
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#000000", "#bfbfbf"); // Pure black
 		// Keep pure RGB colors as is, but list them for explicity.
@@ -166,6 +165,8 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#0000ff", "#0000ff"); // Pure blue
 
 		// GUI Colors
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#e0e0e0", "#5a5a5a"); // Common icon color
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#fefefe", "#fefefe"); // Forced light color
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#808080", "#808080"); // GUI disabled color
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#b3b3b3", "#363636"); // GUI disabled light color
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#699ce8", "#699ce8"); // GUI highlight color
