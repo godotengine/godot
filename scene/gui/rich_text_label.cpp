@@ -238,7 +238,8 @@ void RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 					ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
 					ItemFrame *frame = static_cast<ItemFrame *>(E);
 					for (int i = 0; i < frame->lines.size(); i++) {
-						_resize_line(frame, i, p_base_font, p_base_font_size, 1);
+						int w = _find_margin(frame->lines[i].from, p_base_font, p_base_font_size) + 1;
+						_resize_line(frame, i, p_base_font, p_base_font_size, w);
 					}
 					idx++;
 				}
@@ -254,12 +255,7 @@ void RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 				for (int i = 0; i < col_count; i++) {
 					remaining_width -= table->columns[i].min_width;
 					if (table->columns[i].max_width > table->columns[i].min_width) {
-						// If the column can grow, allow it to grow.
 						table->columns.write[i].expand = true;
-					} else {
-						// Otherwise make it shrink as much as possible, so that other columns can grow if needs be.
-						// We keep the max width as is to spread the remaining space between the columns later.
-						table->columns.write[i].min_width = 0;
 					}
 					if (table->columns[i].expand) {
 						total_ratio += table->columns[i].expand_ratio;
@@ -487,7 +483,8 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 					int column = idx % col_count;
 					for (int i = 0; i < frame->lines.size(); i++) {
 						int char_offset = l.char_offset + l.char_count;
-						_shape_line(frame, i, p_base_font, p_base_font_size, 1, &char_offset);
+						int w = _find_margin(frame->lines[i].from, p_base_font, p_base_font_size) + 1;
+						_shape_line(frame, i, p_base_font, p_base_font_size, w, &char_offset);
 						int cell_ch = (char_offset - (l.char_offset + l.char_count));
 						l.char_count += cell_ch;
 						t_char_count += cell_ch;
@@ -507,12 +504,7 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 				for (int i = 0; i < col_count; i++) {
 					remaining_width -= table->columns[i].min_width;
 					if (table->columns[i].max_width > table->columns[i].min_width) {
-						// If the column can grow, allow it to grow.
 						table->columns.write[i].expand = true;
-					} else {
-						// Otherwise make it shrink as much as possible, so that other columns can grow if needs be.
-						// We keep the max width as is to spread the remaining space between the columns later.
-						table->columns.write[i].min_width = 0;
 					}
 					if (table->columns[i].expand) {
 						total_ratio += table->columns[i].expand_ratio;
