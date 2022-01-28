@@ -93,8 +93,7 @@ protected:
 	static SafeRefCount refcount;
 	_FORCE_INLINE_ void _set_data(RID &p_rid, RID_Data *p_data) {
 		p_rid._data = p_data;
-		refcount.ref();
-		p_data->_id = refcount.get();
+		p_data->_id = refcount.refval();
 #ifndef DEBUG_ENABLED
 		p_data->_owner = this;
 #endif
