@@ -2652,6 +2652,7 @@ void DisplayServerOSX::window_set_mode(WindowMode p_mode, WindowID p_window) {
 		case WINDOW_MODE_MINIMIZED: {
 			[wd.window_object deminiaturize:nil];
 		} break;
+		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
 		case WINDOW_MODE_FULLSCREEN: {
 			[wd.window_object setLevel:NSNormalWindowLevel];
 			if (wd.layered_window) {
@@ -2685,6 +2686,7 @@ void DisplayServerOSX::window_set_mode(WindowMode p_mode, WindowID p_window) {
 		case WINDOW_MODE_MINIMIZED: {
 			[wd.window_object performMiniaturize:nil];
 		} break;
+		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
 		case WINDOW_MODE_FULLSCREEN: {
 			if (wd.layered_window)
 				_set_window_per_pixel_transparency_enabled(false, p_window);

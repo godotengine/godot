@@ -398,6 +398,11 @@
 			Fullscreen window mode. Note that this is not [i]exclusive[/i] fullscreen. On Windows and Linux, a borderless window is used to emulate fullscreen. On macOS, a new desktop is used to display the running project.
 			Regardless of the platform, enabling fullscreen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling fullscreen mode.
 		</constant>
+		<constant name="MODE_EXCLUSIVE_FULLSCREEN" value="4" enum="Mode">
+			Exclusive fullscreen window mode. This mode is implemented on Windows only. On other platforms, it is equivalent to [constant MODE_FULLSCREEN].
+			Only one window in exclusive fullscreen mode can be visible on a given screen at a time. If multiple windows are in exclusive fullscreen mode for the same screen, the last one being set to this mode takes precedence.
+			Regardless of the platform, enabling fullscreen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling fullscreen mode.
+		</constant>
 		<constant name="FLAG_RESIZE_DISABLED" value="0" enum="Flags">
 			The window's ability to be resized.
 		</constant>

@@ -1825,6 +1825,7 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 
 			XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
 		} break;
+		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
 		case WINDOW_MODE_FULLSCREEN: {
 			//Remove full-screen
 			wd.fullscreen = false;
@@ -1877,6 +1878,7 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 
 			XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
 		} break;
+		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
 		case WINDOW_MODE_FULLSCREEN: {
 			wd.last_position_before_fs = wd.position;
 
