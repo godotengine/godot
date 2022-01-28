@@ -13,7 +13,7 @@
 			<argument index="0" name="message" type="String" />
 			<argument index="1" name="error" type="bool" />
 			<description>
-			This signal gets called whenever a print function (print, print_debug, ...) is getting called. It provides the message and the flag incase it is an error as parameters to this function.
+				This signal gets called whenever a print function (print, print_debug, ...) is getting called. It provides the message and the flag incase it is an error as parameters to this function.
 			</description>
 		</signal>
 	</signals>
