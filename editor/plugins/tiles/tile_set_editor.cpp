@@ -482,7 +482,7 @@ void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_
 				Vector2i tile_id = tas->get_tile_id(j);
 				for (int k = 0; k < tas->get_alternative_tiles_count(tile_id); k++) {
 					int alternative_id = tas->get_alternative_tile_id(tile_id, k);
-					TileData *tile_data = Object::cast_to<TileData>(tas->get_tile_data(tile_id, alternative_id));
+					TileData *tile_data = tas->get_tile_data(tile_id, alternative_id);
 					ERR_FAIL_COND(!tile_data);
 
 					// Actually saving stuff.
@@ -601,7 +601,7 @@ void TileSetEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p
 					Vector2i tile_id = tas->get_tile_id(j);
 					for (int k = 0; k < tas->get_alternative_tiles_count(tile_id); k++) {
 						int alternative_id = tas->get_alternative_tile_id(tile_id, k);
-						TileData *tile_data = Object::cast_to<TileData>(tas->get_tile_data(tile_id, alternative_id));
+						TileData *tile_data = tas->get_tile_data(tile_id, alternative_id);
 						ERR_FAIL_COND(!tile_data);
 
 						if (components.size() == 2 && components[0].begins_with("terrain_set_") && components[0].trim_prefix("terrain_set_").is_valid_int() && components[1] == "mode") {
