@@ -362,6 +362,10 @@ void unregister_core_types() {
 		memdelete(ip);
 	}
 
+	if (redirect) {
+		memdelete(redirect);
+	}
+
 	ResourceLoader::remove_resource_format_loader(resource_loader_native_extension);
 	resource_loader_native_extension.unref();
 
