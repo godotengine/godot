@@ -4,7 +4,7 @@
 		Global class to provide signals for redirecting messages
 	</brief_description>
 	<description>
-		This class provides a signal for hooking the output of print_* functions, for example to display a log display directly within the application, or to send it to an external log server (for example Sentry) 
+		This class provides a signal for hooking the output of print_* functions, for example to display a log display directly within the application, or to send it to an external log server (for example Sentry)
 	</description>
 	<tutorials>
 	</tutorials>
