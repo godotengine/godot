@@ -3558,6 +3558,10 @@ String String::rstrip(const String &p_chars) const {
 	return substr(0, end + 1);
 }
 
+bool String::is_network_share_path() const {
+	return begins_with("//") || begins_with("\\\\");
+}
+
 String String::simplify_path() const {
 	String s = *this;
 	String drive;
@@ -3570,6 +3574,9 @@ String String::simplify_path() const {
 	} else if (s.begins_with("user://")) {
 		drive = "user://";
 		s = s.substr(7, s.length());
+	} else if (is_network_share_path()) {
+		drive = s.substr(0, 2);
+		s = s.substr(2, s.length() - 2);
 	} else if (s.begins_with("/") || s.begins_with("\\")) {
 		drive = s.substr(0, 1);
 		s = s.substr(1, s.length() - 1);
@@ -4271,13 +4278,13 @@ bool String::is_relative_path() const {
 String String::get_base_dir() const {
 	int end = 0;
 
-	// url scheme style base
+	// URL scheme style base.
 	int basepos = find("://");
 	if (basepos != -1) {
 		end = basepos + 3;
 	}
 
-	// windows top level directory base
+	// Windows top level directory base.
 	if (end == 0) {
 		basepos = find(":/");
 		if (basepos == -1) {
@@ -4288,7 +4295,24 @@ String String::get_base_dir() const {
 		}
 	}
 
-	// unix root directory base
+	// Windows UNC network share path.
+	if (end == 0) {
+		if (is_network_share_path()) {
+			basepos = find("/", 2);
+			if (basepos == -1) {
+				basepos = find("\\", 2);
+			}
+			int servpos = find("/", basepos + 1);
+			if (servpos == -1) {
+				servpos = find("\\", basepos + 1);
+			}
+			if (servpos != -1) {
+				end = servpos + 1;
+			}
+		}
+	}
+
+	// Unix root directory base.
 	if (end == 0) {
 		if (begins_with("/")) {
 			end = 1;
