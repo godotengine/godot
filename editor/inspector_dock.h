@@ -93,6 +93,8 @@ class InspectorDock : public VBoxContainer {
 	ConfirmationDialog *unique_resources_confirmation;
 	Tree *unique_resources_list_tree;
 
+	float refresh_countdown;
+
 	void _menu_option(int p_option);
 	void _menu_confirm_current();
 	void _menu_option_confirm(int p_option, bool p_confirmed);

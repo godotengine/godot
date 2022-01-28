@@ -394,6 +394,19 @@ Container *InspectorDock::get_addon_area() {
 
 void InspectorDock::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_READY:
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			set_process(is_visible_in_tree());
+		} break;
+		case NOTIFICATION_PROCESS: {
+			if (refresh_countdown > 0) {
+				refresh_countdown -= get_process_delta_time();
+				if (refresh_countdown <= 0) {
+					editor_path->update_path();
+					refresh_countdown = float(EditorSettings::get_singleton()->get("docks/property_editor/auto_refresh_interval"));
+				}
+			}
+		} break;
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
@@ -686,6 +699,14 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	inspector->set_use_filter(true); // TODO: check me
 
 	inspector->connect("resource_selected", callable_mp(this, &InspectorDock::_resource_selected));
+
+	set_process(false);
+	if (EditorSettings::get_singleton()) {
+		refresh_countdown = float(EditorSettings::get_singleton()->get("docks/property_editor/auto_refresh_interval"));
+	} else {
+		//used when class is created by the docgen to dump default values of everything bindable, editorsettings may not be created
+		refresh_countdown = 0.33;
+	}
 }
 
 InspectorDock::~InspectorDock() {
