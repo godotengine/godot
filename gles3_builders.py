@@ -502,7 +502,7 @@ def build_gles3_header(filename, include, class_suffix, output_attribs):
         for i in range(len(header_data.specialization_names)):
             defval = header_data.specialization_values[i].strip()
             if defval.upper() == "TRUE" or defval == "1":
-                defal = "true"
+                defval = "true"
             else:
                 defval = "false"
 
