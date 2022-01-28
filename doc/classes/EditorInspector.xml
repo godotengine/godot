@@ -59,8 +59,8 @@
 			</description>
 		</signal>
 		<signal name="resource_selected">
-			<argument index="0" name="res" type="Object" />
-			<argument index="1" name="prop" type="String" />
+			<argument index="0" name="resource" type="Resource" />
+			<argument index="1" name="path" type="String" />
 			<description>
 				Emitted when a resource is selected in the inspector.
 			</description>

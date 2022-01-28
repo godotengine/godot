@@ -117,7 +117,7 @@
 	</methods>
 	<signals>
 		<signal name="data_channel_received">
-			<argument index="0" name="channel" type="Object" />
+			<argument index="0" name="channel" type="WebRTCDataChannel" />
 			<description>
 				Emitted when a new in-band channel is received, i.e. when the channel was created with [code]negotiated: false[/code] (default).
 				The object will be an instance of [WebRTCDataChannel]. You must keep a reference of it or it will be closed automatically. See [method create_data_channel].
