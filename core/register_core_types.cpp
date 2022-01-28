@@ -306,6 +306,10 @@ void unregister_core_types() {
 		memdelete(ip);
 	}
 
+	if (redir) {
+		memdelete(redir);
+	}
+
 	ResourceLoader::finalize();
 
 	ClassDB::cleanup_defaults();
