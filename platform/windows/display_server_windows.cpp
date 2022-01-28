@@ -706,6 +706,15 @@ void DisplayServerWindows::window_set_current_screen(int p_screen, WindowID p_wi
 		Vector2 ofs = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));
 		window_set_position(ofs + screen_get_position(p_screen), p_window);
 	}
+
+	// Don't let the mouse leave the window when resizing to a smaller resolution.
+	if (mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
+		RECT crect;
+		GetClientRect(wd.hWnd, &crect);
+		ClientToScreen(wd.hWnd, (POINT *)&crect.left);
+		ClientToScreen(wd.hWnd, (POINT *)&crect.right);
+		ClipCursor(&crect);
+	}
 }
 
 Point2i DisplayServerWindows::window_get_position(WindowID p_window) const {
@@ -1067,6 +1076,15 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		if (restore_mouse_trails > 1) {
 			SystemParametersInfoA(SPI_SETMOUSETRAILS, 0, 0, 0);
 		}
+	}
+
+	// Don't let the mouse leave the window when resizing to a smaller resolution.
+	if (mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
+		RECT crect;
+		GetClientRect(wd.hWnd, &crect);
+		ClientToScreen(wd.hWnd, (POINT *)&crect.left);
+		ClientToScreen(wd.hWnd, (POINT *)&crect.right);
+		ClipCursor(&crect);
 	}
 }
 
@@ -2897,6 +2915,9 @@ void DisplayServerWindows::_process_activate_event(WindowID p_window_id, WPARAM 
 		alt_mem = false;
 		control_mem = false;
 		shift_mem = false;
+
+		// Restore mouse mode.
+		_set_mouse_mode_impl(mouse_mode);
 	} else { // WM_INACTIVE.
 		Input::get_singleton()->release_pressed_events();
 		_send_window_event(windows[p_window_id], WINDOW_EVENT_FOCUS_OUT);
