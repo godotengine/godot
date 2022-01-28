@@ -284,7 +284,7 @@
 		<method name="get_global_mouse_position" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the global position of the mouse.
+				Returns the mouse's position in the [CanvasLayer] that this [CanvasItem] is in using the coordinate system of the [CanvasLayer].
 			</description>
 		</method>
 		<method name="get_global_transform" qualifiers="const">
@@ -302,7 +302,7 @@
 		<method name="get_local_mouse_position" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the mouse position relative to this item's position.
+				Returns the mouse's position in this [CanvasItem] using the local coordinate system of this [CanvasItem].
 			</description>
 		</method>
 		<method name="get_transform" qualifiers="const">

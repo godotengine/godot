@@ -16,10 +16,12 @@
 			The mouse button mask identifier, one of or a bitwise combination of the [enum ButtonList] button masks.
 		</member>
 		<member name="global_position" type="Vector2" setter="set_global_position" getter="get_global_position" default="Vector2( 0, 0 )">
-			The global mouse position relative to the current [Viewport]. If used in [method Control._gui_input] and if the current [Control] is not under the mouse, moving it will not update this value.
+			When received in [method Node._input] or [method Node._unhandled_input], returns the mouse's position in the root [Viewport] using the coordinate system of the root [Viewport].
+			When received in [method Control._gui_input], returns the mouse's position in the [CanvasLayer] that the [Control] is in using the coordinate system of the [CanvasLayer].
 		</member>
 		<member name="position" type="Vector2" setter="set_position" getter="get_position" default="Vector2( 0, 0 )">
-			The local mouse position relative to the [Viewport]. If used in [method Control._gui_input], the position is relative to the current [Control] which is under the mouse. If the current [Control] is not under the mouse, moving it will not update this value.
+			When received in [method Node._input] or [method Node._unhandled_input], returns the mouse's position in the [Viewport] this [Node] is in using the coordinate system of this [Viewport].
+			When received in [method Control._gui_input], returns the mouse's position in the [Control] using the local coordinate system of the [Control].
 		</member>
 	</members>
 	<constants>
