@@ -188,16 +188,6 @@ protected:
 
 		return d;
 	}
-	void _remove_child(Object *p_child) {
-		remove_child(Object::cast_to<TreeItem>(p_child));
-	}
-
-	void _move_before(Object *p_item) {
-		move_before(Object::cast_to<TreeItem>(p_item));
-	}
-	void _move_after(Object *p_item) {
-		move_after(Object::cast_to<TreeItem>(p_item));
-	}
 
 	Variant _call_recursive_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 

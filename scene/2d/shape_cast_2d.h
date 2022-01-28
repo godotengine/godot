@@ -34,6 +34,8 @@
 #include "scene/2d/node_2d.h"
 #include "scene/resources/shape_2d.h"
 
+class CollisionObject2D;
+
 class ShapeCast2D : public Node2D {
 	GDCLASS(ShapeCast2D, Node2D);
 
@@ -109,9 +111,9 @@ public:
 	real_t get_closest_collision_unsafe_fraction() const;
 
 	void add_exception_rid(const RID &p_rid);
-	void add_exception(const Object *p_object);
+	void add_exception(const CollisionObject2D *p_node);
 	void remove_exception_rid(const RID &p_rid);
-	void remove_exception(const Object *p_object);
+	void remove_exception(const CollisionObject2D *p_node);
 	void clear_exceptions();
 
 	TypedArray<String> get_configuration_warnings() const override;

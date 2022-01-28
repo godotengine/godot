@@ -1317,10 +1317,10 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_children"), &TreeItem::get_children);
 	ClassDB::bind_method(D_METHOD("get_index"), &TreeItem::get_index);
 
-	ClassDB::bind_method(D_METHOD("move_before", "item"), &TreeItem::_move_before);
-	ClassDB::bind_method(D_METHOD("move_after", "item"), &TreeItem::_move_after);
+	ClassDB::bind_method(D_METHOD("move_before", "item"), &TreeItem::move_before);
+	ClassDB::bind_method(D_METHOD("move_after", "item"), &TreeItem::move_after);
 
-	ClassDB::bind_method(D_METHOD("remove_child", "child"), &TreeItem::_remove_child);
+	ClassDB::bind_method(D_METHOD("remove_child", "child"), &TreeItem::remove_child);
 
 	{
 		MethodInfo mi;
