@@ -2208,7 +2208,7 @@ void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 
 		int total_height = 0;
 		if (p_frame->lines.size()) {
-			total_height = p_frame->lines[p_frame->lines.size() - 1].offset.y + p_frame->lines[p_frame->lines.size() - 1].text_buf->get_size().y * p_frame->lines[p_frame->lines.size() - 1].text_buf->get_line_count() * get_theme_constant(SNAME("line_separation"));
+			total_height = p_frame->lines[p_frame->lines.size() - 1].offset.y + p_frame->lines[p_frame->lines.size() - 1].text_buf->get_size().y + p_frame->lines[p_frame->lines.size() - 1].text_buf->get_line_count() * get_theme_constant(SNAME("line_separation"));
 		}
 
 		p_frame->first_resized_line = p_frame->lines.size();
@@ -4066,7 +4066,7 @@ void RichTextLabel::install_effect(const Variant effect) {
 int RichTextLabel::get_content_height() const {
 	int total_height = 0;
 	if (main->lines.size()) {
-		total_height = main->lines[main->lines.size() - 1].offset.y + main->lines[main->lines.size() - 1].text_buf->get_size().y * main->lines[main->lines.size() - 1].text_buf->get_line_count() * get_theme_constant(SNAME("line_separation"));
+		total_height = main->lines[main->lines.size() - 1].offset.y + main->lines[main->lines.size() - 1].text_buf->get_size().y + main->lines[main->lines.size() - 1].text_buf->get_line_count() * get_theme_constant(SNAME("line_separation"));
 	}
 	return total_height;
 }
