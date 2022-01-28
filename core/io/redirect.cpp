@@ -38,7 +38,7 @@ void Redirect::_print_handler(void *p_this, const String &p_string, bool p_error
 }
 
 void Redirect::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("print_line", PropertyInfo(Variant::OBJECT, "scene_root", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
+	ADD_SIGNAL(MethodInfo("print_line", PropertyInfo(Variant::STRING, "message"), PropertyInfo(Variant::BOOL, "error")));
 }
 
 Redirect *Redirect::singleton = nullptr;
