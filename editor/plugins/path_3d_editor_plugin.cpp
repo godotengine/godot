@@ -539,12 +539,29 @@ void Path3DEditorPlugin::_handle_option_pressed(int p_option) {
 	}
 }
 
+void Path3DEditorPlugin::_update_theme() {
+	// TODO: Split the EditorPlugin instance from the UI instance and connect this properly.
+	// See the 2D path editor for inspiration.
+	curve_edit->set_icon(Node3DEditor::get_singleton()->get_theme_icon(SNAME("CurveEdit"), SNAME("EditorIcons")));
+	curve_create->set_icon(Node3DEditor::get_singleton()->get_theme_icon(SNAME("CurveCreate"), SNAME("EditorIcons")));
+	curve_del->set_icon(Node3DEditor::get_singleton()->get_theme_icon(SNAME("CurveDelete"), SNAME("EditorIcons")));
+	curve_close->set_icon(Node3DEditor::get_singleton()->get_theme_icon(SNAME("CurveClose"), SNAME("EditorIcons")));
+}
+
 void Path3DEditorPlugin::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		curve_create->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_mode_changed), make_binds(0));
-		curve_edit->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_mode_changed), make_binds(1));
-		curve_del->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_mode_changed), make_binds(2));
-		curve_close->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_close_curve));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			curve_create->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_mode_changed), make_binds(0));
+			curve_edit->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_mode_changed), make_binds(1));
+			curve_del->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_mode_changed), make_binds(2));
+			curve_close->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_close_curve));
+
+			_update_theme();
+		} break;
+
+		case NOTIFICATION_READY: {
+			Node3DEditor::get_singleton()->connect("theme_changed", callable_mp(this, &Path3DEditorPlugin::_update_theme));
+		} break;
 	}
 }
 
@@ -567,33 +584,33 @@ Path3DEditorPlugin::Path3DEditorPlugin(EditorNode *p_node) {
 	sep = memnew(VSeparator);
 	sep->hide();
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(sep);
+
 	curve_edit = memnew(Button);
 	curve_edit->set_flat(true);
-	curve_edit->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveEdit"), SNAME("EditorIcons")));
 	curve_edit->set_toggle_mode(true);
 	curve_edit->hide();
 	curve_edit->set_focus_mode(Control::FOCUS_NONE);
 	curve_edit->set_tooltip(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD) + TTR("Click: Add Point") + "\n" + TTR("Right Click: Delete Point"));
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(curve_edit);
+
 	curve_create = memnew(Button);
 	curve_create->set_flat(true);
-	curve_create->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveCreate"), SNAME("EditorIcons")));
 	curve_create->set_toggle_mode(true);
 	curve_create->hide();
 	curve_create->set_focus_mode(Control::FOCUS_NONE);
 	curve_create->set_tooltip(TTR("Add Point (in empty space)") + "\n" + TTR("Split Segment (in curve)"));
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(curve_create);
+
 	curve_del = memnew(Button);
 	curve_del->set_flat(true);
-	curve_del->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveDelete"), SNAME("EditorIcons")));
 	curve_del->set_toggle_mode(true);
 	curve_del->hide();
 	curve_del->set_focus_mode(Control::FOCUS_NONE);
 	curve_del->set_tooltip(TTR("Delete Point"));
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(curve_del);
+
 	curve_close = memnew(Button);
 	curve_close->set_flat(true);
-	curve_close->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveClose"), SNAME("EditorIcons")));
 	curve_close->hide();
 	curve_close->set_focus_mode(Control::FOCUS_NONE);
 	curve_close->set_tooltip(TTR("Close Curve"));

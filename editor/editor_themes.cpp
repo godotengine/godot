@@ -150,11 +150,26 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 	// are contained in the dictionary above.
 	Set<StringName> exceptions;
 
+	// Some of the colors below are listed for completeness sake.
+	// This can be a basis for proper palette validation later.
 	if (!p_dark_theme) {
 		// Convert color:                             FROM       TO
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#478cbf", "#478cbf"); // Godot Blue
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#414042", "#414042"); // Godot Gray
+
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ffffff", "#414141"); // Pure white
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#000000", "#bfbfbf"); // Pure black
+		// Keep pure RGB colors as is, but list them for explicity.
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ff0000", "#ff0000"); // Pure red
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#00ff00", "#00ff00"); // Pure green
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#0000ff", "#0000ff"); // Pure blue
+
+		// GUI Colors
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#e0e0e0", "#5a5a5a"); // Common icon color
-		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ffffff", "#414141"); // White
-		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#b4b4b4", "#363636"); // Script darker color
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#fefefe", "#fefefe"); // Forced light color
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#808080", "#808080"); // GUI disabled color
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#b3b3b3", "#363636"); // GUI disabled light color
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#699ce8", "#699ce8"); // GUI highlight color
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#f9f9f9", "#606060"); // Scrollbar grabber highlight color
 
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#c38ef1", "#a85de9"); // Animation
@@ -162,7 +177,10 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#8da5f3", "#3d64dd"); // 2D
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#4b70ea", "#1a3eac"); // 2D Dark
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#8eef97", "#2fa139"); // Control
-		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ffdd65", "#ca8a04"); // Node warning
+
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#5fb2ff", "#0079f0"); // Selection (blue)
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#003e7a", "#2b74bb"); // Selection (darker blue)
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#f7f5cf", "#615f3a"); // Gizmo (yellow)
 
 		// Rainbow
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ff4545", "#ff2929"); // Red
@@ -173,31 +191,45 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#8045ff", "#702aff"); // Purple
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ff4596", "#ff2781"); // Pink
 
-		// Audio gradient
-		// Red is defined further below.
+		// Audio gradients
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#e1da5b", "#d6cf4b"); // Yellow
-		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#5fff97", "#00f010"); // Green
 
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#62aeff", "#1678e0"); // Frozen gradient top
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#75d1e6", "#41acc5"); // Frozen gradient middle
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#84ffee", "#49ccba"); // Frozen gradient bottom
+
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#f70000", "#c91616"); // Color track red
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#eec315", "#d58c0b"); // Color track orange
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#dbee15", "#b7d10a"); // Color track yellow
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#288027", "#218309"); // Color track green
+
+		// Resource groups
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ffca5f", "#fea900"); // Mesh resource (orange)
-		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#0787ff", "#68b6ff"); // Shape resource (blue)
-
-		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ff5f5f", "#ff3333"); // Red audio gradient + remove (red)
-		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#5fff97", "#00db50"); // Add (green)
-		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#5fb2ff", "#5caeff"); // Selection (blue)
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#2998ff", "#68b6ff"); // Shape resource (blue)
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#a2d2ff", "#4998e3"); // Shape resource (light blue)
 
 		// Animation editor tracks
 		// The property track icon color is set by the common icon color.
-		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ea7940", "#bd5e2c"); // 3D Transform track
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ea7940", "#bd5e2c"); // 3D Position track
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ff2b88", "#bd165f"); // 3D Rotation track
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#eac840", "#bd9d1f"); // 3D Scale track
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#3cf34e", "#16a827"); // Call Method track
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#2877f6", "#236be6"); // Bezier Curve track
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#eae440", "#9f9722"); // Audio Playback track
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#a448f0", "#9853ce"); // Animation Playback track
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#5ad5c4", "#0a9c88"); // Blend Shape track
+
+		// Control layouts
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#d6d6d6", "#474747"); // Highlighted part
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#474747", "#d6d6d6"); // Background part
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#919191", "#6e6e6e"); // Border part
 
 		// TileSet editor icons
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#fce00e", "#aa8d24"); // New Single Tile
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#0e71fc", "#0350bd"); // New Autotile
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#c6ced4", "#828f9b"); // New Atlas
 
+		// Visual script
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#41ecad", "#25e3a0"); // VisualScript variant
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#6f91f0", "#6d8eeb"); // VisualScript bool
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#5abbef", "#4fb2e9"); // VisualScript int
@@ -216,6 +248,11 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#41ec80", "#2ce573"); // VisualScript RID
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#55f3e3", "#12d5c3"); // VisualScript Object
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#54ed9e", "#57e99f"); // VisualScript Dictionary
+		// Visual shaders
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#77ce57", "#67c046"); // Vector funcs
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ea686c", "#d95256"); // Vector transforms
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#eac968", "#d9b64f"); // Textures and cubemaps
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#cf68ea", "#c050dd"); // Functions and expressions
 
 		exceptions.insert("EditorPivot");
 		exceptions.insert("EditorHandle");
@@ -246,9 +283,9 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 	const Color error_color = p_theme->get_color("error_color", "Editor");
 	const Color success_color = p_theme->get_color("success_color", "Editor");
 	const Color warning_color = p_theme->get_color("warning_color", "Editor");
-	dark_icon_color_dictionary[Color::html("#ff0000")] = error_color;
-	dark_icon_color_dictionary[Color::html("#45ff8b")] = success_color;
-	dark_icon_color_dictionary[Color::html("#dbab09")] = warning_color;
+	dark_icon_color_dictionary[Color::html("#ff5f5f")] = error_color;
+	dark_icon_color_dictionary[Color::html("#5fff97")] = success_color;
+	dark_icon_color_dictionary[Color::html("#ffdd65")] = warning_color;
 
 	// Generate icons.
 	if (!p_only_thumbs) {
