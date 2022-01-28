@@ -60,7 +60,7 @@ TileData *TileDataEditor::_get_tile_data(TileMapCell p_cell) {
 	if (atlas_source) {
 		ERR_FAIL_COND_V(!atlas_source->has_tile(p_cell.get_atlas_coords()), nullptr);
 		ERR_FAIL_COND_V(!atlas_source->has_alternative_tile(p_cell.get_atlas_coords(), p_cell.alternative_tile), nullptr);
-		td = Object::cast_to<TileData>(atlas_source->get_tile_data(p_cell.get_atlas_coords(), p_cell.alternative_tile));
+		td = atlas_source->get_tile_data(p_cell.get_atlas_coords(), p_cell.alternative_tile);
 	}
 
 	return td;
@@ -837,7 +837,7 @@ Variant TileDataDefaultEditor::_get_painted_value() {
 }
 
 void TileDataDefaultEditor::_set_painted_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) {
-	TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile));
+	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_COND(!tile_data);
 	Variant value = tile_data->get(property);
 	dummy_object->set(property, value);
@@ -847,13 +847,13 @@ void TileDataDefaultEditor::_set_painted_value(TileSetAtlasSource *p_tile_set_at
 }
 
 void TileDataDefaultEditor::_set_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile, Variant p_value) {
-	TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile));
+	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_COND(!tile_data);
 	tile_data->set(property, p_value);
 }
 
 Variant TileDataDefaultEditor::_get_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) {
-	TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile));
+	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_COND_V(!tile_data, Variant());
 	return tile_data->get(property);
 }
@@ -1269,7 +1269,7 @@ Variant TileDataOcclusionShapeEditor::_get_painted_value() {
 }
 
 void TileDataOcclusionShapeEditor::_set_painted_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) {
-	TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile));
+	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_COND(!tile_data);
 
 	Ref<OccluderPolygon2D> occluder_polygon = tile_data->get_occluder(occlusion_layer);
@@ -1281,7 +1281,7 @@ void TileDataOcclusionShapeEditor::_set_painted_value(TileSetAtlasSource *p_tile
 }
 
 void TileDataOcclusionShapeEditor::_set_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile, Variant p_value) {
-	TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile));
+	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_COND(!tile_data);
 	Ref<OccluderPolygon2D> occluder_polygon = p_value;
 	tile_data->set_occluder(occlusion_layer, occluder_polygon);
@@ -1290,7 +1290,7 @@ void TileDataOcclusionShapeEditor::_set_value(TileSetAtlasSource *p_tile_set_atl
 }
 
 Variant TileDataOcclusionShapeEditor::_get_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) {
-	TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile));
+	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_COND_V(!tile_data, Variant());
 	return tile_data->get_occluder(occlusion_layer);
 }
@@ -1412,7 +1412,7 @@ Variant TileDataCollisionEditor::_get_painted_value() {
 }
 
 void TileDataCollisionEditor::_set_painted_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) {
-	TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile));
+	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_COND(!tile_data);
 
 	polygon_editor->clear_polygons();
@@ -1438,7 +1438,7 @@ void TileDataCollisionEditor::_set_painted_value(TileSetAtlasSource *p_tile_set_
 }
 
 void TileDataCollisionEditor::_set_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile, Variant p_value) {
-	TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile));
+	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_COND(!tile_data);
 
 	Dictionary dict = p_value;
@@ -1457,7 +1457,7 @@ void TileDataCollisionEditor::_set_value(TileSetAtlasSource *p_tile_set_atlas_so
 }
 
 Variant TileDataCollisionEditor::_get_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) {
-	TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile));
+	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_COND_V(!tile_data, Variant());
 
 	Dictionary dict;
@@ -1659,7 +1659,7 @@ void TileDataTerrainsEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas
 		hovered_coords = p_tile_atlas_view->get_atlas_tile_coords_at_pos(mouse_pos);
 		hovered_coords = p_tile_set_atlas_source->get_tile_at_coords(hovered_coords);
 		if (hovered_coords != TileSetSource::INVALID_ATLAS_COORDS) {
-			TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(hovered_coords, 0));
+			TileData *tile_data = p_tile_set_atlas_source->get_tile_data(hovered_coords, 0);
 			int terrain_set = tile_data->get_terrain_set();
 			Rect2i texture_region = p_tile_set_atlas_source->get_tile_texture_region(hovered_coords);
 			Vector2i position = texture_region.get_center() + p_tile_set_atlas_source->get_tile_effective_texture_offset(hovered_coords, 0);
@@ -1698,7 +1698,7 @@ void TileDataTerrainsEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas
 	for (int i = 0; i < p_tile_set_atlas_source->get_tiles_count(); i++) {
 		Vector2i coords = p_tile_set_atlas_source->get_tile_id(i);
 		if (coords != hovered_coords) {
-			TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(coords, 0));
+			TileData *tile_data = p_tile_set_atlas_source->get_tile_data(coords, 0);
 			if (tile_data->get_terrain_set() != int(dummy_object->get("terrain_set"))) {
 				// Dimming
 				p_canvas_item->draw_set_transform_matrix(p_transform);
@@ -1772,7 +1772,7 @@ void TileDataTerrainsEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas
 				Vector2i coords = Vector2i(x, y);
 				coords = p_tile_set_atlas_source->get_tile_at_coords(coords);
 				if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
-					TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(coords, 0));
+					TileData *tile_data = p_tile_set_atlas_source->get_tile_data(coords, 0);
 					if (tile_data->get_terrain_set() == terrain_set) {
 						TileMapCell cell;
 						cell.source_id = 0;
@@ -1833,7 +1833,7 @@ void TileDataTerrainsEditor::forward_draw_over_alternatives(TileAtlasView *p_til
 		hovered_coords = Vector2i(hovered.x, hovered.y);
 		hovered_alternative = hovered.z;
 		if (hovered_coords != TileSetSource::INVALID_ATLAS_COORDS) {
-			TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(hovered_coords, hovered_alternative));
+			TileData *tile_data = p_tile_set_atlas_source->get_tile_data(hovered_coords, hovered_alternative);
 			int terrain_set = tile_data->get_terrain_set();
 			Rect2i texture_region = p_tile_atlas_view->get_alternative_tile_rect(hovered_coords, hovered_alternative);
 			Vector2i position = texture_region.get_center() + p_tile_set_atlas_source->get_tile_effective_texture_offset(hovered_coords, hovered_alternative);
@@ -1874,7 +1874,7 @@ void TileDataTerrainsEditor::forward_draw_over_alternatives(TileAtlasView *p_til
 		for (int j = 1; j < p_tile_set_atlas_source->get_alternative_tiles_count(coords); j++) {
 			int alternative_tile = p_tile_set_atlas_source->get_alternative_tile_id(coords, j);
 			if (coords != hovered_coords || alternative_tile != hovered_alternative) {
-				TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(coords, alternative_tile));
+				TileData *tile_data = p_tile_set_atlas_source->get_tile_data(coords, alternative_tile);
 				if (tile_data->get_terrain_set() != int(dummy_object->get("terrain_set"))) {
 					// Dimming
 					p_canvas_item->draw_set_transform_matrix(p_transform);
@@ -1918,7 +1918,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 					cell.alternative_tile = 0;
 
 					// Save the old terrain_set and terrains bits.
-					TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(coords, 0));
+					TileData *tile_data = p_tile_set_atlas_source->get_tile_data(coords, 0);
 					if (!drag_modified.has(cell)) {
 						Dictionary dict;
 						dict["terrain_set"] = tile_data->get_terrain_set();
@@ -1948,7 +1948,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 					cell.set_atlas_coords(coords);
 					cell.alternative_tile = 0;
 
-					TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(coords, 0));
+					TileData *tile_data = p_tile_set_atlas_source->get_tile_data(coords, 0);
 					if (tile_data->get_terrain_set() == terrain_set) {
 						// Save the old terrain_set and terrains bits.
 						if (!drag_modified.has(cell)) {
@@ -1990,7 +1990,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 					Vector2i coords = p_tile_atlas_view->get_atlas_tile_coords_at_pos(mb->get_position());
 					coords = p_tile_set_atlas_source->get_tile_at_coords(coords);
 					if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
-						TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(coords, 0));
+						TileData *tile_data = p_tile_set_atlas_source->get_tile_data(coords, 0);
 						int terrain_set = tile_data->get_terrain_set();
 						Rect2i texture_region = p_tile_set_atlas_source->get_tile_texture_region(coords);
 						Vector2i position = texture_region.get_center() + p_tile_set_atlas_source->get_tile_effective_texture_offset(coords, 0);
@@ -2014,7 +2014,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 					coords = p_tile_set_atlas_source->get_tile_at_coords(coords);
 					TileData *tile_data = nullptr;
 					if (coords != TileSetAtlasSource::INVALID_ATLAS_COORDS) {
-						tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(coords, 0));
+						tile_data = p_tile_set_atlas_source->get_tile_data(coords, 0);
 					}
 					int terrain_set = int(dummy_object->get("terrain_set"));
 					int terrain = int(dummy_object->get("terrain"));
@@ -2131,7 +2131,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 					undo_redo->create_action(TTR("Painting Terrain Set"));
 					for (Set<TileMapCell>::Element *E = edited.front(); E; E = E->next()) {
 						Vector2i coords = E->get().get_atlas_coords();
-						TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(coords, 0));
+						TileData *tile_data = p_tile_set_atlas_source->get_tile_data(coords, 0);
 						undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrain_set", coords.x, coords.y, E->get().alternative_tile), tile_data->get_terrain_set());
 						undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrain_set", coords.x, coords.y, E->get().alternative_tile), drag_painted_value);
 						for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
@@ -2197,7 +2197,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 							Vector2i coords = Vector2i(x, y);
 							coords = p_tile_set_atlas_source->get_tile_at_coords(coords);
 							if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
-								TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(coords, 0));
+								TileData *tile_data = p_tile_set_atlas_source->get_tile_data(coords, 0);
 								if (tile_data->get_terrain_set() == terrain_set) {
 									TileMapCell cell;
 									cell.source_id = 0;
@@ -2218,7 +2218,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 					undo_redo->create_action(TTR("Painting Terrain"));
 					for (Set<TileMapCell>::Element *E = edited.front(); E; E = E->next()) {
 						Vector2i coords = E->get().get_atlas_coords();
-						TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(coords, 0));
+						TileData *tile_data = p_tile_set_atlas_source->get_tile_data(coords, 0);
 
 						for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 							TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
@@ -2259,7 +2259,7 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 				cell.source_id = 0;
 				cell.set_atlas_coords(coords);
 				cell.alternative_tile = alternative_tile;
-				TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(coords, alternative_tile));
+				TileData *tile_data = p_tile_set_atlas_source->get_tile_data(coords, alternative_tile);
 				if (!drag_modified.has(cell)) {
 					Dictionary dict;
 					dict["terrain_set"] = tile_data->get_terrain_set();
@@ -2291,7 +2291,7 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 				cell.alternative_tile = alternative_tile;
 
 				// Save the old terrain_set and terrains bits.
-				TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(coords, alternative_tile));
+				TileData *tile_data = p_tile_set_atlas_source->get_tile_data(coords, alternative_tile);
 				if (tile_data->get_terrain_set() == terrain_set) {
 					if (!drag_modified.has(cell)) {
 						Dictionary dict;
@@ -2333,7 +2333,7 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 					int alternative_tile = tile.z;
 
 					if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
-						TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(coords, alternative_tile));
+						TileData *tile_data = p_tile_set_atlas_source->get_tile_data(coords, alternative_tile);
 						int terrain_set = tile_data->get_terrain_set();
 						Rect2i texture_region = p_tile_atlas_view->get_alternative_tile_rect(coords, alternative_tile);
 						Vector2i position = texture_region.get_center() + p_tile_set_atlas_source->get_tile_effective_texture_offset(coords, alternative_tile);
@@ -2360,7 +2360,7 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 					Vector2i coords = Vector2i(tile.x, tile.y);
 					int alternative_tile = tile.z;
 
-					TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(coords, alternative_tile));
+					TileData *tile_data = p_tile_set_atlas_source->get_tile_data(coords, alternative_tile);
 
 					if (terrain_set == -1 || !tile_data || tile_data->get_terrain_set() != terrain_set) {
 						drag_type = DRAG_TYPE_PAINT_TERRAIN_SET;
@@ -2539,7 +2539,7 @@ Variant TileDataNavigationEditor::_get_painted_value() {
 }
 
 void TileDataNavigationEditor::_set_painted_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) {
-	TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile));
+	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_COND(!tile_data);
 
 	Ref<NavigationPolygon> navigation_polygon = tile_data->get_navigation_polygon(navigation_layer);
@@ -2553,7 +2553,7 @@ void TileDataNavigationEditor::_set_painted_value(TileSetAtlasSource *p_tile_set
 }
 
 void TileDataNavigationEditor::_set_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile, Variant p_value) {
-	TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile));
+	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_COND(!tile_data);
 	Ref<NavigationPolygon> navigation_polygon = p_value;
 	tile_data->set_navigation_polygon(navigation_layer, navigation_polygon);
@@ -2562,7 +2562,7 @@ void TileDataNavigationEditor::_set_value(TileSetAtlasSource *p_tile_set_atlas_s
 }
 
 Variant TileDataNavigationEditor::_get_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) {
-	TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile));
+	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_COND_V(!tile_data, Variant());
 	return tile_data->get_navigation_polygon(navigation_layer);
 }

@@ -877,7 +877,7 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 						TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 						if (atlas_source) {
 							// Get tile data.
-							TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(E.value.get_atlas_coords(), E.value.alternative_tile));
+							TileData *tile_data = atlas_source->get_tile_data(E.value.get_atlas_coords(), E.value.alternative_tile);
 
 							// Compute the offset
 							Rect2i source_rect = atlas_source->get_tile_texture_region(E.value.get_atlas_coords());
@@ -949,7 +949,7 @@ TileMapCell TileMapEditorTilesPlugin::_pick_random_tile(Ref<TileMapPattern> p_pa
 		TileSetSource *source = *tile_set->get_source(source_id);
 		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 		if (atlas_source) {
-			TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(atlas_coords, alternative_tile));
+			TileData *tile_data = atlas_source->get_tile_data(atlas_coords, alternative_tile);
 			ERR_FAIL_COND_V(!tile_data, TileMapCell());
 			sum += tile_data->get_probability();
 		} else {
@@ -968,7 +968,7 @@ TileMapCell TileMapEditorTilesPlugin::_pick_random_tile(Ref<TileMapPattern> p_pa
 		TileSetSource *source = *tile_set->get_source(source_id);
 		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 		if (atlas_source) {
-			current += Object::cast_to<TileData>(atlas_source->get_tile_data(atlas_coords, alternative_tile))->get_probability();
+			current += atlas_source->get_tile_data(atlas_coords, alternative_tile)->get_probability();
 		} else {
 			current += 1.0;
 		}
@@ -2475,7 +2475,7 @@ Set<Vector2i> TileMapEditorTerrainsPlugin::_get_cells_for_bucket_fill(Vector2i p
 		Ref<TileSetSource> source = tile_set->get_source(source_cell.source_id);
 		Ref<TileSetAtlasSource> atlas_source = source;
 		if (atlas_source.is_valid()) {
-			tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(source_cell.get_atlas_coords(), source_cell.alternative_tile));
+			tile_data = atlas_source->get_tile_data(source_cell.get_atlas_coords(), source_cell.alternative_tile);
 		}
 		if (!tile_data) {
 			return Set<Vector2i>();
@@ -2506,7 +2506,7 @@ Set<Vector2i> TileMapEditorTerrainsPlugin::_get_cells_for_bucket_fill(Vector2i p
 					Ref<TileSetSource> source = tile_set->get_source(tile_map->get_cell_source_id(tile_map_layer, coords));
 					Ref<TileSetAtlasSource> atlas_source = source;
 					if (atlas_source.is_valid()) {
-						tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(tile_map->get_cell_atlas_coords(tile_map_layer, coords), tile_map->get_cell_alternative_tile(tile_map_layer, coords)));
+						tile_data = atlas_source->get_tile_data(tile_map->get_cell_atlas_coords(tile_map_layer, coords), tile_map->get_cell_alternative_tile(tile_map_layer, coords));
 					}
 					if (tile_data) {
 						candidate_pattern = tile_data->get_terrains_pattern();
@@ -2551,7 +2551,7 @@ Set<Vector2i> TileMapEditorTerrainsPlugin::_get_cells_for_bucket_fill(Vector2i p
 				Ref<TileSetSource> source = tile_set->get_source(tile_map->get_cell_source_id(tile_map_layer, coords));
 				Ref<TileSetAtlasSource> atlas_source = source;
 				if (atlas_source.is_valid()) {
-					tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(tile_map->get_cell_atlas_coords(tile_map_layer, coords), tile_map->get_cell_alternative_tile(tile_map_layer, coords)));
+					tile_data = atlas_source->get_tile_data(tile_map->get_cell_atlas_coords(tile_map_layer, coords), tile_map->get_cell_alternative_tile(tile_map_layer, coords));
 				}
 				if (tile_data) {
 					candidate_pattern = tile_data->get_terrains_pattern();
@@ -2617,7 +2617,7 @@ void TileMapEditorTerrainsPlugin::_stop_dragging() {
 			Ref<TileSetSource> source = tile_set->get_source(cell.source_id);
 			Ref<TileSetAtlasSource> atlas_source = source;
 			if (atlas_source.is_valid()) {
-				tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(cell.get_atlas_coords(), cell.alternative_tile));
+				tile_data = atlas_source->get_tile_data(cell.get_atlas_coords(), cell.alternative_tile);
 			}
 
 			if (tile_data) {
@@ -3058,7 +3058,7 @@ void TileMapEditorTerrainsPlugin::_update_terrains_cache() {
 				for (int alternative_index = 0; alternative_index < source->get_alternative_tiles_count(tile_id); alternative_index++) {
 					int alternative_id = source->get_alternative_tile_id(tile_id, alternative_index);
 
-					TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(tile_id, alternative_id));
+					TileData *tile_data = atlas_source->get_tile_data(tile_id, alternative_id);
 					int terrain_set = tile_data->get_terrain_set();
 					if (terrain_set >= 0) {
 						ERR_FAIL_INDEX(terrain_set, (int)per_terrain_terrains_patterns.size());
@@ -3186,7 +3186,7 @@ void TileMapEditorTerrainsPlugin::_update_tiles_list() {
 
 					Ref<TileSetAtlasSource> atlas_source = source;
 					if (atlas_source.is_valid()) {
-						TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(cell.get_atlas_coords(), cell.alternative_tile));
+						TileData *tile_data = atlas_source->get_tile_data(cell.get_atlas_coords(), cell.alternative_tile);
 						if (tile_data->get_probability() > max_probability) {
 							icon = atlas_source->get_texture();
 							region = atlas_source->get_tile_texture_region(cell.get_atlas_coords());

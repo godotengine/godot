@@ -1119,7 +1119,7 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 					if (q.runtime_tile_data_cache.has(E_cell.value)) {
 						tile_data = q.runtime_tile_data_cache[E_cell.value];
 					} else {
-						tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
+						tile_data = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile);
 					}
 
 					Ref<ShaderMaterial> mat = tile_data->get_material();
@@ -1311,7 +1311,7 @@ void TileMap::draw_tile(RID p_canvas_item, Vector2i p_position, const Ref<TileSe
 		}
 
 		// Get tile data.
-		const TileData *tile_data = p_tile_data_override ? p_tile_data_override : Object::cast_to<TileData>(atlas_source->get_tile_data(p_atlas_coords, p_alternative_tile));
+		const TileData *tile_data = p_tile_data_override ? p_tile_data_override : atlas_source->get_tile_data(p_atlas_coords, p_alternative_tile);
 
 		// Get the tile modulation.
 		Color modulate = tile_data->get_modulate() * p_modulation;
@@ -1474,7 +1474,7 @@ void TileMap::_physics_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r
 					if (q.runtime_tile_data_cache.has(E_cell->get())) {
 						tile_data = q.runtime_tile_data_cache[E_cell->get()];
 					} else {
-						tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
+						tile_data = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile);
 					}
 					for (int tile_set_physics_layer = 0; tile_set_physics_layer < tile_set->get_physics_layers_count(); tile_set_physics_layer++) {
 						Ref<PhysicsMaterial> physics_material = tile_set->get_physics_layer_physics_material(tile_set_physics_layer);
@@ -1671,7 +1671,7 @@ void TileMap::_navigation_update_dirty_quadrants(SelfList<TileMapQuadrant>::List
 					if (q.runtime_tile_data_cache.has(E_cell->get())) {
 						tile_data = q.runtime_tile_data_cache[E_cell->get()];
 					} else {
-						tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
+						tile_data = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile);
 					}
 					q.navigation_regions[E_cell->get()].resize(tile_set->get_navigation_layers_count());
 
@@ -1760,7 +1760,7 @@ void TileMap::_navigation_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 				if (p_quadrant->runtime_tile_data_cache.has(E_cell->get())) {
 					tile_data = p_quadrant->runtime_tile_data_cache[E_cell->get()];
 				} else {
-					tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
+					tile_data = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile);
 				}
 
 				Transform2D xform;
@@ -2204,7 +2204,7 @@ Set<TileMap::TerrainConstraint> TileMap::get_terrain_constraints_from_removed_ce
 					Ref<TileSetSource> source = tile_set->get_source(neighbor_cell.source_id);
 					Ref<TileSetAtlasSource> atlas_source = source;
 					if (atlas_source.is_valid()) {
-						TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(neighbor_cell.get_atlas_coords(), neighbor_cell.alternative_tile));
+						TileData *tile_data = atlas_source->get_tile_data(neighbor_cell.get_atlas_coords(), neighbor_cell.alternative_tile);
 						if (tile_data && tile_data->get_terrain_set() == p_terrain_set) {
 							neighbor_tile_data = tile_data;
 						}
@@ -2580,7 +2580,7 @@ void TileMap::_build_runtime_update_tile_data(SelfList<TileMapQuadrant>::List &r
 					if (atlas_source) {
 						bool ret = false;
 						if (GDVIRTUAL_CALL(_use_tile_data_runtime_update, q.layer, E_cell.value, ret) && ret) {
-							TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
+							TileData *tile_data = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile);
 
 							// Create the runtime TileData.
 							TileData *tile_data_runtime_use = tile_data->duplicate();
@@ -3647,9 +3647,6 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_neighbor_cell", "coords", "neighbor"), &TileMap::get_neighbor_cell);
 
 	ClassDB::bind_method(D_METHOD("_update_dirty_quadrants"), &TileMap::_update_dirty_quadrants);
-
-	ClassDB::bind_method(D_METHOD("_set_tile_data", "layer", "data"), &TileMap::_set_tile_data);
-	ClassDB::bind_method(D_METHOD("_get_tile_data", "layer"), &TileMap::_get_tile_data);
 
 	ClassDB::bind_method(D_METHOD("_tile_set_changed_deferred_update"), &TileMap::_tile_set_changed_deferred_update);
 

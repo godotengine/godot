@@ -274,7 +274,7 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_set(const StringName &p_na
 		const int &alternative = E->get().alternative;
 
 		bool valid = false;
-		TileData *tile_data = Object::cast_to<TileData>(tile_set_atlas_source->get_tile_data(coords, alternative));
+		TileData *tile_data = tile_set_atlas_source->get_tile_data(coords, alternative);
 		ERR_FAIL_COND_V(!tile_data, false);
 		tile_data->set(p_name, p_value, &valid);
 
@@ -359,7 +359,7 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_get(const StringName &p_na
 		const Vector2i &coords = E->get().tile;
 		const int &alternative = E->get().alternative;
 
-		TileData *tile_data = Object::cast_to<TileData>(tile_set_atlas_source->get_tile_data(coords, alternative));
+		TileData *tile_data = tile_set_atlas_source->get_tile_data(coords, alternative);
 		ERR_FAIL_COND_V(!tile_data, false);
 
 		bool valid = false;
@@ -432,7 +432,7 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::_get_property_list(List<Pro
 		const Vector2i &coords = E->get().tile;
 		const int &alternative = E->get().alternative;
 
-		TileData *tile_data = Object::cast_to<TileData>(tile_set_atlas_source->get_tile_data(coords, alternative));
+		TileData *tile_data = tile_set_atlas_source->get_tile_data(coords, alternative);
 		ERR_FAIL_COND(!tile_data);
 
 		List<PropertyInfo> list;
@@ -486,7 +486,7 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::edit(TileSetAtlasSource *p_
 		const int &alternative = E->get().alternative;
 
 		if (tile_set_atlas_source && tile_set_atlas_source->has_tile(coords) && tile_set_atlas_source->has_alternative_tile(coords, alternative)) {
-			TileData *tile_data = Object::cast_to<TileData>(tile_set_atlas_source->get_tile_data(coords, alternative));
+			TileData *tile_data = tile_set_atlas_source->get_tile_data(coords, alternative);
 			if (tile_data->is_connected(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed))) {
 				tile_data->disconnect(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed));
 			}
@@ -502,7 +502,7 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::edit(TileSetAtlasSource *p_
 		const int &alternative = E->get().alternative;
 
 		if (tile_set_atlas_source->has_tile(coords) && tile_set_atlas_source->has_alternative_tile(coords, alternative)) {
-			TileData *tile_data = Object::cast_to<TileData>(tile_set_atlas_source->get_tile_data(coords, alternative));
+			TileData *tile_data = tile_set_atlas_source->get_tile_data(coords, alternative);
 			if (!tile_data->is_connected(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed))) {
 				tile_data->connect(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed));
 			}
@@ -2609,7 +2609,7 @@ void EditorPropertyTilePolygon::update_property() {
 	// Set the background
 	Vector2i coords = atlas_tile_proxy_object->get_edited_tiles().front()->get().tile;
 	int alternative = atlas_tile_proxy_object->get_edited_tiles().front()->get().alternative;
-	TileData *tile_data = Object::cast_to<TileData>(tile_set_atlas_source->get_tile_data(coords, alternative));
+	TileData *tile_data = tile_set_atlas_source->get_tile_data(coords, alternative);
 	generic_tile_polygon_editor->set_background(tile_set_atlas_source->get_texture(), tile_set_atlas_source->get_tile_texture_region(coords), tile_set_atlas_source->get_tile_effective_texture_offset(coords, alternative), tile_data->get_flip_h(), tile_data->get_flip_v(), tile_data->get_transpose(), tile_data->get_modulate());
 
 	// Reset the polygons.

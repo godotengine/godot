@@ -111,7 +111,7 @@
 			</description>
 		</method>
 		<method name="get_tile_data" qualifiers="const">
-			<return type="Object" />
+			<return type="TileData" />
 			<argument index="0" name="atlas_coords" type="Vector2i" />
 			<argument index="1" name="alternative_tile" type="int" />
 			<description>
