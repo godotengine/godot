@@ -50,6 +50,20 @@ static bool saved_treat_warning_as_errors = false;
 static Map<ShaderWarning::Code, bool> saved_warnings;
 static uint32_t saved_warning_flags = 0U;
 
+void ShaderTextEditor::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			if (is_visible_in_tree()) {
+				_load_theme_settings();
+				if (warnings.size() > 0 && last_compile_result == OK) {
+					warnings_panel->clear();
+					_update_warning_panel();
+				}
+			}
+		} break;
+	}
+}
+
 Ref<Shader> ShaderTextEditor::get_edited_shader() const {
 	return shader;
 }
@@ -243,9 +257,9 @@ void ShaderTextEditor::_validate_script() {
 	sl.enable_warning_checking(saved_warnings_enabled);
 	sl.set_warning_flags(saved_warning_flags);
 
-	Error err = sl.compile(code, info);
+	last_compile_result = sl.compile(code, info);
 
-	if (err != OK) {
+	if (last_compile_result != OK) {
 		String error_text = "error(" + itos(sl.get_error_line()) + "): " + sl.get_error_text();
 		set_error(error_text);
 		set_error_pos(sl.get_error_line() - 1, 0);
@@ -260,14 +274,14 @@ void ShaderTextEditor::_validate_script() {
 		set_error("");
 	}
 
-	if (warnings.size() > 0 || err != OK) {
+	if (warnings.size() > 0 || last_compile_result != OK) {
 		warnings_panel->clear();
 	}
 	warnings.clear();
 	for (List<ShaderWarning>::Element *E = sl.get_warnings_ptr(); E; E = E->next()) {
 		warnings.push_back(E->get());
 	}
-	if (warnings.size() > 0 && err == OK) {
+	if (warnings.size() > 0 && last_compile_result == OK) {
 		warnings.sort_custom<WarningsComparator>();
 		_update_warning_panel();
 	} else {
