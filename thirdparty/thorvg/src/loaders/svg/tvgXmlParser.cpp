@@ -220,15 +220,15 @@ static SimpleXMLType _getXMLType(const char* itr, const char* itrEnd, size_t &to
         if ((itr + sizeof("<!DOCTYPE>") - 1 < itrEnd) && (!memcmp(itr + 2, "DOCTYPE", sizeof("DOCTYPE") - 1)) && ((itr[2 + sizeof("DOCTYPE") - 1] == '>') || (isspace((unsigned char)itr[2 + sizeof("DOCTYPE") - 1])))) {
             toff = sizeof("!DOCTYPE") - 1;
             return SimpleXMLType::Doctype;
-        } else if (itr + sizeof("<!>") - 1 < itrEnd) {
-            toff = sizeof("!") - 1;
-            return SimpleXMLType::DoctypeChild;
         } else if ((itr + sizeof("<![CDATA[]]>") - 1 < itrEnd) && (!memcmp(itr + 2, "[CDATA[", sizeof("[CDATA[") - 1))) {
             toff = sizeof("![CDATA[") - 1;
             return SimpleXMLType::CData;
         } else if ((itr + sizeof("<!---->") - 1 < itrEnd) && (!memcmp(itr + 2, "--", sizeof("--") - 1))) {
             toff = sizeof("!--") - 1;
             return SimpleXMLType::Comment;
+        } else if (itr + sizeof("<!>") - 1 < itrEnd) {
+            toff = sizeof("!") - 1;
+            return SimpleXMLType::DoctypeChild;
         }
         return SimpleXMLType::Open;
     }
