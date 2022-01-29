@@ -23,15 +23,15 @@ void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event)
 	Ref<InputEventFromWindow> event_from_window = p_event;
 	if (event_from_window.is_valid() && event_from_window->get_window_id() != INVALID_WINDOW_ID) {
 		//send to a window
-		ERR_FAIL_COND(!windows.has(event_from_window->get_window_id()));
-		Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
+		ERR_FAIL_COND(!wls.windows.has(event_from_window->get_window_id()));
+		Callable callable = wls.windows[event_from_window->get_window_id()].input_event_callback;
 		if (callable.is_null()) {
 			return;
 		}
 		callable.call((const Variant **)&evp, 1, ret, ce);
 	} else {
 		//send to all windows
-		for (KeyValue<WindowID, WindowData> &E : windows) {
+		for (KeyValue<WindowID, WindowData> &E : wls.windows) {
 			Callable callable = E.value.input_event_callback;
 			if (callable.is_null()) {
 				continue;
@@ -42,9 +42,9 @@ void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event)
 }
 
 DisplayServerWayland::WindowID DisplayServerWayland::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
-	WindowID id = window_id_counter++;
+	WindowID id = wls.window_id_counter++;
 
-	WindowData &window = windows[id];
+	WindowData &window = wls.windows[id];
 
 	window.vsync_mode = p_vsync_mode;
 	window.rect = p_rect;
@@ -52,8 +52,8 @@ DisplayServerWayland::WindowID DisplayServerWayland::_create_window(WindowMode p
 	window.context_vulkan = context_vulkan;
 	window.id = id;
 
-	window.wl_surface = wl_compositor_create_surface(wayland_globals.wl_compositor);
-	window.xdg_surface = xdg_wm_base_get_xdg_surface(wayland_globals.xdg_wm_base, window.wl_surface);
+	window.wl_surface = wl_compositor_create_surface(wls.globals.wl_compositor);
+	window.xdg_surface = xdg_wm_base_get_xdg_surface(wls.globals.xdg_wm_base, window.wl_surface);
 	window.xdg_toplevel = xdg_surface_get_toplevel(window.xdg_surface);
 
 	xdg_surface_add_listener(window.xdg_surface, &xdg_surface_listener, &window);
@@ -64,7 +64,7 @@ DisplayServerWayland::WindowID DisplayServerWayland::_create_window(WindowMode p
 	xdg_toplevel_set_title(window.xdg_toplevel, "Godot");
 
 	/* Wait for a wl_surface.configure event. */
-	wl_display_roundtrip(display);
+	wl_display_roundtrip(wls.display);
 
 	/* TODO: positioners and whatnot. */
 
@@ -73,7 +73,7 @@ DisplayServerWayland::WindowID DisplayServerWayland::_create_window(WindowMode p
 
 /* `data` here is supposed to be a `WaylandGlobals`. This is needed to avoid having ugly globals everywhere AFAICT */
 void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
-	WaylandGlobals *wayland_globals = (WaylandGlobals*) data;
+	WaylandGlobals *globals = (WaylandGlobals*) data;
 
 	/* `wl_compositor_interface` is defined in `thirdparty/wayland/wayland.c` */
 	if (strcmp(interface, wl_compositor_interface.name) == 0) {
@@ -81,19 +81,19 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 		 * This will select the latest version supported by the server.
 		 * I have no idea if this will cause problems.
 		 */
-		wayland_globals->wl_compositor = (struct wl_compositor*) wl_registry_bind(wl_registry, name, &wl_compositor_interface, version);
+		globals->wl_compositor = (struct wl_compositor*) wl_registry_bind(wl_registry, name, &wl_compositor_interface, version);
 		return;
 	}
 
 	/* `wl_seat_interface` is defined in `thirdparty/wayland/wayland.c` */
 	if (strcmp(interface, wl_seat_interface.name) == 0) {
-		wayland_globals->wl_seat = (struct wl_seat*) wl_registry_bind(wl_registry, name, &wl_seat_interface, version);
+		globals->wl_seat = (struct wl_seat*) wl_registry_bind(wl_registry, name, &wl_seat_interface, version);
 		return;
 	}
 
 	/* `xdg_wm_base_interface` is defined in `thirdparty/xdg-base/xdg-base.c` */
 	if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
-		wayland_globals->xdg_wm_base = (struct xdg_wm_base*) wl_registry_bind(wl_registry, name, &xdg_wm_base_interface, version);
+		globals->xdg_wm_base = (struct xdg_wm_base*) wl_registry_bind(wl_registry, name, &xdg_wm_base_interface, version);
 		return;
 	}
 }
@@ -373,11 +373,11 @@ void DisplayServerWayland::mouse_warp_to_position(const Point2i &p_to) {
 }
 
 Point2i DisplayServerWayland::mouse_get_position() const {
-	return seat_state.pointer_state.data.position;
+	return wls.seat_state.pointer_state.data.position;
 }
 
 MouseButton DisplayServerWayland::mouse_get_button_state() const {
-	return seat_state.pointer_state.data.pressed_button_mask;
+	return wls.seat_state.pointer_state.data.pressed_button_mask;
 }
 
 void DisplayServerWayland::clipboard_set(const String &p_text) {
@@ -466,9 +466,9 @@ DisplayServer::WindowID DisplayServerWayland::create_sub_window(WindowMode p_mod
 }
 
 void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
-	WindowData &window = windows[p_id];
+	WindowData &window = wls.windows[p_id];
 
-	ERR_FAIL_COND(!windows.has(p_id));
+	ERR_FAIL_COND(!wls.windows.has(p_id));
 
 	if (!window.buffer_created) {
 		/*
@@ -476,7 +476,7 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 		 * to the `wl_surface` and doing so instantly maps it, moving this method here
 		 * is the only solution I can think of to implement this method properly.
 		 */
-		context_vulkan->window_create(p_id, window.vsync_mode, display, window.wl_surface, window.rect.size.width, window.rect.size.height);
+		context_vulkan->window_create(p_id, window.vsync_mode, wls.display, window.wl_surface, window.rect.size.width, window.rect.size.height);
 		window.buffer_created = true;
 	}
 }
@@ -507,9 +507,9 @@ ObjectID DisplayServerWayland::window_get_attached_instance_id(DisplayServer::Wi
 
 
 void DisplayServerWayland::window_set_title(const String &p_title, DisplayServer::WindowID p_window) {
-	WindowData &window = windows[p_window];
+	WindowData &window = wls.windows[p_window];
 
-	ERR_FAIL_COND(!windows.has(p_window));
+	ERR_FAIL_COND(!wls.windows.has(p_window));
 
 	window.title = p_title;
 
@@ -523,7 +523,7 @@ void DisplayServerWayland::window_set_mouse_passthrough(const Vector<Vector2> &p
 
 
 void DisplayServerWayland::window_set_rect_changed_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
-	WindowData &window = windows[p_window];
+	WindowData &window = wls.windows[p_window];
 	window.rect_changed_callback = p_callable;
 }
 
@@ -533,7 +533,7 @@ void DisplayServerWayland::window_set_window_event_callback(const Callable &p_ca
 }
 
 void DisplayServerWayland::window_set_input_event_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
-	WindowData &window = windows[p_window];
+	WindowData &window = wls.windows[p_window];
 	window.input_event_callback = p_callable;
 }
 
@@ -560,11 +560,11 @@ void DisplayServerWayland::window_set_current_screen(int p_screen, DisplayServer
 }
 
 Point2i DisplayServerWayland::window_get_position(DisplayServer::WindowID p_window) const {
-	return windows[p_window].rect.position;
+	return wls.windows[p_window].rect.position;
 }
 
 void DisplayServerWayland::window_set_position(const Point2i &p_position, DisplayServer::WindowID p_window) {
-	WindowData &window = windows[p_window];
+	WindowData &window = wls.windows[p_window];
 
 	window.rect.position = p_position;
 
@@ -607,7 +607,7 @@ Size2i DisplayServerWayland::window_get_min_size(DisplayServer::WindowID p_windo
 }
 
 void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::WindowID p_window) {
-	WindowData &window = windows[p_window];
+	WindowData &window = wls.windows[p_window];
 
 	window.rect.size = p_size;
 
@@ -619,7 +619,7 @@ void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::W
 }
 
 Size2i DisplayServerWayland::window_get_size(DisplayServer::WindowID p_window) const {
-	return windows[p_window].rect.size;
+	return wls.windows[p_window].rect.size;
 }
 
 Size2i DisplayServerWayland::window_get_real_size(DisplayServer::WindowID p_window) const {
@@ -628,7 +628,7 @@ Size2i DisplayServerWayland::window_get_real_size(DisplayServer::WindowID p_wind
 	 * other than the one requested by the compositor, which happens to be
 	 * the one the windows always uses
 	 */
-	return windows[p_window].rect.size;
+	return wls.windows[p_window].rect.size;
 }
 
 void DisplayServerWayland::window_set_mode(WindowMode p_mode, DisplayServer::WindowID p_window) {
@@ -763,15 +763,15 @@ Key DisplayServerWayland::keyboard_get_keycode_from_physical(Key p_keycode) cons
 
 void DisplayServerWayland::process_events() {
 	/* Wait for all events. */
-	wl_display_dispatch(display);
+	wl_display_dispatch(wls.display);
 
-	PointerState &old_pointer_state = seat_state.old_pointer_state;
-	PointerState &pointer_state = seat_state.pointer_state;
+	PointerState &old_pointer_state = wls.seat_state.old_pointer_state;
+	PointerState &pointer_state = wls.seat_state.pointer_state;
 
 	if (old_pointer_state.data.time != pointer_state.data.time && pointer_state.data.focused_wl_surface) {
 		WindowID focused_window_id;
 		bool id_found = false;
-		for (KeyValue<WindowID, WindowData> &E : windows) {
+		for (KeyValue<WindowID, WindowData> &E : wls.windows) {
 			WindowData &window = E.value;
 
 			if (window.wl_surface == pointer_state.data.focused_wl_surface) {
@@ -848,7 +848,7 @@ void DisplayServerWayland::process_events() {
 
 		}
 
-		seat_state.old_pointer_state = pointer_state;
+		wls.seat_state.old_pointer_state = pointer_state;
 	}
 
 	Input::get_singleton()->flush_buffered_events();
@@ -915,30 +915,28 @@ DisplayServer *DisplayServerWayland::create_func(const String &p_rendering_drive
 }
 
 DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
-	display = wl_display_connect(NULL);
+	wls.display = wl_display_connect(NULL);
 
-	/* TODO: Validate any edge case. */
+	/* TODO: Better error handling. */
+	ERR_FAIL_COND(!wls.display);
 
-	registry = wl_display_get_registry(display);
+	wls.registry = wl_display_get_registry(wls.display);
 
-	wl_registry_add_listener(registry, &registry_listener, &wayland_globals);
+	wl_registry_add_listener(wls.registry, &registry_listener, &wls.globals);
 
 	/* Wait for globals to get notified from the compositor. */
-	wl_display_roundtrip(display);
+	wl_display_roundtrip(wls.display);
 
-	/* 
-	 * TODO: Return an error when any global is missing. We should have all of
-	 * them.
-	 */
+	ERR_FAIL_COND(!wls.globals.wl_compositor || !wls.globals.wl_seat || !wls.globals.xdg_wm_base);
 
 	/* Input. */
 	Input::get_singleton()->set_event_dispatch_function(dispatch_input_events);
-	wl_seat_add_listener(wayland_globals.wl_seat, &wl_seat_listener, &seat_state);
+	wl_seat_add_listener(wls.globals.wl_seat, &wl_seat_listener, &wls.seat_state);
 
 	/* Wait for seat capabilities. */
-	wl_display_roundtrip(display);
+	wl_display_roundtrip(wls.display);
 
-	xdg_wm_base_add_listener(wayland_globals.xdg_wm_base, &xdg_wm_base_listener, nullptr);
+	xdg_wm_base_add_listener(wls.globals.xdg_wm_base, &xdg_wm_base_listener, nullptr);
 
 #if defined(VULKAN_ENABLED)
 	if (p_rendering_driver == "vulkan") {

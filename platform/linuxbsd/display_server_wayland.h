@@ -95,18 +95,24 @@ class DisplayServerWayland : public DisplayServer {
 		KeyboardState keyboard_state;
 	};
 
-	struct wl_display *display = nullptr;
-	struct wl_registry *registry = nullptr;	
+	/*
+	 * TODO: Perhaps we could make this just contain references to in-class
+	 * variables? We access them a lot here.
+	 */
+	struct WaylandState {
+		struct wl_display *display = nullptr;
+		struct wl_registry *registry = nullptr;
 
-	WaylandGlobals wayland_globals;
-	/* TODO: Investigate what to do with multiple seats. */
-	SeatState seat_state;
+		WaylandGlobals globals;
 
+		WindowID window_id_counter = MAIN_WINDOW_ID;
+		Map<WindowID, WindowData> windows;
 
-	/* Window stuff. */
+		/* TODO: Investigate what to do with multiple seats. */
+		SeatState seat_state;
+	};
 
-	WindowID window_id_counter = MAIN_WINDOW_ID;
-	Map<WindowID, WindowData> windows;
+	WaylandState wls;
 
 	/* Vulkan stuff. */
 	/* TODO: Tidy up these variables and their references with VULKAN_ENABLED. */
