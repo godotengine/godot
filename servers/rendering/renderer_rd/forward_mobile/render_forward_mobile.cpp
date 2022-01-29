@@ -1429,6 +1429,10 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 					distance = -distance_max;
 				}
 
+				if (p_render_data->cam_ortogonal) {
+					distance = 1.0;
+				}
+
 				uint32_t indices;
 				surf->lod_index = storage->mesh_surface_get_lod(surf->surface, inst->lod_model_scale * inst->lod_bias, distance * p_render_data->lod_distance_multiplier, p_render_data->screen_mesh_lod_threshold, &indices);
 				if (p_render_data->render_info) {
