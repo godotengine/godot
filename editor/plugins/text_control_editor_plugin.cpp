@@ -324,8 +324,7 @@ void TextControlEditor::_font_picker_settings() {
 
 	if (default_color_mode == 1) {
 		font_color_picker->get_picker()->set_hsv_mode(true);
-	}
-	else if (default_color_mode == 2) {
+	} else if (default_color_mode == 2) {
 		font_color_picker->get_picker()->set_raw_mode(true);
 	}
 
@@ -365,8 +364,7 @@ void TextControlEditor::_outline_picker_settings() {
 
 	if (default_color_mode == 1) {
 		outline_color_picker->get_picker()->set_hsv_mode(true);
-	}
-	else if (default_color_mode == 2) {
+	} else if (default_color_mode == 2) {
 		outline_color_picker->get_picker()->set_raw_mode(true);
 	}
 

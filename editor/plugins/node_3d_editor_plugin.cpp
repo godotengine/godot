@@ -7208,8 +7208,7 @@ void Node3DEditor::_picker_settings() {
 
 		if (default_color_mode == 1) {
 			sun_color->get_picker()->set_hsv_mode(true);
-		}
-		else if (default_color_mode == 2) {
+		} else if (default_color_mode == 2) {
 			sun_color->get_picker()->set_raw_mode(true);
 		}
 
@@ -7223,8 +7222,7 @@ void Node3DEditor::_picker_settings() {
 
 		if (default_color_mode == 1) {
 			environ_sky_color->get_picker()->set_hsv_mode(true);
-		}
-		else if (default_color_mode == 2) {
+		} else if (default_color_mode == 2) {
 			environ_sky_color->get_picker()->set_raw_mode(true);
 		}
 
@@ -7238,8 +7236,7 @@ void Node3DEditor::_picker_settings() {
 
 		if (default_color_mode == 1) {
 			environ_ground_color->get_picker()->set_hsv_mode(true);
-		}
-		else if (default_color_mode == 2) {
+		} else if (default_color_mode == 2) {
 			environ_ground_color->get_picker()->set_raw_mode(true);
 		}
 
