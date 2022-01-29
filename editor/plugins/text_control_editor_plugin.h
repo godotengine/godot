@@ -87,7 +87,9 @@ protected:
 	void _outline_size_selected(double p_size);
 
 	void _font_color_changed(const Color &p_color);
+	void _font_picker_settings();
 	void _outline_color_changed(const Color &p_color);
+	void _outline_picker_settings();
 
 	void _clear_formatting();
 

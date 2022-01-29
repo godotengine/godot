@@ -7196,6 +7196,57 @@ void Node3DEditor::_preview_settings_changed() {
 	}
 }
 
+void Node3DEditor::_picker_settings() {
+	// get default color picker mode from editor settings
+	int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
+	int picker_shape = EDITOR_GET("interface/inspector/default_color_picker_shape");
+
+	{ //sun color picker settings
+		//reset color modes
+		sun_color->get_picker()->set_hsv_mode(false);
+		sun_color->get_picker()->set_raw_mode(false);
+
+		if (default_color_mode == 1) {
+			sun_color->get_picker()->set_hsv_mode(true);
+		}
+		else if (default_color_mode == 2) {
+			sun_color->get_picker()->set_raw_mode(true);
+		}
+
+		sun_color->get_picker()->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
+	}
+
+	{ //environment sky color picker settings
+		//reset color modes
+		environ_sky_color->get_picker()->set_hsv_mode(false);
+		environ_sky_color->get_picker()->set_raw_mode(false);
+
+		if (default_color_mode == 1) {
+			environ_sky_color->get_picker()->set_hsv_mode(true);
+		}
+		else if (default_color_mode == 2) {
+			environ_sky_color->get_picker()->set_raw_mode(true);
+		}
+
+		environ_sky_color->get_picker()->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
+	}
+
+	{ //environment ground color picker settings
+		//reset color modes
+		environ_ground_color->get_picker()->set_hsv_mode(false);
+		environ_ground_color->get_picker()->set_raw_mode(false);
+
+		if (default_color_mode == 1) {
+			environ_ground_color->get_picker()->set_hsv_mode(true);
+		}
+		else if (default_color_mode == 2) {
+			environ_ground_color->get_picker()->set_raw_mode(true);
+		}
+
+		environ_ground_color->get_picker()->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
+	}
+}
+
 void Node3DEditor::_load_default_preview_settings() {
 	sun_environ_updating = true;
 
@@ -7813,6 +7864,7 @@ void fragment() {
 		sun_color->set_edit_alpha(false);
 		sun_vb->add_margin_child(TTR("Sun Color"), sun_color);
 		sun_color->connect("color_changed", callable_mp(this, &Node3DEditor::_preview_settings_changed).unbind(1));
+		sun_color->get_popup()->connect("about_to_popup", callable_mp(this, &Node3DEditor::_picker_settings));
 
 		sun_energy = memnew(EditorSpinSlider);
 		sun_vb->add_margin_child(TTR("Sun Energy"), sun_energy);
@@ -7858,9 +7910,11 @@ void fragment() {
 		environ_sky_color = memnew(ColorPickerButton);
 		environ_sky_color->set_edit_alpha(false);
 		environ_sky_color->connect("color_changed", callable_mp(this, &Node3DEditor::_preview_settings_changed).unbind(1));
+		environ_sky_color->get_popup()->connect("about_to_popup", callable_mp(this, &Node3DEditor::_picker_settings));
 		environ_vb->add_margin_child(TTR("Sky Color"), environ_sky_color);
 		environ_ground_color = memnew(ColorPickerButton);
 		environ_ground_color->connect("color_changed", callable_mp(this, &Node3DEditor::_preview_settings_changed).unbind(1));
+		environ_ground_color->get_popup()->connect("about_to_popup", callable_mp(this, &Node3DEditor::_picker_settings));
 		environ_ground_color->set_edit_alpha(false);
 		environ_vb->add_margin_child(TTR("Ground Color"), environ_ground_color);
 		environ_energy = memnew(EditorSpinSlider);

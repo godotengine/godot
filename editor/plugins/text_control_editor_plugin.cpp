@@ -312,6 +312,26 @@ void TextControlEditor::_font_color_changed(const Color &p_color) {
 	ur->commit_action();
 }
 
+void TextControlEditor::_font_picker_settings() {
+	// get default color picker mode from editor settings
+	int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
+	int picker_shape = EDITOR_GET("interface/inspector/default_color_picker_shape");
+
+	//font color picker settings
+	//reset color modes
+	font_color_picker->get_picker()->set_hsv_mode(false);
+	font_color_picker->get_picker()->set_raw_mode(false);
+
+	if (default_color_mode == 1) {
+		font_color_picker->get_picker()->set_hsv_mode(true);
+	}
+	else if (default_color_mode == 2) {
+		font_color_picker->get_picker()->set_raw_mode(true);
+	}
+
+	font_color_picker->get_picker()->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
+}
+
 void TextControlEditor::_outline_color_changed(const Color &p_color) {
 	if (!edited_control) {
 		return;
@@ -331,6 +351,26 @@ void TextControlEditor::_outline_color_changed(const Color &p_color) {
 	ur->add_undo_method(this, "_update_control");
 
 	ur->commit_action();
+}
+
+void TextControlEditor::_outline_picker_settings() {
+	// get default color picker mode from editor settings
+	int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
+	int picker_shape = EDITOR_GET("interface/inspector/default_color_picker_shape");
+
+	//outline color picker settings
+	//reset color modes
+	outline_color_picker->get_picker()->set_hsv_mode(false);
+	outline_color_picker->get_picker()->set_raw_mode(false);
+
+	if (default_color_mode == 1) {
+		outline_color_picker->get_picker()->set_hsv_mode(true);
+	}
+	else if (default_color_mode == 2) {
+		outline_color_picker->get_picker()->set_raw_mode(true);
+	}
+
+	outline_color_picker->get_picker()->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
 }
 
 void TextControlEditor::_clear_formatting() {
@@ -433,6 +473,7 @@ TextControlEditor::TextControlEditor() {
 	font_color_picker->set_tooltip(TTR("Text Color"));
 	add_child(font_color_picker);
 	font_color_picker->connect("color_changed", callable_mp(this, &TextControlEditor::_font_color_changed));
+	font_color_picker->get_popup()->connect("about_to_popup", callable_mp(this, &TextControlEditor::_font_picker_settings));
 
 	add_child(memnew(VSeparator));
 
@@ -452,6 +493,7 @@ TextControlEditor::TextControlEditor() {
 	outline_color_picker->set_tooltip(TTR("Outline Color"));
 	add_child(outline_color_picker);
 	outline_color_picker->connect("color_changed", callable_mp(this, &TextControlEditor::_outline_color_changed));
+	outline_color_picker->get_popup()->connect("about_to_popup", callable_mp(this, &TextControlEditor::_outline_picker_settings));
 
 	add_child(memnew(VSeparator));
 

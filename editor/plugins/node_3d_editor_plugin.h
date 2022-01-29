@@ -745,6 +745,7 @@ private:
 	void _update_preview_environment();
 
 	void _preview_settings_changed();
+	void _picker_settings();
 	void _sun_environ_settings_pressed();
 
 	void _add_sun_to_scene(bool p_already_added_environment = false);
