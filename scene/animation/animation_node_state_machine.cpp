@@ -452,21 +452,20 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 		}
 
 		if (goto_next) { //loops should be used because fade time may be too small or zero and animation may have looped
+			if (!transitioning) {
+				if (next_xfade) {
+					//time to fade, baby
+					fading_from = current;
+					fading_time = next_xfade;
+					fading_pos = 0;
+				} else {
+					fading_from = StringName();
+					fading_pos = 0;
+				}
 
-			if (next_xfade) {
-				//time to fade, baby
-				fading_from = current;
-				fading_time = next_xfade;
-				fading_pos = 0;
-			} else {
-				fading_from = StringName();
-				fading_pos = 0;
+				transitioning = true;
+				call_deferred(SNAME("_update_current"), next);
 			}
-
-			if (path.size()) { //if it came from path, remove path
-				path.remove_at(0);
-			}
-			current = next;
 			if (switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_SYNC) {
 				len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, 0, AnimationNode::FILTER_IGNORE, false);
 				pos_current = MIN(pos_current, len_current);
@@ -490,6 +489,15 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 	return rem;
 }
 
+void AnimationNodeStateMachinePlayback::_update_current(StringName state) {
+	//delay updating state to avoid desyncs with multiple players
+	if (path.size()) { //if it came from path, remove path
+		path.remove_at(0);
+	}
+	current = state;
+	transitioning = false;
+}
+
 void AnimationNodeStateMachinePlayback::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("travel", "to_node"), &AnimationNodeStateMachinePlayback::travel);
 	ClassDB::bind_method(D_METHOD("start", "node"), &AnimationNodeStateMachinePlayback::start);
@@ -499,6 +507,7 @@ void AnimationNodeStateMachinePlayback::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_current_play_position"), &AnimationNodeStateMachinePlayback::get_current_play_pos);
 	ClassDB::bind_method(D_METHOD("get_current_length"), &AnimationNodeStateMachinePlayback::get_current_length);
 	ClassDB::bind_method(D_METHOD("get_travel_path"), &AnimationNodeStateMachinePlayback::get_travel_path);
+	ClassDB::bind_method(D_METHOD("_update_current"), &AnimationNodeStateMachinePlayback::_update_current);
 }
 
 AnimationNodeStateMachinePlayback::AnimationNodeStateMachinePlayback() {
