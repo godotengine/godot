@@ -103,10 +103,10 @@ def find_msbuild_tools_path_reg():
         raise ValueError("Cannot find `installationPath` entry")
     except ValueError as e:
         print("Error reading output from vswhere: " + e.message)
-    except WindowsError:
-        pass  # Fine, vswhere not found
-    except (subprocess.CalledProcessError, OSError):
-        pass
+    except subprocess.CalledProcessError as e:
+        print(e.output)
+    except OSError as e:
+        print(e)
 
     # Try to find 14.0 in the Registry
 
