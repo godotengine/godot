@@ -34,8 +34,9 @@
 void SkeletonModification3D::_execute(real_t p_delta) {
 	GDVIRTUAL_CALL(_execute, p_delta);
 
-	if (!enabled)
+	if (!enabled) {
 		return;
+	}
 }
 
 void SkeletonModification3D::_setup_modification(SkeletonModificationStack3D *p_stack) {

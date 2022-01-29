@@ -235,7 +235,7 @@ Scope::~Scope() {
 
 // ------------------------------------------------------------------------------------------------
 Parser::Parser(const TokenList &tokens, bool is_binary) :
-		corrupt(false), tokens(tokens), cursor(tokens.begin()), is_binary(is_binary) {
+		tokens(tokens), cursor(tokens.begin()), is_binary(is_binary) {
 	root = new_Scope(*this, true);
 	scopes.push_back(root);
 }

@@ -184,7 +184,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 	}
 
 	state.current_tex = RID();
-	state.current_tex_ptr = NULL;
+	state.current_tex_ptr = nullptr;
 	state.current_normal = RID();
 	state.current_specular = RID();
 	state.canvas_texscreen_used = false;
@@ -233,13 +233,13 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 		}
 
 		if (material != prev_material) {
-			RasterizerStorageGLES3::Shader *shader_ptr = NULL;
+			RasterizerStorageGLES3::Shader *shader_ptr = nullptr;
 
 			if (material_ptr) {
 				shader_ptr = material_ptr->shader;
 
 				if (shader_ptr && shader_ptr->mode != RS::SHADER_CANVAS_ITEM) {
-					shader_ptr = NULL; // not a canvas item shader, don't use.
+					shader_ptr = nullptr; // not a canvas item shader, don't use.
 				}
 			}
 
@@ -295,8 +295,9 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 						t->detect_normal(t->detect_normal_ud);
 					}
 #endif
-					if (t->render_target)
+					if (t->render_target) {
 						t->render_target->used_in_frame = true;
+					}
 
 					glBindTexture(t->target, t->tex_id);
 				}
@@ -582,7 +583,7 @@ void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item
 				static const GLenum prim[5] = { GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP };
 
 				if (pb->index_buffer != 0) {
-					glDrawElements(prim[polygon->primitive], pb->count, GL_UNSIGNED_INT, 0);
+					glDrawElements(prim[polygon->primitive], pb->count, GL_UNSIGNED_INT, nullptr);
 				} else {
 					glDrawArrays(prim[polygon->primitive], 0, pb->count);
 				}
@@ -946,7 +947,7 @@ void RasterizerCanvasGLES3::_bind_canvas_texture(RID p_texture, RS::CanvasItemTe
 
 	if (!texture) {
 		state.current_tex = RID();
-		state.current_tex_ptr = NULL;
+		state.current_tex_ptr = nullptr;
 		ct->size_cache = Size2i(1, 1);
 
 		glActiveTexture(GL_TEXTURE0);
@@ -1096,7 +1097,7 @@ RendererCanvasRender::PolygonID RasterizerCanvasGLES3::request_polygon(const Vec
 		{
 			// Always uses vertex positions
 			glEnableVertexAttribArray(RS::ARRAY_VERTEX);
-			glVertexAttribPointer(RS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, stride * sizeof(float), NULL);
+			glVertexAttribPointer(RS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, stride * sizeof(float), nullptr);
 			const Vector2 *points_ptr = p_points.ptr();
 
 			for (uint32_t i = 0; i < vertex_count; i++) {
@@ -1313,7 +1314,7 @@ void RasterizerCanvasGLES3::initialize() {
 		glGenBuffers(1, &data.ninepatch_vertices);
 		glBindBuffer(GL_ARRAY_BUFFER, data.ninepatch_vertices);
 
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * (16 + 16) * 2, NULL, GL_DYNAMIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * (16 + 16) * 2, nullptr, GL_DYNAMIC_DRAW);
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -1443,7 +1444,7 @@ void fragment() {
 	default_canvas_texture = storage->canvas_texture_allocate();
 	storage->canvas_texture_initialize(default_canvas_texture);
 
-	state.using_light = NULL;
+	state.using_light = nullptr;
 	state.using_transparent_rt = false;
 	state.using_skeleton = false;
 	state.current_shader_version = state.canvas_shader_default_version;

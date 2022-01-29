@@ -142,8 +142,8 @@ public:
 	} shaders;
 
 	struct Info {
-		uint64_t texture_mem;
-		uint64_t vertex_mem;
+		uint64_t texture_mem = 0;
+		uint64_t vertex_mem = 0;
 
 		struct Render {
 			uint32_t object_count;
@@ -167,9 +167,7 @@ public:
 			}
 		} render, render_final, snap;
 
-		Info() :
-				texture_mem(0),
-				vertex_mem(0) {
+		Info() {
 			render.reset();
 			render_final.reset();
 		}
@@ -275,8 +273,9 @@ public:
 		// texture coords start from bottom left, means we need to draw render target textures upside down
 		// to be compatible with vulkan etc.
 		bool is_upside_down() const {
-			if (proxy)
+			if (proxy) {
 				return proxy->is_upside_down();
+			}
 
 			return render_target != nullptr;
 		}
@@ -364,7 +363,7 @@ public:
 			images.clear();
 
 			for (Set<Texture *>::Element *E = proxy_owners.front(); E; E = E->next()) {
-				E->get()->proxy = NULL;
+				E->get()->proxy = nullptr;
 			}
 
 			if (proxy) {
@@ -374,8 +373,9 @@ public:
 
 		// texture state
 		void GLSetFilter(GLenum p_target, RS::CanvasItemTextureFilter p_filter) {
-			if (p_filter == state_filter)
+			if (p_filter == state_filter) {
 				return;
+			}
 			state_filter = p_filter;
 			GLint pmin = GL_LINEAR; // param min
 			GLint pmag = GL_LINEAR; // param mag
@@ -399,8 +399,9 @@ public:
 			glTexParameteri(p_target, GL_TEXTURE_MAG_FILTER, pmag);
 		}
 		void GLSetRepeat(GLenum p_target, RS::CanvasItemTextureRepeat p_repeat) {
-			if (p_repeat == state_repeat)
+			if (p_repeat == state_repeat) {
 				return;
+			}
 			state_repeat = p_repeat;
 			GLint prep = GL_CLAMP_TO_EDGE; // parameter repeat
 			switch (state_repeat) {
@@ -637,7 +638,7 @@ public:
 
 		Shader() :
 				dirty_list(this) {
-			shader = NULL;
+			shader = nullptr;
 			valid = false;
 			version = RID();
 			last_pass = 0;
@@ -697,7 +698,7 @@ public:
 				dirty_list(this) {
 			can_cast_shadow_cache = false;
 			is_animated_cache = false;
-			shader = NULL;
+			shader = nullptr;
 			line_width = 1.0;
 			last_pass = 0;
 			render_priority = 0;
@@ -1151,27 +1152,23 @@ public:
 
 	struct RenderTarget {
 		RID self;
-		GLuint fbo;
-		GLuint color;
-		GLuint depth;
+		GLuint fbo = 0;
+		GLuint color = 0;
+		GLuint depth = 0;
 
-		GLuint multisample_fbo;
-		GLuint multisample_color;
-		GLuint multisample_depth;
-		bool multisample_active;
+		GLuint multisample_fbo = 0;
+		GLuint multisample_color = 0;
+		GLuint multisample_depth = 0;
+		bool multisample_active = false;
 
 		struct Effect {
-			GLuint fbo;
-			int width;
-			int height;
+			GLuint fbo = 0;
+			int width = 0;
+			int height = 0;
 
-			GLuint color;
+			GLuint color = 0;
 
-			Effect() :
-					fbo(0),
-					width(0),
-					height(0),
-					color(0) {
+			Effect() {
 			}
 		};
 
@@ -1186,71 +1183,47 @@ public:
 			};
 
 			Vector<Size> sizes;
-			GLuint color;
-			int levels;
+			GLuint color = 0;
+			int levels = 0;
 
-			MipMaps() :
-					color(0),
-					levels(0) {
+			MipMaps() {
 			}
 		};
 
 		MipMaps mip_maps[2];
 
 		struct External {
-			GLuint fbo;
-			GLuint color;
-			GLuint depth;
+			GLuint fbo = 0;
+			GLuint color = 0;
+			GLuint depth = 0;
 			RID texture;
 
-			External() :
-					fbo(0),
-					color(0),
-					depth(0) {
+			External() {
 			}
 		} external;
 
-		int x, y, width, height;
+		int x = 0, y = 0, width = 0, height = 0;
 
 		bool flags[RENDER_TARGET_FLAG_MAX];
 
 		// instead of allocating sized render targets immediately,
 		// defer this for faster startup
 		bool allocate_is_dirty = false;
-		bool used_in_frame;
-		RS::ViewportMSAA msaa;
+		bool used_in_frame = false;
+		RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
 
-		bool use_fxaa;
-		bool use_debanding;
+		bool use_fxaa = false;
+		bool use_debanding = false;
 
 		RID texture;
 
-		bool used_dof_blur_near;
-		bool mip_maps_allocated;
+		bool used_dof_blur_near = false;
+		bool mip_maps_allocated = false;
 
-		Color clear_color;
-		bool clear_requested;
+		Color clear_color = Color(1, 1, 1, 1);
+		bool clear_requested = false;
 
-		RenderTarget() :
-				fbo(0),
-				color(0),
-				depth(0),
-				multisample_fbo(0),
-				multisample_color(0),
-				multisample_depth(0),
-				multisample_active(false),
-				x(0),
-				y(0),
-				width(0),
-				height(0),
-				used_in_frame(false),
-				msaa(RS::VIEWPORT_MSAA_DISABLED),
-				use_fxaa(false),
-				use_debanding(false),
-				used_dof_blur_near(false),
-				mip_maps_allocated(false),
-				clear_color(Color(1, 1, 1, 1)),
-				clear_requested(false) {
+		RenderTarget() {
 			for (int i = 0; i < RENDER_TARGET_FLAG_MAX; ++i) {
 				flags[i] = false;
 			}
@@ -1427,8 +1400,9 @@ inline bool RasterizerStorageGLES3::safe_buffer_sub_data(unsigned int p_total_bu
 	r_offset_after = p_offset + p_data_size;
 #ifdef DEBUG_ENABLED
 	// we are trying to write across the edge of the buffer
-	if (r_offset_after > p_total_buffer_size)
+	if (r_offset_after > p_total_buffer_size) {
 		return false;
+	}
 #endif
 	glBufferSubData(p_target, p_offset, p_data_size, p_data);
 	return true;
@@ -1440,7 +1414,7 @@ inline void RasterizerStorageGLES3::buffer_orphan_and_upload(unsigned int p_buff
 	// Orphan the buffer to avoid CPU/GPU sync points caused by glBufferSubData
 	// Was previously #ifndef GLES_OVER_GL however this causes stalls on desktop mac also (and possibly other)
 	if (!p_optional_orphan || (config.should_orphan)) {
-		glBufferData(p_target, p_buffer_size, NULL, p_usage);
+		glBufferData(p_target, p_buffer_size, nullptr, p_usage);
 #ifdef RASTERIZER_EXTRA_CHECKS
 		// fill with garbage off the end of the array
 		if (p_buffer_size) {

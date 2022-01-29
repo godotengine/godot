@@ -1088,8 +1088,9 @@ void AnimatedSprite3D::set_frame(int p_frame) {
 
 	if (frames->has_animation(animation)) {
 		int limit = frames->get_frame_count(animation);
-		if (p_frame >= limit)
+		if (p_frame >= limit) {
 			p_frame = limit - 1;
+		}
 	}
 
 	if (p_frame < 0) {

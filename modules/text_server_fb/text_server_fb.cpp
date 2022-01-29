@@ -127,8 +127,9 @@ _FORCE_INLINE_ int32_t ot_tag_from_string(const char *p_str, int p_len) {
 	char tag[4];
 	uint32_t i;
 
-	if (!p_str || !p_len || !*p_str)
+	if (!p_str || !p_len || !*p_str) {
 		return OT_TAG(0, 0, 0, 0);
+	}
 
 	if (p_len < 0 || p_len > 4) {
 		p_len = 4;

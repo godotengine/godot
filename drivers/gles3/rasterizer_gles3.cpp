@@ -130,46 +130,51 @@ void RasterizerGLES3::end_frame(bool p_swap_buffers) {
 
 #ifdef CAN_DEBUG
 static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
-	if (type == _EXT_DEBUG_TYPE_OTHER_ARB)
+	if (type == _EXT_DEBUG_TYPE_OTHER_ARB) {
 		return;
+	}
 
-	if (type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB)
+	if (type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB) {
 		return; //these are ultimately annoying, so removing for now
+	}
 
 	char debSource[256], debType[256], debSev[256];
 
-	if (source == _EXT_DEBUG_SOURCE_API_ARB)
+	if (source == _EXT_DEBUG_SOURCE_API_ARB) {
 		strcpy(debSource, "OpenGL");
-	else if (source == _EXT_DEBUG_SOURCE_WINDOW_SYSTEM_ARB)
+	} else if (source == _EXT_DEBUG_SOURCE_WINDOW_SYSTEM_ARB) {
 		strcpy(debSource, "Windows");
-	else if (source == _EXT_DEBUG_SOURCE_SHADER_COMPILER_ARB)
+	} else if (source == _EXT_DEBUG_SOURCE_SHADER_COMPILER_ARB) {
 		strcpy(debSource, "Shader Compiler");
-	else if (source == _EXT_DEBUG_SOURCE_THIRD_PARTY_ARB)
+	} else if (source == _EXT_DEBUG_SOURCE_THIRD_PARTY_ARB) {
 		strcpy(debSource, "Third Party");
-	else if (source == _EXT_DEBUG_SOURCE_APPLICATION_ARB)
+	} else if (source == _EXT_DEBUG_SOURCE_APPLICATION_ARB) {
 		strcpy(debSource, "Application");
-	else if (source == _EXT_DEBUG_SOURCE_OTHER_ARB)
+	} else if (source == _EXT_DEBUG_SOURCE_OTHER_ARB) {
 		strcpy(debSource, "Other");
+	}
 
-	if (type == _EXT_DEBUG_TYPE_ERROR_ARB)
+	if (type == _EXT_DEBUG_TYPE_ERROR_ARB) {
 		strcpy(debType, "Error");
-	else if (type == _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB)
+	} else if (type == _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB) {
 		strcpy(debType, "Deprecated behavior");
-	else if (type == _EXT_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB)
+	} else if (type == _EXT_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB) {
 		strcpy(debType, "Undefined behavior");
-	else if (type == _EXT_DEBUG_TYPE_PORTABILITY_ARB)
+	} else if (type == _EXT_DEBUG_TYPE_PORTABILITY_ARB) {
 		strcpy(debType, "Portability");
-	else if (type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB)
+	} else if (type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB) {
 		strcpy(debType, "Performance");
-	else if (type == _EXT_DEBUG_TYPE_OTHER_ARB)
+	} else if (type == _EXT_DEBUG_TYPE_OTHER_ARB) {
 		strcpy(debType, "Other");
+	}
 
-	if (severity == _EXT_DEBUG_SEVERITY_HIGH_ARB)
+	if (severity == _EXT_DEBUG_SEVERITY_HIGH_ARB) {
 		strcpy(debSev, "High");
-	else if (severity == _EXT_DEBUG_SEVERITY_MEDIUM_ARB)
+	} else if (severity == _EXT_DEBUG_SEVERITY_MEDIUM_ARB) {
 		strcpy(debSev, "Medium");
-	else if (severity == _EXT_DEBUG_SEVERITY_LOW_ARB)
+	} else if (severity == _EXT_DEBUG_SEVERITY_LOW_ARB) {
 		strcpy(debSev, "Low");
+	}
 
 	String output = String() + "GL ERROR: Source: " + debSource + "\tType: " + debType + "\tID: " + itos(id) + "\tSeverity: " + debSev + "\tMessage: " + message;
 
@@ -203,7 +208,7 @@ void RasterizerGLES3::initialize() {
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		if (GLAD_GL_ARB_debug_output) {
 			glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-			glDebugMessageCallbackARB(_gl_debug_print, NULL);
+			glDebugMessageCallbackARB(_gl_debug_print, nullptr);
 			glEnable(_EXT_DEBUG_OUTPUT);
 		} else {
 			print_line("OpenGL debugging not supported!");
@@ -215,12 +220,12 @@ void RasterizerGLES3::initialize() {
 #ifdef CAN_DEBUG
 #ifdef GLES_OVER_GL
 	if (OS::get_singleton()->is_stdout_verbose() && GLAD_GL_ARB_debug_output) {
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_ERROR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PORTABILITY_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PERFORMANCE_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_OTHER_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
+		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_ERROR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
+		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
+		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
+		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PORTABILITY_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
+		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PERFORMANCE_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
+		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_OTHER_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
 		//		 glDebugMessageInsertARB(
 		//			GL_DEBUG_SOURCE_API_ARB,
 		//			GL_DEBUG_TYPE_OTHER_ARB, 1,
@@ -299,8 +304,9 @@ void RasterizerGLES3::blit_render_targets_to_screen(DisplayServer::WindowID p_sc
 }
 
 void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
-	if (p_image.is_null() || p_image->is_empty())
+	if (p_image.is_null() || p_image->is_empty()) {
 		return;
+	}
 
 	Size2i win_size = DisplayServer::get_singleton()->screen_get_size();
 

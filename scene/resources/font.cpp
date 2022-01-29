@@ -2344,8 +2344,9 @@ real_t Font::draw_char(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, 
 
 bool Font::has_char(char32_t p_char) const {
 	for (int i = 0; i < data.size(); i++) {
-		if (data[i]->has_char(p_char))
+		if (data[i]->has_char(p_char)) {
 			return true;
+		}
 	}
 	return false;
 }
