@@ -164,11 +164,12 @@ const char *godot_so_name = "libgodot_android.so";
 void *mono_dl_handle = NULL;
 void *godot_dl_handle = NULL;
 
-void *try_dlopen(const String &p_so_path, int p_flags) {
+void *_try_dlopen_file_path(const String &p_so_path, int p_flags) {
 	if (!FileAccess::exists(p_so_path)) {
-		if (OS::get_singleton()->is_stdout_verbose())
+		if (OS::get_singleton()->is_stdout_verbose()) {
 			OS::get_singleton()->print("Cannot find shared library: '%s'\n", p_so_path.utf8().get_data());
-		return NULL;
+		}
+		return nullptr;
 	}
 
 	int lflags = gd_mono_convert_dl_flags(p_flags);
@@ -176,13 +177,48 @@ void *try_dlopen(const String &p_so_path, int p_flags) {
 	void *handle = dlopen(p_so_path.utf8().get_data(), lflags);
 
 	if (!handle) {
-		if (OS::get_singleton()->is_stdout_verbose())
+		if (OS::get_singleton()->is_stdout_verbose()) {
 			OS::get_singleton()->print("Failed to open shared library: '%s'. Error: '%s'\n", p_so_path.utf8().get_data(), dlerror());
-		return NULL;
+		}
+		return nullptr;
 	}
 
-	if (OS::get_singleton()->is_stdout_verbose())
+	if (OS::get_singleton()->is_stdout_verbose()) {
 		OS::get_singleton()->print("Successfully loaded shared library: '%s'\n", p_so_path.utf8().get_data());
+	}
+
+	return handle;
+}
+
+void *try_dlopen(const String &p_so_path, int p_flags) {
+	void *handle = _try_dlopen_file_path(p_so_path, p_flags);
+
+	if (handle) {
+		return handle;
+	}
+
+	// Try only with the file name, without specifying the location.
+	// This is needed when installing from Android App Bundles, as the native
+	// libraries are not extracted. They are loaded directly from the APK.
+	// See: https://stackoverflow.com/a/56551499
+	// If we pass only the file name to dlopen without the location, it should
+	// search the native libraries in all locations, including inside the apk.
+
+	String so_name = p_so_path.get_file();
+
+	int lflags = gd_mono_convert_dl_flags(p_flags);
+
+	handle = dlopen(so_name.utf8().get_data(), lflags);
+	if (!handle) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			OS::get_singleton()->print("Failed to open shared library: '%s'. Error: '%s'\n", so_name.utf8().get_data(), dlerror());
+		}
+		return nullptr;
+	}
+
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		OS::get_singleton()->print("Successfully loaded shared library: '%s'\n", so_name.utf8().get_data());
+	}
 
 	return handle;
 }
@@ -196,6 +232,7 @@ void *gd_mono_android_dlopen(const char *p_name, int p_flags, char **r_err, void
 			String so_path = path::join(app_native_lib_dir, mono_so_name);
 
 			mono_dl_handle = try_dlopen(so_path, p_flags);
+			ERR_FAIL_COND_V_MSG(!mono_dl_handle, nullptr, "Failed to load Mono native library from path");
 		}
 
 		return mono_dl_handle;
@@ -371,7 +408,7 @@ void initialize() {
 	String so_path = path::join(app_native_lib_dir, godot_so_name);
 
 	godot_dl_handle = try_dlopen(so_path, gd_mono_convert_dl_flags(MONO_DL_LAZY));
-	ERR_FAIL_COND(!godot_dl_handle);
+	ERR_FAIL_COND_MSG(!godot_dl_handle, "Failed to load Godot native library");
 }
 
 void cleanup() {
