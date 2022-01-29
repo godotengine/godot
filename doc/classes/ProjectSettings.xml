@@ -1412,8 +1412,8 @@
 			Sets which physics engine to use for 2D physics.
 			"DEFAULT" and "GodotPhysics2D" are the same, as there is currently no alternative 2D physics server implemented.
 		</member>
-		<member name="physics/2d/run_on_thread" type="bool" setter="" getter="" default="false">
-			Sets whether 2D physics is run on the main thread or a separate one. Running the server on a thread increases performance, but restricts API access to only physics process.
+		<member name="physics/2d/run_on_separate_thread" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the 2D physics server runs on a separate thread, making better use of multi-core CPUs. If [code]false[/code], the 2D physics server runs on the main thread. Running the physics server on a separate thread can increase performance, but restricts API access to only physics process.
 		</member>
 		<member name="physics/2d/sleep_threshold_angular" type="float" setter="" getter="" default="0.139626">
 			Threshold angular velocity under which a 2D physics body will be considered inactive. See [constant PhysicsServer2D.SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD].
@@ -1484,8 +1484,8 @@
 			Sets which physics engine to use for 3D physics.
 			"DEFAULT" is currently the [url=https://bulletphysics.org]Bullet[/url] physics engine. The "GodotPhysics3D" engine is still supported as an alternative.
 		</member>
-		<member name="physics/3d/run_on_thread" type="bool" setter="" getter="" default="false">
-			Sets whether 3D physics is run on the main thread or a separate one. Running the server on a thread increases performance, but restricts API access to only physics process.
+		<member name="physics/3d/run_on_separate_thread" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the 3D physics server runs on a separate thread, making better use of multi-core CPUs. If [code]false[/code], the 3D physics server runs on the main thread. Running the physics server on a separate thread can increase performance, but restricts API access to only physics process.
 		</member>
 		<member name="physics/3d/sleep_threshold_angular" type="float" setter="" getter="" default="0.139626">
 			Threshold angular velocity under which a 3D physics body will be considered inactive. See [constant PhysicsServer3D.SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD].
