@@ -4222,6 +4222,8 @@ void EditorNode::_dock_floating_close_request(Control *p_control) {
 	_update_dock_containers();
 
 	floating_docks.erase(p_control);
+
+	_edit_current();
 }
 
 void EditorNode::_dock_make_float() {
@@ -4264,6 +4266,8 @@ void EditorNode::_dock_make_float() {
 	_update_dock_containers();
 
 	floating_docks.push_back(dock);
+
+	_edit_current();
 }
 
 void EditorNode::_update_dock_containers() {
