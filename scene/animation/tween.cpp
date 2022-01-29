@@ -283,6 +283,10 @@ bool Tween::step(float p_delta) {
 		float step_delta = rem_delta;
 		step_active = false;
 
+#ifdef DEBUG_ENABLED
+		float prev_delta = rem_delta;
+#endif
+
 		for (Ref<Tweener> &tweener : tweeners.write[current_step]) {
 			// Modified inside Tweener.step().
 			float temp_delta = rem_delta;
@@ -312,6 +316,12 @@ bool Tween::step(float p_delta) {
 				start_tweeners();
 			}
 		}
+
+#ifdef DEBUG_ENABLED
+		if (Math::is_equal_approx(rem_delta, prev_delta) && running && loops <= 0) {
+			ERR_FAIL_V_MSG(false, "Infinite loop detected. Check set_loops() description for more info.");
+		}
+#endif
 	}
 
 	return true;
