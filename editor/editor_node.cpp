@@ -3801,6 +3801,7 @@ void EditorNode::add_io_error(const String &p_error) {
 }
 
 void EditorNode::_load_error_notify(void *p_ud, const String &p_text) {
+	print_error(p_text);
 	EditorNode *en = (EditorNode *)p_ud;
 	en->load_errors->add_image(en->gui_base->get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
 	en->load_errors->add_text(p_text + "\n");
@@ -4198,9 +4199,8 @@ void EditorNode::show_warning(const String &p_text, const String &p_title) {
 		warning->set_text(p_text);
 		warning->set_title(p_title);
 		warning->popup_centered();
-	} else {
-		WARN_PRINT(p_title + " " + p_text);
 	}
+	WARN_PRINT(p_title + " " + p_text);
 }
 
 void EditorNode::_copy_warning(const String &p_str) {
@@ -5747,6 +5747,8 @@ int EditorNode::execute_and_show_output(const String &p_title, const String &p_p
 
 	eta.execute_output_thread.start(_execute_thread, &eta);
 
+	print_verbose(p_title);
+
 	while (!eta.done.is_set()) {
 		{
 			MutexLock lock(eta.execute_output_mutex);
@@ -5754,6 +5756,7 @@ int EditorNode::execute_and_show_output(const String &p_title, const String &p_p
 				String to_add = eta.output.substr(prev_len, eta.output.length());
 				prev_len = eta.output.length();
 				execute_outputs->add_text(to_add);
+				print_verbose(to_add);
 				Main::iteration();
 			}
 		}
@@ -5761,7 +5764,9 @@ int EditorNode::execute_and_show_output(const String &p_title, const String &p_p
 	}
 
 	eta.execute_output_thread.wait_to_finish();
-	execute_outputs->add_text("\nExit Code: " + itos(eta.exitcode));
+	String const exitMsg("\nExit Code: " + itos(eta.exitcode));
+	execute_outputs->add_text(exitMsg);
+	print_verbose(exitMsg);
 
 	if (p_close_on_errors && eta.exitcode != 0) {
 		execute_output_dialog->hide();
