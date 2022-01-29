@@ -96,6 +96,11 @@ struct _IP_ResolverPrivate {
 			if (queue[i].status.get() != IP::RESOLVER_STATUS_WAITING) {
 				continue;
 			}
+			// We might be overriding another result, but we don't care as long as the result is valid.
+			if (response.size()) {
+				String key = get_cache_key(hostname, type);
+				cache[key] = response;
+			}
 			queue[i].response = response;
 			queue[i].status.set(response.empty() ? IP::RESOLVER_STATUS_ERROR : IP::RESOLVER_STATUS_DONE);
 		}
@@ -118,30 +123,8 @@ struct _IP_ResolverPrivate {
 };
 
 IP_Address IP::resolve_hostname(const String &p_hostname, IP::Type p_type) {
-	List<IP_Address> res;
-	String key = _IP_ResolverPrivate::get_cache_key(p_hostname, p_type);
-
-	resolver->mutex.lock();
-	if (resolver->cache.has(key)) {
-		res = resolver->cache[key];
-	} else {
-		// This should be run unlocked so the resolver thread can keep
-		// resolving other requests.
-		resolver->mutex.unlock();
-		_resolve_hostname(res, p_hostname, p_type);
-		resolver->mutex.lock();
-		// We might be overriding another result, but we don't care (they are the
-		// same hostname).
-		resolver->cache[key] = res;
-	}
-	resolver->mutex.unlock();
-
-	for (int i = 0; i < res.size(); ++i) {
-		if (res[i].is_valid()) {
-			return res[i];
-		}
-	}
-	return IP_Address();
+	const Array addresses = resolve_hostname_addresses(p_hostname, p_type);
+	return addresses.size() ? addresses[0].operator IP_Address() : IP_Address();
 }
 
 Array IP::resolve_hostname_addresses(const String &p_hostname, Type p_type) {
@@ -157,17 +140,16 @@ Array IP::resolve_hostname_addresses(const String &p_hostname, Type p_type) {
 		resolver->mutex.unlock();
 		_resolve_hostname(res, p_hostname, p_type);
 		resolver->mutex.lock();
-		// We might be overriding another result, but we don't care (they are the
-		// same hostname).
-		resolver->cache[key] = res;
+		// We might be overriding another result, but we don't care as long as the result is valid.
+		if (res.size()) {
+			resolver->cache[key] = res;
+		}
 	}
 	resolver->mutex.unlock();
 
 	Array result;
 	for (int i = 0; i < res.size(); ++i) {
-		if (res[i].is_valid()) {
-			result.push_back(String(res[i]));
-		}
+		result.push_back(String(res[i]));
 	}
 	return result;
 }

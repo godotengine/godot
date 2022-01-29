@@ -115,7 +115,7 @@ void IP_Unix::_resolve_hostname(List<IP_Address> &r_addresses, const String &p_h
 			continue;
 		}
 		IP_Address ip = _sockaddr2ip(next->ai_addr);
-		if (!r_addresses.find(ip)) {
+		if (ip.is_valid() && !r_addresses.find(ip)) {
 			r_addresses.push_back(ip);
 		}
 		next = next->ai_next;
