@@ -101,6 +101,10 @@ class CapsuleMesh : public PrimitiveMesh {
 	GDCLASS(CapsuleMesh, PrimitiveMesh);
 
 private:
+	static constexpr int default_radial_segments = 64;
+	static constexpr int default_rings = 8;
+
+private:
 	float radius;
 	float mid_height;
 	int radial_segments;
@@ -111,6 +115,8 @@ protected:
 	virtual void _create_mesh_array(Array &p_arr) const;
 
 public:
+	static void create_mesh_array(Array &p_arr, float radius, float mid_height, int radial_segments = default_radial_segments, int rings = default_rings);
+
 	void set_radius(const float p_radius);
 	float get_radius() const;
 
@@ -133,6 +139,11 @@ class CubeMesh : public PrimitiveMesh {
 	GDCLASS(CubeMesh, PrimitiveMesh);
 
 private:
+	static constexpr int default_subdivide_w = 0;
+	static constexpr int default_subdivide_h = 0;
+	static constexpr int default_subdivide_d = 0;
+
+private:
 	Vector3 size;
 	int subdivide_w;
 	int subdivide_h;
@@ -143,6 +154,8 @@ protected:
 	virtual void _create_mesh_array(Array &p_arr) const;
 
 public:
+	static void create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w = default_subdivide_w, int subdivide_h = default_subdivide_h, int subdivide_d = default_subdivide_d);
+
 	void set_size(const Vector3 &p_size);
 	Vector3 get_size() const;
 
@@ -166,6 +179,10 @@ class CylinderMesh : public PrimitiveMesh {
 	GDCLASS(CylinderMesh, PrimitiveMesh);
 
 private:
+	static constexpr int default_radial_segments = 64;
+	static constexpr int default_rings = 4;
+
+private:
 	float top_radius;
 	float bottom_radius;
 	float height;
@@ -177,6 +194,8 @@ protected:
 	virtual void _create_mesh_array(Array &p_arr) const;
 
 public:
+	static void create_mesh_array(Array &p_arr, float top_radius, float bottom_radius, float height, int radial_segments = default_radial_segments, int rings = default_rings);
+
 	void set_top_radius(const float p_radius);
 	float get_top_radius() const;
 
@@ -295,6 +314,11 @@ class SphereMesh : public PrimitiveMesh {
 	GDCLASS(SphereMesh, PrimitiveMesh);
 
 private:
+	static constexpr int default_radial_segments = 64;
+	static constexpr int default_rings = 32;
+	static constexpr bool default_is_hemisphere = false;
+
+private:
 	float radius;
 	float height;
 	int radial_segments;
@@ -306,6 +330,8 @@ protected:
 	virtual void _create_mesh_array(Array &p_arr) const;
 
 public:
+	static void create_mesh_array(Array &p_arr, float radius, float height, int radial_segments = default_radial_segments, int rings = default_rings, bool is_hemisphere = default_is_hemisphere);
+
 	void set_radius(const float p_radius);
 	float get_radius() const;
 
