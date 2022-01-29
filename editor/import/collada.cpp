@@ -411,8 +411,9 @@ Vector<String> Collada::_read_string_array(XMLParser &parser) {
 }
 
 Transform3D Collada::_read_transform(XMLParser &parser) {
-	if (parser.is_empty())
+	if (parser.is_empty()) {
 		return Transform3D();
+	}
 
 	Vector<String> array;
 	while (parser.read() == OK) {

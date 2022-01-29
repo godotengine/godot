@@ -555,8 +555,9 @@ void TreeItem::uncollapse_tree() {
 void TreeItem::set_custom_minimum_height(int p_height) {
 	custom_min_height = p_height;
 
-	for (Cell &c : cells)
+	for (Cell &c : cells) {
 		c.cached_minimum_size_dirty = true;
+	}
 
 	_changed_notify();
 }
@@ -1092,8 +1093,9 @@ bool TreeItem::get_expand_right(int p_column) const {
 void TreeItem::set_disable_folding(bool p_disable) {
 	disable_folding = p_disable;
 
-	for (Cell &c : cells)
+	for (Cell &c : cells) {
 		c.cached_minimum_size_dirty = true;
+	}
 
 	_changed_notify(0);
 }

@@ -700,8 +700,9 @@ public:
 	static String get_category_static() { return String(); }
 
 	virtual String get_class() const {
-		if (_extension)
+		if (_extension) {
 			return _extension->class_name.operator String();
+		}
 		return "Object";
 	}
 	virtual String get_save_class() const { return get_class(); } //class stored when saving

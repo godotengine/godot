@@ -1042,7 +1042,7 @@ void RenderForwardMobile::_render_uv2(const PagedArray<GeometryInstance *> &p_in
 	RENDER_TIMESTAMP("Render Material");
 
 	{
-		RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].element_info.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), true, pass_mode, rp_uniform_set, true, 0);
+		RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].element_info.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), true, pass_mode, rp_uniform_set, true, false);
 		//regular forward for now
 		Vector<Color> clear = {
 			Color(0, 0, 0, 0),

@@ -456,8 +456,9 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 		if (mb.is_valid() || (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
 			updating_frame = true;
 
-			if (x < total_metrics)
+			if (x < total_metrics) {
 				cursor_metric_edit->set_value(_get_frame_metric(x).frame_number);
+			}
 			updating_frame = false;
 
 			if (activate->is_pressed()) {

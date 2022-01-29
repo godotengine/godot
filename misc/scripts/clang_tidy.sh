@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# This script runs clang-format and fixes copyright headers on all relevant files in the repo.
-# This is the primary script responsible for fixing style violations.
+# This script runs clang-tidy on all relevant files in the repo.
+# This is more thorough than clang-format and thus slower; it should only be run manually.
 
 set -uo pipefail
 
@@ -17,19 +17,11 @@ while read -r f; do
         continue
     fi
 
-    # Run clang-format.
+    # Run clang-tidy.
+    clang-tidy --quiet --fix "$f" &> /dev/null
+
+    # Run clang-format. This also fixes the output of clang-tidy.
     clang-format --Wno-error=unknown -i "$f"
-
-    # Fix copyright headers, but not all files get them.
-    if [[ "$f" == *"inc" ]]; then
-        continue
-    elif [[ "$f" == *"glsl" ]]; then
-        continue
-    elif [[ "$f" == "platform/android/java/lib/src/org/godotengine/godot/input/InputManager"* ]]; then
-        continue
-    fi
-
-    python misc/scripts/copyright_headers.py "$f"
 done
 
 diff=$(git diff --color)

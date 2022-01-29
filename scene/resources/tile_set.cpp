@@ -5089,7 +5089,7 @@ int TileData::get_collision_polygon_shapes_count(int p_layer_id, int p_polygon_i
 }
 
 Ref<ConvexPolygonShape2D> TileData::get_collision_polygon_shape(int p_layer_id, int p_polygon_index, int shape_index) const {
-	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), 0);
+	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), Ref<ConvexPolygonShape2D>());
 	ERR_FAIL_INDEX_V(p_polygon_index, physics[p_layer_id].polygons.size(), Ref<ConvexPolygonShape2D>());
 	ERR_FAIL_INDEX_V(shape_index, (int)physics[p_layer_id].polygons[p_polygon_index].shapes.size(), Ref<ConvexPolygonShape2D>());
 	return physics[p_layer_id].polygons[p_polygon_index].shapes[shape_index];
