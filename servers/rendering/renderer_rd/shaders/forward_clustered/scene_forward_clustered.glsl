@@ -2274,7 +2274,7 @@ void fragment_shader(in SceneData scene_data) {
 #else //MODE_SEPARATE_SPECULAR
 
 #ifdef MODE_UNSHADED
-	frag_color = vec4(albedo, alpha);
+	frag_color = vec4(emission + albedo, alpha);
 #else
 	frag_color = vec4(emission + ambient_light + diffuse_light + specular_light, alpha);
 //frag_color = vec4(1.0);
