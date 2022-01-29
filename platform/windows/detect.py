@@ -65,6 +65,7 @@ def get_opts():
         # Vista support dropped after EOL due to GH-10243
         ("target_win_version", "Targeted Windows version, >= 0x0601 (Windows 7)", "0x0601"),
         BoolVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", True),
+        EnumVariable("windows_subsystem", "Windows subsystem", "gui", ("gui", "console")),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         ("msvc_version", "MSVC version to use. Ignored if VCINSTALLDIR is set in shell env.", None),
         BoolVariable("use_mingw", "Use the Mingw compiler, even if MSVC is installed.", False),
@@ -197,7 +198,12 @@ def configure_msvc(env, manual_msvc_config):
         env.AppendUnique(CCFLAGS=["/bigobj"])
         env.Append(LINKFLAGS=["/DEBUG"])
 
-    env.Append(LINKFLAGS=["/SUBSYSTEM:WINDOWS"])
+    if env["windows_subsystem"] == "gui":
+        env.Append(LINKFLAGS=["/SUBSYSTEM:WINDOWS"])
+    else:
+        env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
+        env.AppendUnique(CPPDEFINES=["WINDOWS_SUBSYSTEM_CONSOLE"])
+
     env.Append(LINKFLAGS=["/ENTRY:mainCRTStartup"])
 
     if env["debug_symbols"]:
@@ -333,7 +339,11 @@ def configure_mingw(env):
         # and are the only ones with too big objects).
         env.Append(CCFLAGS=["-Wa,-mbig-obj"])
 
-    env.Append(LINKFLAGS=["-Wl,--subsystem,windows"])
+    if env["windows_subsystem"] == "gui":
+        env.Append(LINKFLAGS=["-Wl,--subsystem,windows"])
+    else:
+        env.Append(LINKFLAGS=["-Wl,--subsystem,console"])
+        env.AppendUnique(CPPDEFINES=["WINDOWS_SUBSYSTEM_CONSOLE"])
 
     ## Compiler configuration
 

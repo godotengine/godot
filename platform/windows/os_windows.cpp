@@ -166,7 +166,9 @@ void OS_Windows::initialize_core() {
 	last_button_state = 0;
 	restore_mouse_trails = 0;
 
+#ifndef WINDOWS_SUBSYSTEM_CONSOLE
 	RedirectIOToConsole();
+#endif
 
 	maximized = false;
 	minimized = false;
