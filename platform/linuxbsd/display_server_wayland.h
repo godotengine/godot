@@ -28,8 +28,13 @@ class DisplayServerWayland : public DisplayServer {
 
 	struct WaylandGlobals {
 		struct wl_compositor *wl_compositor = nullptr;
+		uint32_t wl_compositor_name = 0;
+
 		struct wl_seat *wl_seat = nullptr;
+		uint32_t wl_seat_name = 0;
+
 		struct xdg_wm_base *xdg_wm_base = nullptr;
+		uint32_t xdg_wm_base_name = 0;
 	};
 
 	struct WindowData {

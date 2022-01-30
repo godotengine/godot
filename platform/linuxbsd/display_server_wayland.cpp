@@ -74,32 +74,52 @@ DisplayServerWayland::WindowID DisplayServerWayland::_create_window(WindowMode p
 }
 
 void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
-	// `data` is expected to be a `WaylandGlobals`.
-	WaylandGlobals *globals = (WaylandGlobals*) data;
+	// `data` is expected to be a `WaylandState`.
+	WaylandState *wls = (WaylandState*) data;
 
 	// `wl_compositor_interface` is defined in `thirdparty/wayland/wayland.c`
 	if (strcmp(interface, wl_compositor_interface.name) == 0) {
 		// This will select the latest version supported by the server.
-		// I have no idea if this will cause problems.
-		globals->wl_compositor = (struct wl_compositor*) wl_registry_bind(wl_registry, name, &wl_compositor_interface, version);
+		// I'm not sure whether this is the best thing to do.
+		wls->globals.wl_compositor = (struct wl_compositor*) wl_registry_bind(wl_registry, name, &wl_compositor_interface, version);
+		wls->globals.wl_compositor_name = name;
 		return;
 	}
 
 	// `wl_seat_interface` is defined in `thirdparty/wayland/wayland.c`
 	if (strcmp(interface, wl_seat_interface.name) == 0) {
-		globals->wl_seat = (struct wl_seat*) wl_registry_bind(wl_registry, name, &wl_seat_interface, version);
+		wls->globals.wl_seat = (struct wl_seat*) wl_registry_bind(wl_registry, name, &wl_seat_interface, version);
+		wls->globals.wl_seat_name = name;
+		wl_seat_add_listener(wls->globals.wl_seat, &wl_seat_listener, &wls->seat_state);
 		return;
 	}
 
 	// `xdg_wm_base_interface` is defined in `thirdparty/xdg-shell/xdg-shell.c`
 	if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
-		globals->xdg_wm_base = (struct xdg_wm_base*) wl_registry_bind(wl_registry, name, &xdg_wm_base_interface, version);
+		wls->globals.xdg_wm_base = (struct xdg_wm_base*) wl_registry_bind(wl_registry, name, &xdg_wm_base_interface, version);
+		wls->globals.xdg_wm_base_name = name;
 		return;
 	}
 }
 
 void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_registry *wl_registry, uint32_t name) {
-	// TODO: Handle globals destrucion.
+	// `data` is expected to be a `WaylandGlobals`.
+	WaylandGlobals *globals = (WaylandGlobals*) data;
+
+	if (name == globals->wl_compositor_name) {
+		wl_compositor_destroy(globals->wl_compositor);
+		return;
+	}
+
+	if (name == globals->wl_seat_name) {
+		wl_seat_destroy(globals->wl_seat);
+		return;
+	}
+
+	if (name == globals->xdg_wm_base_name) {
+		xdg_wm_base_destroy(globals->xdg_wm_base);
+		return;
+	}
 }
 
 // `data` is expected to be a pointer to a `SeatState` struct.
@@ -906,7 +926,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	// TODO: Better error handling.
 	ERR_FAIL_COND(!wls.display);
 
-	wl_registry_add_listener(wls.registry, &registry_listener, &wls.globals);
+	wl_registry_add_listener(wls.registry, &registry_listener, &wls);
 
 	// Wait for globals to get notified from the compositor.
 	wl_display_roundtrip(wls.display);
@@ -915,7 +935,6 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 	// Input.
 	Input::get_singleton()->set_event_dispatch_function(dispatch_input_events);
-	wl_seat_add_listener(wls.globals.wl_seat, &wl_seat_listener, &wls.seat_state);
 
 	// Wait for seat capabilities.
 	wl_display_roundtrip(wls.display);
@@ -951,7 +970,42 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 }
 
 DisplayServerWayland::~DisplayServerWayland() {
-	// TODO: Handle DisplayServer destruction.
+	// Destroy all windows.
+	for (KeyValue<WindowID, WindowData> &E : wls.windows) {
+#ifdef VULKAN_ENABLED
+		if (context_vulkan) {
+			context_vulkan->window_destroy(E.key);
+		}
+#endif
+		WindowData &window = E.value;
+
+		if (window.xdg_toplevel) {
+			xdg_toplevel_destroy(window.xdg_toplevel);
+		}
+
+		if (window.xdg_surface) {
+			xdg_surface_destroy(window.xdg_surface);
+		}
+
+		if (window.wl_surface) {
+			wl_surface_destroy(window.wl_surface);
+		}
+	}
+
+
+	// Destroy all drivers.
+#ifdef VULKAN_ENABLED
+	if (rendering_device_vulkan) {
+		rendering_device_vulkan->finalize();
+		memdelete(rendering_device_vulkan);
+		rendering_device_vulkan = nullptr;
+	}
+
+	if (context_vulkan) {
+		memdelete(context_vulkan);
+		context_vulkan = nullptr;
+	}
+#endif
 }
 
 void DisplayServerWayland::register_wayland_driver() {
