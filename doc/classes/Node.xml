@@ -909,6 +909,9 @@
 		<constant name="NOTIFICATION_ENABLED" value="29">
 			Notification received when the node is enabled again after being disabled. See [constant PROCESS_MODE_DISABLED].
 		</constant>
+		<constant name="NOTIFICATION_NODE_RECACHE_REQUESTED" value="30">
+			Notification received when other nodes in the tree may have been removed/replaced and node pointers may require re-caching.
+		</constant>
 		<constant name="NOTIFICATION_EDITOR_PRE_SAVE" value="9001">
 			Notification received right before the scene with the node is saved in the editor. This notification is only sent in the Godot editor and will not occur in exported projects.
 		</constant>

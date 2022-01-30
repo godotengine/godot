@@ -203,7 +203,6 @@ public:
 	String get_scene_type(int p_idx) const;
 	void set_scene_path(int p_idx, const String &p_path);
 	Ref<Script> get_scene_root_script(int p_idx) const;
-	void set_edited_scene_version(uint64_t version, int p_scene_idx = -1);
 	void set_scene_modified_time(int p_idx, uint64_t p_time);
 	uint64_t get_scene_modified_time(int p_idx) const;
 	void clear_edited_scenes();

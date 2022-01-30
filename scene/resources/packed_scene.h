@@ -150,6 +150,8 @@ public:
 
 	Ref<SceneState> get_base_scene_state() const;
 
+	void update_instance_resource(String p_path, Ref<PackedScene> p_packed_scene);
+
 	//unbuild API
 
 	int get_node_count() const;
