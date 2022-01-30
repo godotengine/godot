@@ -77,7 +77,7 @@ void SkeletonEditor::create_physical_skeleton() {
 			if (!bones_infos[parent].physical_bone) {
 				bones_infos.write[parent].physical_bone = create_physical_bone(parent, bone_id, bones_infos);
 
-				ur->create_action(TTR("Create physical bones"));
+				ur->create_action(TTR("Create physical bones"), UndoRedo::MERGE_ALL);
 				ur->add_do_method(skeleton, "add_child", bones_infos[parent].physical_bone);
 				ur->add_do_reference(bones_infos[parent].physical_bone);
 				ur->add_undo_method(skeleton, "remove_child", bones_infos[parent].physical_bone);
