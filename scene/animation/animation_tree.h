@@ -135,7 +135,7 @@ public:
 	virtual String get_caption() const;
 
 	int get_input_count() const;
-	String get_input_name(int p_input);
+	String get_input_name(int p_input) const;
 
 	void add_input(const String &p_name);
 	void set_input_name(int p_input, const String &p_name);

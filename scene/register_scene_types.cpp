@@ -443,6 +443,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AnimationNodeBlend3);
 	GDREGISTER_CLASS(AnimationNodeTimeScale);
 	GDREGISTER_CLASS(AnimationNodeTimeSeek);
+	GDREGISTER_CLASS(AnimationNodePhase);
 	GDREGISTER_CLASS(AnimationNodeTransition);
 
 	GDREGISTER_CLASS(ShaderGlobalsOverride); // can be used in any shader

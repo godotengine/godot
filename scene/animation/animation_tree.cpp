@@ -296,7 +296,7 @@ int AnimationNode::get_input_count() const {
 	return inputs.size();
 }
 
-String AnimationNode::get_input_name(int p_input) {
+String AnimationNode::get_input_name(int p_input) const {
 	ERR_FAIL_INDEX_V(p_input, inputs.size(), String());
 	return inputs[p_input].name;
 }

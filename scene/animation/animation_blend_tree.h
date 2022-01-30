@@ -276,6 +276,29 @@ public:
 	AnimationNodeTimeSeek();
 };
 
+class AnimationNodePhase : public AnimationNode {
+	GDCLASS(AnimationNodePhase, AnimationNode);
+
+	StringName phase = "phase";
+
+private:
+	static void _recurse_inputs_impl(List<Ref<AnimationNode>> *r_input_names, const AnimationNode *node, const AnimationNodeBlendTree *p_parent);
+	void _recurse_inputs(List<Ref<AnimationNode>> *r_input_nodes) const;
+	void _all_input_animation_nodes(List<Ref<AnimationNodeAnimation>> *r_anim_nodes) const;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
+	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
+
+	virtual String get_caption() const override;
+
+	double process(double p_time, bool p_seek) override;
+	AnimationNodePhase();
+};
+
 class AnimationNodeTransition : public AnimationNode {
 	GDCLASS(AnimationNodeTransition, AnimationNode);
 

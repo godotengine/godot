@@ -627,6 +627,7 @@ String AnimationNodeTimeSeek::get_caption() const {
 
 double AnimationNodeTimeSeek::process(double p_time, bool p_seek) {
 	double seek_pos = get_parameter(this->seek_pos);
+
 	if (p_seek) {
 		return blend_input(0, p_time, true, 1.0, FILTER_IGNORE, false);
 	} else if (seek_pos >= 0) {
@@ -642,6 +643,79 @@ void AnimationNodeTimeSeek::_bind_methods() {
 }
 
 AnimationNodeTimeSeek::AnimationNodeTimeSeek() {
+	add_input("in");
+}
+
+////////////////////////////////////////////////////
+
+void AnimationNodePhase::_recurse_inputs_impl(List<Ref<AnimationNode>> *r_input_nodes, const AnimationNode *p_node, const AnimationNodeBlendTree *p_parent) {
+	StringName node_name = p_parent->get_node_name(Ref<AnimationNode>(p_node));
+	if (p_parent->has_node(node_name)) {
+		Vector<StringName> names = p_parent->get_node_connection_array(node_name);
+		for (int j = 0; j < names.size(); j++) {
+			if (p_parent->has_node(names[j])) {
+				r_input_nodes->push_back(p_parent->get_node(names[j]));
+				_recurse_inputs_impl(r_input_nodes, p_parent->get_node(names[j]).ptr(), p_parent);
+			}
+		}
+	} else {
+		print_line(String(node_name) + " not found...");
+	}
+}
+
+void AnimationNodePhase::_recurse_inputs(List<Ref<AnimationNode>> *r_input_nodes) const {
+	AnimationNodeBlendTree *tree = Object::cast_to<AnimationNodeBlendTree>(parent);
+	AnimationNodePhase::_recurse_inputs_impl(r_input_nodes, this, tree);
+}
+
+void AnimationNodePhase::_all_input_animation_nodes(List<Ref<AnimationNodeAnimation>> *r_anim_nodes) const {
+	List<Ref<AnimationNode>> plugged_nodes;
+	_recurse_inputs(&plugged_nodes);
+
+	for (int i = 0; i < plugged_nodes.size(); i++) {
+		Ref<AnimationNodeAnimation> animation_node_anim = plugged_nodes[i];
+		if (!animation_node_anim.is_null() && animation_node_anim.is_valid()) {
+			r_anim_nodes->push_back(animation_node_anim);
+		}
+	}
+}
+
+void AnimationNodePhase::get_parameter_list(List<PropertyInfo> *r_list) const {
+	r_list->push_back(PropertyInfo(Variant::FLOAT, phase, PROPERTY_HINT_RANGE, "0,1,0.01"));
+}
+
+Variant AnimationNodePhase::get_parameter_default_value(const StringName &p_parameter) const {
+	return 0.0; //initial phase
+}
+
+String AnimationNodePhase::get_caption() const {
+	return "Phase";
+}
+
+double AnimationNodePhase::process(double p_time, bool p_seek) {
+	if (p_seek) {
+		return blend_input(0, p_time, true, 1.0, FILTER_IGNORE, false);
+	} else {
+		double longest = 0.0;
+		List<Ref<AnimationNodeAnimation>> connected_animations;
+		_all_input_animation_nodes(&connected_animations);
+		for (int i = 0; i < connected_animations.size(); i++) {
+			StringName anim_name = connected_animations[i]->get_animation();
+			double length = state->player->get_animation(anim_name)->get_length();
+			if (length > longest) {
+				longest = length;
+			}
+		}
+
+		double phase = (double)get_parameter(this->phase) * longest;
+		return blend_input(0, phase, true, 1.0, FILTER_IGNORE, false);
+	}
+}
+
+void AnimationNodePhase::_bind_methods() {
+}
+
+AnimationNodePhase::AnimationNodePhase() {
 	add_input("in");
 }
 
