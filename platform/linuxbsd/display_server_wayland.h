@@ -3,7 +3,7 @@
 
 #ifdef WAYLAND_ENABLED
 
-/* FIXME: Linux only? */
+// FIXME: Linux only?
 #include <sys/mman.h>
 
 #include "servers/display_server.h"
@@ -13,7 +13,7 @@
 #include "thirdparty/wayland/wayland.h"
 #include "thirdparty/xdg-shell/xdg-shell.h"
 
-/* FIXME: Since this platform is called linuxbsd, can we avoid this include? */
+// FIXME: Since this platform is called linuxbsd, can we avoid this include?
 #include "linux/input-event-codes.h"
 
 #ifdef VULKAN_ENABLED
@@ -24,7 +24,7 @@
 #include "core/input/input.h"
 
 class DisplayServerWayland : public DisplayServer {
-	/* Wayland stuff. */
+	// Wayland stuff.
 
 	struct WaylandGlobals {
 		struct wl_compositor *wl_compositor = nullptr;
@@ -37,7 +37,7 @@ class DisplayServerWayland : public DisplayServer {
 		struct xdg_surface *xdg_surface = nullptr;
 		struct xdg_toplevel *xdg_toplevel = nullptr;
 
-		bool buffer_created = false; 
+		bool buffer_created = false;
 
 		VSyncMode vsync_mode;
 		Rect2i rect;
@@ -45,10 +45,10 @@ class DisplayServerWayland : public DisplayServer {
 		Callable rect_changed_callback;
 		Callable input_event_callback;
 
-		/* Metadata. */
+		// Metadata.
 		String title;
 
-		/* This stuff is needed for buffer changes and creation during events. */
+		// This stuff is needed for buffer changes and creation during events.
 		VulkanContextWayland *context_vulkan = nullptr;
 		WindowID id;
 	};
@@ -65,13 +65,11 @@ class DisplayServerWayland : public DisplayServer {
 	};
 
 	struct PointerState {
-		/*
-		 * This variable is needed to buffer all pointer changes until a
-		 * wl_pointer.frame event, as per Wayland's specification. Everything is
-		 * first set in `data_buffer` and then `data` is set with its contents on
-		 * an input frame event. All methods should generally read from `data` and
-		 * write to `data_buffer`.
-		 */
+		// This variable is needed to buffer all pointer changes until a
+		// wl_pointer.frame event, as per Wayland's specification. Everything is
+		// first set in `data_buffer` and then `data` is set with its contents on
+		// an input frame event. All methods should generally read from `data` and
+		// write to `data_buffer`.
 		PointerData data_buffer;
 		PointerData data;
 	};
@@ -95,10 +93,8 @@ class DisplayServerWayland : public DisplayServer {
 		KeyboardState keyboard_state;
 	};
 
-	/*
-	 * TODO: Perhaps we could make this just contain references to in-class
-	 * variables? We access them a lot here.
-	 */
+	// TODO: Perhaps we could make this just contain references to in-class
+	// variables? We access them a lot here.
 	struct WaylandState {
 		struct wl_display *display = nullptr;
 		struct wl_registry *registry = nullptr;
@@ -108,23 +104,23 @@ class DisplayServerWayland : public DisplayServer {
 		WindowID window_id_counter = MAIN_WINDOW_ID;
 		Map<WindowID, WindowData> windows;
 
-		/* TODO: Investigate what to do with multiple seats. */
+		// TODO: Investigate what to do with multiple seats.
 		SeatState seat_state;
 	};
 
 	WaylandState wls;
 
-	/* Vulkan stuff. */
-	/* TODO: Tidy up these variables and their references with VULKAN_ENABLED. */
+#ifdef VULKAN_ENABLED
 	VulkanContextWayland *context_vulkan = nullptr;
 	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
+#endif
 
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
 
 	static void dispatch_input_events(const Ref<InputEvent> &p_event);
 	void _dispatch_input_event(const Ref<InputEvent> &p_event);
 
-	/* Wayland event handlers. */
+	// Wayland event handlers.
 	static void _wl_registry_on_global(void *data, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version);
 	static void _wl_registry_on_global_remove(void *data, struct wl_registry *wl_registry, uint32_t name);
 
@@ -148,12 +144,12 @@ class DisplayServerWayland : public DisplayServer {
 	static void _wl_keyboard_on_modifiers(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group);
 	static void _wl_keyboard_on_repeat_info(void *data, struct wl_keyboard *wl_keyboard, int32_t rate, int32_t delay);
 
-	/* xdg_shell event handlers. */
+	// xdg_shell event handlers.
 	static void _xdg_wm_base_on_ping(void *data, struct xdg_wm_base *xdg_wm_base, uint32_t serial);
 	static void _xdg_surface_on_configure(void *data, struct xdg_surface *xdg_surface, uint32_t serial);
 	static void _xdg_toplevel_on_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states);
 
-	/* Wayland event listeners. */
+	// Wayland event listeners.
 	static constexpr struct wl_registry_listener registry_listener = {
 		.global = _wl_registry_on_global,
 		.global_remove = _wl_registry_on_global_remove,
@@ -185,7 +181,7 @@ class DisplayServerWayland : public DisplayServer {
 		.repeat_info = _wl_keyboard_on_repeat_info,
 	};
 
-	/* xdg_shell event listeners. */
+	// xdg_shell event listeners.
 	static constexpr struct xdg_wm_base_listener xdg_wm_base_listener = {
 		.ping = _xdg_wm_base_on_ping,
 	};
