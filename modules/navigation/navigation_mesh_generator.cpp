@@ -141,12 +141,12 @@ void NavigationMeshGenerator::_add_faces(const PoolVector3Array &p_faces, const 
 	}
 }
 
-void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform, Node *p_node, Vector<float> &p_vertices, Vector<int> &p_indices, int p_generate_from, uint32_t p_collision_mask, bool p_recurse_children) {
+void NavigationMeshGenerator::_parse_geometry(const Transform &p_navmesh_xform, Node *p_node, Vector<float> &p_vertices, Vector<int> &p_indices, int p_generate_from, uint32_t p_collision_mask, bool p_recurse_children) {
 	if (Object::cast_to<MeshInstance>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
 		MeshInstance *mesh_instance = Object::cast_to<MeshInstance>(p_node);
 		Ref<Mesh> mesh = mesh_instance->get_mesh();
 		if (mesh.is_valid()) {
-			_add_mesh(mesh, p_accumulated_transform * mesh_instance->get_transform(), p_vertices, p_indices);
+			_add_mesh(mesh, p_navmesh_xform * mesh_instance->get_global_transform(), p_vertices, p_indices);
 		}
 	}
 
@@ -160,7 +160,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform,
 				n = multimesh->get_instance_count();
 			}
 			for (int i = 0; i < n; i++) {
-				_add_mesh(mesh, p_accumulated_transform * multimesh->get_instance_transform(i), p_vertices, p_indices);
+				_add_mesh(mesh, p_navmesh_xform * multimesh_instance->get_global_transform() * multimesh->get_instance_transform(i), p_vertices, p_indices);
 			}
 		}
 	}
@@ -172,7 +172,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform,
 		if (!meshes.empty()) {
 			Ref<Mesh> mesh = meshes[1];
 			if (mesh.is_valid()) {
-				_add_mesh(mesh, p_accumulated_transform * csg_shape->get_transform(), p_vertices, p_indices);
+				_add_mesh(mesh, p_navmesh_xform * csg_shape->get_global_transform(), p_vertices, p_indices);
 			}
 		}
 	}
@@ -187,7 +187,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform,
 				if (Object::cast_to<CollisionShape>(child)) {
 					CollisionShape *col_shape = Object::cast_to<CollisionShape>(child);
 
-					Transform transform = p_accumulated_transform * static_body->get_transform() * col_shape->get_transform();
+					Transform transform = p_navmesh_xform * static_body->get_global_transform() * col_shape->get_transform();
 
 					Ref<Mesh> mesh;
 					Ref<Shape> s = col_shape->get_shape();
@@ -271,12 +271,12 @@ void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform,
 	if (gridmap) {
 		if (p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
 			Array meshes = gridmap->get_meshes();
-			Transform xform = gridmap->get_transform();
+			Transform xform = gridmap->get_global_transform();
 			for (int i = 0; i < meshes.size(); i += 2) {
 				Ref<Mesh> mesh = meshes[i + 1];
 				if (mesh.is_valid()) {
 					Transform mesh_xform = meshes[i];
-					_add_mesh(mesh, p_accumulated_transform * xform * mesh_xform, p_vertices, p_indices);
+					_add_mesh(mesh, p_navmesh_xform * xform * mesh_xform, p_vertices, p_indices);
 				}
 			}
 		}
@@ -365,14 +365,9 @@ void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform,
 	}
 #endif
 
-	if (Object::cast_to<Spatial>(p_node)) {
-		Spatial *spatial = Object::cast_to<Spatial>(p_node);
-		p_accumulated_transform = p_accumulated_transform * spatial->get_transform();
-	}
-
 	if (p_recurse_children) {
 		for (int i = 0; i < p_node->get_child_count(); i++) {
-			_parse_geometry(p_accumulated_transform, p_node->get_child(i), p_vertices, p_indices, p_generate_from, p_collision_mask, p_recurse_children);
+			_parse_geometry(p_navmesh_xform, p_node->get_child(i), p_vertices, p_indices, p_generate_from, p_collision_mask, p_recurse_children);
 		}
 	}
 }
@@ -606,7 +601,7 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 		p_node->get_tree()->get_nodes_in_group(p_nav_mesh->get_source_group_name(), &parse_nodes);
 	}
 
-	Transform navmesh_xform = Object::cast_to<Spatial>(p_node)->get_transform().affine_inverse();
+	Transform navmesh_xform = Object::cast_to<Spatial>(p_node)->get_global_transform().affine_inverse();
 	for (const List<Node *>::Element *E = parse_nodes.front(); E; E = E->next()) {
 		NavigationMesh::ParsedGeometryType geometry_type = p_nav_mesh->get_parsed_geometry_type();
 		uint32_t collision_mask = p_nav_mesh->get_collision_mask();
