@@ -5195,8 +5195,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	SceneTreeDock::get_singleton()->connect("node_created", callable_mp(this, &CanvasItemEditor::_node_created));
 	SceneTreeDock::get_singleton()->connect("add_node_used", callable_mp(this, &CanvasItemEditor::_reset_create_position));
 
-	editor->call_deferred(SNAME("connect"), "play_pressed", Callable(this, "_update_override_camera_button"), make_binds(true));
-	editor->call_deferred(SNAME("connect"), "stop_pressed", Callable(this, "_update_override_camera_button"), make_binds(false));
+	editor->call_deferred(SNAME("_connect"), "play_pressed", Callable(this, "_update_override_camera_button"), make_binds(true));
+	editor->call_deferred(SNAME("_connect"), "stop_pressed", Callable(this, "_update_override_camera_button"), make_binds(false));
 
 	hb = memnew(HBoxContainer);
 	add_child(hb);

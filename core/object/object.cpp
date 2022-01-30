@@ -1571,10 +1571,10 @@ void Object::_bind_methods() {
 
 	{
 		MethodInfo mi;
-		mi.name = "emit_signal";
+		mi.name = "_emit_signal";
 		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "signal"));
 
-		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "emit_signal", &Object::_emit_signal, mi, varray(), false);
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "_emit_signal", &Object::_emit_signal, mi, varray(), false);
 	}
 
 	{
@@ -1604,9 +1604,8 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_signal_connection_list", "signal"), &Object::_get_signal_connection_list);
 	ClassDB::bind_method(D_METHOD("get_incoming_connections"), &Object::_get_incoming_connections);
 
-	ClassDB::bind_method(D_METHOD("connect", "signal", "callable", "binds", "flags"), &Object::connect, DEFVAL(Array()), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("disconnect", "signal", "callable"), &Object::disconnect);
-	ClassDB::bind_method(D_METHOD("is_connected", "signal", "callable"), &Object::is_connected);
+	ClassDB::bind_method(D_METHOD("_connect", "signal", "callable", "binds", "flags"), &Object::connect, DEFVAL(Array()), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("_disconnect", "signal", "callable"), &Object::disconnect);
 
 	ClassDB::bind_method(D_METHOD("set_block_signals", "enable"), &Object::set_block_signals);
 	ClassDB::bind_method(D_METHOD("is_blocking_signals"), &Object::is_blocking_signals);
