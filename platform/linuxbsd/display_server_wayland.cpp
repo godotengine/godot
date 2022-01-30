@@ -44,26 +44,26 @@ void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event)
 DisplayServerWayland::WindowID DisplayServerWayland::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
 	WindowID id = wls.window_id_counter++;
 
-	WindowData &window = wls.windows[id];
+	WindowData &wd = wls.windows[id];
 
-	window.vsync_mode = p_vsync_mode;
-	window.rect = p_rect;
+	wd.vsync_mode = p_vsync_mode;
+	wd.rect = p_rect;
 
 #ifdef VULKAN_ENABLED
-	window.context_vulkan = context_vulkan;
+	wd.context_vulkan = context_vulkan;
 #endif
-	window.id = id;
+	wd.id = id;
 
-	window.wl_surface = wl_compositor_create_surface(wls.globals.wl_compositor);
-	window.xdg_surface = xdg_wm_base_get_xdg_surface(wls.globals.xdg_wm_base, window.wl_surface);
-	window.xdg_toplevel = xdg_surface_get_toplevel(window.xdg_surface);
+	wd.wl_surface = wl_compositor_create_surface(wls.globals.wl_compositor);
+	wd.xdg_surface = xdg_wm_base_get_xdg_surface(wls.globals.xdg_wm_base, wd.wl_surface);
+	wd.xdg_toplevel = xdg_surface_get_toplevel(wd.xdg_surface);
 
-	xdg_surface_add_listener(window.xdg_surface, &xdg_surface_listener, &window);
-	xdg_toplevel_add_listener(window.xdg_toplevel, &xdg_toplevel_listener, &window);
+	xdg_surface_add_listener(wd.xdg_surface, &xdg_surface_listener, &wd);
+	xdg_toplevel_add_listener(wd.xdg_toplevel, &xdg_toplevel_listener, &wd);
 
-	wl_surface_commit(window.wl_surface);
+	wl_surface_commit(wd.wl_surface);
 
-	xdg_toplevel_set_title(window.xdg_toplevel, "Godot");
+	xdg_toplevel_set_title(wd.xdg_toplevel, "Godot");
 
 	// Wait for a wl_surface.configure event.
 	wl_display_roundtrip(wls.display);
@@ -476,16 +476,16 @@ DisplayServer::WindowID DisplayServerWayland::create_sub_window(WindowMode p_mod
 }
 
 void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
-	WindowData &window = wls.windows[p_id];
+	WindowData &wd = wls.windows[p_id];
 
 	ERR_FAIL_COND(!wls.windows.has(p_id));
 
-	if (!window.buffer_created) {
+	if (!wd.buffer_created) {
 		// Since `VulkanContextWayland::window_create` automatically assigns a buffer
 		// to the `wl_surface` and doing so instantly maps it, moving this method here
 		// is the only solution I can think of to implement this method properly.
-		context_vulkan->window_create(p_id, window.vsync_mode, wls.display, window.wl_surface, window.rect.size.width, window.rect.size.height);
-		window.buffer_created = true;
+		context_vulkan->window_create(p_id, wd.vsync_mode, wls.display, wd.wl_surface, wd.rect.size.width, wd.rect.size.height);
+		wd.buffer_created = true;
 	}
 }
 
@@ -515,13 +515,13 @@ ObjectID DisplayServerWayland::window_get_attached_instance_id(DisplayServer::Wi
 
 
 void DisplayServerWayland::window_set_title(const String &p_title, DisplayServer::WindowID p_window) {
-	WindowData &window = wls.windows[p_window];
+	WindowData &wd = wls.windows[p_window];
 
 	ERR_FAIL_COND(!wls.windows.has(p_window));
 
-	window.title = p_title;
+	wd.title = p_title;
 
-	xdg_toplevel_set_title(window.xdg_toplevel, p_title.utf8().get_data());
+	xdg_toplevel_set_title(wd.xdg_toplevel, p_title.utf8().get_data());
 }
 
 void DisplayServerWayland::window_set_mouse_passthrough(const Vector<Vector2> &p_region, DisplayServer::WindowID p_window) {
@@ -531,8 +531,8 @@ void DisplayServerWayland::window_set_mouse_passthrough(const Vector<Vector2> &p
 
 
 void DisplayServerWayland::window_set_rect_changed_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
-	WindowData &window = wls.windows[p_window];
-	window.rect_changed_callback = p_callable;
+	WindowData &wd = wls.windows[p_window];
+	wd.rect_changed_callback = p_callable;
 }
 
 void DisplayServerWayland::window_set_window_event_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
@@ -541,8 +541,8 @@ void DisplayServerWayland::window_set_window_event_callback(const Callable &p_ca
 }
 
 void DisplayServerWayland::window_set_input_event_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
-	WindowData &window = wls.windows[p_window];
-	window.input_event_callback = p_callable;
+	WindowData &wd = wls.windows[p_window];
+	wd.input_event_callback = p_callable;
 }
 
 void DisplayServerWayland::window_set_input_text_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
@@ -572,13 +572,13 @@ Point2i DisplayServerWayland::window_get_position(DisplayServer::WindowID p_wind
 }
 
 void DisplayServerWayland::window_set_position(const Point2i &p_position, DisplayServer::WindowID p_window) {
-	WindowData &window = wls.windows[p_window];
+	WindowData &wd = wls.windows[p_window];
 
-	window.rect.position = p_position;
+	wd.rect.position = p_position;
 
 	// FIXME: The size may be changed after a reposition, I believe.
-	xdg_surface_set_window_geometry(window.xdg_surface, window.rect.position.x, window.rect.position.y, window.rect.size.width, window.rect.size.height);
-	wl_surface_commit(window.wl_surface);
+	xdg_surface_set_window_geometry(wd.xdg_surface, wd.rect.position.x, wd.rect.position.y, wd.rect.size.width, wd.rect.size.height);
+	wl_surface_commit(wd.wl_surface);
 }
 
 void DisplayServerWayland::window_set_max_size(const Size2i p_size, DisplayServer::WindowID p_window) {
@@ -615,15 +615,15 @@ Size2i DisplayServerWayland::window_get_min_size(DisplayServer::WindowID p_windo
 }
 
 void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::WindowID p_window) {
-	WindowData &window = wls.windows[p_window];
+	WindowData &wd = wls.windows[p_window];
 
-	window.rect.size = p_size;
+	wd.rect.size = p_size;
 
 	// FIXME: The position may be changed after a resize, I believe.
-	xdg_surface_set_window_geometry(window.xdg_surface, window.rect.position.x, window.rect.position.y, window.rect.size.width, window.rect.size.height);
+	xdg_surface_set_window_geometry(wd.xdg_surface, wd.rect.position.x, wd.rect.position.y, wd.rect.size.width, wd.rect.size.height);
 
-	context_vulkan->window_resize(p_window, window.rect.size.width, window.rect.size.height);
-	wl_surface_commit(window.wl_surface);
+	context_vulkan->window_resize(p_window, wd.rect.size.width, wd.rect.size.height);
+	wl_surface_commit(wd.wl_surface);
 }
 
 Size2i DisplayServerWayland::window_get_size(DisplayServer::WindowID p_window) const {
@@ -773,9 +773,9 @@ void DisplayServerWayland::process_events() {
 		WindowID focused_window_id;
 		bool id_found = false;
 		for (KeyValue<WindowID, WindowData> &E : wls.windows) {
-			WindowData &window = E.value;
+			WindowData &wd = E.value;
 
-			if (window.wl_surface == pointer_state.data.focused_wl_surface) {
+			if (wd.wl_surface == pointer_state.data.focused_wl_surface) {
 				focused_window_id = E.key;
 				id_found = true;
 				break;
@@ -977,18 +977,18 @@ DisplayServerWayland::~DisplayServerWayland() {
 			context_vulkan->window_destroy(E.key);
 		}
 #endif
-		WindowData &window = E.value;
+		WindowData &wd = E.value;
 
-		if (window.xdg_toplevel) {
-			xdg_toplevel_destroy(window.xdg_toplevel);
+		if (wd.xdg_toplevel) {
+			xdg_toplevel_destroy(wd.xdg_toplevel);
 		}
 
-		if (window.xdg_surface) {
-			xdg_surface_destroy(window.xdg_surface);
+		if (wd.xdg_surface) {
+			xdg_surface_destroy(wd.xdg_surface);
 		}
 
-		if (window.wl_surface) {
-			wl_surface_destroy(window.wl_surface);
+		if (wd.wl_surface) {
+			wl_surface_destroy(wd.wl_surface);
 		}
 	}
 
