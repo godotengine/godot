@@ -497,6 +497,12 @@
 		<member name="debug/shapes/navigation/enable_geometry_face_random_color" type="bool" setter="" getter="" default="true">
 			If enabled, colorizes each navigation mesh polygon face with a random color when "Visible Navigation" is enabled in the Debug menu.
 		</member>
+		<member name="debug/shapes/navigation/enable_link_connections" type="bool" setter="" getter="" default="true">
+			If enabled, displays navigation link connections when "Visible Navigation" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/navigation/enable_link_connections_xray" type="bool" setter="" getter="" default="true">
+			If enabled, displays navigation link connections through geometry when "Visible Navigation" is enabled in the Debug menu.
+		</member>
 		<member name="debug/shapes/navigation/geometry_color" type="Color" setter="" getter="" default="Color(0.1, 1, 0.7, 0.4)">
 			Color of the navigation geometry, visible when "Visible Navigation" is enabled in the Debug menu.
 		</member>
@@ -511,6 +517,12 @@
 		</member>
 		<member name="debug/shapes/navigation/geometry_face_disabled_color" type="Color" setter="" getter="" default="Color(0.5, 0.5, 0.5, 0.4)">
 			Color to display disabled navigation mesh polygon faces, visible when "Visible Navigation" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/navigation/link_connection_color" type="Color" setter="" getter="" default="Color(1, 0.5, 1, 1)">
+			Color to use to display navigation link connections, visible when "Visible Navigation" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/navigation/link_connection_disabled_color" type="Color" setter="" getter="" default="Color(0.5, 0.5, 0.5, 1)">
+			Color to use to display disabled navigation link connections, visible when "Visible Navigation" is enabled in the Debug menu.
 		</member>
 		<member name="debug/shapes/paths/geometry_color" type="Color" setter="" getter="" default="Color(0.1, 1, 0.7, 0.4)">
 			Color of the curve path geometry, visible when "Visible Paths" is enabled in the Debug menu.
@@ -1439,11 +1451,17 @@
 		<member name="navigation/2d/default_edge_connection_margin" type="int" setter="" getter="" default="1">
 			Default edge connection margin for 2D navigation maps. See [method NavigationServer2D.map_set_edge_connection_margin].
 		</member>
+		<member name="navigation/2d/default_link_connection_radius" type="int" setter="" getter="" default="4">
+			Default link connection radius for 2D navigation maps. See [method NavigationServer2D.map_set_link_connection_radius].
+		</member>
 		<member name="navigation/3d/default_cell_size" type="float" setter="" getter="" default="0.25">
 			Default cell size for 3D navigation maps. See [method NavigationServer3D.map_set_cell_size].
 		</member>
 		<member name="navigation/3d/default_edge_connection_margin" type="float" setter="" getter="" default="0.25">
 			Default edge connection margin for 3D navigation maps. See [method NavigationServer3D.map_set_edge_connection_margin].
+		</member>
+		<member name="navigation/3d/default_link_connection_radius" type="float" setter="" getter="" default="1.0">
+			Default link connection radius for 3D navigation maps. See [method NavigationServer3D.map_set_link_connection_radius].
 		</member>
 		<member name="network/limits/debugger/max_chars_per_second" type="int" setter="" getter="" default="32768">
 			Maximum number of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.

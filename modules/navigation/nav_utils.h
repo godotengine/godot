@@ -35,9 +35,8 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/hashfuncs.h"
 #include "core/templates/local_vector.h"
-#include <vector>
 
-class NavRegion;
+class NavBase;
 
 namespace gd {
 struct Polygon;
@@ -79,26 +78,33 @@ struct Point {
 };
 
 struct Edge {
-	/// This edge ID
-	int this_edge = -1;
-
 	/// The gateway in the edge, as, in some case, the whole edge might not be navigable.
 	struct Connection {
+		/// Polygon that this connection leads to.
 		Polygon *polygon = nullptr;
+
+		/// Edge of the source polygon where this connection starts from.
 		int edge = -1;
+
+		/// Point on the edge where the gateway leading to the poly starts.
 		Vector3 pathway_start;
+
+		/// Point on the edge where the gateway leading to the poly ends.
 		Vector3 pathway_end;
 	};
+
+	/// Connections from this edge to other polygons.
 	Vector<Connection> connections;
 };
 
 struct Polygon {
-	NavRegion *owner = nullptr;
+	/// Navigation region or link that contains this polygon.
+	const NavBase *owner = nullptr;
 
 	/// The points of this `Polygon`
 	LocalVector<Point> points;
 
-	/// Are the points clockwise ?
+	/// Are the points clockwise?
 	bool clockwise;
 
 	/// The edges of this `Polygon`
@@ -115,7 +121,7 @@ struct NavigationPoly {
 
 	/// Those 4 variables are used to travel the path backwards.
 	int back_navigation_poly_id = -1;
-	uint32_t back_navigation_edge = UINT32_MAX;
+	int back_navigation_edge = -1;
 	Vector3 back_navigation_edge_pathway_start;
 	Vector3 back_navigation_edge_pathway_end;
 

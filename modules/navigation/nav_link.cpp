@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  nav_region.h                                                         */
+/*  nav_link.cpp                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,62 +28,33 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NAV_REGION_H
-#define NAV_REGION_H
+#include "nav_link.h"
 
-#include "scene/resources/navigation_mesh.h"
+#include "nav_map.h"
 
-#include "nav_base.h"
-#include "nav_utils.h"
+void NavLink::set_map(NavMap *p_map) {
+	map = p_map;
+	link_dirty = true;
+}
 
-class NavRegion : public NavBase {
-	NavMap *map = nullptr;
-	Transform3D transform;
-	Ref<NavigationMesh> mesh;
-	Vector<gd::Edge::Connection> connections;
+void NavLink::set_bidirectional(bool p_bidirectional) {
+	bidirectional = p_bidirectional;
+	link_dirty = true;
+}
 
-	bool polygons_dirty = true;
+void NavLink::set_start_location(const Vector3 p_location) {
+	start_location = p_location;
+	link_dirty = true;
+}
 
-	/// Cache
-	LocalVector<gd::Polygon> polygons;
+void NavLink::set_end_location(const Vector3 p_location) {
+	end_location = p_location;
+	link_dirty = true;
+}
 
-public:
-	NavRegion() {}
+bool NavLink::check_dirty() {
+	const bool was_dirty = link_dirty;
 
-	void scratch_polygons() {
-		polygons_dirty = true;
-	}
-
-	void set_map(NavMap *p_map);
-	NavMap *get_map() const {
-		return map;
-	}
-
-	void set_transform(Transform3D transform);
-	const Transform3D &get_transform() const {
-		return transform;
-	}
-
-	void set_mesh(Ref<NavigationMesh> p_mesh);
-	const Ref<NavigationMesh> get_mesh() const {
-		return mesh;
-	}
-
-	Vector<gd::Edge::Connection> &get_connections() {
-		return connections;
-	}
-	int get_connections_count() const;
-	Vector3 get_connection_pathway_start(int p_connection_id) const;
-	Vector3 get_connection_pathway_end(int p_connection_id) const;
-
-	LocalVector<gd::Polygon> const &get_polygons() const {
-		return polygons;
-	}
-
-	bool sync();
-
-private:
-	void update_polygons();
-};
-
-#endif // NAV_REGION_H
+	link_dirty = false;
+	return was_dirty;
+}

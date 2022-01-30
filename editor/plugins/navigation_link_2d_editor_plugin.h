@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  nav_region.h                                                         */
+/*  navigation_link_2d_editor_plugin.h                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,62 +28,56 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NAV_REGION_H
-#define NAV_REGION_H
+#ifndef NAVIGATION_LINK_2D_EDITOR_PLUGIN_H
+#define NAVIGATION_LINK_2D_EDITOR_PLUGIN_H
 
-#include "scene/resources/navigation_mesh.h"
+#include "editor/editor_plugin.h"
+#include "scene/2d/navigation_link_2d.h"
 
-#include "nav_base.h"
-#include "nav_utils.h"
+class CanvasItemEditor;
+class EditorUndoRedoManager;
 
-class NavRegion : public NavBase {
-	NavMap *map = nullptr;
-	Transform3D transform;
-	Ref<NavigationMesh> mesh;
-	Vector<gd::Edge::Connection> connections;
+class NavigationLink2DEditor : public Control {
+	GDCLASS(NavigationLink2DEditor, Control);
 
-	bool polygons_dirty = true;
+	Ref<EditorUndoRedoManager> undo_redo;
+	CanvasItemEditor *canvas_item_editor = nullptr;
+	NavigationLink2D *node;
 
-	/// Cache
-	LocalVector<gd::Polygon> polygons;
+	bool start_grabbed = false;
+	Vector2 original_start_location;
+
+	bool end_grabbed = false;
+	Vector2 original_end_location;
+
+protected:
+	void _notification(int p_what);
+	void _node_removed(Node *p_node);
 
 public:
-	NavRegion() {}
+	bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);
+	void forward_canvas_draw_over_viewport(Control *p_overlay);
+	void edit(NavigationLink2D *p_node);
 
-	void scratch_polygons() {
-		polygons_dirty = true;
-	}
-
-	void set_map(NavMap *p_map);
-	NavMap *get_map() const {
-		return map;
-	}
-
-	void set_transform(Transform3D transform);
-	const Transform3D &get_transform() const {
-		return transform;
-	}
-
-	void set_mesh(Ref<NavigationMesh> p_mesh);
-	const Ref<NavigationMesh> get_mesh() const {
-		return mesh;
-	}
-
-	Vector<gd::Edge::Connection> &get_connections() {
-		return connections;
-	}
-	int get_connections_count() const;
-	Vector3 get_connection_pathway_start(int p_connection_id) const;
-	Vector3 get_connection_pathway_end(int p_connection_id) const;
-
-	LocalVector<gd::Polygon> const &get_polygons() const {
-		return polygons;
-	}
-
-	bool sync();
-
-private:
-	void update_polygons();
+	NavigationLink2DEditor();
 };
 
-#endif // NAV_REGION_H
+class NavigationLink2DEditorPlugin : public EditorPlugin {
+	GDCLASS(NavigationLink2DEditorPlugin, EditorPlugin);
+
+	NavigationLink2DEditor *editor = nullptr;
+
+public:
+	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override { return editor->forward_canvas_gui_input(p_event); }
+	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override { editor->forward_canvas_draw_over_viewport(p_overlay); }
+
+	virtual String get_name() const override { return "NavigationLink2D"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
+
+	NavigationLink2DEditorPlugin();
+};
+
+#endif // NAVIGATION_LINK_2D_EDITOR_PLUGIN_H
