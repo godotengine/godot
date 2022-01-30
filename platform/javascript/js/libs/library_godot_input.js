@@ -87,7 +87,7 @@ const GodotInputGamepads = {
 		},
 
 		init: function (onchange) {
-			GodotEventListeners.samples = [];
+			GodotInputGamepads.samples = [];
 			function add(pad) {
 				const guid = GodotInputGamepads.get_guid(pad);
 				const c_id = GodotRuntime.allocString(pad.id);
