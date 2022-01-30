@@ -163,14 +163,14 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 void EditorHelp::_class_desc_input(const Ref<InputEvent> &p_input) {
 }
 
-void EditorHelp::_class_desc_resized() {
+void EditorHelp::_class_desc_resized(bool p_force_update_theme) {
 	// Add extra horizontal margins for better readability.
 	// The margins increase as the width of the editor help container increases.
 	Ref<Font> doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
 	int font_size = get_theme_font_size(SNAME("doc_source_size"), SNAME("EditorFonts"));
 	real_t char_width = doc_code_font->get_char_size('x', 0, font_size).width;
 	const int new_display_margin = MAX(30 * EDSCALE, get_parent_anchorable_rect().size.width - char_width * 120 * EDSCALE) * 0.5;
-	if (display_margin != new_display_margin) {
+	if (display_margin != new_display_margin || p_force_update_theme) {
 		display_margin = new_display_margin;
 
 		Ref<StyleBox> class_desc_stylebox = EditorNode::get_singleton()->get_theme_base()->get_theme_stylebox(SNAME("normal"), SNAME("RichTextLabel"))->duplicate();
@@ -1772,7 +1772,7 @@ void EditorHelp::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			if (is_inside_tree()) {
-				_class_desc_resized();
+				_class_desc_resized(true);
 			}
 			update_toggle_scripts_button();
 		} break;
@@ -1876,8 +1876,8 @@ EditorHelp::EditorHelp() {
 
 	class_desc->connect("meta_clicked", callable_mp(this, &EditorHelp::_class_desc_select));
 	class_desc->connect("gui_input", callable_mp(this, &EditorHelp::_class_desc_input));
-	class_desc->connect("resized", callable_mp(this, &EditorHelp::_class_desc_resized));
-	_class_desc_resized();
+	class_desc->connect("resized", callable_mp(this, &EditorHelp::_class_desc_resized), varray(false));
+	_class_desc_resized(false);
 
 	// Added second so it opens at the bottom so it won't offset the entire widget.
 	find_bar = memnew(FindBar);
