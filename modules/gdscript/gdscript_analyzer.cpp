@@ -520,6 +520,8 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 						break;
 					case GDScriptParser::ClassNode::Member::ENUM:
 						result = member.m_enum->get_datatype();
+						result.is_constant = true;
+						result.builtin_type = Variant::INT;
 						found = true;
 						break;
 					case GDScriptParser::ClassNode::Member::CONSTANT:
