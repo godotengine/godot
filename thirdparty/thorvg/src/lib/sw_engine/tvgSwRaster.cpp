@@ -481,7 +481,10 @@ static bool _rasterScaledRleRGBAImage(SwSurface* surface, const SwImage* image, 
 static bool _scaledRleRGBAImage(SwSurface* surface, const SwImage* image, const Matrix* transform, const SwBBox& region, uint32_t opacity)
 {
     Matrix itransform;
-    if (transform && !mathInverse(transform, &itransform)) return false;
+
+    if (transform) {
+        if (!mathInverse(transform, &itransform)) return false;
+    } else mathIdentity(&itransform);
 
     auto halfScale = _halfScale(image->scale);
 
@@ -816,7 +819,10 @@ static bool _rasterScaledRGBAImage(SwSurface* surface, const SwImage* image, con
 static bool _scaledRGBAImage(SwSurface* surface, const SwImage* image, const Matrix* transform, const SwBBox& region, uint32_t opacity)
 {
     Matrix itransform;
-    if (transform && !mathInverse(transform, &itransform)) return false;
+
+    if (transform) {
+        if (!mathInverse(transform, &itransform)) return false;
+    } else mathIdentity(&itransform);
 
     auto halfScale = _halfScale(image->scale);
 
@@ -1113,12 +1119,12 @@ static bool _rasterTranslucentLinearGradientRle(SwSurface* surface, const SwRleD
         auto dst = &surface->buffer[span->y * surface->stride + span->x];
         fillFetchLinear(fill, buffer, span->y, span->x, span->len);
         if (span->coverage == 255) {
-            for (uint32_t i = 0; i < span->len; ++i, ++dst) {
-                *dst = buffer[i] + ALPHA_BLEND(*dst, _ialpha(buffer[i]));
+            for (uint32_t x = 0; x < span->len; ++x, ++dst) {
+                *dst = buffer[x] + ALPHA_BLEND(*dst, _ialpha(buffer[x]));
             }
         } else {
-            for (uint32_t i = 0; i < span->len; ++i, ++dst) {
-                auto tmp = ALPHA_BLEND(buffer[i], span->coverage);
+            for (uint32_t x = 0; x < span->len; ++x, ++dst) {
+                auto tmp = ALPHA_BLEND(buffer[x], span->coverage);
                 *dst = tmp + ALPHA_BLEND(*dst, _ialpha(tmp));
             }
         }
@@ -1142,8 +1148,8 @@ static bool _rasterSolidLinearGradientRle(SwSurface* surface, const SwRleData* r
         } else {
             fillFetchLinear(fill, buf, span->y, span->x, span->len);
             auto dst = &surface->buffer[span->y * surface->stride + span->x];
-            for (uint32_t i = 0; i < span->len; ++i) {
-                dst[i] = INTERPOLATE(span->coverage, buf[i], dst[i]);
+            for (uint32_t x = 0; x < span->len; ++x) {
+                dst[x] = INTERPOLATE(span->coverage, buf[x], dst[x]);
             }
         }
     }
@@ -1302,12 +1308,12 @@ static bool _rasterTranslucentRadialGradientRle(SwSurface* surface, const SwRleD
         auto dst = &surface->buffer[span->y * surface->stride + span->x];
         fillFetchRadial(fill, buffer, span->y, span->x, span->len);
         if (span->coverage == 255) {
-            for (uint32_t i = 0; i < span->len; ++i, ++dst) {
-                *dst = buffer[i] + ALPHA_BLEND(*dst, _ialpha(buffer[i]));
+            for (uint32_t x = 0; x < span->len; ++x, ++dst) {
+                *dst = buffer[x] + ALPHA_BLEND(*dst, _ialpha(buffer[x]));
             }
         } else {
-           for (uint32_t i = 0; i < span->len; ++i, ++dst) {
-                auto tmp = ALPHA_BLEND(buffer[i], span->coverage);
+           for (uint32_t x = 0; x < span->len; ++x, ++dst) {
+                auto tmp = ALPHA_BLEND(buffer[x], span->coverage);
                 *dst = tmp + ALPHA_BLEND(*dst, _ialpha(tmp));
             }
         }
@@ -1332,8 +1338,8 @@ static bool _rasterSolidRadialGradientRle(SwSurface* surface, const SwRleData* r
         } else {
             fillFetchRadial(fill, buf, span->y, span->x, span->len);
             auto ialpha = 255 - span->coverage;
-            for (uint32_t i = 0; i < span->len; ++i, ++dst) {
-                *dst = ALPHA_BLEND(buf[i], span->coverage) + ALPHA_BLEND(*dst, ialpha);
+            for (uint32_t x = 0; x < span->len; ++x, ++dst) {
+                *dst = ALPHA_BLEND(buf[x], span->coverage) + ALPHA_BLEND(*dst, ialpha);
             }
         }
     }
@@ -1487,7 +1493,7 @@ bool rasterStroke(SwSurface* surface, SwShape* shape, uint8_t r, uint8_t g, uint
 bool rasterImage(SwSurface* surface, SwImage* image, const Matrix* transform, const SwBBox& bbox, uint32_t opacity)
 {
     //Verify Boundary
-    if (bbox.max.x < 0 || bbox.max.y < 0 || bbox.min.x >= surface->w || bbox.min.y >= surface->h) return false;
+    if (bbox.max.x < 0 || bbox.max.y < 0 || bbox.min.x >= static_cast<SwCoord>(surface->w) || bbox.min.y >= static_cast<SwCoord>(surface->h)) return false;
 
     //TOOD: switch (image->format)
     //TODO: case: _rasterRGBImage()
