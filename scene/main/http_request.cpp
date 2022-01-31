@@ -30,6 +30,7 @@
 
 #include "http_request.h"
 #include "core/io/compression.h"
+#include "core/io/dir_access.h"
 #include "scene/main/timer.h"
 #include "core/io/dir_access.h"
 
