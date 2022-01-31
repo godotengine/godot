@@ -1263,7 +1263,7 @@ void EditorPropertyInteger::_bind_methods() {
 void EditorPropertyInteger::setup(int64_t p_min, int64_t p_max, int64_t p_step, bool p_allow_greater, bool p_allow_lesser) {
 	spin->set_min(p_min);
 	spin->set_max(p_max);
-	spin->set_step(p_step);
+	spin->set_step((p_step == 0) ? 1 : p_step);
 	spin->set_allow_greater(p_allow_greater);
 	spin->set_allow_lesser(p_allow_lesser);
 }
@@ -1353,7 +1353,7 @@ void EditorPropertyFloat::setup(double p_min, double p_max, double p_step, bool 
 	angle_in_radians = p_angle_in_radians;
 	spin->set_min(p_min);
 	spin->set_max(p_max);
-	spin->set_step(p_step);
+	spin->set_step((p_step == 0) ? 0.1 : p_step);
 	spin->set_hide_slider(p_no_slider);
 	spin->set_exp_ratio(p_exp_range);
 	spin->set_allow_greater(p_greater);
@@ -3435,7 +3435,9 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
 
 				EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
-
+				if (hint.step == 0) {
+					WARN_PRINT(p_path + ": Range step size is 0.");
+				}
 				editor->setup(hint.min, hint.max, hint.step, hint.greater, hint.lesser);
 
 				return editor;
@@ -3464,6 +3466,9 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyFloat *editor = memnew(EditorPropertyFloat);
 
 				EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
+				if (hint.step == 0) {
+					WARN_PRINT(p_path + ": Range step size is 0.");
+				}
 				editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.exp_range, hint.greater, hint.lesser, hint.suffix, hint.radians);
 
 				return editor;
