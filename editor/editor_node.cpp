@@ -340,7 +340,7 @@ void EditorNode::_update_scene_tabs() {
 		}
 
 		if (show_rb && editor_data.get_scene_root_script(i).is_valid()) {
-			scene_tabs->set_tab_right_button(i, script_icon);
+			scene_tabs->set_tab_button_icon(i, script_icon);
 		}
 	}
 
@@ -6237,7 +6237,7 @@ EditorNode::EditorNode() {
 	scene_tabs->set_min_width(int(EDITOR_DEF("interface/scene_tabs/minimum_width", 50)) * EDSCALE);
 	scene_tabs->set_drag_to_rearrange_enabled(true);
 	scene_tabs->connect("tab_changed", callable_mp(this, &EditorNode::_scene_tab_changed));
-	scene_tabs->connect("tab_rmb_clicked", callable_mp(this, &EditorNode::_scene_tab_script_edited));
+	scene_tabs->connect("tab_button_pressed", callable_mp(this, &EditorNode::_scene_tab_script_edited));
 	scene_tabs->connect("tab_close_pressed", callable_mp(this, &EditorNode::_scene_tab_closed), varray(SCENE_TAB_CLOSE));
 	scene_tabs->connect("tab_hovered", callable_mp(this, &EditorNode::_scene_tab_hovered));
 	scene_tabs->connect("mouse_exited", callable_mp(this, &EditorNode::_scene_tab_exit));

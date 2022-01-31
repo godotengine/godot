@@ -43,10 +43,11 @@
 				Returns the previously active tab index.
 			</description>
 		</method>
-		<method name="get_select_with_rmb" qualifiers="const">
-			<return type="bool" />
+		<method name="get_tab_button_icon" qualifiers="const">
+			<return type="Texture2D" />
+			<argument index="0" name="tab_idx" type="int" />
 			<description>
-				Returns [code]true[/code] if select with right mouse button is enabled.
+				Returns the [Texture2D] for the right button of the tab at index [code]tab_idx[/code] or [code]null[/code] if the button has no [Texture2D].
 			</description>
 		</method>
 		<method name="get_tab_icon" qualifiers="const">
@@ -111,6 +112,13 @@
 				Returns [code]true[/code] if the tab at index [code]tab_idx[/code] is disabled.
 			</description>
 		</method>
+		<method name="is_tab_hidden" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="tab_idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the tab at index [code]tab_idx[/code] is hidden.
+			</description>
+		</method>
 		<method name="move_tab">
 			<return type="void" />
 			<argument index="0" name="from" type="int" />
@@ -126,11 +134,12 @@
 				Removes the tab at index [code]tab_idx[/code].
 			</description>
 		</method>
-		<method name="set_select_with_rmb">
+		<method name="set_tab_button_icon">
 			<return type="void" />
-			<argument index="0" name="enabled" type="bool" />
+			<argument index="0" name="tab_idx" type="int" />
+			<argument index="1" name="icon" type="Texture2D" />
 			<description>
-				If [code]true[/code], enables selecting a tab with the right mouse button.
+				Sets an [code]icon[/code] for the button of the tab at index [code]tab_idx[/code] (located to the right, before the close button), making it visible and clickable (See [signal tab_button_pressed]). Giving it a [code]null[/code] value will hide the button.
 			</description>
 		</method>
 		<method name="set_tab_disabled">
@@ -139,6 +148,14 @@
 			<argument index="1" name="disabled" type="bool" />
 			<description>
 				If [code]disabled[/code] is [code]true[/code], disables the tab at index [code]tab_idx[/code], making it non-interactable.
+			</description>
+		</method>
+		<method name="set_tab_hidden">
+			<return type="void" />
+			<argument index="0" name="tab_idx" type="int" />
+			<argument index="1" name="hidden" type="bool" />
+			<description>
+				If [code]hidden[/code] is [code]true[/code], hides the tab at index [code]tab_idx[/code], making it disappear from the tab area.
 			</description>
 		</method>
 		<method name="set_tab_icon">
@@ -200,10 +217,17 @@
 		<member name="drag_to_rearrange_enabled" type="bool" setter="set_drag_to_rearrange_enabled" getter="get_drag_to_rearrange_enabled" default="false">
 			If [code]true[/code], tabs can be rearranged with mouse drag.
 		</member>
+		<member name="scroll_to_selected" type="bool" setter="set_scroll_to_selected" getter="get_scroll_to_selected" default="true">
+			If [code]true[/code], the tab offset will be changed to keep the the currently selected tab visible.
+		</member>
 		<member name="scrolling_enabled" type="bool" setter="set_scrolling_enabled" getter="get_scrolling_enabled" default="true">
 			if [code]true[/code], the mouse's scroll wheel can be used to navigate the scroll view.
 		</member>
+		<member name="select_with_rmb" type="bool" setter="set_select_with_rmb" getter="get_select_with_rmb" default="false">
+			If [code]true[/code], enables selecting a tab with the right mouse button.
+		</member>
 		<member name="tab_alignment" type="int" setter="set_tab_alignment" getter="get_tab_alignment" enum="TabBar.AlignmentMode" default="1">
+			Sets the position at which tabs will be placed. See [enum AlignmentMode] for details.
 		</member>
 		<member name="tab_close_display_policy" type="int" setter="set_tab_close_display_policy" getter="get_tab_close_display_policy" enum="TabBar.CloseButtonDisplayPolicy" default="0">
 			Sets when the close button will appear on the tabs. See [enum CloseButtonDisplayPolicy] for details.
@@ -217,6 +241,12 @@
 			<argument index="0" name="idx_to" type="int" />
 			<description>
 				Emitted when the active tab is rearranged via mouse drag. See [member drag_to_rearrange_enabled].
+			</description>
+		</signal>
+		<signal name="tab_button_pressed">
+			<argument index="0" name="tab" type="int" />
+			<description>
+				Emitted when a tab's right button is pressed. See [method set_tab_button_icon].
 			</description>
 		</signal>
 		<signal name="tab_changed">
@@ -255,18 +285,28 @@
 		<signal name="tab_rmb_clicked">
 			<argument index="0" name="tab" type="int" />
 			<description>
-				Emitted when a tab is right-clicked.
+				Emitted when a tab is right-clicked. [member select_with_rmb] must be enabled.
+			</description>
+		</signal>
+		<signal name="tab_selected">
+			<argument index="0" name="tab" type="int" />
+			<description>
+				Emitted when a tab is selected via click or script, even if it is the current tab.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="ALIGNMENT_LEFT" value="0" enum="AlignmentMode">
+			Places tabs to the left.
 		</constant>
 		<constant name="ALIGNMENT_CENTER" value="1" enum="AlignmentMode">
+			Places tabs in the middle.
 		</constant>
 		<constant name="ALIGNMENT_RIGHT" value="2" enum="AlignmentMode">
+			Places tabs to the right.
 		</constant>
 		<constant name="ALIGNMENT_MAX" value="3" enum="AlignmentMode">
+			Represents the size of the [enum AlignmentMode] enum.
 		</constant>
 		<constant name="CLOSE_BUTTON_SHOW_NEVER" value="0" enum="CloseButtonDisplayPolicy">
 			Never show the close buttons.
@@ -321,11 +361,11 @@
 		<theme_item name="increment_highlight" data_type="icon" type="Texture2D">
 			Icon for the right arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
 		</theme_item>
-		<theme_item name="close_bg_highlight" data_type="style" type="StyleBox">
-			Background of the close button when it's being hovered with the cursor.
+		<theme_item name="button_highlight" data_type="style" type="StyleBox">
+			Background of the tab and close buttons when they're being hovered with the cursor.
 		</theme_item>
-		<theme_item name="close_bg_pressed" data_type="style" type="StyleBox">
-			Background of the close button when it's being pressed.
+		<theme_item name="button_pressed" data_type="style" type="StyleBox">
+			Background of the tab and close buttons when it's being pressed.
 		</theme_item>
 		<theme_item name="tab_disabled" data_type="style" type="StyleBox">
 			The style of disabled tabs.

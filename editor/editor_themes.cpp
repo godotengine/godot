@@ -1017,8 +1017,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("SceneTabFG", "EditorStyles", style_tab_selected);
 	theme->set_stylebox("SceneTabBG", "EditorStyles", style_tab_unselected);
 	theme->set_icon("close", "TabBar", theme->get_icon("GuiClose", "EditorIcons"));
-	theme->set_stylebox("close_bg_pressed", "TabBar", style_menu);
-	theme->set_stylebox("close_bg_highlight", "TabBar", style_menu);
+	theme->set_stylebox("button_pressed", "TabBar", style_menu);
+	theme->set_stylebox("button_highlight", "TabBar", style_menu);
 	theme->set_icon("increment", "TabContainer", theme->get_icon("GuiScrollArrowRight", "EditorIcons"));
 	theme->set_icon("decrement", "TabContainer", theme->get_icon("GuiScrollArrowLeft", "EditorIcons"));
 	theme->set_icon("increment", "TabBar", theme->get_icon("GuiScrollArrowRight", "EditorIcons"));

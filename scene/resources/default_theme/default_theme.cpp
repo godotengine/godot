@@ -821,8 +821,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	theme->set_stylebox("tab_selected", "TabBar", style_tab_selected);
 	theme->set_stylebox("tab_unselected", "TabBar", style_tab_unselected);
 	theme->set_stylebox("tab_disabled", "TabBar", style_tab_disabled);
-	theme->set_stylebox("close_bg_pressed", "TabBar", button_pressed);
-	theme->set_stylebox("close_bg_highlight", "TabBar", button_normal);
+	theme->set_stylebox("button_pressed", "TabBar", button_pressed);
+	theme->set_stylebox("button_highlight", "TabBar", button_normal);
 
 	theme->set_icon("increment", "TabBar", icons["scroll_button_right"]);
 	theme->set_icon("increment_highlight", "TabBar", icons["scroll_button_right_hl"]);
