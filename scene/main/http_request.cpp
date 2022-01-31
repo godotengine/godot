@@ -446,26 +446,25 @@ void HTTPRequest::_request_done(int p_status, int p_code, const PackedStringArra
 		is_compressed = false;
 	}
 
-	const PackedByteArray *data = nullptr;
-
 	if (accept_gzip && is_compressed) {
 		// Handle in-memory body decompression
 		if (p_data.size() > 0) {
 			// Decompress request body
-			PackedByteArray *decompressed = memnew(PackedByteArray);
-			int result = Compression::decompress_dynamic(decompressed, body_size_limit, p_data.ptr(), p_data.size(), mode);
+			PackedByteArray decompressed;
+			int result = Compression::decompress_dynamic(&decompressed, body_size_limit, p_data.ptr(), p_data.size(), mode);
 			if (result == OK) {
-				data = decompressed;
+				// Return the successfully decompressed body data
+				emit_signal(SNAME("request_completed"), p_status, p_code, p_headers, decompressed);
 			} else if (result == -5) {
 				WARN_PRINT("Decompressed size of HTTP response body exceeded body_size_limit");
 				p_status = RESULT_BODY_SIZE_LIMIT_EXCEEDED;
-				// Just return the raw data if we failed to decompress it
-				data = &p_data;
+				// Just return the raw data if we exceeded our max body length
+				emit_signal(SNAME("request_completed"), p_status, p_code, p_headers, p_data);
 			} else {
 				WARN_PRINT("Failed to decompress HTTP response body");
 				p_status = RESULT_BODY_DECOMPRESS_FAILED;
 				// Just return the raw data if we failed to decompress it
-				data = &p_data;
+				emit_signal(SNAME("request_completed"), p_status, p_code, p_headers, p_data);
 			}
 		}
 		// Handle download to file decompression
@@ -475,6 +474,8 @@ void HTTPRequest::_request_done(int p_status, int p_code, const PackedStringArra
 			int result = Compression::decompress_file(temp_file_name, body_size_limit, download_to_file, mode);
 
 			if (result == OK) {
+				WARN_PRINT("Decompress complete");
+
 				// Delete the original compressed file
 				DirAccess *d = DirAccess::create_for_path(download_to_file);
 				Error err = d->remove(download_to_file);
@@ -512,15 +513,12 @@ void HTTPRequest::_request_done(int p_status, int p_code, const PackedStringArra
 			}
 
 			// Return empty mem buffer for the body
-			data = memnew(PackedByteArray);
-		} else {
-			data = &p_data;
+			emit_signal(SNAME("request_completed"), p_status, p_code, p_headers, p_data);
 		}
 	} else {
-		data = &p_data;
+		// Normal non-compressed request, return as usual
+		emit_signal(SNAME("request_completed"), p_status, p_code, p_headers, p_data);
 	}
-
-	emit_signal(SNAME("request_completed"), p_status, p_code, p_headers, *data);
 }
 
 void HTTPRequest::_notification(int p_what) {

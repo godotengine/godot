@@ -273,7 +273,7 @@ int Compression::decompress_file(const String dst_file_path, int p_max_dst_size,
 	FileAccess *src_file = FileAccess::open(src_file_path, FileAccess::READ);
 	FileAccess *dst_file = FileAccess::open(dst_file_path, FileAccess::WRITE);
 
-	int ret;
+	int ret = Z_ERRNO;
 	z_stream strm;
 
 	// This function only supports GZip and Deflate
@@ -326,7 +326,7 @@ int Compression::decompress_file(const String dst_file_path, int p_max_dst_size,
 			total_out += out_Size;
 
 			dst_file->store_buffer(out, out_Size);
-		} while (strm.avail_out == 0 && total_out <= p_max_dst_size);
+		} while (strm.avail_out == 0 && (p_max_dst_size <= -1 || total_out <= p_max_dst_size));
 
 		// Break if exceeded max allowed size
 		if (p_max_dst_size > -1 && total_out > p_max_dst_size) {
@@ -347,7 +347,11 @@ int Compression::decompress_file(const String dst_file_path, int p_max_dst_size,
 	delete[] in;
 	delete[] out;
 
-	return ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
+	if (ret == Z_BUF_ERROR) {
+		return Z_BUF_ERROR;
+	} else {
+		return ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
+	}
 }
 
 int Compression::zlib_level = Z_DEFAULT_COMPRESSION;
