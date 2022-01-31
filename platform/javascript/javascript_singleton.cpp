@@ -30,6 +30,7 @@
 
 #include "api/javascript_singleton.h"
 #include "emscripten.h"
+#include "os_javascript.h"
 
 extern "C" {
 extern void godot_js_os_download_buffer(const uint8_t *p_buf, int p_buf_size, const char *p_name, const char *p_mime);
@@ -345,4 +346,11 @@ Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
 
 void JavaScript::download_buffer(Vector<uint8_t> p_arr, const String &p_name, const String &p_mime) {
 	godot_js_os_download_buffer(p_arr.ptr(), p_arr.size(), p_name.utf8().get_data(), p_mime.utf8().get_data());
+}
+
+bool JavaScript::pwa_needs_update() const {
+	return OS_JavaScript::get_singleton()->pwa_needs_update();
+}
+Error JavaScript::pwa_update() {
+	return OS_JavaScript::get_singleton()->pwa_update();
 }
