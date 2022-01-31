@@ -379,8 +379,6 @@ void VisualScriptPropertySelector::_bind_methods() {
 }
 
 VisualScriptPropertySelector::VisualScriptPropertySelector() {
-	virtuals_only = false;
-
 	vbox = memnew(VBoxContainer);
 	add_child(vbox);
 

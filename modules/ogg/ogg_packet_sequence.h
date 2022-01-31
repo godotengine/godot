@@ -104,7 +104,7 @@ class OGGPacketSequencePlayback : public RefCounted {
 
 	mutable ogg_packet *packet;
 
-	uint64_t data_version;
+	uint64_t data_version = 0;
 
 	mutable int64_t packetno = 0;
 
