@@ -2996,37 +2996,43 @@ VisualShaderNodeDeterminant::VisualShaderNodeDeterminant() {
 	set_input_port_default_value(0, Transform3D());
 }
 
-////////////// Scalar Derivative Function
+////////////// Derivative Function
 
-String VisualShaderNodeScalarDerivativeFunc::get_caption() const {
-	return "ScalarDerivativeFunc";
+String VisualShaderNodeDerivativeFunc::get_caption() const {
+	return "DerivativeFunc";
 }
 
-int VisualShaderNodeScalarDerivativeFunc::get_input_port_count() const {
+int VisualShaderNodeDerivativeFunc::get_input_port_count() const {
 	return 1;
 }
 
-VisualShaderNodeScalarDerivativeFunc::PortType VisualShaderNodeScalarDerivativeFunc::get_input_port_type(int p_port) const {
+VisualShaderNodeDerivativeFunc::PortType VisualShaderNodeDerivativeFunc::get_input_port_type(int p_port) const {
+	if (op_type == OP_TYPE_VECTOR) {
+		return PORT_TYPE_VECTOR;
+	}
 	return PORT_TYPE_SCALAR;
 }
 
-String VisualShaderNodeScalarDerivativeFunc::get_input_port_name(int p_port) const {
-	return "";
+String VisualShaderNodeDerivativeFunc::get_input_port_name(int p_port) const {
+	return "p";
 }
 
-int VisualShaderNodeScalarDerivativeFunc::get_output_port_count() const {
+int VisualShaderNodeDerivativeFunc::get_output_port_count() const {
 	return 1;
 }
 
-VisualShaderNodeScalarDerivativeFunc::PortType VisualShaderNodeScalarDerivativeFunc::get_output_port_type(int p_port) const {
+VisualShaderNodeDerivativeFunc::PortType VisualShaderNodeDerivativeFunc::get_output_port_type(int p_port) const {
+	if (op_type == OP_TYPE_VECTOR) {
+		return PORT_TYPE_VECTOR;
+	}
 	return PORT_TYPE_SCALAR;
 }
 
-String VisualShaderNodeScalarDerivativeFunc::get_output_port_name(int p_port) const {
-	return "";
+String VisualShaderNodeDerivativeFunc::get_output_port_name(int p_port) const {
+	return "result";
 }
 
-String VisualShaderNodeScalarDerivativeFunc::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+String VisualShaderNodeDerivativeFunc::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	static const char *functions[FUNC_MAX] = {
 		"fwidth($)",
 		"dFdx($)",
@@ -3038,7 +3044,30 @@ String VisualShaderNodeScalarDerivativeFunc::generate_code(Shader::Mode p_mode, 
 	return code;
 }
 
-void VisualShaderNodeScalarDerivativeFunc::set_function(Function p_func) {
+void VisualShaderNodeDerivativeFunc::set_op_type(OpType p_op_type) {
+	ERR_FAIL_INDEX((int)p_op_type, int(OP_TYPE_MAX));
+	if (op_type == p_op_type) {
+		return;
+	}
+	switch (p_op_type) {
+		case OP_TYPE_SCALAR:
+			set_input_port_default_value(0, 0.0);
+			break;
+		case OP_TYPE_VECTOR:
+			set_input_port_default_value(0, Vector3(0.0, 0.0, 0.0));
+			break;
+		default:
+			break;
+	}
+	op_type = p_op_type;
+	emit_changed();
+}
+
+VisualShaderNodeDerivativeFunc::OpType VisualShaderNodeDerivativeFunc::get_op_type() const {
+	return op_type;
+}
+
+void VisualShaderNodeDerivativeFunc::set_function(Function p_func) {
 	ERR_FAIL_INDEX(int(p_func), int(FUNC_MAX));
 	if (func == p_func) {
 		return;
@@ -3047,21 +3076,30 @@ void VisualShaderNodeScalarDerivativeFunc::set_function(Function p_func) {
 	emit_changed();
 }
 
-VisualShaderNodeScalarDerivativeFunc::Function VisualShaderNodeScalarDerivativeFunc::get_function() const {
+VisualShaderNodeDerivativeFunc::Function VisualShaderNodeDerivativeFunc::get_function() const {
 	return func;
 }
 
-Vector<StringName> VisualShaderNodeScalarDerivativeFunc::get_editable_properties() const {
+Vector<StringName> VisualShaderNodeDerivativeFunc::get_editable_properties() const {
 	Vector<StringName> props;
+	props.push_back("op_type");
 	props.push_back("function");
 	return props;
 }
 
-void VisualShaderNodeScalarDerivativeFunc::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_function", "func"), &VisualShaderNodeScalarDerivativeFunc::set_function);
-	ClassDB::bind_method(D_METHOD("get_function"), &VisualShaderNodeScalarDerivativeFunc::get_function);
+void VisualShaderNodeDerivativeFunc::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_op_type", "type"), &VisualShaderNodeDerivativeFunc::set_op_type);
+	ClassDB::bind_method(D_METHOD("get_op_type"), &VisualShaderNodeDerivativeFunc::get_op_type);
 
+	ClassDB::bind_method(D_METHOD("set_function", "func"), &VisualShaderNodeDerivativeFunc::set_function);
+	ClassDB::bind_method(D_METHOD("get_function"), &VisualShaderNodeDerivativeFunc::get_function);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "op_type", PROPERTY_HINT_ENUM, "Scalar,Vector"), "set_op_type", "get_op_type");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "function", PROPERTY_HINT_ENUM, "Sum,X,Y"), "set_function", "get_function");
+
+	BIND_ENUM_CONSTANT(OP_TYPE_SCALAR);
+	BIND_ENUM_CONSTANT(OP_TYPE_VECTOR);
+	BIND_ENUM_CONSTANT(OP_TYPE_MAX);
 
 	BIND_ENUM_CONSTANT(FUNC_SUM);
 	BIND_ENUM_CONSTANT(FUNC_X);
@@ -3069,85 +3107,8 @@ void VisualShaderNodeScalarDerivativeFunc::_bind_methods() {
 	BIND_ENUM_CONSTANT(FUNC_MAX);
 }
 
-VisualShaderNodeScalarDerivativeFunc::VisualShaderNodeScalarDerivativeFunc() {
+VisualShaderNodeDerivativeFunc::VisualShaderNodeDerivativeFunc() {
 	set_input_port_default_value(0, 0.0);
-}
-
-////////////// Vector Derivative Function
-
-String VisualShaderNodeVectorDerivativeFunc::get_caption() const {
-	return "VectorDerivativeFunc";
-}
-
-int VisualShaderNodeVectorDerivativeFunc::get_input_port_count() const {
-	return 1;
-}
-
-VisualShaderNodeVectorDerivativeFunc::PortType VisualShaderNodeVectorDerivativeFunc::get_input_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
-}
-
-String VisualShaderNodeVectorDerivativeFunc::get_input_port_name(int p_port) const {
-	return "";
-}
-
-int VisualShaderNodeVectorDerivativeFunc::get_output_port_count() const {
-	return 1;
-}
-
-VisualShaderNodeVectorDerivativeFunc::PortType VisualShaderNodeVectorDerivativeFunc::get_output_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
-}
-
-String VisualShaderNodeVectorDerivativeFunc::get_output_port_name(int p_port) const {
-	return "";
-}
-
-String VisualShaderNodeVectorDerivativeFunc::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	static const char *functions[FUNC_MAX] = {
-		"fwidth($)",
-		"dFdx($)",
-		"dFdy($)"
-	};
-
-	String code;
-	code += "	" + p_output_vars[0] + " = " + String(functions[func]).replace("$", p_input_vars[0]) + ";\n";
-	return code;
-}
-
-void VisualShaderNodeVectorDerivativeFunc::set_function(Function p_func) {
-	ERR_FAIL_INDEX(int(p_func), int(FUNC_MAX));
-	if (func == p_func) {
-		return;
-	}
-	func = p_func;
-	emit_changed();
-}
-
-VisualShaderNodeVectorDerivativeFunc::Function VisualShaderNodeVectorDerivativeFunc::get_function() const {
-	return func;
-}
-
-Vector<StringName> VisualShaderNodeVectorDerivativeFunc::get_editable_properties() const {
-	Vector<StringName> props;
-	props.push_back("function");
-	return props;
-}
-
-void VisualShaderNodeVectorDerivativeFunc::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_function", "func"), &VisualShaderNodeVectorDerivativeFunc::set_function);
-	ClassDB::bind_method(D_METHOD("get_function"), &VisualShaderNodeVectorDerivativeFunc::get_function);
-
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "function", PROPERTY_HINT_ENUM, "Sum,X,Y"), "set_function", "get_function");
-
-	BIND_ENUM_CONSTANT(FUNC_SUM);
-	BIND_ENUM_CONSTANT(FUNC_X);
-	BIND_ENUM_CONSTANT(FUNC_Y);
-	BIND_ENUM_CONSTANT(FUNC_MAX);
-}
-
-VisualShaderNodeVectorDerivativeFunc::VisualShaderNodeVectorDerivativeFunc() {
-	set_input_port_default_value(0, Vector3());
 }
 
 ////////////// Clamp
