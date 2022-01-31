@@ -78,6 +78,7 @@ private:
 	bool idb_available;
 	bool idb_needs_sync;
 	bool idb_is_syncing;
+	bool pwa_is_waiting;
 
 	static void fullscreen_change_callback(int p_fullscreen);
 	static int mouse_button_callback(int p_pressed, int p_button, double p_x, double p_y, int p_modifiers);
@@ -98,6 +99,7 @@ private:
 	static void send_notification_callback(int p_notification);
 	static void fs_sync_callback();
 	static void update_clipboard_callback(const char *p_text);
+	static void update_pwa_state_callback();
 
 protected:
 	void resume_audio();
@@ -116,6 +118,8 @@ protected:
 
 public:
 	bool check_size_force_redraw();
+	bool pwa_needs_update() const { return pwa_is_waiting; }
+	Error pwa_update();
 
 	// Override return type to make writing static callbacks less tedious.
 	static OS_JavaScript *get_singleton();
