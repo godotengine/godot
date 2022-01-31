@@ -53,7 +53,7 @@
 		<method name="aspect" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the ratio of [member x] to [member y].
+				Returns the aspect ratio of this vector, the ratio of [member x] to [member y].
 			</description>
 		</method>
 		<method name="clamp" qualifiers="const">
@@ -62,6 +62,19 @@
 			<argument index="1" name="max" type="Vector2i" />
 			<description>
 				Returns a new vector with all components clamped between the components of [code]min[/code] and [code]max[/code], by running [method @GlobalScope.clamp] on each component.
+			</description>
+		</method>
+		<method name="length" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the length (magnitude) of this vector.
+			</description>
+		</method>
+		<method name="length_squared" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the squared length (squared magnitude) of this vector.
+				This method runs faster than [method length], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
 		<method name="max_axis_index" qualifiers="const">
@@ -79,7 +92,7 @@
 		<method name="sign" qualifiers="const">
 			<return type="Vector2i" />
 			<description>
-				Returns the vector with each component set to one or negative one, depending on the signs of the components.
+				Returns a new vector with each component set to one or negative one, depending on the signs of the components, or zero if the component is zero, by calling [method @GlobalScope.sign] on each component.
 			</description>
 		</method>
 	</methods>

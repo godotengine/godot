@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,18 +44,25 @@
 
 DocTools *EditorHelp::doc = nullptr;
 
-void EditorHelp::_init_colors() {
-	title_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
-	text_color = get_theme_color(SNAME("default_color"), SNAME("RichTextLabel"));
-	headline_color = get_theme_color(SNAME("headline_color"), SNAME("EditorHelp"));
-	base_type_color = title_color.lerp(text_color, 0.5);
-	comment_color = text_color * Color(1, 1, 1, 0.6);
-	symbol_color = comment_color;
-	value_color = text_color * Color(1, 1, 1, 0.6);
-	qualifier_color = text_color * Color(1, 1, 1, 0.8);
-	type_color = get_theme_color(SNAME("accent_color"), SNAME("Editor")).lerp(text_color, 0.5);
-	class_desc->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.4));
-	class_desc->add_theme_constant_override("line_separation", Math::round(5 * EDSCALE));
+void EditorHelp::_update_theme() {
+	text_color = get_theme_color("text_color", "EditorHelp");
+	title_color = get_theme_color("title_color", "EditorHelp");
+	headline_color = get_theme_color("headline_color", "EditorHelp");
+	comment_color = get_theme_color("comment_color", "EditorHelp");
+	symbol_color = get_theme_color("symbol_color", "EditorHelp");
+	value_color = get_theme_color("value_color", "EditorHelp");
+	qualifier_color = get_theme_color("qualifier_color", "EditorHelp");
+	type_color = get_theme_color("type_color", "EditorHelp");
+
+	class_desc->add_theme_color_override("selection_color", get_theme_color("selection_color", "EditorHelp"));
+	class_desc->add_theme_constant_override("line_separation", get_theme_constant("line_separation", "EditorHelp"));
+	class_desc->add_theme_constant_override("table_hseparation", get_theme_constant("table_hseparation", "EditorHelp"));
+	class_desc->add_theme_constant_override("table_vseparation", get_theme_constant("table_vseparation", "EditorHelp"));
+
+	doc_font = get_theme_font(SNAME("doc"), SNAME("EditorFonts"));
+	doc_bold_font = get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts"));
+	doc_title_font = get_theme_font(SNAME("doc_title"), SNAME("EditorFonts"));
+	doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
 }
 
 void EditorHelp::_search(bool p_search_previous) {
@@ -156,18 +163,21 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 void EditorHelp::_class_desc_input(const Ref<InputEvent> &p_input) {
 }
 
-void EditorHelp::_class_desc_resized() {
+void EditorHelp::_class_desc_resized(bool p_force_update_theme) {
 	// Add extra horizontal margins for better readability.
 	// The margins increase as the width of the editor help container increases.
 	Ref<Font> doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
 	int font_size = get_theme_font_size(SNAME("doc_source_size"), SNAME("EditorFonts"));
 	real_t char_width = doc_code_font->get_char_size('x', 0, font_size).width;
-	const int display_margin = MAX(30 * EDSCALE, get_parent_anchorable_rect().size.width - char_width * 120 * EDSCALE) * 0.5;
+	const int new_display_margin = MAX(30 * EDSCALE, get_parent_anchorable_rect().size.width - char_width * 120 * EDSCALE) * 0.5;
+	if (display_margin != new_display_margin || p_force_update_theme) {
+		display_margin = new_display_margin;
 
-	Ref<StyleBox> class_desc_stylebox = EditorNode::get_singleton()->get_theme_base()->get_theme_stylebox(SNAME("normal"), SNAME("RichTextLabel"))->duplicate();
-	class_desc_stylebox->set_default_margin(SIDE_LEFT, display_margin);
-	class_desc_stylebox->set_default_margin(SIDE_RIGHT, display_margin);
-	class_desc->add_theme_style_override("normal", class_desc_stylebox);
+		Ref<StyleBox> class_desc_stylebox = EditorNode::get_singleton()->get_theme_base()->get_theme_stylebox(SNAME("normal"), SNAME("RichTextLabel"))->duplicate();
+		class_desc_stylebox->set_default_margin(SIDE_LEFT, display_margin);
+		class_desc_stylebox->set_default_margin(SIDE_RIGHT, display_margin);
+		class_desc->add_theme_style_override("normal", class_desc_stylebox);
+	}
 }
 
 void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
@@ -184,8 +194,7 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 			t = p_enum.get_slice(".", 0);
 		}
 	}
-	const Color text_color = get_theme_color(SNAME("default_color"), SNAME("RichTextLabel"));
-	const Color type_color = get_theme_color(SNAME("accent_color"), SNAME("Editor")).lerp(text_color, 0.5);
+
 	class_desc->push_color(type_color);
 	bool add_array = false;
 	if (can_ref) {
@@ -496,15 +505,10 @@ void EditorHelp::_update_doc() {
 	method_line.clear();
 	section_line.clear();
 
-	_init_colors();
-
-	DocData::ClassDoc cd = doc->class_list[edited_class]; //make a copy, so we can sort without worrying
-
-	Ref<Font> doc_font = get_theme_font(SNAME("doc"), SNAME("EditorFonts"));
-	Ref<Font> doc_bold_font = get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts"));
-	Ref<Font> doc_title_font = get_theme_font(SNAME("doc_title"), SNAME("EditorFonts"));
-	Ref<Font> doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
+	_update_theme();
 	String link_color_text = title_color.to_html(false);
+
+	DocData::ClassDoc cd = doc->class_list[edited_class]; // Make a copy, so we can sort without worrying.
 
 	// Class name
 	section_line.push_back(Pair<String, int>(TTR("Top"), 0));
@@ -1476,11 +1480,9 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 	Ref<Font> doc_kbd_font = p_rt->get_theme_font(SNAME("doc_keyboard"), SNAME("EditorFonts"));
 
 	Color headline_color = p_rt->get_theme_color(SNAME("headline_color"), SNAME("EditorHelp"));
-	Color accent_color = p_rt->get_theme_color(SNAME("accent_color"), SNAME("Editor"));
-	Color property_color = p_rt->get_theme_color(SNAME("property_color"), SNAME("Editor"));
-	Color link_color = accent_color.lerp(headline_color, 0.8);
-	Color code_color = accent_color.lerp(headline_color, 0.6);
-	Color kbd_color = accent_color.lerp(property_color, 0.6);
+	Color link_color = p_rt->get_theme_color(SNAME("link_color"), SNAME("EditorHelp"));
+	Color code_color = p_rt->get_theme_color(SNAME("code_color"), SNAME("EditorHelp"));
+	Color kbd_color = p_rt->get_theme_color(SNAME("kbd_color"), SNAME("EditorHelp"));
 
 	String bbcode = p_bbcode.dedent().replace("\t", "").replace("\r", "").strip_edges();
 
@@ -1600,22 +1602,26 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			pos = brk_pos + 1;
 
 		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("theme_item ")) {
-			int tag_end = tag.find(" ");
+			const int tag_end = tag.find(" ");
+			const String link_tag = tag.substr(0, tag_end);
+			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
 
-			String link_tag = tag.substr(0, tag_end);
-			String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
-
+			p_rt->push_font(doc_code_font);
 			p_rt->push_color(link_color);
 			p_rt->push_meta("@" + link_tag + " " + link_target);
 			p_rt->add_text(link_target + (tag.begins_with("method ") ? "()" : ""));
 			p_rt->pop();
 			p_rt->pop();
+			p_rt->pop();
 			pos = brk_end + 1;
 
 		} else if (doc->class_list.has(tag)) {
+			// Class reference tag such as [Node2D] or [SceneTree].
+			p_rt->push_font(doc_code_font);
 			p_rt->push_color(link_color);
 			p_rt->push_meta("#" + tag);
 			p_rt->add_text(tag);
+			p_rt->pop();
 			p_rt->pop();
 			p_rt->pop();
 			pos = brk_end + 1;
@@ -1724,12 +1730,32 @@ void EditorHelp::_add_text(const String &p_bbcode) {
 	_add_text_to_rt(p_bbcode, class_desc);
 }
 
-void EditorHelp::generate_doc() {
-	doc = memnew(DocTools);
-	doc->generate(true);
+Thread EditorHelp::thread;
+
+void EditorHelp::_wait_for_thread() {
+	if (thread.is_started()) {
+		thread.wait_to_finish();
+	}
+}
+
+void EditorHelp::_gen_doc_thread(void *p_udata) {
 	DocTools compdoc;
 	compdoc.load_compressed(_doc_data_compressed, _doc_data_compressed_size, _doc_data_uncompressed_size);
 	doc->merge_from(compdoc); //ensure all is up to date
+}
+
+static bool doc_gen_use_threads = true;
+
+void EditorHelp::generate_doc() {
+	doc = memnew(DocTools);
+	// Not doable on threads unfortunately, since it instantiates all sorts of classes to get default values.
+	doc->generate(true);
+
+	if (doc_gen_use_threads) {
+		thread.start(_gen_doc_thread, nullptr);
+	} else {
+		_gen_doc_thread(nullptr);
+	}
 }
 
 void EditorHelp::_toggle_scripts_pressed() {
@@ -1741,11 +1767,12 @@ void EditorHelp::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			_wait_for_thread();
 			_update_doc();
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			if (is_inside_tree()) {
-				_class_desc_resized();
+				_class_desc_resized(true);
 			}
 			update_toggle_scripts_button();
 		} break;
@@ -1758,20 +1785,32 @@ void EditorHelp::_notification(int p_what) {
 }
 
 void EditorHelp::go_to_help(const String &p_help) {
+	_wait_for_thread();
 	_help_callback(p_help);
 }
 
 void EditorHelp::go_to_class(const String &p_class, int p_scroll) {
+	_wait_for_thread();
 	_goto_desc(p_class, p_scroll);
 }
 
 void EditorHelp::update_doc() {
+	_wait_for_thread();
 	ERR_FAIL_COND(!doc->class_list.has(edited_class));
 	ERR_FAIL_COND(!doc->class_list[edited_class].is_script_doc);
 	_update_doc();
 }
 
+void EditorHelp::cleanup_doc() {
+	_wait_for_thread();
+	if (doc_gen_use_threads) {
+		thread.wait_to_finish();
+	}
+	memdelete(doc);
+}
+
 Vector<Pair<String, int>> EditorHelp::get_sections() {
+	_wait_for_thread();
 	Vector<Pair<String, int>> sections;
 
 	for (int i = 0; i < section_line.size(); i++) {
@@ -1781,11 +1820,13 @@ Vector<Pair<String, int>> EditorHelp::get_sections() {
 }
 
 void EditorHelp::scroll_to_section(int p_section_index) {
+	_wait_for_thread();
 	int line = section_line[p_section_index].second;
 	class_desc->scroll_to_paragraph(line);
 }
 
 void EditorHelp::popup_search() {
+	_wait_for_thread();
 	find_bar->popup_search();
 }
 
@@ -1798,11 +1839,11 @@ void EditorHelp::search_again(bool p_search_previous) {
 }
 
 int EditorHelp::get_scroll() const {
-	return class_desc->get_v_scroll()->get_value();
+	return class_desc->get_v_scroll_bar()->get_value();
 }
 
 void EditorHelp::set_scroll(int p_scroll) {
-	class_desc->get_v_scroll()->set_value(p_scroll);
+	class_desc->get_v_scroll_bar()->set_value(p_scroll);
 }
 
 void EditorHelp::update_toggle_scripts_button() {
@@ -1835,8 +1876,8 @@ EditorHelp::EditorHelp() {
 
 	class_desc->connect("meta_clicked", callable_mp(this, &EditorHelp::_class_desc_select));
 	class_desc->connect("gui_input", callable_mp(this, &EditorHelp::_class_desc_input));
-	class_desc->connect("resized", callable_mp(this, &EditorHelp::_class_desc_resized));
-	_class_desc_resized();
+	class_desc->connect("resized", callable_mp(this, &EditorHelp::_class_desc_resized), varray(false));
+	_class_desc_resized(false);
 
 	// Added second so it opens at the bottom so it won't offset the entire widget.
 	find_bar = memnew(FindBar);
@@ -1862,6 +1903,11 @@ EditorHelp::EditorHelp() {
 }
 
 EditorHelp::~EditorHelp() {
+}
+
+DocTools *EditorHelp::get_doc_data() {
+	_wait_for_thread();
+	return doc;
 }
 
 void EditorHelpBit::_go_to_help(String p_what) {
@@ -1901,16 +1947,16 @@ void EditorHelpBit::_bind_methods() {
 
 void EditorHelpBit::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			rich_text->add_theme_color_override("selection_color", get_theme_color(SNAME("selection_color"), SNAME("EditorHelp")));
+		} break;
+
 		case NOTIFICATION_READY: {
 			rich_text->clear();
 			_add_text_to_rt(text, rich_text);
 
 		} break;
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			rich_text->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.4));
-		} break;
-		default:
-			break;
 	}
 }
 
@@ -1924,7 +1970,6 @@ EditorHelpBit::EditorHelpBit() {
 	rich_text = memnew(RichTextLabel);
 	add_child(rich_text);
 	rich_text->connect("meta_clicked", callable_mp(this, &EditorHelpBit::_meta_clicked));
-	rich_text->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.4));
 	rich_text->set_override_selected_font_color(false);
 	set_custom_minimum_size(Size2(0, 70 * EDSCALE));
 }

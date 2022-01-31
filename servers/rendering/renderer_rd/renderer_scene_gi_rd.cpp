@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,14 +42,13 @@ const Vector3i RendererSceneGIRD::SDFGI::Cascade::DIRTY_ALL = Vector3i(0x7FFFFFF
 void RendererSceneGIRD::SDFGI::create(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size, RendererSceneGIRD *p_gi) {
 	storage = p_gi->storage;
 	gi = p_gi;
-	cascade_mode = p_env->sdfgi_cascades;
+	num_cascades = p_env->sdfgi_cascades;
 	min_cell_size = p_env->sdfgi_min_cell_size;
 	uses_occlusion = p_env->sdfgi_use_occlusion;
 	y_scale_mode = p_env->sdfgi_y_scale;
 	static const float y_scale[3] = { 1.0, 1.5, 2.0 };
 	y_mult = y_scale[y_scale_mode];
-	static const int cascasde_size[3] = { 4, 6, 8 };
-	cascades.resize(cascasde_size[cascade_mode]);
+	cascades.resize(num_cascades);
 	probe_axis_count = SDFGI::PROBE_DIVISOR + 1;
 	solid_cell_ratio = gi->sdfgi_solid_cell_ratio;
 	solid_cell_count = uint32_t(float(cascade_size * cascade_size * cascade_size) * solid_cell_ratio);
@@ -716,7 +715,10 @@ void RendererSceneGIRD::SDFGI::create(RendererSceneEnvironmentRD *p_env, const V
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 13;
 			RID parent_average;
-			if (i < cascades.size() - 1) {
+			if (cascades.size() == 1) {
+				// If there is only one SDFGI cascade, we can't use the previous cascade for blending.
+				parent_average = cascades[i].lightprobe_average_tex;
+			} else if (i < cascades.size() - 1) {
 				parent_average = cascades[i + 1].lightprobe_average_tex;
 			} else {
 				parent_average = cascades[i - 1].lightprobe_average_tex; //to use something, but it won't be used
@@ -2059,7 +2061,7 @@ void RendererSceneGIRD::VoxelGIInstance::update(bool p_update_light_instances, c
 
 			for (int i = 0; i < levels.size(); i++) {
 				VoxelGIInstance::Mipmap mipmap;
-				mipmap.texture = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), texture, 0, i, RD::TEXTURE_SLICE_3D);
+				mipmap.texture = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), texture, 0, i, 1, RD::TEXTURE_SLICE_3D);
 				mipmap.level = levels.size() - i - 1;
 				mipmap.cell_offset = 0;
 				for (uint32_t j = 0; j < mipmap.level; j++) {
@@ -2176,8 +2178,9 @@ void RendererSceneGIRD::VoxelGIInstance::update(bool p_update_light_instances, c
 					dmap.texture = RD::get_singleton()->texture_create(dtf, RD::TextureView());
 
 					if (dynamic_maps.size() == 0) {
-						//render depth for first one
-						dtf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D32_SFLOAT, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D32_SFLOAT : RD::DATA_FORMAT_X8_D24_UNORM_PACK32;
+						// Render depth for first one.
+						// Use 16-bit depth when supported to improve performance.
+						dtf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D16_UNORM, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D16_UNORM : RD::DATA_FORMAT_X8_D24_UNORM_PACK32;
 						dtf.usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 						dmap.fb_depth = RD::get_singleton()->texture_create(dtf, RD::TextureView());
 					}

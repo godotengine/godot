@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,8 +38,9 @@
 namespace TestString {
 
 int u32scmp(const char32_t *l, const char32_t *r) {
-	for (; *l == *r && *l && *r; l++, r++)
+	for (; *l == *r && *l && *r; l++, r++) {
 		;
+	}
 	return *l - *r;
 }
 
@@ -355,11 +356,17 @@ TEST_CASE("[String] Number to string") {
 	CHECK(String::num(42.100023, 4) == "42.1"); // No trailing zeros.
 
 	// String::num_real tests.
+	CHECK(String::num_real(1.0) == "1.0");
+	CHECK(String::num_real(1.0, false) == "1");
+	CHECK(String::num_real(9.9) == "9.9");
+	CHECK(String::num_real(9.99) == "9.99");
+	CHECK(String::num_real(9.999) == "9.999");
+	CHECK(String::num_real(9.9999) == "9.9999");
 	CHECK(String::num_real(3.141593) == "3.141593");
 	CHECK(String::num_real(3.141) == "3.141"); // No trailing zeros.
 #ifdef REAL_T_IS_DOUBLE
 	CHECK_MESSAGE(String::num_real(Math_PI) == "3.14159265358979", "Prints the appropriate amount of digits for real_t = double.");
-	CHECK_MESSAGE(String::num_real(3.1415f) == "3.14149999618530", "Prints more digits of 32-bit float when real_t = double (ones that would be reliable for double).");
+	CHECK_MESSAGE(String::num_real(3.1415f) == "3.1414999961853", "Prints more digits of 32-bit float when real_t = double (ones that would be reliable for double) and no trailing zero.");
 #else
 	CHECK_MESSAGE(String::num_real(Math_PI) == "3.141593", "Prints the appropriate amount of digits for real_t = float.");
 	CHECK_MESSAGE(String::num_real(3.1415f) == "3.1415", "Prints only reliable digits of 32-bit float when real_t = float.");
@@ -871,7 +878,7 @@ TEST_CASE("[String] is_subsequence_of") {
 	String a = "is subsequence of";
 	CHECK(String("sub").is_subsequence_of(a));
 	CHECK(!String("Sub").is_subsequence_of(a));
-	CHECK(String("Sub").is_subsequence_ofi(a));
+	CHECK(String("Sub").is_subsequence_ofn(a));
 }
 
 TEST_CASE("[String] match") {

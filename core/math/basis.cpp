@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -91,6 +91,18 @@ void Basis::orthonormalize() {
 Basis Basis::orthonormalized() const {
 	Basis c = *this;
 	c.orthonormalize();
+	return c;
+}
+
+void Basis::orthogonalize() {
+	Vector3 scl = get_scale();
+	orthonormalize();
+	scale_local(scl);
+}
+
+Basis Basis::orthogonalized() const {
+	Basis c = *this;
+	c.orthogonalize();
 	return c;
 }
 
@@ -235,6 +247,24 @@ void Basis::scale_local(const Vector3 &p_scale) {
 	// performs a scaling in object-local coordinate system:
 	// M -> (M.S.Minv).M = M.S.
 	*this = scaled_local(p_scale);
+}
+
+void Basis::scale_orthogonal(const Vector3 &p_scale) {
+	*this = scaled_orthogonal(p_scale);
+}
+
+Basis Basis::scaled_orthogonal(const Vector3 &p_scale) const {
+	Basis m = *this;
+	Vector3 s = Vector3(-1, -1, -1) + p_scale;
+	Vector3 dots;
+	Basis b;
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			dots[j] += s[i] * abs(m.get_axis(i).normalized().dot(b.get_axis(j)));
+		}
+	}
+	m.scale_local(Vector3(1, 1, 1) + dots);
+	return m;
 }
 
 float Basis::get_uniform_scale() const {
@@ -929,6 +959,15 @@ void Basis::_set_diagonal(const Vector3 &p_diag) {
 	elements[2][0] = 0;
 	elements[2][1] = 0;
 	elements[2][2] = p_diag.z;
+}
+
+Basis Basis::lerp(const Basis &p_to, const real_t &p_weight) const {
+	Basis b;
+	b.elements[0] = elements[0].lerp(p_to.elements[0], p_weight);
+	b.elements[1] = elements[1].lerp(p_to.elements[1], p_weight);
+	b.elements[2] = elements[2].lerp(p_to.elements[2], p_weight);
+
+	return b;
 }
 
 Basis Basis::slerp(const Basis &p_to, const real_t &p_weight) const {

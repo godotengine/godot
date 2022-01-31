@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -240,7 +240,7 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 		return false;
 	}
 
-	if (p_value.get_type() == Variant::NIL) {
+	if (p_value.get_type() == Variant::NIL || (p_value.get_type() == Variant::OBJECT && (Object *)p_value == nullptr)) {
 		if (name.begins_with("theme_override_icons/") || name.begins_with("custom_icons/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.icon_override.has(dname)) {
@@ -589,6 +589,7 @@ void Control::_notification(int p_notification) {
 			_size_changed();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
+			release_focus();
 			get_viewport()->_gui_remove_control(this);
 		} break;
 		case NOTIFICATION_READY: {
@@ -732,8 +733,10 @@ void Control::_notification(int p_notification) {
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
-			data.is_rtl_dirty = true;
-			_size_changed();
+			if (is_inside_tree()) {
+				data.is_rtl_dirty = true;
+				_size_changed();
+			}
 		} break;
 	}
 }
@@ -1148,12 +1151,12 @@ float Control::fetch_theme_default_base_scale(Control *p_theme_owner, Window *p_
 	Window *theme_owner_window = p_theme_owner_window;
 
 	while (theme_owner || theme_owner_window) {
-		if (theme_owner && theme_owner->data.theme->has_default_theme_base_scale()) {
-			return theme_owner->data.theme->get_default_theme_base_scale();
+		if (theme_owner && theme_owner->data.theme->has_default_base_scale()) {
+			return theme_owner->data.theme->get_default_base_scale();
 		}
 
-		if (theme_owner_window && theme_owner_window->theme->has_default_theme_base_scale()) {
-			return theme_owner_window->theme->get_default_theme_base_scale();
+		if (theme_owner_window && theme_owner_window->theme->has_default_base_scale()) {
+			return theme_owner_window->theme->get_default_base_scale();
 		}
 
 		Node *parent = theme_owner ? theme_owner->get_parent() : theme_owner_window->get_parent();
@@ -1175,13 +1178,16 @@ float Control::fetch_theme_default_base_scale(Control *p_theme_owner, Window *p_
 
 	// Secondly, check the project-defined Theme resource.
 	if (Theme::get_project_default().is_valid()) {
-		if (Theme::get_project_default()->has_default_theme_base_scale()) {
-			return Theme::get_project_default()->get_default_theme_base_scale();
+		if (Theme::get_project_default()->has_default_base_scale()) {
+			return Theme::get_project_default()->get_default_base_scale();
 		}
 	}
 
 	// Lastly, fall back on the default Theme.
-	return Theme::get_default()->get_default_theme_base_scale();
+	if (Theme::get_default()->has_default_base_scale()) {
+		return Theme::get_default()->get_default_base_scale();
+	}
+	return Theme::get_fallback_base_scale();
 }
 
 float Control::get_theme_default_base_scale() const {
@@ -1196,12 +1202,12 @@ Ref<Font> Control::fetch_theme_default_font(Control *p_theme_owner, Window *p_th
 	Window *theme_owner_window = p_theme_owner_window;
 
 	while (theme_owner || theme_owner_window) {
-		if (theme_owner && theme_owner->data.theme->has_default_theme_font()) {
-			return theme_owner->data.theme->get_default_theme_font();
+		if (theme_owner && theme_owner->data.theme->has_default_font()) {
+			return theme_owner->data.theme->get_default_font();
 		}
 
-		if (theme_owner_window && theme_owner_window->theme->has_default_theme_font()) {
-			return theme_owner_window->theme->get_default_theme_font();
+		if (theme_owner_window && theme_owner_window->theme->has_default_font()) {
+			return theme_owner_window->theme->get_default_font();
 		}
 
 		Node *parent = theme_owner ? theme_owner->get_parent() : theme_owner_window->get_parent();
@@ -1223,13 +1229,16 @@ Ref<Font> Control::fetch_theme_default_font(Control *p_theme_owner, Window *p_th
 
 	// Secondly, check the project-defined Theme resource.
 	if (Theme::get_project_default().is_valid()) {
-		if (Theme::get_project_default()->has_default_theme_font()) {
-			return Theme::get_project_default()->get_default_theme_font();
+		if (Theme::get_project_default()->has_default_font()) {
+			return Theme::get_project_default()->get_default_font();
 		}
 	}
 
 	// Lastly, fall back on the default Theme.
-	return Theme::get_default()->get_default_theme_font();
+	if (Theme::get_default()->has_default_font()) {
+		return Theme::get_default()->get_default_font();
+	}
+	return Theme::get_fallback_font();
 }
 
 Ref<Font> Control::get_theme_default_font() const {
@@ -1244,12 +1253,12 @@ int Control::fetch_theme_default_font_size(Control *p_theme_owner, Window *p_the
 	Window *theme_owner_window = p_theme_owner_window;
 
 	while (theme_owner || theme_owner_window) {
-		if (theme_owner && theme_owner->data.theme->has_default_theme_font_size()) {
-			return theme_owner->data.theme->get_default_theme_font_size();
+		if (theme_owner && theme_owner->data.theme->has_default_font_size()) {
+			return theme_owner->data.theme->get_default_font_size();
 		}
 
-		if (theme_owner_window && theme_owner_window->theme->has_default_theme_font_size()) {
-			return theme_owner_window->theme->get_default_theme_font_size();
+		if (theme_owner_window && theme_owner_window->theme->has_default_font_size()) {
+			return theme_owner_window->theme->get_default_font_size();
 		}
 
 		Node *parent = theme_owner ? theme_owner->get_parent() : theme_owner_window->get_parent();
@@ -1271,13 +1280,16 @@ int Control::fetch_theme_default_font_size(Control *p_theme_owner, Window *p_the
 
 	// Secondly, check the project-defined Theme resource.
 	if (Theme::get_project_default().is_valid()) {
-		if (Theme::get_project_default()->has_default_theme_font_size()) {
-			return Theme::get_project_default()->get_default_theme_font_size();
+		if (Theme::get_project_default()->has_default_font_size()) {
+			return Theme::get_project_default()->get_default_font_size();
 		}
 	}
 
 	// Lastly, fall back on the default Theme.
-	return Theme::get_default()->get_default_theme_font_size();
+	if (Theme::get_default()->has_default_font_size()) {
+		return Theme::get_default()->get_default_font_size();
+	}
+	return Theme::get_fallback_font_size();
 }
 
 int Control::get_theme_default_font_size() const {
@@ -1296,7 +1308,7 @@ Rect2 Control::get_parent_anchorable_rect() const {
 #ifdef TOOLS_ENABLED
 		Node *edited_root = get_tree()->get_edited_scene_root();
 		if (edited_root && (this == edited_root || edited_root->is_ancestor_of(this))) {
-			parent_rect.size = Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height"));
+			parent_rect.size = Size2(ProjectSettings::get_singleton()->get("display/window/size/viewport_width"), ProjectSettings::get_singleton()->get("display/window/size/viewport_height"));
 		} else {
 			parent_rect = get_viewport()->get_visible_rect();
 		}

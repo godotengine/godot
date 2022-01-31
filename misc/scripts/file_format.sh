@@ -20,6 +20,8 @@ while IFS= read -rd '' f; do
         continue
     elif [[ "$f" == *"sln" ]]; then
         continue
+    elif [[ "$f" == *".bat" ]]; then
+        continue
     elif [[ "$f" == *".out" ]]; then
         # GDScript integration testing files.
         continue
@@ -45,10 +47,10 @@ while IFS= read -rd '' f; do
     perl -i -ple 's/\s*$//g' "$f"
 done
 
-git diff --color > patch.patch
+diff=$(git diff --color)
 
 # If no patch has been generated all is OK, clean up, and exit.
-if [ ! -s patch.patch ] ; then
+if [ -z "$diff" ] ; then
     printf "Files in this commit comply with the formatting rules.\n"
     rm -f patch.patch
     exit 0
@@ -57,7 +59,6 @@ fi
 # A patch has been created, notify the user, clean up, and exit.
 printf "\n*** The following differences were found between the code "
 printf "and the formatting rules:\n\n"
-cat patch.patch
+echo "$diff"
 printf "\n*** Aborting, please fix your commit(s) with 'git commit --amend' or 'git rebase -i <hash>'\n"
-rm -f patch.patch
 exit 1

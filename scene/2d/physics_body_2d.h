@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,11 +47,11 @@ protected:
 
 	Ref<KinematicCollision2D> motion_cache;
 
-	Ref<KinematicCollision2D> _move(const Vector2 &p_linear_velocity, bool p_test_only = false, real_t p_margin = 0.08);
+	Ref<KinematicCollision2D> _move(const Vector2 &p_distance, bool p_test_only = false, real_t p_margin = 0.08);
 
 public:
 	bool move_and_collide(const PhysicsServer2D::MotionParameters &p_parameters, PhysicsServer2D::MotionResult &r_result, bool p_test_only = false, bool p_cancel_sliding = true);
-	bool test_move(const Transform2D &p_from, const Vector2 &p_linear_velocity, const Ref<KinematicCollision2D> &r_collision = Ref<KinematicCollision2D>(), real_t p_margin = 0.08);
+	bool test_move(const Transform2D &p_from, const Vector2 &p_distance, const Ref<KinematicCollision2D> &r_collision = Ref<KinematicCollision2D>(), real_t p_margin = 0.08);
 
 	TypedArray<PhysicsBody2D> get_collision_exceptions();
 	void add_collision_exception_with(Node *p_node); //must be physicsbody
@@ -328,7 +328,7 @@ class CharacterBody2D : public PhysicsBody2D {
 public:
 	enum MotionMode {
 		MOTION_MODE_GROUNDED,
-		MOTION_MODE_FREE,
+		MOTION_MODE_FLOATING,
 	};
 	enum MovingPlatformApplyVelocityOnLeave {
 		PLATFORM_VEL_ON_LEAVE_ALWAYS,
@@ -374,7 +374,7 @@ private:
 	int platform_layer = 0;
 	real_t floor_max_angle = Math::deg2rad((real_t)45.0);
 	real_t floor_snap_length = 1;
-	real_t free_mode_min_slide_angle = Math::deg2rad((real_t)15.0);
+	real_t wall_min_slide_angle = Math::deg2rad((real_t)15.0);
 	Vector2 up_direction = Vector2(0.0, -1.0);
 	uint32_t moving_platform_floor_layers = UINT32_MAX;
 	uint32_t moving_platform_wall_layers = 0;
@@ -420,8 +420,8 @@ private:
 	real_t get_floor_snap_length();
 	void set_floor_snap_length(real_t p_floor_snap_length);
 
-	real_t get_free_mode_min_slide_angle() const;
-	void set_free_mode_min_slide_angle(real_t p_radians);
+	real_t get_wall_min_slide_angle() const;
+	void set_wall_min_slide_angle(real_t p_radians);
 
 	uint32_t get_moving_platform_floor_layers() const;
 	void set_moving_platform_floor_layers(const uint32_t p_exclude_layer);
@@ -435,7 +435,7 @@ private:
 	void set_moving_platform_apply_velocity_on_leave(MovingPlatformApplyVelocityOnLeave p_on_leave_velocity);
 	MovingPlatformApplyVelocityOnLeave get_moving_platform_apply_velocity_on_leave() const;
 
-	void _move_and_slide_free(double p_delta);
+	void _move_and_slide_floating(double p_delta);
 	void _move_and_slide_grounded(double p_delta, bool p_was_on_floor);
 
 	Ref<KinematicCollision2D> _get_slide_collision(int p_bounce);

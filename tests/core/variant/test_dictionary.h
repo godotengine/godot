@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -196,7 +196,7 @@ TEST_CASE("[Dictionary] Duplicate dictionary") {
 	Dictionary shallow_d = d.duplicate(false);
 	CHECK_MESSAGE(shallow_d.id() != d.id(), "Should create a new array");
 	CHECK_MESSAGE(Dictionary(shallow_d[1]).id() == Dictionary(d[1]).id(), "Should keep nested dictionary");
-	CHECK_MESSAGE(Array(shallow_d[2]).id() == Array(d[2]).id(), "Should keep nested array");
+	CHECK_MESSAGE(Array(shallow_d[k2]).id() == Array(d[k2]).id(), "Should keep nested array");
 	CHECK_EQ(shallow_d, d);
 	shallow_d[0] = 0;
 	CHECK_NE(shallow_d, d);

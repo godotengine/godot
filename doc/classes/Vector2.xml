@@ -95,7 +95,7 @@
 		<method name="ceil" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the vector with all components rounded up (towards positive infinity).
+				Returns a new vector with all components rounded up (towards positive infinity).
 			</description>
 		</method>
 		<method name="clamp" qualifiers="const">
@@ -110,7 +110,9 @@
 			<return type="float" />
 			<argument index="0" name="with" type="Vector2" />
 			<description>
-				Returns the cross product of this vector and [code]with[/code].
+				Returns the 2D analog of the cross product for this vector and [code]with[/code].
+				This is the signed area of the parallelogram formed by the two vectors. If the second vector is clockwise from the first vector, then the cross product is the positive area. If counter-clockwise, the cross product is the negative area.
+				[b]Note:[/b] Cross product is not defined in 2D mathematically. This method embeds the 2D vectors in the XY plane of 3D space and uses their cross product's Z component as the analog.
 			</description>
 		</method>
 		<method name="cubic_interpolate" qualifiers="const">
@@ -158,7 +160,7 @@
 		<method name="floor" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the vector with all components rounded down (towards negative infinity).
+				Returns a new vector with all components rounded down (towards negative infinity).
 			</description>
 		</method>
 		<method name="from_angle" qualifiers="static">
@@ -231,7 +233,7 @@
 			<argument index="0" name="to" type="Vector2" />
 			<argument index="1" name="delta" type="float" />
 			<description>
-				Moves the vector toward [code]to[/code] by the fixed [code]delta[/code] amount. Will not go past the final value.
+				Returns a new vector moved toward [code]to[/code] by the fixed [code]delta[/code] amount. Will not go past the final value.
 			</description>
 		</method>
 		<method name="normalized" qualifiers="const">
@@ -264,14 +266,14 @@
 			<return type="Vector2" />
 			<argument index="0" name="b" type="Vector2" />
 			<description>
-				Returns the vector projected onto the vector [code]b[/code].
+				Returns this vector projected onto the vector [code]b[/code].
 			</description>
 		</method>
 		<method name="reflect" qualifiers="const">
 			<return type="Vector2" />
 			<argument index="0" name="n" type="Vector2" />
 			<description>
-				Returns the vector reflected from a plane defined by the given normal.
+				Returns the vector reflected (i.e. mirrored, or symmetric) over a line defined by the given direction vector [code]n[/code].
 			</description>
 		</method>
 		<method name="rotated" qualifiers="const">
@@ -284,13 +286,13 @@
 		<method name="round" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the vector with all components rounded to the nearest integer, with halfway cases rounded away from zero.
+				Returns a new vector with all components rounded to the nearest integer, with halfway cases rounded away from zero.
 			</description>
 		</method>
 		<method name="sign" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the vector with each component set to one or negative one, depending on the signs of the components, or zero if the component is zero, by calling [method @GlobalScope.sign] on each component.
+				Returns a new vector with each component set to one or negative one, depending on the signs of the components, or zero if the component is zero, by calling [method @GlobalScope.sign] on each component.
 			</description>
 		</method>
 		<method name="slerp" qualifiers="const">
@@ -299,7 +301,7 @@
 			<argument index="1" name="weight" type="float" />
 			<description>
 				Returns the result of spherical linear interpolation between this vector and [code]to[/code], by amount [code]weight[/code]. [code]weight[/code] is on the range of 0.0 to 1.0, representing the amount of interpolation.
-				[b]Note:[/b] Both vectors must be normalized.
+				This method also handles interpolating the lengths if the input vectors have different lengths. For the special case of one or both input vectors having zero length, this method behaves like [method lerp].
 			</description>
 		</method>
 		<method name="slide" qualifiers="const">

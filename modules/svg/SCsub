@@ -9,16 +9,66 @@ env_svg = env_modules.Clone()
 
 thirdparty_obj = []
 
-thirdparty_dir = "#thirdparty/nanosvg/"
+thirdparty_dir = "#thirdparty/thorvg/"
 thirdparty_sources = [
-    "nanosvg.cc",
+    "src/lib/tvgBezier.cpp",
+    "src/lib/tvgCanvas.cpp",
+    "src/lib/tvgFill.cpp",
+    "src/lib/tvgGlCanvas.cpp",
+    "src/lib/tvgInitializer.cpp",
+    "src/lib/tvgLinearGradient.cpp",
+    "src/lib/tvgLoader.cpp",
+    "src/lib/tvgLzw.cpp",
+    "src/lib/tvgPaint.cpp",
+    "src/lib/tvgPicture.cpp",
+    "src/lib/tvgRadialGradient.cpp",
+    "src/lib/tvgRender.cpp",
+    "src/lib/tvgSaver.cpp",
+    "src/lib/tvgScene.cpp",
+    "src/lib/tvgShape.cpp",
+    "src/lib/tvgSwCanvas.cpp",
+    "src/lib/tvgTaskScheduler.cpp",
+    "src/loaders/raw/tvgRawLoader.cpp",
+    "src/loaders/svg/tvgXmlParser.cpp",
+    "src/loaders/svg/tvgSvgUtil.cpp",
+    "src/loaders/svg/tvgSvgSceneBuilder.cpp",
+    "src/loaders/svg/tvgSvgPath.cpp",
+    "src/loaders/svg/tvgSvgLoader.cpp",
+    "src/loaders/tvg/tvgTvgBinInterpreter.cpp",
+    "src/loaders/tvg/tvgTvgLoader.cpp",
+    "src/loaders/jpg/tvgJpgLoader.cpp",
+    "src/loaders/jpg/tvgJpgd.cpp",
+    "src/loaders/external_png/tvgPngLoader.cpp",
+    "src/lib/sw_engine/tvgSwFill.cpp",
+    "src/lib/sw_engine/tvgSwImage.cpp",
+    "src/lib/sw_engine/tvgSwMath.cpp",
+    "src/lib/sw_engine/tvgSwMemPool.cpp",
+    "src/lib/sw_engine/tvgSwRaster.cpp",
+    "src/lib/sw_engine/tvgSwRenderer.cpp",
+    "src/lib/sw_engine/tvgSwRle.cpp",
+    "src/lib/sw_engine/tvgSwShape.cpp",
+    "src/lib/sw_engine/tvgSwStroke.cpp",
+    "src/savers/tvg/tvgTvgSaver.cpp",
 ]
+
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-env_svg.Prepend(CPPPATH=[thirdparty_dir])
+env_svg.Prepend(CPPPATH=[thirdparty_dir + "inc"])
 
 env_thirdparty = env_svg.Clone()
 env_thirdparty.disable_warnings()
+env_thirdparty.Prepend(
+    CPPPATH=[
+        thirdparty_dir + "src/lib",
+        thirdparty_dir + "src/lib/sw_engine",
+        thirdparty_dir + "src/loaders/raw",
+        thirdparty_dir + "src/loaders/svg",
+        thirdparty_dir + "src/loaders/jpg",
+        thirdparty_dir + "src/loaders/png",
+        thirdparty_dir + "src/loaders/tvg",
+        thirdparty_dir + "src/savers/tvg",
+    ]
+)
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
 env.modules_sources += thirdparty_obj
 

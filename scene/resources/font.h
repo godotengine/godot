@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,6 +63,12 @@ class FontData : public Resource {
 	_FORCE_INLINE_ void _clear_cache();
 	_FORCE_INLINE_ void _ensure_rid(int p_cache_index) const;
 
+	void _convert_packed_8bit(Ref<Image> &p_source, int p_page, int p_sz);
+	void _convert_packed_4bit(Ref<Image> &p_source, int p_page, int p_sz);
+	void _convert_rgba_4bit(Ref<Image> &p_source, int p_page, int p_sz);
+	void _convert_mono_8bit(Ref<Image> &p_source, int p_page, int p_ch, int p_sz, int p_ol);
+	void _convert_mono_4bit(Ref<Image> &p_source, int p_page, int p_ch, int p_sz, int p_ol);
+
 protected:
 	static void _bind_methods();
 
@@ -73,6 +79,9 @@ protected:
 	virtual void reset_state() override;
 
 public:
+	Error load_bitmap_font(const String &p_path);
+	Error load_dynamic_font(const String &p_path);
+
 	// Font source data.
 	virtual void set_data_ptr(const uint8_t *p_data, size_t p_size);
 	virtual void set_data(const PackedByteArray &p_data);
@@ -197,6 +206,9 @@ public:
 	virtual bool get_script_support_override(const String &p_script) const;
 	virtual void remove_script_support_override(const String &p_script);
 	virtual Vector<String> get_script_support_overrides() const;
+
+	virtual void set_opentype_feature_overrides(const Dictionary &p_overrides);
+	virtual Dictionary get_opentype_feature_overrides() const;
 
 	// Base font properties.
 	virtual bool has_char(char32_t p_char) const;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,6 +48,10 @@
 #include "tests/core/math/test_math.h"
 #include "tests/core/math/test_random_number_generator.h"
 #include "tests/core/math/test_rect2.h"
+#include "tests/core/math/test_vector2.h"
+#include "tests/core/math/test_vector2i.h"
+#include "tests/core/math/test_vector3.h"
+#include "tests/core/math/test_vector3i.h"
 #include "tests/core/object/test_class_db.h"
 #include "tests/core/object/test_method_bind.h"
 #include "tests/core/object/test_object.h"
@@ -199,7 +203,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			memnew(InputMap);
 			InputMap::get_singleton()->load_default();
 
-			make_default_theme(false, Ref<Font>());
+			make_default_theme(1.0, Ref<Font>());
 
 			memnew(SceneTree);
 			SceneTree::get_singleton()->initialize();

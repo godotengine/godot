@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -136,12 +136,8 @@ void OS_UWP::initialize_core() {
 	NetSocketPosix::make_default();
 
 	// We need to know how often the clock is updated
-	if (!QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second))
-		ticks_per_second = 1000;
-	// If timeAtGameStart is 0 then we get the time since
-	// the start of the computer when we call GetGameTime()
-	ticks_start = 0;
-	ticks_start = get_ticks_usec();
+	QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second);
+	QueryPerformanceCounter((LARGE_INTEGER *)&ticks_start);
 
 	IPUnix::make_default();
 
@@ -443,7 +439,7 @@ String OS_UWP::get_name() const {
 
 OS::Date OS_UWP::get_date(bool p_utc) const {
 	SYSTEMTIME systemtime;
-	if (utc) {
+	if (p_utc) {
 		GetSystemTime(&systemtime);
 	} else {
 		GetLocalTime(&systemtime);
@@ -460,10 +456,11 @@ OS::Date OS_UWP::get_date(bool p_utc) const {
 
 OS::Time OS_UWP::get_time(bool p_utc) const {
 	SYSTEMTIME systemtime;
-	if (utc)
+	if (p_utc) {
 		GetSystemTime(&systemtime);
-	else
+	} else {
 		GetLocalTime(&systemtime);
+	}
 
 	Time time;
 	time.hour = systemtime.wHour;
@@ -524,6 +521,9 @@ uint64_t OS_UWP::get_ticks_usec() const {
 
 	// This is the number of clock ticks since start
 	QueryPerformanceCounter((LARGE_INTEGER *)&ticks);
+	// Subtract the ticks at game start to get
+	// the ticks since the game started
+	ticks -= ticks_start;
 
 	// Divide by frequency to get the time in seconds
 	// original calculation shown below is subject to overflow
@@ -543,9 +543,6 @@ uint64_t OS_UWP::get_ticks_usec() const {
 	// seconds
 	time += seconds * 1000000L;
 
-	// Subtract the time at game start to get
-	// the time since the game started
-	time -= ticks_start;
 	return time;
 }
 
@@ -629,11 +626,11 @@ void OS_UWP::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 	// TODO
 }
 
-Error OS_UWP::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+Error OS_UWP::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
 	return FAILED;
 };
 
-Error OS_UWP::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
+Error OS_UWP::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
 	return FAILED;
 };
 

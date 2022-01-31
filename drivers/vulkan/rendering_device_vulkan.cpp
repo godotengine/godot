@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -387,14 +387,6 @@ const VkFormat RenderingDeviceVulkan::vulkan_formats[RenderingDevice::DATA_FORMA
 	VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM,
 	VK_FORMAT_G16_B16R16_2PLANE_422_UNORM,
 	VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM,
-	VK_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG,
-	VK_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG,
-	VK_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG,
-	VK_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG,
-	VK_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG,
-	VK_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG,
-	VK_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG,
-	VK_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG,
 };
 
 const char *RenderingDeviceVulkan::named_formats[RenderingDevice::DATA_FORMAT_MAX] = {
@@ -616,14 +608,6 @@ const char *RenderingDeviceVulkan::named_formats[RenderingDevice::DATA_FORMAT_MA
 	"G16_B16_R16_3Plane_422_Unorm",
 	"G16_B16R16_2Plane_422_Unorm",
 	"G16_B16_R16_3Plane_444_Unorm",
-	"Pvrtc1_2Bpp_Unorm_Block_Img",
-	"Pvrtc1_4Bpp_Unorm_Block_Img",
-	"Pvrtc2_2Bpp_Unorm_Block_Img",
-	"Pvrtc2_4Bpp_Unorm_Block_Img",
-	"Pvrtc1_2Bpp_Srgb_Block_Img",
-	"Pvrtc1_4Bpp_Srgb_Block_Img",
-	"Pvrtc2_2Bpp_Srgb_Block_Img",
-	"Pvrtc2_4Bpp_Srgb_Block_Img"
 };
 
 int RenderingDeviceVulkan::get_format_vertex_size(DataFormat p_format) {
@@ -970,15 +954,6 @@ uint32_t RenderingDeviceVulkan::get_image_format_pixel_size(DataFormat p_format)
 		case DATA_FORMAT_G16_B16R16_2PLANE_422_UNORM:
 		case DATA_FORMAT_G16_B16_R16_3PLANE_444_UNORM:
 			return 8;
-		case DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG:
-			return 1;
 		default: {
 			ERR_PRINT("Format not handled, bug");
 		}
@@ -1046,20 +1021,6 @@ void RenderingDeviceVulkan::get_compressed_image_format_block_dimensions(DataFor
 		case DATA_FORMAT_ASTC_12x12_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_12x12_SRGB_BLOCK:
 			r_w = 4;
-			r_h = 4;
-			return;
-		case DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG:
-			r_w = 4;
-			r_h = 4;
-			return;
-		case DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG:
-			r_w = 8;
 			r_h = 4;
 			return;
 		default: {
@@ -1138,15 +1099,6 @@ uint32_t RenderingDeviceVulkan::get_compressed_image_format_block_byte_size(Data
 		case DATA_FORMAT_ASTC_12x12_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_12x12_SRGB_BLOCK:
 			return 8; //wrong
-		case DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG:
-			return 8; //what varies is resolution
 		default: {
 		}
 	}
@@ -1167,16 +1119,7 @@ uint32_t RenderingDeviceVulkan::get_compressed_image_format_pixel_rshift(DataFor
 		case DATA_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK:
 		case DATA_FORMAT_EAC_R11_UNORM_BLOCK:
 		case DATA_FORMAT_EAC_R11_SNORM_BLOCK:
-		case DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG:
 			return 1;
-		case DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG: //these formats are quarter byte size, so rshift is 1
-		case DATA_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG:
-			return 2;
 		default: {
 		}
 	}
@@ -2170,7 +2113,7 @@ RID RenderingDeviceVulkan::texture_create_shared(const TextureView &p_view, RID 
 	return id;
 }
 
-RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, TextureSliceType p_slice_type) {
+RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps, TextureSliceType p_slice_type) {
 	_THREAD_SAFE_METHOD_
 
 	Texture *src_texture = texture_owner.get_or_null(p_with_texture);
@@ -2194,6 +2137,7 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 	//create view
 
 	ERR_FAIL_UNSIGNED_INDEX_V(p_mipmap, src_texture->mipmaps, RID());
+	ERR_FAIL_COND_V(p_mipmap + p_mipmaps > src_texture->mipmaps, RID());
 	ERR_FAIL_UNSIGNED_INDEX_V(p_layer, src_texture->layers, RID());
 
 	int slice_layers = 1;
@@ -2206,7 +2150,7 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 
 	Texture texture = *src_texture;
 	get_image_format_required_size(texture.format, texture.width, texture.height, texture.depth, p_mipmap + 1, &texture.width, &texture.height);
-	texture.mipmaps = 1;
+	texture.mipmaps = p_mipmaps;
 	texture.layers = slice_layers;
 	texture.base_mipmap = p_mipmap;
 	texture.base_layer = p_layer;
@@ -2269,7 +2213,7 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 				"Specified layer must be a multiple of 6.");
 	}
 	image_view_create_info.subresourceRange.baseMipLevel = p_mipmap;
-	image_view_create_info.subresourceRange.levelCount = 1;
+	image_view_create_info.subresourceRange.levelCount = p_mipmaps;
 	image_view_create_info.subresourceRange.layerCount = slice_layers;
 	image_view_create_info.subresourceRange.baseArrayLayer = p_layer;
 
@@ -7574,6 +7518,9 @@ Error RenderingDeviceVulkan::draw_list_switch_to_next_pass_split(uint32_t p_spli
 }
 
 Error RenderingDeviceVulkan::_draw_list_allocate(const Rect2i &p_viewport, uint32_t p_splits, uint32_t p_subpass) {
+	// Lock while draw_list is active
+	_THREAD_SAFE_LOCK_
+
 	if (p_splits == 0) {
 		draw_list = memnew(DrawList);
 		draw_list->command_buffer = frames[frame].draw_command_buffer;
@@ -7684,6 +7631,9 @@ void RenderingDeviceVulkan::_draw_list_free(Rect2i *r_last_viewport) {
 		memdelete(draw_list);
 		draw_list = nullptr;
 	}
+
+	// draw_list is no longer active
+	_THREAD_SAFE_UNLOCK_
 }
 
 void RenderingDeviceVulkan::draw_list_end(uint32_t p_post_barrier) {
@@ -7796,6 +7746,9 @@ void RenderingDeviceVulkan::draw_list_end(uint32_t p_post_barrier) {
 RenderingDevice::ComputeListID RenderingDeviceVulkan::compute_list_begin(bool p_allow_draw_overlap) {
 	ERR_FAIL_COND_V_MSG(!p_allow_draw_overlap && draw_list != nullptr, INVALID_ID, "Only one draw list can be active at the same time.");
 	ERR_FAIL_COND_V_MSG(compute_list != nullptr, INVALID_ID, "Only one draw/compute list can be active at the same time.");
+
+	// Lock while compute_list is active
+	_THREAD_SAFE_LOCK_
 
 	compute_list = memnew(ComputeList);
 	compute_list->command_buffer = frames[frame].draw_command_buffer;
@@ -8270,6 +8223,9 @@ void RenderingDeviceVulkan::compute_list_end(uint32_t p_post_barrier) {
 
 	memdelete(compute_list);
 	compute_list = nullptr;
+
+	// compute_list is no longer active
+	_THREAD_SAFE_UNLOCK_
 }
 
 void RenderingDeviceVulkan::barrier(uint32_t p_from, uint32_t p_to) {
@@ -8428,11 +8384,11 @@ void RenderingDeviceVulkan::_free_internal(RID p_id) {
 	} else if (uniform_set_owner.owns(p_id)) {
 		UniformSet *uniform_set = uniform_set_owner.get_or_null(p_id);
 		frames[frame].uniform_sets_to_dispose_of.push_back(*uniform_set);
-		if (uniform_set->invalidated_callback != nullptr) {
-			uniform_set->invalidated_callback(p_id, uniform_set->invalidated_callback_userdata);
-		}
-
 		uniform_set_owner.free(p_id);
+
+		if (uniform_set->invalidated_callback != nullptr) {
+			uniform_set->invalidated_callback(uniform_set->invalidated_callback_userdata);
+		}
 	} else if (render_pipeline_owner.owns(p_id)) {
 		RenderPipeline *pipeline = render_pipeline_owner.get_or_null(p_id);
 		frames[frame].render_pipelines_to_dispose_of.push_back(*pipeline);
@@ -8525,6 +8481,11 @@ String RenderingDeviceVulkan::get_device_vendor_name() const {
 String RenderingDeviceVulkan::get_device_name() const {
 	return context->get_device_name();
 }
+
+RenderingDevice::DeviceType RenderingDeviceVulkan::get_device_type() const {
+	return context->get_device_type();
+}
+
 String RenderingDeviceVulkan::get_device_pipeline_cache_uuid() const {
 	return context->get_device_pipeline_cache_uuid();
 }
@@ -8980,7 +8941,7 @@ void RenderingDeviceVulkan::_free_rids(T &p_owner, const char *p_type) {
 }
 
 void RenderingDeviceVulkan::capture_timestamp(const String &p_name) {
-	ERR_FAIL_COND_MSG(draw_list != nullptr, "Capturing timestamps during draw list creation is not allowed. Offending timestap was: " + p_name);
+	ERR_FAIL_COND_MSG(draw_list != nullptr, "Capturing timestamps during draw list creation is not allowed. Offending timestamp was: " + p_name);
 	ERR_FAIL_COND(frames[frame].timestamp_count >= max_timestamp_query_elements);
 
 	//this should be optional for profiling, else it will slow things down

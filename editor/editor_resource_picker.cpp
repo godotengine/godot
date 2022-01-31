@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,6 +49,7 @@ void EditorResourcePicker::_update_resource() {
 	if (edited_resource == RES()) {
 		assign_button->set_icon(Ref<Texture2D>());
 		assign_button->set_text(TTR("[empty]"));
+		assign_button->set_tooltip("");
 	} else {
 		assign_button->set_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), "Object"));
 
@@ -56,14 +57,15 @@ void EditorResourcePicker::_update_resource() {
 			assign_button->set_text(edited_resource->get_name());
 		} else if (edited_resource->get_path().is_resource_file()) {
 			assign_button->set_text(edited_resource->get_path().get_file());
-			assign_button->set_tooltip(edited_resource->get_path());
 		} else {
 			assign_button->set_text(edited_resource->get_class());
 		}
 
+		String resource_path;
 		if (edited_resource->get_path().is_resource_file()) {
-			assign_button->set_tooltip(edited_resource->get_path());
+			resource_path = edited_resource->get_path() + "\n";
 		}
+		assign_button->set_tooltip(resource_path + TTR("Type:") + " " + edited_resource->get_class());
 
 		// Preview will override the above, so called at the end.
 		EditorResourcePreview::get_singleton()->queue_edited_resource_preview(edited_resource, this, "_update_resource_preview", edited_resource->get_instance_id());
@@ -326,7 +328,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 		} break;
 
 		case OBJ_MENU_SHOW_IN_FILE_SYSTEM: {
-			FileSystemDock *file_system_dock = EditorNode::get_singleton()->get_filesystem_dock();
+			FileSystemDock *file_system_dock = FileSystemDock::get_singleton();
 			file_system_dock->navigate_to_path(edited_resource->get_path());
 
 			// Ensure that the FileSystem dock is visible.
@@ -385,8 +387,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 	_ensure_resource_menu();
 	// If a subclass implements this method, use it to replace all create items.
-	if (get_script_instance() && get_script_instance()->has_method("_set_create_options")) {
-		get_script_instance()->call("_set_create_options", p_menu_node);
+	if (GDVIRTUAL_CALL(_set_create_options, p_menu_node)) {
 		return;
 	}
 
@@ -442,8 +443,9 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 }
 
 bool EditorResourcePicker::handle_menu_selected(int p_which) {
-	if (get_script_instance() && get_script_instance()->has_method("_handle_menu_selected")) {
-		return get_script_instance()->call("_handle_menu_selected", p_which);
+	bool success;
+	if (GDVIRTUAL_CALL(_handle_menu_selected, p_which, success)) {
+		return success;
 	}
 
 	return false;
@@ -514,12 +516,14 @@ void EditorResourcePicker::_get_allowed_types(bool p_with_convert, Set<String> *
 		}
 
 		if (p_with_convert) {
-			if (base == "StandardMaterial3D") {
+			if (base == "BaseMaterial3D") {
 				p_vector->insert("Texture2D");
 			} else if (base == "ShaderMaterial") {
 				p_vector->insert("Shader");
 			} else if (base == "Font") {
 				p_vector->insert("FontData");
+			} else if (base == "Texture2D") {
+				p_vector->insert("Image");
 			}
 		}
 	}
@@ -636,24 +640,44 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 			for (Set<String>::Element *E = allowed_types.front(); E; E = E->next()) {
 				String at = E->get().strip_edges();
 
-				if (at == "StandardMaterial3D" && ClassDB::is_parent_class(dropped_resource->get_class(), "Texture2D")) {
-					Ref<StandardMaterial3D> mat = memnew(StandardMaterial3D);
+				if (at == "BaseMaterial3D" && ClassDB::is_parent_class(dropped_resource->get_class(), "Texture2D")) {
+					// Use existing resource if possible and only replace its data.
+					Ref<StandardMaterial3D> mat = edited_resource;
+					if (!mat.is_valid()) {
+						mat.instantiate();
+					}
 					mat->set_texture(StandardMaterial3D::TextureParam::TEXTURE_ALBEDO, dropped_resource);
 					dropped_resource = mat;
 					break;
 				}
 
 				if (at == "ShaderMaterial" && ClassDB::is_parent_class(dropped_resource->get_class(), "Shader")) {
-					Ref<ShaderMaterial> mat = memnew(ShaderMaterial);
+					Ref<ShaderMaterial> mat = edited_resource;
+					if (!mat.is_valid()) {
+						mat.instantiate();
+					}
 					mat->set_shader(dropped_resource);
 					dropped_resource = mat;
 					break;
 				}
 
 				if (at == "Font" && ClassDB::is_parent_class(dropped_resource->get_class(), "FontData")) {
-					Ref<Font> font = memnew(Font);
+					Ref<Font> font = edited_resource;
+					if (!font.is_valid()) {
+						font.instantiate();
+					}
 					font->add_data(dropped_resource);
 					dropped_resource = font;
+					break;
+				}
+
+				if (at == "Texture2D" && ClassDB::is_parent_class(dropped_resource->get_class(), "Image")) {
+					Ref<ImageTexture> texture = edited_resource;
+					if (!texture.is_valid()) {
+						texture.instantiate();
+					}
+					texture->create_from_image(dropped_resource);
+					dropped_resource = texture;
 					break;
 				}
 			}
@@ -682,8 +706,8 @@ void EditorResourcePicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_editable", "enable"), &EditorResourcePicker::set_editable);
 	ClassDB::bind_method(D_METHOD("is_editable"), &EditorResourcePicker::is_editable);
 
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_set_create_options", PropertyInfo(Variant::OBJECT, "menu_node")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_handle_menu_selected", PropertyInfo(Variant::INT, "id")));
+	GDVIRTUAL_BIND(_set_create_options, "menu_node");
+	GDVIRTUAL_BIND(_handle_menu_selected, "id");
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_type"), "set_base_type", "get_base_type");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "edited_resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource", PROPERTY_USAGE_NONE), "set_edited_resource", "get_edited_resource");
@@ -838,6 +862,7 @@ void EditorResourcePicker::_ensure_resource_menu() {
 	edit_menu->connect("id_pressed", callable_mp(this, &EditorResourcePicker::_edit_menu_cbk));
 	edit_menu->connect("popup_hide", callable_mp((BaseButton *)edit_button, &BaseButton::set_pressed), varray(false));
 }
+
 EditorResourcePicker::EditorResourcePicker() {
 	assign_button = memnew(Button);
 	assign_button->set_flat(true);
@@ -850,7 +875,7 @@ EditorResourcePicker::EditorResourcePicker() {
 	assign_button->connect("gui_input", callable_mp(this, &EditorResourcePicker::_button_input));
 
 	preview_rect = memnew(TextureRect);
-	preview_rect->set_expand(true);
+	preview_rect->set_ignore_texture_size(true);
 	preview_rect->set_anchors_and_offsets_preset(PRESET_WIDE);
 	preview_rect->set_offset(SIDE_TOP, 1);
 	preview_rect->set_offset(SIDE_BOTTOM, -1);
@@ -882,14 +907,14 @@ bool EditorScriptPicker::handle_menu_selected(int p_which) {
 	switch (p_which) {
 		case OBJ_MENU_NEW_SCRIPT: {
 			if (script_owner) {
-				EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(script_owner, false);
+				SceneTreeDock::get_singleton()->open_script_dialog(script_owner, false);
 			}
 			return true;
 		}
 
 		case OBJ_MENU_EXTEND_SCRIPT: {
 			if (script_owner) {
-				EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(script_owner, true);
+				SceneTreeDock::get_singleton()->open_script_dialog(script_owner, true);
 			}
 			return true;
 		}
@@ -934,7 +959,7 @@ bool EditorShaderPicker::handle_menu_selected(int p_which) {
 	switch (p_which) {
 		case OBJ_MENU_NEW_SHADER: {
 			if (material.is_valid()) {
-				EditorNode::get_singleton()->get_scene_tree_dock()->open_shader_dialog(material, preferred_mode);
+				SceneTreeDock::get_singleton()->open_shader_dialog(material, preferred_mode);
 				return true;
 			}
 		} break;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -137,7 +137,6 @@ int DisplayServerJavaScript::mouse_button_callback(int p_pressed, int p_button, 
 	DisplayServerJavaScript *ds = get_singleton();
 
 	Point2 pos(p_x, p_y);
-	Input::get_singleton()->set_mouse_position(pos);
 	Ref<InputEventMouseButton> ev;
 	ev.instantiate();
 	ev->set_position(pos);
@@ -219,7 +218,6 @@ void DisplayServerJavaScript::mouse_move_callback(double p_x, double p_y, double
 	}
 
 	Point2 pos(p_x, p_y);
-	Input::get_singleton()->set_mouse_position(pos);
 	Ref<InputEventMouseMotion> ev;
 	ev.instantiate();
 	dom2godot_mod(ev, p_modifiers);
@@ -229,8 +227,7 @@ void DisplayServerJavaScript::mouse_move_callback(double p_x, double p_y, double
 	ev->set_global_position(pos);
 
 	ev->set_relative(Vector2(p_rel_x, p_rel_y));
-	Input::get_singleton()->set_mouse_position(ev->get_position());
-	ev->set_speed(Input::get_singleton()->get_last_mouse_speed());
+	ev->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
 
 	Input::get_singleton()->parse_input_event(ev);
 }
@@ -500,7 +497,7 @@ void DisplayServerJavaScript::vk_input_text_callback(const char *p_text, int p_c
 		return;
 	}
 	// Call input_text
-	Variant event = String(p_text);
+	Variant event = String::utf8(p_text);
 	Variant *eventp = &event;
 	Variant ret;
 	Callable::CallError ce;
@@ -558,24 +555,16 @@ void DisplayServerJavaScript::process_joypads() {
 			continue;
 		}
 		for (int b = 0; b < s_btns_num; b++) {
-			float value = s_btns[b];
 			// Buttons 6 and 7 in the standard mapping need to be
 			// axis to be handled as JoyAxis::TRIGGER by Godot.
 			if (s_standard && (b == 6 || b == 7)) {
-				Input::JoyAxisValue joy_axis;
-				joy_axis.min = 0;
-				joy_axis.value = value;
-				JoyAxis a = b == 6 ? JoyAxis::TRIGGER_LEFT : JoyAxis::TRIGGER_RIGHT;
-				input->joy_axis(idx, a, joy_axis);
+				input->joy_axis(idx, (JoyAxis)b, s_btns[b]);
 			} else {
-				input->joy_button(idx, (JoyButton)b, value);
+				input->joy_button(idx, (JoyButton)b, s_btns[b]);
 			}
 		}
 		for (int a = 0; a < s_axes_num; a++) {
-			Input::JoyAxisValue joy_axis;
-			joy_axis.min = -1;
-			joy_axis.value = s_axes[a];
-			input->joy_axis(idx, (JoyAxis)a, joy_axis);
+			input->joy_axis(idx, (JoyAxis)a, s_axes[a]);
 		}
 	}
 }
@@ -590,7 +579,7 @@ Vector<String> DisplayServerJavaScript::get_rendering_drivers_func() {
 
 // Clipboard
 void DisplayServerJavaScript::update_clipboard_callback(const char *p_text) {
-	get_singleton()->clipboard = p_text;
+	get_singleton()->clipboard = String::utf8(p_text);
 }
 
 void DisplayServerJavaScript::clipboard_set(const String &p_text) {
@@ -746,7 +735,6 @@ DisplayServerJavaScript::~DisplayServerJavaScript() {
 
 bool DisplayServerJavaScript::has_feature(Feature p_feature) const {
 	switch (p_feature) {
-		//case FEATURE_CONSOLE_WINDOW:
 		//case FEATURE_GLOBAL_MENU:
 		//case FEATURE_HIDPI:
 		//case FEATURE_IME:

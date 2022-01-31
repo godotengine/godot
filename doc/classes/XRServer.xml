@@ -69,24 +69,6 @@
 				Returns a list of available interfaces the ID and name of each interface.
 			</description>
 		</method>
-		<method name="get_last_commit_usec">
-			<return type="int" />
-			<description>
-				Returns the absolute timestamp (in μs) of the last [XRServer] commit of the AR/VR eyes to [RenderingServer]. The value comes from an internal call to [method Time.get_ticks_usec].
-			</description>
-		</method>
-		<method name="get_last_frame_usec">
-			<return type="int" />
-			<description>
-				Returns the duration (in μs) of the last frame. This is computed as the difference between [method get_last_commit_usec] and [method get_last_process_usec] when committing.
-			</description>
-		</method>
-		<method name="get_last_process_usec">
-			<return type="int" />
-			<description>
-				Returns the absolute timestamp (in μs) of the last [XRServer] process callback. The value comes from an internal call to [method Time.get_ticks_usec].
-			</description>
-		</method>
 		<method name="get_reference_frame" qualifiers="const">
 			<return type="Transform3D" />
 			<description>

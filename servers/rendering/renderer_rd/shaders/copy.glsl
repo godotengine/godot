@@ -84,6 +84,8 @@ void main() {
 	color += texelFetch(source_color, base_pos + ivec2(1, 0), 0);
 	color += texelFetch(source_color, base_pos + ivec2(1, 1), 0);
 	color /= 4.0;
+	color = mix(color, vec4(100.0, 100.0, 100.0, 1.0), isinf(color));
+	color = mix(color, vec4(100.0, 100.0, 100.0, 1.0), isnan(color));
 
 	imageStore(dest_buffer, pos + params.target, color);
 #endif
@@ -132,6 +134,13 @@ void main() {
 		local_cache[dest_index + 16] = textureLod(source_color, quad_center_uv + vec2(0.0, 1.0 / params.section.w), 0);
 		local_cache[dest_index + 16 + 1] = textureLod(source_color, quad_center_uv + vec2(1.0 / params.section.zw), 0);
 	}
+	if (bool(params.flags & FLAG_GLOW_FIRST_PASS)) {
+		// Tonemap initial samples to reduce weight of fireflies: https://graphicrants.blogspot.com/2013/12/tone-mapping.html
+		local_cache[dest_index] /= 1.0 + dot(local_cache[dest_index].rgb, vec3(0.299, 0.587, 0.114));
+		local_cache[dest_index + 1] /= 1.0 + dot(local_cache[dest_index + 1].rgb, vec3(0.299, 0.587, 0.114));
+		local_cache[dest_index + 16] /= 1.0 + dot(local_cache[dest_index + 16].rgb, vec3(0.299, 0.587, 0.114));
+		local_cache[dest_index + 16 + 1] /= 1.0 + dot(local_cache[dest_index + 16 + 1].rgb, vec3(0.299, 0.587, 0.114));
+	}
 
 	memoryBarrierShared();
 	barrier();
@@ -177,6 +186,11 @@ void main() {
 	color += temp_cache[index - 2] * 0.140367;
 	color += temp_cache[index - 3] * 0.106595;
 
+	if (bool(params.flags & FLAG_GLOW_FIRST_PASS)) {
+		// Undo tonemap to restore range: https://graphicrants.blogspot.com/2013/12/tone-mapping.html
+		color /= 1.0 - dot(color.rgb, vec3(0.299, 0.587, 0.114));
+	}
+
 	color *= params.glow_strength;
 
 	if (bool(params.flags & FLAG_GLOW_FIRST_PASS)) {
@@ -186,7 +200,7 @@ void main() {
 #endif
 		color *= params.glow_exposure;
 
-		float luminance = max(color.r, max(color.g, color.b));
+		float luminance = dot(color.rgb, vec3(0.299, 0.587, 0.114));
 		float feedback = max(smoothstep(params.glow_hdr_threshold, params.glow_hdr_threshold + params.glow_hdr_scale, luminance), params.glow_bloom);
 
 		color = min(color * feedback, vec4(params.glow_luminance_cap));
@@ -256,7 +270,9 @@ void main() {
 
 	const float PI = 3.14159265359;
 	vec2 uv = vec2(pos) / vec2(params.section.zw);
-	uv.y = 1.0 - uv.y;
+	if (bool(params.flags & FLAG_FLIP_Y)) {
+		uv.y = 1.0 - uv.y;
+	}
 	float phi = uv.x * 2.0 * PI;
 	float theta = uv.y * PI;
 

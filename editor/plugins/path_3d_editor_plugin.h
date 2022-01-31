@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,10 +45,10 @@ class Path3DGizmo : public EditorNode3DGizmo {
 	mutable float orig_out_length;
 
 public:
-	virtual String get_handle_name(int p_idx) const override;
-	virtual Variant get_handle_value(int p_id) const override;
-	virtual void set_handle(int p_id, Camera3D *p_camera, const Point2 &p_point) override;
-	virtual void commit_handle(int p_id, const Variant &p_restore, bool p_cancel = false) override;
+	virtual String get_handle_name(int p_id, bool p_secondary) const override;
+	virtual Variant get_handle_value(int p_id, bool p_secondary) const override;
+	virtual void set_handle(int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) override;
+	virtual void commit_handle(int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel = false) override;
 
 	virtual void redraw() override;
 	Path3DGizmo(Path3D *p_path = nullptr);
@@ -79,6 +79,8 @@ class Path3DEditorPlugin : public EditorPlugin {
 	EditorNode *editor;
 
 	Path3D *path;
+
+	void _update_theme();
 
 	void _mode_changed(int p_idx);
 	void _close_curve();

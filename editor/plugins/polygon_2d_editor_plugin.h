@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,9 @@
 #define POLYGON_2D_EDITOR_PLUGIN_H
 
 #include "editor/plugins/abstract_polygon_2d_editor.h"
-#include "scene/gui/scroll_container.h"
+
+class ViewPanner;
+class ScrollContainer;
 
 class Polygon2DEditor : public AbstractPolygon2DEditor {
 	GDCLASS(Polygon2DEditor, AbstractPolygon2DEditor);
@@ -77,6 +79,11 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	VScrollBar *uv_vscroll;
 	MenuButton *uv_menu;
 	TextureRect *uv_icon_zoom;
+
+	Ref<ViewPanner> uv_panner;
+	void _uv_scroll_callback(Vector2 p_scroll_vec, bool p_alt);
+	void _uv_pan_callback(Vector2 p_scroll_vec);
+	void _uv_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
 
 	VBoxContainer *bone_scroll_main_vb;
 	ScrollContainer *bone_scroll;

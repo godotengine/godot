@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -174,6 +174,9 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_font_remove_script_support_override, "font_rid", "script");
 	GDVIRTUAL_BIND(_font_get_script_support_overrides, "font_rid");
 
+	GDVIRTUAL_BIND(_font_set_opentype_feature_overrides, "font_rid", "overrides");
+	GDVIRTUAL_BIND(_font_get_opentype_feature_overrides, "font_rid");
+
 	GDVIRTUAL_BIND(_font_supported_feature_list, "font_rid");
 	GDVIRTUAL_BIND(_font_supported_variation_list, "font_rid");
 
@@ -191,6 +194,7 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_shaped_text_set_direction, "shaped", "direction");
 	GDVIRTUAL_BIND(_shaped_text_get_direction, "shaped");
+	GDVIRTUAL_BIND(_shaped_text_get_inferred_direction, "shaped");
 
 	GDVIRTUAL_BIND(_shaped_text_set_bidi_override, "shaped", "override");
 
@@ -267,6 +271,9 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_format_number, "string", "language");
 	GDVIRTUAL_BIND(_parse_number, "string", "language");
 	GDVIRTUAL_BIND(_percent_sign, "language");
+
+	GDVIRTUAL_BIND(_string_to_upper, "string", "language");
+	GDVIRTUAL_BIND(_string_to_lower, "string", "language");
 }
 
 bool TextServerExtension::has_feature(Feature p_feature) const {
@@ -869,6 +876,18 @@ Vector<String> TextServerExtension::font_get_script_support_overrides(RID p_font
 	return Vector<String>();
 }
 
+void TextServerExtension::font_set_opentype_feature_overrides(RID p_font_rid, const Dictionary &p_overrides) {
+	GDVIRTUAL_CALL(_font_set_opentype_feature_overrides, p_font_rid, p_overrides);
+}
+
+Dictionary TextServerExtension::font_get_opentype_feature_overrides(RID p_font_rid) const {
+	Dictionary ret;
+	if (GDVIRTUAL_CALL(_font_get_opentype_feature_overrides, p_font_rid, ret)) {
+		return ret;
+	}
+	return Dictionary();
+}
+
 Dictionary TextServerExtension::font_supported_feature_list(RID p_font_rid) const {
 	Dictionary ret;
 	if (GDVIRTUAL_CALL(_font_supported_feature_list, p_font_rid, ret)) {
@@ -937,6 +956,14 @@ TextServer::Direction TextServerExtension::shaped_text_get_direction(RID p_shape
 		return (TextServer::Direction)ret;
 	}
 	return TextServer::Direction::DIRECTION_AUTO;
+}
+
+TextServer::Direction TextServerExtension::shaped_text_get_inferred_direction(RID p_shaped) const {
+	int ret;
+	if (GDVIRTUAL_CALL(_shaped_text_get_inferred_direction, p_shaped, ret)) {
+		return (TextServer::Direction)ret;
+	}
+	return TextServer::Direction::DIRECTION_LTR;
 }
 
 void TextServerExtension::shaped_text_set_orientation(RID p_shaped, TextServer::Orientation p_orientation) {
@@ -1339,6 +1366,22 @@ String TextServerExtension::percent_sign(const String &p_language) const {
 		return ret;
 	}
 	return TextServer::percent_sign(p_language);
+}
+
+String TextServerExtension::string_to_upper(const String &p_string, const String &p_language) const {
+	String ret;
+	if (GDVIRTUAL_CALL(_string_to_upper, p_string, p_language, ret)) {
+		return ret;
+	}
+	return p_string;
+}
+
+String TextServerExtension::string_to_lower(const String &p_string, const String &p_language) const {
+	String ret;
+	if (GDVIRTUAL_CALL(_string_to_lower, p_string, p_language, ret)) {
+		return ret;
+	}
+	return p_string;
 }
 
 TextServerExtension::TextServerExtension() {

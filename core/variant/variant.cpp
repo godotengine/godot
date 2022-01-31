@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,8 +38,6 @@
 #include "core/math/math_funcs.h"
 #include "core/string/print_string.h"
 #include "core/variant/variant_parser.h"
-#include "scene/gui/control.h"
-#include "scene/main/node.h"
 
 String Variant::get_type_name(Variant::Type p_type) {
 	switch (p_type) {
@@ -1692,8 +1690,6 @@ String Variant::stringify(int recursion_count) const {
 				pairs.push_back(sp);
 			}
 
-			pairs.sort();
-
 			for (int i = 0; i < pairs.size(); i++) {
 				if (i > 0) {
 					str += ", ";
@@ -2001,22 +1997,6 @@ Object *Variant::get_validated_object_with_check(bool &r_previously_freed) const
 Object *Variant::get_validated_object() const {
 	if (type == OBJECT) {
 		return ObjectDB::get_instance(_get_obj().id);
-	} else {
-		return nullptr;
-	}
-}
-
-Variant::operator Node *() const {
-	if (type == OBJECT) {
-		return Object::cast_to<Node>(_get_obj().obj);
-	} else {
-		return nullptr;
-	}
-}
-
-Variant::operator Control *() const {
-	if (type == OBJECT) {
-		return Object::cast_to<Control>(_get_obj().obj);
 	} else {
 		return nullptr;
 	}
@@ -3256,7 +3236,7 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 	return false;
 }
 
-bool Variant::is_ref() const {
+bool Variant::is_ref_counted() const {
 	return type == OBJECT && _get_obj().id.is_ref_counted();
 }
 
@@ -3416,7 +3396,7 @@ String Variant::get_call_error_text(Object *p_base, const StringName &p_method, 
 	}
 
 	String class_name = p_base->get_class();
-	Ref<Script> script = p_base->get_script();
+	Ref<Resource> script = p_base->get_script();
 	if (script.is_valid() && script->get_path().is_resource_file()) {
 		class_name += "(" + script->get_path().get_file() + ")";
 	}

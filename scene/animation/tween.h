@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -97,7 +97,7 @@ public:
 
 private:
 	TweenProcessMode process_mode = TweenProcessMode::TWEEN_PROCESS_IDLE;
-	TweenPauseMode pause_mode = TweenPauseMode::TWEEN_PAUSE_STOP;
+	TweenPauseMode pause_mode = TweenPauseMode::TWEEN_PAUSE_BOUND;
 	TransitionType default_transition = TransitionType::TRANS_LINEAR;
 	EaseType default_ease = EaseType::EASE_IN_OUT;
 	ObjectID bound_node;
@@ -164,7 +164,8 @@ public:
 	Variant calculate_delta_value(Variant p_intial_val, Variant p_final_val);
 
 	bool step(float p_delta);
-	bool should_pause();
+	bool can_process(bool p_tree_paused) const;
+	Node *get_bound_node() const;
 
 	Tween() {}
 };

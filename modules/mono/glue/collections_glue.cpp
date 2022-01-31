@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -237,10 +237,14 @@ int32_t godot_icall_Dictionary_KeyValuePairs(Dictionary *ptr, Array **keys, Arra
 }
 
 void godot_icall_Dictionary_KeyValuePairAt(Dictionary *ptr, int index, MonoObject **key, MonoObject **value) {
-	Array *keys = godot_icall_Dictionary_Keys(ptr);
-	Array *values = godot_icall_Dictionary_Values(ptr);
-	*key = GDMonoMarshal::variant_to_mono_object(keys->get(index));
-	*value = GDMonoMarshal::variant_to_mono_object(values->get(index));
+	*key = GDMonoMarshal::variant_to_mono_object(ptr->get_key_at_index(index));
+	*value = GDMonoMarshal::variant_to_mono_object(ptr->get_value_at_index(index));
+}
+
+void godot_icall_Dictionary_KeyValuePairAt_Generic(Dictionary *ptr, int index, MonoObject **key, MonoObject **value, uint32_t value_type_encoding, GDMonoClass *value_type_class) {
+	ManagedType type(value_type_encoding, value_type_class);
+	*key = GDMonoMarshal::variant_to_mono_object(ptr->get_key_at_index(index));
+	*value = GDMonoMarshal::variant_to_mono_object(ptr->get_value_at_index(index), type);
 }
 
 void godot_icall_Dictionary_Add(Dictionary *ptr, MonoObject *key, MonoObject *value) {
@@ -353,6 +357,7 @@ void godot_register_collections_icalls() {
 	GDMonoUtils::add_internal_call("Godot.Collections.Dictionary::godot_icall_Dictionary_Count", godot_icall_Dictionary_Count);
 	GDMonoUtils::add_internal_call("Godot.Collections.Dictionary::godot_icall_Dictionary_KeyValuePairs", godot_icall_Dictionary_KeyValuePairs);
 	GDMonoUtils::add_internal_call("Godot.Collections.Dictionary::godot_icall_Dictionary_KeyValuePairAt", godot_icall_Dictionary_KeyValuePairAt);
+	GDMonoUtils::add_internal_call("Godot.Collections.Dictionary::godot_icall_Dictionary_KeyValuePairAt_Generic", godot_icall_Dictionary_KeyValuePairAt_Generic);
 	GDMonoUtils::add_internal_call("Godot.Collections.Dictionary::godot_icall_Dictionary_Add", godot_icall_Dictionary_Add);
 	GDMonoUtils::add_internal_call("Godot.Collections.Dictionary::godot_icall_Dictionary_Clear", godot_icall_Dictionary_Clear);
 	GDMonoUtils::add_internal_call("Godot.Collections.Dictionary::godot_icall_Dictionary_Contains", godot_icall_Dictionary_Contains);

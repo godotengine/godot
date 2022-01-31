@@ -165,7 +165,14 @@ struct hmtxvmtx
     {
       default_advance = default_advance_ ? default_advance_ : hb_face_get_upem (face);
 
-      num_advances = T::is_horizontal ? face->table.hhea->numberOfLongMetrics : face->table.vhea->numberOfLongMetrics;
+      num_advances = T::is_horizontal ?
+		     face->table.hhea->numberOfLongMetrics :
+#ifndef HB_NO_VERTICAL
+		     face->table.vhea->numberOfLongMetrics
+#else
+		     0
+#endif
+		     ;
 
       table = hb_sanitize_context_t ().reference_table<hmtxvmtx> (face, T::tableTag);
 

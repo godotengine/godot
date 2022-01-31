@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -83,7 +83,7 @@ enum class JoyButton {
 	PADDLE4 = 19,
 	TOUCHPAD = 20,
 	SDL_MAX = 21,
-	MAX = 36, // Android supports up to 36 buttons.
+	MAX = 128, // Android supports up to 36 buttons. DirectInput supports up to 128 buttons.
 };
 
 enum class MIDIMessage {
@@ -95,6 +95,17 @@ enum class MIDIMessage {
 	PROGRAM_CHANGE = 0xC,
 	CHANNEL_PRESSURE = 0xD,
 	PITCH_BEND = 0xE,
+	SYSTEM_EXCLUSIVE = 0xF0,
+	QUARTER_FRAME = 0xF1,
+	SONG_POSITION_POINTER = 0xF2,
+	SONG_SELECT = 0xF3,
+	TUNE_REQUEST = 0xF6,
+	TIMING_CLOCK = 0xF8,
+	START = 0xFA,
+	CONTINUE = 0xFB,
+	STOP = 0xFC,
+	ACTIVE_SENSING = 0xFE,
+	SYSTEM_RESET = 0xFF,
 };
 
 enum class MouseButton {

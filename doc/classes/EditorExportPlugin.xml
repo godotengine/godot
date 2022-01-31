@@ -96,12 +96,22 @@
 				Adds a static lib from the given [code]path[/code] to the iOS project.
 			</description>
 		</method>
+		<method name="add_osx_plugin_file">
+			<return type="void" />
+			<argument index="0" name="path" type="String" />
+			<description>
+				Adds file or directory matching [code]path[/code] to [code]PlugIns[/code] directory of macOS app bundle.
+				[b]Note:[/b] This is useful only for macOS exports.
+			</description>
+		</method>
 		<method name="add_shared_object">
 			<return type="void" />
 			<argument index="0" name="path" type="String" />
 			<argument index="1" name="tags" type="PackedStringArray" />
 			<description>
-				Adds a shared object with the given [code]tags[/code] and destination [code]path[/code].
+				Adds a shared object or a directory containing only shared objects with the given [code]tags[/code] and destination [code]path[/code].
+				[b]Note:[/b] In case of macOS exports, those shared objects will be added to [code]Frameworks[/code] directory of app bundle.
+				In case of a directory code-sign will error if you place non code object in directory.
 			</description>
 		</method>
 		<method name="skip">

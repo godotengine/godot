@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -975,20 +975,6 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 						}
 					}
 
-					if (tname == "meta-data" && attrname == "name" && value == "xr_mode_metadata_name") {
-						// Update the meta-data 'android:name' attribute based on the selected XR mode.
-						if (xr_mode_index == XR_MODE_OPENXR) {
-							string_table.write[attr_value] = "com.samsung.android.vr.application.mode";
-						}
-					}
-
-					if (tname == "meta-data" && attrname == "value" && value == "xr_mode_metadata_value") {
-						// Update the meta-data 'android:value' attribute based on the selected XR mode.
-						if (xr_mode_index == XR_MODE_OPENXR) {
-							string_table.write[attr_value] = "vr_only";
-						}
-					}
-
 					if (tname == "meta-data" && attrname == "name" && value == "xr_hand_tracking_metadata_name") {
 						if (xr_mode_index == XR_MODE_OPENXR && hand_tracking_index > XR_HAND_TRACKING_NONE) {
 							string_table.write[attr_value] = "com.oculus.handtracking.frequency";
@@ -1514,7 +1500,7 @@ String EditorExportPlatformAndroid::load_splash_refs(Ref<Image> &splash_image, R
 	}
 
 	if (scale_splash) {
-		Size2 screen_size = Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height"));
+		Size2 screen_size = Size2(ProjectSettings::get_singleton()->get("display/window/size/viewport_width"), ProjectSettings::get_singleton()->get("display/window/size/viewport_height"));
 		int width, height;
 		if (screen_size.width > screen_size.height) {
 			// scale horizontally
@@ -2666,6 +2652,13 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 					debug_password = EditorSettings::get_singleton()->get("export/android/debug_keystore_pass");
 					debug_user = EditorSettings::get_singleton()->get("export/android/debug_keystore_user");
 				}
+				if (debug_keystore.is_relative_path()) {
+					debug_keystore = OS::get_singleton()->get_resource_dir().plus_file(debug_keystore).simplify_path();
+				}
+				if (!FileAccess::exists(debug_keystore)) {
+					EditorNode::add_io_error(TTR("Could not find keystore, unable to export."));
+					return ERR_FILE_CANT_OPEN;
+				}
 
 				cmdline.push_back("-Pdebug_keystore_file=" + debug_keystore); // argument to specify the debug keystore file.
 				cmdline.push_back("-Pdebug_keystore_alias=" + debug_user); // argument to specify the debug keystore alias.
@@ -2675,6 +2668,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				String release_keystore = p_preset->get("keystore/release");
 				String release_username = p_preset->get("keystore/release_user");
 				String release_password = p_preset->get("keystore/release_password");
+				if (release_keystore.is_relative_path()) {
+					release_keystore = OS::get_singleton()->get_resource_dir().plus_file(release_keystore).simplify_path();
+				}
 				if (!FileAccess::exists(release_keystore)) {
 					EditorNode::add_io_error(TTR("Could not find keystore, unable to export."));
 					return ERR_FILE_CANT_OPEN;
@@ -2794,7 +2790,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 		bool skip = false;
 
-		String file = fname;
+		String file = String::utf8(fname);
 
 		Vector<uint8_t> data;
 		data.resize(info.uncompressed_size);
@@ -2976,7 +2972,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		char extra[16384];
 		ret = unzGetCurrentFileInfo(tmp_unaligned, &info, fname, 16384, extra, 16384 - ZIP_ALIGNMENT, nullptr, 0);
 
-		String file = fname;
+		String file = String::utf8(fname);
 
 		Vector<uint8_t> data;
 		data.resize(info.compressed_size);

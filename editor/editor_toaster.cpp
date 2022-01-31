@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -362,6 +362,7 @@ Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_
 		close_button->set_flat(true);
 		close_button->set_icon(get_theme_icon("Close", "EditorIcons"));
 		close_button->connect("pressed", callable_bind(callable_mp(this, &EditorToaster::close), panel));
+		close_button->connect("theme_changed", callable_bind(callable_mp(this, &EditorToaster::_close_button_theme_changed), close_button));
 		hbox_container->add_child(close_button);
 	}
 
@@ -436,6 +437,13 @@ void EditorToaster::close(Control *p_control) {
 	ERR_FAIL_COND(!toasts.has(p_control));
 	toasts[p_control].remaining_time = -1.0;
 	toasts[p_control].popped = false;
+}
+
+void EditorToaster::_close_button_theme_changed(Control *p_close_button) {
+	Button *close_button = Object::cast_to<Button>(p_close_button);
+	if (close_button) {
+		close_button->set_icon(get_theme_icon("Close", "EditorIcons"));
+	}
 }
 
 EditorToaster *EditorToaster::get_singleton() {

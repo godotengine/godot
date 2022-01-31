@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -224,14 +224,14 @@ Error OS::shell_open(String p_uri) {
 	return ::OS::get_singleton()->shell_open(p_uri);
 }
 
-int OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r_output, bool p_read_stderr) {
+int OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r_output, bool p_read_stderr, bool p_open_console) {
 	List<String> args;
 	for (int i = 0; i < p_arguments.size(); i++) {
 		args.push_back(p_arguments[i]);
 	}
 	String pipe;
 	int exitcode = 0;
-	Error err = ::OS::get_singleton()->execute(p_path, args, &pipe, &exitcode, p_read_stderr);
+	Error err = ::OS::get_singleton()->execute(p_path, args, &pipe, &exitcode, p_read_stderr, nullptr, p_open_console);
 	r_output.push_back(pipe);
 	if (err != OK) {
 		return -1;
@@ -252,13 +252,13 @@ int OS::create_instance(const Vector<String> &p_arguments) {
 	return pid;
 }
 
-int OS::create_process(const String &p_path, const Vector<String> &p_arguments) {
+int OS::create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console) {
 	List<String> args;
 	for (int i = 0; i < p_arguments.size(); i++) {
 		args.push_back(p_arguments[i]);
 	}
 	::OS::ProcessID pid = 0;
-	Error err = ::OS::get_singleton()->create_process(p_path, args, &pid);
+	Error err = ::OS::get_singleton()->create_process(p_path, args, &pid, p_open_console);
 	if (err != OK) {
 		return -1;
 	}
@@ -557,8 +557,8 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_processor_count"), &OS::get_processor_count);
 
 	ClassDB::bind_method(D_METHOD("get_executable_path"), &OS::get_executable_path);
-	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr"), &OS::execute, DEFVAL(Array()), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments"), &OS::create_process);
+	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr", "open_console"), &OS::execute, DEFVAL(Array()), DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments", "open_console"), &OS::create_process, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_instance", "arguments"), &OS::create_instance);
 	ClassDB::bind_method(D_METHOD("kill", "pid"), &OS::kill);
 	ClassDB::bind_method(D_METHOD("shell_open", "uri"), &OS::shell_open);
@@ -623,7 +623,6 @@ void OS::_bind_methods() {
 
 	// Those default values need to be specified for the docs generator,
 	// to avoid using values from the documentation writer's own OS instance.
-	ADD_PROPERTY_DEFAULT("exit_code", 0);
 	ADD_PROPERTY_DEFAULT("low_processor_usage_mode", false);
 	ADD_PROPERTY_DEFAULT("low_processor_usage_mode_sleep_usec", 6900);
 
@@ -698,10 +697,7 @@ Variant Geometry2D::line_intersects_line(const Vector2 &p_from_a, const Vector2 
 Vector<Vector2> Geometry2D::get_closest_points_between_segments(const Vector2 &p1, const Vector2 &q1, const Vector2 &p2, const Vector2 &q2) {
 	Vector2 r1, r2;
 	::Geometry2D::get_closest_points_between_segments(p1, q1, p2, q2, r1, r2);
-	Vector<Vector2> r;
-	r.resize(2);
-	r.set(0, r1);
-	r.set(1, r2);
+	Vector<Vector2> r = { r1, r2 };
 	return r;
 }
 
@@ -923,10 +919,7 @@ Vector<Plane> Geometry3D::build_capsule_planes(float p_radius, float p_height, i
 Vector<Vector3> Geometry3D::get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2) {
 	Vector3 r1, r2;
 	::Geometry3D::get_closest_points_between_segments(p1, p2, q1, q2, r1, r2);
-	Vector<Vector3> r;
-	r.resize(2);
-	r.set(0, r1);
-	r.set(1, r2);
+	Vector<Vector3> r = { r1, r2 };
 	return r;
 }
 
@@ -1672,9 +1665,9 @@ void Directory::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("rename", "from", "to"), &Directory::rename);
 	ClassDB::bind_method(D_METHOD("remove", "path"), &Directory::remove);
 
-	ClassDB::bind_method(D_METHOD("set_include_navigational"), &Directory::set_include_navigational);
+	ClassDB::bind_method(D_METHOD("set_include_navigational", "enable"), &Directory::set_include_navigational);
 	ClassDB::bind_method(D_METHOD("get_include_navigational"), &Directory::get_include_navigational);
-	ClassDB::bind_method(D_METHOD("set_include_hidden"), &Directory::set_include_hidden);
+	ClassDB::bind_method(D_METHOD("set_include_hidden", "enable"), &Directory::set_include_hidden);
 	ClassDB::bind_method(D_METHOD("get_include_hidden"), &Directory::get_include_hidden);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "include_navigational"), "set_include_navigational", "get_include_navigational");
@@ -1894,7 +1887,7 @@ void Thread::_start_func(void *ud) {
 
 Error Thread::start(const Callable &p_callable, const Variant &p_userdata, Priority p_priority) {
 	ERR_FAIL_COND_V_MSG(is_started(), ERR_ALREADY_IN_USE, "Thread already started.");
-	ERR_FAIL_COND_V(p_callable.is_null(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(!p_callable.is_valid(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_INDEX_V(p_priority, PRIORITY_MAX, ERR_INVALID_PARAMETER);
 
 	ret = Variant();
@@ -2297,7 +2290,7 @@ void Engine::register_singleton(const StringName &p_name, Object *p_object) {
 	;
 }
 void Engine::unregister_singleton(const StringName &p_name) {
-	ERR_FAIL_COND_MSG(!has_singleton(p_name), "Attempt to remove unregisteres singleton: " + String(p_name));
+	ERR_FAIL_COND_MSG(!has_singleton(p_name), "Attempt to remove unregistered singleton: " + String(p_name));
 	ERR_FAIL_COND_MSG(!::Engine::get_singleton()->is_singleton_user_created(p_name), "Attempt to remove non-user created singleton: " + String(p_name));
 	::Engine::get_singleton()->remove_singleton(p_name);
 }

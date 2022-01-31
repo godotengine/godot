@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -703,30 +703,16 @@ void TabContainer::add_child_notify(Node *p_child) {
 		return;
 	}
 
-	Vector<Control *> tabs = _get_tabs();
 	_refresh_texts();
+	call_deferred("_repaint");
+	update();
 
-	bool first = false;
-
-	if (tabs.size() != 1) {
-		c->hide();
-	} else {
-		c->show();
-		//call_deferred(SNAME("set_current_tab"),0);
-		first = true;
+	bool first = (_get_tabs().size() == 1);
+	if (first) {
 		current = 0;
 		previous = 0;
 	}
-	c->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
-	if (tabs_visible) {
-		c->set_offset(SIDE_TOP, _get_top_margin());
-	}
-	Ref<StyleBox> sb = get_theme_stylebox(SNAME("panel"));
-	c->set_offset(SIDE_TOP, c->get_offset(SIDE_TOP) + sb->get_margin(SIDE_TOP));
-	c->set_offset(SIDE_LEFT, c->get_offset(SIDE_LEFT) + sb->get_margin(SIDE_LEFT));
-	c->set_offset(SIDE_RIGHT, c->get_offset(SIDE_RIGHT) - sb->get_margin(SIDE_RIGHT));
-	c->set_offset(SIDE_BOTTOM, c->get_offset(SIDE_BOTTOM) - sb->get_margin(SIDE_BOTTOM));
-	update();
+
 	p_child->connect("renamed", callable_mp(this, &TabContainer::_child_renamed_callback));
 	if (first && is_inside_tree()) {
 		emit_signal(SNAME("tab_changed"), current);
@@ -1223,6 +1209,7 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_hidden_tabs_for_min_size", "enabled"), &TabContainer::set_use_hidden_tabs_for_min_size);
 	ClassDB::bind_method(D_METHOD("get_use_hidden_tabs_for_min_size"), &TabContainer::get_use_hidden_tabs_for_min_size);
 
+	ClassDB::bind_method(D_METHOD("_repaint"), &TabContainer::_repaint);
 	ClassDB::bind_method(D_METHOD("_on_theme_changed"), &TabContainer::_on_theme_changed);
 	ClassDB::bind_method(D_METHOD("_update_current_tab"), &TabContainer::_update_current_tab);
 

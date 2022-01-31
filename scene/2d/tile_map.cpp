@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -866,7 +866,7 @@ void TileMap::_recreate_layer_internals(int p_layer) {
 		return;
 	}
 
-	// Upadate the layer internals.
+	// Update the layer internals.
 	_rendering_update_layer(p_layer);
 
 	// Recreate the quadrants.
@@ -1119,7 +1119,7 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 					if (q.runtime_tile_data_cache.has(E_cell.value)) {
 						tile_data = q.runtime_tile_data_cache[E_cell.value];
 					} else {
-						tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
+						tile_data = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile);
 					}
 
 					Ref<ShaderMaterial> mat = tile_data->get_material();
@@ -1311,7 +1311,7 @@ void TileMap::draw_tile(RID p_canvas_item, Vector2i p_position, const Ref<TileSe
 		}
 
 		// Get tile data.
-		const TileData *tile_data = p_tile_data_override ? p_tile_data_override : Object::cast_to<TileData>(atlas_source->get_tile_data(p_atlas_coords, p_alternative_tile));
+		const TileData *tile_data = p_tile_data_override ? p_tile_data_override : atlas_source->get_tile_data(p_atlas_coords, p_alternative_tile);
 
 		// Get the tile modulation.
 		Color modulate = tile_data->get_modulate() * p_modulation;
@@ -1375,7 +1375,7 @@ void TileMap::_physics_notification(int p_what) {
 			in_editor = Engine::get_singleton()->is_editor_hint();
 #endif
 			if (is_inside_tree() && collision_animatable && !in_editor) {
-				// Update tranform on the physics tick when in animatable mode.
+				// Update transform on the physics tick when in animatable mode.
 				last_valid_transform = new_transform;
 				set_notify_local_transform(false);
 				set_global_transform(new_transform);
@@ -1474,7 +1474,7 @@ void TileMap::_physics_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r
 					if (q.runtime_tile_data_cache.has(E_cell->get())) {
 						tile_data = q.runtime_tile_data_cache[E_cell->get()];
 					} else {
-						tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
+						tile_data = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile);
 					}
 					for (int tile_set_physics_layer = 0; tile_set_physics_layer < tile_set->get_physics_layers_count(); tile_set_physics_layer++) {
 						Ref<PhysicsMaterial> physics_material = tile_set->get_physics_layer_physics_material(tile_set_physics_layer);
@@ -1671,7 +1671,7 @@ void TileMap::_navigation_update_dirty_quadrants(SelfList<TileMapQuadrant>::List
 					if (q.runtime_tile_data_cache.has(E_cell->get())) {
 						tile_data = q.runtime_tile_data_cache[E_cell->get()];
 					} else {
-						tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
+						tile_data = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile);
 					}
 					q.navigation_regions[E_cell->get()].resize(tile_set->get_navigation_layers_count());
 
@@ -1760,7 +1760,7 @@ void TileMap::_navigation_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 				if (p_quadrant->runtime_tile_data_cache.has(E_cell->get())) {
 					tile_data = p_quadrant->runtime_tile_data_cache[E_cell->get()];
 				} else {
-					tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
+					tile_data = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile);
 				}
 
 				Transform2D xform;
@@ -1809,7 +1809,7 @@ void TileMap::_scenes_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r_
 
 		// Clear the scenes.
 		for (const KeyValue<Vector2i, String> &E : q.scenes) {
-			Node *node = get_node(E.value);
+			Node *node = get_node_or_null(E.value);
 			if (node) {
 				node->queue_delete();
 			}
@@ -1857,7 +1857,7 @@ void TileMap::_scenes_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r_
 void TileMap::_scenes_cleanup_quadrant(TileMapQuadrant *p_quadrant) {
 	// Clear the scenes.
 	for (const KeyValue<Vector2i, String> &E : p_quadrant->scenes) {
-		Node *node = get_node(E.value);
+		Node *node = get_node_or_null(E.value);
 		if (node) {
 			node->queue_delete();
 		}
@@ -2104,6 +2104,7 @@ Ref<TileMapPattern> TileMap::get_pattern(int p_layer, TypedArray<Vector2i> p_coo
 }
 
 Vector2i TileMap::map_pattern(Vector2i p_position_in_tilemap, Vector2i p_coords_in_pattern, Ref<TileMapPattern> p_pattern) {
+	ERR_FAIL_COND_V(p_pattern.is_null(), Vector2i());
 	ERR_FAIL_COND_V(!p_pattern->has_cell(p_coords_in_pattern), Vector2i());
 
 	Vector2i output = p_position_in_tilemap + p_coords_in_pattern;
@@ -2203,7 +2204,7 @@ Set<TileMap::TerrainConstraint> TileMap::get_terrain_constraints_from_removed_ce
 					Ref<TileSetSource> source = tile_set->get_source(neighbor_cell.source_id);
 					Ref<TileSetAtlasSource> atlas_source = source;
 					if (atlas_source.is_valid()) {
-						TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(neighbor_cell.get_atlas_coords(), neighbor_cell.alternative_tile));
+						TileData *tile_data = atlas_source->get_tile_data(neighbor_cell.get_atlas_coords(), neighbor_cell.alternative_tile);
 						if (tile_data && tile_data->get_terrain_set() == p_terrain_set) {
 							neighbor_tile_data = tile_data;
 						}
@@ -2295,7 +2296,7 @@ Map<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_wave_function_collapse(
 		// Randomly a cell to fill out of the most constrained.
 		Vector2i selected_cell_to_replace = to_choose_from[Math::random(0, to_choose_from.size() - 1)];
 
-		// Get the list of acceptable pattens for the given cell.
+		// Get the list of acceptable patterns for the given cell.
 		Set<TileSet::TerrainsPattern> valid_tiles = per_cell_acceptable_tiles[selected_cell_to_replace];
 		if (valid_tiles.is_empty()) {
 			break; // No possibilities :/
@@ -2579,7 +2580,7 @@ void TileMap::_build_runtime_update_tile_data(SelfList<TileMapQuadrant>::List &r
 					if (atlas_source) {
 						bool ret = false;
 						if (GDVIRTUAL_CALL(_use_tile_data_runtime_update, q.layer, E_cell.value, ret) && ret) {
-							TileData *tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile));
+							TileData *tile_data = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile);
 
 							// Create the runtime TileData.
 							TileData *tile_data_runtime_use = tile_data->duplicate();
@@ -2724,7 +2725,7 @@ void TileMap::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 Vector2 TileMap::map_to_world(const Vector2i &p_pos) const {
-	// SHOULD RETURN THE CENTER OF THE TILE
+	// SHOULD RETURN THE CENTER OF THE CELL
 	ERR_FAIL_COND_V(!tile_set.is_valid(), Vector2());
 
 	Vector2 ret = p_pos;
@@ -3646,9 +3647,6 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_neighbor_cell", "coords", "neighbor"), &TileMap::get_neighbor_cell);
 
 	ClassDB::bind_method(D_METHOD("_update_dirty_quadrants"), &TileMap::_update_dirty_quadrants);
-
-	ClassDB::bind_method(D_METHOD("_set_tile_data", "layer", "data"), &TileMap::_set_tile_data);
-	ClassDB::bind_method(D_METHOD("_get_tile_data", "layer"), &TileMap::_get_tile_data);
 
 	ClassDB::bind_method(D_METHOD("_tile_set_changed_deferred_update"), &TileMap::_tile_set_changed_deferred_update);
 

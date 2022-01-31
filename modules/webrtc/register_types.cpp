@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,11 +38,11 @@
 #include "webrtc_peer_connection_extension.h"
 
 void register_webrtc_types() {
-#define _SET_HINT(NAME, _VAL_, _MAX_) \
-	GLOBAL_DEF(NAME, _VAL_);          \
+#define SET_HINT(NAME, _VAL_, _MAX_) \
+	GLOBAL_DEF(NAME, _VAL_);         \
 	ProjectSettings::get_singleton()->set_custom_property_info(NAME, PropertyInfo(Variant::INT, NAME, PROPERTY_HINT_RANGE, "2," #_MAX_ ",1,or_greater"));
 
-	_SET_HINT(WRTC_IN_BUF, 64, 4096);
+	SET_HINT(WRTC_IN_BUF, 64, 4096);
 
 	ClassDB::register_custom_instance_class<WebRTCPeerConnection>();
 	GDREGISTER_CLASS(WebRTCPeerConnectionExtension);
@@ -51,6 +51,8 @@ void register_webrtc_types() {
 	GDREGISTER_CLASS(WebRTCDataChannelExtension);
 
 	GDREGISTER_CLASS(WebRTCMultiplayerPeer);
+
+#undef SET_HINT
 }
 
 void unregister_webrtc_types() {}

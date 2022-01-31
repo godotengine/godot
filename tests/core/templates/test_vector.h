@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,17 @@
 #include "tests/test_macros.h"
 
 namespace TestVector {
+
+TEST_CASE("[Vector] List initialization") {
+	Vector<int> vector{ 0, 1, 2, 3, 4 };
+
+	CHECK(vector.size() == 5);
+	CHECK(vector[0] == 0);
+	CHECK(vector[1] == 1);
+	CHECK(vector[2] == 2);
+	CHECK(vector[3] == 3);
+	CHECK(vector[4] == 4);
+}
 
 TEST_CASE("[Vector] Push back and append") {
 	Vector<int> vector;
@@ -246,27 +257,42 @@ TEST_CASE("[Vector] Slice") {
 	vector.push_back(3);
 	vector.push_back(4);
 
+	Vector<int> slice0 = vector.slice(0, 0);
+	CHECK(slice0.size() == 0);
+
 	Vector<int> slice1 = vector.slice(1, 3);
 	CHECK(slice1.size() == 2);
 	CHECK(slice1[0] == 1);
 	CHECK(slice1[1] == 2);
 
 	Vector<int> slice2 = vector.slice(1, -1);
-	CHECK(slice2.size() == 4);
+	CHECK(slice2.size() == 3);
 	CHECK(slice2[0] == 1);
 	CHECK(slice2[1] == 2);
 	CHECK(slice2[2] == 3);
-	CHECK(slice2[3] == 4);
 
-	Vector<int> slice3 = vector.slice(3, -1);
+	Vector<int> slice3 = vector.slice(3);
 	CHECK(slice3.size() == 2);
 	CHECK(slice3[0] == 3);
 	CHECK(slice3[1] == 4);
 
 	Vector<int> slice4 = vector.slice(2, -2);
-	CHECK(slice4.size() == 2);
+	CHECK(slice4.size() == 1);
 	CHECK(slice4[0] == 2);
-	CHECK(slice4[1] == 3);
+
+	Vector<int> slice5 = vector.slice(-2);
+	CHECK(slice5.size() == 2);
+	CHECK(slice5[0] == 3);
+	CHECK(slice5[1] == 4);
+
+	Vector<int> slice6 = vector.slice(2, 42);
+	CHECK(slice6.size() == 3);
+	CHECK(slice6[0] == 2);
+	CHECK(slice6[1] == 3);
+	CHECK(slice6[2] == 4);
+
+	Vector<int> slice7 = vector.slice(5, 1);
+	CHECK(slice7.size() == 0);
 }
 
 TEST_CASE("[Vector] Find, has") {

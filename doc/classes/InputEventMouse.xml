@@ -14,10 +14,10 @@
 			The mouse button mask identifier, one of or a bitwise combination of the [enum MouseButton] button masks.
 		</member>
 		<member name="global_position" type="Vector2" setter="set_global_position" getter="get_global_position" default="Vector2(0, 0)">
-			The global mouse position relative to the current [Viewport] when used in [method Control._gui_input], otherwise is at 0,0.
+			The global mouse position relative to the current [Viewport]. If used in [method Control._gui_input] and if the current [Control] is not under the mouse, moving it will not update this value.
 		</member>
 		<member name="position" type="Vector2" setter="set_position" getter="get_position" default="Vector2(0, 0)">
-			The local mouse position relative to the [Viewport]. If used in [method Control._gui_input], the position is relative to the current [Control] which is under the mouse.
+			The local mouse position relative to the [Viewport]. If used in [method Control._gui_input], the position is relative to the current [Control] which is under the mouse. If the current  [Control] is not under the mouse, moving it will not update this value.
 		</member>
 	</members>
 </class>

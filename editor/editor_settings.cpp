@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -142,7 +142,7 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 
 			if (builtin_list.has(shortcut_definition.key)) {
 				// This shortcut was auto-generated from built in actions: don't save.
-				// If the builtin is overriden, it will be saved in the "builtin_action_overrides" section below.
+				// If the builtin is overridden, it will be saved in the "builtin_action_overrides" section below.
 				continue;
 			}
 
@@ -339,7 +339,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	{
 		String lang_hint = "en";
 		String host_lang = OS::get_singleton()->get_locale();
-		host_lang = TranslationServer::standardize_locale(host_lang);
 
 		// Skip locales if Text server lack required features.
 		Vector<String> locales_to_skip;
@@ -365,6 +364,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		}
 
 		String best;
+		int best_score = 0;
 		for (const String &locale : get_editor_locales()) {
 			// Skip locales which we can't render properly (see above comment).
 			// Test against language code without regional variants (e.g. ur_PK).
@@ -376,16 +376,16 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 			lang_hint += ",";
 			lang_hint += locale;
 
-			if (host_lang == locale) {
+			int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);
+			if (score > 0 && score >= best_score) {
 				best = locale;
-			}
-
-			if (best.is_empty() && host_lang.begins_with(locale)) {
-				best = locale;
+				best_score = score;
+				if (score == 10) {
+					break; // Exact match, skip the rest.
+				}
 			}
 		}
-
-		if (best.is_empty()) {
+		if (best_score == 0) {
 			best = "en";
 		}
 
@@ -428,10 +428,13 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/editor/separate_distraction_mode", false);
 	_initial_set("interface/editor/automatically_open_screenshots", true);
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/single_window_mode", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
-	_initial_set("interface/editor/hide_console_window", false);
 	_initial_set("interface/editor/mouse_extra_buttons_navigate_history", true);
 	_initial_set("interface/editor/save_each_scene_on_quit", true); // Regression
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/show_internal_errors_in_toast_notifications", 0, "Auto,Enabled,Disabled")
+#ifdef DEV_ENABLED
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/show_internal_errors_in_toast_notifications", 0, "Auto (Enabled),Enabled,Disabled")
+#else
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/show_internal_errors_in_toast_notifications", 0, "Auto (Disabled),Enabled,Disabled")
+#endif
 
 	// Inspector
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "interface/inspector/max_array_dictionary_items_per_page", 20, "10,100,1")
@@ -640,10 +643,15 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/2d/bone_outline_size", 2);
 	_initial_set("editors/2d/viewport_border_color", Color(0.4, 0.4, 1.0, 0.4));
 	_initial_set("editors/2d/constrain_editor_view", true);
-	_initial_set("editors/2d/warped_mouse_panning", true);
-	_initial_set("editors/2d/simple_panning", false);
-	_initial_set("editors/2d/scroll_to_pan", false);
-	_initial_set("editors/2d/pan_speed", 20);
+
+	// Panning
+	// Enum should be in sync with ControlScheme in ViewPanner.
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/panning/2d_editor_panning_scheme", 0, "Scroll Zooms,Scroll Pans");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/panning/sub_editors_panning_scheme", 0, "Scroll Zooms,Scroll Pans");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/panning/animation_editors_panning_scheme", 1, "Scroll Zooms,Scroll Pans");
+	_initial_set("editors/panning/simple_panning", false);
+	_initial_set("editors/panning/warped_mouse_panning", true);
+	_initial_set("editors/panning/2d_editor_pan_speed", 20);
 
 	// Tiles editor
 	_initial_set("editors/tiles_editor/display_grid", true);
@@ -781,43 +789,6 @@ bool EditorSettings::_is_default_text_editor_theme(String p_theme_name) {
 	return p_theme_name == "default" || p_theme_name == "godot 2" || p_theme_name == "custom";
 }
 
-static Dictionary _get_builtin_script_templates() {
-	Dictionary templates;
-
-	// No Comments
-	templates["no_comments.gd"] =
-			"extends %BASE%\n"
-			"\n"
-			"\n"
-			"func _ready()%VOID_RETURN%:\n"
-			"%TS%pass\n";
-
-	// Empty
-	templates["empty.gd"] =
-			"extends %BASE%"
-			"\n"
-			"\n";
-
-	return templates;
-}
-
-static void _create_script_templates(const String &p_path) {
-	Dictionary templates = _get_builtin_script_templates();
-	List<Variant> keys;
-	templates.get_key_list(&keys);
-	FileAccessRef file = FileAccess::create(FileAccess::ACCESS_FILESYSTEM);
-	DirAccessRef dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	dir->change_dir(p_path);
-	for (int i = 0; i < keys.size(); i++) {
-		if (!dir->file_exists(keys[i])) {
-			Error err = file->reopen(p_path.plus_file((String)keys[i]), FileAccess::WRITE);
-			ERR_FAIL_COND(err != OK);
-			file->store_string(templates[keys[i]]);
-			file->close();
-		}
-	}
-}
-
 // PUBLIC METHODS
 
 EditorSettings *EditorSettings::get_singleton() {
@@ -852,10 +823,7 @@ void EditorSettings::create() {
 	}
 
 	if (EditorPaths::get_singleton()->are_paths_valid()) {
-		_create_script_templates(EditorPaths::get_singleton()->get_config_dir().plus_file("script_templates"));
-
 		// Validate editor config file.
-
 		DirAccessRef dir = DirAccess::open(EditorPaths::get_singleton()->get_config_dir());
 		String config_file_name = "editor_settings-" + itos(VERSION_MAJOR) + ".tres";
 		config_file_path = EditorPaths::get_singleton()->get_config_dir().plus_file(config_file_name);
@@ -1190,7 +1158,7 @@ bool EditorSettings::is_dark_theme() {
 	int LIGHT_COLOR = 2;
 	Color base_color = get("interface/theme/base_color");
 	int icon_font_color_setting = get("interface/theme/icon_and_font_color");
-	return (icon_font_color_setting == AUTO_COLOR && ((base_color.r + base_color.g + base_color.b) / 3.0) < 0.5) || icon_font_color_setting == LIGHT_COLOR;
+	return (icon_font_color_setting == AUTO_COLOR && base_color.get_luminance() < 0.5) || icon_font_color_setting == LIGHT_COLOR;
 }
 
 void EditorSettings::list_text_editor_themes() {

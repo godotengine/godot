@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,7 @@ class OptimizedTranslation : public Translation {
 
 	//this translation uses a sort of modified perfect hash algorithm
 	//it requires hashing strings twice and then does a binary search,
-	//so it's slower, but at the same time it has an extreemly high chance
+	//so it's slower, but at the same time it has an extremely high chance
 	//of catching untranslated strings
 
 	//load/store friendly types

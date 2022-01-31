@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,6 +60,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 		TOOL_REMOVE_ANIM,
 		TOOL_COPY_ANIM,
 		TOOL_PASTE_ANIM,
+		TOOL_PASTE_ANIM_REF,
 		TOOL_EDIT_RESOURCE
 	};
 
@@ -183,6 +184,8 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _animation_blend();
 	void _animation_edit();
 	void _animation_duplicate();
+	Ref<Animation> _animation_clone(const Ref<Animation> p_anim);
+	void _animation_paste(const Ref<Animation> p_anim);
 	void _animation_resource_edit();
 	void _scale_changed(const String &p_scale);
 	void _save_animation(String p_file);
@@ -251,6 +254,10 @@ class AnimationPlayerEditorPlugin : public EditorPlugin {
 
 protected:
 	void _notification(int p_what);
+
+	void _property_keyed(const String &p_keyed, const Variant &p_value, bool p_advance);
+	void _transform_key_request(Object *sp, const String &p_sub, const Transform3D &p_key);
+	void _update_keying();
 
 public:
 	virtual Dictionary get_state() const override { return anim_editor->get_state(); }

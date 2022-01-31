@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,12 +32,12 @@
 
 #include "animation_track_editor_plugins.h"
 #include "core/input/input.h"
-#include "core/os/keyboard.h"
 #include "editor/animation_bezier_editor.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor_node.h"
 #include "editor_scale.h"
 #include "scene/animation/animation_player.h"
+#include "scene/gui/view_panner.h"
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
@@ -1458,6 +1458,10 @@ int AnimationTimelineEdit::get_name_limit() const {
 }
 
 void AnimationTimelineEdit::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+		panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
+	}
+
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		add_track->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 		loop->set_icon(get_theme_icon(SNAME("Loop"), SNAME("EditorIcons")));
@@ -1760,17 +1764,12 @@ void AnimationTimelineEdit::_play_position_draw() {
 void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
+	if (panner->gui_input(p_event)) {
+		accept_event();
+		return;
+	}
+
 	const Ref<InputEventMouseButton> mb = p_event;
-
-	if (mb.is_valid() && mb->is_pressed() && mb->is_command_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
-		get_zoom()->set_value(get_zoom()->get_value() * 1.05);
-		accept_event();
-	}
-
-	if (mb.is_valid() && mb->is_pressed() && mb->is_command_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
-		get_zoom()->set_value(get_zoom()->get_value() / 1.05);
-		accept_event();
-	}
 
 	if (mb.is_valid() && mb->is_pressed() && mb->is_alt_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
 		if (track_edit) {
@@ -1796,27 +1795,17 @@ void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		dragging_hsize = false;
 	}
 	if (mb.is_valid() && mb->get_position().x > get_name_limit() && mb->get_position().x < (get_size().width - get_buttons_width())) {
-		if (!panning_timeline && mb->get_button_index() == MouseButton::LEFT) {
+		if (!panner->is_panning() && mb->get_button_index() == MouseButton::LEFT) {
 			int x = mb->get_position().x - get_name_limit();
 
 			float ofs = x / get_zoom_scale() + get_value();
-			emit_signal(SNAME("timeline_changed"), ofs, false, Input::get_singleton()->is_key_pressed(Key::ALT));
+			emit_signal(SNAME("timeline_changed"), ofs, false, mb->is_alt_pressed());
 			dragging_timeline = true;
-		}
-		if (!dragging_timeline && mb->get_button_index() == MouseButton::MIDDLE) {
-			int x = mb->get_position().x - get_name_limit();
-			panning_timeline_from = x / get_zoom_scale();
-			panning_timeline = true;
-			panning_timeline_at = get_value();
 		}
 	}
 
 	if (dragging_timeline && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
 		dragging_timeline = false;
-	}
-
-	if (panning_timeline && mb.is_valid() && mb->get_button_index() == MouseButton::MIDDLE && !mb->is_pressed()) {
-		panning_timeline = false;
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
@@ -1839,14 +1828,26 @@ void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		if (dragging_timeline) {
 			int x = mm->get_position().x - get_name_limit();
 			float ofs = x / get_zoom_scale() + get_value();
-			emit_signal(SNAME("timeline_changed"), ofs, false, Input::get_singleton()->is_key_pressed(Key::ALT));
+			emit_signal(SNAME("timeline_changed"), ofs, false, mm->is_alt_pressed());
 		}
-		if (panning_timeline) {
-			int x = mm->get_position().x - get_name_limit();
-			float ofs = x / get_zoom_scale();
-			float diff = ofs - panning_timeline_from;
-			set_value(panning_timeline_at - diff);
-		}
+	}
+}
+
+void AnimationTimelineEdit::_scroll_callback(Vector2 p_scroll_vec, bool p_alt) {
+	// Timeline has no vertical scroll, so we change it to horizontal.
+	p_scroll_vec.x += p_scroll_vec.y;
+	_pan_callback(-p_scroll_vec * 32);
+}
+
+void AnimationTimelineEdit::_pan_callback(Vector2 p_scroll_vec) {
+	set_value(get_value() - p_scroll_vec.x / get_zoom_scale());
+}
+
+void AnimationTimelineEdit::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt) {
+	if (p_scroll_vec.y < 0) {
+		get_zoom()->set_value(get_zoom()->get_value() * 1.05);
+	} else {
+		get_zoom()->set_value(get_zoom()->get_value() / 1.05);
 	}
 }
 
@@ -1871,7 +1872,7 @@ void AnimationTimelineEdit::_track_added(int p_track) {
 void AnimationTimelineEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("zoom_changed"));
 	ADD_SIGNAL(MethodInfo("name_limit_changed"));
-	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "drag")));
+	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "drag"), PropertyInfo(Variant::BOOL, "timeline_only")));
 	ADD_SIGNAL(MethodInfo("track_added", PropertyInfo(Variant::INT, "track")));
 	ADD_SIGNAL(MethodInfo("length_changed", PropertyInfo(Variant::FLOAT, "size")));
 }
@@ -1926,9 +1927,11 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	add_track->get_popup()->connect("index_pressed", callable_mp(this, &AnimationTimelineEdit::_track_added));
 	len_hb->hide();
 
-	panning_timeline = false;
 	dragging_timeline = false;
 	dragging_hsize = false;
+
+	panner.instantiate();
+	panner->set_callbacks(callable_mp(this, &AnimationTimelineEdit::_scroll_callback), callable_mp(this, &AnimationTimelineEdit::_pan_callback), callable_mp(this, &AnimationTimelineEdit::_zoom_callback));
 
 	set_layout_direction(Control::LAYOUT_DIRECTION_LTR);
 }
@@ -3118,7 +3121,7 @@ void AnimationTrackEdit::append_to_selection(const Rect2 &p_box, bool p_deselect
 }
 
 void AnimationTrackEdit::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "drag")));
+	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "drag"), PropertyInfo(Variant::BOOL, "timeline_only")));
 	ADD_SIGNAL(MethodInfo("remove_request", PropertyInfo(Variant::INT, "track")));
 	ADD_SIGNAL(MethodInfo("dropped", PropertyInfo(Variant::INT, "from_track"), PropertyInfo(Variant::INT, "to_track")));
 	ADD_SIGNAL(MethodInfo("insert_key", PropertyInfo(Variant::FLOAT, "ofs")));
@@ -3370,7 +3373,13 @@ Node *AnimationTrackEditor::get_root() const {
 }
 
 void AnimationTrackEditor::update_keying() {
-	bool keying_enabled = is_visible_in_tree() && animation.is_valid();
+	bool keying_enabled = false;
+
+	EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
+	if (is_visible_in_tree() && animation.is_valid() && editor_history->get_path_size() > 0) {
+		Object *obj = ObjectDB::get_instance(editor_history->get_path_object(0));
+		keying_enabled = Object::cast_to<Node>(obj) != nullptr;
+	}
 
 	if (keying_enabled == keying) {
 		return;
@@ -3390,7 +3399,7 @@ Dictionary AnimationTrackEditor::get_state() const {
 	state["fps_mode"] = timeline->is_using_fps();
 	state["zoom"] = zoom->get_value();
 	state["offset"] = timeline->get_value();
-	state["v_scroll"] = scroll->get_v_scrollbar()->get_value();
+	state["v_scroll"] = scroll->get_v_scroll_bar()->get_value();
 	return state;
 }
 
@@ -3418,9 +3427,9 @@ void AnimationTrackEditor::set_state(const Dictionary &p_state) {
 		timeline->set_value(0);
 	}
 	if (p_state.has("v_scroll")) {
-		scroll->get_v_scrollbar()->set_value(p_state["v_scroll"]);
+		scroll->get_v_scroll_bar()->set_value(p_state["v_scroll"]);
 	} else {
-		scroll->get_v_scrollbar()->set_value(0);
+		scroll->get_v_scroll_bar()->set_value(0);
 	}
 }
 
@@ -3639,7 +3648,7 @@ void AnimationTrackEditor::_insert_track(bool p_create_reset, bool p_create_bezi
 			pos = animation->get_length();
 		}
 		set_anim_pos(pos);
-		emit_signal(SNAME("timeline_changed"), pos, true);
+		emit_signal(SNAME("timeline_changed"), pos, true, false);
 	}
 }
 
@@ -4500,6 +4509,10 @@ MenuButton *AnimationTrackEditor::get_edit_menu() {
 }
 
 void AnimationTrackEditor::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+		panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
+	}
+
 	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
 		zoom_icon->set_texture(get_theme_icon(SNAME("Zoom"), SNAME("EditorIcons")));
 		snap->set_icon(get_theme_icon(SNAME("Snap"), SNAME("EditorIcons")));
@@ -4516,8 +4529,6 @@ void AnimationTrackEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 		update_keying();
-		EditorNode::get_singleton()->update_keying();
-		emit_signal(SNAME("keying_changed"));
 	}
 }
 
@@ -4999,7 +5010,7 @@ struct _AnimMoveRestore {
 void AnimationTrackEditor::_clear_key_edit() {
 	if (key_edit) {
 		// If key edit is the object being inspected, remove it first.
-		if (EditorNode::get_singleton()->get_inspector()->get_edited_object() == key_edit) {
+		if (InspectorDock::get_inspector_singleton()->get_edited_object() == key_edit) {
 			EditorNode::get_singleton()->push_item(nullptr);
 		}
 
@@ -5009,7 +5020,7 @@ void AnimationTrackEditor::_clear_key_edit() {
 	}
 
 	if (multi_key_edit) {
-		if (EditorNode::get_singleton()->get_inspector()->get_edited_object() == multi_key_edit) {
+		if (InspectorDock::get_inspector_singleton()->get_edited_object() == multi_key_edit) {
 			EditorNode::get_singleton()->push_item(nullptr);
 		}
 
@@ -5212,27 +5223,12 @@ void AnimationTrackEditor::_box_selection_draw() {
 }
 
 void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
+	if (panner->gui_input(p_event)) {
+		scroll->accept_event();
+		return;
+	}
+
 	Ref<InputEventMouseButton> mb = p_event;
-
-	if (mb.is_valid() && mb->is_pressed() && mb->is_command_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
-		timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() * 1.05);
-		scroll->accept_event();
-	}
-
-	if (mb.is_valid() && mb->is_pressed() && mb->is_command_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
-		timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() / 1.05);
-		scroll->accept_event();
-	}
-
-	if (mb.is_valid() && mb->is_pressed() && mb->is_alt_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
-		goto_prev_step(true);
-		scroll->accept_event();
-	}
-
-	if (mb.is_valid() && mb->is_pressed() && mb->is_alt_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
-		goto_next_step(true);
-		scroll->accept_event();
-	}
 
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
 		if (mb->is_pressed()) {
@@ -5261,10 +5257,6 @@ void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
-
-	if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_MIDDLE) != MouseButton::NONE) {
-		timeline->set_value(timeline->get_value() - mm->get_relative().x / timeline->get_zoom_scale());
-	}
 
 	if (mm.is_valid() && box_selecting) {
 		if ((mm->get_button_mask() & MouseButton::MASK_LEFT) == MouseButton::NONE) {
@@ -5299,6 +5291,31 @@ void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 		box_selection->set_size(rect.size);
 
 		box_select_rect = rect;
+	}
+}
+
+void AnimationTrackEditor::_scroll_callback(Vector2 p_scroll_vec, bool p_alt) {
+	if (p_alt) {
+		if (p_scroll_vec.x < 0 || p_scroll_vec.y < 0) {
+			goto_prev_step(true);
+		} else {
+			goto_next_step(true);
+		}
+	} else {
+		_pan_callback(-p_scroll_vec * 32);
+	}
+}
+
+void AnimationTrackEditor::_pan_callback(Vector2 p_scroll_vec) {
+	timeline->set_value(timeline->get_value() - p_scroll_vec.x / timeline->get_zoom_scale());
+	scroll->set_v_scroll(scroll->get_v_scroll() - p_scroll_vec.y);
+}
+
+void AnimationTrackEditor::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt) {
+	if (p_scroll_vec.y < 0) {
+		timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() * 1.05);
+	} else {
+		timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() / 1.05);
 	}
 }
 
@@ -5428,7 +5445,7 @@ void AnimationTrackEditor::goto_prev_step(bool p_from_mouse_event) {
 		pos = 0;
 	}
 	set_anim_pos(pos);
-	emit_signal(SNAME("timeline_changed"), pos, true);
+	emit_signal(SNAME("timeline_changed"), pos, true, false);
 }
 
 void AnimationTrackEditor::goto_next_step(bool p_from_mouse_event) {
@@ -5455,7 +5472,7 @@ void AnimationTrackEditor::goto_next_step(bool p_from_mouse_event) {
 	}
 	set_anim_pos(pos);
 
-	emit_signal(SNAME("timeline_changed"), pos, true);
+	emit_signal(SNAME("timeline_changed"), pos, true, false);
 }
 
 void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
@@ -5679,16 +5696,16 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				to_restore.push_back(amr);
 			}
 
-#define _NEW_POS(m_ofs) (((s > 0) ? m_ofs : from_t + (len - (m_ofs - from_t))) - pivot) * ABS(s) + from_t
+#define NEW_POS(m_ofs) (((s > 0) ? m_ofs : from_t + (len - (m_ofs - from_t))) - pivot) * ABS(s) + from_t
 			// 3 - Move the keys (re insert them).
 			for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-				float newpos = _NEW_POS(E->get().pos);
+				float newpos = NEW_POS(E->get().pos);
 				undo_redo->add_do_method(animation.ptr(), "track_insert_key", E->key().track, newpos, animation->track_get_key_value(E->key().track, E->key().key), animation->track_get_key_transition(E->key().track, E->key().key));
 			}
 
 			// 4 - (Undo) Remove inserted keys.
 			for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-				float newpos = _NEW_POS(E->get().pos);
+				float newpos = NEW_POS(E->get().pos);
 				undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", E->key().track, newpos);
 			}
 
@@ -5708,13 +5725,13 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			// 7-reselect.
 			for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
 				float oldpos = E->get().pos;
-				float newpos = _NEW_POS(oldpos);
+				float newpos = NEW_POS(oldpos);
 				if (newpos >= 0) {
 					undo_redo->add_do_method(this, "_select_at_anim", animation, E->key().track, newpos);
 				}
 				undo_redo->add_undo_method(this, "_select_at_anim", animation, E->key().track, oldpos);
 			}
-#undef _NEW_POS
+#undef NEW_POS
 			undo_redo->commit_action();
 		} break;
 		case EDIT_DUPLICATE_SELECTION: {
@@ -5979,7 +5996,7 @@ void AnimationTrackEditor::_bind_methods() {
 	ClassDB::bind_method("_key_deselected", &AnimationTrackEditor::_key_deselected); // Still used by some connect_compat.
 	ClassDB::bind_method("_clear_selection", &AnimationTrackEditor::_clear_selection); // Still used by some connect_compat.
 
-	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "drag")));
+	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "drag"), PropertyInfo(Variant::BOOL, "timeline_only")));
 	ADD_SIGNAL(MethodInfo("keying_changed"));
 	ADD_SIGNAL(MethodInfo("animation_len_changed", PropertyInfo(Variant::FLOAT, "len")));
 	ADD_SIGNAL(MethodInfo("animation_step_changed", PropertyInfo(Variant::FLOAT, "step")));
@@ -6088,13 +6105,18 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	timeline->connect("value_changed", callable_mp(this, &AnimationTrackEditor::_timeline_value_changed));
 	timeline->connect("length_changed", callable_mp(this, &AnimationTrackEditor::_update_length));
 
+	panner.instantiate();
+	panner->set_callbacks(callable_mp(this, &AnimationTrackEditor::_scroll_callback), callable_mp(this, &AnimationTrackEditor::_pan_callback), callable_mp(this, &AnimationTrackEditor::_zoom_callback));
+
 	scroll = memnew(ScrollContainer);
 	timeline_vbox->add_child(scroll);
 	scroll->set_v_size_flags(SIZE_EXPAND_FILL);
-	VScrollBar *sb = scroll->get_v_scrollbar();
+	VScrollBar *sb = scroll->get_v_scroll_bar();
 	scroll->remove_child(sb);
 	timeline_scroll->add_child(sb); // Move here so timeline and tracks are always aligned.
+	scroll->set_focus_mode(FOCUS_CLICK);
 	scroll->connect("gui_input", callable_mp(this, &AnimationTrackEditor::_scroll_input));
+	scroll->connect("focus_exited", callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
 
 	bezier_edit = memnew(AnimationBezierTrackEdit);
 	timeline_vbox->add_child(bezier_edit);

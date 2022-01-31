@@ -4,7 +4,7 @@
  *
  *   FreeType PFR loader (body).
  *
- * Copyright (C) 2002-2020 by
+ * Copyright (C) 2002-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -565,7 +565,7 @@
     if ( phy_font->font_id )
       goto Exit;
 
-    if ( FT_ALLOC( phy_font->font_id, len + 1 ) )
+    if ( FT_QALLOC( phy_font->font_id, len + 1 ) )
       goto Exit;
 
     /* copy font ID name, and terminate it for safety */
@@ -601,7 +601,7 @@
 
     PFR_CHECK( count * 2 );
 
-    if ( FT_NEW_ARRAY( snaps, count ) )
+    if ( FT_QNEW_ARRAY( snaps, count ) )
       goto Exit;
 
     phy_font->vertical.stem_snaps = snaps;
@@ -761,7 +761,7 @@
 
     if ( ok )
     {
-      if ( FT_ALLOC( result, len + 1 ) )
+      if ( FT_QALLOC( result, len + 1 ) )
         goto Exit;
 
       FT_MEM_COPY( result, p, len );
@@ -953,7 +953,7 @@
 
       PFR_CHECK( count * 2 );
 
-      if ( FT_NEW_ARRAY( phy_font->blue_values, count ) )
+      if ( FT_QNEW_ARRAY( phy_font->blue_values, count ) )
         goto Fail;
 
       for ( n = 0; n < count; n++ )

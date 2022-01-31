@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,7 +65,7 @@ void RendererSceneRenderRD::sdfgi_update(RID p_render_buffers, RID p_environment
 	static const uint32_t history_frames_to_converge[RS::ENV_SDFGI_CONVERGE_MAX] = { 5, 10, 15, 20, 25, 30 };
 	uint32_t requested_history_size = history_frames_to_converge[gi.sdfgi_frames_to_converge];
 
-	if (rb->sdfgi && (rb->sdfgi->cascade_mode != env->sdfgi_cascades || rb->sdfgi->min_cell_size != env->sdfgi_min_cell_size || requested_history_size != rb->sdfgi->history_size || rb->sdfgi->uses_occlusion != env->sdfgi_use_occlusion || rb->sdfgi->y_scale_mode != env->sdfgi_y_scale)) {
+	if (rb->sdfgi && (rb->sdfgi->num_cascades != env->sdfgi_cascades || rb->sdfgi->min_cell_size != env->sdfgi_min_cell_size || requested_history_size != rb->sdfgi->history_size || rb->sdfgi->uses_occlusion != env->sdfgi_use_occlusion || rb->sdfgi->y_scale_mode != env->sdfgi_y_scale)) {
 		//configuration changed, erase
 		rb->sdfgi->erase();
 		memdelete(rb->sdfgi);
@@ -289,10 +289,10 @@ void RendererSceneRenderRD::environment_set_tonemap(RID p_env, RS::EnvironmentTo
 	env->set_tonemap(p_tone_mapper, p_exposure, p_white, p_auto_exposure, p_min_luminance, p_max_luminance, p_auto_exp_speed, p_auto_exp_scale);
 }
 
-void RendererSceneRenderRD::environment_set_glow(RID p_env, bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap) {
+void RendererSceneRenderRD::environment_set_glow(RID p_env, bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, float p_glow_map_strength, RID p_glow_map) {
 	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND(!env);
-	env->set_glow(p_enable, p_levels, p_intensity, p_strength, p_mix, p_bloom_threshold, p_blend_mode, p_hdr_bleed_threshold, p_hdr_bleed_scale, p_hdr_luminance_cap);
+	env->set_glow(p_enable, p_levels, p_intensity, p_strength, p_mix, p_bloom_threshold, p_blend_mode, p_hdr_bleed_threshold, p_hdr_bleed_scale, p_hdr_luminance_cap, p_glow_map_strength, p_glow_map);
 }
 
 void RendererSceneRenderRD::environment_glow_set_use_bicubic_upscale(bool p_enable) {
@@ -303,7 +303,7 @@ void RendererSceneRenderRD::environment_glow_set_use_high_quality(bool p_enable)
 	glow_high_quality = p_enable;
 }
 
-void RendererSceneRenderRD::environment_set_sdfgi(RID p_env, bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) {
+void RendererSceneRenderRD::environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) {
 	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND(!env);
 
@@ -427,6 +427,26 @@ void RendererSceneRenderRD::environment_set_ssao_quality(RS::EnvironmentSSAOQual
 	ssao_fadeout_to = p_fadeout_to;
 }
 
+void RendererSceneRenderRD::environment_set_ssil(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_sharpness, float p_normal_rejection) {
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_COND(!env);
+
+	env->ssil_enabled = p_enable;
+	env->ssil_radius = p_radius;
+	env->ssil_intensity = p_intensity;
+	env->ssil_sharpness = p_sharpness;
+	env->ssil_normal_rejection = p_normal_rejection;
+}
+
+void RendererSceneRenderRD::environment_set_ssil_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
+	ssil_quality = p_quality;
+	ssil_half_size = p_half_size;
+	ssil_adaptive_target = p_adaptive_target;
+	ssil_blur_passes = p_blur_passes;
+	ssil_fadeout_from = p_fadeout_from;
+	ssil_fadeout_to = p_fadeout_to;
+}
+
 bool RendererSceneRenderRD::environment_is_ssao_enabled(RID p_env) const {
 	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, false);
@@ -443,6 +463,12 @@ float RendererSceneRenderRD::environment_get_ssao_light_affect(RID p_env) const 
 	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, 0.0);
 	return env->ssao_direct_light_affect;
+}
+
+bool RendererSceneRenderRD::environment_is_ssil_enabled(RID p_env) const {
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_COND_V(!env, false);
+	return env->ssil_enabled;
 }
 
 bool RendererSceneRenderRD::environment_is_ssr_enabled(RID p_env) const {
@@ -464,34 +490,63 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, Ref<Image>());
 
-	if (env->background == RS::ENV_BG_CAMERA_FEED || env->background == RS::ENV_BG_CANVAS || env->background == RS::ENV_BG_KEEP) {
+	RS::EnvironmentBG environment_background = env->background;
+
+	if (environment_background == RS::ENV_BG_CAMERA_FEED || environment_background == RS::ENV_BG_CANVAS || environment_background == RS::ENV_BG_KEEP) {
 		return Ref<Image>(); //nothing to bake
 	}
 
-	if (env->background == RS::ENV_BG_CLEAR_COLOR || env->background == RS::ENV_BG_COLOR) {
-		Color color;
-		if (env->background == RS::ENV_BG_CLEAR_COLOR) {
-			color = storage->get_default_clear_color();
-		} else {
-			color = env->bg_color;
-		}
-		color.r *= env->bg_energy;
-		color.g *= env->bg_energy;
-		color.b *= env->bg_energy;
+	RS::EnvironmentAmbientSource ambient_source = env->ambient_source;
 
-		Ref<Image> ret;
-		ret.instantiate();
-		ret->create(p_size.width, p_size.height, false, Image::FORMAT_RGBAF);
-		for (int i = 0; i < p_size.width; i++) {
-			for (int j = 0; j < p_size.height; j++) {
-				ret->set_pixel(i, j, color);
-			}
-		}
-		return ret;
+	bool use_ambient_light = false;
+	bool use_cube_map = false;
+	if (ambient_source == RS::ENV_AMBIENT_SOURCE_BG && (environment_background == RS::ENV_BG_CLEAR_COLOR || environment_background == RS::ENV_BG_COLOR)) {
+		use_ambient_light = true;
+	} else {
+		use_cube_map = (ambient_source == RS::ENV_AMBIENT_SOURCE_BG && environment_background == RS::ENV_BG_SKY) || ambient_source == RS::ENV_AMBIENT_SOURCE_SKY;
+		use_ambient_light = use_cube_map || ambient_source == RS::ENV_AMBIENT_SOURCE_COLOR;
+	}
+	use_cube_map = use_cube_map || (environment_background == RS::ENV_BG_SKY && env->sky.is_valid());
+
+	Color ambient_color;
+	float ambient_color_sky_mix;
+	if (use_ambient_light) {
+		ambient_color_sky_mix = env->ambient_sky_contribution;
+		const float ambient_energy = env->ambient_light_energy;
+		ambient_color = env->ambient_light;
+		ambient_color = ambient_color.to_linear();
+		ambient_color.r *= ambient_energy;
+		ambient_color.g *= ambient_energy;
+		ambient_color.b *= ambient_energy;
 	}
 
-	if (env->background == RS::ENV_BG_SKY && env->sky.is_valid()) {
-		return sky_bake_panorama(env->sky, env->bg_energy, p_bake_irradiance, p_size);
+	if (use_cube_map) {
+		Ref<Image> panorama = sky_bake_panorama(env->sky, env->bg_energy, p_bake_irradiance, p_size);
+		if (use_ambient_light) {
+			for (int x = 0; x < p_size.width; x++) {
+				for (int y = 0; y < p_size.height; y++) {
+					panorama->set_pixel(x, y, ambient_color.lerp(panorama->get_pixel(x, y), ambient_color_sky_mix));
+				}
+			}
+		}
+		return panorama;
+	} else {
+		const float bg_energy = env->bg_energy;
+		Color panorama_color = ((environment_background == RS::ENV_BG_CLEAR_COLOR) ? storage->get_default_clear_color() : env->bg_color);
+		panorama_color = panorama_color.to_linear();
+		panorama_color.r *= bg_energy;
+		panorama_color.g *= bg_energy;
+		panorama_color.b *= bg_energy;
+
+		if (use_ambient_light) {
+			panorama_color = ambient_color.lerp(panorama_color, ambient_color_sky_mix);
+		}
+
+		Ref<Image> panorama;
+		panorama.instantiate();
+		panorama->create(p_size.width, p_size.height, false, Image::FORMAT_RGBAF);
+		panorama->fill(panorama_color);
+		return panorama;
 	}
 
 	return Ref<Image>();
@@ -1077,11 +1132,11 @@ bool RendererSceneRenderRD::_shadow_atlas_find_omni_shadows(ShadowAtlas *shadow_
 	return false;
 }
 
-bool RendererSceneRenderRD::shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version) {
+bool RendererSceneRenderRD::shadow_atlas_update_light(RID p_atlas, RID p_light_instance, float p_coverage, uint64_t p_light_version) {
 	ShadowAtlas *shadow_atlas = shadow_atlas_owner.get_or_null(p_atlas);
 	ERR_FAIL_COND_V(!shadow_atlas, false);
 
-	LightInstance *li = light_instance_owner.get_or_null(p_light_intance);
+	LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
 	ERR_FAIL_COND_V(!li, false);
 
 	if (shadow_atlas->size == 0 || shadow_atlas->smallest_subdiv == 0) {
@@ -1130,8 +1185,8 @@ bool RendererSceneRenderRD::shadow_atlas_update_light(RID p_atlas, RID p_light_i
 	bool should_realloc = false;
 	bool should_redraw = false;
 
-	if (shadow_atlas->shadow_owners.has(p_light_intance)) {
-		old_key = shadow_atlas->shadow_owners[p_light_intance];
+	if (shadow_atlas->shadow_owners.has(p_light_instance)) {
+		old_key = shadow_atlas->shadow_owners[p_light_instance];
 		old_quadrant = (old_key >> ShadowAtlas::QUADRANT_SHIFT) & 0x3;
 		old_shadow = old_key & ShadowAtlas::SHADOW_INDEX_MASK;
 
@@ -1175,7 +1230,7 @@ bool RendererSceneRenderRD::shadow_atlas_update_light(RID p_atlas, RID p_light_i
 		ShadowAtlas::Quadrant::Shadow *sh = &shadow_atlas->quadrants[new_quadrant].shadows.write[new_shadow];
 		_shadow_atlas_invalidate_shadow(sh, p_atlas, shadow_atlas, new_quadrant, new_shadow);
 
-		sh->owner = p_light_intance;
+		sh->owner = p_light_instance;
 		sh->alloc_tick = tick;
 		sh->version = p_light_version;
 
@@ -1186,7 +1241,7 @@ bool RendererSceneRenderRD::shadow_atlas_update_light(RID p_atlas, RID p_light_i
 			ShadowAtlas::Quadrant::Shadow *extra_sh = &shadow_atlas->quadrants[new_quadrant].shadows.write[new_omni_shadow];
 			_shadow_atlas_invalidate_shadow(extra_sh, p_atlas, shadow_atlas, new_quadrant, new_omni_shadow);
 
-			extra_sh->owner = p_light_intance;
+			extra_sh->owner = p_light_instance;
 			extra_sh->alloc_tick = tick;
 			extra_sh->version = p_light_version;
 		}
@@ -1194,7 +1249,7 @@ bool RendererSceneRenderRD::shadow_atlas_update_light(RID p_atlas, RID p_light_i
 		li->shadow_atlases.insert(p_atlas);
 
 		//update it in map
-		shadow_atlas->shadow_owners[p_light_intance] = new_key;
+		shadow_atlas->shadow_owners[p_light_instance] = new_key;
 		//make it dirty, as it should redraw anyway
 		return true;
 	}
@@ -1215,10 +1270,10 @@ void RendererSceneRenderRD::_shadow_atlas_invalidate_shadow(RendererSceneRenderR
 			omni_shadow->owner = RID();
 		}
 
+		p_shadow_atlas->shadow_owners.erase(p_shadow->owner);
 		p_shadow->version = 0;
 		p_shadow->owner = RID();
 		sli->shadow_atlases.erase(p_atlas);
-		p_shadow_atlas->shadow_owners.erase(p_shadow->owner);
 	}
 }
 
@@ -1798,24 +1853,51 @@ void RendererSceneRenderRD::_free_render_buffer_data(RenderBuffers *rb) {
 		rb->luminance.current = RID();
 	}
 
-	if (rb->ssao.depth.is_valid()) {
-		RD::get_singleton()->free(rb->ssao.depth);
-		RD::get_singleton()->free(rb->ssao.ao_deinterleaved);
-		RD::get_singleton()->free(rb->ssao.ao_pong);
-		RD::get_singleton()->free(rb->ssao.ao_final);
+	if (rb->ss_effects.linear_depth.is_valid()) {
+		RD::get_singleton()->free(rb->ss_effects.linear_depth);
+		rb->ss_effects.linear_depth = RID();
+		rb->ss_effects.linear_depth_slices.clear();
+	}
 
-		RD::get_singleton()->free(rb->ssao.importance_map[0]);
-		RD::get_singleton()->free(rb->ssao.importance_map[1]);
+	if (rb->ss_effects.ssao.ao_final.is_valid()) {
+		RD::get_singleton()->free(rb->ss_effects.ssao.ao_deinterleaved);
+		RD::get_singleton()->free(rb->ss_effects.ssao.ao_pong);
+		RD::get_singleton()->free(rb->ss_effects.ssao.ao_final);
 
-		rb->ssao.depth = RID();
-		rb->ssao.ao_deinterleaved = RID();
-		rb->ssao.ao_pong = RID();
-		rb->ssao.ao_final = RID();
-		rb->ssao.importance_map[0] = RID();
-		rb->ssao.importance_map[1] = RID();
-		rb->ssao.depth_slices.clear();
-		rb->ssao.ao_deinterleaved_slices.clear();
-		rb->ssao.ao_pong_slices.clear();
+		RD::get_singleton()->free(rb->ss_effects.ssao.importance_map[0]);
+		RD::get_singleton()->free(rb->ss_effects.ssao.importance_map[1]);
+
+		rb->ss_effects.ssao.ao_deinterleaved = RID();
+		rb->ss_effects.ssao.ao_pong = RID();
+		rb->ss_effects.ssao.ao_final = RID();
+		rb->ss_effects.ssao.importance_map[0] = RID();
+		rb->ss_effects.ssao.importance_map[1] = RID();
+
+		rb->ss_effects.ssao.ao_deinterleaved_slices.clear();
+		rb->ss_effects.ssao.ao_pong_slices.clear();
+	}
+
+	if (rb->ss_effects.ssil.ssil_final.is_valid()) {
+		RD::get_singleton()->free(rb->ss_effects.ssil.ssil_final);
+		RD::get_singleton()->free(rb->ss_effects.ssil.deinterleaved);
+		RD::get_singleton()->free(rb->ss_effects.ssil.pong);
+		RD::get_singleton()->free(rb->ss_effects.ssil.edges);
+		RD::get_singleton()->free(rb->ss_effects.ssil.importance_map[0]);
+		RD::get_singleton()->free(rb->ss_effects.ssil.importance_map[1]);
+
+		rb->ss_effects.ssil.ssil_final = RID();
+		rb->ss_effects.ssil.deinterleaved = RID();
+		rb->ss_effects.ssil.pong = RID();
+		rb->ss_effects.ssil.edges = RID();
+		rb->ss_effects.ssil.deinterleaved_slices.clear();
+		rb->ss_effects.ssil.pong_slices.clear();
+		rb->ss_effects.ssil.edges_slices.clear();
+		rb->ss_effects.ssil.importance_map[0] = RID();
+		rb->ss_effects.ssil.importance_map[1] = RID();
+
+		RD::get_singleton()->free(rb->ss_effects.last_frame);
+		rb->ss_effects.last_frame = RID();
+		rb->ss_effects.last_frame_slices.clear();
 	}
 
 	if (rb->ssr.blur_radius[0].is_valid()) {
@@ -1837,6 +1919,11 @@ void RendererSceneRenderRD::_free_render_buffer_data(RenderBuffers *rb) {
 		RD::get_singleton()->free(rb->reflection_buffer);
 		rb->ambient_buffer = RID();
 		rb->reflection_buffer = RID();
+	}
+
+	if (rb->gi.voxel_gi_buffer.is_valid()) {
+		RD::get_singleton()->free(rb->gi.voxel_gi_buffer);
+		rb->gi.voxel_gi_buffer = RID();
 	}
 }
 
@@ -1919,24 +2006,21 @@ void RendererSceneRenderRD::_process_ssao(RID p_render_buffers, RID p_environmen
 
 	RENDER_TIMESTAMP("Process SSAO");
 
-	if (rb->ssao.ao_final.is_valid() && ssao_using_half_size != ssao_half_size) {
-		RD::get_singleton()->free(rb->ssao.depth);
-		RD::get_singleton()->free(rb->ssao.ao_deinterleaved);
-		RD::get_singleton()->free(rb->ssao.ao_pong);
-		RD::get_singleton()->free(rb->ssao.ao_final);
+	if (rb->ss_effects.ssao.ao_final.is_valid() && ssao_using_half_size != ssao_half_size) {
+		RD::get_singleton()->free(rb->ss_effects.ssao.ao_deinterleaved);
+		RD::get_singleton()->free(rb->ss_effects.ssao.ao_pong);
+		RD::get_singleton()->free(rb->ss_effects.ssao.ao_final);
 
-		RD::get_singleton()->free(rb->ssao.importance_map[0]);
-		RD::get_singleton()->free(rb->ssao.importance_map[1]);
+		RD::get_singleton()->free(rb->ss_effects.ssao.importance_map[0]);
+		RD::get_singleton()->free(rb->ss_effects.ssao.importance_map[1]);
 
-		rb->ssao.depth = RID();
-		rb->ssao.ao_deinterleaved = RID();
-		rb->ssao.ao_pong = RID();
-		rb->ssao.ao_final = RID();
-		rb->ssao.importance_map[0] = RID();
-		rb->ssao.importance_map[1] = RID();
-		rb->ssao.depth_slices.clear();
-		rb->ssao.ao_deinterleaved_slices.clear();
-		rb->ssao.ao_pong_slices.clear();
+		rb->ss_effects.ssao.ao_deinterleaved = RID();
+		rb->ss_effects.ssao.ao_pong = RID();
+		rb->ss_effects.ssao.ao_final = RID();
+		rb->ss_effects.ssao.importance_map[0] = RID();
+		rb->ss_effects.ssao.importance_map[1] = RID();
+		rb->ss_effects.ssao.ao_deinterleaved_slices.clear();
+		rb->ss_effects.ssao.ao_pong_slices.clear();
 	}
 
 	int buffer_width;
@@ -1955,24 +2039,24 @@ void RendererSceneRenderRD::_process_ssao(RID p_render_buffers, RID p_environmen
 		half_height = (rb->internal_height + 3) / 4;
 	}
 	bool uniform_sets_are_invalid = false;
-	if (rb->ssao.depth.is_null()) {
-		//allocate depth slices
-
+	if (rb->ss_effects.ssao.ao_deinterleaved.is_null()) {
+		{
+			rb->ss_effects.ssao.depth_texture_view = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->ss_effects.linear_depth, 0, ssao_half_size ? 1 : 0, 4, RD::TEXTURE_SLICE_2D_ARRAY);
+		}
 		{
 			RD::TextureFormat tf;
-			tf.format = RD::DATA_FORMAT_R16_SFLOAT;
+			tf.format = RD::DATA_FORMAT_R8G8_UNORM;
 			tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
 			tf.width = buffer_width;
 			tf.height = buffer_height;
-			tf.mipmaps = 4;
 			tf.array_layers = 4;
 			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
-			rb->ssao.depth = RD::get_singleton()->texture_create(tf, RD::TextureView());
-			RD::get_singleton()->set_resource_name(rb->ssao.depth, "SSAO Depth");
-			for (uint32_t i = 0; i < tf.mipmaps; i++) {
-				RID slice = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->ssao.depth, 0, i, RD::TEXTURE_SLICE_2D_ARRAY);
-				rb->ssao.depth_slices.push_back(slice);
-				RD::get_singleton()->set_resource_name(rb->ssao.depth_slices[i], "SSAO Depth Mip " + itos(i) + " ");
+			rb->ss_effects.ssao.ao_deinterleaved = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			RD::get_singleton()->set_resource_name(rb->ss_effects.ssao.ao_deinterleaved, "SSAO De-interleaved Array");
+			for (uint32_t i = 0; i < 4; i++) {
+				RID slice = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->ss_effects.ssao.ao_deinterleaved, i, 0);
+				rb->ss_effects.ssao.ao_deinterleaved_slices.push_back(slice);
+				RD::get_singleton()->set_resource_name(slice, "SSAO De-interleaved Array Layer " + itos(i) + " ");
 			}
 		}
 
@@ -1984,29 +2068,12 @@ void RendererSceneRenderRD::_process_ssao(RID p_render_buffers, RID p_environmen
 			tf.height = buffer_height;
 			tf.array_layers = 4;
 			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
-			rb->ssao.ao_deinterleaved = RD::get_singleton()->texture_create(tf, RD::TextureView());
-			RD::get_singleton()->set_resource_name(rb->ssao.ao_deinterleaved, "SSAO De-interleaved Array");
+			rb->ss_effects.ssao.ao_pong = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			RD::get_singleton()->set_resource_name(rb->ss_effects.ssao.ao_pong, "SSAO De-interleaved Array Pong");
 			for (uint32_t i = 0; i < 4; i++) {
-				RID slice = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->ssao.ao_deinterleaved, i, 0);
-				rb->ssao.ao_deinterleaved_slices.push_back(slice);
-				RD::get_singleton()->set_resource_name(rb->ssao.ao_deinterleaved_slices[i], "SSAO De-interleaved Array Layer " + itos(i) + " ");
-			}
-		}
-
-		{
-			RD::TextureFormat tf;
-			tf.format = RD::DATA_FORMAT_R8G8_UNORM;
-			tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
-			tf.width = buffer_width;
-			tf.height = buffer_height;
-			tf.array_layers = 4;
-			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
-			rb->ssao.ao_pong = RD::get_singleton()->texture_create(tf, RD::TextureView());
-			RD::get_singleton()->set_resource_name(rb->ssao.ao_pong, "SSAO De-interleaved Array Pong");
-			for (uint32_t i = 0; i < 4; i++) {
-				RID slice = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->ssao.ao_pong, i, 0);
-				rb->ssao.ao_pong_slices.push_back(slice);
-				RD::get_singleton()->set_resource_name(rb->ssao.ao_deinterleaved_slices[i], "SSAO De-interleaved Array Layer " + itos(i) + " Pong");
+				RID slice = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->ss_effects.ssao.ao_pong, i, 0);
+				rb->ss_effects.ssao.ao_pong_slices.push_back(slice);
+				RD::get_singleton()->set_resource_name(slice, "SSAO De-interleaved Array Layer " + itos(i) + " Pong");
 			}
 		}
 
@@ -2016,10 +2083,10 @@ void RendererSceneRenderRD::_process_ssao(RID p_render_buffers, RID p_environmen
 			tf.width = half_width;
 			tf.height = half_height;
 			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
-			rb->ssao.importance_map[0] = RD::get_singleton()->texture_create(tf, RD::TextureView());
-			RD::get_singleton()->set_resource_name(rb->ssao.importance_map[0], "SSAO Importance Map");
-			rb->ssao.importance_map[1] = RD::get_singleton()->texture_create(tf, RD::TextureView());
-			RD::get_singleton()->set_resource_name(rb->ssao.importance_map[1], "SSAO Importance Map Pong");
+			rb->ss_effects.ssao.importance_map[0] = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			RD::get_singleton()->set_resource_name(rb->ss_effects.ssao.importance_map[0], "SSAO Importance Map");
+			rb->ss_effects.ssao.importance_map[1] = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			RD::get_singleton()->set_resource_name(rb->ss_effects.ssao.importance_map[1], "SSAO Importance Map Pong");
 		}
 		{
 			RD::TextureFormat tf;
@@ -2027,8 +2094,8 @@ void RendererSceneRenderRD::_process_ssao(RID p_render_buffers, RID p_environmen
 			tf.width = rb->internal_width;
 			tf.height = rb->internal_height;
 			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
-			rb->ssao.ao_final = RD::get_singleton()->texture_create(tf, RD::TextureView());
-			RD::get_singleton()->set_resource_name(rb->ssao.ao_final, "SSAO Final");
+			rb->ss_effects.ssao.ao_final = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			RD::get_singleton()->set_resource_name(rb->ss_effects.ssao.ao_final, "SSAO Final");
 		}
 		ssao_using_half_size = ssao_half_size;
 		uniform_sets_are_invalid = true;
@@ -2052,7 +2119,187 @@ void RendererSceneRenderRD::_process_ssao(RID p_render_buffers, RID p_environmen
 	settings.half_screen_size = Size2i(buffer_width, buffer_height);
 	settings.quarter_screen_size = Size2i(half_width, half_height);
 
-	storage->get_effects()->generate_ssao(rb->depth_texture, p_normal_buffer, rb->ssao.depth, rb->ssao.depth_slices, rb->ssao.ao_deinterleaved, rb->ssao.ao_deinterleaved_slices, rb->ssao.ao_pong, rb->ssao.ao_pong_slices, rb->ssao.ao_final, rb->ssao.importance_map[0], rb->ssao.importance_map[1], p_projection, settings, uniform_sets_are_invalid, rb->ssao.downsample_uniform_set, rb->ssao.gather_uniform_set, rb->ssao.importance_map_uniform_set);
+	storage->get_effects()->generate_ssao(p_normal_buffer, rb->ss_effects.ssao.depth_texture_view, rb->ss_effects.ssao.ao_deinterleaved, rb->ss_effects.ssao.ao_deinterleaved_slices, rb->ss_effects.ssao.ao_pong, rb->ss_effects.ssao.ao_pong_slices, rb->ss_effects.ssao.ao_final, rb->ss_effects.ssao.importance_map[0], rb->ss_effects.ssao.importance_map[1], p_projection, settings, uniform_sets_are_invalid, rb->ss_effects.ssao.gather_uniform_set, rb->ss_effects.ssao.importance_map_uniform_set);
+}
+
+void RendererSceneRenderRD::_process_ssil(RID p_render_buffers, RID p_environment, RID p_normal_buffer, const CameraMatrix &p_projection, const Transform3D &p_transform) {
+	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
+	ERR_FAIL_COND(!rb);
+
+	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_environment);
+	ERR_FAIL_COND(!env);
+
+	RENDER_TIMESTAMP("Process SSIL");
+
+	if (rb->ss_effects.ssil.ssil_final.is_valid() && ssil_using_half_size != ssil_half_size) {
+		RD::get_singleton()->free(rb->ss_effects.ssil.ssil_final);
+		RD::get_singleton()->free(rb->ss_effects.ssil.deinterleaved);
+		RD::get_singleton()->free(rb->ss_effects.ssil.pong);
+		RD::get_singleton()->free(rb->ss_effects.ssil.edges);
+		RD::get_singleton()->free(rb->ss_effects.ssil.importance_map[0]);
+		RD::get_singleton()->free(rb->ss_effects.ssil.importance_map[1]);
+
+		rb->ss_effects.ssil.ssil_final = RID();
+		rb->ss_effects.ssil.deinterleaved = RID();
+		rb->ss_effects.ssil.pong = RID();
+		rb->ss_effects.ssil.edges = RID();
+		rb->ss_effects.ssil.deinterleaved_slices.clear();
+		rb->ss_effects.ssil.pong_slices.clear();
+		rb->ss_effects.ssil.edges_slices.clear();
+		rb->ss_effects.ssil.importance_map[0] = RID();
+		rb->ss_effects.ssil.importance_map[1] = RID();
+	}
+
+	int buffer_width;
+	int buffer_height;
+	int half_width;
+	int half_height;
+	if (ssil_half_size) {
+		buffer_width = (rb->width + 3) / 4;
+		buffer_height = (rb->height + 3) / 4;
+		half_width = (rb->width + 7) / 8;
+		half_height = (rb->height + 7) / 8;
+	} else {
+		buffer_width = (rb->width + 1) / 2;
+		buffer_height = (rb->height + 1) / 2;
+		half_width = (rb->width + 3) / 4;
+		half_height = (rb->height + 3) / 4;
+	}
+	bool uniform_sets_are_invalid = false;
+	if (rb->ss_effects.ssil.ssil_final.is_null()) {
+		{
+			rb->ss_effects.ssil.depth_texture_view = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->ss_effects.linear_depth, 0, ssil_half_size ? 1 : 0, 4, RD::TEXTURE_SLICE_2D_ARRAY);
+		}
+		{
+			RD::TextureFormat tf;
+			tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+			tf.width = rb->width;
+			tf.height = rb->height;
+			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+			rb->ss_effects.ssil.ssil_final = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			RD::get_singleton()->set_resource_name(rb->ss_effects.ssil.ssil_final, "SSIL texture");
+			RD::get_singleton()->texture_clear(rb->ss_effects.ssil.ssil_final, Color(0, 0, 0, 0), 0, 1, 0, 1);
+			if (rb->ss_effects.last_frame.is_null()) {
+				tf.mipmaps = 6;
+				rb->ss_effects.last_frame = RD::get_singleton()->texture_create(tf, RD::TextureView());
+				RD::get_singleton()->set_resource_name(rb->ss_effects.last_frame, "Last Frame Radiance");
+				RD::get_singleton()->texture_clear(rb->ss_effects.last_frame, Color(0, 0, 0, 0), 0, tf.mipmaps, 0, 1);
+				for (uint32_t i = 0; i < 6; i++) {
+					RID slice = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->ss_effects.last_frame, 0, i);
+					rb->ss_effects.last_frame_slices.push_back(slice);
+					RD::get_singleton()->set_resource_name(slice, "Last Frame Radiance Mip " + itos(i) + " ");
+				}
+			}
+		}
+		{
+			RD::TextureFormat tf;
+			tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+			tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+			tf.width = buffer_width;
+			tf.height = buffer_height;
+			tf.array_layers = 4;
+			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+			rb->ss_effects.ssil.deinterleaved = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			RD::get_singleton()->set_resource_name(rb->ss_effects.ssil.deinterleaved, "SSIL deinterleaved buffer");
+			for (uint32_t i = 0; i < 4; i++) {
+				RID slice = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->ss_effects.ssil.deinterleaved, i, 0);
+				rb->ss_effects.ssil.deinterleaved_slices.push_back(slice);
+				RD::get_singleton()->set_resource_name(slice, "SSIL deinterleaved buffer array " + itos(i) + " ");
+			}
+		}
+
+		{
+			RD::TextureFormat tf;
+			tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+			tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+			tf.width = buffer_width;
+			tf.height = buffer_height;
+			tf.array_layers = 4;
+			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+			rb->ss_effects.ssil.pong = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			RD::get_singleton()->set_resource_name(rb->ss_effects.ssil.pong, "SSIL deinterleaved pong buffer");
+			for (uint32_t i = 0; i < 4; i++) {
+				RID slice = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->ss_effects.ssil.pong, i, 0);
+				rb->ss_effects.ssil.pong_slices.push_back(slice);
+				RD::get_singleton()->set_resource_name(slice, "SSIL deinterleaved buffer pong array " + itos(i) + " ");
+			}
+		}
+
+		{
+			RD::TextureFormat tf;
+			tf.format = RD::DATA_FORMAT_R8_UNORM;
+			tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+			tf.width = buffer_width;
+			tf.height = buffer_height;
+			tf.array_layers = 4;
+			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+			rb->ss_effects.ssil.edges = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			RD::get_singleton()->set_resource_name(rb->ss_effects.ssil.edges, "SSIL edges buffer");
+			for (uint32_t i = 0; i < 4; i++) {
+				RID slice = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->ss_effects.ssil.edges, i, 0);
+				rb->ss_effects.ssil.edges_slices.push_back(slice);
+				RD::get_singleton()->set_resource_name(slice, "SSIL edges buffer slice " + itos(i) + " ");
+			}
+		}
+
+		{
+			RD::TextureFormat tf;
+			tf.format = RD::DATA_FORMAT_R8_UNORM;
+			tf.width = half_width;
+			tf.height = half_height;
+			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+			rb->ss_effects.ssil.importance_map[0] = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			RD::get_singleton()->set_resource_name(rb->ss_effects.ssil.importance_map[0], "SSIL Importance Map");
+			rb->ss_effects.ssil.importance_map[1] = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			RD::get_singleton()->set_resource_name(rb->ss_effects.ssil.importance_map[1], "SSIL Importance Map Pong");
+		}
+		uniform_sets_are_invalid = true;
+		ssil_using_half_size = ssil_half_size;
+	}
+
+	EffectsRD::SSILSettings settings;
+	settings.radius = env->ssil_radius;
+	settings.intensity = env->ssil_intensity;
+	settings.sharpness = env->ssil_sharpness;
+	settings.normal_rejection = env->ssil_normal_rejection;
+
+	settings.quality = ssil_quality;
+	settings.half_size = ssil_half_size;
+	settings.adaptive_target = ssil_adaptive_target;
+	settings.blur_passes = ssil_blur_passes;
+	settings.fadeout_from = ssil_fadeout_from;
+	settings.fadeout_to = ssil_fadeout_to;
+	settings.full_screen_size = Size2i(rb->width, rb->height);
+	settings.half_screen_size = Size2i(buffer_width, buffer_height);
+	settings.quarter_screen_size = Size2i(half_width, half_height);
+
+	CameraMatrix correction;
+	correction.set_depth_correction(true);
+	CameraMatrix projection = correction * p_projection;
+	Transform3D transform = p_transform;
+	transform.set_origin(Vector3(0.0, 0.0, 0.0));
+	CameraMatrix last_frame_projection = rb->ss_effects.last_frame_projection * CameraMatrix(rb->ss_effects.last_frame_transform.affine_inverse()) * CameraMatrix(transform) * projection.inverse();
+
+	storage->get_effects()->screen_space_indirect_lighting(rb->ss_effects.last_frame, rb->ss_effects.ssil.ssil_final, p_normal_buffer, rb->ss_effects.ssil.depth_texture_view, rb->ss_effects.ssil.deinterleaved, rb->ss_effects.ssil.deinterleaved_slices, rb->ss_effects.ssil.pong, rb->ss_effects.ssil.pong_slices, rb->ss_effects.ssil.importance_map[0], rb->ss_effects.ssil.importance_map[1], rb->ss_effects.ssil.edges, rb->ss_effects.ssil.edges_slices, p_projection, last_frame_projection, settings, uniform_sets_are_invalid, rb->ss_effects.ssil.gather_uniform_set, rb->ss_effects.ssil.importance_map_uniform_set, rb->ss_effects.ssil.projection_uniform_set);
+	rb->ss_effects.last_frame_projection = projection;
+	rb->ss_effects.last_frame_transform = transform;
+}
+
+void RendererSceneRenderRD::_copy_framebuffer_to_ssil(RID p_render_buffers) {
+	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
+	ERR_FAIL_COND(!rb);
+
+	if (rb->ss_effects.last_frame.is_valid()) {
+		storage->get_effects()->copy_to_rect(rb->texture, rb->ss_effects.last_frame, Rect2i(0, 0, rb->width, rb->height));
+
+		int width = rb->width;
+		int height = rb->height;
+		for (int i = 0; i < rb->ss_effects.last_frame_slices.size() - 1; i++) {
+			width = MAX(1, width >> 1);
+			height = MAX(1, height >> 1);
+			storage->get_effects()->make_mipmap(rb->ss_effects.last_frame_slices[i], rb->ss_effects.last_frame_slices[i + 1], Size2i(width, height));
+		}
+	}
 }
 
 void RendererSceneRenderRD::_render_buffers_copy_screen_texture(const RenderDataRD *p_render_data) {
@@ -2254,8 +2501,17 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			tonemap.glow_texture_size.y = rb->blur[1].mipmaps[0].height;
 			tonemap.glow_use_bicubic_upscale = glow_bicubic_upscale;
 			tonemap.glow_texture = rb->blur[1].texture;
+			if (env->glow_map.is_valid()) {
+				tonemap.glow_map_strength = env->glow_map_strength;
+				tonemap.glow_map = storage->texture_get_rd_texture(env->glow_map);
+			} else {
+				tonemap.glow_map_strength = 0.0f;
+				tonemap.glow_map = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE);
+			}
+
 		} else {
 			tonemap.glow_texture = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK);
+			tonemap.glow_map = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE);
 		}
 
 		if (rb->screen_space_aa == RS::VIEWPORT_SCREEN_SPACE_AA_FXAA) {
@@ -2348,6 +2604,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 
 	tonemap.use_glow = false;
 	tonemap.glow_texture = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK);
+	tonemap.glow_map = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE);
 	tonemap.use_auto_exposure = false;
 	tonemap.exposure_texture = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE);
 
@@ -2394,8 +2651,12 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(RID p_render_buffers, RID
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS) {
 		if (p_shadow_atlas.is_valid()) {
 			RID shadow_atlas_texture = shadow_atlas_get_texture(p_shadow_atlas);
-			Size2 rtsize = storage->render_target_get_size(rb->render_target);
 
+			if (shadow_atlas_texture.is_null()) {
+				shadow_atlas_texture = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK);
+			}
+
+			Size2 rtsize = storage->render_target_get_size(rb->render_target);
 			effects->copy_to_fb_rect(shadow_atlas_texture, storage->render_target_get_rd_framebuffer(rb->render_target), Rect2i(Vector2(), rtsize / 2), false, true);
 		}
 	}
@@ -2427,10 +2688,14 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(RID p_render_buffers, RID
 		}
 	}
 
-	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_SSAO && rb->ssao.ao_final.is_valid()) {
+	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_SSAO && rb->ss_effects.ssao.ao_final.is_valid()) {
 		Size2 rtsize = storage->render_target_get_size(rb->render_target);
-		RID ao_buf = rb->ssao.ao_final;
-		effects->copy_to_fb_rect(ao_buf, storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize), false, true);
+		effects->copy_to_fb_rect(rb->ss_effects.ssao.ao_final, storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize), false, true);
+	}
+
+	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_SSIL && rb->ss_effects.ssil.ssil_final.is_valid()) {
+		Size2 rtsize = storage->render_target_get_size(rb->render_target);
+		effects->copy_to_fb_rect(rb->ss_effects.ssil.ssil_final, storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize), false, false);
 	}
 
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER && _render_buffers_get_normal_texture(p_render_buffers).is_valid()) {
@@ -2494,7 +2759,13 @@ RID RendererSceneRenderRD::render_buffers_get_ao_texture(RID p_render_buffers) {
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, RID());
 
-	return rb->ssao.ao_final;
+	return rb->ss_effects.ssao.ao_final;
+}
+RID RendererSceneRenderRD::render_buffers_get_ssil_texture(RID p_render_buffers) {
+	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
+	ERR_FAIL_COND_V(!rb, RID());
+
+	return rb->ss_effects.ssil.ssil_final;
 }
 
 RID RendererSceneRenderRD::render_buffers_get_voxel_gi_buffer(RID p_render_buffers) {
@@ -3585,9 +3856,9 @@ void RendererSceneRenderRD::FogShaderData::set_code(const String &p_code) {
 		return; //just invalid, but no error
 	}
 
-	ShaderCompilerRD::GeneratedCode gen_code;
-	ShaderCompilerRD::IdentifierActions actions;
-	actions.entry_point_stages["fog"] = ShaderCompilerRD::STAGE_COMPUTE;
+	ShaderCompiler::GeneratedCode gen_code;
+	ShaderCompiler::IdentifierActions actions;
+	actions.entry_point_stages["fog"] = ShaderCompiler::STAGE_COMPUTE;
 
 	uses_time = false;
 
@@ -3604,7 +3875,7 @@ void RendererSceneRenderRD::FogShaderData::set_code(const String &p_code) {
 		version = scene_singleton->volumetric_fog.shader.version_create();
 	}
 
-	scene_singleton->volumetric_fog.shader.version_set_compute_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompilerRD::STAGE_COMPUTE], gen_code.defines);
+	scene_singleton->volumetric_fog.shader.version_set_compute_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_COMPUTE], gen_code.defines);
 	ERR_FAIL_COND(!scene_singleton->volumetric_fog.shader.version_is_valid(version));
 
 	ubo_size = gen_code.uniform_total_size;
@@ -3741,7 +4012,6 @@ RendererStorageRD::ShaderData *RendererSceneRenderRD::_create_fog_shader_funcs()
 RendererStorageRD::MaterialData *RendererSceneRenderRD::_create_fog_material_func(FogShaderData *p_shader) {
 	FogMaterialData *material_data = memnew(FogMaterialData);
 	material_data->shader_data = p_shader;
-	material_data->last_frame = false;
 	//update will happen later anyway so do nothing.
 	return material_data;
 }
@@ -3759,6 +4029,9 @@ void RendererSceneRenderRD::_volumetric_fog_erase(RenderBuffers *rb) {
 	RD::get_singleton()->free(rb->volumetric_fog->prev_light_density_map);
 	RD::get_singleton()->free(rb->volumetric_fog->light_density_map);
 	RD::get_singleton()->free(rb->volumetric_fog->fog_map);
+	RD::get_singleton()->free(rb->volumetric_fog->density_map);
+	RD::get_singleton()->free(rb->volumetric_fog->light_map);
+	RD::get_singleton()->free(rb->volumetric_fog->emissive_map);
 
 	if (rb->volumetric_fog->fog_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(rb->volumetric_fog->fog_uniform_set)) {
 		RD::get_singleton()->free(rb->volumetric_fog->fog_uniform_set);
@@ -4528,7 +4801,7 @@ void RendererSceneRenderRD::_pre_resolve_render(RenderDataRD *p_render_data, boo
 	}
 }
 
-void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_gi, RID p_normal_roughness_buffer, RID p_voxel_gi_buffer) {
+void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_ssil, bool p_use_gi, RID p_normal_roughness_buffer, RID p_voxel_gi_buffer) {
 	// Render shadows while GI is rendering, due to how barriers are handled, this should happen at the same time
 
 	if (p_render_data->render_buffers.is_valid() && p_use_gi) {
@@ -4560,7 +4833,7 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 
 		//cube shadows are rendered in their own way
 		for (uint32_t i = 0; i < render_state.cube_shadows.size(); i++) {
-			_render_shadow_pass(render_state.render_shadows[render_state.cube_shadows[i]].light, p_render_data->shadow_atlas, render_state.render_shadows[render_state.cube_shadows[i]].pass, render_state.render_shadows[render_state.cube_shadows[i]].instances, camera_plane, lod_distance_multiplier, p_render_data->screen_lod_threshold, true, true, true, p_render_data->render_info);
+			_render_shadow_pass(render_state.render_shadows[render_state.cube_shadows[i]].light, p_render_data->shadow_atlas, render_state.render_shadows[render_state.cube_shadows[i]].pass, render_state.render_shadows[render_state.cube_shadows[i]].instances, camera_plane, lod_distance_multiplier, p_render_data->screen_mesh_lod_threshold, true, true, true, p_render_data->render_info);
 		}
 
 		if (render_state.directional_shadows.size()) {
@@ -4590,11 +4863,11 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 
 		//render directional shadows
 		for (uint32_t i = 0; i < render_state.directional_shadows.size(); i++) {
-			_render_shadow_pass(render_state.render_shadows[render_state.directional_shadows[i]].light, p_render_data->shadow_atlas, render_state.render_shadows[render_state.directional_shadows[i]].pass, render_state.render_shadows[render_state.directional_shadows[i]].instances, camera_plane, lod_distance_multiplier, p_render_data->screen_lod_threshold, false, i == render_state.directional_shadows.size() - 1, false, p_render_data->render_info);
+			_render_shadow_pass(render_state.render_shadows[render_state.directional_shadows[i]].light, p_render_data->shadow_atlas, render_state.render_shadows[render_state.directional_shadows[i]].pass, render_state.render_shadows[render_state.directional_shadows[i]].instances, camera_plane, lod_distance_multiplier, p_render_data->screen_mesh_lod_threshold, false, i == render_state.directional_shadows.size() - 1, false, p_render_data->render_info);
 		}
 		//render positional shadows
 		for (uint32_t i = 0; i < render_state.shadows.size(); i++) {
-			_render_shadow_pass(render_state.render_shadows[render_state.shadows[i]].light, p_render_data->shadow_atlas, render_state.render_shadows[render_state.shadows[i]].pass, render_state.render_shadows[render_state.shadows[i]].instances, camera_plane, lod_distance_multiplier, p_render_data->screen_lod_threshold, i == 0, i == render_state.shadows.size() - 1, true, p_render_data->render_info);
+			_render_shadow_pass(render_state.render_shadows[render_state.shadows[i]].light, p_render_data->shadow_atlas, render_state.render_shadows[render_state.shadows[i]].pass, render_state.render_shadows[render_state.shadows[i]].instances, camera_plane, lod_distance_multiplier, p_render_data->screen_mesh_lod_threshold, i == 0, i == render_state.shadows.size() - 1, true, p_render_data->render_info);
 		}
 
 		_render_shadow_process();
@@ -4615,8 +4888,39 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 	}
 
 	if (p_render_data->render_buffers.is_valid()) {
+		if (p_use_ssao || p_use_ssil) {
+			RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_data->render_buffers);
+			ERR_FAIL_COND(!rb);
+
+			bool invalidate_uniform_set = false;
+			if (rb->ss_effects.linear_depth.is_null()) {
+				RD::TextureFormat tf;
+				tf.format = RD::DATA_FORMAT_R16_SFLOAT;
+				tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+				tf.width = (rb->width + 1) / 2;
+				tf.height = (rb->height + 1) / 2;
+				tf.mipmaps = 5;
+				tf.array_layers = 4;
+				tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+				rb->ss_effects.linear_depth = RD::get_singleton()->texture_create(tf, RD::TextureView());
+				RD::get_singleton()->set_resource_name(rb->ss_effects.linear_depth, "SS Effects Depth");
+				for (uint32_t i = 0; i < tf.mipmaps; i++) {
+					RID slice = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->ss_effects.linear_depth, 0, i, 1, RD::TEXTURE_SLICE_2D_ARRAY);
+					rb->ss_effects.linear_depth_slices.push_back(slice);
+					RD::get_singleton()->set_resource_name(slice, "SS Effects Depth Mip " + itos(i) + " ");
+				}
+				invalidate_uniform_set = true;
+			}
+
+			storage->get_effects()->downsample_depth(rb->depth_texture, rb->ss_effects.linear_depth_slices, ssao_quality, ssil_quality, invalidate_uniform_set, ssao_half_size, ssil_half_size, Size2i(rb->width, rb->height), p_render_data->cam_projection);
+		}
+
 		if (p_use_ssao) {
 			_process_ssao(p_render_data->render_buffers, p_render_data->environment, p_normal_roughness_buffer, p_render_data->cam_projection);
+		}
+
+		if (p_use_ssil) {
+			_process_ssil(p_render_data->render_buffers, p_render_data->environment, p_normal_roughness_buffer, p_render_data->cam_projection, p_render_data->cam_transform);
 		}
 	}
 
@@ -4663,7 +4967,7 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 	}
 }
 
-void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData *p_camera_data, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data, RendererScene::RenderInfo *r_render_info) {
+void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData *p_camera_data, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data, RendererScene::RenderInfo *r_render_info) {
 	// getting this here now so we can direct call a bunch of things more easily
 	RenderBuffers *rb = nullptr;
 	if (p_render_buffers.is_valid()) {
@@ -4709,9 +5013,9 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData 
 		render_data.lod_camera_plane = Plane(-p_camera_data->main_transform.basis.get_axis(Vector3::AXIS_Z), p_camera_data->main_transform.get_origin());
 
 		if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DISABLE_LOD) {
-			render_data.screen_lod_threshold = 0.0;
+			render_data.screen_mesh_lod_threshold = 0.0;
 		} else {
-			render_data.screen_lod_threshold = p_screen_lod_threshold;
+			render_data.screen_mesh_lod_threshold = p_screen_mesh_lod_threshold;
 		}
 
 		render_state.render_shadows = p_render_shadows;
@@ -4837,7 +5141,7 @@ void RendererSceneRenderRD::_debug_draw_cluster(RID p_render_buffers) {
 	}
 }
 
-void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<GeometryInstance *> &p_instances, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_lod_threshold, bool p_open_pass, bool p_close_pass, bool p_clear_region, RendererScene::RenderInfo *p_render_info) {
+void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<GeometryInstance *> &p_instances, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_mesh_lod_threshold, bool p_open_pass, bool p_close_pass, bool p_clear_region, RendererScene::RenderInfo *p_render_info) {
 	LightInstance *light_instance = light_instance_owner.get_or_null(p_light);
 	ERR_FAIL_COND(!light_instance);
 
@@ -4987,7 +5291,7 @@ void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
 
 	if (render_cubemap) {
 		//rendering to cubemap
-		_render_shadow_append(render_fb, p_instances, light_projection, light_transform, zfar, 0, 0, false, false, use_pancake, p_camera_plane, p_lod_distance_multiplier, p_screen_lod_threshold, Rect2(), false, true, true, true, p_render_info);
+		_render_shadow_append(render_fb, p_instances, light_projection, light_transform, zfar, 0, 0, false, false, use_pancake, p_camera_plane, p_lod_distance_multiplier, p_screen_mesh_lod_threshold, Rect2(), false, true, true, true, p_render_info);
 		if (finalize_cubemap) {
 			_render_shadow_process();
 			_render_shadow_end();
@@ -5005,7 +5309,7 @@ void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
 
 	} else {
 		//render shadow
-		_render_shadow_append(render_fb, p_instances, light_projection, light_transform, zfar, 0, 0, using_dual_paraboloid, using_dual_paraboloid_flip, use_pancake, p_camera_plane, p_lod_distance_multiplier, p_screen_lod_threshold, atlas_rect, flip_y, p_clear_region, p_open_pass, p_close_pass, p_render_info);
+		_render_shadow_append(render_fb, p_instances, light_projection, light_transform, zfar, 0, 0, using_dual_paraboloid, using_dual_paraboloid_flip, use_pancake, p_camera_plane, p_lod_distance_multiplier, p_screen_mesh_lod_threshold, atlas_rect, flip_y, p_clear_region, p_open_pass, p_close_pass, p_render_info);
 	}
 }
 
@@ -5370,7 +5674,7 @@ void RendererSceneRenderRD::init() {
 		}
 
 		{
-			ShaderCompilerRD::DefaultIdentifierActions actions;
+			ShaderCompiler::DefaultIdentifierActions actions;
 
 			actions.renames["TIME"] = "scene_params.time";
 			actions.renames["PI"] = _MKSTR(Math_PI);
@@ -5499,6 +5803,9 @@ void fog() {
 	sss_quality = RS::SubSurfaceScatteringQuality(int(GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_quality")));
 	sss_scale = GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_scale");
 	sss_depth_scale = GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale");
+
+	environment_set_ssil_quality(RS::EnvironmentSSILQuality(int(GLOBAL_GET("rendering/environment/ssil/quality"))), GLOBAL_GET("rendering/environment/ssil/half_size"), GLOBAL_GET("rendering/environment/ssil/adaptive_target"), GLOBAL_GET("rendering/environment/ssil/blur_passes"), GLOBAL_GET("rendering/environment/ssil/fadeout_from"), GLOBAL_GET("rendering/environment/ssil/fadeout_to"));
+
 	directional_penumbra_shadow_kernel = memnew_arr(float, 128);
 	directional_soft_shadow_kernel = memnew_arr(float, 128);
 	penumbra_shadow_kernel = memnew_arr(float, 128);

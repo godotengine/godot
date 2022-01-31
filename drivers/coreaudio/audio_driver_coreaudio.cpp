@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -540,7 +540,7 @@ Array AudioDriverCoreAudio::_get_device_list(bool capture) {
 			ERR_FAIL_NULL_V_MSG(buffer, list, "Out of memory.");
 			if (CFStringGetCString(cfname, buffer, maxSize, kCFStringEncodingUTF8)) {
 				// Append the ID to the name in case we have devices with duplicate name
-				list.push_back(String(buffer) + " (" + itos(audioDevices[i]) + ")");
+				list.push_back(String::utf8(buffer) + " (" + itos(audioDevices[i]) + ")");
 			}
 
 			memfree(buffer);
@@ -597,7 +597,7 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 				char *buffer = (char *)memalloc(maxSize);
 				ERR_FAIL_NULL_MSG(buffer, "Out of memory.");
 				if (CFStringGetCString(cfname, buffer, maxSize, kCFStringEncodingUTF8)) {
-					String name = String(buffer) + " (" + itos(audioDevices[i]) + ")";
+					String name = String::utf8(buffer) + " (" + itos(audioDevices[i]) + ")";
 					if (name == device) {
 						deviceId = audioDevices[i];
 						found = true;

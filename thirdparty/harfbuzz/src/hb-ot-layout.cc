@@ -1530,6 +1530,7 @@ hb_ot_layout_lookups_substitute_closure (hb_face_t      *face,
   unsigned int glyphs_length;
   do
   {
+    c.reset_lookup_visit_count ();
     glyphs_length = glyphs->get_population ();
     if (lookups)
     {

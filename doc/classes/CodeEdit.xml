@@ -234,7 +234,7 @@
 		<method name="get_folded_lines" qualifiers="const">
 			<return type="int[]" />
 			<description>
-				Return all lines that are current folded.
+				Returns all lines that are current folded.
 			</description>
 		</method>
 		<method name="get_text_for_code_completion" qualifiers="const">
@@ -288,7 +288,7 @@
 			<argument index="0" name="line" type="int" />
 			<argument index="1" name="column" type="int" default="-1" />
 			<description>
-				Return delimiter index if [code]line[/code] [code]column[/code] is in a comment. If [code]column[/code] is not provided, will return delimiter index if the entire [code]line[/code] is a comment. Otherwise [code]-1[/code].
+				Returns delimiter index if [code]line[/code] [code]column[/code] is in a comment. If [code]column[/code] is not provided, will return delimiter index if the entire [code]line[/code] is a comment. Otherwise [code]-1[/code].
 			</description>
 		</method>
 		<method name="is_in_string" qualifiers="const">
@@ -296,7 +296,7 @@
 			<argument index="0" name="line" type="int" />
 			<argument index="1" name="column" type="int" default="-1" />
 			<description>
-				Return the delimiter index if [code]line[/code] [code]column[/code] is in a string. If [code]column[/code] is not provided, will return the delimiter index if the entire [code]line[/code] is a string. Otherwise [code]-1[/code].
+				Returns the delimiter index if [code]line[/code] [code]column[/code] is in a string. If [code]column[/code] is not provided, will return the delimiter index if the entire [code]line[/code] is a string. Otherwise [code]-1[/code].
 			</description>
 		</method>
 		<method name="is_line_bookmarked" qualifiers="const">
@@ -345,7 +345,7 @@
 			<return type="void" />
 			<argument index="0" name="force" type="bool" default="false" />
 			<description>
-				Emits [signal request_code_completion], if [code]force[/code] is true will bypass all checks. Otherwise will check that the caret is in a word or in front of a prefix. Will ignore the request if all current options are of type file path, node path or signal.
+				Emits [signal code_completion_requested], if [code]force[/code] is true will bypass all checks. Otherwise will check that the caret is in a word or in front of a prefix. Will ignore the request if all current options are of type file path, node path or signal.
 			</description>
 		</method>
 		<method name="set_code_completion_selected_index">
@@ -442,7 +442,7 @@
 		<member name="auto_brace_completion_highlight_matching" type="bool" setter="set_highlight_matching_braces_enabled" getter="is_highlight_matching_braces_enabled" default="false">
 			Highlight mismatching brace pairs.
 		</member>
-		<member name="auto_brace_completion_pairs" type="Dictionary" setter="set_auto_brace_completion_pairs" getter="get_auto_brace_completion_pairs" default="{&quot;\&quot;&quot;: &quot;\&quot;&quot;,&quot;&apos;&quot;: &quot;&apos;&quot;,&quot;(&quot;: &quot;)&quot;,&quot;[&quot;: &quot;]&quot;,&quot;{&quot;: &quot;}&quot;}">
+		<member name="auto_brace_completion_pairs" type="Dictionary" setter="set_auto_brace_completion_pairs" getter="get_auto_brace_completion_pairs" default="{ &quot;\&quot;&quot;: &quot;\&quot;&quot;, &quot;&apos;&quot;: &quot;&apos;&quot;, &quot;(&quot;: &quot;)&quot;, &quot;[&quot;: &quot;]&quot;, &quot;{&quot;: &quot;}&quot; }">
 			Sets the brace pairs to be autocompleted.
 		</member>
 		<member name="code_completion_enabled" type="bool" setter="set_code_completion_enabled" getter="is_code_completion_enabled" default="false">
@@ -506,7 +506,7 @@
 				Emitted when a breakpoint is added or removed from a line. If the line is moved via backspace a removed is emitted at the old line.
 			</description>
 		</signal>
-		<signal name="request_code_completion">
+		<signal name="code_completion_requested">
 			<description>
 				Emitted when the user requests code completion.
 			</description>
@@ -574,7 +574,7 @@
 		<theme_item name="caret_background_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			[Color] of the text behind the caret when block caret is enabled.
 		</theme_item>
-		<theme_item name="caret_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
+		<theme_item name="caret_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			[Color] of the caret.
 		</theme_item>
 		<theme_item name="code_folding_color" data_type="color" type="Color" default="Color(0.8, 0.8, 0.8, 0.8)">
@@ -601,13 +601,13 @@
 		<theme_item name="executing_line_color" data_type="color" type="Color" default="Color(0.98, 0.89, 0.27, 1)">
 			[Color] of the executing icon for executing lines.
 		</theme_item>
-		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
+		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			Sets the font [Color].
 		</theme_item>
 		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The tint of text outline of the [CodeEdit].
 		</theme_item>
-		<theme_item name="font_readonly_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 0.5)">
+		<theme_item name="font_readonly_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
 			Sets the font [Color] when [member TextEdit.editable] is disabled.
 		</theme_item>
 		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
@@ -625,7 +625,7 @@
 		<theme_item name="search_result_color" data_type="color" type="Color" default="Color(0.3, 0.3, 0.3, 1)">
 			[Color] behind the text that matches the search query.
 		</theme_item>
-		<theme_item name="selection_color" data_type="color" type="Color" default="Color(0.49, 0.49, 0.49, 1)">
+		<theme_item name="selection_color" data_type="color" type="Color" default="Color(0.5, 0.5, 0.5, 1)">
 			Sets the highlight [Color] of text selections.
 		</theme_item>
 		<theme_item name="word_highlighted_color" data_type="color" type="Color" default="Color(0.8, 0.9, 0.9, 0.15)">

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,6 +39,7 @@
 #include "scene/gui/grid_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/link_button.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/progress_bar.h"
@@ -126,15 +127,16 @@ public:
 	EditorAssetLibraryItemDescription();
 };
 
-class EditorAssetLibraryItemDownload : public PanelContainer {
-	GDCLASS(EditorAssetLibraryItemDownload, PanelContainer);
+class EditorAssetLibraryItemDownload : public MarginContainer {
+	GDCLASS(EditorAssetLibraryItemDownload, MarginContainer);
 
+	PanelContainer *panel;
 	TextureRect *icon;
 	Label *title;
 	ProgressBar *progress;
-	Button *install;
-	Button *retry;
-	TextureButton *dismiss;
+	Button *install_button;
+	Button *retry_button;
+	TextureButton *dismiss_button;
 
 	AcceptDialog *download_error;
 	HTTPRequest *download;
@@ -151,7 +153,6 @@ class EditorAssetLibraryItemDownload : public PanelContainer {
 	EditorAssetInstaller *asset_installer;
 
 	void _close();
-	void _install();
 	void _make_request();
 	void _http_download_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data);
 
@@ -163,6 +164,10 @@ public:
 	void set_external_install(bool p_enable) { external_install = p_enable; }
 	int get_asset_id() { return asset_id; }
 	void configure(const String &p_title, int p_asset_id, const Ref<Texture2D> &p_preview, const String &p_download_url, const String &p_sha256_hash);
+
+	bool can_install() const;
+	void install();
+
 	EditorAssetLibraryItemDownload();
 };
 
@@ -286,6 +291,7 @@ class EditorAssetLibrary : public PanelContainer {
 	void _api_request(const String &p_request, RequestType p_request_type, const String &p_arguments = "");
 	void _http_request_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data);
 	void _filter_debounce_timer_timeout();
+	EditorAssetLibraryItemDownload *_get_asset_in_progress(int p_asset_id) const;
 
 	void _repository_changed(int p_repository_id);
 	void _support_toggled(int p_support);

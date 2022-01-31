@@ -1,6 +1,6 @@
 #define LIGHT_BAKE_DISABLED 0
-#define LIGHT_BAKE_DYNAMIC 1
-#define LIGHT_BAKE_STATIC 2
+#define LIGHT_BAKE_STATIC 1
+#define LIGHT_BAKE_DYNAMIC 2
 
 struct LightData { //this structure needs to be as packed as possible
 	highp vec3 position;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -145,20 +145,19 @@ void AnimationTrackEditColor::draw_key_link(int p_index, float p_pixels_sec, int
 	}
 
 	for (int i = 0; i < color_samples.size() - 1; i++) {
-		Vector<Vector2> points;
-		Vector<Color> colors;
+		Vector<Vector2> points = {
+			Vector2(Math::lerp(x_from, x_to, float(i) / (color_samples.size() - 1)), y_from),
+			Vector2(Math::lerp(x_from, x_to, float(i + 1) / (color_samples.size() - 1)), y_from),
+			Vector2(Math::lerp(x_from, x_to, float(i + 1) / (color_samples.size() - 1)), y_from + fh),
+			Vector2(Math::lerp(x_from, x_to, float(i) / (color_samples.size() - 1)), y_from + fh)
+		};
 
-		points.push_back(Vector2(Math::lerp(x_from, x_to, float(i) / (color_samples.size() - 1)), y_from));
-		colors.push_back(color_samples[i]);
-
-		points.push_back(Vector2(Math::lerp(x_from, x_to, float(i + 1) / (color_samples.size() - 1)), y_from));
-		colors.push_back(color_samples[i + 1]);
-
-		points.push_back(Vector2(Math::lerp(x_from, x_to, float(i + 1) / (color_samples.size() - 1)), y_from + fh));
-		colors.push_back(color_samples[i + 1]);
-
-		points.push_back(Vector2(Math::lerp(x_from, x_to, float(i) / (color_samples.size() - 1)), y_from + fh));
-		colors.push_back(color_samples[i]);
+		Vector<Color> colors = {
+			color_samples[i],
+			color_samples[i + 1],
+			color_samples[i + 1],
+			color_samples[i]
+		};
 
 		draw_primitive(points, colors, Vector<Vector2>());
 	}

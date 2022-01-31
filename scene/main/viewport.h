@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -148,6 +148,7 @@ public:
 		DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS,
 		DEBUG_DRAW_SCENE_LUMINANCE,
 		DEBUG_DRAW_SSAO,
+		DEBUG_DRAW_SSIL,
 		DEBUG_DRAW_PSSM_SPLITS,
 		DEBUG_DRAW_DECAL_ATLAS,
 		DEBUG_DRAW_SDFGI,
@@ -296,7 +297,7 @@ private:
 	float fsr_sharpness = 0.2f;
 	float fsr_mipmap_bias = 0.0f;
 	bool use_debanding = false;
-	float lod_threshold = 1.0;
+	float mesh_lod_threshold = 1.0;
 	bool use_occlusion_culling = false;
 
 	Ref<ViewportTexture> default_texture;
@@ -361,7 +362,6 @@ private:
 		bool dragging = false;
 		bool drag_successful = false;
 		bool embed_subwindows_hint = false;
-		bool embedding_subwindows = false;
 
 		Window *subwindow_focused = nullptr;
 		SubWindowDrag subwindow_drag = SUB_WINDOW_DRAG_DISABLED;
@@ -372,7 +372,7 @@ private:
 		SubWindowResize subwindow_resize_mode;
 		Rect2i subwindow_resize_from_rect;
 
-		Vector<SubWindow> sub_windows;
+		Vector<SubWindow> sub_windows; // Don't obtain references or pointers to the elements, as their location can change.
 	} gui;
 
 	DefaultCanvasItemTextureFilter default_canvas_item_texture_filter = DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
@@ -530,8 +530,8 @@ public:
 	void set_use_debanding(bool p_use_debanding);
 	bool is_using_debanding() const;
 
-	void set_lod_threshold(float p_pixels);
-	float get_lod_threshold() const;
+	void set_mesh_lod_threshold(float p_pixels);
+	float get_mesh_lod_threshold() const;
 
 	void set_use_occlusion_culling(bool p_us_occlusion_culling);
 	bool is_using_occlusion_culling() const;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,8 @@
 #define ARRAY_H
 
 #include "core/typedefs.h"
+
+#include <climits>
 
 class Variant;
 class ArrayPrivate;
@@ -102,7 +104,7 @@ public:
 	Array duplicate(bool p_deep = false) const;
 	Array recursive_duplicate(bool p_deep, int recursion_count) const;
 
-	Array slice(int p_begin, int p_end, int p_step = 1, bool p_deep = false) const;
+	Array slice(int p_begin, int p_end = INT_MAX, int p_step = 1, bool p_deep = false) const;
 	Array filter(const Callable &p_callable) const;
 	Array map(const Callable &p_callable) const;
 	Variant reduce(const Callable &p_callable, const Variant &p_accum) const;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -137,6 +137,9 @@ protected:
 
 	virtual void _validate_property(PropertyInfo &property) const override;
 
+	bool property_can_revert(const String &p_name);
+	Variant property_get_revert(const String &p_name);
+
 public:
 	enum {
 		NOTIFICATION_TRANSFORM_CHANGED = SceneTree::NOTIFICATION_TRANSFORM_CHANGED,
@@ -182,12 +185,6 @@ public:
 	virtual bool is_transform_gizmo_visible() const { return data.transform_gizmo_visible; };
 #endif
 
-	void set_as_top_level(bool p_enabled);
-	bool is_set_as_top_level() const;
-
-	void set_disable_scale(bool p_enabled);
-	bool is_scale_disabled() const;
-
 	void set_disable_gizmos(bool p_enabled);
 	void update_gizmos();
 	void set_subgizmo_selection(Ref<Node3DGizmo> p_gizmo, int p_id, Transform3D p_transform = Transform3D());
@@ -197,6 +194,12 @@ public:
 	void add_gizmo(Ref<Node3DGizmo> p_gizmo);
 	void remove_gizmo(Ref<Node3DGizmo> p_gizmo);
 	void clear_gizmos();
+
+	void set_as_top_level(bool p_enabled);
+	bool is_set_as_top_level() const;
+
+	void set_disable_scale(bool p_enabled);
+	bool is_scale_disabled() const;
 
 	_FORCE_INLINE_ bool is_inside_world() const { return data.inside_world; }
 
@@ -223,19 +226,19 @@ public:
 	Vector3 to_local(Vector3 p_global) const;
 	Vector3 to_global(Vector3 p_local) const;
 
-	void set_notify_transform(bool p_enable);
+	void set_notify_transform(bool p_enabled);
 	bool is_transform_notification_enabled() const;
 
-	void set_notify_local_transform(bool p_enable);
+	void set_notify_local_transform(bool p_enabled);
 	bool is_local_transform_notification_enabled() const;
 
 	void orthonormalize();
 	void set_identity();
 
 	void set_visible(bool p_visible);
-	bool is_visible() const;
 	void show();
 	void hide();
+	bool is_visible() const;
 	bool is_visible_in_tree() const;
 
 	void force_update_transform();

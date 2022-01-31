@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -2474,34 +2474,38 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, double p_time, Interpol
 					real_t delta = (length - p_keys[next].time) - (length - p_keys[idx].time);
 					real_t from = (length - p_time) - (length - p_keys[idx].time);
 
-					if (Math::is_zero_approx(delta))
+					if (Math::is_zero_approx(delta)) {
 						c = 0;
-					else
+					} else {
 						c = from / delta;
+					}
 				} else {
 					next = len - 1;
 					real_t delta = p_keys[idx].time + (length - p_keys[next].time);
 					real_t from = (length - p_time) - (length - p_keys[idx].time);
 
-					if (Math::is_zero_approx(delta))
+					if (Math::is_zero_approx(delta)) {
 						c = 0;
-					else
+					} else {
 						c = from / delta;
+					}
 				}
 			} else {
 				// on loop, in front of last key
 				idx = 0;
 				next = len - 1;
 				real_t endtime = p_keys[idx].time;
-				if (endtime > length) // may be keys past the end
+				if (endtime > length) { // may be keys past the end
 					endtime = length;
+				}
 				real_t delta = p_keys[next].time - endtime;
 				real_t from = p_time - endtime;
 
-				if (Math::is_zero_approx(delta))
+				if (Math::is_zero_approx(delta)) {
 					c = 0;
-				else
+				} else {
 					c = from / delta;
+				}
 			}
 		}
 	} else { // no loop
@@ -2609,7 +2613,7 @@ Variant Animation::value_track_interpolate(int p_track, double p_time) const {
 
 void Animation::_value_track_get_key_indices_in_range(const ValueTrack *vt, double from_time, double to_time, List<int> *p_indices) const {
 	if (from_time != length && to_time == length) {
-		to_time = length * 1.001; //include a little more if at the end
+		to_time = length + CMP_EPSILON; //include a little more if at the end
 	}
 	int to = _find(vt->values, to_time);
 
@@ -2715,6 +2719,7 @@ void Animation::value_track_set_update_mode(int p_track, UpdateMode p_mode) {
 
 	ValueTrack *vt = static_cast<ValueTrack *>(t);
 	vt->update_mode = p_mode;
+	emit_changed();
 }
 
 Animation::UpdateMode Animation::value_track_get_update_mode(int p_track) const {
@@ -2729,7 +2734,7 @@ Animation::UpdateMode Animation::value_track_get_update_mode(int p_track) const 
 template <class T>
 void Animation::_track_get_key_indices_in_range(const Vector<T> &p_array, double from_time, double to_time, List<int> *p_indices) const {
 	if (from_time != length && to_time == length) {
-		to_time = length * 1.01; //include a little more if at the end
+		to_time = length + CMP_EPSILON; //include a little more if at the end
 	}
 
 	int to = _find(p_array, to_time);
@@ -3080,7 +3085,7 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 
 void Animation::_method_track_get_key_indices_in_range(const MethodTrack *mt, double from_time, double to_time, List<int> *p_indices) const {
 	if (from_time != length && to_time == length) {
-		to_time = length * 1.01; //include a little more if at the end
+		to_time = length + CMP_EPSILON; //include a little more if at the end
 	}
 
 	int to = _find(mt->methods, to_time);
@@ -4197,7 +4202,7 @@ struct AnimationCompressionDataState {
 	};
 
 	uint32_t components = 3;
-	LocalVector<uint8_t> data; //commited packets
+	LocalVector<uint8_t> data; // Committed packets.
 	struct PacketData {
 		int32_t data[3] = { 0, 0, 0 };
 		uint32_t frame = 0;
@@ -4576,7 +4581,7 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 				}
 			}
 			for (int j = 0; j < 3; j++) {
-				//cant have zero
+				// Can't have zero.
 				if (aabb.size[j] < CMP_EPSILON) {
 					aabb.size[j] = CMP_EPSILON;
 				}
@@ -4596,7 +4601,7 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 				}
 			}
 			for (int j = 0; j < 3; j++) {
-				//cant have zero
+				// Can't have zero.
 				if (aabb.size[j] < CMP_EPSILON) {
 					aabb.size[j] = CMP_EPSILON;
 				}

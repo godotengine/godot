@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -184,6 +184,10 @@ String Engine::get_license_text() const {
 
 bool Engine::is_abort_on_gpu_errors_enabled() const {
 	return abort_on_gpu_errors;
+}
+
+int32_t Engine::get_gpu_index() const {
+	return gpu_idx;
 }
 
 bool Engine::is_validation_layers_enabled() const {

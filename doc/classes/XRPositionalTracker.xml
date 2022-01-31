@@ -54,8 +54,9 @@
 			<argument index="1" name="transform" type="Transform3D" />
 			<argument index="2" name="linear_velocity" type="Vector3" />
 			<argument index="3" name="angular_velocity" type="Vector3" />
+			<argument index="4" name="tracking_confidence" type="int" enum="XRPose.TrackingConfidence" />
 			<description>
-				Sets the transform, linear velocity and angular velocity for the given pose. This method is called by a [XRInterface] implementation and should not be used directly.
+				Sets the transform, linear velocity, angular velocity and tracking confidence for the given pose. This method is called by a [XRInterface] implementation and should not be used directly.
 			</description>
 		</method>
 	</methods>

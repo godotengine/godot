@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,12 +68,6 @@ public:
 		TONE_MAPPER_REINHARDT,
 		TONE_MAPPER_FILMIC,
 		TONE_MAPPER_ACES,
-	};
-
-	enum SDFGICascades {
-		SDFGI_CASCADES_4,
-		SDFGI_CASCADES_6,
-		SDFGI_CASCADES_8,
 	};
 
 	enum SDFGIYScale {
@@ -142,9 +136,18 @@ private:
 	float ssao_ao_channel_affect = 0.0;
 	void _update_ssao();
 
+	// SSIL
+	bool ssil_enabled = false;
+	float ssil_radius = 5.0;
+	float ssil_intensity = 1.0;
+	float ssil_sharpness = 0.98;
+	float ssil_normal_rejection = 1.0;
+
+	void _update_ssil();
+
 	// SDFGI
 	bool sdfgi_enabled = false;
-	SDFGICascades sdfgi_cascades = SDFGI_CASCADES_6;
+	int sdfgi_cascades = 6;
 	float sdfgi_min_cell_size = 0.2;
 	SDFGIYScale sdfgi_y_scale = SDFGI_Y_SCALE_DISABLED;
 	bool sdfgi_use_occlusion = false;
@@ -167,6 +170,8 @@ private:
 	float glow_hdr_bleed_threshold = 1.0;
 	float glow_hdr_bleed_scale = 2.0;
 	float glow_hdr_luminance_cap = 12.0;
+	float glow_map_strength = 0.8f;
+	Ref<Texture> glow_map;
 	void _update_glow();
 
 	// Fog
@@ -296,11 +301,23 @@ public:
 	void set_ssao_ao_channel_affect(float p_ao_channel_affect);
 	float get_ssao_ao_channel_affect() const;
 
+	// SSIL
+	void set_ssil_enabled(bool p_enabled);
+	bool is_ssil_enabled() const;
+	void set_ssil_radius(float p_radius);
+	float get_ssil_radius() const;
+	void set_ssil_intensity(float p_intensity);
+	float get_ssil_intensity() const;
+	void set_ssil_sharpness(float p_sharpness);
+	float get_ssil_sharpness() const;
+	void set_ssil_normal_rejection(float p_normal_rejection);
+	float get_ssil_normal_rejection() const;
+
 	// SDFGI
 	void set_sdfgi_enabled(bool p_enabled);
 	bool is_sdfgi_enabled() const;
-	void set_sdfgi_cascades(SDFGICascades p_cascades);
-	SDFGICascades get_sdfgi_cascades() const;
+	void set_sdfgi_cascades(int p_cascades);
+	int get_sdfgi_cascades() const;
 	void set_sdfgi_min_cell_size(float p_size);
 	float get_sdfgi_min_cell_size() const;
 	void set_sdfgi_max_distance(float p_distance);
@@ -345,6 +362,10 @@ public:
 	float get_glow_hdr_bleed_scale() const;
 	void set_glow_hdr_luminance_cap(float p_amount);
 	float get_glow_hdr_luminance_cap() const;
+	void set_glow_map_strength(float p_strength);
+	float get_glow_map_strength() const;
+	void set_glow_map(Ref<Texture> p_glow_map);
+	Ref<Texture> get_glow_map() const;
 
 	// Fog
 
@@ -412,7 +433,6 @@ VARIANT_ENUM_CAST(Environment::BGMode)
 VARIANT_ENUM_CAST(Environment::AmbientSource)
 VARIANT_ENUM_CAST(Environment::ReflectionSource)
 VARIANT_ENUM_CAST(Environment::ToneMapper)
-VARIANT_ENUM_CAST(Environment::SDFGICascades)
 VARIANT_ENUM_CAST(Environment::SDFGIYScale)
 VARIANT_ENUM_CAST(Environment::GlowBlendMode)
 

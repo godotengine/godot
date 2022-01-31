@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -249,8 +249,6 @@ bool Tween::custom_step(float p_delta) {
 }
 
 bool Tween::step(float p_delta) {
-	ERR_FAIL_COND_V_MSG(tweeners.is_empty(), false, "Tween started, but has no Tweeners.");
-
 	if (dead) {
 		return false;
 	}
@@ -260,10 +258,8 @@ bool Tween::step(float p_delta) {
 	}
 
 	if (is_bound) {
-		Object *bound_instance = ObjectDB::get_instance(bound_node);
-		if (bound_instance) {
-			Node *bound_node = Object::cast_to<Node>(bound_instance);
-			// This can't by anything else than Node, so we can omit checking if casting succeeded.
+		Node *bound_node = get_bound_node();
+		if (bound_node) {
 			if (!bound_node->is_inside_tree()) {
 				return true;
 			}
@@ -273,6 +269,7 @@ bool Tween::step(float p_delta) {
 	}
 
 	if (!started) {
+		ERR_FAIL_COND_V_MSG(tweeners.is_empty(), false, "Tween started, but has no Tweeners.");
 		current_step = 0;
 		loops_done = 0;
 		start_tweeners();
@@ -285,6 +282,10 @@ bool Tween::step(float p_delta) {
 	while (rem_delta > 0 && running) {
 		float step_delta = rem_delta;
 		step_active = false;
+
+#ifdef DEBUG_ENABLED
+		float prev_delta = rem_delta;
+#endif
 
 		for (Ref<Tweener> &tweener : tweeners.write[current_step]) {
 			// Modified inside Tweener.step().
@@ -315,21 +316,34 @@ bool Tween::step(float p_delta) {
 				start_tweeners();
 			}
 		}
+
+#ifdef DEBUG_ENABLED
+		if (Math::is_equal_approx(rem_delta, prev_delta) && running && loops <= 0) {
+			ERR_FAIL_V_MSG(false, "Infinite loop detected. Check set_loops() description for more info.");
+		}
+#endif
 	}
 
 	return true;
 }
 
-bool Tween::should_pause() {
+bool Tween::can_process(bool p_tree_paused) const {
 	if (is_bound && pause_mode == TWEEN_PAUSE_BOUND) {
-		Object *bound_instance = ObjectDB::get_instance(bound_node);
-		if (bound_instance) {
-			Node *bound_node = Object::cast_to<Node>(bound_instance);
-			return !bound_node->can_process();
+		Node *bound_node = get_bound_node();
+		if (bound_node) {
+			return bound_node->can_process();
 		}
 	}
 
-	return pause_mode != TWEEN_PAUSE_PROCESS;
+	return !p_tree_paused || pause_mode == TWEEN_PAUSE_PROCESS;
+}
+
+Node *Tween::get_bound_node() const {
+	if (is_bound) {
+		return Object::cast_to<Node>(ObjectDB::get_instance(bound_node));
+	} else {
+		return nullptr;
+	}
 }
 
 real_t Tween::run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t p_time, real_t p_initial, real_t p_delta, real_t p_duration) {

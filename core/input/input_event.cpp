@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -86,7 +86,7 @@ Ref<InputEvent> InputEvent::xformed_by(const Transform2D &p_xform, const Vector2
 	return Ref<InputEvent>((InputEvent *)this);
 }
 
-bool InputEvent::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const {
+bool InputEvent::action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const {
 	return false;
 }
 
@@ -412,35 +412,32 @@ Ref<InputEventKey> InputEventKey::create_reference(Key p_keycode) {
 	return ie;
 }
 
-bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const {
+bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const {
 	Ref<InputEventKey> key = p_event;
 	if (key.is_null()) {
 		return false;
 	}
 
-	bool match = false;
-	if (get_keycode() == Key::NONE) {
-		Key code = get_physical_keycode_with_modifiers();
-		Key event_code = key->get_physical_keycode_with_modifiers();
-
-		match = get_physical_keycode() == key->get_physical_keycode() && (!key->is_pressed() || (code & event_code) == code);
+	bool match;
+	if (keycode != Key::NONE) {
+		match = keycode == key->keycode;
 	} else {
-		Key code = get_keycode_with_modifiers();
-		Key event_code = key->get_keycode_with_modifiers();
-
-		match = get_keycode() == key->get_keycode() && (!key->is_pressed() || (code & event_code) == code);
+		match = get_physical_keycode() == key->get_physical_keycode();
+	}
+	if (p_exact_match) {
+		match &= get_modifiers_mask() == key->get_modifiers_mask();
 	}
 	if (match) {
 		bool pressed = key->is_pressed();
-		if (p_pressed != nullptr) {
-			*p_pressed = pressed;
+		if (r_pressed != nullptr) {
+			*r_pressed = pressed;
 		}
 		float strength = pressed ? 1.0f : 0.0f;
-		if (p_strength != nullptr) {
-			*p_strength = strength;
+		if (r_strength != nullptr) {
+			*r_strength = strength;
 		}
-		if (p_raw_strength != nullptr) {
-			*p_raw_strength = strength;
+		if (r_raw_strength != nullptr) {
+			*r_raw_strength = strength;
 		}
 	}
 	return match;
@@ -585,24 +582,27 @@ Ref<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, co
 	return mb;
 }
 
-bool InputEventMouseButton::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const {
+bool InputEventMouseButton::action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const {
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_null()) {
 		return false;
 	}
 
-	bool match = mb->button_index == button_index;
+	bool match = button_index == mb->button_index;
+	if (p_exact_match) {
+		match &= get_modifiers_mask() == mb->get_modifiers_mask();
+	}
 	if (match) {
 		bool pressed = mb->is_pressed();
-		if (p_pressed != nullptr) {
-			*p_pressed = pressed;
+		if (r_pressed != nullptr) {
+			*r_pressed = pressed;
 		}
 		float strength = pressed ? 1.0f : 0.0f;
-		if (p_strength != nullptr) {
-			*p_strength = strength;
+		if (r_strength != nullptr) {
+			*r_strength = strength;
 		}
-		if (p_raw_strength != nullptr) {
-			*p_raw_strength = strength;
+		if (r_raw_strength != nullptr) {
+			*r_raw_strength = strength;
 		}
 	}
 
@@ -739,20 +739,15 @@ Vector2 InputEventMouseMotion::get_relative() const {
 	return relative;
 }
 
-void InputEventMouseMotion::set_speed(const Vector2 &p_speed) {
-	speed = p_speed;
+void InputEventMouseMotion::set_velocity(const Vector2 &p_velocity) {
+	velocity = p_velocity;
 }
 
-Vector2 InputEventMouseMotion::get_speed() const {
-	return speed;
+Vector2 InputEventMouseMotion::get_velocity() const {
+	return velocity;
 }
 
 Ref<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
-	Vector2 g = get_global_position();
-	Vector2 l = p_xform.xform(get_position() + p_local_ofs);
-	Vector2 r = p_xform.basis_xform(get_relative());
-	Vector2 s = p_xform.basis_xform(get_speed());
-
 	Ref<InputEventMouseMotion> mm;
 	mm.instantiate();
 
@@ -761,20 +756,20 @@ Ref<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, co
 
 	mm->set_modifiers_from_event(this);
 
-	mm->set_position(l);
+	mm->set_position(p_xform.xform(get_position() + p_local_ofs));
 	mm->set_pressure(get_pressure());
 	mm->set_tilt(get_tilt());
-	mm->set_global_position(g);
+	mm->set_global_position(get_global_position());
 
 	mm->set_button_mask(get_button_mask());
-	mm->set_relative(r);
-	mm->set_speed(s);
+	mm->set_relative(p_xform.basis_xform(get_relative()));
+	mm->set_velocity(p_xform.basis_xform(get_velocity()));
 
 	return mm;
 }
 
 String InputEventMouseMotion::as_text() const {
-	return vformat(RTR("Mouse motion at position (%s) with speed (%s)"), String(get_position()), String(get_speed()));
+	return vformat(RTR("Mouse motion at position (%s) with velocity (%s)"), String(get_position()), String(get_velocity()));
 }
 
 String InputEventMouseMotion::to_string() {
@@ -802,7 +797,7 @@ String InputEventMouseMotion::to_string() {
 
 	// Work around the fact vformat can only take 5 substitutions but 6 need to be passed.
 	String mask_and_position = vformat("button_mask=%s, position=(%s)", button_mask_string, String(get_position()));
-	return vformat("InputEventMouseMotion: %s, relative=(%s), speed=(%s), pressure=%.2f, tilt=(%s)", mask_and_position, String(get_relative()), String(get_speed()), get_pressure(), String(get_tilt()));
+	return vformat("InputEventMouseMotion: %s, relative=(%s), velocity=(%s), pressure=%.2f, tilt=(%s)", mask_and_position, String(get_relative()), String(get_velocity()), get_pressure(), String(get_tilt()));
 }
 
 bool InputEventMouseMotion::accumulate(const Ref<InputEvent> &p_event) {
@@ -841,7 +836,7 @@ bool InputEventMouseMotion::accumulate(const Ref<InputEvent> &p_event) {
 
 	set_position(motion->get_position());
 	set_global_position(motion->get_global_position());
-	set_speed(motion->get_speed());
+	set_velocity(motion->get_velocity());
 	relative += motion->get_relative();
 
 	return true;
@@ -857,13 +852,13 @@ void InputEventMouseMotion::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_relative", "relative"), &InputEventMouseMotion::set_relative);
 	ClassDB::bind_method(D_METHOD("get_relative"), &InputEventMouseMotion::get_relative);
 
-	ClassDB::bind_method(D_METHOD("set_speed", "speed"), &InputEventMouseMotion::set_speed);
-	ClassDB::bind_method(D_METHOD("get_speed"), &InputEventMouseMotion::get_speed);
+	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &InputEventMouseMotion::set_velocity);
+	ClassDB::bind_method(D_METHOD("get_velocity"), &InputEventMouseMotion::get_velocity);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "tilt"), "set_tilt", "get_tilt");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure"), "set_pressure", "get_pressure");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "relative"), "set_relative", "get_relative");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "speed"), "set_speed", "get_speed");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "velocity"), "set_velocity", "get_velocity");
 }
 
 ///////////////////////////////////
@@ -892,36 +887,40 @@ bool InputEventJoypadMotion::is_pressed() const {
 	return Math::abs(axis_value) >= 0.5f;
 }
 
-bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const {
+bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const {
 	Ref<InputEventJoypadMotion> jm = p_event;
 	if (jm.is_null()) {
 		return false;
 	}
 
-	bool match = (axis == jm->axis); // Matches even if not in the same direction, but returns a "not pressed" event.
+	// Matches even if not in the same direction, but returns a "not pressed" event.
+	bool match = axis == jm->axis;
+	if (p_exact_match) {
+		match &= (axis_value < 0) == (jm->axis_value < 0);
+	}
 	if (match) {
 		float jm_abs_axis_value = Math::abs(jm->get_axis_value());
 		bool same_direction = (((axis_value < 0) == (jm->axis_value < 0)) || jm->axis_value == 0);
 		bool pressed = same_direction && jm_abs_axis_value >= p_deadzone;
-		if (p_pressed != nullptr) {
-			*p_pressed = pressed;
+		if (r_pressed != nullptr) {
+			*r_pressed = pressed;
 		}
-		if (p_strength != nullptr) {
+		if (r_strength != nullptr) {
 			if (pressed) {
 				if (p_deadzone == 1.0f) {
-					*p_strength = 1.0f;
+					*r_strength = 1.0f;
 				} else {
-					*p_strength = CLAMP(Math::inverse_lerp(p_deadzone, 1.0f, jm_abs_axis_value), 0.0f, 1.0f);
+					*r_strength = CLAMP(Math::inverse_lerp(p_deadzone, 1.0f, jm_abs_axis_value), 0.0f, 1.0f);
 				}
 			} else {
-				*p_strength = 0.0f;
+				*r_strength = 0.0f;
 			}
 		}
-		if (p_raw_strength != nullptr) {
+		if (r_raw_strength != nullptr) {
 			if (same_direction) { // NOT pressed, because we want to ignore the deadzone.
-				*p_raw_strength = jm_abs_axis_value;
+				*r_raw_strength = jm_abs_axis_value;
 			} else {
-				*p_raw_strength = 0.0f;
+				*r_raw_strength = 0.0f;
 			}
 		}
 	}
@@ -999,7 +998,7 @@ float InputEventJoypadButton::get_pressure() const {
 	return pressure;
 }
 
-bool InputEventJoypadButton::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const {
+bool InputEventJoypadButton::action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const {
 	Ref<InputEventJoypadButton> jb = p_event;
 	if (jb.is_null()) {
 		return false;
@@ -1008,15 +1007,15 @@ bool InputEventJoypadButton::action_match(const Ref<InputEvent> &p_event, bool *
 	bool match = button_index == jb->button_index;
 	if (match) {
 		bool pressed = jb->is_pressed();
-		if (p_pressed != nullptr) {
-			*p_pressed = pressed;
+		if (r_pressed != nullptr) {
+			*r_pressed = pressed;
 		}
 		float strength = pressed ? 1.0f : 0.0f;
-		if (p_strength != nullptr) {
-			*p_strength = strength;
+		if (r_strength != nullptr) {
+			*r_strength = strength;
 		}
-		if (p_raw_strength != nullptr) {
-			*p_raw_strength = strength;
+		if (r_raw_strength != nullptr) {
+			*r_raw_strength = strength;
 		}
 	}
 
@@ -1188,12 +1187,12 @@ Vector2 InputEventScreenDrag::get_relative() const {
 	return relative;
 }
 
-void InputEventScreenDrag::set_speed(const Vector2 &p_speed) {
-	speed = p_speed;
+void InputEventScreenDrag::set_velocity(const Vector2 &p_velocity) {
+	velocity = p_velocity;
 }
 
-Vector2 InputEventScreenDrag::get_speed() const {
-	return speed;
+Vector2 InputEventScreenDrag::get_velocity() const {
+	return velocity;
 }
 
 Ref<InputEvent> InputEventScreenDrag::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
@@ -1207,30 +1206,31 @@ Ref<InputEvent> InputEventScreenDrag::xformed_by(const Transform2D &p_xform, con
 	sd->set_index(index);
 	sd->set_position(p_xform.xform(pos + p_local_ofs));
 	sd->set_relative(p_xform.basis_xform(relative));
-	sd->set_speed(p_xform.basis_xform(speed));
+	sd->set_velocity(p_xform.basis_xform(velocity));
 
 	return sd;
 }
 
 String InputEventScreenDrag::as_text() const {
-	return vformat(RTR("Screen dragged with %s touch points at position (%s) with speed of (%s)"), itos(index), String(get_position()), String(get_speed()));
+	return vformat(RTR("Screen dragged with %s touch points at position (%s) with velocity of (%s)"), itos(index), String(get_position()), String(get_velocity()));
 }
 
 String InputEventScreenDrag::to_string() {
-	return vformat("InputEventScreenDrag: index=%d, position=(%s), relative=(%s), speed=(%s)", index, String(get_position()), String(get_relative()), String(get_speed()));
+	return vformat("InputEventScreenDrag: index=%d, position=(%s), relative=(%s), velocity=(%s)", index, String(get_position()), String(get_relative()), String(get_velocity()));
 }
 
 bool InputEventScreenDrag::accumulate(const Ref<InputEvent> &p_event) {
 	Ref<InputEventScreenDrag> drag = p_event;
-	if (drag.is_null())
+	if (drag.is_null()) {
 		return false;
+	}
 
 	if (get_index() != drag->get_index()) {
 		return false;
 	}
 
 	set_position(drag->get_position());
-	set_speed(drag->get_speed());
+	set_velocity(drag->get_velocity());
 	relative += drag->get_relative();
 
 	return true;
@@ -1246,13 +1246,13 @@ void InputEventScreenDrag::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_relative", "relative"), &InputEventScreenDrag::set_relative);
 	ClassDB::bind_method(D_METHOD("get_relative"), &InputEventScreenDrag::get_relative);
 
-	ClassDB::bind_method(D_METHOD("set_speed", "speed"), &InputEventScreenDrag::set_speed);
-	ClassDB::bind_method(D_METHOD("get_speed"), &InputEventScreenDrag::get_speed);
+	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &InputEventScreenDrag::set_velocity);
+	ClassDB::bind_method(D_METHOD("get_velocity"), &InputEventScreenDrag::get_velocity);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "index"), "set_index", "get_index");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "relative"), "set_relative", "get_relative");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "speed"), "set_speed", "get_speed");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "velocity"), "set_velocity", "get_velocity");
 }
 
 ///////////////////////////////////
@@ -1293,7 +1293,7 @@ bool InputEventAction::is_action(const StringName &p_action) const {
 	return action == p_action;
 }
 
-bool InputEventAction::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const {
+bool InputEventAction::action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const {
 	Ref<InputEventAction> act = p_event;
 	if (act.is_null()) {
 		return false;
@@ -1302,15 +1302,15 @@ bool InputEventAction::action_match(const Ref<InputEvent> &p_event, bool *p_pres
 	bool match = action == act->action;
 	if (match) {
 		bool pressed = act->pressed;
-		if (p_pressed != nullptr) {
-			*p_pressed = pressed;
+		if (r_pressed != nullptr) {
+			*r_pressed = pressed;
 		}
 		float strength = pressed ? 1.0f : 0.0f;
-		if (p_strength != nullptr) {
-			*p_strength = strength;
+		if (r_strength != nullptr) {
+			*r_strength = strength;
 		}
-		if (p_raw_strength != nullptr) {
-			*p_raw_strength = strength;
+		if (r_raw_strength != nullptr) {
+			*r_raw_strength = strength;
 		}
 	}
 	return match;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -92,6 +92,12 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	RSG::canvas_render->update();
 
 	RSG::rasterizer->end_frame(p_swap_buffers);
+
+	XRServer *xr_server = XRServer::get_singleton();
+	if (xr_server != nullptr) {
+		// let our XR server know we're done so we can get our frame timing
+		xr_server->end_frame();
+	}
 
 	RSG::canvas->update_visibility_notifiers();
 	RSG::scene->update_visibility_notifiers();
@@ -253,6 +259,10 @@ String RenderingServerDefault::get_video_adapter_name() const {
 
 String RenderingServerDefault::get_video_adapter_vendor() const {
 	return RSG::storage->get_video_adapter_vendor();
+}
+
+RenderingDevice::DeviceType RenderingServerDefault::get_video_adapter_type() const {
+	return RSG::storage->get_video_adapter_type();
 }
 
 void RenderingServerDefault::set_frame_profiling_enabled(bool p_enable) {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,8 +37,6 @@
 #include "servers/xr_server.h"
 
 /**
-	@author Bastiaan Olij <mux213@gmail.com>
-
 	The positional tracker object as an object that represents the position and orientation of a tracked object like a controller or headset.
 	An AR/VR Interface will registered the trackers it manages with our AR/VR server and update its position and orientation.
 	This is where potentially additional AR/VR interfaces may be active as there are AR/VR SDKs that solely deal with positional tracking.
@@ -84,7 +82,7 @@ public:
 	bool has_pose(const StringName &p_action_name) const;
 	Ref<XRPose> get_pose(const StringName &p_action_name) const;
 	void invalidate_pose(const StringName &p_action_name);
-	void set_pose(const StringName &p_action_name, const Transform3D &p_transform, const Vector3 &p_linear_velocity, const Vector3 &p_angular_velocity);
+	void set_pose(const StringName &p_action_name, const Transform3D &p_transform, const Vector3 &p_linear_velocity, const Vector3 &p_angular_velocity, const XRPose::TrackingConfidence p_tracking_confidence = XRPose::XR_TRACKING_CONFIDENCE_HIGH);
 
 	Variant get_input(const StringName &p_action_name) const;
 	void set_input(const StringName &p_action_name, const Variant &p_value);
@@ -99,4 +97,4 @@ public:
 
 VARIANT_ENUM_CAST(XRPositionalTracker::TrackerHand);
 
-#endif
+#endif // XR_POSITIONAL_TRACKER_H

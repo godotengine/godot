@@ -428,7 +428,7 @@ namespace GodotTools
                 Shortcut = buildSolutionShortcut,
                 ShortcutInTooltip = true
             };
-            _toolBarBuildButton.PressedSignal += BuildSolutionPressed;
+            _toolBarBuildButton.Pressed += BuildSolutionPressed;
             AddControlToContainer(CustomControlContainer.Toolbar, _toolBarBuildButton);
 
             if (File.Exists(GodotSharpDirs.ProjectSlnPath) && File.Exists(GodotSharpDirs.ProjectCsProjPath))

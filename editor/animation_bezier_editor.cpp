@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 
 #include "editor/editor_node.h"
 #include "editor_scale.h"
+#include "scene/gui/view_panner.h"
 #include "scene/resources/text_line.h"
 
 float AnimationBezierTrackEdit::_bezier_h_to_pixel(float p_h) {
@@ -216,6 +217,9 @@ void AnimationBezierTrackEdit::_draw_line_clipped(const Vector2 &p_from, const V
 }
 
 void AnimationBezierTrackEdit::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+		panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
+	}
 	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
 		close_button->set_icon(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
 
@@ -610,6 +614,11 @@ void AnimationBezierTrackEdit::_select_at_anim(const Ref<Animation> &p_anim, int
 void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
+	if (panner->gui_input(p_event)) {
+		accept_event();
+		return;
+	}
+
 	if (p_event->is_pressed()) {
 		if (ED_GET_SHORTCUT("animation_editor/duplicate_selection")->matches_event(p_event)) {
 			duplicate_selection();
@@ -623,43 +632,6 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
-		const float v_zoom_orig = v_zoom;
-		if (mb->is_command_pressed()) {
-			timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() / 1.05);
-		} else {
-			if (v_zoom < 100000) {
-				v_zoom *= 1.2;
-			}
-		}
-		v_scroll = v_scroll + (mb->get_position().y - get_size().y / 2) * (v_zoom - v_zoom_orig);
-		update();
-	}
-
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
-		const float v_zoom_orig = v_zoom;
-		if (mb->is_command_pressed()) {
-			timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() * 1.05);
-		} else {
-			if (v_zoom > 0.000001) {
-				v_zoom /= 1.2;
-			}
-		}
-		v_scroll = v_scroll + (mb->get_position().y - get_size().y / 2) * (v_zoom - v_zoom_orig);
-		update();
-	}
-
-	if (mb.is_valid() && mb->get_button_index() == MouseButton::MIDDLE) {
-		if (mb->is_pressed()) {
-			int x = mb->get_position().x - timeline->get_name_limit();
-			panning_timeline_from = x / timeline->get_zoom_scale();
-			panning_timeline = true;
-			panning_timeline_at = timeline->get_value();
-		} else {
-			panning_timeline = false;
-		}
-	}
-
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 		menu_insert_key = mb->get_position();
 		if (menu_insert_key.x >= timeline->get_name_limit() && menu_insert_key.x <= get_size().width - timeline->get_buttons_width()) {
@@ -934,22 +906,6 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_MIDDLE) != MouseButton::NONE) {
-		v_scroll += mm->get_relative().y * v_zoom;
-		if (v_scroll > 100000) {
-			v_scroll = 100000;
-		}
-		if (v_scroll < -100000) {
-			v_scroll = -100000;
-		}
-
-		int x = mm->get_position().x - timeline->get_name_limit();
-		float ofs = x / timeline->get_zoom_scale();
-		float diff = ofs - panning_timeline_from;
-		timeline->set_value(panning_timeline_at - diff);
-
-		update();
-	}
 	if (moving_selection_attempt && mm.is_valid()) {
 		if (!moving_selection) {
 			moving_selection = true;
@@ -1036,6 +992,37 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		moving_handle = 0;
 		update();
 	}
+}
+
+void AnimationBezierTrackEdit::_scroll_callback(Vector2 p_scroll_vec, bool p_alt) {
+	_pan_callback(-p_scroll_vec * 32);
+}
+
+void AnimationBezierTrackEdit::_pan_callback(Vector2 p_scroll_vec) {
+	v_scroll += p_scroll_vec.y * v_zoom;
+	v_scroll = CLAMP(v_scroll, -100000, 100000);
+	timeline->set_value(timeline->get_value() - p_scroll_vec.x / timeline->get_zoom_scale());
+	update();
+}
+
+void AnimationBezierTrackEdit::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt) {
+	const float v_zoom_orig = v_zoom;
+	if (p_alt) {
+		// Alternate zoom (doesn't affect timeline).
+		if (p_scroll_vec.y > 0) {
+			v_zoom = MIN(v_zoom * 1.2, 100000);
+		} else {
+			v_zoom = MAX(v_zoom / 1.2, 0.000001);
+		}
+	} else {
+		if (p_scroll_vec.y > 0) {
+			timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() / 1.05);
+		} else {
+			timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() * 1.05);
+		}
+	}
+	v_scroll = v_scroll + (p_origin.y - get_size().y / 2) * (v_zoom - v_zoom_orig);
+	update();
 }
 
 void AnimationBezierTrackEdit::_menu_selected(int p_index) {
@@ -1171,6 +1158,9 @@ void AnimationBezierTrackEdit::_bind_methods() {
 }
 
 AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
+	panner.instantiate();
+	panner->set_callbacks(callable_mp(this, &AnimationBezierTrackEdit::_scroll_callback), callable_mp(this, &AnimationBezierTrackEdit::_pan_callback), callable_mp(this, &AnimationBezierTrackEdit::_zoom_callback));
+
 	play_position = memnew(Control);
 	play_position->set_mouse_filter(MOUSE_FILTER_PASS);
 	add_child(play_position);

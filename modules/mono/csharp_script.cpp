@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,6 +55,7 @@
 #endif
 
 #include "editor/editor_internal_calls.h"
+#include "editor_templates/templates.gen.h"
 #include "godotsharp_dirs.h"
 #include "mono_gd/gd_mono_cache.h"
 #include "mono_gd/gd_mono_class.h"
@@ -351,57 +352,33 @@ static String get_base_class_name(const String &p_base_class_name, const String 
 	return base_class;
 }
 
-Ref<Script> CSharpLanguage::get_template(const String &p_class_name, const String &p_base_class_name) const {
-	String script_template = "using " BINDINGS_NAMESPACE ";\n"
-							 "using System;\n"
-							 "\n"
-							 "public partial class %CLASS% : %BASE%\n"
-							 "{\n"
-							 "    // Declare member variables here. Examples:\n"
-							 "    // private int a = 2;\n"
-							 "    // private string b = \"text\";\n"
-							 "\n"
-							 "    // Called when the node enters the scene tree for the first time.\n"
-							 "    public override void _Ready()\n"
-							 "    {\n"
-							 "        \n"
-							 "    }\n"
-							 "\n"
-							 "//  // Called every frame. 'delta' is the elapsed time since the previous frame.\n"
-							 "//  public override void _Process(float delta)\n"
-							 "//  {\n"
-							 "//      \n"
-							 "//  }\n"
-							 "}\n";
-
-	// Replaces all spaces in p_class_name with underscores to prevent
-	// invalid C# Script templates from being generated when the object name
-	// has spaces in it.
-	String class_name_no_spaces = p_class_name.replace(" ", "_");
-	String base_class_name = get_base_class_name(p_base_class_name, class_name_no_spaces);
-	script_template = script_template.replace("%BASE%", base_class_name)
-							  .replace("%CLASS%", class_name_no_spaces);
-
-	Ref<CSharpScript> script;
-	script.instantiate();
-	script->set_source_code(script_template);
-	script->set_name(class_name_no_spaces);
-
-	return script;
-}
-
 bool CSharpLanguage::is_using_templates() {
 	return true;
 }
 
-void CSharpLanguage::make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script) {
-	String src = p_script->get_source_code();
+Ref<Script> CSharpLanguage::make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const {
+	Ref<CSharpScript> script;
+	script.instantiate();
+
 	String class_name_no_spaces = p_class_name.replace(" ", "_");
 	String base_class_name = get_base_class_name(p_base_class_name, class_name_no_spaces);
-	src = src.replace("%BASE%", base_class_name)
-				  .replace("%CLASS%", class_name_no_spaces)
-				  .replace("%TS%", _get_indentation());
-	p_script->set_source_code(src);
+	String processed_template = p_template;
+	processed_template = processed_template.replace("_BINDINGS_NAMESPACE_", BINDINGS_NAMESPACE)
+								 .replace("_BASE_", base_class_name)
+								 .replace("_CLASS_", class_name_no_spaces)
+								 .replace("_TS_", _get_indentation());
+	script->set_source_code(processed_template);
+	return script;
+}
+
+Vector<ScriptLanguage::ScriptTemplate> CSharpLanguage::get_built_in_templates(StringName p_object) {
+	Vector<ScriptLanguage::ScriptTemplate> templates;
+	for (int i = 0; i < TEMPLATES_ARRAY_SIZE; i++) {
+		if (TEMPLATES[i].inherit == p_object) {
+			templates.append(TEMPLATES[i]);
+		}
+	}
+	return templates;
 }
 
 String CSharpLanguage::validate_path(const String &p_path) const {
@@ -1191,8 +1168,8 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 #ifdef TOOLS_ENABLED
 	// FIXME: Hack to refresh editor in order to display new properties and signals. See if there is a better alternative.
 	if (Engine::get_singleton()->is_editor_hint()) {
-		EditorNode::get_singleton()->get_inspector()->update_tree();
-		NodeDock::singleton->update_lists();
+		InspectorDock::get_inspector_singleton()->update_tree();
+		NodeDock::get_singleton()->update_lists();
 	}
 #endif
 }
@@ -1762,7 +1739,16 @@ void CSharpInstance::get_properties_state_for_reloading(List<Pair<StringName, Va
 
 		ManagedType managedType;
 
-		GDMonoField *field = script->script_class->get_field(state_pair.first);
+		GDMonoField *field = nullptr;
+		GDMonoClass *top = script->script_class;
+		while (top && top != script->native) {
+			field = top->get_field(state_pair.first);
+			if (field) {
+				break;
+			}
+
+			top = top->get_parent_class();
+		}
 		if (!field) {
 			continue; // Properties ignored. We get the property baking fields instead.
 		}
@@ -3009,6 +2995,7 @@ void CSharpScript::initialize_for_managed_type(Ref<CSharpScript> p_script, GDMon
 	CRASH_COND(p_script->native == nullptr);
 
 	p_script->valid = true;
+	p_script->reload_invalidated = false;
 
 	update_script_class_info(p_script);
 
@@ -3365,13 +3352,13 @@ MethodInfo CSharpScript::get_method_info(const StringName &p_method) const {
 }
 
 Error CSharpScript::reload(bool p_keep_state) {
-	bool has_instances;
-	{
-		MutexLock lock(CSharpLanguage::get_singleton()->script_instances_mutex);
-		has_instances = instances.size();
+	if (!reload_invalidated) {
+		return OK;
 	}
 
-	ERR_FAIL_COND_V(!p_keep_state && has_instances, ERR_ALREADY_IN_USE);
+	// In the case of C#, reload doesn't really do any script reloading.
+	// That's done separately via domain reloading.
+	reload_invalidated = false;
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
@@ -3558,6 +3545,7 @@ void CSharpScript::_update_name() {
 void CSharpScript::_clear() {
 	tool = false;
 	valid = false;
+	reload_invalidated = true;
 
 	base = nullptr;
 	native = nullptr;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -79,6 +79,8 @@ private:
 
 	RID mesh;
 
+	void _attach_sub_emitter();
+
 protected:
 	static void _bind_methods();
 	virtual void _validate_property(PropertyInfo &property) const override;
@@ -139,6 +141,19 @@ public:
 
 	TypedArray<String> get_configuration_warnings() const override;
 
+	void set_sub_emitter(const NodePath &p_path);
+	NodePath get_sub_emitter() const;
+
+	enum EmitFlags {
+		EMIT_FLAG_POSITION = RS::PARTICLES_EMIT_FLAG_POSITION,
+		EMIT_FLAG_ROTATION_SCALE = RS::PARTICLES_EMIT_FLAG_ROTATION_SCALE,
+		EMIT_FLAG_VELOCITY = RS::PARTICLES_EMIT_FLAG_VELOCITY,
+		EMIT_FLAG_COLOR = RS::PARTICLES_EMIT_FLAG_COLOR,
+		EMIT_FLAG_CUSTOM = RS::PARTICLES_EMIT_FLAG_CUSTOM
+	};
+
+	void emit_particle(const Transform2D &p_transform, const Vector2 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags);
+
 	void restart();
 	Rect2 capture_rect() const;
 	GPUParticles2D();
@@ -146,5 +161,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(GPUParticles2D::DrawOrder)
+VARIANT_ENUM_CAST(GPUParticles2D::EmitFlags)
 
 #endif // PARTICLES_2D_H

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,9 +53,9 @@ void NavigationObstacle2D::_validate_property(PropertyInfo &p_property) const {
 
 void NavigationObstacle2D::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_READY: {
-			initialize_agent();
+		case NOTIFICATION_ENTER_TREE: {
 			parent_node2d = Object::cast_to<Node2D>(get_parent());
+			reevaluate_agent_radius();
 			if (parent_node2d != nullptr) {
 				// place agent on navigation map first or else the RVO agent callback creation fails silently later
 				NavigationServer2D::get_singleton()->agent_set_map(get_rid(), parent_node2d->get_world_2d()->get_navigation_map());
@@ -83,6 +83,7 @@ void NavigationObstacle2D::_notification(int p_what) {
 
 NavigationObstacle2D::NavigationObstacle2D() {
 	agent = NavigationServer2D::get_singleton()->agent_create();
+	initialize_agent();
 }
 
 NavigationObstacle2D::~NavigationObstacle2D() {
@@ -110,7 +111,7 @@ void NavigationObstacle2D::initialize_agent() {
 void NavigationObstacle2D::reevaluate_agent_radius() {
 	if (!estimate_radius) {
 		NavigationServer2D::get_singleton()->agent_set_radius(agent, radius);
-	} else if (parent_node2d) {
+	} else if (parent_node2d && parent_node2d->is_inside_tree()) {
 		NavigationServer2D::get_singleton()->agent_set_radius(agent, estimate_agent_radius());
 	}
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,8 +41,6 @@ class XRInterface;
 class XRPositionalTracker;
 
 /**
-	@author Bastiaan Olij <mux213@gmail.com>
-
 	The XR server is a singleton object that gives access to the various
 	objects and SDKs that are available on the system.
 	Because there can be multiple SDKs active this is exposed as an array
@@ -85,10 +83,6 @@ private:
 	double world_scale; /* scale by which we multiply our tracker positions */
 	Transform3D world_origin; /* our world origin point, maps a location in our virtual world to the origin point in our real world tracking volume */
 	Transform3D reference_frame; /* our reference frame */
-
-	uint64_t last_process_usec; /* for frame timing, usec when we did our processing */
-	uint64_t last_commit_usec; /* for frame timing, usec when we finished committing both eyes */
-	uint64_t last_frame_usec; /* time it took between process and committing, we should probably average this over the last x frames */
 
 protected:
 	static XRServer *singleton;
@@ -177,12 +171,16 @@ public:
 	PackedStringArray get_suggested_pose_names(const StringName &p_tracker_name) const;
 	// Q: Should we add get_suggested_input_names and get_suggested_haptic_names even though we don't use them for the IDE?
 
-	uint64_t get_last_process_usec();
-	uint64_t get_last_commit_usec();
-	uint64_t get_last_frame_usec();
-
+	// Process is called before we handle our physics process and game process. This is where our interfaces will update controller data and such.
 	void _process();
-	void _mark_commit();
+
+	// Pre-render is called right before we're rendering our viewports.
+	// This is where interfaces such as OpenVR and OpenXR will update positioning data.
+	// Many of these interfaces will also do a predictive sync which ensures we run at a steady framerate.
+	void pre_render();
+
+	// End-frame is called right after Godot has finished its rendering bits.
+	void end_frame();
 
 	XRServer();
 	~XRServer();
@@ -193,4 +191,4 @@ public:
 VARIANT_ENUM_CAST(XRServer::TrackerType);
 VARIANT_ENUM_CAST(XRServer::RotationMode);
 
-#endif
+#endif // XR_SERVER_H

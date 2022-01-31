@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -149,6 +149,8 @@ private:
 	void update_file_list();
 	void update_filters();
 
+	void _focus_file_text();
+
 	void _update_favorites();
 	void _favorite_pressed();
 	void _favorite_selected(int p_idx);
@@ -178,7 +180,7 @@ private:
 
 	void _delete_items();
 
-	void _update_drives();
+	void _update_drives(bool p_select = true);
 
 	void _go_up();
 	void _go_back();

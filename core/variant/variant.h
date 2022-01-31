@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,8 +53,6 @@
 #include "core/variant/dictionary.h"
 
 class Object;
-class Node; // helper
-class Control; // helper
 
 struct PropertyInfo;
 struct MethodInfo;
@@ -287,7 +285,7 @@ public:
 	static bool can_convert(Type p_type_from, Type p_type_to);
 	static bool can_convert_strict(Type p_type_from, Type p_type_to);
 
-	bool is_ref() const;
+	bool is_ref_counted() const;
 	_FORCE_INLINE_ bool is_num() const {
 		return type == INT || type == FLOAT;
 	}
@@ -339,8 +337,6 @@ public:
 	operator ::RID() const;
 
 	operator Object *() const;
-	operator Node *() const;
-	operator Control *() const;
 
 	operator Callable() const;
 	operator Signal() const;

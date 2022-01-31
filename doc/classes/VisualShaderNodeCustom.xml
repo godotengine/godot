@@ -25,7 +25,7 @@
 		</method>
 		<method name="_get_code" qualifiers="virtual const">
 			<return type="String" />
-			<argument index="0" name="input_vars" type="PackedStringArray" />
+			<argument index="0" name="input_vars" type="String[]" />
 			<argument index="1" name="output_vars" type="String[]" />
 			<argument index="2" name="mode" type="int" enum="Shader.Mode" />
 			<argument index="3" name="type" type="int" enum="VisualShader.Type" />

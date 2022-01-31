@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 
 #include "editor/create_dialog.h"
 #include "editor/editor_inspector.h"
+#include "editor/editor_locale_dialog.h"
 #include "editor/editor_resource_picker.h"
 #include "editor/editor_spin_slider.h"
 #include "editor/property_selector.h"
@@ -153,6 +154,26 @@ public:
 	EditorPropertyPath();
 };
 
+class EditorPropertyLocale : public EditorProperty {
+	GDCLASS(EditorPropertyLocale, EditorProperty);
+	EditorLocaleDialog *dialog;
+	LineEdit *locale;
+	Button *locale_edit;
+
+	void _locale_selected(const String &p_locale);
+	void _locale_pressed();
+	void _locale_focus_exited();
+
+protected:
+	static void _bind_methods();
+	void _notification(int p_what);
+
+public:
+	void setup(const String &p_hit_string);
+	virtual void update_property() override;
+	EditorPropertyLocale();
+};
+
 class EditorPropertyClassName : public EditorProperty {
 	GDCLASS(EditorPropertyClassName, EditorProperty);
 
@@ -258,7 +279,46 @@ public:
 	EditorPropertyFlags();
 };
 
-class EditorPropertyLayersGrid;
+///////////////////// LAYERS /////////////////////////
+
+class EditorPropertyLayersGrid : public Control {
+	GDCLASS(EditorPropertyLayersGrid, Control);
+
+private:
+	Vector<Rect2> flag_rects;
+	Rect2 expand_rect;
+	bool expand_hovered = false;
+	bool expanded = false;
+	int expansion_rows = 0;
+	int hovered_index = -1;
+	bool read_only = false;
+	int renamed_layer_index = -1;
+	PopupMenu *layer_rename;
+	ConfirmationDialog *rename_dialog;
+	LineEdit *rename_dialog_text;
+
+	void _rename_pressed(int p_menu);
+	void _rename_operation_confirm();
+	Size2 get_grid_size() const;
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	uint32_t value = 0;
+	int layer_group_size = 0;
+	int layer_count = 0;
+	Vector<String> names;
+	Vector<String> tooltips;
+
+	void set_read_only(bool p_read_only);
+	virtual Size2 get_minimum_size() const override;
+	virtual String get_tooltip(const Point2 &p_pos) const override;
+	void gui_input(const Ref<InputEvent> &p_ev) override;
+	void set_flag(uint32_t p_flag);
+	EditorPropertyLayersGrid();
+};
 
 class EditorPropertyLayers : public EditorProperty {
 	GDCLASS(EditorPropertyLayers, EditorProperty);
@@ -276,12 +336,14 @@ public:
 private:
 	EditorPropertyLayersGrid *grid;
 	void _grid_changed(uint32_t p_grid);
+	String basename;
 	LayerType layer_type;
 	PopupMenu *layers;
 	Button *button;
 
 	void _button_pressed();
 	void _menu_pressed(int p_menu);
+	void _refresh_names();
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
@@ -289,6 +351,7 @@ protected:
 
 public:
 	void setup(LayerType p_layer_type);
+	void set_layer_name(int p_index, const String &p_name);
 	virtual void update_property() override;
 	EditorPropertyLayers();
 };
@@ -625,6 +688,10 @@ class EditorPropertyNodePath : public EditorProperty {
 	void _node_assign();
 	void _node_clear();
 
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+	bool is_drop_valid(const Dictionary &p_drag_data) const;
+
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 	static void _bind_methods();
@@ -662,7 +729,7 @@ class EditorPropertyResource : public EditorProperty {
 
 	void _viewport_selected(const NodePath &p_path);
 
-	void _sub_inspector_property_keyed(const String &p_property, const Variant &p_value, bool);
+	void _sub_inspector_property_keyed(const String &p_property, const Variant &p_value, bool p_advance);
 	void _sub_inspector_resource_selected(const RES &p_resource, const String &p_property);
 	void _sub_inspector_object_id_selected(int p_id);
 

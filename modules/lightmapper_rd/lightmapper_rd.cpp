@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -775,11 +775,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			} else {
 				panorama_tex.instantiate();
 				panorama_tex->create(8, 8, false, Image::FORMAT_RGBAF);
-				for (int i = 0; i < 8; i++) {
-					for (int j = 0; j < 8; j++) {
-						panorama_tex->set_pixel(i, j, Color(0, 0, 0, 1));
-					}
-				}
+				panorama_tex->fill(Color(0, 0, 0, 1));
 			}
 
 			RD::TextureFormat tfp;

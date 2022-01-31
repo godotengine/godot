@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -269,7 +269,7 @@ Array GDScriptWorkspace::symbol(const Dictionary &p_params) {
 			Vector<lsp::DocumentedSymbolInformation> script_symbols;
 			E.value->get_symbols().symbol_tree_as_list(E.key, script_symbols);
 			for (int i = 0; i < script_symbols.size(); ++i) {
-				if (query.is_subsequence_ofi(script_symbols[i].name)) {
+				if (query.is_subsequence_ofn(script_symbols[i].name)) {
 					lsp::DocumentedSymbolInformation symbol = script_symbols[i];
 					symbol.location.uri = get_file_uri(symbol.location.uri);
 					arr.push_back(symbol.to_json());
@@ -585,7 +585,7 @@ void GDScriptWorkspace::completion(const lsp::CompletionParams &p_params, List<S
 			stack.push_back(owner_scene_node);
 
 			while (!stack.is_empty()) {
-				current = stack.pop_back();
+				current = Object::cast_to<Node>(stack.pop_back());
 				Ref<GDScript> script = current->get_script();
 				if (script.is_valid() && script->get_path() == path) {
 					break;

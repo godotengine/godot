@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -627,7 +627,7 @@ void EditorPropertyArray::_reorder_button_gui_input(const Ref<InputEvent> &p_eve
 			}
 			vbox->move_child(reorder_selected_element_hbox, reorder_to_index % page_length + 2);
 			// Ensure the moving element is visible.
-			EditorNode::get_singleton()->get_inspector()->ensure_control_visible(reorder_selected_element_hbox);
+			InspectorDock::get_inspector_singleton()->ensure_control_visible(reorder_selected_element_hbox);
 		}
 	}
 }

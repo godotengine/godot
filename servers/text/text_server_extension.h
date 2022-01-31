@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -285,6 +285,11 @@ public:
 	GDVIRTUAL2(_font_remove_script_support_override, RID, const String &);
 	GDVIRTUAL1R(Vector<String>, _font_get_script_support_overrides, RID);
 
+	virtual void font_set_opentype_feature_overrides(RID p_font_rid, const Dictionary &p_overrides) override;
+	virtual Dictionary font_get_opentype_feature_overrides(RID p_font_rid) const override;
+	GDVIRTUAL2(_font_set_opentype_feature_overrides, RID, const Dictionary &);
+	GDVIRTUAL1RC(Dictionary, _font_get_opentype_feature_overrides, RID);
+
 	virtual Dictionary font_supported_feature_list(RID p_font_rid) const override;
 	virtual Dictionary font_supported_variation_list(RID p_font_rid) const override;
 	GDVIRTUAL1RC(Dictionary, _font_supported_feature_list, RID);
@@ -310,8 +315,10 @@ public:
 
 	virtual void shaped_text_set_direction(RID p_shaped, Direction p_direction = DIRECTION_AUTO) override;
 	virtual Direction shaped_text_get_direction(RID p_shaped) const override;
+	virtual Direction shaped_text_get_inferred_direction(RID p_shaped) const override;
 	GDVIRTUAL2(_shaped_text_set_direction, RID, Direction);
 	GDVIRTUAL1RC(/*Direction*/ int, _shaped_text_get_direction, RID);
+	GDVIRTUAL1RC(/*Direction*/ int, _shaped_text_get_inferred_direction, RID);
 
 	virtual void shaped_text_set_bidi_override(RID p_shaped, const Array &p_override) override;
 	GDVIRTUAL2(_shaped_text_set_bidi_override, RID, const Array &);
@@ -441,6 +448,11 @@ public:
 	GDVIRTUAL2RC(String, _format_number, const String &, const String &);
 	GDVIRTUAL2RC(String, _parse_number, const String &, const String &);
 	GDVIRTUAL1RC(String, _percent_sign, const String &);
+
+	virtual String string_to_upper(const String &p_string, const String &p_language = "") const override;
+	virtual String string_to_lower(const String &p_string, const String &p_language = "") const override;
+	GDVIRTUAL2RC(String, _string_to_upper, const String &, const String &);
+	GDVIRTUAL2RC(String, _string_to_lower, const String &, const String &);
 
 	TextServerExtension();
 	~TextServerExtension();

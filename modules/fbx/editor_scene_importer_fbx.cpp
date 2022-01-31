@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -83,7 +83,7 @@ uint32_t EditorSceneFormatImporterFBX::get_import_flags() const {
 	return IMPORT_SCENE;
 }
 
-Node3D *EditorSceneFormatImporterFBX::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps,
+Node3D *EditorSceneFormatImporterFBX::import_scene(const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps,
 		List<String> *r_missing_deps, Error *r_err) {
 	// done for performance when re-importing lots of files when testing importer in verbose only!
 	if (OS::get_singleton()->is_stdout_verbose()) {
@@ -1467,4 +1467,9 @@ void EditorSceneFormatImporterFBX::BuildDocumentNodes(
 			BuildDocumentNodes(new_node->pivot_transform, state, p_doc, current_node_id, new_node);
 		}
 	}
+}
+Ref<Animation> EditorSceneFormatImporterFBX::import_animation(const String &p_path,
+		uint32_t p_flags, const Map<StringName, Variant> &p_options,
+		int p_bake_fps) {
+	return Ref<Animation>();
 }

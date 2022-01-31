@@ -3,7 +3,8 @@ on: [push, pull_request]
 
 # Global Settings
 env:
-  GODOT_BASE_BRANCH: master
+  # Only used for the cache key. Increment version to force clean build.
+  GODOT_BASE_BRANCH: master-v2
   SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes
 
 concurrency:

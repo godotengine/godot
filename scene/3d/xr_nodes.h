@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,13 +34,10 @@
 #include "scene/3d/camera_3d.h"
 #include "servers/xr/xr_positional_tracker.h"
 
-/**
-	@author Bastiaan Olij <mux213@gmail.com>
-**/
-
 /*
 	XRCamera is a subclass of camera which will register itself with its parent XROrigin and as a result is automatically positioned
 */
+
 class XRCamera3D : public Camera3D {
 	GDCLASS(XRCamera3D, Camera3D);
 
@@ -181,6 +178,7 @@ public:
 	Our camera and controllers will always be child nodes and thus place relative to this origin point.
 	This node will automatically locate any camera child nodes and update its position while our XRController3D node will handle tracked controllers.
 */
+
 class XROrigin3D : public Node3D {
 	GDCLASS(XROrigin3D, Node3D);
 
@@ -204,4 +202,4 @@ public:
 	~XROrigin3D() {}
 };
 
-#endif /* XR_NODES_H */
+#endif // XR_NODES_H

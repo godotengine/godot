@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,6 +54,8 @@ DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, Windo
 #if defined(GLES3_ENABLED)
 	// FIXME: Add support for both OpenGL and Vulkan when OpenGL is implemented
 	// again,
+	// Note that we should be checking "opengl3" as the driver, might never enable this seeing OpenGL is deprecated on iOS
+	// We are hardcoding the rendering_driver to "vulkan" down below
 
 	if (rendering_driver == "opengl_es") {
 		bool gl_initialization_error = false;
@@ -131,18 +133,16 @@ DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, Windo
 
 DisplayServerIPhone::~DisplayServerIPhone() {
 #if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
-		if (rendering_device_vulkan) {
-			rendering_device_vulkan->finalize();
-			memdelete(rendering_device_vulkan);
-			rendering_device_vulkan = nullptr;
-		}
+	if (rendering_device_vulkan) {
+		rendering_device_vulkan->finalize();
+		memdelete(rendering_device_vulkan);
+		rendering_device_vulkan = nullptr;
+	}
 
-		if (context_vulkan) {
-			context_vulkan->window_destroy(MAIN_WINDOW_ID);
-			memdelete(context_vulkan);
-			context_vulkan = nullptr;
-		}
+	if (context_vulkan) {
+		context_vulkan->window_destroy(MAIN_WINDOW_ID);
+		memdelete(context_vulkan);
+		context_vulkan = nullptr;
 	}
 #endif
 }
@@ -293,7 +293,6 @@ void DisplayServerIPhone::update_gyroscope(float p_x, float p_y, float p_z) {
 
 bool DisplayServerIPhone::has_feature(Feature p_feature) const {
 	switch (p_feature) {
-		// case FEATURE_CONSOLE_WINDOW:
 		// case FEATURE_CURSOR_SHAPE:
 		// case FEATURE_CUSTOM_CURSOR_SHAPE:
 		// case FEATURE_GLOBAL_MENU:
@@ -406,6 +405,24 @@ Vector<DisplayServer::WindowID> DisplayServerIPhone::get_window_list() const {
 
 DisplayServer::WindowID DisplayServerIPhone::get_window_at_screen_position(const Point2i &p_position) const {
 	return MAIN_WINDOW_ID;
+}
+
+int64_t DisplayServerIPhone::window_get_native_handle(HandleType p_handle_type, WindowID p_window) const {
+	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, 0);
+	switch (p_handle_type) {
+		case DISPLAY_HANDLE: {
+			return 0; // Not supported.
+		}
+		case WINDOW_HANDLE: {
+			return (int64_t)AppDelegate.viewController;
+		}
+		case WINDOW_VIEW: {
+			return (int64_t)AppDelegate.viewController.godotView;
+		}
+		default: {
+			return 0;
+		}
+	}
 }
 
 void DisplayServerIPhone::window_attach_instance_id(ObjectID p_instance, WindowID p_window) {
@@ -565,10 +582,8 @@ void DisplayServerIPhone::resize_window(CGSize viewSize) {
 	Size2i size = Size2i(viewSize.width, viewSize.height) * screen_get_max_scale();
 
 #if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
-		if (context_vulkan) {
-			context_vulkan->window_resize(MAIN_WINDOW_ID, size.x, size.y);
-		}
+	if (context_vulkan) {
+		context_vulkan->window_resize(MAIN_WINDOW_ID, size.x, size.y);
 	}
 #endif
 

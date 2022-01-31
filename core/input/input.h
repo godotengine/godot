@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -77,11 +77,6 @@ public:
 		JOYPADS_MAX = 16,
 	};
 
-	struct JoyAxisValue {
-		int min;
-		float value;
-	};
-
 	typedef void (*EventDispatchFunc)(const Ref<InputEvent> &p_event);
 
 private:
@@ -117,9 +112,9 @@ private:
 
 	int mouse_from_touch_index = -1;
 
-	struct SpeedTrack {
+	struct VelocityTrack {
 		uint64_t last_tick;
-		Vector2 speed;
+		Vector2 velocity;
 		Vector2 accum;
 		float accum_t;
 		float min_ref_frame;
@@ -127,7 +122,7 @@ private:
 
 		void update(const Vector2 &p_delta_p);
 		void reset();
-		SpeedTrack();
+		VelocityTrack();
 	};
 
 	struct Joypad {
@@ -141,8 +136,8 @@ private:
 		int hat_current = 0;
 	};
 
-	SpeedTrack mouse_speed_track;
-	Map<int, SpeedTrack> touch_speed_track;
+	VelocityTrack mouse_velocity_track;
+	Map<int, VelocityTrack> touch_velocity_track;
 	Map<int, Joypad> joy_names;
 	int fallback_mapping = -1;
 
@@ -247,6 +242,7 @@ public:
 
 	static Input *get_singleton();
 
+	bool is_anything_pressed() const;
 	bool is_key_pressed(Key p_keycode) const;
 	bool is_physical_key_pressed(Key p_keycode) const;
 	bool is_mouse_button_pressed(MouseButton p_button) const;
@@ -274,7 +270,7 @@ public:
 	Vector3 get_gyroscope() const;
 
 	Point2 get_mouse_position() const;
-	Point2 get_last_mouse_speed() const;
+	Vector2 get_last_mouse_velocity() const;
 	MouseButton get_mouse_button_mask() const;
 
 	void warp_mouse_position(const Vector2 &p_to);
@@ -313,7 +309,7 @@ public:
 
 	void parse_mapping(String p_mapping);
 	void joy_button(int p_device, JoyButton p_button, bool p_pressed);
-	void joy_axis(int p_device, JoyAxis p_axis, const JoyAxisValue &p_value);
+	void joy_axis(int p_device, JoyAxis p_axis, float p_value);
 	void joy_hat(int p_device, HatMask p_val);
 
 	void add_joy_mapping(String p_mapping, bool p_update_existing = false);

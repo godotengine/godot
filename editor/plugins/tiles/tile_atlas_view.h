@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,6 +41,8 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/tile_set.h"
 
+class ViewPanner;
+
 class TileAtlasView : public Control {
 	GDCLASS(TileAtlasView, Control);
 
@@ -63,6 +65,11 @@ private:
 	void _zoom_widget_changed();
 	void _center_view();
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
+	Ref<ViewPanner> panner;
+	void _scroll_callback(Vector2 p_scroll_vec, bool p_alt);
+	void _pan_callback(Vector2 p_scroll_vec);
+	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
 
 	Map<Vector2, Map<int, Rect2i>> alternative_tiles_rect_cache;
 	void _update_alternative_tiles_rect_cache();

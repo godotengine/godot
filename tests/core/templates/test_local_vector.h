@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,17 @@
 #include "tests/test_macros.h"
 
 namespace TestLocalVector {
+
+TEST_CASE("[LocalVector] List Initialization.") {
+	LocalVector<int> vector{ 0, 1, 2, 3, 4 };
+
+	CHECK(vector.size() == 5);
+	CHECK(vector[0] == 0);
+	CHECK(vector[1] == 1);
+	CHECK(vector[2] == 2);
+	CHECK(vector[3] == 3);
+	CHECK(vector[4] == 4);
+}
 
 TEST_CASE("[LocalVector] Push Back.") {
 	LocalVector<int> vector;

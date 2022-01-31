@@ -142,7 +142,7 @@
 			Top scroll limit in pixels. The camera stops moving when reaching this value, but [member offset] can push the view past the limit.
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
-			The camera's relative offset. Useful for looking around or camera shake animations. The offseted camera can go past the limits defined in [member limit_top], [member limit_bottom], [member limit_left] and [member limit_right].
+			The camera's relative offset. Useful for looking around or camera shake animations. The offsetted camera can go past the limits defined in [member limit_top], [member limit_bottom], [member limit_left] and [member limit_right].
 		</member>
 		<member name="process_callback" type="int" setter="set_process_callback" getter="get_process_callback" enum="Camera2D.Camera2DProcessCallback" default="1">
 			The camera's process callback. See [enum Camera2DProcessCallback].

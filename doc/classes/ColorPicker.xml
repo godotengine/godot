@@ -41,7 +41,7 @@
 			If [code]true[/code], the color will apply only after the user releases the mouse button, otherwise it will apply immediately even in mouse motion event (which can cause performance issues).
 		</member>
 		<member name="edit_alpha" type="bool" setter="set_edit_alpha" getter="is_editing_alpha" default="true">
-			If [code]true[/code], shows an alpha channel slider (transparency).
+			If [code]true[/code], shows an alpha channel slider (opacity).
 		</member>
 		<member name="hsv_mode" type="bool" setter="set_hsv_mode" getter="is_hsv_mode" default="false">
 			If [code]true[/code], allows editing the color with Hue/Saturation/Value sliders.

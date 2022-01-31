@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -109,7 +109,8 @@ public:
 		FEATURE_BREAK_ITERATORS = 1 << 4,
 		FEATURE_FONT_SYSTEM = 1 << 5,
 		FEATURE_FONT_VARIABLE = 1 << 6,
-		FEATURE_USE_SUPPORT_DATA = 1 << 7
+		FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION = 1 << 7,
+		FEATURE_USE_SUPPORT_DATA = 1 << 8,
 	};
 
 	enum ContourPointTag {
@@ -350,6 +351,9 @@ public:
 	virtual void font_remove_script_support_override(RID p_font_rid, const String &p_script) = 0;
 	virtual Vector<String> font_get_script_support_overrides(RID p_font_rid) = 0;
 
+	virtual void font_set_opentype_feature_overrides(RID p_font_rid, const Dictionary &p_overrides) = 0;
+	virtual Dictionary font_get_opentype_feature_overrides(RID p_font_rid) const = 0;
+
 	virtual Dictionary font_supported_feature_list(RID p_font_rid) const = 0;
 	virtual Dictionary font_supported_variation_list(RID p_font_rid) const = 0;
 
@@ -367,6 +371,7 @@ public:
 
 	virtual void shaped_text_set_direction(RID p_shaped, Direction p_direction = DIRECTION_AUTO) = 0;
 	virtual Direction shaped_text_get_direction(RID p_shaped) const = 0;
+	virtual Direction shaped_text_get_inferred_direction(RID p_shaped) const = 0;
 
 	virtual void shaped_text_set_bidi_override(RID p_shaped, const Array &p_override) = 0;
 
@@ -452,6 +457,10 @@ public:
 	virtual String percent_sign(const String &p_language = "") const { return "%"; };
 
 	virtual String strip_diacritics(const String &p_string) const;
+
+	// Other string operations.
+	virtual String string_to_upper(const String &p_string, const String &p_language = "") const = 0;
+	virtual String string_to_lower(const String &p_string, const String &p_language = "") const = 0;
 
 	TextServer();
 	~TextServer();

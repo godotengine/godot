@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -370,20 +370,24 @@ Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const {
 
 	ERR_FAIL_COND_V_MSG(p_step == 0, result, "Slice step cannot be zero.");
 
-	if (p_end < 0) {
-		p_end += size() + 1;
+	const int s = size();
+
+	int begin = CLAMP(p_begin, -s, s);
+	if (begin < 0) {
+		begin += s;
+	}
+	int end = CLAMP(p_end, -s, s);
+	if (end < 0) {
+		end += s;
 	}
 
-	ERR_FAIL_INDEX_V(p_begin, size(), result);
-	ERR_FAIL_INDEX_V(p_end, size() + 1, result);
+	ERR_FAIL_COND_V_MSG(p_step > 0 && begin > end, result, "Slice is positive, but bounds is decreasing.");
+	ERR_FAIL_COND_V_MSG(p_step < 0 && begin < end, result, "Slice is negative, but bounds is increasing.");
 
-	ERR_FAIL_COND_V_MSG(p_step > 0 && p_begin > p_end, result, "Slice is positive, but bounds is decreasing");
-	ERR_FAIL_COND_V_MSG(p_step < 0 && p_begin < p_end, result, "Slice is negative, but bounds is increasing");
-
-	int result_size = (p_end - p_begin) / p_step;
+	int result_size = (end - begin) / p_step;
 	result.resize(result_size);
 
-	for (int src_idx = p_begin, dest_idx = 0; dest_idx < result_size; ++dest_idx) {
+	for (int src_idx = begin, dest_idx = 0; dest_idx < result_size; ++dest_idx) {
 		result[dest_idx] = p_deep ? get(src_idx).duplicate(true) : get(src_idx);
 		src_idx += p_step;
 	}
@@ -627,7 +631,7 @@ Variant Array::max() const {
 }
 
 const void *Array::id() const {
-	return _p->array.ptr();
+	return _p;
 }
 
 Array::Array(const Array &p_from, uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {

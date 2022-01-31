@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,24 +44,42 @@
 
 #include <stdio.h>
 
+// Variant cannot define an implicit cast operator for every Object subclass, so the
+// casting is done here, to allow binding methods with parameters more specific than Object *
+
 template <class T>
 struct VariantCaster {
 	static _FORCE_INLINE_ T cast(const Variant &p_variant) {
-		return p_variant;
+		using TStripped = std::remove_pointer_t<T>;
+		if constexpr (std::is_base_of<Object, TStripped>::value) {
+			return Object::cast_to<TStripped>(p_variant);
+		} else {
+			return p_variant;
+		}
 	}
 };
 
 template <class T>
 struct VariantCaster<T &> {
 	static _FORCE_INLINE_ T cast(const Variant &p_variant) {
-		return p_variant;
+		using TStripped = std::remove_pointer_t<T>;
+		if constexpr (std::is_base_of<Object, TStripped>::value) {
+			return Object::cast_to<TStripped>(p_variant);
+		} else {
+			return p_variant;
+		}
 	}
 };
 
 template <class T>
 struct VariantCaster<const T &> {
 	static _FORCE_INLINE_ T cast(const Variant &p_variant) {
-		return p_variant;
+		using TStripped = std::remove_pointer_t<T>;
+		if constexpr (std::is_base_of<Object, TStripped>::value) {
+			return Object::cast_to<TStripped>(p_variant);
+		} else {
+			return p_variant;
+		}
 	}
 };
 
@@ -135,7 +153,13 @@ struct PtrToArg<char32_t> {
 template <typename T>
 struct VariantObjectClassChecker {
 	static _FORCE_INLINE_ bool check(const Variant &p_variant) {
-		return true;
+		using TStripped = std::remove_pointer_t<T>;
+		if constexpr (std::is_base_of<Object, TStripped>::value) {
+			Object *obj = p_variant;
+			return Object::cast_to<TStripped>(p_variant) || !obj;
+		} else {
+			return true;
+		}
 	}
 };
 
@@ -148,24 +172,6 @@ struct VariantObjectClassChecker<const Ref<T> &> {
 		Object *obj = p_variant;
 		const Ref<T> node = p_variant;
 		return node.ptr() || !obj;
-	}
-};
-
-template <>
-struct VariantObjectClassChecker<Node *> {
-	static _FORCE_INLINE_ bool check(const Variant &p_variant) {
-		Object *obj = p_variant;
-		Node *node = p_variant;
-		return node || !obj;
-	}
-};
-
-template <>
-struct VariantObjectClassChecker<Control *> {
-	static _FORCE_INLINE_ bool check(const Variant &p_variant) {
-		Object *obj = p_variant;
-		Control *control = p_variant;
-		return control || !obj;
 	}
 };
 

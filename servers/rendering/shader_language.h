@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -362,7 +362,6 @@ public:
 			TYPE_CONTROL_FLOW,
 			TYPE_MEMBER,
 			TYPE_ARRAY,
-			TYPE_ARRAY_DECLARATION,
 			TYPE_ARRAY_CONSTRUCT,
 			TYPE_STRUCT,
 		};
@@ -428,7 +427,10 @@ public:
 
 		struct Declaration {
 			StringName name;
-			Node *initializer;
+			uint32_t size = 0U;
+			Node *size_expression = nullptr;
+			Vector<Node *> initializer;
+			bool single_expression = false;
 		};
 		Vector<Declaration> declarations;
 
@@ -471,27 +473,6 @@ public:
 				Node(TYPE_ARRAY_CONSTRUCT) {}
 	};
 
-	struct ArrayDeclarationNode : public Node {
-		DataPrecision precision = PRECISION_DEFAULT;
-		DataType datatype = TYPE_VOID;
-		String struct_name;
-		bool is_const = false;
-		Node *size_expression = nullptr;
-
-		struct Declaration {
-			StringName name;
-			uint32_t size;
-			Vector<Node *> initializer;
-			bool single_expression;
-		};
-		Vector<Declaration> declarations;
-
-		virtual DataType get_datatype() const override { return datatype; }
-
-		ArrayDeclarationNode() :
-				Node(TYPE_ARRAY_DECLARATION) {}
-	};
-
 	struct ConstantNode : public Node {
 		DataType datatype = TYPE_VOID;
 		String struct_name = "";
@@ -505,7 +486,7 @@ public:
 		};
 
 		Vector<Value> values;
-		Vector<ArrayDeclarationNode::Declaration> array_declarations;
+		Vector<VariableDeclarationNode::Declaration> array_declarations;
 
 		virtual DataType get_datatype() const override { return datatype; }
 		virtual String get_datatype_name() const override { return struct_name; }
@@ -742,6 +723,7 @@ public:
 
 	enum CompletionType {
 		COMPLETION_NONE,
+		COMPLETION_SHADER_TYPE,
 		COMPLETION_RENDER_MODE,
 		COMPLETION_MAIN_FUNCTION,
 		COMPLETION_IDENTIFIER,
@@ -787,7 +769,7 @@ public:
 	static bool is_sampler_type(DataType p_type);
 	static Variant constant_value_to_variant(const Vector<ShaderLanguage::ConstantNode::Value> &p_value, DataType p_type, int p_array_size, ShaderLanguage::ShaderNode::Uniform::Hint p_hint = ShaderLanguage::ShaderNode::Uniform::HINT_NONE);
 	static PropertyInfo uniform_to_property_info(const ShaderNode::Uniform &p_uniform);
-	static uint32_t get_type_size(DataType p_type);
+	static uint32_t get_datatype_size(DataType p_type);
 
 	static void get_keyword_list(List<String> *r_keywords);
 	static bool is_control_flow_keyword(String p_keyword);
@@ -817,6 +799,57 @@ public:
 
 		Vector<Argument> arguments;
 		DataType return_type = TYPE_VOID;
+	};
+
+	struct ModeInfo {
+		StringName name;
+		Vector<StringName> options;
+
+		ModeInfo() {}
+
+		ModeInfo(const StringName &p_name) :
+				name(p_name) {
+		}
+
+		ModeInfo(const StringName &p_name, const StringName &p_arg1, const StringName &p_arg2) :
+				name(p_name) {
+			options.push_back(p_arg1);
+			options.push_back(p_arg2);
+		}
+
+		ModeInfo(const StringName &p_name, const StringName &p_arg1, const StringName &p_arg2, const StringName &p_arg3) :
+				name(p_name) {
+			options.push_back(p_arg1);
+			options.push_back(p_arg2);
+			options.push_back(p_arg3);
+		}
+
+		ModeInfo(const StringName &p_name, const StringName &p_arg1, const StringName &p_arg2, const StringName &p_arg3, const StringName &p_arg4) :
+				name(p_name) {
+			options.push_back(p_arg1);
+			options.push_back(p_arg2);
+			options.push_back(p_arg3);
+			options.push_back(p_arg4);
+		}
+
+		ModeInfo(const StringName &p_name, const StringName &p_arg1, const StringName &p_arg2, const StringName &p_arg3, const StringName &p_arg4, const StringName &p_arg5) :
+				name(p_name) {
+			options.push_back(p_arg1);
+			options.push_back(p_arg2);
+			options.push_back(p_arg3);
+			options.push_back(p_arg4);
+			options.push_back(p_arg5);
+		}
+
+		ModeInfo(const StringName &p_name, const StringName &p_arg1, const StringName &p_arg2, const StringName &p_arg3, const StringName &p_arg4, const StringName &p_arg5, const StringName &p_arg6) :
+				name(p_name) {
+			options.push_back(p_arg1);
+			options.push_back(p_arg2);
+			options.push_back(p_arg3);
+			options.push_back(p_arg4);
+			options.push_back(p_arg5);
+			options.push_back(p_arg6);
+		}
 	};
 
 	struct FunctionInfo {
@@ -868,11 +901,14 @@ private:
 	bool check_warnings = false;
 	uint32_t warning_flags;
 
-	void _add_line_warning(ShaderWarning::Code p_code, const StringName &p_subject = "") {
-		warnings.push_back(ShaderWarning(p_code, tk_line, p_subject));
+	void _add_line_warning(ShaderWarning::Code p_code, const StringName &p_subject = "", const Vector<Variant> &p_extra_args = Vector<Variant>()) {
+		warnings.push_back(ShaderWarning(p_code, tk_line, p_subject, p_extra_args));
 	}
-	void _add_warning(ShaderWarning::Code p_code, int p_line, const StringName &p_subject = "") {
-		warnings.push_back(ShaderWarning(p_code, p_line, p_subject));
+	void _add_global_warning(ShaderWarning::Code p_code, const StringName &p_subject = "", const Vector<Variant> &p_extra_args = Vector<Variant>()) {
+		warnings.push_back(ShaderWarning(p_code, -1, p_subject, p_extra_args));
+	}
+	void _add_warning(ShaderWarning::Code p_code, int p_line, const StringName &p_subject = "", const Vector<Variant> &p_extra_args = Vector<Variant>()) {
+		warnings.push_back(ShaderWarning(p_code, p_line, p_subject, p_extra_args));
 	}
 	void _check_warning_accums();
 #endif // DEBUG_ENABLED
@@ -886,14 +922,6 @@ private:
 	StringName last_name;
 
 	VaryingFunctionNames varying_function_names;
-
-	struct VaryingUsage {
-		ShaderNode::Varying *var;
-		int line;
-	};
-	List<VaryingUsage> unknown_varying_usages;
-
-	bool _check_varying_usages(int *r_error_line, String *r_error_message) const;
 
 	TkPos _get_tkpos() {
 		TkPos tkp;
@@ -915,6 +943,26 @@ private:
 		error_line = tk_line;
 		error_set = true;
 		error_str = p_str;
+	}
+
+	void _set_expected_error(const String &p_what) {
+		_set_error(vformat(RTR("Expected a '%s'."), p_what));
+	}
+
+	void _set_expected_error(const String &p_first, const String p_second) {
+		_set_error(vformat(RTR("Expected a '%s' or '%s'."), p_first, p_second));
+	}
+
+	void _set_expected_after_error(const String &p_what, const String &p_after) {
+		_set_error(vformat(RTR("Expected a '%s' after '%s'."), p_what, p_after));
+	}
+
+	void _set_redefinition_error(const String &p_what) {
+		_set_error(vformat(RTR("Redefinition of '%s'."), p_what));
+	}
+
+	void _set_parsing_error() {
+		_set_error("Parser bug.");
 	}
 
 	static const char *token_names[TK_MAX];
@@ -996,14 +1044,10 @@ private:
 	bool _propagate_function_call_sampler_uniform_settings(StringName p_name, int p_argument, TextureFilter p_filter, TextureRepeat p_repeat);
 	bool _propagate_function_call_sampler_builtin_reference(StringName p_name, int p_argument, const StringName &p_builtin);
 	bool _validate_varying_assign(ShaderNode::Varying &p_varying, String *r_message);
-	bool _validate_varying_using(ShaderNode::Varying &p_varying, String *r_message);
 	bool _check_node_constness(const Node *p_node) const;
 
-	Node *_parse_array_size(BlockNode *p_block, const FunctionInfo &p_function_info, int &r_array_size);
-	Error _parse_global_array_size(int &r_array_size, const FunctionInfo &p_function_info);
-	Error _parse_local_array_size(BlockNode *p_block, const FunctionInfo &p_function_info, Node *&r_size_expression, int &r_array_size, bool &r_is_unknown_size);
-
 	Node *_parse_expression(BlockNode *p_block, const FunctionInfo &p_function_info);
+	Error _parse_array_size(BlockNode *p_block, const FunctionInfo &p_function_info, bool p_forbid_unknown_size, Node **r_size_expression, int *r_array_size, bool *r_unknown_size);
 	Node *_parse_array_constructor(BlockNode *p_block, const FunctionInfo &p_function_info);
 	Node *_parse_array_constructor(BlockNode *p_block, const FunctionInfo &p_function_info, DataType p_type, const StringName &p_struct_name, int p_array_size);
 	ShaderLanguage::Node *_reduce_expression(BlockNode *p_block, ShaderLanguage::Node *p_node);
@@ -1013,7 +1057,7 @@ private:
 	String _get_shader_type_list(const Set<String> &p_shader_types) const;
 	String _get_qualifier_str(ArgumentQualifier p_qualifier) const;
 
-	Error _parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types);
+	Error _parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const Set<String> &p_shader_types);
 
 	Error _find_last_flow_op_in_block(BlockNode *p_block, FlowOperation p_op);
 	Error _find_last_flow_op_in_op(ControlFlowNode *p_flow, FlowOperation p_op);
@@ -1037,7 +1081,7 @@ public:
 
 	struct ShaderCompileInfo {
 		Map<StringName, FunctionInfo> functions;
-		Vector<StringName> render_modes;
+		Vector<ModeInfo> render_modes;
 		VaryingFunctionNames varying_function_names = VaryingFunctionNames();
 		Set<String> shader_types;
 		GlobalVariableGetTypeFunc global_variable_type_func = nullptr;

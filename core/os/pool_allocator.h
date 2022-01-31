@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,13 +34,12 @@
 #include "core/typedefs.h"
 
 /**
-	@author Juan Linietsky <reduzio@gmail.com>
  * Generic Pool Allocator.
  * This is a generic memory pool allocator, with locking, compacting and alignment. (@TODO alignment)
  * It used as a standard way to manage allocation in a specific region of memory, such as texture memory,
  * audio sample memory, or just any kind of memory overall.
  * (@TODO) abstraction should be greater, because in many platforms, you need to manage a nonreachable memory.
-*/
+ */
 
 enum {
 	POOL_ALLOCATOR_INVALID_ID = -1 ///< default invalid value. use INVALID_ID( id ) to test

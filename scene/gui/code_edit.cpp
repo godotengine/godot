@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -92,7 +92,7 @@ void CodeEdit::_notification(int p_what) {
 			if (line_length_guideline_columns.size() > 0) {
 				const int xmargin_beg = style_normal->get_margin(SIDE_LEFT) + get_total_gutter_width();
 				const int xmargin_end = size.width - style_normal->get_margin(SIDE_RIGHT) - (is_drawing_minimap() ? get_minimap_width() : 0);
-				const int char_size = (int)font->get_char_size('0', 0, font_size).width;
+				const int char_size = Math::round(font->get_char_size('0', 0, font_size).width);
 
 				for (int i = 0; i < line_length_guideline_columns.size(); i++) {
 					const int xoffset = xmargin_beg + char_size * (int)line_length_guideline_columns[i] - get_h_scroll();
@@ -143,7 +143,6 @@ void CodeEdit::_notification(int p_what) {
 
 				code_completion_line_ofs = CLAMP(code_completion_current_selected - lines / 2, 0, code_completion_options_count - lines);
 				RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(code_completion_rect.position.x, code_completion_rect.position.y + (code_completion_current_selected - code_completion_line_ofs) * row_height), Size2(code_completion_rect.size.width, row_height)), code_completion_selected_color);
-				draw_rect(Rect2(code_completion_rect.position + Vector2(icon_area_size.x + icon_hsep, 0), Size2(MIN(code_completion_base_width, code_completion_rect.size.width - (icon_area_size.x + icon_hsep)), code_completion_rect.size.height)), code_completion_existing_color);
 
 				for (int i = 0; i < lines; i++) {
 					int l = code_completion_line_ofs + i;
@@ -177,6 +176,17 @@ void CodeEdit::_notification(int p_what) {
 						}
 						tl->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 					}
+
+					Point2 match_pos = Point2(code_completion_rect.position.x + icon_area_size.x + icon_hsep, code_completion_rect.position.y + i * row_height);
+
+					for (int j = 0; j < code_completion_options[l].matches.size(); j++) {
+						Pair<int, int> match = code_completion_options[l].matches[j];
+						int match_offset = font->get_string_size(code_completion_options[l].display.substr(0, match.first), font_size).width;
+						int match_len = font->get_string_size(code_completion_options[l].display.substr(match.first, match.second), font_size).width;
+
+						draw_rect(Rect2(match_pos + Point2(match_offset, 0), Size2(match_len, row_height)), code_completion_existing_color);
+					}
+
 					tl->draw(ci, title_pos, code_completion_options[l].font_color);
 				}
 
@@ -927,8 +937,10 @@ void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 		return;
 	}
 
-	const int cc = get_caret_column();
+	/* When not splitting the line, we need to factor in indentation from the end of the current line. */
+	const int cc = p_split_current_line ? get_caret_column() : get_line(get_caret_line()).length();
 	const int cl = get_caret_line();
+
 	const String line = get_line(cl);
 
 	String ins = "\n";
@@ -1002,6 +1014,8 @@ void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 
 	bool first_line = false;
 	if (!p_split_current_line) {
+		deselect();
+
 		if (p_above) {
 			if (cl > 0) {
 				set_caret_line(cl - 1, false);
@@ -1783,7 +1797,7 @@ void CodeEdit::request_code_completion(bool p_force) {
 	}
 
 	if (p_force) {
-		emit_signal(SNAME("request_code_completion"));
+		emit_signal(SNAME("code_completion_requested"));
 		return;
 	}
 
@@ -1791,9 +1805,9 @@ void CodeEdit::request_code_completion(bool p_force) {
 	int ofs = CLAMP(get_caret_column(), 0, line.length());
 
 	if (ofs > 0 && (is_in_string(get_caret_line(), ofs) != -1 || _is_char(line[ofs - 1]) || code_completion_prefixes.has(line[ofs - 1]))) {
-		emit_signal(SNAME("request_code_completion"));
+		emit_signal(SNAME("code_completion_requested"));
 	} else if (ofs > 1 && line[ofs - 1] == ' ' && code_completion_prefixes.has(line[ofs - 2])) {
-		emit_signal(SNAME("request_code_completion"));
+		emit_signal(SNAME("code_completion_requested"));
 	}
 }
 
@@ -2075,8 +2089,6 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_auto_brace_completion_close_key", "open_key"), &CodeEdit::get_auto_brace_completion_close_key);
 
 	/* Main Gutter */
-	ClassDB::bind_method(D_METHOD("_main_gutter_draw_callback"), &CodeEdit::_main_gutter_draw_callback);
-
 	ClassDB::bind_method(D_METHOD("set_draw_breakpoints_gutter", "enable"), &CodeEdit::set_draw_breakpoints_gutter);
 	ClassDB::bind_method(D_METHOD("is_drawing_breakpoints_gutter"), &CodeEdit::is_drawing_breakpoints_gutter);
 
@@ -2105,16 +2117,12 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_executing_lines"), &CodeEdit::get_executing_lines);
 
 	/* Line numbers */
-	ClassDB::bind_method(D_METHOD("_line_number_draw_callback"), &CodeEdit::_line_number_draw_callback);
-
 	ClassDB::bind_method(D_METHOD("set_draw_line_numbers", "enable"), &CodeEdit::set_draw_line_numbers);
 	ClassDB::bind_method(D_METHOD("is_draw_line_numbers_enabled"), &CodeEdit::is_draw_line_numbers_enabled);
 	ClassDB::bind_method(D_METHOD("set_line_numbers_zero_padded", "enable"), &CodeEdit::set_line_numbers_zero_padded);
 	ClassDB::bind_method(D_METHOD("is_line_numbers_zero_padded"), &CodeEdit::is_line_numbers_zero_padded);
 
 	/* Fold Gutter */
-	ClassDB::bind_method(D_METHOD("_fold_gutter_draw_callback"), &CodeEdit::_fold_gutter_draw_callback);
-
 	ClassDB::bind_method(D_METHOD("set_draw_fold_gutter", "enable"), &CodeEdit::set_draw_fold_gutter);
 	ClassDB::bind_method(D_METHOD("is_drawing_fold_gutter"), &CodeEdit::is_drawing_fold_gutter);
 
@@ -2257,7 +2265,7 @@ void CodeEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("breakpoint_toggled", PropertyInfo(Variant::INT, "line")));
 
 	/* Code Completion */
-	ADD_SIGNAL(MethodInfo("request_code_completion"));
+	ADD_SIGNAL(MethodInfo("code_completion_requested"));
 
 	/* Symbol lookup */
 	ADD_SIGNAL(MethodInfo("symbol_lookup", PropertyInfo(Variant::STRING, "symbol"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::INT, "column")));
@@ -2808,6 +2816,8 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 	code_completion_base = string_to_complete;
 
 	Vector<ScriptCodeCompletionOption> completion_options_casei;
+	Vector<ScriptCodeCompletionOption> completion_options_substr;
+	Vector<ScriptCodeCompletionOption> completion_options_substr_casei;
 	Vector<ScriptCodeCompletionOption> completion_options_subseq;
 	Vector<ScriptCodeCompletionOption> completion_options_subseq_casei;
 
@@ -2847,7 +2857,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 			completion_options_casei.push_back(option);
 		} else if (s.is_subsequence_of(option.display)) {
 			completion_options_subseq.push_back(option);
-		} else if (s.is_subsequence_ofi(option.display)) {
+		} else if (s.is_subsequence_ofn(option.display)) {
 			completion_options_subseq_casei.push_back(option);
 		}
 
@@ -2862,35 +2872,100 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 		const char32_t *tgt = &option.display[0];
 		const char32_t *tgt_lower = &display_lower[0];
 
-		const char32_t *ssq_last_tgt = nullptr;
-		const char32_t *ssq_lower_last_tgt = nullptr;
+		const char32_t *sst = &string_to_complete[0];
+		const char32_t *sst_lower = &display_lower[0];
 
-		for (; *tgt; tgt++, tgt_lower++) {
+		Vector<Pair<int, int>> ssq_matches;
+		int ssq_match_start = 0;
+		int ssq_match_len = 0;
+
+		Vector<Pair<int, int>> ssq_lower_matches;
+		int ssq_lower_match_start = 0;
+		int ssq_lower_match_len = 0;
+
+		int sst_start = -1;
+		int sst_lower_start = -1;
+
+		for (int i = 0; *tgt; tgt++, tgt_lower++, i++) {
+			// Check substring.
+			if (*sst == *tgt) {
+				sst++;
+				if (sst_start == -1) {
+					sst_start = i;
+				}
+			} else if (sst_start != -1 && *sst) {
+				sst = &string_to_complete[0];
+				sst_start = -1;
+			}
+
+			// Check subsequence.
 			if (*ssq == *tgt) {
 				ssq++;
-				ssq_last_tgt = tgt;
+				if (ssq_match_len == 0) {
+					ssq_match_start = i;
+				}
+				ssq_match_len++;
+			} else if (ssq_match_len > 0) {
+				ssq_matches.push_back(Pair<int, int>(ssq_match_start, ssq_match_len));
+				ssq_match_len = 0;
 			}
+
+			// Check lower substring.
+			if (*sst_lower == *tgt) {
+				sst_lower++;
+				if (sst_lower_start == -1) {
+					sst_lower_start = i;
+				}
+			} else if (sst_lower_start != -1 && *sst_lower) {
+				sst_lower = &string_to_complete[0];
+				sst_lower_start = -1;
+			}
+
+			// Check lower subsequence.
 			if (*ssq_lower == *tgt_lower) {
 				ssq_lower++;
-				ssq_lower_last_tgt = tgt;
+				if (ssq_lower_match_len == 0) {
+					ssq_lower_match_start = i;
+				}
+				ssq_lower_match_len++;
+			} else if (ssq_lower_match_len > 0) {
+				ssq_lower_matches.push_back(Pair<int, int>(ssq_lower_match_start, ssq_lower_match_len));
+				ssq_lower_match_len = 0;
 			}
 		}
 
 		/* Matched the whole subsequence in s. */
-		if (!*ssq) {
-			/* Finished matching in the first s.length() characters. */
-			if (ssq_last_tgt == &option.display[string_to_complete.length() - 1]) {
+		if (!*ssq) { // Matched the whole subsequence in s.
+			option.matches.clear();
+
+			if (sst_start == 0) { // Matched substring in beginning of s.
+				option.matches.push_back(Pair<int, int>(sst_start, string_to_complete.length()));
 				code_completion_options.push_back(option);
+			} else if (sst_start > 0) { // Matched substring in s.
+				option.matches.push_back(Pair<int, int>(sst_start, string_to_complete.length()));
+				completion_options_substr.push_back(option);
 			} else {
+				if (ssq_match_len > 0) {
+					ssq_matches.push_back(Pair<int, int>(ssq_match_start, ssq_match_len));
+				}
+				option.matches.append_array(ssq_matches);
 				completion_options_subseq.push_back(option);
 			}
 			max_width = MAX(max_width, font->get_string_size(option.display, font_size).width + offset);
-			/* Matched the whole subsequence in s_lower. */
-		} else if (!*ssq_lower) {
-			/* Finished matching in the first s.length() characters. */
-			if (ssq_lower_last_tgt == &option.display[string_to_complete.length() - 1]) {
+		} else if (!*ssq_lower) { // Matched the whole subsequence in s_lower.
+			option.matches.clear();
+
+			if (sst_lower_start == 0) { // Matched substring in beginning of s_lower.
+				option.matches.push_back(Pair<int, int>(sst_lower_start, string_to_complete.length()));
 				completion_options_casei.push_back(option);
+			} else if (sst_lower_start > 0) { // Matched substring in s_lower.
+				option.matches.push_back(Pair<int, int>(sst_lower_start, string_to_complete.length()));
+				completion_options_substr_casei.push_back(option);
 			} else {
+				if (ssq_lower_match_len > 0) {
+					ssq_lower_matches.push_back(Pair<int, int>(ssq_lower_match_start, ssq_lower_match_len));
+				}
+				option.matches.append_array(ssq_lower_matches);
 				completion_options_subseq_casei.push_back(option);
 			}
 			max_width = MAX(max_width, font->get_string_size(option.display, font_size).width + offset);
@@ -2990,7 +3065,7 @@ CodeEdit::CodeEdit() {
 	add_auto_brace_completion_pair("\"", "\"");
 	add_auto_brace_completion_pair("\'", "\'");
 
-	/* Delimiter traking */
+	/* Delimiter tracking */
 	add_string_delimiter("\"", "\"", false);
 	add_string_delimiter("\'", "\'", false);
 
@@ -3007,7 +3082,7 @@ CodeEdit::CodeEdit() {
 	set_gutter_draw(gutter_idx, false);
 	set_gutter_overwritable(gutter_idx, true);
 	set_gutter_type(gutter_idx, GUTTER_TYPE_CUSTOM);
-	set_gutter_custom_draw(gutter_idx, this, "_main_gutter_draw_callback");
+	set_gutter_custom_draw(gutter_idx, callable_mp(this, &CodeEdit::_main_gutter_draw_callback));
 	gutter_idx++;
 
 	/* Line numbers */
@@ -3015,7 +3090,7 @@ CodeEdit::CodeEdit() {
 	set_gutter_name(gutter_idx, "line_numbers");
 	set_gutter_draw(gutter_idx, false);
 	set_gutter_type(gutter_idx, GUTTER_TYPE_CUSTOM);
-	set_gutter_custom_draw(gutter_idx, this, "_line_number_draw_callback");
+	set_gutter_custom_draw(gutter_idx, callable_mp(this, &CodeEdit::_line_number_draw_callback));
 	gutter_idx++;
 
 	/* Fold Gutter */
@@ -3023,7 +3098,7 @@ CodeEdit::CodeEdit() {
 	set_gutter_name(gutter_idx, "fold_gutter");
 	set_gutter_draw(gutter_idx, false);
 	set_gutter_type(gutter_idx, GUTTER_TYPE_CUSTOM);
-	set_gutter_custom_draw(gutter_idx, this, "_fold_gutter_draw_callback");
+	set_gutter_custom_draw(gutter_idx, callable_mp(this, &CodeEdit::_fold_gutter_draw_callback));
 	gutter_idx++;
 
 	connect("lines_edited_from", callable_mp(this, &CodeEdit::_lines_edited_from));

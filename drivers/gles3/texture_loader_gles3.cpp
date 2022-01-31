@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "texture_loader_gles3.h"
-#ifdef GLES3_BACKEND_ENABLED
+#ifdef GLES3_ENABLED
 
 #include "core/io/file_access.h"
 #include "core/string/print_string.h"
@@ -61,8 +61,9 @@ RES ResourceFormatGLES2Texture::load(const String &p_path, const String &p_origi
 	Ref<ImageTexture> texture = memnew(ImageTexture);
 	texture->create_from_image(img);
 
-	if (r_error)
+	if (r_error) {
 		*r_error = OK;
+	}
 
 	return texture;
 }
@@ -78,7 +79,6 @@ void ResourceFormatGLES2Texture::get_recognized_extensions(List<String> *p_exten
 	p_extensions->push_back("png");
 	p_extensions->push_back("pvr");
 	p_extensions->push_back("svg");
-	p_extensions->push_back("svgz");
 	p_extensions->push_back("tga");
 	p_extensions->push_back("webp");
 }
@@ -100,7 +100,6 @@ String ResourceFormatGLES2Texture::get_resource_type(const String &p_path) const
 			extension == "png" ||
 			extension == "pvr" ||
 			extension == "svg" ||
-			extension == "svgz" ||
 			extension == "tga" ||
 			extension == "webp") {
 		return "ImageTexture";

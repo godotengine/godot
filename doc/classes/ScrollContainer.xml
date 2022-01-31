@@ -24,14 +24,14 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="get_h_scrollbar">
+		<method name="get_h_scroll_bar">
 			<return type="HScrollBar" />
 			<description>
 				Returns the horizontal scrollbar [HScrollBar] of this [ScrollContainer].
 				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to disable or hide a scrollbar, you can use [member horizontal_scroll_mode].
 			</description>
 		</method>
-		<method name="get_v_scrollbar">
+		<method name="get_v_scroll_bar">
 			<return type="VScrollBar" />
 			<description>
 				Returns the vertical scrollbar [VScrollBar] of this [ScrollContainer].

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,6 +42,17 @@ FileDialog::RegisterFunc FileDialog::unregister_func = nullptr;
 
 void FileDialog::popup_file_dialog() {
 	popup_centered_clamped(Size2i(700, 500), 0.8f);
+	_focus_file_text();
+}
+
+void FileDialog::_focus_file_text() {
+	int lp = file->get_text().rfind(".");
+	if (lp != -1) {
+		file->select(0, lp);
+		if (file->is_inside_tree() && !get_tree()->is_node_being_edited(file)) {
+			file->grab_focus();
+		}
+	}
 }
 
 VBoxContainer *FileDialog::get_vbox() {
@@ -99,6 +110,9 @@ void FileDialog::_notification(int p_what) {
 		show_hidden->set_icon(vbox->get_theme_icon(SNAME("toggle_hidden"), SNAME("FileDialog")));
 		_theme_changed();
 	}
+	if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
+		update_filters();
+	}
 }
 
 void FileDialog::unhandled_input(const Ref<InputEvent> &p_event) {
@@ -155,7 +169,14 @@ void FileDialog::update_dir() {
 	dir->set_text(dir_access->get_current_dir(false));
 
 	if (drives->is_visible()) {
-		drives->select(dir_access->get_current_drive());
+		if (dir_access->get_current_dir().is_network_share_path()) {
+			_update_drives(false);
+			drives->add_item(RTR("Network"));
+			drives->set_item_disabled(drives->get_item_count() - 1, true);
+			drives->select(drives->get_item_count() - 1);
+		} else {
+			drives->select(dir_access->get_current_drive());
+		}
 	}
 
 	// Deselect any item, to make "Select Current Folder" button text by default.
@@ -627,7 +648,7 @@ void FileDialog::update_filters() {
 			all_filters += ", ...";
 		}
 
-		filter->add_item(String(TTRC("All Recognized")) + " (" + all_filters + ")");
+		filter->add_item(RTR("All Recognized") + " (" + all_filters + ")");
 	}
 	for (int i = 0; i < filters.size(); i++) {
 		String flt = filters[i].get_slice(";", 0).strip_edges();
@@ -639,7 +660,7 @@ void FileDialog::update_filters() {
 		}
 	}
 
-	filter->add_item(TTRC("All Files (*)"));
+	filter->add_item(RTR("All Files") + " (*)");
 }
 
 void FileDialog::clear_filters() {
@@ -649,6 +670,7 @@ void FileDialog::clear_filters() {
 }
 
 void FileDialog::add_filter(const String &p_filter) {
+	ERR_FAIL_COND_MSG(p_filter.begins_with("."), "Filter must be \"filename.extension\", can't start with dot.");
 	filters.push_back(p_filter);
 	update_filters();
 	invalidate();
@@ -687,13 +709,7 @@ void FileDialog::set_current_file(const String &p_file) {
 	file->set_text(p_file);
 	update_dir();
 	invalidate();
-	int lp = p_file.rfind(".");
-	if (lp != -1) {
-		file->select(0, lp);
-		if (file->is_inside_tree() && !get_tree()->is_node_being_edited(file)) {
-			file->grab_focus();
-		}
-	}
+	_focus_file_text();
 }
 
 void FileDialog::set_current_path(const String &p_path) {
@@ -837,7 +853,7 @@ void FileDialog::_select_drive(int p_idx) {
 	_push_history();
 }
 
-void FileDialog::_update_drives() {
+void FileDialog::_update_drives(bool p_select) {
 	int dc = dir_access->get_drive_count();
 	if (dc == 0 || access != ACCESS_FILESYSTEM) {
 		drives->hide();
@@ -855,7 +871,9 @@ void FileDialog::_update_drives() {
 			drives->add_item(dir_access->get_drive(i));
 		}
 
-		drives->select(dir_access->get_current_drive());
+		if (p_select) {
+			drives->select(dir_access->get_current_drive());
+		}
 	}
 }
 

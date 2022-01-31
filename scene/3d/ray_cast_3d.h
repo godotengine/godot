@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -105,8 +105,8 @@ public:
 
 	Ref<StandardMaterial3D> get_debug_material();
 
-	float get_debug_shape_thickness() const;
-	void set_debug_shape_thickness(const float p_debug_thickness);
+	int get_debug_shape_thickness() const;
+	void set_debug_shape_thickness(const int p_debug_thickness);
 
 	void force_raycast_update();
 	bool is_colliding() const;

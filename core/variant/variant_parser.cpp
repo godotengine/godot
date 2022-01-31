@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1649,12 +1649,13 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				dict.get_key_list(&keys);
 				keys.sort();
 
+				if (keys.is_empty()) { // Avoid unnecessary line break.
+					p_store_string_func(p_store_string_ud, "{}");
+					break;
+				}
+
 				p_store_string_func(p_store_string_ud, "{\n");
 				for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-					/*
-					if (!_check_type(dict[E->get()]))
-						continue;
-					*/
 					write(E->get(), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, recursion_count);
 					p_store_string_func(p_store_string_ud, ": ");
 					write(dict[E->get()], p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, recursion_count);

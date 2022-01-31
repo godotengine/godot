@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,8 +48,8 @@
 #include "scene_tree_editor.h"
 
 class AnimationPlayer;
-
 class AnimationTrackEdit;
+class ViewPanner;
 
 class AnimationTimelineEdit : public Range {
 	GDCLASS(AnimationTimelineEdit, Range);
@@ -81,9 +81,11 @@ class AnimationTimelineEdit : public Range {
 	bool editing;
 	bool use_fps;
 
-	bool panning_timeline;
-	float panning_timeline_from;
-	float panning_timeline_at;
+	Ref<ViewPanner> panner;
+	void _scroll_callback(Vector2 p_scroll_vec, bool p_alt);
+	void _pan_callback(Vector2 p_scroll_vec);
+	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
+
 	bool dragging_timeline;
 	bool dragging_hsize;
 	float dragging_hsize_from;
@@ -314,7 +316,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _update_tracks();
 
 	void _name_limit_changed();
-	void _timeline_changed(float p_new_pos, bool p_drag, bool p_timeline_only = false);
+	void _timeline_changed(float p_new_pos, bool p_drag, bool p_timeline_only);
 	void _track_remove_request(int p_track);
 	void _track_grab_focus(int p_track);
 
@@ -373,6 +375,11 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _root_removed(Node *p_root);
 
 	PropertyInfo _find_hint_for_track(int p_idx, NodePath &r_base_path, Variant *r_current_val = nullptr);
+
+	Ref<ViewPanner> panner;
+	void _scroll_callback(Vector2 p_scroll_vec, bool p_alt);
+	void _pan_callback(Vector2 p_scroll_vec);
+	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
 
 	void _timeline_value_changed(double);
 

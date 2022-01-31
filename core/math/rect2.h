@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,7 @@
 
 struct Transform2D;
 
-struct Rect2 {
+struct _NO_DISCARD_ Rect2 {
 	Point2 position;
 	Size2 size;
 
@@ -207,11 +207,6 @@ struct Rect2 {
 	bool operator!=(const Rect2 &p_rect) const { return position != p_rect.position || size != p_rect.size; }
 
 	inline Rect2 grow(real_t p_amount) const {
-#ifdef MATH_CHECKS
-		if (unlikely(size.x < 0 || size.y < 0)) {
-			ERR_PRINT("Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.");
-		}
-#endif
 		Rect2 g = *this;
 		g.grow_by(p_amount);
 		return g;
@@ -238,11 +233,6 @@ struct Rect2 {
 	}
 
 	inline Rect2 grow_individual(real_t p_left, real_t p_top, real_t p_right, real_t p_bottom) const {
-#ifdef MATH_CHECKS
-		if (unlikely(size.x < 0 || size.y < 0)) {
-			ERR_PRINT("Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.");
-		}
-#endif
 		Rect2 g = *this;
 		g.position.x -= p_left;
 		g.position.y -= p_top;
@@ -373,7 +363,7 @@ struct Rect2 {
 	}
 };
 
-struct Rect2i {
+struct _NO_DISCARD_ Rect2i {
 	Point2i position;
 	Size2i size;
 
@@ -488,11 +478,6 @@ struct Rect2i {
 	bool operator!=(const Rect2i &p_rect) const { return position != p_rect.position || size != p_rect.size; }
 
 	Rect2i grow(int p_amount) const {
-#ifdef MATH_CHECKS
-		if (unlikely(size.x < 0 || size.y < 0)) {
-			ERR_PRINT("Rect2i size is negative, this is not supported. Use Rect2i.abs() to get a Rect2i with a positive size.");
-		}
-#endif
 		Rect2i g = *this;
 		g.position.x -= p_amount;
 		g.position.y -= p_amount;
@@ -515,11 +500,6 @@ struct Rect2i {
 	}
 
 	inline Rect2i grow_individual(int p_left, int p_top, int p_right, int p_bottom) const {
-#ifdef MATH_CHECKS
-		if (unlikely(size.x < 0 || size.y < 0)) {
-			ERR_PRINT("Rect2i size is negative, this is not supported. Use Rect2i.abs() to get a Rect2i with a positive size.");
-		}
-#endif
 		Rect2i g = *this;
 		g.position.x -= p_left;
 		g.position.y -= p_top;

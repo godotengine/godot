@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,6 +49,7 @@ class GroupDialog : public AcceptDialog {
 	TreeItem *groups_root;
 
 	LineEdit *add_group_text;
+	Button *add_group_button;
 
 	Tree *groups;
 
@@ -77,6 +78,7 @@ class GroupDialog : public AcceptDialog {
 	void _add_pressed();
 	void _removed_pressed();
 	void _add_group_pressed(const String &p_name);
+	void _add_group_text_changed(const String &p_new_text);
 
 	void _group_renamed();
 	void _rename_group_item(const String &p_old_name, const String &p_new_name);
@@ -122,6 +124,7 @@ class GroupsEditor : public VBoxContainer {
 	void update_tree();
 	void _add_group(const String &p_group = "");
 	void _modify_group(Object *p_item, int p_column, int p_id);
+	void _group_name_changed(const String &p_new_text);
 
 	void _show_group_dialog();
 

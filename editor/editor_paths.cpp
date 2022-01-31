@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -91,6 +91,11 @@ EditorPaths::EditorPaths() {
 
 	// Self-contained mode if a `._sc_` or `_sc_` file is present in executable dir.
 	String exe_path = OS::get_singleton()->get_executable_path().get_base_dir();
+
+	// On macOS, look outside .app bundle, since .app bundle is read-only.
+	if (OS::get_singleton()->has_feature("macos") && exe_path.ends_with("MacOS") && exe_path.plus_file("..").simplify_path().ends_with("Contents")) {
+		exe_path = exe_path.plus_file("../../..").simplify_path();
+	}
 	{
 		DirAccessRef d = DirAccess::create_for_path(exe_path);
 

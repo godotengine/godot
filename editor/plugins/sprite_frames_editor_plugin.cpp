@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -222,28 +222,14 @@ void SpriteFramesEditor::_sheet_add_frames() {
 
 	int fc = frames->get_frame_count(edited_anim);
 
-	Point2 src_origin;
-	Rect2 src_region(Point2(), texture_size);
-
-	AtlasTexture *src_atlas = Object::cast_to<AtlasTexture>(*split_sheet_preview->get_texture());
-	if (src_atlas && src_atlas->get_atlas().is_valid()) {
-		src_origin = src_atlas->get_region().position - src_atlas->get_margin().position;
-		src_region = src_atlas->get_region();
-	}
-
 	for (Set<int>::Element *E = frames_selected.front(); E; E = E->next()) {
 		int idx = E->get();
 		Point2 frame_coords(idx % frame_count_x, idx / frame_count_x);
 
-		Rect2 frame(frame_coords * frame_size + src_origin, frame_size);
-		Rect2 region = frame.intersection(src_region);
-		Rect2 margin(region == Rect2() ? Point2() : region.position - frame.position, frame.size - region.size);
-
 		Ref<AtlasTexture> at;
 		at.instantiate();
 		at->set_atlas(split_sheet_preview->get_texture());
-		at->set_region(region);
-		at->set_margin(margin);
+		at->set_region(Rect2(frame_coords * frame_size, frame_size));
 
 		undo_redo->add_do_method(frames, "add_frame", edited_anim, at, -1);
 		undo_redo->add_undo_method(frames, "remove_frame", edited_anim, fc);
@@ -835,19 +821,30 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 
 	for (int i = 0; i < frames->get_frame_count(edited_anim); i++) {
 		String name;
-		Ref<Texture2D> icon;
+		Ref<Texture2D> frame = frames->get_frame(edited_anim, i);
 
-		if (frames->get_frame(edited_anim, i).is_null()) {
+		if (frame.is_null()) {
 			name = itos(i) + ": " + TTR("(empty)");
-
 		} else {
-			name = itos(i) + ": " + frames->get_frame(edited_anim, i)->get_name();
-			icon = frames->get_frame(edited_anim, i);
+			name = itos(i) + ": " + frame->get_name();
 		}
 
-		tree->add_item(name, icon);
-		if (frames->get_frame(edited_anim, i).is_valid()) {
-			tree->set_item_tooltip(tree->get_item_count() - 1, frames->get_frame(edited_anim, i)->get_path());
+		tree->add_item(name, frame);
+		if (frame.is_valid()) {
+			String tooltip = frame->get_path();
+
+			// Frame is often saved as an AtlasTexture subresource within a scene/resource file,
+			// thus its path might be not what the user is looking for. So we're also showing
+			// subsequent source texture paths.
+			String prefix = String::utf8("┖╴");
+			Ref<AtlasTexture> at = frame;
+			while (at.is_valid() && at->get_atlas().is_valid()) {
+				tooltip += "\n" + prefix + at->get_atlas()->get_path();
+				prefix = "    " + prefix;
+				at = at->get_atlas();
+			}
+
+			tree->set_item_tooltip(tree->get_item_count() - 1, tooltip);
 		}
 		if (sel == i) {
 			tree->select(tree->get_item_count() - 1);
@@ -1232,7 +1229,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_vb->add_child(split_sheet_panel);
 
 	split_sheet_preview = memnew(TextureRect);
-	split_sheet_preview->set_expand(true);
+	split_sheet_preview->set_ignore_texture_size(true);
 	split_sheet_preview->set_mouse_filter(MOUSE_FILTER_PASS);
 	split_sheet_preview->connect("draw", callable_mp(this, &SpriteFramesEditor::_sheet_preview_draw));
 	split_sheet_preview->connect("gui_input", callable_mp(this, &SpriteFramesEditor::_sheet_preview_input));

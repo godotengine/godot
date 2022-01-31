@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -167,7 +167,7 @@ ImporterMeshInstance3D *FBXMeshData::create_fbx_mesh(const ImportState &state, c
 
 	sanitize_vertex_weights(state);
 
-	// Re organize polygon vertices to to correctly take into account strange
+	// Reorganize polygon vertices to correctly take into account strange
 	// UVs.
 	reorganize_vertices(
 			polygon_indices,
@@ -1092,7 +1092,7 @@ HashMap<int, R> FBXMeshData::extract_per_vertex_data(
 					const int vertex_index = get_vertex_from_polygon_vertex(p_mesh_indices, polygon_vertex_index);
 					ERR_FAIL_COND_V_MSG(vertex_index < 0, (HashMap<int, R>()), "FBX file corrupted: #ERR05");
 					ERR_FAIL_COND_V_MSG(vertex_index >= p_vertex_count, (HashMap<int, R>()), "FBX file corrupted: #ERR06");
-					const int index_to_direct = p_mapping_data.index[polygon_vertex_index];
+					const int index_to_direct = get_vertex_from_polygon_vertex(p_mapping_data.index, polygon_vertex_index);
 					T value = p_mapping_data.data[index_to_direct];
 					aggregate_vertex_data[vertex_index].push_back({ polygon_id, value });
 				}
@@ -1297,7 +1297,7 @@ HashMap<int, T> FBXMeshData::extract_per_polygon(
 					} else {
 						ERR_FAIL_INDEX_V_MSG(polygon_index, (int)p_fbx_data.index.size(), (HashMap<int, T>()), "FBX file is corrupted: #ERR62");
 
-						const int index_to_direct = p_fbx_data.index[polygon_index];
+						const int index_to_direct = get_vertex_from_polygon_vertex(p_fbx_data.index, polygon_index);
 						T value = p_fbx_data.data[index_to_direct];
 						aggregate_polygon_data[polygon_index].push_back(value);
 					}

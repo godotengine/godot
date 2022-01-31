@@ -10,7 +10,48 @@ import os
 import pickle
 import sys
 import time
+from types import ModuleType
 from collections import OrderedDict
+from importlib.util import spec_from_file_location, module_from_spec
+
+# Explicitly resolve the helper modules, this is done to avoid clash with
+# modules of the same name that might be randomly added (e.g. someone adding
+# an `editor.py` file at the root of the module creates a clash with the editor
+# folder when doing `import editor.template_builder`)
+
+
+def _helper_module(name, path):
+    spec = spec_from_file_location(name, path)
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+    sys.modules[name] = module
+    # Ensure the module's parents are in loaded to avoid loading the wrong parent
+    # when doing "import foo.bar" while only "foo.bar" as declared as helper module
+    child_module = module
+    parent_name = name
+    while True:
+        try:
+            parent_name, child_name = parent_name.rsplit(".", 1)
+        except ValueError:
+            break
+        try:
+            parent_module = sys.modules[parent_name]
+        except KeyError:
+            parent_module = ModuleType(parent_name)
+            sys.modules[parent_name] = parent_module
+        setattr(parent_module, child_name, child_module)
+
+
+_helper_module("gles3_builders", "gles3_builders.py")
+_helper_module("glsl_builders", "glsl_builders.py")
+_helper_module("methods", "methods.py")
+_helper_module("platform_methods", "platform_methods.py")
+_helper_module("version", "version.py")
+_helper_module("core.core_builders", "core/core_builders.py")
+_helper_module("editor.editor_builders", "editor/editor_builders.py")
+_helper_module("editor.template_builders", "editor/template_builders.py")
+_helper_module("main.main_builders", "main/main_builders.py")
+_helper_module("modules.modules_builders", "modules/modules_builders.py")
 
 # Local
 import methods
@@ -300,13 +341,6 @@ opts.Update(env_base)
 env_base["platform"] = selected_platform  # Must always be re-set after calling opts.Update().
 Help(opts.GenerateHelpText(env_base))
 
-# Detect and print a warning listing unknown SCons variables to ease troubleshooting.
-unknown = opts.UnknownVariables()
-if unknown:
-    print("WARNING: Unknown SCons variables were passed and will be ignored:")
-    for item in unknown.items():
-        print("    " + item[0] + "=" + item[1])
-
 # add default include paths
 
 env_base.Prepend(CPPPATH=["#"])
@@ -583,7 +617,8 @@ if selected_platform in platform_list:
 
     if env["target"] == "release":
         if env["tools"]:
-            print("Error: The editor can only be built with `target=debug` or `target=release_debug`.")
+            print("ERROR: The editor can only be built with `target=debug` or `target=release_debug`.")
+            print("       Use `tools=no target=release` to build a release export template.")
             Exit(255)
         suffix += ".opt"
         env.Append(CPPDEFINES=["NDEBUG"])

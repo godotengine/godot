@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -111,10 +111,37 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 	}
 
 	// Fall back to the default from the native class
-	if (r_is_class_default) {
-		*r_is_class_default = true;
+	{
+		if (r_is_class_default) {
+			*r_is_class_default = true;
+		}
+		bool valid = false;
+		Variant value = ClassDB::class_get_default_property_value(p_object->get_class_name(), p_property, &valid);
+		if (valid) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return value;
+		} else {
+			// Heuristically check if this is a synthetic property (whatever/0, whatever/1, etc.)
+			// because they are not in the class DB yet must have a default (null).
+			String prop_str = String(p_property);
+			int p = prop_str.rfind("/");
+			if (p != -1 && p < prop_str.length() - 1) {
+				bool all_digits = true;
+				for (int i = p + 1; i < prop_str.length(); i++) {
+					if (prop_str[i] < '0' || prop_str[i] > '9') {
+						all_digits = false;
+						break;
+					}
+				}
+				if (r_is_valid) {
+					*r_is_valid = all_digits;
+				}
+			}
+			return Variant();
+		}
 	}
-	return ClassDB::class_get_default_property_value(p_object->get_class_name(), p_property, r_is_valid);
 }
 
 // Like SceneState::PackState, but using a raw pointer to avoid the cost of

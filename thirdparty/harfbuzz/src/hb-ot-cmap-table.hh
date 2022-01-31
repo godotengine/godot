@@ -93,120 +93,192 @@ struct CmapSubtableFormat0
 struct CmapSubtableFormat4
 {
 
+
   template<typename Iterator,
+      typename Writer,
 	   hb_requires (hb_is_iterator (Iterator))>
-  HBUINT16* serialize_endcode_array (hb_serialize_context_t *c,
-				     Iterator it)
+  void to_ranges (Iterator it, Writer& range_writer)
   {
-    HBUINT16 *endCode = c->start_embed<HBUINT16> ();
-    hb_codepoint_t prev_endcp = 0xFFFF;
+    hb_codepoint_t start_cp = 0, prev_run_start_cp = 0, run_start_cp = 0, end_cp = 0, last_gid = 0;
+    int run_length = 0 , delta = 0, prev_delta = 0;
 
-    for (const auto& _ : +it)
-    {
-      if (prev_endcp != 0xFFFF && prev_endcp + 1u != _.first)
-      {
-	HBUINT16 end_code;
-	end_code = prev_endcp;
-	c->copy<HBUINT16> (end_code);
+    enum {
+      FIRST_SUB_RANGE,
+      FOLLOWING_SUB_RANGE,
+    } mode;
+
+    while (it) {
+      // Start a new range
+      start_cp = (*it).first;
+      prev_run_start_cp = (*it).first;
+      run_start_cp = (*it).first;
+      end_cp = (*it).first;
+      last_gid = (*it).second;
+      run_length = 1;
+      prev_delta = 0;
+
+      delta = (*it).second - (*it).first;
+      mode = FIRST_SUB_RANGE;
+      it++;
+
+      while (it) {
+        // Process range
+        hb_codepoint_t next_cp = (*it).first;
+        hb_codepoint_t next_gid = (*it).second;
+        if (next_cp != end_cp + 1) {
+          // Current range is over, stop processing.
+          break;
+        }
+
+        if (next_gid == last_gid + 1) {
+          // The current run continues.
+          end_cp = next_cp;
+          run_length++;
+          last_gid = next_gid;
+          it++;
+          continue;
+        }
+
+        // A new run is starting, decide if we want to commit the current run.
+        int split_cost = (mode == FIRST_SUB_RANGE) ? 8 : 16;
+        int run_cost = run_length * 2;
+        if (run_cost >= split_cost) {
+          commit_current_range(start_cp,
+                               prev_run_start_cp,
+                               run_start_cp,
+                               end_cp,
+                               delta,
+                               prev_delta,
+                               split_cost,
+                               range_writer);
+          start_cp = next_cp;
+        }
+
+        // Start the new run
+        mode = FOLLOWING_SUB_RANGE;
+        prev_run_start_cp = run_start_cp;
+        run_start_cp = next_cp;
+        end_cp = next_cp;
+        prev_delta = delta;
+        delta = next_gid - run_start_cp;
+        run_length = 1;
+        last_gid = next_gid;
+        it++;
       }
-      prev_endcp = _.first;
+
+      // Finalize range
+      commit_current_range (start_cp,
+                            prev_run_start_cp,
+                            run_start_cp,
+                            end_cp,
+                            delta,
+                            prev_delta,
+                            8,
+                            range_writer);
     }
 
-    {
-      // last endCode
-      HBUINT16 endcode;
-      endcode = prev_endcp;
-      if (unlikely (!c->copy<HBUINT16> (endcode))) return nullptr;
-      // There must be a final entry with end_code == 0xFFFF.
-      if (prev_endcp != 0xFFFF)
-      {
-	HBUINT16 finalcode;
-	finalcode = 0xFFFF;
-	if (unlikely (!c->copy<HBUINT16> (finalcode))) return nullptr;
+    if (likely (end_cp != 0xFFFF)) {
+      range_writer (0xFFFF, 0xFFFF, 1);
+    }
+  }
+
+  /*
+   * Writes the current range as either one or two ranges depending on what is most efficient.
+   */
+  template<typename Writer>
+  void commit_current_range (hb_codepoint_t start,
+                             hb_codepoint_t prev_run_start,
+                             hb_codepoint_t run_start,
+                             hb_codepoint_t end,
+                             int run_delta,
+                             int previous_run_delta,
+                             int split_cost,
+                             Writer& range_writer) {
+    bool should_split = false;
+    if (start < run_start && run_start < end) {
+      int run_cost = (end - run_start + 1) * 2;
+      if (run_cost >= split_cost) {
+        should_split = true;
       }
     }
 
-    return endCode;
+    // TODO(grieger): handle case where delta is legitimately 0, mark range offset array instead?
+    if (should_split) {
+      if (start == prev_run_start)
+        range_writer (start, run_start - 1, previous_run_delta);
+      else
+        range_writer (start, run_start - 1, 0);
+      range_writer (run_start, end, run_delta);
+      return;
+    }
+
+
+    if (start == run_start) {
+      // Range is only a run
+      range_writer (start, end, run_delta);
+      return;
+    }
+
+    // Write only a single non-run range.
+    range_writer (start, end, 0);
   }
 
   template<typename Iterator,
 	   hb_requires (hb_is_iterator (Iterator))>
-  HBUINT16* serialize_startcode_array (hb_serialize_context_t *c,
-				       Iterator it)
-  {
-    HBUINT16 *startCode = c->start_embed<HBUINT16> ();
-    hb_codepoint_t prev_cp = 0xFFFF;
+  unsigned serialize_find_segcount (Iterator it) {
+    struct Counter {
+      unsigned segcount = 0;
 
-    for (const auto& _ : +it)
-    {
-      if (prev_cp == 0xFFFF || prev_cp + 1u != _.first)
-      {
-	HBUINT16 start_code;
-	start_code = _.first;
-	c->copy<HBUINT16> (start_code);
+      void operator() (hb_codepoint_t start,
+                       hb_codepoint_t end,
+                       int delta) {
+        segcount++;
       }
+    } counter;
 
-      prev_cp = _.first;
-    }
-
-    // There must be a final entry with end_code == 0xFFFF.
-    if (it.len () == 0 || prev_cp != 0xFFFF)
-    {
-      HBUINT16 finalcode;
-      finalcode = 0xFFFF;
-      if (unlikely (!c->copy<HBUINT16> (finalcode))) return nullptr;
-    }
-
-    return startCode;
+    to_ranges (+it, counter);
+    return counter.segcount;
   }
+
 
   template<typename Iterator,
 	   hb_requires (hb_is_iterator (Iterator))>
-  HBINT16* serialize_idDelta_array (hb_serialize_context_t *c,
-				    Iterator it,
-				    HBUINT16 *endCode,
-				    HBUINT16 *startCode,
-				    unsigned segcount)
+  bool serialize_start_end_delta_arrays (hb_serialize_context_t *c,
+                                         Iterator it,
+                                         int segcount)
   {
-    unsigned i = 0;
-    hb_codepoint_t last_gid = 0, start_gid = 0, last_cp = 0xFFFF;
-    bool use_delta = true;
+    struct Writer {
+      hb_serialize_context_t *serializer_;
+      HBUINT16* end_code_;
+      HBUINT16* start_code_;
+      HBINT16* id_delta_;
+      int index_;
 
-    HBINT16 *idDelta = c->start_embed<HBINT16> ();
-    if ((char *)idDelta - (char *)startCode != (int) segcount * (int) HBINT16::static_size)
-      return nullptr;
-
-    for (const auto& _ : +it)
-    {
-      if (_.first == startCode[i])
-      {
-	use_delta = true;
-	start_gid = _.second;
+      Writer(hb_serialize_context_t *serializer)
+          : serializer_(serializer),
+            end_code_(nullptr),
+            start_code_(nullptr),
+            id_delta_(nullptr),
+            index_ (0) {}
+      void operator() (hb_codepoint_t start,
+                       hb_codepoint_t end,
+                       int delta) {
+        start_code_[index_] = start;
+        end_code_[index_] = end;
+        id_delta_[index_] = delta;
+        index_++;
       }
-      else if (_.second != last_gid + 1) use_delta = false;
+    } writer(c);
 
-      if (_.first == endCode[i])
-      {
-	HBINT16 delta;
-	if (use_delta) delta = (int)start_gid - (int)startCode[i];
-	else delta = 0;
-	c->copy<HBINT16> (delta);
+    writer.end_code_ = c->allocate_size<HBUINT16> (HBUINT16::static_size * segcount);
+    c->allocate_size<HBUINT16> (2); // padding
+    writer.start_code_ = c->allocate_size<HBUINT16> (HBUINT16::static_size * segcount);
+    writer.id_delta_ = c->allocate_size<HBINT16> (HBINT16::static_size * segcount);
 
-	i++;
-      }
+    if (unlikely (!writer.end_code_ || !writer.start_code_ || !writer.id_delta_)) return false;
 
-      last_gid = _.second;
-      last_cp = _.first;
-    }
-
-    if (it.len () == 0 || last_cp != 0xFFFF)
-    {
-      HBINT16 delta;
-      delta = 1;
-      if (unlikely (!c->copy<HBINT16> (delta))) return nullptr;
-    }
-
-    return idDelta;
+    to_ranges (+it, writer);
+    return true;
   }
 
   template<typename Iterator,
@@ -257,22 +329,14 @@ struct CmapSubtableFormat4
     if (unlikely (!c->extend_min (this))) return;
     this->format = 4;
 
-    //serialize endCode[]
-    HBUINT16 *endCode = serialize_endcode_array (c, format4_iter);
-    if (unlikely (!endCode)) return;
+    //serialize endCode[], startCode[], idDelta[]
+    HBUINT16* endCode = c->start_embed<HBUINT16> ();
+    unsigned segcount = serialize_find_segcount (format4_iter);
+    if (unlikely (!serialize_start_end_delta_arrays (c, format4_iter, segcount)))
+      return;
 
-    unsigned segcount = (c->length () - min_size) / HBUINT16::static_size;
-
-    // 2 bytes of padding.
-    if (unlikely (!c->allocate_size<HBUINT16> (HBUINT16::static_size))) return; // 2 bytes of padding.
-
-   // serialize startCode[]
-    HBUINT16 *startCode = serialize_startcode_array (c, format4_iter);
-    if (unlikely (!startCode)) return;
-
-    //serialize idDelta[]
-    HBINT16 *idDelta = serialize_idDelta_array (c, format4_iter, endCode, startCode, segcount);
-    if (unlikely (!idDelta)) return;
+    HBUINT16 *startCode = endCode + segcount + 1;
+    HBINT16 *idDelta = ((HBINT16*)startCode) + segcount;
 
     HBUINT16 *idRangeOffset = serialize_rangeoffset_glyid (c, format4_iter, endCode, startCode, idDelta, segcount);
     if (unlikely (!c->check_success (idRangeOffset))) return;

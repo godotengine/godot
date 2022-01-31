@@ -248,7 +248,6 @@ static void _colr_closure (hb_face_t *face,
   unsigned glyphs_num;
   {
     glyphs_num = glyphs_colred->get_population ();
-
     // Collect all glyphs referenced by COLRv0
     hb_set_t glyphset_colrv0;
     for (hb_codepoint_t gid : glyphs_colred->iter ())
@@ -397,6 +396,7 @@ _populate_gids_to_retain (hb_subset_plan_t* plan,
   _colr_closure (plan->source, plan->colrv1_layers, plan->colr_palettes, &cur_glyphset);
   _remove_invalid_gids (&cur_glyphset, plan->source->get_num_glyphs ());
 
+  hb_set_set (plan->_glyphset_colred, &cur_glyphset);
   // Populate a full set of glyphs to retain by adding all referenced
   // composite glyphs.
   for (hb_codepoint_t gid : cur_glyphset.iter ())
@@ -511,6 +511,7 @@ hb_subset_plan_create (hb_face_t	 *face,
   plan->_glyphset = hb_set_create ();
   plan->_glyphset_gsub = hb_set_create ();
   plan->_glyphset_mathed = hb_set_create ();
+  plan->_glyphset_colred = hb_set_create ();
   plan->codepoint_to_glyph = hb_map_create ();
   plan->glyph_map = hb_map_create ();
   plan->reverse_glyph_map = hb_map_create ();
@@ -579,6 +580,7 @@ hb_subset_plan_destroy (hb_subset_plan_t *plan)
   hb_set_destroy (plan->_glyphset);
   hb_set_destroy (plan->_glyphset_gsub);
   hb_set_destroy (plan->_glyphset_mathed);
+  hb_set_destroy (plan->_glyphset_colred);
   hb_map_destroy (plan->gsub_lookups);
   hb_map_destroy (plan->gpos_lookups);
   hb_map_destroy (plan->gsub_features);

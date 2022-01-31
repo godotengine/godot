@@ -43,8 +43,8 @@ Source: https://github.com/godotengine/godot
 
 Files: *
 Comment: Godot Engine
-Copyright: 2007-2021, Juan Linietsky, Ariel Manzur.
- 2014-2021, Godot Engine contributors.
+Copyright: 2007-2022, Juan Linietsky, Ariel Manzur.
+ 2014-2022, Godot Engine contributors.
 License: Expat
 
 Files: ./icon.png
@@ -59,15 +59,15 @@ Files: ./core/math/convex_hull.cpp
  ./core/math/convex_hull.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2011, Ole Kniemeyer, MAXON, www.maxon.net
- 2007-2021, Juan Linietsky, Ariel Manzur.
- 2014-2021, Godot Engine contributors.
+ 2007-2022, Juan Linietsky, Ariel Manzur.
+ 2014-2022, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./modules/fbx/fbx_parser/
 Comment: Open Asset Import Library (FBX parser)
 Copyright: 2006-2020, assimp team
- 2007-2021, Juan Linietsky, Ariel Manzur.
- 2014-2021, Godot Engine contributors.
+ 2007-2022, Juan Linietsky, Ariel Manzur.
+ 2014-2022, Godot Engine contributors.
 License: BSD-3-clause
 
 Files: ./platform/android/java/lib/aidl/com/android/*
@@ -83,8 +83,8 @@ License: Apache-2.0
 Files: ./scene/animation/easing_equations.h
 Comment: Robert Penner's Easing Functions
 Copyright: 2001, Robert Penner
- 2007-2021 Juan Linietsky, Ariel Manzur.
- 2014-2021 Godot Engine contributors.
+ 2007-2022 Juan Linietsky, Ariel Manzur.
+ 2014-2022 Godot Engine contributors.
 License: Expat
 
 Files: ./servers/physics_3d/collision_solver_3d_sat.cpp
@@ -108,16 +108,16 @@ Files: ./servers/physics_3d/gjk_epa.cpp
  ./servers/physics_3d/shape_3d_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2003-2008, Erwin Coumans
- 2007-2021, Juan Linietsky, Ariel Manzur.
- 2014-2021, Godot Engine contributors.
+ 2007-2022, Juan Linietsky, Ariel Manzur.
+ 2014-2022, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./servers/physics_3d/joints/cone_twist_joint_3d_sw.cpp
  ./servers/physics_3d/joints/cone_twist_joint_3d_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2007, Starbreeze Studios
- 2007-2021, Juan Linietsky, Ariel Manzur.
- 2014-2021, Godot Engine contributors.
+ 2007-2022, Juan Linietsky, Ariel Manzur.
+ 2014-2022, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./thirdparty/amd-fsr/
@@ -171,20 +171,19 @@ Comment: DroidSans font
 Copyright: 2008, The Android Open Source Project
 License: Apache-2.0
 
+Files: ./thirdparty/fonts/JetBrainsMono_Regular.ttf
+Comment: JetBrains Mono font
+Copyright: 2020, JetBrains s.r.o.
+License: OFL-1.1
+
 Files: ./thirdparty/fonts/NotoSans*.ttf
 Comment: Noto Sans font
 Copyright: 2012, Google Inc.
 License: OFL-1.1
 
-Files: ./thirdparty/fonts/Hack_Regular.ttf
-Comment: Hack font
-Copyright: 2018, Source Foundry Authors
-  2003, Bitstream Inc.
-License: Expat and Bitstream Vera Fonts Copyright
-
 Files: ./thirdparty/freetype/
 Comment: The FreeType Project
-Copyright: 1996-2020, David Turner, Robert Wilhelm, and Werner Lemberg.
+Copyright: 1996-2021, David Turner, Robert Wilhelm, and Werner Lemberg.
 License: FTL
 
 Files: ./thirdparty/glslang/
@@ -206,11 +205,11 @@ Copyright: 2010-2020, Google, Inc.
  2019-2020, Facebook, Inc.
  2012, Mozilla Foundation
  2011, Codethink Limited
- 2008, 2010 Nokia Corporation and/or its subsidiary(-ies)
+ 2008, 2010, Nokia Corporation and/or its subsidiary(-ies)
  2009, Keith Stribley
  2009, Martin Hosken and SIL International
  2007, Chris Wilson
- 2006, Behdad Esfahbod
+ 2005-2006, 2020-2021, Behdad Esfahbod
  2005, David Turner
  2004, 2007-2010, Red Hat, Inc.
  1998-2004, David Turner and Werner Lemberg
@@ -362,10 +361,6 @@ Comment: Multi-channel signed distance field generator
 Copyright: 2016, Viktor Chlumsky
 License: MIT
 
-Files: ./thirdparty/nanosvg/
-Comment: NanoSVG
-Copyright: 2013-2014, Mikko Mononen
-License: Zlib
 
 Files: ./thirdparty/oidn/
 Comment: Intel Open Image Denoise
@@ -376,11 +371,6 @@ Files: ./thirdparty/pcre2/
 Comment: PCRE2
 Copyright: 1997-2021, University of Cambridge
  2009-2021, Zoltan Herczeg
-License: BSD-3-clause
-
-Files: ./thirdparty/pvrtccompressor/
-Comment: PvrTcCompressor
-Copyright: 2014, Jeffrey Lim.
 License: BSD-3-clause
 
 Files: ./thirdparty/recastnavigation/
@@ -401,6 +391,11 @@ License: Apache-2.0
 Files: ./thirdparty/squish/
 Comment: libSquish
 Copyright: 2006, Simon Brown
+License: Expat
+
+Files: ./thirdparty/thorvg/
+Comment: ThorVG
+Copyright: 2020-2021, Samsung Electronics Co., Ltd.
 License: Expat
 
 Files: ./thirdparty/tinyexr/

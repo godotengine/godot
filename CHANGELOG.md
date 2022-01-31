@@ -338,13 +338,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 #### Rendering
 
 - Some Environment settings such as depth of field have been moved to a CameraEffects resource which is assigned to individual Camera nodes.
-- [The ACES Fitted tonemapping algoirthm is now used in place of the old ACES algorithm.](https://github.com/godotengine/godot/pull/52476)
+- [The ACES Fitted tonemapping algorithm is now used in place of the old ACES algorithm.](https://github.com/godotengine/godot/pull/52476)
   - The old non-fitted ACES tonemapping algorithm was removed.
 - Quality settings have been moved from individual nodes and resources to the Project Settings for better centralization.
 - Quality settings now have performance hints in their values' names, such as "Fast" or "Slow".
 
 #### Shaders
 
+- [`DEPTH_TEXTURE` now uses normalized device coordinates between `0.0` and `1.0` (inclusive) to match Vulkan behavior.](https://docs.godotengine.org/en/latest/tutorials/shaders/advanced_postprocessing.html#depth-texture)
+  - This requires modifying most shaders that rely on `DEPTH_TEXTURE` to make them still work as expected.
+  - Previously, coordinates would be between `-1.0` and `1.0` (inclusive) to match OpenGL behavior.
 - Renamed the `.shader` file extension to `.gdshader`.
   - Existing text-based shader files will have to be renamed before loading the project in a new engine version.
 

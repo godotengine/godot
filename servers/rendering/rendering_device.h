@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -58,6 +58,17 @@ public:
 		DEVICE_OPENGL,
 		DEVICE_VULKAN,
 		DEVICE_DIRECTX
+	};
+
+	// This enum matches VkPhysicalDeviceType (except for `DEVICE_TYPE_MAX`).
+	// Unlike VkPhysicalDeviceType, DeviceType is exposed to the scripting API.
+	enum DeviceType {
+		DEVICE_TYPE_OTHER,
+		DEVICE_TYPE_INTEGRATED_GPU,
+		DEVICE_TYPE_DISCRETE_GPU,
+		DEVICE_TYPE_VIRTUAL_GPU,
+		DEVICE_TYPE_CPU,
+		DEVICE_TYPE_MAX,
 	};
 
 	enum DriverResource {
@@ -381,14 +392,6 @@ public:
 		DATA_FORMAT_G16_B16_R16_3PLANE_422_UNORM,
 		DATA_FORMAT_G16_B16R16_2PLANE_422_UNORM,
 		DATA_FORMAT_G16_B16_R16_3PLANE_444_UNORM,
-		DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG,
-		DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG,
-		DATA_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG,
-		DATA_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG,
-		DATA_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG,
-		DATA_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG,
-		DATA_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG,
-		DATA_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG,
 		DATA_FORMAT_MAX
 	};
 
@@ -505,7 +508,7 @@ public:
 		TEXTURE_SLICE_2D_ARRAY,
 	};
 
-	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, TextureSliceType p_slice_type = TEXTURE_SLICE_2D) = 0;
+	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps = 1, TextureSliceType p_slice_type = TEXTURE_SLICE_2D) = 0;
 
 	virtual Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL) = 0;
 	virtual Vector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer) = 0; // CPU textures will return immediately, while GPU textures will most likely force a flush
@@ -739,7 +742,7 @@ public:
 
 	virtual RID uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set) = 0;
 	virtual bool uniform_set_is_valid(RID p_uniform_set) = 0;
-	typedef void (*UniformSetInvalidatedCallback)(const RID &, void *);
+	typedef void (*UniformSetInvalidatedCallback)(void *);
 	virtual void uniform_set_set_invalidation_callback(RID p_uniform_set, UniformSetInvalidatedCallback p_callback, void *p_userdata) = 0;
 
 	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL) = 0;
@@ -1199,6 +1202,7 @@ public:
 
 	virtual String get_device_vendor_name() const = 0;
 	virtual String get_device_name() const = 0;
+	virtual RenderingDevice::DeviceType get_device_type() const = 0;
 	virtual String get_device_pipeline_cache_uuid() const = 0;
 
 	virtual uint64_t get_driver_resource(DriverResource p_resource, RID p_rid = RID(), uint64_t p_index = 0) = 0;
@@ -1210,7 +1214,7 @@ protected:
 	//binders to script API
 	RID _texture_create(const Ref<RDTextureFormat> &p_format, const Ref<RDTextureView> &p_view, const TypedArray<PackedByteArray> &p_data = Array());
 	RID _texture_create_shared(const Ref<RDTextureView> &p_view, RID p_with_texture);
-	RID _texture_create_shared_from_slice(const Ref<RDTextureView> &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, TextureSliceType p_slice_type = TEXTURE_SLICE_2D);
+	RID _texture_create_shared_from_slice(const Ref<RDTextureView> &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps = 1, TextureSliceType p_slice_type = TEXTURE_SLICE_2D);
 
 	FramebufferFormatID _framebuffer_format_create(const TypedArray<RDAttachmentFormat> &p_attachments, uint32_t p_view_count);
 	FramebufferFormatID _framebuffer_format_create_multipass(const TypedArray<RDAttachmentFormat> &p_attachments, const TypedArray<RDFramebufferPass> &p_passes, uint32_t p_view_count);
@@ -1237,6 +1241,7 @@ protected:
 	Vector<int64_t> _draw_list_switch_to_next_pass_split(uint32_t p_splits);
 };
 
+VARIANT_ENUM_CAST(RenderingDevice::DeviceType)
 VARIANT_ENUM_CAST(RenderingDevice::DriverResource)
 VARIANT_ENUM_CAST(RenderingDevice::ShaderStage)
 VARIANT_ENUM_CAST(RenderingDevice::ShaderLanguage)

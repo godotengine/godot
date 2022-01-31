@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -73,6 +73,14 @@ public:
 		ITEM_META,
 		ITEM_DROPCAP,
 		ITEM_CUSTOMFX
+	};
+
+	enum VisibleCharactersBehavior {
+		VC_CHARS_BEFORE_SHAPING,
+		VC_CHARS_AFTER_SHAPING,
+		VC_GLYPHS_AUTO,
+		VC_GLYPHS_LTR,
+		VC_GLYPHS_RTL,
 	};
 
 protected:
@@ -396,6 +404,7 @@ private:
 
 	int visible_characters = -1;
 	float percent_visible = 1.0;
+	VisibleCharactersBehavior visible_chars_behavior = VC_CHARS_BEFORE_SHAPING;
 
 	void _find_click(ItemFrame *p_frame, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr);
 
@@ -405,7 +414,7 @@ private:
 
 	void _shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, int *r_char_offset);
 	void _resize_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width);
-	int _draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs);
+	int _draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs, int &r_processed_glyphs);
 	float _find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr);
 
 	String _roman(int p_num, bool p_capitalize) const;
@@ -535,7 +544,7 @@ public:
 
 	int get_content_height() const;
 
-	VScrollBar *get_v_scroll() { return vscroll; }
+	VScrollBar *get_v_scroll_bar() { return vscroll; }
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 
@@ -572,9 +581,13 @@ public:
 	void set_visible_characters(int p_visible);
 	int get_visible_characters() const;
 	int get_total_character_count() const;
+	int get_total_glyph_count() const;
 
 	void set_percent_visible(float p_percent);
 	float get_percent_visible() const;
+
+	VisibleCharactersBehavior get_visible_characters_behavior() const;
+	void set_visible_characters_behavior(VisibleCharactersBehavior p_behavior);
 
 	void set_effects(Array p_effects);
 	Array get_effects();
@@ -590,5 +603,6 @@ public:
 
 VARIANT_ENUM_CAST(RichTextLabel::ListType);
 VARIANT_ENUM_CAST(RichTextLabel::ItemType);
+VARIANT_ENUM_CAST(RichTextLabel::VisibleCharactersBehavior);
 
 #endif // RICH_TEXT_LABEL_H
