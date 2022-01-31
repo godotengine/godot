@@ -45,6 +45,7 @@
 #include <emscripten.h>
 #include <stdlib.h>
 
+#include "api/javascript_singleton.h"
 #include "godot_js.h"
 
 void OS_JavaScript::alert(const String &p_alert, const String &p_title) {
@@ -203,6 +204,19 @@ void OS_JavaScript::file_access_close_callback(const String &p_file, int p_flags
 	}
 }
 
+void OS_JavaScript::update_pwa_state_callback() {
+	if (OS_JavaScript::get_singleton()) {
+		OS_JavaScript::get_singleton()->pwa_is_waiting = true;
+	}
+	if (JavaScript::get_singleton()) {
+		JavaScript::get_singleton()->emit_signal("pwa_update_available");
+	}
+}
+
+Error OS_JavaScript::pwa_update() {
+	return godot_js_pwa_update() ? FAILED : OK;
+}
+
 bool OS_JavaScript::is_userfs_persistent() const {
 	return idb_available;
 }
@@ -225,6 +239,8 @@ OS_JavaScript::OS_JavaScript() {
 	char locale_ptr[16];
 	godot_js_config_locale_get(locale_ptr, 16);
 	setenv("LANG", locale_ptr, true);
+
+	godot_js_pwa_cb(&OS_JavaScript::update_pwa_state_callback);
 
 	if (AudioDriverJavaScript::is_available()) {
 #ifdef NO_THREADS
