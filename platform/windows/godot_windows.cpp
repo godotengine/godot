@@ -140,6 +140,11 @@ __declspec(dllexport) int widechar_main(int argc, wchar_t **argv) {
 
 	setlocale(LC_CTYPE, "");
 
+#ifndef TOOLS_ENABLED
+	// Workaround to prevent LTCG (MSVC LTO) from removing "pck" section
+	char *dummy_guard = dummy;
+#endif
+
 	char **argv_utf8 = new char *[argc];
 
 	for (int i = 0; i < argc; ++i) {

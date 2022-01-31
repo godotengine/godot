@@ -227,7 +227,7 @@ struct VSRoomGroup {
 	}
 
 	// used for calculating gameplay notifications
-	uint32_t last_gameplay_tick_hit = 0;
+	uint32_t last_room_tick_hit = 0;
 
 	ObjectID _godot_instance_ID = 0;
 
@@ -257,7 +257,7 @@ struct VSRoom {
 		_secondary_pvs_size = 0;
 		_priority = 0;
 		_contains_internal_rooms = false;
-		last_gameplay_tick_hit = 0;
+		last_room_tick_hit = 0;
 	}
 
 	void cleanup_after_conversion() {
@@ -354,7 +354,7 @@ struct VSRoom {
 	uint16_t _secondary_pvs_size = 0;
 
 	// used for calculating gameplay notifications
-	uint32_t last_gameplay_tick_hit = 0;
+	uint32_t last_room_tick_hit = 0;
 
 	// convex hull of the room, either determined by geometry or manual bound
 	LocalVector<Plane, int32_t> _planes;
