@@ -70,7 +70,7 @@
 			<return type="Rect2i" />
 			<argument index="0" name="to" type="Vector2i" />
 			<description>
-				Returns a copy of this [Rect2i] expanded to include a given point.
+				Returns a copy of this [Rect2i] expanded so that the borders align with the given point.
 				[codeblocks]
 				[gdscript]
 				# position (-3, 2), size (1, 1)
