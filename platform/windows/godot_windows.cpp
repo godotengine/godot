@@ -39,7 +39,7 @@
 #ifndef TOOLS_ENABLED
 #if defined _MSC_VER
 #pragma section("pck", read)
-__declspec(allocate("pck")) static char dummy[8] = { 0 };
+__declspec(allocate("pck")) static const char dummy[8] = { 0 };
 #elif defined __GNUC__
 static const char dummy[8] __attribute__((section("pck"), used)) = { 0 };
 #endif
@@ -142,7 +142,7 @@ int widechar_main(int argc, wchar_t **argv) {
 
 #ifndef TOOLS_ENABLED
 	// Workaround to prevent LTCG (MSVC LTO) from removing "pck" section
-	char *dummy_guard = dummy;
+	const char *dummy_guard = dummy;
 #endif
 
 	char **argv_utf8 = new char *[argc];
