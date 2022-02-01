@@ -161,13 +161,13 @@ Ref<Material> GeometryInstance3D::get_material_overlay() const {
 	return material_overlay;
 }
 
-void GeometryInstance3D::set_transparecy(float p_transparency) {
-	transparency = CLAMP(p_transparency, 0.0f, 1.0f);
-	RS::get_singleton()->instance_geometry_set_transparency(get_instance(), transparency);
+void GeometryInstance3D::set_opacity(float p_opacity) {
+	opacity = CLAMP(p_opacity, 0.0f, 1.0f);
+	RS::get_singleton()->instance_geometry_set_opacity(get_instance(), opacity);
 }
 
-float GeometryInstance3D::get_transparency() const {
-	return transparency;
+float GeometryInstance3D::get_opacity() const {
+	return opacity;
 }
 
 void GeometryInstance3D::set_visibility_range_begin(float p_dist) {
@@ -416,8 +416,8 @@ void GeometryInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_lod_bias", "bias"), &GeometryInstance3D::set_lod_bias);
 	ClassDB::bind_method(D_METHOD("get_lod_bias"), &GeometryInstance3D::get_lod_bias);
 
-	ClassDB::bind_method(D_METHOD("set_transparency", "transparency"), &GeometryInstance3D::set_transparecy);
-	ClassDB::bind_method(D_METHOD("get_transparency"), &GeometryInstance3D::get_transparency);
+	ClassDB::bind_method(D_METHOD("set_opacity", "opacity"), &GeometryInstance3D::set_opacity);
+	ClassDB::bind_method(D_METHOD("get_opacity"), &GeometryInstance3D::get_opacity);
 
 	ClassDB::bind_method(D_METHOD("set_visibility_range_end_margin", "distance"), &GeometryInstance3D::set_visibility_range_end_margin);
 	ClassDB::bind_method(D_METHOD("get_visibility_range_end_margin"), &GeometryInstance3D::get_visibility_range_end_margin);
@@ -456,7 +456,7 @@ void GeometryInstance3D::_bind_methods() {
 	ADD_GROUP("Geometry", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_override", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE), "set_material_override", "get_material_override");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_overlay", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE), "set_material_overlay", "get_material_overlay");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "transparency", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_transparency", "get_transparency");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "opacity", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_opacity", "get_opacity");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cast_shadow", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"), "set_cast_shadows_setting", "get_cast_shadows_setting");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "extra_cull_margin", PROPERTY_HINT_RANGE, "0,16384,0.01"), "set_extra_cull_margin", "get_extra_cull_margin");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_bias", PROPERTY_HINT_RANGE, "0.001,128,0.001"), "set_lod_bias", "get_lod_bias");

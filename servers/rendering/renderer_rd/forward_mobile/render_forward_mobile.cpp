@@ -2099,7 +2099,7 @@ void RenderForwardMobile::geometry_instance_set_lod_bias(GeometryInstance *p_geo
 void RenderForwardMobile::geometry_instance_set_fade_range(GeometryInstance *p_geometry_instance, bool p_enable_near, float p_near_begin, float p_near_end, bool p_enable_far, float p_far_begin, float p_far_end) {
 }
 
-void RenderForwardMobile::geometry_instance_set_transparency(GeometryInstance *p_geometry_instance, float p_transparency) {
+void RenderForwardMobile::geometry_instance_set_opacity(GeometryInstance *p_geometry_instance, float p_opacity) {
 }
 
 void RenderForwardMobile::geometry_instance_set_parent_fade_alpha(GeometryInstance *p_geometry_instance, float p_alpha) {

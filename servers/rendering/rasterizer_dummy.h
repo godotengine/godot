@@ -58,7 +58,7 @@ public:
 	void geometry_instance_set_cast_double_sided_shadows(GeometryInstance *p_geometry_instance, bool p_enable) override {}
 	void geometry_instance_set_fade_range(GeometryInstance *p_geometry_instance, bool p_enable_near, float p_near_begin, float p_near_end, bool p_enable_far, float p_far_begin, float p_far_end) override {}
 	void geometry_instance_set_parent_fade_alpha(GeometryInstance *p_geometry_instance, float p_alpha) override {}
-	void geometry_instance_set_transparency(GeometryInstance *p_geometry_instance, float p_transparency) override {}
+	void geometry_instance_set_opacity(GeometryInstance *p_geometry_instance, float p_opacity) override {}
 
 	uint32_t geometry_instance_get_pair_mask() override { return 0; }
 	void geometry_instance_pair_light_instances(GeometryInstance *p_geometry_instance, const RID *p_light_instances, uint32_t p_light_instance_count) override {}

@@ -3006,10 +3006,10 @@ void RenderForwardClustered::geometry_instance_set_parent_fade_alpha(GeometryIns
 	ginstance->parent_fade_alpha = p_alpha;
 }
 
-void RenderForwardClustered::geometry_instance_set_transparency(GeometryInstance *p_geometry_instance, float p_transparency) {
+void RenderForwardClustered::geometry_instance_set_opacity(GeometryInstance *p_geometry_instance, float p_opacity) {
 	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
-	ginstance->force_alpha = CLAMP(1.0 - p_transparency, 0, 1);
+	ginstance->force_alpha = CLAMP(p_opacity, 0, 1);
 }
 
 void RenderForwardClustered::geometry_instance_set_use_baked_light(GeometryInstance *p_geometry_instance, bool p_enable) {

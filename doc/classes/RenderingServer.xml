@@ -1441,20 +1441,23 @@
 				Sets a material that will override the material for all surfaces on the mesh associated with this instance. Equivalent to [member GeometryInstance3D.material_override].
 			</description>
 		</method>
+		<method name="instance_geometry_set_opacity">
+			<return type="void" />
+			<argument index="0" name="instance" type="RID" />
+			<argument index="1" name="opacity" type="float" />
+			<description>
+				Sets the opacity for the given geometry instance (as a multiplier of the materials' existing opacity). Equivalent to [member GeometryInstance3D.opacity].
+				An [code]opacity[/code] of [code]1.0[/code] is fully opaque, while [code]0.0[/code] is fully transparent. Values lower than [code]1.0[/code] will force the geometry's materials to go through the transparent pipeline, which is slower to render and can exhibit rendering issues due to incorrect transparency sorting. However, unlike using a transparent material, setting [code]opacity[/code] to a value lower than [code]1.0[/code] will not disable shadow rendering.
+				In spatial shaders, [code]opacity[/code] is set as the default value of the [code]ALPHA[/code] built-in.
+				[b]Note:[/b] [code]opacity[/code] is clamped between [code]0.0[/code] and [code]1.0[/code], so [method instance_geometry_set_opacity] cannot be used to make transparent materials more opaque than they originally are.
+			</description>
+		</method>
 		<method name="instance_geometry_set_shader_parameter">
 			<return type="void" />
 			<argument index="0" name="instance" type="RID" />
 			<argument index="1" name="parameter" type="StringName" />
 			<argument index="2" name="value" type="Variant" />
 			<description>
-			</description>
-		</method>
-		<method name="instance_geometry_set_transparency">
-			<return type="void" />
-			<argument index="0" name="instance" type="RID" />
-			<argument index="1" name="transparency" type="float" />
-			<description>
-				Sets the transparency for the given geometry instance. Equivalent to [member GeometryInstance3D.transparency].
 			</description>
 		</method>
 		<method name="instance_geometry_set_visibility_range">

@@ -118,7 +118,7 @@ private:
 	float visibility_range_end_margin = 0.0;
 	VisibilityRangeFadeMode visibility_range_fade_mode = VISIBILITY_RANGE_FADE_DISABLED;
 
-	float transparency = 0.0f;
+	float opacity = 1.0f;
 
 	float lod_bias = 1.0;
 
@@ -144,8 +144,8 @@ public:
 	void set_cast_shadows_setting(ShadowCastingSetting p_shadow_casting_setting);
 	ShadowCastingSetting get_cast_shadows_setting() const;
 
-	void set_transparecy(float p_transparency);
-	float get_transparency() const;
+	void set_opacity(float p_opacity);
+	float get_opacity() const;
 
 	void set_visibility_range_begin(float p_dist);
 	float get_visibility_range_begin() const;
