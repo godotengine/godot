@@ -533,6 +533,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, Resour
 		ResourceCache::lock.read_lock();
 
 		Resource **rptr = ResourceCache::resources.getptr(local_path);
+		Resource *res_to_erase = nullptr;
 
 		if (rptr) {
 			RES res(*rptr);
@@ -548,9 +549,19 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, Resour
 
 				return res; //use cached
 			}
+
+			res_to_erase = *rptr;
 		}
 
 		ResourceCache::lock.read_unlock();
+
+		// If the cached resource was just freed in a thread, remove it from cache before loading a new one.
+		// Otherwise, it can result in the "Another resource is loaded from path" error.
+		if (res_to_erase) {
+			ResourceCache::lock.write_lock();
+			ResourceCache::resources.erase(local_path, res_to_erase);
+			ResourceCache::lock.write_unlock();
+		}
 
 		//load using task (but this thread)
 		ThreadLoadTask load_task;

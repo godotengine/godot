@@ -422,6 +422,44 @@ public:
 		return false;
 	}
 
+	bool erase(const TKey &p_key, const TData &p_value) {
+		if (unlikely(!hash_table)) {
+			return false;
+		}
+
+		uint32_t hash = Hasher::hash(p_key);
+		uint32_t index = hash & ((1 << hash_table_power) - 1);
+
+		Element *e = hash_table[index];
+		Element *p = nullptr;
+		while (e) {
+			/* checking hash first avoids comparing key, which may take longer */
+			if (e->hash == hash && Comparator::compare(e->pair.key, p_key) && e->pair.data == p_value) {
+				if (p) {
+					p->next = e->next;
+				} else {
+					//begin of list
+					hash_table[index] = e->next;
+				}
+
+				memdelete(e);
+				elements--;
+
+				if (elements == 0) {
+					erase_hash_table();
+				} else {
+					check_hash_table();
+				}
+				return true;
+			}
+
+			p = e;
+			e = e->next;
+		}
+
+		return false;
+	}
+
 	inline const TData &operator[](const TKey &p_key) const { //constref
 
 		return get(p_key);

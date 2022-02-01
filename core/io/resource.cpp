@@ -54,7 +54,9 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 
 	if (!path_cache.is_empty()) {
 		ResourceCache::lock.write_lock();
-		ResourceCache::resources.erase(path_cache);
+		// This resource may have already been removed from the cache by the resource
+		// loader in a different thread. Only remove it if the one stored is the same.
+		ResourceCache::resources.erase(path_cache, this);
 		ResourceCache::lock.write_unlock();
 	}
 
@@ -436,7 +438,9 @@ Resource::Resource() :
 Resource::~Resource() {
 	if (!path_cache.is_empty()) {
 		ResourceCache::lock.write_lock();
-		ResourceCache::resources.erase(path_cache);
+		// This resource may have already been removed from the cache by the resource
+		// loader in a different thread. Only remove it if the one stored is the same.
+		ResourceCache::resources.erase(path_cache, this);
 		ResourceCache::lock.write_unlock();
 	}
 	if (owners.size()) {
