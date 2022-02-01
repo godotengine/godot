@@ -15,95 +15,6 @@ void DisplayServerWayland::_poll_events_thread(void *p_wls) {
 		// Wait for all events.
 		wl_display_dispatch(wls->display);
 
-		// TODO: Move to static event handlers.
-		PointerState &old_pointer_state = wls->seat_state.old_pointer_state;
-		PointerState &pointer_state = wls->seat_state.pointer_state;
-
-		if (old_pointer_state.data.time != pointer_state.data.time && pointer_state.data.focused_wl_surface) {
-
-			// TODO: Simplify into its own function.
-			WindowID focused_window_id;
-			bool id_found = false;
-			for (KeyValue<WindowID, WindowData> &E : wls->windows) {
-				WindowData &wd = E.value;
-
-				if (wd.wl_surface == pointer_state.data.focused_wl_surface) {
-					focused_window_id = E.key;
-					id_found = true;
-					break;
-				}
-			}
-
-			ERR_FAIL_COND_MSG(!id_found, "Cursor focused to an invalid window ID.");
-
-			if (old_pointer_state.data.position != pointer_state.data.position) {
-				Ref<InputEventMouseMotion> mouse_motion;
-				mouse_motion.instantiate();
-				mouse_motion->set_window_id(focused_window_id);
-				mouse_motion->set_button_mask(pointer_state.data.pressed_button_mask);
-				mouse_motion->set_position(pointer_state.data.position);
-				// FIXME: We're lying!
-				mouse_motion->set_global_position(pointer_state.data.position);
-				Input::get_singleton()->set_mouse_position(pointer_state.data.position);
-
-				mouse_motion->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
-				mouse_motion->set_relative(pointer_state.data.position - old_pointer_state.data.position);
-
-				Input::get_singleton()->parse_input_event(mouse_motion);
-			}
-
-			if (old_pointer_state.data.pressed_button_mask != pointer_state.data.pressed_button_mask) {
-				MouseButton pressed_mask_delta = old_pointer_state.data.pressed_button_mask ^ pointer_state.data.pressed_button_mask;
-
-				// TODO: Simplify with a function or something.
-				if ((pressed_mask_delta & MouseButton::MASK_LEFT) != MouseButton::NONE) {
-					Ref<InputEventMouseButton> mouse_button;
-					mouse_button.instantiate();
-					mouse_button->set_window_id(focused_window_id);
-					mouse_button->set_position(pointer_state.data.position);
-					// FIXME: We're lying!
-					mouse_button->set_global_position(pointer_state.data.position);
-					mouse_button->set_button_mask(pointer_state.data.pressed_button_mask);
-
-					mouse_button->set_button_index(MouseButton::LEFT);
-					mouse_button->set_pressed((pointer_state.data.pressed_button_mask & MouseButton::MASK_LEFT) != MouseButton::NONE);
-
-					Input::get_singleton()->parse_input_event(mouse_button);
-				}
-				if ((pressed_mask_delta & MouseButton::MASK_MIDDLE) != MouseButton::NONE) {
-					Ref<InputEventMouseButton> mouse_button;
-					mouse_button.instantiate();
-					mouse_button->set_window_id(focused_window_id);
-					mouse_button->set_position(pointer_state.data.position);
-					// FIXME: We're lying!
-					mouse_button->set_global_position(pointer_state.data.position);
-					mouse_button->set_button_mask(pointer_state.data.pressed_button_mask);
-
-					mouse_button->set_button_index(MouseButton::MIDDLE);
-					mouse_button->set_pressed((pointer_state.data.pressed_button_mask & MouseButton::MASK_MIDDLE) != MouseButton::NONE);
-
-					Input::get_singleton()->parse_input_event(mouse_button);
-				}
-				if ((pressed_mask_delta & MouseButton::MASK_RIGHT) != MouseButton::NONE) {
-					Ref<InputEventMouseButton> mouse_button;
-					mouse_button.instantiate();
-					mouse_button->set_window_id(focused_window_id);
-					mouse_button->set_position(pointer_state.data.position);
-					// FIXME: We're lying!
-					mouse_button->set_global_position(pointer_state.data.position);
-					mouse_button->set_button_mask(pointer_state.data.pressed_button_mask);
-
-					mouse_button->set_button_index(MouseButton::RIGHT);
-					mouse_button->set_pressed((pointer_state.data.pressed_button_mask & MouseButton::MASK_RIGHT) != MouseButton::NONE);
-
-					Input::get_singleton()->parse_input_event(mouse_button);
-				}
-
-			}
-
-			wls->seat_state.old_pointer_state = pointer_state;
-		}
-
 		Input::get_singleton()->flush_buffered_events();
 	}
 }
@@ -236,7 +147,7 @@ void DisplayServerWayland::_wl_seat_on_capabilities(void *data, struct wl_seat *
 
 	if (capabilities & WL_SEAT_CAPABILITY_POINTER) {
 		seat_state.wl_pointer = wl_seat_get_pointer(wl_seat);
-		wl_pointer_add_listener(seat_state.wl_pointer, &wl_pointer_listener, &seat_state.pointer_state);
+		wl_pointer_add_listener(seat_state.wl_pointer, &wl_pointer_listener, wls);
 	} else if (seat_state.wl_pointer) {
 		wl_pointer_destroy(seat_state.wl_pointer);
 	}
@@ -258,27 +169,33 @@ void DisplayServerWayland::_wl_seat_on_name(void *data, struct wl_seat *wl_seat,
 }
 
 void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y) {
-	PointerState* pointer_state = (PointerState*) data;
-	pointer_state->data_buffer.focused_wl_surface = surface;
+	WaylandState *wls = (WaylandState*) data;
+	PointerState &pointer_state = wls->seat_state.pointer_state;
+
+	pointer_state.data_buffer.focused_wl_surface = surface;
 }
 
 void DisplayServerWayland::_wl_pointer_on_leave(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface) {
-	PointerState* pointer_state = (PointerState*) data;
-	pointer_state->data_buffer.focused_wl_surface = nullptr;
+	WaylandState *wls = (WaylandState*) data;
+	PointerState &pointer_state = wls->seat_state.pointer_state;
+
+	pointer_state.data_buffer.focused_wl_surface = nullptr;
 }
 
 void DisplayServerWayland::_wl_pointer_on_motion(void *data, struct wl_pointer *wl_pointer, uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y) {
-	PointerState* pointer_state = (PointerState*) data;
+	WaylandState *wls = (WaylandState*) data;
+	PointerState &pointer_state = wls->seat_state.pointer_state;
 
-	pointer_state->data_buffer.position.x = wl_fixed_to_int(surface_x);
-	pointer_state->data_buffer.position.y = wl_fixed_to_int(surface_y);
+	pointer_state.data_buffer.position.x = wl_fixed_to_int(surface_x);
+	pointer_state.data_buffer.position.y = wl_fixed_to_int(surface_y);
 
-	pointer_state->data_buffer.time = time;
+	pointer_state.data_buffer.time = time;
 }
 
 void DisplayServerWayland::_wl_pointer_on_button(void *data, struct wl_pointer *wl_pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state) {
-	PointerState* pointer_state = (PointerState*) data;
-	MouseButton &mouse_button_mask = pointer_state->data_buffer.pressed_button_mask;
+	WaylandState *wls = (WaylandState*) data;
+	PointerState &pointer_state = wls->seat_state.pointer_state;
+	MouseButton &mouse_button_mask = pointer_state.data_buffer.pressed_button_mask;
 
 	MouseButton button_pressed;
 
@@ -303,22 +220,109 @@ void DisplayServerWayland::_wl_pointer_on_button(void *data, struct wl_pointer *
 
 	if (state & WL_POINTER_BUTTON_STATE_PRESSED) {
 		mouse_button_mask |= mouse_button_to_mask(button_pressed);
-		pointer_state->data_buffer.last_button_pressed = button_pressed;
+		pointer_state.data_buffer.last_button_pressed = button_pressed;
 	} else {
 		mouse_button_mask &= ~mouse_button_to_mask(button_pressed);
 	}
 
-	pointer_state->data_buffer.button_time = time;
-	pointer_state->data_buffer.time = time;
+	pointer_state.data_buffer.button_time = time;
+	pointer_state.data_buffer.time = time;
 }
 
 void DisplayServerWayland::_wl_pointer_on_axis(void *data, struct wl_pointer *wl_pointer, uint32_t time, uint32_t axis, wl_fixed_t value) {
 }
 
 void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_pointer) {
-	PointerState* pointer_state = (PointerState*) data;
+	WaylandState *wls = (WaylandState*) data;
+	PointerState &pointer_state = wls->seat_state.pointer_state;
 
-	pointer_state->data = pointer_state->data_buffer;
+	PointerData old_pointer_data = pointer_state.data;
+
+	pointer_state.data = pointer_state.data_buffer;
+
+	if (old_pointer_data.time != pointer_state.data.time && pointer_state.data.focused_wl_surface) {
+
+		// TODO: Simplify into its own function.
+		WindowID focused_window_id;
+		bool id_found = false;
+		for (KeyValue<WindowID, WindowData> &E : wls->windows) {
+			WindowData &wd = E.value;
+
+			if (wd.wl_surface == pointer_state.data.focused_wl_surface) {
+				focused_window_id = E.key;
+				id_found = true;
+				break;
+			}
+		}
+
+		ERR_FAIL_COND_MSG(!id_found, "Cursor focused to an invalid window ID.");
+
+		if (old_pointer_data.position != pointer_state.data.position) {
+			Ref<InputEventMouseMotion> mouse_motion;
+			mouse_motion.instantiate();
+			mouse_motion->set_window_id(focused_window_id);
+			mouse_motion->set_button_mask(pointer_state.data.pressed_button_mask);
+			mouse_motion->set_position(pointer_state.data.position);
+			// FIXME: We're lying!
+			mouse_motion->set_global_position(pointer_state.data.position);
+			Input::get_singleton()->set_mouse_position(pointer_state.data.position);
+
+			mouse_motion->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
+			mouse_motion->set_relative(pointer_state.data.position - old_pointer_data.position);
+
+			Input::get_singleton()->parse_input_event(mouse_motion);
+		}
+
+		if (old_pointer_data.pressed_button_mask != pointer_state.data.pressed_button_mask) {
+			MouseButton pressed_mask_delta = old_pointer_data.pressed_button_mask ^ pointer_state.data.pressed_button_mask;
+
+			// TODO: Simplify with a function or something.
+			if ((pressed_mask_delta & MouseButton::MASK_LEFT) != MouseButton::NONE) {
+				Ref<InputEventMouseButton> mouse_button;
+				mouse_button.instantiate();
+				mouse_button->set_window_id(focused_window_id);
+				mouse_button->set_position(pointer_state.data.position);
+				// FIXME: We're lying!
+				mouse_button->set_global_position(pointer_state.data.position);
+				mouse_button->set_button_mask(pointer_state.data.pressed_button_mask);
+
+				mouse_button->set_button_index(MouseButton::LEFT);
+				mouse_button->set_pressed((pointer_state.data.pressed_button_mask & MouseButton::MASK_LEFT) != MouseButton::NONE);
+
+				Input::get_singleton()->parse_input_event(mouse_button);
+			}
+			if ((pressed_mask_delta & MouseButton::MASK_MIDDLE) != MouseButton::NONE) {
+				Ref<InputEventMouseButton> mouse_button;
+				mouse_button.instantiate();
+				mouse_button->set_window_id(focused_window_id);
+				mouse_button->set_position(pointer_state.data.position);
+				// FIXME: We're lying!
+				mouse_button->set_global_position(pointer_state.data.position);
+				mouse_button->set_button_mask(pointer_state.data.pressed_button_mask);
+
+				mouse_button->set_button_index(MouseButton::MIDDLE);
+				mouse_button->set_pressed((pointer_state.data.pressed_button_mask & MouseButton::MASK_MIDDLE) != MouseButton::NONE);
+
+				Input::get_singleton()->parse_input_event(mouse_button);
+			}
+			if ((pressed_mask_delta & MouseButton::MASK_RIGHT) != MouseButton::NONE) {
+				Ref<InputEventMouseButton> mouse_button;
+				mouse_button.instantiate();
+				mouse_button->set_window_id(focused_window_id);
+				mouse_button->set_position(pointer_state.data.position);
+				// FIXME: We're lying!
+				mouse_button->set_global_position(pointer_state.data.position);
+				mouse_button->set_button_mask(pointer_state.data.pressed_button_mask);
+
+				mouse_button->set_button_index(MouseButton::RIGHT);
+				mouse_button->set_pressed((pointer_state.data.pressed_button_mask & MouseButton::MASK_RIGHT) != MouseButton::NONE);
+
+				Input::get_singleton()->parse_input_event(mouse_button);
+			}
+
+		}
+	}
+
 }
 
 void DisplayServerWayland::_wl_pointer_on_axis_source(void *data, struct wl_pointer *wl_pointer, uint32_t axis_source) {
