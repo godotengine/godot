@@ -31,7 +31,7 @@
 			<return type="bool" />
 			<argument index="0" name="area" type="Node" />
 			<description>
-				If [code]true[/code], the given area overlaps the Area2D.
+				Returns [code]true[/code] if the given [Area2D] intersects or overlaps this [Area2D], [code]false[/code] otherwise.
 				[b]Note:[/b] The result of this test is not immediate after moving objects. For performance, the list of overlaps is updated once per frame and before the physics step. Consider using signals instead.
 			</description>
 		</method>
@@ -39,9 +39,9 @@
 			<return type="bool" />
 			<argument index="0" name="body" type="Node" />
 			<description>
-				If [code]true[/code], the given physics body overlaps the Area2D.
+				Returns [code]true[/code] if the given physics body intersects or overlaps this [Area2D], [code]false[/code] otherwise.
 				[b]Note:[/b] The result of this test is not immediate after moving objects. For performance, list of overlaps is updated once per frame and before the physics step. Consider using signals instead.
-				The [code]body[/code] argument can either be a [PhysicsBody2D] or a [TileMap] instance (while TileMaps are not physics bodies themselves, they register their tiles with collision shapes as a virtual physics body).
+				The [code]body[/code] argument can either be a [PhysicsBody2D] or a [TileMap] instance. While TileMaps are not physics bodies themselves, they register their tiles with collision shapes as a virtual physics body.
 			</description>
 		</method>
 	</methods>
