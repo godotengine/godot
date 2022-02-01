@@ -547,6 +547,103 @@ void PortalRenderer::occluder_refresh_room_within(uint32_t p_occluder_pool_id) {
 	}
 }
 
+void PortalRenderer::occluder_update_mesh(OccluderHandle p_handle, const Geometry::OccluderMeshData &p_mesh_data) {
+	p_handle--;
+	VSOccluder &occ = _occluder_pool[p_handle];
+	ERR_FAIL_COND(occ.type != VSOccluder::OT_MESH);
+
+	// needs world points updating next time
+	occ.dirty = true;
+
+	const LocalVectori<Geometry::OccluderMeshData::Face> &faces = p_mesh_data.faces;
+	const LocalVectori<Vector3> &vertices = p_mesh_data.vertices;
+
+	// first deal with the situation where the number of polys has changed (rare)
+	if (occ.list_ids.size() != faces.size()) {
+		// not the most efficient, but works...
+		// remove existing
+		for (int n = 0; n < occ.list_ids.size(); n++) {
+			uint32_t id = occ.list_ids[n];
+			_occluder_mesh_pool.free(id);
+		}
+
+		occ.list_ids.clear();
+		// create new
+		for (int n = 0; n < faces.size(); n++) {
+			uint32_t id;
+			VSOccluder_Mesh *poly = _occluder_mesh_pool.request(id);
+			poly->create();
+			occ.list_ids.push_back(id);
+		}
+	}
+
+	// new data
+	for (int n = 0; n < occ.list_ids.size(); n++) {
+		uint32_t id = occ.list_ids[n];
+
+		VSOccluder_Mesh &opoly = _occluder_mesh_pool[id];
+		Occlusion::PolyPlane &poly = opoly.poly_local;
+
+		// source face
+		const Geometry::OccluderMeshData::Face &face = faces[n];
+		opoly.two_way = face.two_way;
+
+		// make sure the number of holes is correct
+		if (face.holes.size() != opoly.num_holes) {
+			// slow but hey ho
+			// delete existing holes
+			for (int i = 0; i < opoly.num_holes; i++) {
+				_occluder_hole_pool.free(opoly.hole_pool_ids[i]);
+				opoly.hole_pool_ids[i] = UINT32_MAX;
+			}
+			// create any new holes
+			opoly.num_holes = face.holes.size();
+			for (int i = 0; i < opoly.num_holes; i++) {
+				uint32_t hole_id;
+				VSOccluder_Hole *hole = _occluder_hole_pool.request(hole_id);
+				opoly.hole_pool_ids[i] = hole_id;
+				hole->create();
+			}
+		}
+
+		poly.plane = face.plane;
+
+		poly.num_verts = MIN(face.indices.size(), Occlusion::PolyPlane::MAX_POLY_VERTS);
+
+		// make sure the world poly also has the correct num verts
+		opoly.poly_world.num_verts = poly.num_verts;
+
+		for (int c = 0; c < poly.num_verts; c++) {
+			int vert_index = face.indices[c];
+
+			if (vert_index < vertices.size()) {
+				poly.verts[c] = vertices[vert_index];
+			} else {
+				WARN_PRINT_ONCE("occluder_update_mesh : poly index out of range");
+			}
+		}
+
+		// holes
+		for (int h = 0; h < opoly.num_holes; h++) {
+			VSOccluder_Hole &dhole = get_pool_occluder_hole(opoly.hole_pool_ids[h]);
+			const Geometry::OccluderMeshData::Hole &shole = face.holes[h];
+
+			dhole.poly_local.num_verts = shole.indices.size();
+			dhole.poly_local.num_verts = MIN(dhole.poly_local.num_verts, Occlusion::Poly::MAX_POLY_VERTS);
+			dhole.poly_world.num_verts = dhole.poly_local.num_verts;
+
+			for (int c = 0; c < dhole.poly_local.num_verts; c++) {
+				int vert_index = shole.indices[c];
+				if (vert_index < vertices.size()) {
+					dhole.poly_local.verts[c] = vertices[vert_index];
+				} else {
+					WARN_PRINT_ONCE("occluder_update_mesh : hole index out of range");
+				}
+			}
+		}
+	}
+}
+
 void PortalRenderer::occluder_update_spheres(OccluderHandle p_handle, const Vector<Plane> &p_spheres) {
 	p_handle--;
 	VSOccluder &occ = _occluder_pool[p_handle];
@@ -590,6 +687,9 @@ void PortalRenderer::occluder_destroy(OccluderHandle p_handle) {
 	switch (occ.type) {
 		case VSOccluder::OT_SPHERE: {
 			occluder_update_spheres(p_handle + 1, Vector<Plane>());
+		} break;
+		case VSOccluder::OT_MESH: {
+			occluder_update_mesh(p_handle + 1, Geometry::OccluderMeshData());
 		} break;
 		default: {
 		} break;
@@ -1100,7 +1200,7 @@ void PortalRenderer::rooms_update_gameplay_monitor(const Vector<Vector3> &p_came
 	_gameplay_monitor.update_gameplay(*this, source_rooms, num_source_rooms);
 }
 
-int PortalRenderer::cull_convex_implementation(const Vector3 &p_point, const Vector<Plane> &p_convex, VSInstance **p_result_array, int p_result_max, uint32_t p_mask, int32_t &r_previous_room_id_hint) {
+int PortalRenderer::cull_convex_implementation(const Vector3 &p_point, const Vector3 &p_cam_dir, const CameraMatrix &p_cam_matrix, const Vector<Plane> &p_convex, VSInstance **p_result_array, int p_result_max, uint32_t p_mask, int32_t &r_previous_room_id_hint) {
 	// start room
 	int start_room_id = find_room_within(p_point, r_previous_room_id_hint);
 
@@ -1110,6 +1210,9 @@ int PortalRenderer::cull_convex_implementation(const Vector3 &p_point, const Vec
 	if (start_room_id == -1) {
 		return -1;
 	}
+
+	// set up the occlusion culler once off .. this is a prepare before the prepare is done PER room
+	_tracer.get_occlusion_culler().prepare_camera(p_cam_matrix, p_cam_dir);
 
 	// planes must be in CameraMatrix order
 	DEV_ASSERT(p_convex.size() == 6);

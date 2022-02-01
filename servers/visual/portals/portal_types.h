@@ -39,6 +39,7 @@
 #include "core/math/vector3.h"
 #include "core/object_id.h"
 #include "core/rid.h"
+#include "portal_defines.h"
 
 // visual server scene instance.
 // we can't have a pointer to nested class outside of visual server scene...
@@ -391,6 +392,7 @@ struct VSOccluder {
 	enum Type : uint32_t {
 		OT_UNDEFINED,
 		OT_SPHERE,
+		OT_MESH,
 		OT_NUM_TYPES,
 	} type;
 
@@ -444,6 +446,30 @@ struct Sphere {
 		return true;
 	}
 };
+
+struct Poly {
+	static const int MAX_POLY_VERTS = PortalDefines::OCCLUSION_POLY_MAX_VERTS;
+	void create() {
+		num_verts = 0;
+	}
+	void flip() {
+		for (int n = 0; n < num_verts / 2; n++) {
+			SWAP(verts[n], verts[num_verts - n - 1]);
+		}
+	}
+
+	int num_verts;
+	Vector3 verts[MAX_POLY_VERTS];
+};
+
+struct PolyPlane : public Poly {
+	void flip() {
+		plane = -plane;
+		Poly::flip();
+	}
+	Plane plane;
+};
+
 } // namespace Occlusion
 
 struct VSOccluder_Sphere {
@@ -454,6 +480,34 @@ struct VSOccluder_Sphere {
 
 	Occlusion::Sphere local;
 	Occlusion::Sphere world;
+};
+
+struct VSOccluder_Mesh {
+	static const int MAX_POLY_HOLES = PortalDefines::OCCLUSION_POLY_MAX_HOLES;
+	void create() {
+		poly_local.create();
+		poly_world.create();
+		num_holes = 0;
+		two_way = false;
+		for (int n = 0; n < MAX_POLY_HOLES; n++) {
+			hole_pool_ids[n] = UINT32_MAX;
+		}
+	}
+	Occlusion::PolyPlane poly_local;
+	Occlusion::PolyPlane poly_world;
+	bool two_way;
+
+	int num_holes;
+	uint32_t hole_pool_ids[MAX_POLY_HOLES];
+};
+
+struct VSOccluder_Hole {
+	void create() {
+		poly_local.create();
+		poly_world.create();
+	}
+	Occlusion::Poly poly_local;
+	Occlusion::Poly poly_world;
 };
 
 #endif

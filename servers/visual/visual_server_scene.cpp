@@ -1246,10 +1246,26 @@ void VisualServerScene::occluder_spheres_update(RID p_occluder, const Vector<Pla
 	ro->scenario->_portal_renderer.occluder_update_spheres(ro->scenario_occluder_id, p_spheres);
 }
 
+void VisualServerScene::occluder_mesh_update(RID p_occluder, const Geometry::OccluderMeshData &p_mesh_data) {
+	Occluder *ro = occluder_owner.getornull(p_occluder);
+	ERR_FAIL_COND(!ro);
+	ERR_FAIL_COND(!ro->scenario);
+	ro->scenario->_portal_renderer.occluder_update_mesh(ro->scenario_occluder_id, p_mesh_data);
+}
+
 void VisualServerScene::set_use_occlusion_culling(bool p_enable) {
 	// this is not scenario specific, and is global
 	// (mainly for debugging)
 	PortalRenderer::use_occlusion_culling = p_enable;
+}
+
+Geometry::MeshData VisualServerScene::occlusion_debug_get_current_polys(RID p_scenario) const {
+	Scenario *scenario = scenario_owner.getornull(p_scenario);
+	if (!scenario) {
+		return Geometry::MeshData();
+	}
+
+	return scenario->_portal_renderer.occlusion_debug_get_current_polys();
 }
 
 // Rooms
@@ -1480,13 +1496,13 @@ Vector<ObjectID> VisualServerScene::instances_cull_convex(const Vector<Plane> &p
 }
 
 // thin wrapper to allow rooms / portals to take over culling if active
-int VisualServerScene::_cull_convex_from_point(Scenario *p_scenario, const Vector3 &p_point, const Vector<Plane> &p_convex, Instance **p_result_array, int p_result_max, int32_t &r_previous_room_id_hint, uint32_t p_mask) {
+int VisualServerScene::_cull_convex_from_point(Scenario *p_scenario, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, const Vector<Plane> &p_convex, Instance **p_result_array, int p_result_max, int32_t &r_previous_room_id_hint, uint32_t p_mask) {
 	int res = -1;
 	if (p_scenario->_portal_renderer.is_active()) {
 		// Note that the portal renderer ASSUMES that the planes exactly match the convention in
 		// CameraMatrix of enum Planes (6 planes, in order, near, far etc)
 		// If this is not the case, it should not be used.
-		res = p_scenario->_portal_renderer.cull_convex(p_point, p_convex, (VSInstance **)p_result_array, p_result_max, p_mask, r_previous_room_id_hint);
+		res = p_scenario->_portal_renderer.cull_convex(p_cam_transform, p_cam_projection, p_convex, (VSInstance **)p_result_array, p_result_max, p_mask, r_previous_room_id_hint);
 	}
 
 	// fallback to BVH  / octree if portals not active
@@ -1494,7 +1510,9 @@ int VisualServerScene::_cull_convex_from_point(Scenario *p_scenario, const Vecto
 		res = p_scenario->sps->cull_convex(p_convex, p_result_array, p_result_max, p_mask);
 
 		// Opportunity for occlusion culling on the main scene. This will be a noop if no occluders.
-		res = p_scenario->_portal_renderer.occlusion_cull(p_point, p_convex, (VSInstance **)p_result_array, res);
+		if (p_scenario->_portal_renderer.occlusion_is_active()) {
+			res = p_scenario->_portal_renderer.occlusion_cull(p_cam_transform, p_cam_projection, p_convex, (VSInstance **)p_result_array, res);
+		}
 	}
 	return res;
 }
@@ -2321,7 +2339,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 					Vector<Plane> planes = cm.get_projection_planes(xform);
 
-					int cull_count = _cull_convex_from_point(p_scenario, light_transform.origin, planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, light->previous_room_id_hint, VS::INSTANCE_GEOMETRY_MASK);
+					int cull_count = _cull_convex_from_point(p_scenario, light_transform, cm, planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, light->previous_room_id_hint, VS::INSTANCE_GEOMETRY_MASK);
 
 					Plane near_plane(xform.origin, -xform.basis.get_axis(2));
 					for (int j = 0; j < cull_count; j++) {
@@ -2356,7 +2374,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 			cm.set_perspective(angle * 2.0, 1.0, 0.01, radius);
 
 			Vector<Plane> planes = cm.get_projection_planes(light_transform);
-			int cull_count = _cull_convex_from_point(p_scenario, light_transform.origin, planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, light->previous_room_id_hint, VS::INSTANCE_GEOMETRY_MASK);
+			int cull_count = _cull_convex_from_point(p_scenario, light_transform, cm, planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, light->previous_room_id_hint, VS::INSTANCE_GEOMETRY_MASK);
 
 			Plane near_plane(light_transform.origin, -light_transform.basis.get_axis(2));
 			for (int j = 0; j < cull_count; j++) {
@@ -2535,7 +2553,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 	float z_far = p_cam_projection.get_z_far();
 
 	/* STEP 2 - CULL */
-	instance_cull_count = _cull_convex_from_point(scenario, p_cam_transform.origin, planes, instance_cull_result, MAX_INSTANCE_CULL, r_previous_room_id_hint);
+	instance_cull_count = _cull_convex_from_point(scenario, p_cam_transform, p_cam_projection, planes, instance_cull_result, MAX_INSTANCE_CULL, r_previous_room_id_hint);
 	light_cull_count = 0;
 
 	reflection_probe_cull_count = 0;

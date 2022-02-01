@@ -31,6 +31,7 @@
 #include "occluder.h"
 
 #include "core/engine.h"
+#include "servers/visual/portals/portal_occlusion_culler.h"
 
 void Occluder::resource_changed(RES res) {
 	update_gizmo();
@@ -72,6 +73,15 @@ Ref<OccluderShape> Occluder::get_shape() const {
 	return _shape;
 }
 
+#ifdef TOOLS_ENABLED
+AABB Occluder::get_fallback_gizmo_aabb() const {
+	if (_shape.is_valid()) {
+		return _shape->get_fallback_gizmo_aabb();
+	}
+	return Spatial::get_fallback_gizmo_aabb();
+}
+#endif
+
 String Occluder::get_configuration_warning() const {
 	String warning = Spatial::get_configuration_warning();
 
@@ -80,18 +90,23 @@ String Occluder::get_configuration_warning() const {
 			warning += "\n\n";
 		}
 		warning += TTR("No shape is set.");
+		return warning;
 	}
 
-	Transform tr = get_global_transform();
-	Vector3 scale = tr.basis.get_scale();
+#ifdef TOOLS_ENABLED
+	if (_shape.ptr()->requires_uniform_scale()) {
+		Transform tr = get_global_transform();
+		Vector3 scale = tr.basis.get_scale();
 
-	if ((!Math::is_equal_approx(scale.x, scale.y, 0.01f)) ||
-			(!Math::is_equal_approx(scale.x, scale.z, 0.01f))) {
-		if (!warning.empty()) {
-			warning += "\n\n";
+		if ((!Math::is_equal_approx(scale.x, scale.y, 0.01f)) ||
+				(!Math::is_equal_approx(scale.x, scale.z, 0.01f))) {
+			if (!warning.empty()) {
+				warning += "\n\n";
+			}
+			warning += TTR("Only uniform scales are supported.");
 		}
-		warning += TTR("Only uniform scales are supported.");
 	}
+#endif
 
 	return warning;
 }
@@ -106,11 +121,21 @@ void Occluder::_notification(int p_what) {
 				_shape->update_shape_to_visual_server();
 				_shape->update_transform_to_visual_server(get_global_transform());
 			}
+#ifdef TOOLS_ENABLED
+			if (Engine::get_singleton()->is_editor_hint()) {
+				set_process_internal(true);
+			}
+#endif
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
 			if (_shape.is_valid()) {
 				_shape->notification_exit_world();
 			}
+#ifdef TOOLS_ENABLED
+			if (Engine::get_singleton()->is_editor_hint()) {
+				set_process_internal(false);
+			}
+#endif
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (_shape.is_valid() && is_inside_tree()) {
@@ -126,6 +151,12 @@ void Occluder::_notification(int p_what) {
 					update_configuration_warning();
 				}
 #endif
+			}
+		} break;
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (PortalOcclusionCuller::_redraw_gizmo) {
+				PortalOcclusionCuller::_redraw_gizmo = false;
+				update_gizmo();
 			}
 		} break;
 	}

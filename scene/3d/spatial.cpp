@@ -300,6 +300,12 @@ Transform Spatial::get_global_gizmo_transform() const {
 Transform Spatial::get_local_gizmo_transform() const {
 	return get_transform();
 }
+
+// If not a VisualInstance, use this AABB for the orange box in the editor
+AABB Spatial::get_fallback_gizmo_aabb() const {
+	return AABB(Vector3(-0.2, -0.2, -0.2), Vector3(0.4, 0.4, 0.4));
+}
+
 #endif
 
 Spatial *Spatial::get_parent_spatial() const {
