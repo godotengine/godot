@@ -15,15 +15,21 @@
 	</members>
 	<constants>
 		<constant name="OP_TYPE_SCALAR" value="0" enum="OpType">
-			A scalar type.
+			A floating-point scalar.
 		</constant>
-		<constant name="OP_TYPE_VECTOR" value="1" enum="OpType">
-			A vector type.
+		<constant name="OP_TYPE_VECTOR_2D" value="1" enum="OpType">
+			A 2D vector type.
 		</constant>
-		<constant name="OP_TYPE_VECTOR_SCALAR" value="2" enum="OpType">
-			A vector type. [code]weight[/code] port is using a scalar type.
+		<constant name="OP_TYPE_VECTOR_2D_SCALAR" value="2" enum="OpType">
+			The [code]a[/code] and [code]b[/code] ports use a 2D vector type. The [code]weight[/code] port uses a scalar type.
 		</constant>
-		<constant name="OP_TYPE_MAX" value="3" enum="OpType">
+		<constant name="OP_TYPE_VECTOR_3D" value="3" enum="OpType">
+			A 3D vector type.
+		</constant>
+		<constant name="OP_TYPE_VECTOR_3D_SCALAR" value="4" enum="OpType">
+			The [code]a[/code] and [code]b[/code] ports use a 3D vector type. The [code]weight[/code] port uses a scalar type.
+		</constant>
+		<constant name="OP_TYPE_MAX" value="5" enum="OpType">
 			Represents the size of the [enum OpType] enum.
 		</constant>
 	</constants>
