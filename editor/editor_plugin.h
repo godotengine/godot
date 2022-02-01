@@ -42,6 +42,7 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
+
 class EditorNode;
 class Node3D;
 class Camera3D;
@@ -217,7 +218,7 @@ public:
 	void remove_control_from_bottom_panel(Control *p_control);
 
 	void add_tool_menu_item(const String &p_name, const Callable &p_callable);
-	void add_tool_submenu_item(const String &p_name, Object *p_submenu);
+	void add_tool_submenu_item(const String &p_name, PopupMenu *p_submenu);
 	void remove_tool_menu_item(const String &p_name);
 
 	void set_input_event_forwarding_always_enabled();
