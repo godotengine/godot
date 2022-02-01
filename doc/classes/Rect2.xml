@@ -69,7 +69,7 @@
 		<method name="get_area">
 			<return type="float" />
 			<description>
-				Returns the area of the [Rect2].
+				Returns the area of the [Rect2]. See also [method has_no_area].
 			</description>
 		</method>
 		<method name="get_center">
@@ -106,7 +106,8 @@
 		<method name="has_no_area">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the [Rect2] is flat or empty.
+				Returns [code]true[/code] if the [Rect2] is flat or empty, [code]false[/code] otherwise. See also [method get_area].
+				[b]Note:[/b] If the [Rect2] has a negative size and is not flat or empty, [method has_no_area] will return [code]true[/code].
 			</description>
 		</method>
 		<method name="has_point">
