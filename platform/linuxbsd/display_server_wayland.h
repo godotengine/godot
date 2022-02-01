@@ -22,6 +22,7 @@
 #endif
 
 #include "core/input/input.h"
+#include "core/os/thread.h"
 
 class DisplayServerWayland : public DisplayServer {
 	// Wayland stuff.
@@ -101,6 +102,8 @@ class DisplayServerWayland : public DisplayServer {
 	// TODO: Perhaps we could make this just contain references to in-class
 	// variables? We access them a lot here.
 	struct WaylandState {
+		Mutex mutex;
+
 		struct wl_display *display = nullptr;
 		struct wl_registry *registry = nullptr;
 
@@ -111,9 +114,13 @@ class DisplayServerWayland : public DisplayServer {
 
 		// TODO: Investigate what to do with multiple seats.
 		SeatState seat_state;
+
+		SafeFlag events_thread_done;
 	};
 
 	WaylandState wls;
+
+	Thread events_thread;
 
 #ifdef VULKAN_ENABLED
 	VulkanContextWayland *context_vulkan = nullptr;
@@ -121,6 +128,8 @@ class DisplayServerWayland : public DisplayServer {
 #endif
 
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
+
+	static void _poll_events_thread(void *p_wls);
 
 	static void dispatch_input_events(const Ref<InputEvent> &p_event);
 	void _dispatch_input_event(const Ref<InputEvent> &p_event);

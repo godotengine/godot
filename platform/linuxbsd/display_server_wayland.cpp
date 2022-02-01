@@ -8,17 +8,119 @@
 
 // Implementation specific methods.
 
+void DisplayServerWayland::_poll_events_thread(void *p_wls) {
+	WaylandState *wls = (WaylandState*) p_wls;
+
+	while (!wls->events_thread_done.is_set()) {
+		// Wait for all events.
+		wl_display_dispatch(wls->display);
+
+		// TODO: Move to static event handlers.
+		PointerState &old_pointer_state = wls->seat_state.old_pointer_state;
+		PointerState &pointer_state = wls->seat_state.pointer_state;
+
+		if (old_pointer_state.data.time != pointer_state.data.time && pointer_state.data.focused_wl_surface) {
+			WindowID focused_window_id;
+			bool id_found = false;
+			for (KeyValue<WindowID, WindowData> &E : wls->windows) {
+				WindowData &wd = E.value;
+
+				if (wd.wl_surface == pointer_state.data.focused_wl_surface) {
+					focused_window_id = E.key;
+					id_found = true;
+					break;
+				}
+			}
+
+			ERR_FAIL_COND_MSG(!id_found, "Cursor focused to an invalid window ID.");
+
+			if (old_pointer_state.data.position != pointer_state.data.position) {
+				Ref<InputEventMouseMotion> mouse_motion;
+				mouse_motion.instantiate();
+				mouse_motion->set_window_id(focused_window_id);
+				mouse_motion->set_button_mask(pointer_state.data.pressed_button_mask);
+				mouse_motion->set_position(pointer_state.data.position);
+				// FIXME: We're lying!
+				mouse_motion->set_global_position(pointer_state.data.position);
+				Input::get_singleton()->set_mouse_position(pointer_state.data.position);
+
+				mouse_motion->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
+				mouse_motion->set_relative(pointer_state.data.position - old_pointer_state.data.position);
+
+				Input::get_singleton()->parse_input_event(mouse_motion);
+			}
+
+			if (old_pointer_state.data.pressed_button_mask != pointer_state.data.pressed_button_mask) {
+				MouseButton pressed_mask_delta = old_pointer_state.data.pressed_button_mask ^ pointer_state.data.pressed_button_mask;
+
+				// TODO: Simplify with a function or something.
+				if ((pressed_mask_delta & MouseButton::MASK_LEFT) != MouseButton::NONE) {
+					Ref<InputEventMouseButton> mouse_button;
+					mouse_button.instantiate();
+					mouse_button->set_window_id(focused_window_id);
+					mouse_button->set_position(pointer_state.data.position);
+					// FIXME: We're lying!
+					mouse_button->set_global_position(pointer_state.data.position);
+					mouse_button->set_button_mask(pointer_state.data.pressed_button_mask);
+
+					mouse_button->set_button_index(MouseButton::LEFT);
+					mouse_button->set_pressed((pointer_state.data.pressed_button_mask & MouseButton::MASK_LEFT) != MouseButton::NONE);
+
+					Input::get_singleton()->parse_input_event(mouse_button);
+				}
+				if ((pressed_mask_delta & MouseButton::MASK_MIDDLE) != MouseButton::NONE) {
+					Ref<InputEventMouseButton> mouse_button;
+					mouse_button.instantiate();
+					mouse_button->set_window_id(focused_window_id);
+					mouse_button->set_position(pointer_state.data.position);
+					// FIXME: We're lying!
+					mouse_button->set_global_position(pointer_state.data.position);
+					mouse_button->set_button_mask(pointer_state.data.pressed_button_mask);
+
+					mouse_button->set_button_index(MouseButton::MIDDLE);
+					mouse_button->set_pressed((pointer_state.data.pressed_button_mask & MouseButton::MASK_MIDDLE) != MouseButton::NONE);
+
+					Input::get_singleton()->parse_input_event(mouse_button);
+				}
+				if ((pressed_mask_delta & MouseButton::MASK_RIGHT) != MouseButton::NONE) {
+					Ref<InputEventMouseButton> mouse_button;
+					mouse_button.instantiate();
+					mouse_button->set_window_id(focused_window_id);
+					mouse_button->set_position(pointer_state.data.position);
+					// FIXME: We're lying!
+					mouse_button->set_global_position(pointer_state.data.position);
+					mouse_button->set_button_mask(pointer_state.data.pressed_button_mask);
+
+					mouse_button->set_button_index(MouseButton::RIGHT);
+					mouse_button->set_pressed((pointer_state.data.pressed_button_mask & MouseButton::MASK_RIGHT) != MouseButton::NONE);
+
+					Input::get_singleton()->parse_input_event(mouse_button);
+				}
+
+			}
+
+			wls->seat_state.old_pointer_state = pointer_state;
+		}
+
+		Input::get_singleton()->flush_buffered_events();
+	}
+}
+
+// TODO: Since this class has already its state separated into a struct, we
+// could avoid the public implementation-specific method it calls and do
+// everything here.
+// 
 // Took from DisplayServerX11.
 void DisplayServerWayland::dispatch_input_events(const Ref<InputEvent> &p_event) {
 	((DisplayServerWayland *)(get_singleton()))->_dispatch_input_event(p_event);
 }
 
-// Took from DisplayServerX11.
+// Adapted from DisplayServerX11.
 void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event) {
+	MutexLock mutex_lock(wls.mutex);
+
 	Variant ev = p_event;
 	Variant *evp = &ev;
-	Variant ret;
-	Callable::CallError ce;
 
 	Ref<InputEventFromWindow> event_from_window = p_event;
 	if (event_from_window.is_valid() && event_from_window->get_window_id() != INVALID_WINDOW_ID) {
@@ -28,7 +130,7 @@ void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event)
 		if (callable.is_null()) {
 			return;
 		}
-		callable.call((const Variant **)&evp, 1, ret, ce);
+		callable.call_deferred((const Variant **)&evp, 1);
 	} else {
 		//send to all windows
 		for (KeyValue<WindowID, WindowData> &E : wls.windows) {
@@ -36,12 +138,14 @@ void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event)
 			if (callable.is_null()) {
 				continue;
 			}
-			callable.call((const Variant **)&evp, 1, ret, ce);
+			callable.call_deferred((const Variant **)&evp, 1);
 		}
 	}
 }
 
 DisplayServerWayland::WindowID DisplayServerWayland::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
+	MutexLock mutex_lock(wls.mutex);
+
 	WindowID id = wls.window_id_counter++;
 
 	WindowData &wd = wls.windows[id];
@@ -262,17 +366,6 @@ void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *w
 
 	bool pressed = state & WL_KEYBOARD_KEY_STATE_PRESSED;
 
-	// FIXME: This is far from ideal and inconsistent with the pointer handling,
-	// but this is easier and less issue-prone in this phase of development.
-	// IMO ideally we should use these events to update the appropriate state
-	// which `data` points and then process everything in `process_events`.
-	// The reason we're doing this for now is that, opposed to events which
-	// accumulate in a single state by design (eg. `wl_pointer` events), this would
-	// require us to write some sort of message queue which is both way too
-	// complicated considering the state of all other features and the possibility
-	// of it being implemented with an (IMO) more ideal multithreaded approach.
-	// (see: https://gitlab.freedesktop.org/wayland/wayland/issues/159).
-
 	// TODO: Handle keys that release multiple symbols?
 	Key keycode = KeyMappingXKB::get_keycode(xkb_state_key_get_one_sym(keyboard_state->xkb_state, xkb_keycode));
 	Key physical_keycode = KeyMappingXKB::get_scancode(xkb_keycode);
@@ -329,10 +422,8 @@ void DisplayServerWayland::_xdg_surface_on_configure(void *data, struct xdg_surf
 			Rect2i callback_rect = Rect2i(window_data->rect);
 			Variant variant_rect = callback_rect;
 			Variant *rectp = &variant_rect;
-			Variant ret;
-			Callable::CallError ce;
 
-			window_data->rect_changed_callback.call((const Variant **)&rectp, 1, ret, ce);
+			window_data->rect_changed_callback.call_deferred((const Variant **)&rectp, 1);
 		}
 	}
 }
@@ -383,10 +474,12 @@ void DisplayServerWayland::mouse_warp_to_position(const Point2i &p_to) {
 }
 
 Point2i DisplayServerWayland::mouse_get_position() const {
+	MutexLock mutex_lock(wls.mutex);
 	return wls.seat_state.pointer_state.data.position;
 }
 
 MouseButton DisplayServerWayland::mouse_get_button_state() const {
+	MutexLock mutex_lock(wls.mutex);
 	return wls.seat_state.pointer_state.data.pressed_button_mask;
 }
 
@@ -476,6 +569,8 @@ DisplayServer::WindowID DisplayServerWayland::create_sub_window(WindowMode p_mod
 }
 
 void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
+	MutexLock mutex_lock(wls.mutex);
+
 	WindowData &wd = wls.windows[p_id];
 
 	ERR_FAIL_COND(!wls.windows.has(p_id));
@@ -515,6 +610,8 @@ ObjectID DisplayServerWayland::window_get_attached_instance_id(DisplayServer::Wi
 
 
 void DisplayServerWayland::window_set_title(const String &p_title, DisplayServer::WindowID p_window) {
+	MutexLock mutex_lock(wls.mutex);
+
 	WindowData &wd = wls.windows[p_window];
 
 	ERR_FAIL_COND(!wls.windows.has(p_window));
@@ -531,6 +628,8 @@ void DisplayServerWayland::window_set_mouse_passthrough(const Vector<Vector2> &p
 
 
 void DisplayServerWayland::window_set_rect_changed_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
+	MutexLock mutex_lock(wls.mutex);
+
 	WindowData &wd = wls.windows[p_window];
 	wd.rect_changed_callback = p_callable;
 }
@@ -541,6 +640,8 @@ void DisplayServerWayland::window_set_window_event_callback(const Callable &p_ca
 }
 
 void DisplayServerWayland::window_set_input_event_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
+	MutexLock mutex_lock(wls.mutex);
+
 	WindowData &wd = wls.windows[p_window];
 	wd.input_event_callback = p_callable;
 }
@@ -568,10 +669,14 @@ void DisplayServerWayland::window_set_current_screen(int p_screen, DisplayServer
 }
 
 Point2i DisplayServerWayland::window_get_position(DisplayServer::WindowID p_window) const {
+	MutexLock mutex_lock(wls.mutex);
+
 	return wls.windows[p_window].rect.position;
 }
 
 void DisplayServerWayland::window_set_position(const Point2i &p_position, DisplayServer::WindowID p_window) {
+	MutexLock mutex_lock(wls.mutex);
+
 	WindowData &wd = wls.windows[p_window];
 
 	wd.rect.position = p_position;
@@ -615,6 +720,8 @@ Size2i DisplayServerWayland::window_get_min_size(DisplayServer::WindowID p_windo
 }
 
 void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::WindowID p_window) {
+	MutexLock mutex_lock(wls.mutex);
+
 	WindowData &wd = wls.windows[p_window];
 
 	wd.rect.size = p_size;
@@ -627,10 +734,14 @@ void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::W
 }
 
 Size2i DisplayServerWayland::window_get_size(DisplayServer::WindowID p_window) const {
+	MutexLock mutex_lock(wls.mutex);
+
 	return wls.windows[p_window].rect.size;
 }
 
 Size2i DisplayServerWayland::window_get_real_size(DisplayServer::WindowID p_window) const {
+	MutexLock mutex_lock(wls.mutex);
+
 	// I don't think there's a way of actually knowing the window size in wayland,
 	// other than the one requested by the compositor, which happens to be
 	// the one the windows always uses
@@ -763,96 +874,6 @@ Key DisplayServerWayland::keyboard_get_keycode_from_physical(Key p_keycode) cons
 
 
 void DisplayServerWayland::process_events() {
-	// Wait for all events.
-	wl_display_dispatch(wls.display);
-
-	PointerState &old_pointer_state = wls.seat_state.old_pointer_state;
-	PointerState &pointer_state = wls.seat_state.pointer_state;
-
-	if (old_pointer_state.data.time != pointer_state.data.time && pointer_state.data.focused_wl_surface) {
-		WindowID focused_window_id;
-		bool id_found = false;
-		for (KeyValue<WindowID, WindowData> &E : wls.windows) {
-			WindowData &wd = E.value;
-
-			if (wd.wl_surface == pointer_state.data.focused_wl_surface) {
-				focused_window_id = E.key;
-				id_found = true;
-				break;
-			}
-		}
-
-		ERR_FAIL_COND_MSG(!id_found, "Cursor focused to an invalid window ID.");
-
-		if (old_pointer_state.data.position != pointer_state.data.position) {
-			Ref<InputEventMouseMotion> mouse_motion;
-			mouse_motion.instantiate();
-			mouse_motion->set_window_id(focused_window_id);
-			mouse_motion->set_button_mask(pointer_state.data.pressed_button_mask);
-			mouse_motion->set_position(pointer_state.data.position);
-			// FIXME: We're lying!
-			mouse_motion->set_global_position(pointer_state.data.position);
-			Input::get_singleton()->set_mouse_position(pointer_state.data.position);
-
-			mouse_motion->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
-			mouse_motion->set_relative(pointer_state.data.position - old_pointer_state.data.position);
-
-			Input::get_singleton()->parse_input_event(mouse_motion);
-		}
-
-		if (old_pointer_state.data.pressed_button_mask != pointer_state.data.pressed_button_mask) {
-			MouseButton pressed_mask_delta = old_pointer_state.data.pressed_button_mask ^ pointer_state.data.pressed_button_mask;
-
-			// TODO: Simplify with a function or something.
-			if ((pressed_mask_delta & MouseButton::MASK_LEFT) != MouseButton::NONE) {
-				Ref<InputEventMouseButton> mouse_button;
-				mouse_button.instantiate();
-				mouse_button->set_window_id(focused_window_id);
-				mouse_button->set_position(pointer_state.data.position);
-				// FIXME: We're lying!
-				mouse_button->set_global_position(pointer_state.data.position);
-				mouse_button->set_button_mask(mouse_get_button_state());
-
-				mouse_button->set_button_index(MouseButton::LEFT);
-				mouse_button->set_pressed((pointer_state.data.pressed_button_mask & MouseButton::MASK_LEFT) != MouseButton::NONE);
-
-				Input::get_singleton()->parse_input_event(mouse_button);
-			}
-			if ((pressed_mask_delta & MouseButton::MASK_MIDDLE) != MouseButton::NONE) {
-				Ref<InputEventMouseButton> mouse_button;
-				mouse_button.instantiate();
-				mouse_button->set_window_id(focused_window_id);
-				mouse_button->set_position(pointer_state.data.position);
-				// FIXME: We're lying!
-				mouse_button->set_global_position(pointer_state.data.position);
-				mouse_button->set_button_mask(mouse_get_button_state());
-
-				mouse_button->set_button_index(MouseButton::MIDDLE);
-				mouse_button->set_pressed((pointer_state.data.pressed_button_mask & MouseButton::MASK_MIDDLE) != MouseButton::NONE);
-
-				Input::get_singleton()->parse_input_event(mouse_button);
-			}
-			if ((pressed_mask_delta & MouseButton::MASK_RIGHT) != MouseButton::NONE) {
-				Ref<InputEventMouseButton> mouse_button;
-				mouse_button.instantiate();
-				mouse_button->set_window_id(focused_window_id);
-				mouse_button->set_position(pointer_state.data.position);
-				// FIXME: We're lying!
-				mouse_button->set_global_position(pointer_state.data.position);
-				mouse_button->set_button_mask(mouse_get_button_state());
-
-				mouse_button->set_button_index(MouseButton::RIGHT);
-				mouse_button->set_pressed((pointer_state.data.pressed_button_mask & MouseButton::MASK_RIGHT) != MouseButton::NONE);
-
-				Input::get_singleton()->parse_input_event(mouse_button);
-			}
-
-		}
-
-		wls.seat_state.old_pointer_state = pointer_state;
-	}
-
-	Input::get_singleton()->flush_buffered_events();
 }
 
 void DisplayServerWayland::release_rendering_thread() {
@@ -967,9 +988,14 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 	r_error = OK;
 #endif
+
+	events_thread.start(_poll_events_thread, &wls);
 }
 
 DisplayServerWayland::~DisplayServerWayland() {
+	wls.events_thread_done.set();
+	events_thread.wait_to_finish();
+
 	// Destroy all windows.
 	for (KeyValue<WindowID, WindowData> &E : wls.windows) {
 #ifdef VULKAN_ENABLED
