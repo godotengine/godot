@@ -51,6 +51,7 @@ class GDScriptAnalyzer {
 	Error check_class_member_name_conflict(const GDScriptParser::ClassNode *p_class_node, const StringName &p_member_name, const GDScriptParser::Node *p_member_node);
 
 	Error resolve_inheritance(GDScriptParser::ClassNode *p_class, bool p_recursive = true);
+	GDScriptParser::DataType resolve_user_class(GDScriptParser::ClassNode *p_user_class, const StringName &p_name, String r_error);
 	GDScriptParser::DataType resolve_datatype(GDScriptParser::TypeNode *p_type);
 
 	void decide_suite_type(GDScriptParser::Node *p_suite, GDScriptParser::Node *p_statement);
