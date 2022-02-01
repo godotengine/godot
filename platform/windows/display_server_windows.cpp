@@ -97,7 +97,10 @@ String DisplayServerWindows::get_name() const {
 void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
 	if (windows.has(MAIN_WINDOW_ID) && (p_mode == MOUSE_MODE_CAPTURED || p_mode == MOUSE_MODE_CONFINED || p_mode == MOUSE_MODE_CONFINED_HIDDEN)) {
 		// Mouse is grabbed (captured or confined).
-		WindowData &wd = windows[MAIN_WINDOW_ID];
+
+		WindowID window_id = windows.has(last_focused_window) ? last_focused_window : MAIN_WINDOW_ID;
+
+		WindowData &wd = windows[window_id];
 
 		RECT clipRect;
 		GetClientRect(wd.hWnd, &clipRect);

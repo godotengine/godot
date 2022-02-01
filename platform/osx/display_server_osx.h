@@ -145,6 +145,8 @@ public:
 
 	Map<WindowID, WindowData> windows;
 
+	WindowID last_focused_window = INVALID_WINDOW_ID;
+
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect);
