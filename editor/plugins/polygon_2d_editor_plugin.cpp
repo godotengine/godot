@@ -473,7 +473,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 				uv_move_current = uv_mode;
 				if (uv_move_current == UV_MODE_CREATE) {
 					if (!uv_create) {
-						points_prev.resize(0);
+						points_prev.clear();
 						Vector2 tuv = mtx.affine_inverse().xform(snap_point(mb->get_position()));
 						points_prev.push_back(tuv);
 						uv_create_to = tuv;
@@ -682,7 +682,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 							}
 
 							polygon_create.clear();
-						} else if (polygon_create.find(closest) == -1) {
+						} else if (!polygon_create.has(closest)) {
 							//add temporarily if not exists
 							polygon_create.push_back(closest);
 						}

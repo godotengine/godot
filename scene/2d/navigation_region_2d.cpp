@@ -299,7 +299,7 @@ void NavigationPolygon::make_polygons_from_outlines() {
 	}
 
 	polygons.clear();
-	vertices.resize(0);
+	vertices.clear();
 
 	Map<Vector2, int> points;
 	for (List<TPPLPoly>::Element *I = out_poly.front(); I; I = I->next()) {

@@ -467,7 +467,7 @@ void CreateDialog::select_type(const String &p_type) {
 	}
 
 	favorite->set_disabled(false);
-	favorite->set_pressed(favorite_list.find(p_type) != -1);
+	favorite->set_pressed(favorite_list.has(p_type));
 	get_ok_button()->set_disabled(false);
 }
 
@@ -539,12 +539,12 @@ void CreateDialog::_favorite_toggled() {
 
 	String name = item->get_text(0);
 
-	if (favorite_list.find(name) == -1) {
-		favorite_list.push_back(name);
-		favorite->set_pressed(true);
-	} else {
+	if (favorite_list.has(name)) {
 		favorite_list.erase(name);
 		favorite->set_pressed(false);
+	} else {
+		favorite_list.push_back(name);
+		favorite->set_pressed(true);
 	}
 
 	_save_and_update_favorite_list();

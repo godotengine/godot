@@ -3725,7 +3725,7 @@ void EditorNode::_show_messages() {
 
 void EditorNode::_add_to_recent_scenes(const String &p_scene) {
 	Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scenes", Array());
-	if (rc.find(p_scene) != -1) {
+	if (rc.has(p_scene)) {
 		rc.erase(p_scene);
 	}
 	rc.push_front(p_scene);

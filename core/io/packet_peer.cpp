@@ -39,7 +39,7 @@ void PacketPeer::set_encode_buffer_max_size(int p_max_size) {
 	ERR_FAIL_COND_MSG(p_max_size < 1024, "Max encode buffer must be at least 1024 bytes");
 	ERR_FAIL_COND_MSG(p_max_size > 256 * 1024 * 1024, "Max encode buffer cannot exceed 256 MiB");
 	encode_buffer_max_size = next_power_of_2(p_max_size);
-	encode_buffer.resize(0);
+	encode_buffer.clear();
 }
 
 int PacketPeer::get_encode_buffer_max_size() const {

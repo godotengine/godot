@@ -1030,7 +1030,7 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 }
 
 void VisualShaderEditor::add_plugin(const Ref<VisualShaderNodePlugin> &p_plugin) {
-	if (plugins.find(p_plugin) != -1) {
+	if (plugins.has(p_plugin)) {
 		return;
 	}
 	plugins.push_back(p_plugin);
