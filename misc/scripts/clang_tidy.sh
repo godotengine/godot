@@ -6,17 +6,9 @@
 set -uo pipefail
 
 # Loops through all code files tracked by Git.
-git ls-files '*.c' '*.h' '*.cpp' '*.hpp' '*.cc' '*.hh' '*.cxx' '*.m' '*.mm' '*.inc' '*.java' '*.glsl' |
+git ls-files -- '*.c' '*.h' '*.cpp' '*.hpp' '*.cc' '*.hh' '*.cxx' '*.m' '*.mm' '*.inc' '*.java' '*.glsl' \
+                ':!:.git/*' ':!:thirdparty/*' ':!:platform/android/java/lib/src/com/google/*' ':!:*-so_wrap.*' |
 while read -r f; do
-    # Exclude some files.
-    if [[ "$f" == "thirdparty"* ]]; then
-        continue
-    elif [[ "$f" == "platform/android/java/lib/src/com/google"* ]]; then
-        continue
-    elif [[ "$f" == *"-so_wrap."* ]]; then
-        continue
-    fi
-
     # Run clang-tidy.
     clang-tidy --quiet --fix "$f" &> /dev/null
 
