@@ -321,6 +321,7 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 	}
 
 	DS_OSX->window_focused = true;
+	DS_OSX->last_focused_window = window_id;
 	DS_OSX->_send_window_event(wd, DisplayServerOSX::WINDOW_EVENT_FOCUS_IN);
 }
 
@@ -355,6 +356,7 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
 	DS_OSX->window_focused = true;
+	DS_OSX->last_focused_window = window_id;
 	DS_OSX->_send_window_event(wd, DisplayServerOSX::WINDOW_EVENT_FOCUS_IN);
 }
 
@@ -1913,7 +1915,8 @@ void DisplayServerOSX::mouse_set_mode(MouseMode p_mode) {
 		return;
 	}
 
-	WindowData &wd = windows[MAIN_WINDOW_ID];
+	WindowID window_id = windows.has(last_focused_window) ? last_focused_window : MAIN_WINDOW_ID;
+	WindowData &wd = windows[window_id];
 	if (p_mode == MOUSE_MODE_CAPTURED) {
 		// Apple Docs state that the display parameter is not used.
 		// "This parameter is not used. By default, you may pass kCGDirectMainDisplay."
@@ -1972,7 +1975,8 @@ void DisplayServerOSX::mouse_warp_to_position(const Point2i &p_to) {
 	if (mouse_mode == MOUSE_MODE_CAPTURED) {
 		last_mouse_pos = p_to;
 	} else {
-		WindowData &wd = windows[MAIN_WINDOW_ID];
+		WindowID window_id = windows.has(last_focused_window) ? last_focused_window : MAIN_WINDOW_ID;
+		WindowData &wd = windows[window_id];
 
 		//local point in window coords
 		const NSRect contentRect = [wd.window_view frame];
