@@ -68,8 +68,8 @@ void RemoteDebuggerPeerTCP::close() {
 	running = false;
 	thread.wait_to_finish();
 	tcp_client->disconnect_from_host();
-	out_buf.resize(0);
-	in_buf.resize(0);
+	out_buf.clear();
+	in_buf.clear();
 }
 
 RemoteDebuggerPeerTCP::RemoteDebuggerPeerTCP(Ref<StreamPeerTCP> p_tcp) {

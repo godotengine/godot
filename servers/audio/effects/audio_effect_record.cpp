@@ -112,7 +112,7 @@ void AudioEffectRecordInstance::init() {
 	ring_buffer_read_pos = 0;
 
 	//We start a new recording
-	recording_data.resize(0); //Clear data completely and reset length
+	recording_data.clear(); //Clear data completely and reset length
 	is_recording = true;
 
 #ifdef NO_THREADS

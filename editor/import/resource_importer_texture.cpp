@@ -628,7 +628,7 @@ bool ResourceImporterTexture::are_import_settings_valid(const String &p_path) co
 		String setting_path = "rendering/textures/vram_compression/import_" + String(compression_formats[index]);
 		bool test = ProjectSettings::get_singleton()->get(setting_path);
 		if (test) {
-			if (formats_imported.find(compression_formats[index]) == -1) {
+			if (!formats_imported.has(compression_formats[index])) {
 				valid = false;
 				break;
 			}

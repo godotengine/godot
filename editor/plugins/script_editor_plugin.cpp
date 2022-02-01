@@ -3486,7 +3486,7 @@ void ScriptEditor::_open_script_request(const String &p_path) {
 void ScriptEditor::register_syntax_highlighter(const Ref<EditorSyntaxHighlighter> &p_syntax_highlighter) {
 	ERR_FAIL_COND(p_syntax_highlighter.is_null());
 
-	if (syntax_highlighters.find(p_syntax_highlighter) == -1) {
+	if (!syntax_highlighters.has(p_syntax_highlighter)) {
 		syntax_highlighters.push_back(p_syntax_highlighter);
 	}
 }

@@ -925,7 +925,7 @@ void RendererSceneRenderRD::shadow_atlas_set_size(RID p_atlas, int p_size, bool 
 	}
 	for (int i = 0; i < 4; i++) {
 		//clear subdivisions
-		shadow_atlas->quadrants[i].shadows.resize(0);
+		shadow_atlas->quadrants[i].shadows.clear();
 		shadow_atlas->quadrants[i].shadows.resize(1 << shadow_atlas->quadrants[i].subdivision);
 	}
 
@@ -972,7 +972,7 @@ void RendererSceneRenderRD::shadow_atlas_set_quadrant_subdivision(RID p_atlas, i
 		}
 	}
 
-	shadow_atlas->quadrants[p_quadrant].shadows.resize(0);
+	shadow_atlas->quadrants[p_quadrant].shadows.clear();
 	shadow_atlas->quadrants[p_quadrant].shadows.resize(subdiv * subdiv);
 	shadow_atlas->quadrants[p_quadrant].subdivision = subdiv;
 
