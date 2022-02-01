@@ -61,13 +61,13 @@ class DisplayServerWayland : public DisplayServer {
 
 	struct PointerData {
 		Point2i position;
-		struct wl_surface* focused_wl_surface;
-		MouseButton pressed_button_mask;
+		struct wl_surface* focused_wl_surface = nullptr;
+		MouseButton pressed_button_mask = MouseButton::NONE;
 		
-		MouseButton last_button_pressed;
-		uint32_t button_time;
+		MouseButton last_button_pressed = MouseButton::NONE;
+		uint32_t button_time = 0;
 
-		uint32_t time;
+		uint32_t time = 0;
 	};
 
 	struct PointerState {
@@ -83,6 +83,8 @@ class DisplayServerWayland : public DisplayServer {
 	struct KeyboardState {
 		const char *keymap_buffer = nullptr;
 		uint32_t keymap_buffer_size = 0;
+
+		struct wl_surface* focused_wl_surface = nullptr;
 
 		struct xkb_context *xkb_context = nullptr;
 		struct xkb_keymap *xkb_keymap = nullptr;

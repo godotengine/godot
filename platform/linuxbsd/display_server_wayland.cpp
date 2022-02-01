@@ -20,6 +20,8 @@ void DisplayServerWayland::_poll_events_thread(void *p_wls) {
 		PointerState &pointer_state = wls->seat_state.pointer_state;
 
 		if (old_pointer_state.data.time != pointer_state.data.time && pointer_state.data.focused_wl_surface) {
+
+			// TODO: Simplify into its own function.
 			WindowID focused_window_id;
 			bool id_found = false;
 			for (KeyValue<WindowID, WindowData> &E : wls->windows) {
@@ -194,7 +196,7 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 	if (strcmp(interface, wl_seat_interface.name) == 0) {
 		wls->globals.wl_seat = (struct wl_seat*) wl_registry_bind(wl_registry, name, &wl_seat_interface, version);
 		wls->globals.wl_seat_name = name;
-		wl_seat_add_listener(wls->globals.wl_seat, &wl_seat_listener, &wls->seat_state);
+		wl_seat_add_listener(wls->globals.wl_seat, &wl_seat_listener, wls);
 		return;
 	}
 
@@ -226,36 +228,35 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 	}
 }
 
-// `data` is expected to be a pointer to a `SeatState` struct.
 void DisplayServerWayland::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat, uint32_t capabilities) {
-	SeatState *seat_state = (SeatState*) data;
+	WaylandState *wls = (WaylandState*) data;
+	SeatState &seat_state = wls->seat_state;
 
 	// TODO: Handle touch.
 
 	if (capabilities & WL_SEAT_CAPABILITY_POINTER) {
-		seat_state->wl_pointer = wl_seat_get_pointer(wl_seat);
-		wl_pointer_add_listener(seat_state->wl_pointer, &wl_pointer_listener, &seat_state->pointer_state);
-	} else if (seat_state->wl_pointer) {
-		wl_pointer_destroy(seat_state->wl_pointer);
+		seat_state.wl_pointer = wl_seat_get_pointer(wl_seat);
+		wl_pointer_add_listener(seat_state.wl_pointer, &wl_pointer_listener, &seat_state.pointer_state);
+	} else if (seat_state.wl_pointer) {
+		wl_pointer_destroy(seat_state.wl_pointer);
 	}
 
 	if (capabilities & WL_SEAT_CAPABILITY_KEYBOARD) {
-		seat_state->wl_keyboard = wl_seat_get_keyboard(wl_seat);
-		ERR_FAIL_COND(!seat_state->wl_keyboard);
+		seat_state.wl_keyboard = wl_seat_get_keyboard(wl_seat);
+		ERR_FAIL_COND(!seat_state.wl_keyboard);
 
-		seat_state->keyboard_state.xkb_context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
-		ERR_FAIL_COND(!seat_state->keyboard_state.xkb_context);
+		seat_state.keyboard_state.xkb_context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+		ERR_FAIL_COND(!seat_state.keyboard_state.xkb_context);
 
-		wl_keyboard_add_listener(seat_state->wl_keyboard, &wl_keyboard_listener, &seat_state->keyboard_state);
-	} else if (seat_state->wl_keyboard) {
-		wl_keyboard_destroy(seat_state->wl_keyboard);
+		wl_keyboard_add_listener(seat_state.wl_keyboard, &wl_keyboard_listener, wls);
+	} else if (seat_state.wl_keyboard) {
+		wl_keyboard_destroy(seat_state.wl_keyboard);
 	}
 }
 
 void DisplayServerWayland::_wl_seat_on_name(void *data, struct wl_seat *wl_seat, const char *name) {
 }
 
-// `PointerState` struct.
 void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y) {
 	PointerState* pointer_state = (PointerState*) data;
 	pointer_state->data_buffer.focused_wl_surface = surface;
@@ -330,36 +331,40 @@ void DisplayServerWayland::_wl_pointer_on_axis_discrete(void *data, struct wl_po
 }
 
 
-// `wl_keyboard` event callbacks. These expect `data` to be a pointer to a
-// `KeyboardState` struct.
 void DisplayServerWayland::_wl_keyboard_on_keymap(void *data, struct wl_keyboard *wl_keyboard, uint32_t format, int32_t fd, uint32_t size) {
 	ERR_FAIL_COND_MSG(format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1, "Unsupported keymap format announced from the Wayland compositor.");
 
-	KeyboardState *keyboard_state = (KeyboardState*) data;
+	WaylandState *wls = (WaylandState*) data;
+	KeyboardState &keyboard_state = wls->seat_state.keyboard_state;
 
 	// TODO: Unmap on destruction.
-	keyboard_state->keymap_buffer = (const char*) mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
-	keyboard_state->keymap_buffer_size = size;
+	keyboard_state.keymap_buffer = (const char*) mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
+	keyboard_state.keymap_buffer_size = size;
 
-	// FIXME: This relies on the buffer being null-terminated. Is this the correct
-	// behaviour? If yes, then why does wayland offer a buffer size? Apparently
-	// `xkb_keymap_new_from_buffer` gets confused about the ending null byte.
-	// This behaviour should be investigated.
-	keyboard_state->xkb_keymap = xkb_keymap_new_from_string(keyboard_state->xkb_context, keyboard_state->keymap_buffer,
-								XKB_KEYMAP_FORMAT_TEXT_V1, XKB_KEYMAP_COMPILE_NO_FLAGS);
+	keyboard_state.xkb_keymap = xkb_keymap_new_from_string(keyboard_state.xkb_context, keyboard_state.keymap_buffer,
+		XKB_KEYMAP_FORMAT_TEXT_V1, XKB_KEYMAP_COMPILE_NO_FLAGS);
 
 	// TODO: Handle layout changes.
-	keyboard_state->xkb_state = xkb_state_new(keyboard_state->xkb_keymap);
+	keyboard_state.xkb_state = xkb_state_new(keyboard_state.xkb_keymap);
 }
 
 void DisplayServerWayland::_wl_keyboard_on_enter(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface, struct wl_array *keys) {
+	WaylandState *wls = (WaylandState*) data;
+	KeyboardState &keyboard_state = wls->seat_state.keyboard_state;
+
+	keyboard_state.focused_wl_surface = surface;
 }
 
 void DisplayServerWayland::_wl_keyboard_on_leave(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface) {
+	WaylandState *wls = (WaylandState*) data;
+	KeyboardState &keyboard_state = wls->seat_state.keyboard_state;
+
+	keyboard_state.focused_wl_surface = nullptr;
 }
 
 void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state) {
-	KeyboardState *keyboard_state = (KeyboardState*) data;
+	WaylandState *wls = (WaylandState*) data;
+	KeyboardState &keyboard_state = wls->seat_state.keyboard_state;
 
 	// We have to add 8 to the scancode to get an XKB-compatible keycode.
 	xkb_keycode_t xkb_keycode = key + 8;
@@ -367,19 +372,38 @@ void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *w
 	bool pressed = state & WL_KEYBOARD_KEY_STATE_PRESSED;
 
 	// TODO: Handle keys that release multiple symbols?
-	Key keycode = KeyMappingXKB::get_keycode(xkb_state_key_get_one_sym(keyboard_state->xkb_state, xkb_keycode));
+	Key keycode = KeyMappingXKB::get_keycode(xkb_state_key_get_one_sym(keyboard_state.xkb_state, xkb_keycode));
 	Key physical_keycode = KeyMappingXKB::get_scancode(xkb_keycode);
+
+	// TODO: Simplify into its own function and move into enter and leave events.
+	WindowID focused_window_id;
+	bool id_found = false;
+	for (KeyValue<WindowID, WindowData> &E : wls->windows) {
+		WindowData &wd = E.value;
+
+		if (wd.wl_surface == keyboard_state.focused_wl_surface) {
+			focused_window_id = E.key;
+			id_found = true;
+			break;
+		}
+	}
 
 	Ref<InputEventKey> k;
 	k.instantiate();
+
+	if (id_found) {
+		k->set_window_id(focused_window_id);
+	}
+
 	k->set_keycode(keycode);
 	k->set_physical_keycode(physical_keycode);
-	k->set_unicode(xkb_state_key_get_utf32(keyboard_state->xkb_state, xkb_keycode));
+	k->set_unicode(xkb_state_key_get_utf32(keyboard_state.xkb_state, xkb_keycode));
 	k->set_pressed(pressed);
 	k->set_echo(false);
 
+	// Took from DisplayServerX11.
 	if (k->get_keycode() == Key::BACKTAB) {
-		//make it consistent across platforms.
+		// Make it consistent across platforms.
 		k->set_keycode(Key::TAB);
 		k->set_physical_keycode(Key::TAB);
 		k->set_shift_pressed(true);
@@ -389,8 +413,10 @@ void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *w
 }
 
 void DisplayServerWayland::_wl_keyboard_on_modifiers(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group) {
-	KeyboardState *keyboard_state = (KeyboardState*) data;
-	xkb_state_update_mask(keyboard_state->xkb_state, mods_depressed, mods_latched, mods_locked, 0, 0, group);
+	WaylandState *wls = (WaylandState*) data;
+	KeyboardState &keyboard_state = wls->seat_state.keyboard_state;
+
+	xkb_state_update_mask(keyboard_state.xkb_state, mods_depressed, mods_latched, mods_locked, 0, 0, group);
 }
 
 void DisplayServerWayland::_wl_keyboard_on_repeat_info(void *data, struct wl_keyboard *wl_keyboard, int32_t rate, int32_t delay) {
