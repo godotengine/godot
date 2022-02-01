@@ -28,7 +28,7 @@
 	</members>
 	<signals>
 		<signal name="pressed">
-			<argument index="0" name="button" type="Object" />
+			<argument index="0" name="button" type="BaseButton" />
 			<description>
 				Emitted when one of the buttons of the group is pressed.
 			</description>
