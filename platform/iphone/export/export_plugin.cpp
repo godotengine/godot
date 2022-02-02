@@ -83,7 +83,7 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/app_store_team_id"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/provisioning_profile_uuid_debug"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/code_sign_identity_debug", PROPERTY_HINT_PLACEHOLDER_TEXT, "iPhone Developer"), "iPhone Developer"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/code_sign_identity_debug", PROPERTY_HINT_PLACEHOLDER_TEXT, "iPhone Developer"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/export_method_debug", PROPERTY_HINT_ENUM, "App Store,Development,Ad-Hoc,Enterprise"), 1));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/provisioning_profile_uuid_release"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/code_sign_identity_release", PROPERTY_HINT_PLACEHOLDER_TEXT, "iPhone Distribution"), ""));
@@ -178,6 +178,10 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 		"scaleAspectFill",
 		"scaleToFill"
 	};
+	String dbg_sign_id = p_preset->get("application/code_sign_identity_debug").operator String().is_empty() ? "iPhone Developer" : p_preset->get("application/code_sign_identity_debug");
+	String rel_sign_id = p_preset->get("application/code_sign_identity_release").operator String().is_empty() ? "iPhone Distribution" : p_preset->get("application/code_sign_identity_release");
+	bool dbg_manual = !p_preset->get("application/provisioning_profile_uuid_debug").operator String().is_empty() || (dbg_sign_id != "iPhone Developer");
+	bool rel_manual = !p_preset->get("application/provisioning_profile_uuid_release").operator String().is_empty() || (rel_sign_id != "iPhone Distribution");
 	String str;
 	String strnew;
 	str.parse_utf8((const char *)pfile.ptr(), pfile.size());
@@ -218,13 +222,25 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			strnew += lines[i].replace("$provisioning_profile_uuid_release", p_preset->get("application/provisioning_profile_uuid_release")) + "\n";
 		} else if (lines[i].find("$provisioning_profile_uuid_debug") != -1) {
 			strnew += lines[i].replace("$provisioning_profile_uuid_debug", p_preset->get("application/provisioning_profile_uuid_debug")) + "\n";
+		} else if (lines[i].find("$code_sign_style_debug") != -1) {
+			if (dbg_manual) {
+				strnew += lines[i].replace("$code_sign_style_debug", "Manual") + "\n";
+			} else {
+				strnew += lines[i].replace("$code_sign_style_debug", "Automatic") + "\n";
+			}
+		} else if (lines[i].find("$code_sign_style_release") != -1) {
+			if (rel_manual) {
+				strnew += lines[i].replace("$code_sign_style_release", "Manual") + "\n";
+			} else {
+				strnew += lines[i].replace("$code_sign_style_release", "Automatic") + "\n";
+			}
 		} else if (lines[i].find("$provisioning_profile_uuid") != -1) {
 			String uuid = p_debug ? p_preset->get("application/provisioning_profile_uuid_debug") : p_preset->get("application/provisioning_profile_uuid_release");
 			strnew += lines[i].replace("$provisioning_profile_uuid", uuid) + "\n";
 		} else if (lines[i].find("$code_sign_identity_debug") != -1) {
-			strnew += lines[i].replace("$code_sign_identity_debug", p_preset->get("application/code_sign_identity_debug")) + "\n";
+			strnew += lines[i].replace("$code_sign_identity_debug", dbg_sign_id) + "\n";
 		} else if (lines[i].find("$code_sign_identity_release") != -1) {
-			strnew += lines[i].replace("$code_sign_identity_release", p_preset->get("application/code_sign_identity_release")) + "\n";
+			strnew += lines[i].replace("$code_sign_identity_release", rel_sign_id) + "\n";
 		} else if (lines[i].find("$additional_plist_content") != -1) {
 			strnew += lines[i].replace("$additional_plist_content", p_config.plist_content) + "\n";
 		} else if (lines[i].find("$godot_archs") != -1) {
@@ -770,10 +786,18 @@ Error EditorExportPlatformIOS::_codesign(String p_file, void *p_userdata) {
 	if (p_file.ends_with(".dylib")) {
 		CodesignData *data = (CodesignData *)p_userdata;
 		print_line(String("Signing ") + p_file);
+
+		String sign_id;
+		if (data->debug) {
+			sign_id = data->preset->get("application/code_sign_identity_debug").operator String().is_empty() ? "iPhone Developer" : data->preset->get("application/code_sign_identity_debug");
+		} else {
+			sign_id = data->preset->get("application/code_sign_identity_release").operator String().is_empty() ? "iPhone Distribution" : data->preset->get("application/code_sign_identity_release");
+		}
+
 		List<String> codesign_args;
 		codesign_args.push_back("-f");
 		codesign_args.push_back("-s");
-		codesign_args.push_back(data->preset->get(data->debug ? "application/code_sign_identity_debug" : "application/code_sign_identity_release"));
+		codesign_args.push_back(sign_id);
 		codesign_args.push_back(p_file);
 		return OS::get_singleton()->execute("codesign", codesign_args);
 	}
@@ -1680,6 +1704,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	archive_args.push_back("-destination");
 	archive_args.push_back("generic/platform=iOS");
 	archive_args.push_back("archive");
+	archive_args.push_back("-allowProvisioningUpdates");
 	archive_args.push_back("-archivePath");
 	archive_args.push_back(archive_path);
 	String archive_str;
