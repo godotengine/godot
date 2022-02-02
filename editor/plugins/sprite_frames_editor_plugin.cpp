@@ -821,7 +821,7 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 
 	for (int i = 0; i < frames->get_frame_count(edited_anim); i++) {
 		String name;
-		Ref<Texture> frame = frames->get_frame(edited_anim, i);
+		Ref<Texture2D> frame = frames->get_frame(edited_anim, i);
 
 		if (frame.is_null()) {
 			name = itos(i) + ": " + TTR("(empty)");

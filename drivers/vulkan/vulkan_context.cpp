@@ -538,7 +538,7 @@ Error VulkanContext::_check_capabilities() {
 
 		VkPhysicalDeviceShaderFloat16Int8FeaturesKHR shader_features;
 		shader_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR;
-		shader_features.pNext = NULL;
+		shader_features.pNext = nullptr;
 
 		device_features.pNext = &shader_features;
 
@@ -547,7 +547,7 @@ Error VulkanContext::_check_capabilities() {
 
 		VkPhysicalDevice16BitStorageFeaturesKHR storage_feature;
 		storage_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR;
-		storage_feature.pNext = NULL;
+		storage_feature.pNext = nullptr;
 
 		device_features.pNext = &storage_feature;
 

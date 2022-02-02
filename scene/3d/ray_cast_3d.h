@@ -33,6 +33,8 @@
 
 #include "scene/3d/node_3d.h"
 
+class CollisionObject3D;
+
 class RayCast3D : public Node3D {
 	GDCLASS(RayCast3D, Node3D);
 
@@ -116,9 +118,9 @@ public:
 	Vector3 get_collision_normal() const;
 
 	void add_exception_rid(const RID &p_rid);
-	void add_exception(const Object *p_object);
+	void add_exception(const CollisionObject3D *p_node);
 	void remove_exception_rid(const RID &p_rid);
-	void remove_exception(const Object *p_object);
+	void remove_exception(const CollisionObject3D *p_node);
 	void clear_exceptions();
 
 	RayCast3D();

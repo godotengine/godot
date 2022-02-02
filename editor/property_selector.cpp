@@ -185,7 +185,7 @@ void PropertySelector::_update_search() {
 				continue;
 			}
 
-			if (type_filter.size() && type_filter.find(E.type) == -1) {
+			if (type_filter.size() && !type_filter.has(E.type)) {
 				continue;
 			}
 

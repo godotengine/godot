@@ -80,7 +80,7 @@
 ShaderTypes *shader_types = nullptr;
 
 PhysicsServer3D *_createGodotPhysics3DCallback() {
-	bool using_threads = GLOBAL_GET("physics/3d/run_on_thread");
+	bool using_threads = GLOBAL_GET("physics/3d/run_on_separate_thread");
 
 	PhysicsServer3D *physics_server = memnew(GodotPhysicsServer3D(using_threads));
 
@@ -88,7 +88,7 @@ PhysicsServer3D *_createGodotPhysics3DCallback() {
 }
 
 PhysicsServer2D *_createGodotPhysics2DCallback() {
-	bool using_threads = GLOBAL_GET("physics/2d/run_on_thread");
+	bool using_threads = GLOBAL_GET("physics/2d/run_on_separate_thread");
 
 	PhysicsServer2D *physics_server = memnew(GodotPhysicsServer2D(using_threads));
 

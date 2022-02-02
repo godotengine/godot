@@ -463,7 +463,7 @@ CameraMatrix MobileVRInterface::get_projection_for_view(uint32_t p_view, double 
 	return eye;
 };
 
-Vector<BlitToScreen> MobileVRInterface::commit_views(RID p_render_target, const Rect2 &p_screen_rect) {
+Vector<BlitToScreen> MobileVRInterface::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
 	_THREAD_SAFE_METHOD_
 
 	Vector<BlitToScreen> blit_to_screen;

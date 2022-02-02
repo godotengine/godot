@@ -3289,7 +3289,7 @@ AnimationTrackEditGroup::AnimationTrackEditGroup() {
 //////////////////////////////////////
 
 void AnimationTrackEditor::add_track_edit_plugin(const Ref<AnimationTrackEditPlugin> &p_plugin) {
-	if (track_edit_plugins.find(p_plugin) != -1) {
+	if (track_edit_plugins.has(p_plugin)) {
 		return;
 	}
 	track_edit_plugins.push_back(p_plugin);

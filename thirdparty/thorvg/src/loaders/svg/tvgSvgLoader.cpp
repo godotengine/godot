@@ -541,7 +541,7 @@ static void _toColor(const char* str, uint8_t* r, uint8_t* g, uint8_t* b, char**
                 }
             }
         }
-    } else if (len >= 3 && !strncmp(str, "url", 3)) {
+    } else if (ref && len >= 3 && !strncmp(str, "url", 3)) {
         *ref = _idFromUrl((const char*)(str + 3));
     } else {
         //Handle named color
@@ -789,7 +789,7 @@ static bool _attrParseSvgNode(void* data, const char* key, const char* value)
         return simpleXmlParseW3CAttribute(value, _parseStyleAttr, loader);
     }
 #ifdef THORVG_LOG_ENABLED
-    else if ((!strcmp(key, "x") || !strcmp(key, "y")) && fabsf(svgUtilStrtof(value, nullptr)) > FLT_EPSILON ) {
+    else if ((!strcmp(key, "x") || !strcmp(key, "y")) && fabsf(svgUtilStrtof(value, nullptr)) > FLT_EPSILON) {
         TVGLOG("SVG", "Unsupported attributes used [Elements type: Svg][Attribute: %s][Value: %s]", key, value);
     }
 #endif
@@ -1611,6 +1611,7 @@ static bool _attrParseImageNode(void* data, const char* key, const char* value)
     }
 
     if (!strcmp(key, "href") || !strcmp(key, "xlink:href")) {
+        if (image->href && value) free(image->href);
         image->href = _idFromHref(value);
     } else if (!strcmp(key, "id")) {
         if (node->id && value) free(node->id);
@@ -1728,6 +1729,112 @@ error_grad_alloc:
 }
 
 
+static void _styleInherit(SvgStyleProperty* child, const SvgStyleProperty* parent)
+{
+    if (parent == nullptr) return;
+    //Inherit the property of parent if not present in child.
+    if (!child->curColorSet) {
+        child->color = parent->color;
+        child->curColorSet = parent->curColorSet;
+    }
+    //Fill
+    if (!((int)child->fill.flags & (int)SvgFillFlags::Paint)) {
+        child->fill.paint.color = parent->fill.paint.color;
+        child->fill.paint.none = parent->fill.paint.none;
+        child->fill.paint.curColor = parent->fill.paint.curColor;
+        if (parent->fill.paint.url) child->fill.paint.url = _copyId(parent->fill.paint.url);
+    }
+    if (!((int)child->fill.flags & (int)SvgFillFlags::Opacity)) {
+        child->fill.opacity = parent->fill.opacity;
+    }
+    if (!((int)child->fill.flags & (int)SvgFillFlags::FillRule)) {
+        child->fill.fillRule = parent->fill.fillRule;
+    }
+    //Stroke
+    if (!((int)child->stroke.flags & (int)SvgStrokeFlags::Paint)) {
+        child->stroke.paint.color = parent->stroke.paint.color;
+        child->stroke.paint.none = parent->stroke.paint.none;
+        child->stroke.paint.curColor = parent->stroke.paint.curColor;
+        child->stroke.paint.url = parent->stroke.paint.url ? _copyId(parent->stroke.paint.url) : nullptr;
+    }
+    if (!((int)child->stroke.flags & (int)SvgStrokeFlags::Opacity)) {
+        child->stroke.opacity = parent->stroke.opacity;
+    }
+    if (!((int)child->stroke.flags & (int)SvgStrokeFlags::Width)) {
+        child->stroke.width = parent->stroke.width;
+    }
+    if (!((int)child->stroke.flags & (int)SvgStrokeFlags::Dash)) {
+        if (parent->stroke.dash.array.count > 0) {
+            child->stroke.dash.array.clear();
+            child->stroke.dash.array.reserve(parent->stroke.dash.array.count);
+            for (uint32_t i = 0; i < parent->stroke.dash.array.count; ++i) {
+                child->stroke.dash.array.push(parent->stroke.dash.array.data[i]);
+            }
+        }
+    }
+    if (!((int)child->stroke.flags & (int)SvgStrokeFlags::Cap)) {
+        child->stroke.cap = parent->stroke.cap;
+    }
+    if (!((int)child->stroke.flags & (int)SvgStrokeFlags::Join)) {
+        child->stroke.join = parent->stroke.join;
+    }
+}
+
+
+static void _styleCopy(SvgStyleProperty* to, const SvgStyleProperty* from)
+{
+    if (from == nullptr) return;
+    //Copy the properties of 'from' only if they were explicitly set (not the default ones).
+    if (from->curColorSet) {
+        to->color = from->color;
+        to->curColorSet = true;
+    }
+    //Fill
+    to->fill.flags = (SvgFillFlags)((int)to->fill.flags | (int)from->fill.flags);
+    if (((int)from->fill.flags & (int)SvgFillFlags::Paint)) {
+        to->fill.paint.color = from->fill.paint.color;
+        to->fill.paint.none = from->fill.paint.none;
+        to->fill.paint.curColor = from->fill.paint.curColor;
+        if (from->fill.paint.url) to->fill.paint.url = _copyId(from->fill.paint.url);
+    }
+    if (((int)from->fill.flags & (int)SvgFillFlags::Opacity)) {
+        to->fill.opacity = from->fill.opacity;
+    }
+    if (((int)from->fill.flags & (int)SvgFillFlags::FillRule)) {
+        to->fill.fillRule = from->fill.fillRule;
+    }
+    //Stroke
+    to->stroke.flags = (SvgStrokeFlags)((int)to->stroke.flags | (int)from->stroke.flags);
+    if (((int)from->stroke.flags & (int)SvgStrokeFlags::Paint)) {
+        to->stroke.paint.color = from->stroke.paint.color;
+        to->stroke.paint.none = from->stroke.paint.none;
+        to->stroke.paint.curColor = from->stroke.paint.curColor;
+        to->stroke.paint.url = from->stroke.paint.url ? _copyId(from->stroke.paint.url) : nullptr;
+    }
+    if (((int)from->stroke.flags & (int)SvgStrokeFlags::Opacity)) {
+        to->stroke.opacity = from->stroke.opacity;
+    }
+    if (((int)from->stroke.flags & (int)SvgStrokeFlags::Width)) {
+        to->stroke.width = from->stroke.width;
+    }
+    if (((int)from->stroke.flags & (int)SvgStrokeFlags::Dash)) {
+        if (from->stroke.dash.array.count > 0) {
+            to->stroke.dash.array.clear();
+            to->stroke.dash.array.reserve(from->stroke.dash.array.count);
+            for (uint32_t i = 0; i < from->stroke.dash.array.count; ++i) {
+                to->stroke.dash.array.push(from->stroke.dash.array.data[i]);
+            }
+        }
+    }
+    if (((int)from->stroke.flags & (int)SvgStrokeFlags::Cap)) {
+        to->stroke.cap = from->stroke.cap;
+    }
+    if (((int)from->stroke.flags & (int)SvgStrokeFlags::Join)) {
+        to->stroke.join = from->stroke.join;
+    }
+}
+
+
 static void _copyAttr(SvgNode* to, const SvgNode* from)
 {
     //Copy matrix attribute
@@ -1736,7 +1843,8 @@ static void _copyAttr(SvgNode* to, const SvgNode* from)
         if (to->transform) *to->transform = *from->transform;
     }
     //Copy style attribute
-    *to->style = *from->style;
+    _styleCopy(to->style, from->style);
+    to->style->flags = (SvgStyleFlags)((int)to->style->flags | (int)from->style->flags);
     if (from->style->fill.paint.url) to->style->fill.paint.url = strdup(from->style->fill.paint.url);
     if (from->style->stroke.paint.url) to->style->stroke.paint.url = strdup(from->style->stroke.paint.url);
     if (from->style->clipPath.url) to->style->clipPath.url = strdup(from->style->clipPath.url);
@@ -1780,15 +1888,17 @@ static void _copyAttr(SvgNode* to, const SvgNode* from)
             break;
         }
         case SvgNodeType::Polygon: {
-            to->node.polygon.pointsCount = from->node.polygon.pointsCount;
-            to->node.polygon.points = (float*)malloc(to->node.polygon.pointsCount * sizeof(float));
-            memcpy(to->node.polygon.points, from->node.polygon.points, to->node.polygon.pointsCount * sizeof(float));
+            if ((to->node.polygon.pointsCount = from->node.polygon.pointsCount)) {
+                to->node.polygon.points = (float*)malloc(to->node.polygon.pointsCount * sizeof(float));
+                memcpy(to->node.polygon.points, from->node.polygon.points, to->node.polygon.pointsCount * sizeof(float));
+            }
             break;
         }
         case SvgNodeType::Polyline: {
-            to->node.polyline.pointsCount = from->node.polyline.pointsCount;
-            to->node.polyline.points = (float*)malloc(to->node.polyline.pointsCount * sizeof(float));
-            memcpy(to->node.polyline.points, from->node.polyline.points, to->node.polyline.pointsCount * sizeof(float));
+            if ((to->node.polyline.pointsCount = from->node.polyline.pointsCount)) {
+                to->node.polyline.points = (float*)malloc(to->node.polyline.pointsCount * sizeof(float));
+                memcpy(to->node.polyline.points, from->node.polyline.points, to->node.polyline.pointsCount * sizeof(float));
+            }
             break;
         }
         case SvgNodeType::Image: {
@@ -1806,35 +1916,45 @@ static void _copyAttr(SvgNode* to, const SvgNode* from)
 }
 
 
-static void _cloneNode(SvgNode* from, SvgNode* parent)
+static void _cloneNode(SvgNode* from, SvgNode* parent, int depth)
 {
+    /* Exception handling: Prevent invalid SVG data input.
+       The size is the arbitrary value, we need an experimental size. */
+    if (depth == 8192) {
+        TVGERR("SVG", "Infinite recursive call - stopped after %d calls! Svg file may be incorrectly formatted.", depth);
+        return;
+    }
+
     SvgNode* newNode;
-    if (!from || !parent) return;
+    if (!from || !parent || from == parent) return;
 
     newNode = _createNode(parent, from->type);
-
     if (!newNode) return;
 
+    _styleInherit(newNode->style, parent->style);
     _copyAttr(newNode, from);
 
     auto child = from->child.data;
     for (uint32_t i = 0; i < from->child.count; ++i, ++child) {
-        _cloneNode(*child, newNode);
+        _cloneNode(*child, newNode, depth + 1);
     }
 }
 
 
-static void _postponeCloneNode(SvgLoaderData* loader, SvgNode *node, char* id) {
+static void _postponeCloneNode(SvgLoaderData* loader, SvgNode *node, char* id)
+{
     loader->cloneNodes.push({node, id});
 }
 
 
-static void _clonePostponedNodes(Array<SvgNodeIdPair>* cloneNodes) {
+static void _clonePostponedNodes(Array<SvgNodeIdPair>* cloneNodes, SvgNode* doc)
+{
     for (uint32_t i = 0; i < cloneNodes->count; ++i) {
         auto nodeIdPair = cloneNodes->data[i];
         auto defs = _getDefsNode(nodeIdPair.node);
         auto nodeFrom = _findChildById(defs, nodeIdPair.id);
-        _cloneNode(nodeFrom, nodeIdPair.node);
+        if (!nodeFrom) nodeFrom = _findChildById(doc, nodeIdPair.id);
+        _cloneNode(nodeFrom, nodeIdPair.node, 0);
         free(nodeIdPair.id);
     }
 }
@@ -1875,7 +1995,7 @@ static bool _attrParseUseNode(void* data, const char* key, const char* value)
         defs = _getDefsNode(node);
         nodeFrom = _findChildById(defs, id);
         if (nodeFrom) {
-            _cloneNode(nodeFrom, node);
+            _cloneNode(nodeFrom, node, 0);
             free(id);
         } else {
             //some svg export software include <defs> element at the end of the file
@@ -1883,10 +2003,6 @@ static bool _attrParseUseNode(void* data, const char* key, const char* value)
             //after the whole file is parsed
             _postponeCloneNode(loader, node, id);
         }
-    } else if (!strcmp(key, "clip-path")) {
-        _handleClipPathAttr(loader, node, value);
-    } else if (!strcmp(key, "mask")) {
-        _handleMaskAttr(loader, node, value);
     } else {
         return _attrParseGNode(data, key, value);
     }
@@ -2081,10 +2197,12 @@ static bool _attrParseRadialGradientNode(void* data, const char* key, const char
     }
 
     if (!strcmp(key, "id")) {
+        if (grad->id && value) free(grad->id);
         grad->id = _copyId(value);
     } else if (!strcmp(key, "spreadMethod")) {
         grad->spread = _parseSpreadValue(value);
     } else if (!strcmp(key, "href") || !strcmp(key, "xlink:href")) {
+        if (grad->ref && value) free(grad->ref);
         grad->ref = _idFromHref(value);
     } else if (!strcmp(key, "gradientUnits") && !strcmp(value, "userSpaceOnUse")) {
         grad->userSpace = true;
@@ -2269,10 +2387,12 @@ static bool _attrParseLinearGradientNode(void* data, const char* key, const char
     }
 
     if (!strcmp(key, "id")) {
+        if (grad->id && value) free(grad->id);
         grad->id = _copyId(value);
     } else if (!strcmp(key, "spreadMethod")) {
         grad->spread = _parseSpreadValue(value);
     } else if (!strcmp(key, "href") || !strcmp(key, "xlink:href")) {
+        if (grad->ref && value) free(grad->ref);
         grad->ref = _idFromHref(value);
     } else if (!strcmp(key, "gradientUnits") && !strcmp(value, "userSpaceOnUse")) {
         grad->userSpace = true;
@@ -2408,6 +2528,7 @@ static void _svgLoaderParserXmlOpen(SvgLoaderData* loader, const char* content, 
 
     if ((method = _findGroupFactory(tagName))) {
         //Group
+        if (empty) return;
         if (!loader->doc) {
             if (strcmp(tagName, "svg")) return; //Not a valid svg document
             node = method(loader, nullptr, attrs, attrsLength);
@@ -2493,59 +2614,8 @@ static bool _svgLoaderParser(void* data, SimpleXMLType type, const char* content
 }
 
 
-static void _styleInherit(SvgStyleProperty* child, const SvgStyleProperty* parent)
+static void _inefficientNodeCheck(TVG_UNUSED SvgNode* node)
 {
-    if (parent == nullptr) return;
-    //Inherit the property of parent if not present in child.
-    //Fill
-    if (!((int)child->fill.flags & (int)SvgFillFlags::Paint)) {
-        child->fill.paint.color = parent->fill.paint.color;
-        child->fill.paint.none = parent->fill.paint.none;
-        child->fill.paint.curColor = parent->fill.paint.curColor;
-        if (parent->fill.paint.url) child->fill.paint.url = _copyId(parent->fill.paint.url);
-    } else if (child->fill.paint.curColor && !child->curColorSet) {
-        child->color = parent->color;
-    }
-    if (!((int)child->fill.flags & (int)SvgFillFlags::Opacity)) {
-        child->fill.opacity = parent->fill.opacity;
-    }
-    if (!((int)child->fill.flags & (int)SvgFillFlags::FillRule)) {
-        child->fill.fillRule = parent->fill.fillRule;
-    }
-    //Stroke
-    if (!((int)child->stroke.flags & (int)SvgStrokeFlags::Paint)) {
-        child->stroke.paint.color = parent->stroke.paint.color;
-        child->stroke.paint.none = parent->stroke.paint.none;
-        child->stroke.paint.curColor = parent->stroke.paint.curColor;
-        child->stroke.paint.url = parent->stroke.paint.url ? _copyId(parent->stroke.paint.url) : nullptr;
-    } else if (child->stroke.paint.curColor && !child->curColorSet) {
-        child->color = parent->color;
-    }
-    if (!((int)child->stroke.flags & (int)SvgStrokeFlags::Opacity)) {
-        child->stroke.opacity = parent->stroke.opacity;
-    }
-    if (!((int)child->stroke.flags & (int)SvgStrokeFlags::Width)) {
-        child->stroke.width = parent->stroke.width;
-    }
-    if (!((int)child->stroke.flags & (int)SvgStrokeFlags::Dash)) {
-        if (parent->stroke.dash.array.count > 0) {
-            child->stroke.dash.array.clear();
-            child->stroke.dash.array.reserve(parent->stroke.dash.array.count);
-            for (uint32_t i = 0; i < parent->stroke.dash.array.count; ++i) {
-                child->stroke.dash.array.push(parent->stroke.dash.array.data[i]);
-            }
-        }
-    }
-    if (!((int)child->stroke.flags & (int)SvgStrokeFlags::Cap)) {
-        child->stroke.cap = parent->stroke.cap;
-    }
-    if (!((int)child->stroke.flags & (int)SvgStrokeFlags::Join)) {
-        child->stroke.join = parent->stroke.join;
-    }
-}
-
-
-static void _inefficientNodeCheck(TVG_UNUSED SvgNode* node){
 #ifdef THORVG_LOG_ENABLED
     auto type = simpleXmlNodeTypeToString(node->type);
 
@@ -2838,14 +2908,14 @@ void SvgLoader::run(unsigned tid)
     if (loaderData.doc) {
         _updateStyle(loaderData.doc, nullptr);
         auto defs = loaderData.doc->node.doc.defs;
-        if (defs) _updateGradient(loaderData.doc, &defs->node.defs.gradients);
-
-        if (loaderData.gradients.count > 0) _updateGradient(loaderData.doc, &loaderData.gradients);
 
         _updateComposite(loaderData.doc, loaderData.doc);
         if (defs) _updateComposite(loaderData.doc, defs);
 
-        if (loaderData.cloneNodes.count > 0) _clonePostponedNodes(&loaderData.cloneNodes);
+        if (loaderData.cloneNodes.count > 0) _clonePostponedNodes(&loaderData.cloneNodes, loaderData.doc);
+
+        if (loaderData.gradients.count > 0) _updateGradient(loaderData.doc, &loaderData.gradients);
+        if (defs) _updateGradient(loaderData.doc, &defs->node.defs.gradients);
     }
     root = svgSceneBuild(loaderData.doc, vx, vy, vw, vh, w, h, preserveAspect, svgPath);
 }

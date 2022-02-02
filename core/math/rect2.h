@@ -382,16 +382,16 @@ struct _NO_DISCARD_ Rect2i {
 			ERR_PRINT("Rect2i size is negative, this is not supported. Use Rect2i.abs() to get a Rect2i with a positive size.");
 		}
 #endif
-		if (position.x > (p_rect.position.x + p_rect.size.width)) {
+		if (position.x >= (p_rect.position.x + p_rect.size.width)) {
 			return false;
 		}
-		if ((position.x + size.width) < p_rect.position.x) {
+		if ((position.x + size.width) <= p_rect.position.x) {
 			return false;
 		}
-		if (position.y > (p_rect.position.y + p_rect.size.height)) {
+		if (position.y >= (p_rect.position.y + p_rect.size.height)) {
 			return false;
 		}
-		if ((position.y + size.height) < p_rect.position.y) {
+		if ((position.y + size.height) <= p_rect.position.y) {
 			return false;
 		}
 
@@ -405,8 +405,8 @@ struct _NO_DISCARD_ Rect2i {
 		}
 #endif
 		return (p_rect.position.x >= position.x) && (p_rect.position.y >= position.y) &&
-				((p_rect.position.x + p_rect.size.x) < (position.x + size.x)) &&
-				((p_rect.position.y + p_rect.size.y) < (position.y + size.y));
+				((p_rect.position.x + p_rect.size.x) <= (position.x + size.x)) &&
+				((p_rect.position.y + p_rect.size.y) <= (position.y + size.y));
 	}
 
 	_FORCE_INLINE_ bool has_no_area() const {

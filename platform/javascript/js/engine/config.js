@@ -225,33 +225,34 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 	 */
 	Config.prototype.update = function (opts) {
 		const config = opts || {};
-		function parse(key, def) {
+		const me = this;
+		function parse(key) {
 			if (typeof (config[key]) === 'undefined') {
-				return def;
+				return me[key];
 			}
 			return config[key];
 		}
 		// Module config
-		this.unloadAfterInit = parse('unloadAfterInit', this.unloadAfterInit);
-		this.onPrintError = parse('onPrintError', this.onPrintError);
-		this.onPrint = parse('onPrint', this.onPrint);
-		this.onProgress = parse('onProgress', this.onProgress);
+		this.unloadAfterInit = parse('unloadAfterInit');
+		this.onPrintError = parse('onPrintError');
+		this.onPrint = parse('onPrint');
+		this.onProgress = parse('onProgress');
 
 		// Godot config
-		this.canvas = parse('canvas', this.canvas);
-		this.executable = parse('executable', this.executable);
-		this.mainPack = parse('mainPack', this.mainPack);
-		this.locale = parse('locale', this.locale);
-		this.canvasResizePolicy = parse('canvasResizePolicy', this.canvasResizePolicy);
-		this.persistentPaths = parse('persistentPaths', this.persistentPaths);
-		this.persistentDrops = parse('persistentDrops', this.persistentDrops);
-		this.experimentalVK = parse('experimentalVK', this.experimentalVK);
-		this.focusCanvas = parse('focusCanvas', this.focusCanvas);
-		this.gdnativeLibs = parse('gdnativeLibs', this.gdnativeLibs);
-		this.fileSizes = parse('fileSizes', this.fileSizes);
-		this.args = parse('args', this.args);
-		this.onExecute = parse('onExecute', this.onExecute);
-		this.onExit = parse('onExit', this.onExit);
+		this.canvas = parse('canvas');
+		this.executable = parse('executable');
+		this.mainPack = parse('mainPack');
+		this.locale = parse('locale');
+		this.canvasResizePolicy = parse('canvasResizePolicy');
+		this.persistentPaths = parse('persistentPaths');
+		this.persistentDrops = parse('persistentDrops');
+		this.experimentalVK = parse('experimentalVK');
+		this.focusCanvas = parse('focusCanvas');
+		this.gdnativeLibs = parse('gdnativeLibs');
+		this.fileSizes = parse('fileSizes');
+		this.args = parse('args');
+		this.onExecute = parse('onExecute');
+		this.onExit = parse('onExit');
 	};
 
 	/**

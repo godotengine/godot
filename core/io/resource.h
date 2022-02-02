@@ -37,6 +37,8 @@
 #include "core/templates/safe_refcount.h"
 #include "core/templates/self_list.h"
 
+class Node;
+
 #define RES_BASE_EXTENSION(m_ext)                                                                                   \
 public:                                                                                                             \
 	static void register_custom_data_to_otdb() { ClassDB::add_resource_base_extension(m_ext, get_class_static()); } \

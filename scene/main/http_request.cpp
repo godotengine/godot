@@ -46,7 +46,7 @@ Error HTTPRequest::_parse_url(const String &p_url) {
 	request_sent = false;
 	got_response = false;
 	body_len = -1;
-	body.resize(0);
+	body.clear();
 	downloaded.set(0);
 	redirections = 0;
 
@@ -202,7 +202,7 @@ void HTTPRequest::cancel_request() {
 		file = nullptr;
 	}
 	client->close();
-	body.resize(0);
+	body.clear();
 	got_response = false;
 	response_code = -1;
 	request_sent = false;
@@ -220,7 +220,7 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 	response_code = client->get_response_code();
 	List<String> rheaders;
 	client->get_response_headers(&rheaders);
-	response_headers.resize(0);
+	response_headers.clear();
 	downloaded.set(0);
 	for (const String &E : rheaders) {
 		response_headers.push_back(E);
@@ -260,7 +260,7 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 				request_sent = false;
 				got_response = false;
 				body_len = -1;
-				body.resize(0);
+				body.clear();
 				downloaded.set(0);
 				redirections = new_redirs;
 				*ret_value = false;

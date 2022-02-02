@@ -650,7 +650,7 @@ void TextEdit::_notification(int p_what) {
 				}
 			}
 
-			bool draw_placeholder = text[0].length() == 0;
+			bool draw_placeholder = text.size() == 1 && text[0].length() == 0;
 
 			// Get the highlighted words.
 			String highlighted_text = get_selected_text();
@@ -874,7 +874,7 @@ void TextEdit::_notification(int p_what) {
 				// Ensure we at least use the font color.
 				Color current_color = !editable ? font_readonly_color : font_color;
 				if (draw_placeholder) {
-					current_color.a *= placeholder_alpha;
+					current_color = font_placeholder_color;
 				}
 
 				const Ref<TextParagraph> ldata = draw_placeholder ? placeholder_data_buf : text.get_line_data(line);
@@ -2515,6 +2515,7 @@ void TextEdit::_update_caches() {
 	font_size = get_theme_font_size(SNAME("font_size"));
 	font_color = get_theme_color(SNAME("font_color"));
 	font_readonly_color = get_theme_color(SNAME("font_readonly_color"));
+	font_placeholder_color = get_theme_color(SNAME("font_placeholder_color"));
 
 	outline_size = get_theme_constant(SNAME("outline_size"));
 	outline_color = get_theme_color(SNAME("font_outline_color"));
@@ -2945,15 +2946,6 @@ void TextEdit::set_placeholder(const String &p_text) {
 
 String TextEdit::get_placeholder() const {
 	return placeholder_text;
-}
-
-void TextEdit::set_placeholder_alpha(float p_alpha) {
-	placeholder_alpha = p_alpha;
-	update();
-}
-
-float TextEdit::get_placeholder_alpha() const {
-	return placeholder_alpha;
 }
 
 void TextEdit::set_line(int p_line, const String &p_new_text) {
@@ -4944,9 +4936,6 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_placeholder", "text"), &TextEdit::set_placeholder);
 	ClassDB::bind_method(D_METHOD("get_placeholder"), &TextEdit::get_placeholder);
 
-	ClassDB::bind_method(D_METHOD("set_placeholder_alpha", "alpha"), &TextEdit::set_placeholder_alpha);
-	ClassDB::bind_method(D_METHOD("get_placeholder_alpha"), &TextEdit::get_placeholder_alpha);
-
 	ClassDB::bind_method(D_METHOD("set_line", "line", "new_text"), &TextEdit::set_line);
 	ClassDB::bind_method(D_METHOD("get_line", "line"), &TextEdit::get_line);
 
@@ -5256,7 +5245,6 @@ void TextEdit::_bind_methods() {
 	/* Inspector */
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "placeholder_text", PROPERTY_HINT_MULTILINE_TEXT), "set_placeholder", "get_placeholder");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "placeholder_alpha", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_placeholder_alpha", "get_placeholder_alpha");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), "set_language", "get_language");
 
@@ -6020,7 +6008,7 @@ void TextEdit::_update_scrollbars() {
 	h_scroll->set_begin(Point2(0, size.height - hmin.height));
 	h_scroll->set_end(Point2(size.width - vmin.width, size.height));
 
-	bool draw_placeholder = text[0].length() == 0;
+	bool draw_placeholder = text.size() == 1 && text[0].length() == 0;
 
 	int visible_rows = get_visible_line_count();
 	int total_rows = draw_placeholder ? placeholder_wraped_rows.size() - 1 : get_total_visible_line_count();
@@ -6101,7 +6089,7 @@ void TextEdit::_scroll_moved(double p_to_val) {
 	}
 	if (v_scroll->is_visible_in_tree()) {
 		// Set line ofs and wrap ofs.
-		bool draw_placeholder = text[0].length() == 0;
+		bool draw_placeholder = text.size() == 1 && text[0].length() == 0;
 
 		int v_scroll_i = floor(get_v_scroll());
 		int sc = 0;
@@ -6116,7 +6104,7 @@ void TextEdit::_scroll_moved(double p_to_val) {
 			}
 		}
 		n_line = MIN(n_line, text.size() - 1);
-		int line_wrap_amount = (text[0].length() == 0) ? placeholder_wraped_rows.size() - 1 : get_line_wrap_count(n_line);
+		int line_wrap_amount = draw_placeholder ? placeholder_wraped_rows.size() - 1 : get_line_wrap_count(n_line);
 		int wi = line_wrap_amount - (sc - v_scroll_i - 1);
 		wi = CLAMP(wi, 0, line_wrap_amount);
 

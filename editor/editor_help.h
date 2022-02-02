@@ -155,7 +155,7 @@ class EditorHelp : public VBoxContainer {
 	void _class_list_select(const String &p_select);
 	void _class_desc_select(const String &p_select);
 	void _class_desc_input(const Ref<InputEvent> &p_input);
-	void _class_desc_resized();
+	void _class_desc_resized(bool p_force_update_theme);
 	int display_margin = 0;
 
 	Error _goto_desc(const String &p_class, int p_vscr = -1);

@@ -285,7 +285,7 @@ public:
 	bool ends_with(const String &p_string) const;
 	bool is_enclosed_in(const String &p_string) const;
 	bool is_subsequence_of(const String &p_string) const;
-	bool is_subsequence_ofi(const String &p_string) const;
+	bool is_subsequence_ofn(const String &p_string) const;
 	bool is_quoted() const;
 	Vector<String> bigrams() const;
 	float similarity(const String &p_string) const;
@@ -405,6 +405,7 @@ public:
 	String get_file() const;
 	static String humanize_size(uint64_t p_size);
 	String simplify_path() const;
+	bool is_network_share_path() const;
 
 	String xml_escape(bool p_escape_quotes = false) const;
 	String xml_unescape() const;

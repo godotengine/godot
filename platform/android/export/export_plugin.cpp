@@ -975,20 +975,6 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 						}
 					}
 
-					if (tname == "meta-data" && attrname == "name" && value == "xr_mode_metadata_name") {
-						// Update the meta-data 'android:name' attribute based on the selected XR mode.
-						if (xr_mode_index == XR_MODE_OPENXR) {
-							string_table.write[attr_value] = "com.samsung.android.vr.application.mode";
-						}
-					}
-
-					if (tname == "meta-data" && attrname == "value" && value == "xr_mode_metadata_value") {
-						// Update the meta-data 'android:value' attribute based on the selected XR mode.
-						if (xr_mode_index == XR_MODE_OPENXR) {
-							string_table.write[attr_value] = "vr_only";
-						}
-					}
-
 					if (tname == "meta-data" && attrname == "name" && value == "xr_hand_tracking_metadata_name") {
 						if (xr_mode_index == XR_MODE_OPENXR && hand_tracking_index > XR_HAND_TRACKING_NONE) {
 							string_table.write[attr_value] = "com.oculus.handtracking.frequency";

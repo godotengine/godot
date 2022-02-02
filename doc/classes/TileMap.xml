@@ -218,7 +218,7 @@
 			<return type="void" />
 			<argument index="0" name="layer" type="int" />
 			<description>
-				Moves the layer at index [code]layer_index[/code] to the given position [code]to_position[/code] in the array.
+				Removes the layer at index [code]layer[/code].
 			</description>
 		</method>
 		<method name="set_cell">

@@ -321,6 +321,7 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 	}
 
 	DS_OSX->window_focused = true;
+	DS_OSX->last_focused_window = window_id;
 	DS_OSX->_send_window_event(wd, DisplayServerOSX::WINDOW_EVENT_FOCUS_IN);
 }
 
@@ -355,6 +356,7 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
 	DS_OSX->window_focused = true;
+	DS_OSX->last_focused_window = window_id;
 	DS_OSX->_send_window_event(wd, DisplayServerOSX::WINDOW_EVENT_FOCUS_IN);
 }
 
@@ -1913,7 +1915,8 @@ void DisplayServerOSX::mouse_set_mode(MouseMode p_mode) {
 		return;
 	}
 
-	WindowData &wd = windows[MAIN_WINDOW_ID];
+	WindowID window_id = windows.has(last_focused_window) ? last_focused_window : MAIN_WINDOW_ID;
+	WindowData &wd = windows[window_id];
 	if (p_mode == MOUSE_MODE_CAPTURED) {
 		// Apple Docs state that the display parameter is not used.
 		// "This parameter is not used. By default, you may pass kCGDirectMainDisplay."
@@ -1972,7 +1975,8 @@ void DisplayServerOSX::mouse_warp_to_position(const Point2i &p_to) {
 	if (mouse_mode == MOUSE_MODE_CAPTURED) {
 		last_mouse_pos = p_to;
 	} else {
-		WindowData &wd = windows[MAIN_WINDOW_ID];
+		WindowID window_id = windows.has(last_focused_window) ? last_focused_window : MAIN_WINDOW_ID;
+		WindowData &wd = windows[window_id];
 
 		//local point in window coords
 		const NSRect contentRect = [wd.window_view frame];
@@ -3524,6 +3528,24 @@ DisplayServer::WindowID DisplayServerOSX::get_window_at_screen_position(const Po
 		}
 	}
 	return INVALID_WINDOW_ID;
+}
+
+int64_t DisplayServerOSX::window_get_native_handle(HandleType p_handle_type, WindowID p_window) const {
+	ERR_FAIL_COND_V(!windows.has(p_window), 0);
+	switch (p_handle_type) {
+		case DISPLAY_HANDLE: {
+			return 0; // Not supported.
+		}
+		case WINDOW_HANDLE: {
+			return (int64_t)windows[p_window].window_object;
+		}
+		case WINDOW_VIEW: {
+			return (int64_t)windows[p_window].window_view;
+		}
+		default: {
+			return 0;
+		}
+	}
 }
 
 void DisplayServerOSX::window_attach_instance_id(ObjectID p_instance, WindowID p_window) {

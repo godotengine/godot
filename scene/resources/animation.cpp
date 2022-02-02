@@ -2474,34 +2474,38 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, double p_time, Interpol
 					real_t delta = (length - p_keys[next].time) - (length - p_keys[idx].time);
 					real_t from = (length - p_time) - (length - p_keys[idx].time);
 
-					if (Math::is_zero_approx(delta))
+					if (Math::is_zero_approx(delta)) {
 						c = 0;
-					else
+					} else {
 						c = from / delta;
+					}
 				} else {
 					next = len - 1;
 					real_t delta = p_keys[idx].time + (length - p_keys[next].time);
 					real_t from = (length - p_time) - (length - p_keys[idx].time);
 
-					if (Math::is_zero_approx(delta))
+					if (Math::is_zero_approx(delta)) {
 						c = 0;
-					else
+					} else {
 						c = from / delta;
+					}
 				}
 			} else {
 				// on loop, in front of last key
 				idx = 0;
 				next = len - 1;
 				real_t endtime = p_keys[idx].time;
-				if (endtime > length) // may be keys past the end
+				if (endtime > length) { // may be keys past the end
 					endtime = length;
+				}
 				real_t delta = p_keys[next].time - endtime;
 				real_t from = p_time - endtime;
 
-				if (Math::is_zero_approx(delta))
+				if (Math::is_zero_approx(delta)) {
 					c = 0;
-				else
+				} else {
 					c = from / delta;
+				}
 			}
 		}
 	} else { // no loop
@@ -2609,7 +2613,7 @@ Variant Animation::value_track_interpolate(int p_track, double p_time) const {
 
 void Animation::_value_track_get_key_indices_in_range(const ValueTrack *vt, double from_time, double to_time, List<int> *p_indices) const {
 	if (from_time != length && to_time == length) {
-		to_time = length * 1.001; //include a little more if at the end
+		to_time = length + CMP_EPSILON; //include a little more if at the end
 	}
 	int to = _find(vt->values, to_time);
 
@@ -2730,7 +2734,7 @@ Animation::UpdateMode Animation::value_track_get_update_mode(int p_track) const 
 template <class T>
 void Animation::_track_get_key_indices_in_range(const Vector<T> &p_array, double from_time, double to_time, List<int> *p_indices) const {
 	if (from_time != length && to_time == length) {
-		to_time = length * 1.01; //include a little more if at the end
+		to_time = length + CMP_EPSILON; //include a little more if at the end
 	}
 
 	int to = _find(p_array, to_time);
@@ -3081,7 +3085,7 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 
 void Animation::_method_track_get_key_indices_in_range(const MethodTrack *mt, double from_time, double to_time, List<int> *p_indices) const {
 	if (from_time != length && to_time == length) {
-		to_time = length * 1.01; //include a little more if at the end
+		to_time = length + CMP_EPSILON; //include a little more if at the end
 	}
 
 	int to = _find(mt->methods, to_time);

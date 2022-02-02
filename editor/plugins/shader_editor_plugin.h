@@ -55,11 +55,13 @@ class ShaderTextEditor : public CodeTextEditor {
 	RichTextLabel *warnings_panel = nullptr;
 	Ref<Shader> shader;
 	List<ShaderWarning> warnings;
+	Error last_compile_result = Error::OK;
 
 	void _check_shader_mode();
 	void _update_warning_panel();
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 	virtual void _load_theme_settings() override;
 

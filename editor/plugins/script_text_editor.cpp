@@ -413,12 +413,14 @@ void ScriptTextEditor::_validate_script() {
 
 	String text = te->get_text();
 	List<String> fnc;
-	Set<int> safe_lines;
-	List<ScriptLanguage::Warning> warnings;
-	List<ScriptLanguage::ScriptError> errors;
+
+	warnings.clear();
+	errors.clear();
+	safe_lines.clear();
 
 	if (!script->get_language()->validate(text, script->get_path(), &fnc, &errors, &warnings, &safe_lines)) {
-		String error_text = TTR("Error at ") + "(" + itos(errors[0].line) + "," + itos(errors[0].column) + "): " + errors[0].message;
+		// TRANSLATORS: Script error pointing to a line and column number.
+		String error_text = vformat(TTR("Error at (%d, %d):"), errors[0].line, errors[0].column) + " " + errors[0].message;
 		code_editor->set_error(error_text);
 		code_editor->set_error_pos(errors[0].line - 1, errors[0].column - 1);
 		script_is_valid = false;
@@ -437,7 +439,14 @@ void ScriptTextEditor::_validate_script() {
 		script_is_valid = true;
 	}
 	_update_connected_methods();
+	_update_warnings();
+	_update_errors();
 
+	emit_signal(SNAME("name_changed"));
+	emit_signal(SNAME("edited_script_changed"));
+}
+
+void ScriptTextEditor::_update_warnings() {
 	int warning_nb = warnings.size();
 	warnings_panel->clear();
 
@@ -465,7 +474,6 @@ void ScriptTextEditor::_validate_script() {
 		}
 	}
 
-	code_editor->set_error_count(errors.size());
 	code_editor->set_warning_count(warning_nb);
 
 	if (has_connections_table) {
@@ -489,6 +497,10 @@ void ScriptTextEditor::_validate_script() {
 		warnings_panel->pop(); // Cell.
 	}
 	warnings_panel->pop(); // Table.
+}
+
+void ScriptTextEditor::_update_errors() {
+	code_editor->set_error_count(errors.size());
 
 	errors_panel->clear();
 	errors_panel->push_table(2);
@@ -507,6 +519,7 @@ void ScriptTextEditor::_validate_script() {
 	}
 	errors_panel->pop(); // Table
 
+	CodeEdit *te = code_editor->get_text_editor();
 	bool highlight_safe = EDITOR_DEF("text_editor/appearance/gutters/highlight_type_safe_lines", true);
 	bool last_is_safe = false;
 	for (int i = 0; i < te->get_line_count(); i++) {
@@ -536,9 +549,6 @@ void ScriptTextEditor::_validate_script() {
 			te->set_line_gutter_item_color(i, 1, default_line_number_color);
 		}
 	}
-
-	emit_signal(SNAME("name_changed"));
-	emit_signal(SNAME("edited_script_changed"));
 }
 
 void ScriptTextEditor::_update_bookmark_list() {
@@ -1323,6 +1333,11 @@ void ScriptTextEditor::_change_syntax_highlighter(int p_idx) {
 void ScriptTextEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED:
+			if (is_visible_in_tree()) {
+				_update_warnings();
+				_update_errors();
+			}
+			[[fallthrough]];
 		case NOTIFICATION_ENTER_TREE: {
 			code_editor->get_text_editor()->set_gutter_width(connection_gutter, code_editor->get_text_editor()->get_line_height());
 		} break;

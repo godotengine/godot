@@ -7476,7 +7476,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 					const String smode = String(mode);
 
-					if (shader->render_modes.find(mode) != -1) {
+					if (shader->render_modes.has(mode)) {
 						_set_error(vformat(RTR("Duplicated render mode: '%s'."), smode));
 						return ERR_PARSE_ERROR;
 					}
@@ -7489,7 +7489,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 						if (smode.begins_with(name)) {
 							if (!info.options.is_empty()) {
-								if (info.options.find(smode.substr(name.length() + 1)) != -1) {
+								if (info.options.has(smode.substr(name.length() + 1))) {
 									found = true;
 
 									if (defined_modes.has(name)) {
@@ -7799,7 +7799,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				}
 
 				if (uniform) {
-					if (uniform_scope == ShaderNode::Uniform::SCOPE_GLOBAL) {
+					if (uniform_scope == ShaderNode::Uniform::SCOPE_GLOBAL && Engine::get_singleton()->is_editor_hint()) { // Type checking for global uniforms is not allowed outside the editor.
 						//validate global uniform
 						DataType gvtype = global_var_get_type_func(name);
 						if (gvtype == TYPE_MAX) {

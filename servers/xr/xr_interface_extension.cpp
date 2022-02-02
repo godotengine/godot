@@ -52,9 +52,12 @@ void XRInterfaceExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_transform_for_view, "view", "cam_transform");
 	GDVIRTUAL_BIND(_get_projection_for_view, "view", "aspect", "z_near", "z_far");
 
-	GDVIRTUAL_BIND(_commit_views, "render_target", "screen_rect");
-
 	GDVIRTUAL_BIND(_process);
+	GDVIRTUAL_BIND(_pre_render);
+	GDVIRTUAL_BIND(_pre_draw_viewport, "render_target");
+	GDVIRTUAL_BIND(_post_draw_viewport, "render_target", "screen_rect");
+	GDVIRTUAL_BIND(_end_frame);
+
 	GDVIRTUAL_BIND(_notification, "what");
 
 	/** input and output **/
@@ -274,7 +277,7 @@ CameraMatrix XRInterfaceExtension::get_projection_for_view(uint32_t p_view, doub
 void XRInterfaceExtension::add_blit(RID p_render_target, Rect2 p_src_rect, Rect2i p_dst_rect, bool p_use_layer, uint32_t p_layer, bool p_apply_lens_distortion, Vector2 p_eye_center, double p_k1, double p_k2, double p_upscale, double p_aspect_ratio) {
 	BlitToScreen blit;
 
-	ERR_FAIL_COND_MSG(!can_add_blits, "add_blit can only be called from an XR plugin from within _commit_views!");
+	ERR_FAIL_COND_MSG(!can_add_blits, "add_blit can only be called from an XR plugin from within _post_draw_viewport!");
 
 	blit.render_target = p_render_target;
 	blit.src_rect = p_src_rect;
@@ -293,12 +296,31 @@ void XRInterfaceExtension::add_blit(RID p_render_target, Rect2 p_src_rect, Rect2
 	blits.push_back(blit);
 }
 
-Vector<BlitToScreen> XRInterfaceExtension::commit_views(RID p_render_target, const Rect2 &p_screen_rect) {
+void XRInterfaceExtension::process() {
+	GDVIRTUAL_CALL(_process);
+}
+
+void XRInterfaceExtension::pre_render() {
+	GDVIRTUAL_CALL(_pre_render);
+}
+
+bool XRInterfaceExtension::pre_draw_viewport(RID p_render_target) {
+	bool do_render = true;
+
+	if (GDVIRTUAL_CALL(_pre_draw_viewport, p_render_target, do_render)) {
+		return do_render;
+	} else {
+		// if not implemented we're returning true
+		return true;
+	}
+}
+
+Vector<BlitToScreen> XRInterfaceExtension::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
 	// This is just so our XR plugin can add blits...
 	blits.clear();
 	can_add_blits = true;
 
-	if (GDVIRTUAL_CALL(_commit_views, p_render_target, p_screen_rect)) {
+	if (GDVIRTUAL_CALL(_post_draw_viewport, p_render_target, p_screen_rect)) {
 		return blits;
 	}
 
@@ -306,8 +328,8 @@ Vector<BlitToScreen> XRInterfaceExtension::commit_views(RID p_render_target, con
 	return blits;
 }
 
-void XRInterfaceExtension::process() {
-	GDVIRTUAL_CALL(_process);
+void XRInterfaceExtension::end_frame() {
+	GDVIRTUAL_CALL(_end_frame);
 }
 
 void XRInterfaceExtension::notification(int p_what) {

@@ -115,7 +115,7 @@ EditorProgress *VoxelGIEditorPlugin::tmp_progress = nullptr;
 void VoxelGIEditorPlugin::bake_func_begin(int p_steps) {
 	ERR_FAIL_COND(tmp_progress != nullptr);
 
-	tmp_progress = memnew(EditorProgress("bake_gi", TTR("Bake GI Probe"), p_steps));
+	tmp_progress = memnew(EditorProgress("bake_gi", TTR("Bake VoxelGI"), p_steps));
 }
 
 void VoxelGIEditorPlugin::bake_func_step(int p_step, const String &p_description) {
@@ -149,7 +149,7 @@ VoxelGIEditorPlugin::VoxelGIEditorPlugin(EditorNode *p_node) {
 	bake = memnew(Button);
 	bake->set_flat(true);
 	bake->set_icon(editor->get_gui_base()->get_theme_icon(SNAME("Bake"), SNAME("EditorIcons")));
-	bake->set_text(TTR("Bake GI Probe"));
+	bake->set_text(TTR("Bake VoxelGI"));
 	bake->connect("pressed", callable_mp(this, &VoxelGIEditorPlugin::_bake));
 	bake_hb->add_child(bake);
 

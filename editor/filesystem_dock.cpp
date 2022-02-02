@@ -1801,7 +1801,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			// Add the files from favorites.
 			Vector<String> favorites = EditorSettings::get_singleton()->get_favorites();
 			for (int i = 0; i < p_selected.size(); i++) {
-				if (favorites.find(p_selected[i]) == -1) {
+				if (!favorites.has(p_selected[i])) {
 					favorites.push_back(p_selected[i]);
 				}
 			}
@@ -2324,7 +2324,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 			Vector<String> fnames = drag_data["files"];
 			Vector<String> favorites = EditorSettings::get_singleton()->get_favorites();
 			for (int i = 0; i < fnames.size(); i++) {
-				if (favorites.find(fnames[i]) == -1) {
+				if (!favorites.has(fnames[i])) {
 					favorites.push_back(fnames[i]);
 				}
 			}

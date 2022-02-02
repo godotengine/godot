@@ -72,6 +72,7 @@ PngLoader::PngLoader()
 PngLoader::~PngLoader()
 {
     if (freeData) free(data);
+    free(image);
 }
 
 
@@ -121,7 +122,7 @@ bool PngLoader::open(const char* data, uint32_t size, bool copy)
     clear();
 
     lodepng_state_init(&state);
-    
+
     unsigned int width, height;
     if (lodepng_inspect(&width, &height, &state, (unsigned char*)(data), size) > 0) return false;
 
@@ -180,6 +181,10 @@ unique_ptr<Surface> PngLoader::bitmap()
 
 void PngLoader::run(unsigned tid)
 {
+    if (image) {
+        free(image);
+        image = nullptr;
+    }
     auto width = static_cast<unsigned>(w);
     auto height = static_cast<unsigned>(h);
 
