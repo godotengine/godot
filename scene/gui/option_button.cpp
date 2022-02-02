@@ -32,6 +32,8 @@
 
 #include "core/string/print_string.h"
 
+static const int NONE_SELECTED = -1;
+
 Size2 OptionButton::get_minimum_size() const {
 	Size2 minsize = Button::get_minimum_size();
 
@@ -119,7 +121,7 @@ bool OptionButton::_set(const StringName &p_name, const Variant &p_value) {
 		int idx = components[1].get_slice("_", 1).to_int();
 		if (idx == current) {
 			// Force refreshing currently displayed item.
-			current = -1;
+			current = NONE_SELECTED;
 			_select(idx, false);
 		}
 
@@ -154,7 +156,7 @@ void OptionButton::_get_property_list(List<PropertyInfo> *p_list) const {
 		pi.usage &= ~(!popup->is_item_checked(i) ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 
-		pi = PropertyInfo(Variant::INT, vformat("popup/item_%d/id", i), PROPERTY_HINT_RANGE, "1,10,1,or_greater");
+		pi = PropertyInfo(Variant::INT, vformat("popup/item_%d/id", i), PROPERTY_HINT_RANGE, "0,10,1,or_greater");
 		p_list->push_back(pi);
 
 		pi = PropertyInfo(Variant::BOOL, vformat("popup/item_%d/disabled", i));
@@ -234,6 +236,10 @@ Ref<Texture2D> OptionButton::get_item_icon(int p_idx) const {
 }
 
 int OptionButton::get_item_id(int p_idx) const {
+	if (p_idx == NONE_SELECTED) {
+		return NONE_SELECTED;
+	}
+
 	return popup->get_item_id(p_idx);
 }
 
@@ -266,26 +272,33 @@ void OptionButton::add_separator() {
 void OptionButton::clear() {
 	popup->clear();
 	set_text("");
-	current = -1;
+	current = NONE_SELECTED;
 }
 
 void OptionButton::_select(int p_which, bool p_emit) {
-	if (p_which < 0) {
-		return;
-	}
 	if (p_which == current) {
 		return;
 	}
 
-	ERR_FAIL_INDEX(p_which, popup->get_item_count());
+	if (p_which == NONE_SELECTED) {
+		for (int i = 0; i < popup->get_item_count(); i++) {
+			popup->set_item_checked(i, false);
+		}
 
-	for (int i = 0; i < popup->get_item_count(); i++) {
-		popup->set_item_checked(i, i == p_which);
+		current = NONE_SELECTED;
+		set_text("");
+		set_icon(NULL);
+	} else {
+		ERR_FAIL_INDEX(p_which, popup->get_item_count());
+
+		for (int i = 0; i < popup->get_item_count(); i++) {
+			popup->set_item_checked(i, i == p_which);
+		}
+
+		current = p_which;
+		set_text(popup->get_item_text(current));
+		set_icon(popup->get_item_icon(current));
 	}
-
-	current = p_which;
-	set_text(popup->get_item_text(current));
-	set_icon(popup->get_item_icon(current));
 
 	if (is_inside_tree() && p_emit) {
 		emit_signal(SNAME("item_selected"), current);
@@ -293,7 +306,7 @@ void OptionButton::_select(int p_which, bool p_emit) {
 }
 
 void OptionButton::_select_int(int p_which) {
-	if (p_which < 0 || p_which >= popup->get_item_count()) {
+	if (p_which < NONE_SELECTED || p_which >= popup->get_item_count()) {
 		return;
 	}
 	_select(p_which, false);
@@ -308,10 +321,6 @@ int OptionButton::get_selected() const {
 }
 
 int OptionButton::get_selected_id() const {
-	int idx = get_selected();
-	if (idx < 0) {
-		return 0;
-	}
 	return get_item_id(current);
 }
 
@@ -325,6 +334,9 @@ Variant OptionButton::get_selected_metadata() const {
 
 void OptionButton::remove_item(int p_idx) {
 	popup->remove_item(p_idx);
+	if (current == p_idx) {
+		_select(NONE_SELECTED);
+	}
 }
 
 PopupMenu *OptionButton::get_popup() const {

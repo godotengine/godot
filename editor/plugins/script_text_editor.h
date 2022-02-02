@@ -62,6 +62,9 @@ class ScriptTextEditor : public ScriptEditorBase {
 	bool editor_enabled = false;
 
 	Vector<String> functions;
+	List<ScriptLanguage::Warning> warnings;
+	List<ScriptLanguage::ScriptError> errors;
+	Set<int> safe_lines;
 
 	List<Connection> missing_connections;
 
@@ -154,6 +157,8 @@ protected:
 	void _breakpoint_toggled(int p_row);
 
 	void _validate_script(); // No longer virtual.
+	void _update_warnings();
+	void _update_errors();
 	void _update_bookmark_list();
 	void _bookmark_item_pressed(int p_idx);
 

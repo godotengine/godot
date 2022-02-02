@@ -693,7 +693,7 @@ public:
 	virtual int get_alternative_tile_id(const Vector2i p_atlas_coords, int p_index) const override;
 
 	// Get data associated to a tile.
-	Object *get_tile_data(const Vector2i p_atlas_coords, int p_alternative_tile) const;
+	TileData *get_tile_data(const Vector2i p_atlas_coords, int p_alternative_tile) const;
 
 	// Helpers.
 	Vector2i get_atlas_grid_size() const;

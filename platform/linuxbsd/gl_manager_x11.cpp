@@ -68,8 +68,9 @@ static int ctxErrorHandler(Display *dpy, XErrorEvent *ev) {
 int GLManager_X11::_find_or_create_display(Display *p_x11_display) {
 	for (unsigned int n = 0; n < _displays.size(); n++) {
 		const GLDisplay &d = _displays[n];
-		if (d.x11_display == p_x11_display)
+		if (d.x11_display == p_x11_display) {
 			return n;
+		}
 	}
 
 	// create
@@ -82,8 +83,7 @@ int GLManager_X11::_find_or_create_display(Display *p_x11_display) {
 	GLDisplay &d = _displays[new_display_id];
 
 	d.context = memnew(GLManager_X11_Private);
-	;
-	d.context->glx_context = 0;
+	d.context->glx_context = nullptr;
 
 	//Error err = _create_context(d);
 	_create_context(d);
@@ -124,7 +124,7 @@ Error GLManager_X11::_create_context(GLDisplay &gl_display) {
 	};
 
 	int fbcount;
-	GLXFBConfig fbconfig = 0;
+	GLXFBConfig fbconfig = nullptr;
 	XVisualInfo *vi = nullptr;
 
 	gl_display.x_swa.event_mask = StructureNotifyMask;
@@ -137,8 +137,9 @@ Error GLManager_X11::_create_context(GLDisplay &gl_display) {
 
 		for (int i = 0; i < fbcount; i++) {
 			vi = (XVisualInfo *)glXGetVisualFromFBConfig(x11_display, fbc[i]);
-			if (!vi)
+			if (!vi) {
 				continue;
+			}
 
 			XRenderPictFormat *pict_format = XRenderFindVisualFormat(x11_display, vi->visual);
 			if (!pict_format) {
@@ -262,22 +263,26 @@ void GLManager_X11::window_destroy(DisplayServer::WindowID p_window_id) {
 }
 
 void GLManager_X11::release_current() {
-	if (!_current_window)
+	if (!_current_window) {
 		return;
+	}
 	glXMakeCurrent(_x_windisp.x11_display, None, nullptr);
 }
 
 void GLManager_X11::window_make_current(DisplayServer::WindowID p_window_id) {
-	if (p_window_id == -1)
+	if (p_window_id == -1) {
 		return;
+	}
 
 	GLWindow &win = _windows[p_window_id];
-	if (!win.in_use)
+	if (!win.in_use) {
 		return;
+	}
 
 	// noop
-	if (&win == _current_window)
+	if (&win == _current_window) {
 		return;
+	}
 
 	const GLDisplay &disp = get_display(win.gldisplay_id);
 
@@ -287,8 +292,9 @@ void GLManager_X11::window_make_current(DisplayServer::WindowID p_window_id) {
 }
 
 void GLManager_X11::make_current() {
-	if (!_current_window)
+	if (!_current_window) {
 		return;
+	}
 	if (!_current_window->in_use) {
 		WARN_PRINT("current window not in use!");
 		return;
@@ -301,8 +307,9 @@ void GLManager_X11::swap_buffers() {
 	// NO NEED TO CALL SWAP BUFFERS for each window...
 	// see https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/glXSwapBuffers.xml
 
-	if (!_current_window)
+	if (!_current_window) {
 		return;
+	}
 	if (!_current_window->in_use) {
 		WARN_PRINT("current window not in use!");
 		return;
@@ -335,19 +342,23 @@ void GLManager_X11::set_use_vsync(bool p_use) {
 	}
 
 	// we need an active window to get a display to set the vsync
-	if (!_current_window)
+	if (!_current_window) {
 		return;
+	}
 	const GLDisplay &disp = get_current_display();
 
 	if (!setup) {
 		setup = true;
 		String extensions = glXQueryExtensionsString(disp.x11_display, DefaultScreen(disp.x11_display));
-		if (extensions.find("GLX_EXT_swap_control") != -1)
+		if (extensions.find("GLX_EXT_swap_control") != -1) {
 			glXSwapIntervalEXT = (PFNGLXSWAPINTERVALEXTPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalEXT");
-		if (extensions.find("GLX_MESA_swap_control") != -1)
+		}
+		if (extensions.find("GLX_MESA_swap_control") != -1) {
 			glXSwapIntervalMESA = (PFNGLXSWAPINTERVALSGIPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalMESA");
-		if (extensions.find("GLX_SGI_swap_control") != -1)
+		}
+		if (extensions.find("GLX_SGI_swap_control") != -1) {
 			glXSwapIntervalSGI = (PFNGLXSWAPINTERVALSGIPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalSGI");
+		}
 	}
 	int val = p_use ? 1 : 0;
 	if (glXSwapIntervalMESA) {
@@ -357,8 +368,9 @@ void GLManager_X11::set_use_vsync(bool p_use) {
 	} else if (glXSwapIntervalEXT) {
 		GLXDrawable drawable = glXGetCurrentDrawable();
 		glXSwapIntervalEXT(disp.x11_display, drawable, val);
-	} else
+	} else {
 		return;
+	}
 	use_vsync = p_use;
 }
 

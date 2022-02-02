@@ -145,6 +145,8 @@ public:
 
 	Map<WindowID, WindowData> windows;
 
+	WindowID last_focused_window = INVALID_WINDOW_ID;
+
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect);
@@ -281,6 +283,8 @@ public:
 	virtual void window_set_ime_position(const Point2i &p_pos, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const override;
+
+	virtual int64_t window_get_native_handle(HandleType p_handle_type, WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual void window_attach_instance_id(ObjectID p_instance, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual ObjectID window_get_attached_instance_id(WindowID p_window = MAIN_WINDOW_ID) const override;

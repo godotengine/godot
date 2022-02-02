@@ -292,7 +292,6 @@ ProceduralSkyMaterial::ProceduralSkyMaterial() {
 }
 
 ProceduralSkyMaterial::~ProceduralSkyMaterial() {
-	RS::get_singleton()->material_set_shader(_get_material(), RID());
 }
 
 /////////////////////////////////////////
@@ -389,7 +388,6 @@ PanoramaSkyMaterial::PanoramaSkyMaterial() {
 }
 
 PanoramaSkyMaterial::~PanoramaSkyMaterial() {
-	RS::get_singleton()->material_set_shader(_get_material(), RID());
 }
 
 //////////////////////////////////

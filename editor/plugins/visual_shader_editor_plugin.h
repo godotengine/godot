@@ -247,44 +247,25 @@ class VisualShaderEditor : public VBoxContainer {
 		String category;
 		String type;
 		String description;
-		int sub_func = 0;
-		String sub_func_str;
+		Vector<Variant> ops;
 		Ref<Script> script;
 		int mode = 0;
 		int return_type = 0;
 		int func = 0;
-		float value = 0;
 		bool highend = false;
 		bool is_custom = false;
 		int temp_idx = 0;
 
-		AddOption(const String &p_name = String(), const String &p_category = String(), const String &p_sub_category = String(), const String &p_type = String(), const String &p_description = String(), int p_sub_func = -1, int p_return_type = -1, int p_mode = -1, int p_func = -1, float p_value = -1, bool p_highend = false) {
+		AddOption(const String &p_name = String(), const String &p_category = String(), const String &p_sub_category = String(), const String &p_type = String(), const String &p_description = String(), const Vector<Variant> &p_ops = Vector<Variant>(), int p_return_type = -1, int p_mode = -1, int p_func = -1, bool p_highend = false) {
 			name = p_name;
 			type = p_type;
 			category = p_category + "/" + p_sub_category;
 			description = p_description;
-			sub_func = p_sub_func;
+			ops = p_ops;
 			return_type = p_return_type;
 			mode = p_mode;
 			func = p_func;
-			value = p_value;
 			highend = p_highend;
-			is_custom = false;
-		}
-
-		AddOption(const String &p_name, const String &p_category, const String &p_sub_category, const String &p_type, const String &p_description, const String &p_sub_func, int p_return_type = -1, int p_mode = -1, int p_func = -1, float p_value = -1, bool p_highend = false) {
-			name = p_name;
-			type = p_type;
-			category = p_category + "/" + p_sub_category;
-			description = p_description;
-			sub_func = 0;
-			sub_func_str = p_sub_func;
-			return_type = p_return_type;
-			mode = p_mode;
-			func = p_func;
-			value = p_value;
-			highend = p_highend;
-			is_custom = false;
 		}
 	};
 	struct _OptionComparator {
@@ -307,8 +288,8 @@ class VisualShaderEditor : public VBoxContainer {
 
 	void _draw_color_over_button(Object *obj, Color p_color);
 
-	void _setup_node(VisualShaderNode *p_node, int p_op_idx);
-	void _add_node(int p_idx, int p_op_idx = -1, String p_resource_path = "", int p_node_idx = -1);
+	void _setup_node(VisualShaderNode *p_node, const Vector<Variant> &p_ops);
+	void _add_node(int p_idx, const Vector<Variant> &p_ops, String p_resource_path = "", int p_node_idx = -1);
 	void _update_options_menu();
 	void _set_mode(int p_which);
 

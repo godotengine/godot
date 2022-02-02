@@ -786,6 +786,8 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 	}
 
 	String result;
+	char32_t prev = 0;
+	int prev_pos = 0;
 
 	for (;;) {
 		// Consume actual string.
@@ -852,9 +854,11 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 				case '\\':
 					escaped = '\\';
 					break;
-				case 'u':
+				case 'U':
+				case 'u': {
 					// Hexadecimal sequence.
-					for (int i = 0; i < 4; i++) {
+					int hex_len = (code == 'U') ? 6 : 4;
+					for (int j = 0; j < hex_len; j++) {
 						if (_is_at_end()) {
 							return make_error("Unterminated string.");
 						}
@@ -886,7 +890,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 
 						_advance();
 					}
-					break;
+				} break;
 				case '\r':
 					if (_peek() != '\n') {
 						// Carriage return without newline in string. (???)
@@ -909,11 +913,53 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 					valid_escape = false;
 					break;
 			}
+			// Parse UTF-16 pair.
+			if (valid_escape) {
+				if ((escaped & 0xfffffc00) == 0xd800) {
+					if (prev == 0) {
+						prev = escaped;
+						prev_pos = column - 2;
+						continue;
+					} else {
+						Token error = make_error("Invalid UTF-16 sequence in string, unpaired lead surrogate");
+						error.start_column = column - 2;
+						error.leftmost_column = error.start_column;
+						push_error(error);
+						valid_escape = false;
+						prev = 0;
+					}
+				} else if ((escaped & 0xfffffc00) == 0xdc00) {
+					if (prev == 0) {
+						Token error = make_error("Invalid UTF-16 sequence in string, unpaired trail surrogate");
+						error.start_column = column - 2;
+						error.leftmost_column = error.start_column;
+						push_error(error);
+						valid_escape = false;
+					} else {
+						escaped = (prev << 10UL) + escaped - ((0xd800 << 10UL) + 0xdc00 - 0x10000);
+						prev = 0;
+					}
+				}
+				if (prev != 0) {
+					Token error = make_error("Invalid UTF-16 sequence in string, unpaired lead surrogate");
+					error.start_column = prev_pos;
+					error.leftmost_column = error.start_column;
+					push_error(error);
+					prev = 0;
+				}
+			}
 
 			if (valid_escape) {
 				result += escaped;
 			}
 		} else if (ch == quote_char) {
+			if (prev != 0) {
+				Token error = make_error("Invalid UTF-16 sequence in string, unpaired lead surrogate");
+				error.start_column = prev_pos;
+				error.leftmost_column = error.start_column;
+				push_error(error);
+				prev = 0;
+			}
 			_advance();
 			if (is_multiline) {
 				if (_peek() == quote_char && _peek(1) == quote_char) {
@@ -930,12 +976,26 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 				break;
 			}
 		} else {
+			if (prev != 0) {
+				Token error = make_error("Invalid UTF-16 sequence in string, unpaired lead surrogate");
+				error.start_column = prev_pos;
+				error.leftmost_column = error.start_column;
+				push_error(error);
+				prev = 0;
+			}
 			result += ch;
 			_advance();
 			if (ch == '\n') {
 				newline(false);
 			}
 		}
+	}
+	if (prev != 0) {
+		Token error = make_error("Invalid UTF-16 sequence in string, unpaired lead surrogate");
+		error.start_column = prev_pos;
+		error.leftmost_column = error.start_column;
+		push_error(error);
+		prev = 0;
 	}
 
 	// Make the literal.

@@ -534,11 +534,11 @@ void DocTools::generate(bool p_basic_types) {
 
 			Vector<Error> errs = ClassDB::get_method_error_return_values(name, E.name);
 			if (errs.size()) {
-				if (errs.find(OK) == -1) {
+				if (!errs.has(OK)) {
 					errs.insert(0, OK);
 				}
 				for (int i = 0; i < errs.size(); i++) {
-					if (method.errors_returned.find(errs[i]) == -1) {
+					if (!method.errors_returned.has(errs[i])) {
 						method.errors_returned.push_back(errs[i]);
 					}
 				}

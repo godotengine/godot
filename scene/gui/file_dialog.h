@@ -132,7 +132,7 @@ private:
 	void _go_back();
 	void _go_forward();
 
-	void _update_drives();
+	void _update_drives(bool p_select = true);
 
 	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
 

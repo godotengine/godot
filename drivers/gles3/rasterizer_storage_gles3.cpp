@@ -976,7 +976,7 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 */
 
 void RasterizerStorageGLES3::_texture_set_state_from_flags(Texture *p_tex) {
-	if ((p_tex->flags & TEXTURE_FLAG_MIPMAPS) && !p_tex->ignore_mipmaps)
+	if ((p_tex->flags & TEXTURE_FLAG_MIPMAPS) && !p_tex->ignore_mipmaps) {
 		if (p_tex->flags & TEXTURE_FLAG_FILTER) {
 			// these do not exactly correspond ...
 			p_tex->GLSetFilter(p_tex->target, RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS);
@@ -985,7 +985,7 @@ void RasterizerStorageGLES3::_texture_set_state_from_flags(Texture *p_tex) {
 			p_tex->GLSetFilter(p_tex->target, RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
 			//texture->glTexParam_MinFilter(texture->target, config.use_fast_texture_filter ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_LINEAR);
 		}
-	else {
+	} else {
 		if (p_tex->flags & TEXTURE_FLAG_FILTER) {
 			p_tex->GLSetFilter(p_tex->target, RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
 			//texture->glTexParam_MinFilter(texture->target, GL_LINEAR);
@@ -1125,8 +1125,9 @@ void RasterizerStorageGLES3::texture_debug_usage(List<RS::TextureInfo> *r_info) 
 
 	for (List<RID>::Element *E = textures.front(); E; E = E->next()) {
 		Texture *t = texture_owner.get_or_null(E->get());
-		if (!t)
+		if (!t) {
 			continue;
+		}
 		RS::TextureInfo tinfo;
 		tinfo.path = t->path;
 		tinfo.format = t->format;
@@ -1173,7 +1174,7 @@ void RasterizerStorageGLES3::texture_set_proxy(RID p_texture, RID p_proxy) {
 
 	if (texture->proxy) {
 		texture->proxy->proxy_owners.erase(texture);
-		texture->proxy = NULL;
+		texture->proxy = nullptr;
 	}
 
 	if (p_proxy.is_valid()) {
@@ -1298,8 +1299,9 @@ void RasterizerStorageGLES3::shader_initialize(RID p_rid) {
 //}
 
 void RasterizerStorageGLES3::_shader_make_dirty(Shader *p_shader) {
-	if (p_shader->dirty_list.in_list())
+	if (p_shader->dirty_list.in_list()) {
 		return;
+	}
 
 	_shader_dirty_list.add(&p_shader->dirty_list);
 }
@@ -1371,7 +1373,7 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 	}
 
 	ShaderCompiler::GeneratedCode gen_code;
-	ShaderCompiler::IdentifierActions *actions = NULL;
+	ShaderCompiler::IdentifierActions *actions = nullptr;
 
 	switch (p_shader->mode) {
 		case RS::SHADER_CANVAS_ITEM: {
@@ -1697,8 +1699,9 @@ RID RasterizerStorageGLES3::shader_get_default_texture_param(RID p_shader, const
 /* COMMON MATERIAL API */
 
 void RasterizerStorageGLES3::_material_make_dirty(Material *p_material) const {
-	if (p_material->dirty_list.in_list())
+	if (p_material->dirty_list.in_list()) {
 		return;
+	}
 
 	_material_dirty_list.add(&p_material->dirty_list);
 }
@@ -1954,8 +1957,9 @@ void RasterizerStorageGLES3::_update_material(Material *p_material) {
 		p_material->textures.resize(p_material->shader->texture_uniforms.size());
 
 		for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = p_material->shader->uniforms.front(); E; E = E->next()) {
-			if (E->get().texture_order < 0)
+			if (E->get().texture_order < 0) {
 				continue; // not a texture, does not go here
+			}
 
 			RID texture;
 
@@ -2909,7 +2913,7 @@ void RasterizerStorageGLES3::_set_current_render_target(RID p_render_target) {
 		_dims.win_height = rt->height;
 
 	} else {
-		frame.current_rt = NULL;
+		frame.current_rt = nullptr;
 		frame.clear_request = false;
 		bind_framebuffer_system();
 	}
@@ -2917,8 +2921,9 @@ void RasterizerStorageGLES3::_set_current_render_target(RID p_render_target) {
 
 void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 	// do not allocate a render target with no size
-	if (rt->width <= 0 || rt->height <= 0)
+	if (rt->width <= 0 || rt->height <= 0) {
 		return;
+	}
 
 	// do not allocate a render target that is attached to the screen
 	if (rt->flags[RENDER_TARGET_DIRECT_TO_SCREEN]) {
@@ -2966,7 +2971,7 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 		glGenTextures(1, &rt->color);
 		glBindTexture(GL_TEXTURE_2D, rt->color);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, color_internal_format, rt->width, rt->height, 0, color_format, color_type, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, color_internal_format, rt->width, rt->height, 0, color_format, color_type, nullptr);
 
 		if (texture->flags & TEXTURE_FLAG_FILTER) {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -2986,7 +2991,7 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 		if (config.support_depth_texture) {
 			glGenTextures(1, &rt->depth);
 			glBindTexture(GL_TEXTURE_2D, rt->depth);
-			glTexImage2D(GL_TEXTURE_2D, 0, config.depth_internalformat, rt->width, rt->height, 0, GL_DEPTH_COMPONENT, config.depth_type, NULL);
+			glTexImage2D(GL_TEXTURE_2D, 0, config.depth_internalformat, rt->width, rt->height, 0, GL_DEPTH_COMPONENT, config.depth_type, nullptr);
 
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -3109,9 +3114,9 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 		glBindTexture(GL_TEXTURE_2D, rt->copy_screen_effect.color);
 
 		if (rt->flags[RendererStorage::RENDER_TARGET_TRANSPARENT]) {
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, rt->width, rt->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, rt->width, rt->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 		} else {
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, rt->width, rt->height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, rt->width, rt->height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
 		}
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -3159,8 +3164,9 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 				w >>= 1;
 				h >>= 1;
 
-				if (w < 2 || h < 2)
+				if (w < 2 || h < 2) {
 					break;
+				}
 
 				level++;
 			}
@@ -3173,7 +3179,7 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 				glBindTexture(GL_TEXTURE_2D, rt->mip_maps[i].color);
 
 				for (int l = 0; l < level + 1; l++) {
-					glTexImage2D(GL_TEXTURE_2D, l, color_internal_format, width, height, 0, color_format, color_type, NULL);
+					glTexImage2D(GL_TEXTURE_2D, l, color_internal_format, width, height, 0, color_format, color_type, nullptr);
 					width = MAX(1, (width / 2));
 					height = MAX(1, (height / 2));
 				}
@@ -3186,7 +3192,7 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 				for (int l = 0; l < level + 1; l++) {
 					glGenTextures(1, &rt->mip_maps[i].sizes.write[l].color);
 					glBindTexture(GL_TEXTURE_2D, rt->mip_maps[i].sizes[l].color);
-					glTexImage2D(GL_TEXTURE_2D, 0, color_internal_format, width, height, 0, color_format, color_type, NULL);
+					glTexImage2D(GL_TEXTURE_2D, 0, color_internal_format, width, height, 0, color_format, color_type, nullptr);
 					width = MAX(1, (width / 2));
 					height = MAX(1, (height / 2));
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -3255,8 +3261,9 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 
 void RasterizerStorageGLES3::_render_target_clear(RenderTarget *rt) {
 	// there is nothing to clear when DIRECT_TO_SCREEN is used
-	if (rt->flags[RENDER_TARGET_DIRECT_TO_SCREEN])
+	if (rt->flags[RENDER_TARGET_DIRECT_TO_SCREEN]) {
 		return;
+	}
 
 	if (rt->fbo) {
 		glDeleteFramebuffers(1, &rt->fbo);
@@ -3373,8 +3380,9 @@ void RasterizerStorageGLES3::render_target_set_size(RID p_render_target, int p_w
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND(!rt);
 
-	if (p_width == rt->width && p_height == rt->height)
+	if (p_width == rt->width && p_height == rt->height) {
 		return;
+	}
 
 	_render_target_clear(rt);
 
@@ -3561,8 +3569,9 @@ void RasterizerStorageGLES3::render_target_set_msaa(RID p_render_target, RS::Vie
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND(!rt);
 
-	if (rt->msaa == p_msaa)
+	if (rt->msaa == p_msaa) {
 		return;
+	}
 
 	_render_target_clear(rt);
 	rt->msaa = p_msaa;
@@ -3638,8 +3647,9 @@ void RasterizerStorageGLES3::render_target_mark_sdf_enabled(RID p_render_target,
 RID RasterizerStorageGLES3::canvas_light_shadow_buffer_create(int p_width) {
 	CanvasLightShadow *cls = memnew(CanvasLightShadow);
 
-	if (p_width > config.max_texture_size)
+	if (p_width > config.max_texture_size) {
 		p_width = config.max_texture_size;
+	}
 
 	cls->size = p_width;
 	cls->height = 16;
@@ -3657,10 +3667,10 @@ RID RasterizerStorageGLES3::canvas_light_shadow_buffer_create(int p_width) {
 	glGenTextures(1, &cls->distance);
 	glBindTexture(GL_TEXTURE_2D, cls->distance);
 	if (config.use_rgba_2d_shadows) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, cls->size, cls->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, cls->size, cls->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 	} else {
 #ifdef GLES_OVER_GL
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, cls->size, cls->height, 0, _RED_OES, GL_FLOAT, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, cls->size, cls->height, 0, _RED_OES, GL_FLOAT, nullptr);
 #else
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_FLOAT, cls->size, cls->height, 0, _RED_OES, GL_FLOAT, NULL);
 #endif
@@ -3856,7 +3866,7 @@ bool RasterizerStorageGLES3::free(RID p_rid) {
 		while (shader->materials.first()) {
 			Material *m = shader->materials.first()->self();
 
-			m->shader = NULL;
+			m->shader = nullptr;
 			_material_make_dirty(m);
 
 			shader->materials.remove(shader->materials.first());
@@ -4248,7 +4258,7 @@ void RasterizerStorageGLES3::initialize() {
 		GLuint depth;
 		glGenTextures(1, &depth);
 		glBindTexture(GL_TEXTURE_2D, depth);
-		glTexImage2D(GL_TEXTURE_2D, 0, config.depth_internalformat, 32, 32, 0, GL_DEPTH_COMPONENT, config.depth_type, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, config.depth_internalformat, 32, 32, 0, GL_DEPTH_COMPONENT, config.depth_type, nullptr);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -4280,7 +4290,7 @@ void RasterizerStorageGLES3::initialize() {
 
 			glGenTextures(1, &depth);
 			glBindTexture(GL_TEXTURE_2D, depth);
-			glTexImage2D(GL_TEXTURE_2D, 0, config.depth_internalformat, 32, 32, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, NULL);
+			glTexImage2D(GL_TEXTURE_2D, 0, config.depth_internalformat, 32, 32, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
 
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -4308,7 +4318,7 @@ void RasterizerStorageGLES3::initialize() {
 
 	frame.count = 0;
 	frame.delta = 0;
-	frame.current_rt = NULL;
+	frame.current_rt = nullptr;
 	frame.clear_request = false;
 
 	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &config.max_vertex_texture_image_units);

@@ -882,10 +882,39 @@ void CanvasItemEditor::_selection_menu_hide() {
 }
 
 void CanvasItemEditor::_add_node_pressed(int p_result) {
-	if (p_result == AddNodeOption::ADD_NODE) {
-		SceneTreeDock::get_singleton()->open_add_child_dialog();
-	} else if (p_result == AddNodeOption::ADD_INSTANCE) {
-		SceneTreeDock::get_singleton()->open_instance_child_dialog();
+	List<Node *> nodes_to_move;
+
+	switch (p_result) {
+		case ADD_NODE: {
+			SceneTreeDock::get_singleton()->open_add_child_dialog();
+		} break;
+		case ADD_INSTANCE: {
+			SceneTreeDock::get_singleton()->open_instance_child_dialog();
+		} break;
+		case ADD_PASTE: {
+			nodes_to_move = SceneTreeDock::get_singleton()->paste_nodes();
+			[[fallthrough]];
+		}
+		case ADD_MOVE: {
+			if (p_result == ADD_MOVE) {
+				nodes_to_move = EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list();
+			}
+			if (nodes_to_move.is_empty()) {
+				return;
+			}
+
+			undo_redo->create_action(TTR("Move Node(s) to Position"));
+			for (Node *node : nodes_to_move) {
+				CanvasItem *ci = Object::cast_to<CanvasItem>(node);
+				if (ci) {
+					Transform2D xform = ci->get_global_transform_with_canvas().affine_inverse() * ci->get_transform();
+					undo_redo->add_do_method(ci, "_edit_set_position", xform.xform(node_create_position));
+					undo_redo->add_undo_method(ci, "_edit_set_position", ci->_edit_get_position());
+				}
+			}
+			undo_redo->commit_action();
+			_reset_create_position();
+		} break;
 	}
 }
 
@@ -2194,10 +2223,26 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 		}
 
 		if (b.is_valid() && b->is_pressed() && b->get_button_index() == MouseButton::RIGHT) {
+			add_node_menu->clear();
+			add_node_menu->add_icon_item(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")), TTR("Add Node Here"), ADD_NODE);
+			add_node_menu->add_icon_item(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), TTR("Instantiate Scene Here"), ADD_INSTANCE);
+			for (Node *node : SceneTreeDock::get_singleton()->get_node_clipboard()) {
+				if (Object::cast_to<CanvasItem>(node)) {
+					add_node_menu->add_icon_item(get_theme_icon(SNAME("ActionPaste"), SNAME("EditorIcons")), TTR("Paste Node(s) Here"), ADD_PASTE);
+					break;
+				}
+			}
+			for (Node *node : EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list()) {
+				if (Object::cast_to<CanvasItem>(node)) {
+					add_node_menu->add_icon_item(get_theme_icon(SNAME("ToolMove"), SNAME("EditorIcons")), TTR("Move Node(s) Here"), ADD_MOVE);
+					break;
+				}
+			}
+
 			add_node_menu->reset_size();
-			add_node_menu->set_position(get_screen_transform().xform(get_local_mouse_position()));
+			add_node_menu->set_position(get_screen_transform().xform(b->get_position()));
 			add_node_menu->popup();
-			node_create_position = transform.affine_inverse().xform((get_local_mouse_position()));
+			node_create_position = transform.affine_inverse().xform(b->get_position());
 			return true;
 		}
 
@@ -3904,7 +3949,7 @@ void CanvasItemEditor::_selection_changed() {
 
 void CanvasItemEditor::edit(CanvasItem *p_canvas_item) {
 	Array selection = editor_selection->get_selected_nodes();
-	if (selection.size() != 1 || (Node *)selection[0] != p_canvas_item) {
+	if (selection.size() != 1 || Object::cast_to<Node>(selection[0]) != p_canvas_item) {
 		drag_type = DRAG_NONE;
 
 		// Clear the selection
@@ -5186,6 +5231,11 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	controls_vb = memnew(VBoxContainer);
 	controls_vb->set_begin(Point2(5, 5));
 
+	zoom_widget = memnew(EditorZoomWidget);
+	controls_vb->add_child(zoom_widget);
+	zoom_widget->set_anchors_and_offsets_preset(Control::PRESET_TOP_LEFT, Control::PRESET_MODE_MINSIZE, 2 * EDSCALE);
+	zoom_widget->connect("zoom_changed", callable_mp(this, &CanvasItemEditor::_update_zoom));
+
 	panner.instantiate();
 	panner->set_callbacks(callable_mp(this, &CanvasItemEditor::_scroll_callback), callable_mp(this, &CanvasItemEditor::_pan_callback), callable_mp(this, &CanvasItemEditor::_zoom_callback));
 
@@ -5210,11 +5260,6 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	v_scroll->hide();
 
 	viewport->add_child(controls_vb);
-
-	zoom_widget = memnew(EditorZoomWidget);
-	controls_vb->add_child(zoom_widget);
-	zoom_widget->set_anchors_and_offsets_preset(Control::PRESET_TOP_LEFT, Control::PRESET_MODE_MINSIZE, 2 * EDSCALE);
-	zoom_widget->connect("zoom_changed", callable_mp(this, &CanvasItemEditor::_update_zoom));
 
 	updating_scroll = false;
 
@@ -5548,8 +5593,6 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	add_node_menu = memnew(PopupMenu);
 	add_child(add_node_menu);
-	add_node_menu->add_icon_item(SceneTreeDock::get_singleton()->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")), TTR("Add Node Here"));
-	add_node_menu->add_icon_item(SceneTreeDock::get_singleton()->get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), TTR("Instance Scene Here"));
 	add_node_menu->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_add_node_pressed));
 
 	multiply_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/multiply_grid_step", TTR("Multiply grid step by 2"), Key::KP_MULTIPLY);

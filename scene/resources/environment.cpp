@@ -728,6 +728,24 @@ float Environment::get_glow_hdr_luminance_cap() const {
 	return glow_hdr_luminance_cap;
 }
 
+void Environment::set_glow_map_strength(float p_strength) {
+	glow_map_strength = p_strength;
+	_update_glow();
+}
+
+float Environment::get_glow_map_strength() const {
+	return glow_map_strength;
+}
+
+void Environment::set_glow_map(Ref<Texture> p_glow_map) {
+	glow_map = p_glow_map;
+	_update_glow();
+}
+
+Ref<Texture> Environment::get_glow_map() const {
+	return glow_map;
+}
+
 void Environment::_update_glow() {
 	Vector<float> normalized_levels;
 	if (glow_normalize_levels) {
@@ -743,6 +761,15 @@ void Environment::_update_glow() {
 		normalized_levels = glow_levels;
 	}
 
+	float _glow_map_strength = 0.0f;
+	RID glow_map_rid;
+	if (glow_map.is_valid()) {
+		glow_map_rid = glow_map->get_rid();
+		_glow_map_strength = glow_map_strength;
+	} else {
+		glow_map_rid = RID();
+	}
+
 	RS::get_singleton()->environment_set_glow(
 			environment,
 			glow_enabled,
@@ -754,7 +781,9 @@ void Environment::_update_glow() {
 			RS::EnvironmentGlowBlendMode(glow_blend_mode),
 			glow_hdr_bleed_threshold,
 			glow_hdr_bleed_scale,
-			glow_hdr_luminance_cap);
+			glow_hdr_luminance_cap,
+			_glow_map_strength,
+			glow_map_rid);
 }
 
 // Fog
@@ -1332,6 +1361,10 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_glow_hdr_bleed_scale"), &Environment::get_glow_hdr_bleed_scale);
 	ClassDB::bind_method(D_METHOD("set_glow_hdr_luminance_cap", "amount"), &Environment::set_glow_hdr_luminance_cap);
 	ClassDB::bind_method(D_METHOD("get_glow_hdr_luminance_cap"), &Environment::get_glow_hdr_luminance_cap);
+	ClassDB::bind_method(D_METHOD("set_glow_map_strength", "strength"), &Environment::set_glow_map_strength);
+	ClassDB::bind_method(D_METHOD("get_glow_map_strength"), &Environment::get_glow_map_strength);
+	ClassDB::bind_method(D_METHOD("set_glow_map", "mode"), &Environment::set_glow_map);
+	ClassDB::bind_method(D_METHOD("get_glow_map"), &Environment::get_glow_map);
 
 	ADD_GROUP("Glow", "glow_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "glow_enabled"), "set_glow_enabled", "is_glow_enabled");
@@ -1351,6 +1384,8 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "glow_hdr_threshold", PROPERTY_HINT_RANGE, "0.0,4.0,0.01"), "set_glow_hdr_bleed_threshold", "get_glow_hdr_bleed_threshold");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "glow_hdr_scale", PROPERTY_HINT_RANGE, "0.0,4.0,0.01"), "set_glow_hdr_bleed_scale", "get_glow_hdr_bleed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "glow_hdr_luminance_cap", PROPERTY_HINT_RANGE, "0.0,256.0,0.01"), "set_glow_hdr_luminance_cap", "get_glow_hdr_luminance_cap");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "glow_map_strength", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_glow_map_strength", "get_glow_map_strength");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "glow_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_glow_map", "get_glow_map");
 
 	// Fog
 

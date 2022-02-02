@@ -170,6 +170,8 @@ private:
 	float glow_hdr_bleed_threshold = 1.0;
 	float glow_hdr_bleed_scale = 2.0;
 	float glow_hdr_luminance_cap = 12.0;
+	float glow_map_strength = 0.8f;
+	Ref<Texture> glow_map;
 	void _update_glow();
 
 	// Fog
@@ -360,6 +362,10 @@ public:
 	float get_glow_hdr_bleed_scale() const;
 	void set_glow_hdr_luminance_cap(float p_amount);
 	float get_glow_hdr_luminance_cap() const;
+	void set_glow_map_strength(float p_strength);
+	float get_glow_map_strength() const;
+	void set_glow_map(Ref<Texture> p_glow_map);
+	Ref<Texture> get_glow_map() const;
 
 	// Fog
 

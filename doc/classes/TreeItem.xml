@@ -371,7 +371,7 @@
 		</method>
 		<method name="move_after">
 			<return type="void" />
-			<argument index="0" name="item" type="Object" />
+			<argument index="0" name="item" type="TreeItem" />
 			<description>
 				Moves this TreeItem right after the given [code]item[/code].
 				[b]Note:[/b] You can't move to the root or move the root.
@@ -379,7 +379,7 @@
 		</method>
 		<method name="move_before">
 			<return type="void" />
-			<argument index="0" name="item" type="Object" />
+			<argument index="0" name="item" type="TreeItem" />
 			<description>
 				Moves this TreeItem right before the given [code]item[/code].
 				[b]Note:[/b] You can't move to the root or move the root.
@@ -395,7 +395,7 @@
 		</method>
 		<method name="remove_child">
 			<return type="void" />
-			<argument index="0" name="child" type="Object" />
+			<argument index="0" name="child" type="TreeItem" />
 			<description>
 				Removes the given child [TreeItem] and all its children from the [Tree]. Note that it doesn't free the item from memory, so it can be reused later. To completely remove a [TreeItem] use [method Object.free].
 			</description>

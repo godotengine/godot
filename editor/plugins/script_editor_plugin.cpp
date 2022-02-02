@@ -1878,7 +1878,7 @@ void ScriptEditor::_update_members_overview() {
 	for (int i = 0; i < functions.size(); i++) {
 		String filter = filter_methods->get_text();
 		String name = functions[i].get_slice(":", 0);
-		if (filter.is_empty() || filter.is_subsequence_ofi(name)) {
+		if (filter.is_empty() || filter.is_subsequence_ofn(name)) {
 			members_overview->add_item(name);
 			members_overview->set_item_metadata(members_overview->get_item_count() - 1, functions[i].get_slice(":", 1).to_int() - 1);
 		}
@@ -2128,7 +2128,7 @@ void ScriptEditor::_update_script_names() {
 	Vector<_ScriptEditorItemData> sedata_filtered;
 	for (int i = 0; i < sedata.size(); i++) {
 		String filter = filter_scripts->get_text();
-		if (filter.is_empty() || filter.is_subsequence_ofi(sedata[i].name)) {
+		if (filter.is_empty() || filter.is_subsequence_ofn(sedata[i].name)) {
 			sedata_filtered.push_back(sedata[i]);
 		}
 	}
@@ -2859,7 +2859,7 @@ bool ScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data
 	}
 
 	if (String(d["type"]) == "script_list_element") {
-		Node *node = d["script_list_element"];
+		Node *node = Object::cast_to<Node>(d["script_list_element"]);
 
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(node);
 		if (se) {
@@ -2932,7 +2932,7 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 	}
 
 	if (String(d["type"]) == "script_list_element") {
-		Node *node = d["script_list_element"];
+		Node *node = Object::cast_to<Node>(d["script_list_element"]);
 
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(node);
 		EditorHelp *eh = Object::cast_to<EditorHelp>(node);
@@ -3486,7 +3486,7 @@ void ScriptEditor::_open_script_request(const String &p_path) {
 void ScriptEditor::register_syntax_highlighter(const Ref<EditorSyntaxHighlighter> &p_syntax_highlighter) {
 	ERR_FAIL_COND(p_syntax_highlighter.is_null());
 
-	if (syntax_highlighters.find(p_syntax_highlighter) == -1) {
+	if (!syntax_highlighters.has(p_syntax_highlighter)) {
 		syntax_highlighters.push_back(p_syntax_highlighter);
 	}
 }

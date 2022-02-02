@@ -328,6 +328,7 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 			};
 			case '"': {
 				String str;
+				char32_t prev = 0;
 				while (true) {
 					char32_t ch = GET_CHAR();
 
@@ -364,9 +365,11 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 							case 'r':
 								res = 13;
 								break;
+							case 'U':
 							case 'u': {
-								// hex number
-								for (int j = 0; j < 4; j++) {
+								// Hexadecimal sequence.
+								int hex_len = (next == 'U') ? 6 : 4;
+								for (int j = 0; j < hex_len; j++) {
 									char32_t c = GET_CHAR();
 
 									if (c == 0) {
@@ -403,11 +406,45 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 							} break;
 						}
 
+						// Parse UTF-16 pair.
+						if ((res & 0xfffffc00) == 0xd800) {
+							if (prev == 0) {
+								prev = res;
+								continue;
+							} else {
+								_set_error("Invalid UTF-16 sequence in string, unpaired lead surrogate");
+								r_token.type = TK_ERROR;
+								return ERR_PARSE_ERROR;
+							}
+						} else if ((res & 0xfffffc00) == 0xdc00) {
+							if (prev == 0) {
+								_set_error("Invalid UTF-16 sequence in string, unpaired trail surrogate");
+								r_token.type = TK_ERROR;
+								return ERR_PARSE_ERROR;
+							} else {
+								res = (prev << 10UL) + res - ((0xd800 << 10UL) + 0xdc00 - 0x10000);
+								prev = 0;
+							}
+						}
+						if (prev != 0) {
+							_set_error("Invalid UTF-16 sequence in string, unpaired lead surrogate");
+							r_token.type = TK_ERROR;
+							return ERR_PARSE_ERROR;
+						}
 						str += res;
-
 					} else {
+						if (prev != 0) {
+							_set_error("Invalid UTF-16 sequence in string, unpaired lead surrogate");
+							r_token.type = TK_ERROR;
+							return ERR_PARSE_ERROR;
+						}
 						str += ch;
 					}
+				}
+				if (prev != 0) {
+					_set_error("Invalid UTF-16 sequence in string, unpaired lead surrogate");
+					r_token.type = TK_ERROR;
+					return ERR_PARSE_ERROR;
 				}
 
 				r_token.type = TK_CONSTANT;

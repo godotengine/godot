@@ -233,9 +233,6 @@
 			[b]Note:[/b] This method is only implemented on Linux.
 		</member>
 		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" overrides="Control" enum="Control.CursorShape" default="1" />
-		<member name="placeholder_alpha" type="float" setter="set_placeholder_alpha" getter="get_placeholder_alpha" default="0.6">
-			Opacity of the [member placeholder_text]. From [code]0[/code] to [code]1[/code].
-		</member>
 		<member name="placeholder_text" type="String" setter="set_placeholder" getter="get_placeholder" default="&quot;&quot;">
 			Text shown when the [LineEdit] is empty. It is [b]not[/b] the [LineEdit]'s default value (see [member text]).
 		</member>
@@ -396,6 +393,9 @@
 		</theme_item>
 		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The tint of text outline of the [LineEdit].
+		</theme_item>
+		<theme_item name="font_placeholder_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.6)">
+			Font color for [member placeholder_text].
 		</theme_item>
 		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Font color for selected text (inside the selection rectangle).

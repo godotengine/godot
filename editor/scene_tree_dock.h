@@ -315,6 +315,7 @@ public:
 	void open_instance_child_dialog();
 
 	List<Node *> paste_nodes();
+	List<Node *> get_node_clipboard() const;
 
 	ScriptCreateDialog *get_script_create_dialog() { return script_create_dialog; }
 

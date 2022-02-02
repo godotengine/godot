@@ -37,6 +37,7 @@
 #include "core/variant/array.h"
 
 class Script;
+class Node;
 
 class SceneDebugger {
 public:

@@ -133,7 +133,7 @@ int Line2D::get_point_count() const {
 void Line2D::clear_points() {
 	int count = _points.size();
 	if (count > 0) {
-		_points.resize(0);
+		_points.clear();
 		update();
 	}
 }

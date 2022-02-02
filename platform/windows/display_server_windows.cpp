@@ -97,7 +97,10 @@ String DisplayServerWindows::get_name() const {
 void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
 	if (windows.has(MAIN_WINDOW_ID) && (p_mode == MOUSE_MODE_CAPTURED || p_mode == MOUSE_MODE_CONFINED || p_mode == MOUSE_MODE_CONFINED_HIDDEN)) {
 		// Mouse is grabbed (captured or confined).
-		WindowData &wd = windows[MAIN_WINDOW_ID];
+
+		WindowID window_id = windows.has(last_focused_window) ? last_focused_window : MAIN_WINDOW_ID;
+
+		WindowData &wd = windows[window_id];
 
 		RECT clipRect;
 		GetClientRect(wd.hWnd, &clipRect);
@@ -570,6 +573,24 @@ void DisplayServerWindows::gl_window_make_current(DisplayServer::WindowID p_wind
 #endif
 }
 
+int64_t DisplayServerWindows::window_get_native_handle(HandleType p_handle_type, WindowID p_window) const {
+	ERR_FAIL_COND_V(!windows.has(p_window), 0);
+	switch (p_handle_type) {
+		case DISPLAY_HANDLE: {
+			return 0; // Not supported.
+		}
+		case WINDOW_HANDLE: {
+			return (int64_t)windows[p_window].hWnd;
+		}
+		case WINDOW_VIEW: {
+			return 0; // Not supported.
+		}
+		default: {
+			return 0;
+		}
+	}
+}
+
 void DisplayServerWindows::window_attach_instance_id(ObjectID p_instance, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -687,6 +708,15 @@ void DisplayServerWindows::window_set_current_screen(int p_screen, WindowID p_wi
 	} else {
 		Vector2 ofs = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));
 		window_set_position(ofs + screen_get_position(p_screen), p_window);
+	}
+
+	// Don't let the mouse leave the window when resizing to a smaller resolution.
+	if (mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
+		RECT crect;
+		GetClientRect(wd.hWnd, &crect);
+		ClientToScreen(wd.hWnd, (POINT *)&crect.left);
+		ClientToScreen(wd.hWnd, (POINT *)&crect.right);
+		ClipCursor(&crect);
 	}
 }
 
@@ -1049,6 +1079,15 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		if (restore_mouse_trails > 1) {
 			SystemParametersInfoA(SPI_SETMOUSETRAILS, 0, 0, 0);
 		}
+	}
+
+	// Don't let the mouse leave the window when resizing to a smaller resolution.
+	if (mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
+		RECT crect;
+		GetClientRect(wd.hWnd, &crect);
+		ClientToScreen(wd.hWnd, (POINT *)&crect.left);
+		ClientToScreen(wd.hWnd, (POINT *)&crect.right);
+		ClipCursor(&crect);
 	}
 }
 
@@ -2879,6 +2918,9 @@ void DisplayServerWindows::_process_activate_event(WindowID p_window_id, WPARAM 
 		alt_mem = false;
 		control_mem = false;
 		shift_mem = false;
+
+		// Restore mouse mode.
+		_set_mouse_mode_impl(mouse_mode);
 	} else { // WM_INACTIVE.
 		Input::get_singleton()->release_pressed_events();
 		_send_window_event(windows[p_window_id], WINDOW_EVENT_FOCUS_OUT);

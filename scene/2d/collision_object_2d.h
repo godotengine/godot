@@ -59,7 +59,7 @@ private:
 	PhysicsServer2D::BodyMode body_mode = PhysicsServer2D::BODY_MODE_STATIC;
 
 	struct ShapeData {
-		Object *owner = nullptr;
+		ObjectID owner_id;
 		Transform2D xform;
 		struct Shape {
 			Ref<Shape2D> shape;

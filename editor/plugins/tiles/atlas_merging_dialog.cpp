@@ -81,7 +81,7 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 					}
 
 					// Copy the properties.
-					TileData *original_tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(tile_id, alternative_id));
+					TileData *original_tile_data = atlas_source->get_tile_data(tile_id, alternative_id);
 					List<PropertyInfo> properties;
 					original_tile_data->get_property_list(&properties);
 					for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {

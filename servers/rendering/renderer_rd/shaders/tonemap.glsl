@@ -45,6 +45,7 @@ layout(set = 0, binding = 0) uniform sampler2D source_color;
 
 layout(set = 1, binding = 0) uniform sampler2D source_auto_exposure;
 layout(set = 2, binding = 0) uniform sampler2D source_glow;
+layout(set = 2, binding = 1) uniform sampler2D glow_map;
 
 #ifdef USE_1D_LUT
 layout(set = 3, binding = 0) uniform sampler2D source_color_correction;
@@ -63,7 +64,7 @@ layout(push_constant, binding = 1, std430) uniform Params {
 
 	uvec2 glow_texture_size;
 	float glow_intensity;
-	uint pad3;
+	float glow_map_strength;
 
 	uint glow_mode;
 	float glow_levels[7];
@@ -405,6 +406,9 @@ void main() {
 #ifndef SUBPASS
 	if (params.use_glow && params.glow_mode == GLOW_MODE_MIX) {
 		vec3 glow = gather_glow(source_glow, uv_interp) * params.luminance_multiplier;
+		if (params.glow_map_strength > 0.001) {
+			glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
+		}
 		color.rgb = mix(color.rgb, glow, params.glow_intensity);
 	}
 
@@ -425,9 +429,11 @@ void main() {
 
 #ifndef SUBPASS
 	// Glow
-
 	if (params.use_glow && params.glow_mode != GLOW_MODE_MIX) {
 		vec3 glow = gather_glow(source_glow, uv_interp) * params.glow_intensity * params.luminance_multiplier;
+		if (params.glow_map_strength > 0.001) {
+			glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
+		}
 
 		// high dynamic range -> SRGB
 		glow = apply_tonemapping(glow, params.white);

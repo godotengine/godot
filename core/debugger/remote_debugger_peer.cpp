@@ -68,8 +68,8 @@ void RemoteDebuggerPeerTCP::close() {
 	running = false;
 	thread.wait_to_finish();
 	tcp_client->disconnect_from_host();
-	out_buf.resize(0);
-	in_buf.resize(0);
+	out_buf.clear();
+	in_buf.clear();
 }
 
 RemoteDebuggerPeerTCP::RemoteDebuggerPeerTCP(Ref<StreamPeerTCP> p_tcp) {
@@ -190,7 +190,8 @@ Error RemoteDebuggerPeerTCP::connect_to_host(const String &p_host, uint16_t p_po
 }
 
 void RemoteDebuggerPeerTCP::_thread_func(void *p_ud) {
-	const uint64_t min_tick = 100;
+	// Update in time for 144hz monitors
+	const uint64_t min_tick = 6900;
 	RemoteDebuggerPeerTCP *peer = (RemoteDebuggerPeerTCP *)p_ud;
 	while (peer->running && peer->is_peer_connected()) {
 		uint64_t ticks_usec = OS::get_singleton()->get_ticks_usec();

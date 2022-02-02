@@ -69,7 +69,7 @@ void WebRTCPeerConnection::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("session_description_created", PropertyInfo(Variant::STRING, "type"), PropertyInfo(Variant::STRING, "sdp")));
 	ADD_SIGNAL(MethodInfo("ice_candidate_created", PropertyInfo(Variant::STRING, "media"), PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::STRING, "name")));
-	ADD_SIGNAL(MethodInfo("data_channel_received", PropertyInfo(Variant::OBJECT, "channel")));
+	ADD_SIGNAL(MethodInfo("data_channel_received", PropertyInfo(Variant::OBJECT, "channel", PROPERTY_HINT_RESOURCE_TYPE, "WebRTCDataChannel")));
 
 	BIND_ENUM_CONSTANT(STATE_NEW);
 	BIND_ENUM_CONSTANT(STATE_CONNECTING);

@@ -755,7 +755,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		//now scroll it to draw
 		state_machine_draw->draw_style_box(sb, nr.node);
 
-		if (playing && (blend_from == name || current == name || travel_path.find(name) != -1)) {
+		if (playing && (blend_from == name || current == name || travel_path.has(name))) {
 			state_machine_draw->draw_style_box(playing_overlay, nr.node);
 		}
 

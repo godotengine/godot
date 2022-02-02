@@ -340,7 +340,7 @@ void EditorNode::_update_scene_tabs() {
 		}
 
 		if (show_rb && editor_data.get_scene_root_script(i).is_valid()) {
-			scene_tabs->set_tab_right_button(i, script_icon);
+			scene_tabs->set_tab_button_icon(i, script_icon);
 		}
 	}
 
@@ -3725,7 +3725,7 @@ void EditorNode::_show_messages() {
 
 void EditorNode::_add_to_recent_scenes(const String &p_scene) {
 	Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scenes", Array());
-	if (rc.find(p_scene) != -1) {
+	if (rc.has(p_scene)) {
 		rc.erase(p_scene);
 	}
 	rc.push_front(p_scene);
@@ -4222,6 +4222,8 @@ void EditorNode::_dock_floating_close_request(Control *p_control) {
 	_update_dock_containers();
 
 	floating_docks.erase(p_control);
+
+	_edit_current();
 }
 
 void EditorNode::_dock_make_float() {
@@ -4264,6 +4266,8 @@ void EditorNode::_dock_make_float() {
 	_update_dock_containers();
 
 	floating_docks.push_back(dock);
+
+	_edit_current();
 }
 
 void EditorNode::_update_dock_containers() {
@@ -6233,7 +6237,7 @@ EditorNode::EditorNode() {
 	scene_tabs->set_min_width(int(EDITOR_DEF("interface/scene_tabs/minimum_width", 50)) * EDSCALE);
 	scene_tabs->set_drag_to_rearrange_enabled(true);
 	scene_tabs->connect("tab_changed", callable_mp(this, &EditorNode::_scene_tab_changed));
-	scene_tabs->connect("tab_rmb_clicked", callable_mp(this, &EditorNode::_scene_tab_script_edited));
+	scene_tabs->connect("tab_button_pressed", callable_mp(this, &EditorNode::_scene_tab_script_edited));
 	scene_tabs->connect("tab_close_pressed", callable_mp(this, &EditorNode::_scene_tab_closed), varray(SCENE_TAB_CLOSE));
 	scene_tabs->connect("tab_hovered", callable_mp(this, &EditorNode::_scene_tab_hovered));
 	scene_tabs->connect("mouse_exited", callable_mp(this, &EditorNode::_scene_tab_exit));

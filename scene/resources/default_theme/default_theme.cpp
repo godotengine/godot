@@ -113,6 +113,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	const Color control_font_hover_color = Color(0.95, 0.95, 0.95);
 	const Color control_font_focus_color = Color(0.95, 0.95, 0.95);
 	const Color control_font_disabled_color = control_font_color * Color(1, 1, 1, 0.5);
+	const Color control_font_placeholder_color = Color(control_font_color.r, control_font_color.g, control_font_color.b, 0.6f);
 	const Color control_font_pressed_color = Color(1, 1, 1);
 	const Color control_selection_color = Color(0.5, 0.5, 0.5);
 
@@ -385,6 +386,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	theme->set_color("font_color", "LineEdit", control_font_color);
 	theme->set_color("font_selected_color", "LineEdit", control_font_pressed_color);
 	theme->set_color("font_uneditable_color", "LineEdit", control_font_disabled_color);
+	theme->set_color("font_placeholder_color", "LineEdit", control_font_placeholder_color);
 	theme->set_color("font_outline_color", "LineEdit", Color(1, 1, 1));
 	theme->set_color("caret_color", "LineEdit", control_font_hover_color);
 	theme->set_color("selection_color", "LineEdit", control_selection_color);
@@ -427,6 +429,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	theme->set_color("font_color", "TextEdit", control_font_color);
 	theme->set_color("font_selected_color", "TextEdit", control_font_pressed_color);
 	theme->set_color("font_readonly_color", "TextEdit", control_font_disabled_color);
+	theme->set_color("font_placeholder_color", "TextEdit", control_font_placeholder_color);
 	theme->set_color("font_outline_color", "TextEdit", Color(1, 1, 1));
 	theme->set_color("selection_color", "TextEdit", control_selection_color);
 	theme->set_color("current_line_color", "TextEdit", Color(0.25, 0.25, 0.26, 0.8));
@@ -468,6 +471,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	theme->set_color("font_color", "CodeEdit", control_font_color);
 	theme->set_color("font_selected_color", "CodeEdit", Color(0, 0, 0));
 	theme->set_color("font_readonly_color", "CodeEdit", Color(control_font_color.r, control_font_color.g, control_font_color.b, 0.5f));
+	theme->set_color("font_placeholder_color", "CodeEdit", control_font_placeholder_color);
 	theme->set_color("font_outline_color", "CodeEdit", Color(1, 1, 1));
 	theme->set_color("selection_color", "CodeEdit", control_selection_color);
 	theme->set_color("bookmark_color", "CodeEdit", Color(0.5, 0.64, 1, 0.8));
@@ -817,8 +821,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	theme->set_stylebox("tab_selected", "TabBar", style_tab_selected);
 	theme->set_stylebox("tab_unselected", "TabBar", style_tab_unselected);
 	theme->set_stylebox("tab_disabled", "TabBar", style_tab_disabled);
-	theme->set_stylebox("close_bg_pressed", "TabBar", button_pressed);
-	theme->set_stylebox("close_bg_highlight", "TabBar", button_normal);
+	theme->set_stylebox("button_pressed", "TabBar", button_pressed);
+	theme->set_stylebox("button_highlight", "TabBar", button_normal);
 
 	theme->set_icon("increment", "TabBar", icons["scroll_button_right"]);
 	theme->set_icon("increment_highlight", "TabBar", icons["scroll_button_right_hl"]);

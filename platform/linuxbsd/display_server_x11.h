@@ -143,13 +143,15 @@ class DisplayServerX11 : public DisplayServer {
 		bool borderless = false;
 		bool resize_disabled = false;
 		Vector2i last_position_before_fs;
-		bool focused = false;
+		bool focused = true;
 		bool minimized = false;
 
 		unsigned int focus_order = 0;
 	};
 
 	Map<WindowID, WindowData> windows;
+
+	WindowID last_focused_window = INVALID_WINDOW_ID;
 
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
@@ -315,6 +317,8 @@ public:
 	virtual void delete_sub_window(WindowID p_id) override;
 
 	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const override;
+
+	virtual int64_t window_get_native_handle(HandleType p_handle_type, WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual void window_attach_instance_id(ObjectID p_instance, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual ObjectID window_get_attached_instance_id(WindowID p_window = MAIN_WINDOW_ID) const override;

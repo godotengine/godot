@@ -577,8 +577,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeDotProduct);
 	GDREGISTER_CLASS(VisualShaderNodeVectorLen);
 	GDREGISTER_CLASS(VisualShaderNodeDeterminant);
-	GDREGISTER_CLASS(VisualShaderNodeScalarDerivativeFunc);
-	GDREGISTER_CLASS(VisualShaderNodeVectorDerivativeFunc);
+	GDREGISTER_CLASS(VisualShaderNodeDerivativeFunc);
 	GDREGISTER_CLASS(VisualShaderNodeClamp);
 	GDREGISTER_CLASS(VisualShaderNodeFaceForward);
 	GDREGISTER_CLASS(VisualShaderNodeOuterProduct);
@@ -1024,6 +1023,8 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("VisualShaderNodeVectorScalarStep", "VisualShaderNodeStep");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarSwitch", "VisualShaderNodeSwitch");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarTransformMult", "VisualShaderNodeTransformOp");
+	ClassDB::add_compatibility_class("VisualShaderNodeScalarDerivativeFunc", "VisualShaderNodeDerivativeFunc");
+	ClassDB::add_compatibility_class("VisualShaderNodeVectorDerivativeFunc", "VisualShaderNodeDerivativeFunc");
 	ClassDB::add_compatibility_class("World", "World3D");
 #endif /* DISABLE_DEPRECATED */
 

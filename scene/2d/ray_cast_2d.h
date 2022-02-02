@@ -33,6 +33,8 @@
 
 #include "scene/2d/node_2d.h"
 
+class CollisionObject2D;
+
 class RayCast2D : public Node2D {
 	GDCLASS(RayCast2D, Node2D);
 
@@ -94,9 +96,9 @@ public:
 	Vector2 get_collision_normal() const;
 
 	void add_exception_rid(const RID &p_rid);
-	void add_exception(const Object *p_object);
+	void add_exception(const CollisionObject2D *p_node);
 	void remove_exception_rid(const RID &p_rid);
-	void remove_exception(const Object *p_object);
+	void remove_exception(const CollisionObject2D *p_node);
 	void clear_exceptions();
 
 	RayCast2D();

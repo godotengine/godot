@@ -197,6 +197,8 @@ void Button::_notification(int p_what) {
 					color = get_theme_color(SNAME("font_disabled_color"));
 					if (has_theme_color(SNAME("icon_disabled_color"))) {
 						color_icon = get_theme_color(SNAME("icon_disabled_color"));
+					} else {
+						color_icon.a = 0.4;
 					}
 
 				} break;
@@ -232,9 +234,6 @@ void Button::_notification(int p_what) {
 			}
 			if (!_icon.is_null()) {
 				int valign = size.height - style->get_minimum_size().y;
-				if (is_disabled()) {
-					color_icon.a = 0.4;
-				}
 
 				float icon_ofs_region = 0.0;
 				Point2 style_offset;

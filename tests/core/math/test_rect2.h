@@ -439,6 +439,9 @@ TEST_CASE("[Rect2i] Enclosing") {
 	CHECK_MESSAGE(
 			!Rect2i(0, 100, 1280, 720).encloses(Rect2i(-4000, -4000, 100, 100)),
 			"encloses() with non-contained Rect2i should return the expected result.");
+	CHECK_MESSAGE(
+			Rect2i(0, 100, 1280, 720).encloses(Rect2i(0, 100, 1280, 720)),
+			"encloses() with identical Rect2i should return the expected result.");
 }
 
 TEST_CASE("[Rect2i] Expanding") {
@@ -557,6 +560,9 @@ TEST_CASE("[Rect2i] Intersection") {
 	CHECK_MESSAGE(
 			!Rect2i(0, 100, 1280, 720).intersects(Rect2i(-4000, -4000, 100, 100)),
 			"intersects() with non-enclosed Rect2i should return the expected result.");
+	CHECK_MESSAGE(
+			!Rect2i(0, 0, 2, 2).intersects(Rect2i(2, 2, 2, 2)),
+			"intersects() with adjacent Rect2i should return the expected result.");
 }
 
 TEST_CASE("[Rect2i] Merging") {

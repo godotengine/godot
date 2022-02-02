@@ -82,7 +82,6 @@ private:
 	String placeholder;
 	String placeholder_translated;
 	String secret_character = "*";
-	float placeholder_alpha = 0.6;
 	String ime_text;
 	Point2 ime_selection;
 
@@ -261,9 +260,6 @@ public:
 
 	void set_placeholder(String p_text);
 	String get_placeholder() const;
-
-	void set_placeholder_alpha(float p_alpha);
-	float get_placeholder_alpha() const;
 
 	void set_caret_column(int p_column);
 	int get_caret_column() const;

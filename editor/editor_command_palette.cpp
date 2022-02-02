@@ -72,7 +72,7 @@ void EditorCommandPalette::_update_command_search(const String &search_text) {
 		r.shortcut_text = commands[r.key_name].shortcut;
 		r.last_used = commands[r.key_name].last_used;
 
-		if (search_text.is_subsequence_ofi(r.display_name)) {
+		if (search_text.is_subsequence_ofn(r.display_name)) {
 			if (!search_text.is_empty()) {
 				r.score = _score_path(search_text, r.display_name.to_lower());
 			}

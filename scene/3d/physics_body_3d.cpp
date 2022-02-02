@@ -34,8 +34,8 @@
 #include "scene/scene_string_names.h"
 
 void PhysicsBody3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("move_and_collide", "linear_velocity", "test_only", "safe_margin", "max_collisions"), &PhysicsBody3D::_move, DEFVAL(false), DEFVAL(0.001), DEFVAL(1));
-	ClassDB::bind_method(D_METHOD("test_move", "from", "linear_velocity", "collision", "safe_margin", "max_collisions"), &PhysicsBody3D::test_move, DEFVAL(Variant()), DEFVAL(0.001), DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("move_and_collide", "distance", "test_only", "safe_margin", "max_collisions"), &PhysicsBody3D::_move, DEFVAL(false), DEFVAL(0.001), DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("test_move", "from", "distance", "collision", "safe_margin", "max_collisions"), &PhysicsBody3D::test_move, DEFVAL(Variant()), DEFVAL(0.001), DEFVAL(1));
 
 	ClassDB::bind_method(D_METHOD("set_axis_lock", "axis", "lock"), &PhysicsBody3D::set_axis_lock);
 	ClassDB::bind_method(D_METHOD("get_axis_lock", "axis"), &PhysicsBody3D::get_axis_lock);
@@ -91,11 +91,8 @@ void PhysicsBody3D::remove_collision_exception_with(Node *p_node) {
 	PhysicsServer3D::get_singleton()->body_remove_collision_exception(get_rid(), collision_object->get_rid());
 }
 
-Ref<KinematicCollision3D> PhysicsBody3D::_move(const Vector3 &p_linear_velocity, bool p_test_only, real_t p_margin, int p_max_collisions) {
-	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
-	double delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
-
-	PhysicsServer3D::MotionParameters parameters(get_global_transform(), p_linear_velocity * delta, p_margin);
+Ref<KinematicCollision3D> PhysicsBody3D::_move(const Vector3 &p_distance, bool p_test_only, real_t p_margin, int p_max_collisions) {
+	PhysicsServer3D::MotionParameters parameters(get_global_transform(), p_distance, p_margin);
 	parameters.max_collisions = p_max_collisions;
 
 	PhysicsServer3D::MotionResult result;
@@ -170,7 +167,7 @@ bool PhysicsBody3D::move_and_collide(const PhysicsServer3D::MotionParameters &p_
 	return colliding;
 }
 
-bool PhysicsBody3D::test_move(const Transform3D &p_from, const Vector3 &p_linear_velocity, const Ref<KinematicCollision3D> &r_collision, real_t p_margin, int p_max_collisions) {
+bool PhysicsBody3D::test_move(const Transform3D &p_from, const Vector3 &p_distance, const Ref<KinematicCollision3D> &r_collision, real_t p_margin, int p_max_collisions) {
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
 	PhysicsServer3D::MotionResult *r = nullptr;
@@ -182,10 +179,7 @@ bool PhysicsBody3D::test_move(const Transform3D &p_from, const Vector3 &p_linear
 		r = &temp_result;
 	}
 
-	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
-	double delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
-
-	PhysicsServer3D::MotionParameters parameters(p_from, p_linear_velocity * delta, p_margin);
+	PhysicsServer3D::MotionParameters parameters(p_from, p_distance, p_margin);
 
 	bool colliding = PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), parameters, r);
 

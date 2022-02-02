@@ -6238,7 +6238,7 @@ void RendererStorageRD::skeleton_allocate_data(RID p_skeleton, int p_bones, bool
 	if (skeleton->buffer.is_valid()) {
 		RD::get_singleton()->free(skeleton->buffer);
 		skeleton->buffer = RID();
-		skeleton->data.resize(0);
+		skeleton->data.clear();
 		skeleton->uniform_set_mi = RID();
 	}
 
