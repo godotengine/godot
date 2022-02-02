@@ -1910,6 +1910,8 @@ DocTools *EditorHelp::get_doc_data() {
 	return doc;
 }
 
+//// EditorHelpBit ///
+
 void EditorHelpBit::_go_to_help(String p_what) {
 	EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
 	ScriptEditor::get_singleton()->goto_help(p_what);
@@ -1950,12 +1952,9 @@ void EditorHelpBit::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			rich_text->add_theme_color_override("selection_color", get_theme_color(SNAME("selection_color"), SNAME("EditorHelp")));
-		} break;
-
-		case NOTIFICATION_READY: {
 			rich_text->clear();
 			_add_text_to_rt(text, rich_text);
-
+			rich_text->reset_size(); // Force recalculating size after parsing bbcode.
 		} break;
 	}
 }
@@ -1971,8 +1970,11 @@ EditorHelpBit::EditorHelpBit() {
 	add_child(rich_text);
 	rich_text->connect("meta_clicked", callable_mp(this, &EditorHelpBit::_meta_clicked));
 	rich_text->set_override_selected_font_color(false);
-	set_custom_minimum_size(Size2(0, 70 * EDSCALE));
+	rich_text->set_fit_content_height(true);
+	set_custom_minimum_size(Size2(0, 50 * EDSCALE));
 }
+
+//// FindBar ///
 
 FindBar::FindBar() {
 	search_text = memnew(LineEdit);

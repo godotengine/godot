@@ -833,28 +833,40 @@ void EditorProperty::_update_pin_flags() {
 	}
 }
 
-Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
-	tooltip_text = p_text;
+static Control *make_help_bit(const String &p_text, bool p_property) {
 	EditorHelpBit *help_bit = memnew(EditorHelpBit);
-	//help_bit->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TooltipPanel")));
 	help_bit->get_rich_text()->set_fixed_size_to_width(360 * EDSCALE);
 
-	String text;
 	PackedStringArray slices = p_text.split("::", false);
-	if (!slices.is_empty()) {
-		String property_name = slices[0].strip_edges();
-		text = TTR("Property:") + " [u][b]" + property_name + "[/b][/u]";
-
-		if (slices.size() > 1) {
-			String property_doc = slices[1].strip_edges();
-			if (property_name != property_doc) {
-				text += "\n" + property_doc;
-			}
-		}
-		help_bit->call_deferred(SNAME("set_text"), text); //hack so it uses proper theme once inside scene
+	if (slices.is_empty()) {
+		// Shouldn't happen here, but just in case pass the text along.
+		help_bit->set_text(p_text);
+		return help_bit;
 	}
 
+	String property_name = slices[0].strip_edges();
+	String text;
+	if (p_property) {
+		text = TTR("Property:") + " ";
+	}
+	text += "[u][b]" + property_name + "[/b][/u]";
+
+	if (slices.size() > 1) {
+		String property_doc = slices[1].strip_edges();
+		if (property_name != property_doc) {
+			text += "\n" + property_doc;
+		}
+	} else {
+		text += "\n[i]" + TTR("No description.") + "[/i]";
+	}
+	help_bit->set_text(text);
+
 	return help_bit;
+}
+
+Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
+	tooltip_text = p_text;
+	return make_help_bit(p_text, true);
 }
 
 String EditorProperty::get_tooltip_text() const {
@@ -1094,25 +1106,7 @@ void EditorInspectorCategory::_notification(int p_what) {
 
 Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) const {
 	tooltip_text = p_text;
-	EditorHelpBit *help_bit = memnew(EditorHelpBit);
-	help_bit->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TooltipPanel")));
-	help_bit->get_rich_text()->set_fixed_size_to_width(360 * EDSCALE);
-
-	PackedStringArray slices = p_text.split("::", false);
-	if (!slices.is_empty()) {
-		String property_name = slices[0].strip_edges();
-		String text = "[u][b]" + property_name + "[/b][/u]";
-
-		if (slices.size() > 1) {
-			String property_doc = slices[1].strip_edges();
-			if (property_name != property_doc) {
-				text += "\n" + property_doc;
-			}
-		}
-		help_bit->call_deferred(SNAME("set_text"), text); //hack so it uses proper theme once inside scene
-	}
-
-	return help_bit;
+	return make_help_bit(p_text, false);
 }
 
 Size2 EditorInspectorCategory::get_minimum_size() const {
