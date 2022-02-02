@@ -15,12 +15,15 @@
 	</members>
 	<constants>
 		<constant name="OP_TYPE_SCALAR" value="0" enum="OpType">
-			A scalar type.
+			A floating-point scalar type.
 		</constant>
-		<constant name="OP_TYPE_VECTOR" value="1" enum="OpType">
-			A vector type.
+		<constant name="OP_TYPE_VECTOR_2D" value="1" enum="OpType">
+			A 2D vector type.
 		</constant>
-		<constant name="OP_TYPE_MAX" value="2" enum="OpType">
+		<constant name="OP_TYPE_VECTOR_3D" value="2" enum="OpType">
+			A 3D vector type.
+		</constant>
+		<constant name="OP_TYPE_MAX" value="3" enum="OpType">
 			Represents the size of the [enum OpType] enum.
 		</constant>
 	</constants>

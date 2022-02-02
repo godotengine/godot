@@ -555,11 +555,13 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeResizableBase);
 	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeGroupBase);
 	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeConstant);
+	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeVectorBase);
 	GDREGISTER_CLASS(VisualShaderNodeComment);
 	GDREGISTER_CLASS(VisualShaderNodeFloatConstant);
 	GDREGISTER_CLASS(VisualShaderNodeIntConstant);
 	GDREGISTER_CLASS(VisualShaderNodeBooleanConstant);
 	GDREGISTER_CLASS(VisualShaderNodeColorConstant);
+	GDREGISTER_CLASS(VisualShaderNodeVec2Constant);
 	GDREGISTER_CLASS(VisualShaderNodeVec3Constant);
 	GDREGISTER_CLASS(VisualShaderNodeTransformConstant);
 	GDREGISTER_CLASS(VisualShaderNodeFloatOp);
@@ -603,6 +605,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeIntUniform);
 	GDREGISTER_CLASS(VisualShaderNodeBooleanUniform);
 	GDREGISTER_CLASS(VisualShaderNodeColorUniform);
+	GDREGISTER_CLASS(VisualShaderNodeVec2Uniform);
 	GDREGISTER_CLASS(VisualShaderNodeVec3Uniform);
 	GDREGISTER_CLASS(VisualShaderNodeTransformUniform);
 	GDREGISTER_CLASS(VisualShaderNodeTextureUniform);
