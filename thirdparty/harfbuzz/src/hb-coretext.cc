@@ -481,8 +481,8 @@ struct active_feature_t {
 	   a->rec.setting < b->rec.setting ? -1 : a->rec.setting > b->rec.setting ? 1 :
 	   0;
   }
-  bool operator== (const active_feature_t *f) {
-    return cmp (this, f) == 0;
+  bool operator== (const active_feature_t& f) const {
+    return cmp (this, &f) == 0;
   }
 };
 
@@ -677,7 +677,7 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
       {
 	active_features.push (event->feature);
       } else {
-	active_feature_t *feature = active_features.find (&event->feature);
+	active_feature_t *feature = active_features.lsearch (event->feature);
 	if (feature)
 	  active_features.remove (feature - active_features.arrayZ);
       }
@@ -1213,7 +1213,8 @@ resize_and_retry:
     }
   }
 
-  buffer->clear_glyph_flags (HB_GLYPH_FLAG_UNSAFE_TO_BREAK);
+  buffer->clear_glyph_flags ();
+  buffer->unsafe_to_break ();
 
 #undef FAIL
 

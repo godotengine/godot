@@ -42,26 +42,13 @@ struct graph_t
 {
   struct vertex_t
   {
-    vertex_t () :
-        distance (0),
-        space (0),
-        parents (),
-        start (0),
-        end (0),
-        priority(0) {}
-
-    void fini () {
-      obj.fini ();
-      parents.fini ();
-    }
-
     hb_serialize_context_t::object_t obj;
-    int64_t distance;
-    int64_t space;
+    int64_t distance = 0 ;
+    int64_t space = 0 ;
     hb_vector_t<unsigned> parents;
-    unsigned start;
-    unsigned end;
-    unsigned priority;
+    unsigned start = 0;
+    unsigned end = 0;
+    unsigned priority = 0;
 
     bool is_shared () const
     {
@@ -186,7 +173,7 @@ struct graph_t
 
   ~graph_t ()
   {
-    vertices_.fini_deep ();
+    vertices_.fini ();
   }
 
   bool in_error () const
@@ -309,7 +296,7 @@ struct graph_t
     remap_all_obj_indices (id_map, &sorted_graph);
 
     hb_swap (vertices_, sorted_graph);
-    sorted_graph.fini_deep ();
+    sorted_graph.fini ();
   }
 
   /*
@@ -369,7 +356,7 @@ struct graph_t
     remap_all_obj_indices (id_map, &sorted_graph);
 
     hb_swap (vertices_, sorted_graph);
-    sorted_graph.fini_deep ();
+    sorted_graph.fini ();
   }
 
   /*
@@ -402,11 +389,15 @@ struct graph_t
     while (roots)
     {
       unsigned next = HB_SET_VALUE_INVALID;
+      if (unlikely (!check_success (!roots.in_error ()))) break;
       if (!roots.next (&next)) break;
 
       hb_set_t connected_roots;
       find_connected_nodes (next, roots, visited, connected_roots);
+      if (unlikely (!check_success (!connected_roots.in_error ()))) break;
+
       isolate_subgraph (connected_roots);
+      if (unlikely (!check_success (!connected_roots.in_error ()))) break;
 
       unsigned next_space = this->next_space ();
       num_roots_for_space_.push (0);
@@ -422,6 +413,8 @@ struct graph_t
       // TODO(grieger): special case for GSUB/GPOS use extension promotions to move 16 bit space
       //                into the 32 bit space as needed, instead of using isolation.
     }
+
+
 
     return true;
   }
@@ -865,7 +858,7 @@ struct graph_t
     // Redundant ones are filtered out later on by the visited set.
     // According to https://www3.cs.stonybrook.edu/~rezaul/papers/TR-07-54.pdf
     // for practical performance this is faster then using a more advanced queue
-    // (such as a fibonaacci queue) with a fast decrease priority.
+    // (such as a fibonacci queue) with a fast decrease priority.
     for (unsigned i = 0; i < vertices_.length; i++)
     {
       if (i == vertices_.length - 1)
@@ -1074,6 +1067,7 @@ struct graph_t
                              hb_set_t& visited,
                              hb_set_t& connected)
   {
+    if (unlikely (!check_success (!visited.in_error ()))) return;
     if (visited.has (start_idx)) return;
     visited.add (start_idx);
 
