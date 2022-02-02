@@ -896,6 +896,32 @@
 				[b]Note:[/b] This function is used by during project export, to include TextServer database.
 			</description>
 		</method>
+		<method name="shaped_get_span_count" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="shaped" type="RID" />
+			<description>
+				Returns number of text spans added using [method shaped_text_add_string] or [method shaped_text_add_object].
+			</description>
+		</method>
+		<method name="shaped_get_span_meta" qualifiers="const">
+			<return type="Variant" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="index" type="int" />
+			<description>
+				Returns text span metadata.
+			</description>
+		</method>
+		<method name="shaped_set_span_update_font">
+			<return type="void" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="index" type="int" />
+			<argument index="2" name="fonts" type="Array" />
+			<argument index="3" name="size" type="int" />
+			<argument index="4" name="opentype_features" type="Dictionary" default="{}" />
+			<description>
+				Changes text span font, font size and OpenType features, without changing the text.
+			</description>
+		</method>
 		<method name="shaped_text_add_object">
 			<return type="bool" />
 			<argument index="0" name="shaped" type="RID" />
@@ -915,6 +941,7 @@
 			<argument index="3" name="size" type="int" />
 			<argument index="4" name="opentype_features" type="Dictionary" default="{}" />
 			<argument index="5" name="language" type="String" default="&quot;&quot;" />
+			<argument index="6" name="meta" type="Variant" default="null" />
 			<description>
 				Adds text span and font to draw it to the text buffer.
 			</description>

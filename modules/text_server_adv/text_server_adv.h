@@ -242,12 +242,32 @@ class TextServerAdvanced : public TextServer {
 	// Shaped text cache data.
 
 	struct ShapedTextDataAdvanced : public ShapedTextData {
+		struct Span {
+			int start = -1;
+			int end = -1;
+
+			Vector<RID> fonts;
+			int font_size = 0;
+
+			Variant embedded_key;
+
+			String language;
+			Dictionary features;
+			Variant meta;
+		};
+		Vector<Span> spans;
+
 		/* Intermediate data */
 		Char16String utf16;
 		Vector<UBiDi *> bidi_iter;
 		Vector<Vector2i> bidi_override;
 		ScriptIterator *script_iter = nullptr;
 		hb_buffer_t *hb_buffer = nullptr;
+
+		HashMap<int, bool> jstops;
+		HashMap<int, bool> breaks;
+		bool break_ops_valid = false;
+		bool js_ops_valid = false;
 
 		~ShapedTextDataAdvanced() {
 			for (int i = 0; i < bidi_iter.size(); i++) {
@@ -268,6 +288,7 @@ class TextServerAdvanced : public TextServer {
 	mutable RID_PtrOwner<FontDataAdvanced> font_owner;
 	mutable RID_PtrOwner<ShapedTextDataAdvanced> shaped_owner;
 
+	void _realign(ShapedTextDataAdvanced *p_sd) const;
 	int _convert_pos(const ShapedTextDataAdvanced *p_sd, int p_pos) const;
 	int _convert_pos_inv(const ShapedTextDataAdvanced *p_sd, int p_pos) const;
 	bool _shape_substr(ShapedTextDataAdvanced *p_new_sd, const ShapedTextDataAdvanced *p_sd, int p_start, int p_length) const;
@@ -302,7 +323,7 @@ protected:
 	static void _bind_methods(){};
 
 	void full_copy(ShapedTextDataAdvanced *p_shaped);
-	void invalidate(ShapedTextDataAdvanced *p_shaped);
+	void invalidate(ShapedTextDataAdvanced *p_shaped, bool p_text = false);
 
 public:
 	virtual bool has_feature(Feature p_feature) const override;
@@ -482,9 +503,13 @@ public:
 	virtual void shaped_text_set_preserve_control(RID p_shaped, bool p_enabled) override;
 	virtual bool shaped_text_get_preserve_control(RID p_shaped) const override;
 
-	virtual bool shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "") override;
+	virtual bool shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "", const Variant &p_meta = Variant()) override;
 	virtual bool shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int p_length = 1) override;
 	virtual bool shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER) override;
+
+	virtual int shaped_get_span_count(RID p_shaped) const override;
+	virtual Variant shaped_get_span_meta(RID p_shaped, int p_index) const override;
+	virtual void shaped_set_span_update_font(RID p_shaped, int p_index, const Vector<RID> &p_fonts, int p_size, const Dictionary &p_opentype_features = Dictionary()) override;
 
 	virtual RID shaped_text_substr(RID p_shaped, int p_start, int p_length) const override;
 	virtual RID shaped_text_get_parent(RID p_shaped) const override;
