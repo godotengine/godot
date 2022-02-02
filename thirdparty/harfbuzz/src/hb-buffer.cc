@@ -86,7 +86,46 @@ hb_segment_properties_hash (const hb_segment_properties_t *p)
 	 (intptr_t) (p->language);
 }
 
+/**
+ * hb_segment_properties_overlay:
+ * @p: #hb_segment_properties_t to fill in.
+ * @src: #hb_segment_properties_t to fill in from.
+ *
+ * Fills in missing fields of @p from @src in a considered manner.
+ *
+ * First, if @p does not have direction set, direction is copied from @src.
+ *
+ * Next, if @p and @src have the same direction (which can be unset), if @p
+ * does not have script set, script is copied from @src.
+ *
+ * Finally, if @p and @src have the same direction and script (which either
+ * can be unset), if @p does not have language set, language is copied from
+ * @src.
+ *
+ * Since: 3.3.0
+ **/
+void
+hb_segment_properties_overlay (hb_segment_properties_t *p,
+			       const hb_segment_properties_t *src)
+{
+  if (unlikely (!p || !src))
+    return;
 
+  if (!p->direction)
+    p->direction = src->direction;
+
+  if (p->direction != src->direction)
+    return;
+
+  if (!p->script)
+    p->script = src->script;
+
+  if (p->script != src->script)
+    return;
+
+  if (!p->language)
+    p->language = src->language;
+}
 
 /* Here is how the buffer works internally:
  *
@@ -96,14 +135,14 @@ hb_segment_properties_hash (const hb_segment_properties_t *p)
  * As an optimization, both info and out_info may point to the
  * same piece of memory, which is owned by info.  This remains the
  * case as long as out_len doesn't exceed i at any time.
- * In that case, swap_buffers() is mostly no-op and the glyph operations
+ * In that case, sync() is mostly no-op and the glyph operations
  * operate mostly in-place.
  *
  * As soon as out_info gets longer than info, out_info is moved over
  * to an alternate buffer (which we reuse the pos buffer for), and its
  * current contents (out_len entries) are copied to the new place.
  *
- * This should all remain transparent to the user.  swap_buffers() then
+ * This should all remain transparent to the user.  sync() then
  * switches info over to out_info and does housekeeping.
  */
 
@@ -217,11 +256,24 @@ hb_buffer_t::get_scratch_buffer (unsigned int *size)
 /* HarfBuzz-Internal API */
 
 void
+hb_buffer_t::similar (const hb_buffer_t &src)
+{
+  hb_unicode_funcs_destroy (unicode);
+  unicode = hb_unicode_funcs_reference (src.unicode);
+  flags = src.flags;
+  cluster_level = src.cluster_level;
+  replacement = src.invisible;
+  invisible = src.invisible;
+  not_found = src.not_found;
+}
+
+void
 hb_buffer_t::reset ()
 {
   hb_unicode_funcs_destroy (unicode);
   unicode = hb_unicode_funcs_reference (hb_unicode_funcs_get_default ());
   flags = HB_BUFFER_FLAG_DEFAULT;
+  cluster_level = HB_BUFFER_CLUSTER_LEVEL_DEFAULT;
   replacement = HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT;
   invisible = 0;
   not_found = 0;
@@ -232,11 +284,10 @@ hb_buffer_t::reset ()
 void
 hb_buffer_t::clear ()
 {
+  content_type = HB_BUFFER_CONTENT_TYPE_INVALID;
   hb_segment_properties_t default_props = HB_SEGMENT_PROPERTIES_DEFAULT;
   props = default_props;
-  scratch_flags = HB_BUFFER_SCRATCH_FLAG_DEFAULT;
 
-  content_type = HB_BUFFER_CONTENT_TYPE_INVALID;
   successful = true;
   have_output = false;
   have_positions = false;
@@ -244,15 +295,43 @@ hb_buffer_t::clear ()
   idx = 0;
   len = 0;
   out_len = 0;
-  out_info = info;
 
-  serial = 0;
+  out_info = info;
 
   memset (context, 0, sizeof context);
   memset (context_len, 0, sizeof context_len);
 
   deallocate_var_all ();
+  serial = 0;
+  scratch_flags = HB_BUFFER_SCRATCH_FLAG_DEFAULT;
 }
+
+void
+hb_buffer_t::enter ()
+{
+  deallocate_var_all ();
+  serial = 0;
+  scratch_flags = HB_BUFFER_SCRATCH_FLAG_DEFAULT;
+  if (likely (!hb_unsigned_mul_overflows (len, HB_BUFFER_MAX_LEN_FACTOR)))
+  {
+    max_len = hb_max (len * HB_BUFFER_MAX_LEN_FACTOR,
+		      (unsigned) HB_BUFFER_MAX_LEN_MIN);
+  }
+  if (likely (!hb_unsigned_mul_overflows (len, HB_BUFFER_MAX_OPS_FACTOR)))
+  {
+    max_ops = hb_max (len * HB_BUFFER_MAX_OPS_FACTOR,
+		      (unsigned) HB_BUFFER_MAX_OPS_MIN);
+  }
+}
+void
+hb_buffer_t::leave ()
+{
+  max_len = HB_BUFFER_MAX_LEN_DEFAULT;
+  max_ops = HB_BUFFER_MAX_OPS_DEFAULT;
+  deallocate_var_all ();
+  serial = 0;
+}
+
 
 void
 hb_buffer_t::add (hb_codepoint_t  codepoint,
@@ -307,7 +386,7 @@ hb_buffer_t::clear_positions ()
 }
 
 void
-hb_buffer_t::swap_buffers ()
+hb_buffer_t::sync ()
 {
   assert (have_output);
 
@@ -494,33 +573,6 @@ done:
 }
 
 void
-hb_buffer_t::unsafe_to_break_impl (unsigned int start, unsigned int end)
-{
-  unsigned int cluster = UINT_MAX;
-  cluster = _infos_find_min_cluster (info, start, end, cluster);
-  _unsafe_to_break_set_mask (info, start, end, cluster);
-}
-void
-hb_buffer_t::unsafe_to_break_from_outbuffer (unsigned int start, unsigned int end)
-{
-  if (!have_output)
-  {
-    unsafe_to_break_impl (start, end);
-    return;
-  }
-
-  assert (start <= out_len);
-  assert (idx <= end);
-
-  unsigned int cluster = UINT_MAX;
-  cluster = _infos_find_min_cluster (out_info, start, out_len, cluster);
-  cluster = _infos_find_min_cluster (info, idx, end, cluster);
-
-  _unsafe_to_break_set_mask (out_info, start, out_len, cluster);
-  _unsafe_to_break_set_mask (info, idx, end, cluster);
-}
-
-void
 hb_buffer_t::guess_segment_properties ()
 {
   assert_unicode ();
@@ -565,12 +617,11 @@ DEFINE_NULL_INSTANCE (hb_buffer_t) =
   HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT,
   0, /* invisible */
   0, /* not_found */
-  HB_BUFFER_SCRATCH_FLAG_DEFAULT,
-  HB_BUFFER_MAX_LEN_DEFAULT,
-  HB_BUFFER_MAX_OPS_DEFAULT,
+
 
   HB_BUFFER_CONTENT_TYPE_INVALID,
   HB_SEGMENT_PROPERTIES_DEFAULT,
+
   false, /* successful */
   false, /* have_output */
   true  /* have_positions */
@@ -607,6 +658,46 @@ hb_buffer_create ()
   buffer->reset ();
 
   return buffer;
+}
+
+/**
+ * hb_buffer_create_similar:
+ * @src: An #hb_buffer_t
+ *
+ * Creates a new #hb_buffer_t, similar to hb_buffer_create(). The only
+ * difference is that the buffer is configured similarly to @src.
+ *
+ * Return value: (transfer full):
+ * A newly allocated #hb_buffer_t, similar to hb_buffer_create().
+ *
+ * Since: 3.3.0
+ **/
+hb_buffer_t *
+hb_buffer_create_similar (const hb_buffer_t *src)
+{
+  hb_buffer_t *buffer = hb_buffer_create ();
+
+  buffer->similar (*src);
+
+  return buffer;
+}
+
+/**
+ * hb_buffer_reset:
+ * @buffer: An #hb_buffer_t
+ *
+ * Resets the buffer to its initial status, as if it was just newly created
+ * with hb_buffer_create().
+ *
+ * Since: 0.9.2
+ **/
+void
+hb_buffer_reset (hb_buffer_t *buffer)
+{
+  if (unlikely (hb_object_is_immutable (buffer)))
+    return;
+
+  buffer->reset ();
 }
 
 /**
@@ -1155,24 +1246,6 @@ hb_buffer_get_not_found_glyph (hb_buffer_t    *buffer)
   return buffer->not_found;
 }
 
-
-/**
- * hb_buffer_reset:
- * @buffer: An #hb_buffer_t
- *
- * Resets the buffer to its initial status, as if it was just newly created
- * with hb_buffer_create().
- *
- * Since: 0.9.2
- **/
-void
-hb_buffer_reset (hb_buffer_t *buffer)
-{
-  if (unlikely (hb_object_is_immutable (buffer)))
-    return;
-
-  buffer->reset ();
-}
 
 /**
  * hb_buffer_clear_contents:
@@ -1748,6 +1821,8 @@ hb_buffer_append (hb_buffer_t *buffer,
     buffer->content_type = source->content_type;
   if (!buffer->have_positions && source->have_positions)
     buffer->clear_positions ();
+
+  hb_segment_properties_overlay (&buffer->props, &source->props);
 
   memcpy (buffer->info + orig_len, source->info + start, (end - start) * sizeof (buffer->info[0]));
   if (buffer->have_positions)

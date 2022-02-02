@@ -412,7 +412,7 @@ bool hb_array_t<T>::operator == (const hb_array_t<T> &o) const
   return true;
 }
 
-/* TODO Specialize opeator== for hb_bytes_t and hb_ubytes_t. */
+/* TODO Specialize operator== for hb_bytes_t and hb_ubytes_t. */
 
 template <>
 inline uint32_t hb_array_t<const char>::hash () const {

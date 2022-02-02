@@ -109,7 +109,7 @@ typedef enum { /*< flags >*/
  * @tag: The #hb_tag_t tag identifying the design variation of the axis
  * @name_id: The `name` table Name ID that provides display names for the axis
  * @flags: The #hb_ot_var_axis_flags_t flags for the axis
- * @min_value: The mininum value on the variation axis that the font covers
+ * @min_value: The minimum value on the variation axis that the font covers
  * @default_value: The position on the variation axis corresponding to the font's defaults
  * @max_value: The maximum value on the variation axis that the font covers
  * 

@@ -90,15 +90,15 @@ hb_ot_color_palette_get_count (hb_face_t *face)
 /**
  * hb_ot_color_palette_get_name_id:
  * @face: #hb_face_t to work upon
- * @palette_index: The index of the color palette 
+ * @palette_index: The index of the color palette
  *
  * Fetches the `name` table Name ID that provides display names for
- * a `CPAL` color palette. 
+ * a `CPAL` color palette.
  *
  * Palette display names can be generic (e.g., "Default") or provide
  * specific, themed names (e.g., "Spring", "Summer", "Fall", and "Winter").
  *
- * Return value: the Named ID found for the palette. 
+ * Return value: the Named ID found for the palette.
  * If the requested palette has no name the result is #HB_OT_NAME_ID_INVALID.
  *
  * Since: 2.1.0
@@ -116,7 +116,7 @@ hb_ot_color_palette_get_name_id (hb_face_t *face,
  * @color_index: The index of the color
  *
  * Fetches the `name` table Name ID that provides display names for
- * the specificed color in a face's `CPAL` color palette. 
+ * the specified color in a face's `CPAL` color palette.
  *
  * Display names can be generic (e.g., "Background") or specific
  * (e.g., "Eye color").
@@ -256,6 +256,8 @@ hb_ot_color_has_svg (hb_face_t *face)
  *
  * Fetches the SVG document for a glyph. The blob may be either plain text or gzip-encoded.
  *
+ * If the glyph has no SVG document, the singleton empty blob is returned.
+ *
  * Return value: (transfer full): An #hb_blob_t containing the SVG document of the glyph, if available
  *
  * Since: 2.1.0
@@ -295,6 +297,8 @@ hb_ot_color_has_png (hb_face_t *face)
  * Fetches the PNG image for a glyph. This function takes a font object, not a face object,
  * as input. To get an optimally sized PNG blob, the UPEM value must be set on the @font
  * object. If UPEM is unset, the blob returned will be the largest PNG available.
+ *
+ * If the glyph has no PNG image, the singleton empty blob is returned.
  *
  * Return value: (transfer full): An #hb_blob_t containing the PNG image for the glyph, if available
  *

@@ -762,7 +762,8 @@ retry_getglyphs:
 
   if (isRightToLeft) hb_buffer_reverse (buffer);
 
-  buffer->clear_glyph_flags (HB_GLYPH_FLAG_UNSAFE_TO_BREAK);
+  buffer->clear_glyph_flags ();
+  buffer->unsafe_to_break ();
 
   delete [] clusterMap;
   delete [] glyphIndices;
