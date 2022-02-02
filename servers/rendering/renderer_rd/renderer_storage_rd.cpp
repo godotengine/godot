@@ -5712,6 +5712,21 @@ void RendererStorageRD::update_particles() {
 				total_amount *= particles->trail_bind_poses.size();
 			}
 
+			// Affect 2D only.
+			if (particles->use_local_coords) {
+				// In local mode, particle positions are calculated locally (relative to the node position)
+				// and they're also drawn locally.
+				// It works as expected, so we just pass an identity transform.
+				store_transform(Transform3D(), copy_push_constant.inv_emission_transform);
+			} else {
+				// In global mode, particle positions are calculated globally (relative to the canvas origin)
+				// but they're drawn locally.
+				// So, we need to pass the inverse of the emission transform to bring the
+				// particles to local coordinates before drawing.
+				Transform3D inv = particles->emission_transform.affine_inverse();
+				store_transform(inv, copy_push_constant.inv_emission_transform);
+			}
+
 			copy_push_constant.total_particles = total_amount;
 			copy_push_constant.frame_remainder = particles->interpolate ? particles->frame_remainder : 0.0;
 			copy_push_constant.align_mode = particles->transform_align;
