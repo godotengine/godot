@@ -408,7 +408,8 @@
 			<return type="void" />
 			<argument index="0" name="to" type="Vector2" />
 			<description>
-				Sets the mouse position to the specified vector.
+				Sets the mouse position to the specified vector, provided in pixels and relative to an origin at the upper left corner of the game window.
+				Mouse position is clipped to the limits of the screen resolution, or to the limits of the game window if [enum MouseMode] is set to [constant MOUSE_MODE_CONFINED].
 			</description>
 		</method>
 	</methods>
