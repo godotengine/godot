@@ -19,16 +19,12 @@ void DisplayServerWayland::_poll_events_thread(void *p_wls) {
 	}
 }
 
-// TODO: Since this class has already its state separated into a struct, we
-// could avoid the public implementation-specific method it calls and do
-// everything here.
-// 
-// Took from DisplayServerX11.
+// Taken from DisplayServerX11.
 void DisplayServerWayland::dispatch_input_events(const Ref<InputEvent> &p_event) {
 	((DisplayServerWayland *)(get_singleton()))->_dispatch_input_event(p_event);
 }
 
-// Adapted from DisplayServerX11.
+// Taken from DisplayServerX11.
 void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 	MutexLock mutex_lock(wls.mutex);
 
@@ -405,7 +401,7 @@ void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *w
 	k->set_pressed(pressed);
 	k->set_echo(false);
 
-	// Took from DisplayServerX11.
+	// Taken from DisplayServerX11.
 	if (k->get_keycode() == Key::BACKTAB) {
 		// Make it consistent across platforms.
 		k->set_keycode(Key::TAB);
