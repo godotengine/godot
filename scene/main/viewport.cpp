@@ -47,6 +47,7 @@
 #include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/popup_menu.h"
+#include "scene/gui/viewport_container.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/timer.h"
 #include "scene/resources/mesh.h"
@@ -713,6 +714,11 @@ void Viewport::set_size(const Size2 &p_size) {
 	}
 	size = p_size.floor();
 	VS::get_singleton()->viewport_set_size(viewport, size.width, size.height);
+
+	ViewportContainer *c = Object::cast_to<ViewportContainer>(get_parent());
+	if (c) {
+		c->minimum_size_changed();
+	}
 
 	_update_stretch_transform();
 	update_configuration_warning();
