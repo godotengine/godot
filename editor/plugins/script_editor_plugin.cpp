@@ -1603,7 +1603,8 @@ void ScriptEditor::_notification(int p_what) {
 
 			members_overview->connect("item_selected", callable_mp(this, &ScriptEditor::_members_overview_selected));
 			help_overview->connect("item_selected", callable_mp(this, &ScriptEditor::_help_overview_selected));
-			script_split->connect("dragged", callable_mp(this, &ScriptEditor::_script_split_dragged));
+			script_split->connect("dragged", callable_mp(this, &ScriptEditor::_split_dragged));
+			list_split->connect("dragged", callable_mp(this, &ScriptEditor::_split_dragged));
 
 			EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &ScriptEditor::_editor_settings_changed));
 			EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &ScriptEditor::_filesystem_changed));
@@ -2809,7 +2810,7 @@ void ScriptEditor::_tree_changed() {
 	call_deferred(SNAME("_update_script_connections"));
 }
 
-void ScriptEditor::_script_split_dragged(float) {
+void ScriptEditor::_split_dragged(float) {
 	_save_layout();
 }
 
@@ -3199,8 +3200,12 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 		tab_container->get_child(i)->set_meta("__editor_pass", Variant());
 	}
 
-	if (p_layout->has_section_key("ScriptEditor", "split_offset")) {
-		script_split->set_split_offset(p_layout->get_value("ScriptEditor", "split_offset"));
+	if (p_layout->has_section_key("ScriptEditor", "script_split_offset")) {
+		script_split->set_split_offset(p_layout->get_value("ScriptEditor", "script_split_offset"));
+	}
+
+	if (p_layout->has_section_key("ScriptEditor", "list_split_offset")) {
+		list_split->set_split_offset(p_layout->get_value("ScriptEditor", "list_split_offset"));
 	}
 
 	// Remove any deleted editors that have been removed between launches.
@@ -3253,7 +3258,8 @@ void ScriptEditor::get_window_layout(Ref<ConfigFile> p_layout) {
 
 	p_layout->set_value("ScriptEditor", "open_scripts", scripts);
 	p_layout->set_value("ScriptEditor", "open_help", helps);
-	p_layout->set_value("ScriptEditor", "split_offset", script_split->get_split_offset());
+	p_layout->set_value("ScriptEditor", "script_split_offset", script_split->get_split_offset());
+	p_layout->set_value("ScriptEditor", "list_split_offset", list_split->get_split_offset());
 
 	// Save the cache.
 	script_editor_cache->save(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("script_editor_cache.cfg"));
