@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  settings_config_dialog.cpp                                           */
+/*  editor_settings_dialog.cpp                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "settings_config_dialog.h"
+#include "editor_settings_dialog.h"
 
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"

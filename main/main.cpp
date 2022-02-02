@@ -1311,11 +1311,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			PropertyInfo(Variant::INT, "display/window/size/viewport_width",
 					PROPERTY_HINT_RANGE,
 					"0,7680,or_greater")); // 8K resolution
+
 	GLOBAL_DEF_BASIC("display/window/size/viewport_height", 600);
 	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/viewport_height",
 			PropertyInfo(Variant::INT, "display/window/size/viewport_height",
 					PROPERTY_HINT_RANGE,
-					"0,4320,or_greater")); // 8K resolution
+					"0,4320,1,or_greater")); // 8K resolution
+
 	GLOBAL_DEF_BASIC("display/window/size/resizable", true);
 	GLOBAL_DEF_BASIC("display/window/size/borderless", false);
 	GLOBAL_DEF_BASIC("display/window/size/fullscreen", false);
@@ -1325,7 +1327,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			PropertyInfo(Variant::INT,
 					"display/window/size/window_width_override",
 					PROPERTY_HINT_RANGE,
-					"0,7680,or_greater")); // 8K resolution
+					"0,7680,1,or_greater")); // 8K resolution
 	GLOBAL_DEF("display/window/size/window_height_override", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/window_height_override",
 			PropertyInfo(Variant::INT,

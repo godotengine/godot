@@ -93,6 +93,7 @@
 #include "editor/editor_run_script.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_settings_dialog.h"
 #include "editor/editor_spin_slider.h"
 #include "editor/editor_themes.h"
 #include "editor/editor_toaster.h"
@@ -190,7 +191,6 @@
 #include "editor/project_settings_editor.h"
 #include "editor/quick_open.h"
 #include "editor/register_exporters.h"
-#include "editor/settings_config_dialog.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -822,8 +822,8 @@ void EditorNode::_on_plugin_ready(Object *p_script, const String &p_activate_nam
 	if (p_activate_name.length()) {
 		set_addon_plugin_enabled(p_activate_name, true);
 	}
-	project_settings->update_plugins();
-	project_settings->hide();
+	project_settings_editor->update_plugins();
+	project_settings_editor->hide();
 	push_item(script.operator->());
 }
 
@@ -2773,7 +2773,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 		} break;
 		case RUN_SETTINGS: {
-			project_settings->popup_project_settings();
+			project_settings_editor->popup_project_settings();
 		} break;
 		case FILE_INSTALL_ANDROID_SOURCE: {
 			if (p_confirmed) {
@@ -2846,7 +2846,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			_update_update_spinner();
 		} break;
 		case SETTINGS_PREFERENCES: {
-			settings_config_dialog->popup_edit_settings();
+			editor_settings_dialog->popup_edit_settings();
 		} break;
 		case SETTINGS_EDITOR_DATA_FOLDER: {
 			OS::get_singleton()->shell_open(String("file://") + EditorPaths::get_singleton()->get_data_dir());
@@ -3240,7 +3240,7 @@ void EditorNode::_update_addon_config() {
 		ProjectSettings::get_singleton()->set("editor_plugins/enabled", enabled_addons);
 	}
 
-	project_settings->queue_save();
+	project_settings_editor->queue_save();
 }
 
 void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled, bool p_config_changed) {
@@ -6329,11 +6329,11 @@ EditorNode::EditorNode() {
 	dependency_fixer = memnew(DependencyEditor);
 	gui_base->add_child(dependency_fixer);
 
-	settings_config_dialog = memnew(EditorSettingsDialog);
-	gui_base->add_child(settings_config_dialog);
+	editor_settings_dialog = memnew(EditorSettingsDialog);
+	gui_base->add_child(editor_settings_dialog);
 
-	project_settings = memnew(ProjectSettingsEditor(&editor_data));
-	gui_base->add_child(project_settings);
+	project_settings_editor = memnew(ProjectSettingsEditor(&editor_data));
+	gui_base->add_child(project_settings_editor);
 
 	scene_import_settings = memnew(SceneImportSettings);
 	gui_base->add_child(scene_import_settings);
