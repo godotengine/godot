@@ -1281,13 +1281,17 @@ void RoomManager::_process_static(Room *p_room, Spatial *p_node, Vector<Vector3>
 	bool ignore = false;
 	VisualInstance *vi = Object::cast_to<VisualInstance>(p_node);
 
+	bool is_dynamic = false;
+
 	// we are only interested in VIs with static or dynamic mode
 	if (vi) {
 		switch (vi->get_portal_mode()) {
 			default: {
 				ignore = true;
 			} break;
-			case CullInstance::PORTAL_MODE_DYNAMIC:
+			case CullInstance::PORTAL_MODE_DYNAMIC: {
+				is_dynamic = true;
+			} break;
 			case CullInstance::PORTAL_MODE_STATIC:
 				break;
 		}
@@ -1335,7 +1339,7 @@ void RoomManager::_process_static(Room *p_room, Spatial *p_node, Vector<Vector3>
 					// NOTE the is_visible check MAY cause problems if conversion run on nodes that
 					// aren't properly in the tree. It can optionally be removed. Certainly calling is_visible_in_tree
 					// DID cause problems.
-					if (mi->get_include_in_bound() && mi->is_visible()) {
+					if (!is_dynamic && mi->get_include_in_bound() && mi->is_visible()) {
 						r_room_pts.append_array(object_pts);
 					}
 
@@ -1353,12 +1357,13 @@ void RoomManager::_process_static(Room *p_room, Spatial *p_node, Vector<Vector3>
 				AABB aabb;
 
 				// attempt to recognise this GeometryInstance and read back the geometry
-				if (_bound_findpoints_geom_instance(gi, object_pts, aabb)) {
+				// Note: never attempt to add dynamics to the room aabb
+				if (is_dynamic || _bound_findpoints_geom_instance(gi, object_pts, aabb)) {
 					// need to keep track of room bound
 					// NOTE the is_visible check MAY cause problems if conversion run on nodes that
 					// aren't properly in the tree. It can optionally be removed. Certainly calling is_visible_in_tree
 					// DID cause problems.
-					if (gi->get_include_in_bound() && gi->is_visible()) {
+					if (!is_dynamic && gi->get_include_in_bound() && gi->is_visible()) {
 						r_room_pts.append_array(object_pts);
 					}
 
