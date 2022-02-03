@@ -225,6 +225,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	void set_frames_texture_filter(CanvasItem::TextureFilter p_texture_filter);
 	void edit(Ref<SpriteFrames> p_frames);
 	SpriteFramesEditor();
 };

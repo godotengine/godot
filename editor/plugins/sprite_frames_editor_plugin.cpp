@@ -1159,6 +1159,10 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 	updating = false;
 }
 
+void SpriteFramesEditor::set_frames_texture_filter(CanvasItem::TextureFilter p_texture_filter) {
+	frame_list->set_texture_filter(p_texture_filter);
+}
+
 void SpriteFramesEditor::_edit() {
 	if (!animated_sprite) {
 		return;
@@ -1920,6 +1924,7 @@ void SpriteFramesEditorPlugin::edit(Object *p_object) {
 	AnimatedSprite2D *animated_sprite = Object::cast_to<AnimatedSprite2D>(p_object);
 	if (animated_sprite) {
 		s = animated_sprite->get_sprite_frames();
+		frames_editor->set_frames_texture_filter(animated_sprite->get_texture_filter_in_tree());
 	} else {
 		AnimatedSprite3D *animated_sprite_3d = Object::cast_to<AnimatedSprite3D>(p_object);
 		if (animated_sprite_3d) {
@@ -1927,6 +1932,7 @@ void SpriteFramesEditorPlugin::edit(Object *p_object) {
 		} else {
 			s = p_object;
 		}
+		frames_editor->set_frames_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 	}
 
 	frames_editor->edit(s);
