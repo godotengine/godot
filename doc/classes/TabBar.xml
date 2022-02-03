@@ -211,6 +211,9 @@
 		<member name="drag_to_rearrange_enabled" type="bool" setter="set_drag_to_rearrange_enabled" getter="get_drag_to_rearrange_enabled" default="false">
 			If [code]true[/code], tabs can be rearranged with mouse drag.
 		</member>
+		<member name="max_tab_width" type="int" setter="set_max_tab_width" getter="get_max_tab_width" default="0">
+			Sets the maximum width which all tabs should be limited to. Unlimited if set to [code]0[/code].
+		</member>
 		<member name="scroll_to_selected" type="bool" setter="set_scroll_to_selected" getter="get_scroll_to_selected" default="true">
 			If [code]true[/code], the tab offset will be changed to keep the the currently selected tab visible.
 		</member>

@@ -725,11 +725,7 @@ void EditorNode::_notification(int p_what) {
 				help_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), SNAME("EditorStyles")));
 			}
 
-			if (EDITOR_GET("interface/scene_tabs/resize_if_many_tabs")) {
-				scene_tabs->set_min_width(int(EDITOR_GET("interface/scene_tabs/minimum_width")) * EDSCALE);
-			} else {
-				scene_tabs->set_min_width(0);
-			}
+			scene_tabs->set_max_tab_width(int(EDITOR_GET("interface/scene_tabs/maximum_width")) * EDSCALE);
 			_update_scene_tabs();
 
 			recent_scenes->reset_size();
@@ -806,10 +802,6 @@ void EditorNode::_notification(int p_what) {
 			}
 
 			_update_update_spinner();
-		} break;
-
-		case Control::NOTIFICATION_RESIZED: {
-			_update_scene_tabs();
 		} break;
 	}
 }
@@ -6255,7 +6247,7 @@ EditorNode::EditorNode() {
 	scene_tabs->add_tab("unsaved");
 	scene_tabs->set_tab_alignment(TabBar::ALIGNMENT_LEFT);
 	scene_tabs->set_tab_close_display_policy((bool(EDITOR_GET("interface/scene_tabs/always_show_close_button")) ? TabBar::CLOSE_BUTTON_SHOW_ALWAYS : TabBar::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
-	scene_tabs->set_min_width(int(EDITOR_GET("interface/scene_tabs/minimum_width")) * EDSCALE);
+	scene_tabs->set_max_tab_width(int(EDITOR_GET("interface/scene_tabs/maximum_width")) * EDSCALE);
 	scene_tabs->set_drag_to_rearrange_enabled(true);
 	scene_tabs->connect("tab_changed", callable_mp(this, &EditorNode::_scene_tab_changed));
 	scene_tabs->connect("tab_button_pressed", callable_mp(this, &EditorNode::_scene_tab_script_edited));
