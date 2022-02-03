@@ -331,6 +331,13 @@
 				[b]Note:[/b] The indices of items after the removed item will be shifted by one.
 			</description>
 		</method>
+		<method name="set_current_index">
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<description>
+				Sets the currently focused item as the given [code]index[/code].
+			</description>
+		</method>
 		<method name="set_item_accelerator">
 			<return type="void" />
 			<argument index="0" name="index" type="int" />
