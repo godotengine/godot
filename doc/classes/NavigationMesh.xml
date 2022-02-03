@@ -98,7 +98,7 @@
 		<member name="detail/sample_distance" type="float" setter="set_detail_sample_distance" getter="get_detail_sample_distance" default="6.0">
 			The sampling distance to use when generating the detail mesh, in cell unit.
 		</member>
-		<member name="detail/sample_max_error" type="float" setter="set_detail_sample_max_error" getter="get_detail_sample_max_error" default="1.0">
+		<member name="detail/sample_max_error" type="float" setter="set_detail_sample_max_error" getter="get_detail_sample_max_error" default="5.0">
 			The maximum distance the detail mesh surface should deviate from heightfield, in cell unit.
 		</member>
 		<member name="edge/max_error" type="float" setter="set_edge_max_error" getter="get_edge_max_error" default="1.3">

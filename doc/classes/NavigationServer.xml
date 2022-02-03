@@ -122,6 +122,13 @@
 				Create a new map.
 			</description>
 		</method>
+		<method name="map_get_cell_height" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="map" type="RID" />
+			<description>
+				Returns the map cell height.
+			</description>
+		</method>
 		<method name="map_get_cell_size" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="map" type="RID" />
@@ -200,6 +207,14 @@
 			<argument index="1" name="active" type="bool" />
 			<description>
 				Sets the map active.
+			</description>
+		</method>
+		<method name="map_set_cell_height" qualifiers="const">
+			<return type="void" />
+			<argument index="0" name="map" type="RID" />
+			<argument index="1" name="cell_height" type="float" />
+			<description>
+				Set the map cell height used to weld the navigation mesh polygons.
 			</description>
 		</method>
 		<method name="map_set_cell_size" qualifiers="const">

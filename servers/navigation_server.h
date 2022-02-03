@@ -81,6 +81,12 @@ public:
 	/// Returns the map cell size.
 	virtual real_t map_get_cell_size(RID p_map) const = 0;
 
+	/// Set the map cell height used to weld the navigation mesh polygons.
+	virtual void map_set_cell_height(RID p_map, real_t p_cell_height) const = 0;
+
+	/// Returns the map cell height.
+	virtual real_t map_get_cell_height(RID p_map) const = 0;
+
 	/// Set the map edge connection margin used to weld the compatible region edges.
 	virtual void map_set_edge_connection_margin(RID p_map, real_t p_connection_margin) const = 0;
 
