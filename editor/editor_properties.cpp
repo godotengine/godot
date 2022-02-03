@@ -1263,7 +1263,7 @@ void EditorPropertyInteger::_bind_methods() {
 void EditorPropertyInteger::setup(int64_t p_min, int64_t p_max, int64_t p_step, bool p_allow_greater, bool p_allow_lesser) {
 	spin->set_min(p_min);
 	spin->set_max(p_max);
-	spin->set_step((p_step == 0) ? 1 : p_step);
+	spin->set_step(p_step);
 	spin->set_allow_greater(p_allow_greater);
 	spin->set_allow_lesser(p_allow_lesser);
 }
@@ -1353,7 +1353,7 @@ void EditorPropertyFloat::setup(double p_min, double p_max, double p_step, bool 
 	angle_in_radians = p_angle_in_radians;
 	spin->set_min(p_min);
 	spin->set_max(p_max);
-	spin->set_step((p_step == 0) ? 0.1 : p_step);
+	spin->set_step(p_step);
 	spin->set_hide_slider(p_no_slider);
 	spin->set_exp_ratio(p_exp_range);
 	spin->set_allow_greater(p_greater);
@@ -3318,9 +3318,9 @@ struct EditorPropertyRangeHint {
 	bool angle_in_degrees = false;
 	bool greater = true;
 	bool lesser = true;
-	double min = -99999;
-	double max = 99999;
-	double step = 0;
+	double min = -99999.0;
+	double max = 99999.0;
+	double step = 1.0;
 	String suffix;
 	bool exp_range = false;
 	bool hide_slider = true;
@@ -3331,18 +3331,25 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 	EditorPropertyRangeHint hint;
 	hint.step = p_default_step;
 	bool degrees = false;
-	if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
-		hint.greater = false; //if using ranged, assume false by default
+
+	if (p_hint == PROPERTY_HINT_RANGE) {
+		Vector<String> slices = p_hint_text.split(",");
+		ERR_FAIL_COND_V_MSG(slices.size() < 2, hint,
+				vformat("Invalid PROPERTY_HINT_RANGE with hint \"%s\": Missing required min and/or max values.", p_hint_text));
+
+		hint.greater = false; // If using ranged, assume false by default.
 		hint.lesser = false;
 
-		hint.min = p_hint_text.get_slice(",", 0).to_float();
-		hint.max = p_hint_text.get_slice(",", 1).to_float();
-		if (p_hint_text.get_slice_count(",") >= 3) {
-			hint.step = p_hint_text.get_slice(",", 2).to_float();
+		hint.min = slices[0].to_float();
+		hint.max = slices[1].to_float();
+
+		if (slices.size() >= 3 && slices[2].is_valid_float()) {
+			// Step is optional, could be something else if not a number.
+			hint.step = slices[2].to_float();
 		}
 		hint.hide_slider = false;
-		for (int i = 2; i < p_hint_text.get_slice_count(","); i++) {
-			String slice = p_hint_text.get_slice(",", i).strip_edges();
+		for (int i = 2; i < slices.size(); i++) {
+			String slice = slices[i].strip_edges();
 			if (slice == "radians") {
 				hint.radians = true;
 			} else if (slice == "degrees") {
@@ -3364,6 +3371,9 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 	if ((hint.radians || degrees) && hint.suffix.is_empty()) {
 		hint.suffix = U"\u00B0";
 	}
+
+	ERR_FAIL_COND_V_MSG(hint.step == 0, hint,
+			vformat("Invalid PROPERTY_HINT_RANGE with hint \"%s\": Step cannot be 0.", p_hint_text));
 
 	return hint;
 }
@@ -3435,9 +3445,6 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
 
 				EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
-				if (hint.step == 0) {
-					WARN_PRINT(p_path + ": Range step size is 0.");
-				}
 				editor->setup(hint.min, hint.max, hint.step, hint.greater, hint.lesser);
 
 				return editor;
@@ -3466,9 +3473,6 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyFloat *editor = memnew(EditorPropertyFloat);
 
 				EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-				if (hint.step == 0) {
-					WARN_PRINT(p_path + ": Range step size is 0.");
-				}
 				editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.exp_range, hint.greater, hint.lesser, hint.suffix, hint.radians);
 
 				return editor;
