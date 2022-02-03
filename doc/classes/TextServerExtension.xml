@@ -202,7 +202,7 @@
 			</description>
 		</method>
 		<method name="_font_get_hinting" qualifiers="virtual const">
-			<return type="int" />
+			<return type="int" enum="TextServer.Hinting" />
 			<argument index="0" name="font_rid" type="RID" />
 			<description>
 				Returns the font hinting mode. Used by dynamic fonts only.
@@ -1028,7 +1028,7 @@
 			</description>
 		</method>
 		<method name="_shaped_text_get_direction" qualifiers="virtual const">
-			<return type="int" />
+			<return type="int" enum="TextServer.Direction" />
 			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns direction of the text.
@@ -1051,9 +1051,8 @@
 			</description>
 		</method>
 		<method name="_shaped_text_get_ellipsis_glyphs" qualifiers="virtual const">
-			<return type="void" />
+			<return type="Glyph*" />
 			<argument index="0" name="shaped" type="RID" />
-			<argument index="1" name="r_glyphs" type="void*" />
 			<description>
 				Returns array of the glyphs in the ellipsis.
 			</description>
@@ -1073,9 +1072,8 @@
 			</description>
 		</method>
 		<method name="_shaped_text_get_glyphs" qualifiers="virtual const">
-			<return type="void" />
+			<return type="Glyph*" />
 			<argument index="0" name="shaped" type="RID" />
-			<argument index="1" name="r_glyphs" type="void*" />
 			<description>
 				Copies text glyphs in the visual order, into preallocated array of the size returned by [method _shaped_text_get_glyph_count].
 			</description>
@@ -1089,7 +1087,7 @@
 			</description>
 		</method>
 		<method name="_shaped_text_get_inferred_direction" qualifiers="virtual const">
-			<return type="int" />
+			<return type="int" enum="TextServer.Direction" />
 			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns direction of the text, inferred by the BiDi algorithm.
@@ -1132,7 +1130,7 @@
 			</description>
 		</method>
 		<method name="_shaped_text_get_orientation" qualifiers="virtual const">
-			<return type="int" />
+			<return type="int" enum="TextServer.Orientation" />
 			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns text orientation.
@@ -1337,9 +1335,8 @@
 			</description>
 		</method>
 		<method name="_shaped_text_sort_logical" qualifiers="virtual">
-			<return type="void" />
+			<return type="Glyph*" />
 			<argument index="0" name="shaped" type="RID" />
-			<argument index="1" name="r_glyphs" type="void*" />
 			<description>
 				Copies text glyphs in the logical order, into preallocated array of the size returned by [method _shaped_text_get_glyph_count].
 			</description>

@@ -557,7 +557,6 @@ VARIANT_ENUM_CAST(TextServer::SpacingType);
 VARIANT_ENUM_CAST(TextServer::FontStyle);
 
 GDVIRTUAL_NATIVE_PTR(Glyph);
-GDVIRTUAL_NATIVE_PTR(Glyph *);
 GDVIRTUAL_NATIVE_PTR(CaretInfo);
 
 #endif // TEXT_SERVER_H
