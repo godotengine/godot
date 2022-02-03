@@ -2841,11 +2841,11 @@ RenderingServer::RenderingServer() {
 
 	GLOBAL_DEF("rendering/2d/shadow_atlas/size", 2048);
 
-	GLOBAL_DEF_RST_BASIC("rendering/vulkan/rendering/back_end", 0);
-	GLOBAL_DEF_RST_BASIC("rendering/vulkan/rendering/back_end.mobile", 1);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/vulkan/rendering/back_end",
+	GLOBAL_DEF_RST_BASIC("rendering/vulkan/rendering/backend", 0);
+	GLOBAL_DEF_RST_BASIC("rendering/vulkan/rendering/backend.mobile", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/vulkan/rendering/backend",
 			PropertyInfo(Variant::INT,
-					"rendering/vulkan/rendering/back_end",
+					"rendering/vulkan/rendering/backend",
 					PROPERTY_HINT_ENUM, "Forward Clustered (Supports Desktop Only),Forward Mobile (Supports Desktop and Mobile)"));
 	// Already defined in RenderingDeviceVulkan::initialize which runs before this code.
 	// We re-define them here just for doctool's sake. Make sure to keep default values in sync.

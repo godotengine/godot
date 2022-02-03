@@ -481,7 +481,7 @@ private:
 					ProjectSettings::CustomMap initial_settings;
 					// Be sure to change this code if/when renderers are changed.
 					int renderer_type = rasterizer_button_group->get_pressed_button()->get_meta(SNAME("driver_name"));
-					initial_settings["rendering/vulkan/rendering/back_end"] = renderer_type;
+					initial_settings["rendering/vulkan/rendering/backend"] = renderer_type;
 					if (renderer_type == 0) {
 						project_features.push_back("Vulkan Clustered");
 					} else if (renderer_type == 1) {
