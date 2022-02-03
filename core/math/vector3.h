@@ -343,6 +343,9 @@ Vector3 &Vector3::operator*=(const real_t p_scalar) {
 	return *this;
 }
 
+// Multiplication operators required to workaround issues with LLVM using implicit conversion
+// to Vector2i instead for integers where it should not.
+
 _FORCE_INLINE_ Vector3 operator*(const float p_scalar, const Vector3 &p_vec) {
 	return p_vec * p_scalar;
 }

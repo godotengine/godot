@@ -45,6 +45,126 @@ void register_op(Variant::Operator p_op, Variant::Type p_type_a, Variant::Type p
 	ptr_operator_evaluator_table[p_op][p_type_a][p_type_b] = T::ptr_evaluate;
 }
 
+// Special cases that can't be done otherwise because of the forced casting to float.
+
+template <>
+class OperatorEvaluatorMul<Vector2, Vector2i, double> {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Vector2i &a = *VariantGetInternalPtr<Vector2i>::get_ptr(&p_left);
+		const double &b = *VariantGetInternalPtr<double>::get_ptr(&p_right);
+		*r_ret = Vector2(a.x, a.y) * b;
+		r_valid = true;
+	}
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<Vector2>::get_ptr(r_ret) = Vector2(VariantGetInternalPtr<Vector2i>::get_ptr(left)->x, VariantGetInternalPtr<Vector2i>::get_ptr(left)->y) * *VariantGetInternalPtr<double>::get_ptr(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<Vector2>::encode(Vector2(PtrToArg<Vector2i>::convert(left).x, PtrToArg<Vector2i>::convert(left).y) * PtrToArg<double>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<Vector2>::VARIANT_TYPE; }
+};
+
+template <>
+class OperatorEvaluatorMul<Vector2, double, Vector2i> {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Vector2i &a = *VariantGetInternalPtr<Vector2i>::get_ptr(&p_right);
+		const double &b = *VariantGetInternalPtr<double>::get_ptr(&p_left);
+		*r_ret = Vector2(a.x, a.y) * b;
+		r_valid = true;
+	}
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<Vector2>::get_ptr(r_ret) = Vector2(VariantGetInternalPtr<Vector2i>::get_ptr(right)->x, VariantGetInternalPtr<Vector2i>::get_ptr(right)->y) * *VariantGetInternalPtr<double>::get_ptr(left);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<Vector2>::encode(Vector2(PtrToArg<Vector2i>::convert(right).x, PtrToArg<Vector2i>::convert(right).y) * PtrToArg<double>::convert(left), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<Vector2>::VARIANT_TYPE; }
+};
+
+template <>
+class OperatorEvaluatorDivNZ<Vector2, Vector2i, double> {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Vector2i &a = *VariantGetInternalPtr<Vector2i>::get_ptr(&p_left);
+		const double &b = *VariantGetInternalPtr<double>::get_ptr(&p_right);
+		if (unlikely(b == 0)) {
+			r_valid = false;
+			*r_ret = "Division by zero error";
+			return;
+		}
+		*r_ret = Vector2(a.x, a.y) / b;
+		r_valid = true;
+	}
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<Vector2>::get_ptr(r_ret) = Vector2(VariantGetInternalPtr<Vector2i>::get_ptr(left)->x, VariantGetInternalPtr<Vector2i>::get_ptr(left)->y) / *VariantGetInternalPtr<double>::get_ptr(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<Vector2>::encode(Vector2(PtrToArg<Vector2i>::convert(left).x, PtrToArg<Vector2i>::convert(left).y) / PtrToArg<double>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<Vector2>::VARIANT_TYPE; }
+};
+
+template <>
+class OperatorEvaluatorMul<Vector3, Vector3i, double> {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Vector3i &a = *VariantGetInternalPtr<Vector3i>::get_ptr(&p_left);
+		const double &b = *VariantGetInternalPtr<double>::get_ptr(&p_right);
+		*r_ret = Vector3(a.x, a.y, a.z) * b;
+		r_valid = true;
+	}
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<Vector3>::get_ptr(r_ret) = Vector3(VariantGetInternalPtr<Vector3i>::get_ptr(left)->x, VariantGetInternalPtr<Vector3i>::get_ptr(left)->y, VariantGetInternalPtr<Vector3i>::get_ptr(left)->z) * *VariantGetInternalPtr<double>::get_ptr(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<Vector3>::encode(Vector3(PtrToArg<Vector3i>::convert(left).x, PtrToArg<Vector3i>::convert(left).y, PtrToArg<Vector3i>::convert(left).z) * PtrToArg<double>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<Vector3>::VARIANT_TYPE; }
+};
+
+template <>
+class OperatorEvaluatorMul<Vector3, double, Vector3i> {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Vector3i &a = *VariantGetInternalPtr<Vector3i>::get_ptr(&p_right);
+		const double &b = *VariantGetInternalPtr<double>::get_ptr(&p_left);
+		*r_ret = Vector3(a.x, a.y, a.z) * b;
+		r_valid = true;
+	}
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<Vector3>::get_ptr(r_ret) = Vector3(VariantGetInternalPtr<Vector3i>::get_ptr(right)->x, VariantGetInternalPtr<Vector3i>::get_ptr(right)->y, VariantGetInternalPtr<Vector3i>::get_ptr(right)->z) * *VariantGetInternalPtr<double>::get_ptr(left);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<Vector3>::encode(Vector3(PtrToArg<Vector3i>::convert(right).x, PtrToArg<Vector3i>::convert(right).y, PtrToArg<Vector3i>::convert(right).z) * PtrToArg<double>::convert(left), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<Vector3>::VARIANT_TYPE; }
+};
+
+template <>
+class OperatorEvaluatorDivNZ<Vector3, Vector3i, double> {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Vector3i &a = *VariantGetInternalPtr<Vector3i>::get_ptr(&p_left);
+		const double &b = *VariantGetInternalPtr<double>::get_ptr(&p_right);
+		if (unlikely(b == 0)) {
+			r_valid = false;
+			*r_ret = "Division by zero error";
+			return;
+		}
+		*r_ret = Vector3(a.x, a.y, a.z) / b;
+		r_valid = true;
+	}
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<Vector3>::get_ptr(r_ret) = Vector3(VariantGetInternalPtr<Vector3i>::get_ptr(left)->x, VariantGetInternalPtr<Vector3i>::get_ptr(left)->y, VariantGetInternalPtr<Vector3i>::get_ptr(left)->z) / *VariantGetInternalPtr<double>::get_ptr(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<Vector3>::encode(Vector3(PtrToArg<Vector3i>::convert(left).x, PtrToArg<Vector3i>::convert(left).y, PtrToArg<Vector3i>::convert(left).z) / PtrToArg<double>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<Vector3>::VARIANT_TYPE; }
+};
+
 void Variant::_register_variant_operators() {
 	memset(operator_return_type_table, 0, sizeof(operator_return_type_table));
 	memset(operator_evaluator_table, 0, sizeof(operator_evaluator_table));
@@ -94,9 +214,9 @@ void Variant::_register_variant_operators() {
 	register_op<OperatorEvaluatorMul<double, double, double>>(Variant::OP_MULTIPLY, Variant::FLOAT, Variant::FLOAT);
 	register_op<OperatorEvaluatorMul<double, double, int64_t>>(Variant::OP_MULTIPLY, Variant::FLOAT, Variant::INT);
 	register_op<OperatorEvaluatorMul<Vector2, double, Vector2>>(Variant::OP_MULTIPLY, Variant::FLOAT, Variant::VECTOR2);
-	register_op<OperatorEvaluatorMul<Vector2i, double, Vector2i>>(Variant::OP_MULTIPLY, Variant::FLOAT, Variant::VECTOR2I);
+	register_op<OperatorEvaluatorMul<Vector2, double, Vector2i>>(Variant::OP_MULTIPLY, Variant::FLOAT, Variant::VECTOR2I);
 	register_op<OperatorEvaluatorMul<Vector3, double, Vector3>>(Variant::OP_MULTIPLY, Variant::FLOAT, Variant::VECTOR3);
-	register_op<OperatorEvaluatorMul<Vector3i, double, Vector3i>>(Variant::OP_MULTIPLY, Variant::FLOAT, Variant::VECTOR3I);
+	register_op<OperatorEvaluatorMul<Vector3, double, Vector3i>>(Variant::OP_MULTIPLY, Variant::FLOAT, Variant::VECTOR3I);
 
 	register_op<OperatorEvaluatorMul<Vector2, Vector2, Vector2>>(Variant::OP_MULTIPLY, Variant::VECTOR2, Variant::VECTOR2);
 	register_op<OperatorEvaluatorMul<Vector2, Vector2, int64_t>>(Variant::OP_MULTIPLY, Variant::VECTOR2, Variant::INT);
@@ -104,7 +224,7 @@ void Variant::_register_variant_operators() {
 
 	register_op<OperatorEvaluatorMul<Vector2i, Vector2i, Vector2i>>(Variant::OP_MULTIPLY, Variant::VECTOR2I, Variant::VECTOR2I);
 	register_op<OperatorEvaluatorMul<Vector2i, Vector2i, int64_t>>(Variant::OP_MULTIPLY, Variant::VECTOR2I, Variant::INT);
-	register_op<OperatorEvaluatorMul<Vector2i, Vector2i, double>>(Variant::OP_MULTIPLY, Variant::VECTOR2I, Variant::FLOAT);
+	register_op<OperatorEvaluatorMul<Vector2, Vector2i, double>>(Variant::OP_MULTIPLY, Variant::VECTOR2I, Variant::FLOAT);
 
 	register_op<OperatorEvaluatorMul<Vector3, Vector3, Vector3>>(Variant::OP_MULTIPLY, Variant::VECTOR3, Variant::VECTOR3);
 	register_op<OperatorEvaluatorMul<Vector3, Vector3, int64_t>>(Variant::OP_MULTIPLY, Variant::VECTOR3, Variant::INT);
@@ -112,7 +232,7 @@ void Variant::_register_variant_operators() {
 
 	register_op<OperatorEvaluatorMul<Vector3i, Vector3i, Vector3i>>(Variant::OP_MULTIPLY, Variant::VECTOR3I, Variant::VECTOR3I);
 	register_op<OperatorEvaluatorMul<Vector3i, Vector3i, int64_t>>(Variant::OP_MULTIPLY, Variant::VECTOR3I, Variant::INT);
-	register_op<OperatorEvaluatorMul<Vector3i, Vector3i, double>>(Variant::OP_MULTIPLY, Variant::VECTOR3I, Variant::FLOAT);
+	register_op<OperatorEvaluatorMul<Vector3, Vector3i, double>>(Variant::OP_MULTIPLY, Variant::VECTOR3I, Variant::FLOAT);
 
 	register_op<OperatorEvaluatorMul<Quaternion, Quaternion, Quaternion>>(Variant::OP_MULTIPLY, Variant::QUATERNION, Variant::QUATERNION);
 	register_op<OperatorEvaluatorMul<Quaternion, Quaternion, int64_t>>(Variant::OP_MULTIPLY, Variant::QUATERNION, Variant::INT);
@@ -172,7 +292,7 @@ void Variant::_register_variant_operators() {
 	register_op<OperatorEvaluatorDiv<Vector2, Vector2, int64_t>>(Variant::OP_DIVIDE, Variant::VECTOR2, Variant::INT);
 
 	register_op<OperatorEvaluatorDivNZ<Vector2i, Vector2i, Vector2i>>(Variant::OP_DIVIDE, Variant::VECTOR2I, Variant::VECTOR2I);
-	register_op<OperatorEvaluatorDivNZ<Vector2i, Vector2i, double>>(Variant::OP_DIVIDE, Variant::VECTOR2I, Variant::FLOAT);
+	register_op<OperatorEvaluatorDivNZ<Vector2, Vector2i, double>>(Variant::OP_DIVIDE, Variant::VECTOR2I, Variant::FLOAT);
 	register_op<OperatorEvaluatorDivNZ<Vector2i, Vector2i, int64_t>>(Variant::OP_DIVIDE, Variant::VECTOR2I, Variant::INT);
 
 	register_op<OperatorEvaluatorDiv<Vector2, Vector2, Vector2>>(Variant::OP_DIVIDE, Variant::VECTOR2, Variant::VECTOR2);
@@ -184,7 +304,7 @@ void Variant::_register_variant_operators() {
 	register_op<OperatorEvaluatorDiv<Vector3, Vector3, int64_t>>(Variant::OP_DIVIDE, Variant::VECTOR3, Variant::INT);
 
 	register_op<OperatorEvaluatorDivNZ<Vector3i, Vector3i, Vector3i>>(Variant::OP_DIVIDE, Variant::VECTOR3I, Variant::VECTOR3I);
-	register_op<OperatorEvaluatorDivNZ<Vector3i, Vector3i, double>>(Variant::OP_DIVIDE, Variant::VECTOR3I, Variant::FLOAT);
+	register_op<OperatorEvaluatorDivNZ<Vector3, Vector3i, double>>(Variant::OP_DIVIDE, Variant::VECTOR3I, Variant::FLOAT);
 	register_op<OperatorEvaluatorDivNZ<Vector3i, Vector3i, int64_t>>(Variant::OP_DIVIDE, Variant::VECTOR3I, Variant::INT);
 
 	register_op<OperatorEvaluatorDiv<Quaternion, Quaternion, double>>(Variant::OP_DIVIDE, Variant::QUATERNION, Variant::FLOAT);
