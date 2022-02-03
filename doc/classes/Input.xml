@@ -141,10 +141,10 @@
 				Returns the strength of the joypad vibration: x is the strength of the weak motor, and y is the strength of the strong motor.
 			</description>
 		</method>
-		<method name="get_last_mouse_velocity" qualifiers="const">
+		<method name="get_last_mouse_velocity">
 			<return type="Vector2" />
 			<description>
-				Returns the mouse velocity for the last time the cursor was moved, and this until the next frame where the mouse moves. This means that even if the mouse is not moving, this function will still return the value of the last motion.
+				Returns the last mouse velocity. To provide a precise and jitter-free velocity, mouse velocity is only calculated every 0.1s. Therefore, mouse velocity will lag mouse movements.
 			</description>
 		</method>
 		<method name="get_magnetometer" qualifiers="const">
