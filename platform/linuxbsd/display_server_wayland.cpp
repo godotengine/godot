@@ -87,50 +87,50 @@ DisplayServerWayland::WindowID DisplayServerWayland::_create_window(WindowMode p
 }
 
 void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
-	// `data` is expected to be a `WaylandState`.
 	WaylandState *wls = (WaylandState*) data;
+	WaylandGlobals &globals = wls->globals;
 
 	// `wl_compositor_interface` is defined in `thirdparty/wayland/wayland.c`
 	if (strcmp(interface, wl_compositor_interface.name) == 0) {
 		// This will select the latest version supported by the server.
 		// I'm not sure whether this is the best thing to do.
-		wls->globals.wl_compositor = (struct wl_compositor*) wl_registry_bind(wl_registry, name, &wl_compositor_interface, version);
-		wls->globals.wl_compositor_name = name;
+		globals.wl_compositor = (struct wl_compositor*) wl_registry_bind(wl_registry, name, &wl_compositor_interface, version);
+		globals.wl_compositor_name = name;
 		return;
 	}
 
 	// `wl_seat_interface` is defined in `thirdparty/wayland/wayland.c`
 	if (strcmp(interface, wl_seat_interface.name) == 0) {
-		wls->globals.wl_seat = (struct wl_seat*) wl_registry_bind(wl_registry, name, &wl_seat_interface, version);
-		wls->globals.wl_seat_name = name;
-		wl_seat_add_listener(wls->globals.wl_seat, &wl_seat_listener, wls);
+		globals.wl_seat = (struct wl_seat*) wl_registry_bind(wl_registry, name, &wl_seat_interface, version);
+		globals.wl_seat_name = name;
+		wl_seat_add_listener(globals.wl_seat, &wl_seat_listener, wls);
 		return;
 	}
 
 	// `xdg_wm_base_interface` is defined in `thirdparty/xdg-shell/xdg-shell.c`
 	if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
-		wls->globals.xdg_wm_base = (struct xdg_wm_base*) wl_registry_bind(wl_registry, name, &xdg_wm_base_interface, version);
-		wls->globals.xdg_wm_base_name = name;
+		globals.xdg_wm_base = (struct xdg_wm_base*) wl_registry_bind(wl_registry, name, &xdg_wm_base_interface, version);
+		globals.xdg_wm_base_name = name;
 		return;
 	}
 }
 
 void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_registry *wl_registry, uint32_t name) {
-	// `data` is expected to be a `WaylandGlobals`.
-	WaylandGlobals *globals = (WaylandGlobals*) data;
+	WaylandState *wls = (WaylandState*) data;
+	WaylandGlobals &globals = wls->globals;
 
-	if (name == globals->wl_compositor_name) {
-		wl_compositor_destroy(globals->wl_compositor);
+	if (name == globals.wl_compositor_name) {
+		wl_compositor_destroy(globals.wl_compositor);
 		return;
 	}
 
-	if (name == globals->wl_seat_name) {
-		wl_seat_destroy(globals->wl_seat);
+	if (name == globals.wl_seat_name) {
+		wl_seat_destroy(globals.wl_seat);
 		return;
 	}
 
-	if (name == globals->xdg_wm_base_name) {
-		xdg_wm_base_destroy(globals->xdg_wm_base);
+	if (name == globals.xdg_wm_base_name) {
+		xdg_wm_base_destroy(globals.xdg_wm_base);
 		return;
 	}
 }
