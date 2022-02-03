@@ -197,20 +197,12 @@ Error HTTPClientTCP::request(Method p_method, const String &p_url, const Vector<
 	request += "\r\n";
 	CharString cs = request.utf8();
 
-	Vector<uint8_t> data;
-	data.resize(cs.length() + p_body_size);
-	memcpy(data.ptrw(), cs.get_data(), cs.length());
+	request_buffer->clear();
+	request_buffer->put_data((const uint8_t *)cs.get_data(), cs.length());
 	if (p_body_size > 0) {
-		memcpy(data.ptrw() + cs.length(), p_body, p_body_size);
+		request_buffer->put_data(p_body, p_body_size);
 	}
-
-	err = connection->put_data(data.ptr(), data.size());
-
-	if (err) {
-		close();
-		status = STATUS_CONNECTION_ERROR;
-		return err;
-	}
+	request_buffer->seek(0);
 
 	status = STATUS_REQUESTING;
 	head_request = p_method == METHOD_HEAD;
@@ -261,6 +253,7 @@ void HTTPClientTCP::close() {
 	ip_candidates.clear();
 	response_headers.clear();
 	response_str.clear();
+	request_buffer->clear();
 	body_size = -1;
 	body_left = 0;
 	chunk_left = 0;
@@ -436,6 +429,30 @@ Error HTTPClientTCP::poll() {
 			return OK;
 		} break;
 		case STATUS_REQUESTING: {
+			if (request_buffer->get_available_bytes()) {
+				int avail = request_buffer->get_available_bytes();
+				int pos = request_buffer->get_position();
+				const Vector<uint8_t> data = request_buffer->get_data_array();
+				int wrote = 0;
+				Error err;
+				if (blocking) {
+					err = connection->put_data(data.ptr() + pos, avail);
+					wrote += avail;
+				} else {
+					err = connection->put_partial_data(data.ptr() + pos, avail, wrote);
+				}
+				if (err != OK) {
+					close();
+					status = STATUS_CONNECTION_ERROR;
+					return ERR_CONNECTION_ERROR;
+				}
+				pos += wrote;
+				request_buffer->seek(pos);
+				if (avail - wrote > 0) {
+					return OK;
+				}
+				request_buffer->clear();
+			}
 			while (true) {
 				uint8_t byte;
 				int rec = 0;
@@ -763,6 +780,7 @@ void HTTPClientTCP::set_https_proxy(const String &p_host, int p_port) {
 
 HTTPClientTCP::HTTPClientTCP() {
 	tcp_connection.instantiate();
+	request_buffer.instantiate();
 }
 
 HTTPClient *(*HTTPClient::_create)() = HTTPClientTCP::_create_func;
