@@ -5252,20 +5252,31 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 			expression.push_back(e);
 			continue;
 		} else {
-			if (tk.type != TK_SEMICOLON) {
-				_set_error(vformat(RTR("Expected expression, found: '%s'."), get_token_text(tk)));
-				return nullptr;
-			} else {
-#ifdef DEBUG_ENABLED
-				if (check_warnings && HAS_WARNING(ShaderWarning::FORMATTING_ERROR_FLAG)) {
-					_add_line_warning(ShaderWarning::FORMATTING_ERROR, RTR("Empty statement. Remove ';' to fix this warning."));
-				}
-#endif // DEBUG_ENABLED
+			bool valid = false;
+			if (p_block && p_block->block_type == BlockNode::BLOCK_TYPE_FOR_EXPRESSION && tk.type == TK_PARENTHESIS_CLOSE) {
+				valid = true;
 				_set_tkpos(prepos);
 
 				OperatorNode *func = alloc_node<OperatorNode>();
 				func->op = OP_EMPTY;
 				expr = func;
+			}
+			if (!valid) {
+				if (tk.type != TK_SEMICOLON) {
+					_set_error(vformat(RTR("Expected expression, found: '%s'."), get_token_text(tk)));
+					return nullptr;
+				} else {
+#ifdef DEBUG_ENABLED
+					if (check_warnings && HAS_WARNING(ShaderWarning::FORMATTING_ERROR_FLAG)) {
+						_add_line_warning(ShaderWarning::FORMATTING_ERROR, RTR("Empty statement. Remove ';' to fix this warning."));
+					}
+#endif // DEBUG_ENABLED
+					_set_tkpos(prepos);
+
+					OperatorNode *func = alloc_node<OperatorNode>();
+					func->op = OP_EMPTY;
+					expr = func;
+				}
 			}
 		}
 
@@ -6769,14 +6780,9 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 					array_size = 0;
 				}
 
-				if (tk.type == TK_COMMA) {
-					if (p_block->block_type == BlockNode::BLOCK_TYPE_FOR) {
-						_set_error(vformat("Multiple declarations in '%s' loop are not supported.", "for"));
-						return ERR_PARSE_ERROR;
-					}
-				} else if (tk.type == TK_SEMICOLON) {
+				if (tk.type == TK_SEMICOLON) {
 					break;
-				} else {
+				} else if (tk.type != TK_COMMA) {
 					_set_expected_error(",", ";");
 					return ERR_PARSE_ERROR;
 				}
@@ -7138,43 +7144,35 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			cf->flow_op = FLOW_OP_FOR;
 
 			BlockNode *init_block = alloc_node<BlockNode>();
-			init_block->block_type = BlockNode::BLOCK_TYPE_FOR;
+			init_block->block_type = BlockNode::BLOCK_TYPE_FOR_INIT;
 			init_block->parent_block = p_block;
 			init_block->single_statement = true;
 			cf->blocks.push_back(init_block);
-			if (_parse_block(init_block, p_function_info, true, false, false) != OK) {
-				return ERR_PARSE_ERROR;
+			Error err = _parse_block(init_block, p_function_info, true, false, false);
+			if (err != OK) {
+				return err;
 			}
 
-			Node *n = _parse_and_reduce_expression(init_block, p_function_info);
-			if (!n) {
-				return ERR_PARSE_ERROR;
+			BlockNode *condition_block = alloc_node<BlockNode>();
+			condition_block->block_type = BlockNode::BLOCK_TYPE_FOR_CONDITION;
+			condition_block->parent_block = init_block;
+			condition_block->single_statement = true;
+			condition_block->use_comma_between_statements = true;
+			cf->blocks.push_back(condition_block);
+			err = _parse_block(condition_block, p_function_info, true, false, false);
+			if (err != OK) {
+				return err;
 			}
 
-			if (n->get_datatype() != TYPE_BOOL) {
-				_set_error(RTR("The middle expression is expected to be boolean."));
-				return ERR_PARSE_ERROR;
-			}
-
-			tk = _get_token();
-			if (tk.type != TK_SEMICOLON) {
-				_set_expected_error(";");
-				return ERR_PARSE_ERROR;
-			}
-
-			cf->expressions.push_back(n);
-
-			n = _parse_and_reduce_expression(init_block, p_function_info);
-			if (!n) {
-				return ERR_PARSE_ERROR;
-			}
-
-			cf->expressions.push_back(n);
-
-			tk = _get_token();
-			if (tk.type != TK_PARENTHESIS_CLOSE) {
-				_set_expected_error(")");
-				return ERR_PARSE_ERROR;
+			BlockNode *expression_block = alloc_node<BlockNode>();
+			expression_block->block_type = BlockNode::BLOCK_TYPE_FOR_EXPRESSION;
+			expression_block->parent_block = init_block;
+			expression_block->single_statement = true;
+			expression_block->use_comma_between_statements = true;
+			cf->blocks.push_back(expression_block);
+			err = _parse_block(expression_block, p_function_info, true, false, false);
+			if (err != OK) {
+				return err;
 			}
 
 			BlockNode *block = alloc_node<BlockNode>();
@@ -7182,8 +7180,8 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			cf->blocks.push_back(block);
 			p_block->statements.push_back(cf);
 
-			Error err = _parse_block(block, p_function_info, true, true, true);
-			if (err) {
+			err = _parse_block(block, p_function_info, true, true, true);
+			if (err != OK) {
 				return err;
 			}
 
@@ -7333,10 +7331,48 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			if (!expr) {
 				return ERR_PARSE_ERROR;
 			}
+
+			bool empty = false;
+
+			if (expr->type == Node::TYPE_OPERATOR) {
+				OperatorNode *op = static_cast<OperatorNode *>(expr);
+				if (op->op == OP_EMPTY) {
+					empty = true;
+				}
+			}
+			if (p_block->block_type == BlockNode::BLOCK_TYPE_FOR_INIT) {
+				if (!empty && expr->type != BlockNode::TYPE_VARIABLE_DECLARATION) {
+					_set_error(RTR("The left expression is expected to be a variable declaration."));
+					return ERR_PARSE_ERROR;
+				}
+			}
+			if (p_block->block_type == BlockNode::BLOCK_TYPE_FOR_CONDITION) {
+				if (!empty && expr->get_datatype() != TYPE_BOOL) {
+					_set_error(RTR("The middle expression is expected to be boolean."));
+					return ERR_PARSE_ERROR;
+				}
+			}
+
 			p_block->statements.push_back(expr);
 			tk = _get_token();
 
-			if (tk.type != TK_SEMICOLON) {
+			if (p_block->block_type == BlockNode::BLOCK_TYPE_FOR_CONDITION) {
+				if (tk.type == TK_COMMA) {
+					continue;
+				}
+				if (tk.type != TK_SEMICOLON) {
+					_set_expected_error(",", ";");
+					return ERR_PARSE_ERROR;
+				}
+			} else if (p_block->block_type == BlockNode::BLOCK_TYPE_FOR_EXPRESSION) {
+				if (tk.type == TK_COMMA) {
+					continue;
+				}
+				if (tk.type != TK_PARENTHESIS_CLOSE) {
+					_set_expected_error(",", ")");
+					return ERR_PARSE_ERROR;
+				}
+			} else if (tk.type != TK_SEMICOLON) {
 				_set_expected_error(";");
 				return ERR_PARSE_ERROR;
 			}
