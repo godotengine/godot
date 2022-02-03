@@ -310,7 +310,7 @@ void ConnectDialog::set_dst_node(Node *p_node) {
 
 StringName ConnectDialog::get_dst_method_name() const {
 	String txt = dst_method->get_text();
-	if (txt.find("(") != -1) {
+	if (txt.contains("(")) {
 		txt = txt.left(txt.find("(")).strip_edges();
 	}
 	return txt;

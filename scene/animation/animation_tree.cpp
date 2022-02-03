@@ -314,7 +314,7 @@ void AnimationNode::add_input(const String &p_name) {
 	//root nodes can't add inputs
 	ERR_FAIL_COND(Object::cast_to<AnimationRootNode>(this) != nullptr);
 	Input input;
-	ERR_FAIL_COND(p_name.find(".") != -1 || p_name.find("/") != -1);
+	ERR_FAIL_COND(p_name.contains(".") || p_name.contains("/"));
 	input.name = p_name;
 	inputs.push_back(input);
 	emit_changed();
@@ -322,7 +322,7 @@ void AnimationNode::add_input(const String &p_name) {
 
 void AnimationNode::set_input_name(int p_input, const String &p_name) {
 	ERR_FAIL_INDEX(p_input, inputs.size());
-	ERR_FAIL_COND(p_name.find(".") != -1 || p_name.find("/") != -1);
+	ERR_FAIL_COND(p_name.contains(".") || p_name.contains("/"));
 	inputs.write[p_input].name = p_name;
 	emit_changed();
 }

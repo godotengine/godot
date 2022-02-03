@@ -232,7 +232,7 @@ void CodeEdit::_notification(int p_what) {
 
 					int begin = 0;
 					int end = 0;
-					if (line.find(String::chr(0xFFFF)) != -1) {
+					if (line.contains(String::chr(0xFFFF))) {
 						begin = font->get_string_size(line.substr(0, line.find(String::chr(0xFFFF))), font_size).x;
 						end = font->get_string_size(line.substr(0, line.rfind(String::chr(0xFFFF))), font_size).x;
 					}

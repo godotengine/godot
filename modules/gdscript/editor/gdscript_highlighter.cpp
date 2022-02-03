@@ -585,7 +585,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 				if (E.usage & PROPERTY_USAGE_CATEGORY || E.usage & PROPERTY_USAGE_GROUP || E.usage & PROPERTY_USAGE_SUBGROUP) {
 					continue;
 				}
-				if (name.find("/") != -1) {
+				if (name.contains("/")) {
 					continue;
 				}
 				member_keywords[name] = member_variable_color;

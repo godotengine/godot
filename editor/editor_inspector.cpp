@@ -251,7 +251,7 @@ void EditorProperty::_notification(int p_what) {
 		} else {
 			color = get_theme_color(is_read_only() ? SNAME("readonly_color") : SNAME("property_color"));
 		}
-		if (label.find(".") != -1) {
+		if (label.contains(".")) {
 			// FIXME: Move this to the project settings editor, as this is only used
 			// for project settings feature tag overrides.
 			color.a = 0.5;
@@ -2566,7 +2566,7 @@ void EditorInspector::update_tree() {
 		}
 
 		// Get the property label's string.
-		String property_label_string = (path.find("/") != -1) ? path.substr(path.rfind("/") + 1) : path;
+		String property_label_string = (path.contains("/")) ? path.substr(path.rfind("/") + 1) : path;
 		if (capitalize_paths) {
 			// Capitalize paths.
 			int dot = property_label_string.find(".");
@@ -2590,7 +2590,7 @@ void EditorInspector::update_tree() {
 
 		// Ignore properties that do not fit the filter.
 		if (use_filter && !filter.is_empty()) {
-			if (!filter.is_subsequence_ofn(path) && !filter.is_subsequence_ofn(property_label_string) && property_prefix.to_lower().find(filter.to_lower()) == -1) {
+			if (!filter.is_subsequence_ofn(path) && !filter.is_subsequence_ofn(property_label_string) && !property_prefix.to_lower().contains(filter.to_lower())) {
 				continue;
 			}
 		}
@@ -2664,7 +2664,7 @@ void EditorInspector::update_tree() {
 				array_element_prefix = p.class_name;
 				editor_inspector_array = memnew(EditorInspectorArray);
 
-				String array_label = (path.find("/") != -1) ? path.substr(path.rfind("/") + 1) : path;
+				String array_label = path.contains("/") ? path.substr(path.rfind("/") + 1) : path;
 				array_label = property_label_string.capitalize();
 				int page = per_array_page.has(array_element_prefix) ? per_array_page[array_element_prefix] : 0;
 				editor_inspector_array->setup_with_move_element_function(object, array_label, array_element_prefix, page, c, use_folding);

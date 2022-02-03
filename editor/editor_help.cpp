@@ -81,7 +81,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 	if (p_select.begins_with("$")) { //enum
 		String select = p_select.substr(1, p_select.length());
 		String class_name;
-		if (select.find(".") != -1) {
+		if (select.contains(".")) {
 			class_name = select.get_slice(".", 0);
 			select = select.get_slice(".", 1);
 		} else {
@@ -123,7 +123,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 			return;
 		}
 
-		if (link.find(".") != -1) {
+		if (link.contains(".")) {
 			emit_signal(SNAME("go_to_help"), topic + ":" + link.get_slice(".", 0) + ":" + link.get_slice(".", 1));
 		} else {
 			if (table->has(link)) {
@@ -185,7 +185,7 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 	if (t.is_empty()) {
 		t = "void";
 	}
-	bool can_ref = (t != "void" && t.find("*") == -1) || !p_enum.is_empty();
+	bool can_ref = (t != "void" && !t.contains("*")) || !p_enum.is_empty();
 
 	if (!p_enum.is_empty()) {
 		if (p_enum.get_slice_count(".") > 1) {
@@ -240,7 +240,7 @@ String EditorHelp::_fix_constant(const String &p_constant) const {
 void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview) {
 	method_line[p_method.name] = class_desc->get_line_count() - 2; //gets overridden if description
 
-	const bool is_vararg = p_method.qualifiers.find("vararg") != -1;
+	const bool is_vararg = p_method.qualifiers.contains("vararg");
 
 	if (p_overview) {
 		class_desc->push_cell();
@@ -364,7 +364,7 @@ void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods,
 
 		for (int i = 0; i < p_methods.size(); i++) {
 			const String &q = p_methods[i].qualifiers;
-			if ((pass == 0 && q.find("virtual") != -1) || (pass == 1 && q.find("virtual") == -1)) {
+			if ((pass == 0 && q.contains("virtual")) || (pass == 1 && !q.contains("virtual"))) {
 				m.push_back(p_methods[i]);
 			}
 		}
@@ -429,7 +429,7 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc p_classdoc,
 
 		for (int i = 0; i < p_methods.size(); i++) {
 			const String &q = p_methods[i].qualifiers;
-			if ((pass == 0 && q.find("virtual") != -1) || (pass == 1 && q.find("virtual") == -1)) {
+			if ((pass == 0 && q.contains("virtual")) || (pass == 1 && !q.contains("virtual"))) {
 				methods_filtered.push_back(p_methods[i]);
 			}
 		}
@@ -820,7 +820,7 @@ void EditorHelp::_update_doc() {
 			}
 		}
 		// Ignore undocumented non virtual private.
-		if (cd.methods[i].name.begins_with("_") && cd.methods[i].description.is_empty() && cd.methods[i].qualifiers.find("virtual") == -1) {
+		if (cd.methods[i].name.begins_with("_") && cd.methods[i].description.is_empty() && !cd.methods[i].qualifiers.contains("virtual")) {
 			continue;
 		}
 		methods.push_back(cd.methods[i]);
@@ -1923,7 +1923,7 @@ void EditorHelpBit::_meta_clicked(String p_select) {
 
 		String select = p_select.substr(1, p_select.length());
 		String class_name;
-		if (select.find(".") != -1) {
+		if (select.contains(".")) {
 			class_name = select.get_slice(".", 0);
 		} else {
 			class_name = "@Global";
@@ -1936,7 +1936,7 @@ void EditorHelpBit::_meta_clicked(String p_select) {
 	} else if (p_select.begins_with("@")) {
 		String m = p_select.substr(1, p_select.length());
 
-		if (m.find(".") != -1) {
+		if (m.contains(".")) {
 			_go_to_help("class_method:" + m.get_slice(".", 0) + ":" + m.get_slice(".", 0)); //must go somewhere else
 		}
 	}

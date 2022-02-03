@@ -121,7 +121,7 @@ bool ArrayPropertyEdit::_set(const StringName &p_name, const Variant &p_value) {
 		}
 
 	} else if (pn.begins_with("indices")) {
-		if (pn.find("_") != -1) {
+		if (pn.contains("_")) {
 			//type
 			int idx = pn.get_slicec('/', 1).get_slicec('_', 0).to_int();
 
@@ -178,7 +178,7 @@ bool ArrayPropertyEdit::_get(const StringName &p_name, Variant &r_ret) const {
 			return true;
 		}
 	} else if (pn.begins_with("indices")) {
-		if (pn.find("_") != -1) {
+		if (pn.contains("_")) {
 			//type
 			int idx = pn.get_slicec('/', 1).get_slicec('_', 0).to_int();
 			bool valid;

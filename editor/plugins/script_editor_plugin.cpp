@@ -159,7 +159,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 				if (E.usage & PROPERTY_USAGE_CATEGORY || E.usage & PROPERTY_USAGE_GROUP || E.usage & PROPERTY_USAGE_SUBGROUP) {
 					continue;
 				}
-				if (name.find("/") != -1) {
+				if (name.contains("/")) {
 					continue;
 				}
 				highlighter->add_member_keyword_color(name, member_variable_color);
@@ -714,7 +714,7 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 			return;
 		}
 		// if it's a path then it's most likely a deleted file not help
-	} else if (path.find("::") != -1) {
+	} else if (path.contains("::")) {
 		// built-in script
 		String res_path = path.get_slice("::", 0);
 		if (ResourceLoader::get_resource_type(res_path) == "PackedScene") {
@@ -2293,7 +2293,7 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 
 				} else if (flags[i] == '\0' || (!inside_quotes && flags[i] == ' ')) {
 					String arg = flags.substr(from, num_chars);
-					if (arg.find("{file}") != -1) {
+					if (arg.contains("{file}")) {
 						has_file_flag = true;
 					}
 

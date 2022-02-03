@@ -242,7 +242,7 @@ void ProjectSettingsEditor::unhandled_input(const Ref<InputEvent> &p_event) {
 
 String ProjectSettingsEditor::_get_setting_name() const {
 	String name = property_box->get_text().strip_edges();
-	if (name.find("/") == -1) {
+	if (!name.contains("/")) {
 		name = "global/" + name;
 	}
 	return name;
