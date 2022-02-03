@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="StreamPeerBuffer" inherits="StreamPeer" version="3.5">
 	<brief_description>
+		Data buffer stream peer.
 	</brief_description>
 	<description>
+		Data buffer stream peer that uses a byte array as the stream. This object can be used to handle binary data from network sessions. To handle binary data stored in files, [File] can be used directly.
+		A [StreamPeerBuffer] object keeps an internal cursor which is the offset in bytes to the start of the buffer. Get and put operations are performed at the cursor position and will move the cursor accordingly.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -10,38 +13,45 @@
 		<method name="clear">
 			<return type="void" />
 			<description>
+				Clears the [member data_array] and resets the cursor.
 			</description>
 		</method>
 		<method name="duplicate" qualifiers="const">
 			<return type="StreamPeerBuffer" />
 			<description>
+				Returns a new [StreamPeerBuffer] with the same [member data_array] content.
 			</description>
 		</method>
 		<method name="get_position" qualifiers="const">
 			<return type="int" />
 			<description>
+				Returns the current cursor position.
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">
 			<return type="int" />
 			<description>
+				Returns the size of [member data_array].
 			</description>
 		</method>
 		<method name="resize">
 			<return type="void" />
 			<argument index="0" name="size" type="int" />
 			<description>
+				Resizes the [member data_array]. This [i]doesn't[/i] update the cursor.
 			</description>
 		</method>
 		<method name="seek">
 			<return type="void" />
 			<argument index="0" name="position" type="int" />
 			<description>
+				Moves the cursor to the specified position. [code]position[/code] must be a valid index of [member data_array].
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="data_array" type="PoolByteArray" setter="set_data_array" getter="get_data_array" default="PoolByteArray(  )">
+			The underlying data buffer. Setting this value resets the cursor.
 		</member>
 	</members>
 	<constants>
