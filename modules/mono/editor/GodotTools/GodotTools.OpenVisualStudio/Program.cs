@@ -47,9 +47,13 @@ namespace GodotTools.OpenVisualStudio
             if (dte == null)
             {
                 // Open a new instance
+                dte = TryVisualStudioLaunch("VisualStudio.DTE.17.0");
 
-                var visualStudioDteType = Type.GetTypeFromProgID("VisualStudio.DTE.16.0", throwOnError: true);
-                dte = (DTE)Activator.CreateInstance(visualStudioDteType);
+                if (dte == null)
+                {
+                    // Launch of VS 2022 failed, fallback to 2019
+                    dte = TryVisualStudioLaunch("VisualStudio.DTE.16.0");
+                }
 
                 dte.UserControl = true;
 
@@ -131,6 +135,21 @@ namespace GodotTools.OpenVisualStudio
             }
 
             return 0;
+        }
+
+        private static DTE TryVisualStudioLaunch(string version)
+        {
+            try
+            {
+                var visualStudioDteType = Type.GetTypeFromProgID(version, throwOnError: true);
+                var dte = (DTE)Activator.CreateInstance(visualStudioDteType);
+
+                return dte;
+            }
+            catch (COMException)
+            {
+                return null;
+            }
         }
 
         private static DTE FindInstanceEditingSolution(string solutionPath)
