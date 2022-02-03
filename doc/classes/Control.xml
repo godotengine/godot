@@ -380,12 +380,6 @@
 				Returns the focus neighbor for the specified [enum Side]. A getter method for [member focus_neighbor_bottom], [member focus_neighbor_left], [member focus_neighbor_right] and [member focus_neighbor_top].
 			</description>
 		</method>
-		<method name="get_focus_owner" qualifiers="const">
-			<return type="Control" />
-			<description>
-				Returns the control that has the keyboard focus or [code]null[/code] if none.
-			</description>
-		</method>
 		<method name="get_global_rect" qualifiers="const">
 			<return type="Rect2" />
 			<description>

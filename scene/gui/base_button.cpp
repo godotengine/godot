@@ -403,7 +403,7 @@ bool BaseButton::_is_focus_owner_in_shorcut_context() const {
 	}
 
 	Node *ctx_node = get_shortcut_context();
-	Control *vp_focus = get_focus_owner();
+	Control *vp_focus = get_viewport() ? get_viewport()->gui_get_focus_owner() : nullptr;
 
 	// If the context is valid and the viewport focus is valid, check if the context is the focus or is a parent of it.
 	return ctx_node && vp_focus && (ctx_node == vp_focus || ctx_node->is_ancestor_of(vp_focus));

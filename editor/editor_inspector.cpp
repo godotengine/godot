@@ -2299,7 +2299,7 @@ void EditorInspector::update_tree() {
 	if (property_focusable != -1) {
 		//check focusable is really focusable
 		bool restore_focus = false;
-		Control *focused = get_focus_owner();
+		Control *focused = get_viewport() ? get_viewport()->gui_get_focus_owner() : nullptr;
 		if (focused) {
 			Node *parent = focused->get_parent();
 			while (parent) {
