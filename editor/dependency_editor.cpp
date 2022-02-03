@@ -171,7 +171,7 @@ void DependencyEditor::_update_list() {
 		String path;
 		String type;
 
-		if (n.find("::") != -1) {
+		if (n.contains("::")) {
 			path = n.get_slice("::", 0);
 			type = n.get_slice("::", 1);
 		} else {

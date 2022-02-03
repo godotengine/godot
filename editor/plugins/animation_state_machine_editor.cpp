@@ -1059,7 +1059,7 @@ void AnimationNodeStateMachineEditor::_removed_from_graph() {
 void AnimationNodeStateMachineEditor::_name_edited(const String &p_text) {
 	const String &new_name = p_text;
 
-	ERR_FAIL_COND(new_name.is_empty() || new_name.find(".") != -1 || new_name.find("/") != -1);
+	ERR_FAIL_COND(new_name.is_empty() || new_name.contains(".") || new_name.contains("/"));
 
 	if (new_name == prev_name) {
 		return; // Nothing to do.

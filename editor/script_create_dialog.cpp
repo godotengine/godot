@@ -378,7 +378,7 @@ void ScriptCreateDialog::_language_changed(int l) {
 	String path = file_path->get_text();
 	String extension = "";
 	if (!path.is_empty()) {
-		if (path.find(".") != -1) {
+		if (path.contains(".")) {
 			extension = path.get_extension();
 		}
 
@@ -811,7 +811,7 @@ ScriptLanguage::ScriptTemplate ScriptCreateDialog::_parse_template(const ScriptL
 	List<String> comment_delimiters;
 	language->get_comment_delimiters(&comment_delimiters);
 	for (const String &script_delimiter : comment_delimiters) {
-		if (script_delimiter.find(" ") == -1) {
+		if (!script_delimiter.contains(" ")) {
 			meta_delimiter = script_delimiter;
 			break;
 		}

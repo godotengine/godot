@@ -623,7 +623,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				MAKE_PROPSELECT
 				Variant::Type type = Variant::NIL;
 				String tname = hint_text;
-				if (tname.find(".") != -1) {
+				if (tname.contains(".")) {
 					tname = tname.get_slice(".", 0);
 				}
 				for (int i = 0; i < Variant::VARIANT_MAX; i++) {

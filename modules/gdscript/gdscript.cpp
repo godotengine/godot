@@ -827,7 +827,7 @@ Error GDScript::reload(bool p_keep_state) {
 		return OK;
 	}
 #else
-	if (source.find("_BASE_") != -1) {
+	if (source.contains("_BASE_")) {
 		return OK;
 	}
 #endif

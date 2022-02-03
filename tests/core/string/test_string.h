@@ -245,6 +245,19 @@ TEST_CASE("[String] Testing for empty string") {
 	CHECK(String("").is_empty());
 }
 
+TEST_CASE("[String] Contains") {
+	String s = "C:\\Godot\\project\\string_test.tscn";
+	CHECK(s.contains(":\\"));
+	CHECK(s.contains("Godot"));
+	CHECK(s.contains(String("project\\string_test")));
+	CHECK(s.contains(String("\\string_test.tscn")));
+
+	CHECK(!s.contains("://"));
+	CHECK(!s.contains("Godoh"));
+	CHECK(!s.contains(String("project\\string test")));
+	CHECK(!s.contains(String("\\char_test.tscn")));
+}
+
 TEST_CASE("[String] Test chr") {
 	CHECK(String::chr('H') == "H");
 	CHECK(String::chr(0x3012)[0] == 0x3012);

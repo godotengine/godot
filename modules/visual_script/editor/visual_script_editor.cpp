@@ -2803,7 +2803,7 @@ void VisualScriptEditor::add_callback(const String &p_function, PackedStringArra
 		String name = p_args[i];
 		Variant::Type type = Variant::NIL;
 
-		if (name.find(":") != -1) {
+		if (name.contains(":")) {
 			String tt = name.get_slice(":", 1);
 			name = name.get_slice(":", 0);
 			for (int j = 0; j < Variant::VARIANT_MAX; j++) {

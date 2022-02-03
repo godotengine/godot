@@ -592,7 +592,7 @@ void EditorPropertyMember::_property_select() {
 	} else if (hint == MEMBER_PROPERTY_OF_VARIANT_TYPE) {
 		Variant::Type type = Variant::NIL;
 		String tname = hint_text;
-		if (tname.find(".") != -1) {
+		if (tname.contains(".")) {
 			tname = tname.get_slice(".", 0);
 		}
 		for (int i = 0; i < Variant::VARIANT_MAX; i++) {
@@ -809,7 +809,7 @@ void EditorPropertyLayersGrid::_rename_operation_confirm() {
 	if (new_name.length() == 0) {
 		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
 		return;
-	} else if (new_name.find("/") != -1 || new_name.find("\\") != -1 || new_name.find(":") != -1) {
+	} else if (new_name.contains("/") || new_name.contains("\\") || new_name.contains(":")) {
 		EditorNode::get_singleton()->show_warning(TTR("Name contains invalid characters."));
 		return;
 	}
@@ -2883,7 +2883,7 @@ void EditorPropertyNodePath::update_property() {
 	Node *target_node = base_node->get_node(p);
 	ERR_FAIL_COND(!target_node);
 
-	if (String(target_node->get_name()).find("@") != -1) {
+	if (String(target_node->get_name()).contains("@")) {
 		assign->set_icon(Ref<Texture2D>());
 		assign->set_text(p);
 		return;
