@@ -262,7 +262,7 @@ private:
 				change_root_node(sibling_id, p_tree_id);
 
 				// delete the old root node as no longer needed
-				_nodes.free(p_parent_id);
+				node_free_node_and_leaf(p_parent_id);
 			}
 
 			return;
@@ -275,7 +275,19 @@ private:
 		}
 
 		// put the node on the free list to recycle
-		_nodes.free(p_parent_id);
+		node_free_node_and_leaf(p_parent_id);
+	}
+
+	// A node can either be a node, or a node AND a leaf combo.
+	// Both must be deleted to prevent a leak.
+	void node_free_node_and_leaf(uint32_t p_node_id) {
+		TNode &node = _nodes[p_node_id];
+		if (node.is_leaf()) {
+			int leaf_id = node.get_leaf_id();
+			_leaves.free(leaf_id);
+		}
+
+		_nodes.free(p_node_id);
 	}
 
 	void change_root_node(uint32_t p_new_root_id, uint32_t p_tree_id) {
@@ -367,7 +379,7 @@ private:
 				refit_upward(parent_id);
 
 				// put the node on the free list to recycle
-				_nodes.free(owner_node_id);
+				node_free_node_and_leaf(owner_node_id);
 			}
 
 			// else if no parent, it is the root node. Do not delete
