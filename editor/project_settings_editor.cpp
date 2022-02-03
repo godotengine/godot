@@ -512,6 +512,16 @@ void ProjectSettingsEditor::_update_theme() {
 	restart_container->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 	restart_icon->set_texture(get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
 	restart_label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+
+	type_box->clear();
+	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+		// There's no point in adding Nil types, and Object types
+		// can't be serialized correctly in the project settings.
+		if (i != Variant::NIL && i != Variant::OBJECT) {
+			String type = Variant::get_type_name(Variant::Type(i));
+			type_box->add_icon_item(get_theme_icon(type, SNAME("EditorIcons")), type, i);
+		}
+	}
 }
 
 void ProjectSettingsEditor::_notification(int p_what) {
@@ -526,9 +536,9 @@ void ProjectSettingsEditor::_notification(int p_what) {
 			_update_action_map_editor();
 			_update_theme();
 		} break;
-		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_THEME_CHANGED: {
 			_update_theme();
-			break;
+		} break;
 	}
 }
 
@@ -588,14 +598,6 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	type_box = memnew(OptionButton);
 	type_box->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
 	header->add_child(type_box);
-
-	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-		// There's no point in adding Nil types, and Object types
-		// can't be serialized correctly in the project settings.
-		if (i != Variant::NIL && i != Variant::OBJECT) {
-			type_box->add_item(Variant::get_type_name(Variant::Type(i)), i);
-		}
-	}
 
 	add_button = memnew(Button);
 	add_button->set_text(TTR("Add"));
