@@ -182,13 +182,6 @@ bool profile_gpu = false;
 
 /* Helper methods */
 
-// Used by Mono module, should likely be registered in Engine singleton instead
-// FIXME: This is also not 100% accurate, `project_manager` is only true when it was requested,
-// but not if e.g. we fail to load and project and fallback to the manager.
-bool Main::is_project_manager() {
-	return project_manager;
-}
-
 bool Main::is_cmdline_tool() {
 	return cmdline_tool;
 }
@@ -934,7 +927,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 			editor = true;
 		} else if (I->get() == "-p" || I->get() == "--project-manager") { // starts project manager
-
 			project_manager = true;
 		} else if (I->get() == "--debug-server") {
 			if (I->next()) {
@@ -2548,6 +2540,7 @@ bool Main::start() {
 #ifdef TOOLS_ENABLED
 		if (project_manager) {
 			Engine::get_singleton()->set_editor_hint(true);
+			Engine::get_singleton()->set_project_manager_hint(true);
 			ProjectManager *pmanager = memnew(ProjectManager);
 			ProgressDialog *progress_dialog = memnew(ProgressDialog);
 			pmanager->add_child(progress_dialog);
