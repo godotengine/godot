@@ -2226,7 +2226,7 @@ void ThemeTypeEditor::_update_type_list() {
 	}
 	updating = true;
 
-	Control *focused = get_focus_owner();
+	Control *focused = get_viewport()->gui_get_focus_owner();
 	if (focused) {
 		if (focusables.has(focused)) {
 			// If focus is currently on one of the internal property editors, don't update.

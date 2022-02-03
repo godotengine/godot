@@ -3481,7 +3481,7 @@ void AnimationTrackEditor::_track_remove_request(int p_track) {
 
 void AnimationTrackEditor::_track_grab_focus(int p_track) {
 	// Don't steal focus if not working with the track editor.
-	if (Object::cast_to<AnimationTrackEdit>(get_focus_owner())) {
+	if (Object::cast_to<AnimationTrackEdit>(get_viewport()->gui_get_focus_owner())) {
 		track_edits[p_track]->grab_focus();
 	}
 }
