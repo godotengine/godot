@@ -103,8 +103,6 @@ private:
 	bool valid = false;
 	bool reload_invalidated = false;
 
-	bool builtin;
-
 	GDMonoClass *base = nullptr;
 	GDMonoClass *native = nullptr;
 	GDMonoClass *script_class = nullptr;
