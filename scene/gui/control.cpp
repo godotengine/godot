@@ -2196,8 +2196,7 @@ void Control::release_focus() {
 		return;
 	}
 
-	get_viewport()->_gui_remove_focus();
-	update();
+	get_viewport()->gui_release_focus();
 }
 
 bool Control::is_top_level_control() const {
@@ -2602,7 +2601,7 @@ Control::MouseFilter Control::get_mouse_filter() const {
 
 Control *Control::get_focus_owner() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
-	return get_viewport()->_gui_get_focus_owner();
+	return get_viewport()->gui_get_focus_owner();
 }
 
 void Control::warp_mouse(const Point2 &p_to_pos) {

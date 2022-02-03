@@ -2092,7 +2092,7 @@ void Viewport::_gui_hide_control(Control *p_control) {
 	}
 
 	if (gui.key_focus == p_control) {
-		_gui_remove_focus();
+		gui_release_focus();
 	}
 	if (gui.mouse_over == p_control) {
 		gui.mouse_over = nullptr;
@@ -2142,15 +2142,7 @@ Window *Viewport::get_base_window() const {
 }
 void Viewport::_gui_remove_focus_for_window(Node *p_window) {
 	if (get_base_window() == p_window) {
-		_gui_remove_focus();
-	}
-}
-
-void Viewport::_gui_remove_focus() {
-	if (gui.key_focus) {
-		Node *f = gui.key_focus;
-		gui.key_focus = nullptr;
-		f->notification(Control::NOTIFICATION_FOCUS_EXIT, true);
+		gui_release_focus();
 	}
 }
 
@@ -2277,10 +2269,6 @@ void Viewport::_cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paus
 		physics_2d_shape_mouseover.erase(shapes_to_erase.front()->get());
 		shapes_to_erase.pop_front();
 	}
-}
-
-Control *Viewport::_gui_get_focus_owner() {
-	return gui.key_focus;
 }
 
 void Viewport::_gui_grab_click_focus(Control *p_control) {
@@ -2796,6 +2784,19 @@ void Viewport::gui_reset_canvas_sort_index() {
 
 int Viewport::gui_get_canvas_sort_index() {
 	return gui.canvas_sort_index++;
+}
+
+void Viewport::gui_release_focus() {
+	if (gui.key_focus) {
+		Control *f = gui.key_focus;
+		gui.key_focus = nullptr;
+		f->notification(Control::NOTIFICATION_FOCUS_EXIT, true);
+		f->update();
+	}
+}
+
+Control *Viewport::gui_get_focus_owner() {
+	return gui.key_focus;
 }
 
 void Viewport::set_msaa(MSAA p_msaa) {
@@ -3590,6 +3591,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("gui_get_drag_data"), &Viewport::gui_get_drag_data);
 	ClassDB::bind_method(D_METHOD("gui_is_dragging"), &Viewport::gui_is_dragging);
 	ClassDB::bind_method(D_METHOD("gui_is_drag_successful"), &Viewport::gui_is_drag_successful);
+
+	ClassDB::bind_method(D_METHOD("gui_release_focus"), &Viewport::gui_release_focus);
+	ClassDB::bind_method(D_METHOD("gui_get_focus_owner"), &Viewport::gui_get_focus_owner);
 
 	ClassDB::bind_method(D_METHOD("set_disable_input", "disable"), &Viewport::set_disable_input);
 	ClassDB::bind_method(D_METHOD("is_input_disabled"), &Viewport::is_input_disabled);
