@@ -179,6 +179,7 @@ public:
 	void load_favorites();
 
 	bool is_dark_theme();
+	bool is_caret_blink_active() const;
 
 	void list_text_editor_themes();
 	void load_text_editor_theme();

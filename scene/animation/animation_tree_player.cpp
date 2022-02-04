@@ -31,6 +31,7 @@
 #include "animation_tree_player.h"
 #include "animation_player.h"
 
+#include "core/os/os.h"
 #include "scene/scene_string_names.h"
 
 void AnimationTreePlayer::set_animation_process_mode(AnimationProcessMode p_mode) {
@@ -433,7 +434,7 @@ void AnimationTreePlayer::_notification(int p_what) {
 				break;
 			}
 
-			if (processing) {
+			if (processing && OS::get_singleton()->is_update_pending()) {
 				_process_animation(get_process_delta_time());
 			}
 		} break;
@@ -442,7 +443,7 @@ void AnimationTreePlayer::_notification(int p_what) {
 				break;
 			}
 
-			if (processing) {
+			if (processing && OS::get_singleton()->is_update_pending()) {
 				_process_animation(get_physics_process_delta_time());
 			}
 		} break;

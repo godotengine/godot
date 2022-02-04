@@ -170,7 +170,7 @@ void RasterizerCanvasGLES3::_legacy_canvas_render_item(Item *p_ci, RenderItemSta
 
 			if (shader_ptr != r_ris.shader_cache || r_ris.rebind_shader) {
 				if (shader_ptr->canvas_item.uses_time) {
-					VisualServerRaster::redraw_request();
+					VisualServerRaster::redraw_request(false);
 				}
 
 				state.canvas_shader.set_custom_shader(shader_ptr->custom_code_id);
@@ -968,7 +968,7 @@ void RasterizerCanvasGLES3::render_batches(Item *p_current_clip, bool &r_reclip,
 
 							glVertexAttrib4f(VS::ARRAY_COLOR, 1, 1, 1, 1); //not used, so keep white
 
-							VisualServerRaster::redraw_request();
+							VisualServerRaster::redraw_request(false);
 
 							storage->particles_request_process(particles_cmd->particles);
 							//enable instancing
@@ -1250,7 +1250,7 @@ void RasterizerCanvasGLES3::render_joined_item(const BItemJoined &p_bij, RenderI
 
 			if (shader_ptr != r_ris.shader_cache || r_ris.rebind_shader) {
 				if (shader_ptr->canvas_item.uses_time) {
-					VisualServerRaster::redraw_request();
+					VisualServerRaster::redraw_request(false);
 				}
 
 				state.canvas_shader.set_custom_shader(shader_ptr->custom_code_id);

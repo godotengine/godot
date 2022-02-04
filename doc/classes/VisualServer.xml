@@ -1178,8 +1178,10 @@
 		</method>
 		<method name="has_changed" qualifiers="const">
 			<return type="bool" />
+			<argument index="0" name="queried_priority" type="int" enum="VisualServer.ChangedPriority" default="0" />
 			<description>
 				Returns [code]true[/code] if changes have been made to the VisualServer's data. [method draw] is usually called if this happens.
+				As changes are registered as either high or low priority (e.g. dynamic shaders), this function takes an optional argument to query either low or high priority changes, or any changes.
 			</description>
 		</method>
 		<method name="has_feature" qualifiers="const">
@@ -3840,6 +3842,15 @@
 		</constant>
 		<constant name="ENV_SSAO_BLUR_3x3" value="3" enum="EnvironmentSSAOBlur">
 			Performs a 3x3 blur on the SSAO output. Use this for smoothest SSAO.
+		</constant>
+		<constant name="CHANGED_PRIORITY_ANY" value="0" enum="ChangedPriority">
+			Used to query for any changes that request a redraw, whatever the priority.
+		</constant>
+		<constant name="CHANGED_PRIORITY_LOW" value="1" enum="ChangedPriority">
+			Registered changes which have low priority can be optionally prevented from causing editor redraws. Examples might include dynamic shaders (typically using the [code]TIME[/code] built-in).
+		</constant>
+		<constant name="CHANGED_PRIORITY_HIGH" value="2" enum="ChangedPriority">
+			Registered changes which can cause a redraw default to high priority.
 		</constant>
 	</constants>
 </class>

@@ -53,7 +53,8 @@ class VisualServerRaster : public VisualServer {
 
 	};
 
-	static int changes;
+	// low and high priority
+	static int changes[2];
 	RID test_cube;
 
 	int black_margin[4];
@@ -68,27 +69,36 @@ class VisualServerRaster : public VisualServer {
 	List<FrameDrawnCallbacks> frame_drawn_callbacks;
 
 	void _draw_margins();
-	static void _changes_changed() {}
 
-public:
-	//if editor is redrawing when it shouldn't, enable this and put a breakpoint in _changes_changed()
-	//#define DEBUG_CHANGES
-
-#ifdef DEBUG_CHANGES
-	_FORCE_INLINE_ static void redraw_request() {
-		changes++;
-		_changes_changed();
+	// This function is NOT dead code.
+	// It is specifically for debugging redraws to help identify problems with
+	// undesired constant editor updating.
+	// The function will be called in DEV builds (and thus does not require a recompile),
+	// allowing you to place a breakpoint either at the first line or the semicolon.
+	// You can then look at the callstack to find the cause of the redraw.
+	static void _changes_changed(int p_priority) {
+		if (p_priority) {
+			;
+		}
 	}
 
-#define DISPLAY_CHANGED \
-	changes++;          \
-	_changes_changed();
+public:
+	// if editor is redrawing when it shouldn't, use a DEV build and put a breakpoint in _changes_changed()
+	_FORCE_INLINE_ static void redraw_request(bool p_high_priority = true) {
+		int priority = p_high_priority ? 1 : 0;
+		changes[priority] += 1;
+#ifdef DEV_ENABLED
+		_changes_changed(priority);
+#endif
+	}
 
+#ifdef DEV_ENABLED
+#define DISPLAY_CHANGED \
+	changes[1] += 1;    \
+	_changes_changed(1);
 #else
-	_FORCE_INLINE_ static void redraw_request() { changes++; }
-
 #define DISPLAY_CHANGED \
-	changes++;
+	changes[1] += 1;
 #endif
 
 #define BIND0R(m_r, m_name) \
@@ -736,7 +746,7 @@ public:
 
 	virtual void draw(bool p_swap_buffers, double frame_step);
 	virtual void sync();
-	virtual bool has_changed() const;
+	virtual bool has_changed(ChangedPriority p_priority = CHANGED_PRIORITY_ANY) const;
 	virtual void init();
 	virtual void finish();
 

@@ -30,6 +30,7 @@
 
 #include "cpu_particles_2d.h"
 #include "core/core_string_names.h"
+#include "core/os/os.h"
 #include "scene/2d/canvas_item.h"
 #include "scene/2d/particles_2d.h"
 #include "scene/resources/particles_material.h"
@@ -1028,9 +1029,11 @@ void CPUParticles2D::_set_redraw(bool p_redraw) {
 }
 
 void CPUParticles2D::_update_render_thread() {
-	update_mutex.lock();
-	VS::get_singleton()->multimesh_set_as_bulk_array(multimesh, particle_data);
-	update_mutex.unlock();
+	if (OS::get_singleton()->is_update_pending(true)) {
+		update_mutex.lock();
+		VS::get_singleton()->multimesh_set_as_bulk_array(multimesh, particle_data);
+		update_mutex.unlock();
+	}
 }
 
 void CPUParticles2D::_notification(int p_what) {

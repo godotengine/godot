@@ -2230,7 +2230,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &VisualServer::free); // shouldn't conflict with Object::free()
 
 	ClassDB::bind_method(D_METHOD("request_frame_drawn_callback", "where", "method", "userdata"), &VisualServer::request_frame_drawn_callback);
-	ClassDB::bind_method(D_METHOD("has_changed"), &VisualServer::has_changed);
+	ClassDB::bind_method(D_METHOD("has_changed", "queried_priority"), &VisualServer::has_changed, DEFVAL(CHANGED_PRIORITY_ANY));
 	ClassDB::bind_method(D_METHOD("init"), &VisualServer::init);
 	ClassDB::bind_method(D_METHOD("finish"), &VisualServer::finish);
 	ClassDB::bind_method(D_METHOD("get_render_info", "info"), &VisualServer::get_render_info);
@@ -2521,6 +2521,10 @@ void VisualServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(ENV_SSAO_BLUR_1x1);
 	BIND_ENUM_CONSTANT(ENV_SSAO_BLUR_2x2);
 	BIND_ENUM_CONSTANT(ENV_SSAO_BLUR_3x3);
+
+	BIND_ENUM_CONSTANT(CHANGED_PRIORITY_ANY);
+	BIND_ENUM_CONSTANT(CHANGED_PRIORITY_LOW);
+	BIND_ENUM_CONSTANT(CHANGED_PRIORITY_HIGH);
 
 	ADD_SIGNAL(MethodInfo("frame_pre_draw"));
 	ADD_SIGNAL(MethodInfo("frame_post_draw"));
