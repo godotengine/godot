@@ -76,6 +76,21 @@ def check_wayland_dependencies():
         print("Error: wayland-client library not found. Aborting.")
         return False
 
+    # We need at least version 1.20
+    min_wayland_client_version = "1.20"
+
+    import subprocess
+
+    wayland_client_version = subprocess.check_output(["pkg-config", "wayland-client", "--modversion"]).decode("utf-8")
+    if wayland_client_version < min_wayland_client_version:
+        # Abort as system wayland-client was requested but too old
+        print(
+            "wayland-client: System version {0} does not match minimal requirements ({1}). Aborting.".format(
+                wayland_client_version, min_wayland_client_version
+            )
+        )
+        return False  
+
     wayland_error = os.system("pkg-config xkbcommon --modversion > /dev/null")
     if wayland_error:
             print("Error: xkbcommon library not found. Aborting.")
