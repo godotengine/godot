@@ -146,7 +146,7 @@ void PopupMenu::_activate_submenu(int over) {
 	Popup *pm = Object::cast_to<Popup>(n);
 	ERR_FAIL_COND_MSG(!pm, "Item subnode is not a Popup: " + items[over].submenu + ".");
 	if (pm->is_visible_in_tree()) {
-		return; //already visible!
+		return; // Already visible.
 	}
 
 	Point2 p = get_global_position();
@@ -155,17 +155,21 @@ void PopupMenu::_activate_submenu(int over) {
 
 	Point2 pos = p + Point2(get_size().width, items[over]._ofs_cache - style->get_offset().y) * get_global_transform().get_scale();
 	Size2 size = pm->get_size();
-	// fix pos
+	// Fix pos.
 	if (pos.x + size.width > get_viewport_rect().size.width) {
 		pos.x = p.x - size.width;
 	}
 
 	pm->set_position(pos);
 	pm->set_scale(get_global_transform().get_scale());
-	pm->popup();
 
 	PopupMenu *pum = Object::cast_to<PopupMenu>(pm);
 	if (pum) {
+		// If not triggered by the mouse, start the popup with its first item selected.
+		if (pum->get_item_count() > 0 && Input::get_singleton()->is_action_just_pressed("ui_accept")) {
+			pum->set_current_index(0);
+		}
+
 		pr.position -= pum->get_global_position();
 		pum->clear_autohide_areas();
 		pum->add_autohide_area(Rect2(pr.position.x, pr.position.y, pr.size.x, items[over]._ofs_cache));
@@ -174,6 +178,8 @@ void PopupMenu::_activate_submenu(int over) {
 			pum->add_autohide_area(Rect2(pr.position.x, pr.position.y + from, pr.size.x, pr.size.y - from));
 		}
 	}
+
+	pm->popup();
 }
 
 void PopupMenu::_submenu_timeout() {
@@ -1033,6 +1039,12 @@ bool PopupMenu::is_item_shortcut_disabled(int p_idx) const {
 	return items[p_idx].shortcut_is_disabled;
 }
 
+void PopupMenu::set_current_index(int p_idx) {
+	ERR_FAIL_INDEX(p_idx, items.size());
+	mouse_over = p_idx;
+	update();
+}
+
 int PopupMenu::get_current_index() const {
 	return mouse_over;
 }
@@ -1403,6 +1415,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_tooltip", "idx"), &PopupMenu::get_item_tooltip);
 	ClassDB::bind_method(D_METHOD("get_item_shortcut", "idx"), &PopupMenu::get_item_shortcut);
 
+	ClassDB::bind_method(D_METHOD("set_current_index", "index"), &PopupMenu::set_current_index);
 	ClassDB::bind_method(D_METHOD("get_current_index"), &PopupMenu::get_current_index);
 	ClassDB::bind_method(D_METHOD("get_item_count"), &PopupMenu::get_item_count);
 
