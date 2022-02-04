@@ -127,7 +127,7 @@ void GPUParticles2D::set_process_material(const Ref<Material> &p_material) {
 	if (pm.is_valid() && !pm->get_particle_flag(ParticlesMaterial::PARTICLE_FLAG_DISABLE_Z) && pm->get_gravity() == Vector3(0, -9.8, 0)) {
 		// Likely a new (3D) material, modify it to match 2D space
 		pm->set_particle_flag(ParticlesMaterial::PARTICLE_FLAG_DISABLE_Z, true);
-		pm->set_gravity(Vector3(0, 98, 0));
+		pm->set_gravity(Vector3(0, 980, 0));
 	}
 	RID material_rid;
 	if (process_material.is_valid()) {
