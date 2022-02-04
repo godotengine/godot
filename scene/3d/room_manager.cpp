@@ -2139,8 +2139,7 @@ void RoomManager::_merge_meshes_in_room(Room *p_room) {
 			if (!bf.get_bit(c)) {
 				MeshInstance *b = source_meshes[c];
 
-				//				if (_are_meshes_mergeable(a, b)) {
-				if (a->is_mergeable_with(*b)) {
+				if (a->is_mergeable_with(b)) {
 					merge_list.push_back(b);
 					bf.set_bit(c, true);
 				}
@@ -2157,7 +2156,7 @@ void RoomManager::_merge_meshes_in_room(Room *p_room) {
 
 			_merge_log("\t\t" + merged->get_name());
 
-			if (merged->create_by_merging(merge_list)) {
+			if (merged->merge_meshes(merge_list, true, false)) {
 				// set all the source meshes to portal mode ignore so not shown
 				for (int i = 0; i < merge_list.size(); i++) {
 					merge_list[i]->set_portal_mode(CullInstance::PORTAL_MODE_IGNORE);
