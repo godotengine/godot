@@ -78,11 +78,11 @@ public:
 	/* SHADOW ATLAS API */
 
 	RID shadow_atlas_create() override;
-	void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = false) override;
+	void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = true) override;
 	void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) override;
 	bool shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version) override;
 
-	void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = false) override;
+	void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = true) override;
 	int get_directional_light_shadow_size(RID p_light_intance) override;
 	void set_directional_shadow_count(int p_count) override;
 
