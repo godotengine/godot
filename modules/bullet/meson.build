@@ -1,4 +1,4 @@
-_module_bullet_srcs = files(run_command(GLOB, '*.cpp').stdout().split('\n'))
+_module_bullet_srcs = files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
 if not DEP_BULLET.found()
     error('module bullet requires bullet as a dependency')
 endif

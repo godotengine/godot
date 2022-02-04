@@ -1,2 +1,2 @@
-SOURCES += files(run_command(GLOB, '*.cpp').stdout().split('\n'))
+SOURCES += files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
 subdir('tiles')

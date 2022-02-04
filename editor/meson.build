@@ -20,7 +20,7 @@ if get_option('tools')
     SOURCES += [_exporter_target]
 
     # need to built the sources
-    SOURCES += files(run_command(GLOB, '../platform/*/export/*.cpp').stdout().split('\n'))
+    SOURCES += files(run_command(GLOB, '../platform/*/export/*.cpp', check: true).stdout().split('\n'))
     ################################################################################
     # Doc generation
     ################################################################################
@@ -37,7 +37,7 @@ if get_option('tools')
     # TODO But we can do better, need some py scripts refactoring.
     #_docs_target_srcs = []
     #foreach mp : MODULE_BUILD_PATHS
-    #    _tmp_module_docs = run_command(GLOB, meson.project_source_root() / mp / 'doc_classes' / '*.xml').stdout()
+    #    _tmp_module_docs = run_command(GLOB, meson.project_source_root() / mp / 'doc_classes' / '*.xml', check: true).stdout()
     #    # If GLOB returns empty meson fails -.- .
     #    if _tmp_module_docs != ''
     #        _docs_target_srcs += files(_tmp_module_docs.split('\n'))
@@ -65,7 +65,7 @@ if get_option('tools')
 
     # Translations also will run once
 
-    _doc_translations_target_srcs = files(run_command(GLOB, meson.project_source_root() / 'doc/translations/*.po').stdout().split('\n'))
+    _doc_translations_target_srcs = files(run_command(GLOB, meson.project_source_root() / 'doc/translations/*.po', check: true).stdout().split('\n'))
     _doc_translations_target = custom_target(
         'doc_translations',
         input: _doc_translations_target_srcs,
@@ -76,7 +76,7 @@ if get_option('tools')
     )
     SOURCES += [_doc_translations_target]
 
-    _editor_translations_target_srcs = files(run_command(GLOB, 'translations/*.po').stdout().split('\n'))
+    _editor_translations_target_srcs = files(run_command(GLOB, 'translations/*.po', check: true).stdout().split('\n'))
     _editor_translations_target = custom_target(
         'editor_translations',
         input: _editor_translations_target_srcs,
@@ -89,7 +89,7 @@ if get_option('tools')
 
     # ...and so will fonts
 
-    _fonts_target_srcs = files(run_command(GLOB, meson.project_source_root() / 'thirdparty/fonts/*.ttf').stdout().split('\n'))
+    _fonts_target_srcs = files(run_command(GLOB, meson.project_source_root() / 'thirdparty/fonts/*.ttf', check: true).stdout().split('\n'))
     builtin_fonts_gen = custom_target(
         'fonts',
         input: _fonts_target_srcs,
@@ -102,7 +102,7 @@ if get_option('tools')
     MAIN_SOURCES += [builtin_fonts_gen]
 
     # ...aaaaaaaaaaaaaaand editor icons
-    _editor_icons_srcs = files(run_command(GLOB, 'icons/*.svg').stdout().split('\n'))
+    _editor_icons_srcs = files(run_command(GLOB, 'icons/*.svg', check: true).stdout().split('\n'))
     _editor_icons_target = custom_target(
         'editor_icons',
         input: _editor_icons_srcs,
@@ -115,7 +115,7 @@ if get_option('tools')
 
 
     # Add our sources
-    SOURCES += files(run_command(GLOB, '*.cpp').stdout().split('\n'))
+    SOURCES += files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
 
     subdir('debugger')
     subdir('fileserver')

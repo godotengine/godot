@@ -1,4 +1,4 @@
-_module_gdnaviation_srcs = files(run_command(GLOB, '*.cpp').stdout().split('\n'))
+_module_gdnaviation_srcs = files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
 
 _lib_module_gdnavigation = library('module_gdnavigation',
                                    _module_gdnaviation_srcs,

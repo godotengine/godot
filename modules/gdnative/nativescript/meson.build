@@ -1,4 +1,4 @@
-module_gdnative_srcs += files(run_command(GLOB, '*.cpp').stdout().split('\n'))
+module_gdnative_srcs += files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
 
 if PLATFORM == 'linuxbsd' or PLATFORM == 'iphone'
     module_gdnative_link_args += ['-rdynamic']

@@ -131,13 +131,13 @@ if get_option('disable_all_modules')
     _module_script_args += ['--disable_all_modules']
 endif
 
-_module_output = run_command(SCRIPT_MODULE_DB, _module_script_args)
+_module_output = run_command(SCRIPT_MODULE_DB, _module_script_args, check: true)
 if _module_output.returncode() != 0 or _module_output.stderr() != ''
     error(_module_output.stderr())
 endif
 
 # Get the list of enabled modules
-_module_enabled_output = run_command(SCRIPT_MODULE_DB, ['get_enabled_modules', MODULES_DB_FILE])
+_module_enabled_output = run_command(SCRIPT_MODULE_DB, ['get_enabled_modules', MODULES_DB_FILE], check: true)
 if _module_enabled_output.returncode() != 0
     error(_module_enabled_output.stderr())
 endif
@@ -146,17 +146,17 @@ MODULES_ENABLED = _module_enabled_output.stdout().strip().split(',')
 
 
 # Get the list of disabled modules
-_module_disabled_output = run_command(SCRIPT_MODULE_DB, ['get_disabled_modules', MODULES_DB_FILE])
+_module_disabled_output = run_command(SCRIPT_MODULE_DB, ['get_disabled_modules', MODULES_DB_FILE], check: true)
 if _module_disabled_output.returncode() != 0
     error(_module_disabled_output.stderr())
 endif
 
 MODULES_DISABLED = _module_disabled_output.stdout().strip().split(',')
 
-_module_get_build_paths = run_command(SCRIPT_MODULE_DB, ['get_module_build_paths', MODULES_DB_FILE])
+_module_get_build_paths = run_command(SCRIPT_MODULE_DB, ['get_module_build_paths', MODULES_DB_FILE], check: true)
 MODULE_BUILD_PATHS = _module_get_build_paths.stdout().strip().split(',')
 
-#_module_list = run_command(SCRIPT_MODULE_DB, ['print_modules', MODULES_DB_FILE])
+#_module_list = run_command(SCRIPT_MODULE_DB, ['print_modules', MODULES_DB_FILE], check: true)
 #message(_module_list.stdout())
 
 ################################################################################

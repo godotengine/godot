@@ -1,4 +1,4 @@
-_module_gridmap_srcs = files(run_command(GLOB, '*.cpp').stdout().split('\n'))
+_module_gridmap_srcs = files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
 _lib_module_gridmap = library('module_gridmap',
     _module_gridmap_srcs,
     include_directories: '../..',

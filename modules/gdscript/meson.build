@@ -1,6 +1,6 @@
 subdir('editor_templates')
 
-_module_gdscript_srcs = files(run_command(GLOB, '*.cpp').stdout().split('\n'))
+_module_gdscript_srcs = files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
 
 _module_gdscript_cpp_args = []
 _module_gdscript_deps = [DEP_GODOT_ALL]
@@ -29,7 +29,7 @@ endif
 # do we have tests?
 if get_option('tests')
     _module_gdscript_cpp_args += ['-DTESTS_ENABLED']
-    _module_gdscript_srcs += files(run_command(GLOB, 'tests/*.cpp').stdout().split('\n'))
+    _module_gdscript_srcs += files(run_command(GLOB, 'tests/*.cpp', check: true).stdout().split('\n'))
     _module_gdscript_deps += DEP_TESTS
 endif
 

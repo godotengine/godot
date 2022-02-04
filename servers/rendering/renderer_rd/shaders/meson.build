@@ -1,5 +1,5 @@
 # NOTE: do not use files() here
-_rd_shaders = run_command(GLOB, '*.glsl').stdout().split('\n')
+_rd_shaders = run_command(GLOB, '*.glsl', check: true).stdout().split('\n')
 
 foreach glsl_file : _rd_shaders
     _rd_target = custom_target(

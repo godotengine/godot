@@ -1,4 +1,4 @@
-_module_webxr_srcs = files(run_command(GLOB, '*.cpp').stdout().split('\n'))
+_module_webxr_srcs = files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
 
 DEP_MODULE_WEBXR = []
 if PLATFORM == 'javascript'

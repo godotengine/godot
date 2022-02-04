@@ -1,5 +1,5 @@
-_module_visual_script_srcs = files(run_command(GLOB, '*.cpp').stdout().split('\n'))
-_module_visual_script_srcs += files(run_command(GLOB, 'editor/*.cpp').stdout().split('\n'))
+_module_visual_script_srcs = files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
+_module_visual_script_srcs += files(run_command(GLOB, 'editor/*.cpp', check: true).stdout().split('\n'))
 
 lib_module_visual_script = library('module_visual_script',
     _module_visual_script_srcs,

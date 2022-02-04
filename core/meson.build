@@ -39,7 +39,7 @@ _lib_core_misc = static_library('builtin_core_misc', _core_misc_srcs, c_args: _c
 # MISC LIB FOR CORE - END
 ################################################################################
 
-SOURCES += files(run_command(GLOB, '*.cpp').stdout().split('\n'))
+SOURCES += files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
 
 # generated version file
 version_arr = meson.project_version().split('.')

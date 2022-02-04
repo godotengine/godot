@@ -1,6 +1,6 @@
 DEPENDENCIES += [DEP_VULKAN, DEP_SPIRV_REFLECT]
 
-SOURCES += files(run_command(GLOB, '*.cpp').stdout().split('\n')) + files('../../thirdparty/volk/volk.c')
+SOURCES += files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n')) + files('../../thirdparty/volk/volk.c')
 
 if PLATFORM == 'android'
    CPP_ARGS += '-DVK_USE_PLATFORM_ANDROID_KHR'

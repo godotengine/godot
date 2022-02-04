@@ -1,6 +1,6 @@
-_builtin_xatlas_srcs = files([
+_builtin_xatlas_srcs = files(
     'xatlas.cpp'
-])
+)
 
 _builtin_xatlas_incdirs = include_directories('.')
 

@@ -1,4 +1,4 @@
-_module_basis_universal_srcs = files(run_command(GLOB, '*.cpp').stdout().split('\n'))
+_module_basis_universal_srcs = files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
 if not DEP_BASIS_UNIVERSAL.found()
     error('module basis_universal requires DEP_BASIS_UNIVERSAL')
 endif
