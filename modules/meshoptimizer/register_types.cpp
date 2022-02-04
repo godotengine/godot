@@ -38,6 +38,9 @@ void register_meshoptimizer_types() {
 	SurfaceTool::simplify_with_attrib_func = meshopt_simplifyWithAttributes;
 	SurfaceTool::simplify_scale_func = meshopt_simplifyScale;
 	SurfaceTool::simplify_sloppy_func = meshopt_simplifySloppy;
+	SurfaceTool::generate_remap_func = meshopt_generateVertexRemap;
+	SurfaceTool::remap_vertex_func = meshopt_remapVertexBuffer;
+	SurfaceTool::remap_index_func = meshopt_remapIndexBuffer;
 }
 
 void unregister_meshoptimizer_types() {
@@ -45,4 +48,7 @@ void unregister_meshoptimizer_types() {
 	SurfaceTool::simplify_func = nullptr;
 	SurfaceTool::simplify_scale_func = nullptr;
 	SurfaceTool::simplify_sloppy_func = nullptr;
+	SurfaceTool::generate_remap_func = nullptr;
+	SurfaceTool::remap_vertex_func = nullptr;
+	SurfaceTool::remap_index_func = nullptr;
 }
