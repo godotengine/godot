@@ -34,10 +34,10 @@
 #include "core/math/math_defs.h"
 #include "core/math/vector3.h"
 
-class AABB;
-class Plane;
-class Transform3D;
+struct AABB;
+struct Plane;
 struct Rect2;
+struct Transform3D;
 struct Vector2;
 
 struct CameraMatrix {

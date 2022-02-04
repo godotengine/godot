@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef DYNAMICBVH_H
-#define DYNAMICBVH_H
+#ifndef DYNAMIC_BVH_H
+#define DYNAMIC_BVH_H
 
 #include "core/math/aabb.h"
 #include "core/templates/list.h"
@@ -474,4 +474,4 @@ void DynamicBVH::ray_query(const Vector3 &p_from, const Vector3 &p_to, QueryResu
 	} while (depth > 0);
 }
 
-#endif // DYNAMICBVH_H
+#endif // DYNAMIC_BVH_H
