@@ -43,18 +43,6 @@
 
 #include "scene/main/window.h"
 
-static bool _is_text_char(char32_t c) {
-	return !is_symbol(c);
-}
-
-static bool _is_whitespace(char32_t c) {
-	return c == '\t' || c == ' ';
-}
-
-static bool _is_char(char32_t c) {
-	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 ///                            TEXT                                         ///
 ///////////////////////////////////////////////////////////////////////////////
@@ -820,8 +808,8 @@ void TextEdit::_notification(int p_what) {
 							int xpos = indent_px + ((xmargin_end + minimap_char_size.x) + (minimap_char_size.x * j)) + tabs;
 							bool out_of_bounds = (xpos >= xmargin_end + minimap_width);
 
-							bool is_whitespace = _is_whitespace(str[j]);
-							if (!is_whitespace) {
+							bool whitespace = is_whitespace(str[j]);
+							if (!whitespace) {
 								characters++;
 
 								if (j < str.length() - 1 && color == previous_color && !out_of_bounds) {
@@ -843,7 +831,7 @@ void TextEdit::_notification(int p_what) {
 							if (characters > 0) {
 								previous_color.a *= 0.6;
 								// take one for zero indexing, and if we hit whitespace / the end of a word.
-								int chars = MAX(0, (j - (characters - 1)) - (is_whitespace ? 1 : 0)) + 1;
+								int chars = MAX(0, (j - (characters - 1)) - (whitespace ? 1 : 0)) + 1;
 								int char_x_ofs = indent_px + ((xmargin_end + minimap_char_size.x) + (minimap_char_size.x * chars)) + tabs;
 								if (rtl) {
 									RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(size.width - char_x_ofs - minimap_char_size.x * characters, minimap_line_height * i), Point2(minimap_char_size.x * characters, minimap_char_size.y)), previous_color);
@@ -1144,7 +1132,7 @@ void TextEdit::_notification(int p_what) {
 					}
 
 					if (!clipped && lookup_symbol_word.length() != 0) { // Highlight word
-						if (_is_char(lookup_symbol_word[0]) || lookup_symbol_word[0] == '.') {
+						if (is_ascii_char(lookup_symbol_word[0]) || lookup_symbol_word[0] == '_' || lookup_symbol_word[0] == '.') {
 							int highlighted_word_col = _get_column_pos_of_word(lookup_symbol_word, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, 0);
 							while (highlighted_word_col != -1) {
 								Vector<Vector2> sel = TS->shaped_text_get_selection(rid, highlighted_word_col + start, highlighted_word_col + lookup_symbol_word.length() + start);
@@ -3037,7 +3025,7 @@ int TextEdit::get_first_non_whitespace_column(int p_line) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
 
 	int col = 0;
-	while (col < text[p_line].length() && _is_whitespace(text[p_line][col])) {
+	while (col < text[p_line].length() && is_whitespace(text[p_line][col])) {
 		col++;
 	}
 	return col;
@@ -3622,9 +3610,9 @@ Point2i TextEdit::search(const String &p_key, uint32_t p_search_flags, int p_fro
 
 			if (pos != -1 && (p_search_flags & SEARCH_WHOLE_WORDS)) {
 				// Validate for whole words.
-				if (pos > 0 && _is_text_char(text_line[pos - 1])) {
+				if (pos > 0 && !is_symbol(text_line[pos - 1])) {
 					is_match = false;
-				} else if (pos + p_key.length() < text_line.length() && _is_text_char(text_line[pos + p_key.length()])) {
+				} else if (pos + p_key.length() < text_line.length() && !is_symbol(text_line[pos + p_key.length()])) {
 					is_match = false;
 				}
 			}
@@ -5779,9 +5767,9 @@ int TextEdit::_get_column_pos_of_word(const String &p_key, const String &p_searc
 			if (col != -1 && p_search_flags & SEARCH_WHOLE_WORDS) {
 				p_from_column = col;
 
-				if (col > 0 && _is_text_char(p_search[col - 1])) {
+				if (col > 0 && !is_symbol(p_search[col - 1])) {
 					col = -1;
-				} else if ((col + p_key.length()) < p_search.length() && _is_text_char(p_search[col + p_key.length()])) {
+				} else if ((col + p_key.length()) < p_search.length() && !is_symbol(p_search[col + p_key.length()])) {
 					col = -1;
 				}
 			}

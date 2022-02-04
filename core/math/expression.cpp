@@ -37,18 +37,6 @@
 #include "core/os/os.h"
 #include "core/variant/variant_parser.h"
 
-static bool _is_number(char32_t c) {
-	return (c >= '0' && c <= '9');
-}
-
-static bool _is_hex_digit(char32_t c) {
-	return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
-}
-
-static bool _is_binary_digit(char32_t c) {
-	return (c == '0' || c == '1');
-}
-
 Error Expression::_get_token(Token &r_token) {
 	while (true) {
 #define GET_CHAR() (str_ofs >= expression.length() ? 0 : expression[str_ofs++])
@@ -96,7 +84,7 @@ Error Expression::_get_token(Token &r_token) {
 				r_token.type = TK_INPUT;
 				int index = 0;
 				do {
-					if (!_is_number(expression[str_ofs])) {
+					if (!is_digit(expression[str_ofs])) {
 						_set_error("Expected number after '$'");
 						r_token.type = TK_ERROR;
 						return ERR_PARSE_ERROR;
@@ -105,7 +93,7 @@ Error Expression::_get_token(Token &r_token) {
 					index += expression[str_ofs] - '0';
 					str_ofs++;
 
-				} while (_is_number(expression[str_ofs]));
+				} while (is_digit(expression[str_ofs]));
 
 				r_token.value = index;
 				return OK;
@@ -255,13 +243,13 @@ Error Expression::_get_token(Token &r_token) {
 										r_token.type = TK_ERROR;
 										return ERR_PARSE_ERROR;
 									}
-									if (!(_is_number(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))) {
+									if (!is_hex_digit(c)) {
 										_set_error("Malformed hex constant in string");
 										r_token.type = TK_ERROR;
 										return ERR_PARSE_ERROR;
 									}
 									char32_t v;
-									if (_is_number(c)) {
+									if (is_digit(c)) {
 										v = c - '0';
 									} else if (c >= 'a' && c <= 'f') {
 										v = c - 'a';
@@ -336,7 +324,7 @@ Error Expression::_get_token(Token &r_token) {
 				}
 
 				char32_t next_char = (str_ofs >= expression.length()) ? 0 : expression[str_ofs];
-				if (_is_number(cchar) || (cchar == '.' && _is_number(next_char))) {
+				if (is_digit(cchar) || (cchar == '.' && is_digit(next_char))) {
 					//a number
 
 					String num;
@@ -360,7 +348,7 @@ Error Expression::_get_token(Token &r_token) {
 					while (true) {
 						switch (reading) {
 							case READING_INT: {
-								if (_is_number(c)) {
+								if (is_digit(c)) {
 									if (is_first_char && c == '0') {
 										if (next_char == 'b') {
 											reading = READING_BIN;
@@ -379,7 +367,7 @@ Error Expression::_get_token(Token &r_token) {
 
 							} break;
 							case READING_BIN: {
-								if (bin_beg && !_is_binary_digit(c)) {
+								if (bin_beg && !is_binary_digit(c)) {
 									reading = READING_DONE;
 								} else if (c == 'b') {
 									bin_beg = true;
@@ -387,7 +375,7 @@ Error Expression::_get_token(Token &r_token) {
 
 							} break;
 							case READING_HEX: {
-								if (hex_beg && !_is_hex_digit(c)) {
+								if (hex_beg && !is_hex_digit(c)) {
 									reading = READING_DONE;
 								} else if (c == 'x') {
 									hex_beg = true;
@@ -395,7 +383,7 @@ Error Expression::_get_token(Token &r_token) {
 
 							} break;
 							case READING_DEC: {
-								if (_is_number(c)) {
+								if (is_digit(c)) {
 								} else if (c == 'e') {
 									reading = READING_EXP;
 
@@ -405,7 +393,7 @@ Error Expression::_get_token(Token &r_token) {
 
 							} break;
 							case READING_EXP: {
-								if (_is_number(c)) {
+								if (is_digit(c)) {
 									exp_beg = true;
 
 								} else if ((c == '-' || c == '+') && !exp_sign && !exp_beg) {
@@ -443,11 +431,11 @@ Error Expression::_get_token(Token &r_token) {
 					}
 					return OK;
 
-				} else if ((cchar >= 'A' && cchar <= 'Z') || (cchar >= 'a' && cchar <= 'z') || cchar == '_') {
+				} else if (is_ascii_char(cchar) || is_underscore(cchar)) {
 					String id;
 					bool first = true;
 
-					while ((cchar >= 'A' && cchar <= 'Z') || (cchar >= 'a' && cchar <= 'z') || cchar == '_' || (!first && _is_number(cchar))) {
+					while (is_ascii_char(cchar) || is_underscore(cchar) || (!first && is_digit(cchar))) {
 						id += String::chr(cchar);
 						cchar = GET_CHAR();
 						first = false;

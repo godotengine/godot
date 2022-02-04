@@ -1106,10 +1106,6 @@ String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port
 	return final_code;
 }
 
-#define IS_INITIAL_CHAR(m_d) (((m_d) >= 'a' && (m_d) <= 'z') || ((m_d) >= 'A' && (m_d) <= 'Z'))
-
-#define IS_SYMBOL_CHAR(m_d) (((m_d) >= 'a' && (m_d) <= 'z') || ((m_d) >= 'A' && (m_d) <= 'Z') || ((m_d) >= '0' && (m_d) <= '9') || (m_d) == '_')
-
 String VisualShader::validate_port_name(const String &p_port_name, VisualShaderNode *p_node, int p_port_id, bool p_output) const {
 	String name = p_port_name;
 
@@ -1117,7 +1113,7 @@ String VisualShader::validate_port_name(const String &p_port_name, VisualShaderN
 		return String();
 	}
 
-	while (name.length() && !IS_INITIAL_CHAR(name[0])) {
+	while (name.length() && !is_ascii_char(name[0])) {
 		name = name.substr(1, name.length() - 1);
 	}
 
@@ -1125,7 +1121,7 @@ String VisualShader::validate_port_name(const String &p_port_name, VisualShaderN
 		String valid_name;
 
 		for (int i = 0; i < name.length(); i++) {
-			if (IS_SYMBOL_CHAR(name[i])) {
+			if (is_ascii_identifier_char(name[i])) {
 				valid_name += String::chr(name[i]);
 			} else if (name[i] == ' ') {
 				valid_name += "_";
@@ -1162,14 +1158,14 @@ String VisualShader::validate_port_name(const String &p_port_name, VisualShaderN
 
 String VisualShader::validate_uniform_name(const String &p_name, const Ref<VisualShaderNodeUniform> &p_uniform) const {
 	String name = p_name; //validate name first
-	while (name.length() && !IS_INITIAL_CHAR(name[0])) {
+	while (name.length() && !is_ascii_char(name[0])) {
 		name = name.substr(1, name.length() - 1);
 	}
 	if (!name.is_empty()) {
 		String valid_name;
 
 		for (int i = 0; i < name.length(); i++) {
-			if (IS_SYMBOL_CHAR(name[i])) {
+			if (is_ascii_identifier_char(name[i])) {
 				valid_name += String::chr(name[i]);
 			} else if (name[i] == ' ') {
 				valid_name += "_";
@@ -1206,7 +1202,7 @@ String VisualShader::validate_uniform_name(const String &p_name, const Ref<Visua
 		if (exists) {
 			//remove numbers, put new and try again
 			attempt++;
-			while (name.length() && name[name.length() - 1] >= '0' && name[name.length() - 1] <= '9') {
+			while (name.length() && is_digit(name[name.length() - 1])) {
 				name = name.substr(0, name.length() - 1);
 			}
 			ERR_FAIL_COND_V(name.is_empty(), String());

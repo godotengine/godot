@@ -1061,7 +1061,7 @@ void Node::_generate_serial_child_name(const Node *p_child, StringName &name) co
 	String nums;
 	for (int i = name_string.length() - 1; i >= 0; i--) {
 		char32_t n = name_string[i];
-		if (n >= '0' && n <= '9') {
+		if (is_digit(n)) {
 			nums = String::chr(name_string[i]) + nums;
 		} else {
 			break;

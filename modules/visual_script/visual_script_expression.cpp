@@ -377,13 +377,13 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 										r_token.type = TK_ERROR;
 										return ERR_PARSE_ERROR;
 									}
-									if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))) {
+									if (!is_hex_digit(c)) {
 										_set_error("Malformed hex constant in string");
 										r_token.type = TK_ERROR;
 										return ERR_PARSE_ERROR;
 									}
 									char32_t v;
-									if (c >= '0' && c <= '9') {
+									if (is_digit(c)) {
 										v = c - '0';
 									} else if (c >= 'a' && c <= 'f') {
 										v = c - 'a';
@@ -457,7 +457,7 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 					break;
 				}
 
-				if (cchar >= '0' && cchar <= '9') {
+				if (is_digit(cchar)) {
 					//a number
 
 					String num;
@@ -476,7 +476,7 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 					while (true) {
 						switch (reading) {
 							case READING_INT: {
-								if (c >= '0' && c <= '9') {
+								if (is_digit(c)) {
 									//pass
 								} else if (c == '.') {
 									reading = READING_DEC;
@@ -489,7 +489,7 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 
 							} break;
 							case READING_DEC: {
-								if (c >= '0' && c <= '9') {
+								if (is_digit(c)) {
 								} else if (c == 'e') {
 									reading = READING_EXP;
 
@@ -499,7 +499,7 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 
 							} break;
 							case READING_EXP: {
-								if (c >= '0' && c <= '9') {
+								if (is_digit(c)) {
 									exp_beg = true;
 
 								} else if ((c == '-' || c == '+') && !exp_sign && !exp_beg) {
@@ -532,11 +532,11 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 					}
 					return OK;
 
-				} else if ((cchar >= 'A' && cchar <= 'Z') || (cchar >= 'a' && cchar <= 'z') || cchar == '_') {
+				} else if (is_ascii_char(cchar) || cchar == '_') {
 					String id;
 					bool first = true;
 
-					while ((cchar >= 'A' && cchar <= 'Z') || (cchar >= 'a' && cchar <= 'z') || cchar == '_' || (!first && cchar >= '0' && cchar <= '9')) {
+					while (is_ascii_char(cchar) || cchar == '_' || (!first && is_digit(cchar))) {
 						id += String::chr(cchar);
 						cchar = GET_CHAR();
 						first = false;

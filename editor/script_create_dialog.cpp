@@ -153,7 +153,7 @@ bool ScriptCreateDialog::_validate_class(const String &p_string) {
 			}
 		}
 
-		bool valid_char = (p_string[i] >= '0' && p_string[i] <= '9') || (p_string[i] >= 'a' && p_string[i] <= 'z') || (p_string[i] >= 'A' && p_string[i] <= 'Z') || p_string[i] == '_' || p_string[i] == '.';
+		bool valid_char = is_ascii_identifier_char(p_string[i]) || p_string[i] == '.';
 
 		if (!valid_char) {
 			return false;

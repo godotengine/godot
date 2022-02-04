@@ -303,22 +303,6 @@ _FORCE_INLINE_ bool is_connected_to_prev(char32_t p_chr, char32_t p_pchr) {
 	return (prop != U_JT_RIGHT_JOINING) && (prop != U_JT_NON_JOINING) ? !is_ligature(p_pchr, p_chr) : false;
 }
 
-_FORCE_INLINE_ bool is_control(char32_t p_char) {
-	return (p_char <= 0x001f) || (p_char >= 0x007f && p_char <= 0x009F);
-}
-
-_FORCE_INLINE_ bool is_whitespace(char32_t p_char) {
-	return (p_char == 0x0020) || (p_char == 0x00A0) || (p_char == 0x1680) || (p_char >= 0x2000 && p_char <= 0x200a) || (p_char == 0x202f) || (p_char == 0x205f) || (p_char == 0x3000) || (p_char == 0x2028) || (p_char == 0x2029) || (p_char >= 0x0009 && p_char <= 0x000d) || (p_char == 0x0085);
-}
-
-_FORCE_INLINE_ bool is_linebreak(char32_t p_char) {
-	return (p_char >= 0x000a && p_char <= 0x000d) || (p_char == 0x0085) || (p_char == 0x2028) || (p_char == 0x2029);
-}
-
-_FORCE_INLINE_ bool is_underscore(char32_t p_char) {
-	return (p_char == 0x005F);
-}
-
 /*************************************************************************/
 
 String TextServerAdvanced::interface_name = "ICU / HarfBuzz / Graphite";
