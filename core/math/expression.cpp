@@ -1050,6 +1050,7 @@ Error Expression::_get_token(Token &r_token) {
 									is_float = true;
 								} else if (c == 'e') {
 									reading = READING_EXP;
+									is_float = true;
 								} else {
 									reading = READING_DONE;
 								}
@@ -1086,9 +1087,6 @@ Error Expression::_get_token(Token &r_token) {
 									exp_beg = true;
 
 								} else if ((c == '-' || c == '+') && !exp_sign && !exp_beg) {
-									if (c == '-') {
-										is_float = true;
-									}
 									exp_sign = true;
 
 								} else {
