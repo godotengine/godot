@@ -1,5 +1,5 @@
 if get_option('tests')
-    _tests_srcs = files(run_command(GLOB, '*.cpp').stdout().split('\n'))
+    _tests_srcs = files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
 
     _tests_cpp_args = []
     if PLATFORM == 'windows'

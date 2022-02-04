@@ -1,1 +1,1 @@
-MAIN_SOURCES += files(run_command(GLOB, '*.cpp').stdout().split('\n'))
+MAIN_SOURCES += files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))

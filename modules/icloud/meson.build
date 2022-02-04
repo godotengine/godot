@@ -1,5 +1,5 @@
-_module_icloud_srcs = files(run_command(GLOB, '*.cpp').stdout().split('\n'))
-_module_icloud_srcs = files(run_command(GLOB, '*.mm').stdout().split('\n'))
+_module_icloud_srcs = files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
+_module_icloud_srcs = files(run_command(GLOB, '*.mm', check: true).stdout().split('\n'))
 
 _module_icloud_cpp_args = ['-fmodules', '-fcxx-modules']
 

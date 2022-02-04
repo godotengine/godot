@@ -13,4 +13,4 @@ theme_icons = custom_target('default_theme_icosn',
 
 SOURCES += [generated_font, theme_icons]
 
-SOURCES += files(run_command(GLOB, '*.cpp').stdout().split('\n'))
+SOURCES += files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))

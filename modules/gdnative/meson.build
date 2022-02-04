@@ -1,5 +1,5 @@
 
-module_gdnative_srcs = files(run_command(GLOB, '*.cpp').stdout().split('\n'))
+module_gdnative_srcs = files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
 
 # XXX Could use compat, but module will be removed, so no need to spend time on it.
 #SCRIPT_GDNATIVE_API_GEN = find_program('scripts/gdnative_api_struct_gen.py')

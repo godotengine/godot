@@ -1,6 +1,6 @@
-_module_lmrd_src = files(run_command(GLOB, '*.cpp').stdout().split('\n'))
+_module_lmrd_src = files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
 # NOTE: do not use files() here
-_module_lmrd_raw_shaders = run_command(GLOB, '*.glsl').stdout().split('\n')
+_module_lmrd_raw_shaders = run_command(GLOB, '*.glsl', check: true).stdout().split('\n')
 
 #build_raw_headers
 

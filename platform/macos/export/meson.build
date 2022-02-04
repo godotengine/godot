@@ -1,4 +1,4 @@
-_module_pvr_srcs = files(run_command(GLOB, '*.cpp').stdout().split('\n'))
+_module_pvr_srcs = files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
 
 lib_module_pvr = library('module_pvr', _module_pvr_srcs,
     dependencies: [DEP_GODOT_ALL, DEP_PVRTCCOMPRESSOR]

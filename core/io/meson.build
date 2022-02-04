@@ -13,4 +13,4 @@ _certs_target = custom_target(
 
 SOURCES += [_certs_target]
 
-SOURCES += files(run_command(GLOB, '*.cpp').stdout().split('\n'))
+SOURCES += files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))

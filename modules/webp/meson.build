@@ -1,4 +1,4 @@
-_module_webp_srcs = files(run_command(GLOB, '*.cpp').stdout().split('\n'))
+_module_webp_srcs = files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
 lib_module_webp = library('module_webp', _module_webp_srcs, dependencies: [DEP_GODOT_ALL, DEP_LIBWEBP])
 
 DEP_MODULE_WEBP = declare_dependency(link_with: lib_module_webp)

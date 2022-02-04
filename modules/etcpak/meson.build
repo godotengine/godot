@@ -1,4 +1,4 @@
-_module_etcpak_srcs = files(run_command(GLOB, '*.cpp').stdout().split('\n'))
+_module_etcpak_srcs = files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
 _module_etcpak_deps = [DEP_ETCPAK]
 
 lib_module_etcpak = library('module_etcpak',

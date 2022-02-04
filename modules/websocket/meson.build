@@ -1,4 +1,4 @@
-_module_websocket_srcs = files(run_command(GLOB, '*.cpp').stdout().split('\n'))
+_module_websocket_srcs = files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
 _module_websocket_deps = [DEP_GODOT_ALL]
 
 DEP_MODULE_WEBSOCKET = []
