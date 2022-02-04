@@ -26,8 +26,6 @@ void DisplayServerWayland::dispatch_input_events(const Ref<InputEvent> &p_event)
 
 // Taken from DisplayServerX11.
 void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event) {
-	MutexLock mutex_lock(wls.mutex);
-
 	Variant ev = p_event;
 	Variant *evp = &ev;
 
@@ -88,6 +86,8 @@ DisplayServerWayland::WindowID DisplayServerWayland::_create_window(WindowMode p
 
 void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
 	WaylandState *wls = (WaylandState*) data;
+	MutexLock mutex_lock(wls->mutex);
+
 	WaylandGlobals &globals = wls->globals;
 
 	// `wl_compositor_interface` is defined in `thirdparty/wayland/wayland.c`
@@ -117,6 +117,8 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 
 void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_registry *wl_registry, uint32_t name) {
 	WaylandState *wls = (WaylandState*) data;
+	MutexLock mutex_lock(wls->mutex);
+
 	WaylandGlobals &globals = wls->globals;
 
 	if (name == globals.wl_compositor_name) {
@@ -137,6 +139,8 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 
 void DisplayServerWayland::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat, uint32_t capabilities) {
 	WaylandState *wls = (WaylandState*) data;
+	MutexLock mutex_lock(wls->mutex);
+
 	SeatState &seat_state = wls->seat_state;
 
 	// TODO: Handle touch.
@@ -166,6 +170,8 @@ void DisplayServerWayland::_wl_seat_on_name(void *data, struct wl_seat *wl_seat,
 
 void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y) {
 	WaylandState *wls = (WaylandState*) data;
+	MutexLock mutex_lock(wls->mutex);
+
 	PointerState &pointer_state = wls->seat_state.pointer_state;
 
 	pointer_state.data_buffer.focused_wl_surface = surface;
@@ -173,6 +179,8 @@ void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *w
 
 void DisplayServerWayland::_wl_pointer_on_leave(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface) {
 	WaylandState *wls = (WaylandState*) data;
+	MutexLock mutex_lock(wls->mutex);
+
 	PointerState &pointer_state = wls->seat_state.pointer_state;
 
 	pointer_state.data_buffer.focused_wl_surface = nullptr;
@@ -180,6 +188,8 @@ void DisplayServerWayland::_wl_pointer_on_leave(void *data, struct wl_pointer *w
 
 void DisplayServerWayland::_wl_pointer_on_motion(void *data, struct wl_pointer *wl_pointer, uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y) {
 	WaylandState *wls = (WaylandState*) data;
+	MutexLock mutex_lock(wls->mutex);
+
 	PointerState &pointer_state = wls->seat_state.pointer_state;
 
 	pointer_state.data_buffer.position.x = wl_fixed_to_int(surface_x);
@@ -190,6 +200,8 @@ void DisplayServerWayland::_wl_pointer_on_motion(void *data, struct wl_pointer *
 
 void DisplayServerWayland::_wl_pointer_on_button(void *data, struct wl_pointer *wl_pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state) {
 	WaylandState *wls = (WaylandState*) data;
+	MutexLock mutex_lock(wls->mutex);
+
 	PointerState &pointer_state = wls->seat_state.pointer_state;
 	MouseButton &mouse_button_mask = pointer_state.data_buffer.pressed_button_mask;
 
@@ -230,6 +242,8 @@ void DisplayServerWayland::_wl_pointer_on_axis(void *data, struct wl_pointer *wl
 
 void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_pointer) {
 	WaylandState *wls = (WaylandState*) data;
+	MutexLock mutex_lock(wls->mutex);
+
 	PointerState &pointer_state = wls->seat_state.pointer_state;
 
 	PointerData old_pointer_data = pointer_state.data;
@@ -335,6 +349,8 @@ void DisplayServerWayland::_wl_keyboard_on_keymap(void *data, struct wl_keyboard
 	ERR_FAIL_COND_MSG(format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1, "Unsupported keymap format announced from the Wayland compositor.");
 
 	WaylandState *wls = (WaylandState*) data;
+	MutexLock mutex_lock(wls->mutex);
+
 	KeyboardState &keyboard_state = wls->seat_state.keyboard_state;
 
 	// TODO: Unmap on destruction.
@@ -350,6 +366,8 @@ void DisplayServerWayland::_wl_keyboard_on_keymap(void *data, struct wl_keyboard
 
 void DisplayServerWayland::_wl_keyboard_on_enter(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface, struct wl_array *keys) {
 	WaylandState *wls = (WaylandState*) data;
+	MutexLock mutex_lock(wls->mutex);
+
 	KeyboardState &keyboard_state = wls->seat_state.keyboard_state;
 
 	keyboard_state.focused_wl_surface = surface;
@@ -357,6 +375,8 @@ void DisplayServerWayland::_wl_keyboard_on_enter(void *data, struct wl_keyboard 
 
 void DisplayServerWayland::_wl_keyboard_on_leave(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface) {
 	WaylandState *wls = (WaylandState*) data;
+	MutexLock mutex_lock(wls->mutex);
+
 	KeyboardState &keyboard_state = wls->seat_state.keyboard_state;
 
 	keyboard_state.focused_wl_surface = nullptr;
@@ -364,6 +384,8 @@ void DisplayServerWayland::_wl_keyboard_on_leave(void *data, struct wl_keyboard 
 
 void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state) {
 	WaylandState *wls = (WaylandState*) data;
+	MutexLock mutex_lock(wls->mutex);
+
 	KeyboardState &keyboard_state = wls->seat_state.keyboard_state;
 
 	// We have to add 8 to the scancode to get an XKB-compatible keycode.
@@ -414,6 +436,8 @@ void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *w
 
 void DisplayServerWayland::_wl_keyboard_on_modifiers(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group) {
 	WaylandState *wls = (WaylandState*) data;
+	MutexLock mutex_lock(wls->mutex);
+
 	KeyboardState &keyboard_state = wls->seat_state.keyboard_state;
 
 	xkb_state_update_mask(keyboard_state.xkb_state, mods_depressed, mods_latched, mods_locked, 0, 0, group);
