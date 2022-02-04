@@ -610,7 +610,7 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 				case GDScriptParser::Node::SUBSCRIPT: {
 					const GDScriptParser::SubscriptNode *sub = static_cast<const GDScriptParser::SubscriptNode *>(par->default_value);
 					if (sub->is_constant) {
-						if (sub->datatype.kind == GDScriptParser::DataType::ENUM_VALUE) {
+						if (sub->datatype.kind == GDScriptParser::DataType::ENUM) {
 							def_val = sub->get_datatype().to_string();
 						} else if (sub->reduced) {
 							const Variant::Type vt = sub->reduced_value.get_type();
