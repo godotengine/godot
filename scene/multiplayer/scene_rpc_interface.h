@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rpc_manager.h                                                        */
+/*  scene_rpc_interface.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,15 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MULTIPLAYER_RPC_H
-#define MULTIPLAYER_RPC_H
+#ifndef SCENE_RPC_INTERFACE_H
+#define SCENE_RPC_INTERFACE_H
 
 #include "core/multiplayer/multiplayer.h"
 #include "core/multiplayer/multiplayer_api.h"
-#include "core/object/ref_counted.h"
 
-class RPCManager : public RefCounted {
-	GDCLASS(RPCManager, RefCounted);
+class SceneRPCInterface : public MultiplayerRPCInterface {
+	GDCLASS(SceneRPCInterface, MultiplayerRPCInterface);
 
 private:
 	enum NetworkNodeIdCompression {
@@ -71,6 +70,8 @@ private:
 	Vector<uint8_t> packet_cache;
 
 protected:
+	static MultiplayerRPCInterface *_create(MultiplayerAPI *p_multiplayer);
+
 	_FORCE_INLINE_ void _profile_node_data(const String &p_what, ObjectID p_id);
 	void _process_rpc(Node *p_node, const uint16_t p_rpc_method_id, int p_from, const uint8_t *p_packet, int p_packet_len, int p_offset);
 
@@ -78,12 +79,13 @@ protected:
 	Node *_process_get_node(int p_from, const uint8_t *p_packet, uint32_t p_node_target, int p_packet_len);
 
 public:
-	// Called by Node.rpc
-	void rpcp(Node *p_node, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount);
-	void process_rpc(int p_from, const uint8_t *p_packet, int p_packet_len);
+	static void make_default();
 
-	String get_rpc_md5(const Node *p_node);
-	RPCManager(MultiplayerAPI *p_multiplayer) { multiplayer = p_multiplayer; }
+	virtual void rpcp(Object *p_obj, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount) override;
+	virtual void process_rpc(int p_from, const uint8_t *p_packet, int p_packet_len) override;
+	virtual String get_rpc_md5(const Object *p_obj) const override;
+
+	SceneRPCInterface(MultiplayerAPI *p_multiplayer) { multiplayer = p_multiplayer; }
 };
 
-#endif // MULTIPLAYER_RPC_H
+#endif // SCENE_RPC_INTERFACE_H

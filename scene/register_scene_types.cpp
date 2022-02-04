@@ -136,7 +136,9 @@
 #include "scene/main/window.h"
 #include "scene/multiplayer/multiplayer_spawner.h"
 #include "scene/multiplayer/multiplayer_synchronizer.h"
+#include "scene/multiplayer/scene_cache_interface.h"
 #include "scene/multiplayer/scene_replication_interface.h"
+#include "scene/multiplayer/scene_rpc_interface.h"
 #include "scene/resources/audio_stream_sample.h"
 #include "scene/resources/bit_map.h"
 #include "scene/resources/box_shape_3d.h"
@@ -1058,6 +1060,8 @@ void register_scene_types() {
 
 	SceneDebugger::initialize();
 	SceneReplicationInterface::make_default();
+	SceneRPCInterface::make_default();
+	SceneCacheInterface::make_default();
 
 	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SCENE);
 }
