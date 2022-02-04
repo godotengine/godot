@@ -42,9 +42,9 @@ BVHABB_CLASS _logic_abb_merge(const BVHABB_CLASS &a, const BVHABB_CLASS &b) {
 
 //--------------------------------------------------------------------------------------------------
 /**
- * @file	q3DynamicAABBTree.h
- * @author	Randy Gaul
- * @date	10/10/2014
+ * @file    q3DynamicAABBTree.h
+ * @author  Randy Gaul
+ * @date    10/10/2014
  *  Copyright (c) 2014 Randy Gaul http://www.randygaul.net
  *  This software is provided 'as-is', without any express or implied
  *  warranty. In no event will the authors be held liable for any damages
@@ -75,11 +75,11 @@ int32_t _logic_balance(int32_t iA, uint32_t p_tree_id) {
 		return iA;
 	}
 
-	/*       A
-	 *     /   \
-	 *    B     C
-	 *   / \   / \
-	 *  D   E F   G
+	/*        A
+	 *      /   \
+	 *     B     C
+	 *    / \   / \
+	 *   D   E F   G
 	 */
 
 	CRASH_COND(A->num_children != 2);
