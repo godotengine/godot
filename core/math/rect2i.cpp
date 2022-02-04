@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rect2.cpp                                                            */
+/*  rect2i.cpp                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,34 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "gdnative/rect2.h"
+#include "rect2i.h"
 
 #include "core/math/rect2.h"
-#include "core/math/rect2i.h"
+#include "core/string/ustring.h"
 
-static_assert(sizeof(godot_rect2) == sizeof(Rect2), "Rect2 size mismatch");
-static_assert(sizeof(godot_rect2i) == sizeof(Rect2i), "Rect2i size mismatch");
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void GDAPI godot_rect2_new(godot_rect2 *p_self) {
-	memnew_placement(p_self, Rect2);
+Rect2i::operator String() const {
+	return "[P: " + position.operator String() + ", S: " + size + "]";
 }
 
-void GDAPI godot_rect2_new_copy(godot_rect2 *r_dest, const godot_rect2 *p_src) {
-	memnew_placement(r_dest, Rect2(*(Rect2 *)p_src));
+Rect2i::operator Rect2() const {
+	return Rect2(position, size);
 }
-
-void GDAPI godot_rect2i_new(godot_rect2i *p_self) {
-	memnew_placement(p_self, Rect2i);
-}
-
-void GDAPI godot_rect2i_new_copy(godot_rect2i *r_dest, const godot_rect2i *p_src) {
-	memnew_placement(r_dest, Rect2i(*(Rect2i *)p_src));
-}
-
-#ifdef __cplusplus
-}
-#endif

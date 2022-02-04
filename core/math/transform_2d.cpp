@@ -30,6 +30,8 @@
 
 #include "transform_2d.h"
 
+#include "core/string/ustring.h"
+
 void Transform2D::invert() {
 	// FIXME: this function assumes the basis is a rotation matrix, with no scaling.
 	// Transform2D::affine_inverse can handle matrices with scaling, so GDScript should eventually use that.
