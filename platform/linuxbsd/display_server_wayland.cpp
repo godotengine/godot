@@ -14,8 +14,6 @@ void DisplayServerWayland::_poll_events_thread(void *p_wls) {
 	while (!wls->events_thread_done.is_set()) {
 		// Wait for all events.
 		wl_display_dispatch(wls->display);
-
-		Input::get_singleton()->flush_buffered_events();
 	}
 }
 
@@ -924,6 +922,7 @@ Key DisplayServerWayland::keyboard_get_keycode_from_physical(Key p_keycode) cons
 
 
 void DisplayServerWayland::process_events() {
+	Input::get_singleton()->flush_buffered_events();
 }
 
 void DisplayServerWayland::release_rendering_thread() {
