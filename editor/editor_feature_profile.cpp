@@ -462,7 +462,7 @@ void EditorFeatureProfileManager::_erase_selected_profile() {
 
 void EditorFeatureProfileManager::_create_new_profile() {
 	String name = new_profile_name->get_text().strip_edges();
-	if (!name.is_valid_filename() || name.find(".") != -1) {
+	if (!name.is_valid_filename() || name.contains(".")) {
 		EditorNode::get_singleton()->show_warning(TTR("Profile must be a valid filename and must not contain '.'"));
 		return;
 	}

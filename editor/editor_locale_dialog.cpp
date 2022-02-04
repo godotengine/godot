@@ -37,14 +37,6 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/tree.h"
 
-static _FORCE_INLINE_ bool is_upper_case(char32_t c) {
-	return (c >= 'A' && c <= 'Z');
-}
-
-static _FORCE_INLINE_ bool is_lower_case(char32_t c) {
-	return (c >= 'a' && c <= 'z');
-}
-
 void EditorLocaleDialog::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("locale_selected", PropertyInfo(Variant::STRING, "locale")));
 }
@@ -363,16 +355,16 @@ void EditorLocaleDialog::set_locale(const String &p_locale) {
 		Vector<String> locale_elements = p_locale.split("_");
 		lang_code->set_text(locale_elements[0]);
 		if (locale_elements.size() >= 2) {
-			if (locale_elements[1].length() == 4 && is_upper_case(locale_elements[1][0]) && is_lower_case(locale_elements[1][1]) && is_lower_case(locale_elements[1][2]) && is_lower_case(locale_elements[1][3])) {
+			if (locale_elements[1].length() == 4 && is_ascii_upper_case(locale_elements[1][0]) && is_ascii_lower_case(locale_elements[1][1]) && is_ascii_lower_case(locale_elements[1][2]) && is_ascii_lower_case(locale_elements[1][3])) {
 				script_code->set_text(locale_elements[1]);
 				advanced->set_pressed(true);
 			}
-			if (locale_elements[1].length() == 2 && is_upper_case(locale_elements[1][0]) && is_upper_case(locale_elements[1][1])) {
+			if (locale_elements[1].length() == 2 && is_ascii_upper_case(locale_elements[1][0]) && is_ascii_upper_case(locale_elements[1][1])) {
 				country_code->set_text(locale_elements[1]);
 			}
 		}
 		if (locale_elements.size() >= 3) {
-			if (locale_elements[2].length() == 2 && is_upper_case(locale_elements[2][0]) && is_upper_case(locale_elements[2][1])) {
+			if (locale_elements[2].length() == 2 && is_ascii_upper_case(locale_elements[2][0]) && is_ascii_upper_case(locale_elements[2][1])) {
 				country_code->set_text(locale_elements[2]);
 			} else {
 				variant_code->set_text(locale_elements[2].to_lower());

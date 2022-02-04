@@ -37,13 +37,10 @@
 template <typename K, typename V,
 	  typename k_invalid_t = K,
 	  typename v_invalid_t = V,
-	  k_invalid_t kINVALID = hb_is_pointer (K) ? 0 : std::is_signed<K>::value ? hb_int_min (K) : (K) -1,
-	  v_invalid_t vINVALID = hb_is_pointer (V) ? 0 : std::is_signed<V>::value ? hb_int_min (V) : (V) -1>
+	  k_invalid_t kINVALID = std::is_pointer<K>::value ? 0 : std::is_signed<K>::value ? hb_int_min (K) : (K) -1,
+	  v_invalid_t vINVALID = std::is_pointer<V>::value ? 0 : std::is_signed<V>::value ? hb_int_min (V) : (V) -1>
 struct hb_hashmap_t
 {
-  static constexpr K INVALID_KEY   = kINVALID;
-  static constexpr V INVALID_VALUE = vINVALID;
-
   hb_hashmap_t ()  { init (); }
   ~hb_hashmap_t () { fini (); }
 
@@ -64,24 +61,40 @@ struct hb_hashmap_t
     hb_copy (o, *this);
   }
 
-  static_assert (std::is_trivially_copyable<K>::value, "");
-  static_assert (std::is_trivially_copyable<V>::value, "");
-  static_assert (std::is_trivially_destructible<K>::value, "");
-  static_assert (std::is_trivially_destructible<V>::value, "");
-
   struct item_t
   {
     K key;
     V value;
     uint32_t hash;
 
-    void clear () { key = kINVALID; value = vINVALID; hash = 0; }
+    void clear ()
+    {
+      new (std::addressof (key)) K ();
+      key = hb_coerce<K> (kINVALID);
+      new (std::addressof (value)) V ();
+      value = hb_coerce<V> (vINVALID);
+      hash = 0;
+    }
 
     bool operator == (const K &o) { return hb_deref (key) == hb_deref (o); }
     bool operator == (const item_t &o) { return *this == o.key; }
-    bool is_unused () const    { return key == kINVALID; }
-    bool is_tombstone () const { return key != kINVALID && value == vINVALID; }
-    bool is_real () const { return key != kINVALID && value != vINVALID; }
+    bool is_unused () const
+    {
+      const K inv = hb_coerce<K> (kINVALID);
+      return key == inv;
+    }
+    bool is_tombstone () const
+    {
+      const K kinv = hb_coerce<K> (kINVALID);
+      const V vinv = hb_coerce<V> (vINVALID);
+      return key != kinv && value == vinv;
+    }
+    bool is_real () const
+    {
+      const K kinv = hb_coerce<K> (kINVALID);
+      const V vinv = hb_coerce<V> (vINVALID);
+      return key != kinv && value != vinv;
+    }
     hb_pair_t<K, V> get_pair() const { return hb_pair_t<K, V> (key, value); }
   };
 
@@ -118,8 +131,13 @@ struct hb_hashmap_t
   }
   void fini_shallow ()
   {
-    hb_free (items);
-    items = nullptr;
+    if (likely (items)) {
+      unsigned size = mask + 1;
+      for (unsigned i = 0; i < size; i++)
+        items[i].~item_t ();
+      hb_free (items);
+      items = nullptr;
+    }
     population = occupancy = 0;
   }
   void fini ()
@@ -163,10 +181,15 @@ struct hb_hashmap_t
     /* Insert back old items. */
     if (old_items)
       for (unsigned int i = 0; i < old_size; i++)
+      {
 	if (old_items[i].is_real ())
+	{
 	  set_with_hash (old_items[i].key,
 			 old_items[i].hash,
 			 std::move (old_items[i].value));
+	}
+	old_items[i].~item_t ();
+      }
 
     hb_free (old_items);
 
@@ -178,22 +201,22 @@ struct hb_hashmap_t
 
   V get (K key) const
   {
-    if (unlikely (!items)) return vINVALID;
+    if (unlikely (!items)) return hb_coerce<V> (vINVALID);
     unsigned int i = bucket_for (key);
-    return items[i].is_real () && items[i] == key ? items[i].value : vINVALID;
+    return items[i].is_real () && items[i] == key ? items[i].value : hb_coerce<V> (vINVALID);
   }
 
-  void del (K key) { set (key, vINVALID); }
+  void del (K key) { set (key, hb_coerce<V> (vINVALID)); }
 
   /* Has interface. */
-  static constexpr V SENTINEL = vINVALID;
   typedef V value_t;
   value_t operator [] (K k) const { return get (k); }
   bool has (K k, V *vp = nullptr) const
   {
     V v = (*this)[k];
     if (vp) *vp = v;
-    return v != SENTINEL;
+    const V vinv = hb_coerce<V> (vINVALID);
+    return v != vinv;
   }
   /* Projection. */
   V operator () (K k) const { return get (k); }
@@ -248,11 +271,13 @@ struct hb_hashmap_t
   bool set_with_hash (K key, uint32_t hash, VV&& value)
   {
     if (unlikely (!successful)) return false;
-    if (unlikely (key == kINVALID)) return true;
+    const K kinv = hb_coerce<K> (kINVALID);
+    if (unlikely (key == kinv)) return true;
     if (unlikely ((occupancy + occupancy / 2) >= mask && !resize ())) return false;
     unsigned int i = bucket_for_hash (key, hash);
 
-    if (value == vINVALID && items[i].key != key)
+    const V vinv = hb_coerce<V> (vINVALID);
+    if (value == vinv && items[i].key != key)
       return true; /* Trying to delete non-existent key. */
 
     if (!items[i].is_unused ())

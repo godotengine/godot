@@ -485,7 +485,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 	player->stop();
 
 	String new_name = name->get_text();
-	if (new_name.is_empty() || new_name.find(":") != -1 || new_name.find("/") != -1) {
+	if (new_name.is_empty() || new_name.contains(":") || new_name.contains("/")) {
 		error_dialog->set_text(TTR("Invalid animation name!"));
 		error_dialog->popup_centered();
 		return;
@@ -746,7 +746,7 @@ void AnimationPlayerEditor::_load_animations(Vector<String> p_files) {
 			file = file.substr(file.rfind("\\") + 1, file.length());
 		}
 
-		if (file.find(".") != -1) {
+		if (file.contains(".")) {
 			file = file.substr(0, file.find("."));
 		}
 

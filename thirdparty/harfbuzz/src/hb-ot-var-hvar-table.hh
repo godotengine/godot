@@ -177,9 +177,6 @@ struct hvarvvar_subset_plan_t
 
     inner_maps.resize (var_store->get_sub_table_count ());
 
-    for (unsigned int i = 0; i < inner_maps.length; i++)
-      inner_maps[i].init ();
-
     if (unlikely (!index_map_plans.length || !inner_sets.length || !inner_maps.length)) return;
 
     bool retain_adv_map = false;
@@ -229,8 +226,8 @@ struct hvarvvar_subset_plan_t
     for (unsigned int i = 0; i < inner_sets.length; i++)
       hb_set_destroy (inner_sets[i]);
     hb_set_destroy (adv_set);
-    inner_maps.fini_deep ();
-    index_map_plans.fini_deep ();
+    inner_maps.fini ();
+    index_map_plans.fini ();
   }
 
   hb_inc_bimap_t outer_map;

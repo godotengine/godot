@@ -32,7 +32,6 @@
 
 #include "core/debugger/engine_debugger.h"
 #include "core/io/marshalls.h"
-#include "core/multiplayer/multiplayer_replicator.h"
 #include "core/multiplayer/rpc_manager.h"
 #include "scene/main/node.h"
 
@@ -41,6 +40,8 @@
 #ifdef DEBUG_ENABLED
 #include "core/os/os.h"
 #endif
+
+MultiplayerReplicationInterface *(*MultiplayerAPI::create_default_replication_interface)(MultiplayerAPI *p_multiplayer) = nullptr;
 
 #ifdef DEBUG_ENABLED
 void MultiplayerAPI::profile_bandwidth(const String &p_inout, int p_size) {
@@ -74,7 +75,7 @@ void MultiplayerAPI::poll() {
 		Error err = multiplayer_peer->get_packet(&packet, len);
 		if (err != OK) {
 			ERR_PRINT("Error getting packet!");
-			break; // Something is wrong!
+			return; // Something is wrong!
 		}
 
 		remote_sender_id = sender;
@@ -82,16 +83,13 @@ void MultiplayerAPI::poll() {
 		remote_sender_id = 0;
 
 		if (!multiplayer_peer.is_valid()) {
-			break; // It's also possible that a packet or RPC caused a disconnection, so also check here.
+			return; // It's also possible that a packet or RPC caused a disconnection, so also check here.
 		}
 	}
-	if (multiplayer_peer.is_valid() && multiplayer_peer->get_connection_status() == MultiplayerPeer::CONNECTION_CONNECTED) {
-		replicator->poll();
-	}
+	replicator->on_network_process();
 }
 
 void MultiplayerAPI::clear() {
-	replicator->clear();
 	connected_peers.clear();
 	path_get_cache.clear();
 	path_send_cache.clear();
@@ -133,6 +131,7 @@ void MultiplayerAPI::set_multiplayer_peer(const Ref<MultiplayerPeer> &p_peer) {
 		multiplayer_peer->connect("connection_failed", callable_mp(this, &MultiplayerAPI::_connection_failed));
 		multiplayer_peer->connect("server_disconnected", callable_mp(this, &MultiplayerAPI::_server_disconnected));
 	}
+	replicator->on_reset();
 }
 
 Ref<MultiplayerPeer> MultiplayerAPI::get_multiplayer_peer() const {
@@ -167,13 +166,13 @@ void MultiplayerAPI::_process_packet(int p_from, const uint8_t *p_packet, int p_
 			_process_raw(p_from, p_packet, p_packet_len);
 		} break;
 		case NETWORK_COMMAND_SPAWN: {
-			replicator->process_spawn_despawn(p_from, p_packet, p_packet_len, true);
+			replicator->on_spawn_receive(p_from, p_packet, p_packet_len);
 		} break;
 		case NETWORK_COMMAND_DESPAWN: {
-			replicator->process_spawn_despawn(p_from, p_packet, p_packet_len, false);
+			replicator->on_despawn_receive(p_from, p_packet, p_packet_len);
 		} break;
 		case NETWORK_COMMAND_SYNC: {
-			replicator->process_sync(p_from, p_packet, p_packet_len);
+			replicator->on_sync_receive(p_from, p_packet, p_packet_len);
 		} break;
 	}
 }
@@ -324,7 +323,7 @@ bool MultiplayerAPI::_send_confirm_path(Node *p_node, NodePath p_path, PathSentC
 #define ENCODE_16 1 << 5
 #define ENCODE_32 2 << 5
 #define ENCODE_64 3 << 5
-Error MultiplayerAPI::encode_and_compress_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len) {
+Error MultiplayerAPI::encode_and_compress_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bool p_allow_object_decoding) {
 	// Unreachable because `VARIANT_MAX` == 27 and `ENCODE_VARIANT_MASK` == 31
 	CRASH_COND(p_variant.get_type() > VARIANT_META_TYPE_MASK);
 
@@ -385,7 +384,7 @@ Error MultiplayerAPI::encode_and_compress_variant(const Variant &p_variant, uint
 		} break;
 		default:
 			// Any other case is not yet compressed.
-			Error err = encode_variant(p_variant, r_buffer, r_len, allow_object_decoding);
+			Error err = encode_variant(p_variant, r_buffer, r_len, p_allow_object_decoding);
 			if (err != OK) {
 				return err;
 			}
@@ -399,7 +398,7 @@ Error MultiplayerAPI::encode_and_compress_variant(const Variant &p_variant, uint
 	return OK;
 }
 
-Error MultiplayerAPI::decode_and_decompress_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int *r_len) {
+Error MultiplayerAPI::decode_and_decompress_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int *r_len, bool p_allow_object_decoding) {
 	const uint8_t *buf = p_buffer;
 	int len = p_len;
 
@@ -458,7 +457,7 @@ Error MultiplayerAPI::decode_and_decompress_variant(Variant &r_variant, const ui
 			}
 		} break;
 		default:
-			Error err = decode_variant(r_variant, p_buffer, p_len, r_len, allow_object_decoding);
+			Error err = decode_variant(r_variant, p_buffer, p_len, r_len, p_allow_object_decoding);
 			if (err != OK) {
 				return err;
 			}
@@ -467,17 +466,84 @@ Error MultiplayerAPI::decode_and_decompress_variant(Variant &r_variant, const ui
 	return OK;
 }
 
+Error MultiplayerAPI::encode_and_compress_variants(const Variant **p_variants, int p_count, uint8_t *p_buffer, int &r_len, bool *r_raw, bool p_allow_object_decoding) {
+	r_len = 0;
+	int size = 0;
+
+	if (p_count == 0) {
+		if (r_raw) {
+			*r_raw = true;
+		}
+		return OK;
+	}
+
+	// Try raw encoding optimization.
+	if (r_raw && p_count == 1) {
+		*r_raw = false;
+		const Variant &v = *(p_variants[0]);
+		if (v.get_type() == Variant::PACKED_BYTE_ARRAY) {
+			*r_raw = true;
+			const PackedByteArray pba = v;
+			if (p_buffer) {
+				memcpy(p_buffer, pba.ptr(), pba.size());
+			}
+			r_len += pba.size();
+		} else {
+			encode_and_compress_variant(v, p_buffer, size, p_allow_object_decoding);
+			r_len += size;
+		}
+		return OK;
+	}
+
+	// Regular encoding.
+	for (int i = 0; i < p_count; i++) {
+		const Variant &v = *(p_variants[i]);
+		encode_and_compress_variant(v, p_buffer ? p_buffer + r_len : nullptr, size, p_allow_object_decoding);
+		r_len += size;
+	}
+	return OK;
+}
+
+Error MultiplayerAPI::decode_and_decompress_variants(Vector<Variant> &r_variants, const uint8_t *p_buffer, int p_len, int &r_len, bool p_raw, bool p_allow_object_decoding) {
+	r_len = 0;
+	int argc = r_variants.size();
+	if (argc == 0 && p_raw) {
+		return OK;
+	}
+	ERR_FAIL_COND_V(p_raw && argc != 1, ERR_INVALID_DATA);
+	if (p_raw) {
+		r_len = p_len;
+		PackedByteArray pba;
+		pba.resize(p_len);
+		memcpy(pba.ptrw(), p_buffer, p_len);
+		r_variants.write[0] = pba;
+		return OK;
+	}
+
+	Vector<Variant> args;
+	Vector<const Variant *> argp;
+	args.resize(argc);
+
+	for (int i = 0; i < argc; i++) {
+		ERR_FAIL_COND_V_MSG(r_len >= p_len, ERR_INVALID_DATA, "Invalid packet received. Size too small.");
+
+		int vlen;
+		Error err = MultiplayerAPI::decode_and_decompress_variant(r_variants.write[i], &p_buffer[r_len], p_len - r_len, &vlen, p_allow_object_decoding);
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Invalid packet received. Unable to decode state variable.");
+		r_len += vlen;
+	}
+	return OK;
+}
+
 void MultiplayerAPI::_add_peer(int p_id) {
 	connected_peers.insert(p_id);
 	path_get_cache.insert(p_id, PathGetCache());
-	if (is_server()) {
-		replicator->spawn_all(p_id);
-	}
+	replicator->on_peer_change(p_id, true);
 	emit_signal(SNAME("peer_connected"), p_id);
 }
 
 void MultiplayerAPI::_del_peer(int p_id) {
-	connected_peers.erase(p_id);
+	replicator->on_peer_change(p_id, false);
 	// Cleanup get cache.
 	path_get_cache.erase(p_id);
 	// Cleanup sent cache.
@@ -488,6 +554,7 @@ void MultiplayerAPI::_del_peer(int p_id) {
 		PathSentCache *psc = path_send_cache.getptr(E);
 		psc->confirmed_peers.erase(p_id);
 	}
+	connected_peers.erase(p_id);
 	emit_signal(SNAME("peer_disconnected"), p_id);
 }
 
@@ -500,6 +567,7 @@ void MultiplayerAPI::_connection_failed() {
 }
 
 void MultiplayerAPI::_server_disconnected() {
+	replicator->on_reset();
 	emit_signal(SNAME("server_disconnected"));
 }
 
@@ -612,12 +680,24 @@ bool MultiplayerAPI::is_object_decoding_allowed() const {
 	return allow_object_decoding;
 }
 
-void MultiplayerAPI::scene_enter_exit_notify(const String &p_scene, Node *p_node, bool p_enter) {
-	replicator->scene_enter_exit_notify(p_scene, p_node, p_enter);
-}
-
 void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount) {
 	rpc_manager->rpcp(p_node, p_peer_id, p_method, p_arg, p_argcount);
+}
+
+Error MultiplayerAPI::spawn(Object *p_object, Variant p_config) {
+	return replicator->on_spawn(p_object, p_config);
+}
+
+Error MultiplayerAPI::despawn(Object *p_object, Variant p_config) {
+	return replicator->on_despawn(p_object, p_config);
+}
+
+Error MultiplayerAPI::replication_start(Object *p_object, Variant p_config) {
+	return replicator->on_replication_start(p_object, p_config);
+}
+
+Error MultiplayerAPI::replication_stop(Object *p_object, Variant p_config) {
+	return replicator->on_replication_stop(p_object, p_config);
 }
 
 void MultiplayerAPI::_bind_methods() {
@@ -638,14 +718,12 @@ void MultiplayerAPI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_refusing_new_connections"), &MultiplayerAPI::is_refusing_new_connections);
 	ClassDB::bind_method(D_METHOD("set_allow_object_decoding", "enable"), &MultiplayerAPI::set_allow_object_decoding);
 	ClassDB::bind_method(D_METHOD("is_object_decoding_allowed"), &MultiplayerAPI::is_object_decoding_allowed);
-	ClassDB::bind_method(D_METHOD("get_replicator"), &MultiplayerAPI::get_replicator);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_object_decoding"), "set_allow_object_decoding", "is_object_decoding_allowed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "refuse_new_connections"), "set_refuse_new_connections", "is_refusing_new_connections");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer_peer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerPeer", PROPERTY_USAGE_NONE), "set_multiplayer_peer", "get_multiplayer_peer");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "root_node", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_root_node", "get_root_node");
 	ADD_PROPERTY_DEFAULT("refuse_new_connections", false);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "replicator", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerReplicator", PROPERTY_USAGE_NONE), "", "get_replicator");
 
 	ADD_SIGNAL(MethodInfo("peer_connected", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("peer_disconnected", PropertyInfo(Variant::INT, "id")));
@@ -656,13 +734,16 @@ void MultiplayerAPI::_bind_methods() {
 }
 
 MultiplayerAPI::MultiplayerAPI() {
-	replicator = memnew(MultiplayerReplicator(this));
+	if (create_default_replication_interface) {
+		replicator = Ref<MultiplayerReplicationInterface>(create_default_replication_interface(this));
+	} else {
+		replicator.instantiate();
+	}
 	rpc_manager = memnew(RPCManager(this));
 	clear();
 }
 
 MultiplayerAPI::~MultiplayerAPI() {
 	clear();
-	memdelete(replicator);
 	memdelete(rpc_manager);
 }

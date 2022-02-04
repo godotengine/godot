@@ -212,7 +212,6 @@ protected:
 	static String _get_name_num_separator();
 
 	friend class SceneState;
-	friend class MultiplayerReplicator;
 
 	void _add_child_nocheck(Node *p_child, const StringName &p_name);
 	void _set_owner_nocheck(Node *p_owner);
@@ -467,7 +466,7 @@ public:
 	bool is_displayed_folded() const;
 	/* NETWORK */
 
-	void set_multiplayer_authority(int p_peer_id, bool p_recursive = true);
+	virtual void set_multiplayer_authority(int p_peer_id, bool p_recursive = true);
 	int get_multiplayer_authority() const;
 	bool is_multiplayer_authority() const;
 

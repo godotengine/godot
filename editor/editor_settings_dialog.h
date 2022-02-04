@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  settings_config_dialog.h                                             */
+/*  editor_settings_dialog.h                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SETTINGS_CONFIG_DIALOG_H
-#define SETTINGS_CONFIG_DIALOG_H
+#ifndef EDITOR_SETTINGS_DIALOG_H
+#define EDITOR_SETTINGS_DIALOG_H
 
 #include "editor/action_map_editor.h"
 #include "editor/editor_sectioned_inspector.h"
@@ -128,4 +128,4 @@ public:
 	~EditorSettingsDialog();
 };
 
-#endif // SETTINGS_CONFIG_DIALOG_H
+#endif // EDITOR_SETTINGS_DIALOG_H

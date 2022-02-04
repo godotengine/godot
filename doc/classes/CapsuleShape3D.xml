@@ -10,10 +10,10 @@
 		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
 	</tutorials>
 	<members>
-		<member name="height" type="float" setter="set_height" getter="get_height" default="3.0">
+		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">
 			The capsule's height.
 		</member>
-		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="1.0">
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.5">
 			The capsule's radius.
 		</member>
 	</members>

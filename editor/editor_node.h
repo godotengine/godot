@@ -323,8 +323,8 @@ private:
 	ConfirmationDialog *install_android_build_template;
 	ConfirmationDialog *remove_android_build_template;
 
-	EditorSettingsDialog *settings_config_dialog;
-	ProjectSettingsEditor *project_settings;
+	EditorSettingsDialog *editor_settings_dialog;
+	ProjectSettingsEditor *project_settings_editor;
 	bool settings_changed = true; // make it update settings on first frame
 	void _update_from_settings();
 
@@ -384,6 +384,7 @@ private:
 	HBoxContainer *tabbar_container;
 	Button *distraction_free;
 	Button *scene_tab_add;
+	Control *scene_tab_add_ph;
 
 	bool scene_distraction;
 	bool script_distraction;
@@ -713,7 +714,7 @@ public:
 	EditorPluginList *get_editor_plugins_force_over() { return editor_plugins_force_over; }
 	EditorPluginList *get_editor_plugins_force_input_forwarding() { return editor_plugins_force_input_forwarding; }
 
-	ProjectSettingsEditor *get_project_settings() { return project_settings; }
+	ProjectSettingsEditor *get_project_settings() { return project_settings_editor; }
 
 	static void add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed = false);
 	static void remove_editor_plugin(EditorPlugin *p_editor, bool p_config_changed = false);

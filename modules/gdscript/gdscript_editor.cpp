@@ -486,7 +486,7 @@ struct GDScriptCompletionIdentifier {
 static String _get_visual_datatype(const PropertyInfo &p_info, bool p_is_arg = true) {
 	if (p_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
 		String enum_name = p_info.class_name;
-		if (enum_name.find(".") == -1) {
+		if (!enum_name.contains(".")) {
 			return enum_name;
 		}
 		return enum_name.get_slice(".", 1);
@@ -610,7 +610,7 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 				case GDScriptParser::Node::SUBSCRIPT: {
 					const GDScriptParser::SubscriptNode *sub = static_cast<const GDScriptParser::SubscriptNode *>(par->default_value);
 					if (sub->is_constant) {
-						if (sub->datatype.kind == GDScriptParser::DataType::ENUM_VALUE) {
+						if (sub->datatype.kind == GDScriptParser::DataType::ENUM) {
 							def_val = sub->get_datatype().to_string();
 						} else if (sub->reduced) {
 							const Variant::Type vt = sub->reduced_value.get_type();
@@ -955,7 +955,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 							if (E.usage & (PROPERTY_USAGE_GROUP | PROPERTY_USAGE_CATEGORY)) {
 								continue;
 							}
-							if (E.name.find("/") != -1) {
+							if (E.name.contains("/")) {
 								continue;
 							}
 							ScriptCodeCompletionOption option(E.name, ScriptCodeCompletionOption::KIND_MEMBER);
@@ -1000,7 +1000,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 					}
 
 					for (const PropertyInfo &E : members) {
-						if (String(E.name).find("/") == -1) {
+						if (!String(E.name).contains("/")) {
 							ScriptCodeCompletionOption option(E.name, ScriptCodeCompletionOption::KIND_MEMBER);
 							r_result.insert(option.display, option);
 						}
@@ -2182,7 +2182,7 @@ static bool _guess_method_return_type_from_base(GDScriptParser::CompletionContex
 }
 
 static void _find_enumeration_candidates(GDScriptParser::CompletionContext &p_context, const String &p_enum_hint, Map<String, ScriptCodeCompletionOption> &r_result) {
-	if (p_enum_hint.find(".") == -1) {
+	if (!p_enum_hint.contains(".")) {
 		// Global constant or in the current class.
 		StringName current_enum = p_enum_hint;
 		if (p_context.current_class && p_context.current_class->has_member(current_enum) && p_context.current_class->get_member(current_enum).type == GDScriptParser::ClassNode::Member::ENUM) {
@@ -2291,7 +2291,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 					}
 				}
 
-				if (p_argidx == 0 && method_args > 0 && ClassDB::is_parent_class(class_name, "InputEvent") && p_method.operator String().find("action") != -1) {
+				if (p_argidx == 0 && method_args > 0 && ClassDB::is_parent_class(class_name, "InputEvent") && p_method.operator String().contains("action")) {
 					// Get input actions
 					List<PropertyInfo> props;
 					ProjectSettings::get_singleton()->get_property_list(&props);
@@ -2639,7 +2639,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 			ClassDB::get_virtual_methods(class_name, &virtual_methods);
 			for (const MethodInfo &mi : virtual_methods) {
 				String method_hint = mi.name;
-				if (method_hint.find(":") != -1) {
+				if (method_hint.contains(":")) {
 					method_hint = method_hint.get_slice(":", 0);
 				}
 				method_hint += "(";
@@ -2650,7 +2650,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 							method_hint += ", ";
 						}
 						String arg = mi.arguments[i].name;
-						if (arg.find(":") != -1) {
+						if (arg.contains(":")) {
 							arg = arg.substr(0, arg.find(":"));
 						}
 						method_hint += arg;

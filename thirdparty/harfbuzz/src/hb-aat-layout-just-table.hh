@@ -146,7 +146,7 @@ struct DuctileGlyphAction
   HBUINT32	variationAxis;	/* The 4-byte tag identifying the ductile axis.
 				 * This would normally be 0x64756374 ('duct'),
 				 * but you may use any axis the font contains. */
-  HBFixed	minimumLimit;	/* The lowest value for the ductility axis tha
+  HBFixed	minimumLimit;	/* The lowest value for the ductility axis that
 				 * still yields an acceptable appearance. Normally
 				 * this will be 1.0. */
   HBFixed	noStretchValue; /* This is the default value that corresponds to

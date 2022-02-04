@@ -3740,8 +3740,6 @@ String GDScriptParser::DataType::to_string() const {
 		}
 		case ENUM:
 			return enum_type.operator String() + " (enum)";
-		case ENUM_VALUE:
-			return enum_type.operator String() + " (enum value)";
 		case UNRESOLVED:
 			return "<unresolved type>";
 	}

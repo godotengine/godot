@@ -132,7 +132,7 @@ public:
 	virtual void font_set_hinting(RID p_font_rid, Hinting p_hinting) override;
 	virtual Hinting font_get_hinting(RID p_font_rid) const override;
 	GDVIRTUAL2(_font_set_hinting, RID, Hinting);
-	GDVIRTUAL1RC(/*Hinting*/ int, _font_get_hinting, RID);
+	GDVIRTUAL1RC(Hinting, _font_get_hinting, RID);
 
 	virtual void font_set_variation_coordinates(RID p_font_rid, const Dictionary &p_variation_coordinates) override;
 	virtual Dictionary font_get_variation_coordinates(RID p_font_rid) const override;
@@ -317,8 +317,8 @@ public:
 	virtual Direction shaped_text_get_direction(RID p_shaped) const override;
 	virtual Direction shaped_text_get_inferred_direction(RID p_shaped) const override;
 	GDVIRTUAL2(_shaped_text_set_direction, RID, Direction);
-	GDVIRTUAL1RC(/*Direction*/ int, _shaped_text_get_direction, RID);
-	GDVIRTUAL1RC(/*Direction*/ int, _shaped_text_get_inferred_direction, RID);
+	GDVIRTUAL1RC(Direction, _shaped_text_get_direction, RID);
+	GDVIRTUAL1RC(Direction, _shaped_text_get_inferred_direction, RID);
 
 	virtual void shaped_text_set_bidi_override(RID p_shaped, const Array &p_override) override;
 	GDVIRTUAL2(_shaped_text_set_bidi_override, RID, const Array &);
@@ -331,7 +331,7 @@ public:
 	virtual void shaped_text_set_orientation(RID p_shaped, Orientation p_orientation = ORIENTATION_HORIZONTAL) override;
 	virtual Orientation shaped_text_get_orientation(RID p_shaped) const override;
 	GDVIRTUAL2(_shaped_text_set_orientation, RID, Orientation);
-	GDVIRTUAL1RC(/*Orientation*/ int, _shaped_text_get_orientation, RID);
+	GDVIRTUAL1RC(Orientation, _shaped_text_get_orientation, RID);
 
 	virtual void shaped_text_set_preserve_invalid(RID p_shaped, bool p_enabled) override;
 	virtual bool shaped_text_get_preserve_invalid(RID p_shaped) const override;
@@ -343,12 +343,19 @@ public:
 	GDVIRTUAL2(_shaped_text_set_preserve_control, RID, bool);
 	GDVIRTUAL1RC(bool, _shaped_text_get_preserve_control, RID);
 
-	virtual bool shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "") override;
+	virtual bool shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "", const Variant &p_meta = Variant()) override;
 	virtual bool shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int p_length = 1) override;
 	virtual bool shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER) override;
-	GDVIRTUAL6R(bool, _shaped_text_add_string, RID, const String &, const Array &, int, const Dictionary &, const String &);
+	GDVIRTUAL7R(bool, _shaped_text_add_string, RID, const String &, const Array &, int, const Dictionary &, const String &, const Variant &);
 	GDVIRTUAL5R(bool, _shaped_text_add_object, RID, Variant, const Size2 &, InlineAlignment, int);
 	GDVIRTUAL4R(bool, _shaped_text_resize_object, RID, Variant, const Size2 &, InlineAlignment);
+
+	virtual int shaped_get_span_count(RID p_shaped) const override;
+	virtual Variant shaped_get_span_meta(RID p_shaped, int p_index) const override;
+	virtual void shaped_set_span_update_font(RID p_shaped, int p_index, const Vector<RID> &p_fonts, int p_size, const Dictionary &p_opentype_features = Dictionary()) override;
+	GDVIRTUAL1RC(int, _shaped_get_span_count, RID);
+	GDVIRTUAL2RC(Variant, _shaped_get_span_meta, RID, int);
+	GDVIRTUAL5(_shaped_set_span_update_font, RID, int, const Array &, int, const Dictionary &);
 
 	virtual RID shaped_text_substr(RID p_shaped, int p_start, int p_length) const override;
 	virtual RID shaped_text_get_parent(RID p_shaped) const override;
@@ -373,8 +380,8 @@ public:
 	virtual const Glyph *shaped_text_get_glyphs(RID p_shaped) const override;
 	virtual const Glyph *shaped_text_sort_logical(RID p_shaped) override;
 	virtual int shaped_text_get_glyph_count(RID p_shaped) const override;
-	GDVIRTUAL2C(_shaped_text_get_glyphs, RID, GDNativePtr<const Glyph *>);
-	GDVIRTUAL2(_shaped_text_sort_logical, RID, GDNativePtr<const Glyph *>);
+	GDVIRTUAL1RC(GDNativePtr<Glyph>, _shaped_text_get_glyphs, RID);
+	GDVIRTUAL1R(GDNativePtr<Glyph>, _shaped_text_sort_logical, RID);
 	GDVIRTUAL1RC(int, _shaped_text_get_glyph_count, RID);
 
 	virtual Vector2i shaped_text_get_range(RID p_shaped) const override;
@@ -393,7 +400,7 @@ public:
 	virtual int shaped_text_get_ellipsis_glyph_count(RID p_shaped) const override;
 	GDVIRTUAL1RC(int, _shaped_text_get_trim_pos, RID);
 	GDVIRTUAL1RC(int, _shaped_text_get_ellipsis_pos, RID);
-	GDVIRTUAL2C(_shaped_text_get_ellipsis_glyphs, RID, GDNativePtr<const Glyph *>);
+	GDVIRTUAL1RC(GDNativePtr<Glyph>, _shaped_text_get_ellipsis_glyphs, RID);
 	GDVIRTUAL1RC(int, _shaped_text_get_ellipsis_glyph_count, RID);
 
 	virtual void shaped_text_overrun_trim_to_width(RID p_shaped, float p_width, uint16_t p_trim_flags) override;

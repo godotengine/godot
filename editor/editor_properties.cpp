@@ -592,7 +592,7 @@ void EditorPropertyMember::_property_select() {
 	} else if (hint == MEMBER_PROPERTY_OF_VARIANT_TYPE) {
 		Variant::Type type = Variant::NIL;
 		String tname = hint_text;
-		if (tname.find(".") != -1) {
+		if (tname.contains(".")) {
 			tname = tname.get_slice(".", 0);
 		}
 		for (int i = 0; i < Variant::VARIANT_MAX; i++) {
@@ -809,7 +809,7 @@ void EditorPropertyLayersGrid::_rename_operation_confirm() {
 	if (new_name.length() == 0) {
 		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
 		return;
-	} else if (new_name.find("/") != -1 || new_name.find("\\") != -1 || new_name.find(":") != -1) {
+	} else if (new_name.contains("/") || new_name.contains("\\") || new_name.contains(":")) {
 		EditorNode::get_singleton()->show_warning(TTR("Name contains invalid characters."));
 		return;
 	}
@@ -2883,7 +2883,7 @@ void EditorPropertyNodePath::update_property() {
 	Node *target_node = base_node->get_node(p);
 	ERR_FAIL_COND(!target_node);
 
-	if (String(target_node->get_name()).find("@") != -1) {
+	if (String(target_node->get_name()).contains("@")) {
 		assign->set_icon(Ref<Texture2D>());
 		assign->set_text(p);
 		return;
@@ -3318,9 +3318,9 @@ struct EditorPropertyRangeHint {
 	bool angle_in_degrees = false;
 	bool greater = true;
 	bool lesser = true;
-	double min = -99999;
-	double max = 99999;
-	double step = 0;
+	double min = -99999.0;
+	double max = 99999.0;
+	double step = 1.0;
 	String suffix;
 	bool exp_range = false;
 	bool hide_slider = true;
@@ -3331,18 +3331,25 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 	EditorPropertyRangeHint hint;
 	hint.step = p_default_step;
 	bool degrees = false;
-	if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
-		hint.greater = false; //if using ranged, assume false by default
+
+	if (p_hint == PROPERTY_HINT_RANGE) {
+		Vector<String> slices = p_hint_text.split(",");
+		ERR_FAIL_COND_V_MSG(slices.size() < 2, hint,
+				vformat("Invalid PROPERTY_HINT_RANGE with hint \"%s\": Missing required min and/or max values.", p_hint_text));
+
+		hint.greater = false; // If using ranged, assume false by default.
 		hint.lesser = false;
 
-		hint.min = p_hint_text.get_slice(",", 0).to_float();
-		hint.max = p_hint_text.get_slice(",", 1).to_float();
-		if (p_hint_text.get_slice_count(",") >= 3) {
-			hint.step = p_hint_text.get_slice(",", 2).to_float();
+		hint.min = slices[0].to_float();
+		hint.max = slices[1].to_float();
+
+		if (slices.size() >= 3 && slices[2].is_valid_float()) {
+			// Step is optional, could be something else if not a number.
+			hint.step = slices[2].to_float();
 		}
 		hint.hide_slider = false;
-		for (int i = 2; i < p_hint_text.get_slice_count(","); i++) {
-			String slice = p_hint_text.get_slice(",", i).strip_edges();
+		for (int i = 2; i < slices.size(); i++) {
+			String slice = slices[i].strip_edges();
 			if (slice == "radians") {
 				hint.radians = true;
 			} else if (slice == "degrees") {
@@ -3364,6 +3371,9 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 	if ((hint.radians || degrees) && hint.suffix.is_empty()) {
 		hint.suffix = U"\u00B0";
 	}
+
+	ERR_FAIL_COND_V_MSG(hint.step == 0, hint,
+			vformat("Invalid PROPERTY_HINT_RANGE with hint \"%s\": Step cannot be 0.", p_hint_text));
 
 	return hint;
 }
@@ -3435,7 +3445,6 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
 
 				EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
-
 				editor->setup(hint.min, hint.max, hint.step, hint.greater, hint.lesser);
 
 				return editor;

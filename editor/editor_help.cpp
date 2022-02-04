@@ -81,7 +81,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 	if (p_select.begins_with("$")) { //enum
 		String select = p_select.substr(1, p_select.length());
 		String class_name;
-		if (select.find(".") != -1) {
+		if (select.contains(".")) {
 			class_name = select.get_slice(".", 0);
 			select = select.get_slice(".", 1);
 		} else {
@@ -123,7 +123,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 			return;
 		}
 
-		if (link.find(".") != -1) {
+		if (link.contains(".")) {
 			emit_signal(SNAME("go_to_help"), topic + ":" + link.get_slice(".", 0) + ":" + link.get_slice(".", 1));
 		} else {
 			if (table->has(link)) {
@@ -185,7 +185,7 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 	if (t.is_empty()) {
 		t = "void";
 	}
-	bool can_ref = (t != "void" && t.find("*") == -1) || !p_enum.is_empty();
+	bool can_ref = (t != "void" && !t.contains("*")) || !p_enum.is_empty();
 
 	if (!p_enum.is_empty()) {
 		if (p_enum.get_slice_count(".") > 1) {
@@ -240,7 +240,7 @@ String EditorHelp::_fix_constant(const String &p_constant) const {
 void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview) {
 	method_line[p_method.name] = class_desc->get_line_count() - 2; //gets overridden if description
 
-	const bool is_vararg = p_method.qualifiers.find("vararg") != -1;
+	const bool is_vararg = p_method.qualifiers.contains("vararg");
 
 	if (p_overview) {
 		class_desc->push_cell();
@@ -364,7 +364,7 @@ void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods,
 
 		for (int i = 0; i < p_methods.size(); i++) {
 			const String &q = p_methods[i].qualifiers;
-			if ((pass == 0 && q.find("virtual") != -1) || (pass == 1 && q.find("virtual") == -1)) {
+			if ((pass == 0 && q.contains("virtual")) || (pass == 1 && !q.contains("virtual"))) {
 				m.push_back(p_methods[i]);
 			}
 		}
@@ -429,7 +429,7 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc p_classdoc,
 
 		for (int i = 0; i < p_methods.size(); i++) {
 			const String &q = p_methods[i].qualifiers;
-			if ((pass == 0 && q.find("virtual") != -1) || (pass == 1 && q.find("virtual") == -1)) {
+			if ((pass == 0 && q.contains("virtual")) || (pass == 1 && !q.contains("virtual"))) {
 				methods_filtered.push_back(p_methods[i]);
 			}
 		}
@@ -820,7 +820,7 @@ void EditorHelp::_update_doc() {
 			}
 		}
 		// Ignore undocumented non virtual private.
-		if (cd.methods[i].name.begins_with("_") && cd.methods[i].description.is_empty() && cd.methods[i].qualifiers.find("virtual") == -1) {
+		if (cd.methods[i].name.begins_with("_") && cd.methods[i].description.is_empty() && !cd.methods[i].qualifiers.contains("virtual")) {
 			continue;
 		}
 		methods.push_back(cd.methods[i]);
@@ -1910,6 +1910,8 @@ DocTools *EditorHelp::get_doc_data() {
 	return doc;
 }
 
+//// EditorHelpBit ///
+
 void EditorHelpBit::_go_to_help(String p_what) {
 	EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
 	ScriptEditor::get_singleton()->goto_help(p_what);
@@ -1921,7 +1923,7 @@ void EditorHelpBit::_meta_clicked(String p_select) {
 
 		String select = p_select.substr(1, p_select.length());
 		String class_name;
-		if (select.find(".") != -1) {
+		if (select.contains(".")) {
 			class_name = select.get_slice(".", 0);
 		} else {
 			class_name = "@Global";
@@ -1934,7 +1936,7 @@ void EditorHelpBit::_meta_clicked(String p_select) {
 	} else if (p_select.begins_with("@")) {
 		String m = p_select.substr(1, p_select.length());
 
-		if (m.find(".") != -1) {
+		if (m.contains(".")) {
 			_go_to_help("class_method:" + m.get_slice(".", 0) + ":" + m.get_slice(".", 0)); //must go somewhere else
 		}
 	}
@@ -1950,12 +1952,9 @@ void EditorHelpBit::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			rich_text->add_theme_color_override("selection_color", get_theme_color(SNAME("selection_color"), SNAME("EditorHelp")));
-		} break;
-
-		case NOTIFICATION_READY: {
 			rich_text->clear();
 			_add_text_to_rt(text, rich_text);
-
+			rich_text->reset_size(); // Force recalculating size after parsing bbcode.
 		} break;
 	}
 }
@@ -1971,8 +1970,11 @@ EditorHelpBit::EditorHelpBit() {
 	add_child(rich_text);
 	rich_text->connect("meta_clicked", callable_mp(this, &EditorHelpBit::_meta_clicked));
 	rich_text->set_override_selected_font_color(false);
-	set_custom_minimum_size(Size2(0, 70 * EDSCALE));
+	rich_text->set_fit_content_height(true);
+	set_custom_minimum_size(Size2(0, 50 * EDSCALE));
 }
+
+//// FindBar ///
 
 FindBar::FindBar() {
 	search_text = memnew(LineEdit);
@@ -2126,7 +2128,7 @@ void FindBar::unhandled_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid()) {
-		if (k->is_pressed() && (rich_text_label->has_focus() || is_ancestor_of(get_focus_owner()))) {
+		if (k->is_pressed() && (rich_text_label->has_focus() || is_ancestor_of(get_viewport()->gui_get_focus_owner()))) {
 			bool accepted = true;
 
 			switch (k->get_keycode()) {

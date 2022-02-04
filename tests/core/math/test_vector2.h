@@ -32,6 +32,7 @@
 #define TEST_VECTOR2_H
 
 #include "core/math/vector2.h"
+#include "core/math/vector2i.h"
 #include "tests/test_macros.h"
 
 namespace TestVector2 {

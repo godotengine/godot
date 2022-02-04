@@ -326,6 +326,12 @@ typedef struct {
 	Rect2i rect;
 } EnumRectData;
 
+typedef struct {
+	int count;
+	int screen;
+	float rate;
+} EnumRefreshRateData;
+
 static BOOL CALLBACK _MonitorEnumProcSize(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
 	EnumSizeData *data = (EnumSizeData *)dwData;
 	if (data->count == data->screen) {
@@ -357,6 +363,26 @@ static BOOL CALLBACK _MonitorEnumProcUsableSize(HMONITOR hMonitor, HDC hdcMonito
 		data->rect.position.y = minfo.rcWork.top;
 		data->rect.size.x = minfo.rcWork.right - minfo.rcWork.left;
 		data->rect.size.y = minfo.rcWork.bottom - minfo.rcWork.top;
+	}
+
+	data->count++;
+	return TRUE;
+}
+
+static BOOL CALLBACK _MonitorEnumProcRefreshRate(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
+	EnumRefreshRateData *data = (EnumRefreshRateData *)dwData;
+	if (data->count == data->screen) {
+		MONITORINFOEXW minfo;
+		memset(&minfo, 0, sizeof(minfo));
+		minfo.cbSize = sizeof(minfo);
+		GetMonitorInfoW(hMonitor, &minfo);
+
+		DEVMODEW dm;
+		memset(&dm, 0, sizeof(dm));
+		dm.dmSize = sizeof(dm);
+		EnumDisplaySettingsW(minfo.szDevice, ENUM_CURRENT_SETTINGS, &dm);
+
+		data->rate = dm.dmDisplayFrequency;
 	}
 
 	data->count++;
@@ -446,6 +472,13 @@ int DisplayServerWindows::screen_get_dpi(int p_screen) const {
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcDpi, (LPARAM)&data);
 	return data.dpi;
 }
+float DisplayServerWindows::screen_get_refresh_rate(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	EnumRefreshRateData data = { 0, p_screen == SCREEN_OF_MAIN_WINDOW ? window_get_current_screen() : p_screen, SCREEN_REFRESH_RATE_FALLBACK };
+	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcRefreshRate, (LPARAM)&data);
+	return data.rate;
+}
 
 bool DisplayServerWindows::screen_is_touchscreen(int p_screen) const {
 #ifndef _MSC_VER
@@ -506,7 +539,7 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 	if (p_flags & WINDOW_FLAG_BORDERLESS_BIT) {
 		wd.borderless = true;
 	}
-	if (p_flags & WINDOW_FLAG_ALWAYS_ON_TOP_BIT && p_mode != WINDOW_MODE_FULLSCREEN) {
+	if (p_flags & WINDOW_FLAG_ALWAYS_ON_TOP_BIT && p_mode != WINDOW_MODE_FULLSCREEN && p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 		wd.always_on_top = true;
 	}
 	if (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) {
@@ -946,7 +979,7 @@ Size2i DisplayServerWindows::window_get_real_size(WindowID p_window) const {
 	return Size2();
 }
 
-void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscreen, bool p_borderless, bool p_resizable, bool p_maximized, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex) {
+void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_maximized, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex) {
 	// Windows docs for window styles:
 	// https://docs.microsoft.com/en-us/windows/win32/winmsg/window-styles
 	// https://docs.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
@@ -959,6 +992,9 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 
 	if (p_fullscreen || p_borderless) {
 		r_style |= WS_POPUP; // p_borderless was WS_EX_TOOLWINDOW in the past.
+		if (p_fullscreen && p_multiwindow_fs) {
+			r_style |= WS_BORDER; // Allows child windows to be displayed on top of full screen.
+		}
 	} else {
 		if (p_resizable) {
 			if (p_maximized) {
@@ -989,7 +1025,7 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	DWORD style = 0;
 	DWORD style_ex = 0;
 
-	_get_window_style(p_window == MAIN_WINDOW_ID, wd.fullscreen, wd.borderless, wd.resizable, wd.maximized, wd.no_focus, style, style_ex);
+	_get_window_style(p_window == MAIN_WINDOW_ID, wd.fullscreen, wd.multiwindow_fs, wd.borderless, wd.resizable, wd.maximized, wd.no_focus, style, style_ex);
 
 	SetWindowLongPtr(wd.hWnd, GWL_STYLE, style);
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
@@ -1009,10 +1045,11 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	if (wd.fullscreen && p_mode != WINDOW_MODE_FULLSCREEN) {
+	if (wd.fullscreen && p_mode != WINDOW_MODE_FULLSCREEN && p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 		RECT rect;
 
 		wd.fullscreen = false;
+		wd.multiwindow_fs = false;
 		wd.maximized = wd.was_maximized;
 
 		if (wd.pre_fs_valid) {
@@ -1051,7 +1088,15 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		wd.minimized = true;
 	}
 
-	if (p_mode == WINDOW_MODE_FULLSCREEN && !wd.fullscreen) {
+	if (p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+		wd.multiwindow_fs = false;
+		_update_window_style(false);
+	} else {
+		wd.multiwindow_fs = true;
+		_update_window_style(false);
+	}
+
+	if ((p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) && !wd.fullscreen) {
 		if (wd.minimized) {
 			ShowWindow(wd.hWnd, SW_RESTORE);
 		}
@@ -1098,7 +1143,11 @@ DisplayServer::WindowMode DisplayServerWindows::window_get_mode(WindowID p_windo
 	const WindowData &wd = windows[p_window];
 
 	if (wd.fullscreen) {
-		return WINDOW_MODE_FULLSCREEN;
+		if (wd.multiwindow_fs) {
+			return WINDOW_MODE_FULLSCREEN;
+		} else {
+			return WINDOW_MODE_EXCLUSIVE_FULLSCREEN;
+		}
 	} else if (wd.minimized) {
 		return WINDOW_MODE_MINIMIZED;
 	} else if (wd.maximized) {
@@ -2649,98 +2698,72 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 		} break;
-		case WM_MOVE: {
-			if (!IsIconic(windows[window_id].hWnd)) {
-				int x = int16_t(LOWORD(lParam));
-				int y = int16_t(HIWORD(lParam));
-				windows[window_id].last_pos = Point2(x, y);
 
-				if (!windows[window_id].rect_changed_callback.is_null()) {
-					Variant size = Rect2i(windows[window_id].last_pos.x, windows[window_id].last_pos.y, windows[window_id].width, windows[window_id].height);
-					Variant *sizep = &size;
-					Variant ret;
-					Callable::CallError ce;
-					windows[window_id].rect_changed_callback.call((const Variant **)&sizep, 1, ret, ce);
-				}
+		case WM_WINDOWPOSCHANGED: {
+			Rect2i window_client_rect;
+			{
+				RECT rect;
+				GetClientRect(hWnd, &rect);
+				ClientToScreen(hWnd, (POINT *)&rect.left);
+				ClientToScreen(hWnd, (POINT *)&rect.right);
+				window_client_rect = Rect2i(rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
 			}
-		} break;
-		case WM_SIZE: {
-			// Ignore window size change when a SIZE_MINIMIZED event is triggered.
-			if (wParam != SIZE_MINIMIZED) {
-				// The new width and height of the client area.
-				int window_w = LOWORD(lParam);
-				int window_h = HIWORD(lParam);
 
-				// Set new value to the size if it isn't preserved.
-				if (window_w > 0 && window_h > 0 && !windows[window_id].preserve_window_size) {
-					windows[window_id].width = window_w;
-					windows[window_id].height = window_h;
+			WINDOWPOS *window_pos_params = (WINDOWPOS *)lParam;
+			WindowData &window = windows[window_id];
+
+			bool rect_changed = false;
+			if (!(window_pos_params->flags & SWP_NOSIZE) || window_pos_params->flags & SWP_FRAMECHANGED) {
+				int screen_id = window_get_current_screen(window_id);
+				Size2i screen_size = screen_get_size(screen_id);
+				Point2i screen_position = screen_get_position(screen_id);
+
+				window.maximized = false;
+				window.minimized = false;
+				window.fullscreen = false;
+
+				if (IsIconic(hWnd)) {
+					window.minimized = true;
+				} else if (IsZoomed(hWnd)) {
+					window.maximized = true;
+				} else if (window_client_rect.position == screen_position && window_client_rect.size == screen_size) {
+					window.fullscreen = true;
+				}
+
+				if (!window.minimized) {
+					window.width = window_client_rect.size.width;
+					window.height = window_client_rect.size.height;
 
 #if defined(VULKAN_ENABLED)
 					if (context_vulkan && window_created) {
-						context_vulkan->window_resize(window_id, windows[window_id].width, windows[window_id].height);
+						context_vulkan->window_resize(window_id, window.width, window.height);
 					}
 #endif
-
-				} else { // If the size is preserved.
-					windows[window_id].preserve_window_size = false;
-
-					// Restore the old size.
-					window_set_size(Size2(windows[window_id].width, windows[window_id].height), window_id);
+					rect_changed = true;
 				}
-			} else { // When the window has been minimized, preserve its size.
-				windows[window_id].preserve_window_size = true;
 			}
 
-			// Call windows rect change callback.
-			if (!windows[window_id].rect_changed_callback.is_null()) {
-				Variant size = Rect2i(windows[window_id].last_pos.x, windows[window_id].last_pos.y, windows[window_id].width, windows[window_id].height);
-				Variant *size_ptr = &size;
-				Variant ret;
-				Callable::CallError ce;
-				windows[window_id].rect_changed_callback.call((const Variant **)&size_ptr, 1, ret, ce);
+			if (!window.minimized && (!(window_pos_params->flags & SWP_NOMOVE) || window_pos_params->flags & SWP_FRAMECHANGED)) {
+				window.last_pos = window_client_rect.position;
+				rect_changed = true;
 			}
 
-			// The window has been maximized.
-			if (wParam == SIZE_MAXIMIZED) {
-				windows[window_id].maximized = true;
-				windows[window_id].minimized = false;
+			if (rect_changed) {
+				if (!window.rect_changed_callback.is_null()) {
+					Variant size = Rect2i(window.last_pos.x, window.last_pos.y, window.width, window.height);
+					const Variant *args[] = { &size };
+					Variant ret;
+					Callable::CallError ce;
+					window.rect_changed_callback.call(args, 1, ret, ce);
+				}
 			}
-			// The window has been minimized.
-			else if (wParam == SIZE_MINIMIZED) {
-				windows[window_id].maximized = false;
-				windows[window_id].minimized = true;
-				windows[window_id].preserve_window_size = false;
-			}
-			// The window has been resized, but neither the SIZE_MINIMIZED nor SIZE_MAXIMIZED value applies.
-			else if (wParam == SIZE_RESTORED) {
-				windows[window_id].maximized = false;
-				windows[window_id].minimized = false;
-			}
-#if 0
-			if (is_layered_allowed() && layered_window) {
-				DeleteObject(hBitmap);
 
-				RECT r;
-				GetWindowRect(hWnd, &r);
-				dib_size = Size2i(r.right - r.left, r.bottom - r.top);
+			// Return here to prevent WM_MOVE and WM_SIZE from being sent
+			// See: https://docs.microsoft.com/en-us/windows/win32/winmsg/wm-windowposchanged#remarks
+			return 0;
 
-				BITMAPINFO bmi;
-				ZeroMemory(&bmi, sizeof(BITMAPINFO));
-				bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-				bmi.bmiHeader.biWidth = dib_size.x;
-				bmi.bmiHeader.biHeight = dib_size.y;
-				bmi.bmiHeader.biPlanes = 1;
-				bmi.bmiHeader.biBitCount = 32;
-				bmi.bmiHeader.biCompression = BI_RGB;
-				bmi.bmiHeader.biSizeImage = dib_size.x * dib_size.y * 4;
-				hBitmap = CreateDIBSection(hDC_dib, &bmi, DIB_RGB_COLORS, (void **)&dib_data, nullptr, 0x0);
-				SelectObject(hDC_dib, hBitmap);
-
-				ZeroMemory(dib_data, dib_size.x * dib_size.y * 4);
-			}
-#endif
 		} break;
+
 		case WM_ENTERSIZEMOVE: {
 			Input::get_singleton()->release_pressed_events();
 			windows[window_id].move_timer_id = SetTimer(windows[window_id].hWnd, 1, USER_TIMER_MINIMUM, (TIMERPROC) nullptr);
@@ -3088,7 +3111,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	DWORD dwExStyle;
 	DWORD dwStyle;
 
-	_get_window_style(window_id_counter == MAIN_WINDOW_ID, p_mode == WINDOW_MODE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_mode == WINDOW_MODE_MAXIMIZED, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT), dwStyle, dwExStyle);
+	_get_window_style(window_id_counter == MAIN_WINDOW_ID, (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN), p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_mode == WINDOW_MODE_MAXIMIZED, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT), dwStyle, dwExStyle);
 
 	RECT WindowRect;
 
@@ -3097,7 +3120,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	WindowRect.top = p_rect.position.y;
 	WindowRect.bottom = p_rect.position.y + p_rect.size.y;
 
-	if (p_mode == WINDOW_MODE_FULLSCREEN) {
+	if (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 		int nearest_area = 0;
 		Rect2i screen_rect;
 		for (int i = 0; i < get_screen_count(); i++) {
@@ -3140,7 +3163,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 			windows.erase(id);
 			return INVALID_WINDOW_ID;
 		}
-		if (p_mode != WINDOW_MODE_FULLSCREEN) {
+		if (p_mode != WINDOW_MODE_FULLSCREEN && p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 			wd.pre_fs_valid = true;
 		}
 

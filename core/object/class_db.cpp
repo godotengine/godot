@@ -732,7 +732,7 @@ void ClassDB::bind_integer_constant(const StringName &p_class, const StringName 
 
 	String enum_name = p_enum;
 	if (!enum_name.is_empty()) {
-		if (enum_name.find(".") != -1) {
+		if (enum_name.contains(".")) {
 			enum_name = enum_name.get_slicec('.', 1);
 		}
 

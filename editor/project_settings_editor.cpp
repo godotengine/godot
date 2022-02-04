@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "editor/editor_export.h"
+#include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 
@@ -47,7 +48,8 @@ void ProjectSettingsEditor::popup_project_settings() {
 	}
 
 	_add_feature_overrides();
-	inspector->update_category_list();
+	general_settings_inspector->update_category_list();
+	set_process_unhandled_input(true);
 
 	localization_editor->update_translations();
 	autoload_settings->update_autoload();
@@ -74,7 +76,7 @@ void ProjectSettingsEditor::_setting_edited(const String &p_name) {
 
 void ProjectSettingsEditor::_advanced_toggled(bool p_button_pressed) {
 	EditorSettings::get_singleton()->set_project_metadata("project_settings", "advanced_mode", p_button_pressed);
-	inspector->set_restrict_to_basic_settings(!p_button_pressed);
+	general_settings_inspector->set_restrict_to_basic_settings(!p_button_pressed);
 }
 
 void ProjectSettingsEditor::_setting_selected(const String &p_path) {
@@ -82,7 +84,7 @@ void ProjectSettingsEditor::_setting_selected(const String &p_path) {
 		return;
 	}
 
-	property_box->set_text(inspector->get_current_section() + "/" + p_path);
+	property_box->set_text(general_settings_inspector->get_current_section() + "/" + p_path);
 
 	_update_property_box(); // set_text doesn't trigger text_changed
 }
@@ -99,13 +101,13 @@ void ProjectSettingsEditor::_add_setting() {
 	undo_redo->add_do_property(ps, setting, value);
 	undo_redo->add_undo_property(ps, setting, ps->has_setting(setting) ? ps->get(setting) : Variant());
 
-	undo_redo->add_do_method(inspector, "update_category_list");
-	undo_redo->add_undo_method(inspector, "update_category_list");
+	undo_redo->add_do_method(general_settings_inspector, "update_category_list");
+	undo_redo->add_undo_method(general_settings_inspector, "update_category_list");
 	undo_redo->add_do_method(this, "queue_save");
 	undo_redo->add_undo_method(this, "queue_save");
 	undo_redo->commit_action();
 
-	inspector->set_current_section(setting.get_slice("/", 1));
+	general_settings_inspector->set_current_section(setting.get_slice("/", 1));
 	add_button->release_focus();
 }
 
@@ -120,8 +122,8 @@ void ProjectSettingsEditor::_delete_setting() {
 	undo_redo->add_undo_method(ps, "set", setting, value);
 	undo_redo->add_undo_method(ps, "set_order", setting, order);
 
-	undo_redo->add_do_method(inspector, "update_category_list");
-	undo_redo->add_undo_method(inspector, "update_category_list");
+	undo_redo->add_do_method(general_settings_inspector, "update_category_list");
+	undo_redo->add_undo_method(general_settings_inspector, "update_category_list");
 	undo_redo->add_do_method(this, "queue_save");
 	undo_redo->add_undo_method(this, "queue_save");
 
@@ -200,9 +202,47 @@ void ProjectSettingsEditor::_select_type(Variant::Type p_type) {
 	type_box->select(type_box->get_item_index(p_type));
 }
 
+void ProjectSettingsEditor::unhandled_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	const Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid() && k->is_pressed()) {
+		bool handled = false;
+
+		if (ED_IS_SHORTCUT("ui_undo", p_event)) {
+			String action = undo_redo->get_current_action_name();
+			if (!action.is_empty()) {
+				EditorNode::get_log()->add_message("Undo: " + action, EditorLog::MSG_TYPE_EDITOR);
+			}
+			undo_redo->undo();
+			handled = true;
+		}
+
+		if (ED_IS_SHORTCUT("ui_redo", p_event)) {
+			undo_redo->redo();
+			String action = undo_redo->get_current_action_name();
+			if (!action.is_empty()) {
+				EditorNode::get_log()->add_message("Redo: " + action, EditorLog::MSG_TYPE_EDITOR);
+			}
+			handled = true;
+		}
+
+		if (k->get_keycode_with_modifiers() == (KeyModifierMask::CMD | Key::F)) {
+			search_box->grab_focus();
+			search_box->select_all();
+			handled = true;
+		}
+
+		if (handled) {
+			set_input_as_handled();
+		}
+	}
+}
+
 String ProjectSettingsEditor::_get_setting_name() const {
 	String name = property_box->get_text().strip_edges();
-	if (name.find("/") == -1) {
+	if (!name.contains("/")) {
 		name = "global/" + name;
 	}
 	return name;
@@ -463,7 +503,7 @@ void ProjectSettingsEditor::_update_action_map_editor() {
 		actions.push_back(action_info);
 	}
 
-	action_map->update_action_list(actions);
+	action_map_editor->update_action_list(actions);
 }
 
 void ProjectSettingsEditor::_update_theme() {
@@ -472,6 +512,16 @@ void ProjectSettingsEditor::_update_theme() {
 	restart_container->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 	restart_icon->set_texture(get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
 	restart_label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+
+	type_box->clear();
+	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+		// There's no point in adding Nil types, and Object types
+		// can't be serialized correctly in the project settings.
+		if (i != Variant::NIL && i != Variant::OBJECT) {
+			String type = Variant::get_type_name(Variant::Type(i));
+			type_box->add_icon_item(get_theme_icon(type, SNAME("EditorIcons")), type, i);
+		}
+	}
 }
 
 void ProjectSettingsEditor::_notification(int p_what) {
@@ -482,13 +532,13 @@ void ProjectSettingsEditor::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
-			inspector->edit(ps);
+			general_settings_inspector->edit(ps);
 			_update_action_map_editor();
 			_update_theme();
 		} break;
-		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_THEME_CHANGED: {
 			_update_theme();
-			break;
+		} break;
 	}
 }
 
@@ -549,14 +599,6 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	type_box->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
 	header->add_child(type_box);
 
-	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-		// There's no point in adding Nil types, and Object types
-		// can't be serialized correctly in the project settings.
-		if (i != Variant::NIL && i != Variant::OBJECT) {
-			type_box->add_item(Variant::get_type_name(Variant::Type(i)), i);
-		}
-	}
-
 	add_button = memnew(Button);
 	add_button->set_text(TTR("Add"));
 	add_button->set_disabled(true);
@@ -569,14 +611,14 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	del_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_delete_setting));
 	header->add_child(del_button);
 
-	inspector = memnew(SectionedInspector);
-	inspector->get_inspector()->set_undo_redo(EditorNode::get_singleton()->get_undo_redo());
-	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	inspector->register_search_box(search_box);
-	inspector->get_inspector()->connect("property_selected", callable_mp(this, &ProjectSettingsEditor::_setting_selected));
-	inspector->get_inspector()->connect("property_edited", callable_mp(this, &ProjectSettingsEditor::_setting_edited));
-	inspector->get_inspector()->connect("restart_requested", callable_mp(this, &ProjectSettingsEditor::_editor_restart_request));
-	general_editor->add_child(inspector);
+	general_settings_inspector = memnew(SectionedInspector);
+	general_settings_inspector->get_inspector()->set_undo_redo(EditorNode::get_singleton()->get_undo_redo());
+	general_settings_inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	general_settings_inspector->register_search_box(search_box);
+	general_settings_inspector->get_inspector()->connect("property_selected", callable_mp(this, &ProjectSettingsEditor::_setting_selected));
+	general_settings_inspector->get_inspector()->connect("property_edited", callable_mp(this, &ProjectSettingsEditor::_setting_edited));
+	general_settings_inspector->get_inspector()->connect("restart_requested", callable_mp(this, &ProjectSettingsEditor::_editor_restart_request));
+	general_editor->add_child(general_settings_inspector);
 
 	restart_container = memnew(PanelContainer);
 	general_editor->add_child(restart_container);
@@ -604,14 +646,14 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	restart_close_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_editor_restart_close));
 	restart_hb->add_child(restart_close_button);
 
-	action_map = memnew(ActionMapEditor);
-	action_map->set_name(TTR("Input Map"));
-	action_map->connect("action_added", callable_mp(this, &ProjectSettingsEditor::_action_added));
-	action_map->connect("action_edited", callable_mp(this, &ProjectSettingsEditor::_action_edited));
-	action_map->connect("action_removed", callable_mp(this, &ProjectSettingsEditor::_action_removed));
-	action_map->connect("action_renamed", callable_mp(this, &ProjectSettingsEditor::_action_renamed));
-	action_map->connect("action_reordered", callable_mp(this, &ProjectSettingsEditor::_action_reordered));
-	tab_container->add_child(action_map);
+	action_map_editor = memnew(ActionMapEditor);
+	action_map_editor->set_name(TTR("Input Map"));
+	action_map_editor->connect("action_added", callable_mp(this, &ProjectSettingsEditor::_action_added));
+	action_map_editor->connect("action_edited", callable_mp(this, &ProjectSettingsEditor::_action_edited));
+	action_map_editor->connect("action_removed", callable_mp(this, &ProjectSettingsEditor::_action_removed));
+	action_map_editor->connect("action_renamed", callable_mp(this, &ProjectSettingsEditor::_action_renamed));
+	action_map_editor->connect("action_reordered", callable_mp(this, &ProjectSettingsEditor::_action_reordered));
+	tab_container->add_child(action_map_editor);
 
 	localization_editor = memnew(LocalizationEditor);
 	localization_editor->set_name(TTR("Localization"));
@@ -647,7 +689,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		advanced->set_pressed(true);
 	}
 
-	inspector->set_restrict_to_basic_settings(!use_advanced);
+	general_settings_inspector->set_restrict_to_basic_settings(!use_advanced);
 
 	import_defaults_editor = memnew(ImportDefaultsEditor);
 	import_defaults_editor->set_name(TTR("Import Defaults"));

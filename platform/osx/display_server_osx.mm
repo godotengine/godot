@@ -2203,6 +2203,24 @@ Rect2i DisplayServerOSX::screen_get_usable_rect(int p_screen) const {
 	return Rect2i();
 }
 
+float DisplayServerOSX::screen_get_refresh_rate(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
+		p_screen = window_get_current_screen();
+	}
+
+	NSArray *screenArray = [NSScreen screens];
+	if ((NSUInteger)p_screen < [screenArray count]) {
+		NSDictionary *description = [[screenArray objectAtIndex:p_screen] deviceDescription];
+		const CGDisplayModeRef displayMode = CGDisplayCopyDisplayMode([[description objectForKey:@"NSScreenNumber"] unsignedIntValue]);
+		const double displayRefreshRate = CGDisplayModeGetRefreshRate(displayMode);
+		return (float)displayRefreshRate;
+	}
+	ERR_PRINT("An error occured while trying to get the screen refresh rate.");
+	return SCREEN_REFRESH_RATE_FALLBACK;
+}
+
 Vector<DisplayServer::WindowID> DisplayServerOSX::get_window_list() const {
 	_THREAD_SAFE_METHOD_
 
@@ -2652,6 +2670,7 @@ void DisplayServerOSX::window_set_mode(WindowMode p_mode, WindowID p_window) {
 		case WINDOW_MODE_MINIMIZED: {
 			[wd.window_object deminiaturize:nil];
 		} break;
+		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
 		case WINDOW_MODE_FULLSCREEN: {
 			[wd.window_object setLevel:NSNormalWindowLevel];
 			if (wd.layered_window) {
@@ -2685,6 +2704,7 @@ void DisplayServerOSX::window_set_mode(WindowMode p_mode, WindowID p_window) {
 		case WINDOW_MODE_MINIMIZED: {
 			[wd.window_object performMiniaturize:nil];
 		} break;
+		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
 		case WINDOW_MODE_FULLSCREEN: {
 			if (wd.layered_window)
 				_set_window_per_pixel_transparency_enabled(false, p_window);

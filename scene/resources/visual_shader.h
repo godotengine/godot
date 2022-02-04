@@ -214,6 +214,7 @@ public:
 	enum PortType {
 		PORT_TYPE_SCALAR,
 		PORT_TYPE_SCALAR_INT,
+		PORT_TYPE_VECTOR_2D,
 		PORT_TYPE_VECTOR,
 		PORT_TYPE_BOOLEAN,
 		PORT_TYPE_TRANSFORM,
@@ -229,7 +230,7 @@ public:
 	virtual PortType get_input_port_type(int p_port) const = 0;
 	virtual String get_input_port_name(int p_port) const = 0;
 
-	virtual void set_input_port_default_value(int p_port, const Variant &p_value);
+	virtual void set_input_port_default_value(int p_port, const Variant &p_value, const Variant &p_prev_value = Variant());
 	Variant get_input_port_default_value(int p_port) const; // if NIL (default if node does not set anything) is returned, it means no default value is wanted if disconnected, thus no input var must be supplied (empty string will be supplied)
 	Array get_default_input_values() const;
 	virtual void set_default_input_values(const Array &p_values);
@@ -311,7 +312,7 @@ protected:
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
 
-	virtual void set_input_port_default_value(int p_port, const Variant &p_value) override;
+	virtual void set_input_port_default_value(int p_port, const Variant &p_value, const Variant &p_prev_value = Variant()) override;
 	virtual void set_default_input_values(const Array &p_values) override;
 	virtual void remove_input_port_default_value(int p_port) override;
 	virtual void clear_default_input_values() override;
@@ -492,7 +493,8 @@ public:
 		UNIFORM_TYPE_FLOAT,
 		UNIFORM_TYPE_INT,
 		UNIFORM_TYPE_BOOLEAN,
-		UNIFORM_TYPE_VECTOR,
+		UNIFORM_TYPE_VECTOR2,
+		UNIFORM_TYPE_VECTOR3,
 		UNIFORM_TYPE_TRANSFORM,
 		UNIFORM_TYPE_COLOR,
 		UNIFORM_TYPE_SAMPLER,

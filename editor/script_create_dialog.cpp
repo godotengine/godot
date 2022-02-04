@@ -153,7 +153,7 @@ bool ScriptCreateDialog::_validate_class(const String &p_string) {
 			}
 		}
 
-		bool valid_char = (p_string[i] >= '0' && p_string[i] <= '9') || (p_string[i] >= 'a' && p_string[i] <= 'z') || (p_string[i] >= 'A' && p_string[i] <= 'Z') || p_string[i] == '_' || p_string[i] == '.';
+		bool valid_char = is_ascii_identifier_char(p_string[i]) || p_string[i] == '.';
 
 		if (!valid_char) {
 			return false;
@@ -378,7 +378,7 @@ void ScriptCreateDialog::_language_changed(int l) {
 	String path = file_path->get_text();
 	String extension = "";
 	if (!path.is_empty()) {
-		if (path.find(".") != -1) {
+		if (path.contains(".")) {
 			extension = path.get_extension();
 		}
 
@@ -811,7 +811,7 @@ ScriptLanguage::ScriptTemplate ScriptCreateDialog::_parse_template(const ScriptL
 	List<String> comment_delimiters;
 	language->get_comment_delimiters(&comment_delimiters);
 	for (const String &script_delimiter : comment_delimiters) {
-		if (script_delimiter.find(" ") == -1) {
+		if (!script_delimiter.contains(" ")) {
 			meta_delimiter = script_delimiter;
 			break;
 		}

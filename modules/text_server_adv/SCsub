@@ -62,7 +62,6 @@ if env["builtin_harfbuzz"]:
         #'src/hb-gobject-structs.cc',
         "src/hb-icu.cc",
         "src/hb-map.cc",
-        "src/hb-ms-feature-ranges.cc",
         "src/hb-number.cc",
         "src/hb-ot-cff1-table.cc",
         "src/hb-ot-cff2-table.cc",

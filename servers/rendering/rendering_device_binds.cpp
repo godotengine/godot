@@ -99,11 +99,11 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 		if (reading_versions) {
 			String l = line.strip_edges();
 			if (!l.is_empty()) {
-				if (l.find("=") == -1) {
+				if (!l.contains("=")) {
 					base_error = "Missing `=` in '" + l + "'. Version syntax is `version = \"<defines with C escaping>\";`.";
 					break;
 				}
-				if (l.find(";") == -1) {
+				if (!l.contains(";")) {
 					// We don't require a semicolon per se, but it's needed for clang-format to handle things properly.
 					base_error = "Missing `;` in '" + l + "'. Version syntax is `version = \"<defines with C escaping>\";`.";
 					break;

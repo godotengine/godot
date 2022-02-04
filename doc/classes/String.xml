@@ -103,6 +103,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="contains" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="what" type="String" />
+			<description>
+				Returns [code]true[/code] if the string contains the given string.
+			</description>
+		</method>
 		<method name="count" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="what" type="String" />

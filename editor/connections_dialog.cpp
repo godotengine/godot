@@ -310,7 +310,7 @@ void ConnectDialog::set_dst_node(Node *p_node) {
 
 StringName ConnectDialog::get_dst_method_name() const {
 	String txt = dst_method->get_text();
-	if (txt.find("(") != -1) {
+	if (txt.contains("(")) {
 		txt = txt.left(txt.find("(")).strip_edges();
 	}
 	return txt;
@@ -540,13 +540,27 @@ ConnectDialog::~ConnectDialog() {
 // Originally copied and adapted from EditorProperty, try to keep style in sync.
 Control *ConnectionsDockTree::make_custom_tooltip(const String &p_text) const {
 	EditorHelpBit *help_bit = memnew(EditorHelpBit);
-	help_bit->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TooltipPanel")));
 	help_bit->get_rich_text()->set_fixed_size_to_width(360 * EDSCALE);
 
-	String text = TTR("Signal:") + " [u][b]" + p_text.get_slice("::", 0) + "[/b][/u]";
-	text += p_text.get_slice("::", 1).strip_edges() + "\n";
-	text += p_text.get_slice("::", 2).strip_edges();
-	help_bit->call_deferred(SNAME("set_text"), text); // Hack so it uses proper theme once inside scene.
+	// p_text is expected to be something like this:
+	// "gui_input::(event: InputEvent)::<Signal description>"
+	// with the latter being possibly empty.
+	PackedStringArray slices = p_text.split("::", false);
+	if (slices.size() < 2) {
+		// Shouldn't happen here, but just in case pass the text along.
+		help_bit->set_text(p_text);
+		return help_bit;
+	}
+
+	String text = TTR("Signal:") + " [u][b]" + slices[0] + "[/b][/u]";
+	text += slices[1].strip_edges() + "\n";
+	if (slices.size() > 2) {
+		text += slices[2].strip_edges();
+	} else {
+		text += "[i]" + TTR("No description.") + "[/i]";
+	}
+	help_bit->set_text(text);
+
 	return help_bit;
 }
 
@@ -750,7 +764,7 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &p_item) {
 	String node_name = selected_node->get_name();
 	for (int i = 0; i < node_name.length(); i++) { // TODO: Regex filter may be cleaner.
 		char32_t c = node_name[i];
-		if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_')) {
+		if (!is_ascii_identifier_char(c)) {
 			if (c == ' ') {
 				// Replace spaces with underlines.
 				c = '_';

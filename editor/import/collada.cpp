@@ -287,7 +287,7 @@ void Collada::_parse_image(XMLParser &parser) {
 	if (state.version < State::Version(1, 4, 0)) {
 		/* <1.4 */
 		String path = parser.get_attribute_value("source").strip_edges();
-		if (path.find("://") == -1 && path.is_relative_path()) {
+		if (!path.contains("://") && path.is_relative_path()) {
 			// path is relative to file being loaded, so convert to a resource path
 			image.path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir().plus_file(path.uri_decode()));
 		}
@@ -300,7 +300,7 @@ void Collada::_parse_image(XMLParser &parser) {
 					parser.read();
 					String path = parser.get_node_data().strip_edges().uri_decode();
 
-					if (path.find("://") == -1 && path.is_relative_path()) {
+					if (!path.contains("://") && path.is_relative_path()) {
 						// path is relative to file being loaded, so convert to a resource path
 						path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir().plus_file(path));
 
@@ -1832,10 +1832,10 @@ void Collada::_parse_animation(XMLParser &parser) {
 				}
 			}
 
-			if (target.find("/") != -1) { //transform component
+			if (target.contains("/")) { //transform component
 				track.target = target.get_slicec('/', 0);
 				track.param = target.get_slicec('/', 1);
-				if (track.param.find(".") != -1) {
+				if (track.param.contains(".")) {
 					track.component = track.param.get_slice(".", 1).to_upper();
 				}
 				track.param = track.param.get_slice(".", 0);

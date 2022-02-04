@@ -53,7 +53,7 @@ struct hb_lockable_set_t
   item_t *replace_or_insert (T v, lock_t &l, bool replace)
   {
     l.lock ();
-    item_t *item = items.find (v);
+    item_t *item = items.lsearch (v);
     if (item) {
       if (replace) {
 	item_t old = *item;
@@ -76,7 +76,7 @@ struct hb_lockable_set_t
   void remove (T v, lock_t &l)
   {
     l.lock ();
-    item_t *item = items.find (v);
+    item_t *item = items.lsearch (v);
     if (item)
     {
       item_t old = *item;
@@ -93,7 +93,7 @@ struct hb_lockable_set_t
   bool find (T v, item_t *i, lock_t &l)
   {
     l.lock ();
-    item_t *item = items.find (v);
+    item_t *item = items.lsearch (v);
     if (item)
       *i = *item;
     l.unlock ();

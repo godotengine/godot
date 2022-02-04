@@ -93,6 +93,7 @@
 #include "editor/editor_run_script.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_settings_dialog.h"
 #include "editor/editor_spin_slider.h"
 #include "editor/editor_themes.h"
 #include "editor/editor_toaster.h"
@@ -161,6 +162,7 @@
 #include "editor/plugins/path_3d_editor_plugin.h"
 #include "editor/plugins/physical_bone_3d_editor_plugin.h"
 #include "editor/plugins/polygon_2d_editor_plugin.h"
+#include "editor/plugins/replication_editor_plugin.h"
 #include "editor/plugins/resource_preloader_editor_plugin.h"
 #include "editor/plugins/root_motion_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -190,7 +192,6 @@
 #include "editor/project_settings_editor.h"
 #include "editor/quick_open.h"
 #include "editor/register_exporters.h"
-#include "editor/settings_config_dialog.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -312,7 +313,7 @@ void EditorNode::_update_scene_tabs() {
 		DisplayServer::get_singleton()->global_menu_clear("_dock");
 	}
 
-	// Get all scene names, which may be ambiguous
+	// Get all scene names, which may be ambiguous.
 	Vector<String> disambiguated_scene_names;
 	Vector<String> full_path_names;
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
@@ -349,34 +350,35 @@ void EditorNode::_update_scene_tabs() {
 		DisplayServer::get_singleton()->global_menu_add_item("_dock", TTR("New Window"), callable_mp(this, &EditorNode::_global_menu_new_window));
 	}
 
-	scene_tabs->set_current_tab(editor_data.get_edited_scene());
+	if (scene_tabs->get_tab_count() > 0) {
+		scene_tabs->set_current_tab(editor_data.get_edited_scene());
+	}
 
 	if (scene_tabs->get_offset_buttons_visible()) {
-		// move add button to fixed position on the tabbar
+		// Move the add button to a fixed position.
 		if (scene_tab_add->get_parent() == scene_tabs) {
-			if (scene_tabs->is_layout_rtl()) {
-				scene_tab_add->set_position(Point2(tabbar_container->get_size().x - scene_tab_add->get_size().x, 0));
-			} else {
-				scene_tab_add->set_position(Point2(0, 0));
-			}
 			scene_tabs->remove_child(scene_tab_add);
-			tabbar_container->add_child(scene_tab_add);
-			tabbar_container->move_child(scene_tab_add, 1);
+			scene_tab_add_ph->add_child(scene_tab_add);
+			scene_tab_add->set_position(Point2());
 		}
 	} else {
-		// move add button to after last tab
-		if (scene_tab_add->get_parent() == tabbar_container) {
-			tabbar_container->remove_child(scene_tab_add);
+		// Move the add button to be after the last tab.
+		if (scene_tab_add->get_parent() == scene_tab_add_ph) {
+			scene_tab_add_ph->remove_child(scene_tab_add);
 			scene_tabs->add_child(scene_tab_add);
 		}
-		Rect2 last_tab = Rect2();
-		if (scene_tabs->get_tab_count() != 0) {
-			last_tab = scene_tabs->get_tab_rect(scene_tabs->get_tab_count() - 1);
+
+		if (scene_tabs->get_tab_count() == 0) {
+			scene_tab_add->set_position(Point2());
+			return;
 		}
+
+		Rect2 last_tab = scene_tabs->get_tab_rect(scene_tabs->get_tab_count() - 1);
+		int hsep = scene_tabs->get_theme_constant(SNAME("hseparation"));
 		if (scene_tabs->is_layout_rtl()) {
-			scene_tab_add->set_position(Point2(last_tab.get_position().x - scene_tab_add->get_size().x - 3, last_tab.get_position().y));
+			scene_tab_add->set_position(Point2(last_tab.position.x - scene_tab_add->get_size().x - hsep, last_tab.position.y));
 		} else {
-			scene_tab_add->set_position(Point2(last_tab.get_position().x + last_tab.get_size().x + 3, last_tab.get_position().y));
+			scene_tab_add->set_position(Point2(last_tab.position.x + last_tab.size.width + hsep, last_tab.position.y));
 		}
 	}
 }
@@ -624,6 +626,10 @@ void EditorNode::_notification(int p_what) {
 			editor_data.clear_edited_scenes();
 		} break;
 
+		case Control::NOTIFICATION_THEME_CHANGED: {
+			scene_tab_add_ph->set_custom_minimum_size(scene_tab_add->get_minimum_size());
+		} break;
+
 		case NOTIFICATION_READY: {
 			{
 				_initializing_addons = true;
@@ -822,8 +828,8 @@ void EditorNode::_on_plugin_ready(Object *p_script, const String &p_activate_nam
 	if (p_activate_name.length()) {
 		set_addon_plugin_enabled(p_activate_name, true);
 	}
-	project_settings->update_plugins();
-	project_settings->hide();
+	project_settings_editor->update_plugins();
+	project_settings_editor->hide();
 	push_item(script.operator->());
 }
 
@@ -2773,7 +2779,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 		} break;
 		case RUN_SETTINGS: {
-			project_settings->popup_project_settings();
+			project_settings_editor->popup_project_settings();
 		} break;
 		case FILE_INSTALL_ANDROID_SOURCE: {
 			if (p_confirmed) {
@@ -2846,7 +2852,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			_update_update_spinner();
 		} break;
 		case SETTINGS_PREFERENCES: {
-			settings_config_dialog->popup_edit_settings();
+			editor_settings_dialog->popup_edit_settings();
 		} break;
 		case SETTINGS_EDITOR_DATA_FOLDER: {
 			OS::get_singleton()->shell_open(String("file://") + EditorPaths::get_singleton()->get_data_dir());
@@ -3240,7 +3246,7 @@ void EditorNode::_update_addon_config() {
 		ProjectSettings::get_singleton()->set("editor_plugins/enabled", enabled_addons);
 	}
 
-	project_settings->queue_save();
+	project_settings_editor->queue_save();
 }
 
 void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled, bool p_config_changed) {
@@ -6227,6 +6233,9 @@ EditorNode::EditorNode() {
 	tab_preview->set_position(Point2(2, 2) * EDSCALE);
 	tab_preview_panel->add_child(tab_preview);
 
+	tabbar_container = memnew(HBoxContainer);
+	srt->add_child(tabbar_container);
+
 	scene_tabs = memnew(TabBar);
 	scene_tabs->add_theme_style_override("tab_selected", gui_base->get_theme_stylebox(SNAME("SceneTabFG"), SNAME("EditorStyles")));
 	scene_tabs->add_theme_style_override("tab_unselected", gui_base->get_theme_stylebox(SNAME("SceneTabBG"), SNAME("EditorStyles")));
@@ -6244,16 +6253,26 @@ EditorNode::EditorNode() {
 	scene_tabs->connect("gui_input", callable_mp(this, &EditorNode::_scene_tab_input));
 	scene_tabs->connect("active_tab_rearranged", callable_mp(this, &EditorNode::_reposition_active_tab));
 	scene_tabs->connect("resized", callable_mp(this, &EditorNode::_update_scene_tabs));
-
-	tabbar_container = memnew(HBoxContainer);
 	scene_tabs->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	tabbar_container->add_child(scene_tabs);
 
 	scene_tabs_context_menu = memnew(PopupMenu);
 	tabbar_container->add_child(scene_tabs_context_menu);
 	scene_tabs_context_menu->connect("id_pressed", callable_mp(this, &EditorNode::_menu_option));
 
-	srt->add_child(tabbar_container);
-	tabbar_container->add_child(scene_tabs);
+	scene_tab_add = memnew(Button);
+	scene_tab_add->set_flat(true);
+	scene_tab_add->set_tooltip(TTR("Add a new scene."));
+	scene_tab_add->set_icon(gui_base->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+	scene_tab_add->add_theme_color_override("icon_normal_color", Color(0.6f, 0.6f, 0.6f, 0.8f));
+	scene_tabs->add_child(scene_tab_add);
+	scene_tab_add->connect("pressed", callable_mp(this, &EditorNode::_menu_option), make_binds(FILE_NEW_SCENE));
+
+	scene_tab_add_ph = memnew(Control);
+	scene_tab_add_ph->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+	scene_tab_add_ph->set_custom_minimum_size(scene_tab_add->get_minimum_size());
+	tabbar_container->add_child(scene_tab_add_ph);
+
 	distraction_free = memnew(Button);
 	distraction_free->set_flat(true);
 	ED_SHORTCUT_AND_COMMAND("editor/distraction_free_mode", TTR("Distraction Free Mode"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::F11);
@@ -6263,15 +6282,7 @@ EditorNode::EditorNode() {
 	distraction_free->connect("pressed", callable_mp(this, &EditorNode::_toggle_distraction_free_mode));
 	distraction_free->set_icon(gui_base->get_theme_icon(SNAME("DistractionFree"), SNAME("EditorIcons")));
 	distraction_free->set_toggle_mode(true);
-
-	scene_tab_add = memnew(Button);
-	scene_tab_add->set_flat(true);
-	tabbar_container->add_child(scene_tab_add);
 	tabbar_container->add_child(distraction_free);
-	scene_tab_add->set_tooltip(TTR("Add a new scene."));
-	scene_tab_add->set_icon(gui_base->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-	scene_tab_add->add_theme_color_override("icon_normal_color", Color(0.6f, 0.6f, 0.6f, 0.8f));
-	scene_tab_add->connect("pressed", callable_mp(this, &EditorNode::_menu_option), make_binds(FILE_NEW_SCENE));
 
 	scene_root_parent = memnew(PanelContainer);
 	scene_root_parent->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
@@ -6329,11 +6340,11 @@ EditorNode::EditorNode() {
 	dependency_fixer = memnew(DependencyEditor);
 	gui_base->add_child(dependency_fixer);
 
-	settings_config_dialog = memnew(EditorSettingsDialog);
-	gui_base->add_child(settings_config_dialog);
+	editor_settings_dialog = memnew(EditorSettingsDialog);
+	gui_base->add_child(editor_settings_dialog);
 
-	project_settings = memnew(ProjectSettingsEditor(&editor_data));
-	gui_base->add_child(project_settings);
+	project_settings_editor = memnew(ProjectSettingsEditor(&editor_data));
+	gui_base->add_child(project_settings_editor);
 
 	scene_import_settings = memnew(SceneImportSettings);
 	gui_base->add_child(scene_import_settings);
@@ -7011,6 +7022,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(InputEventEditorPlugin(this)));
 	add_editor_plugin(memnew(SubViewportPreviewEditorPlugin(this)));
 	add_editor_plugin(memnew(TextControlEditorPlugin(this)));
+	add_editor_plugin(memnew(ReplicationEditorPlugin(this)));
 
 	for (int i = 0; i < EditorPlugins::get_plugin_count(); i++) {
 		add_editor_plugin(EditorPlugins::create(i, this));

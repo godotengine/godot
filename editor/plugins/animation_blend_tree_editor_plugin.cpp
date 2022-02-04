@@ -833,7 +833,7 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 
 	const String &new_name = p_text;
 
-	ERR_FAIL_COND(new_name.is_empty() || new_name.find(".") != -1 || new_name.find("/") != -1);
+	ERR_FAIL_COND(new_name.is_empty() || new_name.contains(".") || new_name.contains("/"));
 
 	if (new_name == prev_name) {
 		return; //nothing to do

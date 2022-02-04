@@ -399,7 +399,7 @@ struct gvar
 				  get_offset (glyphCount) - get_offset (0)));
   }
 
-  /* GlyphVariationData not sanitized here; must be checked while accessing each glyph varation data */
+  /* GlyphVariationData not sanitized here; must be checked while accessing each glyph variation data */
   bool sanitize (hb_sanitize_context_t *c) const
   { return sanitize_shallow (c); }
 
@@ -498,9 +498,9 @@ struct gvar
   public:
   struct accelerator_t
   {
-    void init (hb_face_t *face)
+    accelerator_t (hb_face_t *face)
     { table = hb_sanitize_context_t ().reference_table<gvar> (face); }
-    void fini () { table.destroy (); }
+    ~accelerator_t () { table.destroy (); }
 
     private:
     struct x_getter { static float get (const contour_point_t &p) { return p.x; } };
@@ -698,7 +698,9 @@ no_more_gaps:
   DEFINE_SIZE_MIN (20);
 };
 
-struct gvar_accelerator_t : gvar::accelerator_t {};
+struct gvar_accelerator_t : gvar::accelerator_t {
+  gvar_accelerator_t (hb_face_t *face) : gvar::accelerator_t (face) {}
+};
 
 } /* namespace OT */
 

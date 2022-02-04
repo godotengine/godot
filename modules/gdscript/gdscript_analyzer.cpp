@@ -108,7 +108,7 @@ static GDScriptParser::DataType make_native_enum_type(const StringName &p_native
 	GDScriptParser::DataType type;
 	type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 	type.kind = GDScriptParser::DataType::ENUM;
-	type.builtin_type = Variant::OBJECT;
+	type.builtin_type = Variant::INT;
 	type.is_constant = true;
 	type.is_meta_type = true;
 
@@ -650,9 +650,9 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 					datatype = specified_type;
 
 					if (member.variable->initializer != nullptr) {
-						if (!is_type_compatible(datatype, member.variable->initializer->get_datatype(), true)) {
+						if (!is_type_compatible(datatype, member.variable->initializer->get_datatype(), true, member.variable->initializer)) {
 							// Try reverse test since it can be a masked subtype.
-							if (!is_type_compatible(member.variable->initializer->get_datatype(), datatype, true)) {
+							if (!is_type_compatible(member.variable->initializer->get_datatype(), datatype, true, member.variable->initializer)) {
 								push_error(vformat(R"(Value of type "%s" cannot be assigned to a variable of type "%s".)", member.variable->initializer->get_datatype().to_string(), datatype.to_string()), member.variable->initializer);
 							} else {
 								// TODO: Add warning.
@@ -1400,9 +1400,9 @@ void GDScriptAnalyzer::resolve_variable(GDScriptParser::VariableNode *p_variable
 		type.is_meta_type = false;
 
 		if (p_variable->initializer != nullptr) {
-			if (!is_type_compatible(type, p_variable->initializer->get_datatype(), true)) {
+			if (!is_type_compatible(type, p_variable->initializer->get_datatype(), true, p_variable->initializer)) {
 				// Try reverse test since it can be a masked subtype.
-				if (!is_type_compatible(p_variable->initializer->get_datatype(), type, true)) {
+				if (!is_type_compatible(p_variable->initializer->get_datatype(), type, true, p_variable->initializer)) {
 					push_error(vformat(R"(Value of type "%s" cannot be assigned to a variable of type "%s".)", p_variable->initializer->get_datatype().to_string(), type.to_string()), p_variable->initializer);
 				} else {
 					// TODO: Add warning.
@@ -1877,11 +1877,11 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 
 	if (!assignee_type.is_variant() && assigned_value_type.is_hard_type()) {
 		if (compatible) {
-			compatible = is_type_compatible(assignee_type, op_type, true);
+			compatible = is_type_compatible(assignee_type, op_type, true, p_assignment->assigned_value);
 			if (!compatible) {
 				if (assignee_type.is_hard_type()) {
 					// Try reverse test since it can be a masked subtype.
-					if (!is_type_compatible(op_type, assignee_type, true)) {
+					if (!is_type_compatible(op_type, assignee_type, true, p_assignment->assigned_value)) {
 						push_error(vformat(R"(Cannot assign a value of type "%s" to a target of type "%s".)", assigned_value_type.to_string(), assignee_type.to_string()), p_assignment->assigned_value);
 					} else {
 						// TODO: Add warning.
@@ -2416,6 +2416,11 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		}
 		validate_call_arg(par_types, default_arg_count, is_vararg, p_call);
 
+		if (base_type.kind == GDScriptParser::DataType::ENUM && base_type.is_meta_type) {
+			// Enum type is treated as a dictionary value for function calls.
+			base_type.is_meta_type = false;
+		}
+
 		if (is_self && parser->current_function != nullptr && parser->current_function->is_static && !is_static) {
 			push_error(vformat(R"*(Cannot call non-static function "%s()" from static function "%s()".)*", p_call->function_name, parser->current_function->identifier->name), p_call->callee);
 		} else if (!is_self && base_type.is_meta_type && !is_static) {
@@ -2474,17 +2479,24 @@ void GDScriptAnalyzer::reduce_cast(GDScriptParser::CastNode *p_cast) {
 	GDScriptParser::DataType cast_type = resolve_datatype(p_cast->cast_type);
 
 	if (!cast_type.is_set()) {
+		mark_node_unsafe(p_cast);
 		return;
 	}
 
-	cast_type.is_meta_type = false; // The casted value won't be a type name.
+	cast_type = type_from_metatype(cast_type); // The casted value won't be a type name.
 	p_cast->set_datatype(cast_type);
 
 	if (!cast_type.is_variant()) {
 		GDScriptParser::DataType op_type = p_cast->operand->get_datatype();
 		if (!op_type.is_variant()) {
 			bool valid = false;
-			if (op_type.kind == GDScriptParser::DataType::BUILTIN && cast_type.kind == GDScriptParser::DataType::BUILTIN) {
+			if (op_type.kind == GDScriptParser::DataType::ENUM && cast_type.kind == GDScriptParser::DataType::ENUM) {
+				// Enum types are compatible between each other, so it's a safe cast.
+				valid = true;
+			} else if (op_type.kind == GDScriptParser::DataType::BUILTIN && op_type.builtin_type == Variant::INT && cast_type.kind == GDScriptParser::DataType::ENUM) {
+				// Convertint int to enum is always valid.
+				valid = true;
+			} else if (op_type.kind == GDScriptParser::DataType::BUILTIN && cast_type.kind == GDScriptParser::DataType::BUILTIN) {
 				valid = Variant::can_convert(op_type.builtin_type, cast_type.builtin_type);
 			} else if (op_type.kind != GDScriptParser::DataType::BUILTIN && cast_type.kind != GDScriptParser::DataType::BUILTIN) {
 				valid = is_type_compatible(cast_type, op_type) || is_type_compatible(op_type, cast_type);
@@ -2586,6 +2598,34 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 
 	const StringName &name = p_identifier->name;
 
+	if (base.kind == GDScriptParser::DataType::ENUM) {
+		if (base.is_meta_type) {
+			if (base.enum_values.has(name)) {
+				p_identifier->is_constant = true;
+				p_identifier->reduced_value = base.enum_values[name];
+
+				GDScriptParser::DataType result;
+				result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+				result.kind = GDScriptParser::DataType::ENUM;
+				result.is_constant = true;
+				result.builtin_type = Variant::INT;
+				result.native_type = base.native_type;
+				result.enum_type = base.enum_type;
+				p_identifier->set_datatype(result);
+				return;
+			} else {
+				// Consider as a Dictionary, so it can be anything.
+				// This will be evaluated in the next if block.
+				base.kind = GDScriptParser::DataType::BUILTIN;
+				base.builtin_type = Variant::DICTIONARY;
+				base.is_meta_type = false;
+			}
+		} else {
+			push_error(R"(Cannot get property from enum value.)", p_identifier);
+			return;
+		}
+	}
+
 	if (base.kind == GDScriptParser::DataType::BUILTIN) {
 		if (base.is_meta_type) {
 			bool valid = true;
@@ -2628,32 +2668,6 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 					}
 				}
 			}
-		}
-		return;
-	}
-
-	if (base.kind == GDScriptParser::DataType::ENUM) {
-		if (base.is_meta_type) {
-			if (base.enum_values.has(name)) {
-				p_identifier->is_constant = true;
-				p_identifier->reduced_value = base.enum_values[name];
-
-				GDScriptParser::DataType result;
-				result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
-				result.kind = GDScriptParser::DataType::ENUM_VALUE;
-				result.is_constant = true;
-				result.builtin_type = Variant::INT;
-				result.native_type = base.native_type;
-				result.enum_type = name;
-				p_identifier->set_datatype(result);
-			} else {
-				// Consider as a Dictionary
-				GDScriptParser::DataType dummy;
-				dummy.kind = GDScriptParser::DataType::VARIANT;
-				p_identifier->set_datatype(dummy);
-			}
-		} else {
-			push_error(R"(Cannot get property from enum value.)", p_identifier);
 		}
 		return;
 	}
@@ -2793,7 +2807,7 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 			if (element.identifier->name == p_identifier->name) {
 				GDScriptParser::DataType type;
 				type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
-				type.kind = element.parent_enum->identifier ? GDScriptParser::DataType::ENUM_VALUE : GDScriptParser::DataType::BUILTIN;
+				type.kind = element.parent_enum->identifier ? GDScriptParser::DataType::ENUM : GDScriptParser::DataType::BUILTIN;
 				type.builtin_type = Variant::INT;
 				type.is_constant = true;
 				if (element.parent_enum->identifier) {
@@ -3493,6 +3507,9 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_metatype(const GDScriptPars
 	GDScriptParser::DataType result = p_meta_type;
 	result.is_meta_type = false;
 	result.is_constant = false;
+	if (p_meta_type.kind == GDScriptParser::DataType::ENUM) {
+		result.builtin_type = Variant::INT;
+	}
 	return result;
 }
 
@@ -3548,6 +3565,18 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::CallNode *p_source
 	r_vararg = false;
 	r_default_arg_count = 0;
 	StringName function_name = p_function;
+
+	if (p_base_type.kind == GDScriptParser::DataType::ENUM) {
+		if (p_base_type.is_meta_type) {
+			// Enum type can be treated as a dictionary value.
+			p_base_type.kind = GDScriptParser::DataType::BUILTIN;
+			p_base_type.builtin_type = Variant::DICTIONARY;
+			p_base_type.is_meta_type = false;
+		} else {
+			push_error("Cannot call function on enum value.", p_source);
+			return false;
+		}
+	}
 
 	if (p_base_type.kind == GDScriptParser::DataType::BUILTIN) {
 		// Construct a base type to get methods.
@@ -3799,6 +3828,22 @@ GDScriptParser::DataType GDScriptAnalyzer::get_operation_type(Variant::Operator 
 
 	Variant::Type a_type = p_a.builtin_type;
 	Variant::Type b_type = p_b.builtin_type;
+
+	if (p_a.kind == GDScriptParser::DataType::ENUM) {
+		if (p_a.is_meta_type) {
+			a_type = Variant::DICTIONARY;
+		} else {
+			a_type = Variant::INT;
+		}
+	}
+	if (p_b.kind == GDScriptParser::DataType::ENUM) {
+		if (p_b.is_meta_type) {
+			b_type = Variant::DICTIONARY;
+		} else {
+			b_type = Variant::INT;
+		}
+	}
+
 	Variant::ValidatedOperatorEvaluator op_eval = Variant::get_validated_operator_evaluator(p_operation, a_type, b_type);
 
 	bool hard_operation = p_a.is_hard_type() && p_b.is_hard_type();
@@ -3828,7 +3873,7 @@ GDScriptParser::DataType GDScriptAnalyzer::get_operation_type(Variant::Operator 
 }
 
 // TODO: Add safe/unsafe return variable (for variant cases)
-bool GDScriptAnalyzer::is_type_compatible(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion) const {
+bool GDScriptAnalyzer::is_type_compatible(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion, const GDScriptParser::Node *p_source_node) {
 	// These return "true" so it doesn't affect users negatively.
 	ERR_FAIL_COND_V_MSG(!p_target.is_set(), true, "Parser bug (please report): Trying to check compatibility of unset target type");
 	ERR_FAIL_COND_V_MSG(!p_source.is_set(), true, "Parser bug (please report): Trying to check compatibility of unset value type");
@@ -3848,7 +3893,7 @@ bool GDScriptAnalyzer::is_type_compatible(const GDScriptParser::DataType &p_targ
 		if (!valid && p_allow_implicit_conversion) {
 			valid = Variant::can_convert_strict(p_source.builtin_type, p_target.builtin_type);
 		}
-		if (!valid && p_target.builtin_type == Variant::INT && p_source.kind == GDScriptParser::DataType::ENUM_VALUE) {
+		if (!valid && p_target.builtin_type == Variant::INT && p_source.kind == GDScriptParser::DataType::ENUM && !p_source.is_meta_type) {
 			// Enum value is also integer.
 			valid = true;
 		}
@@ -3869,15 +3914,15 @@ bool GDScriptAnalyzer::is_type_compatible(const GDScriptParser::DataType &p_targ
 
 	if (p_target.kind == GDScriptParser::DataType::ENUM) {
 		if (p_source.kind == GDScriptParser::DataType::BUILTIN && p_source.builtin_type == Variant::INT) {
+#ifdef DEBUG_ENABLED
+			if (p_source_node) {
+				parser->push_warning(p_source_node, GDScriptWarning::INT_ASSIGNED_TO_ENUM);
+			}
+#endif
 			return true;
 		}
 		if (p_source.kind == GDScriptParser::DataType::ENUM) {
 			if (p_source.native_type == p_target.native_type) {
-				return true;
-			}
-		}
-		if (p_source.kind == GDScriptParser::DataType::ENUM_VALUE) {
-			if (p_source.native_type == p_target.native_type && p_target.enum_values.has(p_source.enum_type)) {
 				return true;
 			}
 		}
@@ -3935,7 +3980,6 @@ bool GDScriptAnalyzer::is_type_compatible(const GDScriptParser::DataType &p_targ
 		case GDScriptParser::DataType::VARIANT:
 		case GDScriptParser::DataType::BUILTIN:
 		case GDScriptParser::DataType::ENUM:
-		case GDScriptParser::DataType::ENUM_VALUE:
 		case GDScriptParser::DataType::UNRESOLVED:
 			break; // Already solved before.
 	}
@@ -3972,7 +4016,6 @@ bool GDScriptAnalyzer::is_type_compatible(const GDScriptParser::DataType &p_targ
 		case GDScriptParser::DataType::VARIANT:
 		case GDScriptParser::DataType::BUILTIN:
 		case GDScriptParser::DataType::ENUM:
-		case GDScriptParser::DataType::ENUM_VALUE:
 		case GDScriptParser::DataType::UNRESOLVED:
 			break; // Already solved before.
 	}

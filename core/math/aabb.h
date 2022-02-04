@@ -36,13 +36,13 @@
 #include "core/math/vector3.h"
 
 /**
- * AABB / AABB (Axis Aligned Bounding Box)
- * This is implemented by a point (position) and the box size
+ * AABB (Axis Aligned Bounding Box)
+ * This is implemented by a point (position) and the box size.
  */
+
 class Variant;
 
-class _NO_DISCARD_ AABB {
-public:
+struct _NO_DISCARD_ AABB {
 	Vector3 position;
 	Vector3 size;
 

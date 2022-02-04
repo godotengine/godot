@@ -50,8 +50,8 @@ class ProjectSettingsEditor : public AcceptDialog {
 	Timer *timer;
 
 	TabContainer *tab_container;
-	SectionedInspector *inspector;
-	ActionMapEditor *action_map;
+	SectionedInspector *general_settings_inspector;
+	ActionMapEditor *action_map_editor;
 	LocalizationEditor *localization_editor;
 	EditorAutoloadSettings *autoload_settings;
 	ShaderGlobalsEditor *shaders_global_variables_editor;
@@ -80,6 +80,8 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _update_property_box();
 	void _feature_selected(int p_index);
 	void _select_type(Variant::Type p_type);
+
+	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
 
 	String _get_setting_name() const;
 	void _setting_edited(const String &p_name);
