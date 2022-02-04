@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  triangulate.h                                                        */
+/*  vector2i.cpp                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,35 +28,98 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TRIANGULATE_H
-#define TRIANGULATE_H
+#include "vector2i.h"
 
 #include "core/math/vector2.h"
-#include "core/templates/vector.h"
+#include "core/string/ustring.h"
 
-/*
-https://www.flipcode.com/archives/Efficient_Polygon_Triangulation.shtml
-*/
+Vector2i Vector2i::clamp(const Vector2i &p_min, const Vector2i &p_max) const {
+	return Vector2i(
+			CLAMP(x, p_min.x, p_max.x),
+			CLAMP(y, p_min.y, p_max.y));
+}
 
-class Triangulate {
-public:
-	// triangulate a contour/polygon, places results in STL vector
-	// as series of triangles.
-	static bool triangulate(const Vector<Vector2> &contour, Vector<int> &result);
+int64_t Vector2i::length_squared() const {
+	return x * (int64_t)x + y * (int64_t)y;
+}
 
-	// compute area of a contour/polygon
-	static real_t get_area(const Vector<Vector2> &contour);
+double Vector2i::length() const {
+	return Math::sqrt((double)length_squared());
+}
 
-	// decide if point Px/Py is inside triangle defined by
-	// (Ax,Ay) (Bx,By) (Cx,Cy)
-	static bool is_inside_triangle(real_t Ax, real_t Ay,
-			real_t Bx, real_t By,
-			real_t Cx, real_t Cy,
-			real_t Px, real_t Py,
-			bool include_edges);
+Vector2i Vector2i::operator+(const Vector2i &p_v) const {
+	return Vector2i(x + p_v.x, y + p_v.y);
+}
 
-private:
-	static bool snip(const Vector<Vector2> &p_contour, int u, int v, int w, int n, const Vector<int> &V, bool relaxed);
-};
+void Vector2i::operator+=(const Vector2i &p_v) {
+	x += p_v.x;
+	y += p_v.y;
+}
 
-#endif // TRIANGULATE_H
+Vector2i Vector2i::operator-(const Vector2i &p_v) const {
+	return Vector2i(x - p_v.x, y - p_v.y);
+}
+
+void Vector2i::operator-=(const Vector2i &p_v) {
+	x -= p_v.x;
+	y -= p_v.y;
+}
+
+Vector2i Vector2i::operator*(const Vector2i &p_v1) const {
+	return Vector2i(x * p_v1.x, y * p_v1.y);
+}
+
+Vector2i Vector2i::operator*(const int32_t &rvalue) const {
+	return Vector2i(x * rvalue, y * rvalue);
+}
+
+void Vector2i::operator*=(const int32_t &rvalue) {
+	x *= rvalue;
+	y *= rvalue;
+}
+
+Vector2i Vector2i::operator/(const Vector2i &p_v1) const {
+	return Vector2i(x / p_v1.x, y / p_v1.y);
+}
+
+Vector2i Vector2i::operator/(const int32_t &rvalue) const {
+	return Vector2i(x / rvalue, y / rvalue);
+}
+
+void Vector2i::operator/=(const int32_t &rvalue) {
+	x /= rvalue;
+	y /= rvalue;
+}
+
+Vector2i Vector2i::operator%(const Vector2i &p_v1) const {
+	return Vector2i(x % p_v1.x, y % p_v1.y);
+}
+
+Vector2i Vector2i::operator%(const int32_t &rvalue) const {
+	return Vector2i(x % rvalue, y % rvalue);
+}
+
+void Vector2i::operator%=(const int32_t &rvalue) {
+	x %= rvalue;
+	y %= rvalue;
+}
+
+Vector2i Vector2i::operator-() const {
+	return Vector2i(-x, -y);
+}
+
+bool Vector2i::operator==(const Vector2i &p_vec2) const {
+	return x == p_vec2.x && y == p_vec2.y;
+}
+
+bool Vector2i::operator!=(const Vector2i &p_vec2) const {
+	return x != p_vec2.x || y != p_vec2.y;
+}
+
+Vector2i::operator String() const {
+	return "(" + itos(x) + ", " + itos(y) + ")";
+}
+
+Vector2i::operator Vector2() const {
+	return Vector2((int32_t)x, (int32_t)y);
+}

@@ -32,7 +32,7 @@
 
 #include "core/variant/variant.h"
 
-#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
 #include "core/math/vector3i.h"
 
 static_assert(sizeof(godot_packed_byte_array) == sizeof(PackedByteArray), "PackedByteArray size mismatch");

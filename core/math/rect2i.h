@@ -31,7 +31,8 @@
 #ifndef RECT2I_H
 #define RECT2I_H
 
-#include "core/math/vector2.h"
+#include "core/error/error_macros.h"
+#include "core/math/vector2i.h"
 
 class String;
 struct Rect2;
