@@ -235,16 +235,12 @@ void RPCManager::_process_rpc(Node *p_node, const uint16_t p_rpc_method_id, int 
 	ERR_FAIL_COND_MSG(!can_call, "RPC '" + String(config.name) + "' is not allowed on node " + p_node->get_path() + " from: " + itos(p_from) + ". Mode is " + itos((int)config.rpc_mode) + ", authority is " + itos(p_node->get_multiplayer_authority()) + ".");
 
 	int argc = 0;
-	bool byte_only = false;
 
 	const bool byte_only_or_no_args = p_packet[0] & BYTE_ONLY_OR_NO_ARGS_FLAG;
 	if (byte_only_or_no_args) {
 		if (p_offset < p_packet_len) {
 			// This packet contains only bytes.
 			argc = 1;
-			byte_only = true;
-		} else {
-			// This rpc calls a method without parameters.
 		}
 	} else {
 		// Normal variant, takes the argument count from the packet.
@@ -262,25 +258,10 @@ void RPCManager::_process_rpc(Node *p_node, const uint16_t p_rpc_method_id, int 
 	_profile_node_data("in_rpc", p_node->get_instance_id());
 #endif
 
-	if (byte_only) {
-		Vector<uint8_t> pure_data;
-		const int len = p_packet_len - p_offset;
-		pure_data.resize(len);
-		memcpy(pure_data.ptrw(), &p_packet[p_offset], len);
-		args.write[0] = pure_data;
-		argp.write[0] = &args[0];
-		p_offset += len;
-	} else {
-		for (int i = 0; i < argc; i++) {
-			ERR_FAIL_COND_MSG(p_offset >= p_packet_len, "Invalid packet received. Size too small.");
-
-			int vlen;
-			Error err = multiplayer->decode_and_decompress_variant(args.write[i], &p_packet[p_offset], p_packet_len - p_offset, &vlen);
-			ERR_FAIL_COND_MSG(err != OK, "Invalid packet received. Unable to decode RPC argument.");
-
-			argp.write[i] = &args[i];
-			p_offset += vlen;
-		}
+	int out;
+	MultiplayerAPI::decode_and_decompress_variants(args, &p_packet[p_offset], p_packet_len - p_offset, out, byte_only_or_no_args, multiplayer->is_object_decoding_allowed());
+	for (int i = 0; i < argc; i++) {
+		argp.write[i] = &args[i];
 	}
 
 	Callable::CallError ce;
@@ -380,28 +361,19 @@ void RPCManager::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, const Mult
 		ofs += 2;
 	}
 
-	if (p_argcount == 0) {
-		byte_only_or_no_args = true;
-	} else if (p_argcount == 1 && p_arg[0]->get_type() == Variant::PACKED_BYTE_ARRAY) {
-		byte_only_or_no_args = true;
-		// Special optimization when only the byte vector is sent.
-		const Vector<uint8_t> data = *p_arg[0];
-		MAKE_ROOM(ofs + data.size());
-		memcpy(&(packet_cache.write[ofs]), data.ptr(), sizeof(uint8_t) * data.size());
-		ofs += data.size();
+	int len;
+	Error err = MultiplayerAPI::encode_and_compress_variants(p_arg, p_argcount, nullptr, len, &byte_only_or_no_args, multiplayer->is_object_decoding_allowed());
+	ERR_FAIL_COND_MSG(err != OK, "Unable to encode RPC arguments. THIS IS LIKELY A BUG IN THE ENGINE!");
+	if (byte_only_or_no_args) {
+		MAKE_ROOM(ofs + len);
 	} else {
-		// Arguments
-		MAKE_ROOM(ofs + 1);
+		MAKE_ROOM(ofs + 1 + len);
 		packet_cache.write[ofs] = p_argcount;
 		ofs += 1;
-		for (int i = 0; i < p_argcount; i++) {
-			int len(0);
-			Error err = multiplayer->encode_and_compress_variant(*p_arg[i], nullptr, len);
-			ERR_FAIL_COND_MSG(err != OK, "Unable to encode RPC argument. THIS IS LIKELY A BUG IN THE ENGINE!");
-			MAKE_ROOM(ofs + len);
-			multiplayer->encode_and_compress_variant(*p_arg[i], &(packet_cache.write[ofs]), len);
-			ofs += len;
-		}
+	}
+	if (len) {
+		MultiplayerAPI::encode_and_compress_variants(p_arg, p_argcount, &packet_cache.write[ofs], len, &byte_only_or_no_args, multiplayer->is_object_decoding_allowed());
+		ofs += len;
 	}
 
 	ERR_FAIL_COND(command_type > 7);

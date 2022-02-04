@@ -69,7 +69,6 @@
 #include "core/math/triangle_mesh.h"
 #include "core/multiplayer/multiplayer_api.h"
 #include "core/multiplayer/multiplayer_peer.h"
-#include "core/multiplayer/multiplayer_replicator.h"
 #include "core/object/class_db.h"
 #include "core/object/undo_redo.h"
 #include "core/os/main_loop.h"
@@ -200,7 +199,6 @@ void register_core_types() {
 
 	GDREGISTER_VIRTUAL_CLASS(MultiplayerPeer);
 	GDREGISTER_CLASS(MultiplayerPeerExtension);
-	GDREGISTER_VIRTUAL_CLASS(MultiplayerReplicator);
 	GDREGISTER_CLASS(MultiplayerAPI);
 	GDREGISTER_CLASS(MainLoop);
 	GDREGISTER_CLASS(Translation);

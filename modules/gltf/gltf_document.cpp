@@ -50,6 +50,7 @@
 #include "core/io/file_access.h"
 #include "core/io/file_access_memory.h"
 #include "core/io/json.h"
+#include "core/io/stream_peer.h"
 #include "core/math/disjoint_set.h"
 #include "core/math/vector2.h"
 #include "core/variant/dictionary.h"

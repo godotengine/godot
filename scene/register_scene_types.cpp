@@ -134,6 +134,9 @@
 #include "scene/main/timer.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
+#include "scene/multiplayer/multiplayer_spawner.h"
+#include "scene/multiplayer/multiplayer_synchronizer.h"
+#include "scene/multiplayer/scene_replication_interface.h"
 #include "scene/resources/audio_stream_sample.h"
 #include "scene/resources/bit_map.h"
 #include "scene/resources/box_shape_3d.h"
@@ -301,6 +304,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(SubViewport);
 	GDREGISTER_CLASS(ViewportTexture);
 	GDREGISTER_CLASS(HTTPRequest);
+	GDREGISTER_CLASS(MultiplayerSpawner);
+	GDREGISTER_CLASS(MultiplayerSynchronizer);
 	GDREGISTER_CLASS(Timer);
 	GDREGISTER_CLASS(CanvasLayer);
 	GDREGISTER_CLASS(CanvasModulate);
@@ -822,6 +827,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Font);
 	GDREGISTER_CLASS(Curve);
 
+	GDREGISTER_CLASS(SceneReplicationConfig);
+
 	GDREGISTER_CLASS(TextLine);
 	GDREGISTER_CLASS(TextParagraph);
 
@@ -1050,6 +1057,7 @@ void register_scene_types() {
 	}
 
 	SceneDebugger::initialize();
+	SceneReplicationInterface::make_default();
 
 	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SCENE);
 }
