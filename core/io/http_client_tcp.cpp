@@ -614,7 +614,7 @@ PackedByteArray HTTPClientTCP::read_response_body_chunk() {
 					for (int i = 0; i < chunk.size() - 2; i++) {
 						char c = chunk[i];
 						int v = 0;
-						if (c >= '0' && c <= '9') {
+						if (is_digit(c)) {
 							v = c - '0';
 						} else if (c >= 'a' && c <= 'f') {
 							v = c - 'a' + 10;

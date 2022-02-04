@@ -44,30 +44,6 @@
 #endif
 
 /*************************************************************************/
-/*  Character properties.                                                */
-/*************************************************************************/
-
-_FORCE_INLINE_ bool is_control(char32_t p_char) {
-	return (p_char <= 0x001f) || (p_char >= 0x007f && p_char <= 0x009F);
-}
-
-_FORCE_INLINE_ bool is_whitespace(char32_t p_char) {
-	return (p_char == 0x0020) || (p_char == 0x00A0) || (p_char == 0x1680) || (p_char >= 0x2000 && p_char <= 0x200a) || (p_char == 0x202f) || (p_char == 0x205f) || (p_char == 0x3000) || (p_char == 0x2028) || (p_char == 0x2029) || (p_char >= 0x0009 && p_char <= 0x000d) || (p_char == 0x0085);
-}
-
-_FORCE_INLINE_ bool is_linebreak(char32_t p_char) {
-	return (p_char >= 0x000a && p_char <= 0x000d) || (p_char == 0x0085) || (p_char == 0x2028) || (p_char == 0x2029);
-}
-
-_FORCE_INLINE_ bool is_punct(char32_t p_char) {
-	return (p_char >= 0x0020 && p_char <= 0x002F) || (p_char >= 0x003A && p_char <= 0x0040) || (p_char >= 0x005B && p_char <= 0x005E) || (p_char == 0x0060) || (p_char >= 0x007B && p_char <= 0x007E) || (p_char >= 0x2000 && p_char <= 0x206F) || (p_char >= 0x3000 && p_char <= 0x303F);
-}
-
-_FORCE_INLINE_ bool is_underscore(char32_t p_char) {
-	return (p_char == 0x005F);
-}
-
-/*************************************************************************/
 
 String TextServerFallback::interface_name = "Fallback";
 uint32_t TextServerFallback::interface_features = 0; // Nothing is supported.

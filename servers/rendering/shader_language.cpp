@@ -35,18 +35,6 @@
 
 #define HAS_WARNING(flag) (warning_flags & flag)
 
-static bool _is_text_char(char32_t c) {
-	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
-}
-
-static bool _is_number(char32_t c) {
-	return (c >= '0' && c <= '9');
-}
-
-static bool _is_hex(char32_t c) {
-	return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
-}
-
 String ShaderLanguage::get_operator_text(Operator p_op) {
 	static const char *op_names[OP_MAX] = { "==",
 		"!=",
@@ -543,7 +531,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 			default: {
 				char_idx--; //go back one, since we have no idea what this is
 
-				if (_is_number(GETCHAR(0)) || (GETCHAR(0) == '.' && _is_number(GETCHAR(1)))) {
+				if (is_digit(GETCHAR(0)) || (GETCHAR(0) == '.' && is_digit(GETCHAR(1)))) {
 					// parse number
 					bool hexa_found = false;
 					bool period_found = false;
@@ -584,7 +572,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 						const char32_t symbol = String::char_lowercase(GETCHAR(i));
 						bool error = false;
 
-						if (_is_number(symbol)) {
+						if (is_digit(symbol)) {
 							if (end_suffix_found) {
 								error = true;
 							}
@@ -617,8 +605,8 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 										break;
 									}
 								}
-							} else if (!hexa_found || !_is_hex(symbol)) {
-								if (_is_text_char(symbol)) {
+							} else if (!hexa_found || !is_hex_digit(symbol)) {
+								if (is_ascii_identifier_char(symbol)) {
 									error = true;
 								} else {
 									break;
@@ -649,7 +637,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 							return _make_token(TK_ERROR, "Invalid (hexadecimal) numeric constant");
 						}
 					} else if (period_found || exponent_found || float_suffix_found) { // Float
-						if (exponent_found && (!_is_number(last_char) && last_char != 'f')) { // checks for eg: "2E", "2E-", "2E+"
+						if (exponent_found && (!is_digit(last_char) && last_char != 'f')) { // checks for eg: "2E", "2E-", "2E+"
 							return _make_token(TK_ERROR, "Invalid (float) numeric constant");
 						}
 						if (period_found) {
@@ -660,7 +648,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 								}
 							} else {
 								//checks for eg. "1." or "1.99" notations
-								if (last_char != '.' && !_is_number(last_char)) {
+								if (last_char != '.' && !is_digit(last_char)) {
 									return _make_token(TK_ERROR, "Invalid (float) numeric constant");
 								}
 							}
@@ -723,11 +711,11 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 					return _make_token(TK_PERIOD);
 				}
 
-				if (_is_text_char(GETCHAR(0))) {
+				if (is_ascii_identifier_char(GETCHAR(0))) {
 					// parse identifier
 					String str;
 
-					while (_is_text_char(GETCHAR(0))) {
+					while (is_ascii_identifier_char(GETCHAR(0))) {
 						str += char32_t(GETCHAR(0));
 						char_idx++;
 					}

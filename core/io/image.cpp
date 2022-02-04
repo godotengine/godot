@@ -2056,7 +2056,7 @@ void Image::create(const char **p_xpm) {
 						for (int i = 0; i < 6; i++) {
 							char v = line_ptr[i];
 
-							if (v >= '0' && v <= '9') {
+							if (is_digit(v)) {
 								v -= '0';
 							} else if (v >= 'A' && v <= 'F') {
 								v = (v - 'A') + 10;

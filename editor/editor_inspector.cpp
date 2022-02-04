@@ -1780,7 +1780,7 @@ Array EditorInspectorArray::_extract_properties_as_array(const List<PropertyInfo
 
 			int to_char_index = 0;
 			while (to_char_index < str.length()) {
-				if (str[to_char_index] < '0' || str[to_char_index] > '9') {
+				if (!is_digit(str[to_char_index])) {
 					break;
 				}
 				to_char_index++;
@@ -2512,7 +2512,7 @@ void EditorInspector::update_tree() {
 			String str = p.name.trim_prefix(array_prefix);
 			int to_char_index = 0;
 			while (to_char_index < str.length()) {
-				if (str[to_char_index] < '0' || str[to_char_index] > '9') {
+				if (!is_digit(str[to_char_index])) {
 					break;
 				}
 				to_char_index++;

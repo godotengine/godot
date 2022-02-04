@@ -54,33 +54,13 @@
 
 static const int MAX_DECIMALS = 32;
 
-static _FORCE_INLINE_ bool is_digit(char32_t c) {
-	return (c >= '0' && c <= '9');
-}
-
-static _FORCE_INLINE_ bool is_hex_digit(char32_t c) {
-	return (is_digit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
-}
-
-static _FORCE_INLINE_ bool is_upper_case(char32_t c) {
-	return (c >= 'A' && c <= 'Z');
-}
-
-static _FORCE_INLINE_ bool is_lower_case(char32_t c) {
-	return (c >= 'a' && c <= 'z');
-}
-
 static _FORCE_INLINE_ char32_t lower_case(char32_t c) {
-	return (is_upper_case(c) ? (c + ('a' - 'A')) : c);
+	return (is_ascii_upper_case(c) ? (c + ('a' - 'A')) : c);
 }
 
 const char CharString::_null = 0;
 const char16_t Char16String::_null = 0;
 const char32_t String::_null = 0;
-
-bool is_symbol(char32_t c) {
-	return c != '_' && ((c >= '!' && c <= '/') || (c >= ':' && c <= '@') || (c >= '[' && c <= '`') || (c >= '{' && c <= '~') || c == '\t' || c == ' ');
-}
 
 bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end) {
 	const String &s = p_s;
@@ -974,21 +954,21 @@ String String::camelcase_to_underscore(bool lowercase) const {
 	int start_index = 0;
 
 	for (int i = 1; i < this->size(); i++) {
-		bool is_upper = is_upper_case(cstr[i]);
+		bool is_upper = is_ascii_upper_case(cstr[i]);
 		bool is_number = is_digit(cstr[i]);
 
 		bool are_next_2_lower = false;
 		bool is_next_lower = false;
 		bool is_next_number = false;
-		bool was_precedent_upper = is_upper_case(cstr[i - 1]);
+		bool was_precedent_upper = is_ascii_upper_case(cstr[i - 1]);
 		bool was_precedent_number = is_digit(cstr[i - 1]);
 
 		if (i + 2 < this->size()) {
-			are_next_2_lower = is_lower_case(cstr[i + 1]) && is_lower_case(cstr[i + 2]);
+			are_next_2_lower = is_ascii_lower_case(cstr[i + 1]) && is_ascii_lower_case(cstr[i + 2]);
 		}
 
 		if (i + 1 < this->size()) {
-			is_next_lower = is_lower_case(cstr[i + 1]);
+			is_next_lower = is_ascii_lower_case(cstr[i + 1]);
 			is_next_number = is_digit(cstr[i + 1]);
 		}
 
@@ -2212,7 +2192,7 @@ bool String::is_numeric() const {
 				return false;
 			}
 			dot = true;
-		} else if (c < '0' || c > '9') {
+		} else if (!is_digit(c)) {
 			return false;
 		}
 	}
@@ -3691,7 +3671,7 @@ bool String::is_valid_identifier() const {
 			}
 		}
 
-		bool valid_char = is_digit(str[i]) || is_lower_case(str[i]) || is_upper_case(str[i]) || str[i] == '_';
+		bool valid_char = is_ascii_identifier_char(str[i]);
 
 		if (!valid_char) {
 			return false;
@@ -3716,7 +3696,7 @@ String String::uri_encode() const {
 	String res;
 	for (int i = 0; i < temp.length(); ++i) {
 		char ord = temp[i];
-		if (ord == '.' || ord == '-' || ord == '_' || ord == '~' || is_lower_case(ord) || is_upper_case(ord) || is_digit(ord)) {
+		if (ord == '.' || ord == '-' || ord == '~' || is_ascii_identifier_char(ord)) {
 			res += ord;
 		} else {
 			char h_Val[3];
@@ -3738,9 +3718,9 @@ String String::uri_decode() const {
 	for (int i = 0; i < src.length(); ++i) {
 		if (src[i] == '%' && i + 2 < src.length()) {
 			char ord1 = src[i + 1];
-			if (is_digit(ord1) || is_upper_case(ord1)) {
+			if (is_digit(ord1) || is_ascii_upper_case(ord1)) {
 				char ord2 = src[i + 2];
-				if (is_digit(ord2) || is_upper_case(ord2)) {
+				if (is_digit(ord2) || is_ascii_upper_case(ord2)) {
 					char bytes[3] = { (char)ord1, (char)ord2, 0 };
 					res += (char)strtol(bytes, nullptr, 16);
 					i += 2;
@@ -3867,7 +3847,7 @@ static _FORCE_INLINE_ int _xml_unescape(const char32_t *p_src, int p_src_len, ch
 					for (int i = 2; i < p_src_len; i++) {
 						eat = i + 1;
 						char32_t ct = p_src[i];
-						if (ct == ';' || ct < '0' || ct > '9') {
+						if (ct == ';' || !is_digit(ct)) {
 							break;
 						}
 					}
@@ -3997,7 +3977,7 @@ String String::pad_zeros(int p_digits) const {
 
 	int begin = 0;
 
-	while (begin < end && (s[begin] < '0' || s[begin] > '9')) {
+	while (begin < end && !is_digit(s[begin])) {
 		begin++;
 	}
 
@@ -4042,7 +4022,7 @@ bool String::is_valid_int() const {
 	}
 
 	for (int i = from; i < len; i++) {
-		if (operator[](i) < '0' || operator[](i) > '9') {
+		if (!is_digit(operator[](i))) {
 			return false; // no start with number plz
 		}
 	}

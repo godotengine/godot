@@ -764,7 +764,7 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &p_item) {
 	String node_name = selected_node->get_name();
 	for (int i = 0; i < node_name.length(); i++) { // TODO: Regex filter may be cleaner.
 		char32_t c = node_name[i];
-		if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_')) {
+		if (!is_ascii_identifier_char(c)) {
 			if (c == ' ') {
 				// Replace spaces with underlines.
 				c = '_';

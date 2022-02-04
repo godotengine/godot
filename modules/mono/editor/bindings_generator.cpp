@@ -690,11 +690,11 @@ void BindingsGenerator::_apply_prefix_to_enum_constants(BindingsGenerator::EnumI
 				continue;
 			}
 
-			if (parts[curr_prefix_length][0] >= '0' && parts[curr_prefix_length][0] <= '9') {
+			if (is_digit(parts[curr_prefix_length][0])) {
 				// The name of enum constants may begin with a numeric digit when strip from the enum prefix,
 				// so we make the prefix for this constant one word shorter in those cases.
 				for (curr_prefix_length = curr_prefix_length - 1; curr_prefix_length > 0; curr_prefix_length--) {
-					if (parts[curr_prefix_length][0] < '0' || parts[curr_prefix_length][0] > '9') {
+					if (!is_digit(parts[curr_prefix_length][0])) {
 						break;
 					}
 				}

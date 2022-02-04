@@ -213,14 +213,6 @@ static _character_accent_pair _character_to_accented[] = {
 	{ 'z', U"ź" },
 };
 
-static _FORCE_INLINE_ bool is_upper_case(char32_t c) {
-	return (c >= 'A' && c <= 'Z');
-}
-
-static _FORCE_INLINE_ bool is_lower_case(char32_t c) {
-	return (c >= 'a' && c <= 'z');
-}
-
 Vector<TranslationServer::LocaleScriptInfo> TranslationServer::locale_script_info;
 
 Map<String, String> TranslationServer::language_map;
@@ -309,15 +301,15 @@ String TranslationServer::standardize_locale(const String &p_locale) const {
 	Vector<String> locale_elements = univ_locale.get_slice("@", 0).split("_");
 	lang = locale_elements[0];
 	if (locale_elements.size() >= 2) {
-		if (locale_elements[1].length() == 4 && is_upper_case(locale_elements[1][0]) && is_lower_case(locale_elements[1][1]) && is_lower_case(locale_elements[1][2]) && is_lower_case(locale_elements[1][3])) {
+		if (locale_elements[1].length() == 4 && is_ascii_upper_case(locale_elements[1][0]) && is_ascii_lower_case(locale_elements[1][1]) && is_ascii_lower_case(locale_elements[1][2]) && is_ascii_lower_case(locale_elements[1][3])) {
 			script = locale_elements[1];
 		}
-		if (locale_elements[1].length() == 2 && is_upper_case(locale_elements[1][0]) && is_upper_case(locale_elements[1][1])) {
+		if (locale_elements[1].length() == 2 && is_ascii_upper_case(locale_elements[1][0]) && is_ascii_upper_case(locale_elements[1][1])) {
 			country = locale_elements[1];
 		}
 	}
 	if (locale_elements.size() >= 3) {
-		if (locale_elements[2].length() == 2 && is_upper_case(locale_elements[2][0]) && is_upper_case(locale_elements[2][1])) {
+		if (locale_elements[2].length() == 2 && is_ascii_upper_case(locale_elements[2][0]) && is_ascii_upper_case(locale_elements[2][1])) {
 			country = locale_elements[2];
 		} else if (variant_map.has(locale_elements[2].to_lower()) && variant_map[locale_elements[2].to_lower()] == lang) {
 			variant = locale_elements[2].to_lower();
@@ -434,15 +426,15 @@ String TranslationServer::get_locale_name(const String &p_locale) const {
 	Vector<String> locale_elements = locale.split("_");
 	lang = locale_elements[0];
 	if (locale_elements.size() >= 2) {
-		if (locale_elements[1].length() == 4 && is_upper_case(locale_elements[1][0]) && is_lower_case(locale_elements[1][1]) && is_lower_case(locale_elements[1][2]) && is_lower_case(locale_elements[1][3])) {
+		if (locale_elements[1].length() == 4 && is_ascii_upper_case(locale_elements[1][0]) && is_ascii_lower_case(locale_elements[1][1]) && is_ascii_lower_case(locale_elements[1][2]) && is_ascii_lower_case(locale_elements[1][3])) {
 			script = locale_elements[1];
 		}
-		if (locale_elements[1].length() == 2 && is_upper_case(locale_elements[1][0]) && is_upper_case(locale_elements[1][1])) {
+		if (locale_elements[1].length() == 2 && is_ascii_upper_case(locale_elements[1][0]) && is_ascii_upper_case(locale_elements[1][1])) {
 			country = locale_elements[1];
 		}
 	}
 	if (locale_elements.size() >= 3) {
-		if (locale_elements[2].length() == 2 && is_upper_case(locale_elements[2][0]) && is_upper_case(locale_elements[2][1])) {
+		if (locale_elements[2].length() == 2 && is_ascii_upper_case(locale_elements[2][0]) && is_ascii_upper_case(locale_elements[2][1])) {
 			country = locale_elements[2];
 		}
 	}
@@ -911,7 +903,7 @@ String TranslationServer::add_padding(String &p_message, int p_length) const {
 }
 
 const char32_t *TranslationServer::get_accented_version(char32_t p_character) const {
-	if (!((p_character >= 'a' && p_character <= 'z') || (p_character >= 'A' && p_character <= 'Z'))) {
+	if (!is_ascii_char(p_character)) {
 		return nullptr;
 	}
 

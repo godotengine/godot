@@ -458,7 +458,7 @@ void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_
 			String str = pi.name.trim_prefix(p_array_prefix);
 			int to_char_index = 0;
 			while (to_char_index < str.length()) {
-				if (str[to_char_index] < '0' || str[to_char_index] > '9') {
+				if (!is_digit(str[to_char_index])) {
 					break;
 				}
 				to_char_index++;
