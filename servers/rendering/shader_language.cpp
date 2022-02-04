@@ -5255,8 +5255,10 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					return nullptr;
 				} else {
 #ifdef DEBUG_ENABLED
-					if (check_warnings && HAS_WARNING(ShaderWarning::FORMATTING_ERROR_FLAG)) {
-						_add_line_warning(ShaderWarning::FORMATTING_ERROR, RTR("Empty statement. Remove ';' to fix this warning."));
+					if (!p_block || (p_block->block_type != BlockNode::BLOCK_TYPE_FOR_INIT && p_block->block_type != BlockNode::BLOCK_TYPE_FOR_CONDITION)) {
+						if (check_warnings && HAS_WARNING(ShaderWarning::FORMATTING_ERROR_FLAG)) {
+							_add_line_warning(ShaderWarning::FORMATTING_ERROR, RTR("Empty statement. Remove ';' to fix this warning."));
+						}
 					}
 #endif // DEBUG_ENABLED
 					_set_tkpos(prepos);
@@ -6370,6 +6372,8 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 		}
 
 		bool is_struct = shader->structs.has(tk.text);
+		bool is_var_init = false;
+		bool is_condition = false;
 
 		if (tk.type == TK_CURLY_BRACKET_CLOSE) { //end of block
 			if (p_just_one) {
@@ -6380,6 +6384,8 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			return OK;
 
 		} else if (tk.type == TK_CONST || is_token_precision(tk.type) || is_token_nonvoid_datatype(tk.type) || is_struct) {
+			is_var_init = true;
+
 			String struct_name = "";
 			if (is_struct) {
 				struct_name = tk.text;
@@ -7135,6 +7141,14 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			init_block->block_type = BlockNode::BLOCK_TYPE_FOR_INIT;
 			init_block->parent_block = p_block;
 			init_block->single_statement = true;
+			// Need to find a parent function to correctly proceed unused variable warnings.
+			{
+				BlockNode *block = p_block;
+				while (block && !block->parent_function) {
+					block = block->parent_block;
+				}
+				init_block->parent_function = block->parent_function;
+			}
 			cf->blocks.push_back(init_block);
 			Error err = _parse_block(init_block, p_function_info, true, false, false);
 			if (err != OK) {
@@ -7319,25 +7333,13 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			if (!expr) {
 				return ERR_PARSE_ERROR;
 			}
-
-			bool empty = false;
+			is_condition = expr->type == Node::TYPE_OPERATOR && expr->get_datatype() == TYPE_BOOL;
 
 			if (expr->type == Node::TYPE_OPERATOR) {
 				OperatorNode *op = static_cast<OperatorNode *>(expr);
 				if (op->op == OP_EMPTY) {
-					empty = true;
-				}
-			}
-			if (p_block->block_type == BlockNode::BLOCK_TYPE_FOR_INIT) {
-				if (!empty && expr->type != BlockNode::TYPE_VARIABLE_DECLARATION) {
-					_set_error(RTR("The left expression is expected to be a variable declaration."));
-					return ERR_PARSE_ERROR;
-				}
-			}
-			if (p_block->block_type == BlockNode::BLOCK_TYPE_FOR_CONDITION) {
-				if (!empty && expr->get_datatype() != TYPE_BOOL) {
-					_set_error(RTR("The middle expression is expected to be boolean."));
-					return ERR_PARSE_ERROR;
+					is_var_init = true;
+					is_condition = true;
 				}
 			}
 
@@ -7346,6 +7348,10 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 
 			if (p_block->block_type == BlockNode::BLOCK_TYPE_FOR_CONDITION) {
 				if (tk.type == TK_COMMA) {
+					if (!is_condition) {
+						_set_error(RTR("The middle expression is expected to be a boolean operator."));
+						return ERR_PARSE_ERROR;
+					}
 					continue;
 				}
 				if (tk.type != TK_SEMICOLON) {
@@ -7362,6 +7368,17 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				}
 			} else if (tk.type != TK_SEMICOLON) {
 				_set_expected_error(";");
+				return ERR_PARSE_ERROR;
+			}
+		}
+
+		if (p_block) {
+			if (p_block->block_type == BlockNode::BLOCK_TYPE_FOR_INIT && !is_var_init) {
+				_set_error(RTR("The left expression is expected to be a variable declaration."));
+				return ERR_PARSE_ERROR;
+			}
+			if (p_block->block_type == BlockNode::BLOCK_TYPE_FOR_CONDITION && !is_condition) {
+				_set_error(RTR("The middle expression is expected to be a boolean operator."));
 				return ERR_PARSE_ERROR;
 			}
 		}
