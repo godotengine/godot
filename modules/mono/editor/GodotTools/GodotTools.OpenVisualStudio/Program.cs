@@ -183,7 +183,7 @@ namespace GodotTools.OpenVisualStudio
                         continue;
 
                     // The digits after the colon are the process ID
-                    if (!Regex.IsMatch(ppszDisplayName, "!VisualStudio.DTE.16.0:[0-9]"))
+                    if (!Regex.IsMatch(ppszDisplayName, "!VisualStudio.DTE.1[6-7].0:[0-9]"))
                         continue;
 
                     if (pprot.GetObject(moniker[0], out object ppunkObject) == 0)
