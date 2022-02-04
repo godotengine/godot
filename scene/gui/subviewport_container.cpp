@@ -140,7 +140,7 @@ void SubViewportContainer::_notification(int p_what) {
 	}
 }
 
-void SubViewportContainer::input(const Ref<InputEvent> &p_event) {
+void SubViewportContainer::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (Engine::get_singleton()->is_editor_hint()) {
@@ -164,33 +164,6 @@ void SubViewportContainer::input(const Ref<InputEvent> &p_event) {
 		}
 
 		c->push_input(ev);
-	}
-}
-
-void SubViewportContainer::unhandled_input(const Ref<InputEvent> &p_event) {
-	ERR_FAIL_COND(p_event.is_null());
-
-	if (Engine::get_singleton()->is_editor_hint()) {
-		return;
-	}
-
-	Transform2D xform = get_global_transform();
-
-	if (stretch) {
-		Transform2D scale_xf;
-		scale_xf.scale(Vector2(shrink, shrink));
-		xform *= scale_xf;
-	}
-
-	Ref<InputEvent> ev = p_event->xformed_by(xform.affine_inverse());
-
-	for (int i = 0; i < get_child_count(); i++) {
-		SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
-		if (!c || c->is_input_disabled()) {
-			continue;
-		}
-
-		c->push_unhandled_input(ev);
 	}
 }
 

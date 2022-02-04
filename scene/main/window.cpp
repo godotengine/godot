@@ -966,9 +966,6 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	emit_signal(SceneStringNames::get_singleton()->window_input, p_ev);
 
 	push_input(p_ev);
-	if (!is_input_handled()) {
-		push_unhandled_input(p_ev);
-	}
 }
 
 void Window::_window_input_text(const String &p_text) {
