@@ -331,6 +331,7 @@ class DisplayServerWindows : public DisplayServer {
 		bool maximized = false;
 		bool minimized = false;
 		bool fullscreen = false;
+		bool multiwindow_fs = false;
 		bool borderless = false;
 		bool resizable = true;
 		bool window_focused = false;
@@ -400,7 +401,7 @@ class DisplayServerWindows : public DisplayServer {
 	WNDPROC user_proc = nullptr;
 
 	void _send_window_event(const WindowData &wd, WindowEvent p_event);
-	void _get_window_style(bool p_main_window, bool p_fullscreen, bool p_borderless, bool p_resizable, bool p_maximized, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex);
+	void _get_window_style(bool p_main_window, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_maximized, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex);
 
 	MouseMode mouse_mode;
 	int restore_mouse_trails = 0;

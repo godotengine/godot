@@ -539,7 +539,7 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 	if (p_flags & WINDOW_FLAG_BORDERLESS_BIT) {
 		wd.borderless = true;
 	}
-	if (p_flags & WINDOW_FLAG_ALWAYS_ON_TOP_BIT && p_mode != WINDOW_MODE_FULLSCREEN) {
+	if (p_flags & WINDOW_FLAG_ALWAYS_ON_TOP_BIT && p_mode != WINDOW_MODE_FULLSCREEN && p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 		wd.always_on_top = true;
 	}
 	if (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) {
@@ -979,7 +979,7 @@ Size2i DisplayServerWindows::window_get_real_size(WindowID p_window) const {
 	return Size2();
 }
 
-void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscreen, bool p_borderless, bool p_resizable, bool p_maximized, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex) {
+void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_maximized, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex) {
 	// Windows docs for window styles:
 	// https://docs.microsoft.com/en-us/windows/win32/winmsg/window-styles
 	// https://docs.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
@@ -992,6 +992,9 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 
 	if (p_fullscreen || p_borderless) {
 		r_style |= WS_POPUP; // p_borderless was WS_EX_TOOLWINDOW in the past.
+		if (p_fullscreen && p_multiwindow_fs) {
+			r_style |= WS_BORDER; // Allows child windows to be displayed on top of full screen.
+		}
 	} else {
 		if (p_resizable) {
 			if (p_maximized) {
@@ -1022,7 +1025,7 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	DWORD style = 0;
 	DWORD style_ex = 0;
 
-	_get_window_style(p_window == MAIN_WINDOW_ID, wd.fullscreen, wd.borderless, wd.resizable, wd.maximized, wd.no_focus, style, style_ex);
+	_get_window_style(p_window == MAIN_WINDOW_ID, wd.fullscreen, wd.multiwindow_fs, wd.borderless, wd.resizable, wd.maximized, wd.no_focus, style, style_ex);
 
 	SetWindowLongPtr(wd.hWnd, GWL_STYLE, style);
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
@@ -1042,10 +1045,11 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	if (wd.fullscreen && p_mode != WINDOW_MODE_FULLSCREEN) {
+	if (wd.fullscreen && p_mode != WINDOW_MODE_FULLSCREEN && p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 		RECT rect;
 
 		wd.fullscreen = false;
+		wd.multiwindow_fs = false;
 		wd.maximized = wd.was_maximized;
 
 		if (wd.pre_fs_valid) {
@@ -1084,7 +1088,15 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		wd.minimized = true;
 	}
 
-	if (p_mode == WINDOW_MODE_FULLSCREEN && !wd.fullscreen) {
+	if (p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+		wd.multiwindow_fs = false;
+		_update_window_style(false);
+	} else {
+		wd.multiwindow_fs = true;
+		_update_window_style(false);
+	}
+
+	if ((p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) && !wd.fullscreen) {
 		if (wd.minimized) {
 			ShowWindow(wd.hWnd, SW_RESTORE);
 		}
@@ -1131,7 +1143,11 @@ DisplayServer::WindowMode DisplayServerWindows::window_get_mode(WindowID p_windo
 	const WindowData &wd = windows[p_window];
 
 	if (wd.fullscreen) {
-		return WINDOW_MODE_FULLSCREEN;
+		if (wd.multiwindow_fs) {
+			return WINDOW_MODE_FULLSCREEN;
+		} else {
+			return WINDOW_MODE_EXCLUSIVE_FULLSCREEN;
+		}
 	} else if (wd.minimized) {
 		return WINDOW_MODE_MINIMIZED;
 	} else if (wd.maximized) {
@@ -3095,7 +3111,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	DWORD dwExStyle;
 	DWORD dwStyle;
 
-	_get_window_style(window_id_counter == MAIN_WINDOW_ID, p_mode == WINDOW_MODE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_mode == WINDOW_MODE_MAXIMIZED, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT), dwStyle, dwExStyle);
+	_get_window_style(window_id_counter == MAIN_WINDOW_ID, (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN), p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_mode == WINDOW_MODE_MAXIMIZED, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT), dwStyle, dwExStyle);
 
 	RECT WindowRect;
 
@@ -3104,7 +3120,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	WindowRect.top = p_rect.position.y;
 	WindowRect.bottom = p_rect.position.y + p_rect.size.y;
 
-	if (p_mode == WINDOW_MODE_FULLSCREEN) {
+	if (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 		int nearest_area = 0;
 		Rect2i screen_rect;
 		for (int i = 0; i < get_screen_count(); i++) {
@@ -3147,7 +3163,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 			windows.erase(id);
 			return INVALID_WINDOW_ID;
 		}
-		if (p_mode != WINDOW_MODE_FULLSCREEN) {
+		if (p_mode != WINDOW_MODE_FULLSCREEN && p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 			wd.pre_fs_valid = true;
 		}
 
