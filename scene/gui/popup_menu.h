@@ -175,7 +175,9 @@ public:
 	Ref<ShortCut> get_item_shortcut(int p_idx) const;
 	int get_item_state(int p_idx) const;
 
+	void set_current_index(int p_idx);
 	int get_current_index() const;
+
 	int get_item_count() const;
 
 	bool activate_item_by_event(const Ref<InputEvent> &p_event, bool p_for_global_only = false);
