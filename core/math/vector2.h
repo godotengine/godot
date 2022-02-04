@@ -32,8 +32,8 @@
 #define VECTOR2_H
 
 #include "core/math/math_funcs.h"
-#include "core/string/ustring.h"
 
+class String;
 struct Vector2i;
 
 struct _NO_DISCARD_ Vector2 {
@@ -167,6 +167,7 @@ struct _NO_DISCARD_ Vector2 {
 	real_t aspect() const { return width / height; }
 
 	operator String() const;
+	operator Vector2i() const;
 
 	_FORCE_INLINE_ Vector2() {}
 	_FORCE_INLINE_ Vector2(const real_t p_x, const real_t p_y) {
@@ -281,114 +282,5 @@ Vector2 Vector2::direction_to(const Vector2 &p_to) const {
 
 typedef Vector2 Size2;
 typedef Vector2 Point2;
-
-/* INTEGER STUFF */
-
-struct _NO_DISCARD_ Vector2i {
-	enum Axis {
-		AXIS_X,
-		AXIS_Y,
-	};
-
-	union {
-		int32_t x = 0;
-		int32_t width;
-	};
-	union {
-		int32_t y = 0;
-		int32_t height;
-	};
-
-	_FORCE_INLINE_ int32_t &operator[](int p_idx) {
-		return p_idx ? y : x;
-	}
-	_FORCE_INLINE_ const int32_t &operator[](int p_idx) const {
-		return p_idx ? y : x;
-	}
-
-	_FORCE_INLINE_ Vector2i::Axis min_axis_index() const {
-		return x < y ? Vector2i::AXIS_X : Vector2i::AXIS_Y;
-	}
-
-	_FORCE_INLINE_ Vector2i::Axis max_axis_index() const {
-		return x < y ? Vector2i::AXIS_Y : Vector2i::AXIS_X;
-	}
-
-	Vector2i min(const Vector2i &p_vector2i) const {
-		return Vector2(MIN(x, p_vector2i.x), MIN(y, p_vector2i.y));
-	}
-
-	Vector2i max(const Vector2i &p_vector2i) const {
-		return Vector2(MAX(x, p_vector2i.x), MAX(y, p_vector2i.y));
-	}
-
-	Vector2i operator+(const Vector2i &p_v) const;
-	void operator+=(const Vector2i &p_v);
-	Vector2i operator-(const Vector2i &p_v) const;
-	void operator-=(const Vector2i &p_v);
-	Vector2i operator*(const Vector2i &p_v1) const;
-
-	Vector2i operator*(const int32_t &rvalue) const;
-	void operator*=(const int32_t &rvalue);
-
-	Vector2i operator/(const Vector2i &p_v1) const;
-	Vector2i operator/(const int32_t &rvalue) const;
-	void operator/=(const int32_t &rvalue);
-
-	Vector2i operator%(const Vector2i &p_v1) const;
-	Vector2i operator%(const int32_t &rvalue) const;
-	void operator%=(const int32_t &rvalue);
-
-	Vector2i operator-() const;
-	bool operator<(const Vector2i &p_vec2) const { return (x == p_vec2.x) ? (y < p_vec2.y) : (x < p_vec2.x); }
-	bool operator>(const Vector2i &p_vec2) const { return (x == p_vec2.x) ? (y > p_vec2.y) : (x > p_vec2.x); }
-
-	bool operator<=(const Vector2i &p_vec2) const { return x == p_vec2.x ? (y <= p_vec2.y) : (x < p_vec2.x); }
-	bool operator>=(const Vector2i &p_vec2) const { return x == p_vec2.x ? (y >= p_vec2.y) : (x > p_vec2.x); }
-
-	bool operator==(const Vector2i &p_vec2) const;
-	bool operator!=(const Vector2i &p_vec2) const;
-
-	int64_t length_squared() const;
-	double length() const;
-
-	real_t aspect() const { return width / (real_t)height; }
-	Vector2i sign() const { return Vector2i(SIGN(x), SIGN(y)); }
-	Vector2i abs() const { return Vector2i(ABS(x), ABS(y)); }
-	Vector2i clamp(const Vector2i &p_min, const Vector2i &p_max) const;
-
-	operator String() const;
-
-	operator Vector2() const { return Vector2(x, y); }
-
-	inline Vector2i() {}
-	inline Vector2i(const Vector2 &p_vec2) {
-		x = (int32_t)p_vec2.x;
-		y = (int32_t)p_vec2.y;
-	}
-	inline Vector2i(const int32_t p_x, const int32_t p_y) {
-		x = p_x;
-		y = p_y;
-	}
-};
-
-_FORCE_INLINE_ Vector2i operator*(const int32_t &p_scalar, const Vector2i &p_vector) {
-	return p_vector * p_scalar;
-}
-
-_FORCE_INLINE_ Vector2i operator*(const int64_t &p_scalar, const Vector2i &p_vector) {
-	return p_vector * p_scalar;
-}
-
-_FORCE_INLINE_ Vector2i operator*(const float &p_scalar, const Vector2i &p_vector) {
-	return p_vector * p_scalar;
-}
-
-_FORCE_INLINE_ Vector2i operator*(const double &p_scalar, const Vector2i &p_vector) {
-	return p_vector * p_scalar;
-}
-
-typedef Vector2i Size2i;
-typedef Vector2i Point2i;
 
 #endif // VECTOR2_H

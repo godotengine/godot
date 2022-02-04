@@ -34,6 +34,7 @@
 #include "core/math/math_funcs.h"
 #include "core/math/rect2.h"
 #include "core/math/vector2.h"
+#include "core/templates/vector.h"
 
 class String;
 
