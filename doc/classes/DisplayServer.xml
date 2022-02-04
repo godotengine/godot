@@ -399,6 +399,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="screen_get_refresh_rate" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="screen" type="int" default="-1" />
+			<description>
+				Returns the current refresh rate of the specified screen. If [code]screen[/code] is [code]SCREEN_OF_MAIN_WINDOW[/code] (the default value), a screen with the main window will be used.
+				[b]Note:[/b] Returns [code]60.0[/code] if the DisplayServer fails to find the refresh rate for the specified screen. On HTML5, [method screen_get_refresh_rate] will always return [code]60.0[/code] as there is no way to retrieve the refresh rate on that platform.
+			</description>
+		</method>
 		<method name="screen_get_scale" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="screen" type="int" default="-1" />
