@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MultiplayerSpawner" inherits="Node" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_spawn_custom" qualifiers="virtual">
+			<return type="Object" />
+			<argument index="0" name="data" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="spawn">
+			<return type="Node" />
+			<argument index="0" name="data" type="Variant" default="null" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="auto_spawn" type="bool" setter="set_auto_spawning" getter="is_auto_spawning" default="false">
+		</member>
+		<member name="replication" type="PackedScene[]" setter="set_spawnable_scenes" getter="get_spawnable_scenes" default="[]">
+		</member>
+		<member name="spawn_limit" type="int" setter="set_spawn_limit" getter="get_spawn_limit" default="0">
+		</member>
+		<member name="spawn_path" type="NodePath" setter="set_spawn_path" getter="get_spawn_path" default="NodePath(&quot;&quot;)">
+		</member>
+	</members>
+	<signals>
+		<signal name="despawned">
+			<argument index="0" name="scene_id" type="int" />
+			<argument index="1" name="node" type="Node" />
+			<description>
+			</description>
+		</signal>
+		<signal name="spawned">
+			<argument index="0" name="scene_id" type="int" />
+			<argument index="1" name="node" type="Node" />
+			<description>
+			</description>
+		</signal>
+	</signals>
+</class>

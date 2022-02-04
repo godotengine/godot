@@ -35,7 +35,26 @@
 #include "core/multiplayer/multiplayer_peer.h"
 #include "core/object/ref_counted.h"
 
-class MultiplayerReplicator;
+class MultiplayerAPI;
+
+class MultiplayerReplicationInterface : public RefCounted {
+	GDCLASS(MultiplayerReplicationInterface, RefCounted);
+
+public:
+	virtual void on_peer_change(int p_id, bool p_connected) {}
+	virtual void on_reset() {}
+	virtual Error on_spawn_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len) { return ERR_UNAVAILABLE; }
+	virtual Error on_despawn_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len) { return ERR_UNAVAILABLE; }
+	virtual Error on_sync_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len) { return ERR_UNAVAILABLE; }
+	virtual Error on_spawn(Object *p_obj, Variant p_config) { return ERR_UNAVAILABLE; }
+	virtual Error on_despawn(Object *p_obj, Variant p_config) { return ERR_UNAVAILABLE; }
+	virtual Error on_replication_start(Object *p_obj, Variant p_config) { return ERR_UNAVAILABLE; }
+	virtual Error on_replication_stop(Object *p_obj, Variant p_config) { return ERR_UNAVAILABLE; }
+	virtual void on_network_process() {}
+
+	MultiplayerReplicationInterface() {}
+};
+
 class RPCManager;
 
 class MultiplayerAPI : public RefCounted {
@@ -95,7 +114,7 @@ private:
 	Node *root_node = nullptr;
 	bool allow_object_decoding = false;
 
-	MultiplayerReplicator *replicator = nullptr;
+	Ref<MultiplayerReplicationInterface> replicator;
 	RPCManager *rpc_manager = nullptr;
 
 protected:
@@ -108,6 +127,13 @@ protected:
 	void _process_raw(int p_from, const uint8_t *p_packet, int p_packet_len);
 
 public:
+	static MultiplayerReplicationInterface *(*create_default_replication_interface)(MultiplayerAPI *p_multiplayer);
+
+	static Error encode_and_compress_variant(const Variant &p_variant, uint8_t *p_buffer, int &r_len, bool p_allow_object_decoding);
+	static Error decode_and_decompress_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int *r_len, bool p_allow_object_decoding);
+	static Error encode_and_compress_variants(const Variant **p_variants, int p_count, uint8_t *p_buffer, int &r_len, bool *r_raw = nullptr, bool p_allow_object_decoding = false);
+	static Error decode_and_decompress_variants(Vector<Variant> &r_variants, const uint8_t *p_buffer, int p_len, int &r_len, bool p_raw = false, bool p_allow_object_decoding = false);
+
 	void poll();
 	void clear();
 	void set_root_node(Node *p_node);
@@ -117,13 +143,13 @@ public:
 
 	Error send_bytes(Vector<uint8_t> p_data, int p_to = MultiplayerPeer::TARGET_PEER_BROADCAST, Multiplayer::TransferMode p_mode = Multiplayer::TRANSFER_MODE_RELIABLE, int p_channel = 0);
 
-	Error encode_and_compress_variant(const Variant &p_variant, uint8_t *p_buffer, int &r_len);
-	Error decode_and_decompress_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int *r_len);
-
 	// Called by Node.rpc
 	void rpcp(Node *p_node, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount);
-	// Called by Node._notification
-	void scene_enter_exit_notify(const String &p_scene, Node *p_node, bool p_enter);
+	// Replication API
+	Error spawn(Object *p_object, Variant p_config);
+	Error despawn(Object *p_object, Variant p_config);
+	Error replication_start(Object *p_object, Variant p_config);
+	Error replication_stop(Object *p_object, Variant p_config);
 	// Called by replicator
 	bool send_confirm_path(Node *p_node, NodePath p_path, int p_target, int &p_id);
 	Node *get_cached_node(int p_from, uint32_t p_node_id);
@@ -148,7 +174,6 @@ public:
 	void set_allow_object_decoding(bool p_enable);
 	bool is_object_decoding_allowed() const;
 
-	MultiplayerReplicator *get_replicator() const { return replicator; }
 	RPCManager *get_rpc_manager() const { return rpc_manager; }
 
 #ifdef DEBUG_ENABLED

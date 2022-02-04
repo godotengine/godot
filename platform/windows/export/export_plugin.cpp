@@ -76,8 +76,8 @@ void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "codesign/custom_options"), PackedStringArray()));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.ico"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/file_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "1.0.0"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/product_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "1.0.0"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/file_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "1.0.0.0"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/product_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "1.0.0.0"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/company_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Company Name"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/product_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/file_description"), ""));
@@ -89,6 +89,7 @@ void EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset>
 	String rcedit_path = EditorSettings::get_singleton()->get("export/windows/rcedit");
 
 	if (rcedit_path.is_empty()) {
+		WARN_PRINT("The rcedit tool is not configured in the Editor Settings (Export > Windows > Rcedit). No custom icon or app information data will be embedded in the exported executable.");
 		return;
 	}
 
@@ -326,4 +327,47 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 #endif
 
 	return OK;
+}
+
+bool EditorExportPlatformWindows::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+	String err = "";
+	bool valid = EditorExportPlatformPC::can_export(p_preset, err, r_missing_templates);
+
+	String rcedit_path = EditorSettings::get_singleton()->get("export/windows/rcedit");
+	if (rcedit_path.is_empty()) {
+		err += TTR("The rcedit tool must be configured in the Editor Settings (Export > Windows > Rcedit) to change the icon or app information data.") + "\n";
+	}
+
+	String icon_path = ProjectSettings::get_singleton()->globalize_path(p_preset->get("application/icon"));
+	if (!icon_path.is_empty() && !FileAccess::exists(icon_path)) {
+		err += TTR("Invalid icon path:") + " " + icon_path + "\n";
+	}
+
+	// Only non-negative integers can exist in the version string.
+
+	String file_version = p_preset->get("application/file_version");
+	if (!file_version.is_empty()) {
+		PackedStringArray version_array = file_version.split(".", false);
+		if (version_array.size() != 4 || !version_array[0].is_valid_int() ||
+				!version_array[1].is_valid_int() || !version_array[2].is_valid_int() ||
+				!version_array[3].is_valid_int() || file_version.find("-") > -1) {
+			err += TTR("Invalid file version:") + " " + file_version + "\n";
+		}
+	}
+
+	String product_version = p_preset->get("application/product_version");
+	if (!product_version.is_empty()) {
+		PackedStringArray version_array = product_version.split(".", false);
+		if (version_array.size() != 4 || !version_array[0].is_valid_int() ||
+				!version_array[1].is_valid_int() || !version_array[2].is_valid_int() ||
+				!version_array[3].is_valid_int() || product_version.find("-") > -1) {
+			err += TTR("Invalid product version:") + " " + product_version + "\n";
+		}
+	}
+
+	if (!err.is_empty()) {
+		r_error = err;
+	}
+
+	return valid;
 }

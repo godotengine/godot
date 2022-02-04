@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeVectorCompose" inherits="VisualShaderNode" version="4.0">
+<class name="VisualShaderNodeVectorCompose" inherits="VisualShaderNodeVectorBase" version="4.0">
 	<brief_description>
 		Composes a [Vector3] from three scalars within the visual shader graph.
 	</brief_description>

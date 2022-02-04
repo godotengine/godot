@@ -221,7 +221,7 @@ void ShaderCreateDialog::_language_changed(int p_language) {
 	String extension = "";
 
 	if (!path.is_empty()) {
-		if (path.find(".") != -1) {
+		if (path.contains(".")) {
 			extension = path.get_extension();
 		}
 		if (extension.length() == 0) {

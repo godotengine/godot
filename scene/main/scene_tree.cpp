@@ -36,6 +36,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
+#include "core/multiplayer/multiplayer_api.h"
 #include "core/object/message_queue.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"

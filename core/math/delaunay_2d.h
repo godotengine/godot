@@ -32,6 +32,7 @@
 #define DELAUNAY_2D_H
 
 #include "core/math/rect2.h"
+#include "core/templates/vector.h"
 
 class Delaunay2D {
 public:

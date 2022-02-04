@@ -364,7 +364,7 @@ preprocess_text_thai (const hb_ot_shape_plan_t *plan,
 	buffer->merge_out_clusters (start - 1, end);
     }
   }
-  buffer->swap_buffers ();
+  buffer->sync ();
 
   /* If font has Thai GSUB, we are done. */
   if (plan->props.script == HB_SCRIPT_THAI && !plan->map.found_script[0])

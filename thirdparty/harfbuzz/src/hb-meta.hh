@@ -29,6 +29,7 @@
 
 #include "hb.hh"
 
+#include <memory>
 #include <type_traits>
 #include <utility>
 
@@ -85,30 +86,13 @@ template <>             struct hb_priority<0> {};
 template <typename T> struct hb_type_identity_t { typedef T type; };
 template <typename T> using hb_type_identity = typename hb_type_identity_t<T>::type;
 
-struct
-{
-  template <typename T> constexpr T*
-  operator () (T& arg) const
-  {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wcast-align"
-    /* https://en.cppreference.com/w/cpp/memory/addressof */
-    return reinterpret_cast<T*> (
-	     &const_cast<char&> (
-		reinterpret_cast<const volatile char&> (arg)));
-#pragma GCC diagnostic pop
-  }
-}
-HB_FUNCOBJ (hb_addressof);
-
 template <typename T> static inline T hb_declval ();
 #define hb_declval(T) (hb_declval<T> ())
 
 template <typename T> struct hb_match_const		: hb_type_identity_t<T>, hb_false_type	{};
 template <typename T> struct hb_match_const<const T>	: hb_type_identity_t<T>, hb_true_type	{};
 template <typename T> using hb_remove_const = typename hb_match_const<T>::type;
-template <typename T> using hb_add_const = const T;
-#define hb_is_const(T) hb_match_const<T>::value
+
 template <typename T> struct hb_match_reference		: hb_type_identity_t<T>, hb_false_type	{};
 template <typename T> struct hb_match_reference<T &>	: hb_type_identity_t<T>, hb_true_type	{};
 template <typename T> struct hb_match_reference<T &&>	: hb_type_identity_t<T>, hb_true_type	{};
@@ -119,14 +103,13 @@ template <typename T> using hb_add_lvalue_reference = decltype (_hb_try_add_lval
 template <typename T> auto _hb_try_add_rvalue_reference (hb_priority<1>) -> hb_type_identity<T&&>;
 template <typename T> auto _hb_try_add_rvalue_reference (hb_priority<0>) -> hb_type_identity<T>;
 template <typename T> using hb_add_rvalue_reference = decltype (_hb_try_add_rvalue_reference<T> (hb_prioritize));
-#define hb_is_reference(T) hb_match_reference<T>::value
+
 template <typename T> struct hb_match_pointer		: hb_type_identity_t<T>, hb_false_type	{};
 template <typename T> struct hb_match_pointer<T *>	: hb_type_identity_t<T>, hb_true_type	{};
 template <typename T> using hb_remove_pointer = typename hb_match_pointer<T>::type;
 template <typename T> auto _hb_try_add_pointer (hb_priority<1>) -> hb_type_identity<hb_remove_reference<T>*>;
 template <typename T> auto _hb_try_add_pointer (hb_priority<1>) -> hb_type_identity<T>;
 template <typename T> using hb_add_pointer = decltype (_hb_try_add_pointer<T> (hb_prioritize));
-#define hb_is_pointer(T) hb_match_pointer<T>::value
 
 
 /* TODO Add feature-parity to std::decay. */
@@ -137,8 +120,8 @@ template <typename T> using hb_decay = hb_remove_const<hb_remove_reference<T>>;
 template <typename From, typename To>
 using hb_is_cr_convertible = hb_bool_constant<
   hb_is_same (hb_decay<From>, hb_decay<To>) &&
-  (!hb_is_const (From) || hb_is_const (To)) &&
-  (!hb_is_reference (To) || hb_is_const (To) || hb_is_reference (To))
+  (!std::is_const<From>::value || std::is_const<To>::value) &&
+  (!std::is_reference<To>::value || std::is_const<To>::value || std::is_reference<To>::value)
 >;
 #define hb_is_cr_convertible(From,To) hb_is_cr_convertible<From, To>::value
 
@@ -153,16 +136,6 @@ struct
 }
 HB_FUNCOBJ (hb_deref);
 
-struct
-{
-  template <typename T> constexpr auto
-  operator () (T&& v) const HB_AUTO_RETURN (std::forward<T> (v))
-
-  template <typename T> constexpr auto
-  operator () (T& v) const HB_AUTO_RETURN (hb_addressof (v))
-}
-HB_FUNCOBJ (hb_ref);
-
 template <typename T>
 struct hb_reference_wrapper
 {
@@ -176,7 +149,7 @@ struct hb_reference_wrapper
 template <typename T>
 struct hb_reference_wrapper<T&>
 {
-  hb_reference_wrapper (T& v) : v (hb_addressof (v)) {}
+  hb_reference_wrapper (T& v) : v (std::addressof (v)) {}
   bool operator == (const hb_reference_wrapper& o) const { return v == o.v; }
   bool operator != (const hb_reference_wrapper& o) const { return v != o.v; }
   operator T& () const { return *v; }

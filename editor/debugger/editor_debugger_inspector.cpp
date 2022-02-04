@@ -155,7 +155,7 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 		if (pinfo.type == Variant::OBJECT) {
 			if (var.get_type() == Variant::STRING) {
 				String path = var;
-				if (path.find("::") != -1) {
+				if (path.contains("::")) {
 					// built-in resource
 					String base_path = path.get_slice("::", 0);
 					RES dependency = ResourceLoader::load(base_path);

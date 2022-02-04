@@ -210,9 +210,13 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_shaped_text_set_preserve_control, "shaped", "enabled");
 	GDVIRTUAL_BIND(_shaped_text_get_preserve_control, "shaped");
 
-	GDVIRTUAL_BIND(_shaped_text_add_string, "shaped", "text", "fonts", "size", "opentype_features", "language");
+	GDVIRTUAL_BIND(_shaped_text_add_string, "shaped", "text", "fonts", "size", "opentype_features", "language", "meta");
 	GDVIRTUAL_BIND(_shaped_text_add_object, "shaped", "key", "size", "inline_align", "length");
 	GDVIRTUAL_BIND(_shaped_text_resize_object, "shaped", "key", "size", "inline_align");
+
+	GDVIRTUAL_BIND(_shaped_get_span_count, "shaped");
+	GDVIRTUAL_BIND(_shaped_get_span_meta, "shaped", "index");
+	GDVIRTUAL_BIND(_shaped_set_span_update_font, "shaped", "index", "fonts", "size", "opentype_features");
 
 	GDVIRTUAL_BIND(_shaped_text_substr, "shaped", "start", "length");
 	GDVIRTUAL_BIND(_shaped_text_get_parent, "shaped");
@@ -226,8 +230,8 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_shaped_text_is_ready, "shaped");
 
-	GDVIRTUAL_BIND(_shaped_text_get_glyphs, "shaped", "r_glyphs");
-	GDVIRTUAL_BIND(_shaped_text_sort_logical, "shaped", "r_glyphs");
+	GDVIRTUAL_BIND(_shaped_text_get_glyphs, "shaped");
+	GDVIRTUAL_BIND(_shaped_text_sort_logical, "shaped");
 	GDVIRTUAL_BIND(_shaped_text_get_glyph_count, "shaped");
 
 	GDVIRTUAL_BIND(_shaped_text_get_range, "shaped");
@@ -239,7 +243,7 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_shaped_text_get_trim_pos, "shaped");
 	GDVIRTUAL_BIND(_shaped_text_get_ellipsis_pos, "shaped");
 	GDVIRTUAL_BIND(_shaped_text_get_ellipsis_glyph_count, "shaped");
-	GDVIRTUAL_BIND(_shaped_text_get_ellipsis_glyphs, "shaped", "r_glyphs");
+	GDVIRTUAL_BIND(_shaped_text_get_ellipsis_glyphs, "shaped");
 
 	GDVIRTUAL_BIND(_shaped_text_overrun_trim_to_width, "shaped", "width", "trim_flags");
 
@@ -501,7 +505,7 @@ void TextServerExtension::font_set_hinting(RID p_font_rid, TextServer::Hinting p
 }
 
 TextServer::Hinting TextServerExtension::font_get_hinting(RID p_font_rid) const {
-	int ret;
+	TextServer::Hinting ret;
 	if (GDVIRTUAL_CALL(_font_get_hinting, p_font_rid, ret)) {
 		return (TextServer::Hinting)ret;
 	}
@@ -951,7 +955,7 @@ void TextServerExtension::shaped_text_set_direction(RID p_shaped, TextServer::Di
 }
 
 TextServer::Direction TextServerExtension::shaped_text_get_direction(RID p_shaped) const {
-	int ret;
+	TextServer::Direction ret;
 	if (GDVIRTUAL_CALL(_shaped_text_get_direction, p_shaped, ret)) {
 		return (TextServer::Direction)ret;
 	}
@@ -959,7 +963,7 @@ TextServer::Direction TextServerExtension::shaped_text_get_direction(RID p_shape
 }
 
 TextServer::Direction TextServerExtension::shaped_text_get_inferred_direction(RID p_shaped) const {
-	int ret;
+	TextServer::Direction ret;
 	if (GDVIRTUAL_CALL(_shaped_text_get_inferred_direction, p_shaped, ret)) {
 		return (TextServer::Direction)ret;
 	}
@@ -971,7 +975,7 @@ void TextServerExtension::shaped_text_set_orientation(RID p_shaped, TextServer::
 }
 
 TextServer::Orientation TextServerExtension::shaped_text_get_orientation(RID p_shaped) const {
-	int ret;
+	TextServer::Orientation ret;
 	if (GDVIRTUAL_CALL(_shaped_text_get_orientation, p_shaped, ret)) {
 		return (TextServer::Orientation)ret;
 	}
@@ -1018,13 +1022,13 @@ bool TextServerExtension::shaped_text_get_preserve_control(RID p_shaped) const {
 	return false;
 }
 
-bool TextServerExtension::shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Dictionary &p_opentype_features, const String &p_language) {
+bool TextServerExtension::shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Dictionary &p_opentype_features, const String &p_language, const Variant &p_meta) {
 	bool ret;
 	Array fonts;
 	for (int i = 0; i < p_fonts.size(); i++) {
 		fonts.push_back(p_fonts[i]);
 	}
-	if (GDVIRTUAL_CALL(_shaped_text_add_string, p_shaped, p_text, fonts, p_size, p_opentype_features, p_language, ret)) {
+	if (GDVIRTUAL_CALL(_shaped_text_add_string, p_shaped, p_text, fonts, p_size, p_opentype_features, p_language, p_meta, ret)) {
 		return ret;
 	}
 	return false;
@@ -1044,6 +1048,30 @@ bool TextServerExtension::shaped_text_resize_object(RID p_shaped, Variant p_key,
 		return ret;
 	}
 	return false;
+}
+
+int TextServerExtension::shaped_get_span_count(RID p_shaped) const {
+	int ret;
+	if (GDVIRTUAL_CALL(_shaped_get_span_count, p_shaped, ret)) {
+		return ret;
+	}
+	return 0;
+}
+
+Variant TextServerExtension::shaped_get_span_meta(RID p_shaped, int p_index) const {
+	Variant ret;
+	if (GDVIRTUAL_CALL(_shaped_get_span_meta, p_shaped, p_index, ret)) {
+		return ret;
+	}
+	return false;
+}
+
+void TextServerExtension::shaped_set_span_update_font(RID p_shaped, int p_index, const Vector<RID> &p_fonts, int p_size, const Dictionary &p_opentype_features) {
+	Array fonts;
+	for (int i = 0; i < p_fonts.size(); i++) {
+		fonts.push_back(p_fonts[i]);
+	}
+	GDVIRTUAL_CALL(_shaped_set_span_update_font, p_shaped, p_index, fonts, p_size, p_opentype_features);
 }
 
 RID TextServerExtension::shaped_text_substr(RID p_shaped, int p_start, int p_length) const {
@@ -1111,16 +1139,16 @@ bool TextServerExtension::shaped_text_is_ready(RID p_shaped) const {
 }
 
 const Glyph *TextServerExtension::shaped_text_get_glyphs(RID p_shaped) const {
-	const Glyph *ret;
-	if (GDVIRTUAL_CALL(_shaped_text_get_glyphs, p_shaped, &ret)) {
+	GDNativePtr<Glyph> ret;
+	if (GDVIRTUAL_CALL(_shaped_text_get_glyphs, p_shaped, ret)) {
 		return ret;
 	}
 	return nullptr;
 }
 
 const Glyph *TextServerExtension::shaped_text_sort_logical(RID p_shaped) {
-	const Glyph *ret;
-	if (GDVIRTUAL_CALL(_shaped_text_sort_logical, p_shaped, &ret)) {
+	GDNativePtr<Glyph> ret;
+	if (GDVIRTUAL_CALL(_shaped_text_sort_logical, p_shaped, ret)) {
 		return ret;
 	}
 	return nullptr;
@@ -1183,8 +1211,8 @@ int TextServerExtension::shaped_text_get_ellipsis_pos(RID p_shaped) const {
 }
 
 const Glyph *TextServerExtension::shaped_text_get_ellipsis_glyphs(RID p_shaped) const {
-	const Glyph *ret;
-	if (GDVIRTUAL_CALL(_shaped_text_get_ellipsis_glyphs, p_shaped, &ret)) {
+	GDNativePtr<Glyph> ret;
+	if (GDVIRTUAL_CALL(_shaped_text_get_ellipsis_glyphs, p_shaped, ret)) {
 		return ret;
 	}
 	return nullptr;

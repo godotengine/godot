@@ -316,7 +316,7 @@ static bool _teststr(const String &p_what, const String &p_str) {
 	String what = p_what;
 
 	//remove trailing spaces and numbers, some apps like blender add ".number" to duplicates so also compensate for this
-	while (what.length() && ((what[what.length() - 1] >= '0' && what[what.length() - 1] <= '9') || what[what.length() - 1] <= 32 || what[what.length() - 1] == '.')) {
+	while (what.length() && (is_digit(what[what.length() - 1]) || what[what.length() - 1] <= 32 || what[what.length() - 1] == '.')) {
 		what = what.substr(0, what.length() - 1);
 	}
 
@@ -336,7 +336,7 @@ static String _fixstr(const String &p_what, const String &p_str) {
 	String what = p_what;
 
 	//remove trailing spaces and numbers, some apps like blender add ".number" to duplicates so also compensate for this
-	while (what.length() && ((what[what.length() - 1] >= '0' && what[what.length() - 1] <= '9') || what[what.length() - 1] <= 32 || what[what.length() - 1] == '.')) {
+	while (what.length() && (is_digit(what[what.length() - 1]) || what[what.length() - 1] <= 32 || what[what.length() - 1] == '.')) {
 		what = what.substr(0, what.length() - 1);
 	}
 

@@ -71,9 +71,9 @@ ResourceUID::ID ResourceUID::text_to_id(const String &p_text) const {
 	for (uint32_t i = 6; i < l; i++) {
 		uid *= base;
 		uint32_t c = p_text[i];
-		if (c >= 'a' && c <= 'z') {
+		if (is_ascii_lower_case(c)) {
 			uid += c - 'a';
-		} else if (c >= '0' && c <= '9') {
+		} else if (is_digit(c)) {
 			uid += c - '0' + char_count;
 		} else {
 			return INVALID_ID;

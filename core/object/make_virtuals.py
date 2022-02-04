@@ -123,9 +123,9 @@ def generate_version(argcount, const=False, returns=False):
             callargtext += ","
         callargtext += " m_ret& r_ret"
         s = s.replace("$CALLSIBEGIN", "Variant ret = ")
-        s = s.replace("$CALLSIRET", "r_ret = ret;")
+        s = s.replace("$CALLSIRET", "r_ret = VariantCaster<m_ret>::cast(ret);")
         s = s.replace("$CALLPTRRETPASS", "&ret")
-        s = s.replace("$CALLPTRRET", "r_ret = ret;")
+        s = s.replace("$CALLPTRRET", "r_ret = (m_ret)ret;")
     else:
         s = s.replace("$CALLSIBEGIN", "")
         s = s.replace("$CALLSIRET", "")

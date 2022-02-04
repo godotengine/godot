@@ -70,7 +70,7 @@ void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64
 		String p = p_path.replace_first("res://", "");
 		PackedDir *cd = root;
 
-		if (p.find("/") != -1) { //in a subdir
+		if (p.contains("/")) { //in a subdir
 
 			Vector<String> ds = p.get_base_dir().split("/");
 

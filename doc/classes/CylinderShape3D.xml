@@ -15,7 +15,7 @@
 		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">
 			The cylinder's height.
 		</member>
-		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="1.0">
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.5">
 			The cylinder's radius.
 		</member>
 	</members>

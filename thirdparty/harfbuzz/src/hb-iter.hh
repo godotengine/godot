@@ -90,8 +90,8 @@ struct hb_iter_t
    * it will be returning pointer to temporary rvalue.
    * TODO Use a wrapper return type to fix for non-reference type. */
   template <typename T = item_t,
-	    hb_enable_if (hb_is_reference (T))>
-  hb_remove_reference<item_t>* operator -> () const { return hb_addressof (**thiz()); }
+	    hb_enable_if (std::is_reference<T>::value)>
+  hb_remove_reference<item_t>* operator -> () const { return std::addressof (**thiz()); }
   item_t operator * () const { return thiz()->__item__ (); }
   item_t operator * () { return thiz()->__item__ (); }
   item_t operator [] (unsigned i) const { return thiz()->__item_at__ (i); }
@@ -289,7 +289,7 @@ struct hb_is_source_of
 {
   private:
   template <typename Iter2 = Iter,
-	    hb_enable_if (hb_is_convertible (typename Iter2::item_t, hb_add_lvalue_reference<hb_add_const<Item>>))>
+	    hb_enable_if (hb_is_convertible (typename Iter2::item_t, hb_add_lvalue_reference<const Item>))>
   static hb_true_type impl (hb_priority<2>);
   template <typename Iter2 = Iter>
   static auto impl (hb_priority<1>) -> decltype (hb_declval (Iter2) >> hb_declval (Item &), hb_true_type ());

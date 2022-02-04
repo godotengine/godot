@@ -399,6 +399,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="screen_get_refresh_rate" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="screen" type="int" default="-1" />
+			<description>
+				Returns the current refresh rate of the specified screen. If [code]screen[/code] is [code]SCREEN_OF_MAIN_WINDOW[/code] (the default value), a screen with the main window will be used.
+				[b]Note:[/b] Returns [code]60.0[/code] if the DisplayServer fails to find the refresh rate for the specified screen. On HTML5, [method screen_get_refresh_rate] will always return [code]60.0[/code] as there is no way to retrieve the refresh rate on that platform.
+			</description>
+		</method>
 		<method name="screen_get_scale" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="screen" type="int" default="-1" />
@@ -898,6 +906,11 @@
 		</constant>
 		<constant name="WINDOW_MODE_FULLSCREEN" value="3" enum="WindowMode">
 			Fullscreen window mode. Note that this is not [i]exclusive[/i] fullscreen. On Windows and Linux, a borderless window is used to emulate fullscreen. On macOS, a new desktop is used to display the running project.
+			Regardless of the platform, enabling fullscreen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling fullscreen mode.
+		</constant>
+		<constant name="WINDOW_MODE_EXCLUSIVE_FULLSCREEN" value="4" enum="WindowMode">
+			Exclusive fullscreen window mode. This mode is implemented on Windows only. On other platforms, it is equivalent to [constant WINDOW_MODE_FULLSCREEN].
+			Only one window in exclusive fullscreen mode can be visible on a given screen at a time. If multiple windows are in exclusive fullscreen mode for the same screen, the last one being set to this mode takes precedence.
 			Regardless of the platform, enabling fullscreen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling fullscreen mode.
 		</constant>
 		<constant name="WINDOW_FLAG_RESIZE_DISABLED" value="0" enum="WindowFlags">

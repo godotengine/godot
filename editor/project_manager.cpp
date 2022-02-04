@@ -1475,7 +1475,7 @@ void ProjectList::sort_projects() {
 		bool visible = true;
 		if (!_search_term.is_empty()) {
 			String search_path;
-			if (_search_term.find("/") != -1) {
+			if (_search_term.contains("/")) {
 				// Search path will match the whole path
 				search_path = item.path;
 			} else {

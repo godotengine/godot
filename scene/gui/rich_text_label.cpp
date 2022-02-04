@@ -205,6 +205,49 @@ String RichTextLabel::_letters(int p_num, bool p_capitalize) const {
 	return s;
 }
 
+void RichTextLabel::_update_line_font(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size) {
+	ERR_FAIL_COND(p_frame == nullptr);
+	ERR_FAIL_COND(p_line < 0 || p_line >= p_frame->lines.size());
+
+	Line &l = p_frame->lines.write[p_line];
+
+	RID t = l.text_buf->get_rid();
+	int spans = TS->shaped_get_span_count(t);
+	for (int i = 0; i < spans; i++) {
+		ItemText *it = (ItemText *)(uint64_t)TS->shaped_get_span_meta(t, i);
+		if (it) {
+			Ref<Font> font = _find_font(it);
+			if (font.is_null()) {
+				font = p_base_font;
+			}
+			int font_size = _find_font_size(it);
+			if (font_size == -1) {
+				font_size = p_base_font_size;
+			}
+			Dictionary font_ftr = _find_font_features(it);
+			TS->shaped_set_span_update_font(t, i, font->get_rids(), font_size, font_ftr);
+		}
+	}
+
+	Item *it_to = (p_line + 1 < p_frame->lines.size()) ? p_frame->lines[p_line + 1].from : nullptr;
+	for (Item *it = l.from; it && it != it_to; it = _get_next_item(it)) {
+		switch (it->type) {
+			case ITEM_TABLE: {
+				ItemTable *table = static_cast<ItemTable *>(it);
+				for (Item *E : table->subitems) {
+					ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
+					ItemFrame *frame = static_cast<ItemFrame *>(E);
+					for (int i = 0; i < frame->lines.size(); i++) {
+						_update_line_font(frame, i, p_base_font, p_base_font_size);
+					}
+				}
+			} break;
+			default:
+				break;
+		}
+	}
+}
+
 void RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width) {
 	ERR_FAIL_COND(p_frame == nullptr);
 	ERR_FAIL_COND(p_line < 0 || p_line >= p_frame->lines.size());
@@ -378,9 +421,24 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 
 	Line &l = p_frame->lines.write[p_line];
 
+	uint16_t autowrap_flags = TextServer::BREAK_MANDATORY;
+	switch (autowrap_mode) {
+		case AUTOWRAP_WORD_SMART:
+			autowrap_flags = TextServer::BREAK_WORD_BOUND_ADAPTIVE | TextServer::BREAK_MANDATORY;
+			break;
+		case AUTOWRAP_WORD:
+			autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY;
+			break;
+		case AUTOWRAP_ARBITRARY:
+			autowrap_flags = TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_MANDATORY;
+			break;
+		case AUTOWRAP_OFF:
+			break;
+	}
+
 	// Clear cache.
 	l.text_buf->clear();
-	l.text_buf->set_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_TRIM_EDGE_SPACES);
+	l.text_buf->set_flags(autowrap_flags | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_TRIM_EDGE_SPACES);
 	l.char_offset = *r_char_offset;
 	l.char_count = 0;
 
@@ -449,7 +507,7 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 				}
 				remaining_characters -= tx.length();
 
-				l.text_buf->add_string(tx, font, font_size, font_ftr, lang);
+				l.text_buf->add_string(tx, font, font_size, font_ftr, lang, (uint64_t)it);
 				text += tx;
 				l.char_count += tx.length();
 			} break;
@@ -1448,7 +1506,10 @@ void RichTextLabel::_notification(int p_what) {
 			update();
 
 		} break;
-		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_THEME_CHANGED: {
+			main->first_invalid_font_line = 0; //invalidate ALL
+			update();
+		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			if (!text.is_empty()) {
 				set_text(text);
@@ -1545,6 +1606,10 @@ Control::CursorShape RichTextLabel::get_cursor_shape(const Point2 &p_pos) const 
 		return get_default_cursor_shape(); //invalid
 	}
 
+	if (main->first_invalid_font_line < main->lines.size()) {
+		return get_default_cursor_shape(); //invalid
+	}
+
 	if (main->first_resized_line < main->lines.size()) {
 		return get_default_cursor_shape(); //invalid
 	}
@@ -1567,6 +1632,9 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 
 	if (b.is_valid()) {
 		if (main->first_invalid_line < main->lines.size()) {
+			return;
+		}
+		if (main->first_invalid_font_line < main->lines.size()) {
 			return;
 		}
 		if (main->first_resized_line < main->lines.size()) {
@@ -1730,6 +1798,9 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 
 	if (m.is_valid()) {
 		if (main->first_invalid_line < main->lines.size()) {
+			return;
+		}
+		if (main->first_invalid_font_line < main->lines.size()) {
 			return;
 		}
 		if (main->first_resized_line < main->lines.size()) {
@@ -2184,15 +2255,24 @@ bool RichTextLabel::_find_layout_subitem(Item *from, Item *to) {
 
 void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 	if (p_frame->first_invalid_line == p_frame->lines.size()) {
+		Ref<Font> base_font = get_theme_font(SNAME("normal_font"));
+		int base_font_size = get_theme_font_size(SNAME("normal_font_size"));
+
+		// Update fonts.
+		if (p_frame->first_invalid_font_line != p_frame->lines.size()) {
+			for (int i = p_frame->first_invalid_font_line; i < p_frame->lines.size(); i++) {
+				_update_line_font(p_frame, i, base_font, base_font_size);
+			}
+			p_frame->first_resized_line = p_frame->first_invalid_font_line;
+			p_frame->first_invalid_font_line = p_frame->lines.size();
+		}
+
 		if (p_frame->first_resized_line == p_frame->lines.size()) {
 			return;
 		}
 
 		// Resize lines without reshaping.
 		Rect2 text_rect = _get_text_rect();
-
-		Ref<Font> base_font = get_theme_font(SNAME("normal_font"));
-		int base_font_size = get_theme_font_size(SNAME("normal_font_size"));
 
 		for (int i = p_frame->first_resized_line; i < p_frame->lines.size(); i++) {
 			_resize_line(p_frame, i, base_font, base_font_size, text_rect.get_size().width - scroll_w);
@@ -2237,6 +2317,7 @@ void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 
 	p_frame->first_invalid_line = p_frame->lines.size();
 	p_frame->first_resized_line = p_frame->lines.size();
+	p_frame->first_invalid_font_line = p_frame->lines.size();
 
 	updating_scroll = true;
 	vscroll->set_max(total_height);
@@ -4011,6 +4092,19 @@ String RichTextLabel::get_language() const {
 	return language;
 }
 
+void RichTextLabel::set_autowrap_mode(RichTextLabel::AutowrapMode p_mode) {
+	if (autowrap_mode != p_mode) {
+		autowrap_mode = p_mode;
+		main->first_invalid_line = 0; //invalidate ALL
+		_validate_line_caches(main);
+		update();
+	}
+}
+
+RichTextLabel::AutowrapMode RichTextLabel::get_autowrap_mode() const {
+	return autowrap_mode;
+}
+
 void RichTextLabel::set_percent_visible(float p_percent) {
 	if (percent_visible != p_percent) {
 		if (p_percent < 0 || p_percent >= 1) {
@@ -4122,6 +4216,9 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_language", "language"), &RichTextLabel::set_language);
 	ClassDB::bind_method(D_METHOD("get_language"), &RichTextLabel::get_language);
 
+	ClassDB::bind_method(D_METHOD("set_autowrap_mode", "autowrap_mode"), &RichTextLabel::set_autowrap_mode);
+	ClassDB::bind_method(D_METHOD("get_autowrap_mode"), &RichTextLabel::get_autowrap_mode);
+
 	ClassDB::bind_method(D_METHOD("set_meta_underline", "enable"), &RichTextLabel::set_meta_underline);
 	ClassDB::bind_method(D_METHOD("is_meta_underlined"), &RichTextLabel::is_meta_underlined);
 
@@ -4214,6 +4311,8 @@ void RichTextLabel::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), "set_language", "get_language");
 
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
+
 	ADD_GROUP("Structured Text", "structured_text_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "structured_text_bidi_override", PROPERTY_HINT_ENUM, "Default,URI,File,Email,List,None,Custom"), "set_structured_text_bidi_override", "get_structured_text_bidi_override");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "structured_text_bidi_override_options"), "set_structured_text_bidi_override_options", "get_structured_text_bidi_override_options");
@@ -4221,6 +4320,11 @@ void RichTextLabel::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("meta_clicked", PropertyInfo(Variant::NIL, "meta", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
 	ADD_SIGNAL(MethodInfo("meta_hover_started", PropertyInfo(Variant::NIL, "meta", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
 	ADD_SIGNAL(MethodInfo("meta_hover_ended", PropertyInfo(Variant::NIL, "meta", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
+
+	BIND_ENUM_CONSTANT(AUTOWRAP_OFF);
+	BIND_ENUM_CONSTANT(AUTOWRAP_ARBITRARY);
+	BIND_ENUM_CONSTANT(AUTOWRAP_WORD);
+	BIND_ENUM_CONSTANT(AUTOWRAP_WORD_SMART);
 
 	BIND_ENUM_CONSTANT(LIST_NUMBERS);
 	BIND_ENUM_CONSTANT(LIST_LETTERS);
@@ -4494,6 +4598,7 @@ RichTextLabel::RichTextLabel() {
 	main->lines.write[0].from = main;
 	main->first_invalid_line = 0;
 	main->first_resized_line = 0;
+	main->first_invalid_font_line = 0;
 	current_frame = main;
 
 	vscroll = memnew(VScrollBar);

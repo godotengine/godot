@@ -335,7 +335,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 					String exttype = get_unicode_string();
 					String path = get_unicode_string();
 
-					if (path.find("://") == -1 && path.is_relative_path()) {
+					if (!path.contains("://") && path.is_relative_path()) {
 						// path is relative to file being loaded, so convert to a resource path
 						path = ProjectSettings::get_singleton()->localize_path(res_path.get_base_dir().plus_file(path));
 					}
@@ -626,7 +626,7 @@ Error ResourceLoaderBinary::load() {
 			path = remaps[path];
 		}
 
-		if (path.find("://") == -1 && path.is_relative_path()) {
+		if (!path.contains("://") && path.is_relative_path()) {
 			// path is relative to file being loaded, so convert to a resource path
 			path = ProjectSettings::get_singleton()->localize_path(path.get_base_dir().plus_file(external_resources[i].path));
 		}

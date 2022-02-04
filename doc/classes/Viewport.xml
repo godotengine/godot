@@ -107,6 +107,12 @@
 				Returns the drag data from the GUI, that was previously returned by [method Control._get_drag_data].
 			</description>
 		</method>
+		<method name="gui_get_focus_owner">
+			<return type="Control" />
+			<description>
+				Returns the [Control] having the focus within this viewport. If no [Control] has the focus, returns null.
+			</description>
+		</method>
 		<method name="gui_is_drag_successful" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -117,6 +123,12 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the viewport is currently performing a drag operation.
+			</description>
+		</method>
+		<method name="gui_release_focus">
+			<return type="void" />
+			<description>
+				Removes the focus from the currently focussed [Control] within this viewport. If no [Control] has the focus, does nothing.
 			</description>
 		</method>
 		<method name="is_embedding_subwindows" qualifiers="const">

@@ -12,9 +12,11 @@
 #ifndef WEBP_DSP_NEON_H_
 #define WEBP_DSP_NEON_H_
 
-#include <arm_neon.h>
-
 #include "src/dsp/dsp.h"
+
+#if defined(WEBP_USE_NEON)
+
+#include <arm_neon.h>
 
 // Right now, some intrinsics functions seem slower, so we disable them
 // everywhere except newer clang/gcc or aarch64 where the inline assembly is
@@ -98,4 +100,5 @@ static WEBP_INLINE int32x4x4_t Transpose4x4_NEON(const int32x4x4_t rows) {
 } while (0)
 #endif
 
+#endif  // WEBP_USE_NEON
 #endif  // WEBP_DSP_NEON_H_

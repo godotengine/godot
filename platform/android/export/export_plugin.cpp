@@ -416,10 +416,10 @@ String EditorExportPlatformAndroid::get_package_name(const String &p_package) co
 	bool first = true;
 	for (int i = 0; i < basename.length(); i++) {
 		char32_t c = basename[i];
-		if (c >= '0' && c <= '9' && first) {
+		if (is_digit(c) && first) {
 			continue;
 		}
-		if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {
+		if (is_ascii_alphanumeric_char(c)) {
 			name += String::chr(c);
 			first = false;
 		}
@@ -462,19 +462,19 @@ bool EditorExportPlatformAndroid::is_package_name_valid(const String &p_package,
 			first = true;
 			continue;
 		}
-		if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_')) {
+		if (!is_ascii_identifier_char(c)) {
 			if (r_error) {
 				*r_error = vformat(TTR("The character '%s' is not allowed in Android application package names."), String::chr(c));
 			}
 			return false;
 		}
-		if (first && (c >= '0' && c <= '9')) {
+		if (first && is_digit(c)) {
 			if (r_error) {
 				*r_error = TTR("A digit cannot be the first character in a package segment.");
 			}
 			return false;
 		}
-		if (first && c == '_') {
+		if (first && is_underscore(c)) {
 			if (r_error) {
 				*r_error = vformat(TTR("The character '%s' cannot be the first character in a package segment."), String::chr(c));
 			}

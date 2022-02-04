@@ -173,10 +173,10 @@ class VisualScriptEditor : public ScriptEditorBase {
 	String member_name;
 
 	PortAction port_action;
-	int port_action_node;
-	int port_action_output;
+	int port_action_node = 0;
+	int port_action_output = 0;
 	Vector2 port_action_pos;
-	int port_action_new_node;
+	int port_action_new_node = 0;
 
 	bool saved_pos_dirty = false;
 
@@ -196,7 +196,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	int _create_new_node_from_name(const String &p_text, const Vector2 &p_point);
 	void _selected_new_virtual_method(const String &p_text, const String &p_category, const bool p_connecting);
 
-	int error_line;
+	int error_line = -1;
 
 	void _node_selected(Node *p_node);
 	void _center_on_node(int p_id);
@@ -267,12 +267,12 @@ class VisualScriptEditor : public ScriptEditorBase {
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
-	int editing_id;
-	int editing_input;
+	int editing_id = 0;
+	int editing_input = 0;
 
-	bool can_swap;
-	int data_disconnect_node;
-	int data_disconnect_port;
+	bool can_swap = false;
+	int data_disconnect_node = 0;
+	int data_disconnect_port = 0;
 
 	void _default_value_changed();
 	void _default_value_edited(Node *p_button, int p_id, int p_input_port);

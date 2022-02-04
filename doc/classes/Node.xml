@@ -726,6 +726,18 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="child_entered_tree">
+			<argument index="0" name="node" type="Node" />
+			<description>
+				Emitted when a child node enters the scene tree, either because it entered on its own or because this node entered with it.
+			</description>
+		</signal>
+		<signal name="child_exited_tree">
+			<argument index="0" name="node" type="Node" />
+			<description>
+				Emitted when a child node exits the scene tree, either because it exited on its own or because this node exited.
+			</description>
+		</signal>
 		<signal name="ready">
 			<description>
 				Emitted when the node is ready. Comes after [method _ready] callback and follows the same rules.

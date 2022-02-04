@@ -207,8 +207,7 @@ struct glyf
   _populate_subset_glyphs (const hb_subset_plan_t   *plan,
 			   hb_vector_t<SubsetGlyph> *glyphs /* OUT */) const
   {
-    OT::glyf::accelerator_t glyf;
-    glyf.init (plan->source);
+    OT::glyf::accelerator_t glyf (plan->source);
 
     + hb_range (plan->num_output_glyphs ())
     | hb_map ([&] (hb_codepoint_t new_gid)
@@ -233,8 +232,6 @@ struct glyf
 	      })
     | hb_sink (glyphs)
     ;
-
-    glyf.fini ();
   }
 
   static bool
@@ -595,7 +592,7 @@ struct glyf
         if (unlikely (!header.numberOfContours)) return;
 
         unsigned flags_offset = length (instructions_length ());
-        if (unlikely (length (flags_offset + 1) > bytes.length)) return;
+        if (unlikely (flags_offset + 1 > bytes.length)) return;
 
 	HBUINT8 &first_flag = (HBUINT8 &) StructAtOffset<HBUINT16> (&bytes, flags_offset);
         first_flag = (uint8_t) first_flag | FLAG_OVERLAP_SIMPLE;
@@ -920,7 +917,7 @@ struct glyf
 
   struct accelerator_t
   {
-    void init (hb_face_t *face_)
+    accelerator_t (hb_face_t *face_)
     {
       short_offset = false;
       num_glyphs = 0;
@@ -953,8 +950,7 @@ struct glyf
       num_glyphs = hb_max (1u, loca_table.get_length () / (short_offset ? 2 : 4)) - 1;
       num_glyphs = hb_min (num_glyphs, face->get_num_glyphs ());
     }
-
-    void fini ()
+    ~accelerator_t ()
     {
       loca_table.destroy ();
       glyf_table.destroy ();
@@ -1358,7 +1354,10 @@ struct glyf
 			 * defining it _MIN instead. */
 };
 
-struct glyf_accelerator_t : glyf::accelerator_t {};
+struct glyf_accelerator_t : glyf::accelerator_t {
+  glyf_accelerator_t (hb_face_t *face) : glyf::accelerator_t (face) {}
+};
+
 
 } /* namespace OT */
 

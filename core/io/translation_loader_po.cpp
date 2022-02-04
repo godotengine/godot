@@ -179,7 +179,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 		}
 
 		if (l.is_empty() || l.begins_with("#")) {
-			if (l.find("fuzzy") != -1) {
+			if (l.contains("fuzzy")) {
 				skip_next = true;
 			}
 			line++;

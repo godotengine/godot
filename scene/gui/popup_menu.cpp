@@ -192,7 +192,7 @@ void PopupMenu::_activate_submenu(int p_over) {
 	Popup *submenu_popup = Object::cast_to<Popup>(n);
 	ERR_FAIL_COND_MSG(!submenu_popup, "Item subnode is not a Popup: " + items[p_over].submenu + ".");
 	if (submenu_popup->is_visible()) {
-		return; //already visible!
+		return; // Already visible.
 	}
 
 	Ref<StyleBox> style = get_theme_stylebox(SNAME("panel"));
@@ -223,24 +223,33 @@ void PopupMenu::_activate_submenu(int p_over) {
 	submenu_popup->set_close_on_parent_focus(false);
 	submenu_popup->set_position(submenu_pos);
 	submenu_popup->set_as_minsize(); // Shrink the popup size to its contents.
-	submenu_popup->popup();
 
-	// Set autohide areas
 	PopupMenu *submenu_pum = Object::cast_to<PopupMenu>(submenu_popup);
-	if (submenu_pum) {
-		submenu_pum->take_mouse_focus();
-		// Make the position of the parent popup relative to submenu popup
-		this_rect.position = this_rect.position - submenu_pum->get_position();
+	if (!submenu_pum) {
+		submenu_popup->popup();
+		return;
+	}
 
-		// Autohide area above the submenu item
-		submenu_pum->clear_autohide_areas();
-		submenu_pum->add_autohide_area(Rect2(this_rect.position.x, this_rect.position.y, this_rect.size.x, items[p_over]._ofs_cache + scroll_offset + style->get_offset().height - vsep / 2));
+	// If not triggered by the mouse, start the popup with its first item selected.
+	if (submenu_pum->get_item_count() > 0 && Input::get_singleton()->is_action_just_pressed("ui_accept")) {
+		submenu_pum->set_current_index(0);
+	}
 
-		// If there is an area below the submenu item, add an autohide area there.
-		if (items[p_over]._ofs_cache + items[p_over]._height_cache + scroll_offset <= control->get_size().height) {
-			int from = items[p_over]._ofs_cache + items[p_over]._height_cache + scroll_offset + vsep / 2 + style->get_offset().height;
-			submenu_pum->add_autohide_area(Rect2(this_rect.position.x, this_rect.position.y + from, this_rect.size.x, this_rect.size.y - from));
-		}
+	submenu_pum->popup();
+
+	// Set autohide areas.
+
+	// Make the position of the parent popup relative to submenu popup.
+	this_rect.position = this_rect.position - submenu_pum->get_position();
+
+	// Autohide area above the submenu item.
+	submenu_pum->clear_autohide_areas();
+	submenu_pum->add_autohide_area(Rect2(this_rect.position.x, this_rect.position.y, this_rect.size.x, items[p_over]._ofs_cache + scroll_offset + style->get_offset().height - vsep / 2));
+
+	// If there is an area below the submenu item, add an autohide area there.
+	if (items[p_over]._ofs_cache + items[p_over]._height_cache + scroll_offset <= control->get_size().height) {
+		int from = items[p_over]._ofs_cache + items[p_over]._height_cache + scroll_offset + vsep / 2 + style->get_offset().height;
+		submenu_pum->add_autohide_area(Rect2(this_rect.position.x, this_rect.position.y + from, this_rect.size.x, this_rect.size.y - from));
 	}
 }
 
@@ -1747,6 +1756,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_tooltip", "index"), &PopupMenu::get_item_tooltip);
 	ClassDB::bind_method(D_METHOD("get_item_shortcut", "index"), &PopupMenu::get_item_shortcut);
 
+	ClassDB::bind_method(D_METHOD("set_current_index", "index"), &PopupMenu::set_current_index);
 	ClassDB::bind_method(D_METHOD("get_current_index"), &PopupMenu::get_current_index);
 	ClassDB::bind_method(D_METHOD("set_item_count", "count"), &PopupMenu::set_item_count);
 	ClassDB::bind_method(D_METHOD("get_item_count"), &PopupMenu::get_item_count);

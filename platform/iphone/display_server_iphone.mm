@@ -393,6 +393,10 @@ int DisplayServerIPhone::screen_get_dpi(int p_screen) const {
 	}
 }
 
+float DisplayServerIPhone::screen_get_refresh_rate(int p_screen) const {
+	return [UIScreen mainScreen].maximumFramesPerSecond;
+}
+
 float DisplayServerIPhone::screen_get_scale(int p_screen) const {
 	return [UIScreen mainScreen].nativeScale;
 }

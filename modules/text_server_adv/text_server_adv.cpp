@@ -303,22 +303,6 @@ _FORCE_INLINE_ bool is_connected_to_prev(char32_t p_chr, char32_t p_pchr) {
 	return (prop != U_JT_RIGHT_JOINING) && (prop != U_JT_NON_JOINING) ? !is_ligature(p_pchr, p_chr) : false;
 }
 
-_FORCE_INLINE_ bool is_control(char32_t p_char) {
-	return (p_char <= 0x001f) || (p_char >= 0x007f && p_char <= 0x009F);
-}
-
-_FORCE_INLINE_ bool is_whitespace(char32_t p_char) {
-	return (p_char == 0x0020) || (p_char == 0x00A0) || (p_char == 0x1680) || (p_char >= 0x2000 && p_char <= 0x200a) || (p_char == 0x202f) || (p_char == 0x205f) || (p_char == 0x3000) || (p_char == 0x2028) || (p_char == 0x2029) || (p_char >= 0x0009 && p_char <= 0x000d) || (p_char == 0x0085);
-}
-
-_FORCE_INLINE_ bool is_linebreak(char32_t p_char) {
-	return (p_char >= 0x000a && p_char <= 0x000d) || (p_char == 0x0085) || (p_char == 0x2028) || (p_char == 0x2029);
-}
-
-_FORCE_INLINE_ bool is_underscore(char32_t p_char) {
-	return (p_char == 0x005F);
-}
-
 /*************************************************************************/
 
 String TextServerAdvanced::interface_name = "ICU / HarfBuzz / Graphite";
@@ -2901,7 +2885,7 @@ void TextServerAdvanced::font_set_global_oversampling(float p_oversampling) {
 			List<RID> text_bufs;
 			shaped_owner.get_owned_list(&text_bufs);
 			for (const RID &E : text_bufs) {
-				invalidate(shaped_owner.get_or_null(E));
+				invalidate(shaped_owner.get_or_null(E), false);
 			}
 		}
 	}
@@ -2936,7 +2920,7 @@ int TextServerAdvanced::_convert_pos_inv(const ShapedTextDataAdvanced *p_sd, int
 	return limit;
 }
 
-void TextServerAdvanced::invalidate(TextServerAdvanced::ShapedTextDataAdvanced *p_shaped) {
+void TextServerAdvanced::invalidate(TextServerAdvanced::ShapedTextDataAdvanced *p_shaped, bool p_text) {
 	p_shaped->valid = false;
 	p_shaped->sort_valid = false;
 	p_shaped->line_breaks_valid = false;
@@ -2951,27 +2935,32 @@ void TextServerAdvanced::invalidate(TextServerAdvanced::ShapedTextDataAdvanced *
 	p_shaped->glyphs_logical.clear();
 	p_shaped->overrun_trim_data = TrimData();
 	p_shaped->utf16 = Char16String();
-	if (p_shaped->script_iter != nullptr) {
-		memdelete(p_shaped->script_iter);
-		p_shaped->script_iter = nullptr;
-	}
 	for (int i = 0; i < p_shaped->bidi_iter.size(); i++) {
 		ubidi_close(p_shaped->bidi_iter[i]);
 	}
 	p_shaped->bidi_iter.clear();
+
+	if (p_text) {
+		if (p_shaped->script_iter != nullptr) {
+			memdelete(p_shaped->script_iter);
+			p_shaped->script_iter = nullptr;
+		}
+		p_shaped->break_ops_valid = false;
+		p_shaped->js_ops_valid = false;
+	}
 }
 
 void TextServerAdvanced::full_copy(ShapedTextDataAdvanced *p_shaped) {
 	ShapedTextDataAdvanced *parent = shaped_owner.get_or_null(p_shaped->parent);
 
-	for (const KeyValue<Variant, ShapedTextData::EmbeddedObject> &E : parent->objects) {
+	for (const KeyValue<Variant, ShapedTextDataAdvanced::EmbeddedObject> &E : parent->objects) {
 		if (E.value.pos >= p_shaped->start && E.value.pos < p_shaped->end) {
 			p_shaped->objects[E.key] = E.value;
 		}
 	}
 
-	for (int k = 0; k < parent->spans.size(); k++) {
-		ShapedTextDataAdvanced::Span span = parent->spans[k];
+	for (int i = 0; i < parent->spans.size(); i++) {
+		ShapedTextDataAdvanced::Span span = parent->spans[i];
 		if (span.start >= p_shaped->end || span.end <= p_shaped->start) {
 			continue;
 		}
@@ -3004,7 +2993,7 @@ void TextServerAdvanced::shaped_text_clear(RID p_shaped) {
 	sd->spans.clear();
 	sd->objects.clear();
 	sd->bidi_override.clear();
-	invalidate(sd);
+	invalidate(sd, true);
 }
 
 void TextServerAdvanced::shaped_text_set_direction(RID p_shaped, TextServer::Direction p_direction) {
@@ -3017,7 +3006,7 @@ void TextServerAdvanced::shaped_text_set_direction(RID p_shaped, TextServer::Dir
 			full_copy(sd);
 		}
 		sd->direction = p_direction;
-		invalidate(sd);
+		invalidate(sd, false);
 	}
 }
 
@@ -3047,7 +3036,7 @@ void TextServerAdvanced::shaped_text_set_custom_punctuation(RID p_shaped, const 
 			full_copy(sd);
 		}
 		sd->custom_punct = p_punct;
-		invalidate(sd);
+		invalidate(sd, false);
 	}
 }
 
@@ -3070,7 +3059,7 @@ void TextServerAdvanced::shaped_text_set_bidi_override(RID p_shaped, const Array
 	for (int i = 0; i < p_override.size(); i++) {
 		sd->bidi_override.push_back(p_override[i]);
 	}
-	invalidate(sd);
+	invalidate(sd, false);
 }
 
 void TextServerAdvanced::shaped_text_set_orientation(RID p_shaped, TextServer::Orientation p_orientation) {
@@ -3083,7 +3072,7 @@ void TextServerAdvanced::shaped_text_set_orientation(RID p_shaped, TextServer::O
 			full_copy(sd);
 		}
 		sd->orientation = p_orientation;
-		invalidate(sd);
+		invalidate(sd, false);
 	}
 }
 
@@ -3095,7 +3084,7 @@ void TextServerAdvanced::shaped_text_set_preserve_invalid(RID p_shaped, bool p_e
 	ERR_FAIL_COND(sd->parent != RID());
 	if (sd->preserve_invalid != p_enabled) {
 		sd->preserve_invalid = p_enabled;
-		invalidate(sd);
+		invalidate(sd, false);
 	}
 }
 
@@ -3117,7 +3106,7 @@ void TextServerAdvanced::shaped_text_set_preserve_control(RID p_shaped, bool p_e
 			full_copy(sd);
 		}
 		sd->preserve_control = p_enabled;
-		invalidate(sd);
+		invalidate(sd, false);
 	}
 }
 
@@ -3137,7 +3126,41 @@ TextServer::Orientation TextServerAdvanced::shaped_text_get_orientation(RID p_sh
 	return sd->orientation;
 }
 
-bool TextServerAdvanced::shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Dictionary &p_opentype_features, const String &p_language) {
+int TextServerAdvanced::shaped_get_span_count(RID p_shaped) const {
+	ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_COND_V(!sd, 0);
+	return sd->spans.size();
+}
+
+Variant TextServerAdvanced::shaped_get_span_meta(RID p_shaped, int p_index) const {
+	ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_COND_V(!sd, Variant());
+	ERR_FAIL_INDEX_V(p_index, sd->spans.size(), Variant());
+	return sd->spans[p_index].meta;
+}
+
+void TextServerAdvanced::shaped_set_span_update_font(RID p_shaped, int p_index, const Vector<RID> &p_fonts, int p_size, const Dictionary &p_opentype_features) {
+	ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_COND(!sd);
+	ERR_FAIL_INDEX(p_index, sd->spans.size());
+
+	ShapedTextDataAdvanced::Span &span = sd->spans.write[p_index];
+	bool changed = (span.font_size != p_size) || (span.features != p_opentype_features) || (p_fonts.size() != span.fonts.size());
+	if (!changed) {
+		for (int i = 0; i < p_fonts.size(); i++) {
+			changed = changed || (span.fonts[i] != p_fonts[i]);
+		}
+	}
+	if (changed) {
+		span.fonts = p_fonts;
+		span.font_size = p_size;
+		span.features = p_opentype_features;
+
+		invalidate(sd, false);
+	}
+}
+
+bool TextServerAdvanced::shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Dictionary &p_opentype_features, const String &p_language, const Variant &p_meta) {
 	ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
 	ERR_FAIL_COND_V(p_size <= 0, false);
@@ -3162,11 +3185,12 @@ bool TextServerAdvanced::shaped_text_add_string(RID p_shaped, const String &p_te
 	span.font_size = p_size;
 	span.language = p_language;
 	span.features = p_opentype_features;
+	span.meta = p_meta;
 
 	sd->spans.push_back(span);
 	sd->text += p_text;
 	sd->end += p_text.length();
-	invalidate(sd);
+	invalidate(sd, true);
 
 	return true;
 }
@@ -3196,13 +3220,13 @@ bool TextServerAdvanced::shaped_text_add_object(RID p_shaped, Variant p_key, con
 	sd->text += String::chr(0xfffc).repeat(p_length);
 	sd->end += p_length;
 	sd->objects[p_key] = obj;
-	invalidate(sd);
+	invalidate(sd, true);
 
 	return true;
 }
 
 bool TextServerAdvanced::shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align) {
-	ShapedTextData *sd = shaped_owner.get_or_null(p_shaped);
+	ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
 
 	MutexLock lock(sd->mutex);
@@ -3222,7 +3246,7 @@ bool TextServerAdvanced::shaped_text_resize_object(RID p_shaped, Variant p_key, 
 			Glyph gl = sd->glyphs[i];
 			Variant key;
 			if (gl.count == 1) {
-				for (const KeyValue<Variant, ShapedTextData::EmbeddedObject> &E : sd->objects) {
+				for (const KeyValue<Variant, ShapedTextDataAdvanced::EmbeddedObject> &E : sd->objects) {
 					if (E.value.pos == gl.start) {
 						key = E.key;
 						break;
@@ -3262,75 +3286,78 @@ bool TextServerAdvanced::shaped_text_resize_object(RID p_shaped, Variant p_key, 
 				sd->width += gl.advance * gl.repeat;
 			}
 		}
-
-		// Align embedded objects to baseline.
-		float full_ascent = sd->ascent;
-		float full_descent = sd->descent;
-		for (KeyValue<Variant, ShapedTextData::EmbeddedObject> &E : sd->objects) {
-			if ((E.value.pos >= sd->start) && (E.value.pos < sd->end)) {
-				if (sd->orientation == ORIENTATION_HORIZONTAL) {
-					switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
-						case INLINE_ALIGNMENT_TO_TOP: {
-							E.value.rect.position.y = -sd->ascent;
-						} break;
-						case INLINE_ALIGNMENT_TO_CENTER: {
-							E.value.rect.position.y = (-sd->ascent + sd->descent) / 2;
-						} break;
-						case INLINE_ALIGNMENT_TO_BASELINE: {
-							E.value.rect.position.y = 0;
-						} break;
-						case INLINE_ALIGNMENT_TO_BOTTOM: {
-							E.value.rect.position.y = sd->descent;
-						} break;
-					}
-					switch (E.value.inline_align & INLINE_ALIGNMENT_IMAGE_MASK) {
-						case INLINE_ALIGNMENT_BOTTOM_TO: {
-							E.value.rect.position.y -= E.value.rect.size.y;
-						} break;
-						case INLINE_ALIGNMENT_CENTER_TO: {
-							E.value.rect.position.y -= E.value.rect.size.y / 2;
-						} break;
-						case INLINE_ALIGNMENT_TOP_TO: {
-							// NOP
-						} break;
-					}
-					full_ascent = MAX(full_ascent, -E.value.rect.position.y);
-					full_descent = MAX(full_descent, E.value.rect.position.y + E.value.rect.size.y);
-				} else {
-					switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
-						case INLINE_ALIGNMENT_TO_TOP: {
-							E.value.rect.position.x = -sd->ascent;
-						} break;
-						case INLINE_ALIGNMENT_TO_CENTER: {
-							E.value.rect.position.x = (-sd->ascent + sd->descent) / 2;
-						} break;
-						case INLINE_ALIGNMENT_TO_BASELINE: {
-							E.value.rect.position.x = 0;
-						} break;
-						case INLINE_ALIGNMENT_TO_BOTTOM: {
-							E.value.rect.position.x = sd->descent;
-						} break;
-					}
-					switch (E.value.inline_align & INLINE_ALIGNMENT_IMAGE_MASK) {
-						case INLINE_ALIGNMENT_BOTTOM_TO: {
-							E.value.rect.position.x -= E.value.rect.size.x;
-						} break;
-						case INLINE_ALIGNMENT_CENTER_TO: {
-							E.value.rect.position.x -= E.value.rect.size.x / 2;
-						} break;
-						case INLINE_ALIGNMENT_TOP_TO: {
-							// NOP
-						} break;
-					}
-					full_ascent = MAX(full_ascent, -E.value.rect.position.x);
-					full_descent = MAX(full_descent, E.value.rect.position.x + E.value.rect.size.x);
-				}
-			}
-		}
-		sd->ascent = full_ascent;
-		sd->descent = full_descent;
+		_realign(sd);
 	}
 	return true;
+}
+
+void TextServerAdvanced::_realign(ShapedTextDataAdvanced *p_sd) const {
+	// Align embedded objects to baseline.
+	float full_ascent = p_sd->ascent;
+	float full_descent = p_sd->descent;
+	for (KeyValue<Variant, ShapedTextDataAdvanced::EmbeddedObject> &E : p_sd->objects) {
+		if ((E.value.pos >= p_sd->start) && (E.value.pos < p_sd->end)) {
+			if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
+				switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
+					case INLINE_ALIGNMENT_TO_TOP: {
+						E.value.rect.position.y = -p_sd->ascent;
+					} break;
+					case INLINE_ALIGNMENT_TO_CENTER: {
+						E.value.rect.position.y = (-p_sd->ascent + p_sd->descent) / 2;
+					} break;
+					case INLINE_ALIGNMENT_TO_BASELINE: {
+						E.value.rect.position.y = 0;
+					} break;
+					case INLINE_ALIGNMENT_TO_BOTTOM: {
+						E.value.rect.position.y = p_sd->descent;
+					} break;
+				}
+				switch (E.value.inline_align & INLINE_ALIGNMENT_IMAGE_MASK) {
+					case INLINE_ALIGNMENT_BOTTOM_TO: {
+						E.value.rect.position.y -= E.value.rect.size.y;
+					} break;
+					case INLINE_ALIGNMENT_CENTER_TO: {
+						E.value.rect.position.y -= E.value.rect.size.y / 2;
+					} break;
+					case INLINE_ALIGNMENT_TOP_TO: {
+						// NOP
+					} break;
+				}
+				full_ascent = MAX(full_ascent, -E.value.rect.position.y);
+				full_descent = MAX(full_descent, E.value.rect.position.y + E.value.rect.size.y);
+			} else {
+				switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
+					case INLINE_ALIGNMENT_TO_TOP: {
+						E.value.rect.position.x = -p_sd->ascent;
+					} break;
+					case INLINE_ALIGNMENT_TO_CENTER: {
+						E.value.rect.position.x = (-p_sd->ascent + p_sd->descent) / 2;
+					} break;
+					case INLINE_ALIGNMENT_TO_BASELINE: {
+						E.value.rect.position.x = 0;
+					} break;
+					case INLINE_ALIGNMENT_TO_BOTTOM: {
+						E.value.rect.position.x = p_sd->descent;
+					} break;
+				}
+				switch (E.value.inline_align & INLINE_ALIGNMENT_IMAGE_MASK) {
+					case INLINE_ALIGNMENT_BOTTOM_TO: {
+						E.value.rect.position.x -= E.value.rect.size.x;
+					} break;
+					case INLINE_ALIGNMENT_CENTER_TO: {
+						E.value.rect.position.x -= E.value.rect.size.x / 2;
+					} break;
+					case INLINE_ALIGNMENT_TOP_TO: {
+						// NOP
+					} break;
+				}
+				full_ascent = MAX(full_ascent, -E.value.rect.position.x);
+				full_descent = MAX(full_descent, E.value.rect.position.x + E.value.rect.size.x);
+			}
+		}
+	}
+	p_sd->ascent = full_ascent;
+	p_sd->descent = full_descent;
 }
 
 RID TextServerAdvanced::shaped_text_substr(RID p_shaped, int p_start, int p_length) const {
@@ -3423,7 +3450,7 @@ bool TextServerAdvanced::_shape_substr(ShapedTextDataAdvanced *p_new_sd, const S
 						Variant key;
 						bool find_embedded = false;
 						if (gl.count == 1) {
-							for (const KeyValue<Variant, ShapedTextData::EmbeddedObject> &E : p_sd->objects) {
+							for (const KeyValue<Variant, ShapedTextDataAdvanced::EmbeddedObject> &E : p_sd->objects) {
 								if (E.value.pos == gl.start) {
 									find_embedded = true;
 									key = E.key;
@@ -3466,72 +3493,7 @@ bool TextServerAdvanced::_shape_substr(ShapedTextDataAdvanced *p_new_sd, const S
 			}
 		}
 
-		// Align embedded objects to baseline.
-		float full_ascent = p_new_sd->ascent;
-		float full_descent = p_new_sd->descent;
-		for (KeyValue<Variant, ShapedTextData::EmbeddedObject> &E : p_new_sd->objects) {
-			if ((E.value.pos >= p_new_sd->start) && (E.value.pos < p_new_sd->end)) {
-				if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
-					switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
-						case INLINE_ALIGNMENT_TO_TOP: {
-							E.value.rect.position.y = -p_new_sd->ascent;
-						} break;
-						case INLINE_ALIGNMENT_TO_CENTER: {
-							E.value.rect.position.y = (-p_new_sd->ascent + p_new_sd->descent) / 2;
-						} break;
-						case INLINE_ALIGNMENT_TO_BASELINE: {
-							E.value.rect.position.y = 0;
-						} break;
-						case INLINE_ALIGNMENT_TO_BOTTOM: {
-							E.value.rect.position.y = p_new_sd->descent;
-						} break;
-					}
-					switch (E.value.inline_align & INLINE_ALIGNMENT_IMAGE_MASK) {
-						case INLINE_ALIGNMENT_BOTTOM_TO: {
-							E.value.rect.position.y -= E.value.rect.size.y;
-						} break;
-						case INLINE_ALIGNMENT_CENTER_TO: {
-							E.value.rect.position.y -= E.value.rect.size.y / 2;
-						} break;
-						case INLINE_ALIGNMENT_TOP_TO: {
-							// NOP
-						} break;
-					}
-					full_ascent = MAX(full_ascent, -E.value.rect.position.y);
-					full_descent = MAX(full_descent, E.value.rect.position.y + E.value.rect.size.y);
-				} else {
-					switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
-						case INLINE_ALIGNMENT_TO_TOP: {
-							E.value.rect.position.x = -p_new_sd->ascent;
-						} break;
-						case INLINE_ALIGNMENT_TO_CENTER: {
-							E.value.rect.position.x = (-p_new_sd->ascent + p_new_sd->descent) / 2;
-						} break;
-						case INLINE_ALIGNMENT_TO_BASELINE: {
-							E.value.rect.position.x = 0;
-						} break;
-						case INLINE_ALIGNMENT_TO_BOTTOM: {
-							E.value.rect.position.x = p_new_sd->descent;
-						} break;
-					}
-					switch (E.value.inline_align & INLINE_ALIGNMENT_IMAGE_MASK) {
-						case INLINE_ALIGNMENT_BOTTOM_TO: {
-							E.value.rect.position.x -= E.value.rect.size.x;
-						} break;
-						case INLINE_ALIGNMENT_CENTER_TO: {
-							E.value.rect.position.x -= E.value.rect.size.x / 2;
-						} break;
-						case INLINE_ALIGNMENT_TOP_TO: {
-							// NOP
-						} break;
-					}
-					full_ascent = MAX(full_ascent, -E.value.rect.position.x);
-					full_descent = MAX(full_descent, E.value.rect.position.x + E.value.rect.size.x);
-				}
-			}
-		}
-		p_new_sd->ascent = full_ascent;
-		p_new_sd->descent = full_descent;
+		_realign(p_new_sd);
 	}
 	p_new_sd->valid = true;
 
@@ -3968,40 +3930,43 @@ bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
 
 	const UChar *data = sd->utf16.ptr();
 
-	HashMap<int, bool> breaks;
-	UErrorCode err = U_ZERO_ERROR;
-	int i = 0;
-	while (i < sd->spans.size()) {
-		String language = sd->spans[i].language;
-		int r_start = sd->spans[i].start;
-		while (i + 1 < sd->spans.size() && language == sd->spans[i + 1].language) {
+	if (!sd->break_ops_valid) {
+		sd->breaks.clear();
+		UErrorCode err = U_ZERO_ERROR;
+		int i = 0;
+		while (i < sd->spans.size()) {
+			String language = sd->spans[i].language;
+			int r_start = sd->spans[i].start;
+			while (i + 1 < sd->spans.size() && language == sd->spans[i + 1].language) {
+				i++;
+			}
+			int r_end = sd->spans[i].end;
+			UBreakIterator *bi = ubrk_open(UBRK_LINE, language.ascii().get_data(), data + _convert_pos_inv(sd, r_start), _convert_pos_inv(sd, r_end - r_start), &err);
+			if (U_FAILURE(err)) {
+				// No data loaded - use fallback.
+				for (int j = r_start; j < r_end; j++) {
+					char32_t c = sd->text[j - sd->start];
+					if (is_whitespace(c)) {
+						sd->breaks[j + 1] = false;
+					}
+					if (is_linebreak(c)) {
+						sd->breaks[j + 1] = true;
+					}
+				}
+			} else {
+				while (ubrk_next(bi) != UBRK_DONE) {
+					int pos = _convert_pos(sd, ubrk_current(bi)) + r_start;
+					if ((ubrk_getRuleStatus(bi) >= UBRK_LINE_HARD) && (ubrk_getRuleStatus(bi) < UBRK_LINE_HARD_LIMIT)) {
+						sd->breaks[pos] = true;
+					} else if ((ubrk_getRuleStatus(bi) >= UBRK_LINE_SOFT) && (ubrk_getRuleStatus(bi) < UBRK_LINE_SOFT_LIMIT)) {
+						sd->breaks[pos] = false;
+					}
+				}
+			}
+			ubrk_close(bi);
 			i++;
 		}
-		int r_end = sd->spans[i].end;
-		UBreakIterator *bi = ubrk_open(UBRK_LINE, language.ascii().get_data(), data + _convert_pos_inv(sd, r_start), _convert_pos_inv(sd, r_end - r_start), &err);
-		if (U_FAILURE(err)) {
-			// No data loaded - use fallback.
-			for (int j = r_start; j < r_end; j++) {
-				char32_t c = sd->text[j - sd->start];
-				if (is_whitespace(c)) {
-					breaks[j + 1] = false;
-				}
-				if (is_linebreak(c)) {
-					breaks[j + 1] = true;
-				}
-			}
-		} else {
-			while (ubrk_next(bi) != UBRK_DONE) {
-				int pos = _convert_pos(sd, ubrk_current(bi)) + r_start;
-				if ((ubrk_getRuleStatus(bi) >= UBRK_LINE_HARD) && (ubrk_getRuleStatus(bi) < UBRK_LINE_HARD_LIMIT)) {
-					breaks[pos] = true;
-				} else if ((ubrk_getRuleStatus(bi) >= UBRK_LINE_SOFT) && (ubrk_getRuleStatus(bi) < UBRK_LINE_SOFT_LIMIT)) {
-					breaks[pos] = false;
-				}
-			}
-		}
-		ubrk_close(bi);
-		i++;
+		sd->break_ops_valid = true;
 	}
 
 	sd->sort_valid = false;
@@ -4013,7 +3978,7 @@ bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
 	int c_punct_size = sd->custom_punct.length();
 	const char32_t *c_punct = sd->custom_punct.ptr();
 
-	for (i = 0; i < sd_size; i++) {
+	for (int i = 0; i < sd_size; i++) {
 		if (sd_glyphs[i].count > 0) {
 			char32_t c = ch[sd_glyphs[i].start - sd->start];
 			if (c == 0xfffc) {
@@ -4040,8 +4005,8 @@ bool TextServerAdvanced::shaped_text_update_breaks(RID p_shaped) {
 			if (is_underscore(c)) {
 				sd_glyphs[i].flags |= GRAPHEME_IS_UNDERSCORE;
 			}
-			if (breaks.has(sd_glyphs[i].end)) {
-				if (breaks[sd_glyphs[i].end] && (is_linebreak(c))) {
+			if (sd->breaks.has(sd_glyphs[i].end)) {
+				if (sd->breaks[sd_glyphs[i].end] && (is_linebreak(c))) {
 					sd_glyphs[i].flags |= GRAPHEME_IS_BREAK_HARD;
 				} else if (is_whitespace(c)) {
 					sd_glyphs[i].flags |= GRAPHEME_IS_BREAK_SOFT;
@@ -4186,41 +4151,45 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
 	const UChar *data = sd->utf16.ptr();
 	int32_t data_size = sd->utf16.length();
 
-	Map<int, bool> jstops;
+	if (!sd->js_ops_valid) {
+		sd->jstops.clear();
 
-	// Use ICU word iterator and custom kashida detection.
-	UErrorCode err = U_ZERO_ERROR;
-	UBreakIterator *bi = ubrk_open(UBRK_WORD, "", data, data_size, &err);
-	if (U_FAILURE(err)) {
-		// No data - use fallback.
-		int limit = 0;
-		for (int i = 0; i < sd->text.length(); i++) {
-			if (is_whitespace(data[i])) {
-				int ks = _generate_kashida_justification_opportunies(sd->text, limit, i) + sd->start;
-				if (ks != -1) {
-					jstops[ks] = true;
+		// Use ICU word iterator and custom kashida detection.
+		UErrorCode err = U_ZERO_ERROR;
+		UBreakIterator *bi = ubrk_open(UBRK_WORD, "", data, data_size, &err);
+		if (U_FAILURE(err)) {
+			// No data - use fallback.
+			int limit = 0;
+			for (int i = 0; i < sd->text.length(); i++) {
+				if (is_whitespace(data[i])) {
+					int ks = _generate_kashida_justification_opportunies(sd->text, limit, i) + sd->start;
+					if (ks != -1) {
+						sd->jstops[ks] = true;
+					}
+					limit = i + 1;
 				}
-				limit = i + 1;
 			}
-		}
-		int ks = _generate_kashida_justification_opportunies(sd->text, limit, sd->text.length()) + sd->start;
-		if (ks != -1) {
-			jstops[ks] = true;
-		}
-	} else {
-		int limit = 0;
-		while (ubrk_next(bi) != UBRK_DONE) {
-			if (ubrk_getRuleStatus(bi) != UBRK_WORD_NONE) {
-				int i = _convert_pos(sd, ubrk_current(bi));
-				jstops[i + sd->start] = false;
-				int ks = _generate_kashida_justification_opportunies(sd->text, limit, i);
-				if (ks != -1) {
-					jstops[ks + sd->start] = true;
+			int ks = _generate_kashida_justification_opportunies(sd->text, limit, sd->text.length()) + sd->start;
+			if (ks != -1) {
+				sd->jstops[ks] = true;
+			}
+		} else {
+			int limit = 0;
+			while (ubrk_next(bi) != UBRK_DONE) {
+				if (ubrk_getRuleStatus(bi) != UBRK_WORD_NONE) {
+					int i = _convert_pos(sd, ubrk_current(bi));
+					sd->jstops[i + sd->start] = false;
+					int ks = _generate_kashida_justification_opportunies(sd->text, limit, i);
+					if (ks != -1) {
+						sd->jstops[ks + sd->start] = true;
+					}
+					limit = i;
 				}
-				limit = i;
 			}
+			ubrk_close(bi);
 		}
-		ubrk_close(bi);
+
+		sd->js_ops_valid = true;
 	}
 
 	sd->sort_valid = false;
@@ -4228,18 +4197,18 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(RID p_shaped) {
 
 	Glyph *sd_glyphs = sd->glyphs.ptrw();
 	int sd_size = sd->glyphs.size();
-	if (jstops.size() > 0) {
+	if (sd->jstops.size() > 0) {
 		for (int i = 0; i < sd_size; i++) {
 			if (sd_glyphs[i].count > 0) {
 				char32_t c = sd->text[sd_glyphs[i].start - sd->start];
 				if (c == 0x0640) {
 					sd_glyphs[i].flags |= GRAPHEME_IS_ELONGATION;
 				}
-				if (jstops.has(sd_glyphs[i].start)) {
+				if (sd->jstops.has(sd_glyphs[i].start)) {
 					if (c == 0xfffc) {
 						continue;
 					}
-					if (jstops[sd_glyphs[i].start]) {
+					if (sd->jstops[sd_glyphs[i].start]) {
 						if (c != 0x0640) {
 							if (sd_glyphs[i].font_rid != RID()) {
 								Glyph gl = _shape_single_glyph(sd, 0x0640, HB_SCRIPT_ARABIC, HB_DIRECTION_RTL, sd->glyphs[i].font_rid, sd->glyphs[i].font_size);
@@ -4574,7 +4543,7 @@ bool TextServerAdvanced::shaped_text_shape(RID p_shaped) {
 		return true;
 	}
 
-	invalidate(sd);
+	invalidate(sd, false);
 	if (sd->parent != RID()) {
 		shaped_text_shape(sd->parent);
 		ShapedTextDataAdvanced *parent_sd = shaped_owner.get_or_null(sd->parent);
@@ -4733,70 +4702,7 @@ bool TextServerAdvanced::shaped_text_shape(RID p_shaped) {
 		}
 	}
 
-	// Align embedded objects to baseline.
-	float full_ascent = sd->ascent;
-	float full_descent = sd->descent;
-	for (KeyValue<Variant, ShapedTextData::EmbeddedObject> &E : sd->objects) {
-		if (sd->orientation == ORIENTATION_HORIZONTAL) {
-			switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
-				case INLINE_ALIGNMENT_TO_TOP: {
-					E.value.rect.position.y = -sd->ascent;
-				} break;
-				case INLINE_ALIGNMENT_TO_CENTER: {
-					E.value.rect.position.y = (-sd->ascent + sd->descent) / 2;
-				} break;
-				case INLINE_ALIGNMENT_TO_BASELINE: {
-					E.value.rect.position.y = 0;
-				} break;
-				case INLINE_ALIGNMENT_TO_BOTTOM: {
-					E.value.rect.position.y = sd->descent;
-				} break;
-			}
-			switch (E.value.inline_align & INLINE_ALIGNMENT_IMAGE_MASK) {
-				case INLINE_ALIGNMENT_BOTTOM_TO: {
-					E.value.rect.position.y -= E.value.rect.size.y;
-				} break;
-				case INLINE_ALIGNMENT_CENTER_TO: {
-					E.value.rect.position.y -= E.value.rect.size.y / 2;
-				} break;
-				case INLINE_ALIGNMENT_TOP_TO: {
-					// NOP
-				} break;
-			}
-			full_ascent = MAX(full_ascent, -E.value.rect.position.y);
-			full_descent = MAX(full_descent, E.value.rect.position.y + E.value.rect.size.y);
-		} else {
-			switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
-				case INLINE_ALIGNMENT_TO_TOP: {
-					E.value.rect.position.x = -sd->ascent;
-				} break;
-				case INLINE_ALIGNMENT_TO_CENTER: {
-					E.value.rect.position.x = (-sd->ascent + sd->descent) / 2;
-				} break;
-				case INLINE_ALIGNMENT_TO_BASELINE: {
-					E.value.rect.position.x = 0;
-				} break;
-				case INLINE_ALIGNMENT_TO_BOTTOM: {
-					E.value.rect.position.x = sd->descent;
-				} break;
-			}
-			switch (E.value.inline_align & INLINE_ALIGNMENT_IMAGE_MASK) {
-				case INLINE_ALIGNMENT_BOTTOM_TO: {
-					E.value.rect.position.x -= E.value.rect.size.x;
-				} break;
-				case INLINE_ALIGNMENT_CENTER_TO: {
-					E.value.rect.position.x -= E.value.rect.size.x / 2;
-				} break;
-				case INLINE_ALIGNMENT_TOP_TO: {
-					// NOP
-				} break;
-			}
-			full_ascent = MAX(full_ascent, -E.value.rect.position.x);
-			full_descent = MAX(full_descent, E.value.rect.position.x + E.value.rect.size.x);
-		}
-	}
-	sd->ascent = full_ascent;
-	sd->descent = full_descent;
+	_realign(sd);
 	sd->valid = true;
 	return sd->valid;
 }
@@ -4863,7 +4769,7 @@ Array TextServerAdvanced::shaped_text_get_objects(RID p_shaped) const {
 	ERR_FAIL_COND_V(!sd, ret);
 
 	MutexLock lock(sd->mutex);
-	for (const KeyValue<Variant, ShapedTextData::EmbeddedObject> &E : sd->objects) {
+	for (const KeyValue<Variant, ShapedTextDataAdvanced::EmbeddedObject> &E : sd->objects) {
 		ret.push_back(E.key);
 	}
 

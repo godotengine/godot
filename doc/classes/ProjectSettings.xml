@@ -356,6 +356,8 @@
 		<member name="debug/gdscript/warnings/incompatible_ternary" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when a ternary operator may emit values with incompatible types.
 		</member>
+		<member name="debug/gdscript/warnings/int_assigned_to_enum" type="bool" setter="" getter="" default="true">
+		</member>
 		<member name="debug/gdscript/warnings/integer_division" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when dividing an integer by another integer (the decimal part will be discarded).
 		</member>

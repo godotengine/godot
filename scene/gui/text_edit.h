@@ -210,7 +210,8 @@ private:
 		int size() const { return text.size(); }
 		void clear();
 
-		void invalidate_cache(int p_line, int p_column = -1, const String &p_ime_text = String(), const Array &p_bidi_override = Array());
+		void invalidate_cache(int p_line, int p_column = -1, bool p_text_changed = false, const String &p_ime_text = String(), const Array &p_bidi_override = Array());
+		void invalidate_font();
 		void invalidate_all();
 		void invalidate_all_lines();
 
