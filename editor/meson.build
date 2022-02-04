@@ -56,7 +56,7 @@ if get_option('tools')
     _docs_target = custom_target(
         'docs',
         output: ['doc_data_class_path.gen.h', 'doc_data_compressed.gen.h'],
-        input: [MODULES_DB_FILE],
+        input: [modules_db_file],
         command: [SCRIPT_DOCS, '@INPUT@', meson.project_source_root(), '@OUTPUT@'],
         build_by_default: true
     )

@@ -166,7 +166,7 @@ class ModuleDb:
 
 def load_db(module_db_file: str) -> ModuleDb:
     if not os.path.isfile(module_db_file):
-        return None
+        sys.exit(f'Modules database file {module_db_file} does not exist.')
 
     mdb: ModuleDb = ModuleDb()
     with open(module_db_file, "r") as f:
@@ -206,7 +206,6 @@ def __parse_module_config(config_path: str, env: Environment) -> Module:
     module: Module = Module(name=module_name, path=module_path, build=True)
 
     if "can_build" in config:
-        print("xxx", config_path)
 
         class CompatDict:
             def __init__(self, env):
@@ -371,6 +370,7 @@ if __name__ == "__main__":
     create_db_parser.add_argument("output", type=str, help="The output modules db.")
     create_db_parser.add_argument("--platform", type=str, required=True, help="The current platform being built.")
     create_db_parser.add_argument("--cpu_family", type=str, required=True, help="The current cpu_family being built.")
+    create_db_parser.add_argument("--source_root", type=str, default='', help="The root directory of the project.")
     create_db_parser.add_argument(
         "--tools_enabled",
         dest="tools_enabled",
@@ -418,8 +418,19 @@ if __name__ == "__main__":
 
     # Go through each module and check its configuration
     if args.command == "create_db":
-        args.module_disabled = [x[0] for x in args.module_disabled]
-        args.module_search_path = [x[0] for x in args.module_search_path]
+        if args.module_disabled is None:
+            args.module_disabled = []
+        else:
+            args.module_disabled = [x[0] for x in args.module_disabled]
+        if args.module_search_path is None:
+            args.module_search_path = []
+        else:
+            args.module_search_path = [x[0] for x in args.module_search_path]
+
+        # This script has been written assuming that is it run from the source root.
+        # This is not always the case.
+        args.output = os.path.join(os.getcwd(), args.output)
+        os.chdir(args.source_root)
 
         __create_db_file(args)
 
