@@ -78,7 +78,7 @@ public:
 	/* SHADOW ATLAS API */
 
 	RID shadow_atlas_create() override;
-	void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = false) override;
+	void shadow_atlas_set_size(RID p_atlas, RS::ShadowAtlasSize p_size, bool p_16_bits = false) override;
 	void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) override;
 	bool shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version) override;
 

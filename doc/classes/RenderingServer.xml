@@ -3256,10 +3256,10 @@
 		<method name="viewport_set_shadow_atlas_size">
 			<return type="void" />
 			<argument index="0" name="viewport" type="RID" />
-			<argument index="1" name="size" type="int" />
+			<argument index="1" name="size" type="int" enum="RenderingServer.ShadowAtlasSize" />
 			<argument index="2" name="use_16_bits" type="bool" default="false" />
 			<description>
-				Sets the size of the shadow atlas's images (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
+				Sets the size of the shadow atlas's images (used for omni and spot lights).
 			</description>
 		</method>
 		<method name="viewport_set_size">
@@ -3904,6 +3904,33 @@
 		</constant>
 		<constant name="FOG_VOLUME_SHAPE_WORLD" value="2" enum="FogVolumeShape">
 			[FogVolume] will have no shape, will cover the whole world and will not be culled.
+		</constant>
+		<constant name="SHADOW_ATLAS_SIZE_DISABLED" value="0" enum="ShadowAtlasSize">
+			[OmniLight3D], [SpotLight3D] [i]and[/i] [DirectionalLight3D] shadows won't be rendered. This is the fastest option (also results in the lowest memory usage). Speeds up [Viewport] initialization as no shadow atlas needs to be created.
+		</constant>
+		<constant name="SHADOW_ATLAS_SIZE_256" value="1" enum="ShadowAtlasSize">
+			[OmniLight3D] and [SpotLight3D] shadows will be rendered at extremely low resolution. This is the fastest option that still renders shadows.
+		</constant>
+		<constant name="SHADOW_ATLAS_SIZE_512" value="2" enum="ShadowAtlasSize">
+			[OmniLight3D] and [SpotLight3D] shadows will be rendered at very low resolution.
+		</constant>
+		<constant name="SHADOW_ATLAS_SIZE_1024" value="3" enum="ShadowAtlasSize">
+			[OmniLight3D] and [SpotLight3D] shadows will be rendered at low resolution.
+		</constant>
+		<constant name="SHADOW_ATLAS_SIZE_2048" value="4" enum="ShadowAtlasSize">
+			[OmniLight3D] and [SpotLight3D] shadows will be rendered at medium resolution.
+		</constant>
+		<constant name="SHADOW_ATLAS_SIZE_4096" value="5" enum="ShadowAtlasSize">
+			[OmniLight3D] and [SpotLight3D] shadows will be rendered at high resolution.
+		</constant>
+		<constant name="SHADOW_ATLAS_SIZE_8192" value="6" enum="ShadowAtlasSize">
+			[OmniLight3D] and [SpotLight3D] shadows will be rendered at very high resolution.
+		</constant>
+		<constant name="SHADOW_ATLAS_SIZE_16384" value="7" enum="ShadowAtlasSize">
+			[OmniLight3D] and [SpotLight3D] shadows will be rendered at extremely high resolution. This is the slowest option.
+		</constant>
+		<constant name="SHADOW_ATLAS_SIZE_MAX" value="8" enum="ShadowAtlasSize">
+			Represents the size of the [enum ShadowAtlasSize] enum.
 		</constant>
 		<constant name="VIEWPORT_SCALING_3D_MODE_BILINEAR" value="0" enum="ViewportScaling3DMode">
 			Enables bilinear scaling on 3D viewports. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less then [code]1.0[/code] will result in undersampling while values greater than [code]1.0[/code] will result in supersampling. A value of [code]1.0[/code] disables scaling.

@@ -1367,9 +1367,9 @@ SceneTree::SceneTree() {
 	bool snap_2d_vertices = GLOBAL_DEF("rendering/2d/snap/snap_2d_vertices_to_pixel", false);
 	root->set_snap_2d_vertices_to_pixel(snap_2d_vertices);
 
-	int shadowmap_size = GLOBAL_DEF("rendering/shadows/shadow_atlas/size", 4096);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadow_atlas/size", PropertyInfo(Variant::INT, "rendering/shadows/shadow_atlas/size", PROPERTY_HINT_RANGE, "256,16384"));
-	GLOBAL_DEF("rendering/shadows/shadow_atlas/size.mobile", 2048);
+	RS::ShadowAtlasSize shadowmap_size = RS::ShadowAtlasSize(int(GLOBAL_DEF("rendering/shadows/shadow_atlas/size", RS::SHADOW_ATLAS_SIZE_4096)));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadow_atlas/size", PropertyInfo(Variant::INT, "rendering/shadows/shadow_atlas/size", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),256×256 (Faster), 512×512 (Faster), 1024×1024 (Faster), 2048×2048 (Fast), 4096×4096 (Average), 8192×8192 (Slow), 16384×16384 (Slowest)")));
+	GLOBAL_DEF("rendering/shadows/shadow_atlas/size.mobile", RS::SHADOW_ATLAS_SIZE_2048);
 	bool shadowmap_16_bits = GLOBAL_DEF("rendering/shadows/shadow_atlas/16_bits", true);
 	int atlas_q0 = GLOBAL_DEF("rendering/shadows/shadow_atlas/quadrant_0_subdiv", 2);
 	int atlas_q1 = GLOBAL_DEF("rendering/shadows/shadow_atlas/quadrant_1_subdiv", 2);

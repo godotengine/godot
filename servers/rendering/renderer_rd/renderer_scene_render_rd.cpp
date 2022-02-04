@@ -908,11 +908,10 @@ void RendererSceneRenderRD::_update_shadow_atlas(ShadowAtlas *shadow_atlas) {
 	}
 }
 
-void RendererSceneRenderRD::shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits) {
+void RendererSceneRenderRD::shadow_atlas_set_size(RID p_atlas, RS::ShadowAtlasSize p_size, bool p_16_bits) {
 	ShadowAtlas *shadow_atlas = shadow_atlas_owner.get_or_null(p_atlas);
 	ERR_FAIL_COND(!shadow_atlas);
-	ERR_FAIL_COND(p_size < 0);
-	p_size = next_power_of_2(p_size);
+	ERR_FAIL_INDEX(p_size, RS::SHADOW_ATLAS_SIZE_MAX);
 
 	if (p_size == shadow_atlas->size && p_16_bits == shadow_atlas->use_16_bits) {
 		return;
@@ -939,7 +938,36 @@ void RendererSceneRenderRD::shadow_atlas_set_size(RID p_atlas, int p_size, bool 
 	//clear owners
 	shadow_atlas->shadow_owners.clear();
 
-	shadow_atlas->size = p_size;
+	switch (p_size) {
+		case RS::SHADOW_ATLAS_SIZE_DISABLED:
+			shadow_atlas->size = 0;
+			break;
+		case RS::SHADOW_ATLAS_SIZE_256:
+			shadow_atlas->size = 256;
+			break;
+		case RS::SHADOW_ATLAS_SIZE_512:
+			shadow_atlas->size = 512;
+			break;
+		case RS::SHADOW_ATLAS_SIZE_1024:
+			shadow_atlas->size = 1024;
+			break;
+		case RS::SHADOW_ATLAS_SIZE_2048:
+			shadow_atlas->size = 2048;
+			break;
+		case RS::SHADOW_ATLAS_SIZE_4096:
+			shadow_atlas->size = 4096;
+			break;
+		case RS::SHADOW_ATLAS_SIZE_8192:
+			shadow_atlas->size = 8192;
+			break;
+		case RS::SHADOW_ATLAS_SIZE_16384:
+			shadow_atlas->size = 16384;
+			break;
+		case RS::SHADOW_ATLAS_SIZE_MAX:
+			ERR_PRINT("Invalid shadow atlas size (please report).");
+			break;
+	}
+
 	shadow_atlas->use_16_bits = p_16_bits;
 }
 
@@ -5418,7 +5446,7 @@ bool RendererSceneRenderRD::free(RID p_rid) {
 		light_instance_owner.free(p_rid);
 
 	} else if (shadow_atlas_owner.owns(p_rid)) {
-		shadow_atlas_set_size(p_rid, 0);
+		shadow_atlas_set_size(p_rid, RS::SHADOW_ATLAS_SIZE_DISABLED);
 		shadow_atlas_owner.free(p_rid);
 	} else if (fog_volume_instance_owner.owns(p_rid)) {
 		fog_volume_instance_owner.free(p_rid);

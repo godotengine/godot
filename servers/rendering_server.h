@@ -847,7 +847,19 @@ public:
 
 	virtual void viewport_set_sdf_oversize_and_scale(RID p_viewport, ViewportSDFOversize p_oversize, ViewportSDFScale p_scale) = 0;
 
-	virtual void viewport_set_shadow_atlas_size(RID p_viewport, int p_size, bool p_16_bits = false) = 0;
+	enum ShadowAtlasSize {
+		SHADOW_ATLAS_SIZE_DISABLED,
+		SHADOW_ATLAS_SIZE_256,
+		SHADOW_ATLAS_SIZE_512,
+		SHADOW_ATLAS_SIZE_1024,
+		SHADOW_ATLAS_SIZE_2048,
+		SHADOW_ATLAS_SIZE_4096,
+		SHADOW_ATLAS_SIZE_8192,
+		SHADOW_ATLAS_SIZE_16384,
+		SHADOW_ATLAS_SIZE_MAX,
+	};
+
+	virtual void viewport_set_shadow_atlas_size(RID p_viewport, ShadowAtlasSize p_size, bool p_16_bits = false) = 0;
 	virtual void viewport_set_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv) = 0;
 
 	enum ViewportMSAA {
@@ -1610,6 +1622,7 @@ VARIANT_ENUM_CAST(RenderingServer::SubSurfaceScatteringQuality);
 VARIANT_ENUM_CAST(RenderingServer::DOFBlurQuality);
 VARIANT_ENUM_CAST(RenderingServer::DOFBokehShape);
 VARIANT_ENUM_CAST(RenderingServer::ShadowQuality);
+VARIANT_ENUM_CAST(RenderingServer::ShadowAtlasSize);
 VARIANT_ENUM_CAST(RenderingServer::InstanceType);
 VARIANT_ENUM_CAST(RenderingServer::InstanceFlags);
 VARIANT_ENUM_CAST(RenderingServer::ShadowCastingSetting);

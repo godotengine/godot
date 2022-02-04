@@ -358,7 +358,7 @@ void RendererSceneCull::scenario_initialize(RID p_rid) {
 	scenario->self = p_rid;
 
 	scenario->reflection_probe_shadow_atlas = scene_render->shadow_atlas_create();
-	scene_render->shadow_atlas_set_size(scenario->reflection_probe_shadow_atlas, 1024); //make enough shadows for close distance, don't bother with rest
+	scene_render->shadow_atlas_set_size(scenario->reflection_probe_shadow_atlas, RS::SHADOW_ATLAS_SIZE_1024); //make enough shadows for close distance, don't bother with rest
 	scene_render->shadow_atlas_set_quadrant_subdivision(scenario->reflection_probe_shadow_atlas, 0, 4);
 	scene_render->shadow_atlas_set_quadrant_subdivision(scenario->reflection_probe_shadow_atlas, 1, 4);
 	scene_render->shadow_atlas_set_quadrant_subdivision(scenario->reflection_probe_shadow_atlas, 2, 4);

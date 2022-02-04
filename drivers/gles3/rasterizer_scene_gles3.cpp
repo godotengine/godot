@@ -116,7 +116,7 @@ RID RasterizerSceneGLES3::shadow_atlas_create() {
 	return RID();
 }
 
-void RasterizerSceneGLES3::shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits) {
+void RasterizerSceneGLES3::shadow_atlas_set_size(RID p_atlas, RS::ShadowAtlasSize p_size, bool p_16_bits) {
 }
 
 void RasterizerSceneGLES3::shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) {

@@ -285,7 +285,7 @@ private:
 
 	DebugDraw debug_draw = DEBUG_DRAW_DISABLED;
 
-	int shadow_atlas_size = 2048;
+	RS::ShadowAtlasSize shadow_atlas_size = RS::SHADOW_ATLAS_SIZE_2048;
 	bool shadow_atlas_16_bits = true;
 	ShadowAtlasQuadrantSubdiv shadow_atlas_quadrant_subdiv[4];
 
@@ -499,8 +499,8 @@ public:
 
 	Ref<ViewportTexture> get_texture() const;
 
-	void set_shadow_atlas_size(int p_size);
-	int get_shadow_atlas_size() const;
+	void set_shadow_atlas_size(RS::ShadowAtlasSize p_size);
+	RS::ShadowAtlasSize get_shadow_atlas_size() const;
 
 	void set_shadow_atlas_16_bits(bool p_16_bits);
 	bool get_shadow_atlas_16_bits() const;

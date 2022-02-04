@@ -187,7 +187,7 @@ public:
 	virtual void directional_shadow_quality_set(RS::ShadowQuality p_quality) = 0;
 
 	virtual RID shadow_atlas_create() = 0;
-	virtual void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_use_16_bits = false) = 0;
+	virtual void shadow_atlas_set_size(RID p_atlas, RS::ShadowAtlasSize p_size, bool p_use_16_bits = false) = 0;
 	virtual void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) = 0;
 
 	/* Render Buffers */

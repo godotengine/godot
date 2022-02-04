@@ -271,9 +271,9 @@
 		<member name="shadow_atlas_quad_3" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="4">
 			The subdivision amount of the fourth quadrant on the shadow atlas.
 		</member>
-		<member name="shadow_atlas_size" type="int" setter="set_shadow_atlas_size" getter="get_shadow_atlas_size" default="2048">
-			The shadow atlas' resolution (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
-			[b]Note:[/b] If this is set to 0, shadows won't be visible.
+		<member name="shadow_atlas_size" type="int" setter="set_shadow_atlas_size" getter="get_shadow_atlas_size" enum="RenderingServer.ShadowAtlasSize" default="4">
+			The shadow atlas' resolution (used for omni and spot lights). When not using shadows within the [Viewport], set this to [constant RenderingServer.SHADOW_ATLAS_SIZE_DISABLED] to reduce memory usage and speed up initialization time.
+			[b]Note:[/b] If this is set to [constant RenderingServer.SHADOW_ATLAS_SIZE_DISABLED], shadows won't be visible within the [Viewport].
 		</member>
 		<member name="snap_2d_transforms_to_pixel" type="bool" setter="set_snap_2d_transforms_to_pixel" getter="is_snap_2d_transforms_to_pixel_enabled" default="false">
 		</member>

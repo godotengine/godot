@@ -2202,6 +2202,16 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("viewport_set_sdf_oversize_and_scale", "viewport", "oversize", "scale"), &RenderingServer::viewport_set_sdf_oversize_and_scale);
 
+	BIND_ENUM_CONSTANT(SHADOW_ATLAS_SIZE_DISABLED);
+	BIND_ENUM_CONSTANT(SHADOW_ATLAS_SIZE_256);
+	BIND_ENUM_CONSTANT(SHADOW_ATLAS_SIZE_512);
+	BIND_ENUM_CONSTANT(SHADOW_ATLAS_SIZE_1024);
+	BIND_ENUM_CONSTANT(SHADOW_ATLAS_SIZE_2048);
+	BIND_ENUM_CONSTANT(SHADOW_ATLAS_SIZE_4096);
+	BIND_ENUM_CONSTANT(SHADOW_ATLAS_SIZE_8192);
+	BIND_ENUM_CONSTANT(SHADOW_ATLAS_SIZE_16384);
+	BIND_ENUM_CONSTANT(SHADOW_ATLAS_SIZE_MAX);
+
 	ClassDB::bind_method(D_METHOD("viewport_set_shadow_atlas_size", "viewport", "size", "use_16_bits"), &RenderingServer::viewport_set_shadow_atlas_size, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("viewport_set_shadow_atlas_quadrant_subdivision", "viewport", "quadrant", "subdivision"), &RenderingServer::viewport_set_shadow_atlas_quadrant_subdivision);
 	ClassDB::bind_method(D_METHOD("viewport_set_msaa", "viewport", "msaa"), &RenderingServer::viewport_set_msaa);

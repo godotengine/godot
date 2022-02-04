@@ -1846,10 +1846,10 @@
 		<member name="rendering/shadows/shadow_atlas/quadrant_3_subdiv" type="int" setter="" getter="" default="4">
 			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
 		</member>
-		<member name="rendering/shadows/shadow_atlas/size" type="int" setter="" getter="" default="4096">
+		<member name="rendering/shadows/shadow_atlas/size" type="int" setter="" getter="" default="5">
 			Size for shadow atlas (used for OmniLights and SpotLights). See documentation.
 		</member>
-		<member name="rendering/shadows/shadow_atlas/size.mobile" type="int" setter="" getter="" default="2048">
+		<member name="rendering/shadows/shadow_atlas/size.mobile" type="int" setter="" getter="" default="4">
 			Lower-end override for [member rendering/shadows/shadow_atlas/size] on mobile devices, due to performance concerns or driver support.
 		</member>
 		<member name="rendering/shadows/shadows/soft_shadow_quality" type="int" setter="" getter="" default="3">
