@@ -626,6 +626,16 @@ void Window::_update_viewport_size() {
 	float font_oversampling = 1.0;
 
 	if (content_scale_mode == CONTENT_SCALE_MODE_DISABLED || content_scale_size.x == 0 || content_scale_size.y == 0) {
+		if (content_scale_stretch == Window::CONTENT_SCALE_STRETCH_INTEGER) {
+			// Enforce integer scaling to ensure pixel-perfect appearance of pixel art.
+			content_scale_factor = Math::floor(content_scale_factor);
+		} else if (content_scale_stretch == Window::CONTENT_SCALE_STRETCH_HYBRID) {
+			// Scale up to the nearest greater integer value, then scale down with linear filtering.
+			// This provides good (but not pixel-perfect) appearance for pixel art, and allows
+			// displaying at any output resolution.
+			WARN_PRINT("Hybrid content scaling for disabled stretch mode is not implemented yet.");
+		}
+
 		font_oversampling = content_scale_factor;
 		final_size = size;
 		final_size_override = Size2(size) / content_scale_factor;
@@ -702,18 +712,40 @@ void Window::_update_viewport_size() {
 				//_update_font_oversampling(1.0);
 			} break;
 			case CONTENT_SCALE_MODE_CANVAS_ITEMS: {
+				attach_to_screen_rect = Rect2(margin, screen_size);
 				final_size = screen_size;
 				final_size_override = viewport_size / content_scale_factor;
-				attach_to_screen_rect = Rect2(margin, screen_size);
-				font_oversampling = (screen_size.x / viewport_size.x) * content_scale_factor;
 
+				font_oversampling = (screen_size.x / viewport_size.x) * content_scale_factor;
 				Size2 scale = Vector2(screen_size) / Vector2(final_size_override);
+
+				if (content_scale_stretch == Window::CONTENT_SCALE_STRETCH_INTEGER) {
+					// Enforce integer scaling to ensure pixel-perfect appearance of pixel art.
+					font_oversampling = Math::floor(font_oversampling);
+					scale = scale.floor();
+				} else if (content_scale_stretch == Window::CONTENT_SCALE_STRETCH_HYBRID) {
+					// Scale up to the nearest greater integer value, then scale down with linear filtering.
+					// This provides good (but not pixel-perfect) appearance for pixel art, and allows
+					// displaying at any output resolution.
+					WARN_PRINT("Hybrid content scaling for canvas items stretch mode is not implemented yet.");
+				}
+
 				stretch_transform.scale(scale);
 
 			} break;
 			case CONTENT_SCALE_MODE_VIEWPORT: {
-				final_size = (viewport_size / content_scale_factor).floor();
 				attach_to_screen_rect = Rect2(margin, screen_size);
+				final_size = (viewport_size / content_scale_factor).floor();
+
+				if (content_scale_stretch == Window::CONTENT_SCALE_STRETCH_INTEGER) {
+					// Enforce integer scaling to ensure pixel-perfect appearance of pixel art.
+					WARN_PRINT("Integer content scaling for viewport stretch mode is not implemented yet.");
+				} else if (content_scale_stretch == Window::CONTENT_SCALE_STRETCH_HYBRID) {
+					// Scale up to the nearest greater integer value, then scale down with linear filtering.
+					// This provides good (but not pixel-perfect) appearance for pixel art, and allows
+					// displaying at any output resolution.
+					WARN_PRINT("Hybrid content scaling for viewport stretch mode is not implemented yet.");
+				}
 
 			} break;
 		}
@@ -918,6 +950,15 @@ void Window::set_content_scale_aspect(ContentScaleAspect p_aspect) {
 
 Window::ContentScaleAspect Window::get_content_scale_aspect() const {
 	return content_scale_aspect;
+}
+
+void Window::set_content_scale_stretch(ContentScaleStretch p_stretch) {
+	content_scale_stretch = p_stretch;
+	_update_viewport_size();
+}
+
+Window::ContentScaleStretch Window::get_content_scale_stretch() const {
+	return content_scale_stretch;
 }
 
 void Window::set_content_scale_factor(real_t p_factor) {
@@ -1588,6 +1629,9 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_content_scale_aspect", "aspect"), &Window::set_content_scale_aspect);
 	ClassDB::bind_method(D_METHOD("get_content_scale_aspect"), &Window::get_content_scale_aspect);
 
+	ClassDB::bind_method(D_METHOD("set_content_scale_stretch", "stretch"), &Window::set_content_scale_stretch);
+	ClassDB::bind_method(D_METHOD("get_content_scale_stretch"), &Window::get_content_scale_stretch);
+
 	ClassDB::bind_method(D_METHOD("set_content_scale_factor", "factor"), &Window::set_content_scale_factor);
 	ClassDB::bind_method(D_METHOD("get_content_scale_factor"), &Window::get_content_scale_factor);
 
@@ -1663,7 +1707,8 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "content_scale_size"), "set_content_scale_size", "get_content_scale_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_mode", PROPERTY_HINT_ENUM, "Disabled,Canvas Items,Viewport"), "set_content_scale_mode", "get_content_scale_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_aspect", PROPERTY_HINT_ENUM, "Ignore,Keep,Keep Width,Keep Height,Expand"), "set_content_scale_aspect", "get_content_scale_aspect");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "content_scale_factor"), "set_content_scale_factor", "get_content_scale_factor");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_stretch", PROPERTY_HINT_ENUM, "Fractional,Integer,Hybrid"), "set_content_scale_stretch", "get_content_scale_stretch");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "content_scale_factor", PROPERTY_HINT_RANGE, "0.5,8.0,0.01"), "set_content_scale_factor", "get_content_scale_factor");
 
 	ADD_GROUP("Theme", "theme_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
@@ -1709,6 +1754,10 @@ void Window::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_ASPECT_KEEP_WIDTH);
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_ASPECT_KEEP_HEIGHT);
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_ASPECT_EXPAND);
+
+	BIND_ENUM_CONSTANT(CONTENT_SCALE_STRETCH_FRACTIONAL);
+	BIND_ENUM_CONSTANT(CONTENT_SCALE_STRETCH_INTEGER);
+	BIND_ENUM_CONSTANT(CONTENT_SCALE_STRETCH_HYBRID);
 
 	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_INHERITED);
 	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_LOCALE);

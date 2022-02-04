@@ -2500,6 +2500,7 @@ bool Main::start() {
 
 			String stretch_mode = GLOBAL_DEF_BASIC("display/window/stretch/mode", "disabled");
 			String stretch_aspect = GLOBAL_DEF_BASIC("display/window/stretch/aspect", "keep");
+			String stretch_stretch = GLOBAL_DEF_BASIC("display/window/stretch/stretch", "fractional");
 			Size2i stretch_size = Size2i(GLOBAL_DEF_BASIC("display/window/size/viewport_width", 0),
 					GLOBAL_DEF_BASIC("display/window/size/viewport_height", 0));
 			real_t stretch_scale = GLOBAL_DEF_BASIC("display/window/stretch/scale", 1.0);
@@ -2522,8 +2523,16 @@ bool Main::start() {
 				cs_aspect = Window::CONTENT_SCALE_ASPECT_EXPAND;
 			}
 
+			Window::ContentScaleStretch cs_stretch = Window::CONTENT_SCALE_STRETCH_FRACTIONAL;
+			if (stretch_stretch == "integer") {
+				cs_stretch = Window::CONTENT_SCALE_STRETCH_INTEGER;
+			} else if (stretch_stretch == "hybrid") {
+				cs_stretch = Window::CONTENT_SCALE_STRETCH_HYBRID;
+			}
+
 			sml->get_root()->set_content_scale_mode(cs_sm);
 			sml->get_root()->set_content_scale_aspect(cs_aspect);
+			sml->get_root()->set_content_scale_stretch(cs_stretch);
 			sml->get_root()->set_content_scale_size(stretch_size);
 			sml->get_root()->set_content_scale_factor(stretch_scale);
 
@@ -2564,18 +2573,28 @@ bool Main::start() {
 							"display/window/stretch/mode",
 							PROPERTY_HINT_ENUM,
 							"disabled,canvas_items,viewport"));
+
 			GLOBAL_DEF_BASIC("display/window/stretch/aspect", "keep");
 			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/aspect",
 					PropertyInfo(Variant::STRING,
 							"display/window/stretch/aspect",
 							PROPERTY_HINT_ENUM,
 							"ignore,keep,keep_width,keep_height,expand"));
+
+			GLOBAL_DEF_BASIC("display/window/stretch/stretch", "fractional");
+			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/stretch",
+					PropertyInfo(Variant::STRING,
+							"display/window/stretch/stretch",
+							PROPERTY_HINT_ENUM,
+							"fractional,integer,hybrid"));
+
 			GLOBAL_DEF_BASIC("display/window/stretch/scale", 1.0);
 			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/scale",
 					PropertyInfo(Variant::FLOAT,
 							"display/window/stretch/scale",
 							PROPERTY_HINT_RANGE,
-							"1.0,8.0,0.1"));
+							"0.5,8.0,0.01"));
+
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/config/auto_accept_quit", true));
 			sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
 			GLOBAL_DEF_BASIC("gui/common/snap_controls_to_pixels", true);
