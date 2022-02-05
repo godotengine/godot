@@ -61,6 +61,28 @@
 				Returns the number of surface materials.
 			</description>
 		</method>
+		<method name="is_mergeable_with" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="other_mesh_instance" type="Node" />
+			<description>
+				Returns [code]true[/code] if this [MeshInstance] can be merged with the specified [code]other_mesh_instance[/code], using the [method MeshInstance.merge_meshes] function.
+				In order to be mergeable, properties of the [MeshInstance] must match, and each surface must match, in terms of material, attributes and vertex format.
+			</description>
+		</method>
+		<method name="merge_meshes">
+			<return type="bool" />
+			<argument index="0" name="mesh_instances" type="Array" default="[  ]" />
+			<argument index="1" name="use_global_space" type="bool" default="false" />
+			<argument index="2" name="check_compatibility" type="bool" default="true" />
+			<description>
+				This function can merge together the data from several source [MeshInstance]s into a single destination [MeshInstance] (the MeshInstance the function is called from). This is primarily useful for improving performance by reducing the number of drawcalls and [Node]s.
+				Merging should only be attempted for simple meshes that do not contain animation.
+				The final vertices can either be returned in global space, or in local space relative to the destination [MeshInstance] global transform (the destination Node must be inside the [SceneTree] for local space to work).
+				The function will make a final check for compatibility between the [MeshInstance]s by default, this should always be used unless you have previously checked for compatibility using [method MeshInstance.is_mergeable_with]. If the compatibility check is omitted and the meshes are merged, you may see rendering errors.
+				[b]Note:[/b] The requirements for similarity between meshes are quite stringent. They can be checked using the [method MeshInstance.is_mergeable_with] function prior to calling [method MeshInstance.merge_meshes].
+				Also note that any initial data in the destination [MeshInstance] data will be discarded.
+			</description>
+		</method>
 		<method name="set_surface_material">
 			<return type="void" />
 			<argument index="0" name="surface" type="int" />
