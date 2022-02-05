@@ -52,7 +52,7 @@
 				It is only called if input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_input].
 				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
 				For gameplay input, [method _unhandled_input] and [method _unhandled_key_input] are usually a better fit as they allow the GUI to intercept the events first.
-				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
 			</description>
 		</method>
 		<method name="_physics_process" qualifiers="virtual">
@@ -62,7 +62,7 @@
 				Called during the physics processing step of the main loop. Physics processing means that the frame rate is synced to the physics, i.e. the [code]delta[/code] variable should be constant. [code]delta[/code] is in seconds.
 				It is only called if physics processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_physics_process].
 				Corresponds to the [constant NOTIFICATION_PHYSICS_PROCESS] notification in [method Object._notification].
-				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
 			</description>
 		</method>
 		<method name="_process" qualifiers="virtual">
@@ -72,7 +72,7 @@
 				Called during the processing step of the main loop. Processing happens at every frame and as fast as possible, so the [code]delta[/code] time since the previous frame is not constant. [code]delta[/code] is in seconds.
 				It is only called if processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process].
 				Corresponds to the [constant NOTIFICATION_PROCESS] notification in [method Object._notification].
-				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
 			</description>
 		</method>
 		<method name="_ready" qualifiers="virtual">
@@ -81,29 +81,29 @@
 				Called when the node is "ready", i.e. when both the node and its children have entered the scene tree. If the node has children, their [method _ready] callbacks get triggered first, and the parent node will receive the ready notification afterwards.
 				Corresponds to the [constant NOTIFICATION_READY] notification in [method Object._notification]. See also the [code]@onready[/code] annotation for variables.
 				Usually used for initialization. For even earlier initialization, [method Object._init] may be used. See also [method _enter_tree].
-				[b]Note:[/b] [method _ready] may be called only once for each node. After removing a node from the scene tree and adding again, [code]_ready[/code] will not be called for the second time. This can be bypassed with requesting another call with [method request_ready], which may be called anywhere before adding the node again.
+				[b]Note:[/b] [method _ready] may be called only once for each node. After removing a node from the scene tree and adding it again, [code]_ready[/code] will not be called a second time. This can be bypassed by requesting another call with [method request_ready], which may be called anywhere before adding the node again.
 			</description>
 		</method>
 		<method name="_unhandled_input" qualifiers="virtual">
 			<return type="void" />
 			<argument index="0" name="event" type="InputEvent" />
 			<description>
-				Called when an [InputEvent] hasn't been consumed by [method _input] or any GUI. The input event propagates up through the node tree until a node consumes it.
+				Called when an [InputEvent] hasn't been consumed by [method _input] or any GUI [Control] item. The input event propagates up through the node tree until a node consumes it.
 				It is only called if unhandled input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_unhandled_input].
 				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
 				For gameplay input, this and [method _unhandled_key_input] are usually a better fit than [method _input] as they allow the GUI to intercept the events first.
-				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
 			</description>
 		</method>
 		<method name="_unhandled_key_input" qualifiers="virtual">
 			<return type="void" />
 			<argument index="0" name="event" type="InputEvent" />
 			<description>
-				Called when an [InputEventKey] or [InputEventShortcut] hasn't been consumed by [method _input] or any GUI. The input event propagates up through the node tree until a node consumes it.
+				Called when an [InputEventKey] or [InputEventShortcut] hasn't been consumed by [method _input] or any GUI [Control] item. The input event propagates up through the node tree until a node consumes it.
 				It is only called if unhandled key input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_unhandled_key_input].
 				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
 				For gameplay input, this and [method _unhandled_input] are usually a better fit than [method _input] as they allow the GUI to intercept the events first.
-				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
 			</description>
 		</method>
 		<method name="add_child">

@@ -55,7 +55,7 @@
 		<method name="get_mouse_position" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the mouse position relative to the viewport.
+				Returns the mouse's positon in this [Viewport] using the coordinate system of this [Viewport].
 			</description>
 		</method>
 		<method name="get_render_info">
@@ -180,7 +180,7 @@
 			<return type="void" />
 			<argument index="0" name="to_position" type="Vector2" />
 			<description>
-				Warps the mouse to a position relative to the viewport.
+				Moves the mouse pointer to the specified position in this [Viewport] using the coordinate system of this [Viewport].
 			</description>
 		</method>
 	</methods>
