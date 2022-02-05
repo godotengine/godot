@@ -56,43 +56,19 @@ Transform2D CanvasItem::_edit_get_transform() const {
 #endif
 
 bool CanvasItem::is_visible_in_tree() const {
-	if (!is_inside_tree()) {
-		return false;
-	}
-
-	const CanvasItem *p = this;
-
-	while (p) {
-		if (!p->visible) {
-			return false;
-		}
-		if (p->window && !p->window->is_visible()) {
-			return false;
-		}
-		p = p->get_parent_item();
-	}
-
-	const Node *n = get_parent();
-	while (n) {
-		const CanvasLayer *c = Object::cast_to<CanvasLayer>(n);
-		if (c && !c->is_visible()) {
-			return false;
-		}
-		n = n->get_parent();
-	}
-
-	return true;
+	return visible && visible_in_tree;
 }
 
-void CanvasItem::_propagate_visibility_changed(bool p_visible) {
+void CanvasItem::_propagate_visibility_changed(bool p_visible, bool p_was_visible) {
 	if (p_visible && first_draw) { //avoid propagating it twice
 		first_draw = false;
 	}
+	visible_in_tree = p_visible;
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
 
-	if (p_visible) {
-		update(); //todo optimize
-	} else {
+	if (visible && p_visible) {
+		update();
+	} else if (!p_visible && (visible || p_was_visible)) {
 		emit_signal(SceneStringNames::get_singleton()->hidden);
 	}
 	_block();
@@ -120,7 +96,7 @@ void CanvasItem::set_visible(bool p_visible) {
 		return;
 	}
 
-	_propagate_visibility_changed(p_visible);
+	_propagate_visibility_changed(p_visible, !p_visible);
 }
 
 void CanvasItem::show() {
@@ -148,7 +124,7 @@ void CanvasItem::_update_callback() {
 
 	RenderingServer::get_singleton()->canvas_item_clear(get_canvas_item());
 	//todo updating = true - only allow drawing here
-	if (is_visible_in_tree()) { //todo optimize this!!
+	if (is_visible_in_tree()) {
 		if (first_draw) {
 			notification(NOTIFICATION_VISIBILITY_CHANGED);
 			first_draw = false;
@@ -282,32 +258,44 @@ void CanvasItem::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			ERR_FAIL_COND(!is_inside_tree());
 			first_draw = true;
+
 			Node *parent = get_parent();
 			if (parent) {
 				CanvasItem *ci = Object::cast_to<CanvasItem>(parent);
+
 				if (ci) {
+					visible_in_tree = ci->is_visible_in_tree();
 					C = ci->children_items.push_back(this);
-				}
-				if (!ci) {
-					//look for a window
-					Viewport *viewport = nullptr;
+				} else {
+					CanvasLayer *cl = Object::cast_to<CanvasLayer>(parent);
 
-					while (parent) {
-						viewport = Object::cast_to<Viewport>(parent);
-						if (viewport) {
-							break;
+					if (cl) {
+						visible_in_tree = cl->is_visible();
+					} else {
+						// Look for a window.
+						Viewport *viewport = nullptr;
+
+						while (parent) {
+							viewport = Object::cast_to<Viewport>(parent);
+							if (viewport) {
+								break;
+							}
+							parent = parent->get_parent();
 						}
-						parent = parent->get_parent();
-					}
 
-					ERR_FAIL_COND(!viewport);
+						ERR_FAIL_COND(!viewport);
 
-					window = Object::cast_to<Window>(viewport);
-					if (window) {
-						window->connect(SceneStringNames::get_singleton()->visibility_changed, callable_mp(this, &CanvasItem::_window_visibility_changed));
+						window = Object::cast_to<Window>(viewport);
+						if (window) {
+							window->connect(SceneStringNames::get_singleton()->visibility_changed, callable_mp(this, &CanvasItem::_window_visibility_changed));
+							visible_in_tree = window->is_visible();
+						} else {
+							visible_in_tree = true;
+						}
 					}
 				}
 			}
+
 			_enter_canvas();
 
 			_update_texture_filter_changed(false);
@@ -344,6 +332,7 @@ void CanvasItem::_notification(int p_what) {
 				window->disconnect(SceneStringNames::get_singleton()->visibility_changed, callable_mp(this, &CanvasItem::_window_visibility_changed));
 			}
 			global_invalid = true;
+			visible_in_tree = false;
 		} break;
 		case NOTIFICATION_DRAW:
 		case NOTIFICATION_TRANSFORM_CHANGED: {
