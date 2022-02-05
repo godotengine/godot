@@ -30,11 +30,11 @@
 
 #import <UIKit/UIKit.h>
 
-@class ViewController;
+@class GodotViewController;
 
 @interface AppDelegate : NSObject <UIApplicationDelegate>
 
 @property(strong, nonatomic) UIWindow *window;
-@property(strong, class, readonly, nonatomic) ViewController *viewController;
+@property(strong, class, readonly, nonatomic) GodotViewController *viewController;
 
 @end

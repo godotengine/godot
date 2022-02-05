@@ -28,17 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#import "platform/uikit/uikit_view_renderer.h"
 #import <UIKit/UIKit.h>
 
-@protocol GodotViewRendererProtocol <NSObject>
-
-@property(assign, readonly, nonatomic) BOOL hasFinishedSetup;
-
-- (BOOL)setupView:(UIView *)view;
-- (void)renderOnView:(UIView *)view;
-
-@end
-
-@interface GodotViewRenderer : NSObject <GodotViewRendererProtocol>
+@interface GodotViewRenderer : UIKitViewRenderer
 
 @end

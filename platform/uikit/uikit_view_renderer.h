@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_view_renderer.mm                                               */
+/*  uikit_view_renderer.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,29 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import "godot_view_renderer.h"
-
-#include "os_iphone.h"
-
 #import <UIKit/UIKit.h>
 
-@interface GodotViewRenderer ()
+@protocol UIKitViewRendererProtocol <NSObject>
+
+@property(assign, readonly, nonatomic) BOOL hasFinishedSetup;
+
+- (BOOL)setupView:(UIView *)view;
+- (void)renderOnView:(UIView *)view;
 
 @end
 
-@implementation GodotViewRenderer
+@interface UIKitViewRenderer : NSObject <UIKitViewRendererProtocol>
 
-- (BOOL)startUIKitPlatform {
-	OSIPhone::get_singleton()->start();
-	return YES;
-}
-
-- (void)renderOnView:(UIView *)view {
-	if (!OSIPhone::get_singleton()) {
-		return;
-	}
-
-	OSIPhone::get_singleton()->iterate();
-}
+- (BOOL)startUIKitPlatform;
 
 @end

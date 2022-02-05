@@ -3,16 +3,20 @@
 Import("env")
 
 iphone_lib = [
+    "#platform/uikit/uikit_app_delegate.m",
+    "#platform/uikit/uikit_display_layer.mm",
+    "#platform/uikit/uikit_view_controller.mm",
+    "#platform/uikit/uikit_view_renderer.mm",
+    "#platform/uikit/uikit_view.mm",
     "godot_iphone.mm",
     "os_iphone.mm",
     "main.m",
     "app_delegate.mm",
-    "view_controller.mm",
     "ios.mm",
     "joypad_iphone.mm",
     "godot_view.mm",
-    "display_layer.mm",
     "godot_app_delegate.m",
+    "godot_view_controller.mm",
     "godot_view_renderer.mm",
     "godot_view_gesture_recognizer.mm",
     "device_metrics.m",

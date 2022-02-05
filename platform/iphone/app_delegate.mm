@@ -33,9 +33,9 @@
 #include "core/project_settings.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
 #import "godot_view.h"
+#import "godot_view_controller.h"
 #include "main/main.h"
 #include "os_iphone.h"
-#import "view_controller.h"
 
 #import <AudioToolbox/AudioServices.h>
 
@@ -49,9 +49,9 @@ extern void iphone_finish();
 
 @implementation AppDelegate
 
-static ViewController *mainViewController = nil;
+static GodotViewController *mainViewController = nil;
 
-+ (ViewController *)viewController {
++ (GodotViewController *)viewController {
 	return mainViewController;
 }
 
@@ -78,7 +78,7 @@ static ViewController *mainViewController = nil;
 	// OS with iphone_main. This allows the GodotView to access project settings so
 	// it can properly initialize the OpenGL context
 
-	ViewController *viewController = [[ViewController alloc] init];
+	GodotViewController *viewController = [[GodotViewController alloc] init];
 	viewController.godotView.useCADisplayLink = bool(GLOBAL_DEF("display.iOS/use_cadisplaylink", true)) ? YES : NO;
 	viewController.godotView.renderingInterval = 1.0 / kRenderingFrequency;
 

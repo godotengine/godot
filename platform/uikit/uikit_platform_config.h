@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_view_renderer.mm                                               */
+/*  uikit_platform_config.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,29 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import "godot_view_renderer.h"
+#include <alloca.h>
 
-#include "os_iphone.h"
+#define GLES2_INCLUDE_H <ES2/gl.h>
+#define GLES3_INCLUDE_H <ES3/gl.h>
 
-#import <UIKit/UIKit.h>
+#define PLATFORM_REFCOUNT
 
-@interface GodotViewRenderer ()
+#define PTHREAD_RENAME_SELF
 
-@end
-
-@implementation GodotViewRenderer
-
-- (BOOL)startUIKitPlatform {
-	OSIPhone::get_singleton()->start();
-	return YES;
-}
-
-- (void)renderOnView:(UIView *)view {
-	if (!OSIPhone::get_singleton()) {
-		return;
-	}
-
-	OSIPhone::get_singleton()->iterate();
-}
-
-@end
+#define _weakify(var) __weak typeof(var) GDWeak_##var = var;
+#define _strongify(var)                                      \
+	_Pragma("clang diagnostic push")                         \
+			_Pragma("clang diagnostic ignored \"-Wshadow\"") \
+					__strong typeof(var) var = GDWeak_##var; \
+	_Pragma("clang diagnostic pop")

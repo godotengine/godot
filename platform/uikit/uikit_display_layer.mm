@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  display_layer.mm                                                     */
+/*  uikit_display_layer.mm                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import "display_layer.h"
+#import "uikit_display_layer.h"
 
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
@@ -47,7 +47,7 @@
 int gl_view_base_fb;
 bool gles3_available = true;
 
-@implementation GodotOpenGLLayer {
+@implementation UIKitOpenGLLayer {
 	// The pixel dimensions of the backbuffer
 	GLint backingWidth;
 	GLint backingHeight;

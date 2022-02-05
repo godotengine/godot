@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  display_layer.h                                                      */
+/*  uikit_view.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,18 +28,42 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import <OpenGLES/EAGLDrawable.h>
-#import <QuartzCore/QuartzCore.h>
+#import <AVFoundation/AVFoundation.h>
+#import <MediaPlayer/MediaPlayer.h>
+#import <OpenGLES/EAGL.h>
+#import <OpenGLES/ES1/gl.h>
+#import <OpenGLES/ES1/glext.h>
+#import <UIKit/UIKit.h>
 
-@protocol DisplayLayer <NSObject>
+class String;
 
-- (void)startRenderDisplayLayer;
-- (void)stopRenderDisplayLayer;
-- (void)initializeDisplayLayer;
-- (void)layoutDisplayLayer;
+@class UIKitView;
+@protocol UIKitDisplayLayer;
+@protocol UIKitViewRendererProtocol;
+
+@protocol UIKitViewDelegate
+
+- (BOOL)uikitViewFinishedSetup:(UIKitView *)view;
 
 @end
 
-@interface GodotOpenGLLayer : CAEAGLLayer <DisplayLayer>
+@interface UIKitView : UIView
+
+@property(assign, nonatomic) id<UIKitViewRendererProtocol> renderer;
+@property(assign, nonatomic) id<UIKitViewDelegate> delegate;
+
+@property(assign, readonly, nonatomic) BOOL isActive;
+
+@property(strong, readonly, nonatomic) CALayer<UIKitDisplayLayer> *renderingLayer;
+@property(assign, readonly, nonatomic) BOOL canRender;
+
+@property(assign, nonatomic) NSTimeInterval renderingInterval;
+
+- (CALayer<UIKitDisplayLayer> *)initializeRendering;
+- (void)stopRendering;
+- (void)startRendering;
+- (void)drawView;
+
+@property(nonatomic, assign) BOOL useCADisplayLink;
 
 @end

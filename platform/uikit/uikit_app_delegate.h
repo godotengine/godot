@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_view_renderer.mm                                               */
+/*  uikit_app_delegate.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,29 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import "godot_view_renderer.h"
-
-#include "os_iphone.h"
-
 #import <UIKit/UIKit.h>
 
-@interface GodotViewRenderer ()
+typedef NSObject<UIApplicationDelegate> ApplicationDelegateService;
 
-@end
+@interface UIKitApplicalitionDelegate : NSObject <UIApplicationDelegate>
 
-@implementation GodotViewRenderer
+@property(class, readonly, strong) NSArray<ApplicationDelegateService *> *services;
 
-- (BOOL)startUIKitPlatform {
-	OSIPhone::get_singleton()->start();
-	return YES;
-}
-
-- (void)renderOnView:(UIView *)view {
-	if (!OSIPhone::get_singleton()) {
-		return;
-	}
-
-	OSIPhone::get_singleton()->iterate();
-}
++ (void)addService:(ApplicationDelegateService *)service;
 
 @end

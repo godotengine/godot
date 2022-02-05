@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_view_renderer.mm                                               */
+/*  godot_view_controller.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,29 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import "godot_view_renderer.h"
-
-#include "os_iphone.h"
-
+#import "platform/uikit/uikit_view_controller.h"
 #import <UIKit/UIKit.h>
 
-@interface GodotViewRenderer ()
+@class GodotView;
+@class GodotNativeVideoView;
+@class GodotKeyboardInputView;
 
-@end
+@interface GodotViewController : UIKitViewController
 
-@implementation GodotViewRenderer
+@property(nonatomic, readonly, strong) GodotView *godotView;
+@property(nonatomic, readonly, strong) GodotNativeVideoView *videoView;
+@property(nonatomic, readonly, strong) GodotKeyboardInputView *keyboardView;
 
-- (BOOL)startUIKitPlatform {
-	OSIPhone::get_singleton()->start();
-	return YES;
-}
+// MARK: Native Video Player
 
-- (void)renderOnView:(UIView *)view {
-	if (!OSIPhone::get_singleton()) {
-		return;
-	}
-
-	OSIPhone::get_singleton()->iterate();
-}
+- (BOOL)playVideoAtPath:(NSString *)filePath volume:(float)videoVolume audio:(NSString *)audioTrack subtitle:(NSString *)subtitleTrack;
 
 @end

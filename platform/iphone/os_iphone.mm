@@ -48,9 +48,9 @@
 #import "app_delegate.h"
 #import "device_metrics.h"
 #import "godot_view.h"
+#import "godot_view_controller.h"
 #import "keyboard_input_view.h"
 #import "native_video_view.h"
-#import "view_controller.h"
 
 #import <UIKit/UIKit.h>
 #include <dlfcn.h>
