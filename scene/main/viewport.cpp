@@ -2732,6 +2732,7 @@ void Viewport::push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local
 
 						)) {
 			physics_picking_events.push_back(ev);
+			_set_input_as_handled_keep_physics();
 		}
 	}
 }
@@ -2914,7 +2915,10 @@ bool Viewport::gui_is_drag_successful() const {
 
 void Viewport::set_input_as_handled() {
 	_drop_physics_mouseover();
+	_set_input_as_handled_keep_physics();
+}
 
+void Viewport::_set_input_as_handled_keep_physics() {
 	if (!handle_input_locally) {
 		ERR_FAIL_COND(!is_inside_tree());
 		Viewport *vp = this;

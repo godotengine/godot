@@ -452,6 +452,8 @@ private:
 	virtual bool _can_consume_input_events() const { return true; }
 	uint64_t event_count = 0;
 
+	void _set_input_as_handled_keep_physics();
+
 protected:
 	void _set_size(const Size2i &p_size, const Size2i &p_size_2d_override, const Rect2i &p_to_screen_rect, const Transform2D &p_stretch_transform, bool p_allocated);
 
