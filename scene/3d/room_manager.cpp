@@ -2190,7 +2190,14 @@ void RoomManager::_merge_meshes_in_room(Room *p_room) {
 
 			_merge_log("\t\t" + merged->get_name());
 
-			if (merged->merge_meshes(merge_list, true, false)) {
+			// merge function takes a vector of variants
+			Vector<Variant> variant_merge_list;
+			variant_merge_list.resize(merge_list.size());
+			for (int i = 0; i < merge_list.size(); i++) {
+				variant_merge_list.set(i, merge_list[i]);
+			}
+
+			if (merged->merge_meshes(variant_merge_list, true, false)) {
 				// set all the source meshes to portal mode ignore so not shown
 				for (int i = 0; i < merge_list.size(); i++) {
 					merge_list[i]->set_portal_mode(CullInstance::PORTAL_MODE_IGNORE);

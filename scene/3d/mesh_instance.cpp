@@ -847,6 +847,27 @@ void MeshInstance::create_debug_tangents() {
 	}
 }
 
+bool MeshInstance::merge_meshes(Vector<Variant> p_list, bool p_use_global_space, bool p_check_compatibility) {
+	// bound function only support variants, so we need to convert to a list of MeshInstances
+	Vector<MeshInstance *> mis;
+
+	for (int n = 0; n < p_list.size(); n++) {
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_list[n]);
+		if (mi) {
+			if (mi != this) {
+				mis.push_back(mi);
+			} else {
+				ERR_PRINT("Destination MeshInstance cannot be a source.");
+			}
+		} else {
+			ERR_PRINT("Only MeshInstances can be merged.");
+		}
+	}
+
+	ERR_FAIL_COND_V(!mis.size(), "Array contains no MeshInstances");
+	return _merge_meshes(mis, p_use_global_space, p_check_compatibility);
+}
+
 bool MeshInstance::is_mergeable_with(Node *p_other) const {
 	const MeshInstance *mi = Object::cast_to<MeshInstance>(p_other);
 
@@ -1153,7 +1174,7 @@ bool MeshInstance::_triangle_is_degenerate(const Vector3 &p_a, const Vector3 &p_
 
 // If p_check_compatibility is set to false you MUST have performed a prior check using
 // is_mergeable_with, otherwise you could get mismatching surface formats leading to graphical errors etc.
-bool MeshInstance::merge_meshes(Vector<MeshInstance *> p_list, bool p_use_global_space, bool p_check_compatibility) {
+bool MeshInstance::_merge_meshes(Vector<MeshInstance *> p_list, bool p_use_global_space, bool p_check_compatibility) {
 	if (p_list.size() < 1) {
 		// should not happen but just in case
 		return false;
@@ -1301,6 +1322,10 @@ void MeshInstance::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_debug_tangents"), &MeshInstance::create_debug_tangents);
 	ClassDB::set_method_flags("MeshInstance", "create_debug_tangents", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
+
+	ClassDB::bind_method(D_METHOD("is_mergeable_with", "other_mesh_instance"), &MeshInstance::is_mergeable_with);
+	ClassDB::bind_method(D_METHOD("merge_meshes", "mesh_instances", "use_global_space", "check_compatibility"), &MeshInstance::merge_meshes, DEFVAL(Vector<Variant>()), DEFVAL(false), DEFVAL(true));
+	ClassDB::set_method_flags("MeshInstance", "merge_meshes", METHOD_FLAGS_DEFAULT);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "skin", PROPERTY_HINT_RESOURCE_TYPE, "Skin"), "set_skin", "get_skin");
