@@ -44,5 +44,16 @@
 		<member name="transform" type="Transform2D" setter="set_transform" getter="get_transform" default="Transform2D(1, 0, 0, 1, 0, 0)">
 			The layer's transform.
 		</member>
+		<member name="visible" type="bool" setter="set_visible" getter="is_visible" default="true">
+			If [code]false[/code], any [CanvasItem] under this [CanvasLayer] will be hidden.
+			Unlike [member CanvasItem.visible], visibility of a [CanvasLayer] isn't propagated to underlying layers.
+		</member>
 	</members>
+	<signals>
+		<signal name="visibility_changed">
+			<description>
+				Emitted when visibility of the layer is changed. See [member visible].
+			</description>
+		</signal>
+	</signals>
 </class>

@@ -72,6 +72,15 @@ bool CanvasItem::is_visible_in_tree() const {
 		p = p->get_parent_item();
 	}
 
+	const Node *n = get_parent();
+	while (n) {
+		const CanvasLayer *c = Object::cast_to<CanvasLayer>(n);
+		if (c && !c->is_visible()) {
+			return false;
+		}
+		n = n->get_parent();
+	}
+
 	return true;
 }
 
