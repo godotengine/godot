@@ -52,13 +52,13 @@ Includes some patches in the `patches` folder which have been sent upstream.
 
 ## cvtt
 
-- Upstream: https://github.com/elasota/cvtt
-- Version: 1.0.0-beta4 (cc8472a04ba110fe999c686d07af40f7839051fd, 2018)
+- Upstream: https://github.com/elasota/ConvectionKernels
+- Version: git (dc2dbbe0ae2cf2be06ef56d1021e2222a56c7fe2, 2021)
 - License: MIT
 
 Files extracted from upstream source:
 
-- all .cpp, .h, and .txt files in ConvectionKernels/
+- all .cpp, .h, and .txt files except the folders MakeTables and etc2packer.
 
 
 ## doctest
