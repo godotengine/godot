@@ -5,6 +5,7 @@ if get_option('builtin_harfbuzz')
     'src/hb-blob.cc',
     'src/hb-buffer.cc',
     'src/hb-buffer-serialize.cc',
+    'src/hb-buffer-verify.cc',
     'src/hb-common.cc',
     'src/hb-coretext.cc',
     'src/hb-directwrite.cc',

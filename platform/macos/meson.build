@@ -26,9 +26,16 @@ if PLATFORM == 'osx'
                       'crash_handler_osx.mm',
                       'dir_access_osx.mm',
                       'display_server_osx.mm',
-                      'godot_main_osx.mm',
                       'os_osx.mm',
                       'vulkan_context_osx.mm',
+                      'godot_application.mm',
+                      'godot_application_delegate.mm',
+                      'godot_content_view.mm',
+                      'godot_main_osx.mm',
+                      'godot_window.mm',
+                      'godot_window_delegate.mm',
+                      'key_mapping_osx.mm',
+                      'osx_terminal_logger.mm',
                       )
     CPP_ARGS += ['-DUNIX_ENABLED', '-DVULKAN_ENABLED', '-DOSX_ENABLED', '-DAPPLE_STYLE_KEYS', '-DCOREAUDIO_ENABLED', '-DCOREMIDI_ENABLED']
     OBJCPP_ARGS += ['-DUNIX_ENABLED', '-DVULKAN_ENABLED', '-DOSX_ENABLED', '-DAPPLE_STYLE_KEYS', '-DCOREAUDIO_ENABLED', '-DCOREMIDI_ENABLED']

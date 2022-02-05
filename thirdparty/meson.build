@@ -14,7 +14,6 @@ subdir('harfbuzz')
 
 # the rest
 subdir('basis_universal')
-subdir('bullet')
 subdir('cvtt')
 subdir('enet')
 subdir('etcpak')

@@ -38,5 +38,5 @@ if get_option('builtin_zlib')
 
     DEP_ZLIB = declare_dependency(link_with: _lib_zlib, include_directories: _zlib_incdirs, compile_args: _zlib_dep_flags)
 else
-    DEP_ZLIB = dependency('zlib', required=false)
+    DEP_ZLIB = dependency('zlib', required: false)
 endif

@@ -1,6 +1,7 @@
 SOURCES += files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
 
 subdir('audio')
+subdir('debugger')
 subdir('camera')
 subdir('physics_2d')
 subdir('physics_3d')
