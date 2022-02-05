@@ -101,6 +101,7 @@ class EditorScenePostImportPlugin : public RefCounted {
 
 public:
 	enum InternalImportCategory {
+		INTERNAL_IMPORT_CATEGORY_PREFLIGHT,
 		INTERNAL_IMPORT_CATEGORY_NODE,
 		INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE,
 		INTERNAL_IMPORT_CATEGORY_MESH,
@@ -243,6 +244,7 @@ public:
 	virtual String get_preset_name(int p_idx) const override;
 
 	enum InternalImportCategory {
+		INTERNAL_IMPORT_CATEGORY_PREFLIGHT = EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_PREFLIGHT,
 		INTERNAL_IMPORT_CATEGORY_NODE = EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_NODE,
 		INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE = EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE,
 		INTERNAL_IMPORT_CATEGORY_MESH = EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MESH,
