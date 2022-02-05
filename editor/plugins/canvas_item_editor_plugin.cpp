@@ -5797,22 +5797,17 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 		editor_data->get_undo_redo().add_undo_method(ed, "live_debug_remove_node", NodePath(String(editor->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
 	}
 
-	String node_class = child->get_class();
-	if (node_class == "Polygon2D") {
-		editor_data->get_undo_redo().add_do_property(child, "texture/texture", texture);
-	} else if (node_class == "TouchScreenButton") {
-		editor_data->get_undo_redo().add_do_property(child, "normal", texture);
-	} else if (node_class == "TextureButton") {
-		editor_data->get_undo_redo().add_do_property(child, "texture_button", texture);
+	if (Object::cast_to<TouchScreenButton>(child) || Object::cast_to<TextureButton>(child)) {
+		editor_data->get_undo_redo().add_do_property(child, "texture_normal", texture);
 	} else {
 		editor_data->get_undo_redo().add_do_property(child, "texture", texture);
 	}
 
 	// make visible for certain node type
-	if (ClassDB::is_parent_class(node_class, "Control")) {
+	if (ClassDB::is_parent_class(child->get_class(), "Control")) {
 		Size2 texture_size = texture->get_size();
 		editor_data->get_undo_redo().add_do_property(child, "rect_size", texture_size);
-	} else if (node_class == "Polygon2D") {
+	} else if (Object::cast_to<Polygon2D>(child)) {
 		Size2 texture_size = texture->get_size();
 		Vector<Vector2> list = {
 			Vector2(0, 0),
@@ -6069,10 +6064,21 @@ Node *CanvasItemEditorViewport::_make_texture_node_type(String texture_node_type
 }
 
 void CanvasItemEditorViewport::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		List<BaseButton *> btn_list;
+		button_group->get_buttons(&btn_list);
+
+		for (int i = 0; i < btn_list.size(); i++) {
+			CheckBox *check = Object::cast_to<CheckBox>(btn_list[i]);
+			check->set_icon(get_theme_icon(check->get_text(), SNAME("EditorIcons")));
+		}
+
+		label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+	}
+
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			connect("mouse_exited", callable_mp(this, &CanvasItemEditorViewport::_on_mouse_exit));
-			label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("mouse_exited", callable_mp(this, &CanvasItemEditorViewport::_on_mouse_exit));
@@ -6123,7 +6129,7 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 
 	btn_group = memnew(VBoxContainer);
 	vbc->add_child(btn_group);
-	btn_group->set_h_size_flags(0);
+	btn_group->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	button_group.instantiate();
 	for (int i = 0; i < texture_node_types.size(); i++) {
