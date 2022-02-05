@@ -104,6 +104,7 @@ class EditorSettingsDialog : public AcceptDialog {
 
 	void _update_shortcuts();
 	void _shortcut_button_pressed(Object *p_item, int p_column, int p_idx);
+	void _shortcut_cell_double_clicked();
 
 	void _builtin_action_popup_index_pressed(int p_index);
 

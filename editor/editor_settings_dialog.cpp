@@ -513,6 +513,38 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 	}
 }
 
+void EditorSettingsDialog::_shortcut_cell_double_clicked() {
+	// When a shortcut cell is double clicked:
+	// If the cell has children and is in the bindings column, and if its first child is editable,
+	// then uncollapse the cell, and if the first child is the only child, then edit that child.
+	// If the cell is in the bindings column and can be edited, then edit it.
+	// If the cell is in the name column, then toggle collapse.
+	const ShortcutButton edit_btn_id = EditorSettingsDialog::SHORTCUT_EDIT;
+	const int edit_btn_col = 1;
+	TreeItem *ti = shortcuts->get_selected();
+	String type = ti->get_meta("type");
+	int col = shortcuts->get_selected_column();
+	if (type == "shortcut" && col == 0) {
+		if (ti->get_first_child()) {
+			ti->set_collapsed(!ti->is_collapsed());
+		}
+	} else if (type == "shortcut" && col == 1) {
+		if (ti->get_first_child()) {
+			TreeItem *child_ti = ti->get_first_child();
+			if (child_ti->get_button_by_id(edit_btn_col, edit_btn_id) != -1) {
+				ti->set_collapsed(false);
+				if (ti->get_child_count() == 1) {
+					_shortcut_button_pressed(child_ti, edit_btn_col, edit_btn_id);
+				}
+			}
+		}
+	} else if (type == "event" && col == 1) {
+		if (ti->get_button_by_id(edit_btn_col, edit_btn_id) != -1) {
+			_shortcut_button_pressed(ti, edit_btn_col, edit_btn_id);
+		}
+	}
+}
+
 Variant EditorSettingsDialog::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 	TreeItem *selected = shortcuts->get_selected();
 
@@ -692,6 +724,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcuts->set_column_title(0, TTR("Name"));
 	shortcuts->set_column_title(1, TTR("Binding"));
 	shortcuts->connect("button_pressed", callable_mp(this, &EditorSettingsDialog::_shortcut_button_pressed));
+	shortcuts->connect("item_activated", callable_mp(this, &EditorSettingsDialog::_shortcut_cell_double_clicked));
 	tab_shortcuts->add_child(shortcuts);
 
 	shortcuts->set_drag_forwarding(this);
