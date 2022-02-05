@@ -3871,8 +3871,12 @@ void RendererSceneCull::update_dirty_instances() {
 
 void RendererSceneCull::update() {
 	//optimize bvhs
-	for (uint32_t i = 0; i < scenario_owner.get_rid_count(); i++) {
-		Scenario *s = scenario_owner.get_ptr_by_index(i);
+
+	uint32_t rid_count = scenario_owner.get_rid_count();
+	RID *rids = (RID *)alloca(sizeof(RID) * rid_count);
+	scenario_owner.fill_owned_buffer(rids);
+	for (uint32_t i = 0; i < rid_count; i++) {
+		Scenario *s = scenario_owner.get_or_null(rids[i]);
 		s->indexers[Scenario::INDEXER_GEOMETRY].optimize_incremental(indexer_update_iterations);
 		s->indexers[Scenario::INDEXER_VOLUMES].optimize_incremental(indexer_update_iterations);
 	}
