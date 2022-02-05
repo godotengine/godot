@@ -1340,7 +1340,7 @@ void Viewport::_gui_call_notification(Control *p_control, int p_what) {
 }
 
 Control *Viewport::gui_find_control(const Point2 &p_global) {
-	// Handle subwindows.
+	// Handle child Control nodes.
 	_gui_sort_roots();
 
 	for (List<Control *>::Element *E = gui.roots.back(); E; E = E->prev()) {
@@ -2155,7 +2155,7 @@ void Viewport::_gui_control_grab_focus(Control *p_control) {
 		// No need for change.
 		return;
 	}
-	get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, "_viewports", "_gui_remove_focus_for_window", (Node *)get_base_window());
+	gui_release_focus();
 	gui.key_focus = p_control;
 	emit_signal(SNAME("gui_focus_changed"), p_control);
 	p_control->notification(Control::NOTIFICATION_FOCUS_ENTER);
