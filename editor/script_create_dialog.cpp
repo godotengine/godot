@@ -763,10 +763,10 @@ void ScriptCreateDialog::_update_dialog() {
 }
 
 ScriptLanguage::ScriptTemplate ScriptCreateDialog::_get_current_template() const {
-	int selected_id = template_menu->get_selected_id();
+	int selected_index = template_menu->get_selected();
 	for (const ScriptLanguage::ScriptTemplate &t : template_list) {
 		if (is_using_templates) {
-			if (t.id == selected_id) {
+			if (t.id == selected_index) {
 				return t;
 			}
 		} else {
