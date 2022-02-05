@@ -660,17 +660,17 @@ struct _VariantCall {
 
 	static void _call_PoolByteArray_decompress_dynamic(Variant &r_ret, Variant &p_self, const Variant **p_args) {
 		PoolByteArray *ba = reinterpret_cast<PoolByteArray *>(p_self._data._mem);
-		PoolByteArray *decompressed = memnew(PoolByteArray);
+		PoolByteArray decompressed;
 		int max_output_size = (int)(*p_args[0]);
 		Compression::Mode mode = (Compression::Mode)(int)(*p_args[1]);
 
-		decompressed->resize(1024);
-		int result = Compression::decompress_dynamic(decompressed, max_output_size, ba->read().ptr(), ba->size(), mode);
+		decompressed.resize(1024);
+		int result = Compression::decompress_dynamic(&decompressed, max_output_size, ba->read().ptr(), ba->size(), mode);
 
 		if (result == OK) {
 			r_ret = decompressed;
 		} else {
-			decompressed->resize(0);
+			decompressed.resize(0);
 			r_ret = decompressed;
 			ERR_FAIL_MSG("Decompression failed.");
 		}
