@@ -806,6 +806,7 @@ Error GLTFDocument::_parse_buffers(Ref<GLTFState> state, const String &p_base_pa
 					}
 					buffer_data = _parse_base64_uri(uri);
 				} else { // Relative path to an external image file.
+					uri = uri.http_unescape();
 					uri = p_base_path.plus_file(uri).replace("\\", "/"); // Fix for Windows.
 					buffer_data = FileAccess::get_file_as_array(uri);
 					ERR_FAIL_COND_V_MSG(buffer.size() == 0, ERR_PARSE_ERROR, "glTF: Couldn't load binary file as an array: " + uri);
@@ -3011,9 +3012,9 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> state, const String &p_base_pat
 
 		// We'll assume that we use either URI or bufferView, so let's warn the user
 		// if their image somehow uses both. And fail if it has neither.
-		ERR_CONTINUE_MSG(!d.has("uri") && !d.has("bufferView"), "Invalid image definition in glTF file, it should specific an 'uri' or 'bufferView'.");
+		ERR_CONTINUE_MSG(!d.has("uri") && !d.has("bufferView"), "Invalid image definition in glTF file, it should specify an 'uri' or 'bufferView'.");
 		if (d.has("uri") && d.has("bufferView")) {
-			WARN_PRINT("Invalid image definition in glTF file using both 'uri' and 'bufferView'. 'bufferView' will take precedence.");
+			WARN_PRINT("Invalid image definition in glTF file using both 'uri' and 'bufferView'. 'uri' will take precedence.");
 		}
 
 		String mimetype;
@@ -3051,6 +3052,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> state, const String &p_base_pat
 					}
 				}
 			} else { // Relative path to an external image file.
+				uri = uri.http_unescape();
 				uri = p_base_path.plus_file(uri).replace("\\", "/"); // Fix for Windows.
 				// ResourceLoader will rely on the file extension to use the relevant loader.
 				// The spec says that if mimeType is defined, it should take precedence (e.g.
