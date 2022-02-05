@@ -1165,7 +1165,7 @@ void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {
 	ERR_FAIL_COND(!p_multiplayer.is_valid());
 
 	multiplayer = p_multiplayer;
-	multiplayer->set_root_node(root);
+	multiplayer->set_root_path("/" + root->get_name());
 }
 
 void SceneTree::_bind_methods() {

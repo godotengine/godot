@@ -55,7 +55,34 @@ public:
 	MultiplayerReplicationInterface() {}
 };
 
-class RPCManager;
+class MultiplayerRPCInterface : public RefCounted {
+	GDCLASS(MultiplayerRPCInterface, RefCounted);
+
+public:
+	// Called by Node.rpc
+	virtual void rpcp(Object *p_obj, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount) {}
+	virtual void process_rpc(int p_from, const uint8_t *p_packet, int p_packet_len) {}
+	virtual String get_rpc_md5(const Object *p_obj) const { return String(); }
+
+	MultiplayerRPCInterface() {}
+};
+
+class MultiplayerCacheInterface : public RefCounted {
+	GDCLASS(MultiplayerCacheInterface, RefCounted);
+
+public:
+	virtual void clear() {}
+	virtual void on_peer_change(int p_id, bool p_connected) {}
+	virtual void process_simplify_path(int p_from, const uint8_t *p_packet, int p_packet_len) {}
+	virtual void process_confirm_path(int p_from, const uint8_t *p_packet, int p_packet_len) {}
+
+	// Returns true if all peers have cached path.
+	virtual bool send_object_cache(Object *p_obj, NodePath p_path, int p_target, int &p_id) { return false; }
+	virtual Object *get_cached_object(int p_from, uint32_t p_cache_id) { return nullptr; }
+	virtual bool is_cache_confirmed(NodePath p_path, int p_peer) { return false; }
+
+	MultiplayerCacheInterface() {}
+};
 
 class MultiplayerAPI : public RefCounted {
 	GDCLASS(MultiplayerAPI, RefCounted);
@@ -85,49 +112,30 @@ public:
 	};
 
 private:
-	//path sent caches
-	struct PathSentCache {
-		Map<int, bool> confirmed_peers;
-		int id;
-	};
-
-	//path get caches
-	struct PathGetCache {
-		struct NodeInfo {
-			NodePath path;
-			ObjectID instance;
-		};
-
-		Map<int, NodeInfo> nodes;
-	};
-
 	Ref<MultiplayerPeer> multiplayer_peer;
 	Set<int> connected_peers;
 	int remote_sender_id = 0;
 	int remote_sender_override = 0;
 
-	HashMap<NodePath, PathSentCache> path_send_cache;
-	Map<int, PathGetCache> path_get_cache;
-	int last_send_cache_id;
 	Vector<uint8_t> packet_cache;
 
-	Node *root_node = nullptr;
+	NodePath root_path;
 	bool allow_object_decoding = false;
 
+	Ref<MultiplayerCacheInterface> cache;
 	Ref<MultiplayerReplicationInterface> replicator;
-	RPCManager *rpc_manager = nullptr;
+	Ref<MultiplayerRPCInterface> rpc;
 
 protected:
 	static void _bind_methods();
 
-	bool _send_confirm_path(Node *p_node, NodePath p_path, PathSentCache *psc, int p_target);
 	void _process_packet(int p_from, const uint8_t *p_packet, int p_packet_len);
-	void _process_simplify_path(int p_from, const uint8_t *p_packet, int p_packet_len);
-	void _process_confirm_path(int p_from, const uint8_t *p_packet, int p_packet_len);
 	void _process_raw(int p_from, const uint8_t *p_packet, int p_packet_len);
 
 public:
 	static MultiplayerReplicationInterface *(*create_default_replication_interface)(MultiplayerAPI *p_multiplayer);
+	static MultiplayerRPCInterface *(*create_default_rpc_interface)(MultiplayerAPI *p_multiplayer);
+	static MultiplayerCacheInterface *(*create_default_cache_interface)(MultiplayerAPI *p_multiplayer);
 
 	static Error encode_and_compress_variant(const Variant &p_variant, uint8_t *p_buffer, int &r_len, bool p_allow_object_decoding);
 	static Error decode_and_decompress_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int *r_len, bool p_allow_object_decoding);
@@ -136,23 +144,24 @@ public:
 
 	void poll();
 	void clear();
-	void set_root_node(Node *p_node);
-	Node *get_root_node();
+	void set_root_path(const NodePath &p_path);
+	NodePath get_root_path() const;
 	void set_multiplayer_peer(const Ref<MultiplayerPeer> &p_peer);
 	Ref<MultiplayerPeer> get_multiplayer_peer() const;
 
 	Error send_bytes(Vector<uint8_t> p_data, int p_to = MultiplayerPeer::TARGET_PEER_BROADCAST, Multiplayer::TransferMode p_mode = Multiplayer::TRANSFER_MODE_RELIABLE, int p_channel = 0);
 
-	// Called by Node.rpc
-	void rpcp(Node *p_node, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount);
+	// RPC API
+	void rpcp(Object *p_obj, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount);
+	String get_rpc_md5(const Object *p_obj) const;
 	// Replication API
 	Error spawn(Object *p_object, Variant p_config);
 	Error despawn(Object *p_object, Variant p_config);
 	Error replication_start(Object *p_object, Variant p_config);
 	Error replication_stop(Object *p_object, Variant p_config);
-	// Called by replicator
-	bool send_confirm_path(Node *p_node, NodePath p_path, int p_target, int &p_id);
-	Node *get_cached_node(int p_from, uint32_t p_node_id);
+	// Cache API
+	bool send_object_cache(Object *p_obj, NodePath p_path, int p_target, int &p_id);
+	Object *get_cached_object(int p_from, uint32_t p_cache_id);
 	bool is_cache_confirmed(NodePath p_path, int p_peer);
 
 	void _add_peer(int p_id);
@@ -173,8 +182,6 @@ public:
 
 	void set_allow_object_decoding(bool p_enable);
 	bool is_object_decoding_allowed() const;
-
-	RPCManager *get_rpc_manager() const { return rpc_manager; }
 
 #ifdef DEBUG_ENABLED
 	void profile_bandwidth(const String &p_inout, int p_size);
