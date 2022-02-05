@@ -27,6 +27,23 @@
 class DisplayServerWayland : public DisplayServer {
 	// Wayland stuff.
 
+	// TODO: Add the rest of the events.
+	enum WaylandMessageType {
+		TYPE_WINDOW_RECT, // WaylandWindowRectMessage
+	};
+
+	// Messages used for sending stuff to the main thread to be dispatched there.
+	struct WaylandMessage {
+		WaylandMessageType type;
+		void *data;
+	};
+
+	// WaylandMessage data for window rect changes.
+	struct WaylandWindowRectMessage {
+		WindowID id;
+		Rect2i rect;
+	};
+
 	struct WaylandGlobals {
 		struct wl_compositor *wl_compositor = nullptr;
 		uint32_t wl_compositor_name = 0;
@@ -54,9 +71,9 @@ class DisplayServerWayland : public DisplayServer {
 		// Metadata.
 		String title;
 
-		// This stuff is needed for buffer changes and creation during events.
-		VulkanContextWayland *context_vulkan = nullptr;
+		// TODO: Handle more cleanly.
 		WindowID id;
+		List<WaylandMessage> *message_queue;
 	};
 
 	struct PointerData {
@@ -118,6 +135,8 @@ class DisplayServerWayland : public DisplayServer {
 		SeatState seat_state;
 
 		SafeFlag events_thread_done;
+
+		List<WaylandMessage> message_queue;
 	};
 
 	WaylandState wls;

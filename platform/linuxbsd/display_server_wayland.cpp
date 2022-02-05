@@ -24,8 +24,11 @@ void DisplayServerWayland::dispatch_input_events(const Ref<InputEvent> &p_event)
 
 // Taken from DisplayServerX11.
 void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event) {
+#if 0 // Here we are back again...
 	Variant ev = p_event;
 	Variant *evp = &ev;
+	Variant ret;
+	Callable::CallError ce;
 
 	Ref<InputEventFromWindow> event_from_window = p_event;
 	if (event_from_window.is_valid() && event_from_window->get_window_id() != INVALID_WINDOW_ID) {
@@ -35,7 +38,7 @@ void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event)
 		if (callable.is_null()) {
 			return;
 		}
-		callable.call_deferred((const Variant **)&evp, 1);
+		callable.call((const Variant **)&evp, 1, ret, ce);
 	} else {
 		//send to all windows
 		for (KeyValue<WindowID, WindowData> &E : wls.windows) {
@@ -43,9 +46,10 @@ void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event)
 			if (callable.is_null()) {
 				continue;
 			}
-			callable.call_deferred((const Variant **)&evp, 1);
+			callable.call((const Variant **)&evp, 1, ret, ce);
 		}
 	}
+#endif
 }
 
 DisplayServerWayland::WindowID DisplayServerWayland::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
@@ -58,10 +62,9 @@ DisplayServerWayland::WindowID DisplayServerWayland::_create_window(WindowMode p
 	wd.vsync_mode = p_vsync_mode;
 	wd.rect = p_rect;
 
-#ifdef VULKAN_ENABLED
-	wd.context_vulkan = context_vulkan;
-#endif
+	// FIXME: These shouldn't be in the window data.
 	wd.id = id;
+	wd.message_queue = &wls.message_queue;
 
 	wd.wl_surface = wl_compositor_create_surface(wls.globals.wl_compositor);
 	wd.xdg_surface = xdg_wm_base_get_xdg_surface(wls.globals.xdg_wm_base, wd.wl_surface);
@@ -453,35 +456,35 @@ void DisplayServerWayland::_xdg_wm_base_on_ping(void *data, struct xdg_wm_base *
 void DisplayServerWayland::_xdg_surface_on_configure(void *data, struct xdg_surface *xdg_surface, uint32_t serial) {
 	xdg_surface_ack_configure(xdg_surface, serial);
 
-	WindowData *window_data = (WindowData*) data;
+	WindowData *wd = (WindowData*) data;
 
-	if (window_data->buffer_created) {
-		xdg_surface_set_window_geometry(window_data->xdg_surface,
-						window_data->rect.position.x, window_data->rect.position.y,
-						window_data->rect.size.width, window_data->rect.size.height);
+	if (wd->buffer_created) {
+		xdg_surface_set_window_geometry(wd->xdg_surface,
+						wd->rect.position.x, wd->rect.position.y,
+						wd->rect.size.width, wd->rect.size.height);
 
-		window_data->context_vulkan->window_resize(window_data->id, window_data->rect.size.width, window_data->rect.size.height);
+		if (!wd->rect_changed_callback.is_null()) {
+			WaylandMessage msg;
+			msg.type=TYPE_WINDOW_RECT;
 
-		wl_surface_commit(window_data->wl_surface);
+			WaylandWindowRectMessage *msg_data = memnew(WaylandWindowRectMessage);
 
-		if (!window_data->rect_changed_callback.is_null()) {
-			// FIXME: I'm not sure if this is needed to avoid that the callback
-			// function has access the actual window's rect reference.
-			Rect2i callback_rect = Rect2i(window_data->rect);
-			Variant variant_rect = callback_rect;
-			Variant *rectp = &variant_rect;
+			msg_data->id = wd->id;
+			msg_data->rect = wd->rect;
 
-			window_data->rect_changed_callback.call_deferred((const Variant **)&rectp, 1);
+			msg.data = msg_data;
+
+			wd->message_queue->push_back(msg);
 		}
 	}
 }
 
 void DisplayServerWayland::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states) {
-	WindowData *window_data = (WindowData*) data;
+	WindowData *wd = (WindowData*) data;
 
 	if (width != 0 && height != 0) {
-		window_data->rect.size.width = width;
-		window_data->rect.size.height = height;
+		wd->rect.size.width = width;
+		wd->rect.size.height = height;
 	}
 }
 
@@ -922,6 +925,32 @@ Key DisplayServerWayland::keyboard_get_keycode_from_physical(Key p_keycode) cons
 
 
 void DisplayServerWayland::process_events() {
+	MutexLock mutex_lock(wls.mutex);
+
+	while (wls.message_queue.front()) {
+		WaylandMessage &msg = wls.message_queue.front()->get();
+
+		if (msg.type == TYPE_WINDOW_RECT) {
+			// TODO: Assertions.
+
+			WaylandWindowRectMessage* msg_data = (WaylandWindowRectMessage*) msg.data;
+
+			Variant var_rect = Variant(msg_data->rect);
+			Variant *arg = &var_rect;
+
+			Variant ret;
+			Callable::CallError ce;
+
+			context_vulkan->window_resize(msg_data->id, msg_data->rect.size.width, msg_data->rect.size.height);
+
+			wls.windows[msg_data->id].rect_changed_callback.call((const Variant**) &arg, 1, ret, ce);
+
+			memdelete(msg_data);
+		}
+
+		wls.message_queue.pop_front();
+	}
+
 	Input::get_singleton()->flush_buffered_events();
 }
 
