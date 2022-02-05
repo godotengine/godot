@@ -1453,7 +1453,6 @@ void EffectsRD::downsample_depth(RID p_depth_buffer, const Vector<RID> &p_depth_
 
 	RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_COMPUTE);
 
-	ss_effects.used_full_mips_last_frame = use_mips;
 	ss_effects.used_full_mips_last_frame = use_full_mips;
 	ss_effects.used_half_size_last_frame = use_half_size;
 }
