@@ -222,7 +222,7 @@ private:
 	void _gen_new_positions_from_octree(const GenProbesOctree *p_cell, float p_cell_size, const Vector<Vector3> &probe_positions, LocalVector<Vector3> &new_probe_positions, HashMap<Vector3i, bool, Vector3iHash> &positions_used, const AABB &p_bounds);
 
 protected:
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &property) const;
 	static void _bind_methods();
 	void _notification(int p_what);
 

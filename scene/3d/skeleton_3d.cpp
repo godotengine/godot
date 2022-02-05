@@ -208,8 +208,6 @@ void Skeleton3D::_validate_property(PropertyInfo &property) const {
 			}
 		}
 	}
-
-	Node3D::_validate_property(property);
 }
 
 void Skeleton3D::_update_process_order() {

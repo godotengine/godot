@@ -1134,7 +1134,6 @@ void RigidDynamicBody3D::_validate_property(PropertyInfo &property) const {
 			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
-	PhysicsBody3D::_validate_property(property);
 }
 
 RigidDynamicBody3D::RigidDynamicBody3D() :
@@ -2026,7 +2025,6 @@ void CharacterBody3D::_validate_property(PropertyInfo &property) const {
 			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
-	PhysicsBody3D::_validate_property(property);
 }
 
 CharacterBody3D::CharacterBody3D() :

@@ -806,8 +806,6 @@ void AnimationNodeTransition::_validate_property(PropertyInfo &property) const {
 			}
 		}
 	}
-
-	AnimationNode::_validate_property(property);
 }
 
 void AnimationNodeTransition::_bind_methods() {

@@ -67,7 +67,7 @@ public:
 	AnimationNodeAnimation();
 
 protected:
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &property) const;
 	static void _bind_methods();
 
 private:
@@ -309,7 +309,7 @@ class AnimationNodeTransition : public AnimationNode {
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &property) const;
 
 public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;

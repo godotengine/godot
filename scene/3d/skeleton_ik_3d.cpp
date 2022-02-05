@@ -347,8 +347,6 @@ void SkeletonIK3D::_validate_property(PropertyInfo &property) const {
 			property.hint_string = "";
 		}
 	}
-
-	Node::_validate_property(property);
 }
 
 void SkeletonIK3D::_bind_methods() {

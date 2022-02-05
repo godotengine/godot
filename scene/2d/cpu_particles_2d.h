@@ -192,7 +192,7 @@ private:
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &property) const;
 
 public:
 	void set_emitting(bool p_emitting);

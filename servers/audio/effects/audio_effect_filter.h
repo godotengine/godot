@@ -98,7 +98,7 @@ VARIANT_ENUM_CAST(AudioEffectFilter::FilterDB)
 class AudioEffectLowPassFilter : public AudioEffectFilter {
 	GDCLASS(AudioEffectLowPassFilter, AudioEffectFilter);
 
-	void _validate_property(PropertyInfo &property) const override {
+	void _validate_property(PropertyInfo &property) const {
 		if (property.name == "gain") {
 			property.usage = PROPERTY_USAGE_NONE;
 		}
@@ -111,7 +111,7 @@ public:
 
 class AudioEffectHighPassFilter : public AudioEffectFilter {
 	GDCLASS(AudioEffectHighPassFilter, AudioEffectFilter);
-	void _validate_property(PropertyInfo &property) const override {
+	void _validate_property(PropertyInfo &property) const {
 		if (property.name == "gain") {
 			property.usage = PROPERTY_USAGE_NONE;
 		}
@@ -124,7 +124,7 @@ public:
 
 class AudioEffectBandPassFilter : public AudioEffectFilter {
 	GDCLASS(AudioEffectBandPassFilter, AudioEffectFilter);
-	void _validate_property(PropertyInfo &property) const override {
+	void _validate_property(PropertyInfo &property) const {
 		if (property.name == "gain") {
 			property.usage = PROPERTY_USAGE_NONE;
 		}

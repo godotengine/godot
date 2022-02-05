@@ -2490,7 +2490,7 @@ void EditorInspector::update_tree() {
 			continue;
 		}
 
-		if (p.name == "script" && (hide_script || bool(object->call("_hide_script_from_inspector")))) {
+		if (p.name == "script" && hide_script) {
 			// Hide script variables from inspector if required.
 			continue;
 		}

@@ -64,7 +64,7 @@ protected:
 
 	static void _bind_methods();
 
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &property) const;
 
 public:
 #ifdef TOOLS_ENABLED

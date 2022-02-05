@@ -204,7 +204,6 @@ void Light3D::_validate_property(PropertyInfo &property) const {
 		// Angular distance is only used in DirectionalLight3D.
 		property.usage = PROPERTY_USAGE_NONE;
 	}
-	VisualInstance3D::_validate_property(property);
 }
 
 void Light3D::_bind_methods() {
@@ -391,8 +390,6 @@ void DirectionalLight3D::_validate_property(PropertyInfo &property) const {
 		// Not implemented in DirectionalLight3D (`light_size` is replaced by `light_angular_distance`).
 		property.usage = PROPERTY_USAGE_NONE;
 	}
-
-	Light3D::_validate_property(property);
 }
 
 void DirectionalLight3D::_bind_methods() {

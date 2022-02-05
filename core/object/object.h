@@ -453,6 +453,15 @@ protected:                                                                      
 			m_inherits::_notificationv(p_notification, p_reversed);                                                                              \
 		}                                                                                                                                        \
 	}                                                                                                                                            \
+	_FORCE_INLINE_ void (Object::*_get_validate_property() const)(PropertyInfo & property) const {                                               \
+		return (void(Object::*)(PropertyInfo &) const) & m_class::_validate_property;                                                            \
+	}                                                                                                                                            \
+	virtual void _validate_propertyv(PropertyInfo &r_property) const override {                                                                  \
+		m_inherits::_validate_propertyv(r_property);                                                                                             \
+		if (m_class::_get_validate_property() != m_inherits::_get_validate_property()) {                                                         \
+			_validate_property(r_property);                                                                                                      \
+		}                                                                                                                                        \
+	}                                                                                                                                            \
                                                                                                                                                  \
 private:
 
@@ -588,6 +597,7 @@ protected:
 	virtual bool _setv(const StringName &p_name, const Variant &p_property) { return false; };
 	virtual bool _getv(const StringName &p_name, Variant &r_property) const { return false; };
 	virtual void _get_property_listv(List<PropertyInfo> *p_list, bool p_reversed) const {};
+	virtual void _validate_propertyv(PropertyInfo &r_property) const {};
 	virtual void _notificationv(int p_notification, bool p_reversed) {}
 
 	static String _get_category() { return ""; }
@@ -612,6 +622,9 @@ protected:
 	_FORCE_INLINE_ void (Object::*_get_notification() const)(int) {
 		return &Object::_notification;
 	}
+	_FORCE_INLINE_ void (Object::*_get_validate_property() const)(PropertyInfo &r_property) const {
+		return &Object::_validate_property;
+	}
 	static void get_valid_parents_static(List<String> *p_parents);
 	static void _get_valid_parents_static(List<String> *p_parents);
 
@@ -635,7 +648,7 @@ protected:
 	void _clear_internal_resource_paths(const Variant &p_var);
 
 	friend class ClassDB;
-	virtual void _validate_property(PropertyInfo &property) const;
+	void _validate_property(PropertyInfo &property) const;
 
 	void _disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force = false);
 

@@ -212,7 +212,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &property) const;
 #ifndef DISABLE_DEPRECATED
 	// Kept for compatibility from 3.x to 4.0.
 	bool _set(const StringName &p_name, const Variant &p_value);

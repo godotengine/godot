@@ -101,6 +101,12 @@ class Script : public Resource {
 	OBJ_SAVE_TYPE(Script);
 
 protected:
+	void _validate_property(PropertyInfo &property) const {
+		if (property.name == "script") {
+			property.usage = PROPERTY_USAGE_NO_EDITOR; // Do not show script's script for editing.
+		}
+	}
+
 	virtual bool editor_can_reload_from_file() override { return false; } // this is handled by editor better
 	void _notification(int p_what);
 	static void _bind_methods();

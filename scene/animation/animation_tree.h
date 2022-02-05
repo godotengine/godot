@@ -107,7 +107,7 @@ protected:
 
 	static void _bind_methods();
 
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &property) const;
 
 	GDVIRTUAL0RC(Dictionary, _get_child_nodes)
 	GDVIRTUAL0RC(Array, _get_parameter_list)

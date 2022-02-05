@@ -114,7 +114,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &property) const;
 
 public:
 	void set_blend_mode(BlendMode p_blend_mode);

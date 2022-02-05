@@ -472,7 +472,6 @@ void GraphNode::_edit_set_position(const Point2 &p_position) {
 }
 
 void GraphNode::_validate_property(PropertyInfo &property) const {
-	Control::_validate_property(property);
 	GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
 	if (graph) {
 		if (property.name == "rect_position") {

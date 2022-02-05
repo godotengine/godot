@@ -652,8 +652,6 @@ void AudioStreamPlayer3D::_validate_property(PropertyInfo &property) const {
 
 		property.hint_string = options;
 	}
-
-	Node3D::_validate_property(property);
 }
 
 void AudioStreamPlayer3D::_bus_layout_changed() {

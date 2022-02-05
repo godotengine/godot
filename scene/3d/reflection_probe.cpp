@@ -188,7 +188,6 @@ void ReflectionProbe::_validate_property(PropertyInfo &property) const {
 			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
-	VisualInstance3D::_validate_property(property);
 }
 
 void ReflectionProbe::_bind_methods() {

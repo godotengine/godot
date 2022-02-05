@@ -50,7 +50,6 @@ void AnimationNodeBlendSpace1D::_validate_property(PropertyInfo &property) const
 			property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
-	AnimationRootNode::_validate_property(property);
 }
 
 void AnimationNodeBlendSpace1D::_tree_changed() {

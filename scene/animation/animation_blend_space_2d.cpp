@@ -572,7 +572,6 @@ void AnimationNodeBlendSpace2D::_validate_property(PropertyInfo &property) const
 			property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
-	AnimationRootNode::_validate_property(property);
 }
 
 void AnimationNodeBlendSpace2D::set_auto_triangles(bool p_enable) {

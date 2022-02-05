@@ -88,7 +88,7 @@ protected:
 	void _tree_changed();
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &property) const;
 	static void _bind_methods();
 
 public:

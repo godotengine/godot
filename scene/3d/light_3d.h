@@ -88,7 +88,7 @@ protected:
 
 	static void _bind_methods();
 	void _notification(int p_what);
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &property) const;
 
 	Light3D(RenderingServer::LightType p_type);
 
@@ -152,7 +152,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &property) const;
 
 public:
 	void set_shadow_mode(ShadowMode p_mode);

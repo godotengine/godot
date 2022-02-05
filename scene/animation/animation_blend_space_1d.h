@@ -63,7 +63,7 @@ class AnimationNodeBlendSpace1D : public AnimationRootNode {
 	StringName blend_position = "blend_position";
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &property) const;
 	static void _bind_methods();
 
 public:

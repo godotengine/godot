@@ -99,7 +99,7 @@ protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &property) const;
 
 public:
 	void set_offset(const Vector2 &p_offset);

@@ -54,7 +54,7 @@ protected:
 	virtual bool _can_do_next_pass() const { return false; }
 	virtual bool _can_use_render_priority() const { return false; }
 
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &property) const;
 
 public:
 	enum {
@@ -534,7 +534,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &property) const;
 	virtual bool _can_do_next_pass() const override { return true; }
 	virtual bool _can_use_render_priority() const override { return true; }
 
