@@ -41,45 +41,40 @@
 void GotoLineDialog::popup_find_line(CodeEdit *p_edit) {
 	text_editor = p_edit;
 
-	line->set_text(itos(text_editor->get_caret_line()));
 	line->select_all();
-	popup_centered(Size2(180, 80) * EDSCALE);
+	line->set_placeholder("line:column");
+	popup_centered(Size2(300, 80) * EDSCALE);
 	line->grab_focus();
 }
 
 int GotoLineDialog::get_line() const {
-	return line->get_text().to_int();
+	String text = line->get_text();
+	return text.substr(0, text.find(":")).to_int() - 1;
+}
+
+int GotoLineDialog::get_column() const {
+	String text = line->get_text();
+	return text.substr(text.rfind(":")).to_int() - 1;
 }
 
 void GotoLineDialog::ok_pressed() {
-	if (get_line() < 1 || get_line() > text_editor->get_line_count()) {
-		return;
-	}
-	text_editor->unfold_line(get_line() - 1);
-	text_editor->set_caret_line(get_line() - 1);
+	int line = CLAMP(get_line(), 0, text_editor->get_line_count() - 1);
+	int column = CLAMP(get_column(), 0, text_editor->get_line(line).length() - 1);
+
+	text_editor->unfold_line(line);
+	text_editor->set_caret_line(line);
+	text_editor->set_caret_column(column);
+
 	hide();
 }
 
 GotoLineDialog::GotoLineDialog() {
-	set_title(TTR("Go to Line"));
-
-	VBoxContainer *vbc = memnew(VBoxContainer);
-	vbc->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 8 * EDSCALE);
-	vbc->set_anchor_and_offset(SIDE_TOP, Control::ANCHOR_BEGIN, 8 * EDSCALE);
-	vbc->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -8 * EDSCALE);
-	vbc->set_anchor_and_offset(SIDE_BOTTOM, Control::ANCHOR_END, -8 * EDSCALE);
-	add_child(vbc);
-
-	Label *l = memnew(Label);
-	l->set_text(TTR("Line Number:"));
-	vbc->add_child(l);
+	set_title(TTR("Go to..."));
 
 	line = memnew(LineEdit);
-	vbc->add_child(line);
+	add_child(line);
 	register_text_enter(line);
 	text_editor = nullptr;
-
-	line_label = nullptr;
 
 	set_hide_on_ok(false);
 }

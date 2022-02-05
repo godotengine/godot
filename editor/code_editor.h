@@ -43,7 +43,6 @@
 class GotoLineDialog : public ConfirmationDialog {
 	GDCLASS(GotoLineDialog, ConfirmationDialog);
 
-	Label *line_label = nullptr;
 	LineEdit *line = nullptr;
 
 	CodeEdit *text_editor = nullptr;
@@ -53,6 +52,7 @@ class GotoLineDialog : public ConfirmationDialog {
 public:
 	void popup_find_line(CodeEdit *p_edit);
 	int get_line() const;
+	int get_column() const;
 
 	GotoLineDialog();
 };
