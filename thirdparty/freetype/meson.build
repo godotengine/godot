@@ -52,20 +52,25 @@ if get_option('builtin_freetype')
     ])
 
     _freetype_dep_defines = ['-DFT2_BUILD_LIBRARY', '-DFT_CONFIG_OPTION_USE_PNG']
-    
+
     _freetype_c_defines = []
     if PLATFORM == 'javascript'
         _freetype_c_defines += ['-U__OPTIMIZE__']
     endif
 
-    
     if meson.get_compiler('c').get_id() == 'msvc'
         _freetype_c_defines += ['/wd4312']
     endif
 
-    _lib_freetype2 = static_library('freetype2', _freetype_srcs, include_directories: _freetype_incdirs, c_args: _freetype_dep_defines + _freetype_c_defines, dependencies: [DEP_ZLIB, DEP_LIBPNG], build_by_default: false)
+    _lib_freetype2 = static_library('freetype2',
+                                    _freetype_srcs,
+                                    include_directories: _freetype_incdirs,
+                                    c_args: _freetype_dep_defines + _freetype_c_defines,
+                                    dependencies: [DEP_ZLIB, DEP_LIBPNG], build_by_default: false)
 
-    DEP_FREETYPE = declare_dependency(link_with: _lib_freetype2, include_directories: _freetype_incdirs, compile_args: _freetype_dep_defines)
+    DEP_FREETYPE = declare_dependency(link_with: _lib_freetype2,
+                                      include_directories: _freetype_incdirs,
+                                      compile_args: _freetype_dep_defines)
 else
     DEP_FREETYPE = dependency('freetype2')
 endif
