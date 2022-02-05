@@ -2007,7 +2007,7 @@ FindBar::FindBar() {
 	hide_button = memnew(TextureButton);
 	add_child(hide_button);
 	hide_button->set_focus_mode(FOCUS_NONE);
-	hide_button->set_expand(true);
+	hide_button->set_ignore_texture_size(true);
 	hide_button->set_stretch_mode(TextureButton::STRETCH_KEEP_CENTERED);
 	hide_button->connect("pressed", callable_mp(this, &FindBar::_hide_bar));
 }
