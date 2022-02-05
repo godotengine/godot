@@ -463,3 +463,8 @@ void ResourceImporter::_bind_methods() {
 	BIND_ENUM_CONSTANT(IMPORT_ORDER_DEFAULT);
 	BIND_ENUM_CONSTANT(IMPORT_ORDER_SCENE);
 }
+
+void ResourceFormatImporter::add_importer(const Ref<ResourceImporter> &p_importer) {
+	ERR_FAIL_COND(p_importer.is_null());
+	importers.insert(0, p_importer);
+}
