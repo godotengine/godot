@@ -108,7 +108,6 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 
 int PopupMenu::_get_item_height(int p_item) const {
 	ERR_FAIL_INDEX_V(p_item, items.size(), 0);
-	ERR_FAIL_COND_V(p_item < 0, 0);
 
 	int icon_height = items[p_item].get_icon_size().height;
 	if (items[p_item].checkable_type) {
@@ -139,23 +138,6 @@ int PopupMenu::_get_items_total_height() const {
 
 	// Subtract a separator which is not needed for the last item.
 	return items_total_height - vsep;
-}
-
-void PopupMenu::_scroll_to_item(int p_item) {
-	ERR_FAIL_INDEX(p_item, items.size());
-	ERR_FAIL_COND(p_item < 0);
-
-	// Scroll item into view (upwards)
-	if (items[p_item]._ofs_cache < -control->get_position().y) {
-		int amnt_over = items[p_item]._ofs_cache + control->get_position().y;
-		scroll_container->set_v_scroll(scroll_container->get_v_scroll() + amnt_over);
-	}
-
-	// Scroll item into view (downwards)
-	if (items[p_item]._ofs_cache + items[p_item]._height_cache > -control->get_position().y + scroll_container->get_size().height) {
-		int amnt_over = items[p_item]._ofs_cache + items[p_item]._height_cache + control->get_position().y - scroll_container->get_size().height;
-		scroll_container->set_v_scroll(scroll_container->get_v_scroll() + amnt_over);
-	}
 }
 
 int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
@@ -275,7 +257,7 @@ void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 			if (!items[i].separator && !items[i].disabled) {
 				mouse_over = i;
 				emit_signal(SNAME("id_focused"), i);
-				_scroll_to_item(i);
+				scroll_to_item(i);
 				control->update();
 				set_input_as_handled();
 				match_found = true;
@@ -289,7 +271,7 @@ void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 				if (!items[i].separator && !items[i].disabled) {
 					mouse_over = i;
 					emit_signal(SNAME("id_focused"), i);
-					_scroll_to_item(i);
+					scroll_to_item(i);
 					control->update();
 					set_input_as_handled();
 					break;
@@ -307,7 +289,7 @@ void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 			if (!items[i].separator && !items[i].disabled) {
 				mouse_over = i;
 				emit_signal(SNAME("id_focused"), i);
-				_scroll_to_item(i);
+				scroll_to_item(i);
 				control->update();
 				set_input_as_handled();
 				match_found = true;
@@ -321,7 +303,7 @@ void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 				if (!items[i].separator && !items[i].disabled) {
 					mouse_over = i;
 					emit_signal(SNAME("id_focused"), i);
-					_scroll_to_item(i);
+					scroll_to_item(i);
 					control->update();
 					set_input_as_handled();
 					break;
@@ -471,7 +453,7 @@ void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 			if (items[i].text.findn(search_string) == 0) {
 				mouse_over = i;
 				emit_signal(SNAME("id_focused"), i);
-				_scroll_to_item(i);
+				scroll_to_item(i);
 				control->update();
 				set_input_as_handled();
 				break;
@@ -1281,7 +1263,7 @@ bool PopupMenu::is_item_shortcut_disabled(int p_idx) const {
 void PopupMenu::set_current_index(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 	mouse_over = p_idx;
-	_scroll_to_item(mouse_over);
+	scroll_to_item(mouse_over);
 	control->update();
 }
 
@@ -1307,6 +1289,20 @@ void PopupMenu::set_item_count(int p_count) {
 
 int PopupMenu::get_item_count() const {
 	return items.size();
+}
+
+void PopupMenu::scroll_to_item(int p_item) {
+	ERR_FAIL_INDEX(p_item, items.size());
+
+	// Scroll item into view (upwards).
+	if (items[p_item]._ofs_cache - scroll_container->get_v_scroll() < -control->get_position().y) {
+		scroll_container->set_v_scroll(items[p_item]._ofs_cache + control->get_position().y);
+	}
+
+	// Scroll item into view (downwards).
+	if (items[p_item]._ofs_cache + items[p_item]._height_cache - scroll_container->get_v_scroll() > -control->get_position().y + scroll_container->get_size().height) {
+		scroll_container->set_v_scroll(items[p_item]._ofs_cache + items[p_item]._height_cache + control->get_position().y);
+	}
 }
 
 bool PopupMenu::activate_item_by_event(const Ref<InputEvent> &p_event, bool p_for_global_only) {
@@ -1582,7 +1578,7 @@ bool PopupMenu::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (property == "id") {
 			set_item_id(item_index, p_value);
 			return true;
-		} else if (components[1] == "disabled") {
+		} else if (property == "disabled") {
 			set_item_disabled(item_index, p_value);
 			return true;
 		} else if (property == "separator") {
@@ -1655,7 +1651,7 @@ bool PopupMenu::_get(const StringName &p_name, Variant &r_ret) const {
 		} else if (property == "id") {
 			r_ret = get_item_id(item_index);
 			return true;
-		} else if (components[1] == "disabled") {
+		} else if (property == "disabled") {
 			r_ret = is_item_disabled(item_index);
 			return true;
 		} else if (property == "separator") {
@@ -1760,6 +1756,8 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_current_index"), &PopupMenu::get_current_index);
 	ClassDB::bind_method(D_METHOD("set_item_count", "count"), &PopupMenu::set_item_count);
 	ClassDB::bind_method(D_METHOD("get_item_count"), &PopupMenu::get_item_count);
+
+	ClassDB::bind_method(D_METHOD("scroll_to_item", "index"), &PopupMenu::scroll_to_item);
 
 	ClassDB::bind_method(D_METHOD("remove_item", "index"), &PopupMenu::remove_item);
 
