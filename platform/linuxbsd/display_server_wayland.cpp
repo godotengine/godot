@@ -24,7 +24,6 @@ void DisplayServerWayland::dispatch_input_events(const Ref<InputEvent> &p_event)
 
 // Taken from DisplayServerX11.
 void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event) {
-#if 0 // Here we are back again...
 	Variant ev = p_event;
 	Variant *evp = &ev;
 	Variant ret;
@@ -49,7 +48,6 @@ void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event)
 			callable.call((const Variant **)&evp, 1, ret, ce);
 		}
 	}
-#endif
 }
 
 DisplayServerWayland::WindowID DisplayServerWayland::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
@@ -269,68 +267,99 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 		ERR_FAIL_COND_MSG(!id_found, "Cursor focused to an invalid window ID.");
 
 		if (old_pointer_data.position != pointer_state.data.position) {
-			Ref<InputEventMouseMotion> mouse_motion;
-			mouse_motion.instantiate();
-			mouse_motion->set_window_id(focused_window_id);
-			mouse_motion->set_button_mask(pointer_state.data.pressed_button_mask);
-			mouse_motion->set_position(pointer_state.data.position);
-			// FIXME: We're lying!
-			mouse_motion->set_global_position(pointer_state.data.position);
+			WaylandMessage msg;
+			msg.type = TYPE_INPUT_EVENT;
+
+			// We need to use Ref's custom `->` operator, so we have to necessarily
+			// dereference its pointer.
+			Ref<InputEventMouseMotion> &mm = *memnew(Ref<InputEventMouseMotion>);
+
+			mm.instantiate();
+			mm->set_window_id(focused_window_id);
+			mm->set_button_mask(pointer_state.data.pressed_button_mask);
+			mm->set_position(pointer_state.data.position);
+			// FIXME: We're lying! With Wayland we can only know the position of the
+			// mouse in our windows and nowhere else!
+			mm->set_global_position(pointer_state.data.position);
+
+			// FIXME: I'm not sure whether accessing the Input singleton like this might
+			// give problems.
 			Input::get_singleton()->set_mouse_position(pointer_state.data.position);
+			mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
 
-			mouse_motion->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
-			mouse_motion->set_relative(pointer_state.data.position - old_pointer_data.position);
+			mm->set_relative(pointer_state.data.position - old_pointer_data.position);
 
-			Input::get_singleton()->parse_input_event(mouse_motion);
+			msg.data = &mm;
+			wls->message_queue.push_back(msg);
 		}
 
+		// TODO: Simplify with a function or something.
 		if (old_pointer_data.pressed_button_mask != pointer_state.data.pressed_button_mask) {
 			MouseButton pressed_mask_delta = old_pointer_data.pressed_button_mask ^ pointer_state.data.pressed_button_mask;
 
-			// TODO: Simplify with a function or something.
 			if ((pressed_mask_delta & MouseButton::MASK_LEFT) != MouseButton::NONE) {
-				Ref<InputEventMouseButton> mouse_button;
-				mouse_button.instantiate();
-				mouse_button->set_window_id(focused_window_id);
-				mouse_button->set_position(pointer_state.data.position);
+				WaylandMessage msg;
+				msg.type = TYPE_INPUT_EVENT;
+
+				// We need to use Ref's custom `->` operator, so we have to necessarily
+				// dereference its pointer.
+				Ref<InputEventMouseButton> &mb = *memnew(Ref<InputEventMouseButton>);
+
+				mb.instantiate();
+				mb->set_window_id(focused_window_id);
+				mb->set_position(pointer_state.data.position);
 				// FIXME: We're lying!
-				mouse_button->set_global_position(pointer_state.data.position);
-				mouse_button->set_button_mask(pointer_state.data.pressed_button_mask);
+				mb->set_global_position(pointer_state.data.position);
+				mb->set_button_mask(pointer_state.data.pressed_button_mask);
 
-				mouse_button->set_button_index(MouseButton::LEFT);
-				mouse_button->set_pressed((pointer_state.data.pressed_button_mask & MouseButton::MASK_LEFT) != MouseButton::NONE);
+				mb->set_button_index(MouseButton::LEFT);
+				mb->set_pressed((pointer_state.data.pressed_button_mask & MouseButton::MASK_LEFT) != MouseButton::NONE);
 
-				Input::get_singleton()->parse_input_event(mouse_button);
+				msg.data = &mb;
+				wls->message_queue.push_back(msg);
 			}
 			if ((pressed_mask_delta & MouseButton::MASK_MIDDLE) != MouseButton::NONE) {
-				Ref<InputEventMouseButton> mouse_button;
-				mouse_button.instantiate();
-				mouse_button->set_window_id(focused_window_id);
-				mouse_button->set_position(pointer_state.data.position);
+				WaylandMessage msg;
+				msg.type = TYPE_INPUT_EVENT;
+
+				// We need to use Ref's custom `->` operator, so we have to necessarily
+				// dereference its pointer.
+				Ref<InputEventMouseButton> &mb = *memnew(Ref<InputEventMouseButton>);
+
+				mb.instantiate();
+				mb->set_window_id(focused_window_id);
+				mb->set_position(pointer_state.data.position);
 				// FIXME: We're lying!
-				mouse_button->set_global_position(pointer_state.data.position);
-				mouse_button->set_button_mask(pointer_state.data.pressed_button_mask);
+				mb->set_global_position(pointer_state.data.position);
+				mb->set_button_mask(pointer_state.data.pressed_button_mask);
 
-				mouse_button->set_button_index(MouseButton::MIDDLE);
-				mouse_button->set_pressed((pointer_state.data.pressed_button_mask & MouseButton::MASK_MIDDLE) != MouseButton::NONE);
+				mb->set_button_index(MouseButton::MIDDLE);
+				mb->set_pressed((pointer_state.data.pressed_button_mask & MouseButton::MASK_MIDDLE) != MouseButton::NONE);
 
-				Input::get_singleton()->parse_input_event(mouse_button);
+				msg.data = &mb;
+				wls->message_queue.push_back(msg);
 			}
 			if ((pressed_mask_delta & MouseButton::MASK_RIGHT) != MouseButton::NONE) {
-				Ref<InputEventMouseButton> mouse_button;
-				mouse_button.instantiate();
-				mouse_button->set_window_id(focused_window_id);
-				mouse_button->set_position(pointer_state.data.position);
+				WaylandMessage msg;
+				msg.type = TYPE_INPUT_EVENT;
+
+				// We need to use Ref's custom `->` operator, so we have to necessarily
+				// dereference its pointer.
+				Ref<InputEventMouseButton> &mb = *memnew(Ref<InputEventMouseButton>);
+
+				mb.instantiate();
+				mb->set_window_id(focused_window_id);
+				mb->set_position(pointer_state.data.position);
 				// FIXME: We're lying!
-				mouse_button->set_global_position(pointer_state.data.position);
-				mouse_button->set_button_mask(pointer_state.data.pressed_button_mask);
+				mb->set_global_position(pointer_state.data.position);
+				mb->set_button_mask(pointer_state.data.pressed_button_mask);
 
-				mouse_button->set_button_index(MouseButton::RIGHT);
-				mouse_button->set_pressed((pointer_state.data.pressed_button_mask & MouseButton::MASK_RIGHT) != MouseButton::NONE);
+				mb->set_button_index(MouseButton::RIGHT);
+				mb->set_pressed((pointer_state.data.pressed_button_mask & MouseButton::MASK_RIGHT) != MouseButton::NONE);
 
-				Input::get_singleton()->parse_input_event(mouse_button);
+				msg.data = &mb;
+				wls->message_queue.push_back(msg);
 			}
-
 		}
 	}
 
@@ -411,7 +440,12 @@ void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *w
 		}
 	}
 
-	Ref<InputEventKey> k;
+	WaylandMessage msg;
+	msg.type = TYPE_INPUT_EVENT;
+
+	// We need to use Ref's custom `->` operator, so we have to necessarily
+	// dereference its pointer.
+	Ref<InputEventKey> &k= *memnew(Ref<InputEventKey>);
 	k.instantiate();
 
 	if (id_found) {
@@ -432,7 +466,8 @@ void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *w
 		k->set_shift_pressed(true);
 	}
 
-	Input::get_singleton()->parse_input_event(k);
+	msg.data = &k;
+	wls->message_queue.push_back(msg);
 }
 
 void DisplayServerWayland::_wl_keyboard_on_modifiers(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group) {
@@ -454,6 +489,7 @@ void DisplayServerWayland::_xdg_wm_base_on_ping(void *data, struct xdg_wm_base *
 
 
 void DisplayServerWayland::_xdg_surface_on_configure(void *data, struct xdg_surface *xdg_surface, uint32_t serial) {
+	// FIXME: We should synchronize Wayland's state here.
 	xdg_surface_ack_configure(xdg_surface, serial);
 
 	WindowData *wd = (WindowData*) data;
@@ -480,6 +516,7 @@ void DisplayServerWayland::_xdg_surface_on_configure(void *data, struct xdg_surf
 }
 
 void DisplayServerWayland::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states) {
+	// FIXME: We should synchronize Wayland's state here.
 	WindowData *wd = (WindowData*) data;
 
 	if (width != 0 && height != 0) {
@@ -930,22 +967,33 @@ void DisplayServerWayland::process_events() {
 	while (wls.message_queue.front()) {
 		WaylandMessage &msg = wls.message_queue.front()->get();
 
-		if (msg.type == TYPE_WINDOW_RECT) {
-			// TODO: Assertions.
+		switch (msg.type) {
+			case TYPE_WINDOW_RECT: {
+				// TODO: Assertions.
 
-			WaylandWindowRectMessage* msg_data = (WaylandWindowRectMessage*) msg.data;
+				WaylandWindowRectMessage* msg_data = (WaylandWindowRectMessage*) msg.data;
 
-			Variant var_rect = Variant(msg_data->rect);
-			Variant *arg = &var_rect;
+				Variant var_rect = Variant(msg_data->rect);
+				Variant *arg = &var_rect;
 
-			Variant ret;
-			Callable::CallError ce;
+				Variant ret;
+				Callable::CallError ce;
 
-			context_vulkan->window_resize(msg_data->id, msg_data->rect.size.width, msg_data->rect.size.height);
+				context_vulkan->window_resize(msg_data->id, msg_data->rect.size.width, msg_data->rect.size.height);
 
-			wls.windows[msg_data->id].rect_changed_callback.call((const Variant**) &arg, 1, ret, ce);
+				wls.windows[msg_data->id].rect_changed_callback.call((const Variant**) &arg, 1, ret, ce);
 
-			memdelete(msg_data);
+				memdelete(msg_data);
+				break;
+			}	
+
+			case TYPE_INPUT_EVENT: {
+				Ref<InputEvent> *ev = (Ref<InputEvent>*) msg.data;
+				Input::get_singleton()->parse_input_event(*ev);
+
+				memdelete(ev);
+				break;
+			}
 		}
 
 		wls.message_queue.pop_front();
