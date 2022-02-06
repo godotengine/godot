@@ -32,6 +32,7 @@
 #define SCENE_DEBUGGER_H
 
 #include "core/object/class_db.h"
+#include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
 #include "core/templates/pair.h"
 #include "core/variant/array.h"
@@ -41,8 +42,35 @@ class Node;
 
 class SceneDebugger {
 public:
+	// RPC profiler
+	struct RPCNodeInfo {
+		ObjectID node;
+		String node_path;
+		int incoming_rpc = 0;
+		int outgoing_rpc = 0;
+	};
+
+	struct RPCProfilerFrame {
+		Vector<RPCNodeInfo> infos;
+
+		Array serialize();
+		bool deserialize(const Array &p_arr);
+	};
+
+private:
+	class RPCProfiler;
+
+	static SceneDebugger *singleton;
+
+	Ref<RPCProfiler> rpc_profiler;
+
+	SceneDebugger();
+
+public:
 	static void initialize();
 	static void deinitialize();
+
+	~SceneDebugger();
 
 #ifdef DEBUG_ENABLED
 private:

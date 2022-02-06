@@ -147,6 +147,11 @@ Error SceneReplicationInterface::_send_raw(const uint8_t *p_buffer, int p_size, 
 	ERR_FAIL_COND_V(!p_buffer || p_size < 1, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(!multiplayer, ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V(!multiplayer->has_multiplayer_peer(), ERR_UNCONFIGURED);
+
+#ifdef DEBUG_ENABLED
+	multiplayer->profile_bandwidth("out", p_size);
+#endif
+
 	Ref<MultiplayerPeer> peer = multiplayer->get_multiplayer_peer();
 	peer->set_target_peer(p_peer);
 	peer->set_transfer_channel(0);
