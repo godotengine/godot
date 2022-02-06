@@ -41,7 +41,7 @@ int VisualShaderNodeSDFToScreenUV::get_input_port_count() const {
 }
 
 VisualShaderNodeSDFToScreenUV::PortType VisualShaderNodeSDFToScreenUV::get_input_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeSDFToScreenUV::get_input_port_name(int p_port) const {
@@ -53,7 +53,7 @@ int VisualShaderNodeSDFToScreenUV::get_output_port_count() const {
 }
 
 VisualShaderNodeSDFToScreenUV::PortType VisualShaderNodeSDFToScreenUV::get_output_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeSDFToScreenUV::get_output_port_name(int p_port) const {
@@ -78,7 +78,7 @@ int VisualShaderNodeScreenUVToSDF::get_input_port_count() const {
 }
 
 VisualShaderNodeScreenUVToSDF::PortType VisualShaderNodeScreenUVToSDF::get_input_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeScreenUVToSDF::get_input_port_name(int p_port) const {
@@ -90,7 +90,7 @@ int VisualShaderNodeScreenUVToSDF::get_output_port_count() const {
 }
 
 VisualShaderNodeScreenUVToSDF::PortType VisualShaderNodeScreenUVToSDF::get_output_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeScreenUVToSDF::get_output_port_name(int p_port) const {
@@ -122,7 +122,7 @@ int VisualShaderNodeTextureSDF::get_input_port_count() const {
 }
 
 VisualShaderNodeTextureSDF::PortType VisualShaderNodeTextureSDF::get_input_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeTextureSDF::get_input_port_name(int p_port) const {
@@ -159,7 +159,7 @@ int VisualShaderNodeTextureSDFNormal::get_input_port_count() const {
 }
 
 VisualShaderNodeTextureSDFNormal::PortType VisualShaderNodeTextureSDFNormal::get_input_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeTextureSDFNormal::get_input_port_name(int p_port) const {
@@ -171,7 +171,7 @@ int VisualShaderNodeTextureSDFNormal::get_output_port_count() const {
 }
 
 VisualShaderNodeTextureSDFNormal::PortType VisualShaderNodeTextureSDFNormal::get_output_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeTextureSDFNormal::get_output_port_name(int p_port) const {
@@ -197,7 +197,7 @@ int VisualShaderNodeSDFRaymarch::get_input_port_count() const {
 
 VisualShaderNodeSDFRaymarch::PortType VisualShaderNodeSDFRaymarch::get_input_port_type(int p_port) const {
 	if (p_port == 0 || p_port == 1) {
-		return PORT_TYPE_VECTOR;
+		return PORT_TYPE_VECTOR_3D;
 	}
 	return PORT_TYPE_SCALAR;
 }
@@ -221,7 +221,7 @@ VisualShaderNodeSDFRaymarch::PortType VisualShaderNodeSDFRaymarch::get_output_po
 	} else if (p_port == 1) {
 		return PORT_TYPE_BOOLEAN;
 	} else if (p_port == 2) {
-		return PORT_TYPE_VECTOR;
+		return PORT_TYPE_VECTOR_3D;
 	}
 	return PORT_TYPE_SCALAR;
 }

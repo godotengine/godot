@@ -75,7 +75,7 @@
 		<constant name="PORT_TYPE_VECTOR_2D" value="2" enum="PortType">
 			2D vector of floating-point values. Translated to [code]vec2[/code] type in shader code.
 		</constant>
-		<constant name="PORT_TYPE_VECTOR" value="3" enum="PortType">
+		<constant name="PORT_TYPE_VECTOR_3D" value="3" enum="PortType">
 			3D vector of floating-point values. Translated to [code]vec3[/code] type in shader code.
 		</constant>
 		<constant name="PORT_TYPE_BOOLEAN" value="4" enum="PortType">
