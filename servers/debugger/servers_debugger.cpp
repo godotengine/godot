@@ -395,8 +395,24 @@ void ServersDebugger::deinitialize() {
 
 Error ServersDebugger::_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured) {
 	ERR_FAIL_COND_V(!singleton, ERR_BUG);
+	r_captured = true;
 	if (p_cmd == "memory") {
 		singleton->_send_resource_usage();
+	} else if (p_cmd == "draw") { // Forced redraw.
+		// For camera override to stay live when the game is paused from the editor.
+		double delta = 0.0;
+		if (singleton->last_draw_time) {
+			delta = (OS::get_singleton()->get_ticks_usec() - singleton->last_draw_time) / 1000000.0;
+		}
+		singleton->last_draw_time = OS::get_singleton()->get_ticks_usec();
+		RenderingServer::get_singleton()->sync();
+		if (RenderingServer::get_singleton()->has_changed()) {
+			RenderingServer::get_singleton()->draw(true, delta);
+		}
+	} else if (p_cmd == "foreground") {
+		singleton->last_draw_time = 0.0;
+		DisplayServer::get_singleton()->window_move_to_foreground();
+		singleton->servers_profiler->skip_frame();
 	} else {
 		r_captured = false;
 	}

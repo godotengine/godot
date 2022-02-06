@@ -444,11 +444,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 	}
 
-	uint64_t loop_begin_usec = 0;
-	uint64_t loop_time_sec = 0;
 	while (is_peer_connected()) {
-		loop_begin_usec = OS::get_singleton()->get_ticks_usec();
-
 		flush_output();
 		peer->poll();
 
@@ -475,7 +471,6 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			} else if (command == "continue") {
 				script_debugger->set_depth(-1);
 				script_debugger->set_lines_left(-1);
-				DisplayServer::get_singleton()->window_move_to_foreground();
 				break;
 
 			} else if (command == "break") {
@@ -550,13 +545,6 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 		} else {
 			OS::get_singleton()->delay_usec(10000);
 			OS::get_singleton()->process_and_drop_events();
-		}
-
-		// This is for the camera override to stay live even when the game is paused from the editor
-		loop_time_sec = (OS::get_singleton()->get_ticks_usec() - loop_begin_usec) / 1000000.0f;
-		RenderingServer::get_singleton()->sync();
-		if (RenderingServer::get_singleton()->has_changed()) {
-			RenderingServer::get_singleton()->draw(true, loop_time_sec * Engine::get_singleton()->get_time_scale());
 		}
 	}
 

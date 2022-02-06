@@ -129,6 +129,7 @@ void ScriptEditorDebugger::debug_continue() {
 
 	_clear_execution();
 	_put_msg("continue", Array());
+	_put_msg("servers:foreground", Array());
 }
 
 void ScriptEditorDebugger::update_tabs() {
@@ -833,6 +834,9 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					msg.push_back(cam->get_near());
 					msg.push_back(cam->get_far());
 					_put_msg("scene:override_camera_3D:transform", msg);
+				}
+				if (breaked) {
+					_put_msg("servers:draw", Array());
 				}
 			}
 

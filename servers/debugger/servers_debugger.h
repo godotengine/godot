@@ -33,6 +33,8 @@
 
 #include "core/debugger/debugger_marshalls.h"
 
+#include "servers/rendering_server.h"
+
 class ServersDebugger {
 public:
 	// Memory usage
@@ -108,6 +110,7 @@ private:
 	class ServersProfiler;
 	class VisualProfiler;
 
+	double last_draw_time = 0.0;
 	Ref<ServersProfiler> servers_profiler;
 	Ref<VisualProfiler> visual_profiler;
 
