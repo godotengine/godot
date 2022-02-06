@@ -33,6 +33,7 @@
 #ifdef X11_ENABLED
 
 #include "core/config/project_settings.h"
+#include "core/math/math_funcs.h"
 #include "core/string/print_string.h"
 #include "core/string/ustring.h"
 #include "detect_prime_x11.h"
@@ -1098,7 +1099,8 @@ float DisplayServerX11::screen_get_refresh_rate(int p_screen) const {
 				for (int mode = 0; mode < screen_info->nmode; mode++) {
 					XRRModeInfo m_info = screen_info->modes[mode];
 					if (m_info.id == current_mode) {
-						return (float)m_info.dotClock / ((float)m_info.hTotal * (float)m_info.vTotal);
+						// Snap to nearest 0.01 to stay consistent with other platforms.
+						return Math::snapped((float)m_info.dotClock / ((float)m_info.hTotal * (float)m_info.vTotal), 0.01);
 					}
 				}
 			}
