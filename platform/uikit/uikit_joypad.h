@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  joypad_iphone.h                                                      */
+/*  uikit_joypad.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -30,7 +30,7 @@
 
 #import <GameController/GameController.h>
 
-@interface JoypadIPhoneObserver : NSObject
+@interface UIKitJoypadObserver : NSObject
 
 - (void)startObserving;
 - (void)startProcessing;
@@ -38,13 +38,13 @@
 
 @end
 
-class JoypadIPhone {
+class UIKitJoypad {
 private:
-	JoypadIPhoneObserver *observer;
+	UIKitJoypadObserver *observer;
 
 public:
-	JoypadIPhone();
-	~JoypadIPhone();
+	UIKitJoypad();
+	~UIKitJoypad();
 
 	void start_processing();
 };

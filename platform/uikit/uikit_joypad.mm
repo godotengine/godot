@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  joypad_iphone.mm                                                     */
+/*  uikit_joypad.mm                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,33 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import "joypad_iphone.h"
+#import "uikit_joypad.h"
 
 #include "core/project_settings.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
-#import "godot_view.h"
 #include "main/main.h"
-#include "os_iphone.h"
+#include "uikit_os.h"
 
-JoypadIPhone::JoypadIPhone() {
-	observer = [[JoypadIPhoneObserver alloc] init];
+UIKitJoypad::UIKitJoypad() {
+	observer = [[UIKitJoypadObserver alloc] init];
 	[observer startObserving];
 }
 
-JoypadIPhone::~JoypadIPhone() {
+UIKitJoypad::~UIKitJoypad() {
 	if (observer) {
 		[observer finishObserving];
 		observer = nil;
 	}
 }
 
-void JoypadIPhone::start_processing() {
+void UIKitJoypad::start_processing() {
 	if (observer) {
 		[observer startProcessing];
 	}
 }
 
-@interface JoypadIPhoneObserver ()
+@interface UIKitJoypadObserver ()
 
 @property(assign, nonatomic) BOOL isObserving;
 @property(assign, nonatomic) BOOL isProcessing;
@@ -63,19 +62,19 @@ void JoypadIPhone::start_processing() {
 
 @end
 
-@implementation JoypadIPhoneObserver
+@implementation UIKitJoypadObserver
 
 - (instancetype)init {
 	self = [super init];
 
 	if (self) {
-		[self godot_commonInit];
+		[self uikit_commonInit];
 	}
 
 	return self;
 }
 
-- (void)godot_commonInit {
+- (void)uikit_commonInit {
 	self.isObserving = NO;
 	self.isProcessing = NO;
 }
@@ -84,7 +83,7 @@ void JoypadIPhone::start_processing() {
 	self.isProcessing = YES;
 
 	for (GCController *controller in self.joypadsQueue) {
-		[self addiOSJoypad:controller];
+		[self addUIKitJoypad:controller];
 	}
 
 	[self.joypadsQueue removeAllObjects];
@@ -143,9 +142,9 @@ void JoypadIPhone::start_processing() {
 	return -1;
 };
 
-- (void)addiOSJoypad:(GCController *)controller {
+- (void)addUIKitJoypad:(GCController *)controller {
 	//     get a new id for our controller
-	int joy_id = OSIPhone::get_singleton()->get_unused_joy_id();
+	int joy_id = OS_UIKit::get_singleton()->get_unused_joy_id();
 
 	if (joy_id == -1) {
 		printf("Couldn't retrieve new joy id\n");
@@ -158,7 +157,7 @@ void JoypadIPhone::start_processing() {
 	};
 
 	// tell Godot about our new controller
-	OSIPhone::get_singleton()->joy_connection_changed(joy_id, true, String::utf8([controller.vendorName UTF8String]));
+	OS_UIKit::get_singleton()->joy_connection_changed(joy_id, true, String::utf8([controller.vendorName UTF8String]));
 
 	// add it to our dictionary, this will retain our controllers
 	[self.connectedJoypads setObject:controller forKey:[NSNumber numberWithInt:joy_id]];
@@ -181,7 +180,7 @@ void JoypadIPhone::start_processing() {
 	} else if (!self.isProcessing) {
 		[self.joypadsQueue addObject:controller];
 	} else {
-		[self addiOSJoypad:controller];
+		[self addUIKitJoypad:controller];
 	}
 }
 
@@ -197,7 +196,7 @@ void JoypadIPhone::start_processing() {
 	for (NSNumber *key in keys) {
 		// tell Godot this joystick is no longer there
 		int joy_id = [key intValue];
-		OSIPhone::get_singleton()->joy_connection_changed(joy_id, false, "");
+		OS_UIKit::get_singleton()->joy_connection_changed(joy_id, false, "");
 
 		// and remove it from our dictionary
 		[self.connectedJoypads removeObjectForKey:key];
@@ -258,56 +257,66 @@ void JoypadIPhone::start_processing() {
 			int joy_id = [self getJoyIdForController:controller];
 
 			if (element == gamepad.buttonA) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_0,
+				OS_UIKit::get_singleton()->joy_button(joy_id, JOY_BUTTON_0,
 						gamepad.buttonA.isPressed);
 			} else if (element == gamepad.buttonB) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_1,
+				OS_UIKit::get_singleton()->joy_button(joy_id, JOY_BUTTON_1,
 						gamepad.buttonB.isPressed);
 			} else if (element == gamepad.buttonX) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_2,
+				OS_UIKit::get_singleton()->joy_button(joy_id, JOY_BUTTON_2,
 						gamepad.buttonX.isPressed);
 			} else if (element == gamepad.buttonY) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_3,
+				OS_UIKit::get_singleton()->joy_button(joy_id, JOY_BUTTON_3,
 						gamepad.buttonY.isPressed);
 			} else if (element == gamepad.leftShoulder) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_L,
+				OS_UIKit::get_singleton()->joy_button(joy_id, JOY_L,
 						gamepad.leftShoulder.isPressed);
 			} else if (element == gamepad.rightShoulder) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_R,
+				OS_UIKit::get_singleton()->joy_button(joy_id, JOY_R,
 						gamepad.rightShoulder.isPressed);
 			} else if (element == gamepad.leftTrigger) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_L2,
+				OS_UIKit::get_singleton()->joy_button(joy_id, JOY_L2,
 						gamepad.leftTrigger.isPressed);
 			} else if (element == gamepad.rightTrigger) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_R2,
+				OS_UIKit::get_singleton()->joy_button(joy_id, JOY_R2,
 						gamepad.rightTrigger.isPressed);
 			} else if (element == gamepad.dpad) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_UP,
+				OS_UIKit::get_singleton()->joy_button(joy_id, JOY_DPAD_UP,
 						gamepad.dpad.up.isPressed);
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_DOWN,
+				OS_UIKit::get_singleton()->joy_button(joy_id, JOY_DPAD_DOWN,
 						gamepad.dpad.down.isPressed);
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_LEFT,
+				OS_UIKit::get_singleton()->joy_button(joy_id, JOY_DPAD_LEFT,
 						gamepad.dpad.left.isPressed);
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_RIGHT,
+				OS_UIKit::get_singleton()->joy_button(joy_id, JOY_DPAD_RIGHT,
 						gamepad.dpad.right.isPressed);
-			};
+			}
 
 			if (element == gamepad.leftThumbstick) {
 				float value = gamepad.leftThumbstick.xAxis.value;
-				OSIPhone::get_singleton()->joy_axis(joy_id, JOY_ANALOG_LX, value);
+				OS_UIKit::get_singleton()->joy_axis(joy_id, JOY_ANALOG_LX, value);
 				value = -gamepad.leftThumbstick.yAxis.value;
-				OSIPhone::get_singleton()->joy_axis(joy_id, JOY_ANALOG_LY, value);
+				OS_UIKit::get_singleton()->joy_axis(joy_id, JOY_ANALOG_LY, value);
 			} else if (element == gamepad.rightThumbstick) {
 				float value = gamepad.rightThumbstick.xAxis.value;
-				OSIPhone::get_singleton()->joy_axis(joy_id, JOY_ANALOG_RX, value);
+				OS_UIKit::get_singleton()->joy_axis(joy_id, JOY_ANALOG_RX, value);
 				value = -gamepad.rightThumbstick.yAxis.value;
-				OSIPhone::get_singleton()->joy_axis(joy_id, JOY_ANALOG_RY, value);
+				OS_UIKit::get_singleton()->joy_axis(joy_id, JOY_ANALOG_RY, value);
 			} else if (element == gamepad.leftTrigger) {
 				float value = gamepad.leftTrigger.value;
-				OSIPhone::get_singleton()->joy_axis(joy_id, JOY_ANALOG_L2, value);
+				OS_UIKit::get_singleton()->joy_axis(joy_id, JOY_ANALOG_L2, value);
 			} else if (element == gamepad.rightTrigger) {
 				float value = gamepad.rightTrigger.value;
-				OSIPhone::get_singleton()->joy_axis(joy_id, JOY_ANALOG_R2, value);
+				OS_UIKit::get_singleton()->joy_axis(joy_id, JOY_ANALOG_R2, value);
+			}
+
+			if (@available(iOS 13.0, tvOS 13.0, *)) {
+				if (element == gamepad.buttonMenu) {
+					OS_UIKit::get_singleton()->joy_button(joy_id, JOY_START,
+							gamepad.buttonMenu.isPressed);
+				} else if (element == gamepad.buttonOptions) {
+					OS_UIKit::get_singleton()->joy_button(joy_id, JOY_SELECT,
+							gamepad.buttonOptions.isPressed);
+				}
 			}
 		};
 	} else if (controller.microGamepad != nil) {
@@ -315,27 +324,36 @@ void JoypadIPhone::start_processing() {
 		_weakify(self);
 		_weakify(controller);
 
-		controller.microGamepad.valueChangedHandler = ^(GCMicroGamepad *gamepad, GCControllerElement *element) {
+		controller.microGamepad.valueChangedHandler = ^(GCMicroGamepad *, GCControllerElement *element) {
 			_strongify(self);
 			_strongify(controller);
+
+			// Callback gamepad sometimes has different address then
+			// the one used by `controller.microGamepad` instance
+			// which results in gamepad loosing some button events.
+
+			GCMicroGamepad *gamepad = controller.microGamepad;
 
 			int joy_id = [self getJoyIdForController:controller];
 
 			if (element == gamepad.buttonA) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_0,
+				OS_UIKit::get_singleton()->joy_button(joy_id, JOY_BUTTON_0,
 						gamepad.buttonA.isPressed);
 			} else if (element == gamepad.buttonX) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_2,
+				OS_UIKit::get_singleton()->joy_button(joy_id, JOY_BUTTON_2,
 						gamepad.buttonX.isPressed);
 			} else if (element == gamepad.dpad) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_UP,
-						gamepad.dpad.up.isPressed);
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_DOWN,
-						gamepad.dpad.down.isPressed);
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_LEFT,
-						gamepad.dpad.left.isPressed);
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_RIGHT,
-						gamepad.dpad.right.isPressed);
+				float value = gamepad.dpad.xAxis.value;
+				OS_UIKit::get_singleton()->joy_axis(joy_id, JOY_AXIS_4, value);
+
+				OS_UIKit::get_singleton()->joy_button(joy_id, JOY_DPAD_LEFT, gamepad.dpad.left.isPressed);
+				OS_UIKit::get_singleton()->joy_button(joy_id, JOY_DPAD_RIGHT, gamepad.dpad.right.isPressed);
+
+				value = -gamepad.dpad.yAxis.value;
+				OS_UIKit::get_singleton()->joy_axis(joy_id, JOY_AXIS_5, value);
+
+				OS_UIKit::get_singleton()->joy_button(joy_id, JOY_DPAD_UP, gamepad.dpad.up.isPressed);
+				OS_UIKit::get_singleton()->joy_button(joy_id, JOY_DPAD_DOWN, gamepad.dpad.down.isPressed);
 			}
 		};
 	}
