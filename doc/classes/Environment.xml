@@ -206,8 +206,8 @@
 		</member>
 		<member name="sky_rotation" type="Vector3" setter="set_sky_rotation" getter="get_sky_rotation" default="Vector3(0, 0, 0)">
 		</member>
-		<member name="ss_reflections_depth_tolerance" type="float" setter="set_ssr_depth_tolerance" getter="get_ssr_depth_tolerance" default="0.2">
-			The depth tolerance for screen-space reflections.
+		<member name="ss_reflections_depth_tolerance" type="float" setter="set_ssr_depth_tolerance" getter="get_ssr_depth_tolerance" default="1.0">
+			The depth tolerance for screen-space reflections. Higher values will reduce visible artifacting in screen-space reflections, at the cost of some "hallucinated" reflections appearing due to depth buffer discontinuities. Higher values work best with mostly static camera angles, while lower values are preferred in scenes with a more dynamic camera angle (such as a first-person game).
 		</member>
 		<member name="ss_reflections_enabled" type="bool" setter="set_ssr_enabled" getter="is_ssr_enabled" default="false">
 			If [code]true[/code], screen-space reflections are enabled. Screen-space reflections are more accurate than reflections from [VoxelGI]s or [ReflectionProbe]s, but are slower and can't reflect surfaces occluded by others.

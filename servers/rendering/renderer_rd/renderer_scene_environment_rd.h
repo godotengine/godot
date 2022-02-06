@@ -123,7 +123,7 @@ public:
 	int ssr_max_steps = 64;
 	float ssr_fade_in = 0.15;
 	float ssr_fade_out = 2.0;
-	float ssr_depth_tolerance = 0.2;
+	float ssr_depth_tolerance = 1.0;
 
 	/// SSIL
 	///
