@@ -153,13 +153,13 @@ float WebMDemuxer::seek(float p_time){
 	m_seekTime = p_time;
 	m_isSeek = true;
 
- 	const mkvparser::BlockEntry *blockEntry;
+ 	const mkvparser::BlockEntry *blockEntry = NULL;
 	m_videoTrack->Seek(m_seekTime * 1e9, blockEntry);
-	if(!blockEntry)
+
+	if(!blockEntry || !blockEntry->GetBlock() || !blockEntry->GetCluster())
 		return 0.0f;
 
-	const mkvparser::Block *block= blockEntry->GetBlock();
-	return  block ? (block->GetTime(blockEntry->GetCluster()) / 1e9) : 0.0f;
+	return blockEntry->GetBlock()->GetTime(blockEntry->GetCluster()) / 1e9;
 }
 
 bool WebMDemuxer::readFrame(WebMFrame *videoFrame, WebMFrame *audioFrame)
@@ -205,12 +205,14 @@ bool WebMDemuxer::readFrame(WebMFrame *videoFrame, WebMFrame *audioFrame)
 		}
 		else if (!m_block || m_blockFrameIndex == m_block->GetFrameCount() || notSupportedTrackNumber(videoTrackNumber, audioTrackNumber))
 		{
-			if(m_isSeek){
+			if(m_isSeek)
+			{
 				m_videoTrack->Seek(m_seekTime * 1e9, m_blockEntry);
 				m_cluster = m_blockEntry->GetCluster();
 				m_isSeek = false;
 			}
-			else{
+			else
+			{
 				status = m_cluster->GetNext(m_blockEntry, m_blockEntry);
 			}
 			if (!m_blockEntry  || m_blockEntry->EOS())
