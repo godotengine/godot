@@ -606,8 +606,10 @@ void PortalOcclusionCuller::whittle_polys() {
 						// yes .. we can remove this poly .. but do not muck up the iteration of the list
 						//print_line("poly is occluded " + itos(t));
 
+#ifdef TOOLS_ENABLED
 						// this condition should never happen, we should never be checking occludee against itself
 						DEV_ASSERT(_polys[t].poly_source_id != _polys[n].poly_source_id);
+#endif
 
 						// unordered remove
 						_polys[t] = _polys[_num_polys - 1];
