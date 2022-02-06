@@ -737,6 +737,7 @@ def generate_vs_project(env, num_jobs):
                     "progress=no",
                     "tools=!tools!",
                     "-j%s" % num_jobs,
+                    "vsproj=yes",
                 ]
 
                 if env["tests"]:
