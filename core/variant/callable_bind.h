@@ -47,6 +47,7 @@ public:
 	virtual String get_as_text() const;
 	virtual CompareEqualFunc get_compare_equal_func() const;
 	virtual CompareLessFunc get_compare_less_func() const;
+	virtual StringName get_method() const;
 	virtual ObjectID get_object() const; //must always be able to provide an object
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const;
 	virtual const Callable *get_base_comparator() const;
@@ -71,6 +72,7 @@ public:
 	virtual String get_as_text() const;
 	virtual CompareEqualFunc get_compare_equal_func() const;
 	virtual CompareLessFunc get_compare_less_func() const;
+	virtual StringName get_method() const;
 	virtual ObjectID get_object() const; //must always be able to provide an object
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const;
 	virtual const Callable *get_base_comparator() const;
