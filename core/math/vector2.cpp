@@ -163,11 +163,11 @@ Vector2 Vector2::cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, c
 	real_t t3 = t2 * t;
 
 	Vector2 out;
-	out = 0.5 *
-			((p1 * 2.0) +
+	out = 0.5f *
+			((p1 * 2.0f) +
 					(-p0 + p2) * t +
-					(2.0 * p0 - 5.0 * p1 + 4 * p2 - p3) * t2 +
-					(-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3);
+					(2.0f * p0 - 5.0f * p1 + 4 * p2 - p3) * t2 +
+					(-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
 	return out;
 }
 
@@ -194,7 +194,7 @@ Vector2 Vector2::reflect(const Vector2 &p_normal) const {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V_MSG(!p_normal.is_normalized(), Vector2(), "The normal Vector2 must be normalized.");
 #endif
-	return 2.0 * p_normal * this->dot(p_normal) - *this;
+	return 2.0f * p_normal * this->dot(p_normal) - *this;
 }
 
 bool Vector2::is_equal_approx(const Vector2 &p_v) const {

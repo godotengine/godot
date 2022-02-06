@@ -58,7 +58,7 @@ Vector3 Plane::get_any_perpendicular_normal() const {
 	static const Vector3 p2 = Vector3(0, 1, 0);
 	Vector3 p;
 
-	if (ABS(normal.dot(p1)) > 0.99) { // if too similar to p1
+	if (ABS(normal.dot(p1)) > 0.99f) { // if too similar to p1
 		p = p2; // use p2
 	} else {
 		p = p1; // use p1
@@ -129,7 +129,7 @@ bool Plane::intersects_segment(const Vector3 &p_begin, const Vector3 &p_end, Vec
 	real_t dist = (normal.dot(p_begin) - d) / den;
 	//printf("dist is %i\n",dist);
 
-	if (dist < -CMP_EPSILON || dist > (1.0 + CMP_EPSILON)) {
+	if (dist < -CMP_EPSILON || dist > (1.0f + CMP_EPSILON)) {
 		return false;
 	}
 

@@ -95,7 +95,7 @@ struct _NO_DISCARD_ Face3 {
 bool Face3::intersects_aabb2(const AABB &p_aabb) const {
 	Vector3 perp = (vertex[0] - vertex[2]).cross(vertex[0] - vertex[1]);
 
-	Vector3 half_extents = p_aabb.size * 0.5;
+	Vector3 half_extents = p_aabb.size * 0.5f;
 	Vector3 ofs = p_aabb.position + half_extents;
 
 	Vector3 sup = Vector3(
@@ -206,7 +206,7 @@ bool Face3::intersects_aabb2(const AABB &p_aabb) const {
 
 			Vector3 axis = vec3_cross(e1, e2);
 
-			if (axis.length_squared() < 0.0001) {
+			if (axis.length_squared() < 0.0001f) {
 				continue; // coplanar
 			}
 			//axis.normalize();

@@ -108,22 +108,22 @@ struct _NO_DISCARD_ Vector3 {
 		Vector3 n = *this;
 		n /= Math::abs(n.x) + Math::abs(n.y) + Math::abs(n.z);
 		Vector2 o;
-		if (n.z >= 0.0) {
+		if (n.z >= 0.0f) {
 			o.x = n.x;
 			o.y = n.y;
 		} else {
-			o.x = (1.0 - Math::abs(n.y)) * (n.x >= 0.0 ? 1.0 : -1.0);
-			o.y = (1.0 - Math::abs(n.x)) * (n.y >= 0.0 ? 1.0 : -1.0);
+			o.x = (1.0f - Math::abs(n.y)) * (n.x >= 0.0f ? 1.0f : -1.0f);
+			o.y = (1.0f - Math::abs(n.x)) * (n.y >= 0.0f ? 1.0f : -1.0f);
 		}
-		o.x = o.x * 0.5 + 0.5;
-		o.y = o.y * 0.5 + 0.5;
+		o.x = o.x * 0.5f + 0.5f;
+		o.y = o.y * 0.5f + 0.5f;
 		return o;
 	}
 
 	static _FORCE_INLINE_ Vector3 octahedron_decode(const Vector2 &p_oct) {
-		Vector2 f(p_oct.x * 2.0 - 1.0, p_oct.y * 2.0 - 1.0);
+		Vector2 f(p_oct.x * 2.0f - 1.0f, p_oct.y * 2.0f - 1.0f);
 		Vector3 n(f.x, f.y, 1.0f - Math::abs(f.x) - Math::abs(f.y));
-		float t = CLAMP(-n.z, 0.0, 1.0);
+		float t = CLAMP(-n.z, 0.0f, 1.0f);
 		n.x += n.x >= 0 ? -t : t;
 		n.y += n.y >= 0 ? -t : t;
 		return n.normalized();
@@ -243,7 +243,7 @@ Vector3 Vector3::lerp(const Vector3 &p_to, const real_t p_weight) const {
 Vector3 Vector3::slerp(const Vector3 &p_to, const real_t p_weight) const {
 	real_t start_length_sq = length_squared();
 	real_t end_length_sq = p_to.length_squared();
-	if (unlikely(start_length_sq == 0.0 || end_length_sq == 0.0)) {
+	if (unlikely(start_length_sq == 0.0f || end_length_sq == 0.0f)) {
 		// Zero length vectors have no angle, so the best we can do is either lerp or throw an error.
 		return lerp(p_to, p_weight);
 	}
@@ -477,7 +477,7 @@ bool Vector3::is_normalized() const {
 }
 
 Vector3 Vector3::inverse() const {
-	return Vector3(1.0 / x, 1.0 / y, 1.0 / z);
+	return Vector3(1.0f / x, 1.0f / y, 1.0f / z);
 }
 
 void Vector3::zero() {
@@ -500,7 +500,7 @@ Vector3 Vector3::reflect(const Vector3 &p_normal) const {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V_MSG(!p_normal.is_normalized(), Vector3(), "The normal Vector3 must be normalized.");
 #endif
-	return 2.0 * p_normal * this->dot(p_normal) - *this;
+	return 2.0f * p_normal * this->dot(p_normal) - *this;
 }
 
 #endif // VECTOR3_H
