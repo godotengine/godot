@@ -138,6 +138,36 @@ void SubViewportContainer::_notification(int p_what) {
 			}
 		}
 	}
+
+	if (p_what == NOTIFICATION_MOUSE_ENTER) {
+		for (int i = 0; i < get_child_count(); i++) {
+			SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
+			if (!c) {
+				continue;
+			}
+			c->notification(NOTIFICATION_WM_MOUSE_ENTER);
+		}
+	}
+
+	if (p_what == NOTIFICATION_MOUSE_EXIT) {
+		for (int i = 0; i < get_child_count(); i++) {
+			SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
+			if (!c) {
+				continue;
+			}
+			c->notification(NOTIFICATION_WM_MOUSE_EXIT);
+		}
+	}
+
+	if (p_what == NOTIFICATION_FOCUS_EXIT) {
+		for (int i = 0; i < get_child_count(); i++) {
+			SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
+			if (!c) {
+				continue;
+			}
+			c->notification(NOTIFICATION_WM_WINDOW_FOCUS_OUT);
+		}
+	}
 }
 
 void SubViewportContainer::gui_input(const Ref<InputEvent> &p_event) {
