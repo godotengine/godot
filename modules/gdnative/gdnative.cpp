@@ -293,7 +293,7 @@ bool GDNative::initialize() {
 		ERR_PRINT("No library set for this platform");
 		return false;
 	}
-#ifdef UIKIT_ENABLED
+#if defined(IPHONE_ENABLED) || defined(TVOS_ENABLED)
 	// On iOS and tvOS we use static linking by default.
 	String path = "";
 
