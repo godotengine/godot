@@ -31,6 +31,7 @@
 #ifndef CORE_BIND_H
 #define CORE_BIND_H
 
+#include "core/debugger/engine_profiler.h"
 #include "core/io/compression.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
@@ -673,25 +674,8 @@ public:
 class EngineDebugger : public Object {
 	GDCLASS(EngineDebugger, Object);
 
-	class ProfilerCallable {
-		friend class EngineDebugger;
-
-		Callable callable_toggle;
-		Callable callable_add;
-		Callable callable_tick;
-
-	public:
-		ProfilerCallable() {}
-
-		ProfilerCallable(const Callable &p_toggle, const Callable &p_add, const Callable &p_tick) {
-			callable_toggle = p_toggle;
-			callable_add = p_add;
-			callable_tick = p_tick;
-		}
-	};
-
 	Map<StringName, Callable> captures;
-	Map<StringName, ProfilerCallable> profilers;
+	Map<StringName, Ref<EngineProfiler>> profilers;
 
 protected:
 	static void _bind_methods();
@@ -702,7 +686,7 @@ public:
 
 	bool is_active();
 
-	void register_profiler(const StringName &p_name, const Callable &p_toggle, const Callable &p_add, const Callable &p_tick);
+	void register_profiler(const StringName &p_name, Ref<EngineProfiler> p_profiler);
 	void unregister_profiler(const StringName &p_name);
 	bool is_profiling(const StringName &p_name);
 	bool has_profiler(const StringName &p_name);
@@ -715,9 +699,6 @@ public:
 
 	void send_message(const String &p_msg, const Array &p_data);
 
-	static void call_toggle(void *p_user, bool p_enable, const Array &p_opts);
-	static void call_add(void *p_user, const Array &p_data);
-	static void call_tick(void *p_user, double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time);
 	static Error call_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured);
 
 	EngineDebugger() { singleton = this; }

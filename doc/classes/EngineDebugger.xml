@@ -65,14 +65,9 @@
 		<method name="register_profiler">
 			<return type="void" />
 			<argument index="0" name="name" type="StringName" />
-			<argument index="1" name="toggle" type="Callable" />
-			<argument index="2" name="add" type="Callable" />
-			<argument index="3" name="tick" type="Callable" />
+			<argument index="1" name="profiler" type="EngineProfiler" />
 			<description>
-				Registers a profiler with the given [code]name[/code].
-				[code]toggle[/code] callable is called when the profiler is enabled/disabled. It must take an argument array as an argument.
-				[code]add[/code] callable is called when data is added to profiler using [method EngineDebugger.profiler_add_frame_data]. It must take a data array as argument.
-				[code]tick[/code] callable is called at every active profiler iteration. It must take frame time, idle time, physics time, and physics idle time as arguments.
+				Registers a profiler with the given [code]name[/code]. See [EngineProfiler] for more informations.
 			</description>
 		</method>
 		<method name="send_message">
