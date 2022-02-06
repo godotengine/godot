@@ -398,10 +398,10 @@ Ref<Texture2D> ScriptTextEditor::get_theme_icon() {
 			icon_name += "Internal";
 		}
 
-		if (get_parent_control()->has_theme_icon(icon_name, "EditorIcons")) {
-			return get_parent_control()->get_theme_icon(icon_name, "EditorIcons");
-		} else if (get_parent_control()->has_theme_icon(script->get_class(), "EditorIcons")) {
-			return get_parent_control()->get_theme_icon(script->get_class(), "EditorIcons");
+		if (get_parent_control()->has_theme_icon(icon_name, SNAME("EditorIcons"))) {
+			return get_parent_control()->get_theme_icon(icon_name, SNAME("EditorIcons"));
+		} else if (get_parent_control()->has_theme_icon(script->get_class(), SNAME("EditorIcons"))) {
+			return get_parent_control()->get_theme_icon(script->get_class(), SNAME("EditorIcons"));
 		}
 	}
 

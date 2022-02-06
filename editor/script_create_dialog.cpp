@@ -656,7 +656,7 @@ void ScriptCreateDialog::_update_dialog() {
 		if (is_new_script_created) {
 			class_name->set_editable(true);
 			class_name->set_placeholder(TTR("Allowed: a-z, A-Z, 0-9, _ and ."));
-			Color placeholder_color = class_name->get_theme_color("font_placeholder_color");
+			Color placeholder_color = class_name->get_theme_color(SNAME("font_placeholder_color"));
 			placeholder_color.a = 0.3;
 			class_name->add_theme_color_override("font_placeholder_color", placeholder_color);
 		} else {
@@ -665,7 +665,7 @@ void ScriptCreateDialog::_update_dialog() {
 	} else {
 		class_name->set_editable(false);
 		class_name->set_placeholder(TTR("N/A"));
-		Color placeholder_color = class_name->get_theme_color("font_placeholder_color");
+		Color placeholder_color = class_name->get_theme_color(SNAME("font_placeholder_color"));
 		placeholder_color.a = 1;
 		class_name->add_theme_color_override("font_placeholder_color", placeholder_color);
 		class_name->set_text("");

@@ -497,7 +497,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		TreeItem *error = error_tree->create_item(r);
 		error->set_collapsed(true);
 
-		error->set_icon(0, get_theme_icon(oe.warning ? "Warning" : "Error", "EditorIcons"));
+		error->set_icon(0, get_theme_icon(oe.warning ? SNAME("Warning") : SNAME("Error"), SNAME("EditorIcons")));
 		error->set_text(0, time);
 		error->set_text_alignment(0, HORIZONTAL_ALIGNMENT_LEFT);
 
@@ -888,12 +888,12 @@ void ScriptEditorDebugger::_clear_execution() {
 
 void ScriptEditorDebugger::_set_breakpoint(const String &p_file, const int &p_line, const bool &p_enabled) {
 	Ref<Script> script = ResourceLoader::load(p_file);
-	emit_signal("set_breakpoint", script, p_line - 1, p_enabled);
+	emit_signal(SNAME("set_breakpoint"), script, p_line - 1, p_enabled);
 	script.unref();
 }
 
 void ScriptEditorDebugger::_clear_breakpoints() {
-	emit_signal("clear_breakpoints");
+	emit_signal(SNAME("clear_breakpoints"));
 }
 
 void ScriptEditorDebugger::_breakpoint_tree_clicked() {

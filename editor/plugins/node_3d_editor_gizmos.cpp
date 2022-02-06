@@ -1627,7 +1627,7 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 //////
 
 AudioListener3DGizmoPlugin::AudioListener3DGizmoPlugin() {
-	create_icon_material("audio_listener_3d_icon", Node3DEditor::get_singleton()->get_theme_icon("GizmoAudioListener3D", "EditorIcons"));
+	create_icon_material("audio_listener_3d_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoAudioListener3D"), SNAME("EditorIcons")));
 }
 
 bool AudioListener3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {

@@ -45,19 +45,19 @@
 DocTools *EditorHelp::doc = nullptr;
 
 void EditorHelp::_update_theme() {
-	text_color = get_theme_color("text_color", "EditorHelp");
-	title_color = get_theme_color("title_color", "EditorHelp");
-	headline_color = get_theme_color("headline_color", "EditorHelp");
-	comment_color = get_theme_color("comment_color", "EditorHelp");
-	symbol_color = get_theme_color("symbol_color", "EditorHelp");
-	value_color = get_theme_color("value_color", "EditorHelp");
-	qualifier_color = get_theme_color("qualifier_color", "EditorHelp");
-	type_color = get_theme_color("type_color", "EditorHelp");
+	text_color = get_theme_color(SNAME("text_color"), SNAME("EditorHelp"));
+	title_color = get_theme_color(SNAME("title_color"), SNAME("EditorHelp"));
+	headline_color = get_theme_color(SNAME("headline_color"), SNAME("EditorHelp"));
+	comment_color = get_theme_color(SNAME("comment_color"), SNAME("EditorHelp"));
+	symbol_color = get_theme_color(SNAME("symbol_color"), SNAME("EditorHelp"));
+	value_color = get_theme_color(SNAME("value_color"), SNAME("EditorHelp"));
+	qualifier_color = get_theme_color(SNAME("qualifier_color"), SNAME("EditorHelp"));
+	type_color = get_theme_color(SNAME("type_color"), SNAME("EditorHelp"));
 
-	class_desc->add_theme_color_override("selection_color", get_theme_color("selection_color", "EditorHelp"));
-	class_desc->add_theme_constant_override("line_separation", get_theme_constant("line_separation", "EditorHelp"));
-	class_desc->add_theme_constant_override("table_hseparation", get_theme_constant("table_hseparation", "EditorHelp"));
-	class_desc->add_theme_constant_override("table_vseparation", get_theme_constant("table_vseparation", "EditorHelp"));
+	class_desc->add_theme_color_override("selection_color", get_theme_color(SNAME("selection_color"), SNAME("EditorHelp")));
+	class_desc->add_theme_constant_override("line_separation", get_theme_constant(SNAME("line_separation"), SNAME("EditorHelp")));
+	class_desc->add_theme_constant_override("table_hseparation", get_theme_constant(SNAME("table_hseparation"), SNAME("EditorHelp")));
+	class_desc->add_theme_constant_override("table_vseparation", get_theme_constant(SNAME("table_vseparation"), SNAME("EditorHelp")));
 
 	doc_font = get_theme_font(SNAME("doc"), SNAME("EditorFonts"));
 	doc_bold_font = get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts"));

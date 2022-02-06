@@ -40,7 +40,7 @@
 
 void TileDataEditor::_tile_set_changed_plan_update() {
 	_tile_set_changed_update_needed = true;
-	call_deferred("_tile_set_changed_deferred_update");
+	call_deferred(SNAME("_tile_set_changed_deferred_update"));
 }
 
 void TileDataEditor::_tile_set_changed_deferred_update() {

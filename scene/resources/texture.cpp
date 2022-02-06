@@ -1902,7 +1902,7 @@ void GradientTexture2D::_queue_update() {
 		return;
 	}
 	update_pending = true;
-	call_deferred("_update");
+	call_deferred(SNAME("_update"));
 }
 
 void GradientTexture2D::_update() {

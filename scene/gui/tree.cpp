@@ -202,7 +202,7 @@ void TreeItem::propagate_check(int p_column, bool p_emit_signal) {
 	bool ch = cells[p_column].checked;
 
 	if (p_emit_signal) {
-		tree->emit_signal("check_propagated_to_item", this, p_column);
+		tree->emit_signal(SNAME("check_propagated_to_item"), this, p_column);
 	}
 	_propagate_check_through_children(p_column, ch, p_emit_signal);
 	_propagate_check_through_parents(p_column, p_emit_signal);
@@ -213,7 +213,7 @@ void TreeItem::_propagate_check_through_children(int p_column, bool p_checked, b
 	while (current) {
 		current->set_checked(p_column, p_checked);
 		if (p_emit_signal) {
-			current->tree->emit_signal("check_propagated_to_item", current, p_column);
+			current->tree->emit_signal(SNAME("check_propagated_to_item"), current, p_column);
 		}
 		current->_propagate_check_through_children(p_column, p_checked, p_emit_signal);
 		current = current->get_next();
@@ -252,7 +252,7 @@ void TreeItem::_propagate_check_through_parents(int p_column, bool p_emit_signal
 	}
 
 	if (p_emit_signal) {
-		current->tree->emit_signal("check_propagated_to_item", current, p_column);
+		current->tree->emit_signal(SNAME("check_propagated_to_item"), current, p_column);
 	}
 	current->_propagate_check_through_parents(p_column, p_emit_signal);
 }

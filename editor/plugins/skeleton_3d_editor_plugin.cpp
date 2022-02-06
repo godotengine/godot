@@ -821,7 +821,7 @@ void fragment() {
 }
 )");
 	handle_material->set_shader(handle_shader);
-	Ref<Texture2D> handle = editor->get_gui_base()->get_theme_icon("EditorBoneHandle", "EditorIcons");
+	Ref<Texture2D> handle = editor->get_gui_base()->get_theme_icon(SNAME("EditorBoneHandle"), SNAME("EditorIcons"));
 	handle_material->set_shader_param("point_size", handle->get_width());
 	handle_material->set_shader_param("texture_albedo", handle);
 

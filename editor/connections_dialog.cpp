@@ -988,8 +988,8 @@ void ConnectionsDock::update_tree() {
 					name = scr->get_class();
 				}
 
-				if (has_theme_icon(scr->get_class(), "EditorIcons")) {
-					icon = get_theme_icon(scr->get_class(), "EditorIcons");
+				if (has_theme_icon(scr->get_class(), SNAME("EditorIcons"))) {
+					icon = get_theme_icon(scr->get_class(), SNAME("EditorIcons"));
 				}
 			}
 		} else {

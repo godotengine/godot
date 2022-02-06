@@ -658,7 +658,7 @@ EditorExportPlatformJavaScript::EditorExportPlatformJavaScript() {
 
 	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 	if (theme.is_valid()) {
-		stop_icon = theme->get_icon("Stop", "EditorIcons");
+		stop_icon = theme->get_icon(SNAME("Stop"), SNAME("EditorIcons"));
 	} else {
 		stop_icon.instantiate();
 	}

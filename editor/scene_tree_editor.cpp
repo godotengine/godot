@@ -365,9 +365,9 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll
 		} else if (p_node->is_class("CanvasLayer")) {
 			bool v = p_node->call("is_visible");
 			if (v) {
-				item->add_button(0, get_theme_icon("GuiVisibilityVisible", "EditorIcons"), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
+				item->add_button(0, get_theme_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons")), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
 			} else {
-				item->add_button(0, get_theme_icon("GuiVisibilityHidden", "EditorIcons"), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
+				item->add_button(0, get_theme_icon(SNAME("GuiVisibilityHidden"), SNAME("EditorIcons")), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
 			}
 
 			if (!p_node->is_connected("visibility_changed", callable_mp(this, &SceneTreeEditor::_node_visibility_changed))) {

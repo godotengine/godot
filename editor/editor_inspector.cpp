@@ -1441,11 +1441,11 @@ void EditorInspectorArray::_add_button_pressed() {
 }
 
 void EditorInspectorArray::_first_page_button_pressed() {
-	emit_signal("page_change_request", 0);
+	emit_signal(SNAME("page_change_request"), 0);
 }
 
 void EditorInspectorArray::_prev_page_button_pressed() {
-	emit_signal("page_change_request", MAX(0, page - 1));
+	emit_signal(SNAME("page_change_request"), MAX(0, page - 1));
 }
 
 void EditorInspectorArray::_page_line_edit_text_submitted(String p_text) {
@@ -1453,18 +1453,18 @@ void EditorInspectorArray::_page_line_edit_text_submitted(String p_text) {
 		int new_page = p_text.to_int() - 1;
 		new_page = MIN(MAX(0, new_page), max_page);
 		page_line_edit->set_text(Variant(new_page));
-		emit_signal("page_change_request", new_page);
+		emit_signal(SNAME("page_change_request"), new_page);
 	} else {
 		page_line_edit->set_text(Variant(page));
 	}
 }
 
 void EditorInspectorArray::_next_page_button_pressed() {
-	emit_signal("page_change_request", MIN(max_page, page + 1));
+	emit_signal(SNAME("page_change_request"), MIN(max_page, page + 1));
 }
 
 void EditorInspectorArray::_last_page_button_pressed() {
-	emit_signal("page_change_request", max_page);
+	emit_signal(SNAME("page_change_request"), max_page);
 }
 
 void EditorInspectorArray::_rmb_popup_id_pressed(int p_id) {
@@ -1532,7 +1532,7 @@ void EditorInspectorArray::_vbox_visibility_changed() {
 void EditorInspectorArray::_panel_draw(int p_index) {
 	ERR_FAIL_INDEX(p_index, (int)array_elements.size());
 
-	Ref<StyleBox> style = get_theme_stylebox("Focus", "EditorStyles");
+	Ref<StyleBox> style = get_theme_stylebox(SNAME("Focus"), SNAME("EditorStyles"));
 	if (!style.is_valid()) {
 		return;
 	}
@@ -1636,12 +1636,12 @@ void EditorInspectorArray::_move_element(int p_element_index, int p_to_pos) {
 	// Handle page change and update counts.
 	if (p_element_index < 0) {
 		int added_index = p_to_pos < 0 ? count : p_to_pos;
-		emit_signal("page_change_request", added_index / page_lenght);
+		emit_signal(SNAME("page_change_request"), added_index / page_lenght);
 		count += 1;
 	} else if (p_to_pos < 0) {
 		count -= 1;
 		if (page == max_page && (MAX(0, count - 1) / page_lenght != max_page)) {
-			emit_signal("page_change_request", max_page - 1);
+			emit_signal(SNAME("page_change_request"), max_page - 1);
 		}
 	}
 	begin_array_index = page * page_lenght;
@@ -1689,7 +1689,7 @@ void EditorInspectorArray::_clear_array() {
 	undo_redo->commit_action();
 
 	// Handle page change and update counts.
-	emit_signal("page_change_request", 0);
+	emit_signal(SNAME("page_change_request"), 0);
 	count = 0;
 	begin_array_index = 0;
 	end_array_index = 0;
@@ -1762,7 +1762,7 @@ void EditorInspectorArray::_resize_array(int p_size) {
 	undo_redo->commit_action();
 
 	// Handle page change and update counts.
-	emit_signal("page_change_request", 0);
+	emit_signal(SNAME("page_change_request"), 0);
 	/*
 	count = 0;
 	begin_array_index = 0;
@@ -1889,7 +1889,7 @@ void EditorInspectorArray::_setup() {
 		ae.margin = memnew(MarginContainer);
 		ae.margin->set_mouse_filter(MOUSE_FILTER_PASS);
 		if (is_inside_tree()) {
-			Size2 min_size = get_theme_stylebox("Focus", "EditorStyles")->get_minimum_size();
+			Size2 min_size = get_theme_stylebox(SNAME("Focus"), SNAME("EditorStyles"))->get_minimum_size();
 			ae.margin->add_theme_constant_override("margin_left", min_size.x / 2);
 			ae.margin->add_theme_constant_override("margin_top", min_size.y / 2);
 			ae.margin->add_theme_constant_override("margin_right", min_size.x / 2);
@@ -1988,7 +1988,7 @@ void EditorInspectorArray::_notification(int p_what) {
 				ArrayElement &ae = array_elements[i];
 				ae.move_texture_rect->set_texture(get_theme_icon(SNAME("TripleBar"), SNAME("EditorIcons")));
 
-				Size2 min_size = get_theme_stylebox("Focus", "EditorStyles")->get_minimum_size();
+				Size2 min_size = get_theme_stylebox(SNAME("Focus"), SNAME("EditorStyles"))->get_minimum_size();
 				ae.margin->add_theme_constant_override("margin_left", min_size.x / 2);
 				ae.margin->add_theme_constant_override("margin_top", min_size.y / 2);
 				ae.margin->add_theme_constant_override("margin_right", min_size.x / 2);
@@ -2903,7 +2903,7 @@ void EditorInspector::edit(Object *p_object) {
 		object->connect("property_list_changed", callable_mp(this, &EditorInspector::_changed_callback));
 		update_tree();
 	}
-	emit_signal("edited_object_changed");
+	emit_signal(SNAME("edited_object_changed"));
 }
 
 void EditorInspector::set_keying(bool p_active) {
