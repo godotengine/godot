@@ -67,7 +67,7 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 
 		size.width += items[i].h_ofs;
 
-		if (items[i].checkable_type) {
+		if (items[i].checkable_type && !items[i].separator) {
 			has_check = true;
 		}
 
@@ -111,7 +111,7 @@ int PopupMenu::_get_item_height(int p_item) const {
 	ERR_FAIL_COND_V(p_item < 0, 0);
 
 	int icon_height = items[p_item].get_icon_size().height;
-	if (items[p_item].checkable_type) {
+	if (items[p_item].checkable_type && !items[p_item].separator) {
 		icon_height = MAX(icon_height, MAX(get_theme_icon(SNAME("checked"))->get_height(), get_theme_icon(SNAME("radio_checked"))->get_height()));
 	}
 
@@ -495,7 +495,7 @@ void PopupMenu::_draw_items() {
 	bool rtl = control->is_layout_rtl();
 	Ref<StyleBox> style = get_theme_stylebox(SNAME("panel"));
 	Ref<StyleBox> hover = get_theme_stylebox(SNAME("hover"));
-	// In Item::checkable_type enum order (less the non-checkable member)
+	// In Item::checkable_type enum order (less the non-checkable member).
 	Ref<Texture2D> check[] = { get_theme_icon(SNAME("checked")), get_theme_icon(SNAME("radio_checked")) };
 	Ref<Texture2D> uncheck[] = { get_theme_icon(SNAME("unchecked")), get_theme_icon(SNAME("radio_unchecked")) };
 	Ref<Texture2D> submenu;
@@ -524,6 +524,10 @@ void PopupMenu::_draw_items() {
 	float icon_ofs = 0.0;
 	bool has_check = false;
 	for (int i = 0; i < items.size(); i++) {
+		if (items[i].separator) {
+			continue;
+		}
+
 		icon_ofs = MAX(items[i].get_icon_size().width, icon_ofs);
 
 		if (items[i].checkable_type) {
@@ -567,29 +571,33 @@ void PopupMenu::_draw_items() {
 		if (items[i].separator) {
 			int sep_h = separator->get_center_size().height + separator->get_minimum_size().height;
 			int sep_ofs = Math::floor((h - sep_h) / 2.0);
-			if (!text.is_empty()) {
-				int text_size = items[i].text_buf->get_size().width;
-				int text_center = display_width / 2;
-				int text_left = text_center - text_size / 2;
-				int text_right = text_center + text_size / 2;
-				if (text_left > item_ofs.x) {
-					labeled_separator_left->draw(ci, Rect2(item_ofs + Point2(0, sep_ofs), Size2(MAX(0, text_left - item_ofs.x), sep_h)));
+			if (!text.is_empty() || !items[i].icon.is_null()) {
+				int content_size = items[i].text_buf->get_size().width;
+				if (!items[i].icon.is_null()) {
+					content_size += icon_size.width + hseparation;
 				}
-				if (text_right < display_width) {
-					labeled_separator_right->draw(ci, Rect2(Point2(text_right, item_ofs.y + sep_ofs), Size2(MAX(0, display_width - text_right), sep_h)));
+
+				int content_center = display_width / 2;
+				int content_left = content_center - content_size / 2;
+				int content_right = content_center + content_size / 2;
+				if (content_left > item_ofs.x) {
+					labeled_separator_left->draw(ci, Rect2(item_ofs + Point2(0, sep_ofs), Size2(MAX(0, content_left - item_ofs.x), sep_h)));
+				}
+				if (content_right < display_width) {
+					labeled_separator_right->draw(ci, Rect2(Point2(content_right, item_ofs.y + sep_ofs), Size2(MAX(0, display_width - content_right), sep_h)));
 				}
 			} else {
 				separator->draw(ci, Rect2(item_ofs + Point2(0, sep_ofs), Size2(display_width, sep_h)));
 			}
 		}
 
-		Color icon_color(1, 1, 1, items[i].disabled ? 0.5 : 1);
+		Color icon_color(1, 1, 1, items[i].disabled && !items[i].separator ? 0.5 : 1);
 
 		// For non-separator items, add some padding for the content.
 		item_ofs.x += item_start_padding;
 
 		// Checkboxes
-		if (items[i].checkable_type) {
+		if (items[i].checkable_type && !items[i].separator) {
 			Texture2D *icon = (items[i].checked ? check[items[i].checkable_type - 1] : uncheck[items[i].checkable_type - 1]).ptr();
 			if (rtl) {
 				icon->draw(ci, Size2(control->get_size().width - item_ofs.x - icon->get_width(), item_ofs.y) + Point2(0, Math::floor((h - icon->get_height()) / 2.0)), icon_color);
@@ -598,16 +606,28 @@ void PopupMenu::_draw_items() {
 			}
 		}
 
+		int separator_ofs = (display_width - items[i].text_buf->get_size().width) / 2;
+
 		// Icon
 		if (!items[i].icon.is_null()) {
-			if (rtl) {
-				items[i].icon->draw(ci, Size2(control->get_size().width - item_ofs.x - check_ofs - icon_size.width, item_ofs.y) + Point2(0, Math::floor((h - icon_size.height) / 2.0)), icon_color);
+			if (items[i].separator) {
+				separator_ofs -= (icon_size.width + hseparation) / 2;
+
+				if (rtl) {
+					items[i].icon->draw(ci, Size2(control->get_size().width - item_ofs.x - separator_ofs - icon_size.width, item_ofs.y) + Point2(0, Math::floor((h - icon_size.height) / 2.0)), icon_color);
+				} else {
+					items[i].icon->draw(ci, item_ofs + Size2(separator_ofs, 0) + Point2(0, Math::floor((h - icon_size.height) / 2.0)), icon_color);
+				}
 			} else {
-				items[i].icon->draw(ci, item_ofs + Size2(check_ofs, 0) + Point2(0, Math::floor((h - icon_size.height) / 2.0)), icon_color);
+				if (rtl) {
+					items[i].icon->draw(ci, Size2(control->get_size().width - item_ofs.x - check_ofs - icon_size.width, item_ofs.y) + Point2(0, Math::floor((h - icon_size.height) / 2.0)), icon_color);
+				} else {
+					items[i].icon->draw(ci, item_ofs + Size2(check_ofs, 0) + Point2(0, Math::floor((h - icon_size.height) / 2.0)), icon_color);
+				}
 			}
 		}
 
-		// Submenu arrow on right hand side
+		// Submenu arrow on right hand side.
 		if (!items[i].submenu.is_empty()) {
 			if (rtl) {
 				submenu->draw(ci, Point2(scroll_width + style->get_margin(SIDE_LEFT) + item_end_padding, item_ofs.y + Math::floor(h - submenu->get_height()) / 2), icon_color);
@@ -621,8 +641,11 @@ void PopupMenu::_draw_items() {
 		int outline_size = get_theme_constant(SNAME("outline_size"));
 		if (items[i].separator) {
 			if (!text.is_empty()) {
-				int center = (display_width - items[i].text_buf->get_size().width) / 2;
-				Vector2 text_pos = Point2(center, item_ofs.y + Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
+				Vector2 text_pos = Point2(separator_ofs, item_ofs.y + Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
+				if (!items[i].icon.is_null()) {
+					text_pos.x = rtl ? text_pos.x - (icon_size.width + hseparation) : text_pos.x + icon_size.width + hseparation;
+				}
+
 				if (outline_size > 0 && font_outline_color.a > 0) {
 					items[i].text_buf->draw_outline(ci, text_pos, outline_size, font_outline_color);
 				}
@@ -659,7 +682,7 @@ void PopupMenu::_draw_items() {
 			items[i].accel_text_buf->draw(ci, text_pos, i == mouse_over ? font_hover_color : font_accelerator_color);
 		}
 
-		// Cache the item vertical offset from the first item and the height
+		// Cache the item vertical offset from the first item and the height.
 		items.write[i]._ofs_cache = ofs.y;
 		items.write[i]._height_cache = h;
 
