@@ -6495,9 +6495,17 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				decl.name = name;
 
 #ifdef DEBUG_ENABLED
-				if (check_warnings && HAS_WARNING(ShaderWarning::UNUSED_LOCAL_VARIABLE_FLAG)) {
-					if (p_block && p_block->parent_function) {
-						StringName func_name = p_block->parent_function->name;
+				if (check_warnings && HAS_WARNING(ShaderWarning::UNUSED_LOCAL_VARIABLE_FLAG) && p_block) {
+					FunctionNode *parent_function = nullptr;
+					{
+						BlockNode *block = p_block;
+						while (block && !block->parent_function) {
+							block = block->parent_block;
+						}
+						parent_function = block->parent_function;
+					}
+					if (parent_function) {
+						StringName func_name = parent_function->name;
 
 						if (!used_local_vars.has(func_name)) {
 							used_local_vars.insert(func_name, Map<StringName, Usage>());
@@ -7141,14 +7149,6 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			init_block->block_type = BlockNode::BLOCK_TYPE_FOR_INIT;
 			init_block->parent_block = p_block;
 			init_block->single_statement = true;
-			// Need to find a parent function to correctly proceed unused variable warnings.
-			{
-				BlockNode *block = p_block;
-				while (block && !block->parent_function) {
-					block = block->parent_block;
-				}
-				init_block->parent_function = block->parent_function;
-			}
 			cf->blocks.push_back(init_block);
 			Error err = _parse_block(init_block, p_function_info, true, false, false);
 			if (err != OK) {
