@@ -1,7 +1,7 @@
 def can_build(env, platform):
     if env["arch"].startswith("rv"):
         return False
-    return platform not in ["iphone"]
+    return platform not in ["iphone", "tvos"]
 
 
 def configure(env):

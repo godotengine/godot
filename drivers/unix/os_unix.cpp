@@ -265,6 +265,8 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 	// Don't compile this code at all to avoid undefined references.
 	// Actual virtual call goes to OS_JavaScript.
 	ERR_FAIL_V(ERR_BUG);
+#elif defined(TVOS_ENABLED)
+	ERR_FAIL_V(ERR_CANT_FORK);
 #else
 	if (p_blocking && r_pipe) {
 		String argss;
