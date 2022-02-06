@@ -35,6 +35,12 @@
 #include "main/main.h"
 #include "uikit_os.h"
 
+@interface UIKitJoypadObserver (JoypadSearch)
+
+- (int)getJoyIdForControllerName:(NSString *)controllerName;
+
+@end
+
 UIKitJoypad::UIKitJoypad() {
 	observer = [[UIKitJoypadObserver alloc] init];
 	[observer startObserving];
@@ -50,6 +56,18 @@ UIKitJoypad::~UIKitJoypad() {
 void UIKitJoypad::start_processing() {
 	if (observer) {
 		[observer startProcessing];
+	}
+}
+
+int UIKitJoypad::joy_id_for_name(const String &p_name) {
+	if (!observer) {
+		return -1;
+	}
+
+	@autoreleasepool {
+		NSString *controllerName = [[NSString alloc] initWithUTF8String:p_name.utf8().get_data()];
+
+		return [observer getJoyIdForControllerName:controllerName];
 	}
 }
 
@@ -140,7 +158,22 @@ void UIKitJoypad::start_processing() {
 	};
 
 	return -1;
-};
+}
+
+- (int)getJoyIdForControllerName:(NSString *)controllerName {
+	NSArray *keys = [self.connectedJoypads allKeys];
+
+	for (NSNumber *key in keys) {
+		int joy_id = [key intValue];
+		GCController *controller = self.connectedJoypads[key];
+
+		if ([controller.vendorName containsString:controllerName]) {
+			return joy_id;
+		}
+	};
+
+	return -1;
+}
 
 - (void)addUIKitJoypad:(GCController *)controller {
 	//     get a new id for our controller

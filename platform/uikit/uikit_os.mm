@@ -276,19 +276,23 @@ void OS_UIKit::update_gyroscope(float p_x, float p_y, float p_z) {
 
 int OS_UIKit::get_unused_joy_id() {
 	return input->get_unused_joy_id();
-};
+}
+
+int OS_UIKit::joy_id_for_name(const String &p_name) {
+	return uikit_joypad->joy_id_for_name(p_name);
+}
 
 void OS_UIKit::joy_connection_changed(int p_idx, bool p_connected, String p_name) {
 	input->joy_connection_changed(p_idx, p_connected, p_name);
-};
+}
 
 void OS_UIKit::joy_button(int p_device, int p_button, bool p_pressed) {
 	input->joy_button(p_device, p_button, p_pressed);
-};
+}
 
 void OS_UIKit::joy_axis(int p_device, int p_axis, float p_value) {
 	input->joy_axis(p_device, p_axis, p_value);
-};
+}
 
 void OS_UIKit::delete_main_loop() {
 	if (main_loop) {
@@ -297,7 +301,7 @@ void OS_UIKit::delete_main_loop() {
 	};
 
 	main_loop = NULL;
-};
+}
 
 void OS_UIKit::finalize() {
 	delete_main_loop();

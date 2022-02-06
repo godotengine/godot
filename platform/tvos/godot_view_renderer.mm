@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  uikit_joypad.h                                                       */
+/*  godot_view_renderer.mm                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,27 +28,29 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import <GameController/GameController.h>
+#import "godot_view_renderer.h"
 
-class String;
+#include "os_tvos.h"
 
-@interface UIKitJoypadObserver : NSObject
+#import <UIKit/UIKit.h>
 
-- (void)startObserving;
-- (void)startProcessing;
-- (void)finishObserving;
+@interface GodotViewRenderer ()
 
 @end
 
-class UIKitJoypad {
-private:
-	UIKitJoypadObserver *observer;
+@implementation GodotViewRenderer
 
-public:
-	UIKitJoypad();
-	~UIKitJoypad();
+- (BOOL)startUIKitPlatform {
+	OSAppleTV::get_singleton()->start();
+	return YES;
+}
 
-	void start_processing();
+- (void)renderOnView:(UIView *)view {
+	if (!OSAppleTV::get_singleton()) {
+		return;
+	}
 
-	int joy_id_for_name(const String &p_name);
-};
+	OSAppleTV::get_singleton()->iterate();
+}
+
+@end

@@ -122,6 +122,7 @@ public:
 	void update_gyroscope(float p_x, float p_y, float p_z);
 
 	int get_unused_joy_id();
+	int joy_id_for_name(const String &p_name);
 	void joy_connection_changed(int p_idx, bool p_connected, String p_name);
 	void joy_button(int p_device, int p_button, bool p_pressed);
 	void joy_axis(int p_device, int p_axis, float p_value);

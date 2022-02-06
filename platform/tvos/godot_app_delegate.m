@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  uikit_joypad.h                                                       */
+/*  godot_app_delegate.m                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,27 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import <GameController/GameController.h>
+#import "godot_app_delegate.h"
 
-class String;
+#import "app_delegate.h"
 
-@interface UIKitJoypadObserver : NSObject
-
-- (void)startObserving;
-- (void)startProcessing;
-- (void)finishObserving;
+@interface GodotApplicalitionDelegate ()
 
 @end
 
-class UIKitJoypad {
-private:
-	UIKitJoypadObserver *observer;
+@implementation GodotApplicalitionDelegate
 
-public:
-	UIKitJoypad();
-	~UIKitJoypad();
++ (void)load {
+	[self addService:[AppDelegate new]];
+}
 
-	void start_processing();
-
-	int joy_id_for_name(const String &p_name);
-};
+@end

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  uikit_joypad.h                                                       */
+/*  app_delegate.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,27 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import <GameController/GameController.h>
+#import <UIKit/UIKit.h>
 
-class String;
+@class GodotViewController;
 
-@interface UIKitJoypadObserver : NSObject
+@interface AppDelegate : NSObject <UIApplicationDelegate>
 
-- (void)startObserving;
-- (void)startProcessing;
-- (void)finishObserving;
+@property(strong, nonatomic) UIWindow *window;
+@property(strong, class, readonly, nonatomic) GodotViewController *viewController;
 
 @end
-
-class UIKitJoypad {
-private:
-	UIKitJoypadObserver *observer;
-
-public:
-	UIKitJoypad();
-	~UIKitJoypad();
-
-	void start_processing();
-
-	int joy_id_for_name(const String &p_name);
-};

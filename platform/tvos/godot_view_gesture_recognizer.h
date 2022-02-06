@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  uikit_joypad.h                                                       */
+/*  godot_view_gesture_recognizer.h                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,27 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import <GameController/GameController.h>
+// GodotViewGestureRecognizer allows tvOS gestures to work correctly by
+// emulating UIScrollView's UIScrollViewDelayedTouchesBeganGestureRecognizer.
+// It catches all gestures incoming to UIView and delays them for 150ms
+// (the same value used by UIScrollViewDelayedTouchesBeganGestureRecognizer)
+// If touch cancellation or end message is fired it fires delayed
+// begin touch immediately as well as last touch signal
 
-class String;
+#import <UIKit/UIKit.h>
 
-@interface UIKitJoypadObserver : NSObject
+@interface GodotViewGestureRecognizer : UIGestureRecognizer
 
-- (void)startObserving;
-- (void)startProcessing;
-- (void)finishObserving;
+@property(nonatomic, readonly, assign) NSTimeInterval delayTimeInterval;
+@property(nonatomic, readonly, assign) BOOL overridesRemoteButtons;
+
+- (instancetype)init;
 
 @end
-
-class UIKitJoypad {
-private:
-	UIKitJoypadObserver *observer;
-
-public:
-	UIKitJoypad();
-	~UIKitJoypad();
-
-	void start_processing();
-
-	int joy_id_for_name(const String &p_name);
-};

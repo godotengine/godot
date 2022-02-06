@@ -33,12 +33,9 @@
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
 #include "main/main.h"
-#include "os_iphone.h"
 #include "servers/audio_server.h"
 
 #import <AudioToolbox/AudioServices.h>
-#import <CoreMotion/CoreMotion.h>
-#import <GameController/GameController.h>
 #import <QuartzCore/QuartzCore.h>
 #import <UIKit/UIKit.h>
 

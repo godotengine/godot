@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  uikit_joypad.h                                                       */
+/*  main.m                                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,27 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import <GameController/GameController.h>
+#import "godot_app_delegate.h"
 
-class String;
+#import <UIKit/UIKit.h>
+#include <stdio.h>
 
-@interface UIKitJoypadObserver : NSObject
+int gargc;
+char **gargv;
 
-- (void)startObserving;
-- (void)startProcessing;
-- (void)finishObserving;
+int main(int argc, char *argv[]) {
+	printf("*********** main.m\n");
+	gargc = argc;
+	gargv = argv;
 
-@end
-
-class UIKitJoypad {
-private:
-	UIKitJoypadObserver *observer;
-
-public:
-	UIKitJoypad();
-	~UIKitJoypad();
-
-	void start_processing();
-
-	int joy_id_for_name(const String &p_name);
-};
+	printf("running app main\n");
+	@autoreleasepool {
+		NSString *className = NSStringFromClass([GodotApplicalitionDelegate class]);
+		UIApplicationMain(argc, argv, nil, className);
+	}
+	printf("main done\n");
+	return 0;
+}

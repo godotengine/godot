@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  uikit_joypad.h                                                       */
+/*  os_tvos.h                                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,27 +28,56 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import <GameController/GameController.h>
+#ifndef OS_TVOS_H
+#define OS_TVOS_H
 
-class String;
+#include "platform/uikit/uikit_os.h"
 
-@interface UIKitJoypadObserver : NSObject
+#include "tvos.h"
 
-- (void)startObserving;
-- (void)startProcessing;
-- (void)finishObserving;
-
-@end
-
-class UIKitJoypad {
+class OSAppleTV : public OS_UIKit {
 private:
-	UIKitJoypadObserver *observer;
+	static HashMap<String, void *> dynamic_symbol_lookup_table;
+	friend void register_dynamic_symbol(char *name, void *address);
+
+	tvOS *tvos;
+
+	bool overrides_menu_button = true;
+
+	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
+	virtual void finalize();
 
 public:
-	UIKitJoypad();
-	~UIKitJoypad();
+	static OSAppleTV *get_singleton();
 
-	void start_processing();
+	OSAppleTV(String p_data_dir, String p_cache_dir);
+	~OSAppleTV();
 
-	int joy_id_for_name(const String &p_name);
+	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false);
+
+	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
+
+	virtual String get_name() const;
+	virtual String get_model_name() const;
+
+	virtual bool _check_internal_feature_support(const String &p_feature);
+
+	virtual int get_screen_dpi(int p_screen = -1) const;
+
+	virtual bool has_virtual_keyboard() const;
+	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), bool p_multiline = false, int p_max_input_length = -1, int p_cursor_start = -1, int p_cursor_end = -1);
+	virtual void hide_virtual_keyboard();
+	virtual int get_virtual_keyboard_height() const;
+
+	virtual Rect2 get_window_safe_area() const;
+
+	virtual bool has_touchscreen_ui_hint() const;
+
+	void on_focus_out();
+	void on_focus_in();
+
+	bool get_overrides_menu_button() const;
+	void set_overrides_menu_button(bool p_flag);
 };
+
+#endif // OS_IPHONE_H

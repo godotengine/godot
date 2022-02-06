@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  uikit_joypad.h                                                       */
+/*  keyboard_input_view.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,27 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import <GameController/GameController.h>
+#import <UIKit/UIKit.h>
 
-class String;
+@interface GodotKeyboardInputView : UITextField
 
-@interface UIKitJoypadObserver : NSObject
-
-- (void)startObserving;
-- (void)startProcessing;
-- (void)finishObserving;
+- (BOOL)becomeFirstResponderWithString:(NSString *)existingString multiline:(BOOL)flag cursorStart:(NSInteger)start cursorEnd:(NSInteger)end;
 
 @end
-
-class UIKitJoypad {
-private:
-	UIKitJoypadObserver *observer;
-
-public:
-	UIKitJoypad();
-	~UIKitJoypad();
-
-	void start_processing();
-
-	int joy_id_for_name(const String &p_name);
-};

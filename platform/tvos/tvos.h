@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  uikit_joypad.h                                                       */
+/*  tvos.h                                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,27 +28,26 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import <GameController/GameController.h>
+#ifndef TVOS_H
+#define TVOS_H
 
-class String;
+#include "core/object.h"
 
-@interface UIKitJoypadObserver : NSObject
+class tvOS : public Object {
+	GDCLASS(tvOS, Object);
 
-- (void)startObserving;
-- (void)startProcessing;
-- (void)finishObserving;
-
-@end
-
-class UIKitJoypad {
-private:
-	UIKitJoypadObserver *observer;
+	static void _bind_methods();
 
 public:
-	UIKitJoypad();
-	~UIKitJoypad();
+	static void alert(const char *p_alert, const char *p_title);
 
-	void start_processing();
+	String get_model() const;
+	String get_rate_url(int p_app_id) const;
 
-	int joy_id_for_name(const String &p_name);
+	bool get_overrides_menu_button() const;
+	void set_overrides_menu_button(bool p_flag);
+
+	tvOS();
 };
+
+#endif

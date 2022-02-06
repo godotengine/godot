@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+
+Import("env")
+
+tvos_lib = [
+    "#platform/uikit/uikit_app_delegate.m",
+    "#platform/uikit/uikit_display_layer.mm",
+    "#platform/uikit/uikit_joypad.mm",
+    "#platform/uikit/uikit_os.mm",
+    "#platform/uikit/uikit_view_controller.mm",
+    "#platform/uikit/uikit_view_renderer.mm",
+    "#platform/uikit/uikit_view.mm",
+    "godot_tvos.mm",
+    "os_tvos.mm",
+    "main.m",
+    "app_delegate.mm",
+    "tvos.mm",
+    "godot_view.mm",
+    "godot_app_delegate.m",
+    "godot_view_controller.mm",
+    "godot_view_renderer.mm",
+    "godot_view_gesture_recognizer.mm",
+    "keyboard_input_view.mm",
+]
+
+env_tvos = env.Clone()
+tvos_lib = env_tvos.add_library("tvos", tvos_lib)
+
+# (tvOS) Enable module support
+env_tvos.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
+
+
+def combine_libs(target=None, source=None, env=None):
+    lib_path = target[0].srcnode().abspath
+    if "osxcross" in env:
+        libtool = "$TVOSPATH/usr/bin/${tvos_triple}libtool"
+    else:
+        libtool = "$TVOSPATH/usr/bin/libtool"
+    env.Execute(
+        libtool + ' -static -o "' + lib_path + '" ' + " ".join([('"' + lib.srcnode().abspath + '"') for lib in source])
+    )
+
+
+combine_command = env_tvos.Command("#bin/libgodot" + env_tvos["LIBSUFFIX"], [tvos_lib] + env_tvos["LIBS"], combine_libs)
