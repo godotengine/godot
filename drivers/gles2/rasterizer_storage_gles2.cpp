@@ -2287,6 +2287,7 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 				if (p_format & VS::ARRAY_COMPRESS_VERTEX) {
 					attribs[i].type = _GL_HALF_FLOAT_OES;
 					positions_stride += attribs[i].size * 2;
+					uses_half_float = true;
 				} else {
 					attribs[i].type = GL_FLOAT;
 					positions_stride += attribs[i].size * 4;
