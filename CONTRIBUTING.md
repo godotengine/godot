@@ -66,8 +66,10 @@ understand that:
 
 To speed up our work, **please upload a minimal project** that isolates
 and reproduces the issue. This is always the **best way for us to fix it**.
-You can attach a ZIP file with the minimal project directly to the bug report,
-by drag and dropping the file in the GitHub edition field.
+We recommend attaching a ZIP file with the minimal project directly to the bug report,
+by drag and dropping the file in the GitHub edition field. This ensures the file
+can remain available for a long period of time. Only use third-party file hosts
+if your ZIP file isn't accepted by GitHub because it's too large.
 
 We recommend always attaching a minimal reproduction project, even if the issue
 may seem simple to reproduce manually.
@@ -79,7 +81,7 @@ it'll be considered too difficult to diagnose.
 Now that you've read the guidelines, click the link below to create a
 bug report:
 
-- **[Report a bug](https://github.com/godotengine/godot/issues/new?assignees=&labels=&template=bug_report.md&title=)**
+- **[Report a bug](https://github.com/godotengine/godot/issues/new?assignees=&labels=&template=bug_report.yml)**
 
 ## Proposing features or improvements
 
