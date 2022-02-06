@@ -39,7 +39,7 @@ int VisualShaderNodeParticleEmitter::get_output_port_count() const {
 }
 
 VisualShaderNodeParticleEmitter::PortType VisualShaderNodeParticleEmitter::get_output_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeParticleEmitter::get_output_port_name(int p_port) const {
@@ -154,7 +154,7 @@ int VisualShaderNodeParticleBoxEmitter::get_input_port_count() const {
 
 VisualShaderNodeParticleBoxEmitter::PortType VisualShaderNodeParticleBoxEmitter::get_input_port_type(int p_port) const {
 	if (p_port == 0) {
-		return PORT_TYPE_VECTOR;
+		return PORT_TYPE_VECTOR_3D;
 	}
 	return PORT_TYPE_SCALAR;
 }
@@ -270,17 +270,17 @@ int VisualShaderNodeParticleMeshEmitter::get_output_port_count() const {
 VisualShaderNodeParticleBoxEmitter::PortType VisualShaderNodeParticleMeshEmitter::get_output_port_type(int p_port) const {
 	switch (p_port) {
 		case 0:
-			return PORT_TYPE_VECTOR; // position
+			return PORT_TYPE_VECTOR_3D; // position
 		case 1:
-			return PORT_TYPE_VECTOR; // normal
+			return PORT_TYPE_VECTOR_3D; // normal
 		case 2:
-			return PORT_TYPE_VECTOR; // color
+			return PORT_TYPE_VECTOR_3D; // color
 		case 3:
 			return PORT_TYPE_SCALAR; // alpha
 		case 4:
-			return PORT_TYPE_VECTOR; // uv
+			return PORT_TYPE_VECTOR_3D; // uv
 		case 5:
-			return PORT_TYPE_VECTOR; // uv2
+			return PORT_TYPE_VECTOR_3D; // uv2
 	}
 	return PORT_TYPE_SCALAR;
 }
@@ -731,7 +731,7 @@ int VisualShaderNodeParticleMultiplyByAxisAngle::get_input_port_count() const {
 
 VisualShaderNodeParticleMultiplyByAxisAngle::PortType VisualShaderNodeParticleMultiplyByAxisAngle::get_input_port_type(int p_port) const {
 	if (p_port == 0 || p_port == 1) { // position, rotation_axis
-		return PORT_TYPE_VECTOR;
+		return PORT_TYPE_VECTOR_3D;
 	}
 	return PORT_TYPE_SCALAR; // angle (degrees/radians)
 }
@@ -762,7 +762,7 @@ int VisualShaderNodeParticleMultiplyByAxisAngle::get_output_port_count() const {
 }
 
 VisualShaderNodeParticleMultiplyByAxisAngle::PortType VisualShaderNodeParticleMultiplyByAxisAngle::get_output_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeParticleMultiplyByAxisAngle::get_output_port_name(int p_port) const {
@@ -815,7 +815,7 @@ int VisualShaderNodeParticleConeVelocity::get_input_port_count() const {
 
 VisualShaderNodeParticleConeVelocity::PortType VisualShaderNodeParticleConeVelocity::get_input_port_type(int p_port) const {
 	if (p_port == 0) {
-		return PORT_TYPE_VECTOR;
+		return PORT_TYPE_VECTOR_3D;
 	} else if (p_port == 1) {
 		return PORT_TYPE_SCALAR;
 	}
@@ -836,7 +836,7 @@ int VisualShaderNodeParticleConeVelocity::get_output_port_count() const {
 }
 
 VisualShaderNodeParticleConeVelocity::PortType VisualShaderNodeParticleConeVelocity::get_output_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeParticleConeVelocity::get_output_port_name(int p_port) const {
@@ -899,7 +899,7 @@ int VisualShaderNodeParticleRandomness::get_output_port_count() const {
 
 VisualShaderNodeParticleRandomness::PortType VisualShaderNodeParticleRandomness::get_output_port_type(int p_port) const {
 	if (op_type == OP_TYPE_VECTOR) {
-		return PORT_TYPE_VECTOR;
+		return PORT_TYPE_VECTOR_3D;
 	}
 	return PORT_TYPE_SCALAR;
 }
@@ -914,7 +914,7 @@ int VisualShaderNodeParticleRandomness::get_input_port_count() const {
 
 VisualShaderNodeParticleRandomness::PortType VisualShaderNodeParticleRandomness::get_input_port_type(int p_port) const {
 	if (op_type == OP_TYPE_VECTOR) {
-		return PORT_TYPE_VECTOR;
+		return PORT_TYPE_VECTOR_3D;
 	}
 	return PORT_TYPE_SCALAR;
 }
@@ -996,7 +996,7 @@ int VisualShaderNodeParticleAccelerator::get_output_port_count() const {
 }
 
 VisualShaderNodeParticleAccelerator::PortType VisualShaderNodeParticleAccelerator::get_output_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeParticleAccelerator::get_output_port_name(int p_port) const {
@@ -1009,11 +1009,11 @@ int VisualShaderNodeParticleAccelerator::get_input_port_count() const {
 
 VisualShaderNodeParticleAccelerator::PortType VisualShaderNodeParticleAccelerator::get_input_port_type(int p_port) const {
 	if (p_port == 0) {
-		return PORT_TYPE_VECTOR;
+		return PORT_TYPE_VECTOR_3D;
 	} else if (p_port == 1) {
 		return PORT_TYPE_SCALAR;
 	} else if (p_port == 2) {
-		return PORT_TYPE_VECTOR;
+		return PORT_TYPE_VECTOR_3D;
 	}
 	return PORT_TYPE_SCALAR;
 }
@@ -1106,19 +1106,19 @@ VisualShaderNodeParticleOutput::PortType VisualShaderNodeParticleOutput::get_inp
 	switch (p_port) {
 		case 0:
 			if (shader_type == VisualShader::TYPE_START_CUSTOM || shader_type == VisualShader::TYPE_PROCESS_CUSTOM) {
-				return PORT_TYPE_VECTOR; // custom.rgb
+				return PORT_TYPE_VECTOR_3D; // custom.rgb
 			}
 			return PORT_TYPE_BOOLEAN; // active
 		case 1:
 			if (shader_type == VisualShader::TYPE_START_CUSTOM || shader_type == VisualShader::TYPE_PROCESS_CUSTOM) {
 				break; // custom.a (scalar)
 			}
-			return PORT_TYPE_VECTOR; // velocity
+			return PORT_TYPE_VECTOR_3D; // velocity
 		case 2:
-			return PORT_TYPE_VECTOR; // color & velocity
+			return PORT_TYPE_VECTOR_3D; // color & velocity
 		case 3:
 			if (shader_type == VisualShader::TYPE_START_CUSTOM || shader_type == VisualShader::TYPE_PROCESS_CUSTOM) {
-				return PORT_TYPE_VECTOR; // color
+				return PORT_TYPE_VECTOR_3D; // color
 			}
 			break; // alpha (scalar)
 		case 4:
@@ -1131,18 +1131,18 @@ VisualShaderNodeParticleOutput::PortType VisualShaderNodeParticleOutput::get_inp
 			if (shader_type == VisualShader::TYPE_COLLIDE) {
 				return PORT_TYPE_TRANSFORM; // transform
 			}
-			return PORT_TYPE_VECTOR; // position
+			return PORT_TYPE_VECTOR_3D; // position
 		case 5:
 			if (shader_type == VisualShader::TYPE_START_CUSTOM || shader_type == VisualShader::TYPE_PROCESS_CUSTOM) {
 				return PORT_TYPE_TRANSFORM; // transform
 			}
 			if (shader_type == VisualShader::TYPE_PROCESS) {
-				return PORT_TYPE_VECTOR; // rotation_axis
+				return PORT_TYPE_VECTOR_3D; // rotation_axis
 			}
 			break; // scale (scalar)
 		case 6:
 			if (shader_type == VisualShader::TYPE_START) {
-				return PORT_TYPE_VECTOR; // rotation_axis
+				return PORT_TYPE_VECTOR_3D; // rotation_axis
 			}
 			break;
 		case 7:
@@ -1372,13 +1372,13 @@ VisualShaderNodeParticleEmit::PortType VisualShaderNodeParticleEmit::get_input_p
 		case 1:
 			return PORT_TYPE_TRANSFORM;
 		case 2:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		case 3:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		case 4:
 			return PORT_TYPE_SCALAR;
 		case 5:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		case 6:
 			return PORT_TYPE_SCALAR;
 	}
