@@ -1501,6 +1501,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<StyleBoxFlat> theme_preview_picker_label_sb = make_flat_stylebox(theme_preview_picker_label_bg_color, 4.0, 1.0, 4.0, 3.0);
 	theme->set_stylebox("preview_picker_label", "ThemeEditor", theme_preview_picker_label_sb);
 
+	// Dictionary editor add item.
+	theme->set_stylebox("DictionaryAddItem", "EditorStyles", make_flat_stylebox(prop_subsection_color, 4, 4, 4, 4, corner_radius));
+
 	// adaptive script theme constants
 	// for comments and elements with lower relevance
 	const Color dim_color = Color(font_color.r, font_color.g, font_color.b, 0.5);
