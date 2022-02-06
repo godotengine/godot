@@ -4410,7 +4410,7 @@ void TileSetAtlasSource::_clear_tiles_outside_texture() {
 
 void TileSetAtlasSource::_queue_update_padded_texture() {
 	padded_texture_needs_update = true;
-	call_deferred("_update_padded_texture");
+	call_deferred(SNAME("_update_padded_texture"));
 }
 
 void TileSetAtlasSource::_update_padded_texture() {

@@ -726,8 +726,8 @@ void EditorNode::_notification(int p_what) {
 
 				if (icon.is_valid()) {
 					tb->set_icon(icon);
-				} else if (singleton->gui_base->has_theme_icon(p_editor->get_name(), "EditorIcons")) {
-					tb->set_icon(singleton->gui_base->get_theme_icon(p_editor->get_name(), "EditorIcons"));
+				} else if (singleton->gui_base->has_theme_icon(p_editor->get_name(), SNAME("EditorIcons"))) {
+					tb->set_icon(singleton->gui_base->get_theme_icon(p_editor->get_name(), SNAME("EditorIcons")));
 				}
 			}
 
@@ -747,11 +747,11 @@ void EditorNode::_notification(int p_what) {
 
 			// clear_button->set_icon(gui_base->get_icon("Close", "EditorIcons")); don't have access to that node. needs to become a class property
 			if (gui_base->is_layout_rtl()) {
-				dock_tab_move_left->set_icon(theme->get_icon("Forward", "EditorIcons"));
-				dock_tab_move_right->set_icon(theme->get_icon("Back", "EditorIcons"));
+				dock_tab_move_left->set_icon(theme->get_icon(SNAME("Forward"), SNAME("EditorIcons")));
+				dock_tab_move_right->set_icon(theme->get_icon(SNAME("Back"), SNAME("EditorIcons")));
 			} else {
-				dock_tab_move_left->set_icon(theme->get_icon("Back", "EditorIcons"));
-				dock_tab_move_right->set_icon(theme->get_icon("Forward", "EditorIcons"));
+				dock_tab_move_left->set_icon(theme->get_icon(SNAME("Back"), SNAME("EditorIcons")));
+				dock_tab_move_right->set_icon(theme->get_icon(SNAME("Forward"), SNAME("EditorIcons")));
 			}
 
 			PopupMenu *p = help_menu->get_popup();
@@ -3180,8 +3180,8 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 		Ref<Texture2D> icon = p_editor->get_icon();
 		if (icon.is_valid()) {
 			tb->set_icon(icon);
-		} else if (singleton->gui_base->has_theme_icon(p_editor->get_name(), "EditorIcons")) {
-			tb->set_icon(singleton->gui_base->get_theme_icon(p_editor->get_name(), "EditorIcons"));
+		} else if (singleton->gui_base->has_theme_icon(p_editor->get_name(), SNAME("EditorIcons"))) {
+			tb->set_icon(singleton->gui_base->get_theme_icon(p_editor->get_name(), SNAME("EditorIcons")));
 		}
 
 		tb->add_theme_font_override("font", singleton->gui_base->get_theme_font(SNAME("main_button_font"), SNAME("EditorFonts")));
@@ -4032,8 +4032,8 @@ Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String 
 		return p_object->get_meta("_editor_icon");
 	}
 
-	if (gui_base->has_theme_icon(p_object->get_class(), "EditorIcons")) {
-		return gui_base->get_theme_icon(p_object->get_class(), "EditorIcons");
+	if (gui_base->has_theme_icon(p_object->get_class(), SNAME("EditorIcons"))) {
+		return gui_base->get_theme_icon(p_object->get_class(), SNAME("EditorIcons"));
 	}
 
 	if (p_fallback.length()) {
@@ -4062,7 +4062,7 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 		}
 
 		if (icon.is_null()) {
-			icon = gui_base->get_theme_icon(ScriptServer::get_global_class_base(name), "EditorIcons");
+			icon = gui_base->get_theme_icon(ScriptServer::get_global_class_base(name), SNAME("EditorIcons"));
 		}
 	}
 
@@ -5604,7 +5604,7 @@ void EditorNode::_update_rendering_driver_color() {
 	if (rendering_driver->get_text() == "opengl3") {
 		rendering_driver->add_theme_color_override("font_color", Color::hex(0x5586a4ff));
 	} else if (rendering_driver->get_text() == "vulkan") {
-		rendering_driver->add_theme_color_override("font_color", theme_base->get_theme_color("vulkan_color", "Editor"));
+		rendering_driver->add_theme_color_override("font_color", theme_base->get_theme_color(SNAME("vulkan_color"), SNAME("Editor")));
 	}
 }
 
@@ -6147,9 +6147,9 @@ EditorNode::EditorNode() {
 	dock_tab_move_left = memnew(Button);
 	dock_tab_move_left->set_flat(true);
 	if (gui_base->is_layout_rtl()) {
-		dock_tab_move_left->set_icon(theme->get_icon("Forward", "EditorIcons"));
+		dock_tab_move_left->set_icon(theme->get_icon(SNAME("Forward"), SNAME("EditorIcons")));
 	} else {
-		dock_tab_move_left->set_icon(theme->get_icon("Back", "EditorIcons"));
+		dock_tab_move_left->set_icon(theme->get_icon(SNAME("Back"), SNAME("EditorIcons")));
 	}
 	dock_tab_move_left->set_focus_mode(Control::FOCUS_NONE);
 	dock_tab_move_left->connect("pressed", callable_mp(this, &EditorNode::_dock_move_left));
@@ -6164,9 +6164,9 @@ EditorNode::EditorNode() {
 	dock_tab_move_right = memnew(Button);
 	dock_tab_move_right->set_flat(true);
 	if (gui_base->is_layout_rtl()) {
-		dock_tab_move_right->set_icon(theme->get_icon("Back", "EditorIcons"));
+		dock_tab_move_right->set_icon(theme->get_icon(SNAME("Back"), SNAME("EditorIcons")));
 	} else {
-		dock_tab_move_right->set_icon(theme->get_icon("Forward", "EditorIcons"));
+		dock_tab_move_right->set_icon(theme->get_icon(SNAME("Forward"), SNAME("EditorIcons")));
 	}
 	dock_tab_move_right->set_focus_mode(Control::FOCUS_NONE);
 	dock_tab_move_right->connect("pressed", callable_mp(this, &EditorNode::_dock_move_right));
@@ -6637,8 +6637,8 @@ EditorNode::EditorNode() {
 	rendering_driver->set_flat(true);
 	rendering_driver->set_focus_mode(Control::FOCUS_NONE);
 	rendering_driver->connect("item_selected", callable_mp(this, &EditorNode::_rendering_driver_selected));
-	rendering_driver->add_theme_font_override("font", gui_base->get_theme_font("bold", "EditorFonts"));
-	rendering_driver->add_theme_font_size_override("font_size", gui_base->get_theme_font_size("bold_size", "EditorFonts"));
+	rendering_driver->add_theme_font_override("font", gui_base->get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
+	rendering_driver->add_theme_font_size_override("font_size", gui_base->get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts")));
 
 	right_menu_hb->add_child(rendering_driver);
 

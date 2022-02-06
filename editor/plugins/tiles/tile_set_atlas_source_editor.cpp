@@ -2593,7 +2593,7 @@ void EditorPropertyTilePolygon::_polygons_changed() {
 				changed_properties.push_back(vformat(element_pattern, i));
 				values.push_back(generic_tile_polygon_editor->get_polygon(i));
 			}
-			emit_signal("multiple_properties_changed", changed_properties, values, false);
+			emit_signal(SNAME("multiple_properties_changed"), changed_properties, values, false);
 		}
 	}
 }

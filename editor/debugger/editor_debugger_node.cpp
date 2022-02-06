@@ -500,7 +500,7 @@ void EditorDebuggerNode::set_breakpoint(const String &p_path, int p_line, bool p
 		dbg->set_breakpoint(p_path, p_line, p_enabled);
 	});
 
-	emit_signal("breakpoint_toggled", p_path, p_line, p_enabled);
+	emit_signal(SNAME("breakpoint_toggled"), p_path, p_line, p_enabled);
 }
 
 void EditorDebuggerNode::set_breakpoints(const String &p_path, Array p_lines) {

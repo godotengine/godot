@@ -404,9 +404,9 @@ Ref<ImageTexture> EditorExportPlatform::get_option_icon(int p_index) const {
 	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 	ERR_FAIL_COND_V(theme.is_null(), Ref<ImageTexture>());
 	if (EditorNode::get_singleton()->get_main_control()->is_layout_rtl()) {
-		return theme->get_icon("PlayBackwards", "EditorIcons");
+		return theme->get_icon(SNAME("PlayBackwards"), SNAME("EditorIcons"));
 	} else {
-		return theme->get_icon("Play", "EditorIcons");
+		return theme->get_icon(SNAME("Play"), SNAME("EditorIcons"));
 	}
 }
 

@@ -884,8 +884,8 @@ Ref<Texture2D> CodeTextEditor::_get_completion_icon(const ScriptCodeCompletionOp
 	Ref<Texture2D> tex;
 	switch (p_option.kind) {
 		case ScriptCodeCompletionOption::KIND_CLASS: {
-			if (has_theme_icon(p_option.display, "EditorIcons")) {
-				tex = get_theme_icon(p_option.display, "EditorIcons");
+			if (has_theme_icon(p_option.display, SNAME("EditorIcons"))) {
+				tex = get_theme_icon(p_option.display, SNAME("EditorIcons"));
 			} else {
 				tex = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
 			}
