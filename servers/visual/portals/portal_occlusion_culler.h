@@ -260,7 +260,7 @@ private:
 
 		Occlusion::PolyPlane poly;
 		uint32_t flags;
-#ifdef TOOLS_ENABLED
+#if defined(DEV_ENABLED) || defined(TOOLS_ENABLED)
 		uint32_t poly_source_id;
 #endif
 		uint32_t mesh_source_id;
