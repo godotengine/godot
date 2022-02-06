@@ -89,12 +89,12 @@
 			</description>
 		</operator>
 		<operator name="operator *">
-			<return type="Vector2i" />
+			<return type="Vector2" />
 			<argument index="0" name="right" type="Vector2i" />
 			<description>
-				Multiplies each component of the [Vector2i] by the given [float] truncated to an integer.
+				Multiplies each component of the [Vector2i] by the given [float]. Returns a [Vector2].
 				[codeblock]
-				print(0.9 * Vector2i(10, 20)) # Prints "(0, 0)"
+				print(0.9 * Vector2i(10, 15)) # Prints "(9, 13.5)"
 				[/codeblock]
 			</description>
 		</operator>
@@ -106,12 +106,12 @@
 			</description>
 		</operator>
 		<operator name="operator *">
-			<return type="Vector3i" />
+			<return type="Vector3" />
 			<argument index="0" name="right" type="Vector3i" />
 			<description>
-				Multiplies each component of the [Vector3i] by the given [float] truncated to an integer.
+				Multiplies each component of the [Vector3i] by the given [float]. Returns a [Vector3].
 				[codeblock]
-				print(0.9 * Vector3i(10, 20, 30)) # Prints "(0, 0, 0)"
+				print(0.9 * Vector3i(10, 15, 20)) # Prints "(9, 13.5, 18)"
 				[/codeblock]
 			</description>
 		</operator>

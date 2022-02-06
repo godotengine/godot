@@ -119,19 +119,21 @@ struct _NO_DISCARD_ Vector2i {
 	}
 };
 
-_FORCE_INLINE_ Vector2i operator*(const int32_t &p_scalar, const Vector2i &p_vector) {
+// Multiplication operators required to workaround issues with LLVM using implicit conversion.
+
+_FORCE_INLINE_ Vector2i operator*(const int32_t p_scalar, const Vector2i &p_vector) {
 	return p_vector * p_scalar;
 }
 
-_FORCE_INLINE_ Vector2i operator*(const int64_t &p_scalar, const Vector2i &p_vector) {
+_FORCE_INLINE_ Vector2i operator*(const int64_t p_scalar, const Vector2i &p_vector) {
 	return p_vector * p_scalar;
 }
 
-_FORCE_INLINE_ Vector2i operator*(const float &p_scalar, const Vector2i &p_vector) {
+_FORCE_INLINE_ Vector2i operator*(const float p_scalar, const Vector2i &p_vector) {
 	return p_vector * p_scalar;
 }
 
-_FORCE_INLINE_ Vector2i operator*(const double &p_scalar, const Vector2i &p_vector) {
+_FORCE_INLINE_ Vector2i operator*(const double p_scalar, const Vector2i &p_vector) {
 	return p_vector * p_scalar;
 }
 

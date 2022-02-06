@@ -180,22 +180,6 @@ _FORCE_INLINE_ Vector2 Vector2::plane_project(const real_t p_d, const Vector2 &p
 	return p_vec - *this * (dot(p_vec) - p_d);
 }
 
-_FORCE_INLINE_ Vector2 operator*(const float p_scalar, const Vector2 &p_vec) {
-	return p_vec * p_scalar;
-}
-
-_FORCE_INLINE_ Vector2 operator*(const double p_scalar, const Vector2 &p_vec) {
-	return p_vec * p_scalar;
-}
-
-_FORCE_INLINE_ Vector2 operator*(const int32_t p_scalar, const Vector2 &p_vec) {
-	return p_vec * p_scalar;
-}
-
-_FORCE_INLINE_ Vector2 operator*(const int64_t p_scalar, const Vector2 &p_vec) {
-	return p_vec * p_scalar;
-}
-
 _FORCE_INLINE_ Vector2 Vector2::operator+(const Vector2 &p_v) const {
 	return Vector2(x + p_v.x, y + p_v.y);
 }
@@ -278,6 +262,25 @@ Vector2 Vector2::direction_to(const Vector2 &p_to) const {
 	Vector2 ret(p_to.x - x, p_to.y - y);
 	ret.normalize();
 	return ret;
+}
+
+// Multiplication operators required to workaround issues with LLVM using implicit conversion
+// to Vector2i instead for integers where it should not.
+
+_FORCE_INLINE_ Vector2 operator*(const float p_scalar, const Vector2 &p_vec) {
+	return p_vec * p_scalar;
+}
+
+_FORCE_INLINE_ Vector2 operator*(const double p_scalar, const Vector2 &p_vec) {
+	return p_vec * p_scalar;
+}
+
+_FORCE_INLINE_ Vector2 operator*(const int32_t p_scalar, const Vector2 &p_vec) {
+	return p_vec * p_scalar;
+}
+
+_FORCE_INLINE_ Vector2 operator*(const int64_t p_scalar, const Vector2 &p_vec) {
+	return p_vec * p_scalar;
 }
 
 typedef Vector2 Size2;
