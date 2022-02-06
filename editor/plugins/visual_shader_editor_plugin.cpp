@@ -2584,7 +2584,7 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, Stri
 		vsnode = Ref<VisualShaderNode>(vsn);
 	} else {
 		ERR_FAIL_COND(add_options[p_idx].script.is_null());
-		String base_type = add_options[p_idx].script->get_instance_base_type();
+		StringName base_type = add_options[p_idx].script->get_instance_base_type();
 		VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instantiate(base_type));
 		ERR_FAIL_COND(!vsn);
 		vsnode = Ref<VisualShaderNode>(vsn);

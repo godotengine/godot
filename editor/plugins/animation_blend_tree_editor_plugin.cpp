@@ -300,7 +300,7 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 		base_name = add_options[p_idx].name;
 	} else {
 		ERR_FAIL_COND(add_options[p_idx].script.is_null());
-		String base_type = add_options[p_idx].script->get_instance_base_type();
+		StringName base_type = add_options[p_idx].script->get_instance_base_type();
 		AnimationNode *an = Object::cast_to<AnimationNode>(ClassDB::instantiate(base_type));
 		ERR_FAIL_COND(!an);
 		anode = Ref<AnimationNode>(an);

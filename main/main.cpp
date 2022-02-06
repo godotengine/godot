@@ -2250,9 +2250,8 @@ bool Main::start() {
 		}
 	}
 
-	if (main_loop->is_class("SceneTree")) {
-		SceneTree *sml = Object::cast_to<SceneTree>(main_loop);
-
+	SceneTree *sml = Object::cast_to<SceneTree>(main_loop);
+	if (sml) {
 #ifdef DEBUG_ENABLED
 		if (debug_collisions) {
 			sml->set_debug_collisions_hint(true);
@@ -2294,20 +2293,18 @@ bool Main::start() {
 					RES res = ResourceLoader::load(info.path);
 					ERR_CONTINUE_MSG(res.is_null(), "Can't autoload: " + info.path);
 					Node *n = nullptr;
-					if (res->is_class("PackedScene")) {
-						Ref<PackedScene> ps = res;
-						n = ps->instantiate();
-					} else if (res->is_class("Script")) {
-						Ref<Script> script_res = res;
+					Ref<PackedScene> scn = res;
+					Ref<Script> script_res = res;
+					if (scn.is_valid()) {
+						n = scn->instantiate();
+					} else if (script_res.is_valid()) {
 						StringName ibt = script_res->get_instance_base_type();
 						bool valid_type = ClassDB::is_parent_class(ibt, "Node");
 						ERR_CONTINUE_MSG(!valid_type, "Script does not inherit a Node: " + info.path);
 
 						Object *obj = ClassDB::instantiate(ibt);
 
-						ERR_CONTINUE_MSG(obj == nullptr,
-								"Cannot instance script for autoload, expected 'Node' inheritance, got: " +
-										String(ibt));
+						ERR_CONTINUE_MSG(!obj, "Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt) + ".");
 
 						n = Object::cast_to<Node>(obj);
 						n->set_script(script_res);

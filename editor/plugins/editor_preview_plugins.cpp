@@ -188,7 +188,7 @@ bool EditorImagePreviewPlugin::generate_small_preview_automatically() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////
+
 bool EditorBitmapPreviewPlugin::handles(const String &p_type) const {
 	return ClassDB::is_parent_class(p_type, "BitMap");
 }
@@ -308,7 +308,7 @@ void EditorMaterialPreviewPlugin::_preview_done() {
 }
 
 bool EditorMaterialPreviewPlugin::handles(const String &p_type) const {
-	return ClassDB::is_parent_class(p_type, "Material"); //any material
+	return ClassDB::is_parent_class(p_type, "Material"); // Any material.
 }
 
 bool EditorMaterialPreviewPlugin::generate_small_preview_automatically() const {
@@ -699,7 +699,7 @@ void EditorMeshPreviewPlugin::_preview_done() {
 }
 
 bool EditorMeshPreviewPlugin::handles(const String &p_type) const {
-	return ClassDB::is_parent_class(p_type, "Mesh"); //any Mesh
+	return ClassDB::is_parent_class(p_type, "Mesh"); // Any mesh.
 }
 
 Ref<Texture2D> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {

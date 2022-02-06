@@ -2265,7 +2265,7 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 	if (use_external_editor &&
 			(EditorDebuggerNode::get_singleton()->get_dump_stack_script() != p_resource || EditorDebuggerNode::get_singleton()->get_debug_with_external_editor()) &&
 			p_resource->get_path().is_resource_file() &&
-			p_resource->get_class_name() != StringName("VisualScript")) {
+			!Ref<VisualScript>(p_resource).is_valid()) {
 		String path = EditorSettings::get_singleton()->get("text_editor/external/exec_path");
 		String flags = EditorSettings::get_singleton()->get("text_editor/external/exec_flags");
 
@@ -2364,7 +2364,7 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 
 	se->set_edited_resource(p_resource);
 
-	if (p_resource->get_class_name() != StringName("VisualScript")) {
+	if (!Ref<VisualScript>(p_resource).is_valid()) {
 		bool highlighter_set = false;
 		for (int i = 0; i < syntax_highlighters.size(); i++) {
 			Ref<EditorSyntaxHighlighter> highlighter = syntax_highlighters[i]->_create();

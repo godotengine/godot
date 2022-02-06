@@ -85,8 +85,6 @@ private:
 	Label *include_label;
 	MarginContainer *include_margin;
 
-	StringName editor_icons;
-
 	Button *export_button;
 	Button *export_all_button;
 	AcceptDialog *export_all_dialog;

@@ -5804,7 +5804,7 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 	}
 
 	// make visible for certain node type
-	if (ClassDB::is_parent_class(child->get_class(), "Control")) {
+	if (Object::cast_to<Control>(child)) {
 		Size2 texture_size = texture->get_size();
 		editor_data->get_undo_redo().add_do_property(child, "rect_size", texture_size);
 	} else if (Object::cast_to<Polygon2D>(child)) {
@@ -5935,29 +5935,32 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 		if (String(d["type"]) == "files") {
 			Vector<String> files = d["files"];
 			bool can_instantiate = false;
-			for (int i = 0; i < files.size(); i++) { // check if dragged files contain resource or scene can be created at least once
-				RES res = ResourceLoader::load(files[i]);
-				if (res.is_null()) {
-					continue;
-				}
-				String type = res->get_class();
-				if (type == "PackedScene") {
-					Ref<PackedScene> sdata = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
-					Node *instantiated_scene = sdata->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
-					if (!instantiated_scene) {
+
+			List<String> scene_extensions;
+			ResourceLoader::get_recognized_extensions_for_type("PackedScene", &scene_extensions);
+			List<String> texture_extensions;
+			ResourceLoader::get_recognized_extensions_for_type("Texture2D", &texture_extensions);
+
+			for (int i = 0; i < files.size(); i++) {
+				// Check if dragged files with texture or scene extension can be created at least once.
+				if (texture_extensions.find(files[i].get_extension()) || scene_extensions.find(files[i].get_extension())) {
+					RES res = ResourceLoader::load(files[i]);
+					if (res.is_null()) {
 						continue;
 					}
-					memdelete(instantiated_scene);
-				} else if (ClassDB::is_parent_class(type, "Texture2D")) {
-					Ref<Texture2D> texture = Ref<Texture2D>(Object::cast_to<Texture2D>(*res));
-					if (!texture.is_valid()) {
+					Ref<PackedScene> scn = res;
+					if (scn.is_valid()) {
+						Node *instantiated_scene = scn->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
+						if (!instantiated_scene) {
+							continue;
+						}
+						memdelete(instantiated_scene);
+					} else {
 						continue;
 					}
-				} else {
-					continue;
+					can_instantiate = true;
+					break;
 				}
-				can_instantiate = true;
-				break;
 			}
 			if (can_instantiate) {
 				if (!preview_node->get_parent()) { // create preview only once
