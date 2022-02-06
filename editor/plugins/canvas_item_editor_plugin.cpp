@@ -3847,7 +3847,7 @@ void CanvasItemEditor::_notification(int p_what) {
 		// the icon will be dark, so we need to lighten it before blending it
 		// with the red color.
 		const Color key_auto_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25);
-		key_auto_insert_button->add_theme_color_override("icon_pressed_color", key_auto_color.lerp(Color(1, 0, 0), 0.55));
+		key_auto_insert_button->add_theme_color_override(SNAME("icon_pressed_color"), key_auto_color.lerp(Color(1, 0, 0), 0.55));
 		animation_menu->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
 
 		_update_context_menu_stylebox();
@@ -3967,7 +3967,7 @@ void CanvasItemEditor::_update_context_menu_stylebox() {
 	context_menu_stylebox->set_border_color(accent_color);
 	context_menu_stylebox->set_border_width(SIDE_BOTTOM, Math::round(2 * EDSCALE));
 	context_menu_stylebox->set_default_margin(SIDE_BOTTOM, 0);
-	context_menu_container->add_theme_style_override("panel", context_menu_stylebox);
+	context_menu_container->add_theme_style_override(SNAME("panel"), context_menu_stylebox);
 }
 
 void CanvasItemEditor::_update_scrollbars() {
@@ -6073,7 +6073,7 @@ void CanvasItemEditorViewport::_notification(int p_what) {
 			check->set_icon(get_theme_icon(check->get_text(), SNAME("EditorIcons")));
 		}
 
-		label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+		label->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 	}
 
 	switch (p_what) {
@@ -6141,16 +6141,16 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 	}
 
 	label = memnew(Label);
-	label->add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1));
-	label->add_theme_constant_override("shadow_outline_size", 1 * EDSCALE);
+	label->add_theme_color_override(SNAME("font_shadow_color"), Color(0, 0, 0, 1));
+	label->add_theme_constant_override(SNAME("shadow_outline_size"), 1 * EDSCALE);
 	label->hide();
 	canvas_item_editor->get_controls_container()->add_child(label);
 
 	label_desc = memnew(Label);
-	label_desc->add_theme_color_override("font_color", Color(0.6f, 0.6f, 0.6f, 1));
-	label_desc->add_theme_color_override("font_shadow_color", Color(0.2f, 0.2f, 0.2f, 1));
-	label_desc->add_theme_constant_override("shadow_outline_size", 1 * EDSCALE);
-	label_desc->add_theme_constant_override("line_spacing", 0);
+	label_desc->add_theme_color_override(SNAME("font_color"), Color(0.6f, 0.6f, 0.6f, 1));
+	label_desc->add_theme_color_override(SNAME("font_shadow_color"), Color(0.2f, 0.2f, 0.2f, 1));
+	label_desc->add_theme_constant_override(SNAME("shadow_outline_size"), 1 * EDSCALE);
+	label_desc->add_theme_constant_override(SNAME("line_spacing"), 0);
 	label_desc->hide();
 	canvas_item_editor->get_controls_container()->add_child(label_desc);
 

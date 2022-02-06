@@ -1890,10 +1890,10 @@ void EditorInspectorArray::_setup() {
 		ae.margin->set_mouse_filter(MOUSE_FILTER_PASS);
 		if (is_inside_tree()) {
 			Size2 min_size = get_theme_stylebox(SNAME("Focus"), SNAME("EditorStyles"))->get_minimum_size();
-			ae.margin->add_theme_constant_override("margin_left", min_size.x / 2);
-			ae.margin->add_theme_constant_override("margin_top", min_size.y / 2);
-			ae.margin->add_theme_constant_override("margin_right", min_size.x / 2);
-			ae.margin->add_theme_constant_override("margin_bottom", min_size.y / 2);
+			ae.margin->add_theme_constant_override(SNAME("margin_left"), min_size.x / 2);
+			ae.margin->add_theme_constant_override(SNAME("margin_top"), min_size.y / 2);
+			ae.margin->add_theme_constant_override(SNAME("margin_right"), min_size.x / 2);
+			ae.margin->add_theme_constant_override(SNAME("margin_bottom"), min_size.y / 2);
 		}
 		ae.panel->add_child(ae.margin);
 
@@ -1989,10 +1989,10 @@ void EditorInspectorArray::_notification(int p_what) {
 				ae.move_texture_rect->set_texture(get_theme_icon(SNAME("TripleBar"), SNAME("EditorIcons")));
 
 				Size2 min_size = get_theme_stylebox(SNAME("Focus"), SNAME("EditorStyles"))->get_minimum_size();
-				ae.margin->add_theme_constant_override("margin_left", min_size.x / 2);
-				ae.margin->add_theme_constant_override("margin_top", min_size.y / 2);
-				ae.margin->add_theme_constant_override("margin_right", min_size.x / 2);
-				ae.margin->add_theme_constant_override("margin_bottom", min_size.y / 2);
+				ae.margin->add_theme_constant_override(SNAME("margin_left"), min_size.x / 2);
+				ae.margin->add_theme_constant_override(SNAME("margin_top"), min_size.y / 2);
+				ae.margin->add_theme_constant_override(SNAME("margin_right"), min_size.x / 2);
+				ae.margin->add_theme_constant_override(SNAME("margin_bottom"), min_size.y / 2);
 			}
 
 			add_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
@@ -2083,7 +2083,7 @@ EditorInspectorArray::EditorInspectorArray() {
 	add_child(rmb_popup);
 
 	elements_vbox = memnew(VBoxContainer);
-	elements_vbox->add_theme_constant_override("separation", 0);
+	elements_vbox->add_theme_constant_override(SNAME("separation"), 0);
 	vbox->add_child(elements_vbox);
 
 	add_button = memnew(Button);
@@ -2109,7 +2109,7 @@ EditorInspectorArray::EditorInspectorArray() {
 
 	page_line_edit = memnew(LineEdit);
 	page_line_edit->connect("text_submitted", callable_mp(this, &EditorInspectorArray::_page_line_edit_text_submitted));
-	page_line_edit->add_theme_constant_override("minimum_character_width", 2);
+	page_line_edit->add_theme_constant_override(SNAME("minimum_character_width"), 2);
 	hbox_pagination->add_child(page_line_edit);
 
 	page_count_label = memnew(Label);
@@ -3020,9 +3020,9 @@ void EditorInspector::_update_inspector_bg() {
 			n = n->get_parent();
 		}
 		count_subinspectors = MIN(15, count_subinspectors);
-		add_theme_style_override("bg", get_theme_stylebox("sub_inspector_bg" + itos(count_subinspectors), "Editor"));
+		add_theme_style_override(SNAME("bg"), get_theme_stylebox("sub_inspector_bg" + itos(count_subinspectors), SNAME("Editor")));
 	} else {
-		add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+		add_theme_style_override(SNAME("bg"), get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 	}
 }
 void EditorInspector::set_sub_inspector(bool p_enable) {
@@ -3551,7 +3551,7 @@ EditorInspector::EditorInspector() {
 	undo_redo = nullptr;
 	main_vbox = memnew(VBoxContainer);
 	main_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
-	main_vbox->add_theme_constant_override("separation", 0);
+	main_vbox->add_theme_constant_override(SNAME("separation"), 0);
 	add_child(main_vbox);
 	set_horizontal_scroll_mode(SCROLL_MODE_DISABLED);
 

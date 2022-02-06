@@ -585,7 +585,7 @@ TileAtlasView::TileAtlasView() {
 
 	hbox = memnew(HBoxContainer);
 	hbox->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-	hbox->add_theme_constant_override("separation", 10);
+	hbox->add_theme_constant_override(SNAME("separation"), 10);
 	hbox->hide();
 	margin_container->add_child(hbox);
 

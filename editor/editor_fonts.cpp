@@ -279,67 +279,67 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	p_theme->set_default_font(df); // Default theme font
 	p_theme->set_default_font_size(default_font_size);
 
-	p_theme->set_font_size("main_size", "EditorFonts", default_font_size);
-	p_theme->set_font("main", "EditorFonts", df);
+	p_theme->set_font_size(SNAME("main_size"), SNAME("EditorFonts"), default_font_size);
+	p_theme->set_font(SNAME("main"), SNAME("EditorFonts"), df);
 
 	// Bold font
 	MAKE_BOLD_FONT(df_bold, String());
-	p_theme->set_font_size("bold_size", "EditorFonts", default_font_size);
-	p_theme->set_font("bold", "EditorFonts", df_bold);
+	p_theme->set_font_size(SNAME("bold_size"), SNAME("EditorFonts"), default_font_size);
+	p_theme->set_font(SNAME("bold"), SNAME("EditorFonts"), df_bold);
 
 	// Title font
-	p_theme->set_font_size("title_size", "EditorFonts", default_font_size + 1 * EDSCALE);
-	p_theme->set_font("title", "EditorFonts", df_bold);
+	p_theme->set_font_size(SNAME("title_size"), SNAME("EditorFonts"), default_font_size + 1 * EDSCALE);
+	p_theme->set_font(SNAME("title"), SNAME("EditorFonts"), df_bold);
 
-	p_theme->set_font_size("main_button_font_size", "EditorFonts", default_font_size + 1 * EDSCALE);
-	p_theme->set_font("main_button_font", "EditorFonts", df_bold);
+	p_theme->set_font_size(SNAME("main_button_font_size"), SNAME("EditorFonts"), default_font_size + 1 * EDSCALE);
+	p_theme->set_font(SNAME("main_button_font"), SNAME("EditorFonts"), df_bold);
 
-	p_theme->set_font("font", "Label", df);
+	p_theme->set_font(SNAME("font"), SNAME("Label"), df);
 
-	p_theme->set_type_variation("HeaderSmall", "Label");
-	p_theme->set_font("font", "HeaderSmall", df_bold);
-	p_theme->set_font_size("font_size", "HeaderSmall", default_font_size);
+	p_theme->set_type_variation(SNAME("HeaderSmall"), SNAME("Label"));
+	p_theme->set_font(SNAME("font"), SNAME("HeaderSmall"), df_bold);
+	p_theme->set_font_size(SNAME("font_size"), SNAME("HeaderSmall"), default_font_size);
 
-	p_theme->set_type_variation("HeaderMedium", "Label");
-	p_theme->set_font("font", "HeaderMedium", df_bold);
-	p_theme->set_font_size("font_size", "HeaderMedium", default_font_size + 1 * EDSCALE);
+	p_theme->set_type_variation(SNAME("HeaderMedium"), SNAME("Label"));
+	p_theme->set_font(SNAME("font"), SNAME("HeaderMedium"), df_bold);
+	p_theme->set_font_size(SNAME("font_size"), SNAME("HeaderMedium"), default_font_size + 1 * EDSCALE);
 
-	p_theme->set_type_variation("HeaderLarge", "Label");
-	p_theme->set_font("font", "HeaderLarge", df_bold);
-	p_theme->set_font_size("font_size", "HeaderLarge", default_font_size + 3 * EDSCALE);
+	p_theme->set_type_variation(SNAME("HeaderLarge"), SNAME("Label"));
+	p_theme->set_font(SNAME("font"), SNAME("HeaderLarge"), df_bold);
+	p_theme->set_font_size(SNAME("font_size"), SNAME("HeaderLarge"), default_font_size + 3 * EDSCALE);
 
 	// Documentation fonts
 	String code_font_custom_variations = EditorSettings::get_singleton()->get("interface/editor/code_font_custom_variations");
 	MAKE_SOURCE_FONT(df_code, code_font_custom_variations);
-	p_theme->set_font_size("doc_size", "EditorFonts", int(EDITOR_GET("text_editor/help/help_font_size")) * EDSCALE);
-	p_theme->set_font("doc", "EditorFonts", df);
-	p_theme->set_font_size("doc_bold_size", "EditorFonts", int(EDITOR_GET("text_editor/help/help_font_size")) * EDSCALE);
-	p_theme->set_font("doc_bold", "EditorFonts", df_bold);
-	p_theme->set_font_size("doc_title_size", "EditorFonts", int(EDITOR_GET("text_editor/help/help_title_font_size")) * EDSCALE);
-	p_theme->set_font("doc_title", "EditorFonts", df_bold);
-	p_theme->set_font_size("doc_source_size", "EditorFonts", int(EDITOR_GET("text_editor/help/help_source_font_size")) * EDSCALE);
-	p_theme->set_font("doc_source", "EditorFonts", df_code);
-	p_theme->set_font_size("doc_keyboard_size", "EditorFonts", (int(EDITOR_GET("text_editor/help/help_source_font_size")) - 1) * EDSCALE);
-	p_theme->set_font("doc_keyboard", "EditorFonts", df_code);
+	p_theme->set_font_size(SNAME("doc_size"), SNAME("EditorFonts"), int(EDITOR_GET("text_editor/help/help_font_size")) * EDSCALE);
+	p_theme->set_font(SNAME("doc"), SNAME("EditorFonts"), df);
+	p_theme->set_font_size(SNAME("doc_bold_size"), SNAME("EditorFonts"), int(EDITOR_GET("text_editor/help/help_font_size")) * EDSCALE);
+	p_theme->set_font(SNAME("doc_bold"), SNAME("EditorFonts"), df_bold);
+	p_theme->set_font_size(SNAME("doc_title_size"), SNAME("EditorFonts"), int(EDITOR_GET("text_editor/help/help_title_font_size")) * EDSCALE);
+	p_theme->set_font(SNAME("doc_title"), SNAME("EditorFonts"), df_bold);
+	p_theme->set_font_size(SNAME("doc_source_size"), SNAME("EditorFonts"), int(EDITOR_GET("text_editor/help/help_source_font_size")) * EDSCALE);
+	p_theme->set_font(SNAME("doc_source"), SNAME("EditorFonts"), df_code);
+	p_theme->set_font_size(SNAME("doc_keyboard_size"), SNAME("EditorFonts"), (int(EDITOR_GET("text_editor/help/help_source_font_size")) - 1) * EDSCALE);
+	p_theme->set_font(SNAME("doc_keyboard"), SNAME("EditorFonts"), df_code);
 
 	// Ruler font
-	p_theme->set_font_size("rulers_size", "EditorFonts", 8 * EDSCALE);
-	p_theme->set_font("rulers", "EditorFonts", df);
+	p_theme->set_font_size(SNAME("rulers_size"), SNAME("EditorFonts"), 8 * EDSCALE);
+	p_theme->set_font(SNAME("rulers"), SNAME("EditorFonts"), df);
 
 	// Rotation widget font
-	p_theme->set_font_size("rotation_control_size", "EditorFonts", 14 * EDSCALE);
-	p_theme->set_font("rotation_control", "EditorFonts", df);
+	p_theme->set_font_size(SNAME("rotation_control_size"), SNAME("EditorFonts"), 14 * EDSCALE);
+	p_theme->set_font(SNAME("rotation_control"), SNAME("EditorFonts"), df);
 
 	// Code font
-	p_theme->set_font_size("source_size", "EditorFonts", int(EDITOR_GET("interface/editor/code_font_size")) * EDSCALE);
-	p_theme->set_font("source", "EditorFonts", df_code);
+	p_theme->set_font_size(SNAME("source_size"), SNAME("EditorFonts"), int(EDITOR_GET("interface/editor/code_font_size")) * EDSCALE);
+	p_theme->set_font(SNAME("source"), SNAME("EditorFonts"), df_code);
 
-	p_theme->set_font_size("expression_size", "EditorFonts", (int(EDITOR_GET("interface/editor/code_font_size")) - 1) * EDSCALE);
-	p_theme->set_font("expression", "EditorFonts", df_code);
+	p_theme->set_font_size(SNAME("expression_size"), SNAME("EditorFonts"), (int(EDITOR_GET("interface/editor/code_font_size")) - 1) * EDSCALE);
+	p_theme->set_font(SNAME("expression"), SNAME("EditorFonts"), df_code);
 
-	p_theme->set_font_size("output_source_size", "EditorFonts", int(EDITOR_GET("run/output/font_size")) * EDSCALE);
-	p_theme->set_font("output_source", "EditorFonts", df_code);
+	p_theme->set_font_size(SNAME("output_source_size"), SNAME("EditorFonts"), int(EDITOR_GET("run/output/font_size")) * EDSCALE);
+	p_theme->set_font(SNAME("output_source"), SNAME("EditorFonts"), df_code);
 
-	p_theme->set_font_size("status_source_size", "EditorFonts", default_font_size);
-	p_theme->set_font("status_source", "EditorFonts", df_code);
+	p_theme->set_font_size(SNAME("status_source_size"), SNAME("EditorFonts"), default_font_size);
+	p_theme->set_font(SNAME("status_source"), SNAME("EditorFonts"), df_code);
 }

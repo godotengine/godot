@@ -839,7 +839,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	error_message = memnew(Label);
 	error_message->hide();
 	error_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
-	error_message->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), SNAME("Editor")));
+	error_message->add_theme_color_override(SNAME("font_color"), EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 	add_child(error_message);
 
 	Label *l = memnew(Label);

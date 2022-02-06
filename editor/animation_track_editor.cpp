@@ -4368,7 +4368,7 @@ void AnimationTrackEditor::_update_tracks() {
 				g->set_timeline(timeline);
 				groups.push_back(g);
 				VBoxContainer *vb = memnew(VBoxContainer);
-				vb->add_theme_constant_override("separation", 0);
+				vb->add_theme_constant_override(SNAME("separation"), 0);
 				vb->add_child(g);
 				track_vbox->add_child(vb);
 				group_sort[base_path] = vb;
@@ -4519,7 +4519,7 @@ void AnimationTrackEditor::_notification(int p_what) {
 		view_group->set_icon(get_theme_icon(view_group->is_pressed() ? SNAME("AnimationTrackList") : SNAME("AnimationTrackGroup"), SNAME("EditorIcons")));
 		selected_filter->set_icon(get_theme_icon(SNAME("AnimationFilter"), SNAME("EditorIcons")));
 		imported_anim_warning->set_icon(get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons")));
-		main_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+		main_panel->add_theme_style_override(SNAME("panel"), get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 		edit->get_popup()->set_item_icon(edit->get_popup()->get_item_index(EDIT_APPLY_RESET), get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
 	}
 
@@ -6085,7 +6085,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	timeline_scroll->add_child(timeline_vbox);
 	timeline_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
 	timeline_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
-	timeline_vbox->add_theme_constant_override("separation", 0);
+	timeline_vbox->add_theme_constant_override(SNAME("separation"), 0);
 
 	info_message = memnew(Label);
 	info_message->set_text(TTR("Select an AnimationPlayer node to create and edit animations."));
@@ -6140,7 +6140,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	scroll->add_child(track_vbox);
 	track_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
 	scroll->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
-	track_vbox->add_theme_constant_override("separation", 0);
+	track_vbox->add_theme_constant_override(SNAME("separation"), 0);
 
 	HBoxContainer *bottom_hb = memnew(HBoxContainer);
 	add_child(bottom_hb);

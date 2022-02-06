@@ -189,8 +189,8 @@ void ShaderTextEditor::_load_theme_settings() {
 
 	if (warnings_panel) {
 		// Warnings panel
-		warnings_panel->add_theme_font_override("normal_font", EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("main"), SNAME("EditorFonts")));
-		warnings_panel->add_theme_font_size_override("normal_font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size(SNAME("main_size"), SNAME("EditorFonts")));
+		warnings_panel->add_theme_font_override(SNAME("normal_font"), EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("main"), SNAME("EditorFonts")));
+		warnings_panel->add_theme_font_size_override(SNAME("normal_font_size"), EditorNode::get_singleton()->get_gui_base()->get_theme_font_size(SNAME("main_size"), SNAME("EditorFonts")));
 	}
 }
 
@@ -443,7 +443,7 @@ void ShaderEditor::_notification(int p_what) {
 void ShaderEditor::_editor_settings_changed() {
 	shader_editor->update_editor_settings();
 
-	shader_editor->get_text_editor()->add_theme_constant_override("line_spacing", EditorSettings::get_singleton()->get("text_editor/appearance/whitespace/line_spacing"));
+	shader_editor->get_text_editor()->add_theme_constant_override(SNAME("line_spacing"), EditorSettings::get_singleton()->get("text_editor/appearance/whitespace/line_spacing"));
 	shader_editor->get_text_editor()->set_draw_breakpoints_gutter(false);
 	shader_editor->get_text_editor()->set_draw_executing_lines_gutter(false);
 }
@@ -701,7 +701,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 
 	shader_editor = memnew(ShaderTextEditor);
 	shader_editor->set_v_size_flags(SIZE_EXPAND_FILL);
-	shader_editor->add_theme_constant_override("separation", 0);
+	shader_editor->add_theme_constant_override(SNAME("separation"), 0);
 	shader_editor->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 
 	shader_editor->connect("show_warnings_panel", callable_mp(this, &ShaderEditor::_show_warnings_panel));
@@ -789,7 +789,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	hbc->add_child(edit_menu);
 	hbc->add_child(goto_menu);
 	hbc->add_child(help_menu);
-	hbc->add_theme_style_override("panel", p_node->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditorPanel"), SNAME("EditorStyles")));
+	hbc->add_theme_style_override(SNAME("panel"), p_node->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditorPanel"), SNAME("EditorStyles")));
 
 	VSplitContainer *editor_box = memnew(VSplitContainer);
 	main_container->add_child(editor_box);

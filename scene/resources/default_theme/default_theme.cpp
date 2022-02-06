@@ -139,8 +139,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	}
 
 	// Panel
-	theme->set_stylebox("panel", "Panel", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
-	theme->set_stylebox("panel_fg", "Panel", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
+	theme->set_stylebox(SNAME("panel"), SNAME("Panel"), make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
+	theme->set_stylebox(SNAME("panel_fg"), SNAME("Panel"), make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
 
 	// Button
 
@@ -152,108 +152,108 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	// Make the focus outline appear to be flush with the buttons it's focusing.
 	focus->set_expand_margin_size_all(2 * scale);
 
-	theme->set_stylebox("normal", "Button", button_normal);
-	theme->set_stylebox("hover", "Button", button_hover);
-	theme->set_stylebox("pressed", "Button", button_pressed);
-	theme->set_stylebox("disabled", "Button", button_disabled);
-	theme->set_stylebox("focus", "Button", focus);
+	theme->set_stylebox(SNAME("normal"), SNAME("Button"), button_normal);
+	theme->set_stylebox(SNAME("hover"), SNAME("Button"), button_hover);
+	theme->set_stylebox(SNAME("pressed"), SNAME("Button"), button_pressed);
+	theme->set_stylebox(SNAME("disabled"), SNAME("Button"), button_disabled);
+	theme->set_stylebox(SNAME("focus"), SNAME("Button"), focus);
 
-	theme->set_font("font", "Button", Ref<Font>());
-	theme->set_font_size("font_size", "Button", -1);
-	theme->set_constant("outline_size", "Button", 0 * scale);
+	theme->set_font(SNAME("font"), SNAME("Button"), Ref<Font>());
+	theme->set_font_size(SNAME("font_size"), SNAME("Button"), -1);
+	theme->set_constant(SNAME("outline_size"), SNAME("Button"), 0 * scale);
 
-	theme->set_color("font_color", "Button", control_font_color);
-	theme->set_color("font_pressed_color", "Button", control_font_pressed_color);
-	theme->set_color("font_hover_color", "Button", control_font_hover_color);
-	theme->set_color("font_focus_color", "Button", control_font_focus_color);
-	theme->set_color("font_hover_pressed_color", "Button", control_font_pressed_color);
-	theme->set_color("font_disabled_color", "Button", control_font_disabled_color);
-	theme->set_color("font_outline_color", "Button", Color(1, 1, 1));
+	theme->set_color(SNAME("font_color"), SNAME("Button"), control_font_color);
+	theme->set_color(SNAME("font_pressed_color"), SNAME("Button"), control_font_pressed_color);
+	theme->set_color(SNAME("font_hover_color"), SNAME("Button"), control_font_hover_color);
+	theme->set_color(SNAME("font_focus_color"), SNAME("Button"), control_font_focus_color);
+	theme->set_color(SNAME("font_hover_pressed_color"), SNAME("Button"), control_font_pressed_color);
+	theme->set_color(SNAME("font_disabled_color"), SNAME("Button"), control_font_disabled_color);
+	theme->set_color(SNAME("font_outline_color"), SNAME("Button"), Color(1, 1, 1));
 
-	theme->set_color("icon_normal_color", "Button", Color(1, 1, 1, 1));
-	theme->set_color("icon_pressed_color", "Button", Color(1, 1, 1, 1));
-	theme->set_color("icon_hover_color", "Button", Color(1, 1, 1, 1));
-	theme->set_color("icon_hover_pressed_color", "Button", Color(1, 1, 1, 1));
-	theme->set_color("icon_focus_color", "Button", Color(1, 1, 1, 1));
-	theme->set_color("icon_disabled_color", "Button", Color(1, 1, 1, 1));
+	theme->set_color(SNAME("icon_normal_color"), SNAME("Button"), Color(1, 1, 1, 1));
+	theme->set_color(SNAME("icon_pressed_color"), SNAME("Button"), Color(1, 1, 1, 1));
+	theme->set_color(SNAME("icon_hover_color"), SNAME("Button"), Color(1, 1, 1, 1));
+	theme->set_color(SNAME("icon_hover_pressed_color"), SNAME("Button"), Color(1, 1, 1, 1));
+	theme->set_color(SNAME("icon_focus_color"), SNAME("Button"), Color(1, 1, 1, 1));
+	theme->set_color(SNAME("icon_disabled_color"), SNAME("Button"), Color(1, 1, 1, 1));
 
-	theme->set_constant("hseparation", "Button", 2 * scale);
+	theme->set_constant(SNAME("hseparation"), SNAME("Button"), 2 * scale);
 
 	// LinkButton
 
-	theme->set_stylebox("focus", "LinkButton", focus);
+	theme->set_stylebox(SNAME("focus"), SNAME("LinkButton"), focus);
 
-	theme->set_font("font", "LinkButton", Ref<Font>());
-	theme->set_font_size("font_size", "LinkButton", -1);
+	theme->set_font(SNAME("font"), SNAME("LinkButton"), Ref<Font>());
+	theme->set_font_size(SNAME("font_size"), SNAME("LinkButton"), -1);
 
-	theme->set_color("font_color", "LinkButton", control_font_color);
-	theme->set_color("font_pressed_color", "LinkButton", control_font_pressed_color);
-	theme->set_color("font_hover_color", "LinkButton", control_font_hover_color);
-	theme->set_color("font_focus_color", "LinkButton", control_font_focus_color);
-	theme->set_color("font_outline_color", "LinkButton", Color(1, 1, 1));
+	theme->set_color(SNAME("font_color"), SNAME("LinkButton"), control_font_color);
+	theme->set_color(SNAME("font_pressed_color"), SNAME("LinkButton"), control_font_pressed_color);
+	theme->set_color(SNAME("font_hover_color"), SNAME("LinkButton"), control_font_hover_color);
+	theme->set_color(SNAME("font_focus_color"), SNAME("LinkButton"), control_font_focus_color);
+	theme->set_color(SNAME("font_outline_color"), SNAME("LinkButton"), Color(1, 1, 1));
 
-	theme->set_constant("outline_size", "LinkButton", 0);
-	theme->set_constant("underline_spacing", "LinkButton", 2 * scale);
+	theme->set_constant(SNAME("outline_size"), SNAME("LinkButton"), 0);
+	theme->set_constant(SNAME("underline_spacing"), SNAME("LinkButton"), 2 * scale);
 
 	// OptionButton
-	theme->set_stylebox("focus", "OptionButton", focus);
+	theme->set_stylebox(SNAME("focus"), SNAME("OptionButton"), focus);
 
 	Ref<StyleBox> sb_optbutton_normal = make_flat_stylebox(style_normal_color, 2 * default_margin, default_margin, 21, default_margin);
 	Ref<StyleBox> sb_optbutton_hover = make_flat_stylebox(style_hover_color, 2 * default_margin, default_margin, 21, default_margin);
 	Ref<StyleBox> sb_optbutton_pressed = make_flat_stylebox(style_pressed_color, 2 * default_margin, default_margin, 21, default_margin);
 	Ref<StyleBox> sb_optbutton_disabled = make_flat_stylebox(style_disabled_color, 2 * default_margin, default_margin, 21, default_margin);
 
-	theme->set_stylebox("normal", "OptionButton", sb_optbutton_normal);
-	theme->set_stylebox("hover", "OptionButton", sb_optbutton_hover);
-	theme->set_stylebox("pressed", "OptionButton", sb_optbutton_pressed);
-	theme->set_stylebox("disabled", "OptionButton", sb_optbutton_disabled);
+	theme->set_stylebox(SNAME("normal"), SNAME("OptionButton"), sb_optbutton_normal);
+	theme->set_stylebox(SNAME("hover"), SNAME("OptionButton"), sb_optbutton_hover);
+	theme->set_stylebox(SNAME("pressed"), SNAME("OptionButton"), sb_optbutton_pressed);
+	theme->set_stylebox(SNAME("disabled"), SNAME("OptionButton"), sb_optbutton_disabled);
 
 	Ref<StyleBox> sb_optbutton_normal_mirrored = make_flat_stylebox(style_normal_color, 21, default_margin, 2 * default_margin, default_margin);
 	Ref<StyleBox> sb_optbutton_hover_mirrored = make_flat_stylebox(style_hover_color, 21, default_margin, 2 * default_margin, default_margin);
 	Ref<StyleBox> sb_optbutton_pressed_mirrored = make_flat_stylebox(style_pressed_color, 21, default_margin, 2 * default_margin, default_margin);
 	Ref<StyleBox> sb_optbutton_disabled_mirrored = make_flat_stylebox(style_disabled_color, 21, default_margin, 2 * default_margin, default_margin);
 
-	theme->set_stylebox("normal_mirrored", "OptionButton", sb_optbutton_normal_mirrored);
-	theme->set_stylebox("hover_mirrored", "OptionButton", sb_optbutton_hover_mirrored);
-	theme->set_stylebox("pressed_mirrored", "OptionButton", sb_optbutton_pressed_mirrored);
-	theme->set_stylebox("disabled_mirrored", "OptionButton", sb_optbutton_disabled_mirrored);
+	theme->set_stylebox(SNAME("normal_mirrored"), SNAME("OptionButton"), sb_optbutton_normal_mirrored);
+	theme->set_stylebox(SNAME("hover_mirrored"), SNAME("OptionButton"), sb_optbutton_hover_mirrored);
+	theme->set_stylebox(SNAME("pressed_mirrored"), SNAME("OptionButton"), sb_optbutton_pressed_mirrored);
+	theme->set_stylebox(SNAME("disabled_mirrored"), SNAME("OptionButton"), sb_optbutton_disabled_mirrored);
 
-	theme->set_icon("arrow", "OptionButton", icons["option_button_arrow"]);
+	theme->set_icon(SNAME("arrow"), SNAME("OptionButton"), icons["option_button_arrow"]);
 
-	theme->set_font("font", "OptionButton", Ref<Font>());
-	theme->set_font_size("font_size", "OptionButton", -1);
+	theme->set_font(SNAME("font"), SNAME("OptionButton"), Ref<Font>());
+	theme->set_font_size(SNAME("font_size"), SNAME("OptionButton"), -1);
 
-	theme->set_color("font_color", "OptionButton", control_font_color);
-	theme->set_color("font_pressed_color", "OptionButton", control_font_pressed_color);
-	theme->set_color("font_hover_color", "OptionButton", control_font_hover_color);
-	theme->set_color("font_focus_color", "OptionButton", control_font_focus_color);
-	theme->set_color("font_disabled_color", "OptionButton", control_font_disabled_color);
-	theme->set_color("font_outline_color", "OptionButton", Color(1, 1, 1));
+	theme->set_color(SNAME("font_color"), SNAME("OptionButton"), control_font_color);
+	theme->set_color(SNAME("font_pressed_color"), SNAME("OptionButton"), control_font_pressed_color);
+	theme->set_color(SNAME("font_hover_color"), SNAME("OptionButton"), control_font_hover_color);
+	theme->set_color(SNAME("font_focus_color"), SNAME("OptionButton"), control_font_focus_color);
+	theme->set_color(SNAME("font_disabled_color"), SNAME("OptionButton"), control_font_disabled_color);
+	theme->set_color(SNAME("font_outline_color"), SNAME("OptionButton"), Color(1, 1, 1));
 
-	theme->set_constant("hseparation", "OptionButton", 2 * scale);
-	theme->set_constant("arrow_margin", "OptionButton", 4 * scale);
-	theme->set_constant("outline_size", "OptionButton", 0);
+	theme->set_constant(SNAME("hseparation"), SNAME("OptionButton"), 2 * scale);
+	theme->set_constant(SNAME("arrow_margin"), SNAME("OptionButton"), 4 * scale);
+	theme->set_constant(SNAME("outline_size"), SNAME("OptionButton"), 0);
 
 	// MenuButton
 
-	theme->set_stylebox("normal", "MenuButton", button_normal);
-	theme->set_stylebox("pressed", "MenuButton", button_pressed);
-	theme->set_stylebox("hover", "MenuButton", button_hover);
-	theme->set_stylebox("disabled", "MenuButton", button_disabled);
-	theme->set_stylebox("focus", "MenuButton", focus);
+	theme->set_stylebox(SNAME("normal"), SNAME("MenuButton"), button_normal);
+	theme->set_stylebox(SNAME("pressed"), SNAME("MenuButton"), button_pressed);
+	theme->set_stylebox(SNAME("hover"), SNAME("MenuButton"), button_hover);
+	theme->set_stylebox(SNAME("disabled"), SNAME("MenuButton"), button_disabled);
+	theme->set_stylebox(SNAME("focus"), SNAME("MenuButton"), focus);
 
-	theme->set_font("font", "MenuButton", Ref<Font>());
-	theme->set_font_size("font_size", "MenuButton", -1);
+	theme->set_font(SNAME("font"), SNAME("MenuButton"), Ref<Font>());
+	theme->set_font_size(SNAME("font_size"), SNAME("MenuButton"), -1);
 
-	theme->set_color("font_color", "MenuButton", control_font_color);
-	theme->set_color("font_pressed_color", "MenuButton", control_font_pressed_color);
-	theme->set_color("font_hover_color", "MenuButton", control_font_hover_color);
-	theme->set_color("font_focus_color", "MenuButton", control_font_focus_color);
-	theme->set_color("font_disabled_color", "MenuButton", Color(1, 1, 1, 0.3));
-	theme->set_color("font_outline_color", "MenuButton", Color(1, 1, 1));
+	theme->set_color(SNAME("font_color"), SNAME("MenuButton"), control_font_color);
+	theme->set_color(SNAME("font_pressed_color"), SNAME("MenuButton"), control_font_pressed_color);
+	theme->set_color(SNAME("font_hover_color"), SNAME("MenuButton"), control_font_hover_color);
+	theme->set_color(SNAME("font_focus_color"), SNAME("MenuButton"), control_font_focus_color);
+	theme->set_color(SNAME("font_disabled_color"), SNAME("MenuButton"), Color(1, 1, 1, 0.3));
+	theme->set_color(SNAME("font_outline_color"), SNAME("MenuButton"), Color(1, 1, 1));
 
-	theme->set_constant("hseparation", "MenuButton", 3 * scale);
-	theme->set_constant("outline_size", "MenuButton", 0);
+	theme->set_constant(SNAME("hseparation"), SNAME("MenuButton"), 3 * scale);
+	theme->set_constant(SNAME("outline_size"), SNAME("MenuButton"), 0);
 
 	// CheckBox
 
@@ -268,36 +268,36 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	cbx_focus->set_default_margin(SIDE_TOP, 4 * scale);
 	cbx_focus->set_default_margin(SIDE_BOTTOM, 4 * scale);
 
-	theme->set_stylebox("normal", "CheckBox", cbx_empty);
-	theme->set_stylebox("pressed", "CheckBox", cbx_empty);
-	theme->set_stylebox("disabled", "CheckBox", cbx_empty);
-	theme->set_stylebox("hover", "CheckBox", cbx_empty);
-	theme->set_stylebox("hover_pressed", "CheckBox", cbx_empty);
-	theme->set_stylebox("focus", "CheckBox", cbx_focus);
+	theme->set_stylebox(SNAME("normal"), SNAME("CheckBox"), cbx_empty);
+	theme->set_stylebox(SNAME("pressed"), SNAME("CheckBox"), cbx_empty);
+	theme->set_stylebox(SNAME("disabled"), SNAME("CheckBox"), cbx_empty);
+	theme->set_stylebox(SNAME("hover"), SNAME("CheckBox"), cbx_empty);
+	theme->set_stylebox(SNAME("hover_pressed"), SNAME("CheckBox"), cbx_empty);
+	theme->set_stylebox(SNAME("focus"), SNAME("CheckBox"), cbx_focus);
 
-	theme->set_icon("checked", "CheckBox", icons["checked"]);
-	theme->set_icon("checked_disabled", "CheckBox", icons["checked"]);
-	theme->set_icon("unchecked", "CheckBox", icons["unchecked"]);
-	theme->set_icon("unchecked_disabled", "CheckBox", icons["unchecked"]);
-	theme->set_icon("radio_checked", "CheckBox", icons["radio_checked"]);
-	theme->set_icon("radio_checked_disabled", "CheckBox", icons["radio_checked"]);
-	theme->set_icon("radio_unchecked", "CheckBox", icons["radio_unchecked"]);
-	theme->set_icon("radio_unchecked_disabled", "CheckBox", icons["radio_unchecked"]);
+	theme->set_icon(SNAME("checked"), SNAME("CheckBox"), icons["checked"]);
+	theme->set_icon(SNAME("checked_disabled"), SNAME("CheckBox"), icons["checked"]);
+	theme->set_icon(SNAME("unchecked"), SNAME("CheckBox"), icons["unchecked"]);
+	theme->set_icon(SNAME("unchecked_disabled"), SNAME("CheckBox"), icons["unchecked"]);
+	theme->set_icon(SNAME("radio_checked"), SNAME("CheckBox"), icons["radio_checked"]);
+	theme->set_icon(SNAME("radio_checked_disabled"), SNAME("CheckBox"), icons["radio_checked"]);
+	theme->set_icon(SNAME("radio_unchecked"), SNAME("CheckBox"), icons["radio_unchecked"]);
+	theme->set_icon(SNAME("radio_unchecked_disabled"), SNAME("CheckBox"), icons["radio_unchecked"]);
 
-	theme->set_font("font", "CheckBox", Ref<Font>());
-	theme->set_font_size("font_size", "CheckBox", -1);
+	theme->set_font(SNAME("font"), SNAME("CheckBox"), Ref<Font>());
+	theme->set_font_size(SNAME("font_size"), SNAME("CheckBox"), -1);
 
-	theme->set_color("font_color", "CheckBox", control_font_color);
-	theme->set_color("font_pressed_color", "CheckBox", control_font_pressed_color);
-	theme->set_color("font_hover_color", "CheckBox", control_font_hover_color);
-	theme->set_color("font_hover_pressed_color", "CheckBox", control_font_pressed_color);
-	theme->set_color("font_focus_color", "CheckBox", control_font_focus_color);
-	theme->set_color("font_disabled_color", "CheckBox", control_font_disabled_color);
-	theme->set_color("font_outline_color", "CheckBox", Color(1, 1, 1));
+	theme->set_color(SNAME("font_color"), SNAME("CheckBox"), control_font_color);
+	theme->set_color(SNAME("font_pressed_color"), SNAME("CheckBox"), control_font_pressed_color);
+	theme->set_color(SNAME("font_hover_color"), SNAME("CheckBox"), control_font_hover_color);
+	theme->set_color(SNAME("font_hover_pressed_color"), SNAME("CheckBox"), control_font_pressed_color);
+	theme->set_color(SNAME("font_focus_color"), SNAME("CheckBox"), control_font_focus_color);
+	theme->set_color(SNAME("font_disabled_color"), SNAME("CheckBox"), control_font_disabled_color);
+	theme->set_color(SNAME("font_outline_color"), SNAME("CheckBox"), Color(1, 1, 1));
 
-	theme->set_constant("hseparation", "CheckBox", 4 * scale);
-	theme->set_constant("check_vadjust", "CheckBox", 0 * scale);
-	theme->set_constant("outline_size", "CheckBox", 0);
+	theme->set_constant(SNAME("hseparation"), SNAME("CheckBox"), 4 * scale);
+	theme->set_constant(SNAME("check_vadjust"), SNAME("CheckBox"), 0 * scale);
+	theme->set_constant(SNAME("outline_size"), SNAME("CheckBox"), 0);
 
 	// CheckButton
 
@@ -307,62 +307,62 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	cb_empty->set_default_margin(SIDE_TOP, 4 * scale);
 	cb_empty->set_default_margin(SIDE_BOTTOM, 4 * scale);
 
-	theme->set_stylebox("normal", "CheckButton", cb_empty);
-	theme->set_stylebox("pressed", "CheckButton", cb_empty);
-	theme->set_stylebox("disabled", "CheckButton", cb_empty);
-	theme->set_stylebox("hover", "CheckButton", cb_empty);
-	theme->set_stylebox("hover_pressed", "CheckButton", cb_empty);
-	theme->set_stylebox("focus", "CheckButton", focus);
+	theme->set_stylebox(SNAME("normal"), SNAME("CheckButton"), cb_empty);
+	theme->set_stylebox(SNAME("pressed"), SNAME("CheckButton"), cb_empty);
+	theme->set_stylebox(SNAME("disabled"), SNAME("CheckButton"), cb_empty);
+	theme->set_stylebox(SNAME("hover"), SNAME("CheckButton"), cb_empty);
+	theme->set_stylebox(SNAME("hover_pressed"), SNAME("CheckButton"), cb_empty);
+	theme->set_stylebox(SNAME("focus"), SNAME("CheckButton"), focus);
 
-	theme->set_icon("on", "CheckButton", icons["toggle_on"]);
-	theme->set_icon("on_disabled", "CheckButton", icons["toggle_on_disabled"]);
-	theme->set_icon("off", "CheckButton", icons["toggle_off"]);
-	theme->set_icon("off_disabled", "CheckButton", icons["toggle_off_disabled"]);
+	theme->set_icon(SNAME("on"), SNAME("CheckButton"), icons["toggle_on"]);
+	theme->set_icon(SNAME("on_disabled"), SNAME("CheckButton"), icons["toggle_on_disabled"]);
+	theme->set_icon(SNAME("off"), SNAME("CheckButton"), icons["toggle_off"]);
+	theme->set_icon(SNAME("off_disabled"), SNAME("CheckButton"), icons["toggle_off_disabled"]);
 
-	theme->set_icon("on_mirrored", "CheckButton", icons["toggle_on_mirrored"]);
-	theme->set_icon("on_disabled_mirrored", "CheckButton", icons["toggle_on_disabled_mirrored"]);
-	theme->set_icon("off_mirrored", "CheckButton", icons["toggle_off_mirrored"]);
-	theme->set_icon("off_disabled_mirrored", "CheckButton", icons["toggle_off_disabled_mirrored"]);
+	theme->set_icon(SNAME("on_mirrored"), SNAME("CheckButton"), icons["toggle_on_mirrored"]);
+	theme->set_icon(SNAME("on_disabled_mirrored"), SNAME("CheckButton"), icons["toggle_on_disabled_mirrored"]);
+	theme->set_icon(SNAME("off_mirrored"), SNAME("CheckButton"), icons["toggle_off_mirrored"]);
+	theme->set_icon(SNAME("off_disabled_mirrored"), SNAME("CheckButton"), icons["toggle_off_disabled_mirrored"]);
 
-	theme->set_font("font", "CheckButton", Ref<Font>());
-	theme->set_font_size("font_size", "CheckButton", -1);
+	theme->set_font(SNAME("font"), SNAME("CheckButton"), Ref<Font>());
+	theme->set_font_size(SNAME("font_size"), SNAME("CheckButton"), -1);
 
-	theme->set_color("font_color", "CheckButton", control_font_color);
-	theme->set_color("font_pressed_color", "CheckButton", control_font_pressed_color);
-	theme->set_color("font_hover_color", "CheckButton", control_font_hover_color);
-	theme->set_color("font_hover_pressed_color", "CheckButton", control_font_pressed_color);
-	theme->set_color("font_focus_color", "CheckButton", control_font_focus_color);
-	theme->set_color("font_disabled_color", "CheckButton", control_font_disabled_color);
-	theme->set_color("font_outline_color", "CheckButton", Color(1, 1, 1));
+	theme->set_color(SNAME("font_color"), SNAME("CheckButton"), control_font_color);
+	theme->set_color(SNAME("font_pressed_color"), SNAME("CheckButton"), control_font_pressed_color);
+	theme->set_color(SNAME("font_hover_color"), SNAME("CheckButton"), control_font_hover_color);
+	theme->set_color(SNAME("font_hover_pressed_color"), SNAME("CheckButton"), control_font_pressed_color);
+	theme->set_color(SNAME("font_focus_color"), SNAME("CheckButton"), control_font_focus_color);
+	theme->set_color(SNAME("font_disabled_color"), SNAME("CheckButton"), control_font_disabled_color);
+	theme->set_color(SNAME("font_outline_color"), SNAME("CheckButton"), Color(1, 1, 1));
 
-	theme->set_constant("hseparation", "CheckButton", 4 * scale);
-	theme->set_constant("check_vadjust", "CheckButton", 0 * scale);
-	theme->set_constant("outline_size", "CheckButton", 0);
+	theme->set_constant(SNAME("hseparation"), SNAME("CheckButton"), 4 * scale);
+	theme->set_constant(SNAME("check_vadjust"), SNAME("CheckButton"), 0 * scale);
+	theme->set_constant(SNAME("outline_size"), SNAME("CheckButton"), 0);
 
 	// Label
 
-	theme->set_stylebox("normal", "Label", memnew(StyleBoxEmpty));
-	theme->set_font("font", "Label", Ref<Font>());
-	theme->set_font_size("font_size", "Label", -1);
+	theme->set_stylebox(SNAME("normal"), SNAME("Label"), memnew(StyleBoxEmpty));
+	theme->set_font(SNAME("font"), SNAME("Label"), Ref<Font>());
+	theme->set_font_size(SNAME("font_size"), SNAME("Label"), -1);
 
-	theme->set_color("font_color", "Label", Color(1, 1, 1));
-	theme->set_color("font_shadow_color", "Label", Color(0, 0, 0, 0));
-	theme->set_color("font_outline_color", "Label", Color(1, 1, 1));
+	theme->set_color(SNAME("font_color"), SNAME("Label"), Color(1, 1, 1));
+	theme->set_color(SNAME("font_shadow_color"), SNAME("Label"), Color(0, 0, 0, 0));
+	theme->set_color(SNAME("font_outline_color"), SNAME("Label"), Color(1, 1, 1));
 
-	theme->set_constant("shadow_offset_x", "Label", 1 * scale);
-	theme->set_constant("shadow_offset_y", "Label", 1 * scale);
-	theme->set_constant("outline_size", "Label", 0);
-	theme->set_constant("shadow_outline_size", "Label", 1 * scale);
-	theme->set_constant("line_spacing", "Label", 3 * scale);
+	theme->set_constant(SNAME("shadow_offset_x"), SNAME("Label"), 1 * scale);
+	theme->set_constant(SNAME("shadow_offset_y"), SNAME("Label"), 1 * scale);
+	theme->set_constant(SNAME("outline_size"), SNAME("Label"), 0);
+	theme->set_constant(SNAME("shadow_outline_size"), SNAME("Label"), 1 * scale);
+	theme->set_constant(SNAME("line_spacing"), SNAME("Label"), 3 * scale);
 
-	theme->set_type_variation("HeaderSmall", "Label");
-	theme->set_font_size("font_size", "HeaderSmall", default_font_size + 4);
+	theme->set_type_variation(SNAME("HeaderSmall"), SNAME("Label"));
+	theme->set_font_size(SNAME("font_size"), SNAME("HeaderSmall"), default_font_size + 4);
 
-	theme->set_type_variation("HeaderMedium", "Label");
-	theme->set_font_size("font_size", "HeaderMedium", default_font_size + 8);
+	theme->set_type_variation(SNAME("HeaderMedium"), SNAME("Label"));
+	theme->set_font_size(SNAME("font_size"), SNAME("HeaderMedium"), default_font_size + 8);
 
-	theme->set_type_variation("HeaderLarge", "Label");
-	theme->set_font_size("font_size", "HeaderLarge", default_font_size + 12);
+	theme->set_type_variation(SNAME("HeaderLarge"), SNAME("Label"));
+	theme->set_font_size(SNAME("font_size"), SNAME("HeaderLarge"), default_font_size + 12);
 
 	// LineEdit
 
@@ -370,129 +370,129 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	// Add a line at the bottom to make LineEdits distinguishable from Buttons.
 	style_line_edit->set_border_width(SIDE_BOTTOM, 2);
 	style_line_edit->set_border_color(style_pressed_color);
-	theme->set_stylebox("normal", "LineEdit", style_line_edit);
+	theme->set_stylebox(SNAME("normal"), SNAME("LineEdit"), style_line_edit);
 
-	theme->set_stylebox("focus", "LineEdit", focus);
+	theme->set_stylebox(SNAME("focus"), SNAME("LineEdit"), focus);
 
 	Ref<StyleBoxFlat> style_line_edit_read_only = make_flat_stylebox(style_disabled_color);
 	// Add a line at the bottom to make LineEdits distinguishable from Buttons.
 	style_line_edit_read_only->set_border_width(SIDE_BOTTOM, 2);
 	style_line_edit_read_only->set_border_color(style_pressed_color * Color(1, 1, 1, 0.5));
-	theme->set_stylebox("read_only", "LineEdit", style_line_edit_read_only);
+	theme->set_stylebox(SNAME("read_only"), SNAME("LineEdit"), style_line_edit_read_only);
 
-	theme->set_font("font", "LineEdit", Ref<Font>());
-	theme->set_font_size("font_size", "LineEdit", -1);
+	theme->set_font(SNAME("font"), SNAME("LineEdit"), Ref<Font>());
+	theme->set_font_size(SNAME("font_size"), SNAME("LineEdit"), -1);
 
-	theme->set_color("font_color", "LineEdit", control_font_color);
-	theme->set_color("font_selected_color", "LineEdit", control_font_pressed_color);
-	theme->set_color("font_uneditable_color", "LineEdit", control_font_disabled_color);
-	theme->set_color("font_placeholder_color", "LineEdit", control_font_placeholder_color);
-	theme->set_color("font_outline_color", "LineEdit", Color(1, 1, 1));
-	theme->set_color("caret_color", "LineEdit", control_font_hover_color);
-	theme->set_color("selection_color", "LineEdit", control_selection_color);
-	theme->set_color("clear_button_color", "LineEdit", control_font_color);
-	theme->set_color("clear_button_color_pressed", "LineEdit", control_font_pressed_color);
+	theme->set_color(SNAME("font_color"), SNAME("LineEdit"), control_font_color);
+	theme->set_color(SNAME("font_selected_color"), SNAME("LineEdit"), control_font_pressed_color);
+	theme->set_color(SNAME("font_uneditable_color"), SNAME("LineEdit"), control_font_disabled_color);
+	theme->set_color(SNAME("font_placeholder_color"), SNAME("LineEdit"), control_font_placeholder_color);
+	theme->set_color(SNAME("font_outline_color"), SNAME("LineEdit"), Color(1, 1, 1));
+	theme->set_color(SNAME("caret_color"), SNAME("LineEdit"), control_font_hover_color);
+	theme->set_color(SNAME("selection_color"), SNAME("LineEdit"), control_selection_color);
+	theme->set_color(SNAME("clear_button_color"), SNAME("LineEdit"), control_font_color);
+	theme->set_color(SNAME("clear_button_color_pressed"), SNAME("LineEdit"), control_font_pressed_color);
 
-	theme->set_constant("minimum_character_width", "LineEdit", 4);
-	theme->set_constant("outline_size", "LineEdit", 0);
-	theme->set_constant("caret_width", "LineEdit", 1);
+	theme->set_constant(SNAME("minimum_character_width"), SNAME("LineEdit"), 4);
+	theme->set_constant(SNAME("outline_size"), SNAME("LineEdit"), 0);
+	theme->set_constant(SNAME("caret_width"), SNAME("LineEdit"), 1);
 
-	theme->set_icon("clear", "LineEdit", icons["line_edit_clear"]);
+	theme->set_icon(SNAME("clear"), SNAME("LineEdit"), icons["line_edit_clear"]);
 
 	// ProgressBar
 
-	theme->set_stylebox("bg", "ProgressBar", make_flat_stylebox(style_disabled_color, 2, 2, 2, 2, 6));
-	theme->set_stylebox("fg", "ProgressBar", make_flat_stylebox(style_progress_color, 2, 2, 2, 2, 6));
+	theme->set_stylebox(SNAME("bg"), SNAME("ProgressBar"), make_flat_stylebox(style_disabled_color, 2, 2, 2, 2, 6));
+	theme->set_stylebox(SNAME("fg"), SNAME("ProgressBar"), make_flat_stylebox(style_progress_color, 2, 2, 2, 2, 6));
 
-	theme->set_font("font", "ProgressBar", Ref<Font>());
-	theme->set_font_size("font_size", "ProgressBar", -1);
+	theme->set_font(SNAME("font"), SNAME("ProgressBar"), Ref<Font>());
+	theme->set_font_size(SNAME("font_size"), SNAME("ProgressBar"), -1);
 
-	theme->set_color("font_color", "ProgressBar", control_font_hover_color);
-	theme->set_color("font_shadow_color", "ProgressBar", Color(0, 0, 0));
-	theme->set_color("font_outline_color", "ProgressBar", Color(1, 1, 1));
+	theme->set_color(SNAME("font_color"), SNAME("ProgressBar"), control_font_hover_color);
+	theme->set_color(SNAME("font_shadow_color"), SNAME("ProgressBar"), Color(0, 0, 0));
+	theme->set_color(SNAME("font_outline_color"), SNAME("ProgressBar"), Color(1, 1, 1));
 
-	theme->set_constant("outline_size", "ProgressBar", 0);
+	theme->set_constant(SNAME("outline_size"), SNAME("ProgressBar"), 0);
 
 	// TextEdit
 
-	theme->set_stylebox("normal", "TextEdit", style_line_edit);
-	theme->set_stylebox("focus", "TextEdit", focus);
-	theme->set_stylebox("read_only", "TextEdit", style_line_edit_read_only);
+	theme->set_stylebox(SNAME("normal"), SNAME("TextEdit"), style_line_edit);
+	theme->set_stylebox(SNAME("focus"), SNAME("TextEdit"), focus);
+	theme->set_stylebox(SNAME("read_only"), SNAME("TextEdit"), style_line_edit_read_only);
 
-	theme->set_icon("tab", "TextEdit", icons["text_edit_tab"]);
-	theme->set_icon("space", "TextEdit", icons["text_edit_space"]);
+	theme->set_icon(SNAME("tab"), SNAME("TextEdit"), icons["text_edit_tab"]);
+	theme->set_icon(SNAME("space"), SNAME("TextEdit"), icons["text_edit_space"]);
 
-	theme->set_font("font", "TextEdit", Ref<Font>());
-	theme->set_font_size("font_size", "TextEdit", -1);
+	theme->set_font(SNAME("font"), SNAME("TextEdit"), Ref<Font>());
+	theme->set_font_size(SNAME("font_size"), SNAME("TextEdit"), -1);
 
-	theme->set_color("background_color", "TextEdit", Color(0, 0, 0, 0));
-	theme->set_color("font_color", "TextEdit", control_font_color);
-	theme->set_color("font_selected_color", "TextEdit", control_font_pressed_color);
-	theme->set_color("font_readonly_color", "TextEdit", control_font_disabled_color);
-	theme->set_color("font_placeholder_color", "TextEdit", control_font_placeholder_color);
-	theme->set_color("font_outline_color", "TextEdit", Color(1, 1, 1));
-	theme->set_color("selection_color", "TextEdit", control_selection_color);
-	theme->set_color("current_line_color", "TextEdit", Color(0.25, 0.25, 0.26, 0.8));
-	theme->set_color("caret_color", "TextEdit", control_font_color);
-	theme->set_color("caret_background_color", "TextEdit", Color(0, 0, 0));
-	theme->set_color("word_highlighted_color", "TextEdit", Color(0.5, 0.5, 0.5, 0.25));
-	theme->set_color("search_result_color", "TextEdit", Color(0.3, 0.3, 0.3));
-	theme->set_color("search_result_border_color", "TextEdit", Color(0.3, 0.3, 0.3, 0.4));
+	theme->set_color(SNAME("background_color"), SNAME("TextEdit"), Color(0, 0, 0, 0));
+	theme->set_color(SNAME("font_color"), SNAME("TextEdit"), control_font_color);
+	theme->set_color(SNAME("font_selected_color"), SNAME("TextEdit"), control_font_pressed_color);
+	theme->set_color(SNAME("font_readonly_color"), SNAME("TextEdit"), control_font_disabled_color);
+	theme->set_color(SNAME("font_placeholder_color"), SNAME("TextEdit"), control_font_placeholder_color);
+	theme->set_color(SNAME("font_outline_color"), SNAME("TextEdit"), Color(1, 1, 1));
+	theme->set_color(SNAME("selection_color"), SNAME("TextEdit"), control_selection_color);
+	theme->set_color(SNAME("current_line_color"), SNAME("TextEdit"), Color(0.25, 0.25, 0.26, 0.8));
+	theme->set_color(SNAME("caret_color"), SNAME("TextEdit"), control_font_color);
+	theme->set_color(SNAME("caret_background_color"), SNAME("TextEdit"), Color(0, 0, 0));
+	theme->set_color(SNAME("word_highlighted_color"), SNAME("TextEdit"), Color(0.5, 0.5, 0.5, 0.25));
+	theme->set_color(SNAME("search_result_color"), SNAME("TextEdit"), Color(0.3, 0.3, 0.3));
+	theme->set_color(SNAME("search_result_border_color"), SNAME("TextEdit"), Color(0.3, 0.3, 0.3, 0.4));
 
-	theme->set_constant("line_spacing", "TextEdit", 4 * scale);
-	theme->set_constant("outline_size", "TextEdit", 0);
-	theme->set_constant("caret_width", "TextEdit", 1);
+	theme->set_constant(SNAME("line_spacing"), SNAME("TextEdit"), 4 * scale);
+	theme->set_constant(SNAME("outline_size"), SNAME("TextEdit"), 0);
+	theme->set_constant(SNAME("caret_width"), SNAME("TextEdit"), 1);
 
 	// CodeEdit
 
-	theme->set_stylebox("normal", "CodeEdit", style_line_edit);
-	theme->set_stylebox("focus", "CodeEdit", focus);
-	theme->set_stylebox("read_only", "CodeEdit", style_line_edit_read_only);
-	theme->set_stylebox("completion", "CodeEdit", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
+	theme->set_stylebox(SNAME("normal"), SNAME("CodeEdit"), style_line_edit);
+	theme->set_stylebox(SNAME("focus"), SNAME("CodeEdit"), focus);
+	theme->set_stylebox(SNAME("read_only"), SNAME("CodeEdit"), style_line_edit_read_only);
+	theme->set_stylebox(SNAME("completion"), SNAME("CodeEdit"), make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
 
-	theme->set_icon("tab", "CodeEdit", icons["text_edit_tab"]);
-	theme->set_icon("space", "CodeEdit", icons["text_edit_space"]);
-	theme->set_icon("breakpoint", "CodeEdit", icons["breakpoint"]);
-	theme->set_icon("bookmark", "CodeEdit", icons["bookmark"]);
-	theme->set_icon("executing_line", "CodeEdit", icons["arrow_right"]);
-	theme->set_icon("can_fold", "CodeEdit", icons["arrow_down"]);
-	theme->set_icon("folded", "CodeEdit", icons["arrow_right"]);
-	theme->set_icon("folded_eol_icon", "CodeEdit", icons["text_edit_ellipsis"]);
+	theme->set_icon(SNAME("tab"), SNAME("CodeEdit"), icons["text_edit_tab"]);
+	theme->set_icon(SNAME("space"), SNAME("CodeEdit"), icons["text_edit_space"]);
+	theme->set_icon(SNAME("breakpoint"), SNAME("CodeEdit"), icons["breakpoint"]);
+	theme->set_icon(SNAME("bookmark"), SNAME("CodeEdit"), icons["bookmark"]);
+	theme->set_icon(SNAME("executing_line"), SNAME("CodeEdit"), icons["arrow_right"]);
+	theme->set_icon(SNAME("can_fold"), SNAME("CodeEdit"), icons["arrow_down"]);
+	theme->set_icon(SNAME("folded"), SNAME("CodeEdit"), icons["arrow_right"]);
+	theme->set_icon(SNAME("folded_eol_icon"), SNAME("CodeEdit"), icons["text_edit_ellipsis"]);
 
-	theme->set_font("font", "CodeEdit", Ref<Font>());
-	theme->set_font_size("font_size", "CodeEdit", -1);
+	theme->set_font(SNAME("font"), SNAME("CodeEdit"), Ref<Font>());
+	theme->set_font_size(SNAME("font_size"), SNAME("CodeEdit"), -1);
 
-	theme->set_color("background_color", "CodeEdit", Color(0, 0, 0, 0));
-	theme->set_color("completion_background_color", "CodeEdit", Color(0.17, 0.16, 0.2));
-	theme->set_color("completion_selected_color", "CodeEdit", Color(0.26, 0.26, 0.27));
-	theme->set_color("completion_existing_color", "CodeEdit", Color(0.87, 0.87, 0.87, 0.13));
-	theme->set_color("completion_scroll_color", "CodeEdit", control_font_pressed_color);
-	theme->set_color("completion_font_color", "CodeEdit", Color(0.67, 0.67, 0.67));
-	theme->set_color("font_color", "CodeEdit", control_font_color);
-	theme->set_color("font_selected_color", "CodeEdit", Color(0, 0, 0));
-	theme->set_color("font_readonly_color", "CodeEdit", Color(control_font_color.r, control_font_color.g, control_font_color.b, 0.5f));
-	theme->set_color("font_placeholder_color", "CodeEdit", control_font_placeholder_color);
-	theme->set_color("font_outline_color", "CodeEdit", Color(1, 1, 1));
-	theme->set_color("selection_color", "CodeEdit", control_selection_color);
-	theme->set_color("bookmark_color", "CodeEdit", Color(0.5, 0.64, 1, 0.8));
-	theme->set_color("breakpoint_color", "CodeEdit", Color(0.9, 0.29, 0.3));
-	theme->set_color("executing_line_color", "CodeEdit", Color(0.98, 0.89, 0.27));
-	theme->set_color("current_line_color", "CodeEdit", Color(0.25, 0.25, 0.26, 0.8));
-	theme->set_color("code_folding_color", "CodeEdit", Color(0.8, 0.8, 0.8, 0.8));
-	theme->set_color("caret_color", "CodeEdit", control_font_color);
-	theme->set_color("caret_background_color", "CodeEdit", Color(0, 0, 0));
-	theme->set_color("brace_mismatch_color", "CodeEdit", Color(1, 0.2, 0.2));
-	theme->set_color("line_number_color", "CodeEdit", Color(0.67, 0.67, 0.67, 0.4));
-	theme->set_color("word_highlighted_color", "CodeEdit", Color(0.8, 0.9, 0.9, 0.15));
-	theme->set_color("line_length_guideline_color", "CodeEdit", Color(0.3, 0.5, 0.8, 0.1));
-	theme->set_color("search_result_color", "CodeEdit", Color(0.3, 0.3, 0.3));
-	theme->set_color("search_result_border_color", "CodeEdit", Color(0.3, 0.3, 0.3, 0.4));
+	theme->set_color(SNAME("background_color"), SNAME("CodeEdit"), Color(0, 0, 0, 0));
+	theme->set_color(SNAME("completion_background_color"), SNAME("CodeEdit"), Color(0.17, 0.16, 0.2));
+	theme->set_color(SNAME("completion_selected_color"), SNAME("CodeEdit"), Color(0.26, 0.26, 0.27));
+	theme->set_color(SNAME("completion_existing_color"), SNAME("CodeEdit"), Color(0.87, 0.87, 0.87, 0.13));
+	theme->set_color(SNAME("completion_scroll_color"), SNAME("CodeEdit"), control_font_pressed_color);
+	theme->set_color(SNAME("completion_font_color"), SNAME("CodeEdit"), Color(0.67, 0.67, 0.67));
+	theme->set_color(SNAME("font_color"), SNAME("CodeEdit"), control_font_color);
+	theme->set_color(SNAME("font_selected_color"), SNAME("CodeEdit"), Color(0, 0, 0));
+	theme->set_color(SNAME("font_readonly_color"), SNAME("CodeEdit"), Color(control_font_color.r, control_font_color.g, control_font_color.b, 0.5f));
+	theme->set_color(SNAME("font_placeholder_color"), SNAME("CodeEdit"), control_font_placeholder_color);
+	theme->set_color(SNAME("font_outline_color"), SNAME("CodeEdit"), Color(1, 1, 1));
+	theme->set_color(SNAME("selection_color"), SNAME("CodeEdit"), control_selection_color);
+	theme->set_color(SNAME("bookmark_color"), SNAME("CodeEdit"), Color(0.5, 0.64, 1, 0.8));
+	theme->set_color(SNAME("breakpoint_color"), SNAME("CodeEdit"), Color(0.9, 0.29, 0.3));
+	theme->set_color(SNAME("executing_line_color"), SNAME("CodeEdit"), Color(0.98, 0.89, 0.27));
+	theme->set_color(SNAME("current_line_color"), SNAME("CodeEdit"), Color(0.25, 0.25, 0.26, 0.8));
+	theme->set_color(SNAME("code_folding_color"), SNAME("CodeEdit"), Color(0.8, 0.8, 0.8, 0.8));
+	theme->set_color(SNAME("caret_color"), SNAME("CodeEdit"), control_font_color);
+	theme->set_color(SNAME("caret_background_color"), SNAME("CodeEdit"), Color(0, 0, 0));
+	theme->set_color(SNAME("brace_mismatch_color"), SNAME("CodeEdit"), Color(1, 0.2, 0.2));
+	theme->set_color(SNAME("line_number_color"), SNAME("CodeEdit"), Color(0.67, 0.67, 0.67, 0.4));
+	theme->set_color(SNAME("word_highlighted_color"), SNAME("CodeEdit"), Color(0.8, 0.9, 0.9, 0.15));
+	theme->set_color(SNAME("line_length_guideline_color"), SNAME("CodeEdit"), Color(0.3, 0.5, 0.8, 0.1));
+	theme->set_color(SNAME("search_result_color"), SNAME("CodeEdit"), Color(0.3, 0.3, 0.3));
+	theme->set_color(SNAME("search_result_border_color"), SNAME("CodeEdit"), Color(0.3, 0.3, 0.3, 0.4));
 
-	theme->set_constant("completion_lines", "CodeEdit", 7);
-	theme->set_constant("completion_max_width", "CodeEdit", 50);
-	theme->set_constant("completion_scroll_width", "CodeEdit", 3);
-	theme->set_constant("line_spacing", "CodeEdit", 4 * scale);
-	theme->set_constant("outline_size", "CodeEdit", 0);
+	theme->set_constant(SNAME("completion_lines"), SNAME("CodeEdit"), 7);
+	theme->set_constant(SNAME("completion_max_width"), SNAME("CodeEdit"), 50);
+	theme->set_constant(SNAME("completion_scroll_width"), SNAME("CodeEdit"), 3);
+	theme->set_constant(SNAME("line_spacing"), SNAME("CodeEdit"), 4 * scale);
+	theme->set_constant(SNAME("outline_size"), SNAME("CodeEdit"), 0);
 
 	Ref<Texture2D> empty_icon = memnew(ImageTexture);
 
@@ -503,33 +503,33 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 
 	// HScrollBar
 
-	theme->set_stylebox("scroll", "HScrollBar", style_scrollbar);
-	theme->set_stylebox("scroll_focus", "HScrollBar", focus);
-	theme->set_stylebox("grabber", "HScrollBar", style_scrollbar_grabber);
-	theme->set_stylebox("grabber_highlight", "HScrollBar", style_scrollbar_grabber_highlight);
-	theme->set_stylebox("grabber_pressed", "HScrollBar", style_scrollbar_grabber_pressed);
+	theme->set_stylebox(SNAME("scroll"), SNAME("HScrollBar"), style_scrollbar);
+	theme->set_stylebox(SNAME("scroll_focus"), SNAME("HScrollBar"), focus);
+	theme->set_stylebox(SNAME("grabber"), SNAME("HScrollBar"), style_scrollbar_grabber);
+	theme->set_stylebox(SNAME("grabber_highlight"), SNAME("HScrollBar"), style_scrollbar_grabber_highlight);
+	theme->set_stylebox(SNAME("grabber_pressed"), SNAME("HScrollBar"), style_scrollbar_grabber_pressed);
 
-	theme->set_icon("increment", "HScrollBar", empty_icon);
-	theme->set_icon("increment_highlight", "HScrollBar", empty_icon);
-	theme->set_icon("increment_pressed", "HScrollBar", empty_icon);
-	theme->set_icon("decrement", "HScrollBar", empty_icon);
-	theme->set_icon("decrement_highlight", "HScrollBar", empty_icon);
-	theme->set_icon("decrement_pressed", "HScrollBar", empty_icon);
+	theme->set_icon(SNAME("increment"), SNAME("HScrollBar"), empty_icon);
+	theme->set_icon(SNAME("increment_highlight"), SNAME("HScrollBar"), empty_icon);
+	theme->set_icon(SNAME("increment_pressed"), SNAME("HScrollBar"), empty_icon);
+	theme->set_icon(SNAME("decrement"), SNAME("HScrollBar"), empty_icon);
+	theme->set_icon(SNAME("decrement_highlight"), SNAME("HScrollBar"), empty_icon);
+	theme->set_icon(SNAME("decrement_pressed"), SNAME("HScrollBar"), empty_icon);
 
 	// VScrollBar
 
-	theme->set_stylebox("scroll", "VScrollBar", style_scrollbar);
-	theme->set_stylebox("scroll_focus", "VScrollBar", focus);
-	theme->set_stylebox("grabber", "VScrollBar", style_scrollbar_grabber);
-	theme->set_stylebox("grabber_highlight", "VScrollBar", style_scrollbar_grabber_highlight);
-	theme->set_stylebox("grabber_pressed", "VScrollBar", style_scrollbar_grabber_pressed);
+	theme->set_stylebox(SNAME("scroll"), SNAME("VScrollBar"), style_scrollbar);
+	theme->set_stylebox(SNAME("scroll_focus"), SNAME("VScrollBar"), focus);
+	theme->set_stylebox(SNAME("grabber"), SNAME("VScrollBar"), style_scrollbar_grabber);
+	theme->set_stylebox(SNAME("grabber_highlight"), SNAME("VScrollBar"), style_scrollbar_grabber_highlight);
+	theme->set_stylebox(SNAME("grabber_pressed"), SNAME("VScrollBar"), style_scrollbar_grabber_pressed);
 
-	theme->set_icon("increment", "VScrollBar", empty_icon);
-	theme->set_icon("increment_highlight", "VScrollBar", empty_icon);
-	theme->set_icon("increment_pressed", "VScrollBar", empty_icon);
-	theme->set_icon("decrement", "VScrollBar", empty_icon);
-	theme->set_icon("decrement_highlight", "VScrollBar", empty_icon);
-	theme->set_icon("decrement_pressed", "VScrollBar", empty_icon);
+	theme->set_icon(SNAME("increment"), SNAME("VScrollBar"), empty_icon);
+	theme->set_icon(SNAME("increment_highlight"), SNAME("VScrollBar"), empty_icon);
+	theme->set_icon(SNAME("increment_pressed"), SNAME("VScrollBar"), empty_icon);
+	theme->set_icon(SNAME("decrement"), SNAME("VScrollBar"), empty_icon);
+	theme->set_icon(SNAME("decrement_highlight"), SNAME("VScrollBar"), empty_icon);
+	theme->set_icon(SNAME("decrement_pressed"), SNAME("VScrollBar"), empty_icon);
 
 	const Ref<StyleBoxFlat> style_slider = make_flat_stylebox(style_normal_color, 4, 4, 4, 4, 4);
 	const Ref<StyleBoxFlat> style_slider_grabber = make_flat_stylebox(style_progress_color, 4, 4, 4, 4, 4);
@@ -537,83 +537,83 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 
 	// HSlider
 
-	theme->set_stylebox("slider", "HSlider", style_slider);
-	theme->set_stylebox("grabber_area", "HSlider", style_slider_grabber);
-	theme->set_stylebox("grabber_area_highlight", "HSlider", style_slider_grabber_highlight);
+	theme->set_stylebox(SNAME("slider"), SNAME("HSlider"), style_slider);
+	theme->set_stylebox(SNAME("grabber_area"), SNAME("HSlider"), style_slider_grabber);
+	theme->set_stylebox(SNAME("grabber_area_highlight"), SNAME("HSlider"), style_slider_grabber_highlight);
 
-	theme->set_icon("grabber", "HSlider", icons["slider_grabber"]);
-	theme->set_icon("grabber_highlight", "HSlider", icons["slider_grabber_hl"]);
-	theme->set_icon("grabber_disabled", "HSlider", icons["slider_grabber_disabled"]);
-	theme->set_icon("tick", "HSlider", icons["hslider_tick"]);
+	theme->set_icon(SNAME("grabber"), SNAME("HSlider"), icons["slider_grabber"]);
+	theme->set_icon(SNAME("grabber_highlight"), SNAME("HSlider"), icons["slider_grabber_hl"]);
+	theme->set_icon(SNAME("grabber_disabled"), SNAME("HSlider"), icons["slider_grabber_disabled"]);
+	theme->set_icon(SNAME("tick"), SNAME("HSlider"), icons["hslider_tick"]);
 
 	// VSlider
 
-	theme->set_stylebox("slider", "VSlider", style_slider);
-	theme->set_stylebox("grabber_area", "VSlider", style_slider_grabber);
-	theme->set_stylebox("grabber_area_highlight", "VSlider", style_slider_grabber_highlight);
+	theme->set_stylebox(SNAME("slider"), SNAME("VSlider"), style_slider);
+	theme->set_stylebox(SNAME("grabber_area"), SNAME("VSlider"), style_slider_grabber);
+	theme->set_stylebox(SNAME("grabber_area_highlight"), SNAME("VSlider"), style_slider_grabber_highlight);
 
-	theme->set_icon("grabber", "VSlider", icons["slider_grabber"]);
-	theme->set_icon("grabber_highlight", "VSlider", icons["slider_grabber_hl"]);
-	theme->set_icon("grabber_disabled", "VSlider", icons["slider_grabber_disabled"]);
-	theme->set_icon("tick", "VSlider", icons["vslider_tick"]);
+	theme->set_icon(SNAME("grabber"), SNAME("VSlider"), icons["slider_grabber"]);
+	theme->set_icon(SNAME("grabber_highlight"), SNAME("VSlider"), icons["slider_grabber_hl"]);
+	theme->set_icon(SNAME("grabber_disabled"), SNAME("VSlider"), icons["slider_grabber_disabled"]);
+	theme->set_icon(SNAME("tick"), SNAME("VSlider"), icons["vslider_tick"]);
 
 	// SpinBox
 
-	theme->set_icon("updown", "SpinBox", icons["updown"]);
+	theme->set_icon(SNAME("updown"), SNAME("SpinBox"), icons["updown"]);
 
 	// ScrollContainer
 
 	Ref<StyleBoxEmpty> empty;
 	empty.instantiate();
-	theme->set_stylebox("bg", "ScrollContainer", empty);
+	theme->set_stylebox(SNAME("bg"), SNAME("ScrollContainer"), empty);
 
 	// Window
 
-	theme->set_stylebox("embedded_border", "Window", sb_expand(make_flat_stylebox(style_popup_color, 10, 28, 10, 8), 8, 32, 8, 6));
-	theme->set_constant("scaleborder_size", "Window", 4 * scale);
+	theme->set_stylebox(SNAME("embedded_border"), SNAME("Window"), sb_expand(make_flat_stylebox(style_popup_color, 10, 28, 10, 8), 8, 32, 8, 6));
+	theme->set_constant(SNAME("scaleborder_size"), SNAME("Window"), 4 * scale);
 
-	theme->set_font("title_font", "Window", Ref<Font>());
-	theme->set_font_size("title_font_size", "Window", -1);
-	theme->set_color("title_color", "Window", control_font_color);
-	theme->set_color("title_outline_modulate", "Window", Color(1, 1, 1));
-	theme->set_constant("title_outline_size", "Window", 0);
-	theme->set_constant("title_height", "Window", 36 * scale);
-	theme->set_constant("resize_margin", "Window", 4 * scale);
+	theme->set_font(SNAME("title_font"), SNAME("Window"), Ref<Font>());
+	theme->set_font_size(SNAME("title_font_size"), SNAME("Window"), -1);
+	theme->set_color(SNAME("title_color"), SNAME("Window"), control_font_color);
+	theme->set_color(SNAME("title_outline_modulate"), SNAME("Window"), Color(1, 1, 1));
+	theme->set_constant(SNAME("title_outline_size"), SNAME("Window"), 0);
+	theme->set_constant(SNAME("title_height"), SNAME("Window"), 36 * scale);
+	theme->set_constant(SNAME("resize_margin"), SNAME("Window"), 4 * scale);
 
-	theme->set_icon("close", "Window", icons["close"]);
-	theme->set_icon("close_pressed", "Window", icons["close_hl"]);
-	theme->set_constant("close_h_ofs", "Window", 18 * scale);
-	theme->set_constant("close_v_ofs", "Window", 24 * scale);
+	theme->set_icon(SNAME("close"), SNAME("Window"), icons["close"]);
+	theme->set_icon(SNAME("close_pressed"), SNAME("Window"), icons["close_hl"]);
+	theme->set_constant(SNAME("close_h_ofs"), SNAME("Window"), 18 * scale);
+	theme->set_constant(SNAME("close_v_ofs"), SNAME("Window"), 24 * scale);
 
 	// Dialogs
 
-	theme->set_constant("margin", "Dialogs", 8 * scale);
-	theme->set_constant("button_margin", "Dialogs", 32 * scale);
+	theme->set_constant(SNAME("margin"), SNAME("Dialogs"), 8 * scale);
+	theme->set_constant(SNAME("button_margin"), SNAME("Dialogs"), 32 * scale);
 
 	// AcceptDialog
 
-	theme->set_stylebox("panel", "AcceptDialog", make_flat_stylebox(style_popup_color, 0, 0, 0, 0));
+	theme->set_stylebox(SNAME("panel"), SNAME("AcceptDialog"), make_flat_stylebox(style_popup_color, 0, 0, 0, 0));
 
 	// File Dialog
 
-	theme->set_icon("parent_folder", "FileDialog", icons["folder_up"]);
-	theme->set_icon("back_folder", "FileDialog", icons["arrow_left"]);
-	theme->set_icon("forward_folder", "FileDialog", icons["arrow_right"]);
-	theme->set_icon("reload", "FileDialog", icons["reload"]);
-	theme->set_icon("toggle_hidden", "FileDialog", icons["visibility_visible"]);
-	theme->set_icon("folder", "FileDialog", icons["folder"]);
-	theme->set_icon("file", "FileDialog", icons["file"]);
-	theme->set_color("folder_icon_modulate", "FileDialog", Color(1, 1, 1));
-	theme->set_color("file_icon_modulate", "FileDialog", Color(1, 1, 1));
-	theme->set_color("files_disabled", "FileDialog", Color(0, 0, 0, 0.7));
+	theme->set_icon(SNAME("parent_folder"), SNAME("FileDialog"), icons["folder_up"]);
+	theme->set_icon(SNAME("back_folder"), SNAME("FileDialog"), icons["arrow_left"]);
+	theme->set_icon(SNAME("forward_folder"), SNAME("FileDialog"), icons["arrow_right"]);
+	theme->set_icon(SNAME("reload"), SNAME("FileDialog"), icons["reload"]);
+	theme->set_icon(SNAME("toggle_hidden"), SNAME("FileDialog"), icons["visibility_visible"]);
+	theme->set_icon(SNAME("folder"), SNAME("FileDialog"), icons["folder"]);
+	theme->set_icon(SNAME("file"), SNAME("FileDialog"), icons["file"]);
+	theme->set_color(SNAME("folder_icon_modulate"), SNAME("FileDialog"), Color(1, 1, 1));
+	theme->set_color(SNAME("file_icon_modulate"), SNAME("FileDialog"), Color(1, 1, 1));
+	theme->set_color(SNAME("files_disabled"), SNAME("FileDialog"), Color(0, 0, 0, 0.7));
 
 	// Popup
 
-	theme->set_stylebox("panel", "PopupPanel", make_flat_stylebox(style_normal_color));
+	theme->set_stylebox(SNAME("panel"), SNAME("PopupPanel"), make_flat_stylebox(style_normal_color));
 
 	// PopupDialog
 
-	theme->set_stylebox("panel", "PopupDialog", make_flat_stylebox(style_normal_color));
+	theme->set_stylebox(SNAME("panel"), SNAME("PopupDialog"), make_flat_stylebox(style_normal_color));
 
 	// PopupMenu
 
@@ -638,35 +638,35 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	Ref<StyleBoxFlat> style_popup_panel_disabled = style_popup_panel->duplicate();
 	style_popup_panel_disabled->set_bg_color(style_disabled_color);
 
-	theme->set_stylebox("panel", "PopupMenu", style_popup_panel);
-	theme->set_stylebox("panel_disabled", "PopupMenu", style_popup_panel_disabled);
-	theme->set_stylebox("hover", "PopupMenu", make_flat_stylebox(style_popup_hover_color));
-	theme->set_stylebox("separator", "PopupMenu", separator_horizontal);
-	theme->set_stylebox("labeled_separator_left", "PopupMenu", separator_horizontal);
-	theme->set_stylebox("labeled_separator_right", "PopupMenu", separator_horizontal);
+	theme->set_stylebox(SNAME("panel"), SNAME("PopupMenu"), style_popup_panel);
+	theme->set_stylebox(SNAME("panel_disabled"), SNAME("PopupMenu"), style_popup_panel_disabled);
+	theme->set_stylebox(SNAME("hover"), SNAME("PopupMenu"), make_flat_stylebox(style_popup_hover_color));
+	theme->set_stylebox(SNAME("separator"), SNAME("PopupMenu"), separator_horizontal);
+	theme->set_stylebox(SNAME("labeled_separator_left"), SNAME("PopupMenu"), separator_horizontal);
+	theme->set_stylebox(SNAME("labeled_separator_right"), SNAME("PopupMenu"), separator_horizontal);
 
-	theme->set_icon("checked", "PopupMenu", icons["checked"]);
-	theme->set_icon("unchecked", "PopupMenu", icons["unchecked"]);
-	theme->set_icon("radio_checked", "PopupMenu", icons["radio_checked"]);
-	theme->set_icon("radio_unchecked", "PopupMenu", icons["radio_unchecked"]);
-	theme->set_icon("submenu", "PopupMenu", icons["arrow_right"]);
-	theme->set_icon("submenu_mirrored", "PopupMenu", icons["arrow_left"]);
+	theme->set_icon(SNAME("checked"), SNAME("PopupMenu"), icons["checked"]);
+	theme->set_icon(SNAME("unchecked"), SNAME("PopupMenu"), icons["unchecked"]);
+	theme->set_icon(SNAME("radio_checked"), SNAME("PopupMenu"), icons["radio_checked"]);
+	theme->set_icon(SNAME("radio_unchecked"), SNAME("PopupMenu"), icons["radio_unchecked"]);
+	theme->set_icon(SNAME("submenu"), SNAME("PopupMenu"), icons["arrow_right"]);
+	theme->set_icon(SNAME("submenu_mirrored"), SNAME("PopupMenu"), icons["arrow_left"]);
 
-	theme->set_font("font", "PopupMenu", Ref<Font>());
-	theme->set_font_size("font_size", "PopupMenu", -1);
+	theme->set_font(SNAME("font"), SNAME("PopupMenu"), Ref<Font>());
+	theme->set_font_size(SNAME("font_size"), SNAME("PopupMenu"), -1);
 
-	theme->set_color("font_color", "PopupMenu", control_font_color);
-	theme->set_color("font_accelerator_color", "PopupMenu", Color(0.7, 0.7, 0.7, 0.8));
-	theme->set_color("font_disabled_color", "PopupMenu", Color(0.4, 0.4, 0.4, 0.8));
-	theme->set_color("font_hover_color", "PopupMenu", control_font_color);
-	theme->set_color("font_separator_color", "PopupMenu", control_font_color);
-	theme->set_color("font_outline_color", "PopupMenu", Color(1, 1, 1));
+	theme->set_color(SNAME("font_color"), SNAME("PopupMenu"), control_font_color);
+	theme->set_color(SNAME("font_accelerator_color"), SNAME("PopupMenu"), Color(0.7, 0.7, 0.7, 0.8));
+	theme->set_color(SNAME("font_disabled_color"), SNAME("PopupMenu"), Color(0.4, 0.4, 0.4, 0.8));
+	theme->set_color(SNAME("font_hover_color"), SNAME("PopupMenu"), control_font_color);
+	theme->set_color(SNAME("font_separator_color"), SNAME("PopupMenu"), control_font_color);
+	theme->set_color(SNAME("font_outline_color"), SNAME("PopupMenu"), Color(1, 1, 1));
 
-	theme->set_constant("hseparation", "PopupMenu", 4 * scale);
-	theme->set_constant("vseparation", "PopupMenu", 4 * scale);
-	theme->set_constant("outline_size", "PopupMenu", 0);
-	theme->set_constant("item_start_padding", "PopupMenu", 2 * scale);
-	theme->set_constant("item_end_padding", "PopupMenu", 2 * scale);
+	theme->set_constant(SNAME("hseparation"), SNAME("PopupMenu"), 4 * scale);
+	theme->set_constant(SNAME("vseparation"), SNAME("PopupMenu"), 4 * scale);
+	theme->set_constant(SNAME("outline_size"), SNAME("PopupMenu"), 0);
+	theme->set_constant(SNAME("item_start_padding"), SNAME("PopupMenu"), 2 * scale);
+	theme->set_constant(SNAME("item_end_padding"), SNAME("PopupMenu"), 2 * scale);
 
 	// GraphNode
 	Ref<StyleBoxFlat> graphnode_normal = make_flat_stylebox(style_normal_color, 18, 42, 18, 12);
@@ -683,101 +683,101 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	Ref<StyleBoxFlat> graphnode_position = make_flat_stylebox(style_pressed_color, 18, 42, 18, 12, 6, true, 4);
 	graphnode_position->set_border_color(Color(0.98, 0.89, 0.27));
 
-	theme->set_stylebox("frame", "GraphNode", graphnode_normal);
-	theme->set_stylebox("selectedframe", "GraphNode", graphnode_selected);
-	theme->set_stylebox("comment", "GraphNode", graphnode_comment_normal);
-	theme->set_stylebox("commentfocus", "GraphNode", graphnode_comment_selected);
-	theme->set_stylebox("breakpoint", "GraphNode", graphnode_breakpoint);
-	theme->set_stylebox("position", "GraphNode", graphnode_position);
+	theme->set_stylebox(SNAME("frame"), SNAME("GraphNode"), graphnode_normal);
+	theme->set_stylebox(SNAME("selectedframe"), SNAME("GraphNode"), graphnode_selected);
+	theme->set_stylebox(SNAME("comment"), SNAME("GraphNode"), graphnode_comment_normal);
+	theme->set_stylebox(SNAME("commentfocus"), SNAME("GraphNode"), graphnode_comment_selected);
+	theme->set_stylebox(SNAME("breakpoint"), SNAME("GraphNode"), graphnode_breakpoint);
+	theme->set_stylebox(SNAME("position"), SNAME("GraphNode"), graphnode_position);
 
-	theme->set_icon("port", "GraphNode", icons["graph_port"]);
-	theme->set_icon("close", "GraphNode", icons["close"]);
-	theme->set_icon("resizer", "GraphNode", icons["resizer_se"]);
-	theme->set_font("title_font", "GraphNode", Ref<Font>());
-	theme->set_color("title_color", "GraphNode", control_font_color);
-	theme->set_color("close_color", "GraphNode", control_font_color);
-	theme->set_color("resizer_color", "GraphNode", control_font_color);
-	theme->set_constant("separation", "GraphNode", 2 * scale);
-	theme->set_constant("title_offset", "GraphNode", 26 * scale);
-	theme->set_constant("close_offset", "GraphNode", 22 * scale);
-	theme->set_constant("port_offset", "GraphNode", 0);
+	theme->set_icon(SNAME("port"), SNAME("GraphNode"), icons["graph_port"]);
+	theme->set_icon(SNAME("close"), SNAME("GraphNode"), icons["close"]);
+	theme->set_icon(SNAME("resizer"), SNAME("GraphNode"), icons["resizer_se"]);
+	theme->set_font(SNAME("title_font"), SNAME("GraphNode"), Ref<Font>());
+	theme->set_color(SNAME("title_color"), SNAME("GraphNode"), control_font_color);
+	theme->set_color(SNAME("close_color"), SNAME("GraphNode"), control_font_color);
+	theme->set_color(SNAME("resizer_color"), SNAME("GraphNode"), control_font_color);
+	theme->set_constant(SNAME("separation"), SNAME("GraphNode"), 2 * scale);
+	theme->set_constant(SNAME("title_offset"), SNAME("GraphNode"), 26 * scale);
+	theme->set_constant(SNAME("close_offset"), SNAME("GraphNode"), 22 * scale);
+	theme->set_constant(SNAME("port_offset"), SNAME("GraphNode"), 0);
 
 	// Tree
 
-	theme->set_stylebox("bg", "Tree", make_flat_stylebox(style_normal_color, 4, 4, 4, 5));
-	theme->set_stylebox("bg_focus", "Tree", focus);
-	theme->set_stylebox("selected", "Tree", make_flat_stylebox(style_selected_color));
-	theme->set_stylebox("selected_focus", "Tree", make_flat_stylebox(style_selected_color));
-	theme->set_stylebox("cursor", "Tree", focus);
-	theme->set_stylebox("cursor_unfocused", "Tree", focus);
-	theme->set_stylebox("button_pressed", "Tree", button_pressed);
-	theme->set_stylebox("title_button_normal", "Tree", make_flat_stylebox(style_pressed_color, 4, 4, 4, 4));
-	theme->set_stylebox("title_button_pressed", "Tree", make_flat_stylebox(style_hover_color, 4, 4, 4, 4));
-	theme->set_stylebox("title_button_hover", "Tree", make_flat_stylebox(style_normal_color, 4, 4, 4, 4));
-	theme->set_stylebox("custom_button", "Tree", button_normal);
-	theme->set_stylebox("custom_button_pressed", "Tree", button_pressed);
-	theme->set_stylebox("custom_button_hover", "Tree", button_hover);
+	theme->set_stylebox(SNAME("bg"), SNAME("Tree"), make_flat_stylebox(style_normal_color, 4, 4, 4, 5));
+	theme->set_stylebox(SNAME("bg_focus"), SNAME("Tree"), focus);
+	theme->set_stylebox(SNAME("selected"), SNAME("Tree"), make_flat_stylebox(style_selected_color));
+	theme->set_stylebox(SNAME("selected_focus"), SNAME("Tree"), make_flat_stylebox(style_selected_color));
+	theme->set_stylebox(SNAME("cursor"), SNAME("Tree"), focus);
+	theme->set_stylebox(SNAME("cursor_unfocused"), SNAME("Tree"), focus);
+	theme->set_stylebox(SNAME("button_pressed"), SNAME("Tree"), button_pressed);
+	theme->set_stylebox(SNAME("title_button_normal"), SNAME("Tree"), make_flat_stylebox(style_pressed_color, 4, 4, 4, 4));
+	theme->set_stylebox(SNAME("title_button_pressed"), SNAME("Tree"), make_flat_stylebox(style_hover_color, 4, 4, 4, 4));
+	theme->set_stylebox(SNAME("title_button_hover"), SNAME("Tree"), make_flat_stylebox(style_normal_color, 4, 4, 4, 4));
+	theme->set_stylebox(SNAME("custom_button"), SNAME("Tree"), button_normal);
+	theme->set_stylebox(SNAME("custom_button_pressed"), SNAME("Tree"), button_pressed);
+	theme->set_stylebox(SNAME("custom_button_hover"), SNAME("Tree"), button_hover);
 
-	theme->set_icon("checked", "Tree", icons["checked"]);
-	theme->set_icon("unchecked", "Tree", icons["unchecked"]);
-	theme->set_icon("indeterminate", "Tree", icons["indeterminate"]);
-	theme->set_icon("updown", "Tree", icons["updown"]);
-	theme->set_icon("select_arrow", "Tree", icons["option_button_arrow"]);
-	theme->set_icon("arrow", "Tree", icons["arrow_down"]);
-	theme->set_icon("arrow_collapsed", "Tree", icons["arrow_right"]);
-	theme->set_icon("arrow_collapsed_mirrored", "Tree", icons["arrow_left"]);
+	theme->set_icon(SNAME("checked"), SNAME("Tree"), icons["checked"]);
+	theme->set_icon(SNAME("unchecked"), SNAME("Tree"), icons["unchecked"]);
+	theme->set_icon(SNAME("indeterminate"), SNAME("Tree"), icons["indeterminate"]);
+	theme->set_icon(SNAME("updown"), SNAME("Tree"), icons["updown"]);
+	theme->set_icon(SNAME("select_arrow"), SNAME("Tree"), icons["option_button_arrow"]);
+	theme->set_icon(SNAME("arrow"), SNAME("Tree"), icons["arrow_down"]);
+	theme->set_icon(SNAME("arrow_collapsed"), SNAME("Tree"), icons["arrow_right"]);
+	theme->set_icon(SNAME("arrow_collapsed_mirrored"), SNAME("Tree"), icons["arrow_left"]);
 
-	theme->set_font("title_button_font", "Tree", Ref<Font>());
-	theme->set_font("font", "Tree", Ref<Font>());
-	theme->set_font_size("font_size", "Tree", -1);
+	theme->set_font(SNAME("title_button_font"), SNAME("Tree"), Ref<Font>());
+	theme->set_font(SNAME("font"), SNAME("Tree"), Ref<Font>());
+	theme->set_font_size(SNAME("font_size"), SNAME("Tree"), -1);
 
-	theme->set_color("title_button_color", "Tree", control_font_color);
-	theme->set_color("font_color", "Tree", control_font_low_color);
-	theme->set_color("font_selected_color", "Tree", control_font_pressed_color);
-	theme->set_color("font_outline_color", "Tree", Color(1, 1, 1));
-	theme->set_color("guide_color", "Tree", Color(0.7, 0.7, 0.7, 0.25));
-	theme->set_color("drop_position_color", "Tree", Color(1, 0.3, 0.2));
-	theme->set_color("relationship_line_color", "Tree", Color(0.27, 0.27, 0.27));
-	theme->set_color("parent_hl_line_color", "Tree", Color(0.27, 0.27, 0.27));
-	theme->set_color("children_hl_line_color", "Tree", Color(0.27, 0.27, 0.27));
-	theme->set_color("custom_button_font_highlight", "Tree", control_font_hover_color);
+	theme->set_color(SNAME("title_button_color"), SNAME("Tree"), control_font_color);
+	theme->set_color(SNAME("font_color"), SNAME("Tree"), control_font_low_color);
+	theme->set_color(SNAME("font_selected_color"), SNAME("Tree"), control_font_pressed_color);
+	theme->set_color(SNAME("font_outline_color"), SNAME("Tree"), Color(1, 1, 1));
+	theme->set_color(SNAME("guide_color"), SNAME("Tree"), Color(0.7, 0.7, 0.7, 0.25));
+	theme->set_color(SNAME("drop_position_color"), SNAME("Tree"), Color(1, 0.3, 0.2));
+	theme->set_color(SNAME("relationship_line_color"), SNAME("Tree"), Color(0.27, 0.27, 0.27));
+	theme->set_color(SNAME("parent_hl_line_color"), SNAME("Tree"), Color(0.27, 0.27, 0.27));
+	theme->set_color(SNAME("children_hl_line_color"), SNAME("Tree"), Color(0.27, 0.27, 0.27));
+	theme->set_color(SNAME("custom_button_font_highlight"), SNAME("Tree"), control_font_hover_color);
 
-	theme->set_constant("hseparation", "Tree", 4 * scale);
-	theme->set_constant("vseparation", "Tree", 4 * scale);
-	theme->set_constant("item_margin", "Tree", 16 * scale);
-	theme->set_constant("button_margin", "Tree", 4 * scale);
-	theme->set_constant("draw_relationship_lines", "Tree", 0);
-	theme->set_constant("relationship_line_width", "Tree", 1);
-	theme->set_constant("parent_hl_line_width", "Tree", 1);
-	theme->set_constant("children_hl_line_width", "Tree", 1);
-	theme->set_constant("parent_hl_line_margin", "Tree", 0);
-	theme->set_constant("draw_guides", "Tree", 1);
-	theme->set_constant("scroll_border", "Tree", 4);
-	theme->set_constant("scroll_speed", "Tree", 12);
-	theme->set_constant("outline_size", "Tree", 0);
+	theme->set_constant(SNAME("hseparation"), SNAME("Tree"), 4 * scale);
+	theme->set_constant(SNAME("vseparation"), SNAME("Tree"), 4 * scale);
+	theme->set_constant(SNAME("item_margin"), SNAME("Tree"), 16 * scale);
+	theme->set_constant(SNAME("button_margin"), SNAME("Tree"), 4 * scale);
+	theme->set_constant(SNAME("draw_relationship_lines"), SNAME("Tree"), 0);
+	theme->set_constant(SNAME("relationship_line_width"), SNAME("Tree"), 1);
+	theme->set_constant(SNAME("parent_hl_line_width"), SNAME("Tree"), 1);
+	theme->set_constant(SNAME("children_hl_line_width"), SNAME("Tree"), 1);
+	theme->set_constant(SNAME("parent_hl_line_margin"), SNAME("Tree"), 0);
+	theme->set_constant(SNAME("draw_guides"), SNAME("Tree"), 1);
+	theme->set_constant(SNAME("scroll_border"), SNAME("Tree"), 4);
+	theme->set_constant(SNAME("scroll_speed"), SNAME("Tree"), 12);
+	theme->set_constant(SNAME("outline_size"), SNAME("Tree"), 0);
 
 	// ItemList
 
-	theme->set_stylebox("bg", "ItemList", make_flat_stylebox(style_normal_color));
-	theme->set_stylebox("bg_focus", "ItemList", focus);
-	theme->set_constant("hseparation", "ItemList", 4);
-	theme->set_constant("vseparation", "ItemList", 2);
-	theme->set_constant("icon_margin", "ItemList", 4);
-	theme->set_constant("line_separation", "ItemList", 2 * scale);
+	theme->set_stylebox(SNAME("bg"), SNAME("ItemList"), make_flat_stylebox(style_normal_color));
+	theme->set_stylebox(SNAME("bg_focus"), SNAME("ItemList"), focus);
+	theme->set_constant(SNAME("hseparation"), SNAME("ItemList"), 4);
+	theme->set_constant(SNAME("vseparation"), SNAME("ItemList"), 2);
+	theme->set_constant(SNAME("icon_margin"), SNAME("ItemList"), 4);
+	theme->set_constant(SNAME("line_separation"), SNAME("ItemList"), 2 * scale);
 
-	theme->set_font("font", "ItemList", Ref<Font>());
-	theme->set_font_size("font_size", "ItemList", -1);
+	theme->set_font(SNAME("font"), SNAME("ItemList"), Ref<Font>());
+	theme->set_font_size(SNAME("font_size"), SNAME("ItemList"), -1);
 
-	theme->set_color("font_color", "ItemList", control_font_lower_color);
-	theme->set_color("font_selected_color", "ItemList", control_font_pressed_color);
-	theme->set_color("font_outline_color", "ItemList", Color(1, 1, 1));
-	theme->set_color("guide_color", "ItemList", Color(0, 0, 0, 0.1));
-	theme->set_stylebox("selected", "ItemList", make_flat_stylebox(style_selected_color));
-	theme->set_stylebox("selected_focus", "ItemList", make_flat_stylebox(style_selected_color));
-	theme->set_stylebox("cursor", "ItemList", focus);
-	theme->set_stylebox("cursor_unfocused", "ItemList", focus);
+	theme->set_color(SNAME("font_color"), SNAME("ItemList"), control_font_lower_color);
+	theme->set_color(SNAME("font_selected_color"), SNAME("ItemList"), control_font_pressed_color);
+	theme->set_color(SNAME("font_outline_color"), SNAME("ItemList"), Color(1, 1, 1));
+	theme->set_color(SNAME("guide_color"), SNAME("ItemList"), Color(0, 0, 0, 0.1));
+	theme->set_stylebox(SNAME("selected"), SNAME("ItemList"), make_flat_stylebox(style_selected_color));
+	theme->set_stylebox(SNAME("selected_focus"), SNAME("ItemList"), make_flat_stylebox(style_selected_color));
+	theme->set_stylebox(SNAME("cursor"), SNAME("ItemList"), focus);
+	theme->set_stylebox(SNAME("cursor_unfocused"), SNAME("ItemList"), focus);
 
-	theme->set_constant("outline_size", "ItemList", 0);
+	theme->set_constant(SNAME("outline_size"), SNAME("ItemList"), 0);
 
 	// TabContainer
 
@@ -792,105 +792,105 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	Ref<StyleBoxFlat> style_tab_disabled = style_tab_unselected->duplicate();
 	style_tab_disabled->set_bg_color(style_disabled_color);
 
-	theme->set_stylebox("tab_selected", "TabContainer", style_tab_selected);
-	theme->set_stylebox("tab_unselected", "TabContainer", style_tab_unselected);
-	theme->set_stylebox("tab_disabled", "TabContainer", style_tab_disabled);
-	theme->set_stylebox("panel", "TabContainer", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
+	theme->set_stylebox(SNAME("tab_selected"), SNAME("TabContainer"), style_tab_selected);
+	theme->set_stylebox(SNAME("tab_unselected"), SNAME("TabContainer"), style_tab_unselected);
+	theme->set_stylebox(SNAME("tab_disabled"), SNAME("TabContainer"), style_tab_disabled);
+	theme->set_stylebox(SNAME("panel"), SNAME("TabContainer"), make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
 
-	theme->set_icon("increment", "TabContainer", icons["scroll_button_right"]);
-	theme->set_icon("increment_highlight", "TabContainer", icons["scroll_button_right_hl"]);
-	theme->set_icon("decrement", "TabContainer", icons["scroll_button_left"]);
-	theme->set_icon("decrement_highlight", "TabContainer", icons["scroll_button_left_hl"]);
-	theme->set_icon("menu", "TabContainer", icons["tabs_menu"]);
-	theme->set_icon("menu_highlight", "TabContainer", icons["tabs_menu_hl"]);
+	theme->set_icon(SNAME("increment"), SNAME("TabContainer"), icons["scroll_button_right"]);
+	theme->set_icon(SNAME("increment_highlight"), SNAME("TabContainer"), icons["scroll_button_right_hl"]);
+	theme->set_icon(SNAME("decrement"), SNAME("TabContainer"), icons["scroll_button_left"]);
+	theme->set_icon(SNAME("decrement_highlight"), SNAME("TabContainer"), icons["scroll_button_left_hl"]);
+	theme->set_icon(SNAME("menu"), SNAME("TabContainer"), icons["tabs_menu"]);
+	theme->set_icon(SNAME("menu_highlight"), SNAME("TabContainer"), icons["tabs_menu_hl"]);
 
-	theme->set_font("font", "TabContainer", Ref<Font>());
-	theme->set_font_size("font_size", "TabContainer", -1);
+	theme->set_font(SNAME("font"), SNAME("TabContainer"), Ref<Font>());
+	theme->set_font_size(SNAME("font_size"), SNAME("TabContainer"), -1);
 
-	theme->set_color("font_selected_color", "TabContainer", control_font_hover_color);
-	theme->set_color("font_unselected_color", "TabContainer", control_font_low_color);
-	theme->set_color("font_disabled_color", "TabContainer", control_font_disabled_color);
-	theme->set_color("font_outline_color", "TabContainer", Color(1, 1, 1));
+	theme->set_color(SNAME("font_selected_color"), SNAME("TabContainer"), control_font_hover_color);
+	theme->set_color(SNAME("font_unselected_color"), SNAME("TabContainer"), control_font_low_color);
+	theme->set_color(SNAME("font_disabled_color"), SNAME("TabContainer"), control_font_disabled_color);
+	theme->set_color(SNAME("font_outline_color"), SNAME("TabContainer"), Color(1, 1, 1));
 
-	theme->set_constant("side_margin", "TabContainer", 8 * scale);
-	theme->set_constant("icon_separation", "TabContainer", 4 * scale);
-	theme->set_constant("outline_size", "TabContainer", 0);
+	theme->set_constant(SNAME("side_margin"), SNAME("TabContainer"), 8 * scale);
+	theme->set_constant(SNAME("icon_separation"), SNAME("TabContainer"), 4 * scale);
+	theme->set_constant(SNAME("outline_size"), SNAME("TabContainer"), 0);
 
 	// TabBar
 
-	theme->set_stylebox("tab_selected", "TabBar", style_tab_selected);
-	theme->set_stylebox("tab_unselected", "TabBar", style_tab_unselected);
-	theme->set_stylebox("tab_disabled", "TabBar", style_tab_disabled);
-	theme->set_stylebox("button_pressed", "TabBar", button_pressed);
-	theme->set_stylebox("button_highlight", "TabBar", button_normal);
+	theme->set_stylebox(SNAME("tab_selected"), SNAME("TabBar"), style_tab_selected);
+	theme->set_stylebox(SNAME("tab_unselected"), SNAME("TabBar"), style_tab_unselected);
+	theme->set_stylebox(SNAME("tab_disabled"), SNAME("TabBar"), style_tab_disabled);
+	theme->set_stylebox(SNAME("button_pressed"), SNAME("TabBar"), button_pressed);
+	theme->set_stylebox(SNAME("button_highlight"), SNAME("TabBar"), button_normal);
 
-	theme->set_icon("increment", "TabBar", icons["scroll_button_right"]);
-	theme->set_icon("increment_highlight", "TabBar", icons["scroll_button_right_hl"]);
-	theme->set_icon("decrement", "TabBar", icons["scroll_button_left"]);
-	theme->set_icon("decrement_highlight", "TabBar", icons["scroll_button_left_hl"]);
-	theme->set_icon("close", "TabBar", icons["close"]);
+	theme->set_icon(SNAME("increment"), SNAME("TabBar"), icons["scroll_button_right"]);
+	theme->set_icon(SNAME("increment_highlight"), SNAME("TabBar"), icons["scroll_button_right_hl"]);
+	theme->set_icon(SNAME("decrement"), SNAME("TabBar"), icons["scroll_button_left"]);
+	theme->set_icon(SNAME("decrement_highlight"), SNAME("TabBar"), icons["scroll_button_left_hl"]);
+	theme->set_icon(SNAME("close"), SNAME("TabBar"), icons["close"]);
 
-	theme->set_font("font", "TabBar", Ref<Font>());
-	theme->set_font_size("font_size", "TabBar", -1);
+	theme->set_font(SNAME("font"), SNAME("TabBar"), Ref<Font>());
+	theme->set_font_size(SNAME("font_size"), SNAME("TabBar"), -1);
 
-	theme->set_color("font_selected_color", "TabBar", control_font_hover_color);
-	theme->set_color("font_unselected_color", "TabBar", control_font_low_color);
-	theme->set_color("font_disabled_color", "TabBar", control_font_disabled_color);
-	theme->set_color("font_outline_color", "TabBar", Color(1, 1, 1));
+	theme->set_color(SNAME("font_selected_color"), SNAME("TabBar"), control_font_hover_color);
+	theme->set_color(SNAME("font_unselected_color"), SNAME("TabBar"), control_font_low_color);
+	theme->set_color(SNAME("font_disabled_color"), SNAME("TabBar"), control_font_disabled_color);
+	theme->set_color(SNAME("font_outline_color"), SNAME("TabBar"), Color(1, 1, 1));
 
-	theme->set_constant("hseparation", "TabBar", 4 * scale);
-	theme->set_constant("outline_size", "TabBar", 0);
+	theme->set_constant(SNAME("hseparation"), SNAME("TabBar"), 4 * scale);
+	theme->set_constant(SNAME("outline_size"), SNAME("TabBar"), 0);
 
 	// Separators
 
-	theme->set_stylebox("separator", "HSeparator", separator_horizontal);
-	theme->set_stylebox("separator", "VSeparator", separator_vertical);
+	theme->set_stylebox(SNAME("separator"), SNAME("HSeparator"), separator_horizontal);
+	theme->set_stylebox(SNAME("separator"), SNAME("VSeparator"), separator_vertical);
 
-	theme->set_icon("close", "Icons", icons["close"]);
-	theme->set_font("normal", "Fonts", Ref<Font>());
-	theme->set_font("large", "Fonts", Ref<Font>());
+	theme->set_icon(SNAME("close"), SNAME("Icons"), icons["close"]);
+	theme->set_font(SNAME("normal"), SNAME("Fonts"), Ref<Font>());
+	theme->set_font(SNAME("large"), SNAME("Fonts"), Ref<Font>());
 
-	theme->set_constant("separation", "HSeparator", 4 * scale);
-	theme->set_constant("separation", "VSeparator", 4 * scale);
+	theme->set_constant(SNAME("separation"), SNAME("HSeparator"), 4 * scale);
+	theme->set_constant(SNAME("separation"), SNAME("VSeparator"), 4 * scale);
 
 	// ColorPicker
 
-	theme->set_constant("margin", "ColorPicker", 4 * scale);
-	theme->set_constant("sv_width", "ColorPicker", 256 * scale);
-	theme->set_constant("sv_height", "ColorPicker", 256 * scale);
-	theme->set_constant("h_width", "ColorPicker", 30 * scale);
-	theme->set_constant("label_width", "ColorPicker", 10 * scale);
+	theme->set_constant(SNAME("margin"), SNAME("ColorPicker"), 4 * scale);
+	theme->set_constant(SNAME("sv_width"), SNAME("ColorPicker"), 256 * scale);
+	theme->set_constant(SNAME("sv_height"), SNAME("ColorPicker"), 256 * scale);
+	theme->set_constant(SNAME("h_width"), SNAME("ColorPicker"), 30 * scale);
+	theme->set_constant(SNAME("label_width"), SNAME("ColorPicker"), 10 * scale);
 
-	theme->set_icon("screen_picker", "ColorPicker", icons["color_picker_pipette"]);
-	theme->set_icon("add_preset", "ColorPicker", icons["add"]);
-	theme->set_icon("color_hue", "ColorPicker", icons["color_picker_hue"]);
-	theme->set_icon("color_sample", "ColorPicker", icons["color_picker_sample"]);
-	theme->set_icon("sample_bg", "ColorPicker", icons["mini_checkerboard"]);
-	theme->set_icon("overbright_indicator", "ColorPicker", icons["color_picker_overbright"]);
-	theme->set_icon("bar_arrow", "ColorPicker", icons["color_picker_bar_arrow"]);
-	theme->set_icon("picker_cursor", "ColorPicker", icons["color_picker_cursor"]);
+	theme->set_icon(SNAME("screen_picker"), SNAME("ColorPicker"), icons["color_picker_pipette"]);
+	theme->set_icon(SNAME("add_preset"), SNAME("ColorPicker"), icons["add"]);
+	theme->set_icon(SNAME("color_hue"), SNAME("ColorPicker"), icons["color_picker_hue"]);
+	theme->set_icon(SNAME("color_sample"), SNAME("ColorPicker"), icons["color_picker_sample"]);
+	theme->set_icon(SNAME("sample_bg"), SNAME("ColorPicker"), icons["mini_checkerboard"]);
+	theme->set_icon(SNAME("overbright_indicator"), SNAME("ColorPicker"), icons["color_picker_overbright"]);
+	theme->set_icon(SNAME("bar_arrow"), SNAME("ColorPicker"), icons["color_picker_bar_arrow"]);
+	theme->set_icon(SNAME("picker_cursor"), SNAME("ColorPicker"), icons["color_picker_cursor"]);
 
 	// ColorPickerButton
 
-	theme->set_icon("bg", "ColorPickerButton", icons["mini_checkerboard"]);
-	theme->set_stylebox("normal", "ColorPickerButton", button_normal);
-	theme->set_stylebox("pressed", "ColorPickerButton", button_pressed);
-	theme->set_stylebox("hover", "ColorPickerButton", button_hover);
-	theme->set_stylebox("disabled", "ColorPickerButton", button_disabled);
-	theme->set_stylebox("focus", "ColorPickerButton", focus);
+	theme->set_icon(SNAME("bg"), SNAME("ColorPickerButton"), icons["mini_checkerboard"]);
+	theme->set_stylebox(SNAME("normal"), SNAME("ColorPickerButton"), button_normal);
+	theme->set_stylebox(SNAME("pressed"), SNAME("ColorPickerButton"), button_pressed);
+	theme->set_stylebox(SNAME("hover"), SNAME("ColorPickerButton"), button_hover);
+	theme->set_stylebox(SNAME("disabled"), SNAME("ColorPickerButton"), button_disabled);
+	theme->set_stylebox(SNAME("focus"), SNAME("ColorPickerButton"), focus);
 
-	theme->set_font("font", "ColorPickerButton", Ref<Font>());
-	theme->set_font_size("font_size", "ColorPickerButton", -1);
+	theme->set_font(SNAME("font"), SNAME("ColorPickerButton"), Ref<Font>());
+	theme->set_font_size(SNAME("font_size"), SNAME("ColorPickerButton"), -1);
 
-	theme->set_color("font_color", "ColorPickerButton", Color(1, 1, 1, 1));
-	theme->set_color("font_pressed_color", "ColorPickerButton", Color(0.8, 0.8, 0.8, 1));
-	theme->set_color("font_hover_color", "ColorPickerButton", Color(1, 1, 1, 1));
-	theme->set_color("font_focus_color", "ColorPickerButton", Color(1, 1, 1, 1));
-	theme->set_color("font_disabled_color", "ColorPickerButton", Color(0.9, 0.9, 0.9, 0.3));
-	theme->set_color("font_outline_color", "ColorPickerButton", Color(1, 1, 1));
+	theme->set_color(SNAME("font_color"), SNAME("ColorPickerButton"), Color(1, 1, 1, 1));
+	theme->set_color(SNAME("font_pressed_color"), SNAME("ColorPickerButton"), Color(0.8, 0.8, 0.8, 1));
+	theme->set_color(SNAME("font_hover_color"), SNAME("ColorPickerButton"), Color(1, 1, 1, 1));
+	theme->set_color(SNAME("font_focus_color"), SNAME("ColorPickerButton"), Color(1, 1, 1, 1));
+	theme->set_color(SNAME("font_disabled_color"), SNAME("ColorPickerButton"), Color(0.9, 0.9, 0.9, 0.3));
+	theme->set_color(SNAME("font_outline_color"), SNAME("ColorPickerButton"), Color(1, 1, 1));
 
-	theme->set_constant("hseparation", "ColorPickerButton", 2 * scale);
-	theme->set_constant("outline_size", "ColorPickerButton", 0);
+	theme->set_constant(SNAME("hseparation"), SNAME("ColorPickerButton"), 2 * scale);
+	theme->set_constant(SNAME("outline_size"), SNAME("ColorPickerButton"), 0);
 
 	// ColorPresetButton
 
@@ -899,118 +899,118 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	preset_sb->set_corner_detail(2);
 	preset_sb->set_anti_aliased(false);
 
-	theme->set_stylebox("preset_fg", "ColorPresetButton", preset_sb);
-	theme->set_icon("preset_bg", "ColorPresetButton", icons["mini_checkerboard"]);
-	theme->set_icon("overbright_indicator", "ColorPresetButton", icons["color_picker_overbright"]);
+	theme->set_stylebox(SNAME("preset_fg"), SNAME("ColorPresetButton"), preset_sb);
+	theme->set_icon(SNAME("preset_bg"), SNAME("ColorPresetButton"), icons["mini_checkerboard"]);
+	theme->set_icon(SNAME("overbright_indicator"), SNAME("ColorPresetButton"), icons["color_picker_overbright"]);
 
 	// TooltipPanel + TooltipLabel
 
-	theme->set_stylebox("panel", "TooltipPanel",
+	theme->set_stylebox(SNAME("panel"), SNAME("TooltipPanel"),
 			make_flat_stylebox(Color(0, 0, 0, 0.5), 2 * default_margin, 0.5 * default_margin, 2 * default_margin, 0.5 * default_margin));
 
-	theme->set_font("font", "TooltipLabel", Ref<Font>());
-	theme->set_font_size("font_size", "TooltipLabel", -1);
+	theme->set_font(SNAME("font"), SNAME("TooltipLabel"), Ref<Font>());
+	theme->set_font_size(SNAME("font_size"), SNAME("TooltipLabel"), -1);
 
-	theme->set_color("font_color", "TooltipLabel", control_font_color);
-	theme->set_color("font_shadow_color", "TooltipLabel", Color(0, 0, 0, 0));
-	theme->set_color("font_outline_color", "TooltipLabel", Color(0, 0, 0, 0));
+	theme->set_color(SNAME("font_color"), SNAME("TooltipLabel"), control_font_color);
+	theme->set_color(SNAME("font_shadow_color"), SNAME("TooltipLabel"), Color(0, 0, 0, 0));
+	theme->set_color(SNAME("font_outline_color"), SNAME("TooltipLabel"), Color(0, 0, 0, 0));
 
-	theme->set_constant("shadow_offset_x", "TooltipLabel", 1);
-	theme->set_constant("shadow_offset_y", "TooltipLabel", 1);
-	theme->set_constant("outline_size", "TooltipLabel", 0);
+	theme->set_constant(SNAME("shadow_offset_x"), SNAME("TooltipLabel"), 1);
+	theme->set_constant(SNAME("shadow_offset_y"), SNAME("TooltipLabel"), 1);
+	theme->set_constant(SNAME("outline_size"), SNAME("TooltipLabel"), 0);
 
 	// RichTextLabel
 
-	theme->set_stylebox("focus", "RichTextLabel", focus);
-	theme->set_stylebox("normal", "RichTextLabel", make_empty_stylebox(0, 0, 0, 0));
+	theme->set_stylebox(SNAME("focus"), SNAME("RichTextLabel"), focus);
+	theme->set_stylebox(SNAME("normal"), SNAME("RichTextLabel"), make_empty_stylebox(0, 0, 0, 0));
 
-	theme->set_font("normal_font", "RichTextLabel", Ref<Font>());
-	theme->set_font("bold_font", "RichTextLabel", Ref<Font>());
-	theme->set_font("italics_font", "RichTextLabel", Ref<Font>());
-	theme->set_font("bold_italics_font", "RichTextLabel", Ref<Font>());
-	theme->set_font("mono_font", "RichTextLabel", Ref<Font>());
+	theme->set_font(SNAME("normal_font"), SNAME("RichTextLabel"), Ref<Font>());
+	theme->set_font(SNAME("bold_font"), SNAME("RichTextLabel"), Ref<Font>());
+	theme->set_font(SNAME("italics_font"), SNAME("RichTextLabel"), Ref<Font>());
+	theme->set_font(SNAME("bold_italics_font"), SNAME("RichTextLabel"), Ref<Font>());
+	theme->set_font(SNAME("mono_font"), SNAME("RichTextLabel"), Ref<Font>());
 
-	theme->set_font_size("normal_font_size", "RichTextLabel", -1);
-	theme->set_font_size("bold_font_size", "RichTextLabel", -1);
-	theme->set_font_size("italics_font_size", "RichTextLabel", -1);
-	theme->set_font_size("bold_italics_font_size", "RichTextLabel", -1);
-	theme->set_font_size("mono_font_size", "RichTextLabel", -1);
+	theme->set_font_size(SNAME("normal_font_size"), SNAME("RichTextLabel"), -1);
+	theme->set_font_size(SNAME("bold_font_size"), SNAME("RichTextLabel"), -1);
+	theme->set_font_size(SNAME("italics_font_size"), SNAME("RichTextLabel"), -1);
+	theme->set_font_size(SNAME("bold_italics_font_size"), SNAME("RichTextLabel"), -1);
+	theme->set_font_size(SNAME("mono_font_size"), SNAME("RichTextLabel"), -1);
 
-	theme->set_color("default_color", "RichTextLabel", Color(1, 1, 1));
-	theme->set_color("font_selected_color", "RichTextLabel", Color(0, 0, 0));
-	theme->set_color("selection_color", "RichTextLabel", Color(0.1, 0.1, 1, 0.8));
+	theme->set_color(SNAME("default_color"), SNAME("RichTextLabel"), Color(1, 1, 1));
+	theme->set_color(SNAME("font_selected_color"), SNAME("RichTextLabel"), Color(0, 0, 0));
+	theme->set_color(SNAME("selection_color"), SNAME("RichTextLabel"), Color(0.1, 0.1, 1, 0.8));
 
-	theme->set_color("font_shadow_color", "RichTextLabel", Color(0, 0, 0, 0));
+	theme->set_color(SNAME("font_shadow_color"), SNAME("RichTextLabel"), Color(0, 0, 0, 0));
 
-	theme->set_color("font_outline_color", "RichTextLabel", Color(1, 1, 1));
+	theme->set_color(SNAME("font_outline_color"), SNAME("RichTextLabel"), Color(1, 1, 1));
 
-	theme->set_constant("shadow_offset_x", "RichTextLabel", 1 * scale);
-	theme->set_constant("shadow_offset_y", "RichTextLabel", 1 * scale);
-	theme->set_constant("shadow_outline_size", "RichTextLabel", 1 * scale);
+	theme->set_constant(SNAME("shadow_offset_x"), SNAME("RichTextLabel"), 1 * scale);
+	theme->set_constant(SNAME("shadow_offset_y"), SNAME("RichTextLabel"), 1 * scale);
+	theme->set_constant(SNAME("shadow_outline_size"), SNAME("RichTextLabel"), 1 * scale);
 
-	theme->set_constant("line_separation", "RichTextLabel", 0 * scale);
-	theme->set_constant("table_hseparation", "RichTextLabel", 3 * scale);
-	theme->set_constant("table_vseparation", "RichTextLabel", 3 * scale);
+	theme->set_constant(SNAME("line_separation"), SNAME("RichTextLabel"), 0 * scale);
+	theme->set_constant(SNAME("table_hseparation"), SNAME("RichTextLabel"), 3 * scale);
+	theme->set_constant(SNAME("table_vseparation"), SNAME("RichTextLabel"), 3 * scale);
 
-	theme->set_constant("outline_size", "RichTextLabel", 0);
+	theme->set_constant(SNAME("outline_size"), SNAME("RichTextLabel"), 0);
 
-	theme->set_color("table_odd_row_bg", "RichTextLabel", Color(0, 0, 0, 0));
-	theme->set_color("table_even_row_bg", "RichTextLabel", Color(0, 0, 0, 0));
-	theme->set_color("table_border", "RichTextLabel", Color(0, 0, 0, 0));
+	theme->set_color(SNAME("table_odd_row_bg"), SNAME("RichTextLabel"), Color(0, 0, 0, 0));
+	theme->set_color(SNAME("table_even_row_bg"), SNAME("RichTextLabel"), Color(0, 0, 0, 0));
+	theme->set_color(SNAME("table_border"), SNAME("RichTextLabel"), Color(0, 0, 0, 0));
 
 	// Containers
 
-	theme->set_icon("grabber", "VSplitContainer", icons["vsplitter"]);
-	theme->set_icon("grabber", "HSplitContainer", icons["hsplitter"]);
+	theme->set_icon(SNAME("grabber"), SNAME("VSplitContainer"), icons["vsplitter"]);
+	theme->set_icon(SNAME("grabber"), SNAME("HSplitContainer"), icons["hsplitter"]);
 
-	theme->set_constant("separation", "HBoxContainer", 4 * scale);
-	theme->set_constant("separation", "VBoxContainer", 4 * scale);
-	theme->set_constant("margin_left", "MarginContainer", 0 * scale);
-	theme->set_constant("margin_top", "MarginContainer", 0 * scale);
-	theme->set_constant("margin_right", "MarginContainer", 0 * scale);
-	theme->set_constant("margin_bottom", "MarginContainer", 0 * scale);
-	theme->set_constant("hseparation", "GridContainer", 4 * scale);
-	theme->set_constant("vseparation", "GridContainer", 4 * scale);
-	theme->set_constant("separation", "HSplitContainer", 12 * scale);
-	theme->set_constant("separation", "VSplitContainer", 12 * scale);
-	theme->set_constant("autohide", "HSplitContainer", 1 * scale);
-	theme->set_constant("autohide", "VSplitContainer", 1 * scale);
-	theme->set_constant("hseparation", "HFlowContainer", 4 * scale);
-	theme->set_constant("vseparation", "HFlowContainer", 4 * scale);
-	theme->set_constant("hseparation", "VFlowContainer", 4 * scale);
-	theme->set_constant("vseparation", "VFlowContainer", 4 * scale);
+	theme->set_constant(SNAME("separation"), SNAME("HBoxContainer"), 4 * scale);
+	theme->set_constant(SNAME("separation"), SNAME("VBoxContainer"), 4 * scale);
+	theme->set_constant(SNAME("margin_left"), SNAME("MarginContainer"), 0 * scale);
+	theme->set_constant(SNAME("margin_top"), SNAME("MarginContainer"), 0 * scale);
+	theme->set_constant(SNAME("margin_right"), SNAME("MarginContainer"), 0 * scale);
+	theme->set_constant(SNAME("margin_bottom"), SNAME("MarginContainer"), 0 * scale);
+	theme->set_constant(SNAME("hseparation"), SNAME("GridContainer"), 4 * scale);
+	theme->set_constant(SNAME("vseparation"), SNAME("GridContainer"), 4 * scale);
+	theme->set_constant(SNAME("separation"), SNAME("HSplitContainer"), 12 * scale);
+	theme->set_constant(SNAME("separation"), SNAME("VSplitContainer"), 12 * scale);
+	theme->set_constant(SNAME("autohide"), SNAME("HSplitContainer"), 1 * scale);
+	theme->set_constant(SNAME("autohide"), SNAME("VSplitContainer"), 1 * scale);
+	theme->set_constant(SNAME("hseparation"), SNAME("HFlowContainer"), 4 * scale);
+	theme->set_constant(SNAME("vseparation"), SNAME("HFlowContainer"), 4 * scale);
+	theme->set_constant(SNAME("hseparation"), SNAME("VFlowContainer"), 4 * scale);
+	theme->set_constant(SNAME("vseparation"), SNAME("VFlowContainer"), 4 * scale);
 
-	theme->set_stylebox("panel", "PanelContainer", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
+	theme->set_stylebox(SNAME("panel"), SNAME("PanelContainer"), make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
 
-	theme->set_icon("minus", "GraphEdit", icons["zoom_less"]);
-	theme->set_icon("reset", "GraphEdit", icons["zoom_reset"]);
-	theme->set_icon("more", "GraphEdit", icons["zoom_more"]);
-	theme->set_icon("snap", "GraphEdit", icons["grid_snap"]);
-	theme->set_icon("minimap", "GraphEdit", icons["grid_minimap"]);
-	theme->set_icon("layout", "GraphEdit", icons["grid_layout"]);
-	theme->set_stylebox("bg", "GraphEdit", make_flat_stylebox(style_normal_color, 4, 4, 4, 5));
-	theme->set_color("grid_minor", "GraphEdit", Color(1, 1, 1, 0.05));
-	theme->set_color("grid_major", "GraphEdit", Color(1, 1, 1, 0.2));
-	theme->set_color("selection_fill", "GraphEdit", Color(1, 1, 1, 0.3));
-	theme->set_color("selection_stroke", "GraphEdit", Color(1, 1, 1, 0.8));
-	theme->set_color("activity", "GraphEdit", Color(1, 1, 1));
-	theme->set_constant("bezier_len_pos", "GraphEdit", 80 * scale);
-	theme->set_constant("bezier_len_neg", "GraphEdit", 160 * scale);
+	theme->set_icon(SNAME("minus"), SNAME("GraphEdit"), icons["zoom_less"]);
+	theme->set_icon(SNAME("reset"), SNAME("GraphEdit"), icons["zoom_reset"]);
+	theme->set_icon(SNAME("more"), SNAME("GraphEdit"), icons["zoom_more"]);
+	theme->set_icon(SNAME("snap"), SNAME("GraphEdit"), icons["grid_snap"]);
+	theme->set_icon(SNAME("minimap"), SNAME("GraphEdit"), icons["grid_minimap"]);
+	theme->set_icon(SNAME("layout"), SNAME("GraphEdit"), icons["grid_layout"]);
+	theme->set_stylebox(SNAME("bg"), SNAME("GraphEdit"), make_flat_stylebox(style_normal_color, 4, 4, 4, 5));
+	theme->set_color(SNAME("grid_minor"), SNAME("GraphEdit"), Color(1, 1, 1, 0.05));
+	theme->set_color(SNAME("grid_major"), SNAME("GraphEdit"), Color(1, 1, 1, 0.2));
+	theme->set_color(SNAME("selection_fill"), SNAME("GraphEdit"), Color(1, 1, 1, 0.3));
+	theme->set_color(SNAME("selection_stroke"), SNAME("GraphEdit"), Color(1, 1, 1, 0.8));
+	theme->set_color(SNAME("activity"), SNAME("GraphEdit"), Color(1, 1, 1));
+	theme->set_constant(SNAME("bezier_len_pos"), SNAME("GraphEdit"), 80 * scale);
+	theme->set_constant(SNAME("bezier_len_neg"), SNAME("GraphEdit"), 160 * scale);
 
 	// Visual Node Ports
 
-	theme->set_constant("port_grab_distance_horizontal", "GraphEdit", 24 * scale);
-	theme->set_constant("port_grab_distance_vertical", "GraphEdit", 26 * scale);
+	theme->set_constant(SNAME("port_grab_distance_horizontal"), SNAME("GraphEdit"), 24 * scale);
+	theme->set_constant(SNAME("port_grab_distance_vertical"), SNAME("GraphEdit"), 26 * scale);
 
-	theme->set_stylebox("bg", "GraphEditMinimap", make_flat_stylebox(Color(0.24, 0.24, 0.24), 0, 0, 0, 0));
+	theme->set_stylebox(SNAME("bg"), SNAME("GraphEditMinimap"), make_flat_stylebox(Color(0.24, 0.24, 0.24), 0, 0, 0, 0));
 	Ref<StyleBoxFlat> style_minimap_camera = make_flat_stylebox(Color(0.65, 0.65, 0.65, 0.2), 0, 0, 0, 0, 0);
 	style_minimap_camera->set_border_color(Color(0.65, 0.65, 0.65, 0.45));
 	style_minimap_camera->set_border_width_all(1);
-	theme->set_stylebox("camera", "GraphEditMinimap", style_minimap_camera);
-	theme->set_stylebox("node", "GraphEditMinimap", make_flat_stylebox(Color(1, 1, 1), 0, 0, 0, 0, 2));
+	theme->set_stylebox(SNAME("camera"), SNAME("GraphEditMinimap"), style_minimap_camera);
+	theme->set_stylebox(SNAME("node"), SNAME("GraphEditMinimap"), make_flat_stylebox(Color(1, 1, 1), 0, 0, 0, 0, 2));
 
-	theme->set_icon("resizer", "GraphEditMinimap", icons["resizer_nw"]);
-	theme->set_color("resizer_color", "GraphEditMinimap", Color(1, 1, 1, 0.85));
+	theme->set_icon(SNAME("resizer"), SNAME("GraphEditMinimap"), icons["resizer_nw"]);
+	theme->set_color(SNAME("resizer_color"), SNAME("GraphEditMinimap"), Color(1, 1, 1, 0.85));
 
 	// Theme
 

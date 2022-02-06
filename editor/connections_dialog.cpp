@@ -381,7 +381,7 @@ void ConnectDialog::init(ConnectionData p_cd, bool p_edit) {
 
 void ConnectDialog::popup_dialog(const String &p_for_signal) {
 	from_signal->set_text(p_for_signal);
-	error_label->add_theme_color_override("font_color", error_label->get_theme_color(SNAME("error_color"), SNAME("Editor")));
+	error_label->add_theme_color_override(SNAME("font_color"), error_label->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 	if (!advanced->is_pressed()) {
 		error_label->set_visible(!_find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root()));
 	}
@@ -1200,7 +1200,7 @@ ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 	tree->connect("item_activated", callable_mp(this, &ConnectionsDock::_tree_item_activated));
 	tree->connect("item_rmb_selected", callable_mp(this, &ConnectionsDock::_rmb_pressed));
 
-	add_theme_constant_override("separation", 3 * EDSCALE);
+	add_theme_constant_override(SNAME("separation"), 3 * EDSCALE);
 
 	EDITOR_DEF("interface/editors/default_signal_callback_name", "_on_{node_name}_{signal_name}");
 }

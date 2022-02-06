@@ -95,7 +95,7 @@ void ReplicationEditor::_bind_methods() {
 
 void ReplicationEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
+		add_theme_style_override(SNAME("panel"), editor->get_gui_base()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
 	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 		update_keying();
 	}
@@ -257,10 +257,10 @@ void ReplicationEditor::edit(MultiplayerSynchronizer *p_sync) {
 }
 
 Ref<Texture2D> ReplicationEditor::_get_class_icon(const Node *p_node) {
-	if (!p_node || !has_theme_icon(p_node->get_class(), "EditorIcons")) {
-		return get_theme_icon("ImportFail", "EditorIcons");
+	if (!p_node || !has_theme_icon(p_node->get_class(), SNAME("EditorIcons"))) {
+		return get_theme_icon(SNAME("ImportFail"), SNAME("EditorIcons"));
 	}
-	return get_theme_icon(p_node->get_class(), "EditorIcons");
+	return get_theme_icon(p_node->get_class(), SNAME("EditorIcons"));
 }
 
 void ReplicationEditor::_add_property(const NodePath &p_property, bool p_spawn, bool p_sync) {
@@ -285,7 +285,7 @@ void ReplicationEditor::_add_property(const NodePath &p_property, bool p_spawn, 
 		icon = _get_class_icon(node);
 	}
 	item->set_icon(0, icon);
-	item->add_button(3, get_theme_icon("Remove", "EditorIcons"));
+	item->add_button(3, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 	item->set_text_alignment(1, HORIZONTAL_ALIGNMENT_CENTER);
 	item->set_cell_mode(1, TreeItem::CELL_MODE_CHECK);
 	item->set_checked(1, p_spawn);

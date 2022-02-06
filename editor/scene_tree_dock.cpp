@@ -3301,7 +3301,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	VBoxContainer *vbc = this;
 
 	HBoxContainer *filter_hbc = memnew(HBoxContainer);
-	filter_hbc->add_theme_constant_override("separate", 0);
+	filter_hbc->add_theme_constant_override(SNAME("separate"), 0);
 
 	ED_SHORTCUT("scene_tree/rename", TTR("Rename"), Key::F2);
 	ED_SHORTCUT_OVERRIDE("scene_tree/rename", "macos", Key::ENTER);
@@ -3349,7 +3349,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	filter->set_placeholder(TTR("Filter nodes"));
 	filter_hbc->add_child(filter);
-	filter->add_theme_constant_override("minimum_character_width", 0);
+	filter->add_theme_constant_override(SNAME("minimum_character_width"), 0);
 	filter->connect("text_changed", callable_mp(this, &SceneTreeDock::_filter_changed));
 
 	button_create_script = memnew(Button);

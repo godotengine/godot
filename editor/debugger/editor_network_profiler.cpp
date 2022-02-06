@@ -46,8 +46,8 @@ void EditorNetworkProfiler::_notification(int p_what) {
 		outgoing_bandwidth_text->set_right_icon(get_theme_icon(SNAME("ArrowUp"), SNAME("EditorIcons")));
 
 		// This needs to be done here to set the faded color when the profiler is first opened
-		incoming_bandwidth_text->add_theme_color_override("font_uneditable_color", get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.5));
-		outgoing_bandwidth_text->add_theme_color_override("font_uneditable_color", get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.5));
+		incoming_bandwidth_text->add_theme_color_override(SNAME("font_uneditable_color"), get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.5));
+		outgoing_bandwidth_text->add_theme_color_override(SNAME("font_uneditable_color"), get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.5));
 	}
 }
 
@@ -126,7 +126,7 @@ bool EditorNetworkProfiler::is_profiling() {
 
 EditorNetworkProfiler::EditorNetworkProfiler() {
 	HBoxContainer *hb = memnew(HBoxContainer);
-	hb->add_theme_constant_override("separation", 8 * EDSCALE);
+	hb->add_theme_constant_override(SNAME("separation"), 8 * EDSCALE);
 	add_child(hb);
 
 	activate = memnew(Button);

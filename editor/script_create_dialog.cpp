@@ -70,7 +70,7 @@ void ScriptCreateDialog::_notification(int p_what) {
 			path_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
 			parent_browse_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
 			parent_search_button->set_icon(get_theme_icon(SNAME("ClassList"), SNAME("EditorIcons")));
-			status_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			status_panel->add_theme_style_override(SNAME("panel"), get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 		} break;
 	}
 }
@@ -291,7 +291,7 @@ void ScriptCreateDialog::_template_changed(int p_template) {
 		template_info += " - " + sinfo.description;
 	}
 	template_info_label->set_text(template_info);
-	template_info_label->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), SNAME("Editor")));
+	template_info_label->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("success_color"), SNAME("Editor")));
 }
 
 void ScriptCreateDialog::ok_pressed() {
@@ -522,18 +522,18 @@ void ScriptCreateDialog::_path_submitted(const String &p_path) {
 void ScriptCreateDialog::_msg_script_valid(bool valid, const String &p_msg) {
 	error_label->set_text(String::utf8("•  ") + p_msg);
 	if (valid) {
-		error_label->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), SNAME("Editor")));
+		error_label->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("success_color"), SNAME("Editor")));
 	} else {
-		error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+		error_label->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("error_color"), SNAME("Editor")));
 	}
 }
 
 void ScriptCreateDialog::_msg_path_valid(bool valid, const String &p_msg) {
 	path_error_label->set_text(String::utf8("•  ") + p_msg);
 	if (valid) {
-		path_error_label->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), SNAME("Editor")));
+		path_error_label->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("success_color"), SNAME("Editor")));
 	} else {
-		path_error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+		path_error_label->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("error_color"), SNAME("Editor")));
 	}
 }
 
@@ -658,7 +658,7 @@ void ScriptCreateDialog::_update_dialog() {
 			class_name->set_placeholder(TTR("Allowed: a-z, A-Z, 0-9, _ and ."));
 			Color placeholder_color = class_name->get_theme_color(SNAME("font_placeholder_color"));
 			placeholder_color.a = 0.3;
-			class_name->add_theme_color_override("font_placeholder_color", placeholder_color);
+			class_name->add_theme_color_override(SNAME("font_placeholder_color"), placeholder_color);
 		} else {
 			class_name->set_editable(false);
 		}
@@ -667,7 +667,7 @@ void ScriptCreateDialog::_update_dialog() {
 		class_name->set_placeholder(TTR("N/A"));
 		Color placeholder_color = class_name->get_theme_color(SNAME("font_placeholder_color"));
 		placeholder_color.a = 1;
-		class_name->add_theme_color_override("font_placeholder_color", placeholder_color);
+		class_name->add_theme_color_override(SNAME("font_placeholder_color"), placeholder_color);
 		class_name->set_text("");
 	}
 
@@ -911,7 +911,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	script_name_warning_label->set_text(
 			TTR("Warning: Having the script name be the same as a built-in type is usually not desired."));
 	vb->add_child(script_name_warning_label);
-	script_name_warning_label->add_theme_color_override("font_color", Color(1, 0.85, 0.4));
+	script_name_warning_label->add_theme_color_override(SNAME("font_color"), Color(1, 0.85, 0.4));
 	script_name_warning_label->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
 	script_name_warning_label->hide();
 

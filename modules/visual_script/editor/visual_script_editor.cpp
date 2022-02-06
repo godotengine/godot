@@ -713,7 +713,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			LineEdit *line_edit = memnew(LineEdit);
 			line_edit->set_text(node->get_text());
 			line_edit->set_expand_to_text_length_enabled(true);
-			line_edit->add_theme_font_override("font", get_theme_font(SNAME("source"), SNAME("EditorFonts")));
+			line_edit->add_theme_font_override(SNAME("font"), get_theme_font(SNAME("source"), SNAME("EditorFonts")));
 			gnode->add_child(line_edit);
 			line_edit->connect("text_changed", callable_mp(this, &VisualScriptEditor::_expression_text_changed), varray(E));
 		} else {
@@ -743,11 +743,11 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			Color c = sbf->get_border_color();
 			c = ((c.r + c.g + c.b) / 3) < 0.7 ? Color(1.0, 1.0, 1.0, 0.85) : Color(0.0, 0.0, 0.0, 0.85);
 			Color ic = c;
-			gnode->add_theme_color_override("title_color", c);
+			gnode->add_theme_color_override(SNAME("title_color"), c);
 			c.a = 1;
-			gnode->add_theme_color_override("close_color", c);
-			gnode->add_theme_color_override("resizer_color", ic);
-			gnode->add_theme_style_override("frame", sbf);
+			gnode->add_theme_color_override(SNAME("close_color"), c);
+			gnode->add_theme_color_override(SNAME("resizer_color"), ic);
+			gnode->add_theme_style_override(SNAME("frame"), sbf);
 		}
 
 		const Color mono_color = get_theme_color(SNAME("mono_color"), SNAME("Editor"));
@@ -2661,7 +2661,7 @@ Ref<Texture2D> VisualScriptEditor::get_theme_icon() {
 		icon_name += "Internal";
 	}
 
-	if (Control::has_theme_icon(icon_name, "EditorIcons")) {
+	if (Control::has_theme_icon(icon_name, SNAME("EditorIcons"))) {
 		return Control::get_theme_icon(icon_name, SNAME("EditorIcons"));
 	}
 
@@ -3931,13 +3931,13 @@ void VisualScriptEditor::_notification(int p_what) {
 
 			update_toggle_scripts_button();
 
-			edit_variable_edit->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
-			edit_signal_edit->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
-			func_input_scroll->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			edit_variable_edit->add_theme_style_override(SNAME("bg"), get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			edit_signal_edit->add_theme_style_override(SNAME("bg"), get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			func_input_scroll->add_theme_style_override(SNAME("bg"), get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 
 			Ref<Theme> tm = EditorNode::get_singleton()->get_theme_base()->get_theme();
 
-			bool dark_theme = tm->get_constant("dark_theme", "Editor");
+			bool dark_theme = tm->get_constant(SNAME("dark_theme"), SNAME("Editor"));
 
 			if (dark_theme) {
 				node_colors["flow_control"] = Color(0.96, 0.96, 0.96);
