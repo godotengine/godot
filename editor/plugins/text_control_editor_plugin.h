@@ -62,10 +62,7 @@ class TextControlEditor : public HBoxContainer {
 	ColorPickerButton *outline_color_picker = nullptr;
 	Button *clear_formatting = nullptr;
 
-	Control *edited_control = nullptr;
-	String edited_color;
-	String edited_font;
-	String edited_font_size;
+	Vector<Control *> edited_controls;
 	Ref<Font> custom_font;
 
 protected:
