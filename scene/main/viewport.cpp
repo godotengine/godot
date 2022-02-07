@@ -1973,23 +1973,46 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	}
 
 	if (mm.is_null() && mb.is_null() && p_event->is_action_type()) {
-		if (gui.key_focus && !gui.key_focus->is_visible_in_tree()) {
-			gui.key_focus->release_focus();
-		}
+		// Search all qualified subviewports (self-included) for a
+		// key_focus control.
+		Viewport *target_vp = this;
+		List<Node *> vps;
+		get_tree()->get_nodes_in_group("_viewports", &vps);
+		for (Node *node : vps) {
+			Viewport *vp = Object::cast_to<Viewport>(node);
+			if (vp == nullptr) {continue;}
+			if (vp->gui.key_focus == nullptr) {continue;}
 
-		if (gui.key_focus) {
-			gui.key_event_accepted = false;
-			if (gui.key_focus->can_process()) {
-				gui.key_focus->_call_gui_input(p_event);
+			Viewport *vp_parent = vp;
+			while (vp_parent && (vp_parent != this)) {
+				vp_parent = vp_parent->get_parent_viewport();
+			}
+			if (vp_parent != this) {continue;}
+
+			target_vp = vp;
+			break;
+		}
+		if (target_vp->gui.key_focus) {
+			Viewport::GUI &target_gui = target_vp->gui;
+			Control* &target_key_focus = target_vp->gui.key_focus;
+			if (target_key_focus && !target_key_focus->is_visible_in_tree()) {
+				target_key_focus->release_focus();
 			}
 
-			if (gui.key_event_accepted) {
-				set_input_as_handled();
-				return;
+			if (target_key_focus) {
+				target_gui.key_event_accepted = false;
+				if (target_key_focus->can_process()) {
+					target_key_focus->_call_gui_input(p_event);
+				}
+
+				if (target_gui.key_event_accepted) {
+					set_input_as_handled();
+					return;
+				}
 			}
 		}
 
-		Control *from = gui.key_focus ? gui.key_focus : nullptr;
+		Control *from = target_vp->gui.key_focus;
 
 		if (from && p_event->is_pressed()) {
 			Control *next = nullptr;
