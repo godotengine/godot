@@ -51,6 +51,7 @@ private:
 	bool expand_icon;
 	bool clip_text;
 	TextAlign align;
+	TextAlign icon_align;
 	float _internal_margin[4];
 
 protected:
@@ -78,6 +79,9 @@ public:
 
 	void set_text_align(TextAlign p_align);
 	TextAlign get_text_align() const;
+
+	void set_icon_align(TextAlign p_align);
+	TextAlign get_icon_align() const;
 
 	Button(const String &p_text = String());
 	~Button();
