@@ -592,7 +592,15 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 	List<PropertyInfo> props;
 	ClassDB::get_property_list(class_name, &props, true);
 
-	if (props.size() > 0) {
+	bool has_editor_props = false;
+	for (const PropertyInfo &E : props) {
+		if (E.usage & PROPERTY_USAGE_EDITOR) {
+			has_editor_props = true;
+			break;
+		}
+	}
+
+	if (has_editor_props) {
 		TreeItem *properties = property_list->create_item(root);
 		properties->set_text(0, TTR("Class Properties:"));
 
