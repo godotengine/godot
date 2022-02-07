@@ -448,7 +448,7 @@ GroupDialog::GroupDialog() {
 	groups->set_allow_reselect(true);
 	groups->set_allow_rmb_select(true);
 	groups->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	groups->add_theme_constant_override("draw_guides", 1);
+	groups->add_theme_constant_override(SNAME("draw_guides"), 1);
 	groups->connect("item_selected", callable_mp(this, &GroupDialog::_group_selected));
 	groups->connect("button_pressed", callable_mp(this, &GroupDialog::_modify_group_pressed));
 	groups->connect("item_edited", callable_mp(this, &GroupDialog::_group_renamed));
@@ -484,10 +484,10 @@ GroupDialog::GroupDialog() {
 	nodes_to_add->set_hide_folding(true);
 	nodes_to_add->set_select_mode(Tree::SELECT_MULTI);
 	nodes_to_add->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	nodes_to_add->add_theme_constant_override("draw_guides", 1);
+	nodes_to_add->add_theme_constant_override(SNAME("draw_guides"), 1);
 
 	HBoxContainer *add_filter_hbc = memnew(HBoxContainer);
-	add_filter_hbc->add_theme_constant_override("separate", 0);
+	add_filter_hbc->add_theme_constant_override(SNAME("separate"), 0);
 	vbc_add->add_child(add_filter_hbc);
 
 	add_filter = memnew(LineEdit);
@@ -534,10 +534,10 @@ GroupDialog::GroupDialog() {
 	nodes_to_remove->set_hide_root(true);
 	nodes_to_remove->set_hide_folding(true);
 	nodes_to_remove->set_select_mode(Tree::SELECT_MULTI);
-	nodes_to_remove->add_theme_constant_override("draw_guides", 1);
+	nodes_to_remove->add_theme_constant_override(SNAME("draw_guides"), 1);
 
 	HBoxContainer *remove_filter_hbc = memnew(HBoxContainer);
-	remove_filter_hbc->add_theme_constant_override("separate", 0);
+	remove_filter_hbc->add_theme_constant_override(SNAME("separate"), 0);
 	vbc_remove->add_child(remove_filter_hbc);
 
 	remove_filter = memnew(LineEdit);
@@ -733,8 +733,8 @@ GroupsEditor::GroupsEditor() {
 	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbc->add_child(tree);
 	tree->connect("button_pressed", callable_mp(this, &GroupsEditor::_modify_group));
-	tree->add_theme_constant_override("draw_guides", 1);
-	add_theme_constant_override("separation", 3 * EDSCALE);
+	tree->add_theme_constant_override(SNAME("draw_guides"), 1);
+	add_theme_constant_override(SNAME("separation"), 3 * EDSCALE);
 
 	_group_name_changed("");
 }

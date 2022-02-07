@@ -127,7 +127,7 @@ void Button::_notification(int p_what) {
 				} break;
 				case DRAW_HOVER_PRESSED: {
 					// Edge case for CheckButton and CheckBox.
-					if (has_theme_stylebox("hover_pressed")) {
+					if (has_theme_stylebox(SNAME("hover_pressed"))) {
 						if (rtl && has_theme_stylebox(SNAME("hover_pressed_mirrored"))) {
 							style = get_theme_stylebox(SNAME("hover_pressed_mirrored"));
 						} else {

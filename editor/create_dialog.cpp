@@ -743,7 +743,7 @@ CreateDialog::CreateDialog() {
 	favorites->set_allow_reselect(true);
 	favorites->connect("cell_selected", callable_mp(this, &CreateDialog::_favorite_selected));
 	favorites->connect("item_activated", callable_mp(this, &CreateDialog::_favorite_activated));
-	favorites->add_theme_constant_override("draw_guides", 1);
+	favorites->add_theme_constant_override(SNAME("draw_guides"), 1);
 #ifndef _MSC_VER
 #warning cannot forward drag data to a non control, must be fixed
 #endif
@@ -760,7 +760,7 @@ CreateDialog::CreateDialog() {
 	recent->set_allow_reselect(true);
 	recent->connect("item_selected", callable_mp(this, &CreateDialog::_history_selected));
 	recent->connect("item_activated", callable_mp(this, &CreateDialog::_history_activated));
-	recent->add_theme_constant_override("draw_guides", 1);
+	recent->add_theme_constant_override(SNAME("draw_guides"), 1);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	vbc->set_custom_minimum_size(Size2(300, 0) * EDSCALE);

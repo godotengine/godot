@@ -38,7 +38,7 @@
 void EditorHelpSearch::_update_icons() {
 	search_box->set_right_icon(results_tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 	search_box->set_clear_button_enabled(true);
-	search_box->add_theme_icon_override("right_icon", results_tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+	search_box->add_theme_icon_override(SNAME("right_icon"), results_tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 	case_sensitive_button->set_icon(results_tree->get_theme_icon(SNAME("MatchCase"), SNAME("EditorIcons")));
 	hierarchy_button->set_icon(results_tree->get_theme_icon(SNAME("ClassList"), SNAME("EditorIcons")));
 

@@ -79,17 +79,17 @@ void EditorAudioBus::_notification(int p_what) {
 			Color bypass_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(0.13, 0.8, 1.0) : Color(0.44, 0.87, 1.0);
 
 			solo->set_icon(get_theme_icon(SNAME("AudioBusSolo"), SNAME("EditorIcons")));
-			solo->add_theme_color_override("icon_pressed_color", solo_color);
+			solo->add_theme_color_override(SNAME("icon_pressed_color"), solo_color);
 			mute->set_icon(get_theme_icon(SNAME("AudioBusMute"), SNAME("EditorIcons")));
-			mute->add_theme_color_override("icon_pressed_color", mute_color);
+			mute->add_theme_color_override(SNAME("icon_pressed_color"), mute_color);
 			bypass->set_icon(get_theme_icon(SNAME("AudioBusBypass"), SNAME("EditorIcons")));
-			bypass->add_theme_color_override("icon_pressed_color", bypass_color);
+			bypass->add_theme_color_override(SNAME("icon_pressed_color"), bypass_color);
 
 			bus_options->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
 
-			audio_value_preview_label->add_theme_color_override("font_color", get_theme_color(SNAME("font_color"), SNAME("TooltipLabel")));
-			audio_value_preview_label->add_theme_color_override("font_shadow_color", get_theme_color(SNAME("font_shadow_color"), SNAME("TooltipLabel")));
-			audio_value_preview_box->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TooltipPanel")));
+			audio_value_preview_label->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("font_color"), SNAME("TooltipLabel")));
+			audio_value_preview_label->add_theme_color_override(SNAME("font_shadow_color"), get_theme_color(SNAME("font_shadow_color"), SNAME("TooltipLabel")));
+			audio_value_preview_box->add_theme_style_override(SNAME("panel"), get_theme_stylebox(SNAME("panel"), SNAME("TooltipPanel")));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -574,7 +574,7 @@ Variant EditorAudioBus::get_drag_data(const Point2 &p_point) {
 	Panel *p = memnew(Panel);
 	c->add_child(p);
 	p->set_modulate(Color(1, 1, 1, 0.7));
-	p->add_theme_style_override("panel", get_theme_stylebox(SNAME("focus"), SNAME("Button")));
+	p->add_theme_style_override(SNAME("panel"), get_theme_stylebox(SNAME("focus"), SNAME("Button")));
 	p->set_size(get_size());
 	p->set_position(-p_point);
 	set_drag_preview(c);
@@ -804,10 +804,10 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	Ref<StyleBoxEmpty> sbempty = memnew(StyleBoxEmpty);
 	for (int i = 0; i < hbc->get_child_count(); i++) {
 		Control *child = Object::cast_to<Control>(hbc->get_child(i));
-		child->add_theme_style_override("normal", sbempty);
-		child->add_theme_style_override("hover", sbempty);
-		child->add_theme_style_override("focus", sbempty);
-		child->add_theme_style_override("pressed", sbempty);
+		child->add_theme_style_override(SNAME("normal"), sbempty);
+		child->add_theme_style_override(SNAME("hover"), sbempty);
+		child->add_theme_style_override(SNAME("focus"), sbempty);
+		child->add_theme_style_override(SNAME("pressed"), sbempty);
 	}
 
 	HSeparator *separator = memnew(HSeparator);
@@ -1013,7 +1013,7 @@ void EditorAudioBuses::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			bus_scroll->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			bus_scroll->add_theme_style_override(SNAME("bg"), get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 		} break;
 		case NOTIFICATION_READY: {
 			_update_buses();

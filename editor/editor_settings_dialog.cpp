@@ -182,9 +182,9 @@ void EditorSettingsDialog::_update_icons() {
 	shortcut_search_box->set_clear_button_enabled(true);
 
 	restart_close_button->set_icon(shortcuts->get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-	restart_container->add_theme_style_override("panel", shortcuts->get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+	restart_container->add_theme_style_override(SNAME("panel"), shortcuts->get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 	restart_icon->set_texture(shortcuts->get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
-	restart_label->add_theme_color_override("font_color", shortcuts->get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+	restart_label->add_theme_color_override(SNAME("font_color"), shortcuts->get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 }
 
 void EditorSettingsDialog::_event_config_confirmed() {
@@ -272,15 +272,15 @@ void EditorSettingsDialog::_create_shortcut_treeitem(TreeItem *p_parent, const S
 	shortcut_item->set_text(1, sc_text);
 	if (sc_text == "None") {
 		// Fade out unassigned shortcut labels for easier visual grepping.
-		shortcut_item->set_custom_color(1, shortcuts->get_theme_color("font_color", "Label") * Color(1, 1, 1, 0.5));
+		shortcut_item->set_custom_color(1, shortcuts->get_theme_color(SNAME("font_color"), SNAME("Label")) * Color(1, 1, 1, 0.5));
 	}
 
 	if (p_allow_revert) {
-		shortcut_item->add_button(1, shortcuts->get_theme_icon("Reload", "EditorIcons"), SHORTCUT_REVERT);
+		shortcut_item->add_button(1, shortcuts->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")), SHORTCUT_REVERT);
 	}
 
-	shortcut_item->add_button(1, shortcuts->get_theme_icon("Add", "EditorIcons"), SHORTCUT_ADD);
-	shortcut_item->add_button(1, shortcuts->get_theme_icon("Close", "EditorIcons"), SHORTCUT_ERASE);
+	shortcut_item->add_button(1, shortcuts->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")), SHORTCUT_ADD);
+	shortcut_item->add_button(1, shortcuts->get_theme_icon(SNAME("Close"), SNAME("EditorIcons")), SHORTCUT_ERASE);
 
 	shortcut_item->set_meta("is_action", p_is_action);
 	shortcut_item->set_meta("type", "shortcut");
@@ -299,11 +299,11 @@ void EditorSettingsDialog::_create_shortcut_treeitem(TreeItem *p_parent, const S
 		event_item->set_text(0, shortcut_item->get_child_count() == 1 ? "Primary" : "");
 		event_item->set_text(1, ie->as_text());
 
-		event_item->add_button(1, shortcuts->get_theme_icon("Edit", "EditorIcons"), SHORTCUT_EDIT);
-		event_item->add_button(1, shortcuts->get_theme_icon("Close", "EditorIcons"), SHORTCUT_ERASE);
+		event_item->add_button(1, shortcuts->get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")), SHORTCUT_EDIT);
+		event_item->add_button(1, shortcuts->get_theme_icon(SNAME("Close"), SNAME("EditorIcons")), SHORTCUT_ERASE);
 
-		event_item->set_custom_bg_color(0, shortcuts->get_theme_color("dark_color_3", "Editor"));
-		event_item->set_custom_bg_color(1, shortcuts->get_theme_color("dark_color_3", "Editor"));
+		event_item->set_custom_bg_color(0, shortcuts->get_theme_color(SNAME("dark_color_3"), SNAME("Editor")));
+		event_item->set_custom_bg_color(1, shortcuts->get_theme_color(SNAME("dark_color_3"), SNAME("Editor")));
 
 		event_item->set_meta("is_action", p_is_action);
 		event_item->set_meta("type", "event");

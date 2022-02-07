@@ -54,10 +54,10 @@ void EditorHelp::_update_theme() {
 	qualifier_color = get_theme_color(SNAME("qualifier_color"), SNAME("EditorHelp"));
 	type_color = get_theme_color(SNAME("type_color"), SNAME("EditorHelp"));
 
-	class_desc->add_theme_color_override("selection_color", get_theme_color(SNAME("selection_color"), SNAME("EditorHelp")));
-	class_desc->add_theme_constant_override("line_separation", get_theme_constant(SNAME("line_separation"), SNAME("EditorHelp")));
-	class_desc->add_theme_constant_override("table_hseparation", get_theme_constant(SNAME("table_hseparation"), SNAME("EditorHelp")));
-	class_desc->add_theme_constant_override("table_vseparation", get_theme_constant(SNAME("table_vseparation"), SNAME("EditorHelp")));
+	class_desc->add_theme_color_override(SNAME("selection_color"), get_theme_color(SNAME("selection_color"), SNAME("EditorHelp")));
+	class_desc->add_theme_constant_override(SNAME("line_separation"), get_theme_constant(SNAME("line_separation"), SNAME("EditorHelp")));
+	class_desc->add_theme_constant_override(SNAME("table_hseparation"), get_theme_constant(SNAME("table_hseparation"), SNAME("EditorHelp")));
+	class_desc->add_theme_constant_override(SNAME("table_vseparation"), get_theme_constant(SNAME("table_vseparation"), SNAME("EditorHelp")));
 
 	doc_font = get_theme_font(SNAME("doc"), SNAME("EditorFonts"));
 	doc_bold_font = get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts"));
@@ -176,7 +176,7 @@ void EditorHelp::_class_desc_resized(bool p_force_update_theme) {
 		Ref<StyleBox> class_desc_stylebox = EditorNode::get_singleton()->get_theme_base()->get_theme_stylebox(SNAME("normal"), SNAME("RichTextLabel"))->duplicate();
 		class_desc_stylebox->set_default_margin(SIDE_LEFT, display_margin);
 		class_desc_stylebox->set_default_margin(SIDE_RIGHT, display_margin);
-		class_desc->add_theme_style_override("normal", class_desc_stylebox);
+		class_desc->add_theme_style_override(SNAME("normal"), class_desc_stylebox);
 	}
 }
 
@@ -1872,7 +1872,7 @@ EditorHelp::EditorHelp() {
 	class_desc = memnew(RichTextLabel);
 	add_child(class_desc);
 	class_desc->set_v_size_flags(SIZE_EXPAND_FILL);
-	class_desc->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.4));
+	class_desc->add_theme_color_override(SNAME("selection_color"), get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.4));
 
 	class_desc->connect("meta_clicked", callable_mp(this, &EditorHelp::_class_desc_select));
 	class_desc->connect("gui_input", callable_mp(this, &EditorHelp::_class_desc_input));
@@ -1951,7 +1951,7 @@ void EditorHelpBit::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			rich_text->add_theme_color_override("selection_color", get_theme_color(SNAME("selection_color"), SNAME("EditorHelp")));
+			rich_text->add_theme_color_override(SNAME("selection_color"), get_theme_color(SNAME("selection_color"), SNAME("EditorHelp")));
 			rich_text->clear();
 			_add_text_to_rt(text, rich_text);
 			rich_text->reset_size(); // Force recalculating size after parsing bbcode.
@@ -2039,7 +2039,7 @@ void FindBar::_notification(int p_what) {
 			hide_button->set_hover_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
 			hide_button->set_pressed_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
 			hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
-			matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			matches_label->add_theme_color_override(SNAME("font_color"), results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), SNAME("Editor")));
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			set_process_unhandled_input(is_visible_in_tree());
@@ -2110,7 +2110,7 @@ void FindBar::_update_matches_label() {
 	} else {
 		matches_label->show();
 
-		matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), SNAME("Editor")));
+		matches_label->add_theme_color_override(SNAME("font_color"), results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), SNAME("Editor")));
 		matches_label->set_text(vformat(results_count == 1 ? TTR("%d match.") : TTR("%d matches."), results_count));
 	}
 }

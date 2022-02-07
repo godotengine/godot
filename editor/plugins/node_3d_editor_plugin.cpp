@@ -2946,28 +2946,28 @@ void Node3DEditorViewport::_notification(int p_what) {
 		view_menu->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
 		preview_camera->set_icon(get_theme_icon(SNAME("Camera3D"), SNAME("EditorIcons")));
 
-		view_menu->add_theme_style_override("normal", editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-		view_menu->add_theme_style_override("hover", editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-		view_menu->add_theme_style_override("pressed", editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-		view_menu->add_theme_style_override("focus", editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-		view_menu->add_theme_style_override("disabled", editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+		view_menu->add_theme_style_override(SNAME("normal"), editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+		view_menu->add_theme_style_override(SNAME("hover"), editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+		view_menu->add_theme_style_override(SNAME("pressed"), editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+		view_menu->add_theme_style_override(SNAME("focus"), editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+		view_menu->add_theme_style_override(SNAME("disabled"), editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
 
-		preview_camera->add_theme_style_override("normal", editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-		preview_camera->add_theme_style_override("hover", editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-		preview_camera->add_theme_style_override("pressed", editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-		preview_camera->add_theme_style_override("focus", editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-		preview_camera->add_theme_style_override("disabled", editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+		preview_camera->add_theme_style_override(SNAME("normal"), editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+		preview_camera->add_theme_style_override(SNAME("hover"), editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+		preview_camera->add_theme_style_override(SNAME("pressed"), editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+		preview_camera->add_theme_style_override(SNAME("focus"), editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+		preview_camera->add_theme_style_override(SNAME("disabled"), editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
 
 		frame_time_gradient->set_color(0, get_theme_color(SNAME("success_color"), SNAME("Editor")));
 		frame_time_gradient->set_color(1, get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 		frame_time_gradient->set_color(2, get_theme_color(SNAME("error_color"), SNAME("Editor")));
 
-		info_label->add_theme_style_override("normal", editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-		cpu_time_label->add_theme_style_override("normal", editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-		gpu_time_label->add_theme_style_override("normal", editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-		fps_label->add_theme_style_override("normal", editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-		cinema_label->add_theme_style_override("normal", editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
-		locked_label->add_theme_style_override("normal", editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+		info_label->add_theme_style_override(SNAME("normal"), editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+		cpu_time_label->add_theme_style_override(SNAME("normal"), editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+		gpu_time_label->add_theme_style_override(SNAME("normal"), editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+		fps_label->add_theme_style_override(SNAME("normal"), editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+		cinema_label->add_theme_style_override(SNAME("normal"), editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
+		locked_label->add_theme_style_override(SNAME("normal"), editor->get_gui_base()->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
 	}
 }
 
@@ -4512,7 +4512,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	zoom_limit_label->set_offset(Side::SIDE_TOP, -28 * EDSCALE);
 	zoom_limit_label->set_text(TTR("To zoom further, change the camera's clipping planes (View -> Settings...)"));
 	zoom_limit_label->set_name("ZoomLimitMessageLabel");
-	zoom_limit_label->add_theme_color_override("font_color", Color(1, 1, 1, 1));
+	zoom_limit_label->add_theme_color_override(SNAME("font_color"), Color(1, 1, 1, 1));
 	zoom_limit_label->hide();
 	surface->add_child(zoom_limit_label);
 
@@ -4526,7 +4526,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	// Make sure frame time labels don't touch the viewport's edge.
 	top_right_vbox->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 	// Prevent visible spacing between frame time labels.
-	top_right_vbox->add_theme_constant_override("separation", 0);
+	top_right_vbox->add_theme_constant_override(SNAME("separation"), 0);
 
 	rotation_control = memnew(ViewportRotationControl);
 	rotation_control->set_custom_minimum_size(Size2(80, 80) * EDSCALE);
@@ -6190,7 +6190,7 @@ void Node3DEditor::_update_context_menu_stylebox() {
 	context_menu_stylebox->set_border_color(accent_color);
 	context_menu_stylebox->set_border_width(SIDE_BOTTOM, Math::round(2 * EDSCALE));
 	context_menu_stylebox->set_default_margin(SIDE_BOTTOM, 0);
-	context_menu_container->add_theme_style_override("panel", context_menu_stylebox);
+	context_menu_container->add_theme_style_override(SNAME("panel"), context_menu_stylebox);
 }
 
 void Node3DEditor::_update_gizmos_menu() {
@@ -6777,8 +6777,8 @@ void Node3DEditor::_update_theme() {
 	environ_button->set_icon(get_theme_icon(SNAME("WorldEnvironment"), SNAME("EditorIcons")));
 	sun_environ_settings->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
 
-	sun_title->add_theme_font_override("font", get_theme_font(SNAME("title_font"), SNAME("Window")));
-	environ_title->add_theme_font_override("font", get_theme_font(SNAME("title_font"), SNAME("Window")));
+	sun_title->add_theme_font_override(SNAME("font"), get_theme_font(SNAME("title_font"), SNAME("Window")));
+	environ_title->add_theme_font_override(SNAME("font"), get_theme_font(SNAME("title_font"), SNAME("Window")));
 }
 
 void Node3DEditor::_notification(int p_what) {
@@ -6815,8 +6815,8 @@ void Node3DEditor::_notification(int p_what) {
 			_update_theme();
 			_update_gizmos_menu_theme();
 			_update_context_menu_stylebox();
-			sun_title->add_theme_font_override("font", get_theme_font(SNAME("title_font"), SNAME("Window")));
-			environ_title->add_theme_font_override("font", get_theme_font(SNAME("title_font"), SNAME("Window")));
+			sun_title->add_theme_font_override(SNAME("font"), get_theme_font(SNAME("title_font"), SNAME("Window")));
+			environ_title->add_theme_font_override(SNAME("font"), get_theme_font(SNAME("title_font"), SNAME("Window")));
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			// Update grid color by rebuilding grid.
@@ -7806,7 +7806,7 @@ void fragment() {
 		sun_angle_azimuth->connect("value_changed", callable_mp(this, &Node3DEditor::_sun_direction_angle_set).unbind(1));
 		sun_angle_azimuth_vbox->add_child(sun_angle_azimuth);
 		sun_angle_hbox->add_child(sun_angle_azimuth_vbox);
-		sun_angle_hbox->add_theme_constant_override("separation", 10);
+		sun_angle_hbox->add_theme_constant_override(SNAME("separation"), 10);
 		sun_vb->add_child(sun_angle_hbox);
 
 		sun_color = memnew(ColorPickerButton);

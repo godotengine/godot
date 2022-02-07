@@ -243,10 +243,10 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 		mono_color.a = 0.85;
 		c = mono_color;
 
-		node->add_theme_color_override("title_color", c);
+		node->add_theme_color_override(SNAME("title_color"), c);
 		c.a = 0.7;
-		node->add_theme_color_override("close_color", c);
-		node->add_theme_color_override("resizer_color", c);
+		node->add_theme_color_override(SNAME("close_color"), c);
+		node->add_theme_color_override(SNAME("resizer_color"), c);
 	}
 
 	List<AnimationNodeBlendTree::NodeConnection> connections;
@@ -739,8 +739,8 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
-		error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+		error_panel->add_theme_style_override(SNAME("panel"), get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+		error_label->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("error_color"), SNAME("Editor")));
 
 		if (p_what == NOTIFICATION_THEME_CHANGED && is_visible_in_tree()) {
 			_update_graph();

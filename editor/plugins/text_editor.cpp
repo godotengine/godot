@@ -521,7 +521,7 @@ void TextEditor::update_toggle_scripts_button() {
 TextEditor::TextEditor() {
 	code_editor = memnew(CodeTextEditor);
 	add_child(code_editor);
-	code_editor->add_theme_constant_override("separation", 0);
+	code_editor->add_theme_constant_override(SNAME("separation"), 0);
 	code_editor->connect("load_theme_settings", callable_mp(this, &TextEditor::_load_theme_settings));
 	code_editor->connect("validate_script", callable_mp(this, &TextEditor::_validate_script));
 	code_editor->set_anchors_and_offsets_preset(Control::PRESET_WIDE);

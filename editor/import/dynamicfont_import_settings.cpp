@@ -481,7 +481,7 @@ void DynamicFontImportSettings::_main_prop_changed(const String &p_edited_proper
 			font_preview->get_data(0)->set_oversampling(import_settings_data->get("oversampling"));
 		}
 	}
-	font_preview_label->add_theme_font_override("font", font_preview);
+	font_preview_label->add_theme_font_override(SNAME("font"), font_preview);
 	font_preview_label->update();
 }
 
@@ -495,7 +495,7 @@ void DynamicFontImportSettings::_variation_add() {
 
 	vars_item->set_text(0, TTR("New configuration"));
 	vars_item->set_editable(0, true);
-	vars_item->add_button(1, vars_list->get_theme_icon("Remove", "EditorIcons"), BUTTON_REMOVE_VAR, false, TTR("Remove Variation"));
+	vars_item->add_button(1, vars_list->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE_VAR, false, TTR("Remove Variation"));
 	vars_item->set_button_color(1, 0, Color(1, 1, 1, 0.75));
 
 	Ref<DynamicFontImportSettingsData> import_variation_data;
@@ -643,8 +643,8 @@ void DynamicFontImportSettings::_glyph_selected() {
 	TreeItem *item = glyph_table->get_selected();
 	ERR_FAIL_NULL(item);
 
-	Color scol = glyph_table->get_theme_color("box_selection_fill_color", "Editor");
-	Color fcol = glyph_table->get_theme_color("font_selected_color", "Editor");
+	Color scol = glyph_table->get_theme_color(SNAME("box_selection_fill_color"), SNAME("Editor"));
+	Color fcol = glyph_table->get_theme_color(SNAME("font_selected_color"), SNAME("Editor"));
 	scol.a = 1.f;
 
 	int32_t c = item->get_metadata(glyph_table->get_selected_column());
@@ -705,8 +705,8 @@ void DynamicFontImportSettings::_edit_range(int32_t p_start, int32_t p_end) {
 	TreeItem *root = glyph_table->create_item();
 	ERR_FAIL_NULL(root);
 
-	Color scol = glyph_table->get_theme_color("box_selection_fill_color", "Editor");
-	Color fcol = glyph_table->get_theme_color("font_selected_color", "Editor");
+	Color scol = glyph_table->get_theme_color(SNAME("box_selection_fill_color"), SNAME("Editor"));
+	Color fcol = glyph_table->get_theme_color(SNAME("font_selected_color"), SNAME("Editor"));
 	scol.a = 1.f;
 
 	TreeItem *item = nullptr;
@@ -719,12 +719,12 @@ void DynamicFontImportSettings::_edit_range(int32_t p_start, int32_t p_end) {
 			item->set_text(0, _pad_zeros(String::num_int64(c, 16)));
 			item->set_text_alignment(0, HORIZONTAL_ALIGNMENT_LEFT);
 			item->set_selectable(0, false);
-			item->set_custom_bg_color(0, glyph_table->get_theme_color("dark_color_3", "Editor"));
+			item->set_custom_bg_color(0, glyph_table->get_theme_color(SNAME("dark_color_3"), SNAME("Editor")));
 		}
 		if (font_main->has_char(c)) {
 			item->set_text(col + 1, String::chr(c));
 			item->set_custom_color(col + 1, Color(1, 1, 1));
-			if (selected_chars.has(c) || (font_main->get_data(0).is_valid() && selected_glyphs.has(font_main->get_data(0)->get_glyph_index(get_theme_font_size("font_size") * 2, c)))) {
+			if (selected_chars.has(c) || (font_main->get_data(0).is_valid() && selected_glyphs.has(font_main->get_data(0)->get_glyph_index(get_theme_font_size(SNAME("font_size")) * 2, c)))) {
 				item->set_custom_color(col + 1, fcol);
 				item->set_custom_bg_color(col + 1, scol);
 			} else {
@@ -732,13 +732,13 @@ void DynamicFontImportSettings::_edit_range(int32_t p_start, int32_t p_end) {
 				item->clear_custom_bg_color(col + 1);
 			}
 		} else {
-			item->set_custom_bg_color(col + 1, glyph_table->get_theme_color("dark_color_2", "Editor"));
+			item->set_custom_bg_color(col + 1, glyph_table->get_theme_color(SNAME("dark_color_2"), SNAME("Editor")));
 		}
 		item->set_metadata(col + 1, c);
 		item->set_text_alignment(col + 1, HORIZONTAL_ALIGNMENT_CENTER);
 		item->set_selectable(col + 1, true);
 		item->set_custom_font(col + 1, font_main);
-		item->set_custom_font_size(col + 1, get_theme_font_size("font_size") * 2);
+		item->set_custom_font_size(col + 1, get_theme_font_size(SNAME("font_size")) * 2);
 
 		col++;
 		if (col == 16) {
@@ -752,8 +752,8 @@ bool DynamicFontImportSettings::_char_update(int32_t p_char) {
 	if (selected_chars.has(p_char)) {
 		selected_chars.erase(p_char);
 		return false;
-	} else if (font_main->get_data(0).is_valid() && selected_glyphs.has(font_main->get_data(0)->get_glyph_index(get_theme_font_size("font_size") * 2, p_char))) {
-		selected_glyphs.erase(font_main->get_data(0)->get_glyph_index(get_theme_font_size("font_size") * 2, p_char));
+	} else if (font_main->get_data(0).is_valid() && selected_glyphs.has(font_main->get_data(0)->get_glyph_index(get_theme_font_size(SNAME("font_size")) * 2, p_char))) {
+		selected_glyphs.erase(font_main->get_data(0)->get_glyph_index(get_theme_font_size(SNAME("font_size")) * 2, p_char));
 		return false;
 	} else {
 		selected_chars.insert(p_char);
@@ -767,7 +767,7 @@ void DynamicFontImportSettings::_range_update(int32_t p_start, int32_t p_end) {
 	for (int32_t i = p_start; i <= p_end; i++) {
 		if (font_main->has_char(i)) {
 			if (font_main->get_data(0).is_valid()) {
-				all_selected = all_selected && (selected_chars.has(i) || (font_main->get_data(0).is_valid() && selected_glyphs.has(font_main->get_data(0)->get_glyph_index(get_theme_font_size("font_size") * 2, i))));
+				all_selected = all_selected && (selected_chars.has(i) || (font_main->get_data(0).is_valid() && selected_glyphs.has(font_main->get_data(0)->get_glyph_index(get_theme_font_size(SNAME("font_size")) * 2, i))));
 			} else {
 				all_selected = all_selected && selected_chars.has(i);
 			}
@@ -780,7 +780,7 @@ void DynamicFontImportSettings::_range_update(int32_t p_start, int32_t p_end) {
 			} else {
 				selected_chars.erase(i);
 				if (font_main->get_data(0).is_valid()) {
-					selected_glyphs.erase(font_main->get_data(0)->get_glyph_index(get_theme_font_size("font_size") * 2, i));
+					selected_glyphs.erase(font_main->get_data(0)->get_glyph_index(get_theme_font_size(SNAME("font_size")) * 2, i));
 				}
 			}
 		}
@@ -809,7 +809,7 @@ void DynamicFontImportSettings::_lang_add_item(const String &p_locale) {
 	lang_item->set_checked(0, false);
 	lang_item->set_text(1, p_locale);
 	lang_item->set_editable(1, true);
-	lang_item->add_button(2, lang_list->get_theme_icon("Remove", "EditorIcons"), BUTTON_REMOVE_VAR, false, TTR("Remove"));
+	lang_item->add_button(2, lang_list->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE_VAR, false, TTR("Remove"));
 	lang_item->set_button_color(2, 0, Color(1, 1, 1, 0.75));
 }
 
@@ -841,7 +841,7 @@ void DynamicFontImportSettings::_ot_add_item(int p_option) {
 	ot_item->set_editable(0, false);
 	ot_item->set_text(1, "1");
 	ot_item->set_editable(1, true);
-	ot_item->add_button(2, ot_list->get_theme_icon("Remove", "EditorIcons"), BUTTON_REMOVE_VAR, false, TTR("Remove"));
+	ot_item->add_button(2, ot_list->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE_VAR, false, TTR("Remove"));
 	ot_item->set_button_color(2, 0, Color(1, 1, 1, 0.75));
 }
 
@@ -868,7 +868,7 @@ void DynamicFontImportSettings::_script_add_item(int p_option) {
 	script_item->set_checked(0, false);
 	script_item->set_text(1, script_codes[p_option]);
 	script_item->set_editable(1, true);
-	script_item->add_button(2, lang_list->get_theme_icon("Remove", "EditorIcons"), BUTTON_REMOVE_VAR, false, TTR("Remove"));
+	script_item->add_button(2, lang_list->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE_VAR, false, TTR("Remove"));
 	script_item->set_button_color(2, 0, Color(1, 1, 1, 0.75));
 }
 
@@ -895,10 +895,10 @@ void DynamicFontImportSettings::_notification(int p_what) {
 	if (p_what == NOTIFICATION_READY) {
 		connect("confirmed", callable_mp(this, &DynamicFontImportSettings::_re_import));
 	} else if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		add_lang->set_icon(add_var->get_theme_icon("Add", "EditorIcons"));
-		add_script->set_icon(add_var->get_theme_icon("Add", "EditorIcons"));
-		add_var->set_icon(add_var->get_theme_icon("Add", "EditorIcons"));
-		add_ot->set_icon(add_var->get_theme_icon("Add", "EditorIcons"));
+		add_lang->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+		add_script->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+		add_var->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+		add_ot->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 	}
 }
 
@@ -1036,14 +1036,14 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 
 	font_main.instantiate();
 	font_main->add_data(dfont_main);
-	text_edit->add_theme_font_override("font", font_main);
+	text_edit->add_theme_font_override(SNAME("font"), font_main);
 
 	base_path = p_path;
 
 	inspector_vars->edit(nullptr);
 	inspector_general->edit(nullptr);
 
-	int gww = get_theme_font("font")->get_string_size("00000", get_theme_font_size("font_size")).x + 50;
+	int gww = get_theme_font(SNAME("font"))->get_string_size("00000", get_theme_font_size(SNAME("font_size"))).x + 50;
 	glyph_table->set_column_custom_minimum_width(0, gww);
 
 	glyph_table->clear();
@@ -1146,7 +1146,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 
 					vars_item->set_text(0, TTR("Configuration") + " " + itos(i));
 					vars_item->set_editable(0, true);
-					vars_item->add_button(1, vars_list->get_theme_icon("Remove", "EditorIcons"), BUTTON_REMOVE_VAR, false, TTR("Remove Variation"));
+					vars_item->add_button(1, vars_list->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE_VAR, false, TTR("Remove Variation"));
 					vars_item->set_button_color(1, 0, Color(1, 1, 1, 0.75));
 
 					Ref<DynamicFontImportSettingsData> import_variation_data_custom;
@@ -1184,7 +1184,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 					lang_item->set_checked(0, true);
 					lang_item->set_text(1, _langs[i]);
 					lang_item->set_editable(1, true);
-					lang_item->add_button(2, lang_list->get_theme_icon("Remove", "EditorIcons"), BUTTON_REMOVE_VAR, false, TTR("Remove"));
+					lang_item->add_button(2, lang_list->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE_VAR, false, TTR("Remove"));
 				}
 			} else if (key == "support_overrides/language_disabled") {
 				PackedStringArray _langs = config->get_value("params", key);
@@ -1197,7 +1197,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 					lang_item->set_checked(0, false);
 					lang_item->set_text(1, _langs[i]);
 					lang_item->set_editable(1, true);
-					lang_item->add_button(2, lang_list->get_theme_icon("Remove", "EditorIcons"), BUTTON_REMOVE_VAR, false, TTR("Remove"));
+					lang_item->add_button(2, lang_list->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE_VAR, false, TTR("Remove"));
 				}
 			} else if (key == "support_overrides/script_enabled") {
 				PackedStringArray _scripts = config->get_value("params", key);
@@ -1210,7 +1210,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 					script_item->set_checked(0, true);
 					script_item->set_text(1, _scripts[i]);
 					script_item->set_editable(1, true);
-					script_item->add_button(2, lang_list->get_theme_icon("Remove", "EditorIcons"), BUTTON_REMOVE_VAR, false, TTR("Remove"));
+					script_item->add_button(2, lang_list->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE_VAR, false, TTR("Remove"));
 				}
 			} else if (key == "support_overrides/script_disabled") {
 				PackedStringArray _scripts = config->get_value("params", key);
@@ -1223,7 +1223,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 					script_item->set_checked(0, false);
 					script_item->set_text(1, _scripts[i]);
 					script_item->set_editable(1, true);
-					script_item->add_button(2, lang_list->get_theme_icon("Remove", "EditorIcons"), BUTTON_REMOVE_VAR, false, TTR("Remove"));
+					script_item->add_button(2, lang_list->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE_VAR, false, TTR("Remove"));
 				}
 			} else if (key == "opentype_feature_overrides") {
 				Dictionary features = config->get_value("params", key);
@@ -1239,7 +1239,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 					ot_item->set_editable(0, false);
 					ot_item->set_text(1, itos(value));
 					ot_item->set_editable(1, true);
-					ot_item->add_button(2, ot_list->get_theme_icon("Remove", "EditorIcons"), BUTTON_REMOVE_VAR, false, TTR("Remove"));
+					ot_item->add_button(2, ot_list->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), BUTTON_REMOVE_VAR, false, TTR("Remove"));
 					ot_item->set_button_color(2, 0, Color(1, 1, 1, 0.75));
 				}
 			} else {
@@ -1263,7 +1263,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 		font_preview->get_data(0)->set_hinting((TextServer::Hinting)import_settings_data->get("hinting").operator int());
 		font_preview->get_data(0)->set_oversampling(import_settings_data->get("oversampling"));
 	}
-	font_preview_label->add_theme_font_override("font", font_preview);
+	font_preview_label->add_theme_font_override(SNAME("font"), font_preview);
 	font_preview_label->update();
 
 	menu_ot->clear();
@@ -1356,7 +1356,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	menu_ot->add_child(menu_ot_cu);
 	menu_ot_cu->connect("id_pressed", callable_mp(this, &DynamicFontImportSettings::_ot_add_item));
 
-	Color warn_color = (EditorNode::get_singleton()) ? EditorNode::get_singleton()->get_gui_base()->get_theme_color("warning_color", "Editor") : Color(1, 1, 0);
+	Color warn_color = (EditorNode::get_singleton()) ? EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("warning_color"), SNAME("Editor")) : Color(1, 1, 0);
 
 	// Root layout
 
@@ -1372,7 +1372,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	label_warn->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	label_warn->set_text("");
 	root_vb->add_child(label_warn);
-	label_warn->add_theme_color_override("font_color", warn_color);
+	label_warn->add_theme_color_override(SNAME("font_color"), warn_color);
 	label_warn->hide();
 
 	// Page 1 layout: Rendering Options
@@ -1392,7 +1392,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	page1_vb->add_child(page1_hb);
 
 	font_preview_label = memnew(Label);
-	font_preview_label->add_theme_font_size_override("font_size", 200 * EDSCALE);
+	font_preview_label->add_theme_font_size_override(SNAME("font_size"), 200 * EDSCALE);
 	font_preview_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	font_preview_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	font_preview_label->set_autowrap_mode(Label::AUTOWRAP_ARBITRARY);
@@ -1438,7 +1438,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	add_var = memnew(Button);
 	page2_hb_vars->add_child(add_var);
 	add_var->set_tooltip(TTR("Add configuration"));
-	add_var->set_icon(add_var->get_theme_icon("Add", "EditorIcons"));
+	add_var->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 	add_var->connect("pressed", callable_mp(this, &DynamicFontImportSettings::_variation_add));
 
 	vars_list = memnew(Tree);
@@ -1545,9 +1545,9 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	for (int i = 0; i < 16; i++) {
 		glyph_table->set_column_title(i + 1, String::num_int64(i, 16));
 	}
-	glyph_table->add_theme_style_override("selected", glyph_table->get_theme_stylebox("bg"));
-	glyph_table->add_theme_style_override("selected_focus", glyph_table->get_theme_stylebox("bg"));
-	glyph_table->add_theme_constant_override("hseparation", 0);
+	glyph_table->add_theme_style_override(SNAME("selected"), glyph_table->get_theme_stylebox(SNAME("bg")));
+	glyph_table->add_theme_style_override(SNAME("selected_focus"), glyph_table->get_theme_stylebox(SNAME("bg")));
+	glyph_table->add_theme_constant_override(SNAME("hseparation"), 0);
 	glyph_table->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	glyph_table->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
@@ -1590,7 +1590,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	add_lang = memnew(Button);
 	hb_lang->add_child(add_lang);
 	add_lang->set_tooltip(TTR("Add language override"));
-	add_lang->set_icon(add_var->get_theme_icon("Add", "EditorIcons"));
+	add_lang->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 	add_lang->connect("pressed", callable_mp(this, &DynamicFontImportSettings::_lang_add));
 
 	lang_list = memnew(Tree);
@@ -1618,7 +1618,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	add_script = memnew(Button);
 	hb_script->add_child(add_script);
 	add_script->set_tooltip(TTR("Add script override"));
-	add_script->set_icon(add_var->get_theme_icon("Add", "EditorIcons"));
+	add_script->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 	add_script->connect("pressed", callable_mp(this, &DynamicFontImportSettings::_script_add));
 
 	script_list = memnew(Tree);
@@ -1646,7 +1646,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	add_ot = memnew(Button);
 	hb_ot->add_child(add_ot);
 	add_ot->set_tooltip(TTR("Add feature override"));
-	add_ot->set_icon(add_var->get_theme_icon("Add", "EditorIcons"));
+	add_ot->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 	add_ot->connect("pressed", callable_mp(this, &DynamicFontImportSettings::_ot_add));
 
 	ot_list = memnew(Tree);

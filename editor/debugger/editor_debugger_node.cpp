@@ -55,8 +55,8 @@ EditorDebuggerNode::EditorDebuggerNode() {
 		singleton = this;
 	}
 
-	add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles"))->get_margin(SIDE_LEFT));
-	add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles"))->get_margin(SIDE_RIGHT));
+	add_theme_constant_override(SNAME("margin_left"), -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles"))->get_margin(SIDE_LEFT));
+	add_theme_constant_override(SNAME("margin_right"), -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles"))->get_margin(SIDE_RIGHT));
 
 	tabs = memnew(TabContainer);
 	tabs->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
@@ -66,7 +66,7 @@ EditorDebuggerNode::EditorDebuggerNode() {
 
 	Ref<StyleBoxEmpty> empty;
 	empty.instantiate();
-	tabs->add_theme_style_override("panel", empty);
+	tabs->add_theme_style_override(SNAME("panel"), empty);
 
 	auto_switch_remote_scene_tree = EDITOR_DEF("debugger/auto_switch_to_remote_scene_tree", false);
 	_add_debugger();
@@ -113,7 +113,7 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 	if (tabs->get_tab_count() > 1) {
 		node->clear_style();
 		tabs->set_tabs_visible(true);
-		tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
+		tabs->add_theme_style_override(SNAME("panel"), EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
 	}
 
 	if (!debugger_plugins.is_empty()) {
@@ -233,10 +233,10 @@ void EditorDebuggerNode::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (tabs->get_tab_count() > 1) {
-				add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles"))->get_margin(SIDE_LEFT));
-				add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles"))->get_margin(SIDE_RIGHT));
+				add_theme_constant_override(SNAME("margin_left"), -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles"))->get_margin(SIDE_LEFT));
+				add_theme_constant_override(SNAME("margin_right"), -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles"))->get_margin(SIDE_RIGHT));
 
-				tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
+				tabs->add_theme_style_override(SNAME("panel"), EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
 			}
 		} break;
 		case NOTIFICATION_READY: {
@@ -271,20 +271,20 @@ void EditorDebuggerNode::_notification(int p_what) {
 
 		if (error_count == 0 && warning_count == 0) {
 			debugger_button->set_text(TTR("Debugger"));
-			debugger_button->remove_theme_color_override("font_color");
+			debugger_button->remove_theme_color_override(SNAME("font_color"));
 			debugger_button->set_icon(Ref<Texture2D>());
 		} else {
 			debugger_button->set_text(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");
 			if (error_count >= 1 && warning_count >= 1) {
 				debugger_button->set_icon(get_theme_icon(SNAME("ErrorWarning"), SNAME("EditorIcons")));
 				// Use error color to represent the highest level of severity reported.
-				debugger_button->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+				debugger_button->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("error_color"), SNAME("Editor")));
 			} else if (error_count >= 1) {
 				debugger_button->set_icon(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
-				debugger_button->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+				debugger_button->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("error_color"), SNAME("Editor")));
 			} else {
 				debugger_button->set_icon(get_theme_icon(SNAME("Warning"), SNAME("EditorIcons")));
-				debugger_button->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+				debugger_button->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 			}
 		}
 		last_error_count = error_count;

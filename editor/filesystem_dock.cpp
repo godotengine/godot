@@ -2834,7 +2834,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	add_child(top_vbc);
 
 	HBoxContainer *toolbar_hbc = memnew(HBoxContainer);
-	toolbar_hbc->add_theme_constant_override("separation", 0);
+	toolbar_hbc->add_theme_constant_override(SNAME("separation"), 0);
 	top_vbc->add_child(toolbar_hbc);
 
 	button_hist_prev = memnew(Button);
@@ -2873,7 +2873,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	toolbar_hbc->add_child(button_toggle_display_mode);
 
 	toolbar2_hbc = memnew(HBoxContainer);
-	toolbar2_hbc->add_theme_constant_override("separation", 0);
+	toolbar2_hbc->add_theme_constant_override(SNAME("separation"), 0);
 	top_vbc->add_child(toolbar2_hbc);
 
 	tree_search_box = memnew(LineEdit);
