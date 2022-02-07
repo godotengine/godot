@@ -34,8 +34,5 @@ func _get_output_port_name(port: int) -> String:
 func _get_output_port_type(port: int) -> int:
 	return PORT_TYPE_SCALAR
 
-func _get_global_code(mode: Shader.Mode) -> String:
-	return ""
-
 func _get_code(input_vars: Array[String], output_vars: Array[String], mode: Shader.Mode, type: VisualShader.Type) -> String:
 	return output_vars[0] + " = 0.0;"
