@@ -92,7 +92,10 @@ void OptionButton::_notification(int p_what) {
 			arrow->draw(ci, ofs, clr);
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED:
-		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
+			popup->set_layout_direction((Window::LayoutDirection)get_layout_direction());
+			[[fallthrough]];
+		}
 		case NOTIFICATION_THEME_CHANGED: {
 			if (has_theme_icon(SNAME("arrow"))) {
 				if (is_layout_rtl()) {
