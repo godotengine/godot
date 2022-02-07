@@ -87,6 +87,7 @@ private:
 	Window *window = nullptr;
 	bool first_draw = false;
 	bool visible = true;
+	bool visible_in_tree = false;
 	bool clip_children = false;
 	bool pending_update = false;
 	bool top_level = false;
@@ -109,7 +110,7 @@ private:
 
 	void _top_level_raise_self();
 
-	void _propagate_visibility_changed(bool p_visible);
+	void _propagate_visibility_changed(bool p_visible, bool p_was_visible = false);
 
 	void _update_callback();
 
