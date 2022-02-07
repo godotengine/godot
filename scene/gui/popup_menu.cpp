@@ -203,15 +203,17 @@ void PopupMenu::_activate_submenu(int p_over) {
 
 	float scroll_offset = control->get_position().y;
 
-	Point2 submenu_pos;
+	submenu_popup->set_as_minsize(); // Shrink the popup size to its contents.
 	Size2 submenu_size = submenu_popup->get_size();
+
+	Point2 submenu_pos;
 	if (control->is_layout_rtl()) {
 		submenu_pos = this_pos + Point2(-submenu_size.width, items[p_over]._ofs_cache + scroll_offset);
 	} else {
 		submenu_pos = this_pos + Point2(this_rect.size.width, items[p_over]._ofs_cache + scroll_offset);
 	}
 
-	// Fix pos if going outside parent rect
+	// Fix pos if going outside parent rect.
 	if (submenu_pos.x < get_parent_rect().position.x) {
 		submenu_pos.x = this_pos.x + submenu_size.width;
 	}
@@ -222,7 +224,6 @@ void PopupMenu::_activate_submenu(int p_over) {
 
 	submenu_popup->set_close_on_parent_focus(false);
 	submenu_popup->set_position(submenu_pos);
-	submenu_popup->set_as_minsize(); // Shrink the popup size to its contents.
 
 	PopupMenu *submenu_pum = Object::cast_to<PopupMenu>(submenu_popup);
 	if (!submenu_pum) {
@@ -642,8 +643,8 @@ void PopupMenu::_draw_items() {
 		if (items[i].separator) {
 			if (!text.is_empty()) {
 				Vector2 text_pos = Point2(separator_ofs, item_ofs.y + Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
-				if (!items[i].icon.is_null()) {
-					text_pos.x = rtl ? text_pos.x - (icon_size.width + hseparation) : text_pos.x + icon_size.width + hseparation;
+				if (!rtl && !items[i].icon.is_null()) {
+					text_pos.x += icon_size.width + hseparation;
 				}
 
 				if (outline_size > 0 && font_outline_color.a > 0) {
@@ -747,13 +748,32 @@ void PopupMenu::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			PopupMenu *pm = Object::cast_to<PopupMenu>(get_parent());
 			if (pm) {
-				// Inherit submenu's popup delay time from parent menu
+				// Inherit submenu's popup delay time from parent menu.
 				float pm_delay = pm->get_submenu_popup_delay();
 				set_submenu_popup_delay(pm_delay);
 			}
 		} break;
 		case NOTIFICATION_THEME_CHANGED:
-		case Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
+			// Pass the layout direction to all submenus.
+			for (int i = 0; i < items.size(); i++) {
+				if (items[i].submenu.is_empty()) {
+					continue;
+				}
+
+				Node *n = get_node(items[i].submenu);
+				if (!n) {
+					continue;
+				}
+
+				PopupMenu *pm = Object::cast_to<PopupMenu>(n);
+				if (pm) {
+					pm->set_layout_direction(get_layout_direction());
+				}
+			}
+
+			[[fallthrough]];
+		}
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			for (int i = 0; i < items.size(); i++) {
 				items.write[i].xl_text = atr(items[i].text);
