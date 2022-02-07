@@ -6969,6 +6969,7 @@ EditorNode::EditorNode() {
 
 	// more visually meaningful to have this later
 	raise_bottom_panel_item(AnimationPlayerEditor::get_singleton());
+	add_editor_plugin(memnew(ReplicationEditorPlugin(this)));
 
 	add_editor_plugin(VersionControlEditorPlugin::get_singleton());
 	add_editor_plugin(memnew(ShaderEditorPlugin(this)));
@@ -7022,7 +7023,6 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(InputEventEditorPlugin(this)));
 	add_editor_plugin(memnew(SubViewportPreviewEditorPlugin(this)));
 	add_editor_plugin(memnew(TextControlEditorPlugin(this)));
-	add_editor_plugin(memnew(ReplicationEditorPlugin(this)));
 
 	for (int i = 0; i < EditorPlugins::get_plugin_count(); i++) {
 		add_editor_plugin(EditorPlugins::create(i, this));
