@@ -278,7 +278,7 @@ public:
 	void add_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser);
 	void remove_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser);
 
-	void add_import_plugin(const Ref<EditorImportPlugin> &p_importer);
+	void add_import_plugin(const Ref<EditorImportPlugin> &p_importer, bool p_first_priority = false);
 	void remove_import_plugin(const Ref<EditorImportPlugin> &p_importer);
 
 	void add_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
@@ -290,10 +290,10 @@ public:
 	void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 
-	void add_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer);
+	void add_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer, bool p_first_priority = false);
 	void remove_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer);
 
-	void add_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_importer);
+	void add_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_importer, bool p_first_priority = false);
 	void remove_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_importer);
 
 	void add_autoload_singleton(const String &p_name, const String &p_path);
