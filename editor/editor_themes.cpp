@@ -1279,7 +1279,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Panel
 	theme->set_stylebox(SNAME("panel"), SNAME("Panel"), make_flat_stylebox(dark_color_1, 6, 4, 6, 4, corner_width));
-	theme->set_stylebox(SNAME("panel_fg"), SNAME("Panel"), style_default);
+	theme->set_stylebox(SNAME("PanelForeground"), SNAME("EditorStyles"), style_default);
 
 	// Label
 	theme->set_stylebox(SNAME("normal"), SNAME("Label"), style_empty);
