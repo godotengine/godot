@@ -31,9 +31,16 @@
 #ifndef EDITOR_RUN_SCRIPT_H
 #define EDITOR_RUN_SCRIPT_H
 
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/object.h"
 #include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
 #include "editor_plugin.h"
+
 class EditorNode;
+class EditorInterface;
+class Node;
+
 class EditorScript : public RefCounted {
 	GDCLASS(EditorScript, RefCounted);
 

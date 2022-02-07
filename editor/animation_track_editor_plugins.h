@@ -31,7 +31,17 @@
 #ifndef ANIMATION_TRACK_EDITOR_PLUGINS_H
 #define ANIMATION_TRACK_EDITOR_PLUGINS_H
 
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
 #include "editor/animation_track_editor.h"
+#include "scene/resources/texture.h"
+
+class InputEvent;
 
 class AnimationTrackEditBool : public AnimationTrackEdit {
 	GDCLASS(AnimationTrackEditBool, AnimationTrackEdit);

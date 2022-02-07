@@ -31,9 +31,29 @@
 #ifndef RESOURCEIMPORTERSCENE_H
 #define RESOURCEIMPORTERSCENE_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/error/error_macros.h"
+#include "core/io/resource.h"
 #include "core/io/resource_importer.h"
+#include "core/math/basis.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector3.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/variant/binder_common.h"
 #include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 #include "scene/3d/node_3d.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/mesh.h"
@@ -42,8 +62,14 @@
 
 class Material;
 class AnimationPlayer;
-
 class ImporterMesh;
+class Animation;
+class Array;
+class Node;
+class NodePath;
+template <class F, class S>
+struct Pair;
+
 class EditorSceneFormatImporter : public RefCounted {
 	GDCLASS(EditorSceneFormatImporter, RefCounted);
 

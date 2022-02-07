@@ -30,10 +30,29 @@
 
 #include "editor_debugger_tree.h"
 
+#include <stdint.h>
+
+#include "core/error/error_macros.h"
+#include "core/io/resource_saver.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/ref_counted.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/templates/list.h"
+#include "core/templates/pair.h"
+#include "core/variant/variant.h"
+#include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
+#include "editor/scene_tree_dock.h"
 #include "scene/debugger/scene_debugger.h"
+#include "scene/gui/control.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display_server.h"
+
+class Texture2D;
 
 EditorDebuggerTree::EditorDebuggerTree() {
 	set_v_size_flags(SIZE_EXPAND_FILL);

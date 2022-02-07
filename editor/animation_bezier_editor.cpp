@@ -30,10 +30,41 @@
 
 #include "animation_bezier_editor.h"
 
+#include <stdint.h>
+
+#include "core/error/error_macros.h"
+#include "core/input/input_enums.h"
+#include "core/input/input_event.h"
+#include "core/input/shortcut.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/math/transform_2d.h"
+#include "core/math/vector2i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/object/undo_redo.h"
+#include "core/os/memory.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/templates/list.h"
+#include "core/templates/pair.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/callable.h"
+#include "editor/animation_track_editor.h"
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 #include "editor_scale.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/gui/range.h"
 #include "scene/gui/view_panner.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/resources/font.h"
 #include "scene/resources/text_line.h"
+#include "servers/text_server.h"
 
 float AnimationBezierTrackEdit::_bezier_h_to_pixel(float p_h) {
 	float h = p_h;

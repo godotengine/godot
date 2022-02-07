@@ -30,10 +30,24 @@
 
 #include "debug_adapter_parser.h"
 
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
+#include "core/object/class_db.h"
+#include "core/object/ref_counted.h"
+#include "core/os/os.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/pair.h"
+#include "core/variant/array.h"
+#include "core/variant/variant.h"
+#include "editor/debugger/debug_adapter/debug_adapter_protocol.h"
+#include "editor/debugger/debug_adapter/debug_adapter_types.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
+#include "editor/editor_export.h"
 #include "editor/editor_node.h"
-#include "editor/editor_run_native.h"
+#include "editor/plugins/script_editor_plugin.h"
+#include "scene/gui/button.h"
 
 void DebugAdapterParser::_bind_methods() {
 	// Requests

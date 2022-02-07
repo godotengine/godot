@@ -31,6 +31,10 @@
 #ifndef EXPORT_TEMPLATE_MANAGER_H
 #define EXPORT_TEMPLATE_MANAGER_H
 
+#include "core/error/error_list.h"
+#include "core/object/object.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
 #include "editor/editor_settings.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
@@ -40,6 +44,17 @@
 #include "scene/main/http_request.h"
 
 class ExportTemplateVersion;
+class Button;
+class FileDialog;
+class HBoxContainer;
+class HTTPRequest;
+class Label;
+class LineEdit;
+class MenuButton;
+class OptionButton;
+class ProgressBar;
+class Tree;
+class VBoxContainer;
 
 class ExportTemplateManager : public AcceptDialog {
 	GDCLASS(ExportTemplateManager, AcceptDialog);

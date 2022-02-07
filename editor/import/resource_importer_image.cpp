@@ -30,10 +30,16 @@
 
 #include "resource_importer_image.h"
 
+#include <stdint.h>
+
+#include "core/error/error_macros.h"
 #include "core/io/file_access.h"
 #include "core/io/image_loader.h"
-#include "core/io/resource_saver.h"
-#include "scene/resources/texture.h"
+#include "core/os/memory.h"
+#include "core/templates/vector.h"
+
+class StringName;
+class Variant;
 
 String ResourceImporterImage::get_importer_name() const {
 	return "image";

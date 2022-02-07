@@ -31,11 +31,15 @@
 #ifndef EDITOR_ATLAS_PACKER_H
 #define EDITOR_ATLAS_PACKER_H
 
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/object/ref_counted.h"
 #include "core/templates/vector.h"
 #include "scene/resources/bit_map.h"
 
 struct Vector2;
 struct Vector2i;
+class BitMap;
 
 class EditorAtlasPacker {
 public:

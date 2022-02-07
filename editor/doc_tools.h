@@ -31,7 +31,15 @@
 #ifndef DOC_TOOLS_H
 #define DOC_TOOLS_H
 
+#include <stdint.h>
+
 #include "core/doc_data.h"
+#include "core/error/error_list.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/map.h"
+
+class XMLParser;
 
 class DocTools {
 public:

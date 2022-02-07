@@ -29,8 +29,30 @@
 /*************************************************************************/
 
 #include "root_motion_editor_plugin.h"
+
+#include "core/error/error_macros.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/ref_counted.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/set.h"
+#include "core/typedefs.h"
 #include "editor/editor_node.h"
+#include "scene/3d/skeleton_3d.h"
+#include "scene/animation/animation_player.h"
+#include "scene/animation/animation_tree.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/control.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/tree.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
+#include "scene/resources/animation.h"
+#include "scene/resources/texture.h"
 
 void EditorPropertyRootMotion::_confirmed() {
 	TreeItem *ti = filters->get_selected();

@@ -31,9 +31,20 @@
 #ifndef OT_FEATURES_PLUGIN_H
 #define OT_FEATURES_PLUGIN_H
 
+#include <stdint.h>
+
+#include "core/object/object.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
+
+class Button;
+class EditorNode;
+class EditorSpinSlider;
+class PopupMenu;
 
 /*************************************************************************/
 

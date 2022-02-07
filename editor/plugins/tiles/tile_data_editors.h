@@ -31,15 +31,42 @@
 #ifndef TILE_DATA_EDITORS_H
 #define TILE_DATA_EDITORS_H
 
-#include "tile_atlas_view.h"
-
+#include "core/math/color.h"
+#include "core/math/rect2.h"
+#include "core/math/transform_2d.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/local_vector.h"
+#include "core/templates/map.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
-
 #include "scene/2d/tile_map.h"
+#include "scene/gui/base_button.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
+#include "scene/resources/texture.h"
+#include "scene/resources/tile_set.h"
+#include "tile_atlas_view.h"
+
+class Button;
+class CanvasItem;
+class Control;
+class EditorProperty;
+class EditorPropertyEnum;
+class EditorZoomWidget;
+class InputEvent;
+class Label;
+class MenuButton;
+class Panel;
+class TileAtlasView;
+class UndoRedo;
 
 class TileDataEditor : public VBoxContainer {
 	GDCLASS(TileDataEditor, VBoxContainer);

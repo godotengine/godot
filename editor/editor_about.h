@@ -31,6 +31,10 @@
 #ifndef EDITOR_ABOUT_H
 #define EDITOR_ABOUT_H
 
+#include "core/object/object.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "editor_scale.h"
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
@@ -43,7 +47,11 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
-#include "editor_scale.h"
+class LinkButton;
+class RichTextLabel;
+class ScrollContainer;
+class TextureRect;
+class Tree;
 
 /**
  * NOTE: Do not assume the EditorNode singleton to be available in this class' methods.

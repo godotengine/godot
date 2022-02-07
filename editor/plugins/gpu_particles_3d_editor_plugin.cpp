@@ -30,10 +30,48 @@
 
 #include "gpu_particles_3d_editor_plugin.h"
 
-#include "core/io/resource_loader.h"
+#include <math.h>
+#include <stdint.h>
+#include <string.h>
+
+#include "core/error/error_macros.h"
+#include "core/io/image.h"
+#include "core/math/aabb.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/math/plane.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/math/vector3.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/ref_counted.h"
+#include "core/object/undo_redo.h"
+#include "core/os/memory.h"
+#include "core/os/os.h"
+#include "core/string/string_name.h"
+#include "core/templates/map.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "editor/editor_node.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/scene_tree_dock.h"
+#include "editor/scene_tree_editor.h"
 #include "scene/3d/cpu_particles_3d.h"
+#include "scene/3d/gpu_particles_3d.h"
+#include "scene/3d/node_3d.h"
+#include "scene/3d/visual_instance_3d.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/gui/spin_box.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/particles_material.h"
+#include "scene/resources/texture.h"
 
 bool GPUParticles3DEditorBase::_generate(Vector<Vector3> &points, Vector<Vector3> &normals) {
 	bool use_normals = emission_fill->get_selected() == 1;

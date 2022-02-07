@@ -31,6 +31,10 @@
 #ifndef INSPECTOR_DOCK_H
 #define INSPECTOR_DOCK_H
 
+#include "core/io/resource.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
 #include "editor/animation_track_editor.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_data.h"
@@ -41,6 +45,18 @@
 #include "scene/gui/control.h"
 
 class EditorNode;
+class AcceptDialog;
+class Button;
+class ConfirmationDialog;
+class Container;
+class CreateDialog;
+class EditorData;
+class EditorFileDialog;
+class EditorInspector;
+class EditorPath;
+class LineEdit;
+class MenuButton;
+class Tree;
 
 class InspectorDock : public VBoxContainer {
 	GDCLASS(InspectorDock, VBoxContainer);

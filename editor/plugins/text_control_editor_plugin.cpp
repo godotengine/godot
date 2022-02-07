@@ -30,7 +30,26 @@
 
 #include "text_control_editor_plugin.h"
 
+#include "core/io/resource_loader.h"
+#include "core/math/vector2.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/object/undo_redo.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/typedefs.h"
+#include "editor/editor_file_system.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/plugins/canvas_item_editor_plugin.h"
+#include "scene/gui/button.h"
+#include "scene/gui/color_picker.h"
+#include "scene/gui/control.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/separator.h"
+#include "scene/gui/spin_box.h"
+#include "scene/main/node.h"
 
 void TextControlEditor::_notification(int p_notification) {
 	switch (p_notification) {

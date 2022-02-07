@@ -31,13 +31,25 @@
 #ifndef RESOURCEIMPORTTEXTURE_H
 #define RESOURCEIMPORTTEXTURE_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/io/file_access.h"
 #include "core/io/image.h"
 #include "core/io/resource_importer.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/os/mutex.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
 #include "scene/resources/texture.h"
 #include "servers/rendering_server.h"
 
 class StreamTexture2D;
+class FileAccess;
+class Variant;
 
 class ResourceImporterTexture : public ResourceImporter {
 	GDCLASS(ResourceImporterTexture, ResourceImporter);

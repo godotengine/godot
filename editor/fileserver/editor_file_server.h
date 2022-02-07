@@ -33,9 +33,19 @@
 
 #include "core/io/file_access_network.h"
 #include "core/io/packet_peer.h"
+#include "core/io/stream_peer_tcp.h"
 #include "core/io/tcp_server.h"
 #include "core/object/class_db.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/os/mutex.h"
 #include "core/os/thread.h"
+#include "core/string/ustring.h"
+#include "core/templates/map.h"
+#include "core/templates/set.h"
+
+class FileAccess;
+class TCPServer;
 
 class EditorFileServer : public Object {
 	GDCLASS(EditorFileServer, Object);

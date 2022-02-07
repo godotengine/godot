@@ -30,7 +30,26 @@
 
 #include "ot_features_plugin.h"
 
-#include "editor/editor_scale.h"
+#include "core/math/color.h"
+#include "core/math/transform_2d.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/ref_counted.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/variant/dictionary.h"
+#include "editor/editor_spin_slider.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/control.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/main/node.h"
+#include "scene/resources/font.h"
+#include "scene/resources/texture.h"
+#include "servers/text_server.h"
+
+class EditorNode;
 
 void OpenTypeFeaturesEditor::_value_changed(double val) {
 	if (setting) {

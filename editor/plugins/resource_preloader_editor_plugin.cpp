@@ -30,10 +30,28 @@
 
 #include "resource_preloader_editor_plugin.h"
 
-#include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
+#include "core/io/resource.h"
 #include "core/io/resource_loader.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/object/undo_redo.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/templates/list.h"
+#include "core/variant/dictionary.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/control.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/tree.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/main/resource_preloader.h"
 
 void ResourcePreloaderEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {

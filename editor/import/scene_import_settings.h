@@ -31,6 +31,18 @@
 #ifndef SCENEIMPORTSETTINGS_H
 #define SCENEIMPORTSETTINGS_H
 
+#include "core/math/aabb.h"
+#include "core/math/math_defs.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/map.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_inspector.h"
 #include "editor/import/resource_importer_scene.h"
@@ -45,9 +57,27 @@
 #include "scene/gui/subviewport_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
+#include "scene/resources/animation.h"
+#include "scene/resources/material.h"
+#include "scene/resources/mesh.h"
 #include "scene/resources/primitive_meshes.h"
 
 class SceneImportSettingsData;
+class Camera3D;
+class DirectionalLight3D;
+class EditorFileDialog;
+class EditorInspector;
+class HSplitContainer;
+class InputEvent;
+class MenuButton;
+class MeshInstance3D;
+class Node;
+class OptionButton;
+class SphereMesh;
+class SubViewport;
+class TabContainer;
+class Tree;
+class TreeItem;
 
 class SceneImportSettings : public ConfirmationDialog {
 	GDCLASS(SceneImportSettings, ConfirmationDialog)

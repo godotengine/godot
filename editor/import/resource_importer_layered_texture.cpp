@@ -30,13 +30,17 @@
 
 #include "resource_importer_layered_texture.h"
 
-#include "resource_importer_texture.h"
-
+#include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
-#include "core/io/config_file.h"
+#include "core/io/file_access.h"
 #include "core/io/image_loader.h"
+#include "core/math/color.h"
+#include "core/math/rect2.h"
+#include "core/math/vector3.h"
+#include "core/math/vector3i.h"
 #include "core/object/ref_counted.h"
-#include "editor/editor_file_system.h"
+#include "core/typedefs.h"
+#include "core/variant/dictionary.h"
 #include "editor/editor_node.h"
 #include "resource_importer_texture.h"
 #include "scene/resources/texture.h"

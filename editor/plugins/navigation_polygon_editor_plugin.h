@@ -31,8 +31,17 @@
 #ifndef NAVIGATIONPOLYGONEDITORPLUGIN_H
 #define NAVIGATIONPOLYGONEDITORPLUGIN_H
 
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/variant/variant.h"
 #include "editor/plugins/abstract_polygon_2d_editor.h"
 #include "scene/2d/navigation_region_2d.h"
+
+class EditorNode;
+class NavigationPolygon;
+class NavigationRegion2D;
+class Node2D;
+class Node;
 
 class NavigationPolygonEditor : public AbstractPolygon2DEditor {
 	GDCLASS(NavigationPolygonEditor, AbstractPolygon2DEditor);

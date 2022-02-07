@@ -32,7 +32,13 @@
 #define PROJECT_EXPORT_SETTINGS_H
 
 #include "core/io/dir_access.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
 #include "core/os/thread.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
 #include "editor/editor_export.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_file_system.h"
@@ -54,6 +60,26 @@
 #include "scene/main/timer.h"
 
 class EditorNode;
+class Button;
+class CheckBox;
+class CheckButton;
+class Control;
+class EditorExportPreset;
+class EditorFileDialog;
+class EditorFileSystemDirectory;
+class EditorInspector;
+class EditorPropertyPath;
+class HBoxContainer;
+class ItemList;
+class Label;
+class LineEdit;
+class MarginContainer;
+class MenuButton;
+class OptionButton;
+class RichTextLabel;
+class TabContainer;
+class Tree;
+class TreeItem;
 
 class ProjectExportDialog : public ConfirmationDialog {
 	GDCLASS(ProjectExportDialog, ConfirmationDialog);

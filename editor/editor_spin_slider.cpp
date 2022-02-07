@@ -30,11 +30,39 @@
 
 #include "editor_spin_slider.h"
 
+#include <math.h>
+
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
 #include "core/input/input.h"
+#include "core/input/input_enums.h"
+#include "core/input/input_event.h"
 #include "core/math/expression.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/math/rect2.h"
+#include "core/math/transform_2d.h"
+#include "core/math/vector2i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
-#include "editor_node.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/templates/rid.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/variant.h"
 #include "editor_scale.h"
+#include "scene/gui/control.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/popup.h"
+#include "scene/gui/texture_rect.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/resources/font.h"
+#include "scene/resources/style_box.h"
+#include "scene/resources/texture.h"
+#include "servers/text_server.h"
 
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 	if (grabber->is_visible()) {

@@ -30,8 +30,29 @@
 
 #include "find_in_files.h"
 
+#include <stdint.h>
+
+#include "core/config/project_settings.h"
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
 #include "core/io/dir_access.h"
+#include "core/io/file_access.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/object/ref_counted.h"
+#include "core/os/memory.h"
 #include "core/os/os.h"
+#include "core/string/char_utils.h"
+#include "core/string/print_string.h"
+#include "core/string/string_name.h"
+#include "core/templates/pair.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
 #include "editor_node.h"
 #include "editor_scale.h"
 #include "scene/gui/box_container.h"
@@ -43,6 +64,8 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/tree.h"
+#include "scene/main/window.h"
+#include "scene/resources/font.h"
 
 const char *FindInFiles::SIGNAL_RESULT_FOUND = "result_found";
 const char *FindInFiles::SIGNAL_FINISHED = "finished";

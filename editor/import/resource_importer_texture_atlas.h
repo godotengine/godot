@@ -31,8 +31,21 @@
 #ifndef RESOURCE_IMPORTER_TEXTURE_ATLAS_H
 #define RESOURCE_IMPORTER_TEXTURE_ATLAS_H
 
+#include "core/error/error_list.h"
 #include "core/io/image.h"
 #include "core/io/resource_importer.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/vector.h"
+
+class StringName;
+class Variant;
+
 class ResourceImporterTextureAtlas : public ResourceImporter {
 	GDCLASS(ResourceImporterTextureAtlas, ResourceImporter);
 

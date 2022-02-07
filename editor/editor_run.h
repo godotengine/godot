@@ -31,8 +31,12 @@
 #ifndef EDITOR_RUN_H
 #define EDITOR_RUN_H
 
+#include "core/error/error_list.h"
 #include "core/os/os.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
 #include "scene/main/node.h"
+
 class EditorRun {
 public:
 	enum Status {

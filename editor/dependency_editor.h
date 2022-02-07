@@ -31,6 +31,12 @@
 #ifndef DEPENDENCY_EDITOR_H
 #define DEPENDENCY_EDITOR_H
 
+#include "core/object/object.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/vector.h"
 #include "editor_file_dialog.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tab_container.h"
@@ -39,6 +45,13 @@
 class EditorFileDialog;
 class EditorFileSystemDirectory;
 class EditorNode;
+class Button;
+class ItemList;
+class Label;
+class PopupMenu;
+class Tree;
+class TreeItem;
+struct Vector2;
 
 class DependencyEditor : public AcceptDialog {
 	GDCLASS(DependencyEditor, AcceptDialog);

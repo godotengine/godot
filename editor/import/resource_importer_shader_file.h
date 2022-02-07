@@ -31,7 +31,15 @@
 #ifndef RESOURCE_IMPORTER_SHADER_FILE_H
 #define RESOURCE_IMPORTER_SHADER_FILE_H
 
+#include "core/error/error_list.h"
 #include "core/io/resource_importer.h"
+#include "core/object/object.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+
+class StringName;
+class Variant;
 
 class ResourceImporterShaderFile : public ResourceImporter {
 	GDCLASS(ResourceImporterShaderFile, ResourceImporter);

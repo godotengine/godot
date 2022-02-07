@@ -31,18 +31,60 @@
 #ifndef CONTROL_EDITOR_PLUGIN_H
 #define CONTROL_EDITOR_PLUGIN_H
 
+#include <stdint.h>
+
+#include "core/input/shortcut.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/rect2.h"
+#include "core/math/transform_2d.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_zoom_widget.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/control.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/spin_box.h"
+#include "scene/gui/view_panner.h"
 #include "scene/main/canvas_item.h"
+#include "scene/resources/style_box.h"
+#include "scene/resources/texture.h"
 
 class CanvasItemEditorViewport;
 class ViewPanner;
+class AcceptDialog;
+class Button;
+class ButtonGroup;
+class CanvasItem;
+class ConfirmationDialog;
+class EditorData;
+class EditorNode;
+class EditorSelection;
+class EditorZoomWidget;
+class HScrollBar;
+class HSplitContainer;
+class InputEvent;
+class Label;
+class MenuButton;
+class Node;
+class PanelContainer;
+class PopupMenu;
+class UndoRedo;
+class VScrollBar;
+class VSplitContainer;
 
 class CanvasItemEditorSelectedItem : public Object {
 	GDCLASS(CanvasItemEditorSelectedItem, Object);

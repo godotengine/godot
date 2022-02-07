@@ -31,12 +31,33 @@
 #ifndef SCENE_TREE_EDITOR_H
 #define SCENE_TREE_EDITOR_H
 
+#include <stdint.h>
+
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
 #include "core/object/undo_redo.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 #include "editor_data.h"
 #include "editor_settings.h"
 #include "scene/gui/button.h"
+#include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
+
+class EditorSelection;
+class LineEdit;
+class Node;
+class Timer;
+class Tree;
+class TreeItem;
+class UndoRedo;
 
 class SceneTreeEditor : public Control {
 	GDCLASS(SceneTreeEditor, Control);

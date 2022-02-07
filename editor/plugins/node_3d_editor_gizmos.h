@@ -31,14 +31,41 @@
 #ifndef NODE_3D_EDITOR_GIZMOS_H
 #define NODE_3D_EDITOR_GIZMOS_H
 
+#include <stdint.h>
+
+#include "core/io/resource.h"
+#include "core/math/basis.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector2.h"
+#include "core/math/vector3.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/list.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/ordered_hash_map.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/variant/typed_array.h"
+#include "core/variant/variant.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
+#include "scene/main/node.h"
+#include "scene/resources/material.h"
+#include "scene/resources/mesh.h"
+#include "scene/resources/texture.h"
 
 class Timer;
 class EditorNode3DGizmoPlugin;
+class Camera3D;
+class TriangleMesh;
+struct Plane;
 
 class EditorNode3DGizmo : public Node3DGizmo {
 	GDCLASS(EditorNode3DGizmo, Node3DGizmo);

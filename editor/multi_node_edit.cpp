@@ -30,8 +30,14 @@
 
 #include "multi_node_edit.h"
 
+#include "core/error/error_macros.h"
 #include "core/math/math_fieldwise.h"
+#include "core/object/undo_redo.h"
+#include "core/templates/hash_map.h"
+#include "editor/editor_inspector.h"
+#include "editor/inspector_dock.h"
 #include "editor_node.h"
+#include "scene/main/node.h"
 
 bool MultiNodeEdit::_set(const StringName &p_name, const Variant &p_value) {
 	return _set_impl(p_name, p_value, "");

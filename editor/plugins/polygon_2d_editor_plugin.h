@@ -31,10 +31,35 @@
 #ifndef POLYGON_2D_EDITOR_PLUGIN_H
 #define POLYGON_2D_EDITOR_PLUGIN_H
 
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
 #include "editor/plugins/abstract_polygon_2d_editor.h"
+#include "scene/gui/base_button.h"
+#include "scene/gui/view_panner.h"
 
 class ViewPanner;
 class ScrollContainer;
+class AcceptDialog;
+class Button;
+class EditorNode;
+class HScrollBar;
+class HSlider;
+class InputEvent;
+class Label;
+class MenuButton;
+class Node2D;
+class Node;
+class Panel;
+class Polygon2D;
+class SpinBox;
+class TextureRect;
+class VBoxContainer;
+class VScrollBar;
 
 class Polygon2DEditor : public AbstractPolygon2DEditor {
 	GDCLASS(Polygon2DEditor, AbstractPolygon2DEditor);

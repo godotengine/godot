@@ -30,7 +30,14 @@
 
 #include "style_box_editor_plugin.h"
 
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/os/memory.h"
 #include "editor/editor_scale.h"
+#include "scene/gui/control.h"
+
+class EditorNode;
 
 bool EditorInspectorPluginStyleBox::can_handle(Object *p_object) {
 	return Object::cast_to<StyleBox>(p_object) != nullptr;

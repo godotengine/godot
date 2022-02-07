@@ -29,7 +29,11 @@
 /*************************************************************************/
 
 #include "editor_import_plugin.h"
-#include "core/object/script_language.h"
+
+#include <stdint.h>
+
+#include "core/error/error_macros.h"
+#include "core/variant/variant.h"
 
 EditorImportPlugin::EditorImportPlugin() {
 }

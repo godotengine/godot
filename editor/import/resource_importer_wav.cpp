@@ -30,9 +30,15 @@
 
 #include "resource_importer_wav.h"
 
+#include "core/error/error_macros.h"
 #include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
+#include "core/math/math_funcs.h"
+#include "core/object/ref_counted.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/variant/variant.h"
 #include "scene/resources/audio_stream_sample.h"
 
 const float TRIM_DB_LIMIT = -50;

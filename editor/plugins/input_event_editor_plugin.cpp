@@ -30,6 +30,16 @@
 
 #include "input_event_editor_plugin.h"
 
+#include "core/io/resource.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/os/memory.h"
+#include "editor/action_map_editor.h"
+#include "scene/gui/button.h"
+#include "scene/gui/label.h"
+#include "scene/gui/margin_container.h"
+
+class EditorNode;
+
 void InputEventConfigContainer::_bind_methods() {
 }
 

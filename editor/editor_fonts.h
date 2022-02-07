@@ -31,7 +31,10 @@
 #ifndef EDITOR_FONTS_H
 #define EDITOR_FONTS_H
 
+#include "core/object/ref_counted.h"
 #include "scene/resources/theme.h"
+
+class Theme;
 
 void editor_register_fonts(Ref<Theme> p_theme);
 

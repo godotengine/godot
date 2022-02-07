@@ -30,8 +30,29 @@
 
 #include "text_editor.h"
 
-#include "core/os/keyboard.h"
+#include "core/error/error_macros.h"
+#include "core/input/input_enums.h"
+#include "core/input/input_event.h"
+#include "core/math/transform_2d.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/typedefs.h"
+#include "core/variant/dictionary.h"
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
+#include "editor/plugins/script_editor_plugin.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/code_edit.h"
+#include "scene/gui/control.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/resources/syntax_highlighter.h"
+#include "scene/resources/text_file.h"
+
+class Texture2D;
 
 void TextEditor::add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) {
 	ERR_FAIL_COND(p_highlighter.is_null());

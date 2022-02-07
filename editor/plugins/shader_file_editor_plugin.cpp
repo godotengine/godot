@@ -30,16 +30,26 @@
 
 #include "shader_file_editor_plugin.h"
 
-#include "core/io/resource_loader.h"
-#include "core/io/resource_saver.h"
-#include "core/os/keyboard.h"
-#include "core/os/os.h"
+#include <stdint.h>
+
+#include "core/error/error_macros.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/os/memory.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
-#include "editor/editor_settings.h"
-#include "editor/property_editor.h"
-#include "servers/display_server.h"
-#include "servers/rendering/shader_types.h"
+#include "scene/gui/base_button.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/control.h"
+#include "scene/gui/item_list.h"
+#include "scene/gui/rich_text_label.h"
+#include "scene/gui/split_container.h"
+#include "scene/main/node.h"
+#include "scene/resources/texture.h"
 
 /*** SHADER SCRIPT EDITOR ****/
 

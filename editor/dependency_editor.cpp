@@ -30,11 +30,41 @@
 
 #include "dependency_editor.h"
 
+#include "core/config/project_settings.h"
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
+#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/io/resource.h"
 #include "core/io/resource_loader.h"
+#include "core/io/resource_uid.h"
+#include "core/math/color.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/ref_counted.h"
+#include "core/os/memory.h"
+#include "core/os/os.h"
+#include "core/string/print_string.h"
+#include "core/string/string_name.h"
+#include "core/templates/pair.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_file_system.h"
+#include "editor/editor_settings.h"
 #include "editor_node.h"
 #include "editor_scale.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/control.h"
+#include "scene/gui/item_list.h"
+#include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/gui/tree.h"
+
+class Texture2D;
 
 void DependencyEditor::_searched(const String &p_path) {
 	Map<String, String> dep_rename;

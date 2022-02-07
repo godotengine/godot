@@ -30,7 +30,18 @@
 
 #include "editor_run.h"
 
+#include <stdio.h>
+
 #include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
+#include "core/math/math_funcs.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
+#include "editor/debugger/editor_debugger_node.h"
+#include "editor/editor_data.h"
 #include "editor/editor_node.h"
 #include "editor_settings.h"
 #include "servers/display_server.h"

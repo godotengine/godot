@@ -30,11 +30,32 @@
 
 #include "curve_editor_plugin.h"
 
-#include "canvas_item_editor_plugin.h"
 #include "core/core_string_names.h"
+#include "core/error/error_macros.h"
 #include "core/input/input.h"
+#include "core/input/input_enums.h"
+#include "core/input/input_event.h"
+#include "core/io/image.h"
+#include "core/io/resource.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/undo_redo.h"
 #include "core/os/keyboard.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/main/canvas_item.h"
+#include "scene/resources/font.h"
+#include "scene/resources/texture.h"
 
 CurveEditor::CurveEditor() {
 	_selected_point = -1;

@@ -30,10 +30,32 @@
 
 #include "atlas_merging_dialog.h"
 
+#include "core/error/error_macros.h"
+#include "core/io/image.h"
+#include "core/io/resource_loader.h"
+#include "core/math/math_defs.h"
+#include "core/math/rect2.h"
+#include "core/math/rect2i.h"
+#include "core/math/vector2.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/undo_redo.h"
+#include "core/os/memory.h"
+#include "core/templates/list.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/callable.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_properties.h"
 #include "editor/editor_scale.h"
-
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/control.h"
+#include "scene/gui/item_list.h"
+#include "scene/gui/label.h"
 #include "scene/gui/split_container.h"
+#include "scene/gui/texture_rect.h"
+#include "scene/main/canvas_item.h"
+#include "scene/resources/texture.h"
 
 void AtlasMergingDialog::_property_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing) {
 	_set(p_property, p_value);

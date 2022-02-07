@@ -31,8 +31,14 @@
 #ifndef PROJECT_MANAGER_H
 #define PROJECT_MANAGER_H
 
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/variant/variant.h"
 #include "editor/editor_about.h"
 #include "editor/plugins/asset_library_editor_plugin.h"
+#include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/scroll_container.h"
@@ -40,6 +46,20 @@
 
 class ProjectDialog;
 class ProjectList;
+class AcceptDialog;
+class Button;
+class CheckBox;
+class ConfirmationDialog;
+class EditorAbout;
+class EditorAssetLibrary;
+class FileDialog;
+class HBoxContainer;
+class InputEvent;
+class Label;
+class LineEdit;
+class LinkButton;
+class OptionButton;
+class TabContainer;
 
 enum FilterOption {
 	NAME,

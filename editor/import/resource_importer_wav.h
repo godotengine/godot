@@ -31,7 +31,19 @@
 #ifndef RESOURCEIMPORTWAV_H
 #define RESOURCEIMPORTWAV_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/io/resource_importer.h"
+#include "core/object/object.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+
+class StringName;
+class Variant;
 
 class ResourceImporterWAV : public ResourceImporter {
 	GDCLASS(ResourceImporterWAV, ResourceImporter);

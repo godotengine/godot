@@ -31,6 +31,16 @@
 #ifndef SCENE_TREE_DOCK_H
 #define SCENE_TREE_DOCK_H
 
+#include "core/io/resource.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/node_path.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_data.h"
 #include "editor/groups_editor.h"
@@ -38,6 +48,7 @@
 #include "editor/rename_dialog.h"
 #include "editor/reparent_dialog.h"
 #include "editor/script_create_dialog.h"
+#include "modules/modules_enabled.gen.h" // For regex.
 #include "scene/animation/animation_player.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -47,10 +58,37 @@
 #include "scene/gui/tree.h"
 #include "scene_tree_editor.h"
 
-#include "modules/modules_enabled.gen.h" // For regex.
-
 class EditorNode;
 class ShaderCreateDialog;
+class AcceptDialog;
+class Animation;
+class Array;
+class Button;
+class ConfirmationDialog;
+class Control;
+class CreateDialog;
+class EditorData;
+class EditorFileDialog;
+class EditorQuickOpen;
+class EditorSelection;
+class InputEvent;
+class LineEdit;
+class MenuButton;
+class Node;
+class ObjectID;
+class PopupMenu;
+class RenameDialog;
+class ReparentDialog;
+class SceneTreeEditor;
+class Script;
+class ScriptCreateDialog;
+class Shader;
+class ShaderMaterial;
+class StringName;
+class TextureRect;
+class TreeItem;
+class Variant;
+struct Vector2;
 
 class SceneTreeDock : public VBoxContainer {
 	GDCLASS(SceneTreeDock, VBoxContainer);

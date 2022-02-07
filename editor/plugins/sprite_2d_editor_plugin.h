@@ -31,10 +31,24 @@
 #ifndef SPRITE_EDITOR_PLUGIN_H
 #define SPRITE_EDITOR_PLUGIN_H
 
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/2d/sprite_2d.h"
+#include "scene/gui/control.h"
 #include "scene/gui/spin_box.h"
+
+class AcceptDialog;
+class Button;
+class ConfirmationDialog;
+class EditorNode;
+class MenuButton;
+class Node;
+class SpinBox;
+class Sprite2D;
 
 class Sprite2DEditor : public Control {
 	GDCLASS(Sprite2DEditor, Control);

@@ -31,8 +31,11 @@
 #ifndef EDITOR_THEMES_H
 #define EDITOR_THEMES_H
 
+#include "core/object/ref_counted.h"
 #include "scene/resources/texture.h"
 #include "scene/resources/theme.h"
+
+class ImageTexture;
 
 Ref<Theme> create_editor_theme(Ref<Theme> p_theme = nullptr);
 

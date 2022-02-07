@@ -29,13 +29,17 @@
 /*************************************************************************/
 
 #include "resource_importer_bitmask.h"
-#include "core/io/config_file.h"
+
 #include "core/io/image.h"
 #include "core/io/image_loader.h"
-#include "editor/editor_file_system.h"
-#include "editor/editor_node.h"
+#include "core/io/resource_saver.h"
+#include "core/math/color.h"
+#include "core/math/vector2.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
 #include "scene/resources/bit_map.h"
-#include "scene/resources/texture.h"
 
 String ResourceImporterBitMap::get_importer_name() const {
 	return "bitmap";

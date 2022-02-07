@@ -31,12 +31,37 @@
 #ifndef EDITOR_RESOURCE_PICKER_H
 #define EDITOR_RESOURCE_PICKER_H
 
+#include "core/io/resource.h"
+#include "core/math/vector2.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/list.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 #include "editor_file_dialog.h"
 #include "quick_open.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/texture_rect.h"
+
+class Button;
+class Control;
+class Dictionary;
+class EditorFileDialog;
+class EditorQuickOpen;
+class InputEvent;
+class Node;
+class ObjectID;
+class PopupMenu;
+class ShaderMaterial;
+class Texture2D;
+class TextureRect;
 
 class EditorResourcePicker : public HBoxContainer {
 	GDCLASS(EditorResourcePicker, HBoxContainer);

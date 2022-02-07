@@ -32,7 +32,10 @@
 #define EDITOR_VCS_INTERFACE_H
 
 #include "core/object/class_db.h"
+#include "core/object/object.h"
 #include "core/string/ustring.h"
+#include "core/variant/array.h"
+#include "core/variant/dictionary.h"
 #include "scene/gui/panel_container.h"
 
 class EditorVCSInterface : public Object {

@@ -31,6 +31,10 @@
 #ifndef SHADER_FILE_EDITOR_PLUGIN_H
 #define SHADER_FILE_EDITOR_PLUGIN_H
 
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
 #include "editor/code_editor.h"
 #include "editor/editor_plugin.h"
 #include "scene/gui/menu_button.h"
@@ -39,7 +43,14 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
 #include "scene/main/timer.h"
+#include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_device_binds.h"
+
+class Button;
+class EditorNode;
+class HBoxContainer;
+class ItemList;
+class RichTextLabel;
 
 class ShaderFileEditor : public PanelContainer {
 	GDCLASS(ShaderFileEditor, PanelContainer);

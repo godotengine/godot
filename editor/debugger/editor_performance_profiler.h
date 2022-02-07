@@ -31,13 +31,25 @@
 #ifndef EDITOR_PERFORMANCE_PROFILER_H
 #define EDITOR_PERFORMANCE_PROFILER_H
 
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
 #include "core/templates/map.h"
 #include "core/templates/ordered_hash_map.h"
+#include "core/templates/vector.h"
 #include "main/performance.h"
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
+
+class Control;
+class InputEvent;
+class Label;
+class Tree;
+class TreeItem;
 
 class EditorPerformanceProfiler : public HSplitContainer {
 	GDCLASS(EditorPerformanceProfiler, HSplitContainer);

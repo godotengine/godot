@@ -32,15 +32,38 @@
 #define TEXTURE_REGION_EDITOR_PLUGIN_H
 
 #include "canvas_item_editor_plugin.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/rid.h"
+#include "core/variant/dictionary.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/3d/sprite_3d.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/nine_patch_rect.h"
+#include "scene/gui/view_panner.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 
 class ViewPanner;
+class Button;
+class EditorNode;
+class HScrollBar;
+class InputEvent;
+class NinePatchRect;
+class OptionButton;
+class Panel;
+class SpinBox;
+class Sprite2D;
+class Sprite3D;
+class UndoRedo;
+class VScrollBar;
 
 class TextureRegionEditor : public VBoxContainer {
 	GDCLASS(TextureRegionEditor, VBoxContainer);

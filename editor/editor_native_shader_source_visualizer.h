@@ -31,8 +31,12 @@
 #ifndef EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
 #define EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
 
+#include "core/object/object.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tab_container.h"
+
+class RID;
+class TabContainer;
 
 class EditorNativeShaderSourceVisualizer : public AcceptDialog {
 	GDCLASS(EditorNativeShaderSourceVisualizer, AcceptDialog)

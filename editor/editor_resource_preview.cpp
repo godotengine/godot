@@ -31,13 +31,23 @@
 #include "editor_resource_preview.h"
 
 #include "core/config/project_settings.h"
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
 #include "core/io/file_access.h"
+#include "core/io/image.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/class_db.h"
 #include "core/object/message_queue.h"
+#include "core/os/memory.h"
+#include "core/os/os.h"
+#include "core/typedefs.h"
+#include "editor/editor_paths.h"
 #include "editor_node.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
+#include "scene/gui/control.h"
+#include "servers/rendering_server.h"
 
 bool EditorResourcePreviewGenerator::handles(const String &p_type) const {
 	bool success;

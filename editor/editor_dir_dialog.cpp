@@ -30,11 +30,23 @@
 
 #include "editor_dir_dialog.h"
 
-#include "core/os/keyboard.h"
-#include "core/os/os.h"
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
+#include "core/io/dir_access.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/variant/variant.h"
 #include "editor/editor_file_system.h"
-#include "editor/editor_settings.h"
 #include "editor_scale.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/tree.h"
+#include "scene/main/node.h"
+#include "scene/main/window.h"
 #include "servers/display_server.h"
 
 void EditorDirDialog::_update_dir(TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path) {

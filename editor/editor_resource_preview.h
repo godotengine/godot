@@ -31,9 +31,25 @@
 #ifndef EDITORRESOURCEPREVIEW_H
 #define EDITORRESOURCEPREVIEW_H
 
+#include <stdint.h>
+
+#include "core/io/resource.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/object/ref_counted.h"
+#include "core/os/mutex.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
 #include "core/templates/safe_refcount.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 

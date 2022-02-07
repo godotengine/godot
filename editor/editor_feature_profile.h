@@ -31,8 +31,16 @@
 #ifndef EDITOR_FEATURE_PROFILE_H
 #define EDITOR_FEATURE_PROFILE_H
 
+#include "core/error/error_list.h"
 #include "core/io/file_access.h"
+#include "core/object/object.h"
 #include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/map.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/variant/binder_common.h"
 #include "editor/editor_file_dialog.h"
 #include "editor_help.h"
 #include "scene/gui/dialogs.h"
@@ -40,6 +48,18 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
+
+class Button;
+class EditorFileDialog;
+class EditorHelpBit;
+class HSplitContainer;
+class Label;
+class LineEdit;
+class OptionButton;
+class Timer;
+class Tree;
+class TreeItem;
+class VBoxContainer;
 
 class EditorFeatureProfile : public RefCounted {
 	GDCLASS(EditorFeatureProfile, RefCounted);

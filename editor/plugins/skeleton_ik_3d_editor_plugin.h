@@ -31,10 +31,14 @@
 #ifndef SKELETON_IK_3D_EDITOR_PLUGIN_H
 #define SKELETON_IK_3D_EDITOR_PLUGIN_H
 
+#include "core/object/object.h"
+#include "core/string/ustring.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 
 class SkeletonIK3D;
+class Button;
+class EditorNode;
 
 class SkeletonIK3DEditorPlugin : public EditorPlugin {
 	GDCLASS(SkeletonIK3DEditorPlugin, EditorPlugin);

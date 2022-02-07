@@ -31,10 +31,25 @@
 #ifndef PATH_EDITOR_PLUGIN_H
 #define PATH_EDITOR_PLUGIN_H
 
+#include "core/math/vector2.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
 #include "editor/editor_plugin.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/path_3d.h"
+
+class Button;
+class Camera3D;
+class EditorNode;
+class InputEvent;
+class MenuButton;
+class Node3D;
+class Path3D;
+class Separator;
 
 class Path3DGizmo : public EditorNode3DGizmo {
 	GDCLASS(Path3DGizmo, EditorNode3DGizmo);

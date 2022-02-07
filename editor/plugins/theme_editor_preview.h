@@ -31,6 +31,11 @@
 #ifndef THEME_EDITOR_PREVIEW_H
 #define THEME_EDITOR_PREVIEW_H
 
+#include "core/math/color.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "editor/editor_node.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
@@ -48,9 +53,19 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
 #include "scene/gui/tree.h"
+#include "scene/resources/font.h"
+#include "scene/resources/packed_scene.h"
+#include "scene/resources/style_box.h"
 #include "scene/resources/theme.h"
 
-#include "editor/editor_node.h"
+class Button;
+class ColorRect;
+class Control;
+class InputEvent;
+class MarginContainer;
+class ScrollContainer;
+class Theme;
+struct Vector2;
 
 class ThemeEditorPreview : public VBoxContainer {
 	GDCLASS(ThemeEditorPreview, VBoxContainer);

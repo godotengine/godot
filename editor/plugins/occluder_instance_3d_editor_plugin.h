@@ -31,10 +31,17 @@
 #ifndef OCCLUDER_INSTANCE_3D_EDITOR_PLUGIN_H
 #define OCCLUDER_INSTANCE_3D_EDITOR_PLUGIN_H
 
+#include "core/object/object.h"
+#include "core/string/ustring.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/3d/occluder_instance_3d.h"
 #include "scene/resources/material.h"
+
+class Button;
+class EditorFileDialog;
+class EditorNode;
+class OccluderInstance3D;
 
 class OccluderInstance3DEditorPlugin : public EditorPlugin {
 	GDCLASS(OccluderInstance3DEditorPlugin, EditorPlugin);

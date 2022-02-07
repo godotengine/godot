@@ -31,9 +31,21 @@
 #ifndef RESOURCE_IMPORTER_FONT_DATA_H
 #define RESOURCE_IMPORTER_FONT_DATA_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/io/resource_importer.h"
+#include "core/object/object.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
 #include "scene/resources/font.h"
 #include "servers/text_server.h"
+
+class Dictionary;
+class StringName;
+class Variant;
+struct Vector2i;
 
 class ResourceImporterDynamicFont : public ResourceImporter {
 	GDCLASS(ResourceImporterDynamicFont, ResourceImporter);

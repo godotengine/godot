@@ -31,10 +31,23 @@
 #ifndef TEXTURE_LAYERED_EDITOR_PLUGIN_H
 #define TEXTURE_LAYERED_EDITOR_PLUGIN_H
 
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
+#include "scene/gui/control.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
+
+class EditorNode;
+class InputEvent;
+class Label;
+class Shader;
+class ShaderMaterial;
+class SpinBox;
+class TextureLayered;
 
 class TextureLayeredEditor : public Control {
 	GDCLASS(TextureLayeredEditor, Control);

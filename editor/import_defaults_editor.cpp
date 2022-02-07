@@ -30,6 +30,27 @@
 
 #include "import_defaults_editor.h"
 
+#include "core/config/project_settings.h"
+#include "core/io/resource_importer.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/ref_counted.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/pair.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
+#include "editor/editor_inspector.h"
+#include "scene/gui/button.h"
+#include "scene/gui/center_container.h"
+#include "scene/gui/control.h"
+#include "scene/gui/label.h"
+#include "scene/gui/option_button.h"
+
 class ImportDefaultsEditorSettings : public Object {
 	GDCLASS(ImportDefaultsEditorSettings, Object)
 	friend class ImportDefaultsEditor;

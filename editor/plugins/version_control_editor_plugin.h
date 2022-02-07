@@ -31,12 +31,37 @@
 #ifndef VERSION_CONTROL_EDITOR_PLUGIN_H
 #define VERSION_CONTROL_EDITOR_PLUGIN_H
 
+#include "core/math/color.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/list.h"
+#include "core/variant/binder_common.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_vcs_interface.h"
 #include "scene/gui/container.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/text_edit.h"
 #include "scene/gui/tree.h"
+
+class AcceptDialog;
+class Button;
+class ConfirmationDialog;
+class Control;
+class HBoxContainer;
+class HSplitContainer;
+class InputEvent;
+class Label;
+class OptionButton;
+class PanelContainer;
+class PopupMenu;
+class RichTextLabel;
+class TextEdit;
+class Tree;
+class TreeItem;
+class VBoxContainer;
 
 class VersionControlEditorPlugin : public EditorPlugin {
 	GDCLASS(VersionControlEditorPlugin, EditorPlugin)

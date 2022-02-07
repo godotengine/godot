@@ -31,6 +31,20 @@
 #ifndef EDITOR_PROPERTIES_H
 #define EDITOR_PROPERTIES_H
 
+#include <stdint.h>
+
+#include "core/io/resource.h"
+#include "core/math/color.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_locale_dialog.h"
@@ -39,7 +53,31 @@
 #include "editor/property_selector.h"
 #include "editor/scene_tree_editor.h"
 #include "scene/gui/color_picker.h"
+#include "scene/gui/control.h"
 #include "scene/gui/line_edit.h"
+
+class AcceptDialog;
+class Button;
+class CheckBox;
+class ColorPickerButton;
+class ConfirmationDialog;
+class CreateDialog;
+class Dictionary;
+class EditorFileDialog;
+class EditorLocaleDialog;
+class EditorResourcePicker;
+class EditorSpinSlider;
+class HBoxContainer;
+class InputEvent;
+class Label;
+class LineEdit;
+class OptionButton;
+class PopupMenu;
+class PropertySelector;
+class SceneTreeDialog;
+class TextEdit;
+class VBoxContainer;
+struct Transform3D;
 
 class EditorPropertyNil : public EditorProperty {
 	GDCLASS(EditorPropertyNil, EditorProperty);

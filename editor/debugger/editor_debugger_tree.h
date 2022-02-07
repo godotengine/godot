@@ -28,7 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/string/ustring.h"
+#include "core/templates/set.h"
 #include "scene/gui/tree.h"
+
+class PopupMenu;
+struct Vector2;
 
 #ifndef EDITOR_DEBUGGER_TREE_H
 #define EDITOR_DEBUGGER_TREE_H

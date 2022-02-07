@@ -30,7 +30,14 @@
 
 #include "resource_importer_bmfont.h"
 
+#include "core/error/error_macros.h"
 #include "core/io/resource_saver.h"
+#include "core/object/ref_counted.h"
+#include "core/string/print_string.h"
+#include "core/string/string_name.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "scene/resources/font.h"
 
 String ResourceImporterBMFont::get_importer_name() const {
 	return "font_data_bmfont";

@@ -30,13 +30,25 @@
 
 #include "editor_plugin_settings.h"
 
-#include "core/config/project_settings.h"
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
 #include "core/io/config_file.h"
+#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
-#include "core/os/main_loop.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/ref_counted.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/variant/callable.h"
+#include "core/variant/variant.h"
+#include "editor/plugin_config_dialog.h"
 #include "editor_node.h"
 #include "editor_scale.h"
-#include "scene/gui/margin_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/control.h"
+#include "scene/gui/label.h"
+#include "scene/gui/tree.h"
+#include "scene/main/node.h"
 
 void EditorPluginSettings::_notification(int p_what) {
 	if (p_what == NOTIFICATION_WM_WINDOW_FOCUS_IN) {

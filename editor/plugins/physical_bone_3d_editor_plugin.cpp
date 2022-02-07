@@ -30,8 +30,18 @@
 
 #include "physical_bone_3d_editor_plugin.h"
 
+#include "core/error/error_macros.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/physics_body_3d.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/control.h"
+#include "scene/gui/separator.h"
+
+class EditorNode;
 
 void PhysicalBone3DEditor::_bind_methods() {
 }

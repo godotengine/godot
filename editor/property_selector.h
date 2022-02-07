@@ -31,9 +31,22 @@
 #ifndef PROPERTYSELECTOR_H
 #define PROPERTYSELECTOR_H
 
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 #include "editor/property_editor.h"
 #include "editor_help.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/rich_text_label.h"
+
+class EditorHelpBit;
+class InputEvent;
+class LineEdit;
+class Script;
+class Tree;
 
 class PropertySelector : public ConfirmationDialog {
 	GDCLASS(PropertySelector, ConfirmationDialog);

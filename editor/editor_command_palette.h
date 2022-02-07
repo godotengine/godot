@@ -32,9 +32,24 @@
 #define EDITOR_COMMAND_PALETTE_H
 
 #include "core/input/shortcut.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/os/keyboard.h"
 #include "core/os/thread_safe.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/list.h"
+#include "core/templates/pair.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/callable.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
+
+class InputEvent;
+class LineEdit;
+class Tree;
+class Variant;
 
 class EditorCommandPalette : public ConfirmationDialog {
 	GDCLASS(EditorCommandPalette, ConfirmationDialog);

@@ -30,7 +30,14 @@
 
 #include "collada.h"
 
-#include <stdio.h>
+#include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
+#include "core/io/xml_parser.h"
+#include "core/math/basis.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/object/ref_counted.h"
+#include "core/templates/pair.h"
 
 //#define DEBUG_DEFAULT_ANIMATION
 //#define DEBUG_COLLADA

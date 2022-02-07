@@ -31,7 +31,21 @@
 #ifndef RESOURCEIMPORTEROBJ_H
 #define RESOURCEIMPORTEROBJ_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
+#include "core/io/resource_importer.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
 #include "resource_importer_scene.h"
+
+class Animation;
+class Node;
+class StringName;
+class Variant;
 
 class EditorOBJImporter : public EditorSceneFormatImporter {
 	GDCLASS(EditorOBJImporter, EditorSceneFormatImporter);

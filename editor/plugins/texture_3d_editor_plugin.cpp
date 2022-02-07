@@ -30,9 +30,25 @@
 
 #include "texture_3d_editor_plugin.h"
 
-#include "core/config/project_settings.h"
-#include "core/io/resource_loader.h"
-#include "editor/editor_settings.h"
+#include "core/io/image.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/variant/callable.h"
+#include "scene/gui/label.h"
+#include "scene/gui/spin_box.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/resources/material.h"
+#include "scene/resources/shader.h"
+#include "scene/resources/texture.h"
+
+class EditorNode;
 
 void Texture3DEditor::_texture_rect_draw() {
 	texture_rect->draw_rect(Rect2(Point2(), texture_rect->get_size()), Color(1, 1, 1, 1));

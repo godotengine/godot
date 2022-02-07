@@ -31,10 +31,23 @@
 #ifndef MESH_INSTANCE_EDITOR_PLUGIN_H
 #define MESH_INSTANCE_EDITOR_PLUGIN_H
 
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/gui/control.h"
 #include "scene/gui/spin_box.h"
+
+class AcceptDialog;
+class ConfirmationDialog;
+class EditorNode;
+class MenuButton;
+class MeshInstance3D;
+class Node;
+class SpinBox;
 
 class MeshInstance3DEditor : public Control {
 	GDCLASS(MeshInstance3DEditor, Control);

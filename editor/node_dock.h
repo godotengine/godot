@@ -31,9 +31,15 @@
 #ifndef NODE_DOCK_H
 #define NODE_DOCK_H
 
+#include "core/object/object.h"
 #include "groups_editor.h"
+#include "scene/gui/box_container.h"
 
 class ConnectionsDock;
+class Button;
+class GroupsEditor;
+class Label;
+class Node;
 
 class NodeDock : public VBoxContainer {
 	GDCLASS(NodeDock, VBoxContainer);

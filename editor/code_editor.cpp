@@ -30,16 +30,48 @@
 
 #include "code_editor.h"
 
+#include <math.h>
+
+#include "core/error/error_macros.h"
 #include "core/input/input.h"
-#include "core/object/message_queue.h"
+#include "core/input/input_enums.h"
+#include "core/input/input_event.h"
+#include "core/input/shortcut.h"
+#include "core/math/math_funcs.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/object/script_language.h"
 #include "core/os/keyboard.h"
+#include "core/os/memory.h"
+#include "core/string/char_utils.h"
 #include "core/string/string_builder.h"
+#include "core/string/string_name.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/typed_array.h"
 #include "editor/editor_scale.h"
-#include "editor_node.h"
+#include "editor/plugins/script_editor_plugin.h"
 #include "editor_settings.h"
-#include "scene/gui/margin_container.h"
-#include "scene/gui/separator.h"
-#include "scene/resources/font.h"
+#include "scene/gui/button.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/code_edit.h"
+#include "scene/gui/control.h"
+#include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/scroll_container.h"
+#include "scene/gui/text_edit.h"
+#include "scene/gui/texture_button.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/main/timer.h"
+#include "scene/main/viewport.h"
+#include "scene/resources/texture.h"
+
+class Font;
 
 void GotoLineDialog::popup_find_line(CodeEdit *p_edit) {
 	text_editor = p_edit;

@@ -31,20 +31,57 @@
 #ifndef SKELETON_3D_EDITOR_PLUGIN_H
 #define SKELETON_3D_EDITOR_PLUGIN_H
 
+#include <stdint.h>
+
+#include "core/math/quaternion.h"
+#include "core/math/rect2.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector2.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/node_path.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
+#include "editor/plugins/node_3d_editor_gizmos.h"
 #include "node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/skeleton_3d.h"
+#include "scene/gui/box_container.h"
 #include "scene/resources/immediate_mesh.h"
+#include "scene/resources/material.h"
+#include "scene/resources/shader.h"
 
 class EditorInspectorPluginSkeleton;
 class Joint;
 class PhysicalBone3D;
 class Skeleton3DEditorPlugin;
 class Button;
+class Camera3D;
+class Control;
+class EditorFileDialog;
+class EditorNode;
+class EditorPropertyCheck;
+class EditorPropertyQuaternion;
+class EditorPropertyTransform3D;
+class EditorPropertyVector3;
+class ImmediateMesh;
+class InputEvent;
+class MenuButton;
+class MeshInstance3D;
+class Node3D;
+class Node;
+class Skeleton3D;
+class Tree;
+class TreeItem;
+class UndoRedo;
+class VSeparator;
 
 class BoneTransformEditor : public VBoxContainer {
 	GDCLASS(BoneTransformEditor, VBoxContainer);

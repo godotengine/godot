@@ -31,12 +31,25 @@
 #ifndef TILE_PROXIES_MANAGER_DIALOG_H
 #define TILE_PROXIES_MANAGER_DIALOG_H
 
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
-
 #include "scene/2d/tile_map.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
+#include "scene/resources/tile_set.h"
+
+class EditorPropertyInteger;
+class EditorPropertyVector2i;
+class InputEvent;
+class ItemList;
+class PopupMenu;
+class UndoRedo;
+struct Vector2;
 
 class TileProxiesManagerDialog : public ConfirmationDialog {
 	GDCLASS(TileProxiesManagerDialog, ConfirmationDialog);

@@ -31,16 +31,50 @@
 #ifndef ANIMATION_PLAYER_EDITOR_PLUGIN_H
 #define ANIMATION_PLAYER_EDITOR_PLUGIN_H
 
+#include <stdint.h>
+
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/animation/animation_player.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/texture_button.h"
+#include "scene/resources/material.h"
+#include "scene/resources/shader.h"
 
 class AnimationTrackEditor;
 class AnimationPlayerEditorPlugin;
+class AcceptDialog;
+class Animation;
+class AnimationPlayer;
+class ConfirmationDialog;
+class Control;
+class EditorFileDialog;
+class EditorNode;
+class ImageTexture;
+class InputEvent;
+class Label;
+class LineEdit;
+class MenuButton;
+class Node;
+class OptionButton;
+class Resource;
+class SpinBox;
+class Texture2D;
+class Tree;
+class UndoRedo;
+struct Transform3D;
 
 class AnimationPlayerEditor : public VBoxContainer {
 	GDCLASS(AnimationPlayerEditor, VBoxContainer);

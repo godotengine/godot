@@ -31,6 +31,17 @@
 #ifndef EDITORPROFILER_H
 #define EDITORPROFILER_H
 
+#include <stdint.h>
+
+#include "core/math/color.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/map.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
@@ -39,6 +50,16 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
+#include "scene/resources/texture.h"
+
+class Button;
+class HSplitContainer;
+class InputEvent;
+class OptionButton;
+class SpinBox;
+class TextureRect;
+class Timer;
+class Tree;
 
 class EditorProfiler : public VBoxContainer {
 	GDCLASS(EditorProfiler, VBoxContainer);

@@ -31,9 +31,21 @@
 #ifndef CONNECTIONS_DIALOG_H
 #define CONNECTIONS_DIALOG_H
 
+#include <stdint.h>
+
+#include "core/object/object.h"
 #include "core/object/undo_redo.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/map.h"
+#include "core/templates/vector.h"
+#include "core/variant/callable.h"
+#include "core/variant/callable_bind.h"
+#include "core/variant/variant.h"
 #include "editor/editor_inspector.h"
 #include "editor/scene_tree_editor.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
@@ -41,10 +53,23 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
+#include "scene/main/node.h"
 
 class PopupMenu;
 class ConnectDialogBinds;
 class SpinBox;
+class Button;
+class CheckBox;
+class CheckButton;
+class Control;
+class EditorInspector;
+class EditorNode;
+class Label;
+class LineEdit;
+class OptionButton;
+class SceneTreeEditor;
+class UndoRedo;
+struct Vector2;
 
 class ConnectDialog : public ConfirmationDialog {
 	GDCLASS(ConnectDialog, ConfirmationDialog);

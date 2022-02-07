@@ -31,12 +31,22 @@
 #ifndef EDITOR_TOASTER_H
 #define EDITOR_TOASTER_H
 
+#include "core/error/error_macros.h"
+#include "core/math/math_defs.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/local_vector.h"
+#include "core/templates/map.h"
+#include "core/variant/binder_common.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/popup.h"
 
-#include "core/string/ustring.h"
-#include "core/templates/local_vector.h"
+class Button;
+class Control;
+class PanelContainer;
+class StyleBoxFlat;
 
 class EditorToaster : public HBoxContainer {
 	GDCLASS(EditorToaster, HBoxContainer);

@@ -31,17 +31,67 @@
 #ifndef EDITOR_NODE_H
 #define EDITOR_NODE_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
+#include "core/io/resource.h"
+#include "core/math/rect2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/os/mutex.h"
+#include "core/os/os.h"
+#include "core/os/thread.h"
+#include "core/string/node_path.h"
+#include "core/string/print_string.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
 #include "core/templates/safe_refcount.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/callable.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 #include "editor/editor_data.h"
 #include "editor/editor_export.h"
 #include "editor/editor_folding.h"
 #include "editor/editor_native_shader_source_visualizer.h"
+#include "editor/editor_plugin.h"
 #include "editor/editor_run.h"
 #include "editor/editor_toaster.h"
 #include "editor/inspector_dock.h"
 #include "editor/property_editor.h"
 #include "editor/scene_tree_dock.h"
+#include "scene/gui/control.h"
 #include "scene/gui/link_button.h"
+#include "scene/main/node.h"
+#include "scene/resources/texture.h"
+#include "scene/resources/theme.h"
+
+class Camera3D;
+class CheckBox;
+class ConfigFile;
+class EditorExportPreset;
+class EditorFileDialog;
+class EditorNativeShaderSourceVisualizer;
+class EditorResourceConversionPlugin;
+class EditorToaster;
+class FileDialog;
+class HBoxContainer;
+class InputEvent;
+class LinkButton;
+class OptionButton;
+class PopupMenu;
+class PopupPanel;
+class RichTextLabel;
+class Script;
+class TextureRect;
+class Timer;
+class Tree;
+class UndoRedo;
+class VBoxContainer;
 
 typedef void (*EditorNodeInitCallback)();
 typedef void (*EditorPluginInitializeCallback)();

@@ -30,9 +30,24 @@
 
 #include "editor_run_native.h"
 
+#include "core/error/error_macros.h"
+#include "core/io/image.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/ref_counted.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/pair.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "editor/editor_settings.h"
 #include "editor_export.h"
 #include "editor_node.h"
 #include "editor_scale.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/main/node.h"
+#include "scene/resources/texture.h"
 
 void EditorRunNative::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {

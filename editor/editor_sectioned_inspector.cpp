@@ -30,7 +30,21 @@
 
 #include "editor_sectioned_inspector.h"
 
+#include "core/math/vector2.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/templates/list.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "editor/editor_inspector.h"
 #include "editor_scale.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/control.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/tree.h"
 
 class SectionedInspectorFilter : public Object {
 	GDCLASS(SectionedInspectorFilter, Object);

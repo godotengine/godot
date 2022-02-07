@@ -30,9 +30,29 @@
 
 #include "editor_performance_profiler.h"
 
+#include "core/error/error_macros.h"
+#include "core/input/input_enums.h"
+#include "core/input/input_event.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/math/rect2.h"
+#include "core/math/rect2i.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/os/memory.h"
+#include "core/templates/set.h"
+#include "core/typedefs.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "main/performance.h"
+#include "scene/gui/control.h"
+#include "scene/gui/label.h"
+#include "scene/gui/tree.h"
+#include "scene/resources/font.h"
+#include "scene/resources/style_box.h"
+#include "servers/text_server.h"
 
 EditorPerformanceProfiler::Monitor::Monitor() {}
 

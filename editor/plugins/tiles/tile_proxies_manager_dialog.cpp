@@ -30,7 +30,26 @@
 
 #include "tile_proxies_manager_dialog.h"
 
-#include "editor/editor_scale.h"
+#include "core/error/error_macros.h"
+#include "core/input/input_event.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/object/undo_redo.h"
+#include "core/os/memory.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "editor/editor_properties.h"
+#include "editor/editor_settings.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/control.h"
+#include "scene/gui/item_list.h"
+#include "scene/gui/label.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/gui/separator.h"
 
 void TileProxiesManagerDialog::_right_clicked(int p_item, Vector2 p_local_mouse_pos, Object *p_item_list) {
 	ItemList *item_list = Object::cast_to<ItemList>(p_item_list);

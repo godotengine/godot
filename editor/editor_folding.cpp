@@ -30,9 +30,19 @@
 
 #include "editor_folding.h"
 
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
+#include "core/io/config_file.h"
 #include "core/io/file_access.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/node_path.h"
+#include "core/templates/list.h"
+#include "core/variant/array.h"
+#include "core/variant/variant.h"
 #include "editor_inspector.h"
 #include "editor_settings.h"
+#include "scene/main/node.h"
 
 Vector<String> EditorFolding::_get_unfolds(const Object *p_object) {
 	Vector<String> sections;

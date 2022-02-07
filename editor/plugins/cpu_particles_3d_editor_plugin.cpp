@@ -30,7 +30,20 @@
 
 #include "cpu_particles_3d_editor_plugin.h"
 
+#include "core/math/vector3.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/templates/vector.h"
+#include "editor/editor_node.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/scene_tree_editor.h"
+#include "scene/3d/cpu_particles_3d.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/control.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/main/node.h"
 
 void CPUParticles3DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {

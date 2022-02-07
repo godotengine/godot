@@ -29,11 +29,34 @@
 /*************************************************************************/
 
 #include "editor/editor_command_palette.h"
+
+#include "core/error/error_macros.h"
+#include "core/input/input_event.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/vector2i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/os/memory.h"
+#include "core/os/os.h"
+#include "core/string/string_name.h"
+#include "core/templates/map.h"
+#include "core/templates/sort_array.h"
+#include "core/variant/array.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
+#include "scene/gui/base_button.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/control.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/tree.h"
+#include "scene/main/viewport.h"
 
 EditorCommandPalette *EditorCommandPalette::singleton = nullptr;
 

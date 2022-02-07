@@ -30,15 +30,42 @@
 
 #include "mesh_library_editor_plugin.h"
 
+#include <stdint.h>
+
+#include "core/error/error_macros.h"
+#include "core/io/resource_loader.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
-#include "main/main.h"
+#include "editor/inspector_dock.h"
 #include "node_3d_editor_plugin.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/3d/physics_body_3d.h"
-#include "scene/main/window.h"
+#include "scene/gui/button.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/main/node.h"
+#include "scene/resources/mesh.h"
+#include "scene/resources/navigation_mesh.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/resources/shape_3d.h"
+
+class Material;
+class Texture2D;
 
 void MeshLibraryEditor::edit(const Ref<MeshLibrary> &p_mesh_library) {
 	mesh_library = p_mesh_library;

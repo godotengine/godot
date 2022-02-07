@@ -31,17 +31,34 @@
 #ifndef TILE_ATLAS_VIEW_H
 #define TILE_ATLAS_VIEW_H
 
+#include "core/math/math_defs.h"
+#include "core/math/rect2i.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/math/vector3i.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/templates/map.h"
 #include "editor/editor_zoom_widget.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/center_container.h"
+#include "scene/gui/control.h"
 #include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/gui/view_panner.h"
 #include "scene/resources/tile_set.h"
 
 class ViewPanner;
+class Button;
+class CenterContainer;
+class EditorZoomWidget;
+class HBoxContainer;
+class InputEvent;
+class Label;
+class MarginContainer;
 
 class TileAtlasView : public Control {
 	GDCLASS(TileAtlasView, Control);

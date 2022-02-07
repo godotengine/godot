@@ -30,12 +30,22 @@
 
 #include "editor_fonts.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "builtin_fonts.gen.h"
 #include "core/io/dir_access.h"
+#include "core/io/file_access.h"
+#include "core/os/memory.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
-#include "scene/resources/default_theme/default_theme.h"
 #include "scene/resources/font.h"
+#include "scene/resources/theme.h"
+#include "servers/text_server.h"
 
 #define MAKE_FALLBACKS(m_name)        \
 	m_name->add_data(FontArabic);     \

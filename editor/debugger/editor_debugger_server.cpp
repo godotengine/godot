@@ -30,10 +30,13 @@
 
 #include "editor_debugger_server.h"
 
-#include "core/io/marshalls.h"
+#include "core/debugger/remote_debugger_peer.h"
+#include "core/error/error_macros.h"
 #include "core/io/tcp_server.h"
-#include "core/os/mutex.h"
-#include "core/os/thread.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"

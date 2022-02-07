@@ -30,15 +30,31 @@
 
 #include "editor_themes.h"
 
+#include <string.h>
+#include <cmath>
+
 #include "core/error/error_macros.h"
+#include "core/io/image.h"
 #include "core/io/resource_loader.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/math/vector2.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/set.h"
+#include "core/typedefs.h"
 #include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 #include "editor_fonts.h"
 #include "editor_icons.gen.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
-
 #include "modules/modules_enabled.gen.h" // For svg.
+#include "scene/resources/font.h"
+#include "scene/resources/style_box.h"
+#include "scene/resources/texture.h"
 #ifdef MODULE_SVG_ENABLED
 #include "modules/svg/image_loader_svg.h"
 #endif

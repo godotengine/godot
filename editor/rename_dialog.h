@@ -31,7 +31,26 @@
 #ifndef RENAME_DIALOG_H
 #define RENAME_DIALOG_H
 
+#include "core/error/error_macros.h"
+#include "core/object/object.h"
+#include "core/string/node_path.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/pair.h"
 #include "modules/modules_enabled.gen.h" // For regex.
+
+class Array;
+class Button;
+class CheckBox;
+class CheckButton;
+class Label;
+class LineEdit;
+class Node;
+class OptionButton;
+class SceneTreeEditor;
+class SpinBox;
+class TabContainer;
+class UndoRedo;
 #ifdef MODULE_REGEX_ENABLED
 
 #include "core/object/undo_redo.h"

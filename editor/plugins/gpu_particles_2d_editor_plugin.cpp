@@ -30,11 +30,42 @@
 
 #include "gpu_particles_2d_editor_plugin.h"
 
-#include "canvas_item_editor_plugin.h"
+#include <math.h>
+#include <stdint.h>
+
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
+#include "core/io/image.h"
 #include "core/io/image_loader.h"
+#include "core/math/math_defs.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/ref_counted.h"
+#include "core/object/undo_redo.h"
+#include "core/os/memory.h"
+#include "core/os/os.h"
+#include "core/string/string_name.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "editor/editor_data.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
+#include "editor/scene_tree_dock.h"
 #include "scene/2d/cpu_particles_2d.h"
+#include "scene/2d/gpu_particles_2d.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/spin_box.h"
+#include "scene/main/node.h"
 #include "scene/resources/particles_material.h"
+#include "scene/resources/texture.h"
 
 void GPUParticles2DEditorPlugin::edit(Object *p_object) {
 	particles = Object::cast_to<GPUParticles2D>(p_object);

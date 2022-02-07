@@ -31,9 +31,23 @@
 #include "editor_debugger_inspector.h"
 
 #include "core/debugger/debugger_marshalls.h"
+#include "core/error/error_macros.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_loader.h"
+#include "core/math/vector2.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/object/ref_counted.h"
+#include "core/object/script_language.h"
+#include "core/os/memory.h"
+#include "core/templates/pair.h"
+#include "core/typedefs.h"
+#include "editor/editor_data.h"
 #include "editor/editor_node.h"
 #include "scene/debugger/scene_debugger.h"
+#include "scene/main/node.h"
+
+class Array;
 
 bool EditorDebuggerRemoteObject::_set(const StringName &p_name, const Variant &p_value) {
 	if (!editable || !prop_values.has(p_name) || String(p_name).begins_with("Constants/")) {

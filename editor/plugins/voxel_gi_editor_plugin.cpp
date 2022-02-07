@@ -30,6 +30,25 @@
 
 #include "voxel_gi_editor_plugin.h"
 
+#include "core/error/error_macros.h"
+#include "core/io/resource_saver.h"
+#include "core/math/vector2.h"
+#include "core/math/vector3.h"
+#include "core/math/vector3i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/ref_counted.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/variant/variant.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
+#include "scene/3d/voxel_gi.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/control.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
+
 void VoxelGIEditorPlugin::_bake() {
 	if (voxel_gi) {
 		if (voxel_gi->get_probe_data().is_null()) {

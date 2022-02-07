@@ -32,11 +32,19 @@
 #define EDITORNETWORKPROFILER_H
 
 #include "core/debugger/debugger_marshalls.h"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/templates/map.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
+
+class Button;
+class LineEdit;
+class Timer;
+class Tree;
 
 class EditorNetworkProfiler : public VBoxContainer {
 	GDCLASS(EditorNetworkProfiler, VBoxContainer)

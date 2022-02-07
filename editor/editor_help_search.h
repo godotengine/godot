@@ -31,12 +31,32 @@
 #ifndef EDITOR_HELP_SEARCH_H
 #define EDITOR_HELP_SEARCH_H
 
+#include <stdint.h>
+
+#include "core/doc_data.h"
+#include "core/math/color.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/map.h"
 #include "core/templates/ordered_hash_map.h"
+#include "core/templates/vector.h"
 #include "editor/code_editor.h"
 #include "editor/editor_help.h"
 #include "editor/editor_plugin.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/tree.h"
+#include "scene/resources/texture.h"
+
+class Button;
+class Control;
+class InputEvent;
+class LineEdit;
+class OptionButton;
+class Tree;
+class TreeItem;
 
 class EditorHelpSearch : public ConfirmationDialog {
 	GDCLASS(EditorHelpSearch, ConfirmationDialog);
@@ -64,6 +84,7 @@ class EditorHelpSearch : public ConfirmationDialog {
 	String old_term;
 
 	class Runner;
+
 	Ref<Runner> search;
 
 	void _update_icons();

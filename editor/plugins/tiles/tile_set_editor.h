@@ -32,11 +32,35 @@
 #define TILE_SET_EDITOR_H
 
 #include "atlas_merging_dialog.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "editor/editor_node.h"
 #include "scene/gui/box_container.h"
 #include "scene/resources/tile_set.h"
 #include "tile_proxies_manager_dialog.h"
 #include "tile_set_atlas_source_editor.h"
 #include "tile_set_scenes_collection_source_editor.h"
+
+class AtlasMergingDialog;
+class Button;
+class Control;
+class HSplitContainer;
+class InputEvent;
+class ItemList;
+class Label;
+class MenuButton;
+class TabBar;
+class Texture2D;
+class TileMapPattern;
+class TileProxiesManagerDialog;
+class TileSet;
+class TileSetAtlasSourceEditor;
+class TileSetScenesCollectionSourceEditor;
+class UndoRedo;
 
 class TileSetEditor : public VBoxContainer {
 	GDCLASS(TileSetEditor, VBoxContainer);

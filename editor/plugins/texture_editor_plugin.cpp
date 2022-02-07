@@ -30,7 +30,22 @@
 
 #include "texture_editor_plugin.h"
 
+#include "core/io/image.h"
+#include "core/math/color.h"
+#include "core/math/vector2.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
 #include "editor/editor_scale.h"
+#include "scene/gui/control.h"
+#include "scene/gui/label.h"
+#include "scene/gui/texture_rect.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/resources/texture.h"
+
+class EditorNode;
+class Font;
 
 TextureRect *TexturePreview::get_texture_display() {
 	return texture_display;

@@ -29,7 +29,14 @@
 /*************************************************************************/
 
 #include "dictionary_property_edit.h"
+
+#include "core/object/class_db.h"
+#include "core/object/undo_redo.h"
+#include "core/string/ustring.h"
+#include "core/variant/array.h"
+#include "core/variant/dictionary.h"
 #include "editor_node.h"
+#include "scene/main/node.h"
 
 void DictionaryPropertyEdit::_notif_change() {
 	notify_property_list_changed();

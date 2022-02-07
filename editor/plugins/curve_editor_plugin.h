@@ -31,10 +31,24 @@
 #ifndef CURVE_EDITOR_PLUGIN_H
 #define CURVE_EDITOR_PLUGIN_H
 
+#include "core/math/transform_2d.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/variant/array.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_resource_preview.h"
+#include "scene/gui/control.h"
 #include "scene/resources/curve.h"
+
+class EditorNode;
+class InputEvent;
+class PopupMenu;
+class Resource;
+class Texture2D;
 
 // Edits a y(x) curve
 class CurveEditor : public Control {

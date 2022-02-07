@@ -30,12 +30,29 @@
 
 #include "localization_editor.h"
 
+#include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
+#include "core/io/resource_loader.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/object/undo_redo.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
 #include "core/string/translation.h"
+#include "core/templates/list.h"
+#include "core/templates/vector.h"
+#include "core/variant/dictionary.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_locale_dialog.h"
 #include "editor_node.h"
-#include "editor_scale.h"
 #include "editor_translation_parser.h"
 #include "pot_generator.h"
+#include "scene/gui/button.h"
 #include "scene/gui/control.h"
+#include "scene/gui/label.h"
+#include "scene/gui/tab_container.h"
+#include "scene/gui/tree.h"
+#include "scene/main/node.h"
 
 void LocalizationEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {

@@ -31,9 +31,17 @@
 #include "skeleton_2d_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
-#include "scene/2d/mesh_instance_2d.h"
-#include "scene/gui/box_container.h"
-#include "thirdparty/misc/clipper.hpp"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/undo_redo.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "editor/editor_node.h"
+#include "scene/2d/skeleton_2d.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/popup_menu.h"
+
+class Node;
 
 void Skeleton2DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {

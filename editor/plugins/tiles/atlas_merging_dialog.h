@@ -31,13 +31,30 @@
 #ifndef ATLAS_MERGING_DIALOG_H
 #define ATLAS_MERGING_DIALOG_H
 
+#include "core/math/vector2i.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/local_vector.h"
+#include "core/templates/map.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
-
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/tile_set.h"
+
+class Button;
+class EditorFileDialog;
+class EditorPropertyInteger;
+class EditorPropertyVector2i;
+class ItemList;
+class Label;
+class TextureRect;
+class UndoRedo;
 
 class AtlasMergingDialog : public ConfirmationDialog {
 	GDCLASS(AtlasMergingDialog, ConfirmationDialog);

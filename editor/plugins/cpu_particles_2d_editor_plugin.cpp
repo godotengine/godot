@@ -30,11 +30,34 @@
 
 #include "cpu_particles_2d_editor_plugin.h"
 
-#include "canvas_item_editor_plugin.h"
+#include <stdint.h>
+
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
+#include "core/io/image.h"
 #include "core/io/image_loader.h"
+#include "core/math/color.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/ref_counted.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/templates/list.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
 #include "scene/2d/cpu_particles_2d.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/gui/separator.h"
-#include "scene/resources/particles_material.h"
+#include "scene/gui/spin_box.h"
+#include "scene/main/node.h"
 
 void CPUParticles2DEditorPlugin::edit(Object *p_object) {
 	particles = Object::cast_to<CPUParticles2D>(p_object);

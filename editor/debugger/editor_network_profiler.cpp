@@ -30,9 +30,24 @@
 
 #include "editor_network_profiler.h"
 
-#include "core/os/os.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/vector2.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/pair.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
 #include "editor/editor_scale.h"
-#include "editor/editor_settings.h"
+#include "scene/gui/button.h"
+#include "scene/gui/control.h"
+#include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/tree.h"
+#include "scene/main/node.h"
+#include "scene/main/timer.h"
 
 void EditorNetworkProfiler::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("enable_profiling", PropertyInfo(Variant::BOOL, "enable")));

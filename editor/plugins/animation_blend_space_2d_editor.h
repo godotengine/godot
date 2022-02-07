@@ -31,15 +31,36 @@
 #ifndef ANIMATION_BLEND_SPACE_2D_EDITOR_H
 #define ANIMATION_BLEND_SPACE_2D_EDITOR_H
 
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/plugins/animation_tree_editor_plugin.h"
 #include "editor/property_editor.h"
 #include "scene/animation/animation_blend_space_2d.h"
+#include "scene/animation/animation_tree.h"
 #include "scene/gui/button.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
+
+class Button;
+class Control;
+class EditorFileDialog;
+class HBoxContainer;
+class InputEvent;
+class Label;
+class LineEdit;
+class OptionButton;
+class PanelContainer;
+class PopupMenu;
+class SpinBox;
+class UndoRedo;
+class VSeparator;
 
 class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 	GDCLASS(AnimationNodeBlendSpace2DEditor, AnimationTreeNodeEditorPlugin);

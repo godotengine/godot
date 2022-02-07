@@ -31,6 +31,24 @@
 #ifndef FILESYSTEM_DOCK_H
 #define FILESYSTEM_DOCK_H
 
+#include <stdint.h>
+
+#include "core/io/dir_access.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/os/thread.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
+#include "create_dialog.h"
+#include "dependency_editor.h"
+#include "editor_dir_dialog.h"
+#include "editor_file_system.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
@@ -42,19 +60,30 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
 #include "scene/main/timer.h"
-
-#include "core/io/dir_access.h"
-#include "core/os/thread.h"
-
-#include "create_dialog.h"
-
-#include "dependency_editor.h"
-#include "editor_dir_dialog.h"
-#include "editor_file_system.h"
 #include "script_create_dialog.h"
 
 class EditorNode;
 class ShaderCreateDialog;
+class Button;
+class ConfirmationDialog;
+class Control;
+class CreateDialog;
+class DependencyEditor;
+class DependencyEditorOwners;
+class DependencyRemoveDialog;
+class EditorDirDialog;
+class EditorFileSystemDirectory;
+class InputEvent;
+class ItemList;
+class LineEdit;
+class MenuButton;
+class PopupMenu;
+class ProgressBar;
+class ScriptCreateDialog;
+class Texture2D;
+class TextureRect;
+class Tree;
+class TreeItem;
 
 class FileSystemDock : public VBoxContainer {
 	GDCLASS(FileSystemDock, VBoxContainer);

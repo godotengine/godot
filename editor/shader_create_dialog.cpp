@@ -29,9 +29,44 @@
 /*************************************************************************/
 
 #include "shader_create_dialog.h"
+
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
+#include "core/error/error_list.h"
+#include "core/io/dir_access.h"
+#include "core/io/resource.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/math/math_defs.h"
+#include "core/math/vector2.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/object/ref_counted.h"
+#include "core/os/memory.h"
+#include "core/string/string_builder.h"
+#include "core/string/string_name.h"
+#include "core/templates/set.h"
+#include "core/variant/callable.h"
+#include "core/variant/variant.h"
+#include "editor/editor_file_dialog.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/control.h"
+#include "scene/gui/grid_container.h"
+#include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/panel_container.h"
+#include "scene/main/node.h"
+#include "scene/main/window.h"
+#include "scene/resources/shader.h"
 #include "scene/resources/visual_shader.h"
 #include "servers/rendering/shader_types.h"
+
+class Texture2D;
 
 void ShaderCreateDialog::_notification(int p_what) {
 	switch (p_what) {

@@ -31,15 +31,51 @@
 #ifndef EDITOR_INSPECTOR_H
 #define EDITOR_INSPECTOR_H
 
+#include <stdint.h>
+
+#include "core/io/resource.h"
+#include "core/math/color.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/local_vector.h"
+#include "core/templates/map.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
+#include "core/variant/variant.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
+#include "scene/gui/container.h"
+#include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/resources/style_box.h"
+#include "scene/resources/texture.h"
 
 class UndoRedo;
+class AcceptDialog;
+class Button;
+class HBoxContainer;
+class InputEvent;
+class Label;
+class LineEdit;
+class MarginContainer;
+class Node;
+class PanelContainer;
+class PopupMenu;
+class TextureRect;
+class Timer;
+class VBoxContainer;
 
 class EditorPropertyRevert {
 public:

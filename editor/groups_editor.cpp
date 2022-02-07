@@ -30,12 +30,35 @@
 
 #include "groups_editor.h"
 
+#include "core/math/math_defs.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/object/ref_counted.h"
+#include "core/object/undo_redo.h"
+#include "core/os/memory.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/templates/list.h"
+#include "core/variant/variant.h"
+#include "editor/scene_tree_dock.h"
 #include "editor/scene_tree_editor.h"
 #include "editor_node.h"
 #include "editor_scale.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/control.h"
 #include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/tree.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
+#include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
+#include "servers/display_server.h"
+
+class Texture2D;
 
 void GroupDialog::_group_selected() {
 	nodes_to_add->clear();

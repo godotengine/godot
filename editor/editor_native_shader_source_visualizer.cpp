@@ -30,7 +30,15 @@
 
 #include "editor_native_shader_source_visualizer.h"
 
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/string/ustring.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "scene/gui/control.h"
+#include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
+#include "servers/rendering_server.h"
 
 void EditorNativeShaderSourceVisualizer::_inspect_shader(RID p_shader) {
 	if (versions) {

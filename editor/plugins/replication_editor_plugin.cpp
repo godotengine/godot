@@ -30,11 +30,32 @@
 
 #include "replication_editor_plugin.h"
 
+#include "core/error/error_macros.h"
+#include "core/math/math_defs.h"
+#include "core/math/vector2.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/object/undo_redo.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/variant/array.h"
+#include "core/variant/typed_array.h"
+#include "editor/editor_data.h"
+#include "editor/editor_inspector.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/inspector_dock.h"
+#include "scene/gui/button.h"
+#include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/tree.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
 #include "scene/multiplayer/multiplayer_synchronizer.h"
+#include "scene/resources/texture.h"
 
 /// ReplicationEditor
 ReplicationEditor::ReplicationEditor(EditorNode *p_editor) {

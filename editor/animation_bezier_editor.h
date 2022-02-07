@@ -32,8 +32,30 @@
 #define ANIMATION_BEZIER_EDITOR_H
 
 #include "animation_track_editor.h"
+#include "core/math/color.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/map.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
+#include "scene/gui/control.h"
+#include "scene/gui/view_panner.h"
+#include "scene/resources/animation.h"
+#include "scene/resources/texture.h"
 
 class ViewPanner;
+class AnimationTimelineEdit;
+class AnimationTrackEditor;
+class Button;
+class InputEvent;
+class Node;
+class PopupMenu;
+class UndoRedo;
+class VBoxContainer;
 
 class AnimationBezierTrackEdit : public Control {
 	GDCLASS(AnimationBezierTrackEdit, Control);

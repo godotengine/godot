@@ -31,10 +31,20 @@
 #ifndef LOCALIZATION_EDITOR_H
 #define LOCALIZATION_EDITOR_H
 
+#include "core/object/object.h"
 #include "core/object/undo_redo.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
 #include "editor_file_dialog.h"
 #include "editor_locale_dialog.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/tree.h"
+
+class Button;
+class EditorFileDialog;
+class EditorLocaleDialog;
+class Tree;
+class UndoRedo;
 
 class LocalizationEditor : public VBoxContainer {
 	GDCLASS(LocalizationEditor, VBoxContainer);

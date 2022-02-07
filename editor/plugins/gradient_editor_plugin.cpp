@@ -30,9 +30,19 @@
 
 #include "gradient_editor_plugin.h"
 
-#include "canvas_item_editor_plugin.h"
+#include "core/math/rect2.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/undo_redo.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/templates/vector.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
-#include "node_3d_editor_plugin.h"
+#include "editor/editor_settings.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/color_picker.h"
+#include "scene/main/canvas_item.h"
+#include "scene/resources/texture.h"
 
 Size2 GradientEditor::get_minimum_size() const {
 	return Size2(0, 60) * EDSCALE;

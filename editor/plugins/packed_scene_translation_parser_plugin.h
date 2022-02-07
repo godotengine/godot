@@ -31,6 +31,14 @@
 #ifndef PACKED_SCENE_TRANSLATION_PARSER_PLUGIN_H
 #define PACKED_SCENE_TRANSLATION_PARSER_PLUGIN_H
 
+#include "core/error/error_list.h"
+#include "core/object/object.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
 #include "editor/editor_translation_parser.h"
 
 class PackedSceneEditorTranslationParserPlugin : public EditorTranslationParserPlugin {

@@ -31,11 +31,24 @@
 #ifndef AUDIO_STREAM_EDITOR_PLUGIN_H
 #define AUDIO_STREAM_EDITOR_PLUGIN_H
 
+#include "core/math/math_defs.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/audio/audio_stream_player.h"
 #include "scene/gui/color_rect.h"
 #include "scene/resources/texture.h"
+#include "servers/audio/audio_stream.h"
+
+class AudioStreamPlayer;
+class Button;
+class Control;
+class EditorNode;
+class InputEvent;
+class Label;
+class ObjectID;
 
 class AudioStreamEditor : public ColorRect {
 	GDCLASS(AudioStreamEditor, ColorRect);

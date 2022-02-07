@@ -31,15 +31,28 @@
 #ifndef EDITOR_SETTINGS_H
 #define EDITOR_SETTINGS_H
 
+#include "core/input/input_event.h"
 #include "core/input/shortcut.h"
 #include "core/io/config_file.h"
 #include "core/io/resource.h"
 #include "core/object/class_db.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/os/keyboard.h"
 #include "core/os/thread_safe.h"
+#include "core/string/string_name.h"
 #include "core/string/translation.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
+#include "core/variant/variant.h"
 #include "editor/editor_paths.h"
 
 class EditorPlugin;
+class Dictionary;
 
 class EditorSettings : public Resource {
 	GDCLASS(EditorSettings, Resource);

@@ -33,16 +33,28 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
+#include "core/error/error_macros.h"
 #include "core/io/compression.h"
 #include "core/io/dir_access.h"
-#include "core/io/marshalls.h"
+#include "core/io/file_access.h"
+#include "core/io/xml_parser.h"
+#include "core/object/class_db.h"
+#include "core/object/method_bind.h"
+#include "core/object/object.h"
 #include "core/object/script_language.h"
+#include "core/os/memory.h"
+#include "core/string/print_string.h"
+#include "core/string/string_name.h"
 #include "core/string/translation.h"
+#include "core/templates/list.h"
+#include "core/templates/pair.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/callable.h"
+#include "core/variant/variant.h"
 #include "core/version.h"
 #include "scene/resources/theme.h"
-
-// Used for a hack preserving Mono properties on non-Mono builds.
-#include "modules/modules_enabled.gen.h" // For mono.
 
 static String _get_indent(const String &p_text) {
 	String indent;

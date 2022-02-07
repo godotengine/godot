@@ -30,7 +30,15 @@
 
 #include "camera_3d_editor_plugin.h"
 
+#include "core/math/math_defs.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/os/memory.h"
 #include "node_3d_editor_plugin.h"
+#include "scene/3d/camera_3d.h"
+#include "scene/gui/button.h"
+
+class EditorNode;
+class Node;
 
 void Camera3DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {

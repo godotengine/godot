@@ -31,21 +31,67 @@
 #ifndef SCRIPT_EDITOR_PLUGIN_H
 #define SCRIPT_EDITOR_PLUGIN_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
+#include "core/io/resource.h"
+#include "core/math/vector2.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/callable.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 #include "editor/code_editor.h"
 #include "editor/editor_help.h"
 #include "editor/editor_help_search.h"
 #include "editor/editor_plugin.h"
 #include "editor/script_create_dialog.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/panel_container.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
 #include "scene/gui/tree.h"
 #include "scene/main/timer.h"
+#include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/text_file.h"
+
+class Button;
+class ConfigFile;
+class Control;
+class EditorFileDialog;
+class EditorHelpSearch;
+class EditorNode;
+class FindReplaceBar;
+class HSplitContainer;
+class InputEvent;
+class ItemList;
+class Label;
+class LineEdit;
+class MenuButton;
+class Node;
+class PopupMenu;
+class ScriptCreateDialog;
+class TabContainer;
+class TextFile;
+class Texture2D;
+class TextureRect;
+class Timer;
+class Tree;
+class VSplitContainer;
 
 class EditorSyntaxHighlighter : public SyntaxHighlighter {
 	GDCLASS(EditorSyntaxHighlighter, SyntaxHighlighter)

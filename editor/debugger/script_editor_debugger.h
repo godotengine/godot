@@ -31,7 +31,19 @@
 #ifndef SCRIPT_EDITOR_DEBUGGER_H
 #define SCRIPT_EDITOR_DEBUGGER_H
 
+#include "core/debugger/remote_debugger_peer.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/object/script_language.h"
 #include "core/os/os.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/map.h"
+#include "core/variant/callable.h"
+#include "core/variant/variant.h"
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/editor_debugger_server.h"
@@ -57,6 +69,14 @@ class SceneDebuggerTree;
 class EditorDebuggerPlugin;
 class DebugAdapterProtocol;
 class DebugAdapterParser;
+class Array;
+class Button;
+class EditorDebuggerInspector;
+class EditorFileDialog;
+class Label;
+class ObjectID;
+class PopupMenu;
+class VBoxContainer;
 
 class ScriptEditorDebugger : public MarginContainer {
 	GDCLASS(ScriptEditorDebugger, MarginContainer);

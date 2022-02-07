@@ -31,8 +31,15 @@
 #ifndef LINE_2D_EDITOR_PLUGIN_H
 #define LINE_2D_EDITOR_PLUGIN_H
 
+#include "core/object/object.h"
+#include "core/variant/variant.h"
 #include "editor/plugins/abstract_polygon_2d_editor.h"
 #include "scene/2d/line_2d.h"
+
+class EditorNode;
+class Line2D;
+class Node2D;
+class Node;
 
 class Line2DEditor : public AbstractPolygon2DEditor {
 	GDCLASS(Line2DEditor, AbstractPolygon2DEditor);

@@ -30,14 +30,33 @@
 
 #include "resource_importer_obj.h"
 
+#include "core/error/error_macros.h"
 #include "core/io/file_access.h"
+#include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/math/color.h"
+#include "core/math/vector2.h"
+#include "core/math/vector3.h"
+#include "core/os/memory.h"
+#include "core/string/print_string.h"
+#include "core/string/string_name.h"
+#include "core/templates/local_vector.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
+#include "editor/import/resource_importer_scene.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
+#include "scene/resources/animation.h"
 #include "scene/resources/importer_mesh.h"
+#include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/surface_tool.h"
+#include "scene/resources/texture.h"
+
+class Node;
 
 uint32_t EditorOBJImporter::get_import_flags() const {
 	return IMPORT_SCENE;

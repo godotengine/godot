@@ -28,12 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "editor/editor_node.h"
+#include "editor/editor_toaster.h"
+
+#include "core/math/color.h"
+#include "core/math/math_funcs.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/templates/local_vector.h"
+#include "core/templates/pair.h"
+#include "core/typedefs.h"
+#include "core/variant/callable_bind.h"
+#include "core/variant/variant.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
+#include "editor_toaster.h"
+#include "scene/gui/button.h"
+#include "scene/gui/control.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel_container.h"
-
-#include "editor_toaster.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/resources/style_box.h"
 
 EditorToaster *EditorToaster::singleton = nullptr;
 

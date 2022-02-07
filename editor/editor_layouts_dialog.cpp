@@ -30,10 +30,21 @@
 
 #include "editor_layouts_dialog.h"
 
+#include "core/error/error_list.h"
+#include "core/input/input_event.h"
 #include "core/io/config_file.h"
-#include "core/object/class_db.h"
+#include "core/math/math_defs.h"
+#include "core/object/callable_method_pointer.h"
 #include "core/os/keyboard.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 #include "editor/editor_settings.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/control.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
 

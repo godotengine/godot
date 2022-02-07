@@ -31,10 +31,19 @@
 #ifndef EDITOR_HELP_H
 #define EDITOR_HELP_H
 
+#include "core/doc_data.h"
+#include "core/error/error_list.h"
+#include "core/math/color.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
 #include "core/os/thread.h"
+#include "core/string/ustring.h"
+#include "core/templates/map.h"
+#include "core/templates/vector.h"
 #include "editor/code_editor.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_plugin.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel_container.h"
@@ -43,6 +52,19 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
 #include "scene/main/timer.h"
+
+class Button;
+class ConfirmationDialog;
+class DocTools;
+class Font;
+class HSplitContainer;
+class InputEvent;
+class Label;
+class LineEdit;
+class TextureButton;
+class Thread;
+template <class F, class S>
+struct Pair;
 
 class FindBar : public HBoxContainer {
 	GDCLASS(FindBar, HBoxContainer);

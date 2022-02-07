@@ -31,6 +31,7 @@
 #ifndef DEBUG_ADAPTER_SERVER_H
 #define DEBUG_ADAPTER_SERVER_H
 
+#include "core/object/object.h"
 #include "debug_adapter_protocol.h"
 #include "editor/editor_plugin.h"
 

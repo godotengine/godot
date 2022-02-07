@@ -31,11 +31,19 @@
 #ifndef STYLE_BOX_EDITOR_PLUGIN_H
 #define STYLE_BOX_EDITOR_PLUGIN_H
 
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/style_box.h"
+
+class Control;
+class EditorNode;
 
 class StyleBoxPreview : public VBoxContainer {
 	GDCLASS(StyleBoxPreview, VBoxContainer);

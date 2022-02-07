@@ -30,6 +30,24 @@
 
 #include "lightmap_gi_editor_plugin.h"
 
+#include "core/error/error_macros.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/os/os.h"
+#include "core/string/print_string.h"
+#include "core/string/string_name.h"
+#include "core/variant/callable.h"
+#include "core/variant/variant.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
+#include "scene/3d/lightmap_gi.h"
+#include "scene/gui/button.h"
+#include "scene/gui/control.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
+#include "servers/display_server.h"
+
 void LightmapGIEditorPlugin::_bake_select_file(const String &p_file) {
 	if (lightmap) {
 		LightmapGI::BakeError err;

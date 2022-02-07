@@ -30,12 +30,24 @@
 
 #include "resource_importer_dynamicfont.h"
 
+#include "core/error/error_macros.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
+#include "core/math/math_defs.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/object/ref_counted.h"
+#include "core/string/print_string.h"
+#include "core/string/string_name.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 #include "dynamicfont_import_settings.h"
-#include "editor/editor_node.h"
-
 #include "modules/modules_enabled.gen.h" // For freetype.
+#include "scene/resources/font.h"
+#include "servers/text_server.h"
 
 String ResourceImporterDynamicFont::get_importer_name() const {
 	return "font_data_dynamic";

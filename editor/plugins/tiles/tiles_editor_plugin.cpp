@@ -30,20 +30,40 @@
 
 #include "tiles_editor_plugin.h"
 
+#include "core/error/error_macros.h"
+#include "core/math/rect2.h"
+#include "core/math/rect2i.h"
+#include "core/math/vector2i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/os/memory.h"
 #include "core/os/mutex.h"
-
+#include "core/os/os.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
+#include "core/variant/typed_array.h"
+#include "core/variant/variant.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
-
+#include "editor/plugins/tiles/tile_atlas_view.h"
+#include "editor/plugins/tiles/tile_map_editor.h"
 #include "scene/2d/tile_map.h"
-#include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
-#include "scene/gui/separator.h"
+#include "scene/gui/item_list.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/main/node.h"
+#include "scene/main/viewport.h"
+#include "scene/resources/texture.h"
 #include "scene/resources/tile_set.h"
-
+#include "servers/rendering_server.h"
 #include "tile_set_editor.h"
+
+class Image;
 
 TilesEditorPlugin *TilesEditorPlugin::singleton = nullptr;
 

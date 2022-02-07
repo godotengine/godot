@@ -31,12 +31,31 @@
 #ifndef CREATE_DIALOG_H
 #define CREATE_DIALOG_H
 
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/list.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 #include "editor_help.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/tree.h"
+
+class Button;
+class Control;
+class EditorHelpBit;
+class InputEvent;
+class ItemList;
+class LineEdit;
+class Tree;
+class TreeItem;
 
 class CreateDialog : public ConfirmationDialog {
 	GDCLASS(CreateDialog, ConfirmationDialog);

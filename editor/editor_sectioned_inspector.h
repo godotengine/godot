@@ -31,11 +31,19 @@
 #ifndef EDITOR_SECTIONED_INSPECTOR_H
 #define EDITOR_SECTIONED_INSPECTOR_H
 
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/string/ustring.h"
+#include "core/templates/map.h"
 #include "editor/editor_inspector.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
 
 class SectionedInspectorFilter;
+class EditorInspector;
+class LineEdit;
+class Tree;
+class TreeItem;
 
 class SectionedInspector : public HSplitContainer {
 	GDCLASS(SectionedInspector, HSplitContainer);

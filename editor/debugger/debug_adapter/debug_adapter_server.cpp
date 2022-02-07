@@ -30,9 +30,14 @@
 
 #include "debug_adapter_server.h"
 
-#include "core/os/os.h"
+#include "core/error/error_list.h"
+#include "core/io/ip_address.h"
+#include "core/variant/variant.h"
+#include "editor/debugger/debug_adapter/debug_adapter_protocol.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
+#include "scene/main/node.h"
 
 DebugAdapterServer::DebugAdapterServer() {
 	_EDITOR_DEF("network/debug_adapter/remote_port", remote_port);

@@ -31,12 +31,26 @@
 #ifndef PARTICLES_2D_EDITOR_PLUGIN_H
 #define PARTICLES_2D_EDITOR_PLUGIN_H
 
+#include "core/object/object.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/2d/collision_polygon_2d.h"
 #include "scene/2d/gpu_particles_2d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/file_dialog.h"
+
+class CheckBox;
+class ConfirmationDialog;
+class EditorFileDialog;
+class EditorNode;
+class GPUParticles2D;
+class HBoxContainer;
+class MenuButton;
+class OptionButton;
+class SpinBox;
+class UndoRedo;
 
 class GPUParticles2DEditorPlugin : public EditorPlugin {
 	GDCLASS(GPUParticles2DEditorPlugin, EditorPlugin);

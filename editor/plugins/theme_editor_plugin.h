@@ -31,16 +31,50 @@
 #ifndef THEME_EDITOR_PLUGIN_H
 #define THEME_EDITOR_PLUGIN_H
 
+#include "core/io/resource.h"
+#include "core/math/color.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/ordered_hash_map.h"
+#include "core/templates/vector.h"
+#include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/tab_bar.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/resources/style_box.h"
 #include "scene/resources/theme.h"
 #include "theme_editor_preview.h"
 
-#include "editor/editor_node.h"
+class Button;
+class CheckButton;
+class Control;
+class EditorFileDialog;
+class EditorNode;
+class Font;
+class InputEvent;
+class ItemList;
+class Label;
+class LineEdit;
+class Node;
+class OptionButton;
+class PanelContainer;
+class TabBar;
+class TabContainer;
+class Texture2D;
+class TextureRect;
+class ThemeEditorPreview;
+class Timer;
+class Tree;
+class TreeItem;
 
 class ThemeItemImportTree : public VBoxContainer {
 	GDCLASS(ThemeItemImportTree, VBoxContainer);

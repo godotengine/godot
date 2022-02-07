@@ -31,12 +31,29 @@
 #ifndef TILES_EDITOR_PLUGIN_H
 #define TILES_EDITOR_PLUGIN_H
 
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/object/ref_counted.h"
+#include "core/os/mutex.h"
+#include "core/os/semaphore.h"
+#include "core/os/thread.h"
+#include "core/templates/list.h"
+#include "core/templates/safe_refcount.h"
+#include "core/typedefs.h"
+#include "core/variant/callable.h"
 #include "editor/editor_plugin.h"
 #include "scene/gui/box_container.h"
-
+#include "scene/resources/tile_set.h"
 #include "tile_atlas_view.h"
 #include "tile_map_editor.h"
 #include "tile_set_editor.h"
+
+class Button;
+class Control;
+class EditorNode;
+class InputEvent;
+class TileSetEditor;
 
 class TilesEditorPlugin : public EditorPlugin {
 	GDCLASS(TilesEditorPlugin, EditorPlugin);

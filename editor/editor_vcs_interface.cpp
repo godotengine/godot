@@ -30,6 +30,12 @@
 
 #include "editor_vcs_interface.h"
 
+#include "core/error/error_macros.h"
+#include "core/io/file_access.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/variant/variant.h"
+
 EditorVCSInterface *EditorVCSInterface::singleton = nullptr;
 
 void EditorVCSInterface::_bind_methods() {

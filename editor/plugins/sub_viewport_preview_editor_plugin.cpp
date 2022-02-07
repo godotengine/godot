@@ -30,6 +30,17 @@
 
 #include "sub_viewport_preview_editor_plugin.h"
 
+#include "core/object/callable_method_pointer.h"
+#include "core/object/ref_counted.h"
+#include "core/os/memory.h"
+#include "editor/editor_inspector.h"
+#include "scene/gui/texture_rect.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/viewport.h"
+#include "scene/resources/texture.h"
+
+class EditorNode;
+
 bool EditorInspectorPluginSubViewportPreview::can_handle(Object *p_object) {
 	return Object::cast_to<SubViewport>(p_object) != nullptr;
 }

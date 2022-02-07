@@ -30,8 +30,21 @@
 
 #include "resource_importer_imagefont.h"
 
+#include "core/error/error_macros.h"
+#include "core/io/image.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/object/ref_counted.h"
+#include "core/string/print_string.h"
+#include "core/string/string_name.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "scene/resources/font.h"
+#include "servers/text_server.h"
 
 String ResourceImporterImageFont::get_importer_name() const {
 	return "font_data_image";

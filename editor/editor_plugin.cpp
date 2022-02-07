@@ -30,20 +30,60 @@
 
 #include "editor_plugin.h"
 
+#include <stdint.h>
+
+#include "core/input/input_event.h"
+#include "core/io/config_file.h"
+#include "core/io/image.h"
+#include "core/io/resource.h"
+#include "core/io/resource_importer.h"
+#include "core/math/aabb.h"
+#include "core/math/basis.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector3.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/object/script_language.h"
+#include "core/templates/rid.h"
+#include "core/typedefs.h"
+#include "editor/debugger/editor_debugger_node.h"
+#include "editor/editor_autoload_settings.h"
 #include "editor/editor_command_palette.h"
+#include "editor/editor_data.h"
 #include "editor/editor_export.h"
+#include "editor/editor_file_system.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_translation_parser.h"
 #include "editor/filesystem_dock.h"
+#include "editor/import/editor_import_plugin.h"
+#include "editor/import/resource_importer_scene.h"
+#include "editor/inspector_dock.h"
+#include "editor/plugins/node_3d_editor_gizmos.h"
+#include "editor/plugins/script_editor_plugin.h"
 #include "editor/project_settings_editor.h"
+#include "editor/scene_tree_dock.h"
 #include "editor_resource_preview.h"
 #include "main/main.h"
 #include "plugins/canvas_item_editor_plugin.h"
 #include "plugins/node_3d_editor_plugin.h"
-#include "scene/3d/camera_3d.h"
-#include "scene/gui/popup_menu.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/container.h"
+#include "scene/gui/control.h"
+#include "scene/gui/split_container.h"
+#include "scene/gui/tab_container.h"
+#include "scene/resources/mesh.h"
+#include "scene/resources/texture.h"
 #include "servers/rendering_server.h"
+
+class Button;
+class PopupMenu;
+class ScriptCreateDialog;
 
 Array EditorInterface::_make_mesh_previews(const Array &p_meshes, int p_preview_size) {
 	Vector<Ref<Mesh>> meshes;

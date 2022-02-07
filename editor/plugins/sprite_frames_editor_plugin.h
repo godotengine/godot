@@ -31,6 +31,14 @@
 #ifndef SPRITE_FRAMES_EDITOR_PLUGIN_H
 #define SPRITE_FRAMES_EDITOR_PLUGIN_H
 
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/2d/animated_sprite_2d.h"
@@ -40,6 +48,22 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
+
+class AcceptDialog;
+class Button;
+class CheckButton;
+class ConfirmationDialog;
+class Control;
+class EditorFileDialog;
+class EditorNode;
+class InputEvent;
+class ItemList;
+class ScrollContainer;
+class SpinBox;
+class SpriteFrames;
+class TextureRect;
+class Tree;
+class UndoRedo;
 
 class SpriteFramesEditor : public HSplitContainer {
 	GDCLASS(SpriteFramesEditor, HSplitContainer);

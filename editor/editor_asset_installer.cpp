@@ -30,11 +30,33 @@
 
 #include "editor_asset_installer.h"
 
+#include <stdint.h>
+
+#include "core/config/engine.h"
+#include "core/error/error_macros.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/zip_io.h"
+#include "core/math/color.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/ref_counted.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "editor/editor_file_system.h"
 #include "editor_node.h"
 #include "progress_dialog.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/control.h"
+#include "scene/gui/label.h"
+#include "scene/gui/tree.h"
+#include "scene/resources/texture.h"
+#include "thirdparty/minizip/ioapi.h"
+#include "thirdparty/minizip/unzip.h"
 
 void EditorAssetInstaller::_item_edited() {
 	if (updating) {

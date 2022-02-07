@@ -31,18 +31,34 @@
 #ifndef MATERIAL_EDITOR_PLUGIN_H
 #define MATERIAL_EDITOR_PLUGIN_H
 
-#include "editor/property_editor.h"
-#include "scene/resources/primitive_meshes.h"
-
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
+#include "editor/property_editor.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/color_rect.h"
+#include "scene/gui/control.h"
+#include "scene/resources/environment.h"
 #include "scene/resources/material.h"
+#include "scene/resources/primitive_meshes.h"
 
 class SubViewportContainer;
+class Camera3D;
+class ColorRect;
+class DirectionalLight3D;
+class EditorNode;
+class HBoxContainer;
+class MeshInstance3D;
+class Node;
+class Resource;
+class SubViewport;
+class TextureButton;
 
 class MaterialEditor : public Control {
 	GDCLASS(MaterialEditor, Control);

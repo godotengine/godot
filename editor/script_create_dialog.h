@@ -31,7 +31,11 @@
 #ifndef SCRIPT_CREATE_DIALOG_H
 #define SCRIPT_CREATE_DIALOG_H
 
+#include "core/object/object.h"
 #include "core/object/script_language.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_settings.h"
 #include "scene/gui/check_box.h"
@@ -42,6 +46,15 @@
 #include "scene/gui/panel_container.h"
 
 class CreateDialog;
+class Button;
+class CheckBox;
+class Control;
+class EditorFileDialog;
+class Label;
+class LineEdit;
+class OptionButton;
+class PanelContainer;
+class VBoxContainer;
 
 class ScriptCreateDialog : public ConfirmationDialog {
 	GDCLASS(ScriptCreateDialog, ConfirmationDialog);

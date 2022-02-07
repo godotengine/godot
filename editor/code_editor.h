@@ -31,13 +31,34 @@
 #ifndef CODE_EDITOR_H
 #define CODE_EDITOR_H
 
+#include <stdint.h>
+
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/variant/variant.h"
 #include "editor/editor_plugin.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/code_edit.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
 #include "scene/main/timer.h"
+
+class Button;
+class CheckBox;
+class CodeEdit;
+class InputEvent;
+class Label;
+class LineEdit;
+class Texture2D;
+class TextureButton;
+class Timer;
+struct ScriptCodeCompletionOption;
 
 class GotoLineDialog : public ConfirmationDialog {
 	GDCLASS(GotoLineDialog, ConfirmationDialog);

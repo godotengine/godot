@@ -31,14 +31,47 @@
 #ifndef TILE_MAP_EDITOR_H
 #define TILE_MAP_EDITOR_H
 
-#include "tile_atlas_view.h"
-
+#include "core/math/color.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/object/ref_counted.h"
 #include "core/os/thread.h"
+#include "core/string/ustring.h"
+#include "core/templates/local_vector.h"
+#include "core/templates/map.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
 #include "core/typedefs.h"
+#include "core/variant/typed_array.h"
+#include "core/variant/variant.h"
 #include "editor/editor_node.h"
 #include "scene/2d/tile_map.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/tab_bar.h"
+#include "scene/resources/tile_set.h"
+#include "tile_atlas_view.h"
+
+class Button;
+class ButtonGroup;
+class CheckBox;
+class Control;
+class HSplitContainer;
+class InputEvent;
+class ItemList;
+class Label;
+class MenuButton;
+class PopupMenu;
+class SpinBox;
+class TabBar;
+class Texture2D;
+class TileAtlasView;
+class TileMap;
+class Tree;
+class UndoRedo;
+class VSeparator;
+struct Rect2;
 
 class TileMapEditorPlugin : public Object {
 public:

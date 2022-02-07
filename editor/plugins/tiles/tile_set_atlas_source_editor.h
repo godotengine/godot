@@ -31,14 +31,46 @@
 #ifndef TILE_SET_ATLAS_SOURCE_EDITOR_H
 #define TILE_SET_ATLAS_SOURCE_EDITOR_H
 
+#include <stdint.h>
+
+#include "core/math/rect2i.h"
+#include "core/math/vector2i.h"
+#include "core/math/vector3i.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/set.h"
+#include "core/variant/array.h"
+#include "core/variant/variant.h"
+#include "editor/editor_inspector.h"
+#include "editor/editor_node.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/split_container.h"
+#include "scene/resources/tile_set.h"
 #include "tile_atlas_view.h"
 #include "tile_data_editors.h"
 
-#include "editor/editor_node.h"
-#include "scene/gui/split_container.h"
-#include "scene/resources/tile_set.h"
-
 class TileSet;
+class AcceptDialog;
+class Button;
+class ButtonGroup;
+class Control;
+class GenericTilePolygonEditor;
+class InputEvent;
+class Label;
+class MenuButton;
+class Node;
+class Popup;
+class PopupMenu;
+class Texture2D;
+class TileAtlasView;
+class TileDataEditor;
+class Tree;
+class UndoRedo;
+class VSeparator;
 
 class TileSetAtlasSourceEditor : public HBoxContainer {
 	GDCLASS(TileSetAtlasSourceEditor, HBoxContainer);

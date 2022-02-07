@@ -30,15 +30,36 @@
 
 #include "animation_track_editor_plugins.h"
 
+#include <initializer_list>
+
+#include "core/error/error_macros.h"
+#include "core/input/input_enums.h"
+#include "core/input/input_event.h"
+#include "core/io/resource_loader.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/undo_redo.h"
+#include "core/os/memory.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/templates/list.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/dictionary.h"
 #include "editor/audio_stream_preview.h"
-#include "editor_resource_preview.h"
 #include "editor_scale.h"
 #include "scene/2d/animated_sprite_2d.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/animation/animation_player.h"
-#include "scene/resources/text_line.h"
+#include "scene/gui/control.h"
+#include "scene/resources/animation.h"
+#include "scene/resources/font.h"
+#include "scene/resources/sprite_frames.h"
 #include "servers/audio/audio_stream.h"
+#include "servers/rendering_server.h"
 
 /// BOOL ///
 int AnimationTrackEditBool::get_key_height() const {

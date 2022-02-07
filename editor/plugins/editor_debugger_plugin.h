@@ -31,9 +31,14 @@
 #ifndef EDITOR_DEBUGGER_PLUGIN_H
 #define EDITOR_DEBUGGER_PLUGIN_H
 
+#include "core/object/object.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/variant/callable.h"
 #include "scene/gui/control.h"
 
 class ScriptEditorDebugger;
+class Array;
 
 class EditorDebuggerPlugin : public Control {
 	GDCLASS(EditorDebuggerPlugin, Control);

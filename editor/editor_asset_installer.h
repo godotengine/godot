@@ -31,8 +31,16 @@
 #ifndef EDITORASSETINSTALLER_H
 #define EDITORASSETINSTALLER_H
 
+#include "core/object/object.h"
+#include "core/string/ustring.h"
+#include "core/templates/map.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
+
+class Label;
+class Tree;
+class TreeItem;
+
 class EditorAssetInstaller : public ConfirmationDialog {
 	GDCLASS(EditorAssetInstaller, ConfirmationDialog);
 

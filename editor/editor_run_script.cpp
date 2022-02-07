@@ -30,7 +30,12 @@
 
 #include "editor_run_script.h"
 
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "editor/editor_plugin.h"
 #include "editor_node.h"
+
+class Node;
 
 void EditorScript::add_root_node(Node *p_node) {
 	if (!editor) {

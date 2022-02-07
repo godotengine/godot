@@ -30,6 +30,19 @@
 
 #include "occluder_instance_3d_editor_plugin.h"
 
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/variant/callable.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
+#include "scene/3d/occluder_instance_3d.h"
+#include "scene/gui/button.h"
+#include "scene/gui/control.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
+
 void OccluderInstance3DEditorPlugin::_bake_select_file(const String &p_file) {
 	if (occluder_instance) {
 		OccluderInstance3D::BakeError err;

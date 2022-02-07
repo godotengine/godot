@@ -31,10 +31,29 @@
 #ifndef PARTICLES_EDITOR_PLUGIN_H
 #define PARTICLES_EDITOR_PLUGIN_H
 
+#include "core/math/face3.h"
+#include "core/object/object.h"
+#include "core/string/node_path.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/3d/gpu_particles_3d.h"
+#include "scene/gui/control.h"
 #include "scene/gui/spin_box.h"
+
+class ConfirmationDialog;
+class EditorNode;
+class GPUParticles3D;
+class HBoxContainer;
+class MenuButton;
+class Node3D;
+class Node;
+class OptionButton;
+class Panel;
+class SceneTreeDialog;
+class SpinBox;
+struct Vector3;
 
 class GPUParticles3DEditorBase : public Control {
 	GDCLASS(GPUParticles3DEditorBase, Control);

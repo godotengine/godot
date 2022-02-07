@@ -32,7 +32,12 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
 #include "core/io/dir_access.h"
+#include "core/io/file_access.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
 #include "core/os/os.h"
 #include "main/main.h" // For `is_project_manager`.
 

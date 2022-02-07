@@ -31,10 +31,22 @@
 #ifndef EDITOR_QUICK_OPEN_H
 #define EDITOR_QUICK_OPEN_H
 
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
 #include "core/templates/oa_hash_map.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
 #include "editor_file_system.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
+#include "scene/resources/texture.h"
+
+class EditorFileSystemDirectory;
+class InputEvent;
+class LineEdit;
+class Tree;
 
 class EditorQuickOpen : public ConfirmationDialog {
 	GDCLASS(EditorQuickOpen, ConfirmationDialog);

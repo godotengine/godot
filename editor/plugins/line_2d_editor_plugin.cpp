@@ -30,6 +30,15 @@
 
 #include "line_2d_editor_plugin.h"
 
+#include "core/object/undo_redo.h"
+#include "core/os/memory.h"
+#include "core/string/ustring.h"
+#include "scene/2d/line_2d.h"
+#include "scene/2d/node_2d.h"
+#include "scene/main/node.h"
+
+class EditorNode;
+
 Node2D *Line2DEditor::_get_node() const {
 	return node;
 }

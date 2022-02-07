@@ -30,13 +30,50 @@
 
 #include "tile_data_editors.h"
 
-#include "tile_set_editor.h"
-
+#include "core/error/error_macros.h"
+#include "core/input/input_enums.h"
+#include "core/input/input_event.h"
 #include "core/math/geometry_2d.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/math/random_pcg.h"
+#include "core/math/rect2i.h"
+#include "core/math/vector2i.h"
+#include "core/math/vector3i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/object/undo_redo.h"
 #include "core/os/keyboard.h"
-
+#include "core/templates/pair.h"
+#include "core/templates/set.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/callable.h"
+#include "core/variant/dictionary.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
+#include "editor/editor_zoom_widget.h"
+#include "editor/plugins/tiles/tile_atlas_view.h"
+#include "scene/2d/light_occluder_2d.h"
+#include "scene/2d/navigation_region_2d.h"
+#include "scene/gui/button.h"
+#include "scene/gui/control.h"
+#include "scene/gui/label.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/panel.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/gui/separator.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
+#include "scene/resources/font.h"
+#include "servers/rendering_server.h"
+#include "tile_set_editor.h"
+
+class StyleBox;
 
 void TileDataEditor::_tile_set_changed_plan_update() {
 	_tile_set_changed_update_needed = true;

@@ -30,13 +30,35 @@
 
 #include "debug_adapter_protocol.h"
 
+#include <stddef.h>
+
 #include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
+#include "core/error/error_macros.h"
 #include "core/io/json.h"
+#include "core/io/tcp_server.h"
+#include "core/math/aabb.h"
+#include "core/math/basis.h"
+#include "core/math/color.h"
+#include "core/math/plane.h"
+#include "core/math/quaternion.h"
+#include "core/math/rect2.h"
+#include "core/math/transform_2d.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector2.h"
+#include "core/math/vector3.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/os/memory.h"
+#include "core/os/os.h"
+#include "core/templates/vector.h"
+#include "editor/debugger/debug_adapter/debug_adapter_parser.h"
+#include "editor/debugger/debug_adapter/debug_adapter_types.h"
+#include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
-#include "editor/doc_tools.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
+#include "scene/gui/button.h"
 
 DebugAdapterProtocol *DebugAdapterProtocol::singleton = nullptr;
 

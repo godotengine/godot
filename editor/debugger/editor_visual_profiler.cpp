@@ -30,9 +30,32 @@
 
 #include "editor_visual_profiler.h"
 
-#include "core/os/os.h"
+#include "core/error/error_macros.h"
+#include "core/input/input_enums.h"
+#include "core/input/input_event.h"
+#include "core/io/image.h"
+#include "core/math/math_defs.h"
+#include "core/math/vector2.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/os/memory.h"
+#include "core/templates/list.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "scene/gui/button.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/control.h"
+#include "scene/gui/label.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/spin_box.h"
+#include "scene/gui/split_container.h"
+#include "scene/gui/texture_rect.h"
+#include "scene/gui/tree.h"
+#include "scene/main/node.h"
+#include "scene/main/timer.h"
+#include "scene/resources/font.h"
+#include "servers/text_server.h"
 
 void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
 	++last_metric;

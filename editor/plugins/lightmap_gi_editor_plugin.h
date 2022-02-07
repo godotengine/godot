@@ -31,10 +31,20 @@
 #ifndef BAKED_LIGHTMAP_EDITOR_PLUGIN_H
 #define BAKED_LIGHTMAP_EDITOR_PLUGIN_H
 
+#include <stdint.h>
+
+#include "core/object/object.h"
+#include "core/string/ustring.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/3d/lightmap_gi.h"
 #include "scene/resources/material.h"
+
+class Button;
+class EditorFileDialog;
+class EditorNode;
+class LightmapGI;
+struct EditorProgress;
 
 class LightmapGIEditorPlugin : public EditorPlugin {
 	GDCLASS(LightmapGIEditorPlugin, EditorPlugin);

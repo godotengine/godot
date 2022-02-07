@@ -31,7 +31,11 @@
 #ifndef PROJECT_SETTINGS_EDITOR_H
 #define PROJECT_SETTINGS_EDITOR_H
 
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
 #include "core/object/undo_redo.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
 #include "editor/action_map_editor.h"
 #include "editor/editor_data.h"
 #include "editor/editor_plugin_settings.h"
@@ -40,7 +44,30 @@
 #include "editor/localization_editor.h"
 #include "editor/shader_globals_editor.h"
 #include "editor_autoload_settings.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/tab_container.h"
+
+class ActionMapEditor;
+class Button;
+class CheckButton;
+class Dictionary;
+class EditorAutoloadSettings;
+class EditorData;
+class EditorPluginSettings;
+class ImportDefaultsEditor;
+class InputEvent;
+class Label;
+class LineEdit;
+class LocalizationEditor;
+class OptionButton;
+class PanelContainer;
+class ProjectSettings;
+class SectionedInspector;
+class ShaderGlobalsEditor;
+class TabContainer;
+class TextureRect;
+class Timer;
+class UndoRedo;
 
 class ProjectSettingsEditor : public AcceptDialog {
 	GDCLASS(ProjectSettingsEditor, AcceptDialog);

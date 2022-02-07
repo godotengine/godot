@@ -31,8 +31,16 @@
 #ifndef RESOURCE_IMPORTER_IMAGE_H
 #define RESOURCE_IMPORTER_IMAGE_H
 
+#include "core/error/error_list.h"
 #include "core/io/image.h"
 #include "core/io/resource_importer.h"
+#include "core/object/object.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+
+class StringName;
+class Variant;
 
 class ResourceImporterImage : public ResourceImporter {
 	GDCLASS(ResourceImporterImage, ResourceImporter);

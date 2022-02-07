@@ -31,6 +31,16 @@
 #ifndef EDITOR_DEBUGGER_NODE_H
 #define EDITOR_DEBUGGER_NODE_H
 
+#include "core/error/error_list.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/object/script_language.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/map.h"
+#include "core/templates/set.h"
+#include "core/variant/variant.h"
 #include "editor/debugger/editor_debugger_server.h"
 #include "scene/gui/margin_container.h"
 
@@ -41,6 +51,8 @@ class EditorDebuggerRemoteObject;
 class MenuButton;
 class ScriptEditorDebugger;
 class TabContainer;
+class Array;
+class ObjectID;
 
 class EditorDebuggerNode : public MarginContainer {
 	GDCLASS(EditorDebuggerNode, MarginContainer);

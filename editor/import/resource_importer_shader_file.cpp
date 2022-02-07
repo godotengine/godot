@@ -30,12 +30,16 @@
 
 #include "resource_importer_shader_file.h"
 
+#include "core/error/error_macros.h"
 #include "core/io/file_access.h"
-#include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
+#include "core/object/ref_counted.h"
+#include "core/variant/variant.h"
 #include "editor/editor_node.h"
 #include "editor/plugins/shader_file_editor_plugin.h"
 #include "servers/rendering/rendering_device_binds.h"
+
+class StringName;
 
 String ResourceImporterShaderFile::get_importer_name() const {
 	return "glsl";

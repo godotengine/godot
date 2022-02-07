@@ -30,9 +30,25 @@
 
 #include "editor_zoom_widget.h"
 
+#include "core/input/input.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/math/vector2.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "scene/gui/button.h"
+#include "scene/gui/control.h"
+#include "scene/main/node.h"
+#include "servers/text_server.h"
 
 void EditorZoomWidget::_update_zoom_label() {
 	String zoom_text;

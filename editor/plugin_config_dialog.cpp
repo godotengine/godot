@@ -30,12 +30,36 @@
 
 #include "plugin_config_dialog.h"
 
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
+#include "core/io/resource_saver.h"
+#include "core/math/vector2.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/ref_counted.h"
+#include "core/object/script_language.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 #include "editor/editor_node.h"
-#include "editor/editor_plugin.h"
 #include "editor/editor_scale.h"
 #include "editor/project_settings_editor.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/control.h"
+#include "scene/gui/grid_container.h"
+#include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/text_edit.h"
+#include "scene/gui/texture_rect.h"
+#include "scene/main/node.h"
+#include "scene/main/window.h"
+
+class Texture2D;
 
 void PluginConfigDialog::_clear_fields() {
 	name_edit->set_text("");

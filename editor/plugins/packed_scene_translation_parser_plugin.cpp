@@ -30,8 +30,16 @@
 
 #include "packed_scene_translation_parser_plugin.h"
 
+#include "core/error/error_macros.h"
+#include "core/io/resource.h"
 #include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
+#include "core/object/ref_counted.h"
+#include "core/object/script_language.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
 #include "scene/gui/option_button.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/resources/packed_scene.h"
 
 void PackedSceneEditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_extensions) const {

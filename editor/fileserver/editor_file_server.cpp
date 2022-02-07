@@ -30,8 +30,20 @@
 
 #include "editor_file_server.h"
 
+#include <stdint.h>
+
 #include "../editor_settings.h"
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
+#include "core/io/file_access.h"
+#include "core/io/file_access_network.h"
 #include "core/io/marshalls.h"
+#include "core/io/tcp_server.h"
+#include "core/os/memory.h"
+#include "core/os/os.h"
+#include "core/string/print_string.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
 
 //#define DEBUG_PRINT(m_p) print_line(m_p)
 //#define DEBUG_TIME(m_what) printf("MS: %s - %lu\n", m_what, OS::get_singleton()->get_ticks_usec());

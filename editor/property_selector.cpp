@@ -30,10 +30,31 @@
 
 #include "property_selector.h"
 
+#include "core/doc_data.h"
+#include "core/error/error_macros.h"
+#include "core/input/input_event.h"
+#include "core/math/color.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/object/method_bind.h"
+#include "core/object/script_language.h"
 #include "core/os/keyboard.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/typedefs.h"
+#include "core/variant/callable.h"
 #include "editor/doc_tools.h"
+#include "editor/editor_help.h"
 #include "editor/editor_node.h"
-#include "editor_scale.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/rich_text_label.h"
+#include "scene/gui/tree.h"
+#include "scene/main/node.h"
+#include "scene/resources/texture.h"
 
 void PropertySelector::_text_changed(const String &p_newtext) {
 	_update_search();

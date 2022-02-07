@@ -31,12 +31,26 @@
 #ifndef DEBUG_ADAPTER_PROTOCOL_H
 #define DEBUG_ADAPTER_PROTOCOL_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
+#include "core/io/ip_address.h"
 #include "core/io/stream_peer.h"
 #include "core/io/stream_peer_tcp.h"
 #include "core/io/tcp_server.h"
-
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 #include "debug_adapter_parser.h"
 #include "debug_adapter_types.h"
+
+class TCPServer;
 
 #define DAP_MAX_BUFFER_SIZE 4194304 // 4MB
 #define DAP_MAX_CLIENTS 8

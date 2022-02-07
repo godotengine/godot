@@ -31,11 +31,20 @@
 #ifndef ASSET_LIBRARY_EDITOR_PLUGIN_H
 #define ASSET_LIBRARY_EDITOR_PLUGIN_H
 
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/map.h"
+#include "core/templates/vector.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 #include "editor/editor_asset_installer.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_plugin_settings.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/link_button.h"
@@ -49,6 +58,28 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_button.h"
 #include "scene/main/http_request.h"
+#include "scene/resources/texture.h"
+
+class Button;
+class EditorAssetInstaller;
+class EditorFileDialog;
+class EditorNode;
+class GridContainer;
+class HBoxContainer;
+class HTTPRequest;
+class InputEvent;
+class Label;
+class LineEdit;
+class LinkButton;
+class MenuButton;
+class OptionButton;
+class ProgressBar;
+class RichTextLabel;
+class ScrollContainer;
+class TextureButton;
+class TextureRect;
+class Timer;
+class VBoxContainer;
 
 class EditorAssetLibraryItem : public PanelContainer {
 	GDCLASS(EditorAssetLibraryItem, PanelContainer);

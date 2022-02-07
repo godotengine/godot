@@ -31,10 +31,26 @@
 #ifndef EDITOR_PROPERTIES_ARRAY_DICT_H
 #define EDITOR_PROPERTIES_ARRAY_DICT_H
 
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_spin_slider.h"
 #include "editor/filesystem_dock.h"
 #include "scene/gui/button.h"
+
+class Button;
+class Control;
+class EditorSpinSlider;
+class HBoxContainer;
+class InputEvent;
+class ObjectID;
+class PopupMenu;
+class VBoxContainer;
 
 class EditorPropertyArrayObject : public RefCounted {
 	GDCLASS(EditorPropertyArrayObject, RefCounted);

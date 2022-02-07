@@ -32,14 +32,29 @@
 #define TEXT_CONTROL_EDITOR_PLUGIN_H
 
 #include "canvas_item_editor_plugin.h"
+#include "core/math/color.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/map.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/color_rect.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/popup_menu.h"
+#include "scene/resources/font.h"
+
+class Button;
+class ColorPickerButton;
+class Control;
+class EditorFileSystemDirectory;
+class EditorNode;
+class OptionButton;
+class SpinBox;
 
 /*************************************************************************/
 

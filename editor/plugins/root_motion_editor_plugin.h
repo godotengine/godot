@@ -31,10 +31,20 @@
 #ifndef ROOT_MOTION_EDITOR_PLUGIN_H
 #define ROOT_MOTION_EDITOR_PLUGIN_H
 
+#include <stdint.h>
+
+#include "core/object/object.h"
+#include "core/string/node_path.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_spin_slider.h"
 #include "editor/property_selector.h"
 #include "scene/animation/animation_tree.h"
+
+class Button;
+class ConfirmationDialog;
+class Tree;
 
 class EditorPropertyRootMotion : public EditorProperty {
 	GDCLASS(EditorPropertyRootMotion, EditorProperty);

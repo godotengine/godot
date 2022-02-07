@@ -31,9 +31,21 @@
 #ifndef INPUT_EVENT_EDITOR_PLUGIN_H
 #define INPUT_EVENT_EDITOR_PLUGIN_H
 
+#include "core/input/input_event.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
 #include "editor/action_map_editor.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
+#include "scene/gui/box_container.h"
+
+class Button;
+class EditorNode;
+class InputEventConfigurationDialog;
+class Label;
 
 class InputEventConfigContainer : public HBoxContainer {
 	GDCLASS(InputEventConfigContainer, HBoxContainer);

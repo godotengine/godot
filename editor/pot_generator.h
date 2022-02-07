@@ -32,8 +32,12 @@
 #define POT_GENERATOR_H
 
 #include "core/io/file_access.h"
+#include "core/string/ustring.h"
 #include "core/templates/ordered_hash_map.h"
 #include "core/templates/set.h"
+#include "core/templates/vector.h"
+
+class FileAccess;
 
 //#define DEBUG_POT
 

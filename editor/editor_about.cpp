@@ -29,13 +29,38 @@
 /*************************************************************************/
 
 #include "editor_about.h"
-#include "editor_node.h"
 
 #include "core/authors.gen.h"
 #include "core/donors.gen.h"
 #include "core/license.gen.h"
+#include "core/math/color.h"
+#include "core/math/vector2.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/object/ref_counted.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/variant/variant.h"
 #include "core/version.h"
 #include "core/version_hash.gen.h"
+#include "editor/editor_scale.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/control.h"
+#include "scene/gui/item_list.h"
+#include "scene/gui/label.h"
+#include "scene/gui/link_button.h"
+#include "scene/gui/rich_text_label.h"
+#include "scene/gui/scroll_container.h"
+#include "scene/gui/separator.h"
+#include "scene/gui/split_container.h"
+#include "scene/gui/tab_container.h"
+#include "scene/gui/texture_rect.h"
+#include "scene/gui/tree.h"
+#include "scene/main/node.h"
+#include "scene/resources/texture.h"
+#include "servers/display_server.h"
+
+class Font;
 
 // The metadata key used to store and retrieve the version text to copy to the clipboard.
 static const String META_TEXT_TO_COPY = "text_to_copy";

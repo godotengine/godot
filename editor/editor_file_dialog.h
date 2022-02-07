@@ -32,6 +32,12 @@
 #define EDITORFILEDIALOG_H
 
 #include "core/io/dir_access.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/variant.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
@@ -42,6 +48,19 @@
 #include "scene/gui/texture_rect.h"
 
 class DependencyRemoveDialog;
+class Button;
+class DirAccess;
+class HBoxContainer;
+class HSplitContainer;
+class InputEvent;
+class ItemList;
+class LineEdit;
+class OptionButton;
+class PopupMenu;
+class Texture2D;
+class TextureRect;
+class VBoxContainer;
+struct Vector2;
 
 class EditorFileDialog : public ConfirmationDialog {
 	GDCLASS(EditorFileDialog, ConfirmationDialog);

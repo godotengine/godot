@@ -31,11 +31,19 @@
 #ifndef EDITORPLUGINSETTINGS_H
 #define EDITORPLUGINSETTINGS_H
 
+#include "core/object/object.h"
 #include "core/object/undo_redo.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
 #include "editor/plugin_config_dialog.h"
 #include "editor_data.h"
 #include "property_editor.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
+
+class Button;
+class PluginConfigDialog;
+class Tree;
 
 class EditorPluginSettings : public VBoxContainer {
 	GDCLASS(EditorPluginSettings, VBoxContainer);

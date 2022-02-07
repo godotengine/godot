@@ -31,15 +31,22 @@
 #ifndef SHADER_GLOBALS_EDITOR_H
 #define SHADER_GLOBALS_EDITOR_H
 
+#include "core/object/object.h"
 #include "core/object/undo_redo.h"
+#include "core/string/ustring.h"
 #include "editor/editor_autoload_settings.h"
 #include "editor/editor_data.h"
 #include "editor/editor_plugin_settings.h"
 #include "editor/editor_sectioned_inspector.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tab_container.h"
 
 class ShaderGlobalsEditorInterface;
+class Button;
+class EditorInspector;
+class LineEdit;
+class OptionButton;
 
 class ShaderGlobalsEditor : public VBoxContainer {
 	GDCLASS(ShaderGlobalsEditor, VBoxContainer)

@@ -31,12 +31,36 @@
 #ifndef EDITOR_DATA_H
 #define EDITOR_DATA_H
 
+#include <stdint.h>
+
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/object/ref_counted.h"
+#include "core/object/script_language.h"
 #include "core/object/undo_redo.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
 #include "core/templates/list.h"
+#include "core/templates/map.h"
 #include "core/templates/pair.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/callable.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/typed_array.h"
+#include "core/variant/variant.h"
 #include "editor/editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "scene/resources/texture.h"
+
+class ConfigFile;
+class EditorPlugin;
+class Node;
+class Resource;
 
 class EditorHistory {
 	enum {
