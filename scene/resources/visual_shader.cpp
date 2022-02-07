@@ -131,7 +131,7 @@ void VisualShaderNode::set_input_port_default_value(int p_port, const Variant &p
 					} break;
 					case Variant::VECTOR2: {
 						Vector2 pv = p_prev_value;
-						value = Vector3(pv.x, pv.y, 0.0);
+						value = Vector3(pv.x, pv.y, pv.y);
 					} break;
 					case Variant::VECTOR3: {
 						value = p_prev_value;
@@ -289,7 +289,7 @@ String VisualShaderNode::generate_global(Shader::Mode p_mode, VisualShader::Type
 	return String();
 }
 
-String VisualShaderNode::generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+String VisualShaderNode::generate_global_per_node(Shader::Mode p_mode, int p_id) const {
 	return String();
 }
 
@@ -472,7 +472,7 @@ String VisualShaderNodeCustom::generate_code(Shader::Mode p_mode, VisualShader::
 	return code;
 }
 
-String VisualShaderNodeCustom::generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+String VisualShaderNodeCustom::generate_global_per_node(Shader::Mode p_mode, int p_id) const {
 	String ret;
 	if (GDVIRTUAL_CALL(_get_global_code, p_mode, ret)) {
 		String code = "// " + get_caption() + "\n";
@@ -1485,7 +1485,7 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 			class_name = vsnode->get_script_instance()->get_script()->get_path();
 		}
 		if (!r_classes.has(class_name)) {
-			global_code_per_node += vsnode->generate_global_per_node(get_mode(), type, node);
+			global_code_per_node += vsnode->generate_global_per_node(get_mode(), node);
 			for (int i = 0; i < TYPE_MAX; i++) {
 				global_code_per_func[Type(i)] += vsnode->generate_global_per_func(get_mode(), Type(i), node);
 			}
@@ -2146,7 +2146,11 @@ void VisualShader::_update_shader() const {
 		global_compute_code += "	return __rand_from_seed(seed) * (to - from) + from;\n";
 		global_compute_code += "}\n\n";
 
-		global_compute_code += "vec3 __randv_range(inout uint seed, vec3 from, vec3 to) {\n";
+		global_compute_code += "vec2 __randv2_range(inout uint seed, vec2 from, vec2 to) {\n";
+		global_compute_code += "	return vec2(__randf_range(seed, from.x, to.x), __randf_range(seed, from.y, to.y));\n";
+		global_compute_code += "}\n\n";
+
+		global_compute_code += "vec3 __randv3_range(inout uint seed, vec3 from, vec3 to) {\n";
 		global_compute_code += "	return vec3(__randf_range(seed, from.x, to.x), __randf_range(seed, from.y, to.y), __randf_range(seed, from.z, to.z));\n";
 		global_compute_code += "}\n\n";
 

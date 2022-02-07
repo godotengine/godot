@@ -5694,7 +5694,7 @@ String VisualShaderNodeTextureUniformTriplanar::get_input_port_name(int p_port) 
 	return "";
 }
 
-String VisualShaderNodeTextureUniformTriplanar::generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+String VisualShaderNodeTextureUniformTriplanar::generate_global_per_node(Shader::Mode p_mode, int p_id) const {
 	String code;
 
 	code += "// TRIPLANAR FUNCTION GLOBAL CODE\n";

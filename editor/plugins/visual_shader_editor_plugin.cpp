@@ -4783,11 +4783,11 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	// SDF
 	{
-		add_options.push_back(AddOption("ScreenUVToSDF", "SDF", "", "VisualShaderNodeScreenUVToSDF", TTR("Converts screen UV to a SDF."), {}, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_CANVAS_ITEM));
+		add_options.push_back(AddOption("ScreenUVToSDF", "SDF", "", "VisualShaderNodeScreenUVToSDF", TTR("Converts screen UV to a SDF."), {}, VisualShaderNode::PORT_TYPE_VECTOR_2D, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_CANVAS_ITEM));
 		add_options.push_back(AddOption("SDFRaymarch", "SDF", "", "VisualShaderNodeSDFRaymarch", TTR("Casts a ray against the screen SDF and returns the distance travelled."), {}, -1, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_CANVAS_ITEM));
-		add_options.push_back(AddOption("SDFToScreenUV", "SDF", "", "VisualShaderNodeSDFToScreenUV", TTR("Converts a SDF to screen UV."), {}, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_CANVAS_ITEM));
+		add_options.push_back(AddOption("SDFToScreenUV", "SDF", "", "VisualShaderNodeSDFToScreenUV", TTR("Converts a SDF to screen UV."), {}, VisualShaderNode::PORT_TYPE_VECTOR_2D, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_CANVAS_ITEM));
 		add_options.push_back(AddOption("TextureSDF", "SDF", "", "VisualShaderNodeTextureSDF", TTR("Performs a SDF texture lookup."), {}, VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_CANVAS_ITEM));
-		add_options.push_back(AddOption("TextureSDFNormal", "SDF", "", "VisualShaderNodeTextureSDFNormal", TTR("Performs a SDF normal texture lookup."), {}, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_CANVAS_ITEM));
+		add_options.push_back(AddOption("TextureSDFNormal", "SDF", "", "VisualShaderNodeTextureSDFNormal", TTR("Performs a SDF normal texture lookup."), {}, VisualShaderNode::PORT_TYPE_VECTOR_2D, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_CANVAS_ITEM));
 	}
 
 	// TEXTURES
@@ -4971,8 +4971,8 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("Subtract", "Vector", "Operators", "VisualShaderNodeVectorOp", TTR("Subtracts 3D vector from 3D vector."), { VisualShaderNodeVectorOp::OP_SUB, VisualShaderNodeVectorOp::OP_TYPE_VECTOR_3D }, VisualShaderNode::PORT_TYPE_VECTOR_3D));
 
 	add_options.push_back(AddOption("Vector2Constant", "Vector", "Variables", "VisualShaderNodeVec2Constant", TTR("2D vector constant."), {}, VisualShaderNode::PORT_TYPE_VECTOR_2D));
-	add_options.push_back(AddOption("Vector3Constant", "Vector", "Variables", "VisualShaderNodeVec3Constant", TTR("3D vector constant."), {}, VisualShaderNode::PORT_TYPE_VECTOR_3D));
 	add_options.push_back(AddOption("Vector2Uniform", "Vector", "Variables", "VisualShaderNodeVec2Uniform", TTR("2D vector uniform."), {}, VisualShaderNode::PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption("Vector3Constant", "Vector", "Variables", "VisualShaderNodeVec3Constant", TTR("3D vector constant."), {}, VisualShaderNode::PORT_TYPE_VECTOR_3D));
 	add_options.push_back(AddOption("Vector3Uniform", "Vector", "Variables", "VisualShaderNodeVec3Uniform", TTR("3D vector uniform."), {}, VisualShaderNode::PORT_TYPE_VECTOR_3D));
 
 	// SPECIAL
