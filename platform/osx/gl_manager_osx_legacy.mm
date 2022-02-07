@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gl_manager_osx.mm                                                    */
+/*  gl_manager_osx_legacy.mm                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "gl_manager_osx.h"
+#include "gl_manager_osx_legacy.h"
 
 #ifdef OSX_ENABLED
 #ifdef GLES3_ENABLED
@@ -36,7 +36,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-Error GLManager_OSX::_create_context(GLWindow &win) {
+Error GLManager_OSX::create_context(GLWindow &win) {
 	NSOpenGLPixelFormatAttribute attributes[] = {
 		NSOpenGLPFADoubleBuffer,
 		NSOpenGLPFAClosestPolicy,
@@ -50,10 +50,10 @@ Error GLManager_OSX::_create_context(GLWindow &win) {
 	NSOpenGLPixelFormat *pixel_format = [[NSOpenGLPixelFormat alloc] initWithAttributes:attributes];
 	ERR_FAIL_COND_V(pixel_format == nil, ERR_CANT_CREATE);
 
-	win.context = [[NSOpenGLContext alloc] initWithFormat:pixel_format shareContext:_shared_context];
+	win.context = [[NSOpenGLContext alloc] initWithFormat:pixel_format shareContext:shared_context];
 	ERR_FAIL_COND_V(win.context == nil, ERR_CANT_CREATE);
-	if (_shared_context == nullptr) {
-		_shared_context = win.context;
+	if (shared_context == nullptr) {
+		shared_context = win.context;
 	}
 
 	[win.context setView:win.window_view];
@@ -63,40 +63,27 @@ Error GLManager_OSX::_create_context(GLWindow &win) {
 }
 
 Error GLManager_OSX::window_create(DisplayServer::WindowID p_window_id, id p_view, int p_width, int p_height) {
-	if (p_window_id >= (int)_windows.size()) {
-		_windows.resize(p_window_id + 1);
-	}
-
-	GLWindow &win = _windows[p_window_id];
-	win.in_use = true;
-	win.window_id = p_window_id;
+	GLWindow win;
 	win.width = p_width;
 	win.height = p_height;
 	win.window_view = p_view;
 
-	if (_create_context(win) != OK) {
-		_windows.remove_at(_windows.size() - 1);
+	if (create_context(win) != OK) {
 		return FAILED;
 	}
 
-	window_make_current(_windows.size() - 1);
+	windows[p_window_id] = win;
+	window_make_current(p_window_id);
 
 	return OK;
 }
 
-void GLManager_OSX::_internal_set_current_window(GLWindow *p_win) {
-	_current_window = p_win;
-}
-
 void GLManager_OSX::window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height) {
-	if (p_window_id == -1) {
+	if (!windows.has(p_window_id)) {
 		return;
 	}
 
-	GLWindow &win = _windows[p_window_id];
-	if (!win.in_use) {
-		return;
-	}
+	GLWindow &win = windows[p_window_id];
 
 	win.width = p_width;
 	win.height = p_height;
@@ -116,24 +103,37 @@ void GLManager_OSX::window_resize(DisplayServer::WindowID p_window_id, int p_wid
 }
 
 int GLManager_OSX::window_get_width(DisplayServer::WindowID p_window_id) {
-	return get_window(p_window_id).width;
+	if (!windows.has(p_window_id)) {
+		return 0;
+	}
+
+	GLWindow &win = windows[p_window_id];
+	return win.width;
 }
 
 int GLManager_OSX::window_get_height(DisplayServer::WindowID p_window_id) {
-	return get_window(p_window_id).height;
+	if (!windows.has(p_window_id)) {
+		return 0;
+	}
+
+	GLWindow &win = windows[p_window_id];
+	return win.height;
 }
 
 void GLManager_OSX::window_destroy(DisplayServer::WindowID p_window_id) {
-	GLWindow &win = get_window(p_window_id);
-	win.in_use = false;
-
-	if (_current_window == &win) {
-		_current_window = nullptr;
+	if (!windows.has(p_window_id)) {
+		return;
 	}
+
+	if (current_window == p_window_id) {
+		current_window = DisplayServer::INVALID_WINDOW_ID;
+	}
+
+	windows.erase(p_window_id);
 }
 
 void GLManager_OSX::release_current() {
-	if (!_current_window) {
+	if (current_window == DisplayServer::INVALID_WINDOW_ID) {
 		return;
 	}
 
@@ -141,63 +141,59 @@ void GLManager_OSX::release_current() {
 }
 
 void GLManager_OSX::window_make_current(DisplayServer::WindowID p_window_id) {
-	if (p_window_id == -1) {
+	if (current_window == p_window_id) {
+		return;
+	}
+	if (!windows.has(p_window_id)) {
 		return;
 	}
 
-	GLWindow &win = _windows[p_window_id];
-	if (!win.in_use) {
-		return;
-	}
-
-	if (&win == _current_window) {
-		return;
-	}
-
+	GLWindow &win = windows[p_window_id];
 	[win.context makeCurrentContext];
 
-	_internal_set_current_window(&win);
+	current_window = p_window_id;
 }
 
 void GLManager_OSX::make_current() {
-	if (!_current_window) {
+	if (current_window == DisplayServer::INVALID_WINDOW_ID) {
 		return;
 	}
-	if (!_current_window->in_use) {
-		WARN_PRINT("current window not in use!");
+	if (!windows.has(current_window)) {
 		return;
 	}
-	[_current_window->context makeCurrentContext];
+
+	GLWindow &win = windows[current_window];
+	[win.context makeCurrentContext];
 }
 
 void GLManager_OSX::swap_buffers() {
-	// NO NEED TO CALL SWAP BUFFERS for each window...
-	// see https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/glXSwapBuffers.xml
-
-	if (!_current_window) {
-		return;
+	for (Map<DisplayServer::WindowID, GLWindow>::Element *E = windows.front(); E; E = E->next()) {
+		[E->get().context flushBuffer];
 	}
-	if (!_current_window->in_use) {
-		WARN_PRINT("current window not in use!");
-		return;
-	}
-	[_current_window->context flushBuffer];
 }
 
 void GLManager_OSX::window_update(DisplayServer::WindowID p_window_id) {
-	if (p_window_id == -1) {
+	if (!windows.has(p_window_id)) {
 		return;
 	}
 
-	GLWindow &win = _windows[p_window_id];
-	if (!win.in_use) {
+	GLWindow &win = windows[p_window_id];
+	[win.context update];
+}
+
+void GLManager_OSX::window_set_per_pixel_transparency_enabled(DisplayServer::WindowID p_window_id, bool p_enabled) {
+	if (!windows.has(p_window_id)) {
 		return;
 	}
 
-	if (&win == _current_window) {
-		return;
+	GLWindow &win = windows[p_window_id];
+	if (p_enabled) {
+		GLint opacity = 0;
+		[win.context setValues:&opacity forParameter:NSOpenGLContextParameterSurfaceOpacity];
+	} else {
+		GLint opacity = 1;
+		[win.context setValues:&opacity forParameter:NSOpenGLContextParameterSurfaceOpacity];
 	}
-
 	[win.context update];
 }
 
@@ -207,6 +203,7 @@ Error GLManager_OSX::initialize() {
 
 void GLManager_OSX::set_use_vsync(bool p_use) {
 	use_vsync = p_use;
+
 	CGLContextObj ctx = CGLGetCurrentContext();
 	if (ctx) {
 		GLint swapInterval = p_use ? 1 : 0;
@@ -221,8 +218,6 @@ bool GLManager_OSX::is_using_vsync() const {
 
 GLManager_OSX::GLManager_OSX(ContextType p_context_type) {
 	context_type = p_context_type;
-	use_vsync = false;
-	_current_window = nullptr;
 }
 
 GLManager_OSX::~GLManager_OSX() {

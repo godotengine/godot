@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_main_osx.mm                                                    */
+/*  godot_content_view.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,60 +28,38 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "main/main.h"
+#ifndef GODOT_CONTENT_VIEW_H
+#define GODOT_CONTENT_VIEW_H
 
-#include "os_osx.h"
+#include "servers/display_server.h"
 
-#include <string.h>
-#include <unistd.h>
+#import <AppKit/AppKit.h>
+#import <Foundation/Foundation.h>
 
-int main(int argc, char **argv) {
-#if defined(VULKAN_ENABLED)
-	// MoltenVK - enable full component swizzling support.
-	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1);
+#if defined(GLES3_ENABLED)
+#import <AppKit/NSOpenGLView.h>
+#define RootView NSOpenGLView
+#else
+#define RootView NSView
 #endif
 
-	int first_arg = 1;
-	const char *dbg_arg = "-NSDocumentRevisionsDebugMode";
-	printf("arguments\n");
-	for (int i = 0; i < argc; i++) {
-		if (strcmp(dbg_arg, argv[i]) == 0) {
-			first_arg = i + 2;
-		}
-		printf("%i: %s\n", i, argv[i]);
-	};
+#import <QuartzCore/CAMetalLayer.h>
 
-#ifdef DEBUG_ENABLED
-	// Lets report the path we made current after all that.
-	char cwd[4096];
-	getcwd(cwd, 4096);
-	printf("Current path: %s\n", cwd);
-#endif
+@interface GodotContentView : RootView <NSTextInputClient> {
+	DisplayServer::WindowID window_id;
+	NSTrackingArea *tracking_area;
+	NSMutableAttributedString *marked_text;
+	bool ime_input_event_in_progress;
+	bool mouse_down_control;
+	bool ignore_momentum_scroll;
+}
 
-	OS_OSX os;
-	Error err;
+- (void)processScrollEvent:(NSEvent *)event button:(MouseButton)button factor:(double)factor;
+- (void)processPanEvent:(NSEvent *)event dx:(double)dx dy:(double)dy;
+- (void)processMouseEvent:(NSEvent *)event index:(MouseButton)index mask:(MouseButton)mask pressed:(bool)pressed;
+- (void)setWindowID:(DisplayServer::WindowID)wid;
+- (void)cancelComposition;
 
-	// We must override main when testing is enabled.
-	TEST_MAIN_OVERRIDE
+@end
 
-	if (os.get_open_with_filename() != "") {
-		char *argv_c = (char *)malloc(os.get_open_with_filename().utf8().size());
-		memcpy(argv_c, os.get_open_with_filename().utf8().get_data(), os.get_open_with_filename().utf8().size());
-		err = Main::setup(argv[0], 1, &argv_c);
-		free(argv_c);
-	} else {
-		err = Main::setup(argv[0], argc - first_arg, &argv[first_arg]);
-	}
-
-	if (err != OK) {
-		return 255;
-	}
-
-	if (Main::start()) {
-		os.run(); // It is actually the OS that decides how to run.
-	}
-
-	Main::cleanup();
-
-	return os.get_exit_code();
-};
+#endif // GODOT_CONTENT_VIEW_H

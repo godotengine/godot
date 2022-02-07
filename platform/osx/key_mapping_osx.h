@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_main_osx.mm                                                    */
+/*  key_mapping_osx.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,60 +28,25 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "main/main.h"
+#ifndef KEY_MAPPING_OSX_H
+#define KEY_MAPPING_OSX_H
 
-#include "os_osx.h"
+#include "core/os/keyboard.h"
 
-#include <string.h>
-#include <unistd.h>
+class KeyMappingOSX {
+	KeyMappingOSX() {}
 
-int main(int argc, char **argv) {
-#if defined(VULKAN_ENABLED)
-	// MoltenVK - enable full component swizzling support.
-	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1);
-#endif
+	static bool is_numpad_key(unsigned int key);
 
-	int first_arg = 1;
-	const char *dbg_arg = "-NSDocumentRevisionsDebugMode";
-	printf("arguments\n");
-	for (int i = 0; i < argc; i++) {
-		if (strcmp(dbg_arg, argv[i]) == 0) {
-			first_arg = i + 2;
-		}
-		printf("%i: %s\n", i, argv[i]);
-	};
+public:
+	// Mappings input.
+	static Key translate_key(unsigned int key);
+	static unsigned int unmap_key(Key key);
+	static Key remap_key(unsigned int key, unsigned int state);
 
-#ifdef DEBUG_ENABLED
-	// Lets report the path we made current after all that.
-	char cwd[4096];
-	getcwd(cwd, 4096);
-	printf("Current path: %s\n", cwd);
-#endif
-
-	OS_OSX os;
-	Error err;
-
-	// We must override main when testing is enabled.
-	TEST_MAIN_OVERRIDE
-
-	if (os.get_open_with_filename() != "") {
-		char *argv_c = (char *)malloc(os.get_open_with_filename().utf8().size());
-		memcpy(argv_c, os.get_open_with_filename().utf8().get_data(), os.get_open_with_filename().utf8().size());
-		err = Main::setup(argv[0], 1, &argv_c);
-		free(argv_c);
-	} else {
-		err = Main::setup(argv[0], argc - first_arg, &argv[first_arg]);
-	}
-
-	if (err != OK) {
-		return 255;
-	}
-
-	if (Main::start()) {
-		os.run(); // It is actually the OS that decides how to run.
-	}
-
-	Main::cleanup();
-
-	return os.get_exit_code();
+	// Mapping for menu shortcuts.
+	static String keycode_get_native_string(Key p_keycode);
+	static unsigned int keycode_get_native_mask(Key p_keycode);
 };
+
+#endif // KEY_MAPPING_OSX_H

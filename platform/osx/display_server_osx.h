@@ -37,13 +37,13 @@
 #include "servers/display_server.h"
 
 #if defined(GLES3_ENABLED)
-#include "gl_manager_osx.h"
-#endif
+#include "gl_manager_osx_legacy.h"
+#endif // GLES3_ENABLED
 
 #if defined(VULKAN_ENABLED)
 #include "drivers/vulkan/rendering_device_vulkan.h"
 #include "platform/osx/vulkan_context_osx.h"
-#endif
+#endif // VULKAN_ENABLED
 
 #include <AppKit/AppKit.h>
 #include <AppKit/NSCursor.h>
@@ -59,27 +59,8 @@ class DisplayServerOSX : public DisplayServer {
 	_THREAD_SAFE_CLASS_
 
 public:
-	void _send_event(NSEvent *p_event);
-	NSMenu *_get_dock_menu() const;
-	void _menu_callback(id p_sender);
-
-#if defined(GLES3_ENABLED)
-	GLManager_OSX *gl_manager = nullptr;
-#endif
-#if defined(VULKAN_ENABLED)
-	VulkanContextOSX *context_vulkan = nullptr;
-	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
-#endif
-
-	const NSMenu *_get_menu_root(const String &p_menu_root) const;
-	NSMenu *_get_menu_root(const String &p_menu_root);
-
-	NSMenu *apple_menu = nullptr;
-	NSMenu *dock_menu = nullptr;
-	Map<String, NSMenu *> submenu;
-
 	struct KeyEvent {
-		WindowID window_id;
+		WindowID window_id = INVALID_WINDOW_ID;
 		unsigned int osx_state = false;
 		bool pressed = false;
 		bool echo = false;
@@ -88,20 +69,6 @@ public:
 		Key physical_keycode = Key::NONE;
 		uint32_t unicode = 0;
 	};
-
-	struct WarpEvent {
-		NSTimeInterval timestamp;
-		NSPoint delta;
-	};
-
-	List<WarpEvent> warp_events;
-	NSTimeInterval last_warp = 0;
-	bool ignore_warp = false;
-
-	float display_max_scale = 1.f;
-
-	Vector<KeyEvent> key_event_buffer;
-	int key_event_pos;
 
 	struct WindowData {
 		id window_delegate;
@@ -115,8 +82,6 @@ public:
 		Size2i min_size;
 		Size2i max_size;
 		Size2i size;
-
-		bool mouse_down_control = false;
 
 		bool im_active = false;
 		Size2i im_position;
@@ -140,49 +105,102 @@ public:
 		bool no_focus = false;
 	};
 
+private:
+#if defined(GLES3_ENABLED)
+	GLManager_OSX *gl_manager = nullptr;
+#endif
+#if defined(VULKAN_ENABLED)
+	VulkanContextOSX *context_vulkan = nullptr;
+	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
+#endif
+	String rendering_driver;
+
+	NSMenu *apple_menu = nullptr;
+	NSMenu *dock_menu = nullptr;
+	Map<String, NSMenu *> submenu;
+
+	struct WarpEvent {
+		NSTimeInterval timestamp;
+		NSPoint delta;
+	};
+	List<WarpEvent> warp_events;
+	NSTimeInterval last_warp = 0;
+	bool ignore_warp = false;
+
+	Vector<KeyEvent> key_event_buffer;
+	int key_event_pos = 0;
+
 	Point2i im_selection;
 	String im_text;
 
-	Map<WindowID, WindowData> windows;
+	CGEventSourceRef event_source;
+	MouseMode mouse_mode = MOUSE_MODE_VISIBLE;
+	MouseButton last_button_state = MouseButton::NONE;
+
+	bool drop_events = false;
+	bool in_dispatch_input_event = false;
+
+	struct LayoutInfo {
+		String name;
+		String code;
+	};
+	Vector<LayoutInfo> kbd_layouts;
+	int current_layout = 0;
+	bool keyboard_layout_dirty = true;
 
 	WindowID last_focused_window = INVALID_WINDOW_ID;
-
 	WindowID window_id_counter = MAIN_WINDOW_ID;
+	float display_max_scale = 1.f;
+	Point2i origin;
+	bool displays_arrangement_dirty = true;
 
-	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect);
-	void _update_window(WindowData p_wd);
-	void _send_window_event(const WindowData &wd, WindowEvent p_event);
-	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
-	void _dispatch_input_event(const Ref<InputEvent> &p_event);
-	WindowID _find_window_id(id p_window);
-
-	void _set_window_per_pixel_transparency_enabled(bool p_enabled, WindowID p_window);
-
-	Point2i _get_screens_origin() const;
-	Point2i _get_native_screen_position(int p_screen) const;
-
-	void _push_input(const Ref<InputEvent> &p_event);
-	void _process_key_events();
-	void _release_pressed_events();
-
-	String rendering_driver;
-
-	id autoreleasePool;
-	CGEventSourceRef eventSource;
-
-	CursorShape cursor_shape;
+	CursorShape cursor_shape = CURSOR_ARROW;
 	NSCursor *cursors[CURSOR_MAX];
 	Map<CursorShape, Vector<Variant>> cursors_cache;
 
-	MouseMode mouse_mode;
-	Point2i last_mouse_pos;
-	MouseButton last_button_state = MouseButton::NONE;
+	Map<WindowID, WindowData> windows;
 
-	bool window_focused;
-	bool drop_events;
-	bool in_dispatch_input_event = false;
+	const NSMenu *_get_menu_root(const String &p_menu_root) const;
+	NSMenu *_get_menu_root(const String &p_menu_root);
+
+	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect);
+	void _update_window_style(WindowData p_wd);
+	void _set_window_per_pixel_transparency_enabled(bool p_enabled, WindowID p_window);
+
+	void _update_displays_arrangement();
+	Point2i _get_screens_origin() const;
+	Point2i _get_native_screen_position(int p_screen) const;
+	static void _displays_arrangement_changed(CGDirectDisplayID display_id, CGDisplayChangeSummaryFlags flags, void *user_info);
+
+	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
+	void _dispatch_input_event(const Ref<InputEvent> &p_event);
+	void _push_input(const Ref<InputEvent> &p_event);
+	void _process_key_events();
+	void _update_keyboard_layouts();
+	static void _keyboard_layout_changed(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef user_info);
+
+	static NSCursor *_cursor_from_selector(SEL p_selector, SEL p_fallback = nil);
 
 public:
+	NSMenu *get_dock_menu() const;
+	void menu_callback(id p_sender);
+
+	bool has_window(WindowID p_window) const;
+	WindowData &get_window(WindowID p_window);
+
+	void send_event(NSEvent *p_event);
+	void send_window_event(const WindowData &p_wd, WindowEvent p_event);
+	void release_pressed_events();
+	void get_key_modifier_state(unsigned int p_osx_state, Ref<InputEventWithModifiers> r_state) const;
+	void update_mouse_pos(WindowData &p_wd, NSPoint p_location_in_window);
+	void push_to_key_event_buffer(const KeyEvent &p_event);
+	void update_im_text(const Point2i &p_selection, const String &p_text);
+	void set_last_focused_window(WindowID p_window);
+
+	void window_update(WindowID p_window);
+	void window_destroy(WindowID p_window);
+	void window_resize(WindowID p_window, int p_width, int p_height);
+
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;
 
@@ -216,8 +234,10 @@ public:
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
 
+	bool update_mouse_wrap(WindowData &p_wd, NSPoint &r_delta, NSPoint &r_mpos, NSTimeInterval p_timestamp);
 	virtual void mouse_warp_to_position(const Point2i &p_to) override;
 	virtual Point2i mouse_get_position() const override;
+	void mouse_set_button_state(MouseButton p_state);
 	virtual MouseButton mouse_get_button_state() const override;
 
 	virtual void clipboard_set(const String &p_text) override;
@@ -297,6 +317,7 @@ public:
 	virtual Point2i ime_get_selection() const override;
 	virtual String ime_get_text() const override;
 
+	void cursor_update_shape();
 	virtual void cursor_set_shape(CursorShape p_shape) override;
 	virtual CursorShape cursor_get_shape() const override;
 	virtual void cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) override;

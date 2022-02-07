@@ -40,9 +40,7 @@
 #include "servers/audio_server.h"
 
 class OS_OSX : public OS_Unix {
-	virtual void delete_main_loop() override;
-
-	bool force_quit;
+	bool force_quit = false;
 
 	JoypadOSX *joypad_osx = nullptr;
 
@@ -55,12 +53,14 @@ class OS_OSX : public OS_Unix {
 
 	CrashHandler crash_handler;
 
-	MainLoop *main_loop;
+	CFRunLoopObserverRef pre_wait_observer;
 
-	static void pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context);
+	MainLoop *main_loop = nullptr;
 
-public:
 	String open_with_filename;
+
+	static _FORCE_INLINE_ String get_framework_executable(const String &p_path);
+	static void pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context);
 
 protected:
 	virtual void initialize_core() override;
@@ -70,8 +70,12 @@ protected:
 	virtual void initialize_joypads() override;
 
 	virtual void set_main_loop(MainLoop *p_main_loop) override;
+	virtual void delete_main_loop() override;
 
 public:
+	String get_open_with_filename() const;
+	void set_open_with_filename(const String &p_path);
+
 	virtual String get_name() const override;
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
@@ -89,26 +93,27 @@ public:
 
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;
 
-	Error shell_open(String p_uri) override;
+	virtual Error shell_open(String p_uri) override;
 
-	String get_locale() const override;
+	virtual String get_locale() const override;
 
 	virtual String get_executable_path() const override;
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
 	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
 
-	virtual String get_unique_id() const override; //++
+	virtual String get_unique_id() const override;
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
-
-	void run();
 
 	virtual void disable_crash_handler() override;
 	virtual bool is_disable_crash_handler() const override;
 
 	virtual Error move_to_trash(const String &p_path) override;
 
+	void run();
+
 	OS_OSX();
+	~OS_OSX();
 };
 
 #endif
