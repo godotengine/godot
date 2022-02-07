@@ -1048,6 +1048,27 @@ def show_progress(env):
     AlwaysBuild(progress_finish_command)
 
 
+def validate_target_filename(suffix):  # Check if target file can be written to.
+    if not os.access("bin/godot" + suffix, os.F_OK) or os.access("bin/godot" + suffix, os.W_OK):
+        return suffix
+    name, _, extension = suffix.rpartition(".")  # Split suffix string so we can add suffix number later
+
+    old_suffix = suffix  # Store old suffix to use in print statement
+    suffix = ""
+
+    MAXIMUM_ATTEMPTS = 10
+    for suffix_number in range(1, MAXIMUM_ATTEMPTS + 1):
+        new_suffix = f"{name}.{suffix_number}.{extension}"
+        if not os.access("bin/godot" + new_suffix, os.F_OK) or os.access("bin/godot" + new_suffix, os.W_OK):  # Check if this path can be written to
+            suffix = new_suffix
+            break
+
+    if not suffix:
+        print("'bin/godot" + old_suffix + "' cannot be written to at this time. This can be caused when trying to compile to an executable that is currently open. Close Godot and try again.")
+    else:
+        print("'bin/godot" + old_suffix + "' cannot be written to at this time. Compiling to 'bin/godot" + suffix + "' instead.")
+    return suffix
+
 def dump(env):
     # Dumps latest build information for debugging purposes and external tools.
     from json import dump
