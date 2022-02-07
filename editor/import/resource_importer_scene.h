@@ -224,12 +224,12 @@ class ResourceImporterScene : public ResourceImporter {
 public:
 	static ResourceImporterScene *get_singleton() { return singleton; }
 
-	void add_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin);
+	void add_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin, bool p_first_priority = false);
 	void remove_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin);
 
 	const Vector<Ref<EditorSceneFormatImporter>> &get_importers() const { return importers; }
 
-	void add_importer(Ref<EditorSceneFormatImporter> p_importer);
+	void add_importer(Ref<EditorSceneFormatImporter> p_importer, bool p_first_priority = false);
 	void remove_importer(Ref<EditorSceneFormatImporter> p_importer);
 
 	virtual String get_importer_name() const override;

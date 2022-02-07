@@ -379,8 +379,10 @@
 		<method name="add_import_plugin">
 			<return type="void" />
 			<argument index="0" name="importer" type="EditorImportPlugin" />
+			<argument index="1" name="first_priority" type="bool" default="false" />
 			<description>
 				Registers a new [EditorImportPlugin]. Import plugins are used to import custom and unsupported assets as a custom [Resource] type.
+				If [code]first_priority[/code] is [code]true[/code], the new import plugin is inserted first in the list and takes precedence over pre-existing plugins.
 				[b]Note:[/b] If you want to import custom 3D asset formats use [method add_scene_format_importer_plugin] instead.
 				See [method add_inspector_plugin] for an example of how to register a plugin.
 			</description>
@@ -408,15 +410,19 @@
 		<method name="add_scene_format_importer_plugin">
 			<return type="void" />
 			<argument index="0" name="scene_format_importer" type="EditorSceneFormatImporter" />
+			<argument index="1" name="first_priority" type="bool" default="false" />
 			<description>
 				Registers a new [EditorSceneFormatImporter]. Scene importers are used to import custom 3D asset formats as scenes.
+				If [code]first_priority[/code] is [code]true[/code], the new import plugin is inserted first in the list and takes precedence over pre-existing plugins.
 			</description>
 		</method>
 		<method name="add_scene_post_import_plugin">
 			<return type="void" />
 			<argument index="0" name="scene_import_plugin" type="EditorScenePostImportPlugin" />
+			<argument index="1" name="first_priority" type="bool" default="false" />
 			<description>
 				Add a [EditorScenePostImportPlugin]. These plugins allow customizing the import process of 3D assets by adding new options to the import dialogs.
+				If [code]first_priority[/code] is [code]true[/code], the new import plugin is inserted first in the list and takes precedence over pre-existing plugins.
 			</description>
 		</method>
 		<method name="add_spatial_gizmo_plugin">

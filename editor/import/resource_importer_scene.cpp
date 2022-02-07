@@ -2088,18 +2088,26 @@ ResourceImporterScene::ResourceImporterScene() {
 	singleton = this;
 }
 
-void ResourceImporterScene::add_importer(Ref<EditorSceneFormatImporter> p_importer) {
+void ResourceImporterScene::add_importer(Ref<EditorSceneFormatImporter> p_importer, bool p_first_priority) {
 	ERR_FAIL_COND(p_importer.is_null());
-	importers.insert(0, p_importer);
+	if (p_first_priority) {
+		importers.insert(0, p_importer);
+	} else {
+		importers.push_back(p_importer);
+	}
 }
 
 void ResourceImporterScene::remove_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin) {
 	post_importer_plugins.erase(p_plugin);
 }
 
-void ResourceImporterScene::add_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin) {
+void ResourceImporterScene::add_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin, bool p_first_priority) {
 	ERR_FAIL_COND(p_plugin.is_null());
-	post_importer_plugins.insert(0, p_plugin);
+	if (p_first_priority) {
+		post_importer_plugins.insert(0, p_plugin);
+	} else {
+		post_importer_plugins.push_back(p_plugin);
+	}
 }
 
 void ResourceImporterScene::remove_importer(Ref<EditorSceneFormatImporter> p_importer) {
