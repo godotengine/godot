@@ -546,6 +546,15 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 		wd.no_focus = true;
 	}
 
+	// Inherit icons from MAIN_WINDOW for all sub windows.
+	HICON mainwindow_icon = (HICON)SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_GETICON, ICON_SMALL, 0);
+	if (mainwindow_icon) {
+		SendMessage(windows[window_id].hWnd, WM_SETICON, ICON_SMALL, (LPARAM)mainwindow_icon);
+	}
+	mainwindow_icon = (HICON)SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_GETICON, ICON_BIG, 0);
+	if (mainwindow_icon) {
+		SendMessage(windows[window_id].hWnd, WM_SETICON, ICON_BIG, (LPARAM)mainwindow_icon);
+	}
 	return window_id;
 }
 
