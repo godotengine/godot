@@ -265,6 +265,7 @@
 		<button id="btn-close-editor" class="btn close-btn" disabled="disabled" onclick="closeEditor()">×</button>
 		<button id="btn-tab-game" class="btn tab-btn" disabled="disabled" onclick="showTab('game')">Game</button>
 		<button id="btn-close-game" class="btn close-btn"  disabled="disabled" onclick="closeGame()">×</button>
+		<button id="btn-tab-update" class="btn tab-btn" style="display: none;">Update</button>
 	</div>
 	<div id="tabs">
 		<div id="tab-loader">
@@ -324,10 +325,39 @@
 			<div id="status-notice" class="godot" style="display: none;"></div>
 		</div>
 	</div>
-	<script>
+	<script>//<![CDATA[
 		window.addEventListener("load", () => {
+			function notifyUpdate(sw) {
+				const btn = document.getElementById("btn-tab-update");
+				btn.onclick = function () {
+					if (!window.confirm("Are you sure you want to update?\nClicking \"OK\" will reload all active instances!")) {
+						return;
+					}
+					sw.postMessage("update");
+					btn.innerHTML = "Updating...";
+					btn.disabled = true;
+				};
+				btn.style.display = "";
+			}
 			if ("serviceWorker" in navigator) {
-				navigator.serviceWorker.register("service.worker.js");
+				navigator.serviceWorker.register("service.worker.js").then(function (reg) {
+					if (reg.waiting) {
+						notifyUpdate(reg.waiting);
+					}
+					reg.addEventListener("updatefound", function () {
+						const update = reg.installing;
+						update.addEventListener("statechange", function () {
+							if (update.state === "installed") {
+								// It's a new install, claim and perform aggressive caching.
+								if (!reg.active) {
+									update.postMessage("claim");
+								} else {
+									notifyUpdate(update);
+								}
+							}
+						});
+					});
+				});
 			}
 
 			if (localStorage.getItem("welcomeModalDismissed") !== 'true') {
@@ -342,7 +372,7 @@
 				localStorage.setItem("welcomeModalDismissed", 'true');
 			}
 		}
-	</script>
+	//]]></script>
 	<script src="godot.tools.js"></script>
 	<script>//<![CDATA[
 
