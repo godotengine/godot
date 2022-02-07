@@ -30,6 +30,8 @@
 
 #include "error_macros.h"
 
+#include <stdio.h>
+
 #include "core/io/logger.h"
 #include "core/os/os.h"
 #include "core/string/ustring.h"

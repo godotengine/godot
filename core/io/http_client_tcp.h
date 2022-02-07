@@ -31,6 +31,18 @@
 #ifndef HTTP_CLIENT_TCP_H
 #define HTTP_CLIENT_TCP_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
+#include "core/io/ip.h"
+#include "core/io/stream_peer.h"
+#include "core/io/stream_peer_tcp.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
+#include "core/variant/variant.h"
 #include "http_client.h"
 
 class HTTPClientTCP : public HTTPClient {

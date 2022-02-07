@@ -31,8 +31,13 @@
 #ifndef COLOR_H
 #define COLOR_H
 
+#include <stdint.h>
+#include <cmath>
+
+#include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
 #include "core/string/ustring.h"
+#include "core/typedefs.h"
 
 struct _NO_DISCARD_ Color {
 	union {

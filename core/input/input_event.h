@@ -31,12 +31,21 @@
 #ifndef INPUT_EVENT_H
 #define INPUT_EVENT_H
 
+#include <stdint.h>
+
 #include "core/input/input_enums.h"
 #include "core/io/resource.h"
+#include "core/math/math_defs.h"
 #include "core/math/transform_2d.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
 #include "core/os/keyboard.h"
+#include "core/string/string_name.h"
 #include "core/string/ustring.h"
 #include "core/typedefs.h"
+
+struct Transform2D;
 
 /**
  * Input Event classes. These are used in the main loop.

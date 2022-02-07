@@ -31,6 +31,9 @@
 #ifndef COMMAND_QUEUE_MT_H
 #define COMMAND_QUEUE_MT_H
 
+#include <stdint.h>
+
+#include "core/error/error_macros.h"
 #include "core/os/memory.h"
 #include "core/os/mutex.h"
 #include "core/os/semaphore.h"

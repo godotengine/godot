@@ -30,12 +30,11 @@
 
 #include "pool_allocator.h"
 
+#include <string.h>
+
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
 #include "core/os/os.h"
-#include "core/string/print_string.h"
-
-#include <assert.h>
 
 #define COMPACT_CHUNK(m_entry, m_to_pos)                      \
 	do {                                                      \

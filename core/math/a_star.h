@@ -31,10 +31,21 @@
 #ifndef A_STAR_H
 #define A_STAR_H
 
+#include <stdint.h>
+
+#include "core/math/math_defs.h"
+#include "core/math/vector2.h"
+#include "core/math/vector3.h"
 #include "core/object/gdvirtual.gen.inc"
+#include "core/object/object.h"
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
+#include "core/string/string_name.h"
 #include "core/templates/oa_hash_map.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
 
 /**
 	A* pathfinding algorithm.

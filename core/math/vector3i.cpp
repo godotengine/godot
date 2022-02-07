@@ -30,6 +30,8 @@
 
 #include "vector3i.h"
 
+#include "core/error/error_macros.h"
+
 void Vector3i::set_axis(const int p_axis, const int32_t p_value) {
 	ERR_FAIL_INDEX(p_axis, 3);
 	coord[p_axis] = p_value;

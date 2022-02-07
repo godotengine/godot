@@ -31,8 +31,13 @@
 #ifndef FILE_ACCESS_COMPRESSED_H
 #define FILE_ACCESS_COMPRESSED_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/io/compression.h"
 #include "core/io/file_access.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
 
 class FileAccessCompressed : public FileAccess {
 	Compression::Mode cmode = Compression::MODE_ZSTD;

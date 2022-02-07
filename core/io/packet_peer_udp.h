@@ -31,11 +31,20 @@
 #ifndef PACKET_PEER_UDP_H
 #define PACKET_PEER_UDP_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/io/ip.h"
+#include "core/io/ip_address.h"
 #include "core/io/net_socket.h"
 #include "core/io/packet_peer.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/ring_buffer.h"
 
 class UDPServer;
+class NetSocket;
 
 class PacketPeerUDP : public PacketPeer {
 	GDCLASS(PacketPeerUDP, PacketPeer);

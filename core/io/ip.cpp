@@ -30,9 +30,17 @@
 
 #include "ip.h"
 
+#include "core/error/error_macros.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/os/mutex.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
 #include "core/templates/hash_map.h"
+#include "core/templates/pair.h"
+#include "core/templates/safe_refcount.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 
 VARIANT_ENUM_CAST(IP::ResolverStatus);
 

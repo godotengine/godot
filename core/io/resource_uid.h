@@ -31,11 +31,18 @@
 #ifndef RESOURCE_UUID_H
 #define RESOURCE_UUID_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
+#include "core/object/object.h"
 #include "core/object/ref_counted.h"
+#include "core/os/mutex.h"
 #include "core/string/string_name.h"
+#include "core/string/ustring.h"
 #include "core/templates/ordered_hash_map.h"
 
 class Crypto;
+
 class ResourceUID : public Object {
 	GDCLASS(ResourceUID, Object)
 public:

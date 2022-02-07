@@ -30,7 +30,13 @@
 
 #include "image_loader.h"
 
-#include "core/string/print_string.h"
+#include <stdint.h>
+
+#include "core/error/error_macros.h"
+#include "core/io/file_access.h"
+#include "core/io/image.h"
+#include "core/os/memory.h"
+#include "core/templates/vector.h"
 
 bool ImageFormatLoader::recognize(const String &p_extension) const {
 	List<String> extensions;

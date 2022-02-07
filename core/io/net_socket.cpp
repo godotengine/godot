@@ -30,6 +30,8 @@
 
 #include "net_socket.h"
 
+#include "core/error/error_macros.h"
+
 NetSocket *(*NetSocket::_create)() = nullptr;
 
 NetSocket *NetSocket::create() {

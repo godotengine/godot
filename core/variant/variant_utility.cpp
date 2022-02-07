@@ -28,17 +28,40 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "variant.h"
+#include <stddef.h>
+#include <stdint.h>
 
-#include "core/core_string_names.h"
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
 #include "core/io/marshalls.h"
+#include "core/math/math_funcs.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/math/vector3.h"
+#include "core/math/vector3i.h"
+#include "core/object/method_bind.h"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
 #include "core/object/ref_counted.h"
+#include "core/os/memory.h"
 #include "core/os/os.h"
+#include "core/string/print_string.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/hashfuncs.h"
+#include "core/templates/list.h"
 #include "core/templates/oa_hash_map.h"
 #include "core/templates/rid.h"
 #include "core/templates/rid_owner.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
 #include "core/variant/binder_common.h"
+#include "core/variant/callable.h"
+#include "core/variant/method_ptrcall.h"
+#include "core/variant/type_info.h"
+#include "core/variant/variant_internal.h"
 #include "core/variant/variant_parser.h"
+#include "variant.h"
 
 struct VariantUtilityFunctions {
 	// Math

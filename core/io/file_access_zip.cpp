@@ -32,7 +32,15 @@
 
 #include "file_access_zip.h"
 
+#include <stdlib.h>
+#include <string.h>
+
+#include "core/error/error_macros.h"
 #include "core/io/file_access.h"
+#include "core/os/memory.h"
+#include "core/typedefs.h"
+#include "thirdparty/minizip/ioapi.h"
+#include "zconf.h"
 
 ZipArchive *ZipArchive::instance = nullptr;
 

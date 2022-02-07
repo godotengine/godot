@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #include "packet_peer_dtls.h"
-#include "core/config/project_settings.h"
-#include "core/io/file_access.h"
+
+#include "core/object/class_db.h"
 
 PacketPeerDTLS *(*PacketPeerDTLS::_create)() = nullptr;
 bool PacketPeerDTLS::available = false;

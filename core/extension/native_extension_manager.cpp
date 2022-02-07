@@ -29,7 +29,13 @@
 /*************************************************************************/
 
 #include "native_extension_manager.h"
+
+#include "core/error/error_macros.h"
 #include "core/io/file_access.h"
+#include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
+#include "core/templates/pair.h"
+#include "core/typedefs.h"
 
 NativeExtensionManager::LoadStatus NativeExtensionManager::load_extension(const String &p_path) {
 	if (native_extension_map.has(p_path)) {

@@ -31,10 +31,13 @@
 #ifndef TRANSFORM_2D_H
 #define TRANSFORM_2D_H
 
+#include "core/error/error_macros.h"
+#include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
 #include "core/math/rect2.h"
 #include "core/math/vector2.h"
 #include "core/templates/vector.h"
+#include "core/typedefs.h"
 
 class String;
 

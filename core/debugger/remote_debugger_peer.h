@@ -31,11 +31,17 @@
 #ifndef REMOTE_DEBUGGER_PEER_H
 #define REMOTE_DEBUGGER_PEER_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/io/stream_peer_tcp.h"
 #include "core/object/ref_counted.h"
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
 #include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
 
 class RemoteDebuggerPeer : public RefCounted {
 protected:

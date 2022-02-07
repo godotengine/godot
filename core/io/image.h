@@ -31,9 +31,22 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
 #include "core/io/resource.h"
 #include "core/math/color.h"
 #include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/dictionary.h"
 
 /**
  * Image storage class. This is used to store an image in user memory, as well as

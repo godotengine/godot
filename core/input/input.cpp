@@ -30,10 +30,19 @@
 
 #include "input.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
 #include "core/input/default_controller_mappings.h"
 #include "core/input/input_map.h"
+#include "core/math/math_funcs.h"
+#include "core/math/rect2.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
+#include "core/templates/ordered_hash_map.h"
+#include "core/templates/pair.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
 
 static const char *_joy_buttons[(size_t)JoyButton::SDL_MAX] = {
 	"a",

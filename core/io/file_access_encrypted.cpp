@@ -30,11 +30,13 @@
 
 #include "file_access_encrypted.h"
 
-#include "core/crypto/crypto_core.h"
-#include "core/string/print_string.h"
-#include "core/variant/variant.h"
+#include <string.h>
 
-#include <stdio.h>
+#include "core/crypto/crypto_core.h"
+#include "core/error/error_macros.h"
+#include "core/math/math_funcs.h"
+#include "core/os/memory.h"
+#include "core/typedefs.h"
 
 Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8_t> &p_key, Mode p_mode, bool p_with_magic) {
 	ERR_FAIL_COND_V_MSG(file != nullptr, ERR_ALREADY_IN_USE, "Can't open file while another file from path '" + file->get_path_absolute() + "' is open.");

@@ -31,7 +31,15 @@
 #ifndef NATIVE_EXTENSION_MANAGER_H
 #define NATIVE_EXTENSION_MANAGER_H
 
+#include <stdint.h>
+
 #include "core/extension/native_extension.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/map.h"
+#include "core/templates/vector.h"
+#include "core/variant/binder_common.h"
 
 class NativeExtensionManager : public Object {
 	GDCLASS(NativeExtensionManager, Object);

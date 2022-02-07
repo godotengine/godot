@@ -31,9 +31,12 @@
 #ifndef STRING_NAME_H
 #define STRING_NAME_H
 
+#include <cstdint>
+
 #include "core/os/mutex.h"
 #include "core/string/ustring.h"
 #include "core/templates/safe_refcount.h"
+#include "core/typedefs.h"
 
 class Main;
 

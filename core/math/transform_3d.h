@@ -33,7 +33,12 @@
 
 #include "core/math/aabb.h"
 #include "core/math/basis.h"
+#include "core/math/math_defs.h"
 #include "core/math/plane.h"
+#include "core/math/vector3.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
 
 struct _NO_DISCARD_ Transform3D {
 	Basis basis;

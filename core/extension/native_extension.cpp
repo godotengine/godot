@@ -29,11 +29,20 @@
 /*************************************************************************/
 
 #include "native_extension.h"
+
 #include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
 #include "core/io/config_file.h"
 #include "core/object/class_db.h"
 #include "core/object/method_bind.h"
+#include "core/object/ref_counted.h"
+#include "core/os/memory.h"
 #include "core/os/os.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/callable.h"
+#include "core/variant/type_info.h"
+#include "core/variant/variant.h"
 
 String NativeExtension::get_extension_list_config_file() {
 	return ProjectSettings::get_singleton()->get_project_data_path().plus_file("extension_list.cfg");

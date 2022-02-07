@@ -30,9 +30,14 @@
 
 #include "dictionary.h"
 
+#include "core/error/error_macros.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/hashfuncs.h"
 #include "core/templates/ordered_hash_map.h"
 #include "core/templates/safe_refcount.h"
-#include "core/variant/variant.h"
+#include "core/typedefs.h"
 // required in this order by VariantInternal, do not remove this comment.
 #include "core/object/class_db.h"
 #include "core/object/object.h"

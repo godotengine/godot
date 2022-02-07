@@ -31,9 +31,22 @@
 #ifndef GEOMETRY_3D_H
 #define GEOMETRY_3D_H
 
+#include <stdint.h>
+
+#include "core/error/error_macros.h"
+#include "core/math/color.h"
 #include "core/math/face3.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/math/plane.h"
+#include "core/math/vector2.h"
+#include "core/math/vector3.h"
 #include "core/object/object.h"
 #include "core/templates/vector.h"
+#include "core/typedefs.h"
+
+struct Face3;
+struct Vector3i;
 
 class Geometry3D {
 public:

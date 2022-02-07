@@ -30,15 +30,34 @@
 
 #include "remote_debugger.h"
 
+#include <stdint.h>
+
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/input/input.h"
+#include "core/io/image.h"
+#include "core/math/math_defs.h"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
 #include "core/object/script_language.h"
+#include "core/os/memory.h"
 #include "core/os/os.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/templates/map.h"
+#include "core/templates/pair.h"
+#include "core/templates/rid.h"
+#include "core/templates/sort_array.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/variant.h"
 #include "scene/main/node.h"
 #include "servers/display_server.h"
+#include "servers/rendering_server.h"
 
 template <typename T>
 void RemoteDebugger::_bind_profiler(const String &p_name, T *p_prof) {

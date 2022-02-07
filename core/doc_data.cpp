@@ -30,6 +30,8 @@
 
 #include "doc_data.h"
 
+#include "core/templates/list.h"
+
 void DocData::return_doc_from_retinfo(DocData::MethodDoc &p_method, const PropertyInfo &p_retinfo) {
 	if (p_retinfo.type == Variant::INT && p_retinfo.hint == PROPERTY_HINT_INT_IS_POINTER) {
 		p_method.return_type = p_retinfo.hint_string;

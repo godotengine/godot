@@ -31,13 +31,29 @@
 #ifndef VARIANT_SETGET_H
 #define VARIANT_SETGET_H
 
-#include "variant.h"
+#include <stdint.h>
 
 #include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/math/aabb.h"
+#include "core/math/basis.h"
+#include "core/math/color.h"
+#include "core/math/plane.h"
+#include "core/math/quaternion.h"
+#include "core/math/rect2.h"
+#include "core/math/rect2i.h"
+#include "core/math/transform_2d.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/math/vector3.h"
+#include "core/math/vector3i.h"
 #include "core/object/class_db.h"
 #include "core/templates/local_vector.h"
+#include "core/variant/method_ptrcall.h"
+#include "core/variant/type_info.h"
 #include "core/variant/variant_internal.h"
+#include "variant.h"
 
 /**** NAMED SETTERS AND GETTERS ****/
 

@@ -32,6 +32,9 @@
 // to use a custom Thread implementation defined in `platform/[your_platform]/platform_thread.h`
 // Overriding the platform implementation is required in some proprietary platforms
 #ifdef PLATFORM_THREAD_OVERRIDE
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "platform_thread.h"
 #else
 #ifndef THREAD_H
@@ -40,8 +43,9 @@
 #include "core/typedefs.h"
 
 #if !defined(NO_THREADS)
-#include "core/templates/safe_refcount.h"
 #include <thread>
+
+#include "core/templates/safe_refcount.h"
 #endif
 
 class String;

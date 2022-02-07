@@ -31,6 +31,8 @@
 #ifndef VECTOR3I_H
 #define VECTOR3I_H
 
+#include <stdint.h>
+
 #include "core/math/math_funcs.h"
 #include "core/string/ustring.h"
 #include "core/typedefs.h"

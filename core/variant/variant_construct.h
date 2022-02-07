@@ -31,16 +31,50 @@
 #ifndef VARIANT_CONSTRUCT_H
 #define VARIANT_CONSTRUCT_H
 
-#include "variant.h"
+#include <stddef.h>
+#include <stdint.h>
 
 #include "core/core_string_names.h"
 #include "core/crypto/crypto_core.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/error/error_macros.h"
 #include "core/io/compression.h"
+#include "core/math/aabb.h"
+#include "core/math/basis.h"
+#include "core/math/color.h"
+#include "core/math/plane.h"
+#include "core/math/quaternion.h"
+#include "core/math/rect2.h"
+#include "core/math/rect2i.h"
+#include "core/math/transform_2d.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/math/vector3.h"
+#include "core/math/vector3i.h"
 #include "core/object/class_db.h"
+#include "core/object/object_id.h"
+#include "core/os/memory.h"
 #include "core/os/os.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/oa_hash_map.h"
+#include "core/templates/rid.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/callable.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/method_ptrcall.h"
+#include "core/variant/type_info.h"
+#include "core/variant/variant_internal.h"
+#include "variant.h"
+
+class Object;
+template <class T>
+struct PtrConstruct;
 
 template <class T>
 struct PtrConstruct {};

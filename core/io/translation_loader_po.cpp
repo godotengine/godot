@@ -30,9 +30,12 @@
 
 #include "translation_loader_po.h"
 
+#include "core/error/error_macros.h"
 #include "core/io/file_access.h"
-#include "core/string/translation.h"
+#include "core/object/ref_counted.h"
+#include "core/os/memory.h"
 #include "core/string/translation_po.h"
+#include "core/templates/vector.h"
 
 RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 	enum Status {

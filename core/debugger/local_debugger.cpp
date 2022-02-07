@@ -30,9 +30,23 @@
 
 #include "local_debugger.h"
 
+#include <stdint.h>
+
 #include "core/debugger/script_debugger.h"
+#include "core/math/math_defs.h"
+#include "core/object/script_language.h"
+#include "core/os/memory.h"
 #include "core/os/os.h"
+#include "core/string/print_string.h"
+#include "core/string/string_name.h"
+#include "core/templates/set.h"
+#include "core/templates/sort_array.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
 #include "scene/main/scene_tree.h"
+
+class Array;
 
 struct LocalDebugger::ScriptsProfiler {
 	struct ProfileInfoSort {

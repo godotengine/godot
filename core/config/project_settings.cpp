@@ -30,20 +30,27 @@
 
 #include "project_settings.h"
 
-#include "core/core_bind.h" // For Compression enum.
+#include "core/config/engine.h"
 #include "core/core_string_names.h"
+#include "core/error/error_macros.h"
+#include "core/input/input_event.h"
 #include "core/input/input_map.h"
+#include "core/io/compression.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/file_access_network.h"
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
-#include "core/os/keyboard.h"
+#include "core/object/class_db.h"
+#include "core/object/ref_counted.h"
+#include "core/os/memory.h"
 #include "core/os/os.h"
+#include "core/templates/pair.h"
+#include "core/variant/array.h"
+#include "core/variant/dictionary.h"
 #include "core/variant/variant_parser.h"
 #include "core/version.h"
-
-#include "modules/modules_enabled.gen.h" // For mono.
+#include "core/version_generated.gen.h"
 
 const String ProjectSettings::PROJECT_DATA_DIR_NAME_SUFFIX = "godot";
 

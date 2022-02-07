@@ -31,10 +31,19 @@
 #ifndef TCP_SERVER_H
 #define TCP_SERVER_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/io/ip.h"
+#include "core/io/ip_address.h"
 #include "core/io/net_socket.h"
 #include "core/io/stream_peer.h"
 #include "core/io/stream_peer_tcp.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+
+class NetSocket;
+class StreamPeerTCP;
 
 class TCPServer : public RefCounted {
 	GDCLASS(TCPServer, RefCounted);

@@ -31,10 +31,23 @@
 #ifndef PROJECT_SETTINGS_H
 #define PROJECT_SETTINGS_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/object/class_db.h"
+#include "core/object/object.h"
 #include "core/os/thread_safe.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
 #include "core/templates/ordered_hash_map.h"
 #include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+
+class Dictionary;
 
 class ProjectSettings : public Object {
 	GDCLASS(ProjectSettings, Object);

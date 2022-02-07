@@ -31,8 +31,10 @@
 #ifndef SCRIPT_DEBUGGER_H
 #define SCRIPT_DEBUGGER_H
 
+#include "core/error/error_macros.h"
 #include "core/object/script_language.h"
 #include "core/string/string_name.h"
+#include "core/string/ustring.h"
 #include "core/templates/map.h"
 #include "core/templates/set.h"
 #include "core/templates/vector.h"

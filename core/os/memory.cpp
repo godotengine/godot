@@ -30,11 +30,11 @@
 
 #include "memory.h"
 
+#include <stdlib.h>
+#include <cstdint>
+
 #include "core/error/error_macros.h"
 #include "core/templates/safe_refcount.h"
-
-#include <stdio.h>
-#include <stdlib.h>
 
 void *operator new(size_t p_size, const char *p_description) {
 	return Memory::alloc_static(p_size, false);

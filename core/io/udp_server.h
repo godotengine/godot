@@ -31,8 +31,18 @@
 #ifndef UDP_SERVER_H
 #define UDP_SERVER_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
+#include "core/io/ip_address.h"
 #include "core/io/net_socket.h"
 #include "core/io/packet_peer_udp.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/templates/list.h"
+
+class NetSocket;
+class PacketPeerUDP;
 
 class UDPServer : public RefCounted {
 	GDCLASS(UDPServer, RefCounted);

@@ -34,7 +34,11 @@
 #include "core/debugger/remote_debugger.h"
 #include "core/debugger/remote_debugger_peer.h"
 #include "core/debugger/script_debugger.h"
+#include "core/math/math_defs.h"
+#include "core/object/ref_counted.h"
+#include "core/os/memory.h"
 #include "core/os/os.h"
+#include "core/templates/pair.h"
 
 EngineDebugger *EngineDebugger::singleton = nullptr;
 ScriptDebugger *EngineDebugger::script_debugger = nullptr;

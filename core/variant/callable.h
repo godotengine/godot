@@ -31,9 +31,16 @@
 #ifndef CALLABLE_H
 #define CALLABLE_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/object/object_id.h"
 #include "core/string/string_name.h"
+#include "core/string/ustring.h"
 #include "core/templates/list.h"
+#include "core/templates/safe_refcount.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
 
 class Object;
 class Variant;

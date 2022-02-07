@@ -30,6 +30,23 @@
 
 #include "variant_setget.h"
 
+#include "core/core_string_names.h"
+#include "core/debugger/engine_debugger.h"
+#include "core/error/error_macros.h"
+#include "core/math/math_defs.h"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/local_vector.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/callable.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
+
 struct VariantSetterGetterInfo {
 	void (*setter)(Variant *base, const Variant *value, bool &valid);
 	void (*getter)(const Variant *base, Variant *value);

@@ -31,9 +31,15 @@
 #include "file_access_network.h"
 
 #include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
 #include "core/io/ip.h"
+#include "core/io/ip_address.h"
 #include "core/io/marshalls.h"
+#include "core/io/stream_peer_tcp.h"
+#include "core/object/object.h"
 #include "core/os/os.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
 
 //#define DEBUG_PRINT(m_p) print_line(m_p)
 //#define DEBUG_TIME(m_what) printf("MS: %s - %lli\n",m_what,OS::get_singleton()->get_ticks_usec());

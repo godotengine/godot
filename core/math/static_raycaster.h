@@ -31,7 +31,17 @@
 #ifndef STATIC_RAYCASTER_H
 #define STATIC_RAYCASTER_H
 
+#include <math.h>
+
+#include "core/math/vector3.h"
+#include "core/object/object.h"
 #include "core/object/ref_counted.h"
+#include "core/templates/set.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+
+template <class T>
+class Vector;
 
 #if !defined(__aligned)
 

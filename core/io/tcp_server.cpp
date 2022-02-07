@@ -30,6 +30,13 @@
 
 #include "tcp_server.h"
 
+#include "core/error/error_macros.h"
+#include "core/io/ip.h"
+#include "core/io/net_socket.h"
+#include "core/io/stream_peer_tcp.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+
 void TCPServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &TCPServer::listen, DEFVAL("*"));
 	ClassDB::bind_method(D_METHOD("is_connection_available"), &TCPServer::is_connection_available);

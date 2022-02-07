@@ -31,8 +31,15 @@
 #ifndef DTLS_SERVER_H
 #define DTLS_SERVER_H
 
+#include "core/crypto/crypto.h"
+#include "core/error/error_list.h"
 #include "core/io/net_socket.h"
 #include "core/io/packet_peer_dtls.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+
+class PacketPeerDTLS;
+class PacketPeerUDP;
 
 class DTLSServer : public RefCounted {
 	GDCLASS(DTLSServer, RefCounted);

@@ -31,10 +31,15 @@
 #ifndef VECTOR3_H
 #define VECTOR3_H
 
+#include <stdint.h>
+
+#include "core/error/error_macros.h"
+#include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
 #include "core/math/vector2.h"
 #include "core/math/vector3i.h"
 #include "core/string/ustring.h"
+#include "core/typedefs.h"
 
 struct Basis;
 

@@ -30,10 +30,17 @@
 
 #include "resource_uid.h"
 
+#include <string.h>
+
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto.h"
+#include "core/error/error_macros.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/string/char_utils.h"
+#include "core/variant/variant.h"
 
 static constexpr uint32_t char_count = ('z' - 'a');
 static constexpr uint32_t base = char_count + ('9' - '0');

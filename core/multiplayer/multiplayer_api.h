@@ -31,9 +31,19 @@
 #ifndef MULTIPLAYER_API_H
 #define MULTIPLAYER_API_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/multiplayer/multiplayer.h"
 #include "core/multiplayer/multiplayer_peer.h"
+#include "core/object/object.h"
 #include "core/object/ref_counted.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 
 class MultiplayerAPI;
 

@@ -31,7 +31,13 @@
 #ifndef VECTOR2_H
 #define VECTOR2_H
 
+#include <stdint.h>
+
+#include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
+#include "core/math/vector2i.h"
+#include "core/string/ustring.h"
+#include "core/typedefs.h"
 
 class String;
 struct Vector2i;

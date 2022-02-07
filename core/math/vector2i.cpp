@@ -30,6 +30,7 @@
 
 #include "vector2i.h"
 
+#include "core/math/math_funcs.h"
 #include "core/math/vector2.h"
 #include "core/string/ustring.h"
 

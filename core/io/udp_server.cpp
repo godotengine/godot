@@ -30,6 +30,14 @@
 
 #include "udp_server.h"
 
+#include "core/error/error_macros.h"
+#include "core/io/ip.h"
+#include "core/io/net_socket.h"
+#include "core/io/packet_peer_udp.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/variant/variant.h"
+
 void UDPServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &UDPServer::listen, DEFVAL("*"));
 	ClassDB::bind_method(D_METHOD("poll"), &UDPServer::poll);

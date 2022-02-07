@@ -32,7 +32,12 @@
 #define STREAM_PEER_SSL_H
 
 #include "core/crypto/crypto.h"
+#include "core/error/error_list.h"
 #include "core/io/stream_peer.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/variant/binder_common.h"
 
 class StreamPeerSSL : public StreamPeer {
 	GDCLASS(StreamPeerSSL, StreamPeer);

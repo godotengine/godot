@@ -31,10 +31,22 @@
 #ifndef HTTP_CLIENT_H
 #define HTTP_CLIENT_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/io/ip.h"
 #include "core/io/stream_peer.h"
 #include "core/io/stream_peer_tcp.h"
+#include "core/object/object.h"
 #include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/vector.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
+
+class StreamPeer;
 
 class HTTPClient : public RefCounted {
 	GDCLASS(HTTPClient, RefCounted);

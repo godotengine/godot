@@ -30,9 +30,9 @@
 
 #include "print_string.h"
 
+#include "core/error/error_macros.h"
 #include "core/os/os.h"
-
-#include <stdio.h>
+#include "core/typedefs.h"
 
 static PrintHandlerList *print_handler_list = nullptr;
 bool _print_line_enabled = true;

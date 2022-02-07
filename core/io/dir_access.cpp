@@ -34,6 +34,8 @@
 #include "core/io/file_access.h"
 #include "core/os/memory.h"
 #include "core/os/os.h"
+#include "core/templates/list.h"
+#include "core/templates/vector.h"
 
 String DirAccess::_get_root_path() const {
 	switch (_access_type) {

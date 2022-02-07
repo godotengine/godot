@@ -31,11 +31,16 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
+#include <stddef.h>
+#include <stdint.h>
+#include <new>
+
 #include "core/error/error_macros.h"
 #include "core/templates/safe_refcount.h"
+#include "core/typedefs.h"
 
-#include <stddef.h>
-#include <new>
+template <class T>
+class SafeNumeric;
 
 #ifndef PAD_ALIGN
 #define PAD_ALIGN 16 //must always be greater than this at much

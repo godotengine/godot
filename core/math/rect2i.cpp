@@ -31,6 +31,7 @@
 #include "rect2i.h"
 
 #include "core/math/rect2.h"
+#include "core/math/vector2.h"
 #include "core/string/ustring.h"
 
 Rect2i::operator String() const {

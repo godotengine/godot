@@ -30,9 +30,18 @@
 
 #include "input_event.h"
 
+#include <stddef.h>
+
+#include "core/error/error_macros.h"
 #include "core/input/input_map.h"
 #include "core/input/shortcut.h"
+#include "core/math/math_funcs.h"
+#include "core/math/transform_2d.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
 
 const int InputEvent::DEVICE_ID_TOUCH_MOUSE = -1;
 const int InputEvent::DEVICE_ID_INTERNAL = -2;

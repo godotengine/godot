@@ -31,11 +31,10 @@
 #include "script_language.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
-
-#include <stdint.h>
+#include "core/error/error_macros.h"
+#include "core/object/class_db.h"
 
 ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
 int ScriptServer::_language_count = 0;

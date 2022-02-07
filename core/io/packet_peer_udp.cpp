@@ -30,8 +30,12 @@
 
 #include "packet_peer_udp.h"
 
+#include "core/error/error_macros.h"
 #include "core/io/ip.h"
+#include "core/io/net_socket.h"
 #include "core/io/udp_server.h"
+#include "core/object/class_db.h"
+#include "core/typedefs.h"
 
 void PacketPeerUDP::set_blocking_mode(bool p_enable) {
 	blocking = p_enable;

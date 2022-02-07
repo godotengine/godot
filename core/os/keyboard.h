@@ -31,6 +31,8 @@
 #ifndef KEYBOARD_H
 #define KEYBOARD_H
 
+#include <stdint.h>
+
 #include "core/string/ustring.h"
 
 enum class Key {

@@ -31,9 +31,11 @@
 #ifndef ARRAY_H
 #define ARRAY_H
 
-#include "core/typedefs.h"
-
+#include <stdint.h>
 #include <climits>
+
+#include "core/error/error_list.h"
+#include "core/typedefs.h"
 
 class Variant;
 class ArrayPrivate;

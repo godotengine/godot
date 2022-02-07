@@ -31,10 +31,16 @@
 #include "callable.h"
 
 #include "callable_bind.h"
+#include "core/error/error_macros.h"
 #include "core/object/message_queue.h"
 #include "core/object/object.h"
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
+#include "core/os/memory.h"
+#include "core/templates/hashfuncs.h"
+#include "core/templates/list.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 
 void Callable::call_deferred(const Variant **p_arguments, int p_argcount) const {
 	MessageQueue::get_singleton()->push_callable(*this, p_arguments, p_argcount);

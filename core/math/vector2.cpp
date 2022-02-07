@@ -30,6 +30,7 @@
 
 #include "vector2.h"
 
+#include "core/error/error_macros.h"
 #include "core/math/vector2i.h"
 #include "core/string/ustring.h"
 

@@ -31,8 +31,13 @@
 #ifndef NODE_PATH_H
 #define NODE_PATH_H
 
+#include <stdint.h>
+
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
+#include "core/templates/safe_refcount.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
 
 class NodePath {
 	struct Data {

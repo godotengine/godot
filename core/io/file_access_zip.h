@@ -31,14 +31,19 @@
 #ifndef FILE_ACCESS_ZIP_H
 #define FILE_ACCESS_ZIP_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
+#include "core/io/file_access.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
 #ifdef MINIZIP_ENABLED
+
+#include <stdlib.h>
 
 #include "core/io/file_access_pack.h"
 #include "core/templates/map.h"
-
 #include "thirdparty/minizip/unzip.h"
-
-#include <stdlib.h>
 
 class ZipArchive : public PackSource {
 public:

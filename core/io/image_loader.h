@@ -31,13 +31,20 @@
 #ifndef IMAGE_LOADER_H
 #define IMAGE_LOADER_H
 
+#include "core/error/error_list.h"
 #include "core/io/file_access.h"
 #include "core/io/image.h"
+#include "core/io/resource.h"
 #include "core/io/resource_loader.h"
+#include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
 
 class ImageLoader;
+class FileAccess;
+class Image;
+template <class T>
+class Vector;
 
 class ImageFormatLoader {
 	friend class ImageLoader;

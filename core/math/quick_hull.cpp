@@ -30,7 +30,14 @@
 
 #include "quick_hull.h"
 
+#include "core/error/error_macros.h"
+#include "core/math/aabb.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/math/vector3.h"
 #include "core/templates/map.h"
+#include "core/templates/pair.h"
+#include "core/templates/set.h"
 
 uint32_t QuickHull::debug_stop_after = 0xFFFFFFFF;
 

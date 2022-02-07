@@ -31,10 +31,29 @@
 #ifndef INPUT_H
 #define INPUT_H
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "core/input/input_enums.h"
 #include "core/input/input_event.h"
+#include "core/io/resource.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/math/vector3.h"
 #include "core/object/object.h"
+#include "core/object/ref_counted.h"
 #include "core/os/keyboard.h"
 #include "core/os/thread_safe.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
+#include "core/variant/binder_common.h"
+
+struct Rect2;
 
 class Input : public Object {
 	GDCLASS(Input, Object);

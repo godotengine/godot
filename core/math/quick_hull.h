@@ -31,10 +31,18 @@
 #ifndef QUICK_HULL_H
 #define QUICK_HULL_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/math/aabb.h"
 #include "core/math/geometry_3d.h"
+#include "core/math/plane.h"
 #include "core/templates/list.h"
 #include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+
+struct Vector3;
 
 class QuickHull {
 public:

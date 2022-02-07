@@ -31,16 +31,19 @@
 #ifndef RANDOM_PCG_H
 #define RANDOM_PCG_H
 
-#include "core/math/math_defs.h"
-
-#include "thirdparty/misc/pcg.h"
-
 #include <math.h>
+#include <stdint.h>
+#include <cmath>
+
+#include "core/math/math_defs.h"
+#include "core/typedefs.h"
+#include "thirdparty/misc/pcg.h"
 
 #if defined(__GNUC__)
 #define CLZ32(x) __builtin_clz(x)
 #elif defined(_MSC_VER)
 #include <intrin.h>
+
 static int __bsr_clz32(uint32_t x) {
 	unsigned long index;
 	_BitScanReverse(&index, x);
@@ -55,6 +58,7 @@ static int __bsr_clz32(uint32_t x) {
 #define LDEXPF(s, e) __builtin_ldexpf(s, e)
 #else
 #include <math.h>
+
 #define LDEXP(s, e) ldexp(s, e)
 #define LDEXPF(s, e) ldexp(s, e)
 #endif

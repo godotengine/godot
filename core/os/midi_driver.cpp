@@ -31,7 +31,9 @@
 #include "midi_driver.h"
 
 #include "core/input/input.h"
-#include "core/os/os.h"
+#include "core/input/input_enums.h"
+#include "core/input/input_event.h"
+#include "core/object/ref_counted.h"
 
 uint8_t MIDIDriver::last_received_message = 0x00;
 MIDIDriver *MIDIDriver::singleton = nullptr;

@@ -30,9 +30,14 @@
 
 #include "undo_redo.h"
 
+#include "core/error/error_macros.h"
 #include "core/io/resource.h"
+#include "core/object/class_db.h"
+#include "core/object/method_bind.h"
+#include "core/os/memory.h"
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
+#include "core/typedefs.h"
 
 void UndoRedo::_discard_redo() {
 	if (current_action == actions.size() - 1) {

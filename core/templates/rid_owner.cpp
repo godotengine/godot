@@ -30,4 +30,6 @@
 
 #include "rid_owner.h"
 
+#include <cstdint>
+
 SafeNumeric<uint64_t> RID_AllocBase::base_id{ 1 };

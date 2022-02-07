@@ -30,7 +30,18 @@
 
 #include "triangle_mesh.h"
 
+#include <stdint.h>
+
+#include "core/error/error_macros.h"
+#include "core/math/basis.h"
+#include "core/math/face3.h"
+#include "core/math/math_defs.h"
+#include "core/math/plane.h"
+#include "core/math/transform_3d.h"
+#include "core/templates/map.h"
+#include "core/templates/pair.h"
 #include "core/templates/sort_array.h"
+#include "core/typedefs.h"
 
 int TriangleMesh::_create_bvh(BVH *p_bvh, BVH **p_bb, int p_from, int p_size, int p_depth, int &r_max_depth, int &r_max_alloc) {
 	if (p_depth > r_max_depth) {

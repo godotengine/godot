@@ -31,7 +31,12 @@
 #ifndef FILE_ACCESS_MEMORY_H
 #define FILE_ACCESS_MEMORY_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/io/file_access.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
 
 class FileAccessMemory : public FileAccess {
 	uint8_t *data = nullptr;

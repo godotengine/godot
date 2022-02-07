@@ -31,12 +31,22 @@
 #ifndef FILE_ACCESS_NETWORK_H
 #define FILE_ACCESS_NETWORK_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/io/file_access.h"
 #include "core/io/stream_peer_tcp.h"
+#include "core/object/ref_counted.h"
+#include "core/os/mutex.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/vector.h"
 
 class FileAccessNetwork;
+class StreamPeerTCP;
 
 class FileAccessNetworkClient {
 	struct BlockRequest {

@@ -30,11 +30,15 @@
 
 #include "object.h"
 
+#include "core/config/engine.h"
 #include "core/core_string_names.h"
 #include "core/io/resource.h"
 #include "core/object/class_db.h"
 #include "core/object/message_queue.h"
+#include "core/object/method_bind.h"
+#include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
+#include "core/os/memory.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"

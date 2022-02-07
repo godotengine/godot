@@ -36,6 +36,9 @@
 #include <mbedtls/sha1.h>
 #include <mbedtls/sha256.h>
 
+#include "core/os/memory.h"
+#include "core/templates/vector.h"
+
 // MD5
 CryptoCore::MD5Context::MD5Context() {
 	ctx = memalloc(sizeof(mbedtls_md5_context));

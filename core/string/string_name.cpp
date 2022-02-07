@@ -30,8 +30,13 @@
 
 #include "string_name.h"
 
+#include <stdint.h>
+
+#include "core/error/error_macros.h"
+#include "core/os/memory.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
+#include "core/templates/vector.h"
 
 StaticCString StaticCString::create(const char *p_ptr) {
 	StaticCString scs;

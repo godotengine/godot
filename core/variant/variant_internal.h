@@ -33,6 +33,8 @@
 
 #include "variant.h"
 
+#include "core/object/object.h"
+
 // For use when you want to access the internal pointer of a Variant directly.
 // Use with caution. You need to be sure that the type is correct.
 class VariantInternal {

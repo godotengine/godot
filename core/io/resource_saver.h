@@ -31,9 +31,19 @@
 #ifndef RESOURCE_SAVER_H
 #define RESOURCE_SAVER_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/io/resource.h"
+#include "core/io/resource_uid.h"
 #include "core/object/gdvirtual.gen.inc"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/vector.h"
 
 class ResourceFormatSaver : public RefCounted {
 	GDCLASS(ResourceFormatSaver, RefCounted);

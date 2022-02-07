@@ -30,8 +30,15 @@
 
 #include "geometry_2d.h"
 
+#include <stdint.h>
+#include <string.h>
+#include <memory>
+
+#include "core/math/vector3i.h"
+#include "core/templates/list.h"
 #include "thirdparty/misc/clipper.hpp"
 #include "thirdparty/misc/polypartition.h"
+
 #define STB_RECT_PACK_IMPLEMENTATION
 #include "thirdparty/misc/stb_rect_pack.h"
 

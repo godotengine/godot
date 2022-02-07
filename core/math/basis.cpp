@@ -30,8 +30,10 @@
 
 #include "basis.h"
 
+#include <cmath>
+
+#include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
-#include "core/string/print_string.h"
 
 #define cofac(row1, col1, row2, col2) \
 	(elements[row1][col1] * elements[row2][col2] - elements[row1][col2] * elements[row2][col1])

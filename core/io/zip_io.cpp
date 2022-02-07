@@ -30,6 +30,14 @@
 
 #include "zip_io.h"
 
+#include <stdint.h>
+#include <string.h>
+
+#include "core/error/error_list.h"
+#include "core/io/file_access.h"
+#include "core/os/memory.h"
+#include "core/string/ustring.h"
+
 void *zipio_open(void *data, const char *p_fname, int mode) {
 	FileAccess *&f = *(FileAccess **)data;
 

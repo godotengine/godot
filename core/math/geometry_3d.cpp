@@ -30,10 +30,13 @@
 
 #include "geometry_3d.h"
 
-#include "core/string/print_string.h"
+#include <initializer_list>
 
-#include "thirdparty/misc/clipper.hpp"
-#include "thirdparty/misc/polypartition.h"
+#include "core/math/aabb.h"
+#include "core/math/face3.h"
+#include "core/math/vector3i.h"
+#include "core/os/memory.h"
+#include "core/templates/map.h"
 
 void Geometry3D::MeshData::optimize_vertices() {
 	Map<int, int> vtx_remap;

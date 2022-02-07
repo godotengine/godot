@@ -31,11 +31,31 @@
 #ifndef RESOURCE_LOADER_H
 #define RESOURCE_LOADER_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/io/resource.h"
+#include "core/io/resource_uid.h"
 #include "core/object/gdvirtual.gen.inc"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
+#include "core/os/mutex.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/self_list.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
+
+class Semaphore;
 
 class ResourceFormatLoader : public RefCounted {
 	GDCLASS(ResourceFormatLoader, RefCounted);

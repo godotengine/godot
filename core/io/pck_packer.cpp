@@ -30,11 +30,19 @@
 
 #include "pck_packer.h"
 
+#include <stdio.h>
+
 #include "core/crypto/crypto_core.h"
+#include "core/error/error_macros.h"
 #include "core/io/file_access.h"
 #include "core/io/file_access_encrypted.h"
 #include "core/io/file_access_pack.h" // PACK_HEADER_MAGIC, PACK_FORMAT_VERSION
-#include "core/version.h"
+#include "core/math/math_funcs.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/string/char_utils.h"
+#include "core/typedefs.h"
+#include "core/version_generated.gen.h"
 
 static int _get_pad(int p_alignment, int p_n) {
 	int rest = p_n % p_alignment;

@@ -31,7 +31,13 @@
 #ifndef PCK_PACKER_H
 #define PCK_PACKER_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
+#include "core/object/object.h"
 #include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
 
 class FileAccess;
 

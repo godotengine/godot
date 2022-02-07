@@ -30,6 +30,13 @@
 
 #include "variant_construct.h"
 
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/templates/list.h"
+#include "core/templates/local_vector.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
+
 struct VariantConstructData {
 	void (*construct)(Variant &r_base, const Variant **p_args, Callable::CallError &r_error);
 	Variant::ValidatedConstructor validated_construct;

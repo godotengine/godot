@@ -31,11 +31,25 @@
 #ifndef VARIANT_OP_H
 #define VARIANT_OP_H
 
-#include "variant.h"
+#include <stdint.h>
 
 #include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/error/error_macros.h"
+#include "core/math/vector2i.h"
+#include "core/math/vector3i.h"
 #include "core/object/class_db.h"
+#include "core/object/object.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/method_ptrcall.h"
+#include "core/variant/type_info.h"
+#include "core/variant/variant_internal.h"
+#include "variant.h"
 
 template <class R, class A, class B>
 class OperatorEvaluatorAdd {

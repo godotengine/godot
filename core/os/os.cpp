@@ -30,14 +30,20 @@
 
 #include "os.h"
 
+#include <stdarg.h>
+#include <stdio.h>
+
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
-#include "core/input/input.h"
+#include "core/error/error_macros.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/io/resource.h"
+#include "core/object/object.h"
+#include "core/os/memory.h"
 #include "core/os/midi_driver.h"
+#include "core/string/print_string.h"
 #include "core/version_generated.gen.h"
-
-#include <stdarg.h>
 
 OS *OS::singleton = nullptr;
 uint64_t OS::target_ticks = 0;

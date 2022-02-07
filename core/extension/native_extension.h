@@ -31,9 +31,19 @@
 #ifndef NATIVE_EXTENSION_H
 #define NATIVE_EXTENSION_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/extension/gdnative_interface.h"
+#include "core/io/resource.h"
 #include "core/io/resource_loader.h"
+#include "core/object/object.h"
 #include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/variant/binder_common.h"
 
 class NativeExtension : public Resource {
 	GDCLASS(NativeExtension, Resource)

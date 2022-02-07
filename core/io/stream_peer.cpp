@@ -30,7 +30,12 @@
 
 #include "stream_peer.h"
 
+#include <string.h>
+
+#include "core/error/error_macros.h"
 #include "core/io/marshalls.h"
+#include "core/object/class_db.h"
+#include "core/typedefs.h"
 
 Error StreamPeer::_put_data(const Vector<uint8_t> &p_data) {
 	int len = p_data.size();

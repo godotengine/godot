@@ -29,7 +29,11 @@
 /*************************************************************************/
 
 #include "shortcut.h"
-#include "core/os/keyboard.h"
+
+#include "core/error/error_macros.h"
+#include "core/input/input_event.h"
+#include "core/object/class_db.h"
+#include "core/variant/variant.h"
 
 void Shortcut::set_events(const Array &p_events) {
 	for (int i = 0; i < p_events.size(); i++) {

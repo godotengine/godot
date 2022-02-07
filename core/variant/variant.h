@@ -31,12 +31,15 @@
 #ifndef VARIANT_H
 #define VARIANT_H
 
+#include <stdint.h>
+
 #include "core/input/input_enums.h"
 #include "core/io/ip_address.h"
 #include "core/math/aabb.h"
 #include "core/math/basis.h"
 #include "core/math/color.h"
 #include "core/math/face3.h"
+#include "core/math/math_defs.h"
 #include "core/math/plane.h"
 #include "core/math/quaternion.h"
 #include "core/math/rect2.h"
@@ -47,19 +50,26 @@
 #include "core/math/vector2i.h"
 #include "core/math/vector3.h"
 #include "core/math/vector3i.h"
+
 #include "core/object/object_id.h"
 #include "core/os/keyboard.h"
+#include "core/os/memory.h"
 #include "core/string/node_path.h"
+#include "core/string/string_name.h"
 #include "core/string/ustring.h"
+#include "core/templates/list.h"
 #include "core/templates/rid.h"
+#include "core/templates/safe_refcount.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
 #include "core/variant/array.h"
 #include "core/variant/callable.h"
 #include "core/variant/dictionary.h"
 
 class Object;
-
 struct PropertyInfo;
 struct MethodInfo;
+struct Face3;
 
 typedef Vector<uint8_t> PackedByteArray;
 typedef Vector<int32_t> PackedInt32Array;

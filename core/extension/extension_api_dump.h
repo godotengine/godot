@@ -32,6 +32,8 @@
 #define API_DUMP_H
 
 #include "core/extension/native_extension.h"
+#include "core/string/ustring.h"
+#include "core/variant/dictionary.h"
 
 #ifdef TOOLS_ENABLED
 

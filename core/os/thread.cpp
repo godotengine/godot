@@ -32,11 +32,11 @@
 
 #include "thread.h"
 
+#include "core/error/error_macros.h"
 #include "core/object/script_language.h"
+#include "core/string/ustring.h"
 
 #if !defined(NO_THREADS)
-
-#include "core/templates/safe_refcount.h"
 
 Error (*Thread::set_name_func)(const String &) = nullptr;
 void (*Thread::set_priority_func)(Thread::Priority) = nullptr;

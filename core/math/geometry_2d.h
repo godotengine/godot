@@ -31,7 +31,9 @@
 #ifndef GEOMETRY_2D_H
 #define GEOMETRY_2D_H
 
+#include "core/error/error_macros.h"
 #include "core/math/delaunay_2d.h"
+#include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
 #include "core/math/triangulate.h"
 #include "core/math/vector2.h"
@@ -39,6 +41,9 @@
 #include "core/math/vector3.h"
 #include "core/math/vector3i.h"
 #include "core/templates/vector.h"
+#include "core/typedefs.h"
+
+struct Vector3i;
 
 class Geometry2D {
 public:

@@ -28,17 +28,56 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include <limits.h>
+#include <math.h>
+#include <stdint.h>
+#include <string.h>
+
 #include "variant.h"
 
-#include "core/core_string_names.h"
-#include "core/crypto/crypto_core.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
 #include "core/io/compression.h"
 #include "core/io/marshalls.h"
+#include "core/math/aabb.h"
+#include "core/math/basis.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/math/plane.h"
+#include "core/math/quaternion.h"
+#include "core/math/rect2.h"
+#include "core/math/rect2i.h"
+#include "core/math/transform_2d.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/math/vector3.h"
+#include "core/math/vector3i.h"
 #include "core/object/class_db.h"
-#include "core/os/os.h"
+#include "core/object/method_bind.h"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/os/memory.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/hashfuncs.h"
+#include "core/templates/list.h"
 #include "core/templates/local_vector.h"
+#include "core/templates/map.h"
 #include "core/templates/oa_hash_map.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/callable.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/method_ptrcall.h"
+#include "core/variant/type_info.h"
+#include "core/variant/variant_internal.h"
 
 typedef void (*VariantFunc)(Variant &r_ret, Variant &p_self, const Variant **p_args);
 typedef void (*VariantConstructFunc)(Variant &r_ret, const Variant **p_args);

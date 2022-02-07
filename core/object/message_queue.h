@@ -31,8 +31,17 @@
 #ifndef MESSAGE_QUEUE_H
 #define MESSAGE_QUEUE_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/object/class_db.h"
+#include "core/object/object.h"
 #include "core/os/thread_safe.h"
+#include "core/string/string_name.h"
+#include "core/variant/callable.h"
+#include "core/variant/variant.h"
+
+class ObjectID;
 
 class MessageQueue {
 	_THREAD_SAFE_CLASS_

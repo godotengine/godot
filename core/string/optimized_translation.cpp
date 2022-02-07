@@ -30,6 +30,13 @@
 
 #include "optimized_translation.h"
 
+#include <string.h>
+
+#include "core/error/error_macros.h"
+#include "core/math/math_funcs.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/templates/map.h"
 #include "core/templates/pair.h"
 
 extern "C" {

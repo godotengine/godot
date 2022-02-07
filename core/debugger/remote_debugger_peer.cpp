@@ -31,8 +31,15 @@
 #include "remote_debugger_peer.h"
 
 #include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
+#include "core/io/ip.h"
+#include "core/io/ip_address.h"
 #include "core/io/marshalls.h"
+#include "core/io/net_socket.h"
+#include "core/os/memory.h"
 #include "core/os/os.h"
+#include "core/string/print_string.h"
+#include "core/variant/variant.h"
 
 bool RemoteDebuggerPeerTCP::is_peer_connected() {
 	return connected;

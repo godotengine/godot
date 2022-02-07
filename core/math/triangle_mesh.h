@@ -31,8 +31,15 @@
 #ifndef TRIANGLE_MESH_H
 #define TRIANGLE_MESH_H
 
+#include "core/math/aabb.h"
 #include "core/math/face3.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
 #include "core/object/ref_counted.h"
+#include "core/templates/vector.h"
+
+struct Face3;
+struct Plane;
 
 class TriangleMesh : public RefCounted {
 	GDCLASS(TriangleMesh, RefCounted);

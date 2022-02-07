@@ -31,12 +31,19 @@
 #ifndef FILE_ACCESS_PACK_H
 #define FILE_ACCESS_PACK_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/os/memory.h"
 #include "core/string/print_string.h"
+#include "core/string/ustring.h"
 #include "core/templates/list.h"
 #include "core/templates/map.h"
 #include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
 
 // Godot's packed file magic header ("GDPC" in ASCII).
 #define PACK_HEADER_MAGIC 0x43504447

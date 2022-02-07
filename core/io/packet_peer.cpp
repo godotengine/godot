@@ -31,7 +31,10 @@
 #include "packet_peer.h"
 
 #include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
 #include "core/io/marshalls.h"
+#include "core/object/class_db.h"
+#include "core/typedefs.h"
 
 /* helpers / binders */
 

@@ -31,18 +31,34 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
+#include <stdint.h>
+#include <mutex>
+
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
 #include "core/extension/gdnative_interface.h"
 #include "core/object/object_id.h"
 #include "core/os/rw_lock.h"
 #include "core/os/spin_lock.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
 #include "core/templates/map.h"
 #include "core/templates/safe_refcount.h"
 #include "core/templates/set.h"
+#include "core/templates/vector.h"
 #include "core/templates/vmap.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/callable.h"
 #include "core/variant/callable_bind.h"
+#include "core/variant/dictionary.h"
 #include "core/variant/variant.h"
+
+class ClassDB;
+class Object;
 
 #define VARIANT_ARG_LIST const Variant &p_arg1 = Variant(), const Variant &p_arg2 = Variant(), const Variant &p_arg3 = Variant(), const Variant &p_arg4 = Variant(), const Variant &p_arg5 = Variant(), const Variant &p_arg6 = Variant(), const Variant &p_arg7 = Variant(), const Variant &p_arg8 = Variant()
 #define VARIANT_ARG_PASS p_arg1, p_arg2, p_arg3, p_arg4, p_arg5, p_arg6, p_arg7, p_arg8

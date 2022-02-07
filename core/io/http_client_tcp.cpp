@@ -32,7 +32,17 @@
 
 #include "http_client_tcp.h"
 
+#include <string.h>
+
+#include "core/error/error_macros.h"
+#include "core/io/http_client.h"
+#include "core/io/ip_address.h"
 #include "core/io/stream_peer_ssl.h"
+#include "core/object/object.h"
+#include "core/os/memory.h"
+#include "core/os/os.h"
+#include "core/string/char_utils.h"
+#include "core/typedefs.h"
 #include "core/version.h"
 
 HTTPClient *HTTPClientTCP::_create_func() {

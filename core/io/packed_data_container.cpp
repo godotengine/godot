@@ -30,8 +30,17 @@
 
 #include "packed_data_container.h"
 
-#include "core/core_string_names.h"
+#include <string.h>
+
+#include "core/error/error_macros.h"
 #include "core/io/marshalls.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/dictionary.h"
 
 Variant PackedDataContainer::getvar(const Variant &p_key, bool *r_valid) const {
 	bool err = false;

@@ -30,10 +30,38 @@
 
 #include "variant_parser.h"
 
-#include "core/input/input_event.h"
+#include <stdint.h>
+#include <cmath>
+
+#include "core/error/error_macros.h"
+#include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
-#include "core/os/keyboard.h"
+#include "core/math/aabb.h"
+#include "core/math/basis.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/plane.h"
+#include "core/math/quaternion.h"
+#include "core/math/rect2.h"
+#include "core/math/rect2i.h"
+#include "core/math/transform_2d.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/math/vector3.h"
+#include "core/math/vector3i.h"
+#include "core/object/class_db.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/char_utils.h"
+#include "core/string/node_path.h"
 #include "core/string/string_buffer.h"
+#include "core/string/string_name.h"
+#include "core/templates/list.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/dictionary.h"
 
 char32_t VariantParser::StreamFile::get_char() {
 	return f->get_8();

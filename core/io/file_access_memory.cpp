@@ -30,9 +30,13 @@
 
 #include "file_access_memory.h"
 
+#include <string.h>
+
 #include "core/config/project_settings.h"
-#include "core/io/dir_access.h"
+#include "core/error/error_macros.h"
+#include "core/os/memory.h"
 #include "core/templates/map.h"
+#include "core/typedefs.h"
 
 static Map<String, Vector<uint8_t>> *files = nullptr;
 

@@ -31,7 +31,16 @@
 #ifndef OPTIMIZED_TRANSLATION_H
 #define OPTIMIZED_TRANSLATION_H
 
+#include <stdint.h>
+
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
 #include "core/string/translation.h"
+#include "core/templates/list.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
 
 class OptimizedTranslation : public Translation {
 	GDCLASS(OptimizedTranslation, Translation);

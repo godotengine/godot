@@ -31,7 +31,9 @@
 #ifndef CORE_STRING_NAMES_H
 #define CORE_STRING_NAMES_H
 
+#include "core/os/memory.h"
 #include "core/string/string_name.h"
+#include "core/typedefs.h"
 
 class CoreStringNames {
 	friend void register_core_types();

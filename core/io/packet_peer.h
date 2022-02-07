@@ -31,13 +31,20 @@
 #ifndef PACKET_PEER_H
 #define PACKET_PEER_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/io/stream_peer.h"
 #include "core/object/class_db.h"
-#include "core/templates/ring_buffer.h"
-
 #include "core/object/gdvirtual.gen.inc"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
+#include "core/string/string_name.h"
+#include "core/templates/ring_buffer.h"
+#include "core/templates/vector.h"
 #include "core/variant/native_ptr.h"
+#include "core/variant/variant.h"
 
 class PacketPeer : public RefCounted {
 	GDCLASS(PacketPeer, RefCounted);

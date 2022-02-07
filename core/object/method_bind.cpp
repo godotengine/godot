@@ -30,9 +30,9 @@
 
 // object.h needs to be the first include *before* method_bind.h
 // FIXME: Find out why and fix potential cyclical dependencies.
-#include "core/object/object.h"
-
 #include "method_bind.h"
+#include "core/object/object.h"
+#include "core/templates/hashfuncs.h"
 
 uint32_t MethodBind::get_hash() const {
 	uint32_t hash = hash_djb2_one_32(has_return() ? 1 : 0);

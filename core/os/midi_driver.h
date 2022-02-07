@@ -31,6 +31,9 @@
 #ifndef MIDI_DRIVER_H
 #define MIDI_DRIVER_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
 

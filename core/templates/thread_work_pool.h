@@ -31,11 +31,14 @@
 #ifndef THREAD_WORK_POOL_H
 #define THREAD_WORK_POOL_H
 
+#include <stdint.h>
+#include <atomic>
+
+#include "core/error/error_macros.h"
 #include "core/os/memory.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
-
-#include <atomic>
+#include "core/typedefs.h"
 
 class ThreadWorkPool {
 	std::atomic<uint32_t> index;

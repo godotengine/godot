@@ -31,8 +31,13 @@
 #ifndef RANDOM_NUMBER_GENERATOR_H
 #define RANDOM_NUMBER_GENERATOR_H
 
+#include <stdint.h>
+
+#include "core/math/math_defs.h"
 #include "core/math/random_pcg.h"
+#include "core/object/object.h"
 #include "core/object/ref_counted.h"
+#include "core/typedefs.h"
 
 class RandomNumberGenerator : public RefCounted {
 	GDCLASS(RandomNumberGenerator, RefCounted);

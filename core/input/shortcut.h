@@ -33,6 +33,13 @@
 
 #include "core/input/input_event.h"
 #include "core/io/resource.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/variant/array.h"
+
+class InputEvent;
 
 class Shortcut : public Resource {
 	GDCLASS(Shortcut, Resource);

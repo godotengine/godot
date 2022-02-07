@@ -31,6 +31,7 @@
 #ifndef MATH_FIELDWISE_H
 #define MATH_FIELDWISE_H
 
+#include "core/string/ustring.h"
 #ifdef TOOLS_ENABLED
 
 #include "core/variant/variant.h"

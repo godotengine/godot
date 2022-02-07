@@ -30,10 +30,17 @@
 
 #include "translation.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
 #include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
+#include "core/os/main_loop.h"
 #include "core/os/os.h"
+#include "core/string/char_utils.h"
 #include "core/string/locales.h"
+#include "core/templates/pair.h"
+#include "core/variant/variant.h"
 
 #ifdef TOOLS_ENABLED
 #include "main/main.h"

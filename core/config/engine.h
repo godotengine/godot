@@ -31,10 +31,19 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
+#include <stdint.h>
+
 #include "core/os/main_loop.h"
+#include "core/string/string_name.h"
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
+#include "core/templates/map.h"
 #include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/dictionary.h"
+
+class Object;
 
 class Engine {
 public:

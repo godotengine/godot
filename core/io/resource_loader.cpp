@@ -31,11 +31,19 @@
 #include "resource_loader.h"
 
 #include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_importer.h"
+#include "core/object/class_db.h"
+#include "core/object/script_language.h"
+#include "core/os/memory.h"
 #include "core/os/os.h"
+#include "core/os/rw_lock.h"
+#include "core/os/semaphore.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
+#include "core/templates/pair.h"
+#include "core/variant/array.h"
 #include "core/variant/variant_parser.h"
 
 #ifdef DEBUG_LOAD_THREADED

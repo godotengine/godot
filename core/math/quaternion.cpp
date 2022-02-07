@@ -31,7 +31,6 @@
 #include "quaternion.h"
 
 #include "core/math/basis.h"
-#include "core/string/print_string.h"
 
 real_t Quaternion::angle_to(const Quaternion &p_to) const {
 	real_t d = dot(p_to);

@@ -31,8 +31,11 @@
 #ifndef BASIS_H
 #define BASIS_H
 
+#include "core/math/math_defs.h"
 #include "core/math/quaternion.h"
 #include "core/math/vector3.h"
+#include "core/string/ustring.h"
+#include "core/typedefs.h"
 
 struct _NO_DISCARD_ Basis {
 	Vector3 elements[3] = {

@@ -30,7 +30,13 @@
 
 #include "hashing_context.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "core/crypto/crypto_core.h"
+#include "core/error/error_macros.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
 
 Error HashingContext::start(HashType p_type) {
 	ERR_FAIL_COND_V(ctx != nullptr, ERR_ALREADY_IN_USE);

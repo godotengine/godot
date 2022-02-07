@@ -30,17 +30,22 @@
 
 #include "image.h"
 
+#include <string.h>
+#include <cmath>
+
 #include "core/error/error_list.h"
 #include "core/error/error_macros.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
-#include "core/string/print_string.h"
+#include "core/math/rect2i.h"
+#include "core/math/vector3.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/string/char_utils.h"
 #include "core/templates/hash_map.h"
 #include "core/variant/dictionary.h"
-
-#include <stdio.h>
-#include <cmath>
+#include "core/variant/variant.h"
 
 const char *Image::format_names[Image::FORMAT_MAX] = {
 	"Lum8", //luminance

@@ -30,6 +30,9 @@
 
 #include "random_number_generator.h"
 
+#include "core/object/class_db.h"
+#include "core/variant/variant.h"
+
 void RandomNumberGenerator::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_seed", "seed"), &RandomNumberGenerator::set_seed);
 	ClassDB::bind_method(D_METHOD("get_seed"), &RandomNumberGenerator::get_seed);

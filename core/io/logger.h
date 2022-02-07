@@ -31,11 +31,14 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
+#include <stdarg.h>
+
 #include "core/io/file_access.h"
 #include "core/string/ustring.h"
 #include "core/templates/vector.h"
+#include "core/typedefs.h"
 
-#include <stdarg.h>
+class FileAccess;
 
 class Logger {
 protected:

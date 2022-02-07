@@ -30,10 +30,15 @@
 
 #include "multiplayer_api.h"
 
-#include "core/debugger/engine_debugger.h"
-#include "core/io/marshalls.h"
-
 #include <stdint.h>
+#include <string.h>
+
+#include "core/debugger/engine_debugger.h"
+#include "core/error/error_macros.h"
+#include "core/io/marshalls.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/variant/array.h"
 
 #ifdef DEBUG_ENABLED
 #include "core/os/os.h"

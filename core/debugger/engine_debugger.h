@@ -31,10 +31,15 @@
 #ifndef ENGINE_DEBUGGER_H
 #define ENGINE_DEBUGGER_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
 #include "core/templates/map.h"
 #include "core/templates/vector.h"
+#include "core/typedefs.h"
 #include "core/variant/array.h"
 #include "core/variant/variant.h"
 

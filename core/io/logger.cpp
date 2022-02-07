@@ -30,11 +30,16 @@
 
 #include "logger.h"
 
-#include "core/config/project_settings.h"
+#include <stdint.h>
+#include <stdio.h>
+
+#include "core/error/error_macros.h"
 #include "core/io/dir_access.h"
-#include "core/os/os.h"
+#include "core/io/file_access.h"
+#include "core/os/memory.h"
 #include "core/os/time.h"
 #include "core/string/print_string.h"
+#include "core/templates/set.h"
 
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)
 #define sprintf sprintf_s

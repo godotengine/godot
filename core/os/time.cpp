@@ -30,7 +30,14 @@
 
 #include "time.h"
 
+#include "core/error/error_macros.h"
+#include "core/math/math_funcs.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
 #include "core/os/os.h"
+#include "core/templates/vector.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/variant.h"
 
 #define UNIX_EPOCH_YEAR_AD 1970 // 1970
 #define SECONDS_PER_DAY (24 * 60 * 60) // 86400

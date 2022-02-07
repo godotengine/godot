@@ -31,14 +31,17 @@
 #ifndef MATH_FUNCS_H
 #define MATH_FUNCS_H
 
+#include <float.h>
+#include <math.h>
+#include <stdint.h>
+#include <cmath>
+
 #include "core/math/math_defs.h"
 #include "core/math/random_pcg.h"
 #include "core/typedefs.h"
-
 #include "thirdparty/misc/pcg.h"
 
-#include <float.h>
-#include <math.h>
+class RandomPCG;
 
 class Math {
 	static RandomPCG default_rand;

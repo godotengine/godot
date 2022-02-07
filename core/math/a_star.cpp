@@ -30,8 +30,14 @@
 
 #include "a_star.h"
 
+#include <initializer_list>
+
+#include "core/error/error_macros.h"
 #include "core/math/geometry_3d.h"
-#include "core/object/script_language.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/templates/sort_array.h"
+#include "core/variant/variant.h"
 
 int AStar::get_available_point_id() const {
 	if (points.has(last_free_id)) {

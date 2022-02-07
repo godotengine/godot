@@ -30,6 +30,9 @@
 
 #include "random_pcg.h"
 
+#include <math.h>
+#include <stdlib.h>
+
 #include "core/os/os.h"
 
 RandomPCG::RandomPCG(uint64_t p_seed, uint64_t p_inc) :

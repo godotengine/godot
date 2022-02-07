@@ -30,7 +30,10 @@
 
 #include "translation_po.h"
 
-#include "core/io/file_access.h"
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
+#include "core/object/class_db.h"
+#include "core/variant/variant.h"
 
 #ifdef DEBUG_TRANSLATION_PO
 void TranslationPO::print_translation_map() {

@@ -30,6 +30,8 @@
 
 #include "dynamic_bvh.h"
 
+#include <math.h>
+
 void DynamicBVH::_delete_node(Node *p_node) {
 	node_allocator.free(p_node);
 }

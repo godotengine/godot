@@ -32,11 +32,17 @@
 #define USTRING_GODOT_H
 // Note: Renamed to avoid conflict with ICU header with the same name.
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/string/char_utils.h"
 #include "core/templates/cowdata.h"
 #include "core/templates/vector.h"
 #include "core/typedefs.h"
 #include "core/variant/array.h"
+
+class Array;
+class Variant;
 
 /*************************************************************************/
 /*  CharProxy                                                            */

@@ -31,8 +31,15 @@
 #ifndef JSON_H
 #define JSON_H
 
+#include "core/error/error_list.h"
+#include "core/object/object.h"
 #include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/set.h"
 #include "core/variant/variant.h"
+
+class Array;
+class Dictionary;
 
 class JSON : public RefCounted {
 	GDCLASS(JSON, RefCounted);

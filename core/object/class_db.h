@@ -31,9 +31,24 @@
 #ifndef CLASS_DB_H
 #define CLASS_DB_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
+#include "core/extension/gdnative_interface.h"
 #include "core/object/method_bind.h"
 #include "core/object/object.h"
+#include "core/os/memory.h"
 #include "core/string/print_string.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
 
 /** To bind more then 6 parameters include this:
  *
@@ -442,5 +457,7 @@ _FORCE_INLINE_ Vector<Error> errarray(P... p_args) {
 	}
 
 #include "core/disabled_classes.gen.h"
+
+class RWLock;
 
 #endif // CLASS_DB_H

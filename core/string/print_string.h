@@ -31,6 +31,7 @@
 #ifndef PRINT_STRING_H
 #define PRINT_STRING_H
 
+#include "core/string/ustring.h"
 #include "core/variant/variant.h"
 
 extern void (*_print_func)(String);

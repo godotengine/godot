@@ -30,6 +30,8 @@
 
 #include "debugger_marshalls.h"
 
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
 #include "core/io/marshalls.h"
 
 #define CHECK_SIZE(arr, expected, what) ERR_FAIL_COND_V_MSG((uint32_t)arr.size() < (uint32_t)(expected), false, String("Malformed ") + what + " message from script debugger, message too short. Expected size: " + itos(expected) + ", actual size: " + itos(arr.size()))

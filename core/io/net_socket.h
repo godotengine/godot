@@ -31,8 +31,13 @@
 #ifndef NET_SOCKET_H
 #define NET_SOCKET_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/io/ip.h"
+#include "core/io/ip_address.h"
 #include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
 
 class NetSocket : public RefCounted {
 protected:

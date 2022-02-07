@@ -32,6 +32,8 @@
 
 #include <string.h>
 
+#include "core/os/memory.h"
+
 StringBuilder &StringBuilder::append(const String &p_string) {
 	if (p_string.is_empty()) {
 		return *this;

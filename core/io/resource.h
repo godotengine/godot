@@ -31,13 +31,26 @@
 #ifndef RESOURCE_H
 #define RESOURCE_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/io/resource_uid.h"
 #include "core/object/class_db.h"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
 #include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/rid.h"
 #include "core/templates/safe_refcount.h"
 #include "core/templates/self_list.h"
+#include "core/templates/set.h"
+#include "core/typedefs.h"
 
 class Node;
+class RWLock;
 
 #define RES_BASE_EXTENSION(m_ext)                                                                                   \
 public:                                                                                                             \

@@ -30,13 +30,15 @@
 
 #include "compression.h"
 
-#include "core/config/project_settings.h"
-#include "core/io/zip_io.h"
-
-#include "thirdparty/misc/fastlz.h"
-
+#include <string.h>
 #include <zlib.h>
 #include <zstd.h>
+
+#include "core/error/error_macros.h"
+#include "core/io/zip_io.h"
+#include "core/templates/vector.h"
+#include "thirdparty/misc/fastlz.h"
+#include "zconf.h"
 
 int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, Mode p_mode) {
 	switch (p_mode) {

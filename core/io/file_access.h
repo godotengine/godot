@@ -31,9 +31,13 @@
 #ifndef FILE_ACCESS_H
 #define FILE_ACCESS_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/math/math_defs.h"
 #include "core/os/memory.h"
 #include "core/string/ustring.h"
+#include "core/templates/vector.h"
 #include "core/typedefs.h"
 
 /**
