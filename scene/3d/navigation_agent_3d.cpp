@@ -30,6 +30,17 @@
 
 #include "navigation_agent_3d.h"
 
+#include "core/config/engine.h"
+#include "core/error/error_macros.h"
+#include "core/math/geometry_3d.h"
+#include "core/math/transform_3d.h"
+#include "core/object/class_db.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
+#include "scene/3d/node_3d.h"
+#include "scene/resources/world_3d.h"
 #include "servers/navigation_server_3d.h"
 
 void NavigationAgent3D::_bind_methods() {

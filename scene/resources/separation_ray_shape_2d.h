@@ -31,7 +31,13 @@
 #ifndef SEPARATION_RAY_SHAPE_2D_H
 #define SEPARATION_RAY_SHAPE_2D_H
 
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/rect2.h"
+#include "core/object/object.h"
 #include "scene/resources/shape_2d.h"
+
+class RID;
 
 class SeparationRayShape2D : public Shape2D {
 	GDCLASS(SeparationRayShape2D, Shape2D);

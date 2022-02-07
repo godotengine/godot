@@ -30,10 +30,32 @@
 
 #include "lightmap_gi.h"
 
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
 #include "core/io/config_file.h"
+#include "core/io/file_access.h"
+#include "core/io/image.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/math/basis.h"
 #include "core/math/delaunay_3d.h"
+#include "core/math/face3.h"
+#include "core/math/geometry_3d.h"
+#include "core/math/math_funcs.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/math/vector3.h"
+#include "core/object/class_db.h"
+#include "core/variant/typed_array.h"
 #include "lightmap_probe.h"
+#include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/node_3d.h"
+#include "scene/main/node.h"
+#include "scene/resources/environment.h"
+#include "scene/resources/texture.h"
+#include "scene/resources/world_3d.h"
+#include "servers/rendering_server.h"
 
 void LightmapGIData::add_user(const NodePath &p_path, const Rect2 &p_uv_scale, int p_slice_index, int32_t p_sub_instance) {
 	User user;

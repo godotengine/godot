@@ -30,18 +30,35 @@
 
 #include "tree.h"
 
-#include "core/config/project_settings.h"
-#include "core/input/input.h"
-#include "core/math/math_funcs.h"
-#include "core/os/keyboard.h"
-#include "core/os/os.h"
-#include "core/string/print_string.h"
-#include "core/string/translation.h"
-#include "scene/main/window.h"
+#include <limits.h>
 
 #include "box_container.h"
-
-#include <limits.h>
+#include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
+#include "core/input/input.h"
+#include "core/input/input_event.h"
+#include "core/math/math_funcs.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/object/method_bind.h"
+#include "core/os/keyboard.h"
+#include "core/os/memory.h"
+#include "core/os/os.h"
+#include "core/string/translation.h"
+#include "core/templates/list.h"
+#include "core/templates/rid.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/popup.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/gui/scroll_bar.h"
+#include "scene/gui/slider.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/main/timer.h"
+#include "scene/main/viewport.h"
+#include "servers/display_server.h"
+#include "servers/rendering_server.h"
+#include "servers/text_server.h"
 
 Size2 TreeItem::Cell::get_icon_size() const {
 	if (icon.is_null()) {

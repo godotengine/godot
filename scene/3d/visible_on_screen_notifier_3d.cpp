@@ -30,7 +30,15 @@
 
 #include "visible_on_screen_notifier_3d.h"
 
+#include "core/config/engine.h"
+#include "core/math/face3.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/templates/rid.h"
+#include "core/variant/variant.h"
+#include "scene/main/node.h"
 #include "scene/scene_string_names.h"
+#include "servers/rendering_server.h"
 
 void VisibleOnScreenNotifier3D::_visibility_enter() {
 	if (!is_inside_tree() || Engine::get_singleton()->is_editor_hint()) {

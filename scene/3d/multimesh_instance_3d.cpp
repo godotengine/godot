@@ -30,6 +30,12 @@
 
 #include "multimesh_instance_3d.h"
 
+#include "core/math/face3.h"
+#include "core/object/class_db.h"
+#include "core/templates/rid.h"
+#include "core/variant/variant.h"
+#include "scene/resources/multimesh.h"
+
 void MultiMeshInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_multimesh", "multimesh"), &MultiMeshInstance3D::set_multimesh);
 	ClassDB::bind_method(D_METHOD("get_multimesh"), &MultiMeshInstance3D::get_multimesh);

@@ -30,6 +30,21 @@
 
 #include "surface_tool.h"
 
+#include <string.h>
+
+#include "core/error/error_macros.h"
+#include "core/math/aabb.h"
+#include "core/math/basis.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/math/transform_3d.h"
+#include "core/object/class_db.h"
+#include "core/string/string_name.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/hashfuncs.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
+
 #define EQ_VERTEX_DIST 0.00001
 
 SurfaceTool::OptimizeVertexCacheFunc SurfaceTool::optimize_vertex_cache_func = nullptr;

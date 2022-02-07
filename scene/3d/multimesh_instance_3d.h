@@ -31,8 +31,17 @@
 #ifndef MULTIMESH_INSTANCE_3D_H
 #define MULTIMESH_INSTANCE_3D_H
 
+#include <stdint.h>
+
+#include "core/math/aabb.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/templates/vector.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/multimesh.h"
+
+class MultiMesh;
+struct Face3;
 
 class MultiMeshInstance3D : public GeometryInstance3D {
 	GDCLASS(MultiMeshInstance3D, GeometryInstance3D);

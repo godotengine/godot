@@ -31,6 +31,17 @@
 #ifndef SPRITE_FRAMES_H
 #define SPRITE_FRAMES_H
 
+#include "core/error/error_macros.h"
+#include "core/io/resource.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
 #include "scene/resources/texture.h"
 
 class SpriteFrames : public Resource {

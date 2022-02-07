@@ -31,9 +31,29 @@
 #ifndef SKELETON_3D_H
 #define SKELETON_3D_H
 
+#include <stdint.h>
+
+#include "core/math/basis.h"
+#include "core/math/math_defs.h"
+#include "core/math/quaternion.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/rid.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/typed_array.h"
+#include "core/variant/variant.h"
 #include "scene/3d/node_3d.h"
 #include "scene/resources/skeleton_modification_3d.h"
 #include "scene/resources/skin.h"
+
+class Skin;
 
 typedef int BoneId;
 

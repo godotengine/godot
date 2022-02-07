@@ -31,9 +31,19 @@
 #ifndef COLLISION_POLYGON_2D_H
 #define COLLISION_POLYGON_2D_H
 
+#include <stdint.h>
+
+#include "core/math/math_defs.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/templates/vector.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/typed_array.h"
 #include "scene/2d/node_2d.h"
 
 class CollisionObject2D;
+class String;
 
 class CollisionPolygon2D : public Node2D {
 	GDCLASS(CollisionPolygon2D, Node2D);

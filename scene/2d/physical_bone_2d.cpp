@@ -30,7 +30,14 @@
 
 #include "physical_bone_2d.h"
 
+#include "core/error/error_macros.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
 #include "scene/2d/joint_2d.h"
+#include "scene/2d/skeleton_2d.h"
+#include "scene/main/node.h"
+#include "servers/physics_server_2d.h"
 
 void PhysicalBone2D::_notification(int p_what) {
 	switch (p_what) {

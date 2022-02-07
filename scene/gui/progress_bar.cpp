@@ -29,7 +29,21 @@
 /*************************************************************************/
 
 #include "progress_bar.h"
+
+#include "core/math/color.h"
+#include "core/math/rect2.h"
+#include "core/object/class_db.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "scene/main/canvas_item.h"
+#include "scene/resources/style_box.h"
 #include "scene/resources/text_line.h"
+#include "servers/text_server.h"
+
+class Font;
 
 Size2 ProgressBar::get_minimum_size() const {
 	Ref<StyleBox> bg = get_theme_stylebox(SNAME("bg"));

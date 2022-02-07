@@ -31,6 +31,8 @@
 #ifndef COLOR_RECT_H
 #define COLOR_RECT_H
 
+#include "core/math/color.h"
+#include "core/object/object.h"
 #include "scene/gui/control.h"
 
 class ColorRect : public Control {

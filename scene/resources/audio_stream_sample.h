@@ -31,9 +31,19 @@
 #ifndef AUDIO_STREAM_SAMPLE_H
 #define AUDIO_STREAM_SAMPLE_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
+#include "core/io/resource.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
+#include "core/variant/binder_common.h"
 #include "servers/audio/audio_stream.h"
 
 class AudioStreamSample;
+struct AudioFrame;
 
 class AudioStreamPlaybackSample : public AudioStreamPlayback {
 	GDCLASS(AudioStreamPlaybackSample, AudioStreamPlayback);

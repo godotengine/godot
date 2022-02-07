@@ -31,8 +31,19 @@
 #ifndef MULTIPLAYER_SPAWNER_H
 #define MULTIPLAYER_SPAWNER_H
 
+#include <stdint.h>
+
 #include "scene/main/node.h"
 
+#include "core/io/resource_uid.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/set.h"
 #include "core/variant/typed_array.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/scene_replication_config.h"

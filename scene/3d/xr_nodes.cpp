@@ -30,8 +30,20 @@
 
 #include "xr_nodes.h"
 
+#include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
+#include "core/math/basis.h"
+#include "core/math/camera_matrix.h"
+#include "core/math/rect2.h"
+#include "core/math/transform_3d.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/variant/variant.h"
+#include "scene/main/node.h"
 #include "scene/main/viewport.h"
 #include "servers/xr/xr_interface.h"
+#include "servers/xr/xr_pose.h"
+#include "servers/xr_server.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 

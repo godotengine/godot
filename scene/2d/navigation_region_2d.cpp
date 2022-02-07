@@ -30,11 +30,29 @@
 
 #include "navigation_region_2d.h"
 
+#include "core/config/engine.h"
 #include "core/core_string_names.h"
+#include "core/error/error_macros.h"
+#include "core/math/color.h"
 #include "core/math/geometry_2d.h"
+#include "core/math/math_defs.h"
+#include "core/math/random_pcg.h"
+#include "core/math/transform_2d.h"
+#include "core/math/vector3.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
 #include "core/os/mutex.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
+#include "scene/resources/world_2d.h"
 #include "servers/navigation_server_2d.h"
-
+#include "servers/rendering_server.h"
 #include "thirdparty/misc/polypartition.h"
 
 #ifdef TOOLS_ENABLED

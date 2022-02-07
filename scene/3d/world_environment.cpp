@@ -30,8 +30,14 @@
 
 #include "world_environment.h"
 
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/templates/rid.h"
+#include "core/variant/variant.h"
 #include "scene/3d/node_3d.h"
-#include "scene/main/window.h"
+#include "scene/main/scene_tree.h"
+#include "scene/main/viewport.h"
+#include "scene/resources/world_3d.h"
 
 void WorldEnvironment::_notification(int p_what) {
 	if (p_what == Node3D::NOTIFICATION_ENTER_WORLD || p_what == Node3D::NOTIFICATION_ENTER_TREE) {

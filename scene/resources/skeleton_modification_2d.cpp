@@ -29,11 +29,19 @@
 /*************************************************************************/
 
 #include "skeleton_modification_2d.h"
-#include "scene/2d/skeleton_2d.h"
 
-#include "scene/2d/collision_object_2d.h"
-#include "scene/2d/collision_shape_2d.h"
-#include "scene/2d/physical_bone_2d.h"
+#include "core/config/engine.h"
+#include "core/error/error_macros.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/math/vector2.h"
+#include "core/object/class_db.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "scene/2d/skeleton_2d.h"
+#include "scene/main/node.h"
+#include "scene/resources/skeleton_modification_stack_2d.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"

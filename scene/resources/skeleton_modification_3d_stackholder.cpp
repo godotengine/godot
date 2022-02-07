@@ -29,8 +29,11 @@
 /*************************************************************************/
 
 #include "scene/resources/skeleton_modification_3d_stackholder.h"
-#include "scene/3d/skeleton_3d.h"
-#include "scene/resources/skeleton_modification_3d.h"
+
+#include "core/error/error_macros.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "scene/resources/skeleton_modification_stack_3d.h"
 
 bool SkeletonModification3DStackHolder::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;

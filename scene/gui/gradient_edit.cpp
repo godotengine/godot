@@ -30,7 +30,22 @@
 
 #include "gradient_edit.h"
 
+#include "core/error/error_macros.h"
+#include "core/input/input_enums.h"
+#include "core/input/input_event.h"
+#include "core/math/math_funcs.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2i.h"
+#include "core/object/callable_method_pointer.h"
 #include "core/os/keyboard.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/typedefs.h"
+#include "scene/gui/color_picker.h"
+#include "scene/gui/popup.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/resources/texture.h"
 
 GradientEdit::GradientEdit() {
 	set_focus_mode(FOCUS_ALL);

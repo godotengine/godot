@@ -30,6 +30,15 @@
 
 #include "fog_volume.h"
 
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
+#include "scene/main/node.h"
+#include "scene/main/viewport.h"
+#include "scene/resources/environment.h"
+#include "scene/resources/material.h"
+#include "scene/resources/world_3d.h"
+
 ///////////////////////////
 
 void FogVolume::_bind_methods() {

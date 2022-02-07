@@ -30,10 +30,32 @@
 
 #include "audio_stream_player_3d.h"
 
+#include <math.h>
+
+#include "core/config/engine.h"
+#include "core/error/error_macros.h"
+#include "core/math/audio_frame.h"
+#include "core/math/basis.h"
+#include "core/math/math_funcs.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector2.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/templates/map.h"
+#include "core/templates/set.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
 #include "scene/3d/area_3d.h"
 #include "scene/3d/audio_listener_3d.h"
 #include "scene/3d/camera_3d.h"
+#include "scene/3d/velocity_tracker_3d.h"
+#include "scene/main/node.h"
 #include "scene/main/viewport.h"
+#include "scene/resources/world_3d.h"
+#include "servers/audio/audio_stream.h"
+#include "servers/audio_server.h"
+#include "servers/physics_server_3d.h"
 
 // Based on "A Novel Multichannel Panning Method for Standard and Arbitrary Loudspeaker Configurations" by Ramy Sadek and Chris Kyriakakis (2004)
 // Speaker-Placement Correction Amplitude Panning (SPCAP)

@@ -30,6 +30,10 @@
 
 #include "back_buffer_copy.h"
 
+#include "core/object/class_db.h"
+#include "core/variant/variant.h"
+#include "servers/rendering_server.h"
+
 void BackBufferCopy::_update_copy_mode() {
 	switch (copy_mode) {
 		case COPY_MODE_DISABLED: {

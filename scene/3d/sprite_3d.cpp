@@ -30,7 +30,19 @@
 
 #include "sprite_3d.h"
 
+#include <string.h>
+
 #include "core/core_string_names.h"
+#include "core/error/error_macros.h"
+#include "core/math/face3.h"
+#include "core/math/plane.h"
+#include "core/math/triangle_mesh.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/string/ustring.h"
+#include "core/variant/array.h"
+#include "core/variant/callable.h"
+#include "scene/main/node.h"
 #include "scene/scene_string_names.h"
 
 Color SpriteBase3D::_get_color_accum() {

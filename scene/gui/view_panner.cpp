@@ -31,8 +31,14 @@
 #include "view_panner.h"
 
 #include "core/input/input.h"
+#include "core/input/input_enums.h"
+#include "core/input/input_event.h"
 #include "core/input/shortcut.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
 #include "core/os/keyboard.h"
+#include "core/variant/array.h"
+#include "core/variant/variant.h"
 
 bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) {
 	Ref<InputEventMouseButton> mb = p_event;

@@ -31,9 +31,21 @@
 #ifndef RICH_TEXT_EFFECT_H
 #define RICH_TEXT_EFFECT_H
 
+#include <stdint.h>
+
 #include "core/io/resource.h"
+#include "core/math/color.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
 #include "core/object/gdvirtual.gen.inc"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/rid.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 
 class CharFXTransform : public RefCounted {
 	GDCLASS(CharFXTransform, RefCounted);

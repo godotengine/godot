@@ -30,10 +30,20 @@
 
 #include "label.h"
 
-#include "core/config/project_settings.h"
-#include "core/string/print_string.h"
-#include "core/string/translation.h"
+#include <stdint.h>
 
+#include "core/error/error_macros.h"
+#include "core/math/color.h"
+#include "core/math/rect2.h"
+#include "core/object/class_db.h"
+#include "core/object/ref_counted.h"
+#include "core/string/translation.h"
+#include "core/typedefs.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/resources/font.h"
+#include "scene/resources/style_box.h"
+#include "servers/rendering_server.h"
 #include "servers/text_server.h"
 
 void Label::set_autowrap_mode(Label::AutowrapMode p_mode) {

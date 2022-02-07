@@ -31,7 +31,29 @@
 #ifndef CPU_PARTICLES_H
 #define CPU_PARTICLES_H
 
+#include <stdint.h>
+
+#include "core/math/aabb.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/os/mutex.h"
+#include "core/templates/rid.h"
+#include "core/templates/safe_refcount.h"
+#include "core/templates/vector.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/typed_array.h"
 #include "scene/3d/visual_instance_3d.h"
+
+class Curve;
+class Gradient;
+class Mesh;
+class Node;
+class String;
+struct Face3;
 
 class CPUParticles3D : public GeometryInstance3D {
 private:

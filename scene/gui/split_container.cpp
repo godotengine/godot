@@ -30,8 +30,17 @@
 
 #include "split_container.h"
 
-#include "label.h"
-#include "margin_container.h"
+#include "core/error/error_macros.h"
+#include "core/input/input_enums.h"
+#include "core/input/input_event.h"
+#include "core/math/rect2.h"
+#include "core/object/class_db.h"
+#include "core/string/string_name.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/resources/texture.h"
 
 Control *SplitContainer::_getch(int p_idx) const {
 	int idx = 0;

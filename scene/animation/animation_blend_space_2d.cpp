@@ -31,7 +31,12 @@
 #include "animation_blend_space_2d.h"
 
 #include "animation_blend_tree.h"
+#include "core/error/error_macros.h"
+#include "core/math/delaunay_2d.h"
 #include "core/math/geometry_2d.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/templates/sort_array.h"
 
 void AnimationNodeBlendSpace2D::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::VECTOR2, blend_position));

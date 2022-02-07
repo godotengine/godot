@@ -29,7 +29,13 @@
 /*************************************************************************/
 
 #include "skeleton_modification_stack_2d.h"
+
+#include "core/error/error_macros.h"
+#include "core/math/vector2.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
 #include "scene/2d/skeleton_2d.h"
+#include "scene/resources/skeleton_modification_2d.h"
 
 void SkeletonModificationStack2D::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < modifications.size(); i++) {

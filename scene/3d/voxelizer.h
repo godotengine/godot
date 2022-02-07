@@ -31,7 +31,24 @@
 #ifndef VOXEL_LIGHT_BAKER_H
 #define VOXEL_LIGHT_BAKER_H
 
+#include <stdint.h>
+
+#include "core/math/aabb.h"
+#include "core/math/color.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector3i.h"
+#include "core/object/ref_counted.h"
+#include "core/templates/map.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "scene/resources/material.h"
 #include "scene/resources/multimesh.h"
+
+class Image;
+class Mesh;
+class MultiMesh;
+struct Vector2;
+struct Vector3;
 
 class Voxelizer {
 private:

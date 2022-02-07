@@ -30,6 +30,13 @@
 
 #include "remote_transform_3d.h"
 
+#include "core/math/basis.h"
+#include "core/math/transform_3d.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
+#include "scene/main/node.h"
+
 void RemoteTransform3D::_update_cache() {
 	cache = ObjectID();
 	if (has_node(remote_node)) {

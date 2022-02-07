@@ -31,11 +31,36 @@
 #ifndef ANIMATION_PLAYER_H
 #define ANIMATION_PLAYER_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
+#include "core/io/resource.h"
+#include "core/math/quaternion.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/object/ref_counted.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/variant.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
+#include "scene/main/node.h"
 #include "scene/resources/animation.h"
+
+class MeshInstance3D;
+class Node2D;
+class Node3D;
+class Skeleton3D;
 
 #ifdef TOOLS_ENABLED
 class AnimatedValuesBackup : public RefCounted {

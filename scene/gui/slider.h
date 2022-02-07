@@ -31,7 +31,13 @@
 #ifndef SLIDER_H
 #define SLIDER_H
 
+#include "core/math/math_defs.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
 #include "scene/gui/range.h"
+
+class InputEvent;
 
 class Slider : public Range {
 	GDCLASS(Slider, Range);

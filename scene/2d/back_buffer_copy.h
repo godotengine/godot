@@ -31,6 +31,9 @@
 #ifndef BACKBUFFERCOPY_H
 #define BACKBUFFERCOPY_H
 
+#include "core/math/rect2.h"
+#include "core/object/object.h"
+#include "core/variant/binder_common.h"
 #include "scene/2d/node_2d.h"
 
 class BackBufferCopy : public Node2D {

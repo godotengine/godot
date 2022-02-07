@@ -31,8 +31,19 @@
 #ifndef NAVIGATION_REGION_H
 #define NAVIGATION_REGION_H
 
+#include <stdint.h>
+
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/os/thread.h"
+#include "core/templates/rid.h"
+#include "core/variant/typed_array.h"
 #include "scene/3d/node_3d.h"
 #include "scene/resources/navigation_mesh.h"
+
+class NavigationMesh;
+class Node;
+class String;
 
 class NavigationRegion3D : public Node3D {
 	GDCLASS(NavigationRegion3D, Node3D);

@@ -30,7 +30,20 @@
 
 #include "gpu_particles_3d.h"
 
+#include "core/config/engine.h"
+#include "core/error/error_macros.h"
+#include "core/math/face3.h"
+#include "core/math/transform_3d.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
+#include "scene/3d/node_3d.h"
+#include "scene/main/node.h"
+#include "scene/resources/material.h"
+#include "scene/resources/mesh.h"
 #include "scene/resources/particles_material.h"
+#include "scene/resources/skin.h"
 
 AABB GPUParticles3D::get_aabb() const {
 	return AABB();

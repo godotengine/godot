@@ -31,6 +31,9 @@
 #ifndef POSITION_2D_H
 #define POSITION_2D_H
 
+#include "core/math/math_defs.h"
+#include "core/math/rect2.h"
+#include "core/object/object.h"
 #include "scene/2d/node_2d.h"
 
 class Position2D : public Node2D {

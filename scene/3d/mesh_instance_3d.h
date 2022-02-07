@@ -31,10 +31,26 @@
 #ifndef MESH_INSTANCE_H
 #define MESH_INSTANCE_H
 
+#include <stdint.h>
+
+#include "core/math/aabb.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/templates/list.h"
 #include "core/templates/local_vector.h"
+#include "core/templates/map.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 #include "scene/3d/visual_instance_3d.h"
+
 class Skin;
 class SkinReference;
+class Material;
+class Mesh;
+class Node;
+struct Face3;
 
 class MeshInstance3D : public GeometryInstance3D {
 	GDCLASS(MeshInstance3D, GeometryInstance3D);

@@ -30,9 +30,23 @@
 
 #include "popup.h"
 
-#include "core/config/engine.h"
+#include <stdint.h>
+
+#include "core/error/error_macros.h"
+#include "core/input/input_event.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "scene/gui/control.h"
 #include "scene/gui/panel.h"
+#include "scene/main/node.h"
+#include "scene/resources/style_box.h"
 
 void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> key = p_event;

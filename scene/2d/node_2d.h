@@ -31,7 +31,15 @@
 #ifndef NODE2D_H
 #define NODE2D_H
 
+#include "core/math/math_defs.h"
+#include "core/math/transform_2d.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/variant/dictionary.h"
 #include "scene/main/canvas_item.h"
+
+class Node;
+struct Rect2;
 
 class Node2D : public CanvasItem {
 	GDCLASS(Node2D, CanvasItem);

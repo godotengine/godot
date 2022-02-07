@@ -29,6 +29,12 @@
 /*************************************************************************/
 
 #include "sphere_shape_3d.h"
+
+#include "core/math/math_funcs.h"
+#include "core/math/vector2.h"
+#include "core/math/vector3.h"
+#include "core/object/class_db.h"
+#include "core/variant/variant.h"
 #include "servers/physics_server_3d.h"
 
 Vector<Vector3> SphereShape3D::get_debug_mesh_lines() const {

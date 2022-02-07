@@ -31,7 +31,28 @@
 #ifndef NODE_3D_H
 #define NODE_3D_H
 
+#include "core/math/basis.h"
+#include "core/math/math_defs.h"
+#include "core/math/quaternion.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/node_path.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/rid.h"
+#include "core/templates/self_list.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/variant.h"
 #include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
+
+class Viewport;
+class World3D;
 
 class Node3DGizmo : public RefCounted {
 	GDCLASS(Node3DGizmo, RefCounted);

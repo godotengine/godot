@@ -31,7 +31,12 @@
 #ifndef CANVASMODULATE_H
 #define CANVASMODULATE_H
 
+#include "core/math/color.h"
+#include "core/object/object.h"
+#include "core/variant/typed_array.h"
 #include "scene/2d/node_2d.h"
+
+class String;
 
 class CanvasModulate : public Node2D {
 	GDCLASS(CanvasModulate, Node2D);

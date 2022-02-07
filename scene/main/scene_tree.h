@@ -31,12 +31,36 @@
 #ifndef SCENE_TREE_H
 #define SCENE_TREE_H
 
+#include <stdint.h>
+#include <stdlib.h>
+
+#include "core/error/error_list.h"
+#include "core/math/color.h"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/object/ref_counted.h"
 #include "core/os/main_loop.h"
 #include "core/os/thread_safe.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
 #include "core/templates/self_list.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/callable.h"
+#include "core/variant/variant.h"
+#include "scene/animation/tween.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/world_2d.h"
 #include "scene/resources/world_3d.h"
+
+class ArrayMesh;
+class InputEvent;
+class Viewport;
 
 #undef Window
 

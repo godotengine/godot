@@ -31,6 +31,8 @@
 #ifndef CENTER_CONTAINER_H
 #define CENTER_CONTAINER_H
 
+#include "core/math/vector2.h"
+#include "core/object/object.h"
 #include "scene/gui/container.h"
 
 class CenterContainer : public Container {

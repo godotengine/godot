@@ -32,6 +32,16 @@
 #define CURVE_H
 
 #include "core/io/resource.h"
+#include "core/math/math_defs.h"
+#include "core/math/vector2.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/templates/map.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 
 // y(x) curve
 class Curve : public Resource {

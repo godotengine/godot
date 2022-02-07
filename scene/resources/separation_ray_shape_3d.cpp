@@ -30,6 +30,12 @@
 
 #include "separation_ray_shape_3d.h"
 
+#include <initializer_list>
+
+#include "core/math/vector3.h"
+#include "core/object/class_db.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 #include "servers/physics_server_3d.h"
 
 Vector<Vector3> SeparationRayShape3D::get_debug_mesh_lines() const {

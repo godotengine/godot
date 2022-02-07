@@ -31,17 +31,42 @@
 #ifndef TILE_SET_H
 #define TILE_SET_H
 
+#include <stdint.h>
+
 #include "core/io/resource.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/rect2.h"
+#include "core/math/rect2i.h"
+#include "core/math/transform_2d.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
 #include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
 #include "core/templates/local_vector.h"
+#include "core/templates/map.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/typed_array.h"
+#include "core/variant/variant.h"
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/2d/navigation_region_2d.h"
 #include "scene/main/canvas_item.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
+#include "scene/resources/material.h"
+#include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/physics_material.h"
 #include "scene/resources/shape_2d.h"
+
+class CanvasItem;
 
 #ifndef DISABLE_DEPRECATED
 #include "scene/resources/shader.h"
@@ -53,7 +78,6 @@ struct TileMapQuadrant;
 class TileSetSource;
 class TileSetAtlasSource;
 class TileData;
-
 // Forward-declare the plugins.
 class TileSetPlugin;
 class TileSetPluginAtlasRendering;

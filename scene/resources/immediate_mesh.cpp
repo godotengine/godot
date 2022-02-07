@@ -30,6 +30,11 @@
 
 #include "immediate_mesh.h"
 
+#include "core/error/error_macros.h"
+#include "core/object/class_db.h"
+#include "core/typedefs.h"
+#include "servers/rendering_server.h"
+
 void ImmediateMesh::surface_begin(PrimitiveType p_primitive, const Ref<Material> &p_material) {
 	ERR_FAIL_COND_MSG(surface_active, "Already creating a new surface.");
 	active_surface_data.primitive = p_primitive;

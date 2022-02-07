@@ -31,8 +31,19 @@
 #ifndef SKELETONMODIFICATION2DCCDIK_H
 #define SKELETONMODIFICATION2DCCDIK_H
 
+#include "core/math/math_defs.h"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/templates/list.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 #include "scene/2d/skeleton_2d.h"
 #include "scene/resources/skeleton_modification_2d.h"
+
+class Node2D;
+class SkeletonModificationStack2D;
 
 ///////////////////////////////////////
 // SkeletonModification2DCCDIK

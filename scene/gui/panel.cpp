@@ -30,7 +30,15 @@
 
 #include "panel.h"
 
-#include "core/string/print_string.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/object/class_db.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/templates/rid.h"
+#include "core/variant/variant.h"
+#include "scene/main/canvas_item.h"
+#include "scene/resources/style_box.h"
 
 void Panel::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {

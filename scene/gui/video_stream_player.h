@@ -31,10 +31,24 @@
 #ifndef VIDEO_STREAM_PLAYER_H
 #define VIDEO_STREAM_PLAYER_H
 
+#include "core/math/audio_frame.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
 #include "scene/gui/control.h"
 #include "scene/resources/video_stream.h"
 #include "servers/audio/audio_rb_resampler.h"
 #include "servers/audio_server.h"
+
+class ImageTexture;
+class Texture2D;
+class VideoStream;
+class VideoStreamPlayback;
+class Viewport;
 
 class VideoStreamPlayer : public Control {
 	GDCLASS(VideoStreamPlayer, Control);

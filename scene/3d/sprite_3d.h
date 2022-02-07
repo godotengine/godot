@@ -31,8 +31,34 @@
 #ifndef SPRITE_3D_H
 #define SPRITE_3D_H
 
+#include <stdint.h>
+
+#include "core/math/aabb.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/templates/list.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/typed_array.h"
+#include "core/variant/variant.h"
 #include "scene/3d/visual_instance_3d.h"
+#include "scene/resources/material.h"
 #include "scene/resources/sprite_frames.h"
+#include "scene/resources/texture.h"
+#include "servers/rendering_server.h"
+
+class String;
+class TriangleMesh;
+struct Face3;
 
 class SpriteBase3D : public GeometryInstance3D {
 	GDCLASS(SpriteBase3D, GeometryInstance3D);

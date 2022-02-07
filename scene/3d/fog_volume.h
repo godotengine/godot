@@ -31,11 +31,25 @@
 #ifndef FOG_VOLUME_H
 #define FOG_VOLUME_H
 
+#include <stdint.h>
+
+#include "core/math/aabb.h"
+#include "core/math/face3.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
 #include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/typed_array.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/main/node.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/material.h"
+#include "servers/rendering_server.h"
+
+class Material;
+class String;
 
 class FogVolume : public VisualInstance3D {
 	GDCLASS(FogVolume, VisualInstance3D);

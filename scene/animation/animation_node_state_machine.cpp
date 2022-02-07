@@ -30,6 +30,13 @@
 
 #include "animation_node_state_machine.h"
 
+#include "core/error/error_macros.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/templates/pair.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+
 /////////////////////////////////////////////////
 
 void AnimationNodeStateMachineTransition::set_switch_mode(SwitchMode p_mode) {

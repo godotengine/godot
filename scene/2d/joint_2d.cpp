@@ -30,8 +30,21 @@
 
 #include "joint_2d.h"
 
+#include "core/config/engine.h"
+#include "core/error/error_macros.h"
+#include "core/math/color.h"
+#include "core/math/transform_2d.h"
+#include "core/math/vector2.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/variant/variant.h"
 #include "physics_body_2d.h"
+#include "scene/2d/node_2d.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
 #include "scene/scene_string_names.h"
+#include "servers/physics_server_2d.h"
 
 void Joint2D::_disconnect_signals() {
 	Node *node_a = get_node_or_null(a);

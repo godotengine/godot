@@ -31,8 +31,19 @@
 #ifndef JOINT_3D_H
 #define JOINT_3D_H
 
+#include "core/math/math_defs.h"
+#include "core/object/object.h"
+#include "core/string/node_path.h"
+#include "core/string/ustring.h"
+#include "core/templates/rid.h"
+#include "core/typedefs.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/typed_array.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/physics_body_3d.h"
+#include "servers/physics_server_3d.h"
+
+class PhysicsBody3D;
 
 class Joint3D : public Node3D {
 	GDCLASS(Joint3D, Node3D);

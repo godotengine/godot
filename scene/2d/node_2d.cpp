@@ -30,6 +30,15 @@
 
 #include "node_2d.h"
 
+#include "core/error/error_macros.h"
+#include "core/math/math_funcs.h"
+#include "core/math/rect2.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
+#include "scene/main/node.h"
+#include "servers/rendering_server.h"
+
 #ifdef TOOLS_ENABLED
 Dictionary Node2D::_edit_get_state() const {
 	Dictionary state;

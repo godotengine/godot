@@ -31,11 +31,33 @@
 #ifndef POPUP_MENU_H
 #define POPUP_MENU_H
 
+#include <stdint.h>
+
+#include "core/input/input_enums.h"
 #include "core/input/shortcut.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/os/keyboard.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/vector.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
+#include "scene/gui/control.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/resources/text_line.h"
+#include "scene/resources/texture.h"
+
+class InputEvent;
+class MarginContainer;
+class ScrollContainer;
+class Timer;
 
 class PopupMenu : public Popup {
 	GDCLASS(PopupMenu, Popup);

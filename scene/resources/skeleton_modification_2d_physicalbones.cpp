@@ -29,8 +29,16 @@
 /*************************************************************************/
 
 #include "skeleton_modification_2d_physicalbones.h"
+
+#include "core/config/engine.h"
+#include "core/error/error_macros.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/variant/array.h"
 #include "scene/2d/physical_bone_2d.h"
 #include "scene/2d/skeleton_2d.h"
+#include "scene/main/node.h"
+#include "scene/resources/skeleton_modification_stack_2d.h"
 
 bool SkeletonModification2DPhysicalBones::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;

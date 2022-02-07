@@ -30,11 +30,20 @@
 
 #include "node_3d.h"
 
+#include <stdint.h>
+
+#include "core/config/engine.h"
+#include "core/error/error_macros.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
 #include "core/object/message_queue.h"
+#include "core/object/script_language.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/main/viewport.h"
 #include "scene/property_utils.h"
+#include "scene/resources/world_3d.h"
 #include "scene/scene_string_names.h"
+#include "servers/rendering_server.h"
 
 /*
 

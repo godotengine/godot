@@ -31,8 +31,30 @@
 #ifndef GPU_PARTICLES_COLLISION_3D_H
 #define GPU_PARTICLES_COLLISION_3D_H
 
+#include <stdint.h>
+
+#include "core/math/aabb.h"
+#include "core/math/face3.h"
+#include "core/math/math_defs.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector3.h"
+#include "core/math/vector3i.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/templates/list.h"
 #include "core/templates/local_vector.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/binder_common.h"
 #include "scene/3d/visual_instance_3d.h"
+#include "scene/resources/mesh.h"
+#include "servers/rendering_server.h"
+
+class Image;
+class Node;
+class String;
+class Texture3D;
 
 class GPUParticlesCollision3D : public VisualInstance3D {
 	GDCLASS(GPUParticlesCollision3D, VisualInstance3D);

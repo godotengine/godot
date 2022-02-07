@@ -30,7 +30,29 @@
 
 #include "option_button.h"
 
-#include "core/string/print_string.h"
+#include <stddef.h>
+
+#include "core/error/error_macros.h"
+#include "core/input/input.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/math/transform_2d.h"
+#include "core/math/vector2i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "scene/gui/base_button.h"
+#include "scene/gui/control.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/main/viewport.h"
+#include "scene/resources/style_box.h"
+#include "scene/resources/texture.h"
 
 static const int NONE_SELECTED = -1;
 

@@ -31,6 +31,13 @@
 #ifndef SKELETONMODIFICATION3D_H
 #define SKELETONMODIFICATION3D_H
 
+#include "core/io/resource.h"
+#include "core/math/math_defs.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/skeleton_modification_stack_3d.h"
 

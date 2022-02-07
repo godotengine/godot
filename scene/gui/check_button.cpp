@@ -30,8 +30,17 @@
 
 #include "check_button.h"
 
-#include "core/string/print_string.h"
-#include "servers/rendering_server.h"
+#include "core/math/math_defs.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/rid.h"
+#include "core/typedefs.h"
+#include "scene/gui/control.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/resources/style_box.h"
+#include "scene/resources/texture.h"
 
 Size2 CheckButton::get_icon_size() const {
 	Ref<Texture2D> on = Control::get_theme_icon(is_disabled() ? "on_disabled" : "on");

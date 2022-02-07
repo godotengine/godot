@@ -31,7 +31,14 @@
 #ifndef GRADIENT_H
 #define GRADIENT_H
 
+#include "core/error/error_macros.h"
 #include "core/io/resource.h"
+#include "core/math/color.h"
+#include "core/object/object.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/binder_common.h"
 
 class Gradient : public Resource {
 	GDCLASS(Gradient, Resource);

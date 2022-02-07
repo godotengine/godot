@@ -30,9 +30,31 @@
 
 #include "cpu_particles_2d.h"
 
+#include <string.h>
+#include <initializer_list>
+
 #include "core/core_string_names.h"
+#include "core/error/error_macros.h"
+#include "core/math/basis.h"
+#include "core/math/math_funcs.h"
+#include "core/math/rect2.h"
+#include "core/math/vector3.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/templates/sort_array.h"
+#include "core/variant/array.h"
+#include "core/variant/variant.h"
 #include "scene/2d/gpu_particles_2d.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/resources/canvas_item_material.h"
+#include "scene/resources/curve.h"
+#include "scene/resources/gradient.h"
+#include "scene/resources/material.h"
 #include "scene/resources/particles_material.h"
+#include "scene/resources/texture.h"
+#include "servers/rendering_server.h"
 
 void CPUParticles2D::set_emitting(bool p_emitting) {
 	if (emitting == p_emitting) {

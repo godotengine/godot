@@ -30,7 +30,18 @@
 
 #include "path_2d.h"
 
+#include "core/config/engine.h"
+#include "core/math/color.h"
 #include "core/math/geometry_2d.h"
+#include "core/math/math_funcs.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_scale.h"

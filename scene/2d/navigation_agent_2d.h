@@ -31,9 +31,19 @@
 #ifndef NAVIGATION_AGENT_2D_H
 #define NAVIGATION_AGENT_2D_H
 
+#include <stdint.h>
+
+#include "core/math/math_defs.h"
+#include "core/math/vector2.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/variant/typed_array.h"
 #include "scene/main/node.h"
 
 class Node2D;
+class String;
 
 class NavigationAgent2D : public Node {
 	GDCLASS(NavigationAgent2D, Node);

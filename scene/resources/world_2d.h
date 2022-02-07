@@ -33,11 +33,16 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/resource.h"
+#include "core/object/object.h"
+#include "core/templates/rid.h"
+#include "core/templates/set.h"
+#include "core/typedefs.h"
 #include "servers/physics_server_2d.h"
 
 class VisibleOnScreenNotifier2D;
 class Viewport;
 struct SpatialIndexer2D;
+class PhysicsDirectSpaceState2D;
 
 class World2D : public Resource {
 	GDCLASS(World2D, Resource);

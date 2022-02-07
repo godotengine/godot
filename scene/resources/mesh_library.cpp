@@ -31,6 +31,12 @@
 #include "mesh_library.h"
 
 #include "box_shape_3d.h"
+#include "core/error/error_macros.h"
+#include "core/object/class_db.h"
+#include "core/templates/pair.h"
+#include "core/typedefs.h"
+#include "scene/resources/mesh.h"
+#include "scene/resources/shape_3d.h"
 
 bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;

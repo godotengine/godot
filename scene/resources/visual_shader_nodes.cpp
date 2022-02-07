@@ -30,6 +30,16 @@
 
 #include "visual_shader_nodes.h"
 
+#include "core/error/error_macros.h"
+#include "core/math/basis.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/object/class_db.h"
+#include "core/string/string_name.h"
+#include "core/templates/list.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+
 ////////////// Vector Base
 
 VisualShaderNodeVectorBase::PortType VisualShaderNodeVectorBase::get_input_port_type(int p_port) const {

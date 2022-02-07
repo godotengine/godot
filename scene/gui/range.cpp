@@ -30,6 +30,18 @@
 
 #include "range.h"
 
+#include <math.h>
+
+#include "core/error/error_macros.h"
+#include "core/math/math_funcs.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "scene/main/node.h"
+
 TypedArray<String> Range::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 

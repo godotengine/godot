@@ -30,7 +30,18 @@
 
 #include "physics_body_3d.h"
 
+#include "core/config/engine.h"
 #include "core/core_string_names.h"
+#include "core/error/error_macros.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/templates/pair.h"
+#include "core/templates/set.h"
+#include "core/typedefs.h"
+#include "scene/3d/node_3d.h"
+#include "scene/3d/skeleton_3d.h"
+#include "scene/main/node.h"
 #include "scene/scene_string_names.h"
 
 void PhysicsBody3D::_bind_methods() {

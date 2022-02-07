@@ -31,8 +31,14 @@
 #ifndef PROPERTY_UTILS_H
 #define PROPERTY_UTILS_H
 
+#include "core/string/string_name.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 #include "scene/main/node.h"
 #include "scene/resources/packed_scene.h"
+
+class Node;
+class Object;
 
 class PropertyUtils {
 public:

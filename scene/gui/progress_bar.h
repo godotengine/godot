@@ -31,6 +31,8 @@
 #ifndef PROGRESS_BAR_H
 #define PROGRESS_BAR_H
 
+#include "core/math/vector2.h"
+#include "core/object/object.h"
 #include "scene/gui/range.h"
 
 class ProgressBar : public Range {

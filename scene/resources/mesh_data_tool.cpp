@@ -30,6 +30,15 @@
 
 #include "mesh_data_tool.h"
 
+#include "core/error/error_macros.h"
+#include "core/math/math_defs.h"
+#include "core/math/vector2i.h"
+#include "core/object/class_db.h"
+#include "core/templates/map.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "scene/resources/mesh.h"
+
 void MeshDataTool::clear() {
 	vertices.clear();
 	edges.clear();

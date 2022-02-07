@@ -31,7 +31,28 @@
 #ifndef VOXEL_GI_H
 #define VOXEL_GI_H
 
+#include <stdint.h>
+
+#include "core/io/resource.h"
+#include "core/math/aabb.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector3.h"
+#include "core/math/vector3i.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/templates/list.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/typed_array.h"
 #include "scene/3d/visual_instance_3d.h"
+#include "scene/resources/material.h"
+#include "scene/resources/mesh.h"
+
+class Node;
+class String;
+struct Face3;
 
 class VoxelGIData : public Resource {
 	GDCLASS(VoxelGIData, Resource);

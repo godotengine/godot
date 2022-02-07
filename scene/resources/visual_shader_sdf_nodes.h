@@ -31,6 +31,9 @@
 #ifndef VISUAL_SHADER_SDF_NODES_H
 #define VISUAL_SHADER_SDF_NODES_H
 
+#include "core/object/object.h"
+#include "core/string/ustring.h"
+#include "scene/resources/shader.h"
 #include "scene/resources/visual_shader.h"
 
 class VisualShaderNodeSDFToScreenUV : public VisualShaderNode {

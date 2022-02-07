@@ -31,7 +31,25 @@
 #ifndef PARTICLES_2D_H
 #define PARTICLES_2D_H
 
+#include <stdint.h>
+
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/rect2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/node_path.h"
+#include "core/templates/rid.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/typed_array.h"
 #include "scene/2d/node_2d.h"
+#include "servers/rendering_server.h"
+
+class Material;
+class String;
+class Texture2D;
+struct Transform2D;
+struct Vector2;
 
 class GPUParticles2D : public Node2D {
 private:

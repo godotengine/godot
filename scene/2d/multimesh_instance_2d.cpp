@@ -29,6 +29,14 @@
 /*************************************************************************/
 
 #include "multimesh_instance_2d.h"
+
+#include "core/math/aabb.h"
+#include "core/math/vector3.h"
+#include "core/object/class_db.h"
+#include "core/variant/variant.h"
+#include "scene/main/canvas_item.h"
+#include "scene/resources/multimesh.h"
+#include "scene/resources/texture.h"
 #include "scene/scene_string_names.h"
 
 void MultiMeshInstance2D::_notification(int p_what) {

@@ -29,8 +29,21 @@
 /*************************************************************************/
 
 #include "root_motion_view.h"
+
+#include "core/config/engine.h"
+#include "core/math/face3.h"
+#include "core/math/math_funcs.h"
+#include "core/math/vector3.h"
+#include "core/object/class_db.h"
+#include "core/templates/rid.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
 #include "scene/animation/animation_tree.h"
+#include "scene/main/node.h"
+#include "scene/resources/immediate_mesh.h"
 #include "scene/resources/material.h"
+#include "scene/resources/mesh.h"
+
 void RootMotionView::set_animation_path(const NodePath &p_path) {
 	path = p_path;
 	first = true;

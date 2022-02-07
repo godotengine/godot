@@ -31,7 +31,25 @@
 #ifndef OCCLUDER_INSTANCE_3D_H
 #define OCCLUDER_INSTANCE_3D_H
 
+#include <stdint.h>
+
+#include "core/io/resource.h"
+#include "core/math/aabb.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/variant/typed_array.h"
+#include "core/variant/variant.h"
+#include "scene/3d/node_3d.h"
 #include "scene/3d/visual_instance_3d.h"
+
+class ArrayMesh;
+class Material;
+class Node;
+struct Face3;
+struct Vector3;
 
 class Occluder3D : public Resource {
 	GDCLASS(Occluder3D, Resource);

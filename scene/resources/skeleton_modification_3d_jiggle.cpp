@@ -29,8 +29,20 @@
 /*************************************************************************/
 
 #include "scene/resources/skeleton_modification_3d_jiggle.h"
+
+#include "core/error/error_macros.h"
+#include "core/math/basis.h"
+#include "core/math/math_funcs.h"
+#include "core/math/transform_3d.h"
+#include "core/object/class_db.h"
+#include "core/object/ref_counted.h"
+#include "core/templates/vector.h"
+#include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
-#include "scene/resources/skeleton_modification_3d.h"
+#include "scene/main/node.h"
+#include "scene/resources/skeleton_modification_stack_3d.h"
+#include "scene/resources/world_3d.h"
+#include "servers/physics_server_3d.h"
 
 bool SkeletonModification3DJiggle::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;

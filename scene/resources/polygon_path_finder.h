@@ -32,6 +32,13 @@
 #define POLYGON_PATH_FINDER_H
 
 #include "core/io/resource.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/dictionary.h"
 
 class PolygonPathFinder : public Resource {
 	GDCLASS(PolygonPathFinder, Resource);

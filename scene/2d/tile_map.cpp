@@ -30,9 +30,33 @@
 
 #include "tile_map.h"
 
-#include "core/io/marshalls.h"
+#include <stdint.h>
 
+#include "core/config/engine.h"
+#include "core/error/error_macros.h"
+#include "core/io/marshalls.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/math/random_pcg.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/templates/pair.h"
+#include "core/variant/array.h"
+#include "scene/2d/light_occluder_2d.h"
+#include "scene/2d/navigation_region_2d.h"
+#include "scene/gui/control.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
+#include "scene/resources/convex_polygon_shape_2d.h"
+#include "scene/resources/material.h"
+#include "scene/resources/packed_scene.h"
+#include "scene/resources/physics_material.h"
+#include "scene/resources/texture.h"
+#include "scene/resources/world_2d.h"
 #include "servers/navigation_server_2d.h"
+#include "servers/physics_server_2d.h"
+#include "servers/rendering_server.h"
 
 Map<Vector2i, TileSet::CellNeighbor> TileMap::TerrainConstraint::get_overlapping_coords_and_peering_bits() const {
 	Map<Vector2i, TileSet::CellNeighbor> output;

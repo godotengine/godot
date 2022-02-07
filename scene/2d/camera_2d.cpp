@@ -30,6 +30,20 @@
 
 #include "camera_2d.h"
 
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
+#include "core/math/color.h"
+#include "core/math/math_funcs.h"
+#include "core/math/rect2.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
+#include "scene/main/viewport.h"
 #include "scene/main/window.h"
 
 void Camera2D::_update_scroll() {

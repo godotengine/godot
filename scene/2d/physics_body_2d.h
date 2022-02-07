@@ -31,12 +31,31 @@
 #ifndef PHYSICS_BODY_2D_H
 #define PHYSICS_BODY_2D_H
 
+#include <stdint.h>
+
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/math/transform_2d.h"
+#include "core/math/vector2.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/templates/map.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
 #include "core/templates/vset.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/typed_array.h"
 #include "scene/2d/collision_object_2d.h"
 #include "scene/resources/physics_material.h"
 #include "servers/physics_server_2d.h"
 
 class KinematicCollision2D;
+class Node2D;
+class Node;
+class String;
 
 class PhysicsBody2D : public CollisionObject2D {
 	GDCLASS(PhysicsBody2D, CollisionObject2D);

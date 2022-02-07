@@ -32,9 +32,20 @@
 #define MESH_LIBRARY_H
 
 #include "core/io/resource.h"
+#include "core/math/transform_3d.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
 #include "core/templates/map.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
+#include "core/variant/variant.h"
 #include "mesh.h"
 #include "scene/3d/navigation_region_3d.h"
+#include "scene/resources/navigation_mesh.h"
+#include "scene/resources/texture.h"
 #include "shape_3d.h"
 
 class MeshLibrary : public Resource {

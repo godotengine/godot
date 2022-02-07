@@ -30,7 +30,18 @@
 
 #include "navigation_region_3d.h"
 
+#include "core/error/error_macros.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
 #include "mesh_instance_3d.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
+#include "scene/resources/navigation_mesh.h"
+#include "scene/resources/world_3d.h"
 #include "servers/navigation_server_3d.h"
 
 void NavigationRegion3D::set_enabled(bool p_enabled) {

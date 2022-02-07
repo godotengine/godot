@@ -28,8 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include <stdint.h>
+
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/os/mutex.h"
+#include "core/string/string_name.h"
+#include "core/templates/map.h"
 #include "core/templates/rid.h"
+#include "core/templates/self_list.h"
+#include "core/typedefs.h"
+#include "core/variant/binder_common.h"
 #include "scene/resources/material.h"
+#include "scene/resources/shader.h"
+
+class Texture2D;
 
 #ifndef PARTICLES_MATERIAL_H
 #define PARTICLES_MATERIAL_H

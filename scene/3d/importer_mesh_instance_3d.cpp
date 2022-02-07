@@ -30,6 +30,9 @@
 
 #include "importer_mesh_instance_3d.h"
 
+#include "core/error/error_macros.h"
+#include "core/object/class_db.h"
+#include "core/variant/variant.h"
 #include "scene/resources/importer_mesh.h"
 
 void ImporterMeshInstance3D::set_mesh(const Ref<ImporterMesh> &p_mesh) {

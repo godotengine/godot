@@ -30,8 +30,22 @@
 
 #include "animation_tree.h"
 
+#include <cmath>
+
 #include "animation_blend_tree.h"
 #include "core/config/engine.h"
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
+#include "core/math/basis.h"
+#include "core/math/math_funcs.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/typedefs.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/node_3d.h"
+#include "scene/3d/skeleton_3d.h"
+#include "scene/animation/animation_player.h"
 #include "scene/resources/animation.h"
 #include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"

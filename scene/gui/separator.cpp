@@ -30,6 +30,13 @@
 
 #include "separator.h"
 
+#include "core/math/rect2.h"
+#include "core/math/vector2i.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "scene/main/canvas_item.h"
+#include "scene/resources/style_box.h"
+
 Size2 Separator::get_minimum_size() const {
 	Size2 ms(3, 3);
 	if (orientation == VERTICAL) {

@@ -31,9 +31,19 @@
 #ifndef SPIN_BOX_H
 #define SPIN_BOX_H
 
+#include "core/math/math_defs.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/range.h"
 #include "scene/main/timer.h"
+
+class InputEvent;
+class LineEdit;
+class Texture2D;
+class Timer;
 
 class SpinBox : public Range {
 	GDCLASS(SpinBox, Range);

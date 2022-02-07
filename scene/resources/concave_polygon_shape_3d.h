@@ -31,6 +31,11 @@
 #ifndef CONCAVE_POLYGON_SHAPE_3D_H
 #define CONCAVE_POLYGON_SHAPE_3D_H
 
+#include "core/math/math_defs.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
 #include "scene/resources/shape_3d.h"
 
 class ConcavePolygonShape3D : public Shape3D {

@@ -30,6 +30,15 @@
 
 #include "timer.h"
 
+#include "core/config/engine.h"
+#include "core/error/error_macros.h"
+#include "core/math/math_defs.h"
+#include "core/object/class_db.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
+#include "scene/main/scene_tree.h"
+
 void Timer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {

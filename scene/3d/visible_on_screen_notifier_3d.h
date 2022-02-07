@@ -31,10 +31,21 @@
 #ifndef VISIBLE_ON_SCREEN_NOTIFIER_3D_H
 #define VISIBLE_ON_SCREEN_NOTIFIER_3D_H
 
+#include <stdint.h>
+
+#include "core/math/aabb.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/string/node_path.h"
+#include "core/templates/vector.h"
+#include "core/variant/binder_common.h"
 #include "scene/3d/visual_instance_3d.h"
 
 class World3D;
 class Camera3D;
+struct Face3;
+
 class VisibleOnScreenNotifier3D : public VisualInstance3D {
 	GDCLASS(VisibleOnScreenNotifier3D, VisualInstance3D);
 

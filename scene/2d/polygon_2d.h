@@ -31,7 +31,21 @@
 #ifndef POLYGON_2D_H
 #define POLYGON_2D_H
 
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/object/ref_counted.h"
+#include "core/string/node_path.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
+#include "core/variant/dictionary.h"
 #include "scene/2d/node_2d.h"
+
+class Texture2D;
 
 class Polygon2D : public Node2D {
 	GDCLASS(Polygon2D, Node2D);

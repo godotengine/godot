@@ -31,8 +31,15 @@
 #ifndef PATH_H
 #define PATH_H
 
+#include "core/math/math_defs.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/typed_array.h"
 #include "scene/3d/node_3d.h"
 #include "scene/resources/curve.h"
+
+class String;
 
 class Path3D : public Node3D {
 	GDCLASS(Path3D, Node3D);

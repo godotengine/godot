@@ -31,6 +31,17 @@
 #ifndef SKELETON_IK_H
 #define SKELETON_IK_H
 
+#include "core/math/math_defs.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "scene/main/node.h"
+
+class Node3D;
 #ifndef _3D_DISABLED
 
 #include "scene/3d/skeleton_3d.h"

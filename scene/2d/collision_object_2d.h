@@ -31,10 +31,31 @@
 #ifndef COLLISION_OBJECT_2D_H
 #define COLLISION_OBJECT_2D_H
 
+#include <stdint.h>
+
+#include "core/math/math_defs.h"
+#include "core/math/transform_2d.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/typed_array.h"
 #include "scene/2d/node_2d.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/shape_2d.h"
 #include "servers/physics_server_2d.h"
+
+class InputEvent;
+class String;
+class Viewport;
 
 class CollisionObject2D : public Node2D {
 	GDCLASS(CollisionObject2D, Node2D);

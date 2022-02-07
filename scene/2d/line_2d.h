@@ -31,7 +31,16 @@
 #ifndef LINE2D_H
 #define LINE2D_H
 
+#include "core/math/color.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/templates/vector.h"
 #include "node_2d.h"
+#include "scene/resources/curve.h"
+#include "scene/resources/gradient.h"
+#include "scene/resources/texture.h"
 
 class Line2D : public Node2D {
 	GDCLASS(Line2D, Node2D);

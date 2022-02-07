@@ -30,7 +30,17 @@
 
 #include "check_box.h"
 
-#include "servers/rendering_server.h"
+#include "core/math/math_defs.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/templates/rid.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "scene/gui/control.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/resources/style_box.h"
+#include "scene/resources/texture.h"
 
 Size2 CheckBox::get_icon_size() const {
 	Ref<Texture2D> checked = Control::get_theme_icon(SNAME("checked"));

@@ -31,7 +31,17 @@
 #ifndef SCENE_REPLICATON_STATE_H
 #define SCENE_REPLICATON_STATE_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
 #include "core/object/ref_counted.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/set.h"
+#include "scene/main/node.h"
+#include "scene/multiplayer/multiplayer_spawner.h"
+#include "scene/multiplayer/multiplayer_synchronizer.h"
 
 class MultiplayerSpawner;
 class MultiplayerSynchronizer;

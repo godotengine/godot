@@ -30,9 +30,24 @@
 
 #include "camera_3d.h"
 
-#include "collision_object_3d.h"
+#include <initializer_list>
+
+#include "core/error/error_macros.h"
+#include "core/math/basis.h"
 #include "core/math/camera_matrix.h"
+#include "core/math/plane.h"
+#include "core/math/rect2.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
+#include "scene/3d/velocity_tracker_3d.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/viewport.h"
+#include "scene/resources/camera_effects.h"
+#include "scene/resources/environment.h"
+#include "scene/resources/world_3d.h"
+#include "servers/physics_server_3d.h"
+#include "servers/rendering_server.h"
 
 void Camera3D::_update_audio_listener_state() {
 }

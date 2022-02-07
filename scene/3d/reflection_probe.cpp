@@ -30,6 +30,13 @@
 
 #include "reflection_probe.h"
 
+#include "core/math/face3.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "servers/rendering_server.h"
+
 void ReflectionProbe::set_intensity(float p_intensity) {
 	intensity = p_intensity;
 	RS::get_singleton()->reflection_probe_set_intensity(probe, p_intensity);

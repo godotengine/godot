@@ -29,7 +29,18 @@
 /*************************************************************************/
 
 #include "spring_arm_3d.h"
+
+#include "core/config/engine.h"
+#include "core/math/basis.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector3.h"
+#include "core/object/class_db.h"
+#include "core/variant/variant.h"
 #include "scene/3d/camera_3d.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
+#include "scene/resources/world_3d.h"
+#include "servers/physics_server_3d.h"
 
 void SpringArm3D::_notification(int p_what) {
 	switch (p_what) {

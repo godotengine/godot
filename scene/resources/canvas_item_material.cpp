@@ -30,7 +30,14 @@
 
 #include "canvas_item_material.h"
 
+#include "core/error/error_macros.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
 #include "core/version.h"
+#include "core/version_generated.gen.h"
+#include "servers/rendering_server.h"
 
 Mutex CanvasItemMaterial::material_mutex;
 SelfList<CanvasItemMaterial>::List *CanvasItemMaterial::dirty_materials = nullptr;

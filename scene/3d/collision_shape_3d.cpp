@@ -30,10 +30,23 @@
 
 #include "collision_shape_3d.h"
 
+#include "core/math/transform_3d.h"
+#include "core/math/vector3.h"
+#include "core/object/class_db.h"
+#include "core/object/method_bind.h"
+#include "core/os/memory.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
+#include "core/variant/variant.h"
 #include "mesh_instance_3d.h"
 #include "physics_body_3d.h"
+#include "scene/3d/collision_object_3d.h"
+#include "scene/main/node.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
+#include "scene/resources/mesh.h"
+#include "scene/resources/shape_3d.h"
+#include "servers/rendering_server.h"
 
 void CollisionShape3D::make_convex_from_siblings() {
 	Node *p = get_parent();

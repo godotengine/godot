@@ -31,9 +31,27 @@
 #ifndef SURFACE_TOOL_H
 #define SURFACE_TOOL_H
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "core/math/color.h"
+#include "core/math/plane.h"
+#include "core/math/vector2.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
 #include "core/templates/local_vector.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/binder_common.h"
+#include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
+#include "servers/rendering_server.h"
 #include "thirdparty/misc/mikktspace.h"
+
+struct Transform3D;
 
 class SurfaceTool : public RefCounted {
 	GDCLASS(SurfaceTool, RefCounted);

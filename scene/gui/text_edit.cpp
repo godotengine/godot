@@ -30,18 +30,38 @@
 
 #include "text_edit.h"
 
+#include <cmath>
+
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
 #include "core/input/input.h"
+#include "core/input/input_enums.h"
+#include "core/input/input_event.h"
 #include "core/input/input_map.h"
+#include "core/math/math_funcs.h"
+#include "core/math/rect2.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
 #include "core/object/message_queue.h"
-#include "core/object/script_language.h"
 #include "core/os/keyboard.h"
+#include "core/os/main_loop.h"
+#include "core/os/memory.h"
 #include "core/os/os.h"
+#include "core/string/char_utils.h"
 #include "core/string/string_builder.h"
 #include "core/string/translation.h"
+#include "core/templates/rid.h"
 #include "label.h"
-
-#include "scene/main/window.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/gui/scroll_bar.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/main/timer.h"
+#include "scene/main/viewport.h"
+#include "scene/resources/text_line.h"
+#include "servers/display_server.h"
+#include "servers/rendering_server.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 ///                            TEXT                                         ///

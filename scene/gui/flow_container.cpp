@@ -28,9 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "scene/gui/container.h"
-
 #include "flow_container.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2i.h"
+#include "core/object/class_db.h"
+#include "core/string/string_name.h"
+#include "core/templates/map.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "scene/gui/container.h"
+#include "scene/gui/control.h"
+#include "scene/main/node.h"
 
 struct _LineData {
 	int child_count = 0;

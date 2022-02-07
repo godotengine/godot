@@ -30,7 +30,23 @@
 
 #include "graph_node.h"
 
+#include <stdint.h>
+
+#include "core/error/error_macros.h"
+#include "core/input/input_enums.h"
+#include "core/input/input_event.h"
+#include "core/math/math_defs.h"
+#include "core/math/vector2i.h"
+#include "core/object/class_db.h"
 #include "core/string/translation.h"
+#include "core/templates/pair.h"
+#include "core/typedefs.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/resources/style_box.h"
+#include "servers/text_server.h"
+
+class Font;
 #ifdef TOOLS_ENABLED
 #include "graph_edit.h"
 #endif

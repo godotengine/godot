@@ -29,7 +29,19 @@
 /*************************************************************************/
 
 #include "container.h"
+
+#include "core/error/error_macros.h"
+#include "core/math/math_funcs.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
 #include "core/object/message_queue.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
 #include "scene/scene_string_names.h"
 
 void Container::_child_minsize_changed() {

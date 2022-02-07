@@ -30,6 +30,15 @@
 
 #include "decal.h"
 
+#include "core/error/error_macros.h"
+#include "core/math/face3.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
+#include "scene/main/node.h"
+#include "scene/resources/texture.h"
+#include "servers/rendering_server.h"
+
 void Decal::set_extents(const Vector3 &p_extents) {
 	extents = p_extents;
 	RS::get_singleton()->decal_set_extents(decal, p_extents);

@@ -31,9 +31,29 @@
 #ifndef ITEMLIST_H
 #define ITEMLIST_H
 
+#include <stdint.h>
+
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/rect2.h"
+#include "core/math/rect2i.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/vector.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 #include "scene/gui/control.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/resources/text_paragraph.h"
+#include "scene/resources/texture.h"
+
+class InputEvent;
+class VScrollBar;
 
 class ItemList : public Control {
 	GDCLASS(ItemList, Control);

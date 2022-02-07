@@ -31,8 +31,21 @@
 #ifndef SKELETONMODIFICATION2DJIGGLE_H
 #define SKELETONMODIFICATION2DJIGGLE_H
 
+#include <stdint.h>
+
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/templates/list.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 #include "scene/2d/skeleton_2d.h"
 #include "scene/resources/skeleton_modification_2d.h"
+
+class Node2D;
+class SkeletonModificationStack2D;
 
 ///////////////////////////////////////
 // SkeletonModification2DJIGGLE

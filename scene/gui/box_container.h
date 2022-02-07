@@ -31,7 +31,13 @@
 #ifndef BOX_CONTAINER_H
 #define BOX_CONTAINER_H
 
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/string/ustring.h"
+#include "core/variant/binder_common.h"
 #include "scene/gui/container.h"
+
+class Control;
 
 class BoxContainer : public Container {
 	GDCLASS(BoxContainer, Container);
@@ -74,6 +80,7 @@ public:
 };
 
 class MarginContainer;
+
 class VBoxContainer : public BoxContainer {
 	GDCLASS(VBoxContainer, BoxContainer);
 

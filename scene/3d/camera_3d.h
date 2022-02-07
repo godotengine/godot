@@ -31,8 +31,25 @@
 #ifndef CAMERA_3D_H
 #define CAMERA_3D_H
 
+#include <stdint.h>
+
+#include "core/math/math_defs.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector2.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/variant/binder_common.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/velocity_tracker_3d.h"
+
+class CameraEffects;
+class Environment;
+class VelocityTracker3D;
+class Viewport;
+struct Plane;
 
 class Camera3D : public Node3D {
 	GDCLASS(Camera3D, Node3D);

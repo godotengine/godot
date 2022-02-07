@@ -31,7 +31,13 @@
 #ifndef PARALLAX_BACKGROUND_H
 #define PARALLAX_BACKGROUND_H
 
+#include "core/math/math_defs.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/string/ustring.h"
 #include "scene/main/canvas_layer.h"
+
+struct Transform2D;
 
 class ParallaxBackground : public CanvasLayer {
 	GDCLASS(ParallaxBackground, CanvasLayer);

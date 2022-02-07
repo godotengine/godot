@@ -30,19 +30,42 @@
 
 #include "line_edit.h"
 
+#include <cmath>
+
+#include "core/config/engine.h"
+#include "core/error/error_macros.h"
+#include "core/input/input.h"
+#include "core/input/input_enums.h"
+#include "core/input/input_event.h"
 #include "core/input/input_map.h"
+#include "core/math/color.h"
+#include "core/math/rect2.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
 #include "core/object/message_queue.h"
 #include "core/os/keyboard.h"
+#include "core/os/main_loop.h"
+#include "core/os/memory.h"
 #include "core/os/os.h"
-#include "core/string/print_string.h"
 #include "core/string/translation.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
 #include "label.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
+#include "scene/main/timer.h"
+#include "scene/main/viewport.h"
+#include "scene/resources/font.h"
+#include "scene/resources/style_box.h"
+#include "scene/resources/texture.h"
 #include "servers/display_server.h"
+#include "servers/rendering_server.h"
 #include "servers/text_server.h"
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
 #endif
-#include "scene/main/window.h"
 
 void LineEdit::_swap_current_input_direction() {
 	if (input_direction == TEXT_DIRECTION_LTR) {

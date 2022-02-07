@@ -31,9 +31,18 @@
 #ifndef NAVIGATION_AGENT_H
 #define NAVIGATION_AGENT_H
 
+#include <stdint.h>
+
+#include "core/math/math_defs.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/variant/typed_array.h"
 #include "scene/main/node.h"
 
 class Node3D;
+class String;
 
 class NavigationAgent3D : public Node {
 	GDCLASS(NavigationAgent3D, Node);

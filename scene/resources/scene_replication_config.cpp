@@ -30,8 +30,8 @@
 
 #include "scene_replication_config.h"
 
-#include "core/multiplayer/multiplayer_api.h"
-#include "scene/main/node.h"
+#include "core/error/error_macros.h"
+#include "core/object/class_db.h"
 
 bool SceneReplicationConfig::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;

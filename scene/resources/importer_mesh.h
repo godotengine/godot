@@ -31,14 +31,30 @@
 #ifndef SCENE_IMPORTER_MESH_H
 #define SCENE_IMPORTER_MESH_H
 
+#include <cstdint>
+
+#include "core/error/error_list.h"
 #include "core/io/resource.h"
+#include "core/math/vector2i.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
 #include "core/templates/local_vector.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/dictionary.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
+#include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/navigation_mesh.h"
 
-#include <cstdint>
+class NavigationMesh;
+class Shape3D;
+struct Face3;
+struct Transform3D;
+struct Vector3;
 
 // The following classes are used by importers instead of ArrayMesh and MeshInstance3D
 // so the data is not registered (hence, quality loss), importing happens faster and

@@ -29,11 +29,18 @@
 /*************************************************************************/
 
 #include "skeleton_modification_2d_ccdik.h"
-#include "scene/2d/skeleton_2d.h"
 
-#ifdef TOOLS_ENABLED
-#include "editor/editor_settings.h"
-#endif // TOOLS_ENABLED
+#include "core/config/engine.h"
+#include "core/error/error_macros.h"
+#include "core/math/math_funcs.h"
+#include "core/math/transform_2d.h"
+#include "core/math/vector2.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "scene/2d/node_2d.h"
+#include "scene/2d/skeleton_2d.h"
+#include "scene/main/node.h"
+#include "scene/resources/skeleton_modification_stack_2d.h"
 
 bool SkeletonModification2DCCDIK::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;

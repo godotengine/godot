@@ -30,7 +30,20 @@
 
 #include "collision_shape_2d.h"
 
+#include <initializer_list>
+
 #include "collision_object_2d.h"
+#include "core/config/engine.h"
+#include "core/error/error_macros.h"
+#include "core/math/color.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 

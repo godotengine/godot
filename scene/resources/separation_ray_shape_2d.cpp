@@ -30,6 +30,16 @@
 
 #include "separation_ray_shape_2d.h"
 
+#include <initializer_list>
+
+#include "core/math/transform_2d.h"
+#include "core/math/vector2.h"
+#include "core/object/class_db.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 #include "servers/physics_server_2d.h"
 #include "servers/rendering_server.h"
 

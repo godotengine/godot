@@ -31,10 +31,19 @@
 #ifndef COLLISION_SHAPE_2D_H
 #define COLLISION_SHAPE_2D_H
 
+#include <stdint.h>
+
+#include "core/math/math_defs.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/variant/typed_array.h"
 #include "scene/2d/node_2d.h"
 #include "scene/resources/shape_2d.h"
 
 class CollisionObject2D;
+class String;
 
 class CollisionShape2D : public Node2D {
 	GDCLASS(CollisionShape2D, Node2D);

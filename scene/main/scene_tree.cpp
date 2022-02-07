@@ -30,33 +30,38 @@
 
 #include "scene_tree.h"
 
+#include <stdlib.h>
+
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
-#include "core/debugger/engine_debugger.h"
+#include "core/error/error_macros.h"
 #include "core/input/input.h"
 #include "core/io/dir_access.h"
-#include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
+#include "core/math/math_funcs.h"
+#include "core/math/vector3.h"
 #include "core/multiplayer/multiplayer_api.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
 #include "core/object/message_queue.h"
-#include "core/os/keyboard.h"
+#include "core/object/method_bind.h"
+#include "core/os/memory.h"
 #include "core/os/os.h"
-#include "core/string/print_string.h"
+#include "core/templates/sort_array.h"
 #include "node.h"
 #include "scene/animation/tween.h"
-#include "scene/debugger/scene_debugger.h"
-#include "scene/resources/font.h"
+#include "scene/main/viewport.h"
+#include "scene/resources/environment.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
-#include "scene/scene_string_names.h"
-#include "servers/display_server.h"
+#include "scene/resources/world_3d.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/physics_server_2d.h"
 #include "servers/physics_server_3d.h"
 #include "window.h"
 
-#include <stdio.h>
-#include <stdlib.h>
+class InputEvent;
 
 void SceneTreeTimer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_time_left", "time"), &SceneTreeTimer::set_time_left);

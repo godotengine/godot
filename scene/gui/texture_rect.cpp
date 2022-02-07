@@ -29,8 +29,14 @@
 /*************************************************************************/
 
 #include "texture_rect.h"
+
 #include "core/core_string_names.h"
-#include "servers/rendering_server.h"
+#include "core/math/rect2.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/variant/variant.h"
+#include "scene/main/canvas_item.h"
+#include "scene/resources/texture.h"
 
 void TextureRect::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {

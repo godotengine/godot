@@ -30,10 +30,30 @@
 
 #include "window.h"
 
+#include <stdint.h>
+
+#include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/error/error_macros.h"
+#include "core/input/input_event.h"
+#include "core/math/math_funcs.h"
+#include "core/math/rect2.h"
+#include "core/math/transform_2d.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/os/keyboard.h"
+#include "core/os/main_loop.h"
 #include "core/string/translation.h"
+#include "core/variant/array.h"
+#include "core/variant/variant.h"
 #include "scene/gui/control.h"
+#include "scene/main/node.h"
+#include "scene/resources/theme.h"
 #include "scene/scene_string_names.h"
+#include "servers/rendering_server.h"
+#include "servers/text_server.h"
+
+class Texture2D;
 
 void Window::set_title(const String &p_title) {
 	title = p_title;

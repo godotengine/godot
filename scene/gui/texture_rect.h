@@ -31,7 +31,13 @@
 #ifndef TEXTURE_RECT_H
 #define TEXTURE_RECT_H
 
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/variant/binder_common.h"
 #include "scene/gui/control.h"
+
+class Texture2D;
 
 class TextureRect : public Control {
 	GDCLASS(TextureRect, Control);

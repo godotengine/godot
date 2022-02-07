@@ -31,7 +31,26 @@
 #ifndef CPU_PARTICLES_2D_H
 #define CPU_PARTICLES_2D_H
 
+#include <stdint.h>
+
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/transform_2d.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/os/mutex.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/typed_array.h"
 #include "scene/2d/node_2d.h"
+
+class Curve;
+class Gradient;
+class Node;
+class String;
+class Texture2D;
 
 class CPUParticles2D : public Node2D {
 private:

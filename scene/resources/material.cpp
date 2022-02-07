@@ -31,9 +31,21 @@
 #include "material.h"
 
 #include "core/config/engine.h"
+#include "core/error/error_macros.h"
+#include "core/math/plane.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/object/method_bind.h"
+#include "core/os/main_loop.h"
+#include "core/os/memory.h"
+#include "core/os/os.h"
+#include "core/templates/pair.h"
 #include "core/version.h"
+#include "core/version_generated.gen.h"
 #include "scene/main/scene_tree.h"
-#include "scene/scene_string_names.h"
+#include "scene/resources/texture.h"
 
 void Material::set_next_pass(const Ref<Material> &p_pass) {
 	for (Ref<Material> pass_child = p_pass; pass_child != nullptr; pass_child = pass_child->get_next_pass()) {

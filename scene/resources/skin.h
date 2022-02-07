@@ -31,7 +31,15 @@
 #ifndef SKIN_H
 #define SKIN_H
 
+#include "core/error/error_macros.h"
 #include "core/io/resource.h"
+#include "core/math/transform_3d.h"
+#include "core/object/object.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 
 class Skin : public Resource {
 	GDCLASS(Skin, Resource)

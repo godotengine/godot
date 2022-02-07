@@ -30,9 +30,16 @@
 
 #include "capsule_shape_2d.h"
 
+#include <initializer_list>
+
 #include "core/math/geometry_2d.h"
+#include "core/math/math_funcs.h"
+#include "core/object/class_db.h"
+#include "core/variant/variant.h"
 #include "servers/physics_server_2d.h"
 #include "servers/rendering_server.h"
+
+class RID;
 
 Vector<Vector2> CapsuleShape2D::_get_points() const {
 	Vector<Vector2> points;

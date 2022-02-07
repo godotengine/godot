@@ -31,6 +31,12 @@
 #ifndef LISTENER_3D_H
 #define LISTENER_3D_H
 
+#include "core/math/transform_3d.h"
+#include "core/object/object.h"
+#include "core/string/string_name.h"
+#include "core/templates/list.h"
+#include "core/templates/rid.h"
+#include "core/variant/variant.h"
 #include "scene/3d/node_3d.h"
 
 class AudioListener3D : public Node3D {

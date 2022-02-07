@@ -31,7 +31,13 @@
 #ifndef PARALLAX_LAYER_H
 #define PARALLAX_LAYER_H
 
+#include "core/math/math_defs.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/variant/typed_array.h"
 #include "scene/2d/node_2d.h"
+
+class String;
 
 class ParallaxLayer : public Node2D {
 	GDCLASS(ParallaxLayer, Node2D);

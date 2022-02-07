@@ -32,8 +32,18 @@
 #define SCROLL_CONTAINER_H
 
 #include "container.h"
-
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/typed_array.h"
 #include "scroll_bar.h"
+
+class Control;
+class HScrollBar;
+class InputEvent;
+class String;
+class VScrollBar;
 
 class ScrollContainer : public Container {
 	GDCLASS(ScrollContainer, Container);

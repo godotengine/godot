@@ -29,7 +29,14 @@
 /*************************************************************************/
 
 #include "skeleton_modification_3d.h"
-#include "scene/3d/skeleton_3d.h"
+
+#include "core/error/error_macros.h"
+#include "core/math/math_funcs.h"
+#include "core/math/vector2.h"
+#include "core/object/class_db.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "scene/resources/skeleton_modification_stack_3d.h"
 
 void SkeletonModification3D::_execute(real_t p_delta) {
 	GDVIRTUAL_CALL(_execute, p_delta);

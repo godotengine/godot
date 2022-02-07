@@ -31,12 +31,30 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/rect2i.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/binder_common.h"
 #include "scene/main/viewport.h"
+#include "servers/display_server.h"
 
 class Control;
 class Font;
 class StyleBox;
 class Theme;
+class InputEvent;
+class Node;
+class Texture2D;
 
 class Window : public Viewport {
 	GDCLASS(Window, Viewport)

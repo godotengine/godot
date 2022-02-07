@@ -31,6 +31,8 @@
 #ifndef REFERENCE_RECT_H
 #define REFERENCE_RECT_H
 
+#include "core/math/color.h"
+#include "core/object/object.h"
 #include "scene/gui/control.h"
 
 class ReferenceRect : public Control {

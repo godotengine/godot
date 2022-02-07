@@ -31,10 +31,32 @@
 #ifndef CANVAS_ITEM_H
 #define CANVAS_ITEM_H
 
+#include <stdint.h>
+
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/rect2.h"
+#include "core/math/transform_2d.h"
+#include "core/math/vector2.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/rid.h"
+#include "core/templates/self_list.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/dictionary.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/canvas_item_material.h"
 #include "scene/resources/font.h"
+#include "scene/resources/texture.h"
+#include "servers/rendering_server.h"
 #include "servers/text_server.h"
 
 class CanvasLayer;
@@ -42,6 +64,10 @@ class MultiMesh;
 class StyleBox;
 class Window;
 class World2D;
+class Image;
+class InputEvent;
+class Material;
+class Mesh;
 
 class CanvasItem : public Node {
 	GDCLASS(CanvasItem, Node);

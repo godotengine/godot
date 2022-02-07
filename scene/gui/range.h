@@ -31,7 +31,13 @@
 #ifndef RANGE_H
 #define RANGE_H
 
+#include "core/object/object.h"
+#include "core/templates/set.h"
+#include "core/variant/typed_array.h"
 #include "scene/gui/control.h"
+
+class Node;
+class String;
 
 class Range : public Control {
 	GDCLASS(Range, Control);

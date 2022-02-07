@@ -31,8 +31,18 @@
 #ifndef OPTION_BUTTON_H
 #define OPTION_BUTTON_H
 
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/variant/variant.h"
 #include "scene/gui/button.h"
 #include "scene/gui/popup_menu.h"
+
+class PopupMenu;
+class Texture2D;
 
 class OptionButton : public Button {
 	GDCLASS(OptionButton, Button);

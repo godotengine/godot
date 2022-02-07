@@ -32,8 +32,13 @@
 #define SCENE_REPLICATION_CONFIG_H
 
 #include "core/io/resource.h"
-
+#include "core/object/object.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
 #include "core/variant/typed_array.h"
+#include "core/variant/variant.h"
 
 class SceneReplicationConfig : public Resource {
 	GDCLASS(SceneReplicationConfig, Resource);

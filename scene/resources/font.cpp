@@ -30,12 +30,24 @@
 
 #include "font.h"
 
+#include <string.h>
+
+#include "core/error/error_macros.h"
+#include "core/io/file_access.h"
+#include "core/io/image.h"
 #include "core/io/image_loader.h"
-#include "core/io/resource_loader.h"
+#include "core/math/vector2i.h"
+#include "core/math/vector3.h"
+#include "core/math/vector3i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
 #include "core/string/translation.h"
 #include "core/templates/hashfuncs.h"
+#include "core/templates/map.h"
 #include "scene/resources/text_line.h"
 #include "scene/resources/text_paragraph.h"
+#include "servers/rendering_server.h"
 
 _FORCE_INLINE_ void FontData::_clear_cache() {
 	for (int i = 0; i < cache.size(); i++) {

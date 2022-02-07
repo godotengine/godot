@@ -31,6 +31,19 @@
 #include "visual_shader_particle_nodes.h"
 
 #include "core/core_string_names.h"
+#include "core/error/error_macros.h"
+#include "core/io/image.h"
+#include "core/math/color.h"
+#include "core/math/vector2.h"
+#include "core/math/vector3.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/string/string_name.h"
+#include "core/templates/list.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/callable.h"
+#include "core/variant/variant.h"
 
 // VisualShaderNodeParticleEmitter
 

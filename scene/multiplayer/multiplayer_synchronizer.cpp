@@ -31,6 +31,7 @@
 #include "multiplayer_synchronizer.h"
 
 #include "core/config/engine.h"
+#include "core/error/error_macros.h"
 #include "core/multiplayer/multiplayer_api.h"
 
 Object *MultiplayerSynchronizer::_get_prop_target(Object *p_obj, const NodePath &p_path) {

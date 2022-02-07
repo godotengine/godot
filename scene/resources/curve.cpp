@@ -31,6 +31,14 @@
 #include "curve.h"
 
 #include "core/core_string_names.h"
+#include "core/error/error_macros.h"
+#include "core/math/math_funcs.h"
+#include "core/math/plane.h"
+#include "core/object/class_db.h"
+#include "core/string/string_name.h"
+#include "core/templates/list.h"
+#include "core/templates/pair.h"
+#include "core/typedefs.h"
 
 template <class T>
 static _FORCE_INLINE_ T _bezier_interp(real_t p_t, T p_start, T p_control_1, T p_control_2, T p_end) {

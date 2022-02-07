@@ -32,6 +32,17 @@
 #define SHAPE_2D_H
 
 #include "core/io/resource.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/rid.h"
+#include "core/variant/array.h"
+
+struct Transform2D;
 
 class Shape2D : public Resource {
 	GDCLASS(Shape2D, Resource);

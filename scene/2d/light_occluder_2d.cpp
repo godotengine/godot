@@ -29,9 +29,18 @@
 /*************************************************************************/
 
 #include "light_occluder_2d.h"
-#include "core/math/geometry_2d.h"
 
 #include "core/config/engine.h"
+#include "core/math/color.h"
+#include "core/math/geometry_2d.h"
+#include "core/math/math_defs.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "servers/rendering_server.h"
 
 #define LINE_GRAB_WIDTH 8
 

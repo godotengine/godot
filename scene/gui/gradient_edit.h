@@ -31,9 +31,21 @@
 #ifndef GRADIENT_EDIT_H
 #define GRADIENT_EDIT_H
 
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/templates/vector.h"
 #include "scene/gui/color_picker.h"
+#include "scene/gui/control.h"
 #include "scene/gui/popup.h"
 #include "scene/resources/gradient.h"
+
+class ColorPicker;
+class GradientTexture1D;
+class InputEvent;
+class PopupPanel;
 
 class GradientEdit : public Control {
 	GDCLASS(GradientEdit, Control);

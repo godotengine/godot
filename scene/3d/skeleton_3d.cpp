@@ -30,13 +30,21 @@
 
 #include "skeleton_3d.h"
 
+#include "core/config/engine.h"
+#include "core/error/error_macros.h"
+#include "core/object/class_db.h"
 #include "core/object/message_queue.h"
-#include "core/variant/type_info.h"
-#include "editor/plugins/skeleton_3d_editor_plugin.h"
+#include "core/templates/local_vector.h"
+#include "core/variant/array.h"
+#include "core/variant/callable.h"
+#include "scene/3d/collision_object_3d.h"
 #include "scene/3d/physics_body_3d.h"
-#include "scene/resources/skeleton_modification_3d.h"
-#include "scene/resources/surface_tool.h"
+#include "scene/main/node.h"
+#include "scene/resources/skeleton_modification_stack_3d.h"
+#include "scene/resources/skin.h"
 #include "scene/scene_string_names.h"
+#include "servers/physics_server_3d.h"
+#include "servers/rendering_server.h"
 
 void SkinReference::_skin_changed() {
 	if (skeleton_node) {

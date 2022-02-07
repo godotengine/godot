@@ -32,7 +32,29 @@
 
 #include "collision_shape_3d.h"
 #include "core/core_string_names.h"
+#include "core/error/error_macros.h"
+#include "core/math/color.h"
+#include "core/math/face3.h"
+#include "core/math/vector3.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/object/method_bind.h"
+#include "core/os/memory.h"
+#include "core/string/ustring.h"
+#include "core/templates/pair.h"
+#include "core/templates/rid.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
 #include "physics_body_3d.h"
+#include "scene/3d/skeleton_3d.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
+#include "scene/resources/material.h"
+#include "scene/resources/mesh.h"
+#include "scene/resources/skin.h"
+#include "servers/rendering_server.h"
+
+class Shape3D;
 
 bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 	//this is not _too_ bad performance wise, really. it only arrives here if the property was not set anywhere else.

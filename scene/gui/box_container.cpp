@@ -29,8 +29,20 @@
 /*************************************************************************/
 
 #include "box_container.h"
+
+#include "core/error/error_macros.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2i.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/templates/map.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
 #include "label.h"
 #include "margin_container.h"
+#include "scene/gui/control.h"
+#include "scene/main/node.h"
 
 struct _MinSizeCache {
 	int min_size = 0;

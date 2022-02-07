@@ -30,12 +30,36 @@
 
 #include "graph_edit.h"
 
+#include <float.h>
+#include <math.h>
+#include <stdlib.h>
+
+#include "core/error/error_macros.h"
 #include "core/input/input.h"
+#include "core/input/input_enums.h"
+#include "core/input/input_event.h"
 #include "core/math/math_funcs.h"
+#include "core/math/vector2i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/os/memory.h"
+#include "core/string/node_path.h"
+#include "core/templates/pair.h"
+#include "core/typedefs.h"
+#include "core/variant/dictionary.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
+#include "scene/gui/graph_node.h"
+#include "scene/gui/label.h"
+#include "scene/gui/scroll_bar.h"
+#include "scene/gui/spin_box.h"
 #include "scene/gui/view_panner.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/resources/curve.h"
+#include "scene/resources/style_box.h"
+#include "scene/resources/texture.h"
 
 constexpr int MINIMAP_OFFSET = 12;
 constexpr int MINIMAP_PADDING = 5;

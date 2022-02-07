@@ -31,8 +31,17 @@
 #ifndef MENU_BUTTON_H
 #define MENU_BUTTON_H
 
+#include "core/math/vector2i.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/templates/list.h"
+#include "core/variant/variant.h"
 #include "scene/gui/button.h"
 #include "scene/gui/popup_menu.h"
+
+class InputEvent;
+class PopupMenu;
 
 class MenuButton : public Button {
 	GDCLASS(MenuButton, Button);

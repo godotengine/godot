@@ -31,7 +31,23 @@
 #ifndef LIGHT_3D_H
 #define LIGHT_3D_H
 
+#include <stdint.h>
+
+#include "core/math/aabb.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/typed_array.h"
 #include "scene/3d/visual_instance_3d.h"
+#include "servers/rendering_server.h"
+
+class Texture2D;
+struct Face3;
 
 class Light3D : public VisualInstance3D {
 	GDCLASS(Light3D, VisualInstance3D);

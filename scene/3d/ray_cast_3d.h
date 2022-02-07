@@ -31,9 +31,21 @@
 #ifndef RAY_CAST_3D_H
 #define RAY_CAST_3D_H
 
+#include <stdint.h>
+
+#include "core/math/color.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/object/ref_counted.h"
+#include "core/templates/rid.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
 #include "scene/3d/node_3d.h"
+#include "scene/resources/material.h"
 
 class CollisionObject3D;
+class Node;
 
 class RayCast3D : public Node3D {
 	GDCLASS(RayCast3D, Node3D);

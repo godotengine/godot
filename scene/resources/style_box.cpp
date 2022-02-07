@@ -30,9 +30,20 @@
 
 #include "style_box.h"
 
-#include "scene/main/canvas_item.h"
+#include <math.h>
+#include <initializer_list>
 
-#include <limits.h>
+#include "core/error/error_macros.h"
+#include "core/math/math_funcs.h"
+#include "core/math/rect2i.h"
+#include "core/math/vector2i.h"
+#include "core/object/class_db.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "scene/main/canvas_item.h"
+#include "scene/resources/texture.h"
+#include "servers/rendering_server.h"
 
 bool StyleBox::test_mask(const Point2 &p_point, const Rect2 &p_rect) const {
 	return true;

@@ -30,9 +30,26 @@
 
 #include "audio_stream_player_2d.h"
 
+#include "core/config/engine.h"
+#include "core/error/error_macros.h"
+#include "core/math/math_funcs.h"
+#include "core/math/rect2.h"
+#include "core/math/transform_2d.h"
+#include "core/math/vector2.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/templates/set.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
 #include "scene/2d/area_2d.h"
 #include "scene/2d/audio_listener_2d.h"
-#include "scene/main/window.h"
+#include "scene/main/node.h"
+#include "scene/main/viewport.h"
+#include "scene/resources/world_2d.h"
+#include "servers/audio/audio_stream.h"
+#include "servers/audio_server.h"
+#include "servers/physics_server_2d.h"
 
 void AudioStreamPlayer2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {

@@ -31,7 +31,23 @@
 #ifndef IMMEDIATE_MESH_H
 #define IMMEDIATE_MESH_H
 
+#include <stdint.h>
+
+#include "core/math/aabb.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/plane.h"
+#include "core/math/vector2.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
 #include "core/templates/local_vector.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
+#include "core/variant/dictionary.h"
+#include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 
 class ImmediateMesh : public Mesh {

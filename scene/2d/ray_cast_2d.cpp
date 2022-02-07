@@ -30,7 +30,24 @@
 
 #include "ray_cast_2d.h"
 
+#include <initializer_list>
+
 #include "collision_object_2d.h"
+#include "core/config/engine.h"
+#include "core/error/error_macros.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/transform_2d.h"
+#include "core/object/class_db.h"
+#include "core/object/ref_counted.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
+#include "scene/resources/world_2d.h"
+#include "servers/physics_server_2d.h"
 
 void RayCast2D::set_target_position(const Vector2 &p_point) {
 	target_position = p_point;

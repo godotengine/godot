@@ -29,7 +29,18 @@
 /*************************************************************************/
 
 #include "http_request.h"
+
+#include <string.h>
+
+#include "core/error/error_macros.h"
 #include "core/io/compression.h"
+#include "core/io/file_access.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/os/os.h"
+#include "core/string/string_name.h"
+#include "core/templates/list.h"
 #include "scene/main/timer.h"
 
 void HTTPRequest::_redirect_request(const String &p_new_url) {

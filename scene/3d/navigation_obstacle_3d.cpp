@@ -30,8 +30,20 @@
 
 #include "navigation_obstacle_3d.h"
 
+#include "core/error/error_macros.h"
+#include "core/math/basis.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector3.h"
+#include "core/object/class_db.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
 #include "scene/3d/collision_shape_3d.h"
+#include "scene/3d/node_3d.h"
 #include "scene/3d/physics_body_3d.h"
+#include "scene/resources/shape_3d.h"
+#include "scene/resources/world_3d.h"
 #include "servers/navigation_server_3d.h"
 
 void NavigationObstacle3D::_bind_methods() {

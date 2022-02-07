@@ -30,6 +30,13 @@
 
 #include "aspect_ratio_container.h"
 
+#include "core/math/rect2.h"
+#include "core/object/class_db.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "scene/gui/control.h"
+#include "scene/main/node.h"
+
 Size2 AspectRatioContainer::get_minimum_size() const {
 	Size2 ms;
 	for (int i = 0; i < get_child_count(); i++) {

@@ -31,10 +31,22 @@
 #ifndef SKELETON_2D_H
 #define SKELETON_2D_H
 
+#include "core/math/math_defs.h"
+#include "core/math/transform_2d.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/templates/list.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/variant/typed_array.h"
+#include "core/variant/variant.h"
 #include "scene/2d/node_2d.h"
 #include "scene/resources/skeleton_modification_2d.h"
 
 class Skeleton2D;
+class String;
+struct Vector2;
 
 class Bone2D : public Node2D {
 	GDCLASS(Bone2D, Node2D);

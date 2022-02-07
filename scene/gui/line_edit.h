@@ -31,8 +31,29 @@
 #ifndef LINE_EDIT_H
 #define LINE_EDIT_H
 
+#include <stdint.h>
+
+#include "core/math/math_defs.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/os/keyboard.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/rid.h"
+#include "core/variant/array.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 #include "scene/gui/control.h"
 #include "scene/gui/popup_menu.h"
+
+class InputEvent;
+class PopupMenu;
+class Texture2D;
+class Timer;
 
 class LineEdit : public Control {
 	GDCLASS(LineEdit, Control);

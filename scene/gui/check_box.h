@@ -31,6 +31,9 @@
 #ifndef CHECK_BOX_H
 #define CHECK_BOX_H
 
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/string/ustring.h"
 #include "scene/gui/button.h"
 
 class CheckBox : public Button {

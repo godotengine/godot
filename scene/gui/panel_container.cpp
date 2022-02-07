@@ -30,6 +30,16 @@
 
 #include "panel_container.h"
 
+#include "core/math/rect2.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/templates/rid.h"
+#include "core/typedefs.h"
+#include "scene/gui/control.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/resources/style_box.h"
+
 Size2 PanelContainer::get_minimum_size() const {
 	Ref<StyleBox> style;
 

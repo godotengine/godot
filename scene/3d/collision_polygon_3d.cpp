@@ -32,7 +32,14 @@
 
 #include "collision_object_3d.h"
 #include "core/math/geometry_2d.h"
+#include "core/object/class_db.h"
+#include "core/object/ref_counted.h"
+#include "core/os/memory.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
+#include "scene/main/node.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
+#include "scene/resources/shape_3d.h"
 
 void CollisionPolygon3D::_build_polygon() {
 	if (!parent) {

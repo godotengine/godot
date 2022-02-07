@@ -31,16 +31,25 @@
 #include "resource_format_text.h"
 
 #include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
 #include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/io/resource_format_binary.h"
-#include "core/version.h"
+#include "core/object/class_db.h"
+#include "core/object/object.h"
+#include "core/os/memory.h"
+#include "core/string/node_path.h"
+#include "core/string/print_string.h"
+#include "core/templates/pair.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/dictionary.h"
+#include "core/version_generated.gen.h"
 
 // Version 2: changed names for Basis, AABB, Vectors, etc.
 // Version 3: new string ID for ext/subresources, breaks forward compat.
 #define FORMAT_VERSION 3
-
-#include "core/io/dir_access.h"
-#include "core/version.h"
 
 #define _printerr() ERR_PRINT(String(res_path + ":" + itos(lines) + " - Parse Error: " + error_text).utf8().get_data());
 

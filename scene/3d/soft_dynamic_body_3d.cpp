@@ -30,7 +30,27 @@
 
 #include "soft_dynamic_body_3d.h"
 
+#include <string.h>
+
+#include "core/config/engine.h"
+#include "core/error/error_macros.h"
+#include "core/math/basis.h"
+#include "core/math/transform_3d.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/object/object_id.h"
+#include "core/typedefs.h"
+#include "core/variant/dictionary.h"
+#include "scene/3d/collision_object_3d.h"
+#include "scene/3d/node_3d.h"
 #include "scene/3d/physics_body_3d.h"
+#include "scene/main/node.h"
+#include "scene/resources/material.h"
+#include "scene/resources/mesh.h"
+#include "scene/resources/world_3d.h"
+#include "servers/rendering_server.h"
+
+struct AABB;
 
 SoftDynamicBodyRenderingServerHandler::SoftDynamicBodyRenderingServerHandler() {}
 

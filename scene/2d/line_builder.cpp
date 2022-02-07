@@ -30,6 +30,14 @@
 
 #include "line_builder.h"
 
+#include "core/error/error_macros.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/math/rect2.h"
+#include "scene/2d/line_2d.h"
+#include "scene/resources/curve.h"
+#include "scene/resources/gradient.h"
+
 //----------------------------------------------------------------------------
 // Util
 //----------------------------------------------------------------------------

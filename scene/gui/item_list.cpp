@@ -31,8 +31,24 @@
 #include "item_list.h"
 
 #include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
+#include "core/input/input_enums.h"
+#include "core/input/input_event.h"
+#include "core/math/math_funcs.h"
+#include "core/math/vector2i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
 #include "core/os/os.h"
 #include "core/string/translation.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "scene/gui/scroll_bar.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/resources/style_box.h"
+#include "servers/rendering_server.h"
+#include "servers/text_server.h"
 
 void ItemList::_shape(int p_idx) {
 	Item &item = items.write[p_idx];

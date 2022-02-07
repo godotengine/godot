@@ -29,7 +29,21 @@
 /*************************************************************************/
 
 #include "link_button.h"
+
+#include <stdint.h>
+
+#include "core/error/error_macros.h"
+#include "core/math/color.h"
+#include "core/math/rect2.h"
+#include "core/object/class_db.h"
 #include "core/string/translation.h"
+#include "core/templates/rid.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/resources/style_box.h"
+#include "servers/text_server.h"
+
+class Font;
 
 void LinkButton::_shape() {
 	Ref<Font> font = get_theme_font(SNAME("font"));

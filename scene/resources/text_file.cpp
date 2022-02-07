@@ -30,7 +30,12 @@
 
 #include "text_file.h"
 
+#include <stdint.h>
+
+#include "core/error/error_macros.h"
 #include "core/io/file_access.h"
+#include "core/os/memory.h"
+#include "core/templates/vector.h"
 
 bool TextFile::has_text() const {
 	return !text.is_empty();

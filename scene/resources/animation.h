@@ -31,8 +31,27 @@
 #ifndef ANIMATION_H
 #define ANIMATION_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/io/resource.h"
+#include "core/math/aabb.h"
+#include "core/math/math_defs.h"
+#include "core/math/quaternion.h"
+#include "core/math/vector2.h"
+#include "core/math/vector3.h"
+#include "core/math/vector3i.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
 #include "core/templates/local_vector.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/variant.h"
 
 #define ANIM_MIN_LENGTH 0.001
 

@@ -32,6 +32,10 @@
 #define PHYSICS_MATERIAL_H
 
 #include "core/io/resource.h"
+#include "core/math/math_defs.h"
+#include "core/object/object.h"
+#include "core/string/ustring.h"
+#include "core/typedefs.h"
 #include "servers/physics_server_3d.h"
 
 class PhysicsMaterial : public Resource {

@@ -31,10 +31,23 @@
 #ifndef SHAPE_CAST_2D
 #define SHAPE_CAST_2D
 
+#include <stdint.h>
+
+#include "core/math/math_defs.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/templates/rid.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
+#include "core/variant/typed_array.h"
 #include "scene/2d/node_2d.h"
 #include "scene/resources/shape_2d.h"
+#include "servers/physics_server_2d.h"
 
 class CollisionObject2D;
+class String;
 
 class ShapeCast2D : public Node2D {
 	GDCLASS(ShapeCast2D, Node2D);

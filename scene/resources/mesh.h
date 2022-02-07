@@ -31,12 +31,35 @@
 #ifndef MESH_H
 #define MESH_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
 #include "core/io/resource.h"
+#include "core/math/aabb.h"
 #include "core/math/face3.h"
+#include "core/math/math_defs.h"
+#include "core/math/transform_3d.h"
 #include "core/math/triangle_mesh.h"
+#include "core/math/vector2i.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 #include "scene/resources/material.h"
 #include "scene/resources/shape_3d.h"
 #include "servers/rendering_server.h"
+
+class Shape3D;
+struct Face3;
 
 class Mesh : public Resource {
 	GDCLASS(Mesh, Resource);

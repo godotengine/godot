@@ -32,6 +32,7 @@
 #define CAMERA_EFFECTS_H
 
 #include "core/io/resource.h"
+#include "core/object/object.h"
 #include "core/templates/rid.h"
 
 class CameraEffects : public Resource {

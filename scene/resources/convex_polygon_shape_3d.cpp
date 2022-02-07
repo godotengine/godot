@@ -29,7 +29,14 @@
 /*************************************************************************/
 
 #include "convex_polygon_shape_3d.h"
+
+#include "core/error/error_list.h"
 #include "core/math/convex_hull.h"
+#include "core/math/geometry_3d.h"
+#include "core/math/math_funcs.h"
+#include "core/object/class_db.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
 #include "servers/physics_server_3d.h"
 
 Vector<Vector3> ConvexPolygonShape3D::get_debug_mesh_lines() const {

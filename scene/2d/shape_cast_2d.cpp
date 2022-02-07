@@ -30,12 +30,26 @@
 
 #include "shape_cast_2d.h"
 
+#include <initializer_list>
+
 #include "core/config/engine.h"
 #include "core/core_string_names.h"
+#include "core/error/error_macros.h"
+#include "core/math/color.h"
+#include "core/math/rect2.h"
+#include "core/math/transform_2d.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/object/object_id.h"
+#include "core/string/ustring.h"
+#include "core/typedefs.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 #include "scene/2d/collision_object_2d.h"
-#include "scene/2d/physics_body_2d.h"
-#include "scene/resources/circle_shape_2d.h"
-#include "servers/physics_2d/godot_physics_server_2d.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
+#include "scene/resources/world_2d.h"
 
 void ShapeCast2D::set_target_position(const Vector2 &p_point) {
 	target_position = p_point;

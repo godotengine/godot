@@ -31,11 +31,15 @@
 #ifndef POPUP_H
 #define POPUP_H
 
+#include "core/math/rect2i.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/templates/local_vector.h"
 #include "scene/main/window.h"
 
-#include "core/templates/local_vector.h"
-
 class Panel;
+class InputEvent;
 
 class Popup : public Window {
 	GDCLASS(Popup, Window);

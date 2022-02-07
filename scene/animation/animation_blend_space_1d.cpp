@@ -30,6 +30,11 @@
 
 #include "animation_blend_space_1d.h"
 
+#include "core/error/error_macros.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/typedefs.h"
+
 void AnimationNodeBlendSpace1D::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::FLOAT, blend_position));
 }

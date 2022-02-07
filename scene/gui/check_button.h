@@ -31,6 +31,8 @@
 #ifndef CHECK_BUTTON_H
 #define CHECK_BUTTON_H
 
+#include "core/math/vector2.h"
+#include "core/object/object.h"
 #include "scene/gui/button.h"
 
 class CheckButton : public Button {

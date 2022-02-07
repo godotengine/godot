@@ -30,9 +30,25 @@
 
 #include "gpu_particles_collision_3d.h"
 
+#include "core/error/error_macros.h"
+#include "core/io/image.h"
+#include "core/math/basis.h"
+#include "core/math/geometry_3d.h"
+#include "core/math/math_funcs.h"
+#include "core/math/plane.h"
+#include "core/math/vector2.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
+#include "core/templates/sort_array.h"
+#include "core/templates/thread_work_pool.h"
+#include "core/variant/array.h"
+#include "core/variant/variant.h"
 #include "mesh_instance_3d.h"
 #include "scene/3d/camera_3d.h"
+#include "scene/3d/node_3d.h"
+#include "scene/main/node.h"
 #include "scene/main/viewport.h"
+#include "scene/resources/texture.h"
 
 void GPUParticlesCollision3D::set_cull_mask(uint32_t p_cull_mask) {
 	cull_mask = p_cull_mask;

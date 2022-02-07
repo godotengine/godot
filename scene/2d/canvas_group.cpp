@@ -30,6 +30,11 @@
 
 #include "canvas_group.h"
 
+#include "core/error/error_macros.h"
+#include "core/object/class_db.h"
+#include "core/variant/variant.h"
+#include "servers/rendering_server.h"
+
 void CanvasGroup::set_fit_margin(real_t p_fit_margin) {
 	ERR_FAIL_COND(p_fit_margin < 0.0);
 

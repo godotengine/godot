@@ -30,7 +30,16 @@
 
 #include "visible_on_screen_notifier_2d.h"
 
+#include "core/config/engine.h"
+#include "core/math/color.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/variant/callable.h"
+#include "core/variant/variant.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
 #include "scene/scene_string_names.h"
+#include "servers/rendering_server.h"
 
 #ifdef TOOLS_ENABLED
 Rect2 VisibleOnScreenNotifier2D::_edit_get_rect() const {

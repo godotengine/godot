@@ -30,6 +30,11 @@
 
 #include "margin_container.h"
 
+#include "core/math/rect2.h"
+#include "core/string/string_name.h"
+#include "scene/gui/control.h"
+#include "scene/main/node.h"
+
 Size2 MarginContainer::get_minimum_size() const {
 	int margin_left = get_theme_constant(SNAME("margin_left"));
 	int margin_top = get_theme_constant(SNAME("margin_top"));

@@ -31,6 +31,10 @@
 #ifndef LISTENER_2D_H
 #define LISTENER_2D_H
 
+#include "core/object/object.h"
+#include "core/string/string_name.h"
+#include "core/templates/list.h"
+#include "core/variant/variant.h"
 #include "scene/2d/node_2d.h"
 #include "scene/main/window.h"
 

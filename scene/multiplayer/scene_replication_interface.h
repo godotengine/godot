@@ -31,9 +31,18 @@
 #ifndef SCENE_TREE_REPLICATOR_INTERFACE_H
 #define SCENE_TREE_REPLICATOR_INTERFACE_H
 
-#include "core/multiplayer/multiplayer_api.h"
+#include <stdint.h>
 
+#include "core/error/error_list.h"
+#include "core/multiplayer/multiplayer_api.h"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/object/ref_counted.h"
+#include "core/variant/variant.h"
 #include "scene/multiplayer/scene_replication_state.h"
+
+class MultiplayerSpawner;
+class Node;
 
 class SceneReplicationInterface : public MultiplayerReplicationInterface {
 	GDCLASS(SceneReplicationInterface, MultiplayerReplicationInterface);

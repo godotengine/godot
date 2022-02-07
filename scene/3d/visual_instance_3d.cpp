@@ -30,6 +30,13 @@
 
 #include "visual_instance_3d.h"
 
+#include "core/error/error_macros.h"
+#include "core/math/math_funcs.h"
+#include "core/math/transform_3d.h"
+#include "core/object/class_db.h"
+#include "core/typedefs.h"
+#include "scene/main/node.h"
+#include "scene/resources/world_3d.h"
 #include "scene/scene_string_names.h"
 
 AABB VisualInstance3D::get_transformed_aabb() const {

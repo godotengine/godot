@@ -31,7 +31,17 @@
 #ifndef AUDIO_STREAM_PLAYER_3D_H
 #define AUDIO_STREAM_PLAYER_3D_H
 
+#include <stdint.h>
+
+#include "core/math/math_defs.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
 #include "core/os/mutex.h"
+#include "core/string/string_name.h"
+#include "core/templates/safe_refcount.h"
+#include "core/templates/vector.h"
+#include "core/variant/binder_common.h"
 #include "scene/3d/area_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/velocity_tracker_3d.h"
@@ -40,6 +50,12 @@
 #include "servers/audio_server.h"
 
 class Camera3D;
+class Area3D;
+class AudioStream;
+class AudioStreamPlayback;
+class VelocityTracker3D;
+struct AudioFrame;
+
 class AudioStreamPlayer3D : public Node3D {
 	GDCLASS(AudioStreamPlayer3D, Node3D);
 

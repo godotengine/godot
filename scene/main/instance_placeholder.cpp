@@ -30,7 +30,9 @@
 
 #include "instance_placeholder.h"
 
+#include "core/error/error_macros.h"
 #include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #include "scene/resources/packed_scene.h"
 
 bool InstancePlaceholder::_set(const StringName &p_name, const Variant &p_value) {

@@ -30,7 +30,12 @@
 
 #ifndef SEPARATION_RAY_SHAPE_H
 #define SEPARATION_RAY_SHAPE_H
+#include "core/math/math_defs.h"
+#include "core/object/object.h"
+#include "core/templates/vector.h"
 #include "scene/resources/shape_3d.h"
+
+struct Vector3;
 
 class SeparationRayShape3D : public Shape3D {
 	GDCLASS(SeparationRayShape3D, Shape3D);

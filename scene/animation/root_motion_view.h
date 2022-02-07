@@ -31,8 +31,23 @@
 #ifndef ROOT_MOTION_VIEW_H
 #define ROOT_MOTION_VIEW_H
 
+#include <stdint.h>
+
+#include "core/math/aabb.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/transform_3d.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/node_path.h"
+#include "core/templates/vector.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/immediate_mesh.h"
+
+class ImmediateMesh;
+class Material;
+struct Face3;
+
 class RootMotionView : public VisualInstance3D {
 	GDCLASS(RootMotionView, VisualInstance3D);
 

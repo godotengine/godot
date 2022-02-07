@@ -31,8 +31,29 @@
 #ifndef PARTICLES_H
 #define PARTICLES_H
 
+#include <stdint.h>
+
+#include "core/math/aabb.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/node_path.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/typed_array.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/skin.h"
+#include "servers/rendering_server.h"
+
+class Material;
+class Mesh;
+class Skin;
+class String;
+struct Face3;
+struct Transform3D;
 
 class GPUParticles3D : public GeometryInstance3D {
 private:

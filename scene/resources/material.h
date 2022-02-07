@@ -31,11 +31,29 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
+#include <stdint.h>
+#include <string.h>
+
 #include "core/io/resource.h"
+#include "core/math/color.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/os/mutex.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/rid.h"
 #include "core/templates/self_list.h"
+#include "core/typedefs.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/variant.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
 #include "servers/rendering_server.h"
+
+class Texture2D;
 
 class Material : public Resource {
 	GDCLASS(Material, Resource);

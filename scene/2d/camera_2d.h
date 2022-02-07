@@ -31,7 +31,18 @@
 #ifndef CAMERA_2D_H
 #define CAMERA_2D_H
 
+#include "core/math/math_defs.h"
+#include "core/math/transform_2d.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/string/string_name.h"
+#include "core/templates/rid.h"
+#include "core/variant/binder_common.h"
 #include "scene/2d/node_2d.h"
+
+class Node;
+class Viewport;
 
 class Camera2D : public Node2D {
 	GDCLASS(Camera2D, Node2D);

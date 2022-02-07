@@ -31,8 +31,41 @@
 #ifndef VIEWPORT_H
 #define VIEWPORT_H
 
+#include <math.h>
+#include <stdint.h>
+
+#include "core/input/input_enums.h"
+#include "core/input/input_event.h"
+#include "core/math/math_defs.h"
+#include "core/math/rect2.h"
+#include "core/math/rect2i.h"
+#include "core/math/transform_2d.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/object/ref_counted.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/pair.h"
+#include "core/templates/rid.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/typed_array.h"
+#include "core/variant/variant.h"
 #include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/texture.h"
+#include "servers/display_server.h"
+
+class Image;
 
 #ifndef _3D_DISABLED
 class Camera3D;

@@ -31,7 +31,12 @@
 #ifndef MESH_INSTANCE_2D_H
 #define MESH_INSTANCE_2D_H
 
+#include "core/math/rect2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
 #include "scene/2d/node_2d.h"
+#include "scene/resources/mesh.h"
+#include "scene/resources/texture.h"
 
 class MeshInstance2D : public Node2D {
 	GDCLASS(MeshInstance2D, Node2D);

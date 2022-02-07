@@ -30,8 +30,24 @@
 
 #include "ray_cast_3d.h"
 
+#include <cmath>
+
 #include "collision_object_3d.h"
+#include "core/config/engine.h"
+#include "core/error/error_macros.h"
+#include "core/math/math_defs.h"
+#include "core/math/transform_3d.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/variant/array.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 #include "mesh_instance_3d.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
+#include "scene/resources/mesh.h"
+#include "scene/resources/world_3d.h"
+#include "servers/physics_server_3d.h"
 
 void RayCast3D::set_target_position(const Vector3 &p_point) {
 	target_position = p_point;

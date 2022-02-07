@@ -32,8 +32,17 @@
 #define SHAPE_3D_H
 
 #include "core/io/resource.h"
+#include "core/math/math_defs.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
 
 class ArrayMesh;
+struct Transform3D;
+struct Vector3;
 
 class Shape3D : public Resource {
 	GDCLASS(Shape3D, Resource);

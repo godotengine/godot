@@ -30,7 +30,21 @@
 
 #include "touch_screen_button.h"
 
-#include "scene/main/window.h"
+#include "core/config/engine.h"
+#include "core/error/error_macros.h"
+#include "core/input/input.h"
+#include "core/input/input_event.h"
+#include "core/math/color.h"
+#include "core/math/transform_2d.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/variant/variant.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
+#include "scene/main/viewport.h"
+#include "servers/display_server.h"
 
 void TouchScreenButton::set_texture_normal(const Ref<Texture2D> &p_texture) {
 	texture_normal = p_texture;

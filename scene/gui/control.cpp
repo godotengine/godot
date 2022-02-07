@@ -30,17 +30,25 @@
 
 #include "control.h"
 
+#include <stdint.h>
+#include <cmath>
+
 #include "container.h"
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
+#include "core/input/input_event.h"
 #include "core/math/geometry_2d.h"
+#include "core/math/math_funcs.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
 #include "core/object/message_queue.h"
-#include "core/os/keyboard.h"
-#include "core/os/os.h"
-#include "core/string/print_string.h"
+#include "core/os/main_loop.h"
 #include "core/string/translation.h"
-#include "scene/gui/label.h"
-#include "scene/gui/panel.h"
-#include "scene/main/canvas_layer.h"
+#include "core/templates/vector.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
+#include "scene/main/viewport.h"
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
 #include "servers/rendering_server.h"

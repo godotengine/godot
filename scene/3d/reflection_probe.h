@@ -31,7 +31,18 @@
 #ifndef REFLECTIONPROBE_H
 #define REFLECTIONPROBE_H
 
+#include <stdint.h>
+
+#include "core/math/aabb.h"
+#include "core/math/color.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/variant/binder_common.h"
 #include "scene/3d/visual_instance_3d.h"
+
+struct Face3;
 
 class ReflectionProbe : public VisualInstance3D {
 	GDCLASS(ReflectionProbe, VisualInstance3D);

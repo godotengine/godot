@@ -30,6 +30,15 @@
 
 #include "vehicle_body_3d.h"
 
+#include "core/math/basis.h"
+#include "core/math/math_funcs.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "scene/main/node.h"
+#include "servers/physics_server_3d.h"
+
 #define ROLLING_INFLUENCE_FIX
 
 class btVehicleJacobianEntry {

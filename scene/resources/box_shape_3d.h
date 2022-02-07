@@ -31,6 +31,12 @@
 #ifndef BOX_SHAPE_H
 #define BOX_SHAPE_H
 
+#include "core/math/math_defs.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/string/string_name.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 #include "scene/resources/shape_3d.h"
 
 class BoxShape3D : public Shape3D {

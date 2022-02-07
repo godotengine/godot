@@ -29,7 +29,11 @@
 /*************************************************************************/
 
 #include "theme.h"
-#include "core/string/print_string.h"
+
+#include "core/error/error_macros.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/templates/set.h"
 
 // Universal Theme resources used when no other theme has the item.
 Ref<Theme> Theme::default_theme;

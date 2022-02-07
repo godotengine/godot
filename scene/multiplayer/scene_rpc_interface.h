@@ -31,8 +31,22 @@
 #ifndef SCENE_RPC_INTERFACE_H
 #define SCENE_RPC_INTERFACE_H
 
+#include <stdint.h>
+
 #include "core/multiplayer/multiplayer.h"
 #include "core/multiplayer/multiplayer_api.h"
+#include "core/object/object.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+
+class Node;
+class ObjectID;
+class Variant;
+namespace Multiplayer {
+struct RPCConfig;
+} // namespace Multiplayer
 
 class SceneRPCInterface : public MultiplayerRPCInterface {
 	GDCLASS(SceneRPCInterface, MultiplayerRPCInterface);

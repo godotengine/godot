@@ -30,13 +30,28 @@
 
 #include "mesh.h"
 
+#include <string.h>
+
+#include "core/error/error_macros.h"
+#include "core/math/basis.h"
+#include "core/math/color.h"
 #include "core/math/convex_hull.h"
+#include "core/math/face3.h"
+#include "core/math/geometry_3d.h"
+#include "core/math/math_funcs.h"
+#include "core/math/plane.h"
+#include "core/math/vector2.h"
+#include "core/object/class_db.h"
+#include "core/object/method_bind.h"
+#include "core/os/memory.h"
+#include "core/string/print_string.h"
+#include "core/templates/local_vector.h"
+#include "core/templates/map.h"
 #include "core/templates/pair.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
+#include "scene/resources/shape_3d.h"
 #include "surface_tool.h"
-
-#include <stdlib.h>
 
 Mesh::ConvexDecompositionFunc Mesh::convex_decomposition_function = nullptr;
 

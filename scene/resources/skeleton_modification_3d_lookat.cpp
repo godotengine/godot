@@ -29,8 +29,16 @@
 /*************************************************************************/
 
 #include "scene/resources/skeleton_modification_3d_lookat.h"
+
+#include "core/error/error_macros.h"
+#include "core/math/basis.h"
+#include "core/math/math_funcs.h"
+#include "core/math/transform_3d.h"
+#include "core/object/class_db.h"
+#include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
-#include "scene/resources/skeleton_modification_3d.h"
+#include "scene/main/node.h"
+#include "scene/resources/skeleton_modification_stack_3d.h"
 
 bool SkeletonModification3DLookAt::_set(const StringName &p_path, const Variant &p_value) {
 	if (p_path == "lock_rotation_to_plane") {

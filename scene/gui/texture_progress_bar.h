@@ -31,7 +31,14 @@
 #ifndef TEXTURE_PROGRESS_BAR_H
 #define TEXTURE_PROGRESS_BAR_H
 
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/variant/binder_common.h"
 #include "scene/gui/range.h"
+#include "scene/resources/texture.h"
 
 class TextureProgressBar : public Range {
 	GDCLASS(TextureProgressBar, Range);

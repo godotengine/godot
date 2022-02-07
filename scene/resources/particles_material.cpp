@@ -30,7 +30,15 @@
 
 #include "particles_material.h"
 
+#include "core/error/error_macros.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
 #include "core/version.h"
+#include "core/version_generated.gen.h"
+#include "scene/resources/texture.h"
+#include "servers/rendering_server.h"
 
 Mutex ParticlesMaterial::material_mutex;
 SelfList<ParticlesMaterial>::List *ParticlesMaterial::dirty_materials = nullptr;

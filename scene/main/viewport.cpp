@@ -30,14 +30,33 @@
 
 #include "viewport.h"
 
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
 #include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/error/error_macros.h"
+#include "core/input/input.h"
+#include "core/io/image.h"
+#include "core/math/color.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
 #include "core/object/message_queue.h"
+#include "core/os/memory.h"
 #include "core/string/translation.h"
 #include "core/templates/pair.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/typed_array.h"
 #include "scene/2d/audio_listener_2d.h"
 #include "scene/2d/camera_2d.h"
 #include "scene/2d/collision_object_2d.h"
+#include "scene/3d/node_3d.h"
+#include "scene/main/canvas_item.h"
+#include "scene/resources/style_box.h"
+#include "scene/resources/world_3d.h"
+#include "servers/physics_server_2d.h"
+#include "servers/physics_server_3d.h"
+#include "servers/rendering_server.h"
+#include "servers/text_server.h"
 #ifndef _3D_DISABLED
 #include "scene/3d/audio_listener_3d.h"
 #include "scene/3d/camera_3d.h"
@@ -54,9 +73,9 @@
 #include "scene/resources/mesh.h"
 #include "scene/resources/text_line.h"
 #include "scene/resources/world_2d.h"
-#include "scene/scene_string_names.h"
 #include "servers/audio_server.h"
-#include "servers/rendering/rendering_server_globals.h"
+
+class Font;
 
 void ViewportTexture::setup_local_to_scene() {
 	Node *local_scene = get_local_scene();

@@ -32,6 +32,10 @@
 #define DIALOGS_H
 
 #include "box_container.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"
@@ -40,6 +44,12 @@
 #include "scene/main/window.h"
 
 class LineEdit;
+class Button;
+class Control;
+class HBoxContainer;
+class InputEvent;
+class Label;
+class Panel;
 
 class AcceptDialog : public Window {
 	GDCLASS(AcceptDialog, Window);

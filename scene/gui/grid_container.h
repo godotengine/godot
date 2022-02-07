@@ -31,6 +31,8 @@
 #ifndef GRID_CONTAINER_H
 #define GRID_CONTAINER_H
 
+#include "core/math/vector2.h"
+#include "core/object/object.h"
 #include "scene/gui/container.h"
 
 class GridContainer : public Container {

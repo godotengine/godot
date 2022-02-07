@@ -30,14 +30,21 @@
 
 #include "default_theme.h"
 
-#include "core/os/os.h"
+#include "core/io/image.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/os/memory.h"
+#include "core/typedefs.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 #include "default_font.gen.h"
 #include "default_theme_icons.gen.h"
-#include "scene/resources/font.h"
-#include "scene/resources/theme.h"
-#include "servers/text_server.h"
-
 #include "modules/modules_enabled.gen.h" // For svg.
+#include "scene/resources/font.h"
+#include "scene/resources/style_box.h"
+#include "scene/resources/texture.h"
+#include "scene/resources/theme.h"
 #ifdef MODULE_SVG_ENABLED
 #include "modules/svg/image_loader_svg.h"
 #endif

@@ -31,6 +31,10 @@
 #ifndef FLOW_CONTAINER_H
 #define FLOW_CONTAINER_H
 
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "scene/gui/container.h"
+
 class Container;
 
 class FlowContainer : public Container {

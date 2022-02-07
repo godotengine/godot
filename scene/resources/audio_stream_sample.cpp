@@ -30,8 +30,17 @@
 
 #include "audio_stream_sample.h"
 
+#include <string.h>
+
+#include "core/error/error_macros.h"
 #include "core/io/file_access.h"
 #include "core/io/marshalls.h"
+#include "core/math/audio_frame.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "servers/audio_server.h"
 
 void AudioStreamPlaybackSample::start(float p_from_pos) {
 	if (base->format == AudioStreamSample::FORMAT_IMA_ADPCM) {

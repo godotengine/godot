@@ -31,7 +31,17 @@
 #ifndef SCENE_CACHE_INTERFACE_H
 #define SCENE_CACHE_INTERFACE_H
 
+#include <stdint.h>
+
 #include "core/multiplayer/multiplayer_api.h"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/string/node_path.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/map.h"
+#include "core/typedefs.h"
+
+class Node;
 
 class SceneCacheInterface : public MultiplayerCacheInterface {
 	GDCLASS(SceneCacheInterface, MultiplayerCacheInterface);

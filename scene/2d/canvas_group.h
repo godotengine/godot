@@ -31,6 +31,8 @@
 #ifndef CANVASGROUP_H
 #define CANVASGROUP_H
 
+#include "core/math/math_defs.h"
+#include "core/object/object.h"
 #include "scene/2d/node_2d.h"
 
 class CanvasGroup : public Node2D {

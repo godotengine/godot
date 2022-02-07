@@ -31,6 +31,8 @@
 #ifndef PANEL_CONTAINER_H
 #define PANEL_CONTAINER_H
 
+#include "core/math/vector2.h"
+#include "core/object/object.h"
 #include "scene/gui/container.h"
 
 class PanelContainer : public Container {

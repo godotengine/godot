@@ -30,9 +30,24 @@
 
 #include "scene_debugger.h"
 
+#include <stdint.h>
+
 #include "core/debugger/engine_debugger.h"
+#include "core/error/error_macros.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/math/transform_2d.h"
+#include "core/math/transform_3d.h"
+#include "core/object/class_db.h"
+#include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
+#include "core/os/memory.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"

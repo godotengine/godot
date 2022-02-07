@@ -30,6 +30,14 @@
 
 #include "remote_transform_2d.h"
 
+#include "core/math/transform_2d.h"
+#include "core/math/vector2.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+
 void RemoteTransform2D::_update_cache() {
 	cache = ObjectID();
 	if (has_node(remote_node)) {

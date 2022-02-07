@@ -30,6 +30,15 @@
 
 #include "resource_preloader.h"
 
+#include "core/error/error_macros.h"
+#include "core/object/class_db.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/pair.h"
+#include "core/templates/set.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+
 void ResourcePreloader::_set_resources(const Array &p_data) {
 	resources.clear();
 

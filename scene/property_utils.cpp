@@ -31,7 +31,16 @@
 #include "property_utils.h"
 
 #include "core/config/engine.h"
+#include "core/math/math_funcs.h"
+#include "core/object/class_db.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/object/script_language.h"
+#include "core/string/char_utils.h"
+#include "core/string/node_path.h"
+#include "core/string/ustring.h"
 #include "core/templates/local_vector.h"
+#include "scene/main/node.h"
 #include "scene/resources/packed_scene.h"
 
 #ifdef TOOLS_ENABLED

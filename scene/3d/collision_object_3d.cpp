@@ -30,7 +30,23 @@
 
 #include "collision_object_3d.h"
 
+#include "core/config/engine.h"
+#include "core/error/error_macros.h"
+#include "core/input/input_event.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/object/script_language.h"
+#include "core/string/ustring.h"
+#include "core/templates/pair.h"
+#include "core/variant/callable.h"
+#include "core/variant/variant.h"
+#include "scene/3d/camera_3d.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
+#include "scene/resources/mesh.h"
+#include "scene/resources/world_3d.h"
 #include "scene/scene_string_names.h"
+#include "servers/rendering_server.h"
 
 void CollisionObject3D::_notification(int p_what) {
 	switch (p_what) {

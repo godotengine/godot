@@ -30,12 +30,31 @@
 
 #include "tab_bar.h"
 
-#include "core/object/message_queue.h"
-#include "core/string/translation.h"
+#include <stdint.h>
 
+#include "core/error/error_macros.h"
+#include "core/input/input_enums.h"
+#include "core/input/input_event.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/math/vector2i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/string/node_path.h"
+#include "core/string/translation.h"
+#include "core/templates/rid.h"
+#include "core/typedefs.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/resources/style_box.h"
+#include "servers/text_server.h"
+
+class Font;
 
 Size2 TabBar::get_minimum_size() const {
 	Size2 ms;

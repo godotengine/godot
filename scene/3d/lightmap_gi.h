@@ -31,10 +31,42 @@
 #ifndef LIGHTMAP_GI_H
 #define LIGHTMAP_GI_H
 
+#include <stdint.h>
+
+#include "core/io/resource.h"
+#include "core/math/aabb.h"
+#include "core/math/color.h"
+#include "core/math/plane.h"
+#include "core/math/rect2.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector3i.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/os/memory.h"
+#include "core/string/node_path.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/hashfuncs.h"
 #include "core/templates/local_vector.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/lightmapper.h"
 #include "scene/3d/visual_instance_3d.h"
+#include "scene/resources/material.h"
+#include "scene/resources/mesh.h"
+#include "scene/resources/sky.h"
+
+class Light3D;
+class Node;
+class TextureLayered;
+struct Face3;
+struct Vector3;
 
 class LightmapGIData : public Resource {
 	GDCLASS(LightmapGIData, Resource);

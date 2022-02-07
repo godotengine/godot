@@ -30,6 +30,13 @@
 
 #include "multimesh.h"
 
+#include "core/error/error_macros.h"
+#include "core/math/basis.h"
+#include "core/math/vector2.h"
+#include "core/math/vector3.h"
+#include "core/object/class_db.h"
+#include "core/variant/variant.h"
+#include "scene/resources/mesh.h"
 #include "servers/rendering_server.h"
 
 #ifndef DISABLE_DEPRECATED

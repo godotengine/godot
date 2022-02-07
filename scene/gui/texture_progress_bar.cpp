@@ -31,6 +31,18 @@
 #include "texture_progress_bar.h"
 
 #include "core/config/engine.h"
+#include "core/error/error_macros.h"
+#include "core/math/math_funcs.h"
+#include "core/math/rect2.h"
+#include "core/object/class_db.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/variant.h"
+#include "scene/gui/control.h"
+#include "scene/main/canvas_item.h"
+#include "servers/rendering_server.h"
 
 void TextureProgressBar::set_under_texture(const Ref<Texture2D> &p_texture) {
 	under = p_texture;

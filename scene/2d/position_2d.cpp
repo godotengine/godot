@@ -30,6 +30,14 @@
 
 #include "position_2d.h"
 
+#include "core/config/engine.h"
+#include "core/math/color.h"
+#include "core/math/vector2.h"
+#include "core/object/class_db.h"
+#include "core/variant/variant.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+
 const real_t DEFAULT_GIZMO_EXTENTS = 10.0;
 
 void Position2D::_draw_cross() {

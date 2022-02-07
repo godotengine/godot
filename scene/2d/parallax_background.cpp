@@ -29,7 +29,13 @@
 /*************************************************************************/
 
 #include "parallax_background.h"
+
+#include "core/math/transform_2d.h"
+#include "core/object/class_db.h"
+#include "core/templates/rid.h"
+#include "core/variant/variant.h"
 #include "parallax_layer.h"
+#include "scene/main/node.h"
 
 void ParallaxBackground::_notification(int p_what) {
 	switch (p_what) {

@@ -30,12 +30,24 @@
 
 #include "texture.h"
 
+#include <string.h>
+
 #include "core/core_string_names.h"
+#include "core/error/error_macros.h"
+#include "core/io/file_access.h"
 #include "core/io/image_loader.h"
 #include "core/math/geometry_2d.h"
+#include "core/math/math_funcs.h"
+#include "core/math/transform_2d.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
 #include "core/os/os.h"
+#include "core/typedefs.h"
 #include "mesh.h"
 #include "scene/resources/bit_map.h"
+#include "scene/resources/curve.h"
+#include "scene/resources/gradient.h"
 #include "servers/camera/camera_feed.h"
 
 Size2 Texture2D::get_size() const {

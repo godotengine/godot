@@ -30,6 +30,16 @@
 
 #include "canvas_modulate.h"
 
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/rid.h"
+#include "core/variant/variant.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
+#include "servers/rendering_server.h"
+
 void CanvasModulate::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_CANVAS) {
 		if (is_visible_in_tree()) {

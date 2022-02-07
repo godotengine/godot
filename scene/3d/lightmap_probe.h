@@ -31,6 +31,7 @@
 #ifndef LIGHTMAP_PROBE_H
 #define LIGHTMAP_PROBE_H
 
+#include "core/object/object.h"
 #include "scene/3d/node_3d.h"
 
 class LightmapProbe : public Node3D {

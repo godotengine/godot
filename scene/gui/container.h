@@ -31,7 +31,13 @@
 #ifndef CONTAINER_H
 #define CONTAINER_H
 
+#include "core/object/object.h"
+#include "core/variant/typed_array.h"
 #include "scene/gui/control.h"
+
+class Node;
+class String;
+struct Rect2;
 
 class Container : public Control {
 	GDCLASS(Container, Control);

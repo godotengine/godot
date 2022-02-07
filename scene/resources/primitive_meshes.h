@@ -31,7 +31,23 @@
 #ifndef PRIMITIVE_MESHES_H
 #define PRIMITIVE_MESHES_H
 
+#include <stdint.h>
+
+#include "core/math/aabb.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector2.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/templates/rid.h"
+#include "core/variant/array.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/dictionary.h"
+#include "scene/resources/curve.h"
 #include "scene/resources/mesh.h"
+
+class Material;
 
 ///@TODO probably should change a few integers to unsigned integers...
 

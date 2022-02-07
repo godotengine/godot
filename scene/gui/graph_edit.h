@@ -31,17 +31,52 @@
 #ifndef GRAPH_EDIT_H
 #define GRAPH_EDIT_H
 
+#include <stdint.h>
+
+#include "core/error/error_list.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/list.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/variant.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
+#include "scene/gui/control.h"
 #include "scene/gui/graph_node.h"
 #include "scene/gui/label.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/gui/view_panner.h"
 
 class GraphEdit;
 class ViewPanner;
+class Button;
+class CanvasItem;
+class Dictionary;
+class GraphNode;
+class HBoxContainer;
+class HScrollBar;
+class InputEvent;
+class Label;
+class Node;
+class SpinBox;
+class VScrollBar;
+struct Vector2i;
+template <class F, class S>
+struct Pair;
 
 class GraphEditFilter : public Control {
 	GDCLASS(GraphEditFilter, Control);

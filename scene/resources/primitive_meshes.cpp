@@ -29,6 +29,17 @@
 /*************************************************************************/
 
 #include "primitive_meshes.h"
+
+#include <math.h>
+
+#include "core/error/error_macros.h"
+#include "core/math/math_defs.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "scene/resources/material.h"
 #include "servers/rendering_server.h"
 
 /**

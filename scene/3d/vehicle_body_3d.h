@@ -31,9 +31,20 @@
 #ifndef VEHICLE_BODY_H
 #define VEHICLE_BODY_H
 
+#include "core/math/math_defs.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/templates/rid.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/variant/typed_array.h"
+#include "scene/3d/node_3d.h"
 #include "scene/3d/physics_body_3d.h"
 
 class VehicleBody3D;
+class PhysicsDirectBodyState3D;
+class String;
 
 class VehicleWheel3D : public Node3D {
 	GDCLASS(VehicleWheel3D, Node3D);

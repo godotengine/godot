@@ -30,9 +30,29 @@
 
 #include "code_edit.h"
 
+#include "core/config/engine.h"
+#include "core/error/error_macros.h"
+#include "core/input/input_enums.h"
+#include "core/input/input_event.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/math/rect2.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/string/char_utils.h"
 #include "core/string/string_builder.h"
 #include "core/string/ustring.h"
+#include "core/templates/pair.h"
+#include "core/templates/rid.h"
+#include "core/typedefs.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/resources/font.h"
+#include "scene/resources/style_box.h"
+#include "scene/resources/text_line.h"
+#include "servers/rendering_server.h"
+#include "servers/text_server.h"
 
 void CodeEdit::_notification(int p_what) {
 	switch (p_what) {

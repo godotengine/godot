@@ -30,6 +30,12 @@
 
 #include "text_line.h"
 
+#include "core/error/error_macros.h"
+#include "core/math/math_funcs.h"
+#include "core/object/class_db.h"
+#include "core/typedefs.h"
+#include "scene/resources/font.h"
+
 void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &TextLine::clear);
 

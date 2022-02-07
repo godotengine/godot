@@ -31,8 +31,26 @@
 #ifndef TEXT_PARAGRAPH_H
 #define TEXT_PARAGRAPH_H
 
+#include <stdint.h>
+
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 #include "scene/resources/font.h"
 #include "servers/text_server.h"
+
+class Font;
 
 /*************************************************************************/
 

@@ -30,15 +30,27 @@
 
 #include "tile_set.h"
 
+#include <string.h>
+#include <initializer_list>
+
 #include "core/core_string_names.h"
+#include "core/error/error_macros.h"
+#include "core/io/image.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
+#include "core/math/math_funcs.h"
+#include "core/math/vector3.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
 #include "core/templates/local_vector.h"
-
+#include "core/templates/pair.h"
+#include "core/variant/callable.h"
+#include "core/variant/dictionary.h"
 #include "scene/2d/navigation_region_2d.h"
-#include "scene/gui/control.h"
+#include "scene/main/canvas_item.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
-#include "servers/navigation_server_2d.h"
+#include "servers/rendering_server.h"
 
 /////////////////////////////// TileMapPattern //////////////////////////////////////
 

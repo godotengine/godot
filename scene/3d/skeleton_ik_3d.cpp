@@ -30,6 +30,15 @@
 
 #include "skeleton_ik_3d.h"
 
+#include "core/error/error_macros.h"
+#include "core/math/basis.h"
+#include "core/math/math_funcs.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
+#include "scene/3d/node_3d.h"
+
 #ifndef _3D_DISABLED
 
 FabrikInverseKinematic::ChainItem *FabrikInverseKinematic::ChainItem::find_child(const BoneId p_bone_id) {

@@ -30,11 +30,24 @@
 
 #include "visual_shader.h"
 
+#include "core/error/error_macros.h"
+#include "core/math/basis.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector3.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/object/script_language.h"
+#include "core/string/char_utils.h"
+#include "core/string/string_builder.h"
+#include "core/templates/pair.h"
 #include "core/templates/vmap.h"
+#include "core/typedefs.h"
+#include "servers/rendering/shader_language.h"
 #include "servers/rendering/shader_types.h"
 #include "visual_shader_nodes.h"
 #include "visual_shader_particle_nodes.h"
-#include "visual_shader_sdf_nodes.h"
+
+class Control;
 
 String make_unique_id(VisualShader::Type p_type, int p_id, const String &p_name) {
 	static const char *typepf[VisualShader::TYPE_MAX] = { "vtx", "frg", "lgt", "start", "process", "collide", "start_custom", "process_custom", "sky", "fog" };

@@ -31,7 +31,16 @@
 #ifndef RESOURCE_PRELOADER_H
 #define RESOURCE_PRELOADER_H
 
+#include "core/io/resource.h"
+#include "core/object/object.h"
+#include "core/string/string_name.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
 #include "scene/main/node.h"
+
+class String;
 
 class ResourcePreloader : public Node {
 	GDCLASS(ResourcePreloader, Node);

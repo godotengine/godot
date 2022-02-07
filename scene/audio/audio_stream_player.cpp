@@ -31,7 +31,14 @@
 #include "audio_stream_player.h"
 
 #include "core/config/engine.h"
+#include "core/error/error_macros.h"
 #include "core/math/audio_frame.h"
+#include "core/math/math_funcs.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
+#include "servers/audio/audio_stream.h"
 #include "servers/audio_server.h"
 
 void AudioStreamPlayer::_notification(int p_what) {

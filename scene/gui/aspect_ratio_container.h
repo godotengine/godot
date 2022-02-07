@@ -31,6 +31,9 @@
 #ifndef ASPECT_RATIO_CONTAINER_H
 #define ASPECT_RATIO_CONTAINER_H
 
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/variant/binder_common.h"
 #include "scene/gui/container.h"
 
 class AspectRatioContainer : public Container {

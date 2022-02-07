@@ -30,11 +30,35 @@
 
 #include "importer_mesh.h"
 
+#include <float.h>
+#include <string.h>
+#include <cstdint>
+
+#include "core/error/error_macros.h"
+#include "core/math/basis.h"
+#include "core/math/color.h"
+#include "core/math/face3.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/math/plane.h"
 #include "core/math/random_pcg.h"
 #include "core/math/static_raycaster.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector2.h"
+#include "core/math/vector3.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/string/print_string.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/pair.h"
+#include "core/variant/variant.h"
+#include "scene/resources/concave_polygon_shape_3d.h"
+#include "scene/resources/convex_polygon_shape_3d.h"
+#include "scene/resources/navigation_mesh.h"
+#include "scene/resources/shape_3d.h"
 #include "scene/resources/surface_tool.h"
-
-#include <cstdint>
+#include "servers/rendering_server.h"
 
 void ImporterMesh::Surface::split_normals(const LocalVector<int> &p_indices, const LocalVector<Vector3> &p_normals) {
 	_split_normals(arrays, p_indices, p_normals);

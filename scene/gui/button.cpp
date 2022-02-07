@@ -30,8 +30,23 @@
 
 #include "button.h"
 
+#include <stdint.h>
+
+#include "core/error/error_macros.h"
+#include "core/math/color.h"
+#include "core/math/math_funcs.h"
+#include "core/math/rect2.h"
+#include "core/object/class_db.h"
 #include "core/string/translation.h"
-#include "servers/rendering_server.h"
+#include "core/templates/rid.h"
+#include "core/typedefs.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/resources/font.h"
+#include "scene/resources/style_box.h"
+#include "scene/resources/text_paragraph.h"
+#include "scene/resources/texture.h"
+#include "servers/text_server.h"
 
 Size2 Button::get_minimum_size() const {
 	Size2 minsize = text_buf->get_size();

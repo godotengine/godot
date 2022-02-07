@@ -29,8 +29,21 @@
 /*************************************************************************/
 
 #include "occluder_instance_3d.h"
+
+#include "core/config/project_settings.h"
 #include "core/core_string_names.h"
+#include "core/error/error_macros.h"
+#include "core/math/face3.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector3.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/variant/array.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/main/node.h"
+#include "scene/resources/material.h"
+#include "scene/resources/mesh.h"
+#include "servers/rendering_server.h"
 
 RID Occluder3D::get_rid() const {
 	if (!occluder.is_valid()) {

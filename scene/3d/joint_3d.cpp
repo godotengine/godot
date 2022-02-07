@@ -30,6 +30,15 @@
 
 #include "joint_3d.h"
 
+#include "core/error/error_macros.h"
+#include "core/math/math_funcs.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector3.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/variant/variant.h"
+#include "scene/3d/physics_body_3d.h"
+#include "scene/main/node.h"
 #include "scene/scene_string_names.h"
 
 void Joint3D::_disconnect_signals() {

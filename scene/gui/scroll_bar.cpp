@@ -30,10 +30,26 @@
 
 #include "scroll_bar.h"
 
-#include "core/os/keyboard.h"
-#include "core/os/os.h"
-#include "core/string/print_string.h"
-#include "scene/main/window.h"
+#include <math.h>
+
+#include "core/error/error_macros.h"
+#include "core/input/input_enums.h"
+#include "core/input/input_event.h"
+#include "core/math/math_funcs.h"
+#include "core/math/rect2.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/string/string_name.h"
+#include "core/templates/rid.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "scene/gui/control.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/main/viewport.h"
+#include "scene/resources/style_box.h"
+#include "scene/resources/texture.h"
+#include "servers/display_server.h"
 
 bool ScrollBar::focus_by_default = false;
 

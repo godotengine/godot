@@ -31,9 +31,23 @@
 #ifndef BIT_MAP_H
 #define BIT_MAP_H
 
+#include <stdint.h>
+
 #include "core/io/image.h"
 #include "core/io/resource.h"
 #include "core/io/resource_loader.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
+#include "core/variant/dictionary.h"
+
+class Image;
+struct Rect2;
+struct Rect2i;
 
 class BitMap : public Resource {
 	GDCLASS(BitMap, Resource);

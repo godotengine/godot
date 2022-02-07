@@ -31,7 +31,23 @@
 #ifndef DECAL_H
 #define DECAL_H
 
+#include <stdint.h>
+
+#include "core/math/aabb.h"
+#include "core/math/color.h"
+#include "core/math/math_defs.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/typed_array.h"
 #include "scene/3d/visual_instance_3d.h"
+
+class String;
+class Texture2D;
+struct Face3;
 
 class Decal : public VisualInstance3D {
 	GDCLASS(Decal, VisualInstance3D);

@@ -31,7 +31,18 @@
 #ifndef CANVAS_ITEM_MATERIAL_H
 #define CANVAS_ITEM_MATERIAL_H
 
+#include <stdint.h>
+
+#include "core/object/object.h"
+#include "core/os/mutex.h"
+#include "core/string/string_name.h"
+#include "core/templates/map.h"
+#include "core/templates/rid.h"
+#include "core/templates/self_list.h"
+#include "core/typedefs.h"
+#include "core/variant/binder_common.h"
 #include "scene/resources/material.h"
+#include "scene/resources/shader.h"
 
 class CanvasItemMaterial : public Material {
 	GDCLASS(CanvasItemMaterial, Material);

@@ -31,10 +31,30 @@
 #ifndef SOFT_DYNAMIC_BODY_H
 #define SOFT_DYNAMIC_BODY_H
 
+#include <stdint.h>
+
+#include "core/math/math_defs.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/typed_array.h"
+#include "core/variant/variant.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "servers/physics_server_3d.h"
 
 class SoftDynamicBody3D;
+class ArrayMesh;
+class Node3D;
+class Node;
+struct AABB;
 
 class SoftDynamicBodyRenderingServerHandler : public RenderingServerHandler {
 	friend class SoftDynamicBody3D;

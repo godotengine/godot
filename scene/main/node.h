@@ -31,18 +31,39 @@
 #ifndef NODE_H
 #define NODE_H
 
+#include <stdint.h>
+
 #include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
+#include "core/io/resource.h"
+#include "core/multiplayer/multiplayer.h"
 #include "core/object/class_db.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
+#include "core/os/main_loop.h"
 #include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
 #include "core/templates/map.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/callable.h"
 #include "core/variant/typed_array.h"
+#include "core/variant/variant.h"
 #include "scene/main/scene_tree.h"
 
 class Viewport;
 class SceneState;
 class Tween;
 class PropertyTweener;
+class InputEvent;
+class MultiplayerAPI;
 
 class Node : public Object {
 	GDCLASS(Node, Object);

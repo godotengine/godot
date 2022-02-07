@@ -30,6 +30,13 @@
 
 #include "bone_attachment_3d.h"
 
+#include "core/error/error_macros.h"
+#include "core/math/transform_3d.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "scene/3d/skeleton_3d.h"
+#include "scene/main/node.h"
+
 void BoneAttachment3D::_validate_property(PropertyInfo &property) const {
 	if (property.name == "bone_name") {
 		// Because it is a constant function, we cannot use the _get_skeleton_3d function.

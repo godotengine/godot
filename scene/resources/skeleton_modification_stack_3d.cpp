@@ -29,7 +29,14 @@
 /*************************************************************************/
 
 #include "skeleton_modification_stack_3d.h"
+
+#include <stdint.h>
+
+#include "core/error/error_macros.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
 #include "scene/3d/skeleton_3d.h"
+#include "scene/resources/skeleton_modification_3d.h"
 
 ///////////////////////////////////////
 // ModificationStack3D

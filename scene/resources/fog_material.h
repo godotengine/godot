@@ -31,7 +31,15 @@
 #ifndef FOG_MATERIAL_H
 #define FOG_MATERIAL_H
 
+#include "core/math/color.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/os/mutex.h"
+#include "core/templates/rid.h"
 #include "scene/resources/material.h"
+#include "scene/resources/shader.h"
+
+class Texture3D;
 
 class FogMaterial : public Material {
 	GDCLASS(FogMaterial, Material);

@@ -31,8 +31,14 @@
 #ifndef SCENE_IMPORTER_MESH_INSTANCE_3D_H
 #define SCENE_IMPORTER_MESH_INSTANCE_3D_H
 
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/node_path.h"
+#include "core/templates/vector.h"
 #include "scene/3d/node_3d.h"
 #include "scene/resources/immediate_mesh.h"
+#include "scene/resources/importer_mesh.h"
+#include "scene/resources/material.h"
 #include "scene/resources/skin.h"
 
 class ImporterMesh;

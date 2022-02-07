@@ -30,6 +30,17 @@
 
 #include "light_2d.h"
 
+#include "core/config/engine.h"
+#include "core/error/error_macros.h"
+#include "core/math/transform_2d.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
+#include "servers/rendering_server.h"
+
 void Light2D::_update_light_visibility() {
 	if (!is_inside_tree()) {
 		return;

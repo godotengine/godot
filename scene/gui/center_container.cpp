@@ -30,6 +30,13 @@
 
 #include "center_container.h"
 
+#include "core/math/rect2.h"
+#include "core/object/class_db.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "scene/gui/control.h"
+#include "scene/main/node.h"
+
 Size2 CenterContainer::get_minimum_size() const {
 	if (use_top_left) {
 		return Size2();

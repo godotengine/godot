@@ -31,7 +31,15 @@
 #ifndef SHADER_GLOBALS_OVERRIDE_H
 #define SHADER_GLOBALS_OVERRIDE_H
 
+#include "core/object/object.h"
+#include "core/string/string_name.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/list.h"
+#include "core/variant/typed_array.h"
+#include "core/variant/variant.h"
 #include "scene/main/node.h"
+
+class String;
 
 class ShaderGlobalsOverride : public Node {
 	GDCLASS(ShaderGlobalsOverride, Node);

@@ -30,12 +30,25 @@
 
 #include "collision_polygon_2d.h"
 
+#include <initializer_list>
+
 #include "collision_object_2d.h"
+#include "core/config/engine.h"
+#include "core/error/error_macros.h"
+#include "core/math/color.h"
 #include "core/math/geometry_2d.h"
+#include "core/math/math_funcs.h"
+#include "core/object/class_db.h"
+#include "core/object/ref_counted.h"
+#include "core/os/memory.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
-
-#include "thirdparty/misc/polypartition.h"
+#include "scene/resources/shape_2d.h"
 
 void CollisionPolygon2D::_build_polygon() {
 	parent->shape_owner_clear_shapes(owner_id);

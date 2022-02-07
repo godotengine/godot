@@ -32,9 +32,21 @@
 #define ENVIRONMENT_H
 
 #include "core/io/resource.h"
+#include "core/math/color.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/variant.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/texture.h"
 #include "servers/rendering_server.h"
+
+class Sky;
+class Texture;
 
 class Environment : public Resource {
 	GDCLASS(Environment, Resource);

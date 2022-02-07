@@ -30,6 +30,23 @@
 
 #include "voxelizer.h"
 
+#include "core/error/error_macros.h"
+#include "core/io/image.h"
+#include "core/math/basis.h"
+#include "core/math/face3.h"
+#include "core/math/geometry_3d.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/math/plane.h"
+#include "core/math/vector2.h"
+#include "core/math/vector3.h"
+#include "core/os/memory.h"
+#include "core/variant/array.h"
+#include "core/variant/variant.h"
+#include "scene/resources/mesh.h"
+#include "scene/resources/multimesh.h"
+#include "scene/resources/texture.h"
+
 static _FORCE_INLINE_ void get_uv_and_normal(const Vector3 &p_pos, const Vector3 *p_vtx, const Vector2 *p_uv, const Vector3 *p_normal, Vector2 &r_uv, Vector3 &r_normal) {
 	if (p_pos.is_equal_approx(p_vtx[0])) {
 		r_uv = p_uv[0];

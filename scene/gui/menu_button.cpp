@@ -30,8 +30,25 @@
 
 #include "menu_button.h"
 
-#include "core/os/keyboard.h"
+#include "core/error/error_macros.h"
+#include "core/input/input.h"
+#include "core/input/input_event.h"
+#include "core/math/rect2.h"
+#include "core/math/transform_2d.h"
+#include "core/math/vector2.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
+#include "scene/gui/base_button.h"
+#include "scene/gui/control.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/main/viewport.h"
 #include "scene/main/window.h"
+#include "servers/display_server.h"
 
 void MenuButton::unhandled_key_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());

@@ -31,10 +31,21 @@
 #ifndef COLLISION_POLYGON_3D_H
 #define COLLISION_POLYGON_3D_H
 
+#include <stdint.h>
+
+#include "core/math/aabb.h"
+#include "core/math/math_defs.h"
+#include "core/math/vector2.h"
+#include "core/math/vector3.h"
+#include "core/object/object.h"
+#include "core/templates/vector.h"
+#include "core/variant/typed_array.h"
 #include "scene/3d/node_3d.h"
 #include "scene/resources/shape_3d.h"
 
 class CollisionObject3D;
+class String;
+
 class CollisionPolygon3D : public Node3D {
 	GDCLASS(CollisionPolygon3D, Node3D);
 	real_t margin = 0.04;

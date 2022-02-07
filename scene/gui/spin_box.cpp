@@ -30,8 +30,30 @@
 
 #include "spin_box.h"
 
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
 #include "core/input/input.h"
+#include "core/input/input_enums.h"
+#include "core/input/input_event.h"
 #include "core/math/expression.h"
+#include "core/math/math_funcs.h"
+#include "core/math/vector2i.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/variant.h"
+#include "scene/gui/control.h"
+#include "scene/gui/line_edit.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/main/timer.h"
+#include "scene/resources/texture.h"
+#include "servers/text_server.h"
 
 Size2 SpinBox::get_minimum_size() const {
 	Size2 ms = line_edit->get_combined_minimum_size();

@@ -31,8 +31,22 @@
 #ifndef NAVIGATION_REGION_2D_H
 #define NAVIGATION_REGION_2D_H
 
+#include <stdint.h>
+
+#include "core/io/resource.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/os/mutex.h"
+#include "core/templates/rid.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
+#include "core/variant/typed_array.h"
 #include "scene/2d/node_2d.h"
 #include "scene/resources/navigation_mesh.h"
+
+class String;
 
 class NavigationPolygon : public Resource {
 	GDCLASS(NavigationPolygon, Resource);

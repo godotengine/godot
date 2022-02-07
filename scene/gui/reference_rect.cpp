@@ -31,6 +31,12 @@
 #include "reference_rect.h"
 
 #include "core/config/engine.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2.h"
+#include "core/object/class_db.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "scene/main/canvas_item.h"
 
 void ReferenceRect::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {

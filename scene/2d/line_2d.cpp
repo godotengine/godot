@@ -31,8 +31,17 @@
 #include "line_2d.h"
 
 #include "core/core_string_names.h"
+#include "core/error/error_macros.h"
 #include "core/math/geometry_2d.h"
+#include "core/math/math_defs.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/templates/rid.h"
+#include "core/variant/binder_common.h"
+#include "core/variant/variant.h"
 #include "line_builder.h"
+#include "scene/main/canvas_item.h"
+#include "servers/rendering_server.h"
 
 // Needed so we can bind functions
 VARIANT_ENUM_CAST(Line2D::LineJointMode)

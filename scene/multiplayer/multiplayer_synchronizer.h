@@ -31,9 +31,18 @@
 #ifndef MULTIPLAYER_SYNCHRONIZER_H
 #define MULTIPLAYER_SYNCHRONIZER_H
 
-#include "scene/main/node.h"
+#include <stdint.h>
 
+#include "core/error/error_list.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/node_path.h"
+#include "core/templates/list.h"
+#include "core/templates/vector.h"
+#include "scene/main/node.h"
 #include "scene/resources/scene_replication_config.h"
+
+class Variant;
 
 class MultiplayerSynchronizer : public Node {
 	GDCLASS(MultiplayerSynchronizer, Node);

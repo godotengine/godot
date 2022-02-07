@@ -30,6 +30,21 @@
 
 #include "grid_container.h"
 
+#include <cmath>
+
+#include "core/error/error_macros.h"
+#include "core/math/rect2.h"
+#include "core/math/vector2i.h"
+#include "core/object/class_db.h"
+#include "core/string/string_name.h"
+#include "core/templates/map.h"
+#include "core/templates/pair.h"
+#include "core/templates/set.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "scene/gui/control.h"
+#include "scene/main/node.h"
+
 void GridContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_SORT_CHILDREN: {

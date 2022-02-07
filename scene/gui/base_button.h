@@ -31,9 +31,25 @@
 #ifndef BASE_BUTTON_H
 #define BASE_BUTTON_H
 
+#include "core/input/input_enums.h"
+#include "core/io/resource.h"
+#include "core/math/vector2.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/set.h"
+#include "core/variant/array.h"
+#include "core/variant/binder_common.h"
 #include "scene/gui/control.h"
 
 class ButtonGroup;
+class InputEvent;
+class Node;
+class Shortcut;
 
 class BaseButton : public Control {
 	GDCLASS(BaseButton, Control);

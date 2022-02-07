@@ -31,6 +31,8 @@
 #ifndef PANEL_H
 #define PANEL_H
 
+#include "core/object/object.h"
+#include "core/variant/binder_common.h"
 #include "scene/gui/control.h"
 
 class Panel : public Control {

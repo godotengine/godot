@@ -30,6 +30,18 @@
 
 #include "light_3d.h"
 
+#include "core/config/engine.h"
+#include "core/error/error_macros.h"
+#include "core/math/face3.h"
+#include "core/math/math_funcs.h"
+#include "core/math/vector3.h"
+#include "core/object/class_db.h"
+#include "core/variant/variant.h"
+#include "scene/3d/node_3d.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
+#include "scene/resources/texture.h"
+
 void Light3D::set_param(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	param[p_param] = p_value;

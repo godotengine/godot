@@ -30,10 +30,23 @@
 
 #include "scene_replication_interface.h"
 
+#include "core/error/error_macros.h"
 #include "core/io/marshalls.h"
+#include "core/multiplayer/multiplayer.h"
+#include "core/multiplayer/multiplayer_peer.h"
+#include "core/os/memory.h"
+#include "core/os/os.h"
+#include "core/string/node_path.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/list.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
 #include "scene/main/node.h"
 #include "scene/multiplayer/multiplayer_spawner.h"
 #include "scene/multiplayer/multiplayer_synchronizer.h"
+#include "scene/resources/scene_replication_config.h"
 
 #define MAKE_ROOM(m_amount)             \
 	if (packet_cache.size() < m_amount) \

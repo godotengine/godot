@@ -31,6 +31,13 @@
 #ifndef JOINT_2D_H
 #define JOINT_2D_H
 
+#include "core/math/math_defs.h"
+#include "core/object/object.h"
+#include "core/string/node_path.h"
+#include "core/string/ustring.h"
+#include "core/templates/rid.h"
+#include "core/typedefs.h"
+#include "core/variant/typed_array.h"
 #include "node_2d.h"
 
 class PhysicsBody2D;

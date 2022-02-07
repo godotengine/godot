@@ -29,8 +29,29 @@
 /*************************************************************************/
 
 #include "scroll_container.h"
-#include "core/os/os.h"
-#include "scene/main/window.h"
+
+#include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
+#include "core/input/input_enums.h"
+#include "core/input/input_event.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/math/rect2.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/os/memory.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/typedefs.h"
+#include "core/variant/variant.h"
+#include "scene/gui/container.h"
+#include "scene/gui/control.h"
+#include "scene/gui/scroll_bar.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/main/viewport.h"
+#include "scene/resources/style_box.h"
+#include "servers/display_server.h"
 
 Size2 ScrollContainer::get_minimum_size() const {
 	Ref<StyleBox> sb = get_theme_stylebox(SNAME("bg"));

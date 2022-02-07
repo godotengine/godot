@@ -30,7 +30,13 @@
 
 #include "sky_material.h"
 
+#include "core/math/math_funcs.h"
+#include "core/object/class_db.h"
+#include "core/variant/variant.h"
 #include "core/version.h"
+#include "core/version_generated.gen.h"
+#include "scene/resources/texture.h"
+#include "servers/rendering_server.h"
 
 Mutex ProceduralSkyMaterial::shader_mutex;
 RID ProceduralSkyMaterial::shader;

@@ -31,9 +31,16 @@
 #ifndef VISIBLE_ON_SCREEN_NOTIFIER_2D_H
 #define VISIBLE_ON_SCREEN_NOTIFIER_2D_H
 
+#include "core/math/rect2.h"
+#include "core/object/object.h"
+#include "core/object/object_id.h"
+#include "core/string/node_path.h"
+#include "core/templates/set.h"
+#include "core/variant/binder_common.h"
 #include "scene/2d/node_2d.h"
 
 class Viewport;
+
 class VisibleOnScreenNotifier2D : public Node2D {
 	GDCLASS(VisibleOnScreenNotifier2D, Node2D);
 

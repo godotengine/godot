@@ -31,9 +31,18 @@
 #ifndef AUDIO_STREAM_PLAYER_H
 #define AUDIO_STREAM_PLAYER_H
 
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
 #include "core/templates/safe_refcount.h"
+#include "core/templates/vector.h"
+#include "core/variant/binder_common.h"
 #include "scene/main/node.h"
 #include "servers/audio/audio_stream.h"
+
+class AudioStream;
+class AudioStreamPlayback;
+struct AudioFrame;
 
 class AudioStreamPlayer : public Node {
 	GDCLASS(AudioStreamPlayer, Node);

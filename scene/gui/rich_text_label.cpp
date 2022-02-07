@@ -30,13 +30,27 @@
 
 #include "rich_text_label.h"
 
-#include "core/math/math_defs.h"
-#include "core/os/keyboard.h"
-#include "core/os/os.h"
-#include "scene/scene_string_names.h"
-#include "servers/display_server.h"
+#include <cmath>
 
+#include "core/error/error_macros.h"
+#include "core/input/input_enums.h"
+#include "core/input/input_event.h"
+#include "core/io/resource_loader.h"
+#include "core/math/math_defs.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/object/class_db.h"
+#include "core/string/node_path.h"
+#include "core/templates/map.h"
+#include "core/templates/rid.h"
+#include "core/typedefs.h"
 #include "modules/modules_enabled.gen.h" // For regex.
+#include "scene/gui/rich_text_effect.h"
+#include "scene/gui/scroll_bar.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/node.h"
+#include "scene/resources/style_box.h"
+#include "servers/display_server.h"
+#include "servers/rendering_server.h"
 #ifdef MODULE_REGEX_ENABLED
 #include "modules/regex/regex.h"
 #endif

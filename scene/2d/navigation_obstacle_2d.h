@@ -31,8 +31,15 @@
 #ifndef NAVIGATION_OBSTACLE_2D_H
 #define NAVIGATION_OBSTACLE_2D_H
 
+#include "core/math/math_defs.h"
+#include "core/object/object.h"
+#include "core/templates/rid.h"
+#include "core/variant/typed_array.h"
 #include "scene/2d/node_2d.h"
 #include "scene/main/node.h"
+
+class Node2D;
+class String;
 
 class NavigationObstacle2D : public Node {
 	GDCLASS(NavigationObstacle2D, Node);

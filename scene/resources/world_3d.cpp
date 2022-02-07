@@ -30,12 +30,15 @@
 
 #include "world_3d.h"
 
-#include "core/math/camera_matrix.h"
-#include "core/math/octree.h"
-#include "scene/3d/camera_3d.h"
-#include "scene/3d/visible_on_screen_notifier_3d.h"
-#include "scene/scene_string_names.h"
+#include "core/config/project_settings.h"
+#include "core/math/vector3.h"
+#include "core/object/class_db.h"
+#include "core/variant/variant.h"
+#include "scene/resources/camera_effects.h"
+#include "scene/resources/environment.h"
 #include "servers/navigation_server_3d.h"
+#include "servers/physics_server_3d.h"
+#include "servers/rendering_server.h"
 
 void World3D::_register_camera(Camera3D *p_camera) {
 #ifndef _3D_DISABLED

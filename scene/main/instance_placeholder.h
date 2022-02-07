@@ -31,7 +31,15 @@
 #ifndef INSTANCE_PLACEHOLDER_H
 #define INSTANCE_PLACEHOLDER_H
 
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 #include "scene/main/node.h"
+#include "scene/resources/packed_scene.h"
 
 class PackedScene;
 

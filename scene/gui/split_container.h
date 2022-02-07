@@ -31,7 +31,15 @@
 #ifndef SPLIT_CONTAINER_H
 #define SPLIT_CONTAINER_H
 
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/variant/binder_common.h"
 #include "scene/gui/container.h"
+#include "scene/gui/control.h"
+
+class InputEvent;
 
 class SplitContainer : public Container {
 	GDCLASS(SplitContainer, Container);
