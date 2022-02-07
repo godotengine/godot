@@ -147,7 +147,7 @@ void SubViewportContainer::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	Transform2D xform = get_global_transform();
+	Transform2D xform = get_viewport()->get_global_canvas_transform();
 
 	if (stretch) {
 		Transform2D scale_xf;
