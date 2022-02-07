@@ -79,7 +79,7 @@ class DisplayServerWayland : public DisplayServer {
 
 	struct PointerData {
 		Point2i position;
-		struct wl_surface* focused_wl_surface = nullptr;
+		WindowID focused_window_id = INVALID_WINDOW_ID;
 		MouseButton pressed_button_mask = MouseButton::NONE;
 		
 		MouseButton last_button_pressed = MouseButton::NONE;
