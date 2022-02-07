@@ -46,6 +46,7 @@
 #include <png.h>
 #include <stdlib.h>
 
+#include "api/javascript_singleton.h"
 #include "dom_keys.inc"
 #include "godot_js.h"
 
@@ -1035,6 +1036,19 @@ void OS_JavaScript::file_access_close_callback(const String &p_file, int p_flags
 	}
 }
 
+void OS_JavaScript::update_pwa_state_callback() {
+	if (OS_JavaScript::get_singleton()) {
+		OS_JavaScript::get_singleton()->pwa_is_waiting = true;
+	}
+	if (JavaScript::get_singleton()) {
+		JavaScript::get_singleton()->emit_signal("pwa_update_available");
+	}
+}
+
+Error OS_JavaScript::pwa_update() {
+	return godot_js_pwa_update() ? FAILED : OK;
+}
+
 bool OS_JavaScript::is_userfs_persistent() const {
 	return idb_available;
 }
@@ -1072,6 +1086,8 @@ OS_JavaScript::OS_JavaScript() {
 	idb_available = godot_js_os_fs_is_persistent() != 0;
 	idb_needs_sync = false;
 	idb_is_syncing = false;
+	pwa_is_waiting = false;
+	godot_js_pwa_cb(&OS_JavaScript::update_pwa_state_callback);
 
 	if (AudioDriverJavaScript::is_available()) {
 #ifdef NO_THREADS

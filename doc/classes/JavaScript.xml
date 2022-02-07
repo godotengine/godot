@@ -54,7 +54,29 @@
 				Returns an interface to a JavaScript object that can be used by scripts. The [code]interface[/code] must be a valid property of the JavaScript [code]window[/code]. The callback must accept a single [Array] argument, which will contain the JavaScript [code]arguments[/code]. See [JavaScriptObject] for usage.
 			</description>
 		</method>
+		<method name="pwa_needs_update" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if a new version of the progressive web app is waiting to be activated.
+				[b]Note:[/b] Only relevant when exported as a Progressive Web App.
+			</description>
+		</method>
+		<method name="pwa_update">
+			<return type="int" enum="Error" />
+			<description>
+				Performs the live update of the progressive web app. Forcing the new version to be installed and the page to be reloaded.
+				[b]Note:[/b] Your application will be [b]reloaded in all browser tabs[/b].
+				[b]Note:[/b] Only relevant when exported as a Progressive Web App and [method pwa_needs_update] returns [code]true[/code].
+			</description>
+		</method>
 	</methods>
+	<signals>
+		<signal name="pwa_update_available">
+			<description>
+				Emitted when an update for this progressive web app has been detected but is waiting to be activated because a previous version is active. See [method pwa_update] to force the update to take place immediately.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 	</constants>
 </class>
