@@ -48,6 +48,7 @@
 		<method name="abs" qualifiers="const">
 			<return type="Vector3i" />
 			<description>
+				Returns a new vector with all components in absolute values (i.e. positive).
 			</description>
 		</method>
 		<method name="clamp" qualifiers="const">
