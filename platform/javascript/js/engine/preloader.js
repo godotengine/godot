@@ -1,4 +1,5 @@
 const Preloader = /** @constructor */ function () { // eslint-disable-line no-unused-vars
+
 	function getTrackedResponse(response, load_status) {
 		function onloadprogress(reader, controller) {
 			return reader.read().then(function (result) {
@@ -32,7 +33,8 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 			loaded: 0,
 			done: false,
 		};
-		return fetch(file).then(function (response) {
+
+		return fetch(file + cacheBuster).then(function (response) {
 			if (!response.ok) {
 				return Promise.reject(new Error(`Failed loading file '${file}'`));
 			}
@@ -62,6 +64,7 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 	const loadingFiles = {};
 	const lastProgress = { loaded: 0, total: 0 };
 	let progressFunc = null;
+	let cacheBuster = "";
 
 	const animateProgress = function () {
 		let loaded = 0;
@@ -98,6 +101,10 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 
 	this.setProgressFunc = function (callback) {
 		progressFunc = callback;
+	};
+
+	this.setCacheBuster = function (initCacheBuster) {
+		cacheBuster = initCacheBuster;
 	};
 
 	this.loadPromise = function (file, fileSize, raw = false) {

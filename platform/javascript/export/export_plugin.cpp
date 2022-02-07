@@ -30,6 +30,8 @@
 
 #include "export_plugin.h"
 
+#include "core/os/time.h"
+
 Error EditorExportPlatformJavaScript::_extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa) {
 	FileAccess *src_f = nullptr;
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
@@ -132,6 +134,7 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Re
 	config["args"] = args;
 	config["fileSizes"] = p_file_sizes;
 
+	String cache_buster;
 	String head_include;
 	if (p_preset->get("html/export_icon")) {
 		head_include += "<link id='-gd-engine-icon' rel='icon' type='image/png' href='" + p_name + ".icon.png' />\n";
@@ -141,13 +144,20 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Re
 		head_include += "<link rel='manifest' href='" + p_name + ".manifest.json'>\n";
 		head_include += "<script type='application/javascript'>window.addEventListener('load', () => {if ('serviceWorker' in navigator) {navigator.serviceWorker.register('" +
 				p_name + ".service.worker.js');}});</script>\n";
+	} else {
+		const String date = Time::get_singleton()->get_date_string_from_system(true);
+		const String time = Time::get_singleton()->get_time_string_from_system(true);
+		const uint64_t ticks = Time::get_singleton()->get_ticks_msec() % 1000;
+		// The cache buster is a unique value for the export.
+		// The value may look like a timestamp but due to the last value being ticks it is not.
+		cache_buster = vformat("?v=%sT%s.%d", date, time, ticks);
+		config["cacheBuster"] = cache_buster;
 	}
-
 	// Replaces HTML string
 	const String str_config = Variant(config).to_json_string();
 	const String custom_head_include = p_preset->get("html/head_include");
 	Map<String, String> replaces;
-	replaces["$GODOT_URL"] = p_name + ".js";
+	replaces["$GODOT_URL"] = p_name + ".js" + cache_buster;
 	replaces["$GODOT_PROJECT_NAME"] = ProjectSettings::get_singleton()->get_setting("application/config/name");
 	replaces["$GODOT_HEAD_INCLUDE"] = head_include + custom_head_include;
 	replaces["$GODOT_CONFIG"] = str_config;
