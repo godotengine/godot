@@ -870,21 +870,12 @@ bool EditorData::script_class_is_parent(const String &p_class, const String &p_i
 		return false;
 	}
 
-	Ref<Script> script = script_class_load_script(p_class);
-	if (script.is_null()) {
-		return false;
-	}
-
-	String base = script_class_get_base(p_class);
-	Ref<Script> base_script = script->get_base_script();
-
-	while (p_inherits != base) {
+	String base = p_class;
+	while (base != p_inherits) {
 		if (ClassDB::class_exists(base)) {
 			return ClassDB::is_parent_class(base, p_inherits);
 		} else if (ScriptServer::is_global_class(base)) {
-			base = script_class_get_base(base);
-		} else if (base_script.is_valid()) {
-			return ClassDB::is_parent_class(base_script->get_instance_base_type(), p_inherits);
+			base = ScriptServer::get_global_class_base(base);
 		} else {
 			return false;
 		}
