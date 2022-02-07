@@ -61,7 +61,7 @@ layout(rgba8, set = 3, binding = 0) uniform restrict writeonly image2D dest_buff
 layout(rgba32f, set = 3, binding = 0) uniform restrict writeonly image2D dest_buffer;
 #endif
 
-#ifdef MODE_GAUSSIAN_GLOW
+#ifdef MODE_GAUSSIAN_BLUR
 shared vec4 local_cache[256];
 shared vec4 temp_cache[128];
 #endif
@@ -70,7 +70,7 @@ void main() {
 	// Pixel being shaded
 	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
 
-#ifndef MODE_GAUSSIAN_GLOW // Glow needs the extra threads
+#ifndef MODE_GAUSSIAN_BLUR // Gaussian blur needs the extra threads
 	if (any(greaterThanEqual(pos, params.section.zw))) { //too large, do nothing
 		return;
 	}
@@ -92,35 +92,11 @@ void main() {
 
 #ifdef MODE_GAUSSIAN_BLUR
 
-	//Simpler blur uses SIGMA2 for the gaussian kernel for a stronger effect
-
-	if (bool(params.flags & FLAG_HORIZONTAL)) {
-		ivec2 base_pos = (pos + params.section.xy) << 1;
-		vec4 color = texelFetch(source_color, base_pos + ivec2(0, 0), 0) * 0.214607;
-		color += texelFetch(source_color, base_pos + ivec2(1, 0), 0) * 0.189879;
-		color += texelFetch(source_color, base_pos + ivec2(2, 0), 0) * 0.131514;
-		color += texelFetch(source_color, base_pos + ivec2(3, 0), 0) * 0.071303;
-		color += texelFetch(source_color, base_pos + ivec2(-1, 0), 0) * 0.189879;
-		color += texelFetch(source_color, base_pos + ivec2(-2, 0), 0) * 0.131514;
-		color += texelFetch(source_color, base_pos + ivec2(-3, 0), 0) * 0.071303;
-		imageStore(dest_buffer, pos + params.target, color);
-	} else {
-		ivec2 base_pos = (pos + params.section.xy);
-		vec4 color = texelFetch(source_color, base_pos + ivec2(0, 0), 0) * 0.38774;
-		color += texelFetch(source_color, base_pos + ivec2(0, 1), 0) * 0.24477;
-		color += texelFetch(source_color, base_pos + ivec2(0, 2), 0) * 0.06136;
-		color += texelFetch(source_color, base_pos + ivec2(0, -1), 0) * 0.24477;
-		color += texelFetch(source_color, base_pos + ivec2(0, -2), 0) * 0.06136;
-		imageStore(dest_buffer, pos + params.target, color);
-	}
-#endif
-
-#ifdef MODE_GAUSSIAN_GLOW
-
 	// First pass copy texture into 16x16 local memory for every 8x8 thread block
 	vec2 quad_center_uv = clamp(vec2(gl_GlobalInvocationID.xy + gl_LocalInvocationID.xy - 3.5) / params.section.zw, vec2(0.5 / params.section.zw), vec2(1.0 - 1.5 / params.section.zw));
 	uint dest_index = gl_LocalInvocationID.x * 2 + gl_LocalInvocationID.y * 2 * 16;
 
+#ifdef MODE_GLOW
 	if (bool(params.flags & FLAG_HIGH_QUALITY_GLOW)) {
 		vec2 quad_offset_uv = clamp((vec2(gl_GlobalInvocationID.xy + gl_LocalInvocationID.xy - 3.0)) / params.section.zw, vec2(0.5 / params.section.zw), vec2(1.0 - 1.5 / params.section.zw));
 
@@ -128,12 +104,15 @@ void main() {
 		local_cache[dest_index + 1] = (textureLod(source_color, quad_center_uv + vec2(1.0 / params.section.z, 0.0), 0) + textureLod(source_color, quad_offset_uv + vec2(1.0 / params.section.z, 0.0), 0)) * 0.5;
 		local_cache[dest_index + 16] = (textureLod(source_color, quad_center_uv + vec2(0.0, 1.0 / params.section.w), 0) + textureLod(source_color, quad_offset_uv + vec2(0.0, 1.0 / params.section.w), 0)) * 0.5;
 		local_cache[dest_index + 16 + 1] = (textureLod(source_color, quad_center_uv + vec2(1.0 / params.section.zw), 0) + textureLod(source_color, quad_offset_uv + vec2(1.0 / params.section.zw), 0)) * 0.5;
-	} else {
+	} else
+#endif
+	{
 		local_cache[dest_index] = textureLod(source_color, quad_center_uv, 0);
 		local_cache[dest_index + 1] = textureLod(source_color, quad_center_uv + vec2(1.0 / params.section.z, 0.0), 0);
 		local_cache[dest_index + 16] = textureLod(source_color, quad_center_uv + vec2(0.0, 1.0 / params.section.w), 0);
 		local_cache[dest_index + 16 + 1] = textureLod(source_color, quad_center_uv + vec2(1.0 / params.section.zw), 0);
 	}
+#ifdef MODE_GLOW
 	if (bool(params.flags & FLAG_GLOW_FIRST_PASS)) {
 		// Tonemap initial samples to reduce weight of fireflies: https://graphicrants.blogspot.com/2013/12/tone-mapping.html
 		local_cache[dest_index] /= 1.0 + dot(local_cache[dest_index].rgb, vec3(0.299, 0.587, 0.114));
@@ -141,29 +120,33 @@ void main() {
 		local_cache[dest_index + 16] /= 1.0 + dot(local_cache[dest_index + 16].rgb, vec3(0.299, 0.587, 0.114));
 		local_cache[dest_index + 16 + 1] /= 1.0 + dot(local_cache[dest_index + 16 + 1].rgb, vec3(0.299, 0.587, 0.114));
 	}
-
+	const float kernel[4] = { 0.174938, 0.165569, 0.140367, 0.106595 };
+#else
+	// Simpler blur uses SIGMA2 for the gaussian kernel for a stronger effect.
+	const float kernel[4] = { 0.214607, 0.189879, 0.131514, 0.071303 };
+#endif
 	memoryBarrierShared();
 	barrier();
 
 	// Horizontal pass. Needs to copy into 8x16 chunk of local memory so vertical pass has full resolution
 	uint read_index = gl_LocalInvocationID.x + gl_LocalInvocationID.y * 32 + 4;
 	vec4 color_top = vec4(0.0);
-	color_top += local_cache[read_index] * 0.174938;
-	color_top += local_cache[read_index + 1] * 0.165569;
-	color_top += local_cache[read_index + 2] * 0.140367;
-	color_top += local_cache[read_index + 3] * 0.106595;
-	color_top += local_cache[read_index - 1] * 0.165569;
-	color_top += local_cache[read_index - 2] * 0.140367;
-	color_top += local_cache[read_index - 3] * 0.106595;
+	color_top += local_cache[read_index] * kernel[0];
+	color_top += local_cache[read_index + 1] * kernel[1];
+	color_top += local_cache[read_index + 2] * kernel[2];
+	color_top += local_cache[read_index + 3] * kernel[3];
+	color_top += local_cache[read_index - 1] * kernel[1];
+	color_top += local_cache[read_index - 2] * kernel[2];
+	color_top += local_cache[read_index - 3] * kernel[3];
 
 	vec4 color_bottom = vec4(0.0);
-	color_bottom += local_cache[read_index + 16] * 0.174938;
-	color_bottom += local_cache[read_index + 1 + 16] * 0.165569;
-	color_bottom += local_cache[read_index + 2 + 16] * 0.140367;
-	color_bottom += local_cache[read_index + 3 + 16] * 0.106595;
-	color_bottom += local_cache[read_index - 1 + 16] * 0.165569;
-	color_bottom += local_cache[read_index - 2 + 16] * 0.140367;
-	color_bottom += local_cache[read_index - 3 + 16] * 0.106595;
+	color_bottom += local_cache[read_index + 16] * kernel[0];
+	color_bottom += local_cache[read_index + 1 + 16] * kernel[1];
+	color_bottom += local_cache[read_index + 2 + 16] * kernel[2];
+	color_bottom += local_cache[read_index + 3 + 16] * kernel[3];
+	color_bottom += local_cache[read_index - 1 + 16] * kernel[1];
+	color_bottom += local_cache[read_index - 2 + 16] * kernel[2];
+	color_bottom += local_cache[read_index - 3 + 16] * kernel[3];
 
 	// rotate samples to take advantage of cache coherency
 	uint write_index = gl_LocalInvocationID.y * 2 + gl_LocalInvocationID.x * 16;
@@ -174,18 +157,24 @@ void main() {
 	memoryBarrierShared();
 	barrier();
 
+	// If destination outside of texture, can stop doing work now
+	if (any(greaterThanEqual(pos, params.section.zw))) {
+		return;
+	}
+
 	// Vertical pass
 	uint index = gl_LocalInvocationID.y + gl_LocalInvocationID.x * 16 + 4;
 	vec4 color = vec4(0.0);
 
-	color += temp_cache[index] * 0.174938;
-	color += temp_cache[index + 1] * 0.165569;
-	color += temp_cache[index + 2] * 0.140367;
-	color += temp_cache[index + 3] * 0.106595;
-	color += temp_cache[index - 1] * 0.165569;
-	color += temp_cache[index - 2] * 0.140367;
-	color += temp_cache[index - 3] * 0.106595;
+	color += temp_cache[index] * kernel[0];
+	color += temp_cache[index + 1] * kernel[1];
+	color += temp_cache[index + 2] * kernel[2];
+	color += temp_cache[index + 3] * kernel[3];
+	color += temp_cache[index - 1] * kernel[1];
+	color += temp_cache[index - 2] * kernel[2];
+	color += temp_cache[index - 3] * kernel[3];
 
+#ifdef MODE_GLOW
 	if (bool(params.flags & FLAG_GLOW_FIRST_PASS)) {
 		// Undo tonemap to restore range: https://graphicrants.blogspot.com/2013/12/tone-mapping.html
 		color /= 1.0 - dot(color.rgb, vec3(0.299, 0.587, 0.114));
@@ -205,7 +194,7 @@ void main() {
 
 		color = min(color * feedback, vec4(params.glow_luminance_cap));
 	}
-
+#endif
 	imageStore(dest_buffer, pos + params.target, color);
 
 #endif

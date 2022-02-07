@@ -482,12 +482,11 @@ void EffectsRD::set_color(RID p_dest_texture, const Color &p_color, const Rect2i
 	RD::get_singleton()->compute_list_end();
 }
 
-void EffectsRD::gaussian_blur(RID p_source_rd_texture, RID p_texture, RID p_back_texture, const Rect2i &p_region, bool p_8bit_dst) {
+void EffectsRD::gaussian_blur(RID p_source_rd_texture, RID p_texture, const Rect2i &p_region, bool p_8bit_dst) {
 	ERR_FAIL_COND_MSG(prefer_raster_effects, "Can't use the compute version of the gaussian blur with the mobile renderer.");
 
 	memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
 
-	uint32_t base_flags = 0;
 	copy.push_constant.section[0] = p_region.position.x;
 	copy.push_constant.section[1] = p_region.position.y;
 	copy.push_constant.section[2] = p_region.size.width;
@@ -497,23 +496,12 @@ void EffectsRD::gaussian_blur(RID p_source_rd_texture, RID p_texture, RID p_back
 	RD::DrawListID compute_list = RD::get_singleton()->compute_list_begin();
 	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, copy.pipelines[p_8bit_dst ? COPY_MODE_GAUSSIAN_COPY_8BIT : COPY_MODE_GAUSSIAN_COPY]);
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_source_rd_texture), 0);
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_back_texture), 3);
-
-	copy.push_constant.flags = base_flags | COPY_FLAG_HORIZONTAL;
-	RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy.push_constant, sizeof(CopyPushConstant));
-
-	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_region.size.width, p_region.size.height, 1);
-
-	RD::get_singleton()->compute_list_add_barrier(compute_list);
-
-	//VERTICAL
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_back_texture), 0);
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_texture), 3);
 
-	copy.push_constant.flags = base_flags;
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy.push_constant, sizeof(CopyPushConstant));
 
 	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_region.size.width, p_region.size.height, 1);
+
 	RD::get_singleton()->compute_list_end();
 }
 
@@ -2343,8 +2331,8 @@ EffectsRD::EffectsRD(bool p_prefer_raster_effects) {
 		Vector<String> copy_modes;
 		copy_modes.push_back("\n#define MODE_GAUSSIAN_BLUR\n");
 		copy_modes.push_back("\n#define MODE_GAUSSIAN_BLUR\n#define DST_IMAGE_8BIT\n");
-		copy_modes.push_back("\n#define MODE_GAUSSIAN_GLOW\n");
-		copy_modes.push_back("\n#define MODE_GAUSSIAN_GLOW\n#define GLOW_USE_AUTO_EXPOSURE\n");
+		copy_modes.push_back("\n#define MODE_GAUSSIAN_BLUR\n#define MODE_GLOW\n");
+		copy_modes.push_back("\n#define MODE_GAUSSIAN_BLUR\n#define MODE_GLOW\n#define GLOW_USE_AUTO_EXPOSURE\n");
 		copy_modes.push_back("\n#define MODE_SIMPLE_COPY\n");
 		copy_modes.push_back("\n#define MODE_SIMPLE_COPY\n#define DST_IMAGE_8BIT\n");
 		copy_modes.push_back("\n#define MODE_SIMPLE_COPY_DEPTH\n");

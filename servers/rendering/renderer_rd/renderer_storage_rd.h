@@ -1169,12 +1169,7 @@ private:
 		RID backbuffer_fb;
 		RID backbuffer_mipmap0;
 
-		struct BackbufferMipmap {
-			RID mipmap;
-			RID mipmap_copy;
-		};
-
-		Vector<BackbufferMipmap> backbuffer_mipmaps;
+		Vector<RID> backbuffer_mipmaps;
 
 		RID framebuffer_uniform_set;
 		RID backbuffer_uniform_set;
