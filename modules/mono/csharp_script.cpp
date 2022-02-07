@@ -3032,6 +3032,8 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 	CRASH_COND(!valid);
 #endif
 
+	GD_MONO_SCOPE_THREAD_ATTACH;
+
 	if (native) {
 		String native_name = NATIVE_GDMONOCLASS_NAME(native);
 		if (!ClassDB::is_parent_class(p_this->get_class_name(), native_name)) {
@@ -3041,8 +3043,6 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 			ERR_FAIL_V_MSG(NULL, "Script inherits from native type '" + native_name + "', so it can't be instanced in object of type: '" + p_this->get_class() + "'.");
 		}
 	}
-
-	GD_MONO_SCOPE_THREAD_ATTACH;
 
 	Variant::CallError unchecked_error;
 	return _create_instance(NULL, 0, p_this, Object::cast_to<Reference>(p_this) != NULL, unchecked_error);
