@@ -761,6 +761,8 @@ void TabBar::_update_hover() {
 		return;
 	}
 
+	ERR_FAIL_COND(tabs.is_empty());
+
 	const Point2 &pos = get_local_mouse_position();
 	// Test hovering to display right or close button.
 	int hover_now = -1;
@@ -1436,7 +1438,6 @@ void TabBar::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void TabBar::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update_hover"), &TabBar::_update_hover);
 	ClassDB::bind_method(D_METHOD("set_tab_count", "count"), &TabBar::set_tab_count);
 	ClassDB::bind_method(D_METHOD("get_tab_count"), &TabBar::get_tab_count);
 	ClassDB::bind_method(D_METHOD("set_current_tab", "tab_idx"), &TabBar::set_current_tab);
