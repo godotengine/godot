@@ -3479,10 +3479,14 @@ void EditorInspector::_update_script_class_properties(const Object &p_object, Li
 		String path = s->get_path();
 		String name = EditorNode::get_editor_data().script_class_get_name(path);
 		if (name.is_empty()) {
-			if (!s->is_built_in()) {
-				name = path.get_file();
+			if (s->is_built_in()) {
+				if (s->get_name().is_empty()) {
+					name = TTR("Built-in script");
+				} else {
+					name = vformat("%s (%s)", s->get_name(), TTR("Built-in"));
+				}
 			} else {
-				name = TTR("Built-in script");
+				name = path.get_file();
 			}
 		}
 
