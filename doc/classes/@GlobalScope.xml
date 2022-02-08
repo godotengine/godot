@@ -1267,6 +1267,12 @@
 		<constant name="INLINE_ALIGNMENT_BOTTOM" value="14" enum="InlineAlignment">
 			Aligns bottom of the inline object (e.g. image, table) to the bottom of the text. Equivalent to [code]INLINE_ALIGNMENT_BOTTOM_TO | INLINE_ALIGNMENT_TO_BOTTOM[/code].
 		</constant>
+		<constant name="INLINE_ALIGNMENT_IMAGE_MASK" value="3" enum="InlineAlignment">
+			A bit mask for [code]INLINE_ALIGNMENT_*_TO[/code] alignment constants.
+		</constant>
+		<constant name="INLINE_ALIGNMENT_TEXT_MASK" value="12" enum="InlineAlignment">
+			A bit mask for [code]INLINE_ALIGNMENT_TO_*[/code] alignment constants.
+		</constant>
 		<constant name="KEY_SPECIAL" value="16777216" enum="Key">
 			Keycodes with this bit applied are non-printable.
 		</constant>
