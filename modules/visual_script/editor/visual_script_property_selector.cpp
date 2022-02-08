@@ -46,7 +46,7 @@
 void VisualScriptPropertySelector::_update_icons() {
 	search_box->set_right_icon(results_tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 	search_box->set_clear_button_enabled(true);
-	search_box->add_theme_icon_override(SNAME("right_icon"), results_tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+	search_box->add_theme_icon_override("right_icon", results_tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 
 	search_visual_script_nodes->set_icon(results_tree->get_theme_icon(SNAME("VisualScript"), SNAME("EditorIcons")));
 	search_classes->set_icon(results_tree->get_theme_icon(SNAME("Object"), SNAME("EditorIcons")));
@@ -1142,11 +1142,11 @@ TreeItem *VisualScriptPropertySelector::SearchRunner::_create_class_item(TreeIte
 	} else {
 		if (p_doc->name.is_quoted()) {
 			text_0 = p_doc->name.unquote().get_file();
-			if (ui_service->has_theme_icon(p_doc->inherits, SNAME("EditorIcons"))) {
-				icon = ui_service->get_theme_icon(p_doc->inherits, SNAME("EditorIcons"));
+			if (ui_service->has_theme_icon(p_doc->inherits, "EditorIcons")) {
+				icon = ui_service->get_theme_icon(p_doc->inherits, "EditorIcons");
 			}
-		} else if (ui_service->has_theme_icon(p_doc->name, SNAME("EditorIcons"))) {
-			icon = ui_service->get_theme_icon(p_doc->name, SNAME("EditorIcons"));
+		} else if (ui_service->has_theme_icon(p_doc->name, "EditorIcons")) {
+			icon = ui_service->get_theme_icon(p_doc->name, "EditorIcons");
 		} else if (ClassDB::class_exists(p_doc->name) && ClassDB::is_parent_class(p_doc->name, "Object")) {
 			icon = ui_service->get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
 		}

@@ -182,9 +182,9 @@ void EditorSettingsDialog::_update_icons() {
 	shortcut_search_box->set_clear_button_enabled(true);
 
 	restart_close_button->set_icon(shortcuts->get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-	restart_container->add_theme_style_override(SNAME("panel"), shortcuts->get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+	restart_container->add_theme_style_override("panel", shortcuts->get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 	restart_icon->set_texture(shortcuts->get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
-	restart_label->add_theme_color_override(SNAME("font_color"), shortcuts->get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+	restart_label->add_theme_color_override("font_color", shortcuts->get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 }
 
 void EditorSettingsDialog::_event_config_confirmed() {

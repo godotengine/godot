@@ -247,11 +247,11 @@ TextureLayeredEditor::TextureLayeredEditor() {
 	info->set_anchor(SIDE_TOP, 1);
 	info->set_h_grow_direction(GROW_DIRECTION_BEGIN);
 	info->set_v_grow_direction(GROW_DIRECTION_BEGIN);
-	info->add_theme_color_override(SNAME("font_color"), Color(1, 1, 1, 1));
-	info->add_theme_color_override(SNAME("font_shadow_color"), Color(0, 0, 0, 0.5));
-	info->add_theme_constant_override(SNAME("shadow_outline_size"), 1);
-	info->add_theme_constant_override(SNAME("shadow_offset_x"), 2);
-	info->add_theme_constant_override(SNAME("shadow_offset_y"), 2);
+	info->add_theme_color_override("font_color", Color(1, 1, 1, 1));
+	info->add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.5));
+	info->add_theme_constant_override("shadow_outline_size", 1);
+	info->add_theme_constant_override("shadow_offset_x", 2);
+	info->add_theme_constant_override("shadow_offset_y", 2);
 
 	setting = false;
 	layer->connect("value_changed", Callable(this, "_layer_changed"));

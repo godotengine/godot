@@ -1082,7 +1082,7 @@ void EditorPropertyDictionary::update_property() {
 				}
 				flat->set_bg_color(get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
 
-				pc->add_theme_style_override(SNAME("panel"), flat);
+				pc->add_theme_style_override("panel", flat);
 				add_vbox = memnew(VBoxContainer);
 				pc->add_child(add_vbox);
 			}

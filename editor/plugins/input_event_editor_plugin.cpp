@@ -76,10 +76,10 @@ void InputEventConfigContainer::set_event(const Ref<InputEvent> &p_event) {
 
 InputEventConfigContainer::InputEventConfigContainer() {
 	MarginContainer *mc = memnew(MarginContainer);
-	mc->add_theme_constant_override(SNAME("margin_left"), 10);
-	mc->add_theme_constant_override(SNAME("margin_right"), 10);
-	mc->add_theme_constant_override(SNAME("margin_top"), 10);
-	mc->add_theme_constant_override(SNAME("margin_bottom"), 10);
+	mc->add_theme_constant_override("margin_left", 10);
+	mc->add_theme_constant_override("margin_right", 10);
+	mc->add_theme_constant_override("margin_top", 10);
+	mc->add_theme_constant_override("margin_bottom", 10);
 	add_child(mc);
 
 	HBoxContainer *hb = memnew(HBoxContainer);

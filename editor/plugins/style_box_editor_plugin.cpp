@@ -50,7 +50,7 @@ void StyleBoxPreview::edit(const Ref<StyleBox> &p_stylebox) {
 	}
 	stylebox = p_stylebox;
 	if (p_stylebox.is_valid()) {
-		preview->add_theme_style_override(SNAME("panel"), stylebox);
+		preview->add_theme_style_override("panel", stylebox);
 		stylebox->connect("changed", callable_mp(this, &StyleBoxPreview::_sb_changed));
 	}
 	_sb_changed();

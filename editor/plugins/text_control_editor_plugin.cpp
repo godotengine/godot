@@ -392,7 +392,7 @@ void TextControlEditor::_outline_size_selected(double p_size) {
 		Control *edited_control = edited_controls[i];
 
 		ur->add_do_method(edited_control, "add_theme_constant_override", "outline_size", p_size);
-		if (edited_control->has_theme_constant_override(SNAME("outline_size"))) {
+		if (edited_control->has_theme_constant_override("outline_size")) {
 			ur->add_undo_method(edited_control, "add_theme_constant_override", "outline_size", edited_control->get_theme_constant(SNAME("outline_size")));
 		} else {
 			ur->add_undo_method(edited_control, "remove_theme_constant_override", "outline_size");
@@ -451,7 +451,7 @@ void TextControlEditor::_outline_color_changed(const Color &p_color) {
 		Control *edited_control = edited_controls[i];
 
 		ur->add_do_method(edited_control, "add_theme_color_override", "font_outline_color", p_color);
-		if (edited_control->has_theme_color_override(SNAME("font_outline_color"))) {
+		if (edited_control->has_theme_color_override("font_outline_color")) {
 			ur->add_undo_method(edited_control, "add_theme_color_override", "font_outline_color", edited_control->get_theme_color(SNAME("font_outline_color")));
 		} else {
 			ur->add_undo_method(edited_control, "remove_theme_color_override", "font_outline_color");
@@ -510,12 +510,12 @@ void TextControlEditor::_clear_formatting() {
 		}
 
 		ur->add_do_method(edited_control, "remove_theme_color_override", "font_outline_color");
-		if (edited_control->has_theme_color_override(SNAME("font_outline_color"))) {
+		if (edited_control->has_theme_color_override("font_outline_color")) {
 			ur->add_undo_method(edited_control, "add_theme_color_override", "font_outline_color", edited_control->get_theme_color(SNAME("font_outline_color")));
 		}
 
 		ur->add_do_method(edited_control, "remove_theme_constant_override", "outline_size");
-		if (edited_control->has_theme_constant_override(SNAME("outline_size"))) {
+		if (edited_control->has_theme_constant_override("outline_size")) {
 			ur->add_undo_method(edited_control, "add_theme_constant_override", "outline_size", edited_control->get_theme_constant(SNAME("outline_size")));
 		}
 
@@ -600,7 +600,7 @@ TextControlEditor::TextControlEditor() {
 
 	font_size_list = memnew(SpinBox);
 	font_size_list->set_tooltip(TTR("Font Size"));
-	font_size_list->get_line_edit()->add_theme_constant_override(SNAME("minimum_character_width"), 2);
+	font_size_list->get_line_edit()->add_theme_constant_override("minimum_character_width", 2);
 	font_size_list->set_min(6);
 	font_size_list->set_step(1);
 	font_size_list->set_max(96);
@@ -619,7 +619,7 @@ TextControlEditor::TextControlEditor() {
 
 	outline_size_list = memnew(SpinBox);
 	outline_size_list->set_tooltip(TTR("Outline Size"));
-	outline_size_list->get_line_edit()->add_theme_constant_override(SNAME("minimum_character_width"), 2);
+	outline_size_list->get_line_edit()->add_theme_constant_override("minimum_character_width", 2);
 	outline_size_list->set_min(0);
 	outline_size_list->set_step(1);
 	outline_size_list->set_max(96);

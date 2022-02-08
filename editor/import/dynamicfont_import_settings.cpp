@@ -481,7 +481,7 @@ void DynamicFontImportSettings::_main_prop_changed(const String &p_edited_proper
 			font_preview->get_data(0)->set_oversampling(import_settings_data->get("oversampling"));
 		}
 	}
-	font_preview_label->add_theme_font_override(SNAME("font"), font_preview);
+	font_preview_label->add_theme_font_override("font", font_preview);
 	font_preview_label->update();
 }
 
@@ -1036,7 +1036,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 
 	font_main.instantiate();
 	font_main->add_data(dfont_main);
-	text_edit->add_theme_font_override(SNAME("font"), font_main);
+	text_edit->add_theme_font_override("font", font_main);
 
 	base_path = p_path;
 
@@ -1263,7 +1263,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 		font_preview->get_data(0)->set_hinting((TextServer::Hinting)import_settings_data->get("hinting").operator int());
 		font_preview->get_data(0)->set_oversampling(import_settings_data->get("oversampling"));
 	}
-	font_preview_label->add_theme_font_override(SNAME("font"), font_preview);
+	font_preview_label->add_theme_font_override("font", font_preview);
 	font_preview_label->update();
 
 	menu_ot->clear();
@@ -1372,7 +1372,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	label_warn->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	label_warn->set_text("");
 	root_vb->add_child(label_warn);
-	label_warn->add_theme_color_override(SNAME("font_color"), warn_color);
+	label_warn->add_theme_color_override("font_color", warn_color);
 	label_warn->hide();
 
 	// Page 1 layout: Rendering Options
@@ -1392,7 +1392,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	page1_vb->add_child(page1_hb);
 
 	font_preview_label = memnew(Label);
-	font_preview_label->add_theme_font_size_override(SNAME("font_size"), 200 * EDSCALE);
+	font_preview_label->add_theme_font_size_override("font_size", 200 * EDSCALE);
 	font_preview_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	font_preview_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	font_preview_label->set_autowrap_mode(Label::AUTOWRAP_ARBITRARY);
@@ -1545,9 +1545,9 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	for (int i = 0; i < 16; i++) {
 		glyph_table->set_column_title(i + 1, String::num_int64(i, 16));
 	}
-	glyph_table->add_theme_style_override(SNAME("selected"), glyph_table->get_theme_stylebox(SNAME("bg")));
-	glyph_table->add_theme_style_override(SNAME("selected_focus"), glyph_table->get_theme_stylebox(SNAME("bg")));
-	glyph_table->add_theme_constant_override(SNAME("hseparation"), 0);
+	glyph_table->add_theme_style_override("selected", glyph_table->get_theme_stylebox(SNAME("bg")));
+	glyph_table->add_theme_style_override("selected_focus", glyph_table->get_theme_stylebox(SNAME("bg")));
+	glyph_table->add_theme_constant_override("hseparation", 0);
 	glyph_table->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	glyph_table->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 

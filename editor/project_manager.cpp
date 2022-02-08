@@ -117,13 +117,13 @@ private:
 
 		switch (p_type) {
 			case MESSAGE_ERROR: {
-				msg->add_theme_color_override(SNAME("font_color"), msg->get_theme_color(SNAME("error_color"), SNAME("Editor")));
+				msg->add_theme_color_override("font_color", msg->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 				msg->set_modulate(Color(1, 1, 1, 1));
 				new_icon = msg->get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons"));
 
 			} break;
 			case MESSAGE_WARNING: {
-				msg->add_theme_color_override(SNAME("font_color"), msg->get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+				msg->add_theme_color_override("font_color", msg->get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 				msg->set_modulate(Color(1, 1, 1, 1));
 				new_icon = msg->get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons"));
 
@@ -1349,7 +1349,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	ProjectListItemControl *hb = memnew(ProjectListItemControl);
 	hb->connect("draw", callable_mp(this, &ProjectList::_panel_draw), varray(hb));
 	hb->connect("gui_input", callable_mp(this, &ProjectList::_panel_input), varray(hb));
-	hb->add_theme_constant_override(SNAME("separation"), 10 * EDSCALE);
+	hb->add_theme_constant_override("separation", 10 * EDSCALE);
 	hb->set_tooltip(item.description);
 
 	VBoxContainer *favorite_box = memnew(VBoxContainer);
@@ -1394,9 +1394,9 @@ void ProjectList::create_project_item_control(int p_index) {
 
 		Label *title = memnew(Label(!item.missing ? item.project_name : TTR("Missing Project")));
 		title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		title->add_theme_font_override(SNAME("font"), get_theme_font(SNAME("title"), SNAME("EditorFonts")));
-		title->add_theme_font_size_override(SNAME("font_size"), get_theme_font_size(SNAME("title_size"), SNAME("EditorFonts")));
-		title->add_theme_color_override(SNAME("font_color"), font_color);
+		title->add_theme_font_override("font", get_theme_font(SNAME("title"), SNAME("EditorFonts")));
+		title->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("title_size"), SNAME("EditorFonts")));
+		title->add_theme_color_override("font_color", font_color);
 		title->set_clip_text(true);
 		title_hb->add_child(title);
 
@@ -1405,8 +1405,8 @@ void ProjectList::create_project_item_control(int p_index) {
 		if (length > 0) {
 			Label *unsupported_label = memnew(Label(unsupported_features_str));
 			unsupported_label->set_custom_minimum_size(Size2(length * 15, 10) * EDSCALE);
-			unsupported_label->add_theme_font_override(SNAME("font"), get_theme_font(SNAME("title"), SNAME("EditorFonts")));
-			unsupported_label->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+			unsupported_label->add_theme_font_override("font", get_theme_font(SNAME("title"), SNAME("EditorFonts")));
+			unsupported_label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 			unsupported_label->set_clip_text(true);
 			unsupported_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 			title_hb->add_child(unsupported_label);
@@ -1443,7 +1443,7 @@ void ProjectList::create_project_item_control(int p_index) {
 		path_hb->add_child(fpath);
 		fpath->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		fpath->set_modulate(Color(1, 1, 1, 0.5));
-		fpath->add_theme_color_override(SNAME("font_color"), font_color);
+		fpath->add_theme_color_override("font_color", font_color);
 		fpath->set_clip_text(true);
 	}
 
@@ -2524,7 +2524,7 @@ ProjectManager::ProjectManager() {
 	Panel *panel = memnew(Panel);
 	add_child(panel);
 	panel->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
-	panel->add_theme_style_override(SNAME("panel"), get_theme_stylebox(SNAME("Background"), SNAME("EditorStyles")));
+	panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("Background"), SNAME("EditorStyles")));
 
 	VBoxContainer *vb = memnew(VBoxContainer);
 	panel->add_child(vb);
@@ -2562,7 +2562,7 @@ ProjectManager::ProjectManager() {
 		hb->add_child(search_box);
 
 		loading_label = memnew(Label(TTR("Loading, please wait...")));
-		loading_label->add_theme_font_override(SNAME("font"), get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
+		loading_label->add_theme_font_override("font", get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
 		loading_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		hb->add_child(loading_label);
 		// Hide the label but make it still take up space. This prevents reflows when showing the label.
@@ -2588,7 +2588,7 @@ ProjectManager::ProjectManager() {
 		}
 
 		PanelContainer *pc = memnew(PanelContainer);
-		pc->add_theme_style_override(SNAME("panel"), get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+		pc->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 		pc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		search_tree_vb->add_child(pc);
 

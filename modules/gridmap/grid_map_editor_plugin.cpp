@@ -1181,7 +1181,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	floor->set_min(-32767);
 	floor->set_max(32767);
 	floor->set_step(1);
-	floor->get_line_edit()->add_theme_constant_override(SNAME("minimum_character_width"), 16);
+	floor->get_line_edit()->add_theme_constant_override("minimum_character_width", 16);
 
 	spatial_editor_hb->add_child(floor);
 	floor->connect("value_changed", callable_mp(this, &GridMapEditor::_floor_changed));

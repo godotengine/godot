@@ -50,7 +50,7 @@ void TexturePreview::_notification(int p_what) {
 
 			if (metadata_label) {
 				Ref<Font> metadata_label_font = get_theme_font(SNAME("expression"), SNAME("EditorFonts"));
-				metadata_label->add_theme_font_override(SNAME("font"), metadata_label_font);
+				metadata_label->add_theme_font_override("font", metadata_label_font);
 			}
 
 			checkerboard->set_texture(get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons")));
@@ -94,14 +94,14 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 		p_texture->connect("changed", callable_mp(this, &TexturePreview::_update_metadata_label_text));
 
 		// It's okay that these colors are static since the grid color is static too.
-		metadata_label->add_theme_color_override(SNAME("font_color"), Color::named("white"));
-		metadata_label->add_theme_color_override(SNAME("font_color_shadow"), Color::named("black"));
+		metadata_label->add_theme_color_override("font_color", Color::named("white"));
+		metadata_label->add_theme_color_override("font_color_shadow", Color::named("black"));
 
-		metadata_label->add_theme_font_size_override(SNAME("font_size"), 16 * EDSCALE);
-		metadata_label->add_theme_color_override(SNAME("font_outline_color"), Color::named("black"));
-		metadata_label->add_theme_constant_override(SNAME("outline_size"), 2 * EDSCALE);
+		metadata_label->add_theme_font_size_override("font_size", 16 * EDSCALE);
+		metadata_label->add_theme_color_override("font_outline_color", Color::named("black"));
+		metadata_label->add_theme_constant_override("outline_size", 2 * EDSCALE);
 
-		metadata_label->add_theme_constant_override(SNAME("shadow_outline_size"), 1);
+		metadata_label->add_theme_constant_override("shadow_outline_size", 1);
 		metadata_label->set_h_size_flags(Control::SIZE_SHRINK_END);
 		metadata_label->set_v_size_flags(Control::SIZE_SHRINK_END);
 

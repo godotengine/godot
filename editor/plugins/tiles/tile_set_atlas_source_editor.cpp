@@ -609,8 +609,8 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	}
 
 	// Theming.
-	tile_data_editors_tree->add_theme_constant_override(SNAME("vseparation"), 1);
-	tile_data_editors_tree->add_theme_constant_override(SNAME("hseparation"), 3);
+	tile_data_editors_tree->add_theme_constant_override("vseparation", 1);
+	tile_data_editors_tree->add_theme_constant_override("hseparation", 3);
 
 	Color group_color = get_theme_color(SNAME("prop_category"), SNAME("Editor"));
 
@@ -908,10 +908,10 @@ void TileSetAtlasSourceEditor::_update_atlas_view() {
 			alternative_tiles_control->add_child(button);
 			button->set_flat(true);
 			button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-			button->add_theme_style_override(SNAME("normal"), memnew(StyleBoxEmpty));
-			button->add_theme_style_override(SNAME("hover"), memnew(StyleBoxEmpty));
-			button->add_theme_style_override(SNAME("focus"), memnew(StyleBoxEmpty));
-			button->add_theme_style_override(SNAME("pressed"), memnew(StyleBoxEmpty));
+			button->add_theme_style_override("normal", memnew(StyleBoxEmpty));
+			button->add_theme_style_override("hover", memnew(StyleBoxEmpty));
+			button->add_theme_style_override("focus", memnew(StyleBoxEmpty));
+			button->add_theme_style_override("pressed", memnew(StyleBoxEmpty));
 			button->connect("pressed", callable_mp(tile_set_atlas_source, &TileSetAtlasSource::create_alternative_tile), varray(tile_id, TileSetSource::INVALID_TILE_ALTERNATIVE));
 			button->set_rect(Rect2(Vector2(pos.x, pos.y + (y_increment - texture_region_base_size.y) / 2.0), Vector2(texture_region_base_size_min, texture_region_base_size_min)));
 			button->set_expand_icon(true);

@@ -147,7 +147,7 @@ void ScriptEditorDebugger::update_tabs() {
 }
 
 void ScriptEditorDebugger::clear_style() {
-	tabs->remove_theme_style_override(SNAME("panel"));
+	tabs->remove_theme_style_override("panel");
 }
 
 void ScriptEditorDebugger::save_node(ObjectID p_id, const String &p_file) {
@@ -762,13 +762,13 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType p_type) {
 	switch (p_type) {
 		case MESSAGE_ERROR:
-			reason->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			reason->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
 			break;
 		case MESSAGE_WARNING:
-			reason->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+			reason->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 			break;
 		default:
-			reason->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("success_color"), SNAME("Editor")));
+			reason->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), SNAME("Editor")));
 	}
 	reason->set_text(p_reason);
 	reason->set_tooltip(p_reason.word_wrap(80));
@@ -793,7 +793,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			vmem_export->set_icon(get_theme_icon(SNAME("Save"), SNAME("EditorIcons")));
 			search->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 
-			reason->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			reason->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
 
 		} break;
 		case NOTIFICATION_PROCESS: {
@@ -855,8 +855,8 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			};
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (tabs->has_theme_stylebox_override(SNAME("panel"))) {
-				tabs->add_theme_style_override(SNAME("panel"), editor->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
+			if (tabs->has_theme_stylebox_override("panel")) {
+				tabs->add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
 			}
 
 			copy->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
@@ -1665,7 +1665,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 
 	tabs = memnew(TabContainer);
 	tabs->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
-	tabs->add_theme_style_override(SNAME("panel"), editor->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
+	tabs->add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
 	tabs->connect("tab_changed", callable_mp(this, &ScriptEditorDebugger::_tab_changed));
 
 	add_child(tabs);

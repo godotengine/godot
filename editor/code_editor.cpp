@@ -105,7 +105,7 @@ void FindReplaceBar::_notification(int p_what) {
 		hide_button->set_pressed_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
 		hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
-		matches_label->add_theme_color_override(SNAME("font_color"), results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), SNAME("Editor")));
+		matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), SNAME("Editor")));
 	} else if (p_what == NOTIFICATION_PREDELETE) {
 		if (base_text_editor) {
 			base_text_editor->remove_find_replace_bar();
@@ -301,7 +301,7 @@ void FindReplaceBar::_replace_all() {
 	}
 
 	text_editor->set_v_scroll(vsval);
-	matches_label->add_theme_color_override(SNAME("font_color"), rc > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), SNAME("Editor")));
+	matches_label->add_theme_color_override("font_color", rc > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), SNAME("Editor")));
 	matches_label->set_text(vformat(TTR("%d replaced."), rc));
 
 	text_editor->call_deferred(SNAME("connect"), "text_changed", callable_mp(this, &FindReplaceBar::_editor_text_changed));
@@ -365,7 +365,7 @@ void FindReplaceBar::_update_matches_label() {
 	} else {
 		matches_label->show();
 
-		matches_label->add_theme_color_override(SNAME("font_color"), results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), SNAME("Editor")));
+		matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), SNAME("Editor")));
 		matches_label->set_text(vformat(results_count == 1 ? TTR("%d match.") : TTR("%d matches."), results_count));
 	}
 }
@@ -818,7 +818,7 @@ void CodeTextEditor::_zoom_changed() {
 
 void CodeTextEditor::_reset_zoom() {
 	EditorSettings::get_singleton()->set("interface/editor/code_font_size", 14);
-	text_editor->add_theme_font_size_override(SNAME("font_size"), 14 * EDSCALE);
+	text_editor->add_theme_font_size_override("font_size", 14 * EDSCALE);
 }
 
 void CodeTextEditor::_line_col_changed() {
@@ -936,7 +936,7 @@ bool CodeTextEditor::_add_font_size(int p_delta) {
 
 	if (new_size != old_size) {
 		EditorSettings::get_singleton()->set("interface/editor/code_font_size", new_size / EDSCALE);
-		text_editor->add_theme_font_size_override(SNAME("font_size"), new_size);
+		text_editor->add_theme_font_size_override("font_size", new_size);
 	}
 
 	return true;
@@ -1567,14 +1567,14 @@ void CodeTextEditor::_update_text_editor_theme() {
 
 	Ref<Font> status_bar_font = get_theme_font(SNAME("status_source"), SNAME("EditorFonts"));
 	int status_bar_font_size = get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts"));
-	error->add_theme_font_override(SNAME("font"), status_bar_font);
-	error->add_theme_font_size_override(SNAME("font_size"), status_bar_font_size);
+	error->add_theme_font_override("font", status_bar_font);
+	error->add_theme_font_size_override("font_size", status_bar_font_size);
 	int count = status_bar->get_child_count();
 	for (int i = 0; i < count; i++) {
 		Control *n = Object::cast_to<Control>(status_bar->get_child(i));
 		if (n) {
-			n->add_theme_font_override(SNAME("font"), status_bar_font);
-			n->add_theme_font_size_override(SNAME("font_size"), status_bar_font_size);
+			n->add_theme_font_override("font", status_bar_font);
+			n->add_theme_font_size_override("font_size", status_bar_font_size);
 		}
 	}
 	error->end_bulk_theme_override();
@@ -1666,17 +1666,17 @@ void CodeTextEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			error_button->set_icon(get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")));
-			error_button->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("error_color"), SNAME("Editor")));
-			error_button->add_theme_font_override(SNAME("font"), get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
-			error_button->add_theme_font_size_override(SNAME("font_size"), get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
+			error_button->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			error_button->add_theme_font_override("font", get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
+			error_button->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
 
 			warning_button->set_icon(get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons")));
-			warning_button->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("warning_color"), SNAME("Editor")));
-			warning_button->add_theme_font_override(SNAME("font"), get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
-			warning_button->add_theme_font_size_override(SNAME("font_size"), get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
+			warning_button->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+			warning_button->add_theme_font_override("font", get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
+			warning_button->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
 
-			line_and_col_txt->add_theme_font_override(SNAME("font"), get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
-			line_and_col_txt->add_theme_font_size_override(SNAME("font_size"), get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
+			line_and_col_txt->add_theme_font_override("font", get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
+			line_and_col_txt->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
 
 			if (p_what == NOTIFICATION_ENTER_TREE) {
 				break;
@@ -1935,5 +1935,5 @@ CodeTextEditor::CodeTextEditor() {
 	font_resize_timer->connect("timeout", callable_mp(this, &CodeTextEditor::_font_resize_timeout));
 
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &CodeTextEditor::_on_settings_change));
-	add_theme_constant_override(SNAME("separation"), 4 * EDSCALE);
+	add_theme_constant_override("separation", 4 * EDSCALE);
 }

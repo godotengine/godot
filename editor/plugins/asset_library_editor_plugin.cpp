@@ -68,9 +68,9 @@ void EditorAssetLibraryItem::set_image(int p_type, int p_index, const Ref<Textur
 void EditorAssetLibraryItem::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		icon->set_normal_texture(get_theme_icon(SNAME("ProjectIconLoading"), SNAME("EditorIcons")));
-		category->add_theme_color_override(SNAME("font_color"), Color(0.5, 0.5, 0.5));
-		author->add_theme_color_override(SNAME("font_color"), Color(0.5, 0.5, 0.5));
-		price->add_theme_color_override(SNAME("font_color"), Color(0.5, 0.5, 0.5));
+		category->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
+		author->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
+		price->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
 	}
 }
 
@@ -100,11 +100,11 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	border->set_default_margin(SIDE_RIGHT, 5 * EDSCALE);
 	border->set_default_margin(SIDE_BOTTOM, 5 * EDSCALE);
 	border->set_default_margin(SIDE_TOP, 5 * EDSCALE);
-	add_theme_style_override(SNAME("panel"), border);
+	add_theme_style_override("panel", border);
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	// Add some spacing to visually separate the icon from the asset details.
-	hb->add_theme_constant_override(SNAME("separation"), 15 * EDSCALE);
+	hb->add_theme_constant_override("separation", 15 * EDSCALE);
 	add_child(hb);
 
 	icon = memnew(TextureButton);
@@ -195,7 +195,7 @@ void EditorAssetLibraryItemDescription::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			previews_bg->add_theme_style_override(SNAME("panel"), previews->get_theme_stylebox(SNAME("normal"), SNAME("TextEdit")));
+			previews_bg->add_theme_style_override("panel", previews->get_theme_stylebox(SNAME("normal"), SNAME("TextEdit")));
 		} break;
 	}
 }
@@ -269,7 +269,7 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	add_child(hbox);
 	VBoxContainer *desc_vbox = memnew(VBoxContainer);
 	hbox->add_child(desc_vbox);
-	hbox->add_theme_constant_override(SNAME("separation"), 15 * EDSCALE);
+	hbox->add_theme_constant_override("separation", 15 * EDSCALE);
 
 	item = memnew(EditorAssetLibraryItem);
 
@@ -280,11 +280,11 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	desc_vbox->add_child(description);
 	description->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	description->connect("meta_clicked", callable_mp(this, &EditorAssetLibraryItemDescription::_link_click));
-	description->add_theme_constant_override(SNAME("line_separation"), Math::round(5 * EDSCALE));
+	description->add_theme_constant_override("line_separation", Math::round(5 * EDSCALE));
 
 	VBoxContainer *previews_vbox = memnew(VBoxContainer);
 	hbox->add_child(previews_vbox);
-	previews_vbox->add_theme_constant_override(SNAME("separation"), 15 * EDSCALE);
+	previews_vbox->add_theme_constant_override("separation", 15 * EDSCALE);
 	previews_vbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	preview = memnew(TextureRect);
@@ -400,8 +400,8 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			panel->add_theme_style_override(SNAME("panel"), get_theme_stylebox(SNAME("panel"), SNAME("AssetLib")));
-			status->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("status_color"), SNAME("AssetLib")));
+			panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("AssetLib")));
+			status->add_theme_color_override("font_color", get_theme_color(SNAME("status_color"), SNAME("AssetLib")));
 			dismiss_button->set_normal_texture(get_theme_icon(SNAME("dismiss"), SNAME("AssetLib")));
 		} break;
 		case NOTIFICATION_PROCESS: {
@@ -578,9 +578,9 @@ void EditorAssetLibrary::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			error_tr->set_texture(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
 			filter->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-			library_scroll_bg->add_theme_style_override(SNAME("panel"), get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
-			downloads_scroll->add_theme_style_override(SNAME("bg"), get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
-			error_label->add_theme_color_override(SNAME("color"), get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			library_scroll_bg->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			downloads_scroll->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			error_label->add_theme_color_override("color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
@@ -984,7 +984,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	}
 
 	hbc->add_spacer();
-	hbc->add_theme_constant_override(SNAME("separation"), 5 * EDSCALE);
+	hbc->add_theme_constant_override("separation", 5 * EDSCALE);
 
 	Button *first = memnew(Button);
 	first->set_text(TTR("First"));
@@ -1191,8 +1191,8 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 			asset_items = memnew(GridContainer);
 			asset_items->set_columns(2);
-			asset_items->add_theme_constant_override(SNAME("hseparation"), 10 * EDSCALE);
-			asset_items->add_theme_constant_override(SNAME("vseparation"), 10 * EDSCALE);
+			asset_items->add_theme_constant_override("hseparation", 10 * EDSCALE);
+			asset_items->add_theme_constant_override("vseparation", 10 * EDSCALE);
 
 			library_vb->add_child(asset_items);
 
@@ -1374,7 +1374,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	HBoxContainer *search_hb = memnew(HBoxContainer);
 
 	library_main->add_child(search_hb);
-	library_main->add_theme_constant_override(SNAME("separation"), 10 * EDSCALE);
+	library_main->add_theme_constant_override("separation", 10 * EDSCALE);
 
 	filter = memnew(LineEdit);
 	if (templates_only) {
@@ -1482,7 +1482,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	PanelContainer *library_vb_border = memnew(PanelContainer);
 	library_scroll->add_child(library_vb_border);
-	library_vb_border->add_theme_style_override(SNAME("panel"), border2);
+	library_vb_border->add_theme_style_override("panel", border2);
 	library_vb_border->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	library_vb = memnew(VBoxContainer);
@@ -1504,8 +1504,8 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	asset_items = memnew(GridContainer);
 	asset_items->set_columns(2);
-	asset_items->add_theme_constant_override(SNAME("hseparation"), 10 * EDSCALE);
-	asset_items->add_theme_constant_override(SNAME("vseparation"), 10 * EDSCALE);
+	asset_items->add_theme_constant_override("hseparation", 10 * EDSCALE);
+	asset_items->add_theme_constant_override("vseparation", 10 * EDSCALE);
 
 	library_vb->add_child(asset_items);
 
@@ -1519,7 +1519,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	last_queue_id = 0;
 
-	library_vb->add_theme_constant_override(SNAME("separation"), 20 * EDSCALE);
+	library_vb->add_theme_constant_override("separation", 20 * EDSCALE);
 
 	error_hb = memnew(HBoxContainer);
 	library_main->add_child(error_hb);
