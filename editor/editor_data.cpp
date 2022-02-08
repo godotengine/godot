@@ -520,6 +520,21 @@ void EditorData::remove_custom_type(const String &p_type) {
 	}
 }
 
+void EditorData::instantiate_object_properties(Object *p_object) {
+	ERR_FAIL_NULL(p_object);
+	// Check if any Object-type property should be instantiated.
+	List<PropertyInfo> pinfo;
+	p_object->get_property_list(&pinfo);
+
+	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
+		PropertyInfo pi = E->get();
+		if (pi.type == Variant::OBJECT && pi.usage & PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT) {
+			Object *prop = ClassDB::instantiate(pi.class_name);
+			p_object->set(pi.name, prop);
+		}
+	}
+}
+
 int EditorData::add_edited_scene(int p_at_pos) {
 	if (p_at_pos < 0) {
 		p_at_pos = edited_scene.size();

@@ -1632,7 +1632,8 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 	// Some properties may have an instantiated Object as default value,
 	// (like Path2D's `curve` used to have), but that's not a good practice.
 	// Instead, those properties should use PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT
-	// to be auto-instantiated when created in the editor.
+	// to be auto-instantiated when created in the editor with the following method:
+	// EditorNode::get_editor_data().instantiate_object_properties(obj);
 	if (var.get_type() == Variant::OBJECT) {
 		Object *obj = var.get_validated_object();
 		if (obj) {
