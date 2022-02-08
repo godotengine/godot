@@ -34,7 +34,6 @@
 #include "core/donors.gen.h"
 #include "core/license.gen.h"
 #include "core/version.h"
-#include "core/version_hash.gen.h"
 
 void Engine::set_iterations_per_second(int p_ips) {
 	ERR_FAIL_COND_MSG(p_ips <= 0, "Engine iterations per second must be greater than 0.");
@@ -97,8 +96,8 @@ Dictionary Engine::get_version_info() const {
 	dict["build"] = VERSION_BUILD;
 	dict["year"] = VERSION_YEAR;
 
-	String hash = VERSION_HASH;
-	dict["hash"] = hash.length() == 0 ? String("unknown") : hash;
+	String hash = String(VERSION_HASH);
+	dict["hash"] = hash.empty() ? String("unknown") : hash;
 
 	String stringver = String(dict["major"]) + "." + String(dict["minor"]);
 	if ((int)dict["patch"] != 0) {

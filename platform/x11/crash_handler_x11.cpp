@@ -33,7 +33,6 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "core/version.h"
-#include "core/version_hash.gen.h"
 #include "main/main.h"
 
 #ifdef DEBUG_ENABLED
@@ -71,10 +70,10 @@ static void handle_crash(int sig) {
 	}
 
 	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
-	if (String(VERSION_HASH).length() != 0) {
-		fprintf(stderr, "Engine version: " VERSION_FULL_NAME " (" VERSION_HASH ")\n");
+	if (String(VERSION_HASH).empty()) {
+		fprintf(stderr, "Engine version: %s\n", VERSION_FULL_NAME);
 	} else {
-		fprintf(stderr, "Engine version: " VERSION_FULL_NAME "\n");
+		fprintf(stderr, "Engine version: %s (%s)\n", VERSION_FULL_NAME, VERSION_HASH);
 	}
 	fprintf(stderr, "Dumping the backtrace. %ls\n", msg.c_str());
 	char **strings = backtrace_symbols(bt_buffer, size);

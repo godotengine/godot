@@ -49,7 +49,6 @@
 #include "core/os/file_access.h"
 #include "core/variant.h"
 #include "core/version.h"
-#include "core/version_hash.gen.h"
 #include "drivers/png/png_driver_common.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/bone_attachment.h"
@@ -6743,8 +6742,8 @@ Error GLTFDocument::_serialize_version(Ref<GLTFState> state) {
 	Dictionary asset;
 	asset["version"] = version;
 
-	String hash = VERSION_HASH;
-	asset["generator"] = String(VERSION_FULL_NAME) + String("@") + (hash.length() == 0 ? String("unknown") : hash);
+	String hash = String(VERSION_HASH);
+	asset["generator"] = String(VERSION_FULL_NAME) + String("@") + (hash.empty() ? String("unknown") : hash);
 	state->json["asset"] = asset;
 	ERR_FAIL_COND_V(!asset.has("version"), Error::FAILED);
 	ERR_FAIL_COND_V(!state->json.has("asset"), Error::FAILED);
