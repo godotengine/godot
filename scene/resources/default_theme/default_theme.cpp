@@ -175,7 +175,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	theme->set_color("icon_hover_color", "Button", Color(1, 1, 1, 1));
 	theme->set_color("icon_hover_pressed_color", "Button", Color(1, 1, 1, 1));
 	theme->set_color("icon_focus_color", "Button", Color(1, 1, 1, 1));
-	theme->set_color("icon_disabled_color", "Button", Color(1, 1, 1, 1));
+	theme->set_color("icon_disabled_color", "Button", Color(1, 1, 1, 0.4));
 
 	theme->set_constant("hseparation", "Button", 2 * scale);
 
