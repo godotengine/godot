@@ -45,7 +45,7 @@
 }
 
 - (BOOL)canBecomeKeyWindow {
-	// Required for NSBorderlessWindowMask windows.
+	// Required for NSWindowStyleMaskBorderless windows.
 	DisplayServerOSX *ds = (DisplayServerOSX *)DisplayServer::get_singleton();
 	if (!ds || !ds->has_window(window_id)) {
 		return YES;
@@ -56,7 +56,7 @@
 }
 
 - (BOOL)canBecomeMainWindow {
-	// Required for NSBorderlessWindowMask windows.
+	// Required for NSWindowStyleMaskBorderless windows.
 	DisplayServerOSX *ds = (DisplayServerOSX *)DisplayServer::get_singleton();
 	if (!ds || !ds->has_window(window_id)) {
 		return YES;
