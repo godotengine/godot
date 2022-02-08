@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  collision_polygon_3d_editor_plugin.cpp                               */
+/*  polygon_3d_editor_plugin.cpp                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,9 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "collision_polygon_3d_editor_plugin.h"
+#include "polygon_3d_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
+#include "core/core_string_names.h"
 #include "core/input/input.h"
 #include "core/io/file_access.h"
 #include "core/math/geometry_2d.h"
@@ -39,13 +40,13 @@
 #include "node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
 
-void CollisionPolygon3DEditor::_notification(int p_what) {
+void Polygon3DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			button_create->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
 			button_edit->set_icon(get_theme_icon(SNAME("MovePoint"), SNAME("EditorIcons")));
 			button_edit->set_pressed(true);
-			get_tree()->connect("node_removed", callable_mp(this, &CollisionPolygon3DEditor::_node_removed));
+			get_tree()->connect("node_removed", callable_mp(this, &Polygon3DEditor::_node_removed));
 
 		} break;
 		case NOTIFICATION_PROCESS: {
@@ -62,7 +63,7 @@ void CollisionPolygon3DEditor::_notification(int p_what) {
 	}
 }
 
-void CollisionPolygon3DEditor::_node_removed(Node *p_node) {
+void Polygon3DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
 		node = nullptr;
 		if (imgeom->get_parent() == p_node) {
@@ -73,7 +74,7 @@ void CollisionPolygon3DEditor::_node_removed(Node *p_node) {
 	}
 }
 
-void CollisionPolygon3DEditor::_menu_option(int p_option) {
+void Polygon3DEditor::_menu_option(int p_option) {
 	switch (p_option) {
 		case MODE_CREATE: {
 			mode = MODE_CREATE;
@@ -88,10 +89,12 @@ void CollisionPolygon3DEditor::_menu_option(int p_option) {
 	}
 }
 
-void CollisionPolygon3DEditor::_wip_close() {
+void Polygon3DEditor::_wip_close() {
+	Object *obj = node_resource.is_valid() ? (Object *)node_resource.ptr() : node;
+	ERR_FAIL_COND_MSG(!obj, "Edited object is not valid.");
 	undo_redo->create_action(TTR("Create Polygon3D"));
-	undo_redo->add_undo_method(node, "set_polygon", node->call("get_polygon"));
-	undo_redo->add_do_method(node, "set_polygon", wip);
+	undo_redo->add_undo_method(obj, "set_polygon", obj->call("get_polygon"));
+	undo_redo->add_do_method(obj, "set_polygon", wip);
 	undo_redo->add_do_method(this, "_polygon_draw");
 	undo_redo->add_undo_method(this, "_polygon_draw");
 	wip.clear();
@@ -103,11 +106,12 @@ void CollisionPolygon3DEditor::_wip_close() {
 	undo_redo->commit_action();
 }
 
-EditorPlugin::AfterGUIInput CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
+EditorPlugin::AfterGUIInput Polygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
 	if (!node) {
 		return EditorPlugin::AFTER_GUI_INPUT_PASS;
 	}
 
+	Object *obj = node_resource.is_valid() ? (Object *)node_resource.ptr() : node;
 	Transform3D gt = node->get_global_transform();
 	Transform3D gi = gt.affine_inverse();
 	float depth = _get_depth() * 0.5;
@@ -135,7 +139,7 @@ EditorPlugin::AfterGUIInput CollisionPolygon3DEditor::forward_spatial_gui_input(
 		//Let the snap happen when the point is being moved, instead.
 		//cpoint = CanvasItemEditor::get_singleton()->snap_point(cpoint);
 
-		Vector<Vector2> poly = node->call("get_polygon");
+		PackedVector2Array poly = _get_polygon();
 
 		//first check if a point is to be added (segment split)
 		real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
@@ -178,9 +182,9 @@ EditorPlugin::AfterGUIInput CollisionPolygon3DEditor::forward_spatial_gui_input(
 						if (mb->is_ctrl_pressed()) {
 							if (poly.size() < 3) {
 								undo_redo->create_action(TTR("Edit Poly"));
-								undo_redo->add_undo_method(node, "set_polygon", poly);
+								undo_redo->add_undo_method(obj, "set_polygon", poly);
 								poly.push_back(cpoint);
-								undo_redo->add_do_method(node, "set_polygon", poly);
+								undo_redo->add_do_method(obj, "set_polygon", poly);
 								undo_redo->add_do_method(this, "_polygon_draw");
 								undo_redo->add_undo_method(this, "_polygon_draw");
 								undo_redo->commit_action();
@@ -215,7 +219,7 @@ EditorPlugin::AfterGUIInput CollisionPolygon3DEditor::forward_spatial_gui_input(
 								poly.insert(closest_idx + 1, cpoint);
 								edited_point = closest_idx + 1;
 								edited_point_pos = cpoint;
-								node->call("set_polygon", poly);
+								_set_polygon(poly);
 								_polygon_draw();
 								snap_ignore = true;
 
@@ -256,8 +260,8 @@ EditorPlugin::AfterGUIInput CollisionPolygon3DEditor::forward_spatial_gui_input(
 							ERR_FAIL_INDEX_V(edited_point, poly.size(), EditorPlugin::AFTER_GUI_INPUT_PASS);
 							poly.write[edited_point] = edited_point_pos;
 							undo_redo->create_action(TTR("Edit Poly"));
-							undo_redo->add_do_method(node, "set_polygon", poly);
-							undo_redo->add_undo_method(node, "set_polygon", pre_move_edit);
+							undo_redo->add_do_method(obj, "set_polygon", poly);
+							undo_redo->add_undo_method(obj, "set_polygon", pre_move_edit);
 							undo_redo->add_do_method(this, "_polygon_draw");
 							undo_redo->add_undo_method(this, "_polygon_draw");
 							undo_redo->commit_action();
@@ -284,9 +288,9 @@ EditorPlugin::AfterGUIInput CollisionPolygon3DEditor::forward_spatial_gui_input(
 
 					if (closest_idx >= 0) {
 						undo_redo->create_action(TTR("Edit Poly (Remove Point)"));
-						undo_redo->add_undo_method(node, "set_polygon", poly);
+						undo_redo->add_undo_method(obj, "set_polygon", poly);
 						poly.remove_at(closest_idx);
-						undo_redo->add_do_method(node, "set_polygon", poly);
+						undo_redo->add_do_method(obj, "set_polygon", poly);
 						undo_redo->add_do_method(this, "_polygon_draw");
 						undo_redo->add_undo_method(this, "_polygon_draw");
 						undo_redo->commit_action();
@@ -335,25 +339,40 @@ EditorPlugin::AfterGUIInput CollisionPolygon3DEditor::forward_spatial_gui_input(
 	return EditorPlugin::AFTER_GUI_INPUT_PASS;
 }
 
-float CollisionPolygon3DEditor::_get_depth() {
-	if (bool(node->call("_has_editable_3d_polygon_no_depth"))) {
-		return 0;
+float Polygon3DEditor::_get_depth() {
+	Object *obj = node_resource.is_valid() ? (Object *)node_resource.ptr() : node;
+	ERR_FAIL_COND_V_MSG(!obj, 0.0f, "Edited object is not valid.");
+
+	if (bool(obj->call("_has_editable_3d_polygon_no_depth"))) {
+		return 0.0f;
 	}
 
-	return float(node->call("get_depth"));
+	return float(obj->call("get_depth"));
 }
 
-void CollisionPolygon3DEditor::_polygon_draw() {
+PackedVector2Array Polygon3DEditor::_get_polygon() {
+	Object *obj = node_resource.is_valid() ? (Object *)node_resource.ptr() : node;
+	ERR_FAIL_COND_V_MSG(!obj, PackedVector2Array(), "Edited object is not valid.");
+	return PackedVector2Array(obj->call("get_polygon"));
+}
+
+void Polygon3DEditor::_set_polygon(PackedVector2Array p_poly) {
+	Object *obj = node_resource.is_valid() ? (Object *)node_resource.ptr() : node;
+	ERR_FAIL_COND_MSG(!obj, "Edited object is not valid.");
+	obj->call("set_polygon", p_poly);
+}
+
+void Polygon3DEditor::_polygon_draw() {
 	if (!node) {
 		return;
 	}
 
-	Vector<Vector2> poly;
+	PackedVector2Array poly;
 
 	if (wip_active) {
 		poly = wip;
 	} else {
-		poly = node->call("get_polygon");
+		poly = _get_polygon();
 	}
 
 	float depth = _get_depth() * 0.5;
@@ -464,23 +483,32 @@ void CollisionPolygon3DEditor::_polygon_draw() {
 	m->surface_set_material(0, handle_material);
 }
 
-void CollisionPolygon3DEditor::edit(Node *p_collision_polygon) {
-	if (p_collision_polygon) {
-		node = Object::cast_to<Node3D>(p_collision_polygon);
+void Polygon3DEditor::edit(Node *p_node) {
+	if (p_node) {
+		node = Object::cast_to<Node3D>(p_node);
+		node_resource = node->call("_get_editable_3d_polygon_resource");
+
+		if (node_resource.is_valid()) {
+			node_resource->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Polygon3DEditor::_polygon_draw));
+		}
 		//Enable the pencil tool if the polygon is empty
-		if (Vector<Vector2>(node->call("get_polygon")).size() == 0) {
+		if (_get_polygon().is_empty()) {
 			_menu_option(MODE_CREATE);
 		}
 		wip.clear();
 		wip_active = false;
 		edited_point = -1;
-		p_collision_polygon->add_child(imgeom);
+		p_node->add_child(imgeom);
 		_polygon_draw();
 		set_process(true);
 		prev_depth = -1;
 
 	} else {
 		node = nullptr;
+		if (node_resource.is_valid()) {
+			node_resource->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Polygon3DEditor::_polygon_draw));
+		}
+		node_resource.unref();
 
 		if (imgeom->get_parent()) {
 			imgeom->get_parent()->remove_child(imgeom);
@@ -490,11 +518,11 @@ void CollisionPolygon3DEditor::edit(Node *p_collision_polygon) {
 	}
 }
 
-void CollisionPolygon3DEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_polygon_draw"), &CollisionPolygon3DEditor::_polygon_draw);
+void Polygon3DEditor::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_polygon_draw"), &Polygon3DEditor::_polygon_draw);
 }
 
-CollisionPolygon3DEditor::CollisionPolygon3DEditor(EditorNode *p_editor) {
+Polygon3DEditor::Polygon3DEditor(EditorNode *p_editor) {
 	node = nullptr;
 	editor = p_editor;
 	undo_redo = EditorNode::get_undo_redo();
@@ -503,13 +531,13 @@ CollisionPolygon3DEditor::CollisionPolygon3DEditor(EditorNode *p_editor) {
 	button_create = memnew(Button);
 	button_create->set_flat(true);
 	add_child(button_create);
-	button_create->connect("pressed", callable_mp(this, &CollisionPolygon3DEditor::_menu_option), varray(MODE_CREATE));
+	button_create->connect("pressed", callable_mp(this, &Polygon3DEditor::_menu_option), varray(MODE_CREATE));
 	button_create->set_toggle_mode(true);
 
 	button_edit = memnew(Button);
 	button_edit->set_flat(true);
 	add_child(button_edit);
-	button_edit->connect("pressed", callable_mp(this, &CollisionPolygon3DEditor::_menu_option), varray(MODE_EDIT));
+	button_edit->connect("pressed", callable_mp(this, &Polygon3DEditor::_menu_option), varray(MODE_EDIT));
 	button_edit->set_toggle_mode(true);
 
 	mode = MODE_EDIT;
@@ -545,12 +573,12 @@ CollisionPolygon3DEditor::CollisionPolygon3DEditor(EditorNode *p_editor) {
 	snap_ignore = false;
 }
 
-CollisionPolygon3DEditor::~CollisionPolygon3DEditor() {
+Polygon3DEditor::~Polygon3DEditor() {
 	memdelete(imgeom);
 }
 
 void Polygon3DEditorPlugin::edit(Object *p_object) {
-	collision_polygon_editor->edit(Object::cast_to<Node>(p_object));
+	polygon_editor->edit(Object::cast_to<Node>(p_object));
 }
 
 bool Polygon3DEditorPlugin::handles(Object *p_object) const {
@@ -559,19 +587,19 @@ bool Polygon3DEditorPlugin::handles(Object *p_object) const {
 
 void Polygon3DEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		collision_polygon_editor->show();
+		polygon_editor->show();
 	} else {
-		collision_polygon_editor->hide();
-		collision_polygon_editor->edit(nullptr);
+		polygon_editor->hide();
+		polygon_editor->edit(nullptr);
 	}
 }
 
 Polygon3DEditorPlugin::Polygon3DEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
-	collision_polygon_editor = memnew(CollisionPolygon3DEditor(p_node));
-	Node3DEditor::get_singleton()->add_control_to_menu_panel(collision_polygon_editor);
+	polygon_editor = memnew(Polygon3DEditor(p_node));
+	Node3DEditor::get_singleton()->add_control_to_menu_panel(polygon_editor);
 
-	collision_polygon_editor->hide();
+	polygon_editor->hide();
 }
 
 Polygon3DEditorPlugin::~Polygon3DEditorPlugin() {

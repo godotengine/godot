@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  collision_polygon_3d_editor_plugin.h                                 */
+/*  polygon_3d_editor_plugin.h                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef COLLISION_POLYGON_EDITOR_PLUGIN_H
-#define COLLISION_POLYGON_EDITOR_PLUGIN_H
+#ifndef POLYGON_3D_EDITOR_PLUGIN_H
+#define POLYGON_3D_EDITOR_PLUGIN_H
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -39,8 +39,8 @@
 
 class CanvasItemEditor;
 
-class CollisionPolygon3DEditor : public HBoxContainer {
-	GDCLASS(CollisionPolygon3DEditor, HBoxContainer);
+class Polygon3DEditor : public HBoxContainer {
+	GDCLASS(Polygon3DEditor, HBoxContainer);
 
 	UndoRedo *undo_redo;
 	enum Mode {
@@ -60,6 +60,7 @@ class CollisionPolygon3DEditor : public HBoxContainer {
 	EditorNode *editor;
 	Panel *panel;
 	Node3D *node;
+	Ref<Resource> node_resource;
 	Ref<ImmediateMesh> imesh;
 	MeshInstance3D *imgeom;
 	MeshInstance3D *pointsm;
@@ -69,8 +70,8 @@ class CollisionPolygon3DEditor : public HBoxContainer {
 
 	int edited_point;
 	Vector2 edited_point_pos;
-	Vector<Vector2> pre_move_edit;
-	Vector<Vector2> wip;
+	PackedVector2Array pre_move_edit;
+	PackedVector2Array wip;
 	bool wip_active;
 	bool snap_ignore;
 
@@ -81,6 +82,8 @@ class CollisionPolygon3DEditor : public HBoxContainer {
 	void _menu_option(int p_option);
 
 	float _get_depth();
+	PackedVector2Array _get_polygon();
+	void _set_polygon(PackedVector2Array p_poly);
 
 protected:
 	void _notification(int p_what);
@@ -89,19 +92,19 @@ protected:
 
 public:
 	virtual EditorPlugin::AfterGUIInput forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event);
-	void edit(Node *p_collision_polygon);
-	CollisionPolygon3DEditor(EditorNode *p_editor);
-	~CollisionPolygon3DEditor();
+	void edit(Node *p_node);
+	Polygon3DEditor(EditorNode *p_editor);
+	~Polygon3DEditor();
 };
 
 class Polygon3DEditorPlugin : public EditorPlugin {
 	GDCLASS(Polygon3DEditorPlugin, EditorPlugin);
 
-	CollisionPolygon3DEditor *collision_polygon_editor;
+	Polygon3DEditor *polygon_editor;
 	EditorNode *editor;
 
 public:
-	virtual EditorPlugin::AfterGUIInput forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override { return collision_polygon_editor->forward_spatial_gui_input(p_camera, p_event); }
+	virtual EditorPlugin::AfterGUIInput forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override { return polygon_editor->forward_spatial_gui_input(p_camera, p_event); }
 
 	virtual String get_name() const override { return "Polygon3DEditor"; }
 	bool has_main_screen() const override { return false; }
@@ -113,4 +116,4 @@ public:
 	~Polygon3DEditorPlugin();
 };
 
-#endif // COLLISION_POLYGON_EDITOR_PLUGIN_H
+#endif // POLYGON_3D_EDITOR_PLUGIN_H

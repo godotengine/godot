@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ArrayOccluder3D" inherits="Occluder3D" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="set_arrays">
+			<return type="void" />
+			<argument index="0" name="vertices" type="PackedVector3Array" />
+			<argument index="1" name="indices" type="PackedInt32Array" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="indices" type="PackedInt32Array" setter="set_indices" getter="get_indices" default="PackedInt32Array()">
+		</member>
+		<member name="vertices" type="PackedVector3Array" setter="set_vertices" getter="get_vertices" default="PackedVector3Array()">
+		</member>
+	</members>
+</class>

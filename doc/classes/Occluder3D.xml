@@ -6,10 +6,16 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<members>
-		<member name="indices" type="PackedInt32Array" setter="set_indices" getter="get_indices" default="PackedInt32Array()">
-		</member>
-		<member name="vertices" type="PackedVector3Array" setter="set_vertices" getter="get_vertices" default="PackedVector3Array()">
-		</member>
-	</members>
+	<methods>
+		<method name="get_indices" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<description>
+			</description>
+		</method>
+		<method name="get_vertices" qualifiers="const">
+			<return type="PackedVector3Array" />
+			<description>
+			</description>
+		</method>
+	</methods>
 </class>

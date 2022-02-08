@@ -270,12 +270,13 @@ void RaycastOcclusionCull::scenario_set_instance(RID p_scenario, RID p_instance,
 
 	OccluderInstance &instance = scenario.instances[p_instance];
 
+	bool changed = false;
+
 	if (instance.removed) {
 		instance.removed = false;
 		scenario.removed_instances.erase(p_instance);
+		changed = true; // It was removed and re-added, we might have missed some changes
 	}
-
-	bool changed = false;
 
 	if (instance.occluder != p_occluder) {
 		Occluder *old_occluder = occluder_owner.get_or_null(instance.occluder);
