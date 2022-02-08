@@ -312,9 +312,6 @@ template_builders_bin = find_program('editor/template_builders.py')
 # then thirdparty
 subdir('thirdparty')
 
-# generate the module include files
-subdir('modules')
-
 # get all of godot except main
 subdir('platform')
 subdir('core')
@@ -340,6 +337,8 @@ endif
 
 # build up our module list
 MODULE_DEPENDENCIES = []
+# generate the module include files
+subdir('modules')
 
 # finally, get the sources for main separately
 subdir('main')

@@ -1,3 +1,7 @@
+if host_machine.system() != 'darwin'
+  subdir_done()
+endif
+
 _module_icloud_srcs = files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
 _module_icloud_srcs = files(run_command(GLOB, '*.mm', check: true).stdout().split('\n'))
 
