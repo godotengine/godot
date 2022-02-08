@@ -51,6 +51,13 @@
 				[b]Note:[/b] Despite the name of this method, the focus cursor itself is only visible in [constant SELECT_MULTI] mode.
 			</description>
 		</method>
+		<method name="get_button_id_at_position" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="position" type="Vector2" />
+			<description>
+				Returns the button id at [code]position[/code], or -1 if no button is there.
+			</description>
+		</method>
 		<method name="get_column_at_position" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="position" type="Vector2" />
