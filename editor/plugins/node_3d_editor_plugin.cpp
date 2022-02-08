@@ -1041,24 +1041,40 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 
 	if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE) {
 		int col_axis = -1;
-		float col_d = 1e20;
 
-		for (int i = 0; i < 3; i++) {
-			Plane plane(gt.basis.get_axis(i).normalized(), gt.origin);
-			Vector3 r;
-			if (!plane.intersects_ray(ray_pos, ray, &r)) {
-				continue;
+		Vector3 hit_position;
+		Vector3 hit_normal;
+		real_t ray_length = gt.origin.distance_to(ray_pos) + (GIZMO_CIRCLE_SIZE * gizmo_scale) * 4.0f;
+		if (Geometry3D::segment_intersects_sphere(ray_pos, ray_pos + ray * ray_length, gt.origin, gizmo_scale * (GIZMO_CIRCLE_SIZE), &hit_position, &hit_normal)) {
+			if (hit_normal.dot(_get_camera_normal()) < 0.05) {
+				hit_position = gt.xform_inv(hit_position).abs();
+				int min_axis = hit_position.min_axis_index();
+				if (hit_position[min_axis] < gizmo_scale * GIZMO_RING_HALF_WIDTH) {
+					col_axis = min_axis;
+				}
 			}
+		}
 
-			const real_t dist = r.distance_to(gt.origin);
-			const Vector3 r_dir = (r - gt.origin).normalized();
+		if (col_axis == -1) {
+			float col_d = 1e20;
 
-			if (_get_camera_normal().dot(r_dir) <= 0.005) {
-				if (dist > gizmo_scale * (GIZMO_CIRCLE_SIZE - GIZMO_RING_HALF_WIDTH) && dist < gizmo_scale * (GIZMO_CIRCLE_SIZE + GIZMO_RING_HALF_WIDTH)) {
-					const real_t d = ray_pos.distance_to(r);
-					if (d < col_d) {
-						col_d = d;
-						col_axis = i;
+			for (int i = 0; i < 3; i++) {
+				Plane plane(gt.basis.get_axis(i).normalized(), gt.origin);
+				Vector3 r;
+				if (!plane.intersects_ray(ray_pos, ray, &r)) {
+					continue;
+				}
+
+				const real_t dist = r.distance_to(gt.origin);
+				const Vector3 r_dir = (r - gt.origin).normalized();
+
+				if (_get_camera_normal().dot(r_dir) <= 0.005) {
+					if (dist > gizmo_scale * (GIZMO_CIRCLE_SIZE - GIZMO_RING_HALF_WIDTH) && dist < gizmo_scale * (GIZMO_CIRCLE_SIZE + GIZMO_RING_HALF_WIDTH)) {
+						const real_t d = ray_pos.distance_to(r);
+						if (d < col_d) {
+							col_d = d;
+							col_axis = i;
+						}
 					}
 				}
 			}
@@ -2730,7 +2746,7 @@ void Node3DEditorViewport::_draw() {
 		font->draw_string(ci, msgpos, message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 1));
 	}
 
-	if (_edit.mode == TRANSFORM_ROTATE) {
+	if (_edit.mode == TRANSFORM_ROTATE && _edit.show_rotation_line) {
 		Point2 center = _point_to_screen(_edit.center);
 
 		Color handle_color;
@@ -4278,29 +4294,32 @@ void Node3DEditorViewport::update_transform(Point2 p_mousepos, bool p_shift) {
 		} break;
 
 		case TRANSFORM_ROTATE: {
-			Plane plane;
-			Vector3 axis;
+			Plane plane = Plane(_get_camera_normal(), _edit.center);
 
+			Vector3 local_axis;
+			Vector3 global_axis;
 			switch (_edit.plane) {
 				case TRANSFORM_VIEW:
-					plane = Plane(_get_camera_normal(), _edit.center);
+					// local_axis unused
+					global_axis = _get_camera_normal();
 					break;
 				case TRANSFORM_X_AXIS:
-					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized(), _edit.center);
-					axis = Vector3(1, 0, 0);
+					local_axis = Vector3(1, 0, 0);
 					break;
 				case TRANSFORM_Y_AXIS:
-					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized(), _edit.center);
-					axis = Vector3(0, 1, 0);
+					local_axis = Vector3(0, 1, 0);
 					break;
 				case TRANSFORM_Z_AXIS:
-					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized(), _edit.center);
-					axis = Vector3(0, 0, 1);
+					local_axis = Vector3(0, 0, 1);
 					break;
 				case TRANSFORM_YZ:
 				case TRANSFORM_XZ:
 				case TRANSFORM_XY:
 					break;
+			}
+
+			if (_edit.plane != TRANSFORM_VIEW) {
+				global_axis = spatial_editor->get_gizmo_transform().basis.xform(local_axis).normalized();
 			}
 
 			Vector3 intersection;
@@ -4313,10 +4332,22 @@ void Node3DEditorViewport::update_transform(Point2 p_mousepos, bool p_shift) {
 				break;
 			}
 
-			Vector3 y_axis = (click - _edit.center).normalized();
-			Vector3 x_axis = plane.normal.cross(y_axis).normalized();
+			static const float orthogonal_threshold = Math::cos(Math::deg2rad(87.0f));
+			bool axis_is_orthogonal = ABS(plane.normal.dot(global_axis)) < orthogonal_threshold;
 
-			double angle = Math::atan2(x_axis.dot(intersection - _edit.center), y_axis.dot(intersection - _edit.center));
+			double angle = 0.0f;
+			if (axis_is_orthogonal) {
+				_edit.show_rotation_line = false;
+				Vector3 projection_axis = plane.normal.cross(global_axis);
+				Vector3 delta = intersection - click;
+				float projection = delta.dot(projection_axis);
+				angle = (projection * (Math_PI / 2.0f)) / (gizmo_scale * GIZMO_CIRCLE_SIZE);
+			} else {
+				_edit.show_rotation_line = true;
+				Vector3 click_axis = (click - _edit.center).normalized();
+				Vector3 current_axis = (intersection - _edit.center).normalized();
+				angle = click_axis.signed_angle_to(current_axis, global_axis);
+			}
 
 			if (_edit.snap || spatial_editor->is_snap_enabled()) {
 				snap = spatial_editor->get_rotate_snap();
@@ -4344,7 +4375,7 @@ void Node3DEditorViewport::update_transform(Point2 p_mousepos, bool p_shift) {
 					continue;
 				}
 
-				Vector3 compute_axis = local_coords ? axis : plane.normal;
+				Vector3 compute_axis = local_coords ? local_axis : global_axis;
 				if (se->gizmo.is_valid()) {
 					for (KeyValue<int, Transform3D> &GE : se->subgizmos) {
 						Transform3D xform = GE.value;
@@ -4377,6 +4408,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	_edit.mode = TRANSFORM_NONE;
 	_edit.plane = TRANSFORM_VIEW;
 	_edit.snap = true;
+	_edit.show_rotation_line = true;
 	_edit.instant = false;
 	_edit.gizmo_handle = -1;
 	_edit.gizmo_handle_secondary = false;
