@@ -4377,7 +4377,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	_edit.mode = TRANSFORM_NONE;
 	_edit.plane = TRANSFORM_VIEW;
 	_edit.snap = true;
-	_edit.instant = true;
+	_edit.instant = false;
 	_edit.gizmo_handle = -1;
 	_edit.gizmo_handle_secondary = false;
 
