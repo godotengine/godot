@@ -104,8 +104,8 @@ void NavigationPolygon::_set_polygons(const TypedArray<Vector<int32_t>> &p_array
 	}
 }
 
-Array NavigationPolygon::_get_polygons() const {
-	Array ret;
+TypedArray<Vector<int32_t>> NavigationPolygon::_get_polygons() const {
+	TypedArray<Vector<int32_t>> ret;
 	ret.resize(polygons.size());
 	for (int i = 0; i < ret.size(); i++) {
 		ret[i] = polygons[i].indices;
@@ -122,8 +122,8 @@ void NavigationPolygon::_set_outlines(const TypedArray<Vector<Vector2>> &p_array
 	rect_cache_dirty = true;
 }
 
-Array NavigationPolygon::_get_outlines() const {
-	Array ret;
+TypedArray<Vector<Vector2>> NavigationPolygon::_get_outlines() const {
+	TypedArray<Vector<Vector2>> ret;
 	ret.resize(outlines.size());
 	for (int i = 0; i < ret.size(); i++) {
 		ret[i] = outlines[i];
