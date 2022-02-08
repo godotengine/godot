@@ -34,7 +34,6 @@
 #include "core/project_settings.h"
 #include "core/ustring.h"
 #include "core/version.h"
-#include "core/version_hash.gen.h"
 #include "editor/editor_log.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/spatial_editor_plugin.h"
@@ -2293,19 +2292,10 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 			const int line_number = file_line_number[1].to_int();
 
 			// Construct a GitHub repository URL and open it in the user's default web browser.
-			if (String(VERSION_HASH).length() >= 1) {
-				// Git commit hash information available; use it for greater accuracy, including for development versions.
-				OS::get_singleton()->shell_open(vformat("https://github.com/godotengine/godot/blob/%s/%s#L%d",
-						VERSION_HASH,
-						file,
-						line_number));
-			} else {
-				// Git commit hash information unavailable; fall back to tagged releases.
-				OS::get_singleton()->shell_open(vformat("https://github.com/godotengine/godot/blob/%s-stable/%s#L%d",
-						VERSION_NUMBER,
-						file,
-						line_number));
-			}
+			// If the commit hash is available, use it for greater accuracy. Otherwise fall back to tagged release.
+			String git_ref = String(VERSION_HASH).empty() ? String(VERSION_NUMBER) + "-stable" : String(VERSION_HASH);
+			OS::get_singleton()->shell_open(vformat("https://github.com/godotengine/godot/blob/%s/%s#L%d",
+					git_ref, file, line_number));
 		} break;
 	}
 }

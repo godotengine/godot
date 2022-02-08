@@ -93,7 +93,9 @@ def update_version(module_version_string=""):
     f.close()
 
     # NOTE: It is safe to generate this file here, since this is still executed serially
-    fhash = open("core/version_hash.gen.h", "w")
+    fhash = open("core/version_hash.gen.cpp", "w")
+    fhash.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+    fhash.write('#include "core/version.h"\n')
     githash = ""
     gitfolder = ".git"
 
@@ -111,7 +113,7 @@ def update_version(module_version_string=""):
         else:
             githash = head
 
-    fhash.write('#define VERSION_HASH "' + githash + '"')
+    fhash.write('const char *const VERSION_HASH = "' + githash + '";\n')
     fhash.close()
 
 

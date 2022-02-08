@@ -152,6 +152,7 @@ env.core_sources += thirdparty_obj
 
 env.add_source_files(env.core_sources, "*.cpp")
 env.add_source_files(env.core_sources, "script_encryption_key.gen.cpp")
+env.add_source_files(env.core_sources, "version_hash.gen.cpp")
 
 # Certificates
 env.Depends(

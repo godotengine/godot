@@ -68,4 +68,7 @@
 // Example: "Godot v3.1.4.stable.official.mono"
 #define VERSION_FULL_NAME "" VERSION_NAME " v" VERSION_FULL_BUILD
 
+// Git commit hash, generated at build time in `core/version_hash.gen.cpp`.
+extern const char *const VERSION_HASH;
+
 #endif // GODOT_VERSION_H
