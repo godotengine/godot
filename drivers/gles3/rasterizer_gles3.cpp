@@ -69,7 +69,7 @@
 
 #if !defined(UIKIT_ENABLED) && !defined(JAVASCRIPT_ENABLED)
 // We include EGL below to get debug callback on GLES2 platforms,
-// but EGL is not available on iOS.
+// but EGL is not available on iOS/tvOS.
 #define CAN_DEBUG
 #endif
 

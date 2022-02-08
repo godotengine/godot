@@ -637,6 +637,65 @@ Vector<String> EditorExportPlugin::get_ios_project_static_libs() const {
 	return ios_project_static_libs;
 }
 
+void EditorExportPlugin::add_tvos_framework(const String &p_path) {
+	tvos_frameworks.push_back(p_path);
+}
+
+void EditorExportPlugin::add_tvos_embedded_framework(const String &p_path) {
+	tvos_embedded_frameworks.push_back(p_path);
+}
+
+Vector<String> EditorExportPlugin::get_tvos_frameworks() const {
+	return tvos_frameworks;
+}
+
+Vector<String> EditorExportPlugin::get_tvos_embedded_frameworks() const {
+	return tvos_embedded_frameworks;
+}
+
+void EditorExportPlugin::add_tvos_plist_content(const String &p_plist_content) {
+	tvos_plist_content += p_plist_content + "\n";
+}
+
+String EditorExportPlugin::get_tvos_plist_content() const {
+	return tvos_plist_content;
+}
+
+void EditorExportPlugin::add_tvos_linker_flags(const String &p_flags) {
+	if (tvos_linker_flags.length() > 0) {
+		tvos_linker_flags += ' ';
+	}
+	tvos_linker_flags += p_flags;
+}
+
+String EditorExportPlugin::get_tvos_linker_flags() const {
+	return tvos_linker_flags;
+}
+
+void EditorExportPlugin::add_tvos_bundle_file(const String &p_path) {
+	tvos_bundle_files.push_back(p_path);
+}
+
+Vector<String> EditorExportPlugin::get_tvos_bundle_files() const {
+	return tvos_bundle_files;
+}
+
+void EditorExportPlugin::add_tvos_cpp_code(const String &p_code) {
+	tvos_cpp_code += p_code;
+}
+
+String EditorExportPlugin::get_tvos_cpp_code() const {
+	return tvos_cpp_code;
+}
+
+void EditorExportPlugin::add_tvos_project_static_lib(const String &p_path) {
+	tvos_project_static_libs.push_back(p_path);
+}
+
+Vector<String> EditorExportPlugin::get_tvos_project_static_libs() const {
+	return tvos_project_static_libs;
+}
+
 void EditorExportPlugin::_export_file_script(const String &p_path, const String &p_type, const Vector<String> &p_features) {
 	GDVIRTUAL_CALL(_export_file, p_path, p_type, p_features);
 }
@@ -670,6 +729,13 @@ void EditorExportPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_ios_bundle_file", "path"), &EditorExportPlugin::add_ios_bundle_file);
 	ClassDB::bind_method(D_METHOD("add_ios_cpp_code", "code"), &EditorExportPlugin::add_ios_cpp_code);
 	ClassDB::bind_method(D_METHOD("add_osx_plugin_file", "path"), &EditorExportPlugin::add_osx_plugin_file);
+	ClassDB::bind_method(D_METHOD("add_tvos_project_static_lib", "path"), &EditorExportPlugin::add_tvos_project_static_lib);
+	ClassDB::bind_method(D_METHOD("add_tvos_framework", "path"), &EditorExportPlugin::add_tvos_framework);
+	ClassDB::bind_method(D_METHOD("add_tvos_embedded_framework", "path"), &EditorExportPlugin::add_tvos_embedded_framework);
+	ClassDB::bind_method(D_METHOD("add_tvos_plist_content", "plist_content"), &EditorExportPlugin::add_tvos_plist_content);
+	ClassDB::bind_method(D_METHOD("add_tvos_linker_flags", "flags"), &EditorExportPlugin::add_tvos_linker_flags);
+	ClassDB::bind_method(D_METHOD("add_tvos_bundle_file", "path"), &EditorExportPlugin::add_tvos_bundle_file);
+	ClassDB::bind_method(D_METHOD("add_tvos_cpp_code", "code"), &EditorExportPlugin::add_tvos_cpp_code);
 	ClassDB::bind_method(D_METHOD("skip"), &EditorExportPlugin::skip);
 
 	GDVIRTUAL_BIND(_export_file, "path", "type", "features");

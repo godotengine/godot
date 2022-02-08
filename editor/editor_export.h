@@ -311,6 +311,14 @@ class EditorExportPlugin : public RefCounted {
 
 	Vector<String> osx_plugin_files;
 
+	Vector<String> tvos_frameworks;
+	Vector<String> tvos_embedded_frameworks;
+	Vector<String> tvos_project_static_libs;
+	String tvos_plist_content;
+	String tvos_linker_flags;
+	Vector<String> tvos_bundle_files;
+	String tvos_cpp_code;
+
 	_FORCE_INLINE_ void _clear() {
 		shared_objects.clear();
 		extra_files.clear();
@@ -325,6 +333,13 @@ class EditorExportPlugin : public RefCounted {
 		ios_linker_flags = "";
 		ios_cpp_code = "";
 		osx_plugin_files.clear();
+
+		tvos_frameworks.clear();
+		tvos_embedded_frameworks.clear();
+		tvos_bundle_files.clear();
+		tvos_plist_content = "";
+		tvos_linker_flags = "";
+		tvos_cpp_code = "";
 	}
 
 	void _export_file_script(const String &p_path, const String &p_type, const Vector<String> &p_features);
@@ -347,6 +362,14 @@ protected:
 	void add_ios_cpp_code(const String &p_code);
 	void add_osx_plugin_file(const String &p_path);
 
+	void add_tvos_framework(const String &p_path);
+	void add_tvos_embedded_framework(const String &p_path);
+	void add_tvos_project_static_lib(const String &p_path);
+	void add_tvos_plist_content(const String &p_plist_content);
+	void add_tvos_linker_flags(const String &p_flags);
+	void add_tvos_bundle_file(const String &p_path);
+	void add_tvos_cpp_code(const String &p_code);
+
 	void skip();
 
 	virtual void _export_file(const String &p_path, const String &p_type, const Set<String> &p_features);
@@ -367,6 +390,14 @@ public:
 	Vector<String> get_ios_bundle_files() const;
 	String get_ios_cpp_code() const;
 	const Vector<String> &get_osx_plugin_files() const;
+
+	Vector<String> get_tvos_frameworks() const;
+	Vector<String> get_tvos_embedded_frameworks() const;
+	Vector<String> get_tvos_project_static_libs() const;
+	String get_tvos_plist_content() const;
+	String get_tvos_linker_flags() const;
+	Vector<String> get_tvos_bundle_files() const;
+	String get_tvos_cpp_code() const;
 
 	EditorExportPlugin();
 };

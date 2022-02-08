@@ -4121,7 +4121,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 		rb->volumetric_fog->fog_map = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		RD::get_singleton()->set_resource_name(rb->volumetric_fog->fog_map, "Fog map");
 
-#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED) || defined(TVOS_ENABLED)
 		Vector<uint8_t> dm;
 		dm.resize(target_width * target_height * volumetric_fog_depth * 4);
 		dm.fill(0);
@@ -4210,7 +4210,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 			{
 				RD::Uniform u;
-#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED) || defined(TVOS_ENABLED)
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 #else
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
@@ -4230,7 +4230,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 			{
 				RD::Uniform u;
-#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED) || defined(TVOS_ENABLED)
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 #else
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
@@ -4242,7 +4242,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 			{
 				RD::Uniform u;
-#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED) || defined(TVOS_ENABLED)
 				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 #else
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
@@ -4513,7 +4513,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 		}
 		{
 			RD::Uniform u;
-#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED) || defined(TVOS_ENABLED)
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 #else
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
@@ -4524,7 +4524,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 		}
 		{
 			RD::Uniform u;
-#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED) || defined(TVOS_ENABLED)
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 #else
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
@@ -4536,7 +4536,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 		{
 			RD::Uniform u;
-#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED) || defined(TVOS_ENABLED)
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 #else
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;

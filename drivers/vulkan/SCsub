@@ -15,7 +15,7 @@ if env["use_volk"]:
 
 if env["platform"] == "android":
     env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_ANDROID_KHR"])
-elif env["platform"] == "iphone":
+elif env["platform"] == "iphone" or env["platform"] == "tvos":
     env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_IOS_MVK"])
 elif env["platform"] == "linuxbsd":
     env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_XLIB_KHR"])

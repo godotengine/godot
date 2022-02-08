@@ -47,6 +47,15 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 	}
 
 	{
+		// FIXME: this block of code causes crash on tvOS
+		// with error message: No valid pixelFormats set.
+		// Passing non-empty p_framebuffer_format to render_pipeline_create()
+		// fixes the crash.
+		// Resulting RenderingDevice::FramebufferFormatID should be created with
+		// either color attachment or depth attachement or both.
+		// Using empty attachments list also results in crash.
+#ifdef TVOS_ENABLED
+#else
 		Vector<String> versions;
 		versions.push_back("");
 		cluster_render.cluster_render_shader.initialize(versions);
@@ -56,6 +65,7 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 		RD::PipelineMultisampleState ms;
 		ms.sample_count = RD::TEXTURE_SAMPLES_4;
 		cluster_render.shader_pipelines[ClusterRender::PIPELINE_MSAA] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, RD::get_singleton()->framebuffer_format_create_empty(), vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), ms, RD::PipelineDepthStencilState(), RD::PipelineColorBlendState(), 0);
+#endif
 	}
 	{
 		Vector<String> versions;
