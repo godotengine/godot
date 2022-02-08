@@ -24,6 +24,8 @@
 #include "core/input/input.h"
 #include "core/os/thread.h"
 
+#undef CursorShape
+
 class DisplayServerWayland : public DisplayServer {
 	// Wayland stuff.
 
