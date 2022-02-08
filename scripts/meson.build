@@ -5,9 +5,6 @@
 SCRIPT_DOCS = find_program('docs.py')
 # In core/SCsub
 SCRIPT_ENCRYPTION_KEY = find_program('encryption_key.py')
-# Those 2 are heavily customized for meson, this is fine.
-SCRIPT_MODULE_DB = find_program('module_db.py')
-SCRIPT_MODULES_GEN = find_program('modules_gen.py')
 # TODO use methods.save_active_platforms
 SCRIPT_PLATFORM_LOGO = find_program('platform_logo.py')
 # In editor/SCsub
