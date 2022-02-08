@@ -512,24 +512,24 @@ namespace Godot
         /// Returns the result of the spherical linear interpolation between
         /// this vector and <paramref name="to"/> by amount <paramref name="weight"/>.
         ///
-        /// Note: Both vectors must be normalized.
+        /// This method also handles interpolating the lengths if the input vectors have different lengths.
+        /// For the special case of one or both input vectors having zero length, this method behaves like [method lerp].
         /// </summary>
-        /// <param name="to">The destination vector for interpolation. Must be normalized.</param>
+        /// <param name="to">The destination vector for interpolation.</param>
         /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The resulting vector of the interpolation.</returns>
         public Vector2 Slerp(Vector2 to, real_t weight)
         {
-#if DEBUG
-            if (!IsNormalized())
-            {
-                throw new InvalidOperationException("Vector2.Slerp: From vector is not normalized.");
+            real_t startLengthSquared = LengthSquared();
+            real_t endLengthSquared = to.LengthSquared();
+            if (startLengthSquared == 0.0 || endLengthSquared == 0.0) {
+              // Zero length vectors have no angle, so the best we can do is either lerp or throw an error.
+              return Lerp(to, weight);
             }
-            if (!to.IsNormalized())
-            {
-                throw new InvalidOperationException($"Vector2.Slerp: `{nameof(to)}` is not normalized.");
-            }
-#endif
-            return Rotated(AngleTo(to) * weight);
+            real_t startLength = Mathf.Sqrt(startLengthSquared);
+            real_t resultLength = Mathf.Lerp(startLength, Mathf.Sqrt(endLengthSquared), weight);
+            real_t angle = AngleTo(to);
+            return Rotated(angle * weight) * (resultLength / startLength);
         }
 
         /// <summary>
