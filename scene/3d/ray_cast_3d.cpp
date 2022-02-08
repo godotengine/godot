@@ -259,6 +259,13 @@ void RayCast3D::remove_exception(const CollisionObject3D *p_node) {
 
 void RayCast3D::clear_exceptions() {
 	exclude.clear();
+
+	if (exclude_parent_body && is_inside_tree()) {
+		CollisionObject3D *parent = Object::cast_to<CollisionObject3D>(get_parent());
+		if (parent) {
+			exclude.insert(parent->get_rid());
+		}
+	}
 }
 
 void RayCast3D::set_collide_with_areas(bool p_enabled) {
