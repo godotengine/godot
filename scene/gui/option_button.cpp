@@ -118,6 +118,11 @@ void OptionButton::_notification(int p_what) {
 bool OptionButton::_set(const StringName &p_name, const Variant &p_value) {
 	Vector<String> components = String(p_name).split("/", true, 2);
 	if (components.size() >= 2 && components[0] == "popup") {
+		String property = components[2];
+		if (property != "text" && property != "icon" && property != "id" && property != "disabled" && property != "separator") {
+			return false;
+		}
+
 		bool valid;
 		popup->set(String(p_name).trim_prefix("popup/"), p_value, &valid);
 
@@ -136,6 +141,11 @@ bool OptionButton::_set(const StringName &p_name, const Variant &p_value) {
 bool OptionButton::_get(const StringName &p_name, Variant &r_ret) const {
 	Vector<String> components = String(p_name).split("/", true, 2);
 	if (components.size() >= 2 && components[0] == "popup") {
+		String property = components[2];
+		if (property != "text" && property != "icon" && property != "id" && property != "disabled" && property != "separator") {
+			return false;
+		}
+
 		bool valid;
 		r_ret = popup->get(String(p_name).trim_prefix("popup/"), &valid);
 		return valid;
@@ -149,14 +159,6 @@ void OptionButton::_get_property_list(List<PropertyInfo> *p_list) const {
 
 		PropertyInfo pi = PropertyInfo(Variant::OBJECT, vformat("popup/item_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
 		pi.usage &= ~(popup->get_item_icon(i).is_null() ? PROPERTY_USAGE_STORAGE : 0);
-		p_list->push_back(pi);
-
-		pi = PropertyInfo(Variant::INT, vformat("popup/item_%d/checkable", i), PROPERTY_HINT_ENUM, "No,As checkbox,As radio button");
-		pi.usage &= ~(!popup->is_item_checkable(i) ? PROPERTY_USAGE_STORAGE : 0);
-		p_list->push_back(pi);
-
-		pi = PropertyInfo(Variant::BOOL, vformat("popup/item_%d/checked", i));
-		pi.usage &= ~(!popup->is_item_checked(i) ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 
 		pi = PropertyInfo(Variant::INT, vformat("popup/item_%d/id", i), PROPERTY_HINT_RANGE, "0,10,1,or_greater");
@@ -186,10 +188,13 @@ void OptionButton::pressed() {
 	popup->set_size(Size2(size.width, 0));
 
 	// If not triggered by the mouse, start the popup with the checked item selected.
-	if (popup->get_item_count() > 0 &&
-			((get_action_mode() == ActionMode::ACTION_MODE_BUTTON_PRESS && Input::get_singleton()->is_action_just_pressed("ui_accept")) ||
-					(get_action_mode() == ActionMode::ACTION_MODE_BUTTON_RELEASE && Input::get_singleton()->is_action_just_released("ui_accept")))) {
-		popup->set_current_index(current > -1 ? current : 0);
+	if (popup->get_item_count() > 0) {
+		if ((get_action_mode() == ActionMode::ACTION_MODE_BUTTON_PRESS && Input::get_singleton()->is_action_just_pressed("ui_accept")) ||
+				(get_action_mode() == ActionMode::ACTION_MODE_BUTTON_RELEASE && Input::get_singleton()->is_action_just_released("ui_accept"))) {
+			popup->set_current_index(current > -1 ? current : 0);
+		} else {
+			popup->scroll_to_item(current > -1 ? current : 0);
+		}
 	}
 
 	popup->popup();
@@ -267,7 +272,20 @@ bool OptionButton::is_item_disabled(int p_idx) const {
 
 void OptionButton::set_item_count(int p_count) {
 	ERR_FAIL_COND(p_count < 0);
+
+	int count_old = get_item_count();
+	if (p_count == count_old) {
+		return;
+	}
+
 	popup->set_item_count(p_count);
+
+	if (p_count > count_old) {
+		for (int i = count_old; i < p_count; i++) {
+			popup->set_item_as_radio_checkable(i, true);
+		}
+	}
+
 	notify_property_list_changed();
 }
 
@@ -297,7 +315,7 @@ void OptionButton::_select(int p_which, bool p_emit) {
 
 		current = NONE_SELECTED;
 		set_text("");
-		set_icon(NULL);
+		set_icon(nullptr);
 	} else {
 		ERR_FAIL_INDEX(p_which, popup->get_item_count());
 

@@ -103,7 +103,6 @@ class PopupMenu : public Popup {
 
 	int _get_item_height(int p_item) const;
 	int _get_items_total_height() const;
-	void _scroll_to_item(int p_item);
 
 	void _shape_item(int p_item);
 
@@ -217,6 +216,8 @@ public:
 
 	void set_item_count(int p_count);
 	int get_item_count() const;
+
+	void scroll_to_item(int p_item);
 
 	bool activate_item_by_event(const Ref<InputEvent> &p_event, bool p_for_global_only = false);
 	void activate_item(int p_item);

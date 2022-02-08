@@ -331,6 +331,13 @@
 				[b]Note:[/b] The indices of items after the removed item will be shifted by one.
 			</description>
 		</method>
+		<method name="scroll_to_item">
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<description>
+				Moves the scroll view to make the item at the given [code]index[/code] visible.
+			</description>
+		</method>
 		<method name="set_current_index">
 			<return type="void" />
 			<argument index="0" name="index" type="int" />
