@@ -256,6 +256,13 @@ void RayCast::remove_exception(const Object *p_object) {
 
 void RayCast::clear_exceptions() {
 	exclude.clear();
+
+	if (exclude_parent_body && is_inside_tree()) {
+		CollisionObject *parent = Object::cast_to<CollisionObject>(get_parent());
+		if (parent) {
+			exclude.insert(parent->get_rid());
+		}
+	}
 }
 
 void RayCast::set_collide_with_areas(bool p_clip) {
