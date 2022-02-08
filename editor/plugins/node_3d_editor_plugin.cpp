@@ -3978,7 +3978,7 @@ AABB Node3DEditorViewport::_calculate_spatial_bounds(const Node3D *p_parent, boo
 		if (child) {
 			AABB child_bounds = _calculate_spatial_bounds(child, false);
 
-			if (bounds.size == Vector3() && p_parent->get_class_name() == StringName("Node3D")) {
+			if (bounds.size == Vector3() && Object::cast_to<Node3D>(p_parent)) {
 				bounds = child_bounds;
 			} else {
 				bounds.merge_with(child_bounds);
@@ -3986,7 +3986,7 @@ AABB Node3DEditorViewport::_calculate_spatial_bounds(const Node3D *p_parent, boo
 		}
 	}
 
-	if (bounds.size == Vector3() && p_parent->get_class_name() != StringName("Node3D")) {
+	if (bounds.size == Vector3() && !Object::cast_to<Node3D>(p_parent)) {
 		bounds = AABB(Vector3(-0.2, -0.2, -0.2), Vector3(0.4, 0.4, 0.4));
 	}
 
@@ -4213,25 +4213,19 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 			ResourceLoader::get_recognized_extensions_for_type("Mesh", &mesh_extensions);
 
 			for (int i = 0; i < files.size(); i++) {
+				// Check if dragged files with mesh or scene extension can be created at least once.
 				if (mesh_extensions.find(files[i].get_extension()) || scene_extensions.find(files[i].get_extension())) {
 					RES res = ResourceLoader::load(files[i]);
 					if (res.is_null()) {
 						continue;
 					}
-
-					String type = res->get_class();
-					if (type == "PackedScene") {
-						Ref<PackedScene> sdata = ResourceLoader::load(files[i]);
-						Node *instantiated_scene = sdata->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
+					Ref<PackedScene> scn = res;
+					if (scn.is_valid()) {
+						Node *instantiated_scene = scn->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
 						if (!instantiated_scene) {
 							continue;
 						}
 						memdelete(instantiated_scene);
-					} else if (ClassDB::is_parent_class(type, "Mesh")) {
-						Ref<Mesh> mesh = ResourceLoader::load(files[i]);
-						if (!mesh.is_valid()) {
-							continue;
-						}
 					} else {
 						continue;
 					}

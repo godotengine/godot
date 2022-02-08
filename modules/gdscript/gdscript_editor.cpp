@@ -652,7 +652,7 @@ static void _get_directory_contents(EditorFileSystemDirectory *p_dir, Map<String
 }
 
 static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_annotation, int p_argument, const String p_quote_style, Map<String, ScriptCodeCompletionOption> &r_result) {
-	if (p_annotation->name == "@export_range") {
+	if (p_annotation->name == SNAME("@export_range")) {
 		if (p_argument == 3 || p_argument == 4) {
 			// Slider hint.
 			ScriptCodeCompletionOption slider1("or_greater", ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
@@ -662,7 +662,7 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 			slider2.insert_text = slider2.display.quote(p_quote_style);
 			r_result.insert(slider2.display, slider2);
 		}
-	} else if (p_annotation->name == "@export_exp_easing") {
+	} else if (p_annotation->name == SNAME("@export_exp_easing")) {
 		if (p_argument == 0 || p_argument == 1) {
 			// Easing hint.
 			ScriptCodeCompletionOption hint1("attenuation", ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
@@ -672,7 +672,7 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 			hint2.insert_text = hint2.display.quote(p_quote_style);
 			r_result.insert(hint2.display, hint2);
 		}
-	} else if (p_annotation->name == "@export_node_path") {
+	} else if (p_annotation->name == SNAME("@export_node_path")) {
 		ScriptCodeCompletionOption node("Node", ScriptCodeCompletionOption::KIND_CLASS);
 		r_result.insert(node.display, node);
 		List<StringName> node_types;
@@ -684,7 +684,7 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 			ScriptCodeCompletionOption option(E, ScriptCodeCompletionOption::KIND_CLASS);
 			r_result.insert(option.display, option);
 		}
-	} else if (p_annotation->name == "@warning_ignore") {
+	} else if (p_annotation->name == SNAME("@warning_ignore")) {
 		for (int warning_code = 0; warning_code < GDScriptWarning::WARNING_MAX; warning_code++) {
 			ScriptCodeCompletionOption warning(GDScriptWarning::get_name_from_code((GDScriptWarning::Code)warning_code).to_lower(), ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
 			r_result.insert(warning.display, warning);
@@ -1384,7 +1384,7 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 
 								Object *baseptr = base.value;
 
-								if (all_is_const && String(call->function_name) == "get_node" && ClassDB::is_parent_class(native_type.native_type, "Node") && args.size()) {
+								if (all_is_const && call->function_name == SNAME("get_node") && ClassDB::is_parent_class(native_type.native_type, SNAME("Node")) && args.size()) {
 									String arg1 = args[0];
 									if (arg1.begins_with("/root/")) {
 										String which = arg1.get_slice("/", 2);
@@ -2085,7 +2085,7 @@ static bool _guess_method_return_type_from_base(GDScriptParser::CompletionContex
 	GDScriptParser::DataType base_type = p_base.type;
 	bool is_static = base_type.is_meta_type;
 
-	if (is_static && p_method == "new") {
+	if (is_static && p_method == SNAME("new")) {
 		r_type.type = base_type;
 		r_type.type.is_meta_type = false;
 		r_type.type.is_constant = false;
@@ -2274,7 +2274,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 					r_arghint = _make_arguments_hint(info, p_argidx);
 				}
 
-				if (p_argidx == 0 && ClassDB::is_parent_class(class_name, "Node") && (p_method == "get_node" || p_method == "has_node")) {
+				if (p_argidx == 0 && ClassDB::is_parent_class(class_name, SNAME("Node")) && (p_method == SNAME("get_node") || p_method == SNAME("has_node"))) {
 					// Get autoloads
 					List<PropertyInfo> props;
 					ProjectSettings::get_singleton()->get_property_list(&props);
@@ -2291,7 +2291,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 					}
 				}
 
-				if (p_argidx == 0 && method_args > 0 && ClassDB::is_parent_class(class_name, "InputEvent") && p_method.operator String().contains("action")) {
+				if (p_argidx == 0 && method_args > 0 && ClassDB::is_parent_class(class_name, SNAME("InputEvent")) && p_method.operator String().contains("action")) {
 					// Get input actions
 					List<PropertyInfo> props;
 					ProjectSettings::get_singleton()->get_property_list(&props);

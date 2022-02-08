@@ -610,11 +610,6 @@ TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, cons
 		text = p_text;
 	} else {
 		icon = ui_service->get_theme_icon(p_icon, SNAME("EditorIcons"));
-		/*// In flat mode, show the class icon.
-if (ui_service->has_icon(p_class_name, "EditorIcons"))
-icon = ui_service->get_icon(p_class_name, "EditorIcons");
-else if (ClassDB::is_parent_class(p_class_name, "Object"))
-icon = ui_service->get_icon("Object", "EditorIcons");*/
 		text = p_class_name + "." + p_text;
 	}
 

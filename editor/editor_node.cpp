@@ -745,7 +745,6 @@ void EditorNode::_notification(int p_what) {
 
 			bottom_panel_raise->set_icon(gui_base->get_theme_icon(SNAME("ExpandBottomDock"), SNAME("EditorIcons")));
 
-			// clear_button->set_icon(gui_base->get_icon("Close", "EditorIcons")); don't have access to that node. needs to become a class property
 			if (gui_base->is_layout_rtl()) {
 				dock_tab_move_left->set_icon(theme->get_icon(SNAME("Forward"), SNAME("EditorIcons")));
 				dock_tab_move_right->set_icon(theme->get_icon(SNAME("Back"), SNAME("EditorIcons")));
@@ -2280,7 +2279,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 		if (main_plugin) {
 			// special case if use of external editor is true
 			Resource *current_res = Object::cast_to<Resource>(current_obj);
-			if (main_plugin->get_name() == "Script" && current_obj->get_class_name() != StringName("VisualScript") && current_res && !current_res->is_built_in() && (bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor")) || overrides_external_editor(current_obj))) {
+			if (main_plugin->get_name() == "Script" && current_obj->is_class("VisualScript") && current_res && !current_res->is_built_in() && (bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor")) || overrides_external_editor(current_obj))) {
 				if (!changing_scene) {
 					main_plugin->edit(current_obj);
 				}
@@ -3293,8 +3292,8 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 			return;
 		}
 
-		// Errors in the script cause the base_type to be an empty string.
-		if (String(script->get_instance_base_type()) == "") {
+		// Errors in the script cause the base_type to be an empty StringName.
+		if (script->get_instance_base_type() == StringName()) {
 			show_warning(vformat(TTR("Unable to load addon script from path: '%s'. This might be due to a code error in that script.\nDisabling the addon at '%s' to prevent further errors."), script_path, p_addon));
 			_remove_plugin_from_enabled(p_addon);
 			return;
@@ -3937,7 +3936,7 @@ StringName EditorNode::get_object_custom_type_name(const Object *p_object) const
 	ERR_FAIL_COND_V(!p_object, StringName());
 
 	Ref<Script> script = p_object->get_script();
-	if (script.is_null() && p_object->is_class("Script")) {
+	if (script.is_null() && Object::cast_to<Script>(p_object)) {
 		script = p_object;
 	}
 
@@ -4148,13 +4147,12 @@ Ref<Texture2D> EditorNode::_file_dialog_get_icon(const String &p_path) {
 
 void EditorNode::_build_icon_type_cache() {
 	List<StringName> tl;
-	StringName ei = "EditorIcons";
-	theme_base->get_theme()->get_icon_list(ei, &tl);
+	theme_base->get_theme()->get_icon_list(SNAME("EditorIcons"), &tl);
 	for (const StringName &E : tl) {
 		if (!ClassDB::class_exists(E)) {
 			continue;
 		}
-		icon_type_cache[E] = theme_base->get_theme()->get_icon(E, ei);
+		icon_type_cache[E] = theme_base->get_theme()->get_icon(E, SNAME("EditorIcons"));
 	}
 }
 

@@ -73,23 +73,21 @@ void init_autoloads() {
 		RES res = ResourceLoader::load(info.path);
 		ERR_CONTINUE_MSG(res.is_null(), "Can't autoload: " + info.path);
 		Node *n = nullptr;
-		if (res->is_class("PackedScene")) {
-			Ref<PackedScene> ps = res;
-			n = ps->instantiate();
-		} else if (res->is_class("Script")) {
-			Ref<Script> script_res = res;
-			StringName ibt = script_res->get_instance_base_type();
+		Ref<PackedScene> scn = res;
+		Ref<Script> script = res;
+		if (scn.is_valid()) {
+			n = scn->instantiate();
+		} else if (script.is_valid()) {
+			StringName ibt = script->get_instance_base_type();
 			bool valid_type = ClassDB::is_parent_class(ibt, "Node");
 			ERR_CONTINUE_MSG(!valid_type, "Script does not inherit a Node: " + info.path);
 
 			Object *obj = ClassDB::instantiate(ibt);
 
-			ERR_CONTINUE_MSG(obj == nullptr,
-					"Cannot instance script for autoload, expected 'Node' inheritance, got: " +
-							String(ibt));
+			ERR_CONTINUE_MSG(!obj, "Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt) + ".");
 
 			n = Object::cast_to<Node>(obj);
-			n->set_script(script_res);
+			n->set_script(script);
 		}
 
 		ERR_CONTINUE_MSG(!n, "Path in autoload not a node or script: " + info.path);

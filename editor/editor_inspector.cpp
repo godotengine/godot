@@ -2425,7 +2425,7 @@ void EditorInspector::update_tree() {
 			if (!ClassDB::class_exists(type) && !ScriptServer::is_global_class(type) && p.hint_string.length() && FileAccess::exists(p.hint_string)) {
 				// If we have a category inside a script, search for the first script with a valid icon.
 				Ref<Script> script = ResourceLoader::load(p.hint_string, "Script");
-				String base_type;
+				StringName base_type;
 				if (script.is_valid()) {
 					base_type = script->get_instance_base_type();
 				}

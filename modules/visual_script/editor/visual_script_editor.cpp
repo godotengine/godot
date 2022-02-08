@@ -653,7 +653,6 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 
 	List<int> ids;
 	script->get_node_list(&ids);
-	StringName editor_icons = "EditorIcons";
 
 	for (int &E : ids) {
 		if (p_only_id >= 0 && p_only_id != E) {
