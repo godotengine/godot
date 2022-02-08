@@ -125,6 +125,7 @@ DisplayServerOSX::WindowID DisplayServerOSX::_create_window(WindowMode p_mode, V
 							backing:NSBackingStoreBuffered
 							  defer:NO];
 		ERR_FAIL_COND_V_MSG(wd.window_object == nil, INVALID_WINDOW_ID, "Can't create a window");
+		[wd.window_object setWindowID:window_id_counter];
 
 		wd.window_view = [[GodotContentView alloc] init];
 		ERR_FAIL_COND_V_MSG(wd.window_view == nil, INVALID_WINDOW_ID, "Can't create a window view");
