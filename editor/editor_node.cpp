@@ -47,7 +47,6 @@
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 #include "core/version.h"
-#include "core/version_hash.gen.h"
 #include "main/main.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/gui/center_container.h"
