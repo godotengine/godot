@@ -258,7 +258,7 @@ void ReplicationEditor::edit(MultiplayerSynchronizer *p_sync) {
 
 Ref<Texture2D> ReplicationEditor::_get_class_icon(const Node *p_node) {
 	if (!p_node || !has_theme_icon(p_node->get_class(), "EditorIcons")) {
-		return get_theme_icon("ImportFail", "EditorIcons");
+		return get_theme_icon(SNAME("ImportFail"), SNAME("EditorIcons"));
 	}
 	return get_theme_icon(p_node->get_class(), "EditorIcons");
 }
@@ -285,7 +285,7 @@ void ReplicationEditor::_add_property(const NodePath &p_property, bool p_spawn, 
 		icon = _get_class_icon(node);
 	}
 	item->set_icon(0, icon);
-	item->add_button(3, get_theme_icon("Remove", "EditorIcons"));
+	item->add_button(3, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 	item->set_text_alignment(1, HORIZONTAL_ALIGNMENT_CENTER);
 	item->set_cell_mode(1, TreeItem::CELL_MODE_CHECK);
 	item->set_checked(1, p_spawn);

@@ -1114,14 +1114,14 @@ TreeItem *VisualScriptPropertySelector::SearchRunner::_create_class_item(TreeIte
 	String details = p_doc->name;
 	if (p_doc->category.begins_with("VisualScriptCustomNode/")) {
 		Vector<String> path = p_doc->name.split("/");
-		icon = ui_service->get_theme_icon("VisualScript", "EditorIcons");
+		icon = ui_service->get_theme_icon(SNAME("VisualScript"), SNAME("EditorIcons"));
 		text_0 = path[path.size() - 1];
 		text_1 = "VisualScriptCustomNode";
 		what = "VisualScriptCustomNode";
 		details = "CustomNode";
 	} else if (p_doc->category.begins_with("VisualScriptNode/")) {
 		Vector<String> path = p_doc->name.split("/");
-		icon = ui_service->get_theme_icon("VisualScript", "EditorIcons");
+		icon = ui_service->get_theme_icon(SNAME("VisualScript"), SNAME("EditorIcons"));
 		text_0 = path[path.size() - 1];
 		if (p_doc->category.begins_with("VisualScriptNode/deconstruct")) {
 			text_0 = "deconstruct " + text_0;
