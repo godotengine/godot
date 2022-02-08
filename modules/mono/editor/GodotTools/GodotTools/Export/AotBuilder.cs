@@ -537,7 +537,6 @@ MONO_AOT_MODE_LAST = 1000,
         {
             var iosArchs = new[]
             {
-                "armv7",
                 "arm64"
             };
 
