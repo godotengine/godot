@@ -70,12 +70,19 @@ bool CallableCustomBind::_less_func(const CallableCustom *p_a, const CallableCus
 CallableCustom::CompareEqualFunc CallableCustomBind::get_compare_equal_func() const {
 	return _equal_func;
 }
+
 CallableCustom::CompareLessFunc CallableCustomBind::get_compare_less_func() const {
 	return _less_func;
 }
+
+StringName CallableCustomBind::get_method() const {
+	return callable.get_method();
+}
+
 ObjectID CallableCustomBind::get_object() const {
 	return callable.get_object_id();
 }
+
 const Callable *CallableCustomBind::get_base_comparator() const {
 	return &callable;
 }
@@ -140,12 +147,19 @@ bool CallableCustomUnbind::_less_func(const CallableCustom *p_a, const CallableC
 CallableCustom::CompareEqualFunc CallableCustomUnbind::get_compare_equal_func() const {
 	return _equal_func;
 }
+
 CallableCustom::CompareLessFunc CallableCustomUnbind::get_compare_less_func() const {
 	return _less_func;
 }
+
+StringName CallableCustomUnbind::get_method() const {
+	return callable.get_method();
+}
+
 ObjectID CallableCustomUnbind::get_object() const {
 	return callable.get_object_id();
 }
+
 const Callable *CallableCustomUnbind::get_base_comparator() const {
 	return &callable;
 }
