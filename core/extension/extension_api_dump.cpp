@@ -67,6 +67,12 @@ static String get_type_name(const PropertyInfo &p_info) {
 	return Variant::get_type_name(p_info.type);
 }
 
+static String get_array_type_name(const String &p_hint_string) {
+	// The format of p_hint_string is:
+	// subType/subTypeHint:nextSubtype ... etc
+	return p_hint_string.get_slice(":", 1);
+}
+
 Dictionary NativeExtensionAPIDump::generate_extension_api() {
 	Dictionary api_dump;
 
@@ -731,6 +737,9 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 							}
 
 							d3["type"] = get_type_name(pinfo);
+							if (pinfo.type == Variant::ARRAY && pinfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
+								d3["array_type"] = get_array_type_name(pinfo.hint_string);
+							}
 
 							if (i == -1) {
 								d2["return_value"] = d3;
@@ -774,6 +783,9 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 								d3["name"] = pinfo.name;
 							}
 							d3["type"] = get_type_name(pinfo);
+							if (pinfo.type == Variant::ARRAY && pinfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
+								d3["array_type"] = get_array_type_name(pinfo.hint_string);
+							}
 
 							if (method->get_argument_meta(i) > 0) {
 								static const char *argmeta[11] = { "none", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float", "double" };
@@ -817,10 +829,13 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 
 					Array arguments;
 
-					for (int i = 0; i < F.arguments.size(); i++) {
+					for (const PropertyInfo &pinfo : F.arguments) {
 						Dictionary d3;
-						d3["name"] = F.arguments[i].name;
-						d3["type"] = get_type_name(F.arguments[i]);
+						d3["name"] = pinfo.name;
+						d3["type"] = get_type_name(pinfo);
+						if (pinfo.type == Variant::ARRAY && pinfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
+							d3["array_type"] = get_array_type_name(pinfo.hint_string);
+						}
 						arguments.push_back(d3);
 					}
 					if (arguments.size()) {
@@ -839,20 +854,23 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				Array properties;
 				List<PropertyInfo> property_list;
 				ClassDB::get_property_list(class_name, &property_list, true);
-				for (const PropertyInfo &F : property_list) {
-					if (F.usage & PROPERTY_USAGE_CATEGORY || F.usage & PROPERTY_USAGE_GROUP || F.usage & PROPERTY_USAGE_SUBGROUP) {
+				for (const PropertyInfo &pinfo : property_list) {
+					if (pinfo.usage & PROPERTY_USAGE_CATEGORY || pinfo.usage & PROPERTY_USAGE_GROUP || pinfo.usage & PROPERTY_USAGE_SUBGROUP) {
 						continue; //not real properties
 					}
-					if (F.name.begins_with("_")) {
+					if (pinfo.name.begins_with("_")) {
 						continue; //hidden property
 					}
-					StringName property_name = F.name;
+					StringName property_name = pinfo.name;
 					Dictionary d2;
-					d2["type"] = get_type_name(F);
+					d2["type"] = get_type_name(pinfo);
+					if (pinfo.type == Variant::ARRAY && pinfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
+						d2["array_type"] = get_array_type_name(pinfo.hint_string);
+					}
 					d2["name"] = String(property_name);
-					d2["setter"] = ClassDB::get_property_setter(class_name, F.name);
-					d2["getter"] = ClassDB::get_property_getter(class_name, F.name);
-					d2["index"] = ClassDB::get_property_index(class_name, F.name);
+					d2["setter"] = ClassDB::get_property_setter(class_name, pinfo.name);
+					d2["getter"] = ClassDB::get_property_getter(class_name, pinfo.name);
+					d2["index"] = ClassDB::get_property_index(class_name, pinfo.name);
 					properties.push_back(d2);
 				}
 
