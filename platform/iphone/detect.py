@@ -120,7 +120,6 @@ def configure(env):
             )
         )
         env.Append(CPPDEFINES=["NEED_LONG_INT"])
-        env.Append(CPPDEFINES=["LIBYUV_DISABLE_NEON"])
 
     # Disable exceptions on non-tools (template) builds
     if not env["tools"]:
