@@ -28,8 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef IPHONE_ENABLED
-
 #include "os_iphone.h"
 
 #import "app_delegate.h"
@@ -40,8 +38,8 @@
 #include "display_server_iphone.h"
 #include "drivers/unix/syslog_logger.h"
 #import "godot_view.h"
+#import "godot_view_controller.h"
 #include "main/main.h"
-#import "view_controller.h"
 
 #import <AudioToolbox/AudioServices.h>
 #import <UIKit/UIKit.h>
@@ -89,7 +87,8 @@ OSIPhone *OSIPhone::get_singleton() {
 	return (OSIPhone *)OS::get_singleton();
 }
 
-OSIPhone::OSIPhone(String p_data_dir, String p_cache_dir) {
+OSIPhone::OSIPhone(String p_data_dir, String p_cache_dir) :
+		OS_UIKit(p_data_dir, p_cache_dir) {
 	for (int i = 0; i < ios_init_callbacks_count; ++i) {
 		ios_init_callbacks[i]();
 	}
@@ -97,24 +96,6 @@ OSIPhone::OSIPhone(String p_data_dir, String p_cache_dir) {
 	ios_init_callbacks = nullptr;
 	ios_init_callbacks_count = 0;
 	ios_init_callbacks_capacity = 0;
-
-	main_loop = nullptr;
-
-	// can't call set_data_dir from here, since it requires DirAccess
-	// which is initialized in initialize_core
-	user_data_dir = p_data_dir;
-	cache_dir = p_cache_dir;
-
-	Vector<Logger *> loggers;
-	loggers.push_back(memnew(SyslogLogger));
-#ifdef DEBUG_ENABLED
-	// it seems iOS app's stdout/stderr is only obtainable if you launch it from
-	// Xcode
-	loggers.push_back(memnew(StdLogger));
-#endif
-	_set_logger(memnew(CompositeLogger(loggers)));
-
-	AudioDriverManager::add_driver(&audio_driver);
 
 	DisplayServerIPhone::register_iphone_driver();
 }
@@ -127,97 +108,24 @@ void OSIPhone::alert(const String &p_alert, const String &p_title) {
 	iOS::alert(utf8_alert.get_data(), utf8_title.get_data());
 }
 
-void OSIPhone::initialize_core() {
-	OS_Unix::initialize_core();
-
-	set_user_data_dir(user_data_dir);
-}
-
 void OSIPhone::initialize() {
-	initialize_core();
+	OS_UIKit::initialize();
 }
 
 void OSIPhone::initialize_modules() {
 	ios = memnew(iOS);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", ios));
-
-	joypad_iphone = memnew(JoypadIPhone);
-}
-
-void OSIPhone::deinitialize_modules() {
-	if (joypad_iphone) {
-		memdelete(joypad_iphone);
-	}
-
-	if (ios) {
-		memdelete(ios);
-	}
-}
-
-void OSIPhone::set_main_loop(MainLoop *p_main_loop) {
-	main_loop = p_main_loop;
-
-	if (main_loop) {
-		main_loop->initialize();
-	}
-}
-
-MainLoop *OSIPhone::get_main_loop() const {
-	return main_loop;
-}
-
-void OSIPhone::delete_main_loop() {
-	if (main_loop) {
-		main_loop->finalize();
-		memdelete(main_loop);
-	}
-
-	main_loop = nullptr;
-}
-
-bool OSIPhone::iterate() {
-	if (!main_loop) {
-		return true;
-	}
-
-	if (DisplayServer::get_singleton()) {
-		DisplayServer::get_singleton()->process_events();
-	}
-
-	return Main::iteration();
-}
-
-void OSIPhone::start() {
-	Main::start();
-
-	if (joypad_iphone) {
-		joypad_iphone->start_processing();
-	}
 }
 
 void OSIPhone::finalize() {
-	deinitialize_modules();
+	if (ios) {
+		memdelete(ios);
+	}
 
-	// Already gets called
-	//delete_main_loop();
+	OS_UIKit::finalize();
 }
 
 // MARK: Dynamic Libraries
-
-Error OSIPhone::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
-	if (p_path.length() == 0) {
-		p_library_handle = RTLD_SELF;
-		return OK;
-	}
-	return OS_Unix::open_dynamic_library(p_path, p_library_handle, p_also_set_library_path);
-}
-
-Error OSIPhone::close_dynamic_library(void *p_library_handle) {
-	if (p_library_handle == RTLD_SELF) {
-		return OK;
-	}
-	return OS_Unix::close_dynamic_library(p_library_handle);
-}
 
 Error OSIPhone::get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional) {
 	if (p_library_handle == RTLD_SELF) {
@@ -241,51 +149,6 @@ String OSIPhone::get_model_name() const {
 	}
 
 	return OS_Unix::get_model_name();
-}
-
-Error OSIPhone::shell_open(String p_uri) {
-	NSString *urlPath = [[NSString alloc] initWithUTF8String:p_uri.utf8().get_data()];
-	NSURL *url = [NSURL URLWithString:urlPath];
-
-	if (![[UIApplication sharedApplication] canOpenURL:url]) {
-		return ERR_CANT_OPEN;
-	}
-
-	printf("opening url %s\n", p_uri.utf8().get_data());
-
-	[[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
-
-	return OK;
-}
-
-void OSIPhone::set_user_data_dir(String p_dir) {
-	DirAccessRef da = DirAccess::open(p_dir);
-	user_data_dir = da->get_current_dir();
-	printf("setting data dir to %s from %s\n", user_data_dir.utf8().get_data(), p_dir.utf8().get_data());
-}
-
-String OSIPhone::get_user_data_dir() const {
-	return user_data_dir;
-}
-
-String OSIPhone::get_cache_path() const {
-	return cache_dir;
-}
-
-String OSIPhone::get_locale() const {
-	NSString *preferedLanguage = [NSLocale preferredLanguages].firstObject;
-
-	if (preferedLanguage) {
-		return String::utf8([preferedLanguage UTF8String]).replace("-", "_");
-	}
-
-	NSString *localeIdentifier = [[NSLocale currentLocale] localeIdentifier];
-	return String::utf8([localeIdentifier UTF8String]).replace("-", "_");
-}
-
-String OSIPhone::get_unique_id() const {
-	NSString *uuid = [UIDevice currentDevice].identifierForVendor.UUIDString;
-	return String::utf8([uuid UTF8String]);
 }
 
 String OSIPhone::get_processor_name() const {
@@ -333,5 +196,3 @@ void OSIPhone::on_focus_in() {
 		audio_driver.start();
 	}
 }
-
-#endif // IPHONE_ENABLED

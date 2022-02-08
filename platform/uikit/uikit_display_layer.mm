@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  display_layer.mm                                                     */
+/*  uikit_display_layer.mm                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,14 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import "display_layer.h"
+#import "uikit_display_layer.h"
 
 #include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
-#include "display_server_iphone.h"
 #include "main/main.h"
-#include "os_iphone.h"
 #include "servers/audio_server.h"
+#include "uikit_os.h"
 
 #import <AudioToolbox/AudioServices.h>
 #import <GameController/GameController.h>
@@ -45,7 +44,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import <UIKit/UIKit.h>
 
-@implementation GodotMetalLayer
+@implementation UIKitMetalLayer
 
 - (void)initializeDisplayLayer {
 #if defined(TARGET_OS_SIMULATOR) && TARGET_OS_SIMULATOR
@@ -60,12 +59,15 @@
 - (void)layoutDisplayLayer {
 }
 
-- (void)renderDisplayLayer {
+- (void)startRenderDisplayLayer {
+}
+
+- (void)stopRenderDisplayLayer {
 }
 
 @end
 
-@implementation GodotOpenGLLayer {
+@implementation UIKitOpenGLLayer {
 	// The pixel dimensions of the backbuffer
 	GLint backingWidth;
 	GLint backingHeight;
@@ -115,8 +117,20 @@
 	[self createFramebuffer];
 }
 
-- (void)renderDisplayLayer {
+- (void)startRenderDisplayLayer {
 	[EAGLContext setCurrentContext:context];
+}
+
+- (void)stopRenderDisplayLayer {
+	glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
+	[context presentRenderbuffer:GL_RENDERBUFFER_OES];
+
+#ifdef DEBUG_ENABLED
+	GLenum err = glGetError();
+	if (err) {
+		NSLog(@"DrawView: %x error", err);
+	}
+#endif
 }
 
 - (void)dealloc {

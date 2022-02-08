@@ -28,14 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import <UIKit/UIKit.h>
+#import "platform/uikit/uikit_app_delegate.h"
 
-typedef NSObject<UIApplicationDelegate> ApplicationDelegateService;
-
-@interface GodotApplicalitionDelegate : NSObject <UIApplicationDelegate>
-
-@property(class, readonly, strong) NSArray<ApplicationDelegateService *> *services;
-
-+ (void)addService:(ApplicationDelegateService *)service;
+@interface GodotApplicalitionDelegate : UIKitApplicalitionDelegate
 
 @end

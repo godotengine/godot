@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  display_layer.h                                                      */
+/*  godot_view_controller.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,31 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import <OpenGLES/EAGLDrawable.h>
-#import <QuartzCore/QuartzCore.h>
+#import "platform/uikit/uikit_view_controller.h"
+#import <UIKit/UIKit.h>
 
-@protocol DisplayLayer <NSObject>
+@class GodotView;
+@class GodotKeyboardInputView;
 
-- (void)renderDisplayLayer;
-- (void)initializeDisplayLayer;
-- (void)layoutDisplayLayer;
+@interface GodotViewController : UIKitViewController
 
-@end
-
-// An ugly workaround for iOS simulator
-#if defined(TARGET_OS_SIMULATOR) && TARGET_OS_SIMULATOR
-#if defined(__IPHONE_13_0)
-API_AVAILABLE(ios(13.0))
-@interface GodotMetalLayer : CAMetalLayer <DisplayLayer>
-#else
-@interface GodotMetalLayer : CALayer <DisplayLayer>
-#endif
-#else
-@interface GodotMetalLayer : CAMetalLayer <DisplayLayer>
-#endif
-@end
-
-API_DEPRECATED("OpenGLES is deprecated", ios(2.0, 12.0))
-@interface GodotOpenGLLayer : CAEAGLLayer <DisplayLayer>
+@property(nonatomic, readonly, strong) GodotView *godotView;
+@property(nonatomic, readonly, strong) GodotKeyboardInputView *keyboardView;
 
 @end

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  vulkan_context_iphone.mm                                             */
+/*  uikit_view_renderer.mm                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,32 +28,85 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "vulkan_context_iphone.h"
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan.h>
-#endif
+#import "uikit_view_renderer.h"
 
-const char *VulkanContextIPhone::_get_platform_surface_extension() const {
-	return VK_MVK_IOS_SURFACE_EXTENSION_NAME;
+#include "core/config/project_settings.h"
+#include "core/os/keyboard.h"
+#include "main/main.h"
+#include "servers/audio_server.h"
+
+#import <AudioToolbox/AudioServices.h>
+#import <QuartzCore/QuartzCore.h>
+#import <UIKit/UIKit.h>
+
+@interface UIKitViewRenderer ()
+
+@property(assign, nonatomic) BOOL hasFinishedProjectDataSetup;
+@property(assign, nonatomic) BOOL hasStartedMain;
+@property(assign, nonatomic) BOOL hasFinishedSetup;
+
+@end
+
+@implementation UIKitViewRenderer
+
+- (BOOL)setupView:(UIView *)view {
+	if (self.hasFinishedSetup) {
+		return NO;
+	}
+
+	if (!OS::get_singleton()) {
+		exit(0);
+	}
+
+	if (!self.hasFinishedProjectDataSetup) {
+		[self setupProjectData];
+		return YES;
+	}
+
+	if (!self.hasStartedMain) {
+		self.hasStartedMain = [self startUIKitPlatform];
+		return YES;
+	}
+
+	self.hasFinishedSetup = YES;
+
+	return NO;
 }
 
-Error VulkanContextIPhone::window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, CALayer *p_metal_layer, int p_width, int p_height) {
-	VkIOSSurfaceCreateInfoMVK createInfo;
-	createInfo.sType = VK_STRUCTURE_TYPE_IOS_SURFACE_CREATE_INFO_MVK;
-	createInfo.pNext = nullptr;
-	createInfo.flags = 0;
-	createInfo.pView = (__bridge const void *)p_metal_layer;
+- (void)setupProjectData {
+	self.hasFinishedProjectDataSetup = YES;
 
-	VkSurfaceKHR surface;
-	VkResult err =
-			vkCreateIOSSurfaceMVK(get_instance(), &createInfo, nullptr, &surface);
-	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+	Main::setup2();
 
-	return _window_create(p_window_id, p_vsync_mode, surface, p_width, p_height);
+	// this might be necessary before here
+	NSDictionary *dict = [[NSBundle mainBundle] infoDictionary];
+	for (NSString *key in dict) {
+		NSObject *value = [dict objectForKey:key];
+		String ukey = String::utf8([key UTF8String]);
+
+		// we need a NSObject to Variant conversor
+
+		if ([value isKindOfClass:[NSString class]]) {
+			NSString *str = (NSString *)value;
+			String uval = String::utf8([str UTF8String]);
+
+			ProjectSettings::get_singleton()->set("Info.plist/" + ukey, uval);
+
+		} else if ([value isKindOfClass:[NSNumber class]]) {
+			NSNumber *n = (NSNumber *)value;
+			double dval = [n doubleValue];
+
+			ProjectSettings::get_singleton()->set("Info.plist/" + ukey, dval);
+		};
+		// do stuff
+	}
 }
 
-VulkanContextIPhone::VulkanContextIPhone() {}
+- (BOOL)startUIKitPlatform {
+	return NO;
+}
 
-VulkanContextIPhone::~VulkanContextIPhone() {}
+- (void)renderOnView:(UIView *)view {
+}
+
+@end

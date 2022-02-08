@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_view_renderer.h                                                */
+/*  uikit_view_renderer.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,9 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import "platform/uikit/uikit_view_renderer.h"
 #import <UIKit/UIKit.h>
 
-@interface GodotViewRenderer : UIKitViewRenderer
+@protocol UIKitViewRendererProtocol <NSObject>
+
+@property(assign, readonly, nonatomic) BOOL hasFinishedSetup;
+
+- (BOOL)setupView:(UIView *)view;
+- (void)renderOnView:(UIView *)view;
+
+@end
+
+@interface UIKitViewRenderer : NSObject <UIKitViewRendererProtocol>
+
+- (BOOL)startUIKitPlatform;
 
 @end

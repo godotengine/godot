@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_view_renderer.mm                                               */
+/*  uikit_view_controller.mm                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,38 +28,99 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import "godot_view_renderer.h"
+#import "uikit_view_controller.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/keyboard.h"
-#import "display_server_iphone.h"
-#include "main/main.h"
-#include "os_iphone.h"
-#include "servers/audio_server.h"
+#import "uikit_view.h"
+#import "uikit_view_renderer.h"
 
-#import <AudioToolbox/AudioServices.h>
-#import <CoreMotion/CoreMotion.h>
-#import <GameController/GameController.h>
-#import <QuartzCore/QuartzCore.h>
-#import <UIKit/UIKit.h>
+@interface UIKitViewController ()
 
-@interface GodotViewRenderer ()
+@property(strong, nonatomic) UIView *uikitLoadingOverlay;
 
 @end
 
-@implementation GodotViewRenderer
+@implementation UIKitViewController
 
-- (BOOL)startUIKitPlatform {
-	OSIPhone::get_singleton()->start();
-	return YES;
+- (UIKitView *)uikitView {
+	return (UIKitView *)self.view;
 }
 
-- (void)renderOnView:(UIView *)view {
-	if (!OSIPhone::get_singleton()) {
+- (void)loadView {
+	UIKitView *view = [[UIKitView alloc] init];
+
+	self.view = view;
+
+	view.delegate = self;
+}
+
+- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
+	self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+
+	if (self) {
+		[self uikit_commonInit];
+	}
+
+	return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)coder {
+	self = [super initWithCoder:coder];
+
+	if (self) {
+		[self uikit_commonInit];
+	}
+
+	return self;
+}
+
+- (void)uikit_commonInit {
+	// Initialize view controller values.
+}
+
+- (void)didReceiveMemoryWarning {
+	[super didReceiveMemoryWarning];
+	printf("*********** did receive memory warning!\n");
+};
+
+- (void)viewDidLoad {
+	[super viewDidLoad];
+
+	[self displayLoadingOverlay];
+}
+
+- (void)displayLoadingOverlay {
+	NSBundle *bundle = [NSBundle mainBundle];
+	NSString *storyboardName = @"Launch Screen";
+
+	if ([bundle pathForResource:storyboardName ofType:@"storyboardc"] == nil) {
 		return;
 	}
 
-	OSIPhone::get_singleton()->iterate();
+	UIStoryboard *launchStoryboard = [UIStoryboard storyboardWithName:storyboardName bundle:bundle];
+
+	UIViewController *controller = [launchStoryboard instantiateInitialViewController];
+	self.uikitLoadingOverlay = controller.view;
+	self.uikitLoadingOverlay.frame = self.view.bounds;
+	self.uikitLoadingOverlay.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+
+	[self.view addSubview:self.uikitLoadingOverlay];
+}
+
+- (BOOL)uikitViewFinishedSetup:(UIKitView *)view {
+	[self.uikitLoadingOverlay removeFromSuperview];
+	self.uikitLoadingOverlay = nil;
+
+	return YES;
+}
+
+- (void)dealloc {
+	if (self.uikitLoadingOverlay) {
+		[self.uikitLoadingOverlay removeFromSuperview];
+		self.uikitLoadingOverlay = nil;
+	}
+
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 @end

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  view_controller.h                                                    */
+/*  uikit_display_layer.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,15 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import <UIKit/UIKit.h>
+#import <OpenGLES/EAGLDrawable.h>
+#import <QuartzCore/QuartzCore.h>
 
-@class GodotView;
-@class GodotNativeVideoView;
-@class GodotKeyboardInputView;
+@protocol UIKitDisplayLayer <NSObject>
 
-@interface ViewController : UIViewController
+- (void)startRenderDisplayLayer;
+- (void)stopRenderDisplayLayer;
+- (void)initializeDisplayLayer;
+- (void)layoutDisplayLayer;
 
-@property(nonatomic, readonly, strong) GodotView *godotView;
-@property(nonatomic, readonly, strong) GodotKeyboardInputView *keyboardView;
+@end
+
+// An ugly workaround for iOS simulator
+#if defined(TARGET_OS_SIMULATOR) && TARGET_OS_SIMULATOR
+#if defined(__IPHONE_13_0)
+API_AVAILABLE(ios(13.0))
+@interface UIKitMetalLayer : CAMetalLayer <UIKitDisplayLayer>
+#else
+@interface UIKitMetalLayer : CALayer <UIKitDisplayLayer>
+#endif
+#else
+@interface UIKitMetalLayer : CAMetalLayer <UIKitDisplayLayer>
+#endif
+@end
+
+@interface UIKitOpenGLLayer : CAEAGLLayer <UIKitDisplayLayer>
 
 @end

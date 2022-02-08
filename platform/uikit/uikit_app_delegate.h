@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  joypad_iphone.h                                                      */
+/*  uikit_app_delegate.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,23 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import <GameController/GameController.h>
+#import <UIKit/UIKit.h>
 
-@interface JoypadIPhoneObserver : NSObject
+typedef NSObject<UIApplicationDelegate> ApplicationDelegateService;
 
-- (void)startObserving;
-- (void)startProcessing;
-- (void)finishObserving;
+@interface UIKitApplicalitionDelegate : NSObject <UIApplicationDelegate>
+
+@property(class, readonly, strong) NSArray<ApplicationDelegateService *> *services;
+
++ (void)addService:(ApplicationDelegateService *)service;
 
 @end
-
-class JoypadIPhone {
-private:
-	JoypadIPhoneObserver *observer;
-
-public:
-	JoypadIPhone();
-	~JoypadIPhone();
-
-	void start_processing();
-};

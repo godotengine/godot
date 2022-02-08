@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_view_renderer.h                                                */
+/*  uikit_platform_config.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,9 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import "platform/uikit/uikit_view_renderer.h"
-#import <UIKit/UIKit.h>
+#include <alloca.h>
 
-@interface GodotViewRenderer : UIKitViewRenderer
+#define OPENGL_INCLUDE_H <ES3/gl.h>
 
-@end
+#define PLATFORM_REFCOUNT
+
+#define PTHREAD_RENAME_SELF
+
+#define _weakify(var) __weak typeof(var) GDWeak_##var = var;
+#define _strongify(var)                                      \
+	_Pragma("clang diagnostic push")                         \
+			_Pragma("clang diagnostic ignored \"-Wshadow\"") \
+					__strong typeof(var) var = GDWeak_##var; \
+	_Pragma("clang diagnostic pop")

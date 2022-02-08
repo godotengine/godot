@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_view_renderer.h                                                */
+/*  uikit_view_controller.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,9 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import "platform/uikit/uikit_view_renderer.h"
 #import <UIKit/UIKit.h>
 
-@interface GodotViewRenderer : UIKitViewRenderer
+#import "uikit_view.h"
+
+@class UIKitView;
+
+@interface UIKitViewController : UIViewController <UIKitViewDelegate>
+
+@property(nonatomic, readonly, strong) UIKitView *uikitView;
 
 @end

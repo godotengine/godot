@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  joypad_iphone.mm                                                     */
+/*  uikit_joypad.mm                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,35 +28,50 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import "joypad_iphone.h"
+#import "uikit_joypad.h"
 
 #include "core/config/project_settings.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "main/main.h"
+#include "uikit_os.h"
 
-#import "godot_view.h"
+@interface UIKitJoypadObserver (JoypadSearch)
 
-#include "os_iphone.h"
+- (int)getJoyIdForControllerName:(NSString *)controllerName;
 
-JoypadIPhone::JoypadIPhone() {
-	observer = [[JoypadIPhoneObserver alloc] init];
+@end
+
+UIKitJoypad::UIKitJoypad() {
+	observer = [[UIKitJoypadObserver alloc] init];
 	[observer startObserving];
 }
 
-JoypadIPhone::~JoypadIPhone() {
+UIKitJoypad::~UIKitJoypad() {
 	if (observer) {
 		[observer finishObserving];
 		observer = nil;
 	}
 }
 
-void JoypadIPhone::start_processing() {
+void UIKitJoypad::start_processing() {
 	if (observer) {
 		[observer startProcessing];
 	}
 }
 
-@interface JoypadIPhoneObserver ()
+int UIKitJoypad::joy_id_for_name(const String &p_name) {
+	if (!observer) {
+		return -1;
+	}
+
+	@autoreleasepool {
+		NSString *controllerName = [[NSString alloc] initWithUTF8String:p_name.utf8().get_data()];
+
+		return [observer getJoyIdForControllerName:controllerName];
+	}
+}
+
+@interface UIKitJoypadObserver ()
 
 @property(assign, nonatomic) BOOL isObserving;
 @property(assign, nonatomic) BOOL isProcessing;
@@ -65,19 +80,19 @@ void JoypadIPhone::start_processing() {
 
 @end
 
-@implementation JoypadIPhoneObserver
+@implementation UIKitJoypadObserver
 
 - (instancetype)init {
 	self = [super init];
 
 	if (self) {
-		[self godot_commonInit];
+		[self uikit_commonInit];
 	}
 
 	return self;
 }
 
-- (void)godot_commonInit {
+- (void)uikit_commonInit {
 	self.isObserving = NO;
 	self.isProcessing = NO;
 }
@@ -86,7 +101,7 @@ void JoypadIPhone::start_processing() {
 	self.isProcessing = YES;
 
 	for (GCController *controller in self.joypadsQueue) {
-		[self addiOSJoypad:controller];
+		[self addUIKitJoypad:controller];
 	}
 
 	[self.joypadsQueue removeAllObjects];
@@ -145,7 +160,22 @@ void JoypadIPhone::start_processing() {
 	return -1;
 }
 
-- (void)addiOSJoypad:(GCController *)controller {
+- (int)getJoyIdForControllerName:(NSString *)controllerName {
+	NSArray *keys = [self.connectedJoypads allKeys];
+
+	for (NSNumber *key in keys) {
+		int joy_id = [key intValue];
+		GCController *controller = self.connectedJoypads[key];
+
+		if ([controller.vendorName containsString:controllerName]) {
+			return joy_id;
+		}
+	}
+
+	return -1;
+}
+
+- (void)addUIKitJoypad:(GCController *)controller {
 	//     get a new id for our controller
 	int joy_id = Input::get_singleton()->get_unused_joy_id();
 
@@ -183,7 +213,7 @@ void JoypadIPhone::start_processing() {
 	} else if (!self.isProcessing) {
 		[self.joypadsQueue addObject:controller];
 	} else {
-		[self addiOSJoypad:controller];
+		[self addUIKitJoypad:controller];
 	}
 }
 
@@ -305,15 +335,31 @@ void JoypadIPhone::start_processing() {
 				float value = gamepad.rightTrigger.value;
 				Input::get_singleton()->joy_axis(joy_id, JoyAxis::TRIGGER_RIGHT, value);
 			}
+
+			if (@available(iOS 13.0, tvOS 13.0, *)) {
+				if (element == gamepad.buttonMenu) {
+					Input::get_singleton()->joy_button(joy_id, JoyButton::START,
+							gamepad.buttonMenu.isPressed);
+				} else if (element == gamepad.buttonOptions) {
+					Input::get_singleton()->joy_button(joy_id, JoyButton::BACK,
+							gamepad.buttonOptions.isPressed);
+				}
+			}
 		};
 	} else if (controller.microGamepad != nil) {
 		// micro gamepads were added in OS 9 and feature just 2 buttons and a d-pad
 		_weakify(self);
 		_weakify(controller);
 
-		controller.microGamepad.valueChangedHandler = ^(GCMicroGamepad *gamepad, GCControllerElement *element) {
+		controller.microGamepad.valueChangedHandler = ^(GCMicroGamepad *, GCControllerElement *element) {
 			_strongify(self);
 			_strongify(controller);
+
+			// Callback gamepad sometimes has different address then
+			// the one used by `controller.microGamepad` instance
+			// which results in gamepad loosing some button events.
+
+			GCMicroGamepad *gamepad = controller.microGamepad;
 
 			int joy_id = [self getJoyIdForController:controller];
 
@@ -324,10 +370,22 @@ void JoypadIPhone::start_processing() {
 				Input::get_singleton()->joy_button(joy_id, JoyButton::X,
 						gamepad.buttonX.isPressed);
 			} else if (element == gamepad.dpad) {
+				float value = gamepad.dpad.xAxis.value;
+				Input::get_singleton()->joy_axis(joy_id, JoyAxis::LEFT_X, value);
+
+				Input::get_singleton()->joy_button(joy_id, JoyButton::DPAD_LEFT,
+						gamepad.dpad.left.isPressed);
+				Input::get_singleton()->joy_button(joy_id, JoyButton::DPAD_RIGHT,
+						gamepad.dpad.right.isPressed);
+
+				value = -gamepad.dpad.yAxis.value;
+				Input::get_singleton()->joy_axis(joy_id, JoyAxis::LEFT_Y, value);
+
 				Input::get_singleton()->joy_button(joy_id, JoyButton::DPAD_UP,
 						gamepad.dpad.up.isPressed);
 				Input::get_singleton()->joy_button(joy_id, JoyButton::DPAD_DOWN,
 						gamepad.dpad.down.isPressed);
+
 				Input::get_singleton()->joy_button(joy_id, JoyButton::DPAD_LEFT, gamepad.dpad.left.isPressed);
 				Input::get_singleton()->joy_button(joy_id, JoyButton::DPAD_RIGHT, gamepad.dpad.right.isPressed);
 			}

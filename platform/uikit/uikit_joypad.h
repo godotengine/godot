@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_view_renderer.h                                                */
+/*  uikit_joypad.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,9 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import "platform/uikit/uikit_view_renderer.h"
-#import <UIKit/UIKit.h>
+#import <GameController/GameController.h>
 
-@interface GodotViewRenderer : UIKitViewRenderer
+class String;
+
+@interface UIKitJoypadObserver : NSObject
+
+- (void)startObserving;
+- (void)startProcessing;
+- (void)finishObserving;
 
 @end
+
+class UIKitJoypad {
+private:
+	UIKitJoypadObserver *observer;
+
+public:
+	UIKitJoypad();
+	~UIKitJoypad();
+
+	void start_processing();
+
+	int joy_id_for_name(const String &p_name);
+};

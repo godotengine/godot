@@ -32,7 +32,6 @@
 
 #include "core/os/keyboard.h"
 #include "core/string/ustring.h"
-#import "display_layer.h"
 #include "display_server_iphone.h"
 #import "godot_view_gesture_recognizer.h"
 #import "godot_view_renderer.h"
@@ -46,17 +45,6 @@ static const float earth_gravity = 9.80665;
 	UITouch *godot_touches[max_touches];
 }
 
-@property(assign, nonatomic) BOOL isActive;
-
-// CADisplayLink available on 3.1+ synchronizes the animation timer & drawing with the refresh rate of the display, only supports animation intervals of 1/60 1/30 & 1/15
-@property(strong, nonatomic) CADisplayLink *displayLink;
-
-// An animation timer that, when animation is started, will periodically call -drawView at the given rate.
-// Only used if CADisplayLink is not
-@property(strong, nonatomic) NSTimer *animationTimer;
-
-@property(strong, nonatomic) CALayer<DisplayLayer> *renderingLayer;
-
 @property(strong, nonatomic) CMMotionManager *motionManager;
 
 @property(strong, nonatomic) GodotViewGestureRecognizer *delayGestureRecognizer;
@@ -64,39 +52,6 @@ static const float earth_gravity = 9.80665;
 @end
 
 @implementation GodotView
-
-- (CALayer<DisplayLayer> *)initializeRenderingForDriver:(NSString *)driverName {
-	if (self.renderingLayer) {
-		return self.renderingLayer;
-	}
-
-	CALayer<DisplayLayer> *layer;
-
-	if ([driverName isEqualToString:@"vulkan"]) {
-		layer = [GodotMetalLayer layer];
-	} else if ([driverName isEqualToString:@"opengl_es"]) {
-		if (@available(iOS 13, *)) {
-			NSLog(@"OpenGL ES is deprecated on iOS 13");
-		}
-#if defined(TARGET_OS_SIMULATOR) && TARGET_OS_SIMULATOR
-		return nil;
-#else
-		layer = [GodotOpenGLLayer layer];
-#endif
-	} else {
-		return nil;
-	}
-
-	layer.frame = self.bounds;
-	layer.contentsScale = self.contentScaleFactor;
-
-	[self.layer addSublayer:layer];
-	self.renderingLayer = layer;
-
-	[layer initializeDisplayLayer];
-
-	return self.renderingLayer;
-}
 
 - (instancetype)initWithCoder:(NSCoder *)coder {
 	self = [super initWithCoder:coder];
@@ -119,29 +74,9 @@ static const float earth_gravity = 9.80665;
 }
 
 - (void)dealloc {
-	[self stopRendering];
-
-	self.renderer = nil;
-	self.delegate = nil;
-
-	if (self.renderingLayer) {
-		[self.renderingLayer removeFromSuperlayer];
-		self.renderingLayer = nil;
-	}
-
 	if (self.motionManager) {
 		[self.motionManager stopDeviceMotionUpdates];
 		self.motionManager = nil;
-	}
-
-	if (self.displayLink) {
-		[self.displayLink invalidate];
-		self.displayLink = nil;
-	}
-
-	if (self.animationTimer) {
-		[self.animationTimer invalidate];
-		self.animationTimer = nil;
 	}
 
 	if (self.delayGestureRecognizer) {
@@ -150,8 +85,6 @@ static const float earth_gravity = 9.80665;
 }
 
 - (void)godot_commonInit {
-	self.contentScaleFactor = [UIScreen mainScreen].nativeScale;
-
 	[self initTouches];
 
 	self.multipleTouchEnabled = YES;
@@ -174,119 +107,15 @@ static const float earth_gravity = 9.80665;
 }
 
 - (void)stopRendering {
-	if (!self.isActive) {
-		return;
-	}
-
-	self.isActive = NO;
-
-	printf("******** stop animation!\n");
-
-	if (self.useCADisplayLink) {
-		[self.displayLink invalidate];
-		self.displayLink = nil;
-	} else {
-		[self.animationTimer invalidate];
-		self.animationTimer = nil;
-	}
+	[super stopRendering];
 
 	[self clearTouches];
 }
 
-- (void)startRendering {
-	if (self.isActive) {
-		return;
-	}
-
-	self.isActive = YES;
-
-	printf("start animation!\n");
-
-	if (self.useCADisplayLink) {
-		self.displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(drawView)];
-
-		// Approximate frame rate
-		// assumes device refreshes at 60 fps
-		int displayFPS = (NSInteger)(1.0 / self.renderingInterval);
-
-		self.displayLink.preferredFramesPerSecond = displayFPS;
-
-		// Setup DisplayLink in main thread
-		[self.displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
-	} else {
-		self.animationTimer = [NSTimer scheduledTimerWithTimeInterval:self.renderingInterval target:self selector:@selector(drawView) userInfo:nil repeats:YES];
-	}
-}
-
 - (void)drawView {
-	if (!self.isActive) {
-		printf("draw view not active!\n");
-		return;
-	}
-
-	if (self.useCADisplayLink) {
-		// Pause the CADisplayLink to avoid recursion
-		[self.displayLink setPaused:YES];
-
-		// Process all input events
-		while (CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.0, TRUE) == kCFRunLoopRunHandledSource) {
-			// Continue.
-		}
-
-		// We are good to go, resume the CADisplayLink
-		[self.displayLink setPaused:NO];
-	}
-
-	[self.renderingLayer renderDisplayLayer];
-
-	if (!self.renderer) {
-		return;
-	}
-
-	if ([self.renderer setupView:self]) {
-		return;
-	}
-
-	if (self.delegate) {
-		BOOL delegateFinishedSetup = [self.delegate godotViewFinishedSetup:self];
-
-		if (!delegateFinishedSetup) {
-			return;
-		}
-	}
+	[super drawView];
 
 	[self handleMotion];
-	[self.renderer renderOnView:self];
-}
-
-- (BOOL)canRender {
-	if (self.useCADisplayLink) {
-		return self.displayLink != nil;
-	} else {
-		return self.animationTimer != nil;
-	}
-}
-
-- (void)setRenderingInterval:(NSTimeInterval)renderingInterval {
-	_renderingInterval = renderingInterval;
-
-	if (self.canRender) {
-		[self stopRendering];
-		[self startRendering];
-	}
-}
-
-- (void)layoutSubviews {
-	if (self.renderingLayer) {
-		self.renderingLayer.frame = self.bounds;
-		[self.renderingLayer layoutDisplayLayer];
-
-		if (DisplayServerIPhone::get_singleton()) {
-			DisplayServerIPhone::get_singleton()->resize_window(self.bounds.size);
-		}
-	}
-
-	[super layoutSubviews];
 }
 
 // MARK: - Input

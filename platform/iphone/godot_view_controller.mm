@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  view_controller.mm                                                   */
+/*  godot_view_controller.mm                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import "view_controller.h"
+#import "godot_view_controller.h"
 #include "core/config/project_settings.h"
 #include "display_server_iphone.h"
 #import "godot_view.h"
@@ -39,16 +39,14 @@
 #import <AVFoundation/AVFoundation.h>
 #import <GameController/GameController.h>
 
-@interface ViewController () <GodotViewDelegate>
+@interface GodotViewController ()
 
 @property(strong, nonatomic) GodotViewRenderer *renderer;
 @property(strong, nonatomic) GodotKeyboardInputView *keyboardView;
 
-@property(strong, nonatomic) UIView *godotLoadingOverlay;
-
 @end
 
-@implementation ViewController
+@implementation GodotViewController
 
 - (GodotView *)godotView {
 	return (GodotView *)self.view;
@@ -98,7 +96,6 @@
 	[super viewDidLoad];
 
 	[self observeKeyboard];
-	[self displayLoadingOverlay];
 
 	if (@available(iOS 11.0, *)) {
 		[self setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
@@ -123,40 +120,10 @@
 				 object:nil];
 }
 
-- (void)displayLoadingOverlay {
-	NSBundle *bundle = [NSBundle mainBundle];
-	NSString *storyboardName = @"Launch Screen";
-
-	if ([bundle pathForResource:storyboardName ofType:@"storyboardc"] == nil) {
-		return;
-	}
-
-	UIStoryboard *launchStoryboard = [UIStoryboard storyboardWithName:storyboardName bundle:bundle];
-
-	UIViewController *controller = [launchStoryboard instantiateInitialViewController];
-	self.godotLoadingOverlay = controller.view;
-	self.godotLoadingOverlay.frame = self.view.bounds;
-	self.godotLoadingOverlay.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-
-	[self.view addSubview:self.godotLoadingOverlay];
-}
-
-- (BOOL)godotViewFinishedSetup:(GodotView *)view {
-	[self.godotLoadingOverlay removeFromSuperview];
-	self.godotLoadingOverlay = nil;
-
-	return YES;
-}
-
 - (void)dealloc {
 	self.keyboardView = nil;
 
 	self.renderer = nil;
-
-	if (self.godotLoadingOverlay) {
-		[self.godotLoadingOverlay removeFromSuperview];
-		self.godotLoadingOverlay = nil;
-	}
 
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }

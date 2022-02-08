@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  vulkan_context_iphone.h                                              */
+/*  uikit_os.h                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,21 +28,72 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VULKAN_CONTEXT_IPHONE_H
-#define VULKAN_CONTEXT_IPHONE_H
+#ifndef OS_UIKIT_H
+#define OS_UIKIT_H
 
-#include "drivers/vulkan/vulkan_context.h"
+#include "drivers/coreaudio/audio_driver_coreaudio.h"
+#include "drivers/unix/os_unix.h"
+#include "servers/audio_server.h"
+#include "servers/rendering/renderer_compositor.h"
+#include "uikit_joypad.h"
 
-#import <UIKit/UIKit.h>
+#if defined(VULKAN_ENABLED)
+#include "drivers/vulkan/rendering_device_vulkan.h"
+#include "platform/uikit/uikit_vulkan_context.h"
+#endif
 
-class VulkanContextIPhone : public VulkanContext {
-	virtual const char *_get_platform_surface_extension() const;
+class OS_UIKit : public OS_Unix {
+private:
+	AudioDriverCoreAudio audio_driver;
+
+	UIKitJoypad *uikit_joypad;
+
+	MainLoop *main_loop;
+
+	String user_data_dir;
+	String cache_dir;
+
+protected:
+	virtual void initialize_core() override;
+	virtual void initialize() override;
+
+	virtual void initialize_joypads() override {
+	}
+
+	virtual void set_main_loop(MainLoop *p_main_loop) override;
+	virtual MainLoop *get_main_loop() const override;
+
+	virtual void delete_main_loop() override;
+
+	virtual void finalize() override;
 
 public:
-	Error window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, CALayer *p_metal_layer, int p_width, int p_height);
+	static OS_UIKit *get_singleton();
 
-	VulkanContextIPhone();
-	~VulkanContextIPhone();
+	OS_UIKit(String p_data_dir, String p_cache_dir);
+	~OS_UIKit();
+
+	virtual bool iterate();
+
+	virtual void start();
+
+	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false) override;
+	virtual Error close_dynamic_library(void *p_library_handle) override;
+
+	virtual String get_name() const override;
+
+	virtual Error shell_open(String p_uri) override;
+
+	void set_user_data_dir(String p_dir);
+	virtual String get_user_data_dir() const override;
+
+	virtual String get_cache_path() const override;
+
+	virtual String get_locale() const override;
+
+	virtual String get_unique_id() const override;
+
+	int joy_id_for_name(const String &p_name);
 };
 
-#endif // VULKAN_CONTEXT_IPHONE_H
+#endif // OS_UIKIT_H

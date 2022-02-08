@@ -30,7 +30,7 @@
 
 #import <UIKit/UIKit.h>
 
-@class ViewController;
+@class GodotViewController;
 
 // FIXME: Add support for both OpenGL and Vulkan when OpenGL is implemented again,
 // so it can't be done with compilation time branching.
@@ -42,6 +42,6 @@
 //#endif
 
 @property(strong, nonatomic) UIWindow *window;
-@property(strong, class, readonly, nonatomic) ViewController *viewController;
+@property(strong, class, readonly, nonatomic) GodotViewController *viewController;
 
 @end

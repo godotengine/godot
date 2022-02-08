@@ -31,7 +31,7 @@
 #include "ios.h"
 
 #import "app_delegate.h"
-#import "view_controller.h"
+#import "godot_view_controller.h"
 #import <UIKit/UIKit.h>
 #include <sys/sysctl.h>
 

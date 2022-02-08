@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_view_renderer.h                                                */
+/*  uikit_vulkan_context.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,9 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import "platform/uikit/uikit_view_renderer.h"
+#ifndef VULKAN_CONTEXT_UIKIT_H
+#define VULKAN_CONTEXT_UIKIT_H
+
+#include "drivers/vulkan/vulkan_context.h"
+
 #import <UIKit/UIKit.h>
 
-@interface GodotViewRenderer : UIKitViewRenderer
+class VulkanContextUIKit : public VulkanContext {
+protected:
+	virtual const char *_get_platform_surface_extension() const;
 
-@end
+public:
+	Error window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, CALayer *p_metal_layer, int p_width, int p_height);
+
+	VulkanContextUIKit();
+	~VulkanContextUIKit();
+};
+
+#endif // VULKAN_CONTEXT_UIKIT_H

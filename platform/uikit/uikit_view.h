@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_view_renderer.h                                                */
+/*  uikit_view.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,9 +28,37 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import "platform/uikit/uikit_view_renderer.h"
 #import <UIKit/UIKit.h>
 
-@interface GodotViewRenderer : UIKitViewRenderer
+class String;
+
+@class UIKitView;
+@protocol UIKitDisplayLayer;
+@protocol UIKitViewRendererProtocol;
+
+@protocol UIKitViewDelegate
+
+- (BOOL)uikitViewFinishedSetup:(UIKitView *)view;
+
+@end
+
+@interface UIKitView : UIView
+
+@property(assign, nonatomic) id<UIKitViewRendererProtocol> renderer;
+@property(assign, nonatomic) id<UIKitViewDelegate> delegate;
+
+@property(assign, readonly, nonatomic) BOOL isActive;
+
+@property(strong, readonly, nonatomic) CALayer<UIKitDisplayLayer> *renderingLayer;
+@property(assign, readonly, nonatomic) BOOL canRender;
+
+@property(assign, nonatomic) NSTimeInterval renderingInterval;
+
+- (CALayer<UIKitDisplayLayer> *)initializeRenderingForDriver:(NSString *)driverName;
+- (void)stopRendering;
+- (void)startRendering;
+- (void)drawView;
+
+@property(nonatomic, assign) BOOL useCADisplayLink;
 
 @end

@@ -139,7 +139,7 @@ def configure(env):
     )
 
     env.Prepend(CPPPATH=["#platform/iphone"])
-    env.Append(CPPDEFINES=["IPHONE_ENABLED", "UNIX_ENABLED", "COREAUDIO_ENABLED"])
+    env.Append(CPPDEFINES=["UIKIT_ENABLED", "IPHONE_ENABLED", "UNIX_ENABLED", "COREAUDIO_ENABLED"])
 
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED"])
