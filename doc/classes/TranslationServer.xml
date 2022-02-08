@@ -91,6 +91,13 @@
 				Returns readable script name for the [code]script[/code] code.
 			</description>
 		</method>
+		<method name="get_tool_locale">
+			<return type="String" />
+			<description>
+				Returns the current locale of the editor.
+				[b]Note:[/b] When called from an exported project returns the same value as [method get_locale].
+			</description>
+		</method>
 		<method name="get_translation_object">
 			<return type="Translation" />
 			<argument index="0" name="locale" type="String" />

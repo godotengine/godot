@@ -925,6 +925,7 @@ bool TranslationServer::is_placeholder(String &p_message, int p_index) const {
 void TranslationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_locale", "locale"), &TranslationServer::set_locale);
 	ClassDB::bind_method(D_METHOD("get_locale"), &TranslationServer::get_locale);
+	ClassDB::bind_method(D_METHOD("get_tool_locale"), &TranslationServer::get_tool_locale);
 
 	ClassDB::bind_method(D_METHOD("compare_locales", "locale_a", "locale_b"), &TranslationServer::compare_locales);
 	ClassDB::bind_method(D_METHOD("standardize_locale", "locale"), &TranslationServer::standardize_locale);

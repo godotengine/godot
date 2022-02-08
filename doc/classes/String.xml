@@ -222,6 +222,22 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="get_slice_count" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="delimiter" type="String" />
+			<description>
+				Splits a string using a [code]delimiter[/code] and returns a number of slices.
+			</description>
+		</method>
+		<method name="get_slicec" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="delimiter" type="int" />
+			<argument index="1" name="slice" type="int" />
+			<description>
+				Splits a string using a Unicode character with code [code]delimiter[/code] and returns a substring at index [code]slice[/code]. Returns an empty string if the index doesn't exist.
+				This is a more performant alternative to [method split] for cases when you need only one element from the array at a fixed index.
+			</description>
+		</method>
 		<method name="hash" qualifiers="const">
 			<return type="int" />
 			<description>
