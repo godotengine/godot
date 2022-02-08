@@ -3626,7 +3626,7 @@
 		<constant name="ARRAY_FORMAT_INDEX" value="4096" enum="ArrayFormat">
 			Flag used to mark an index array.
 		</constant>
-		<constant name="ARRAY_FORMAT_BLEND_SHAPE_MASK" value="2147475463" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_BLEND_SHAPE_MASK" value="7" enum="ArrayFormat">
 		</constant>
 		<constant name="ARRAY_FORMAT_CUSTOM_BASE" value="13" enum="ArrayFormat">
 		</constant>
