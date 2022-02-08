@@ -214,10 +214,13 @@ void PropertySelector::_update_search() {
 			Variant::construct(type, v, nullptr, 0, ce);
 			v.get_method_list(&methods);
 		} else {
-			Object *obj = ObjectDB::get_instance(script);
-			if (Object::cast_to<Script>(obj)) {
+			Ref<Script> script_ref = Object::cast_to<Script>(ObjectDB::get_instance(script));
+			if (script_ref.is_valid()) {
 				methods.push_back(MethodInfo("*Script Methods"));
-				Object::cast_to<Script>(obj)->get_script_method_list(&methods);
+				if (script_ref->is_built_in()) {
+					script_ref->reload(true);
+				}
+				script_ref->get_script_method_list(&methods);
 			}
 
 			StringName base = base_type;
