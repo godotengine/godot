@@ -830,7 +830,7 @@ void ThemeItemImportTree::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			select_icons_warning_icon->set_texture(get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
-			select_icons_warning->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
+			select_icons_warning->add_theme_color_override("font_color", get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
 
 			// Bottom panel buttons.
 			import_collapse_types_button->set_icon(get_theme_icon(SNAME("CollapseTree"), SNAME("EditorIcons")));
@@ -1824,8 +1824,8 @@ void ThemeItemEditorDialog::_notification(int p_what) {
 
 			import_another_theme_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
 
-			tc->add_theme_style_override(SNAME("tab_selected"), get_theme_stylebox(SNAME("tab_selected_odd"), SNAME("TabContainer")));
-			tc->add_theme_style_override(SNAME("panel"), get_theme_stylebox(SNAME("panel_odd"), SNAME("TabContainer")));
+			tc->add_theme_style_override("tab_selected", get_theme_stylebox(SNAME("tab_selected_odd"), SNAME("TabContainer")));
+			tc->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel_odd"), SNAME("TabContainer")));
 		} break;
 	}
 }
@@ -2389,7 +2389,7 @@ HBoxContainer *ThemeTypeEditor::_create_property_control(Theme::DataType p_data_
 		item_rename_cancel_button->connect("pressed", callable_mp(this, &ThemeTypeEditor::_item_rename_canceled), varray(p_data_type, p_item_name, item_name_container));
 		item_rename_cancel_button->hide();
 	} else {
-		item_name->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
+		item_name->add_theme_color_override("font_color", get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
 
 		Button *item_override_button = memnew(Button);
 		item_override_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
@@ -3251,8 +3251,8 @@ void ThemeTypeEditor::_notification(int p_what) {
 			data_type_tabs->set_tab_icon(5, get_theme_icon(SNAME("StyleBoxFlat"), SNAME("EditorIcons")));
 			data_type_tabs->set_tab_icon(6, get_theme_icon(SNAME("Tools"), SNAME("EditorIcons")));
 
-			data_type_tabs->add_theme_style_override(SNAME("tab_selected"), get_theme_stylebox(SNAME("tab_selected_odd"), SNAME("TabContainer")));
-			data_type_tabs->add_theme_style_override(SNAME("panel"), get_theme_stylebox(SNAME("panel_odd"), SNAME("TabContainer")));
+			data_type_tabs->add_theme_style_override("tab_selected", get_theme_stylebox(SNAME("tab_selected_odd"), SNAME("TabContainer")));
+			data_type_tabs->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel_odd"), SNAME("TabContainer")));
 
 			type_variation_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 		} break;
@@ -3532,9 +3532,9 @@ void ThemeEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			preview_tabs->add_theme_style_override(SNAME("tab_selected"), get_theme_stylebox(SNAME("ThemeEditorPreviewFG"), SNAME("EditorStyles")));
-			preview_tabs->add_theme_style_override(SNAME("tab_unselected"), get_theme_stylebox(SNAME("ThemeEditorPreviewBG"), SNAME("EditorStyles")));
-			preview_tabs_content->add_theme_style_override(SNAME("panel"), get_theme_stylebox(SNAME("panel_odd"), SNAME("TabContainer")));
+			preview_tabs->add_theme_style_override("tab_selected", get_theme_stylebox(SNAME("ThemeEditorPreviewFG"), SNAME("EditorStyles")));
+			preview_tabs->add_theme_style_override("tab_unselected", get_theme_stylebox(SNAME("ThemeEditorPreviewBG"), SNAME("EditorStyles")));
+			preview_tabs_content->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel_odd"), SNAME("TabContainer")));
 
 			add_preview_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 		} break;
@@ -3586,7 +3586,7 @@ ThemeEditor::ThemeEditor() {
 	VBoxContainer *preview_tabs_vb = memnew(VBoxContainer);
 	preview_tabs_vb->set_h_size_flags(SIZE_EXPAND_FILL);
 	preview_tabs_vb->set_custom_minimum_size(Size2(520, 0) * EDSCALE);
-	preview_tabs_vb->add_theme_constant_override(SNAME("separation"), 2 * EDSCALE);
+	preview_tabs_vb->add_theme_constant_override("separation", 2 * EDSCALE);
 	main_hs->add_child(preview_tabs_vb);
 	HBoxContainer *preview_tabbar_hb = memnew(HBoxContainer);
 	preview_tabs_vb->add_child(preview_tabbar_hb);

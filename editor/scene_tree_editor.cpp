@@ -1219,7 +1219,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	tree->set_begin(Point2(0, p_label ? 18 : 0));
 	tree->set_end(Point2(0, 0));
 	tree->set_allow_reselect(true);
-	tree->add_theme_constant_override(SNAME("button_margin"), 0);
+	tree->add_theme_constant_override("button_margin", 0);
 
 	add_child(tree);
 
@@ -1324,7 +1324,7 @@ SceneTreeDialog::SceneTreeDialog() {
 	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	filter->set_placeholder(TTR("Filter nodes"));
 	filter->set_clear_button_enabled(true);
-	filter->add_theme_constant_override(SNAME("minimum_character_width"), 0);
+	filter->add_theme_constant_override("minimum_character_width", 0);
 	filter->connect("text_changed", callable_mp(this, &SceneTreeDialog::_filter_changed));
 	vbc->add_child(filter);
 

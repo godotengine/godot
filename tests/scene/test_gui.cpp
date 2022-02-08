@@ -103,7 +103,7 @@ public:
 		item->set_editable(0, true);
 		item->set_range_config(0, 0, 20, 0.1);
 		item->set_range(0, 2);
-		item->add_button(0, Theme::get_default()->get_icon(SNAME("folder"), SNAME("FileDialog")));
+		item->add_button(0, Theme::get_default()->get_icon("folder", "FileDialog"));
 		item->set_cell_mode(1, TreeItem::CELL_MODE_RANGE);
 		item->set_editable(1, true);
 		item->set_range_config(1, 0, 20, 0.1);

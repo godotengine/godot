@@ -602,7 +602,7 @@ void Skeleton3DEditor::update_editors() {
 
 void Skeleton3DEditor::create_editors() {
 	set_h_size_flags(SIZE_EXPAND_FILL);
-	add_theme_constant_override(SNAME("separation"), 0);
+	add_theme_constant_override("separation", 0);
 
 	set_focus_mode(FOCUS_ALL);
 

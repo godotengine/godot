@@ -73,7 +73,7 @@ void AcceptDialog::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			bg->add_theme_style_override(SNAME("panel"), bg->get_theme_stylebox(SNAME("panel"), SNAME("AcceptDialog")));
+			bg->add_theme_style_override("panel", bg->get_theme_stylebox(SNAME("panel"), SNAME("AcceptDialog")));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			if (parent_visible) {

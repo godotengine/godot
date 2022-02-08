@@ -302,7 +302,7 @@ SectionedInspector::SectionedInspector() :
 		sections(memnew(Tree)),
 		filter(memnew(SectionedInspectorFilter)),
 		inspector(memnew(EditorInspector)) {
-	add_theme_constant_override(SNAME("autohide"), 1); // Fixes the dragger always showing up
+	add_theme_constant_override("autohide", 1); // Fixes the dragger always showing up
 
 	VBoxContainer *left_vb = memnew(VBoxContainer);
 	left_vb->set_custom_minimum_size(Size2(190, 0) * EDSCALE);

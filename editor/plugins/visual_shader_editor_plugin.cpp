@@ -679,7 +679,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		} else {
 			hb = memnew(HBoxContainer);
 		}
-		hb->add_theme_constant_override(SNAME("separation"), 7 * EDSCALE);
+		hb->add_theme_constant_override("separation", 7 * EDSCALE);
 
 		Variant default_value;
 
@@ -732,14 +732,14 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 				} else {
 					Label *label = memnew(Label);
 					label->set_text(name_left);
-					label->add_theme_style_override(SNAME("normal"), label_style); //more compact
+					label->add_theme_style_override("normal", label_style); //more compact
 					hb->add_child(label);
 
 					if (vsnode->is_input_port_default(i, mode) && !port_left_used) {
 						Label *hint_label = memnew(Label);
 						hint_label->set_text(TTR("[default]"));
-						hint_label->add_theme_color_override(SNAME("font_color"), editor->get_theme_color(SNAME("font_readonly_color"), SNAME("TextEdit")));
-						hint_label->add_theme_style_override(SNAME("normal"), label_style);
+						hint_label->add_theme_color_override("font_color", editor->get_theme_color(SNAME("font_readonly_color"), SNAME("TextEdit")));
+						hint_label->add_theme_style_override("normal", label_style);
 						hb->add_child(hint_label);
 					}
 				}
@@ -779,7 +779,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 				} else {
 					Label *label = memnew(Label);
 					label->set_text(name_right);
-					label->add_theme_style_override(SNAME("normal"), label_style); //more compact
+					label->add_theme_style_override("normal", label_style); //more compact
 					hb->add_child(label);
 				}
 			}
@@ -896,7 +896,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 	String error = vsnode->get_warning(mode, p_type);
 	if (!error.is_empty()) {
 		Label *error_label = memnew(Label);
-		error_label->add_theme_color_override(SNAME("font_color"), editor->get_theme_color(SNAME("error_color"), SNAME("Editor")));
+		error_label->add_theme_color_override("font_color", editor->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 		error_label->set_text(error);
 		node->add_child(error_label);
 	}
@@ -920,7 +920,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		Color members_color = EDITOR_GET("text_editor/theme/highlighting/member_variable_color");
 
 		expression_box->set_syntax_highlighter(expression_syntax_highlighter);
-		expression_box->add_theme_color_override(SNAME("background_color"), background_color);
+		expression_box->add_theme_color_override("background_color", background_color);
 
 		for (const String &E : editor->keyword_list) {
 			if (ShaderLanguage::is_control_flow_keyword(E)) {
@@ -930,9 +930,9 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 			}
 		}
 
-		expression_box->add_theme_font_override(SNAME("font"), editor->get_theme_font(SNAME("expression"), SNAME("EditorFonts")));
-		expression_box->add_theme_font_size_override(SNAME("font_size"), editor->get_theme_font_size(SNAME("expression_size"), SNAME("EditorFonts")));
-		expression_box->add_theme_color_override(SNAME("font_color"), text_color);
+		expression_box->add_theme_font_override("font", editor->get_theme_font(SNAME("expression"), SNAME("EditorFonts")));
+		expression_box->add_theme_font_size_override("font_size", editor->get_theme_font_size(SNAME("expression_size"), SNAME("EditorFonts")));
+		expression_box->add_theme_color_override("font_color", text_color);
 		expression_syntax_highlighter->set_number_color(number_color);
 		expression_syntax_highlighter->set_symbol_color(symbol_color);
 		expression_syntax_highlighter->set_function_color(function_color);
@@ -1512,10 +1512,10 @@ void VisualShaderEditor::_update_created_node(GraphNode *node) {
 	const Color mono_color = ((c.r + c.g + c.b) / 3) < 0.7 ? Color(1.0, 1.0, 1.0, 0.85) : Color(0.0, 0.0, 0.0, 0.85);
 	c = mono_color;
 
-	node->add_theme_color_override(SNAME("title_color"), c);
+	node->add_theme_color_override("title_color", c);
 	c.a = 0.7;
-	node->add_theme_color_override(SNAME("close_color"), c);
-	node->add_theme_color_override(SNAME("resizer_color"), c);
+	node->add_theme_color_override("close_color", c);
+	node->add_theme_color_override("resizer_color", c);
 }
 
 void VisualShaderEditor::_update_uniforms(bool p_update_refs) {
@@ -3421,7 +3421,7 @@ void VisualShaderEditor::_notification(int p_what) {
 			Color number_color = EDITOR_GET("text_editor/theme/highlighting/number_color");
 			Color members_color = EDITOR_GET("text_editor/theme/highlighting/member_variable_color");
 
-			preview_text->add_theme_color_override(SNAME("background_color"), background_color);
+			preview_text->add_theme_color_override("background_color", background_color);
 
 			for (const String &E : keyword_list) {
 				if (ShaderLanguage::is_control_flow_keyword(E)) {
@@ -3431,9 +3431,9 @@ void VisualShaderEditor::_notification(int p_what) {
 				}
 			}
 
-			preview_text->add_theme_font_override(SNAME("font"), get_theme_font(SNAME("expression"), SNAME("EditorFonts")));
-			preview_text->add_theme_font_size_override(SNAME("font_size"), get_theme_font_size(SNAME("expression_size"), SNAME("EditorFonts")));
-			preview_text->add_theme_color_override(SNAME("font_color"), text_color);
+			preview_text->add_theme_font_override("font", get_theme_font(SNAME("expression"), SNAME("EditorFonts")));
+			preview_text->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("expression_size"), SNAME("EditorFonts")));
+			preview_text->add_theme_color_override("font_color", text_color);
 			syntax_highlighter->set_number_color(number_color);
 			syntax_highlighter->set_symbol_color(symbol_color);
 			syntax_highlighter->set_function_color(function_color);
@@ -3446,10 +3446,10 @@ void VisualShaderEditor::_notification(int p_what) {
 			preview_text->add_comment_delimiter("/*", "*/", false);
 			preview_text->add_comment_delimiter("//", "", true);
 
-			error_panel->add_theme_style_override(SNAME("panel"), get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
-			error_label->add_theme_font_override(SNAME("font"), get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
-			error_label->add_theme_font_size_override(SNAME("font_size"), get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
-			error_label->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
+			error_label->add_theme_font_override("font", get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
+			error_label->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
+			error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
 		}
 
 		tools->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Tools"), SNAME("EditorIcons")));
@@ -4301,7 +4301,7 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	preview_vbox = memnew(VBoxContainer);
 	preview_window->add_child(preview_vbox);
-	preview_vbox->add_theme_constant_override(SNAME("separation"), 0);
+	preview_vbox->add_theme_constant_override("separation", 0);
 
 	preview_text = memnew(CodeEdit);
 	syntax_highlighter.instantiate();

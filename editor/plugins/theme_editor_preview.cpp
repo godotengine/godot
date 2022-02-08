@@ -247,10 +247,10 @@ ThemeEditorPreview::ThemeEditorPreview() {
 
 	preview_content = memnew(MarginContainer);
 	preview_root->add_child(preview_content);
-	preview_content->add_theme_constant_override(SNAME("margin_right"), 4 * EDSCALE);
-	preview_content->add_theme_constant_override(SNAME("margin_top"), 4 * EDSCALE);
-	preview_content->add_theme_constant_override(SNAME("margin_left"), 4 * EDSCALE);
-	preview_content->add_theme_constant_override(SNAME("margin_bottom"), 4 * EDSCALE);
+	preview_content->add_theme_constant_override("margin_right", 4 * EDSCALE);
+	preview_content->add_theme_constant_override("margin_top", 4 * EDSCALE);
+	preview_content->add_theme_constant_override("margin_left", 4 * EDSCALE);
+	preview_content->add_theme_constant_override("margin_bottom", 4 * EDSCALE);
 
 	preview_overlay = memnew(MarginContainer);
 	preview_overlay->set_mouse_filter(MOUSE_FILTER_IGNORE);
@@ -269,20 +269,20 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	preview_content->add_child(main_panel);
 
 	MarginContainer *main_mc = memnew(MarginContainer);
-	main_mc->add_theme_constant_override(SNAME("margin_right"), 4 * EDSCALE);
-	main_mc->add_theme_constant_override(SNAME("margin_top"), 4 * EDSCALE);
-	main_mc->add_theme_constant_override(SNAME("margin_left"), 4 * EDSCALE);
-	main_mc->add_theme_constant_override(SNAME("margin_bottom"), 4 * EDSCALE);
+	main_mc->add_theme_constant_override("margin_right", 4 * EDSCALE);
+	main_mc->add_theme_constant_override("margin_top", 4 * EDSCALE);
+	main_mc->add_theme_constant_override("margin_left", 4 * EDSCALE);
+	main_mc->add_theme_constant_override("margin_bottom", 4 * EDSCALE);
 	preview_content->add_child(main_mc);
 
 	HBoxContainer *main_hb = memnew(HBoxContainer);
 	main_mc->add_child(main_hb);
-	main_hb->add_theme_constant_override(SNAME("separation"), 20 * EDSCALE);
+	main_hb->add_theme_constant_override("separation", 20 * EDSCALE);
 
 	VBoxContainer *first_vb = memnew(VBoxContainer);
 	main_hb->add_child(first_vb);
 	first_vb->set_h_size_flags(SIZE_EXPAND_FILL);
-	first_vb->add_theme_constant_override(SNAME("separation"), 10 * EDSCALE);
+	first_vb->add_theme_constant_override("separation", 10 * EDSCALE);
 
 	first_vb->add_child(memnew(Label("Label")));
 
@@ -343,7 +343,7 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	VBoxContainer *second_vb = memnew(VBoxContainer);
 	second_vb->set_h_size_flags(SIZE_EXPAND_FILL);
 	main_hb->add_child(second_vb);
-	second_vb->add_theme_constant_override(SNAME("separation"), 10 * EDSCALE);
+	second_vb->add_theme_constant_override("separation", 10 * EDSCALE);
 	LineEdit *le = memnew(LineEdit);
 	le->set_text("LineEdit");
 	second_vb->add_child(le);
@@ -383,7 +383,7 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 
 	VBoxContainer *third_vb = memnew(VBoxContainer);
 	third_vb->set_h_size_flags(SIZE_EXPAND_FILL);
-	third_vb->add_theme_constant_override(SNAME("separation"), 10 * EDSCALE);
+	third_vb->add_theme_constant_override("separation", 10 * EDSCALE);
 	main_hb->add_child(third_vb);
 
 	TabContainer *tc = memnew(TabContainer);

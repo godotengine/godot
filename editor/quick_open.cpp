@@ -261,7 +261,7 @@ EditorQuickOpen::EditorQuickOpen() {
 	search_options->create_item();
 	search_options->set_hide_root(true);
 	search_options->set_hide_folding(true);
-	search_options->add_theme_constant_override(SNAME("draw_guides"), 1);
+	search_options->add_theme_constant_override("draw_guides", 1);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
 
 	get_ok_button()->set_text(TTR("Open"));

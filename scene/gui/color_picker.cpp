@@ -70,7 +70,7 @@ void ColorPicker::_notification(int p_what) {
 			w_edit->set_custom_minimum_size(Size2(get_theme_constant(SNAME("h_width")), 0));
 
 			wheel_edit->set_custom_minimum_size(Size2(get_theme_constant(SNAME("sv_width")), get_theme_constant(SNAME("sv_height"))));
-			wheel_margin->add_theme_constant_override(SNAME("margin_bottom"), 8 * get_theme_default_base_scale());
+			wheel_margin->add_theme_constant_override("margin_bottom", 8 * get_theme_default_base_scale());
 
 			for (int i = 0; i < 4; i++) {
 				labels[i]->set_custom_minimum_size(Size2(get_theme_constant(SNAME("label_width")), 0));
@@ -191,22 +191,22 @@ void ColorPicker::_update_controls() {
 
 	if (raw_mode_enabled) {
 		for (int i = 0; i < 3; i++) {
-			scroll[i]->remove_theme_icon_override(SNAME("grabber"));
-			scroll[i]->remove_theme_icon_override(SNAME("grabber_highlight"));
-			scroll[i]->remove_theme_style_override(SNAME("slider"));
-			scroll[i]->remove_theme_style_override(SNAME("grabber_area"));
-			scroll[i]->remove_theme_style_override(SNAME("grabber_area_highlight"));
+			scroll[i]->remove_theme_icon_override("grabber");
+			scroll[i]->remove_theme_icon_override("grabber_highlight");
+			scroll[i]->remove_theme_style_override("slider");
+			scroll[i]->remove_theme_style_override("grabber_area");
+			scroll[i]->remove_theme_style_override("grabber_area_highlight");
 		}
 	} else {
 		Ref<StyleBoxEmpty> style_box_empty(memnew(StyleBoxEmpty));
 		Ref<Texture2D> bar_arrow = get_theme_icon(SNAME("bar_arrow"));
 
 		for (int i = 0; i < 4; i++) {
-			scroll[i]->add_theme_icon_override(SNAME("grabber"), bar_arrow);
-			scroll[i]->add_theme_icon_override(SNAME("grabber_highlight"), bar_arrow);
-			scroll[i]->add_theme_style_override(SNAME("slider"), style_box_empty);
-			scroll[i]->add_theme_style_override(SNAME("grabber_area"), style_box_empty);
-			scroll[i]->add_theme_style_override(SNAME("grabber_area_highlight"), style_box_empty);
+			scroll[i]->add_theme_icon_override("grabber", bar_arrow);
+			scroll[i]->add_theme_icon_override("grabber_highlight", bar_arrow);
+			scroll[i]->add_theme_style_override("slider", style_box_empty);
+			scroll[i]->add_theme_style_override("grabber_area", style_box_empty);
+			scroll[i]->add_theme_style_override("grabber_area_highlight", style_box_empty);
 		}
 	}
 
@@ -1245,7 +1245,7 @@ ColorPicker::ColorPicker() :
 	circle_mat.instantiate();
 	circle_mat->set_shader(circle_shader);
 
-	wheel_margin->add_theme_constant_override(SNAME("margin_bottom"), 8);
+	wheel_margin->add_theme_constant_override("margin_bottom", 8);
 	wheel_edit->add_child(wheel_margin);
 
 	wheel_margin->add_child(wheel);
