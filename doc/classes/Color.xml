@@ -218,12 +218,45 @@
 			<return type="Color" />
 			<argument index="0" name="rgba" type="String" />
 			<description>
+				Returns a new color from [code]rgba[/code], an HTML hexadecimal color string. [code]rgba[/code] is not case sensitive, and may be prefixed with a '#' character.
+				[code]rgba[/code] must be a valid three-digit or six-digit hexadecimal color string, and may contain an alpha channel value. If [code]rgba[/code] does not contain an alpha channel value, an alpha channel value of 1.0 is applied.
+				If [code]rgba[/code] is invalid a Color(0.0, 0.0, 0.0, 1.0) is returned.
+				[codeblocks]
+				[gdscript]
+				var green = Color.html("#00FF00FF") # set green to Color(0.0, 1.0, 0.0, 1.0)
+				var blue = Color.html("#0000FF") # set blue to Color(0.0, 0.0, 1.0, 1.0)
+				[/gdscript]
+				[csharp]
+				var green = Color.Html("#00FF00FF"); // set green to Color(0.0, 1.0, 0.0, 1.0)
+				var blue = Color.Html("#0000FF"); // set blue to Color(0.0, 0.0, 1.0, 1.0)
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="html_is_valid" qualifiers="static">
 			<return type="bool" />
 			<argument index="0" name="color" type="String" />
 			<description>
+				Returns [code]true[/code] if [code]color[/code] is a valid HTML hexadecimal color string. [code]color[/code] is not case sensitive, and may be prefixed with a '#' character.
+				For a string to be valid it must be three-digit or six-digit hexadecimal, and may contain an alpha channel value.
+				[codeblocks]
+				[gdscript]
+				var result = Color.html_is_valid("#55aaFF") # result is true
+				result = Color.html_is_valid("#55AAFF20") # result is true
+				result = Color.html_is_valid("55AAFF") # result is true
+				result = Color.html_is_valid("#F2C") # result is true
+				result = Color.html_is_valid("#AABBC) # result is false
+				result = Color.html_is_valid("#55aaFF5") # result is false
+				[/gdscript]
+				[csharp]
+				var result = Color.HtmlIsValid("#55AAFF"); // result is true
+				result = Color.HtmlIsValid("#55AAFF20"); // result is true
+				result = Color.HtmlIsValid("55AAFF); // result is true
+				result = Color.HtmlIsValid("#F2C"); // result is true
+				result = Color.HtmlIsValid("#AABBC"); // result is false
+				result = Color.HtmlIsValid("#55aaFF5"); // result is false
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="inverted" qualifiers="const">
