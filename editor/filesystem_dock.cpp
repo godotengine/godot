@@ -1225,6 +1225,30 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 			if (err != OK) {
 				EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:") + "\n" + old_path + ".import\n");
 			}
+
+			// Remove uid from .import file to avoid conflict.
+			Ref<ConfigFile> cfg;
+			cfg.instantiate();
+			cfg->load(new_path + ".import");
+			cfg->erase_section_key("remap", "uid");
+			cfg->save(new_path + ".import");
+		} else if (p_item.is_file && (old_path.get_extension() == "tscn" || old_path.get_extension() == "tres")) {
+			// FIXME: Quick hack to fix text resources. This should be fixed properly.
+			FileAccessRef file = FileAccess::open(old_path, FileAccess::READ, &err);
+			if (err == OK) {
+				PackedStringArray lines = file->get_as_utf8_string().split("\n");
+				String line = lines[0];
+
+				if (line.contains("uid")) {
+					line = line.substr(0, line.find(" uid")) + "]";
+					lines.write[0] = line;
+
+					FileAccessRef file2 = FileAccess::open(new_path, FileAccess::WRITE, &err);
+					if (err == OK) {
+						file2->store_string(String("\n").join(lines));
+					}
+				}
+			}
 		}
 	} else {
 		EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:") + "\n" + old_path + "\n");
