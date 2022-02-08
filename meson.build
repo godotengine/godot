@@ -131,25 +131,9 @@ if get_option('disable_all_modules')
     _module_script_args += ['--disable_all_modules']
 endif
 
-modules_db_file = configure_file(output: 'modules_db.json',
-  command: [SCRIPT_MODULE_DB] + _module_script_args
-)
+MODULES_ENABLED = []
 
-# Get the list of enabled modules
-_module_enabled_output = run_command(SCRIPT_MODULE_DB, ['get_enabled_modules', modules_db_file], check: true)
-
-MODULES_ENABLED = _module_enabled_output.stdout().strip().split(',')
-
-# Get the list of disabled modules
-_module_disabled_output = run_command(SCRIPT_MODULE_DB, ['get_disabled_modules', modules_db_file], check: true)
-
-MODULES_DISABLED = _module_disabled_output.stdout().strip().split(',')
-
-_module_get_build_paths = run_command(SCRIPT_MODULE_DB, ['get_module_build_paths', modules_db_file], check: true)
-MODULE_BUILD_PATHS = _module_get_build_paths.stdout().strip().split(',')
-
-#_module_list = run_command(SCRIPT_MODULE_DB, ['print_modules', modules_db_file], check: true)
-#message(_module_list.stdout())
+MODULES_DISABLED = []
 
 ################################################################################
 # COMPILER FLAGS - DEFINED BEFORE ANY TARGETS
@@ -287,39 +271,39 @@ DEPENDENCIES = []
 # generator first
 subdir('splash')
 
-_modules_enabled_gen = custom_target(
-    'modules_enabled',
-    output: ['modules_enabled.gen.h'],
-    input: [modules_db_file],
-    command: [SCRIPT_MODULES_GEN,
-              'modules_enabled',
-              '@INPUT@',
-              MESON_BUILD_ROOT,
-              '@OUTPUT@',
-              '--fake-stamp',
-              'modules_enabled.gen.h'
-              ],
-    build_by_default: true,
-    env: SCRIPTS_ENV
-)
-SOURCES += [_modules_enabled_gen]
+#_modules_enabled_gen = custom_target(
+#    'modules_enabled',
+#    output: ['modules_enabled.gen.h'],
+#    input: [modules_db_file],
+#    command: [SCRIPT_MODULES_GEN,
+#              'modules_enabled',
+#              '@INPUT@',
+#              MESON_BUILD_ROOT,
+#              '@OUTPUT@',
+#              '--fake-stamp',
+#              'modules_enabled.gen.h'
+#              ],
+#    build_by_default: true,
+#    env: SCRIPTS_ENV
+#)
+#SOURCES += [_modules_enabled_gen]
 
-_modules_tests_gen = custom_target(
-    'modules_tests',
-    output: ['modules_tests.gen.h'],
-    input: [modules_db_file],
-    command: [SCRIPT_MODULES_GEN,
-              'modules_tests',
-              '@INPUT@',
-              MESON_BUILD_ROOT,
-              MESON_SOURCE_ROOT,
-              '@OUTPUT@',
-              '--fake-stamp',
-              'modules_tests.gen.h'],
-    build_by_default: true,
-    env: SCRIPTS_ENV
-)
-SOURCES += [_modules_tests_gen]
+#_modules_tests_gen = custom_target(
+#    'modules_tests',
+#    output: ['modules_tests.gen.h'],
+#    input: [modules_db_file],
+#    command: [SCRIPT_MODULES_GEN,
+#              'modules_tests',
+#              '@INPUT@',
+#              MESON_BUILD_ROOT,
+#              MESON_SOURCE_ROOT,
+#              '@OUTPUT@',
+#              '--fake-stamp',
+#              'modules_tests.gen.h'],
+#    build_by_default: true,
+#    env: SCRIPTS_ENV
+#)
+#SOURCES += [_modules_tests_gen]
 
 # Needed to work around backwards dependency
 # editor <-> modules/gdscript
@@ -356,9 +340,6 @@ endif
 
 # build up our module list
 MODULE_DEPENDENCIES = []
-foreach mp : MODULE_BUILD_PATHS
-    subdir(mp)
-endforeach
 
 # finally, get the sources for main separately
 subdir('main')
