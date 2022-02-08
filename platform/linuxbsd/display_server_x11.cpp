@@ -1835,7 +1835,7 @@ void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled) {
 		Hints hints;
 		Atom property;
 		hints.flags = 2;
-		hints.decorations = window_get_flag(WINDOW_FLAG_BORDERLESS, p_window) ? 0 : 1;
+		hints.decorations = wd.borderless ? 0 : 1;
 		property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
 		if (property != None) {
 			XChangeProperty(x11_display, wd.x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
