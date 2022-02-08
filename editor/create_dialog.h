@@ -79,7 +79,7 @@ class CreateDialog : public ConfirmationDialog {
 
 	void _sbox_input(const Ref<InputEvent> &p_ie);
 	void _text_changed(const String &p_newtext);
-	void select_type(const String &p_type);
+	void select_type(const String &p_type, bool p_center_on_item = true);
 	void _item_selected();
 	void _hide_requested();
 
