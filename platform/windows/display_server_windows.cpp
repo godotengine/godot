@@ -2710,12 +2710,17 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 		case WM_WINDOWPOSCHANGED: {
 			Rect2i window_client_rect;
+			Rect2i window_rect;
 			{
 				RECT rect;
 				GetClientRect(hWnd, &rect);
 				ClientToScreen(hWnd, (POINT *)&rect.left);
 				ClientToScreen(hWnd, (POINT *)&rect.right);
 				window_client_rect = Rect2i(rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
+
+				RECT wrect;
+				GetWindowRect(hWnd, &wrect);
+				window_rect = Rect2i(wrect.left, wrect.top, wrect.right - wrect.left, wrect.bottom - wrect.top);
 			}
 
 			WINDOWPOS *window_pos_params = (WINDOWPOS *)lParam;
@@ -2735,7 +2740,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					window.minimized = true;
 				} else if (IsZoomed(hWnd)) {
 					window.maximized = true;
-				} else if (window_client_rect.position == screen_position && window_client_rect.size == screen_size) {
+				} else if (window_rect.position == screen_position && window_rect.size == screen_size) {
 					window.fullscreen = true;
 				}
 
