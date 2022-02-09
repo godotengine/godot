@@ -279,8 +279,9 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			xml_output.append("[");
 			pos = brk_pos + 1;
 		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ")) {
-			String link_target = tag.substr(tag.find(" ") + 1, tag.length());
-			String link_tag = tag.substr(0, tag.find(" "));
+			const int tag_end = tag.find(" ");
+			const String link_tag = tag.substr(0, tag_end);
+			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
 
 			Vector<String> link_target_parts = link_target.split(".");
 
@@ -360,12 +361,38 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 					}
 				}
 			} else if (link_tag == "signal") {
-				// We do not declare signals in any way in C#, so there is nothing to reference
-				xml_output.append("<c>");
-				xml_output.append(link_target);
-				xml_output.append("</c>");
+				if (!target_itype || !target_itype->is_object_type) {
+					if (OS::get_singleton()->is_stdout_verbose()) {
+						if (target_itype) {
+							OS::get_singleton()->print("Cannot resolve signal reference for non-Godot.Object type in documentation: %s\n", link_target.utf8().get_data());
+						} else {
+							OS::get_singleton()->print("Cannot resolve type from signal reference in documentation: %s\n", link_target.utf8().get_data());
+						}
+					}
+
+					// TODO Map what we can
+					xml_output.append("<c>");
+					xml_output.append(link_target);
+					xml_output.append("</c>");
+				} else {
+					const SignalInterface *target_isignal = target_itype->find_signal_by_name(target_cname);
+
+					if (target_isignal) {
+						xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+						xml_output.append(target_itype->proxy_name);
+						xml_output.append(".");
+						xml_output.append(target_isignal->proxy_name);
+						xml_output.append("\"/>");
+					} else {
+						ERR_PRINT("Cannot resolve signal reference in documentation: '" + link_target + "'.");
+
+						xml_output.append("<c>");
+						xml_output.append(link_target);
+						xml_output.append("</c>");
+					}
+				}
 			} else if (link_tag == "enum") {
-				StringName search_cname = !target_itype ? target_cname : StringName(target_itype->name + "." + (String)target_cname);
+				const StringName search_cname = !target_itype ? target_cname : StringName(target_itype->name + "." + (String)target_cname);
 
 				const Map<StringName, TypeInterface>::Element *enum_match = enum_types.find(search_cname);
 
@@ -401,7 +428,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 					xml_output.append(link_target);
 					xml_output.append("</c>");
 				} else if (!target_itype && target_cname == name_cache.type_at_GlobalScope) {
-					String target_name = (String)target_cname;
+					const String target_name = (String)target_cname;
 
 					// Try to find as a global constant
 					const ConstantInterface *target_iconst = find_constant_by_name(target_name, global_constants);
@@ -438,7 +465,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 						}
 					}
 				} else {
-					String target_name = (String)target_cname;
+					const String target_name = (String)target_cname;
 
 					// Try to find the constant in the current class
 					const ConstantInterface *target_iconst = find_constant_by_name(target_name, target_itype->constants);
