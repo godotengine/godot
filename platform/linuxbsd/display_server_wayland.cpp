@@ -480,6 +480,18 @@ void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *w
 	Key keycode = KeyMappingXKB::get_keycode(xkb_state_key_get_one_sym(ks.xkb_state, xkb_keycode));
 	Key physical_keycode = KeyMappingXKB::get_scancode(xkb_keycode);
 
+	if (physical_keycode == Key::NONE) {
+		return;
+	}
+
+	if (keycode == Key::NONE) {
+		keycode = physical_keycode;
+	}
+
+	if (keycode >= Key::A + 32 && keycode <= Key::Z + 32) {
+		keycode -= 'a' - 'A';
+	}
+
 	// TODO: Simplify into its own function and move into enter and leave events.
 	WindowID focused_window_id;
 	bool id_found = false;
