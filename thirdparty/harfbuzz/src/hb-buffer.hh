@@ -386,11 +386,14 @@ struct hb_buffer_t
   HB_INTERNAL void delete_glyph ();
 
 
-  void set_glyph_flags (hb_mask_t mask,
-			unsigned start = 0,
-			unsigned end = (unsigned) -1,
-			bool interior = false,
-			bool from_out_buffer = false)
+  /* Adds glyph flags in mask to infos with clusters between start and end.
+   * The start index will be from out-buffer if from_out_buffer is true.
+   * If interior is true, then the cluster having the minimum value is skipped. */
+  void _set_glyph_flags (hb_mask_t mask,
+			 unsigned start = 0,
+			 unsigned end = (unsigned) -1,
+			 bool interior = false,
+			 bool from_out_buffer = false)
   {
     end = hb_min (end, len);
 
@@ -437,27 +440,27 @@ struct hb_buffer_t
 
   void unsafe_to_break (unsigned int start = 0, unsigned int end = -1)
   {
-    set_glyph_flags (HB_GLYPH_FLAG_UNSAFE_TO_BREAK | HB_GLYPH_FLAG_UNSAFE_TO_CONCAT,
-		     start, end,
-		     true);
+    _set_glyph_flags (HB_GLYPH_FLAG_UNSAFE_TO_BREAK | HB_GLYPH_FLAG_UNSAFE_TO_CONCAT,
+		      start, end,
+		      true);
   }
   void unsafe_to_concat (unsigned int start = 0, unsigned int end = -1)
   {
-    set_glyph_flags (HB_GLYPH_FLAG_UNSAFE_TO_CONCAT,
-		     start, end,
-		     true);
+    _set_glyph_flags (HB_GLYPH_FLAG_UNSAFE_TO_CONCAT,
+		      start, end,
+		      true);
   }
   void unsafe_to_break_from_outbuffer (unsigned int start = 0, unsigned int end = -1)
   {
-    set_glyph_flags (HB_GLYPH_FLAG_UNSAFE_TO_BREAK | HB_GLYPH_FLAG_UNSAFE_TO_CONCAT,
-		     start, end,
-		     true, true);
+    _set_glyph_flags (HB_GLYPH_FLAG_UNSAFE_TO_BREAK | HB_GLYPH_FLAG_UNSAFE_TO_CONCAT,
+		      start, end,
+		      true, true);
   }
   void unsafe_to_concat_from_outbuffer (unsigned int start = 0, unsigned int end = -1)
   {
-    set_glyph_flags (HB_GLYPH_FLAG_UNSAFE_TO_CONCAT,
-		     start, end,
-		     false, true);
+    _set_glyph_flags (HB_GLYPH_FLAG_UNSAFE_TO_CONCAT,
+		      start, end,
+		      false, true);
   }
 
 

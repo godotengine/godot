@@ -1586,7 +1586,15 @@ struct PairPosFormat2
 
 
     /* Isolate simple kerning and apply it half to each side.
-     * Results in better cursor positinoing / underline drawing. */
+     * Results in better cursor positinoing / underline drawing.
+     *
+     * Disabled, because causes issues... :-(
+     * https://github.com/harfbuzz/harfbuzz/issues/3408
+     * https://github.com/harfbuzz/harfbuzz/pull/3235#issuecomment-1029814978
+     */
+#ifndef HB_SPLIT_KERN
+    if (0)
+#endif
     {
       if (!len2)
       {
