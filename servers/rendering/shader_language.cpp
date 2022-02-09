@@ -7871,7 +7871,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 					if (is_sampler_type(type)) {
 						if (uniform_scope == ShaderNode::Uniform::SCOPE_INSTANCE) {
-							_set_error(vformat(RTR("Uniforms with '%s' qualifiers can't be of sampler type.", "instance")));
+							_set_error(vformat(RTR("The '%s' qualifier is not supported for sampler types."), "SCOPE_INSTANCE"));
 							return ERR_PARSE_ERROR;
 						}
 						uniform2.texture_order = texture_uniforms++;
@@ -7887,7 +7887,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						}
 					} else {
 						if (uniform_scope == ShaderNode::Uniform::SCOPE_INSTANCE && (type == TYPE_MAT2 || type == TYPE_MAT3 || type == TYPE_MAT4)) {
-							_set_error(vformat(RTR("Uniforms with '%s' qualifier can't be of matrix type.", "instance")));
+							_set_error(vformat(RTR("The '%s' qualifier is not supported for matrix types."), "SCOPE_INSTANCE"));
 							return ERR_PARSE_ERROR;
 						}
 						uniform2.texture_order = -1;
