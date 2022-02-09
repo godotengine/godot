@@ -35,9 +35,36 @@
 #include "core/os/thread_safe.h"
 #include "core/set.h"
 
+// Querying ProjectSettings is usually done at startup.
+// Additionally, in order to keep track of changes to ProjectSettings,
+// instead of Querying all the strings every frame just in case of changes,
+// there is a signal "project_settings_changed" which objects can subscribe to.
+
+// E.g. (from another Godot object)
+// // Call your user written object function to Query the project settings once at creation,
+// perhaps in an ENTER_TREE notification:
+// _project_settings_changed()
+// // Then connect your function to the signal so it is called every time something changes in future:
+// ProjectSettings::get_singleton()->connect("project_settings_changed", this, "_project_settings_changed");
+
+// Where for example your function may take the form:
+// void _project_settings_changed() {
+// _shadowmap_size = GLOBAL_GET("rendering/quality/shadow_atlas/size");
+// }
+
+// You may want to also disconnect from the signal in EXIT_TREE notification, if your object may be deleted
+// before ProjectSettings:
+// ProjectSettings::get_singleton()->disconnect("project_settings_changed", this, "_project_settings_changed");
+
+// Additionally, for objects that are not regular Godot objects capable of subscribing to signals (e.g. Rasterizers),
+// you can also query the function "has_changes()" each frame,
+// and update your local settings whenever this is set.
+
 class ProjectSettings : public Object {
 	GDCLASS(ProjectSettings, Object);
 	_THREAD_SAFE_CLASS_
+
+	int _dirty_this_frame = 2;
 
 public:
 	typedef Map<String, Variant> CustomMap;
@@ -167,6 +194,14 @@ public:
 	void set_registering_order(bool p_enable);
 
 	bool has_custom_feature(const String &p_feature) const;
+
+	// Either use the signal `project_settings_changed` or query this function.
+	// N.B. _dirty_this_frame is set initially to 2.
+	// This is to cope with the situation where a project setting is changed in the iteration AFTER it is read.
+	// There is therefore the potential for a change to be missed. Persisting the counter
+	// for two frames avoids this, at the cost of a frame delay.
+	bool has_changes() const { return _dirty_this_frame == 1; }
+	void update();
 
 	ProjectSettings();
 	~ProjectSettings();

@@ -2462,6 +2462,49 @@ void SpatialEditorPlugin::edited_scene_changed() {
 	}
 }
 
+void SpatialEditorViewport::_project_settings_changed() {
+	if (viewport) {
+		_project_settings_change_pending = false;
+
+		//update shadow atlas if changed
+		int shadowmap_size = ProjectSettings::get_singleton()->get("rendering/quality/shadow_atlas/size");
+		int atlas_q0 = ProjectSettings::get_singleton()->get("rendering/quality/shadow_atlas/quadrant_0_subdiv");
+		int atlas_q1 = ProjectSettings::get_singleton()->get("rendering/quality/shadow_atlas/quadrant_1_subdiv");
+		int atlas_q2 = ProjectSettings::get_singleton()->get("rendering/quality/shadow_atlas/quadrant_2_subdiv");
+		int atlas_q3 = ProjectSettings::get_singleton()->get("rendering/quality/shadow_atlas/quadrant_3_subdiv");
+
+		viewport->set_shadow_atlas_size(shadowmap_size);
+		viewport->set_shadow_atlas_quadrant_subdiv(0, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q0));
+		viewport->set_shadow_atlas_quadrant_subdiv(1, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q1));
+		viewport->set_shadow_atlas_quadrant_subdiv(2, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q2));
+		viewport->set_shadow_atlas_quadrant_subdiv(3, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q3));
+
+		// Update MSAA, FXAA, debanding and HDR if changed.
+		int msaa_mode = ProjectSettings::get_singleton()->get("rendering/quality/filters/msaa");
+		viewport->set_msaa(Viewport::MSAA(msaa_mode));
+
+		bool use_fxaa = ProjectSettings::get_singleton()->get("rendering/quality/filters/use_fxaa");
+		viewport->set_use_fxaa(use_fxaa);
+
+		bool use_debanding = ProjectSettings::get_singleton()->get("rendering/quality/filters/use_debanding");
+		viewport->set_use_debanding(use_debanding);
+
+		float sharpen_intensity = ProjectSettings::get_singleton()->get("rendering/quality/filters/sharpen_intensity");
+		viewport->set_sharpen_intensity(sharpen_intensity);
+
+		bool hdr = ProjectSettings::get_singleton()->get("rendering/quality/depth/hdr");
+		viewport->set_hdr(hdr);
+
+		const bool use_32_bpc_depth = ProjectSettings::get_singleton()->get("rendering/quality/depth/use_32_bpc_depth");
+		viewport->set_use_32_bpc_depth(use_32_bpc_depth);
+
+	} else {
+		// Could not update immediately, set a pending update.
+		// This may never happen, but is included for safety
+		_project_settings_change_pending = true;
+	}
+}
+
 void SpatialEditorViewport::_notification(int p_what) {
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 		bool visible = is_visible_in_tree();
@@ -2583,45 +2626,15 @@ void SpatialEditorViewport::_notification(int p_what) {
 			}
 		}
 
-		//update shadow atlas if changed
-
-		int shadowmap_size = ProjectSettings::get_singleton()->get("rendering/quality/shadow_atlas/size");
-		int atlas_q0 = ProjectSettings::get_singleton()->get("rendering/quality/shadow_atlas/quadrant_0_subdiv");
-		int atlas_q1 = ProjectSettings::get_singleton()->get("rendering/quality/shadow_atlas/quadrant_1_subdiv");
-		int atlas_q2 = ProjectSettings::get_singleton()->get("rendering/quality/shadow_atlas/quadrant_2_subdiv");
-		int atlas_q3 = ProjectSettings::get_singleton()->get("rendering/quality/shadow_atlas/quadrant_3_subdiv");
-
-		viewport->set_shadow_atlas_size(shadowmap_size);
-		viewport->set_shadow_atlas_quadrant_subdiv(0, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q0));
-		viewport->set_shadow_atlas_quadrant_subdiv(1, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q1));
-		viewport->set_shadow_atlas_quadrant_subdiv(2, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q2));
-		viewport->set_shadow_atlas_quadrant_subdiv(3, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q3));
+		if (_project_settings_change_pending) {
+			_project_settings_changed();
+		}
 
 		bool shrink = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_HALF_RESOLUTION));
 
 		if (shrink != (viewport_container->get_stretch_shrink() > 1)) {
 			viewport_container->set_stretch_shrink(shrink ? 2 : 1);
 		}
-
-		// Update MSAA, FXAA, debanding and HDR if changed.
-
-		int msaa_mode = ProjectSettings::get_singleton()->get("rendering/quality/filters/msaa");
-		viewport->set_msaa(Viewport::MSAA(msaa_mode));
-
-		bool use_fxaa = ProjectSettings::get_singleton()->get("rendering/quality/filters/use_fxaa");
-		viewport->set_use_fxaa(use_fxaa);
-
-		bool use_debanding = ProjectSettings::get_singleton()->get("rendering/quality/filters/use_debanding");
-		viewport->set_use_debanding(use_debanding);
-
-		float sharpen_intensity = ProjectSettings::get_singleton()->get("rendering/quality/filters/sharpen_intensity");
-		viewport->set_sharpen_intensity(sharpen_intensity);
-
-		const bool hdr = ProjectSettings::get_singleton()->get("rendering/quality/depth/hdr");
-		viewport->set_hdr(hdr);
-
-		const bool use_32_bpc_depth = ProjectSettings::get_singleton()->get("rendering/quality/depth/use_32_bpc_depth");
-		viewport->set_use_32_bpc_depth(use_32_bpc_depth);
 
 		bool show_info = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_INFORMATION));
 		info_label->set_visible(show_info);
@@ -2689,10 +2702,17 @@ void SpatialEditorViewport::_notification(int p_what) {
 		surface->connect("focus_entered", this, "_surface_focus_enter");
 		surface->connect("focus_exited", this, "_surface_focus_exit");
 
+		// Ensure we are up to date with project settings
+		_project_settings_changed();
+
+		// Any further changes to project settings get a signal
+		ProjectSettings::get_singleton()->connect("project_settings_changed", this, "_project_settings_changed");
+
 		_init_gizmo_instance(index);
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
+		ProjectSettings::get_singleton()->disconnect("project_settings_changed", this, "_project_settings_changed");
 		_finish_gizmo_instances();
 	}
 
@@ -3582,6 +3602,7 @@ void SpatialEditorViewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_selection_menu_hide"), &SpatialEditorViewport::_selection_menu_hide);
 	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &SpatialEditorViewport::can_drop_data_fw);
 	ClassDB::bind_method(D_METHOD("drop_data_fw"), &SpatialEditorViewport::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_project_settings_changed"), &SpatialEditorViewport::_project_settings_changed);
 
 	ADD_SIGNAL(MethodInfo("toggle_maximize_view", PropertyInfo(Variant::OBJECT, "viewport")));
 	ADD_SIGNAL(MethodInfo("clicked", PropertyInfo(Variant::OBJECT, "viewport")));
@@ -4104,6 +4125,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	gizmo_scale = 1.0;
 
 	preview_node = nullptr;
+	_project_settings_change_pending = false;
 
 	info_label = memnew(Label);
 	info_label->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -90 * EDSCALE);

@@ -1569,6 +1569,13 @@
 			Cell size used for the 2D hash grid that [VisibilityNotifier2D] uses (in pixels).
 		</member>
 	</members>
+	<signals>
+		<signal name="project_settings_changed">
+			<description>
+				Objects can use this signal to restrict reading of settings only to situations where a change has been made.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 	</constants>
 </class>
