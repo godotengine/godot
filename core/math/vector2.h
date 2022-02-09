@@ -60,10 +60,10 @@ struct _NO_DISCARD_ Vector2 {
 	};
 
 	_FORCE_INLINE_ real_t &operator[](int p_idx) {
-		return p_idx ? y : x;
+		return coord[p_idx];
 	}
 	_FORCE_INLINE_ const real_t &operator[](int p_idx) const {
-		return p_idx ? y : x;
+		return coord[p_idx];
 	}
 
 	_FORCE_INLINE_ void set_all(const real_t p_value) {
