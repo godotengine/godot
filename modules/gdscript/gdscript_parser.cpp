@@ -2943,9 +2943,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
 					if (tokenizer->get_token(1) == GDScriptTokenizer::TK_OP_ASSIGN) {
 						lv->datatype = DataType();
-#ifdef DEBUG_ENABLED
 						lv->datatype.infer_type = true;
-#endif
 						tokenizer->advance();
 					} else if (!_parse_type(lv->datatype)) {
 						_set_error("Expected a type for the variable.");
@@ -4905,9 +4903,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
 					if (tokenizer->get_token(1) == GDScriptTokenizer::TK_OP_ASSIGN) {
 						member.data_type = DataType();
-#ifdef DEBUG_ENABLED
 						member.data_type.infer_type = true;
-#endif
 						tokenizer->advance();
 					} else if (!_parse_type(member.data_type)) {
 						_set_error("Expected a type for the class variable.");
@@ -5149,9 +5145,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
 					if (tokenizer->get_token(1) == GDScriptTokenizer::TK_OP_ASSIGN) {
 						constant.type = DataType();
-#ifdef DEBUG_ENABLED
 						constant.type.infer_type = true;
-#endif
 						tokenizer->advance();
 					} else if (!_parse_type(constant.type)) {
 						_set_error("Expected a type for the class constant.");
