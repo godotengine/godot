@@ -1595,9 +1595,9 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					}
 
 					if (after != EditorPlugin::AFTER_GUI_INPUT_DESELECT) {
-						clicked = _select_ray(b->get_position());
-
 						//clicking is always deferred to either move or release
+						clicked = _select_ray(b->get_position());
+						selection_in_progress = true;
 
 						if (clicked.is_null()) {
 							//default to regionselect
@@ -1616,6 +1616,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					}
 
 					if (after != EditorPlugin::AFTER_GUI_INPUT_DESELECT) {
+						selection_in_progress = false;
+
 						if (clicked.is_valid()) {
 							_select_clicked(false);
 						}
@@ -1720,23 +1722,26 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				nav_mode = NAVIGATION_ORBIT;
 			} else {
 				const bool movement_threshold_passed = _edit.original_mouse_pos.distance_to(_edit.mouse_pos) > 8 * EDSCALE;
-				if (clicked.is_valid() && movement_threshold_passed) {
-					_compute_edit(_edit.original_mouse_pos);
-					clicked = ObjectID();
-
-					_edit.mode = TRANSFORM_TRANSLATE;
-				}
 
 				// enable region-select if nothing has been selected yet or multi-select (shift key) is active
-				if (movement_threshold_passed && (get_selected_count() == 0 || clicked_wants_append)) {
-					cursor.region_select = true;
-					cursor.region_begin = _edit.original_mouse_pos;
+				if (selection_in_progress && movement_threshold_passed) {
+					if (get_selected_count() == 0 || clicked_wants_append) {
+						cursor.region_select = true;
+						cursor.region_begin = _edit.original_mouse_pos;
+						clicked = ObjectID();
+					}
 				}
 
 				if (cursor.region_select) {
 					cursor.region_end = m->get_position();
 					surface->update();
 					return;
+				}
+
+				if (clicked.is_valid() && movement_threshold_passed) {
+					_compute_edit(_edit.original_mouse_pos);
+					clicked = ObjectID();
+					_edit.mode = TRANSFORM_TRANSLATE;
 				}
 
 				if (_edit.mode == TRANSFORM_NONE) {
