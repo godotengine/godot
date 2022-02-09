@@ -602,9 +602,12 @@ void Sprite3D::_draw() {
 		RS::get_singleton()->material_set_param(get_material(), "texture_normal", Variant());
 	}
 	if (normal_map.is_valid() && last_normal_map != normal_map->get_rid()) {
-		RS::get_singleton()->material_set_param(get_material(), "normal_scale", 1);
 		RS::get_singleton()->material_set_param(get_material(), "texture_normal", normal_map->get_rid());
 		last_normal_map = normal_map->get_rid();
+	}
+	if (normal_map.is_valid() && last_normal_scale != normal_scale) {
+		RS::get_singleton()->material_set_param(get_material(), "normal_scale", normal_scale);
+		last_normal_scale = normal_scale;
 	}
 }
 
@@ -644,6 +647,20 @@ void Sprite3D::set_normal_map(const Ref<Texture2D> &p_texture) {
 
 Ref<Texture2D> Sprite3D::get_normal_map() const {
 	return normal_map;
+}
+
+void Sprite3D::set_normal_scale(float p_normal_scale) {
+	if (p_normal_scale == normal_scale) {
+		return;
+	}
+
+	normal_scale = p_normal_scale;
+	_queue_update();
+	emit_signal(SceneStringNames::get_singleton()->texture_changed);
+}
+
+float Sprite3D::get_normal_scale() const {
+	return normal_scale;
 }
 
 void Sprite3D::set_region_enabled(bool p_region) {
@@ -769,6 +786,9 @@ void Sprite3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_normal_map", "texture"), &Sprite3D::set_normal_map);
 	ClassDB::bind_method(D_METHOD("get_normal_map"), &Sprite3D::get_normal_map);
 
+	ClassDB::bind_method(D_METHOD("set_normal_scale", "normal_scale"), &Sprite3D::set_normal_scale);
+	ClassDB::bind_method(D_METHOD("get_normal_scale"), &Sprite3D::get_normal_scale);
+
 	ClassDB::bind_method(D_METHOD("set_region_enabled", "enabled"), &Sprite3D::set_region_enabled);
 	ClassDB::bind_method(D_METHOD("is_region_enabled"), &Sprite3D::is_region_enabled);
 
@@ -788,7 +808,8 @@ void Sprite3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_hframes"), &Sprite3D::get_hframes);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
- 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_normal_map", "get_normal_map");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_normal_map", "get_normal_map");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "normal_scale", PROPERTY_HINT_RANGE, "-16,16,0.01"), "set_normal_scale", "get_normal_scale");
 	ADD_GROUP("Animation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_hframes", "get_hframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");
