@@ -322,12 +322,6 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 
 			mm->set_relative(pd.position - old_pd.position);
 
-			// TODO: Perhaps move this into a separate function?
-			mm->set_shift_pressed(ks.shift_pressed);
-			mm->set_ctrl_pressed(ks.ctrl_pressed);
-			mm->set_alt_pressed(ks.alt_pressed);
-			mm->set_meta_pressed(ks.meta_pressed);
-
 			msg.data = &mm;
 			wls->message_queue.push_back(msg);
 		}
