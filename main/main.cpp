@@ -2789,8 +2789,6 @@ void Main::cleanup(bool p_force) {
 		ERR_FAIL_COND(!_start_success);
 	}
 
-	EngineDebugger::deinitialize();
-
 	ResourceLoader::remove_custom_loaders();
 	ResourceSaver::remove_custom_savers();
 
@@ -2832,6 +2830,8 @@ void Main::cleanup(bool p_force) {
 	unregister_platform_apis();
 	unregister_scene_types();
 	unregister_server_types();
+
+	EngineDebugger::deinitialize();
 
 	if (xr_server) {
 		memdelete(xr_server);

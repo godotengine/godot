@@ -47,7 +47,6 @@ MultiplayerCacheInterface *(*MultiplayerAPI::create_default_cache_interface)(Mul
 void MultiplayerAPI::profile_bandwidth(const String &p_inout, int p_size) {
 	if (EngineDebugger::is_profiling("multiplayer")) {
 		Array values;
-		values.push_back("bandwidth");
 		values.push_back(p_inout);
 		values.push_back(OS::get_singleton()->get_ticks_msec());
 		values.push_back(p_size);

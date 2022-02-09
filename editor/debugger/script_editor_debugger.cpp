@@ -63,6 +63,7 @@
 #include "scene/gui/texture_button.h"
 #include "scene/gui/tree.h"
 #include "scene/resources/packed_scene.h"
+#include "servers/debugger/servers_debugger.h"
 #include "servers/display_server.h"
 
 using CameraOverride = EditorDebuggerNode::CameraOverride;
@@ -127,6 +128,7 @@ void ScriptEditorDebugger::debug_continue() {
 
 	_clear_execution();
 	_put_msg("continue", Array());
+	_put_msg("servers:foreground", Array());
 }
 
 void ScriptEditorDebugger::update_tabs() {
@@ -277,7 +279,7 @@ void ScriptEditorDebugger::_remote_object_property_updated(ObjectID p_id, const 
 }
 
 void ScriptEditorDebugger::_video_mem_request() {
-	_put_msg("core:memory", Array());
+	_put_msg("servers:memory", Array());
 }
 
 void ScriptEditorDebugger::_video_mem_export() {
@@ -343,15 +345,15 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		if (id.is_valid()) {
 			emit_signal(SNAME("remote_object_updated"), id);
 		}
-	} else if (p_msg == "memory:usage") {
+	} else if (p_msg == "servers:memory_usage") {
 		vmem_tree->clear();
 		TreeItem *root = vmem_tree->create_item();
-		DebuggerMarshalls::ResourceUsage usage;
+		ServersDebugger::ResourceUsage usage;
 		usage.deserialize(p_data);
 
 		uint64_t total = 0;
 
-		for (const DebuggerMarshalls::ResourceInfo &E : usage.infos) {
+		for (const ServersDebugger::ResourceInfo &E : usage.infos) {
 			TreeItem *it = vmem_tree->create_item(root);
 			String type = E.type;
 			int bytes = E.vram;
@@ -444,7 +446,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		performance_profiler->add_profile_frame(frame_data);
 
 	} else if (p_msg == "visual:profile_frame") {
-		DebuggerMarshalls::VisualProfilerFrame frame;
+		ServersDebugger::VisualProfilerFrame frame;
 		frame.deserialize(p_data);
 
 		EditorVisualProfiler::Metric metric;
@@ -591,13 +593,13 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 	} else if (p_msg == "servers:function_signature") {
 		// Cache a profiler signature.
-		DebuggerMarshalls::ScriptFunctionSignature sig;
+		ServersDebugger::ScriptFunctionSignature sig;
 		sig.deserialize(p_data);
 		profiler_signature[sig.id] = sig.name;
 
 	} else if (p_msg == "servers:profile_frame" || p_msg == "servers:profile_total") {
 		EditorProfiler::Metric metric;
-		DebuggerMarshalls::ServersProfilerFrame frame;
+		ServersDebugger::ServersProfilerFrame frame;
 		frame.deserialize(p_data);
 		metric.valid = true;
 		metric.frame_number = frame.frame_number;
@@ -641,7 +643,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		}
 
 		for (int i = 0; i < frame.servers.size(); i++) {
-			const DebuggerMarshalls::ServerInfo &srv = frame.servers[i];
+			const ServersDebugger::ServerInfo &srv = frame.servers[i];
 			EditorProfiler::Metric::Category c;
 			const String name = srv.name;
 			c.name = name.capitalize();
@@ -708,14 +710,14 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			profiler->add_frame_metric(metric, true);
 		}
 
-	} else if (p_msg == "network:profile_frame") {
-		DebuggerMarshalls::NetworkProfilerFrame frame;
+	} else if (p_msg == "multiplayer:rpc") {
+		SceneDebugger::RPCProfilerFrame frame;
 		frame.deserialize(p_data);
 		for (int i = 0; i < frame.infos.size(); i++) {
 			network_profiler->add_node_frame_data(frame.infos[i]);
 		}
 
-	} else if (p_msg == "network:bandwidth") {
+	} else if (p_msg == "multiplayer:bandwidth") {
 		ERR_FAIL_COND(p_data.size() < 2);
 		network_profiler->set_bandwidth(p_data[0], p_data[1]);
 
@@ -831,6 +833,9 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					msg.push_back(cam->get_near());
 					msg.push_back(cam->get_far());
 					_put_msg("scene:override_camera_3D:transform", msg);
+				}
+				if (breaked) {
+					_put_msg("servers:draw", Array());
 				}
 			}
 
@@ -970,7 +975,8 @@ void ScriptEditorDebugger::_profiler_activate(bool p_enable, int p_type) {
 	data.push_back(p_enable);
 	switch (p_type) {
 		case PROFILER_NETWORK:
-			_put_msg("profiler:network", data);
+			_put_msg("profiler:multiplayer", data);
+			_put_msg("profiler:rpc", data);
 			break;
 		case PROFILER_VISUAL:
 			_put_msg("profiler:visual", data);

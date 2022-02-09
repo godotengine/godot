@@ -107,6 +107,10 @@ void SceneCacheInterface::process_simplify_path(int p_from, const uint8_t *p_pac
 	Ref<MultiplayerPeer> multiplayer_peer = multiplayer->get_multiplayer_peer();
 	ERR_FAIL_COND(multiplayer_peer.is_null());
 
+#ifdef DEBUG_ENABLED
+	multiplayer->profile_bandwidth("out", packet.size());
+#endif
+
 	multiplayer_peer->set_transfer_channel(0);
 	multiplayer_peer->set_transfer_mode(Multiplayer::TRANSFER_MODE_RELIABLE);
 	multiplayer_peer->set_target_peer(p_from);
@@ -187,6 +191,10 @@ bool SceneCacheInterface::_send_confirm_path(Node *p_node, NodePath p_path, Path
 
 		Ref<MultiplayerPeer> multiplayer_peer = multiplayer->get_multiplayer_peer();
 		ERR_FAIL_COND_V(multiplayer_peer.is_null(), false);
+
+#ifdef DEBUG_ENABLED
+		multiplayer->profile_bandwidth("out", packet.size() * peers_to_add.size());
+#endif
 
 		for (int &E : peers_to_add) {
 			multiplayer_peer->set_target_peer(E); // To all of you.

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  debugger_marshalls.h                                                 */
+/*  engine_profiler.cpp                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,45 +28,55 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef DEBUGGER_MARSHARLLS_H
-#define DEBUGGER_MARSHARLLS_H
+#include "engine_profiler.h"
 
-#include "core/object/script_language.h"
+#include "core/debugger/engine_debugger.h"
 
-struct DebuggerMarshalls {
-	struct ScriptStackVariable {
-		String name;
-		Variant value;
-		int type = -1;
+void EngineProfiler::_bind_methods() {
+	GDVIRTUAL_BIND(_toggle, "enable", "options");
+	GDVIRTUAL_BIND(_add_frame, "data");
+	GDVIRTUAL_BIND(_tick, "frame_time", "idle_time", "physics_time", "physics_frame_time");
+}
 
-		Array serialize(int max_size = 1 << 20); // 1 MiB default.
-		bool deserialize(const Array &p_arr);
-	};
+void EngineProfiler::toggle(bool p_enable, const Array &p_array) {
+	GDVIRTUAL_CALL(_toggle, p_enable, p_array);
+}
 
-	struct ScriptStackDump {
-		List<ScriptLanguage::StackInfo> frames;
-		ScriptStackDump() {}
+void EngineProfiler::add(const Array &p_data) {
+	GDVIRTUAL_CALL(_add_frame, p_data);
+}
 
-		Array serialize();
-		bool deserialize(const Array &p_arr);
-	};
+void EngineProfiler::tick(double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
+	GDVIRTUAL_CALL(_tick, p_frame_time, p_idle_time, p_physics_time, p_physics_frame_time);
+}
 
-	struct OutputError {
-		int hr = -1;
-		int min = -1;
-		int sec = -1;
-		int msec = -1;
-		String source_file;
-		String source_func;
-		int source_line = -1;
-		String error;
-		String error_descr;
-		bool warning = false;
-		Vector<ScriptLanguage::StackInfo> callstack;
+Error EngineProfiler::bind(const String &p_name) {
+	ERR_FAIL_COND_V(is_bound(), ERR_ALREADY_IN_USE);
+	EngineDebugger::Profiler prof(
+			this,
+			[](void *p_user, bool p_enable, const Array &p_opts) {
+				((EngineProfiler *)p_user)->toggle(p_enable, p_opts);
+			},
+			[](void *p_user, const Array &p_data) {
+				((EngineProfiler *)p_user)->add(p_data);
+			},
+			[](void *p_user, double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
+				((EngineProfiler *)p_user)->tick(p_frame_time, p_idle_time, p_physics_time, p_physics_frame_time);
+			});
+	registration = p_name;
+	EngineDebugger::register_profiler(p_name, prof);
+	return OK;
+}
 
-		Array serialize();
-		bool deserialize(const Array &p_arr);
-	};
-};
+Error EngineProfiler::unbind() {
+	ERR_FAIL_COND_V(!is_bound(), ERR_UNCONFIGURED);
+	EngineDebugger::unregister_profiler(registration);
+	registration.clear();
+	return OK;
+}
 
-#endif // DEBUGGER_MARSHARLLS_H
+EngineProfiler::~EngineProfiler() {
+	if (is_bound()) {
+		unbind();
+	}
+}

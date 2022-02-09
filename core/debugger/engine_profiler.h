@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  debugger_marshalls.h                                                 */
+/*  engine_profiler.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,45 +28,38 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef DEBUGGER_MARSHARLLS_H
-#define DEBUGGER_MARSHARLLS_H
+#ifndef ENGINE_PROFILER_H
+#define ENGINE_PROFILER_H
 
+#include "core/object/ref_counted.h"
+
+#include "core/object/gdvirtual.gen.inc"
 #include "core/object/script_language.h"
 
-struct DebuggerMarshalls {
-	struct ScriptStackVariable {
-		String name;
-		Variant value;
-		int type = -1;
+class EngineProfiler : public RefCounted {
+	GDCLASS(EngineProfiler, RefCounted);
 
-		Array serialize(int max_size = 1 << 20); // 1 MiB default.
-		bool deserialize(const Array &p_arr);
-	};
+private:
+	String registration;
 
-	struct ScriptStackDump {
-		List<ScriptLanguage::StackInfo> frames;
-		ScriptStackDump() {}
+protected:
+	static void _bind_methods();
 
-		Array serialize();
-		bool deserialize(const Array &p_arr);
-	};
+public:
+	virtual void toggle(bool p_enable, const Array &p_opts);
+	virtual void add(const Array &p_data);
+	virtual void tick(double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time);
 
-	struct OutputError {
-		int hr = -1;
-		int min = -1;
-		int sec = -1;
-		int msec = -1;
-		String source_file;
-		String source_func;
-		int source_line = -1;
-		String error;
-		String error_descr;
-		bool warning = false;
-		Vector<ScriptLanguage::StackInfo> callstack;
+	Error bind(const String &p_name);
+	Error unbind();
+	bool is_bound() const { return registration.length() > 0; }
 
-		Array serialize();
-		bool deserialize(const Array &p_arr);
-	};
+	GDVIRTUAL2(_toggle, bool, Array);
+	GDVIRTUAL1(_add_frame, Array);
+	GDVIRTUAL4(_tick, double, double, double, double);
+
+	EngineProfiler() {}
+	virtual ~EngineProfiler();
 };
 
-#endif // DEBUGGER_MARSHARLLS_H
+#endif // ENGINE_PROFILER_H

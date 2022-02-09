@@ -2376,21 +2376,18 @@ bool EngineDebugger::is_active() {
 	return ::EngineDebugger::is_active();
 }
 
-void EngineDebugger::register_profiler(const StringName &p_name, const Callable &p_toggle, const Callable &p_add, const Callable &p_tick) {
-	ERR_FAIL_COND_MSG(profilers.has(p_name) || has_profiler(p_name), "Profiler already registered: " + p_name);
-	profilers.insert(p_name, ProfilerCallable(p_toggle, p_add, p_tick));
-	ProfilerCallable &p = profilers[p_name];
-	::EngineDebugger::Profiler profiler(
-			&p,
-			&EngineDebugger::call_toggle,
-			&EngineDebugger::call_add,
-			&EngineDebugger::call_tick);
-	::EngineDebugger::register_profiler(p_name, profiler);
+void EngineDebugger::register_profiler(const StringName &p_name, Ref<EngineProfiler> p_profiler) {
+	ERR_FAIL_COND(p_profiler.is_null());
+	ERR_FAIL_COND_MSG(p_profiler->is_bound(), "Profiler already registered.");
+	ERR_FAIL_COND_MSG(profilers.has(p_name) || has_profiler(p_name), "Profiler name already in use: " + p_name);
+	Error err = p_profiler->bind(p_name);
+	ERR_FAIL_COND_MSG(err != OK, "Profiler failed to register with error: " + itos(err));
+	profilers.insert(p_name, p_profiler);
 }
 
 void EngineDebugger::unregister_profiler(const StringName &p_name) {
 	ERR_FAIL_COND_MSG(!profilers.has(p_name), "Profiler not registered: " + p_name);
-	::EngineDebugger::unregister_profiler(p_name);
+	profilers[p_name]->unbind();
 	profilers.erase(p_name);
 }
 
@@ -2435,45 +2432,6 @@ void EngineDebugger::send_message(const String &p_msg, const Array &p_data) {
 	::EngineDebugger::get_singleton()->send_message(p_msg, p_data);
 }
 
-void EngineDebugger::call_toggle(void *p_user, bool p_enable, const Array &p_opts) {
-	Callable &toggle = ((ProfilerCallable *)p_user)->callable_toggle;
-	if (toggle.is_null()) {
-		return;
-	}
-	Variant enable = p_enable, opts = p_opts;
-	const Variant *args[2] = { &enable, &opts };
-	Variant retval;
-	Callable::CallError err;
-	toggle.call(args, 2, retval, err);
-	ERR_FAIL_COND_MSG(err.error != Callable::CallError::CALL_OK, "Error calling 'toggle' to callable: " + Variant::get_callable_error_text(toggle, args, 2, err));
-}
-
-void EngineDebugger::call_add(void *p_user, const Array &p_data) {
-	Callable &add = ((ProfilerCallable *)p_user)->callable_add;
-	if (add.is_null()) {
-		return;
-	}
-	Variant data = p_data;
-	const Variant *args[1] = { &data };
-	Variant retval;
-	Callable::CallError err;
-	add.call(args, 1, retval, err);
-	ERR_FAIL_COND_MSG(err.error != Callable::CallError::CALL_OK, "Error calling 'add' to callable: " + Variant::get_callable_error_text(add, args, 1, err));
-}
-
-void EngineDebugger::call_tick(void *p_user, double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
-	Callable &tick = ((ProfilerCallable *)p_user)->callable_tick;
-	if (tick.is_null()) {
-		return;
-	}
-	Variant frame_time = p_frame_time, idle_time = p_idle_time, physics_time = p_physics_time, physics_frame_time = p_physics_frame_time;
-	const Variant *args[4] = { &frame_time, &idle_time, &physics_time, &physics_frame_time };
-	Variant retval;
-	Callable::CallError err;
-	tick.call(args, 4, retval, err);
-	ERR_FAIL_COND_MSG(err.error != Callable::CallError::CALL_OK, "Error calling 'tick' to callable: " + Variant::get_callable_error_text(tick, args, 4, err));
-}
-
 Error EngineDebugger::call_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured) {
 	Callable &capture = *(Callable *)p_user;
 	if (capture.is_null()) {
@@ -2495,10 +2453,6 @@ EngineDebugger::~EngineDebugger() {
 		::EngineDebugger::unregister_message_capture(E.key);
 	}
 	captures.clear();
-	for (const KeyValue<StringName, ProfilerCallable> &E : profilers) {
-		::EngineDebugger::unregister_profiler(E.key);
-	}
-	profilers.clear();
 }
 
 EngineDebugger *EngineDebugger::singleton = nullptr;
@@ -2506,8 +2460,9 @@ EngineDebugger *EngineDebugger::singleton = nullptr;
 void EngineDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_active"), &EngineDebugger::is_active);
 
-	ClassDB::bind_method(D_METHOD("register_profiler", "name", "toggle", "add", "tick"), &EngineDebugger::register_profiler);
+	ClassDB::bind_method(D_METHOD("register_profiler", "name", "profiler"), &EngineDebugger::register_profiler);
 	ClassDB::bind_method(D_METHOD("unregister_profiler", "name"), &EngineDebugger::unregister_profiler);
+
 	ClassDB::bind_method(D_METHOD("is_profiling", "name"), &EngineDebugger::is_profiling);
 	ClassDB::bind_method(D_METHOD("has_profiler", "name"), &EngineDebugger::has_profiler);
 

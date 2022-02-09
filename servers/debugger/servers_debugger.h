@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  debugger_marshalls.h                                                 */
+/*  servers_debugger.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,45 +28,105 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef DEBUGGER_MARSHARLLS_H
-#define DEBUGGER_MARSHARLLS_H
+#ifndef SERVER_DEBUGGER_H
+#define SERVER_DEBUGGER_H
 
-#include "core/object/script_language.h"
+#include "core/debugger/debugger_marshalls.h"
 
-struct DebuggerMarshalls {
-	struct ScriptStackVariable {
-		String name;
-		Variant value;
-		int type = -1;
+#include "servers/rendering_server.h"
 
-		Array serialize(int max_size = 1 << 20); // 1 MiB default.
-		bool deserialize(const Array &p_arr);
+class ServersDebugger {
+public:
+	// Memory usage
+	struct ResourceInfo {
+		String path;
+		String format;
+		String type;
+		RID id;
+		int vram = 0;
+		bool operator<(const ResourceInfo &p_img) const { return vram == p_img.vram ? id < p_img.id : vram > p_img.vram; }
 	};
 
-	struct ScriptStackDump {
-		List<ScriptLanguage::StackInfo> frames;
-		ScriptStackDump() {}
+	struct ResourceUsage {
+		List<ResourceInfo> infos;
 
 		Array serialize();
 		bool deserialize(const Array &p_arr);
 	};
 
-	struct OutputError {
-		int hr = -1;
-		int min = -1;
-		int sec = -1;
-		int msec = -1;
-		String source_file;
-		String source_func;
-		int source_line = -1;
-		String error;
-		String error_descr;
-		bool warning = false;
-		Vector<ScriptLanguage::StackInfo> callstack;
+	// Script Profiler
+	struct ScriptFunctionSignature {
+		StringName name;
+		int id = -1;
 
 		Array serialize();
 		bool deserialize(const Array &p_arr);
 	};
+
+	struct ScriptFunctionInfo {
+		StringName name;
+		int sig_id = -1;
+		int call_count = 0;
+		double self_time = 0;
+		double total_time = 0;
+	};
+
+	// Servers profiler
+	struct ServerFunctionInfo {
+		StringName name;
+		double time = 0;
+	};
+
+	struct ServerInfo {
+		StringName name;
+		List<ServerFunctionInfo> functions;
+	};
+
+	struct ServersProfilerFrame {
+		int frame_number = 0;
+		double frame_time = 0;
+		double idle_time = 0;
+		double physics_time = 0;
+		double physics_frame_time = 0;
+		double script_time = 0;
+		List<ServerInfo> servers;
+		Vector<ScriptFunctionInfo> script_functions;
+
+		Array serialize();
+		bool deserialize(const Array &p_arr);
+	};
+
+	// Visual Profiler
+	struct VisualProfilerFrame {
+		uint64_t frame_number = 0;
+		Vector<RS::FrameProfileArea> areas;
+
+		Array serialize();
+		bool deserialize(const Array &p_arr);
+	};
+
+private:
+	class ScriptsProfiler;
+	class ServersProfiler;
+	class VisualProfiler;
+
+	double last_draw_time = 0.0;
+	Ref<ServersProfiler> servers_profiler;
+	Ref<VisualProfiler> visual_profiler;
+
+	static ServersDebugger *singleton;
+
+	static Error _capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured);
+
+	void _send_resource_usage();
+
+	ServersDebugger();
+
+public:
+	static void initialize();
+	static void deinitialize();
+
+	~ServersDebugger();
 };
 
-#endif // DEBUGGER_MARSHARLLS_H
+#endif // SERVERS_DEBUGGER_H
