@@ -460,7 +460,7 @@ void SceneRPCInterface::rpcp(Object *p_obj, int p_peer_id, const StringName &p_m
 	uint16_t rpc_id = UINT16_MAX;
 	const Multiplayer::RPCConfig config = _get_rpc_config(node, p_method, rpc_id);
 	ERR_FAIL_COND_MSG(config.name == StringName(),
-			vformat("Unable to get the RPC configuration for the function \"%s\" at path: \"%s\". This happens when the method is not marked for RPCs.", p_method, node->get_path()));
+			vformat("Unable to get the RPC configuration for the function \"%s\" at path: \"%s\". This happens when the method is missing or not marked for RPCs in the local script.", p_method, node->get_path()));
 	if (p_peer_id == 0 || p_peer_id == node_id || (p_peer_id < 0 && p_peer_id != -node_id)) {
 		if (rpc_id & (1 << 15)) {
 			call_local_native = config.call_local;
