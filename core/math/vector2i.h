@@ -43,19 +43,25 @@ struct _NO_DISCARD_ Vector2i {
 	};
 
 	union {
-		int32_t x = 0;
-		int32_t width;
-	};
-	union {
-		int32_t y = 0;
-		int32_t height;
+		struct {
+			union {
+				int32_t x;
+				int32_t width;
+			};
+			union {
+				int32_t y;
+				int32_t height;
+			};
+		};
+
+		int32_t coord[2] = { 0 };
 	};
 
 	_FORCE_INLINE_ int32_t &operator[](int p_idx) {
-		return p_idx ? y : x;
+		return coord[p_idx];
 	}
 	_FORCE_INLINE_ const int32_t &operator[](int p_idx) const {
-		return p_idx ? y : x;
+		return coord[p_idx];
 	}
 
 	_FORCE_INLINE_ Vector2i::Axis min_axis_index() const {
