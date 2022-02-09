@@ -312,6 +312,30 @@ void EditorExportPlatformTVOS::get_export_options(List<ExportOption> *r_options)
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "plugins/" + found_plugins[i].name), false));
 	}
 
+	Set<String> plist_keys;
+
+	for (int i = 0; i < found_plugins.size(); i++) {
+		// Editable plugin plist values
+		PluginConfigTVOS plugin = found_plugins[i];
+		const String *K = nullptr;
+
+		while ((K = plugin.plist.next(K))) {
+			String key = *K;
+			PluginConfigTVOS::PlistItem item = plugin.plist[key];
+			switch (item.type) {
+				case PluginConfigTVOS::PlistItemType::STRING_INPUT: {
+					String preset_name = "plugins_plist/" + key;
+					if (!plist_keys.has(preset_name)) {
+						r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, preset_name), item.value));
+						plist_keys.insert(preset_name);
+					}
+				} break;
+				default:
+					continue;
+			}
+		}
+	}
+
 	plugins_changed.clear();
 	plugins = found_plugins;
 }
@@ -787,6 +811,8 @@ Error EditorExportPlatformTVOS::_export_tvos_plugins(const Ref<EditorExportPrese
 	Vector<String> added_embedded_dependenciy_names;
 	HashMap<String, String> plist_values;
 
+	Set<String> plugin_linker_flags;
+
 	Error err;
 
 	for (int i = 0; i < enabled_plugins.size(); i++) {
@@ -853,19 +879,41 @@ Error EditorExportPlatformTVOS::_export_tvos_plugins(const Ref<EditorExportPrese
 			p_config_data.capabilities.push_back(capability);
 		}
 
+		// Linker flags
+		// Checking duplicates
+		for (int j = 0; j < plugin.linker_flags.size(); j++) {
+			String linker_flag = plugin.linker_flags[j];
+			plugin_linker_flags.insert(linker_flag);
+		}
+
 		// Plist
 		// Using hash map container to remove duplicates
 		const String *K = nullptr;
 
 		while ((K = plugin.plist.next(K))) {
 			String key = *K;
-			String value = plugin.plist[key];
+			PluginConfigTVOS::PlistItem item = plugin.plist[key];
+
+			String value;
+
+			switch (item.type) {
+				case PluginConfigTVOS::PlistItemType::STRING_INPUT: {
+					String preset_name = "plugins_plist/" + key;
+					String input_value = p_preset->get(preset_name);
+					value = "<string>" + input_value + "</string>";
+				} break;
+				default:
+					value = item.value;
+					break;
+			}
 
 			if (key.empty() || value.empty()) {
 				continue;
 			}
 
-			plist_values[key] = value;
+			String plist_key = "<key>" + key + "</key>";
+
+			plist_values[plist_key] = value;
 		}
 
 		// CPP Code
@@ -892,7 +940,7 @@ Error EditorExportPlatformTVOS::_export_tvos_plugins(const Ref<EditorExportPrese
 				continue;
 			}
 
-			p_config_data.plist_content += "<key>" + key + "</key><string>" + value + "</string>\n";
+			p_config_data.plist_content += key + value + "\n";
 		}
 	}
 
@@ -933,6 +981,27 @@ Error EditorExportPlatformTVOS::_export_tvos_plugins(const Ref<EditorExportPrese
 
 		p_config_data.cpp_code += plugin_cpp_code.format(plugin_format, "$_");
 	}
+
+	// Update Linker Flag Values
+	{
+		String result_linker_flags = " ";
+		for (Set<String>::Element *E = plugin_linker_flags.front(); E; E = E->next()) {
+			const String &flag = E->get();
+
+			if (flag.length() == 0) {
+				continue;
+			}
+
+			if (result_linker_flags.length() > 0) {
+				result_linker_flags += ' ';
+			}
+
+			result_linker_flags += flag;
+		}
+		result_linker_flags = result_linker_flags.replace("\"", "\\\"");
+		p_config_data.linker_flags += result_linker_flags;
+	}
+
 	return OK;
 }
 
