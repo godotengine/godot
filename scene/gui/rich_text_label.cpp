@@ -1330,14 +1330,22 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 	}
 }
 
-float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Point2i &p_click, ItemFrame **r_click_frame, int *r_click_line, Item **r_click_item, int *r_click_char) {
+float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Point2i &p_click, ItemFrame **r_click_frame, int *r_click_line, Item **r_click_item, int *r_click_char, bool p_table) {
 	Vector2 off;
 
 	int char_pos = -1;
 	Line &l = p_frame->lines.write[p_line];
 	bool rtl = (l.text_buf->get_direction() == TextServer::DIRECTION_RTL);
 	bool lrtl = is_layout_rtl();
+
+	// Table hit test results.
 	bool table_hit = false;
+	Vector2i table_range;
+	float table_offy = 0.f;
+	ItemFrame *table_click_frame = nullptr;
+	int table_click_line = -1;
+	Item *table_click_item = nullptr;
+	int table_click_char = -1;
 
 	for (int line = 0; line < l.text_buf->get_line_count(); line++) {
 		RID rid = l.text_buf->get_line_rid(line);
@@ -1381,15 +1389,14 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 			Item *it = (Item *)(uint64_t)objects[i];
 			if (it != nullptr) {
 				Rect2 rect = TS->shaped_text_get_object_rect(rid, objects[i]);
-				if (rect.has_point(p_click - p_ofs - off)) {
+				rect.position += p_ofs + off;
+				if (p_click.y >= rect.position.y && p_click.y <= rect.position.y + rect.size.y) {
 					switch (it->type) {
 						case ITEM_TABLE: {
 							int hseparation = get_theme_constant(SNAME("table_hseparation"));
 							int vseparation = get_theme_constant(SNAME("table_vseparation"));
 
 							ItemTable *table = static_cast<ItemTable *>(it);
-
-							table_hit = true;
 
 							int idx = 0;
 							int col_count = table->columns.size();
@@ -1406,7 +1413,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 									if (rtl) {
 										coff.x = rect.size.width - table->columns[col].width - coff.x;
 									}
-									Rect2 crect = Rect2(p_ofs + off + rect.position + coff - frame->padding.position, Size2(table->columns[col].width + hseparation, table->rows[row] + vseparation) + frame->padding.position + frame->padding.size);
+									Rect2 crect = Rect2(rect.position + coff - frame->padding.position, Size2(table->columns[col].width + hseparation, table->rows[row] + vseparation) + frame->padding.position + frame->padding.size);
 									if (col == col_count - 1) {
 										if (rtl) {
 											crect.size.x = crect.position.x + crect.size.x;
@@ -1417,9 +1424,19 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 									}
 									if (crect.has_point(p_click)) {
 										for (int j = 0; j < frame->lines.size(); j++) {
-											_find_click_in_line(frame, j, p_ofs + off + rect.position + Vector2(0, frame->lines[j].offset.y), rect.size.x, p_click, r_click_frame, r_click_line, r_click_item, r_click_char);
-											if (((r_click_item != nullptr) && ((*r_click_item) != nullptr)) || ((r_click_frame != nullptr) && ((*r_click_frame) != nullptr))) {
-												return off.y;
+											_find_click_in_line(frame, j, rect.position + Vector2(0, frame->lines[j].offset.y), rect.size.x, p_click, &table_click_frame, &table_click_line, &table_click_item, &table_click_char, true);
+											if (table_click_frame && table_click_item) {
+												// Save cell detected cell hit data.
+												table_range = Vector2i(INT32_MAX, 0);
+												for (Item *F : table->subitems) {
+													ItemFrame *sub_frame = static_cast<ItemFrame *>(F);
+													for (int k = 0; k < sub_frame->lines.size(); k++) {
+														table_range.x = MIN(table_range.x, sub_frame->lines[k].char_offset);
+														table_range.y = MAX(table_range.y, sub_frame->lines[k].char_offset + sub_frame->lines[k].char_count);
+													}
+												}
+												table_offy = off.y;
+												table_hit = true;
 											}
 										}
 									}
@@ -1433,14 +1450,39 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 				}
 			}
 		}
-		Rect2 rect = Rect2(p_ofs + off - Vector2(0, TS->shaped_text_get_ascent(rid)), Size2(get_size().x, TS->shaped_text_get_size(rid).y));
+		Rect2 rect = Rect2(p_ofs + off - Vector2(0, TS->shaped_text_get_ascent(rid)) - p_frame->padding.position, TS->shaped_text_get_size(rid) + p_frame->padding.position + p_frame->padding.size);
+		if (p_table) {
+			rect.size.y += get_theme_constant(SNAME("table_vseparation"));
+		}
 
-		if (rect.has_point(p_click) && !table_hit) {
+		if (p_click.y >= rect.position.y && p_click.y <= rect.position.y + rect.size.y) {
 			char_pos = TS->shaped_text_hit_test_position(rid, p_click.x - rect.position.x);
 		}
+
+		// If table hit was detected, and line hit is in the table bounds use table hit.
+		if (table_hit && (((char_pos + p_frame->lines[p_line].char_offset) >= table_range.x && (char_pos + p_frame->lines[p_line].char_offset) <= table_range.y) || char_pos == -1)) {
+			if (r_click_frame != nullptr) {
+				*r_click_frame = table_click_frame;
+			}
+
+			if (r_click_line != nullptr) {
+				*r_click_line = table_click_line;
+			}
+
+			if (r_click_item != nullptr) {
+				*r_click_item = table_click_item;
+			}
+
+			if (r_click_char != nullptr) {
+				*r_click_char = table_click_char;
+			}
+			return table_offy;
+		}
+
 		off.y += TS->shaped_text_get_descent(rid) + l.text_buf->get_spacing_bottom() + get_theme_constant(SNAME("line_separation"));
 	}
 
+	// Text line hit.
 	if (char_pos >= 0) {
 		// Find item.
 		if (r_click_item != nullptr) {
@@ -1914,12 +1956,12 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 			selection.to_char = c_index;
 
 			bool swap = false;
-			if (selection.from_item->index > selection.to_item->index) {
-				swap = true;
-			} else if (selection.from_item->index == selection.to_item->index) {
-				if (selection.from_char > selection.to_char) {
+			if (selection.click_frame && c_frame) {
+				const Line &l1 = c_frame->lines[c_line];
+				const Line &l2 = selection.click_frame->lines[selection.click_line];
+				if (l1.char_offset + c_index < l2.char_offset + selection.click_char) {
 					swap = true;
-				} else if (selection.from_char == selection.to_char) {
+				} else if (l1.char_offset + c_index == l2.char_offset + selection.click_char) {
 					deselect();
 					return;
 				}
