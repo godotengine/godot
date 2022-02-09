@@ -743,7 +743,7 @@ void PopupMenu::_notification(int p_what) {
 					continue;
 				}
 
-				Node *n = get_node(items[i].submenu);
+				Node *n = get_node_or_null(items[i].submenu);
 				if (!n) {
 					continue;
 				}
