@@ -109,6 +109,11 @@ class DisplayServerWayland : public DisplayServer {
 		struct xkb_context *xkb_context = nullptr;
 		struct xkb_keymap *xkb_keymap = nullptr;
 		struct xkb_state *xkb_state = nullptr;
+
+		bool shift_pressed = false;
+		bool ctrl_pressed = false;
+		bool alt_pressed = false;
+		bool meta_pressed = false;
 	};
 
 	struct SeatState {
@@ -150,6 +155,8 @@ class DisplayServerWayland : public DisplayServer {
 	VulkanContextWayland *context_vulkan = nullptr;
 	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
 #endif
+
+	static void _get_key_modifier_state(KeyboardState &ks, Ref<InputEventWithModifiers> state);
 
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
 

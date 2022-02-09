@@ -50,6 +50,14 @@ void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event)
 	}
 }
 
+// Adapted from DisplayServerX11.
+void DisplayServerWayland::_get_key_modifier_state(KeyboardState &ks, Ref<InputEventWithModifiers> state) {
+	state->set_shift_pressed(ks.shift_pressed);
+	state->set_ctrl_pressed(ks.ctrl_pressed);
+	state->set_alt_pressed(ks.alt_pressed);
+	state->set_meta_pressed(ks.meta_pressed);
+}
+
 DisplayServerWayland::WindowID DisplayServerWayland::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
 	MutexLock mutex_lock(wls.mutex);
 
@@ -282,6 +290,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 	MutexLock mutex_lock(wls->mutex);
 
 	PointerState &ps = wls->seat_state.pointer_state;
+	KeyboardState &ks = wls->seat_state.keyboard_state;
 
 	PointerData &old_pd = ps.data;
 	PointerData &pd = ps.data_buffer;
@@ -294,8 +303,11 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 			// We need to use Ref's custom `->` operator, so we have to necessarily
 			// dereference its pointer.
 			Ref<InputEventMouseMotion> &mm = *memnew(Ref<InputEventMouseMotion>);
-
 			mm.instantiate();
+
+			// Set all pressed modifiers.
+			_get_key_modifier_state(ks, mm);
+
 			mm->set_window_id(pd.focused_window_id);
 			mm->set_button_mask(pd.pressed_button_mask);
 			mm->set_position(pd.position);
@@ -310,6 +322,12 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 
 			mm->set_relative(pd.position - old_pd.position);
 
+			// TODO: Perhaps move this into a separate function?
+			mm->set_shift_pressed(ks.shift_pressed);
+			mm->set_ctrl_pressed(ks.ctrl_pressed);
+			mm->set_alt_pressed(ks.alt_pressed);
+			mm->set_meta_pressed(ks.meta_pressed);
+
 			msg.data = &mm;
 			wls->message_queue.push_back(msg);
 		}
@@ -317,7 +335,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 		if (old_pd.pressed_button_mask != pd.pressed_button_mask) {
 			MouseButton pressed_mask_delta = old_pd.pressed_button_mask ^ pd.pressed_button_mask;
 
-			// This is the cleanest and simplest approach I could find to avoid writing the same code 8 times.
+			// This is the cleanest and simplest approach I could find to avoid writing the same code 7 times.
 			for (MouseButton test_button : {MouseButton::LEFT, MouseButton::MIDDLE, MouseButton::RIGHT,
 					MouseButton::WHEEL_UP, MouseButton::WHEEL_DOWN, MouseButton::WHEEL_LEFT,
 					MouseButton::WHEEL_RIGHT}) {
@@ -330,8 +348,11 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 					// We need to use Ref's custom `->` operator, so we have to necessarily
 					// dereference its pointer.
 					Ref<InputEventMouseButton> &mb = *memnew(Ref<InputEventMouseButton>);
-
 					mb.instantiate();
+
+					// Set all pressed modifiers.
+					_get_key_modifier_state(ks, mb);
+
 					mb->set_window_id(pd.focused_window_id);
 					mb->set_position(pd.position);
 					// FIXME: We're lying!
@@ -360,8 +381,6 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 							|| test_button == MouseButton::WHEEL_DOWN
 							|| test_button == MouseButton::WHEEL_LEFT
 							|| test_button == MouseButton::WHEEL_RIGHT) {
-
-
 						WaylandMessage msg_up;
 						msg_up.type = TYPE_INPUT_EVENT;
 
@@ -369,6 +388,11 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 						// This works for now, despite being horrible.
 						Ref<InputEventMouseButton> &mb_up = *memnew(Ref<InputEventMouseButton>);
 						mb_up.instantiate();
+
+
+						// Set all pressed modifiers.
+						_get_key_modifier_state(ks, mb);
+
 						mb_up->set_window_id(pd.focused_window_id);
 						mb_up->set_position(pd.position);
 						// FIXME: We're lying!
@@ -445,7 +469,7 @@ void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *w
 	WaylandState *wls = (WaylandState*) data;
 	MutexLock mutex_lock(wls->mutex);
 
-	KeyboardState &keyboard_state = wls->seat_state.keyboard_state;
+	KeyboardState &ks = wls->seat_state.keyboard_state;
 
 	// We have to add 8 to the scancode to get an XKB-compatible keycode.
 	xkb_keycode_t xkb_keycode = key + 8;
@@ -453,7 +477,7 @@ void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *w
 	bool pressed = state & WL_KEYBOARD_KEY_STATE_PRESSED;
 
 	// TODO: Handle keys that release multiple symbols?
-	Key keycode = KeyMappingXKB::get_keycode(xkb_state_key_get_one_sym(keyboard_state.xkb_state, xkb_keycode));
+	Key keycode = KeyMappingXKB::get_keycode(xkb_state_key_get_one_sym(ks.xkb_state, xkb_keycode));
 	Key physical_keycode = KeyMappingXKB::get_scancode(xkb_keycode);
 
 	// TODO: Simplify into its own function and move into enter and leave events.
@@ -462,7 +486,7 @@ void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *w
 	for (KeyValue<WindowID, WindowData> &E : wls->windows) {
 		WindowData &wd = E.value;
 
-		if (wd.wl_surface == keyboard_state.focused_wl_surface) {
+		if (wd.wl_surface == ks.focused_wl_surface) {
 			focused_window_id = E.key;
 			id_found = true;
 			break;
@@ -481,9 +505,12 @@ void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *w
 		k->set_window_id(focused_window_id);
 	}
 
+	// Set all pressed modifiers.
+	_get_key_modifier_state(ks, k);
+
 	k->set_keycode(keycode);
 	k->set_physical_keycode(physical_keycode);
-	k->set_unicode(xkb_state_key_get_utf32(keyboard_state.xkb_state, xkb_keycode));
+	k->set_unicode(xkb_state_key_get_utf32(ks.xkb_state, xkb_keycode));
 	k->set_pressed(pressed);
 	k->set_echo(false);
 
@@ -503,9 +530,14 @@ void DisplayServerWayland::_wl_keyboard_on_modifiers(void *data, struct wl_keybo
 	WaylandState *wls = (WaylandState*) data;
 	MutexLock mutex_lock(wls->mutex);
 
-	KeyboardState &keyboard_state = wls->seat_state.keyboard_state;
+	KeyboardState &ks = wls->seat_state.keyboard_state;
 
-	xkb_state_update_mask(keyboard_state.xkb_state, mods_depressed, mods_latched, mods_locked, 0, 0, group);
+	xkb_state_update_mask(ks.xkb_state, mods_depressed, mods_latched, mods_locked, 0, 0, group);
+
+	ks.shift_pressed = xkb_state_mod_name_is_active(ks.xkb_state, XKB_MOD_NAME_SHIFT, XKB_STATE_MODS_DEPRESSED);
+	ks.ctrl_pressed = xkb_state_mod_name_is_active(ks.xkb_state, XKB_MOD_NAME_CTRL, XKB_STATE_MODS_DEPRESSED);
+	ks.alt_pressed = xkb_state_mod_name_is_active(ks.xkb_state, XKB_MOD_NAME_ALT, XKB_STATE_MODS_DEPRESSED);
+	ks.meta_pressed = xkb_state_mod_name_is_active(ks.xkb_state, XKB_MOD_NAME_LOGO, XKB_STATE_MODS_DEPRESSED);
 }
 
 void DisplayServerWayland::_wl_keyboard_on_repeat_info(void *data, struct wl_keyboard *wl_keyboard, int32_t rate, int32_t delay) {
