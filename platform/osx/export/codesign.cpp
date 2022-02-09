@@ -1359,9 +1359,12 @@ Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const 
 
 	// Generate common signature structures.
 	if (id.is_empty()) {
-		Ref<Crypto> crypto = Ref<Crypto>(Crypto::create());
-		PackedByteArray uuid = crypto->generate_random_bytes(16);
-		id = (String("a-55554944") /*a-UUID*/ + String::hex_encode_buffer(uuid.ptr(), 16));
+		CryptoCore::RandomGenerator rng;
+		ERR_FAIL_COND_V_MSG(rng.init(), FAILED, "Failed to initialize random number generator.");
+		uint8_t uuid[16];
+		Error err = rng.get_random_bytes(uuid, 16);
+		ERR_FAIL_COND_V_MSG(err, err, "Failed to generate UUID.");
+		id = (String("a-55554944") /*a-UUID*/ + String::hex_encode_buffer(uuid, 16));
 	}
 	CharString uuid_str = id.utf8();
 	print_verbose(vformat("CodeSign: Used bundle ID: %s", id));
