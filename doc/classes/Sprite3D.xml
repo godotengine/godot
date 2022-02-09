@@ -29,6 +29,9 @@
 		<member name="normal_map" type="Texture" setter="set_normal_map" getter="get_normal_map">
 			[Texture2D] object to be used as the normal map.
 		</member>
+		<member name="normal_scale" type="float" setter="set_normal_scale" getter="get_normal_scale" default="1.0">
+			The strength of the normal map's effect.
+		</member>
 		<member name="vframes" type="int" setter="set_vframes" getter="get_vframes" default="1">
 			The number of rows in the sprite sheet.
 		</member>
