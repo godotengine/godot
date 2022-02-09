@@ -40,7 +40,6 @@
 #include "core/os/os.h"
 #include "core/string/translation.h"
 #include "core/version.h"
-#include "core/version_hash.gen.h"
 #include "editor/editor_vcs_interface.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
