@@ -273,9 +273,9 @@ Error VulkanContext::_obtain_vulkan_version() {
 		uint32_t api_version;
 		VkResult res = func(&api_version);
 		if (res == VK_SUCCESS) {
-			vulkan_major = VK_VERSION_MAJOR(api_version);
-			vulkan_minor = VK_VERSION_MINOR(api_version);
-			vulkan_patch = VK_VERSION_PATCH(api_version);
+			vulkan_major = VK_API_VERSION_MAJOR(api_version);
+			vulkan_minor = VK_API_VERSION_MINOR(api_version);
+			vulkan_patch = VK_API_VERSION_PATCH(api_version);
 		} else {
 			// according to the documentation this shouldn't fail with anything except a memory allocation error
 			// in which case we're in deep trouble anyway
