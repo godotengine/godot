@@ -1877,8 +1877,13 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
+		const Key code = k->get_keycode();
+		if (code == Key::ESCAPE) {
+			_clear_selected();
+			return;
+		}
+
 		if (EditorSettings::get_singleton()->get("editors/3d/navigation/emulate_numpad")) {
-			const Key code = k->get_keycode();
 			if (code >= Key::KEY_0 && code <= Key::KEY_9) {
 				k->set_keycode(code - Key::KEY_0 + Key::KP_0);
 			}
