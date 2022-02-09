@@ -736,26 +736,7 @@ void PopupMenu::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_THEME_CHANGED:
-		case Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
-			// Pass the layout direction to all submenus.
-			for (int i = 0; i < items.size(); i++) {
-				if (items[i].submenu.is_empty()) {
-					continue;
-				}
-
-				Node *n = get_node(items[i].submenu);
-				if (!n) {
-					continue;
-				}
-
-				PopupMenu *pm = Object::cast_to<PopupMenu>(n);
-				if (pm) {
-					pm->set_layout_direction(get_layout_direction());
-				}
-			}
-
-			[[fallthrough]];
-		}
+		case Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			for (int i = 0; i < items.size(); i++) {
 				items.write[i].xl_text = atr(items[i].text);

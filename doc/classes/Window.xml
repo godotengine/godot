@@ -435,7 +435,7 @@
 		<constant name="CONTENT_SCALE_ASPECT_EXPAND" value="4" enum="ContentScaleAspect">
 		</constant>
 		<constant name="LAYOUT_DIRECTION_INHERITED" value="0" enum="LayoutDirection">
-			Automatic layout direction, determined from the parent control layout direction.
+			Automatic layout direction, determined from the parent window layout direction.
 		</constant>
 		<constant name="LAYOUT_DIRECTION_LOCALE" value="1" enum="LayoutDirection">
 			Automatic layout direction, determined from the current locale.
