@@ -842,7 +842,7 @@ void DisplayServerWayland::window_set_position(const Point2i &p_position, Displa
 	wd.rect.position = p_position;
 
 	// FIXME: The size may be changed after a reposition, I believe.
-	xdg_surface_set_window_geometry(wd.xdg_surface, wd.rect.position.x, wd.rect.position.y, wd.rect.size.width, wd.rect.size.height);
+	xdg_surface_set_window_geometry(wd.xdg_surface, 0, 0, wd.rect.size.width, wd.rect.size.height);
 	wl_surface_commit(wd.wl_surface);
 }
 
