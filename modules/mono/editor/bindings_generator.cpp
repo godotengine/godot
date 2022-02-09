@@ -415,6 +415,11 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 				}
 			} else if (link_tag == "constant") {
 				if (!target_itype || !target_itype->is_object_type) {
+					// Search in @GlobalScope as a last resort if no class was specified
+					if (link_target_parts.size() == 1) {
+						goto find_constant_in_global_scope;
+					}
+
 					if (OS::get_singleton()->is_stdout_verbose()) {
 						if (target_itype) {
 							OS::get_singleton()->print("Cannot resolve constant reference for non-Godot.Object type in documentation: %s\n", link_target.utf8().get_data());
@@ -428,6 +433,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 					xml_output.append(link_target);
 					xml_output.append("</c>");
 				} else if (!target_itype && target_cname == name_cache.type_at_GlobalScope) {
+				find_constant_in_global_scope:
 					const String target_name = (String)target_cname;
 
 					// Try to find as a global constant
@@ -498,6 +504,11 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 							xml_output.append(target_iconst->proxy_name);
 							xml_output.append("\"/>");
 						} else {
+							// Also search in @GlobalScope as a last resort if no class was specified
+							if (link_target_parts.size() == 1) {
+								goto find_constant_in_global_scope;
+							}
+
 							ERR_PRINT("Cannot resolve constant reference in documentation: '" + link_target + "'.");
 
 							xml_output.append("<c>");
