@@ -336,7 +336,7 @@ static const float earth_gravity = 9.80665;
 	}
 }
 
-- (void)touchesBegan:(NSSet *)touchesSet withEvent:(UIEvent *)event {
+- (void)godotTouchesBegan:(NSSet *)touchesSet withEvent:(UIEvent *)event {
 	NSArray *tlist = [event.allTouches allObjects];
 	for (unsigned int i = 0; i < [tlist count]; i++) {
 		if ([touchesSet containsObject:[tlist objectAtIndex:i]]) {
@@ -349,7 +349,7 @@ static const float earth_gravity = 9.80665;
 	}
 }
 
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
+- (void)godotTouchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
 	NSArray *tlist = [event.allTouches allObjects];
 	for (unsigned int i = 0; i < [tlist count]; i++) {
 		if ([touches containsObject:[tlist objectAtIndex:i]]) {
@@ -363,7 +363,7 @@ static const float earth_gravity = 9.80665;
 	}
 }
 
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
+- (void)godotTouchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
 	NSArray *tlist = [event.allTouches allObjects];
 	for (unsigned int i = 0; i < [tlist count]; i++) {
 		if ([touches containsObject:[tlist objectAtIndex:i]]) {
@@ -377,7 +377,7 @@ static const float earth_gravity = 9.80665;
 	}
 }
 
-- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
+- (void)godotTouchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
 	NSArray *tlist = [event.allTouches allObjects];
 	for (unsigned int i = 0; i < [tlist count]; i++) {
 		if ([touches containsObject:[tlist objectAtIndex:i]]) {
