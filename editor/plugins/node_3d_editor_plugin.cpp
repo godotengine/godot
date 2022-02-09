@@ -886,15 +886,13 @@ void Node3DEditorViewport::_update_name() {
 	view_menu->reset_size();
 }
 
-void Node3DEditorViewport::_compute_edit(const Point2 &p_point, const bool p_auto_center) {
+void Node3DEditorViewport::_compute_edit(const Point2 &p_point) {
 	_edit.original_local = spatial_editor->are_local_coords_enabled();
 	_edit.click_ray = _get_ray(p_point);
 	_edit.click_ray_pos = _get_ray_pos(p_point);
 	_edit.plane = TRANSFORM_VIEW;
-	if (p_auto_center) {
-		_edit.center = spatial_editor->get_gizmo_transform().origin;
-	}
 	spatial_editor->update_transform_gizmo();
+	_edit.center = spatial_editor->get_gizmo_transform().origin;
 
 	Node3D *selected = spatial_editor->get_single_selected_node();
 	Node3DEditorSelectedItem *se = selected ? editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(selected) : nullptr;
@@ -1366,7 +1364,6 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	_edit.center = spatial_editor->get_gizmo_target_center();
 	Ref<InputEventMouseButton> b = p_event;
 
 	if (b.is_valid()) {
@@ -3367,7 +3364,7 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 
 	Transform3D xform = spatial_editor->get_gizmo_transform();
 
-	const Transform3D camera_xform = camera->get_transform();
+	Transform3D camera_xform = camera->get_transform();
 
 	if (xform.origin.is_equal_approx(camera_xform.origin)) {
 		for (int i = 0; i < 3; i++) {
@@ -3386,62 +3383,10 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 	const Vector3 camz = -camera_xform.get_basis().get_axis(2).normalized();
 	const Vector3 camy = -camera_xform.get_basis().get_axis(1).normalized();
 	const Plane p = Plane(camz, camera_xform.origin);
-	const real_t gizmo_d = CLAMP(Math::abs(p.distance_to(xform.origin)), camera->get_near() * 2, camera->get_far() / 2);
+	const real_t gizmo_d = MAX(Math::abs(p.distance_to(xform.origin)), CMP_EPSILON);
 	const real_t d0 = camera->unproject_position(camera_xform.origin + camz * gizmo_d).y;
 	const real_t d1 = camera->unproject_position(camera_xform.origin + camz * gizmo_d + camy).y;
 	const real_t dd = MAX(Math::abs(d0 - d1), CMP_EPSILON);
-
-	// This code ensures the gizmo stays on the screen. This includes if
-	// the gizmo would otherwise be behind the camera, to the sides of
-	// the camera, too close to the edge of the screen, too close to
-	// the camera, or too far away from the camera. First we calculate
-	// where the gizmo would go on screen, then we put it there.
-	const Vector3 object_position = spatial_editor->get_gizmo_target_center();
-	Vector2 gizmo_screen_position = camera->unproject_position(object_position);
-	const Vector2 viewport_size = viewport->get_size();
-	// We would use "camera.is_position_behind(parent_translation)" instead of dot,
-	// except that it also accounts for the near clip plane, which we don't want.
-	const bool is_in_front = camera_xform.basis.get_column(2).dot(object_position - camera_xform.origin) < 0;
-	const bool is_in_viewport = is_in_front && Rect2(Vector2(0, 0), viewport_size).has_point(gizmo_screen_position);
-	if (spatial_editor->is_keep_gizmo_onscreen_enabled()) {
-		if (!spatial_editor->is_gizmo_visible() || is_in_viewport) {
-			// In this case, the gizmo is either not visible, or in the viewport
-			// already, so we should hide the offscreen line.
-			gizmo_offscreen_line->hide();
-		} else {
-			// In this case, the point is not "normally" on screen, and
-			// it should be placed in the center.
-			const Vector2 half_viewport_size = viewport_size / 2;
-			gizmo_screen_position = half_viewport_size;
-			// The rest of this is for drawing the offscreen line.
-			// One point goes in the center of the viewport.
-			// Calculate where to put the other point of the line.
-			Vector2 unprojected_position = camera->unproject_position(object_position);
-			if (!is_in_front) {
-				// When the object is behind, we need to flip and grow the line.
-				unprojected_position -= half_viewport_size;
-				unprojected_position = unprojected_position.normalized() * -half_viewport_size.length_squared();
-				unprojected_position += half_viewport_size;
-			}
-			gizmo_offscreen_line->point1 = half_viewport_size;
-			gizmo_offscreen_line->point2 = unprojected_position;
-			gizmo_offscreen_line->update();
-			gizmo_offscreen_line->show();
-		}
-		// Update the gizmo's position using what we calculated.
-		xform.origin = camera->project_position(gizmo_screen_position, gizmo_d);
-	} else {
-		// In this case, the user does not want the gizmo to be
-		// kept on screen, so we should hide the offscreen line,
-		// and just use the gizmo's unmodified position.
-		gizmo_offscreen_line->hide();
-		if (is_in_viewport) {
-			xform.origin = camera->project_position(gizmo_screen_position, gizmo_d);
-		} else {
-			xform.origin = object_position;
-		}
-	}
-	spatial_editor->set_gizmo_transform(xform);
 
 	const real_t gizmo_size = EditorSettings::get_singleton()->get("editors/3d/manipulator_gizmo_size");
 	// At low viewport heights, multiply the gizmo scale based on the viewport height.
@@ -3451,6 +3396,7 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 			(gizmo_size / Math::abs(dd)) * MAX(1, EDSCALE) *
 			MIN(viewport_base_height, subviewport_container->get_size().height) / viewport_base_height /
 			subviewport_container->get_stretch_shrink();
+	Vector3 scale = Vector3(1, 1, 1) * gizmo_scale;
 
 	// if the determinant is zero, we should disable the gizmo from being rendered
 	// this prevents supplying bad values to the renderer and then having to filter it out again
@@ -3472,7 +3418,7 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 		if (xform.basis.get_axis(i).normalized().dot(xform.basis.get_axis((i + 1) % 3).normalized()) < 1.0) {
 			axis_angle = axis_angle.looking_at(xform.basis.get_axis(i).normalized(), xform.basis.get_axis((i + 1) % 3).normalized());
 		}
-		axis_angle.basis *= gizmo_scale;
+		axis_angle.basis.scale(scale);
 		axis_angle.origin = xform.origin;
 		RenderingServer::get_singleton()->instance_set_transform(move_gizmo_instance[i], axis_angle);
 		RenderingServer::get_singleton()->instance_set_visible(move_gizmo_instance[i], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
@@ -3495,7 +3441,7 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 
 	// Rotation white outline
 	xform.orthonormalize();
-	xform.basis *= gizmo_scale;
+	xform.basis.scale(scale);
 	RenderingServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[3], xform);
 	RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE));
 }
@@ -4077,7 +4023,7 @@ void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_
 void Node3DEditorViewport::begin_transform(TransformMode p_mode, bool instant) {
 	if (get_selected_count() > 0) {
 		_edit.mode = p_mode;
-		_compute_edit(_edit.mouse_pos, false);
+		_compute_edit(_edit.mouse_pos);
 		_edit.instant = instant;
 		_edit.snap = spatial_editor->is_snap_enabled();
 	}
@@ -4480,14 +4426,15 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	zoom_indicator_delay = 0.0;
 
 	spatial_editor = p_spatial_editor;
-	subviewport_container = memnew(SubViewportContainer);
-	subviewport_container->set_stretch(true);
-	add_child(subviewport_container);
-	subviewport_container->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	SubViewportContainer *c = memnew(SubViewportContainer);
+	subviewport_container = c;
+	c->set_stretch(true);
+	add_child(c);
+	c->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	viewport = memnew(SubViewport);
 	viewport->set_disable_input(true);
 
-	subviewport_container->add_child(viewport);
+	c->add_child(viewport);
 	surface = memnew(Control);
 	surface->set_drag_forwarding(this);
 	add_child(surface);
@@ -4499,9 +4446,6 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	viewport->add_child(camera);
 	camera->make_current();
 	surface->set_focus_mode(FOCUS_ALL);
-
-	gizmo_offscreen_line = memnew(GizmoOffScreenLine);
-	subviewport_container->add_child(gizmo_offscreen_line);
 
 	VBoxContainer *vbox = memnew(VBoxContainer);
 	surface->add_child(vbox);
@@ -5127,7 +5071,6 @@ void Node3DEditor::update_transform_gizmo() {
 	gizmo.visible = count > 0;
 	gizmo.transform.origin = (count > 0) ? gizmo_center / count : Vector3();
 	gizmo.transform.basis = (count == 1) ? gizmo_basis : Basis();
-	gizmo.target_center = gizmo_center / count;
 
 	for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {
 		viewports[i]->update_transform_gizmo_view();
@@ -5280,7 +5223,6 @@ Dictionary Node3DEditor::get_state() const {
 
 	d["show_grid"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_GRID));
 	d["show_origin"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN));
-	d["keep_gizmo_onscreen"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_KEEP_GIZMO_ONSCREEN));
 	d["fov"] = get_fov();
 	d["znear"] = get_znear();
 	d["zfar"] = get_zfar();
@@ -5403,13 +5345,6 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 		if (use != view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN))) {
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN), use);
 			RenderingServer::get_singleton()->instance_set_visible(origin_instance, use);
-		}
-	}
-	if (d.has("keep_gizmo_onscreen")) {
-		bool use = d["keep_gizmo_onscreen"];
-
-		if (use != view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_KEEP_GIZMO_ONSCREEN))) {
-			_menu_item_pressed(MENU_KEEP_GIZMO_ONSCREEN);
 		}
 	}
 
@@ -5765,13 +5700,7 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 			_init_grid();
 
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(p_option), grid_enabled);
-		} break;
-		case MENU_KEEP_GIZMO_ONSCREEN: {
-			keep_gizmo_onscreen = !view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(p_option));
-			for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {
-				get_editor_viewport(i)->update_transform_gizmo_view();
-			}
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(p_option), keep_gizmo_onscreen);
+
 		} break;
 		case MENU_VIEW_CAMERA_SETTINGS: {
 			settings_dialog->popup_centered(settings_vbc->get_combined_minimum_size() + Size2(50, 50));
@@ -7756,14 +7685,12 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	p->add_separator();
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_origin", TTR("View Origin")), MENU_VIEW_ORIGIN);
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_grid", TTR("View Grid"), Key::NUMBERSIGN), MENU_VIEW_GRID);
-	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/keep_gizmo_onscreen", TTR("Keep Gizmo On Screen"), KeyModifierMask::CMD + KeyModifierMask::ALT + Key::G), MENU_KEEP_GIZMO_ONSCREEN);
 
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/settings", TTR("Settings...")), MENU_VIEW_CAMERA_SETTINGS);
 
 	p->set_item_checked(p->get_item_index(MENU_VIEW_ORIGIN), true);
 	p->set_item_checked(p->get_item_index(MENU_VIEW_GRID), true);
-	p->set_item_checked(p->get_item_index(MENU_KEEP_GIZMO_ONSCREEN), true);
 
 	p->connect("id_pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed));
 
