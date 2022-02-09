@@ -6184,6 +6184,13 @@ void RasterizerStorageGLES2::initialize() {
 	config.pvrtc_supported = config.extensions.has("GL_IMG_texture_compression_pvrtc") || config.extensions.has("WEBGL_compressed_texture_pvrtc");
 	config.support_npot_repeat_mipmap = config.extensions.has("GL_OES_texture_npot");
 
+	// If the desktop build is using S3TC, and you export / run from the IDE for android, if the device supports
+	// S3TC it will crash trying to load these textures, as they are not exported in the APK. This is a simple way
+	// to prevent Android devices trying to load S3TC, by faking lack of hardware support.
+#if defined(ANDROID_ENABLED) || defined(IPHONE_ENABLED)
+	config.s3tc_supported = false;
+#endif
+
 #ifdef JAVASCRIPT_ENABLED
 	// RenderBuffer internal format must be 16 bits in WebGL,
 	// but depth_texture should default to 32 always
