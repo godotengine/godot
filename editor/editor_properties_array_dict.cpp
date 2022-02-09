@@ -638,6 +638,10 @@ void EditorPropertyArray::_reorder_button_gui_input(const Ref<InputEvent> &p_eve
 			vbox->move_child(reorder_selected_element_hbox, reorder_to_index % page_length + 2);
 			// Ensure the moving element is visible.
 			InspectorDock::get_inspector_singleton()->ensure_control_visible(reorder_selected_element_hbox);
+
+			if ((reorder_to_index == 0 && reorder_mouse_y_delta < 0.0f) || (reorder_to_index == size - 1 && reorder_mouse_y_delta > 0.0f)) {
+				reorder_mouse_y_delta = 0;
+			}
 		}
 	}
 }
