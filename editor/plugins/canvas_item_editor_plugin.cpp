@@ -5955,8 +5955,6 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 							continue;
 						}
 						memdelete(instantiated_scene);
-					} else {
-						continue;
 					}
 					can_instantiate = true;
 					break;
