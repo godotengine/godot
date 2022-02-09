@@ -26,7 +26,12 @@ if "vulkan" in env and env["vulkan"]:
 if "udev" in env and env["udev"]:
     common_linuxbsd.append("libudev-so_wrap.c")
 
-prog = env.add_program("#bin/godot", ["godot_linuxbsd.cpp"] + common_linuxbsd)
+if env.get("sharedlibs"):
+    obj_suffix = env["SHOBJSUFFIX"]
+else:
+    obj_suffix = env["OBJSUFFIX"]
+
+prog = env.add_program("#bin/godot", ["godot_linuxbsd.cpp"] + common_linuxbsd, OBJSUFFIX=obj_suffix)
 
 if env["debug_symbols"] and env["separate_debug_symbols"]:
     env.AddPostAction(prog, run_in_subprocess(platform_linuxbsd_builders.make_debug_linuxbsd))

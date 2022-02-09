@@ -13,6 +13,7 @@ SConscript("rendering/SCsub")
 SConscript("audio/SCsub")
 SConscript("text/SCsub")
 
-lib = env.add_library("servers", env.servers_sources)
+servers_env = env.Clone()
 
+lib = servers_env.add_library("servers", env.servers_sources)
 env.Prepend(LIBS=[lib])

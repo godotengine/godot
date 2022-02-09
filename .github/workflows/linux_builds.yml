@@ -59,6 +59,15 @@ jobs:
             sconsflags: modules_enabled_by_default=no disable_3d=yes disable_advanced_gui=yes deprecated=no minizip=no
             artifact: true
 
+          - name: Editor Shared Build (target=release_debug, tools=yes, tests=yes, sharedlibs=yes)
+            cache-name: linux-editor-shared
+            target: release_debug
+            tools: true
+            tests: true
+            sconsflags: sharedlibs=yes
+            bin: "./bin/godot.linuxbsd.opt.tools.64"
+            artifact: false
+
     steps:
       - uses: actions/checkout@v2
 

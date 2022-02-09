@@ -28,12 +28,13 @@ test_headers = []
 # libmodule_<name>.a for each active module.
 for name, path in env.module_list.items():
     env.modules_sources = []
+    env_module = env_modules.Clone()
 
     # Name for built-in modules, (absolute) path for custom ones.
     base_path = path if os.path.isabs(path) else name
-    SConscript(base_path + "/SCsub")
+    SConscript(base_path + "/SCsub", exports={"env_module": env_module})
 
-    lib = env_modules.add_library("module_%s" % name, env.modules_sources)
+    lib = env_module.add_library("module_%s" % name, env.modules_sources)
     env.Prepend(LIBS=[lib])
     if env["vsproj"]:
         vs_sources += env.modules_sources

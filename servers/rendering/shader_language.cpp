@@ -4669,7 +4669,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				expr = _parse_array_constructor(p_block, p_function_info);
 			} else {
 				DataType datatype;
-				DataPrecision precision;
+				DataPrecision precision = DataPrecision::PRECISION_DEFAULT;
 				bool precision_defined = false;
 
 				if (is_token_precision(tk.type)) {

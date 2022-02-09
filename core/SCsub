@@ -196,9 +196,10 @@ SConscript("string/SCsub")
 SConscript("config/SCsub")
 SConscript("error/SCsub")
 
+core_env = env.Clone()
 
 # Build it all as a library
-lib = env.add_library("core", env.core_sources)
+lib = core_env.add_library("core", env.core_sources)
 env.Prepend(LIBS=[lib])
 
 # Needed to force rebuilding the core files when the thirdparty code is updated.

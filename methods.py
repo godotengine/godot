@@ -16,7 +16,7 @@ from SCons.Variables.BoolVariable import _text2bool
 from platform_methods import run_in_subprocess
 
 
-def add_source_files(self, sources, files):
+def add_source_files(self, sources, files, **kwargs):
     # Convert string to list of absolute paths (including expanding wildcard)
     if isinstance(files, (str, bytes)):
         # Keep SCons project-absolute path as they are (no wildcard support)
@@ -36,7 +36,10 @@ def add_source_files(self, sources, files):
 
     # Add each path as compiled Object following environment (self) configuration
     for path in files:
-        obj = self.Object(path)
+        if self.get("sharedlibs"):
+            obj = self.SharedObject(path, **kwargs)
+        else:
+            obj = self.Object(path, **kwargs)
         if obj in sources:
             print('WARNING: Object "{}" already included in environment sources.'.format(obj))
             continue
@@ -817,7 +820,10 @@ def add_shared_library(env, name, sources, **args):
 
 
 def add_library(env, name, sources, **args):
-    library = env.Library(name, sources, **args)
+    if not env.get("sharedlibs"):
+        library = env.Library(name, sources, **args)
+    else:
+        library = env.SharedLibrary(name, sources, **args)
     env.NoCache(library)
     return library
 

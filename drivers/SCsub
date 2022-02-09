@@ -35,5 +35,6 @@ SConscript("spirv-reflect/SCsub")
 
 env.add_source_files(env.drivers_sources, "*.cpp")
 
-lib = env.add_library("drivers", env.drivers_sources)
+drivers_env = env.Clone()
+lib = drivers_env.add_library("drivers", env.drivers_sources)
 env.Prepend(LIBS=[lib])

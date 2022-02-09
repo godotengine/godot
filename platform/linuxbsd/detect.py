@@ -81,6 +81,7 @@ def get_opts():
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         BoolVariable("touch", "Enable touch events", True),
         BoolVariable("execinfo", "Use libexecinfo on systems where glibc is not available", False),
+        BoolVariable("sharedlibs", "Build shared libraries (only available on linuxbsd platform)", False),
     ]
 
 
@@ -115,7 +116,7 @@ def configure(env):
 
     ## Architecture
 
-    is64 = sys.maxsize > 2 ** 32
+    is64 = sys.maxsize > 2**32
     if env["bits"] == "default":
         env["bits"] = "64" if is64 else "32"
 

@@ -39,8 +39,71 @@ thirdparty_obj = []
 freetype_enabled = env.module_check_dependencies("text_server_adv", ["freetype"], True)
 msdngen_enabled = env.module_check_dependencies("text_server_adv", ["msdfgen"], True)
 
+if env["builtin_graphite"] and freetype_enabled:
+    env_graphite = env_text_server_adv.Clone()
+    env_graphite.disable_warnings()
+
+    thirdparty_dir = "#thirdparty/graphite/"
+    thirdparty_sources = [
+        "src/gr_char_info.cpp",
+        "src/gr_face.cpp",
+        "src/gr_features.cpp",
+        "src/gr_font.cpp",
+        "src/gr_logging.cpp",
+        "src/gr_segment.cpp",
+        "src/gr_slot.cpp",
+        "src/CmapCache.cpp",
+        "src/Code.cpp",
+        "src/Collider.cpp",
+        "src/Decompressor.cpp",
+        "src/Face.cpp",
+        #'src/FileFace.cpp',
+        "src/FeatureMap.cpp",
+        "src/Font.cpp",
+        "src/GlyphCache.cpp",
+        "src/GlyphFace.cpp",
+        "src/Intervals.cpp",
+        "src/Justifier.cpp",
+        "src/NameTable.cpp",
+        "src/Pass.cpp",
+        "src/Position.cpp",
+        "src/Segment.cpp",
+        "src/Silf.cpp",
+        "src/Slot.cpp",
+        "src/Sparse.cpp",
+        "src/TtfUtil.cpp",
+        "src/UtfCodec.cpp",
+        "src/FileFace.cpp",
+        "src/json.cpp",
+    ]
+    if not env_graphite.msvc:
+        thirdparty_sources += ["src/direct_machine.cpp"]
+    else:
+        thirdparty_sources += ["src/call_machine.cpp"]
+
+    thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+    env_graphite.Append(CPPPATH=["#thirdparty/graphite/src", "#thirdparty/graphite/include"])
+    env_graphite.Append(
+        CCFLAGS=[
+            "-DGRAPHITE2_NTRACING",
+            "-DGRAPHITE2_NFILEFACE",
+        ],
+    )
+    if not env.get("sharedlibs"):
+        env_graphite.Append(
+            CCFLAGS=[
+                "-DGRAPHITE2_STATIC",
+            ]
+        )
+
+    gr_sources = []
+    env_graphite.add_source_files(gr_sources, thirdparty_sources)
+    graphite_lib = env_graphite.add_library("graphite_builtin", gr_sources)
+    thirdparty_obj += graphite_lib
+
 if env["builtin_harfbuzz"]:
-    env_harfbuzz = env_modules.Clone()
+    env_harfbuzz = env_text_server_adv.Clone()
     env_harfbuzz.disable_warnings()
 
     thirdparty_dir = "#thirdparty/harfbuzz/"
@@ -151,99 +214,39 @@ if env["builtin_harfbuzz"]:
             CCFLAGS=[
                 "-DHAVE_FREETYPE",
                 "-DHAVE_GRAPHITE2",
-                "-DGRAPHITE2_STATIC",
             ]
         )
+        if not env.get("sharedlibs"):
+            env_harfbuzz.Append(
+                CCFLAGS=[
+                    "-DGRAPHITE2_STATIC",
+                ]
+            )
 
-    lib = env_harfbuzz.add_library("harfbuzz_builtin", thirdparty_sources)
-    thirdparty_obj += lib
-
-    # Needs to be appended to arrive after libscene in the linker call,
-    # but we don't want it to arrive *after* system libs, so manual hack
-    # LIBS contains first SCons Library objects ("SCons.Node.FS.File object")
-    # and then plain strings for system library. We insert between the two.
-    inserted = False
-    for idx, linklib in enumerate(env["LIBS"]):
-        if isinstance(linklib, (str, bytes)):  # first system lib such as "X11", otherwise SCons lib object
-            env["LIBS"].insert(idx, lib)
-            inserted = True
-            break
-    if not inserted:
-        env.Append(LIBS=[lib])
-
-
-if env["builtin_graphite"] and freetype_enabled:
-    env_graphite = env_modules.Clone()
-    env_graphite.disable_warnings()
-
-    thirdparty_dir = "#thirdparty/graphite/"
-    thirdparty_sources = [
-        "src/gr_char_info.cpp",
-        "src/gr_face.cpp",
-        "src/gr_features.cpp",
-        "src/gr_font.cpp",
-        "src/gr_logging.cpp",
-        "src/gr_segment.cpp",
-        "src/gr_slot.cpp",
-        "src/CmapCache.cpp",
-        "src/Code.cpp",
-        "src/Collider.cpp",
-        "src/Decompressor.cpp",
-        "src/Face.cpp",
-        #'src/FileFace.cpp',
-        "src/FeatureMap.cpp",
-        "src/Font.cpp",
-        "src/GlyphCache.cpp",
-        "src/GlyphFace.cpp",
-        "src/Intervals.cpp",
-        "src/Justifier.cpp",
-        "src/NameTable.cpp",
-        "src/Pass.cpp",
-        "src/Position.cpp",
-        "src/Segment.cpp",
-        "src/Silf.cpp",
-        "src/Slot.cpp",
-        "src/Sparse.cpp",
-        "src/TtfUtil.cpp",
-        "src/UtfCodec.cpp",
-        "src/FileFace.cpp",
-        "src/json.cpp",
-    ]
-    if not env_graphite.msvc:
-        thirdparty_sources += ["src/direct_machine.cpp"]
-    else:
-        thirdparty_sources += ["src/call_machine.cpp"]
-
-    thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
-
-    env_graphite.Append(CPPPATH=["#thirdparty/graphite/src", "#thirdparty/graphite/include"])
-    env_graphite.Append(
-        CCFLAGS=[
-            "-DGRAPHITE2_STATIC",
-            "-DGRAPHITE2_NTRACING",
-            "-DGRAPHITE2_NFILEFACE",
-        ]
-    )
-
-    lib = env_graphite.add_library("graphite_builtin", thirdparty_sources)
-    thirdparty_obj += lib
+    hb_sources = []
+    env_harfbuzz.add_source_files(hb_sources, thirdparty_sources)
+    if env.get("sharedlibs") and env["builtin_graphite"] and freetype_enabled:
+        env_harfbuzz.Append(LIBS=graphite_lib)
+    harfbuzz_lib = env_harfbuzz.add_library("harfbuzz_builtin", hb_sources)
+    thirdparty_obj += harfbuzz_lib
 
     # Needs to be appended to arrive after libscene in the linker call,
     # but we don't want it to arrive *after* system libs, so manual hack
     # LIBS contains first SCons Library objects ("SCons.Node.FS.File object")
     # and then plain strings for system library. We insert between the two.
-    inserted = False
-    for idx, linklib in enumerate(env["LIBS"]):
-        if isinstance(linklib, (str, bytes)):  # first system lib such as "X11", otherwise SCons lib object
-            env["LIBS"].insert(idx, lib)
-            inserted = True
-            break
-    if not inserted:
-        env.Append(LIBS=[lib])
+    for lib in [harfbuzz_lib, graphite_lib]:
+        inserted = False
+        for idx, linklib in enumerate(env["LIBS"]):
+            if isinstance(linklib, (str, bytes)):  # first system lib such as "X11", otherwise SCons lib object
+                env["LIBS"].insert(idx, lib)
+                inserted = True
+                break
+        if not inserted:
+            env.Append(LIBS=[lib])
 
 
 if env["builtin_icu"]:
-    env_icu = env_modules.Clone()
+    env_icu = env_text_server_adv.Clone()
     env_icu.disable_warnings()
 
     thirdparty_dir = "#thirdparty/icu4c/"
@@ -447,6 +450,9 @@ if env["builtin_icu"]:
         "common/uvectr64.cpp",
         "common/wintz.cpp",
     ]
+    if env.get("sharedlibs"):
+        thirdparty_sources += ["common/ushape.cpp"]
+
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
     icu_data_name = "icudt70l.dat"
@@ -460,7 +466,6 @@ if env["builtin_icu"]:
     env_icu.Append(CPPPATH=["#thirdparty/icu4c/common/"])
     env_icu.Append(
         CXXFLAGS=[
-            "-DU_STATIC_IMPLEMENTATION",
             "-DU_COMMON_IMPLEMENTATION",
             "-DUCONFIG_NO_COLLATION",
             "-DUCONFIG_NO_CONVERSION",
@@ -473,13 +478,22 @@ if env["builtin_icu"]:
             "-DICU_DATA_NAME=" + icu_data_name,
         ]
     )
+    if not env.get("sharedlibs"):
+        env_icu.Append(
+            CXXFLAGS=[
+                "-DU_STATIC_IMPLEMENTATION",
+            ]
+        )
+
     env_text_server_adv.Append(
         CXXFLAGS=[
             "-DICU_DATA_NAME=" + icu_data_name,
         ]
     )
 
-    lib = env_icu.add_library("icu_builtin", thirdparty_sources)
+    icu_sources = []
+    env_icu.add_source_files(icu_sources, thirdparty_sources)
+    lib = env_icu.add_library("icu_builtin", icu_sources)
     thirdparty_obj += lib
 
     # Needs to be appended to arrive after libscene in the linker call,
