@@ -1468,6 +1468,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			} break;
 			case MouseButton::LEFT: {
 				if (b->is_pressed()) {
+					clicked_wants_append = b->is_shift_pressed();
+
 					if (_edit.mode != TRANSFORM_NONE && _edit.instant) {
 						commit_transform();
 						break; // just commit the edit, stop processing the event so we don't deselect the object
@@ -1597,8 +1599,6 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 						//clicking is always deferred to either move or release
 
-						clicked_wants_append = b->is_shift_pressed();
-
 						if (clicked.is_null()) {
 							//default to regionselect
 							cursor.region_select = true;
@@ -1725,6 +1725,12 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					clicked = ObjectID();
 
 					_edit.mode = TRANSFORM_TRANSLATE;
+				}
+
+				// enable region-select if nothing has been selected yet or multi-select (shift key) is active
+				if (movement_threshold_passed && (get_selected_count() == 0 || clicked_wants_append)) {
+					cursor.region_select = true;
+					cursor.region_begin = _edit.original_mouse_pos;
 				}
 
 				if (cursor.region_select) {
