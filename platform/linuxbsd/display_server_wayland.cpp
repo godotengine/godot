@@ -246,6 +246,35 @@ void DisplayServerWayland::_wl_pointer_on_button(void *data, struct wl_pointer *
 }
 
 void DisplayServerWayland::_wl_pointer_on_axis(void *data, struct wl_pointer *wl_pointer, uint32_t time, uint32_t axis, wl_fixed_t value) {
+	WaylandState *wls = (WaylandState*) data;
+	MutexLock mutex_lock(wls->mutex);
+
+	PointerData &pd = wls->seat_state.pointer_state.data_buffer;
+
+	MouseButton button_pressed = MouseButton::NONE;
+
+	switch (axis) {
+		case WL_POINTER_AXIS_VERTICAL_SCROLL: {
+			button_pressed = value >= 0 ? MouseButton::WHEEL_DOWN : MouseButton::WHEEL_UP;
+			pd.scroll_vector.y = wl_fixed_to_double(value);
+
+			break;
+		}
+
+		case WL_POINTER_AXIS_HORIZONTAL_SCROLL: {
+			button_pressed = value >= 0 ? MouseButton::WHEEL_RIGHT: MouseButton::WHEEL_LEFT;
+			pd.scroll_vector.x = wl_fixed_to_double(value);
+
+			break;
+		}
+	}
+
+	// These buttons will get unpressed when the event is sent.
+	pd.pressed_button_mask |= mouse_button_to_mask(button_pressed);
+	pd.last_button_pressed = button_pressed;
+
+	pd.button_time = time;
+	pd.time = time;
 }
 
 void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_pointer) {
@@ -288,8 +317,10 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 		if (old_pd.pressed_button_mask != pd.pressed_button_mask) {
 			MouseButton pressed_mask_delta = old_pd.pressed_button_mask ^ pd.pressed_button_mask;
 
-			// This is the cleanest and simplest approach I could find to avoid writing the same code 3 times.
-			for (MouseButton test_button : {MouseButton::LEFT, MouseButton::MIDDLE, MouseButton::RIGHT}) {
+			// This is the cleanest and simplest approach I could find to avoid writing the same code 8 times.
+			for (MouseButton test_button : {MouseButton::LEFT, MouseButton::MIDDLE, MouseButton::RIGHT,
+					MouseButton::WHEEL_UP, MouseButton::WHEEL_DOWN, MouseButton::WHEEL_LEFT,
+					MouseButton::WHEEL_RIGHT}) {
 
 				MouseButton test_button_mask = mouse_button_to_mask(test_button);
 				if ((pressed_mask_delta & test_button_mask) != MouseButton::NONE) {
@@ -310,8 +341,49 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 					mb->set_button_index(test_button);
 					mb->set_pressed((pd.pressed_button_mask & test_button_mask) != MouseButton::NONE);
 
+					if (test_button == MouseButton::WHEEL_UP || test_button == MouseButton::WHEEL_DOWN) {
+						mb->set_factor(abs(pd.scroll_vector.y));
+					}
+
+					if (test_button == MouseButton::WHEEL_RIGHT || test_button == MouseButton::WHEEL_LEFT) {
+						mb->set_factor(abs(pd.scroll_vector.x));
+					}
+
 					msg.data = &mb;
 					wls->message_queue.push_back(msg);
+
+					// Send an event resetting immediately the wheel key.
+					// Wayland specification defines axis_stop events as optional and says to
+					// treat all axis events as unterminated. As such, we have to manually do
+					// it ourselves.
+					if (test_button == MouseButton::WHEEL_UP
+							|| test_button == MouseButton::WHEEL_DOWN
+							|| test_button == MouseButton::WHEEL_LEFT
+							|| test_button == MouseButton::WHEEL_RIGHT) {
+
+
+						WaylandMessage msg_up;
+						msg_up.type = TYPE_INPUT_EVENT;
+
+						// FIXME: This is ugly, I can't find a clean way to clone an InputEvent.
+						// This works for now, despite being horrible.
+						Ref<InputEventMouseButton> &mb_up = *memnew(Ref<InputEventMouseButton>);
+						mb_up.instantiate();
+						mb_up->set_window_id(pd.focused_window_id);
+						mb_up->set_position(pd.position);
+						// FIXME: We're lying!
+						mb_up->set_global_position(pd.position);
+
+						// We have to unset the button to avoid it getting stuck.
+						pd.pressed_button_mask &= ~test_button_mask;
+						mb_up->set_button_mask(pd.pressed_button_mask);
+
+						mb_up->set_button_index(test_button);
+						mb_up->set_pressed(false);
+
+						msg_up.data = &mb_up;
+						wls->message_queue.push_back(msg_up);
+					}
 				}
 			}
 		}

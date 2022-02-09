@@ -85,6 +85,8 @@ class DisplayServerWayland : public DisplayServer {
 		MouseButton last_button_pressed = MouseButton::NONE;
 		uint32_t button_time = 0;
 
+		Vector2 scroll_vector;
+
 		uint32_t time = 0;
 	};
 
