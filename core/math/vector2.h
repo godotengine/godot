@@ -60,10 +60,10 @@ struct _NO_DISCARD_CLASS_ Vector2 {
 	};
 
 	_FORCE_INLINE_ real_t &operator[](int p_idx) {
-		return p_idx ? y : x;
+		return coord[p_idx];
 	}
 	_FORCE_INLINE_ const real_t &operator[](int p_idx) const {
-		return p_idx ? y : x;
+		return coord[p_idx];
 	}
 
 	_FORCE_INLINE_ void set_all(real_t p_value) {
@@ -276,19 +276,25 @@ struct _NO_DISCARD_CLASS_ Vector2i {
 	};
 
 	union {
-		int x;
-		int width;
-	};
-	union {
-		int y;
-		int height;
+		struct {
+			union {
+				int x;
+				int width;
+			};
+			union {
+				int y;
+				int height;
+			};
+		};
+
+		int coord[2];
 	};
 
 	_FORCE_INLINE_ int &operator[](int p_idx) {
-		return p_idx ? y : x;
+		return coord[p_idx];
 	}
 	_FORCE_INLINE_ const int &operator[](int p_idx) const {
-		return p_idx ? y : x;
+		return coord[p_idx];
 	}
 
 	Vector2i operator+(const Vector2i &p_v) const;
