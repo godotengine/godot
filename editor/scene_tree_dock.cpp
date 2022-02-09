@@ -906,6 +906,17 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			String existing;
 			if (extensions.size()) {
 				String root_name(tocopy->get_name());
+				switch (ProjectSettings::get_singleton()->get("editor/scene/scene_naming").operator int()) {
+					case EditorNode::SCENE_NAME_CASING_AUTO:
+						// Use casing of the root node.
+						break;
+					case EditorNode::SCENE_NAME_CASING_PASCAL_CASE:
+						root_name = root_name.capitalize().replace(" ", "");
+						break;
+					case EditorNode::SCENE_NAME_CASING_SNAKE_CASE:
+						root_name = root_name.capitalize().replace(" ", "").replace("-", "_").camelcase_to_underscore();
+						break;
+				}
 				existing = root_name + "." + extensions.front()->get().to_lower();
 			}
 			new_scene_from_dialog->set_current_path(existing);

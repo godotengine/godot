@@ -111,6 +111,12 @@ public:
 		DOCK_SLOT_MAX
 	};
 
+	enum ScriptNameCasing {
+		SCENE_NAME_CASING_AUTO,
+		SCENE_NAME_CASING_PASCAL_CASE,
+		SCENE_NAME_CASING_SNAKE_CASE
+	};
+
 	struct ExecuteThreadArgs {
 		String path;
 		List<String> args;
@@ -214,12 +220,6 @@ private:
 		IMPORT_PLUGIN_BASE = 100,
 
 		TOOL_MENU_BASE = 1000
-	};
-
-	enum ScriptNameCasing {
-		SCENE_NAME_CASING_AUTO,
-		SCENE_NAME_CASING_PASCAL_CASE,
-		SCENE_NAME_CASING_SNAKE_CASE
 	};
 
 	SubViewport *scene_root; // root of the scene being edited
