@@ -221,14 +221,15 @@
 				Returns a new color from [code]rgba[/code], an HTML hexadecimal color string. [code]rgba[/code] is not case sensitive, and may be prefixed with a '#' character.
 				[code]rgba[/code] must be a valid three-digit or six-digit hexadecimal color string, and may contain an alpha channel value. If [code]rgba[/code] does not contain an alpha channel value, an alpha channel value of 1.0 is applied.
 				If [code]rgba[/code] is invalid a Color(0.0, 0.0, 0.0, 1.0) is returned.
+				[b]Note:[/b] This method is not implemented in C#, but the same functionality is provided in the class constructor.
 				[codeblocks]
 				[gdscript]
 				var green = Color.html("#00FF00FF") # set green to Color(0.0, 1.0, 0.0, 1.0)
 				var blue = Color.html("#0000FF") # set blue to Color(0.0, 0.0, 1.0, 1.0)
 				[/gdscript]
 				[csharp]
-				var green = Color.Html("#00FF00FF"); // set green to Color(0.0, 1.0, 0.0, 1.0)
-				var blue = Color.Html("#0000FF"); // set blue to Color(0.0, 0.0, 1.0, 1.0)
+				var green = new Color("#00FF00FF"); // set green to Color(0.0, 1.0, 0.0, 1.0)
+				var blue = new Color("#0000FF"); // set blue to Color(0.0, 0.0, 1.0, 1.0)
 				[/csharp]
 				[/codeblocks]
 			</description>
