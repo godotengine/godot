@@ -116,7 +116,6 @@ private:
 		SNAP_RELATIVE,
 		SNAP_CONFIGURE,
 		SNAP_USE_PIXEL,
-		SHOW_GRID,
 		SHOW_HELPERS,
 		SHOW_RULERS,
 		SHOW_GUIDES,
@@ -175,6 +174,12 @@ private:
 		DRAG_KEY_MOVE
 	};
 
+	enum GridVisibility {
+		GRID_VISIBILITY_SHOW,
+		GRID_VISIBILITY_SHOW_WHEN_SNAPPING,
+		GRID_VISIBILITY_HIDE,
+	};
+
 	bool selection_menu_additive_selection;
 
 	Tool tool = TOOL_SELECT;
@@ -190,7 +195,7 @@ private:
 	HBoxContainer *hbc_context_menu;
 
 	Transform2D transform;
-	bool show_grid = false;
+	GridVisibility grid_visibility = GRID_VISIBILITY_SHOW_WHEN_SNAPPING;
 	bool show_rulers = true;
 	bool show_guides = true;
 	bool show_origin = true;
@@ -314,6 +319,7 @@ private:
 	MenuButton *skeleton_menu;
 	Button *override_camera_button;
 	MenuButton *view_menu;
+	PopupMenu *grid_menu;
 	HBoxContainer *animation_hb;
 	MenuButton *animation_menu;
 
@@ -390,6 +396,9 @@ private:
 	void _node_created(Node *p_node);
 	void _reset_create_position();
 	void _update_editor_settings();
+	bool _is_grid_visible() const;
+	void _prepare_grid_menu();
+	void _on_grid_menu_id_pressed(int p_id);
 
 	UndoRedo *undo_redo;
 
