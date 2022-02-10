@@ -220,6 +220,8 @@ def _make_translation_catalog(classes):
             if elem.tag in EXTRACT_TAGS:
                 if not elem.text or len(elem.text) == 0:
                     continue
+                if elem.tag == "link" and "$DOCS_URL" in elem.text:  # No need to localize.
+                    continue
                 line_no = elem._start_line_number if elem.text[0] != "\n" else elem._start_line_number + 1
                 desc_str = elem.text.strip()
                 code_block_regions = _make_codeblock_regions(desc_str, desc_list.path)
