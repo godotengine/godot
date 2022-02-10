@@ -622,6 +622,19 @@ void TParseContextBase::growGlobalUniformBlock(const TSourceLoc& loc, TType& mem
     globalUniformBlock->getWritableType().getQualifier().layoutBinding = globalUniformBinding;
     globalUniformBlock->getWritableType().getQualifier().layoutSet = globalUniformSet;
 
+    // Check for declarations of this default uniform that already exist due to other compilation units.
+    TSymbol* symbol = symbolTable.find(memberName);
+    if (symbol) {
+        if (memberType != symbol->getType()) {
+            TString err;
+            err += "\"" + memberType.getCompleteString() + "\"";
+            err += " versus ";
+            err += "\"" + symbol->getType().getCompleteString() + "\"";
+            error(loc, "Types must match:", memberType.getFieldName().c_str(), err.c_str());
+        }
+        return;
+    }
+
     // Add the requested member as a member to the global block.
     TType* type = new TType;
     type->shallowCopy(memberType);
