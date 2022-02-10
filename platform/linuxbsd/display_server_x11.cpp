@@ -1077,7 +1077,7 @@ float DisplayServerX11::screen_get_refresh_rate(int p_screen) const {
 				monitors = xrr_get_monitors(x11_display, windows[MAIN_WINDOW_ID].x11_window, true, &count);
 				ERR_FAIL_INDEX_V(p_screen, count, SCREEN_REFRESH_RATE_FALLBACK);
 			} else {
-				ERR_PRINT("An error occured while trying to get the screen refresh rate.");
+				ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
 				return SCREEN_REFRESH_RATE_FALLBACK;
 			}
 
@@ -1105,14 +1105,14 @@ float DisplayServerX11::screen_get_refresh_rate(int p_screen) const {
 				}
 			}
 
-			ERR_PRINT("An error occured while trying to get the screen refresh rate."); // We should have returned the refresh rate by now. An error must have occured.
+			ERR_PRINT("An error occurred while trying to get the screen refresh rate."); // We should have returned the refresh rate by now. An error must have occurred.
 			return SCREEN_REFRESH_RATE_FALLBACK;
 		} else {
-			ERR_PRINT("An error occured while trying to get the screen refresh rate.");
+			ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
 			return SCREEN_REFRESH_RATE_FALLBACK;
 		}
 	}
-	ERR_PRINT("An error occured while trying to get the screen refresh rate.");
+	ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
 	return SCREEN_REFRESH_RATE_FALLBACK;
 }
 

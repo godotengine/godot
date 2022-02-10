@@ -3373,9 +3373,9 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 					orm_texture_index = _set_texture(state, orm_texture);
 				}
 				if (has_ao) {
-					Dictionary ot;
-					ot["index"] = orm_texture_index;
-					d["occlusionTexture"] = ot;
+					Dictionary occt;
+					occt["index"] = orm_texture_index;
+					d["occlusionTexture"] = occt;
 				}
 				if (has_roughness || has_metalness) {
 					mrt["index"] = orm_texture_index;

@@ -557,7 +557,7 @@
 			<argument index="0" name="font_rid" type="RID" />
 			<argument index="1" name="force_autohinter" type="bool" />
 			<description>
-				If set to [code]true[/code] auto-hinting is preffered over font built-in hinting.
+				If set to [code]true[/code] auto-hinting is preferred over font built-in hinting.
 			</description>
 		</method>
 		<method name="_font_set_global_oversampling" qualifiers="virtual">

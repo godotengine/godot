@@ -55,7 +55,7 @@
 		<method name="get_mouse_position" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the mouse's positon in this [Viewport] using the coordinate system of this [Viewport].
+				Returns the mouse's position in this [Viewport] using the coordinate system of this [Viewport].
 			</description>
 		</method>
 		<method name="get_render_info">
@@ -128,7 +128,7 @@
 		<method name="gui_release_focus">
 			<return type="void" />
 			<description>
-				Removes the focus from the currently focussed [Control] within this viewport. If no [Control] has the focus, does nothing.
+				Removes the focus from the currently focused [Control] within this viewport. If no [Control] has the focus, does nothing.
 			</description>
 		</method>
 		<method name="is_embedding_subwindows" qualifiers="const">

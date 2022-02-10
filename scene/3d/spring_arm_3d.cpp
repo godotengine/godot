@@ -185,14 +185,14 @@ void SpringArm3D::process_spring() {
 	}
 
 	current_spring_length = spring_length * motion_delta;
-	Transform3D childs_transform;
-	childs_transform.origin = get_global_transform().origin + cast_direction * (spring_length * motion_delta);
+	Transform3D child_transform;
+	child_transform.origin = get_global_transform().origin + cast_direction * (spring_length * motion_delta);
 
 	for (int i = get_child_count() - 1; 0 <= i; --i) {
 		Node3D *child = Object::cast_to<Node3D>(get_child(i));
 		if (child) {
-			childs_transform.basis = child->get_global_transform().basis;
-			child->set_global_transform(childs_transform);
+			child_transform.basis = child->get_global_transform().basis;
+			child->set_global_transform(child_transform);
 		}
 	}
 }

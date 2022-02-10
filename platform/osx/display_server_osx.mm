@@ -1335,7 +1335,7 @@ float DisplayServerOSX::screen_get_refresh_rate(int p_screen) const {
 		const double displayRefreshRate = CGDisplayModeGetRefreshRate(displayMode);
 		return (float)displayRefreshRate;
 	}
-	ERR_PRINT("An error occured while trying to get the screen refresh rate.");
+	ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
 	return SCREEN_REFRESH_RATE_FALLBACK;
 }
 

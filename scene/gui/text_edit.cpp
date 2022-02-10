@@ -2472,7 +2472,7 @@ void TextEdit::_update_placeholder() {
 		return; // Not in tree?
 	}
 
-	// Placeholder is generally smaller then text docuemnts, and updates less so this should be fast enough for now.
+	// Placeholder is generally smaller then text documents, and updates less so this should be fast enough for now.
 	placeholder_data_buf->clear();
 	placeholder_data_buf->set_width(text.get_width());
 	placeholder_data_buf->set_direction((TextServer::Direction)text_direction);

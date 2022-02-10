@@ -58,7 +58,7 @@ TEST_CASE("[Vector3] Angle methods") {
 
 	CHECK_MESSAGE(
 			Math::is_equal_approx(vector_x.signed_angle_to(vector_y, vector_y), (real_t)Math_TAU / 4),
-			"Vector3 signed_angle_to edge case should be postiive.");
+			"Vector3 signed_angle_to edge case should be positive.");
 	CHECK_MESSAGE(
 			Math::is_equal_approx(vector_x.signed_angle_to(vector_yz, vector_y), (real_t)Math_TAU / -4),
 			"Vector3 signed_angle_to should work as expected.");
