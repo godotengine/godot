@@ -1422,6 +1422,7 @@ EditorInspectorSection::~EditorInspectorSection() {
 
 ////////////////////////////////////////////////
 ////////////////////////////////////////////////
+
 int EditorInspectorArray::_get_array_count() {
 	if (mode == MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION) {
 		List<PropertyInfo> object_property_list;
@@ -1440,31 +1441,8 @@ void EditorInspectorArray::_add_button_pressed() {
 	_move_element(-1, -1);
 }
 
-void EditorInspectorArray::_first_page_button_pressed() {
-	emit_signal(SNAME("page_change_request"), 0);
-}
-
-void EditorInspectorArray::_prev_page_button_pressed() {
-	emit_signal(SNAME("page_change_request"), MAX(0, page - 1));
-}
-
-void EditorInspectorArray::_page_line_edit_text_submitted(String p_text) {
-	if (p_text.is_valid_int()) {
-		int new_page = p_text.to_int() - 1;
-		new_page = MIN(MAX(0, new_page), max_page);
-		page_line_edit->set_text(Variant(new_page));
-		emit_signal(SNAME("page_change_request"), new_page);
-	} else {
-		page_line_edit->set_text(Variant(page));
-	}
-}
-
-void EditorInspectorArray::_next_page_button_pressed() {
-	emit_signal(SNAME("page_change_request"), MIN(max_page, page + 1));
-}
-
-void EditorInspectorArray::_last_page_button_pressed() {
-	emit_signal(SNAME("page_change_request"), max_page);
+void EditorInspectorArray::_paginator_page_changed(int p_page) {
+	emit_signal("page_change_request", p_page);
 }
 
 void EditorInspectorArray::_rmb_popup_id_pressed(int p_id) {
@@ -1636,17 +1614,17 @@ void EditorInspectorArray::_move_element(int p_element_index, int p_to_pos) {
 	// Handle page change and update counts.
 	if (p_element_index < 0) {
 		int added_index = p_to_pos < 0 ? count : p_to_pos;
-		emit_signal(SNAME("page_change_request"), added_index / page_lenght);
+		emit_signal(SNAME("page_change_request"), added_index / page_length);
 		count += 1;
 	} else if (p_to_pos < 0) {
 		count -= 1;
-		if (page == max_page && (MAX(0, count - 1) / page_lenght != max_page)) {
+		if (page == max_page && (MAX(0, count - 1) / page_length != max_page)) {
 			emit_signal(SNAME("page_change_request"), max_page - 1);
 		}
 	}
-	begin_array_index = page * page_lenght;
-	end_array_index = MIN(count, (page + 1) * page_lenght);
-	max_page = MAX(0, count - 1) / page_lenght;
+	begin_array_index = page * page_length;
+	end_array_index = MIN(count, (page + 1) * page_length);
+	max_page = MAX(0, count - 1) / page_length;
 }
 
 void EditorInspectorArray::_clear_array() {
@@ -1860,9 +1838,9 @@ void EditorInspectorArray::_resize_dialog_confirmed() {
 void EditorInspectorArray::_setup() {
 	// Setup counts.
 	count = _get_array_count();
-	begin_array_index = page * page_lenght;
-	end_array_index = MIN(count, (page + 1) * page_lenght);
-	max_page = MAX(0, count - 1) / page_lenght;
+	begin_array_index = page * page_length;
+	end_array_index = MIN(count, (page + 1) * page_length);
+	max_page = MAX(0, count - 1) / page_length;
 	array_elements.resize(MAX(0, end_array_index - begin_array_index));
 	if (page < 0 || page > max_page) {
 		WARN_PRINT(vformat("Invalid page number %d", page));
@@ -1920,18 +1898,12 @@ void EditorInspectorArray::_setup() {
 	// Hide/show the add button.
 	add_button->set_visible(page == max_page);
 
-	if (max_page == 0) {
-		hbox_pagination->hide();
-	} else {
-		// Update buttons.
-		first_page_button->set_disabled(page == 0);
-		prev_page_button->set_disabled(page == 0);
-		next_page_button->set_disabled(page == max_page);
-		last_page_button->set_disabled(page == max_page);
-
-		// Update page number and page count.
-		page_line_edit->set_text(vformat("%d", page + 1));
-		page_count_label->set_text(vformat("/ %d", max_page + 1));
+	// Add paginator if there's more than 1 page.
+	if (max_page > 0) {
+		EditorPaginator *paginator = memnew(EditorPaginator);
+		paginator->update(page, max_page);
+		paginator->connect("page_changed", callable_mp(this, &EditorInspectorArray::_paginator_page_changed));
+		vbox->add_child(paginator);
 	}
 }
 
@@ -1996,10 +1968,6 @@ void EditorInspectorArray::_notification(int p_what) {
 			}
 
 			add_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-			first_page_button->set_icon(get_theme_icon(SNAME("PageFirst"), SNAME("EditorIcons")));
-			prev_page_button->set_icon(get_theme_icon(SNAME("PagePrevious"), SNAME("EditorIcons")));
-			next_page_button->set_icon(get_theme_icon(SNAME("PageNext"), SNAME("EditorIcons")));
-			last_page_button->set_icon(get_theme_icon(SNAME("PageLast"), SNAME("EditorIcons")));
 			update_minimum_size();
 		} break;
 		case NOTIFICATION_DRAG_BEGIN: {
@@ -2092,38 +2060,6 @@ EditorInspectorArray::EditorInspectorArray() {
 	add_button->connect("pressed", callable_mp(this, &EditorInspectorArray::_add_button_pressed));
 	vbox->add_child(add_button);
 
-	hbox_pagination = memnew(HBoxContainer);
-	hbox_pagination->set_h_size_flags(SIZE_EXPAND_FILL);
-	hbox_pagination->set_alignment(BoxContainer::ALIGNMENT_CENTER);
-	vbox->add_child(hbox_pagination);
-
-	first_page_button = memnew(Button);
-	first_page_button->set_flat(true);
-	first_page_button->connect("pressed", callable_mp(this, &EditorInspectorArray::_first_page_button_pressed));
-	hbox_pagination->add_child(first_page_button);
-
-	prev_page_button = memnew(Button);
-	prev_page_button->set_flat(true);
-	prev_page_button->connect("pressed", callable_mp(this, &EditorInspectorArray::_prev_page_button_pressed));
-	hbox_pagination->add_child(prev_page_button);
-
-	page_line_edit = memnew(LineEdit);
-	page_line_edit->connect("text_submitted", callable_mp(this, &EditorInspectorArray::_page_line_edit_text_submitted));
-	page_line_edit->add_theme_constant_override("minimum_character_width", 2);
-	hbox_pagination->add_child(page_line_edit);
-
-	page_count_label = memnew(Label);
-	hbox_pagination->add_child(page_count_label);
-	next_page_button = memnew(Button);
-	next_page_button->set_flat(true);
-	next_page_button->connect("pressed", callable_mp(this, &EditorInspectorArray::_next_page_button_pressed));
-	hbox_pagination->add_child(next_page_button);
-
-	last_page_button = memnew(Button);
-	last_page_button->set_flat(true);
-	last_page_button->connect("pressed", callable_mp(this, &EditorInspectorArray::_last_page_button_pressed));
-	hbox_pagination->add_child(last_page_button);
-
 	control_dropping = memnew(Control);
 	control_dropping->connect("draw", callable_mp(this, &EditorInspectorArray::_control_dropping_draw));
 	control_dropping->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
@@ -2144,6 +2080,97 @@ EditorInspectorArray::EditorInspectorArray() {
 	resize_dialog_vbox->add_margin_child(TTRC("New Size:"), new_size_line_edit);
 
 	vbox->connect("visibility_changed", callable_mp(this, &EditorInspectorArray::_vbox_visibility_changed));
+}
+
+////////////////////////////////////////////////
+////////////////////////////////////////////////
+
+void EditorPaginator::_first_page_button_pressed() {
+	emit_signal("page_changed", 0);
+}
+
+void EditorPaginator::_prev_page_button_pressed() {
+	emit_signal("page_changed", MAX(0, page - 1));
+}
+
+void EditorPaginator::_page_line_edit_text_submitted(String p_text) {
+	if (p_text.is_valid_int()) {
+		int new_page = p_text.to_int() - 1;
+		new_page = MIN(MAX(0, new_page), max_page);
+		page_line_edit->set_text(Variant(new_page));
+		emit_signal("page_changed", new_page);
+	} else {
+		page_line_edit->set_text(Variant(page));
+	}
+}
+
+void EditorPaginator::_next_page_button_pressed() {
+	emit_signal("page_changed", MIN(max_page, page + 1));
+}
+
+void EditorPaginator::_last_page_button_pressed() {
+	emit_signal("page_changed", max_page);
+}
+
+void EditorPaginator::update(int p_page, int p_max_page) {
+	page = p_page;
+	max_page = p_max_page;
+
+	// Update buttons.
+	first_page_button->set_disabled(page == 0);
+	prev_page_button->set_disabled(page == 0);
+	next_page_button->set_disabled(page == max_page);
+	last_page_button->set_disabled(page == max_page);
+
+	// Update page number and page count.
+	page_line_edit->set_text(vformat("%d", page + 1));
+	page_count_label->set_text(vformat("/ %d", max_page + 1));
+}
+
+void EditorPaginator::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		first_page_button->set_icon(get_theme_icon(SNAME("PageFirst"), SNAME("EditorIcons")));
+		prev_page_button->set_icon(get_theme_icon(SNAME("PagePrevious"), SNAME("EditorIcons")));
+		next_page_button->set_icon(get_theme_icon(SNAME("PageNext"), SNAME("EditorIcons")));
+		last_page_button->set_icon(get_theme_icon(SNAME("PageLast"), SNAME("EditorIcons")));
+	}
+}
+
+void EditorPaginator::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("page_changed", PropertyInfo(Variant::INT, "page")));
+}
+
+EditorPaginator::EditorPaginator() {
+	set_h_size_flags(SIZE_EXPAND_FILL);
+	set_alignment(ALIGNMENT_CENTER);
+
+	first_page_button = memnew(Button);
+	first_page_button->set_flat(true);
+	first_page_button->connect("pressed", callable_mp(this, &EditorPaginator::_first_page_button_pressed));
+	add_child(first_page_button);
+
+	prev_page_button = memnew(Button);
+	prev_page_button->set_flat(true);
+	prev_page_button->connect("pressed", callable_mp(this, &EditorPaginator::_prev_page_button_pressed));
+	add_child(prev_page_button);
+
+	page_line_edit = memnew(LineEdit);
+	page_line_edit->connect("text_submitted", callable_mp(this, &EditorPaginator::_page_line_edit_text_submitted));
+	page_line_edit->add_theme_constant_override("minimum_character_width", 2);
+	add_child(page_line_edit);
+
+	page_count_label = memnew(Label);
+	add_child(page_count_label);
+
+	next_page_button = memnew(Button);
+	next_page_button->set_flat(true);
+	next_page_button->connect("pressed", callable_mp(this, &EditorPaginator::_next_page_button_pressed));
+	add_child(next_page_button);
+
+	last_page_button = memnew(Button);
+	last_page_button->set_flat(true);
+	last_page_button->connect("pressed", callable_mp(this, &EditorPaginator::_last_page_button_pressed));
+	add_child(last_page_button);
 }
 
 ////////////////////////////////////////////////
