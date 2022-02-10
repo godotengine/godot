@@ -162,6 +162,8 @@ VARIANT_ENUM_CAST(CanvasItemMaterial::LightMode)
 class CanvasItem : public Node {
 	GDCLASS(CanvasItem, Node);
 
+	friend class CanvasLayer;
+
 public:
 	enum BlendMode {
 
@@ -191,6 +193,7 @@ private:
 
 	bool first_draw;
 	bool visible;
+	bool parent_visible_in_tree;
 	bool pending_update;
 	bool toplevel;
 	bool drawing;
@@ -207,7 +210,7 @@ private:
 
 	void _toplevel_raise_self();
 
-	void _propagate_visibility_changed(bool p_visible);
+	void _propagate_visibility_changed(bool p_visible, bool p_was_visible = false);
 
 	void _update_callback();
 
