@@ -21,3 +21,4 @@ lib_module_webrtc = library('module_webrtc',
 DEP_MODULE_WEBRTC += declare_dependency(link_with: lib_module_webrtc)
 
 MODULE_DEPENDENCIES += DEP_MODULE_WEBRTC
+MODULES_ENABLED += 'webrtc'

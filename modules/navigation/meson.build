@@ -7,3 +7,4 @@ _lib_module_gdnavigation = library('module_gdnavigation',
 DEP_MODULE_GDNAVIGATION = declare_dependency(link_with: _lib_module_gdnavigation)
 
 MODULE_DEPENDENCIES += [DEP_MODULE_GDNAVIGATION]
+MODULES_ENABLED += 'navigation'

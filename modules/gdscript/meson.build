@@ -43,3 +43,4 @@ lib_gdscript = library('module_gdscript',
 DEP_MODULE_GDSCRIPT = declare_dependency(link_with: lib_gdscript)
 
 MODULE_DEPENDENCIES += DEP_MODULE_GDSCRIPT
+MODULES_ENABLED += 'gdscript'

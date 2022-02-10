@@ -6,3 +6,4 @@ _lib_module_csg = library('module_csg',
 DEP_MODULE_CSG = declare_dependency(link_with: _lib_module_csg)
 
 MODULE_DEPENDENCIES += DEP_MODULE_CSG
+MODULES_ENABLED += 'csg'

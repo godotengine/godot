@@ -10,3 +10,5 @@ _lib_module_basis_universal = library('module_basis_universal', _module_basis_un
 DEP_MODULE_BASIS_UNIVERSAL = declare_dependency(link_with: _lib_module_basis_universal)
 
 MODULE_DEPENDENCIES += DEP_MODULE_BASIS_UNIVERSAL
+
+MODULES_ENABLED += 'basis_universal'

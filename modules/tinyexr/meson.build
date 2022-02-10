@@ -4,3 +4,4 @@ lib_module_tinyexr = library('module_tinyexr', _module_tinyexr_srcs, dependencie
 DEP_MODULE_TINYEXR = declare_dependency(link_with: lib_module_tinyexr)
 
 MODULE_DEPENDENCIES += DEP_MODULE_TINYEXR
+MODULES_ENABLED += 'tinyexr'

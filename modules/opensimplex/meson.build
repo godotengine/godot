@@ -8,3 +8,4 @@ lib_module_opensimplex = library('module_opensimplex', _module_opensimplex_srcs,
 DEP_MODULE_OPENSIMPLEX = declare_dependency(link_with: lib_module_opensimplex)
 
 MODULE_DEPENDENCIES += DEP_MODULE_OPENSIMPLEX
+MODULES_ENABLED += 'opensimplex'

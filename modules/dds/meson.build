@@ -6,3 +6,4 @@ _lib_module_dds = library('module_dds', _module_dds_srcs,
 DEP_MODULE_DDS = declare_dependency(link_with: _lib_module_dds)
 
 MODULE_DEPENDENCIES += DEP_MODULE_DDS
+MODULES_ENABLED += 'dds'

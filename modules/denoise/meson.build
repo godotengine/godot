@@ -6,3 +6,4 @@ _lib_module_denoise = library('module_denoise', _module_denoise_srcs,
 DEP_MODULE_DENOISE = declare_dependency(link_with: _lib_module_denoise)
 
 MODULE_DEPENDENCIES += DEP_MODULE_DENOISE
+MODULES_ENABLED += 'denoise'

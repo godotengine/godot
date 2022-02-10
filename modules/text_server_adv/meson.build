@@ -15,3 +15,4 @@ lib_module_tsa = library('module_text_server_adv', module_tsa_srcs,
 DEP_MODULE_TEXT_SERVER_ADV = declare_dependency(link_with: lib_module_tsa)
 
 MODULE_DEPENDENCIES += DEP_MODULE_TEXT_SERVER_ADV
+MODULES_ENABLED += 'text_server_adv'

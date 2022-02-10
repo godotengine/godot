@@ -9,3 +9,4 @@ lib_module_tsf = library('module_text_server_fb',
 DEP_MODULE_TEXT_SERVER_FB = declare_dependency(link_with: lib_module_tsf)
 
 MODULE_DEPENDENCIES += DEP_MODULE_TEXT_SERVER_FB
+MODULES_ENABLED += 'text_server_fb'

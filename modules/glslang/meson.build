@@ -7,3 +7,4 @@ _lib_modules_glslang = library('modules_glslang',
 DEP_MODULE_GLSLANG = declare_dependency(link_with: _lib_modules_glslang)
 
 MODULE_DEPENDENCIES += [DEP_MODULE_GLSLANG]
+MODULES_ENABLED += 'glslang'

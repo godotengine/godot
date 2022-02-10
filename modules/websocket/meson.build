@@ -16,3 +16,4 @@ lib_module_websocket = library('module_websocket',
 DEP_MODULE_WEBSOCKET += declare_dependency(link_with: lib_module_websocket)
 
 MODULE_DEPENDENCIES += DEP_MODULE_WEBSOCKET
+MODULES_ENABLED += 'websocket'

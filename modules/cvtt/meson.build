@@ -4,3 +4,4 @@ _lib_module_cvtt = library('module_cvtt', _module_cvtt_srcs, dependencies: [DEP_
 DEP_MODULE_CVTT = declare_dependency(link_with: _lib_module_cvtt)
 
 MODULE_DEPENDENCIES += DEP_MODULE_CVTT
+MODULES_ENABLED += 'cvtt'

@@ -9,3 +9,4 @@ ogg_lib = library('ogg',
 DEP_MODULE_OGG = declare_dependency(link_with: ogg_lib)
 
 MODULE_DEPENDENCIES += DEP_MODULE_OGG
+MODULES_ENABLED += 'ogg'

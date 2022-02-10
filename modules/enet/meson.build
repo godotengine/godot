@@ -8,3 +8,4 @@ _lib_module_enet = library('module_enet',
 DEP_MODULE_ENET = declare_dependency(link_with: _lib_module_enet)
 
 MODULE_DEPENDENCIES += DEP_MODULE_ENET
+MODULES_ENABLED += 'enet'

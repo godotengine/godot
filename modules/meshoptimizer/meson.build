@@ -5,3 +5,4 @@ lib_module_meshoptimizer = library('module_meshoptimizer', _module_meshoptimizer
 DEP_MODULE_MESHOPTIMIZER = declare_dependency(link_with: lib_module_meshoptimizer)
 
 MODULE_DEPENDENCIES += DEP_MODULE_MESHOPTIMIZER
+MODULES_ENABLED += 'meshoptimizer'

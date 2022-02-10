@@ -15,3 +15,4 @@ lib_module_mbedtls = library('module_mbedtls',
 DEP_MODULE_MBEDTLS = declare_dependency(link_with: lib_module_mbedtls)
 
 MODULE_DEPENDENCIES += DEP_MODULE_MBEDTLS
+MODULES_ENABLED += 'mbedtls'

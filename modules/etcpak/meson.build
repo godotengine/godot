@@ -10,3 +10,4 @@ lib_module_etcpak = library('module_etcpak',
 DEP_MODULE_ETCPAK = declare_dependency(link_with: lib_module_etcpak)
 
 MODULE_DEPENDENCIES += DEP_MODULE_ETCPAK
+MODULES_ENABLED += 'etcpak'
