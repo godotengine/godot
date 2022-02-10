@@ -55,6 +55,12 @@
 				Returns the height of the content.
 			</description>
 		</method>
+		<method name="get_content_width" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the width of the content.
+			</description>
+		</method>
 		<method name="get_line_count" qualifiers="const">
 			<return type="int" />
 			<description>

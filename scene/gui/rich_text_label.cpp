@@ -4157,6 +4157,14 @@ int RichTextLabel::get_content_height() const {
 	return total_height;
 }
 
+int RichTextLabel::get_content_width() const {
+	int total_width = 0;
+	for (int i = 0; i < main->lines.size(); i++) {
+		total_width = MAX(total_width, main->lines[i].offset.x + main->lines[i].text_buf->get_size().x);
+	}
+	return total_width;
+}
+
 #ifndef DISABLE_DEPRECATED
 // People will be very angry, if their texts get erased, because of #39148. (3.x -> 4.0)
 // Although some people may not used bbcode_text, so we only overwrite, if bbcode_text is not empty.
@@ -4279,6 +4287,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_visible_paragraph_count"), &RichTextLabel::get_visible_paragraph_count);
 
 	ClassDB::bind_method(D_METHOD("get_content_height"), &RichTextLabel::get_content_height);
+	ClassDB::bind_method(D_METHOD("get_content_width"), &RichTextLabel::get_content_width);
 
 	ClassDB::bind_method(D_METHOD("parse_expressions_for_values", "expressions"), &RichTextLabel::parse_expressions_for_values);
 

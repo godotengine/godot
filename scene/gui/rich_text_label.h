@@ -554,6 +554,7 @@ public:
 	int get_visible_line_count() const;
 
 	int get_content_height() const;
+	int get_content_width() const;
 
 	VScrollBar *get_v_scroll_bar() { return vscroll; }
 
