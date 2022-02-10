@@ -58,6 +58,46 @@ void DisplayServerWayland::_get_key_modifier_state(KeyboardState &ks, Ref<InputE
 	state->set_meta_pressed(ks.meta_pressed);
 }
 
+bool DisplayServerWayland::_keyboard_state_configure_key_event(KeyboardState &ks, Ref<InputEventKey> p_event, xkb_keycode_t p_keycode, bool p_pressed) {
+	// TODO: Handle keys that release multiple symbols?
+	Key keycode = KeyMappingXKB::get_keycode(xkb_state_key_get_one_sym(ks.xkb_state, p_keycode));
+	Key physical_keycode = KeyMappingXKB::get_scancode(p_keycode);
+
+	if (physical_keycode == Key::NONE) {
+		return false;
+	}
+
+	if (keycode == Key::NONE) {
+		keycode = physical_keycode;
+	}
+
+	if (keycode >= Key::A + 32 && keycode <= Key::Z + 32) {
+		keycode -= 'a' - 'A';
+	}
+
+	if (ks.focused_window_id != INVALID_WINDOW_ID) {
+		p_event->set_window_id(ks.focused_window_id);
+	}
+
+	// Set all pressed modifiers.
+	_get_key_modifier_state(ks, p_event);
+
+	p_event->set_keycode(keycode);
+	p_event->set_physical_keycode(physical_keycode);
+	p_event->set_unicode(xkb_state_key_get_utf32(ks.xkb_state, p_keycode));
+	p_event->set_pressed(p_pressed);
+
+	// Taken from DisplayServerX11.
+	if (p_event->get_keycode() == Key::BACKTAB) {
+		// Make it consistent across platforms.
+		p_event->set_keycode(Key::TAB);
+		p_event->set_physical_keycode(Key::TAB);
+		p_event->set_shift_pressed(true);
+	}
+
+	return true;
+}
+
 DisplayServerWayland::WindowID DisplayServerWayland::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
 	MutexLock mutex_lock(wls.mutex);
 
@@ -435,35 +475,43 @@ void DisplayServerWayland::_wl_keyboard_on_keymap(void *data, struct wl_keyboard
 	WaylandState *wls = (WaylandState*) data;
 	MutexLock mutex_lock(wls->mutex);
 
-	KeyboardState &keyboard_state = wls->seat_state.keyboard_state;
+	KeyboardState &ks = wls->seat_state.keyboard_state;
 
 	// TODO: Unmap on destruction.
-	keyboard_state.keymap_buffer = (const char*) mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
-	keyboard_state.keymap_buffer_size = size;
+	ks.keymap_buffer = (const char*) mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
+	ks.keymap_buffer_size = size;
 
-	keyboard_state.xkb_keymap = xkb_keymap_new_from_string(keyboard_state.xkb_context, keyboard_state.keymap_buffer,
+	ks.xkb_keymap = xkb_keymap_new_from_string(ks.xkb_context, ks.keymap_buffer,
 		XKB_KEYMAP_FORMAT_TEXT_V1, XKB_KEYMAP_COMPILE_NO_FLAGS);
 
 	// TODO: Handle layout changes.
-	keyboard_state.xkb_state = xkb_state_new(keyboard_state.xkb_keymap);
+	ks.xkb_state = xkb_state_new(ks.xkb_keymap);
 }
 
 void DisplayServerWayland::_wl_keyboard_on_enter(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface, struct wl_array *keys) {
 	WaylandState *wls = (WaylandState*) data;
 	MutexLock mutex_lock(wls->mutex);
 
-	KeyboardState &keyboard_state = wls->seat_state.keyboard_state;
+	KeyboardState &ks = wls->seat_state.keyboard_state;
 
-	keyboard_state.focused_wl_surface = surface;
+	for (KeyValue<WindowID, WindowData> &E : wls->windows) {
+		WindowData &wd = E.value;
+
+		if (wd.wl_surface == surface) {
+			ks.focused_window_id = E.key;
+			break;
+		}
+	}
 }
 
 void DisplayServerWayland::_wl_keyboard_on_leave(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface) {
 	WaylandState *wls = (WaylandState*) data;
 	MutexLock mutex_lock(wls->mutex);
 
-	KeyboardState &keyboard_state = wls->seat_state.keyboard_state;
+	KeyboardState &ks = wls->seat_state.keyboard_state;
 
-	keyboard_state.focused_wl_surface = nullptr;
+	ks.focused_window_id = INVALID_WINDOW_ID;
+	ks.repeating_keycode = XKB_KEYCODE_INVALID;
 }
 
 void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state) {
@@ -477,64 +525,27 @@ void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *w
 
 	bool pressed = state & WL_KEYBOARD_KEY_STATE_PRESSED;
 
-	// TODO: Handle keys that release multiple symbols?
-	Key keycode = KeyMappingXKB::get_keycode(xkb_state_key_get_one_sym(ks.xkb_state, xkb_keycode));
-	Key physical_keycode = KeyMappingXKB::get_scancode(xkb_keycode);
-
-	if (physical_keycode == Key::NONE) {
-		return;
-	}
-
-	if (keycode == Key::NONE) {
-		keycode = physical_keycode;
-	}
-
-	if (keycode >= Key::A + 32 && keycode <= Key::Z + 32) {
-		keycode -= 'a' - 'A';
-	}
-
-	// TODO: Simplify into its own function and move into enter and leave events.
-	WindowID focused_window_id;
-	bool id_found = false;
-	for (KeyValue<WindowID, WindowData> &E : wls->windows) {
-		WindowData &wd = E.value;
-
-		if (wd.wl_surface == ks.focused_wl_surface) {
-			focused_window_id = E.key;
-			id_found = true;
-			break;
+	if (pressed) {
+		if (xkb_keymap_key_repeats(ks.xkb_keymap, xkb_keycode)) {
+			ks.last_repeat_start_msec = OS::get_singleton()->get_ticks_msec();
+			ks.repeating_keycode = xkb_keycode;
 		}
+	} else if (ks.repeating_keycode == xkb_keycode) {
+		ks.repeating_keycode = XKB_KEYCODE_INVALID;
 	}
-
-	WaylandMessage msg;
-	msg.type = TYPE_INPUT_EVENT;
 
 	// We need to use Ref's custom `->` operator, so we have to necessarily
 	// dereference its pointer.
 	Ref<InputEventKey> &k= *memnew(Ref<InputEventKey>);
 	k.instantiate();
 
-	if (id_found) {
-		k->set_window_id(focused_window_id);
+	if (!_keyboard_state_configure_key_event(ks, k, xkb_keycode, pressed)) {
+		memdelete(&k);
+		return;
 	}
 
-	// Set all pressed modifiers.
-	_get_key_modifier_state(ks, k);
-
-	k->set_keycode(keycode);
-	k->set_physical_keycode(physical_keycode);
-	k->set_unicode(xkb_state_key_get_utf32(ks.xkb_state, xkb_keycode));
-	k->set_pressed(pressed);
-	k->set_echo(false);
-
-	// Taken from DisplayServerX11.
-	if (k->get_keycode() == Key::BACKTAB) {
-		// Make it consistent across platforms.
-		k->set_keycode(Key::TAB);
-		k->set_physical_keycode(Key::TAB);
-		k->set_shift_pressed(true);
-	}
-
+	WaylandMessage msg;
+	msg.type = TYPE_INPUT_EVENT;
 	msg.data = &k;
 	wls->message_queue.push_back(msg);
 }
@@ -554,6 +565,13 @@ void DisplayServerWayland::_wl_keyboard_on_modifiers(void *data, struct wl_keybo
 }
 
 void DisplayServerWayland::_wl_keyboard_on_repeat_info(void *data, struct wl_keyboard *wl_keyboard, int32_t rate, int32_t delay) {
+	WaylandState *wls = (WaylandState*) data;
+	MutexLock mutex_lock(wls->mutex);
+
+	KeyboardState &ks = wls->seat_state.keyboard_state;
+
+	ks.repeat_key_delay_msec = 1000 / rate;
+	ks.repeat_start_delay_msec = delay;
 }
 
 
@@ -1069,6 +1087,38 @@ void DisplayServerWayland::process_events() {
 		}
 
 		wls.message_queue.pop_front();
+	}
+
+	KeyboardState &ks = wls.seat_state.keyboard_state;
+
+	if (ks.repeat_key_delay_msec && ks.repeating_keycode != XKB_KEYCODE_INVALID) {
+		uint64_t current_ticks = OS::get_singleton()->get_ticks_msec();
+		uint64_t delayed_start_ticks =  ks.last_repeat_start_msec + ks.repeat_start_delay_msec;
+
+		if (ks.last_repeat_msec < delayed_start_ticks) {
+			ks.last_repeat_msec = delayed_start_ticks;
+		}
+
+		if (current_ticks >= delayed_start_ticks) {
+			uint64_t ticks_delta = current_ticks - ks.last_repeat_msec;
+
+			int keys_amount = (ticks_delta / ks.repeat_key_delay_msec);
+
+			for (int i = 0; i < keys_amount; i++) {
+				Ref<InputEventKey> k;
+				k.instantiate();
+
+				if (!_keyboard_state_configure_key_event(ks, k, ks.repeating_keycode, true)) {
+					continue;
+				}
+
+				k->set_echo(true);
+
+				Input::get_singleton()->parse_input_event(k);
+			}
+
+			ks.last_repeat_msec += ticks_delta - (ticks_delta % ks.repeat_key_delay_msec);
+		}
 	}
 
 	Input::get_singleton()->flush_buffered_events();

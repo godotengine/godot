@@ -106,11 +106,18 @@ class DisplayServerWayland : public DisplayServer {
 		const char *keymap_buffer = nullptr;
 		uint32_t keymap_buffer_size = 0;
 
-		struct wl_surface* focused_wl_surface = nullptr;
+		WindowID focused_window_id = INVALID_WINDOW_ID;
 
 		struct xkb_context *xkb_context = nullptr;
 		struct xkb_keymap *xkb_keymap = nullptr;
 		struct xkb_state *xkb_state = nullptr;
+
+		int32_t repeat_key_delay_msec = 0;
+		int32_t repeat_start_delay_msec = 0;
+
+		xkb_keycode_t repeating_keycode = XKB_KEYCODE_INVALID;
+		uint64_t last_repeat_start_msec = 0;
+		uint64_t last_repeat_msec = 0;
 
 		bool shift_pressed = false;
 		bool ctrl_pressed = false;
@@ -159,6 +166,8 @@ class DisplayServerWayland : public DisplayServer {
 #endif
 
 	static void _get_key_modifier_state(KeyboardState &ks, Ref<InputEventWithModifiers> state);
+
+	static bool _keyboard_state_configure_key_event(KeyboardState &ks, Ref<InputEventKey> p_event, xkb_keycode_t p_keycode, bool pressed);
 
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
 
