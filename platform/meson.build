@@ -12,10 +12,10 @@ _register_platform_apis_target = custom_target(
 SOURCES += [_register_platform_apis_target]
 
 # platform apis
-SOURCES += files([
+SOURCES += files(
     'android/api/api.cpp',
     'javascript/api/api.cpp'
-])
+)
 
 subdir('android')
 subdir('ios')
