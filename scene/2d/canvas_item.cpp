@@ -350,31 +350,19 @@ Transform2D CanvasItem::_edit_get_transform() const {
 #endif
 
 bool CanvasItem::is_visible_in_tree() const {
-	if (!is_inside_tree()) {
-		return false;
-	}
-
-	const CanvasItem *p = this;
-
-	while (p) {
-		if (!p->visible) {
-			return false;
-		}
-		p = p->get_parent_item();
-	}
-
-	return true;
+	return visible && parent_visible_in_tree;
 }
 
-void CanvasItem::_propagate_visibility_changed(bool p_visible) {
+void CanvasItem::_propagate_visibility_changed(bool p_visible, bool p_was_visible) {
 	if (p_visible && first_draw) { //avoid propagating it twice
 		first_draw = false;
 	}
+	parent_visible_in_tree = p_visible;
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
 
-	if (p_visible) {
-		update(); //todo optimize
-	} else {
+	if (visible && p_visible) {
+		update();
+	} else if (!p_visible && (visible || p_was_visible)) {
 		emit_signal(SceneStringNames::get_singleton()->hide);
 	}
 	_block();
@@ -383,43 +371,39 @@ void CanvasItem::_propagate_visibility_changed(bool p_visible) {
 		CanvasItem *c = Object::cast_to<CanvasItem>(get_child(i));
 
 		if (c && c->visible) { //should the toplevels stop propagation? i think so but..
-			c->_propagate_visibility_changed(p_visible);
+			c->_propagate_visibility_changed(p_visible, !p_visible);
 		}
 	}
 
 	_unblock();
 }
 
-void CanvasItem::show() {
-	if (visible) {
+void CanvasItem::set_visible(bool p_visible) {
+	if (visible == p_visible) {
 		return;
 	}
 
-	visible = true;
-	VisualServer::get_singleton()->canvas_item_set_visible(canvas_item, true);
+	visible = p_visible;
+	VisualServer::get_singleton()->canvas_item_set_visible(canvas_item, p_visible);
 
 	if (!is_inside_tree()) {
 		return;
 	}
 
-	_propagate_visibility_changed(true);
+	_propagate_visibility_changed(p_visible, !p_visible);
 	_change_notify("visible");
 }
 
+void CanvasItem::show() {
+	set_visible(true);
+}
+
 void CanvasItem::hide() {
-	if (!visible) {
-		return;
-	}
+	set_visible(false);
+}
 
-	visible = false;
-	VisualServer::get_singleton()->canvas_item_set_visible(canvas_item, false);
-
-	if (!is_inside_tree()) {
-		return;
-	}
-
-	_propagate_visibility_changed(false);
-	_change_notify("visible");
+bool CanvasItem::is_visible() const {
+	return visible;
 }
 
 CanvasItem *CanvasItem::current_item_drawn = nullptr;
@@ -435,7 +419,7 @@ void CanvasItem::_update_callback() {
 
 	VisualServer::get_singleton()->canvas_item_clear(get_canvas_item());
 	//todo updating = true - only allow drawing here
-	if (is_visible_in_tree()) { //todo optimize this!!
+	if (is_visible_in_tree()) {
 		if (first_draw) {
 			notification(NOTIFICATION_VISIBILITY_CHANGED);
 			first_draw = false;
@@ -556,10 +540,20 @@ void CanvasItem::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			ERR_FAIL_COND(!is_inside_tree());
 			first_draw = true;
-			if (get_parent()) {
-				CanvasItem *ci = Object::cast_to<CanvasItem>(get_parent());
+
+			Node *parent = get_parent();
+			if (parent) {
+				CanvasItem *ci = Object::cast_to<CanvasItem>(parent);
 				if (ci) {
+					parent_visible_in_tree = ci->is_visible_in_tree();
 					C = ci->children_items.push_back(this);
+				} else {
+					CanvasLayer *cl = Object::cast_to<CanvasLayer>(parent);
+					if (cl) {
+						parent_visible_in_tree = cl->is_visible();
+					} else {
+						parent_visible_in_tree = true;
+					}
 				}
 			}
 			_enter_canvas();
@@ -591,6 +585,7 @@ void CanvasItem::_notification(int p_what) {
 				C = nullptr;
 			}
 			global_invalid = true;
+			parent_visible_in_tree = false;
 		} break;
 		case NOTIFICATION_DRAW:
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -599,17 +594,6 @@ void CanvasItem::_notification(int p_what) {
 			emit_signal(SceneStringNames::get_singleton()->visibility_changed);
 		} break;
 	}
-}
-
-void CanvasItem::set_visible(bool p_visible) {
-	if (p_visible) {
-		show();
-	} else {
-		hide();
-	}
-}
-bool CanvasItem::is_visible() const {
-	return visible;
 }
 
 void CanvasItem::update() {
@@ -1267,6 +1251,7 @@ CanvasItem::CanvasItem() :
 		xform_change(this) {
 	canvas_item = RID_PRIME(VisualServer::get_singleton()->canvas_item_create());
 	visible = true;
+	parent_visible_in_tree = false;
 	pending_update = false;
 	modulate = Color(1, 1, 1, 1);
 	self_modulate = Color(1, 1, 1, 1);
