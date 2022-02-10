@@ -403,8 +403,14 @@
 			<return type="float" />
 			<argument index="0" name="screen" type="int" default="-1" />
 			<description>
-				Returns the current refresh rate of the specified screen. If [code]screen[/code] is [code]SCREEN_OF_MAIN_WINDOW[/code] (the default value), a screen with the main window will be used.
-				[b]Note:[/b] Returns [code]60.0[/code] if the DisplayServer fails to find the refresh rate for the specified screen. On HTML5, [method screen_get_refresh_rate] will always return [code]60.0[/code] as there is no way to retrieve the refresh rate on that platform.
+				Returns the current refresh rate of the specified screen. If [code]screen[/code] is [constant SCREEN_OF_MAIN_WINDOW] (the default value), a screen with the main window will be used.
+				[b]Note:[/b] Returns [code]-1.0[/code] if the DisplayServer fails to find the refresh rate for the specified screen. On HTML5, [method screen_get_refresh_rate] will always return [code]-1.0[/code] as there is no way to retrieve the refresh rate on that platform.
+				To fallback to a default refresh rate if the method fails, try:
+				[codeblock]
+				var refresh_rate = DisplayServer.screen_get_refresh_rate()
+				if refresh_rate &lt; 0:
+				    refresh_rate = 60.0
+				[/codeblock]
 			</description>
 		</method>
 		<method name="screen_get_scale" qualifiers="const">

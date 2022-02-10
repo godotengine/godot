@@ -175,7 +175,7 @@ public:
 		SCREEN_OF_MAIN_WINDOW = -1
 	};
 
-	const float SCREEN_REFRESH_RATE_FALLBACK = 60.0; // Returned by screen_get_refresh_rate if the method fails. Most screens are 60hz as of 2022.
+	const float SCREEN_REFRESH_RATE_FALLBACK = -1.0; // Returned by screen_get_refresh_rate if the method fails.
 
 	virtual int get_screen_count() const = 0;
 	virtual Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
