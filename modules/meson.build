@@ -1,6 +1,6 @@
 module_dirs = ['basis_universal',
   'bmp',
-#  'bullet',
+  'bullet',
   'camera',
   'csg',
   'cvtt',
@@ -16,7 +16,6 @@ module_dirs = ['basis_universal',
   'gltf',
   'gridmap',
   'hdr',
-  'icloud',
   'jpg',
   'jsonrpc',
   'lightmapper_rd',
@@ -54,7 +53,7 @@ all_disabled = get_option('disable_all_modules')
 
 foreach d: module_dirs
   if all_disabled or disabled_modules.contains(d)
-    # fixme
+    MODULES_DISABLED += d
   else
     subdir(d)
   endif

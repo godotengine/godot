@@ -7,3 +7,4 @@ _lib_module_jpg = library('module_jpg', _module_jpg_srcs,
 DEP_MODULE_JPG = declare_dependency(link_with: _lib_module_jpg)
 
 MODULE_DEPENDENCIES += DEP_MODULE_JPG
+MODULES_ENABLED += 'jpg'

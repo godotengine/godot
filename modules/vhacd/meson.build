@@ -5,3 +5,4 @@ lib_module_vhacd = library('module_vhacd', _module_vhacd_srcs, dependencies: [DE
 DEP_MODULE_VHACD = declare_dependency(link_with: lib_module_vhacd)
 
 MODULE_DEPENDENCIES += DEP_MODULE_VHACD
+MODULES_ENABLED += 'vhacd'

@@ -4,3 +4,4 @@ _lib_module_jsonrpc = library('module_jsonrpc', _module_jsonrpc_srcs, dependenci
 DEP_MODULE_JSONRPC = declare_dependency(link_with: _lib_module_jsonrpc)
 
 MODULE_DEPENDENCIES += DEP_MODULE_JSONRPC
+MODULES_ENABLED += 'jsonrpc'

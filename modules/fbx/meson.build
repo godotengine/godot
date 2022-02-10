@@ -14,3 +14,4 @@ lib_module_fbx = library('module_fbx',
 DEP_MODULE_FBX = declare_dependency(link_with: lib_module_fbx)
 
 MODULE_DEPENDENCIES += DEP_MODULE_FBX
+MODULES_ENABLED += 'fbx'

@@ -9,3 +9,4 @@ lib_module_visual_script = library('module_visual_script',
 DEP_MODULE_VISUAL_SCRIPT = declare_dependency(link_with: lib_module_visual_script)
 
 MODULE_DEPENDENCIES += DEP_MODULE_VISUAL_SCRIPT
+MODULES_ENABLED += 'visual_script'

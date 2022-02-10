@@ -4,3 +4,4 @@ _lib_module_svg = library('module_svg', _module_svg_sourcs, dependencies: [DEP_G
 DEP_MODULE_SVG = declare_dependency(link_with: _lib_module_svg)
 
 MODULE_DEPENDENCIES += DEP_MODULE_SVG
+MODULES_ENABLED += 'svg'

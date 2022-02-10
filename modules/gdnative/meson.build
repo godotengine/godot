@@ -1,4 +1,3 @@
-
 module_gdnative_srcs = files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
 
 # XXX Could use compat, but module will be removed, so no need to spend time on it.
@@ -44,3 +43,4 @@ DEP_MODULE_GDNATIVE = declare_dependency(link_with: lib_module_gdnative,
                                          include_directories: _module_gdnative_incdirs)
 
 MODULE_DEPENDENCIES += DEP_MODULE_GDNATIVE
+MODULES_ENABLED += 'gdnative'

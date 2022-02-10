@@ -7,3 +7,4 @@ _lib_module_bmp = library('module_bmp', _module_bmp_srcs,
 DEP_MODULE_BMP = declare_dependency(link_with: _lib_module_bmp)
 
 MODULE_DEPENDENCIES += DEP_MODULE_BMP
+MODULES_ENABLED += 'bmp'

@@ -22,3 +22,4 @@ lib_module_lmrd = library('module_lightmapper_rd', _module_lmrd_src, dependencie
 DEP_MODULE_LIGHTMAPPER_RD = declare_dependency(link_with: lib_module_lmrd)
 
 MODULE_DEPENDENCIES += DEP_MODULE_LIGHTMAPPER_RD
+MODULES_ENABLED += 'lightmapper_rd'

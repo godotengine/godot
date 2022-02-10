@@ -6,3 +6,4 @@ lib_module_minimp3 = library('module_minimp3',
 DEP_MODULE_MINIMP3 = declare_dependency(link_with: lib_module_minimp3)
 
 MODULE_DEPENDENCIES += DEP_MODULE_MINIMP3
+MODULES_ENABLED += 'minimp3'
