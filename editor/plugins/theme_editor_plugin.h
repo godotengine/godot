@@ -321,6 +321,16 @@ class ThemeTypeEditor : public MarginContainer {
 	VBoxContainer *icon_items_list;
 	VBoxContainer *stylebox_items_list;
 
+	LineEdit *type_variation_edit;
+	Button *type_variation_button;
+	Label *type_variation_locked;
+
+	enum TypeDialogMode {
+		ADD_THEME_TYPE,
+		ADD_VARIATION_BASE,
+	};
+
+	TypeDialogMode add_type_mode = ADD_THEME_TYPE;
 	ThemeTypeDialog *add_type_dialog;
 
 	Vector<Control *> focusables;
@@ -356,6 +366,9 @@ class ThemeTypeEditor : public MarginContainer {
 	void _pin_leading_stylebox(Control *p_editor, String p_item_name);
 	void _unpin_leading_stylebox();
 	void _update_stylebox_from_leading();
+
+	void _type_variation_changed(const String p_value);
+	void _add_type_variation_cbk();
 
 	void _add_type_dialog_selected(const String p_type_name);
 

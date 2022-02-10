@@ -1420,6 +1420,10 @@
 		<constant name="PROPERTY_HINT_ENUM" value="3" enum="PropertyHint">
 			Hints that an integer, float or string property is an enumerated value to pick in a list specified via a hint string such as [code]"Hello,Something,Else"[/code].
 		</constant>
+		<constant name="PROPERTY_HINT_ENUM_SUGGESTION" value="37" enum="PropertyHint">
+			Hints that a string property can be an enumerated value to pick in a list specified via a hint string such as [code]"Hello,Something,Else"[/code].
+			Unlike [constant PROPERTY_HINT_ENUM] a property with this hint still accepts arbitrary values and can be empty. The list of values serves to suggest possible values.
+		</constant>
 		<constant name="PROPERTY_HINT_EXP_EASING" value="4" enum="PropertyHint">
 			Hints that a float property should be edited via an exponential easing function. The hint string can include [code]"attenuation"[/code] to flip the curve horizontally and/or [code]"inout"[/code] to also include in/out easing.
 		</constant>
