@@ -147,7 +147,7 @@ private:
 
 	// SDFGI
 	bool sdfgi_enabled = false;
-	int sdfgi_cascades = 6;
+	int sdfgi_cascades = 4;
 	float sdfgi_min_cell_size = 0.2;
 	SDFGIYScale sdfgi_y_scale = SDFGI_Y_SCALE_DISABLED;
 	bool sdfgi_use_occlusion = false;

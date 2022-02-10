@@ -135,7 +135,7 @@ public:
 
 	/// SDFGI
 	bool sdfgi_enabled = false;
-	int sdfgi_cascades = 6;
+	int sdfgi_cascades = 4;
 	float sdfgi_min_cell_size = 0.2;
 	bool sdfgi_use_occlusion = false;
 	float sdfgi_bounce_feedback = 0.0;
