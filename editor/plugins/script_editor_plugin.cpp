@@ -159,7 +159,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 				if (E.usage & PROPERTY_USAGE_CATEGORY || E.usage & PROPERTY_USAGE_GROUP || E.usage & PROPERTY_USAGE_SUBGROUP) {
 					continue;
 				}
-				if (name.find("/") != -1) {
+				if (name.contains("/")) {
 					continue;
 				}
 				highlighter->add_member_keyword_color(name, member_variable_color);
@@ -714,7 +714,7 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 			return;
 		}
 		// if it's a path then it's most likely a deleted file not help
-	} else if (path.find("::") != -1) {
+	} else if (path.contains("::")) {
 		// built-in script
 		String res_path = path.get_slice("::", 0);
 		if (ResourceLoader::get_resource_type(res_path) == "PackedScene") {
@@ -1603,7 +1603,8 @@ void ScriptEditor::_notification(int p_what) {
 
 			members_overview->connect("item_selected", callable_mp(this, &ScriptEditor::_members_overview_selected));
 			help_overview->connect("item_selected", callable_mp(this, &ScriptEditor::_help_overview_selected));
-			script_split->connect("dragged", callable_mp(this, &ScriptEditor::_script_split_dragged));
+			script_split->connect("dragged", callable_mp(this, &ScriptEditor::_split_dragged));
+			list_split->connect("dragged", callable_mp(this, &ScriptEditor::_split_dragged));
 
 			EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &ScriptEditor::_editor_settings_changed));
 			EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &ScriptEditor::_filesystem_changed));
@@ -1878,7 +1879,7 @@ void ScriptEditor::_update_members_overview() {
 	for (int i = 0; i < functions.size(); i++) {
 		String filter = filter_methods->get_text();
 		String name = functions[i].get_slice(":", 0);
-		if (filter.is_empty() || filter.is_subsequence_ofi(name)) {
+		if (filter.is_empty() || filter.is_subsequence_ofn(name)) {
 			members_overview->add_item(name);
 			members_overview->set_item_metadata(members_overview->get_item_count() - 1, functions[i].get_slice(":", 1).to_int() - 1);
 		}
@@ -2128,7 +2129,7 @@ void ScriptEditor::_update_script_names() {
 	Vector<_ScriptEditorItemData> sedata_filtered;
 	for (int i = 0; i < sedata.size(); i++) {
 		String filter = filter_scripts->get_text();
-		if (filter.is_empty() || filter.is_subsequence_ofi(sedata[i].name)) {
+		if (filter.is_empty() || filter.is_subsequence_ofn(sedata[i].name)) {
 			sedata_filtered.push_back(sedata[i]);
 		}
 	}
@@ -2264,7 +2265,7 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 	if (use_external_editor &&
 			(EditorDebuggerNode::get_singleton()->get_dump_stack_script() != p_resource || EditorDebuggerNode::get_singleton()->get_debug_with_external_editor()) &&
 			p_resource->get_path().is_resource_file() &&
-			p_resource->get_class_name() != StringName("VisualScript")) {
+			!Ref<VisualScript>(p_resource).is_valid()) {
 		String path = EditorSettings::get_singleton()->get("text_editor/external/exec_path");
 		String flags = EditorSettings::get_singleton()->get("text_editor/external/exec_flags");
 
@@ -2292,7 +2293,7 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 
 				} else if (flags[i] == '\0' || (!inside_quotes && flags[i] == ' ')) {
 					String arg = flags.substr(from, num_chars);
-					if (arg.find("{file}") != -1) {
+					if (arg.contains("{file}")) {
 						has_file_flag = true;
 					}
 
@@ -2363,7 +2364,7 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 
 	se->set_edited_resource(p_resource);
 
-	if (p_resource->get_class_name() != StringName("VisualScript")) {
+	if (!Ref<VisualScript>(p_resource).is_valid()) {
 		bool highlighter_set = false;
 		for (int i = 0; i < syntax_highlighters.size(); i++) {
 			Ref<EditorSyntaxHighlighter> highlighter = syntax_highlighters[i]->_create();
@@ -2809,7 +2810,7 @@ void ScriptEditor::_tree_changed() {
 	call_deferred(SNAME("_update_script_connections"));
 }
 
-void ScriptEditor::_script_split_dragged(float) {
+void ScriptEditor::_split_dragged(float) {
 	_save_layout();
 }
 
@@ -2859,7 +2860,7 @@ bool ScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data
 	}
 
 	if (String(d["type"]) == "script_list_element") {
-		Node *node = d["script_list_element"];
+		Node *node = Object::cast_to<Node>(d["script_list_element"]);
 
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(node);
 		if (se) {
@@ -2932,7 +2933,7 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 	}
 
 	if (String(d["type"]) == "script_list_element") {
-		Node *node = d["script_list_element"];
+		Node *node = Object::cast_to<Node>(d["script_list_element"]);
 
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(node);
 		EditorHelp *eh = Object::cast_to<EditorHelp>(node);
@@ -3199,8 +3200,12 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 		tab_container->get_child(i)->set_meta("__editor_pass", Variant());
 	}
 
-	if (p_layout->has_section_key("ScriptEditor", "split_offset")) {
-		script_split->set_split_offset(p_layout->get_value("ScriptEditor", "split_offset"));
+	if (p_layout->has_section_key("ScriptEditor", "script_split_offset")) {
+		script_split->set_split_offset(p_layout->get_value("ScriptEditor", "script_split_offset"));
+	}
+
+	if (p_layout->has_section_key("ScriptEditor", "list_split_offset")) {
+		list_split->set_split_offset(p_layout->get_value("ScriptEditor", "list_split_offset"));
 	}
 
 	// Remove any deleted editors that have been removed between launches.
@@ -3253,7 +3258,8 @@ void ScriptEditor::get_window_layout(Ref<ConfigFile> p_layout) {
 
 	p_layout->set_value("ScriptEditor", "open_scripts", scripts);
 	p_layout->set_value("ScriptEditor", "open_help", helps);
-	p_layout->set_value("ScriptEditor", "split_offset", script_split->get_split_offset());
+	p_layout->set_value("ScriptEditor", "script_split_offset", script_split->get_split_offset());
+	p_layout->set_value("ScriptEditor", "list_split_offset", list_split->get_split_offset());
 
 	// Save the cache.
 	script_editor_cache->save(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("script_editor_cache.cfg"));
@@ -3486,7 +3492,7 @@ void ScriptEditor::_open_script_request(const String &p_path) {
 void ScriptEditor::register_syntax_highlighter(const Ref<EditorSyntaxHighlighter> &p_syntax_highlighter) {
 	ERR_FAIL_COND(p_syntax_highlighter.is_null());
 
-	if (syntax_highlighters.find(p_syntax_highlighter) == -1) {
+	if (!syntax_highlighters.has(p_syntax_highlighter)) {
 		syntax_highlighters.push_back(p_syntax_highlighter);
 	}
 }

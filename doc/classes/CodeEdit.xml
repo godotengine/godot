@@ -607,6 +607,9 @@
 		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The tint of text outline of the [CodeEdit].
 		</theme_item>
+		<theme_item name="font_placeholder_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.6)">
+			Font color for [member TextEdit.placeholder_text].
+		</theme_item>
 		<theme_item name="font_readonly_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
 			Sets the font [Color] when [member TextEdit.editable] is disabled.
 		</theme_item>

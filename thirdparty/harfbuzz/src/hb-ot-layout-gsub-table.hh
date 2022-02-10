@@ -826,22 +826,25 @@ struct Ligature
 
     unsigned int total_component_count = 0;
 
-    unsigned int match_length = 0;
+    unsigned int match_end = 0;
     unsigned int match_positions[HB_MAX_CONTEXT_LENGTH];
 
     if (likely (!match_input (c, count,
 			      &component[1],
 			      match_glyph,
 			      nullptr,
-			      &match_length,
+			      &match_end,
 			      match_positions,
 			      &total_component_count)))
+    {
+      c->buffer->unsafe_to_concat (c->buffer->idx, match_end);
       return_trace (false);
+    }
 
     ligate_input (c,
 		  count,
 		  match_positions,
-		  match_length,
+		  match_end,
 		  ligGlyph,
 		  total_component_count);
 
@@ -1296,7 +1299,7 @@ struct ReverseChainSingleSubstFormat1
 	match_lookahead (c,
 			 lookahead.len, (HBUINT16 *) lookahead.arrayZ,
 			 match_coverage, this,
-			 1, &end_index))
+			 c->buffer->idx + 1, &end_index))
     {
       c->buffer->unsafe_to_break_from_outbuffer (start_index, end_index);
       c->replace_glyph_inplace (substitute[index]);
@@ -1305,8 +1308,11 @@ struct ReverseChainSingleSubstFormat1
        * calls us through a Context lookup. */
       return_trace (true);
     }
-
-    return_trace (false);
+    else
+    {
+      c->buffer->unsafe_to_concat_from_outbuffer (start_index, end_index);
+      return_trace (false);
+    }
   }
 
   template<typename Iterator,
@@ -1739,7 +1745,9 @@ struct GSUB : GSUBGPOS
 };
 
 
-struct GSUB_accelerator_t : GSUB::accelerator_t {};
+struct GSUB_accelerator_t : GSUB::accelerator_t {
+  GSUB_accelerator_t (hb_face_t *face) : GSUB::accelerator_t (face) {}
+};
 
 
 /* Out-of-class implementation for methods recursing */

@@ -15,7 +15,7 @@
 		<member name="use_hdr" type="bool" setter="set_use_hdr" getter="is_using_hdr" default="false">
 			If [code]true[/code], the generated texture will support high dynamic range ([constant Image.FORMAT_RGBAF] format). This allows for glow effects to work if [member Environment.glow_enabled] is [code]true[/code]. If [code]false[/code], the generated texture will use low dynamic range; overbright colors will be clamped ([constant Image.FORMAT_RGBA8] format).
 		</member>
-		<member name="width" type="int" setter="set_width" getter="get_width" default="2048">
+		<member name="width" type="int" setter="set_width" getter="get_width" default="256">
 			The number of color samples that will be obtained from the [Gradient].
 		</member>
 	</members>

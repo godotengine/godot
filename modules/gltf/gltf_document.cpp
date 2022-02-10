@@ -50,13 +50,13 @@
 #include "core/io/file_access.h"
 #include "core/io/file_access_memory.h"
 #include "core/io/json.h"
+#include "core/io/stream_peer.h"
 #include "core/math/disjoint_set.h"
 #include "core/math/vector2.h"
 #include "core/variant/dictionary.h"
 #include "core/variant/typed_array.h"
 #include "core/variant/variant.h"
 #include "core/version.h"
-#include "core/version_hash.gen.h"
 #include "drivers/png/png_driver_common.h"
 #include "editor/import/resource_importer_scene.h"
 #include "scene/2d/node_2d.h"
@@ -6277,7 +6277,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 			p_track.rotation_track.values.write[key_i] = rotation;
 		}
 	} else if (track_type == Animation::TYPE_VALUE) {
-		if (path.find(":position") != -1) {
+		if (path.contains(":position")) {
 			p_track.position_track.times = times;
 			p_track.position_track.interpolation = gltf_interpolation;
 
@@ -6288,7 +6288,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 				Vector3 position = p_animation->track_get_key_value(p_track_i, key_i);
 				p_track.position_track.values.write[key_i] = position;
 			}
-		} else if (path.find(":rotation") != -1) {
+		} else if (path.contains(":rotation")) {
 			p_track.rotation_track.times = times;
 			p_track.rotation_track.interpolation = gltf_interpolation;
 
@@ -6299,7 +6299,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 				Vector3 rotation_radian = p_animation->track_get_key_value(p_track_i, key_i);
 				p_track.rotation_track.values.write[key_i] = Quaternion(rotation_radian);
 			}
-		} else if (path.find(":scale") != -1) {
+		} else if (path.contains(":scale")) {
 			p_track.scale_track.times = times;
 			p_track.scale_track.interpolation = gltf_interpolation;
 
@@ -6312,7 +6312,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 			}
 		}
 	} else if (track_type == Animation::TYPE_BEZIER) {
-		if (path.find("/scale") != -1) {
+		if (path.contains("/scale")) {
 			const int32_t keys = p_animation->track_get_key_time(p_track_i, key_count - 1) * BAKE_FPS;
 			if (!p_track.scale_track.times.size()) {
 				Vector<real_t> new_times;
@@ -6333,16 +6333,16 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 
 			for (int32_t key_i = 0; key_i < keys; key_i++) {
 				Vector3 bezier_track = p_track.scale_track.values[key_i];
-				if (path.find("/scale:x") != -1) {
+				if (path.contains("/scale:x")) {
 					bezier_track.x = p_animation->bezier_track_interpolate(p_track_i, key_i / BAKE_FPS);
-				} else if (path.find("/scale:y") != -1) {
+				} else if (path.contains("/scale:y")) {
 					bezier_track.y = p_animation->bezier_track_interpolate(p_track_i, key_i / BAKE_FPS);
-				} else if (path.find("/scale:z") != -1) {
+				} else if (path.contains("/scale:z")) {
 					bezier_track.z = p_animation->bezier_track_interpolate(p_track_i, key_i / BAKE_FPS);
 				}
 				p_track.scale_track.values.write[key_i] = bezier_track;
 			}
-		} else if (path.find("/position") != -1) {
+		} else if (path.contains("/position")) {
 			const int32_t keys = p_animation->track_get_key_time(p_track_i, key_count - 1) * BAKE_FPS;
 			if (!p_track.position_track.times.size()) {
 				Vector<real_t> new_times;
@@ -6359,11 +6359,11 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 
 			for (int32_t key_i = 0; key_i < keys; key_i++) {
 				Vector3 bezier_track = p_track.position_track.values[key_i];
-				if (path.find("/position:x") != -1) {
+				if (path.contains("/position:x")) {
 					bezier_track.x = p_animation->bezier_track_interpolate(p_track_i, key_i / BAKE_FPS);
-				} else if (path.find("/position:y") != -1) {
+				} else if (path.contains("/position:y")) {
 					bezier_track.y = p_animation->bezier_track_interpolate(p_track_i, key_i / BAKE_FPS);
-				} else if (path.find("/position:z") != -1) {
+				} else if (path.contains("/position:z")) {
 					bezier_track.z = p_animation->bezier_track_interpolate(p_track_i, key_i / BAKE_FPS);
 				}
 				p_track.position_track.values.write[key_i] = bezier_track;
@@ -6384,7 +6384,7 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 			continue;
 		}
 		String orig_track_path = animation->track_get_path(track_i);
-		if (String(orig_track_path).find(":position") != -1) {
+		if (String(orig_track_path).contains(":position")) {
 			const Vector<String> node_suffix = String(orig_track_path).split(":position");
 			const NodePath path = node_suffix[0];
 			const Node *node = ap->get_parent()->get_node_or_null(path);
@@ -6400,7 +6400,7 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 					gltf_animation->get_tracks().insert(node_index, track);
 				}
 			}
-		} else if (String(orig_track_path).find(":rotation_degrees") != -1) {
+		} else if (String(orig_track_path).contains(":rotation_degrees")) {
 			const Vector<String> node_suffix = String(orig_track_path).split(":rotation_degrees");
 			const NodePath path = node_suffix[0];
 			const Node *node = ap->get_parent()->get_node_or_null(path);
@@ -6416,7 +6416,7 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 					gltf_animation->get_tracks().insert(node_index, track);
 				}
 			}
-		} else if (String(orig_track_path).find(":scale") != -1) {
+		} else if (String(orig_track_path).contains(":scale")) {
 			const Vector<String> node_suffix = String(orig_track_path).split(":scale");
 			const NodePath path = node_suffix[0];
 			const Node *node = ap->get_parent()->get_node_or_null(path);
@@ -6432,7 +6432,7 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 					gltf_animation->get_tracks().insert(node_index, track);
 				}
 			}
-		} else if (String(orig_track_path).find(":transform") != -1) {
+		} else if (String(orig_track_path).contains(":transform")) {
 			const Vector<String> node_suffix = String(orig_track_path).split(":transform");
 			const NodePath path = node_suffix[0];
 			const Node *node = ap->get_parent()->get_node_or_null(path);
@@ -6443,7 +6443,7 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 					gltf_animation->get_tracks().insert(transform_track_i.key, track);
 				}
 			}
-		} else if (String(orig_track_path).find(":blend_shapes/") != -1) {
+		} else if (String(orig_track_path).contains(":blend_shapes/")) {
 			const Vector<String> node_suffix = String(orig_track_path).split(":blend_shapes/");
 			const NodePath path = node_suffix[0];
 			const String suffix = node_suffix[1];
@@ -6499,7 +6499,7 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 				}
 				tracks[mesh_index] = track;
 			}
-		} else if (String(orig_track_path).find(":") != -1) {
+		} else if (String(orig_track_path).contains(":")) {
 			//Process skeleton
 			const Vector<String> node_suffix = String(orig_track_path).split(":");
 			const String node = node_suffix[0];
@@ -6529,7 +6529,7 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 					gltf_animation->get_tracks()[node_i] = track;
 				}
 			}
-		} else if (String(orig_track_path).find(":") == -1) {
+		} else if (!String(orig_track_path).contains(":")) {
 			ERR_CONTINUE(!ap->get_parent());
 			Node *godot_node = ap->get_parent()->get_node_or_null(orig_track_path);
 			for (const KeyValue<GLTFNodeIndex, Node *> &scene_node_i : state->scene_nodes) {
@@ -6654,8 +6654,8 @@ Error GLTFDocument::_serialize_version(Ref<GLTFState> state) {
 	Dictionary asset;
 	asset["version"] = version;
 
-	String hash = VERSION_HASH;
-	asset["generator"] = String(VERSION_FULL_NAME) + String("@") + (hash.length() == 0 ? String("unknown") : hash);
+	String hash = String(VERSION_HASH);
+	asset["generator"] = String(VERSION_FULL_NAME) + String("@") + (hash.is_empty() ? String("unknown") : hash);
 	state->json["asset"] = asset;
 	ERR_FAIL_COND_V(!asset.has("version"), Error::FAILED);
 	ERR_FAIL_COND_V(!state->json.has("asset"), Error::FAILED);
@@ -6843,6 +6843,7 @@ Error GLTFDocument::write_to_filesystem(Ref<GLTFState> state, const String &p_pa
 }
 
 Node *GLTFDocument::generate_scene(Ref<GLTFState> state, int32_t p_bake_fps) {
+	ERR_FAIL_NULL_V(state, nullptr);
 	ERR_FAIL_INDEX_V(0, state->root_nodes.size(), nullptr);
 	GLTFNodeIndex gltf_root = state->root_nodes.write[0];
 	Node *gltf_root_node = state->get_scene_node(gltf_root);

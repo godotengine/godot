@@ -43,6 +43,7 @@
 		</member>
 		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance" default="0.0">
 			The maximum distance away from the [ReflectionProbe] an object can be before it is culled. Decrease this to improve performance, especially when using the [constant UPDATE_ALWAYS] [member update_mode].
+			[b]Note:[/b] The maximum reflection distance is always at least equal to the [member extents]. This means that decreasing [member max_distance] will not always cull objects from reflections, especially if the reflection probe's [member extents] are already large.
 		</member>
 		<member name="mesh_lod_threshold" type="float" setter="set_mesh_lod_threshold" getter="get_mesh_lod_threshold" default="1.0">
 			The automatic LOD bias to use for meshes rendered within the [ReflectionProbe] (this is analog to [member Viewport.mesh_lod_threshold]). Higher values will use less detailed versions of meshes that have LOD variations generated. If set to [code]0.0[/code], automatic LOD is disabled. Increase [member mesh_lod_threshold] to improve performance at the cost of geometry detail, especially when using the [constant UPDATE_ALWAYS] [member update_mode].

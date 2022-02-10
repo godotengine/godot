@@ -106,6 +106,14 @@
 				Scales basis and origin of the transform by the given scale factor, using matrix multiplication.
 			</description>
 		</method>
+		<method name="sphere_interpolate_with" qualifiers="const">
+			<return type="Transform3D" />
+			<argument index="0" name="xform" type="Transform3D" />
+			<argument index="1" name="weight" type="float" />
+			<description>
+				Returns a transform spherically interpolated between this transform and another by a given [code]weight[/code] (on the range of 0.0 to 1.0).
+			</description>
+		</method>
 		<method name="translated" qualifiers="const">
 			<return type="Transform3D" />
 			<argument index="0" name="offset" type="Vector3" />

@@ -11,16 +11,6 @@
 		<link title="2D Finite State Machine Demo">https://godotengine.org/asset-library/asset/516</link>
 		<link title="3D Inverse Kinematics Demo">https://godotengine.org/asset-library/asset/523</link>
 	</tutorials>
-	<members>
-		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="Panel.Mode" default="0">
-		</member>
-	</members>
-	<constants>
-		<constant name="MODE_BACKGROUND" value="0" enum="Mode">
-		</constant>
-		<constant name="MODE_FOREGROUND" value="1" enum="Mode">
-		</constant>
-	</constants>
 	<theme_items>
 		<theme_item name="panel" data_type="style" type="StyleBox">
 			The style of this [Panel].

@@ -62,7 +62,7 @@ Error PCKPacker::pck_start(const String &p_file, int p_alignment, const String &
 		int v = 0;
 		if (i * 2 < _key.length()) {
 			char32_t ct = _key[i * 2];
-			if (ct >= '0' && ct <= '9') {
+			if (is_digit(ct)) {
 				ct = ct - '0';
 			} else if (ct >= 'a' && ct <= 'f') {
 				ct = 10 + ct - 'a';
@@ -72,7 +72,7 @@ Error PCKPacker::pck_start(const String &p_file, int p_alignment, const String &
 
 		if (i * 2 + 1 < _key.length()) {
 			char32_t ct = _key[i * 2 + 1];
-			if (ct >= '0' && ct <= '9') {
+			if (is_digit(ct)) {
 				ct = ct - '0';
 			} else if (ct >= 'a' && ct <= 'f') {
 				ct = 10 + ct - 'a';

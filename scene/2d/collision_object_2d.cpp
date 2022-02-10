@@ -268,7 +268,7 @@ uint32_t CollisionObject2D::create_shape_owner(Object *p_owner) {
 		id = shapes.back()->key() + 1;
 	}
 
-	sd.owner = p_owner;
+	sd.owner_id = p_owner ? p_owner->get_instance_id() : ObjectID();
 
 	shapes[id] = sd;
 
@@ -382,7 +382,7 @@ Transform2D CollisionObject2D::shape_owner_get_transform(uint32_t p_owner) const
 Object *CollisionObject2D::shape_owner_get_owner(uint32_t p_owner) const {
 	ERR_FAIL_COND_V(!shapes.has(p_owner), nullptr);
 
-	return shapes[p_owner].owner;
+	return ObjectDB::get_instance(shapes[p_owner].owner_id);
 }
 
 void CollisionObject2D::shape_owner_add_shape(uint32_t p_owner, const Ref<Shape2D> &p_shape) {

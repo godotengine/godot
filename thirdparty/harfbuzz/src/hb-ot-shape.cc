@@ -566,7 +566,7 @@ hb_insert_dotted_circle (hb_buffer_t *buffer, hb_font_t *font)
   info.mask = buffer->cur().mask;
   (void) buffer->output_info (info);
 
-  buffer->swap_buffers ();
+  buffer->sync ();
 }
 
 static void
@@ -1034,7 +1034,7 @@ hb_ot_position_complex (const hb_ot_shape_context_t *c)
    * hanging over the next glyph after the final reordering.
    *
    * Note: If fallback positinoing happens, we don't care about
-   * this as it will be overriden.
+   * this as it will be overridden.
    */
   bool adjust_offsets_when_zeroing = c->plan->adjust_mark_positioning_when_zeroing &&
 				     HB_DIRECTION_IS_FORWARD (c->buffer->props.direction);
@@ -1120,7 +1120,7 @@ hb_propagate_flags (hb_buffer_t *buffer)
   /* Propagate cluster-level glyph flags to be the same on all cluster glyphs.
    * Simplifies using them. */
 
-  if (!(buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_UNSAFE_TO_BREAK))
+  if (!(buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS))
     return;
 
   hb_glyph_info_t *info = buffer->info;
@@ -1129,11 +1129,7 @@ hb_propagate_flags (hb_buffer_t *buffer)
   {
     unsigned int mask = 0;
     for (unsigned int i = start; i < end; i++)
-      if (info[i].mask & HB_GLYPH_FLAG_UNSAFE_TO_BREAK)
-      {
-	 mask = HB_GLYPH_FLAG_UNSAFE_TO_BREAK;
-	 break;
-      }
+      mask |= info[i].mask & HB_GLYPH_FLAG_DEFINED;
     if (mask)
       for (unsigned int i = start; i < end; i++)
 	info[i].mask |= mask;
@@ -1145,18 +1141,7 @@ hb_propagate_flags (hb_buffer_t *buffer)
 static void
 hb_ot_shape_internal (hb_ot_shape_context_t *c)
 {
-  c->buffer->deallocate_var_all ();
-  c->buffer->scratch_flags = HB_BUFFER_SCRATCH_FLAG_DEFAULT;
-  if (likely (!hb_unsigned_mul_overflows (c->buffer->len, HB_BUFFER_MAX_LEN_FACTOR)))
-  {
-    c->buffer->max_len = hb_max (c->buffer->len * HB_BUFFER_MAX_LEN_FACTOR,
-				 (unsigned) HB_BUFFER_MAX_LEN_MIN);
-  }
-  if (likely (!hb_unsigned_mul_overflows (c->buffer->len, HB_BUFFER_MAX_OPS_FACTOR)))
-  {
-    c->buffer->max_ops = hb_max (c->buffer->len * HB_BUFFER_MAX_OPS_FACTOR,
-				 (unsigned) HB_BUFFER_MAX_OPS_MIN);
-  }
+  c->buffer->enter ();
 
   /* Save the original direction, we use it later. */
   c->target_direction = c->buffer->props.direction;
@@ -1188,9 +1173,7 @@ hb_ot_shape_internal (hb_ot_shape_context_t *c)
 
   c->buffer->props.direction = c->target_direction;
 
-  c->buffer->max_len = HB_BUFFER_MAX_LEN_DEFAULT;
-  c->buffer->max_ops = HB_BUFFER_MAX_OPS_DEFAULT;
-  c->buffer->deallocate_var_all ();
+  c->buffer->leave ();
 }
 
 

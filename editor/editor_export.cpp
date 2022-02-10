@@ -404,9 +404,9 @@ Ref<ImageTexture> EditorExportPlatform::get_option_icon(int p_index) const {
 	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 	ERR_FAIL_COND_V(theme.is_null(), Ref<ImageTexture>());
 	if (EditorNode::get_singleton()->get_main_control()->is_layout_rtl()) {
-		return theme->get_icon("PlayBackwards", "EditorIcons");
+		return theme->get_icon(SNAME("PlayBackwards"), SNAME("EditorIcons"));
 	} else {
-		return theme->get_icon("Play", "EditorIcons");
+		return theme->get_icon(SNAME("Play"), SNAME("EditorIcons"));
 	}
 }
 
@@ -818,7 +818,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				int v = 0;
 				if (i * 2 < script_key.length()) {
 					char32_t ct = script_key[i * 2];
-					if (ct >= '0' && ct <= '9') {
+					if (is_digit(ct)) {
 						ct = ct - '0';
 					} else if (ct >= 'a' && ct <= 'f') {
 						ct = 10 + ct - 'a';
@@ -828,7 +828,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 				if (i * 2 + 1 < script_key.length()) {
 					char32_t ct = script_key[i * 2 + 1];
-					if (ct >= '0' && ct <= '9') {
+					if (is_digit(ct)) {
 						ct = ct - '0';
 					} else if (ct >= 'a' && ct <= 'f') {
 						ct = 10 + ct - 'a';
@@ -1215,7 +1215,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 				int v = 0;
 				if (i * 2 < script_key.length()) {
 					char32_t ct = script_key[i * 2];
-					if (ct >= '0' && ct <= '9') {
+					if (is_digit(ct)) {
 						ct = ct - '0';
 					} else if (ct >= 'a' && ct <= 'f') {
 						ct = 10 + ct - 'a';
@@ -1225,7 +1225,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 				if (i * 2 + 1 < script_key.length()) {
 					char32_t ct = script_key[i * 2 + 1];
-					if (ct >= '0' && ct <= '9') {
+					if (is_digit(ct)) {
 						ct = ct - '0';
 					} else if (ct >= 'a' && ct <= 'f') {
 						ct = 10 + ct - 'a';
@@ -1525,7 +1525,7 @@ void EditorExport::remove_export_preset(int p_idx) {
 }
 
 void EditorExport::add_export_plugin(const Ref<EditorExportPlugin> &p_plugin) {
-	if (export_plugins.find(p_plugin) == -1) {
+	if (!export_plugins.has(p_plugin)) {
 		export_plugins.push_back(p_plugin);
 	}
 }

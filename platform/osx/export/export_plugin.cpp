@@ -777,6 +777,24 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		err = tmp_app_dir->make_dir_recursive(tmp_app_path_name + "/Contents/Resources");
 	}
 
+	Vector<String> translations = ProjectSettings::get_singleton()->get("internationalization/locale/translations");
+	if (translations.size() > 0) {
+		{
+			String fname = tmp_app_path_name + "/Contents/Resources/en.lproj";
+			tmp_app_dir->make_dir_recursive(fname);
+			FileAccessRef f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
+		}
+
+		for (const String &E : translations) {
+			Ref<Translation> tr = ResourceLoader::load(E);
+			if (tr.is_valid()) {
+				String fname = tmp_app_path_name + "/Contents/Resources/" + tr->get_locale() + ".lproj";
+				tmp_app_dir->make_dir_recursive(fname);
+				FileAccessRef f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
+			}
+		}
+	}
+
 	// Now process our template.
 	bool found_binary = false;
 	Vector<String> dylibs_found;

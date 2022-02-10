@@ -84,10 +84,22 @@ public:
 	static SimplifyScaleFunc simplify_scale_func;
 	typedef size_t (*SimplifySloppyFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_positions_data, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, float *out_result_error);
 	static SimplifySloppyFunc simplify_sloppy_func;
+	typedef size_t (*GenerateRemapFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const void *vertices, size_t vertex_count, size_t vertex_size);
+	static GenerateRemapFunc generate_remap_func;
+	typedef void (*RemapVertexFunc)(void *destination, const void *vertices, size_t vertex_count, size_t vertex_size, const unsigned int *remap);
+	static RemapVertexFunc remap_vertex_func;
+	typedef void (*RemapIndexFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const unsigned int *remap);
+	static RemapIndexFunc remap_index_func;
+	static void strip_mesh_arrays(PackedVector3Array &r_vertices, PackedInt32Array &r_indices);
 
 private:
 	struct VertexHasher {
 		static _FORCE_INLINE_ uint32_t hash(const Vertex &p_vtx);
+	};
+
+	struct TriangleHasher {
+		static _FORCE_INLINE_ uint32_t hash(const int *p_triangle);
+		static _FORCE_INLINE_ bool compare(const int *p_lhs, const int *p_rhs);
 	};
 
 	struct WeightSort {

@@ -130,7 +130,7 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 			if (p != -1 && p < prop_str.length() - 1) {
 				bool all_digits = true;
 				for (int i = p + 1; i < prop_str.length(); i++) {
-					if (prop_str[i] < '0' || prop_str[i] > '9') {
+					if (!is_digit(prop_str[i])) {
 						all_digits = false;
 						break;
 					}

@@ -145,6 +145,7 @@ private:
 	Label *invalid_source_label;
 
 	ItemList *sources_list;
+	MenuButton *source_sort_button;
 
 	Ref<Texture2D> missing_atlas_texture_icon;
 	void _update_tile_set_sources_list();
@@ -170,6 +171,7 @@ private:
 	void _tile_alternatives_control_gui_input(const Ref<InputEvent> &p_event);
 
 	void _update_atlas_view();
+	void _set_source_sort(int p_sort);
 
 	// Scenes collection sources.
 	ItemList *scene_tiles_list;

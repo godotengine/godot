@@ -73,6 +73,7 @@ private:
 
 	bool lines_dirty = true;
 	bool dirty = true;
+	bool font_dirty = true;
 	RID text_rid;
 	Vector<RID> lines_rid;
 

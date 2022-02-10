@@ -180,7 +180,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 		selected_point = -1;
 
 		for (int i = 0; i < points.size(); i++) {
-			if (making_triangle.find(i) != -1) {
+			if (making_triangle.has(i)) {
 				continue;
 			}
 

@@ -52,13 +52,13 @@ Includes some patches in the `patches` folder which have been sent upstream.
 
 ## cvtt
 
-- Upstream: https://github.com/elasota/cvtt
-- Version: 1.0.0-beta4 (cc8472a04ba110fe999c686d07af40f7839051fd, 2018)
+- Upstream: https://github.com/elasota/ConvectionKernels
+- Version: git (dc2dbbe0ae2cf2be06ef56d1021e2222a56c7fe2, 2021)
 - License: MIT
 
 Files extracted from upstream source:
 
-- all .cpp, .h, and .txt files in ConvectionKernels/
+- all .cpp, .h, and .txt files except the folders MakeTables and etc2packer.
 
 
 ## doctest
@@ -206,7 +206,7 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 3.2.0 (be91d2917d9860326cb5fd1d03ffe1042a72f6d3, 2021)
+- Version: 3.3.2 (ac46c3248e8b0316235943175c4d4a11c24dd4a9, 2022)
 - License: MIT
 
 Files extracted from upstream source:
@@ -309,17 +309,13 @@ Files extracted from upstream source:
 ## libwebp
 
 - Upstream: https://chromium.googlesource.com/webm/libwebp/
-- Version: 1.2.1 (9ce5843dbabcfd3f7c39ec7ceba9cbeb213cbfdf, 2021)
+- Version: 1.2.2 (b0a860891dcd4c0c2d7c6149e5cccb6eb881cc21, 2022)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
 - `src/*` except from: `.am`, `.rc` and `.in` files
 - `AUTHORS`, `COPYING`, `PATENTS`
-
-Important: The files `utils/bit_reader_utils.{c,h}` have Godot-made
-changes to ensure they build for Javascript/HTML5. Those
-changes are marked with `// -- GODOT --` comments.
 
 
 ## mbedtls
@@ -469,7 +465,7 @@ Collection of single-file libraries used in Godot components.
 ## msdfgen
 
 - Upstream: https://github.com/Chlumsky/msdfgen
-- Version: 1.9.1 (1b3b6b985094e6f12751177490add3ad11dd91a9, 2010)
+- Version: 1.9.2 (64a91eec3ca3787e6f78b4c99fcd3052ad3e37c0, 2021)
 - License: MIT
 
 Files extracted from the upstream source:
@@ -606,15 +602,13 @@ instead of `miniz.h` as an external dependency.
 ## thorvg
 
 - Upstream: https://github.com/Samsung/thorvg
-- Version: 0.7.0 (e527f565b770f0a41df821e6618ccaeea94f465e, 2021)
+- Version: 0.7.1 (d53eb2a880002cb770ace1c1ace9c5dfcfc28252, 2022)
 - License: MIT
 
 Files extracted from upstream source:
 
 See `thorvg/update-thorvg.sh` for extraction instructions. Set the version
 number and run the script.
-
-Patches in the `patches` directory should be re-applied after updates.
 
 
 ## vhacd

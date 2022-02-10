@@ -54,7 +54,7 @@
 			<argument index="2" name="open_console" type="bool" default="false" />
 			<description>
 				Creates a new process that runs independently of Godot. It will not terminate if Godot terminates. The path specified in [code]path[/code] must exist and be executable file or macOS .app bundle. Platform path resolution will be used. The [code]arguments[/code] are used in the given order and separated by a space.
-				On Windows, if [code]open_console[/code] is [code]true[/code] and process is console app, new terminal window will be opened, it's ignored on other platforms.
+				On Windows, if [code]open_console[/code] is [code]true[/code] and the process is a console app, a new terminal window will be opened. This is ignored on other platforms.
 				If the process creation succeeds, the method will return the new process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process creation fails, the method will return [code]-1[/code].
 				For example, running another instance of the project:
 				[codeblocks]
@@ -114,7 +114,7 @@
 			<argument index="4" name="open_console" type="bool" default="false" />
 			<description>
 				Executes a command. The file specified in [code]path[/code] must exist and be executable. Platform path resolution will be used. The [code]arguments[/code] are used in the given order and separated by a space. If an [code]output[/code] [Array] is provided, the complete shell output of the process will be appended as a single [String] element in [code]output[/code]. If [code]read_stderr[/code] is [code]true[/code], the output to the standard error stream will be included too.
-				On Windows, if [code]open_console[/code] is [code]true[/code] and process is console app, new terminal window will be opened, it's ignored on other platforms.
+				On Windows, if [code]open_console[/code] is [code]true[/code] and the process is a console app, a new terminal window will be opened. This is ignored on other platforms.
 				If the command is successfully executed, the method will return the exit code of the command, or [code]-1[/code] if it fails.
 				[b]Note:[/b] The Godot thread will pause its execution until the executed command terminates. Use [Thread] to create a separate thread that will not pause the Godot thread, or use [method create_process] to create a completely independent process.
 				For example, to retrieve a list of the working directory's contents:
@@ -128,7 +128,7 @@
 				int exitCode = OS.Execute("ls", new string[] {"-l", "/tmp"}, output);
 				[/csharp]
 				[/codeblocks]
-				If you wish to access a shell built-in or perform a composite command, a platform-specific shell can be invoked. For example:
+				If you wish to access a shell built-in or execute a composite command, a platform-specific shell can be invoked. For example:
 				[codeblocks]
 				[gdscript]
 				var output = []

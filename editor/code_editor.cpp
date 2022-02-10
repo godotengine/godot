@@ -122,7 +122,7 @@ void FindReplaceBar::unhandled_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	Control *focus_owner = get_focus_owner();
+	Control *focus_owner = get_viewport()->gui_get_focus_owner();
 	if (text_editor->has_focus() || (focus_owner && vbc_lineedit->is_ancestor_of(focus_owner))) {
 		bool accepted = true;
 
@@ -724,7 +724,7 @@ void CodeTextEditor::input(const Ref<InputEvent> &event) {
 	}
 
 	if (!text_editor->has_focus()) {
-		if ((find_replace_bar != nullptr && find_replace_bar->is_visible()) && (find_replace_bar->has_focus() || find_replace_bar->is_ancestor_of(get_focus_owner()))) {
+		if ((find_replace_bar != nullptr && find_replace_bar->is_visible()) && (find_replace_bar->has_focus() || find_replace_bar->is_ancestor_of(get_viewport()->gui_get_focus_owner()))) {
 			if (ED_IS_SHORTCUT("script_text_editor/find_next", key_event)) {
 				find_replace_bar->search_next();
 				accept_event();
@@ -884,8 +884,8 @@ Ref<Texture2D> CodeTextEditor::_get_completion_icon(const ScriptCodeCompletionOp
 	Ref<Texture2D> tex;
 	switch (p_option.kind) {
 		case ScriptCodeCompletionOption::KIND_CLASS: {
-			if (has_theme_icon(p_option.display, "EditorIcons")) {
-				tex = get_theme_icon(p_option.display, "EditorIcons");
+			if (has_theme_icon(p_option.display, SNAME("EditorIcons"))) {
+				tex = get_theme_icon(p_option.display, SNAME("EditorIcons"));
 			} else {
 				tex = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
 			}
@@ -1663,16 +1663,28 @@ void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
 
 void CodeTextEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
+			error_button->set_icon(get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")));
+			error_button->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			error_button->add_theme_font_override("font", get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
+			error_button->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
+
+			warning_button->set_icon(get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons")));
+			warning_button->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+			warning_button->add_theme_font_override("font", get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
+			warning_button->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
+
+			line_and_col_txt->add_theme_font_override("font", get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
+			line_and_col_txt->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
+
+			if (p_what == NOTIFICATION_ENTER_TREE) {
+				break;
+			}
 			if (toggle_scripts_button->is_visible()) {
 				update_toggle_scripts_button();
 			}
 			_update_text_editor_theme();
-		} break;
-		case NOTIFICATION_ENTER_TREE: {
-			error_button->set_icon(get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")));
-			warning_button->set_icon(get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons")));
-			add_theme_constant_override("separation", 4 * EDSCALE);
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (toggle_scripts_button->is_visible()) {
@@ -1874,10 +1886,6 @@ CodeTextEditor::CodeTextEditor() {
 	error_button->connect("pressed", callable_mp(this, &CodeTextEditor::_error_button_pressed));
 	error_button->set_tooltip(TTR("Errors"));
 
-	error_button->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), SNAME("Editor")));
-	error_button->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
-	error_button->add_theme_font_size_override("font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
-
 	is_errors_panel_opened = false;
 	set_error_count(0);
 
@@ -1890,10 +1898,6 @@ CodeTextEditor::CodeTextEditor() {
 	warning_button->connect("pressed", callable_mp(this, &CodeTextEditor::_warning_button_pressed));
 	warning_button->set_tooltip(TTR("Warnings"));
 
-	warning_button->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("warning_color"), SNAME("Editor")));
-	warning_button->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
-	warning_button->add_theme_font_size_override("font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
-
 	is_warnings_panel_opened = false;
 	set_warning_count(0);
 
@@ -1901,8 +1905,6 @@ CodeTextEditor::CodeTextEditor() {
 	line_and_col_txt = memnew(Label);
 	status_bar->add_child(line_and_col_txt);
 	line_and_col_txt->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
-	line_and_col_txt->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
-	line_and_col_txt->add_theme_font_size_override("font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
 	line_and_col_txt->set_tooltip(TTR("Line and column numbers."));
 	line_and_col_txt->set_mouse_filter(MOUSE_FILTER_STOP);
 
@@ -1933,4 +1935,5 @@ CodeTextEditor::CodeTextEditor() {
 	font_resize_timer->connect("timeout", callable_mp(this, &CodeTextEditor::_font_resize_timeout));
 
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &CodeTextEditor::_on_settings_change));
+	add_theme_constant_override("separation", 4 * EDSCALE);
 }

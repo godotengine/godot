@@ -37,6 +37,44 @@ SurfaceTool::SimplifyFunc SurfaceTool::simplify_func = nullptr;
 SurfaceTool::SimplifyWithAttribFunc SurfaceTool::simplify_with_attrib_func = nullptr;
 SurfaceTool::SimplifyScaleFunc SurfaceTool::simplify_scale_func = nullptr;
 SurfaceTool::SimplifySloppyFunc SurfaceTool::simplify_sloppy_func = nullptr;
+SurfaceTool::GenerateRemapFunc SurfaceTool::generate_remap_func = nullptr;
+SurfaceTool::RemapVertexFunc SurfaceTool::remap_vertex_func = nullptr;
+SurfaceTool::RemapIndexFunc SurfaceTool::remap_index_func = nullptr;
+
+void SurfaceTool::strip_mesh_arrays(PackedVector3Array &r_vertices, PackedInt32Array &r_indices) {
+	ERR_FAIL_COND_MSG(!generate_remap_func || !remap_vertex_func || !remap_index_func, "Meshoptimizer library is not initialized.");
+
+	Vector<uint32_t> remap;
+	remap.resize(r_vertices.size());
+	uint32_t new_vertex_count = generate_remap_func(remap.ptrw(), (unsigned int *)r_indices.ptr(), r_indices.size(), (float *)r_vertices.ptr(), r_vertices.size(), sizeof(Vector3));
+	remap_vertex_func(r_vertices.ptrw(), r_vertices.ptr(), r_vertices.size(), sizeof(Vector3), remap.ptr());
+	r_vertices.resize(new_vertex_count);
+	remap_index_func((unsigned int *)r_indices.ptrw(), (unsigned int *)r_indices.ptr(), r_indices.size(), remap.ptr());
+
+	HashMap<const int *, bool, TriangleHasher, TriangleHasher> found_triangles;
+	int *idx_ptr = r_indices.ptrw();
+
+	int filtered_indices_count = 0;
+	for (int i = 0; i < r_indices.size() / 3; i++) {
+		const int *tri = idx_ptr + (i * 3);
+
+		if (tri[0] == tri[1] || tri[1] == tri[2] || tri[2] == tri[0]) {
+			continue;
+		}
+
+		if (found_triangles.has(tri)) {
+			continue;
+		}
+
+		if (i != filtered_indices_count) {
+			memcpy(idx_ptr + (filtered_indices_count * 3), tri, sizeof(int) * 3);
+		}
+
+		found_triangles[tri] = true;
+		filtered_indices_count++;
+	}
+	r_indices.resize(filtered_indices_count * 3);
+}
 
 bool SurfaceTool::Vertex::operator==(const Vertex &p_vertex) const {
 	if (vertex != p_vertex.vertex) {
@@ -105,6 +143,47 @@ uint32_t SurfaceTool::VertexHasher::hash(const Vertex &p_vtx) {
 	h = hash_djb2_buffer((const uint8_t *)&p_vtx.custom[0], sizeof(Color) * RS::ARRAY_CUSTOM_COUNT, h);
 	h = hash_djb2_one_32(p_vtx.smooth_group, h);
 	return h;
+}
+
+uint32_t SurfaceTool::TriangleHasher::hash(const int *p_triangle) {
+	int t0 = p_triangle[0];
+	int t1 = p_triangle[1];
+	int t2 = p_triangle[2];
+
+	if (t0 > t1)
+		SWAP(t0, t1);
+	if (t1 > t2)
+		SWAP(t1, t2);
+	if (t0 > t1)
+		SWAP(t0, t1);
+
+	return (t0 * 73856093) ^ (t1 * 19349663) ^ (t2 * 83492791);
+}
+
+bool SurfaceTool::TriangleHasher::compare(const int *p_lhs, const int *p_rhs) {
+	int r0 = p_rhs[0];
+	int r1 = p_rhs[1];
+	int r2 = p_rhs[2];
+
+	if (r0 > r1)
+		SWAP(r0, r1);
+	if (r1 > r2)
+		SWAP(r1, r2);
+	if (r0 > r1)
+		SWAP(r0, r1);
+
+	int l0 = p_lhs[0];
+	int l1 = p_lhs[1];
+	int l2 = p_lhs[2];
+
+	if (l0 > l1)
+		SWAP(l0, l1);
+	if (l1 > l2)
+		SWAP(l1, l2);
+	if (l0 > l1)
+		SWAP(l0, l1);
+
+	return l0 == r0 && l1 == r1 && l2 == r2;
 }
 
 void SurfaceTool::begin(Mesh::PrimitiveType p_primitive) {

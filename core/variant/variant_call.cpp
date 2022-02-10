@@ -1371,6 +1371,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(String, length, sarray(), varray());
 	bind_method(String, substr, sarray("from", "len"), varray(-1));
 	bind_method(String, get_slice, sarray("delimiter", "slice"), varray());
+	bind_method(String, get_slicec, sarray("delimiter", "slice"), varray());
+	bind_method(String, get_slice_count, sarray("delimiter"), varray());
 	bind_methodv(String, find, static_cast<int (String::*)(const String &, int) const>(&String::find), sarray("what", "from"), varray(0));
 	bind_method(String, count, sarray("what", "from", "to"), varray(0, 0));
 	bind_method(String, countn, sarray("what", "from", "to"), varray(0, 0));
@@ -1382,7 +1384,7 @@ static void _register_variant_builtin_methods() {
 	bind_methodv(String, begins_with, static_cast<bool (String::*)(const String &) const>(&String::begins_with), sarray("text"), varray());
 	bind_method(String, ends_with, sarray("text"), varray());
 	bind_method(String, is_subsequence_of, sarray("text"), varray());
-	bind_method(String, is_subsequence_ofi, sarray("text"), varray());
+	bind_method(String, is_subsequence_ofn, sarray("text"), varray());
 	bind_method(String, bigrams, sarray(), varray());
 	bind_method(String, similarity, sarray("text"), varray());
 
@@ -1421,6 +1423,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(String, sha1_buffer, sarray(), varray());
 	bind_method(String, sha256_buffer, sarray(), varray());
 	bind_method(String, is_empty, sarray(), varray());
+	bind_methodv(String, contains, static_cast<bool (String::*)(const String &) const>(&String::contains), sarray("what"), varray());
 
 	bind_method(String, is_absolute_path, sarray(), varray());
 	bind_method(String, is_relative_path, sarray(), varray());
@@ -1666,6 +1669,7 @@ static void _register_variant_builtin_methods() {
 
 	/* RID */
 
+	bind_method(RID, is_valid, sarray(), varray());
 	bind_method(RID, get_id, sarray(), varray());
 
 	/* NodePath */
@@ -1789,6 +1793,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Transform3D, scaled, sarray("scale"), varray());
 	bind_method(Transform3D, translated, sarray("offset"), varray());
 	bind_method(Transform3D, looking_at, sarray("target", "up"), varray(Vector3(0, 1, 0)));
+	bind_method(Transform3D, sphere_interpolate_with, sarray("xform", "weight"), varray());
 	bind_method(Transform3D, interpolate_with, sarray("xform", "weight"), varray());
 	bind_method(Transform3D, is_equal_approx, sarray("xform"), varray());
 

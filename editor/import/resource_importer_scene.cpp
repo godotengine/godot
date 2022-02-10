@@ -39,6 +39,7 @@
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/navigation_region_3d.h"
+#include "scene/3d/occluder_instance_3d.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/3d/vehicle_body_3d.h"
 #include "scene/animation/animation_player.h"
@@ -258,8 +259,8 @@ String ResourceImporterScene::get_visible_name() const {
 }
 
 void ResourceImporterScene::get_recognized_extensions(List<String> *p_extensions) const {
-	for (Set<Ref<EditorSceneFormatImporter>>::Element *E = importers.front(); E; E = E->next()) {
-		E->get()->get_extensions(p_extensions);
+	for (Ref<EditorSceneFormatImporter> importer_elem : importers) {
+		importer_elem->get_extensions(p_extensions);
 	}
 }
 
@@ -282,7 +283,8 @@ bool ResourceImporterScene::get_option_visibility(const String &p_path, const St
 		}
 	}
 
-	if (p_option == "meshes/lightmap_texel_size" && int(p_options["meshes/light_baking"]) < 3) {
+	if (p_option == "meshes/lightmap_texel_size" && int(p_options["meshes/light_baking"]) != 2) {
+		// Only display the lightmap texel size import option when using the Static Lightmaps light baking mode.
 		return false;
 	}
 
@@ -315,7 +317,7 @@ static bool _teststr(const String &p_what, const String &p_str) {
 	String what = p_what;
 
 	//remove trailing spaces and numbers, some apps like blender add ".number" to duplicates so also compensate for this
-	while (what.length() && ((what[what.length() - 1] >= '0' && what[what.length() - 1] <= '9') || what[what.length() - 1] <= 32 || what[what.length() - 1] == '.')) {
+	while (what.length() && (is_digit(what[what.length() - 1]) || what[what.length() - 1] <= 32 || what[what.length() - 1] == '.')) {
 		what = what.substr(0, what.length() - 1);
 	}
 
@@ -335,7 +337,7 @@ static String _fixstr(const String &p_what, const String &p_str) {
 	String what = p_what;
 
 	//remove trailing spaces and numbers, some apps like blender add ".number" to duplicates so also compensate for this
-	while (what.length() && ((what[what.length() - 1] >= '0' && what[what.length() - 1] <= '9') || what[what.length() - 1] <= 32 || what[what.length() - 1] == '.')) {
+	while (what.length() && (is_digit(what[what.length() - 1]) || what[what.length() - 1] <= 32 || what[what.length() - 1] == '.')) {
 		what = what.substr(0, what.length() - 1);
 	}
 
@@ -370,10 +372,10 @@ static void _pre_gen_shape_list(Ref<ImporterMesh> &mesh, Vector<Ref<Shape3D>> &r
 	}
 }
 
-Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, List<Pair<NodePath, Node *>> &r_node_renames) {
+Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &r_collision_map, Pair<PackedVector3Array, PackedInt32Array> *r_occluder_arrays, List<Pair<NodePath, Node *>> &r_node_renames) {
 	// Children first.
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		Node *r = _pre_fix_node(p_node->get_child(i), p_root, collision_map, r_node_renames);
+		Node *r = _pre_fix_node(p_node->get_child(i), p_root, r_collision_map, r_occluder_arrays, r_node_renames);
 		if (!r) {
 			i--; // Was erased.
 		}
@@ -497,14 +499,14 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<I
 
 			if (mesh.is_valid()) {
 				Vector<Ref<Shape3D>> shapes;
-				if (collision_map.has(mesh)) {
-					shapes = collision_map[mesh];
+				if (r_collision_map.has(mesh)) {
+					shapes = r_collision_map[mesh];
 				} else if (_teststr(name, "colonly")) {
 					_pre_gen_shape_list(mesh, shapes, false);
-					collision_map[mesh] = shapes;
+					r_collision_map[mesh] = shapes;
 				} else if (_teststr(name, "convcolonly")) {
 					_pre_gen_shape_list(mesh, shapes, true);
-					collision_map[mesh] = shapes;
+					r_collision_map[mesh] = shapes;
 				}
 
 				if (shapes.size()) {
@@ -559,8 +561,8 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<I
 
 		if (mesh.is_valid()) {
 			Vector<Ref<Shape3D>> shapes;
-			if (collision_map.has(mesh)) {
-				shapes = collision_map[mesh];
+			if (r_collision_map.has(mesh)) {
+				shapes = r_collision_map[mesh];
 			} else {
 				_pre_gen_shape_list(mesh, shapes, true);
 			}
@@ -585,14 +587,14 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<I
 		if (mesh.is_valid()) {
 			Vector<Ref<Shape3D>> shapes;
 			String fixed_name;
-			if (collision_map.has(mesh)) {
-				shapes = collision_map[mesh];
+			if (r_collision_map.has(mesh)) {
+				shapes = r_collision_map[mesh];
 			} else if (_teststr(name, "col")) {
 				_pre_gen_shape_list(mesh, shapes, false);
-				collision_map[mesh] = shapes;
+				r_collision_map[mesh] = shapes;
 			} else if (_teststr(name, "convcol")) {
 				_pre_gen_shape_list(mesh, shapes, true);
-				collision_map[mesh] = shapes;
+				r_collision_map[mesh] = shapes;
 			}
 
 			if (_teststr(name, "col")) {
@@ -634,7 +636,31 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<I
 		p_node->replace_by(nmi);
 		memdelete(p_node);
 		p_node = nmi;
+	} else if (_teststr(name, "occ") || _teststr(name, "occonly")) {
+		if (isroot) {
+			return p_node;
+		}
+		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
+		if (mi) {
+			Ref<ImporterMesh> mesh = mi->get_mesh();
 
+			if (mesh.is_valid()) {
+				if (r_occluder_arrays) {
+					OccluderInstance3D::bake_single_node(mi, 0.0f, r_occluder_arrays->first, r_occluder_arrays->second);
+				}
+				if (_teststr(name, "occ")) {
+					String fixed_name = _fixstr(name, "occ");
+					if (!fixed_name.is_empty()) {
+						if (mi->get_parent() && !mi->get_parent()->has_node(fixed_name)) {
+							mi->set_name(fixed_name);
+						}
+					}
+				} else {
+					memdelete(p_node);
+					p_node = nullptr;
+				}
+			}
+		}
 	} else if (Object::cast_to<ImporterMeshInstance3D>(p_node)) {
 		//last attempt, maybe collision inside the mesh data
 
@@ -643,16 +669,21 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<I
 		Ref<ImporterMesh> mesh = mi->get_mesh();
 		if (!mesh.is_null()) {
 			Vector<Ref<Shape3D>> shapes;
-			if (collision_map.has(mesh)) {
-				shapes = collision_map[mesh];
+			if (r_collision_map.has(mesh)) {
+				shapes = r_collision_map[mesh];
 			} else if (_teststr(mesh->get_name(), "col")) {
 				_pre_gen_shape_list(mesh, shapes, false);
-				collision_map[mesh] = shapes;
+				r_collision_map[mesh] = shapes;
 				mesh->set_name(_fixstr(mesh->get_name(), "col"));
 			} else if (_teststr(mesh->get_name(), "convcol")) {
 				_pre_gen_shape_list(mesh, shapes, true);
-				collision_map[mesh] = shapes;
+				r_collision_map[mesh] = shapes;
 				mesh->set_name(_fixstr(mesh->get_name(), "convcol"));
+			} else if (_teststr(mesh->get_name(), "occ")) {
+				if (r_occluder_arrays) {
+					OccluderInstance3D::bake_single_node(mi, 0.0f, r_occluder_arrays->first, r_occluder_arrays->second);
+				}
+				mesh->set_name(_fixstr(mesh->get_name(), "occ"));
 			}
 
 			if (shapes.size()) {
@@ -676,10 +707,10 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<I
 	return p_node;
 }
 
-Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Set<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps) {
+Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, Set<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps) {
 	// children first
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		Node *r = _post_fix_node(p_node->get_child(i), p_root, collision_map, r_scanned_meshes, p_node_data, p_material_data, p_animation_data, p_animation_fps);
+		Node *r = _post_fix_node(p_node->get_child(i), p_root, collision_map, r_occluder_arrays, r_scanned_meshes, p_node_data, p_material_data, p_animation_data, p_animation_fps);
 		if (!r) {
 			i--; //was erased
 		}
@@ -876,6 +907,32 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 					} else {
 						mi->add_child(nmi, true);
 						nmi->set_owner(mi->get_owner());
+					}
+				}
+			}
+		}
+	}
+
+	if (Object::cast_to<ImporterMeshInstance3D>(p_node)) {
+		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
+
+		Ref<ImporterMesh> m = mi->get_mesh();
+
+		if (m.is_valid()) {
+			if (node_settings.has("generate/occluder")) {
+				int occluder_mode = node_settings["generate/occluder"];
+
+				if (occluder_mode != OCCLUDER_DISABLED) {
+					float simplification_dist = 0.0f;
+					if (node_settings.has("occluder/simplification_distance")) {
+						simplification_dist = node_settings["occluder/simplification_distance"];
+					}
+
+					OccluderInstance3D::bake_single_node(mi, simplification_dist, r_occluder_arrays.first, r_occluder_arrays.second);
+
+					if (occluder_mode == OCCLUDER_OCCLUDER_ONLY) {
+						memdelete(p_node);
+						p_node = nullptr;
 					}
 				}
 			}
@@ -1254,6 +1311,9 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "primitive/radius", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 1.0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "primitive/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), Vector3()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "primitive/rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), Vector3()));
+
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/occluder", PROPERTY_HINT_ENUM, "Disabled,Mesh + Occluder,Occluder Only", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "occluder/simplification_distance", PROPERTY_HINT_RANGE, "0.0,2.0,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0.1f));
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_MESH: {
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "save_to_file/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
@@ -1375,6 +1435,11 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 						(physics_shape == SHAPE_TYPE_CYLINDER ||
 								physics_shape == SHAPE_TYPE_CAPSULE);
 			}
+
+			if (p_option == "occluder/simplification_distance") {
+				// Show only if occluder generation is enabled
+				return p_options.has("generate/occluder") && p_options["generate/occluder"].operator signed int() != OCCLUDER_DISABLED;
+			}
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_MESH: {
 			if (p_option == "save_to_file/path" || p_option == "save_to_file/make_streamable") {
@@ -1476,7 +1541,7 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/ensure_tangents"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/generate_lods"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/create_shadow_meshes"), true));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/light_baking", PROPERTY_HINT_ENUM, "Disabled,Static (VoxelGI/SDFGI),Static Lightmaps,Dynamic (VoxelGI only)", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 1));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/light_baking", PROPERTY_HINT_ENUM, "Disabled,Static (VoxelGI/SDFGI),Static Lightmaps (VoxelGI/SDFGI/LightmapGI),Dynamic (VoxelGI only)", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "meshes/lightmap_texel_size", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 0.1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "skins/use_named_skins"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/import"), true));
@@ -1489,8 +1554,8 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 		post_importer_plugins.write[i]->get_import_options(p_path, r_options);
 	}
 
-	for (Ref<EditorSceneFormatImporter> importer : importers) {
-		importer->get_import_options(p_path, r_options);
+	for (Ref<EditorSceneFormatImporter> importer_elem : importers) {
+		importer_elem->get_import_options(p_path, r_options);
 	}
 }
 
@@ -1842,13 +1907,13 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file) {
 	EditorProgress progress("pre-import", TTR("Pre-Import Scene"), 0);
 	progress.step(TTR("Importing Scene..."), 0);
 
-	for (Set<Ref<EditorSceneFormatImporter>>::Element *E = importers.front(); E; E = E->next()) {
+	for (Ref<EditorSceneFormatImporter> importer_elem : importers) {
 		List<String> extensions;
-		E->get()->get_extensions(&extensions);
+		importer_elem->get_extensions(&extensions);
 
 		for (const String &F : extensions) {
 			if (F.to_lower() == ext) {
-				importer = E->get();
+				importer = importer_elem;
 				break;
 			}
 		}
@@ -1868,7 +1933,7 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file) {
 
 	Map<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> collision_map;
 	List<Pair<NodePath, Node *>> node_renames;
-	_pre_fix_node(scene, scene, collision_map, node_renames);
+	_pre_fix_node(scene, scene, collision_map, nullptr, node_renames);
 
 	return scene;
 }
@@ -1882,13 +1947,13 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	EditorProgress progress("import", TTR("Import Scene"), 104);
 	progress.step(TTR("Importing Scene..."), 0);
 
-	for (Set<Ref<EditorSceneFormatImporter>>::Element *E = importers.front(); E; E = E->next()) {
+	for (Ref<EditorSceneFormatImporter> importer_elem : importers) {
 		List<String> extensions;
-		E->get()->get_extensions(&extensions);
+		importer_elem->get_extensions(&extensions);
 
 		for (const String &F : extensions) {
 			if (F.to_lower() == ext) {
-				importer = E->get();
+				importer = importer_elem;
 				break;
 			}
 		}
@@ -1943,15 +2008,16 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 
 	Set<Ref<ImporterMesh>> scanned_meshes;
 	Map<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> collision_map;
+	Pair<PackedVector3Array, PackedInt32Array> occluder_arrays;
 	List<Pair<NodePath, Node *>> node_renames;
 
-	_pre_fix_node(scene, scene, collision_map, node_renames);
+	_pre_fix_node(scene, scene, collision_map, &occluder_arrays, node_renames);
 
 	for (int i = 0; i < post_importer_plugins.size(); i++) {
 		post_importer_plugins.write[i]->pre_process(scene, p_options);
 	}
 
-	_post_fix_node(scene, scene, collision_map, scanned_meshes, node_data, material_data, animation_data, fps);
+	_post_fix_node(scene, scene, collision_map, occluder_arrays, scanned_meshes, node_data, material_data, animation_data, fps);
 
 	String root_type = p_options["nodes/root_type"];
 	root_type = root_type.split(" ")[0]; // full root_type is "ClassName (filename.gd)" for a script global class.
@@ -1986,6 +2052,15 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		scene->set_name(p_options["nodes/root_name"]);
 	} else {
 		scene->set_name(p_save_path.get_file().get_basename());
+	}
+
+	if (!occluder_arrays.first.is_empty() && !occluder_arrays.second.is_empty()) {
+		Ref<ArrayOccluder3D> occ = memnew(ArrayOccluder3D);
+		occ->set_arrays(occluder_arrays.first, occluder_arrays.second);
+		OccluderInstance3D *occluder_instance = memnew(OccluderInstance3D);
+		occluder_instance->set_occluder(occ);
+		scene->add_child(occluder_instance, true);
+		occluder_instance->set_owner(scene);
 	}
 
 	bool gen_lods = bool(p_options["meshes/generate_lods"]);
@@ -2085,6 +2160,32 @@ void ResourceImporterScene::ResourceImporterScene::show_advanced_options(const S
 
 ResourceImporterScene::ResourceImporterScene() {
 	singleton = this;
+}
+
+void ResourceImporterScene::add_importer(Ref<EditorSceneFormatImporter> p_importer, bool p_first_priority) {
+	ERR_FAIL_COND(p_importer.is_null());
+	if (p_first_priority) {
+		importers.insert(0, p_importer);
+	} else {
+		importers.push_back(p_importer);
+	}
+}
+
+void ResourceImporterScene::remove_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin) {
+	post_importer_plugins.erase(p_plugin);
+}
+
+void ResourceImporterScene::add_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin, bool p_first_priority) {
+	ERR_FAIL_COND(p_plugin.is_null());
+	if (p_first_priority) {
+		post_importer_plugins.insert(0, p_plugin);
+	} else {
+		post_importer_plugins.push_back(p_plugin);
+	}
+}
+
+void ResourceImporterScene::remove_importer(Ref<EditorSceneFormatImporter> p_importer) {
+	importers.erase(p_importer);
 }
 
 ///////////////////////////////////////

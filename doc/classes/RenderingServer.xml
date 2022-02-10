@@ -994,6 +994,8 @@
 			<argument index="8" name="hdr_bleed_threshold" type="float" />
 			<argument index="9" name="hdr_bleed_scale" type="float" />
 			<argument index="10" name="hdr_luminance_cap" type="float" />
+			<argument index="11" name="glow_map_strength" type="float" />
+			<argument index="12" name="glow_map" type="RID" />
 			<description>
 			</description>
 		</method>
@@ -3624,7 +3626,7 @@
 		<constant name="ARRAY_FORMAT_INDEX" value="4096" enum="ArrayFormat">
 			Flag used to mark an index array.
 		</constant>
-		<constant name="ARRAY_FORMAT_BLEND_SHAPE_MASK" value="2147475463" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_BLEND_SHAPE_MASK" value="7" enum="ArrayFormat">
 		</constant>
 		<constant name="ARRAY_FORMAT_CUSTOM_BASE" value="13" enum="ArrayFormat">
 		</constant>

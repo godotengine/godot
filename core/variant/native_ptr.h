@@ -53,22 +53,36 @@ struct GDNativePtr {
 	operator Variant() const { return uint64_t(data); }
 };
 
-#define GDVIRTUAL_NATIVE_PTR(m_type)                                  \
-	template <>                                                       \
-	struct GDNativeConstPtr<const m_type> {                           \
-		const m_type *data = nullptr;                                 \
-		GDNativeConstPtr(const m_type *p_assign) { data = p_assign; } \
-		static const char *get_name() { return "const " #m_type; }    \
-		operator const m_type *() const { return data; }              \
-		operator Variant() const { return uint64_t(data); }           \
-	};                                                                \
-	template <>                                                       \
-	struct GDNativePtr<m_type> {                                      \
-		m_type *data = nullptr;                                       \
-		GDNativePtr(m_type *p_assign) { data = p_assign; }            \
-		static const char *get_name() { return #m_type; }             \
-		operator m_type *() const { return data; }                    \
-		operator Variant() const { return uint64_t(data); }           \
+#define GDVIRTUAL_NATIVE_PTR(m_type)                                                              \
+	template <>                                                                                   \
+	struct GDNativeConstPtr<const m_type> {                                                       \
+		const m_type *data = nullptr;                                                             \
+		GDNativeConstPtr() {}                                                                     \
+		GDNativeConstPtr(const m_type *p_assign) { data = p_assign; }                             \
+		static const char *get_name() { return "const " #m_type; }                                \
+		operator const m_type *() const { return data; }                                          \
+		operator Variant() const { return uint64_t(data); }                                       \
+	};                                                                                            \
+	template <>                                                                                   \
+	struct VariantCaster<GDNativeConstPtr<const m_type>> {                                        \
+		static _FORCE_INLINE_ GDNativeConstPtr<const m_type> cast(const Variant &p_variant) {     \
+			return GDNativeConstPtr<const m_type>((const m_type *)p_variant.operator uint64_t()); \
+		}                                                                                         \
+	};                                                                                            \
+	template <>                                                                                   \
+	struct GDNativePtr<m_type> {                                                                  \
+		m_type *data = nullptr;                                                                   \
+		GDNativePtr() {}                                                                          \
+		GDNativePtr(m_type *p_assign) { data = p_assign; }                                        \
+		static const char *get_name() { return #m_type; }                                         \
+		operator m_type *() const { return data; }                                                \
+		operator Variant() const { return uint64_t(data); }                                       \
+	};                                                                                            \
+	template <>                                                                                   \
+	struct VariantCaster<GDNativePtr<m_type>> {                                                   \
+		static _FORCE_INLINE_ GDNativePtr<m_type> cast(const Variant &p_variant) {                \
+			return GDNativePtr<m_type>((m_type *)p_variant.operator uint64_t());                  \
+		}                                                                                         \
 	};
 
 template <class T>

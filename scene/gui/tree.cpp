@@ -202,7 +202,7 @@ void TreeItem::propagate_check(int p_column, bool p_emit_signal) {
 	bool ch = cells[p_column].checked;
 
 	if (p_emit_signal) {
-		tree->emit_signal("check_propagated_to_item", this, p_column);
+		tree->emit_signal(SNAME("check_propagated_to_item"), this, p_column);
 	}
 	_propagate_check_through_children(p_column, ch, p_emit_signal);
 	_propagate_check_through_parents(p_column, p_emit_signal);
@@ -213,7 +213,7 @@ void TreeItem::_propagate_check_through_children(int p_column, bool p_checked, b
 	while (current) {
 		current->set_checked(p_column, p_checked);
 		if (p_emit_signal) {
-			current->tree->emit_signal("check_propagated_to_item", current, p_column);
+			current->tree->emit_signal(SNAME("check_propagated_to_item"), current, p_column);
 		}
 		current->_propagate_check_through_children(p_column, p_checked, p_emit_signal);
 		current = current->get_next();
@@ -252,7 +252,7 @@ void TreeItem::_propagate_check_through_parents(int p_column, bool p_emit_signal
 	}
 
 	if (p_emit_signal) {
-		current->tree->emit_signal("check_propagated_to_item", current, p_column);
+		current->tree->emit_signal(SNAME("check_propagated_to_item"), current, p_column);
 	}
 	current->_propagate_check_through_parents(p_column, p_emit_signal);
 }
@@ -555,8 +555,9 @@ void TreeItem::uncollapse_tree() {
 void TreeItem::set_custom_minimum_height(int p_height) {
 	custom_min_height = p_height;
 
-	for (Cell &c : cells)
+	for (Cell &c : cells) {
 		c.cached_minimum_size_dirty = true;
+	}
 
 	_changed_notify();
 }
@@ -904,6 +905,12 @@ String TreeItem::get_button_tooltip(int p_column, int p_idx) const {
 	return cells[p_column].buttons[p_idx].tooltip;
 }
 
+int TreeItem::get_button_id(int p_column, int p_idx) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), -1);
+	ERR_FAIL_INDEX_V(p_idx, cells[p_column].buttons.size(), -1);
+	return cells[p_column].buttons[p_idx].id;
+}
+
 void TreeItem::erase_button(int p_column, int p_idx) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	ERR_FAIL_INDEX(p_idx, cells[p_column].buttons.size());
@@ -1092,8 +1099,9 @@ bool TreeItem::get_expand_right(int p_column) const {
 void TreeItem::set_disable_folding(bool p_disable) {
 	disable_folding = p_disable;
 
-	for (Cell &c : cells)
+	for (Cell &c : cells) {
 		c.cached_minimum_size_dirty = true;
+	}
 
 	_changed_notify(0);
 }
@@ -1281,9 +1289,11 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_custom_as_button", "column", "enable"), &TreeItem::set_custom_as_button);
 	ClassDB::bind_method(D_METHOD("is_custom_set_as_button", "column"), &TreeItem::is_custom_set_as_button);
 
-	ClassDB::bind_method(D_METHOD("add_button", "column", "button", "button_idx", "disabled", "tooltip"), &TreeItem::add_button, DEFVAL(-1), DEFVAL(false), DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("add_button", "column", "button", "id", "disabled", "tooltip"), &TreeItem::add_button, DEFVAL(-1), DEFVAL(false), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_button_count", "column"), &TreeItem::get_button_count);
 	ClassDB::bind_method(D_METHOD("get_button_tooltip", "column", "button_idx"), &TreeItem::get_button_tooltip);
+	ClassDB::bind_method(D_METHOD("get_button_id", "column", "button_idx"), &TreeItem::get_button_id);
+	ClassDB::bind_method(D_METHOD("get_button_by_id", "column", "id"), &TreeItem::get_button_by_id);
 	ClassDB::bind_method(D_METHOD("get_button", "column", "button_idx"), &TreeItem::get_button);
 	ClassDB::bind_method(D_METHOD("set_button", "column", "button_idx", "button"), &TreeItem::set_button);
 	ClassDB::bind_method(D_METHOD("erase_button", "column", "button_idx"), &TreeItem::erase_button);
@@ -1317,10 +1327,10 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_children"), &TreeItem::get_children);
 	ClassDB::bind_method(D_METHOD("get_index"), &TreeItem::get_index);
 
-	ClassDB::bind_method(D_METHOD("move_before", "item"), &TreeItem::_move_before);
-	ClassDB::bind_method(D_METHOD("move_after", "item"), &TreeItem::_move_after);
+	ClassDB::bind_method(D_METHOD("move_before", "item"), &TreeItem::move_before);
+	ClassDB::bind_method(D_METHOD("move_after", "item"), &TreeItem::move_after);
 
-	ClassDB::bind_method(D_METHOD("remove_child", "child"), &TreeItem::_remove_child);
+	ClassDB::bind_method(D_METHOD("remove_child", "child"), &TreeItem::remove_child);
 
 	{
 		MethodInfo mi;
@@ -2488,7 +2498,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 			/* process selection */
 
 			if (p_double_click && (!c.editable || c.mode == TreeItem::CELL_MODE_CUSTOM || c.mode == TreeItem::CELL_MODE_ICON /*|| c.mode==TreeItem::CELL_MODE_CHECK*/)) { //it's confusing for check
-
+				// Emits the "item_activated" signal.
 				propagate_mouse_activated = true;
 
 				incr_search.clear();
@@ -4407,21 +4417,29 @@ Point2 Tree::get_scroll() const {
 	return ofs;
 }
 
-void Tree::scroll_to_item(TreeItem *p_item) {
+void Tree::scroll_to_item(TreeItem *p_item, bool p_center_on_item) {
 	if (!is_visible_in_tree()) {
-		// hack to work around crash in get_item_rect() if Tree is not in tree.
-		return;
+		return; // Hack to work around crash in get_item_rect() if Tree is not in tree.
 	}
 
-	// make sure the scrollbar min and max are up to date with latest changes.
 	update_scrollbars();
 
-	const Rect2 r = get_item_rect(p_item);
+	const real_t tree_height = get_size().y;
+	const Rect2 item_rect = get_item_rect(p_item);
+	const real_t item_y = item_rect.position.y;
+	const real_t item_height = item_rect.size.y + cache.vseparation;
 
-	if (r.position.y <= v_scroll->get_value()) {
-		v_scroll->set_value(r.position.y);
-	} else if (r.position.y + r.size.y + 2 * cache.vseparation > v_scroll->get_value() + get_size().y) {
-		v_scroll->set_value(r.position.y + r.size.y + 2 * cache.vseparation - get_size().y);
+	if (p_center_on_item) {
+		v_scroll->set_value(item_y - (tree_height - item_height) / 2.0f);
+	} else {
+		if (item_y < v_scroll->get_value()) {
+			v_scroll->set_value(item_y);
+		} else {
+			const real_t new_position = item_y + item_height - tree_height;
+			if (new_position > v_scroll->get_value()) {
+				v_scroll->set_value(new_position);
+			}
+		}
 	}
 }
 
@@ -4813,7 +4831,7 @@ bool Tree::get_allow_reselect() const {
 
 void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &Tree::clear);
-	ClassDB::bind_method(D_METHOD("create_item", "parent", "idx"), &Tree::_create_item, DEFVAL(Variant()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_item", "parent", "idx"), &Tree::create_item, DEFVAL(Variant()), DEFVAL(-1));
 
 	ClassDB::bind_method(D_METHOD("get_root"), &Tree::get_root);
 	ClassDB::bind_method(D_METHOD("set_column_custom_minimum_width", "column", "min_width"), &Tree::set_column_custom_minimum_width);
@@ -4828,7 +4846,7 @@ void Tree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_hide_root", "enable"), &Tree::set_hide_root);
 	ClassDB::bind_method(D_METHOD("is_root_hidden"), &Tree::is_root_hidden);
-	ClassDB::bind_method(D_METHOD("get_next_selected", "from"), &Tree::_get_next_selected);
+	ClassDB::bind_method(D_METHOD("get_next_selected", "from"), &Tree::get_next_selected);
 	ClassDB::bind_method(D_METHOD("get_selected"), &Tree::get_selected);
 	ClassDB::bind_method(D_METHOD("get_selected_column"), &Tree::get_selected_column);
 	ClassDB::bind_method(D_METHOD("get_pressed_button"), &Tree::get_pressed_button);
@@ -4842,10 +4860,11 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_edited_column"), &Tree::get_edited_column);
 	ClassDB::bind_method(D_METHOD("edit_selected"), &Tree::edit_selected);
 	ClassDB::bind_method(D_METHOD("get_custom_popup_rect"), &Tree::get_custom_popup_rect);
-	ClassDB::bind_method(D_METHOD("get_item_area_rect", "item", "column"), &Tree::_get_item_rect, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("get_item_area_rect", "item", "column"), &Tree::get_item_rect, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("get_item_at_position", "position"), &Tree::get_item_at_position);
 	ClassDB::bind_method(D_METHOD("get_column_at_position", "position"), &Tree::get_column_at_position);
 	ClassDB::bind_method(D_METHOD("get_drop_section_at_position", "position"), &Tree::get_drop_section_at_position);
+	ClassDB::bind_method(D_METHOD("get_button_id_at_position", "position"), &Tree::get_button_id_at_position);
 
 	ClassDB::bind_method(D_METHOD("ensure_cursor_is_visible"), &Tree::ensure_cursor_is_visible);
 
@@ -4866,7 +4885,7 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_column_title_language", "column"), &Tree::get_column_title_language);
 
 	ClassDB::bind_method(D_METHOD("get_scroll"), &Tree::get_scroll);
-	ClassDB::bind_method(D_METHOD("scroll_to_item", "item"), &Tree::_scroll_to_item);
+	ClassDB::bind_method(D_METHOD("scroll_to_item", "item", "center_on_item"), &Tree::scroll_to_item, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_h_scroll_enabled", "h_scroll"), &Tree::set_h_scroll_enabled);
 	ClassDB::bind_method(D_METHOD("is_h_scroll_enabled"), &Tree::is_h_scroll_enabled);

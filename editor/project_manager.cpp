@@ -40,7 +40,6 @@
 #include "core/os/os.h"
 #include "core/string/translation.h"
 #include "core/version.h"
-#include "core/version_hash.gen.h"
 #include "editor/editor_vcs_interface.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
@@ -1423,7 +1422,7 @@ void ProjectList::create_project_item_control(int p_index) {
 
 		Button *show = memnew(Button);
 		// Display a folder icon if the project directory can be opened, or a "broken file" icon if it can't.
-		show->set_icon(get_theme_icon(!item.missing ? "Load" : "FileBroken", "EditorIcons"));
+		show->set_icon(get_theme_icon(!item.missing ? SNAME("Load") : SNAME("FileBroken"), SNAME("EditorIcons")));
 		show->set_flat(true);
 		if (!item.grayed) {
 			// Don't make the icon less prominent if the parent is already grayed out.
@@ -1475,7 +1474,7 @@ void ProjectList::sort_projects() {
 		bool visible = true;
 		if (!_search_term.is_empty()) {
 			String search_path;
-			if (_search_term.find("/") != -1) {
+			if (_search_term.contains("/")) {
 				// Search path will match the whole path
 				search_path = item.path;
 			} else {

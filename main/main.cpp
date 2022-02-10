@@ -50,7 +50,6 @@
 #include "core/register_core_types.h"
 #include "core/string/translation.h"
 #include "core/version.h"
-#include "core/version_hash.gen.h"
 #include "drivers/register_driver_types.h"
 #include "main/app_icon.gen.h"
 #include "main/main_timer_sync.h"
@@ -200,7 +199,7 @@ static String unescape_cmdline(const String &p_str) {
 
 static String get_full_version_string() {
 	String hash = String(VERSION_HASH);
-	if (hash.length() != 0) {
+	if (!hash.is_empty()) {
 		hash = "." + hash.left(9);
 	}
 	return String(VERSION_FULL_BUILD) + hash;
@@ -827,7 +826,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			if (I->next()) {
 				String vm = I->next()->get();
 
-				if (vm.find("x") == -1) { // invalid parameter format
+				if (!vm.contains("x")) { // invalid parameter format
 
 					OS::get_singleton()->print("Invalid resolution '%s', it should be e.g. '1280x720'.\n",
 							vm.utf8().get_data());
@@ -858,7 +857,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			if (I->next()) {
 				String vm = I->next()->get();
 
-				if (vm.find(",") == -1) { // invalid parameter format
+				if (!vm.contains(",")) { // invalid parameter format
 
 					OS::get_singleton()->print("Invalid position '%s', it should be e.g. '80,128'.\n",
 							vm.utf8().get_data());
@@ -940,7 +939,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--debug-server") {
 			if (I->next()) {
 				debug_server_uri = I->next()->get();
-				if (debug_server_uri.find("://") == -1) { // wrong address
+				if (!debug_server_uri.contains("://")) { // wrong address
 					OS::get_singleton()->print("Invalid debug server uri. It should be of the form <protocol>://<bind_address>:<port>.\n");
 					goto error;
 				}
@@ -1073,7 +1072,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--remote-debug") {
 			if (I->next()) {
 				debug_uri = I->next()->get();
-				if (debug_uri.find("://") == -1) { // wrong address
+				if (!debug_uri.contains("://")) { // wrong address
 					OS::get_singleton()->print(
 							"Invalid debug host address, it should be of the form <protocol>://<host/IP>:<port>.\n");
 					goto error;
@@ -1130,7 +1129,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (!remotefs.is_empty()) {
 		file_access_network_client = memnew(FileAccessNetworkClient);
 		int port;
-		if (remotefs.find(":") != -1) {
+		if (remotefs.contains(":")) {
 			port = remotefs.get_slicec(':', 1).to_int();
 			remotefs = remotefs.get_slicec(':', 0);
 		} else {
@@ -1310,12 +1309,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/viewport_width",
 			PropertyInfo(Variant::INT, "display/window/size/viewport_width",
 					PROPERTY_HINT_RANGE,
-					"0,7680,or_greater")); // 8K resolution
+					"0,7680,1,or_greater")); // 8K resolution
+
 	GLOBAL_DEF_BASIC("display/window/size/viewport_height", 600);
 	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/viewport_height",
 			PropertyInfo(Variant::INT, "display/window/size/viewport_height",
 					PROPERTY_HINT_RANGE,
-					"0,4320,or_greater")); // 8K resolution
+					"0,4320,1,or_greater")); // 8K resolution
+
 	GLOBAL_DEF_BASIC("display/window/size/resizable", true);
 	GLOBAL_DEF_BASIC("display/window/size/borderless", false);
 	GLOBAL_DEF_BASIC("display/window/size/fullscreen", false);
@@ -1325,13 +1326,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			PropertyInfo(Variant::INT,
 					"display/window/size/window_width_override",
 					PROPERTY_HINT_RANGE,
-					"0,7680,or_greater")); // 8K resolution
+					"0,7680,1,or_greater")); // 8K resolution
 	GLOBAL_DEF("display/window/size/window_height_override", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/window_height_override",
 			PropertyInfo(Variant::INT,
 					"display/window/size/window_height_override",
 					PROPERTY_HINT_RANGE,
-					"0,4320,or_greater")); // 8K resolution
+					"0,4320,1,or_greater")); // 8K resolution
 
 	if (use_custom_res) {
 		if (!force_res) {
@@ -2248,9 +2249,8 @@ bool Main::start() {
 		}
 	}
 
-	if (main_loop->is_class("SceneTree")) {
-		SceneTree *sml = Object::cast_to<SceneTree>(main_loop);
-
+	SceneTree *sml = Object::cast_to<SceneTree>(main_loop);
+	if (sml) {
 #ifdef DEBUG_ENABLED
 		if (debug_collisions) {
 			sml->set_debug_collisions_hint(true);
@@ -2292,20 +2292,18 @@ bool Main::start() {
 					RES res = ResourceLoader::load(info.path);
 					ERR_CONTINUE_MSG(res.is_null(), "Can't autoload: " + info.path);
 					Node *n = nullptr;
-					if (res->is_class("PackedScene")) {
-						Ref<PackedScene> ps = res;
-						n = ps->instantiate();
-					} else if (res->is_class("Script")) {
-						Ref<Script> script_res = res;
+					Ref<PackedScene> scn = res;
+					Ref<Script> script_res = res;
+					if (scn.is_valid()) {
+						n = scn->instantiate();
+					} else if (script_res.is_valid()) {
 						StringName ibt = script_res->get_instance_base_type();
 						bool valid_type = ClassDB::is_parent_class(ibt, "Node");
 						ERR_CONTINUE_MSG(!valid_type, "Script does not inherit a Node: " + info.path);
 
 						Object *obj = ClassDB::instantiate(ibt);
 
-						ERR_CONTINUE_MSG(obj == nullptr,
-								"Cannot instance script for autoload, expected 'Node' inheritance, got: " +
-										String(ibt));
+						ERR_CONTINUE_MSG(!obj, "Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt) + ".");
 
 						n = Object::cast_to<Node>(obj);
 						n->set_script(script_res);

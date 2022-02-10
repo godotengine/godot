@@ -83,7 +83,7 @@ Size2i TileAtlasView::_compute_alternative_tiles_control_size() {
 		Size2i texture_region_size = tile_set_atlas_source->get_tile_texture_region(tile_id).size;
 		for (int j = 1; j < alternatives_count; j++) {
 			int alternative_id = tile_set_atlas_source->get_alternative_tile_id(tile_id, j);
-			bool transposed = Object::cast_to<TileData>(tile_set_atlas_source->get_tile_data(tile_id, alternative_id))->get_transpose();
+			bool transposed = tile_set_atlas_source->get_tile_data(tile_id, alternative_id)->get_transpose();
 			line_size.x += transposed ? texture_region_size.y : texture_region_size.x;
 			line_size.y = MAX(line_size.y, transposed ? texture_region_size.x : texture_region_size.y);
 		}
@@ -345,7 +345,7 @@ void TileAtlasView::_draw_alternatives() {
 			int alternatives_count = tile_set_atlas_source->get_alternative_tiles_count(atlas_coords);
 			for (int j = 1; j < alternatives_count; j++) {
 				int alternative_id = tile_set_atlas_source->get_alternative_tile_id(atlas_coords, j);
-				TileData *tile_data = Object::cast_to<TileData>(tile_set_atlas_source->get_tile_data(atlas_coords, alternative_id));
+				TileData *tile_data = tile_set_atlas_source->get_tile_data(atlas_coords, alternative_id);
 				bool transposed = tile_data->get_transpose();
 
 				// Update the y to max value.
@@ -473,7 +473,7 @@ void TileAtlasView::_update_alternative_tiles_rect_cache() {
 		int line_height = 0;
 		for (int j = 1; j < alternatives_count; j++) {
 			int alternative_id = tile_set_atlas_source->get_alternative_tile_id(tile_id, j);
-			TileData *tile_data = Object::cast_to<TileData>(tile_set_atlas_source->get_tile_data(tile_id, alternative_id));
+			TileData *tile_data = tile_set_atlas_source->get_tile_data(tile_id, alternative_id);
 			bool transposed = tile_data->get_transpose();
 			current.size = transposed ? Vector2i(texture_region_size.y, texture_region_size.x) : texture_region_size;
 

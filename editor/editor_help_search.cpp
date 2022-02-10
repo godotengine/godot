@@ -529,8 +529,8 @@ TreeItem *EditorHelpSearch::Runner::_create_class_hierarchy(const ClassMatch &p_
 
 TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const DocData::ClassDoc *p_doc, bool p_gray) {
 	Ref<Texture2D> icon = empty_icon;
-	if (ui_service->has_theme_icon(p_doc->name, "EditorIcons")) {
-		icon = ui_service->get_theme_icon(p_doc->name, "EditorIcons");
+	if (ui_service->has_theme_icon(p_doc->name, SNAME("EditorIcons"))) {
+		icon = ui_service->get_theme_icon(p_doc->name, SNAME("EditorIcons"));
 	} else if (ClassDB::class_exists(p_doc->name) && ClassDB::is_parent_class(p_doc->name, "Object")) {
 		icon = ui_service->get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
 	}
@@ -610,11 +610,6 @@ TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, cons
 		text = p_text;
 	} else {
 		icon = ui_service->get_theme_icon(p_icon, SNAME("EditorIcons"));
-		/*// In flat mode, show the class icon.
-if (ui_service->has_icon(p_class_name, "EditorIcons"))
-icon = ui_service->get_icon(p_class_name, "EditorIcons");
-else if (ClassDB::is_parent_class(p_class_name, "Object"))
-icon = ui_service->get_icon("Object", "EditorIcons");*/
 		text = p_class_name + "." + p_text;
 	}
 

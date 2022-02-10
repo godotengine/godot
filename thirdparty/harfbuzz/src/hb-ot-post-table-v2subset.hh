@@ -76,8 +76,7 @@ HB_INTERNAL bool postV2Tail::subset (hb_subset_context_t *c) const
   hb_map_t old_new_index_map, old_gid_new_index_map;
   unsigned i = 0;
 
-  post::accelerator_t _post;
-  _post.init (c->plan->source);
+  post::accelerator_t _post (c->plan->source);
 
   hb_hashmap_t<hb_bytes_t, unsigned, std::nullptr_t, unsigned, nullptr, (unsigned)-1> glyph_name_to_new_index;
   for (hb_codepoint_t new_gid = 0; new_gid < num_glyphs; new_gid++)
@@ -128,9 +127,7 @@ HB_INTERNAL bool postV2Tail::subset (hb_subset_context_t *c) const
                             })
   ;
 
-  bool ret = serialize (c->serializer, index_iter, &_post);
-  _post.fini ();
-  return_trace (ret);
+  return_trace (serialize (c->serializer, index_iter, &_post));
 }
 
 } /* namespace OT */

@@ -79,10 +79,8 @@
 		<member name="refuse_new_connections" type="bool" setter="set_refuse_new_connections" getter="is_refusing_new_connections" default="false">
 			If [code]true[/code], the MultiplayerAPI's [member multiplayer_peer] refuses new incoming connections.
 		</member>
-		<member name="replicator" type="MultiplayerReplicator" setter="" getter="get_replicator">
-		</member>
-		<member name="root_node" type="Node" setter="set_root_node" getter="get_root_node">
-			The root node to use for RPCs. Instead of an absolute path, a relative path will be used to find the node upon which the RPC should be executed.
+		<member name="root_path" type="NodePath" setter="set_root_path" getter="get_root_path" default="NodePath(&quot;&quot;)">
+			The root path to use for RPCs and replication. Instead of an absolute path, a relative path will be used to find the node upon which the RPC should be executed.
 			This effectively allows to have different branches of the scene tree to be managed by different MultiplayerAPI, allowing for example to run both client and server in the same scene.
 		</member>
 	</members>

@@ -188,16 +188,6 @@ protected:
 
 		return d;
 	}
-	void _remove_child(Object *p_child) {
-		remove_child(Object::cast_to<TreeItem>(p_child));
-	}
-
-	void _move_before(Object *p_item) {
-		move_before(Object::cast_to<TreeItem>(p_item));
-	}
-	void _move_after(Object *p_item) {
-		move_after(Object::cast_to<TreeItem>(p_item));
-	}
 
 	Variant _call_recursive_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
@@ -258,6 +248,7 @@ public:
 	int get_button_count(int p_column) const;
 	String get_button_tooltip(int p_column, int p_idx) const;
 	Ref<Texture2D> get_button(int p_column, int p_idx) const;
+	int get_button_id(int p_column, int p_idx) const;
 	void erase_button(int p_column, int p_idx);
 	int get_button_by_id(int p_column, int p_id) const;
 	void set_button(int p_column, int p_idx, const Ref<Texture2D> &p_button);
@@ -617,23 +608,6 @@ private:
 protected:
 	static void _bind_methods();
 
-	//bind helpers
-	TreeItem *_create_item(Object *p_parent, int p_idx = -1) {
-		return create_item(Object::cast_to<TreeItem>(p_parent), p_idx);
-	}
-
-	TreeItem *_get_next_selected(Object *p_item) {
-		return get_next_selected(Object::cast_to<TreeItem>(p_item));
-	}
-
-	Rect2 _get_item_rect(Object *p_item, int p_column) const {
-		return get_item_rect(Object::cast_to<TreeItem>(p_item), p_column);
-	}
-
-	void _scroll_to_item(Object *p_item) {
-		scroll_to_item(Object::cast_to<TreeItem>(p_item));
-	}
-
 public:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
@@ -709,7 +683,7 @@ public:
 	TreeItem *get_item_with_text(const String &p_find) const;
 
 	Point2 get_scroll() const;
-	void scroll_to_item(TreeItem *p_item);
+	void scroll_to_item(TreeItem *p_item, bool p_center_on_item = false);
 	void set_h_scroll_enabled(bool p_enable);
 	bool is_h_scroll_enabled() const;
 	void set_v_scroll_enabled(bool p_enable);

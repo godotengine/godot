@@ -32,6 +32,7 @@
 
 #include "core/core_string_names.h"
 #include "core/io/resource_loader.h"
+#include "core/multiplayer/multiplayer_api.h"
 #include "core/object/message_queue.h"
 #include "core/string/print_string.h"
 #include "instance_placeholder.h"
@@ -110,9 +111,6 @@ void Node::_notification(int p_notification) {
 				memdelete(data.path_cache);
 				data.path_cache = nullptr;
 			}
-			if (data.scene_file_path.length()) {
-				get_multiplayer()->scene_enter_exit_notify(data.scene_file_path, this, false);
-			}
 		} break;
 		case NOTIFICATION_PATH_RENAMED: {
 			if (data.path_cache) {
@@ -141,12 +139,6 @@ void Node::_notification(int p_notification) {
 			}
 
 			GDVIRTUAL_CALL(_ready);
-
-			if (data.scene_file_path.length()) {
-				ERR_FAIL_COND(!is_inside_tree());
-				get_multiplayer()->scene_enter_exit_notify(data.scene_file_path, this, true);
-			}
-
 		} break;
 		case NOTIFICATION_POSTINITIALIZE: {
 			data.in_constructor = false;
@@ -210,6 +202,12 @@ void Node::_propagate_enter_tree() {
 	emit_signal(SceneStringNames::get_singleton()->tree_entered);
 
 	data.tree->node_added(this);
+
+	if (data.parent) {
+		Variant c = this;
+		const Variant *cptr = &c;
+		data.parent->emit_signal(SNAME("child_entered_tree"), &cptr, 1);
+	}
 
 	data.blocked++;
 	//block while adding children
@@ -279,6 +277,12 @@ void Node::_propagate_exit_tree() {
 	notification(NOTIFICATION_EXIT_TREE, true);
 	if (data.tree) {
 		data.tree->node_removed(this);
+	}
+
+	if (data.parent) {
+		Variant c = this;
+		const Variant *cptr = &c;
+		data.parent->emit_signal(SNAME("child_exited_tree"), &cptr, 1);
 	}
 
 	// exit groups
@@ -608,14 +612,15 @@ Variant Node::_rpc_bind(const Variant **p_args, int p_argcount, Callable::CallEr
 		return Variant();
 	}
 
-	if (p_args[0]->get_type() != Variant::STRING_NAME) {
+	Variant::Type type = p_args[0]->get_type();
+	if (type != Variant::STRING_NAME && type != Variant::STRING) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING_NAME;
 		return Variant();
 	}
 
-	StringName method = *p_args[0];
+	StringName method = (*p_args[0]).operator StringName();
 
 	rpcp(0, method, &p_args[1], p_argcount - 1);
 
@@ -637,7 +642,8 @@ Variant Node::_rpc_id_bind(const Variant **p_args, int p_argcount, Callable::Cal
 		return Variant();
 	}
 
-	if (p_args[1]->get_type() != Variant::STRING_NAME) {
+	Variant::Type type = p_args[1]->get_type();
+	if (type != Variant::STRING_NAME && type != Variant::STRING) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
 		r_error.expected = Variant::STRING_NAME;
@@ -645,7 +651,7 @@ Variant Node::_rpc_id_bind(const Variant **p_args, int p_argcount, Callable::Cal
 	}
 
 	int peer_id = *p_args[0];
-	StringName method = *p_args[1];
+	StringName method = (*p_args[1]).operator StringName();
 
 	rpcp(peer_id, method, &p_args[2], p_argcount - 2);
 
@@ -1049,7 +1055,7 @@ void Node::_generate_serial_child_name(const Node *p_child, StringName &name) co
 	String nums;
 	for (int i = name_string.length() - 1; i >= 0; i--) {
 		char32_t n = name_string[i];
-		if (n >= '0' && n <= '9') {
+		if (is_digit(n)) {
 			nums = String::chr(name_string[i]) + nums;
 		} else {
 			break;
@@ -2865,6 +2871,8 @@ void Node::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tree_entered"));
 	ADD_SIGNAL(MethodInfo("tree_exiting"));
 	ADD_SIGNAL(MethodInfo("tree_exited"));
+	ADD_SIGNAL(MethodInfo("child_entered_tree", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
+	ADD_SIGNAL(MethodInfo("child_exited_tree", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "scene_file_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_scene_file_path", "get_scene_file_path");

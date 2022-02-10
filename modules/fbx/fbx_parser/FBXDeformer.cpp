@@ -104,7 +104,7 @@ Constraint::~Constraint() {
 
 // ------------------------------------------------------------------------------------------------
 Cluster::Cluster(uint64_t id, const ElementPtr element, const Document &doc, const std::string &name) :
-		Deformer(id, element, doc, name), valid_transformAssociateModel(false) {
+		Deformer(id, element, doc, name) {
 	const ScopePtr sc = GetRequiredScope(element);
 	//    for( auto element : sc.Elements())
 	//    {
@@ -177,7 +177,7 @@ Cluster::~Cluster() {
 
 // ------------------------------------------------------------------------------------------------
 Skin::Skin(uint64_t id, const ElementPtr element, const Document &doc, const std::string &name) :
-		Deformer(id, element, doc, name), accuracy(0.0f) {
+		Deformer(id, element, doc, name) {
 	const ScopePtr sc = GetRequiredScope(element);
 
 	// keep this it is used for debugging and any FBX format changes

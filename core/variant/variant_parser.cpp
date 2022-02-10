@@ -188,7 +188,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 					if (p_stream->is_eof()) {
 						r_token.type = TK_EOF;
 						return OK;
-					} else if ((ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F')) {
+					} else if (is_hex_digit(ch)) {
 						color_str += ch;
 
 					} else {
@@ -217,6 +217,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 			}
 			case '"': {
 				String str;
+				char32_t prev = 0;
 				while (true) {
 					char32_t ch = p_stream->get_char();
 
@@ -252,22 +253,25 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 							case 'r':
 								res = 13;
 								break;
+							case 'U':
 							case 'u': {
-								//hex number
-								for (int j = 0; j < 4; j++) {
+								// Hexadecimal sequence.
+								int hex_len = (next == 'U') ? 6 : 4;
+								for (int j = 0; j < hex_len; j++) {
 									char32_t c = p_stream->get_char();
+
 									if (c == 0) {
 										r_err_str = "Unterminated String";
 										r_token.type = TK_ERROR;
 										return ERR_PARSE_ERROR;
 									}
-									if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))) {
+									if (!is_hex_digit(c)) {
 										r_err_str = "Malformed hex constant in string";
 										r_token.type = TK_ERROR;
 										return ERR_PARSE_ERROR;
 									}
 									char32_t v;
-									if (c >= '0' && c <= '9') {
+									if (is_digit(c)) {
 										v = c - '0';
 									} else if (c >= 'a' && c <= 'f') {
 										v = c - 'a';
@@ -290,14 +294,48 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 							} break;
 						}
 
+						// Parse UTF-16 pair.
+						if ((res & 0xfffffc00) == 0xd800) {
+							if (prev == 0) {
+								prev = res;
+								continue;
+							} else {
+								r_err_str = "Invalid UTF-16 sequence in string, unpaired lead surrogate";
+								r_token.type = TK_ERROR;
+								return ERR_PARSE_ERROR;
+							}
+						} else if ((res & 0xfffffc00) == 0xdc00) {
+							if (prev == 0) {
+								r_err_str = "Invalid UTF-16 sequence in string, unpaired trail surrogate";
+								r_token.type = TK_ERROR;
+								return ERR_PARSE_ERROR;
+							} else {
+								res = (prev << 10UL) + res - ((0xd800 << 10UL) + 0xdc00 - 0x10000);
+								prev = 0;
+							}
+						}
+						if (prev != 0) {
+							r_err_str = "Invalid UTF-16 sequence in string, unpaired lead surrogate";
+							r_token.type = TK_ERROR;
+							return ERR_PARSE_ERROR;
+						}
 						str += res;
-
 					} else {
+						if (prev != 0) {
+							r_err_str = "Invalid UTF-16 sequence in string, unpaired lead surrogate";
+							r_token.type = TK_ERROR;
+							return ERR_PARSE_ERROR;
+						}
 						if (ch == '\n') {
 							line++;
 						}
 						str += ch;
 					}
+				}
+				if (prev != 0) {
+					r_err_str = "Invalid UTF-16 sequence in string, unpaired lead surrogate";
+					r_token.type = TK_ERROR;
+					return ERR_PARSE_ERROR;
 				}
 
 				if (p_stream->is_utf8()) {
@@ -343,7 +381,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 					while (true) {
 						switch (reading) {
 							case READING_INT: {
-								if (c >= '0' && c <= '9') {
+								if (is_digit(c)) {
 									//pass
 								} else if (c == '.') {
 									reading = READING_DEC;
@@ -357,7 +395,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 
 							} break;
 							case READING_DEC: {
-								if (c >= '0' && c <= '9') {
+								if (is_digit(c)) {
 								} else if (c == 'e') {
 									reading = READING_EXP;
 								} else {
@@ -366,7 +404,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 
 							} break;
 							case READING_EXP: {
-								if (c >= '0' && c <= '9') {
+								if (is_digit(c)) {
 									exp_beg = true;
 
 								} else if ((c == '-' || c == '+') && !exp_sign && !exp_beg) {
@@ -395,11 +433,11 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 						r_token.value = num.as_int();
 					}
 					return OK;
-				} else if ((cchar >= 'A' && cchar <= 'Z') || (cchar >= 'a' && cchar <= 'z') || cchar == '_') {
+				} else if (is_ascii_char(cchar) || is_underscore(cchar)) {
 					StringBuffer<> id;
 					bool first = true;
 
-					while ((cchar >= 'A' && cchar <= 'Z') || (cchar >= 'a' && cchar <= 'z') || cchar == '_' || (!first && cchar >= '0' && cchar <= '9')) {
+					while (is_ascii_char(cchar) || is_underscore(cchar) || (!first && is_digit(cchar))) {
 						id += cchar;
 						cchar = p_stream->get_char();
 						first = false;
@@ -1457,7 +1495,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		case Variant::FLOAT: {
 			String s = rtos_fix(p_variant.operator double());
 			if (s != "inf" && s != "inf_neg" && s != "nan") {
-				if (s.find(".") == -1 && s.find("e") == -1) {
+				if (!s.contains(".") && !s.contains("e")) {
 					s += ".0";
 				}
 			}

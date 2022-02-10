@@ -134,6 +134,11 @@
 #include "scene/main/timer.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
+#include "scene/multiplayer/multiplayer_spawner.h"
+#include "scene/multiplayer/multiplayer_synchronizer.h"
+#include "scene/multiplayer/scene_cache_interface.h"
+#include "scene/multiplayer/scene_replication_interface.h"
+#include "scene/multiplayer/scene_rpc_interface.h"
 #include "scene/resources/audio_stream_sample.h"
 #include "scene/resources/bit_map.h"
 #include "scene/resources/box_shape_3d.h"
@@ -301,6 +306,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(SubViewport);
 	GDREGISTER_CLASS(ViewportTexture);
 	GDREGISTER_CLASS(HTTPRequest);
+	GDREGISTER_CLASS(MultiplayerSpawner);
+	GDREGISTER_CLASS(MultiplayerSynchronizer);
 	GDREGISTER_CLASS(Timer);
 	GDREGISTER_CLASS(CanvasLayer);
 	GDREGISTER_CLASS(CanvasModulate);
@@ -463,7 +470,12 @@ void register_scene_types() {
 	GDREGISTER_CLASS(XROrigin3D);
 	GDREGISTER_CLASS(MeshInstance3D);
 	GDREGISTER_CLASS(OccluderInstance3D);
-	GDREGISTER_CLASS(Occluder3D);
+	GDREGISTER_VIRTUAL_CLASS(Occluder3D);
+	GDREGISTER_CLASS(ArrayOccluder3D);
+	GDREGISTER_CLASS(QuadOccluder3D);
+	GDREGISTER_CLASS(BoxOccluder3D);
+	GDREGISTER_CLASS(SphereOccluder3D);
+	GDREGISTER_CLASS(PolygonOccluder3D);
 	GDREGISTER_VIRTUAL_CLASS(SpriteBase3D);
 	GDREGISTER_CLASS(Sprite3D);
 	GDREGISTER_CLASS(AnimatedSprite3D);
@@ -555,11 +567,13 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeResizableBase);
 	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeGroupBase);
 	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeConstant);
+	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeVectorBase);
 	GDREGISTER_CLASS(VisualShaderNodeComment);
 	GDREGISTER_CLASS(VisualShaderNodeFloatConstant);
 	GDREGISTER_CLASS(VisualShaderNodeIntConstant);
 	GDREGISTER_CLASS(VisualShaderNodeBooleanConstant);
 	GDREGISTER_CLASS(VisualShaderNodeColorConstant);
+	GDREGISTER_CLASS(VisualShaderNodeVec2Constant);
 	GDREGISTER_CLASS(VisualShaderNodeVec3Constant);
 	GDREGISTER_CLASS(VisualShaderNodeTransformConstant);
 	GDREGISTER_CLASS(VisualShaderNodeFloatOp);
@@ -577,8 +591,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeDotProduct);
 	GDREGISTER_CLASS(VisualShaderNodeVectorLen);
 	GDREGISTER_CLASS(VisualShaderNodeDeterminant);
-	GDREGISTER_CLASS(VisualShaderNodeScalarDerivativeFunc);
-	GDREGISTER_CLASS(VisualShaderNodeVectorDerivativeFunc);
+	GDREGISTER_CLASS(VisualShaderNodeDerivativeFunc);
 	GDREGISTER_CLASS(VisualShaderNodeClamp);
 	GDREGISTER_CLASS(VisualShaderNodeFaceForward);
 	GDREGISTER_CLASS(VisualShaderNodeOuterProduct);
@@ -604,6 +617,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeIntUniform);
 	GDREGISTER_CLASS(VisualShaderNodeBooleanUniform);
 	GDREGISTER_CLASS(VisualShaderNodeColorUniform);
+	GDREGISTER_CLASS(VisualShaderNodeVec2Uniform);
 	GDREGISTER_CLASS(VisualShaderNodeVec3Uniform);
 	GDREGISTER_CLASS(VisualShaderNodeTransformUniform);
 	GDREGISTER_CLASS(VisualShaderNodeTextureUniform);
@@ -820,6 +834,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Font);
 	GDREGISTER_CLASS(Curve);
 
+	GDREGISTER_CLASS(SceneReplicationConfig);
+
 	GDREGISTER_CLASS(TextLine);
 	GDREGISTER_CLASS(TextParagraph);
 
@@ -1024,6 +1040,8 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("VisualShaderNodeVectorScalarStep", "VisualShaderNodeStep");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarSwitch", "VisualShaderNodeSwitch");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarTransformMult", "VisualShaderNodeTransformOp");
+	ClassDB::add_compatibility_class("VisualShaderNodeScalarDerivativeFunc", "VisualShaderNodeDerivativeFunc");
+	ClassDB::add_compatibility_class("VisualShaderNodeVectorDerivativeFunc", "VisualShaderNodeDerivativeFunc");
 	ClassDB::add_compatibility_class("World", "World3D");
 #endif /* DISABLE_DEPRECATED */
 
@@ -1046,6 +1064,9 @@ void register_scene_types() {
 	}
 
 	SceneDebugger::initialize();
+	SceneReplicationInterface::make_default();
+	SceneRPCInterface::make_default();
+	SceneCacheInterface::make_default();
 
 	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SCENE);
 }

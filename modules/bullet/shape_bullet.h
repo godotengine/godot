@@ -105,7 +105,7 @@ private:
 };
 
 class SphereShapeBullet : public ShapeBullet {
-	real_t radius;
+	real_t radius = 0.0;
 
 public:
 	SphereShapeBullet();
@@ -137,8 +137,8 @@ private:
 };
 
 class CapsuleShapeBullet : public ShapeBullet {
-	real_t height;
-	real_t radius;
+	real_t height = 0.0;
+	real_t radius = 0.0;
 
 public:
 	CapsuleShapeBullet();
@@ -155,8 +155,8 @@ private:
 };
 
 class CylinderShapeBullet : public ShapeBullet {
-	real_t height;
-	real_t radius;
+	real_t height = 0.0;
+	real_t radius = 0.0;
 
 public:
 	CylinderShapeBullet();

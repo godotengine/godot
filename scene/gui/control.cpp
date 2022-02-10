@@ -576,6 +576,11 @@ void Control::_update_canvas_item_transform() {
 	Transform2D xform = _get_internal_transform();
 	xform[2] += get_position();
 
+	// We use a little workaround to avoid flickering when moving the pivot with _edit_set_pivot()
+	if (is_inside_tree() && Math::abs(Math::sin(data.rotation * 4.0f)) < 0.00001f && get_viewport()->is_snap_controls_to_pixels_enabled()) {
+		xform[2] = xform[2].round();
+	}
+
 	RenderingServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), xform);
 }
 
@@ -2191,8 +2196,7 @@ void Control::release_focus() {
 		return;
 	}
 
-	get_viewport()->_gui_remove_focus();
-	update();
+	get_viewport()->gui_release_focus();
 }
 
 bool Control::is_top_level_control() const {
@@ -2595,11 +2599,6 @@ Control::MouseFilter Control::get_mouse_filter() const {
 	return data.mouse_filter;
 }
 
-Control *Control::get_focus_owner() const {
-	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
-	return get_viewport()->_gui_get_focus_owner();
-}
-
 void Control::warp_mouse(const Point2 &p_to_pos) {
 	ERR_FAIL_COND(!is_inside_tree());
 	get_viewport()->warp_mouse(get_global_transform().xform(p_to_pos));
@@ -2889,7 +2888,6 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("release_focus"), &Control::release_focus);
 	ClassDB::bind_method(D_METHOD("find_prev_valid_focus"), &Control::find_prev_valid_focus);
 	ClassDB::bind_method(D_METHOD("find_next_valid_focus"), &Control::find_next_valid_focus);
-	ClassDB::bind_method(D_METHOD("get_focus_owner"), &Control::get_focus_owner);
 
 	ClassDB::bind_method(D_METHOD("set_h_size_flags", "flags"), &Control::set_h_size_flags);
 	ClassDB::bind_method(D_METHOD("get_h_size_flags"), &Control::get_h_size_flags);

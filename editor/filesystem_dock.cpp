@@ -338,30 +338,28 @@ void FileSystemDock::_notification(int p_what) {
 			EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &FileSystemDock::_fs_changed));
 			EditorResourcePreview::get_singleton()->connect("preview_invalidated", callable_mp(this, &FileSystemDock::_preview_invalidated));
 
-			String ei = "EditorIcons";
-
-			button_reload->set_icon(get_theme_icon(SNAME("Reload"), ei));
-			button_toggle_display_mode->set_icon(get_theme_icon(SNAME("Panels2"), ei));
+			button_reload->set_icon(get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
+			button_toggle_display_mode->set_icon(get_theme_icon(SNAME("Panels2"), SNAME("EditorIcons")));
 			button_file_list_display_mode->connect("pressed", callable_mp(this, &FileSystemDock::_toggle_file_display));
 
 			files->connect("item_activated", callable_mp(this, &FileSystemDock::_file_list_activate_file));
 			button_hist_next->connect("pressed", callable_mp(this, &FileSystemDock::_fw_history));
 			button_hist_prev->connect("pressed", callable_mp(this, &FileSystemDock::_bw_history));
 
-			tree_search_box->set_right_icon(get_theme_icon(SNAME("Search"), ei));
+			tree_search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			tree_search_box->set_clear_button_enabled(true);
-			tree_button_sort->set_icon(get_theme_icon(SNAME("Sort"), ei));
+			tree_button_sort->set_icon(get_theme_icon(SNAME("Sort"), SNAME("EditorIcons")));
 
-			file_list_search_box->set_right_icon(get_theme_icon(SNAME("Search"), ei));
+			file_list_search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			file_list_search_box->set_clear_button_enabled(true);
-			file_list_button_sort->set_icon(get_theme_icon(SNAME("Sort"), ei));
+			file_list_button_sort->set_icon(get_theme_icon(SNAME("Sort"), SNAME("EditorIcons")));
 
 			if (is_layout_rtl()) {
-				button_hist_next->set_icon(get_theme_icon(SNAME("Back"), ei));
-				button_hist_prev->set_icon(get_theme_icon(SNAME("Forward"), ei));
+				button_hist_next->set_icon(get_theme_icon(SNAME("Back"), SNAME("EditorIcons")));
+				button_hist_prev->set_icon(get_theme_icon(SNAME("Forward"), SNAME("EditorIcons")));
 			} else {
-				button_hist_next->set_icon(get_theme_icon(SNAME("Forward"), ei));
-				button_hist_prev->set_icon(get_theme_icon(SNAME("Back"), ei));
+				button_hist_next->set_icon(get_theme_icon(SNAME("Forward"), SNAME("EditorIcons")));
+				button_hist_prev->set_icon(get_theme_icon(SNAME("Back"), SNAME("EditorIcons")));
 			}
 			file_list_popup->connect("id_pressed", callable_mp(this, &FileSystemDock::_file_list_rmb_option));
 			tree_popup->connect("id_pressed", callable_mp(this, &FileSystemDock::_tree_rmb_option));
@@ -412,15 +410,14 @@ void FileSystemDock::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			// Update icons.
-			String ei = "EditorIcons";
-			button_reload->set_icon(get_theme_icon(SNAME("Reload"), ei));
-			button_toggle_display_mode->set_icon(get_theme_icon(SNAME("Panels2"), ei));
+			button_reload->set_icon(get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
+			button_toggle_display_mode->set_icon(get_theme_icon(SNAME("Panels2"), SNAME("EditorIcons")));
 			if (is_layout_rtl()) {
-				button_hist_next->set_icon(get_theme_icon(SNAME("Back"), ei));
-				button_hist_prev->set_icon(get_theme_icon(SNAME("Forward"), ei));
+				button_hist_next->set_icon(get_theme_icon(SNAME("Back"), SNAME("EditorIcons")));
+				button_hist_prev->set_icon(get_theme_icon(SNAME("Forward"), SNAME("EditorIcons")));
 			} else {
-				button_hist_next->set_icon(get_theme_icon(SNAME("Forward"), ei));
-				button_hist_prev->set_icon(get_theme_icon(SNAME("Back"), ei));
+				button_hist_next->set_icon(get_theme_icon(SNAME("Forward"), SNAME("EditorIcons")));
+				button_hist_prev->set_icon(get_theme_icon(SNAME("Back"), SNAME("EditorIcons")));
 			}
 			if (file_list_display_mode == FILE_LIST_DISPLAY_LIST) {
 				button_file_list_display_mode->set_icon(get_theme_icon(SNAME("FileThumbnail"), SNAME("EditorIcons")));
@@ -428,13 +425,13 @@ void FileSystemDock::_notification(int p_what) {
 				button_file_list_display_mode->set_icon(get_theme_icon(SNAME("FileList"), SNAME("EditorIcons")));
 			}
 
-			tree_search_box->set_right_icon(get_theme_icon(SNAME("Search"), ei));
+			tree_search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			tree_search_box->set_clear_button_enabled(true);
-			tree_button_sort->set_icon(get_theme_icon(SNAME("Sort"), ei));
+			tree_button_sort->set_icon(get_theme_icon(SNAME("Sort"), SNAME("EditorIcons")));
 
-			file_list_search_box->set_right_icon(get_theme_icon(SNAME("Search"), ei));
+			file_list_search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			file_list_search_box->set_clear_button_enabled(true);
-			file_list_button_sort->set_icon(get_theme_icon(SNAME("Sort"), ei));
+			file_list_button_sort->set_icon(get_theme_icon(SNAME("Sort"), SNAME("EditorIcons")));
 
 			// Update always show folders.
 			bool new_always_show_folders = bool(EditorSettings::get_singleton()->get("docks/filesystem/always_show_folders"));
@@ -629,7 +626,7 @@ void FileSystemDock::_search(EditorFileSystemDirectory *p_path, List<FileInfo> *
 	for (int i = 0; i < p_path->get_file_count(); i++) {
 		String file = p_path->get_file(i);
 
-		if (file.to_lower().find(searched_string) != -1) {
+		if (file.to_lower().contains(searched_string)) {
 			FileInfo fi;
 			fi.name = file;
 			fi.type = p_path->get_file_type(i);
@@ -718,7 +715,6 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 	String directory = path;
 	String file = "";
 
-	String ei = "EditorIcons";
 	int thumbnail_size = EditorSettings::get_singleton()->get("docks/filesystem/thumbnail_size");
 	thumbnail_size *= EDSCALE;
 	Ref<Texture2D> folder_thumbnail;
@@ -736,13 +732,13 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		files->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
 
 		if (thumbnail_size < 64) {
-			folder_thumbnail = get_theme_icon(SNAME("FolderMediumThumb"), ei);
-			file_thumbnail = get_theme_icon(SNAME("FileMediumThumb"), ei);
-			file_thumbnail_broken = get_theme_icon(SNAME("FileDeadMediumThumb"), ei);
+			folder_thumbnail = get_theme_icon(SNAME("FolderMediumThumb"), SNAME("EditorIcons"));
+			file_thumbnail = get_theme_icon(SNAME("FileMediumThumb"), SNAME("EditorIcons"));
+			file_thumbnail_broken = get_theme_icon(SNAME("FileDeadMediumThumb"), SNAME("EditorIcons"));
 		} else {
-			folder_thumbnail = get_theme_icon(SNAME("FolderBigThumb"), ei);
-			file_thumbnail = get_theme_icon(SNAME("FileBigThumb"), ei);
-			file_thumbnail_broken = get_theme_icon(SNAME("FileDeadBigThumb"), ei);
+			folder_thumbnail = get_theme_icon(SNAME("FolderBigThumb"), SNAME("EditorIcons"));
+			file_thumbnail = get_theme_icon(SNAME("FileBigThumb"), SNAME("EditorIcons"));
+			file_thumbnail_broken = get_theme_icon(SNAME("FileDeadBigThumb"), SNAME("EditorIcons"));
 		}
 	} else {
 		// No thumbnails.
@@ -871,7 +867,6 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 
 	// Fills the ItemList control node from the FileInfos.
 	String main_scene = ProjectSettings::get_singleton()->get("application/run/main_scene");
-	String oi = "Object";
 	for (FileInfo &E : file_list) {
 		FileInfo *finfo = &(E);
 		String fname = finfo->name;
@@ -885,10 +880,10 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 
 		// Select the icons.
 		if (!finfo->import_broken) {
-			type_icon = (has_theme_icon(ftype, ei)) ? get_theme_icon(ftype, ei) : get_theme_icon(oi, ei);
+			type_icon = (has_theme_icon(ftype, SNAME("EditorIcons"))) ? get_theme_icon(ftype, SNAME("EditorIcons")) : get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
 			big_icon = file_thumbnail;
 		} else {
-			type_icon = get_theme_icon(SNAME("ImportFail"), ei);
+			type_icon = get_theme_icon(SNAME("ImportFail"), SNAME("EditorIcons"));
 			big_icon = file_thumbnail_broken;
 			tooltip += "\n" + TTR("Status: Import of file failed. Please fix file and reimport manually.");
 		}
@@ -1230,6 +1225,30 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 			if (err != OK) {
 				EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:") + "\n" + old_path + ".import\n");
 			}
+
+			// Remove uid from .import file to avoid conflict.
+			Ref<ConfigFile> cfg;
+			cfg.instantiate();
+			cfg->load(new_path + ".import");
+			cfg->erase_section_key("remap", "uid");
+			cfg->save(new_path + ".import");
+		} else if (p_item.is_file && (old_path.get_extension() == "tscn" || old_path.get_extension() == "tres")) {
+			// FIXME: Quick hack to fix text resources. This should be fixed properly.
+			FileAccessRef file = FileAccess::open(old_path, FileAccess::READ, &err);
+			if (err == OK) {
+				PackedStringArray lines = file->get_as_utf8_string().split("\n");
+				String line = lines[0];
+
+				if (line.contains("uid")) {
+					line = line.substr(0, line.find(" uid")) + "]";
+					lines.write[0] = line;
+
+					FileAccessRef file2 = FileAccess::open(new_path, FileAccess::WRITE, &err);
+					if (err == OK) {
+						file2->store_string(String("\n").join(lines));
+					}
+				}
+			}
 		}
 	} else {
 		EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:") + "\n" + old_path + "\n");
@@ -1373,8 +1392,8 @@ void FileSystemDock::_make_dir_confirm() {
 	if (dir_name.length() == 0) {
 		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
 		return;
-	} else if (dir_name.find("/") != -1 || dir_name.find("\\") != -1 || dir_name.find(":") != -1 || dir_name.find("*") != -1 ||
-			dir_name.find("|") != -1 || dir_name.find(">") != -1 || dir_name.ends_with(".") || dir_name.ends_with(" ")) {
+	} else if (dir_name.contains("/") || dir_name.contains("\\") || dir_name.contains(":") || dir_name.contains("*") ||
+			dir_name.contains("|") || dir_name.contains(">") || dir_name.ends_with(".") || dir_name.ends_with(" ")) {
 		EditorNode::get_singleton()->show_warning(TTR("Provided name contains invalid characters."));
 		return;
 	}
@@ -1478,7 +1497,7 @@ void FileSystemDock::_rename_operation_confirm() {
 	if (new_name.length() == 0) {
 		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
 		return;
-	} else if (new_name.find("/") != -1 || new_name.find("\\") != -1 || new_name.find(":") != -1) {
+	} else if (new_name.contains("/") || new_name.contains("\\") || new_name.contains(":")) {
 		EditorNode::get_singleton()->show_warning(TTR("Name contains invalid characters."));
 		return;
 	} else if (to_rename.is_file && old_name.get_extension() != new_name.get_extension()) {
@@ -1540,7 +1559,7 @@ void FileSystemDock::_duplicate_operation_confirm() {
 	if (new_name.length() == 0) {
 		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
 		return;
-	} else if (new_name.find("/") != -1 || new_name.find("\\") != -1 || new_name.find(":") != -1) {
+	} else if (new_name.contains("/") || new_name.contains("\\") || new_name.contains(":")) {
 		EditorNode::get_singleton()->show_warning(TTR("Name contains invalid characters."));
 		return;
 	}
@@ -1801,7 +1820,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			// Add the files from favorites.
 			Vector<String> favorites = EditorSettings::get_singleton()->get_favorites();
 			for (int i = 0; i < p_selected.size(); i++) {
-				if (favorites.find(p_selected[i]) == -1) {
+				if (!favorites.has(p_selected[i])) {
 					favorites.push_back(p_selected[i]);
 				}
 			}
@@ -2324,7 +2343,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 			Vector<String> fnames = drag_data["files"];
 			Vector<String> favorites = EditorSettings::get_singleton()->get_favorites();
 			for (int i = 0; i < fnames.size(); i++) {
-				if (favorites.find(fnames[i]) == -1) {
+				if (!favorites.has(fnames[i])) {
 					favorites.push_back(fnames[i]);
 				}
 			}

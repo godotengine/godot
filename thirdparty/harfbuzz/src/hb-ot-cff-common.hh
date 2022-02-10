@@ -68,8 +68,6 @@ struct code_pair_t
 typedef hb_vector_t<unsigned char> str_buff_t;
 struct str_buff_vec_t : hb_vector_t<str_buff_t>
 {
-  void fini () { SUPER::fini_deep (); }
-
   unsigned int total_size () const
   {
     unsigned int size = 0;

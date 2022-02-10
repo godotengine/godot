@@ -82,9 +82,11 @@ void Label::_shape() {
 	Ref<StyleBox> style = get_theme_stylebox(SNAME("normal"), SNAME("Label"));
 	int width = (get_size().width - style->get_minimum_size().width);
 
-	if (dirty) {
+	if (dirty || font_dirty) {
 		String lang = (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale();
-		TS->shaped_text_clear(text_rid);
+		if (dirty) {
+			TS->shaped_text_clear(text_rid);
+		}
 		if (text_direction == Control::TEXT_DIRECTION_INHERITED) {
 			TS->shaped_text_set_direction(text_rid, is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
 		} else {
@@ -97,9 +99,17 @@ void Label::_shape() {
 		if (visible_chars >= 0 && visible_chars_behavior == VC_CHARS_BEFORE_SHAPING) {
 			text = text.substr(0, visible_chars);
 		}
-		TS->shaped_text_add_string(text_rid, text, font->get_rids(), font_size, opentype_features, lang);
+		if (dirty) {
+			TS->shaped_text_add_string(text_rid, text, font->get_rids(), font_size, opentype_features, lang);
+		} else {
+			int spans = TS->shaped_get_span_count(text_rid);
+			for (int i = 0; i < spans; i++) {
+				TS->shaped_set_span_update_font(text_rid, i, font->get_rids(), font_size, opentype_features);
+			}
+		}
 		TS->shaped_text_set_bidi_override(text_rid, structured_text_parser(st_parser, st_args, text));
 		dirty = false;
+		font_dirty = false;
 		lines_dirty = true;
 	}
 
@@ -276,7 +286,7 @@ void Label::_notification(int p_what) {
 			RenderingServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), true);
 		}
 
-		if (dirty || lines_dirty) {
+		if (dirty || font_dirty || lines_dirty) {
 			_shape();
 		}
 
@@ -521,7 +531,7 @@ void Label::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_THEME_CHANGED) {
-		dirty = true;
+		font_dirty = true;
 		update();
 	}
 	if (p_what == NOTIFICATION_RESIZED) {
@@ -531,7 +541,7 @@ void Label::_notification(int p_what) {
 
 Size2 Label::get_minimum_size() const {
 	// don't want to mutable everything
-	if (dirty || lines_dirty) {
+	if (dirty || font_dirty || lines_dirty) {
 		const_cast<Label *>(this)->_shape();
 	}
 
@@ -555,7 +565,7 @@ int Label::get_line_count() const {
 	if (!is_inside_tree()) {
 		return 1;
 	}
-	if (dirty || lines_dirty) {
+	if (dirty || font_dirty || lines_dirty) {
 		const_cast<Label *>(this)->_shape();
 	}
 
@@ -630,7 +640,7 @@ void Label::set_text_direction(Control::TextDirection p_text_direction) {
 	ERR_FAIL_COND((int)p_text_direction < -1 || (int)p_text_direction > 3);
 	if (text_direction != p_text_direction) {
 		text_direction = p_text_direction;
-		dirty = true;
+		font_dirty = true;
 		update();
 	}
 }
@@ -638,7 +648,7 @@ void Label::set_text_direction(Control::TextDirection p_text_direction) {
 void Label::set_structured_text_bidi_override(Control::StructuredTextParser p_parser) {
 	if (st_parser != p_parser) {
 		st_parser = p_parser;
-		dirty = true;
+		font_dirty = true;
 		update();
 	}
 }
@@ -649,7 +659,7 @@ Control::StructuredTextParser Label::get_structured_text_bidi_override() const {
 
 void Label::set_structured_text_bidi_override_options(Array p_args) {
 	st_args = p_args;
-	dirty = true;
+	font_dirty = true;
 	update();
 }
 
@@ -663,7 +673,7 @@ Control::TextDirection Label::get_text_direction() const {
 
 void Label::clear_opentype_features() {
 	opentype_features.clear();
-	dirty = true;
+	font_dirty = true;
 	update();
 }
 
@@ -671,7 +681,7 @@ void Label::set_opentype_feature(const String &p_name, int p_value) {
 	int32_t tag = TS->name_to_tag(p_name);
 	if (!opentype_features.has(tag) || (int)opentype_features[tag] != p_value) {
 		opentype_features[tag] = p_value;
-		dirty = true;
+		font_dirty = true;
 		update();
 	}
 }
@@ -798,7 +808,7 @@ int Label::get_max_lines_visible() const {
 }
 
 int Label::get_total_character_count() const {
-	if (dirty || lines_dirty) {
+	if (dirty || font_dirty || lines_dirty) {
 		const_cast<Label *>(this)->_shape();
 	}
 
@@ -814,13 +824,13 @@ bool Label::_set(const StringName &p_name, const Variant &p_value) {
 		if (value == -1) {
 			if (opentype_features.has(tag)) {
 				opentype_features.erase(tag);
-				dirty = true;
+				font_dirty = true;
 				update();
 			}
 		} else {
 			if (!opentype_features.has(tag) || (int)opentype_features[tag] != value) {
 				opentype_features[tag] = value;
-				dirty = true;
+				font_dirty = true;
 				update();
 			}
 		}

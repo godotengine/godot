@@ -263,30 +263,29 @@ void RayCast2D::add_exception_rid(const RID &p_rid) {
 	exclude.insert(p_rid);
 }
 
-void RayCast2D::add_exception(const Object *p_object) {
-	ERR_FAIL_NULL(p_object);
-	const CollisionObject2D *co = Object::cast_to<CollisionObject2D>(p_object);
-	if (!co) {
-		return;
-	}
-	add_exception_rid(co->get_rid());
+void RayCast2D::add_exception(const CollisionObject2D *p_node) {
+	ERR_FAIL_NULL_MSG(p_node, "The passed Node must be an instance of CollisionObject2D.");
+	add_exception_rid(p_node->get_rid());
 }
 
 void RayCast2D::remove_exception_rid(const RID &p_rid) {
 	exclude.erase(p_rid);
 }
 
-void RayCast2D::remove_exception(const Object *p_object) {
-	ERR_FAIL_NULL(p_object);
-	const CollisionObject2D *co = Object::cast_to<CollisionObject2D>(p_object);
-	if (!co) {
-		return;
-	}
-	remove_exception_rid(co->get_rid());
+void RayCast2D::remove_exception(const CollisionObject2D *p_node) {
+	ERR_FAIL_NULL_MSG(p_node, "The passed Node must be an instance of CollisionObject2D.");
+	remove_exception_rid(p_node->get_rid());
 }
 
 void RayCast2D::clear_exceptions() {
 	exclude.clear();
+
+	if (exclude_parent_body && is_inside_tree()) {
+		CollisionObject2D *parent = Object::cast_to<CollisionObject2D>(get_parent());
+		if (parent) {
+			exclude.insert(parent->get_rid());
+		}
+	}
 }
 
 void RayCast2D::set_collide_with_areas(bool p_enabled) {

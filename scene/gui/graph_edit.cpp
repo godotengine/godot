@@ -1692,8 +1692,9 @@ int GraphEdit::_set_operations(SET_OPERATIONS p_operation, Set<StringName> &r_u,
 	switch (p_operation) {
 		case GraphEdit::IS_EQUAL: {
 			for (Set<StringName>::Element *E = r_u.front(); E; E = E->next()) {
-				if (!r_v.has(E->get()))
+				if (!r_v.has(E->get())) {
 					return 0;
+				}
 			}
 			return r_u.size() == r_v.size();
 		} break;
@@ -1702,8 +1703,9 @@ int GraphEdit::_set_operations(SET_OPERATIONS p_operation, Set<StringName> &r_u,
 				return 1;
 			}
 			for (Set<StringName>::Element *E = r_u.front(); E; E = E->next()) {
-				if (!r_v.has(E->get()))
+				if (!r_v.has(E->get())) {
 					return 0;
+				}
 			}
 			return 1;
 		} break;

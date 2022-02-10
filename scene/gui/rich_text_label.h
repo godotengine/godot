@@ -39,6 +39,13 @@ class RichTextLabel : public Control {
 	GDCLASS(RichTextLabel, Control);
 
 public:
+	enum AutowrapMode {
+		AUTOWRAP_OFF,
+		AUTOWRAP_ARBITRARY,
+		AUTOWRAP_WORD,
+		AUTOWRAP_WORD_SMART
+	};
+
 	enum ListType {
 		LIST_NUMBERS,
 		LIST_LETTERS,
@@ -129,6 +136,7 @@ private:
 
 		Vector<Line> lines;
 		int first_invalid_line = 0;
+		int first_invalid_font_line = 0;
 		int first_resized_line = 0;
 
 		ItemFrame *parent_frame = nullptr;
@@ -345,6 +353,8 @@ private:
 
 	VScrollBar *vscroll = nullptr;
 
+	AutowrapMode autowrap_mode = AUTOWRAP_WORD_SMART;
+
 	bool scroll_visible = false;
 	bool scroll_follow = false;
 	bool scroll_following = false;
@@ -414,6 +424,7 @@ private:
 
 	void _shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, int *r_char_offset);
 	void _resize_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width);
+	void _update_line_font(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size);
 	int _draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs, int &r_processed_glyphs);
 	float _find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr);
 
@@ -572,6 +583,9 @@ public:
 	void set_language(const String &p_language);
 	String get_language() const;
 
+	void set_autowrap_mode(AutowrapMode p_mode);
+	AutowrapMode get_autowrap_mode() const;
+
 	void set_structured_text_bidi_override(Control::StructuredTextParser p_parser);
 	Control::StructuredTextParser get_structured_text_bidi_override() const;
 
@@ -601,6 +615,7 @@ public:
 	~RichTextLabel();
 };
 
+VARIANT_ENUM_CAST(RichTextLabel::AutowrapMode);
 VARIANT_ENUM_CAST(RichTextLabel::ListType);
 VARIANT_ENUM_CAST(RichTextLabel::ItemType);
 VARIANT_ENUM_CAST(RichTextLabel::VisibleCharactersBehavior);

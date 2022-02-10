@@ -362,21 +362,21 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 	RES res = ResourceLoader::load(p_path);
 	ERR_FAIL_COND_V_MSG(res.is_null(), nullptr, "Can't autoload: " + p_path + ".");
 	Node *n = nullptr;
-	if (res->is_class("PackedScene")) {
-		Ref<PackedScene> ps = res;
-		n = ps->instantiate();
-	} else if (res->is_class("Script")) {
-		Ref<Script> s = res;
-		StringName ibt = s->get_instance_base_type();
+	Ref<PackedScene> scn = res;
+	Ref<Script> script = res;
+	if (scn.is_valid()) {
+		n = scn->instantiate();
+	} else if (script.is_valid()) {
+		StringName ibt = script->get_instance_base_type();
 		bool valid_type = ClassDB::is_parent_class(ibt, "Node");
 		ERR_FAIL_COND_V_MSG(!valid_type, nullptr, "Script does not inherit a Node: " + p_path + ".");
 
 		Object *obj = ClassDB::instantiate(ibt);
 
-		ERR_FAIL_COND_V_MSG(obj == nullptr, nullptr, "Cannot instance script for AutoLoad, expected 'Node' inheritance, got: " + String(ibt) + ".");
+		ERR_FAIL_COND_V_MSG(!obj, nullptr, "Cannot instance script for AutoLoad, expected 'Node' inheritance, got: " + String(ibt) + ".");
 
 		n = Object::cast_to<Node>(obj);
-		n->set_script(s);
+		n->set_script(script);
 	}
 
 	ERR_FAIL_COND_V_MSG(!n, nullptr, "Path in AutoLoad not a node or script: " + p_path + ".");

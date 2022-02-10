@@ -383,7 +383,7 @@ void Skeleton3DEditor::create_physical_skeleton() {
 			if (!bones_infos[parent].physical_bone) {
 				bones_infos.write[parent].physical_bone = create_physical_bone(parent, bone_id, bones_infos);
 
-				ur->create_action(TTR("Create physical bones"));
+				ur->create_action(TTR("Create physical bones"), UndoRedo::MERGE_ALL);
 				ur->add_do_method(skeleton, "add_child", bones_infos[parent].physical_bone);
 				ur->add_do_reference(bones_infos[parent].physical_bone);
 				ur->add_undo_method(skeleton, "remove_child", bones_infos[parent].physical_bone);
@@ -821,7 +821,7 @@ void fragment() {
 }
 )");
 	handle_material->set_shader(handle_shader);
-	Ref<Texture2D> handle = editor->get_gui_base()->get_theme_icon("EditorBoneHandle", "EditorIcons");
+	Ref<Texture2D> handle = editor->get_gui_base()->get_theme_icon(SNAME("EditorBoneHandle"), SNAME("EditorIcons"));
 	handle_material->set_shader_param("point_size", handle->get_width());
 	handle_material->set_shader_param("texture_albedo", handle);
 

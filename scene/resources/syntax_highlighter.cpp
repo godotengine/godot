@@ -116,14 +116,6 @@ void SyntaxHighlighter::_bind_methods() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static bool _is_char(char32_t c) {
-	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
-}
-
-static bool _is_hex_symbol(char32_t c) {
-	return ((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
-}
-
 Dictionary CodeHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 	Dictionary color_map;
 
@@ -166,7 +158,7 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 		color = font_color;
 		bool is_char = !is_symbol(str[j]);
 		bool is_a_symbol = is_symbol(str[j]);
-		bool is_number = (str[j] >= '0' && str[j] <= '9');
+		bool is_number = is_digit(str[j]);
 
 		/* color regions */
 		if (is_a_symbol || in_region != -1) {
@@ -304,7 +296,7 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 		}
 
 		// Allow ABCDEF in hex notation.
-		if (is_hex_notation && (_is_hex_symbol(str[j]) || is_number)) {
+		if (is_hex_notation && (is_hex_digit(str[j]) || is_number)) {
 			is_number = true;
 		} else {
 			is_hex_notation = false;
@@ -321,7 +313,7 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 			}
 		}
 
-		if (!in_word && _is_char(str[j]) && !is_number) {
+		if (!in_word && (is_ascii_char(str[j]) || is_underscore(str[j])) && !is_number) {
 			in_word = true;
 		}
 

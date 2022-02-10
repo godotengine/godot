@@ -114,16 +114,10 @@
 	if (output) {
 		[self removeOutput:output];
 		[output setSampleBufferDelegate:nil queue:nullptr];
-		[output release];
 		output = nullptr;
 	}
 
 	[self commitConfiguration];
-}
-
-- (void)dealloc {
-	// bye bye
-	[super dealloc];
 }
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
@@ -208,7 +202,6 @@ public:
 	AVCaptureDevice *get_device() const;
 
 	CameraFeedOSX();
-	~CameraFeedOSX();
 
 	void set_device(AVCaptureDevice *p_device);
 
@@ -227,7 +220,6 @@ CameraFeedOSX::CameraFeedOSX() {
 
 void CameraFeedOSX::set_device(AVCaptureDevice *p_device) {
 	device = p_device;
-	[device retain];
 
 	// get some info
 	NSString *device_name = p_device.localizedName;
@@ -237,18 +229,6 @@ void CameraFeedOSX::set_device(AVCaptureDevice *p_device) {
 		position = CameraFeed::FEED_BACK;
 	} else if ([p_device position] == AVCaptureDevicePositionFront) {
 		position = CameraFeed::FEED_FRONT;
-	};
-};
-
-CameraFeedOSX::~CameraFeedOSX() {
-	if (capture_session != nullptr) {
-		[capture_session release];
-		capture_session = nullptr;
-	};
-
-	if (device != nullptr) {
-		[device release];
-		device = nullptr;
 	};
 };
 
@@ -282,7 +262,6 @@ void CameraFeedOSX::deactivate_feed() {
 	// end camera capture if we have one
 	if (capture_session) {
 		[capture_session cleanup];
-		[capture_session release];
 		capture_session = nullptr;
 	};
 };
@@ -317,8 +296,6 @@ void CameraFeedOSX::deactivate_feed() {
 	// remove notifications
 	[[NSNotificationCenter defaultCenter] removeObserver:self name:AVCaptureDeviceWasConnectedNotification object:nil];
 	[[NSNotificationCenter defaultCenter] removeObserver:self name:AVCaptureDeviceWasDisconnectedNotification object:nil];
-
-	[super dealloc];
 }
 
 @end
@@ -375,8 +352,4 @@ CameraOSX::CameraOSX() {
 
 	// should only have one of these....
 	device_notifications = [[MyDeviceNotifications alloc] initForServer:this];
-};
-
-CameraOSX::~CameraOSX() {
-	[device_notifications release];
 };

@@ -889,7 +889,7 @@ void GridMapEditor::update_palette() {
 			name = "#" + itos(id);
 		}
 
-		if (!filter.is_empty() && !filter.is_subsequence_ofi(name)) {
+		if (!filter.is_empty() && !filter.is_subsequence_ofn(name)) {
 			continue;
 		}
 

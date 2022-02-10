@@ -2786,6 +2786,52 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		SEND_GUI_KEY_EVENT(code_edit, Key::APOSTROPHE);
 		SEND_GUI_KEY_EVENT(code_edit, Key::QUOTEDBL);
 		CHECK(code_edit->get_line(0) == "'\"'");
+
+		/* Wrap single line selection with brackets */
+		code_edit->clear();
+		code_edit->insert_text_at_caret("abc");
+		code_edit->select_all();
+		SEND_GUI_KEY_EVENT(code_edit, Key::BRACKETLEFT);
+		CHECK(code_edit->get_line(0) == "[abc]");
+
+		/* Caret should be after the last character of the single line selection */
+		CHECK(code_edit->get_caret_column() == 4);
+
+		/* Wrap multi line selection with brackets */
+		code_edit->clear();
+		code_edit->insert_text_at_caret("abc\nabc");
+		code_edit->select_all();
+		SEND_GUI_KEY_EVENT(code_edit, Key::BRACKETLEFT);
+		CHECK(code_edit->get_text() == "[abc\nabc]");
+
+		/* Caret should be after the last character of the multi line selection */
+		CHECK(code_edit->get_caret_line() == 1);
+		CHECK(code_edit->get_caret_column() == 3);
+
+		/* If inserted character is not a auto brace completion open key, replace selected text with the inserted character */
+		code_edit->clear();
+		code_edit->insert_text_at_caret("abc");
+		code_edit->select_all();
+		SEND_GUI_KEY_EVENT(code_edit, Key::KEY_1);
+		CHECK(code_edit->get_text() == "1");
+
+		/* If potential multichar and single brace completion is matched, it should wrap the single.  */
+		code_edit->clear();
+		code_edit->insert_text_at_caret("\'\'abc");
+		code_edit->select(0, 2, 0, 5);
+		SEND_GUI_KEY_EVENT(code_edit, Key::APOSTROPHE);
+		CHECK(code_edit->get_text() == "\'\'\'abc\'");
+
+		/* If only the potential multichar brace completion is matched, it does not wrap or complete. */
+		auto_brace_completion_pairs.erase("\'");
+		code_edit->set_auto_brace_completion_pairs(auto_brace_completion_pairs);
+		CHECK_FALSE(code_edit->has_auto_brace_completion_open_key("\'"));
+
+		code_edit->clear();
+		code_edit->insert_text_at_caret("\'\'abc");
+		code_edit->select(0, 2, 0, 5);
+		SEND_GUI_KEY_EVENT(code_edit, Key::APOSTROPHE);
+		CHECK(code_edit->get_text() == "\'\'\'");
 	}
 
 	SUBCASE("[CodeEdit] autocomplete") {
@@ -3244,6 +3290,55 @@ TEST_CASE("[SceneTree][CodeEdit] Backspace delete") {
 	code_edit->set_caret_column(0);
 	code_edit->backspace();
 	CHECK(code_edit->get_text() == "line 1\nline 2\nline 3");
+
+	memdelete(code_edit);
+}
+
+TEST_CASE("[SceneTree][CodeEdit] New Line") {
+	CodeEdit *code_edit = memnew(CodeEdit);
+	SceneTree::get_singleton()->get_root()->add_child(code_edit);
+
+	/* Add a new line. */
+	code_edit->set_text("");
+	code_edit->insert_text_at_caret("test new line");
+	code_edit->set_caret_line(0);
+	code_edit->set_caret_column(13);
+	SEND_GUI_ACTION(code_edit, "ui_text_newline");
+	CHECK(code_edit->get_line(0) == "test new line");
+	CHECK(code_edit->get_line(1) == "");
+
+	/* Split line with new line. */
+	code_edit->set_text("");
+	code_edit->insert_text_at_caret("test new line");
+	code_edit->set_caret_line(0);
+	code_edit->set_caret_column(5);
+	SEND_GUI_ACTION(code_edit, "ui_text_newline");
+	CHECK(code_edit->get_line(0) == "test ");
+	CHECK(code_edit->get_line(1) == "new line");
+
+	/* Delete selection and split with new line. */
+	code_edit->set_text("");
+	code_edit->insert_text_at_caret("test new line");
+	code_edit->select(0, 0, 0, 5);
+	SEND_GUI_ACTION(code_edit, "ui_text_newline");
+	CHECK(code_edit->get_line(0) == "");
+	CHECK(code_edit->get_line(1) == "new line");
+
+	/* Blank new line below with selection should not split. */
+	code_edit->set_text("");
+	code_edit->insert_text_at_caret("test new line");
+	code_edit->select(0, 0, 0, 5);
+	SEND_GUI_ACTION(code_edit, "ui_text_newline_blank");
+	CHECK(code_edit->get_line(0) == "test new line");
+	CHECK(code_edit->get_line(1) == "");
+
+	/* Blank new line above with selection should not split. */
+	code_edit->set_text("");
+	code_edit->insert_text_at_caret("test new line");
+	code_edit->select(0, 0, 0, 5);
+	SEND_GUI_ACTION(code_edit, "ui_text_newline_above");
+	CHECK(code_edit->get_line(0) == "");
+	CHECK(code_edit->get_line(1) == "test new line");
 
 	memdelete(code_edit);
 }

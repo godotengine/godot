@@ -492,20 +492,26 @@ void Viewport::_notification(int p_what) {
 			}
 #endif // _3D_DISABLED
 		} break;
+		case NOTIFICATION_WM_MOUSE_ENTER: {
+			gui.mouse_in_window = true;
+		} break;
 		case NOTIFICATION_WM_MOUSE_EXIT: {
+			gui.mouse_in_window = false;
 			_drop_physics_mouseover();
-
-			// Unlike on loss of focus (NOTIFICATION_WM_WINDOW_FOCUS_OUT), do not
-			// drop the gui mouseover here, as a scrollbar may be dragged while the
-			// mouse is outside the window (without the window having lost focus).
-			// See bug #39634
+			_drop_mouse_over();
+			// When the mouse exits the window, we want to end mouse_over, but
+			// not mouse_focus, because, for example, we want to continue
+			// dragging a scrollbar even if the mouse has left the window.
 		} break;
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
 			_drop_physics_mouseover();
-
 			if (gui.mouse_focus && !gui.forced_mouse_focus) {
 				_drop_mouse_focus();
 			}
+			// When the window focus changes, we want to end mouse_focus, but
+			// not the mouse_over. Note: The OS will trigger a separate mouse
+			// exit event if the change in focus results in the mouse exiting
+			// the window.
 		} break;
 	}
 }
@@ -1225,7 +1231,7 @@ void Viewport::_gui_show_tooltip() {
 
 	base_tooltip->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 
-	panel->set_transient(false);
+	panel->set_transient(true);
 	panel->set_flag(Window::FLAG_NO_FOCUS, true);
 	panel->set_wrap_controls(true);
 	panel->add_child(base_tooltip);
@@ -1447,8 +1453,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	if (mb.is_valid()) {
 		gui.key_event_accepted = false;
 
-		Control *over = nullptr;
-
 		Point2 mpos = mb->get_position();
 		gui.last_mouse_pos = mpos;
 		if (mb->is_pressed()) {
@@ -1594,6 +1598,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			// it is different, rather than wait for it to be updated the next time the
 			// mouse is moved, notify the control so that it can e.g. drop the highlight.
 			// This code is duplicated from the mm.is_valid()-case further below.
+			Control *over = nullptr;
 			if (gui.mouse_focus) {
 				over = gui.mouse_focus;
 			} else {
@@ -1601,10 +1606,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 
 			if (gui.mouse_focus_mask == MouseButton::NONE && over != gui.mouse_over) {
-				if (gui.mouse_over) {
-					_gui_call_notification(gui.mouse_over, Control::NOTIFICATION_MOUSE_EXIT);
-				}
-
+				_drop_mouse_over();
 				_gui_cancel_tooltip();
 
 				if (over) {
@@ -1624,8 +1626,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		Point2 mpos = mm->get_position();
 
 		gui.last_mouse_pos = mpos;
-
-		Control *over = nullptr;
 
 		// Drag & drop.
 		if (!gui.drag_attempted && gui.mouse_focus && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
@@ -1674,28 +1674,22 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 		}
 
-		// These sections of code are reused in the mb.is_valid() case further up
-		// for the purpose of notifying controls about potential changes in focus
-		// when the mousebutton is released.
+		Control *over = nullptr;
 		if (gui.mouse_focus) {
 			over = gui.mouse_focus;
-		} else {
+		} else if (gui.mouse_in_window) {
 			over = gui_find_control(mpos);
 		}
 
 		if (over != gui.mouse_over) {
-			if (gui.mouse_over) {
-				_gui_call_notification(gui.mouse_over, Control::NOTIFICATION_MOUSE_EXIT);
-			}
-
+			_drop_mouse_over();
 			_gui_cancel_tooltip();
 
 			if (over) {
 				_gui_call_notification(over, Control::NOTIFICATION_MOUSE_ENTER);
+				gui.mouse_over = over;
 			}
 		}
-
-		gui.mouse_over = over;
 
 		DisplayServer::CursorShape ds_cursor_shape = (DisplayServer::CursorShape)Input::get_singleton()->get_default_cursor_shape();
 
@@ -2098,7 +2092,7 @@ void Viewport::_gui_hide_control(Control *p_control) {
 	}
 
 	if (gui.key_focus == p_control) {
-		_gui_remove_focus();
+		gui_release_focus();
 	}
 	if (gui.mouse_over == p_control) {
 		gui.mouse_over = nullptr;
@@ -2148,15 +2142,7 @@ Window *Viewport::get_base_window() const {
 }
 void Viewport::_gui_remove_focus_for_window(Node *p_window) {
 	if (get_base_window() == p_window) {
-		_gui_remove_focus();
-	}
-}
-
-void Viewport::_gui_remove_focus() {
-	if (gui.key_focus) {
-		Node *f = gui.key_focus;
-		gui.key_focus = nullptr;
-		f->notification(Control::NOTIFICATION_FOCUS_EXIT, true);
+		gui_release_focus();
 	}
 }
 
@@ -2180,6 +2166,13 @@ void Viewport::_gui_accept_event() {
 	gui.key_event_accepted = true;
 	if (is_inside_tree()) {
 		set_input_as_handled();
+	}
+}
+
+void Viewport::_drop_mouse_over() {
+	if (gui.mouse_over) {
+		_gui_call_notification(gui.mouse_over, Control::NOTIFICATION_MOUSE_EXIT);
+		gui.mouse_over = nullptr;
 	}
 }
 
@@ -2276,10 +2269,6 @@ void Viewport::_cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paus
 		physics_2d_shape_mouseover.erase(shapes_to_erase.front()->get());
 		shapes_to_erase.pop_front();
 	}
-}
-
-Control *Viewport::_gui_get_focus_owner() {
-	return gui.key_focus;
 }
 
 void Viewport::_gui_grab_click_focus(Control *p_control) {
@@ -2795,6 +2784,19 @@ void Viewport::gui_reset_canvas_sort_index() {
 
 int Viewport::gui_get_canvas_sort_index() {
 	return gui.canvas_sort_index++;
+}
+
+void Viewport::gui_release_focus() {
+	if (gui.key_focus) {
+		Control *f = gui.key_focus;
+		gui.key_focus = nullptr;
+		f->notification(Control::NOTIFICATION_FOCUS_EXIT, true);
+		f->update();
+	}
+}
+
+Control *Viewport::gui_get_focus_owner() {
+	return gui.key_focus;
 }
 
 void Viewport::set_msaa(MSAA p_msaa) {
@@ -3589,6 +3591,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("gui_get_drag_data"), &Viewport::gui_get_drag_data);
 	ClassDB::bind_method(D_METHOD("gui_is_dragging"), &Viewport::gui_is_dragging);
 	ClassDB::bind_method(D_METHOD("gui_is_drag_successful"), &Viewport::gui_is_drag_successful);
+
+	ClassDB::bind_method(D_METHOD("gui_release_focus"), &Viewport::gui_release_focus);
+	ClassDB::bind_method(D_METHOD("gui_get_focus_owner"), &Viewport::gui_get_focus_owner);
 
 	ClassDB::bind_method(D_METHOD("set_disable_input", "disable"), &Viewport::set_disable_input);
 	ClassDB::bind_method(D_METHOD("is_input_disabled"), &Viewport::is_input_disabled);

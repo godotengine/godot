@@ -820,7 +820,7 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 			}
 			String l = res_remaps[i].substr(split + 1).strip_edges();
 			int score = TranslationServer::get_singleton()->compare_locales(locale, l);
-			if (score > best_score) {
+			if (score > 0 && score >= best_score) {
 				new_path = res_remaps[i].left(split);
 				best_score = score;
 				if (score == 10) {

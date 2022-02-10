@@ -39,8 +39,12 @@
 #include "core/math/face3.h"
 #include "core/math/plane.h"
 #include "core/math/quaternion.h"
+#include "core/math/rect2.h"
+#include "core/math/rect2i.h"
 #include "core/math/transform_2d.h"
 #include "core/math/transform_3d.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
 #include "core/math/vector3.h"
 #include "core/math/vector3i.h"
 #include "core/object/object_id.h"
@@ -53,8 +57,6 @@
 #include "core/variant/dictionary.h"
 
 class Object;
-class Node; // helper
-class Control; // helper
 
 struct PropertyInfo;
 struct MethodInfo;
@@ -339,8 +341,6 @@ public:
 	operator ::RID() const;
 
 	operator Object *() const;
-	operator Node *() const;
-	operator Control *() const;
 
 	operator Callable() const;
 	operator Signal() const;

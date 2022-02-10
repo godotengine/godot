@@ -185,7 +185,7 @@ void PropertySelector::_update_search() {
 				continue;
 			}
 
-			if (type_filter.size() && type_filter.find(E.type) == -1) {
+			if (type_filter.size() && !type_filter.has(E.type)) {
 				continue;
 			}
 
@@ -214,10 +214,13 @@ void PropertySelector::_update_search() {
 			Variant::construct(type, v, nullptr, 0, ce);
 			v.get_method_list(&methods);
 		} else {
-			Object *obj = ObjectDB::get_instance(script);
-			if (Object::cast_to<Script>(obj)) {
+			Ref<Script> script_ref = Object::cast_to<Script>(ObjectDB::get_instance(script));
+			if (script_ref.is_valid()) {
 				methods.push_back(MethodInfo("*Script Methods"));
-				Object::cast_to<Script>(obj)->get_script_method_list(&methods);
+				if (script_ref->is_built_in()) {
+					script_ref->reload(true);
+				}
+				script_ref->get_script_method_list(&methods);
 			}
 
 			StringName base = base_type;
@@ -276,7 +279,7 @@ void PropertySelector::_update_search() {
 			TreeItem *item = search_options->create_item(category ? category : root);
 
 			String desc;
-			if (mi.name.find(":") != -1) {
+			if (mi.name.contains(":")) {
 				desc = mi.name.get_slice(":", 1) + " ";
 				mi.name = mi.name.get_slice(":", 0);
 			} else if (mi.return_val.type != Variant::NIL) {
@@ -296,7 +299,7 @@ void PropertySelector::_update_search() {
 
 				if (mi.arguments[i].type == Variant::NIL) {
 					desc += ": Variant";
-				} else if (mi.arguments[i].name.find(":") != -1) {
+				} else if (mi.arguments[i].name.contains(":")) {
 					desc += vformat(": %s", mi.arguments[i].name.get_slice(":", 1));
 					mi.arguments[i].name = mi.arguments[i].name.get_slice(":", 0);
 				} else {

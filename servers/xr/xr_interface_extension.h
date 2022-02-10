@@ -109,13 +109,20 @@ public:
 	GDVIRTUAL4R(PackedFloat64Array, _get_projection_for_view, uint32_t, double, double, double);
 
 	void add_blit(RID p_render_target, Rect2 p_src_rect, Rect2i p_dst_rect, bool p_use_layer = false, uint32_t p_layer = 0, bool p_apply_lens_distortion = false, Vector2 p_eye_center = Vector2(), double p_k1 = 0.0, double p_k2 = 0.0, double p_upscale = 1.0, double p_aspect_ratio = 1.0);
-	virtual Vector<BlitToScreen> commit_views(RID p_render_target, const Rect2 &p_screen_rect) override;
-	GDVIRTUAL2(_commit_views, RID, const Rect2 &);
 
 	virtual void process() override;
+	virtual void pre_render() override;
+	virtual bool pre_draw_viewport(RID p_render_target) override;
+	virtual Vector<BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
+	virtual void end_frame() override;
 	virtual void notification(int p_what) override;
 
 	GDVIRTUAL0(_process);
+	GDVIRTUAL0(_pre_render);
+	GDVIRTUAL1R(bool, _pre_draw_viewport, RID);
+	GDVIRTUAL2(_post_draw_viewport, RID, const Rect2 &);
+	GDVIRTUAL0(_end_frame);
+
 	GDVIRTUAL1(_notification, int);
 
 	/* access to some internals we need */

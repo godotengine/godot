@@ -181,6 +181,18 @@ bool operator!=(const char *p_name, const StringName &p_string_name);
 
 StringName _scs_create(const char *p_chr, bool p_static = false);
 
+/*
+ * The SNAME macro is used to speed up StringName creation, as it allows caching it after the first usage in a very efficient way.
+ * It should NOT be used everywhere, but instead in places where high performance is required and the creation of a StringName
+ * can be costly. Places where it should be used are:
+ * - Control::get_theme_*(<name> and Window::get_theme_*(<name> functions.
+ * - emit_signal(<name>,..) function
+ * - call_deferred(<name>,..) function
+ * - Comparisons to a StringName in overriden _set and _get methods.
+ *
+ * Use in places that can be called hundreds of times per frame (or more) is recommended, but this situation is very rare. If in doubt, do not use.
+ */
+
 #define SNAME(m_arg) ([]() -> const StringName & { static StringName sname = _scs_create(m_arg, true); return sname; })()
 
 #endif // STRING_NAME_H

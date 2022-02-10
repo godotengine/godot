@@ -98,7 +98,7 @@ Array StreamPeer::_get_partial_data(int p_bytes) {
 	Error err = get_partial_data(&w[0], p_bytes, received);
 
 	if (err != OK) {
-		data.resize(0);
+		data.clear();
 	} else if (received != data.size()) {
 		data.resize(received);
 	}
@@ -563,7 +563,7 @@ Vector<uint8_t> StreamPeerBuffer::get_data_array() const {
 }
 
 void StreamPeerBuffer::clear() {
-	data.resize(0);
+	data.clear();
 	pointer = 0;
 }
 

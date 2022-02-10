@@ -48,6 +48,8 @@ public:
 private:
 	bool is_dragging = false;
 	bool pan_key_pressed = false;
+	bool force_drag = false;
+
 	bool enable_rmb = false;
 	bool simple_panning_enabled = false;
 
@@ -70,6 +72,7 @@ public:
 	void setup(ControlScheme p_scheme, Ref<Shortcut> p_shortcut, bool p_simple_panning);
 
 	bool is_panning() const;
+	void set_force_drag(bool p_force);
 
 	bool gui_input(const Ref<InputEvent> &p_ev, Rect2 p_canvas_rect = Rect2());
 	void release_pan_key();

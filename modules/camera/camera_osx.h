@@ -39,7 +39,6 @@
 class CameraOSX : public CameraServer {
 public:
 	CameraOSX();
-	~CameraOSX();
 
 	void update_feeds();
 };

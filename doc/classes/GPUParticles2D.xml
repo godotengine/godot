@@ -18,6 +18,17 @@
 				Returns a rectangle containing the positions of all existing particles.
 			</description>
 		</method>
+		<method name="emit_particle">
+			<return type="void" />
+			<argument index="0" name="xform" type="Transform2D" />
+			<argument index="1" name="velocity" type="Vector2" />
+			<argument index="2" name="color" type="Color" />
+			<argument index="3" name="custom" type="Color" />
+			<argument index="4" name="flags" type="int" />
+			<description>
+				Emits a single particle. Whether [code]xform[/code], [code]velocity[/code], [code]color[/code] and [code]custom[/code] are applied depends on the value of [code]flags[/code]. See [enum EmitFlags].
+			</description>
+		</method>
 		<method name="restart">
 			<return type="void" />
 			<description>
@@ -67,6 +78,9 @@
 		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale" default="1.0">
 			Particle system's running speed scaling ratio. A value of [code]0[/code] can be used to pause the particles.
 		</member>
+		<member name="sub_emitter" type="NodePath" setter="set_sub_emitter" getter="get_sub_emitter" default="NodePath(&quot;&quot;)">
+			The [NodePath] to the [GPUParticles2D] used for sub-emissions.
+		</member>
 		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			Particle texture. If [code]null[/code], particles will be squares.
 		</member>
@@ -91,6 +105,21 @@
 			Particles are drawn in order of remaining lifetime.
 		</constant>
 		<constant name="DRAW_ORDER_REVERSE_LIFETIME" value="2" enum="DrawOrder">
+		</constant>
+		<constant name="EMIT_FLAG_POSITION" value="1" enum="EmitFlags">
+			Particle starts at the specified position.
+		</constant>
+		<constant name="EMIT_FLAG_ROTATION_SCALE" value="2" enum="EmitFlags">
+			Particle starts with specified rotation and scale.
+		</constant>
+		<constant name="EMIT_FLAG_VELOCITY" value="4" enum="EmitFlags">
+			Particle starts with the specified velocity vector, which defines the emission direction and speed.
+		</constant>
+		<constant name="EMIT_FLAG_COLOR" value="8" enum="EmitFlags">
+			Particle starts with specified color.
+		</constant>
+		<constant name="EMIT_FLAG_CUSTOM" value="16" enum="EmitFlags">
+			Particle starts with specificed [code]CUSTOM[/code] data.
 		</constant>
 	</constants>
 </class>

@@ -53,7 +53,8 @@ public:
 		WINDOW_MODE_WINDOWED,
 		WINDOW_MODE_MINIMIZED,
 		WINDOW_MODE_MAXIMIZED,
-		WINDOW_MODE_FULLSCREEN
+		WINDOW_MODE_FULLSCREEN,
+		WINDOW_MODE_EXCLUSIVE_FULLSCREEN,
 	};
 
 	// Keep the VSyncMode enum values in sync with the `display/window/vsync/vsync_mode`
@@ -63,6 +64,12 @@ public:
 		VSYNC_ENABLED,
 		VSYNC_ADAPTIVE,
 		VSYNC_MAILBOX
+	};
+
+	enum HandleType {
+		DISPLAY_HANDLE,
+		WINDOW_HANDLE,
+		WINDOW_VIEW,
 	};
 
 	typedef DisplayServer *(*CreateFunction)(const String &, WindowMode, VSyncMode, uint32_t, const Size2i &, Error &r_error);
@@ -168,6 +175,8 @@ public:
 		SCREEN_OF_MAIN_WINDOW = -1
 	};
 
+	const float SCREEN_REFRESH_RATE_FALLBACK = 60.0; // Returned by screen_get_refresh_rate if the method fails. Most screens are 60hz as of 2022.
+
 	virtual int get_screen_count() const = 0;
 	virtual Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
@@ -182,6 +191,7 @@ public:
 		}
 		return scale;
 	}
+	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
 	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
 
 	// Keep the ScreenOrientation enum values in sync with the `display/window/handheld/orientation`
@@ -231,6 +241,8 @@ public:
 	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i());
 	virtual void show_window(WindowID p_id);
 	virtual void delete_sub_window(WindowID p_id);
+
+	virtual int64_t window_get_native_handle(HandleType p_handle_type, WindowID p_window = MAIN_WINDOW_ID) const;
 
 	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const = 0;
 
@@ -387,6 +399,7 @@ VARIANT_ENUM_CAST(DisplayServer::MouseMode)
 VARIANT_ENUM_CAST(DisplayServer::ScreenOrientation)
 VARIANT_ENUM_CAST(DisplayServer::WindowMode)
 VARIANT_ENUM_CAST(DisplayServer::WindowFlags)
+VARIANT_ENUM_CAST(DisplayServer::HandleType)
 VARIANT_ENUM_CAST(DisplayServer::CursorShape)
 VARIANT_ENUM_CAST(DisplayServer::VSyncMode)
 

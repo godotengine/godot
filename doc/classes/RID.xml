@@ -30,6 +30,12 @@
 				Returns the ID of the referenced resource.
 			</description>
 		</method>
+		<method name="is_valid" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if [RID] is valid.
+			</description>
+		</method>
 	</methods>
 	<operators>
 		<operator name="operator !=">

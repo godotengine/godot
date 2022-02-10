@@ -47,6 +47,7 @@ JpgLoader::~JpgLoader()
 {
     jpgdDelete(decoder);
     if (freeData) free(data);
+    free(image);
 }
 
 
@@ -128,5 +129,9 @@ unique_ptr<Surface> JpgLoader::bitmap()
 
 void JpgLoader::run(unsigned tid)
 {
+    if (image) {
+        free(image);
+        image = nullptr;
+    }
     image = jpgdDecompress(decoder);
 }

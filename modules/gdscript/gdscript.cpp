@@ -43,6 +43,7 @@
 #include "gdscript_cache.h"
 #include "gdscript_compiler.h"
 #include "gdscript_parser.h"
+#include "gdscript_rpc_callable.h"
 #include "gdscript_warning.h"
 
 #ifdef TESTS_ENABLED
@@ -827,7 +828,7 @@ Error GDScript::reload(bool p_keep_state) {
 		return OK;
 	}
 #else
-	if (source.find("_BASE_") != -1) {
+	if (source.contains("_BASE_")) {
 		return OK;
 	}
 #endif
@@ -1375,7 +1376,13 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 			while (sl) {
 				const Map<StringName, GDScriptFunction *>::Element *E = sl->member_functions.find(p_name);
 				if (E) {
-					r_ret = Callable(this->owner, E->key());
+					Multiplayer::RPCConfig config;
+					config.name = p_name;
+					if (sptr->rpc_functions.find(config) != -1) {
+						r_ret = Callable(memnew(GDScriptRPCCallable(this->owner, E->key())));
+					} else {
+						r_ret = Callable(this->owner, E->key());
+					}
 					return true; //index found
 				}
 				sl = sl->_base;
@@ -2022,8 +2029,6 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"preload",
 		"signal",
 		"super",
-		"trait",
-		"yield",
 		// var
 		"const",
 		"enum",
@@ -2040,6 +2045,11 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"return",
 		"match",
 		"while",
+		// These keywords are not implemented currently, but reserved for (potential) future use.
+		// We highlight them as keywords to make errors easier to understand.
+		"trait",
+		"namespace",
+		"yield",
 		nullptr
 	};
 

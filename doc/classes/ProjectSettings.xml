@@ -356,6 +356,8 @@
 		<member name="debug/gdscript/warnings/incompatible_ternary" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when a ternary operator may emit values with incompatible types.
 		</member>
+		<member name="debug/gdscript/warnings/int_assigned_to_enum" type="bool" setter="" getter="" default="true">
+		</member>
 		<member name="debug/gdscript/warnings/integer_division" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when dividing an integer by another integer (the decimal part will be discarded).
 		</member>
@@ -1329,10 +1331,10 @@
 			The policy to use for unhandled Mono (C#) exceptions. The default "Terminate Application" exits the project as soon as an unhandled exception is thrown. "Log Error" logs an error message to the console instead, and will not interrupt the project execution when an unhandled exception is thrown.
 			[b]Note:[/b] The unhandled exception policy is always set to "Log Error" in the editor, which also includes C# [code]tool[/code] scripts running within the editor as well as editor plugin code.
 		</member>
-		<member name="navigation/2d/default_cell_size" type="int" setter="" getter="" default="10">
+		<member name="navigation/2d/default_cell_size" type="int" setter="" getter="" default="1">
 			Default cell size for 2D navigation maps. See [method NavigationServer2D.map_set_cell_size].
 		</member>
-		<member name="navigation/2d/default_edge_connection_margin" type="int" setter="" getter="" default="5">
+		<member name="navigation/2d/default_edge_connection_margin" type="int" setter="" getter="" default="1">
 			Default edge connection margin for 2D navigation maps. See [method NavigationServer2D.map_set_edge_connection_margin].
 		</member>
 		<member name="navigation/3d/default_cell_size" type="float" setter="" getter="" default="0.3">
@@ -1412,8 +1414,8 @@
 			Sets which physics engine to use for 2D physics.
 			"DEFAULT" and "GodotPhysics2D" are the same, as there is currently no alternative 2D physics server implemented.
 		</member>
-		<member name="physics/2d/run_on_thread" type="bool" setter="" getter="" default="false">
-			Sets whether 2D physics is run on the main thread or a separate one. Running the server on a thread increases performance, but restricts API access to only physics process.
+		<member name="physics/2d/run_on_separate_thread" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the 2D physics server runs on a separate thread, making better use of multi-core CPUs. If [code]false[/code], the 2D physics server runs on the main thread. Running the physics server on a separate thread can increase performance, but restricts API access to only physics process.
 		</member>
 		<member name="physics/2d/sleep_threshold_angular" type="float" setter="" getter="" default="0.139626">
 			Threshold angular velocity under which a 2D physics body will be considered inactive. See [constant PhysicsServer2D.SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD].
@@ -1484,8 +1486,8 @@
 			Sets which physics engine to use for 3D physics.
 			"DEFAULT" is currently the [url=https://bulletphysics.org]Bullet[/url] physics engine. The "GodotPhysics3D" engine is still supported as an alternative.
 		</member>
-		<member name="physics/3d/run_on_thread" type="bool" setter="" getter="" default="false">
-			Sets whether 3D physics is run on the main thread or a separate one. Running the server on a thread increases performance, but restricts API access to only physics process.
+		<member name="physics/3d/run_on_separate_thread" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the 3D physics server runs on a separate thread, making better use of multi-core CPUs. If [code]false[/code], the 3D physics server runs on the main thread. Running the physics server on a separate thread can increase performance, but restricts API access to only physics process.
 		</member>
 		<member name="physics/3d/sleep_threshold_angular" type="float" setter="" getter="" default="0.139626">
 			Threshold angular velocity under which a 3D physics body will be considered inactive. See [constant PhysicsServer3D.SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD].

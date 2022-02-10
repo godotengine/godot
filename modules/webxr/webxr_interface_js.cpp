@@ -385,7 +385,7 @@ CameraMatrix WebXRInterfaceJS::get_projection_for_view(uint32_t p_view, double p
 	return eye;
 }
 
-Vector<BlitToScreen> WebXRInterfaceJS::commit_views(RID p_render_target, const Rect2 &p_screen_rect) {
+Vector<BlitToScreen> WebXRInterfaceJS::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
 	Vector<BlitToScreen> blit_to_screen;
 
 	if (!initialized) {

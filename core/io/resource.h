@@ -37,6 +37,8 @@
 #include "core/templates/safe_refcount.h"
 #include "core/templates/self_list.h"
 
+class Node;
+
 #define RES_BASE_EXTENSION(m_ext)                                                                                   \
 public:                                                                                                             \
 	static void register_custom_data_to_otdb() { ClassDB::add_resource_base_extension(m_ext, get_class_static()); } \
@@ -103,7 +105,7 @@ public:
 
 	virtual void set_path(const String &p_path, bool p_take_over = false);
 	String get_path() const;
-	_FORCE_INLINE_ bool is_built_in() const { return path_cache.is_empty() || path_cache.find("::") != -1 || path_cache.begins_with("local://"); }
+	_FORCE_INLINE_ bool is_built_in() const { return path_cache.is_empty() || path_cache.contains("::") || path_cache.begins_with("local://"); }
 
 	static String generate_scene_unique_id();
 	void set_scene_unique_id(const String &p_id);

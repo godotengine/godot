@@ -115,7 +115,7 @@
 		<theme_item name="font_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Text [Color] used when the [Button] is being pressed.
 		</theme_item>
-		<theme_item name="icon_disabled_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="icon_disabled_color" data_type="color" type="Color" default="Color(1, 1, 1, 0.4)">
 			Icon modulate [Color] used when the [Button] is disabled.
 		</theme_item>
 		<theme_item name="icon_focus_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">

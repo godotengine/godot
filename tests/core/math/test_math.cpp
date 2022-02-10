@@ -227,7 +227,7 @@ class GetClassAndNamespace {
 						return TK_SYMBOL;
 					}
 
-					if (code[idx] == '-' || (code[idx] >= '0' && code[idx] <= '9')) {
+					if (code[idx] == '-' || is_digit(code[idx])) {
 						//a number
 						const char32_t *rptr;
 						double number = String::to_float(&code[idx], &rptr);
@@ -235,10 +235,10 @@ class GetClassAndNamespace {
 						value = number;
 						return TK_NUMBER;
 
-					} else if ((code[idx] >= 'A' && code[idx] <= 'Z') || (code[idx] >= 'a' && code[idx] <= 'z') || code[idx] > 127) {
+					} else if (is_ascii_char(code[idx]) || code[idx] > 127) {
 						String id;
 
-						while ((code[idx] >= 'A' && code[idx] <= 'Z') || (code[idx] >= 'a' && code[idx] <= 'z') || code[idx] > 127) {
+						while (is_ascii_char(code[idx]) || code[idx] > 127) {
 							id += code[idx];
 							idx++;
 						}

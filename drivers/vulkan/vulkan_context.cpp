@@ -273,9 +273,9 @@ Error VulkanContext::_obtain_vulkan_version() {
 		uint32_t api_version;
 		VkResult res = func(&api_version);
 		if (res == VK_SUCCESS) {
-			vulkan_major = VK_VERSION_MAJOR(api_version);
-			vulkan_minor = VK_VERSION_MINOR(api_version);
-			vulkan_patch = VK_VERSION_PATCH(api_version);
+			vulkan_major = VK_API_VERSION_MAJOR(api_version);
+			vulkan_minor = VK_API_VERSION_MINOR(api_version);
+			vulkan_patch = VK_API_VERSION_PATCH(api_version);
 		} else {
 			// according to the documentation this shouldn't fail with anything except a memory allocation error
 			// in which case we're in deep trouble anyway
@@ -538,7 +538,7 @@ Error VulkanContext::_check_capabilities() {
 
 		VkPhysicalDeviceShaderFloat16Int8FeaturesKHR shader_features;
 		shader_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR;
-		shader_features.pNext = NULL;
+		shader_features.pNext = nullptr;
 
 		device_features.pNext = &shader_features;
 
@@ -547,7 +547,7 @@ Error VulkanContext::_check_capabilities() {
 
 		VkPhysicalDevice16BitStorageFeaturesKHR storage_feature;
 		storage_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR;
-		storage_feature.pNext = NULL;
+		storage_feature.pNext = nullptr;
 
 		device_features.pNext = &storage_feature;
 

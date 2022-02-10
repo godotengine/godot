@@ -31,241 +31,45 @@
 #include "os_osx.h"
 
 #include "core/version_generated.gen.h"
+#include "main/main.h"
 
 #include "dir_access_osx.h"
 #include "display_server_osx.h"
-#include "main/main.h"
+#include "godot_application.h"
+#include "godot_application_delegate.h"
+#include "osx_terminal_logger.h"
 
 #include <dlfcn.h>
 #include <libproc.h>
 #include <mach-o/dyld.h>
-#include <os/log.h>
 
-#define DS_OSX ((DisplayServerOSX *)(DisplayServerOSX::get_singleton()))
-
-/*************************************************************************/
-/* GodotApplication                                                      */
-/*************************************************************************/
-
-@interface GodotApplication : NSApplication
-@end
-
-@implementation GodotApplication
-
-- (void)sendEvent:(NSEvent *)event {
-	if (DS_OSX) {
-		DS_OSX->_send_event(event);
-	}
-
-	// From http://cocoadev.com/index.pl?GameKeyboardHandlingAlmost
-	// This works around an AppKit bug, where key up events while holding
-	// down the command key don't get sent to the key window.
-	if ([event type] == NSEventTypeKeyUp && ([event modifierFlags] & NSEventModifierFlagCommand)) {
-		[[self keyWindow] sendEvent:event];
+_FORCE_INLINE_ String OS_OSX::get_framework_executable(const String &p_path) {
+	// Append framework executable name, or return as is if p_path is not a framework.
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	if (da->dir_exists(p_path) && da->file_exists(p_path.plus_file(p_path.get_file().get_basename()))) {
+		return p_path.plus_file(p_path.get_file().get_basename());
 	} else {
-		[super sendEvent:event];
+		return p_path;
 	}
 }
 
-@end
+void OS_OSX::pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context) {
+	// Prevent main loop from sleeping and redraw window during resize / modal popups.
 
-/*************************************************************************/
-/* GodotApplicationDelegate                                              */
-/*************************************************************************/
-
-@interface GodotApplicationDelegate : NSObject
-- (void)forceUnbundledWindowActivationHackStep1;
-- (void)forceUnbundledWindowActivationHackStep2;
-- (void)forceUnbundledWindowActivationHackStep3;
-@end
-
-@implementation GodotApplicationDelegate
-
-- (void)forceUnbundledWindowActivationHackStep1 {
-	// Step 1: Switch focus to macOS SystemUIServer process.
-	// Required to perform step 2, TransformProcessType will fail if app is already the in focus.
-	for (NSRunningApplication *app in [NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.apple.systemuiserver"]) {
-		[app activateWithOptions:NSApplicationActivateIgnoringOtherApps];
-		break;
-	}
-	[self performSelector:@selector(forceUnbundledWindowActivationHackStep2)
-			   withObject:nil
-			   afterDelay:0.02];
-}
-
-- (void)forceUnbundledWindowActivationHackStep2 {
-	// Step 2: Register app as foreground process.
-	ProcessSerialNumber psn = { 0, kCurrentProcess };
-	(void)TransformProcessType(&psn, kProcessTransformToForegroundApplication);
-	[self performSelector:@selector(forceUnbundledWindowActivationHackStep3) withObject:nil afterDelay:0.02];
-}
-
-- (void)forceUnbundledWindowActivationHackStep3 {
-	// Step 3: Switch focus back to app window.
-	[[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
-}
-
-- (void)applicationDidFinishLaunching:(NSNotification *)notice {
-	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
-	if (nsappname == nil || isatty(STDOUT_FILENO) || isatty(STDIN_FILENO) || isatty(STDERR_FILENO)) {
-		// If the executable is started from terminal or is not bundled, macOS WindowServer won't register and activate app window correctly (menu and title bar are grayed out and input ignored).
-		[self performSelector:@selector(forceUnbundledWindowActivationHackStep1) withObject:nil afterDelay:0.02];
-	}
-}
-
-- (void)applicationDidResignActive:(NSNotification *)notification {
-	if (OS::get_singleton()->get_main_loop()) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
-	}
-}
-
-- (void)applicationDidBecomeActive:(NSNotification *)notification {
-	if (OS::get_singleton()->get_main_loop()) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
-	}
-}
-
-- (void)globalMenuCallback:(id)sender {
-	if (DS_OSX) {
-		return DS_OSX->_menu_callback(sender);
-	}
-}
-
-- (NSMenu *)applicationDockMenu:(NSApplication *)sender {
-	if (DS_OSX) {
-		return DS_OSX->_get_dock_menu();
-	} else {
-		return nullptr;
-	}
-}
-
-- (BOOL)application:(NSApplication *)sender openFile:(NSString *)filename {
-	// Note: may be called called before main loop init!
-	char *utfs = strdup([filename UTF8String]);
-	((OS_OSX *)OS_OSX::get_singleton())->open_with_filename.parse_utf8(utfs);
-	free(utfs);
-
-#ifdef TOOLS_ENABLED
-	// Open new instance
-	if (OS_OSX::get_singleton()->get_main_loop()) {
-		List<String> args;
-		args.push_back(((OS_OSX *)OS_OSX::get_singleton())->open_with_filename);
-		String exec = OS_OSX::get_singleton()->get_executable_path();
-		OS_OSX::get_singleton()->create_process(exec, args);
-	}
-#endif
-	return YES;
-}
-
-- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
-	if (DS_OSX) {
-		DS_OSX->_send_window_event(DS_OSX->windows[DisplayServerOSX::MAIN_WINDOW_ID], DisplayServerOSX::WINDOW_EVENT_CLOSE_REQUEST);
-	}
-	return NSTerminateCancel;
-}
-
-- (void)showAbout:(id)sender {
-	if (OS_OSX::get_singleton()->get_main_loop()) {
-		OS_OSX::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_ABOUT);
-	}
-}
-
-@end
-
-/*************************************************************************/
-/* OSXTerminalLogger                                                     */
-/*************************************************************************/
-
-class OSXTerminalLogger : public StdLogger {
-public:
-	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, ErrorType p_type = ERR_ERROR) {
-		if (!should_log(true)) {
-			return;
-		}
-
-		const char *err_details;
-		if (p_rationale && p_rationale[0])
-			err_details = p_rationale;
-		else
-			err_details = p_code;
-
-		switch (p_type) {
-			case ERR_WARNING:
-				os_log_info(OS_LOG_DEFAULT,
-						"WARNING: %{public}s\nat: %{public}s (%{public}s:%i)",
-						err_details, p_function, p_file, p_line);
-				logf_error("\E[1;33mWARNING:\E[0;93m %s\n", err_details);
-				logf_error("\E[0;90m     at: %s (%s:%i)\E[0m\n", p_function, p_file, p_line);
-				break;
-			case ERR_SCRIPT:
-				os_log_error(OS_LOG_DEFAULT,
-						"SCRIPT ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
-						err_details, p_function, p_file, p_line);
-				logf_error("\E[1;35mSCRIPT ERROR:\E[0;95m %s\n", err_details);
-				logf_error("\E[0;90m          at: %s (%s:%i)\E[0m\n", p_function, p_file, p_line);
-				break;
-			case ERR_SHADER:
-				os_log_error(OS_LOG_DEFAULT,
-						"SHADER ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
-						err_details, p_function, p_file, p_line);
-				logf_error("\E[1;36mSHADER ERROR:\E[0;96m %s\n", err_details);
-				logf_error("\E[0;90m          at: %s (%s:%i)\E[0m\n", p_function, p_file, p_line);
-				break;
-			case ERR_ERROR:
-			default:
-				os_log_error(OS_LOG_DEFAULT,
-						"ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
-						err_details, p_function, p_file, p_line);
-				logf_error("\E[1;31mERROR:\E[0;91m %s\n", err_details);
-				logf_error("\E[0;90m   at: %s (%s:%i)\E[0m\n", p_function, p_file, p_line);
-				break;
+	if (get_singleton()->get_main_loop()) {
+		Main::force_redraw();
+		if (!Main::is_iterating()) { // Avoid cyclic loop.
+			Main::iteration();
 		}
 	}
-};
 
-/*************************************************************************/
-/* OS_OSX                                                                */
-/*************************************************************************/
-
-String OS_OSX::get_unique_id() const {
-	static String serial_number;
-
-	if (serial_number.is_empty()) {
-		io_service_t platformExpert = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IOPlatformExpertDevice"));
-		CFStringRef serialNumberAsCFString = nullptr;
-		if (platformExpert) {
-			serialNumberAsCFString = (CFStringRef)IORegistryEntryCreateCFProperty(platformExpert, CFSTR(kIOPlatformSerialNumberKey), kCFAllocatorDefault, 0);
-			IOObjectRelease(platformExpert);
-		}
-
-		NSString *serialNumberAsNSString = nil;
-		if (serialNumberAsCFString) {
-			serialNumberAsNSString = [NSString stringWithString:(NSString *)serialNumberAsCFString];
-			CFRelease(serialNumberAsCFString);
-		}
-
-		serial_number = [serialNumberAsNSString UTF8String];
-	}
-
-	return serial_number;
+	CFRunLoopWakeUp(CFRunLoopGetCurrent()); // Prevent main loop from sleeping.
 }
 
-void OS_OSX::alert(const String &p_alert, const String &p_title) {
-	NSAlert *window = [[NSAlert alloc] init];
-	NSString *ns_title = [NSString stringWithUTF8String:p_title.utf8().get_data()];
-	NSString *ns_alert = [NSString stringWithUTF8String:p_alert.utf8().get_data()];
+void OS_OSX::initialize() {
+	crash_handler.initialize();
 
-	[window addButtonWithTitle:@"OK"];
-	[window setMessageText:ns_title];
-	[window setInformativeText:ns_alert];
-	[window setAlertStyle:NSAlertStyleWarning];
-
-	id key_window = [[NSApplication sharedApplication] keyWindow];
-	[window runModal];
-	[window release];
-	if (key_window) {
-		[key_window makeKeyAndOrderFront:nil];
-	}
+	initialize_core();
 }
 
 void OS_OSX::initialize_core() {
@@ -274,17 +78,6 @@ void OS_OSX::initialize_core() {
 	DirAccess::make_default<DirAccessOSX>(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessOSX>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessOSX>(DirAccess::ACCESS_FILESYSTEM);
-}
-
-void OS_OSX::initialize_joypads() {
-	joypad_osx = memnew(JoypadOSX(Input::get_singleton()));
-}
-
-void OS_OSX::initialize() {
-	crash_handler.initialize();
-
-	initialize_core();
-	//ensure_user_data_dir();
 }
 
 void OS_OSX::finalize() {
@@ -299,42 +92,63 @@ void OS_OSX::finalize() {
 	}
 }
 
+void OS_OSX::initialize_joypads() {
+	joypad_osx = memnew(JoypadOSX(Input::get_singleton()));
+}
+
 void OS_OSX::set_main_loop(MainLoop *p_main_loop) {
 	main_loop = p_main_loop;
 }
 
 void OS_OSX::delete_main_loop() {
-	if (!main_loop)
+	if (!main_loop) {
 		return;
+	}
+
 	memdelete(main_loop);
 	main_loop = nullptr;
+}
+
+String OS_OSX::get_open_with_filename() const {
+	return open_with_filename;
+}
+
+void OS_OSX::set_open_with_filename(const String &p_path) {
+	open_with_filename = p_path;
 }
 
 String OS_OSX::get_name() const {
 	return "macOS";
 }
 
-_FORCE_INLINE_ String _get_framework_executable(const String p_path) {
-	// Append framework executable name, or return as is if p_path is not a framework.
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	if (da->dir_exists(p_path) && da->file_exists(p_path.plus_file(p_path.get_file().get_basename()))) {
-		return p_path.plus_file(p_path.get_file().get_basename());
-	} else {
-		return p_path;
+void OS_OSX::alert(const String &p_alert, const String &p_title) {
+	NSAlert *window = [[NSAlert alloc] init];
+	NSString *ns_title = [NSString stringWithUTF8String:p_title.utf8().get_data()];
+	NSString *ns_alert = [NSString stringWithUTF8String:p_alert.utf8().get_data()];
+
+	[window addButtonWithTitle:@"OK"];
+	[window setMessageText:ns_title];
+	[window setInformativeText:ns_alert];
+	[window setAlertStyle:NSAlertStyleWarning];
+
+	id key_window = [[NSApplication sharedApplication] keyWindow];
+	[window runModal];
+	if (key_window) {
+		[key_window makeKeyAndOrderFront:nil];
 	}
 }
 
 Error OS_OSX::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
-	String path = _get_framework_executable(p_path);
+	String path = get_framework_executable(p_path);
 
 	if (!FileAccess::exists(path)) {
-		// This code exists so gdnative can load .dylib files from within the executable path.
-		path = _get_framework_executable(get_executable_path().get_base_dir().plus_file(p_path.get_file()));
+		// Load .dylib or framework from within the executable path.
+		path = get_framework_executable(get_executable_path().get_base_dir().plus_file(p_path.get_file()));
 	}
 
 	if (!FileAccess::exists(path)) {
-		// This code exists so gdnative can load .dylib files from a standard macOS location.
-		path = _get_framework_executable(get_executable_path().get_base_dir().plus_file("../Frameworks").plus_file(p_path.get_file()));
+		// Load .dylib or framework from a standard macOS location.
+		path = get_framework_executable(get_executable_path().get_base_dir().plus_file("../Frameworks").plus_file(p_path.get_file()));
 	}
 
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
@@ -393,8 +207,8 @@ String OS_OSX::get_bundle_resource_dir() const {
 
 	NSBundle *main = [NSBundle mainBundle];
 	if (main) {
-		NSString *resourcePath = [main resourcePath];
-		ret.parse_utf8([resourcePath UTF8String]);
+		NSString *resource_path = [main resourcePath];
+		ret.parse_utf8([resource_path UTF8String]);
 	}
 	return ret;
 }
@@ -404,9 +218,9 @@ String OS_OSX::get_bundle_icon_path() const {
 
 	NSBundle *main = [NSBundle mainBundle];
 	if (main) {
-		NSString *iconPath = [[main infoDictionary] objectForKey:@"CFBundleIconFile"];
-		if (iconPath) {
-			ret.parse_utf8([iconPath UTF8String]);
+		NSString *icon_path = [[main infoDictionary] objectForKey:@"CFBundleIconFile"];
+		if (icon_path) {
+			ret.parse_utf8([icon_path UTF8String]);
 		}
 	}
 	return ret;
@@ -449,9 +263,7 @@ String OS_OSX::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	if (found) {
 		NSArray *paths = NSSearchPathForDirectoriesInDomains(id, NSUserDomainMask, YES);
 		if (paths && [paths count] >= 1) {
-			char *utfs = strdup([[paths firstObject] UTF8String]);
-			ret.parse_utf8(utfs);
-			free(utfs);
+			ret.parse_utf8([[paths firstObject] UTF8String]);
 		}
 	}
 
@@ -475,12 +287,9 @@ String OS_OSX::get_locale() const {
 }
 
 String OS_OSX::get_executable_path() const {
-	int ret;
-	pid_t pid;
 	char pathbuf[PROC_PIDPATHINFO_MAXSIZE];
-
-	pid = getpid();
-	ret = proc_pidpath(pid, pathbuf, sizeof(pathbuf));
+	int pid = getpid();
+	pid_t ret = proc_pidpath(pid, pathbuf, sizeof(pathbuf));
 	if (ret <= 0) {
 		return OS::get_executable_path();
 	} else {
@@ -488,18 +297,6 @@ String OS_OSX::get_executable_path() const {
 		path.parse_utf8(pathbuf);
 
 		return path;
-	}
-}
-
-Error OS_OSX::create_instance(const List<String> &p_arguments, ProcessID *r_child_id) {
-	// If executable is bundled, always execute editor instances as an app bundle to ensure app window is registered and activated correctly.
-	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
-	if (nsappname != nil) {
-		String path;
-		path.parse_utf8([[[NSBundle mainBundle] bundlePath] UTF8String]);
-		return create_process(path, p_arguments, r_child_id, false);
-	} else {
-		return create_process(get_executable_path(), p_arguments, r_child_id, false);
 	}
 }
 
@@ -532,7 +329,6 @@ Error OS_OSX::create_process(const String &p_path, const List<String> &p_argumen
 												  dispatch_semaphore_signal(lock);
 											  }];
 			dispatch_semaphore_wait(lock, dispatch_time(DISPATCH_TIME_NOW, 20000000000)); // 20 sec timeout, wait for app to launch.
-			dispatch_release(lock);
 
 			if (err == OK) {
 				if (r_child_id) {
@@ -549,51 +345,53 @@ Error OS_OSX::create_process(const String &p_path, const List<String> &p_argumen
 	}
 }
 
-void OS_OSX::pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context) {
-	// Prevent main loop from sleeping and redraw window during resize / modal popups.
-
-	if (get_singleton()->get_main_loop()) {
-		Main::force_redraw();
-		if (!Main::is_iterating()) { // Avoid cyclic loop.
-			Main::iteration();
-		}
+Error OS_OSX::create_instance(const List<String> &p_arguments, ProcessID *r_child_id) {
+	// If executable is bundled, always execute editor instances as an app bundle to ensure app window is registered and activated correctly.
+	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
+	if (nsappname != nil) {
+		String path;
+		path.parse_utf8([[[NSBundle mainBundle] bundlePath] UTF8String]);
+		return create_process(path, p_arguments, r_child_id, false);
+	} else {
+		return create_process(get_executable_path(), p_arguments, r_child_id, false);
 	}
-
-	CFRunLoopWakeUp(CFRunLoopGetCurrent()); // Prevent main loop from sleeping.
 }
 
-void OS_OSX::run() {
-	force_quit = false;
+String OS_OSX::get_unique_id() const {
+	static String serial_number;
 
-	if (!main_loop) {
-		return;
+	if (serial_number.is_empty()) {
+		io_service_t platform_expert = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IOPlatformExpertDevice"));
+		CFStringRef serial_number_cf_string = nullptr;
+		if (platform_expert) {
+			serial_number_cf_string = (CFStringRef)IORegistryEntryCreateCFProperty(platform_expert, CFSTR(kIOPlatformSerialNumberKey), kCFAllocatorDefault, 0);
+			IOObjectRelease(platform_expert);
+		}
+
+		NSString *serial_number_ns_string = nil;
+		if (serial_number_cf_string) {
+			serial_number_ns_string = [NSString stringWithString:(__bridge NSString *)serial_number_cf_string];
+			CFRelease(serial_number_cf_string);
+		}
+
+		if (serial_number_ns_string) {
+			serial_number.parse_utf8([serial_number_ns_string UTF8String]);
+		}
 	}
 
-	main_loop->initialize();
+	return serial_number;
+}
 
-	CFRunLoopObserverRef pre_wait_observer = CFRunLoopObserverCreate(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true, 0, &pre_wait_observer_cb, nullptr);
-	CFRunLoopAddObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
+bool OS_OSX::_check_internal_feature_support(const String &p_feature) {
+	return p_feature == "pc";
+}
 
-	bool quit = false;
-	while (!force_quit && !quit) {
-		@try {
-			if (DisplayServer::get_singleton()) {
-				DisplayServer::get_singleton()->process_events(); // get rid of pending events
-			}
-			joypad_osx->process_joypads();
+void OS_OSX::disable_crash_handler() {
+	crash_handler.disable();
+}
 
-			if (Main::iteration()) {
-				quit = true;
-			}
-		} @catch (NSException *exception) {
-			ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
-		}
-	};
-
-	CFRunLoopRemoveObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
-	CFRelease(pre_wait_observer);
-
-	main_loop->finalize();
+bool OS_OSX::is_disable_crash_handler() const {
+	return crash_handler.is_disabled();
 }
 
 Error OS_OSX::move_to_trash(const String &p_path) {
@@ -607,6 +405,34 @@ Error OS_OSX::move_to_trash(const String &p_path) {
 	}
 
 	return OK;
+}
+
+void OS_OSX::run() {
+	force_quit = false;
+
+	if (!main_loop) {
+		return;
+	}
+
+	main_loop->initialize();
+
+	bool quit = false;
+	while (!force_quit && !quit) {
+		@try {
+			if (DisplayServer::get_singleton()) {
+				DisplayServer::get_singleton()->process_events(); // Get rid of pending events.
+			}
+			joypad_osx->process_joypads();
+
+			if (Main::iteration()) {
+				quit = true;
+			}
+		} @catch (NSException *exception) {
+			ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
+		}
+	};
+
+	main_loop->finalize();
 }
 
 OS_OSX::OS_OSX() {
@@ -623,17 +449,17 @@ OS_OSX::OS_OSX() {
 
 	DisplayServerOSX::register_osx_driver();
 
-	// Implicitly create shared NSApplication instance
+	// Implicitly create shared NSApplication instance.
 	[GodotApplication sharedApplication];
 
-	// In case we are unbundled, make us a proper UI application
+	// In case we are unbundled, make us a proper UI application.
 	[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
 
 	// Menu bar setup must go between sharedApplication above and
 	// finishLaunching below, in order to properly emulate the behavior
-	// of NSApplicationMain
+	// of NSApplicationMain.
 
-	NSMenu *main_menu = [[[NSMenu alloc] initWithTitle:@""] autorelease];
+	NSMenu *main_menu = [[NSMenu alloc] initWithTitle:@""];
 	[NSApp setMainMenu:main_menu];
 	[NSApp finishLaunching];
 
@@ -641,7 +467,10 @@ OS_OSX::OS_OSX() {
 	ERR_FAIL_COND(!delegate);
 	[NSApp setDelegate:delegate];
 
-	//process application:openFile: event
+	pre_wait_observer = CFRunLoopObserverCreate(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true, 0, &pre_wait_observer_cb, nullptr);
+	CFRunLoopAddObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
+
+	// Process application:openFile: event.
 	while (true) {
 		NSEvent *event = [NSApp
 				nextEventMatchingMask:NSEventMaskAny
@@ -659,14 +488,7 @@ OS_OSX::OS_OSX() {
 	[NSApp activateIgnoringOtherApps:YES];
 }
 
-bool OS_OSX::_check_internal_feature_support(const String &p_feature) {
-	return p_feature == "pc";
-}
-
-void OS_OSX::disable_crash_handler() {
-	crash_handler.disable();
-}
-
-bool OS_OSX::is_disable_crash_handler() const {
-	return crash_handler.is_disabled();
+OS_OSX::~OS_OSX() {
+	CFRunLoopRemoveObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
+	CFRelease(pre_wait_observer);
 }

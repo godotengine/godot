@@ -31,7 +31,6 @@
 #ifndef METHOD_PTRCALL_H
 #define METHOD_PTRCALL_H
 
-#include "core/math/transform_2d.h"
 #include "core/object/object_id.h"
 #include "core/typedefs.h"
 #include "core/variant/variant.h"

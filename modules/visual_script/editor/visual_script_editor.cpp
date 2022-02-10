@@ -653,7 +653,6 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 
 	List<int> ids;
 	script->get_node_list(&ids);
-	StringName editor_icons = "EditorIcons";
 
 	for (int &E : ids) {
 		if (p_only_id >= 0 && p_only_id != E) {
@@ -2803,7 +2802,7 @@ void VisualScriptEditor::add_callback(const String &p_function, PackedStringArra
 		String name = p_args[i];
 		Variant::Type type = Variant::NIL;
 
-		if (name.find(":") != -1) {
+		if (name.contains(":")) {
 			String tt = name.get_slice(":", 1);
 			name = name.get_slice(":", 0);
 			for (int j = 0; j < Variant::VARIANT_MAX; j++) {

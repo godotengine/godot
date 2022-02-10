@@ -88,6 +88,15 @@
 			<description>
 			</description>
 		</method>
+		<method name="compute_image_metrics">
+			<return type="Dictionary" />
+			<argument index="0" name="compared_image" type="Image" />
+			<argument index="1" name="use_luma" type="bool" />
+			<description>
+				Compute image metrics on the current image and the compared image.
+				The dictionary contains [code]max[/code], [code]mean[/code], [code]mean_squared[/code], [code]root_mean_squared[/code] and [code]peak_snr[/code].
+			</description>
+		</method>
 		<method name="convert">
 			<return type="void" />
 			<argument index="0" name="format" type="int" enum="Image.Format" />

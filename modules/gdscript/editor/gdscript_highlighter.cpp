@@ -33,18 +33,6 @@
 #include "../gdscript_tokenizer.h"
 #include "editor/editor_settings.h"
 
-static bool _is_char(char32_t c) {
-	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
-}
-
-static bool _is_hex_symbol(char32_t c) {
-	return ((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
-}
-
-static bool _is_bin_symbol(char32_t c) {
-	return (c == '0' || c == '1');
-}
-
 Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 	Dictionary color_map;
 
@@ -102,7 +90,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		color = font_color;
 		bool is_char = !is_symbol(str[j]);
 		bool is_a_symbol = is_symbol(str[j]);
-		bool is_number = (str[j] >= '0' && str[j] <= '9');
+		bool is_number = is_digit(str[j]);
 
 		/* color regions */
 		if (is_a_symbol || in_region != -1) {
@@ -241,14 +229,14 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		}
 
 		// allow ABCDEF in hex notation
-		if (is_hex_notation && (_is_hex_symbol(str[j]) || is_number)) {
+		if (is_hex_notation && (is_hex_digit(str[j]) || is_number)) {
 			is_number = true;
 		} else {
 			is_hex_notation = false;
 		}
 
 		// disallow anything not a 0 or 1
-		if (is_bin_notation && (_is_bin_symbol(str[j]))) {
+		if (is_bin_notation && (is_binary_digit(str[j]))) {
 			is_number = true;
 		} else if (is_bin_notation) {
 			is_bin_notation = false;
@@ -270,7 +258,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			}
 		}
 
-		if (!in_word && _is_char(str[j]) && !is_number) {
+		if (!in_word && (is_ascii_char(str[j]) || is_underscore(str[j])) && !is_number) {
 			in_word = true;
 		}
 
@@ -585,7 +573,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 				if (E.usage & PROPERTY_USAGE_CATEGORY || E.usage & PROPERTY_USAGE_GROUP || E.usage & PROPERTY_USAGE_SUBGROUP) {
 					continue;
 				}
-				if (name.find("/") != -1) {
+				if (name.contains("/")) {
 					continue;
 				}
 				member_keywords[name] = member_variable_color;

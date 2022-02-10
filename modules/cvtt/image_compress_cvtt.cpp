@@ -41,7 +41,7 @@ struct CVTTCompressionJobParams {
 	bool is_hdr = false;
 	bool is_signed = false;
 	int bytes_per_pixel = 0;
-
+	cvtt::BC7EncodingPlan bc7_plan;
 	cvtt::Options options;
 };
 
@@ -116,7 +116,7 @@ static void _digest_row_task(const CVTTCompressionJobParams &p_job_params, const
 				cvtt::Kernels::EncodeBC6HU(output_blocks, input_blocks_hdr, p_job_params.options);
 			}
 		} else {
-			cvtt::Kernels::EncodeBC7(output_blocks, input_blocks_ldr, p_job_params.options);
+			cvtt::Kernels::EncodeBC7(output_blocks, input_blocks_ldr, p_job_params.options, p_job_params.bc7_plan);
 		}
 
 		unsigned int num_real_blocks = ((w - x_start) + 3) / 4;
@@ -141,7 +141,6 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChann
 	if (p_image->get_format() >= Image::FORMAT_BPTC_RGBA) {
 		return; //do not compress, already compressed
 	}
-
 	int w = p_image->get_width();
 	int h = p_image->get_height();
 
@@ -153,22 +152,8 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChann
 	}
 
 	cvtt::Options options;
-	uint32_t flags = cvtt::Flags::Fastest;
-
-	if (p_lossy_quality > 0.85) {
-		flags = cvtt::Flags::Ultra;
-	} else if (p_lossy_quality > 0.75) {
-		flags = cvtt::Flags::Better;
-	} else if (p_lossy_quality > 0.55) {
-		flags = cvtt::Flags::Default;
-	} else if (p_lossy_quality > 0.35) {
-		flags = cvtt::Flags::Fast;
-	} else if (p_lossy_quality > 0.15) {
-		flags = cvtt::Flags::Faster;
-	}
-
+	uint32_t flags = cvtt::Flags::Default;
 	flags |= cvtt::Flags::BC7_RespectPunchThrough;
-
 	if (p_channels == Image::USED_CHANNELS_RG) { //guessing this is a normal map
 		flags |= cvtt::Flags::Uniform;
 	}
@@ -215,12 +200,15 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChann
 	job_queue.job_params.is_signed = is_signed;
 	job_queue.job_params.options = options;
 	job_queue.job_params.bytes_per_pixel = is_hdr ? 6 : 4;
+	cvtt::Kernels::ConfigureBC7EncodingPlanFromQuality(job_queue.job_params.bc7_plan, 5);
 
-#ifdef NO_THREADS
 	int num_job_threads = 0;
-#else
-	int num_job_threads = OS::get_singleton()->can_use_threads() ? (OS::get_singleton()->get_processor_count() - 1) : 0;
-#endif
+	// Amdahl's law (Wikipedia)
+	// If a program needs 20 hours to complete using a single thread, but a one-hour portion of the program cannot be parallelized,
+	// therefore only the remaining 19 hours (p = 0.95) of execution time can be parallelized, then regardless of how many threads are devoted
+	// to a parallelized execution of this program, the minimum execution time cannot be less than one hour.
+	//
+	// The number of executions with different inputs can be increased while the latency is the same.
 
 	Vector<CVTTCompressionRowTask> tasks;
 
@@ -278,7 +266,6 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChann
 			memdelete(threads_wb[i]);
 		}
 	}
-
 	p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
 }
 
@@ -388,6 +375,5 @@ void image_decompress_cvtt(Image *p_image) {
 		w >>= 1;
 		h >>= 1;
 	}
-
 	p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
 }

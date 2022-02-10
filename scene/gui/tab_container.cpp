@@ -704,7 +704,7 @@ void TabContainer::add_child_notify(Node *p_child) {
 	}
 
 	_refresh_texts();
-	call_deferred("_repaint");
+	call_deferred(SNAME("_repaint"));
 	update();
 
 	bool first = (_get_tabs().size() == 1);

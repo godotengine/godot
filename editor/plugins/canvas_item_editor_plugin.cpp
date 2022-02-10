@@ -882,10 +882,39 @@ void CanvasItemEditor::_selection_menu_hide() {
 }
 
 void CanvasItemEditor::_add_node_pressed(int p_result) {
-	if (p_result == AddNodeOption::ADD_NODE) {
-		SceneTreeDock::get_singleton()->open_add_child_dialog();
-	} else if (p_result == AddNodeOption::ADD_INSTANCE) {
-		SceneTreeDock::get_singleton()->open_instance_child_dialog();
+	List<Node *> nodes_to_move;
+
+	switch (p_result) {
+		case ADD_NODE: {
+			SceneTreeDock::get_singleton()->open_add_child_dialog();
+		} break;
+		case ADD_INSTANCE: {
+			SceneTreeDock::get_singleton()->open_instance_child_dialog();
+		} break;
+		case ADD_PASTE: {
+			nodes_to_move = SceneTreeDock::get_singleton()->paste_nodes();
+			[[fallthrough]];
+		}
+		case ADD_MOVE: {
+			if (p_result == ADD_MOVE) {
+				nodes_to_move = EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list();
+			}
+			if (nodes_to_move.is_empty()) {
+				return;
+			}
+
+			undo_redo->create_action(TTR("Move Node(s) to Position"));
+			for (Node *node : nodes_to_move) {
+				CanvasItem *ci = Object::cast_to<CanvasItem>(node);
+				if (ci) {
+					Transform2D xform = ci->get_global_transform_with_canvas().affine_inverse() * ci->get_transform();
+					undo_redo->add_do_method(ci, "_edit_set_position", xform.xform(node_create_position));
+					undo_redo->add_undo_method(ci, "_edit_set_position", ci->_edit_get_position());
+				}
+			}
+			undo_redo->commit_action();
+			_reset_create_position();
+		} break;
 	}
 }
 
@@ -1117,6 +1146,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 }
 
 bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bool p_already_accepted) {
+	panner->set_force_drag(tool == TOOL_PAN);
 	bool panner_active = panner->gui_input(p_event, warped_panning ? viewport->get_global_rect() : Rect2());
 	if (panner->is_panning() != pan_pressed) {
 		pan_pressed = panner->is_panning();
@@ -2193,10 +2223,26 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 		}
 
 		if (b.is_valid() && b->is_pressed() && b->get_button_index() == MouseButton::RIGHT) {
+			add_node_menu->clear();
+			add_node_menu->add_icon_item(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")), TTR("Add Node Here"), ADD_NODE);
+			add_node_menu->add_icon_item(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), TTR("Instantiate Scene Here"), ADD_INSTANCE);
+			for (Node *node : SceneTreeDock::get_singleton()->get_node_clipboard()) {
+				if (Object::cast_to<CanvasItem>(node)) {
+					add_node_menu->add_icon_item(get_theme_icon(SNAME("ActionPaste"), SNAME("EditorIcons")), TTR("Paste Node(s) Here"), ADD_PASTE);
+					break;
+				}
+			}
+			for (Node *node : EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list()) {
+				if (Object::cast_to<CanvasItem>(node)) {
+					add_node_menu->add_icon_item(get_theme_icon(SNAME("ToolMove"), SNAME("EditorIcons")), TTR("Move Node(s) Here"), ADD_MOVE);
+					break;
+				}
+			}
+
 			add_node_menu->reset_size();
-			add_node_menu->set_position(get_screen_transform().xform(get_local_mouse_position()));
+			add_node_menu->set_position(get_screen_transform().xform(b->get_position()));
 			add_node_menu->popup();
-			node_create_position = transform.affine_inverse().xform((get_local_mouse_position()));
+			node_create_position = transform.affine_inverse().xform(b->get_position());
 			return true;
 		}
 
@@ -2461,7 +2507,7 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 	_update_cursor();
 
 	// Grab focus
-	if (!viewport->has_focus() && (!get_focus_owner() || !get_focus_owner()->is_text_field())) {
+	if (!viewport->has_focus() && (!get_viewport()->gui_get_focus_owner() || !get_viewport()->gui_get_focus_owner()->is_text_field())) {
 		viewport->call_deferred(SNAME("grab_focus"));
 	}
 }
@@ -3903,7 +3949,7 @@ void CanvasItemEditor::_selection_changed() {
 
 void CanvasItemEditor::edit(CanvasItem *p_canvas_item) {
 	Array selection = editor_selection->get_selected_nodes();
-	if (selection.size() != 1 || (Node *)selection[0] != p_canvas_item) {
+	if (selection.size() != 1 || Object::cast_to<Node>(selection[0]) != p_canvas_item) {
 		drag_type = DRAG_NONE;
 
 		// Clear the selection
@@ -5185,6 +5231,11 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	controls_vb = memnew(VBoxContainer);
 	controls_vb->set_begin(Point2(5, 5));
 
+	zoom_widget = memnew(EditorZoomWidget);
+	controls_vb->add_child(zoom_widget);
+	zoom_widget->set_anchors_and_offsets_preset(Control::PRESET_TOP_LEFT, Control::PRESET_MODE_MINSIZE, 2 * EDSCALE);
+	zoom_widget->connect("zoom_changed", callable_mp(this, &CanvasItemEditor::_update_zoom));
+
 	panner.instantiate();
 	panner->set_callbacks(callable_mp(this, &CanvasItemEditor::_scroll_callback), callable_mp(this, &CanvasItemEditor::_pan_callback), callable_mp(this, &CanvasItemEditor::_zoom_callback));
 
@@ -5209,11 +5260,6 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	v_scroll->hide();
 
 	viewport->add_child(controls_vb);
-
-	zoom_widget = memnew(EditorZoomWidget);
-	controls_vb->add_child(zoom_widget);
-	zoom_widget->set_anchors_and_offsets_preset(Control::PRESET_TOP_LEFT, Control::PRESET_MODE_MINSIZE, 2 * EDSCALE);
-	zoom_widget->connect("zoom_changed", callable_mp(this, &CanvasItemEditor::_update_zoom));
 
 	updating_scroll = false;
 
@@ -5547,8 +5593,6 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	add_node_menu = memnew(PopupMenu);
 	add_child(add_node_menu);
-	add_node_menu->add_icon_item(SceneTreeDock::get_singleton()->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")), TTR("Add Node Here"));
-	add_node_menu->add_icon_item(SceneTreeDock::get_singleton()->get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), TTR("Instance Scene Here"));
 	add_node_menu->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_add_node_pressed));
 
 	multiply_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/multiply_grid_step", TTR("Multiply grid step by 2"), Key::KP_MULTIPLY);
@@ -5753,22 +5797,17 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 		editor_data->get_undo_redo().add_undo_method(ed, "live_debug_remove_node", NodePath(String(editor->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
 	}
 
-	String node_class = child->get_class();
-	if (node_class == "Polygon2D") {
-		editor_data->get_undo_redo().add_do_property(child, "texture/texture", texture);
-	} else if (node_class == "TouchScreenButton") {
-		editor_data->get_undo_redo().add_do_property(child, "normal", texture);
-	} else if (node_class == "TextureButton") {
-		editor_data->get_undo_redo().add_do_property(child, "texture_button", texture);
+	if (Object::cast_to<TouchScreenButton>(child) || Object::cast_to<TextureButton>(child)) {
+		editor_data->get_undo_redo().add_do_property(child, "texture_normal", texture);
 	} else {
 		editor_data->get_undo_redo().add_do_property(child, "texture", texture);
 	}
 
 	// make visible for certain node type
-	if (ClassDB::is_parent_class(node_class, "Control")) {
+	if (Object::cast_to<Control>(child)) {
 		Size2 texture_size = texture->get_size();
 		editor_data->get_undo_redo().add_do_property(child, "rect_size", texture_size);
-	} else if (node_class == "Polygon2D") {
+	} else if (Object::cast_to<Polygon2D>(child)) {
 		Size2 texture_size = texture->get_size();
 		Vector<Vector2> list = {
 			Vector2(0, 0),
@@ -5896,29 +5935,32 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 		if (String(d["type"]) == "files") {
 			Vector<String> files = d["files"];
 			bool can_instantiate = false;
-			for (int i = 0; i < files.size(); i++) { // check if dragged files contain resource or scene can be created at least once
-				RES res = ResourceLoader::load(files[i]);
-				if (res.is_null()) {
-					continue;
-				}
-				String type = res->get_class();
-				if (type == "PackedScene") {
-					Ref<PackedScene> sdata = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
-					Node *instantiated_scene = sdata->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
-					if (!instantiated_scene) {
+
+			List<String> scene_extensions;
+			ResourceLoader::get_recognized_extensions_for_type("PackedScene", &scene_extensions);
+			List<String> texture_extensions;
+			ResourceLoader::get_recognized_extensions_for_type("Texture2D", &texture_extensions);
+
+			for (int i = 0; i < files.size(); i++) {
+				// Check if dragged files with texture or scene extension can be created at least once.
+				if (texture_extensions.find(files[i].get_extension()) || scene_extensions.find(files[i].get_extension())) {
+					RES res = ResourceLoader::load(files[i]);
+					if (res.is_null()) {
 						continue;
 					}
-					memdelete(instantiated_scene);
-				} else if (ClassDB::is_parent_class(type, "Texture2D")) {
-					Ref<Texture2D> texture = Ref<Texture2D>(Object::cast_to<Texture2D>(*res));
-					if (!texture.is_valid()) {
+					Ref<PackedScene> scn = res;
+					if (scn.is_valid()) {
+						Node *instantiated_scene = scn->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
+						if (!instantiated_scene) {
+							continue;
+						}
+						memdelete(instantiated_scene);
+					} else {
 						continue;
 					}
-				} else {
-					continue;
+					can_instantiate = true;
+					break;
 				}
-				can_instantiate = true;
-				break;
 			}
 			if (can_instantiate) {
 				if (!preview_node->get_parent()) { // create preview only once
@@ -6025,10 +6067,21 @@ Node *CanvasItemEditorViewport::_make_texture_node_type(String texture_node_type
 }
 
 void CanvasItemEditorViewport::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		List<BaseButton *> btn_list;
+		button_group->get_buttons(&btn_list);
+
+		for (int i = 0; i < btn_list.size(); i++) {
+			CheckBox *check = Object::cast_to<CheckBox>(btn_list[i]);
+			check->set_icon(get_theme_icon(check->get_text(), SNAME("EditorIcons")));
+		}
+
+		label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+	}
+
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			connect("mouse_exited", callable_mp(this, &CanvasItemEditorViewport::_on_mouse_exit));
-			label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("mouse_exited", callable_mp(this, &CanvasItemEditorViewport::_on_mouse_exit));
@@ -6079,7 +6132,7 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 
 	btn_group = memnew(VBoxContainer);
 	vbc->add_child(btn_group);
-	btn_group->set_h_size_flags(0);
+	btn_group->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	button_group.instantiate();
 	for (int i = 0; i < texture_node_types.size(); i++) {

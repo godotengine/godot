@@ -43,6 +43,15 @@ class TilesEditorPlugin : public EditorPlugin {
 
 	static TilesEditorPlugin *singleton;
 
+public:
+	enum SourceSortOption {
+		SOURCE_SORT_ID = 0,
+		SOURCE_SORT_ID_REVERSE,
+		SOURCE_SORT_NAME,
+		SOURCE_SORT_NAME_REVERSE,
+		SOURCE_SORT_MAX
+	};
+
 private:
 	EditorNode *editor_node;
 
@@ -64,6 +73,14 @@ private:
 	Vector2 atlas_view_scroll = Vector2();
 
 	void _tile_map_changed();
+
+	// Source sorting.
+	int source_sort = SOURCE_SORT_ID;
+
+	struct SourceNameComparator {
+		static Ref<TileSet> tile_set;
+		bool operator()(const int &p_a, const int &p_b) const;
+	};
 
 	// Patterns preview generation.
 	struct QueueItem {
@@ -97,10 +114,14 @@ public:
 
 	// To synchronize the atlas sources lists.
 	void set_sources_lists_current(int p_current);
-	void synchronize_sources_list(Object *p_current);
+	void synchronize_sources_list(Object *p_current_list, Object *p_current_sort_button);
 
 	void set_atlas_view_transform(float p_zoom, Vector2 p_scroll);
 	void synchronize_atlas_view(Object *p_current);
+
+	// Sorting.
+	void set_sorting_option(int p_option);
+	List<int> get_sorted_sources(const Ref<TileSet> tile_set) const;
 
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;

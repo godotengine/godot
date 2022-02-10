@@ -500,7 +500,7 @@ void EditorDebuggerNode::set_breakpoint(const String &p_path, int p_line, bool p
 		dbg->set_breakpoint(p_path, p_line, p_enabled);
 	});
 
-	emit_signal("breakpoint_toggled", p_path, p_line, p_enabled);
+	emit_signal(SNAME("breakpoint_toggled"), p_path, p_line, p_enabled);
 }
 
 void EditorDebuggerNode::set_breakpoints(const String &p_path, Array p_lines) {
@@ -683,7 +683,7 @@ EditorDebuggerNode::CameraOverride EditorDebuggerNode::get_camera_override() {
 void EditorDebuggerNode::add_debugger_plugin(const Ref<Script> &p_script) {
 	ERR_FAIL_COND_MSG(debugger_plugins.has(p_script), "Debugger plugin already exists.");
 	ERR_FAIL_COND_MSG(p_script.is_null(), "Debugger plugin script is null");
-	ERR_FAIL_COND_MSG(String(p_script->get_instance_base_type()) == "", "Debugger plugin script has error.");
+	ERR_FAIL_COND_MSG(p_script->get_instance_base_type() == StringName(), "Debugger plugin script has error.");
 	ERR_FAIL_COND_MSG(String(p_script->get_instance_base_type()) != "EditorDebuggerPlugin", "Base type of debugger plugin is not 'EditorDebuggerPlugin'.");
 	ERR_FAIL_COND_MSG(!p_script->is_tool(), "Debugger plugin script is not in tool mode.");
 	debugger_plugins.insert(p_script);

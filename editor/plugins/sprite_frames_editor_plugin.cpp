@@ -285,7 +285,7 @@ void SpriteFramesEditor::_sheet_spin_changed(double) {
 }
 
 void SpriteFramesEditor::_prepare_sprite_sheet(const String &p_file) {
-	Ref<Resource> texture = ResourceLoader::load(p_file);
+	Ref<Texture2D> texture = ResourceLoader::load(p_file);
 	if (!texture.is_valid()) {
 		EditorNode::get_singleton()->show_warning(TTR("Unable to load images"));
 		ERR_FAIL_COND(!texture.is_valid());
@@ -821,7 +821,7 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 
 	for (int i = 0; i < frames->get_frame_count(edited_anim); i++) {
 		String name;
-		Ref<Texture> frame = frames->get_frame(edited_anim, i);
+		Ref<Texture2D> frame = frames->get_frame(edited_anim, i);
 
 		if (frame.is_null()) {
 			name = itos(i) + ": " + TTR("(empty)");

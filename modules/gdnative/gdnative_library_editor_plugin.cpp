@@ -315,7 +315,6 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 
 		NativePlatformConfig platform_ios;
 		platform_ios.name = "iOS";
-		platform_ios.entries.push_back("armv7");
 		platform_ios.entries.push_back("arm64");
 		platform_ios.entries.push_back("x86_64");
 		// iOS can use both Static and Dynamic libraries.

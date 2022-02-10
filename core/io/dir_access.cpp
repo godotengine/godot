@@ -145,17 +145,21 @@ Error DirAccess::make_dir_recursive(String p_dir) {
 
 	full_dir = full_dir.replace("\\", "/");
 
-	//int slices = full_dir.get_slice_count("/");
-
 	String base;
 
 	if (full_dir.begins_with("res://")) {
 		base = "res://";
 	} else if (full_dir.begins_with("user://")) {
 		base = "user://";
+	} else if (full_dir.is_network_share_path()) {
+		int pos = full_dir.find("/", 2);
+		ERR_FAIL_COND_V(pos < 0, ERR_INVALID_PARAMETER);
+		pos = full_dir.find("/", pos + 1);
+		ERR_FAIL_COND_V(pos < 0, ERR_INVALID_PARAMETER);
+		base = full_dir.substr(0, pos + 1);
 	} else if (full_dir.begins_with("/")) {
 		base = "/";
-	} else if (full_dir.find(":/") != -1) {
+	} else if (full_dir.contains(":/")) {
 		base = full_dir.substr(0, full_dir.find(":/") + 2);
 	} else {
 		ERR_FAIL_V(ERR_INVALID_PARAMETER);

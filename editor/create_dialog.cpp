@@ -178,7 +178,7 @@ void CreateDialog::_update_search() {
 	// Filter all candidate results.
 	Vector<String> candidates;
 	for (List<StringName>::Element *I = type_list.front(); I; I = I->next()) {
-		if (empty_search || search_text.is_subsequence_ofi(I->get())) {
+		if (empty_search || search_text.is_subsequence_ofn(I->get())) {
 			candidates.push_back(I->get());
 		}
 	}
@@ -446,14 +446,14 @@ void CreateDialog::_notification(int p_what) {
 	}
 }
 
-void CreateDialog::select_type(const String &p_type) {
+void CreateDialog::select_type(const String &p_type, bool p_center_on_item) {
 	if (!search_options_types.has(p_type)) {
 		return;
 	}
 
 	TreeItem *to_select = search_options_types[p_type];
 	to_select->select(0);
-	search_options->scroll_to_item(to_select);
+	search_options->scroll_to_item(to_select, p_center_on_item);
 
 	if (EditorHelp::get_doc_data()->class_list.has(p_type) && !DTR(EditorHelp::get_doc_data()->class_list[p_type].brief_description).is_empty()) {
 		// Display both class name and description, since the help bit may be displayed
@@ -467,7 +467,7 @@ void CreateDialog::select_type(const String &p_type) {
 	}
 
 	favorite->set_disabled(false);
-	favorite->set_pressed(favorite_list.find(p_type) != -1);
+	favorite->set_pressed(favorite_list.has(p_type));
 	get_ok_button()->set_disabled(false);
 }
 
@@ -503,24 +503,14 @@ Variant CreateDialog::instance_selected() {
 	} else {
 		obj = ClassDB::instantiate(selected->get_text(0));
 	}
-
-	// Check if any Object-type property should be instantiated.
-	List<PropertyInfo> pinfo;
-	((Object *)obj)->get_property_list(&pinfo);
-
-	for (const PropertyInfo &pi : pinfo) {
-		if (pi.type == Variant::OBJECT && pi.usage & PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT) {
-			Object *prop = ClassDB::instantiate(pi.class_name);
-			((Object *)obj)->set(pi.name, prop);
-		}
-	}
+	EditorNode::get_editor_data().instantiate_object_properties(obj);
 
 	return obj;
 }
 
 void CreateDialog::_item_selected() {
 	String name = get_selected_type();
-	select_type(name);
+	select_type(name, false);
 }
 
 void CreateDialog::_hide_requested() {
@@ -539,12 +529,12 @@ void CreateDialog::_favorite_toggled() {
 
 	String name = item->get_text(0);
 
-	if (favorite_list.find(name) == -1) {
-		favorite_list.push_back(name);
-		favorite->set_pressed(true);
-	} else {
+	if (favorite_list.has(name)) {
 		favorite_list.erase(name);
 		favorite->set_pressed(false);
+	} else {
+		favorite_list.push_back(name);
+		favorite->set_pressed(true);
 	}
 
 	_save_and_update_favorite_list();

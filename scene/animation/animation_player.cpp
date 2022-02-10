@@ -1171,7 +1171,7 @@ void AnimationPlayer::_animation_process(double p_delta) {
 
 Error AnimationPlayer::add_animation(const StringName &p_name, const Ref<Animation> &p_animation) {
 #ifdef DEBUG_ENABLED
-	ERR_FAIL_COND_V_MSG(String(p_name).find("/") != -1 || String(p_name).find(":") != -1 || String(p_name).find(",") != -1 || String(p_name).find("[") != -1, ERR_INVALID_PARAMETER, "Invalid animation name: " + String(p_name) + ".");
+	ERR_FAIL_COND_V_MSG(String(p_name).contains("/") || String(p_name).contains(":") || String(p_name).contains(",") || String(p_name).contains("["), ERR_INVALID_PARAMETER, "Invalid animation name: " + String(p_name) + ".");
 #endif
 
 	ERR_FAIL_COND_V(p_animation.is_null(), ERR_INVALID_PARAMETER);
@@ -1213,7 +1213,7 @@ void AnimationPlayer::_unref_anim(const Ref<Animation> &p_anim) {
 
 void AnimationPlayer::rename_animation(const StringName &p_name, const StringName &p_new_name) {
 	ERR_FAIL_COND(!animation_set.has(p_name));
-	ERR_FAIL_COND(String(p_new_name).find("/") != -1 || String(p_new_name).find(":") != -1);
+	ERR_FAIL_COND(String(p_new_name).contains("/") || String(p_new_name).contains(":"));
 	ERR_FAIL_COND(animation_set.has(p_new_name));
 
 	stop();

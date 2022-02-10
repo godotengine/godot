@@ -45,11 +45,13 @@ class OS_JavaScript : public OS_Unix {
 	bool idb_is_syncing = false;
 	bool idb_available = false;
 	bool idb_needs_sync = false;
+	bool pwa_is_waiting = false;
 
 	static void main_loop_callback();
 
 	static void file_access_close_callback(const String &p_file, int p_flags);
 	static void fs_sync_callback();
+	static void update_pwa_state_callback();
 
 protected:
 	void initialize() override;
@@ -64,6 +66,9 @@ protected:
 public:
 	// Override return type to make writing static callbacks less tedious.
 	static OS_JavaScript *get_singleton();
+
+	bool pwa_needs_update() const { return pwa_is_waiting; }
+	Error pwa_update();
 
 	void initialize_joypads() override;
 

@@ -259,7 +259,7 @@ public:
 		ARRAY_FORMAT_WEIGHTS = 1 << ARRAY_WEIGHTS,
 		ARRAY_FORMAT_INDEX = 1 << ARRAY_INDEX,
 
-		ARRAY_FORMAT_BLEND_SHAPE_MASK = (~(ARRAY_FORMAT_COLOR | ARRAY_FORMAT_TEX_UV | ARRAY_FORMAT_TEX_UV2 | ARRAY_FORMAT_BONES | ARRAY_FORMAT_WEIGHTS | ARRAY_FORMAT_CUSTOM0 | ARRAY_FORMAT_CUSTOM1 | ARRAY_FORMAT_CUSTOM2 | ARRAY_FORMAT_CUSTOM3 | ARRAY_FORMAT_INDEX)) & 0x7FFFFFFF,
+		ARRAY_FORMAT_BLEND_SHAPE_MASK = ARRAY_FORMAT_VERTEX | ARRAY_FORMAT_NORMAL | ARRAY_FORMAT_TANGENT,
 
 		ARRAY_FORMAT_CUSTOM_BASE = (ARRAY_INDEX + 1),
 		ARRAY_FORMAT_CUSTOM_BITS = 3,
@@ -991,7 +991,7 @@ public:
 		ENV_GLOW_BLEND_MODE_MIX,
 	};
 
-	virtual void environment_set_glow(RID p_env, bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap) = 0;
+	virtual void environment_set_glow(RID p_env, bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, float p_glow_map_strength, RID p_glow_map) = 0;
 
 	virtual void environment_glow_set_use_bicubic_upscale(bool p_enable) = 0;
 	virtual void environment_glow_set_use_high_quality(bool p_enable) = 0;

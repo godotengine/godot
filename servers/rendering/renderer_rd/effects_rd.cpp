@@ -115,6 +115,43 @@ RID EffectsRD::_get_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps) 
 	return uniform_set;
 }
 
+RID EffectsRD::_get_uniform_set_from_texture_pair(RID p_texture1, RID p_texture2, bool p_use_mipmaps) {
+	TexturePair tp;
+	tp.texture1 = p_texture1;
+	tp.texture2 = p_texture2;
+
+	if (texture_pair_to_uniform_set_cache.has(tp)) {
+		RID uniform_set = texture_pair_to_uniform_set_cache[tp];
+		if (RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
+			return uniform_set;
+		}
+	}
+
+	Vector<RD::Uniform> uniforms;
+	{
+		RD::Uniform u;
+		u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+		u.binding = 0;
+		u.ids.push_back(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
+		u.ids.push_back(p_texture1);
+		uniforms.push_back(u);
+	}
+	{
+		RD::Uniform u;
+		u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+		u.binding = 1;
+		u.ids.push_back(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
+		u.ids.push_back(p_texture2);
+		uniforms.push_back(u);
+	}
+	// anything with the same configuration (one texture in binding 0 for set 0), is good
+	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, tonemap.shader.version_get_shader(tonemap.shader_version, 0), 2);
+
+	texture_pair_to_uniform_set_cache[tp] = uniform_set;
+
+	return uniform_set;
+}
+
 RID EffectsRD::_get_compute_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps) {
 	if (texture_to_compute_uniform_set_cache.has(p_texture)) {
 		RID uniform_set = texture_to_compute_uniform_set_cache[p_texture];
@@ -445,12 +482,11 @@ void EffectsRD::set_color(RID p_dest_texture, const Color &p_color, const Rect2i
 	RD::get_singleton()->compute_list_end();
 }
 
-void EffectsRD::gaussian_blur(RID p_source_rd_texture, RID p_texture, RID p_back_texture, const Rect2i &p_region, bool p_8bit_dst) {
+void EffectsRD::gaussian_blur(RID p_source_rd_texture, RID p_texture, const Rect2i &p_region, bool p_8bit_dst) {
 	ERR_FAIL_COND_MSG(prefer_raster_effects, "Can't use the compute version of the gaussian blur with the mobile renderer.");
 
 	memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
 
-	uint32_t base_flags = 0;
 	copy.push_constant.section[0] = p_region.position.x;
 	copy.push_constant.section[1] = p_region.position.y;
 	copy.push_constant.section[2] = p_region.size.width;
@@ -460,23 +496,12 @@ void EffectsRD::gaussian_blur(RID p_source_rd_texture, RID p_texture, RID p_back
 	RD::DrawListID compute_list = RD::get_singleton()->compute_list_begin();
 	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, copy.pipelines[p_8bit_dst ? COPY_MODE_GAUSSIAN_COPY_8BIT : COPY_MODE_GAUSSIAN_COPY]);
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_source_rd_texture), 0);
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_back_texture), 3);
-
-	copy.push_constant.flags = base_flags | COPY_FLAG_HORIZONTAL;
-	RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy.push_constant, sizeof(CopyPushConstant));
-
-	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_region.size.width, p_region.size.height, 1);
-
-	RD::get_singleton()->compute_list_add_barrier(compute_list);
-
-	//VERTICAL
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_back_texture), 0);
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_texture), 3);
 
-	copy.push_constant.flags = base_flags;
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy.push_constant, sizeof(CopyPushConstant));
 
 	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_region.size.width, p_region.size.height, 1);
+
 	RD::get_singleton()->compute_list_end();
 }
 
@@ -828,6 +853,7 @@ void EffectsRD::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Tone
 
 	tonemap.push_constant.use_glow = p_settings.use_glow;
 	tonemap.push_constant.glow_intensity = p_settings.glow_intensity;
+	tonemap.push_constant.glow_map_strength = p_settings.glow_map_strength;
 	tonemap.push_constant.glow_levels[0] = p_settings.glow_levels[0]; // clean this up to just pass by pointer or something
 	tonemap.push_constant.glow_levels[1] = p_settings.glow_levels[1];
 	tonemap.push_constant.glow_levels[2] = p_settings.glow_levels[2];
@@ -867,7 +893,7 @@ void EffectsRD::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Tone
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, tonemap.pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dst_framebuffer), false, RD::get_singleton()->draw_list_get_current_pass()));
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_color), 0);
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_settings.exposure_texture), 1);
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_settings.glow_texture, true), 2);
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture_pair(p_settings.glow_texture, p_settings.glow_map, true), 2);
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_settings.color_correction_texture), 3);
 	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
 
@@ -907,7 +933,7 @@ void EffectsRD::tonemapper(RD::DrawListID p_subpass_draw_list, RID p_source_colo
 	RD::get_singleton()->draw_list_bind_render_pipeline(p_subpass_draw_list, tonemap.pipelines[mode].get_render_pipeline(RD::INVALID_ID, p_dst_format_id, false, RD::get_singleton()->draw_list_get_current_pass()));
 	RD::get_singleton()->draw_list_bind_uniform_set(p_subpass_draw_list, _get_uniform_set_for_input(p_source_color), 0);
 	RD::get_singleton()->draw_list_bind_uniform_set(p_subpass_draw_list, _get_uniform_set_from_texture(p_settings.exposure_texture), 1); // should be set to a default texture, it's ignored
-	RD::get_singleton()->draw_list_bind_uniform_set(p_subpass_draw_list, _get_uniform_set_from_texture(p_settings.glow_texture, true), 2); // should be set to a default texture, it's ignored
+	RD::get_singleton()->draw_list_bind_uniform_set(p_subpass_draw_list, _get_uniform_set_from_texture_pair(p_settings.glow_texture, p_settings.glow_map, true), 2); // should be set to a default texture, it's ignored
 	RD::get_singleton()->draw_list_bind_uniform_set(p_subpass_draw_list, _get_uniform_set_from_texture(p_settings.color_correction_texture), 3);
 
 	RD::get_singleton()->draw_list_bind_index_array(p_subpass_draw_list, index_array);
@@ -1415,7 +1441,6 @@ void EffectsRD::downsample_depth(RID p_depth_buffer, const Vector<RID> &p_depth_
 
 	RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_COMPUTE);
 
-	ss_effects.used_full_mips_last_frame = use_mips;
 	ss_effects.used_full_mips_last_frame = use_full_mips;
 	ss_effects.used_half_size_last_frame = use_half_size;
 }
@@ -2306,8 +2331,8 @@ EffectsRD::EffectsRD(bool p_prefer_raster_effects) {
 		Vector<String> copy_modes;
 		copy_modes.push_back("\n#define MODE_GAUSSIAN_BLUR\n");
 		copy_modes.push_back("\n#define MODE_GAUSSIAN_BLUR\n#define DST_IMAGE_8BIT\n");
-		copy_modes.push_back("\n#define MODE_GAUSSIAN_GLOW\n");
-		copy_modes.push_back("\n#define MODE_GAUSSIAN_GLOW\n#define GLOW_USE_AUTO_EXPOSURE\n");
+		copy_modes.push_back("\n#define MODE_GAUSSIAN_BLUR\n#define MODE_GLOW\n");
+		copy_modes.push_back("\n#define MODE_GAUSSIAN_BLUR\n#define MODE_GLOW\n#define GLOW_USE_AUTO_EXPOSURE\n");
 		copy_modes.push_back("\n#define MODE_SIMPLE_COPY\n");
 		copy_modes.push_back("\n#define MODE_SIMPLE_COPY\n#define DST_IMAGE_8BIT\n");
 		copy_modes.push_back("\n#define MODE_SIMPLE_COPY_DEPTH\n");

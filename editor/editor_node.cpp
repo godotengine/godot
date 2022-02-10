@@ -47,7 +47,6 @@
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 #include "core/version.h"
-#include "core/version_hash.gen.h"
 #include "main/main.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/gui/center_container.h"
@@ -93,6 +92,7 @@
 #include "editor/editor_run_script.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_settings_dialog.h"
 #include "editor/editor_spin_slider.h"
 #include "editor/editor_themes.h"
 #include "editor/editor_toaster.h"
@@ -127,10 +127,10 @@
 #include "editor/plugins/animation_tree_editor_plugin.h"
 #include "editor/plugins/asset_library_editor_plugin.h"
 #include "editor/plugins/audio_stream_editor_plugin.h"
+#include "editor/plugins/audio_stream_randomizer_editor_plugin.h"
 #include "editor/plugins/camera_3d_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/collision_polygon_2d_editor_plugin.h"
-#include "editor/plugins/collision_polygon_3d_editor_plugin.h"
 #include "editor/plugins/collision_shape_2d_editor_plugin.h"
 #include "editor/plugins/cpu_particles_2d_editor_plugin.h"
 #include "editor/plugins/cpu_particles_3d_editor_plugin.h"
@@ -161,6 +161,8 @@
 #include "editor/plugins/path_3d_editor_plugin.h"
 #include "editor/plugins/physical_bone_3d_editor_plugin.h"
 #include "editor/plugins/polygon_2d_editor_plugin.h"
+#include "editor/plugins/polygon_3d_editor_plugin.h"
+#include "editor/plugins/replication_editor_plugin.h"
 #include "editor/plugins/resource_preloader_editor_plugin.h"
 #include "editor/plugins/root_motion_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -190,7 +192,6 @@
 #include "editor/project_settings_editor.h"
 #include "editor/quick_open.h"
 #include "editor/register_exporters.h"
-#include "editor/settings_config_dialog.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -312,7 +313,7 @@ void EditorNode::_update_scene_tabs() {
 		DisplayServer::get_singleton()->global_menu_clear("_dock");
 	}
 
-	// Get all scene names, which may be ambiguous
+	// Get all scene names, which may be ambiguous.
 	Vector<String> disambiguated_scene_names;
 	Vector<String> full_path_names;
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
@@ -340,7 +341,7 @@ void EditorNode::_update_scene_tabs() {
 		}
 
 		if (show_rb && editor_data.get_scene_root_script(i).is_valid()) {
-			scene_tabs->set_tab_right_button(i, script_icon);
+			scene_tabs->set_tab_button_icon(i, script_icon);
 		}
 	}
 
@@ -349,34 +350,35 @@ void EditorNode::_update_scene_tabs() {
 		DisplayServer::get_singleton()->global_menu_add_item("_dock", TTR("New Window"), callable_mp(this, &EditorNode::_global_menu_new_window));
 	}
 
-	scene_tabs->set_current_tab(editor_data.get_edited_scene());
+	if (scene_tabs->get_tab_count() > 0) {
+		scene_tabs->set_current_tab(editor_data.get_edited_scene());
+	}
 
 	if (scene_tabs->get_offset_buttons_visible()) {
-		// move add button to fixed position on the tabbar
+		// Move the add button to a fixed position.
 		if (scene_tab_add->get_parent() == scene_tabs) {
-			if (scene_tabs->is_layout_rtl()) {
-				scene_tab_add->set_position(Point2(tabbar_container->get_size().x - scene_tab_add->get_size().x, 0));
-			} else {
-				scene_tab_add->set_position(Point2(0, 0));
-			}
 			scene_tabs->remove_child(scene_tab_add);
-			tabbar_container->add_child(scene_tab_add);
-			tabbar_container->move_child(scene_tab_add, 1);
+			scene_tab_add_ph->add_child(scene_tab_add);
+			scene_tab_add->set_position(Point2());
 		}
 	} else {
-		// move add button to after last tab
-		if (scene_tab_add->get_parent() == tabbar_container) {
-			tabbar_container->remove_child(scene_tab_add);
+		// Move the add button to be after the last tab.
+		if (scene_tab_add->get_parent() == scene_tab_add_ph) {
+			scene_tab_add_ph->remove_child(scene_tab_add);
 			scene_tabs->add_child(scene_tab_add);
 		}
-		Rect2 last_tab = Rect2();
-		if (scene_tabs->get_tab_count() != 0) {
-			last_tab = scene_tabs->get_tab_rect(scene_tabs->get_tab_count() - 1);
+
+		if (scene_tabs->get_tab_count() == 0) {
+			scene_tab_add->set_position(Point2());
+			return;
 		}
+
+		Rect2 last_tab = scene_tabs->get_tab_rect(scene_tabs->get_tab_count() - 1);
+		int hsep = scene_tabs->get_theme_constant(SNAME("hseparation"));
 		if (scene_tabs->is_layout_rtl()) {
-			scene_tab_add->set_position(Point2(last_tab.get_position().x - scene_tab_add->get_size().x - 3, last_tab.get_position().y));
+			scene_tab_add->set_position(Point2(last_tab.position.x - scene_tab_add->get_size().x - hsep, last_tab.position.y));
 		} else {
-			scene_tab_add->set_position(Point2(last_tab.get_position().x + last_tab.get_size().x + 3, last_tab.get_position().y));
+			scene_tab_add->set_position(Point2(last_tab.position.x + last_tab.size.width + hsep, last_tab.position.y));
 		}
 	}
 }
@@ -624,6 +626,10 @@ void EditorNode::_notification(int p_what) {
 			editor_data.clear_edited_scenes();
 		} break;
 
+		case Control::NOTIFICATION_THEME_CHANGED: {
+			scene_tab_add_ph->set_custom_minimum_size(scene_tab_add->get_minimum_size());
+		} break;
+
 		case NOTIFICATION_READY: {
 			{
 				_initializing_addons = true;
@@ -720,8 +726,8 @@ void EditorNode::_notification(int p_what) {
 
 				if (icon.is_valid()) {
 					tb->set_icon(icon);
-				} else if (singleton->gui_base->has_theme_icon(p_editor->get_name(), "EditorIcons")) {
-					tb->set_icon(singleton->gui_base->get_theme_icon(p_editor->get_name(), "EditorIcons"));
+				} else if (singleton->gui_base->has_theme_icon(p_editor->get_name(), SNAME("EditorIcons"))) {
+					tb->set_icon(singleton->gui_base->get_theme_icon(p_editor->get_name(), SNAME("EditorIcons")));
 				}
 			}
 
@@ -739,13 +745,12 @@ void EditorNode::_notification(int p_what) {
 
 			bottom_panel_raise->set_icon(gui_base->get_theme_icon(SNAME("ExpandBottomDock"), SNAME("EditorIcons")));
 
-			// clear_button->set_icon(gui_base->get_icon("Close", "EditorIcons")); don't have access to that node. needs to become a class property
 			if (gui_base->is_layout_rtl()) {
-				dock_tab_move_left->set_icon(theme->get_icon("Forward", "EditorIcons"));
-				dock_tab_move_right->set_icon(theme->get_icon("Back", "EditorIcons"));
+				dock_tab_move_left->set_icon(theme->get_icon(SNAME("Forward"), SNAME("EditorIcons")));
+				dock_tab_move_right->set_icon(theme->get_icon(SNAME("Back"), SNAME("EditorIcons")));
 			} else {
-				dock_tab_move_left->set_icon(theme->get_icon("Back", "EditorIcons"));
-				dock_tab_move_right->set_icon(theme->get_icon("Forward", "EditorIcons"));
+				dock_tab_move_left->set_icon(theme->get_icon(SNAME("Back"), SNAME("EditorIcons")));
+				dock_tab_move_right->set_icon(theme->get_icon(SNAME("Forward"), SNAME("EditorIcons")));
 			}
 
 			PopupMenu *p = help_menu->get_popup();
@@ -822,8 +827,8 @@ void EditorNode::_on_plugin_ready(Object *p_script, const String &p_activate_nam
 	if (p_activate_name.length()) {
 		set_addon_plugin_enabled(p_activate_name, true);
 	}
-	project_settings->update_plugins();
-	project_settings->hide();
+	project_settings_editor->update_plugins();
+	project_settings_editor->hide();
 	push_item(script.operator->());
 }
 
@@ -2274,7 +2279,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 		if (main_plugin) {
 			// special case if use of external editor is true
 			Resource *current_res = Object::cast_to<Resource>(current_obj);
-			if (main_plugin->get_name() == "Script" && current_obj->get_class_name() != StringName("VisualScript") && current_res && !current_res->is_built_in() && (bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor")) || overrides_external_editor(current_obj))) {
+			if (main_plugin->get_name() == "Script" && current_obj->is_class("VisualScript") && current_res && !current_res->is_built_in() && (bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor")) || overrides_external_editor(current_obj))) {
 				if (!changing_scene) {
 					main_plugin->edit(current_obj);
 				}
@@ -2773,7 +2778,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 		} break;
 		case RUN_SETTINGS: {
-			project_settings->popup_project_settings();
+			project_settings_editor->popup_project_settings();
 		} break;
 		case FILE_INSTALL_ANDROID_SOURCE: {
 			if (p_confirmed) {
@@ -2846,7 +2851,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			_update_update_spinner();
 		} break;
 		case SETTINGS_PREFERENCES: {
-			settings_config_dialog->popup_edit_settings();
+			editor_settings_dialog->popup_edit_settings();
 		} break;
 		case SETTINGS_EDITOR_DATA_FOLDER: {
 			OS::get_singleton()->shell_open(String("file://") + EditorPaths::get_singleton()->get_data_dir());
@@ -3174,8 +3179,8 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 		Ref<Texture2D> icon = p_editor->get_icon();
 		if (icon.is_valid()) {
 			tb->set_icon(icon);
-		} else if (singleton->gui_base->has_theme_icon(p_editor->get_name(), "EditorIcons")) {
-			tb->set_icon(singleton->gui_base->get_theme_icon(p_editor->get_name(), "EditorIcons"));
+		} else if (singleton->gui_base->has_theme_icon(p_editor->get_name(), SNAME("EditorIcons"))) {
+			tb->set_icon(singleton->gui_base->get_theme_icon(p_editor->get_name(), SNAME("EditorIcons")));
 		}
 
 		tb->add_theme_font_override("font", singleton->gui_base->get_theme_font(SNAME("main_button_font"), SNAME("EditorFonts")));
@@ -3240,7 +3245,7 @@ void EditorNode::_update_addon_config() {
 		ProjectSettings::get_singleton()->set("editor_plugins/enabled", enabled_addons);
 	}
 
-	project_settings->queue_save();
+	project_settings_editor->queue_save();
 }
 
 void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled, bool p_config_changed) {
@@ -3287,8 +3292,8 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 			return;
 		}
 
-		// Errors in the script cause the base_type to be an empty string.
-		if (String(script->get_instance_base_type()) == "") {
+		// Errors in the script cause the base_type to be an empty StringName.
+		if (script->get_instance_base_type() == StringName()) {
 			show_warning(vformat(TTR("Unable to load addon script from path: '%s'. This might be due to a code error in that script.\nDisabling the addon at '%s' to prevent further errors."), script_path, p_addon));
 			_remove_plugin_from_enabled(p_addon);
 			return;
@@ -3725,7 +3730,7 @@ void EditorNode::_show_messages() {
 
 void EditorNode::_add_to_recent_scenes(const String &p_scene) {
 	Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scenes", Array());
-	if (rc.find(p_scene) != -1) {
+	if (rc.has(p_scene)) {
 		rc.erase(p_scene);
 	}
 	rc.push_front(p_scene);
@@ -3931,7 +3936,7 @@ StringName EditorNode::get_object_custom_type_name(const Object *p_object) const
 	ERR_FAIL_COND_V(!p_object, StringName());
 
 	Ref<Script> script = p_object->get_script();
-	if (script.is_null() && p_object->is_class("Script")) {
+	if (script.is_null() && Object::cast_to<Script>(p_object)) {
 		script = p_object;
 	}
 
@@ -4026,8 +4031,8 @@ Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String 
 		return p_object->get_meta("_editor_icon");
 	}
 
-	if (gui_base->has_theme_icon(p_object->get_class(), "EditorIcons")) {
-		return gui_base->get_theme_icon(p_object->get_class(), "EditorIcons");
+	if (gui_base->has_theme_icon(p_object->get_class(), SNAME("EditorIcons"))) {
+		return gui_base->get_theme_icon(p_object->get_class(), SNAME("EditorIcons"));
 	}
 
 	if (p_fallback.length()) {
@@ -4056,7 +4061,7 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 		}
 
 		if (icon.is_null()) {
-			icon = gui_base->get_theme_icon(ScriptServer::get_global_class_base(name), "EditorIcons");
+			icon = gui_base->get_theme_icon(ScriptServer::get_global_class_base(name), SNAME("EditorIcons"));
 		}
 	}
 
@@ -4142,13 +4147,12 @@ Ref<Texture2D> EditorNode::_file_dialog_get_icon(const String &p_path) {
 
 void EditorNode::_build_icon_type_cache() {
 	List<StringName> tl;
-	StringName ei = "EditorIcons";
-	theme_base->get_theme()->get_icon_list(ei, &tl);
+	theme_base->get_theme()->get_icon_list(SNAME("EditorIcons"), &tl);
 	for (const StringName &E : tl) {
 		if (!ClassDB::class_exists(E)) {
 			continue;
 		}
-		icon_type_cache[E] = theme_base->get_theme()->get_icon(E, ei);
+		icon_type_cache[E] = theme_base->get_theme()->get_icon(E, SNAME("EditorIcons"));
 	}
 }
 
@@ -4222,14 +4226,17 @@ void EditorNode::_dock_floating_close_request(Control *p_control) {
 	_update_dock_containers();
 
 	floating_docks.erase(p_control);
+
+	_edit_current();
 }
 
 void EditorNode::_dock_make_float() {
 	Control *dock = dock_slot[dock_popup_selected]->get_current_tab_control();
 	ERR_FAIL_COND(!dock);
 
-	const Size2i borders = Size2i(4, 4) * EDSCALE;
-	Size2 dock_size = dock->get_size() + borders * 2; // remember size
+	Size2 borders = Size2(4, 4) * EDSCALE;
+	// Remember size and position before removing it from the main window.
+	Size2 dock_size = dock->get_size() + borders * 2;
 	Point2 dock_screen_pos = dock->get_global_position() + get_tree()->get_root()->get_position() - borders;
 
 	int dock_index = dock->get_index();
@@ -4238,7 +4245,7 @@ void EditorNode::_dock_make_float() {
 	Window *window = memnew(Window);
 	window->set_title(dock->get_name());
 	Panel *p = memnew(Panel);
-	p->set_mode(Panel::MODE_FOREGROUND);
+	p->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("PanelForeground"), SNAME("EditorStyles")));
 	p->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	window->add_child(p);
 	MarginContainer *margin = memnew(MarginContainer);
@@ -4264,6 +4271,8 @@ void EditorNode::_dock_make_float() {
 	_update_dock_containers();
 
 	floating_docks.push_back(dock);
+
+	_edit_current();
 }
 
 void EditorNode::_update_dock_containers() {
@@ -5594,7 +5603,7 @@ void EditorNode::_update_rendering_driver_color() {
 	if (rendering_driver->get_text() == "opengl3") {
 		rendering_driver->add_theme_color_override("font_color", Color::hex(0x5586a4ff));
 	} else if (rendering_driver->get_text() == "vulkan") {
-		rendering_driver->add_theme_color_override("font_color", theme_base->get_theme_color("vulkan_color", "Editor"));
+		rendering_driver->add_theme_color_override("font_color", theme_base->get_theme_color(SNAME("vulkan_color"), SNAME("Editor")));
 	}
 }
 
@@ -5667,6 +5676,7 @@ void EditorNode::_feature_profile_changed() {
 void EditorNode::_bind_methods() {
 	GLOBAL_DEF("editor/scene/scene_naming", SCENE_NAME_CASING_SNAKE_CASE);
 	ProjectSettings::get_singleton()->set_custom_property_info("editor/scene/scene_naming", PropertyInfo(Variant::INT, "editor/scene/scene_naming", PROPERTY_HINT_ENUM, "Auto,PascalCase,snake_case"));
+	ClassDB::bind_method("edit_current", &EditorNode::edit_current);
 	ClassDB::bind_method("_editor_select", &EditorNode::_editor_select);
 	ClassDB::bind_method("_node_renamed", &EditorNode::_node_renamed);
 	ClassDB::bind_method("edit_node", &EditorNode::edit_node);
@@ -6137,9 +6147,9 @@ EditorNode::EditorNode() {
 	dock_tab_move_left = memnew(Button);
 	dock_tab_move_left->set_flat(true);
 	if (gui_base->is_layout_rtl()) {
-		dock_tab_move_left->set_icon(theme->get_icon("Forward", "EditorIcons"));
+		dock_tab_move_left->set_icon(theme->get_icon(SNAME("Forward"), SNAME("EditorIcons")));
 	} else {
-		dock_tab_move_left->set_icon(theme->get_icon("Back", "EditorIcons"));
+		dock_tab_move_left->set_icon(theme->get_icon(SNAME("Back"), SNAME("EditorIcons")));
 	}
 	dock_tab_move_left->set_focus_mode(Control::FOCUS_NONE);
 	dock_tab_move_left->connect("pressed", callable_mp(this, &EditorNode::_dock_move_left));
@@ -6154,9 +6164,9 @@ EditorNode::EditorNode() {
 	dock_tab_move_right = memnew(Button);
 	dock_tab_move_right->set_flat(true);
 	if (gui_base->is_layout_rtl()) {
-		dock_tab_move_right->set_icon(theme->get_icon("Back", "EditorIcons"));
+		dock_tab_move_right->set_icon(theme->get_icon(SNAME("Back"), SNAME("EditorIcons")));
 	} else {
-		dock_tab_move_right->set_icon(theme->get_icon("Forward", "EditorIcons"));
+		dock_tab_move_right->set_icon(theme->get_icon(SNAME("Forward"), SNAME("EditorIcons")));
 	}
 	dock_tab_move_right->set_focus_mode(Control::FOCUS_NONE);
 	dock_tab_move_right->connect("pressed", callable_mp(this, &EditorNode::_dock_move_right));
@@ -6223,6 +6233,9 @@ EditorNode::EditorNode() {
 	tab_preview->set_position(Point2(2, 2) * EDSCALE);
 	tab_preview_panel->add_child(tab_preview);
 
+	tabbar_container = memnew(HBoxContainer);
+	srt->add_child(tabbar_container);
+
 	scene_tabs = memnew(TabBar);
 	scene_tabs->add_theme_style_override("tab_selected", gui_base->get_theme_stylebox(SNAME("SceneTabFG"), SNAME("EditorStyles")));
 	scene_tabs->add_theme_style_override("tab_unselected", gui_base->get_theme_stylebox(SNAME("SceneTabBG"), SNAME("EditorStyles")));
@@ -6233,23 +6246,33 @@ EditorNode::EditorNode() {
 	scene_tabs->set_min_width(int(EDITOR_DEF("interface/scene_tabs/minimum_width", 50)) * EDSCALE);
 	scene_tabs->set_drag_to_rearrange_enabled(true);
 	scene_tabs->connect("tab_changed", callable_mp(this, &EditorNode::_scene_tab_changed));
-	scene_tabs->connect("tab_rmb_clicked", callable_mp(this, &EditorNode::_scene_tab_script_edited));
+	scene_tabs->connect("tab_button_pressed", callable_mp(this, &EditorNode::_scene_tab_script_edited));
 	scene_tabs->connect("tab_close_pressed", callable_mp(this, &EditorNode::_scene_tab_closed), varray(SCENE_TAB_CLOSE));
 	scene_tabs->connect("tab_hovered", callable_mp(this, &EditorNode::_scene_tab_hovered));
 	scene_tabs->connect("mouse_exited", callable_mp(this, &EditorNode::_scene_tab_exit));
 	scene_tabs->connect("gui_input", callable_mp(this, &EditorNode::_scene_tab_input));
 	scene_tabs->connect("active_tab_rearranged", callable_mp(this, &EditorNode::_reposition_active_tab));
 	scene_tabs->connect("resized", callable_mp(this, &EditorNode::_update_scene_tabs));
-
-	tabbar_container = memnew(HBoxContainer);
 	scene_tabs->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	tabbar_container->add_child(scene_tabs);
 
 	scene_tabs_context_menu = memnew(PopupMenu);
 	tabbar_container->add_child(scene_tabs_context_menu);
 	scene_tabs_context_menu->connect("id_pressed", callable_mp(this, &EditorNode::_menu_option));
 
-	srt->add_child(tabbar_container);
-	tabbar_container->add_child(scene_tabs);
+	scene_tab_add = memnew(Button);
+	scene_tab_add->set_flat(true);
+	scene_tab_add->set_tooltip(TTR("Add a new scene."));
+	scene_tab_add->set_icon(gui_base->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+	scene_tab_add->add_theme_color_override("icon_normal_color", Color(0.6f, 0.6f, 0.6f, 0.8f));
+	scene_tabs->add_child(scene_tab_add);
+	scene_tab_add->connect("pressed", callable_mp(this, &EditorNode::_menu_option), make_binds(FILE_NEW_SCENE));
+
+	scene_tab_add_ph = memnew(Control);
+	scene_tab_add_ph->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+	scene_tab_add_ph->set_custom_minimum_size(scene_tab_add->get_minimum_size());
+	tabbar_container->add_child(scene_tab_add_ph);
+
 	distraction_free = memnew(Button);
 	distraction_free->set_flat(true);
 	ED_SHORTCUT_AND_COMMAND("editor/distraction_free_mode", TTR("Distraction Free Mode"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::F11);
@@ -6259,15 +6282,7 @@ EditorNode::EditorNode() {
 	distraction_free->connect("pressed", callable_mp(this, &EditorNode::_toggle_distraction_free_mode));
 	distraction_free->set_icon(gui_base->get_theme_icon(SNAME("DistractionFree"), SNAME("EditorIcons")));
 	distraction_free->set_toggle_mode(true);
-
-	scene_tab_add = memnew(Button);
-	scene_tab_add->set_flat(true);
-	tabbar_container->add_child(scene_tab_add);
 	tabbar_container->add_child(distraction_free);
-	scene_tab_add->set_tooltip(TTR("Add a new scene."));
-	scene_tab_add->set_icon(gui_base->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-	scene_tab_add->add_theme_color_override("icon_normal_color", Color(0.6f, 0.6f, 0.6f, 0.8f));
-	scene_tab_add->connect("pressed", callable_mp(this, &EditorNode::_menu_option), make_binds(FILE_NEW_SCENE));
 
 	scene_root_parent = memnew(PanelContainer);
 	scene_root_parent->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
@@ -6325,11 +6340,11 @@ EditorNode::EditorNode() {
 	dependency_fixer = memnew(DependencyEditor);
 	gui_base->add_child(dependency_fixer);
 
-	settings_config_dialog = memnew(EditorSettingsDialog);
-	gui_base->add_child(settings_config_dialog);
+	editor_settings_dialog = memnew(EditorSettingsDialog);
+	gui_base->add_child(editor_settings_dialog);
 
-	project_settings = memnew(ProjectSettingsEditor(&editor_data));
-	gui_base->add_child(project_settings);
+	project_settings_editor = memnew(ProjectSettingsEditor(&editor_data));
+	gui_base->add_child(project_settings_editor);
 
 	scene_import_settings = memnew(SceneImportSettings);
 	gui_base->add_child(scene_import_settings);
@@ -6622,8 +6637,8 @@ EditorNode::EditorNode() {
 	rendering_driver->set_flat(true);
 	rendering_driver->set_focus_mode(Control::FOCUS_NONE);
 	rendering_driver->connect("item_selected", callable_mp(this, &EditorNode::_rendering_driver_selected));
-	rendering_driver->add_theme_font_override("font", gui_base->get_theme_font("bold", "EditorFonts"));
-	rendering_driver->add_theme_font_size_override("font_size", gui_base->get_theme_font_size("bold_size", "EditorFonts"));
+	rendering_driver->add_theme_font_override("font", gui_base->get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
+	rendering_driver->add_theme_font_size_override("font_size", gui_base->get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts")));
 
 	right_menu_hb->add_child(rendering_driver);
 
@@ -6954,6 +6969,7 @@ EditorNode::EditorNode() {
 
 	// more visually meaningful to have this later
 	raise_bottom_panel_item(AnimationPlayerEditor::get_singleton());
+	add_editor_plugin(memnew(ReplicationEditorPlugin(this)));
 
 	add_editor_plugin(VersionControlEditorPlugin::get_singleton());
 	add_editor_plugin(memnew(ShaderEditorPlugin(this)));
@@ -6997,6 +7013,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(TextureLayeredEditorPlugin(this)));
 	add_editor_plugin(memnew(Texture3DEditorPlugin(this)));
 	add_editor_plugin(memnew(AudioStreamEditorPlugin(this)));
+	add_editor_plugin(memnew(AudioStreamRandomizerEditorPlugin(this)));
 	add_editor_plugin(memnew(AudioBusesEditorPlugin(audio_bus_editor)));
 	add_editor_plugin(memnew(Skeleton3DEditorPlugin(this)));
 	add_editor_plugin(memnew(SkeletonIK3DEditorPlugin(this)));

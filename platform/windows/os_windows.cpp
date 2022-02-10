@@ -83,15 +83,23 @@ static String format_error_message(DWORD id) {
 	return msg;
 }
 
+void RedirectStream(const char *p_file_name, const char *p_mode, FILE *p_cpp_stream, const DWORD p_std_handle) {
+	const HANDLE h_existing = GetStdHandle(p_std_handle);
+	if (h_existing != INVALID_HANDLE_VALUE) { // Redirect only if attached console have a valid handle.
+		const HANDLE h_cpp = reinterpret_cast<HANDLE>(_get_osfhandle(_fileno(p_cpp_stream)));
+		if (h_cpp == INVALID_HANDLE_VALUE) { // Redirect only if it's not already redirected to the pipe or file.
+			FILE *fp = p_cpp_stream;
+			freopen_s(&fp, p_file_name, p_mode, p_cpp_stream); // Redirect stream.
+			setvbuf(p_cpp_stream, nullptr, _IONBF, 0); // Disable stream buffering.
+		}
+	}
+}
+
 void RedirectIOToConsole() {
 	if (AttachConsole(ATTACH_PARENT_PROCESS)) {
-		FILE *fpstdin = stdin;
-		FILE *fpstdout = stdout;
-		FILE *fpstderr = stderr;
-
-		freopen_s(&fpstdin, "CONIN$", "r", stdin);
-		freopen_s(&fpstdout, "CONOUT$", "w", stdout);
-		freopen_s(&fpstderr, "CONOUT$", "w", stderr);
+		RedirectStream("CONIN$", "r", stdin, STD_INPUT_HANDLE);
+		RedirectStream("CONOUT$", "w", stdout, STD_OUTPUT_HANDLE);
+		RedirectStream("CONOUT$", "w", stderr, STD_ERROR_HANDLE);
 
 		printf("\n"); // Make sure our output is starting from the new line.
 	}
@@ -385,14 +393,14 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		}
 		inherit_handles = true;
 	}
-	DWORD creaton_flags = NORMAL_PRIORITY_CLASS;
+	DWORD creation_flags = NORMAL_PRIORITY_CLASS;
 	if (p_open_console) {
-		creaton_flags |= CREATE_NEW_CONSOLE;
+		creation_flags |= CREATE_NEW_CONSOLE;
 	} else {
-		creaton_flags |= CREATE_NO_WINDOW;
+		creation_flags |= CREATE_NO_WINDOW;
 	}
 
-	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, inherit_handles, creaton_flags, nullptr, nullptr, si_w, &pi.pi);
+	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, inherit_handles, creation_flags, nullptr, nullptr, si_w, &pi.pi);
 	if (!ret && r_pipe) {
 		CloseHandle(pipe[0]); // Cleanup pipe handles.
 		CloseHandle(pipe[1]);
@@ -446,14 +454,14 @@ Error OS_Windows::create_process(const String &p_path, const List<String> &p_arg
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
 	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
 
-	DWORD creaton_flags = NORMAL_PRIORITY_CLASS;
+	DWORD creation_flags = NORMAL_PRIORITY_CLASS;
 	if (p_open_console) {
-		creaton_flags |= CREATE_NEW_CONSOLE;
+		creation_flags |= CREATE_NEW_CONSOLE;
 	} else {
-		creaton_flags |= CREATE_NO_WINDOW;
+		creation_flags |= CREATE_NO_WINDOW;
 	}
 
-	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, false, creaton_flags, nullptr, nullptr, si_w, &pi.pi);
+	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, false, creation_flags, nullptr, nullptr, si_w, &pi.pi);
 	ERR_FAIL_COND_V_MSG(ret == 0, ERR_CANT_FORK, "Could not create child process: " + command);
 
 	ProcessID pid = pi.pi.dwProcessId;

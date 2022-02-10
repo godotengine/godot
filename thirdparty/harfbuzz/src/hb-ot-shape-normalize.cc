@@ -193,7 +193,8 @@ decompose_current_character (const hb_ot_shape_normalize_context_t *c, bool shor
   {
     hb_codepoint_t space_glyph;
     hb_unicode_funcs_t::space_t space_type = buffer->unicode->space_fallback_type (u);
-    if (space_type != hb_unicode_funcs_t::NOT_SPACE && c->font->get_nominal_glyph (0x0020u, &space_glyph))
+    if (space_type != hb_unicode_funcs_t::NOT_SPACE &&
+	(c->font->get_nominal_glyph (0x0020, &space_glyph) || (space_glyph = buffer->invisible)))
     {
       _hb_glyph_info_set_unicode_space_fallback_type (&buffer->cur(), space_type);
       next_char (buffer, space_glyph);
@@ -374,7 +375,7 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
       decompose_multi_char_cluster (&c, end, always_short_circuit);
     }
     while (buffer->idx < count && buffer->successful);
-    buffer->swap_buffers ();
+    buffer->sync ();
   }
 
 
@@ -477,7 +478,7 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
       if (info_cc (buffer->prev()) == 0)
 	starter = buffer->out_len - 1;
     }
-    buffer->swap_buffers ();
+    buffer->sync ();
   }
 }
 

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="QuadOccluder3D" inherits="Occluder3D" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2(1, 1)">
+		</member>
+	</members>
+</class>

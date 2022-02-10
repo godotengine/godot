@@ -114,8 +114,9 @@ ObjectID Callable::get_object_id() const {
 }
 
 StringName Callable::get_method() const {
-	ERR_FAIL_COND_V_MSG(is_custom(), StringName(),
-			vformat("Can't get method on CallableCustom \"%s\".", operator String()));
+	if (is_custom()) {
+		return get_custom()->get_method();
+	}
 	return method;
 }
 
@@ -308,6 +309,10 @@ Callable::~Callable() {
 			memdelete(custom);
 		}
 	}
+}
+
+StringName CallableCustom::get_method() const {
+	ERR_FAIL_V_MSG(StringName(), vformat("Can't get method on CallableCustom \"%s\".", get_as_text()));
 }
 
 void CallableCustom::rpc(int p_peer_id, const Variant **p_arguments, int p_argcount, Callable::CallError &r_call_error) const {

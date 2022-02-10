@@ -369,7 +369,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 			// Skip locales which we can't render properly (see above comment).
 			// Test against language code without regional variants (e.g. ur_PK).
 			String lang_code = locale.get_slice("_", 0);
-			if (locales_to_skip.find(lang_code) != -1) {
+			if (locales_to_skip.has(lang_code)) {
 				continue;
 			}
 
@@ -377,7 +377,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 			lang_hint += locale;
 
 			int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);
-			if (score > best_score) {
+			if (score > 0 && score >= best_score) {
 				best = locale;
 				best_score = score;
 				if (score == 10) {

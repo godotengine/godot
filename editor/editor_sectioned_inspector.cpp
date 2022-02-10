@@ -89,7 +89,7 @@ class SectionedInspectorFilter : public Object {
 
 			if (pi.name.begins_with(section + "/")) {
 				pi.name = pi.name.replace_first(section + "/", "");
-				if (!allow_sub && pi.name.find("/") != -1) {
+				if (!allow_sub && pi.name.contains("/")) {
 					continue;
 				}
 				p_list->push_back(pi);
@@ -227,7 +227,7 @@ void SectionedInspector::update_category_list() {
 			continue;
 		}
 
-		if (pi.name.find(":") != -1 || pi.name == "script" || pi.name == "resource_name" || pi.name == "resource_path" || pi.name == "resource_local_to_scene" || pi.name.begins_with("_global_script")) {
+		if (pi.name.contains(":") || pi.name == "script" || pi.name == "resource_name" || pi.name == "resource_path" || pi.name == "resource_local_to_scene" || pi.name.begins_with("_global_script")) {
 			continue;
 		}
 

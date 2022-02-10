@@ -36,6 +36,7 @@
 
 #include <algorithm>
 #include <initializer_list>
+#include <functional>
 #include <new>
 
 /*
@@ -210,12 +211,23 @@ struct
 }
 HB_FUNCOBJ (hb_bool);
 
+template <typename T>
+static inline
+T hb_coerce (const T v) { return v; }
+template <typename T, typename V,
+	  hb_enable_if (!hb_is_same (hb_decay<T>, hb_decay<V>) && std::is_pointer<V>::value)>
+static inline
+T hb_coerce (const V v) { return *v; }
+
 struct
 {
   private:
 
   template <typename T> constexpr auto
-  impl (const T& v, hb_priority<1>) const HB_RETURN (uint32_t, hb_deref (v).hash ())
+  impl (const T& v, hb_priority<2>) const HB_RETURN (uint32_t, hb_deref (v).hash ())
+
+  template <typename T> constexpr auto
+  impl (const T& v, hb_priority<1>) const HB_RETURN (uint32_t, std::hash<hb_decay<decltype (hb_deref (v))>>{} (hb_deref (v)))
 
   template <typename T,
 	    hb_enable_if (std::is_integral<T>::value)> constexpr auto
@@ -435,21 +447,27 @@ struct
   private:
 
   template <typename T1, typename T2> auto
-  impl (T1&& v1, T2 &&v2, hb_priority<2>) const HB_AUTO_RETURN
+  impl (T1&& v1, T2 &&v2, hb_priority<3>) const HB_AUTO_RETURN
   (
     std::forward<T2> (v2).cmp (std::forward<T1> (v1)) == 0
   )
 
   template <typename T1, typename T2> auto
-  impl (T1&& v1, T2 &&v2, hb_priority<1>) const HB_AUTO_RETURN
+  impl (T1&& v1, T2 &&v2, hb_priority<2>) const HB_AUTO_RETURN
   (
     std::forward<T1> (v1).cmp (std::forward<T2> (v2)) == 0
   )
 
   template <typename T1, typename T2> auto
-  impl (T1&& v1, T2 &&v2, hb_priority<0>) const HB_AUTO_RETURN
+  impl (T1&& v1, T2 &&v2, hb_priority<1>) const HB_AUTO_RETURN
   (
     std::forward<T1> (v1) == std::forward<T2> (v2)
+  )
+
+  template <typename T1, typename T2> auto
+  impl (T1&& v1, T2 &&v2, hb_priority<0>) const HB_AUTO_RETURN
+  (
+    std::forward<T2> (v2) == std::forward<T1> (v1)
   )
 
   public:
@@ -472,6 +490,10 @@ struct hb_pair_t
   typedef T2 second_t;
   typedef hb_pair_t<T1, T2> pair_t;
 
+  template <typename U1 = T1, typename U2 = T2,
+	    hb_enable_if (std::is_default_constructible<U1>::value &&
+			  std::is_default_constructible<U2>::value)>
+  hb_pair_t () : first (), second () {}
   hb_pair_t (T1 a, T2 b) : first (a), second (b) {}
 
   template <typename Q1, typename Q2,
@@ -870,7 +892,7 @@ hb_bsearch_impl (unsigned *pos, /* Out */
 #pragma GCC diagnostic ignored "-Wcast-align"
     V* p = (V*) (((const char *) base) + (mid * stride));
 #pragma GCC diagnostic pop
-    int c = compar ((const void *) hb_addressof (key), (const void *) p, ds...);
+    int c = compar ((const void *) std::addressof (key), (const void *) p, ds...);
     if (c < 0)
       max = mid - 1;
     else if (c > 0)

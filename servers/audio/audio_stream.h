@@ -167,25 +167,66 @@ public:
 
 //
 
-class AudioStreamPlaybackRandomPitch;
+class AudioStreamPlaybackRandomizer;
 
-class AudioStreamRandomPitch : public AudioStream {
-	GDCLASS(AudioStreamRandomPitch, AudioStream);
-	friend class AudioStreamPlaybackRandomPitch;
+class AudioStreamRandomizer : public AudioStream {
+	GDCLASS(AudioStreamRandomizer, AudioStream);
 
-	Set<AudioStreamPlaybackRandomPitch *> playbacks;
-	Ref<AudioStream> audio_stream;
-	float random_pitch;
+public:
+	enum PlaybackMode {
+		PLAYBACK_RANDOM_NO_REPEATS,
+		PLAYBACK_RANDOM,
+		PLAYBACK_SEQUENTIAL,
+	};
+
+private:
+	friend class AudioStreamPlaybackRandomizer;
+
+	struct PoolEntry {
+		Ref<AudioStream> stream;
+		float weight;
+	};
+
+	Set<AudioStreamPlaybackRandomizer *> playbacks;
+	Vector<PoolEntry> audio_stream_pool;
+	float random_pitch_scale;
+	float random_volume_offset_db;
+
+	Ref<AudioStreamPlayback> instance_playback_random();
+	Ref<AudioStreamPlayback> instance_playback_no_repeats();
+	Ref<AudioStreamPlayback> instance_playback_sequential();
+
+	Ref<AudioStream> last_playback = nullptr;
+	PlaybackMode playback_mode = PLAYBACK_RANDOM_NO_REPEATS;
 
 protected:
 	static void _bind_methods();
 
-public:
-	void set_audio_stream(const Ref<AudioStream> &p_audio_stream);
-	Ref<AudioStream> get_audio_stream() const;
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
-	void set_random_pitch(float p_pitch);
+public:
+	void add_stream(int p_index);
+	void move_stream(int p_index_from, int p_index_to);
+	void remove_stream(int p_index);
+
+	void set_stream(int p_index, Ref<AudioStream> p_stream);
+	Ref<AudioStream> get_stream(int p_index) const;
+	void set_stream_probability_weight(int p_index, float p_weight);
+	float get_stream_probability_weight(int p_index) const;
+
+	void set_streams_count(int p_count);
+	int get_streams_count() const;
+
+	void set_random_pitch(float p_pitch_scale);
 	float get_random_pitch() const;
+
+	void set_random_volume_offset_db(float p_volume_offset_db);
+	float get_random_volume_offset_db() const;
+
+	void set_playback_mode(PlaybackMode p_playback_mode);
+	PlaybackMode get_playback_mode() const;
 
 	virtual Ref<AudioStreamPlayback> instance_playback() override;
 	virtual String get_stream_name() const override;
@@ -193,17 +234,19 @@ public:
 	virtual float get_length() const override; //if supported, otherwise return 0
 	virtual bool is_monophonic() const override;
 
-	AudioStreamRandomPitch();
+	AudioStreamRandomizer();
 };
 
-class AudioStreamPlaybackRandomPitch : public AudioStreamPlayback {
-	GDCLASS(AudioStreamPlaybackRandomPitch, AudioStreamPlayback);
-	friend class AudioStreamRandomPitch;
+class AudioStreamPlaybackRandomizer : public AudioStreamPlayback {
+	GDCLASS(AudioStreamPlaybackRandomizer, AudioStreamPlayback);
+	friend class AudioStreamRandomizer;
 
-	Ref<AudioStreamRandomPitch> random_pitch;
+	Ref<AudioStreamRandomizer> randomizer;
 	Ref<AudioStreamPlayback> playback;
 	Ref<AudioStreamPlayback> playing;
+
 	float pitch_scale;
+	float volume_scale;
 
 public:
 	virtual void start(float p_from_pos = 0.0) override;
@@ -217,7 +260,9 @@ public:
 
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
 
-	~AudioStreamPlaybackRandomPitch();
+	~AudioStreamPlaybackRandomizer();
 };
+
+VARIANT_ENUM_CAST(AudioStreamRandomizer::PlaybackMode);
 
 #endif // AUDIO_STREAM_H

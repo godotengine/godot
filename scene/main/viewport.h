@@ -335,6 +335,7 @@ private:
 		// info used when this is a window
 
 		bool forced_mouse_focus = false; //used for menu buttons
+		bool mouse_in_window = true;
 		bool key_event_accepted = false;
 		Control *mouse_focus = nullptr;
 		Control *last_mouse_focus = nullptr;
@@ -410,15 +411,12 @@ private:
 	Control *_gui_get_drag_preview();
 
 	void _gui_remove_focus_for_window(Node *p_window);
-	void _gui_remove_focus();
 	void _gui_unfocus_control(Control *p_control);
 	bool _gui_control_has_focus(const Control *p_control);
 	void _gui_control_grab_focus(Control *p_control);
 	void _gui_grab_click_focus(Control *p_control);
 	void _post_gui_grab_click_focus();
 	void _gui_accept_event();
-
-	Control *_gui_get_focus_owner();
 
 	bool _gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_check);
 
@@ -433,6 +431,7 @@ private:
 	void _canvas_layer_add(CanvasLayer *p_canvas_layer);
 	void _canvas_layer_remove(CanvasLayer *p_canvas_layer);
 
+	void _drop_mouse_over();
 	void _drop_mouse_focus();
 	void _drop_physics_mouseover(bool p_paused_only = false);
 
@@ -556,6 +555,9 @@ public:
 
 	void gui_reset_canvas_sort_index();
 	int gui_get_canvas_sort_index();
+
+	void gui_release_focus();
+	Control *gui_get_focus_owner();
 
 	TypedArray<String> get_configuration_warnings() const override;
 

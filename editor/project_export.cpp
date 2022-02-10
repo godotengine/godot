@@ -1275,8 +1275,6 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	set_hide_on_ok(false);
 
-	editor_icons = "EditorIcons";
-
 	default_filename = EditorSettings::get_singleton()->get_project_metadata("export_options", "default_filename", "");
 	// If no default set, use project name
 	if (default_filename.is_empty()) {

@@ -103,6 +103,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="contains" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="what" type="String" />
+			<description>
+				Returns [code]true[/code] if the string contains the given string.
+			</description>
+		</method>
 		<method name="count" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="what" type="String" />
@@ -215,6 +222,22 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="get_slice_count" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="delimiter" type="String" />
+			<description>
+				Splits a string using a [code]delimiter[/code] and returns a number of slices.
+			</description>
+		</method>
+		<method name="get_slicec" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="delimiter" type="int" />
+			<argument index="1" name="slice" type="int" />
+			<description>
+				Splits a string using a Unicode character with code [code]delimiter[/code] and returns a substring at index [code]slice[/code]. Returns an empty string if the index doesn't exist.
+				This is a more performant alternative to [method split] for cases when you need only one element from the array at a fixed index.
+			</description>
+		</method>
 		<method name="hash" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -285,7 +308,7 @@
 				Returns [code]true[/code] if this string is a subsequence of the given string.
 			</description>
 		</method>
-		<method name="is_subsequence_ofi" qualifiers="const">
+		<method name="is_subsequence_ofn" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="text" type="String" />
 			<description>

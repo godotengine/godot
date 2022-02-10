@@ -300,7 +300,7 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 		base_name = add_options[p_idx].name;
 	} else {
 		ERR_FAIL_COND(add_options[p_idx].script.is_null());
-		String base_type = add_options[p_idx].script->get_instance_base_type();
+		StringName base_type = add_options[p_idx].script->get_instance_base_type();
 		AnimationNode *an = Object::cast_to<AnimationNode>(ClassDB::instantiate(base_type));
 		ERR_FAIL_COND(!an);
 		anode = Ref<AnimationNode>(an);
@@ -833,7 +833,7 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 
 	const String &new_name = p_text;
 
-	ERR_FAIL_COND(new_name.is_empty() || new_name.find(".") != -1 || new_name.find("/") != -1);
+	ERR_FAIL_COND(new_name.is_empty() || new_name.contains(".") || new_name.contains("/"));
 
 	if (new_name == prev_name) {
 		return; //nothing to do
@@ -898,6 +898,9 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 }
 
 void AnimationNodeBlendTreeEditor::_node_renamed_focus_out(Node *le, Ref<AnimationNode> p_node) {
+	if (le == nullptr) {
+		return; // The text_submitted signal triggered the graph update and freed the LineEdit.
+	}
 	_node_renamed(le->call("get_text"), p_node);
 }
 

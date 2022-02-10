@@ -70,7 +70,7 @@
 			<return type="Rect2i" />
 			<argument index="0" name="to" type="Vector2i" />
 			<description>
-				Returns a copy of this [Rect2i] expanded to include a given point.
+				Returns a copy of this [Rect2i] expanded so that the borders align with the given point.
 				[codeblocks]
 				[gdscript]
 				# position (-3, 2), size (1, 1)
@@ -90,7 +90,7 @@
 		<method name="get_area" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the area of the [Rect2i].
+				Returns the area of the [Rect2i]. See also [method has_no_area].
 			</description>
 		</method>
 		<method name="get_center" qualifiers="const">
@@ -128,7 +128,8 @@
 		<method name="has_no_area" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the [Rect2i] is flat or empty.
+				Returns [code]true[/code] if the [Rect2i] is flat or empty, [code]false[/code] otherwise. See also [method get_area].
+				[b]Note:[/b] If the [Rect2i] has a negative size and is not flat or empty, [method has_no_area] will return [code]true[/code].
 			</description>
 		</method>
 		<method name="has_point" qualifiers="const">

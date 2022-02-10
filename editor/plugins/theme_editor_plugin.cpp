@@ -2076,7 +2076,7 @@ void ThemeTypeDialog::_update_add_type_options(const String &p_filter) {
 	Vector<StringName> unique_names;
 	for (const StringName &E : names) {
 		// Filter out undesired values.
-		if (!p_filter.is_subsequence_ofi(String(E))) {
+		if (!p_filter.is_subsequence_ofn(String(E))) {
 			continue;
 		}
 
@@ -2226,7 +2226,7 @@ void ThemeTypeEditor::_update_type_list() {
 	}
 	updating = true;
 
-	Control *focused = get_focus_owner();
+	Control *focused = get_viewport()->gui_get_focus_owner();
 	if (focused) {
 		if (focusables.has(focused)) {
 			// If focus is currently on one of the internal property editors, don't update.
@@ -3469,7 +3469,7 @@ void ThemeEditor::_add_preview_tab(ThemeEditorPreview *p_preview_tab, const Stri
 
 	preview_tabs->add_tab(p_preview_name, p_icon);
 	preview_tabs_content->add_child(p_preview_tab);
-	preview_tabs->set_tab_right_button(preview_tabs->get_tab_count() - 1, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("close"), SNAME("TabBar")));
+	preview_tabs->set_tab_button_icon(preview_tabs->get_tab_count() - 1, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("close"), SNAME("TabBar")));
 	p_preview_tab->connect("control_picked", callable_mp(this, &ThemeEditor::_preview_control_picked));
 
 	preview_tabs->set_current_tab(preview_tabs->get_tab_count() - 1);
@@ -3600,7 +3600,7 @@ ThemeEditor::ThemeEditor() {
 	preview_tabs->set_h_size_flags(SIZE_EXPAND_FILL);
 	preview_tabbar_hb->add_child(preview_tabs);
 	preview_tabs->connect("tab_changed", callable_mp(this, &ThemeEditor::_change_preview_tab));
-	preview_tabs->connect("tab_rmb_clicked", callable_mp(this, &ThemeEditor::_remove_preview_tab));
+	preview_tabs->connect("tab_button_pressed", callable_mp(this, &ThemeEditor::_remove_preview_tab));
 
 	HBoxContainer *add_preview_button_hb = memnew(HBoxContainer);
 	preview_tabbar_hb->add_child(add_preview_button_hb);

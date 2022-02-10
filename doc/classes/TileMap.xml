@@ -202,7 +202,8 @@
 			<return type="Vector2" />
 			<argument index="0" name="map_position" type="Vector2i" />
 			<description>
-				Returns the local position corresponding to the given tilemap (grid-based) coordinates.
+				Returns a local position of the center of the cell at the given tilemap (grid-based) coordinates.
+				[b]Note:[/b] This doesn't correspond to the visual position of the tile, i.e. it ignores the [member TileData.texture_offset] property of individual tiles.
 			</description>
 		</method>
 		<method name="move_layer">
@@ -217,7 +218,7 @@
 			<return type="void" />
 			<argument index="0" name="layer" type="int" />
 			<description>
-				Moves the layer at index [code]layer_index[/code] to the given position [code]to_position[/code] in the array.
+				Removes the layer at index [code]layer[/code].
 			</description>
 		</method>
 		<method name="set_cell">

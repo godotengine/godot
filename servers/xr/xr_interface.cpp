@@ -168,8 +168,5 @@ XRInterface::TrackingStatus XRInterface::get_tracking_status() const {
 	return XR_UNKNOWN_TRACKING;
 }
 
-void XRInterface::notification(int p_what) {
-}
-
 void XRInterface::trigger_haptic_pulse(const String &p_action_name, const StringName &p_tracker_name, double p_frequency, double p_amplitude, double p_duration_sec, double p_delay_sec) {
 }

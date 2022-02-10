@@ -462,8 +462,6 @@ public:
 	void set_focus_previous(const NodePath &p_prev);
 	NodePath get_focus_previous() const;
 
-	Control *get_focus_owner() const;
-
 	void set_mouse_filter(MouseFilter p_filter);
 	MouseFilter get_mouse_filter() const;
 

@@ -251,7 +251,7 @@ void EditorProperty::_notification(int p_what) {
 		} else {
 			color = get_theme_color(is_read_only() ? SNAME("readonly_color") : SNAME("property_color"));
 		}
-		if (label.find(".") != -1) {
+		if (label.contains(".")) {
 			// FIXME: Move this to the project settings editor, as this is only used
 			// for project settings feature tag overrides.
 			color.a = 0.5;
@@ -833,28 +833,40 @@ void EditorProperty::_update_pin_flags() {
 	}
 }
 
-Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
-	tooltip_text = p_text;
+static Control *make_help_bit(const String &p_text, bool p_property) {
 	EditorHelpBit *help_bit = memnew(EditorHelpBit);
-	//help_bit->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TooltipPanel")));
 	help_bit->get_rich_text()->set_fixed_size_to_width(360 * EDSCALE);
 
-	String text;
 	PackedStringArray slices = p_text.split("::", false);
-	if (!slices.is_empty()) {
-		String property_name = slices[0].strip_edges();
-		text = TTR("Property:") + " [u][b]" + property_name + "[/b][/u]";
-
-		if (slices.size() > 1) {
-			String property_doc = slices[1].strip_edges();
-			if (property_name != property_doc) {
-				text += "\n" + property_doc;
-			}
-		}
-		help_bit->call_deferred(SNAME("set_text"), text); //hack so it uses proper theme once inside scene
+	if (slices.is_empty()) {
+		// Shouldn't happen here, but just in case pass the text along.
+		help_bit->set_text(p_text);
+		return help_bit;
 	}
 
+	String property_name = slices[0].strip_edges();
+	String text;
+	if (p_property) {
+		text = TTR("Property:") + " ";
+	}
+	text += "[u][b]" + property_name + "[/b][/u]";
+
+	if (slices.size() > 1) {
+		String property_doc = slices[1].strip_edges();
+		if (property_name != property_doc) {
+			text += "\n" + property_doc;
+		}
+	} else {
+		text += "\n[i]" + TTR("No description.") + "[/i]";
+	}
+	help_bit->set_text(text);
+
 	return help_bit;
+}
+
+Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
+	tooltip_text = p_text;
+	return make_help_bit(p_text, true);
 }
 
 String EditorProperty::get_tooltip_text() const {
@@ -919,6 +931,7 @@ void EditorProperty::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_warning"), "set_draw_warning", "is_draw_warning");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keying"), "set_keying", "is_keying");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deletable"), "set_deletable", "is_deletable");
+
 	ADD_SIGNAL(MethodInfo("property_changed", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
 	ADD_SIGNAL(MethodInfo("multiple_properties_changed", PropertyInfo(Variant::PACKED_STRING_ARRAY, "properties"), PropertyInfo(Variant::ARRAY, "value")));
 	ADD_SIGNAL(MethodInfo("property_keyed", PropertyInfo(Variant::STRING_NAME, "property")));
@@ -1093,25 +1106,7 @@ void EditorInspectorCategory::_notification(int p_what) {
 
 Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) const {
 	tooltip_text = p_text;
-	EditorHelpBit *help_bit = memnew(EditorHelpBit);
-	help_bit->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TooltipPanel")));
-	help_bit->get_rich_text()->set_fixed_size_to_width(360 * EDSCALE);
-
-	PackedStringArray slices = p_text.split("::", false);
-	if (!slices.is_empty()) {
-		String property_name = slices[0].strip_edges();
-		String text = "[u][b]" + property_name + "[/b][/u]";
-
-		if (slices.size() > 1) {
-			String property_doc = slices[1].strip_edges();
-			if (property_name != property_doc) {
-				text += "\n" + property_doc;
-			}
-		}
-		help_bit->call_deferred(SNAME("set_text"), text); //hack so it uses proper theme once inside scene
-	}
-
-	return help_bit;
+	return make_help_bit(p_text, false);
 }
 
 Size2 EditorInspectorCategory::get_minimum_size() const {
@@ -1446,11 +1441,11 @@ void EditorInspectorArray::_add_button_pressed() {
 }
 
 void EditorInspectorArray::_first_page_button_pressed() {
-	emit_signal("page_change_request", 0);
+	emit_signal(SNAME("page_change_request"), 0);
 }
 
 void EditorInspectorArray::_prev_page_button_pressed() {
-	emit_signal("page_change_request", MAX(0, page - 1));
+	emit_signal(SNAME("page_change_request"), MAX(0, page - 1));
 }
 
 void EditorInspectorArray::_page_line_edit_text_submitted(String p_text) {
@@ -1458,18 +1453,18 @@ void EditorInspectorArray::_page_line_edit_text_submitted(String p_text) {
 		int new_page = p_text.to_int() - 1;
 		new_page = MIN(MAX(0, new_page), max_page);
 		page_line_edit->set_text(Variant(new_page));
-		emit_signal("page_change_request", new_page);
+		emit_signal(SNAME("page_change_request"), new_page);
 	} else {
 		page_line_edit->set_text(Variant(page));
 	}
 }
 
 void EditorInspectorArray::_next_page_button_pressed() {
-	emit_signal("page_change_request", MIN(max_page, page + 1));
+	emit_signal(SNAME("page_change_request"), MIN(max_page, page + 1));
 }
 
 void EditorInspectorArray::_last_page_button_pressed() {
-	emit_signal("page_change_request", max_page);
+	emit_signal(SNAME("page_change_request"), max_page);
 }
 
 void EditorInspectorArray::_rmb_popup_id_pressed(int p_id) {
@@ -1537,7 +1532,7 @@ void EditorInspectorArray::_vbox_visibility_changed() {
 void EditorInspectorArray::_panel_draw(int p_index) {
 	ERR_FAIL_INDEX(p_index, (int)array_elements.size());
 
-	Ref<StyleBox> style = get_theme_stylebox("Focus", "EditorStyles");
+	Ref<StyleBox> style = get_theme_stylebox(SNAME("Focus"), SNAME("EditorStyles"));
 	if (!style.is_valid()) {
 		return;
 	}
@@ -1641,12 +1636,12 @@ void EditorInspectorArray::_move_element(int p_element_index, int p_to_pos) {
 	// Handle page change and update counts.
 	if (p_element_index < 0) {
 		int added_index = p_to_pos < 0 ? count : p_to_pos;
-		emit_signal("page_change_request", added_index / page_lenght);
+		emit_signal(SNAME("page_change_request"), added_index / page_lenght);
 		count += 1;
 	} else if (p_to_pos < 0) {
 		count -= 1;
 		if (page == max_page && (MAX(0, count - 1) / page_lenght != max_page)) {
-			emit_signal("page_change_request", max_page - 1);
+			emit_signal(SNAME("page_change_request"), max_page - 1);
 		}
 	}
 	begin_array_index = page * page_lenght;
@@ -1694,7 +1689,7 @@ void EditorInspectorArray::_clear_array() {
 	undo_redo->commit_action();
 
 	// Handle page change and update counts.
-	emit_signal("page_change_request", 0);
+	emit_signal(SNAME("page_change_request"), 0);
 	count = 0;
 	begin_array_index = 0;
 	end_array_index = 0;
@@ -1767,7 +1762,7 @@ void EditorInspectorArray::_resize_array(int p_size) {
 	undo_redo->commit_action();
 
 	// Handle page change and update counts.
-	emit_signal("page_change_request", 0);
+	emit_signal(SNAME("page_change_request"), 0);
 	/*
 	count = 0;
 	begin_array_index = 0;
@@ -1785,7 +1780,7 @@ Array EditorInspectorArray::_extract_properties_as_array(const List<PropertyInfo
 
 			int to_char_index = 0;
 			while (to_char_index < str.length()) {
-				if (str[to_char_index] < '0' || str[to_char_index] > '9') {
+				if (!is_digit(str[to_char_index])) {
 					break;
 				}
 				to_char_index++;
@@ -1894,7 +1889,7 @@ void EditorInspectorArray::_setup() {
 		ae.margin = memnew(MarginContainer);
 		ae.margin->set_mouse_filter(MOUSE_FILTER_PASS);
 		if (is_inside_tree()) {
-			Size2 min_size = get_theme_stylebox("Focus", "EditorStyles")->get_minimum_size();
+			Size2 min_size = get_theme_stylebox(SNAME("Focus"), SNAME("EditorStyles"))->get_minimum_size();
 			ae.margin->add_theme_constant_override("margin_left", min_size.x / 2);
 			ae.margin->add_theme_constant_override("margin_top", min_size.y / 2);
 			ae.margin->add_theme_constant_override("margin_right", min_size.x / 2);
@@ -1993,7 +1988,7 @@ void EditorInspectorArray::_notification(int p_what) {
 				ArrayElement &ae = array_elements[i];
 				ae.move_texture_rect->set_texture(get_theme_icon(SNAME("TripleBar"), SNAME("EditorIcons")));
 
-				Size2 min_size = get_theme_stylebox("Focus", "EditorStyles")->get_minimum_size();
+				Size2 min_size = get_theme_stylebox(SNAME("Focus"), SNAME("EditorStyles"))->get_minimum_size();
 				ae.margin->add_theme_constant_override("margin_left", min_size.x / 2);
 				ae.margin->add_theme_constant_override("margin_top", min_size.y / 2);
 				ae.margin->add_theme_constant_override("margin_right", min_size.x / 2);
@@ -2304,7 +2299,7 @@ void EditorInspector::update_tree() {
 	if (property_focusable != -1) {
 		//check focusable is really focusable
 		bool restore_focus = false;
-		Control *focused = get_focus_owner();
+		Control *focused = get_viewport() ? get_viewport()->gui_get_focus_owner() : nullptr;
 		if (focused) {
 			Node *parent = focused->get_parent();
 			while (parent) {
@@ -2430,7 +2425,7 @@ void EditorInspector::update_tree() {
 			if (!ClassDB::class_exists(type) && !ScriptServer::is_global_class(type) && p.hint_string.length() && FileAccess::exists(p.hint_string)) {
 				// If we have a category inside a script, search for the first script with a valid icon.
 				Ref<Script> script = ResourceLoader::load(p.hint_string, "Script");
-				String base_type;
+				StringName base_type;
 				if (script.is_valid()) {
 					base_type = script->get_instance_base_type();
 				}
@@ -2517,7 +2512,7 @@ void EditorInspector::update_tree() {
 			String str = p.name.trim_prefix(array_prefix);
 			int to_char_index = 0;
 			while (to_char_index < str.length()) {
-				if (str[to_char_index] < '0' || str[to_char_index] > '9') {
+				if (!is_digit(str[to_char_index])) {
 					break;
 				}
 				to_char_index++;
@@ -2571,7 +2566,7 @@ void EditorInspector::update_tree() {
 		}
 
 		// Get the property label's string.
-		String property_label_string = (path.find("/") != -1) ? path.substr(path.rfind("/") + 1) : path;
+		String property_label_string = (path.contains("/")) ? path.substr(path.rfind("/") + 1) : path;
 		if (capitalize_paths) {
 			// Capitalize paths.
 			int dot = property_label_string.find(".");
@@ -2595,7 +2590,7 @@ void EditorInspector::update_tree() {
 
 		// Ignore properties that do not fit the filter.
 		if (use_filter && !filter.is_empty()) {
-			if (!filter.is_subsequence_ofi(path) && !filter.is_subsequence_ofi(property_label_string) && property_prefix.to_lower().find(filter.to_lower()) == -1) {
+			if (!filter.is_subsequence_ofn(path) && !filter.is_subsequence_ofn(property_label_string) && !property_prefix.to_lower().contains(filter.to_lower())) {
 				continue;
 			}
 		}
@@ -2669,7 +2664,7 @@ void EditorInspector::update_tree() {
 				array_element_prefix = p.class_name;
 				editor_inspector_array = memnew(EditorInspectorArray);
 
-				String array_label = (path.find("/") != -1) ? path.substr(path.rfind("/") + 1) : path;
+				String array_label = path.contains("/") ? path.substr(path.rfind("/") + 1) : path;
 				array_label = property_label_string.capitalize();
 				int page = per_array_page.has(array_element_prefix) ? per_array_page[array_element_prefix] : 0;
 				editor_inspector_array->setup_with_move_element_function(object, array_label, array_element_prefix, page, c, use_folding);
@@ -2908,7 +2903,7 @@ void EditorInspector::edit(Object *p_object) {
 		object->connect("property_list_changed", callable_mp(this, &EditorInspector::_changed_callback));
 		update_tree();
 	}
-	emit_signal("edited_object_changed");
+	emit_signal(SNAME("edited_object_changed"));
 }
 
 void EditorInspector::set_keying(bool p_active) {
@@ -3025,7 +3020,7 @@ void EditorInspector::_update_inspector_bg() {
 			n = n->get_parent();
 		}
 		count_subinspectors = MIN(15, count_subinspectors);
-		add_theme_style_override("bg", get_theme_stylebox("sub_inspector_bg" + itos(count_subinspectors), "Editor"));
+		add_theme_style_override("bg", get_theme_stylebox("sub_inspector_bg" + itos(count_subinspectors), SNAME("Editor")));
 	} else {
 		add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 	}
@@ -3484,10 +3479,14 @@ void EditorInspector::_update_script_class_properties(const Object &p_object, Li
 		String path = s->get_path();
 		String name = EditorNode::get_editor_data().script_class_get_name(path);
 		if (name.is_empty()) {
-			if (!s->is_built_in()) {
-				name = path.get_file();
+			if (s->is_built_in()) {
+				if (s->get_name().is_empty()) {
+					name = TTR("Built-in script");
+				} else {
+					name = vformat("%s (%s)", s->get_name(), TTR("Built-in"));
+				}
 			} else {
-				name = TTR("Built-in script");
+				name = path.get_file();
 			}
 		}
 
@@ -3543,7 +3542,7 @@ void EditorInspector::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("property_selected", PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("property_keyed", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT), PropertyInfo(Variant::BOOL, "advance")));
 	ADD_SIGNAL(MethodInfo("property_deleted", PropertyInfo(Variant::STRING, "property")));
-	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "res"), PropertyInfo(Variant::STRING, "prop")));
+	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource"), PropertyInfo(Variant::STRING, "path")));
 	ADD_SIGNAL(MethodInfo("object_id_selected", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("property_edited", PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("property_toggled", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::BOOL, "checked")));

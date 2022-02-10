@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #import "godot_view_gesture_recognizer.h"
+#import "godot_view.h"
 
 #include "core/config/project_settings.h"
 
@@ -57,6 +58,10 @@ const CGFloat kGLGestureMovementDistance = 0.5;
 @end
 
 @implementation GodotViewGestureRecognizer
+
+- (GodotView *)godotView {
+	return (GodotView *)self.view;
+}
 
 - (instancetype)init {
 	self = [super init];
@@ -104,7 +109,7 @@ const CGFloat kGLGestureMovementDistance = 0.5;
 	self.delayTimer = nil;
 
 	if (self.delayedTouches) {
-		[self.view touchesBegan:self.delayedTouches withEvent:self.delayedEvent];
+		[self.godotView godotTouchesBegan:self.delayedTouches withEvent:self.delayedEvent];
 	}
 
 	self.delayedTouches = nil;
@@ -114,6 +119,8 @@ const CGFloat kGLGestureMovementDistance = 0.5;
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
 	NSSet *cleared = [self copyClearedTouches:touches phase:UITouchPhaseBegan];
 	[self delayTouches:cleared andEvent:event];
+
+	[super touchesBegan:touches withEvent:event];
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
@@ -123,8 +130,8 @@ const CGFloat kGLGestureMovementDistance = 0.5;
 		// We should check if movement was significant enough to fire an event
 		// for dragging to work correctly.
 		for (UITouch *touch in cleared) {
-			CGPoint from = [touch locationInView:self.view];
-			CGPoint to = [touch previousLocationInView:self.view];
+			CGPoint from = [touch locationInView:self.godotView];
+			CGPoint to = [touch previousLocationInView:self.godotView];
 			CGFloat xDistance = from.x - to.x;
 			CGFloat yDistance = from.y - to.y;
 
@@ -133,7 +140,7 @@ const CGFloat kGLGestureMovementDistance = 0.5;
 			// Early exit, since one of touches has moved enough to fire a drag event.
 			if (distance > kGLGestureMovementDistance) {
 				[self.delayTimer fire];
-				[self.view touchesMoved:cleared withEvent:event];
+				[self.godotView godotTouchesMoved:cleared withEvent:event];
 				return;
 			}
 		}
@@ -141,26 +148,32 @@ const CGFloat kGLGestureMovementDistance = 0.5;
 		return;
 	}
 
-	[self.view touchesMoved:cleared withEvent:event];
+	[self.godotView touchesMoved:cleared withEvent:event];
+
+	[super touchesMoved:touches withEvent:event];
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
 	[self.delayTimer fire];
 
 	NSSet *cleared = [self copyClearedTouches:touches phase:UITouchPhaseEnded];
-	[self.view touchesEnded:cleared withEvent:event];
+	[self.godotView godotTouchesEnded:cleared withEvent:event];
+
+	[super touchesEnded:touches withEvent:event];
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
 	[self.delayTimer fire];
-	[self.view touchesCancelled:touches withEvent:event];
-};
+	[self.godotView godotTouchesCancelled:touches withEvent:event];
+
+	[super touchesCancelled:touches withEvent:event];
+}
 
 - (NSSet *)copyClearedTouches:(NSSet *)touches phase:(UITouchPhase)phaseToSave {
 	NSMutableSet *cleared = [touches mutableCopy];
 
 	for (UITouch *touch in touches) {
-		if (touch.phase != phaseToSave) {
+		if (touch.view != self.view || touch.phase != phaseToSave) {
 			[cleared removeObject:touch];
 		}
 	}

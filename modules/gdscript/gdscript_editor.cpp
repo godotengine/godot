@@ -486,7 +486,7 @@ struct GDScriptCompletionIdentifier {
 static String _get_visual_datatype(const PropertyInfo &p_info, bool p_is_arg = true) {
 	if (p_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
 		String enum_name = p_info.class_name;
-		if (enum_name.find(".") == -1) {
+		if (!enum_name.contains(".")) {
 			return enum_name;
 		}
 		return enum_name.get_slice(".", 1);
@@ -610,7 +610,7 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 				case GDScriptParser::Node::SUBSCRIPT: {
 					const GDScriptParser::SubscriptNode *sub = static_cast<const GDScriptParser::SubscriptNode *>(par->default_value);
 					if (sub->is_constant) {
-						if (sub->datatype.kind == GDScriptParser::DataType::ENUM_VALUE) {
+						if (sub->datatype.kind == GDScriptParser::DataType::ENUM) {
 							def_val = sub->get_datatype().to_string();
 						} else if (sub->reduced) {
 							const Variant::Type vt = sub->reduced_value.get_type();
@@ -652,7 +652,7 @@ static void _get_directory_contents(EditorFileSystemDirectory *p_dir, Map<String
 }
 
 static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_annotation, int p_argument, const String p_quote_style, Map<String, ScriptCodeCompletionOption> &r_result) {
-	if (p_annotation->name == "@export_range") {
+	if (p_annotation->name == SNAME("@export_range")) {
 		if (p_argument == 3 || p_argument == 4) {
 			// Slider hint.
 			ScriptCodeCompletionOption slider1("or_greater", ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
@@ -662,7 +662,7 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 			slider2.insert_text = slider2.display.quote(p_quote_style);
 			r_result.insert(slider2.display, slider2);
 		}
-	} else if (p_annotation->name == "@export_exp_easing") {
+	} else if (p_annotation->name == SNAME("@export_exp_easing")) {
 		if (p_argument == 0 || p_argument == 1) {
 			// Easing hint.
 			ScriptCodeCompletionOption hint1("attenuation", ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
@@ -672,7 +672,7 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 			hint2.insert_text = hint2.display.quote(p_quote_style);
 			r_result.insert(hint2.display, hint2);
 		}
-	} else if (p_annotation->name == "@export_node_path") {
+	} else if (p_annotation->name == SNAME("@export_node_path")) {
 		ScriptCodeCompletionOption node("Node", ScriptCodeCompletionOption::KIND_CLASS);
 		r_result.insert(node.display, node);
 		List<StringName> node_types;
@@ -684,7 +684,7 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 			ScriptCodeCompletionOption option(E, ScriptCodeCompletionOption::KIND_CLASS);
 			r_result.insert(option.display, option);
 		}
-	} else if (p_annotation->name == "@warning_ignore") {
+	} else if (p_annotation->name == SNAME("@warning_ignore")) {
 		for (int warning_code = 0; warning_code < GDScriptWarning::WARNING_MAX; warning_code++) {
 			ScriptCodeCompletionOption warning(GDScriptWarning::get_name_from_code((GDScriptWarning::Code)warning_code).to_lower(), ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
 			r_result.insert(warning.display, warning);
@@ -955,7 +955,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 							if (E.usage & (PROPERTY_USAGE_GROUP | PROPERTY_USAGE_CATEGORY)) {
 								continue;
 							}
-							if (E.name.find("/") != -1) {
+							if (E.name.contains("/")) {
 								continue;
 							}
 							ScriptCodeCompletionOption option(E.name, ScriptCodeCompletionOption::KIND_MEMBER);
@@ -1000,7 +1000,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 					}
 
 					for (const PropertyInfo &E : members) {
-						if (String(E.name).find("/") == -1) {
+						if (!String(E.name).contains("/")) {
 							ScriptCodeCompletionOption option(E.name, ScriptCodeCompletionOption::KIND_MEMBER);
 							r_result.insert(option.display, option);
 						}
@@ -1384,7 +1384,7 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 
 								Object *baseptr = base.value;
 
-								if (all_is_const && String(call->function_name) == "get_node" && ClassDB::is_parent_class(native_type.native_type, "Node") && args.size()) {
+								if (all_is_const && call->function_name == SNAME("get_node") && ClassDB::is_parent_class(native_type.native_type, SNAME("Node")) && args.size()) {
 									String arg1 = args[0];
 									if (arg1.begins_with("/root/")) {
 										String which = arg1.get_slice("/", 2);
@@ -2085,7 +2085,7 @@ static bool _guess_method_return_type_from_base(GDScriptParser::CompletionContex
 	GDScriptParser::DataType base_type = p_base.type;
 	bool is_static = base_type.is_meta_type;
 
-	if (is_static && p_method == "new") {
+	if (is_static && p_method == SNAME("new")) {
 		r_type.type = base_type;
 		r_type.type.is_meta_type = false;
 		r_type.type.is_constant = false;
@@ -2182,7 +2182,7 @@ static bool _guess_method_return_type_from_base(GDScriptParser::CompletionContex
 }
 
 static void _find_enumeration_candidates(GDScriptParser::CompletionContext &p_context, const String &p_enum_hint, Map<String, ScriptCodeCompletionOption> &r_result) {
-	if (p_enum_hint.find(".") == -1) {
+	if (!p_enum_hint.contains(".")) {
 		// Global constant or in the current class.
 		StringName current_enum = p_enum_hint;
 		if (p_context.current_class && p_context.current_class->has_member(current_enum) && p_context.current_class->get_member(current_enum).type == GDScriptParser::ClassNode::Member::ENUM) {
@@ -2274,7 +2274,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 					r_arghint = _make_arguments_hint(info, p_argidx);
 				}
 
-				if (p_argidx == 0 && ClassDB::is_parent_class(class_name, "Node") && (p_method == "get_node" || p_method == "has_node")) {
+				if (p_argidx == 0 && ClassDB::is_parent_class(class_name, SNAME("Node")) && (p_method == SNAME("get_node") || p_method == SNAME("has_node"))) {
 					// Get autoloads
 					List<PropertyInfo> props;
 					ProjectSettings::get_singleton()->get_property_list(&props);
@@ -2291,7 +2291,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 					}
 				}
 
-				if (p_argidx == 0 && method_args > 0 && ClassDB::is_parent_class(class_name, "InputEvent") && p_method.operator String().find("action") != -1) {
+				if (p_argidx == 0 && method_args > 0 && ClassDB::is_parent_class(class_name, SNAME("InputEvent")) && p_method.operator String().contains("action")) {
 					// Get input actions
 					List<PropertyInfo> props;
 					ProjectSettings::get_singleton()->get_property_list(&props);
@@ -2639,7 +2639,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 			ClassDB::get_virtual_methods(class_name, &virtual_methods);
 			for (const MethodInfo &mi : virtual_methods) {
 				String method_hint = mi.name;
-				if (method_hint.find(":") != -1) {
+				if (method_hint.contains(":")) {
 					method_hint = method_hint.get_slice(":", 0);
 				}
 				method_hint += "(";
@@ -2650,7 +2650,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 							method_hint += ", ";
 						}
 						String arg = mi.arguments[i].name;
-						if (arg.find(":") != -1) {
+						if (arg.contains(":")) {
 							arg = arg.substr(0, arg.find(":"));
 						}
 						method_hint += arg;

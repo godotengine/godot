@@ -78,7 +78,7 @@ void SceneTreeDock::input(const Ref<InputEvent> &p_event) {
 void SceneTreeDock::unhandled_key_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (get_focus_owner() && get_focus_owner()->is_text_field()) {
+	if (get_viewport()->gui_get_focus_owner() && get_viewport()->gui_get_focus_owner()->is_text_field()) {
 		return;
 	}
 
@@ -1206,8 +1206,16 @@ void SceneTreeDock::_notification(int p_what) {
 
 			create_root_dialog->add_child(top_row);
 
+			ScrollContainer *scroll_container = memnew(ScrollContainer);
+			scroll_container->set_name("NodeShortcutsScrollContainer");
+			create_root_dialog->add_child(scroll_container);
+			scroll_container->set_v_size_flags(SIZE_EXPAND_FILL);
+			scroll_container->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+
 			VBoxContainer *node_shortcuts = memnew(VBoxContainer);
 			node_shortcuts->set_name("NodeShortcuts");
+			scroll_container->add_child(node_shortcuts);
+			node_shortcuts->set_h_size_flags(SIZE_EXPAND_FILL);
 
 			VBoxContainer *beginner_node_shortcuts = memnew(VBoxContainer);
 			beginner_node_shortcuts->set_name("BeginnerNodeShortcuts");
@@ -1247,8 +1255,6 @@ void SceneTreeDock::_notification(int p_what) {
 			button_clipboard->set_icon(get_theme_icon(SNAME("ActionPaste"), SNAME("EditorIcons")));
 			button_clipboard->connect("pressed", callable_bind(callable_mp(this, &SceneTreeDock::_tool_selected), TOOL_PASTE, false));
 
-			node_shortcuts->add_spacer();
-			create_root_dialog->add_child(node_shortcuts);
 			_update_create_root_dialog();
 		} break;
 
@@ -1723,7 +1729,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 
 	Node *validate = new_parent;
 	while (validate) {
-		ERR_FAIL_COND_MSG(p_nodes.find(validate) != -1, "Selection changed at some point. Can't reparent.");
+		ERR_FAIL_COND_MSG(p_nodes.has(validate), "Selection changed at some point. Can't reparent.");
 		validate = validate->get_parent();
 	}
 
@@ -3060,6 +3066,10 @@ List<Node *> SceneTreeDock::paste_nodes() {
 	return pasted_nodes;
 }
 
+List<Node *> SceneTreeDock::get_node_clipboard() const {
+	return node_clipboard;
+}
+
 void SceneTreeDock::add_remote_tree_editor(Control *p_remote) {
 	ERR_FAIL_COND(remote_tree != nullptr);
 	add_child(p_remote);
@@ -3108,7 +3118,7 @@ void SceneTreeDock::_local_tree_selected() {
 
 void SceneTreeDock::_update_create_root_dialog() {
 	BaseButton *toggle = Object::cast_to<BaseButton>(create_root_dialog->get_node(String("NodeShortcutsTopRow/NodeShortcutsToggle")));
-	Node *node_shortcuts = create_root_dialog->get_node(String("NodeShortcuts"));
+	Node *node_shortcuts = create_root_dialog->get_node(String("NodeShortcutsScrollContainer/NodeShortcuts"));
 
 	if (!toggle || !node_shortcuts) {
 		return;
@@ -3138,6 +3148,7 @@ void SceneTreeDock::_update_create_root_dialog() {
 					Button *button = memnew(Button);
 					favorite_nodes->add_child(button);
 					button->set_text(l);
+					button->set_clip_text(true);
 					String name = l.get_slicec(' ', 0);
 					if (ScriptServer::is_global_class(name)) {
 						name = ScriptServer::get_global_class_native_base(name);
@@ -3399,6 +3410,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 
 	create_root_dialog = memnew(VBoxContainer);
 	vbc->add_child(create_root_dialog);
+	create_root_dialog->set_v_size_flags(SIZE_EXPAND_FILL);
 	create_root_dialog->hide();
 
 	scene_tree = memnew(SceneTreeEditor(false, true, true));

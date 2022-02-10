@@ -84,10 +84,6 @@ private:
 	Transform3D world_origin; /* our world origin point, maps a location in our virtual world to the origin point in our real world tracking volume */
 	Transform3D reference_frame; /* our reference frame */
 
-	uint64_t last_process_usec; /* for frame timing, usec when we did our processing */
-	uint64_t last_commit_usec; /* for frame timing, usec when we finished committing both eyes */
-	uint64_t last_frame_usec; /* time it took between process and committing, we should probably average this over the last x frames */
-
 protected:
 	static XRServer *singleton;
 
@@ -175,12 +171,16 @@ public:
 	PackedStringArray get_suggested_pose_names(const StringName &p_tracker_name) const;
 	// Q: Should we add get_suggested_input_names and get_suggested_haptic_names even though we don't use them for the IDE?
 
-	uint64_t get_last_process_usec();
-	uint64_t get_last_commit_usec();
-	uint64_t get_last_frame_usec();
-
+	// Process is called before we handle our physics process and game process. This is where our interfaces will update controller data and such.
 	void _process();
-	void _mark_commit();
+
+	// Pre-render is called right before we're rendering our viewports.
+	// This is where interfaces such as OpenVR and OpenXR will update positioning data.
+	// Many of these interfaces will also do a predictive sync which ensures we run at a steady framerate.
+	void pre_render();
+
+	// End-frame is called right after Godot has finished its rendering bits.
+	void end_frame();
 
 	XRServer();
 	~XRServer();

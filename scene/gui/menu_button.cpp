@@ -98,7 +98,13 @@ void MenuButton::pressed() {
 	popup->set_position(gp);
 	popup->set_parent_rect(Rect2(Point2(gp - popup->get_position()), size));
 
-	popup->take_mouse_focus();
+	// If not triggered by the mouse, start the popup with its first item selected.
+	if (popup->get_item_count() > 0 &&
+			((get_action_mode() == ActionMode::ACTION_MODE_BUTTON_PRESS && Input::get_singleton()->is_action_just_pressed("ui_accept")) ||
+					(get_action_mode() == ActionMode::ACTION_MODE_BUTTON_RELEASE && Input::get_singleton()->is_action_just_released("ui_accept")))) {
+		popup->set_current_index(0);
+	}
+
 	popup->popup();
 }
 
@@ -130,6 +136,9 @@ int MenuButton::get_item_count() const {
 
 void MenuButton::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
+			popup->set_layout_direction((Window::LayoutDirection)get_layout_direction());
+		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible_in_tree()) {
 				popup->hide();

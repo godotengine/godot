@@ -53,6 +53,7 @@ GodotIOJavaWrapper::GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instanc
 		_get_locale = p_env->GetMethodID(cls, "getLocale", "()Ljava/lang/String;");
 		_get_model = p_env->GetMethodID(cls, "getModel", "()Ljava/lang/String;");
 		_get_screen_DPI = p_env->GetMethodID(cls, "getScreenDPI", "()I");
+		_get_screen_refresh_rate = p_env->GetMethodID(cls, "getScreenRefreshRate", "(D)D");
 		_screen_get_usable_rect = p_env->GetMethodID(cls, "screenGetUsableRect", "()[I"),
 		_get_unique_id = p_env->GetMethodID(cls, "getUniqueID", "()Ljava/lang/String;");
 		_show_keyboard = p_env->GetMethodID(cls, "showKeyboard", "(Ljava/lang/String;ZIII)V");
@@ -134,6 +135,19 @@ int GodotIOJavaWrapper::get_screen_dpi() {
 	} else {
 		return 160;
 	}
+}
+
+float GodotIOJavaWrapper::get_screen_refresh_rate(float fallback) {
+	if (_get_screen_refresh_rate) {
+		JNIEnv *env = get_jni_env();
+		if (env == nullptr) {
+			ERR_PRINT("An error occured while trying to get screen refresh rate.");
+			return fallback;
+		}
+		return (float)env->CallDoubleMethod(godot_io_instance, _get_screen_refresh_rate, (double)fallback);
+	}
+	ERR_PRINT("An error occured while trying to get the screen refresh rate.");
+	return fallback;
 }
 
 void GodotIOJavaWrapper::screen_get_usable_rect(int (&p_rect_xywh)[4]) {

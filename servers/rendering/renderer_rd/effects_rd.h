@@ -274,7 +274,7 @@ private:
 
 		uint32_t glow_texture_size[2]; //  8 - 40
 		float glow_intensity; //  4 - 44
-		uint32_t pad3; //  4 - 48
+		float glow_map_strength; //  4 - 48
 
 		uint32_t glow_mode; //  4 - 52
 		float glow_levels[7]; // 28 - 80
@@ -874,6 +874,7 @@ private:
 		}
 	};
 
+	Map<TexturePair, RID> texture_pair_to_uniform_set_cache;
 	Map<RID, RID> texture_to_compute_uniform_set_cache;
 	Map<TexturePair, RID> texture_pair_to_compute_uniform_set_cache;
 	Map<TexturePair, RID> image_pair_to_compute_uniform_set_cache;
@@ -882,6 +883,7 @@ private:
 	RID _get_uniform_set_from_image(RID p_texture);
 	RID _get_uniform_set_for_input(RID p_texture);
 	RID _get_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps = false);
+	RID _get_uniform_set_from_texture_pair(RID p_texture1, RID p_texture2, bool p_use_mipmaps = false);
 	RID _get_compute_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps = false);
 	RID _get_compute_uniform_set_from_texture_and_sampler(RID p_texture, RID p_sampler);
 	RID _get_compute_uniform_set_from_texture_pair(RID p_texture, RID p_texture2, bool p_use_mipmaps = false);
@@ -897,7 +899,7 @@ public:
 	void copy_depth_to_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y = false);
 	void copy_depth_to_rect_and_linearize(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, float p_z_near, float p_z_far);
 	void copy_to_atlas_fb(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_uv_rect, RD::DrawListID p_draw_list, bool p_flip_y = false, bool p_panorama = false);
-	void gaussian_blur(RID p_source_rd_texture, RID p_texture, RID p_back_texture, const Rect2i &p_region, bool p_8bit_dst = false);
+	void gaussian_blur(RID p_source_rd_texture, RID p_texture, const Rect2i &p_region, bool p_8bit_dst = false);
 	void set_color(RID p_dest_texture, const Color &p_color, const Rect2i &p_region, bool p_8bit_dst = false);
 	void gaussian_glow(RID p_source_rd_texture, RID p_back_texture, const Size2i &p_size, float p_strength = 1.0, bool p_high_quality = false, bool p_first_pass = false, float p_luminance_cap = 16.0, float p_exposure = 1.0, float p_bloom = 0.0, float p_hdr_bleed_threshold = 1.0, float p_hdr_bleed_scale = 1.0, RID p_auto_exposure = RID(), float p_auto_exposure_grey = 1.0);
 	void gaussian_glow_raster(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, float p_strength = 1.0, bool p_high_quality = false, bool p_first_pass = false, float p_luminance_cap = 16.0, float p_exposure = 1.0, float p_bloom = 0.0, float p_hdr_bleed_threshold = 1.0, float p_hdr_bleed_scale = 1.0, RID p_auto_exposure = RID(), float p_auto_exposure_grey = 1.0);
@@ -943,10 +945,12 @@ public:
 
 		GlowMode glow_mode = GLOW_MODE_ADD;
 		float glow_intensity = 1.0;
+		float glow_map_strength = 0.0f;
 		float glow_levels[7] = { 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0 };
 		Vector2i glow_texture_size;
 		bool glow_use_bicubic_upscale = false;
 		RID glow_texture;
+		RID glow_map;
 
 		RS::EnvironmentToneMapper tonemap_mode = RS::ENV_TONE_MAPPER_LINEAR;
 		float exposure = 1.0;
