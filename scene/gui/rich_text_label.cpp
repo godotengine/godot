@@ -33,6 +33,7 @@
 #include "core/math/math_defs.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "label.h"
 #include "scene/scene_string_names.h"
 #include "servers/display_server.h"
 
@@ -1590,6 +1591,9 @@ void RichTextLabel::_notification(int p_what) {
 				update();
 			}
 		} break;
+		case NOTIFICATION_DRAG_END: {
+			selection.drag_attempt = false;
+		} break;
 	}
 }
 
@@ -1650,6 +1654,8 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 				int c_index = 0;
 				bool outside;
 
+				selection.drag_attempt = false;
+
 				_find_click(main, b->get_position(), &c_frame, &c_line, &c_item, &c_index, &outside);
 				if (c_item != nullptr) {
 					if (selection.enabled) {
@@ -1660,17 +1666,22 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 
 						// Erase previous selection.
 						if (selection.active) {
-							selection.from_frame = nullptr;
-							selection.from_line = 0;
-							selection.from_item = nullptr;
-							selection.from_char = 0;
-							selection.to_frame = nullptr;
-							selection.to_line = 0;
-							selection.to_item = nullptr;
-							selection.to_char = 0;
-							selection.active = false;
+							if (_is_click_inside_selection()) {
+								selection.drag_attempt = true;
+								selection.click_item = nullptr;
+							} else {
+								selection.from_frame = nullptr;
+								selection.from_line = 0;
+								selection.from_item = nullptr;
+								selection.from_char = 0;
+								selection.to_frame = nullptr;
+								selection.to_line = 0;
+								selection.to_item = nullptr;
+								selection.to_char = 0;
+								selection.active = false;
 
-							update();
+								update();
+							}
 						}
 					}
 				}
@@ -1682,6 +1693,8 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 				Item *c_item = nullptr;
 				int c_index = 0;
 				bool outside;
+
+				selection.drag_attempt = false;
 
 				_find_click(main, b->get_position(), &c_frame, &c_line, &c_item, &c_index, &outside);
 
@@ -1714,6 +1727,22 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 					DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
 				}
 				selection.click_item = nullptr;
+				if (selection.drag_attempt) {
+					selection.drag_attempt = false;
+					if (_is_click_inside_selection()) {
+						selection.from_frame = nullptr;
+						selection.from_line = 0;
+						selection.from_item = nullptr;
+						selection.from_char = 0;
+						selection.to_frame = nullptr;
+						selection.to_line = 0;
+						selection.to_item = nullptr;
+						selection.to_char = 0;
+						selection.active = false;
+
+						update();
+					}
+				}
 
 				if (!b->is_double_click() && !scroll_updated) {
 					Item *c_item = nullptr;
@@ -3731,6 +3760,29 @@ void RichTextLabel::set_deselect_on_focus_loss_enabled(const bool p_enabled) {
 	if (p_enabled && selection.active && !has_focus()) {
 		selection.active = false;
 		update();
+	}
+}
+
+Variant RichTextLabel::get_drag_data(const Point2 &p_point) {
+	if (selection.drag_attempt && selection.enabled) {
+		String t = get_selected_text();
+		Label *l = memnew(Label);
+		l->set_text(t);
+		set_drag_preview(l);
+		return t;
+	}
+
+	return Variant();
+}
+
+bool RichTextLabel::_is_click_inside_selection() const {
+	if (selection.active && selection.enabled && selection.click_frame && selection.from_frame && selection.to_frame) {
+		const Line &l_click = selection.click_frame->lines[selection.click_line];
+		const Line &l_from = selection.from_frame->lines[selection.from_line];
+		const Line &l_to = selection.to_frame->lines[selection.to_line];
+		return (l_click.char_offset + selection.click_char >= l_from.char_offset + selection.from_char) && (l_click.char_offset + selection.click_char <= l_to.char_offset + selection.to_char);
+	} else {
+		return false;
 	}
 }
 
