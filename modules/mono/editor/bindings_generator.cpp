@@ -325,18 +325,38 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 					xml_output.append(link_target);
 					xml_output.append("</c>");
 				} else {
-					const MethodInterface *target_imethod = target_itype->find_method_by_name(target_cname);
-
-					if (target_imethod) {
+					if (target_cname == "_init") {
+						// The _init method is not declared in C#, reference the constructor instead
 						xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
 						xml_output.append(target_itype->proxy_name);
 						xml_output.append(".");
-						xml_output.append(target_imethod->proxy_name);
-						xml_output.append("\"/>");
+						xml_output.append(target_itype->proxy_name);
+						xml_output.append("()\"/>");
+					} else {
+						const MethodInterface *target_imethod = target_itype->find_method_by_name(target_cname);
+
+						if (target_imethod) {
+							xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+							xml_output.append(target_itype->proxy_name);
+							xml_output.append(".");
+							xml_output.append(target_imethod->proxy_name);
+							xml_output.append("\"/>");
+						} else {
+							ERR_PRINT("Cannot resolve method reference in documentation: '" + link_target + "'.");
+
+							xml_output.append("<c>");
+							xml_output.append(link_target);
+							xml_output.append("</c>");
+						}
 					}
 				}
 			} else if (link_tag == "member") {
-				if (!target_itype || !target_itype->is_object_type) {
+				if (link_target.find("/") >= 0) {
+					// Properties with '/' (slash) in the name are not declared in C#, so there is nothing to reference.
+					xml_output.append("<c>");
+					xml_output.append(link_target);
+					xml_output.append("</c>");
+				} else if (!target_itype || !target_itype->is_object_type) {
 					if (OS::get_singleton()->is_stdout_verbose()) {
 						if (target_itype) {
 							OS::get_singleton()->print("Cannot resolve member reference for non-Godot.Object type in documentation: %s\n", link_target.utf8().get_data());
@@ -358,6 +378,12 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 						xml_output.append(".");
 						xml_output.append(target_iprop->proxy_name);
 						xml_output.append("\"/>");
+					} else {
+						ERR_PRINT("Cannot resolve member reference in documentation: '" + link_target + "'.");
+
+						xml_output.append("<c>");
+						xml_output.append(link_target);
+						xml_output.append("</c>");
 					}
 				}
 			} else if (link_tag == "signal") {
