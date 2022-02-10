@@ -59,6 +59,7 @@ foreach d: module_dirs
   endif
 endforeach
 
+# This also creates the modules_enabled.gen.h header.
 MAIN_SOURCES += configure_file(
     output: 'register_module_types.gen.cpp',
     command: [find_program('gen_registration.py'), '@OUTPUT@'] + MODULES_ENABLED,

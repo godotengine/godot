@@ -23,7 +23,7 @@ def replace_if_different(output_path_str, new_content_path_str):
     else:
         new_content_path.replace(output_path)
 
-def create_source(ofilename, modules):
+def create_register_source(ofilename, modules):
     tmpfilename = ofilename + '~'
     with open(tmpfilename, 'w') as ofile:
         ofile.write(header)
@@ -46,7 +46,18 @@ def create_source(ofilename, modules):
         ofile.write('}\n')
     replace_if_different(ofilename, tmpfilename)
 
+def create_enabled_header(ofilename, modules):
+    tmpfilename = ofilename + '~'
+    with open(tmpfilename, 'w') as ofile:
+        ofile.write('#pragma once\n\n')
+        for m in modules:
+            mup = m.upper()
+            ofile.write(f'#define MODULE_{mup}_ENABLED\n')
+    replace_if_different(ofilename, tmpfilename)
+
 if __name__ == "__main__":
-    ofilename = sys.argv[1]
+    registerfilename = sys.argv[1]
     modules = sys.argv[2:]
-    create_source(ofilename, modules)
+    create_register_source(registerfilename, modules)
+    enabledfilename = os.path.join(os.path.split(registerfilename)[0], 'modules_enabled.gen.h')
+    create_enabled_header(enabledfilename, modules)
