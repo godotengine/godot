@@ -177,7 +177,7 @@ Error WSLClient::connect_to_host(String p_host, String p_path, uint16_t p_port, 
 		}
 	}
 
-	// We assume OK while hostname resultion is pending.
+	// We assume OK while hostname resolution is pending.
 	Error err = _resolver_id != IP::RESOLVER_INVALID_ID ? OK : FAILED;
 	while (_ip_candidates.size()) {
 		err = _tcp->connect_to_host(_ip_candidates.pop_front(), p_port);

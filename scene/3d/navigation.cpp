@@ -119,7 +119,7 @@ Navigation::Navigation() {
 
 	set_cell_size(0.3);
 	set_cell_height(0.2);
-	set_edge_connection_margin(5.0); // Five meters, depends alot on the agents radius
+	set_edge_connection_margin(5.0); // Five meters, depends a lot on the agents radius
 
 	up = Vector3(0, 1, 0);
 }

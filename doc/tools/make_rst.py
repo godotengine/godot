@@ -471,19 +471,19 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
     # Inheritance tree
     # Ascendants
     if class_def.inherits:
-        inh = class_def.inherits.strip()
+        inherits = class_def.inherits.strip()
         f.write("**" + translate("Inherits:") + "** ")
         first = True
-        while inh in state.classes:
+        while inherits in state.classes:
             if not first:
                 f.write(" **<** ")
             else:
                 first = False
 
-            f.write(make_type(inh, state))
-            inode = state.classes[inh].inherits
+            f.write(make_type(inherits, state))
+            inode = state.classes[inherits].inherits
             if inode:
-                inh = inode.strip()
+                inherits = inode.strip()
             else:
                 break
         f.write("\n\n")
