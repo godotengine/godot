@@ -1818,11 +1818,14 @@ void RendererSceneRenderRD::_free_render_buffer_data(RenderBuffers *rb) {
 			if (rb->blur[i].mipmaps[m].fb.is_valid()) {
 				RD::get_singleton()->free(rb->blur[i].mipmaps[m].fb);
 			}
-			if (rb->blur[i].mipmaps[m].half_fb.is_valid()) {
-				RD::get_singleton()->free(rb->blur[i].mipmaps[m].half_fb);
-			}
-			if (rb->blur[i].mipmaps[m].half_texture.is_valid()) {
-				RD::get_singleton()->free(rb->blur[i].mipmaps[m].half_texture);
+			// texture and framebuffer in both blur mipmaps are shared, so only free from the first one
+			if (i == 0) {
+				if (rb->blur[i].mipmaps[m].half_fb.is_valid()) {
+					RD::get_singleton()->free(rb->blur[i].mipmaps[m].half_fb);
+				}
+				if (rb->blur[i].mipmaps[m].half_texture.is_valid()) {
+					RD::get_singleton()->free(rb->blur[i].mipmaps[m].half_texture);
+				}
 			}
 		}
 		rb->blur[i].mipmaps.clear();
