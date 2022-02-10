@@ -385,8 +385,6 @@ int Node3DEditorViewport::get_selected_count() const {
 }
 
 void Node3DEditorViewport::cancel_transform() {
-	_edit.mode = TRANSFORM_NONE;
-
 	List<Node *> &selection = editor_selection->get_selected_node_list();
 
 	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
@@ -402,7 +400,8 @@ void Node3DEditorViewport::cancel_transform() {
 
 		sp->set_global_transform(se->original);
 	}
-	surface->update();
+
+	finish_transform();
 	set_message(TTR("Transform Aborted."), 3);
 }
 
@@ -4061,12 +4060,9 @@ void Node3DEditorViewport::commit_transform() {
 		undo_redo->add_undo_method(sp, "set_global_transform", se->original);
 	}
 	undo_redo->commit_action();
-	_edit.mode = TRANSFORM_NONE;
-	_edit.instant = false;
-	spatial_editor->set_local_coords_enabled(_edit.original_local);
+
+	finish_transform();
 	set_message("");
-	spatial_editor->update_transform_gizmo();
-	surface->update();
 }
 
 void Node3DEditorViewport::update_transform(Point2 p_mousepos, bool p_shift) {
@@ -4403,6 +4399,14 @@ void Node3DEditorViewport::update_transform(Point2 p_mousepos, bool p_shift) {
 		default: {
 		}
 	}
+}
+
+void Node3DEditorViewport::finish_transform() {
+	spatial_editor->set_local_coords_enabled(_edit.original_local);
+	spatial_editor->update_transform_gizmo();
+	_edit.mode = TRANSFORM_NONE;
+	_edit.instant = false;
+	surface->update();
 }
 
 Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, EditorNode *p_editor, int p_index) {
