@@ -34,6 +34,10 @@
 #include "core/config/project_settings.h"
 #include "servers/physics_server_2d.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
+#endif // TOOLS_ENABLED
+
 RID Shape2D::get_rid() const {
 	return shape;
 }
@@ -112,7 +116,7 @@ void Shape2D::_bind_methods() {
 bool Shape2D::is_collision_outline_enabled() {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		return true;
+		return EditorSettings::get_singleton()->get("editors/2d/draw_2d_outlines");
 	}
 #endif
 	return GLOBAL_DEF("debug/shapes/collision/draw_2d_outlines", true);
