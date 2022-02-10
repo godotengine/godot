@@ -466,6 +466,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_color", "Editor", font_color);
 	theme->set_color("highlighted_font_color", "Editor", font_hover_color);
 	theme->set_color("disabled_font_color", "Editor", font_disabled_color);
+	theme->set_color("readonly_font_color", "Editor", font_readonly_color);
 
 	theme->set_color("mono_color", "Editor", mono_color);
 
@@ -875,8 +876,20 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("readonly_color", "EditorProperty", readonly_color);
 	theme->set_color("readonly_warning_color", "EditorProperty", readonly_warning_color);
 
+	Ref<StyleBoxFlat> style_property_group_note = style_default->duplicate();
+	Color property_group_note_color = accent_color;
+	property_group_note_color.a = 0.1;
+	style_property_group_note->set_bg_color(property_group_note_color);
+	theme->set_stylebox("bg_group_note", "EditorProperty", style_property_group_note);
+
 	Color inspector_section_color = font_color.lerp(Color(0.5, 0.5, 0.5), 0.35);
 	theme->set_color("font_color", "EditorInspectorSection", inspector_section_color);
+
+	Color inspector_indent_color = accent_color;
+	inspector_indent_color.a = 0.2;
+	Ref<StyleBoxFlat> inspector_indent_style = make_flat_stylebox(inspector_indent_color, 2.0 * EDSCALE, 0, 2.0 * EDSCALE, 0);
+	theme->set_stylebox("indent_box", "EditorInspectorSection", inspector_indent_style);
+	theme->set_constant("indent_size", "EditorInspectorSection", 6.0 * EDSCALE);
 
 	theme->set_constant("inspector_margin", "Editor", 12 * EDSCALE);
 

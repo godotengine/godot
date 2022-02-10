@@ -1177,6 +1177,14 @@ bool TabContainer::get_use_hidden_tabs_for_min_size() const {
 	return use_hidden_tabs_for_min_size;
 }
 
+Vector<int> TabContainer::get_allowed_size_flags_horizontal() const {
+	return Vector<int>();
+}
+
+Vector<int> TabContainer::get_allowed_size_flags_vertical() const {
+	return Vector<int>();
+}
+
 void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_count"), &TabContainer::get_tab_count);
 	ClassDB::bind_method(D_METHOD("set_current_tab", "tab_idx"), &TabContainer::set_current_tab);

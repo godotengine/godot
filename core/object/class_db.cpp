@@ -1007,20 +1007,30 @@ bool ClassDB::get_signal(const StringName &p_class, const StringName &p_signal, 
 	return false;
 }
 
-void ClassDB::add_property_group(const StringName &p_class, const String &p_name, const String &p_prefix) {
+void ClassDB::add_property_group(const StringName &p_class, const String &p_name, const String &p_prefix, int p_indent_depth) {
 	OBJTYPE_WLOCK;
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_COND(!type);
 
-	type->property_list.push_back(PropertyInfo(Variant::NIL, p_name, PROPERTY_HINT_NONE, p_prefix, PROPERTY_USAGE_GROUP));
+	String prefix = p_prefix;
+	if (p_indent_depth > 0) {
+		prefix = vformat("%s,%d", p_prefix, p_indent_depth);
+	}
+
+	type->property_list.push_back(PropertyInfo(Variant::NIL, p_name, PROPERTY_HINT_NONE, prefix, PROPERTY_USAGE_GROUP));
 }
 
-void ClassDB::add_property_subgroup(const StringName &p_class, const String &p_name, const String &p_prefix) {
+void ClassDB::add_property_subgroup(const StringName &p_class, const String &p_name, const String &p_prefix, int p_indent_depth) {
 	OBJTYPE_WLOCK;
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_COND(!type);
 
-	type->property_list.push_back(PropertyInfo(Variant::NIL, p_name, PROPERTY_HINT_NONE, p_prefix, PROPERTY_USAGE_SUBGROUP));
+	String prefix = p_prefix;
+	if (p_indent_depth > 0) {
+		prefix = vformat("%s,%d", p_prefix, p_indent_depth);
+	}
+
+	type->property_list.push_back(PropertyInfo(Variant::NIL, p_name, PROPERTY_HINT_NONE, prefix, PROPERTY_USAGE_SUBGROUP));
 }
 
 void ClassDB::add_property_array_count(const StringName &p_class, const String &p_label, const StringName &p_count_property, const StringName &p_count_setter, const StringName &p_count_getter, const String &p_array_element_prefix, uint32_t p_count_usage) {

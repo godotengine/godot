@@ -261,17 +261,18 @@ class EditorInspectorSection : public Container {
 
 	String label;
 	String section;
-	bool vbox_added; // Optimization.
+	bool vbox_added = false; // Optimization.
 	Color bg_color;
-	bool foldable;
+	bool foldable = false;
+	int indent_depth = 0;
 
 	Timer *dropping_unfold_timer;
-	bool dropping;
+	bool dropping = false;
 
 	void _test_unfold();
 
 protected:
-	Object *object;
+	Object *object = nullptr;
 	VBoxContainer *vbox;
 
 	void _notification(int p_what);
@@ -281,7 +282,7 @@ protected:
 public:
 	virtual Size2 get_minimum_size() const override;
 
-	void setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable);
+	void setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth = 0);
 	VBoxContainer *get_vbox();
 	void unfold();
 	void fold();
