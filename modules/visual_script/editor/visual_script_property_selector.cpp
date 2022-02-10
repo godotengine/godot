@@ -493,7 +493,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	hbox->add_child(scope_combo);
 
 	search_box = memnew(LineEdit);
-	search_box->set_tooltip(TTR("Enter \" \" to show all filterd options\nEnter \".\" to show all filterd methods, operators and constructors\nUse CTRL_KEY to drop property setters"));
+	search_box->set_tooltip(TTR("Enter \" \" to show all filtered options\nEnter \".\" to show all filtered methods, operators and constructors\nUse CTRL_KEY to drop property setters"));
 	search_box->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_box->connect("text_changed", callable_mp(this, &VisualScriptPropertySelector::_update_results_s));
@@ -694,7 +694,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes_init() {
 			class_doc.name = selector_ui->base_script;
 
 			class_doc.inherits = script->get_instance_base_type();
-			class_doc.brief_description = ".vs files not suported by EditorHelp::get_doc_data()";
+			class_doc.brief_description = ".vs files not supported by EditorHelp::get_doc_data()";
 			class_doc.description = "";
 
 			Object *obj = ObjectDB::get_instance(script->get_instance_id());
@@ -711,9 +711,9 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes_init() {
 					class_doc.signals.push_back(_get_method_doc(S->get()));
 				}
 
-				List<PropertyInfo> propertys;
-				Object::cast_to<Script>(obj)->get_script_property_list(&propertys);
-				for (List<PropertyInfo>::Element *P = propertys.front(); P; P = P->next()) {
+				List<PropertyInfo> properties;
+				Object::cast_to<Script>(obj)->get_script_property_list(&properties);
+				for (List<PropertyInfo>::Element *P = properties.front(); P; P = P->next()) {
 					DocData::PropertyDoc pd = DocData::PropertyDoc();
 					pd.name = P->get().name;
 					pd.type = Variant::get_type_name(P->get().type);

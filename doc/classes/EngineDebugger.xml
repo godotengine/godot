@@ -67,7 +67,7 @@
 			<argument index="0" name="name" type="StringName" />
 			<argument index="1" name="profiler" type="EngineProfiler" />
 			<description>
-				Registers a profiler with the given [code]name[/code]. See [EngineProfiler] for more informations.
+				Registers a profiler with the given [code]name[/code]. See [EngineProfiler] for more information.
 			</description>
 		</method>
 		<method name="send_message">

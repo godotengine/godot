@@ -188,7 +188,7 @@ StringName _scs_create(const char *p_chr, bool p_static = false);
  * - Control::get_theme_*(<name> and Window::get_theme_*(<name> functions.
  * - emit_signal(<name>,..) function
  * - call_deferred(<name>,..) function
- * - Comparisons to a StringName in overriden _set and _get methods.
+ * - Comparisons to a StringName in overridden _set and _get methods.
  *
  * Use in places that can be called hundreds of times per frame (or more) is recommended, but this situation is very rare. If in doubt, do not use.
  */
