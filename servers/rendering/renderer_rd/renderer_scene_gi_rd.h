@@ -392,7 +392,7 @@ public:
 		return voxel_gi->texture;
 	};
 
-	RS::VoxelGIQuality voxel_gi_quality = RS::VOXEL_GI_QUALITY_HIGH;
+	RS::VoxelGIQuality voxel_gi_quality = RS::VOXEL_GI_QUALITY_LOW;
 
 	/* SDFGI */
 
