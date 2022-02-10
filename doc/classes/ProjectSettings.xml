@@ -1746,10 +1746,14 @@
 			[b]Note:[/b] This property is only read when the project starts. To adjust the automatic LOD threshold at runtime, set [member Viewport.mesh_lod_threshold] on the root [Viewport].
 		</member>
 		<member name="rendering/occlusion_culling/bvh_build_quality" type="int" setter="" getter="" default="2">
+			The [url=https://en.wikipedia.org/wiki/Bounding_volume_hierarchy]BVH[/url] quality to use when rendering the occlusion culling buffer. Higher values will result in more accurate occlusion culling, at the cost of higher CPU usage.
 		</member>
 		<member name="rendering/occlusion_culling/occlusion_rays_per_thread" type="int" setter="" getter="" default="512">
+			Higher values will result in more accurate occlusion culling, at the cost of higher CPU usage. The occlusion culling buffer's pixel count is roughly equal to [code]occlusion_rays_per_thread * number_of_logical_cpu_cores[/code], so it will depend on the system's CPU. Therefore, CPUs with fewer cores will use a lower resolution to attempt keeping performance costs even across devices.
 		</member>
 		<member name="rendering/occlusion_culling/use_occlusion_culling" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], [OccluderInstance3D] nodes will be usable for occlusion culling in 3D in the root viewport. In custom viewports, [member Viewport.use_occlusion_culling] must be set to [code]true[/code] instead.
+			[b]Note:[/b] Enabling occlusion culling has a cost on the CPU. Only enable occlusion culling if you actually plan to use it. Large open scenes with few or no objects blocking the view will generally not benefit much from occlusion culling. Large open scenes generally benefit more from mesh LOD and visibility ranges ([member GeometryInstance3D.visibility_range_begin] and [member GeometryInstance3D.visibility_range_end]) compared to occlusion culling.
 		</member>
 		<member name="rendering/reflections/reflection_atlas/reflection_count" type="int" setter="" getter="" default="64">
 			Number of cubemaps to store in the reflection atlas. The number of [ReflectionProbe]s in a scene will be limited by this amount. A higher number requires more VRAM.
