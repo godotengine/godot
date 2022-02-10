@@ -1172,7 +1172,7 @@ void RendererSceneSkyRD::setup(RendererSceneEnvironmentRD *p_env, RID p_render_b
 				}
 			}
 			// Check whether the directional_light_buffer changes
-			bool light_data_dirty = true;
+			bool light_data_dirty = false;
 
 			// Light buffer is dirty if we have fewer or more lights
 			// If we have fewer lights, make sure that old lights are disabled
