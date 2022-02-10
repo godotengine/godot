@@ -1812,7 +1812,7 @@ void main() {
 		discard;
 #endif //ubershader-runtime
 
-	//lay out everything, whathever is unused is optimized away anyway
+	//lay out everything, whatever is unused is optimized away anyway
 	highp vec3 vertex = vertex_interp;
 	vec3 view = -normalize(vertex_interp);
 	vec3 albedo = vec3(1.0);

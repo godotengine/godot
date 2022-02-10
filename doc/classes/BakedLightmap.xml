@@ -81,7 +81,7 @@
 			The calculated light data.
 		</member>
 		<member name="quality" type="int" setter="set_bake_quality" getter="get_bake_quality" enum="BakedLightmap.BakeQuality" default="1">
-			Determines the amount of samples per texel used in indrect light baking. The amount of samples for each quality level can be configured in the project settings.
+			Determines the amount of samples per texel used in indirect light baking. The amount of samples for each quality level can be configured in the project settings.
 		</member>
 		<member name="use_color" type="bool" setter="set_use_color" getter="is_using_color" default="true">
 			Store full color values in the lightmap textures. When disabled, lightmap textures will store a single brightness channel. Can be disabled to reduce disk usage if the scene contains only white lights or you don't mind losing color information in indirect lighting.

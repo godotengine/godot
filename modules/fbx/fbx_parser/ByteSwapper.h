@@ -70,7 +70,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ----------------------------------------------------------------------
 */
 
-/** @file Helper class tp perform various byte oder swappings
+/** @file Helper class to perform various byte order swappings
    (e.g. little to big endian) */
 #ifndef BYTE_SWAPPER_H
 #define BYTE_SWAPPER_H

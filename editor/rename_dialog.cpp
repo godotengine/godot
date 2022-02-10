@@ -535,7 +535,7 @@ String RenameDialog::_postprocess(const String &subject) {
 		// To Lowercase
 		result = result.to_lower();
 	} else if (case_id == 2) {
-		// To Upercase
+		// To Uppercase
 		result = result.to_upper();
 	}
 

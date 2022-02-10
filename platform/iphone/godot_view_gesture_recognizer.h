@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-// GodotViewGestureRecognizer allows iOS gestures to work currectly by
+// GodotViewGestureRecognizer allows iOS gestures to work correctly by
 // emulating UIScrollView's UIScrollViewDelayedTouchesBeganGestureRecognizer.
 // It catches all gestures incoming to UIView and delays them for 150ms
 // (the same value used by UIScrollViewDelayedTouchesBeganGestureRecognizer)

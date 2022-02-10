@@ -198,7 +198,7 @@ ObjectPtr LazyObject::LoadObject() {
 			object.reset(new ModelLimbNode(id, element, doc, name));
 
 		} else if (strcmp(classtag.c_str(), "IKEffector") && strcmp(classtag.c_str(), "FKEffector")) {
-			// FK and IK effectors are not supporte
+			// FK and IK effectors are not supported
 			object.reset(new Model(id, element, doc, name));
 		}
 	} else if (!strncmp(obtype, "Material", length)) {

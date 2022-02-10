@@ -403,7 +403,7 @@ See the [release announcement](https://godotengine.org/article/godot-3-4-is-rele
 - Label: Fix valign with stylebox borders ([GH-50478](https://github.com/godotengine/godot/pull/50478)).
 - RichTextLabel: Fix auto-wrapping on CJK texts ([GH-49280](https://github.com/godotengine/godot/pull/49280)).
 - RichTextLabel: Fix character horizontal offset calculation ([GH-52752](https://github.com/godotengine/godot/pull/52752)).
-- RichTextLabel: Honor content marging when drawing font shadow ([GH-54054](https://github.com/godotengine/godot/pull/54054)).
+- RichTextLabel: Honor content margin when drawing font shadow ([GH-54054](https://github.com/godotengine/godot/pull/54054)).
 - RichTextLabel: Fix meta link detection when used inside a fill tag ([GH-54114](https://github.com/godotengine/godot/pull/54114)).
 - TabContainer: Fix moving dropped tab to incorrect child index ([GH-51177](https://github.com/godotengine/godot/pull/51177)).
 - Tabs: Fix invisible tabs not being ignored ([GH-53551](https://github.com/godotengine/godot/pull/53551)).

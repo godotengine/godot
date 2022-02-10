@@ -179,11 +179,11 @@ fi
 while true; do
     if [ $terminal = "0" ] ; then
         if [ -x "$ZENITY" ] ; then
-            ans=$($ZENITY --text-info --filename="$patch" --width=800 --height=600 --title="Do you want to apply that patch?" --ok-label="Apply" --cancel-label="Do not apply" --extra-button="Apply and stage")
+            choice=$($ZENITY --text-info --filename="$patch" --width=800 --height=600 --title="Do you want to apply that patch?" --ok-label="Apply" --cancel-label="Do not apply" --extra-button="Apply and stage")
             if [ "$?" = "0" ] ; then
                 yn="Y"
             else
-                if [ "$ans" = "Apply and stage" ] ; then
+                if [ "$choice" = "Apply and stage" ] ; then
                     yn="S"
                 else
                     yn="N"
@@ -191,10 +191,10 @@ while true; do
             fi
         elif [ -x "$XMSG" ] ; then
             $XMSG -file "$patch" -buttons "Apply":100,"Apply and stage":200,"Do not apply":0 -center -default "Do not apply" -geometry 800x600 -title "Do you want to apply that patch?"
-            ans=$?
-            if [ "$ans" = "100" ] ; then
+            choice=$?
+            if [ "$choice" = "100" ] ; then
                 yn="Y"
-            elif [ "$ans" = "200" ] ; then
+            elif [ "$choice" = "200" ] ; then
                 yn="S"
             else
                 yn="N"
@@ -202,10 +202,10 @@ while true; do
         elif [ \( \( "$OSTYPE" = "msys" \) -o \( "$OSTYPE" = "win32" \) \) -a \( -x "$PWSH" \) ]; then
             winmessage="$(canonicalize_filename "./.git/hooks/winmessage.ps1")"
             $PWSH -noprofile -executionpolicy bypass -file "$winmessage" -file "$patch" -buttons "Apply":100,"Apply and stage":200,"Do not apply":0 -center -default "Do not apply" -geometry 800x600 -title "Do you want to apply that patch?"
-            ans=$?
-            if [ "$ans" = "100" ] ; then
+            choice=$?
+            if [ "$choice" = "100" ] ; then
                 yn="Y"
-            elif [ "$ans" = "200" ] ; then
+            elif [ "$choice" = "200" ] ; then
                 yn="S"
             else
                 yn="N"

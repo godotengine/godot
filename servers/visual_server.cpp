@@ -362,7 +362,7 @@ Vector2 VisualServer::norm_to_oct(const Vector3 v) {
 }
 
 // Maps normalized tangent vector to an octahedron projected onto the cartesian plane
-// Encodes the tangent vector sign in the second componenet of the returned Vector2 for use in shaders
+// Encodes the tangent vector sign in the second component of the returned Vector2 for use in shaders
 // high_precision specifies whether the encoding will be 32 bit (true) or 16 bit (false)
 // Resulting 2D vector in range [-1, 1]
 // See http://jcgt.org/published/0003/02/01/ for details
