@@ -328,7 +328,10 @@ _godot_all = library('godot_all',
     objcpp_args: OBJCPP_ARGS,
     link_args: LINK_ARGS)
 
-DEP_GODOT_ALL = declare_dependency(link_with: _godot_all, include_directories: INCDIRS, compile_args: CPP_ARGS, link_args: LINK_ARGS)
+DEP_GODOT_ALL = declare_dependency(link_with: _godot_all,
+                                   include_directories: INCDIRS,
+                                   compile_args: CPP_ARGS,
+                                   link_args: LINK_ARGS)
 
 # Tests if needed
 if get_option('tests')

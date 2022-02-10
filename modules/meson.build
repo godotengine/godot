@@ -59,11 +59,7 @@ foreach d: module_dirs
   endif
 endforeach
 
-#_register_module_types_target = custom_target(
-#    'register_module_types',
-#    output: ['register_module_types.gen.cpp'],
-#    input: [modules_db_file],
-#    command: [SCRIPT_MODULES_GEN, 'register_module_types', '@INPUT@', MESON_SOURCE_ROOT, '@OUTPUT@'],
-#    build_by_default: true
-#)
-#SOURCES += [_register_module_types_target]
+MAIN_SOURCES += configure_file(
+    output: 'register_module_types.gen.cpp',
+    command: [find_program('gen_registration.py'), '@OUTPUT@'] + MODULES_ENABLED,
+    )
