@@ -181,6 +181,7 @@ private:
 		uint64_t modal_frame; //frame used to put something as modal
 		Ref<Theme> theme;
 		Control *theme_owner;
+		StringName theme_type_variation;
 		String tooltip;
 		CursorShape default_cursor;
 
@@ -255,8 +256,8 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 	void _notification(int p_notification);
-
 	static void _bind_methods();
+	virtual void _validate_property(PropertyInfo &property) const;
 
 	//bind helpers
 
@@ -378,6 +379,9 @@ public:
 
 	void set_theme(const Ref<Theme> &p_theme);
 	Ref<Theme> get_theme() const;
+
+	void set_theme_type_variation(const StringName &p_theme_type);
+	StringName get_theme_type_variation() const;
 
 	void set_h_size_flags(int p_flags);
 	int get_h_size_flags() const;

@@ -400,6 +400,34 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
+void Control::_validate_property(PropertyInfo &property) const {
+	if (property.name == "theme_type_variation") {
+		List<StringName> names;
+
+		// Only the default theme and the project theme are used for the list of options.
+		// This is an imposed limitation to simplify the logic needed to leverage those options.
+		Theme::get_default()->get_type_variation_list(get_class_name(), &names);
+		if (Theme::get_project_default().is_valid()) {
+			Theme::get_project_default()->get_type_variation_list(get_class_name(), &names);
+		}
+		names.sort_custom<StringName::AlphCompare>();
+
+		Vector<StringName> unique_names;
+		String hint_string;
+		for (const List<StringName>::Element *E = names.front(); E; E = E->next()) {
+			// Skip duplicate values.
+			if (unique_names.find(E->get()) != -1) {
+				continue;
+			}
+
+			hint_string += String(E->get()) + ",";
+			unique_names.push_back(E->get());
+		}
+
+		property.hint_string = hint_string;
+	}
+}
+
 Control *Control::get_parent_control() const {
 	return data.parent;
 }
@@ -850,15 +878,19 @@ bool Control::has_theme_item_in_types(Control *p_theme_owner, Theme::DataType p_
 }
 
 void Control::_get_theme_type_dependencies(const StringName &p_theme_type, List<StringName> *p_list) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
-		Theme::get_default()->get_type_dependencies(get_class_name(), p_list);
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+		if (Theme::get_project_default().is_valid() && Theme::get_project_default()->get_type_variation_base(data.theme_type_variation) != StringName()) {
+			Theme::get_project_default()->get_type_dependencies(get_class_name(), data.theme_type_variation, p_list);
+		} else {
+			Theme::get_default()->get_type_dependencies(get_class_name(), data.theme_type_variation, p_list);
+		}
 	} else {
-		Theme::get_default()->get_type_dependencies(p_theme_type, p_list);
+		Theme::get_default()->get_type_dependencies(p_theme_type, StringName(), p_list);
 	}
 }
 
 Ref<Texture> Control::get_icon(const StringName &p_name, const StringName &p_theme_type) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		const Ref<Texture> *tex = data.icon_override.getptr(p_name);
 		if (tex) {
 			return *tex;
@@ -913,7 +945,7 @@ Ref<Shader> Control::get_shader(const StringName &p_name, const StringName &p_th
 }
 
 Ref<StyleBox> Control::get_stylebox(const StringName &p_name, const StringName &p_theme_type) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		const Ref<StyleBox> *style = data.style_override.getptr(p_name);
 		if (style) {
 			return *style;
@@ -926,7 +958,7 @@ Ref<StyleBox> Control::get_stylebox(const StringName &p_name, const StringName &
 }
 
 Ref<Font> Control::get_font(const StringName &p_name, const StringName &p_theme_type) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		const Ref<Font> *font = data.font_override.getptr(p_name);
 		if (font) {
 			return *font;
@@ -939,7 +971,7 @@ Ref<Font> Control::get_font(const StringName &p_name, const StringName &p_theme_
 }
 
 Color Control::get_color(const StringName &p_name, const StringName &p_theme_type) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		const Color *color = data.color_override.getptr(p_name);
 		if (color) {
 			return *color;
@@ -952,7 +984,7 @@ Color Control::get_color(const StringName &p_name, const StringName &p_theme_typ
 }
 
 int Control::get_constant(const StringName &p_name, const StringName &p_theme_type) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		const int *constant = data.constant_override.getptr(p_name);
 		if (constant) {
 			return *constant;
@@ -995,7 +1027,7 @@ bool Control::has_constant_override(const StringName &p_name) const {
 }
 
 bool Control::has_icon(const StringName &p_name, const StringName &p_theme_type) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		if (has_icon_override(p_name)) {
 			return true;
 		}
@@ -1046,7 +1078,7 @@ bool Control::has_shader(const StringName &p_name, const StringName &p_theme_typ
 }
 
 bool Control::has_stylebox(const StringName &p_name, const StringName &p_theme_type) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		if (has_stylebox_override(p_name)) {
 			return true;
 		}
@@ -1058,7 +1090,7 @@ bool Control::has_stylebox(const StringName &p_name, const StringName &p_theme_t
 }
 
 bool Control::has_font(const StringName &p_name, const StringName &p_theme_type) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		if (has_font_override(p_name)) {
 			return true;
 		}
@@ -1070,7 +1102,7 @@ bool Control::has_font(const StringName &p_name, const StringName &p_theme_type)
 }
 
 bool Control::has_color(const StringName &p_name, const StringName &p_theme_type) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		if (has_color_override(p_name)) {
 			return true;
 		}
@@ -1082,7 +1114,7 @@ bool Control::has_color(const StringName &p_name, const StringName &p_theme_type
 }
 
 bool Control::has_constant(const StringName &p_name, const StringName &p_theme_type) const {
-	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		if (has_constant_override(p_name)) {
 			return true;
 		}
@@ -2086,14 +2118,23 @@ void Control::set_theme(const Ref<Theme> &p_theme) {
 	}
 }
 
+Ref<Theme> Control::get_theme() const {
+	return data.theme;
+}
+
+void Control::set_theme_type_variation(const StringName &p_theme_type) {
+	data.theme_type_variation = p_theme_type;
+	_propagate_theme_changed(this, data.theme_owner);
+}
+
+StringName Control::get_theme_type_variation() const {
+	return data.theme_type_variation;
+}
+
 void Control::accept_event() {
 	if (is_inside_tree()) {
 		get_viewport()->_gui_accept_event();
 	}
-}
-
-Ref<Theme> Control::get_theme() const {
-	return data.theme;
 }
 
 void Control::set_tooltip(const String &p_tooltip) {
@@ -2637,6 +2678,9 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_theme", "theme"), &Control::set_theme);
 	ClassDB::bind_method(D_METHOD("get_theme"), &Control::get_theme);
 
+	ClassDB::bind_method(D_METHOD("set_theme_type_variation", "theme_type"), &Control::set_theme_type_variation);
+	ClassDB::bind_method(D_METHOD("get_theme_type_variation"), &Control::get_theme_type_variation);
+
 	ClassDB::bind_method(D_METHOD("add_icon_override", "name", "texture"), &Control::add_icon_override);
 	ClassDB::bind_method(D_METHOD("add_shader_override", "name", "shader"), &Control::add_shader_override);
 	ClassDB::bind_method(D_METHOD("add_stylebox_override", "name", "stylebox"), &Control::add_style_override);
@@ -2786,6 +2830,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "size_flags_stretch_ratio", PROPERTY_HINT_RANGE, "0,20,0.01,or_greater"), "set_stretch_ratio", "get_stretch_ratio");
 	ADD_GROUP("Theme", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "theme_type_variation", PROPERTY_HINT_ENUM_SUGGESTION), "set_theme_type_variation", "get_theme_type_variation");
 
 	BIND_ENUM_CONSTANT(FOCUS_NONE);
 	BIND_ENUM_CONSTANT(FOCUS_CLICK);
