@@ -858,10 +858,6 @@ void DisplayServerWayland::window_set_position(const Point2i &p_position, Displa
 	WindowData &wd = wls.windows[p_window];
 
 	wd.rect.position = p_position;
-
-	// FIXME: The size may be changed after a reposition, I believe.
-	xdg_surface_set_window_geometry(wd.xdg_surface, 0, 0, wd.rect.size.width, wd.rect.size.height);
-	wl_surface_commit(wd.wl_surface);
 }
 
 void DisplayServerWayland::window_set_max_size(const Size2i p_size, DisplayServer::WindowID p_window) {
@@ -904,8 +900,7 @@ void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::W
 
 	wd.rect.size = p_size;
 
-	// FIXME: The position may be changed after a resize, I believe.
-	xdg_surface_set_window_geometry(wd.xdg_surface, wd.rect.position.x, wd.rect.position.y, wd.rect.size.width, wd.rect.size.height);
+	xdg_surface_set_window_geometry(wd.xdg_surface, 0, 0, wd.rect.size.width, wd.rect.size.height);
 
 	context_vulkan->window_resize(p_window, wd.rect.size.width, wd.rect.size.height);
 	wl_surface_commit(wd.wl_surface);
