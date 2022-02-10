@@ -3,7 +3,7 @@ if get_option('builtin_graphite')
     _builtin_graphite_dep_incdirs = include_directories('include')
     _builtin_graphite_incdirs = include_directories('include', 'src')
 
-    _builtin_graphite_srcs = files([
+    _builtin_graphite_srcs = files(
         'src/gr_char_info.cpp',
         'src/gr_face.cpp',
         'src/gr_features.cpp',
@@ -34,7 +34,7 @@ if get_option('builtin_graphite')
         'src/UtfCodec.cpp',
         'src/FileFace.cpp',
         'src/json.cpp',
-    ])
+    )
 
     _builtin_graphite_compile_args = [
         '-DGRAPHITE2_STATIC',
@@ -43,9 +43,9 @@ if get_option('builtin_graphite')
     ]
 
     if meson.get_compiler('cpp').get_id() == 'msvc'
-        _builtin_graphite_srcs += files(['src/call_machine.cpp'])
+        _builtin_graphite_srcs += files('src/call_machine.cpp')
     else
-        _builtin_graphite_srcs += files(['src/direct_machine.cpp'])
+        _builtin_graphite_srcs += files('src/direct_machine.cpp')
     endif
 
     if meson.get_compiler('cpp').get_id() == 'msvc'
