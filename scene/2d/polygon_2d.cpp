@@ -295,14 +295,14 @@ void Polygon2D::_notification(int p_what) {
 			}
 
 			Vector<Color> colors;
+			colors.resize(len);
+
 			if (vertex_colors.size() == points.size()) {
-				colors.resize(len);
 				const Color *color_r = vertex_colors.ptr();
 				for (int i = 0; i < len; i++) {
 					colors.write[i] = color_r[i];
 				}
 			} else {
-				colors.resize(len);
 				for (int i = 0; i < len; i++) {
 					colors.write[i] = color;
 				}

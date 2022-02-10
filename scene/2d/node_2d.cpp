@@ -244,10 +244,9 @@ Point2 Node2D::get_global_position() const {
 }
 
 void Node2D::set_global_position(const Point2 &p_pos) {
-	Transform2D inv;
 	CanvasItem *pi = get_parent_item();
 	if (pi) {
-		inv = pi->get_global_transform().affine_inverse();
+		Transform2D inv = pi->get_global_transform().affine_inverse();
 		set_position(inv.xform(p_pos));
 	} else {
 		set_position(p_pos);
