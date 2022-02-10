@@ -229,16 +229,23 @@ Error EditorRun::run(const String &p_scene) {
 		}
 	}
 
-	printf("Running: %s", exec.utf8().get_data());
-	for (const String &E : args) {
-		printf(" %s", E.utf8().get_data());
-	};
-	printf("\n");
-
 	int instances = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_instances", 1);
 	for (int i = 0; i < instances; i++) {
+		List<String> instance_args;
+		for (int a = 0; a < args.size(); a++) {
+			instance_args.push_back(args[a]);
+		}
+		instance_args.push_back("--run-instance=" + itos(i + 1));
+
 		OS::ProcessID pid = 0;
-		Error err = OS::get_singleton()->create_instance(args, &pid);
+
+		printf("Running: %s", exec.utf8().get_data());
+		for (const String &E : instance_args) {
+			printf(" %s", E.utf8().get_data());
+		};
+		printf("\n");
+
+		Error err = OS::get_singleton()->create_instance(instance_args, &pid);
 		ERR_FAIL_COND_V(err, err);
 		pids.push_back(pid);
 	}
