@@ -93,6 +93,7 @@ protected:
 
 public:
 	enum SaverFlags {
+		FLAG_NONE = 0,
 		FLAG_RELATIVE_PATHS = 1,
 		FLAG_BUNDLE_RESOURCES = 2,
 		FLAG_CHANGE_PATH = 4,
@@ -104,7 +105,7 @@ public:
 
 	static ResourceSaver *get_singleton() { return singleton; }
 
-	Error save(const String &p_path, const RES &p_resource, SaverFlags p_flags);
+	Error save(const String &p_path, const RES &p_resource, uint32_t p_flags);
 	Vector<String> get_recognized_extensions(const RES &p_resource);
 
 	ResourceSaver() { singleton = this; }
