@@ -53,7 +53,7 @@ layout(set = 3, binding = 0) uniform sampler2D source_color_correction;
 layout(set = 3, binding = 0) uniform sampler3D source_color_correction;
 #endif
 
-layout(push_constant, binding = 1, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	vec3 bcs;
 	bool use_bcs;
 

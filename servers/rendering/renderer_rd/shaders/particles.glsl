@@ -168,7 +168,7 @@ layout(set = 3, binding = 0, std140) uniform MaterialUniforms{
 } material;
 #endif
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	float lifetime;
 	bool clear;
 	uint total_particles;

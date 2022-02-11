@@ -25,7 +25,7 @@ layout(rg8ui, set = 3, binding = 0) uniform restrict writeonly uimage2D dest_vox
 
 #endif
 
-layout(push_constant, binding = 16, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	ivec2 screen_size;
 	int sample_count;
 	uint pad;

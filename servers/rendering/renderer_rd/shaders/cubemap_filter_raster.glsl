@@ -25,7 +25,7 @@
 
 #VERSION_DEFINES
 
-layout(push_constant, binding = 1, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	int mip_level;
 	uint face_id;
 }
@@ -47,7 +47,7 @@ void main() {
 
 #VERSION_DEFINES
 
-layout(push_constant, binding = 1, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	int mip_level;
 	uint face_id;
 }

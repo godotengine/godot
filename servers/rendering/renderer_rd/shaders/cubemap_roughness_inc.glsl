@@ -1,6 +1,6 @@
 #define M_PI 3.14159265359
 
-layout(push_constant, binding = 1, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	uint face_id;
 	uint sample_count;
 	float roughness;

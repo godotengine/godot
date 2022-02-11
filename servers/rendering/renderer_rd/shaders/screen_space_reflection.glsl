@@ -15,7 +15,7 @@ layout(r8, set = 1, binding = 1) uniform restrict writeonly image2D blur_radius_
 layout(rgba8, set = 2, binding = 0) uniform restrict readonly image2D source_normal_roughness;
 layout(set = 3, binding = 0) uniform sampler2D source_metallic;
 
-layout(push_constant, binding = 2, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	vec4 proj_info;
 
 	ivec2 screen_size;

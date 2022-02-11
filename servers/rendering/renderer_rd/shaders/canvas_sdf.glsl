@@ -12,7 +12,7 @@ layout(r16_snorm, set = 0, binding = 2) uniform restrict writeonly image2D dst_s
 layout(rg16i, set = 0, binding = 3) uniform restrict readonly iimage2D src_process;
 layout(rg16i, set = 0, binding = 4) uniform restrict writeonly iimage2D dst_process;
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	ivec2 size;
 	int stride;
 	int shift;

@@ -53,7 +53,7 @@ layout(set = 0, binding = 0) uniform sampler2D source_image;
 #define FSR_UPSCALE_PASS_TYPE_EASU 0
 #define FSR_UPSCALE_PASS_TYPE_RCAS 1
 
-layout(push_constant, binding = 1, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	float resolution_width;
 	float resolution_height;
 	float upscaled_width;

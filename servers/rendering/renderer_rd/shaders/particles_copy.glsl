@@ -42,7 +42,7 @@ layout(set = 2, binding = 0, std430) restrict readonly buffer TrailBindPoses {
 }
 trail_bind_poses;
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	vec3 sort_direction;
 	uint total_particles;
 

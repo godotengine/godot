@@ -87,7 +87,7 @@ layout(set = 3, binding = 1) uniform ProjectionConstants {
 }
 projection_constants;
 
-layout(push_constant, binding = 3, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	ivec2 screen_size;
 	int pass;
 	int quality;
