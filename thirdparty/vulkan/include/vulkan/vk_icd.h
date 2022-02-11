@@ -33,7 +33,7 @@
 //   Version 2 - Add Loader/ICD Interface version negotiation
 //               via vk_icdNegotiateLoaderICDInterfaceVersion.
 //   Version 3 - Add ICD creation/destruction of KHR_surface objects.
-//   Version 4 - Add unknown physical device extension querying via
+//   Version 4 - Add unknown physical device extension qyering via
 //               vk_icdGetPhysicalDeviceProcAddr.
 //   Version 5 - Tells ICDs that the loader is now paying attention to the
 //               application version of Vulkan passed into the ApplicationInfo

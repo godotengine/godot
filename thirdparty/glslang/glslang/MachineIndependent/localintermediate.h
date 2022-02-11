@@ -290,7 +290,6 @@ public:
         resources(TBuiltInResource{}),
         numEntryPoints(0), numErrors(0), numPushConstants(0), recursive(false),
         invertY(false),
-        dxPositionW(false),
         useStorageBuffer(false),
         invariantAll(false),
         nanMinMaxClamp(false),
@@ -398,9 +397,6 @@ public:
         case EShTargetSpv_1_5:
             processes.addProcess("target-env spirv1.5");
             break;
-        case EShTargetSpv_1_6:
-            processes.addProcess("target-env spirv1.6");
-            break;
         default:
             processes.addProcess("target-env spirvUnknown");
             break;
@@ -418,9 +414,6 @@ public:
             break;
         case EShTargetVulkan_1_2:
             processes.addProcess("target-env vulkan1.2");
-            break;
-        case EShTargetVulkan_1_3:
-            processes.addProcess("target-env vulkan1.3");
             break;
         default:
             processes.addProcess("target-env vulkanUnknown");
@@ -466,14 +459,6 @@ public:
             processes.addProcess("invert-y");
     }
     bool getInvertY() const { return invertY; }
-
-    void setDxPositionW(bool dxPosW)
-    {
-      dxPositionW = dxPosW;
-      if (dxPositionW)
-        processes.addProcess("dx-position-w");
-    }
-    bool getDxPositionW() const { return dxPositionW; }
 
 #ifdef ENABLE_HLSL
     void setSource(EShSource s) { source = s; }
@@ -1085,7 +1070,6 @@ protected:
     int numPushConstants;
     bool recursive;
     bool invertY;
-    bool dxPositionW;
     bool useStorageBuffer;
     bool invariantAll;
     bool nanMinMaxClamp;            // true if desiring min/max/clamp to favor non-NaN over NaN

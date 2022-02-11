@@ -312,7 +312,6 @@ void TIntermediate::mergeModes(TInfoSink& infoSink, TIntermediate& unit)
     MERGE_TRUE(autoMapBindings);
     MERGE_TRUE(autoMapLocations);
     MERGE_TRUE(invertY);
-    MERGE_TRUE(dxPositionW);
     MERGE_TRUE(flattenUniformArrays);
     MERGE_TRUE(useUnknownFormat);
     MERGE_TRUE(hlslOffsets);
@@ -760,10 +759,7 @@ void TIntermediate::mergeLinkerObjects(TInfoSink& infoSink, TIntermSequence& lin
 
                     auto checkName = [this, unitSymbol, &infoSink](const TString& name) {
                         for (unsigned int i = 0; i < unitSymbol->getType().getStruct()->size(); ++i) {
-                            if (name == (*unitSymbol->getType().getStruct())[i].type->getFieldName()
-                                && !((*unitSymbol->getType().getStruct())[i].type->getQualifier().hasLocation()
-                                    || unitSymbol->getType().getQualifier().hasLocation())
-                                ) {
+                            if (name == (*unitSymbol->getType().getStruct())[i].type->getFieldName()) {
                                 error(infoSink, "Anonymous member name used for global variable or other anonymous member: ");
                                 infoSink.info << (*unitSymbol->getType().getStruct())[i].type->getCompleteString() << "\n";
                             }
@@ -862,19 +858,9 @@ void TIntermediate::mergeErrorCheck(TInfoSink& infoSink, const TIntermSymbol& sy
     if (symbol.getType().getBasicType() == EbtBlock && unitSymbol.getType().getBasicType() == EbtBlock &&
         symbol.getType().getStruct() && unitSymbol.getType().getStruct() &&
         symbol.getType().sameStructType(unitSymbol.getType())) {
-        unsigned int li = 0;
-        unsigned int ri = 0;
-        while (li < symbol.getType().getStruct()->size() && ri < unitSymbol.getType().getStruct()->size()) {
-            if ((*symbol.getType().getStruct())[li].type->hiddenMember()) {
-                ++li;
-                continue;
-            }
-            if ((*unitSymbol.getType().getStruct())[ri].type->hiddenMember()) {
-                ++ri;
-                continue;
-            }
-            const TQualifier& qualifier = (*symbol.getType().getStruct())[li].type->getQualifier();
-            const TQualifier & unitQualifier = (*unitSymbol.getType().getStruct())[ri].type->getQualifier();
+        for (unsigned int i = 0; i < symbol.getType().getStruct()->size(); ++i) {
+            const TQualifier& qualifier = (*symbol.getType().getStruct())[i].type->getQualifier();
+            const TQualifier& unitQualifier = (*unitSymbol.getType().getStruct())[i].type->getQualifier();
             if (qualifier.layoutMatrix     != unitQualifier.layoutMatrix ||
                 qualifier.layoutOffset     != unitQualifier.layoutOffset ||
                 qualifier.layoutAlign      != unitQualifier.layoutAlign ||
@@ -883,8 +869,6 @@ void TIntermediate::mergeErrorCheck(TInfoSink& infoSink, const TIntermSymbol& sy
                 error(infoSink, "Interface block member layout qualifiers must match:");
                 writeTypeComparison = true;
             }
-            ++li;
-            ++ri;
         }
     }
 
@@ -970,10 +954,10 @@ void TIntermediate::mergeErrorCheck(TInfoSink& infoSink, const TIntermSymbol& sy
     //       current implementation only has one offset.
     if (symbol.getQualifier().layoutMatrix    != unitSymbol.getQualifier().layoutMatrix ||
         symbol.getQualifier().layoutPacking   != unitSymbol.getQualifier().layoutPacking ||
-        (symbol.getQualifier().hasLocation() && unitSymbol.getQualifier().hasLocation() && symbol.getQualifier().layoutLocation != unitSymbol.getQualifier().layoutLocation) ||
+        symbol.getQualifier().layoutLocation  != unitSymbol.getQualifier().layoutLocation ||
         symbol.getQualifier().layoutComponent != unitSymbol.getQualifier().layoutComponent ||
         symbol.getQualifier().layoutIndex     != unitSymbol.getQualifier().layoutIndex ||
-        (symbol.getQualifier().hasBinding() && unitSymbol.getQualifier().hasBinding() && symbol.getQualifier().layoutBinding != unitSymbol.getQualifier().layoutBinding) ||
+        symbol.getQualifier().layoutBinding   != unitSymbol.getQualifier().layoutBinding ||
         (symbol.getQualifier().hasBinding() && (symbol.getQualifier().layoutOffset != unitSymbol.getQualifier().layoutOffset))) {
         error(infoSink, "Layout qualification must match:");
         writeTypeComparison = true;
@@ -1802,7 +1786,7 @@ unsigned int TIntermediate::computeTypeXfbSize(const TType& type, bool& contains
         return size;
     }
 
-    int numComponents {0};
+    int numComponents;
     if (type.isScalar())
         numComponents = 1;
     else if (type.isVector())
@@ -1950,7 +1934,7 @@ int TIntermediate::getBaseAlignment(const TType& type, int& size, int& stride, T
     }
 
     // rule 9
-    if (type.getBasicType() == EbtStruct || type.getBasicType() == EbtBlock) {
+    if (type.getBasicType() == EbtStruct) {
         const TTypeList& memberList = *type.getStruct();
 
         size = 0;
@@ -2175,9 +2159,8 @@ int TIntermediate::computeBufferReferenceTypeSize(const TType& type)
 bool TIntermediate::isIoResizeArray(const TType& type, EShLanguage language) {
     return type.isArray() &&
             ((language == EShLangGeometry    && type.getQualifier().storage == EvqVaryingIn) ||
-            (language == EShLangTessControl && (type.getQualifier().storage == EvqVaryingIn || type.getQualifier().storage == EvqVaryingOut) &&
+            (language == EShLangTessControl && type.getQualifier().storage == EvqVaryingOut &&
                 ! type.getQualifier().patch) ||
-            (language == EShLangTessEvaluation && type.getQualifier().storage == EvqVaryingIn) ||
             (language == EShLangFragment && type.getQualifier().storage == EvqVaryingIn &&
                 type.getQualifier().pervertexNV) ||
             (language == EShLangMeshNV && type.getQualifier().storage == EvqVaryingOut &&

@@ -68,8 +68,6 @@ spv_target_env MapToSpirvToolsEnv(const SpvVersion& spvVersion, spv::SpvBuildLog
         }
     case glslang::EShTargetVulkan_1_2:
         return spv_target_env::SPV_ENV_VULKAN_1_2;
-    case glslang::EShTargetVulkan_1_3:
-        return spv_target_env::SPV_ENV_VULKAN_1_3;
     default:
         break;
     }
