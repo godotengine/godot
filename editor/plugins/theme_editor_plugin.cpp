@@ -1211,7 +1211,8 @@ void ThemeItemEditorDialog::_update_edit_types() {
 
 	bool item_reselected = false;
 	edit_type_list->clear();
-	int e_idx = 0;
+	TreeItem *list_root = edit_type_list->create_item();
+
 	for (const StringName &E : theme_types) {
 		Ref<Texture2D> item_icon;
 		if (E == "") {
@@ -1219,19 +1220,21 @@ void ThemeItemEditorDialog::_update_edit_types() {
 		} else {
 			item_icon = EditorNode::get_singleton()->get_class_icon(E, "NodeDisabled");
 		}
-		edit_type_list->add_item(E, item_icon);
+		TreeItem *list_item = edit_type_list->create_item(list_root);
+		list_item->set_text(0, E);
+		list_item->set_icon(0, item_icon);
+		list_item->add_button(0, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TYPES_TREE_REMOVE_ITEM, false, TTR("Remove Type"));
 
 		if (E == edited_item_type) {
-			edit_type_list->select(e_idx);
+			list_item->select(0);
 			item_reselected = true;
 		}
-		e_idx++;
 	}
 	if (!item_reselected) {
 		edited_item_type = "";
 
-		if (edit_type_list->get_item_count() > 0) {
-			edit_type_list->select(0);
+		if (list_root->get_child_count() > 0) {
+			list_root->get_child(0)->select(0);
 		}
 	}
 
@@ -1240,9 +1243,9 @@ void ThemeItemEditorDialog::_update_edit_types() {
 	default_types.sort_custom<StringName::AlphCompare>();
 
 	String selected_type = "";
-	Vector<int> selected_ids = edit_type_list->get_selected_items();
-	if (selected_ids.size() > 0) {
-		selected_type = edit_type_list->get_item_text(selected_ids[0]);
+	TreeItem *selected_item = edit_type_list->get_selected();
+	if (selected_item) {
+		selected_type = selected_item->get_text(0);
 
 		edit_items_add_color->set_disabled(false);
 		edit_items_add_constant->set_disabled(false);
@@ -1276,9 +1279,24 @@ void ThemeItemEditorDialog::_update_edit_types() {
 	_update_edit_item_tree(selected_type);
 }
 
-void ThemeItemEditorDialog::_edited_type_selected(int p_item_idx) {
-	String selected_type = edit_type_list->get_item_text(p_item_idx);
+void ThemeItemEditorDialog::_edited_type_selected() {
+	TreeItem *selected_item = edit_type_list->get_selected();
+	String selected_type = selected_item->get_text(0);
 	_update_edit_item_tree(selected_type);
+}
+
+void ThemeItemEditorDialog::_edited_type_button_pressed(Object *p_item, int p_column, int p_id) {
+	TreeItem *item = Object::cast_to<TreeItem>(p_item);
+	if (!item) {
+		return;
+	}
+
+	switch (p_id) {
+		case TYPES_TREE_REMOVE_ITEM: {
+			String type_name = item->get_text(0);
+			_remove_theme_type(type_name);
+		} break;
+	}
 }
 
 void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
@@ -1429,8 +1447,8 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 	}
 
 	// If some type is selected, but it doesn't seem to have any items, show a guiding message.
-	Vector<int> selected_ids = edit_type_list->get_selected_items();
-	if (selected_ids.size() > 0) {
+	TreeItem *selected_item = edit_type_list->get_selected();
+	if (selected_item) {
 		if (!has_any_items) {
 			edit_items_message->set_text(TTR("This theme type is empty.\nAdd more items to it manually or by importing from another theme."));
 			edit_items_message->show();
@@ -1477,16 +1495,15 @@ void ThemeItemEditorDialog::_add_theme_type(const String &p_new_text) {
 	const String new_type = edit_add_type_value->get_text().strip_edges();
 	edit_add_type_value->clear();
 
-	edited_theme->add_icon_type(new_type);
-	edited_theme->add_stylebox_type(new_type);
-	edited_theme->add_font_type(new_type);
-	edited_theme->add_font_size_type(new_type);
-	edited_theme->add_color_type(new_type);
-	edited_theme->add_constant_type(new_type);
+	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	ur->create_action(TTR("Add Theme Type"));
 
-	_update_edit_types();
+	ur->add_do_method(*edited_theme, "add_type", new_type);
+	ur->add_undo_method(*edited_theme, "remove_type", new_type);
+	ur->add_do_method(this, "_update_edit_types");
+	ur->add_undo_method(this, "_update_edit_types");
 
-	edited_theme->emit_changed();
+	ur->commit_action();
 }
 
 void ThemeItemEditorDialog::_add_theme_item(Theme::DataType p_data_type, String p_item_name, String p_item_type) {
@@ -1528,6 +1545,27 @@ void ThemeItemEditorDialog::_add_theme_item(Theme::DataType p_data_type, String 
 
 	ur->add_do_method(this, "_update_edit_item_tree", edited_item_type);
 	ur->add_undo_method(this, "_update_edit_item_tree", edited_item_type);
+	ur->commit_action();
+}
+
+void ThemeItemEditorDialog::_remove_theme_type(const String &p_theme_type) {
+	Ref<Theme> old_snapshot = edited_theme->duplicate();
+	Ref<Theme> new_snapshot = edited_theme->duplicate();
+
+	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	ur->create_action(TTR("Remove Theme Type"));
+
+	new_snapshot->remove_type(p_theme_type);
+
+	ur->add_do_method(*edited_theme, "clear");
+	ur->add_do_method(*edited_theme, "merge_with", new_snapshot);
+	// If the type was empty, it cannot be restored with merge, but thankfully we can fake it.
+	ur->add_undo_method(*edited_theme, "add_type", p_theme_type);
+	ur->add_undo_method(*edited_theme, "merge_with", old_snapshot);
+
+	ur->add_do_method(this, "_update_edit_types");
+	ur->add_undo_method(this, "_update_edit_types");
+
 	ur->commit_action();
 }
 
@@ -1863,10 +1901,14 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_type_label->set_text(TTR("Types:"));
 	edit_dialog_side_vb->add_child(edit_type_label);
 
-	edit_type_list = memnew(ItemList);
+	edit_type_list = memnew(Tree);
+	edit_type_list->set_hide_root(true);
+	edit_type_list->set_hide_folding(true);
+	edit_type_list->set_columns(1);
 	edit_type_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	edit_dialog_side_vb->add_child(edit_type_list);
 	edit_type_list->connect("item_selected", callable_mp(this, &ThemeItemEditorDialog::_edited_type_selected));
+	edit_type_list->connect("button_pressed", callable_mp(this, &ThemeItemEditorDialog::_edited_type_button_pressed));
 
 	Label *edit_add_type_label = memnew(Label);
 	edit_add_type_label->set_text(TTR("Add Type:"));
