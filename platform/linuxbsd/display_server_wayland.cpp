@@ -502,6 +502,17 @@ void DisplayServerWayland::_wl_keyboard_on_enter(void *data, struct wl_keyboard 
 			break;
 		}
 	}
+
+	WaylandMessage msg;
+	msg.type=TYPE_WINDOW_EVENT;
+
+	WaylandWindowEventMessage *msg_data = memnew(WaylandWindowEventMessage);
+	msg_data->id = ks.focused_window_id;
+	msg_data->event = WINDOW_EVENT_FOCUS_IN;
+
+	msg.data = msg_data;
+
+	wls->message_queue.push_back(msg);
 }
 
 void DisplayServerWayland::_wl_keyboard_on_leave(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface) {
@@ -509,6 +520,17 @@ void DisplayServerWayland::_wl_keyboard_on_leave(void *data, struct wl_keyboard 
 	MutexLock mutex_lock(wls->mutex);
 
 	KeyboardState &ks = wls->seat_state.keyboard_state;
+
+	WaylandMessage msg;
+	msg.type=TYPE_WINDOW_EVENT;
+
+	WaylandWindowEventMessage *msg_data = memnew(WaylandWindowEventMessage);
+	msg_data->id = ks.focused_window_id;
+	msg_data->event = WINDOW_EVENT_FOCUS_OUT;
+
+	msg.data = msg_data;
+
+	wls->message_queue.push_back(msg);
 
 	ks.focused_window_id = INVALID_WINDOW_ID;
 	ks.repeating_keycode = XKB_KEYCODE_INVALID;
