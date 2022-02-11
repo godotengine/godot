@@ -13,6 +13,14 @@
 		<link title="Using the theme editor">$DOCS_URL/tutorials/ui/gui_using_theme_editor.html</link>
 	</tutorials>
 	<methods>
+		<method name="add_type">
+			<return type="void" />
+			<argument index="0" name="theme_type" type="StringName" />
+			<description>
+				Adds an empty theme type for every valid data type.
+				[b]Note:[/b] Empty types are not saved with the theme. This method only exists to perform in-memory changes to the resource. Use available [code]set_*[/code] methods to add theme items.
+			</description>
+		</method>
 		<method name="clear">
 			<return type="void" />
 			<description>
@@ -373,6 +381,13 @@
 			<description>
 				Adds missing and overrides existing definitions with values from the [code]other[/code] theme resource.
 				[b]Note:[/b] This modifies the current theme. If you want to merge two themes together without modifying either one, create a new empty theme and merge the other two into it one after another.
+			</description>
+		</method>
+		<method name="remove_type">
+			<return type="void" />
+			<argument index="0" name="theme_type" type="StringName" />
+			<description>
+				Removes the theme type, gracefully discarding defined theme items. If the type is a variation, this information is also erased. If the type is a base for type variations, those variations lose their base.
 			</description>
 		</method>
 		<method name="rename_color">
