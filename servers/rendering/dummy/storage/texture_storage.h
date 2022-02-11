@@ -169,6 +169,9 @@ public:
 	virtual void render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) override {}
 	virtual Rect2i render_target_get_sdf_rect(RID p_render_target) const override { return Rect2i(); }
 	virtual void render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled) override {}
+
+	virtual void render_target_set_vrs_mode(RID p_render_target, RS::ViewportVRSMode p_mode) override{};
+	virtual void render_target_set_vrs_texture(RID p_render_target, RID p_texture) override{};
 };
 
 } // namespace RendererDummy

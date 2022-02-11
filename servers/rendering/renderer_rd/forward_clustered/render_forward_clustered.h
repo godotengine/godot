@@ -107,11 +107,14 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		RID depth_normal_roughness_voxelgi_fb;
 		RID color_only_fb;
 		RID specular_only_fb;
+
+		RID vrs;
+
 		int width, height;
 		HashMap<uint32_t, RID> color_framebuffers;
 
 		// for multiview
-		uint32_t view_count;
+		uint32_t view_count = 1;
 		RID color_views[RendererSceneRender::MAX_RENDER_VIEWS]; // we should rewrite this so we get access to the existing views in our renderer, something we can address when we reorg this
 		RID depth_views[RendererSceneRender::MAX_RENDER_VIEWS]; // we should rewrite this so we get access to the existing views in our renderer, something we can address when we reorg this
 		RID color_msaa_views[RendererSceneRender::MAX_RENDER_VIEWS];
@@ -120,13 +123,14 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		RID normal_roughness_msaa_views[RendererSceneRender::MAX_RENDER_VIEWS];
 		RID voxelgi_views[RendererSceneRender::MAX_RENDER_VIEWS];
 		RID voxelgi_msaa_views[RendererSceneRender::MAX_RENDER_VIEWS];
+		RID vrs_views[RendererSceneRender::MAX_RENDER_VIEWS];
 
 		RID render_sdfgi_uniform_set;
 		void ensure_specular();
 		void ensure_voxelgi();
 		void ensure_velocity();
 		void clear();
-		virtual void configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, bool p_use_taa, uint32_t p_view_count);
+		virtual void configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, bool p_use_taa, uint32_t p_view_count, RID p_vrs_texture);
 		RID get_color_pass_fb(uint32_t p_color_pass_flags);
 
 		~RenderBufferDataForwardClustered();

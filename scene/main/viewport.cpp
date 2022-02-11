@@ -3080,6 +3080,41 @@ Viewport::DefaultCanvasItemTextureRepeat Viewport::get_default_canvas_item_textu
 	return default_canvas_item_texture_repeat;
 }
 
+void Viewport::set_vrs_mode(Viewport::VRSMode p_vrs_mode) {
+	// Note, set this even if not supported on this hardware, it will only be used if it is but we want to save the value as set by the user.
+	vrs_mode = p_vrs_mode;
+
+	switch (p_vrs_mode) {
+		case VRS_TEXTURE: {
+			RS::get_singleton()->viewport_set_vrs_mode(viewport, RS::VIEWPORT_VRS_TEXTURE);
+		} break;
+		case VRS_XR: {
+			RS::get_singleton()->viewport_set_vrs_mode(viewport, RS::VIEWPORT_VRS_XR);
+		} break;
+		default: {
+			RS::get_singleton()->viewport_set_vrs_mode(viewport, RS::VIEWPORT_VRS_DISABLED);
+		} break;
+	}
+
+	notify_property_list_changed();
+}
+
+Viewport::VRSMode Viewport::get_vrs_mode() const {
+	return vrs_mode;
+}
+
+void Viewport::set_vrs_texture(Ref<Texture2D> p_texture) {
+	vrs_texture = p_texture;
+
+	// TODO need to add something here in case the RID changes
+	RID tex = p_texture.is_valid() ? p_texture->get_rid() : RID();
+	RS::get_singleton()->viewport_set_vrs_texture(viewport, tex);
+}
+
+Ref<Texture2D> Viewport::get_vrs_texture() const {
+	return vrs_texture;
+}
+
 DisplayServer::WindowID Viewport::get_window_id() const {
 	return DisplayServer::MAIN_WINDOW_ID;
 }
@@ -3741,6 +3776,12 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fsr_mipmap_bias", "fsr_mipmap_bias"), &Viewport::set_fsr_mipmap_bias);
 	ClassDB::bind_method(D_METHOD("get_fsr_mipmap_bias"), &Viewport::get_fsr_mipmap_bias);
 
+	ClassDB::bind_method(D_METHOD("set_vrs_mode", "mode"), &Viewport::set_vrs_mode);
+	ClassDB::bind_method(D_METHOD("get_vrs_mode"), &Viewport::get_vrs_mode);
+
+	ClassDB::bind_method(D_METHOD("set_vrs_texture", "texture"), &Viewport::set_vrs_texture);
+	ClassDB::bind_method(D_METHOD("get_vrs_texture"), &Viewport::get_vrs_texture);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_3d"), "set_disable_3d", "is_3d_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_xr"), "set_use_xr", "is_using_xr");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "own_world_3d"), "set_use_own_world_3d", "is_using_own_world_3d");
@@ -3766,6 +3807,9 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fsr_mipmap_bias", PROPERTY_HINT_RANGE, "-2,2,0.1"), "set_fsr_mipmap_bias", "get_fsr_mipmap_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fsr_sharpness", PROPERTY_HINT_RANGE, "0,2,0.1"), "set_fsr_sharpness", "get_fsr_sharpness");
 #endif
+	ADD_GROUP("Variable Rate Shading", "vrs_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "vrs_mode", PROPERTY_HINT_ENUM, "Disabled,Texture,Depth buffer,XR"), "set_vrs_mode", "get_vrs_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "vrs_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_vrs_texture", "get_vrs_texture");
 	ADD_GROUP("Canvas Items", "canvas_item_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_item_default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Linear Mipmap,Nearest Mipmap"), "set_default_canvas_item_texture_filter", "get_default_canvas_item_texture_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_item_default_texture_repeat", PROPERTY_HINT_ENUM, "Disabled,Enabled,Mirror"), "set_default_canvas_item_texture_repeat", "get_default_canvas_item_texture_repeat");
@@ -3876,6 +3920,17 @@ void Viewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(SDF_SCALE_50_PERCENT);
 	BIND_ENUM_CONSTANT(SDF_SCALE_25_PERCENT);
 	BIND_ENUM_CONSTANT(SDF_SCALE_MAX);
+
+	BIND_ENUM_CONSTANT(VRS_DISABLED);
+	BIND_ENUM_CONSTANT(VRS_TEXTURE);
+	BIND_ENUM_CONSTANT(VRS_XR);
+	BIND_ENUM_CONSTANT(VRS_MAX);
+}
+
+void Viewport::_validate_property(PropertyInfo &property) const {
+	if (vrs_mode != VRS_TEXTURE && (property.name == "vrs_texture")) {
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
 }
 
 Viewport::Viewport() {

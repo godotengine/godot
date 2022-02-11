@@ -48,6 +48,18 @@
 
 VulkanHooks *VulkanContext::vulkan_hooks = nullptr;
 
+VkResult VulkanContext::vkCreateRenderPass2KHR(VkDevice device, const VkRenderPassCreateInfo2 *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkRenderPass *pRenderPass) {
+	if (fpCreateRenderPass2KHR == nullptr) {
+		fpCreateRenderPass2KHR = (PFN_vkCreateRenderPass2KHR)vkGetInstanceProcAddr(inst, "vkCreateRenderPass2KHR");
+	}
+
+	if (fpCreateRenderPass2KHR == nullptr) {
+		return VK_ERROR_EXTENSION_NOT_PRESENT;
+	} else {
+		return (fpCreateRenderPass2KHR)(device, pCreateInfo, pAllocator, pRenderPass);
+	}
+}
+
 VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(
 		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 		VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -507,6 +519,9 @@ Error VulkanContext::_check_capabilities() {
 	// (note that the desktop loader does a better job here but the android loader doesn't)
 
 	// assume not supported until proven otherwise
+	vrs_capabilities.pipeline_vrs_supported = false;
+	vrs_capabilities.primitive_vrs_supported = false;
+	vrs_capabilities.attachment_vrs_supported = false;
 	multiview_capabilities.is_supported = false;
 	multiview_capabilities.geometry_shader_is_supported = false;
 	multiview_capabilities.tessellation_shader_is_supported = false;
@@ -531,9 +546,17 @@ Error VulkanContext::_check_capabilities() {
 	}
 	if (vkGetPhysicalDeviceFeatures2_func != nullptr) {
 		// check our extended features
+		VkPhysicalDeviceFragmentShadingRateFeaturesKHR vrs_features = {
+			/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
+			/*pNext*/ nullptr,
+			/*pipelineFragmentShadingRate*/ false,
+			/*primitiveFragmentShadingRate*/ false,
+			/*attachmentFragmentShadingRate*/ false,
+		};
+
 		VkPhysicalDeviceShaderFloat16Int8FeaturesKHR shader_features = {
 			/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR,
-			/*pNext*/ nullptr,
+			/*pNext*/ &vrs_features,
 			/*shaderFloat16*/ false,
 			/*shaderInt8*/ false,
 		};
@@ -561,6 +584,10 @@ Error VulkanContext::_check_capabilities() {
 
 		vkGetPhysicalDeviceFeatures2_func(gpu, &device_features);
 
+		vrs_capabilities.pipeline_vrs_supported = vrs_features.pipelineFragmentShadingRate;
+		vrs_capabilities.primitive_vrs_supported = vrs_features.primitiveFragmentShadingRate;
+		vrs_capabilities.attachment_vrs_supported = vrs_features.attachmentFragmentShadingRate;
+
 		multiview_capabilities.is_supported = multiview_features.multiview;
 		multiview_capabilities.geometry_shader_is_supported = multiview_features.multiviewGeometryShader;
 		multiview_capabilities.tessellation_shader_is_supported = multiview_features.multiviewTessellationShader;
@@ -581,23 +608,32 @@ Error VulkanContext::_check_capabilities() {
 		device_properties_func = (PFN_vkGetPhysicalDeviceProperties2)vkGetInstanceProcAddr(inst, "vkGetPhysicalDeviceProperties2KHR");
 	}
 	if (device_properties_func != nullptr) {
+		VkPhysicalDeviceFragmentShadingRatePropertiesKHR vrsProperties;
 		VkPhysicalDeviceMultiviewProperties multiviewProperties;
 		VkPhysicalDeviceSubgroupProperties subgroupProperties;
 		VkPhysicalDeviceProperties2 physicalDeviceProperties;
+		void *nextptr = nullptr;
 
 		subgroupProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_PROPERTIES;
-		subgroupProperties.pNext = nullptr;
-
-		physicalDeviceProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+		subgroupProperties.pNext = nextptr;
+		nextptr = &subgroupProperties;
 
 		if (multiview_capabilities.is_supported) {
 			multiviewProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES;
-			multiviewProperties.pNext = &subgroupProperties;
+			multiviewProperties.pNext = nextptr;
 
-			physicalDeviceProperties.pNext = &multiviewProperties;
-		} else {
-			physicalDeviceProperties.pNext = &subgroupProperties;
+			nextptr = &multiviewProperties;
 		}
+
+		if (vrs_capabilities.attachment_vrs_supported) {
+			vrsProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR;
+			vrsProperties.pNext = nextptr;
+
+			nextptr = &vrsProperties;
+		}
+
+		physicalDeviceProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+		physicalDeviceProperties.pNext = nextptr;
 
 		device_properties_func(gpu, &physicalDeviceProperties);
 
@@ -608,6 +644,28 @@ Error VulkanContext::_check_capabilities() {
 		// - supportedStages has VK_SHADER_STAGE_ALL_GRAPHICS + VK_SHADER_STAGE_COMPUTE_BIT
 		// - supportedOperations has VK_SUBGROUP_FEATURE_QUAD_BIT
 		subgroup_capabilities.quadOperationsInAllStages = subgroupProperties.quadOperationsInAllStages;
+
+		if (vrs_capabilities.pipeline_vrs_supported || vrs_capabilities.primitive_vrs_supported || vrs_capabilities.attachment_vrs_supported) {
+			print_verbose("- Vulkan Varying Shading Rates supported:");
+			if (vrs_capabilities.pipeline_vrs_supported) {
+				print_verbose("  Pipeline fragment shading rate");
+			}
+			if (vrs_capabilities.primitive_vrs_supported) {
+				print_verbose("  Primitive fragment shading rate");
+			}
+			if (vrs_capabilities.attachment_vrs_supported) {
+				// TODO expose these somehow to the end user
+				vrs_capabilities.min_texel_size.x = vrsProperties.minFragmentShadingRateAttachmentTexelSize.width;
+				vrs_capabilities.min_texel_size.y = vrsProperties.minFragmentShadingRateAttachmentTexelSize.height;
+				vrs_capabilities.max_texel_size.x = vrsProperties.maxFragmentShadingRateAttachmentTexelSize.width;
+				vrs_capabilities.max_texel_size.y = vrsProperties.maxFragmentShadingRateAttachmentTexelSize.height;
+
+				print_verbose(String("  Attachment fragment shading rate") + String(", min texel size: (") + itos(vrs_capabilities.min_texel_size.x) + String(", ") + itos(vrs_capabilities.min_texel_size.y) + String(")") + String(", max texel size: (") + itos(vrs_capabilities.max_texel_size.x) + String(", ") + itos(vrs_capabilities.max_texel_size.y) + String(")"));
+			}
+
+		} else {
+			print_verbose("- Vulkan Varying Shading Rates not supported");
+		}
 
 		if (multiview_capabilities.is_supported) {
 			multiview_capabilities.max_view_count = multiviewProperties.maxMultiviewViewCount;
@@ -999,6 +1057,13 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 				// if multiview is supported, enable it
 				extension_names[enabled_extension_count++] = VK_KHR_MULTIVIEW_EXTENSION_NAME;
 			}
+			if (!strcmp(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, device_extensions[i].extensionName)) {
+				// if shading rate image is supported, enable it
+				extension_names[enabled_extension_count++] = VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME;
+			}
+			if (!strcmp(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME, device_extensions[i].extensionName)) {
+				extension_names[enabled_extension_count++] = VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME;
+			}
 			if (enabled_extension_count >= MAX_EXTENSIONS) {
 				free(device_extensions);
 				ERR_FAIL_V_MSG(ERR_BUG, "Enabled extension count reaches MAX_EXTENSIONS, BUG");
@@ -1109,6 +1174,18 @@ Error VulkanContext::_create_device() {
 		/*shaderInt8*/ shader_capabilities.shader_int8_is_supported,
 	};
 	nextptr = &shader_features;
+
+	VkPhysicalDeviceFragmentShadingRateFeaturesKHR vrs_features;
+	if (vrs_capabilities.pipeline_vrs_supported || vrs_capabilities.primitive_vrs_supported || vrs_capabilities.attachment_vrs_supported) {
+		// insert into our chain to enable these features if they are available
+		vrs_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR;
+		vrs_features.pNext = nextptr;
+		vrs_features.pipelineFragmentShadingRate = vrs_capabilities.pipeline_vrs_supported;
+		vrs_features.primitiveFragmentShadingRate = vrs_capabilities.primitive_vrs_supported;
+		vrs_features.attachmentFragmentShadingRate = vrs_capabilities.attachment_vrs_supported;
+
+		nextptr = &vrs_features;
+	}
 
 	VkPhysicalDeviceVulkan11Features vulkan11features;
 	VkPhysicalDevice16BitStorageFeaturesKHR storage_feature;
@@ -1725,7 +1802,9 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 	/******** FRAMEBUFFER ************/
 
 	{
-		const VkAttachmentDescription attachment = {
+		const VkAttachmentDescription2KHR attachment = {
+			/*sType*/ VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2_KHR,
+			/*pNext*/ nullptr,
 			/*flags*/ 0,
 			/*format*/ format,
 			/*samples*/ VK_SAMPLE_COUNT_1_BIT,
@@ -1737,14 +1816,20 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 			/*finalLayout*/ VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
 
 		};
-		const VkAttachmentReference color_reference = {
+		const VkAttachmentReference2KHR color_reference = {
+			/*sType*/ VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR,
+			/*pNext*/ nullptr,
 			/*attachment*/ 0,
 			/*layout*/ VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+			/*aspectMask*/ 0,
 		};
 
-		const VkSubpassDescription subpass = {
+		const VkSubpassDescription2KHR subpass = {
+			/*sType*/ VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2_KHR,
+			/*pNext*/ nullptr,
 			/*flags*/ 0,
 			/*pipelineBindPoint*/ VK_PIPELINE_BIND_POINT_GRAPHICS,
+			/*viewMask*/ 1,
 			/*inputAttachmentCount*/ 0,
 			/*pInputAttachments*/ nullptr,
 			/*colorAttachmentCount*/ 1,
@@ -1754,8 +1839,10 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 			/*preserveAttachmentCount*/ 0,
 			/*pPreserveAttachments*/ nullptr,
 		};
-		const VkRenderPassCreateInfo rp_info = {
-			/*sTyp*/ VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+
+		uint32_t view_masks = 1;
+		const VkRenderPassCreateInfo2KHR rp_info = {
+			/*sType*/ VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2_KHR,
 			/*pNext*/ nullptr,
 			/*flags*/ 0,
 			/*attachmentCount*/ 1,
@@ -1764,9 +1851,11 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 			/*pSubpasses*/ &subpass,
 			/*dependencyCount*/ 0,
 			/*pDependencies*/ nullptr,
+			/*correlatedViewMaskCount*/ 1,
+			/*pCorrelatedViewMasks*/ &view_masks,
 		};
 
-		err = vkCreateRenderPass(device, &rp_info, nullptr, &window->render_pass);
+		err = vkCreateRenderPass2KHR(device, &rp_info, nullptr, &window->render_pass);
 		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 		for (uint32_t i = 0; i < swapchainImageCount; i++) {

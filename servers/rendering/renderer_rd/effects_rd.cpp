@@ -1309,7 +1309,7 @@ EffectsRD::EffectsRD(bool p_prefer_raster_effects) {
 		FSR_upscale_modes.push_back("\n#define MODE_FSR_UPSCALE_FALLBACK\n");
 #else
 		// Everyone else can use normal mode when available.
-		if (RD::get_singleton()->get_device_capabilities()->supports_fsr_half_float) {
+		if (RD::get_singleton()->has_feature(RD::SUPPORTS_FSR_HALF_FLOAT)) {
 			FSR_upscale_modes.push_back("\n#define MODE_FSR_UPSCALE_NORMAL\n");
 		} else {
 			FSR_upscale_modes.push_back("\n#define MODE_FSR_UPSCALE_FALLBACK\n");

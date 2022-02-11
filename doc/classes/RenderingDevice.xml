@@ -395,7 +395,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="limit_get">
+		<method name="limit_get" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="limit" type="int" enum="RenderingDevice.Limit" />
 			<description>
