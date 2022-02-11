@@ -678,14 +678,24 @@ void SpriteFramesEditor::_animation_duplicate() {
 
 	StringName anim_to_duplicate = edited_anim;
 	int duplicate_frame_count = frames->get_frame_count(anim_to_duplicate);
-	
+	String new_name = String(edited_anim); //Get the animation name to duplicate, cant use the anim_to_duplicate since its a StringName and cannot be modified
+
 	_animation_add();
 
 	for (int i = 0; i < duplicate_frame_count; i++) {
 		frames->add_frame(edited_anim, frames->get_frame(anim_to_duplicate, i));
 	}
+
+	//Rename the duplicated animation
+	int counter = 1;
+	while(frames->has_animation(new_name + "_" + itos(counter))) {
+		counter++;
+	}
+	new_name = new_name + "_" + itos(counter);
+	frames->rename_animation(edited_anim,new_name);
 	
 	//Update the UI
+	edited_anim = new_name;
 	_update_library();
 	animations->grab_focus();
 }
