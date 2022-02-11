@@ -479,6 +479,7 @@ private:
 
 	int fixed_width = -1;
 
+	bool fit_content_width = false;
 	bool fit_content_height = false;
 
 public:
@@ -542,6 +543,9 @@ public:
 	void set_tab_size(int p_spaces);
 	int get_tab_size() const;
 
+	void set_fit_content_width(bool p_enabled);
+	bool is_fit_content_width_enabled() const;
+
 	void set_fit_content_height(bool p_enabled);
 	bool is_fit_content_height_enabled() const;
 
@@ -555,6 +559,7 @@ public:
 	int get_line_count() const;
 	int get_visible_line_count() const;
 
+	int get_content_width() const;
 	int get_content_height() const;
 	int get_content_width() const;
 

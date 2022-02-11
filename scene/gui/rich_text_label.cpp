@@ -2304,7 +2304,11 @@ void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 		Rect2 text_rect = _get_text_rect();
 
 		for (int i = p_frame->first_resized_line; i < p_frame->lines.size(); i++) {
-			_resize_line(p_frame, i, base_font, base_font_size, text_rect.get_size().width - scroll_w);
+			int line_width = text_rect.get_size().width;
+			if (!fit_content_width) {
+				line_width -= scroll_w;
+			}
+			_resize_line(p_frame, i, base_font, base_font_size, line_width);
 		}
 
 		int total_height = 0;
@@ -2322,7 +2326,7 @@ void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 		}
 		updating_scroll = false;
 
-		if (fit_content_height) {
+		if (fit_content_width || fit_content_height) {
 			update_minimum_size();
 		}
 		return;
@@ -2336,7 +2340,11 @@ void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 
 	int total_chars = (p_frame->first_invalid_line == 0) ? 0 : (p_frame->lines[p_frame->first_invalid_line].char_offset + p_frame->lines[p_frame->first_invalid_line].char_count);
 	for (int i = p_frame->first_invalid_line; i < p_frame->lines.size(); i++) {
-		_shape_line(p_frame, i, base_font, base_font_size, text_rect.get_size().width - scroll_w, &total_chars);
+		int line_width = text_rect.get_size().width;
+		if (!fit_content_width) {
+			line_width -= scroll_w;
+		}
+		_shape_line(p_frame, i, base_font, base_font_size, line_width, &total_chars);
 	}
 
 	int total_height = 0;
@@ -2356,7 +2364,7 @@ void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 	}
 	updating_scroll = false;
 
-	if (fit_content_height) {
+	if (fit_content_width || fit_content_height) {
 		update_minimum_size();
 	}
 }
@@ -2898,6 +2906,17 @@ void RichTextLabel::set_tab_size(int p_spaces) {
 
 int RichTextLabel::get_tab_size() const {
 	return tab_size;
+}
+
+void RichTextLabel::set_fit_content_width(bool p_enabled) {
+	if (p_enabled != fit_content_width) {
+		fit_content_width = p_enabled;
+		update_minimum_size();
+	}
+}
+
+bool RichTextLabel::is_fit_content_width_enabled() const {
+	return fit_content_width;
 }
 
 void RichTextLabel::set_fit_content_height(bool p_enabled) {
@@ -4201,6 +4220,17 @@ void RichTextLabel::install_effect(const Variant effect) {
 	}
 }
 
+int RichTextLabel::get_content_width() const {
+	int total_width = 0;
+	if (main->lines.size()) {
+		for (int i = 0; i < main->lines.size(); i++) {
+			int line_width = main->lines[i].offset.x + main->lines[i].text_buf->get_non_wrapped_size().x;
+			total_width = line_width > total_width ? line_width : total_width;
+		}
+	}
+	return total_width;
+}
+
 int RichTextLabel::get_content_height() const {
 	int total_height = 0;
 	if (main->lines.size()) {
@@ -4299,6 +4329,9 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tab_size", "spaces"), &RichTextLabel::set_tab_size);
 	ClassDB::bind_method(D_METHOD("get_tab_size"), &RichTextLabel::get_tab_size);
 
+	ClassDB::bind_method(D_METHOD("set_fit_content_width", "enabled"), &RichTextLabel::set_fit_content_width);
+	ClassDB::bind_method(D_METHOD("is_fit_content_width_enabled"), &RichTextLabel::is_fit_content_width_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_fit_content_height", "enabled"), &RichTextLabel::set_fit_content_height);
 	ClassDB::bind_method(D_METHOD("is_fit_content_height_enabled"), &RichTextLabel::is_fit_content_height_enabled);
 
@@ -4338,6 +4371,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_paragraph_count"), &RichTextLabel::get_paragraph_count);
 	ClassDB::bind_method(D_METHOD("get_visible_paragraph_count"), &RichTextLabel::get_visible_paragraph_count);
 
+	ClassDB::bind_method(D_METHOD("get_content_width"), &RichTextLabel::get_content_width);
 	ClassDB::bind_method(D_METHOD("get_content_height"), &RichTextLabel::get_content_height);
 	ClassDB::bind_method(D_METHOD("get_content_width"), &RichTextLabel::get_content_width);
 
@@ -4357,6 +4391,7 @@ void RichTextLabel::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bbcode_enabled"), "set_use_bbcode", "is_using_bbcode");
 
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fit_content_width"), "set_fit_content_width", "is_fit_content_width_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fit_content_height"), "set_fit_content_height", "is_fit_content_height_enabled");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_active"), "set_scroll_active", "is_scroll_active");
@@ -4508,6 +4543,10 @@ Size2 RichTextLabel::get_minimum_size() const {
 
 	if (fixed_width != -1) {
 		size.x += fixed_width;
+	} else {
+		if (fit_content_width) {
+			size.x += get_content_width();
+		}
 	}
 
 	if (fit_content_height) {
