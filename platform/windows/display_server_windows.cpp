@@ -1023,6 +1023,7 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 		r_style_ex |= WS_EX_TOPMOST | WS_EX_NOACTIVATE;
 	}
 	r_style |= WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+	r_style_ex |= WS_EX_ACCEPTFILES;
 }
 
 void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repaint) {
@@ -1099,10 +1100,10 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 
 	if (p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 		wd.multiwindow_fs = false;
-		_update_window_style(false);
+		_update_window_style(p_window, false);
 	} else {
 		wd.multiwindow_fs = true;
-		_update_window_style(false);
+		_update_window_style(p_window, false);
 	}
 
 	if ((p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) && !wd.fullscreen) {
@@ -1123,7 +1124,7 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		wd.maximized = false;
 		wd.minimized = false;
 
-		_update_window_style(false);
+		_update_window_style(p_window, false);
 
 		MoveWindow(wd.hWnd, pos.x, pos.y, size.width, size.height, TRUE);
 
