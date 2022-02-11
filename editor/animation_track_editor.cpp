@@ -4952,7 +4952,7 @@ void AnimationTrackEditor::_add_method_key(const String &p_method) {
 	EditorNode::get_singleton()->show_warning(TTR("Method not found in object: ") + p_method);
 }
 
-void AnimationTrackEditor::_key_selected(int p_track, int p_key, bool p_single) {
+void AnimationTrackEditor::_key_selected(int p_key, bool p_single, int p_track) {
 	ERR_FAIL_INDEX(p_track, animation->get_track_count());
 	ERR_FAIL_INDEX(p_key, animation->track_get_key_count(p_track));
 
