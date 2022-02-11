@@ -91,6 +91,7 @@
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/graph_node.h"
 #include "scene/gui/grid_container.h"
@@ -336,6 +337,9 @@ void register_scene_types() {
 	ClassDB::register_class<CenterContainer>();
 	ClassDB::register_class<ScrollContainer>();
 	ClassDB::register_class<PanelContainer>();
+	ClassDB::register_virtual_class<FlowContainer>();
+	ClassDB::register_class<HFlowContainer>();
+	ClassDB::register_class<VFlowContainer>();
 
 	OS::get_singleton()->yield(); //may take time to init
 
