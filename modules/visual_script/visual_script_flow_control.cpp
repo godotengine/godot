@@ -778,7 +778,7 @@ public:
 			}
 
 			if (!ResourceCache::has(script)) {
-				//if the script is not in use by anyone, we can safely assume whathever we got is not casting to it.
+				//if the script is not in use by anyone, we can safely assume whatever we got is not casting to it.
 				return 1;
 			}
 			Ref<Script> cast_script = Ref<Resource>(ResourceCache::get(script));

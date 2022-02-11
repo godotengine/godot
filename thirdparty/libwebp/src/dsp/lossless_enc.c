@@ -745,7 +745,7 @@ static void PredictorSub##PREDICTOR_I##_C(const uint32_t* in,              \
   assert(upper != NULL);                                                   \
   for (x = 0; x < num_pixels; ++x) {                                       \
     const uint32_t pred =                                                  \
-        VP8LPredictor##PREDICTOR_I##_C(in[x - 1], upper + x);              \
+        VP8LPredictor##PREDICTOR_I##_C(&in[x - 1], upper + x);             \
     out[x] = VP8LSubPixels(in[x], pred);                                   \
   }                                                                        \
 }

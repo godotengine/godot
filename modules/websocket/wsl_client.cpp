@@ -163,22 +163,24 @@ Error WSLClient::connect_to_host(String p_host, String p_path, uint16_t p_port, 
 	_peer = Ref<WSLPeer>(memnew(WSLPeer));
 
 	if (p_host.is_valid_ip_address()) {
-		ip_candidates.clear();
-		ip_candidates.push_back(IP_Address(p_host));
+		_ip_candidates.push_back(IP_Address(p_host));
 	} else {
-		ip_candidates = IP::get_singleton()->resolve_hostname_addresses(p_host);
+		// Queue hostname for resolution.
+		_resolver_id = IP::get_singleton()->resolve_hostname_queue_item(p_host);
+		ERR_FAIL_COND_V(_resolver_id == IP::RESOLVER_INVALID_ID, ERR_INVALID_PARAMETER);
+		// Check if it was found in cache.
+		IP::ResolverStatus ip_status = IP::get_singleton()->get_resolve_item_status(_resolver_id);
+		if (ip_status == IP::RESOLVER_STATUS_DONE) {
+			_ip_candidates = IP::get_singleton()->get_resolve_item_addresses(_resolver_id);
+			IP::get_singleton()->erase_resolve_item(_resolver_id);
+			_resolver_id = IP::RESOLVER_INVALID_ID;
+		}
 	}
 
-	ERR_FAIL_COND_V(ip_candidates.empty(), ERR_INVALID_PARAMETER);
-
-	String port = "";
-	if ((p_port != 80 && !p_ssl) || (p_port != 443 && p_ssl)) {
-		port = ":" + itos(p_port);
-	}
-
-	Error err = ERR_BUG; // Should be at least one entry.
-	while (ip_candidates.size() > 0) {
-		err = _tcp->connect_to_host(ip_candidates.pop_front(), p_port);
+	// We assume OK while hostname resolution is pending.
+	Error err = _resolver_id != IP::RESOLVER_INVALID_ID ? OK : FAILED;
+	while (_ip_candidates.size()) {
+		err = _tcp->connect_to_host(_ip_candidates.pop_front(), p_port);
 		if (err == OK) {
 			break;
 		}
@@ -200,8 +202,11 @@ Error WSLClient::connect_to_host(String p_host, String p_path, uint16_t p_port, 
 	}
 
 	_key = WSLPeer::generate_key();
-	// TODO custom extra headers (allow overriding this too?)
 	String request = "GET " + p_path + " HTTP/1.1\r\n";
+	String port = "";
+	if ((p_port != 80 && !p_ssl) || (p_port != 443 && p_ssl)) {
+		port = ":" + itos(p_port);
+	}
 	request += "Host: " + p_host + port + "\r\n";
 	request += "Upgrade: websocket\r\n";
 	request += "Connection: Upgrade\r\n";
@@ -231,6 +236,30 @@ int WSLClient::get_max_packet_size() const {
 }
 
 void WSLClient::poll() {
+	if (_resolver_id != IP::RESOLVER_INVALID_ID) {
+		IP::ResolverStatus ip_status = IP::get_singleton()->get_resolve_item_status(_resolver_id);
+		if (ip_status == IP::RESOLVER_STATUS_WAITING) {
+			return;
+		}
+		// Anything else is either a candidate or a failure.
+		Error err = FAILED;
+		if (ip_status == IP::RESOLVER_STATUS_DONE) {
+			_ip_candidates = IP::get_singleton()->get_resolve_item_addresses(_resolver_id);
+			while (_ip_candidates.size()) {
+				err = _tcp->connect_to_host(_ip_candidates.pop_front(), _port);
+				if (err == OK) {
+					break;
+				}
+			}
+		}
+		IP::get_singleton()->erase_resolve_item(_resolver_id);
+		_resolver_id = IP::RESOLVER_INVALID_ID;
+		if (err != OK) {
+			disconnect_from_host();
+			_on_error();
+			return;
+		}
+	}
 	if (_peer->is_connected_to_host()) {
 		_peer->poll();
 		if (!_peer->is_connected_to_host()) {
@@ -251,7 +280,7 @@ void WSLClient::poll() {
 			_on_error();
 			break;
 		case StreamPeerTCP::STATUS_CONNECTED: {
-			ip_candidates.clear();
+			_ip_candidates.clear();
 			Ref<StreamPeerSSL> ssl;
 			if (_use_ssl) {
 				if (_connection == _tcp) {
@@ -282,9 +311,9 @@ void WSLClient::poll() {
 			_do_handshake();
 		} break;
 		case StreamPeerTCP::STATUS_ERROR:
-			while (ip_candidates.size() > 0) {
+			while (_ip_candidates.size() > 0) {
 				_tcp->disconnect_from_host();
-				if (_tcp->connect_to_host(ip_candidates.pop_front(), _port) == OK) {
+				if (_tcp->connect_to_host(_ip_candidates.pop_front(), _port) == OK) {
 					return;
 				}
 			}
@@ -307,7 +336,7 @@ NetworkedMultiplayerPeer::ConnectionStatus WSLClient::get_connection_status() co
 		return CONNECTION_CONNECTED;
 	}
 
-	if (_tcp->is_connected_to_host()) {
+	if (_tcp->is_connected_to_host() || _resolver_id != IP::RESOLVER_INVALID_ID) {
 		return CONNECTION_CONNECTING;
 	}
 
@@ -330,7 +359,12 @@ void WSLClient::disconnect_from_host(int p_code, String p_reason) {
 	memset(_resp_buf, 0, sizeof(_resp_buf));
 	_resp_pos = 0;
 
-	ip_candidates.clear();
+	if (_resolver_id != IP::RESOLVER_INVALID_ID) {
+		IP::get_singleton()->erase_resolve_item(_resolver_id);
+		_resolver_id = IP::RESOLVER_INVALID_ID;
+	}
+
+	_ip_candidates.clear();
 }
 
 IP_Address WSLClient::get_connected_host() const {

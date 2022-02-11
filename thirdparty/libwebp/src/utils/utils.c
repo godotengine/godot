@@ -23,7 +23,7 @@
 // alloc/free etc) is printed. For debugging/tuning purpose only (it's slow,
 // and not multi-thread safe!).
 // An interesting alternative is valgrind's 'massif' tool:
-//    http://valgrind.org/docs/manual/ms-manual.html
+//    https://valgrind.org/docs/manual/ms-manual.html
 // Here is an example command line:
 /*    valgrind --tool=massif --massif-out-file=massif.out \
                --stacks=yes --alloc-fn=WebPSafeMalloc --alloc-fn=WebPSafeCalloc

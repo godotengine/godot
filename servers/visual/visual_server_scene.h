@@ -611,7 +611,7 @@ private:
 
 public:
 	struct Ghost : RID_Data {
-		// all interations with actual ghosts are indirect, as the ghost is part of the scenario
+		// all interactions with actual ghosts are indirect, as the ghost is part of the scenario
 		Scenario *scenario = nullptr;
 		uint32_t object_id = 0;
 		RGhostHandle rghost_handle = 0; // handle in occlusion system (or 0)
@@ -638,7 +638,7 @@ private:
 
 public:
 	struct Portal : RID_Data {
-		// all interations with actual portals are indirect, as the portal is part of the scenario
+		// all interactions with actual portals are indirect, as the portal is part of the scenario
 		uint32_t scenario_portal_id = 0;
 		Scenario *scenario = nullptr;
 		virtual ~Portal() {
@@ -659,7 +659,7 @@ public:
 
 	// RoomGroups
 	struct RoomGroup : RID_Data {
-		// all interations with actual roomgroups are indirect, as the roomgroup is part of the scenario
+		// all interactions with actual roomgroups are indirect, as the roomgroup is part of the scenario
 		uint32_t scenario_roomgroup_id = 0;
 		Scenario *scenario = nullptr;
 		virtual ~RoomGroup() {
@@ -704,7 +704,7 @@ public:
 
 	// Rooms
 	struct Room : RID_Data {
-		// all interations with actual rooms are indirect, as the room is part of the scenario
+		// all interactions with actual rooms are indirect, as the room is part of the scenario
 		uint32_t scenario_room_id = 0;
 		Scenario *scenario = nullptr;
 		virtual ~Room() {

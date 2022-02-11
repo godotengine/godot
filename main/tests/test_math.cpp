@@ -319,7 +319,7 @@ public:
 						curly_stack++;
 						break;
 					} else {
-						break; //whathever else
+						break; //whatever else
 					}
 				}
 
