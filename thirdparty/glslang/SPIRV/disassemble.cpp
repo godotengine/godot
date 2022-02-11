@@ -43,7 +43,6 @@
 #include <stack>
 #include <sstream>
 #include <cstring>
-#include <utility>
 
 #include "disassemble.h"
 #include "doc.h"
@@ -101,7 +100,6 @@ protected:
     void outputMask(OperandClass operandClass, unsigned mask);
     void disassembleImmediates(int numOperands);
     void disassembleIds(int numOperands);
-    std::pair<int, std::string> decodeString();
     int disassembleString();
     void disassembleInstruction(Id resultId, Id typeId, Op opCode, int numOperands);
 
@@ -292,44 +290,31 @@ void SpirvStream::disassembleIds(int numOperands)
     }
 }
 
-// decode string from words at current position (non-consuming)
-std::pair<int, std::string> SpirvStream::decodeString()
-{
-    std::string res;
-    int wordPos = word;
-    char c;
-    bool done = false;
-
-    do {
-        unsigned int content = stream[wordPos];
-        for (int charCount = 0; charCount < 4; ++charCount) {
-            c = content & 0xff;
-            content >>= 8;
-            if (c == '\0') {
-                done = true;
-                break;
-            }
-            res += c;
-        }
-        ++wordPos;
-    } while(! done);
-
-    return std::make_pair(wordPos - word, res);
-}
-
 // return the number of operands consumed by the string
 int SpirvStream::disassembleString()
 {
+    int startWord = word;
+
     out << " \"";
 
-    std::pair<int, std::string> decoderes = decodeString();
+    const char* wordString;
+    bool done = false;
+    do {
+        unsigned int content = stream[word];
+        wordString = (const char*)&content;
+        for (int charCount = 0; charCount < 4; ++charCount) {
+            if (*wordString == 0) {
+                done = true;
+                break;
+            }
+            out << *(wordString++);
+        }
+        ++word;
+    } while (! done);
 
-    out << decoderes.second;
     out << "\"";
 
-    word += decoderes.first;
-
-    return decoderes.first;
+    return word - startWord;
 }
 
 void SpirvStream::disassembleInstruction(Id resultId, Id /*typeId*/, Op opCode, int numOperands)
@@ -346,7 +331,7 @@ void SpirvStream::disassembleInstruction(Id resultId, Id /*typeId*/, Op opCode, 
             nextNestedControl = 0;
         }
     } else if (opCode == OpExtInstImport) {
-        idDescriptor[resultId] = decodeString().second;
+        idDescriptor[resultId] = (const char*)(&stream[word]);
     }
     else {
         if (resultId != 0 && idDescriptor[resultId].size() == 0) {
@@ -443,7 +428,7 @@ void SpirvStream::disassembleInstruction(Id resultId, Id /*typeId*/, Op opCode, 
             --numOperands;
             // Get names for printing "(XXX)" for readability, *after* this id
             if (opCode == OpName)
-                idDescriptor[stream[word - 1]] = decodeString().second;
+                idDescriptor[stream[word - 1]] = (const char*)(&stream[word]);
             break;
         case OperandVariableIds:
             disassembleIds(numOperands);

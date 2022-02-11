@@ -1343,6 +1343,7 @@ int ShInitialize()
 
     glslang::GetGlobalLock();
     ++NumberOfClients;
+    glslang::ReleaseGlobalLock();
 
     if (PerProcessGPA == nullptr)
         PerProcessGPA = new TPoolAllocator();
@@ -1352,7 +1353,6 @@ int ShInitialize()
     glslang::HlslScanContext::fillInKeywordMap();
 #endif
 
-    glslang::ReleaseGlobalLock();
     return 1;
 }
 
@@ -1415,10 +1415,9 @@ int ShFinalize()
     --NumberOfClients;
     assert(NumberOfClients >= 0);
     bool finalize = NumberOfClients == 0;
-    if (! finalize) {
-        glslang::ReleaseGlobalLock();
+    glslang::ReleaseGlobalLock();
+    if (! finalize)
         return 1;
-    }
 
     for (int version = 0; version < VersionCount; ++version) {
         for (int spvVersion = 0; spvVersion < SpvVersionCount; ++spvVersion) {
@@ -1456,7 +1455,6 @@ int ShFinalize()
     glslang::HlslScanContext::deleteKeywordMap();
 #endif
 
-    glslang::ReleaseGlobalLock();
     return 1;
 }
 
@@ -1829,7 +1827,6 @@ void  TShader::setUniqueId(unsigned long long id)
 }
 
 void TShader::setInvertY(bool invert)                   { intermediate->setInvertY(invert); }
-void TShader::setDxPositionW(bool invert)               { intermediate->setDxPositionW(invert); }
 void TShader::setNanMinMaxClamp(bool useNonNan)         { intermediate->setNanMinMaxClamp(useNonNan); }
 
 #ifndef GLSLANG_WEB

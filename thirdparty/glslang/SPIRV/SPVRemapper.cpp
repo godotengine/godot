@@ -297,21 +297,15 @@ namespace spv {
     std::string spirvbin_t::literalString(unsigned word) const
     {
         std::string literal;
-        const spirword_t * pos = spv.data() + word;
 
         literal.reserve(16);
 
-        do {
-            spirword_t word = *pos;
-            for (int i = 0; i < 4; i++) {
-                char c = word & 0xff;
-                if (c == '\0')
-                    return literal;
-                literal += c;
-                word >>= 8;
-            }
-            pos++;
-        } while (true);
+        const char* bytes = reinterpret_cast<const char*>(spv.data() + word);
+
+        while (bytes && *bytes)
+            literal += *bytes++;
+
+        return literal;
     }
 
     void spirvbin_t::applyMap()

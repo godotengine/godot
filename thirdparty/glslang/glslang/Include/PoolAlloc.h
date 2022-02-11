@@ -306,8 +306,6 @@ public:
 
     TPoolAllocator& getAllocator() const { return allocator; }
 
-    pool_allocator select_on_container_copy_construction() const { return pool_allocator{}; }
-
 protected:
     pool_allocator& operator=(const pool_allocator&) { return *this; }
     TPoolAllocator& allocator;
