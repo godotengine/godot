@@ -2320,22 +2320,12 @@ Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a
 
 	if (vformat == ((1 << Variant::INT) | (1 << Variant::FLOAT)) || vformat == (1 << Variant::FLOAT)) {
 		//mix of real and int
+		real_t a = p_a;
+		real_t b = p_b;
+		real_t pa = p_pre_a;
+		real_t pb = p_post_b;
 
-		real_t p0 = p_pre_a;
-		real_t p1 = p_a;
-		real_t p2 = p_b;
-		real_t p3 = p_post_b;
-
-		real_t t = p_c;
-		real_t t2 = t * t;
-		real_t t3 = t2 * t;
-
-		return 0.5f *
-				((p1 * 2.0f) +
-						(-p0 + p2) * t +
-						(2.0f * p0 - 5.0f * p1 + 4 * p2 - p3) * t2 +
-						(-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
-
+		return Math::cubic_interpolate(a, b, pa, pb, p_c);
 	} else if ((vformat & (vformat - 1))) {
 		return p_a; //can't interpolate, mix of types
 	}

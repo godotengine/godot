@@ -65,6 +65,7 @@ const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX
 	"step_decimals",
 	"snapped",
 	"lerp",
+	"cubic_interpolate",
 	"inverse_lerp",
 	"range_lerp",
 	"move_toward",
@@ -212,6 +213,7 @@ int VisualScriptBuiltinFunc::get_func_argument_count(BuiltinFunc p_func) {
 		case MATH_WRAPF:
 		case LOGIC_CLAMP:
 			return 3;
+		case MATH_CUBIC_INTERPOLATE:
 		case MATH_RANGE_LERP:
 			return 5;
 		case FUNC_MAX: {
@@ -325,6 +327,19 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 				return PropertyInfo(Variant::FLOAT, "from");
 			} else if (p_idx == 1) {
 				return PropertyInfo(Variant::FLOAT, "to");
+			} else {
+				return PropertyInfo(Variant::FLOAT, "weight");
+			}
+		} break;
+		case MATH_CUBIC_INTERPOLATE: {
+			if (p_idx == 0) {
+				return PropertyInfo(Variant::FLOAT, "from");
+			} else if (p_idx == 1) {
+				return PropertyInfo(Variant::FLOAT, "to");
+			} else if (p_idx == 2) {
+				return PropertyInfo(Variant::FLOAT, "pre");
+			} else if (p_idx == 3) {
+				return PropertyInfo(Variant::FLOAT, "post");
 			} else {
 				return PropertyInfo(Variant::FLOAT, "weight");
 			}
@@ -525,6 +540,7 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		} break;
 		case MATH_SNAPPED:
 		case MATH_LERP:
+		case MATH_CUBIC_INTERPOLATE:
 		case MATH_LERP_ANGLE:
 		case MATH_INVERSE_LERP:
 		case MATH_RANGE_LERP:
@@ -794,6 +810,14 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			VALIDATE_ARG_NUM(1);
 			VALIDATE_ARG_NUM(2);
 			*r_return = Math::lerp((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2]);
+		} break;
+		case VisualScriptBuiltinFunc::MATH_CUBIC_INTERPOLATE: {
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			VALIDATE_ARG_NUM(2);
+			VALIDATE_ARG_NUM(3);
+			VALIDATE_ARG_NUM(4);
+			*r_return = Math::cubic_interpolate((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2], (double)*p_inputs[3], (double)*p_inputs[4]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_LERP_ANGLE: {
 			VALIDATE_ARG_NUM(0);
@@ -1220,6 +1244,7 @@ void VisualScriptBuiltinFunc::_bind_methods() {
 	BIND_ENUM_CONSTANT(MATH_STEP_DECIMALS);
 	BIND_ENUM_CONSTANT(MATH_SNAPPED);
 	BIND_ENUM_CONSTANT(MATH_LERP);
+	BIND_ENUM_CONSTANT(MATH_CUBIC_INTERPOLATE);
 	BIND_ENUM_CONSTANT(MATH_INVERSE_LERP);
 	BIND_ENUM_CONSTANT(MATH_RANGE_LERP);
 	BIND_ENUM_CONSTANT(MATH_MOVE_TOWARD);
@@ -1309,6 +1334,7 @@ void register_visual_script_builtin_func_node() {
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/step_decimals", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_STEP_DECIMALS>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/snapped", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_SNAPPED>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/lerp", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_LERP>);
+	VisualScriptLanguage::singleton->add_register_func("functions/built_in/cubic_interpolate", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_CUBIC_INTERPOLATE>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/lerp_angle", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_LERP_ANGLE>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/inverse_lerp", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_INVERSE_LERP>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/range_lerp", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANGE_LERP>);

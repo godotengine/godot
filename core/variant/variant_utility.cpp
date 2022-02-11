@@ -231,6 +231,10 @@ struct VariantUtilityFunctions {
 		return Math::lerp(from, to, weight);
 	}
 
+	static inline double cubic_interpolate(double from, double to, double pre, double post, double weight) {
+		return Math::cubic_interpolate(from, to, pre, post, weight);
+	}
+
 	static inline double lerp_angle(double from, double to, double weight) {
 		return Math::lerp_angle(from, to, weight);
 	}
@@ -1204,6 +1208,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(snapped, sarray("x", "step"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(lerp, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(cubic_interpolate, sarray("from", "to", "pre", "post", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(lerp_angle, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(inverse_lerp, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(range_lerp, sarray("value", "istart", "istop", "ostart", "ostop"), Variant::UTILITY_FUNC_TYPE_MATH);

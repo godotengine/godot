@@ -221,6 +221,17 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="cubic_interpolate">
+			<return type="float" />
+			<argument index="0" name="from" type="float" />
+			<argument index="1" name="to" type="float" />
+			<argument index="2" name="pre" type="float" />
+			<argument index="3" name="post" type="float" />
+			<argument index="4" name="weight" type="float" />
+			<description>
+				Cubic interpolates between two values by the factor defined in [code]weight[/code] with pre and post values.
+			</description>
+		</method>
 		<method name="db2linear">
 			<return type="float" />
 			<argument index="0" name="db" type="float" />
