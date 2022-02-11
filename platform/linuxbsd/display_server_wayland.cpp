@@ -589,19 +589,17 @@ void DisplayServerWayland::_xdg_surface_on_configure(void *data, struct xdg_surf
 	if (wd->buffer_created) {
 		xdg_surface_set_window_geometry(wd->xdg_surface, 0, 0, wd->rect.size.width, wd->rect.size.height);
 
-		if (!wd->rect_changed_callback.is_null()) {
-			WaylandMessage msg;
-			msg.type=TYPE_WINDOW_RECT;
+		WaylandMessage msg;
+		msg.type = TYPE_WINDOW_RECT;
 
-			WaylandWindowRectMessage *msg_data = memnew(WaylandWindowRectMessage);
+		WaylandWindowRectMessage *msg_data = memnew(WaylandWindowRectMessage);
 
-			msg_data->id = wd->id;
-			msg_data->rect = wd->rect;
+		msg_data->id = wd->id;
+		msg_data->rect = wd->rect;
 
-			msg.data = msg_data;
+		msg.data = msg_data;
 
-			wd->message_queue->push_back(msg);
-		}
+		wd->message_queue->push_back(msg);
 	}
 }
 
@@ -613,6 +611,22 @@ void DisplayServerWayland::_xdg_toplevel_on_configure(void *data, struct xdg_top
 		wd->rect.size.width = width;
 		wd->rect.size.height = height;
 	}
+}
+
+void DisplayServerWayland::_xdg_toplevel_on_close(void *data, struct xdg_toplevel *xdg_toplevel) {
+	WindowData *wd = (WindowData*) data;
+
+	WaylandMessage msg;
+	msg.type = TYPE_WINDOW_EVENT;
+
+	WaylandWindowEventMessage *msg_data = memnew(WaylandWindowEventMessage);
+
+	msg_data->id = wd->id;
+	msg_data->event = WINDOW_EVENT_CLOSE_REQUEST;
+
+	msg.data = msg_data;
+
+	wd->message_queue->push_back(msg);
 }
 
 // Interface mthods
@@ -813,8 +827,10 @@ void DisplayServerWayland::window_set_rect_changed_callback(const Callable &p_ca
 }
 
 void DisplayServerWayland::window_set_window_event_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
-	// TODO
-	print_verbose("wayland stub window_set_window_event_callback");
+	MutexLock mutex_lock(wls.mutex);
+
+	WindowData &wd = wls.windows[p_window];
+	wd.window_event_callback = p_callable;
 }
 
 void DisplayServerWayland::window_set_input_event_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
@@ -1056,21 +1072,44 @@ void DisplayServerWayland::process_events() {
 			case TYPE_WINDOW_RECT: {
 				// TODO: Assertions.
 
-				WaylandWindowRectMessage* msg_data = (WaylandWindowRectMessage*) msg.data;
+				WaylandWindowRectMessage *msg_data = (WaylandWindowRectMessage*) msg.data;
 
-				Variant var_rect = Variant(msg_data->rect);
-				Variant *arg = &var_rect;
+				WindowData &wd = wls.windows[msg_data->id];
 
-				Variant ret;
-				Callable::CallError ce;
+				if (!wd.rect_changed_callback.is_null()) {
+					Variant var_rect = Variant(msg_data->rect);
+					Variant *arg = &var_rect;
 
-				context_vulkan->window_resize(msg_data->id, msg_data->rect.size.width, msg_data->rect.size.height);
+					Variant ret;
+					Callable::CallError ce;
 
-				wls.windows[msg_data->id].rect_changed_callback.call((const Variant**) &arg, 1, ret, ce);
+					context_vulkan->window_resize(msg_data->id, msg_data->rect.size.width, msg_data->rect.size.height);
+
+					wd.rect_changed_callback.call((const Variant**) &arg, 1, ret, ce);
+				}
 
 				memdelete(msg_data);
 				break;
-			}	
+			}
+
+			case TYPE_WINDOW_EVENT: {
+				WaylandWindowEventMessage *msg_data = (WaylandWindowEventMessage*) msg.data;
+
+				WindowData &wd = wls.windows[msg_data->id];
+
+				if (!wd.window_event_callback.is_null()) {
+					Variant var_event = Variant(msg_data->event);
+					Variant *arg = &var_event;
+
+					Variant ret;
+					Callable::CallError ce;
+
+					wd.window_event_callback.call((const Variant**) &arg, 1, ret, ce);
+				}
+
+				memdelete(msg_data);
+				break;
+			}
 
 			case TYPE_INPUT_EVENT: {
 				Ref<InputEvent> *ev = (Ref<InputEvent>*) msg.data;

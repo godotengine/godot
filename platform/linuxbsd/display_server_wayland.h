@@ -32,6 +32,7 @@ class DisplayServerWayland : public DisplayServer {
 	// TODO: Add the rest of the events.
 	enum WaylandMessageType {
 		TYPE_WINDOW_RECT, // WaylandWindowRectMessage
+		TYPE_WINDOW_EVENT, // WaylandWindowEventMessage
 		TYPE_INPUT_EVENT, // Ref<InputEvent>
 	};
 
@@ -45,6 +46,11 @@ class DisplayServerWayland : public DisplayServer {
 	struct WaylandWindowRectMessage {
 		WindowID id;
 		Rect2i rect;
+	};
+
+	struct WaylandWindowEventMessage {
+		WindowID id;
+		WindowEvent event;
 	};
 
 	struct WaylandGlobals {
@@ -69,6 +75,7 @@ class DisplayServerWayland : public DisplayServer {
 		Rect2i rect;
 
 		Callable rect_changed_callback;
+		Callable window_event_callback;
 		Callable input_event_callback;
 
 		// Metadata.
@@ -204,6 +211,7 @@ class DisplayServerWayland : public DisplayServer {
 	static void _xdg_wm_base_on_ping(void *data, struct xdg_wm_base *xdg_wm_base, uint32_t serial);
 	static void _xdg_surface_on_configure(void *data, struct xdg_surface *xdg_surface, uint32_t serial);
 	static void _xdg_toplevel_on_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states);
+	static void _xdg_toplevel_on_close(void *data, struct xdg_toplevel *xdg_toplevel);
 
 	// Wayland event listeners.
 	static constexpr struct wl_registry_listener registry_listener = {
@@ -248,6 +256,7 @@ class DisplayServerWayland : public DisplayServer {
 
 	static constexpr struct xdg_toplevel_listener xdg_toplevel_listener = {
 		.configure = _xdg_toplevel_on_configure,
+		.close = _xdg_toplevel_on_close,
 	};
 
 public:
