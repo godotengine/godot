@@ -1,4 +1,5 @@
 if get_option('tools')
+    editor_builders = find_program('editor_builders.py')
 
     # NOTE: do not use files() here
     _exporter_list = [
@@ -53,39 +54,28 @@ if get_option('tools')
     #)
     #SOURCES += [_other_docs_target]
 
-    #_docs_target = custom_target(
-    #    'docs',
-    #    output: ['doc_data_class_path.gen.h', 'doc_data_compressed.gen.h'],
-    #    input: [modules_db_file],
-    #    command: [SCRIPT_DOCS, '@INPUT@', meson.project_source_root(), '@OUTPUT@'],
-    #    build_by_default: true
-    #)
-    #SOURCES += [_docs_target]
+    _docs_target = configure_file(
+        output: 'doc_data_compressed.gen.h', # 'doc_data_class_path.gen.h',
+        command: [editor_builders, 'make_doc_header', '@OUTPUT@'] + MODULES_ENABLED,
+    )
+    SOURCES += [_docs_target]
 
 
     # Translations also will run once
 
     _doc_translations_target_srcs = files(run_command(GLOB, meson.project_source_root() / 'doc/translations/*.po', check: true).stdout().split('\n'))
-    _doc_translations_target = custom_target(
-        'doc_translations',
-        input: _doc_translations_target_srcs,
-        output: ['doc_translations.gen.h'],
-        env: SCRIPTS_ENV,
-        command: [SCRIPT_COMPAT, 'make_doc_translations_header', SCRIPT_EDITOR_BUILDERS, '-i','@INPUT@', '-o', '@OUTPUT@'],
-        build_by_default: true
-    )
-    SOURCES += [_doc_translations_target]
+    SOURCES += custom_target('doc_translations',
+        output: 'doc_translations.gen.h',
+        input:  _doc_translations_target_srcs,
+        command: [editor_builders, 'make_doc_translations', '@OUTPUT@', '@INPUT@'],
+        )
 
     _editor_translations_target_srcs = files(run_command(GLOB, 'translations/*.po', check: true).stdout().split('\n'))
-    _editor_translations_target = custom_target(
-        'editor_translations',
-        input: _editor_translations_target_srcs,
-        output: ['editor_translations.gen.h'],
-        env: SCRIPTS_ENV,
-        command: [SCRIPT_COMPAT, 'make_editor_translations_header', SCRIPT_EDITOR_BUILDERS, '-i','@INPUT@', '-o', '@OUTPUT@'],
-        build_by_default: true
+    SOURCES += custom_target('editor_translations',
+        output: 'editor_translations.gen.h',
+        input:  _editor_translations_target_srcs,
+        command: [editor_builders, 'make_editor_translations_header', '@OUTPUT@', '@INPUT@'],
     )
-    SOURCES += [_editor_translations_target]
 
     # ...and so will fonts
 

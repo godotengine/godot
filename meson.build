@@ -312,9 +312,23 @@ template_builders_bin = find_program('editor/template_builders.py')
 # then thirdparty
 subdir('thirdparty')
 
-# get all of godot except main
+godotcore_dep = declare_dependency(include_directories: INCDIRS,
+                                   compile_args: CPP_ARGS,
+                                   link_args: LINK_ARGS)
+
 subdir('platform')
 subdir('core')
+# Tests if needed
+if get_option('tests')
+    subdir('tests')
+endif
+
+# build up our module list
+MODULE_DEPENDENCIES = []
+# generate the module include files
+subdir('modules')
+
+# get all of godot except main
 subdir('scene')
 subdir('drivers')
 subdir('servers')
@@ -332,16 +346,6 @@ DEP_GODOT_ALL = declare_dependency(link_with: _godot_all,
                                    include_directories: INCDIRS,
                                    compile_args: CPP_ARGS,
                                    link_args: LINK_ARGS)
-
-# Tests if needed
-if get_option('tests')
-    subdir('tests')
-endif
-
-# build up our module list
-MODULE_DEPENDENCIES = []
-# generate the module include files
-subdir('modules')
 
 # finally, get the sources for main separately
 subdir('main')

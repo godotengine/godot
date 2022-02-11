@@ -1,11 +1,11 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 """Functions used to generate source files during build time
 
 All such functions are invoked in a subprocess on Windows to prevent build flakiness.
 
 """
-import os
+import os, sys
 import os.path
 import shutil
 import subprocess
@@ -15,18 +15,38 @@ import zlib
 from platform_methods import subprocess_main
 
 
-def make_doc_header(target, source, env):
-    dst = target[0]
-    g = open(dst, "w", encoding="utf-8")
+from glob import glob
+
+def replace_if_different(output_path_str, new_content_path_str):
+    import pathlib
+
+    output_path = pathlib.Path(output_path_str)
+    new_content_path = pathlib.Path(new_content_path_str)
+    if not output_path.exists():
+        new_content_path.replace(output_path)
+        return
+    if output_path.read_bytes() == new_content_path.read_bytes():
+        new_content_path.unlink()
+    else:
+        new_content_path.replace(output_path)
+
+def make_doc_header(compr_filename, modules):
+    path_filename = os.path.join(os.path.split(compr_filename)[0], 'doc_data_class_path.gen.h')
+    compr_tmpname = compr_filename + '~'
+    path_tmpname = path_filename + '~'
     buf = ""
     docbegin = ""
     docend = ""
-    for src in source:
-        if not src.endswith(".xml"):
-            continue
-        with open(src, "r", encoding="utf-8") as f:
-            content = f.read()
-        buf += content
+    root = os.environ['MESON_SOURCE_ROOT']
+
+    path_entries = []
+    for m in modules:
+        subdir = os.path.join('modules', m, 'doc_classes')
+        for src in sorted(glob(os.path.join(root, subdir, '*.xml'))):
+            with open(src, "r", encoding="utf-8") as f:
+                content = f.read()
+            buf += content
+            path_entries += [(os.path.split(src)[-1], subdir)]
 
     buf = (docbegin + buf + docend).encode("utf-8")
     decomp_size = len(buf)
@@ -35,21 +55,29 @@ def make_doc_header(target, source, env):
     # (at the cost of initial build times).
     buf = zlib.compress(buf, zlib.Z_BEST_COMPRESSION)
 
-    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    g.write("#ifndef _DOC_DATA_RAW_H\n")
-    g.write("#define _DOC_DATA_RAW_H\n")
-    g.write('static const char *_doc_data_hash = "' + str(hash(buf)) + '";\n')
-    g.write("static const int _doc_data_compressed_size = " + str(len(buf)) + ";\n")
-    g.write("static const int _doc_data_uncompressed_size = " + str(decomp_size) + ";\n")
-    g.write("static const unsigned char _doc_data_compressed[] = {\n")
-    for i in range(len(buf)):
-        g.write("\t" + str(buf[i]) + ",\n")
-    g.write("};\n")
+    with open(compr_tmpname, "w", encoding="utf-8") as g:
+        g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+        g.write("#ifndef _DOC_DATA_RAW_H\n")
+        g.write("#define _DOC_DATA_RAW_H\n")
+        g.write('static const char *_doc_data_hash = "' + str(hash(buf)) + '";\n')
+        g.write("static const int _doc_data_compressed_size = " + str(len(buf)) + ";\n")
+        g.write("static const int _doc_data_uncompressed_size = " + str(decomp_size) + ";\n")
+        g.write("static const unsigned char _doc_data_compressed[] = {\n")
+        for i in range(len(buf)):
+            g.write("\t" + str(buf[i]) + ",\n")
+        g.write("};\n")
+        g.write("#endif")
 
-    g.write("#endif")
+    replace_if_different(compr_filename, compr_tmpname)
 
-    g.close()
-
+    with open(path_tmpname, "w", encoding="utf-8") as g:
+        g.write(f"static const int _doc_data_class_path_count = {len(path_entries)};\n")
+        g.write("struct _DocDataClassPath { const char* name; const char* path; };\n")
+        g.write(f"static const _DocDataClassPath _doc_data_class_paths[{len(path_entries)+1}] = {{\n")
+        for i in path_entries:
+            g.write(f'        {{"{i[0]}", "{i[1]}"}},\n')
+        g.write("        {nullptr, nullptr}\n};")
+    replace_if_different(path_filename, path_tmpname)
 
 def make_fonts_header(target, source, env):
     dst = target[0]
@@ -78,11 +106,9 @@ def make_fonts_header(target, source, env):
 
     g.close()
 
-
-def make_translations_header(target, source, env, category):
-    dst = target[0]
-
-    g = open(dst, "w", encoding="utf-8")
+def make_translations_header(dst, source, category):
+    tmpname = dst + '~'
+    g = open(tmpname, "w", encoding="utf-8")
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     g.write("#ifndef _{}_TRANSLATIONS_H\n".format(category.upper()))
@@ -155,19 +181,29 @@ def make_translations_header(target, source, env, category):
     g.write("#endif")
 
     g.close()
+    replace_if_different(dst, tmpname)
+    assert(os.path.exists(dst))
 
+def make_editor_translations_header(target, source):
+    make_translations_header(target, source, "editor")
 
-def make_editor_translations_header(target, source, env):
-    make_translations_header(target, source, env, "editor")
+def make_editor_translations_header(target, source):
+    make_translations_header(target, source, "editor")
 
+def make_property_translations_header(target, source):
+    make_translations_header(target, source, "property")
 
-def make_property_translations_header(target, source, env):
-    make_translations_header(target, source, env, "property")
-
-
-def make_doc_translations_header(target, source, env):
-    make_translations_header(target, source, env, "doc")
+def make_doc_translations_header(target, source):
+    make_translations_header(target, source, "doc")
 
 
 if __name__ == "__main__":
-    subprocess_main(globals())
+    type = sys.argv[1]
+    if type == 'make_doc_header':
+        make_doc_header(sys.argv[2], sys.argv[3:])
+    elif type == 'make_editor_translations_header':
+        make_editor_translations_header(sys.argv[2], sys.argv[3:])
+    elif type == 'make_doc_translations':
+        make_doc_translations_header(sys.argv[2], sys.argv[3:])
+    else:
+        sys.exit(f'Unknown command {type}.')

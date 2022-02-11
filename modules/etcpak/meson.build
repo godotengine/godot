@@ -4,7 +4,7 @@ _module_etcpak_deps = [DEP_ETCPAK]
 lib_module_etcpak = library('module_etcpak',
     _module_etcpak_srcs,
     _certs_target,
-    dependencies: [DEP_GODOT_ALL, DEP_ETCPAK]
+    dependencies: [godotcore_dep, DEP_ETCPAK]
 )
 
 DEP_MODULE_ETCPAK = declare_dependency(link_with: lib_module_etcpak)

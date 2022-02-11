@@ -3,7 +3,7 @@ subdir('editor_templates')
 _module_gdscript_srcs = files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
 
 _module_gdscript_cpp_args = []
-_module_gdscript_deps = [DEP_GODOT_ALL]
+_module_gdscript_deps = [godotcore_dep]
 
 # do we have tools?
 if get_option('tools')

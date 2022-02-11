@@ -4,7 +4,7 @@ if not DEP_BASIS_UNIVERSAL.found()
 endif
 
 _lib_module_basis_universal = library('module_basis_universal', _module_basis_universal_srcs,
-    dependencies: [DEP_GODOT_ALL, DEP_BASIS_UNIVERSAL]
+    dependencies: [godotcore_dep, DEP_BASIS_UNIVERSAL]
 )
 
 DEP_MODULE_BASIS_UNIVERSAL = declare_dependency(link_with: _lib_module_basis_universal)

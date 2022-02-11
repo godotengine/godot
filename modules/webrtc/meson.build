@@ -1,6 +1,6 @@
 _module_webrtc_srcs = files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
 _module_webrtc_compile_args = []
-_module_webrtc_deps = [DEP_GODOT_ALL]
+_module_webrtc_deps = [godotcore_dep]
 
 DEP_MODULE_WEBRTC = []
 
