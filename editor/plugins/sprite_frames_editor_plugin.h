@@ -62,6 +62,7 @@ class SpriteFramesEditor : public HSplitContainer {
 
 	Button *new_anim;
 	Button *remove_anim;
+	Button *duplicate_anim;
 
 	Tree *animations;
 	SpinBox *anim_speed;
@@ -113,6 +114,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _animation_select();
 	void _animation_name_edited();
 	void _animation_add();
+	void _animation_duplicate();
 	void _animation_remove();
 	void _animation_remove_confirmed();
 	void _animation_loop_changed();

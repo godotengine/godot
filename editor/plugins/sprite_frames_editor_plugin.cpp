@@ -321,6 +321,7 @@ void SpriteFramesEditor::_notification(int p_what) {
 			zoom_reset->set_icon(get_theme_icon(SNAME("ZoomReset"), SNAME("EditorIcons")));
 			zoom_in->set_icon(get_theme_icon(SNAME("ZoomMore"), SNAME("EditorIcons")));
 			new_anim->set_icon(get_theme_icon(SNAME("New"), SNAME("EditorIcons")));
+			duplicate_anim->set_icon(get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")));
 			remove_anim->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 			split_sheet_zoom_out->set_icon(get_theme_icon(SNAME("ZoomLess"), SNAME("EditorIcons")));
 			split_sheet_zoom_reset->set_icon(get_theme_icon(SNAME("ZoomReset"), SNAME("EditorIcons")));
@@ -662,10 +663,30 @@ void SpriteFramesEditor::_animation_add() {
 		undo_redo->add_do_method(E, "set_animation", name);
 		undo_redo->add_undo_method(E, "set_animation", current);
 	}
-
+	
 	edited_anim = name;
 
 	undo_redo->commit_action();
+	animations->grab_focus();
+}
+
+void SpriteFramesEditor::_animation_duplicate() {
+	if ( !frames->has_animation(edited_anim) ) {
+		print_line("Current animation has no frames");
+		return;
+	}
+
+	StringName anim_to_duplicate = edited_anim;
+	int duplicate_frame_count = frames->get_frame_count(anim_to_duplicate);
+	
+	_animation_add();
+
+	for (int i = 0; i < duplicate_frame_count; i++) {
+		frames->add_frame(edited_anim, frames->get_frame(anim_to_duplicate, i));
+	}
+	
+	//Update the UI
+	_update_library();
 	animations->grab_focus();
 }
 
@@ -1035,6 +1056,12 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	new_anim->set_tooltip(TTR("New Animation"));
 	hbc_animlist->add_child(new_anim);
 	new_anim->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_add));
+
+	duplicate_anim = memnew(Button);
+	duplicate_anim->set_flat(true);
+	duplicate_anim->set_tooltip(TTR("Duplicate Animation"));
+	hbc_animlist->add_child(duplicate_anim);
+	duplicate_anim->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_duplicate));
 
 	remove_anim = memnew(Button);
 	remove_anim->set_flat(true);
