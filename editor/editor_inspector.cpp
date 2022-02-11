@@ -268,14 +268,15 @@ void EditorProperty::_notification(int p_what) {
 			} else {
 				color = get_theme_color(is_read_only() ? SNAME("readonly_color") : SNAME("property_color"));
 			}
-			if (label.contains(".")) {
-				// FIXME: Move this to the project settings editor, as this is only used
-				// for project settings feature tag overrides.
+			if (label_transparent) {
 				color.a = 0.5;
 			}
 
 			int ofs = get_theme_constant(SNAME("font_offset"));
 			int text_limit = text_size - ofs;
+
+			Color normal_color = Color(1, 1, 1);
+			Color hover_color = Color(1.2, 1.2, 1.2);
 
 			if (checkable) {
 				Ref<Texture2D> checkbox;
@@ -285,12 +286,7 @@ void EditorProperty::_notification(int p_what) {
 					checkbox = get_theme_icon(SNAME("GuiUnchecked"), SNAME("EditorIcons"));
 				}
 
-				Color color2(1, 1, 1);
-				if (check_hover) {
-					color2.r *= 1.2;
-					color2.g *= 1.2;
-					color2.b *= 1.2;
-				}
+				Color color2 = check_hover ? normal_color : hover_color;
 				check_rect = Rect2(ofs, ((size.height - checkbox->get_height()) / 2), checkbox->get_width(), checkbox->get_height());
 				if (rtl) {
 					draw_texture(checkbox, Vector2(size.width - check_rect.position.x - checkbox->get_width(), check_rect.position.y), color2);
@@ -309,12 +305,7 @@ void EditorProperty::_notification(int p_what) {
 				text_limit -= reload_icon->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree")) * 2;
 				revert_rect = Rect2(ofs + text_limit, (size.height - reload_icon->get_height()) / 2, reload_icon->get_width(), reload_icon->get_height());
 
-				Color color2(1, 1, 1);
-				if (revert_hover) {
-					color2.r *= 1.2;
-					color2.g *= 1.2;
-					color2.b *= 1.2;
-				}
+				Color color2 = revert_hover ? normal_color : hover_color;
 				if (rtl) {
 					draw_texture(reload_icon, Vector2(size.width - revert_rect.position.x - reload_icon->get_width(), revert_rect.position.y), color2);
 				} else {
@@ -356,12 +347,7 @@ void EditorProperty::_notification(int p_what) {
 
 				ofs = size.width - key->get_width() - get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
 
-				Color color2(1, 1, 1);
-				if (keying_hover) {
-					color2.r *= 1.2;
-					color2.g *= 1.2;
-					color2.b *= 1.2;
-				}
+				Color color2 = keying_hover ? normal_color : hover_color;
 				keying_rect = Rect2(ofs, ((size.height - key->get_height()) / 2), key->get_width(), key->get_height());
 				if (rtl) {
 					draw_texture(key, Vector2(size.width - keying_rect.position.x - key->get_width(), keying_rect.position.y), color2);
@@ -421,6 +407,7 @@ void EditorProperty::update_property() {
 }
 
 void EditorProperty::_set_read_only(bool p_read_only) {
+	// This method is overriden by many EditorProperty derived classes.
 }
 
 void EditorProperty::set_read_only(bool p_read_only) {
@@ -430,6 +417,15 @@ void EditorProperty::set_read_only(bool p_read_only) {
 
 bool EditorProperty::is_read_only() const {
 	return read_only;
+}
+
+void EditorProperty::set_label_transparent(bool p_label_transparent) {
+	label_transparent = p_label_transparent;
+	update();
+}
+
+bool EditorProperty::is_label_transparent() const {
+	return label_transparent;
 }
 
 Variant EditorPropertyRevert::get_property_revert_value(Object *p_object, const StringName &p_property, bool *r_is_valid) {
@@ -735,6 +731,7 @@ bool EditorProperty::is_cache_valid() const {
 	}
 	return true;
 }
+
 void EditorProperty::update_cache() {
 	cache.clear();
 	if (object && property != StringName()) {
@@ -745,6 +742,7 @@ void EditorProperty::update_cache() {
 		}
 	}
 }
+
 Variant EditorProperty::get_drag_data(const Point2 &p_point) {
 	if (property == StringName()) {
 		return Variant();
@@ -913,6 +911,9 @@ void EditorProperty::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_read_only", "read_only"), &EditorProperty::set_read_only);
 	ClassDB::bind_method(D_METHOD("is_read_only"), &EditorProperty::is_read_only);
 
+	ClassDB::bind_method(D_METHOD("set_label_transparent", "label_transparent"), &EditorProperty::set_label_transparent);
+	ClassDB::bind_method(D_METHOD("is_label_transparent"), &EditorProperty::is_label_transparent);
+
 	ClassDB::bind_method(D_METHOD("set_checkable", "checkable"), &EditorProperty::set_checkable);
 	ClassDB::bind_method(D_METHOD("is_checkable"), &EditorProperty::is_checkable);
 
@@ -941,6 +942,7 @@ void EditorProperty::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "label"), "set_label", "get_label");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "read_only"), "set_read_only", "is_read_only");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "label_transparent"), "set_label_transparent", "is_label_transparent");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "checkable"), "set_checkable", "is_checkable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "checked"), "set_checked", "is_checked");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_warning"), "set_draw_warning", "is_draw_warning");
@@ -2922,6 +2924,9 @@ void EditorInspector::update_tree() {
 							// Use the existing one.
 							ep->set_label(property_label_string);
 						}
+						if (has_feature_tag_overrides) {
+							ep->set_label_transparent(ep->get_label().contains("."));
+						}
 						for (int i = 0; i < F.properties.size(); i++) {
 							String prop = F.properties[i];
 
@@ -3172,6 +3177,7 @@ void EditorInspector::_update_inspector_bg() {
 		add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 	}
 }
+
 void EditorInspector::set_sub_inspector(bool p_enable) {
 	sub_inspector = p_enable;
 	if (!is_inside_tree()) {
@@ -3687,6 +3693,10 @@ void EditorInspector::_update_script_class_properties(const Object &p_object, Li
 void EditorInspector::set_restrict_to_basic_settings(bool p_restrict) {
 	restrict_to_basic = p_restrict;
 	update_tree();
+}
+
+void EditorInspector::set_has_feature_tag_overrides(bool p_feature_tag_overrides) {
+	has_feature_tag_overrides = p_feature_tag_overrides;
 }
 
 void EditorInspector::set_property_clipboard(const Variant &p_value) {

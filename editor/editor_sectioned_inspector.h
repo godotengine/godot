@@ -52,6 +52,7 @@ class SectionedInspector : public HSplitContainer {
 	String selected_category;
 
 	bool restrict_to_basic = false;
+	bool has_feature_tag_overrides = false;
 
 	static void _bind_methods();
 	void _section_selected();
