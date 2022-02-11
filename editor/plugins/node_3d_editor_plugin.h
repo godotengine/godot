@@ -269,6 +269,7 @@ private:
 	ObjectID clicked;
 	Vector<_RayResult> selection_results;
 	bool clicked_wants_append;
+	bool selection_in_progress = false;
 
 	PopupMenu *selection_menu;
 
