@@ -2,7 +2,7 @@
 #define VULKAN_FUCHSIA_H_ 1
 
 /*
-** Copyright 2015-2021 The Khronos Group Inc.
+** Copyright 2015-2022 The Khronos Group Inc.
 **
 ** SPDX-License-Identifier: Apache-2.0
 */
@@ -112,6 +112,143 @@ VKAPI_ATTR VkResult VKAPI_CALL vkGetSemaphoreZirconHandleFUCHSIA(
     VkDevice                                    device,
     const VkSemaphoreGetZirconHandleInfoFUCHSIA* pGetZirconHandleInfo,
     zx_handle_t*                                pZirconHandle);
+#endif
+
+
+#define VK_FUCHSIA_buffer_collection 1
+VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkBufferCollectionFUCHSIA)
+#define VK_FUCHSIA_BUFFER_COLLECTION_SPEC_VERSION 2
+#define VK_FUCHSIA_BUFFER_COLLECTION_EXTENSION_NAME "VK_FUCHSIA_buffer_collection"
+typedef VkFlags VkImageFormatConstraintsFlagsFUCHSIA;
+
+typedef enum VkImageConstraintsInfoFlagBitsFUCHSIA {
+    VK_IMAGE_CONSTRAINTS_INFO_CPU_READ_RARELY_FUCHSIA = 0x00000001,
+    VK_IMAGE_CONSTRAINTS_INFO_CPU_READ_OFTEN_FUCHSIA = 0x00000002,
+    VK_IMAGE_CONSTRAINTS_INFO_CPU_WRITE_RARELY_FUCHSIA = 0x00000004,
+    VK_IMAGE_CONSTRAINTS_INFO_CPU_WRITE_OFTEN_FUCHSIA = 0x00000008,
+    VK_IMAGE_CONSTRAINTS_INFO_PROTECTED_OPTIONAL_FUCHSIA = 0x00000010,
+    VK_IMAGE_CONSTRAINTS_INFO_FLAG_BITS_MAX_ENUM_FUCHSIA = 0x7FFFFFFF
+} VkImageConstraintsInfoFlagBitsFUCHSIA;
+typedef VkFlags VkImageConstraintsInfoFlagsFUCHSIA;
+typedef struct VkBufferCollectionCreateInfoFUCHSIA {
+    VkStructureType    sType;
+    const void*        pNext;
+    zx_handle_t        collectionToken;
+} VkBufferCollectionCreateInfoFUCHSIA;
+
+typedef struct VkImportMemoryBufferCollectionFUCHSIA {
+    VkStructureType              sType;
+    const void*                  pNext;
+    VkBufferCollectionFUCHSIA    collection;
+    uint32_t                     index;
+} VkImportMemoryBufferCollectionFUCHSIA;
+
+typedef struct VkBufferCollectionImageCreateInfoFUCHSIA {
+    VkStructureType              sType;
+    const void*                  pNext;
+    VkBufferCollectionFUCHSIA    collection;
+    uint32_t                     index;
+} VkBufferCollectionImageCreateInfoFUCHSIA;
+
+typedef struct VkBufferCollectionConstraintsInfoFUCHSIA {
+    VkStructureType    sType;
+    const void*        pNext;
+    uint32_t           minBufferCount;
+    uint32_t           maxBufferCount;
+    uint32_t           minBufferCountForCamping;
+    uint32_t           minBufferCountForDedicatedSlack;
+    uint32_t           minBufferCountForSharedSlack;
+} VkBufferCollectionConstraintsInfoFUCHSIA;
+
+typedef struct VkBufferConstraintsInfoFUCHSIA {
+    VkStructureType                             sType;
+    const void*                                 pNext;
+    VkBufferCreateInfo                          createInfo;
+    VkFormatFeatureFlags                        requiredFormatFeatures;
+    VkBufferCollectionConstraintsInfoFUCHSIA    bufferCollectionConstraints;
+} VkBufferConstraintsInfoFUCHSIA;
+
+typedef struct VkBufferCollectionBufferCreateInfoFUCHSIA {
+    VkStructureType              sType;
+    const void*                  pNext;
+    VkBufferCollectionFUCHSIA    collection;
+    uint32_t                     index;
+} VkBufferCollectionBufferCreateInfoFUCHSIA;
+
+typedef struct VkSysmemColorSpaceFUCHSIA {
+    VkStructureType    sType;
+    const void*        pNext;
+    uint32_t           colorSpace;
+} VkSysmemColorSpaceFUCHSIA;
+
+typedef struct VkBufferCollectionPropertiesFUCHSIA {
+    VkStructureType                  sType;
+    void*                            pNext;
+    uint32_t                         memoryTypeBits;
+    uint32_t                         bufferCount;
+    uint32_t                         createInfoIndex;
+    uint64_t                         sysmemPixelFormat;
+    VkFormatFeatureFlags             formatFeatures;
+    VkSysmemColorSpaceFUCHSIA        sysmemColorSpaceIndex;
+    VkComponentMapping               samplerYcbcrConversionComponents;
+    VkSamplerYcbcrModelConversion    suggestedYcbcrModel;
+    VkSamplerYcbcrRange              suggestedYcbcrRange;
+    VkChromaLocation                 suggestedXChromaOffset;
+    VkChromaLocation                 suggestedYChromaOffset;
+} VkBufferCollectionPropertiesFUCHSIA;
+
+typedef struct VkImageFormatConstraintsInfoFUCHSIA {
+    VkStructureType                         sType;
+    const void*                             pNext;
+    VkImageCreateInfo                       imageCreateInfo;
+    VkFormatFeatureFlags                    requiredFormatFeatures;
+    VkImageFormatConstraintsFlagsFUCHSIA    flags;
+    uint64_t                                sysmemPixelFormat;
+    uint32_t                                colorSpaceCount;
+    const VkSysmemColorSpaceFUCHSIA*        pColorSpaces;
+} VkImageFormatConstraintsInfoFUCHSIA;
+
+typedef struct VkImageConstraintsInfoFUCHSIA {
+    VkStructureType                               sType;
+    const void*                                   pNext;
+    uint32_t                                      formatConstraintsCount;
+    const VkImageFormatConstraintsInfoFUCHSIA*    pFormatConstraints;
+    VkBufferCollectionConstraintsInfoFUCHSIA      bufferCollectionConstraints;
+    VkImageConstraintsInfoFlagsFUCHSIA            flags;
+} VkImageConstraintsInfoFUCHSIA;
+
+typedef VkResult (VKAPI_PTR *PFN_vkCreateBufferCollectionFUCHSIA)(VkDevice device, const VkBufferCollectionCreateInfoFUCHSIA* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkBufferCollectionFUCHSIA* pCollection);
+typedef VkResult (VKAPI_PTR *PFN_vkSetBufferCollectionImageConstraintsFUCHSIA)(VkDevice device, VkBufferCollectionFUCHSIA collection, const VkImageConstraintsInfoFUCHSIA* pImageConstraintsInfo);
+typedef VkResult (VKAPI_PTR *PFN_vkSetBufferCollectionBufferConstraintsFUCHSIA)(VkDevice device, VkBufferCollectionFUCHSIA collection, const VkBufferConstraintsInfoFUCHSIA* pBufferConstraintsInfo);
+typedef void (VKAPI_PTR *PFN_vkDestroyBufferCollectionFUCHSIA)(VkDevice device, VkBufferCollectionFUCHSIA collection, const VkAllocationCallbacks* pAllocator);
+typedef VkResult (VKAPI_PTR *PFN_vkGetBufferCollectionPropertiesFUCHSIA)(VkDevice device, VkBufferCollectionFUCHSIA collection, VkBufferCollectionPropertiesFUCHSIA* pProperties);
+
+#ifndef VK_NO_PROTOTYPES
+VKAPI_ATTR VkResult VKAPI_CALL vkCreateBufferCollectionFUCHSIA(
+    VkDevice                                    device,
+    const VkBufferCollectionCreateInfoFUCHSIA*  pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkBufferCollectionFUCHSIA*                  pCollection);
+
+VKAPI_ATTR VkResult VKAPI_CALL vkSetBufferCollectionImageConstraintsFUCHSIA(
+    VkDevice                                    device,
+    VkBufferCollectionFUCHSIA                   collection,
+    const VkImageConstraintsInfoFUCHSIA*        pImageConstraintsInfo);
+
+VKAPI_ATTR VkResult VKAPI_CALL vkSetBufferCollectionBufferConstraintsFUCHSIA(
+    VkDevice                                    device,
+    VkBufferCollectionFUCHSIA                   collection,
+    const VkBufferConstraintsInfoFUCHSIA*       pBufferConstraintsInfo);
+
+VKAPI_ATTR void VKAPI_CALL vkDestroyBufferCollectionFUCHSIA(
+    VkDevice                                    device,
+    VkBufferCollectionFUCHSIA                   collection,
+    const VkAllocationCallbacks*                pAllocator);
+
+VKAPI_ATTR VkResult VKAPI_CALL vkGetBufferCollectionPropertiesFUCHSIA(
+    VkDevice                                    device,
+    VkBufferCollectionFUCHSIA                   collection,
+    VkBufferCollectionPropertiesFUCHSIA*        pProperties);
 #endif
 
 #ifdef __cplusplus

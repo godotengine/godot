@@ -165,7 +165,7 @@ public:
 protected:
     TDefaultIoResolverBase(TDefaultIoResolverBase&);
     TDefaultIoResolverBase& operator=(TDefaultIoResolverBase&);
-    const TIntermediate& intermediate;
+    const TIntermediate& referenceIntermediate;
     int nextUniformLocation;
     int nextInputLocation;
     int nextOutputLocation;
@@ -291,7 +291,7 @@ public:
     bool virtual doMap(TIoMapResolver*, TInfoSink&) { return true; }
 };
 
-// I/O mapper for OpenGL
+// I/O mapper for GLSL
 class TGlslIoMapper : public TIoMapper {
 public:
     TGlslIoMapper() {
@@ -301,6 +301,8 @@ public:
         memset(intermediates, 0, sizeof(TIntermediate*) * (EShLangCount + 1));
         profile = ENoProfile;
         version = 0;
+        autoPushConstantMaxSize = 128;
+        autoPushConstantBlockPacking = ElpStd430;
     }
     virtual ~TGlslIoMapper() {
         for (size_t stage = 0; stage < EShLangCount; stage++) {
@@ -320,6 +322,13 @@ public:
                 intermediates[stage] = nullptr;
         }
     }
+    // If set, the uniform block with the given name will be changed to be backed by
+    // push_constant if it's size is <= maxSize
+    void setAutoPushConstantBlock(const char* name, unsigned int maxSize, TLayoutPacking packing) {
+        autoPushConstantBlockName = name;
+        autoPushConstantMaxSize = maxSize;
+        autoPushConstantBlockPacking = packing;
+    }
     // grow the reflection stage by stage
     bool addStage(EShLanguage, TIntermediate&, TInfoSink&, TIoMapResolver*) override;
     bool doMap(TIoMapResolver*, TInfoSink&) override;
@@ -329,6 +338,11 @@ public:
     bool hadError = false;
     EProfile profile;
     int version;
+
+private:
+    TString autoPushConstantBlockName;
+    unsigned int autoPushConstantMaxSize;
+    TLayoutPacking autoPushConstantBlockPacking;
 };
 
 } // end namespace glslang
