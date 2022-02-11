@@ -1517,65 +1517,88 @@ void VisualServerScene::roomgroup_add_room(RID p_roomgroup, RID p_room) {
 }
 
 // Occluders
-RID VisualServerScene::occluder_create() {
-	Occluder *ro = memnew(Occluder);
+RID VisualServerScene::occluder_instance_create() {
+	OccluderInstance *ro = memnew(OccluderInstance);
 	ERR_FAIL_COND_V(!ro, RID());
-	RID occluder_rid = occluder_owner.make_rid(ro);
+	RID occluder_rid = occluder_instance_owner.make_rid(ro);
 	return occluder_rid;
 }
 
-void VisualServerScene::occluder_set_scenario(RID p_occluder, RID p_scenario, VisualServer::OccluderType p_type) {
-	Occluder *ro = occluder_owner.getornull(p_occluder);
-	ERR_FAIL_COND(!ro);
+void VisualServerScene::occluder_instance_link_resource(RID p_occluder_instance, RID p_occluder_resource) {
+	OccluderInstance *oi = occluder_instance_owner.getornull(p_occluder_instance);
+	ERR_FAIL_COND(!oi);
+	ERR_FAIL_COND(!oi->scenario);
+
+	OccluderResource *res = occluder_resource_owner.getornull(p_occluder_resource);
+	ERR_FAIL_COND(!res);
+
+	oi->scenario->_portal_renderer.occluder_instance_link(oi->scenario_occluder_id, res->occluder_resource_id);
+}
+
+void VisualServerScene::occluder_instance_set_scenario(RID p_occluder_instance, RID p_scenario) {
+	OccluderInstance *oi = occluder_instance_owner.getornull(p_occluder_instance);
+	ERR_FAIL_COND(!oi);
 	Scenario *scenario = scenario_owner.getornull(p_scenario);
 
 	// noop?
-	if (ro->scenario == scenario) {
+	if (oi->scenario == scenario) {
 		return;
 	}
 
 	// if the portal is in a scenario already, remove it
-	if (ro->scenario) {
-		ro->scenario->_portal_renderer.occluder_destroy(ro->scenario_occluder_id);
-		ro->scenario = nullptr;
-		ro->scenario_occluder_id = 0;
+	if (oi->scenario) {
+		oi->scenario->_portal_renderer.occluder_instance_destroy(oi->scenario_occluder_id);
+		oi->scenario = nullptr;
+		oi->scenario_occluder_id = 0;
 	}
 
 	// create when entering the world
 	if (scenario) {
-		ro->scenario = scenario;
-
-		// defer the actual creation to here
-		ro->scenario_occluder_id = scenario->_portal_renderer.occluder_create((VSOccluder::Type)p_type);
+		oi->scenario = scenario;
+		oi->scenario_occluder_id = scenario->_portal_renderer.occluder_instance_create();
 	}
 }
 
-void VisualServerScene::occluder_set_active(RID p_occluder, bool p_active) {
-	Occluder *ro = occluder_owner.getornull(p_occluder);
-	ERR_FAIL_COND(!ro);
-	ERR_FAIL_COND(!ro->scenario);
-	ro->scenario->_portal_renderer.occluder_set_active(ro->scenario_occluder_id, p_active);
+void VisualServerScene::occluder_instance_set_active(RID p_occluder_instance, bool p_active) {
+	OccluderInstance *oi = occluder_instance_owner.getornull(p_occluder_instance);
+	ERR_FAIL_COND(!oi);
+	ERR_FAIL_COND(!oi->scenario);
+	oi->scenario->_portal_renderer.occluder_instance_set_active(oi->scenario_occluder_id, p_active);
 }
 
-void VisualServerScene::occluder_set_transform(RID p_occluder, const Transform &p_xform) {
-	Occluder *ro = occluder_owner.getornull(p_occluder);
-	ERR_FAIL_COND(!ro);
-	ERR_FAIL_COND(!ro->scenario);
-	ro->scenario->_portal_renderer.occluder_set_transform(ro->scenario_occluder_id, p_xform);
+void VisualServerScene::occluder_instance_set_transform(RID p_occluder_instance, const Transform &p_xform) {
+	OccluderInstance *oi = occluder_instance_owner.getornull(p_occluder_instance);
+	ERR_FAIL_COND(!oi);
+	ERR_FAIL_COND(!oi->scenario);
+	oi->scenario->_portal_renderer.occluder_instance_set_transform(oi->scenario_occluder_id, p_xform);
 }
 
-void VisualServerScene::occluder_spheres_update(RID p_occluder, const Vector<Plane> &p_spheres) {
-	Occluder *ro = occluder_owner.getornull(p_occluder);
-	ERR_FAIL_COND(!ro);
-	ERR_FAIL_COND(!ro->scenario);
-	ro->scenario->_portal_renderer.occluder_update_spheres(ro->scenario_occluder_id, p_spheres);
+RID VisualServerScene::occluder_resource_create() {
+	OccluderResource *res = memnew(OccluderResource);
+	ERR_FAIL_COND_V(!res, RID());
+
+	res->occluder_resource_id = _portal_resources.occluder_resource_create();
+
+	RID occluder_resource_rid = occluder_resource_owner.make_rid(res);
+	return occluder_resource_rid;
 }
 
-void VisualServerScene::occluder_mesh_update(RID p_occluder, const Geometry::OccluderMeshData &p_mesh_data) {
-	Occluder *ro = occluder_owner.getornull(p_occluder);
-	ERR_FAIL_COND(!ro);
-	ERR_FAIL_COND(!ro->scenario);
-	ro->scenario->_portal_renderer.occluder_update_mesh(ro->scenario_occluder_id, p_mesh_data);
+void VisualServerScene::occluder_resource_prepare(RID p_occluder_resource, VisualServer::OccluderType p_type) {
+	OccluderResource *res = occluder_resource_owner.getornull(p_occluder_resource);
+	ERR_FAIL_COND(!res);
+	_portal_resources.occluder_resource_prepare(res->occluder_resource_id, (VSOccluder_Instance::Type)p_type);
+}
+
+void VisualServerScene::occluder_resource_spheres_update(RID p_occluder_resource, const Vector<Plane> &p_spheres) {
+	OccluderResource *res = occluder_resource_owner.getornull(p_occluder_resource);
+	ERR_FAIL_COND(!res);
+	_portal_resources.occluder_resource_update_spheres(res->occluder_resource_id, p_spheres);
+}
+
+void VisualServerScene::occluder_resource_mesh_update(RID p_occluder_resource, const Geometry::OccluderMeshData &p_mesh_data) {
+	OccluderResource *res = occluder_resource_owner.getornull(p_occluder_resource);
+	ERR_FAIL_COND(!res);
+	_portal_resources.occluder_resource_update_mesh(res->occluder_resource_id, p_mesh_data);
 }
 
 void VisualServerScene::set_use_occlusion_culling(bool p_enable) {
@@ -4505,10 +4528,15 @@ bool VisualServerScene::free(RID p_rid) {
 		RoomGroup *roomgroup = roomgroup_owner.get(p_rid);
 		roomgroup_owner.free(p_rid);
 		memdelete(roomgroup);
-	} else if (occluder_owner.owns(p_rid)) {
-		Occluder *ro = occluder_owner.get(p_rid);
-		occluder_owner.free(p_rid);
-		memdelete(ro);
+	} else if (occluder_instance_owner.owns(p_rid)) {
+		OccluderInstance *occ_inst = occluder_instance_owner.get(p_rid);
+		occluder_instance_owner.free(p_rid);
+		memdelete(occ_inst);
+	} else if (occluder_resource_owner.owns(p_rid)) {
+		OccluderResource *occ_res = occluder_resource_owner.get(p_rid);
+		occ_res->destroy(_portal_resources);
+		occluder_resource_owner.free(p_rid);
+		memdelete(occ_res);
 	} else {
 		return false;
 	}

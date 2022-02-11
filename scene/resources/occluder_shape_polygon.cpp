@@ -108,6 +108,7 @@ void OccluderShapePolygon::set_polygon_point(int p_idx, const Vector2 &p_point) 
 
 	_poly_pts_local_raw.set(p_idx, p_point);
 	_sanitize_points();
+	update_shape_to_visual_server();
 	notify_change_to_owners();
 }
 
@@ -118,18 +119,21 @@ void OccluderShapePolygon::set_hole_point(int p_idx, const Vector2 &p_point) {
 
 	_hole_pts_local_raw.set(p_idx, p_point);
 	_sanitize_points();
+	update_shape_to_visual_server();
 	notify_change_to_owners();
 }
 
 void OccluderShapePolygon::set_polygon_points(const PoolVector<Vector2> &p_points) {
 	_poly_pts_local_raw = p_points;
 	_sanitize_points();
+	update_shape_to_visual_server();
 	notify_change_to_owners();
 }
 
 void OccluderShapePolygon::set_hole_points(const PoolVector<Vector2> &p_points) {
 	_hole_pts_local_raw = p_points;
 	_sanitize_points();
+	update_shape_to_visual_server();
 	notify_change_to_owners();
 }
 
@@ -139,10 +143,6 @@ PoolVector<Vector2> OccluderShapePolygon::get_polygon_points() const {
 
 PoolVector<Vector2> OccluderShapePolygon::get_hole_points() const {
 	return _hole_pts_local_raw;
-}
-
-void OccluderShapePolygon::notification_enter_world(RID p_scenario) {
-	VisualServer::get_singleton()->occluder_set_scenario(get_shape(), p_scenario, VisualServer::OCCLUDER_TYPE_MESH);
 }
 
 void OccluderShapePolygon::update_shape_to_visual_server() {
@@ -179,11 +179,12 @@ void OccluderShapePolygon::update_shape_to_visual_server() {
 
 	face.plane = Plane(Vector3(0, 0, 0), Vector3(0, 0, -1));
 
-	VisualServer::get_singleton()->occluder_mesh_update(get_shape(), md);
+	VisualServer::get_singleton()->occluder_resource_mesh_update(get_shape(), md);
 }
 
 void OccluderShapePolygon::set_two_way(bool p_two_way) {
 	_settings_two_way = p_two_way;
+	update_shape_to_visual_server();
 	notify_change_to_owners();
 }
 
@@ -221,8 +222,11 @@ void OccluderShapePolygon::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "hole_points"), "set_hole_points", "get_hole_points");
 }
 
-OccluderShapePolygon::OccluderShapePolygon() :
-		OccluderShape(RID_PRIME(VisualServer::get_singleton()->occluder_create())) {
+OccluderShapePolygon::OccluderShapePolygon() {
+	if (get_shape().is_valid()) {
+		VisualServer::get_singleton()->occluder_resource_prepare(get_shape(), VisualServer::OCCLUDER_TYPE_MESH);
+	}
+
 	clear();
 
 	PoolVector<Vector2> points;

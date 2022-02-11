@@ -729,29 +729,47 @@ public:
 	virtual void roomgroup_add_room(RID p_roomgroup, RID p_room);
 
 	// Occluders
-	struct Occluder : RID_Data {
+	struct OccluderInstance : RID_Data {
 		uint32_t scenario_occluder_id = 0;
 		Scenario *scenario = nullptr;
-		virtual ~Occluder() {
+		virtual ~OccluderInstance() {
 			if (scenario) {
-				scenario->_portal_renderer.occluder_destroy(scenario_occluder_id);
+				scenario->_portal_renderer.occluder_instance_destroy(scenario_occluder_id);
 				scenario = nullptr;
 				scenario_occluder_id = 0;
 			}
 		}
 	};
-	RID_Owner<Occluder> occluder_owner;
+	RID_Owner<OccluderInstance> occluder_instance_owner;
 
-	virtual RID occluder_create();
-	virtual void occluder_set_scenario(RID p_occluder, RID p_scenario, VisualServer::OccluderType p_type);
-	virtual void occluder_spheres_update(RID p_occluder, const Vector<Plane> &p_spheres);
-	virtual void occluder_mesh_update(RID p_occluder, const Geometry::OccluderMeshData &p_mesh_data);
-	virtual void occluder_set_transform(RID p_occluder, const Transform &p_xform);
-	virtual void occluder_set_active(RID p_occluder, bool p_active);
+	struct OccluderResource : RID_Data {
+		uint32_t occluder_resource_id = 0;
+		void destroy(PortalResources &r_portal_resources) {
+			r_portal_resources.occluder_resource_destroy(occluder_resource_id);
+			occluder_resource_id = 0;
+		}
+		virtual ~OccluderResource() {
+			DEV_ASSERT(occluder_resource_id == 0);
+		}
+	};
+	RID_Owner<OccluderResource> occluder_resource_owner;
+
+	virtual RID occluder_instance_create();
+	virtual void occluder_instance_set_scenario(RID p_occluder_instance, RID p_scenario);
+	virtual void occluder_instance_link_resource(RID p_occluder_instance, RID p_occluder_resource);
+	virtual void occluder_instance_set_transform(RID p_occluder_instance, const Transform &p_xform);
+	virtual void occluder_instance_set_active(RID p_occluder_instance, bool p_active);
+
+	virtual RID occluder_resource_create();
+	virtual void occluder_resource_prepare(RID p_occluder_resource, VisualServer::OccluderType p_type);
+	virtual void occluder_resource_spheres_update(RID p_occluder_resource, const Vector<Plane> &p_spheres);
+	virtual void occluder_resource_mesh_update(RID p_occluder_resource, const Geometry::OccluderMeshData &p_mesh_data);
 	virtual void set_use_occlusion_culling(bool p_enable);
 
 	// editor only .. slow
 	virtual Geometry::MeshData occlusion_debug_get_current_polys(RID p_scenario) const;
+	const PortalResources &get_portal_resources() const { return _portal_resources; }
+	PortalResources &get_portal_resources() { return _portal_resources; }
 
 	// Rooms
 	struct Room : RID_Data {
@@ -876,6 +894,7 @@ public:
 private:
 	bool _use_bvh;
 	VisualServerCallbacks *_visual_server_callbacks;
+	PortalResources _portal_resources;
 
 public:
 	VisualServerScene();
