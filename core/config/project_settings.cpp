@@ -615,7 +615,11 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 bool ProjectSettings::has_setting(String p_var) const {
 	_THREAD_SAFE_METHOD_
 
-	return props.has(p_var);
+	StringName name = p_var;
+	if (!disable_feature_overrides && feature_overrides.has(name)) {
+		name = feature_overrides[name];
+	}
+	return props.has(name);
 }
 
 Error ProjectSettings::_load_settings_binary(const String &p_path) {
