@@ -311,7 +311,16 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			}
 
 			if (link_tag == "method") {
-				if (!target_itype || !target_itype->is_object_type) {
+				if (link_target_parts[0] == name_cache.type_at_GlobalScope) {
+					if (OS::get_singleton()->is_stdout_verbose()) {
+						OS::get_singleton()->print("Cannot resolve @GlobalScope method reference in documentation: %s\n", link_target.utf8().get_data());
+					}
+
+					// TODO Map what we can
+					xml_output.append("<c>");
+					xml_output.append(link_target);
+					xml_output.append("</c>");
+				} else if (!target_itype || !target_itype->is_object_type) {
 					if (OS::get_singleton()->is_stdout_verbose()) {
 						if (target_itype) {
 							OS::get_singleton()->print("Cannot resolve method reference for non-Godot.Object type in documentation: %s\n", link_target.utf8().get_data());
@@ -440,25 +449,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 					xml_output.append("</c>");
 				}
 			} else if (link_tag == "constant") {
-				if (!target_itype || !target_itype->is_object_type) {
-					// Search in @GlobalScope as a last resort if no class was specified
-					if (link_target_parts.size() == 1) {
-						goto find_constant_in_global_scope;
-					}
-
-					if (OS::get_singleton()->is_stdout_verbose()) {
-						if (target_itype) {
-							OS::get_singleton()->print("Cannot resolve constant reference for non-Godot.Object type in documentation: %s\n", link_target.utf8().get_data());
-						} else {
-							OS::get_singleton()->print("Cannot resolve type from constant reference in documentation: %s\n", link_target.utf8().get_data());
-						}
-					}
-
-					// TODO Map what we can
-					xml_output.append("<c>");
-					xml_output.append(link_target);
-					xml_output.append("</c>");
-				} else if (!target_itype && target_cname == name_cache.type_at_GlobalScope) {
+				if (link_target_parts[0] == name_cache.type_at_GlobalScope) {
 				find_constant_in_global_scope:
 					const String target_name = (String)target_cname;
 
@@ -496,6 +487,24 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 							xml_output.append("</c>");
 						}
 					}
+				} else if (!target_itype || !target_itype->is_object_type) {
+					// Search in @GlobalScope as a last resort if no class was specified
+					if (link_target_parts.size() == 1) {
+						goto find_constant_in_global_scope;
+					}
+
+					if (OS::get_singleton()->is_stdout_verbose()) {
+						if (target_itype) {
+							OS::get_singleton()->print("Cannot resolve constant reference for non-Godot.Object type in documentation: %s\n", link_target.utf8().get_data());
+						} else {
+							OS::get_singleton()->print("Cannot resolve type from constant reference in documentation: %s\n", link_target.utf8().get_data());
+						}
+					}
+
+					// TODO Map what we can
+					xml_output.append("<c>");
+					xml_output.append(link_target);
+					xml_output.append("</c>");
 				} else {
 					const String target_name = (String)target_cname;
 
