@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="HFlowContainer" inherits="FlowContainer" version="3.5">
+	<brief_description>
+		Horizontal flow container.
+	</brief_description>
+	<description>
+		Horizontal version of [FlowContainer].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<constants>
+	</constants>
+	<theme_items>
+		<theme_item name="hseparation" data_type="constant" type="int" default="4">
+			The horizontal separation of children nodes.
+		</theme_item>
+		<theme_item name="vseparation" data_type="constant" type="int" default="4">
+			The vertical separation of children nodes.
+		</theme_item>
+	</theme_items>
+</class>
