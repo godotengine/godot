@@ -4181,11 +4181,11 @@
 		<constant name="ENV_SSIL_QUALITY_ULTRA" value="4" enum="EnvironmentSSILQuality">
 			Highest quality screen-space indirect lighting. Uses the adaptive target setting which can be dynamically adjusted to smoothly balance performance and visual quality.
 		</constant>
-		<constant name="ENV_SDFGI_Y_SCALE_DISABLED" value="0" enum="EnvironmentSDFGIYScale">
+		<constant name="ENV_SDFGI_Y_SCALE_50_PERCENT" value="0" enum="EnvironmentSDFGIYScale">
 		</constant>
 		<constant name="ENV_SDFGI_Y_SCALE_75_PERCENT" value="1" enum="EnvironmentSDFGIYScale">
 		</constant>
-		<constant name="ENV_SDFGI_Y_SCALE_50_PERCENT" value="2" enum="EnvironmentSDFGIYScale">
+		<constant name="ENV_SDFGI_Y_SCALE_100_PERCENT" value="2" enum="EnvironmentSDFGIYScale">
 		</constant>
 		<constant name="ENV_SDFGI_RAY_COUNT_4" value="0" enum="EnvironmentSDFGIRayCount">
 		</constant>

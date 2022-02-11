@@ -269,6 +269,7 @@ private:
 	ObjectID clicked;
 	Vector<_RayResult> selection_results;
 	bool clicked_wants_append;
+	bool selection_in_progress = false;
 
 	PopupMenu *selection_menu;
 
@@ -409,6 +410,7 @@ private:
 	void begin_transform(TransformMode p_mode, bool instant);
 	void commit_transform();
 	void update_transform(Point2 p_mousepos, bool p_shift);
+	void finish_transform();
 
 protected:
 	void _notification(int p_what);

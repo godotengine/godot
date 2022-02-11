@@ -159,7 +159,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ffffff", "#414141"); // Pure white
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#000000", "#bfbfbf"); // Pure black
-		// Keep pure RGB colors as is, but list them for explicity.
+		// Keep pure RGB colors as is, but list them for explicitly.
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ff0000", "#ff0000"); // Pure red
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#00ff00", "#00ff00"); // Pure green
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#0000ff", "#0000ff"); // Pure blue
@@ -466,6 +466,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_color", "Editor", font_color);
 	theme->set_color("highlighted_font_color", "Editor", font_hover_color);
 	theme->set_color("disabled_font_color", "Editor", font_disabled_color);
+	theme->set_color("readonly_font_color", "Editor", font_readonly_color);
 
 	theme->set_color("mono_color", "Editor", mono_color);
 
@@ -875,8 +876,20 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("readonly_color", "EditorProperty", readonly_color);
 	theme->set_color("readonly_warning_color", "EditorProperty", readonly_warning_color);
 
+	Ref<StyleBoxFlat> style_property_group_note = style_default->duplicate();
+	Color property_group_note_color = accent_color;
+	property_group_note_color.a = 0.1;
+	style_property_group_note->set_bg_color(property_group_note_color);
+	theme->set_stylebox("bg_group_note", "EditorProperty", style_property_group_note);
+
 	Color inspector_section_color = font_color.lerp(Color(0.5, 0.5, 0.5), 0.35);
 	theme->set_color("font_color", "EditorInspectorSection", inspector_section_color);
+
+	Color inspector_indent_color = accent_color;
+	inspector_indent_color.a = 0.2;
+	Ref<StyleBoxFlat> inspector_indent_style = make_flat_stylebox(inspector_indent_color, 2.0 * EDSCALE, 0, 2.0 * EDSCALE, 0);
+	theme->set_stylebox("indent_box", "EditorInspectorSection", inspector_indent_style);
+	theme->set_constant("indent_size", "EditorInspectorSection", 6.0 * EDSCALE);
 
 	theme->set_constant("inspector_margin", "Editor", 12 * EDSCALE);
 
@@ -1500,6 +1513,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme_preview_picker_label_bg_color.set_v(0.5);
 	Ref<StyleBoxFlat> theme_preview_picker_label_sb = make_flat_stylebox(theme_preview_picker_label_bg_color, 4.0, 1.0, 4.0, 3.0);
 	theme->set_stylebox("preview_picker_label", "ThemeEditor", theme_preview_picker_label_sb);
+
+	// Dictionary editor add item.
+	theme->set_stylebox("DictionaryAddItem", "EditorStyles", make_flat_stylebox(prop_subsection_color, 4, 4, 4, 4, corner_radius));
 
 	// adaptive script theme constants
 	// for comments and elements with lower relevance

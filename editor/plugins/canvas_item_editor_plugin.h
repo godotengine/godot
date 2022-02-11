@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CONTROL_EDITOR_PLUGIN_H
-#define CONTROL_EDITOR_PLUGIN_H
+#ifndef CANVAS_ITEM_EDITOR_PLUGIN_H
+#define CANVAS_ITEM_EDITOR_PLUGIN_H
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -39,6 +39,7 @@
 #include "scene/gui/label.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/spin_box.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/main/canvas_item.h"
 
 class CanvasItemEditorViewport;
@@ -128,55 +129,6 @@ private:
 		UNLOCK_SELECTED,
 		GROUP_SELECTED,
 		UNGROUP_SELECTED,
-		ANCHORS_AND_OFFSETS_PRESET_TOP_LEFT,
-		ANCHORS_AND_OFFSETS_PRESET_TOP_RIGHT,
-		ANCHORS_AND_OFFSETS_PRESET_BOTTOM_LEFT,
-		ANCHORS_AND_OFFSETS_PRESET_BOTTOM_RIGHT,
-		ANCHORS_AND_OFFSETS_PRESET_CENTER_LEFT,
-		ANCHORS_AND_OFFSETS_PRESET_CENTER_RIGHT,
-		ANCHORS_AND_OFFSETS_PRESET_CENTER_TOP,
-		ANCHORS_AND_OFFSETS_PRESET_CENTER_BOTTOM,
-		ANCHORS_AND_OFFSETS_PRESET_CENTER,
-		ANCHORS_AND_OFFSETS_PRESET_TOP_WIDE,
-		ANCHORS_AND_OFFSETS_PRESET_LEFT_WIDE,
-		ANCHORS_AND_OFFSETS_PRESET_RIGHT_WIDE,
-		ANCHORS_AND_OFFSETS_PRESET_BOTTOM_WIDE,
-		ANCHORS_AND_OFFSETS_PRESET_VCENTER_WIDE,
-		ANCHORS_AND_OFFSETS_PRESET_HCENTER_WIDE,
-		ANCHORS_AND_OFFSETS_PRESET_WIDE,
-		ANCHORS_AND_OFFSETS_PRESET_KEEP_RATIO,
-		ANCHORS_PRESET_TOP_LEFT,
-		ANCHORS_PRESET_TOP_RIGHT,
-		ANCHORS_PRESET_BOTTOM_LEFT,
-		ANCHORS_PRESET_BOTTOM_RIGHT,
-		ANCHORS_PRESET_CENTER_LEFT,
-		ANCHORS_PRESET_CENTER_RIGHT,
-		ANCHORS_PRESET_CENTER_TOP,
-		ANCHORS_PRESET_CENTER_BOTTOM,
-		ANCHORS_PRESET_CENTER,
-		ANCHORS_PRESET_TOP_WIDE,
-		ANCHORS_PRESET_LEFT_WIDE,
-		ANCHORS_PRESET_RIGHT_WIDE,
-		ANCHORS_PRESET_BOTTOM_WIDE,
-		ANCHORS_PRESET_VCENTER_WIDE,
-		ANCHORS_PRESET_HCENTER_WIDE,
-		ANCHORS_PRESET_WIDE,
-		OFFSETS_PRESET_TOP_LEFT,
-		OFFSETS_PRESET_TOP_RIGHT,
-		OFFSETS_PRESET_BOTTOM_LEFT,
-		OFFSETS_PRESET_BOTTOM_RIGHT,
-		OFFSETS_PRESET_CENTER_LEFT,
-		OFFSETS_PRESET_CENTER_RIGHT,
-		OFFSETS_PRESET_CENTER_TOP,
-		OFFSETS_PRESET_CENTER_BOTTOM,
-		OFFSETS_PRESET_CENTER,
-		OFFSETS_PRESET_TOP_WIDE,
-		OFFSETS_PRESET_LEFT_WIDE,
-		OFFSETS_PRESET_RIGHT_WIDE,
-		OFFSETS_PRESET_BOTTOM_WIDE,
-		OFFSETS_PRESET_VCENTER_WIDE,
-		OFFSETS_PRESET_HCENTER_WIDE,
-		OFFSETS_PRESET_WIDE,
 		ANIM_INSERT_KEY,
 		ANIM_INSERT_KEY_EXISTING,
 		ANIM_INSERT_POS,
@@ -226,7 +178,7 @@ private:
 
 	bool selection_menu_additive_selection;
 
-	Tool tool;
+	Tool tool = TOOL_SELECT;
 	Control *viewport;
 	Control *viewport_scrollable;
 
@@ -239,21 +191,20 @@ private:
 	HBoxContainer *hbc_context_menu;
 
 	Transform2D transform;
-	bool show_grid;
-	bool show_rulers;
-	bool show_guides;
-	bool show_origin;
-	bool show_viewport;
-	bool show_helpers;
-	bool show_edit_locks;
-	bool show_transformation_gizmos;
+	bool show_grid = false;
+	bool show_rulers = true;
+	bool show_guides = true;
+	bool show_origin = true;
+	bool show_viewport = true;
+	bool show_helpers = false;
+	bool show_edit_locks = true;
+	bool show_transformation_gizmos = true;
 
 	real_t zoom;
 	Point2 view_offset;
 	Point2 previous_update_view_offset;
 
-	bool selected_from_canvas;
-	bool anchors_mode;
+	bool selected_from_canvas = false;
 
 	Point2 grid_offset;
 	Point2 grid_step;
@@ -263,26 +214,30 @@ private:
 	real_t snap_rotation_step;
 	real_t snap_rotation_offset;
 	real_t snap_scale_step;
-	bool smart_snap_active;
-	bool grid_snap_active;
+	bool smart_snap_active = false;
+	bool grid_snap_active = false;
 
-	bool snap_node_parent;
-	bool snap_node_anchors;
-	bool snap_node_sides;
-	bool snap_node_center;
-	bool snap_other_nodes;
-	bool snap_guides;
-	bool snap_rotation;
-	bool snap_scale;
-	bool snap_relative;
-	bool snap_pixel;
-	bool key_pos;
-	bool key_rot;
-	bool key_scale;
-	bool pan_pressed;
+	bool snap_node_parent = true;
+	bool snap_node_anchors = true;
+	bool snap_node_sides = true;
+	bool snap_node_center = true;
+	bool snap_other_nodes = true;
+	bool snap_guides = true;
+	bool snap_rotation = false;
+	bool snap_scale = false;
+	bool snap_relative = false;
+	// Enable pixel snapping even if pixel snap rendering is disabled in the Project Settings.
+	// This results in crisper visuals by preventing 2D nodes from being placed at subpixel coordinates.
+	bool snap_pixel = true;
 
-	bool ruler_tool_active;
-	Point2 ruler_tool_origin;
+	bool key_pos = true;
+	bool key_rot = true;
+	bool key_scale = false;
+
+	bool pan_pressed = false;
+
+	bool ruler_tool_active = false;
+	Point2 ruler_tool_origin = Point2();
 	Point2 node_create_position;
 
 	MenuOption last_option;
@@ -310,7 +265,7 @@ private:
 		uint64_t last_pass = 0;
 	};
 
-	uint64_t bone_last_frame;
+	uint64_t bone_last_frame = 0;
 
 	struct BoneKey {
 		ObjectID from;
@@ -363,12 +318,6 @@ private:
 	HBoxContainer *animation_hb;
 	MenuButton *animation_menu;
 
-	MenuButton *presets_menu;
-	PopupMenu *anchors_and_margins_popup;
-	PopupMenu *anchors_popup;
-
-	Button *anchor_mode_button;
-
 	Button *key_loc_button;
 	Button *key_rot_button;
 	Button *key_scale_button;
@@ -382,15 +331,15 @@ private:
 	Control *left_ruler;
 
 	Point2 drag_start_origin;
-	DragType drag_type;
-	Point2 drag_from;
-	Point2 drag_to;
+	DragType drag_type = DRAG_NONE;
+	Point2 drag_from = Vector2();
+	Point2 drag_to = Vector2();
 	Point2 drag_rotation_center;
 	List<CanvasItem *> drag_selection;
-	int dragged_guide_index;
-	Point2 dragged_guide_pos;
-	bool is_hovering_h_guide;
-	bool is_hovering_v_guide;
+	int dragged_guide_index = -1;
+	Point2 dragged_guide_pos = Point2();
+	bool is_hovering_h_guide = false;
+	bool is_hovering_v_guide = false;
 
 	bool updating_value_dialog;
 
@@ -432,7 +381,7 @@ private:
 	Vector2 _position_to_anchor(const Control *p_control, Vector2 position);
 
 	void _popup_callback(int p_op);
-	bool updating_scroll;
+	bool updating_scroll = false;
 	void _update_scroll(real_t);
 	void _update_scrollbars();
 	void _snap_changed();
@@ -444,7 +393,7 @@ private:
 
 	UndoRedo *undo_redo;
 
-	List<CanvasItem *> _get_edited_canvas_items(bool retreive_locked = false, bool remove_canvas_item_if_parent_in_selection = true);
+	List<CanvasItem *> _get_edited_canvas_items(bool retrieve_locked = false, bool remove_canvas_item_if_parent_in_selection = true);
 	Rect2 _get_encompassing_rect_from_list(List<CanvasItem *> p_list);
 	void _expand_encompassing_rect_using_children(Rect2 &r_rect, const Node *p_node, bool &r_first, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D(), bool include_locked_nodes = true);
 	Rect2 _get_encompassing_rect(const Node *p_node);
@@ -517,12 +466,6 @@ private:
 			Point2 &r_current_snap, SnapTarget (&r_current_snap_target)[2],
 			const SnapTarget p_snap_target, List<const CanvasItem *> p_exceptions,
 			const Node *p_current);
-
-	void _set_anchors_preset(Control::LayoutPreset p_preset);
-	void _set_anchors_and_offsets_preset(Control::LayoutPreset p_preset);
-	void _set_anchors_and_offsets_to_keep_ratio();
-
-	void _button_toggle_anchor_mode(bool p_status);
 
 	VBoxContainer *controls_vb;
 	EditorZoomWidget *zoom_widget;
@@ -601,8 +544,6 @@ public:
 	void edit(CanvasItem *p_canvas_item);
 
 	void focus_selection();
-
-	bool is_anchors_mode_enabled() { return anchors_mode; };
 
 	EditorSelection *editor_selection;
 
@@ -683,4 +624,4 @@ public:
 	~CanvasItemEditorViewport();
 };
 
-#endif
+#endif //CANVAS_ITEM_EDITOR_PLUGIN_H

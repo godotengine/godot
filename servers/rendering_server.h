@@ -473,7 +473,7 @@ public:
 	virtual void light_directional_set_blend_splits(RID p_light, bool p_enable) = 0;
 	virtual void light_directional_set_sky_only(RID p_light, bool p_sky_only) = 0;
 
-	virtual void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = false) = 0;
+	virtual void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = true) = 0;
 
 	enum ShadowQuality {
 		SHADOW_QUALITY_HARD,
@@ -847,7 +847,7 @@ public:
 
 	virtual void viewport_set_sdf_oversize_and_scale(RID p_viewport, ViewportSDFOversize p_oversize, ViewportSDFScale p_scale) = 0;
 
-	virtual void viewport_set_shadow_atlas_size(RID p_viewport, int p_size, bool p_16_bits = false) = 0;
+	virtual void viewport_set_shadow_atlas_size(RID p_viewport, int p_size, bool p_16_bits = true) = 0;
 	virtual void viewport_set_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv) = 0;
 
 	enum ViewportMSAA {
@@ -1042,9 +1042,9 @@ public:
 	virtual void environment_set_ssil_quality(EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) = 0;
 
 	enum EnvironmentSDFGIYScale {
-		ENV_SDFGI_Y_SCALE_DISABLED,
+		ENV_SDFGI_Y_SCALE_50_PERCENT,
 		ENV_SDFGI_Y_SCALE_75_PERCENT,
-		ENV_SDFGI_Y_SCALE_50_PERCENT
+		ENV_SDFGI_Y_SCALE_100_PERCENT,
 	};
 
 	virtual void environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) = 0;

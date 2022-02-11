@@ -79,6 +79,9 @@ public:
 
 	virtual Size2 get_minimum_size() const override;
 
+	virtual Vector<int> get_allowed_size_flags_horizontal() const override;
+	virtual Vector<int> get_allowed_size_flags_vertical() const override;
+
 	SplitContainer(bool p_vertical = false);
 };
 

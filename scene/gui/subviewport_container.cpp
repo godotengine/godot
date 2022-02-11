@@ -91,6 +91,14 @@ int SubViewportContainer::get_stretch_shrink() const {
 	return shrink;
 }
 
+Vector<int> SubViewportContainer::get_allowed_size_flags_horizontal() const {
+	return Vector<int>();
+}
+
+Vector<int> SubViewportContainer::get_allowed_size_flags_vertical() const {
+	return Vector<int>();
+}
+
 void SubViewportContainer::_notification(int p_what) {
 	if (p_what == NOTIFICATION_RESIZED) {
 		if (!stretch) {

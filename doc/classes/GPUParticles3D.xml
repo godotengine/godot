@@ -150,7 +150,7 @@
 			Particle starts with specified color.
 		</constant>
 		<constant name="EMIT_FLAG_CUSTOM" value="16" enum="EmitFlags">
-			Particle starts with specificed [code]CUSTOM[/code] data.
+			Particle starts with specified [code]CUSTOM[/code] data.
 		</constant>
 		<constant name="MAX_DRAW_PASSES" value="4">
 			Maximum number of draw passes supported.

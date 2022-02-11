@@ -1030,7 +1030,7 @@ static void _encode_string(const String &p_string, uint8_t *&buf, int &r_len) {
 }
 
 Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bool p_full_objects, int p_depth) {
-	ERR_FAIL_COND_V_MSG(p_depth > Variant::MAX_RECURSION_DEPTH, ERR_OUT_OF_MEMORY, "Potential inifite recursion detected. Bailing.");
+	ERR_FAIL_COND_V_MSG(p_depth > Variant::MAX_RECURSION_DEPTH, ERR_OUT_OF_MEMORY, "Potential infinite recursion detected. Bailing.");
 	uint8_t *buf = r_buffer;
 
 	r_len = 0;

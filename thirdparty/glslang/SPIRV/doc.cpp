@@ -900,6 +900,12 @@ const char* CapabilityString(int info)
     case CapabilityDeviceGroup: return "DeviceGroup";
     case CapabilityMultiView:   return "MultiView";
 
+    case CapabilityDenormPreserve:           return "DenormPreserve";
+    case CapabilityDenormFlushToZero:        return "DenormFlushToZero";
+    case CapabilitySignedZeroInfNanPreserve: return "SignedZeroInfNanPreserve";
+    case CapabilityRoundingModeRTE:          return "RoundingModeRTE";
+    case CapabilityRoundingModeRTZ:          return "RoundingModeRTZ";
+
     case CapabilityStencilExportEXT: return "StencilExportEXT";
 
     case CapabilityFloat16ImageAMD:       return "Float16ImageAMD";

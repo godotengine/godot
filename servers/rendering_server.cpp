@@ -2388,9 +2388,9 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(ENV_SSIL_QUALITY_HIGH);
 	BIND_ENUM_CONSTANT(ENV_SSIL_QUALITY_ULTRA);
 
-	BIND_ENUM_CONSTANT(ENV_SDFGI_Y_SCALE_DISABLED);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_Y_SCALE_75_PERCENT);
 	BIND_ENUM_CONSTANT(ENV_SDFGI_Y_SCALE_50_PERCENT);
+	BIND_ENUM_CONSTANT(ENV_SDFGI_Y_SCALE_75_PERCENT);
+	BIND_ENUM_CONSTANT(ENV_SDFGI_Y_SCALE_100_PERCENT);
 
 	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_4);
 	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_8);
@@ -2830,12 +2830,12 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/shadows/directional_shadow/size", 4096);
 	GLOBAL_DEF("rendering/shadows/directional_shadow/size.mobile", 2048);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/directional_shadow/size", PropertyInfo(Variant::INT, "rendering/shadows/directional_shadow/size", PROPERTY_HINT_RANGE, "256,16384"));
-	GLOBAL_DEF("rendering/shadows/directional_shadow/soft_shadow_quality", 3);
+	GLOBAL_DEF("rendering/shadows/directional_shadow/soft_shadow_quality", 2);
 	GLOBAL_DEF("rendering/shadows/directional_shadow/soft_shadow_quality.mobile", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/directional_shadow/soft_shadow_quality", PropertyInfo(Variant::INT, "rendering/shadows/directional_shadow/soft_shadow_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Very Low (Faster),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"));
 	GLOBAL_DEF("rendering/shadows/directional_shadow/16_bits", true);
 
-	GLOBAL_DEF("rendering/shadows/shadows/soft_shadow_quality", 3);
+	GLOBAL_DEF("rendering/shadows/shadows/soft_shadow_quality", 2);
 	GLOBAL_DEF("rendering/shadows/shadows/soft_shadow_quality.mobile", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadows/soft_shadow_quality", PropertyInfo(Variant::INT, "rendering/shadows/shadows/soft_shadow_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Very Low (Faster),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"));
 
@@ -2872,7 +2872,7 @@ RenderingServer::RenderingServer() {
 
 	GLOBAL_DEF("rendering/global_illumination/gi/use_half_resolution", false);
 
-	GLOBAL_DEF("rendering/global_illumination/voxel_gi/quality", 1);
+	GLOBAL_DEF("rendering/global_illumination/voxel_gi/quality", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/global_illumination/voxel_gi/quality", PropertyInfo(Variant::INT, "rendering/global_illumination/voxel_gi/quality", PROPERTY_HINT_ENUM, "Low (4 Cones - Fast),High (6 Cones - Slow)"));
 
 	GLOBAL_DEF("rendering/shading/overrides/force_vertex_shading", false);
@@ -2979,7 +2979,7 @@ RenderingServer::RenderingServer() {
 
 	GLOBAL_DEF("rendering/global_illumination/sdfgi/probe_ray_count", 1);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/global_illumination/sdfgi/probe_ray_count", PropertyInfo(Variant::INT, "rendering/global_illumination/sdfgi/probe_ray_count", PROPERTY_HINT_ENUM, "8 (Fastest),16,32,64,96,128 (Slowest)"));
-	GLOBAL_DEF("rendering/global_illumination/sdfgi/frames_to_converge", 4);
+	GLOBAL_DEF("rendering/global_illumination/sdfgi/frames_to_converge", 5);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/global_illumination/sdfgi/frames_to_converge", PropertyInfo(Variant::INT, "rendering/global_illumination/sdfgi/frames_to_converge", PROPERTY_HINT_ENUM, "5 (Less Latency but Lower Quality),10,15,20,25,30 (More Latency but Higher Quality)"));
 	GLOBAL_DEF("rendering/global_illumination/sdfgi/frames_to_update_lights", 2);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/global_illumination/sdfgi/frames_to_update_lights", PropertyInfo(Variant::INT, "rendering/global_illumination/sdfgi/frames_to_update_lights", PROPERTY_HINT_ENUM, "1 (Slower),2,4,8,16 (Faster)"));

@@ -577,7 +577,7 @@
 			Font style flags, see [enum TextServer.FontStyle].
 		</member>
 		<member name="force_autohinter" type="bool" setter="set_force_autohinter" getter="is_force_autohinter" default="false">
-			If set to [code]true[/code], auto-hinting is supported and preffered over font built-in hinting. Used by dynamic fonts only.
+			If set to [code]true[/code], auto-hinting is supported and preferred over font built-in hinting. Used by dynamic fonts only.
 		</member>
 		<member name="hinting" type="int" setter="set_hinting" getter="get_hinting" enum="TextServer.Hinting" default="1">
 			Font hinting mode. Used by dynamic fonts only.

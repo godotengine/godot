@@ -385,8 +385,6 @@ int Node3DEditorViewport::get_selected_count() const {
 }
 
 void Node3DEditorViewport::cancel_transform() {
-	_edit.mode = TRANSFORM_NONE;
-
 	List<Node *> &selection = editor_selection->get_selected_node_list();
 
 	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
@@ -402,7 +400,8 @@ void Node3DEditorViewport::cancel_transform() {
 
 		sp->set_global_transform(se->original);
 	}
-	surface->update();
+
+	finish_transform();
 	set_message(TTR("Transform Aborted."), 3);
 }
 
@@ -1595,9 +1594,9 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					}
 
 					if (after != EditorPlugin::AFTER_GUI_INPUT_DESELECT) {
-						clicked = _select_ray(b->get_position());
-
 						//clicking is always deferred to either move or release
+						clicked = _select_ray(b->get_position());
+						selection_in_progress = true;
 
 						if (clicked.is_null()) {
 							//default to regionselect
@@ -1616,6 +1615,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					}
 
 					if (after != EditorPlugin::AFTER_GUI_INPUT_DESELECT) {
+						selection_in_progress = false;
+
 						if (clicked.is_valid()) {
 							_select_clicked(false);
 						}
@@ -1720,23 +1721,26 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				nav_mode = NAVIGATION_ORBIT;
 			} else {
 				const bool movement_threshold_passed = _edit.original_mouse_pos.distance_to(_edit.mouse_pos) > 8 * EDSCALE;
-				if (clicked.is_valid() && movement_threshold_passed) {
-					_compute_edit(_edit.original_mouse_pos);
-					clicked = ObjectID();
-
-					_edit.mode = TRANSFORM_TRANSLATE;
-				}
 
 				// enable region-select if nothing has been selected yet or multi-select (shift key) is active
-				if (movement_threshold_passed && (get_selected_count() == 0 || clicked_wants_append)) {
-					cursor.region_select = true;
-					cursor.region_begin = _edit.original_mouse_pos;
+				if (selection_in_progress && movement_threshold_passed) {
+					if (get_selected_count() == 0 || clicked_wants_append) {
+						cursor.region_select = true;
+						cursor.region_begin = _edit.original_mouse_pos;
+						clicked = ObjectID();
+					}
 				}
 
 				if (cursor.region_select) {
 					cursor.region_end = m->get_position();
 					surface->update();
 					return;
+				}
+
+				if (clicked.is_valid() && movement_threshold_passed) {
+					_compute_edit(_edit.original_mouse_pos);
+					clicked = ObjectID();
+					_edit.mode = TRANSFORM_TRANSLATE;
 				}
 
 				if (_edit.mode == TRANSFORM_NONE) {
@@ -3959,8 +3963,6 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 							continue;
 						}
 						memdelete(instantiated_scene);
-					} else {
-						continue;
 					}
 					can_instantiate = true;
 					break;
@@ -4063,12 +4065,9 @@ void Node3DEditorViewport::commit_transform() {
 		undo_redo->add_undo_method(sp, "set_global_transform", se->original);
 	}
 	undo_redo->commit_action();
-	_edit.mode = TRANSFORM_NONE;
-	_edit.instant = false;
-	spatial_editor->set_local_coords_enabled(_edit.original_local);
+
+	finish_transform();
 	set_message("");
-	spatial_editor->update_transform_gizmo();
-	surface->update();
 }
 
 void Node3DEditorViewport::update_transform(Point2 p_mousepos, bool p_shift) {
@@ -4405,6 +4404,14 @@ void Node3DEditorViewport::update_transform(Point2 p_mousepos, bool p_shift) {
 		default: {
 		}
 	}
+}
+
+void Node3DEditorViewport::finish_transform() {
+	spatial_editor->set_local_coords_enabled(_edit.original_local);
+	spatial_editor->update_transform_gizmo();
+	_edit.mode = TRANSFORM_NONE;
+	_edit.instant = false;
+	surface->update();
 }
 
 Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, EditorNode *p_editor, int p_index) {

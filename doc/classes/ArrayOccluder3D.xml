@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ArrayOccluder3D" inherits="Occluder3D" version="4.0">
 	<brief_description>
+		3D polygon shape for use with occlusion culling in [OccluderInstance3D].
 	</brief_description>
 	<description>
+		[ArrayOccluder3D] stores an arbitrary 3D polygon shape that can be used by the engine's occlusion culling system. This is analogous to [ArrayMesh], but for occluders.
+		See [OccluderInstance3D]'s documentation for instructions on setting up occlusion culling.
 	</description>
 	<tutorials>
 	</tutorials>

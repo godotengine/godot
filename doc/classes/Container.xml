@@ -10,6 +10,20 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_get_allowed_size_flags_horizontal" qualifiers="virtual const">
+			<return type="PackedInt32Array" />
+			<description>
+				Implement to return a list of allowed horizontal [enum Control.SizeFlags] for child nodes. This doesn't technically prevent the usages of any other size flags, if your implementation requires that. This only limits the options available to the user in the inspector dock.
+				[b]Note:[/b] Having no size flags is equal to having [constant Control.SIZE_SHRINK_BEGIN]. As such, this value is always implicitly allowed.
+			</description>
+		</method>
+		<method name="_get_allowed_size_flags_vertical" qualifiers="virtual const">
+			<return type="PackedInt32Array" />
+			<description>
+				Implement to return a list of allowed vertical [enum Control.SizeFlags] for child nodes. This doesn't technically prevent the usages of any other size flags, if your implementation requires that. This only limits the options available to the user in the inspector dock.
+				[b]Note:[/b] Having no size flags is equal to having [constant Control.SIZE_SHRINK_BEGIN]. As such, this value is always implicitly allowed.
+			</description>
+		</method>
 		<method name="fit_child_in_rect">
 			<return type="void" />
 			<argument index="0" name="child" type="Control" />

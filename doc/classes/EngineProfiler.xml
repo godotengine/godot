@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		This class can be used to implement custom profilers that are able to interact with the engine and editor debugger.
-		See [EngineDebugger] and [EditorDebuggerPlugin] for more informations.
+		See [EngineDebugger] and [EditorDebuggerPlugin] for more information.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -24,7 +24,7 @@
 			<argument index="2" name="physics_time" type="float" />
 			<argument index="3" name="physics_frame_time" type="float" />
 			<description>
-				Called once every engine iteration when the profiler is active with informations about the current frame.
+				Called once every engine iteration when the profiler is active with information about the current frame.
 			</description>
 		</method>
 		<method name="_toggle" qualifiers="virtual">

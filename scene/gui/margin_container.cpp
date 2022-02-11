@@ -65,6 +65,24 @@ Size2 MarginContainer::get_minimum_size() const {
 	return max;
 }
 
+Vector<int> MarginContainer::get_allowed_size_flags_horizontal() const {
+	Vector<int> flags;
+	flags.append(SIZE_FILL);
+	flags.append(SIZE_SHRINK_BEGIN);
+	flags.append(SIZE_SHRINK_CENTER);
+	flags.append(SIZE_SHRINK_END);
+	return flags;
+}
+
+Vector<int> MarginContainer::get_allowed_size_flags_vertical() const {
+	Vector<int> flags;
+	flags.append(SIZE_FILL);
+	flags.append(SIZE_SHRINK_BEGIN);
+	flags.append(SIZE_SHRINK_CENTER);
+	flags.append(SIZE_SHRINK_END);
+	return flags;
+}
+
 void MarginContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_SORT_CHILDREN: {

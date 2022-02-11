@@ -261,17 +261,18 @@ class EditorInspectorSection : public Container {
 
 	String label;
 	String section;
-	bool vbox_added; // Optimization.
+	bool vbox_added = false; // Optimization.
 	Color bg_color;
-	bool foldable;
+	bool foldable = false;
+	int indent_depth = 0;
 
 	Timer *dropping_unfold_timer;
-	bool dropping;
+	bool dropping = false;
 
 	void _test_unfold();
 
 protected:
-	Object *object;
+	Object *object = nullptr;
 	VBoxContainer *vbox;
 
 	void _notification(int p_what);
@@ -281,7 +282,7 @@ protected:
 public:
 	virtual Size2 get_minimum_size() const override;
 
-	void setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable);
+	void setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth = 0);
 	VBoxContainer *get_vbox();
 	void unfold();
 	void fold();
@@ -317,18 +318,11 @@ class EditorInspectorArray : public EditorInspectorSection {
 	LineEdit *new_size_line_edit;
 
 	// Pagination
-	int page_lenght = 5;
+	int page_length = 5;
 	int page = 0;
 	int max_page = 0;
 	int begin_array_index = 0;
 	int end_array_index = 0;
-	HBoxContainer *hbox_pagination;
-	Button *first_page_button;
-	Button *prev_page_button;
-	LineEdit *page_line_edit;
-	Label *page_count_label;
-	Button *next_page_button;
-	Button *last_page_button;
 
 	enum MenuOptions {
 		OPTION_MOVE_UP = 0,
@@ -356,12 +350,7 @@ class EditorInspectorArray : public EditorInspectorSection {
 
 	int _get_array_count();
 	void _add_button_pressed();
-
-	void _first_page_button_pressed();
-	void _prev_page_button_pressed();
-	void _page_line_edit_text_submitted(String p_text);
-	void _next_page_button_pressed();
-	void _last_page_button_pressed();
+	void _paginator_page_changed(int p_page);
 
 	void _rmb_popup_id_pressed(int p_id);
 
@@ -400,6 +389,34 @@ public:
 	VBoxContainer *get_vbox(int p_index);
 
 	EditorInspectorArray();
+};
+
+class EditorPaginator : public HBoxContainer {
+	GDCLASS(EditorPaginator, HBoxContainer);
+
+	int page = 0;
+	int max_page = 0;
+	Button *first_page_button;
+	Button *prev_page_button;
+	LineEdit *page_line_edit;
+	Label *page_count_label;
+	Button *next_page_button;
+	Button *last_page_button;
+
+	void _first_page_button_pressed();
+	void _prev_page_button_pressed();
+	void _page_line_edit_text_submitted(String p_text);
+	void _next_page_button_pressed();
+	void _last_page_button_pressed();
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	void update(int p_page, int p_max_page);
+
+	EditorPaginator();
 };
 
 class EditorInspector : public ScrollContainer {

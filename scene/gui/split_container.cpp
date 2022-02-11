@@ -336,6 +336,30 @@ bool SplitContainer::is_collapsed() const {
 	return collapsed;
 }
 
+Vector<int> SplitContainer::get_allowed_size_flags_horizontal() const {
+	Vector<int> flags;
+	flags.append(SIZE_FILL);
+	if (!vertical) {
+		flags.append(SIZE_EXPAND);
+	}
+	flags.append(SIZE_SHRINK_BEGIN);
+	flags.append(SIZE_SHRINK_CENTER);
+	flags.append(SIZE_SHRINK_END);
+	return flags;
+}
+
+Vector<int> SplitContainer::get_allowed_size_flags_vertical() const {
+	Vector<int> flags;
+	flags.append(SIZE_FILL);
+	if (vertical) {
+		flags.append(SIZE_EXPAND);
+	}
+	flags.append(SIZE_SHRINK_BEGIN);
+	flags.append(SIZE_SHRINK_CENTER);
+	flags.append(SIZE_SHRINK_END);
+	return flags;
+}
+
 void SplitContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_split_offset", "offset"), &SplitContainer::set_split_offset);
 	ClassDB::bind_method(D_METHOD("get_split_offset"), &SplitContainer::get_split_offset);

@@ -407,6 +407,7 @@ private:
 
 		bool active = false; // anything selected? i.e. from, to, etc. valid?
 		bool enabled = false; // allow selections?
+		bool drag_attempt = false;
 	};
 
 	Selection selection;
@@ -416,6 +417,7 @@ private:
 	float percent_visible = 1.0;
 	VisibleCharactersBehavior visible_chars_behavior = VC_CHARS_BEFORE_SHAPING;
 
+	bool _is_click_inside_selection() const;
 	void _find_click(ItemFrame *p_frame, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr);
 
 	String _get_line_text(ItemFrame *p_frame, int p_line, Selection p_sel) const;
@@ -554,10 +556,12 @@ public:
 	int get_visible_line_count() const;
 
 	int get_content_height() const;
+	int get_content_width() const;
 
 	VScrollBar *get_v_scroll_bar() { return vscroll; }
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
+	virtual Variant get_drag_data(const Point2 &p_point) override;
 
 	void set_selection_enabled(bool p_enabled);
 	bool is_selection_enabled() const;

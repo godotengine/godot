@@ -89,9 +89,10 @@ class EditorPropertyArray : public EditorProperty {
 	int changing_type_index;
 	Button *edit;
 	VBoxContainer *vbox;
+	VBoxContainer *property_vbox;
 	EditorSpinSlider *size_slider;
-	EditorSpinSlider *page_slider;
-	HBoxContainer *page_hbox;
+	Button *button_add_item;
+	EditorPaginator *paginator;
 	Variant::Type array_type;
 	Variant::Type subtype;
 	PropertyHint subtype_hint;
@@ -103,8 +104,9 @@ class EditorPropertyArray : public EditorProperty {
 	HBoxContainer *reorder_selected_element_hbox = nullptr;
 	Button *reorder_selected_button = nullptr;
 
-	void _page_changed(double p_page);
+	void _page_changed(int p_page);
 	void _length_changed(double p_page);
+	void _add_element();
 	void _edit_pressed();
 	void _property_changed(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
 	void _change_type(Object *p_button, int p_index);
@@ -144,12 +146,12 @@ class EditorPropertyDictionary : public EditorProperty {
 	int changing_type_index;
 	Button *edit;
 	VBoxContainer *vbox;
+	VBoxContainer *property_vbox;
 	EditorSpinSlider *size_slider;
-	EditorSpinSlider *page_slider;
-	HBoxContainer *page_hbox;
 	Button *button_add_item;
+	EditorPaginator *paginator;
 
-	void _page_changed(double p_page);
+	void _page_changed(int p_page);
 	void _edit_pressed();
 	void _property_changed(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
 	void _change_type(Object *p_button, int p_index);

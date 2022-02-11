@@ -143,6 +143,34 @@ void Container::queue_sort() {
 	pending_sort = true;
 }
 
+Vector<int> Container::get_allowed_size_flags_horizontal() const {
+	Vector<int> flags;
+	if (GDVIRTUAL_CALL(_get_allowed_size_flags_horizontal, flags)) {
+		return flags;
+	}
+
+	flags.append(SIZE_FILL);
+	flags.append(SIZE_EXPAND);
+	flags.append(SIZE_SHRINK_BEGIN);
+	flags.append(SIZE_SHRINK_CENTER);
+	flags.append(SIZE_SHRINK_END);
+	return flags;
+}
+
+Vector<int> Container::get_allowed_size_flags_vertical() const {
+	Vector<int> flags;
+	if (GDVIRTUAL_CALL(_get_allowed_size_flags_vertical, flags)) {
+		return flags;
+	}
+
+	flags.append(SIZE_FILL);
+	flags.append(SIZE_EXPAND);
+	flags.append(SIZE_SHRINK_BEGIN);
+	flags.append(SIZE_SHRINK_CENTER);
+	flags.append(SIZE_SHRINK_END);
+	return flags;
+}
+
 void Container::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -176,6 +204,9 @@ TypedArray<String> Container::get_configuration_warnings() const {
 void Container::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("queue_sort"), &Container::queue_sort);
 	ClassDB::bind_method(D_METHOD("fit_child_in_rect", "child", "rect"), &Container::fit_child_in_rect);
+
+	GDVIRTUAL_BIND(_get_allowed_size_flags_horizontal);
+	GDVIRTUAL_BIND(_get_allowed_size_flags_vertical);
 
 	BIND_CONSTANT(NOTIFICATION_PRE_SORT_CHILDREN);
 	BIND_CONSTANT(NOTIFICATION_SORT_CHILDREN);

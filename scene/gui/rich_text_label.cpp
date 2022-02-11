@@ -33,6 +33,7 @@
 #include "core/math/math_defs.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "label.h"
 #include "scene/scene_string_names.h"
 #include "servers/display_server.h"
 
@@ -1590,6 +1591,9 @@ void RichTextLabel::_notification(int p_what) {
 				update();
 			}
 		} break;
+		case NOTIFICATION_DRAG_END: {
+			selection.drag_attempt = false;
+		} break;
 	}
 }
 
@@ -1650,6 +1654,8 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 				int c_index = 0;
 				bool outside;
 
+				selection.drag_attempt = false;
+
 				_find_click(main, b->get_position(), &c_frame, &c_line, &c_item, &c_index, &outside);
 				if (c_item != nullptr) {
 					if (selection.enabled) {
@@ -1660,17 +1666,22 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 
 						// Erase previous selection.
 						if (selection.active) {
-							selection.from_frame = nullptr;
-							selection.from_line = 0;
-							selection.from_item = nullptr;
-							selection.from_char = 0;
-							selection.to_frame = nullptr;
-							selection.to_line = 0;
-							selection.to_item = nullptr;
-							selection.to_char = 0;
-							selection.active = false;
+							if (_is_click_inside_selection()) {
+								selection.drag_attempt = true;
+								selection.click_item = nullptr;
+							} else {
+								selection.from_frame = nullptr;
+								selection.from_line = 0;
+								selection.from_item = nullptr;
+								selection.from_char = 0;
+								selection.to_frame = nullptr;
+								selection.to_line = 0;
+								selection.to_item = nullptr;
+								selection.to_char = 0;
+								selection.active = false;
 
-							update();
+								update();
+							}
 						}
 					}
 				}
@@ -1682,6 +1693,8 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 				Item *c_item = nullptr;
 				int c_index = 0;
 				bool outside;
+
+				selection.drag_attempt = false;
 
 				_find_click(main, b->get_position(), &c_frame, &c_line, &c_item, &c_index, &outside);
 
@@ -1714,6 +1727,22 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 					DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
 				}
 				selection.click_item = nullptr;
+				if (selection.drag_attempt) {
+					selection.drag_attempt = false;
+					if (_is_click_inside_selection()) {
+						selection.from_frame = nullptr;
+						selection.from_line = 0;
+						selection.from_item = nullptr;
+						selection.from_char = 0;
+						selection.to_frame = nullptr;
+						selection.to_line = 0;
+						selection.to_item = nullptr;
+						selection.to_char = 0;
+						selection.active = false;
+
+						update();
+					}
+				}
 
 				if (!b->is_double_click() && !scroll_updated) {
 					Item *c_item = nullptr;
@@ -3734,6 +3763,29 @@ void RichTextLabel::set_deselect_on_focus_loss_enabled(const bool p_enabled) {
 	}
 }
 
+Variant RichTextLabel::get_drag_data(const Point2 &p_point) {
+	if (selection.drag_attempt && selection.enabled) {
+		String t = get_selected_text();
+		Label *l = memnew(Label);
+		l->set_text(t);
+		set_drag_preview(l);
+		return t;
+	}
+
+	return Variant();
+}
+
+bool RichTextLabel::_is_click_inside_selection() const {
+	if (selection.active && selection.enabled && selection.click_frame && selection.from_frame && selection.to_frame) {
+		const Line &l_click = selection.click_frame->lines[selection.click_line];
+		const Line &l_from = selection.from_frame->lines[selection.from_line];
+		const Line &l_to = selection.to_frame->lines[selection.to_line];
+		return (l_click.char_offset + selection.click_char >= l_from.char_offset + selection.from_char) && (l_click.char_offset + selection.click_char <= l_to.char_offset + selection.to_char);
+	} else {
+		return false;
+	}
+}
+
 bool RichTextLabel::_search_table(ItemTable *p_table, List<Item *>::Element *p_from, const String &p_string, bool p_reverse_search) {
 	List<Item *>::Element *E = p_from;
 	while (E != nullptr) {
@@ -3992,7 +4044,7 @@ int RichTextLabel::get_selection_to() const {
 
 void RichTextLabel::set_text(const String &p_bbcode) {
 	text = p_bbcode;
-	if (is_inside_tree() && use_bbcode) {
+	if (use_bbcode) {
 		parse_bbcode(p_bbcode);
 	} else { // raw text
 		clear();
@@ -4157,6 +4209,14 @@ int RichTextLabel::get_content_height() const {
 	return total_height;
 }
 
+int RichTextLabel::get_content_width() const {
+	int total_width = 0;
+	for (int i = 0; i < main->lines.size(); i++) {
+		total_width = MAX(total_width, main->lines[i].offset.x + main->lines[i].text_buf->get_size().x);
+	}
+	return total_width;
+}
+
 #ifndef DISABLE_DEPRECATED
 // People will be very angry, if their texts get erased, because of #39148. (3.x -> 4.0)
 // Although some people may not used bbcode_text, so we only overwrite, if bbcode_text is not empty.
@@ -4279,6 +4339,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_visible_paragraph_count"), &RichTextLabel::get_visible_paragraph_count);
 
 	ClassDB::bind_method(D_METHOD("get_content_height"), &RichTextLabel::get_content_height);
+	ClassDB::bind_method(D_METHOD("get_content_width"), &RichTextLabel::get_content_width);
 
 	ClassDB::bind_method(D_METHOD("parse_expressions_for_values", "expressions"), &RichTextLabel::parse_expressions_for_values);
 
@@ -4286,32 +4347,29 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_effects"), &RichTextLabel::get_effects);
 	ClassDB::bind_method(D_METHOD("install_effect", "effect"), &RichTextLabel::install_effect);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters", PROPERTY_HINT_RANGE, "-1,128000,1"), "set_visible_characters", "get_visible_characters");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "percent_visible", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_percent_visible", "get_percent_visible");
-
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters_behavior", PROPERTY_HINT_ENUM, "Characters Before Shaping,Characters After Shaping,Glyphs (Layout Direction),Glyphs (Left-to-Right),Glyphs (Right-to-Left)"), "set_visible_characters_behavior", "get_visible_characters_behavior");
-
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "meta_underlined"), "set_meta_underline", "is_meta_underlined");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_size", PROPERTY_HINT_RANGE, "0,24,1"), "set_tab_size", "get_tab_size");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
+	// Note: set "bbcode_enabled" first, to avoid unnecessery "text" resets.
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bbcode_enabled"), "set_use_bbcode", "is_using_bbcode");
 
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_size", PROPERTY_HINT_RANGE, "0,24,1"), "set_tab_size", "get_tab_size");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fit_content_height"), "set_fit_content_height", "is_fit_content_height_enabled");
-
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_active"), "set_scroll_active", "is_scroll_active");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_following"), "set_scroll_follow", "is_scroll_following");
-
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selection_enabled"), "set_selection_enabled", "is_selection_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_selected_font_color"), "set_override_selected_font_color", "is_overriding_selected_font_color");
-
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_on_focus_loss_enabled"), "set_deselect_on_focus_loss_enabled", "is_deselect_on_focus_loss_enabled");
-
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "custom_effects", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "RichTextEffect"), (PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE)), "set_effects", "get_effects");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "meta_underlined"), "set_meta_underline", "is_meta_underlined");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
 
+	// Note: "visible_characters" and "percent_visible" should be set after "text" to be correctly applied.
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters", PROPERTY_HINT_RANGE, "-1,128000,1"), "set_visible_characters", "get_visible_characters");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters_behavior", PROPERTY_HINT_ENUM, "Characters Before Shaping,Characters After Shaping,Glyphs (Layout Direction),Glyphs (Left-to-Right),Glyphs (Right-to-Left)"), "set_visible_characters_behavior", "get_visible_characters_behavior");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "percent_visible", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_percent_visible", "get_percent_visible");
+
+	ADD_GROUP("Locale", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), "set_language", "get_language");
-
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
 
 	ADD_GROUP("Structured Text", "structured_text_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "structured_text_bidi_override", PROPERTY_HINT_ENUM, "Default,URI,File,Email,List,None,Custom"), "set_structured_text_bidi_override", "get_structured_text_bidi_override");

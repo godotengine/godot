@@ -293,7 +293,7 @@ private:
 		uint32_t smallest_subdiv = 0;
 
 		int size = 0;
-		bool use_16_bits = false;
+		bool use_16_bits = true;
 
 		RID depth;
 		RID fb; //for copying
@@ -333,7 +333,7 @@ private:
 
 		int light_count = 0;
 		int size = 0;
-		bool use_16_bits = false;
+		bool use_16_bits = true;
 		int current_light = 0;
 
 	} directional_shadow;
@@ -981,7 +981,7 @@ public:
 	/* SHADOW ATLAS API */
 
 	virtual RID shadow_atlas_create() override;
-	virtual void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = false) override;
+	virtual void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = true) override;
 	virtual void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) override;
 	virtual bool shadow_atlas_update_light(RID p_atlas, RID p_light_instance, float p_coverage, uint64_t p_light_version) override;
 	_FORCE_INLINE_ bool shadow_atlas_owns_light_instance(RID p_atlas, RID p_light_intance) {
@@ -1002,7 +1002,7 @@ public:
 		return Size2(atlas->size, atlas->size);
 	}
 
-	virtual void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = false) override;
+	virtual void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = true) override;
 	virtual int get_directional_light_shadow_size(RID p_light_intance) override;
 	virtual void set_directional_shadow_count(int p_count) override;
 
