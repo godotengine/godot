@@ -47,6 +47,8 @@ private:
 	Status status;
 	String running_scene;
 
+	void parse_run_args(String *exec_path, List<String> *args, const String raw_custom_args);
+
 public:
 	Status get_status() const;
 	String get_running_scene() const;

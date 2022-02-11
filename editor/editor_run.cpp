@@ -184,9 +184,44 @@ Error EditorRun::run(const String &p_scene) {
 		args.push_back(p_scene);
 	}
 
-	String exec = OS::get_singleton()->get_executable_path();
+	int instances = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_instances", 1);
+	for (int instance_num = 1; instance_num <= instances; instance_num++) {
+		List<String> instance_args;
+		for (int i = 0; i < args.size(); i++) {
+			instance_args.push_back(args[i]);
+		}
 
-	const String raw_custom_args = ProjectSettings::get_singleton()->get("editor/run/main_run_args");
+		String exec;
+		String instance_arg_setting = "editor/run/instance_" + itos(instance_num) + "_run_args";
+		String raw_custom_args = ProjectSettings::get_singleton()->get(instance_arg_setting);
+		if (raw_custom_args.is_empty()) {
+			// Fallback to main run args if no instance specific run args exist.
+			raw_custom_args = ProjectSettings::get_singleton()->get("editor/run/main_run_args");
+		}
+		parse_run_args(&exec, &instance_args, raw_custom_args);
+
+		printf("Running: %s", exec.utf8().get_data());
+		for (const String &E : instance_args) {
+			printf(" %s", E.utf8().get_data());
+		};
+		printf("\n");
+
+		OS::ProcessID pid = 0;
+		Error err = OS::get_singleton()->create_instance(instance_args, &pid);
+		ERR_FAIL_COND_V(err, err);
+		pids.push_back(pid);
+	}
+
+	status = STATUS_PLAY;
+	if (!p_scene.is_empty()) {
+		running_scene = p_scene;
+	}
+
+	return OK;
+}
+
+void EditorRun::parse_run_args(String *exec_path, List<String> *args, const String raw_custom_args) {
+	*exec_path = OS::get_singleton()->get_executable_path();
 	if (!raw_custom_args.is_empty()) {
 		// Allow the user to specify a command to run, similar to Steam's launch options.
 		// In this case, Godot will no longer be run directly; it's up to the underlying command
@@ -202,53 +237,32 @@ Error EditorRun::run(const String &p_scene) {
 			// If nothing is placed before `%command%`, behave as if no placeholder was specified.
 			Vector<String> exec_args = raw_custom_args.substr(0, placeholder_pos).split(" ", false);
 			if (exec_args.size() >= 1) {
-				exec = exec_args[0];
+				*exec_path = exec_args[0];
 				exec_args.remove_at(0);
 
 				// Append the Godot executable name before we append executable arguments
 				// (since the order is reversed when using `push_front()`).
-				args.push_front(OS::get_singleton()->get_executable_path());
+				args->push_front(OS::get_singleton()->get_executable_path());
 			}
 
 			for (int i = exec_args.size() - 1; i >= 0; i--) {
 				// Iterate backwards as we're pushing items in the reverse order.
-				args.push_front(exec_args[i].replace(" ", "%20"));
+				args->push_front(exec_args[i].replace(" ", "%20"));
 			}
 
 			// Append Godot-specific custom arguments.
 			custom_args = raw_custom_args.substr(placeholder_pos + String("%command%").size()).split(" ", false);
 			for (int i = 0; i < custom_args.size(); i++) {
-				args.push_back(custom_args[i].replace(" ", "%20"));
+				args->push_back(custom_args[i].replace(" ", "%20"));
 			}
 		} else {
 			// Append Godot-specific custom arguments.
 			custom_args = raw_custom_args.split(" ", false);
 			for (int i = 0; i < custom_args.size(); i++) {
-				args.push_back(custom_args[i].replace(" ", "%20"));
+				args->push_back(custom_args[i].replace(" ", "%20"));
 			}
 		}
 	}
-
-	printf("Running: %s", exec.utf8().get_data());
-	for (const String &E : args) {
-		printf(" %s", E.utf8().get_data());
-	};
-	printf("\n");
-
-	int instances = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_instances", 1);
-	for (int i = 0; i < instances; i++) {
-		OS::ProcessID pid = 0;
-		Error err = OS::get_singleton()->create_instance(args, &pid);
-		ERR_FAIL_COND_V(err, err);
-		pids.push_back(pid);
-	}
-
-	status = STATUS_PLAY;
-	if (!p_scene.is_empty()) {
-		running_scene = p_scene;
-	}
-
-	return OK;
 }
 
 bool EditorRun::has_child_process(OS::ProcessID p_pid) const {

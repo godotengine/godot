@@ -1221,6 +1221,10 @@ ProjectSettings::ProjectSettings() {
 	extensions.push_back("gdshader");
 
 	GLOBAL_DEF("editor/run/main_run_args", "");
+	GLOBAL_DEF("editor/run/instance_1_run_args", "");
+	GLOBAL_DEF("editor/run/instance_2_run_args", "");
+	GLOBAL_DEF("editor/run/instance_3_run_args", "");
+	GLOBAL_DEF("editor/run/instance_4_run_args", "");
 
 	GLOBAL_DEF("editor/script/search_in_file_extensions", extensions);
 	custom_prop_info["editor/script/search_in_file_extensions"] = PropertyInfo(Variant::PACKED_STRING_ARRAY, "editor/script/search_in_file_extensions");
