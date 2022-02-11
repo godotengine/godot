@@ -1298,6 +1298,10 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 DisplayServerWayland::~DisplayServerWayland() {
 	wls.events_thread_done.set();
+
+	// Wait for all events to be handled, and in turn unblock the events thread.
+	wl_display_roundtrip(wls.display);
+
 	events_thread.wait_to_finish();
 
 	// Destroy all windows.
@@ -1322,6 +1326,7 @@ DisplayServerWayland::~DisplayServerWayland() {
 		}
 	}
 
+	wl_display_disconnect(wls.display);
 
 	// Destroy all drivers.
 #ifdef VULKAN_ENABLED
