@@ -552,7 +552,7 @@ Godot. Please check the file to know what's new.
 ## spirv-reflect
 
 - Upstream: https://github.com/KhronosGroup/SPIRV-Reflect
-- Version: git (1aceb6af56e74b92a00378842dda5c5a73f49a4b, 2022)
+- Version: git (cc937caab141d889c9c9dff572c5a6854d5cf9b4, 2021)
 - License: Apache 2.0
 
 Does not track Vulkan SDK releases closely, but try to package a commit newer
