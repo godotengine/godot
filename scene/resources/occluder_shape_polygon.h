@@ -81,8 +81,7 @@ public:
 
 	void clear();
 
-	virtual void notification_enter_world(RID p_scenario);
-	virtual void update_shape_to_visual_server();
+	void update_shape_to_visual_server();
 	virtual Transform center_node(const Transform &p_global_xform, const Transform &p_parent_xform, real_t p_snap);
 
 #ifdef TOOLS_ENABLED

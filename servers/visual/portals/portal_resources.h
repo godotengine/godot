@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  occluder_shape.h                                                     */
+/*  portal_resources.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,69 +28,41 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OCCLUDER_SHAPE_H
-#define OCCLUDER_SHAPE_H
+#ifndef PORTAL_RESOURCES_H
+#define PORTAL_RESOURCES_H
 
-#include "core/math/plane.h"
-#include "core/resource.h"
-#include "core/vector.h"
+#include "core/math/geometry.h"
+#include "portal_types.h"
 
-class OccluderShape : public Resource {
-	GDCLASS(OccluderShape, Resource);
-	OBJ_SAVE_TYPE(OccluderShape);
-	RES_BASE_EXTENSION("occ");
-	RID _shape;
+// Although the portal renderer is owned by a scenario,
+// resources are not associated with a scenario and can be shared
+// potentially across multiple scenarios. They must therefore be held in
+// some form of global.
 
-protected:
-	static void _bind_methods();
-
-	RID get_shape() const { return _shape; }
-	OccluderShape();
+class PortalResources {
+	friend class PortalRenderer;
 
 public:
-	virtual RID get_rid() const { return _shape; }
-	~OccluderShape();
+	OccluderResourceHandle occluder_resource_create();
+	void occluder_resource_prepare(OccluderResourceHandle p_handle, VSOccluder_Instance::Type p_type);
+	void occluder_resource_update_spheres(OccluderResourceHandle p_handle, const Vector<Plane> &p_spheres);
+	void occluder_resource_update_mesh(OccluderResourceHandle p_handle, const Geometry::OccluderMeshData &p_mesh_data);
+	void occluder_resource_destroy(OccluderResourceHandle p_handle);
 
-	virtual Transform center_node(const Transform &p_global_xform, const Transform &p_parent_xform, real_t p_snap) = 0;
+	const VSOccluder_Resource &get_pool_occluder_resource(uint32_t p_pool_id) const { return _occluder_resource_pool[p_pool_id]; }
+	VSOccluder_Resource &get_pool_occluder_resource(uint32_t p_pool_id) { return _occluder_resource_pool[p_pool_id]; }
 
-#ifdef TOOLS_ENABLED
-	// for editor gizmo
-	virtual AABB get_fallback_gizmo_aabb() const;
-	virtual bool requires_uniform_scale() const { return false; }
-#endif
+	// Local space is shared resources
+	const VSOccluder_Sphere &get_pool_occluder_local_sphere(uint32_t p_pool_id) const { return _occluder_local_sphere_pool[p_pool_id]; }
+	const VSOccluder_Poly &get_pool_occluder_local_poly(uint32_t p_pool_id) const { return _occluder_local_poly_pool[p_pool_id]; }
+	const VSOccluder_Hole &get_pool_occluder_local_hole(uint32_t p_pool_id) const { return _occluder_local_hole_pool[p_pool_id]; }
+	VSOccluder_Hole &get_pool_occluder_local_hole(uint32_t p_pool_id) { return _occluder_local_hole_pool[p_pool_id]; }
+
+private:
+	TrackedPooledList<VSOccluder_Resource> _occluder_resource_pool;
+	TrackedPooledList<VSOccluder_Sphere, uint32_t, true> _occluder_local_sphere_pool;
+	TrackedPooledList<VSOccluder_Poly, uint32_t, true> _occluder_local_poly_pool;
+	TrackedPooledList<VSOccluder_Hole, uint32_t, true> _occluder_local_hole_pool;
 };
 
-class OccluderShapeSphere : public OccluderShape {
-	GDCLASS(OccluderShapeSphere, OccluderShape);
-
-	// We bandit a plane to store position / radius
-	Vector<Plane> _spheres;
-	const real_t _min_radius = 0.1;
-
-#ifdef TOOLS_ENABLED
-	AABB _aabb_local;
-	void _update_aabb();
-#endif
-
-protected:
-	static void _bind_methods();
-
-public:
-	void set_spheres(const Vector<Plane> &p_spheres);
-	Vector<Plane> get_spheres() const { return _spheres; }
-
-	void set_sphere_position(int p_idx, const Vector3 &p_position);
-	void set_sphere_radius(int p_idx, real_t p_radius);
-
-	void update_shape_to_visual_server();
-	virtual Transform center_node(const Transform &p_global_xform, const Transform &p_parent_xform, real_t p_snap);
-
-#ifdef TOOLS_ENABLED
-	virtual AABB get_fallback_gizmo_aabb() const;
-	virtual bool requires_uniform_scale() const { return false; }
-#endif
-
-	OccluderShapeSphere();
-};
-
-#endif // OCCLUDER_SHAPE_H
+#endif // PORTAL_RESOURCES_H

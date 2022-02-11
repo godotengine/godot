@@ -40,6 +40,7 @@ class Occluder : public Spatial {
 	friend class OccluderSpatialGizmo;
 	friend class OccluderEditorPlugin;
 
+	RID _occluder_instance;
 	Ref<OccluderShape> _shape;
 
 	void resource_changed(RES res);

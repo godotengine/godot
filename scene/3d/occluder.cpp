@@ -35,10 +35,6 @@
 
 void Occluder::resource_changed(RES res) {
 	update_gizmo();
-
-	if (_shape.is_valid()) {
-		_shape->update_shape_to_visual_server();
-	}
 }
 
 void Occluder::set_shape(const Ref<OccluderShape> &p_shape) {
@@ -52,16 +48,9 @@ void Occluder::set_shape(const Ref<OccluderShape> &p_shape) {
 	if (_shape.is_valid()) {
 		_shape->register_owner(this);
 
-		// Especially in the editor, the shape can be added AFTER the occluder
-		// is added to the world. This means the shape scenario will not be set.
-		// To remedy this we make sure the scenario etc is refreshed as soon as
-		// a shape is set on the occluder.
 		if (is_inside_world() && get_world().is_valid()) {
-			_shape->notification_enter_world(get_world()->get_scenario());
-			_shape->update_shape_to_visual_server();
-			if (is_inside_tree()) {
-				_shape->update_active_to_visual_server(is_visible_in_tree());
-				_shape->update_transform_to_visual_server(get_global_transform());
+			if (_occluder_instance.is_valid()) {
+				VisualServer::get_singleton()->occluder_instance_link_resource(_occluder_instance, p_shape->get_rid());
 			}
 		}
 	}
@@ -115,12 +104,16 @@ void Occluder::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_WORLD: {
 			ERR_FAIL_COND(get_world().is_null());
-			if (_shape.is_valid()) {
-				_shape->notification_enter_world(get_world()->get_scenario());
-				_shape->update_active_to_visual_server(is_visible_in_tree());
-				_shape->update_shape_to_visual_server();
-				_shape->update_transform_to_visual_server(get_global_transform());
+
+			if (_occluder_instance.is_valid()) {
+				VisualServer::get_singleton()->occluder_instance_set_scenario(_occluder_instance, get_world()->get_scenario());
+				if (get_shape().is_valid()) {
+					VisualServer::get_singleton()->occluder_instance_link_resource(_occluder_instance, get_shape()->get_rid());
+				}
+				VisualServer::get_singleton()->occluder_instance_set_active(_occluder_instance, is_visible_in_tree());
+				VisualServer::get_singleton()->occluder_instance_set_transform(_occluder_instance, get_global_transform());
 			}
+
 #ifdef TOOLS_ENABLED
 			if (Engine::get_singleton()->is_editor_hint()) {
 				set_process_internal(true);
@@ -128,8 +121,8 @@ void Occluder::_notification(int p_what) {
 #endif
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
-			if (_shape.is_valid()) {
-				_shape->notification_exit_world();
+			if (_occluder_instance.is_valid()) {
+				VisualServer::get_singleton()->occluder_instance_set_scenario(_occluder_instance, RID());
 			}
 #ifdef TOOLS_ENABLED
 			if (Engine::get_singleton()->is_editor_hint()) {
@@ -138,14 +131,13 @@ void Occluder::_notification(int p_what) {
 #endif
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (_shape.is_valid() && is_inside_tree()) {
-				_shape->update_active_to_visual_server(is_visible_in_tree());
+			if (_occluder_instance.is_valid() && is_inside_tree()) {
+				VisualServer::get_singleton()->occluder_instance_set_active(_occluder_instance, is_visible_in_tree());
 			}
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			if (_shape.is_valid()) {
-				_shape->update_transform_to_visual_server(get_global_transform());
-
+			if (_occluder_instance.is_valid()) {
+				VisualServer::get_singleton()->occluder_instance_set_transform(_occluder_instance, get_global_transform());
 #ifdef TOOLS_ENABLED
 				if (Engine::get_singleton()->is_editor_hint()) {
 					update_configuration_warning();
@@ -171,10 +163,15 @@ void Occluder::_bind_methods() {
 }
 
 Occluder::Occluder() {
+	_occluder_instance = RID_PRIME(VisualServer::get_singleton()->occluder_instance_create());
 	set_notify_transform(true);
 }
 
 Occluder::~Occluder() {
+	if (_occluder_instance != RID()) {
+		VisualServer::get_singleton()->free(_occluder_instance);
+	}
+
 	if (!_shape.is_null()) {
 		_shape->unregister_owner(this);
 	}

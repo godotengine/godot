@@ -34,6 +34,8 @@
 #include "core/math/aabb.h"
 #include "core/project_settings.h"
 #include "portal_renderer.h"
+#include "servers/visual/visual_server_globals.h"
+#include "servers/visual/visual_server_scene.h"
 
 #define _log(a, b) ;
 //#define _log_prepare(a) log(a, 0)
@@ -275,10 +277,12 @@ void PortalOcclusionCuller::prepare_generic(PortalRenderer &p_portal_renderer, c
 	uint32_t polycount = 0;
 #endif
 
+	const PortalResources &resources = VSG::scene->get_portal_resources();
+
 	// find occluders
 	for (unsigned int o = 0; o < p_occluder_pool_ids.size(); o++) {
 		int id = p_occluder_pool_ids[o];
-		VSOccluder &occ = p_portal_renderer.get_pool_occluder(id);
+		VSOccluder_Instance &occ = p_portal_renderer.get_pool_occluder_instance(id);
 
 		// is it active?
 		// in the case of rooms, they will always be active, as inactive
@@ -290,9 +294,9 @@ void PortalOcclusionCuller::prepare_generic(PortalRenderer &p_portal_renderer, c
 		// TODO : occlusion cull spheres AGAINST themselves.
 		// i.e. a sphere that is occluded by another occluder is no
 		// use as an occluder...
-		if (occ.type == VSOccluder::OT_SPHERE) {
+		if (occ.type == VSOccluder_Instance::OT_SPHERE) {
 			// make sure world space spheres are up to date
-			p_portal_renderer.occluder_ensure_up_to_date_sphere(occ);
+			p_portal_renderer.occluder_ensure_up_to_date_sphere(resources, occ);
 
 			// cull entire AABB
 			if (is_aabb_culled(occ.aabb, p_planes)) {
@@ -301,7 +305,7 @@ void PortalOcclusionCuller::prepare_generic(PortalRenderer &p_portal_renderer, c
 
 			// multiple spheres
 			for (int n = 0; n < occ.list_ids.size(); n++) {
-				const Occlusion::Sphere &occluder_sphere = p_portal_renderer.get_pool_occluder_sphere(occ.list_ids[n]).world;
+				const Occlusion::Sphere &occluder_sphere = p_portal_renderer.get_pool_occluder_world_sphere(occ.list_ids[n]);
 
 				// is the occluder sphere culled?
 				if (is_sphere_culled(occluder_sphere.pos, occluder_sphere.radius, p_planes)) {
@@ -358,14 +362,14 @@ void PortalOcclusionCuller::prepare_generic(PortalRenderer &p_portal_renderer, c
 			}
 		} // sphere
 
-		if (occ.type == VSOccluder::OT_MESH) {
+		if (occ.type == VSOccluder_Instance::OT_MESH) {
 			// make sure world space spheres are up to date
-			p_portal_renderer.occluder_ensure_up_to_date_polys(occ);
+			p_portal_renderer.occluder_ensure_up_to_date_polys(resources, occ);
 
 			// multiple polys
 			for (int n = 0; n < occ.list_ids.size(); n++) {
-				const VSOccluder_Mesh &opoly = p_portal_renderer.get_pool_occluder_mesh(occ.list_ids[n]);
-				const Occlusion::PolyPlane &poly = opoly.poly_world;
+				const VSOccluder_Poly &opoly = p_portal_renderer.get_pool_occluder_world_poly(occ.list_ids[n]);
+				const Occlusion::PolyPlane &poly = opoly.poly;
 
 				// backface cull
 				bool faces_camera = poly.plane.is_point_over(pt_camera);
@@ -507,21 +511,21 @@ void PortalOcclusionCuller::precalc_poly_edge_planes(const Vector3 &p_pt_camera)
 		// holes
 		if (sortpoly.flags & SortPoly::SPF_HAS_HOLES) {
 			// get the mesh poly and the holes
-			const VSOccluder_Mesh &mesh = _portal_renderer->get_pool_occluder_mesh(sortpoly.mesh_source_id);
+			const VSOccluder_Poly &mesh = _portal_renderer->get_pool_occluder_world_poly(sortpoly.mesh_source_id);
 
 			dpoly.num_holes = mesh.num_holes;
 
 			for (int h = 0; h < mesh.num_holes; h++) {
 				uint32_t hid = mesh.hole_pool_ids[h];
-				const VSOccluder_Hole &hole = _portal_renderer->get_pool_occluder_hole(hid);
+				const VSOccluder_Hole &hole = _portal_renderer->get_pool_occluder_world_hole(hid);
 
 				// copy the verts to the precalced poly,
 				// we will need these later for whittling polys.
 				// We could alternatively link back to the original verts, but that gets messy.
-				dpoly.hole_polys[h] = hole.poly_world;
+				dpoly.hole_polys[h] = hole;
 
-				int hole_num_verts = hole.poly_world.num_verts;
-				const Vector3 *hverts = hole.poly_world.verts;
+				int hole_num_verts = hole.num_verts;
+				const Vector3 *hverts = hole.verts;
 
 				// number of planes equals number of verts forming edges
 				dpoly.hole_edge_planes[h].num_planes = hole_num_verts;
@@ -671,7 +675,7 @@ void PortalOcclusionCuller::whittle_polys() {
 	// order polys by distance to camera / area? NYI
 }
 
-bool PortalOcclusionCuller::calculate_poly_goodness_of_fit(const VSOccluder_Mesh &p_opoly, real_t &r_fit) {
+bool PortalOcclusionCuller::calculate_poly_goodness_of_fit(const VSOccluder_Poly &p_opoly, real_t &r_fit) {
 	// transform each of the poly points, find the area in screen space
 
 	// The points must be homogeneous coordinates, i.e. BEFORE
@@ -679,11 +683,11 @@ bool PortalOcclusionCuller::calculate_poly_goodness_of_fit(const VSOccluder_Mesh
 	// divide applied after clipping, to calculate the area.
 	// We therefore store them as planes to store the w coordinate as d.
 	Plane xpoints[Occlusion::PolyPlane::MAX_POLY_VERTS];
-	int num_verts = p_opoly.poly_world.num_verts;
+	int num_verts = p_opoly.poly.num_verts;
 
 	for (int n = 0; n < num_verts; n++) {
 		// source and dest in homogeneous coords
-		Plane source(p_opoly.poly_world.verts[n], 1.0f);
+		Plane source(p_opoly.poly.verts[n], 1.0f);
 		Plane &dest = xpoints[n];
 
 		dest = _matrix_camera.xform4(source);
