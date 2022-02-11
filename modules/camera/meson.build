@@ -9,7 +9,7 @@ elif PLATFORM == 'osx'
 endif
 
 _lib_module_camera = library('module_camera', _modules_camera_srcs,
-    dependencies: DEP_GODOT_ALL
+    dependencies: godotcore_dep
 )
 
 DEP_MODULE_CAMERA = declare_dependency(link_with: _lib_module_camera)

@@ -2,7 +2,7 @@ _module_enet_srcs = files(run_command(GLOB, '*.cpp', check: true).stdout().split
 
 _lib_module_enet = library('module_enet',
     _module_enet_srcs,
-    dependencies: [DEP_GODOT_ALL, DEP_ENET]
+    dependencies: [godotcore_dep, DEP_ENET]
 )
 
 DEP_MODULE_ENET = declare_dependency(link_with: _lib_module_enet)

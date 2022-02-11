@@ -4,7 +4,7 @@ _module_visual_script_srcs += files(run_command(GLOB, 'editor/*.cpp', check: tru
 lib_module_visual_script = library('module_visual_script',
     _module_visual_script_srcs,
     include_directories: '../..',
-    dependencies: [DEP_GODOT_ALL])
+    dependencies: [godotcore_dep])
 
 DEP_MODULE_VISUAL_SCRIPT = declare_dependency(link_with: lib_module_visual_script)
 
