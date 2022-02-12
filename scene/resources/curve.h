@@ -164,6 +164,8 @@ class Curve2D : public Resource {
 	mutable Vector<real_t> baked_dist_cache;
 	mutable real_t baked_max_ofs = 0.0;
 
+	void mark_dirty();
+
 	void _bake() const;
 
 	real_t bake_interval = 5.0;
@@ -227,6 +229,8 @@ class Curve3D : public Resource {
 	mutable PackedVector3Array baked_up_vector_cache;
 	mutable Vector<real_t> baked_dist_cache;
 	mutable real_t baked_max_ofs = 0.0;
+
+	void mark_dirty();
 
 	void _bake() const;
 
