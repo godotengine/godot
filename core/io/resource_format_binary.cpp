@@ -678,11 +678,13 @@ Error ResourceLoaderBinary::load() {
 				internal_resources.write[i].path = path; // Update path.
 			}
 
-			if (cache_mode == ResourceFormatLoader::CACHE_MODE_REUSE) {
-				if (ResourceCache::has(path)) {
+			if (cache_mode == ResourceFormatLoader::CACHE_MODE_REUSE && ResourceCache::has(path)) {
+				RES cached = ResourceCache::get(path);
+				if (cached.is_valid()) {
 					//already loaded, don't do anything
 					stage++;
 					error = OK;
+					internal_index_cache[path] = cached;
 					continue;
 				}
 			}
