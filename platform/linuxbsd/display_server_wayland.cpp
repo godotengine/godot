@@ -793,7 +793,11 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 		// Since `VulkanContextWayland::window_create` automatically assigns a buffer
 		// to the `wl_surface` and doing so instantly maps it, moving this method here
 		// is the only solution I can think of to implement this method properly.
-		context_vulkan->window_create(p_id, wd.vsync_mode, wls.display, wd.wl_surface, wd.rect.size.width, wd.rect.size.height);
+#ifdef VULKAN_ENABLED
+		if (context_vulkan) {
+			context_vulkan->window_create(p_id, wd.vsync_mode, wls.display, wd.wl_surface, wd.rect.size.width, wd.rect.size.height);
+		}
+#endif
 		wd.buffer_created = true;
 	}
 }
@@ -940,7 +944,11 @@ void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::W
 
 	xdg_surface_set_window_geometry(wd.xdg_surface, 0, 0, wd.rect.size.width, wd.rect.size.height);
 
-	context_vulkan->window_resize(p_window, wd.rect.size.width, wd.rect.size.height);
+#ifdef VULKAN_ENABLED
+	if (context_vulkan) {
+		context_vulkan->window_resize(p_window, wd.rect.size.width, wd.rect.size.height);
+	}
+#endif
 	wl_surface_commit(wd.wl_surface);
 }
 
@@ -1098,14 +1106,18 @@ void DisplayServerWayland::process_events() {
 
 				WindowData &wd = wls.windows[msg_data->id];
 
+#ifdef VULKAN_ENABLED
+				if (context_vulkan) {
+					context_vulkan->window_resize(msg_data->id, msg_data->rect.size.width, msg_data->rect.size.height);
+				}
+#endif
+
 				if (!wd.rect_changed_callback.is_null()) {
 					Variant var_rect = Variant(msg_data->rect);
 					Variant *arg = &var_rect;
 
 					Variant ret;
 					Callable::CallError ce;
-
-					context_vulkan->window_resize(msg_data->id, msg_data->rect.size.width, msg_data->rect.size.height);
 
 					wd.rect_changed_callback.call((const Variant**) &arg, 1, ret, ce);
 				}
