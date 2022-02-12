@@ -49,6 +49,18 @@ const char *Curve::SIGNAL_RANGE_CHANGED = "range_changed";
 Curve::Curve() {
 }
 
+void Curve::set_point_count(int p_count) {
+	ERR_FAIL_COND(p_count < 0);
+	if (_points.size() >= p_count) {
+		_points.resize(p_count);
+		mark_dirty();
+	} else {
+		for (int i = p_count - _points.size(); i > 0; i--) {
+			add_point(Vector2());
+		}
+	}
+}
+
 int Curve::add_point(Vector2 p_position, real_t p_left_tangent, real_t p_right_tangent, TangentMode p_left_mode, TangentMode p_right_mode) {
 	// Add a point and preserve order
 
@@ -358,6 +370,7 @@ real_t Curve::interpolate_local_nocheck(int p_index, real_t p_local_offset) cons
 void Curve::mark_dirty() {
 	_baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
+	notify_property_list_changed();
 }
 
 Array Curve::get_data() const {
@@ -409,7 +422,6 @@ void Curve::set_data(const Array p_input) {
 		p.position = p_input[i];
 		p.left_tangent = p_input[i + 1];
 		p.right_tangent = p_input[i + 2];
-		// TODO For some reason the compiler won't convert from Variant to enum
 		int left_mode = p_input[i + 3];
 		int right_mode = p_input[i + 4];
 		p.left_mode = (TangentMode)left_mode;
@@ -490,8 +502,91 @@ void Curve::ensure_default_setup(real_t p_min, real_t p_max) {
 	}
 }
 
+bool Curve::_set(const StringName &p_name, const Variant &p_value) {
+	Vector<String> components = String(p_name).split("/", true, 2);
+	if (components.size() >= 2 && components[0].begins_with("point_") && components[0].trim_prefix("point_").is_valid_int()) {
+		int point_index = components[0].trim_prefix("point_").to_int();
+		String property = components[1];
+		if (property == "position") {
+			Vector2 position = p_value.operator Vector2();
+			set_point_offset(point_index, position.x);
+			set_point_value(point_index, position.y);
+			return true;
+		} else if (property == "left_tangent") {
+			set_point_left_tangent(point_index, p_value);
+			return true;
+		} else if (property == "left_mode") {
+			int mode = p_value;
+			set_point_left_mode(point_index, (TangentMode)mode);
+			return true;
+		} else if (property == "right_tangent") {
+			set_point_right_tangent(point_index, p_value);
+			return true;
+		} else if (property == "right_mode") {
+			int mode = p_value;
+			set_point_right_mode(point_index, (TangentMode)mode);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool Curve::_get(const StringName &p_name, Variant &r_ret) const {
+	Vector<String> components = String(p_name).split("/", true, 2);
+	if (components.size() >= 2 && components[0].begins_with("point_") && components[0].trim_prefix("point_").is_valid_int()) {
+		int point_index = components[0].trim_prefix("point_").to_int();
+		String property = components[1];
+		if (property == "position") {
+			r_ret = get_point_position(point_index);
+			return true;
+		} else if (property == "left_tangent") {
+			r_ret = get_point_left_tangent(point_index);
+			return true;
+		} else if (property == "left_mode") {
+			r_ret = get_point_left_mode(point_index);
+			return true;
+		} else if (property == "right_tangent") {
+			r_ret = get_point_right_tangent(point_index);
+			return true;
+		} else if (property == "right_mode") {
+			r_ret = get_point_right_mode(point_index);
+			return true;
+		}
+	}
+	return false;
+}
+
+void Curve::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (int i = 0; i < _points.size(); i++) {
+		PropertyInfo pi = PropertyInfo(Variant::VECTOR2, vformat("point_%d/position", i));
+		pi.usage &= ~PROPERTY_USAGE_STORAGE;
+		p_list->push_back(pi);
+
+		if (i != 0) {
+			pi = PropertyInfo(Variant::FLOAT, vformat("point_%d/left_tangent", i));
+			pi.usage &= ~PROPERTY_USAGE_STORAGE;
+			p_list->push_back(pi);
+
+			pi = PropertyInfo(Variant::INT, vformat("point_%d/left_mode", i), PROPERTY_HINT_ENUM, "Free,Linear");
+			pi.usage &= ~PROPERTY_USAGE_STORAGE;
+			p_list->push_back(pi);
+		}
+
+		if (i != _points.size() - 1) {
+			pi = PropertyInfo(Variant::FLOAT, vformat("point_%d/right_tangent", i));
+			pi.usage &= ~PROPERTY_USAGE_STORAGE;
+			p_list->push_back(pi);
+
+			pi = PropertyInfo(Variant::INT, vformat("point_%d/right_mode", i), PROPERTY_HINT_ENUM, "Free,Linear");
+			pi.usage &= ~PROPERTY_USAGE_STORAGE;
+			p_list->push_back(pi);
+		}
+	}
+}
+
 void Curve::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_count"), &Curve::get_point_count);
+	ClassDB::bind_method(D_METHOD("set_point_count", "count"), &Curve::set_point_count);
 	ClassDB::bind_method(D_METHOD("add_point", "position", "left_tangent", "right_tangent", "left_mode", "right_mode"), &Curve::add_point, DEFVAL(0), DEFVAL(0), DEFVAL(TANGENT_FREE), DEFVAL(TANGENT_FREE));
 	ClassDB::bind_method(D_METHOD("remove_point", "index"), &Curve::remove_point);
 	ClassDB::bind_method(D_METHOD("clear_points"), &Curve::clear_points);
@@ -523,6 +618,7 @@ void Curve::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_value", PROPERTY_HINT_RANGE, "-1024,1024,0.01"), "set_max_value", "get_max_value");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_resolution", PROPERTY_HINT_RANGE, "1,1000,1"), "set_bake_resolution", "get_bake_resolution");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
+	ADD_ARRAY_COUNT("Points", "point_count", "set_point_count", "get_point_count", "point_");
 
 	ADD_SIGNAL(MethodInfo(SIGNAL_RANGE_CHANGED));
 
@@ -533,6 +629,20 @@ void Curve::_bind_methods() {
 
 int Curve2D::get_point_count() const {
 	return points.size();
+}
+
+void Curve2D::set_point_count(int p_count) {
+	ERR_FAIL_COND(p_count < 0);
+	if (points.size() >= p_count) {
+		points.resize(p_count);
+		mark_dirty();
+		baked_cache_dirty = true;
+		emit_signal(CoreStringNames::get_singleton()->changed);
+	} else {
+		for (int i = p_count - points.size(); i > 0; i--) {
+			add_point(Vector2());
+		}
+	}
 }
 
 void Curve2D::add_point(const Vector2 &p_position, const Vector2 &p_in, const Vector2 &p_out, int p_atpos) {
@@ -629,6 +739,7 @@ Vector2 Curve2D::interpolatef(real_t p_findex) const {
 void Curve2D::mark_dirty() {
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
+	notify_property_list_changed();
 }
 
 void Curve2D::_bake_segment2d(RBMap<real_t, Vector2> &r_bake, real_t p_begin, real_t p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_max_depth, real_t p_tol) const {
@@ -983,8 +1094,67 @@ PackedVector2Array Curve2D::tessellate(int p_max_stages, real_t p_tolerance) con
 	return tess;
 }
 
+bool Curve2D::_set(const StringName &p_name, const Variant &p_value) {
+	Vector<String> components = String(p_name).split("/", true, 2);
+	if (components.size() >= 2 && components[0].begins_with("point_") && components[0].trim_prefix("point_").is_valid_int()) {
+		int point_index = components[0].trim_prefix("point_").to_int();
+		String property = components[1];
+		if (property == "position") {
+			set_point_position(point_index, p_value);
+			return true;
+		} else if (property == "in") {
+			set_point_in(point_index, p_value);
+			return true;
+		} else if (property == "out") {
+			set_point_out(point_index, p_value);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool Curve2D::_get(const StringName &p_name, Variant &r_ret) const {
+	Vector<String> components = String(p_name).split("/", true, 2);
+	if (components.size() >= 2 && components[0].begins_with("point_") && components[0].trim_prefix("point_").is_valid_int()) {
+		int point_index = components[0].trim_prefix("point_").to_int();
+		String property = components[1];
+		if (property == "position") {
+			r_ret = get_point_position(point_index);
+			return true;
+		} else if (property == "in") {
+			r_ret = get_point_in(point_index);
+			return true;
+		} else if (property == "out") {
+			r_ret = get_point_out(point_index);
+			return true;
+		}
+	}
+	return false;
+}
+
+void Curve2D::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (int i = 0; i < points.size(); i++) {
+		PropertyInfo pi = PropertyInfo(Variant::VECTOR2, vformat("point_%d/position", i));
+		pi.usage &= ~PROPERTY_USAGE_STORAGE;
+		p_list->push_back(pi);
+
+		if (i != 0) {
+			pi = PropertyInfo(Variant::VECTOR2, vformat("point_%d/in", i));
+			pi.usage &= ~PROPERTY_USAGE_STORAGE;
+			p_list->push_back(pi);
+		}
+
+		if (i != points.size() - 1) {
+			pi = PropertyInfo(Variant::VECTOR2, vformat("point_%d/out", i));
+			pi.usage &= ~PROPERTY_USAGE_STORAGE;
+			p_list->push_back(pi);
+		}
+	}
+}
+
 void Curve2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_count"), &Curve2D::get_point_count);
+	ClassDB::bind_method(D_METHOD("set_point_count", "count"), &Curve2D::set_point_count);
 	ClassDB::bind_method(D_METHOD("add_point", "position", "in", "out", "at_position"), &Curve2D::add_point, DEFVAL(Vector2()), DEFVAL(Vector2()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("set_point_position", "idx", "position"), &Curve2D::set_point_position);
 	ClassDB::bind_method(D_METHOD("get_point_position", "idx"), &Curve2D::get_point_position);
@@ -1012,6 +1182,7 @@ void Curve2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bake_interval", PROPERTY_HINT_RANGE, "0.01,512,0.01"), "set_bake_interval", "get_bake_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
+	ADD_ARRAY_COUNT("Points", "point_count", "set_point_count", "get_point_count", "point_");
 }
 
 Curve2D::Curve2D() {}
@@ -1025,6 +1196,18 @@ Curve2D::Curve2D() {}
 
 int Curve3D::get_point_count() const {
 	return points.size();
+}
+
+void Curve3D::set_point_count(int p_count) {
+	ERR_FAIL_COND(p_count < 0);
+	if (points.size() >= p_count) {
+		points.resize(p_count);
+		mark_dirty();
+	} else {
+		for (int i = p_count - points.size(); i > 0; i--) {
+			add_point(Vector3());
+		}
+	}
 }
 
 void Curve3D::add_point(const Vector3 &p_position, const Vector3 &p_in, const Vector3 &p_out, int p_atpos) {
@@ -1133,6 +1316,7 @@ Vector3 Curve3D::interpolatef(real_t p_findex) const {
 void Curve3D::mark_dirty() {
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
+	notify_property_list_changed();
 }
 
 void Curve3D::_bake_segment3d(RBMap<real_t, Vector3> &r_bake, real_t p_begin, real_t p_end, const Vector3 &p_a, const Vector3 &p_out, const Vector3 &p_b, const Vector3 &p_in, int p_depth, int p_max_depth, real_t p_tol) const {
@@ -1693,8 +1877,77 @@ PackedVector3Array Curve3D::tessellate(int p_max_stages, real_t p_tolerance) con
 	return tess;
 }
 
+bool Curve3D::_set(const StringName &p_name, const Variant &p_value) {
+	Vector<String> components = String(p_name).split("/", true, 2);
+	if (components.size() >= 2 && components[0].begins_with("point_") && components[0].trim_prefix("point_").is_valid_int()) {
+		int point_index = components[0].trim_prefix("point_").to_int();
+		String property = components[1];
+		if (property == "position") {
+			set_point_position(point_index, p_value);
+			return true;
+		} else if (property == "in") {
+			set_point_in(point_index, p_value);
+			return true;
+		} else if (property == "out") {
+			set_point_out(point_index, p_value);
+			return true;
+		} else if (property == "tilt") {
+			set_point_tilt(point_index, p_value);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool Curve3D::_get(const StringName &p_name, Variant &r_ret) const {
+	Vector<String> components = String(p_name).split("/", true, 2);
+	if (components.size() >= 2 && components[0].begins_with("point_") && components[0].trim_prefix("point_").is_valid_int()) {
+		int point_index = components[0].trim_prefix("point_").to_int();
+		String property = components[1];
+		if (property == "position") {
+			r_ret = get_point_position(point_index);
+			return true;
+		} else if (property == "in") {
+			r_ret = get_point_in(point_index);
+			return true;
+		} else if (property == "out") {
+			r_ret = get_point_out(point_index);
+			return true;
+		} else if (property == "tilt") {
+			r_ret = get_point_tilt(point_index);
+			return true;
+		}
+	}
+	return false;
+}
+
+void Curve3D::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (int i = 0; i < points.size(); i++) {
+		PropertyInfo pi = PropertyInfo(Variant::VECTOR3, vformat("point_%d/position", i));
+		pi.usage &= ~PROPERTY_USAGE_STORAGE;
+		p_list->push_back(pi);
+
+		if (i != 0) {
+			pi = PropertyInfo(Variant::VECTOR3, vformat("point_%d/in", i));
+			pi.usage &= ~PROPERTY_USAGE_STORAGE;
+			p_list->push_back(pi);
+		}
+
+		if (i != points.size() - 1) {
+			pi = PropertyInfo(Variant::VECTOR3, vformat("point_%d/out", i));
+			pi.usage &= ~PROPERTY_USAGE_STORAGE;
+			p_list->push_back(pi);
+		}
+
+		pi = PropertyInfo(Variant::FLOAT, vformat("point_%d/tilt", i));
+		pi.usage &= ~PROPERTY_USAGE_STORAGE;
+		p_list->push_back(pi);
+	}
+}
+
 void Curve3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_count"), &Curve3D::get_point_count);
+	ClassDB::bind_method(D_METHOD("set_point_count", "count"), &Curve3D::set_point_count);
 	ClassDB::bind_method(D_METHOD("add_point", "position", "in", "out", "at_position"), &Curve3D::add_point, DEFVAL(Vector3()), DEFVAL(Vector3()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("set_point_position", "idx", "position"), &Curve3D::set_point_position);
 	ClassDB::bind_method(D_METHOD("get_point_position", "idx"), &Curve3D::get_point_position);
@@ -1729,6 +1982,7 @@ void Curve3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bake_interval", PROPERTY_HINT_RANGE, "0.01,512,0.01"), "set_bake_interval", "get_bake_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
+	ADD_ARRAY_COUNT("Points", "point_count", "set_point_count", "get_point_count", "point_");
 
 	ADD_GROUP("Up Vector", "up_vector_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "up_vector_enabled"), "set_up_vector_enabled", "is_up_vector_enabled");
