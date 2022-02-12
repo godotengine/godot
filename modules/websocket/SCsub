@@ -18,12 +18,11 @@ elif env["builtin_wslay"]:
         "wslay_net.c",
         "wslay_event.c",
         "wslay_queue.c",
-        "wslay_stack.c",
         "wslay_frame.c",
     ]
     thirdparty_sources = [thirdparty_dir + s for s in thirdparty_sources]
 
-    env_ws.Prepend(CPPPATH=[thirdparty_dir + "includes/"])
+    env_ws.Prepend(CPPPATH=[thirdparty_dir])
     env_ws.Append(CPPDEFINES=["HAVE_CONFIG_H"])
 
     if env["platform"] == "windows" or env["platform"] == "uwp":

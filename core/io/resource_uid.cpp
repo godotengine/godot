@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,8 @@
 /*************************************************************************/
 
 #include "resource_uid.h"
+
+#include "core/config/project_settings.h"
 #include "core/crypto/crypto.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
@@ -36,7 +38,9 @@
 static constexpr uint32_t char_count = ('z' - 'a');
 static constexpr uint32_t base = char_count + ('9' - '0');
 
-const char *ResourceUID::CACHE_FILE = "res://.godot/uid_cache.bin";
+String ResourceUID::get_cache_file() {
+	return ProjectSettings::get_singleton()->get_project_data_path().plus_file("uid_cache.bin");
+}
 
 String ResourceUID::id_to_text(ID p_id) const {
 	if (p_id < 0) {
@@ -67,9 +71,9 @@ ResourceUID::ID ResourceUID::text_to_id(const String &p_text) const {
 	for (uint32_t i = 6; i < l; i++) {
 		uid *= base;
 		uint32_t c = p_text[i];
-		if (c >= 'a' && c <= 'z') {
+		if (is_ascii_lower_case(c)) {
 			uid += c - 'a';
-		} else if (c >= '0' && c <= '9') {
+		} else if (is_digit(c)) {
 			uid += c - '0' + char_count;
 		} else {
 			return INVALID_ID;
@@ -126,8 +130,7 @@ String ResourceUID::get_id_path(ID p_id) const {
 	MutexLock l(mutex);
 	ERR_FAIL_COND_V(!unique_ids.has(p_id), String());
 	const CharString &cs = unique_ids[p_id].cs;
-	String s(cs.ptr());
-	return s;
+	return String::utf8(cs.ptr());
 }
 void ResourceUID::remove_id(ID p_id) {
 	MutexLock l(mutex);
@@ -136,12 +139,13 @@ void ResourceUID::remove_id(ID p_id) {
 }
 
 Error ResourceUID::save_to_cache() {
-	if (!FileAccess::exists(CACHE_FILE)) {
+	String cache_file = get_cache_file();
+	if (!FileAccess::exists(cache_file)) {
 		DirAccessRef d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		d->make_dir_recursive(String(CACHE_FILE).get_base_dir()); //ensure base dir exists
+		d->make_dir_recursive(String(cache_file).get_base_dir()); //ensure base dir exists
 	}
 
-	FileAccessRef f = FileAccess::open(CACHE_FILE, FileAccess::WRITE);
+	FileAccessRef f = FileAccess::open(cache_file, FileAccess::WRITE);
 	if (!f) {
 		return ERR_CANT_OPEN;
 	}
@@ -165,7 +169,7 @@ Error ResourceUID::save_to_cache() {
 }
 
 Error ResourceUID::load_from_cache() {
-	FileAccessRef f = FileAccess::open(CACHE_FILE, FileAccess::READ);
+	FileAccessRef f = FileAccess::open(get_cache_file(), FileAccess::READ);
 	if (!f) {
 		return ERR_CANT_OPEN;
 	}
@@ -207,7 +211,7 @@ Error ResourceUID::update_cache() {
 	for (OrderedHashMap<ID, Cache>::Element E = unique_ids.front(); E; E = E.next()) {
 		if (!E.get().saved_to_cache) {
 			if (f == nullptr) {
-				f = FileAccess::open(CACHE_FILE, FileAccess::READ_WRITE); //append
+				f = FileAccess::open(get_cache_file(), FileAccess::READ_WRITE); //append
 				if (!f) {
 					return ERR_CANT_OPEN;
 				}

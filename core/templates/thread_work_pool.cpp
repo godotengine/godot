@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,7 +47,7 @@ void ThreadWorkPool::_thread_function(void *p_user) {
 void ThreadWorkPool::init(int p_thread_count) {
 	ERR_FAIL_COND(threads != nullptr);
 	if (p_thread_count < 0) {
-		p_thread_count = OS::get_singleton()->get_processor_count();
+		p_thread_count = OS::get_singleton()->get_default_thread_pool_size();
 	}
 
 	thread_count = p_thread_count;

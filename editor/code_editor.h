@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +53,6 @@ public:
 	void popup_find_line(CodeEdit *p_edit);
 	int get_line() const;
 
-	void set_text_editor(CodeEdit *p_text_editor);
 	GotoLineDialog();
 };
 
@@ -101,11 +100,10 @@ class FindReplaceBar : public HBoxContainer {
 	void _search_text_changed(const String &p_text);
 	void _search_text_submitted(const String &p_text);
 	void _replace_text_submitted(const String &p_text);
-	void _update_size();
 
 protected:
 	void _notification(int p_what);
-	void _unhandled_input(const Ref<InputEvent> &p_event);
+	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
 
 	bool _search(uint32_t p_flags, int p_from_line, int p_from_col);
 
@@ -162,19 +160,16 @@ class CodeTextEditor : public VBoxContainer {
 	int error_line;
 	int error_column;
 
-	bool settings_changed = false;
-
 	void _on_settings_change();
 	void _apply_settings_change();
 
 	void _update_text_editor_theme();
-	void _update_font();
 	void _complete_request();
 	Ref<Texture2D> _get_completion_icon(const ScriptCodeCompletionOption &p_option);
 	void _font_resize_timeout();
 	bool _add_font_size(int p_delta);
 
-	void _input(const Ref<InputEvent> &event);
+	virtual void input(const Ref<InputEvent> &event) override;
 	void _text_editor_gui_input(const Ref<InputEvent> &p_event);
 	void _zoom_in();
 	void _zoom_out();

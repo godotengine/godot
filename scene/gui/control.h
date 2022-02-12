@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,10 @@
 #ifndef CONTROL_H
 #define CONTROL_H
 
+#include "core/input/shortcut.h"
 #include "core/math/transform_2d.h"
 #include "core/object/gdvirtual.gen.inc"
 #include "core/templates/rid.h"
-#include "scene/gui/shortcut.h"
 #include "scene/main/canvas_item.h"
 #include "scene/main/node.h"
 #include "scene/main/timer.h"
@@ -67,12 +67,13 @@ public:
 	};
 
 	enum SizeFlags {
+		SIZE_SHRINK_BEGIN = 0,
 		SIZE_FILL = 1,
 		SIZE_EXPAND = 2,
-		SIZE_EXPAND_FILL = SIZE_EXPAND | SIZE_FILL,
-		SIZE_SHRINK_CENTER = 4, //ignored by expand or fill
-		SIZE_SHRINK_END = 8, //ignored by expand or fill
+		SIZE_SHRINK_CENTER = 4,
+		SIZE_SHRINK_END = 8,
 
+		SIZE_EXPAND_FILL = SIZE_EXPAND | SIZE_FILL,
 	};
 
 	enum MouseFilter {
@@ -126,6 +127,13 @@ public:
 		PRESET_MODE_KEEP_WIDTH,
 		PRESET_MODE_KEEP_HEIGHT,
 		PRESET_MODE_KEEP_SIZE
+	};
+
+	enum LayoutMode {
+		LAYOUT_MODE_POSITION,
+		LAYOUT_MODE_ANCHORS,
+		LAYOUT_MODE_CONTAINER,
+		LAYOUT_MODE_UNCONTROLLED,
 	};
 
 	enum LayoutDirection {
@@ -220,6 +228,7 @@ private:
 		NodePath focus_next;
 		NodePath focus_prev;
 
+		bool bulk_theme_override = false;
 		HashMap<StringName, Ref<Texture2D>> icon_override;
 		HashMap<StringName, Ref<StyleBox>> style_override;
 		HashMap<StringName, Ref<Font>> font_override;
@@ -229,8 +238,8 @@ private:
 
 	} data;
 
-	// used internally
-	Control *_find_control_at_pos(CanvasItem *p_node, const Point2 &p_pos, const Transform2D &p_xform, Transform2D &r_inv_xform);
+	static constexpr unsigned properties_managed_by_container_count = 12;
+	static String properties_managed_by_container[properties_managed_by_container_count];
 
 	void _window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Point2 *p_points, real_t p_min, real_t &r_closest_dist, Control **r_closest);
 	Control *_get_focus_neighbor(Side p_side, int p_count = 0);
@@ -240,12 +249,18 @@ private:
 	void _set_global_position(const Point2 &p_point);
 	void _set_size(const Size2 &p_size);
 
+	void _set_layout_mode(LayoutMode p_mode);
+	LayoutMode _get_layout_mode() const;
+
+	void _set_anchors_layout_preset(int p_preset);
+	int _get_anchors_layout_preset() const;
+
 	void _theme_changed();
+	void _notify_theme_changed();
 
 	void _update_minimum_size();
 
 	void _clear_size_warning();
-	void _update_scroll();
 
 	void _compute_offsets(Rect2 p_rect, const real_t p_anchors[4], real_t (&r_offsets)[4]);
 	void _compute_anchors(Rect2 p_rect, const real_t p_offsets[4], real_t (&r_anchors)[4]);
@@ -261,6 +276,8 @@ private:
 
 	friend class Viewport;
 
+	void _call_gui_input(const Ref<InputEvent> &p_event);
+
 	void _update_minimum_size_cache();
 	friend class Window;
 	static void _propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_owner_window, bool p_assign = true);
@@ -270,24 +287,35 @@ private:
 	static bool has_theme_item_in_types(Control *p_theme_owner, Window *p_theme_owner_window, Theme::DataType p_data_type, const StringName &p_name, List<StringName> p_theme_types);
 	_FORCE_INLINE_ void _get_theme_type_dependencies(const StringName &p_theme_type, List<StringName> *p_list) const;
 
-	GDVIRTUAL1RC(bool, _has_point, Vector2)
 protected:
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 
 	//virtual void _window_gui_input(InputEvent p_event);
 
-	virtual Vector<Vector2i> structured_text_parser(StructuredTextParser p_theme_type, const Array &p_args, const String p_text) const;
+	virtual Array structured_text_parser(StructuredTextParser p_theme_type, const Array &p_args, const String &p_text) const;
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
-	void _notification(int p_notification);
-	static void _bind_methods();
 	virtual void _validate_property(PropertyInfo &property) const override;
 
+	void _notification(int p_notification);
+	static void _bind_methods();
+
 	//bind helpers
+
+	GDVIRTUAL1RC(bool, _has_point, Vector2)
+	GDVIRTUAL2RC(Array, _structured_text_parser, Array, String)
+	GDVIRTUAL0RC(Vector2, _get_minimum_size)
+
+	GDVIRTUAL1RC(Variant, _get_drag_data, Vector2)
+	GDVIRTUAL2RC(bool, _can_drop_data, Vector2, Variant)
+	GDVIRTUAL2(_drop_data, Vector2, Variant)
+	GDVIRTUAL1RC(Object *, _make_custom_tooltip, String)
+
+	GDVIRTUAL1(_gui_input, Ref<InputEvent>)
 
 public:
 	enum {
@@ -331,17 +359,20 @@ public:
 	virtual Size2 _edit_get_minimum_size() const override;
 #endif
 
+	virtual void gui_input(const Ref<InputEvent> &p_event);
+
 	void accept_event();
 
 	virtual Size2 get_minimum_size() const;
 	virtual Size2 get_combined_minimum_size() const;
 	virtual bool has_point(const Point2 &p_point) const;
-	virtual void set_drag_forwarding(Control *p_target);
+	virtual void set_drag_forwarding(Object *p_target);
 	virtual Variant get_drag_data(const Point2 &p_point);
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
 	void set_drag_preview(Control *p_control);
 	void force_drag(const Variant &p_data, Control *p_control);
+	bool is_drag_successful() const;
 
 	void set_custom_minimum_size(const Size2 &p_custom);
 	Size2 get_custom_minimum_size() const;
@@ -362,6 +393,7 @@ public:
 	void set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets = true);
 	void set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resize_mode = PRESET_MODE_MINSIZE, int p_margin = 0);
 	void set_anchors_and_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resize_mode = PRESET_MODE_MINSIZE, int p_margin = 0);
+	void set_grow_direction_preset(LayoutPreset p_preset);
 
 	void set_anchor(Side p_side, real_t p_anchor, bool p_keep_offset = true, bool p_push_opposite_anchor = true);
 	real_t get_anchor(Side p_side) const;
@@ -385,11 +417,12 @@ public:
 
 	void set_size(const Size2 &p_size, bool p_keep_offsets = false);
 	Size2 get_size() const;
+	void reset_size();
 
 	Rect2 get_rect() const;
 	Rect2 get_global_rect() const;
 	Rect2 get_screen_rect() const;
-	Rect2 get_window_rect() const; ///< use with care, as it blocks waiting for the visual server
+	Rect2 get_window_rect() const; ///< use with care, as it blocks waiting for the rendering server
 	Rect2 get_anchorable_rect() const override;
 
 	void set_rect(const Rect2 &p_rect); // Reset anchors to begin and set rect, for faster container children sorting.
@@ -424,7 +457,7 @@ public:
 	void set_stretch_ratio(real_t p_ratio);
 	real_t get_stretch_ratio() const;
 
-	void minimum_size_changed();
+	void update_minimum_size();
 
 	/* FOCUS */
 
@@ -445,12 +478,13 @@ public:
 	void set_focus_previous(const NodePath &p_prev);
 	NodePath get_focus_previous() const;
 
-	Control *get_focus_owner() const;
-
 	void set_mouse_filter(MouseFilter p_filter);
 	MouseFilter get_mouse_filter() const;
 
 	/* SKINNING */
+
+	void begin_bulk_theme_override();
+	void end_bulk_theme_override();
 
 	void add_theme_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon);
 	void add_theme_style_override(const StringName &p_name, const Ref<StyleBox> &p_style);
@@ -486,6 +520,14 @@ public:
 	bool has_theme_font_size(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	bool has_theme_color(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	bool has_theme_constant(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+
+	static float fetch_theme_default_base_scale(Control *p_theme_owner, Window *p_theme_owner_window);
+	static Ref<Font> fetch_theme_default_font(Control *p_theme_owner, Window *p_theme_owner_window);
+	static int fetch_theme_default_font_size(Control *p_theme_owner, Window *p_theme_owner_window);
+
+	float get_theme_default_base_scale() const;
+	Ref<Font> get_theme_default_font() const;
+	int get_theme_default_font_size() const;
 
 	/* TOOLTIP */
 
@@ -537,6 +579,7 @@ VARIANT_ENUM_CAST(Control::LayoutPresetMode);
 VARIANT_ENUM_CAST(Control::MouseFilter);
 VARIANT_ENUM_CAST(Control::GrowDirection);
 VARIANT_ENUM_CAST(Control::Anchor);
+VARIANT_ENUM_CAST(Control::LayoutMode);
 VARIANT_ENUM_CAST(Control::LayoutDirection);
 VARIANT_ENUM_CAST(Control::TextDirection);
 VARIANT_ENUM_CAST(Control::StructuredTextParser);

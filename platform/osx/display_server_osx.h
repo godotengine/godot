@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,15 +36,14 @@
 #include "core/input/input.h"
 #include "servers/display_server.h"
 
-#if defined(OPENGL_ENABLED)
-#include "context_gl_osx.h"
-//TODO - reimplement OpenGLES
-#endif
+#if defined(GLES3_ENABLED)
+#include "gl_manager_osx_legacy.h"
+#endif // GLES3_ENABLED
 
 #if defined(VULKAN_ENABLED)
 #include "drivers/vulkan/rendering_device_vulkan.h"
 #include "platform/osx/vulkan_context_osx.h"
-#endif
+#endif // VULKAN_ENABLED
 
 #include <AppKit/AppKit.h>
 #include <AppKit/NSCursor.h>
@@ -60,47 +59,16 @@ class DisplayServerOSX : public DisplayServer {
 	_THREAD_SAFE_CLASS_
 
 public:
-	void _send_event(NSEvent *p_event);
-	NSMenu *_get_dock_menu() const;
-	void _menu_callback(id p_sender);
-
-#if defined(OPENGL_ENABLED)
-	ContextGL_OSX *context_gles2;
-#endif
-#if defined(VULKAN_ENABLED)
-	VulkanContextOSX *context_vulkan;
-	RenderingDeviceVulkan *rendering_device_vulkan;
-#endif
-
-	const NSMenu *_get_menu_root(const String &p_menu_root) const;
-	NSMenu *_get_menu_root(const String &p_menu_root);
-
-	NSMenu *apple_menu = nullptr;
-	NSMenu *dock_menu = nullptr;
-	Map<String, NSMenu *> submenu;
-
 	struct KeyEvent {
-		WindowID window_id;
+		WindowID window_id = INVALID_WINDOW_ID;
 		unsigned int osx_state = false;
 		bool pressed = false;
 		bool echo = false;
 		bool raw = false;
-		uint32_t keycode = 0;
-		uint32_t physical_keycode = 0;
+		Key keycode = Key::NONE;
+		Key physical_keycode = Key::NONE;
 		uint32_t unicode = 0;
 	};
-
-	struct WarpEvent {
-		NSTimeInterval timestamp;
-		NSPoint delta;
-	};
-
-	List<WarpEvent> warp_events;
-	NSTimeInterval last_warp = 0;
-	bool ignore_warp = false;
-
-	Vector<KeyEvent> key_event_buffer;
-	int key_event_pos;
 
 	struct WindowData {
 		id window_delegate;
@@ -109,16 +77,11 @@ public:
 
 		Vector<Vector2> mpath;
 
-#if defined(OPENGL_ENABLED)
-		ContextGL_OSX *context_gles2 = nullptr;
-#endif
 		Point2i mouse_pos;
 
 		Size2i min_size;
 		Size2i max_size;
 		Size2i size;
-
-		bool mouse_down_control = false;
 
 		bool im_active = false;
 		Size2i im_position;
@@ -142,47 +105,102 @@ public:
 		bool no_focus = false;
 	};
 
+private:
+#if defined(GLES3_ENABLED)
+	GLManager_OSX *gl_manager = nullptr;
+#endif
+#if defined(VULKAN_ENABLED)
+	VulkanContextOSX *context_vulkan = nullptr;
+	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
+#endif
+	String rendering_driver;
+
+	NSMenu *apple_menu = nullptr;
+	NSMenu *dock_menu = nullptr;
+	Map<String, NSMenu *> submenu;
+
+	struct WarpEvent {
+		NSTimeInterval timestamp;
+		NSPoint delta;
+	};
+	List<WarpEvent> warp_events;
+	NSTimeInterval last_warp = 0;
+	bool ignore_warp = false;
+
+	Vector<KeyEvent> key_event_buffer;
+	int key_event_pos = 0;
+
 	Point2i im_selection;
 	String im_text;
 
-	Map<WindowID, WindowData> windows;
+	CGEventSourceRef event_source;
+	MouseMode mouse_mode = MOUSE_MODE_VISIBLE;
+	MouseButton last_button_state = MouseButton::NONE;
 
+	bool drop_events = false;
+	bool in_dispatch_input_event = false;
+
+	struct LayoutInfo {
+		String name;
+		String code;
+	};
+	Vector<LayoutInfo> kbd_layouts;
+	int current_layout = 0;
+	bool keyboard_layout_dirty = true;
+
+	WindowID last_focused_window = INVALID_WINDOW_ID;
 	WindowID window_id_counter = MAIN_WINDOW_ID;
+	float display_max_scale = 1.f;
+	Point2i origin;
+	bool displays_arrangement_dirty = true;
 
-	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect);
-	void _update_window(WindowData p_wd);
-	void _send_window_event(const WindowData &wd, WindowEvent p_event);
-	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
-	void _dispatch_input_event(const Ref<InputEvent> &p_event);
-	WindowID _find_window_id(id p_window);
-
-	void _set_window_per_pixel_transparency_enabled(bool p_enabled, WindowID p_window);
-
-	Point2i _get_screens_origin() const;
-	Point2i _get_native_screen_position(int p_screen) const;
-
-	void _push_input(const Ref<InputEvent> &p_event);
-	void _process_key_events();
-	void _release_pressed_events();
-
-	String rendering_driver;
-
-	id autoreleasePool;
-	CGEventSourceRef eventSource;
-
-	CursorShape cursor_shape;
+	CursorShape cursor_shape = CURSOR_ARROW;
 	NSCursor *cursors[CURSOR_MAX];
 	Map<CursorShape, Vector<Variant>> cursors_cache;
 
-	MouseMode mouse_mode;
-	Point2i last_mouse_pos;
-	MouseButton last_button_state = MOUSE_BUTTON_NONE;
+	Map<WindowID, WindowData> windows;
 
-	bool window_focused;
-	bool drop_events;
-	bool in_dispatch_input_event = false;
+	const NSMenu *_get_menu_root(const String &p_menu_root) const;
+	NSMenu *_get_menu_root(const String &p_menu_root);
+
+	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect);
+	void _update_window_style(WindowData p_wd);
+	void _set_window_per_pixel_transparency_enabled(bool p_enabled, WindowID p_window);
+
+	void _update_displays_arrangement();
+	Point2i _get_screens_origin() const;
+	Point2i _get_native_screen_position(int p_screen) const;
+	static void _displays_arrangement_changed(CGDirectDisplayID display_id, CGDisplayChangeSummaryFlags flags, void *user_info);
+
+	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
+	void _dispatch_input_event(const Ref<InputEvent> &p_event);
+	void _push_input(const Ref<InputEvent> &p_event);
+	void _process_key_events();
+	void _update_keyboard_layouts();
+	static void _keyboard_layout_changed(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef user_info);
+
+	static NSCursor *_cursor_from_selector(SEL p_selector, SEL p_fallback = nil);
 
 public:
+	NSMenu *get_dock_menu() const;
+	void menu_callback(id p_sender);
+
+	bool has_window(WindowID p_window) const;
+	WindowData &get_window(WindowID p_window);
+
+	void send_event(NSEvent *p_event);
+	void send_window_event(const WindowData &p_wd, WindowEvent p_event);
+	void release_pressed_events();
+	void get_key_modifier_state(unsigned int p_osx_state, Ref<InputEventWithModifiers> r_state) const;
+	void update_mouse_pos(WindowData &p_wd, NSPoint p_location_in_window);
+	void push_to_key_event_buffer(const KeyEvent &p_event);
+	void update_im_text(const Point2i &p_selection, const String &p_text);
+	void set_last_focused_window(WindowID p_window);
+
+	void window_update(WindowID p_window);
+	void window_destroy(WindowID p_window);
+	void window_resize(WindowID p_window, int p_width, int p_height);
+
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;
 
@@ -216,9 +234,10 @@ public:
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
 
+	bool update_mouse_wrap(WindowData &p_wd, NSPoint &r_delta, NSPoint &r_mpos, NSTimeInterval p_timestamp);
 	virtual void mouse_warp_to_position(const Point2i &p_to) override;
 	virtual Point2i mouse_get_position() const override;
-	virtual Point2i mouse_get_absolute_position() const override;
+	void mouse_set_button_state(MouseButton p_state);
 	virtual MouseButton mouse_get_button_state() const override;
 
 	virtual void clipboard_set(const String &p_text) override;
@@ -231,6 +250,7 @@ public:
 	virtual float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_max_scale() const override;
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 
 	virtual Vector<int> get_window_list() const override;
 
@@ -285,8 +305,11 @@ public:
 
 	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const override;
 
+	virtual int64_t window_get_native_handle(HandleType p_handle_type, WindowID p_window = MAIN_WINDOW_ID) const override;
+
 	virtual void window_attach_instance_id(ObjectID p_instance, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual ObjectID window_get_attached_instance_id(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual void gl_window_make_current(DisplayServer::WindowID p_window_id) override;
 
 	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;
@@ -294,6 +317,7 @@ public:
 	virtual Point2i ime_get_selection() const override;
 	virtual String ime_get_text() const override;
 
+	void cursor_update_shape();
 	virtual void cursor_set_shape(CursorShape p_shape) override;
 	virtual CursorShape cursor_get_shape() const override;
 	virtual void cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) override;
@@ -305,6 +329,7 @@ public:
 	virtual void keyboard_set_current_layout(int p_index) override;
 	virtual String keyboard_get_layout_language(int p_index) const override;
 	virtual String keyboard_get_layout_name(int p_index) const override;
+	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const override;
 
 	virtual void process_events() override;
 	virtual void force_process_and_drop_events() override;
@@ -315,9 +340,6 @@ public:
 
 	virtual void set_native_icon(const String &p_filename) override;
 	virtual void set_icon(const Ref<Image> &p_icon) override;
-
-	virtual void console_set_visible(bool p_enabled) override;
-	virtual bool is_console_visible() const override;
 
 	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();

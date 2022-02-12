@@ -259,7 +259,7 @@ index 8a6d9fa0a9..697e07bb86 100644
 +  //   throw std::runtime_error(std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
    #define THROW_RUNTIME_ERROR(str) \
 -    throw std::runtime_error(std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
-+    printf(std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str)), abort();
++    printf("%s (%d): %s", __FILE__, __LINE__, std::string(str).c_str()), abort();
 +  // -- GODOT end --
  #else
 +  // -- GODOT start --
@@ -583,7 +583,7 @@ index 4e4b24e9c2..373e49a689 100644
 +  //   throw rtcore_error(error,std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
    #define throw_RTCError(error,str) \
 -    throw rtcore_error(error,std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
-+    printf(std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str)), abort();
++    printf("%s (%d): %s", __FILE__, __LINE__, std::string(str).c_str()), abort();
 +  // -- GODOT end --
  #else
 +  // -- GODOT begin --

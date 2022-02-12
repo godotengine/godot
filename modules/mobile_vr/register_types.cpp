@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,15 +32,30 @@
 
 #include "mobile_vr_interface.h"
 
+Ref<MobileVRInterface> mobile_vr;
+
 void register_mobile_vr_types() {
 	GDREGISTER_CLASS(MobileVRInterface);
 
 	if (XRServer::get_singleton()) {
-		Ref<MobileVRInterface> mobile_vr;
 		mobile_vr.instantiate();
 		XRServer::get_singleton()->add_interface(mobile_vr);
 	}
 }
 
 void unregister_mobile_vr_types() {
+	if (mobile_vr.is_valid()) {
+		// uninitialise our interface if it is initialised
+		if (mobile_vr->is_initialized()) {
+			mobile_vr->uninitialize();
+		}
+
+		// unregister our interface from the XR server
+		if (XRServer::get_singleton()) {
+			XRServer::get_singleton()->remove_interface(mobile_vr);
+		}
+
+		// and release
+		mobile_vr.unref();
+	}
 }

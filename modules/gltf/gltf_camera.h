@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,8 +39,8 @@ class GLTFCamera : public Resource {
 private:
 	bool perspective = true;
 	float fov_size = 75.0;
-	float zfar = 4000.0;
-	float znear = 0.05;
+	float depth_far = 4000.0;
+	float depth_near = 0.05;
 
 protected:
 	static void _bind_methods();
@@ -50,9 +50,9 @@ public:
 	void set_perspective(bool p_val) { perspective = p_val; }
 	float get_fov_size() const { return fov_size; }
 	void set_fov_size(float p_val) { fov_size = p_val; }
-	float get_zfar() const { return zfar; }
-	void set_zfar(float p_val) { zfar = p_val; }
-	float get_znear() const { return znear; }
-	void set_znear(float p_val) { znear = p_val; }
+	float get_depth_far() const { return depth_far; }
+	void set_depth_far(float p_val) { depth_far = p_val; }
+	float get_depth_near() const { return depth_near; }
+	void set_depth_near(float p_val) { depth_near = p_val; }
 };
 #endif // GLTF_CAMERA_H

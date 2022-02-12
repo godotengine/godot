@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,6 +38,23 @@
 
 class DisplayServerJavaScript : public DisplayServer {
 private:
+	struct JSTouchEvent {
+		uint32_t identifier[32] = { 0 };
+		double coords[64] = { 0 };
+	};
+	JSTouchEvent touch_event;
+
+	struct JSKeyEvent {
+		char code[32] = { 0 };
+		char key[32] = { 0 };
+		uint8_t modifiers[4] = { 0 };
+	};
+	JSKeyEvent key_event;
+
+#ifdef GLES3_ENABLED
+	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE webgl_ctx = 0;
+#endif
+
 	WindowMode window_mode = WINDOW_MODE_WINDOWED;
 	ObjectID window_attached_instance_id = {};
 
@@ -47,44 +64,29 @@ private:
 	Callable drop_files_callback;
 
 	String clipboard;
-	Ref<InputEventKey> deferred_key_event;
 	Point2 touches[32];
 
 	char canvas_id[256] = { 0 };
 	bool cursor_inside_canvas = true;
 	CursorShape cursor_shape = CURSOR_ARROW;
 	Point2i last_click_pos = Point2(-100, -100); // TODO check this again.
-	double last_click_ms = 0;
-	int last_click_button_index = -1;
+	uint64_t last_click_ms = 0;
+	MouseButton last_click_button_index = MouseButton::NONE;
 
 	bool swap_cancel_ok = false;
 
 	// utilities
-	static Point2 compute_position_in_canvas(int p_x, int p_y);
-	static void focus_canvas();
-	static bool is_canvas_focused();
-	template <typename T>
-	static void dom2godot_mod(T *emscripten_event_ptr, Ref<InputEventWithModifiers> godot_event);
-	static Ref<InputEventKey> setup_key_event(const EmscriptenKeyboardEvent *emscripten_event);
+	static void dom2godot_mod(Ref<InputEventWithModifiers> ev, int p_mod);
 	static const char *godot2dom_cursor(DisplayServer::CursorShape p_shape);
 
 	// events
-	static EM_BOOL fullscreen_change_callback(int p_event_type, const EmscriptenFullscreenChangeEvent *p_event, void *p_user_data);
-
-	static EM_BOOL keydown_callback(int p_event_type, const EmscriptenKeyboardEvent *p_event, void *p_user_data);
-	static EM_BOOL keypress_callback(int p_event_type, const EmscriptenKeyboardEvent *p_event, void *p_user_data);
-	static EM_BOOL keyup_callback(int p_event_type, const EmscriptenKeyboardEvent *p_event, void *p_user_data);
-
+	static void fullscreen_change_callback(int p_fullscreen);
+	static int mouse_button_callback(int p_pressed, int p_button, double p_x, double p_y, int p_modifiers);
+	static void mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers);
+	static int mouse_wheel_callback(double p_delta_x, double p_delta_y);
+	static void touch_callback(int p_type, int p_count);
+	static void key_callback(int p_pressed, int p_repeat, int p_modifiers);
 	static void vk_input_text_callback(const char *p_text, int p_cursor);
-
-	static EM_BOOL mousemove_callback(int p_event_type, const EmscriptenMouseEvent *p_event, void *p_user_data);
-	static EM_BOOL mouse_button_callback(int p_event_type, const EmscriptenMouseEvent *p_event, void *p_user_data);
-
-	static EM_BOOL wheel_callback(int p_event_type, const EmscriptenWheelEvent *p_event, void *p_user_data);
-
-	static EM_BOOL touch_press_callback(int p_event_type, const EmscriptenTouchEvent *p_event, void *p_user_data);
-	static EM_BOOL touchmove_callback(int p_event_type, const EmscriptenTouchEvent *p_event, void *p_user_data);
-
 	static void gamepad_callback(int p_index, int p_connected, const char *p_id, const char *p_guid);
 	void process_joypads();
 
@@ -94,6 +96,7 @@ private:
 	static void _dispatch_input_event(const Ref<InputEvent> &p_event);
 
 	static void request_quit_callback();
+	static void window_blur_callback();
 	static void update_clipboard_callback(const char *p_text);
 	static void send_window_event_callback(int p_notification);
 	static void drop_files_js_callback(char **p_filev, int p_filec);
@@ -120,6 +123,7 @@ public:
 	// mouse
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
+	virtual Point2i mouse_get_position() const override;
 
 	// touch
 	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
@@ -135,6 +139,7 @@ public:
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 
 	virtual void virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), bool p_multiline = false, int p_max_input_length = -1, int p_cursor_start = -1, int p_cursor_end = -1) override;
 	virtual void virtual_keyboard_hide() override;

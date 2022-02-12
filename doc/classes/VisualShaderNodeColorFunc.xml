@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeColorFunc.Function" default="0">
 			A function to be applied to the input color. See [enum Function] for options.
@@ -35,6 +33,9 @@
 			float b = (c.r * 0.272) + (c.g * 0.534) + (c.b * 0.131);
 			return vec3(r, g, b);
 			[/codeblock]
+		</constant>
+		<constant name="FUNC_MAX" value="2" enum="Function">
+			Represents the size of the [enum Function] enum.
 		</constant>
 	</constants>
 </class>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -76,7 +76,7 @@ int TriangleMesh::_create_bvh(BVH *p_bvh, BVH **p_bb, int p_from, int p_size, in
 	int index = r_max_alloc++;
 	BVH *_new = &p_bvh[index];
 	_new->aabb = aabb;
-	_new->center = aabb.position + aabb.size * 0.5;
+	_new->center = aabb.get_center();
 	_new->face_index = -1;
 	_new->left = left;
 	_new->right = right;
@@ -152,13 +152,13 @@ void TriangleMesh::create(const Vector<Vector3> &p_faces) {
 			bw[i].left = -1;
 			bw[i].right = -1;
 			bw[i].face_index = i;
-			bw[i].center = bw[i].aabb.position + bw[i].aabb.size * 0.5;
+			bw[i].center = bw[i].aabb.get_center();
 		}
 
 		vertices.resize(db.size());
 		Vector3 *vw = vertices.ptrw();
-		for (Map<Vector3, int>::Element *E = db.front(); E; E = E->next()) {
-			vw[E->get()] = E->key();
+		for (const KeyValue<Vector3, int> &E : db) {
+			vw[E.value] = E.key;
 		}
 	}
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,18 +56,16 @@ void EditorNetworkProfiler::_update_frame() {
 
 	TreeItem *root = counters_display->create_item();
 
-	for (Map<ObjectID, DebuggerMarshalls::MultiplayerNodeInfo>::Element *E = nodes_data.front(); E; E = E->next()) {
+	for (const KeyValue<ObjectID, SceneDebugger::RPCNodeInfo> &E : nodes_data) {
 		TreeItem *node = counters_display->create_item(root);
 
 		for (int j = 0; j < counters_display->get_columns(); ++j) {
-			node->set_text_align(j, j > 0 ? TreeItem::ALIGN_RIGHT : TreeItem::ALIGN_LEFT);
+			node->set_text_alignment(j, j > 0 ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT);
 		}
 
-		node->set_text(0, E->get().node_path);
-		node->set_text(1, E->get().incoming_rpc == 0 ? "-" : itos(E->get().incoming_rpc));
-		node->set_text(2, E->get().incoming_rset == 0 ? "-" : itos(E->get().incoming_rset));
-		node->set_text(3, E->get().outgoing_rpc == 0 ? "-" : itos(E->get().outgoing_rpc));
-		node->set_text(4, E->get().outgoing_rset == 0 ? "-" : itos(E->get().outgoing_rset));
+		node->set_text(0, E.value.node_path);
+		node->set_text(1, E.value.incoming_rpc == 0 ? "-" : itos(E.value.incoming_rpc));
+		node->set_text(2, E.value.outgoing_rpc == 0 ? "-" : itos(E.value.outgoing_rpc));
 	}
 }
 
@@ -91,14 +89,12 @@ void EditorNetworkProfiler::_clear_pressed() {
 	}
 }
 
-void EditorNetworkProfiler::add_node_frame_data(const DebuggerMarshalls::MultiplayerNodeInfo p_frame) {
+void EditorNetworkProfiler::add_node_frame_data(const SceneDebugger::RPCNodeInfo p_frame) {
 	if (!nodes_data.has(p_frame.node)) {
 		nodes_data.insert(p_frame.node, p_frame);
 	} else {
 		nodes_data[p_frame.node].incoming_rpc += p_frame.incoming_rpc;
-		nodes_data[p_frame.node].incoming_rset += p_frame.incoming_rset;
 		nodes_data[p_frame.node].outgoing_rpc += p_frame.outgoing_rpc;
-		nodes_data[p_frame.node].outgoing_rset += p_frame.outgoing_rset;
 	}
 
 	if (frame_delay->is_stopped()) {
@@ -149,7 +145,7 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	incoming_bandwidth_text = memnew(LineEdit);
 	incoming_bandwidth_text->set_editable(false);
 	incoming_bandwidth_text->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
-	incoming_bandwidth_text->set_align(LineEdit::Align::ALIGN_RIGHT);
+	incoming_bandwidth_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	hb->add_child(incoming_bandwidth_text);
 
 	Control *down_up_spacer = memnew(Control);
@@ -163,7 +159,7 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	outgoing_bandwidth_text = memnew(LineEdit);
 	outgoing_bandwidth_text->set_editable(false);
 	outgoing_bandwidth_text->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
-	outgoing_bandwidth_text->set_align(LineEdit::Align::ALIGN_RIGHT);
+	outgoing_bandwidth_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	hb->add_child(outgoing_bandwidth_text);
 
 	// Set initial texts in the incoming/outgoing bandwidth labels
@@ -174,7 +170,7 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	counters_display->set_v_size_flags(SIZE_EXPAND_FILL);
 	counters_display->set_hide_folding(true);
 	counters_display->set_hide_root(true);
-	counters_display->set_columns(5);
+	counters_display->set_columns(3);
 	counters_display->set_column_titles_visible(true);
 	counters_display->set_column_title(0, TTR("Node"));
 	counters_display->set_column_expand(0, true);
@@ -184,18 +180,10 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	counters_display->set_column_expand(1, false);
 	counters_display->set_column_clip_content(1, true);
 	counters_display->set_column_custom_minimum_width(1, 120 * EDSCALE);
-	counters_display->set_column_title(2, TTR("Incoming RSET"));
+	counters_display->set_column_title(2, TTR("Outgoing RPC"));
 	counters_display->set_column_expand(2, false);
 	counters_display->set_column_clip_content(2, true);
 	counters_display->set_column_custom_minimum_width(2, 120 * EDSCALE);
-	counters_display->set_column_title(3, TTR("Outgoing RPC"));
-	counters_display->set_column_expand(3, false);
-	counters_display->set_column_clip_content(3, true);
-	counters_display->set_column_custom_minimum_width(3, 120 * EDSCALE);
-	counters_display->set_column_title(4, TTR("Outgoing RSET"));
-	counters_display->set_column_expand(4, false);
-	counters_display->set_column_clip_content(4, true);
-	counters_display->set_column_custom_minimum_width(4, 120 * EDSCALE);
 	add_child(counters_display);
 
 	frame_delay = memnew(Timer);

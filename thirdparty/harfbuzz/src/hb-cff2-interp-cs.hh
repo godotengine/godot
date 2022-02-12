@@ -35,18 +35,6 @@ using namespace OT;
 
 struct blend_arg_t : number_t
 {
-  void init ()
-  {
-    number_t::init ();
-    deltas.init ();
-  }
-
-  void fini ()
-  {
-    number_t::fini ();
-    deltas.fini_deep ();
-  }
-
   void set_int (int v) { reset_blends (); number_t::set_int (v); }
   void set_fixed (int32_t v) { reset_blends (); number_t::set_fixed (v); }
   void set_real (double v) { reset_blends (); number_t::set_real (v); }
@@ -136,8 +124,8 @@ struct cff2_cs_interp_env_t : cs_interp_env_t<blend_arg_t, CFF2Subrs>
 	if (unlikely (!scalars.resize (region_count)))
 	  set_error ();
 	else
-	  varStore->varStore.get_scalars (get_ivs (), coords, num_coords,
-					  &scalars[0], region_count);
+	  varStore->varStore.get_region_scalars (get_ivs (), coords, num_coords,
+						 &scalars[0], region_count);
       }
       seen_blend = true;
     }
@@ -202,7 +190,7 @@ struct cff2_cs_opset_t : cs_opset_t<blend_arg_t, OPSET, cff2_cs_interp_env_t, PA
     switch (op) {
       case OpCode_callsubr:
       case OpCode_callgsubr:
-	/* a subroutine number shoudln't be a blended value */
+	/* a subroutine number shouldn't be a blended value */
 	if (unlikely (env.argStack.peek ().blending ()))
 	{
 	  env.set_error ();

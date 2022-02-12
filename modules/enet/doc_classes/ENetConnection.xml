@@ -40,6 +40,7 @@
 			<description>
 				Sets the compression method used for network packets. These have different tradeoffs of compression speed versus bandwidth, you may need to test which one works best for your use case if you use compression at all.
 				[b]Note:[/b] Most games' network design involve sending many small packets frequently (smaller than 4 KB each). If in doubt, it is recommended to keep the default compression algorithm as it works best on these small packets.
+				[b]Note:[/b] The compression mode must be set to the same value on both the server and all its clients. Clients will fail to connect if the compression mode set on the client differs from the one set on the server.
 			</description>
 		</method>
 		<method name="connect_to_host">
@@ -49,8 +50,8 @@
 			<argument index="2" name="channels" type="int" default="0" />
 			<argument index="3" name="data" type="int" default="0" />
 			<description>
-				Initiates a connection to a foreign [code]address[/code] using the specified [code]port[/code] and allocting the requested [code]channels[/code]. Optional [code]data[/code] can be passed during connection in the form of a 32 bit integer.
-				Note: You must call either [method create_host] or [method create_host_bound] before calling this method.
+				Initiates a connection to a foreign [code]address[/code] using the specified [code]port[/code] and allocating the requested [code]channels[/code]. Optional [code]data[/code] can be passed during connection in the form of a 32 bit integer.
+				[b]Note:[/b] You must call either [method create_host] or [method create_host_bound] before calling this method.
 			</description>
 		</method>
 		<method name="create_host">
@@ -60,7 +61,7 @@
 			<argument index="2" name="in_bandwidth" type="int" default="0" />
 			<argument index="3" name="out_bandwidth" type="int" default="0" />
 			<description>
-				Create an ENetHost that will allow up to [code]max_peers[/code] connected peers, each allocating up to [code]max_channels[/code] channels, optionally limiting bandwith to [code]in_bandwidth[/code] and [code]out_bandwidth[/code].
+				Create an ENetHost that will allow up to [code]max_peers[/code] connected peers, each allocating up to [code]max_channels[/code] channels, optionally limiting bandwidth to [code]in_bandwidth[/code] and [code]out_bandwidth[/code].
 			</description>
 		</method>
 		<method name="create_host_bound">
@@ -120,7 +121,7 @@
 			<return type="Array" />
 			<description>
 				Returns the list of peers associated with this host.
-				Note: This list might include some peers that are not fully connected or are still being disconnected.
+				[b]Note:[/b] This list might include some peers that are not fully connected or are still being disconnected.
 			</description>
 		</method>
 		<method name="pop_statistic">
@@ -135,7 +136,7 @@
 			<argument index="0" name="refuse" type="bool" />
 			<description>
 				Configures the DTLS server to automatically drop new connections.
-				Note: This method is only relevant after calling [method dtls_server_setup].
+				[b]Note:[/b] This method is only relevant after calling [method dtls_server_setup].
 			</description>
 		</method>
 		<method name="service">
@@ -155,7 +156,7 @@
 			ENet's built-in range encoding. Works well on small packets, but is not the most efficient algorithm on packets larger than 4 KB.
 		</constant>
 		<constant name="COMPRESS_FASTLZ" value="2" enum="CompressionMode">
-			[url=http://fastlz.org/]FastLZ[/url] compression. This option uses less CPU resources compared to [constant COMPRESS_ZLIB], at the expense of using more bandwidth.
+			[url=https://fastlz.org/]FastLZ[/url] compression. This option uses less CPU resources compared to [constant COMPRESS_ZLIB], at the expense of using more bandwidth.
 		</constant>
 		<constant name="COMPRESS_ZLIB" value="3" enum="CompressionMode">
 			[url=https://www.zlib.net/]Zlib[/url] compression. This option uses less bandwidth compared to [constant COMPRESS_FASTLZ], at the expense of using more CPU resources.
@@ -173,7 +174,7 @@
 			A connection request initiated by enet_host_connect has completed. The array will contain the peer which successfully connected.
 		</constant>
 		<constant name="EVENT_DISCONNECT" value="2" enum="EventType">
-			A peer has disconnected. This event is generated on a successful completion of a disconnect initiated by [method ENetPacketPeer.peer_disconnect], if a peer has timed out, or if a connection request intialized by [method connect_to_host] has timed out. The array will contain the peer which disconnected. The data field contains user supplied data describing the disconnection, or 0, if none is available.
+			A peer has disconnected. This event is generated on a successful completion of a disconnect initiated by [method ENetPacketPeer.peer_disconnect], if a peer has timed out, or if a connection request initialized by [method connect_to_host] has timed out. The array will contain the peer which disconnected. The data field contains user supplied data describing the disconnection, or 0, if none is available.
 		</constant>
 		<constant name="EVENT_RECEIVE" value="3" enum="EventType">
 			A packet has been received from a peer. The array will contain the peer which sent the packet, the channel number upon which the packet was received, and the received packet.

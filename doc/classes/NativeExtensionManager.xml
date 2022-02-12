@@ -18,6 +18,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="is_extension_loaded" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="path" type="String" />
+			<description>
+			</description>
+		</method>
 		<method name="load_extension">
 			<return type="int" enum="NativeExtensionManager.LoadStatus" />
 			<argument index="0" name="path" type="String" />

@@ -276,7 +276,7 @@ THE SOFTWARE.
       char*  s;
 
 
-      if ( FT_ALLOC( face->style_name, len ) )
+      if ( FT_QALLOC( face->style_name, len ) )
         return error;
 
       s = face->style_name;
@@ -442,7 +442,7 @@ THE SOFTWARE.
       bdfface->num_glyphs = (FT_Long)( font->glyphs_size + 1 );
 
       bdfface->num_fixed_sizes = 1;
-      if ( FT_NEW_ARRAY( bdfface->available_sizes, 1 ) )
+      if ( FT_NEW( bdfface->available_sizes ) )
         goto Exit;
 
       {
@@ -450,8 +450,6 @@ THE SOFTWARE.
         FT_Short         resolution_x = 0, resolution_y = 0;
         long             value;
 
-
-        FT_ZERO( bsize );
 
         /* sanity checks */
         if ( font->font_ascent > 0x7FFF || font->font_ascent < -0x7FFF )
@@ -489,7 +487,7 @@ THE SOFTWARE.
         else
         {
           /* this is a heuristical value */
-          bsize->width = (FT_Short)FT_MulDiv( bsize->height, 2, 3 );
+          bsize->width = ( bsize->height * 2 + 1 ) / 3;
         }
 
         prop = bdf_get_font_property( font, "POINT_SIZE" );
@@ -608,7 +606,7 @@ THE SOFTWARE.
         unsigned long  n;
 
 
-        if ( FT_NEW_ARRAY( face->en_table, font->glyphs_size ) )
+        if ( FT_QNEW_ARRAY( face->en_table, font->glyphs_size ) )
           goto Exit;
 
         face->default_glyph = 0;

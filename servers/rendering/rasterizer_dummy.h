@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,6 +44,7 @@ public:
 	GeometryInstance *geometry_instance_create(RID p_base) override { return nullptr; }
 	void geometry_instance_set_skeleton(GeometryInstance *p_geometry_instance, RID p_skeleton) override {}
 	void geometry_instance_set_material_override(GeometryInstance *p_geometry_instance, RID p_override) override {}
+	void geometry_instance_set_material_overlay(GeometryInstance *p_geometry_instance, RID p_override) override {}
 	void geometry_instance_set_surface_materials(GeometryInstance *p_geometry_instance, const Vector<RID> &p_material) override {}
 	void geometry_instance_set_mesh_instance(GeometryInstance *p_geometry_instance, RID p_mesh_instance) override {}
 	void geometry_instance_set_transform(GeometryInstance *p_geometry_instance, const Transform3D &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabbb) override {}
@@ -55,6 +56,9 @@ public:
 	void geometry_instance_set_lightmap_capture(GeometryInstance *p_geometry_instance, const Color *p_sh9) override {}
 	void geometry_instance_set_instance_shader_parameters_offset(GeometryInstance *p_geometry_instance, int32_t p_offset) override {}
 	void geometry_instance_set_cast_double_sided_shadows(GeometryInstance *p_geometry_instance, bool p_enable) override {}
+	void geometry_instance_set_fade_range(GeometryInstance *p_geometry_instance, bool p_enable_near, float p_near_begin, float p_near_end, bool p_enable_far, float p_far_begin, float p_far_end) override {}
+	void geometry_instance_set_parent_fade_alpha(GeometryInstance *p_geometry_instance, float p_alpha) override {}
+	void geometry_instance_set_transparency(GeometryInstance *p_geometry_instance, float p_transparency) override {}
 
 	uint32_t geometry_instance_get_pair_mask() override { return 0; }
 	void geometry_instance_pair_light_instances(GeometryInstance *p_geometry_instance, const RID *p_light_instances, uint32_t p_light_instance_count) override {}
@@ -68,11 +72,11 @@ public:
 	/* SHADOW ATLAS API */
 
 	RID shadow_atlas_create() override { return RID(); }
-	void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = false) override {}
+	void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = true) override {}
 	void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) override {}
 	bool shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version) override { return false; }
 
-	void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = false) override {}
+	void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = true) override {}
 	int get_directional_light_shadow_size(RID p_light_intance) override { return 0; }
 	void set_directional_shadow_count(int p_count) override {}
 
@@ -103,9 +107,9 @@ public:
 	void environment_set_bg_color(RID p_env, const Color &p_color) override {}
 	void environment_set_bg_energy(RID p_env, float p_energy) override {}
 	void environment_set_canvas_max_layer(RID p_env, int p_max_layer) override {}
-	void environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient = RS::ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, RS::EnvironmentReflectionSource p_reflection_source = RS::ENV_REFLECTION_SOURCE_BG, const Color &p_ao_color = Color()) override {}
+	void environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient = RS::ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, RS::EnvironmentReflectionSource p_reflection_source = RS::ENV_REFLECTION_SOURCE_BG) override {}
 
-	void environment_set_glow(RID p_env, bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap) override {}
+	void environment_set_glow(RID p_env, bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, float p_glow_map_strength, RID p_glow_map) override {}
 	void environment_glow_set_use_bicubic_upscale(bool p_enable) override {}
 	void environment_glow_set_use_high_quality(bool p_enable) override {}
 
@@ -113,8 +117,10 @@ public:
 	void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) override {}
 	void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_light_affect, float p_ao_channel_affect) override {}
 	void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override {}
+	void environment_set_ssil(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_sharpness, float p_normal_rejection) override {}
+	void environment_set_ssil_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override {}
 
-	void environment_set_sdfgi(RID p_env, bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) override {}
+	void environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) override {}
 
 	void environment_set_sdfgi_ray_count(RS::EnvironmentSDFGIRayCount p_ray_count) override {}
 	void environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames) override {}
@@ -125,7 +131,7 @@ public:
 	void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction) override {}
 
 	void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective) override {}
-	void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount) override {}
+	void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject) override {}
 	void environment_set_volumetric_fog_volume_size(int p_size, int p_depth) override {}
 	void environment_set_volumetric_fog_filter_active(bool p_enable) override {}
 
@@ -152,6 +158,12 @@ public:
 	void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2()) override {}
 	void light_instance_mark_visible(RID p_light_instance) override {}
 
+	RID fog_volume_instance_create(RID p_fog_volume) override { return RID(); }
+	void fog_volume_instance_set_transform(RID p_fog_volume_instance, const Transform3D &p_transform) override {}
+	void fog_volume_instance_set_active(RID p_fog_volume_instance, bool p_active) override {}
+	RID fog_volume_instance_get_volume(RID p_fog_volume_instance) const override { return RID(); }
+	Vector3 fog_volume_instance_get_position(RID p_fog_volume_instance) const override { return Vector3(); }
+
 	RID reflection_atlas_create() override { return RID(); }
 	int reflection_atlas_get_size(RID p_ref_atlas) const override { return 0; }
 	void reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_size, int p_reflection_count) override {}
@@ -177,7 +189,7 @@ public:
 
 	void voxel_gi_set_quality(RS::VoxelGIQuality) override {}
 
-	void render_scene(RID p_render_buffers, const CameraData *p_camera_data, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RendererScene::RenderInfo *r_info = nullptr) override {}
+	void render_scene(RID p_render_buffers, const CameraData *p_camera_data, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RendererScene::RenderInfo *r_info = nullptr) override {}
 	void render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override {}
 	void render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<GeometryInstance *> &p_instances) override {}
 
@@ -186,7 +198,7 @@ public:
 	void set_debug_draw_mode(RS::ViewportDebugDraw p_debug_draw) override {}
 
 	RID render_buffers_create() override { return RID(); }
-	void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, uint32_t p_view_count) override {}
+	void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_internal_width, int p_internal_height, int p_width, int p_height, float p_fsr_sharpness, float p_fsr_mipmap_bias, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, uint32_t p_view_count) override {}
 	void gi_set_use_half_resolution(bool p_enable) override {}
 
 	void screen_space_roughness_limiter_set_active(bool p_enable, float p_amount, float p_curve) override {}
@@ -197,7 +209,7 @@ public:
 
 	TypedArray<Image> bake_render_uv2(RID p_base, const Vector<RID> &p_material_overrides, const Size2i &p_image_size) override { return TypedArray<Image>(); }
 
-	bool free(RID p_rid) override { return true; }
+	bool free(RID p_rid) override { return false; }
 	void update() override {}
 	void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) override {}
 
@@ -224,7 +236,7 @@ public:
 		return texture_owner.make_rid(texture);
 	}
 	void texture_2d_initialize(RID p_texture, const Ref<Image> &p_image) override {
-		DummyTexture *t = texture_owner.getornull(p_texture);
+		DummyTexture *t = texture_owner.get_or_null(p_texture);
 		ERR_FAIL_COND(!t);
 		t->image = p_image->duplicate();
 	}
@@ -241,7 +253,7 @@ public:
 	void texture_3d_placeholder_initialize(RID p_texture) override {}
 
 	Ref<Image> texture_2d_get(RID p_texture) const override {
-		DummyTexture *t = texture_owner.getornull(p_texture);
+		DummyTexture *t = texture_owner.get_or_null(p_texture);
 		ERR_FAIL_COND_V(!t, Ref<Image>());
 		return t->image;
 	}
@@ -249,7 +261,7 @@ public:
 	Ref<Image> texture_2d_layer_get(RID p_texture, int p_layer) const override { return Ref<Image>(); }
 	Vector<Ref<Image>> texture_3d_get(RID p_texture) const override { return Vector<Ref<Image>>(); }
 
-	void texture_replace(RID p_texture, RID p_by_texture) override {}
+	void texture_replace(RID p_texture, RID p_by_texture) override { free(p_by_texture); }
 	void texture_set_size_override(RID p_texture, int p_width, int p_height) override {}
 
 	void texture_set_path(RID p_texture, const String &p_path) override {}
@@ -284,8 +296,8 @@ public:
 	String shader_get_code(RID p_shader) const override { return ""; }
 	void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const override {}
 
-	void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture) override {}
-	RID shader_get_default_texture_param(RID p_shader, const StringName &p_name) const override { return RID(); }
+	void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index) override {}
+	RID shader_get_default_texture_param(RID p_shader, const StringName &p_name, int p_index) const override { return RID(); }
 	Variant shader_get_param_default(RID p_material, const StringName &p_param) const override { return Variant(); }
 
 	RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const override { return RS::ShaderNativeSourceCode(); };
@@ -318,8 +330,8 @@ public:
 	void mesh_instance_set_blend_shape_weight(RID p_mesh_instance, int p_shape, float p_weight) override {}
 	void mesh_instance_check_for_update(RID p_mesh_instance) override {}
 	void update_mesh_instances() override {}
-	void reflection_probe_set_lod_threshold(RID p_probe, float p_ratio) override {}
-	float reflection_probe_get_lod_threshold(RID p_probe) const override { return 0.0; }
+	void reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio) override {}
+	float reflection_probe_get_mesh_lod_threshold(RID p_probe) const override { return 0.0; }
 
 	void mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface) override {}
 
@@ -540,13 +552,13 @@ public:
 	void particles_emit(RID p_particles, const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) override {}
 	void particles_set_emitting(RID p_particles, bool p_emitting) override {}
 	void particles_set_amount(RID p_particles, int p_amount) override {}
-	void particles_set_lifetime(RID p_particles, float p_lifetime) override {}
+	void particles_set_lifetime(RID p_particles, double p_lifetime) override {}
 	void particles_set_one_shot(RID p_particles, bool p_one_shot) override {}
-	void particles_set_pre_process_time(RID p_particles, float p_time) override {}
-	void particles_set_explosiveness_ratio(RID p_particles, float p_ratio) override {}
-	void particles_set_randomness_ratio(RID p_particles, float p_ratio) override {}
+	void particles_set_pre_process_time(RID p_particles, double p_time) override {}
+	void particles_set_explosiveness_ratio(RID p_particles, real_t p_ratio) override {}
+	void particles_set_randomness_ratio(RID p_particles, real_t p_ratio) override {}
 	void particles_set_custom_aabb(RID p_particles, const AABB &p_aabb) override {}
-	void particles_set_speed_scale(RID p_particles, float p_scale) override {}
+	void particles_set_speed_scale(RID p_particles, double p_scale) override {}
 	void particles_set_use_local_coordinates(RID p_particles, bool p_enable) override {}
 	void particles_set_process_material(RID p_particles, RID p_material) override {}
 	void particles_set_fixed_fps(RID p_particles, int p_fps) override {}
@@ -554,11 +566,11 @@ public:
 	void particles_set_fractional_delta(RID p_particles, bool p_enable) override {}
 	void particles_set_subemitter(RID p_particles, RID p_subemitter_particles) override {}
 	void particles_set_view_axis(RID p_particles, const Vector3 &p_axis, const Vector3 &p_up_axis) override {}
-	void particles_set_collision_base_size(RID p_particles, float p_size) override {}
+	void particles_set_collision_base_size(RID p_particles, real_t p_size) override {}
 
 	void particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align) override {}
 
-	void particles_set_trails(RID p_particles, bool p_enable, float p_length) override {}
+	void particles_set_trails(RID p_particles, bool p_enable, double p_length) override {}
 	void particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses) override {}
 
 	void particles_restart(RID p_particles) override {}
@@ -591,11 +603,11 @@ public:
 	void particles_collision_initialize(RID p_rid) override {}
 	void particles_collision_set_collision_type(RID p_particles_collision, RS::ParticlesCollisionType p_type) override {}
 	void particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask) override {}
-	void particles_collision_set_sphere_radius(RID p_particles_collision, float p_radius) override {}
+	void particles_collision_set_sphere_radius(RID p_particles_collision, real_t p_radius) override {}
 	void particles_collision_set_box_extents(RID p_particles_collision, const Vector3 &p_extents) override {}
-	void particles_collision_set_attractor_strength(RID p_particles_collision, float p_strength) override {}
-	void particles_collision_set_attractor_directionality(RID p_particles_collision, float p_directionality) override {}
-	void particles_collision_set_attractor_attenuation(RID p_particles_collision, float p_curve) override {}
+	void particles_collision_set_attractor_strength(RID p_particles_collision, real_t p_strength) override {}
+	void particles_collision_set_attractor_directionality(RID p_particles_collision, real_t p_directionality) override {}
+	void particles_collision_set_attractor_attenuation(RID p_particles_collision, real_t p_curve) override {}
 	void particles_collision_set_field_texture(RID p_particles_collision, RID p_texture) override {}
 	void particles_collision_height_field_update(RID p_particles_collision) override {}
 	void particles_collision_set_height_field_resolution(RID p_particles_collision, RS::ParticlesCollisionHeightfieldResolution p_resolution) override {}
@@ -606,6 +618,17 @@ public:
 	RID particles_collision_instance_create(RID p_collision) override { return RID(); }
 	void particles_collision_instance_set_transform(RID p_collision_instance, const Transform3D &p_transform) override {}
 	void particles_collision_instance_set_active(RID p_collision_instance, bool p_active) override {}
+
+	/* FOG VOLUMES */
+
+	RID fog_volume_allocate() override { return RID(); }
+	void fog_volume_initialize(RID p_rid) override {}
+
+	void fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) override {}
+	void fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents) override {}
+	void fog_volume_set_material(RID p_fog_volume, RID p_material) override {}
+	AABB fog_volume_get_aabb(RID p_fog_volume) const override { return AABB(); }
+	RS::FogVolumeShape fog_volume_get_shape(RID p_fog_volume) const override { return RS::FOG_VOLUME_SHAPE_BOX; }
 
 	/* VISIBILITY NOTIFIER */
 	virtual RID visibility_notifier_allocate() override { return RID(); }
@@ -661,17 +684,20 @@ public:
 	bool free(RID p_rid) override {
 		if (texture_owner.owns(p_rid)) {
 			// delete the texture
-			DummyTexture *texture = texture_owner.getornull(p_rid);
+			DummyTexture *texture = texture_owner.get_or_null(p_rid);
 			texture_owner.free(p_rid);
 			memdelete(texture);
+			return true;
 		}
-		return true;
+		return false;
 	}
 
 	virtual void update_memory_info() override {}
 	virtual uint64_t get_rendering_info(RS::RenderingInfo p_info) override { return 0; }
 
-	bool has_os_feature(const String &p_feature) const override { return false; }
+	bool has_os_feature(const String &p_feature) const override {
+		return p_feature == "rgtc" || p_feature == "bptc" || p_feature == "s3tc" || p_feature == "etc" || p_feature == "etc2";
+	}
 
 	void update_dirty_resources() override {}
 
@@ -679,6 +705,7 @@ public:
 
 	String get_video_adapter_name() const override { return String(); }
 	String get_video_adapter_vendor() const override { return String(); }
+	RenderingDevice::DeviceType get_video_adapter_type() const override { return RenderingDevice::DeviceType::DEVICE_TYPE_OTHER; }
 
 	static RendererStorage *base_singleton;
 
@@ -724,7 +751,7 @@ public:
 class RasterizerDummy : public RendererCompositor {
 private:
 	uint64_t frame = 1;
-	float delta = 0;
+	double delta = 0;
 
 protected:
 	RasterizerCanvasDummy canvas;
@@ -765,7 +792,7 @@ public:
 
 	bool is_low_end() const override { return true; }
 	uint64_t get_frame_number() const override { return frame; }
-	float get_frame_delta_time() const override { return delta; }
+	double get_frame_delta_time() const override { return delta; }
 
 	RasterizerDummy() {}
 	~RasterizerDummy() {}

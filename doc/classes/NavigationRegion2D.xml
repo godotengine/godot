@@ -10,8 +10,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
 			Determines if the [NavigationRegion2D] is enabled or disabled.
@@ -23,6 +21,4 @@
 			The [NavigationPolygon] resource to use.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,6 @@
 #ifndef SCENE_TREE_H
 #define SCENE_TREE_H
 
-#include "core/io/multiplayer_api.h"
 #include "core/os/main_loop.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/self_list.h"
@@ -46,6 +45,7 @@ class Node;
 class Window;
 class Material;
 class Mesh;
+class MultiplayerAPI;
 class SceneDebugger;
 class Tween;
 
@@ -136,7 +136,6 @@ private:
 	void _flush_ugc();
 
 	_FORCE_INLINE_ void _update_group_order(Group &g, bool p_use_priority = false);
-	void _update_listener();
 
 	Array _get_nodes_in_group(const StringName &p_group);
 
@@ -204,8 +203,14 @@ private:
 	void _main_window_close();
 	void _main_window_go_back();
 
+	enum CallInputType {
+		CALL_INPUT_TYPE_INPUT,
+		CALL_INPUT_TYPE_UNHANDLED_INPUT,
+		CALL_INPUT_TYPE_UNHANDLED_KEY_INPUT,
+	};
+
 	//used by viewport
-	void _call_input_pause(const StringName &p_group, const StringName &p_method, const Ref<InputEvent> &p_input, Viewport *p_viewport);
+	void _call_input_pause(const StringName &p_group, CallInputType p_call_type, const Ref<InputEvent> &p_input, Viewport *p_viewport);
 
 protected:
 	void _notification(int p_notification);
@@ -258,9 +263,6 @@ public:
 
 	void set_pause(bool p_enabled);
 	bool is_paused() const;
-
-	void set_camera(const RID &p_camera);
-	RID get_camera() const;
 
 #ifdef DEBUG_ENABLED
 	void set_debug_collisions_hint(bool p_enabled);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef GDSCRIPT_CODEGEN
 #define GDSCRIPT_CODEGEN
 
-#include "core/io/multiplayer_api.h"
+#include "core/multiplayer/multiplayer.h"
 #include "core/string/string_name.h"
 #include "core/variant/variant.h"
 #include "gdscript_function.h"
@@ -80,7 +80,7 @@ public:
 	virtual void start_block() = 0;
 	virtual void end_block() = 0;
 
-	virtual void write_start(GDScript *p_script, const StringName &p_function_name, bool p_static, MultiplayerAPI::RPCConfig p_rpc_config, const GDScriptDataType &p_return_type) = 0;
+	virtual void write_start(GDScript *p_script, const StringName &p_function_name, bool p_static, Multiplayer::RPCConfig p_rpc_config, const GDScriptDataType &p_return_type) = 0;
 	virtual GDScriptFunction *write_end() = 0;
 
 #ifdef DEBUG_ENABLED
@@ -115,6 +115,7 @@ public:
 	virtual void write_assign_true(const Address &p_target) = 0;
 	virtual void write_assign_false(const Address &p_target) = 0;
 	virtual void write_assign_default_parameter(const Address &dst, const Address &src) = 0;
+	virtual void write_store_global(const Address &p_dst, int p_global_index) = 0;
 	virtual void write_store_named_global(const Address &p_dst, const StringName &p_global) = 0;
 	virtual void write_cast(const Address &p_target, const Address &p_source, const GDScriptDataType &p_type) = 0;
 	virtual void write_call(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) = 0;

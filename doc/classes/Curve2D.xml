@@ -156,6 +156,4 @@
 			The distance in pixels between two adjacent cached points. Changing it forces the cache to be recomputed the next time the [method get_baked_points] or [method get_baked_length] function is called. The smaller the distance, the more points in the cache and the more memory it will consume, so use with care.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

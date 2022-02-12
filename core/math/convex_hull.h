@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,7 +49,7 @@ subject to the following restrictions:
 #include "core/templates/vector.h"
 
 /// Convex hull implementation based on Preparata and Hong
-/// See http://code.google.com/p/bullet/issues/detail?id=275
+/// See https://code.google.com/archive/p/bullet/issues/275
 /// Ole Kniemeyer, MAXON Computer GmbH
 class ConvexHullComputer {
 public:

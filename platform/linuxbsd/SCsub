@@ -14,7 +14,7 @@ common_linuxbsd = [
 
 if "x11" in env and env["x11"]:
     common_linuxbsd += [
-        "context_gl_x11.cpp",
+        "gl_manager_x11.cpp",
         "detect_prime_x11.cpp",
         "display_server_x11.cpp",
         "key_mapping_x11.cpp",

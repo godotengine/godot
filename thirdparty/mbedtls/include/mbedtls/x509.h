@@ -5,13 +5,7 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
- *
- *  This file is provided under the Apache License 2.0, or the
- *  GNU General Public License v2.0 or later.
- *
- *  **********
- *  Apache License 2.0:
+ *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -24,42 +18,21 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  **********
- *
- *  **********
- *  GNU General Public License v2.0 or later:
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- *  **********
  */
 #ifndef MBEDTLS_X509_H
 #define MBEDTLS_X509_H
 
 #if !defined(MBEDTLS_CONFIG_FILE)
-#include "config.h"
+#include "mbedtls/config.h"
 #else
 #include MBEDTLS_CONFIG_FILE
 #endif
 
-#include "asn1.h"
-#include "pk.h"
+#include "mbedtls/asn1.h"
+#include "mbedtls/pk.h"
 
 #if defined(MBEDTLS_RSA_C)
-#include "rsa.h"
+#include "mbedtls/rsa.h"
 #endif
 
 /**
@@ -83,26 +56,46 @@
  * \name X509 Error codes
  * \{
  */
-#define MBEDTLS_ERR_X509_FEATURE_UNAVAILABLE              -0x2080  /**< Unavailable feature, e.g. RSA hashing/encryption combination. */
-#define MBEDTLS_ERR_X509_UNKNOWN_OID                      -0x2100  /**< Requested OID is unknown. */
-#define MBEDTLS_ERR_X509_INVALID_FORMAT                   -0x2180  /**< The CRT/CRL/CSR format is invalid, e.g. different type expected. */
-#define MBEDTLS_ERR_X509_INVALID_VERSION                  -0x2200  /**< The CRT/CRL/CSR version element is invalid. */
-#define MBEDTLS_ERR_X509_INVALID_SERIAL                   -0x2280  /**< The serial tag or value is invalid. */
-#define MBEDTLS_ERR_X509_INVALID_ALG                      -0x2300  /**< The algorithm tag or value is invalid. */
-#define MBEDTLS_ERR_X509_INVALID_NAME                     -0x2380  /**< The name tag or value is invalid. */
-#define MBEDTLS_ERR_X509_INVALID_DATE                     -0x2400  /**< The date tag or value is invalid. */
-#define MBEDTLS_ERR_X509_INVALID_SIGNATURE                -0x2480  /**< The signature tag or value invalid. */
-#define MBEDTLS_ERR_X509_INVALID_EXTENSIONS               -0x2500  /**< The extension tag or value is invalid. */
-#define MBEDTLS_ERR_X509_UNKNOWN_VERSION                  -0x2580  /**< CRT/CRL/CSR has an unsupported version number. */
-#define MBEDTLS_ERR_X509_UNKNOWN_SIG_ALG                  -0x2600  /**< Signature algorithm (oid) is unsupported. */
-#define MBEDTLS_ERR_X509_SIG_MISMATCH                     -0x2680  /**< Signature algorithms do not match. (see \c ::mbedtls_x509_crt sig_oid) */
-#define MBEDTLS_ERR_X509_CERT_VERIFY_FAILED               -0x2700  /**< Certificate verification failed, e.g. CRL, CA or signature check failed. */
-#define MBEDTLS_ERR_X509_CERT_UNKNOWN_FORMAT              -0x2780  /**< Format not recognized as DER or PEM. */
-#define MBEDTLS_ERR_X509_BAD_INPUT_DATA                   -0x2800  /**< Input invalid. */
-#define MBEDTLS_ERR_X509_ALLOC_FAILED                     -0x2880  /**< Allocation of memory failed. */
-#define MBEDTLS_ERR_X509_FILE_IO_ERROR                    -0x2900  /**< Read/write of file failed. */
-#define MBEDTLS_ERR_X509_BUFFER_TOO_SMALL                 -0x2980  /**< Destination buffer is too small. */
-#define MBEDTLS_ERR_X509_FATAL_ERROR                      -0x3000  /**< A fatal error occurred, eg the chain is too long or the vrfy callback failed. */
+/** Unavailable feature, e.g. RSA hashing/encryption combination. */
+#define MBEDTLS_ERR_X509_FEATURE_UNAVAILABLE              -0x2080
+/** Requested OID is unknown. */
+#define MBEDTLS_ERR_X509_UNKNOWN_OID                      -0x2100
+/** The CRT/CRL/CSR format is invalid, e.g. different type expected. */
+#define MBEDTLS_ERR_X509_INVALID_FORMAT                   -0x2180
+/** The CRT/CRL/CSR version element is invalid. */
+#define MBEDTLS_ERR_X509_INVALID_VERSION                  -0x2200
+/** The serial tag or value is invalid. */
+#define MBEDTLS_ERR_X509_INVALID_SERIAL                   -0x2280
+/** The algorithm tag or value is invalid. */
+#define MBEDTLS_ERR_X509_INVALID_ALG                      -0x2300
+/** The name tag or value is invalid. */
+#define MBEDTLS_ERR_X509_INVALID_NAME                     -0x2380
+/** The date tag or value is invalid. */
+#define MBEDTLS_ERR_X509_INVALID_DATE                     -0x2400
+/** The signature tag or value invalid. */
+#define MBEDTLS_ERR_X509_INVALID_SIGNATURE                -0x2480
+/** The extension tag or value is invalid. */
+#define MBEDTLS_ERR_X509_INVALID_EXTENSIONS               -0x2500
+/** CRT/CRL/CSR has an unsupported version number. */
+#define MBEDTLS_ERR_X509_UNKNOWN_VERSION                  -0x2580
+/** Signature algorithm (oid) is unsupported. */
+#define MBEDTLS_ERR_X509_UNKNOWN_SIG_ALG                  -0x2600
+/** Signature algorithms do not match. (see \c ::mbedtls_x509_crt sig_oid) */
+#define MBEDTLS_ERR_X509_SIG_MISMATCH                     -0x2680
+/** Certificate verification failed, e.g. CRL, CA or signature check failed. */
+#define MBEDTLS_ERR_X509_CERT_VERIFY_FAILED               -0x2700
+/** Format not recognized as DER or PEM. */
+#define MBEDTLS_ERR_X509_CERT_UNKNOWN_FORMAT              -0x2780
+/** Input invalid. */
+#define MBEDTLS_ERR_X509_BAD_INPUT_DATA                   -0x2800
+/** Allocation of memory failed. */
+#define MBEDTLS_ERR_X509_ALLOC_FAILED                     -0x2880
+/** Read/write of file failed. */
+#define MBEDTLS_ERR_X509_FILE_IO_ERROR                    -0x2900
+/** Destination buffer is too small. */
+#define MBEDTLS_ERR_X509_BUFFER_TOO_SMALL                 -0x2980
+/** A fatal error occurred, eg the chain is too long or the vrfy callback failed. */
+#define MBEDTLS_ERR_X509_FATAL_ERROR                      -0x3000
 /* \} name */
 
 /**
@@ -133,6 +126,28 @@
 
 /* \} name */
 /* \} addtogroup x509_module */
+
+/*
+ * X.509 v3 Subject Alternative Name types.
+ *      otherName                       [0]     OtherName,
+ *      rfc822Name                      [1]     IA5String,
+ *      dNSName                         [2]     IA5String,
+ *      x400Address                     [3]     ORAddress,
+ *      directoryName                   [4]     Name,
+ *      ediPartyName                    [5]     EDIPartyName,
+ *      uniformResourceIdentifier       [6]     IA5String,
+ *      iPAddress                       [7]     OCTET STRING,
+ *      registeredID                    [8]     OBJECT IDENTIFIER
+ */
+#define MBEDTLS_X509_SAN_OTHER_NAME                      0
+#define MBEDTLS_X509_SAN_RFC822_NAME                     1
+#define MBEDTLS_X509_SAN_DNS_NAME                        2
+#define MBEDTLS_X509_SAN_X400_ADDRESS_NAME               3
+#define MBEDTLS_X509_SAN_DIRECTORY_NAME                  4
+#define MBEDTLS_X509_SAN_EDI_PARTY_NAME                  5
+#define MBEDTLS_X509_SAN_UNIFORM_RESOURCE_IDENTIFIER     6
+#define MBEDTLS_X509_SAN_IP_ADDRESS                      7
+#define MBEDTLS_X509_SAN_REGISTERED_ID                   8
 
 /*
  * X.509 v3 Key Usage Extension flags
@@ -167,24 +182,26 @@
  *
  * Comments refer to the status for using certificates. Status can be
  * different for writing certificates or reading CRLs or CSRs.
+ *
+ * Those are defined in oid.h as oid.c needs them in a data structure. Since
+ * these were previously defined here, let's have aliases for compatibility.
  */
-#define MBEDTLS_X509_EXT_AUTHORITY_KEY_IDENTIFIER    (1 << 0)
-#define MBEDTLS_X509_EXT_SUBJECT_KEY_IDENTIFIER      (1 << 1)
-#define MBEDTLS_X509_EXT_KEY_USAGE                   (1 << 2)
-#define MBEDTLS_X509_EXT_CERTIFICATE_POLICIES        (1 << 3)
-#define MBEDTLS_X509_EXT_POLICY_MAPPINGS             (1 << 4)
-#define MBEDTLS_X509_EXT_SUBJECT_ALT_NAME            (1 << 5)    /* Supported (DNS) */
-#define MBEDTLS_X509_EXT_ISSUER_ALT_NAME             (1 << 6)
-#define MBEDTLS_X509_EXT_SUBJECT_DIRECTORY_ATTRS     (1 << 7)
-#define MBEDTLS_X509_EXT_BASIC_CONSTRAINTS           (1 << 8)    /* Supported */
-#define MBEDTLS_X509_EXT_NAME_CONSTRAINTS            (1 << 9)
-#define MBEDTLS_X509_EXT_POLICY_CONSTRAINTS          (1 << 10)
-#define MBEDTLS_X509_EXT_EXTENDED_KEY_USAGE          (1 << 11)
-#define MBEDTLS_X509_EXT_CRL_DISTRIBUTION_POINTS     (1 << 12)
-#define MBEDTLS_X509_EXT_INIHIBIT_ANYPOLICY          (1 << 13)
-#define MBEDTLS_X509_EXT_FRESHEST_CRL                (1 << 14)
-
-#define MBEDTLS_X509_EXT_NS_CERT_TYPE                (1 << 16)
+#define MBEDTLS_X509_EXT_AUTHORITY_KEY_IDENTIFIER MBEDTLS_OID_X509_EXT_AUTHORITY_KEY_IDENTIFIER
+#define MBEDTLS_X509_EXT_SUBJECT_KEY_IDENTIFIER   MBEDTLS_OID_X509_EXT_SUBJECT_KEY_IDENTIFIER
+#define MBEDTLS_X509_EXT_KEY_USAGE                MBEDTLS_OID_X509_EXT_KEY_USAGE
+#define MBEDTLS_X509_EXT_CERTIFICATE_POLICIES     MBEDTLS_OID_X509_EXT_CERTIFICATE_POLICIES
+#define MBEDTLS_X509_EXT_POLICY_MAPPINGS          MBEDTLS_OID_X509_EXT_POLICY_MAPPINGS
+#define MBEDTLS_X509_EXT_SUBJECT_ALT_NAME         MBEDTLS_OID_X509_EXT_SUBJECT_ALT_NAME         /* Supported (DNS) */
+#define MBEDTLS_X509_EXT_ISSUER_ALT_NAME          MBEDTLS_OID_X509_EXT_ISSUER_ALT_NAME
+#define MBEDTLS_X509_EXT_SUBJECT_DIRECTORY_ATTRS  MBEDTLS_OID_X509_EXT_SUBJECT_DIRECTORY_ATTRS
+#define MBEDTLS_X509_EXT_BASIC_CONSTRAINTS        MBEDTLS_OID_X509_EXT_BASIC_CONSTRAINTS        /* Supported */
+#define MBEDTLS_X509_EXT_NAME_CONSTRAINTS         MBEDTLS_OID_X509_EXT_NAME_CONSTRAINTS
+#define MBEDTLS_X509_EXT_POLICY_CONSTRAINTS       MBEDTLS_OID_X509_EXT_POLICY_CONSTRAINTS
+#define MBEDTLS_X509_EXT_EXTENDED_KEY_USAGE       MBEDTLS_OID_X509_EXT_EXTENDED_KEY_USAGE
+#define MBEDTLS_X509_EXT_CRL_DISTRIBUTION_POINTS  MBEDTLS_OID_X509_EXT_CRL_DISTRIBUTION_POINTS
+#define MBEDTLS_X509_EXT_INIHIBIT_ANYPOLICY       MBEDTLS_OID_X509_EXT_INIHIBIT_ANYPOLICY
+#define MBEDTLS_X509_EXT_FRESHEST_CRL             MBEDTLS_OID_X509_EXT_FRESHEST_CRL
+#define MBEDTLS_X509_EXT_NS_CERT_TYPE             MBEDTLS_OID_X509_EXT_NS_CERT_TYPE
 
 /*
  * Storage format identifiers

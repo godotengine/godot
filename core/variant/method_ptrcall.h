@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,6 @@
 #ifndef METHOD_PTRCALL_H
 #define METHOD_PTRCALL_H
 
-#include "core/math/transform_2d.h"
 #include "core/object/object_id.h"
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
@@ -191,6 +190,7 @@ struct PtrToArg<ObjectID> {
 
 // This is for the special cases used by Variant.
 
+// No EncodeT because direct pointer conversion not possible.
 #define MAKE_VECARG(m_type)                                                              \
 	template <>                                                                          \
 	struct PtrToArg<Vector<m_type>> {                                                    \
@@ -236,6 +236,7 @@ struct PtrToArg<ObjectID> {
 		}                                                                                \
 	}
 
+// No EncodeT because direct pointer conversion not possible.
 #define MAKE_VECARG_ALT(m_type, m_type_alt)                                              \
 	template <>                                                                          \
 	struct PtrToArg<Vector<m_type_alt>> {                                                \
@@ -285,6 +286,7 @@ MAKE_VECARG_ALT(String, StringName);
 
 // For stuff that gets converted to Array vectors.
 
+// No EncodeT because direct pointer conversion not possible.
 #define MAKE_VECARR(m_type)                                                    \
 	template <>                                                                \
 	struct PtrToArg<Vector<m_type>> {                                          \
@@ -325,6 +327,7 @@ MAKE_VECARR(Variant);
 MAKE_VECARR(RID);
 MAKE_VECARR(Plane);
 
+// No EncodeT because direct pointer conversion not possible.
 #define MAKE_DVECARR(m_type)                                                   \
 	template <>                                                                \
 	struct PtrToArg<Vector<m_type>> {                                          \
@@ -372,6 +375,7 @@ MAKE_VECARR(Plane);
 
 // Special case for IPAddress.
 
+// No EncodeT because direct pointer conversion not possible.
 #define MAKE_STRINGCONV_BY_REFERENCE(m_type)                                  \
 	template <>                                                               \
 	struct PtrToArg<m_type> {                                                 \
@@ -395,6 +399,7 @@ MAKE_VECARR(Plane);
 
 MAKE_STRINGCONV_BY_REFERENCE(IPAddress);
 
+// No EncodeT because direct pointer conversion not possible.
 template <>
 struct PtrToArg<Vector<Face3>> {
 	_FORCE_INLINE_ static Vector<Face3> convert(const void *p_ptr) {
@@ -429,6 +434,7 @@ struct PtrToArg<Vector<Face3>> {
 	}
 };
 
+// No EncodeT because direct pointer conversion not possible.
 template <>
 struct PtrToArg<const Vector<Face3> &> {
 	_FORCE_INLINE_ static Vector<Face3> convert(const void *p_ptr) {

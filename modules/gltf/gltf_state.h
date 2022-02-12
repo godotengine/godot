@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,7 @@
 #include "gltf_buffer_view.h"
 #include "gltf_camera.h"
 #include "gltf_document.h"
+#include "gltf_document_extension.h"
 #include "gltf_light.h"
 #include "gltf_mesh.h"
 #include "gltf_node.h"
@@ -44,6 +45,8 @@
 #include "gltf_texture.h"
 
 #include "core/io/resource.h"
+#include "core/templates/map.h"
+#include "core/templates/pair.h"
 #include "core/templates/vector.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/texture.h"
@@ -51,7 +54,6 @@
 class GLTFState : public Resource {
 	GDCLASS(GLTFState, Resource);
 	friend class GLTFDocument;
-	friend class PackedSceneGLTF;
 
 	String filename;
 	Dictionary json;
@@ -87,6 +89,9 @@ class GLTFState : public Resource {
 	Map<GLTFSkeletonIndex, GLTFNodeIndex> skeleton_to_node;
 	Vector<Ref<GLTFAnimation>> animations;
 	Map<GLTFNodeIndex, Node *> scene_nodes;
+
+	Map<ObjectID, GLTFSkeletonIndex> skeleton3d_to_gltf_skeleton;
+	Map<ObjectID, Map<ObjectID, GLTFSkinIndex>> skin_and_skeleton3d_to_gltf_skin;
 
 protected:
 	static void _bind_methods();

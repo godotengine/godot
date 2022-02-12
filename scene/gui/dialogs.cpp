@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,6 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "scene/main/window.h" // Only used to check for more modals when dimming the editor.
 #endif
 
@@ -45,7 +44,7 @@
 
 void AcceptDialog::_input_from_window(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> key = p_event;
-	if (key.is_valid() && key->is_pressed() && key->get_keycode() == KEY_ESCAPE) {
+	if (key.is_valid() && key->is_pressed() && key->get_keycode() == Key::ESCAPE) {
 		_cancel_pressed();
 	}
 }
@@ -243,7 +242,7 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 		hbc->add_spacer(true);
 	}
 
-	if (p_action != "") {
+	if (!p_action.is_empty()) {
 		button->connect("pressed", callable_mp(this, &AcceptDialog::_custom_action), varray(p_action));
 	}
 
@@ -252,7 +251,7 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 
 Button *AcceptDialog::add_cancel_button(const String &p_cancel) {
 	String c = p_cancel;
-	if (p_cancel == "") {
+	if (p_cancel.is_empty()) {
 		c = TTRC("Cancel");
 	}
 	Button *b = swap_cancel_ok ? add_button(c, true) : add_button(c);
@@ -319,7 +318,7 @@ AcceptDialog::AcceptDialog() {
 	set_clamp_to_embedder(true);
 
 	bg = memnew(Panel);
-	add_child(bg);
+	add_child(bg, false, INTERNAL_MODE_FRONT);
 
 	hbc = memnew(HBoxContainer);
 
@@ -331,9 +330,9 @@ AcceptDialog::AcceptDialog() {
 	label->set_anchor(SIDE_BOTTOM, Control::ANCHOR_END);
 	label->set_begin(Point2(margin, margin));
 	label->set_end(Point2(-margin, -button_margin - 10));
-	add_child(label);
+	add_child(label, false, INTERNAL_MODE_FRONT);
 
-	add_child(hbc);
+	add_child(hbc, false, INTERNAL_MODE_FRONT);
 
 	hbc->add_spacer();
 	ok = memnew(Button);
@@ -363,8 +362,7 @@ Button *ConfirmationDialog::get_cancel_button() {
 
 ConfirmationDialog::ConfirmationDialog() {
 	set_title(TTRC("Please Confirm..."));
-#ifdef TOOLS_ENABLED
-	set_min_size(Size2(200, 70) * EDSCALE);
-#endif
+	set_min_size(Size2(200, 70));
+
 	cancel = add_cancel_button();
 }

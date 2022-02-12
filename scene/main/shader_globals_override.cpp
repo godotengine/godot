@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,7 @@
 
 #include "shader_globals_override.h"
 
-#include "core/core_string_names.h"
-#include "scene/main/window.h"
+#include "scene/3d/node_3d.h"
 #include "scene/scene_string_names.h"
 
 StringName *ShaderGlobalsOverride::_remap(const StringName &p_name) const {
@@ -222,6 +221,7 @@ void ShaderGlobalsOverride::_get_property_list(List<PropertyInfo> *p_list) const
 }
 
 void ShaderGlobalsOverride::_activate() {
+	ERR_FAIL_NULL(get_tree());
 	List<Node *> nodes;
 	get_tree()->get_nodes_in_group(SceneStringNames::get_singleton()->shader_overrides_group_active, &nodes);
 	if (nodes.size() == 0) {

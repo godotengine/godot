@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -74,7 +74,7 @@ int add_cmdline(int p_argc, char **p_args) {
 	return p_argc;
 };
 
-int iphone_main(int argc, char **argv, String data_dir) {
+int iphone_main(int argc, char **argv, String data_dir, String cache_dir) {
 	size_t len = strlen(argv[0]);
 
 	while (len--) {
@@ -95,7 +95,7 @@ int iphone_main(int argc, char **argv, String data_dir) {
 	char cwd[512];
 	getcwd(cwd, sizeof(cwd));
 	printf("cwd %s\n", cwd);
-	os = new OSIPhone(data_dir);
+	os = new OSIPhone(data_dir, cache_dir);
 
 	// We must override main when testing is enabled
 	TEST_MAIN_OVERRIDE

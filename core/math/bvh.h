@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -200,7 +200,7 @@ public:
 
 	// use in conjunction with activate if you have deferred the collision check, and
 	// set pairable has never been called.
-	// (deferred collision checks are a workaround for visual server for historical reasons)
+	// (deferred collision checks are a workaround for rendering server for historical reasons)
 	void force_collision_check(BVHHandle p_handle) {
 		if (USE_PAIRS) {
 			// the aabb should already be up to date in the BVH
@@ -654,7 +654,7 @@ private:
 		// remove from changed items (not very efficient yet)
 		for (int n = 0; n < (int)changed_items.size(); n++) {
 			if (changed_items[n] == p_handle) {
-				changed_items.remove_unordered(n);
+				changed_items.remove_at_unordered(n);
 
 				// because we are using an unordered remove,
 				// the last changed item will now be at spot 'n',

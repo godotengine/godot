@@ -5,12 +5,10 @@
 	</brief_description>
 	<description>
 		This class contains the list of attachment descriptions for a framebuffer pass. Each points with an index to a previously supplied list of texture attachments.
-	Multipass framebuffers can optimize some configurations in mobile, on desktop they provide little to no advantage.
+		Multipass framebuffers can optimize some configurations in mobile, on desktop they provide little to no advantage.
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="color_attachments" type="PackedInt32Array" setter="set_color_attachments" getter="get_color_attachments" default="PackedInt32Array()">
 			Color attachments in order starting from 0. If this attachment is not used by the shader, pass ATTACHMENT_UNUSED to skip.

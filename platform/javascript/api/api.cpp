@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -71,6 +71,9 @@ void JavaScript::_bind_methods() {
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "create_object", &JavaScript::_create_object_bind, mi);
 	}
 	ClassDB::bind_method(D_METHOD("download_buffer", "buffer", "name", "mime"), &JavaScript::download_buffer, DEFVAL("application/octet-stream"));
+	ClassDB::bind_method(D_METHOD("pwa_needs_update"), &JavaScript::pwa_needs_update);
+	ClassDB::bind_method(D_METHOD("pwa_update"), &JavaScript::pwa_update);
+	ADD_SIGNAL(MethodInfo("pwa_update_available"));
 }
 
 #if !defined(JAVASCRIPT_ENABLED) || !defined(JAVASCRIPT_EVAL_ENABLED)
@@ -102,6 +105,12 @@ Variant JavaScript::_create_object_bind(const Variant **p_args, int p_argcount, 
 }
 #endif
 #if !defined(JAVASCRIPT_ENABLED)
+bool JavaScript::pwa_needs_update() const {
+	return false;
+}
+Error JavaScript::pwa_update() {
+	return ERR_UNAVAILABLE;
+}
 void JavaScript::download_buffer(Vector<uint8_t> p_arr, const String &p_name, const String &p_mime) {
 }
 #endif

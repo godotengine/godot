@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -239,7 +239,8 @@ void Variant::set_named(const StringName &p_member, const Variant &p_value, bool
 			*v = p_value;
 			r_valid = true;
 		} else {
-			r_valid = false;
+			VariantGetInternalPtr<Dictionary>::get_ptr(this)->operator[](p_member) = p_value;
+			r_valid = true;
 		}
 
 	} else {
@@ -661,6 +662,91 @@ struct VariantIndexedSetGet_Array {
 	static uint64_t get_indexed_size(const Variant *base) { return 0; }
 };
 
+struct VariantIndexedSetGet_String {
+	static void get(const Variant *base, int64_t index, Variant *value, bool *oob) {
+		int64_t length = VariantGetInternalPtr<String>::get_ptr(base)->length();
+		if (index < 0) {
+			index += length;
+		}
+		if (index < 0 || index >= length) {
+			*oob = true;
+			return;
+		}
+		char32_t result = (*VariantGetInternalPtr<String>::get_ptr(base))[index];
+		*value = String(&result, 1);
+		*oob = false;
+	}
+	static void ptr_get(const void *base, int64_t index, void *member) {
+		/* avoid ptrconvert for performance*/
+		const String &v = *reinterpret_cast<const String *>(base);
+		if (index < 0) {
+			index += v.length();
+		}
+		OOB_TEST(index, v.length());
+		char32_t c = v[index];
+		PtrToArg<String>::encode(String(&c, 1), member);
+	}
+	static void set(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) {
+		if (value->get_type() != Variant::STRING) {
+			*oob = false;
+			*valid = false;
+			return;
+		}
+		int64_t length = VariantGetInternalPtr<String>::get_ptr(base)->length();
+		if (index < 0) {
+			index += length;
+		}
+		if (index < 0 || index >= length) {
+			*oob = true;
+			*valid = false;
+			return;
+		}
+		String *b = VariantGetInternalPtr<String>::get_ptr(base);
+		const String *v = VariantInternal::get_string(value);
+		if (v->length() == 0) {
+			b->remove_at(index);
+		} else {
+			b->set(index, v->get(0));
+		}
+		*oob = false;
+		*valid = true;
+	}
+	static void validated_set(Variant *base, int64_t index, const Variant *value, bool *oob) {
+		int64_t length = VariantGetInternalPtr<String>::get_ptr(base)->length();
+		if (index < 0) {
+			index += length;
+		}
+		if (index < 0 || index >= length) {
+			*oob = true;
+			return;
+		}
+		String *b = VariantGetInternalPtr<String>::get_ptr(base);
+		const String *v = VariantInternal::get_string(value);
+		if (v->length() == 0) {
+			b->remove_at(index);
+		} else {
+			b->set(index, v->get(0));
+		}
+		*oob = false;
+	}
+	static void ptr_set(void *base, int64_t index, const void *member) {
+		/* avoid ptrconvert for performance*/
+		String &v = *reinterpret_cast<String *>(base);
+		if (index < 0) {
+			index += v.length();
+		}
+		OOB_TEST(index, v.length());
+		const String &m = *reinterpret_cast<const String *>(member);
+		if (unlikely(m.length() == 0)) {
+			v.remove_at(index);
+		} else {
+			v.set(index, m.unicode_at(0));
+		}
+	}
+	static Variant::Type get_index_type() { return Variant::STRING; }
+	static uint64_t get_indexed_size(const Variant *base) { return VariantInternal::get_string(base)->length(); }
+};
+
 #define INDEXED_SETGET_STRUCT_DICT(m_base_type)                                                                                     \
 	struct VariantIndexedSetGet_##m_base_type {                                                                                     \
 		static void get(const Variant *base, int64_t index, Variant *value, bool *oob) {                                            \
@@ -758,6 +844,7 @@ static void register_indexed_member(Variant::Type p_type) {
 void register_indexed_setters_getters() {
 #define REGISTER_INDEXED_MEMBER(m_base_type) register_indexed_member<VariantIndexedSetGet_##m_base_type>(GetTypeInfo<m_base_type>::VARIANT_TYPE)
 
+	REGISTER_INDEXED_MEMBER(String);
 	REGISTER_INDEXED_MEMBER(Vector2);
 	REGISTER_INDEXED_MEMBER(Vector2i);
 	REGISTER_INDEXED_MEMBER(Vector3);
@@ -1737,11 +1824,15 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 	return Variant();
 }
 
-Variant Variant::duplicate(bool deep) const {
+Variant Variant::duplicate(bool p_deep) const {
+	return recursive_duplicate(p_deep, 0);
+}
+
+Variant Variant::recursive_duplicate(bool p_deep, int recursion_count) const {
 	switch (type) {
 		case OBJECT: {
 			/*  breaks stuff :(
-			if (deep && !_get_obj().ref.is_null()) {
+			if (p_deep && !_get_obj().ref.is_null()) {
 				Ref<Resource> resource = _get_obj().ref;
 				if (resource.is_valid()) {
 					return resource->duplicate(true);
@@ -1751,9 +1842,9 @@ Variant Variant::duplicate(bool deep) const {
 			return *this;
 		} break;
 		case DICTIONARY:
-			return operator Dictionary().duplicate(deep);
+			return operator Dictionary().recursive_duplicate(p_deep, recursion_count);
 		case ARRAY:
-			return operator Array().duplicate(deep);
+			return operator Array().recursive_duplicate(p_deep, recursion_count);
 		case PACKED_BYTE_ARRAY:
 			return operator Vector<uint8_t>().duplicate();
 		case PACKED_INT32_ARRAY:
@@ -2029,7 +2120,7 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		}
 			return;
 		case BASIS: {
-			r_dst = Transform3D(*a._data._basis).interpolate_with(Transform3D(*b._data._basis), c).basis;
+			r_dst = a._data._basis->lerp(*b._data._basis, c);
 		}
 			return;
 		case TRANSFORM3D: {

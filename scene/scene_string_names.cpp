@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -61,8 +61,12 @@ SceneStringNames::SceneStringNames() {
 	animation_finished = StaticCString::create("animation_finished");
 	animation_changed = StaticCString::create("animation_changed");
 	animation_started = StaticCString::create("animation_started");
+	RESET = StaticCString::create("RESET");
 
 	pose_updated = StaticCString::create("pose_updated");
+	bone_pose_changed = StaticCString::create("bone_pose_changed");
+	bone_enabled_changed = StaticCString::create("bone_enabled_changed");
+	show_rest_only_changed = StaticCString::create("show_rest_only_changed");
 
 	mouse_entered = StaticCString::create("mouse_entered");
 	mouse_exited = StaticCString::create("mouse_exited");
@@ -72,6 +76,7 @@ SceneStringNames::SceneStringNames() {
 	focus_entered = StaticCString::create("focus_entered");
 	focus_exited = StaticCString::create("focus_exited");
 
+	pre_sort_children = StaticCString::create("pre_sort_children");
 	sort_children = StaticCString::create("sort_children");
 
 	body_shape_entered = StaticCString::create("body_shape_entered");
@@ -89,9 +94,6 @@ SceneStringNames::SceneStringNames() {
 	iteration = StaticCString::create("iteration");
 	update = StaticCString::create("update");
 	updated = StaticCString::create("updated");
-
-	_get_gizmo_geometry = StaticCString::create("_get_gizmo_geometry");
-	_can_gizmo_scale = StaticCString::create("_can_gizmo_scale");
 
 	_physics_process = StaticCString::create("_physics_process");
 	_process = StaticCString::create("_process");
@@ -136,6 +138,7 @@ SceneStringNames::SceneStringNames() {
 
 	_spatial_editor_group = StaticCString::create("_spatial_editor_group");
 	_request_gizmo = StaticCString::create("_request_gizmo");
+	_set_subgizmo_selection = StaticCString::create("_set_subgizmo_selection");
 	_clear_subgizmo_selection = StaticCString::create("_clear_subgizmo_selection");
 
 	offset = StaticCString::create("offset");

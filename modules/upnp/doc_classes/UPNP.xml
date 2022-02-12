@@ -16,6 +16,38 @@
 		[codeblock]
 		upnp.delete_port_mapping(port)
 		[/codeblock]
+		[b]Note:[/b] UPnP discovery blocks the current thread. To perform discovery without blocking the main thread, use [Thread]s like this:
+		[codeblock]
+		# Emitted when UPnP port mapping setup is completed (regardless of success or failure).
+		signal upnp_completed(error)
+
+		# Replace this with your own server port number between 1025 and 65535.
+		const SERVER_PORT = 3928
+		var thread = null
+
+		func _upnp_setup(server_port):
+		    # UPNP queries take some time.
+		    var upnp = UPNP.new()
+		    var err = upnp.discover()
+
+		    if err != OK:
+		        push_error(str(err))
+		        emit_signal("upnp_completed", err)
+		        return
+
+		    if upnp.get_gateway() and upnp.get_gateway().is_valid_gateway():
+		        upnp.add_port_mapping(server_port, server_port, ProjectSettings.get_setting("application/config/name"), "UDP")
+		        upnp.add_port_mapping(server_port, server_port, ProjectSettings.get_setting("application/config/name"), "TCP")
+		        emit_signal("upnp_completed", OK)
+
+		func _ready():
+		    thread = Thread.new()
+		    thread.start(self, "_upnp_setup", SERVER_PORT)
+
+		func _exit_tree():
+		    # Wait for thread finish here to handle game exit while the thread is running.
+		    thread.wait_to_finish()
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>

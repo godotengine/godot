@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -107,7 +107,7 @@ void EditorDebuggerTree::_scene_tree_rmb_selected(const Vector2 &p_position) {
 	item_menu->clear();
 	item_menu->add_icon_item(get_theme_icon(SNAME("CreateNewSceneFrom"), SNAME("EditorIcons")), TTR("Save Branch as Scene"), ITEM_MENU_SAVE_REMOTE_NODE);
 	item_menu->add_icon_item(get_theme_icon(SNAME("CopyNodePath"), SNAME("EditorIcons")), TTR("Copy Node Path"), ITEM_MENU_COPY_NODE_PATH);
-	item_menu->set_position(get_screen_transform().xform(get_local_mouse_position()));
+	item_menu->set_position(get_screen_position() + get_local_mouse_position());
 	item_menu->popup();
 }
 
@@ -128,7 +128,7 @@ void EditorDebuggerTree::_scene_tree_rmb_selected(const Vector2 &p_position) {
 void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int p_debugger) {
 	updating_scene_tree = true;
 	const String last_path = get_selected_path();
-	const String filter = EditorNode::get_singleton()->get_scene_tree_dock()->get_filter();
+	const String filter = SceneTreeDock::get_singleton()->get_filter();
 	bool filter_changed = filter != last_filter;
 	TreeItem *scroll_item = nullptr;
 
@@ -186,7 +186,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 			// Apply filters.
 			while (parent) {
 				const bool had_siblings = item->get_prev() || item->get_next();
-				if (filter.is_subsequence_ofi(item->get_text(0))) {
+				if (filter.is_subsequence_ofn(item->get_text(0))) {
 					break; // Filter matches, must survive.
 				}
 				parent->remove_child(item);

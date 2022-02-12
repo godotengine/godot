@@ -54,7 +54,7 @@ struct Anchor
   DEFINE_SIZE_STATIC (4);
 };
 
-typedef LArrayOf<Anchor> GlyphAnchors;
+typedef Array32Of<Anchor> GlyphAnchors;
 
 struct ankr
 {
@@ -64,7 +64,7 @@ struct ankr
 			    unsigned int i,
 			    unsigned int num_glyphs) const
   {
-    const NNOffsetTo<GlyphAnchors> *offset = (this+lookupTable).get_value (glyph_id, num_glyphs);
+    const NNOffset16To<GlyphAnchors> *offset = (this+lookupTable).get_value (glyph_id, num_glyphs);
     if (!offset)
       return Null (Anchor);
     const GlyphAnchors &anchors = &(this+anchorData) + *offset;
@@ -83,9 +83,9 @@ struct ankr
   protected:
   HBUINT16	version;	/* Version number (set to zero) */
   HBUINT16	flags;		/* Flags (currently unused; set to zero) */
-  LOffsetTo<Lookup<NNOffsetTo<GlyphAnchors>>>
+  Offset32To<Lookup<NNOffset16To<GlyphAnchors>>>
 		lookupTable;	/* Offset to the table's lookup table */
-  LNNOffsetTo<HBUINT8>
+  NNOffset32To<HBUINT8>
 		anchorData;	/* Offset to the glyph data table */
 
   public:

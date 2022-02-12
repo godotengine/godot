@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,6 @@
 #include "core/io/file_access.h"
 #include "core/os/midi_driver.h"
 #include "core/version_generated.gen.h"
-#include "servers/audio_server.h"
 
 #include <stdarg.h>
 
@@ -76,12 +75,12 @@ void OS::add_logger(Logger *p_logger) {
 	}
 }
 
-void OS::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, Logger::ErrorType p_type) {
+void OS::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, Logger::ErrorType p_type) {
 	if (!_stderr_enabled) {
 		return;
 	}
 
-	_logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_type);
+	_logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type);
 }
 
 void OS::print(const char *p_format, ...) {
@@ -146,6 +145,10 @@ bool OS::is_stdout_verbose() const {
 	return _verbose_stdout;
 }
 
+bool OS::is_single_window() const {
+	return _single_window;
+}
+
 bool OS::is_stdout_debug_enabled() const {
 	return _debug_stdout;
 }
@@ -178,7 +181,7 @@ static void _OS_printres(Object *p_obj) {
 		return;
 	}
 
-	String str = itos(res->get_instance_id()) + String(res->get_class()) + ":" + String(res->get_name()) + " - " + res->get_path();
+	String str = vformat("%s - %s - %s", res->to_string(), res->get_name(), res->get_path());
 	if (_OSPRF) {
 		_OSPRF->store_line(str);
 	} else {
@@ -187,8 +190,8 @@ static void _OS_printres(Object *p_obj) {
 }
 
 void OS::print_all_resources(String p_to_file) {
-	ERR_FAIL_COND(p_to_file != "" && _OSPRF);
-	if (p_to_file != "") {
+	ERR_FAIL_COND(!p_to_file.is_empty() && _OSPRF);
+	if (!p_to_file.is_empty()) {
 		Error err;
 		_OSPRF = FileAccess::open(p_to_file, FileAccess::WRITE, &err);
 		if (err != OK) {
@@ -199,7 +202,7 @@ void OS::print_all_resources(String p_to_file) {
 
 	ObjectDB::debug_objects(_OS_printres);
 
-	if (p_to_file != "") {
+	if (!p_to_file.is_empty()) {
 		if (_OSPRF) {
 			memdelete(_OSPRF);
 		}
@@ -225,6 +228,12 @@ void OS::set_exit_code(int p_code) {
 
 String OS::get_locale() const {
 	return "en";
+}
+
+// Non-virtual helper to extract the 2 or 3-letter language code from
+// `get_locale()` in a way that's consistent for all platforms.
+String OS::get_locale_language() const {
+	return get_locale().left(3).replace("_", "");
 }
 
 // Helper function to ensure that a dir name/path will be valid on the OS
@@ -272,15 +281,15 @@ String OS::get_bundle_resource_dir() const {
 	return ".";
 }
 
+// Path to macOS .app bundle embedded icon
+String OS::get_bundle_icon_path() const {
+	return String();
+}
+
 // OS specific path for user://
 String OS::get_user_data_dir() const {
 	return ".";
 }
-
-// Android OS path to app's external data storage
-String OS::get_external_data_dir() const {
-	return get_user_data_dir();
-};
 
 // Absolute path to res://
 String OS::get_resource_dir() const {
@@ -288,7 +297,7 @@ String OS::get_resource_dir() const {
 }
 
 // Access system-specific dirs like Documents, Downloads, etc.
-String OS::get_system_dir(SystemDir p_dir) const {
+String OS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	return ".";
 }
 
@@ -337,7 +346,7 @@ String OS::get_model_name() const {
 }
 
 void OS::set_cmdline(const char *p_execpath, const List<String> &p_args) {
-	_execpath = p_execpath;
+	_execpath = String::utf8(p_execpath);
 	_cmdline = p_args;
 }
 
@@ -362,9 +371,17 @@ void OS::set_has_server_feature_callback(HasServerFeatureCallback p_callback) {
 }
 
 bool OS::has_feature(const String &p_feature) {
-	if (p_feature == get_name()) {
+	// Feature tags are always lowercase for consistency.
+	if (p_feature == get_name().to_lower()) {
 		return true;
 	}
+
+	// Catch-all `linuxbsd` feature tag that matches on both Linux and BSD.
+	// This is the one exposed in the project settings dialog.
+	if (p_feature == "linuxbsd" && (get_name() == "Linux" || get_name() == "FreeBSD" || get_name() == "NetBSD" || get_name() == "OpenBSD" || get_name() == "BSD")) {
+		return true;
+	}
+
 #ifdef DEBUG_ENABLED
 	if (p_feature == "debug") {
 		return true;
@@ -412,6 +429,24 @@ bool OS::has_feature(const String &p_feature) {
 	}
 #endif
 	if (p_feature == "arm") {
+		return true;
+	}
+#elif defined(__riscv)
+#if __riscv_xlen == 8
+	if (p_feature == "rv64") {
+		return true;
+	}
+#endif
+	if (p_feature == "riscv") {
+		return true;
+	}
+#elif defined(__powerpc__)
+#if defined(__powerpc64__)
+	if (p_feature == "ppc64") {
+		return true;
+	}
+#endif
+	if (p_feature == "ppc") {
 		return true;
 	}
 #endif

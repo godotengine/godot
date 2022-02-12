@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -93,7 +93,7 @@ public:
 	void set_value_label(const String &p_label);
 	String get_value_label() const;
 
-	float process(float p_time, bool p_seek) override;
+	double process(double p_time, bool p_seek) override;
 	String get_caption() const override;
 
 	Ref<AnimationNode> get_child_by_name(const StringName &p_name) override;

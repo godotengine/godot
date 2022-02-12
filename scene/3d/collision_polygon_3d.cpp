@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,6 @@
 
 #include "collision_object_3d.h"
 #include "core/math/geometry_2d.h"
-#include "scene/resources/concave_polygon_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
 
 void CollisionPolygon3D::_build_polygon() {
@@ -171,7 +170,7 @@ TypedArray<String> CollisionPolygon3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<CollisionObject3D>(get_parent())) {
-		warnings.push_back(TTR("CollisionPolygon3D only serves to provide a collision shape to a CollisionObject3D derived node. Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, CharacterBody3D, etc. to give them a shape."));
+		warnings.push_back(TTR("CollisionPolygon3D only serves to provide a collision shape to a CollisionObject3D derived node. Please only use it as a child of Area3D, StaticBody3D, RigidDynamicBody3D, CharacterBody3D, etc. to give them a shape."));
 	}
 
 	if (polygon.is_empty()) {

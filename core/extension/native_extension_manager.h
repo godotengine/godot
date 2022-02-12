@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,6 +55,7 @@ public:
 	LoadStatus load_extension(const String &p_path);
 	LoadStatus reload_extension(const String &p_path);
 	LoadStatus unload_extension(const String &p_path);
+	bool is_extension_loaded(const String &p_path) const;
 	Vector<String> get_loaded_extensions() const;
 	Ref<NativeExtension> get_extension(const String &p_path);
 
@@ -62,6 +63,8 @@ public:
 	void deinitialize_extensions(NativeExtension::InitializationLevel p_level);
 
 	static NativeExtensionManager *get_singleton();
+
+	void load_extensions();
 
 	NativeExtensionManager();
 };

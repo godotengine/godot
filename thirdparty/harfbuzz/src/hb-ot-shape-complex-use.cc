@@ -47,7 +47,8 @@ use_basic_features[] =
 {
   /*
    * Basic features.
-   * These features are applied all at once, before reordering.
+   * These features are applied all at once, before reordering, constrained
+   * to the syllable.
    */
   HB_TAG('r','k','r','f'),
   HB_TAG('a','b','v','f'),
@@ -154,7 +155,7 @@ struct use_shape_plan_t
 static void *
 data_create_use (const hb_ot_shape_plan_t *plan)
 {
-  use_shape_plan_t *use_plan = (use_shape_plan_t *) calloc (1, sizeof (use_shape_plan_t));
+  use_shape_plan_t *use_plan = (use_shape_plan_t *) hb_calloc (1, sizeof (use_shape_plan_t));
   if (unlikely (!use_plan))
     return nullptr;
 
@@ -165,7 +166,7 @@ data_create_use (const hb_ot_shape_plan_t *plan)
     use_plan->arabic_plan = (arabic_shape_plan_t *) data_create_arabic (plan);
     if (unlikely (!use_plan->arabic_plan))
     {
-      free (use_plan);
+      hb_free (use_plan);
       return nullptr;
     }
   }
@@ -181,7 +182,7 @@ data_destroy_use (void *data)
   if (use_plan->arabic_plan)
     data_destroy_arabic (use_plan->arabic_plan);
 
-  free (data);
+  hb_free (data);
 }
 
 static void
@@ -256,7 +257,6 @@ setup_topographical_masks (const hb_ot_shape_plan_t *plan,
     use_syllable_type_t syllable_type = (use_syllable_type_t) (info[start].syllable() & 0x0F);
     switch (syllable_type)
     {
-      case use_independent_cluster:
       case use_symbol_cluster:
       case use_hieroglyph_cluster:
       case use_non_cluster:

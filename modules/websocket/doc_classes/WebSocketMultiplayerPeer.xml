@@ -4,7 +4,8 @@
 		Base class for WebSocket server and client.
 	</brief_description>
 	<description>
-		Base class for WebSocket server and client, allowing them to be used as network peer for the [MultiplayerAPI].
+		Base class for WebSocket server and client, allowing them to be used as multiplayer peer for the [MultiplayerAPI].
+		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -30,10 +31,6 @@
 			</description>
 		</method>
 	</methods>
-	<members>
-		<member name="refuse_new_connections" type="bool" setter="set_refuse_new_connections" getter="is_refusing_new_connections" override="true" default="false" />
-		<member name="transfer_mode" type="int" setter="set_transfer_mode" getter="get_transfer_mode" override="true" enum="MultiplayerPeer.TransferMode" default="2" />
-	</members>
 	<signals>
 		<signal name="peer_packet">
 			<argument index="0" name="peer_source" type="int" />
@@ -43,6 +40,4 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

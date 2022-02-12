@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 #ifdef WINDOWS_ENABLED
 
 #include <stdio.h>
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 void WindowsTerminalLogger::logv(const char *p_format, va_list p_list, bool p_err) {
@@ -70,7 +71,7 @@ void WindowsTerminalLogger::logv(const char *p_format, va_list p_list, bool p_er
 #endif
 }
 
-void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
+void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type) {
 	if (!should_log(true)) {
 		return;
 	}

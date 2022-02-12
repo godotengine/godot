@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,7 +56,7 @@ static void test_tokenizer(const String &p_code, const Vector<String> &p_lines) 
 	int tab_size = 4;
 #ifdef TOOLS_ENABLED
 	if (EditorSettings::get_singleton()) {
-		tab_size = EditorSettings::get_singleton()->get_setting("text_editor/indent/size");
+		tab_size = EditorSettings::get_singleton()->get_setting("text_editor/behavior/indent/size");
 	}
 #endif // TOOLS_ENABLED
 	String tab = String(" ").repeat(tab_size);
@@ -172,8 +172,8 @@ static void test_compiler(const String &p_code, const String &p_script_path, con
 		return;
 	}
 
-	for (const Map<StringName, GDScriptFunction *>::Element *E = script->get_member_functions().front(); E; E = E->next()) {
-		const GDScriptFunction *func = E->value();
+	for (const KeyValue<StringName, GDScriptFunction *> &E : script->get_member_functions()) {
+		const GDScriptFunction *func = E.value;
 
 		String signature = "Disassembling " + func->get_name().operator String() + "(";
 		for (int i = 0; i < func->get_argument_count(); i++) {

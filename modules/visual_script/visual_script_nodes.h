@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,8 @@
 #ifndef VISUAL_SCRIPT_NODES_H
 #define VISUAL_SCRIPT_NODES_H
 
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/script_language.h"
 #include "visual_script.h"
 
 class VisualScriptFunction : public VisualScriptNode {
@@ -47,7 +49,7 @@ class VisualScriptFunction : public VisualScriptNode {
 
 	bool stack_less;
 	int stack_size;
-	MultiplayerAPI::RPCMode rpc_mode;
+	Multiplayer::RPCMode rpc_mode;
 	bool sequenced;
 
 protected:
@@ -88,14 +90,8 @@ public:
 	void set_stack_size(int p_size);
 	int get_stack_size() const;
 
-	void set_return_type_enabled(bool p_returns);
-	bool is_return_type_enabled() const;
-
-	void set_return_type(Variant::Type p_type);
-	Variant::Type get_return_type() const;
-
-	void set_rpc_mode(MultiplayerAPI::RPCMode p_mode);
-	MultiplayerAPI::RPCMode get_rpc_mode() const;
+	void set_rpc_mode(Multiplayer::RPCMode p_mode);
+	Multiplayer::RPCMode get_rpc_mode() const;
 
 	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
@@ -757,6 +753,30 @@ class VisualScriptCustomNode : public VisualScriptNode {
 
 protected:
 	static void _bind_methods();
+	friend class VisualScriptNodeInstanceCustomNode;
+	GDVIRTUAL0RC(int, _get_output_sequence_port_count)
+	GDVIRTUAL0RC(bool, _has_input_sequence_port)
+	GDVIRTUAL1RC(String, _get_output_sequence_port_text, int)
+
+	GDVIRTUAL0RC(int, _get_input_value_port_count)
+	GDVIRTUAL1RC(int, _get_input_value_port_type, int)
+	GDVIRTUAL1RC(String, _get_input_value_port_name, int)
+	GDVIRTUAL1RC(int, _get_input_value_port_hint, int)
+	GDVIRTUAL1RC(String, _get_input_value_port_hint_string, int)
+
+	GDVIRTUAL0RC(int, _get_output_value_port_count)
+	GDVIRTUAL1RC(int, _get_output_value_port_type, int)
+	GDVIRTUAL1RC(String, _get_output_value_port_name, int)
+	GDVIRTUAL1RC(int, _get_output_value_port_hint, int)
+	GDVIRTUAL1RC(String, _get_output_value_port_hint_string, int)
+
+	GDVIRTUAL0RC(String, _get_caption)
+	GDVIRTUAL0RC(String, _get_text)
+	GDVIRTUAL0RC(String, _get_category)
+
+	GDVIRTUAL0RC(int, _get_working_memory_size)
+
+	GDVIRTUAL4RC(Variant, _step, Array, Array, int, Array)
 
 public:
 	enum StartMode { //replicated for step

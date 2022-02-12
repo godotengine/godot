@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,7 +57,7 @@ int MainTimerSync::get_average_physics_steps(double &p_min, double &p_max) {
 		const double typical_lower = typical_physics_steps[i];
 		const double current_min = typical_lower / (i + 1);
 		if (current_min > p_max) {
-			return i; // bail out of further restrictions would void the interval
+			return i; // bail out if further restrictions would void the interval
 		} else if (current_min > p_min) {
 			p_min = current_min;
 		}
@@ -73,14 +73,14 @@ int MainTimerSync::get_average_physics_steps(double &p_min, double &p_max) {
 }
 
 // advance physics clock by p_process_step, return appropriate number of steps to simulate
-MainFrameTime MainTimerSync::advance_core(double p_physics_step, int p_physics_fps, double p_process_step) {
+MainFrameTime MainTimerSync::advance_core(double p_physics_step, int p_physics_ticks_per_second, double p_process_step) {
 	MainFrameTime ret;
 
 	ret.process_step = p_process_step;
 
 	// simple determination of number of physics iteration
 	time_accum += ret.process_step;
-	ret.physics_steps = floor(time_accum * p_physics_fps);
+	ret.physics_steps = floor(time_accum * p_physics_ticks_per_second);
 
 	int min_typical_steps = typical_physics_steps[0];
 	int max_typical_steps = min_typical_steps + 1;
@@ -105,9 +105,15 @@ MainFrameTime MainTimerSync::advance_core(double p_physics_step, int p_physics_f
 		}
 	}
 
+#ifdef DEBUG_ENABLED
+	if (max_typical_steps < 0) {
+		WARN_PRINT_ONCE("`max_typical_steps` is negative. This could hint at an engine bug or system timer misconfiguration.");
+	}
+#endif
+
 	// try to keep it consistent with previous iterations
 	if (ret.physics_steps < min_typical_steps) {
-		const int max_possible_steps = floor((time_accum)*p_physics_fps + get_physics_jitter_fix());
+		const int max_possible_steps = floor((time_accum)*p_physics_ticks_per_second + get_physics_jitter_fix());
 		if (max_possible_steps < min_typical_steps) {
 			ret.physics_steps = max_possible_steps;
 			update_typical = true;
@@ -115,13 +121,17 @@ MainFrameTime MainTimerSync::advance_core(double p_physics_step, int p_physics_f
 			ret.physics_steps = min_typical_steps;
 		}
 	} else if (ret.physics_steps > max_typical_steps) {
-		const int min_possible_steps = floor((time_accum)*p_physics_fps - get_physics_jitter_fix());
+		const int min_possible_steps = floor((time_accum)*p_physics_ticks_per_second - get_physics_jitter_fix());
 		if (min_possible_steps > max_typical_steps) {
 			ret.physics_steps = min_possible_steps;
 			update_typical = true;
 		} else {
 			ret.physics_steps = max_typical_steps;
 		}
+	}
+
+	if (ret.physics_steps < 0) {
+		ret.physics_steps = 0;
 	}
 
 	time_accum -= ret.physics_steps * p_physics_step;
@@ -146,15 +156,18 @@ MainFrameTime MainTimerSync::advance_core(double p_physics_step, int p_physics_f
 }
 
 // calls advance_core, keeps track of deficit it adds to animaption_step, make sure the deficit sum stays close to zero
-MainFrameTime MainTimerSync::advance_checked(double p_physics_step, int p_physics_fps, double p_process_step) {
+MainFrameTime MainTimerSync::advance_checked(double p_physics_step, int p_physics_ticks_per_second, double p_process_step) {
 	if (fixed_fps != -1) {
 		p_process_step = 1.0 / fixed_fps;
 	}
 
+	float min_output_step = p_process_step / 8;
+	min_output_step = MAX(min_output_step, 1E-6);
+
 	// compensate for last deficit
 	p_process_step += time_deficit;
 
-	MainFrameTime ret = advance_core(p_physics_step, p_physics_fps, p_process_step);
+	MainFrameTime ret = advance_core(p_physics_step, p_physics_ticks_per_second, p_process_step);
 
 	// we will do some clamping on ret.process_step and need to sync those changes to time_accum,
 	// that's easiest if we just remember their fixed difference now
@@ -177,8 +190,36 @@ MainFrameTime MainTimerSync::advance_checked(double p_physics_step, int p_physic
 	// last clamping: make sure time_accum is between 0 and p_physics_step for consistency between physics and process
 	ret.clamp_process_step(process_minus_accum, process_minus_accum + p_physics_step);
 
+	// all the operations above may have turned ret.p_process_step negative or zero, keep a minimal value
+	if (ret.process_step < min_output_step) {
+		ret.process_step = min_output_step;
+	}
+
 	// restore time_accum
 	time_accum = ret.process_step - process_minus_accum;
+
+	// forcing ret.process_step to be positive may trigger a violation of the
+	// promise that time_accum is between 0 and p_physics_step
+#ifdef DEBUG_ENABLED
+	if (time_accum < -1E-7) {
+		WARN_PRINT_ONCE("Intermediate value of `time_accum` is negative. This could hint at an engine bug or system timer misconfiguration.");
+	}
+#endif
+
+	if (time_accum > p_physics_step) {
+		const int extra_physics_steps = floor(time_accum * p_physics_ticks_per_second);
+		time_accum -= extra_physics_steps * p_physics_step;
+		ret.physics_steps += extra_physics_steps;
+	}
+
+#ifdef DEBUG_ENABLED
+	if (time_accum < -1E-7) {
+		WARN_PRINT_ONCE("Final value of `time_accum` is negative. It should always be between 0 and `p_physics_step`. This hints at an engine bug.");
+	}
+	if (time_accum > p_physics_step + 1E-7) {
+		WARN_PRINT_ONCE("Final value of `time_accum` is larger than `p_physics_step`. It should always be between 0 and `p_physics_step`. This hints at an engine bug.");
+	}
+#endif
 
 	// track deficit
 	time_deficit = p_process_step - ret.process_step;
@@ -220,8 +261,8 @@ void MainTimerSync::set_fixed_fps(int p_fixed_fps) {
 }
 
 // advance one physics frame, return timesteps to take
-MainFrameTime MainTimerSync::advance(double p_physics_step, int p_physics_fps) {
+MainFrameTime MainTimerSync::advance(double p_physics_step, int p_physics_ticks_per_second) {
 	double cpu_process_step = get_cpu_process_step();
 
-	return advance_checked(p_physics_step, p_physics_fps, cpu_process_step);
+	return advance_checked(p_physics_step, p_physics_ticks_per_second, cpu_process_step);
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,6 +43,7 @@ void PhysicalBone3DEditor::_on_toggle_button_transform_joint(bool p_is_pressed) 
 void PhysicalBone3DEditor::_set_move_joint() {
 	if (selected) {
 		selected->_set_gizmo_move_joint(button_transform_joint->is_pressed());
+		Node3DEditor::get_singleton()->update_transform_gizmo();
 	}
 }
 
@@ -50,7 +51,7 @@ PhysicalBone3DEditor::PhysicalBone3DEditor(EditorNode *p_editor) :
 		editor(p_editor) {
 	spatial_editor_hb = memnew(HBoxContainer);
 	spatial_editor_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	spatial_editor_hb->set_alignment(BoxContainer::ALIGN_BEGIN);
+	spatial_editor_hb->set_alignment(BoxContainer::ALIGNMENT_BEGIN);
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(spatial_editor_hb);
 
 	spatial_editor_hb->add_child(memnew(VSeparator));

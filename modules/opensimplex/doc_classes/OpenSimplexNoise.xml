@@ -109,6 +109,4 @@
 			Seed used to generate random values, different seeds will generate different noise maps.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

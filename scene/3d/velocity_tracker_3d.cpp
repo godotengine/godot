@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,6 @@
 /*************************************************************************/
 
 #include "velocity_tracker_3d.h"
-#include "core/config/engine.h"
 
 void VelocityTracker3D::set_track_physics_step(bool p_track_physics_step) {
 	physics_step = p_track_physics_step;
@@ -61,16 +60,16 @@ void VelocityTracker3D::update_position(const Vector3 &p_position) {
 Vector3 VelocityTracker3D::get_tracked_linear_velocity() const {
 	Vector3 linear_velocity;
 
-	float max_time = 1 / 5.0; //maximum time to interpolate a velocity
+	double max_time = 1 / 5.0; //maximum time to interpolate a velocity
 
 	Vector3 distance_accum;
-	float time_accum = 0.0;
-	float base_time = 0.0;
+	double time_accum = 0.0;
+	double base_time = 0.0;
 
 	if (position_history_len) {
 		if (physics_step) {
 			uint64_t base = Engine::get_singleton()->get_physics_frames();
-			base_time = float(base - position_history[0].frame) / Engine::get_singleton()->get_iterations_per_second();
+			base_time = double(base - position_history[0].frame) / Engine::get_singleton()->get_physics_ticks_per_second();
 		} else {
 			uint64_t base = Engine::get_singleton()->get_frame_ticks();
 			base_time = double(base - position_history[0].frame) / 1000000.0;
@@ -78,12 +77,12 @@ Vector3 VelocityTracker3D::get_tracked_linear_velocity() const {
 	}
 
 	for (int i = 0; i < position_history_len - 1; i++) {
-		float delta = 0.0;
+		double delta = 0.0;
 		uint64_t diff = position_history[i].frame - position_history[i + 1].frame;
 		Vector3 distance = position_history[i].position - position_history[i + 1].position;
 
 		if (physics_step) {
-			delta = float(diff) / Engine::get_singleton()->get_iterations_per_second();
+			delta = double(diff) / Engine::get_singleton()->get_physics_ticks_per_second();
 		} else {
 			delta = double(diff) / 1000000.0;
 		}

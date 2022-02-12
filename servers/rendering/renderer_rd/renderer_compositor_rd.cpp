@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,6 +46,8 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 		RID rd_texture = storage->texture_get_rd_texture(texture);
 		ERR_CONTINUE(rd_texture.is_null());
 
+		// TODO if keep_3d_linear was set when rendering to this render target we need to add a linear->sRGB conversion in.
+
 		if (!render_target_descriptors.has(rd_texture) || !RD::get_singleton()->uniform_set_is_valid(render_target_descriptors[rd_texture])) {
 			Vector<RD::Uniform> uniforms;
 			RD::Uniform u;
@@ -65,10 +67,14 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 		RD::get_singleton()->draw_list_bind_index_array(draw_list, blit.array);
 		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, render_target_descriptors[rd_texture], 0);
 
-		blit.push_constant.rect[0] = p_render_targets[i].rect.position.x / screen_size.width;
-		blit.push_constant.rect[1] = p_render_targets[i].rect.position.y / screen_size.height;
-		blit.push_constant.rect[2] = p_render_targets[i].rect.size.width / screen_size.width;
-		blit.push_constant.rect[3] = p_render_targets[i].rect.size.height / screen_size.height;
+		blit.push_constant.src_rect[0] = p_render_targets[i].src_rect.position.x;
+		blit.push_constant.src_rect[1] = p_render_targets[i].src_rect.position.y;
+		blit.push_constant.src_rect[2] = p_render_targets[i].src_rect.size.width;
+		blit.push_constant.src_rect[3] = p_render_targets[i].src_rect.size.height;
+		blit.push_constant.dst_rect[0] = p_render_targets[i].dst_rect.position.x / screen_size.width;
+		blit.push_constant.dst_rect[1] = p_render_targets[i].dst_rect.position.y / screen_size.height;
+		blit.push_constant.dst_rect[2] = p_render_targets[i].dst_rect.size.width / screen_size.width;
+		blit.push_constant.dst_rect[3] = p_render_targets[i].dst_rect.size.height / screen_size.height;
 		blit.push_constant.layer = p_render_targets[i].multi_view.layer;
 		blit.push_constant.eye_center[0] = p_render_targets[i].lens_distortion.eye_center.x;
 		blit.push_constant.eye_center[1] = p_render_targets[i].lens_distortion.eye_center.y;
@@ -191,7 +197,7 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 		}
 	} else {
 		screenrect = imgrect;
-		screenrect.position += ((Size2(window_size.width, window_size.height) - screenrect.size) / 2.0).floor();
+		screenrect.position += ((window_size - screenrect.size) / 2.0).floor();
 	}
 
 	screenrect.position /= window_size;
@@ -203,10 +209,14 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 	RD::get_singleton()->draw_list_bind_index_array(draw_list, blit.array);
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uset, 0);
 
-	blit.push_constant.rect[0] = screenrect.position.x;
-	blit.push_constant.rect[1] = screenrect.position.y;
-	blit.push_constant.rect[2] = screenrect.size.width;
-	blit.push_constant.rect[3] = screenrect.size.height;
+	blit.push_constant.src_rect[0] = 0.0;
+	blit.push_constant.src_rect[1] = 0.0;
+	blit.push_constant.src_rect[2] = 1.0;
+	blit.push_constant.src_rect[3] = 1.0;
+	blit.push_constant.dst_rect[0] = screenrect.position.x;
+	blit.push_constant.dst_rect[1] = screenrect.position.y;
+	blit.push_constant.dst_rect[2] = screenrect.size.width;
+	blit.push_constant.dst_rect[3] = screenrect.size.height;
 	blit.push_constant.layer = 0;
 	blit.push_constant.eye_center[0] = 0;
 	blit.push_constant.eye_center[1] = 0;
@@ -230,7 +240,7 @@ RendererCompositorRD *RendererCompositorRD::singleton = nullptr;
 RendererCompositorRD::RendererCompositorRD() {
 	{
 		String shader_cache_dir = Engine::get_singleton()->get_shader_cache_path();
-		if (shader_cache_dir == String()) {
+		if (shader_cache_dir.is_empty()) {
 			shader_cache_dir = "user://";
 		}
 		DirAccessRef da = DirAccess::open(shader_cache_dir);
@@ -251,7 +261,7 @@ RendererCompositorRD::RendererCompositorRD() {
 					shader_cache_dir = String(); //disable only if not editor
 				}
 
-				if (shader_cache_dir != String()) {
+				if (!shader_cache_dir.is_empty()) {
 					bool compress = GLOBAL_GET("rendering/shader_compiler/shader_cache/compress");
 					bool use_zstd = GLOBAL_GET("rendering/shader_compiler/shader_cache/use_zstd_compression");
 					bool strip_debug = GLOBAL_GET("rendering/shader_compiler/shader_cache/strip_debug");
@@ -271,15 +281,17 @@ RendererCompositorRD::RendererCompositorRD() {
 	storage = memnew(RendererStorageRD);
 	canvas = memnew(RendererCanvasRenderRD(storage));
 
-	uint32_t back_end = GLOBAL_GET("rendering/vulkan/rendering/back_end");
+	back_end = (bool)(int)GLOBAL_GET("rendering/vulkan/rendering/back_end");
 	uint32_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
 
-	if (back_end == 1 || textures_per_stage < 48) {
+	if (back_end || textures_per_stage < 48) {
 		scene = memnew(RendererSceneRenderImplementation::RenderForwardMobile(storage));
-	} else { // back_end == 0
+	} else { // back_end == false
 		// default to our high end renderer
 		scene = memnew(RendererSceneRenderImplementation::RenderForwardClustered(storage));
 	}
+
+	scene->init();
 
 	// now we're ready to create our effects,
 	storage->init_effects(!scene->_render_buffers_can_be_storage());

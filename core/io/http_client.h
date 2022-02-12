@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -165,6 +165,7 @@ public:
 	static HTTPClient *create();
 
 	String query_string_from_dict(const Dictionary &p_dict);
+	Error verify_headers(const Vector<String> &p_headers);
 
 	virtual Error request(Method p_method, const String &p_url, const Vector<String> &p_headers, const uint8_t *p_body, int p_body_size) = 0;
 	virtual Error connect_to_host(const String &p_host, int p_port = -1, bool p_ssl = false, bool p_verify_host = true) = 0;
@@ -180,7 +181,7 @@ public:
 	virtual bool is_response_chunked() const = 0;
 	virtual int get_response_code() const = 0;
 	virtual Error get_response_headers(List<String> *r_response) = 0;
-	virtual int get_response_body_length() const = 0;
+	virtual int64_t get_response_body_length() const = 0;
 
 	virtual PackedByteArray read_response_body_chunk() = 0; // Can't get body as partial text because of most encodings UTF8, gzip, etc.
 
@@ -191,6 +192,10 @@ public:
 	virtual int get_read_chunk_size() const = 0;
 
 	virtual Error poll() = 0;
+
+	// Use empty string or -1 to unset
+	virtual void set_http_proxy(const String &p_host, int p_port);
+	virtual void set_https_proxy(const String &p_host, int p_port);
 
 	HTTPClient() {}
 	virtual ~HTTPClient() {}

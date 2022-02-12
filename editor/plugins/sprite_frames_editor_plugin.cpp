@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@
 #include "scene/gui/margin_container.h"
 #include "scene/gui/panel_container.h"
 
-void SpriteFramesEditor::_gui_input(Ref<InputEvent> p_event) {
+void SpriteFramesEditor::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void SpriteFramesEditor::_open_sprite_sheet() {
@@ -54,22 +54,46 @@ void SpriteFramesEditor::_open_sprite_sheet() {
 	file_split_sheet->popup_file_dialog();
 }
 
-void SpriteFramesEditor::_sheet_preview_draw() {
-	Size2i size = split_sheet_preview->get_size();
+int SpriteFramesEditor::_sheet_preview_position_to_frame_index(const Point2 &p_position) {
+	if (p_position.x < 0 || p_position.y < 0) {
+		return -1;
+	}
+
+	Size2i texture_size = split_sheet_preview->get_texture()->get_size();
 	int h = split_sheet_h->get_value();
 	int v = split_sheet_v->get_value();
-	int width = size.width / h;
-	int height = size.height / v;
-	const float a = 0.3;
-	for (int i = 1; i < h; i++) {
-		int x = i * width;
-		split_sheet_preview->draw_line(Point2(x, 0), Point2(x, size.height), Color(1, 1, 1, a));
-		split_sheet_preview->draw_line(Point2(x + 1, 0), Point2(x + 1, size.height), Color(0, 0, 0, a));
+	if (h > texture_size.width || v > texture_size.height) {
+		return -1;
 	}
-	for (int i = 1; i < v; i++) {
-		int y = i * height;
-		split_sheet_preview->draw_line(Point2(0, y), Point2(size.width, y), Color(1, 1, 1, a));
-		split_sheet_preview->draw_line(Point2(0, y + 1), Point2(size.width, y + 1), Color(0, 0, 0, a));
+
+	int x = int(p_position.x / sheet_zoom) / (texture_size.width / h);
+	int y = int(p_position.y / sheet_zoom) / (texture_size.height / v);
+	if (x >= h || y >= v) {
+		return -1;
+	}
+	return h * y + x;
+}
+
+void SpriteFramesEditor::_sheet_preview_draw() {
+	Size2i texture_size = split_sheet_preview->get_texture()->get_size();
+	int h = split_sheet_h->get_value();
+	int v = split_sheet_v->get_value();
+
+	real_t width = (texture_size.width / h) * sheet_zoom;
+	real_t height = (texture_size.height / v) * sheet_zoom;
+	const float a = 0.3;
+
+	real_t y_end = v * height;
+	for (int i = 0; i <= h; i++) {
+		real_t x = i * width;
+		split_sheet_preview->draw_line(Point2(x, 0), Point2(x, y_end), Color(1, 1, 1, a));
+		split_sheet_preview->draw_line(Point2(x + 1, 0), Point2(x + 1, y_end), Color(0, 0, 0, a));
+	}
+	real_t x_end = h * width;
+	for (int i = 0; i <= v; i++) {
+		real_t y = i * height;
+		split_sheet_preview->draw_line(Point2(0, y), Point2(x_end, y), Color(1, 1, 1, a));
+		split_sheet_preview->draw_line(Point2(0, y + 1), Point2(x_end, y + 1), Color(0, 0, 0, a));
 	}
 
 	if (frames_selected.size() == 0) {
@@ -83,9 +107,9 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 	for (Set<int>::Element *E = frames_selected.front(); E; E = E->next()) {
 		int idx = E->get();
 		int xp = idx % h;
-		int yp = (idx - xp) / h;
-		int x = xp * width;
-		int y = yp * height;
+		int yp = idx / h;
+		real_t x = xp * width;
+		real_t y = yp * height;
 
 		split_sheet_preview->draw_rect(Rect2(x + 5, y + 5, width - 10, height - 10), Color(0, 0, 0, 0.35), true);
 		split_sheet_preview->draw_rect(Rect2(x + 0, y + 0, width - 0, height - 0), Color(0, 0, 0, 1), false);
@@ -102,66 +126,56 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 
 void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 	const Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
-		const Size2i size = split_sheet_preview->get_size();
-		const int h = split_sheet_h->get_value();
-		const int v = split_sheet_v->get_value();
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
+		const int idx = _sheet_preview_position_to_frame_index(mb->get_position());
 
-		const int x = CLAMP(int(mb->get_position().x) * h / size.width, 0, h - 1);
-		const int y = CLAMP(int(mb->get_position().y) * v / size.height, 0, v - 1);
+		if (idx != -1) {
+			if (mb->is_shift_pressed() && last_frame_selected >= 0) {
+				//select multiple
+				int from = idx;
+				int to = last_frame_selected;
+				if (from > to) {
+					SWAP(from, to);
+				}
 
-		const int idx = h * y + x;
+				for (int i = from; i <= to; i++) {
+					// Prevent double-toggling the same frame when moving the mouse when the mouse button is still held.
+					frames_toggled_by_mouse_hover.insert(idx);
 
-		if (mb->is_shift_pressed() && last_frame_selected >= 0) {
-			//select multiple
-			int from = idx;
-			int to = last_frame_selected;
-			if (from > to) {
-				SWAP(from, to);
-			}
-
-			for (int i = from; i <= to; i++) {
+					if (mb->is_ctrl_pressed()) {
+						frames_selected.erase(i);
+					} else {
+						frames_selected.insert(i);
+					}
+				}
+			} else {
 				// Prevent double-toggling the same frame when moving the mouse when the mouse button is still held.
 				frames_toggled_by_mouse_hover.insert(idx);
 
-				if (mb->is_ctrl_pressed()) {
-					frames_selected.erase(i);
+				if (frames_selected.has(idx)) {
+					frames_selected.erase(idx);
 				} else {
-					frames_selected.insert(i);
+					frames_selected.insert(idx);
 				}
-			}
-		} else {
-			// Prevent double-toggling the same frame when moving the mouse when the mouse button is still held.
-			frames_toggled_by_mouse_hover.insert(idx);
-
-			if (frames_selected.has(idx)) {
-				frames_selected.erase(idx);
-			} else {
-				frames_selected.insert(idx);
 			}
 		}
 
-		last_frame_selected = idx;
-		split_sheet_preview->update();
+		if (last_frame_selected != idx || idx != -1) {
+			last_frame_selected = idx;
+			split_sheet_preview->update();
+		}
 	}
 
-	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		frames_toggled_by_mouse_hover.clear();
 	}
 
 	const Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
+	if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
 		// Select by holding down the mouse button on frames.
-		const Size2i size = split_sheet_preview->get_size();
-		const int h = split_sheet_h->get_value();
-		const int v = split_sheet_v->get_value();
+		const int idx = _sheet_preview_position_to_frame_index(mm->get_position());
 
-		const int x = CLAMP(int(mm->get_position().x) * h / size.width, 0, h - 1);
-		const int y = CLAMP(int(mm->get_position().y) * v / size.height, 0, v - 1);
-
-		const int idx = h * y + x;
-
-		if (!frames_toggled_by_mouse_hover.has(idx)) {
+		if (idx != -1 && !frames_toggled_by_mouse_hover.has(idx)) {
 			// Only allow toggling each tile once per mouse hold.
 			// Otherwise, the selection would constantly "flicker" in and out when moving the mouse cursor.
 			// The mouse button must be released before it can be toggled again.
@@ -186,11 +200,11 @@ void SpriteFramesEditor::_sheet_scroll_input(const Ref<InputEvent> &p_event) {
 		// Zoom in/out using Ctrl + mouse wheel. This is done on the ScrollContainer
 		// to allow performing this action anywhere, even if the cursor isn't
 		// hovering the texture in the workspace.
-		if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP && mb->is_pressed() && mb->is_ctrl_pressed()) {
+		if (mb->get_button_index() == MouseButton::WHEEL_UP && mb->is_pressed() && mb->is_ctrl_pressed()) {
 			_sheet_zoom_in();
 			// Don't scroll up after zooming in.
 			accept_event();
-		} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && mb->is_pressed() && mb->is_ctrl_pressed()) {
+		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN && mb->is_pressed() && mb->is_ctrl_pressed()) {
 			_sheet_zoom_out();
 			// Don't scroll down after zooming out.
 			accept_event();
@@ -199,35 +213,23 @@ void SpriteFramesEditor::_sheet_scroll_input(const Ref<InputEvent> &p_event) {
 }
 
 void SpriteFramesEditor::_sheet_add_frames() {
-	Size2i size = split_sheet_preview->get_texture()->get_size();
-	int h = split_sheet_h->get_value();
-	int v = split_sheet_v->get_value();
+	Size2i texture_size = split_sheet_preview->get_texture()->get_size();
+	int frame_count_x = split_sheet_h->get_value();
+	int frame_count_y = split_sheet_v->get_value();
+	Size2 frame_size(texture_size.width / frame_count_x, texture_size.height / frame_count_y);
 
 	undo_redo->create_action(TTR("Add Frame"));
 
 	int fc = frames->get_frame_count(edited_anim);
 
-	AtlasTexture *atlas_source = Object::cast_to<AtlasTexture>(*split_sheet_preview->get_texture());
-
-	Rect2 region_rect = Rect2();
-
-	if (atlas_source && atlas_source->get_atlas().is_valid()) {
-		region_rect = atlas_source->get_region();
-	}
-
 	for (Set<int>::Element *E = frames_selected.front(); E; E = E->next()) {
 		int idx = E->get();
-		int width = size.width / h;
-		int height = size.height / v;
-		int xp = idx % h;
-		int yp = (idx - xp) / h;
-		int x = (xp * width) + region_rect.position.x;
-		int y = (yp * height) + region_rect.position.y;
+		Point2 frame_coords(idx % frame_count_x, idx / frame_count_x);
 
 		Ref<AtlasTexture> at;
 		at.instantiate();
 		at->set_atlas(split_sheet_preview->get_texture());
-		at->set_region(Rect2(x, y, width, height));
+		at->set_region(Rect2(frame_coords * frame_size, frame_size));
 
 		undo_redo->add_do_method(frames, "add_frame", edited_anim, at, -1);
 		undo_redo->add_undo_method(frames, "remove_frame", edited_anim, fc);
@@ -283,7 +285,7 @@ void SpriteFramesEditor::_sheet_spin_changed(double) {
 }
 
 void SpriteFramesEditor::_prepare_sprite_sheet(const String &p_file) {
-	Ref<Resource> texture = ResourceLoader::load(p_file);
+	Ref<Texture2D> texture = ResourceLoader::load(p_file);
 	if (!texture.is_valid()) {
 		EditorNode::get_singleton()->show_warning(TTR("Unable to load images"));
 		ERR_FAIL_COND(!texture.is_valid());
@@ -730,11 +732,11 @@ void SpriteFramesEditor::_tree_input(const Ref<InputEvent> &p_event) {
 	const Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP && mb->is_pressed() && mb->is_ctrl_pressed()) {
+		if (mb->get_button_index() == MouseButton::WHEEL_UP && mb->is_pressed() && mb->is_ctrl_pressed()) {
 			_zoom_in();
 			// Don't scroll up after zooming in.
 			accept_event();
-		} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && mb->is_pressed() && mb->is_ctrl_pressed()) {
+		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN && mb->is_pressed() && mb->is_ctrl_pressed()) {
 			_zoom_out();
 			// Don't scroll down after zooming out.
 			accept_event();
@@ -819,19 +821,30 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 
 	for (int i = 0; i < frames->get_frame_count(edited_anim); i++) {
 		String name;
-		Ref<Texture2D> icon;
+		Ref<Texture2D> frame = frames->get_frame(edited_anim, i);
 
-		if (frames->get_frame(edited_anim, i).is_null()) {
+		if (frame.is_null()) {
 			name = itos(i) + ": " + TTR("(empty)");
-
 		} else {
-			name = itos(i) + ": " + frames->get_frame(edited_anim, i)->get_name();
-			icon = frames->get_frame(edited_anim, i);
+			name = itos(i) + ": " + frame->get_name();
 		}
 
-		tree->add_item(name, icon);
-		if (frames->get_frame(edited_anim, i).is_valid()) {
-			tree->set_item_tooltip(tree->get_item_count() - 1, frames->get_frame(edited_anim, i)->get_path());
+		tree->add_item(name, frame);
+		if (frame.is_valid()) {
+			String tooltip = frame->get_path();
+
+			// Frame is often saved as an AtlasTexture subresource within a scene/resource file,
+			// thus its path might be not what the user is looking for. So we're also showing
+			// subsequent source texture paths.
+			String prefix = String::utf8("┖╴");
+			Ref<AtlasTexture> at = frame;
+			while (at.is_valid() && at->get_atlas().is_valid()) {
+				tooltip += "\n" + prefix + at->get_atlas()->get_path();
+				prefix = "    " + prefix;
+				at = at->get_atlas();
+			}
+
+			tree->set_item_tooltip(tree->get_item_count() - 1, tooltip);
 		}
 		if (sel == i) {
 			tree->select(tree->get_item_count() - 1);
@@ -990,7 +1003,7 @@ void SpriteFramesEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	if (String(d["type"]) == "files") {
 		Vector<String> files = d["files"];
 
-		if (Input::get_singleton()->is_key_pressed(KEY_CTRL)) {
+		if (Input::get_singleton()->is_key_pressed(Key::CTRL)) {
 			_prepare_sprite_sheet(files[0]);
 		} else {
 			_file_load_request(files, at_pos);
@@ -1216,14 +1229,12 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_vb->add_child(split_sheet_panel);
 
 	split_sheet_preview = memnew(TextureRect);
-	split_sheet_preview->set_expand(true);
+	split_sheet_preview->set_ignore_texture_size(true);
 	split_sheet_preview->set_mouse_filter(MOUSE_FILTER_PASS);
 	split_sheet_preview->connect("draw", callable_mp(this, &SpriteFramesEditor::_sheet_preview_draw));
 	split_sheet_preview->connect("gui_input", callable_mp(this, &SpriteFramesEditor::_sheet_preview_input));
 
 	split_sheet_scroll = memnew(ScrollContainer);
-	split_sheet_scroll->set_enable_h_scroll(true);
-	split_sheet_scroll->set_enable_v_scroll(true);
 	split_sheet_scroll->connect("gui_input", callable_mp(this, &SpriteFramesEditor::_sheet_scroll_input));
 	split_sheet_panel->add_child(split_sheet_scroll);
 	CenterContainer *cc = memnew(CenterContainer);

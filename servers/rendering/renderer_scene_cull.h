@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -267,7 +267,9 @@ public:
 			FLAG_VISIBILITY_DEPENDENCY_NEEDS_CHECK = (3 << 20), // 2 bits, overlaps with the other vis. dependency flags
 			FLAG_VISIBILITY_DEPENDENCY_HIDDEN_CLOSE_RANGE = (1 << 20),
 			FLAG_VISIBILITY_DEPENDENCY_HIDDEN = (1 << 21),
-			FLAG_GEOM_PROJECTOR_SOFTSHADOW_DIRTY = (1 << 22),
+			FLAG_VISIBILITY_DEPENDENCY_FADE_CHILDREN = (1 << 22),
+			FLAG_GEOM_PROJECTOR_SOFTSHADOW_DIRTY = (1 << 23),
+			FLAG_IGNORE_ALL_CULLING = (1 << 24),
 		};
 
 		uint32_t flags = 0;
@@ -286,12 +288,14 @@ public:
 	struct InstanceVisibilityData {
 		uint64_t viewport_state = 0;
 		int32_t array_index = -1;
+		RS::VisibilityRangeFadeMode fade_mode = RS::VISIBILITY_RANGE_FADE_DISABLED;
 		Vector3 position;
 		Instance *instance = nullptr;
 		float range_begin = 0.0f;
 		float range_end = 0.0f;
 		float range_begin_margin = 0.0f;
 		float range_end_margin = 0.0f;
+		float children_fade_alpha = 1.0f;
 	};
 
 	class VisibilityArray : public BinSortedArray<InstanceVisibilityData> {
@@ -386,6 +390,7 @@ public:
 
 		RID skeleton;
 		RID material_override;
+		RID material_overlay;
 
 		RID mesh_instance; //only used for meshes and when skeleton/blendshapes exist
 
@@ -394,6 +399,7 @@ public:
 		float lod_bias;
 
 		bool ignore_occlusion_culling;
+		bool ignore_all_culling;
 
 		Vector<RID> materials;
 
@@ -434,14 +440,18 @@ public:
 		RID self;
 		//scenario stuff
 		DynamicBVH::ID indexer_id;
-		int32_t array_index;
+		int32_t array_index = -1;
 		int32_t visibility_index = -1;
-		float visibility_range_begin;
-		float visibility_range_end;
-		float visibility_range_begin_margin;
-		float visibility_range_end_margin;
+		float visibility_range_begin = 0.0f;
+		float visibility_range_end = 0.0f;
+		float visibility_range_begin_margin = 0.0f;
+		float visibility_range_end_margin = 0.0f;
+		RS::VisibilityRangeFadeMode visibility_range_fade_mode = RS::VISIBILITY_RANGE_FADE_DISABLED;
 		Instance *visibility_parent = nullptr;
-		Scenario *scenario;
+		Set<Instance *> visibility_dependencies;
+		uint32_t visibility_dependencies_depth = 0;
+		float transparency = 0.0f;
+		Scenario *scenario = nullptr;
 		SelfList<Instance> scenario_item;
 
 		//aabb stuff
@@ -529,6 +539,7 @@ public:
 			lightmap_cull_index = 0;
 			lod_bias = 1.0;
 			ignore_occlusion_culling = false;
+			ignore_all_culling = false;
 
 			scenario = nullptr;
 
@@ -583,8 +594,6 @@ public:
 		Set<Instance *> reflection_probes;
 		Set<Instance *> voxel_gi_instances;
 		Set<Instance *> lightmap_captures;
-		Set<Instance *> visibility_dependencies;
-		uint32_t visibility_dependencies_depth = 0;
 
 		InstanceGeometryData() {
 			can_cast_shadows = true;
@@ -622,6 +631,11 @@ public:
 
 	struct InstanceParticlesCollisionData : public InstanceBaseData {
 		RID instance;
+	};
+
+	struct InstanceFogVolumeData : public InstanceBaseData {
+		RID instance;
+		bool is_global;
 	};
 
 	struct InstanceVisibilityNotifierData : public InstanceBaseData {
@@ -788,6 +802,7 @@ public:
 		PagedArray<RID> decals;
 		PagedArray<RID> voxel_gi_instances;
 		PagedArray<RID> mesh_instances;
+		PagedArray<RID> fog_volumes;
 
 		struct DirectionalShadow {
 			PagedArray<RendererSceneRender::GeometryInstance *> cascade_geometry_instances[RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES];
@@ -805,6 +820,7 @@ public:
 			decals.clear();
 			voxel_gi_instances.clear();
 			mesh_instances.clear();
+			fog_volumes.clear();
 			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
 				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
 					directional_shadows[i].cascade_geometry_instances[j].clear();
@@ -829,6 +845,7 @@ public:
 			decals.reset();
 			voxel_gi_instances.reset();
 			mesh_instances.reset();
+			fog_volumes.reset();
 			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
 				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
 					directional_shadows[i].cascade_geometry_instances[j].reset();
@@ -853,6 +870,7 @@ public:
 			decals.merge_unordered(p_cull_result.decals);
 			voxel_gi_instances.merge_unordered(p_cull_result.voxel_gi_instances);
 			mesh_instances.merge_unordered(p_cull_result.mesh_instances);
+			fog_volumes.merge_unordered(p_cull_result.fog_volumes);
 
 			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
 				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
@@ -878,6 +896,7 @@ public:
 			decals.set_page_pool(p_rid_pool);
 			voxel_gi_instances.set_page_pool(p_rid_pool);
 			mesh_instances.set_page_pool(p_rid_pool);
+			fog_volumes.set_page_pool(p_rid_pool);
 			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
 				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
 					directional_shadows[i].cascade_geometry_instances[j].set_page_pool(p_geometry_instance_pool);
@@ -920,6 +939,7 @@ public:
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight);
 	virtual void instance_set_surface_override_material(RID p_instance, int p_surface, RID p_material);
 	virtual void instance_set_visible(RID p_instance, bool p_visible);
+	virtual void instance_geometry_set_transparency(RID p_instance, float p_transparency);
 
 	virtual void instance_set_custom_aabb(RID p_instance, AABB p_aabb);
 
@@ -929,7 +949,9 @@ public:
 
 	virtual void instance_set_visibility_parent(RID p_instance, RID p_parent_instance);
 
-	void _update_instance_visibility_depth(Instance *p_instance);
+	virtual void instance_set_ignore_culling(RID p_instance, bool p_enabled);
+
+	bool _update_instance_visibility_depth(Instance *p_instance);
 	void _update_instance_visibility_dependencies(Instance *p_instance);
 
 	// don't use these in a game!
@@ -940,8 +962,9 @@ public:
 	virtual void instance_geometry_set_flag(RID p_instance, RS::InstanceFlags p_flags, bool p_enabled);
 	virtual void instance_geometry_set_cast_shadows_setting(RID p_instance, RS::ShadowCastingSetting p_shadow_casting_setting);
 	virtual void instance_geometry_set_material_override(RID p_instance, RID p_material);
+	virtual void instance_geometry_set_material_overlay(RID p_instance, RID p_material);
 
-	virtual void instance_geometry_set_visibility_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin);
+	virtual void instance_geometry_set_visibility_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin, RS::VisibilityRangeFadeMode p_fade_mode);
 
 	virtual void instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_slice_index);
 	virtual void instance_geometry_set_lod_bias(RID p_instance, float p_lod_bias);
@@ -961,7 +984,7 @@ public:
 
 	void _light_instance_setup_directional_shadow(int p_shadow_index, Instance *p_instance, const Transform3D p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect);
 
-	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_scren_lod_threshold);
+	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_scren_mesh_lod_threshold);
 
 	RID _render_get_environment(RID p_camera, RID p_scenario);
 
@@ -1013,7 +1036,7 @@ public:
 
 	void _visibility_cull_threaded(uint32_t p_thread, VisibilityCullData *cull_data);
 	void _visibility_cull(const VisibilityCullData &cull_data, uint64_t p_from, uint64_t p_to);
-	_FORCE_INLINE_ void _visibility_cull(const VisibilityCullData &cull_data, uint64_t p_idx);
+	template <bool p_fade_check>
 	_FORCE_INLINE_ int _visibility_range_check(InstanceVisibilityData &r_vis_data, const Vector3 &p_camera_pos, uint64_t p_viewport_mask);
 
 	struct CullData {
@@ -1030,12 +1053,13 @@ public:
 
 	void _scene_cull_threaded(uint32_t p_thread, CullData *cull_data);
 	void _scene_cull(CullData &cull_data, InstanceCullResult &cull_result, uint64_t p_from, uint64_t p_to);
+	_FORCE_INLINE_ bool _visibility_parent_check(const CullData &p_cull_data, const InstanceData &p_instance_data);
 
 	bool _render_reflection_probe_step(Instance *p_instance, int p_step);
-	void _render_scene(const RendererSceneRender::CameraData *p_camera_data, RID p_render_buffers, RID p_environment, RID p_force_camera_effects, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, bool p_using_shadows = true, RenderInfo *r_render_info = nullptr);
+	void _render_scene(const RendererSceneRender::CameraData *p_camera_data, RID p_render_buffers, RID p_environment, RID p_force_camera_effects, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, bool p_using_shadows = true, RenderInfo *r_render_info = nullptr);
 	void render_empty_scene(RID p_render_buffers, RID p_scenario, RID p_shadow_atlas);
 
-	void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, float p_screen_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RendererScene::RenderInfo *r_render_info = nullptr);
+	void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RendererScene::RenderInfo *r_render_info = nullptr);
 	void update_dirty_instances();
 
 	void render_particle_colliders();
@@ -1078,7 +1102,7 @@ public:
 	PASS2(environment_set_bg_color, RID, const Color &)
 	PASS2(environment_set_bg_energy, RID, float)
 	PASS2(environment_set_canvas_max_layer, RID, int)
-	PASS7(environment_set_ambient_light, RID, const Color &, RS::EnvironmentAmbientSource, float, float, RS::EnvironmentReflectionSource, const Color &)
+	PASS6(environment_set_ambient_light, RID, const Color &, RS::EnvironmentAmbientSource, float, float, RS::EnvironmentReflectionSource)
 
 	PASS6(environment_set_ssr, RID, bool, int, float, float, float)
 	PASS1(environment_set_ssr_roughness_quality, RS::EnvironmentSSRRoughnessQuality)
@@ -1086,7 +1110,10 @@ public:
 	PASS10(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, float)
 	PASS6(environment_set_ssao_quality, RS::EnvironmentSSAOQuality, bool, float, int, float, float)
 
-	PASS11(environment_set_glow, RID, bool, Vector<float>, float, float, float, float, RS::EnvironmentGlowBlendMode, float, float, float)
+	PASS6(environment_set_ssil, RID, bool, float, float, float, float)
+	PASS6(environment_set_ssil_quality, RS::EnvironmentSSILQuality, bool, float, int, float, float)
+
+	PASS13(environment_set_glow, RID, bool, Vector<float>, float, float, float, float, RS::EnvironmentGlowBlendMode, float, float, float, float, RID)
 	PASS1(environment_glow_set_use_bicubic_upscale, bool)
 	PASS1(environment_glow_set_use_high_quality, bool)
 
@@ -1095,12 +1122,12 @@ public:
 	PASS7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)
 
 	PASS9(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float)
-	PASS10(environment_set_volumetric_fog, RID, bool, float, const Color &, float, float, float, float, bool, float)
+	PASS13(environment_set_volumetric_fog, RID, bool, float, const Color &, const Color &, float, float, float, float, float, bool, float, float)
 
 	PASS2(environment_set_volumetric_fog_volume_size, int, int)
 	PASS1(environment_set_volumetric_fog_filter_active, bool)
 
-	PASS11(environment_set_sdfgi, RID, bool, RS::EnvironmentSDFGICascades, float, RS::EnvironmentSDFGIYScale, bool, float, bool, float, float, float)
+	PASS11(environment_set_sdfgi, RID, bool, int, float, RS::EnvironmentSDFGIYScale, bool, float, bool, float, float, float)
 	PASS1(environment_set_sdfgi_ray_count, RS::EnvironmentSDFGIRayCount)
 	PASS1(environment_set_sdfgi_frames_to_converge, RS::EnvironmentSDFGIFramesToConverge)
 	PASS1(environment_set_sdfgi_frames_to_update_light, RS::EnvironmentSDFGIFramesToUpdateLight)
@@ -1133,7 +1160,7 @@ public:
 	/* Render Buffers */
 
 	PASS0R(RID, render_buffers_create)
-	PASS8(render_buffers_configure, RID, RID, int, int, RS::ViewportMSAA, RS::ViewportScreenSpaceAA, bool, uint32_t)
+	PASS12(render_buffers_configure, RID, RID, int, int, int, int, float, float, RS::ViewportMSAA, RS::ViewportScreenSpaceAA, bool, uint32_t)
 	PASS1(gi_set_use_half_resolution, bool)
 
 	/* Shadow Atlas */
@@ -1158,4 +1185,4 @@ public:
 	virtual ~RendererSceneCull();
 };
 
-#endif // VISUALSERVERSCENE_H
+#endif // RENDERING_SERVER_SCENE_CULL_H

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,12 +30,14 @@
 
 #include "sky_material.h"
 
+#include "core/version.h"
+
 Mutex ProceduralSkyMaterial::shader_mutex;
 RID ProceduralSkyMaterial::shader;
 
 void ProceduralSkyMaterial::set_sky_top_color(const Color &p_sky_top) {
 	sky_top_color = p_sky_top;
-	RS::get_singleton()->material_set_param(_get_material(), "sky_top_color", sky_top_color.to_linear());
+	RS::get_singleton()->material_set_param(_get_material(), "sky_top_color", sky_top_color);
 }
 
 Color ProceduralSkyMaterial::get_sky_top_color() const {
@@ -44,7 +46,7 @@ Color ProceduralSkyMaterial::get_sky_top_color() const {
 
 void ProceduralSkyMaterial::set_sky_horizon_color(const Color &p_sky_horizon) {
 	sky_horizon_color = p_sky_horizon;
-	RS::get_singleton()->material_set_param(_get_material(), "sky_horizon_color", sky_horizon_color.to_linear());
+	RS::get_singleton()->material_set_param(_get_material(), "sky_horizon_color", sky_horizon_color);
 }
 
 Color ProceduralSkyMaterial::get_sky_horizon_color() const {
@@ -71,7 +73,7 @@ float ProceduralSkyMaterial::get_sky_energy() const {
 
 void ProceduralSkyMaterial::set_ground_bottom_color(const Color &p_ground_bottom) {
 	ground_bottom_color = p_ground_bottom;
-	RS::get_singleton()->material_set_param(_get_material(), "ground_bottom_color", ground_bottom_color.to_linear());
+	RS::get_singleton()->material_set_param(_get_material(), "ground_bottom_color", ground_bottom_color);
 }
 
 Color ProceduralSkyMaterial::get_ground_bottom_color() const {
@@ -80,7 +82,7 @@ Color ProceduralSkyMaterial::get_ground_bottom_color() const {
 
 void ProceduralSkyMaterial::set_ground_horizon_color(const Color &p_ground_horizon) {
 	ground_horizon_color = p_ground_horizon;
-	RS::get_singleton()->material_set_param(_get_material(), "ground_horizon_color", ground_horizon_color.to_linear());
+	RS::get_singleton()->material_set_param(_get_material(), "ground_horizon_color", ground_horizon_color);
 }
 
 Color ProceduralSkyMaterial::get_ground_horizon_color() const {
@@ -121,10 +123,6 @@ void ProceduralSkyMaterial::set_sun_curve(float p_curve) {
 
 float ProceduralSkyMaterial::get_sun_curve() const {
 	return sun_curve;
-}
-
-bool ProceduralSkyMaterial::_can_do_next_pass() const {
-	return false;
 }
 
 Shader::Mode ProceduralSkyMaterial::get_shader_mode() const {
@@ -177,14 +175,14 @@ void ProceduralSkyMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_sun_curve"), &ProceduralSkyMaterial::get_sun_curve);
 
 	ADD_GROUP("Sky", "sky_");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "sky_top_color"), "set_sky_top_color", "get_sky_top_color");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "sky_horizon_color"), "set_sky_horizon_color", "get_sky_horizon_color");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "sky_top_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_sky_top_color", "get_sky_top_color");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "sky_horizon_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_sky_horizon_color", "get_sky_horizon_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sky_curve", PROPERTY_HINT_EXP_EASING), "set_sky_curve", "get_sky_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sky_energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_sky_energy", "get_sky_energy");
 
 	ADD_GROUP("Ground", "ground_");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ground_bottom_color"), "set_ground_bottom_color", "get_ground_bottom_color");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ground_horizon_color"), "set_ground_horizon_color", "get_ground_horizon_color");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ground_bottom_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_ground_bottom_color", "get_ground_bottom_color");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ground_horizon_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_ground_horizon_color", "get_ground_horizon_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ground_curve", PROPERTY_HINT_EXP_EASING), "set_ground_curve", "get_ground_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ground_energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_ground_energy", "get_ground_energy");
 
@@ -204,7 +202,10 @@ void ProceduralSkyMaterial::_update_shader() {
 	if (shader.is_null()) {
 		shader = RS::get_singleton()->shader_create();
 
+		// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
 		RS::get_singleton()->shader_set_code(shader, R"(
+// NOTE: Shader automatically converted from )" VERSION_NAME " " VERSION_FULL_CONFIG R"('s ProceduralSkyMaterial.
+
 shader_type sky;
 
 uniform vec4 sky_top_color : hint_color = vec4(0.35, 0.46, 0.71, 1.0);
@@ -291,7 +292,6 @@ ProceduralSkyMaterial::ProceduralSkyMaterial() {
 }
 
 ProceduralSkyMaterial::~ProceduralSkyMaterial() {
-	RS::get_singleton()->material_set_shader(_get_material(), RID());
 }
 
 /////////////////////////////////////////
@@ -307,8 +307,18 @@ Ref<Texture2D> PanoramaSkyMaterial::get_panorama() const {
 	return panorama;
 }
 
-bool PanoramaSkyMaterial::_can_do_next_pass() const {
-	return false;
+void PanoramaSkyMaterial::set_filtering_enabled(bool p_enabled) {
+	filter = p_enabled;
+	notify_property_list_changed();
+	_update_shader();
+	// Only set if shader already compiled
+	if (shader_set) {
+		RS::get_singleton()->material_set_shader(_get_material(), shader_cache[int(filter)]);
+	}
+}
+
+bool PanoramaSkyMaterial::is_filtering_enabled() const {
+	return filter;
 }
 
 Shader::Mode PanoramaSkyMaterial::get_shader_mode() const {
@@ -317,8 +327,10 @@ Shader::Mode PanoramaSkyMaterial::get_shader_mode() const {
 
 RID PanoramaSkyMaterial::get_rid() const {
 	_update_shader();
+	// Don't compile shaders until first use, then compile both
 	if (!shader_set) {
-		RS::get_singleton()->material_set_shader(_get_material(), shader);
+		RS::get_singleton()->material_set_shader(_get_material(), shader_cache[1 - int(filter)]);
+		RS::get_singleton()->material_set_shader(_get_material(), shader_cache[int(filter)]);
 		shader_set = true;
 	}
 	return _get_material();
@@ -326,39 +338,47 @@ RID PanoramaSkyMaterial::get_rid() const {
 
 RID PanoramaSkyMaterial::get_shader_rid() const {
 	_update_shader();
-	return shader;
+	return shader_cache[int(filter)];
 }
 
 void PanoramaSkyMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_panorama", "texture"), &PanoramaSkyMaterial::set_panorama);
 	ClassDB::bind_method(D_METHOD("get_panorama"), &PanoramaSkyMaterial::get_panorama);
 
+	ClassDB::bind_method(D_METHOD("set_filtering_enabled", "enabled"), &PanoramaSkyMaterial::set_filtering_enabled);
+	ClassDB::bind_method(D_METHOD("is_filtering_enabled"), &PanoramaSkyMaterial::is_filtering_enabled);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "panorama", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_panorama", "get_panorama");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter"), "set_filtering_enabled", "is_filtering_enabled");
 }
 
 Mutex PanoramaSkyMaterial::shader_mutex;
-RID PanoramaSkyMaterial::shader;
+RID PanoramaSkyMaterial::shader_cache[2];
 
 void PanoramaSkyMaterial::cleanup_shader() {
-	if (shader.is_valid()) {
-		RS::get_singleton()->free(shader);
+	if (shader_cache[0].is_valid()) {
+		RS::get_singleton()->free(shader_cache[0]);
+		RS::get_singleton()->free(shader_cache[1]);
 	}
 }
 
 void PanoramaSkyMaterial::_update_shader() {
 	shader_mutex.lock();
-	if (shader.is_null()) {
-		shader = RS::get_singleton()->shader_create();
+	if (shader_cache[0].is_null()) {
+		for (int i = 0; i < 2; i++) {
+			shader_cache[i] = RS::get_singleton()->shader_create();
 
-		RS::get_singleton()->shader_set_code(shader, R"(
+			// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
+			RS::get_singleton()->shader_set_code(shader_cache[i], vformat(R"(
+// NOTE: Shader automatically converted from )" VERSION_NAME " " VERSION_FULL_CONFIG R"('s PanoramaSkyMaterial.
 shader_type sky;
-
-uniform sampler2D source_panorama : filter_linear;
-
+uniform sampler2D source_panorama : %s, hint_albedo;
 void sky() {
 	COLOR = texture(source_panorama, SKY_COORDS).rgb;
 }
-)");
+)",
+																		  i ? "filter_linear" : "filter_nearest"));
+		}
 	}
 
 	shader_mutex.unlock();
@@ -368,7 +388,6 @@ PanoramaSkyMaterial::PanoramaSkyMaterial() {
 }
 
 PanoramaSkyMaterial::~PanoramaSkyMaterial() {
-	RS::get_singleton()->material_set_shader(_get_material(), RID());
 }
 
 //////////////////////////////////
@@ -474,10 +493,6 @@ Ref<Texture2D> PhysicalSkyMaterial::get_night_sky() const {
 	return night_sky;
 }
 
-bool PhysicalSkyMaterial::_can_do_next_pass() const {
-	return false;
-}
-
 Shader::Mode PhysicalSkyMaterial::get_shader_mode() const {
 	return Shader::MODE_SKY;
 }
@@ -535,16 +550,16 @@ void PhysicalSkyMaterial::_bind_methods() {
 
 	ADD_GROUP("Rayleigh", "rayleigh_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rayleigh_coefficient", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_rayleigh_coefficient", "get_rayleigh_coefficient");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "rayleigh_color"), "set_rayleigh_color", "get_rayleigh_color");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "rayleigh_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_rayleigh_color", "get_rayleigh_color");
 
 	ADD_GROUP("Mie", "mie_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mie_coefficient", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_mie_coefficient", "get_mie_coefficient");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mie_eccentricity", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_mie_eccentricity", "get_mie_eccentricity");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "mie_color"), "set_mie_color", "get_mie_color");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "mie_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_mie_color", "get_mie_color");
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "turbidity", PROPERTY_HINT_RANGE, "0,1000,0.01"), "set_turbidity", "get_turbidity");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sun_disk_scale", PROPERTY_HINT_RANGE, "0,360,0.01"), "set_sun_disk_scale", "get_sun_disk_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ground_color"), "set_ground_color", "get_ground_color");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ground_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_ground_color", "get_ground_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "exposure", PROPERTY_HINT_RANGE, "0,128,0.01"), "set_exposure", "get_exposure");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dither_strength", PROPERTY_HINT_RANGE, "0,10,0.01"), "set_dither_strength", "get_dither_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "night_sky", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_night_sky", "get_night_sky");
@@ -561,14 +576,17 @@ void PhysicalSkyMaterial::_update_shader() {
 	if (shader.is_null()) {
 		shader = RS::get_singleton()->shader_create();
 
+		// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
 		RS::get_singleton()->shader_set_code(shader, R"(
+// NOTE: Shader automatically converted from )" VERSION_NAME " " VERSION_FULL_CONFIG R"('s PhysicalSkyMaterial.
+
 shader_type sky;
 
 uniform float rayleigh : hint_range(0, 64) = 2.0;
-uniform vec4 rayleigh_color : hint_color = vec4(0.056, 0.14, 0.3, 1.0);
+uniform vec4 rayleigh_color : hint_color = vec4(0.26, 0.41, 0.58, 1.0);
 uniform float mie : hint_range(0, 1) = 0.005;
 uniform float mie_eccentricity : hint_range(-1, 1) = 0.8;
-uniform vec4 mie_color : hint_color = vec4(0.36, 0.56, 0.82, 1.0);
+uniform vec4 mie_color : hint_color = vec4(0.63, 0.77, 0.92, 1.0);
 
 uniform float turbidity : hint_range(0, 1000) = 10.0;
 uniform float sun_disk_scale : hint_range(0, 360) = 1.0;
@@ -576,7 +594,7 @@ uniform vec4 ground_color : hint_color = vec4(1.0);
 uniform float exposure : hint_range(0, 128) = 0.1;
 uniform float dither_strength : hint_range(0, 10) = 1.0;
 
-uniform sampler2D night_sky : hint_black;
+uniform sampler2D night_sky : hint_black_albedo;
 
 const vec3 UP = vec3( 0.0, 1.0, 0.0 );
 
@@ -662,10 +680,10 @@ void sky() {
 
 PhysicalSkyMaterial::PhysicalSkyMaterial() {
 	set_rayleigh_coefficient(2.0);
-	set_rayleigh_color(Color(0.056, 0.14, 0.3));
+	set_rayleigh_color(Color(0.26, 0.41, 0.58));
 	set_mie_coefficient(0.005);
 	set_mie_eccentricity(0.8);
-	set_mie_color(Color(0.36, 0.56, 0.82));
+	set_mie_color(Color(0.63, 0.77, 0.92));
 	set_turbidity(10.0);
 	set_sun_disk_scale(1.0);
 	set_ground_color(Color(1.0, 1.0, 1.0));

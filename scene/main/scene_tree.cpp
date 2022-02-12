@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
+#include "core/multiplayer/multiplayer_api.h"
 #include "core/object/message_queue.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -130,7 +131,7 @@ SceneTree::Group *SceneTree::add_to_group(const StringName &p_group, Node *p_nod
 		E = group_map.insert(p_group, Group());
 	}
 
-	ERR_FAIL_COND_V_MSG(E->get().nodes.find(p_node) != -1, &E->get(), "Already in group: " + p_group + ".");
+	ERR_FAIL_COND_V_MSG(E->get().nodes.has(p_node), &E->get(), "Already in group: " + p_group + ".");
 	E->get().nodes.push_back(p_node);
 	//E->get().last_tree_version=0;
 	E->get().changed = true;
@@ -499,7 +500,7 @@ bool SceneTree::process(double p_time) {
 	_call_idle_callbacks();
 
 #ifdef TOOLS_ENABLED
-
+#ifndef _3D_DISABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
 		//simple hack to reload fallback environment if it changed from editor
 		String env_path = ProjectSettings::get_singleton()->get(SNAME("rendering/environment/defaults/default_environment"));
@@ -510,7 +511,7 @@ bool SceneTree::process(double p_time) {
 			cpath = fallback->get_path();
 		}
 		if (cpath != env_path) {
-			if (env_path != String()) {
+			if (!env_path.is_empty()) {
 				fallback = ResourceLoader::load(env_path);
 				if (fallback.is_null()) {
 					//could not load fallback, set as empty
@@ -522,8 +523,8 @@ bool SceneTree::process(double p_time) {
 			get_root()->get_world_3d()->set_fallback_environment(fallback);
 		}
 	}
-
-#endif
+#endif // _3D_DISABLED
+#endif // TOOLS_ENABLED
 
 	return _quit;
 }
@@ -535,7 +536,7 @@ void SceneTree::process_tweens(float p_delta, bool p_physics) {
 	for (List<Ref<Tween>>::Element *E = tweens.front(); E;) {
 		List<Ref<Tween>>::Element *N = E->next();
 		// Don't process if paused or process mode doesn't match.
-		if ((paused && E->get()->should_pause()) || (p_physics == (E->get()->get_process_mode() == Tween::TWEEN_PROCESS_IDLE))) {
+		if (!E->get()->can_process(paused) || (p_physics == (E->get()->get_process_mode() == Tween::TWEEN_PROCESS_IDLE))) {
 			if (E == L) {
 				break;
 			}
@@ -544,7 +545,7 @@ void SceneTree::process_tweens(float p_delta, bool p_physics) {
 		}
 
 		if (!E->get()->step(p_delta)) {
-			E->get()->set_valid(false);
+			E->get()->clear();
 			tweens.erase(E);
 		}
 		if (E == L) {
@@ -570,7 +571,11 @@ void SceneTree::finalize() {
 		root = nullptr;
 	}
 
-	// cleanup timers
+	// In case deletion of some objects was queued when destructing the `root`.
+	// E.g. if `queue_free()` was called for some node outside the tree when handling NOTIFICATION_PREDELETE for some node in the tree.
+	_flush_delete_queue();
+
+	// Cleanup timers.
 	for (Ref<SceneTreeTimer> &timer : timers) {
 		timer->release_connections();
 	}
@@ -858,16 +863,7 @@ void SceneTree::_notify_group_pause(const StringName &p_group, int p_notificatio
 	}
 }
 
-/*
-void SceneMainLoop::_update_listener_2d() {
-	if (listener_2d.is_valid()) {
-		SpatialSound2DServer::get_singleton()->listener_set_space( listener_2d, world_2d->get_sound_space() );
-	}
-}
-
-*/
-
-void SceneTree::_call_input_pause(const StringName &p_group, const StringName &p_method, const Ref<InputEvent> &p_input, Viewport *p_viewport) {
+void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_call_type, const Ref<InputEvent> &p_input, Viewport *p_viewport) {
 	Map<StringName, Group>::Element *E = group_map.find(p_group);
 	if (!E) {
 		return;
@@ -886,9 +882,6 @@ void SceneTree::_call_input_pause(const StringName &p_group, const StringName &p
 	int node_count = nodes_copy.size();
 	Node **nodes = nodes_copy.ptrw();
 
-	Variant arg = p_input;
-	const Variant *v[1] = { &arg };
-
 	call_lock++;
 
 	for (int i = node_count - 1; i >= 0; i--) {
@@ -905,14 +898,16 @@ void SceneTree::_call_input_pause(const StringName &p_group, const StringName &p
 			continue;
 		}
 
-		Callable::CallError err;
-		// Call both script and native method.
-		if (n->get_script_instance()) {
-			n->get_script_instance()->call(p_method, (const Variant **)v, 1, err);
-		}
-		MethodBind *method = ClassDB::get_method(n->get_class_name(), p_method);
-		if (method) {
-			method->call(n, (const Variant **)v, 1, err);
+		switch (p_call_type) {
+			case CALL_INPUT_TYPE_INPUT:
+				n->_call_input(p_input);
+				break;
+			case CALL_INPUT_TYPE_UNHANDLED_INPUT:
+				n->_call_unhandled_input(p_input);
+				break;
+			case CALL_INPUT_TYPE_UNHANDLED_KEY_INPUT:
+				n->_call_unhandled_key_input(p_input);
+				break;
 		}
 	}
 
@@ -1115,7 +1110,7 @@ Error SceneTree::change_scene_to(const Ref<PackedScene> &p_scene) {
 
 Error SceneTree::reload_current_scene() {
 	ERR_FAIL_COND_V(!current_scene, ERR_UNCONFIGURED);
-	String fname = current_scene->get_filename();
+	String fname = current_scene->get_scene_file_path();
 	return change_scene(fname);
 }
 
@@ -1170,7 +1165,7 @@ void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {
 	ERR_FAIL_COND(!p_multiplayer.is_valid());
 
 	multiplayer = p_multiplayer;
-	multiplayer->set_root_node(root);
+	multiplayer->set_root_path("/" + root->get_name());
 }
 
 void SceneTree::_bind_methods() {
@@ -1296,7 +1291,7 @@ void SceneTree::get_argument_options(const StringName &p_function, int p_idx, Li
 			dir_access->list_dir_begin();
 			String filename = dir_access->get_next();
 
-			while (filename != "") {
+			while (!filename.is_empty()) {
 				if (filename == "." || filename == "..") {
 					filename = dir_access->get_next();
 					continue;
@@ -1332,21 +1327,25 @@ SceneTree::SceneTree() {
 	// Create with mainloop.
 
 	root = memnew(Window);
+	root->set_process_mode(Node::PROCESS_MODE_PAUSABLE);
 	root->set_name("root");
+	root->set_title(ProjectSettings::get_singleton()->get("application/config/name"));
+
+#ifndef _3D_DISABLED
 	if (!root->get_world_3d().is_valid()) {
 		root->set_world_3d(Ref<World3D>(memnew(World3D)));
 	}
+	root->set_as_audio_listener_3d(true);
+#endif // _3D_DISABLED
 
 	// Initialize network state.
 	set_multiplayer(Ref<MultiplayerAPI>(memnew(MultiplayerAPI)));
 
-	//root->set_world_2d( Ref<World2D>( memnew( World2D )));
-	root->set_as_audio_listener(true);
 	root->set_as_audio_listener_2d(true);
 	current_scene = nullptr;
 
 	const int msaa_mode = GLOBAL_DEF("rendering/anti_aliasing/quality/msaa", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/quality/msaa", PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/msaa", PROPERTY_HINT_ENUM, "Disabled (Fastest),2x (Fast),4x (Average),8x (Slow),16x (Slower)"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/quality/msaa", PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/msaa", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Average),4× (Slow),8× (Slowest)")));
 	root->set_msaa(Viewport::MSAA(msaa_mode));
 
 	const int ssaa_mode = GLOBAL_DEF("rendering/anti_aliasing/quality/screen_space_aa", 0);
@@ -1359,9 +1358,9 @@ SceneTree::SceneTree() {
 	const bool use_occlusion_culling = GLOBAL_DEF("rendering/occlusion_culling/use_occlusion_culling", false);
 	root->set_use_occlusion_culling(use_occlusion_culling);
 
-	float lod_threshold = GLOBAL_DEF("rendering/mesh_lod/lod_change/threshold_pixels", 1.0);
+	float mesh_lod_threshold = GLOBAL_DEF("rendering/mesh_lod/lod_change/threshold_pixels", 1.0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/mesh_lod/lod_change/threshold_pixels", PropertyInfo(Variant::FLOAT, "rendering/mesh_lod/lod_change/threshold_pixels", PROPERTY_HINT_RANGE, "0,1024,0.1"));
-	root->set_lod_threshold(lod_threshold);
+	root->set_mesh_lod_threshold(mesh_lod_threshold);
 
 	bool snap_2d_transforms = GLOBAL_DEF("rendering/2d/snap/snap_2d_transforms_to_pixel", false);
 	root->set_snap_2d_transforms_to_pixel(snap_2d_transforms);
@@ -1397,13 +1396,14 @@ SceneTree::SceneTree() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/2d/sdf/oversize", PropertyInfo(Variant::INT, "rendering/2d/sdf/oversize", PROPERTY_HINT_ENUM, "100%,120%,150%,200%"));
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/2d/sdf/scale", PropertyInfo(Variant::INT, "rendering/2d/sdf/scale", PROPERTY_HINT_ENUM, "100%,50%,25%"));
 
+#ifndef _3D_DISABLED
 	{ // Load default fallback environment.
 		// Get possible extensions.
 		List<String> exts;
 		ResourceLoader::get_recognized_extensions_for_type("Environment", &exts);
 		String ext_hint;
 		for (const String &E : exts) {
-			if (ext_hint != String()) {
+			if (!ext_hint.is_empty()) {
 				ext_hint += ",";
 			}
 			ext_hint += "*." + E;
@@ -1413,7 +1413,7 @@ SceneTree::SceneTree() {
 		// Setup property.
 		ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/defaults/default_environment", PropertyInfo(Variant::STRING, "rendering/viewport/default_environment", PROPERTY_HINT_FILE, ext_hint));
 		env_path = env_path.strip_edges();
-		if (env_path != String()) {
+		if (!env_path.is_empty()) {
 			Ref<Environment> env = ResourceLoader::load(env_path);
 			if (env.is_valid()) {
 				root->get_world_3d()->set_fallback_environment(env);
@@ -1428,6 +1428,7 @@ SceneTree::SceneTree() {
 			}
 		}
 	}
+#endif // _3D_DISABLED
 
 	root->set_physics_object_picking(GLOBAL_DEF("physics/common/enable_object_picking", true));
 

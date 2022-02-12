@@ -544,6 +544,9 @@ namespace spv {
         // Extended instructions: currently, assume everything is an ID.
         // TODO: add whatever data we need for exceptions to that
         if (opCode == spv::OpExtInst) {
+
+            idFn(asId(word)); // Instruction set is an ID that also needs to be mapped
+
             word        += 2; // instruction set, and instruction from set
             numOperands -= 2;
 

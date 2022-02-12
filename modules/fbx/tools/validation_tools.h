@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,9 +53,9 @@ protected:
 			String csv_header = "file_path, error message, extra data\n";
 			massive_log_file += csv_header;
 
-			for (Map<String, LocalVector<String>>::Element *element = validation_entries.front(); element; element = element->next()) {
-				for (unsigned int x = 0; x < element->value().size(); x++) {
-					const String &line_entry = element->key() + ", " + element->value()[x].c_escape() + "\n";
+			for (const KeyValue<String, LocalVector<String>> &element : validation_entries) {
+				for (unsigned int x = 0; x < element.value.size(); x++) {
+					const String &line_entry = element.key + ", " + element.value[x].c_escape() + "\n";
 					massive_log_file += line_entry;
 				}
 			}

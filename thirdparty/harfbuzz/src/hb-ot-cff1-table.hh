@@ -187,7 +187,7 @@ struct Encoding
 		  const hb_vector_t<code_pair_t>& supp_codes)
   {
     TRACE_SERIALIZE (this);
-    Encoding *dest = c->extend_min (*this);
+    Encoding *dest = c->extend_min (this);
     if (unlikely (!dest)) return_trace (false);
     dest->format = format | ((supp_codes.length > 0) ? 0x80 : 0);
     switch (format) {
@@ -457,7 +457,7 @@ struct Charset
 		  const hb_vector_t<code_pair_t>& sid_ranges)
   {
     TRACE_SERIALIZE (this);
-    Charset *dest = c->extend_min (*this);
+    Charset *dest = c->extend_min (this);
     if (unlikely (!dest)) return_trace (false);
     dest->format = format;
     switch (format)
@@ -713,6 +713,7 @@ struct cff1_top_dict_opset_t : top_dict_opset_t<cff1_top_dict_val_t>
       case OpCode_Notice:
       case OpCode_Copyright:
       case OpCode_FullName:
+      case OpCode_FontName:
       case OpCode_FamilyName:
       case OpCode_Weight:
       case OpCode_PostScript:
@@ -1143,8 +1144,8 @@ struct cff1
     {
       sc.end_processing ();
       topDict.fini ();
-      fontDicts.fini_deep ();
-      privateDicts.fini_deep ();
+      fontDicts.fini ();
+      privateDicts.fini ();
       hb_blob_destroy (blob);
       blob = nullptr;
     }
@@ -1244,32 +1245,32 @@ struct cff1
     }
 
     protected:
-    hb_blob_t	           *blob;
+    hb_blob_t	           *blob = nullptr;
     hb_sanitize_context_t   sc;
 
     public:
-    const Encoding	    *encoding;
-    const Charset	    *charset;
-    const CFF1NameIndex     *nameIndex;
-    const CFF1TopDictIndex  *topDictIndex;
-    const CFF1StringIndex   *stringIndex;
-    const CFF1Subrs	    *globalSubrs;
-    const CFF1CharStrings   *charStrings;
-    const CFF1FDArray       *fdArray;
-    const CFF1FDSelect      *fdSelect;
-    unsigned int	     fdCount;
+    const Encoding	    *encoding = nullptr;
+    const Charset	    *charset = nullptr;
+    const CFF1NameIndex     *nameIndex = nullptr;
+    const CFF1TopDictIndex  *topDictIndex = nullptr;
+    const CFF1StringIndex   *stringIndex = nullptr;
+    const CFF1Subrs	    *globalSubrs = nullptr;
+    const CFF1CharStrings   *charStrings = nullptr;
+    const CFF1FDArray       *fdArray = nullptr;
+    const CFF1FDSelect      *fdSelect = nullptr;
+    unsigned int	     fdCount = 0;
 
     cff1_top_dict_values_t   topDict;
     hb_vector_t<cff1_font_dict_values_t>
 			     fontDicts;
     hb_vector_t<PRIVDICTVAL> privateDicts;
 
-    unsigned int	     num_glyphs;
+    unsigned int	     num_glyphs = 0;
   };
 
   struct accelerator_t : accelerator_templ_t<cff1_private_dict_opset_t, cff1_private_dict_values_t>
   {
-    void init (hb_face_t *face)
+    accelerator_t (hb_face_t *face)
     {
       SUPER::init (face);
 
@@ -1294,8 +1295,7 @@ struct cff1
       }
       glyph_names.qsort ();
     }
-
-    void fini ()
+    ~accelerator_t ()
     {
       glyph_names.fini ();
 
@@ -1390,14 +1390,17 @@ struct cff1
 
   public:
   FixedVersion<HBUINT8> version;	  /* Version of CFF table. set to 0x0100u */
-  OffsetTo<CFF1NameIndex, HBUINT8> nameIndex; /* headerSize = Offset to Name INDEX. */
+  NNOffsetTo<CFF1NameIndex, HBUINT8> nameIndex; /* headerSize = Offset to Name INDEX. */
   HBUINT8	       offSize;	  /* offset size (unused?) */
 
   public:
   DEFINE_SIZE_STATIC (4);
 };
 
-struct cff1_accelerator_t : cff1::accelerator_t {};
+struct cff1_accelerator_t : cff1::accelerator_t {
+  cff1_accelerator_t (hb_face_t *face) : cff1::accelerator_t (face) {}
+};
+
 } /* namespace OT */
 
 #endif /* HB_OT_CFF1_TABLE_HH */

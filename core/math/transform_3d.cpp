@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -71,45 +71,19 @@ void Transform3D::rotate_basis(const Vector3 &p_axis, real_t p_phi) {
 
 Transform3D Transform3D::looking_at(const Vector3 &p_target, const Vector3 &p_up) const {
 	Transform3D t = *this;
-	t.set_look_at(origin, p_target, p_up);
+	t.basis = Basis::looking_at(p_target - origin, p_up);
 	return t;
 }
 
 void Transform3D::set_look_at(const Vector3 &p_eye, const Vector3 &p_target, const Vector3 &p_up) {
-#ifdef MATH_CHECKS
-	ERR_FAIL_COND(p_eye == p_target);
-	ERR_FAIL_COND(p_up.length() == 0);
-#endif
-	// Reference: MESA source code
-	Vector3 v_x, v_y, v_z;
-
-	/* Make rotation matrix */
-
-	/* Z vector */
-	v_z = p_eye - p_target;
-
-	v_z.normalize();
-
-	v_y = p_up;
-
-	v_x = v_y.cross(v_z);
-#ifdef MATH_CHECKS
-	ERR_FAIL_COND(v_x.length() == 0);
-#endif
-
-	/* Recompute Y = Z cross X */
-	v_y = v_z.cross(v_x);
-
-	v_x.normalize();
-	v_y.normalize();
-
-	basis.set(v_x, v_y, v_z);
-
+	basis = Basis::looking_at(p_target - p_eye, p_up);
 	origin = p_eye;
 }
 
-Transform3D Transform3D::interpolate_with(const Transform3D &p_transform, real_t p_c) const {
+Transform3D Transform3D::sphere_interpolate_with(const Transform3D &p_transform, real_t p_c) const {
 	/* not sure if very "efficient" but good enough? */
+
+	Transform3D interp;
 
 	Vector3 src_scale = basis.get_scale();
 	Quaternion src_rot = basis.get_rotation_quaternion();
@@ -119,9 +93,17 @@ Transform3D Transform3D::interpolate_with(const Transform3D &p_transform, real_t
 	Quaternion dst_rot = p_transform.basis.get_rotation_quaternion();
 	Vector3 dst_loc = p_transform.origin;
 
-	Transform3D interp;
 	interp.basis.set_quaternion_scale(src_rot.slerp(dst_rot, p_c).normalized(), src_scale.lerp(dst_scale, p_c));
 	interp.origin = src_loc.lerp(dst_loc, p_c);
+
+	return interp;
+}
+
+Transform3D Transform3D::interpolate_with(const Transform3D &p_transform, real_t p_c) const {
+	Transform3D interp;
+
+	interp.basis = basis.lerp(p_transform.basis, p_c);
+	interp.origin = origin.lerp(p_transform.origin, p_c);
 
 	return interp;
 }
@@ -167,6 +149,16 @@ Transform3D Transform3D::orthonormalized() const {
 	return _copy;
 }
 
+void Transform3D::orthogonalize() {
+	basis.orthogonalize();
+}
+
+Transform3D Transform3D::orthogonalized() const {
+	Transform3D _copy = *this;
+	_copy.orthogonalize();
+	return _copy;
+}
+
 bool Transform3D::is_equal_approx(const Transform3D &p_transform) const {
 	return basis.is_equal_approx(p_transform.basis) && origin.is_equal_approx(p_transform.origin);
 }
@@ -203,9 +195,9 @@ Transform3D Transform3D::operator*(const real_t p_val) const {
 
 Transform3D::operator String() const {
 	return "[X: " + basis.get_axis(0).operator String() +
-		   ", Y: " + basis.get_axis(1).operator String() +
-		   ", Z: " + basis.get_axis(2).operator String() +
-		   ", O: " + origin.operator String() + "]";
+			", Y: " + basis.get_axis(1).operator String() +
+			", Z: " + basis.get_axis(2).operator String() +
+			", O: " + origin.operator String() + "]";
 }
 
 Transform3D::Transform3D(const Basis &p_basis, const Vector3 &p_origin) :

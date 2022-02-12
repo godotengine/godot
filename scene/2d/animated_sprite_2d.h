@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,6 @@
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/sprite_frames.h"
-#include "scene/resources/texture.h"
 
 class AnimatedSprite2D : public Node2D {
 	GDCLASS(AnimatedSprite2D, Node2D);
@@ -56,10 +55,8 @@ class AnimatedSprite2D : public Node2D {
 
 	void _res_changed();
 
-	float _get_frame_duration();
+	double _get_frame_duration();
 	void _reset_timeout();
-	void _set_playing(bool p_playing);
-	bool _is_playing() const;
 	Rect2 _get_rect() const;
 
 protected:
@@ -86,6 +83,8 @@ public:
 
 	void play(const StringName &p_animation = StringName(), const bool p_backwards = false);
 	void stop();
+
+	void set_playing(bool p_playing);
 	bool is_playing() const;
 
 	void set_animation(const StringName &p_animation);
@@ -94,8 +93,8 @@ public:
 	void set_frame(int p_frame);
 	int get_frame() const;
 
-	void set_speed_scale(float p_speed_scale);
-	float get_speed_scale() const;
+	void set_speed_scale(double p_speed_scale);
+	double get_speed_scale() const;
 
 	void set_centered(bool p_center);
 	bool is_centered() const;

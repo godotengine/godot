@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@
 #include "scene/gui/text_edit.h"
 #include "scene/main/timer.h"
 #include "scene/resources/shader.h"
-#include "servers/rendering/shader_language.h"
+#include "servers/rendering/shader_warnings.h"
 
 class ShaderTextEditor : public CodeTextEditor {
 	GDCLASS(ShaderTextEditor, CodeTextEditor);
@@ -55,11 +55,13 @@ class ShaderTextEditor : public CodeTextEditor {
 	RichTextLabel *warnings_panel = nullptr;
 	Ref<Shader> shader;
 	List<ShaderWarning> warnings;
+	Error last_compile_result = Error::OK;
 
 	void _check_shader_mode();
 	void _update_warning_panel();
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 	virtual void _load_theme_settings() override;
 

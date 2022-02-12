@@ -198,6 +198,4 @@
 			If [code]true[/code], the curve will bake up vectors used for orientation. This is used when [member PathFollow3D.rotation_mode] is set to [constant PathFollow3D.ROTATION_ORIENTED]. Changing it forces the cache to be recomputed.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

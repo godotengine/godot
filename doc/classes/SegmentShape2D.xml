@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="a" type="Vector2" setter="set_a" getter="get_a" default="Vector2(0, 0)">
 			The segment's first point position.
@@ -18,6 +16,4 @@
 			The segment's second point position.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

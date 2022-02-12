@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -125,7 +125,7 @@ struct PtrToArg<TypedArray<T>> {
 	_FORCE_INLINE_ static TypedArray<T> convert(const void *p_ptr) {
 		return TypedArray<T>(*reinterpret_cast<const Array *>(p_ptr));
 	}
-
+	typedef Array EncodeT;
 	_FORCE_INLINE_ static void encode(TypedArray<T> p_val, void *p_ptr) {
 		*(Array *)p_ptr = p_val;
 	}
@@ -133,12 +133,12 @@ struct PtrToArg<TypedArray<T>> {
 
 template <class T>
 struct PtrToArg<const TypedArray<T> &> {
-	_FORCE_INLINE_ static TypedArray<T> convert(const void *p_ptr) {
+	typedef Array EncodeT;
+	_FORCE_INLINE_ static TypedArray<T>
+	convert(const void *p_ptr) {
 		return TypedArray<T>(*reinterpret_cast<const Array *>(p_ptr));
 	}
 };
-
-#ifdef DEBUG_METHODS_ENABLED
 
 template <class T>
 struct GetTypeInfo<TypedArray<T>> {
@@ -217,7 +217,5 @@ MAKE_TYPED_ARRAY_INFO(Vector<String>, Variant::PACKED_STRING_ARRAY)
 MAKE_TYPED_ARRAY_INFO(Vector<Vector2>, Variant::PACKED_VECTOR2_ARRAY)
 MAKE_TYPED_ARRAY_INFO(Vector<Vector3>, Variant::PACKED_VECTOR3_ARRAY)
 MAKE_TYPED_ARRAY_INFO(Vector<Color>, Variant::PACKED_COLOR_ARRAY)
-
-#endif
 
 #endif // TYPED_ARRAY_H

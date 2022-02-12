@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -114,7 +114,7 @@ class AnimationNodeStateMachinePlayback : public Resource {
 
 	bool _travel(AnimationNodeStateMachine *p_state_machine, const StringName &p_travel);
 
-	float process(AnimationNodeStateMachine *p_state_machine, float p_time, bool p_seek);
+	double process(AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek);
 
 protected:
 	static void _bind_methods();
@@ -210,7 +210,7 @@ public:
 	void set_graph_offset(const Vector2 &p_offset);
 	Vector2 get_graph_offset() const;
 
-	virtual float process(float p_time, bool p_seek) override;
+	virtual double process(double p_time, bool p_seek) override;
 	virtual String get_caption() const override;
 
 	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name) override;

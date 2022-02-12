@@ -112,6 +112,7 @@ struct hb_ot_shape_plan_t
 #else
   static constexpr bool apply_kern = false;
 #endif
+  bool apply_fallback_kern : 1;
 #ifndef HB_NO_AAT_SHAPE
   bool apply_kerx : 1;
   bool apply_morx : 1;

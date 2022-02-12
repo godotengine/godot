@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -229,12 +229,12 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 										r_err_str = "Unterminated String";
 										return ERR_PARSE_ERROR;
 									}
-									if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))) {
+									if (!is_hex_digit(c)) {
 										r_err_str = "Malformed hex constant in string";
 										return ERR_PARSE_ERROR;
 									}
 									char32_t v;
-									if (c >= '0' && c <= '9') {
+									if (is_digit(c)) {
 										v = c - '0';
 									} else if (c >= 'a' && c <= 'f') {
 										v = c - 'a';
@@ -265,12 +265,12 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 											r_err_str = "Unterminated String";
 											return ERR_PARSE_ERROR;
 										}
-										if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))) {
+										if (!is_hex_digit(c)) {
 											r_err_str = "Malformed hex constant in string";
 											return ERR_PARSE_ERROR;
 										}
 										char32_t v;
-										if (c >= '0' && c <= '9') {
+										if (is_digit(c)) {
 											v = c - '0';
 										} else if (c >= 'a' && c <= 'f') {
 											v = c - 'a';
@@ -326,7 +326,7 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 					break;
 				}
 
-				if (p_str[index] == '-' || (p_str[index] >= '0' && p_str[index] <= '9')) {
+				if (p_str[index] == '-' || is_digit(p_str[index])) {
 					//a number
 					const char32_t *rptr;
 					double number = String::to_float(&p_str[index], &rptr);
@@ -335,10 +335,10 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 					r_token.value = number;
 					return OK;
 
-				} else if ((p_str[index] >= 'A' && p_str[index] <= 'Z') || (p_str[index] >= 'a' && p_str[index] <= 'z')) {
+				} else if (is_ascii_char(p_str[index])) {
 					String id;
 
-					while ((p_str[index] >= 'A' && p_str[index] <= 'Z') || (p_str[index] >= 'a' && p_str[index] <= 'z')) {
+					while (is_ascii_char(p_str[index])) {
 						id += p_str[index];
 						index++;
 					}

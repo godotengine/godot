@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,18 +51,19 @@
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #endif
 
-#if defined(OPENGL_ENABLED)
-#include "context_gl_windows.h"
-#endif
-
 #if defined(VULKAN_ENABLED)
 #include "drivers/vulkan/rendering_device_vulkan.h"
 #include "platform/windows/vulkan_context_win.h"
 #endif
 
+#if defined(GLES3_ENABLED)
+#include "gl_manager_windows.h"
+#endif
+
 #include <fcntl.h>
 #include <io.h>
 #include <stdio.h>
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <windowsx.h>
 
@@ -303,13 +304,13 @@ class DisplayServerWindows : public DisplayServer {
 	int old_x, old_y;
 	Point2i center;
 
-#if defined(OPENGL_ENABLED)
-	ContextGL_Windows *context_gles2;
+#if defined(GLES3_ENABLED)
+	GLManager_Windows *gl_manager = nullptr;
 #endif
 
 #if defined(VULKAN_ENABLED)
-	VulkanContextWindows *context_vulkan;
-	RenderingDeviceVulkan *rendering_device_vulkan;
+	VulkanContextWindows *context_vulkan = nullptr;
+	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
 #endif
 
 	Map<int, Vector2> touch_state;
@@ -325,12 +326,12 @@ class DisplayServerWindows : public DisplayServer {
 
 		Vector<Vector2> mpath;
 
-		bool preserve_window_size = false;
 		bool pre_fs_valid = false;
 		RECT pre_fs_rect;
 		bool maximized = false;
 		bool minimized = false;
 		bool fullscreen = false;
+		bool multiwindow_fs = false;
 		bool borderless = false;
 		bool resizable = true;
 		bool window_focused = false;
@@ -400,19 +401,19 @@ class DisplayServerWindows : public DisplayServer {
 	WNDPROC user_proc = nullptr;
 
 	void _send_window_event(const WindowData &wd, WindowEvent p_event);
-	void _get_window_style(bool p_main_window, bool p_fullscreen, bool p_borderless, bool p_resizable, bool p_maximized, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex);
+	void _get_window_style(bool p_main_window, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_maximized, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex);
 
 	MouseMode mouse_mode;
+	int restore_mouse_trails = 0;
 	bool alt_mem = false;
 	bool gr_mem = false;
 	bool shift_mem = false;
 	bool control_mem = false;
 	bool meta_mem = false;
-	MouseButton last_button_state = MOUSE_BUTTON_NONE;
+	MouseButton last_button_state = MouseButton::NONE;
 	bool use_raw_input = false;
 	bool drop_events = false;
 	bool in_dispatch_input_event = false;
-	bool console_visible = false;
 
 	WNDCLASSEXW wc;
 
@@ -457,10 +458,11 @@ public:
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 
 	virtual void screen_set_orientation(ScreenOrientation p_orientation, int p_screen = SCREEN_OF_MAIN_WINDOW) override;
-	ScreenOrientation screen_get_orientation(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
+	virtual ScreenOrientation screen_get_orientation(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 
 	virtual void screen_set_keep_on(bool p_enable) override; //disable screensaver
 	virtual bool screen_is_kept_on() const override;
@@ -471,10 +473,13 @@ public:
 	virtual void show_window(WindowID p_window) override;
 	virtual void delete_sub_window(WindowID p_window) override;
 
+	virtual int64_t window_get_native_handle(HandleType p_handle_type, WindowID p_window = MAIN_WINDOW_ID) const override;
+
 	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const override;
 
 	virtual void window_attach_instance_id(ObjectID p_instance, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual ObjectID window_get_attached_instance_id(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual void gl_window_make_current(DisplayServer::WindowID p_window_id) override;
 
 	virtual void window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 
@@ -526,9 +531,6 @@ public:
 	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;
 
-	virtual void console_set_visible(bool p_enabled) override;
-	virtual bool is_console_visible() const override;
-
 	virtual void cursor_set_shape(CursorShape p_shape) override;
 	virtual CursorShape cursor_get_shape() const override;
 	virtual void cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) override;
@@ -542,6 +544,7 @@ public:
 	virtual void keyboard_set_current_layout(int p_index) override;
 	virtual String keyboard_get_layout_language(int p_index) const override;
 	virtual String keyboard_get_layout_name(int p_index) const override;
+	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const override;
 
 	virtual int tablet_get_driver_count() const override;
 	virtual String tablet_get_driver_name(int p_driver) const override;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,6 +37,7 @@
 
 #include <stdio.h>
 #include <wchar.h>
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 /*
@@ -132,7 +133,7 @@ Error DirAccessWindows::change_dir(String p_dir) {
 	bool worked = (SetCurrentDirectoryW((LPCWSTR)(p_dir.utf16().get_data())) != 0);
 
 	String base = _get_root_path();
-	if (base != "") {
+	if (!base.is_empty()) {
 		GetCurrentDirectoryW(2048, real_current_dir_name);
 		String new_dir = String::utf16((const char16_t *)real_current_dir_name).replace("\\", "/");
 		if (!new_dir.begins_with(base)) {
@@ -155,7 +156,7 @@ Error DirAccessWindows::make_dir(String p_dir) {
 	GLOBAL_LOCK_FUNCTION
 
 	p_dir = fix_path(p_dir);
-	if (p_dir.is_rel_path()) {
+	if (p_dir.is_relative_path()) {
 		p_dir = current_dir.plus_file(p_dir);
 	}
 
@@ -164,8 +165,11 @@ Error DirAccessWindows::make_dir(String p_dir) {
 	bool success;
 	int err;
 
-	p_dir = "\\\\?\\" + p_dir; //done according to
-	// https://msdn.microsoft.com/en-us/library/windows/desktop/aa363855(v=vs.85).aspx
+	if (!p_dir.is_network_share_path()) {
+		p_dir = "\\\\?\\" + p_dir;
+		// Add "\\?\" to the path to extend max. path length past 248, if it's not a network share UNC path.
+		// See https://msdn.microsoft.com/en-us/library/windows/desktop/aa363855(v=vs.85).aspx
+	}
 
 	success = CreateDirectoryW((LPCWSTR)(p_dir.utf16().get_data()), nullptr);
 	err = GetLastError();
@@ -183,7 +187,7 @@ Error DirAccessWindows::make_dir(String p_dir) {
 
 String DirAccessWindows::get_current_dir(bool p_include_drive) {
 	String base = _get_root_path();
-	if (base != "") {
+	if (!base.is_empty()) {
 		String bd = current_dir.replace("\\", "/").replace_first(base, "");
 		if (bd.begins_with("/")) {
 			return _get_root_string() + bd.substr(1, bd.length());
@@ -195,7 +199,7 @@ String DirAccessWindows::get_current_dir(bool p_include_drive) {
 	if (p_include_drive) {
 		return current_dir;
 	} else {
-		if (_get_root_string() == "") {
+		if (_get_root_string().is_empty()) {
 			int p = current_dir.find(":");
 			if (p != -1) {
 				return current_dir.substr(p + 1);
@@ -227,7 +231,7 @@ bool DirAccessWindows::file_exists(String p_file) {
 bool DirAccessWindows::dir_exists(String p_dir) {
 	GLOBAL_LOCK_FUNCTION
 
-	if (p_dir.is_rel_path()) {
+	if (p_dir.is_relative_path()) {
 		p_dir = get_current_dir().plus_file(p_dir);
 	}
 
@@ -242,13 +246,13 @@ bool DirAccessWindows::dir_exists(String p_dir) {
 }
 
 Error DirAccessWindows::rename(String p_path, String p_new_path) {
-	if (p_path.is_rel_path()) {
+	if (p_path.is_relative_path()) {
 		p_path = get_current_dir().plus_file(p_path);
 	}
 
 	p_path = fix_path(p_path);
 
-	if (p_new_path.is_rel_path()) {
+	if (p_new_path.is_relative_path()) {
 		p_new_path = get_current_dir().plus_file(p_new_path);
 	}
 
@@ -256,6 +260,11 @@ Error DirAccessWindows::rename(String p_path, String p_new_path) {
 
 	// If we're only changing file name case we need to do a little juggling
 	if (p_path.to_lower() == p_new_path.to_lower()) {
+		if (dir_exists(p_path)) {
+			// The path is a dir; just rename
+			return ::_wrename((LPCWSTR)(p_path.utf16().get_data()), (LPCWSTR)(p_new_path.utf16().get_data())) == 0 ? OK : FAILED;
+		}
+		// The path is a file; juggle
 		WCHAR tmpfile[MAX_PATH];
 
 		if (!GetTempFileNameW((LPCWSTR)(fix_path(get_current_dir()).utf16().get_data()), nullptr, 0, tmpfile)) {
@@ -281,7 +290,7 @@ Error DirAccessWindows::rename(String p_path, String p_new_path) {
 }
 
 Error DirAccessWindows::remove(String p_path) {
-	if (p_path.is_rel_path()) {
+	if (p_path.is_relative_path()) {
 		p_path = get_current_dir().plus_file(p_path);
 	}
 
@@ -342,6 +351,10 @@ String DirAccessWindows::get_filesystem_type() const {
 	int unit_end = path.find(":");
 	ERR_FAIL_COND_V(unit_end == -1, String());
 	String unit = path.substr(0, unit_end + 1) + "\\";
+
+	if (path.is_network_share_path()) {
+		return "Network Share";
+	}
 
 	WCHAR szVolumeName[100];
 	WCHAR szFileSystemName[10];

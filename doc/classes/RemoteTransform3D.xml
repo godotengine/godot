@@ -34,6 +34,4 @@
 			If [code]true[/code], global coordinates are used. If [code]false[/code], local coordinates are used.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

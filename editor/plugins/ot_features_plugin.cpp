@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -136,6 +136,7 @@ void OpenTypeFeaturesAdd::update_property() {
 void OpenTypeFeaturesAdd::_features_menu() {
 	Size2 size = get_size();
 	menu->set_position(get_screen_position() + Size2(0, size.height * get_global_transform().get_scale().y));
+	menu->reset_size();
 	menu->popup();
 }
 
@@ -183,12 +184,6 @@ OpenTypeFeaturesAdd::OpenTypeFeaturesAdd() {
 
 bool EditorInspectorPluginOpenTypeFeatures::can_handle(Object *p_object) {
 	return (Object::cast_to<Control>(p_object) != nullptr);
-}
-
-void EditorInspectorPluginOpenTypeFeatures::parse_begin(Object *p_object) {
-}
-
-void EditorInspectorPluginOpenTypeFeatures::parse_category(Object *p_object, const String &p_parse_category) {
 }
 
 bool EditorInspectorPluginOpenTypeFeatures::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {

@@ -37,33 +37,9 @@ layout(set = 1, binding = 0) uniform sampler2D source_auto_exposure;
 
 layout(location = 0) out vec4 frag_color;
 
-//DOF
-#ifdef MODE_DOF_BLUR
-
-layout(set = 1, binding = 0) uniform sampler2D dof_source_depth;
-
-#ifdef DOF_QUALITY_LOW
-const int dof_kernel_size = 5;
-const int dof_kernel_from = 2;
-const float dof_kernel[5] = float[](0.153388, 0.221461, 0.250301, 0.221461, 0.153388);
-#endif
-
-#ifdef DOF_QUALITY_MEDIUM
-const int dof_kernel_size = 11;
-const int dof_kernel_from = 5;
-const float dof_kernel[11] = float[](0.055037, 0.072806, 0.090506, 0.105726, 0.116061, 0.119726, 0.116061, 0.105726, 0.090506, 0.072806, 0.055037);
-
-#endif
-
-#ifdef DOF_QUALITY_HIGH
-const int dof_kernel_size = 21;
-const int dof_kernel_from = 10;
-const float dof_kernel[21] = float[](0.028174, 0.032676, 0.037311, 0.041944, 0.046421, 0.050582, 0.054261, 0.057307, 0.059587, 0.060998, 0.061476, 0.060998, 0.059587, 0.057307, 0.054261, 0.050582, 0.046421, 0.041944, 0.037311, 0.032676, 0.028174);
-#endif
-
-#endif
-
 void main() {
+	// We do not apply our color scale for our mobile renderer here, we'll leave our colors at half brightness and apply scale in the tonemap raster.
+
 #ifdef MODE_MIPMAP
 
 	vec2 pix_size = blur.pixel_size;
@@ -155,74 +131,8 @@ void main() {
 
 #endif
 
-#ifdef MODE_DOF_BLUR
-
-	vec4 color_accum = vec4(0.0);
-
-	float depth = texture(dof_source_depth, uv_interp, 0.0).r;
-	depth = depth * 2.0 - 1.0;
-
-	if (bool(blur.flags & FLAG_USE_ORTHOGONAL_PROJECTION)) {
-		depth = ((depth + (blur.camera_z_far + blur.camera_z_near) / (blur.camera_z_far - blur.camera_z_near)) * (blur.camera_z_far - blur.camera_z_near)) / 2.0;
-	} else {
-		depth = 2.0 * blur.camera_z_near * blur.camera_z_far / (blur.camera_z_far + blur.camera_z_near - depth * (blur.camera_z_far - blur.camera_z_near));
-	}
-
-	// mix near and far blur amount
-	float amount = 1.0;
-	if (bool(blur.flags & FLAG_DOF_FAR)) {
-		amount *= 1.0 - smoothstep(blur.dof_far_begin, blur.dof_far_end, depth);
-	}
-	if (bool(blur.flags & FLAG_DOF_NEAR)) {
-		amount *= smoothstep(blur.dof_near_end, blur.dof_near_begin, depth);
-	}
-	amount = 1.0 - amount;
-
-	if (amount > 0.0) {
-		float k_accum = 0.0;
-
-		for (int i = 0; i < dof_kernel_size; i++) {
-			int int_ofs = i - dof_kernel_from;
-			vec2 tap_uv = uv_interp + blur.dof_dir * float(int_ofs) * amount * blur.dof_radius;
-
-			float tap_k = dof_kernel[i];
-
-			float tap_depth = texture(dof_source_depth, tap_uv, 0.0).r;
-			tap_depth = tap_depth * 2.0 - 1.0;
-
-			if (bool(blur.flags & FLAG_USE_ORTHOGONAL_PROJECTION)) {
-				tap_depth = ((tap_depth + (blur.camera_z_far + blur.camera_z_near) / (blur.camera_z_far - blur.camera_z_near)) * (blur.camera_z_far - blur.camera_z_near)) / 2.0;
-			} else {
-				tap_depth = 2.0 * blur.camera_z_near * blur.camera_z_far / (blur.camera_z_far + blur.camera_z_near - tap_depth * (blur.camera_z_far - blur.camera_z_near));
-			}
-
-			// mix near and far blur amount
-			float tap_amount = 1.0;
-			if (bool(blur.flags & FLAG_DOF_FAR)) {
-				tap_amount *= mix(1.0 - smoothstep(blur.dof_far_begin, blur.dof_far_end, tap_depth), 0.0, int_ofs == 0);
-			}
-			if (bool(blur.flags & FLAG_DOF_NEAR)) {
-				tap_amount *= mix(smoothstep(blur.dof_near_end, blur.dof_near_begin, tap_depth), 0.0, int_ofs == 0);
-			}
-			tap_amount = 1.0 - tap_amount;
-
-			tap_amount *= tap_amount * tap_amount; //prevent undesired glow effect
-
-			vec4 tap_color = texture(source_color, tap_uv, 0.0) * tap_k;
-
-			k_accum += tap_k * tap_amount;
-			color_accum += tap_color * tap_amount;
-		}
-
-		if (k_accum > 0.0) {
-			color_accum /= k_accum;
-		}
-
-		frag_color = color_accum; ///k_accum;
-	} else {
-		// we are in focus, don't waste time
-		frag_color = texture(source_color, uv_interp, 0.0);
-	}
-
+#ifdef MODE_COPY
+	vec4 color = textureLod(source_color, uv_interp, 0.0);
+	frag_color = color;
 #endif
 }

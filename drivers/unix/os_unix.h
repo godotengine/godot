@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -72,8 +72,8 @@ public:
 
 	virtual String get_name() const override;
 
-	virtual Date get_date(bool utc) const override;
-	virtual Time get_time(bool utc) const override;
+	virtual Date get_date(bool p_utc) const override;
+	virtual Time get_time(bool p_utc) const override;
 	virtual TimeZoneInfo get_time_zone_info() const override;
 
 	virtual double get_unix_time() const override;
@@ -81,8 +81,8 @@ public:
 	virtual void delay_usec(uint32_t p_usec) const override;
 	virtual uint64_t get_ticks_usec() const override;
 
-	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr) override;
-	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) override;
+	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
 	virtual Error kill(const ProcessID &p_pid) override;
 	virtual int get_process_id() const override;
 
@@ -102,7 +102,7 @@ public:
 
 class UnixTerminalLogger : public StdLogger {
 public:
-	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type = ERR_ERROR);
+	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, ErrorType p_type = ERR_ERROR) override;
 	virtual ~UnixTerminalLogger();
 };
 

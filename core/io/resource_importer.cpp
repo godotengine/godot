@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -78,8 +78,8 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 			return err;
 		}
 
-		if (assign != String()) {
-			if (!path_found && assign.begins_with("path.") && r_path_and_type.path == String()) {
+		if (!assign.is_empty()) {
+			if (!path_found && assign.begins_with("path.") && r_path_and_type.path.is_empty()) {
 				String feature = assign.get_slicec('.', 1);
 				if (OS::get_singleton()->has_feature(feature)) {
 					r_path_and_type.path = value;
@@ -112,7 +112,7 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 
 	memdelete(f);
 
-	if (r_path_and_type.path == String() || r_path_and_type.type == String()) {
+	if (r_path_and_type.path.is_empty() || r_path_and_type.type.is_empty()) {
 		return ERR_FILE_CORRUPT;
 	}
 	return OK;
@@ -158,7 +158,7 @@ void ResourceFormatImporter::get_recognized_extensions(List<String> *p_extension
 }
 
 void ResourceFormatImporter::get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const {
-	if (p_type == "") {
+	if (p_type.is_empty()) {
 		get_recognized_extensions(p_extensions);
 		return;
 	}
@@ -167,7 +167,7 @@ void ResourceFormatImporter::get_recognized_extensions_for_type(const String &p_
 
 	for (int i = 0; i < importers.size(); i++) {
 		String res_type = importers[i]->get_resource_type();
-		if (res_type == String()) {
+		if (res_type.is_empty()) {
 			continue;
 		}
 
@@ -246,7 +246,7 @@ int ResourceFormatImporter::get_import_order(const String &p_path) const {
 bool ResourceFormatImporter::handles_type(const String &p_type) const {
 	for (int i = 0; i < importers.size(); i++) {
 		String res_type = importers[i]->get_resource_type();
-		if (res_type == String()) {
+		if (res_type.is_empty()) {
 			continue;
 		}
 		if (ClassDB::is_parent_class(res_type, p_type)) {
@@ -300,7 +300,7 @@ void ResourceFormatImporter::get_internal_resource_path_list(const String &p_pat
 			return;
 		}
 
-		if (assign != String()) {
+		if (!assign.is_empty()) {
 			if (assign.begins_with("path.")) {
 				r_paths->push_back(value);
 			} else if (assign == "path") {
@@ -418,7 +418,7 @@ Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_extension(const St
 }
 
 String ResourceFormatImporter::get_import_base_path(const String &p_for_file) const {
-	return ProjectSettings::IMPORTED_FILES_PATH.plus_file(p_for_file.get_file() + "-" + p_for_file.md5_text());
+	return ProjectSettings::get_singleton()->get_imported_files_path().plus_file(p_for_file.get_file() + "-" + p_for_file.md5_text());
 }
 
 bool ResourceFormatImporter::are_import_settings_valid(const String &p_path) const {
@@ -462,4 +462,13 @@ ResourceFormatImporter::ResourceFormatImporter() {
 void ResourceImporter::_bind_methods() {
 	BIND_ENUM_CONSTANT(IMPORT_ORDER_DEFAULT);
 	BIND_ENUM_CONSTANT(IMPORT_ORDER_SCENE);
+}
+
+void ResourceFormatImporter::add_importer(const Ref<ResourceImporter> &p_importer, bool p_first_priority) {
+	ERR_FAIL_COND(p_importer.is_null());
+	if (p_first_priority) {
+		importers.insert(0, p_importer);
+	} else {
+		importers.push_back(p_importer);
+	}
 }

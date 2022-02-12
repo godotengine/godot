@@ -9,8 +9,8 @@
 		[SceneTree] is the default [MainLoop] implementation used by scenes, and is thus in charge of the game loop.
 	</description>
 	<tutorials>
-		<link title="SceneTree">https://docs.godotengine.org/en/latest/getting_started/step_by_step/scene_tree.html</link>
-		<link title="Multiple resolutions">https://docs.godotengine.org/en/latest/tutorials/viewports/multiple_resolutions.html</link>
+		<link title="SceneTree">$DOCS_URL/tutorials/scripting/scene_tree.html</link>
+		<link title="Multiple resolutions">$DOCS_URL/tutorials/rendering/multiple_resolutions.html</link>
 	</tutorials>
 	<methods>
 		<method name="call_group" qualifiers="vararg">
@@ -18,7 +18,8 @@
 			<argument index="0" name="group" type="StringName" />
 			<argument index="1" name="method" type="StringName" />
 			<description>
-				Calls [code]method[/code] on each member of the given group. You can pass arguments to [code]method[/code] by specifying them at the end of the method call.
+				Calls [code]method[/code] on each member of the given group. You can pass arguments to [code]method[/code] by specifying them at the end of the method call. This method is equivalent of calling [method call_group_flags] with [constant GROUP_CALL_DEFAULT] flag.
+				[b]Note:[/b] Due to design limitations, [method call_group] will fail silently if one of the arguments is [code]null[/code].
 				[b]Note:[/b] [method call_group] will always call methods with an one-frame delay, in a way similar to [method Object.call_deferred]. To call methods immediately, use [method call_group_flags] with the [constant GROUP_CALL_REALTIME] flag.
 			</description>
 		</method>
@@ -29,7 +30,11 @@
 			<argument index="2" name="method" type="StringName" />
 			<description>
 				Calls [code]method[/code] on each member of the given group, respecting the given [enum GroupCallFlags]. You can pass arguments to [code]method[/code] by specifying them at the end of the method call.
-				[b]Note:[/b] Group call flags are used to control the method calling behavior. If the [constant GROUP_CALL_REALTIME] flag is present in the [code]flags[/code] argument, methods will be called immediately. If this flag isn't present in [code]flags[/code], methods will be called with a one-frame delay in a way similar to [method call_group].
+				[b]Note:[/b] Due to design limitations, [method call_group_flags] will fail silently if one of the arguments is [code]null[/code].
+				[codeblock]
+				# Call the method immediately and in reverse order.
+				get_tree().call_group_flags(SceneTree.GROUP_CALL_REALTIME | SceneTree.GROUP_CALL_REVERSE, "bases", "destroy")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="change_scene">
@@ -61,7 +66,7 @@
 				[gdscript]
 				func some_function():
 				    print("start")
-				    yield(get_tree().create_timer(1.0), "timeout")
+				    await get_tree().create_timer(1.0).timeout
 				    print("end")
 				[/gdscript]
 				[csharp]
@@ -215,11 +220,11 @@
 		</member>
 		<member name="multiplayer_poll" type="bool" setter="set_multiplayer_poll_enabled" getter="is_multiplayer_poll_enabled" default="true">
 			If [code]true[/code] (default value), enables automatic polling of the [MultiplayerAPI] for this SceneTree during [signal process_frame].
-			If [code]false[/code], you need to manually call [method MultiplayerAPI.poll] to process network packets and deliver RPCs/RSETs. This allows running RPCs/RSETs in a different loop (e.g. physics, thread, specific time step) and for manual [Mutex] protection when accessing the [MultiplayerAPI] from threads.
+			If [code]false[/code], you need to manually call [method MultiplayerAPI.poll] to process network packets and deliver RPCs. This allows running RPCs in a different loop (e.g. physics, thread, specific time step) and for manual [Mutex] protection when accessing the [MultiplayerAPI] from threads.
 		</member>
 		<member name="paused" type="bool" setter="set_pause" getter="is_paused" default="false">
 			If [code]true[/code], the [SceneTree] is paused. Doing so will have the following behavior:
-			- 2D and 3D physics will be stopped.
+			- 2D and 3D physics will be stopped. This includes signals and collision detection.
 			- [method Node._process], [method Node._physics_process] and [method Node._input] will not be called anymore in nodes.
 		</member>
 		<member name="root" type="Window" setter="" getter="get_root">

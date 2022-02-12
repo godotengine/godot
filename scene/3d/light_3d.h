@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,8 +32,6 @@
 #define LIGHT_3D_H
 
 #include "scene/3d/visual_instance_3d.h"
-#include "scene/resources/texture.h"
-#include "servers/rendering_server.h"
 
 class Light3D : public VisualInstance3D {
 	GDCLASS(Light3D, VisualInstance3D);
@@ -65,13 +63,13 @@ public:
 
 	enum BakeMode {
 		BAKE_DISABLED,
+		BAKE_STATIC,
 		BAKE_DYNAMIC,
-		BAKE_STATIC
 	};
 
 private:
 	Color color;
-	float param[PARAM_MAX] = {};
+	real_t param[PARAM_MAX] = {};
 	Color shadow_color;
 	bool shadow = false;
 	bool negative = false;
@@ -88,8 +86,6 @@ private:
 protected:
 	RID light;
 
-	virtual bool _can_gizmo_scale() const;
-
 	static void _bind_methods();
 	void _notification(int p_what);
 	virtual void _validate_property(PropertyInfo &property) const override;
@@ -102,8 +98,8 @@ public:
 	void set_editor_only(bool p_editor_only);
 	bool is_editor_only() const;
 
-	void set_param(Param p_param, float p_value);
-	float get_param(Param p_param) const;
+	void set_param(Param p_param, real_t p_value);
+	real_t get_param(Param p_param) const;
 
 	void set_shadow(bool p_enable);
 	bool has_shadow() const;
@@ -156,6 +152,7 @@ private:
 
 protected:
 	static void _bind_methods();
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 public:
 	void set_shadow_mode(ShadowMode p_mode);

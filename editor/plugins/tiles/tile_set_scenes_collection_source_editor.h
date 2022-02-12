@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,6 +51,7 @@ private:
 	protected:
 		bool _set(const StringName &p_name, const Variant &p_value);
 		bool _get(const StringName &p_name, Variant &r_ret) const;
+		void _get_property_list(List<PropertyInfo> *p_list) const;
 		static void _bind_methods();
 
 	public:
@@ -124,14 +125,15 @@ private:
 	void _update_scenes_list();
 	void _update_action_buttons();
 
+	void _drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
 	void edit(Ref<TileSet> p_tile_set, TileSetScenesCollectionSource *p_tile_set_scenes_collection_source, int p_source_id);
-	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
-	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	TileSetScenesCollectionSourceEditor();
 	~TileSetScenesCollectionSourceEditor();
 };

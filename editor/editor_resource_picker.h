@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 #define EDITOR_RESOURCE_PICKER_H
 
 #include "editor_file_dialog.h"
+#include "quick_open.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/popup_menu.h"
@@ -54,9 +55,11 @@ class EditorResourcePicker : public HBoxContainer {
 	TextureRect *preview_rect;
 	Button *edit_button;
 	EditorFileDialog *file_dialog = nullptr;
+	EditorQuickOpen *quick_open = nullptr;
 
 	enum MenuOption {
 		OBJ_MENU_LOAD,
+		OBJ_MENU_QUICKLOAD,
 		OBJ_MENU_EDIT,
 		OBJ_MENU_CLEAR,
 		OBJ_MENU_MAKE_UNIQUE,
@@ -75,6 +78,7 @@ class EditorResourcePicker : public HBoxContainer {
 	void _update_resource_preview(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, ObjectID p_obj);
 
 	void _resource_selected();
+	void _file_quick_selected();
 	void _file_selected(const String &p_path);
 
 	void _update_menu();
@@ -97,6 +101,9 @@ class EditorResourcePicker : public HBoxContainer {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+
+	GDVIRTUAL1(_set_create_options, Object *)
+	GDVIRTUAL1R(bool, _handle_menu_selected, int)
 
 public:
 	static void clear_caches();
@@ -142,6 +149,27 @@ public:
 	Node *get_script_owner() const;
 
 	EditorScriptPicker();
+};
+
+class EditorShaderPicker : public EditorResourcePicker {
+	GDCLASS(EditorShaderPicker, EditorResourcePicker);
+
+	enum ExtraMenuOption {
+		OBJ_MENU_NEW_SHADER = 10,
+	};
+
+	ShaderMaterial *edited_material = nullptr;
+	int preferred_mode = -1;
+
+public:
+	virtual void set_create_options(Object *p_menu_node) override;
+	virtual bool handle_menu_selected(int p_which) override;
+
+	void set_edited_material(ShaderMaterial *p_material);
+	ShaderMaterial *get_edited_material() const;
+	void set_preferred_mode(int p_preferred_mode);
+
+	EditorShaderPicker();
 };
 
 #endif // EDITOR_RESOURCE_PICKER_H

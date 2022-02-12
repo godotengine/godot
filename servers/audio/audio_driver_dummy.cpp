@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,7 +46,7 @@ Error AudioDriverDummy::init() {
 	int latency = GLOBAL_GET("audio/driver/output_latency");
 	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
 
-	samples_in = memnew_arr(int32_t, buffer_frames * channels);
+	samples_in = memnew_arr(int32_t, (size_t)buffer_frames * channels);
 
 	thread.start(AudioDriverDummy::thread_func, this);
 

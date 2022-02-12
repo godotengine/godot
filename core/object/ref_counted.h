@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -274,8 +274,6 @@ struct PtrToArg<const Ref<T> &> {
 	}
 };
 
-#ifdef DEBUG_METHODS_ENABLED
-
 template <class T>
 struct GetTypeInfo<Ref<T>> {
 	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
@@ -295,7 +293,5 @@ struct GetTypeInfo<const Ref<T> &> {
 		return PropertyInfo(Variant::OBJECT, String(), PROPERTY_HINT_RESOURCE_TYPE, T::get_class_static());
 	}
 };
-
-#endif // DEBUG_METHODS_ENABLED
 
 #endif // REF_COUNTED_H

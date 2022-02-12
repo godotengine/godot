@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,24 +29,35 @@
 /*************************************************************************/
 
 #include "gltf_mesh.h"
-#include "editor/import/scene_importer_mesh.h"
+#include "scene/resources/importer_mesh.h"
 
 void GLTFMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_mesh"), &GLTFMesh::get_mesh);
 	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &GLTFMesh::set_mesh);
 	ClassDB::bind_method(D_METHOD("get_blend_weights"), &GLTFMesh::get_blend_weights);
 	ClassDB::bind_method(D_METHOD("set_blend_weights", "blend_weights"), &GLTFMesh::set_blend_weights);
+	ClassDB::bind_method(D_METHOD("get_instance_materials"), &GLTFMesh::get_instance_materials);
+	ClassDB::bind_method(D_METHOD("set_instance_materials", "instance_materials"), &GLTFMesh::set_instance_materials);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh"), "set_mesh", "get_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "blend_weights"), "set_blend_weights", "get_blend_weights"); // Vector<float>
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "instance_materials"), "set_instance_materials", "get_instance_materials");
 }
 
-Ref<EditorSceneImporterMesh> GLTFMesh::get_mesh() {
+Ref<ImporterMesh> GLTFMesh::get_mesh() {
 	return mesh;
 }
 
-void GLTFMesh::set_mesh(Ref<EditorSceneImporterMesh> p_mesh) {
+void GLTFMesh::set_mesh(Ref<ImporterMesh> p_mesh) {
 	mesh = p_mesh;
+}
+
+Array GLTFMesh::get_instance_materials() {
+	return instance_materials;
+}
+
+void GLTFMesh::set_instance_materials(Array p_instance_materials) {
+	instance_materials = p_instance_materials;
 }
 
 Vector<float> GLTFMesh::get_blend_weights() {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,8 +47,7 @@ private:
 
 	bool use_apk_expansion;
 
-#if defined(OPENGL_ENABLED)
-	bool use_16bits_fbo;
+#if defined(GLES3_ENABLED)
 	const char *gl_extensions;
 #endif
 
@@ -57,6 +56,7 @@ private:
 #endif
 
 	mutable String data_dir_cache;
+	mutable String cache_dir_cache;
 
 	AudioDriverOpenSL audio_driver_android;
 
@@ -95,7 +95,6 @@ public:
 
 	void main_loop_begin();
 	bool main_loop_iterate();
-	void main_loop_request_go_back();
 	void main_loop_end();
 	void main_loop_focusout();
 	void main_loop_focusin();
@@ -103,7 +102,6 @@ public:
 	void set_display_size(const Size2i &p_size);
 	Size2i get_display_size() const;
 
-	void set_context_is_16_bits(bool p_is_16);
 	void set_opengl_extensions(const char *p_gl_extensions);
 
 	void set_native_window(ANativeWindow *p_native_window);
@@ -111,14 +109,15 @@ public:
 
 	virtual Error shell_open(String p_uri) override;
 	virtual String get_user_data_dir() const override;
-	virtual String get_external_data_dir() const override;
+	virtual String get_data_path() const override;
+	virtual String get_cache_path() const override;
 	virtual String get_resource_dir() const override;
 	virtual String get_locale() const override;
 	virtual String get_model_name() const override;
 
 	virtual String get_unique_id() const override;
 
-	virtual String get_system_dir(SystemDir p_dir) const override;
+	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;
 
 	void vibrate_handheld(int p_duration_ms) override;
 

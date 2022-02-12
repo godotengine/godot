@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,11 +31,7 @@
 #include "material.h"
 
 #include "core/config/engine.h"
-
-#ifdef TOOLS_ENABLED
-#include "editor/editor_settings.h"
-#endif
-
+#include "core/version.h"
 #include "scene/main/scene_tree.h"
 #include "scene/scene_string_names.h"
 
@@ -77,6 +73,9 @@ RID Material::get_rid() const {
 
 void Material::_validate_property(PropertyInfo &property) const {
 	if (!_can_do_next_pass() && property.name == "next_pass") {
+		property.usage = PROPERTY_USAGE_NONE;
+	}
+	if (!_can_use_render_priority() && property.name == "render_priority") {
 		property.usage = PROPERTY_USAGE_NONE;
 	}
 }
@@ -267,19 +266,13 @@ void ShaderMaterial::_bind_methods() {
 }
 
 void ShaderMaterial::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-#ifdef TOOLS_ENABLED
-	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", 0) ? "'" : "\"";
-#else
-	const String quote_style = "\"";
-#endif
-
 	String f = p_function.operator String();
 	if ((f == "get_shader_param" || f == "set_shader_param") && p_idx == 0) {
 		if (shader.is_valid()) {
 			List<PropertyInfo> pl;
 			shader->get_param_list(&pl);
 			for (const PropertyInfo &E : pl) {
-				r_options->push_back(quote_style + E.name.replace_first("shader_param/", "") + quote_style);
+				r_options->push_back(E.name.replace_first("shader_param/", "").quote());
 			}
 		}
 	}
@@ -287,6 +280,10 @@ void ShaderMaterial::get_argument_options(const StringName &p_function, int p_id
 }
 
 bool ShaderMaterial::_can_do_next_pass() const {
+	return shader.is_valid() && shader->get_mode() == Shader::MODE_SPATIAL;
+}
+
+bool ShaderMaterial::_can_use_render_priority() const {
 	return shader.is_valid() && shader->get_mode() == Shader::MODE_SPATIAL;
 }
 
@@ -452,10 +449,10 @@ void BaseMaterial3D::_update_shader() {
 			texfilter_str = "filter_linear_mipmap";
 			break;
 		case TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC:
-			texfilter_str = "filter_nearest_mipmap_aniso";
+			texfilter_str = "filter_nearest_mipmap_anisotropic";
 			break;
 		case TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC:
-			texfilter_str = "filter_linear_mipmap_aniso";
+			texfilter_str = "filter_linear_mipmap_anisotropic";
 			break;
 		case TEXTURE_FILTER_MAX:
 			break; // Internal value, skip.
@@ -469,7 +466,12 @@ void BaseMaterial3D::_update_shader() {
 
 	//must create a shader!
 
-	String code = "shader_type spatial;\nrender_mode ";
+	// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
+	String code = vformat(
+			"// NOTE: Shader automatically converted from " VERSION_NAME " " VERSION_FULL_CONFIG "'s %s.\n\n",
+			orm ? "ORMMaterial3D" : "StandardMaterial3D");
+
+	code += "shader_type spatial;\nrender_mode ";
 	switch (blend_mode) {
 		case BLEND_MODE_MIX:
 			code += "blend_mix";
@@ -693,7 +695,7 @@ void BaseMaterial3D::_update_shader() {
 	}
 	if (features[FEATURE_ANISOTROPY]) {
 		code += "uniform float anisotropy_ratio : hint_range(0,256);\n";
-		code += "uniform sampler2D texture_flowmap : hint_aniso," + texfilter_str + ";\n";
+		code += "uniform sampler2D texture_flowmap : hint_anisotropy," + texfilter_str + ";\n";
 	}
 	if (features[FEATURE_AMBIENT_OCCLUSION]) {
 		code += "uniform sampler2D texture_ambient_occlusion : hint_white, " + texfilter_str + ";\n";
@@ -784,12 +786,10 @@ void BaseMaterial3D::_update_shader() {
 			}
 		} break;
 		case BILLBOARD_FIXED_Y: {
-			code += "	MODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0],WORLD_MATRIX[1],vec4(normalize(cross(CAMERA_MATRIX[0].xyz,WORLD_MATRIX[1].xyz)), 0.0),WORLD_MATRIX[3]);\n";
+			code += "	MODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat4(vec4(normalize(cross(vec3(0.0, 1.0, 0.0), CAMERA_MATRIX[2].xyz)),0.0),vec4(0.0, 1.0, 0.0, 0.0),vec4(normalize(cross(CAMERA_MATRIX[0].xyz, vec3(0.0, 1.0, 0.0))),0.0),WORLD_MATRIX[3]);\n";
 
 			if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
-				code += "	MODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(WORLD_MATRIX[0].xyz), 0.0, 0.0, 0.0),vec4(0.0, 1.0, 0.0, 0.0),vec4(0.0, 0.0, length(WORLD_MATRIX[2].xyz), 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
-			} else {
-				code += "	MODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(1.0, 0.0, 0.0, 0.0),vec4(0.0, 1.0/length(WORLD_MATRIX[1].xyz), 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0),vec4(0.0, 0.0, 0.0 ,1.0));\n";
+				code += "	MODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(WORLD_MATRIX[0].xyz), 0.0, 0.0, 0.0),vec4(0.0, length(WORLD_MATRIX[1].xyz), 0.0, 0.0),vec4(0.0, 0.0, length(WORLD_MATRIX[2].xyz), 0.0),vec4(0.0, 0.0, 0.0, 1.0));\n";
 			}
 		} break;
 		case BILLBOARD_PARTICLES: {
@@ -811,7 +811,7 @@ void BaseMaterial3D::_update_shader() {
 			code += "		particle_frame = mod(particle_frame, particle_total_frames);\n";
 			code += "	}";
 			code += "	UV /= vec2(h_frames, v_frames);\n";
-			code += "	UV += vec2(mod(particle_frame, h_frames) / h_frames, floor(particle_frame / h_frames) / v_frames);\n";
+			code += "	UV += vec2(mod(particle_frame, h_frames) / h_frames, floor((particle_frame + 0.5) / h_frames) / v_frames);\n";
 		} break;
 		case BILLBOARD_MAX:
 			break; // Internal value, skip.
@@ -957,7 +957,9 @@ void BaseMaterial3D::_update_shader() {
 			} else {
 				code += "		float depth = 1.0 - texture(texture_heightmap, base_uv).r;\n";
 			}
-			code += "		vec2 ofs = base_uv - view_dir.xy / view_dir.z * (depth * heightmap_scale);\n";
+			// Use offset limiting to improve the appearance of non-deep parallax.
+			// This reduces the impression of depth, but avoids visible warping in the distance.
+			code += "		vec2 ofs = base_uv - view_dir.xy * depth * heightmap_scale;\n";
 		}
 
 		code += "		base_uv=ofs;\n";
@@ -1084,7 +1086,7 @@ void BaseMaterial3D::_update_shader() {
 		code += "	ALPHA = 1.0;\n";
 
 	} else if (transparency != TRANSPARENCY_DISABLED || flags[FLAG_USE_SHADOW_TO_OPACITY] || (distance_fade == DISTANCE_FADE_PIXEL_ALPHA) || proximity_fade_enabled) {
-		code += "	ALPHA = albedo.a * albedo_tex.a;\n";
+		code += "	ALPHA *= albedo.a * albedo_tex.a;\n";
 	}
 	if (transparency == TRANSPARENCY_ALPHA_HASH) {
 		code += "	ALPHA_HASH_SCALE = alpha_hash_scale;\n";
@@ -1098,7 +1100,7 @@ void BaseMaterial3D::_update_shader() {
 
 	if (proximity_fade_enabled) {
 		code += "	float depth_tex = textureLod(DEPTH_TEXTURE,SCREEN_UV,0.0).r;\n";
-		code += "	vec4 world_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV*2.0-1.0,depth_tex*2.0-1.0,1.0);\n";
+		code += "	vec4 world_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV*2.0-1.0,depth_tex,1.0);\n";
 		code += "	world_pos.xyz/=world_pos.w;\n";
 		code += "	ALPHA*=clamp(1.0-smoothstep(world_pos.z+proximity_fade_distance,world_pos.z,VERTEX.z),0.0,1.0);\n";
 	}
@@ -1295,7 +1297,7 @@ void BaseMaterial3D::flush_changes() {
 void BaseMaterial3D::_queue_shader_change() {
 	MutexLock lock(material_mutex);
 
-	if (!element.in_list()) {
+	if (is_initialized && !element.in_list()) {
 		dirty_materials->add(&element);
 	}
 }
@@ -1656,13 +1658,16 @@ bool BaseMaterial3D::get_feature(Feature p_feature) const {
 
 void BaseMaterial3D::set_texture(TextureParam p_param, const Ref<Texture2D> &p_texture) {
 	ERR_FAIL_INDEX(p_param, TEXTURE_MAX);
+
 	textures[p_param] = p_texture;
 	RID rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
 	RS::get_singleton()->material_set_param(_get_material(), shader_names->texture_names[p_param], rid);
+
 	if (p_texture.is_valid() && p_param == TEXTURE_ALBEDO) {
 		RS::get_singleton()->material_set_param(_get_material(), shader_names->albedo_texture_size,
 				Vector2i(p_texture->get_width(), p_texture->get_height()));
 	}
+
 	notify_property_list_changed();
 	_queue_shader_change();
 }
@@ -1693,7 +1698,7 @@ BaseMaterial3D::TextureFilter BaseMaterial3D::get_texture_filter() const {
 
 void BaseMaterial3D::_validate_feature(const String &text, Feature feature, PropertyInfo &property) const {
 	if (property.name.begins_with(text) && property.name != text + "_enabled" && !features[feature]) {
-		property.usage = PROPERTY_USAGE_NOEDITOR;
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
 
@@ -1727,23 +1732,23 @@ void BaseMaterial3D::_validate_property(PropertyInfo &property) const {
 	}
 
 	if (property.name == "billboard_keep_scale" && billboard_mode == BILLBOARD_DISABLED) {
-		property.usage = PROPERTY_USAGE_NOEDITOR;
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
 	if (property.name == "grow_amount" && !grow_enabled) {
-		property.usage = PROPERTY_USAGE_NOEDITOR;
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
 	if (property.name == "point_size" && !flags[FLAG_USE_POINT_SIZE]) {
-		property.usage = PROPERTY_USAGE_NOEDITOR;
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
 	if (property.name == "proximity_fade_distance" && !proximity_fade_enabled) {
-		property.usage = PROPERTY_USAGE_NOEDITOR;
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
 	if ((property.name == "distance_fade_max_distance" || property.name == "distance_fade_min_distance") && distance_fade == DISTANCE_FADE_DISABLED) {
-		property.usage = PROPERTY_USAGE_NOEDITOR;
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
 	// you can only enable anti-aliasing (in materials) on alpha scissor and alpha hash
@@ -2552,7 +2557,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "uv2_world_triplanar"), "set_flag", "get_flag", FLAG_UV2_USE_WORLD_TRIPLANAR);
 
 	ADD_GROUP("Sampling", "texture_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Aniso.,Linear Mipmap Aniso."), "set_texture_filter", "get_texture_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "texture_repeat"), "set_flag", "get_flag", FLAG_USE_TEXTURE_REPEAT);
 
 	ADD_GROUP("Shadows", "");
@@ -2771,6 +2776,7 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 
 	flags[FLAG_USE_TEXTURE_REPEAT] = true;
 
+	is_initialized = true;
 	_queue_shader_change();
 }
 
@@ -2881,7 +2887,7 @@ bool StandardMaterial3D::_set(const StringName &p_name, const Variant &p_value) 
 			idx++;
 		}
 
-		print_line("remapped parameter not found: " + String(p_name));
+		WARN_PRINT("Godot 3.x SpatialMaterial remapped parameter not found: " + String(p_name));
 		return true;
 	}
 

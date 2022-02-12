@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,7 @@
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/templates/hashfuncs.h"
+#include "core/templates/search_array.h"
 #include "core/templates/vector.h"
 #include "core/variant/callable.h"
 #include "core/variant/variant.h"
@@ -96,11 +97,38 @@ void Array::clear() {
 }
 
 bool Array::operator==(const Array &p_array) const {
-	return _p == p_array._p;
+	return recursive_equal(p_array, 0);
 }
 
 bool Array::operator!=(const Array &p_array) const {
-	return !operator==(p_array);
+	return !recursive_equal(p_array, 0);
+}
+
+bool Array::recursive_equal(const Array &p_array, int recursion_count) const {
+	// Cheap checks
+	if (_p == p_array._p) {
+		return true;
+	}
+	const Vector<Variant> &a1 = _p->array;
+	const Vector<Variant> &a2 = p_array._p->array;
+	const int size = a1.size();
+	if (size != a2.size()) {
+		return false;
+	}
+
+	// Heavy O(n) check
+	if (recursion_count > MAX_RECURSION) {
+		ERR_PRINT("Max recursion reached");
+		return true;
+	}
+	recursion_count++;
+	for (int i = 0; i < size; i++) {
+		if (!a1[i].hash_compare(a2[i], recursion_count)) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 bool Array::operator<(const Array &p_array) const {
@@ -131,10 +159,20 @@ bool Array::operator>=(const Array &p_array) const {
 }
 
 uint32_t Array::hash() const {
-	uint32_t h = hash_djb2_one_32(0);
+	return recursive_hash(0);
+}
 
+uint32_t Array::recursive_hash(int recursion_count) const {
+	if (recursion_count > MAX_RECURSION) {
+		ERR_PRINT("Max recursion reached");
+		return 0;
+	}
+
+	uint32_t h = hash_djb2_one_32(Variant::ARRAY);
+
+	recursion_count++;
 	for (int i = 0; i < _p->array.size(); i++) {
-		h = hash_djb2_one_32(_p->array[i].hash(), h);
+		h = hash_djb2_one_32(_p->array[i].recursive_hash(recursion_count), h);
 	}
 	return h;
 }
@@ -203,9 +241,9 @@ Error Array::resize(int p_new_size) {
 	return _p->array.resize(p_new_size);
 }
 
-void Array::insert(int p_pos, const Variant &p_value) {
-	ERR_FAIL_COND(!_p->typed.validate(p_value, "insert"));
-	_p->array.insert(p_pos, p_value);
+Error Array::insert(int p_pos, const Variant &p_value) {
+	ERR_FAIL_COND_V(!_p->typed.validate(p_value, "insert"), ERR_INVALID_PARAMETER);
+	return _p->array.insert(p_pos, p_value);
 }
 
 void Array::fill(const Variant &p_value) {
@@ -284,8 +322,8 @@ bool Array::has(const Variant &p_value) const {
 	return _p->array.find(p_value, 0) != -1;
 }
 
-void Array::remove(int p_pos) {
-	_p->array.remove(p_pos);
+void Array::remove_at(int p_pos) {
+	_p->array.remove_at(p_pos);
 }
 
 void Array::set(int p_idx, const Variant &p_value) {
@@ -299,66 +337,62 @@ const Variant &Array::get(int p_idx) const {
 }
 
 Array Array::duplicate(bool p_deep) const {
+	return recursive_duplicate(p_deep, 0);
+}
+
+Array Array::recursive_duplicate(bool p_deep, int recursion_count) const {
 	Array new_arr;
+
+	if (recursion_count > MAX_RECURSION) {
+		ERR_PRINT("Max recursion reached");
+		return new_arr;
+	}
+
 	int element_count = size();
 	new_arr.resize(element_count);
 	new_arr._p->typed = _p->typed;
-	for (int i = 0; i < element_count; i++) {
-		new_arr[i] = p_deep ? get(i).duplicate(p_deep) : get(i);
+	if (p_deep) {
+		recursion_count++;
+		for (int i = 0; i < element_count; i++) {
+			new_arr[i] = get(i).recursive_duplicate(true, recursion_count);
+		}
+	} else {
+		for (int i = 0; i < element_count; i++) {
+			new_arr[i] = get(i);
+		}
 	}
 
 	return new_arr;
 }
 
-int Array::_clamp_slice_index(int p_index) const {
-	int arr_size = size();
-	int fixed_index = CLAMP(p_index, -arr_size, arr_size - 1);
-	if (fixed_index < 0) {
-		fixed_index = arr_size + fixed_index;
+Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const {
+	Array result;
+
+	ERR_FAIL_COND_V_MSG(p_step == 0, result, "Slice step cannot be zero.");
+
+	const int s = size();
+
+	int begin = CLAMP(p_begin, -s, s);
+	if (begin < 0) {
+		begin += s;
 	}
-	return fixed_index;
-}
-
-Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const { // like python, but inclusive on upper bound
-
-	Array new_arr;
-
-	ERR_FAIL_COND_V_MSG(p_step == 0, new_arr, "Array slice step size cannot be zero.");
-
-	if (is_empty()) { // Don't try to slice empty arrays.
-		return new_arr;
-	}
-	if (p_step > 0) {
-		if (p_begin >= size() || p_end < -size()) {
-			return new_arr;
-		}
-	} else { // p_step < 0
-		if (p_begin < -size() || p_end >= size()) {
-			return new_arr;
-		}
+	int end = CLAMP(p_end, -s, s);
+	if (end < 0) {
+		end += s;
 	}
 
-	int begin = _clamp_slice_index(p_begin);
-	int end = _clamp_slice_index(p_end);
+	ERR_FAIL_COND_V_MSG(p_step > 0 && begin > end, result, "Slice is positive, but bounds is decreasing.");
+	ERR_FAIL_COND_V_MSG(p_step < 0 && begin < end, result, "Slice is negative, but bounds is increasing.");
 
-	int new_arr_size = MAX(((end - begin + p_step) / p_step), 0);
-	new_arr.resize(new_arr_size);
+	int result_size = (end - begin) / p_step;
+	result.resize(result_size);
 
-	if (p_step > 0) {
-		int dest_idx = 0;
-		for (int idx = begin; idx <= end; idx += p_step) {
-			ERR_FAIL_COND_V_MSG(dest_idx < 0 || dest_idx >= new_arr_size, Array(), "Bug in Array slice()");
-			new_arr[dest_idx++] = p_deep ? get(idx).duplicate(p_deep) : get(idx);
-		}
-	} else { // p_step < 0
-		int dest_idx = 0;
-		for (int idx = begin; idx >= end; idx += p_step) {
-			ERR_FAIL_COND_V_MSG(dest_idx < 0 || dest_idx >= new_arr_size, Array(), "Bug in Array slice()");
-			new_arr[dest_idx++] = p_deep ? get(idx).duplicate(p_deep) : get(idx);
-		}
+	for (int src_idx = begin, dest_idx = 0; dest_idx < result_size; ++dest_idx) {
+		result[dest_idx] = p_deep ? get(src_idx).duplicate(true) : get(src_idx);
+		src_idx += p_step;
 	}
 
-	return new_arr;
+	return result;
 }
 
 Array Array::filter(const Callable &p_callable) const {
@@ -484,44 +518,19 @@ void Array::shuffle() {
 	}
 }
 
-template <typename Less>
-_FORCE_INLINE_ int bisect(const Vector<Variant> &p_array, const Variant &p_value, bool p_before, const Less &p_less) {
-	int lo = 0;
-	int hi = p_array.size();
-	if (p_before) {
-		while (lo < hi) {
-			const int mid = (lo + hi) / 2;
-			if (p_less(p_array.get(mid), p_value)) {
-				lo = mid + 1;
-			} else {
-				hi = mid;
-			}
-		}
-	} else {
-		while (lo < hi) {
-			const int mid = (lo + hi) / 2;
-			if (p_less(p_value, p_array.get(mid))) {
-				hi = mid;
-			} else {
-				lo = mid + 1;
-			}
-		}
-	}
-	return lo;
-}
-
 int Array::bsearch(const Variant &p_value, bool p_before) {
 	ERR_FAIL_COND_V(!_p->typed.validate(p_value, "binary search"), -1);
-	return bisect(_p->array, p_value, p_before, _ArrayVariantSort());
+	SearchArray<Variant, _ArrayVariantSort> avs;
+	return avs.bisect(_p->array.ptrw(), _p->array.size(), p_value, p_before);
 }
 
 int Array::bsearch_custom(const Variant &p_value, Callable p_callable, bool p_before) {
 	ERR_FAIL_COND_V(!_p->typed.validate(p_value, "custom binary search"), -1);
 
-	_ArrayVariantSortCustom less;
-	less.func = p_callable;
+	SearchArray<Variant, _ArrayVariantSortCustom> avs;
+	avs.compare.func = p_callable;
 
-	return bisect(_p->array, p_value, p_before, less);
+	return avs.bisect(_p->array.ptrw(), _p->array.size(), p_value, p_before);
 }
 
 void Array::reverse() {
@@ -535,8 +544,8 @@ void Array::push_front(const Variant &p_value) {
 
 Variant Array::pop_back() {
 	if (!_p->array.is_empty()) {
-		int n = _p->array.size() - 1;
-		Variant ret = _p->array.get(n);
+		const int n = _p->array.size() - 1;
+		const Variant ret = _p->array.get(n);
 		_p->array.resize(n);
 		return ret;
 	}
@@ -545,11 +554,36 @@ Variant Array::pop_back() {
 
 Variant Array::pop_front() {
 	if (!_p->array.is_empty()) {
-		Variant ret = _p->array.get(0);
-		_p->array.remove(0);
+		const Variant ret = _p->array.get(0);
+		_p->array.remove_at(0);
 		return ret;
 	}
 	return Variant();
+}
+
+Variant Array::pop_at(int p_pos) {
+	if (_p->array.is_empty()) {
+		// Return `null` without printing an error to mimic `pop_back()` and `pop_front()` behavior.
+		return Variant();
+	}
+
+	if (p_pos < 0) {
+		// Relative offset from the end
+		p_pos = _p->array.size() + p_pos;
+	}
+
+	ERR_FAIL_INDEX_V_MSG(
+			p_pos,
+			_p->array.size(),
+			Variant(),
+			vformat(
+					"The calculated index %s is out of bounds (the array has %s elements). Leaving the array untouched and returning `null`.",
+					p_pos,
+					_p->array.size()));
+
+	const Variant ret = _p->array.get(p_pos);
+	_p->array.remove_at(p_pos);
+	return ret;
 }
 
 Variant Array::min() const {
@@ -597,7 +631,7 @@ Variant Array::max() const {
 }
 
 const void *Array::id() const {
-	return _p->array.ptr();
+	return _p;
 }
 
 Array::Array(const Array &p_from, uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {

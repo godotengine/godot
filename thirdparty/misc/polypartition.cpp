@@ -23,6 +23,8 @@
 
 #include "polypartition.h"
 
+#include <math.h>
+#include <string.h>
 #include <algorithm>
 
 TPPLPoly::TPPLPoly() {

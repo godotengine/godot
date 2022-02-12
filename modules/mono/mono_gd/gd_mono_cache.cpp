@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -140,9 +140,8 @@ void CachedData::clear_godot_api_cache() {
 	field_ExportAttribute_hintString = nullptr;
 	class_SignalAttribute = nullptr;
 	class_ToolAttribute = nullptr;
-	class_RemoteAttribute = nullptr;
-	class_MasterAttribute = nullptr;
-	class_PuppetAttribute = nullptr;
+	class_AnyPeerAttribute = nullptr;
+	class_AuthorityAttribute = nullptr;
 	class_GodotMethodAttribute = nullptr;
 	field_GodotMethodAttribute_methodName = nullptr;
 	class_ScriptPathAttribute = nullptr;
@@ -177,6 +176,8 @@ void CachedData::clear_godot_api_cache() {
 	methodthunk_MarshalUtils_TypeIsGenericIEnumerable.nullify();
 	methodthunk_MarshalUtils_TypeIsGenericICollection.nullify();
 	methodthunk_MarshalUtils_TypeIsGenericIDictionary.nullify();
+
+	methodthunk_MarshalUtils_GetGenericTypeDefinition.nullify();
 
 	methodthunk_MarshalUtils_ArrayGetElementType.nullify();
 	methodthunk_MarshalUtils_DictionaryGetKeyValueTypes.nullify();
@@ -266,9 +267,8 @@ void update_godot_api_cache() {
 	CACHE_FIELD_AND_CHECK(ExportAttribute, hintString, CACHED_CLASS(ExportAttribute)->get_field("hintString"));
 	CACHE_CLASS_AND_CHECK(SignalAttribute, GODOT_API_CLASS(SignalAttribute));
 	CACHE_CLASS_AND_CHECK(ToolAttribute, GODOT_API_CLASS(ToolAttribute));
-	CACHE_CLASS_AND_CHECK(RemoteAttribute, GODOT_API_CLASS(RemoteAttribute));
-	CACHE_CLASS_AND_CHECK(MasterAttribute, GODOT_API_CLASS(MasterAttribute));
-	CACHE_CLASS_AND_CHECK(PuppetAttribute, GODOT_API_CLASS(PuppetAttribute));
+	CACHE_CLASS_AND_CHECK(AnyPeerAttribute, GODOT_API_CLASS(AnyPeerAttribute));
+	CACHE_CLASS_AND_CHECK(AuthorityAttribute, GODOT_API_CLASS(AuthorityAttribute));
 	CACHE_CLASS_AND_CHECK(GodotMethodAttribute, GODOT_API_CLASS(GodotMethodAttribute));
 	CACHE_FIELD_AND_CHECK(GodotMethodAttribute, methodName, CACHED_CLASS(GodotMethodAttribute)->get_field("methodName"));
 	CACHE_CLASS_AND_CHECK(ScriptPathAttribute, GODOT_API_CLASS(ScriptPathAttribute));
@@ -300,6 +300,8 @@ void update_godot_api_cache() {
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericIEnumerable, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericIEnumerable", 1));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericICollection, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericICollection", 1));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericIDictionary, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericIDictionary", 1));
+
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, GetGenericTypeDefinition, GODOT_API_CLASS(MarshalUtils)->get_method("GetGenericTypeDefinition", 2));
 
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, ArrayGetElementType, GODOT_API_CLASS(MarshalUtils)->get_method("ArrayGetElementType", 2));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, DictionaryGetKeyValueTypes, GODOT_API_CLASS(MarshalUtils)->get_method("DictionaryGetKeyValueTypes", 3));

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -129,7 +129,7 @@ void WebSocketClient::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "verify_ssl", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_verify_ssl_enabled", "is_verify_ssl_enabled");
 
 	ClassDB::bind_method(D_METHOD("get_trusted_ssl_certificate"), &WebSocketClient::get_trusted_ssl_certificate);
-	ClassDB::bind_method(D_METHOD("set_trusted_ssl_certificate"), &WebSocketClient::set_trusted_ssl_certificate);
+	ClassDB::bind_method(D_METHOD("set_trusted_ssl_certificate", "cert"), &WebSocketClient::set_trusted_ssl_certificate);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "trusted_ssl_certificate", PROPERTY_HINT_RESOURCE_TYPE, "X509Certificate", PROPERTY_USAGE_NONE), "set_trusted_ssl_certificate", "get_trusted_ssl_certificate");
 

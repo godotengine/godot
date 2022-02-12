@@ -18,40 +18,42 @@ def can_build():
     # Check the minimal dependencies
     x11_error = os.system("pkg-config --version > /dev/null")
     if x11_error:
+        print("Error: pkg-config not found. Aborting.")
         return False
 
-    x11_error = os.system("pkg-config x11 --modversion > /dev/null ")
+    x11_error = os.system("pkg-config x11 --modversion > /dev/null")
     if x11_error:
+        print("Error: X11 libraries not found. Aborting.")
         return False
 
-    x11_error = os.system("pkg-config xcursor --modversion > /dev/null ")
+    x11_error = os.system("pkg-config xcursor --modversion > /dev/null")
     if x11_error:
-        print("xcursor not found.. x11 disabled.")
+        print("Error: Xcursor library not found. Aborting.")
         return False
 
-    x11_error = os.system("pkg-config xinerama --modversion > /dev/null ")
+    x11_error = os.system("pkg-config xinerama --modversion > /dev/null")
     if x11_error:
-        print("xinerama not found.. x11 disabled.")
+        print("Error: Xinerama library not found. Aborting.")
         return False
 
-    x11_error = os.system("pkg-config xext --modversion > /dev/null ")
+    x11_error = os.system("pkg-config xext --modversion > /dev/null")
     if x11_error:
-        print("xext not found.. x11 disabled.")
+        print("Error: Xext library not found. Aborting.")
         return False
 
-    x11_error = os.system("pkg-config xrandr --modversion > /dev/null ")
+    x11_error = os.system("pkg-config xrandr --modversion > /dev/null")
     if x11_error:
-        print("xrandr not found.. x11 disabled.")
+        print("Error: XrandR library not found. Aborting.")
         return False
 
-    x11_error = os.system("pkg-config xrender --modversion > /dev/null ")
+    x11_error = os.system("pkg-config xrender --modversion > /dev/null")
     if x11_error:
-        print("xrender not found.. x11 disabled.")
+        print("Error: XRender library not found. Aborting.")
         return False
 
-    x11_error = os.system("pkg-config xi --modversion > /dev/null ")
+    x11_error = os.system("pkg-config xi --modversion > /dev/null")
     if x11_error:
-        print("xi not found.. Aborting.")
+        print("Error: Xi library not found. Aborting.")
         return False
 
     return True
@@ -103,14 +105,12 @@ def configure(env):
             env.Prepend(CCFLAGS=["-O2"])
         elif env["optimize"] == "size":  # optimize for size
             env.Prepend(CCFLAGS=["-Os"])
-        env.Prepend(CPPDEFINES=["DEBUG_ENABLED"])
 
         if env["debug_symbols"]:
             env.Prepend(CCFLAGS=["-g2"])
 
     elif env["target"] == "debug":
         env.Prepend(CCFLAGS=["-g3"])
-        env.Prepend(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(LINKFLAGS=["-rdynamic"])
 
     ## Architecture
@@ -118,6 +118,21 @@ def configure(env):
     is64 = sys.maxsize > 2 ** 32
     if env["bits"] == "default":
         env["bits"] = "64" if is64 else "32"
+
+    machines = {
+        "riscv64": "rv64",
+        "ppc64le": "ppc64",
+        "ppc64": "ppc64",
+        "ppcle": "ppc",
+        "ppc": "ppc",
+    }
+
+    if env["arch"] == "" and platform.machine() in machines:
+        env["arch"] = machines[platform.machine()]
+
+    if env["arch"] == "rv64":
+        # G = General-purpose extensions, C = Compression extension (very common).
+        env.Append(CCFLAGS=["-march=rv64gc"])
 
     ## Compiler configuration
 
@@ -138,7 +153,7 @@ def configure(env):
                 # A convenience so you don't need to write use_lto too when using SCons
                 env["use_lto"] = True
         else:
-            print("Using LLD with GCC is not supported yet, try compiling with 'use_llvm=yes'.")
+            print("Using LLD with GCC is not supported yet. Try compiling with 'use_llvm=yes'.")
             sys.exit(255)
 
     if env["use_coverage"]:
@@ -146,7 +161,7 @@ def configure(env):
         env.Append(LINKFLAGS=["-ftest-coverage", "-fprofile-arcs"])
 
     if env["use_ubsan"] or env["use_asan"] or env["use_lsan"] or env["use_tsan"] or env["use_msan"]:
-        env.extra_suffix += "s"
+        env.extra_suffix += ".san"
 
         if env["use_ubsan"]:
             env.Append(
@@ -200,11 +215,6 @@ def configure(env):
 
     env.Append(CCFLAGS=["-pipe"])
     env.Append(LINKFLAGS=["-pipe"])
-
-    # -fpie and -no-pie is supported on GCC 6+ and Clang 4+, both below our
-    # minimal requirements.
-    env.Append(CCFLAGS=["-fpie"])
-    env.Append(LINKFLAGS=["-no-pie"])
 
     ## Dependencies
 
@@ -293,16 +303,9 @@ def configure(env):
         if any(platform.machine() in s for s in list_of_x86):
             env["x86_libtheora_opt_gcc"] = True
 
-    if not env["builtin_libvpx"]:
-        env.ParseConfig("pkg-config vpx --cflags --libs")
-
     if not env["builtin_libvorbis"]:
         env["builtin_libogg"] = False  # Needed to link against system libvorbis
         env.ParseConfig("pkg-config vorbis vorbisfile --cflags --libs")
-
-    if not env["builtin_opus"]:
-        env["builtin_libogg"] = False  # Needed to link against system opus
-        env.ParseConfig("pkg-config opus opusfile --cflags --libs")
 
     if not env["builtin_libogg"]:
         env.ParseConfig("pkg-config ogg --cflags --libs")
@@ -334,36 +337,32 @@ def configure(env):
     ## Flags
 
     if os.system("pkg-config --exists alsa") == 0:  # 0 means found
-        print("Enabling ALSA")
         env["alsa"] = True
         env.Append(CPPDEFINES=["ALSA_ENABLED", "ALSAMIDI_ENABLED"])
     else:
-        print("ALSA libraries not found, disabling driver")
+        print("Warning: ALSA libraries not found. Disabling the ALSA audio driver.")
 
     if env["pulseaudio"]:
         if os.system("pkg-config --exists libpulse") == 0:  # 0 means found
-            print("Enabling PulseAudio")
             env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED"])
             env.ParseConfig("pkg-config --cflags libpulse")
         else:
-            print("PulseAudio development libraries not found, disabling driver")
+            print("Warning: PulseAudio development libraries not found. Disabling the PulseAudio audio driver.")
 
     if env["dbus"]:
         if os.system("pkg-config --exists dbus-1") == 0:  # 0 means found
-            print("Enabling D-Bus")
             env.Append(CPPDEFINES=["DBUS_ENABLED"])
             env.ParseConfig("pkg-config --cflags --libs dbus-1")
         else:
-            print("D-Bus development libraries not found, disabling dependent features")
+            print("Warning: D-Bus development libraries not found. Disabling screensaver prevention.")
 
     if platform.system() == "Linux":
         env.Append(CPPDEFINES=["JOYDEV_ENABLED"])
         if env["udev"]:
             if os.system("pkg-config --exists libudev") == 0:  # 0 means found
-                print("Enabling udev support")
                 env.Append(CPPDEFINES=["UDEV_ENABLED"])
             else:
-                print("libudev development libraries not found, disabling udev support")
+                print("Warning: libudev development libraries not found. Disabling controller hotplugging support.")
     else:
         env["udev"] = False  # Linux specific
 
@@ -384,14 +383,14 @@ def configure(env):
 
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED"])
-        if not env["builtin_vulkan"]:
+        if not env["use_volk"]:
             env.ParseConfig("pkg-config vulkan --cflags --libs")
         if not env["builtin_glslang"]:
             # No pkgconfig file for glslang so far
             env.Append(LIBS=["glslang", "SPIRV"])
 
-        # env.Append(CPPDEFINES=['OPENGL_ENABLED'])
-        env.Append(LIBS=["GL"])
+    env.Append(CPPDEFINES=["GLES3_ENABLED"])
+    env.Append(LIBS=["GL"])
 
     env.Append(LIBS=["pthread"])
 
@@ -412,7 +411,7 @@ def configure(env):
         gnu_ld_version = re.search("^GNU ld [^$]*(\d+\.\d+)$", linker_version_str, re.MULTILINE)
         if not gnu_ld_version:
             print(
-                "Warning: Creating template binaries enabled for PCK embedding is currently only supported with GNU ld"
+                "Warning: Creating template binaries enabled for PCK embedding is currently only supported with GNU ld, not gold or LLD."
             )
         else:
             if float(gnu_ld_version.group(1)) >= 2.30:

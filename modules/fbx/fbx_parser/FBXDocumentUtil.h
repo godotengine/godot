@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -107,12 +107,12 @@ const T *ProcessSimpleConnection(const Connection &con,
 		const char **propNameOut = nullptr) {
 	if (is_object_property_conn && !con.PropertyName().length()) {
 		DOMWarning("expected incoming " + std::string(name) +
-						   " link to be an object-object connection, ignoring",
+						" link to be an object-object connection, ignoring",
 				element);
 		return nullptr;
 	} else if (!is_object_property_conn && con.PropertyName().length()) {
 		DOMWarning("expected incoming " + std::string(name) +
-						   " link to be an object-property connection, ignoring",
+						" link to be an object-property connection, ignoring",
 				element);
 		return nullptr;
 	}

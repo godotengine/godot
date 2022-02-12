@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -84,12 +84,15 @@ void StringName::cleanup() {
 	for (int i = 0; i < STRING_TABLE_LEN; i++) {
 		while (_table[i]) {
 			_Data *d = _table[i];
-			lost_strings++;
-			if (d->static_count.get() != d->refcount.get() && OS::get_singleton()->is_stdout_verbose()) {
-				if (d->cname) {
-					print_line("Orphan StringName: " + String(d->cname));
-				} else {
-					print_line("Orphan StringName: " + String(d->name));
+			if (d->static_count.get() != d->refcount.get()) {
+				lost_strings++;
+
+				if (OS::get_singleton()->is_stdout_verbose()) {
+					if (d->cname) {
+						print_line("Orphan StringName: " + String(d->cname));
+					} else {
+						print_line("Orphan StringName: " + String(d->name));
+					}
 				}
 			}
 
@@ -310,7 +313,7 @@ StringName::StringName(const String &p_name, bool p_static) {
 
 	ERR_FAIL_COND(!configured);
 
-	if (p_name == String()) {
+	if (p_name.is_empty()) {
 		return;
 	}
 
@@ -434,7 +437,7 @@ StringName StringName::search(const char32_t *p_name) {
 }
 
 StringName StringName::search(const String &p_name) {
-	ERR_FAIL_COND_V(p_name == "", StringName());
+	ERR_FAIL_COND_V(p_name.is_empty(), StringName());
 
 	MutexLock lock(mutex);
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,11 +36,10 @@
 ///@TODO probably should change a few integers to unsigned integers...
 
 /**
-	@author Bastiaan Olij <mux213@gmail.com>
-
 	Base class for all the classes in this file, handles a number of code functions that are shared among all meshes.
 	This class is set apart that it assumes a single surface is always generated for our mesh.
 */
+
 class PrimitiveMesh : public Mesh {
 	GDCLASS(PrimitiveMesh, Mesh);
 
@@ -107,8 +106,8 @@ class CapsuleMesh : public PrimitiveMesh {
 	GDCLASS(CapsuleMesh, PrimitiveMesh);
 
 private:
-	float radius = 1.0;
-	float mid_height = 1.0;
+	float radius = 0.5;
+	float height = 2.0;
 	int radial_segments = 64;
 	int rings = 8;
 
@@ -120,8 +119,8 @@ public:
 	void set_radius(const float p_radius);
 	float get_radius() const;
 
-	void set_mid_height(const float p_mid_height);
-	float get_mid_height() const;
+	void set_height(const float p_height);
+	float get_height() const;
 
 	void set_radial_segments(const int p_segments);
 	int get_radial_segments() const;
@@ -139,7 +138,7 @@ class BoxMesh : public PrimitiveMesh {
 	GDCLASS(BoxMesh, PrimitiveMesh);
 
 private:
-	Vector3 size = Vector3(2.0, 2.0, 2.0);
+	Vector3 size = Vector3(1, 1, 1);
 	int subdivide_w = 0;
 	int subdivide_h = 0;
 	int subdivide_d = 0;
@@ -172,8 +171,8 @@ class CylinderMesh : public PrimitiveMesh {
 	GDCLASS(CylinderMesh, PrimitiveMesh);
 
 private:
-	float top_radius = 1.0;
-	float bottom_radius = 1.0;
+	float top_radius = 0.5;
+	float bottom_radius = 0.5;
 	float height = 2.0;
 	int radial_segments = 64;
 	int rings = 4;
@@ -285,6 +284,8 @@ protected:
 	virtual void _create_mesh_array(Array &p_arr) const override;
 
 public:
+	virtual uint32_t surface_get_format(int p_idx) const override;
+
 	QuadMesh();
 
 	void set_size(const Size2 &p_size);

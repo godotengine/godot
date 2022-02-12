@@ -7,36 +7,38 @@
 		This is the built-in string class (and the one used by GDScript). It supports Unicode and provides all necessary means for string handling. Strings are reference-counted and use a copy-on-write approach, so passing them around is cheap in resources.
 	</description>
 	<tutorials>
-		<link title="GDScript format strings">https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/gdscript_format_string.html</link>
+		<link title="GDScript format strings">$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html</link>
 	</tutorials>
-	<methods>
-		<method name="String" qualifiers="constructor">
+	<constructors>
+		<constructor name="String">
 			<return type="String" />
 			<description>
 				Constructs an empty [String] ([code]""[/code]).
 			</description>
-		</method>
-		<method name="String" qualifiers="constructor">
+		</constructor>
+		<constructor name="String">
 			<return type="String" />
 			<argument index="0" name="from" type="String" />
 			<description>
 				Constructs a [String] as a copy of the given [String].
 			</description>
-		</method>
-		<method name="String" qualifiers="constructor">
+		</constructor>
+		<constructor name="String">
 			<return type="String" />
 			<argument index="0" name="from" type="NodePath" />
 			<description>
 				Constructs a new String from the given [NodePath].
 			</description>
-		</method>
-		<method name="String" qualifiers="constructor">
+		</constructor>
+		<constructor name="String">
 			<return type="String" />
 			<argument index="0" name="from" type="StringName" />
 			<description>
 				Constructs a new String from the given [StringName].
 			</description>
-		</method>
+		</constructor>
+	</constructors>
+	<methods>
 		<method name="begins_with" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="text" type="String" />
@@ -56,11 +58,11 @@
 				Converts a string containing a binary number into an integer. Binary strings can either be prefixed with [code]0b[/code] or not, and they can also start with a [code]-[/code] before the optional prefix.
 				[codeblocks]
 				[gdscript]
-				print("0x101".bin_to_int()) # Prints "5".
+				print("0b101".bin_to_int()) # Prints "5".
 				print("101".bin_to_int()) # Prints "5".
 				[/gdscript]
 				[csharp]
-				GD.Print("0x101".BinToInt()); // Prints "5".
+				GD.Print("0b101".BinToInt()); // Prints "5".
 				GD.Print("101".BinToInt()); // Prints "5".
 				[/csharp]
 				[/codeblocks]
@@ -89,7 +91,7 @@
 			<return type="int" />
 			<argument index="0" name="to" type="String" />
 			<description>
-				Performs a case-sensitive comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/code] of each string, which roughly matches the alphabetical order.
+				Performs a case-sensitive comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order.
 				[b]Behavior with different string lengths:[/b] Returns [code]1[/code] if the "base" string is longer than the [code]to[/code] string or [code]-1[/code] if the "base" string is shorter than the [code]to[/code] string. Keep in mind this length is determined by the number of Unicode codepoints, [i]not[/i] the actual visible characters.
 				[b]Behavior with empty strings:[/b] Returns [code]-1[/code] if the "base" string is empty, [code]1[/code] if the [code]to[/code] string is empty or [code]0[/code] if both strings are empty.
 				To get a boolean result from a string comparison, use the [code]==[/code] operator instead. See also [method nocasecmp_to] and [method naturalnocasecmp_to].
@@ -99,6 +101,13 @@
 			<return type="String" />
 			<argument index="0" name="char" type="int" />
 			<description>
+			</description>
+		</method>
+		<method name="contains" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="what" type="String" />
+			<description>
+				Returns [code]true[/code] if the string contains the given string.
 			</description>
 		</method>
 		<method name="count" qualifiers="const">
@@ -122,7 +131,7 @@
 		<method name="dedent" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns a copy of the string with indentation (leading tabs and spaces) removed.
+				Returns a copy of the string with indentation (leading tabs and spaces) removed. See also [method indent] to add indentation.
 			</description>
 		</method>
 		<method name="ends_with" qualifiers="const">
@@ -181,13 +190,52 @@
 		<method name="get_extension" qualifiers="const">
 			<return type="String" />
 			<description>
-				If the string is a valid file path, returns the extension.
+				Returns the extension without the leading period character ([code].[/code]) if the string is a valid file name or path. If the string does not contain an extension, returns an empty string instead.
+				[codeblock]
+				print("/path/to/file.txt".get_extension())  # "txt"
+				print("file.txt".get_extension())  # "txt"
+				print("file.sample.txt".get_extension())  # "txt"
+				print(".txt".get_extension())  # "txt"
+				print("file.txt.".get_extension())  # "" (empty string)
+				print("file.txt..".get_extension())  # "" (empty string)
+				print("txt".get_extension())  # "" (empty string)
+				print("".get_extension())  # "" (empty string)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_file" qualifiers="const">
 			<return type="String" />
 			<description>
 				If the string is a valid file path, returns the filename.
+			</description>
+		</method>
+		<method name="get_slice" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="delimiter" type="String" />
+			<argument index="1" name="slice" type="int" />
+			<description>
+				Splits a string using a [code]delimiter[/code] and returns a substring at index [code]slice[/code]. Returns an empty string if the index doesn't exist.
+				This is a more performant alternative to [method split] for cases when you need only one element from the array at a fixed index.
+				Example:
+				[codeblock]
+				print("i/am/example/string".get_slice("/", 2)) # Prints 'example'.
+				[/codeblock]
+			</description>
+		</method>
+		<method name="get_slice_count" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="delimiter" type="String" />
+			<description>
+				Splits a string using a [code]delimiter[/code] and returns a number of slices.
+			</description>
+		</method>
+		<method name="get_slicec" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="delimiter" type="int" />
+			<argument index="1" name="slice" type="int" />
+			<description>
+				Splits a string using a Unicode character with code [code]delimiter[/code] and returns a substring at index [code]slice[/code]. Returns an empty string if the index doesn't exist.
+				This is a more performant alternative to [method split] for cases when you need only one element from the array at a fixed index.
 			</description>
 		</method>
 		<method name="hash" qualifiers="const">
@@ -218,6 +266,15 @@
 			<description>
 			</description>
 		</method>
+		<method name="indent" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="prefix" type="String" />
+			<description>
+				Returns a copy of the string with lines indented with [code]prefix[/code].
+				For example, the string can be indented with two tabs using [code]"\t\t"[/code], or four spaces using [code]"    "[/code]. The prefix can be any string so it can also be used to comment out strings with e.g. [code]"# "[/code]. See also [method dedent] to remove indentation.
+				[b]Note:[/b] Empty lines are kept empty.
+			</description>
+		</method>
 		<method name="insert" qualifiers="const">
 			<return type="String" />
 			<argument index="0" name="position" type="int" />
@@ -229,7 +286,7 @@
 		<method name="is_absolute_path" qualifiers="const">
 			<return type="bool" />
 			<description>
-				If the string is a path to a file or directory, returns [code]true[/code] if the path is absolute.
+				Returns [code]true[/code] if the string is a path to a file or directory and its starting point is explicitly defined. This includes [code]res://[/code], [code]user://[/code], [code]C:\[/code], [code]/[/code], etc.
 			</description>
 		</method>
 		<method name="is_empty" qualifiers="const">
@@ -238,10 +295,10 @@
 				Returns [code]true[/code] if the length of the string equals [code]0[/code].
 			</description>
 		</method>
-		<method name="is_rel_path" qualifiers="const">
+		<method name="is_relative_path" qualifiers="const">
 			<return type="bool" />
 			<description>
-				If the string is a path to a file or directory, returns [code]true[/code] if the path is relative.
+				Returns [code]true[/code] if the string is a path to a file or directory and its starting point is implicitly defined within the context it is being used. The starting point may refer to the current directory ([code]./[/code]), or the current [Node].
 			</description>
 		</method>
 		<method name="is_subsequence_of" qualifiers="const">
@@ -251,7 +308,7 @@
 				Returns [code]true[/code] if this string is a subsequence of the given string.
 			</description>
 		</method>
-		<method name="is_subsequence_ofi" qualifiers="const">
+		<method name="is_subsequence_ofn" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="text" type="String" />
 			<description>
@@ -306,7 +363,7 @@
 			<return type="String" />
 			<argument index="0" name="parts" type="PackedStringArray" />
 			<description>
-				Return a [String] which is the concatenation of the [code]parts[/code]. The separator between elements is the string providing this method.
+				Returns a [String] which is the concatenation of the [code]parts[/code]. The separator between elements is the string providing this method.
 				Example:
 				[codeblocks]
 				[gdscript]
@@ -388,7 +445,7 @@
 			<return type="int" />
 			<argument index="0" name="to" type="String" />
 			<description>
-				Performs a case-insensitive [i]natural order[/i] comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/code] of each string, which roughly matches the alphabetical order. Internally, lowercase characters will be converted to uppercase during the comparison.
+				Performs a case-insensitive [i]natural order[/i] comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order. Internally, lowercase characters will be converted to uppercase during the comparison.
 				When used for sorting, natural order comparison will order suites of numbers as expected by most people. If you sort the numbers from 1 to 10 using natural order, you will get [code][1, 2, 3, ...][/code] instead of [code][1, 10, 2, 3, ...][/code].
 				[b]Behavior with different string lengths:[/b] Returns [code]1[/code] if the "base" string is longer than the [code]to[/code] string or [code]-1[/code] if the "base" string is shorter than the [code]to[/code] string. Keep in mind this length is determined by the number of Unicode codepoints, [i]not[/i] the actual visible characters.
 				[b]Behavior with empty strings:[/b] Returns [code]-1[/code] if the "base" string is empty, [code]1[/code] if the [code]to[/code] string is empty or [code]0[/code] if both strings are empty.
@@ -399,7 +456,7 @@
 			<return type="int" />
 			<argument index="0" name="to" type="String" />
 			<description>
-				Performs a case-insensitive comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/code] of each string, which roughly matches the alphabetical order. Internally, lowercase characters will be converted to uppercase during the comparison.
+				Performs a case-insensitive comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order. Internally, lowercase characters will be converted to uppercase during the comparison.
 				[b]Behavior with different string lengths:[/b] Returns [code]1[/code] if the "base" string is longer than the [code]to[/code] string or [code]-1[/code] if the "base" string is shorter than the [code]to[/code] string. Keep in mind this length is determined by the number of Unicode codepoints, [i]not[/i] the actual visible characters.
 				[b]Behavior with empty strings:[/b] Returns [code]-1[/code] if the "base" string is empty, [code]1[/code] if the [code]to[/code] string is empty or [code]0[/code] if both strings are empty.
 				To get a boolean result from a string comparison, use the [code]==[/code] operator instead. See also [method casecmp_to] and [method naturalnocasecmp_to].
@@ -410,71 +467,26 @@
 			<argument index="0" name="number" type="float" />
 			<argument index="1" name="decimals" type="int" default="-1" />
 			<description>
+				Converts a [float] to a string representation of a decimal number.
+				The number of decimal places can be specified with [code]decimals[/code]. If [code]decimals[/code] is [code]-1[/code] (default), decimal places will be automatically adjusted so that the string representation has 14 significant digits (counting both digits to the left and the right of the decimal point).
+				Trailing zeros are not included in the string. The last digit will be rounded and not truncated.
+				Some examples:
+				[codeblock]
+				String.num(3.141593)     # "3.141593"
+				String.num(3.141593, 3)  # "3.142"
+				String.num(3.14159300)   # "3.141593", no trailing zeros.
+				# Last digit will be rounded up here, which reduces total digit count since
+				# trailing zeros are removed:
+				String.num(42.129999, 5) # "42.13"
+				# If `decimals` is not specified, the total amount of significant digits is 14:
+				String.num(-0.0000012345432123454321)     # "-0.00000123454321"
+				String.num(-10000.0000012345432123454321) # "-10000.0000012345"
+				[/codeblock]
 			</description>
 		</method>
 		<method name="num_scientific" qualifiers="static">
 			<return type="String" />
 			<argument index="0" name="number" type="float" />
-			<description>
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="String" />
-			<description>
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="StringName" />
-			<description>
-			</description>
-		</method>
-		<method name="operator %" qualifiers="operator">
-			<return type="String" />
-			<argument index="0" name="right" type="Variant" />
-			<description>
-			</description>
-		</method>
-		<method name="operator +" qualifiers="operator">
-			<return type="String" />
-			<argument index="0" name="right" type="String" />
-			<description>
-			</description>
-		</method>
-		<method name="operator &lt;" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="String" />
-			<description>
-			</description>
-		</method>
-		<method name="operator &lt;=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="String" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="String" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="StringName" />
-			<description>
-			</description>
-		</method>
-		<method name="operator &gt;" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="String" />
-			<description>
-			</description>
-		</method>
-		<method name="operator &gt;=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="String" />
 			<description>
 			</description>
 		</method>
@@ -621,6 +633,12 @@
 				Returns the similarity index of the text compared to this string. 1 means totally similar and 0 means totally dissimilar.
 			</description>
 		</method>
+		<method name="simplify_path" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns a simplified canonical path.
+			</description>
+		</method>
 		<method name="split" qualifiers="const">
 			<return type="PackedStringArray" />
 			<argument index="0" name="delimiter" type="String" />
@@ -629,6 +647,7 @@
 			<description>
 				Splits the string by a [code]delimiter[/code] string and returns an array of the substrings. The [code]delimiter[/code] can be of any length.
 				If [code]maxsplit[/code] is specified, it defines the number of splits to do from the left up to [code]maxsplit[/code]. The default value of [code]0[/code] means that all items are split.
+				If you need only one element from the array at a specific index, [method get_slice] is a more performant option.
 				Example:
 				[codeblocks]
 				[gdscript]
@@ -688,13 +707,24 @@
 		<method name="to_float" qualifiers="const">
 			<return type="float" />
 			<description>
-				Converts a string containing a decimal number into a [code]float[/code].
+				Converts a string containing a decimal number into a [code]float[/code]. The method will stop on the first non-number character except the first [code].[/code] (decimal point), and [code]e[/code] which is used for exponential.
+				[codeblock]
+				print("12.3".to_float()) # 12.3
+				print("1.2.3".to_float()) # 1.2
+				print("12ab3".to_float()) # 12
+				print("1e3".to_float()) # 1000
+				[/codeblock]
 			</description>
 		</method>
 		<method name="to_int" qualifiers="const">
 			<return type="int" />
 			<description>
-				Converts a string containing an integer number into an [code]int[/code].
+				Converts a string containing an integer number into an [code]int[/code]. The method will remove any non-number character and stop if it encounters a [code].[/code].
+				[codeblock]
+				print("123".to_int()) # 123
+				print("a1b2c3".to_int()) # 123
+				print("1.2.3".to_int()) # 1
+				[/codeblock]
 			</description>
 		</method>
 		<method name="to_lower" qualifiers="const">
@@ -796,6 +826,82 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="String" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="StringName" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator %">
+			<return type="String" />
+			<argument index="0" name="right" type="Variant" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="String" />
+			<argument index="0" name="right" type="String" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &lt;">
+			<return type="bool" />
+			<argument index="0" name="right" type="String" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &lt;=">
+			<return type="bool" />
+			<argument index="0" name="right" type="String" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="String" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="StringName" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &gt;">
+			<return type="bool" />
+			<argument index="0" name="right" type="String" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator &gt;=">
+			<return type="bool" />
+			<argument index="0" name="right" type="String" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="String" />
+			<argument index="0" name="index" type="int" />
+			<description>
+			</description>
+		</operator>
+	</operators>
 </class>

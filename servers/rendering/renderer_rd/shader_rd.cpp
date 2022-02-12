@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -79,7 +79,7 @@ void ShaderRD::_add_stage(const char *p_code, StageType p_stage_type) {
 		}
 
 		if (push_chunk) {
-			if (text != String()) {
+			if (!text.is_empty()) {
 				StageTemplate::Chunk text_chunk;
 				text_chunk.type = StageTemplate::Chunk::TYPE_TEXT;
 				text_chunk.text = text.utf8();
@@ -90,7 +90,7 @@ void ShaderRD::_add_stage(const char *p_code, StageType p_stage_type) {
 		}
 	}
 
-	if (text != String()) {
+	if (!text.is_empty()) {
 		StageTemplate::Chunk text_chunk;
 		text_chunk.type = StageTemplate::Chunk::TYPE_TEXT;
 		text_chunk.text = text.utf8();
@@ -174,9 +174,12 @@ void ShaderRD::_build_variant_code(StringBuilder &builder, uint32_t p_variant, c
 				if (p_version->uniforms.size()) {
 					builder.append("#define MATERIAL_UNIFORMS_USED\n");
 				}
-				for (Map<StringName, CharString>::Element *E = p_version->code_sections.front(); E; E = E->next()) {
-					builder.append(String("#define ") + String(E->key()) + "_CODE_USED\n");
+				for (const KeyValue<StringName, CharString> &E : p_version->code_sections) {
+					builder.append(String("#define ") + String(E.key) + "_CODE_USED\n");
 				}
+#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+				builder.append("#define MOLTENVK_USED\n");
+#endif
 			} break;
 			case StageTemplate::Chunk::TYPE_MATERIAL_UNIFORMS: {
 				builder.append(p_version->uniforms.get_data()); //uniforms (same for vertex and fragment)
@@ -279,7 +282,7 @@ void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 		return;
 	}
 
-	Vector<uint8_t> shader_data = RD::get_singleton()->shader_compile_binary_from_spirv(stages);
+	Vector<uint8_t> shader_data = RD::get_singleton()->shader_compile_binary_from_spirv(stages, name + ":" + itos(p_variant));
 
 	ERR_FAIL_COND(shader_data.size() == 0);
 
@@ -292,7 +295,7 @@ void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 }
 
 RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_version) {
-	Version *version = version_owner.getornull(p_version);
+	Version *version = version_owner.get_or_null(p_version);
 	RS::ShaderNativeSourceCode source_code;
 	ERR_FAIL_COND_V(!version, source_code);
 
@@ -355,8 +358,8 @@ String ShaderRD::_version_get_sha1(Version *p_version) const {
 	hash_build.append(p_version->compute_globals.get_data());
 
 	Vector<StringName> code_sections;
-	for (Map<StringName, CharString>::Element *E = p_version->code_sections.front(); E; E = E->next()) {
-		code_sections.push_back(E->key());
+	for (const KeyValue<StringName, CharString> &E : p_version->code_sections) {
+		code_sections.push_back(E.key);
 	}
 	code_sections.sort_custom<StringName::AlphCompare>();
 
@@ -524,14 +527,14 @@ void ShaderRD::_compile_version(Version *p_version) {
 void ShaderRD::version_set_code(RID p_version, const Map<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines) {
 	ERR_FAIL_COND(is_compute);
 
-	Version *version = version_owner.getornull(p_version);
+	Version *version = version_owner.get_or_null(p_version);
 	ERR_FAIL_COND(!version);
 	version->vertex_globals = p_vertex_globals.utf8();
 	version->fragment_globals = p_fragment_globals.utf8();
 	version->uniforms = p_uniforms.utf8();
 	version->code_sections.clear();
-	for (Map<String, String>::Element *E = p_code.front(); E; E = E->next()) {
-		version->code_sections[StringName(E->key().to_upper())] = E->get().utf8();
+	for (const KeyValue<String, String> &E : p_code) {
+		version->code_sections[StringName(E.key.to_upper())] = E.value.utf8();
 	}
 
 	version->custom_defines.clear();
@@ -549,15 +552,15 @@ void ShaderRD::version_set_code(RID p_version, const Map<String, String> &p_code
 void ShaderRD::version_set_compute_code(RID p_version, const Map<String, String> &p_code, const String &p_uniforms, const String &p_compute_globals, const Vector<String> &p_custom_defines) {
 	ERR_FAIL_COND(!is_compute);
 
-	Version *version = version_owner.getornull(p_version);
+	Version *version = version_owner.get_or_null(p_version);
 	ERR_FAIL_COND(!version);
 
 	version->compute_globals = p_compute_globals.utf8();
 	version->uniforms = p_uniforms.utf8();
 
 	version->code_sections.clear();
-	for (Map<String, String>::Element *E = p_code.front(); E; E = E->next()) {
-		version->code_sections[StringName(E->key().to_upper())] = E->get().utf8();
+	for (const KeyValue<String, String> &E : p_code) {
+		version->code_sections[StringName(E.key.to_upper())] = E.value.utf8();
 	}
 
 	version->custom_defines.clear();
@@ -573,7 +576,7 @@ void ShaderRD::version_set_compute_code(RID p_version, const Map<String, String>
 }
 
 bool ShaderRD::version_is_valid(RID p_version) {
-	Version *version = version_owner.getornull(p_version);
+	Version *version = version_owner.get_or_null(p_version);
 	ERR_FAIL_COND_V(!version, false);
 
 	if (version->dirty) {
@@ -585,7 +588,7 @@ bool ShaderRD::version_is_valid(RID p_version) {
 
 bool ShaderRD::version_free(RID p_version) {
 	if (version_owner.owns(p_version)) {
-		Version *version = version_owner.getornull(p_version);
+		Version *version = version_owner.get_or_null(p_version);
 		_clear_version(version);
 		version_owner.free(p_version);
 	} else {
@@ -635,7 +638,7 @@ void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String 
 		variants_enabled.push_back(true);
 	}
 
-	if (shader_cache_dir != String()) {
+	if (!shader_cache_dir.is_empty()) {
 		StringBuilder hash_build;
 
 		hash_build.append("[base_hash]");

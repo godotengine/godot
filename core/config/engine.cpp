@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,25 +35,24 @@
 #include "core/donors.gen.h"
 #include "core/license.gen.h"
 #include "core/version.h"
-#include "core/version_hash.gen.h"
 
-void Engine::set_iterations_per_second(int p_ips) {
+void Engine::set_physics_ticks_per_second(int p_ips) {
 	ERR_FAIL_COND_MSG(p_ips <= 0, "Engine iterations per second must be greater than 0.");
 	ips = p_ips;
 }
 
-int Engine::get_iterations_per_second() const {
+int Engine::get_physics_ticks_per_second() const {
 	return ips;
 }
 
-void Engine::set_physics_jitter_fix(float p_threshold) {
+void Engine::set_physics_jitter_fix(double p_threshold) {
 	if (p_threshold < 0) {
 		p_threshold = 0;
 	}
 	physics_jitter_fix = p_threshold;
 }
 
-float Engine::get_physics_jitter_fix() const {
+double Engine::get_physics_jitter_fix() const {
 	return physics_jitter_fix;
 }
 
@@ -77,11 +76,11 @@ uint32_t Engine::get_frame_delay() const {
 	return _frame_delay;
 }
 
-void Engine::set_time_scale(float p_scale) {
+void Engine::set_time_scale(double p_scale) {
 	_time_scale = p_scale;
 }
 
-float Engine::get_time_scale() const {
+double Engine::get_time_scale() const {
 	return _time_scale;
 }
 
@@ -95,8 +94,8 @@ Dictionary Engine::get_version_info() const {
 	dict["build"] = VERSION_BUILD;
 	dict["year"] = VERSION_YEAR;
 
-	String hash = VERSION_HASH;
-	dict["hash"] = hash.length() == 0 ? String("unknown") : hash;
+	String hash = String(VERSION_HASH);
+	dict["hash"] = hash.is_empty() ? String("unknown") : hash;
 
 	String stringver = String(dict["major"]) + "." + String(dict["minor"]);
 	if ((int)dict["patch"] != 0) {
@@ -111,7 +110,7 @@ Dictionary Engine::get_version_info() const {
 static Array array_from_info(const char *const *info_list) {
 	Array arr;
 	for (int i = 0; info_list[i] != nullptr; i++) {
-		arr.push_back(info_list[i]);
+		arr.push_back(String::utf8(info_list[i]));
 	}
 	return arr;
 }
@@ -119,7 +118,7 @@ static Array array_from_info(const char *const *info_list) {
 static Array array_from_info_count(const char *const *info_list, int info_count) {
 	Array arr;
 	for (int i = 0; i < info_count; i++) {
-		arr.push_back(info_list[i]);
+		arr.push_back(String::utf8(info_list[i]));
 	}
 	return arr;
 }
@@ -140,14 +139,14 @@ Array Engine::get_copyright_info() const {
 	for (int component_index = 0; component_index < COPYRIGHT_INFO_COUNT; component_index++) {
 		const ComponentCopyright &cp_info = COPYRIGHT_INFO[component_index];
 		Dictionary component_dict;
-		component_dict["name"] = cp_info.name;
+		component_dict["name"] = String::utf8(cp_info.name);
 		Array parts;
 		for (int i = 0; i < cp_info.part_count; i++) {
 			const ComponentCopyrightPart &cp_part = cp_info.parts[i];
 			Dictionary part_dict;
 			part_dict["files"] = array_from_info_count(cp_part.files, cp_part.file_count);
 			part_dict["copyright"] = array_from_info_count(cp_part.copyright_statements, cp_part.copyright_count);
-			part_dict["license"] = cp_part.license;
+			part_dict["license"] = String::utf8(cp_part.license);
 			parts.push_back(part_dict);
 		}
 		component_dict["parts"] = parts;
@@ -186,6 +185,10 @@ bool Engine::is_abort_on_gpu_errors_enabled() const {
 	return abort_on_gpu_errors;
 }
 
+int32_t Engine::get_gpu_index() const {
+	return gpu_idx;
+}
+
 bool Engine::is_validation_layers_enabled() const {
 	return use_validation_layers;
 }
@@ -199,17 +202,41 @@ bool Engine::is_printing_error_messages() const {
 }
 
 void Engine::add_singleton(const Singleton &p_singleton) {
+	ERR_FAIL_COND_MSG(singleton_ptrs.has(p_singleton.name), "Can't register singleton that already exists: " + String(p_singleton.name));
 	singletons.push_back(p_singleton);
 	singleton_ptrs[p_singleton.name] = p_singleton.ptr;
 }
 
-Object *Engine::get_singleton_object(const String &p_name) const {
+Object *Engine::get_singleton_object(const StringName &p_name) const {
 	const Map<StringName, Object *>::Element *E = singleton_ptrs.find(p_name);
-	ERR_FAIL_COND_V_MSG(!E, nullptr, "Failed to retrieve non-existent singleton '" + p_name + "'.");
+	ERR_FAIL_COND_V_MSG(!E, nullptr, "Failed to retrieve non-existent singleton '" + String(p_name) + "'.");
 	return E->get();
 }
 
-bool Engine::has_singleton(const String &p_name) const {
+bool Engine::is_singleton_user_created(const StringName &p_name) const {
+	ERR_FAIL_COND_V(!singleton_ptrs.has(p_name), false);
+
+	for (const Singleton &E : singletons) {
+		if (E.name == p_name && E.user_created) {
+			return true;
+		}
+	}
+
+	return false;
+}
+void Engine::remove_singleton(const StringName &p_name) {
+	ERR_FAIL_COND(!singleton_ptrs.has(p_name));
+
+	for (List<Singleton>::Element *E = singletons.front(); E; E = E->next()) {
+		if (E->get().name == p_name) {
+			singletons.erase(E);
+			singleton_ptrs.erase(p_name);
+			return;
+		}
+	}
+}
+
+bool Engine::has_singleton(const StringName &p_name) const {
 	return singleton_ptrs.has(p_name);
 }
 

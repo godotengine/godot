@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -111,11 +111,7 @@ public:
 				}
 
 				if (!ClassDB::is_parent_class(obj->get_class_name(), native_type)) {
-					// Try with underscore prefix
-					StringName underscore_native_type = "_" + native_type;
-					if (!ClassDB::is_parent_class(obj->get_class_name(), underscore_native_type)) {
-						return false;
-					}
+					return false;
 				}
 				return true;
 			} break;
@@ -196,7 +192,7 @@ public:
 
 	GDScriptDataType() = default;
 
-	GDScriptDataType &operator=(const GDScriptDataType &p_other) {
+	void operator=(const GDScriptDataType &p_other) {
 		kind = p_other.kind;
 		has_type = p_other.has_type;
 		builtin_type = p_other.builtin_type;
@@ -207,7 +203,6 @@ public:
 		if (p_other.has_container_element_type()) {
 			set_container_element_type(p_other.get_container_element_type());
 		}
-		return *this;
 	}
 
 	GDScriptDataType(const GDScriptDataType &p_other) {
@@ -352,6 +347,7 @@ public:
 		OPCODE_ITERATE_PACKED_VECTOR3_ARRAY,
 		OPCODE_ITERATE_PACKED_COLOR_ARRAY,
 		OPCODE_ITERATE_OBJECT,
+		OPCODE_STORE_GLOBAL,
 		OPCODE_STORE_NAMED_GLOBAL,
 		OPCODE_TYPE_ADJUST_BOOL,
 		OPCODE_TYPE_ADJUST_INT,
@@ -472,7 +468,7 @@ private:
 
 	int _initial_line = 0;
 	bool _static = false;
-	MultiplayerAPI::RPCConfig rpc_config;
+	Multiplayer::RPCConfig rpc_config;
 
 	GDScript *_script = nullptr;
 
@@ -592,7 +588,7 @@ public:
 	void disassemble(const Vector<String> &p_code_lines) const;
 #endif
 
-	_FORCE_INLINE_ MultiplayerAPI::RPCConfig get_rpc_config() const { return rpc_config; }
+	_FORCE_INLINE_ Multiplayer::RPCConfig get_rpc_config() const { return rpc_config; }
 	GDScriptFunction();
 	~GDScriptFunction();
 };

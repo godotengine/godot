@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 
 #include "core/input/input_event.h"
 #include "core/object/object.h"
+#include "core/os/keyboard.h"
 #include "core/os/thread_safe.h"
 
 class Input : public Object {
@@ -76,19 +77,15 @@ public:
 		JOYPADS_MAX = 16,
 	};
 
-	struct JoyAxisValue {
-		int min;
-		float value;
-	};
-
 	typedef void (*EventDispatchFunc)(const Ref<InputEvent> &p_event);
 
 private:
-	int mouse_button_mask = 0;
+	MouseButton mouse_button_mask = MouseButton::NONE;
 
-	Set<int> keys_pressed;
-	Set<int> joy_buttons_pressed;
-	Map<int, float> _joy_axis;
+	Set<Key> physical_keys_pressed;
+	Set<Key> keys_pressed;
+	Set<JoyButton> joy_buttons_pressed;
+	Map<JoyAxis, float> _joy_axis;
 	//Map<StringName,int> custom_action_press;
 	Vector3 gravity;
 	Vector3 accelerometer;
@@ -110,13 +107,14 @@ private:
 
 	bool emulate_touch_from_mouse = false;
 	bool emulate_mouse_from_touch = false;
+	bool use_input_buffering = false;
 	bool use_accumulated_input = false;
 
 	int mouse_from_touch_index = -1;
 
-	struct SpeedTrack {
+	struct VelocityTrack {
 		uint64_t last_tick;
-		Vector2 speed;
+		Vector2 velocity;
 		Vector2 accum;
 		float accum_t;
 		float min_ref_frame;
@@ -124,22 +122,22 @@ private:
 
 		void update(const Vector2 &p_delta_p);
 		void reset();
-		SpeedTrack();
+		VelocityTrack();
 	};
 
 	struct Joypad {
 		StringName name;
 		StringName uid;
 		bool connected = false;
-		bool last_buttons[JOY_BUTTON_MAX] = { false };
-		float last_axis[JOY_AXIS_MAX] = { 0.0f };
-		int last_hat = HatMask::HAT_MASK_CENTER;
+		bool last_buttons[(size_t)JoyButton::MAX] = { false };
+		float last_axis[(size_t)JoyAxis::MAX] = { 0.0f };
+		HatMask last_hat = HatMask::CENTER;
 		int mapping = -1;
 		int hat_current = 0;
 	};
 
-	SpeedTrack mouse_speed_track;
-	Map<int, SpeedTrack> touch_speed_track;
+	VelocityTrack mouse_velocity_track;
+	Map<int, VelocityTrack> touch_velocity_track;
 	Map<int, Joypad> joy_names;
 	int fallback_mapping = -1;
 
@@ -160,7 +158,7 @@ private:
 
 	struct JoyEvent {
 		int type;
-		int index;
+		int index; // Can be either JoyAxis or JoyButton.
 		float value;
 	};
 
@@ -204,7 +202,7 @@ private:
 
 	JoyEvent _get_mapped_button_event(const JoyDeviceMapping &mapping, JoyButton p_button);
 	JoyEvent _get_mapped_axis_event(const JoyDeviceMapping &mapping, JoyAxis p_axis, float p_value);
-	void _get_mapped_hat_events(const JoyDeviceMapping &mapping, HatDir p_hat, JoyEvent r_events[HAT_MAX]);
+	void _get_mapped_hat_events(const JoyDeviceMapping &mapping, HatDir p_hat, JoyEvent r_events[(size_t)HatDir::MAX]);
 	JoyButton _get_output_button(String output);
 	JoyAxis _get_output_axis(String output);
 	void _button_event(int p_device, JoyButton p_index, bool p_pressed);
@@ -212,7 +210,7 @@ private:
 
 	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
 
-	List<Ref<InputEvent>> accumulated_events;
+	List<Ref<InputEvent>> buffered_events;
 
 	friend class DisplayServer;
 
@@ -244,7 +242,9 @@ public:
 
 	static Input *get_singleton();
 
-	bool is_key_pressed(int p_keycode) const;
+	bool is_anything_pressed() const;
+	bool is_key_pressed(Key p_keycode) const;
+	bool is_physical_key_pressed(Key p_keycode) const;
 	bool is_mouse_button_pressed(MouseButton p_button) const;
 	bool is_joy_button_pressed(int p_device, JoyButton p_button) const;
 	bool is_action_pressed(const StringName &p_action, bool p_exact = false) const;
@@ -263,7 +263,6 @@ public:
 	float get_joy_vibration_duration(int p_device);
 	uint64_t get_joy_vibration_timestamp(int p_device);
 	void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid = "");
-	void parse_joypad_mapping(String p_mapping, bool p_update_existing);
 
 	Vector3 get_gravity() const;
 	Vector3 get_accelerometer() const;
@@ -271,8 +270,8 @@ public:
 	Vector3 get_gyroscope() const;
 
 	Point2 get_mouse_position() const;
-	Point2 get_last_mouse_speed() const;
-	int get_mouse_button_mask() const;
+	Vector2 get_last_mouse_velocity();
+	MouseButton get_mouse_button_mask() const;
 
 	void warp_mouse_position(const Vector2 &p_to);
 	Point2i warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect);
@@ -310,8 +309,8 @@ public:
 
 	void parse_mapping(String p_mapping);
 	void joy_button(int p_device, JoyButton p_button, bool p_pressed);
-	void joy_axis(int p_device, JoyAxis p_axis, const JoyAxisValue &p_value);
-	void joy_hat(int p_device, int p_val);
+	void joy_axis(int p_device, JoyAxis p_axis, float p_value);
+	void joy_hat(int p_device, HatMask p_val);
 
 	void add_joy_mapping(String p_mapping, bool p_update_existing = false);
 	void remove_joy_mapping(String p_guid);
@@ -322,8 +321,9 @@ public:
 	String get_joy_guid(int p_device) const;
 	void set_fallback_mapping(String p_guid);
 
-	void accumulate_input_event(const Ref<InputEvent> &p_event);
-	void flush_accumulated_events();
+	void flush_buffered_events();
+	bool is_using_input_buffering();
+	void set_use_input_buffering(bool p_enable);
 	void set_use_accumulated_input(bool p_enable);
 
 	void release_pressed_events();

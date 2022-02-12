@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,39 +51,6 @@ public:
 	void set_data(const Ref<FontData> &p_data);
 
 	FontDataPreview();
-};
-
-/*************************************************************************/
-
-class FontDataEditor : public EditorProperty {
-	GDCLASS(FontDataEditor, EditorProperty);
-
-	LineEdit *le = nullptr;
-	CheckBox *chk = nullptr;
-	Button *button = nullptr;
-
-	void toggle_lang(bool p_pressed);
-	void toggle_script(bool p_pressed);
-	void add_lang();
-	void add_script();
-	void remove_lang();
-	void remove_script();
-
-protected:
-	void _notification(int p_what);
-
-	static void _bind_methods();
-
-public:
-	virtual Size2 get_minimum_size() const override;
-	virtual void update_property() override;
-
-	void init_lang_add();
-	void init_lang_edit();
-	void init_script_add();
-	void init_script_edit();
-
-	FontDataEditor();
 };
 
 /*************************************************************************/

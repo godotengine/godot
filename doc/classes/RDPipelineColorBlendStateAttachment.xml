@@ -37,6 +37,4 @@
 		<member name="write_r" type="bool" setter="set_write_r" getter="get_write_r" default="true">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

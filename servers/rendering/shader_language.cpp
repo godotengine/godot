@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,18 +34,6 @@
 #include "servers/rendering_server.h"
 
 #define HAS_WARNING(flag) (warning_flags & flag)
-
-static bool _is_text_char(char32_t c) {
-	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
-}
-
-static bool _is_number(char32_t c) {
-	return (c >= '0' && c <= '9');
-}
-
-static bool _is_hex(char32_t c) {
-	return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
-}
 
 String ShaderLanguage::get_operator_text(Operator p_op) {
 	static const char *op_names[OP_MAX] = { "==",
@@ -88,7 +76,8 @@ String ShaderLanguage::get_operator_text(Operator p_op) {
 		"--",
 		"()",
 		"construct",
-		"index" };
+		"index",
+		"empty" };
 
 	return op_names[p_op];
 }
@@ -203,7 +192,7 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"HINT_WHITE_TEXTURE",
 	"HINT_BLACK_TEXTURE",
 	"HINT_NORMAL_TEXTURE",
-	"HINT_ANISO_TEXTURE",
+	"HINT_ANISOTROPY_TEXTURE",
 	"HINT_ALBEDO_TEXTURE",
 	"HINT_BLACK_ALBEDO_TEXTURE",
 	"HINT_COLOR",
@@ -213,8 +202,8 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"FILTER_LINEAR",
 	"FILTER_NEAREST_MIPMAP",
 	"FILTER_LINEAR_MIPMAP",
-	"FILTER_NEAREST_MIPMAP_ANISO",
-	"FILTER_LINEAR_MIPMAP_ANISO",
+	"FILTER_NEAREST_MIPMAP_ANISOTROPIC",
+	"FILTER_LINEAR_MIPMAP_ANISOTROPIC",
 	"REPEAT_ENABLE",
 	"REPEAT_DISABLE",
 	"SHADER_TYPE",
@@ -225,7 +214,7 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 
 String ShaderLanguage::get_token_text(Token p_token) {
 	String name = token_names[p_token.type];
-	if (p_token.type == TK_INT_CONSTANT || p_token.type == TK_FLOAT_CONSTANT) {
+	if (p_token.is_integer_constant() || p_token.type == TK_FLOAT_CONSTANT) {
 		name += "(" + rtos(p_token.constant) + ")";
 	} else if (p_token.type == TK_IDENTIFIER) {
 		name += "(" + String(p_token.text) + ")";
@@ -317,7 +306,7 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_HINT_ROUGHNESS_B, "hint_roughness_b" },
 	{ TK_HINT_ROUGHNESS_A, "hint_roughness_a" },
 	{ TK_HINT_ROUGHNESS_GRAY, "hint_roughness_gray" },
-	{ TK_HINT_ANISO_TEXTURE, "hint_aniso" },
+	{ TK_HINT_ANISOTROPY_TEXTURE, "hint_anisotropy" },
 	{ TK_HINT_ALBEDO_TEXTURE, "hint_albedo" },
 	{ TK_HINT_BLACK_ALBEDO_TEXTURE, "hint_black_albedo" },
 	{ TK_HINT_COLOR, "hint_color" },
@@ -327,8 +316,8 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_FILTER_LINEAR, "filter_linear" },
 	{ TK_FILTER_NEAREST_MIPMAP, "filter_nearest_mipmap" },
 	{ TK_FILTER_LINEAR_MIPMAP, "filter_linear_mipmap" },
-	{ TK_FILTER_NEAREST_MIPMAP_ANISO, "filter_nearest_mipmap_aniso" },
-	{ TK_FILTER_LINEAR_MIPMAP_ANISO, "filter_linear_mipmap_aniso" },
+	{ TK_FILTER_NEAREST_MIPMAP_ANISOTROPIC, "filter_nearest_mipmap_anisotropic" },
+	{ TK_FILTER_LINEAR_MIPMAP_ANISOTROPIC, "filter_linear_mipmap_anisotropic" },
 	{ TK_REPEAT_ENABLE, "repeat_enable" },
 	{ TK_REPEAT_DISABLE, "repeat_disable" },
 	{ TK_SHADER_TYPE, "shader_type" },
@@ -474,6 +463,10 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 			case ':':
 				return _make_token(TK_COLON);
 			case '^':
+				if (GETCHAR(0) == '=') {
+					char_idx++;
+					return _make_token(TK_OP_ASSIGN_BIT_XOR);
+				}
 				return _make_token(TK_OP_BIT_XOR);
 			case '~':
 				return _make_token(TK_OP_BIT_INVERT);
@@ -538,65 +531,115 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 			default: {
 				char_idx--; //go back one, since we have no idea what this is
 
-				if (_is_number(GETCHAR(0)) || (GETCHAR(0) == '.' && _is_number(GETCHAR(1)))) {
+				if (is_digit(GETCHAR(0)) || (GETCHAR(0) == '.' && is_digit(GETCHAR(1)))) {
 					// parse number
+					bool hexa_found = false;
 					bool period_found = false;
 					bool exponent_found = false;
-					bool hexa_found = false;
-					bool sign_found = false;
 					bool float_suffix_found = false;
+					bool uint_suffix_found = false;
+					bool end_suffix_found = false;
+
+					enum {
+						CASE_ALL,
+						CASE_HEXA_PERIOD,
+						CASE_EXPONENT,
+						CASE_SIGN_AFTER_EXPONENT,
+						CASE_NONE,
+						CASE_MAX,
+					} lut_case = CASE_ALL;
+
+					static bool suffix_lut[CASE_MAX][127];
+
+					if (!is_const_suffix_lut_initialized) {
+						is_const_suffix_lut_initialized = true;
+
+						for (int i = 0; i < 127; i++) {
+							char t = char(i);
+
+							suffix_lut[CASE_ALL][i] = t == '.' || t == 'x' || t == 'e' || t == 'f' || t == 'u' || t == '-' || t == '+';
+							suffix_lut[CASE_HEXA_PERIOD][i] = t == 'e' || t == 'f';
+							suffix_lut[CASE_EXPONENT][i] = t == 'f' || t == '-' || t == '+';
+							suffix_lut[CASE_SIGN_AFTER_EXPONENT][i] = t == 'f';
+							suffix_lut[CASE_NONE][i] = false;
+						}
+					}
 
 					String str;
 					int i = 0;
 
 					while (true) {
-						if (GETCHAR(i) == '.') {
-							if (period_found || exponent_found || hexa_found || float_suffix_found) {
-								return _make_token(TK_ERROR, "Invalid numeric constant");
+						const char32_t symbol = String::char_lowercase(GETCHAR(i));
+						bool error = false;
+
+						if (is_digit(symbol)) {
+							if (end_suffix_found) {
+								error = true;
 							}
-							period_found = true;
-						} else if (GETCHAR(i) == 'x') {
-							if (hexa_found || str.length() != 1 || str[0] != '0') {
-								return _make_token(TK_ERROR, "Invalid numeric constant");
-							}
-							hexa_found = true;
-						} else if (GETCHAR(i) == 'e' && !hexa_found) {
-							if (exponent_found || float_suffix_found) {
-								return _make_token(TK_ERROR, "Invalid numeric constant");
-							}
-							exponent_found = true;
-						} else if (GETCHAR(i) == 'f' && !hexa_found) {
-							if (exponent_found) {
-								return _make_token(TK_ERROR, "Invalid numeric constant");
-							}
-							float_suffix_found = true;
-						} else if (_is_number(GETCHAR(i))) {
-							if (float_suffix_found) {
-								return _make_token(TK_ERROR, "Invalid numeric constant");
-							}
-						} else if (hexa_found && _is_hex(GETCHAR(i))) {
-						} else if ((GETCHAR(i) == '-' || GETCHAR(i) == '+') && exponent_found) {
-							if (sign_found) {
-								return _make_token(TK_ERROR, "Invalid numeric constant");
-							}
-							sign_found = true;
 						} else {
-							break;
+							if (symbol < 0x7F && suffix_lut[lut_case][symbol]) {
+								if (symbol == 'x') {
+									hexa_found = true;
+									lut_case = CASE_HEXA_PERIOD;
+								} else if (symbol == '.') {
+									period_found = true;
+									lut_case = CASE_HEXA_PERIOD;
+								} else if (symbol == 'e' && !hexa_found) {
+									exponent_found = true;
+									lut_case = CASE_EXPONENT;
+								} else if (symbol == 'f' && !hexa_found) {
+									if (!period_found && !exponent_found) {
+										error = true;
+									}
+									float_suffix_found = true;
+									end_suffix_found = true;
+									lut_case = CASE_NONE;
+								} else if (symbol == 'u') {
+									uint_suffix_found = true;
+									end_suffix_found = true;
+									lut_case = CASE_NONE;
+								} else if (symbol == '-' || symbol == '+') {
+									if (exponent_found) {
+										lut_case = CASE_SIGN_AFTER_EXPONENT;
+									} else {
+										break;
+									}
+								}
+							} else if (!hexa_found || !is_hex_digit(symbol)) {
+								if (is_ascii_identifier_char(symbol)) {
+									error = true;
+								} else {
+									break;
+								}
+							}
 						}
 
-						str += char32_t(GETCHAR(i));
+						if (error) {
+							if (hexa_found) {
+								return _make_token(TK_ERROR, "Invalid (hexadecimal) numeric constant");
+							}
+							if (period_found || exponent_found || float_suffix_found) {
+								return _make_token(TK_ERROR, "Invalid (float) numeric constant");
+							}
+							if (uint_suffix_found) {
+								return _make_token(TK_ERROR, "Invalid (unsigned integer) numeric constant");
+							}
+							return _make_token(TK_ERROR, "Invalid (integer) numeric constant");
+						}
+						str += symbol;
 						i++;
 					}
 
 					char32_t last_char = str[str.length() - 1];
 
-					if (hexa_found) {
-						//integer(hex)
+					if (hexa_found) { // Integer(hex)
 						if (str.size() > 11 || !str.is_valid_hex_number(true)) { // > 0xFFFFFFFF
 							return _make_token(TK_ERROR, "Invalid (hexadecimal) numeric constant");
 						}
-					} else if (period_found || exponent_found || float_suffix_found) {
-						//floats
+					} else if (period_found || exponent_found || float_suffix_found) { // Float
+						if (exponent_found && (!is_digit(last_char) && last_char != 'f')) { // checks for eg: "2E", "2E-", "2E+"
+							return _make_token(TK_ERROR, "Invalid (float) numeric constant");
+						}
 						if (period_found) {
 							if (float_suffix_found) {
 								//checks for eg "1.f" or "1.99f" notations
@@ -605,7 +648,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 								}
 							} else {
 								//checks for eg. "1." or "1.99" notations
-								if (last_char != '.' && !_is_number(last_char)) {
+								if (last_char != '.' && !is_digit(last_char)) {
 									return _make_token(TK_ERROR, "Invalid (float) numeric constant");
 								}
 							}
@@ -617,22 +660,28 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 						}
 
 						if (float_suffix_found) {
-							//strip the suffix
+							// Strip the suffix.
 							str = str.left(str.length() - 1);
-							//compensate reading cursor position
+							// Compensate reading cursor position.
 							char_idx += 1;
 						}
 
 						if (!str.is_valid_float()) {
 							return _make_token(TK_ERROR, "Invalid (float) numeric constant");
 						}
-					} else {
-						//integers
-						if (!_is_number(last_char)) {
-							return _make_token(TK_ERROR, "Invalid (integer) numeric constant");
+					} else { // Integer
+						if (uint_suffix_found) {
+							// Strip the suffix.
+							str = str.left(str.length() - 1);
+							// Compensate reading cursor position.
+							char_idx += 1;
 						}
 						if (!str.is_valid_int()) {
-							return _make_token(TK_ERROR, "Invalid numeric constant");
+							if (uint_suffix_found) {
+								return _make_token(TK_ERROR, "Invalid (unsigned integer) numeric constant");
+							} else {
+								return _make_token(TK_ERROR, "Invalid (integer) numeric constant");
+							}
 						}
 					}
 
@@ -640,6 +689,8 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 					Token tk;
 					if (period_found || exponent_found || float_suffix_found) {
 						tk.type = TK_FLOAT_CONSTANT;
+					} else if (uint_suffix_found) {
+						tk.type = TK_UINT_CONSTANT;
 					} else {
 						tk.type = TK_INT_CONSTANT;
 					}
@@ -660,11 +711,11 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 					return _make_token(TK_PERIOD);
 				}
 
-				if (_is_text_char(GETCHAR(0))) {
+				if (is_ascii_identifier_char(GETCHAR(0))) {
 					// parse identifier
 					String str;
 
-					while (_is_text_char(GETCHAR(0))) {
+					while (is_ascii_identifier_char(GETCHAR(0))) {
 						str += char32_t(GETCHAR(0));
 						char_idx++;
 					}
@@ -909,10 +960,10 @@ void ShaderLanguage::clear() {
 	completion_type = COMPLETION_NONE;
 	completion_block = nullptr;
 	completion_function = StringName();
-	completion_class = SubClassTag::TAG_GLOBAL;
+	completion_class = TAG_GLOBAL;
 	completion_struct = StringName();
-
-	unknown_varying_usages.clear();
+	completion_base = TYPE_VOID;
+	completion_base_array = false;
 
 #ifdef DEBUG_ENABLED
 	used_constants.clear();
@@ -930,7 +981,6 @@ void ShaderLanguage::clear() {
 	error_set = false;
 	error_str = "";
 	last_const = false;
-	pass_array = false;
 	while (nodes) {
 		Node *n = nodes;
 		nodes = nodes->next;
@@ -1077,6 +1127,9 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_rea
 	if (shader->uniforms.has(p_identifier)) {
 		if (r_data_type) {
 			*r_data_type = shader->uniforms[p_identifier].type;
+		}
+		if (r_array_size) {
+			*r_array_size = shader->uniforms[p_identifier].array_size;
 		}
 		if (r_type) {
 			*r_type = IDENTIFIER_UNIFORM;
@@ -1424,7 +1477,7 @@ bool ShaderLanguage::_validate_operator(OperatorNode *p_op, DataType *r_ret_type
 			DataType nb = p_op->arguments[1]->get_datatype();
 
 			if (na == nb) {
-				valid = (na > TYPE_BOOL && na < TYPE_MAT2) || (p_op->op == OP_ASSIGN_MUL && na >= TYPE_MAT2 && na <= TYPE_MAT4);
+				valid = (na > TYPE_BOOL && na <= TYPE_MAT4);
 				ret_type = na;
 			} else if (na == TYPE_IVEC2 && nb == TYPE_INT) {
 				valid = true;
@@ -1597,731 +1650,1062 @@ bool ShaderLanguage::_validate_operator(OperatorNode *p_op, DataType *r_ret_type
 }
 
 const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
-	//constructors
-	{ "bool", TYPE_BOOL, { TYPE_BOOL, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "bvec2", TYPE_BVEC2, { TYPE_BOOL, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "bvec2", TYPE_BVEC2, { TYPE_BOOL, TYPE_BOOL, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "bvec3", TYPE_BVEC3, { TYPE_BOOL, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "bvec3", TYPE_BVEC3, { TYPE_BOOL, TYPE_BOOL, TYPE_BOOL, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "bvec3", TYPE_BVEC3, { TYPE_BVEC2, TYPE_BOOL, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "bvec3", TYPE_BVEC3, { TYPE_BOOL, TYPE_BVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "bvec4", TYPE_BVEC4, { TYPE_BOOL, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "bvec4", TYPE_BVEC4, { TYPE_BOOL, TYPE_BOOL, TYPE_BOOL, TYPE_BOOL, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "bvec4", TYPE_BVEC4, { TYPE_BOOL, TYPE_BVEC2, TYPE_BOOL, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "bvec4", TYPE_BVEC4, { TYPE_BVEC2, TYPE_BOOL, TYPE_BOOL, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "bvec4", TYPE_BVEC4, { TYPE_BOOL, TYPE_BOOL, TYPE_BVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "bvec4", TYPE_BVEC4, { TYPE_BOOL, TYPE_BVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "bvec4", TYPE_BVEC4, { TYPE_BVEC3, TYPE_BOOL, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "bvec4", TYPE_BVEC4, { TYPE_BVEC2, TYPE_BVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "float", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "vec2", TYPE_VEC2, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "vec2", TYPE_VEC2, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "vec3", TYPE_VEC3, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "vec3", TYPE_VEC3, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "vec3", TYPE_VEC3, { TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "vec3", TYPE_VEC3, { TYPE_FLOAT, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "vec4", TYPE_VEC4, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "vec4", TYPE_VEC4, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "vec4", TYPE_VEC4, { TYPE_FLOAT, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "vec4", TYPE_VEC4, { TYPE_VEC2, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "vec4", TYPE_VEC4, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "vec4", TYPE_VEC4, { TYPE_FLOAT, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "vec4", TYPE_VEC4, { TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "vec4", TYPE_VEC4, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "int", TYPE_INT, { TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "ivec2", TYPE_IVEC2, { TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "ivec2", TYPE_IVEC2, { TYPE_INT, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "ivec3", TYPE_IVEC3, { TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "ivec3", TYPE_IVEC3, { TYPE_INT, TYPE_INT, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "ivec3", TYPE_IVEC3, { TYPE_IVEC2, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "ivec3", TYPE_IVEC3, { TYPE_INT, TYPE_IVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "ivec4", TYPE_IVEC4, { TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "ivec4", TYPE_IVEC4, { TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "ivec4", TYPE_IVEC4, { TYPE_INT, TYPE_IVEC2, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "ivec4", TYPE_IVEC4, { TYPE_IVEC2, TYPE_INT, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "ivec4", TYPE_IVEC4, { TYPE_INT, TYPE_INT, TYPE_IVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "ivec4", TYPE_IVEC4, { TYPE_INT, TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "ivec4", TYPE_IVEC4, { TYPE_IVEC3, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "ivec4", TYPE_IVEC4, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "uint", TYPE_UINT, { TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uvec2", TYPE_UVEC2, { TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uvec2", TYPE_UVEC2, { TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uvec3", TYPE_UVEC3, { TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uvec3", TYPE_UVEC3, { TYPE_UINT, TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uvec3", TYPE_UVEC3, { TYPE_UVEC2, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uvec3", TYPE_UVEC3, { TYPE_UINT, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uvec4", TYPE_UVEC4, { TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uvec4", TYPE_UVEC4, { TYPE_UINT, TYPE_UINT, TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uvec4", TYPE_UVEC4, { TYPE_UINT, TYPE_UVEC2, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uvec4", TYPE_UVEC4, { TYPE_UVEC2, TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uvec4", TYPE_UVEC4, { TYPE_UINT, TYPE_UINT, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uvec4", TYPE_UVEC4, { TYPE_UINT, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uvec4", TYPE_UVEC4, { TYPE_UVEC3, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uvec4", TYPE_UVEC4, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
-
-	{ "mat2", TYPE_MAT2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "mat3", TYPE_MAT3, { TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "mat4", TYPE_MAT4, { TYPE_VEC4, TYPE_VEC4, TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "mat2", TYPE_MAT2, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "mat3", TYPE_MAT3, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "mat4", TYPE_MAT4, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-
-	//conversion scalars
-
-	{ "int", TYPE_INT, { TYPE_BOOL, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "int", TYPE_INT, { TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "int", TYPE_INT, { TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "int", TYPE_INT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "float", TYPE_FLOAT, { TYPE_BOOL, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "float", TYPE_FLOAT, { TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "float", TYPE_FLOAT, { TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "float", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "uint", TYPE_UINT, { TYPE_BOOL, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uint", TYPE_UINT, { TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uint", TYPE_UINT, { TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uint", TYPE_UINT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-
-	{ "bool", TYPE_BOOL, { TYPE_BOOL, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "bool", TYPE_BOOL, { TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "bool", TYPE_BOOL, { TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "bool", TYPE_BOOL, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-
-	//conversion vectors
-
-	{ "ivec2", TYPE_IVEC2, { TYPE_BVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "ivec2", TYPE_IVEC2, { TYPE_IVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "ivec2", TYPE_IVEC2, { TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "ivec2", TYPE_IVEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "vec2", TYPE_VEC2, { TYPE_BVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "vec2", TYPE_VEC2, { TYPE_IVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "vec2", TYPE_VEC2, { TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "vec2", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "uvec2", TYPE_UVEC2, { TYPE_BVEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uvec2", TYPE_UVEC2, { TYPE_IVEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uvec2", TYPE_UVEC2, { TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uvec2", TYPE_UVEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, true },
-
-	{ "bvec2", TYPE_BVEC2, { TYPE_BVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "bvec2", TYPE_BVEC2, { TYPE_IVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "bvec2", TYPE_BVEC2, { TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "bvec2", TYPE_BVEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "ivec3", TYPE_IVEC3, { TYPE_BVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "ivec3", TYPE_IVEC3, { TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "ivec3", TYPE_IVEC3, { TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "ivec3", TYPE_IVEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "vec3", TYPE_VEC3, { TYPE_BVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "vec3", TYPE_VEC3, { TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "vec3", TYPE_VEC3, { TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "vec3", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "uvec3", TYPE_UVEC3, { TYPE_BVEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uvec3", TYPE_UVEC3, { TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uvec3", TYPE_UVEC3, { TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uvec3", TYPE_UVEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
-
-	{ "bvec3", TYPE_BVEC3, { TYPE_BVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "bvec3", TYPE_BVEC3, { TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "bvec3", TYPE_BVEC3, { TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "bvec3", TYPE_BVEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "ivec4", TYPE_IVEC4, { TYPE_BVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "ivec4", TYPE_IVEC4, { TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "ivec4", TYPE_IVEC4, { TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "ivec4", TYPE_IVEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "vec4", TYPE_VEC4, { TYPE_BVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "vec4", TYPE_VEC4, { TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "vec4", TYPE_VEC4, { TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "vec4", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "uvec4", TYPE_UVEC4, { TYPE_BVEC4, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uvec4", TYPE_UVEC4, { TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uvec4", TYPE_UVEC4, { TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uvec4", TYPE_UVEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, true },
-
-	{ "bvec4", TYPE_BVEC4, { TYPE_BVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "bvec4", TYPE_BVEC4, { TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "bvec4", TYPE_BVEC4, { TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "bvec4", TYPE_BVEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	//conversion between matrixes
-
-	{ "mat2", TYPE_MAT2, { TYPE_MAT3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "mat2", TYPE_MAT2, { TYPE_MAT4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "mat3", TYPE_MAT3, { TYPE_MAT2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "mat3", TYPE_MAT3, { TYPE_MAT4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "mat4", TYPE_MAT4, { TYPE_MAT2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "mat4", TYPE_MAT4, { TYPE_MAT3, TYPE_VOID }, TAG_GLOBAL, false },
-
-	//builtins - trigonometry
-
-	{ "radians", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "radians", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "radians", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "radians", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "degrees", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "degrees", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "degrees", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "degrees", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "sin", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "sin", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "sin", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "sin", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "cos", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "cos", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "cos", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "cos", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "tan", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "tan", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "tan", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "tan", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "asin", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "asin", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "asin", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "asin", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "acos", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "acos", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "acos", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "acos", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "atan", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "atan", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "atan", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "atan", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "atan", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "atan", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "atan", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "atan", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "sinh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "sinh", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "sinh", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "sinh", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "cosh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "cosh", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "cosh", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "cosh", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "tanh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "tanh", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "tanh", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "tanh", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "asinh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "asinh", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "asinh", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "asinh", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "acosh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "acosh", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "acosh", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "acosh", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "atanh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "atanh", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "atanh", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "atanh", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	//builtins - exponential
-	{ "pow", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "pow", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "pow", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "pow", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "exp", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "exp", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "exp", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "exp", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "log", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "log", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "log", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "log", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "exp2", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "exp2", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "exp2", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "exp2", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "log2", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "log2", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "log2", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "log2", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "sqrt", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "sqrt", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "sqrt", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "sqrt", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "inversesqrt", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "inversesqrt", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "inversesqrt", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "inversesqrt", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	//builtins - common
-	{ "abs", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "abs", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "abs", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "abs", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "abs", TYPE_INT, { TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "abs", TYPE_IVEC2, { TYPE_IVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "abs", TYPE_IVEC3, { TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "abs", TYPE_IVEC4, { TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "sign", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "sign", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "sign", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "sign", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "sign", TYPE_INT, { TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "sign", TYPE_IVEC2, { TYPE_IVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "sign", TYPE_IVEC3, { TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "sign", TYPE_IVEC4, { TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "floor", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "floor", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "floor", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "floor", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "trunc", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "trunc", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "trunc", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "trunc", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "round", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "round", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "round", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "round", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "roundEven", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "roundEven", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "roundEven", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "roundEven", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "ceil", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "ceil", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "ceil", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "ceil", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "fract", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "fract", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "fract", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "fract", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "mod", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "mod", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "mod", TYPE_VEC2, { TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "mod", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "mod", TYPE_VEC3, { TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "mod", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "mod", TYPE_VEC4, { TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "modf", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "modf", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "modf", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "modf", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, true },
-
-	{ "min", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "min", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "min", TYPE_VEC2, { TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "min", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "min", TYPE_VEC3, { TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "min", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "min", TYPE_VEC4, { TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "min", TYPE_INT, { TYPE_INT, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "min", TYPE_IVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "min", TYPE_IVEC2, { TYPE_IVEC2, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "min", TYPE_IVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "min", TYPE_IVEC3, { TYPE_IVEC3, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "min", TYPE_IVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "min", TYPE_IVEC4, { TYPE_IVEC4, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "min", TYPE_UINT, { TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "min", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "min", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "min", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "min", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "min", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "min", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-
-	{ "max", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "max", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "max", TYPE_VEC2, { TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "max", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "max", TYPE_VEC3, { TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "max", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "max", TYPE_VEC4, { TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "max", TYPE_INT, { TYPE_INT, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "max", TYPE_IVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "max", TYPE_IVEC2, { TYPE_IVEC2, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "max", TYPE_IVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "max", TYPE_IVEC3, { TYPE_IVEC3, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "max", TYPE_IVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "max", TYPE_IVEC4, { TYPE_IVEC4, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "max", TYPE_UINT, { TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "max", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "max", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "max", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "max", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "max", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "max", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-
-	{ "clamp", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "clamp", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "clamp", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "clamp", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "clamp", TYPE_VEC2, { TYPE_VEC2, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "clamp", TYPE_VEC3, { TYPE_VEC3, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "clamp", TYPE_VEC4, { TYPE_VEC4, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "clamp", TYPE_INT, { TYPE_INT, TYPE_INT, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "clamp", TYPE_IVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "clamp", TYPE_IVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "clamp", TYPE_IVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "clamp", TYPE_IVEC2, { TYPE_IVEC2, TYPE_INT, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "clamp", TYPE_IVEC3, { TYPE_IVEC3, TYPE_INT, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "clamp", TYPE_IVEC4, { TYPE_IVEC4, TYPE_INT, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "clamp", TYPE_UINT, { TYPE_UINT, TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "clamp", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "clamp", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "clamp", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "clamp", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "clamp", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "clamp", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-
-	{ "mix", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "mix", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "mix", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_BVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "mix", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "mix", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "mix", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_BVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "mix", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "mix", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "mix", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_BVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "mix", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "step", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "step", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "step", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "step", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "step", TYPE_VEC2, { TYPE_FLOAT, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "step", TYPE_VEC3, { TYPE_FLOAT, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "step", TYPE_VEC4, { TYPE_FLOAT, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "smoothstep", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "smoothstep", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "smoothstep", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "smoothstep", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "smoothstep", TYPE_VEC2, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "smoothstep", TYPE_VEC3, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "smoothstep", TYPE_VEC4, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "isnan", TYPE_BOOL, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "isnan", TYPE_BVEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "isnan", TYPE_BVEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "isnan", TYPE_BVEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "isinf", TYPE_BOOL, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "isinf", TYPE_BVEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "isinf", TYPE_BVEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "isinf", TYPE_BVEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "floatBitsToInt", TYPE_INT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "floatBitsToInt", TYPE_IVEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "floatBitsToInt", TYPE_IVEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "floatBitsToInt", TYPE_IVEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, true },
-
-	{ "floatBitsToUint", TYPE_UINT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "floatBitsToUint", TYPE_UVEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "floatBitsToUint", TYPE_UVEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "floatBitsToUint", TYPE_UVEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, true },
-
-	{ "intBitsToFloat", TYPE_FLOAT, { TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "intBitsToFloat", TYPE_VEC2, { TYPE_IVEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "intBitsToFloat", TYPE_VEC3, { TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "intBitsToFloat", TYPE_VEC4, { TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, true },
-
-	{ "uintBitsToFloat", TYPE_FLOAT, { TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uintBitsToFloat", TYPE_VEC2, { TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uintBitsToFloat", TYPE_VEC3, { TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "uintBitsToFloat", TYPE_VEC4, { TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, true },
-
-	//builtins - geometric
-	{ "length", TYPE_FLOAT, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "length", TYPE_FLOAT, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "length", TYPE_FLOAT, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "distance", TYPE_FLOAT, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "distance", TYPE_FLOAT, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "distance", TYPE_FLOAT, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "dot", TYPE_FLOAT, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "dot", TYPE_FLOAT, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "dot", TYPE_FLOAT, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "cross", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "normalize", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "normalize", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "normalize", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "reflect", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "refract", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "faceforward", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "faceforward", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "faceforward", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "matrixCompMult", TYPE_MAT2, { TYPE_MAT2, TYPE_MAT2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "matrixCompMult", TYPE_MAT3, { TYPE_MAT3, TYPE_MAT3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "matrixCompMult", TYPE_MAT4, { TYPE_MAT4, TYPE_MAT4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "outerProduct", TYPE_MAT2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "outerProduct", TYPE_MAT3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "outerProduct", TYPE_MAT4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "transpose", TYPE_MAT2, { TYPE_MAT2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "transpose", TYPE_MAT3, { TYPE_MAT3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "transpose", TYPE_MAT4, { TYPE_MAT4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "determinant", TYPE_FLOAT, { TYPE_MAT2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "determinant", TYPE_FLOAT, { TYPE_MAT3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "determinant", TYPE_FLOAT, { TYPE_MAT4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "inverse", TYPE_MAT2, { TYPE_MAT2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "inverse", TYPE_MAT3, { TYPE_MAT3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "inverse", TYPE_MAT4, { TYPE_MAT4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "lessThan", TYPE_BVEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "lessThan", TYPE_BVEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "lessThan", TYPE_BVEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "lessThan", TYPE_BVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "lessThan", TYPE_BVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "lessThan", TYPE_BVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "lessThan", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "lessThan", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "lessThan", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, true },
-
-	{ "greaterThan", TYPE_BVEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "greaterThan", TYPE_BVEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "greaterThan", TYPE_BVEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "greaterThan", TYPE_BVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "greaterThan", TYPE_BVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "greaterThan", TYPE_BVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "greaterThan", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "greaterThan", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "greaterThan", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, true },
-
-	{ "lessThanEqual", TYPE_BVEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "lessThanEqual", TYPE_BVEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "lessThanEqual", TYPE_BVEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "lessThanEqual", TYPE_BVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "lessThanEqual", TYPE_BVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "lessThanEqual", TYPE_BVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "lessThanEqual", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "lessThanEqual", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "lessThanEqual", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, true },
-
-	{ "greaterThanEqual", TYPE_BVEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "greaterThanEqual", TYPE_BVEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "greaterThanEqual", TYPE_BVEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "greaterThanEqual", TYPE_BVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "greaterThanEqual", TYPE_BVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "greaterThanEqual", TYPE_BVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "greaterThanEqual", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "greaterThanEqual", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "greaterThanEqual", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, true },
-
-	{ "equal", TYPE_BVEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "equal", TYPE_BVEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "equal", TYPE_BVEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "equal", TYPE_BVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "equal", TYPE_BVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "equal", TYPE_BVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "equal", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "equal", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "equal", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, true },
-
-	{ "equal", TYPE_BVEC2, { TYPE_BVEC2, TYPE_BVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "equal", TYPE_BVEC3, { TYPE_BVEC3, TYPE_BVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "equal", TYPE_BVEC4, { TYPE_BVEC4, TYPE_BVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "notEqual", TYPE_BVEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "notEqual", TYPE_BVEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "notEqual", TYPE_BVEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "notEqual", TYPE_BVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "notEqual", TYPE_BVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "notEqual", TYPE_BVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "notEqual", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "notEqual", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "notEqual", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, true },
-
-	{ "notEqual", TYPE_BVEC2, { TYPE_BVEC2, TYPE_BVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "notEqual", TYPE_BVEC3, { TYPE_BVEC3, TYPE_BVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "notEqual", TYPE_BVEC4, { TYPE_BVEC4, TYPE_BVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "any", TYPE_BOOL, { TYPE_BVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "any", TYPE_BOOL, { TYPE_BVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "any", TYPE_BOOL, { TYPE_BVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "all", TYPE_BOOL, { TYPE_BVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "all", TYPE_BOOL, { TYPE_BVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "all", TYPE_BOOL, { TYPE_BVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "not", TYPE_BVEC2, { TYPE_BVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "not", TYPE_BVEC3, { TYPE_BVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "not", TYPE_BVEC4, { TYPE_BVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	//builtins - texture
-	{ "textureSize", TYPE_IVEC2, { TYPE_SAMPLER2D, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureSize", TYPE_IVEC2, { TYPE_ISAMPLER2D, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureSize", TYPE_IVEC2, { TYPE_USAMPLER2D, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureSize", TYPE_IVEC3, { TYPE_SAMPLER2DARRAY, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureSize", TYPE_IVEC3, { TYPE_ISAMPLER2DARRAY, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureSize", TYPE_IVEC3, { TYPE_USAMPLER2DARRAY, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureSize", TYPE_IVEC3, { TYPE_SAMPLER3D, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureSize", TYPE_IVEC3, { TYPE_ISAMPLER3D, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureSize", TYPE_IVEC3, { TYPE_USAMPLER3D, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureSize", TYPE_IVEC2, { TYPE_SAMPLERCUBE, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureSize", TYPE_IVEC2, { TYPE_SAMPLERCUBEARRAY, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
-
-	{ "texture", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "texture", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "texture", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "texture", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "texture", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "texture", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "texture", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "texture", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "texture", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "texture", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "texture", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "texture", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "texture", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "texture", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "texture", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "texture", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "texture", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "texture", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "texture", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "texture", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "texture", TYPE_VEC4, { TYPE_SAMPLERCUBEARRAY, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "texture", TYPE_VEC4, { TYPE_SAMPLERCUBEARRAY, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "textureProj", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureProj", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureProj", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureProj", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureProj", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureProj", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureProj", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureProj", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureProj", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureProj", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureProj", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureProj", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureProj", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureProj", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureProj", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureProj", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureProj", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureProj", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-
-	{ "textureLod", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "textureLod", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureLod", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureLod", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "textureLod", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureLod", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureLod", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "textureLod", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureLod", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureLod", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "textureLod", TYPE_VEC4, { TYPE_SAMPLERCUBEARRAY, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ "texelFetch", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_IVEC2, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "texelFetch", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_IVEC2, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "texelFetch", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_IVEC2, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "texelFetch", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_IVEC3, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "texelFetch", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_IVEC3, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "texelFetch", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_IVEC3, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "texelFetch", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_IVEC3, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "texelFetch", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_IVEC3, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "texelFetch", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_IVEC3, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
-
-	{ "textureProjLod", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureProjLod", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureProjLod", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureProjLod", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureProjLod", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureProjLod", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureProjLod", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureProjLod", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureProjLod", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-
-	{ "textureGrad", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureGrad", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureGrad", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureGrad", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_VEC3, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureGrad", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_VEC3, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureGrad", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_VEC3, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureGrad", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureGrad", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureGrad", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureGrad", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "textureGrad", TYPE_VEC4, { TYPE_SAMPLERCUBEARRAY, TYPE_VEC4, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
-
-	{ "dFdx", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "dFdx", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "dFdx", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "dFdx", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, true },
-
-	{ "dFdy", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "dFdy", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "dFdy", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "dFdy", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, true },
-
-	{ "fwidth", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "fwidth", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "fwidth", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
-	{ "fwidth", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, true },
-
-	//sub-functions
-
-	//array
-	{ "length", TYPE_INT, { TYPE_VOID }, TAG_ARRAY, true },
-
-	// modern functions
-
-	{ "fma", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "fma", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "fma", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "fma", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
-
-	{ nullptr, TYPE_VOID, { TYPE_VOID }, TAG_GLOBAL, false }
+	// Constructors.
+
+	{ "bool", TYPE_BOOL, { TYPE_BOOL, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "bvec2", TYPE_BVEC2, { TYPE_BOOL, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "bvec2", TYPE_BVEC2, { TYPE_BOOL, TYPE_BOOL, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "bvec3", TYPE_BVEC3, { TYPE_BOOL, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "bvec3", TYPE_BVEC3, { TYPE_BOOL, TYPE_BOOL, TYPE_BOOL, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "bvec3", TYPE_BVEC3, { TYPE_BVEC2, TYPE_BOOL, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "bvec3", TYPE_BVEC3, { TYPE_BOOL, TYPE_BVEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "bvec4", TYPE_BVEC4, { TYPE_BOOL, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "bvec4", TYPE_BVEC4, { TYPE_BOOL, TYPE_BOOL, TYPE_BOOL, TYPE_BOOL, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "bvec4", TYPE_BVEC4, { TYPE_BOOL, TYPE_BVEC2, TYPE_BOOL, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "bvec4", TYPE_BVEC4, { TYPE_BVEC2, TYPE_BOOL, TYPE_BOOL, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "bvec4", TYPE_BVEC4, { TYPE_BOOL, TYPE_BOOL, TYPE_BVEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "bvec4", TYPE_BVEC4, { TYPE_BOOL, TYPE_BVEC3, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "bvec4", TYPE_BVEC4, { TYPE_BVEC3, TYPE_BOOL, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "bvec4", TYPE_BVEC4, { TYPE_BVEC2, TYPE_BVEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+
+	{ "float", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "vec2", TYPE_VEC2, { TYPE_FLOAT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "vec2", TYPE_VEC2, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "vec3", TYPE_VEC3, { TYPE_FLOAT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "vec3", TYPE_VEC3, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "vec3", TYPE_VEC3, { TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "vec3", TYPE_VEC3, { TYPE_FLOAT, TYPE_VEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "vec4", TYPE_VEC4, { TYPE_FLOAT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "vec4", TYPE_VEC4, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "vec4", TYPE_VEC4, { TYPE_FLOAT, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "vec4", TYPE_VEC4, { TYPE_VEC2, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "vec4", TYPE_VEC4, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "vec4", TYPE_VEC4, { TYPE_FLOAT, TYPE_VEC3, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "vec4", TYPE_VEC4, { TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "vec4", TYPE_VEC4, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+
+	{ "int", TYPE_INT, { TYPE_INT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "ivec2", TYPE_IVEC2, { TYPE_INT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "ivec2", TYPE_IVEC2, { TYPE_INT, TYPE_INT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "ivec3", TYPE_IVEC3, { TYPE_INT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "ivec3", TYPE_IVEC3, { TYPE_INT, TYPE_INT, TYPE_INT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "ivec3", TYPE_IVEC3, { TYPE_IVEC2, TYPE_INT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "ivec3", TYPE_IVEC3, { TYPE_INT, TYPE_IVEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "ivec4", TYPE_IVEC4, { TYPE_INT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "ivec4", TYPE_IVEC4, { TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "ivec4", TYPE_IVEC4, { TYPE_INT, TYPE_IVEC2, TYPE_INT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "ivec4", TYPE_IVEC4, { TYPE_IVEC2, TYPE_INT, TYPE_INT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "ivec4", TYPE_IVEC4, { TYPE_INT, TYPE_INT, TYPE_IVEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "ivec4", TYPE_IVEC4, { TYPE_INT, TYPE_IVEC3, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "ivec4", TYPE_IVEC4, { TYPE_IVEC3, TYPE_INT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "ivec4", TYPE_IVEC4, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+
+	{ "uint", TYPE_UINT, { TYPE_UINT, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "uvec2", TYPE_UVEC2, { TYPE_UINT, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "uvec2", TYPE_UVEC2, { TYPE_UINT, TYPE_UINT, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "uvec3", TYPE_UVEC3, { TYPE_UINT, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "uvec3", TYPE_UVEC3, { TYPE_UINT, TYPE_UINT, TYPE_UINT, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "uvec3", TYPE_UVEC3, { TYPE_UVEC2, TYPE_UINT, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "uvec3", TYPE_UVEC3, { TYPE_UINT, TYPE_UVEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "uvec4", TYPE_UVEC4, { TYPE_UINT, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "uvec4", TYPE_UVEC4, { TYPE_UINT, TYPE_UINT, TYPE_UINT, TYPE_UINT, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "uvec4", TYPE_UVEC4, { TYPE_UINT, TYPE_UVEC2, TYPE_UINT, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "uvec4", TYPE_UVEC4, { TYPE_UVEC2, TYPE_UINT, TYPE_UINT, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "uvec4", TYPE_UVEC4, { TYPE_UINT, TYPE_UINT, TYPE_UVEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "uvec4", TYPE_UVEC4, { TYPE_UINT, TYPE_UVEC3, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "uvec4", TYPE_UVEC4, { TYPE_UVEC3, TYPE_UINT, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "uvec4", TYPE_UVEC4, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+
+	{ "mat2", TYPE_MAT2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "mat3", TYPE_MAT3, { TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "mat4", TYPE_MAT4, { TYPE_VEC4, TYPE_VEC4, TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+
+	{ "mat2", TYPE_MAT2, { TYPE_FLOAT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "mat3", TYPE_MAT3, { TYPE_FLOAT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "mat4", TYPE_MAT4, { TYPE_FLOAT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+
+	// Conversion scalars.
+
+	{ "int", TYPE_INT, { TYPE_BOOL, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "int", TYPE_INT, { TYPE_INT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "int", TYPE_INT, { TYPE_UINT, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "int", TYPE_INT, { TYPE_FLOAT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+
+	{ "float", TYPE_FLOAT, { TYPE_BOOL, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "float", TYPE_FLOAT, { TYPE_INT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "float", TYPE_FLOAT, { TYPE_UINT, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "float", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+
+	{ "uint", TYPE_UINT, { TYPE_BOOL, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "uint", TYPE_UINT, { TYPE_INT, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "uint", TYPE_UINT, { TYPE_UINT, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "uint", TYPE_UINT, { TYPE_FLOAT, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+
+	{ "bool", TYPE_BOOL, { TYPE_BOOL, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "bool", TYPE_BOOL, { TYPE_INT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "bool", TYPE_BOOL, { TYPE_UINT, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "bool", TYPE_BOOL, { TYPE_FLOAT, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+
+	// Conversion vectors.
+
+	{ "ivec2", TYPE_IVEC2, { TYPE_BVEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "ivec2", TYPE_IVEC2, { TYPE_IVEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "ivec2", TYPE_IVEC2, { TYPE_UVEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "ivec2", TYPE_IVEC2, { TYPE_VEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+
+	{ "vec2", TYPE_VEC2, { TYPE_BVEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "vec2", TYPE_VEC2, { TYPE_IVEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "vec2", TYPE_VEC2, { TYPE_UVEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "vec2", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+
+	{ "uvec2", TYPE_UVEC2, { TYPE_BVEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "uvec2", TYPE_UVEC2, { TYPE_IVEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "uvec2", TYPE_UVEC2, { TYPE_UVEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "uvec2", TYPE_UVEC2, { TYPE_VEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+
+	{ "bvec2", TYPE_BVEC2, { TYPE_BVEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "bvec2", TYPE_BVEC2, { TYPE_IVEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "bvec2", TYPE_BVEC2, { TYPE_UVEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "bvec2", TYPE_BVEC2, { TYPE_VEC2, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+
+	{ "ivec3", TYPE_IVEC3, { TYPE_BVEC3, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "ivec3", TYPE_IVEC3, { TYPE_IVEC3, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "ivec3", TYPE_IVEC3, { TYPE_UVEC3, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "ivec3", TYPE_IVEC3, { TYPE_VEC3, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+
+	{ "vec3", TYPE_VEC3, { TYPE_BVEC3, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "vec3", TYPE_VEC3, { TYPE_IVEC3, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "vec3", TYPE_VEC3, { TYPE_UVEC3, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "vec3", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+
+	{ "uvec3", TYPE_UVEC3, { TYPE_BVEC3, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "uvec3", TYPE_UVEC3, { TYPE_IVEC3, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "uvec3", TYPE_UVEC3, { TYPE_UVEC3, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "uvec3", TYPE_UVEC3, { TYPE_VEC3, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+
+	{ "bvec3", TYPE_BVEC3, { TYPE_BVEC3, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "bvec3", TYPE_BVEC3, { TYPE_IVEC3, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "bvec3", TYPE_BVEC3, { TYPE_UVEC3, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "bvec3", TYPE_BVEC3, { TYPE_VEC3, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+
+	{ "ivec4", TYPE_IVEC4, { TYPE_BVEC4, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "ivec4", TYPE_IVEC4, { TYPE_IVEC4, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "ivec4", TYPE_IVEC4, { TYPE_UVEC4, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "ivec4", TYPE_IVEC4, { TYPE_VEC4, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+
+	{ "vec4", TYPE_VEC4, { TYPE_BVEC4, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "vec4", TYPE_VEC4, { TYPE_IVEC4, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "vec4", TYPE_VEC4, { TYPE_UVEC4, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "vec4", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+
+	{ "uvec4", TYPE_UVEC4, { TYPE_BVEC4, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "uvec4", TYPE_UVEC4, { TYPE_IVEC4, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "uvec4", TYPE_UVEC4, { TYPE_UVEC4, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "uvec4", TYPE_UVEC4, { TYPE_VEC4, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+
+	{ "bvec4", TYPE_BVEC4, { TYPE_BVEC4, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "bvec4", TYPE_BVEC4, { TYPE_IVEC4, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "bvec4", TYPE_BVEC4, { TYPE_UVEC4, TYPE_VOID }, { "" }, TAG_GLOBAL, true },
+	{ "bvec4", TYPE_BVEC4, { TYPE_VEC4, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+
+	// Conversion between matrixes.
+
+	{ "mat2", TYPE_MAT2, { TYPE_MAT3, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "mat2", TYPE_MAT2, { TYPE_MAT4, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "mat3", TYPE_MAT3, { TYPE_MAT2, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "mat3", TYPE_MAT3, { TYPE_MAT4, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "mat4", TYPE_MAT4, { TYPE_MAT2, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+	{ "mat4", TYPE_MAT4, { TYPE_MAT3, TYPE_VOID }, { "" }, TAG_GLOBAL, false },
+
+	// Built-ins - trigonometric functions.
+	// radians
+
+	{ "radians", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "degrees" }, TAG_GLOBAL, false },
+	{ "radians", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "degrees" }, TAG_GLOBAL, false },
+	{ "radians", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "degrees" }, TAG_GLOBAL, false },
+	{ "radians", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "degrees" }, TAG_GLOBAL, false },
+
+	// degrees
+
+	{ "degrees", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "radians" }, TAG_GLOBAL, false },
+	{ "degrees", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "radians" }, TAG_GLOBAL, false },
+	{ "degrees", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "radians" }, TAG_GLOBAL, false },
+	{ "degrees", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "radians" }, TAG_GLOBAL, false },
+
+	// sin
+
+	{ "sin", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "angle" }, TAG_GLOBAL, false },
+	{ "sin", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "angle" }, TAG_GLOBAL, false },
+	{ "sin", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "angle" }, TAG_GLOBAL, false },
+	{ "sin", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "angle" }, TAG_GLOBAL, false },
+
+	// cos
+
+	{ "cos", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "angle" }, TAG_GLOBAL, false },
+	{ "cos", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "angle" }, TAG_GLOBAL, false },
+	{ "cos", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "angle" }, TAG_GLOBAL, false },
+	{ "cos", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "angle" }, TAG_GLOBAL, false },
+
+	// tan
+
+	{ "tan", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "angle" }, TAG_GLOBAL, false },
+	{ "tan", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "angle" }, TAG_GLOBAL, false },
+	{ "tan", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "angle" }, TAG_GLOBAL, false },
+	{ "tan", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "angle" }, TAG_GLOBAL, false },
+
+	// asin
+
+	{ "asin", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "asin", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "asin", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "asin", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// acos
+
+	{ "acos", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "acos", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "acos", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "acos", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// atan
+
+	{ "atan", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "y_over_x" }, TAG_GLOBAL, false },
+	{ "atan", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "y_over_x" }, TAG_GLOBAL, false },
+	{ "atan", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "y_over_x" }, TAG_GLOBAL, false },
+	{ "atan", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "y_over_x" }, TAG_GLOBAL, false },
+	{ "atan", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, { "y", "x" }, TAG_GLOBAL, false },
+	{ "atan", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "y", "x" }, TAG_GLOBAL, false },
+	{ "atan", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "y", "x" }, TAG_GLOBAL, false },
+	{ "atan", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, { "y", "x" }, TAG_GLOBAL, false },
+
+	// sinh
+
+	{ "sinh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "sinh", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "sinh", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "sinh", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// cosh
+
+	{ "cosh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "cosh", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "cosh", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "cosh", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// tanh
+
+	{ "tanh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "tanh", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "tanh", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "tanh", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// asinh
+
+	{ "asinh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "asinh", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "asinh", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "asinh", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// acosh
+
+	{ "acosh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "acosh", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "acosh", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "acosh", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// atanh
+
+	{ "atanh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "atanh", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "atanh", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "atanh", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// Builtins - exponential functions.
+	// pow
+
+	{ "pow", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, { "x", "y" }, TAG_GLOBAL, false },
+	{ "pow", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "x", "y" }, TAG_GLOBAL, false },
+	{ "pow", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "x", "y" }, TAG_GLOBAL, false },
+	{ "pow", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, { "x", "y" }, TAG_GLOBAL, false },
+
+	// exp
+
+	{ "exp", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "exp", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "exp", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "exp", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// log
+
+	{ "log", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "log", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "log", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "log", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// exp2
+
+	{ "exp2", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "exp2", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "exp2", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "exp2", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// log2
+
+	{ "log2", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "log2", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "log2", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "log2", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// sqrt
+
+	{ "sqrt", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "sqrt", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "sqrt", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "sqrt", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// inversesqrt
+
+	{ "inversesqrt", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "inversesqrt", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "inversesqrt", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "inversesqrt", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// Built-ins - common functions.
+	// abs
+
+	{ "abs", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "abs", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "abs", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "abs", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	{ "abs", TYPE_INT, { TYPE_INT, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "abs", TYPE_IVEC2, { TYPE_IVEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "abs", TYPE_IVEC3, { TYPE_IVEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "abs", TYPE_IVEC4, { TYPE_IVEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// sign
+
+	{ "sign", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "sign", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "sign", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "sign", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	{ "sign", TYPE_INT, { TYPE_INT, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "sign", TYPE_IVEC2, { TYPE_IVEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "sign", TYPE_IVEC3, { TYPE_IVEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "sign", TYPE_IVEC4, { TYPE_IVEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// floor
+
+	{ "floor", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "floor", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "floor", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "floor", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// trunc
+
+	{ "trunc", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "trunc", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "trunc", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "trunc", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// round
+
+	{ "round", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "round", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "round", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "round", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// roundEven
+
+	{ "roundEven", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "roundEven", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "roundEven", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "roundEven", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// ceil
+
+	{ "ceil", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "ceil", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "ceil", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "ceil", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// fract
+
+	{ "fract", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "fract", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "fract", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "fract", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// mod
+
+	{ "mod", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, { "x", "y" }, TAG_GLOBAL, false },
+	{ "mod", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "x", "y" }, TAG_GLOBAL, false },
+	{ "mod", TYPE_VEC2, { TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, { "x", "y" }, TAG_GLOBAL, false },
+	{ "mod", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "x", "y" }, TAG_GLOBAL, false },
+	{ "mod", TYPE_VEC3, { TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "x", "y" }, TAG_GLOBAL, false },
+	{ "mod", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, { "x", "y" }, TAG_GLOBAL, false },
+	{ "mod", TYPE_VEC4, { TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, { "x", "y" }, TAG_GLOBAL, false },
+
+	// modf
+
+	{ "modf", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, { "x", "i" }, TAG_GLOBAL, true },
+	{ "modf", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "x", "i" }, TAG_GLOBAL, true },
+	{ "modf", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "x", "i" }, TAG_GLOBAL, true },
+	{ "modf", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, { "x", "i" }, TAG_GLOBAL, true },
+
+	// min
+
+	{ "min", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "min", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "min", TYPE_VEC2, { TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "min", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "min", TYPE_VEC3, { TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "min", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "min", TYPE_VEC4, { TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+
+	{ "min", TYPE_INT, { TYPE_INT, TYPE_INT, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "min", TYPE_IVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "min", TYPE_IVEC2, { TYPE_IVEC2, TYPE_INT, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "min", TYPE_IVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "min", TYPE_IVEC3, { TYPE_IVEC3, TYPE_INT, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "min", TYPE_IVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "min", TYPE_IVEC4, { TYPE_IVEC4, TYPE_INT, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+
+	{ "min", TYPE_UINT, { TYPE_UINT, TYPE_UINT, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+	{ "min", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+	{ "min", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UINT, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+	{ "min", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+	{ "min", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UINT, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+	{ "min", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+	{ "min", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UINT, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+
+	// max
+
+	{ "max", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "max", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "max", TYPE_VEC2, { TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "max", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "max", TYPE_VEC3, { TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "max", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "max", TYPE_VEC4, { TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+
+	{ "max", TYPE_INT, { TYPE_INT, TYPE_INT, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "max", TYPE_IVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "max", TYPE_IVEC2, { TYPE_IVEC2, TYPE_INT, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "max", TYPE_IVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "max", TYPE_IVEC3, { TYPE_IVEC3, TYPE_INT, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "max", TYPE_IVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "max", TYPE_IVEC4, { TYPE_IVEC4, TYPE_INT, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+
+	{ "max", TYPE_UINT, { TYPE_UINT, TYPE_UINT, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+	{ "max", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+	{ "max", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UINT, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+	{ "max", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+	{ "max", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UINT, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+	{ "max", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+	{ "max", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UINT, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+
+	// clamp
+
+	{ "clamp", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, { "x", "minVal", "maxVal" }, TAG_GLOBAL, false },
+	{ "clamp", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "x", "minVal", "maxVal" }, TAG_GLOBAL, false },
+	{ "clamp", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "x", "minVal", "maxVal" }, TAG_GLOBAL, false },
+	{ "clamp", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, { "x", "minVal", "maxVal" }, TAG_GLOBAL, false },
+	{ "clamp", TYPE_VEC2, { TYPE_VEC2, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, { "x", "minVal", "maxVal" }, TAG_GLOBAL, false },
+	{ "clamp", TYPE_VEC3, { TYPE_VEC3, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, { "x", "minVal", "maxVal" }, TAG_GLOBAL, false },
+	{ "clamp", TYPE_VEC4, { TYPE_VEC4, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, { "x", "minVal", "maxVal" }, TAG_GLOBAL, false },
+
+	{ "clamp", TYPE_INT, { TYPE_INT, TYPE_INT, TYPE_INT, TYPE_VOID }, { "x", "minVal", "maxVal" }, TAG_GLOBAL, false },
+	{ "clamp", TYPE_IVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID }, { "x", "minVal", "maxVal" }, TAG_GLOBAL, false },
+	{ "clamp", TYPE_IVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID }, { "x", "minVal", "maxVal" }, TAG_GLOBAL, false },
+	{ "clamp", TYPE_IVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, { "x", "minVal", "maxVal" }, TAG_GLOBAL, false },
+	{ "clamp", TYPE_IVEC2, { TYPE_IVEC2, TYPE_INT, TYPE_INT, TYPE_VOID }, { "x", "minVal", "maxVal" }, TAG_GLOBAL, false },
+	{ "clamp", TYPE_IVEC3, { TYPE_IVEC3, TYPE_INT, TYPE_INT, TYPE_VOID }, { "x", "minVal", "maxVal" }, TAG_GLOBAL, false },
+	{ "clamp", TYPE_IVEC4, { TYPE_IVEC4, TYPE_INT, TYPE_INT, TYPE_VOID }, { "x", "minVal", "maxVal" }, TAG_GLOBAL, false },
+
+	{ "clamp", TYPE_UINT, { TYPE_UINT, TYPE_UINT, TYPE_UINT, TYPE_VOID }, { "x", "minVal", "maxVal" }, TAG_GLOBAL, true },
+	{ "clamp", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, { "x", "minVal", "maxVal" }, TAG_GLOBAL, true },
+	{ "clamp", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, { "x", "minVal", "maxVal" }, TAG_GLOBAL, true },
+	{ "clamp", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, { "x", "minVal", "maxVal" }, TAG_GLOBAL, true },
+	{ "clamp", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UINT, TYPE_UINT, TYPE_VOID }, { "x", "minVal", "maxVal" }, TAG_GLOBAL, true },
+	{ "clamp", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UINT, TYPE_UINT, TYPE_VOID }, { "x", "minVal", "maxVal" }, TAG_GLOBAL, true },
+	{ "clamp", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UINT, TYPE_UINT, TYPE_VOID }, { "x", "minVal", "maxVal" }, TAG_GLOBAL, true },
+
+	// mix
+
+	{ "mix", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, { "a", "b", "value" }, TAG_GLOBAL, false },
+	{ "mix", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, { "a", "b", "value" }, TAG_GLOBAL, false },
+	{ "mix", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_BVEC2, TYPE_VOID }, { "a", "b", "value" }, TAG_GLOBAL, false },
+	{ "mix", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "a", "b", "value" }, TAG_GLOBAL, false },
+	{ "mix", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "a", "b", "value" }, TAG_GLOBAL, false },
+	{ "mix", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_BVEC3, TYPE_VOID }, { "a", "b", "value" }, TAG_GLOBAL, false },
+	{ "mix", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "a", "b", "value" }, TAG_GLOBAL, false },
+	{ "mix", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, { "a", "b", "value" }, TAG_GLOBAL, false },
+	{ "mix", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_BVEC4, TYPE_VOID }, { "a", "b", "value" }, TAG_GLOBAL, false },
+	{ "mix", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, { "a", "b", "value" }, TAG_GLOBAL, false },
+
+	// step
+
+	{ "step", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, { "edge", "x" }, TAG_GLOBAL, false },
+	{ "step", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "edge", "x" }, TAG_GLOBAL, false },
+	{ "step", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "edge", "x" }, TAG_GLOBAL, false },
+	{ "step", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, { "edge", "x" }, TAG_GLOBAL, false },
+	{ "step", TYPE_VEC2, { TYPE_FLOAT, TYPE_VEC2, TYPE_VOID }, { "edge", "x" }, TAG_GLOBAL, false },
+	{ "step", TYPE_VEC3, { TYPE_FLOAT, TYPE_VEC3, TYPE_VOID }, { "edge", "x" }, TAG_GLOBAL, false },
+	{ "step", TYPE_VEC4, { TYPE_FLOAT, TYPE_VEC4, TYPE_VOID }, { "edge", "x" }, TAG_GLOBAL, false },
+
+	// smoothstep
+
+	{ "smoothstep", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, { "edge0", "edge1", "value" }, TAG_GLOBAL, false },
+	{ "smoothstep", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "edge0", "edge1", "value" }, TAG_GLOBAL, false },
+	{ "smoothstep", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "edge0", "edge1", "value" }, TAG_GLOBAL, false },
+	{ "smoothstep", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, { "edge0", "edge1", "value" }, TAG_GLOBAL, false },
+	{ "smoothstep", TYPE_VEC2, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VEC2, TYPE_VOID }, { "edge0", "edge1", "value" }, TAG_GLOBAL, false },
+	{ "smoothstep", TYPE_VEC3, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VEC3, TYPE_VOID }, { "edge0", "edge1", "value" }, TAG_GLOBAL, false },
+	{ "smoothstep", TYPE_VEC4, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VEC4, TYPE_VOID }, { "edge0", "edge1", "value" }, TAG_GLOBAL, false },
+
+	// isnan
+
+	{ "isnan", TYPE_BOOL, { TYPE_FLOAT, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "isnan", TYPE_BVEC2, { TYPE_VEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "isnan", TYPE_BVEC3, { TYPE_VEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "isnan", TYPE_BVEC4, { TYPE_VEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// isinf
+
+	{ "isinf", TYPE_BOOL, { TYPE_FLOAT, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "isinf", TYPE_BVEC2, { TYPE_VEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "isinf", TYPE_BVEC3, { TYPE_VEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "isinf", TYPE_BVEC4, { TYPE_VEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// floatBitsToInt
+
+	{ "floatBitsToInt", TYPE_INT, { TYPE_FLOAT, TYPE_VOID }, { "x" }, TAG_GLOBAL, true },
+	{ "floatBitsToInt", TYPE_IVEC2, { TYPE_VEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, true },
+	{ "floatBitsToInt", TYPE_IVEC3, { TYPE_VEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, true },
+	{ "floatBitsToInt", TYPE_IVEC4, { TYPE_VEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, true },
+
+	// floatBitsToUint
+
+	{ "floatBitsToUint", TYPE_UINT, { TYPE_FLOAT, TYPE_VOID }, { "x" }, TAG_GLOBAL, true },
+	{ "floatBitsToUint", TYPE_UVEC2, { TYPE_VEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, true },
+	{ "floatBitsToUint", TYPE_UVEC3, { TYPE_VEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, true },
+	{ "floatBitsToUint", TYPE_UVEC4, { TYPE_VEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, true },
+
+	// intBitsToFloat
+
+	{ "intBitsToFloat", TYPE_FLOAT, { TYPE_INT, TYPE_VOID }, { "x" }, TAG_GLOBAL, true },
+	{ "intBitsToFloat", TYPE_VEC2, { TYPE_IVEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, true },
+	{ "intBitsToFloat", TYPE_VEC3, { TYPE_IVEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, true },
+	{ "intBitsToFloat", TYPE_VEC4, { TYPE_IVEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, true },
+
+	// uintBitsToFloat
+
+	{ "uintBitsToFloat", TYPE_FLOAT, { TYPE_UINT, TYPE_VOID }, { "x" }, TAG_GLOBAL, true },
+	{ "uintBitsToFloat", TYPE_VEC2, { TYPE_UVEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, true },
+	{ "uintBitsToFloat", TYPE_VEC3, { TYPE_UVEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, true },
+	{ "uintBitsToFloat", TYPE_VEC4, { TYPE_UVEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, true },
+
+	// Built-ins - geometric functions.
+	// length
+
+	{ "length", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "length", TYPE_FLOAT, { TYPE_VEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "length", TYPE_FLOAT, { TYPE_VEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "length", TYPE_FLOAT, { TYPE_VEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// distance
+
+	{ "distance", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "distance", TYPE_FLOAT, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "distance", TYPE_FLOAT, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "distance", TYPE_FLOAT, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+
+	// dot
+
+	{ "dot", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "dot", TYPE_FLOAT, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "dot", TYPE_FLOAT, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "dot", TYPE_FLOAT, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+
+	// cross
+
+	{ "cross", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+
+	// normalize
+
+	{ "normalize", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "v" }, TAG_GLOBAL, false },
+	{ "normalize", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "v" }, TAG_GLOBAL, false },
+	{ "normalize", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "v" }, TAG_GLOBAL, false },
+	{ "normalize", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "v" }, TAG_GLOBAL, false },
+
+	// reflect
+
+	{ "reflect", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "I", "N" }, TAG_GLOBAL, false },
+
+	// refract
+
+	{ "refract", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "I", "N", "eta" }, TAG_GLOBAL, false },
+
+	// faceforward
+
+	{ "faceforward", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "N", "I", "Nref" }, TAG_GLOBAL, false },
+	{ "faceforward", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "N", "I", "Nref" }, TAG_GLOBAL, false },
+	{ "faceforward", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, { "N", "I", "Nref" }, TAG_GLOBAL, false },
+
+	// matrixCompMult
+
+	{ "matrixCompMult", TYPE_MAT2, { TYPE_MAT2, TYPE_MAT2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "matrixCompMult", TYPE_MAT3, { TYPE_MAT3, TYPE_MAT3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "matrixCompMult", TYPE_MAT4, { TYPE_MAT4, TYPE_MAT4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+
+	// outerProduct
+
+	{ "outerProduct", TYPE_MAT2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "c", "r" }, TAG_GLOBAL, false },
+	{ "outerProduct", TYPE_MAT3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "c", "r" }, TAG_GLOBAL, false },
+	{ "outerProduct", TYPE_MAT4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, { "c", "r" }, TAG_GLOBAL, false },
+
+	// transpose
+
+	{ "transpose", TYPE_MAT2, { TYPE_MAT2, TYPE_VOID }, { "m" }, TAG_GLOBAL, false },
+	{ "transpose", TYPE_MAT3, { TYPE_MAT3, TYPE_VOID }, { "m" }, TAG_GLOBAL, false },
+	{ "transpose", TYPE_MAT4, { TYPE_MAT4, TYPE_VOID }, { "m" }, TAG_GLOBAL, false },
+
+	// determinant
+
+	{ "determinant", TYPE_FLOAT, { TYPE_MAT2, TYPE_VOID }, { "m" }, TAG_GLOBAL, false },
+	{ "determinant", TYPE_FLOAT, { TYPE_MAT3, TYPE_VOID }, { "m" }, TAG_GLOBAL, false },
+	{ "determinant", TYPE_FLOAT, { TYPE_MAT4, TYPE_VOID }, { "m" }, TAG_GLOBAL, false },
+
+	// inverse
+
+	{ "inverse", TYPE_MAT2, { TYPE_MAT2, TYPE_VOID }, { "m" }, TAG_GLOBAL, false },
+	{ "inverse", TYPE_MAT3, { TYPE_MAT3, TYPE_VOID }, { "m" }, TAG_GLOBAL, false },
+	{ "inverse", TYPE_MAT4, { TYPE_MAT4, TYPE_VOID }, { "m" }, TAG_GLOBAL, false },
+
+	// lessThan
+
+	{ "lessThan", TYPE_BVEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "lessThan", TYPE_BVEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "lessThan", TYPE_BVEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+
+	{ "lessThan", TYPE_BVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "lessThan", TYPE_BVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "lessThan", TYPE_BVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+
+	{ "lessThan", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+	{ "lessThan", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+	{ "lessThan", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+
+	// greaterThan
+
+	{ "greaterThan", TYPE_BVEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "greaterThan", TYPE_BVEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "greaterThan", TYPE_BVEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+
+	{ "greaterThan", TYPE_BVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "greaterThan", TYPE_BVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "greaterThan", TYPE_BVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+
+	{ "greaterThan", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+	{ "greaterThan", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+	{ "greaterThan", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+
+	// lessThanEqual
+
+	{ "lessThanEqual", TYPE_BVEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "lessThanEqual", TYPE_BVEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "lessThanEqual", TYPE_BVEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+
+	{ "lessThanEqual", TYPE_BVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "lessThanEqual", TYPE_BVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "lessThanEqual", TYPE_BVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+
+	{ "lessThanEqual", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+	{ "lessThanEqual", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+	{ "lessThanEqual", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+
+	// greaterThanEqual
+
+	{ "greaterThanEqual", TYPE_BVEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "greaterThanEqual", TYPE_BVEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "greaterThanEqual", TYPE_BVEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+
+	{ "greaterThanEqual", TYPE_BVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "greaterThanEqual", TYPE_BVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "greaterThanEqual", TYPE_BVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+
+	{ "greaterThanEqual", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+	{ "greaterThanEqual", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+	{ "greaterThanEqual", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+
+	// equal
+
+	{ "equal", TYPE_BVEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "equal", TYPE_BVEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "equal", TYPE_BVEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+
+	{ "equal", TYPE_BVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "equal", TYPE_BVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "equal", TYPE_BVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+
+	{ "equal", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+	{ "equal", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+	{ "equal", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+
+	{ "equal", TYPE_BVEC2, { TYPE_BVEC2, TYPE_BVEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "equal", TYPE_BVEC3, { TYPE_BVEC3, TYPE_BVEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "equal", TYPE_BVEC4, { TYPE_BVEC4, TYPE_BVEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+
+	// notEqual
+
+	{ "notEqual", TYPE_BVEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "notEqual", TYPE_BVEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "notEqual", TYPE_BVEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+
+	{ "notEqual", TYPE_BVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "notEqual", TYPE_BVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "notEqual", TYPE_BVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+
+	{ "notEqual", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+	{ "notEqual", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+	{ "notEqual", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, true },
+
+	{ "notEqual", TYPE_BVEC2, { TYPE_BVEC2, TYPE_BVEC2, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "notEqual", TYPE_BVEC3, { TYPE_BVEC3, TYPE_BVEC3, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+	{ "notEqual", TYPE_BVEC4, { TYPE_BVEC4, TYPE_BVEC4, TYPE_VOID }, { "a", "b" }, TAG_GLOBAL, false },
+
+	// any
+
+	{ "any", TYPE_BOOL, { TYPE_BVEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "any", TYPE_BOOL, { TYPE_BVEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "any", TYPE_BOOL, { TYPE_BVEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// all
+
+	{ "all", TYPE_BOOL, { TYPE_BVEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "all", TYPE_BOOL, { TYPE_BVEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "all", TYPE_BOOL, { TYPE_BVEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// not
+
+	{ "not", TYPE_BVEC2, { TYPE_BVEC2, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "not", TYPE_BVEC3, { TYPE_BVEC3, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+	{ "not", TYPE_BVEC4, { TYPE_BVEC4, TYPE_VOID }, { "x" }, TAG_GLOBAL, false },
+
+	// Built-ins: texture functions.
+	// textureSize
+
+	{ "textureSize", TYPE_IVEC2, { TYPE_SAMPLER2D, TYPE_INT, TYPE_VOID }, { "sampler", "lod" }, TAG_GLOBAL, true },
+	{ "textureSize", TYPE_IVEC2, { TYPE_ISAMPLER2D, TYPE_INT, TYPE_VOID }, { "sampler", "lod" }, TAG_GLOBAL, true },
+	{ "textureSize", TYPE_IVEC2, { TYPE_USAMPLER2D, TYPE_INT, TYPE_VOID }, { "sampler", "lod" }, TAG_GLOBAL, true },
+	{ "textureSize", TYPE_IVEC3, { TYPE_SAMPLER2DARRAY, TYPE_INT, TYPE_VOID }, { "sampler", "lod" }, TAG_GLOBAL, true },
+	{ "textureSize", TYPE_IVEC3, { TYPE_ISAMPLER2DARRAY, TYPE_INT, TYPE_VOID }, { "sampler", "lod" }, TAG_GLOBAL, true },
+	{ "textureSize", TYPE_IVEC3, { TYPE_USAMPLER2DARRAY, TYPE_INT, TYPE_VOID }, { "sampler", "lod" }, TAG_GLOBAL, true },
+	{ "textureSize", TYPE_IVEC3, { TYPE_SAMPLER3D, TYPE_INT, TYPE_VOID }, { "sampler", "lod" }, TAG_GLOBAL, true },
+	{ "textureSize", TYPE_IVEC3, { TYPE_ISAMPLER3D, TYPE_INT, TYPE_VOID }, { "sampler", "lod" }, TAG_GLOBAL, true },
+	{ "textureSize", TYPE_IVEC3, { TYPE_USAMPLER3D, TYPE_INT, TYPE_VOID }, { "sampler", "lod" }, TAG_GLOBAL, true },
+	{ "textureSize", TYPE_IVEC2, { TYPE_SAMPLERCUBE, TYPE_INT, TYPE_VOID }, { "sampler", "lod" }, TAG_GLOBAL, true },
+	{ "textureSize", TYPE_IVEC2, { TYPE_SAMPLERCUBEARRAY, TYPE_INT, TYPE_VOID }, { "sampler", "lod" }, TAG_GLOBAL, true },
+
+	// texture
+
+	{ "texture", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, false },
+	{ "texture", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "bias" }, TAG_GLOBAL, false },
+	{ "texture", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC2, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "texture", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "bias" }, TAG_GLOBAL, true },
+	{ "texture", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC2, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "texture", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "bias" }, TAG_GLOBAL, true },
+	{ "texture", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, false },
+	{ "texture", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "bias" }, TAG_GLOBAL, false },
+	{ "texture", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "texture", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "bias" }, TAG_GLOBAL, true },
+	{ "texture", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "texture", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "bias" }, TAG_GLOBAL, true },
+	{ "texture", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, false },
+	{ "texture", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "bias" }, TAG_GLOBAL, false },
+	{ "texture", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "texture", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "bias" }, TAG_GLOBAL, true },
+	{ "texture", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "texture", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "bias" }, TAG_GLOBAL, true },
+	{ "texture", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, false },
+	{ "texture", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "bias" }, TAG_GLOBAL, false },
+	{ "texture", TYPE_VEC4, { TYPE_SAMPLERCUBEARRAY, TYPE_VEC4, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, false },
+	{ "texture", TYPE_VEC4, { TYPE_SAMPLERCUBEARRAY, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "bias" }, TAG_GLOBAL, false },
+
+	// textureProj
+
+	{ "textureProj", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureProj", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC4, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureProj", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "bias" }, TAG_GLOBAL, true },
+	{ "textureProj", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "bias" }, TAG_GLOBAL, true },
+	{ "textureProj", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureProj", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC4, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureProj", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "bias" }, TAG_GLOBAL, true },
+	{ "textureProj", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "bias" }, TAG_GLOBAL, true },
+	{ "textureProj", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureProj", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC4, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureProj", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "bias" }, TAG_GLOBAL, true },
+	{ "textureProj", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "bias" }, TAG_GLOBAL, true },
+	{ "textureProj", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC4, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureProj", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "bias" }, TAG_GLOBAL, true },
+	{ "textureProj", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC4, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureProj", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "bias" }, TAG_GLOBAL, true },
+	{ "textureProj", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC4, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureProj", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "bias" }, TAG_GLOBAL, true },
+
+	// textureLod
+
+	{ "textureLod", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, false },
+	{ "textureLod", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, true },
+	{ "textureLod", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, true },
+	{ "textureLod", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, false },
+	{ "textureLod", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, true },
+	{ "textureLod", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, true },
+	{ "textureLod", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, false },
+	{ "textureLod", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, true },
+	{ "textureLod", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, true },
+	{ "textureLod", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, false },
+	{ "textureLod", TYPE_VEC4, { TYPE_SAMPLERCUBEARRAY, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, false },
+
+	// texelFetch
+
+	{ "texelFetch", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_IVEC2, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, true },
+	{ "texelFetch", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_IVEC2, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, true },
+	{ "texelFetch", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_IVEC2, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, true },
+	{ "texelFetch", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_IVEC3, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, true },
+	{ "texelFetch", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_IVEC3, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, true },
+	{ "texelFetch", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_IVEC3, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, true },
+	{ "texelFetch", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_IVEC3, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, true },
+	{ "texelFetch", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_IVEC3, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, true },
+	{ "texelFetch", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_IVEC3, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, true },
+
+	// textureProjLod
+
+	{ "textureProjLod", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, true },
+	{ "textureProjLod", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, true },
+	{ "textureProjLod", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, true },
+	{ "textureProjLod", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, true },
+	{ "textureProjLod", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, true },
+	{ "textureProjLod", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, true },
+	{ "textureProjLod", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, true },
+	{ "textureProjLod", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, true },
+	{ "textureProjLod", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, { "sampler", "coords", "lod" }, TAG_GLOBAL, true },
+
+	// textureGrad
+
+	{ "textureGrad", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy" }, TAG_GLOBAL, true },
+	{ "textureGrad", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy" }, TAG_GLOBAL, true },
+	{ "textureGrad", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy" }, TAG_GLOBAL, true },
+	{ "textureGrad", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_VEC3, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy" }, TAG_GLOBAL, true },
+	{ "textureGrad", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_VEC3, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy" }, TAG_GLOBAL, true },
+	{ "textureGrad", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_VEC3, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy" }, TAG_GLOBAL, true },
+	{ "textureGrad", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy" }, TAG_GLOBAL, true },
+	{ "textureGrad", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy" }, TAG_GLOBAL, true },
+	{ "textureGrad", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy" }, TAG_GLOBAL, true },
+	{ "textureGrad", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy" }, TAG_GLOBAL, true },
+	{ "textureGrad", TYPE_VEC4, { TYPE_SAMPLERCUBEARRAY, TYPE_VEC4, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords", "dPdx", "dPdy" }, TAG_GLOBAL, true },
+
+	// textureGather
+
+	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC2, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC2, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC2, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC2, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_VEC3, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_VEC3, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_VEC3, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_VOID }, { "sampler", "coords" }, TAG_GLOBAL, true },
+	{ "textureGather", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_INT, TYPE_VOID }, { "sampler", "coords", "comp" }, TAG_GLOBAL, true },
+
+	// dFdx
+
+	{ "dFdx", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+	{ "dFdx", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+	{ "dFdx", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+	{ "dFdx", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+
+	// dFdy
+
+	{ "dFdy", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+	{ "dFdy", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+	{ "dFdy", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+	{ "dFdy", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+
+	// fwidth
+
+	{ "fwidth", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+	{ "fwidth", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+	{ "fwidth", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+	{ "fwidth", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+
+	// Sub-functions.
+	// array
+
+	{ "length", TYPE_INT, { TYPE_VOID }, { "" }, TAG_ARRAY, true },
+
+	// Modern functions.
+	// fma
+
+	{ "fma", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, { "a", "b", "c" }, TAG_GLOBAL, false },
+	{ "fma", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "a", "b", "c" }, TAG_GLOBAL, false },
+	{ "fma", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "a", "b", "c" }, TAG_GLOBAL, false },
+	{ "fma", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, { "a", "b", "c" }, TAG_GLOBAL, false },
+
+	// Packing/Unpacking functions.
+
+	{ "packHalf2x16", TYPE_UINT, { TYPE_VEC2, TYPE_VOID }, { "v" }, TAG_GLOBAL, true },
+	{ "packUnorm2x16", TYPE_UINT, { TYPE_VEC2, TYPE_VOID }, { "v" }, TAG_GLOBAL, true },
+	{ "packSnorm2x16", TYPE_UINT, { TYPE_VEC2, TYPE_VOID }, { "v" }, TAG_GLOBAL, true },
+	{ "packUnorm4x8", TYPE_UINT, { TYPE_VEC4, TYPE_VOID }, { "v" }, TAG_GLOBAL, true },
+	{ "packSnorm4x8", TYPE_UINT, { TYPE_VEC4, TYPE_VOID }, { "v" }, TAG_GLOBAL, true },
+
+	{ "unpackHalf2x16", TYPE_VEC2, { TYPE_UINT, TYPE_VOID }, { "v" }, TAG_GLOBAL, true },
+	{ "unpackUnorm2x16", TYPE_VEC2, { TYPE_UINT, TYPE_VOID }, { "v" }, TAG_GLOBAL, true },
+	{ "unpackSnorm2x16", TYPE_VEC2, { TYPE_UINT, TYPE_VOID }, { "v" }, TAG_GLOBAL, true },
+	{ "unpackUnorm4x8", TYPE_VEC4, { TYPE_UINT, TYPE_VOID }, { "v" }, TAG_GLOBAL, true },
+	{ "unpackSnorm4x8", TYPE_VEC4, { TYPE_UINT, TYPE_VOID }, { "v" }, TAG_GLOBAL, true },
+
+	// bitfieldExtract
+
+	{ "bitfieldExtract", TYPE_INT, { TYPE_INT, TYPE_INT, TYPE_INT, TYPE_VOID }, { "value", "offset", "bits" }, TAG_GLOBAL, true },
+	{ "bitfieldExtract", TYPE_IVEC2, { TYPE_IVEC2, TYPE_INT, TYPE_INT, TYPE_VOID }, { "value", "offset", "bits" }, TAG_GLOBAL, true },
+	{ "bitfieldExtract", TYPE_IVEC3, { TYPE_IVEC3, TYPE_INT, TYPE_INT, TYPE_VOID }, { "value", "offset", "bits" }, TAG_GLOBAL, true },
+	{ "bitfieldExtract", TYPE_IVEC4, { TYPE_IVEC4, TYPE_INT, TYPE_INT, TYPE_VOID }, { "value", "offset", "bits" }, TAG_GLOBAL, true },
+
+	{ "bitfieldExtract", TYPE_UINT, { TYPE_UINT, TYPE_INT, TYPE_INT, TYPE_VOID }, { "value", "offset", "bits" }, TAG_GLOBAL, true },
+	{ "bitfieldExtract", TYPE_UVEC2, { TYPE_UVEC2, TYPE_INT, TYPE_INT, TYPE_VOID }, { "value", "offset", "bits" }, TAG_GLOBAL, true },
+	{ "bitfieldExtract", TYPE_UVEC3, { TYPE_UVEC3, TYPE_INT, TYPE_INT, TYPE_VOID }, { "value", "offset", "bits" }, TAG_GLOBAL, true },
+	{ "bitfieldExtract", TYPE_UVEC4, { TYPE_UVEC4, TYPE_INT, TYPE_INT, TYPE_VOID }, { "value", "offset", "bits" }, TAG_GLOBAL, true },
+
+	// bitfieldInsert
+
+	{ "bitfieldInsert", TYPE_INT, { TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_VOID }, { "base", "insert", "offset", "bits" }, TAG_GLOBAL, true },
+	{ "bitfieldInsert", TYPE_IVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_INT, TYPE_INT, TYPE_VOID }, { "base", "insert", "offset", "bits" }, TAG_GLOBAL, true },
+	{ "bitfieldInsert", TYPE_IVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_INT, TYPE_INT, TYPE_VOID }, { "base", "insert", "offset", "bits" }, TAG_GLOBAL, true },
+	{ "bitfieldInsert", TYPE_IVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_INT, TYPE_INT, TYPE_VOID }, { "base", "insert", "offset", "bits" }, TAG_GLOBAL, true },
+
+	{ "bitfieldInsert", TYPE_UINT, { TYPE_UINT, TYPE_UINT, TYPE_INT, TYPE_INT, TYPE_VOID }, { "base", "insert", "offset", "bits" }, TAG_GLOBAL, true },
+	{ "bitfieldInsert", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_INT, TYPE_INT, TYPE_VOID }, { "base", "insert", "offset", "bits" }, TAG_GLOBAL, true },
+	{ "bitfieldInsert", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_INT, TYPE_INT, TYPE_VOID }, { "base", "insert", "offset", "bits" }, TAG_GLOBAL, true },
+	{ "bitfieldInsert", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_INT, TYPE_INT, TYPE_VOID }, { "base", "insert", "offset", "bits" }, TAG_GLOBAL, true },
+
+	// bitfieldReverse
+
+	{ "bitfieldReverse", TYPE_INT, { TYPE_INT, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+	{ "bitfieldReverse", TYPE_IVEC2, { TYPE_IVEC2, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+	{ "bitfieldReverse", TYPE_IVEC3, { TYPE_IVEC3, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+	{ "bitfieldReverse", TYPE_IVEC4, { TYPE_IVEC4, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+
+	{ "bitfieldReverse", TYPE_UINT, { TYPE_UINT, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+	{ "bitfieldReverse", TYPE_UVEC2, { TYPE_UVEC2, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+	{ "bitfieldReverse", TYPE_UVEC3, { TYPE_UVEC3, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+	{ "bitfieldReverse", TYPE_UVEC4, { TYPE_UVEC4, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+
+	// bitCount
+
+	{ "bitCount", TYPE_INT, { TYPE_INT, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+	{ "bitCount", TYPE_IVEC2, { TYPE_IVEC2, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+	{ "bitCount", TYPE_IVEC3, { TYPE_IVEC3, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+	{ "bitCount", TYPE_IVEC4, { TYPE_IVEC4, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+
+	{ "bitCount", TYPE_UINT, { TYPE_UINT, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+	{ "bitCount", TYPE_UVEC2, { TYPE_UVEC2, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+	{ "bitCount", TYPE_UVEC3, { TYPE_UVEC3, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+	{ "bitCount", TYPE_UVEC4, { TYPE_UVEC4, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+
+	// findLSB
+
+	{ "findLSB", TYPE_INT, { TYPE_INT, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+	{ "findLSB", TYPE_IVEC2, { TYPE_IVEC2, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+	{ "findLSB", TYPE_IVEC3, { TYPE_IVEC3, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+	{ "findLSB", TYPE_IVEC4, { TYPE_IVEC4, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+
+	{ "findLSB", TYPE_UINT, { TYPE_UINT, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+	{ "findLSB", TYPE_UVEC2, { TYPE_UVEC2, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+	{ "findLSB", TYPE_UVEC3, { TYPE_UVEC3, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+	{ "findLSB", TYPE_UVEC4, { TYPE_UVEC4, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+
+	// findMSB
+
+	{ "findMSB", TYPE_INT, { TYPE_INT, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+	{ "findMSB", TYPE_IVEC2, { TYPE_IVEC2, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+	{ "findMSB", TYPE_IVEC3, { TYPE_IVEC3, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+	{ "findMSB", TYPE_IVEC4, { TYPE_IVEC4, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+
+	{ "findMSB", TYPE_UINT, { TYPE_UINT, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+	{ "findMSB", TYPE_UVEC2, { TYPE_UVEC2, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+	{ "findMSB", TYPE_UVEC3, { TYPE_UVEC3, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+	{ "findMSB", TYPE_UVEC4, { TYPE_UVEC4, TYPE_VOID }, { "value" }, TAG_GLOBAL, true },
+
+	// umulExtended
+
+	{ "umulExtended", TYPE_VOID, { TYPE_UINT, TYPE_UINT, TYPE_UINT, TYPE_UINT, TYPE_VOID }, { "x", "y", "msb", "lsb" }, TAG_GLOBAL, true },
+	{ "umulExtended", TYPE_VOID, { TYPE_UVEC2, TYPE_UVEC2, TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, { "x", "y", "msb", "lsb" }, TAG_GLOBAL, true },
+	{ "umulExtended", TYPE_VOID, { TYPE_UVEC3, TYPE_UVEC3, TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, { "x", "y", "msb", "lsb" }, TAG_GLOBAL, true },
+	{ "umulExtended", TYPE_VOID, { TYPE_UVEC4, TYPE_UVEC4, TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, { "x", "y", "msb", "lsb" }, TAG_GLOBAL, true },
+
+	// imulExtended
+
+	{ "imulExtended", TYPE_VOID, { TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_VOID }, { "x", "y", "msb", "lsb" }, TAG_GLOBAL, true },
+	{ "imulExtended", TYPE_VOID, { TYPE_IVEC2, TYPE_IVEC2, TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID }, { "x", "y", "msb", "lsb" }, TAG_GLOBAL, true },
+	{ "imulExtended", TYPE_VOID, { TYPE_IVEC3, TYPE_IVEC3, TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID }, { "x", "y", "msb", "lsb" }, TAG_GLOBAL, true },
+	{ "imulExtended", TYPE_VOID, { TYPE_IVEC4, TYPE_IVEC4, TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, { "x", "y", "msb", "lsb" }, TAG_GLOBAL, true },
+
+	// uaddCarry
+
+	{ "uaddCarry", TYPE_UINT, { TYPE_UINT, TYPE_UINT, TYPE_UINT, TYPE_VOID }, { "x", "y", "carry" }, TAG_GLOBAL, true },
+	{ "uaddCarry", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, { "x", "y", "carry" }, TAG_GLOBAL, true },
+	{ "uaddCarry", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, { "x", "y", "carry" }, TAG_GLOBAL, true },
+	{ "uaddCarry", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, { "x", "y", "carry" }, TAG_GLOBAL, true },
+
+	// usubBorrow
+
+	{ "usubBorrow", TYPE_UINT, { TYPE_UINT, TYPE_UINT, TYPE_UINT, TYPE_VOID }, { "x", "y", "borrow" }, TAG_GLOBAL, true },
+	{ "usubBorrow", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, { "x", "y", "borrow" }, TAG_GLOBAL, true },
+	{ "usubBorrow", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, { "x", "y", "borrow" }, TAG_GLOBAL, true },
+	{ "usubBorrow", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, { "x", "y", "borrow" }, TAG_GLOBAL, true },
+
+	// ldexp
+
+	{ "ldexp", TYPE_FLOAT, { TYPE_FLOAT, TYPE_INT, TYPE_VOID }, { "x", "exp" }, TAG_GLOBAL, true },
+	{ "ldexp", TYPE_VEC2, { TYPE_VEC2, TYPE_IVEC2, TYPE_VOID }, { "x", "exp" }, TAG_GLOBAL, true },
+	{ "ldexp", TYPE_VEC3, { TYPE_VEC3, TYPE_IVEC3, TYPE_VOID }, { "x", "exp" }, TAG_GLOBAL, true },
+	{ "ldexp", TYPE_VEC4, { TYPE_VEC4, TYPE_IVEC4, TYPE_VOID }, { "x", "exp" }, TAG_GLOBAL, true },
+
+	// frexp
+
+	{ "frexp", TYPE_FLOAT, { TYPE_FLOAT, TYPE_INT, TYPE_VOID }, { "x", "exp" }, TAG_GLOBAL, true },
+	{ "frexp", TYPE_VEC2, { TYPE_VEC2, TYPE_IVEC2, TYPE_VOID }, { "x", "exp" }, TAG_GLOBAL, true },
+	{ "frexp", TYPE_VEC3, { TYPE_VEC3, TYPE_IVEC3, TYPE_VOID }, { "x", "exp" }, TAG_GLOBAL, true },
+	{ "frexp", TYPE_VEC4, { TYPE_VEC4, TYPE_IVEC4, TYPE_VOID }, { "x", "exp" }, TAG_GLOBAL, true },
+
+	{ nullptr, TYPE_VOID, { TYPE_VOID }, { "" }, TAG_GLOBAL, false }
 };
 
 const ShaderLanguage::BuiltinFuncOutArgs ShaderLanguage::builtin_func_out_args[] = {
-	//constructors
-	{ "modf", 1 },
-	{ nullptr, 0 }
+	{ "modf", { 1, -1 } },
+	{ "umulExtended", { 2, 3 } },
+	{ "imulExtended", { 2, 3 } },
+	{ "uaddCarry", { 2, -1 } },
+	{ "usubBorrow", { 2, -1 } },
+	{ "ldexp", { 1, -1 } },
+	{ "frexp", { 1, -1 } },
+	{ nullptr, { 0, -1 } }
 };
+
+const ShaderLanguage::BuiltinFuncConstArgs ShaderLanguage::builtin_func_const_args[] = {
+	{ "textureGather", 2, 0, 3 },
+	{ nullptr, 0, 0, 0 }
+};
+
+bool ShaderLanguage::is_const_suffix_lut_initialized = false;
 
 bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_func, DataType *r_ret_type, StringName *r_ret_type_str) {
 	ERR_FAIL_COND_V(p_func->op != OP_CALL && p_func->op != OP_CONSTRUCT, false);
@@ -2346,13 +2730,13 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 		//stage based function
 		const StageFunctionInfo &sf = p_function_info.stage_functions[name];
 		if (argcount != sf.arguments.size()) {
-			_set_error(vformat("Invalid number of arguments when calling stage function '%s', which expects %d arguments.", String(name), sf.arguments.size()));
+			_set_error(vformat(RTR("Invalid number of arguments when calling stage function '%s', which expects %d arguments."), String(name), sf.arguments.size()));
 			return false;
 		}
 		//validate arguments
 		for (int i = 0; i < argcount; i++) {
 			if (args[i] != sf.arguments[i].type) {
-				_set_error(vformat("Invalid argument type when calling stage function '%s', type expected is '%s'.", String(name), String(get_datatype_name(sf.arguments[i].type))));
+				_set_error(vformat(RTR("Invalid argument type when calling stage function '%s', type expected is '%s'."), String(name), get_datatype_name(sf.arguments[i].type)));
 				return false;
 			}
 		}
@@ -2384,6 +2768,13 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 				failed_builtin = true;
 				bool fail = false;
 				for (int i = 0; i < argcount; i++) {
+					if (p_func->arguments[i + 1]->type == Node::TYPE_ARRAY) {
+						const ArrayNode *anode = static_cast<const ArrayNode *>(p_func->arguments[i + 1]);
+						if (anode->call_expression == nullptr && !anode->is_indexed()) {
+							fail = true;
+							break;
+						}
+					}
 					if (get_scalar_type(args[i]) == args[i] && p_func->arguments[i + 1]->type == Node::TYPE_CONSTANT && convert_constant(static_cast<ConstantNode *>(p_func->arguments[i + 1]), builtin_func_defs[idx].args[i])) {
 						//all good, but needs implicit conversion later
 					} else if (args[i] != builtin_func_defs[idx].args[i]) {
@@ -2407,100 +2798,153 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 				}
 
 				if (!fail) {
+					{
+						int constarg_idx = 0;
+						while (builtin_func_const_args[constarg_idx].name) {
+							if (String(name) == builtin_func_const_args[constarg_idx].name) {
+								int arg = builtin_func_const_args[constarg_idx].arg + 1;
+								if (p_func->arguments.size() <= arg) {
+									break;
+								}
+
+								int min = builtin_func_const_args[constarg_idx].min;
+								int max = builtin_func_const_args[constarg_idx].max;
+
+								bool error = false;
+								if (p_func->arguments[arg]->type == Node::TYPE_VARIABLE) {
+									const VariableNode *vn = (VariableNode *)p_func->arguments[arg];
+
+									bool is_const = false;
+									ConstantNode::Value value;
+									value.sint = -1;
+
+									_find_identifier(p_block, false, p_function_info, vn->name, nullptr, nullptr, &is_const, nullptr, nullptr, &value);
+									if (!is_const || value.sint < min || value.sint > max) {
+										error = true;
+									}
+								} else {
+									if (p_func->arguments[arg]->type == Node::TYPE_CONSTANT) {
+										ConstantNode *cn = (ConstantNode *)p_func->arguments[arg];
+
+										if (cn->get_datatype() == TYPE_INT && cn->values.size() == 1) {
+											int value = cn->values[0].sint;
+
+											if (value < min || value > max) {
+												error = true;
+											}
+										} else {
+											error = true;
+										}
+									} else {
+										error = true;
+									}
+								}
+								if (error) {
+									_set_error(vformat(RTR("Expected integer constant within [%d..%d] range."), min, max));
+									return false;
+								}
+							}
+							constarg_idx++;
+						}
+					}
+
 					//make sure its not an out argument used in the wrong way
 					int outarg_idx = 0;
 					while (builtin_func_out_args[outarg_idx].name) {
 						if (String(name) == builtin_func_out_args[outarg_idx].name) {
-							int arg_idx = builtin_func_out_args[outarg_idx].argument;
-
-							if (arg_idx < argcount) {
-								if (p_func->arguments[arg_idx + 1]->type != Node::TYPE_VARIABLE && p_func->arguments[arg_idx + 1]->type != Node::TYPE_MEMBER && p_func->arguments[arg_idx + 1]->type != Node::TYPE_ARRAY) {
-									_set_error("Argument " + itos(arg_idx + 1) + " of function '" + String(name) + "' is not a variable, array or member.");
-									return false;
+							for (int arg = 0; arg < BuiltinFuncOutArgs::MAX_ARGS; arg++) {
+								int arg_idx = builtin_func_out_args[outarg_idx].arguments[arg];
+								if (arg_idx == -1) {
+									break;
 								}
+								if (arg_idx < argcount) {
+									if (p_func->arguments[arg_idx + 1]->type != Node::TYPE_VARIABLE && p_func->arguments[arg_idx + 1]->type != Node::TYPE_MEMBER && p_func->arguments[arg_idx + 1]->type != Node::TYPE_ARRAY) {
+										_set_error(vformat(RTR("Argument %d of function '%s' is not a variable, array, or member."), arg_idx + 1, String(name)));
+										return false;
+									}
 
-								if (p_func->arguments[arg_idx + 1]->type == Node::TYPE_ARRAY) {
-									ArrayNode *mn = static_cast<ArrayNode *>(p_func->arguments[arg_idx + 1]);
-									if (mn->is_const) {
-										fail = true;
-									}
-								} else if (p_func->arguments[arg_idx + 1]->type == Node::TYPE_MEMBER) {
-									MemberNode *mn = static_cast<MemberNode *>(p_func->arguments[arg_idx + 1]);
-									if (mn->basetype_const) {
-										fail = true;
-									}
-								} else { // TYPE_VARIABLE
-									VariableNode *vn = static_cast<VariableNode *>(p_func->arguments[arg_idx + 1]);
-									if (vn->is_const) {
-										fail = true;
-									} else {
-										StringName varname = vn->name;
-										if (shader->uniforms.has(varname)) {
+									if (p_func->arguments[arg_idx + 1]->type == Node::TYPE_ARRAY) {
+										ArrayNode *mn = static_cast<ArrayNode *>(p_func->arguments[arg_idx + 1]);
+										if (mn->is_const) {
+											fail = true;
+										}
+									} else if (p_func->arguments[arg_idx + 1]->type == Node::TYPE_MEMBER) {
+										MemberNode *mn = static_cast<MemberNode *>(p_func->arguments[arg_idx + 1]);
+										if (mn->basetype_const) {
+											fail = true;
+										}
+									} else { // TYPE_VARIABLE
+										VariableNode *vn = static_cast<VariableNode *>(p_func->arguments[arg_idx + 1]);
+										if (vn->is_const) {
 											fail = true;
 										} else {
-											if (shader->varyings.has(varname)) {
-												_set_error(vformat("Varyings cannot be passed for '%s' parameter!", "out"));
-												return false;
-											}
-											if (p_function_info.built_ins.has(varname)) {
-												BuiltInInfo info = p_function_info.built_ins[varname];
-												if (info.constant) {
-													fail = true;
+											StringName varname = vn->name;
+											if (shader->uniforms.has(varname)) {
+												fail = true;
+											} else {
+												if (shader->varyings.has(varname)) {
+													_set_error(vformat(RTR("Varyings cannot be passed for the '%s' parameter."), "out"));
+													return false;
+												}
+												if (p_function_info.built_ins.has(varname)) {
+													BuiltInInfo info = p_function_info.built_ins[varname];
+													if (info.constant) {
+														fail = true;
+													}
 												}
 											}
 										}
 									}
-								}
-								if (fail) {
-									_set_error(vformat("Constant value cannot be passed for '%s' parameter!", "out"));
-									return false;
-								}
-
-								StringName var_name;
-								if (p_func->arguments[arg_idx + 1]->type == Node::TYPE_ARRAY) {
-									var_name = static_cast<const ArrayNode *>(p_func->arguments[arg_idx + 1])->name;
-								} else if (p_func->arguments[arg_idx + 1]->type == Node::TYPE_MEMBER) {
-									Node *n = static_cast<const MemberNode *>(p_func->arguments[arg_idx + 1])->owner;
-									while (n->type == Node::TYPE_MEMBER) {
-										n = static_cast<const MemberNode *>(n)->owner;
-									}
-									if (n->type != Node::TYPE_VARIABLE && n->type != Node::TYPE_ARRAY) {
-										_set_error("Argument " + itos(arg_idx + 1) + " of function '" + String(name) + "' is not a variable, array or member.");
+									if (fail) {
+										_set_error(vformat(RTR("A constant value cannot be passed for the '%s' parameter."), "out"));
 										return false;
 									}
-									if (n->type == Node::TYPE_VARIABLE) {
-										var_name = static_cast<const VariableNode *>(n)->name;
-									} else { // TYPE_ARRAY
-										var_name = static_cast<const ArrayNode *>(n)->name;
+
+									StringName var_name;
+									if (p_func->arguments[arg_idx + 1]->type == Node::TYPE_ARRAY) {
+										var_name = static_cast<const ArrayNode *>(p_func->arguments[arg_idx + 1])->name;
+									} else if (p_func->arguments[arg_idx + 1]->type == Node::TYPE_MEMBER) {
+										Node *n = static_cast<const MemberNode *>(p_func->arguments[arg_idx + 1])->owner;
+										while (n->type == Node::TYPE_MEMBER) {
+											n = static_cast<const MemberNode *>(n)->owner;
+										}
+										if (n->type != Node::TYPE_VARIABLE && n->type != Node::TYPE_ARRAY) {
+											_set_error(vformat(RTR("Argument %d of function '%s' is not a variable, array, or member."), arg_idx + 1, String(name)));
+											return false;
+										}
+										if (n->type == Node::TYPE_VARIABLE) {
+											var_name = static_cast<const VariableNode *>(n)->name;
+										} else { // TYPE_ARRAY
+											var_name = static_cast<const ArrayNode *>(n)->name;
+										}
+									} else { // TYPE_VARIABLE
+										var_name = static_cast<const VariableNode *>(p_func->arguments[arg_idx + 1])->name;
 									}
-								} else { // TYPE_VARIABLE
-									var_name = static_cast<const VariableNode *>(p_func->arguments[arg_idx + 1])->name;
-								}
-								const BlockNode *b = p_block;
-								bool valid = false;
-								while (b) {
-									if (b->variables.has(var_name) || p_function_info.built_ins.has(var_name)) {
-										valid = true;
-										break;
-									}
-									if (b->parent_function) {
-										for (int i = 0; i < b->parent_function->arguments.size(); i++) {
-											if (b->parent_function->arguments[i].name == var_name) {
-												valid = true;
-												break;
+									const BlockNode *b = p_block;
+									bool valid = false;
+									while (b) {
+										if (b->variables.has(var_name) || p_function_info.built_ins.has(var_name)) {
+											valid = true;
+											break;
+										}
+										if (b->parent_function) {
+											for (int i = 0; i < b->parent_function->arguments.size(); i++) {
+												if (b->parent_function->arguments[i].name == var_name) {
+													valid = true;
+													break;
+												}
 											}
 										}
+										b = b->parent_block;
 									}
-									b = b->parent_block;
-								}
 
-								if (!valid) {
-									_set_error("Argument " + itos(arg_idx + 1) + " of function '" + String(name) + "' can only take a local variable, array or member.");
-									return false;
+									if (!valid) {
+										_set_error(vformat(RTR("Argument %d of function '%s' can only take a local variable, array, or member."), arg_idx + 1, String(name)));
+										return false;
+									}
 								}
 							}
 						}
-
 						outarg_idx++;
 					}
 					//implicitly convert values if possible
@@ -2542,16 +2986,15 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 			arglist += get_datatype_name(builtin_func_defs[builtin_idx].args[i]);
 		}
 
-		String err = "Built-in function \"" + String(name) + "(" + arglist + ")\" is supported only on high-end platform!";
-		_set_error(err);
+		_set_error(vformat(RTR("Built-in function \"%s(%s)\" is only supported on high-end platforms."), String(name), arglist));
 		return false;
 	}
 
 	if (failed_builtin) {
-		String err = "Invalid arguments for built-in function: " + String(name) + "(";
+		String arg_list;
 		for (int i = 0; i < argcount; i++) {
 			if (i > 0) {
-				err += ",";
+				arg_list += ",";
 			}
 
 			String arg_name;
@@ -2560,10 +3003,14 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 			} else {
 				arg_name = get_datatype_name(args[i]);
 			}
-			err += arg_name;
+			if (args3[i] > 0) {
+				arg_name += "[";
+				arg_name += itos(args3[i]);
+				arg_name += "]";
+			}
+			arg_list += arg_name;
 		}
-		err += ")";
-		_set_error(err);
+		_set_error(vformat(RTR("Invalid arguments for the built-in function: \"%s(%s)\"."), String(name), arg_list));
 		return false;
 	}
 
@@ -2580,7 +3027,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 	}
 
 	if (name == exclude_function) {
-		_set_error("Recursion is not allowed");
+		_set_error(RTR("Recursion is not allowed."));
 		return false;
 	}
 
@@ -2593,12 +3040,12 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 		}
 
 		if (!shader->functions[i].callable) {
-			_set_error("Function '" + String(name) + " can't be called from source code.");
+			_set_error(vformat(RTR("Function '%s' can't be called from source code."), String(name)));
 			return false;
 		}
 
 		FunctionNode *pfunc = shader->functions[i].function;
-		if (arg_list == "") {
+		if (arg_list.is_empty()) {
 			for (int j = 0; j < pfunc->arguments.size(); j++) {
 				if (j > 0) {
 					arg_list += ", ";
@@ -2652,7 +3099,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 					arg_name += "]";
 				}
 
-				_set_error(vformat("Invalid argument for \"%s(%s)\" function: argument %s should be %s but is %s.", String(name), arg_list, j + 1, func_arg_name, arg_name));
+				_set_error(vformat(RTR("Invalid argument for \"%s(%s)\" function: argument %d should be %s but is %s."), String(name), arg_list, j + 1, func_arg_name, arg_name));
 				fail = true;
 				break;
 			}
@@ -2689,9 +3136,9 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 	}
 
 	if (last_arg_count > args.size()) {
-		_set_error(vformat("Too few arguments for \"%s(%s)\" call. Expected at least %s but received %s.", String(name), arg_list, last_arg_count, args.size()));
+		_set_error(vformat(RTR("Too few arguments for \"%s(%s)\" call. Expected at least %d but received %d."), String(name), arg_list, last_arg_count, args.size()));
 	} else if (last_arg_count < args.size()) {
-		_set_error(vformat("Too many arguments for \"%s(%s)\" call. Expected at most %s but received %s.", String(name), arg_list, last_arg_count, args.size()));
+		_set_error(vformat(RTR("Too many arguments for \"%s(%s)\" call. Expected at most %d but received %d."), String(name), arg_list, last_arg_count, args.size()));
 	}
 
 	return false;
@@ -2729,7 +3176,7 @@ bool ShaderLanguage::_compare_datatypes(DataType p_datatype_a, String p_datatype
 			type_name2 += "]";
 		}
 
-		_set_error("Invalid assignment of '" + type_name2 + "' to '" + type_name + "'");
+		_set_error(vformat(RTR("Invalid assignment of '%s' to '%s'."), type_name2, type_name));
 	}
 	return result;
 }
@@ -2774,7 +3221,7 @@ bool ShaderLanguage::_parse_function_arguments(BlockNode *p_block, const Functio
 			return true;
 		} else if (tk.type != TK_COMMA) {
 			// something is broken
-			_set_error("Expected ',' or ')' after argument");
+			_set_error(RTR("Expected ',' or ')' after argument."));
 			return false;
 		}
 	}
@@ -2834,6 +3281,10 @@ bool ShaderLanguage::is_token_operator_assign(TokenType p_type) {
 			p_type == TK_OP_ASSIGN_BIT_XOR);
 }
 
+bool ShaderLanguage::is_token_hint(TokenType p_type) {
+	return int(p_type) > int(TK_RENDER_MODE) && int(p_type) < int(TK_SHADER_TYPE);
+}
+
 bool ShaderLanguage::convert_constant(ConstantNode *p_constant, DataType p_to_type, ConstantNode::Value *p_value) {
 	if (p_constant->datatype == p_to_type) {
 		if (p_value) {
@@ -2877,100 +3328,329 @@ bool ShaderLanguage::is_scalar_type(DataType p_type) {
 	return p_type == TYPE_BOOL || p_type == TYPE_INT || p_type == TYPE_UINT || p_type == TYPE_FLOAT;
 }
 
+bool ShaderLanguage::is_float_type(DataType p_type) {
+	switch (p_type) {
+		case TYPE_FLOAT:
+		case TYPE_VEC2:
+		case TYPE_VEC3:
+		case TYPE_VEC4:
+		case TYPE_MAT2:
+		case TYPE_MAT3:
+		case TYPE_MAT4:
+		case TYPE_SAMPLER2D:
+		case TYPE_SAMPLER2DARRAY:
+		case TYPE_SAMPLER3D:
+		case TYPE_SAMPLERCUBE:
+		case TYPE_SAMPLERCUBEARRAY: {
+			return true;
+		}
+		default: {
+			return false;
+		}
+	}
+}
 bool ShaderLanguage::is_sampler_type(DataType p_type) {
 	return p_type == TYPE_SAMPLER2D ||
-		   p_type == TYPE_ISAMPLER2D ||
-		   p_type == TYPE_USAMPLER2D ||
-		   p_type == TYPE_SAMPLER2DARRAY ||
-		   p_type == TYPE_ISAMPLER2DARRAY ||
-		   p_type == TYPE_USAMPLER2DARRAY ||
-		   p_type == TYPE_SAMPLER3D ||
-		   p_type == TYPE_ISAMPLER3D ||
-		   p_type == TYPE_USAMPLER3D ||
-		   p_type == TYPE_SAMPLERCUBE ||
-		   p_type == TYPE_SAMPLERCUBEARRAY;
+			p_type == TYPE_ISAMPLER2D ||
+			p_type == TYPE_USAMPLER2D ||
+			p_type == TYPE_SAMPLER2DARRAY ||
+			p_type == TYPE_ISAMPLER2DARRAY ||
+			p_type == TYPE_USAMPLER2DARRAY ||
+			p_type == TYPE_SAMPLER3D ||
+			p_type == TYPE_ISAMPLER3D ||
+			p_type == TYPE_USAMPLER3D ||
+			p_type == TYPE_SAMPLERCUBE ||
+			p_type == TYPE_SAMPLERCUBEARRAY;
 }
 
-Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::ConstantNode::Value> &p_value, DataType p_type, ShaderLanguage::ShaderNode::Uniform::Hint p_hint) {
+Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::ConstantNode::Value> &p_value, DataType p_type, int p_array_size, ShaderLanguage::ShaderNode::Uniform::Hint p_hint) {
+	int array_size = p_array_size;
+
 	if (p_value.size() > 0) {
 		Variant value;
 		switch (p_type) {
 			case ShaderLanguage::TYPE_BOOL:
-				value = Variant(p_value[0].boolean);
+				if (array_size > 0) {
+					PackedInt32Array array = PackedInt32Array();
+					for (int i = 0; i < array_size; i++) {
+						array.push_back(p_value[i].boolean);
+					}
+					value = Variant(array);
+				} else {
+					value = Variant(p_value[0].boolean);
+				}
 				break;
 			case ShaderLanguage::TYPE_BVEC2:
+				array_size *= 2;
+
+				if (array_size > 0) {
+					PackedInt32Array array = PackedInt32Array();
+					for (int i = 0; i < array_size; i++) {
+						array.push_back(p_value[i].boolean);
+					}
+					value = Variant(array);
+				} else {
+					value = Variant(p_value[0].boolean);
+				}
+				break;
 			case ShaderLanguage::TYPE_BVEC3:
+				array_size *= 3;
+
+				if (array_size > 0) {
+					PackedInt32Array array = PackedInt32Array();
+					for (int i = 0; i < array_size; i++) {
+						array.push_back(p_value[i].boolean);
+					}
+					value = Variant(array);
+				} else {
+					value = Variant(p_value[0].boolean);
+				}
+				break;
 			case ShaderLanguage::TYPE_BVEC4:
+				array_size *= 4;
+
+				if (array_size > 0) {
+					PackedInt32Array array = PackedInt32Array();
+					for (int i = 0; i < array_size; i++) {
+						array.push_back(p_value[i].boolean);
+					}
+					value = Variant(array);
+				} else {
+					value = Variant(p_value[0].boolean);
+				}
+				break;
 			case ShaderLanguage::TYPE_INT:
-				value = Variant(p_value[0].sint);
+				if (array_size > 0) {
+					PackedInt32Array array = PackedInt32Array();
+					for (int i = 0; i < array_size; i++) {
+						array.push_back(p_value[i].sint);
+					}
+					value = Variant(array);
+				} else {
+					value = Variant(p_value[0].sint);
+				}
 				break;
 			case ShaderLanguage::TYPE_IVEC2:
-				value = Variant(Vector2(p_value[0].sint, p_value[1].sint));
+				if (array_size > 0) {
+					array_size *= 2;
+
+					PackedInt32Array array = PackedInt32Array();
+					for (int i = 0; i < array_size; i++) {
+						array.push_back(p_value[i].sint);
+					}
+					value = Variant(array);
+				} else {
+					value = Variant(Vector2(p_value[0].sint, p_value[1].sint));
+				}
 				break;
 			case ShaderLanguage::TYPE_IVEC3:
-				value = Variant(Vector3(p_value[0].sint, p_value[1].sint, p_value[2].sint));
+				if (array_size > 0) {
+					array_size *= 3;
+
+					PackedInt32Array array = PackedInt32Array();
+					for (int i = 0; i < array_size; i++) {
+						array.push_back(p_value[i].sint);
+					}
+					value = Variant(array);
+				} else {
+					value = Variant(Vector3(p_value[0].sint, p_value[1].sint, p_value[2].sint));
+				}
 				break;
 			case ShaderLanguage::TYPE_IVEC4:
-				value = Variant(Plane(p_value[0].sint, p_value[1].sint, p_value[2].sint, p_value[3].sint));
+				if (array_size > 0) {
+					array_size *= 4;
+
+					PackedInt32Array array = PackedInt32Array();
+					for (int i = 0; i < array_size; i++) {
+						array.push_back(p_value[i].sint);
+					}
+					value = Variant(array);
+				} else {
+					value = Variant(Plane(p_value[0].sint, p_value[1].sint, p_value[2].sint, p_value[3].sint));
+				}
 				break;
 			case ShaderLanguage::TYPE_UINT:
-				value = Variant(p_value[0].uint);
+				if (array_size > 0) {
+					PackedInt32Array array = PackedInt32Array();
+					for (int i = 0; i < array_size; i++) {
+						array.push_back(p_value[i].uint);
+					}
+					value = Variant(array);
+				} else {
+					value = Variant(p_value[0].uint);
+				}
 				break;
 			case ShaderLanguage::TYPE_UVEC2:
-				value = Variant(Vector2(p_value[0].uint, p_value[1].uint));
+				if (array_size > 0) {
+					array_size *= 2;
+
+					PackedInt32Array array = PackedInt32Array();
+					for (int i = 0; i < array_size; i++) {
+						array.push_back(p_value[i].uint);
+					}
+					value = Variant(array);
+				} else {
+					value = Variant(Vector2(p_value[0].uint, p_value[1].uint));
+				}
 				break;
 			case ShaderLanguage::TYPE_UVEC3:
-				value = Variant(Vector3(p_value[0].uint, p_value[1].uint, p_value[2].uint));
+				if (array_size > 0) {
+					array_size *= 3;
+
+					PackedInt32Array array = PackedInt32Array();
+					for (int i = 0; i < array_size; i++) {
+						array.push_back(p_value[i].uint);
+					}
+					value = Variant(array);
+				} else {
+					value = Variant(Vector3(p_value[0].uint, p_value[1].uint, p_value[2].uint));
+				}
 				break;
 			case ShaderLanguage::TYPE_UVEC4:
-				value = Variant(Plane(p_value[0].uint, p_value[1].uint, p_value[2].uint, p_value[3].uint));
+				if (array_size > 0) {
+					array_size *= 4;
+
+					PackedInt32Array array = PackedInt32Array();
+					for (int i = 0; i < array_size; i++) {
+						array.push_back(p_value[i].uint);
+					}
+					value = Variant(array);
+				} else {
+					value = Variant(Plane(p_value[0].uint, p_value[1].uint, p_value[2].uint, p_value[3].uint));
+				}
 				break;
 			case ShaderLanguage::TYPE_FLOAT:
-				value = Variant(p_value[0].real);
+				if (array_size > 0) {
+					PackedFloat32Array array = PackedFloat32Array();
+					for (int i = 0; i < array_size; i++) {
+						array.push_back(p_value[i].real);
+					}
+					value = Variant(array);
+				} else {
+					value = Variant(p_value[0].real);
+				}
 				break;
 			case ShaderLanguage::TYPE_VEC2:
-				value = Variant(Vector2(p_value[0].real, p_value[1].real));
+				if (array_size > 0) {
+					array_size *= 2;
+
+					PackedVector2Array array = PackedVector2Array();
+					for (int i = 0; i < array_size; i += 2) {
+						array.push_back(Vector2(p_value[i].real, p_value[i + 1].real));
+					}
+					value = Variant(array);
+				} else {
+					value = Variant(Vector2(p_value[0].real, p_value[1].real));
+				}
 				break;
 			case ShaderLanguage::TYPE_VEC3:
-				value = Variant(Vector3(p_value[0].real, p_value[1].real, p_value[2].real));
+				if (array_size > 0) {
+					array_size *= 3;
+
+					PackedVector3Array array = PackedVector3Array();
+					for (int i = 0; i < array_size; i += 3) {
+						array.push_back(Vector3(p_value[i].real, p_value[i + 1].real, p_value[i + 2].real));
+					}
+					value = Variant(array);
+				} else {
+					value = Variant(Vector3(p_value[0].real, p_value[1].real, p_value[2].real));
+				}
 				break;
 			case ShaderLanguage::TYPE_VEC4:
-				if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
-					value = Variant(Color(p_value[0].real, p_value[1].real, p_value[2].real, p_value[3].real));
+				if (array_size > 0) {
+					array_size *= 4;
+
+					if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+						PackedColorArray array = PackedColorArray();
+						for (int i = 0; i < array_size; i += 4) {
+							array.push_back(Color(p_value[i].real, p_value[i + 1].real, p_value[i + 2].real, p_value[i + 3].real));
+						}
+						value = Variant(array);
+					} else {
+						PackedFloat32Array array = PackedFloat32Array();
+						for (int i = 0; i < array_size; i += 4) {
+							array.push_back(p_value[i].real);
+							array.push_back(p_value[i + 1].real);
+							array.push_back(p_value[i + 2].real);
+							array.push_back(p_value[i + 3].real);
+						}
+						value = Variant(array);
+					}
 				} else {
-					value = Variant(Plane(p_value[0].real, p_value[1].real, p_value[2].real, p_value[3].real));
+					if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+						value = Variant(Color(p_value[0].real, p_value[1].real, p_value[2].real, p_value[3].real));
+					} else {
+						value = Variant(Plane(p_value[0].real, p_value[1].real, p_value[2].real, p_value[3].real));
+					}
 				}
 				break;
 			case ShaderLanguage::TYPE_MAT2:
-				value = Variant(Transform2D(p_value[0].real, p_value[2].real, p_value[1].real, p_value[3].real, 0.0, 0.0));
+				if (array_size > 0) {
+					array_size *= 4;
+
+					PackedFloat32Array array = PackedFloat32Array();
+					for (int i = 0; i < array_size; i += 4) {
+						array.push_back(p_value[i].real);
+						array.push_back(p_value[i + 1].real);
+						array.push_back(p_value[i + 2].real);
+						array.push_back(p_value[i + 3].real);
+					}
+					value = Variant(array);
+				} else {
+					value = Variant(Transform2D(p_value[0].real, p_value[2].real, p_value[1].real, p_value[3].real, 0.0, 0.0));
+				}
 				break;
 			case ShaderLanguage::TYPE_MAT3: {
-				Basis p;
-				p[0][0] = p_value[0].real;
-				p[0][1] = p_value[1].real;
-				p[0][2] = p_value[2].real;
-				p[1][0] = p_value[3].real;
-				p[1][1] = p_value[4].real;
-				p[1][2] = p_value[5].real;
-				p[2][0] = p_value[6].real;
-				p[2][1] = p_value[7].real;
-				p[2][2] = p_value[8].real;
-				value = Variant(p);
+				if (array_size > 0) {
+					array_size *= 9;
+
+					PackedFloat32Array array = PackedFloat32Array();
+					for (int i = 0; i < array_size; i += 9) {
+						for (int j = 0; j < 9; j++) {
+							array.push_back(p_value[i + j].real);
+						}
+					}
+					value = Variant(array);
+				} else {
+					Basis p;
+					p[0][0] = p_value[0].real;
+					p[0][1] = p_value[1].real;
+					p[0][2] = p_value[2].real;
+					p[1][0] = p_value[3].real;
+					p[1][1] = p_value[4].real;
+					p[1][2] = p_value[5].real;
+					p[2][0] = p_value[6].real;
+					p[2][1] = p_value[7].real;
+					p[2][2] = p_value[8].real;
+					value = Variant(p);
+				}
 				break;
 			}
 			case ShaderLanguage::TYPE_MAT4: {
-				Basis p;
-				p[0][0] = p_value[0].real;
-				p[0][1] = p_value[1].real;
-				p[0][2] = p_value[2].real;
-				p[1][0] = p_value[4].real;
-				p[1][1] = p_value[5].real;
-				p[1][2] = p_value[6].real;
-				p[2][0] = p_value[8].real;
-				p[2][1] = p_value[9].real;
-				p[2][2] = p_value[10].real;
-				Transform3D t = Transform3D(p, Vector3(p_value[3].real, p_value[7].real, p_value[11].real));
-				value = Variant(t);
+				if (array_size > 0) {
+					array_size *= 16;
+
+					PackedFloat32Array array = PackedFloat32Array();
+					for (int i = 0; i < array_size; i += 16) {
+						for (int j = 0; j < 16; j++) {
+							array.push_back(p_value[i + j].real);
+						}
+					}
+					value = Variant(array);
+				} else {
+					Basis p;
+					p[0][0] = p_value[0].real;
+					p[0][1] = p_value[1].real;
+					p[0][2] = p_value[2].real;
+					p[1][0] = p_value[4].real;
+					p[1][1] = p_value[5].real;
+					p[1][2] = p_value[6].real;
+					p[2][0] = p_value[8].real;
+					p[2][1] = p_value[9].real;
+					p[2][2] = p_value[10].real;
+					Transform3D t = Transform3D(p, Vector3(p_value[3].real, p_value[7].real, p_value[11].real));
+					value = Variant(t);
+				}
 				break;
 			}
 			case ShaderLanguage::TYPE_ISAMPLER2DARRAY:
@@ -3006,31 +3686,50 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			pi.type = Variant::NIL;
 			break;
 		case ShaderLanguage::TYPE_BOOL:
-			pi.type = Variant::BOOL;
+			if (p_uniform.array_size > 0) {
+				pi.type = Variant::PACKED_INT32_ARRAY;
+			} else {
+				pi.type = Variant::BOOL;
+			}
 			break;
 		case ShaderLanguage::TYPE_BVEC2:
-			pi.type = Variant::INT;
-			pi.hint = PROPERTY_HINT_FLAGS;
-			pi.hint_string = "x,y";
+			if (p_uniform.array_size > 0) {
+				pi.type = Variant::PACKED_INT32_ARRAY;
+			} else {
+				pi.type = Variant::INT;
+				pi.hint = PROPERTY_HINT_FLAGS;
+				pi.hint_string = "x,y";
+			}
 			break;
 		case ShaderLanguage::TYPE_BVEC3:
-			pi.type = Variant::INT;
-			pi.hint = PROPERTY_HINT_FLAGS;
-			pi.hint_string = "x,y,z";
+			if (p_uniform.array_size > 0) {
+				pi.type = Variant::PACKED_INT32_ARRAY;
+			} else {
+				pi.type = Variant::INT;
+				pi.hint = PROPERTY_HINT_FLAGS;
+				pi.hint_string = "x,y,z";
+			}
 			break;
 		case ShaderLanguage::TYPE_BVEC4:
-			pi.type = Variant::INT;
-			pi.hint = PROPERTY_HINT_FLAGS;
-			pi.hint_string = "x,y,z,w";
+			if (p_uniform.array_size > 0) {
+				pi.type = Variant::PACKED_INT32_ARRAY;
+			} else {
+				pi.type = Variant::INT;
+				pi.hint = PROPERTY_HINT_FLAGS;
+				pi.hint_string = "x,y,z,w";
+			}
 			break;
 		case ShaderLanguage::TYPE_UINT:
 		case ShaderLanguage::TYPE_INT: {
-			pi.type = Variant::INT;
-			if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_RANGE) {
-				pi.hint = PROPERTY_HINT_RANGE;
-				pi.hint_string = rtos(p_uniform.hint_range[0]) + "," + rtos(p_uniform.hint_range[1]) + "," + rtos(p_uniform.hint_range[2]);
+			if (p_uniform.array_size > 0) {
+				pi.type = Variant::PACKED_INT32_ARRAY;
+			} else {
+				pi.type = Variant::INT;
+				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_RANGE) {
+					pi.hint = PROPERTY_HINT_RANGE;
+					pi.hint_string = rtos(p_uniform.hint_range[0]) + "," + rtos(p_uniform.hint_range[1]) + "," + rtos(p_uniform.hint_range[2]);
+				}
 			}
-
 		} break;
 		case ShaderLanguage::TYPE_IVEC2:
 		case ShaderLanguage::TYPE_IVEC3:
@@ -3041,59 +3740,106 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			pi.type = Variant::PACKED_INT32_ARRAY;
 		} break;
 		case ShaderLanguage::TYPE_FLOAT: {
-			pi.type = Variant::FLOAT;
-			if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_RANGE) {
-				pi.hint = PROPERTY_HINT_RANGE;
-				pi.hint_string = rtos(p_uniform.hint_range[0]) + "," + rtos(p_uniform.hint_range[1]) + "," + rtos(p_uniform.hint_range[2]);
+			if (p_uniform.array_size > 0) {
+				pi.type = Variant::PACKED_FLOAT32_ARRAY;
+			} else {
+				pi.type = Variant::FLOAT;
+				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_RANGE) {
+					pi.hint = PROPERTY_HINT_RANGE;
+					pi.hint_string = rtos(p_uniform.hint_range[0]) + "," + rtos(p_uniform.hint_range[1]) + "," + rtos(p_uniform.hint_range[2]);
+				}
 			}
-
 		} break;
 		case ShaderLanguage::TYPE_VEC2:
-			pi.type = Variant::VECTOR2;
+			if (p_uniform.array_size > 0) {
+				pi.type = Variant::PACKED_VECTOR2_ARRAY;
+			} else {
+				pi.type = Variant::VECTOR2;
+			}
 			break;
 		case ShaderLanguage::TYPE_VEC3:
-			pi.type = Variant::VECTOR3;
+			if (p_uniform.array_size > 0) {
+				pi.type = Variant::PACKED_VECTOR3_ARRAY;
+			} else {
+				pi.type = Variant::VECTOR3;
+			}
 			break;
 		case ShaderLanguage::TYPE_VEC4: {
-			if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
-				pi.type = Variant::COLOR;
+			if (p_uniform.array_size > 0) {
+				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+					pi.type = Variant::PACKED_COLOR_ARRAY;
+				} else {
+					pi.type = Variant::PACKED_FLOAT32_ARRAY;
+				}
 			} else {
-				pi.type = Variant::PLANE;
+				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+					pi.type = Variant::COLOR;
+				} else {
+					pi.type = Variant::PLANE;
+				}
 			}
 		} break;
 		case ShaderLanguage::TYPE_MAT2:
-			pi.type = Variant::TRANSFORM2D;
+			if (p_uniform.array_size > 0) {
+				pi.type = Variant::PACKED_FLOAT32_ARRAY;
+			} else {
+				pi.type = Variant::TRANSFORM2D;
+			}
 			break;
 		case ShaderLanguage::TYPE_MAT3:
-			pi.type = Variant::BASIS;
+			if (p_uniform.array_size > 0) {
+				pi.type = Variant::PACKED_FLOAT32_ARRAY;
+			} else {
+				pi.type = Variant::BASIS;
+			}
 			break;
 		case ShaderLanguage::TYPE_MAT4:
-			pi.type = Variant::TRANSFORM3D;
+			if (p_uniform.array_size > 0) {
+				pi.type = Variant::PACKED_FLOAT32_ARRAY;
+			} else {
+				pi.type = Variant::TRANSFORM3D;
+			}
 			break;
 		case ShaderLanguage::TYPE_SAMPLER2D:
 		case ShaderLanguage::TYPE_ISAMPLER2D:
 		case ShaderLanguage::TYPE_USAMPLER2D: {
-			pi.type = Variant::OBJECT;
+			if (p_uniform.array_size > 0) {
+				pi.type = Variant::ARRAY;
+			} else {
+				pi.type = Variant::OBJECT;
+			}
 			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
 			pi.hint_string = "Texture2D";
 		} break;
 		case ShaderLanguage::TYPE_SAMPLER2DARRAY:
 		case ShaderLanguage::TYPE_ISAMPLER2DARRAY:
 		case ShaderLanguage::TYPE_USAMPLER2DARRAY: {
-			pi.type = Variant::OBJECT;
+			if (p_uniform.array_size > 0) {
+				pi.type = Variant::ARRAY;
+			} else {
+				pi.type = Variant::OBJECT;
+			}
 			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
 			pi.hint_string = "TextureLayered";
 		} break;
 		case ShaderLanguage::TYPE_SAMPLER3D:
 		case ShaderLanguage::TYPE_ISAMPLER3D:
 		case ShaderLanguage::TYPE_USAMPLER3D: {
-			pi.type = Variant::OBJECT;
+			if (p_uniform.array_size > 0) {
+				pi.type = Variant::ARRAY;
+			} else {
+				pi.type = Variant::OBJECT;
+			}
 			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
 			pi.hint_string = "Texture3D";
 		} break;
 		case ShaderLanguage::TYPE_SAMPLERCUBE:
 		case ShaderLanguage::TYPE_SAMPLERCUBEARRAY: {
-			pi.type = Variant::OBJECT;
+			if (p_uniform.array_size > 0) {
+				pi.type = Variant::ARRAY;
+			} else {
+				pi.type = Variant::OBJECT;
+			}
 			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
 			pi.hint_string = "TextureLayered";
 		} break;
@@ -3106,55 +3852,77 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 	return pi;
 }
 
-uint32_t ShaderLanguage::get_type_size(DataType p_type) {
+uint32_t ShaderLanguage::get_datatype_size(ShaderLanguage::DataType p_type) {
 	switch (p_type) {
 		case TYPE_VOID:
 			return 0;
 		case TYPE_BOOL:
-		case TYPE_INT:
-		case TYPE_UINT:
-		case TYPE_FLOAT:
 			return 4;
 		case TYPE_BVEC2:
-		case TYPE_IVEC2:
-		case TYPE_UVEC2:
-		case TYPE_VEC2:
 			return 8;
 		case TYPE_BVEC3:
-		case TYPE_IVEC3:
-		case TYPE_UVEC3:
-		case TYPE_VEC3:
 			return 12;
 		case TYPE_BVEC4:
+			return 16;
+		case TYPE_INT:
+			return 4;
+		case TYPE_IVEC2:
+			return 8;
+		case TYPE_IVEC3:
+			return 12;
 		case TYPE_IVEC4:
+			return 16;
+		case TYPE_UINT:
+			return 4;
+		case TYPE_UVEC2:
+			return 8;
+		case TYPE_UVEC3:
+			return 12;
 		case TYPE_UVEC4:
+			return 16;
+		case TYPE_FLOAT:
+			return 4;
+		case TYPE_VEC2:
+			return 8;
+		case TYPE_VEC3:
+			return 12;
 		case TYPE_VEC4:
 			return 16;
 		case TYPE_MAT2:
-			return 8;
+			return 32; // 4 * 4 + 4 * 4
 		case TYPE_MAT3:
-			return 12;
+			return 48; // 4 * 4 + 4 * 4 + 4 * 4
 		case TYPE_MAT4:
-			return 16;
+			return 64;
 		case TYPE_SAMPLER2D:
+			return 16;
 		case TYPE_ISAMPLER2D:
+			return 16;
 		case TYPE_USAMPLER2D:
+			return 16;
 		case TYPE_SAMPLER2DARRAY:
+			return 16;
 		case TYPE_ISAMPLER2DARRAY:
+			return 16;
 		case TYPE_USAMPLER2DARRAY:
+			return 16;
 		case TYPE_SAMPLER3D:
+			return 16;
 		case TYPE_ISAMPLER3D:
+			return 16;
 		case TYPE_USAMPLER3D:
+			return 16;
 		case TYPE_SAMPLERCUBE:
+			return 16;
 		case TYPE_SAMPLERCUBEARRAY:
-			return 4; //not really, but useful for indices
+			return 16;
 		case TYPE_STRUCT:
-			// FIXME: Implement.
 			return 0;
-		case ShaderLanguage::TYPE_MAX:
-			return 0;
+		case TYPE_MAX: {
+			ERR_FAIL_V(0);
+		};
 	}
-	return 0;
+	ERR_FAIL_V(0);
 }
 
 void ShaderLanguage::get_keyword_list(List<String> *r_keywords) {
@@ -3182,16 +3950,16 @@ void ShaderLanguage::get_keyword_list(List<String> *r_keywords) {
 
 bool ShaderLanguage::is_control_flow_keyword(String p_keyword) {
 	return p_keyword == "break" ||
-		   p_keyword == "case" ||
-		   p_keyword == "continue" ||
-		   p_keyword == "default" ||
-		   p_keyword == "do" ||
-		   p_keyword == "else" ||
-		   p_keyword == "for" ||
-		   p_keyword == "if" ||
-		   p_keyword == "return" ||
-		   p_keyword == "switch" ||
-		   p_keyword == "while";
+			p_keyword == "case" ||
+			p_keyword == "continue" ||
+			p_keyword == "default" ||
+			p_keyword == "do" ||
+			p_keyword == "else" ||
+			p_keyword == "for" ||
+			p_keyword == "if" ||
+			p_keyword == "return" ||
+			p_keyword == "switch" ||
+			p_keyword == "while";
 }
 
 void ShaderLanguage::get_builtin_funcs(List<String> *r_keywords) {
@@ -3360,43 +4128,6 @@ bool ShaderLanguage::_validate_varying_assign(ShaderNode::Varying &p_varying, St
 	return true;
 }
 
-bool ShaderLanguage::_validate_varying_using(ShaderNode::Varying &p_varying, String *r_message) {
-	switch (p_varying.stage) {
-		case ShaderNode::Varying::STAGE_UNKNOWN:
-			VaryingUsage usage;
-			usage.var = &p_varying;
-			usage.line = tk_line;
-			unknown_varying_usages.push_back(usage);
-			break;
-		case ShaderNode::Varying::STAGE_VERTEX:
-			if (current_function == varying_function_names.fragment || current_function == varying_function_names.light) {
-				p_varying.stage = ShaderNode::Varying::STAGE_VERTEX_TO_FRAGMENT_LIGHT;
-			}
-			break;
-		case ShaderNode::Varying::STAGE_FRAGMENT:
-			if (current_function == varying_function_names.light) {
-				p_varying.stage = ShaderNode::Varying::STAGE_FRAGMENT_TO_LIGHT;
-			}
-			break;
-		default:
-			break;
-	}
-	return true;
-}
-
-bool ShaderLanguage::_check_varying_usages(int *r_error_line, String *r_error_message) const {
-	for (const List<ShaderLanguage::VaryingUsage>::Element *E = unknown_varying_usages.front(); E; E = E->next()) {
-		ShaderNode::Varying::Stage stage = E->get().var->stage;
-		if (stage != ShaderNode::Varying::STAGE_UNKNOWN && stage != ShaderNode::Varying::STAGE_VERTEX && stage != ShaderNode::Varying::STAGE_VERTEX_TO_FRAGMENT_LIGHT) {
-			*r_error_line = E->get().line;
-			*r_error_message = RTR("Fragment-stage varying could not been accessed in custom function!");
-			return false;
-		}
-	}
-
-	return true;
-}
-
 bool ShaderLanguage::_check_node_constness(const Node *p_node) const {
 	switch (p_node->type) {
 		case Node::TYPE_OPERATOR: {
@@ -3502,23 +4233,23 @@ bool ShaderLanguage::_propagate_function_call_sampler_uniform_settings(StringNam
 			ERR_FAIL_INDEX_V(p_argument, shader->functions[i].function->arguments.size(), false);
 			FunctionNode::Argument *arg = &shader->functions[i].function->arguments.write[p_argument];
 			if (arg->tex_builtin_check) {
-				_set_error("Sampler argument #" + itos(p_argument) + " of function '" + String(p_name) + "' called more than once using both built-ins and uniform textures, this is not supported (use either one or the other).");
+				_set_error(vformat(RTR("Sampler argument %d of function '%s' called more than once using both built-ins and uniform textures, this is not supported (use either one or the other)."), p_argument, String(p_name)));
 				return false;
 			} else if (arg->tex_argument_check) {
 				//was checked, verify that filter and repeat are the same
 				if (arg->tex_argument_filter == p_filter && arg->tex_argument_repeat == p_repeat) {
 					return true;
 				} else {
-					_set_error("Sampler argument #" + itos(p_argument) + " of function '" + String(p_name) + "' called more than once using textures that differ in either filter or repeat setting.");
+					_set_error(vformat(RTR("Sampler argument %d of function '%s' called more than once using textures that differ in either filter or repeat setting."), p_argument, String(p_name)));
 					return false;
 				}
 			} else {
 				arg->tex_argument_check = true;
 				arg->tex_argument_filter = p_filter;
 				arg->tex_argument_repeat = p_repeat;
-				for (Map<StringName, Set<int>>::Element *E = arg->tex_argument_connect.front(); E; E = E->next()) {
-					for (Set<int>::Element *F = E->get().front(); F; F = F->next()) {
-						if (!_propagate_function_call_sampler_uniform_settings(E->key(), F->get(), p_filter, p_repeat)) {
+				for (KeyValue<StringName, Set<int>> &E : arg->tex_argument_connect) {
+					for (Set<int>::Element *F = E.value.front(); F; F = F->next()) {
+						if (!_propagate_function_call_sampler_uniform_settings(E.key, F->get(), p_filter, p_repeat)) {
 							return false;
 						}
 					}
@@ -3536,23 +4267,23 @@ bool ShaderLanguage::_propagate_function_call_sampler_builtin_reference(StringNa
 			ERR_FAIL_INDEX_V(p_argument, shader->functions[i].function->arguments.size(), false);
 			FunctionNode::Argument *arg = &shader->functions[i].function->arguments.write[p_argument];
 			if (arg->tex_argument_check) {
-				_set_error("Sampler argument #" + itos(p_argument) + " of function '" + String(p_name) + "' called more than once using both built-ins and uniform textures, this is not supported (use either one or the other).");
+				_set_error(vformat(RTR("Sampler argument %d of function '%s' called more than once using both built-ins and uniform textures, this is not supported (use either one or the other)."), p_argument, String(p_name)));
 				return false;
 			} else if (arg->tex_builtin_check) {
 				//was checked, verify that the built-in is the same
 				if (arg->tex_builtin == p_builtin) {
 					return true;
 				} else {
-					_set_error("Sampler argument #" + itos(p_argument) + " of function '" + String(p_name) + "' called more than once using different built-ins. Only calling with the same built-in is supported.");
+					_set_error(vformat(RTR("Sampler argument %d of function '%s' called more than once using different built-ins. Only calling with the same built-in is supported."), p_argument, String(p_name)));
 					return false;
 				}
 			} else {
 				arg->tex_builtin_check = true;
 				arg->tex_builtin = p_builtin;
 
-				for (Map<StringName, Set<int>>::Element *E = arg->tex_argument_connect.front(); E; E = E->next()) {
-					for (Set<int>::Element *F = E->get().front(); F; F = F->next()) {
-						if (!_propagate_function_call_sampler_builtin_reference(E->key(), F->get(), p_builtin)) {
+				for (KeyValue<StringName, Set<int>> &E : arg->tex_argument_connect) {
+					for (Set<int>::Element *F = E.value.front(); F; F = F->next()) {
+						if (!_propagate_function_call_sampler_builtin_reference(E.key, F->get(), p_builtin)) {
 							return false;
 						}
 					}
@@ -3562,6 +4293,90 @@ bool ShaderLanguage::_propagate_function_call_sampler_builtin_reference(StringNa
 		}
 	}
 	ERR_FAIL_V(false); //bug? function not found
+}
+
+Error ShaderLanguage::_parse_array_size(BlockNode *p_block, const FunctionInfo &p_function_info, bool p_forbid_unknown_size, Node **r_size_expression, int *r_array_size, bool *r_unknown_size) {
+	bool error = false;
+	if (r_array_size != nullptr && *r_array_size > 0) {
+		error = true;
+	}
+	if (r_unknown_size != nullptr && *r_unknown_size) {
+		error = true;
+	}
+	if (error) {
+		_set_error(vformat(RTR("Array size is already defined.")));
+		return ERR_PARSE_ERROR;
+	}
+
+	TkPos pos = _get_tkpos();
+	Token tk = _get_token();
+
+	if (tk.type == TK_BRACKET_CLOSE) {
+		if (p_forbid_unknown_size) {
+			_set_error(vformat(RTR("Unknown array size is forbidden in that context.")));
+			return ERR_PARSE_ERROR;
+		}
+		if (r_unknown_size != nullptr) {
+			*r_unknown_size = true;
+		}
+	} else {
+		int array_size = 0;
+
+		if (!tk.is_integer_constant() || ((int)tk.constant) <= 0) {
+			_set_tkpos(pos);
+			Node *n = _parse_and_reduce_expression(p_block, p_function_info);
+			if (n) {
+				if (n->type == Node::TYPE_VARIABLE) {
+					VariableNode *vn = static_cast<VariableNode *>(n);
+					if (vn) {
+						ConstantNode::Value v;
+						DataType data_type;
+						bool is_const = false;
+
+						_find_identifier(p_block, false, p_function_info, vn->name, &data_type, nullptr, &is_const, nullptr, nullptr, &v);
+
+						if (is_const) {
+							if (data_type == TYPE_INT) {
+								int32_t value = v.sint;
+								if (value > 0) {
+									array_size = value;
+								}
+							} else if (data_type == TYPE_UINT) {
+								uint32_t value = v.uint;
+								if (value > 0U) {
+									array_size = value;
+								}
+							}
+						}
+					}
+				} else if (n->type == Node::TYPE_OPERATOR) {
+					_set_error(vformat(RTR("Array size expressions are not supported.")));
+					return ERR_PARSE_ERROR;
+				}
+				if (r_size_expression != nullptr) {
+					*r_size_expression = n;
+				}
+			}
+		} else if (((int)tk.constant) > 0) {
+			array_size = (uint32_t)tk.constant;
+		}
+
+		if (array_size <= 0) {
+			_set_error(RTR("Expected a positive integer constant."));
+			return ERR_PARSE_ERROR;
+		}
+
+		tk = _get_token();
+		if (tk.type != TK_BRACKET_CLOSE) {
+			_set_expected_error("]");
+			return ERR_PARSE_ERROR;
+		}
+
+		if (r_array_size != nullptr) {
+			*r_array_size = array_size;
+		}
+	}
+	return OK;
 }
 
 ShaderLanguage::Node *ShaderLanguage::_parse_array_constructor(BlockNode *p_block, const FunctionInfo &p_function_info) {
@@ -3580,49 +4395,20 @@ ShaderLanguage::Node *ShaderLanguage::_parse_array_constructor(BlockNode *p_bloc
 			struct_name = tk.text;
 		} else {
 			if (!is_token_variable_datatype(tk.type)) {
-				_set_error("Invalid data type for array");
+				_set_error(RTR("Invalid data type for the array."));
 				return nullptr;
 			}
 			type = get_token_datatype(tk.type);
 		}
 		tk = _get_token();
 		if (tk.type == TK_BRACKET_OPEN) {
-			TkPos pos = _get_tkpos();
-			tk = _get_token();
-			if (tk.type == TK_BRACKET_CLOSE) {
-				undefined_size = true;
-				tk = _get_token();
-			} else {
-				_set_tkpos(pos);
-
-				Node *n = _parse_and_reduce_expression(p_block, p_function_info);
-				if (!n || n->type != Node::TYPE_CONSTANT || n->get_datatype() != TYPE_INT) {
-					_set_error("Expected single integer constant > 0");
-					return nullptr;
-				}
-
-				ConstantNode *cnode = (ConstantNode *)n;
-				if (cnode->values.size() == 1) {
-					array_size = cnode->values[0].sint;
-					if (array_size <= 0) {
-						_set_error("Expected single integer constant > 0");
-						return nullptr;
-					}
-				} else {
-					_set_error("Expected single integer constant > 0");
-					return nullptr;
-				}
-
-				tk = _get_token();
-				if (tk.type != TK_BRACKET_CLOSE) {
-					_set_error("Expected ']'");
-					return nullptr;
-				} else {
-					tk = _get_token();
-				}
+			Error error = _parse_array_size(p_block, p_function_info, false, nullptr, &array_size, &undefined_size);
+			if (error != OK) {
+				return nullptr;
 			}
+			tk = _get_token();
 		} else {
-			_set_error("Expected '['");
+			_set_expected_error("[");
 			return nullptr;
 		}
 	}
@@ -3660,20 +4446,20 @@ ShaderLanguage::Node *ShaderLanguage::_parse_array_constructor(BlockNode *p_bloc
 				break;
 			} else {
 				if (auto_size) {
-					_set_error("Expected '}' or ','");
+					_set_expected_error("}", ",");
 				} else {
-					_set_error("Expected ')' or ','");
+					_set_expected_error(")", ",");
 				}
 				return nullptr;
 			}
 			idx++;
 		}
 		if (!auto_size && !undefined_size && an->initializer.size() != array_size) {
-			_set_error("Array size mismatch");
+			_set_error(RTR("Array size mismatch."));
 			return nullptr;
 		}
 	} else {
-		_set_error("Expected array initialization!");
+		_set_error(RTR("Expected array initialization."));
 		return nullptr;
 	}
 
@@ -3700,12 +4486,10 @@ ShaderLanguage::Node *ShaderLanguage::_parse_array_constructor(BlockNode *p_bloc
 			if (!is_token_variable_datatype(tk.type)) {
 				_set_tkpos(prev_pos);
 
-				pass_array = true;
 				Node *n = _parse_and_reduce_expression(p_block, p_function_info);
-				pass_array = false;
 
 				if (!n) {
-					_set_error("Invalid data type for array");
+					_set_error(RTR("Invalid data type for the array."));
 					return nullptr;
 				}
 
@@ -3718,65 +4502,42 @@ ShaderLanguage::Node *ShaderLanguage::_parse_array_constructor(BlockNode *p_bloc
 		}
 		tk = _get_token();
 		if (tk.type == TK_BRACKET_OPEN) {
-			TkPos pos = _get_tkpos();
-			tk = _get_token();
-			if (tk.type == TK_BRACKET_CLOSE) {
-				array_size = p_array_size;
-				tk = _get_token();
-			} else {
-				_set_tkpos(pos);
-
-				Node *n = _parse_and_reduce_expression(p_block, p_function_info);
-				if (!n || n->type != Node::TYPE_CONSTANT || n->get_datatype() != TYPE_INT) {
-					_set_error("Expected single integer constant > 0");
-					return nullptr;
-				}
-
-				ConstantNode *cnode = (ConstantNode *)n;
-				if (cnode->values.size() == 1) {
-					array_size = cnode->values[0].sint;
-					if (array_size <= 0) {
-						_set_error("Expected single integer constant > 0");
-						return nullptr;
-					}
-				} else {
-					_set_error("Expected single integer constant > 0");
-					return nullptr;
-				}
-
-				tk = _get_token();
-				if (tk.type != TK_BRACKET_CLOSE) {
-					_set_error("Expected ']'");
-					return nullptr;
-				} else {
-					tk = _get_token();
-				}
+			bool is_unknown_size = false;
+			Error error = _parse_array_size(p_block, p_function_info, false, nullptr, &array_size, &is_unknown_size);
+			if (error != OK) {
+				return nullptr;
 			}
+			if (is_unknown_size) {
+				array_size = p_array_size;
+			}
+			tk = _get_token();
 		} else {
-			_set_error("Expected '['");
+			_set_expected_error("[");
 			return nullptr;
 		}
 
 		if (type != p_type || struct_name != p_struct_name || array_size != p_array_size) {
-			String error_str = "Cannot convert from '";
+			String from;
 			if (type == TYPE_STRUCT) {
-				error_str += struct_name;
+				from += struct_name;
 			} else {
-				error_str += get_datatype_name(type);
+				from += get_datatype_name(type);
 			}
-			error_str += "[";
-			error_str += itos(array_size);
-			error_str += "]'";
-			error_str += " to '";
+			from += "[";
+			from += itos(array_size);
+			from += "]'";
+
+			String to;
 			if (type == TYPE_STRUCT) {
-				error_str += p_struct_name;
+				to += p_struct_name;
 			} else {
-				error_str += get_datatype_name(p_type);
+				to += get_datatype_name(p_type);
 			}
-			error_str += "[";
-			error_str += itos(p_array_size);
-			error_str += "]'";
-			_set_error(error_str);
+			to += "[";
+			to += itos(p_array_size);
+			to += "]'";
+
+			_set_error(vformat(RTR("Cannot convert from '%s' to '%s'."), from, to));
 			return nullptr;
 		}
 	}
@@ -3792,7 +4553,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_array_constructor(BlockNode *p_bloc
 				return nullptr;
 			}
 
-			if (!_compare_datatypes(p_type, p_struct_name, 0, n->get_datatype(), n->get_datatype_name(), 0)) {
+			if (!_compare_datatypes(p_type, p_struct_name, 0, n->get_datatype(), n->get_datatype_name(), n->get_array_size())) {
 				return nullptr;
 			}
 
@@ -3807,19 +4568,19 @@ ShaderLanguage::Node *ShaderLanguage::_parse_array_constructor(BlockNode *p_bloc
 				break;
 			} else {
 				if (auto_size) {
-					_set_error("Expected '}' or ','");
+					_set_expected_error("}", ",");
 				} else {
-					_set_error("Expected ')' or ','");
+					_set_expected_error(")", ",");
 				}
 				return nullptr;
 			}
 		}
 		if (an->initializer.size() != p_array_size) {
-			_set_error("Array size mismatch");
+			_set_error(RTR("Array size mismatch."));
 			return nullptr;
 		}
 	} else {
-		_set_error("Expected array initialization!");
+		_set_error(RTR("Expected array initialization."));
 		return nullptr;
 	}
 
@@ -3850,7 +4611,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 			tk = _get_token();
 
 			if (tk.type != TK_PARENTHESIS_CLOSE) {
-				_set_error("Expected ')' in expression");
+				_set_error(RTR("Expected ')' in expression."));
 				return nullptr;
 			}
 
@@ -3868,6 +4629,14 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 			v.sint = tk.constant;
 			constant->values.push_back(v);
 			constant->datatype = TYPE_INT;
+			expr = constant;
+
+		} else if (tk.type == TK_UINT_CONSTANT) {
+			ConstantNode *constant = alloc_node<ConstantNode>();
+			ConstantNode::Value v;
+			v.uint = tk.constant;
+			constant->values.push_back(v);
+			constant->datatype = TYPE_UINT;
 			expr = constant;
 
 		} else if (tk.type == TK_TRUE) {
@@ -3890,7 +4659,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 		} else if (tk.type == TK_TYPE_VOID) {
 			//make sure void is not used in expression
-			_set_error("Void value not allowed in Expression");
+			_set_error(RTR("Void value not allowed in expression."));
 			return nullptr;
 		} else if (is_token_nonvoid_datatype(tk.type) || tk.type == TK_CURLY_BRACKET_OPEN) {
 			if (tk.type == TK_CURLY_BRACKET_OPEN) {
@@ -3919,7 +4688,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					expr = _parse_array_constructor(p_block, p_function_info);
 				} else {
 					if (tk.type != TK_PARENTHESIS_OPEN) {
-						_set_error("Expected '(' after type name");
+						_set_error(RTR("Expected '(' after the type name."));
 						return nullptr;
 					}
 					//basic type constructor
@@ -3952,7 +4721,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					}
 
 					if (!_validate_function_call(p_block, p_function_info, func, &func->return_cache, &func->struct_name)) {
-						_set_error("No matching constructor found for: '" + String(funcname->name) + "'");
+						_set_error(vformat(RTR("No matching constructor found for: '%s'."), String(funcname->name)));
 						return nullptr;
 					}
 
@@ -3971,11 +4740,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 			if (shader->structs.has(identifier)) {
 				pstruct = shader->structs[identifier].shader_struct;
-#ifdef DEBUG_ENABLED
-				if (check_warnings && HAS_WARNING(ShaderWarning::UNUSED_STRUCT_FLAG) && used_structs.has(identifier)) {
-					used_structs[identifier].used = true;
-				}
-#endif // DEBUG_ENABLED
 				struct_init = true;
 			}
 
@@ -4014,7 +4778,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						if (i + 1 < pstruct->members.size()) {
 							tk = _get_token();
 							if (tk.type != TK_COMMA) {
-								_set_error("Expected ','");
+								_set_expected_error(",");
 								return nullptr;
 							}
 						}
@@ -4022,7 +4786,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					}
 					tk = _get_token();
 					if (tk.type != TK_PARENTHESIS_CLOSE) {
-						_set_error("Expected ')'");
+						_set_expected_error(")");
 						return nullptr;
 					}
 
@@ -4040,15 +4804,13 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 					int carg = -1;
 
-					pass_array = true;
 					bool ok = _parse_function_arguments(p_block, p_function_info, func, &carg);
-					pass_array = false;
 
 					// Check if block has a variable with the same name as function to prevent shader crash.
 					ShaderLanguage::BlockNode *bnode = p_block;
 					while (bnode) {
 						if (bnode->variables.has(name)) {
-							_set_error("Expected function name");
+							_set_error(RTR("Expected a function name."));
 							return nullptr;
 						}
 						bnode = bnode->parent_block;
@@ -4085,7 +4847,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					}
 
 					if (!_validate_function_call(p_block, p_function_info, func, &func->return_cache, &func->struct_name)) {
-						_set_error("No matching function found for: '" + String(funcname->name) + "'");
+						_set_error(vformat(RTR("No matching function found for: '%s'."), String(funcname->name)));
 						return nullptr;
 					}
 					completion_class = TAG_GLOBAL; // reset sub-class
@@ -4119,53 +4881,104 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							for (int i = 0; i < call_function->arguments.size(); i++) {
 								int argidx = i + 1;
 								if (argidx < func->arguments.size()) {
-									if (call_function->arguments[i].is_const || call_function->arguments[i].qualifier == ArgumentQualifier::ARGUMENT_QUALIFIER_OUT || call_function->arguments[i].qualifier == ArgumentQualifier::ARGUMENT_QUALIFIER_INOUT) {
-										bool error = false;
-										Node *n = func->arguments[argidx];
-										if (n->type == Node::TYPE_CONSTANT || n->type == Node::TYPE_OPERATOR) {
-											error = true;
-										} else if (n->type == Node::TYPE_ARRAY) {
-											ArrayNode *an = static_cast<ArrayNode *>(n);
-											if (an->call_expression != nullptr || an->is_const) {
-												error = true;
-											}
-										} else if (n->type == Node::TYPE_VARIABLE) {
+									bool error = false;
+									Node *n = func->arguments[argidx];
+									ArgumentQualifier arg_qual = call_function->arguments[i].qualifier;
+									bool is_out_arg = arg_qual != ArgumentQualifier::ARGUMENT_QUALIFIER_IN;
+
+									if (n->type == Node::TYPE_VARIABLE || n->type == Node::TYPE_ARRAY) {
+										StringName varname;
+
+										if (n->type == Node::TYPE_VARIABLE) {
 											VariableNode *vn = static_cast<VariableNode *>(n);
-											if (vn->is_const) {
-												error = true;
-											} else {
-												StringName varname = vn->name;
-												if (shader->constants.has(varname)) {
-													error = true;
-												} else if (shader->uniforms.has(varname)) {
-													error = true;
-												} else {
-													if (shader->varyings.has(varname)) {
-														_set_error(vformat("Varyings cannot be passed for '%s' parameter!", _get_qualifier_str(call_function->arguments[i].qualifier)));
-														return nullptr;
+											varname = vn->name;
+										} else { // TYPE_ARRAY
+											ArrayNode *an = static_cast<ArrayNode *>(n);
+											varname = an->name;
+										}
+
+										if (shader->varyings.has(varname)) {
+											switch (shader->varyings[varname].stage) {
+												case ShaderNode::Varying::STAGE_UNKNOWN: {
+													_set_error(vformat(RTR("Varying '%s' must be assigned in the vertex or fragment function first."), varname));
+													return nullptr;
+												}
+												case ShaderNode::Varying::STAGE_VERTEX_TO_FRAGMENT_LIGHT:
+													[[fallthrough]];
+												case ShaderNode::Varying::STAGE_VERTEX:
+													if (is_out_arg && current_function != varying_function_names.vertex) { // inout/out
+														error = true;
 													}
-													if (p_function_info.built_ins.has(varname)) {
-														BuiltInInfo info = p_function_info.built_ins[varname];
-														if (info.constant) {
+													break;
+												case ShaderNode::Varying::STAGE_FRAGMENT_TO_LIGHT:
+													[[fallthrough]];
+												case ShaderNode::Varying::STAGE_FRAGMENT:
+													if (!is_out_arg) {
+														if (current_function != varying_function_names.fragment && current_function != varying_function_names.light) {
 															error = true;
 														}
+													} else if (current_function != varying_function_names.fragment) { // inout/out
+														error = true;
 													}
-												}
+													break;
+												default:
+													break;
 											}
+
+											if (error) {
+												_set_error(vformat(RTR("Varying '%s' cannot be passed for the '%s' parameter in that context."), varname, _get_qualifier_str(arg_qual)));
+												return nullptr;
+											}
+										}
+									}
+
+									bool is_const_arg = call_function->arguments[i].is_const;
+
+									if (is_const_arg || is_out_arg) {
+										StringName varname;
+
+										if (n->type == Node::TYPE_CONSTANT || n->type == Node::TYPE_OPERATOR || n->type == Node::TYPE_ARRAY_CONSTRUCT) {
+											if (!is_const_arg) {
+												error = true;
+											}
+										} else if (n->type == Node::TYPE_ARRAY) {
+											ArrayNode *an = static_cast<ArrayNode *>(n);
+											if (!is_const_arg && (an->call_expression != nullptr || an->is_const)) {
+												error = true;
+											}
+											varname = an->name;
+										} else if (n->type == Node::TYPE_VARIABLE) {
+											VariableNode *vn = static_cast<VariableNode *>(n);
+											if (vn->is_const && !is_const_arg) {
+												error = true;
+											}
+											varname = vn->name;
 										} else if (n->type == Node::TYPE_MEMBER) {
 											MemberNode *mn = static_cast<MemberNode *>(n);
-											if (mn->basetype_const) {
+											if (mn->basetype_const && is_out_arg) {
 												error = true;
 											}
 										}
+										if (!error && varname != StringName()) {
+											if (shader->constants.has(varname)) {
+												error = true;
+											} else if (shader->uniforms.has(varname)) {
+												error = true;
+											} else if (p_function_info.built_ins.has(varname)) {
+												BuiltInInfo info = p_function_info.built_ins[varname];
+												if (info.constant) {
+													error = true;
+												}
+											}
+										}
+
 										if (error) {
-											_set_error(vformat("Constant value cannot be passed for '%s' parameter!", _get_qualifier_str(call_function->arguments[i].qualifier)));
+											_set_error(vformat(RTR("A constant value cannot be passed for '%s' parameter."), _get_qualifier_str(arg_qual)));
 											return nullptr;
 										}
 									}
 									if (is_sampler_type(call_function->arguments[i].type)) {
 										//let's see where our argument comes from
-										Node *n = func->arguments[argidx];
 										ERR_CONTINUE(n->type != Node::TYPE_VARIABLE); //bug? this should always be a variable
 										VariableNode *vn = static_cast<VariableNode *>(n);
 										StringName varname = vn->name;
@@ -4228,6 +5041,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				IdentifierType ident_type;
 				int array_size = 0;
 				StringName struct_name;
+				bool is_local = false;
 
 				if (p_block && p_block->block_tag != SubClassTag::TAG_GLOBAL) {
 					int idx = 0;
@@ -4241,35 +5055,54 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						idx++;
 					}
 					if (!found) {
-						_set_error("Unknown identifier in expression: " + String(identifier));
+						_set_error(vformat(RTR("Unknown identifier in expression: '%s'."), String(identifier)));
 						return nullptr;
 					}
 				} else {
 					if (!_find_identifier(p_block, false, p_function_info, identifier, &data_type, &ident_type, &is_const, &array_size, &struct_name)) {
-						_set_error("Unknown identifier in expression: " + String(identifier));
+						_set_error(vformat(RTR("Unknown identifier in expression: '%s'."), String(identifier)));
 						return nullptr;
 					}
 					if (ident_type == IDENTIFIER_VARYING) {
 						TkPos prev_pos = _get_tkpos();
 						Token next_token = _get_token();
-						_set_tkpos(prev_pos);
-						String error;
 
+						// An array of varyings.
+						if (next_token.type == TK_BRACKET_OPEN) {
+							_get_token(); // Pass constant.
+							_get_token(); // Pass TK_BRACKET_CLOSE.
+							next_token = _get_token();
+						}
+						_set_tkpos(prev_pos);
+
+						String error;
 						if (is_token_operator_assign(next_token.type)) {
 							if (!_validate_varying_assign(shader->varyings[identifier], &error)) {
 								_set_error(error);
 								return nullptr;
 							}
 						} else {
-							if (!_validate_varying_using(shader->varyings[identifier], &error)) {
-								_set_error(error);
-								return nullptr;
+							ShaderNode::Varying &var = shader->varyings[identifier];
+
+							switch (var.stage) {
+								case ShaderNode::Varying::STAGE_VERTEX:
+									if (current_function == varying_function_names.fragment || current_function == varying_function_names.light) {
+										var.stage = ShaderNode::Varying::STAGE_VERTEX_TO_FRAGMENT_LIGHT;
+									}
+									break;
+								case ShaderNode::Varying::STAGE_FRAGMENT:
+									if (current_function == varying_function_names.light) {
+										var.stage = ShaderNode::Varying::STAGE_FRAGMENT_TO_LIGHT;
+									}
+									break;
+								default:
+									break;
 							}
 						}
 					}
 
 					if (ident_type == IDENTIFIER_FUNCTION) {
-						_set_error("Can't use function as identifier: " + String(identifier));
+						_set_error(vformat(RTR("Can't use function as identifier: '%s'."), String(identifier)));
 						return nullptr;
 					}
 					if (is_const) {
@@ -4277,6 +5110,8 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					} else {
 						last_type = ident_type;
 					}
+
+					is_local = ident_type == IDENTIFIER_LOCAL_VAR || ident_type == IDENTIFIER_FUNCTION_ARGUMENT;
 				}
 
 				Node *index_expression = nullptr;
@@ -4284,62 +5119,58 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				Node *assign_expression = nullptr;
 
 				if (array_size > 0) {
-					if (!pass_array) {
-						tk = _get_token();
+					prepos = _get_tkpos();
+					tk = _get_token();
 
-						if (tk.type != TK_BRACKET_OPEN && tk.type != TK_PERIOD && tk.type != TK_OP_ASSIGN) {
-							_set_error("Expected '[','.' or '='");
+					if (tk.type == TK_OP_ASSIGN) {
+						if (is_const) {
+							_set_error(RTR("Constants cannot be modified."));
+							return nullptr;
+						}
+						assign_expression = _parse_array_constructor(p_block, p_function_info, data_type, struct_name, array_size);
+						if (!assign_expression) {
+							return nullptr;
+						}
+					} else if (tk.type == TK_PERIOD) {
+						completion_class = TAG_ARRAY;
+						p_block->block_tag = SubClassTag::TAG_ARRAY;
+						call_expression = _parse_and_reduce_expression(p_block, p_function_info);
+						p_block->block_tag = SubClassTag::TAG_GLOBAL;
+						if (!call_expression) {
+							return nullptr;
+						}
+						data_type = call_expression->get_datatype();
+					} else if (tk.type == TK_BRACKET_OPEN) { // indexing
+						index_expression = _parse_and_reduce_expression(p_block, p_function_info);
+						if (!index_expression) {
 							return nullptr;
 						}
 
-						if (tk.type == TK_OP_ASSIGN) {
-							if (is_const) {
-								_set_error("Constants cannot be modified.");
-								return nullptr;
-							}
-							assign_expression = _parse_array_constructor(p_block, p_function_info, data_type, struct_name, array_size);
-							if (!assign_expression) {
-								return nullptr;
-							}
-						} else if (tk.type == TK_PERIOD) {
-							completion_class = TAG_ARRAY;
-							p_block->block_tag = SubClassTag::TAG_ARRAY;
-							call_expression = _parse_and_reduce_expression(p_block, p_function_info);
-							p_block->block_tag = SubClassTag::TAG_GLOBAL;
-							if (!call_expression) {
-								return nullptr;
-							}
-							data_type = call_expression->get_datatype();
-						} else { // indexing
-							index_expression = _parse_and_reduce_expression(p_block, p_function_info);
-							if (!index_expression) {
-								return nullptr;
-							}
+						if (index_expression->get_array_size() != 0 || (index_expression->get_datatype() != TYPE_INT && index_expression->get_datatype() != TYPE_UINT)) {
+							_set_error(RTR("Only integer expressions are allowed for indexing."));
+							return nullptr;
+						}
 
-							if (index_expression->get_datatype() != TYPE_INT && index_expression->get_datatype() != TYPE_UINT) {
-								_set_error("Only integer expressions are allowed for indexing");
-								return nullptr;
-							}
-
-							if (index_expression->type == Node::TYPE_CONSTANT) {
-								ConstantNode *cnode = (ConstantNode *)index_expression;
-								if (cnode) {
-									if (!cnode->values.is_empty()) {
-										int value = cnode->values[0].sint;
-										if (value < 0 || value >= array_size) {
-											_set_error(vformat("Index [%s] out of range [%s..%s]", value, 0, array_size - 1));
-											return nullptr;
-										}
+						if (index_expression->type == Node::TYPE_CONSTANT) {
+							ConstantNode *cnode = (ConstantNode *)index_expression;
+							if (cnode) {
+								if (!cnode->values.is_empty()) {
+									int value = cnode->values[0].sint;
+									if (value < 0 || value >= array_size) {
+										_set_error(vformat(RTR("Index [%d] out of range [%d..%d]."), value, 0, array_size - 1));
+										return nullptr;
 									}
 								}
 							}
-
-							tk = _get_token();
-							if (tk.type != TK_BRACKET_CLOSE) {
-								_set_error("Expected ']'");
-								return nullptr;
-							}
 						}
+
+						tk = _get_token();
+						if (tk.type != TK_BRACKET_CLOSE) {
+							_set_expected_error("]");
+							return nullptr;
+						}
+					} else {
+						_set_tkpos(prepos);
 					}
 
 					ArrayNode *arrname = alloc_node<ArrayNode>();
@@ -4351,6 +5182,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					arrname->assign_expression = assign_expression;
 					arrname->is_const = is_const;
 					arrname->array_size = array_size;
+					arrname->is_local = is_local;
 					expr = arrname;
 				} else {
 					VariableNode *varname = alloc_node<VariableNode>();
@@ -4358,14 +5190,21 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					varname->datatype_cache = data_type;
 					varname->is_const = is_const;
 					varname->struct_name = struct_name;
+					varname->is_local = is_local;
 					expr = varname;
 				}
 #ifdef DEBUG_ENABLED
 				if (check_warnings) {
 					StringName func_name;
+					BlockNode *b = p_block;
 
-					if (p_block && p_block->parent_function) {
-						func_name = p_block->parent_function->name;
+					while (b) {
+						if (b->parent_function) {
+							func_name = b->parent_function->name;
+							break;
+						} else {
+							b = b->parent_block;
+						}
 					}
 
 					_parse_used_identifier(identifier, ident_type, func_name);
@@ -4401,9 +5240,34 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 			expression.push_back(e);
 			continue;
 		} else {
-			_set_error("Expected expression, found: " + get_token_text(tk));
-			return nullptr;
-			//nothing
+			bool valid = false;
+			if (p_block && p_block->block_type == BlockNode::BLOCK_TYPE_FOR_EXPRESSION && tk.type == TK_PARENTHESIS_CLOSE) {
+				valid = true;
+				_set_tkpos(prepos);
+
+				OperatorNode *func = alloc_node<OperatorNode>();
+				func->op = OP_EMPTY;
+				expr = func;
+			}
+			if (!valid) {
+				if (tk.type != TK_SEMICOLON) {
+					_set_error(vformat(RTR("Expected expression, found: '%s'."), get_token_text(tk)));
+					return nullptr;
+				} else {
+#ifdef DEBUG_ENABLED
+					if (!p_block || (p_block->block_type != BlockNode::BLOCK_TYPE_FOR_INIT && p_block->block_type != BlockNode::BLOCK_TYPE_FOR_CONDITION)) {
+						if (check_warnings && HAS_WARNING(ShaderWarning::FORMATTING_ERROR_FLAG)) {
+							_add_line_warning(ShaderWarning::FORMATTING_ERROR, RTR("Empty statement. Remove ';' to fix this warning."));
+						}
+					}
+#endif // DEBUG_ENABLED
+					_set_tkpos(prepos);
+
+					OperatorNode *func = alloc_node<OperatorNode>();
+					func->op = OP_EMPTY;
+					expr = func;
+				}
+			}
 		}
 
 		ERR_FAIL_COND_V(!expr, nullptr);
@@ -4416,7 +5280,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 			if (tk.type == TK_CURSOR) {
 				//do nothing
-			} else if (tk.type == TK_IDENTIFIER) {
 			} else if (tk.type == TK_PERIOD) {
 				DataType dt = expr->get_datatype();
 				String st = expr->get_datatype_name();
@@ -4443,7 +5306,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				}
 
 				if (identifier == StringName()) {
-					_set_error("Expected identifier as member");
+					_set_error(RTR("Expected an identifier as a member."));
 					return nullptr;
 				}
 				String ident = identifier;
@@ -4688,12 +5551,12 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				}
 
 				if (mix_error) {
-					_set_error("Cannot combine symbols from different sets in expression ." + ident);
+					_set_error(vformat(RTR("Cannot combine symbols from different sets in expression '.%s'."), ident));
 					return nullptr;
 				}
 
 				if (!ok) {
-					_set_error("Invalid member for " + (dt == TYPE_STRUCT ? st : get_datatype_name(dt)) + " expression: ." + ident);
+					_set_error(vformat(RTR("Invalid member for '%s' expression: '.%s'."), (dt == TYPE_STRUCT ? st : get_datatype_name(dt)), ident));
 					return nullptr;
 				}
 
@@ -4713,7 +5576,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					tk = _get_token();
 					if (tk.type == TK_OP_ASSIGN) {
 						if (last_type == IDENTIFIER_CONSTANT) {
-							_set_error("Constants cannot be modified.");
+							_set_error(RTR("Constants cannot be modified."));
 							return nullptr;
 						}
 						Node *assign_expression = _parse_array_constructor(p_block, p_function_info, member_type, member_struct_name, array_size);
@@ -4737,8 +5600,8 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							return nullptr;
 						}
 
-						if (index_expression->get_datatype() != TYPE_INT && index_expression->get_datatype() != TYPE_UINT) {
-							_set_error("Only integer expressions are allowed for indexing");
+						if (index_expression->get_array_size() != 0 || (index_expression->get_datatype() != TYPE_INT && index_expression->get_datatype() != TYPE_UINT)) {
+							_set_error(RTR("Only integer expressions are allowed for indexing."));
 							return nullptr;
 						}
 
@@ -4748,7 +5611,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 								if (!cnode->values.is_empty()) {
 									int value = cnode->values[0].sint;
 									if (value < 0 || value >= array_size) {
-										_set_error(vformat("Index [%s] out of range [%s..%s]", value, 0, array_size - 1));
+										_set_error(vformat(RTR("Index [%d] out of range [%d..%d]."), value, 0, array_size - 1));
 										return nullptr;
 									}
 								}
@@ -4757,15 +5620,11 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 						tk = _get_token();
 						if (tk.type != TK_BRACKET_CLOSE) {
-							_set_error("Expected ']'");
+							_set_expected_error("]");
 							return nullptr;
 						}
 						mn->index_expression = index_expression;
 					} else {
-						if (!pass_array) {
-							_set_error("Expected '[','.' or '='");
-							return nullptr;
-						}
 						_set_tkpos(prev_pos);
 					}
 				}
@@ -4787,8 +5646,8 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					return nullptr;
 				}
 
-				if (index->get_datatype() != TYPE_INT && index->get_datatype() != TYPE_UINT) {
-					_set_error("Only integer datatypes are allowed for indexing");
+				if (index->get_array_size() != 0 || (index->get_datatype() != TYPE_INT && index->get_datatype() != TYPE_UINT)) {
+					_set_error(RTR("Only integer expressions are allowed for indexing."));
 					return nullptr;
 				}
 
@@ -4799,7 +5658,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					if (index->type == Node::TYPE_CONSTANT) {
 						uint32_t index_constant = static_cast<ConstantNode *>(index)->values[0].uint;
 						if (index_constant >= (uint32_t)expr->get_array_size()) {
-							_set_error(vformat("Index [%s] out of range [%s..%s]", index_constant, 0, expr->get_array_size() - 1));
+							_set_error(vformat(RTR("Index [%d] out of range [%d..%d]."), index_constant, 0, expr->get_array_size() - 1));
 							return nullptr;
 						}
 					}
@@ -4817,7 +5676,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							if (index->type == Node::TYPE_CONSTANT) {
 								uint32_t index_constant = static_cast<ConstantNode *>(index)->values[0].uint;
 								if (index_constant >= 2) {
-									_set_error("Index out of range (0-1)");
+									_set_error(vformat(RTR("Index [%d] out of range [%d..%d]."), index_constant, 0, 1));
 									return nullptr;
 								}
 							}
@@ -4851,7 +5710,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							if (index->type == Node::TYPE_CONSTANT) {
 								uint32_t index_constant = static_cast<ConstantNode *>(index)->values[0].uint;
 								if (index_constant >= 3) {
-									_set_error("Index out of range (0-2)");
+									_set_error(vformat(RTR("Index [%d] out of range [%d..%d]."), index_constant, 0, 2));
 									return nullptr;
 								}
 							}
@@ -4884,7 +5743,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							if (index->type == Node::TYPE_CONSTANT) {
 								uint32_t index_constant = static_cast<ConstantNode *>(index)->values[0].uint;
 								if (index_constant >= 4) {
-									_set_error("Index out of range (0-3)");
+									_set_error(vformat(RTR("Index [%d] out of range [%d..%d]."), index_constant, 0, 3));
 									return nullptr;
 								}
 							}
@@ -4910,7 +5769,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							}
 							break;
 						default: {
-							_set_error("Object of type '" + (expr->get_datatype() == TYPE_STRUCT ? expr->get_datatype_name() : get_datatype_name(expr->get_datatype())) + "' can't be indexed");
+							_set_error(vformat(RTR("An object of type '%s' can't be indexed."), (expr->get_datatype() == TYPE_STRUCT ? expr->get_datatype_name() : get_datatype_name(expr->get_datatype()))));
 							return nullptr;
 						}
 					}
@@ -4925,7 +5784,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 				tk = _get_token();
 				if (tk.type != TK_BRACKET_CLOSE) {
-					_set_error("Expected ']' after indexing expression");
+					_set_expected_error("]");
 					return nullptr;
 				}
 
@@ -4935,12 +5794,12 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				op->arguments.push_back(expr);
 
 				if (!_validate_operator(op, &op->return_cache, &op->return_array_size)) {
-					_set_error("Invalid base type for increment/decrement operator");
+					_set_error(RTR("Invalid base type for increment/decrement operator."));
 					return nullptr;
 				}
 
 				if (!_validate_assign(expr, p_function_info)) {
-					_set_error("Invalid use of increment/decrement operator in constant expression.");
+					_set_error(RTR("Invalid use of increment/decrement operator in a constant expression."));
 					return nullptr;
 				}
 				expr = op;
@@ -5057,7 +5916,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					o.op = OP_SELECT_ELSE;
 					break;
 				default: {
-					_set_error("Invalid token for operator: " + get_token_text(tk));
+					_set_error(vformat(RTR("Invalid token for the operator: '%s'."), get_token_text(tk)));
 					return nullptr;
 				}
 			}
@@ -5209,8 +6068,10 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					ERR_FAIL_V(nullptr); //unexpected operator
 			}
 
-#if DEBUG_ENABLED
-			if (check_warnings && HAS_WARNING(ShaderWarning::FLOAT_COMPARISON_FLAG) && (op == OP_EQUAL || op == OP_NOT_EQUAL) && expression[i - 1].node->get_datatype() == TYPE_FLOAT && expression[i + 1].node->get_datatype() == TYPE_FLOAT) {
+#ifdef DEBUG_ENABLED
+			if (check_warnings && HAS_WARNING(ShaderWarning::FLOAT_COMPARISON_FLAG) && (op == OP_EQUAL || op == OP_NOT_EQUAL) &&
+					(!expression[i - 1].is_op && !expression[i + 1].is_op) &&
+					(expression[i - 1].node->get_datatype() == TYPE_FLOAT && expression[i + 1].node->get_datatype() == TYPE_FLOAT)) {
 				_add_line_warning(ShaderWarning::FLOAT_COMPARISON);
 			}
 #endif // DEBUG_ENABLED
@@ -5234,7 +6095,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				expr_pos++;
 				if (expr_pos == expression.size()) {
 					//can happen..
-					_set_error("Unexpected end of expression...");
+					_set_error(RTR("Unexpected end of expression."));
 					return nullptr;
 				}
 			}
@@ -5244,7 +6105,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				OperatorNode *op = alloc_node<OperatorNode>();
 				op->op = expression[i].op;
 				if ((op->op == OP_INCREMENT || op->op == OP_DECREMENT) && !_validate_assign(expression[i + 1].node, p_function_info)) {
-					_set_error("Can't use increment/decrement operator in constant expression.");
+					_set_error(RTR("Can't use increment/decrement operator in a constant expression."));
 					return nullptr;
 				}
 				op->arguments.push_back(expression[i + 1].node);
@@ -5256,7 +6117,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					String at;
 					for (int j = 0; j < op->arguments.size(); j++) {
 						if (j > 0) {
-							at += " and ";
+							at += ", ";
 						}
 						at += get_datatype_name(op->arguments[j]->get_datatype());
 						if (!op->arguments[j]->is_indexed() && op->arguments[j]->get_array_size() > 0) {
@@ -5265,20 +6126,20 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							at += "]";
 						}
 					}
-					_set_error("Invalid arguments to unary operator '" + get_operator_text(op->op) + "' :" + at);
+					_set_error(vformat(RTR("Invalid arguments to unary operator '%s': %s."), get_operator_text(op->op), at));
 					return nullptr;
 				}
-				expression.remove(i + 1);
+				expression.remove_at(i + 1);
 			}
 
 		} else if (is_ternary) {
 			if (next_op < 1 || next_op >= (expression.size() - 1)) {
-				_set_error("Parser bug...");
+				_set_parsing_error();
 				ERR_FAIL_V(nullptr);
 			}
 
 			if (next_op + 2 >= expression.size() || !expression[next_op + 2].is_op || expression[next_op + 2].op != OP_SELECT_ELSE) {
-				_set_error("Missing matching ':' for select operator");
+				_set_error(RTR("Missing matching ':' for select operator."));
 				return nullptr;
 			}
 
@@ -5294,7 +6155,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				String at;
 				for (int i = 0; i < op->arguments.size(); i++) {
 					if (i > 0) {
-						at += " and ";
+						at += ", ";
 					}
 					at += get_datatype_name(op->arguments[i]->get_datatype());
 					if (!op->arguments[i]->is_indexed() && op->arguments[i]->get_array_size() > 0) {
@@ -5303,17 +6164,17 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						at += "]";
 					}
 				}
-				_set_error("Invalid argument to ternary ?: operator: " + at);
+				_set_error(vformat(RTR("Invalid argument to ternary operator: '%s'."), at));
 				return nullptr;
 			}
 
 			for (int i = 0; i < 4; i++) {
-				expression.remove(next_op);
+				expression.remove_at(next_op);
 			}
 
 		} else {
 			if (next_op < 1 || next_op >= (expression.size() - 1)) {
-				_set_error("Parser bug...");
+				_set_parsing_error();
 				ERR_FAIL_V(nullptr);
 			}
 
@@ -5321,7 +6182,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 			op->op = expression[next_op].op;
 
 			if (expression[next_op - 1].is_op) {
-				_set_error("Parser bug...");
+				_set_parsing_error();
 				ERR_FAIL_V(nullptr);
 			}
 
@@ -5339,7 +6200,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				// can be followed by a unary op in a valid combination,
 				// due to how precedence works, unaries will always disappear first
 
-				_set_error("Parser bug...");
+				_set_parsing_error();
 			}
 
 			op->arguments.push_back(expression[next_op - 1].node); //expression goes as left
@@ -5352,7 +6213,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				String at;
 				for (int i = 0; i < op->arguments.size(); i++) {
 					if (i > 0) {
-						at += " and ";
+						at += ", ";
 					}
 					if (op->arguments[i]->get_datatype() == TYPE_STRUCT) {
 						at += op->arguments[i]->get_datatype_name();
@@ -5365,12 +6226,12 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						at += "]";
 					}
 				}
-				_set_error("Invalid arguments to operator '" + get_operator_text(op->op) + "' :" + at);
+				_set_error(vformat(RTR("Invalid arguments to operator '%s': '%s'."), get_operator_text(op->op), at));
 				return nullptr;
 			}
 
-			expression.remove(next_op);
-			expression.remove(next_op);
+			expression.remove_at(next_op);
+			expression.remove_at(next_op);
 		}
 	}
 
@@ -5505,25 +6366,34 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 
 		if (p_block && p_block->block_type == BlockNode::BLOCK_TYPE_SWITCH) {
 			if (tk.type != TK_CF_CASE && tk.type != TK_CF_DEFAULT && tk.type != TK_CURLY_BRACKET_CLOSE) {
-				_set_error("Switch may contains only case and default blocks");
+				_set_error(vformat(RTR("A switch may only contain '%s' and '%s' blocks."), "case", "default"));
 				return ERR_PARSE_ERROR;
 			}
 		}
 
 		bool is_struct = shader->structs.has(tk.text);
+		bool is_var_init = false;
+		bool is_condition = false;
 
 		if (tk.type == TK_CURLY_BRACKET_CLOSE) { //end of block
 			if (p_just_one) {
-				_set_error("Unexpected '}'");
+				_set_expected_error("}");
 				return ERR_PARSE_ERROR;
 			}
 
 			return OK;
 
 		} else if (tk.type == TK_CONST || is_token_precision(tk.type) || is_token_nonvoid_datatype(tk.type) || is_struct) {
+			is_var_init = true;
+
 			String struct_name = "";
 			if (is_struct) {
 				struct_name = tk.text;
+#ifdef DEBUG_ENABLED
+				if (check_warnings && HAS_WARNING(ShaderWarning::UNUSED_STRUCT_FLAG) && used_structs.has(struct_name)) {
+					used_structs[struct_name].used = true;
+				}
+#endif // DEBUG_ENABLED
 			}
 
 			bool is_const = false;
@@ -5547,18 +6417,18 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 					is_struct = shader->structs.has(tk.text); // check again.
 				}
 				if (is_struct && precision != PRECISION_DEFAULT) {
-					_set_error("Precision modifier cannot be used on structs.");
+					_set_error(RTR("The precision modifier cannot be used on structs."));
 					return ERR_PARSE_ERROR;
 				}
 				if (!is_token_nonvoid_datatype(tk.type)) {
-					_set_error("Expected datatype after precision");
+					_set_error(RTR("Expected variable type after precision modifier."));
 					return ERR_PARSE_ERROR;
 				}
 			}
 
 			if (!is_struct) {
 				if (!is_token_variable_datatype(tk.type)) {
-					_set_error("Invalid data type for variable (samplers not allowed)");
+					_set_error(RTR("Invalid variable type (samplers are not allowed)."));
 					return ERR_PARSE_ERROR;
 				}
 			}
@@ -5569,13 +6439,48 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				return ERR_PARSE_ERROR;
 			}
 
-			tk = _get_token();
+			int array_size = 0;
+			bool fixed_array_size = false;
+			bool first = true;
 
-			Node *vardecl = nullptr;
+			VariableDeclarationNode *vdnode = alloc_node<VariableDeclarationNode>();
+			vdnode->precision = precision;
+			if (is_struct) {
+				vdnode->struct_name = struct_name;
+				vdnode->datatype = TYPE_STRUCT;
+			} else {
+				vdnode->datatype = type;
+			};
+			vdnode->is_const = is_const;
 
-			while (true) {
+			do {
+				bool unknown_size = false;
+				VariableDeclarationNode::Declaration decl;
+
+				tk = _get_token();
+
+				if (first) {
+					first = false;
+
+					if (tk.type != TK_IDENTIFIER && tk.type != TK_BRACKET_OPEN) {
+						_set_error(RTR("Expected an identifier or '[' after type."));
+						return ERR_PARSE_ERROR;
+					}
+
+					if (tk.type == TK_BRACKET_OPEN) {
+						Error error = _parse_array_size(p_block, p_function_info, false, &decl.size_expression, &array_size, &unknown_size);
+						if (error != OK) {
+							return error;
+						}
+						decl.size = array_size;
+
+						fixed_array_size = true;
+						tk = _get_token();
+					}
+				}
+
 				if (tk.type != TK_IDENTIFIER) {
-					_set_error("Expected identifier after type");
+					_set_error(RTR("Expected an identifier."));
 					return ERR_PARSE_ERROR;
 				}
 
@@ -5583,15 +6488,24 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				ShaderLanguage::IdentifierType itype;
 				if (_find_identifier(p_block, true, p_function_info, name, (ShaderLanguage::DataType *)nullptr, &itype)) {
 					if (itype != IDENTIFIER_FUNCTION) {
-						_set_error("Redefinition of '" + String(name) + "'");
+						_set_redefinition_error(String(name));
 						return ERR_PARSE_ERROR;
 					}
 				}
+				decl.name = name;
 
 #ifdef DEBUG_ENABLED
-				if (check_warnings && HAS_WARNING(ShaderWarning::UNUSED_LOCAL_VARIABLE_FLAG)) {
-					if (p_block && p_block->parent_function) {
-						StringName func_name = p_block->parent_function->name;
+				if (check_warnings && HAS_WARNING(ShaderWarning::UNUSED_LOCAL_VARIABLE_FLAG) && p_block) {
+					FunctionNode *parent_function = nullptr;
+					{
+						BlockNode *block = p_block;
+						while (block && !block->parent_function) {
+							block = block->parent_block;
+						}
+						parent_function = block->parent_function;
+					}
+					if (parent_function) {
+						StringName func_name = parent_function->name;
 
 						if (!used_local_vars.has(func_name)) {
 							used_local_vars.insert(func_name, Map<StringName, Usage>());
@@ -5606,98 +6520,35 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				var.type = type;
 				var.precision = precision;
 				var.line = tk_line;
-				var.array_size = 0;
+				var.array_size = array_size;
 				var.is_const = is_const;
 				var.struct_name = struct_name;
 
 				tk = _get_token();
 
 				if (tk.type == TK_BRACKET_OPEN) {
-					bool unknown_size = false;
-
 					if (RenderingServer::get_singleton()->is_low_end() && is_const) {
-						_set_error("Local const arrays are supported only on high-end platform!");
+						_set_error(RTR("Local const arrays are only supported on high-end platforms."));
 						return ERR_PARSE_ERROR;
 					}
 
-					ArrayDeclarationNode *node = alloc_node<ArrayDeclarationNode>();
-					if (is_struct) {
-						node->struct_name = struct_name;
-						node->datatype = TYPE_STRUCT;
-					} else {
-						node->datatype = type;
+					Error error = _parse_array_size(p_block, p_function_info, false, &decl.size_expression, &var.array_size, &unknown_size);
+					if (error != OK) {
+						return error;
 					}
-					node->precision = precision;
-					node->is_const = is_const;
-					vardecl = (Node *)node;
 
-					ArrayDeclarationNode::Declaration decl;
-					decl.name = name;
-					decl.size = 0U;
-					decl.single_expression = false;
+					decl.size = var.array_size;
+					array_size = var.array_size;
 
-					pos = _get_tkpos();
 					tk = _get_token();
+				}
 
-					if (tk.type == TK_BRACKET_CLOSE) {
-						unknown_size = true;
-					} else {
-						if (tk.type != TK_INT_CONSTANT || ((int)tk.constant) <= 0) {
-							_set_tkpos(pos);
-							Node *n = _parse_and_reduce_expression(p_block, p_function_info);
-							if (n) {
-								if (n->type == Node::TYPE_VARIABLE) {
-									VariableNode *vn = static_cast<VariableNode *>(n);
-									if (vn) {
-										ConstantNode::Value v;
-										DataType data_type;
-
-										_find_identifier(p_block, false, p_function_info, vn->name, &data_type, nullptr, &is_const, nullptr, nullptr, &v);
-
-										if (is_const) {
-											if (data_type == TYPE_INT) {
-												int32_t value = v.sint;
-												if (value > 0) {
-													node->size_expression = n;
-													decl.size = (uint32_t)value;
-												}
-											} else if (data_type == TYPE_UINT) {
-												uint32_t value = v.uint;
-												if (value > 0U) {
-													node->size_expression = n;
-													decl.size = value;
-												}
-											}
-										}
-									}
-								} else if (n->type == Node::TYPE_OPERATOR) {
-									_set_error("Array size expressions are not yet implemented.");
-									return ERR_PARSE_ERROR;
-								}
-							}
-						} else if (((int)tk.constant) > 0) {
-							decl.size = (uint32_t)tk.constant;
-						}
-
-						if (decl.size == 0U) {
-							_set_error("Expected integer constant > 0 or ']'");
-							return ERR_PARSE_ERROR;
-						}
-						tk = _get_token();
-
-						if (tk.type != TK_BRACKET_CLOSE) {
-							_set_error("Expected ']'");
-							return ERR_PARSE_ERROR;
-						}
-						var.array_size = decl.size;
-					}
-
+				if (var.array_size > 0 || unknown_size) {
 					bool full_def = false;
 
-					tk = _get_token();
 					if (tk.type == TK_OP_ASSIGN) {
 						if (RenderingServer::get_singleton()->is_low_end()) {
-							_set_error("Array initialization is supported only on high-end platform!");
+							_set_error(RTR("Array initialization is only supported on high-end platforms."));
 							return ERR_PARSE_ERROR;
 						}
 
@@ -5706,12 +6557,10 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 
 						if (tk.type == TK_IDENTIFIER) { // a function call array initialization
 							_set_tkpos(prev_pos);
-							pass_array = true;
 							Node *n = _parse_and_reduce_expression(p_block, p_function_info);
-							pass_array = false;
 
 							if (!n) {
-								_set_error("Expected correct array initializer!");
+								_set_error(RTR("Expected array initializer."));
 								return ERR_PARSE_ERROR;
 							} else {
 								if (unknown_size) {
@@ -5731,7 +6580,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 						} else {
 							if (tk.type != TK_CURLY_BRACKET_OPEN) {
 								if (unknown_size) {
-									_set_error("Expected '{'");
+									_set_expected_error("{");
 									return ERR_PARSE_ERROR;
 								}
 
@@ -5742,11 +6591,11 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 									precision2 = get_token_precision(tk.type);
 									tk = _get_token();
 									if (shader->structs.has(tk.text)) {
-										_set_error("Precision modifier cannot be used on structs.");
+										_set_error(RTR("The precision modifier cannot be used on structs."));
 										return ERR_PARSE_ERROR;
 									}
 									if (!is_token_nonvoid_datatype(tk.type)) {
-										_set_error("Expected datatype after precision");
+										_set_error(RTR("Expected data type after precision modifier."));
 										return ERR_PARSE_ERROR;
 									}
 								}
@@ -5759,7 +6608,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 									struct_name2 = tk.text;
 								} else {
 									if (!is_token_variable_datatype(tk.type)) {
-										_set_error("Invalid data type for array");
+										_set_error(RTR("Invalid data type for the array."));
 										return ERR_PARSE_ERROR;
 									}
 									type2 = get_token_datatype(tk.type);
@@ -5769,73 +6618,50 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 
 								tk = _get_token();
 								if (tk.type == TK_BRACKET_OPEN) {
-									TkPos pos2 = _get_tkpos();
-									tk = _get_token();
-									if (tk.type == TK_BRACKET_CLOSE) {
-										array_size2 = var.array_size;
-										tk = _get_token();
-									} else {
-										_set_tkpos(pos2);
-
-										Node *n = _parse_and_reduce_expression(p_block, p_function_info);
-										if (!n || n->type != Node::TYPE_CONSTANT || n->get_datatype() != TYPE_INT) {
-											_set_error("Expected single integer constant > 0");
-											return ERR_PARSE_ERROR;
-										}
-
-										ConstantNode *cnode = (ConstantNode *)n;
-										if (cnode->values.size() == 1) {
-											array_size2 = cnode->values[0].sint;
-											if (array_size2 <= 0) {
-												_set_error("Expected single integer constant > 0");
-												return ERR_PARSE_ERROR;
-											}
-										} else {
-											_set_error("Expected single integer constant > 0");
-											return ERR_PARSE_ERROR;
-										}
-
-										tk = _get_token();
-										if (tk.type != TK_BRACKET_CLOSE) {
-											_set_error("Expected ']'");
-											return ERR_PARSE_ERROR;
-										} else {
-											tk = _get_token();
-										}
+									bool is_unknown_size = false;
+									Error error = _parse_array_size(p_block, p_function_info, false, nullptr, &array_size2, &is_unknown_size);
+									if (error != OK) {
+										return error;
 									}
+									if (is_unknown_size) {
+										array_size2 = var.array_size;
+									}
+									tk = _get_token();
 								} else {
-									_set_error("Expected '['");
+									_set_expected_error("[");
 									return ERR_PARSE_ERROR;
 								}
 
 								if (precision != precision2 || type != type2 || struct_name != struct_name2 || var.array_size != array_size2) {
-									String error_str = "Cannot convert from '";
+									String from;
 									if (precision2 != PRECISION_DEFAULT) {
-										error_str += get_precision_name(precision2);
-										error_str += " ";
+										from += get_precision_name(precision2);
+										from += " ";
 									}
 									if (type2 == TYPE_STRUCT) {
-										error_str += struct_name2;
+										from += struct_name2;
 									} else {
-										error_str += get_datatype_name(type2);
+										from += get_datatype_name(type2);
 									}
-									error_str += "[";
-									error_str += itos(array_size2);
-									error_str += "]'";
-									error_str += " to '";
+									from += "[";
+									from += itos(array_size2);
+									from += "]'";
+
+									String to;
 									if (precision != PRECISION_DEFAULT) {
-										error_str += get_precision_name(precision);
-										error_str += " ";
+										to += get_precision_name(precision);
+										to += " ";
 									}
 									if (type == TYPE_STRUCT) {
-										error_str += struct_name;
+										to += struct_name;
 									} else {
-										error_str += get_datatype_name(type);
+										to += get_datatype_name(type);
 									}
-									error_str += "[";
-									error_str += itos(var.array_size);
-									error_str += "]'";
-									_set_error(error_str);
+									to += "[";
+									to += itos(var.array_size);
+									to += "]'";
+
+									_set_error(vformat(RTR("Cannot convert from '%s' to '%s'."), from, to));
 									return ERR_PARSE_ERROR;
 								}
 							}
@@ -5844,13 +6670,13 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 
 							if (unknown_size) {
 								if (!curly) {
-									_set_error("Expected '{'");
+									_set_expected_error("{");
 									return ERR_PARSE_ERROR;
 								}
 							} else {
 								if (full_def) {
 									if (curly) {
-										_set_error("Expected '('");
+										_set_expected_error("(");
 										return ERR_PARSE_ERROR;
 									}
 								}
@@ -5863,8 +6689,8 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 										return ERR_PARSE_ERROR;
 									}
 
-									if (node->is_const && n->type == Node::TYPE_OPERATOR && ((OperatorNode *)n)->op == OP_CALL) {
-										_set_error("Expected constant expression");
+									if (is_const && n->type == Node::TYPE_OPERATOR && ((OperatorNode *)n)->op == OP_CALL) {
+										_set_error(RTR("Expected a constant expression."));
 										return ERR_PARSE_ERROR;
 									}
 
@@ -5884,9 +6710,9 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 										break;
 									} else {
 										if (curly) {
-											_set_error("Expected '}' or ','");
+											_set_expected_error("}", ",");
 										} else {
-											_set_error("Expected ')' or ','");
+											_set_expected_error(")", ",");
 										}
 										return ERR_PARSE_ERROR;
 									}
@@ -5895,7 +6721,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 									decl.size = decl.initializer.size();
 									var.array_size = decl.initializer.size();
 								} else if (decl.initializer.size() != var.array_size) {
-									_set_error("Array size mismatch");
+									_set_error(RTR("Array size mismatch."));
 									return ERR_PARSE_ERROR;
 								}
 								tk = _get_token();
@@ -5903,47 +6729,31 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 						}
 					} else {
 						if (unknown_size) {
-							_set_error("Expected array initialization");
+							_set_error(RTR("Expected array initialization."));
 							return ERR_PARSE_ERROR;
 						}
-						if (node->is_const) {
-							_set_error("Expected initialization of constant");
+						if (is_const) {
+							_set_error(RTR("Expected initialization of constant."));
 							return ERR_PARSE_ERROR;
 						}
 					}
 
-					node->declarations.push_back(decl);
+					array_size = var.array_size;
 				} else if (tk.type == TK_OP_ASSIGN) {
-					VariableDeclarationNode *node = alloc_node<VariableDeclarationNode>();
-					if (is_struct) {
-						node->struct_name = struct_name;
-						node->datatype = TYPE_STRUCT;
-					} else {
-						node->datatype = type;
-					}
-					node->precision = precision;
-					node->is_const = is_const;
-					vardecl = (Node *)node;
-
-					VariableDeclarationNode::Declaration decl;
-					decl.name = name;
-					decl.initializer = nullptr;
-
 					//variable created with assignment! must parse an expression
 					Node *n = _parse_and_reduce_expression(p_block, p_function_info);
 					if (!n) {
 						return ERR_PARSE_ERROR;
 					}
-					if (node->is_const && n->type == Node::TYPE_OPERATOR && ((OperatorNode *)n)->op == OP_CALL) {
+					if (is_const && n->type == Node::TYPE_OPERATOR && ((OperatorNode *)n)->op == OP_CALL) {
 						OperatorNode *op = ((OperatorNode *)n);
 						for (int i = 1; i < op->arguments.size(); i++) {
 							if (!_check_node_constness(op->arguments[i])) {
-								_set_error("Expected constant expression for argument '" + itos(i - 1) + "' of function call after '='");
+								_set_error(vformat(RTR("Expected constant expression for argument %d of function call after '='."), i - 1));
 								return ERR_PARSE_ERROR;
 							}
 						}
 					}
-					decl.initializer = n;
 
 					if (n->type == Node::TYPE_CONSTANT) {
 						ConstantNode *const_node = static_cast<ConstantNode *>(n);
@@ -5955,47 +6765,32 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 					if (!_compare_datatypes(var.type, var.struct_name, var.array_size, n->get_datatype(), n->get_datatype_name(), n->get_array_size())) {
 						return ERR_PARSE_ERROR;
 					}
+
+					decl.initializer.push_back(n);
 					tk = _get_token();
-					node->declarations.push_back(decl);
 				} else {
 					if (is_const) {
-						_set_error("Expected initialization of constant");
+						_set_error(RTR("Expected initialization of constant."));
 						return ERR_PARSE_ERROR;
 					}
-
-					VariableDeclarationNode *node = alloc_node<VariableDeclarationNode>();
-					if (is_struct) {
-						node->struct_name = struct_name;
-						node->datatype = TYPE_STRUCT;
-					} else {
-						node->datatype = type;
-					}
-					node->precision = precision;
-					vardecl = (Node *)node;
-
-					VariableDeclarationNode::Declaration decl;
-					decl.name = name;
-					decl.initializer = nullptr;
-					node->declarations.push_back(decl);
 				}
 
-				p_block->statements.push_back(vardecl);
-
+				vdnode->declarations.push_back(decl);
 				p_block->variables[name] = var;
-				if (tk.type == TK_COMMA) {
-					if (p_block->block_type == BlockNode::BLOCK_TYPE_FOR) {
-						_set_error("Multiple declarations in 'for' loop are not implemented yet.");
-						return ERR_PARSE_ERROR;
-					}
-					tk = _get_token();
-					//another variable
-				} else if (tk.type == TK_SEMICOLON) {
+
+				if (!fixed_array_size) {
+					array_size = 0;
+				}
+
+				if (tk.type == TK_SEMICOLON) {
 					break;
-				} else {
-					_set_error("Expected ',' or ';' after variable");
+				} else if (tk.type != TK_COMMA) {
+					_set_expected_error(",", ";");
 					return ERR_PARSE_ERROR;
 				}
-			}
+			} while (tk.type == TK_COMMA); //another variable
+
+			p_block->statements.push_back((Node *)vdnode);
 		} else if (tk.type == TK_CURLY_BRACKET_OPEN) {
 			//a sub block, just because..
 			BlockNode *block = alloc_node<BlockNode>();
@@ -6008,7 +6803,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			//if () {}
 			tk = _get_token();
 			if (tk.type != TK_PARENTHESIS_OPEN) {
-				_set_error("Expected '(' after if");
+				_set_expected_after_error("(", "if");
 				return ERR_PARSE_ERROR;
 			}
 
@@ -6020,13 +6815,13 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			}
 
 			if (n->get_datatype() != TYPE_BOOL) {
-				_set_error("Expected boolean expression");
+				_set_error(RTR("Expected a boolean expression."));
 				return ERR_PARSE_ERROR;
 			}
 
 			tk = _get_token();
 			if (tk.type != TK_PARENTHESIS_CLOSE) {
-				_set_error("Expected ')' after expression");
+				_set_expected_error(")");
 				return ERR_PARSE_ERROR;
 			}
 
@@ -6048,20 +6843,22 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				block->parent_block = p_block;
 				cf->blocks.push_back(block);
 				err = _parse_block(block, p_function_info, true, p_can_break, p_can_continue);
-
+				if (err) {
+					return err;
+				}
 			} else {
 				_set_tkpos(pos); //rollback
 			}
 		} else if (tk.type == TK_CF_SWITCH) {
 			if (RenderingServer::get_singleton()->is_low_end()) {
-				_set_error("\"switch\" operator is supported only on high-end platform!");
+				_set_error(vformat(RTR("The '%s' operator is only supported on high-end platforms."), "switch"));
 				return ERR_PARSE_ERROR;
 			}
 
 			// switch() {}
 			tk = _get_token();
 			if (tk.type != TK_PARENTHESIS_OPEN) {
-				_set_error("Expected '(' after switch");
+				_set_expected_after_error("(", "switch");
 				return ERR_PARSE_ERROR;
 			}
 			ControlFlowNode *cf = alloc_node<ControlFlowNode>();
@@ -6071,17 +6868,17 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				return ERR_PARSE_ERROR;
 			}
 			if (n->get_datatype() != TYPE_INT) {
-				_set_error("Expected integer expression");
+				_set_error(RTR("Expected an integer expression."));
 				return ERR_PARSE_ERROR;
 			}
 			tk = _get_token();
 			if (tk.type != TK_PARENTHESIS_CLOSE) {
-				_set_error("Expected ')' after expression");
+				_set_expected_error(")");
 				return ERR_PARSE_ERROR;
 			}
 			tk = _get_token();
 			if (tk.type != TK_CURLY_BRACKET_OPEN) {
-				_set_error("Expected '{' after switch statement");
+				_set_expected_after_error("{", "switch");
 				return ERR_PARSE_ERROR;
 			}
 			BlockNode *switch_block = alloc_node<BlockNode>();
@@ -6102,10 +6899,10 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				if (tk.type == TK_CF_CASE || tk.type == TK_CF_DEFAULT) {
 					if (prev_type == TK_CF_DEFAULT) {
 						if (tk.type == TK_CF_CASE) {
-							_set_error("Cases must be defined before default case.");
+							_set_error(RTR("Cases must be defined before default case."));
 							return ERR_PARSE_ERROR;
 						} else if (prev_type == TK_CF_DEFAULT) {
-							_set_error("Default case must be defined only once.");
+							_set_error(RTR("Default case must be defined only once."));
 							return ERR_PARSE_ERROR;
 						}
 					}
@@ -6124,7 +6921,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 										return ERR_PARSE_ERROR;
 									}
 									if (constants.has(cn->values[0].sint)) {
-										_set_error("Duplicated case label: '" + itos(cn->values[0].sint) + "'");
+										_set_error(vformat(RTR("Duplicated case label: %d."), cn->values[0].sint));
 										return ERR_PARSE_ERROR;
 									}
 									constants.insert(cn->values[0].sint);
@@ -6136,7 +6933,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 									ConstantNode::Value v;
 									_find_identifier(p_block, false, p_function_info, vn->name, nullptr, nullptr, nullptr, nullptr, nullptr, &v);
 									if (constants.has(v.sint)) {
-										_set_error("Duplicated case label: '" + itos(v.sint) + "'");
+										_set_error(vformat(RTR("Duplicated case label: %d."), v.sint));
 										return ERR_PARSE_ERROR;
 									}
 									constants.insert(v.sint);
@@ -6163,7 +6960,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			}
 
 			if (!p_block || (p_block->block_type != BlockNode::BLOCK_TYPE_SWITCH)) {
-				_set_error("case must be placed within switch block");
+				_set_error(vformat(RTR("'%s' must be placed within a '%s' block."), "case", "switch"));
 				return ERR_PARSE_ERROR;
 			}
 
@@ -6178,7 +6975,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 
 			Node *n = nullptr;
 
-			if (tk.type != TK_INT_CONSTANT) {
+			if (!tk.is_integer_constant()) {
 				bool correct_constant_expression = false;
 				DataType data_type;
 
@@ -6192,7 +6989,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 					}
 				}
 				if (!correct_constant_expression) {
-					_set_error("Expected integer constant");
+					_set_error(RTR("Expected an integer constant."));
 					return ERR_PARSE_ERROR;
 				}
 
@@ -6201,18 +6998,22 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				n = vn;
 			} else {
 				ConstantNode::Value v;
-				v.sint = (int)tk.constant * sign;
+				if (tk.type == TK_UINT_CONSTANT) {
+					v.uint = (uint32_t)tk.constant;
+				} else {
+					v.sint = (int)tk.constant * sign;
+				}
 
 				ConstantNode *cn = alloc_node<ConstantNode>();
 				cn->values.push_back(v);
-				cn->datatype = TYPE_INT;
+				cn->datatype = (tk.type == TK_UINT_CONSTANT ? TYPE_UINT : TYPE_INT);
 				n = cn;
 			}
 
 			tk = _get_token();
 
 			if (tk.type != TK_COLON) {
-				_set_error("Expected ':'");
+				_set_expected_error(":");
 				return ERR_PARSE_ERROR;
 			}
 
@@ -6240,14 +7041,14 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			}
 
 			if (!p_block || (p_block->block_type != BlockNode::BLOCK_TYPE_SWITCH)) {
-				_set_error("default must be placed within switch block");
+				_set_error(vformat(RTR("'%s' must be placed within a '%s' block."), "default", "switch"));
 				return ERR_PARSE_ERROR;
 			}
 
 			tk = _get_token();
 
 			if (tk.type != TK_COLON) {
-				_set_error("Expected ':'");
+				_set_expected_error(":");
 				return ERR_PARSE_ERROR;
 			}
 
@@ -6284,14 +7085,14 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 
 				tk = _get_token();
 				if (tk.type != TK_CF_WHILE) {
-					_set_error("Expected while after do");
+					_set_expected_after_error("while", "do");
 					return ERR_PARSE_ERROR;
 				}
 			}
 			tk = _get_token();
 
 			if (tk.type != TK_PARENTHESIS_OPEN) {
-				_set_error("Expected '(' after while");
+				_set_expected_after_error("(", "while");
 				return ERR_PARSE_ERROR;
 			}
 
@@ -6308,7 +7109,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 
 			tk = _get_token();
 			if (tk.type != TK_PARENTHESIS_CLOSE) {
-				_set_error("Expected ')' after expression");
+				_set_expected_error(")");
 				return ERR_PARSE_ERROR;
 			}
 			if (!is_do) {
@@ -6329,7 +7130,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 
 				tk = _get_token();
 				if (tk.type != TK_SEMICOLON) {
-					_set_error("Expected ';'");
+					_set_expected_error(";");
 					return ERR_PARSE_ERROR;
 				}
 			}
@@ -6337,7 +7138,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			// for() {}
 			tk = _get_token();
 			if (tk.type != TK_PARENTHESIS_OPEN) {
-				_set_error("Expected '(' after for");
+				_set_expected_after_error("(", "for");
 				return ERR_PARSE_ERROR;
 			}
 
@@ -6345,43 +7146,35 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			cf->flow_op = FLOW_OP_FOR;
 
 			BlockNode *init_block = alloc_node<BlockNode>();
-			init_block->block_type = BlockNode::BLOCK_TYPE_FOR;
+			init_block->block_type = BlockNode::BLOCK_TYPE_FOR_INIT;
 			init_block->parent_block = p_block;
 			init_block->single_statement = true;
 			cf->blocks.push_back(init_block);
-			if (_parse_block(init_block, p_function_info, true, false, false) != OK) {
-				return ERR_PARSE_ERROR;
+			Error err = _parse_block(init_block, p_function_info, true, false, false);
+			if (err != OK) {
+				return err;
 			}
 
-			Node *n = _parse_and_reduce_expression(init_block, p_function_info);
-			if (!n) {
-				return ERR_PARSE_ERROR;
+			BlockNode *condition_block = alloc_node<BlockNode>();
+			condition_block->block_type = BlockNode::BLOCK_TYPE_FOR_CONDITION;
+			condition_block->parent_block = init_block;
+			condition_block->single_statement = true;
+			condition_block->use_comma_between_statements = true;
+			cf->blocks.push_back(condition_block);
+			err = _parse_block(condition_block, p_function_info, true, false, false);
+			if (err != OK) {
+				return err;
 			}
 
-			if (n->get_datatype() != TYPE_BOOL) {
-				_set_error("Middle expression is expected to be boolean.");
-				return ERR_PARSE_ERROR;
-			}
-
-			tk = _get_token();
-			if (tk.type != TK_SEMICOLON) {
-				_set_error("Expected ';' after middle expression");
-				return ERR_PARSE_ERROR;
-			}
-
-			cf->expressions.push_back(n);
-
-			n = _parse_and_reduce_expression(init_block, p_function_info);
-			if (!n) {
-				return ERR_PARSE_ERROR;
-			}
-
-			cf->expressions.push_back(n);
-
-			tk = _get_token();
-			if (tk.type != TK_PARENTHESIS_CLOSE) {
-				_set_error("Expected ')' after third expression");
-				return ERR_PARSE_ERROR;
+			BlockNode *expression_block = alloc_node<BlockNode>();
+			expression_block->block_type = BlockNode::BLOCK_TYPE_FOR_EXPRESSION;
+			expression_block->parent_block = init_block;
+			expression_block->single_statement = true;
+			expression_block->use_comma_between_statements = true;
+			cf->blocks.push_back(expression_block);
+			err = _parse_block(expression_block, p_function_info, true, false, false);
+			if (err != OK) {
+				return err;
 			}
 
 			BlockNode *block = alloc_node<BlockNode>();
@@ -6389,8 +7182,8 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			cf->blocks.push_back(block);
 			p_block->statements.push_back(cf);
 
-			Error err = _parse_block(block, p_function_info, true, true, true);
-			if (err) {
+			err = _parse_block(block, p_function_info, true, true, true);
+			if (err != OK) {
 				return err;
 			}
 
@@ -6398,18 +7191,18 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			//check return type
 			BlockNode *b = p_block;
 
-			if (b && b->parent_function && p_function_info.main_function) {
-				_set_error(vformat("Using 'return' in '%s' processor function results in undefined behavior!", b->parent_function->name));
-				return ERR_PARSE_ERROR;
-			}
-
 			while (b && !b->parent_function) {
 				b = b->parent_block;
 			}
 
 			if (!b) {
-				_set_error("Bug");
+				_set_parsing_error();
 				return ERR_BUG;
+			}
+
+			if (b && b->parent_function && p_function_info.main_function) {
+				_set_error(vformat(RTR("Using '%s' in the '%s' processor function is incorrect."), "return", b->parent_function->name));
+				return ERR_PARSE_ERROR;
 			}
 
 			String return_struct_name = String(b->parent_function->return_struct_name);
@@ -6427,27 +7220,25 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			if (tk.type == TK_SEMICOLON) {
 				//all is good
 				if (b->parent_function->return_type != TYPE_VOID) {
-					_set_error("Expected return with an expression of type '" + (return_struct_name != "" ? return_struct_name : get_datatype_name(b->parent_function->return_type)) + array_size_string + "'");
+					_set_error(vformat(RTR("Expected '%s' with an expression of type '%s'."), "return", (!return_struct_name.is_empty() ? return_struct_name : get_datatype_name(b->parent_function->return_type)) + array_size_string));
 					return ERR_PARSE_ERROR;
 				}
 			} else {
 				_set_tkpos(pos); //rollback, wants expression
 
-				pass_array = true;
 				Node *expr = _parse_and_reduce_expression(p_block, p_function_info);
 				if (!expr) {
 					return ERR_PARSE_ERROR;
 				}
-				pass_array = false;
 
 				if (b->parent_function->return_type != expr->get_datatype() || b->parent_function->return_array_size != expr->get_array_size() || return_struct_name != expr->get_datatype_name()) {
-					_set_error("Expected return with an expression of type '" + (return_struct_name != "" ? return_struct_name : get_datatype_name(b->parent_function->return_type)) + array_size_string + "'");
+					_set_error(vformat(RTR("Expected return with an expression of type '%s'."), (!return_struct_name.is_empty() ? return_struct_name : get_datatype_name(b->parent_function->return_type)) + array_size_string));
 					return ERR_PARSE_ERROR;
 				}
 
 				tk = _get_token();
 				if (tk.type != TK_SEMICOLON) {
-					_set_error("Expected ';' after return expression");
+					_set_expected_after_error(";", "return");
 					return ERR_PARSE_ERROR;
 				}
 
@@ -6470,12 +7261,12 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				b = b->parent_block;
 			}
 			if (!b) {
-				_set_error("Bug");
+				_set_parsing_error();
 				return ERR_BUG;
 			}
 
 			if (!b->parent_function->can_discard) {
-				_set_error("Use of 'discard' is not allowed here.");
+				_set_error(vformat(RTR("Use of '%s' is not allowed here."), "discard"));
 				return ERR_PARSE_ERROR;
 			}
 
@@ -6485,14 +7276,14 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			pos = _get_tkpos();
 			tk = _get_token();
 			if (tk.type != TK_SEMICOLON) {
-				_set_error("Expected ';' after discard");
+				_set_expected_after_error(";", "discard");
 				return ERR_PARSE_ERROR;
 			}
 
 			p_block->statements.push_back(flow);
 		} else if (tk.type == TK_CF_BREAK) {
 			if (!p_can_break) {
-				_set_error("'break' is not allowed outside of a loop or 'switch' statement");
+				_set_error(vformat(RTR("'%s' is not allowed outside of a loop or '%s' statement."), "break", "switch"));
 				return ERR_PARSE_ERROR;
 			}
 
@@ -6502,7 +7293,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			pos = _get_tkpos();
 			tk = _get_token();
 			if (tk.type != TK_SEMICOLON) {
-				_set_error("Expected ';' after break");
+				_set_expected_after_error(";", "break");
 				return ERR_PARSE_ERROR;
 			}
 
@@ -6518,7 +7309,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 
 		} else if (tk.type == TK_CF_CONTINUE) {
 			if (!p_can_continue) {
-				_set_error("'continue' is not allowed outside of a loop");
+				_set_error(vformat(RTR("'%s' is not allowed outside of a loop."), "continue"));
 				return ERR_PARSE_ERROR;
 			}
 
@@ -6529,7 +7320,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			tk = _get_token();
 			if (tk.type != TK_SEMICOLON) {
 				//all is good
-				_set_error("Expected ';' after continue");
+				_set_expected_after_error(";", "continue");
 				return ERR_PARSE_ERROR;
 			}
 
@@ -6542,11 +7333,52 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			if (!expr) {
 				return ERR_PARSE_ERROR;
 			}
+			is_condition = expr->type == Node::TYPE_OPERATOR && expr->get_datatype() == TYPE_BOOL;
+
+			if (expr->type == Node::TYPE_OPERATOR) {
+				OperatorNode *op = static_cast<OperatorNode *>(expr);
+				if (op->op == OP_EMPTY) {
+					is_var_init = true;
+					is_condition = true;
+				}
+			}
+
 			p_block->statements.push_back(expr);
 			tk = _get_token();
 
-			if (tk.type != TK_SEMICOLON) {
-				_set_error("Expected ';' after statement");
+			if (p_block->block_type == BlockNode::BLOCK_TYPE_FOR_CONDITION) {
+				if (tk.type == TK_COMMA) {
+					if (!is_condition) {
+						_set_error(RTR("The middle expression is expected to be a boolean operator."));
+						return ERR_PARSE_ERROR;
+					}
+					continue;
+				}
+				if (tk.type != TK_SEMICOLON) {
+					_set_expected_error(",", ";");
+					return ERR_PARSE_ERROR;
+				}
+			} else if (p_block->block_type == BlockNode::BLOCK_TYPE_FOR_EXPRESSION) {
+				if (tk.type == TK_COMMA) {
+					continue;
+				}
+				if (tk.type != TK_PARENTHESIS_CLOSE) {
+					_set_expected_error(",", ")");
+					return ERR_PARSE_ERROR;
+				}
+			} else if (tk.type != TK_SEMICOLON) {
+				_set_expected_error(";");
+				return ERR_PARSE_ERROR;
+			}
+		}
+
+		if (p_block) {
+			if (p_block->block_type == BlockNode::BLOCK_TYPE_FOR_INIT && !is_var_init) {
+				_set_error(RTR("The left expression is expected to be a variable declaration."));
+				return ERR_PARSE_ERROR;
+			}
+			if (p_block->block_type == BlockNode::BLOCK_TYPE_FOR_CONDITION && !is_condition) {
+				_set_error(RTR("The middle expression is expected to be a boolean operator."));
 				return ERR_PARSE_ERROR;
 			}
 		}
@@ -6563,7 +7395,7 @@ String ShaderLanguage::_get_shader_type_list(const Set<String> &p_shader_types) 
 	// Return a list of shader types as an human-readable string
 	String valid_types;
 	for (const Set<String>::Element *E = p_shader_types.front(); E; E = E->next()) {
-		if (valid_types != String()) {
+		if (!valid_types.is_empty()) {
 			valid_types += ", ";
 		}
 
@@ -6607,51 +7439,69 @@ Error ShaderLanguage::_validate_datatype(DataType p_type) {
 		}
 
 		if (invalid_type) {
-			_set_error(vformat("\"%s\" type is supported only on high-end platform!", get_datatype_name(p_type)));
+			_set_error(vformat(RTR("The \"%s\" type is only supported on high-end platforms."), get_datatype_name(p_type)));
 			return ERR_UNAVAILABLE;
 		}
 	}
 	return OK;
 }
 
-Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types) {
+Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const Set<String> &p_shader_types) {
 	Token tk = _get_token();
+	TkPos prev_pos;
 
 	if (tk.type != TK_SHADER_TYPE) {
-		_set_error("Expected 'shader_type' at the beginning of shader. Valid types are: " + _get_shader_type_list(p_shader_types));
+		_set_error(vformat(RTR("Expected '%s' at the beginning of shader. Valid types are: %s."), "shader_type", _get_shader_type_list(p_shader_types)));
 		return ERR_PARSE_ERROR;
 	}
 
-	tk = _get_token();
+	StringName shader_type_identifier;
+	_get_completable_identifier(nullptr, COMPLETION_SHADER_TYPE, shader_type_identifier);
 
-	if (tk.type != TK_IDENTIFIER) {
-		_set_error("Expected identifier after 'shader_type', indicating type of shader. Valid types are: " + _get_shader_type_list(p_shader_types));
+	if (shader_type_identifier == StringName()) {
+		_set_error(vformat(RTR("Expected an identifier after '%s', indicating the type of shader. Valid types are: %s."), "shader_type", _get_shader_type_list(p_shader_types)));
 		return ERR_PARSE_ERROR;
 	}
-
-	String shader_type_identifier;
-
-	shader_type_identifier = tk.text;
-
 	if (!p_shader_types.has(shader_type_identifier)) {
-		_set_error("Invalid shader type. Valid types are: " + _get_shader_type_list(p_shader_types));
+		_set_error(vformat(RTR("Invalid shader type. Valid types are: %s"), _get_shader_type_list(p_shader_types)));
 		return ERR_PARSE_ERROR;
 	}
-
+	prev_pos = _get_tkpos();
 	tk = _get_token();
 
 	if (tk.type != TK_SEMICOLON) {
-		_set_error("Expected ';' after 'shader_type <type>'.");
+		_set_tkpos(prev_pos);
+		_set_expected_after_error(";", "shader_type " + String(shader_type_identifier));
+		return ERR_PARSE_ERROR;
 	}
 
 	tk = _get_token();
 
 	int texture_uniforms = 0;
+	int texture_binding = 0;
 	int uniforms = 0;
 	int instance_index = 0;
+#ifdef DEBUG_ENABLED
+	int uniform_buffer_size = 0;
+	int max_uniform_buffer_size = 0;
+	int uniform_buffer_exceeded_line = -1;
+
+	bool check_device_limit_warnings = false;
+	{
+		RenderingDevice *device = RenderingDevice::get_singleton();
+		if (device != nullptr) {
+			check_device_limit_warnings = check_warnings && HAS_WARNING(ShaderWarning::DEVICE_LIMIT_EXCEEDED_FLAG);
+
+			max_uniform_buffer_size = device->limit_get(RenderingDevice::LIMIT_MAX_UNIFORM_BUFFER_SIZE);
+		}
+	}
+#endif // DEBUG_ENABLED
 	ShaderNode::Uniform::Scope uniform_scope = ShaderNode::Uniform::SCOPE_LOCAL;
 
 	stages = &p_functions;
+	const FunctionInfo &constants = p_functions.has("constants") ? p_functions["constants"] : FunctionInfo();
+
+	Map<String, String> defined_modes;
 
 	while (tk.type != TK_EOF) {
 		switch (tk.type) {
@@ -6661,17 +7511,44 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					_get_completable_identifier(nullptr, COMPLETION_RENDER_MODE, mode);
 
 					if (mode == StringName()) {
-						_set_error("Expected identifier for render mode");
+						_set_error(RTR("Expected an identifier for render mode."));
 						return ERR_PARSE_ERROR;
 					}
 
-					if (p_render_modes.find(mode) == -1) {
-						_set_error("Invalid render mode: '" + String(mode) + "'");
+					const String smode = String(mode);
+
+					if (shader->render_modes.has(mode)) {
+						_set_error(vformat(RTR("Duplicated render mode: '%s'."), smode));
 						return ERR_PARSE_ERROR;
 					}
 
-					if (shader->render_modes.find(mode) != -1) {
-						_set_error("Duplicate render mode: '" + String(mode) + "'");
+					bool found = false;
+
+					for (int i = 0; i < p_render_modes.size(); i++) {
+						const ModeInfo &info = p_render_modes[i];
+						const String name = String(info.name);
+
+						if (smode.begins_with(name)) {
+							if (!info.options.is_empty()) {
+								if (info.options.has(smode.substr(name.length() + 1))) {
+									found = true;
+
+									if (defined_modes.has(name)) {
+										_set_error(vformat(RTR("Redefinition of render mode: '%s'. The '%s' mode has already been set to '%s'."), smode, name, defined_modes[name]));
+										return ERR_PARSE_ERROR;
+									}
+									defined_modes.insert(name, smode);
+									break;
+								}
+							} else {
+								found = true;
+								break;
+							}
+						}
+					}
+
+					if (!found) {
+						_set_error(vformat(RTR("Invalid render mode: '%s'."), smode));
 						return ERR_PARSE_ERROR;
 					}
 
@@ -6683,7 +7560,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					} else if (tk.type == TK_SEMICOLON) {
 						break; //done
 					} else {
-						_set_error("Unexpected token: " + get_token_text(tk));
+						_set_error(vformat(RTR("Unexpected token: '%s'."), get_token_text(tk)));
 						return ERR_PARSE_ERROR;
 					}
 				}
@@ -6695,17 +7572,17 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				tk = _get_token();
 				if (tk.type == TK_IDENTIFIER) {
 					st.name = tk.text;
-					if (shader->structs.has(st.name)) {
-						_set_error("Redefinition of '" + String(st.name) + "'");
+					if (shader->constants.has(st.name) || shader->structs.has(st.name)) {
+						_set_redefinition_error(String(st.name));
 						return ERR_PARSE_ERROR;
 					}
 					tk = _get_token();
 					if (tk.type != TK_CURLY_BRACKET_OPEN) {
-						_set_error("Expected '{'");
+						_set_expected_error("{");
 						return ERR_PARSE_ERROR;
 					}
 				} else {
-					_set_error("Expected struct identifier!");
+					_set_error(RTR("Expected a struct identifier."));
 					return ERR_PARSE_ERROR;
 				}
 
@@ -6725,7 +7602,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					DataPrecision precision = DataPrecision::PRECISION_DEFAULT;
 
 					if (tk.type == TK_STRUCT) {
-						_set_error("nested structs are not allowed!");
+						_set_error(RTR("Nested structs are not allowed."));
 						return ERR_PARSE_ERROR;
 					}
 
@@ -6737,84 +7614,103 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 					if (shader->structs.has(tk.text)) {
 						struct_name = tk.text;
+#ifdef DEBUG_ENABLED
+						if (check_warnings && HAS_WARNING(ShaderWarning::UNUSED_STRUCT_FLAG) && used_structs.has(struct_name)) {
+							used_structs[struct_name].used = true;
+						}
+#endif // DEBUG_ENABLED
 						struct_dt = true;
 						if (use_precision) {
-							_set_error("Precision modifier cannot be used on structs.");
+							_set_error(RTR("The precision modifier cannot be used on structs."));
 							return ERR_PARSE_ERROR;
 						}
 					}
 
 					if (!is_token_datatype(tk.type) && !struct_dt) {
-						_set_error("Expected datatype.");
+						_set_error(RTR("Expected data type."));
 						return ERR_PARSE_ERROR;
 					} else {
 						type = struct_dt ? TYPE_STRUCT : get_token_datatype(tk.type);
 
-						if (is_sampler_type(type)) {
-							_set_error("sampler datatype not allowed here");
-							return ERR_PARSE_ERROR;
-						} else if (type == TYPE_VOID) {
-							_set_error("void datatype not allowed here");
+						if (type == TYPE_VOID || is_sampler_type(type)) {
+							_set_error(vformat(RTR("A '%s' data type is not allowed here."), get_datatype_name(type)));
 							return ERR_PARSE_ERROR;
 						}
 
-						tk = _get_token();
-						if (tk.type != TK_IDENTIFIER) {
-							_set_error("Expected identifier!");
-							return ERR_PARSE_ERROR;
-						}
+						bool first = true;
+						bool fixed_array_size = false;
+						int array_size = 0;
 
-						MemberNode *member = alloc_node<MemberNode>();
-						member->precision = precision;
-						member->datatype = type;
-						member->struct_name = struct_name;
-						member->name = tk.text;
-
-						if (member_names.has(member->name)) {
-							_set_error("Redefinition of '" + String(member->name) + "'");
-							return ERR_PARSE_ERROR;
-						}
-						member_names.insert(member->name);
-
-						tk = _get_token();
-						if (tk.type == TK_BRACKET_OPEN) {
+						do {
 							tk = _get_token();
-							if (tk.type == TK_INT_CONSTANT && tk.constant > 0) {
-								member->array_size = (int)tk.constant;
 
-								tk = _get_token();
-								if (tk.type == TK_BRACKET_CLOSE) {
-									tk = _get_token();
-									if (tk.type != TK_SEMICOLON) {
-										_set_error("Expected ';'");
-										return ERR_PARSE_ERROR;
-									}
-								} else {
-									_set_error("Expected ']'");
+							if (first) {
+								first = false;
+
+								if (tk.type != TK_IDENTIFIER && tk.type != TK_BRACKET_OPEN) {
+									_set_error(RTR("Expected an identifier or '['."));
 									return ERR_PARSE_ERROR;
 								}
-							} else {
-								_set_error("Expected single integer constant > 0");
+
+								if (tk.type == TK_BRACKET_OPEN) {
+									Error error = _parse_array_size(nullptr, constants, true, nullptr, &array_size, nullptr);
+									if (error != OK) {
+										return error;
+									}
+									fixed_array_size = true;
+									tk = _get_token();
+								}
+							}
+
+							if (tk.type != TK_IDENTIFIER) {
+								_set_error(RTR("Expected an identifier."));
 								return ERR_PARSE_ERROR;
 							}
-						}
-						st_node->members.push_back(member);
 
-						if (tk.type != TK_SEMICOLON) {
-							_set_error("Expected ']' or ';'");
-							return ERR_PARSE_ERROR;
-						}
-						member_count++;
+							MemberNode *member = alloc_node<MemberNode>();
+							member->precision = precision;
+							member->datatype = type;
+							member->struct_name = struct_name;
+							member->name = tk.text;
+							member->array_size = array_size;
+
+							if (member_names.has(member->name)) {
+								_set_redefinition_error(String(member->name));
+								return ERR_PARSE_ERROR;
+							}
+							member_names.insert(member->name);
+							tk = _get_token();
+
+							if (tk.type == TK_BRACKET_OPEN) {
+								Error error = _parse_array_size(nullptr, constants, true, nullptr, &member->array_size, nullptr);
+								if (error != OK) {
+									return error;
+								}
+								tk = _get_token();
+							}
+
+							if (!fixed_array_size) {
+								array_size = 0;
+							}
+
+							if (tk.type != TK_SEMICOLON && tk.type != TK_COMMA) {
+								_set_expected_error(",", ";");
+								return ERR_PARSE_ERROR;
+							}
+
+							st_node->members.push_back(member);
+							member_count++;
+						} while (tk.type == TK_COMMA); // another member
 					}
 				}
 				if (member_count == 0) {
-					_set_error("Empty structs are not allowed!");
+					_set_error(RTR("Empty structs are not allowed."));
 					return ERR_PARSE_ERROR;
 				}
 
 				tk = _get_token();
 				if (tk.type != TK_SEMICOLON) {
-					_set_error("Expected ';'");
+					_set_expected_error(";");
 					return ERR_PARSE_ERROR;
 				}
 				shader->structs[st.name] = st;
@@ -6828,7 +7724,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 			case TK_GLOBAL: {
 				tk = _get_token();
 				if (tk.type != TK_UNIFORM) {
-					_set_error("Expected 'uniform' after 'global'");
+					_set_expected_after_error("uniform", "global");
 					return ERR_PARSE_ERROR;
 				}
 				uniform_scope = ShaderNode::Uniform::SCOPE_GLOBAL;
@@ -6838,7 +7734,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				if (uniform_scope == ShaderNode::Uniform::SCOPE_LOCAL) {
 					tk = _get_token();
 					if (tk.type != TK_UNIFORM) {
-						_set_error("Expected 'uniform' after 'instance'");
+						_set_expected_after_error("uniform", "instance");
 						return ERR_PARSE_ERROR;
 					}
 					uniform_scope = ShaderNode::Uniform::SCOPE_INSTANCE;
@@ -6850,115 +7746,209 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				bool uniform = tk.type == TK_UNIFORM;
 
 				if (!uniform) {
-					if (shader_type_identifier == "particles" || shader_type_identifier == "sky") {
-						_set_error(vformat("Varyings cannot be used in '%s' shaders!", shader_type_identifier));
+					if (shader_type_identifier == "particles" || shader_type_identifier == "sky" || shader_type_identifier == "fog") {
+						_set_error(vformat(RTR("Varyings cannot be used in '%s' shaders."), shader_type_identifier));
 						return ERR_PARSE_ERROR;
 					}
 				}
 
+				bool precision_defined = false;
 				DataPrecision precision = PRECISION_DEFAULT;
 				DataInterpolation interpolation = INTERPOLATION_SMOOTH;
 				DataType type;
 				StringName name;
+				int array_size = 0;
 
 				tk = _get_token();
 				if (is_token_interpolation(tk.type)) {
+					if (uniform) {
+						_set_error(RTR("Interpolation qualifiers are not supported for uniforms."));
+						return ERR_PARSE_ERROR;
+					}
 					interpolation = get_token_interpolation(tk.type);
 					tk = _get_token();
 				}
 
 				if (is_token_precision(tk.type)) {
 					precision = get_token_precision(tk.type);
+					precision_defined = true;
 					tk = _get_token();
 				}
 
+				if (shader->structs.has(tk.text)) {
+					if (uniform) {
+						if (precision_defined) {
+							_set_error(RTR("The precision modifier cannot be used on structs."));
+							return ERR_PARSE_ERROR;
+						}
+						_set_error(vformat(RTR("The '%s' data type is not supported for uniforms."), "struct"));
+						return ERR_PARSE_ERROR;
+					} else {
+						_set_error(vformat(RTR("The '%s' data type not allowed here."), "struct"));
+						return ERR_PARSE_ERROR;
+					}
+				}
+
 				if (!is_token_datatype(tk.type)) {
-					_set_error("Expected datatype. ");
+					_set_error(RTR("Expected data type."));
 					return ERR_PARSE_ERROR;
 				}
 
 				type = get_token_datatype(tk.type);
 
 				if (type == TYPE_VOID) {
-					_set_error("void datatype not allowed here");
+					_set_error(vformat(RTR("The '%s' data type is not allowed here."), "void"));
 					return ERR_PARSE_ERROR;
 				}
 
 				if (!uniform && (type < TYPE_FLOAT || type > TYPE_MAT4)) {
-					_set_error("Invalid type for varying, only float,vec2,vec3,vec4,mat2,mat3,mat4 or array of these types allowed.");
+					_set_error(RTR("Invalid type for varying, only 'float', 'vec2', 'vec3', 'vec4', 'mat2', 'mat3', 'mat4', or arrays of these types are allowed."));
 					return ERR_PARSE_ERROR;
 				}
 
 				tk = _get_token();
-				if (tk.type != TK_IDENTIFIER) {
-					_set_error("Expected identifier!");
+
+				if (tk.type != TK_IDENTIFIER && tk.type != TK_BRACKET_OPEN) {
+					_set_error(RTR("Expected an identifier or '['."));
 					return ERR_PARSE_ERROR;
 				}
 
-				TkPos name_pos = _get_tkpos();
+				if (tk.type == TK_BRACKET_OPEN) {
+					Error error = _parse_array_size(nullptr, constants, true, nullptr, &array_size, nullptr);
+					if (error != OK) {
+						return error;
+					}
+					tk = _get_token();
+				}
+
+				if (tk.type != TK_IDENTIFIER) {
+					_set_error(RTR("Expected an identifier."));
+					return ERR_PARSE_ERROR;
+				}
+
+				prev_pos = _get_tkpos();
 				name = tk.text;
 
-				if (_find_identifier(nullptr, false, FunctionInfo(), name)) {
-					_set_error("Redefinition of '" + String(name) + "'");
+				if (_find_identifier(nullptr, false, constants, name)) {
+					_set_redefinition_error(String(name));
 					return ERR_PARSE_ERROR;
 				}
 
 				if (has_builtin(p_functions, name)) {
-					_set_error("Redefinition of '" + String(name) + "'");
+					_set_redefinition_error(String(name));
 					return ERR_PARSE_ERROR;
 				}
 
 				if (uniform) {
-					if (uniform_scope == ShaderNode::Uniform::SCOPE_GLOBAL) {
+					if (uniform_scope == ShaderNode::Uniform::SCOPE_GLOBAL && Engine::get_singleton()->is_editor_hint()) { // Type checking for global uniforms is not allowed outside the editor.
 						//validate global uniform
 						DataType gvtype = global_var_get_type_func(name);
 						if (gvtype == TYPE_MAX) {
-							_set_error("Global uniform '" + String(name) + "' does not exist. Create it in Project Settings.");
+							_set_error(vformat(RTR("Global uniform '%s' does not exist. Create it in Project Settings."), String(name)));
 							return ERR_PARSE_ERROR;
 						}
 
 						if (type != gvtype) {
-							_set_error("Global uniform '" + String(name) + "' must be of type '" + get_datatype_name(gvtype) + "'.");
+							_set_error(vformat(RTR("Global uniform '%s' must be of type '%s'."), String(name), get_datatype_name(gvtype)));
 							return ERR_PARSE_ERROR;
 						}
 					}
 					ShaderNode::Uniform uniform2;
 
+					uniform2.type = type;
+					uniform2.scope = uniform_scope;
+					uniform2.precision = precision;
+					uniform2.array_size = array_size;
+
+					tk = _get_token();
+					if (tk.type == TK_BRACKET_OPEN) {
+						Error error = _parse_array_size(nullptr, constants, true, nullptr, &uniform2.array_size, nullptr);
+						if (error != OK) {
+							return error;
+						}
+						tk = _get_token();
+					}
+
 					if (is_sampler_type(type)) {
 						if (uniform_scope == ShaderNode::Uniform::SCOPE_INSTANCE) {
-							_set_error("Uniforms with 'instance' qualifiers can't be of sampler type.");
+							_set_error(vformat(RTR("The '%s' qualifier is not supported for sampler types."), "SCOPE_INSTANCE"));
 							return ERR_PARSE_ERROR;
 						}
 						uniform2.texture_order = texture_uniforms++;
+						uniform2.texture_binding = texture_binding;
+						if (uniform2.array_size > 0) {
+							texture_binding += uniform2.array_size;
+						} else {
+							++texture_binding;
+						}
 						uniform2.order = -1;
 						if (_validate_datatype(type) != OK) {
 							return ERR_PARSE_ERROR;
 						}
 					} else {
 						if (uniform_scope == ShaderNode::Uniform::SCOPE_INSTANCE && (type == TYPE_MAT2 || type == TYPE_MAT3 || type == TYPE_MAT4)) {
-							_set_error("Uniforms with 'instance' qualifiers can't be of matrix type.");
+							_set_error(vformat(RTR("The '%s' qualifier is not supported for matrix types."), "SCOPE_INSTANCE"));
 							return ERR_PARSE_ERROR;
 						}
-
 						uniform2.texture_order = -1;
 						if (uniform_scope != ShaderNode::Uniform::SCOPE_INSTANCE) {
 							uniform2.order = uniforms++;
+#ifdef DEBUG_ENABLED
+							if (check_device_limit_warnings) {
+								if (uniform2.array_size > 0) {
+									int size = get_datatype_size(uniform2.type) * uniform2.array_size;
+									int m = (16 * uniform2.array_size);
+									if ((size % m) != 0U) {
+										size += m - (size % m);
+									}
+									uniform_buffer_size += size;
+								} else {
+									uniform_buffer_size += get_datatype_size(uniform2.type);
+								}
+
+								if (uniform_buffer_exceeded_line == -1 && uniform_buffer_size > max_uniform_buffer_size) {
+									uniform_buffer_exceeded_line = tk_line;
+								}
+							}
+#endif // DEBUG_ENABLED
 						}
 					}
-					uniform2.type = type;
-					uniform2.scope = uniform_scope;
-					uniform2.precision = precision;
 
-					//todo parse default value
-
-					tk = _get_token();
+					if (uniform2.array_size > 0) {
+						if (uniform_scope == ShaderNode::Uniform::SCOPE_GLOBAL) {
+							_set_error(vformat(RTR("The '%s' qualifier is not supported for uniform arrays."), "SCOPE_GLOBAL"));
+							return ERR_PARSE_ERROR;
+						}
+						if (uniform_scope == ShaderNode::Uniform::SCOPE_INSTANCE) {
+							_set_error(vformat(RTR("The '%s' qualifier is not supported for uniform arrays."), "SCOPE_INSTANCE"));
+							return ERR_PARSE_ERROR;
+						}
+					}
 
 					int custom_instance_index = -1;
 
 					if (tk.type == TK_COLON) {
+						completion_type = COMPLETION_HINT;
+						completion_base = type;
+						completion_base_array = uniform2.array_size > 0;
+
 						//hint
 						do {
 							tk = _get_token();
+							completion_line = tk.line;
+
+							if (!is_token_hint(tk.type)) {
+								_set_error(RTR("Expected valid type hint after ':'."));
+								return ERR_PARSE_ERROR;
+							}
+
+							if (uniform2.array_size > 0) {
+								if (tk.type != TK_HINT_COLOR) {
+									_set_error(RTR("This hint is not supported for uniform arrays."));
+									return ERR_PARSE_ERROR;
+								}
+							}
+
 							if (tk.type == TK_HINT_WHITE_TEXTURE) {
 								uniform2.hint = ShaderNode::Uniform::HINT_WHITE;
 							} else if (tk.type == TK_HINT_BLACK_TEXTURE) {
@@ -6977,28 +7967,28 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 								uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_A;
 							} else if (tk.type == TK_HINT_ROUGHNESS_GRAY) {
 								uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_GRAY;
-							} else if (tk.type == TK_HINT_ANISO_TEXTURE) {
-								uniform2.hint = ShaderNode::Uniform::HINT_ANISO;
+							} else if (tk.type == TK_HINT_ANISOTROPY_TEXTURE) {
+								uniform2.hint = ShaderNode::Uniform::HINT_ANISOTROPY;
 							} else if (tk.type == TK_HINT_ALBEDO_TEXTURE) {
 								uniform2.hint = ShaderNode::Uniform::HINT_ALBEDO;
 							} else if (tk.type == TK_HINT_BLACK_ALBEDO_TEXTURE) {
 								uniform2.hint = ShaderNode::Uniform::HINT_BLACK_ALBEDO;
 							} else if (tk.type == TK_HINT_COLOR) {
 								if (type != TYPE_VEC4) {
-									_set_error("Color hint is for vec4 only");
+									_set_error(vformat(RTR("Color hint is for '%s' only."), "vec4"));
 									return ERR_PARSE_ERROR;
 								}
 								uniform2.hint = ShaderNode::Uniform::HINT_COLOR;
 							} else if (tk.type == TK_HINT_RANGE) {
 								uniform2.hint = ShaderNode::Uniform::HINT_RANGE;
 								if (type != TYPE_FLOAT && type != TYPE_INT) {
-									_set_error("Range hint is for float and int only");
+									_set_error(vformat(RTR("Range hint is for '%s' and '%s' only."), "float", "int"));
 									return ERR_PARSE_ERROR;
 								}
 
 								tk = _get_token();
 								if (tk.type != TK_PARENTHESIS_OPEN) {
-									_set_error("Expected '(' after hint_range");
+									_set_expected_after_error("(", "hint_range");
 									return ERR_PARSE_ERROR;
 								}
 
@@ -7011,8 +8001,8 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 									tk = _get_token();
 								}
 
-								if (tk.type != TK_FLOAT_CONSTANT && tk.type != TK_INT_CONSTANT) {
-									_set_error("Expected integer constant");
+								if (tk.type != TK_FLOAT_CONSTANT && !tk.is_integer_constant()) {
+									_set_error(RTR("Expected an integer constant."));
 									return ERR_PARSE_ERROR;
 								}
 
@@ -7022,7 +8012,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 								tk = _get_token();
 
 								if (tk.type != TK_COMMA) {
-									_set_error("Expected ',' after integer constant");
+									_set_error(RTR("Expected ',' after integer constant."));
 									return ERR_PARSE_ERROR;
 								}
 
@@ -7035,8 +8025,8 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 									tk = _get_token();
 								}
 
-								if (tk.type != TK_FLOAT_CONSTANT && tk.type != TK_INT_CONSTANT) {
-									_set_error("Expected integer constant after ','");
+								if (tk.type != TK_FLOAT_CONSTANT && !tk.is_integer_constant()) {
+									_set_error(RTR("Expected an integer constant after ','."));
 									return ERR_PARSE_ERROR;
 								}
 
@@ -7048,8 +8038,8 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 								if (tk.type == TK_COMMA) {
 									tk = _get_token();
 
-									if (tk.type != TK_FLOAT_CONSTANT && tk.type != TK_INT_CONSTANT) {
-										_set_error("Expected integer constant after ','");
+									if (tk.type != TK_FLOAT_CONSTANT && !tk.is_integer_constant()) {
+										_set_error(RTR("Expected an integer constant after ','."));
 										return ERR_PARSE_ERROR;
 									}
 
@@ -7064,44 +8054,44 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 								}
 
 								if (tk.type != TK_PARENTHESIS_CLOSE) {
-									_set_error("Expected ')'");
+									_set_expected_error(")");
 									return ERR_PARSE_ERROR;
 								}
 							} else if (tk.type == TK_HINT_INSTANCE_INDEX) {
 								if (custom_instance_index != -1) {
-									_set_error("Can only specify 'instance_index' once.");
+									_set_error(vformat(RTR("Can only specify '%s' once."), "instance_index"));
 									return ERR_PARSE_ERROR;
 								}
 
 								tk = _get_token();
 								if (tk.type != TK_PARENTHESIS_OPEN) {
-									_set_error("Expected '(' after 'instance_index'");
+									_set_expected_after_error("(", "instance_index");
 									return ERR_PARSE_ERROR;
 								}
 
 								tk = _get_token();
 
 								if (tk.type == TK_OP_SUB) {
-									_set_error("The instance index can't be negative.");
+									_set_error(RTR("The instance index can't be negative."));
 									return ERR_PARSE_ERROR;
 								}
 
-								if (tk.type != TK_INT_CONSTANT) {
-									_set_error("Expected integer constant");
+								if (!tk.is_integer_constant()) {
+									_set_error(RTR("Expected an integer constant."));
 									return ERR_PARSE_ERROR;
 								}
 
 								custom_instance_index = tk.constant;
 
 								if (custom_instance_index >= MAX_INSTANCE_UNIFORM_INDICES) {
-									_set_error("Allowed instance uniform indices are 0-" + itos(MAX_INSTANCE_UNIFORM_INDICES - 1));
+									_set_error(vformat(RTR("Allowed instance uniform indices must be within [0..%d] range."), MAX_INSTANCE_UNIFORM_INDICES - 1));
 									return ERR_PARSE_ERROR;
 								}
 
 								tk = _get_token();
 
 								if (tk.type != TK_PARENTHESIS_CLOSE) {
-									_set_error("Expected ')'");
+									_set_expected_error(")");
 									return ERR_PARSE_ERROR;
 								}
 							} else if (tk.type == TK_FILTER_LINEAR) {
@@ -7112,20 +8102,18 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 								uniform2.filter = FILTER_NEAREST_MIPMAP;
 							} else if (tk.type == TK_FILTER_LINEAR_MIPMAP) {
 								uniform2.filter = FILTER_LINEAR_MIPMAP;
-							} else if (tk.type == TK_FILTER_NEAREST_MIPMAP_ANISO) {
-								uniform2.filter = FILTER_NEAREST_MIPMAP_ANISO;
-							} else if (tk.type == TK_FILTER_LINEAR_MIPMAP_ANISO) {
-								uniform2.filter = FILTER_LINEAR_MIPMAP_ANISO;
+							} else if (tk.type == TK_FILTER_NEAREST_MIPMAP_ANISOTROPIC) {
+								uniform2.filter = FILTER_NEAREST_MIPMAP_ANISOTROPIC;
+							} else if (tk.type == TK_FILTER_LINEAR_MIPMAP_ANISOTROPIC) {
+								uniform2.filter = FILTER_LINEAR_MIPMAP_ANISOTROPIC;
 							} else if (tk.type == TK_REPEAT_DISABLE) {
 								uniform2.repeat = REPEAT_DISABLE;
 							} else if (tk.type == TK_REPEAT_ENABLE) {
 								uniform2.repeat = REPEAT_ENABLE;
-							} else {
-								_set_error("Expected valid type hint after ':'.");
 							}
 
 							if (uniform2.hint != ShaderNode::Uniform::HINT_RANGE && uniform2.hint != ShaderNode::Uniform::HINT_NONE && uniform2.hint != ShaderNode::Uniform::HINT_COLOR && type <= TYPE_MAT4) {
-								_set_error("This hint is only for sampler types");
+								_set_error(RTR("This hint is only for sampler types."));
 								return ERR_PARSE_ERROR;
 							}
 
@@ -7140,7 +8128,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						} else {
 							uniform2.instance_index = instance_index++;
 							if (instance_index > MAX_INSTANCE_UNIFORM_INDICES) {
-								_set_error("Too many 'instance' uniforms in shader, maximum supported is " + itos(MAX_INSTANCE_UNIFORM_INDICES));
+								_set_error(vformat(RTR("Too many '%s' uniforms in shader, maximum supported is %d."), "instance", MAX_INSTANCE_UNIFORM_INDICES));
 								return ERR_PARSE_ERROR;
 							}
 						}
@@ -7149,12 +8137,17 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					//reset scope for next uniform
 
 					if (tk.type == TK_OP_ASSIGN) {
-						Node *expr = _parse_and_reduce_expression(nullptr, FunctionInfo());
+						if (uniform2.array_size > 0) {
+							_set_error(RTR("Setting default values to uniform arrays is not supported."));
+							return ERR_PARSE_ERROR;
+						}
+
+						Node *expr = _parse_and_reduce_expression(nullptr, constants);
 						if (!expr) {
 							return ERR_PARSE_ERROR;
 						}
 						if (expr->type != Node::TYPE_CONSTANT) {
-							_set_error("Expected constant expression after '='");
+							_set_error(RTR("Expected constant expression after '='."));
 							return ERR_PARSE_ERROR;
 						}
 
@@ -7163,7 +8156,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						uniform2.default_value.resize(cn->values.size());
 
 						if (!convert_constant(cn, uniform2.type, uniform2.default_value.ptrw())) {
-							_set_error("Can't convert constant to " + get_datatype_name(uniform2.type));
+							_set_error(vformat(RTR("Can't convert constant to '%s'."), get_datatype_name(uniform2.type)));
 							return ERR_PARSE_ERROR;
 						}
 						tk = _get_token();
@@ -7180,42 +8173,35 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					uniform_scope = ShaderNode::Uniform::SCOPE_LOCAL;
 
 					if (tk.type != TK_SEMICOLON) {
-						_set_error("Expected ';'");
+						_set_expected_error(";");
 						return ERR_PARSE_ERROR;
 					}
+
+					completion_type = COMPLETION_NONE;
 				} else { // varying
 					ShaderNode::Varying varying;
 					varying.type = type;
 					varying.precision = precision;
 					varying.interpolation = interpolation;
-					varying.tkpos = name_pos;
+					varying.tkpos = prev_pos;
+					varying.array_size = array_size;
 
 					tk = _get_token();
 					if (tk.type != TK_SEMICOLON && tk.type != TK_BRACKET_OPEN) {
-						_set_error("Expected ';' or '['");
+						if (array_size == 0) {
+							_set_expected_error(";", "[");
+						} else {
+							_set_expected_error(";");
+						}
 						return ERR_PARSE_ERROR;
 					}
 
 					if (tk.type == TK_BRACKET_OPEN) {
-						tk = _get_token();
-						if (tk.type == TK_INT_CONSTANT && tk.constant > 0) {
-							varying.array_size = (int)tk.constant;
-
-							tk = _get_token();
-							if (tk.type == TK_BRACKET_CLOSE) {
-								tk = _get_token();
-								if (tk.type != TK_SEMICOLON) {
-									_set_error("Expected ';'");
-									return ERR_PARSE_ERROR;
-								}
-							} else {
-								_set_error("Expected ']'");
-								return ERR_PARSE_ERROR;
-							}
-						} else {
-							_set_error("Expected single integer constant > 0");
-							return ERR_PARSE_ERROR;
+						Error error = _parse_array_size(nullptr, constants, true, nullptr, &varying.array_size, nullptr);
+						if (error != OK) {
+							return error;
 						}
+						tk = _get_token();
 					}
 
 					shader->varyings[name] = varying;
@@ -7227,6 +8213,10 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				}
 
 			} break;
+			case TK_SHADER_TYPE: {
+				_set_error(RTR("Shader type is already defined."));
+				return ERR_PARSE_ERROR;
+			} break;
 			default: {
 				//function or constant variable
 
@@ -7236,7 +8226,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				DataPrecision precision = PRECISION_DEFAULT;
 				DataType type;
 				StringName name;
-				int return_array_size = 0;
+				int array_size = 0;
 
 				if (tk.type == TK_CONST) {
 					is_constant = true;
@@ -7250,19 +8240,23 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 				if (shader->structs.has(tk.text)) {
 					if (precision != PRECISION_DEFAULT) {
-						_set_error("Precision modifier cannot be used on structs.");
+						_set_error(RTR("The precision modifier cannot be used on structs."));
 						return ERR_PARSE_ERROR;
 					}
 					is_struct = true;
 					struct_name = tk.text;
 				} else {
 					if (!is_token_datatype(tk.type)) {
-						_set_error("Expected constant, function, uniform or varying");
+						_set_error(RTR("Expected constant, function, uniform or varying."));
 						return ERR_PARSE_ERROR;
 					}
 
 					if (!is_token_variable_datatype(tk.type)) {
-						_set_error("Invalid data type for constants or function return (samplers not allowed)");
+						if (is_constant) {
+							_set_error(RTR("Invalid constant type (samplers are not allowed)."));
+						} else {
+							_set_error(RTR("Invalid function type (samplers are not allowed)."));
+						}
 						return ERR_PARSE_ERROR;
 					}
 				}
@@ -7272,32 +8266,22 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				} else {
 					type = get_token_datatype(tk.type);
 				}
-				TkPos prev_pos = _get_tkpos();
+				prev_pos = _get_tkpos();
 				tk = _get_token();
 
-				if (tk.type == TK_BRACKET_OPEN) {
-					bool error = false;
-					tk = _get_token();
+				bool unknown_size = false;
+				bool fixed_array_size = false;
 
-					if (tk.type == TK_INT_CONSTANT) {
-						return_array_size = (int)tk.constant;
-						if (return_array_size > 0) {
-							tk = _get_token();
-							if (tk.type != TK_BRACKET_CLOSE) {
-								_set_error("Expected ']'");
-								return ERR_PARSE_ERROR;
-							}
-						} else {
-							error = true;
-						}
-					} else {
-						error = true;
-					}
-					if (error) {
-						_set_error("Expected integer constant > 0");
+				if (tk.type == TK_BRACKET_OPEN) {
+					if (is_constant && RenderingServer::get_singleton()->is_low_end()) {
+						_set_error(RTR("Global constant arrays are only supported on high-end platforms."));
 						return ERR_PARSE_ERROR;
 					}
-
+					Error error = _parse_array_size(nullptr, constants, !is_constant, nullptr, &array_size, &unknown_size);
+					if (error != OK) {
+						return error;
+					}
+					fixed_array_size = true;
 					prev_pos = _get_tkpos();
 				}
 
@@ -7306,29 +8290,27 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				_get_completable_identifier(nullptr, COMPLETION_MAIN_FUNCTION, name);
 
 				if (name == StringName()) {
-					_set_error("Expected function name after datatype");
+					if (is_constant) {
+						_set_error(RTR("Expected an identifier or '[' after type."));
+					} else {
+						_set_error(RTR("Expected a function name after type."));
+					}
 					return ERR_PARSE_ERROR;
 				}
 
-				if (_find_identifier(nullptr, false, FunctionInfo(), name)) {
-					_set_error("Redefinition of '" + String(name) + "'");
-					return ERR_PARSE_ERROR;
-				}
-
-				if (has_builtin(p_functions, name)) {
-					_set_error("Redefinition of '" + String(name) + "'");
+				if (shader->structs.has(name) || _find_identifier(nullptr, false, constants, name) || has_builtin(p_functions, name)) {
+					_set_redefinition_error(String(name));
 					return ERR_PARSE_ERROR;
 				}
 
 				tk = _get_token();
 				if (tk.type != TK_PARENTHESIS_OPEN) {
 					if (type == TYPE_VOID) {
-						_set_error("Expected '(' after function identifier");
+						_set_error(RTR("Expected '(' after function identifier."));
 						return ERR_PARSE_ERROR;
 					}
 
 					//variable
-
 					while (true) {
 						ShaderNode::Constant constant;
 						constant.name = name;
@@ -7336,44 +8318,30 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						constant.type_str = struct_name;
 						constant.precision = precision;
 						constant.initializer = nullptr;
-						constant.array_size = 0;
-
-						bool unknown_size = false;
+						constant.array_size = array_size;
 
 						if (tk.type == TK_BRACKET_OPEN) {
 							if (RenderingServer::get_singleton()->is_low_end()) {
-								_set_error("Global const arrays are supported only on high-end platform!");
+								_set_error(RTR("Global const arrays are only supported on high-end platforms."));
 								return ERR_PARSE_ERROR;
 							}
-
+							Error error = _parse_array_size(nullptr, constants, false, nullptr, &constant.array_size, &unknown_size);
+							if (error != OK) {
+								return error;
+							}
 							tk = _get_token();
-							if (tk.type == TK_BRACKET_CLOSE) {
-								unknown_size = true;
-								tk = _get_token();
-							} else if (tk.type == TK_INT_CONSTANT && ((int)tk.constant) > 0) {
-								constant.array_size = (int)tk.constant;
-								tk = _get_token();
-								if (tk.type != TK_BRACKET_CLOSE) {
-									_set_error("Expected ']'");
-									return ERR_PARSE_ERROR;
-								}
-								tk = _get_token();
-							} else {
-								_set_error("Expected integer constant > 0 or ']'");
-								return ERR_PARSE_ERROR;
-							}
 						}
 
 						if (tk.type == TK_OP_ASSIGN) {
 							if (!is_constant) {
-								_set_error("Expected 'const' keyword before constant definition");
+								_set_error(vformat(RTR("Global non-constant variables are not supported. Expected '%s' keyword before constant definition."), "const"));
 								return ERR_PARSE_ERROR;
 							}
 
 							if (constant.array_size > 0 || unknown_size) {
 								bool full_def = false;
 
-								ArrayDeclarationNode::Declaration decl;
+								VariableDeclarationNode::Declaration decl;
 								decl.name = name;
 								decl.size = constant.array_size;
 
@@ -7381,7 +8349,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 								if (tk.type != TK_CURLY_BRACKET_OPEN) {
 									if (unknown_size) {
-										_set_error("Expected '{'");
+										_set_expected_error("{");
 										return ERR_PARSE_ERROR;
 									}
 
@@ -7392,7 +8360,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 										precision2 = get_token_precision(tk.type);
 										tk = _get_token();
 										if (!is_token_nonvoid_datatype(tk.type)) {
-											_set_error("Expected datatype after precision");
+											_set_error(RTR("Expected data type after precision modifier."));
 											return ERR_PARSE_ERROR;
 										}
 									}
@@ -7405,83 +8373,60 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 										struct_name2 = tk.text;
 									} else {
 										if (!is_token_variable_datatype(tk.type)) {
-											_set_error("Invalid data type for array");
+											_set_error(RTR("Invalid data type for the array."));
 											return ERR_PARSE_ERROR;
 										}
 										type2 = get_token_datatype(tk.type);
 									}
 
 									int array_size2 = 0;
-
 									tk = _get_token();
+
 									if (tk.type == TK_BRACKET_OPEN) {
-										TkPos pos2 = _get_tkpos();
-										tk = _get_token();
-										if (tk.type == TK_BRACKET_CLOSE) {
-											array_size2 = constant.array_size;
-											tk = _get_token();
-										} else {
-											_set_tkpos(pos2);
-
-											Node *n = _parse_and_reduce_expression(nullptr, FunctionInfo());
-											if (!n || n->type != Node::TYPE_CONSTANT || n->get_datatype() != TYPE_INT) {
-												_set_error("Expected single integer constant > 0");
-												return ERR_PARSE_ERROR;
-											}
-
-											ConstantNode *cnode = (ConstantNode *)n;
-											if (cnode->values.size() == 1) {
-												array_size2 = cnode->values[0].sint;
-												if (array_size2 <= 0) {
-													_set_error("Expected single integer constant > 0");
-													return ERR_PARSE_ERROR;
-												}
-											} else {
-												_set_error("Expected single integer constant > 0");
-												return ERR_PARSE_ERROR;
-											}
-
-											tk = _get_token();
-											if (tk.type != TK_BRACKET_CLOSE) {
-												_set_error("Expected ']");
-												return ERR_PARSE_ERROR;
-											} else {
-												tk = _get_token();
-											}
+										bool is_unknown_size = false;
+										Error error = _parse_array_size(nullptr, constants, false, nullptr, &array_size2, &is_unknown_size);
+										if (error != OK) {
+											return error;
 										}
+										if (is_unknown_size) {
+											array_size2 = constant.array_size;
+										}
+										tk = _get_token();
 									} else {
-										_set_error("Expected '[");
+										_set_expected_error("[");
 										return ERR_PARSE_ERROR;
 									}
 
 									if (constant.precision != precision2 || constant.type != type2 || struct_name != struct_name2 || constant.array_size != array_size2) {
-										String error_str = "Cannot convert from '";
+										String from;
 										if (type2 == TYPE_STRUCT) {
-											error_str += struct_name2;
+											from += struct_name2;
 										} else {
 											if (precision2 != PRECISION_DEFAULT) {
-												error_str += get_precision_name(precision2);
-												error_str += " ";
+												from += get_precision_name(precision2);
+												from += " ";
 											}
-											error_str += get_datatype_name(type2);
+											from += get_datatype_name(type2);
 										}
-										error_str += "[";
-										error_str += itos(array_size2);
-										error_str += "]'";
-										error_str += " to '";
+										from += "[";
+										from += itos(array_size2);
+										from += "]'";
+
+										String to;
 										if (type == TYPE_STRUCT) {
-											error_str += struct_name;
+											to += struct_name;
 										} else {
 											if (precision != PRECISION_DEFAULT) {
-												error_str += get_precision_name(precision);
-												error_str += " ";
+												to += get_precision_name(precision);
+												to += " ";
 											}
-											error_str += get_datatype_name(type);
+											to += get_datatype_name(type);
 										}
-										error_str += "[";
-										error_str += itos(constant.array_size);
-										error_str += "]'";
-										_set_error(error_str);
+										to += "[";
+										to += itos(constant.array_size);
+										to += "]'";
+
+										_set_error(vformat(RTR("Cannot convert from '%s' to '%s'."), from, to));
 										return ERR_PARSE_ERROR;
 									}
 								}
@@ -7490,13 +8435,13 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 								if (unknown_size) {
 									if (!curly) {
-										_set_error("Expected '{'");
+										_set_expected_error("{");
 										return ERR_PARSE_ERROR;
 									}
 								} else {
 									if (full_def) {
 										if (curly) {
-											_set_error("Expected '('");
+											_set_expected_error("(");
 											return ERR_PARSE_ERROR;
 										}
 									}
@@ -7504,13 +8449,13 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 								if (tk.type == TK_PARENTHESIS_OPEN || curly) { // initialization
 									while (true) {
-										Node *n = _parse_and_reduce_expression(nullptr, FunctionInfo());
+										Node *n = _parse_and_reduce_expression(nullptr, constants);
 										if (!n) {
 											return ERR_PARSE_ERROR;
 										}
 
 										if (n->type == Node::TYPE_OPERATOR && ((OperatorNode *)n)->op == OP_CALL) {
-											_set_error("Expected constant expression");
+											_set_error(RTR("Expected constant expression."));
 											return ERR_PARSE_ERROR;
 										}
 
@@ -7530,9 +8475,9 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 											break;
 										} else {
 											if (curly) {
-												_set_error("Expected '}' or ','");
+												_set_expected_error("}", ",");
 											} else {
-												_set_error("Expected ')' or ','");
+												_set_expected_error(")", ",");
 											}
 											return ERR_PARSE_ERROR;
 										}
@@ -7541,10 +8486,12 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 										decl.size = decl.initializer.size();
 										constant.array_size = decl.initializer.size();
 									} else if (decl.initializer.size() != constant.array_size) {
-										_set_error("Array size mismatch");
+										_set_error(RTR("Array size mismatch."));
 										return ERR_PARSE_ERROR;
 									}
 								}
+
+								array_size = constant.array_size;
 
 								ConstantNode *expr = memnew(ConstantNode);
 
@@ -7559,7 +8506,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 								constant.initializer = static_cast<ConstantNode *>(expr);
 							} else {
 								//variable created with assignment! must parse an expression
-								Node *expr = _parse_and_reduce_expression(nullptr, FunctionInfo());
+								Node *expr = _parse_and_reduce_expression(nullptr, constants);
 								if (!expr) {
 									return ERR_PARSE_ERROR;
 								}
@@ -7567,7 +8514,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 									OperatorNode *op = ((OperatorNode *)expr);
 									for (int i = 1; i < op->arguments.size(); i++) {
 										if (!_check_node_constness(op->arguments[i])) {
-											_set_error("Expected constant expression for argument '" + itos(i - 1) + "' of function call after '='");
+											_set_error(vformat(RTR("Expected constant expression for argument %d of function call after '='."), i - 1));
 											return ERR_PARSE_ERROR;
 										}
 									}
@@ -7575,17 +8522,17 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 								constant.initializer = static_cast<ConstantNode *>(expr);
 
-								if (!_compare_datatypes(type, struct_name, 0, expr->get_datatype(), expr->get_datatype_name(), 0)) {
+								if (!_compare_datatypes(type, struct_name, 0, expr->get_datatype(), expr->get_datatype_name(), expr->get_array_size())) {
 									return ERR_PARSE_ERROR;
 								}
 							}
 							tk = _get_token();
 						} else {
 							if (constant.array_size > 0 || unknown_size) {
-								_set_error("Expected array initialization");
+								_set_error(RTR("Expected array initialization."));
 								return ERR_PARSE_ERROR;
 							} else {
-								_set_error("Expected initialization of constant");
+								_set_error(RTR("Expected initialization of constant."));
 								return ERR_PARSE_ERROR;
 							}
 						}
@@ -7601,27 +8548,32 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						if (tk.type == TK_COMMA) {
 							tk = _get_token();
 							if (tk.type != TK_IDENTIFIER) {
-								_set_error("Expected identifier after type");
+								_set_error(RTR("Expected an identifier after type."));
 								return ERR_PARSE_ERROR;
 							}
 
 							name = tk.text;
-							if (_find_identifier(nullptr, false, FunctionInfo(), name)) {
-								_set_error("Redefinition of '" + String(name) + "'");
+							if (_find_identifier(nullptr, false, constants, name)) {
+								_set_redefinition_error(String(name));
 								return ERR_PARSE_ERROR;
 							}
 
 							if (has_builtin(p_functions, name)) {
-								_set_error("Redefinition of '" + String(name) + "'");
+								_set_redefinition_error(String(name));
 								return ERR_PARSE_ERROR;
 							}
 
 							tk = _get_token();
 
+							if (!fixed_array_size) {
+								array_size = 0;
+							}
+							unknown_size = false;
+
 						} else if (tk.type == TK_SEMICOLON) {
 							break;
 						} else {
-							_set_error("Expected ',' or ';' after constant");
+							_set_expected_error(",", ";");
 							return ERR_PARSE_ERROR;
 						}
 					}
@@ -7635,8 +8587,21 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				}
 
 				if (p_functions.has("global")) { // Adds global variables: 'TIME'
-					for (Map<StringName, BuiltInInfo>::Element *E = p_functions["global"].built_ins.front(); E; E = E->next()) {
-						builtins.built_ins.insert(E->key(), E->value());
+					for (const KeyValue<StringName, BuiltInInfo> &E : p_functions["global"].built_ins) {
+						builtins.built_ins.insert(E.key, E.value);
+					}
+				}
+
+				if (p_functions.has("constants")) { // Adds global constants: 'PI', 'TAU', 'E'
+					for (const KeyValue<StringName, BuiltInInfo> &E : p_functions["constants"].built_ins) {
+						builtins.built_ins.insert(E.key, E.value);
+					}
+				}
+
+				for (int i = 0; i < shader->functions.size(); i++) {
+					if (!shader->functions[i].callable && shader->functions[i].name == name) {
+						_set_redefinition_error(String(name));
+						return ERR_PARSE_ERROR;
 					}
 				}
 
@@ -7655,7 +8620,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				func_node->return_type = type;
 				func_node->return_struct_name = struct_name;
 				func_node->return_precision = precision;
-				func_node->return_array_size = return_array_size;
+				func_node->return_array_size = array_size;
 
 				if (p_functions.has(name)) {
 					func_node->can_discard = p_functions[name].can_discard;
@@ -7690,14 +8655,14 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						tk = _get_token();
 					} else if (tk.type == TK_ARG_OUT) {
 						if (is_const) {
-							_set_error("'out' qualifier cannot be used within a function parameter declared with 'const'.");
+							_set_error(vformat(RTR("The '%s' qualifier cannot be used within a function parameter declared with '%s'."), "out", "const"));
 							return ERR_PARSE_ERROR;
 						}
 						qualifier = ARGUMENT_QUALIFIER_OUT;
 						tk = _get_token();
 					} else if (tk.type == TK_ARG_INOUT) {
 						if (is_const) {
-							_set_error("'inout' qualifier cannot be used within a function parameter declared with 'const'.");
+							_set_error(vformat(RTR("The '%s' qualifier cannot be used within a function parameter declared with '%s'."), "inout", "const"));
 							return ERR_PARSE_ERROR;
 						}
 						qualifier = ARGUMENT_QUALIFIER_INOUT;
@@ -7709,7 +8674,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					StringName param_struct_name;
 					DataPrecision pprecision = PRECISION_DEFAULT;
 					bool use_precision = false;
-					int array_size = 0;
+					int arg_array_size = 0;
 
 					if (is_token_precision(tk.type)) {
 						pprecision = get_token_precision(tk.type);
@@ -7722,20 +8687,25 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					if (shader->structs.has(tk.text)) {
 						is_struct = true;
 						param_struct_name = tk.text;
+#ifdef DEBUG_ENABLED
+						if (check_warnings && HAS_WARNING(ShaderWarning::UNUSED_STRUCT_FLAG) && used_structs.has(param_struct_name)) {
+							used_structs[param_struct_name].used = true;
+						}
+#endif // DEBUG_ENABLED
 						if (use_precision) {
-							_set_error("Precision modifier cannot be used on structs.");
+							_set_error(RTR("The precision modifier cannot be used on structs."));
 							return ERR_PARSE_ERROR;
 						}
 					}
 
 					if (!is_struct && !is_token_datatype(tk.type)) {
-						_set_error("Expected a valid datatype for argument");
+						_set_error(RTR("Expected a valid data type for argument."));
 						return ERR_PARSE_ERROR;
 					}
 
 					if (qualifier == ARGUMENT_QUALIFIER_OUT || qualifier == ARGUMENT_QUALIFIER_INOUT) {
 						if (is_sampler_type(get_token_datatype(tk.type))) {
-							_set_error("Opaque types cannot be output parameters.");
+							_set_error(RTR("Opaque types cannot be output parameters."));
 							return ERR_PARSE_ERROR;
 						}
 					}
@@ -7748,7 +8718,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 							return ERR_PARSE_ERROR;
 						}
 						if (ptype == TYPE_VOID) {
-							_set_error("void not allowed in argument");
+							_set_error(RTR("Void type not allowed as argument."));
 							return ERR_PARSE_ERROR;
 						}
 					}
@@ -7756,32 +8726,14 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					tk = _get_token();
 
 					if (tk.type == TK_BRACKET_OPEN) {
-						bool error = false;
-						tk = _get_token();
-
-						if (tk.type == TK_INT_CONSTANT) {
-							array_size = (int)tk.constant;
-
-							if (array_size > 0) {
-								tk = _get_token();
-								if (tk.type != TK_BRACKET_CLOSE) {
-									_set_error("Expected ']'");
-									return ERR_PARSE_ERROR;
-								}
-							} else {
-								error = true;
-							}
-						} else {
-							error = true;
-						}
-						if (error) {
-							_set_error("Expected integer constant > 0");
-							return ERR_PARSE_ERROR;
+						Error error = _parse_array_size(nullptr, constants, true, nullptr, &arg_array_size, nullptr);
+						if (error != OK) {
+							return error;
 						}
 						tk = _get_token();
 					}
 					if (tk.type != TK_IDENTIFIER) {
-						_set_error("Expected identifier for argument name");
+						_set_error(RTR("Expected an identifier for argument name."));
 						return ERR_PARSE_ERROR;
 					}
 
@@ -7790,13 +8742,13 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					ShaderLanguage::IdentifierType itype;
 					if (_find_identifier(func_node->body, false, builtins, pname, (ShaderLanguage::DataType *)nullptr, &itype)) {
 						if (itype != IDENTIFIER_FUNCTION) {
-							_set_error("Redefinition of '" + String(pname) + "'");
+							_set_redefinition_error(String(pname));
 							return ERR_PARSE_ERROR;
 						}
 					}
 
 					if (has_builtin(p_functions, pname)) {
-						_set_error("Redefinition of '" + String(pname) + "'");
+						_set_redefinition_error(String(pname));
 						return ERR_PARSE_ERROR;
 					}
 
@@ -7814,44 +8766,21 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 					tk = _get_token();
 					if (tk.type == TK_BRACKET_OPEN) {
-						if (array_size > 0) {
-							_set_error("Array size is already defined!");
-							return ERR_PARSE_ERROR;
-						}
-						bool error = false;
-						tk = _get_token();
-
-						if (tk.type == TK_INT_CONSTANT) {
-							array_size = (int)tk.constant;
-
-							if (array_size > 0) {
-								tk = _get_token();
-								if (tk.type != TK_BRACKET_CLOSE) {
-									_set_error("Expected ']'");
-									return ERR_PARSE_ERROR;
-								}
-							} else {
-								error = true;
-							}
-						} else {
-							error = true;
-						}
-
-						if (error) {
-							_set_error("Expected integer constant > 0");
-							return ERR_PARSE_ERROR;
+						Error error = _parse_array_size(nullptr, constants, true, nullptr, &arg_array_size, nullptr);
+						if (error != OK) {
+							return error;
 						}
 						tk = _get_token();
 					}
 
-					arg.array_size = array_size;
+					arg.array_size = arg_array_size;
 					func_node->arguments.push_back(arg);
 
 					if (tk.type == TK_COMMA) {
 						tk = _get_token();
 						//do none and go on
 					} else if (tk.type != TK_PARENTHESIS_CLOSE) {
-						_set_error("Expected ',' or ')' after identifier");
+						_set_expected_error(",", ")");
 						return ERR_PARSE_ERROR;
 					}
 				}
@@ -7859,11 +8788,11 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				if (p_functions.has(name)) {
 					//if one of the core functions, make sure they are of the correct form
 					if (func_node->arguments.size() > 0) {
-						_set_error("Function '" + String(name) + "' expects no arguments.");
+						_set_error(vformat(RTR("Function '%s' expects no arguments."), String(name)));
 						return ERR_PARSE_ERROR;
 					}
 					if (func_node->return_type != TYPE_VOID) {
-						_set_error("Function '" + String(name) + "' must be of void return type.");
+						_set_error(vformat(RTR("Function '%s' must be of '%s' return type."), String(name), "void"));
 						return ERR_PARSE_ERROR;
 					}
 				}
@@ -7871,7 +8800,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				//all good let's parse inside the function!
 				tk = _get_token();
 				if (tk.type != TK_CURLY_BRACKET_OPEN) {
-					_set_error("Expected '{' to begin function");
+					_set_error(RTR("Expected a '{' to begin function."));
 					return ERR_PARSE_ERROR;
 				}
 
@@ -7885,7 +8814,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				if (func_node->return_type != DataType::TYPE_VOID) {
 					BlockNode *block = func_node->body;
 					if (_find_last_flow_op_in_block(block, FlowOperation::FLOW_OP_RETURN) != OK) {
-						_set_error("Expected at least one return statement in a non-void function.");
+						_set_error(vformat(RTR("Expected at least one '%s' statement in a non-void function."), "return"));
 						return ERR_PARSE_ERROR;
 					}
 				}
@@ -7896,20 +8825,17 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 		tk = _get_token();
 	}
 
-	int error_line;
-	String error_message;
-	if (!_check_varying_usages(&error_line, &error_message)) {
-		_set_tkpos({ 0, error_line });
-		_set_error(error_message);
-		return ERR_PARSE_ERROR;
+#ifdef DEBUG_ENABLED
+	if (check_device_limit_warnings && uniform_buffer_exceeded_line != -1) {
+		_add_warning(ShaderWarning::DEVICE_LIMIT_EXCEEDED, uniform_buffer_exceeded_line, RTR("uniform buffer"), { uniform_buffer_size, max_uniform_buffer_size });
 	}
-
+#endif // DEBUG_ENABLED
 	return OK;
 }
 
 bool ShaderLanguage::has_builtin(const Map<StringName, ShaderLanguage::FunctionInfo> &p_functions, const StringName &p_name) {
-	for (Map<StringName, ShaderLanguage::FunctionInfo>::Element *E = p_functions.front(); E; E = E->next()) {
-		if (E->get().built_ins.has(p_name)) {
+	for (const KeyValue<StringName, ShaderLanguage::FunctionInfo> &E : p_functions) {
+		if (E.value.built_ins.has(p_name)) {
 			return true;
 		}
 	}
@@ -8023,7 +8949,7 @@ String ShaderLanguage::get_shader_type(const String &p_code) {
 			break;
 
 		} else if (p_code[i] <= 32) {
-			if (cur_identifier != String()) {
+			if (!cur_identifier.is_empty()) {
 				if (!reading_type) {
 					if (cur_identifier != "shader_type") {
 						return String();
@@ -8049,19 +8975,19 @@ String ShaderLanguage::get_shader_type(const String &p_code) {
 
 #ifdef DEBUG_ENABLED
 void ShaderLanguage::_check_warning_accums() {
-	for (Map<ShaderWarning::Code, Map<StringName, Map<StringName, Usage>> *>::Element *E = warnings_check_map2.front(); E; E = E->next()) {
-		for (Map<StringName, Map<StringName, Usage>>::Element *T = (*E->get()).front(); T; T = T->next()) {
-			for (const Map<StringName, Usage>::Element *U = T->get().front(); U; U = U->next()) {
-				if (!U->get().used) {
-					_add_warning(E->key(), U->get().decl_line, U->key());
+	for (const KeyValue<ShaderWarning::Code, Map<StringName, Map<StringName, Usage>> *> &E : warnings_check_map2) {
+		for (Map<StringName, Map<StringName, Usage>>::Element *T = (*E.value).front(); T; T = T->next()) {
+			for (const KeyValue<StringName, Usage> &U : T->get()) {
+				if (!U.value.used) {
+					_add_warning(E.key, U.value.decl_line, U.key);
 				}
 			}
 		}
 	}
-	for (Map<ShaderWarning::Code, Map<StringName, Usage> *>::Element *E = warnings_check_map.front(); E; E = E->next()) {
-		for (const Map<StringName, Usage>::Element *U = (*E->get()).front(); U; U = U->next()) {
+	for (const KeyValue<ShaderWarning::Code, Map<StringName, Usage> *> &E : warnings_check_map) {
+		for (const Map<StringName, Usage>::Element *U = (*E.value).front(); U; U = U->next()) {
 			if (!U->get().used) {
-				_add_warning(E->key(), U->get().decl_line, U->key());
+				_add_warning(E.key, U->get().decl_line, U->key());
 			}
 		}
 	}
@@ -8083,17 +9009,17 @@ uint32_t ShaderLanguage::get_warning_flags() const {
 }
 #endif // DEBUG_ENABLED
 
-Error ShaderLanguage::compile(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const VaryingFunctionNames &p_varying_function_names, const Set<String> &p_shader_types, GlobalVariableGetTypeFunc p_global_variable_type_func) {
+Error ShaderLanguage::compile(const String &p_code, const ShaderCompileInfo &p_info) {
 	clear();
 
 	code = p_code;
-	global_var_get_type_func = p_global_variable_type_func;
-	varying_function_names = p_varying_function_names;
+	global_var_get_type_func = p_info.global_variable_type_func;
+	varying_function_names = p_info.varying_function_names;
 
 	nodes = nullptr;
 
 	shader = alloc_node<ShaderNode>();
-	Error err = _parse_shader(p_functions, p_render_modes, p_shader_types);
+	Error err = _parse_shader(p_info.functions, p_info.render_modes, p_info.shader_types);
 
 #ifdef DEBUG_ENABLED
 	if (check_warnings) {
@@ -8107,27 +9033,57 @@ Error ShaderLanguage::compile(const String &p_code, const Map<StringName, Functi
 	return OK;
 }
 
-Error ShaderLanguage::complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const VaryingFunctionNames &p_varying_function_names, const Set<String> &p_shader_types, GlobalVariableGetTypeFunc p_global_variable_type_func, List<ScriptCodeCompletionOption> *r_options, String &r_call_hint) {
+Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_info, List<ScriptCodeCompletionOption> *r_options, String &r_call_hint) {
 	clear();
 
 	code = p_code;
-	varying_function_names = p_varying_function_names;
+	varying_function_names = p_info.varying_function_names;
 
 	nodes = nullptr;
-	global_var_get_type_func = p_global_variable_type_func;
+	global_var_get_type_func = p_info.global_variable_type_func;
 
 	shader = alloc_node<ShaderNode>();
-	_parse_shader(p_functions, p_render_modes, p_shader_types);
+	_parse_shader(p_info.functions, p_info.render_modes, p_info.shader_types);
 
 	switch (completion_type) {
 		case COMPLETION_NONE: {
 			//do nothing
 			return OK;
 		} break;
-		case COMPLETION_RENDER_MODE: {
-			for (int i = 0; i < p_render_modes.size(); i++) {
-				ScriptCodeCompletionOption option(p_render_modes[i], ScriptCodeCompletionOption::KIND_ENUM);
+		case COMPLETION_SHADER_TYPE: {
+			for (const String &shader_type : p_info.shader_types) {
+				ScriptCodeCompletionOption option(shader_type, ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
 				r_options->push_back(option);
+			}
+			return OK;
+		} break;
+		case COMPLETION_RENDER_MODE: {
+			for (int i = 0; i < p_info.render_modes.size(); i++) {
+				const ModeInfo &info = p_info.render_modes[i];
+
+				if (!info.options.is_empty()) {
+					bool found = false;
+
+					for (int j = 0; j < info.options.size(); j++) {
+						if (shader->render_modes.has(String(info.name) + "_" + String(info.options[j]))) {
+							found = true;
+						}
+					}
+
+					if (!found) {
+						for (int j = 0; j < info.options.size(); j++) {
+							ScriptCodeCompletionOption option(String(info.name) + "_" + String(info.options[j]), ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
+							r_options->push_back(option);
+						}
+					}
+				} else {
+					const String name = String(info.name);
+
+					if (!shader->render_modes.has(name)) {
+						ScriptCodeCompletionOption option(name, ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
+						r_options->push_back(option);
+					}
+				}
 			}
 
 			return OK;
@@ -8144,8 +9100,21 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 			return OK;
 		} break;
 		case COMPLETION_MAIN_FUNCTION: {
-			for (const Map<StringName, FunctionInfo>::Element *E = p_functions.front(); E; E = E->next()) {
-				ScriptCodeCompletionOption option(E->key(), ScriptCodeCompletionOption::KIND_FUNCTION);
+			for (const KeyValue<StringName, FunctionInfo> &E : p_info.functions) {
+				if (!E.value.main_function) {
+					continue;
+				}
+				bool found = false;
+				for (int i = 0; i < shader->functions.size(); i++) {
+					if (shader->functions[i].name == E.key) {
+						found = true;
+						break;
+					}
+				}
+				if (found) {
+					continue;
+				}
+				ScriptCodeCompletionOption option(E.key, ScriptCodeCompletionOption::KIND_FUNCTION);
 				r_options->push_back(option);
 			}
 
@@ -8161,9 +9130,9 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 			if (completion_class == TAG_GLOBAL) {
 				while (block) {
 					if (comp_ident) {
-						for (const Map<StringName, BlockNode::Variable>::Element *E = block->variables.front(); E; E = E->next()) {
-							if (E->get().line < completion_line) {
-								matches.insert(E->key(), ScriptCodeCompletionOption::KIND_VARIABLE);
+						for (const KeyValue<StringName, BlockNode::Variable> &E : block->variables) {
+							if (E.value.line < completion_line) {
+								matches.insert(E.key, ScriptCodeCompletionOption::KIND_VARIABLE);
 							}
 						}
 					}
@@ -8180,31 +9149,44 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 				}
 
 				if (comp_ident) {
-					if (p_functions.has("global")) {
-						for (Map<StringName, BuiltInInfo>::Element *E = p_functions["global"].built_ins.front(); E; E = E->next()) {
+					if (p_info.functions.has("global")) {
+						for (const KeyValue<StringName, BuiltInInfo> &E : p_info.functions["global"].built_ins) {
 							ScriptCodeCompletionOption::Kind kind = ScriptCodeCompletionOption::KIND_MEMBER;
-							if (E->get().constant) {
+							if (E.value.constant) {
 								kind = ScriptCodeCompletionOption::KIND_CONSTANT;
 							}
-							matches.insert(E->key(), kind);
+							matches.insert(E.key, kind);
 						}
 					}
 
-					if (skip_function != StringName() && p_functions.has(skip_function)) {
-						for (Map<StringName, BuiltInInfo>::Element *E = p_functions[skip_function].built_ins.front(); E; E = E->next()) {
+					if (p_info.functions.has("constants")) {
+						for (const KeyValue<StringName, BuiltInInfo> &E : p_info.functions["constants"].built_ins) {
 							ScriptCodeCompletionOption::Kind kind = ScriptCodeCompletionOption::KIND_MEMBER;
-							if (E->get().constant) {
+							if (E.value.constant) {
 								kind = ScriptCodeCompletionOption::KIND_CONSTANT;
 							}
-							matches.insert(E->key(), kind);
+							matches.insert(E.key, kind);
 						}
 					}
 
-					for (const Map<StringName, ShaderNode::Varying>::Element *E = shader->varyings.front(); E; E = E->next()) {
-						matches.insert(E->key(), ScriptCodeCompletionOption::KIND_VARIABLE);
+					if (skip_function != StringName() && p_info.functions.has(skip_function)) {
+						for (const KeyValue<StringName, BuiltInInfo> &E : p_info.functions[skip_function].built_ins) {
+							ScriptCodeCompletionOption::Kind kind = ScriptCodeCompletionOption::KIND_MEMBER;
+							if (E.value.constant) {
+								kind = ScriptCodeCompletionOption::KIND_CONSTANT;
+							}
+							matches.insert(E.key, kind);
+						}
 					}
-					for (const Map<StringName, ShaderNode::Uniform>::Element *E = shader->uniforms.front(); E; E = E->next()) {
-						matches.insert(E->key(), ScriptCodeCompletionOption::KIND_MEMBER);
+
+					for (const KeyValue<StringName, ShaderNode::Constant> &E : shader->constants) {
+						matches.insert(E.key, ScriptCodeCompletionOption::KIND_CONSTANT);
+					}
+					for (const KeyValue<StringName, ShaderNode::Varying> &E : shader->varyings) {
+						matches.insert(E.key, ScriptCodeCompletionOption::KIND_VARIABLE);
+					}
+					for (const KeyValue<StringName, ShaderNode::Uniform> &E : shader->uniforms) {
+						matches.insert(E.key, ScriptCodeCompletionOption::KIND_MEMBER);
 					}
 				}
 
@@ -8219,8 +9201,8 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 				bool low_end = RenderingServer::get_singleton()->is_low_end();
 
 				if (stages && stages->has(skip_function)) {
-					for (const Map<StringName, StageFunctionInfo>::Element *E = (*stages)[skip_function].stage_functions.front(); E; E = E->next()) {
-						matches.insert(String(E->key()), ScriptCodeCompletionOption::KIND_FUNCTION);
+					for (const KeyValue<StringName, StageFunctionInfo> &E : (*stages)[skip_function].stage_functions) {
+						matches.insert(String(E.key), ScriptCodeCompletionOption::KIND_FUNCTION);
 					}
 				}
 
@@ -8249,9 +9231,9 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 				}
 			}
 
-			for (Map<String, ScriptCodeCompletionOption::Kind>::Element *E = matches.front(); E; E = E->next()) {
-				ScriptCodeCompletionOption option(E->key(), E->value());
-				if (E->value() == ScriptCodeCompletionOption::KIND_FUNCTION) {
+			for (const KeyValue<String, ScriptCodeCompletionOption::Kind> &E : matches) {
+				ScriptCodeCompletionOption option(E.key, E.value);
+				if (E.value == ScriptCodeCompletionOption::KIND_FUNCTION) {
 					option.insert_text += "(";
 				}
 				r_options->push_back(option);
@@ -8343,14 +9325,14 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 			bool low_end = RenderingServer::get_singleton()->is_low_end();
 
 			if (stages && stages->has(block_function)) {
-				for (const Map<StringName, StageFunctionInfo>::Element *E = (*stages)[block_function].stage_functions.front(); E; E = E->next()) {
-					if (completion_function == E->key()) {
-						calltip += get_datatype_name(E->get().return_type);
+				for (const KeyValue<StringName, StageFunctionInfo> &E : (*stages)[block_function].stage_functions) {
+					if (completion_function == E.key) {
+						calltip += get_datatype_name(E.value.return_type);
 						calltip += " ";
-						calltip += E->key();
+						calltip += E.key;
 						calltip += "(";
 
-						for (int i = 0; i < E->get().arguments.size(); i++) {
+						for (int i = 0; i < E.value.arguments.size(); i++) {
 							if (i > 0) {
 								calltip += ", ";
 							} else {
@@ -8361,16 +9343,16 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 								calltip += char32_t(0xFFFF);
 							}
 
-							calltip += get_datatype_name(E->get().arguments[i].type);
+							calltip += get_datatype_name(E.value.arguments[i].type);
 							calltip += " ";
-							calltip += E->get().arguments[i].name;
+							calltip += E.value.arguments[i].name;
 
 							if (i == completion_argument) {
 								calltip += char32_t(0xFFFF);
 							}
 						}
 
-						if (E->get().arguments.size()) {
+						if (E.value.arguments.size()) {
 							calltip += " ";
 						}
 						calltip += ")";
@@ -8388,10 +9370,16 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 				}
 
 				int idx2 = 0;
-				int out_arg = -1;
+				Set<int> out_args;
 				while (builtin_func_out_args[idx2].name != nullptr) {
 					if (builtin_func_out_args[idx2].name == builtin_func_defs[idx].name) {
-						out_arg = builtin_func_out_args[idx2].argument;
+						for (int i = 0; i < BuiltinFuncOutArgs::MAX_ARGS; i++) {
+							int arg = builtin_func_out_args[idx2].arguments[i];
+							if (arg == -1) {
+								break;
+							}
+							out_args.insert(arg);
+						}
 						break;
 					}
 					idx2++;
@@ -8428,11 +9416,17 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 							calltip += char32_t(0xFFFF);
 						}
 
-						if (out_arg >= 0 && i == out_arg) {
+						if (out_args.has(i)) {
 							calltip += "out ";
 						}
 
 						calltip += get_datatype_name(builtin_func_defs[idx].args[i]);
+
+						String arg_name = (String)builtin_func_defs[idx].args_names[i];
+						if (!arg_name.is_empty()) {
+							calltip += " ";
+							calltip += arg_name;
+						}
 
 						if (i == completion_argument) {
 							calltip += char32_t(0xFFFF);
@@ -8483,15 +9477,6 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 					limit = 4;
 
 				} break;
-				case TYPE_MAT2:
-					limit = 2;
-					break;
-				case TYPE_MAT3:
-					limit = 3;
-					break;
-				case TYPE_MAT4:
-					limit = 4;
-					break;
 				default: {
 				}
 			}
@@ -8502,6 +9487,57 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 				r_options->push_back(ScriptCodeCompletionOption(String::chr(coordt[i]), ScriptCodeCompletionOption::KIND_PLAIN_TEXT));
 			}
 
+		} break;
+		case COMPLETION_HINT: {
+			if (completion_base == DataType::TYPE_VEC4) {
+				ScriptCodeCompletionOption option("hint_color", ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
+				r_options->push_back(option);
+			} else if ((completion_base == DataType::TYPE_INT || completion_base == DataType::TYPE_FLOAT) && !completion_base_array) {
+				ScriptCodeCompletionOption option("hint_range", ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
+
+				if (completion_base == DataType::TYPE_INT) {
+					option.insert_text = "hint_range(0, 100, 1)";
+				} else {
+					option.insert_text = "hint_range(0.0, 1.0, 0.1)";
+				}
+
+				r_options->push_back(option);
+			} else if ((int(completion_base) > int(TYPE_MAT4) && int(completion_base) < int(TYPE_STRUCT)) && !completion_base_array) {
+				static Vector<String> options;
+
+				if (options.is_empty()) {
+					options.push_back("filter_linear");
+					options.push_back("filter_linear_mipmap");
+					options.push_back("filter_linear_mipmap_anisotropic");
+					options.push_back("filter_nearest");
+					options.push_back("filter_nearest_mipmap");
+					options.push_back("filter_nearest_mipmap_anisotropic");
+					options.push_back("hint_albedo");
+					options.push_back("hint_anisotropy");
+					options.push_back("hint_black");
+					options.push_back("hint_black_albedo");
+					options.push_back("hint_normal");
+					options.push_back("hint_roughness_a");
+					options.push_back("hint_roughness_b");
+					options.push_back("hint_roughness_g");
+					options.push_back("hint_roughness_gray");
+					options.push_back("hint_roughness_normal");
+					options.push_back("hint_roughness_r");
+					options.push_back("hint_white");
+					options.push_back("repeat_enable");
+					options.push_back("repeat_disable");
+				}
+
+				for (int i = 0; i < options.size(); i++) {
+					ScriptCodeCompletionOption option(options[i], ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
+					r_options->push_back(option);
+				}
+			}
+			if (!completion_base_array) {
+				ScriptCodeCompletionOption option("instance_index", ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
+				option.insert_text = "instance_index(0)";
+				r_options->push_back(option);
+			}
 		} break;
 	}
 
@@ -8524,7 +9560,7 @@ ShaderLanguage::ShaderLanguage() {
 	nodes = nullptr;
 	completion_class = TAG_GLOBAL;
 
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 	warnings_check_map.insert(ShaderWarning::UNUSED_CONSTANT, &used_constants);
 	warnings_check_map.insert(ShaderWarning::UNUSED_FUNCTION, &used_functions);
 	warnings_check_map.insert(ShaderWarning::UNUSED_STRUCT, &used_structs);

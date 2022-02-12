@@ -1,19 +1,41 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="@GlobalScope" version="4.0">
 	<brief_description>
-		Global scope constants and variables.
+		Global scope constants and functions.
 	</brief_description>
 	<description>
-		Global scope constants and variables. This is all that resides in the globals, constants regarding error codes, keycodes, property hints, etc.
+		A list of global scope enumerated constants and built-in functions. This is all that resides in the globals, constants regarding error codes, keycodes, property hints, etc.
 		Singletons are also documented here, since they can be accessed from anywhere.
+		For the entries related to GDScript which can be accessed in any script see [@GDScript].
 	</description>
 	<tutorials>
+		<link title="Random number generation">$DOCS_URL/tutorials/math/random_number_generation.html</link>
 	</tutorials>
 	<methods>
 		<method name="abs">
 			<return type="Variant" />
 			<argument index="0" name="x" type="Variant" />
 			<description>
+				Returns the absolute value of a [Variant] parameter [code]x[/code] (i.e. non-negative value). Variant types [int], [float] (real), [Vector2], [Vector2i], [Vector3] and [Vector3i] are supported.
+				[codeblock]
+				var a = abs(-1)
+				# a is 1
+
+				var b = abs(-1.2)
+				# b is 1.2
+
+				var c = abs(Vector2(-3.5, -4))
+				# c is (3.5, 4)
+
+				var d = abs(Vector2i(-5, -6))
+				# d is (5, 6)
+
+				var e = abs(Vector3(-7, 8.5, -3.8))
+				# e is (7, 8.5, 3.8)
+
+				var f = abs(Vector3i(-7, -8, -9))
+				# f is (7, 8, 9)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="absf">
@@ -23,7 +45,7 @@
 				Returns the absolute value of float parameter [code]x[/code] (i.e. positive value).
 				[codeblock]
 				# a is 1.2
-				a = absf(-1.2)
+				var a = absf(-1.2)
 				[/codeblock]
 			</description>
 		</method>
@@ -34,7 +56,7 @@
 				Returns the absolute value of int parameter [code]x[/code] (i.e. positive value).
 				[codeblock]
 				# a is 1
-				a = absi(-1)
+				var a = absi(-1)
 				[/codeblock]
 			</description>
 		</method>
@@ -45,7 +67,7 @@
 				Returns the arc cosine of [code]x[/code] in radians. Use to get the angle of cosine [code]x[/code]. [code]x[/code] must be between [code]-1.0[/code] and [code]1.0[/code] (inclusive), otherwise, [method acos] will return [constant @GDScript.NAN].
 				[codeblock]
 				# c is 0.523599 or 30 degrees if converted with rad2deg(c)
-				c = acos(0.866025)
+				var c = acos(0.866025)
 				[/codeblock]
 			</description>
 		</method>
@@ -56,7 +78,7 @@
 				Returns the arc sine of [code]x[/code] in radians. Use to get the angle of sine [code]x[/code]. [code]x[/code] must be between [code]-1.0[/code] and [code]1.0[/code] (inclusive), otherwise, [method asin] will return [constant @GDScript.NAN].
 				[codeblock]
 				# s is 0.523599 or 30 degrees if converted with rad2deg(s)
-				s = asin(0.5)
+				var s = asin(0.5)
 				[/codeblock]
 			</description>
 		</method>
@@ -64,11 +86,12 @@
 			<return type="float" />
 			<argument index="0" name="x" type="float" />
 			<description>
-				Returns the arc tangent of [code]x[/code] in radians. Use it to get the angle from an angle's tangent in trigonometry: [code]atan(tan(angle)) == angle[/code].
+				Returns the arc tangent of [code]x[/code] in radians. Use it to get the angle from an angle's tangent in trigonometry.
 				The method cannot know in which quadrant the angle should fall. See [method atan2] if you have both [code]y[/code] and [code]x[/code].
 				[codeblock]
-				a = atan(0.5) # a is 0.463648
+				var a = atan(0.5) # a is 0.463648
 				[/codeblock]
+				If [code]x[/code] is between [code]-PI / 2[/code] and [code]PI / 2[/code] (inclusive), [code]atan(tan(x))[/code] is equal to [code]x[/code].
 			</description>
 		</method>
 		<method name="atan2">
@@ -79,7 +102,7 @@
 				Returns the arc tangent of [code]y/x[/code] in radians. Use to get the angle of tangent [code]y/x[/code]. To compute the value, the method takes into account the sign of both arguments in order to determine the quadrant.
 				Important note: The Y coordinate comes first, by convention.
 				[codeblock]
-				a = atan2(0, -1) # a is 3.141593
+				var a = atan2(0, -1) # a is 3.141593
 				[/codeblock]
 			</description>
 		</method>
@@ -96,15 +119,7 @@
 			<argument index="0" name="bytes" type="PackedByteArray" />
 			<description>
 				Decodes a byte array back to a [Variant] value. Decoding objects is allowed.
-				[b]WARNING:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
-			</description>
-		</method>
-		<method name="cartesian2polar">
-			<return type="Vector2" />
-			<argument index="0" name="x" type="float" />
-			<argument index="1" name="y" type="float" />
-			<description>
-				Converts a 2D point expressed in the cartesian coordinate system (X and Y axis) to the polar coordinate system (a distance from the origin and an angle).
+				[b]Warning:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
 			</description>
 		</method>
 		<method name="ceil">
@@ -113,8 +128,8 @@
 			<description>
 				Rounds [code]x[/code] upward (towards positive infinity), returning the smallest whole number that is not less than [code]x[/code].
 				[codeblock]
-				i = ceil(1.45)  # i is 2
-				i = ceil(1.001) # i is 2
+				var i = ceil(1.45) # i is 2.0
+				i = ceil(1.001)    # i is 2.0
 				[/codeblock]
 				See also [method floor], [method round], and [method snapped].
 			</description>
@@ -125,6 +140,26 @@
 			<argument index="1" name="min" type="Variant" />
 			<argument index="2" name="max" type="Variant" />
 			<description>
+				Clamps the [Variant] [code]value[/code] and returns a value not less than [code]min[/code] and not more than [code]max[/code]. Variant types [int], [float] (real), [Vector2], [Vector2i], [Vector3] and [Vector3i] are supported.
+				[codeblock]
+				var a = clamp(-10, -1, 5)
+				# a is -1
+
+				var b = clamp(8.1, 0.9, 5.5)
+				# b is 5.5
+
+				var c = clamp(Vector2(-3.5, -4), Vector2(-3.2, -2), Vector2(2, 6.5))
+				# c is (-3.2, -2)
+
+				var d = clamp(Vector2i(7, 8), Vector2i(-3, -2), Vector2i(2, 6))
+				# d is (2, 6)
+
+				var e = clamp(Vector3(-7, 8.5, -3.8), Vector3(-3, -2, 5.4), Vector3(-2, 6, -4.1))
+				# e is (-3, -2, 5.4)
+
+				var f = clamp(Vector3i(-7, -8, -9), Vector3i(-1, 2, 3), Vector3i(-4, -5, -6))
+				# f is (-4, -5, -6)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="clampf">
@@ -135,9 +170,9 @@
 			<description>
 				Clamps the float [code]value[/code] and returns a value not less than [code]min[/code] and not more than [code]max[/code].
 				[codeblock]
-				speed = 42.1
+				var speed = 42.1
 				# a is 20.0
-				a = clampf(speed, 1.0, 20.0)
+				var a = clampf(speed, 1.0, 20.0)
 
 				speed = -10.0
 				# a is -1.0
@@ -153,9 +188,9 @@
 			<description>
 				Clamps the integer [code]value[/code] and returns a value not less than [code]min[/code] and not more than [code]max[/code].
 				[codeblock]
-				speed = 42
+				var speed = 42
 				# a is 20
-				a = clampi(speed, 1, 20)
+				var a = clampi(speed, 1, 20)
 
 				speed = -10
 				# a is -1
@@ -169,9 +204,9 @@
 			<description>
 				Returns the cosine of angle [code]angle_rad[/code] in radians.
 				[codeblock]
-				# Prints 1 then -1
-				print(cos(PI * 2))
-				print(cos(PI))
+				cos(PI * 2)      # Returns 1.0
+				cos(PI)          # Returns -1.0
+				cos(deg2rad(90)) # Returns 0.0
 				[/codeblock]
 			</description>
 		</method>
@@ -200,7 +235,7 @@
 				Converts an angle expressed in degrees to radians.
 				[codeblock]
 				# r is 3.141593
-				r = deg2rad(180)
+				var r = deg2rad(180)
 				[/codeblock]
 			</description>
 		</method>
@@ -209,7 +244,25 @@
 			<argument index="0" name="x" type="float" />
 			<argument index="1" name="curve" type="float" />
 			<description>
-				Easing function, based on exponent. The curve values are: 0 is constant, 1 is linear, 0 to 1 is ease-in, 1+ is ease out. Negative values are in-out/out in.
+				Returns an "eased" value of [code]x[/code] based on an easing function defined with [code]curve[/code]. This easing function is based on an exponent. The [code]curve[/code] can be any floating-point number, with specific values leading to the following behaviors:
+				[codeblock]
+				- Lower than -1.0 (exclusive): Ease in-out
+				- 1.0: Linear
+				- Between -1.0 and 0.0 (exclusive): Ease out-in
+				- 0.0: Constant
+				- Between 0.0 to 1.0 (exclusive): Ease out
+				- 1.0: Linear
+				- Greater than 1.0 (exclusive): Ease in
+				[/codeblock]
+				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/ease_cheatsheet.png]ease() curve values cheatsheet[/url]
+				See also [method smoothstep]. If you need to perform more advanced transitions, use [Tween] or [AnimationPlayer].
+			</description>
+		</method>
+		<method name="error_string">
+			<return type="String" />
+			<argument index="0" name="error" type="int" />
+			<description>
+				Returns a human-readable name for the given error code.
 			</description>
 		</method>
 		<method name="exp">
@@ -220,7 +273,7 @@
 				[b]e[/b] has an approximate value of 2.71828, and can be obtained with [code]exp(1)[/code].
 				For exponents to other bases use the method [method pow].
 				[codeblock]
-				a = exp(2) # Approximately 7.39
+				var a = exp(2) # Approximately 7.39
 				[/codeblock]
 			</description>
 		</method>
@@ -231,7 +284,7 @@
 				Rounds [code]x[/code] downward (towards negative infinity), returning the largest whole number that is not more than [code]x[/code].
 				[codeblock]
 				# a is 2.0
-				a = floor(2.99)
+				var a = floor(2.99)
 				# a is -3.0
 				a = floor(-2.99)
 				[/codeblock]
@@ -305,14 +358,16 @@
 			<argument index="1" name="to" type="float" />
 			<argument index="2" name="weight" type="float" />
 			<description>
-				Returns a normalized value considering the given range. This is the opposite of [method lerp].
+				Returns an interpolation or extrapolation factor considering the range specified in [code]from[/code] and [code]to[/code], and the interpolated value specified in [code]weight[/code]. The returned value will be between [code]0.0[/code] and [code]1.0[/code] if [code]weight[/code] is between [code]from[/code] and [code]to[/code] (inclusive). If [code]weight[/code] is located outside this range, then an extrapolation factor will be returned (return value lower than [code]0.0[/code] or greater than [code]1.0[/code]).
 				[codeblock]
+				# The interpolation ratio in the `lerp()` call below is 0.75.
 				var middle = lerp(20, 30, 0.75)
 				# `middle` is now 27.5.
 				# Now, we pretend to have forgotten the original ratio and want to get it back.
 				var ratio = inverse_lerp(20, 30, 27.5)
 				# `ratio` is now 0.75.
 				[/codeblock]
+				See also [method lerp] which performs the reverse of this operation.
 			</description>
 		</method>
 		<method name="is_equal_approx">
@@ -336,6 +391,7 @@
 			<return type="bool" />
 			<argument index="0" name="id" type="int" />
 			<description>
+				Returns [code]true[/code] if the Object that corresponds to [code]instance_id[/code] is a valid object (e.g. has not been deleted from memory). All Objects have a unique instance ID.
 			</description>
 		</method>
 		<method name="is_instance_valid">
@@ -366,10 +422,11 @@
 			<argument index="1" name="to" type="float" />
 			<argument index="2" name="weight" type="float" />
 			<description>
-				Linearly interpolates between two values by a normalized value. This is the opposite of [method inverse_lerp].
+				Linearly interpolates between two values by the factor defined in [code]weight[/code]. To perform interpolation, [code]weight[/code] should be between [code]0.0[/code] and [code]1.0[/code] (inclusive). However, values outside this range are allowed and can be used to perform [i]extrapolation[/i].
 				[codeblock]
 				lerp(0, 4, 0.75) # Returns 3.0
 				[/codeblock]
+				See also [method inverse_lerp] which performs the reverse of this operation. To perform eased interpolation with [method lerp], combine it with [method ease] or [method smoothstep].
 			</description>
 		</method>
 		<method name="lerp_angle">
@@ -379,7 +436,7 @@
 			<argument index="2" name="weight" type="float" />
 			<description>
 				Linearly interpolates between two angles (in radians) by a normalized value.
-				Similar to [method lerp], but interpolates correctly when the angles wrap around [constant @GDScript.TAU].
+				Similar to [method lerp], but interpolates correctly when the angles wrap around [constant @GDScript.TAU]. To perform eased interpolation with [method lerp_angle], combine it with [method ease] or [method smoothstep].
 				[codeblock]
 				extends Sprite
 				var elapsed = 0.0
@@ -511,15 +568,27 @@
 				nearest_po2(0) # Returns 0 (this may not be what you expect)
 				nearest_po2(-1) # Returns 0 (this may not be what you expect)
 				[/codeblock]
-				[b]WARNING:[/b] Due to the way it is implemented, this function returns [code]0[/code] rather than [code]1[/code] for non-positive values of [code]value[/code] (in reality, 1 is the smallest integer power of 2).
+				[b]Warning:[/b] Due to the way it is implemented, this function returns [code]0[/code] rather than [code]1[/code] for non-positive values of [code]value[/code] (in reality, 1 is the smallest integer power of 2).
 			</description>
 		</method>
-		<method name="polar2cartesian">
-			<return type="Vector2" />
-			<argument index="0" name="r" type="float" />
-			<argument index="1" name="th" type="float" />
+		<method name="pingpong">
+			<return type="float" />
+			<argument index="0" name="value" type="float" />
+			<argument index="1" name="length" type="float" />
 			<description>
-				Converts a 2D point expressed in the polar coordinate system (a distance from the origin [code]r[/code] and an angle [code]th[/code]) to the cartesian coordinate system (X and Y axis).
+				Returns the [code]value[/code] wrapped between [code]0[/code] and the [code]length[/code]. If the limit is reached, the next value the function returned is decreased to the [code]0[/code] side or increased to the [code]length[/code] side (like a triangle wave). If [code]length[/code] is less than zero, it becomes positive.
+				[codeblock]
+				pingpong(-3.0, 3.0) # Returns 3
+				pingpong(-2.0, 3.0) # Returns 2
+				pingpong(-1.0, 3.0) # Returns 1
+				pingpong(0.0, 3.0) # Returns 0
+				pingpong(1.0, 3.0) # Returns 1
+				pingpong(2.0, 3.0) # Returns 2
+				pingpong(3.0, 3.0) # Returns 3
+				pingpong(4.0, 3.0) # Returns 2
+				pingpong(5.0, 3.0) # Returns 1
+				pingpong(6.0, 3.0) # Returns 0
+				[/codeblock]
 			</description>
 		</method>
 		<method name="posmod">
@@ -559,10 +628,15 @@
 			<description>
 				Converts one or more arguments of any type to string in the best way possible and prints them to the console.
 				[codeblock]
-				a = [1, 2, 3]
+				var a = [1, 2, 3]
 				print("a", "b", a) # Prints ab[1, 2, 3]
 				[/codeblock]
 				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
+			</description>
+		</method>
+		<method name="print_verbose" qualifiers="vararg">
+			<description>
+				If verbose mode is enabled ([method OS.is_stdout_verbose] returning [code]true[/code]), converts one or more arguments of any type to string in the best way possible and prints them to the console.
 			</description>
 		</method>
 		<method name="printerr" qualifiers="vararg">
@@ -654,6 +728,14 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="randfn">
+			<return type="float" />
+			<argument index="0" name="mean" type="float" />
+			<argument index="1" name="deviation" type="float" />
+			<description>
+				Returns a normally-distributed pseudo-random floating point value using Box-Muller transform with the specified [code]mean[/code] and a standard [code]deviation[/code]. This is also called Gaussian distribution.
+			</description>
+		</method>
 		<method name="randi">
 			<return type="int" />
 			<description>
@@ -704,6 +786,19 @@
 			<description>
 			</description>
 		</method>
+		<method name="rid_allocate_id">
+			<return type="int" />
+			<description>
+				Allocate a unique ID which can be used by the implementation to construct a RID. This is used mainly from native extensions to implement servers.
+			</description>
+		</method>
+		<method name="rid_from_int64">
+			<return type="RID" />
+			<argument index="0" name="base" type="int" />
+			<description>
+				Create a RID from an int64. This is used mainly from native extensions to build servers.
+			</description>
+		</method>
 		<method name="round">
 			<return type="float" />
 			<argument index="0" name="x" type="float" />
@@ -720,7 +815,7 @@
 			<description>
 				Sets seed for the random number generator.
 				[codeblock]
-				my_seed = "Godot Rocks"
+				var my_seed = "Godot Rocks"
 				seed(my_seed.hash())
 				[/codeblock]
 			</description>
@@ -729,6 +824,14 @@
 			<return type="Variant" />
 			<argument index="0" name="x" type="Variant" />
 			<description>
+				Returns the sign of [code]x[/code] as same type of [Variant] as [code]x[/code] with each component being -1, 0 and 1 for each negative, zero and positive values respectivelu. Variant types [int], [float] (real), [Vector2], [Vector2i], [Vector3] and [Vector3i] are supported.
+				[codeblock]
+				sign(-6.0) # Returns -1
+				sign(0.0)  # Returns 0
+				sign(6.0)  # Returns 1
+
+				sign(Vector3(-6.0, 0.0, 6.0) # Returns (-1, 0, 1)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="signf">
@@ -761,7 +864,8 @@
 			<description>
 				Returns the sine of angle [code]angle_rad[/code] in radians.
 				[codeblock]
-				sin(0.523599) # Returns 0.5
+				sin(0.523599)    # Returns 0.5
+				sin(deg2rad(90)) # Returns 1.0
 				[/codeblock]
 			</description>
 		</method>
@@ -771,7 +875,7 @@
 			<description>
 				Returns the hyperbolic sine of [code]x[/code].
 				[codeblock]
-				a = log(2.0) # Returns 0.693147
+				var a = log(2.0) # Returns 0.693147
 				sinh(a) # Returns 0.75
 				[/codeblock]
 			</description>
@@ -791,6 +895,8 @@
 				smoothstep(0, 2, 1.0) # Returns 0.5
 				smoothstep(0, 2, 2.0) # Returns 1.0
 				[/codeblock]
+				Compared to [method ease] with a curve value of [code]-1.6521[/code], [method smoothstep] returns the smoothest possible curve with no sudden changes in the derivative. If you need to perform more advanced transitions, use [Tween] or [AnimationPlayer].
+				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/smoothstep_ease_comparison.png]Comparison between smoothstep() and ease(x, -1.6521) return values[/url]
 			</description>
 		</method>
 		<method name="snapped">
@@ -814,7 +920,7 @@
 				[codeblock]
 				sqrt(9) # Returns 3
 				[/codeblock]
-				[b]Note:[/b]Negative values of [code]x[/code] return NaN. If you need negative inputs, use [code]System.Numerics.Complex[/code] in C#.
+				[b]Note:[/b] Negative values of [code]x[/code] return NaN. If you need negative inputs, use [code]System.Numerics.Complex[/code] in C#.
 			</description>
 		</method>
 		<method name="step_decimals">
@@ -824,7 +930,7 @@
 				Returns the position of the first non-zero digit, after the decimal point. Note that the maximum return value is 10, which is a design decision in the implementation.
 				[codeblock]
 				# n is 0
-				n = step_decimals(5)
+				var n = step_decimals(5)
 				# n is 4
 				n = step_decimals(1.0005)
 				# n is 9
@@ -844,8 +950,8 @@
 			<description>
 				Converts a formatted string that was returned by [method var2str] to the original value.
 				[codeblock]
-				a = '{ "a": 1, "b": 2 }'
-				b = str2var(a)
+				var a = '{ "a": 1, "b": 2 }'
+				var b = str2var(a)
 				print(b["a"]) # Prints 1
 				[/codeblock]
 			</description>
@@ -866,7 +972,7 @@
 			<description>
 				Returns the hyperbolic tangent of [code]x[/code].
 				[codeblock]
-				a = log(2.0) # Returns 0.693147
+				var a = log(2.0) # Returns 0.693147
 				tanh(a)      # Returns 0.6
 				[/codeblock]
 			</description>
@@ -1065,8 +1171,8 @@
 		<member name="TranslationServer" type="TranslationServer" setter="" getter="">
 			The [TranslationServer] singleton.
 		</member>
-		<member name="VisualScriptEditor" type="VisualScriptEditor" setter="" getter="">
-			The [VisualScriptEditor] singleton.
+		<member name="VisualScriptCustomNodes" type="VisualScriptCustomNodes" setter="" getter="">
+			The [VisualScriptCustomNodes] singleton.
 		</member>
 		<member name="XRServer" type="XRServer" setter="" getter="">
 			The [XRServer] singleton.
@@ -1107,28 +1213,67 @@
 		</constant>
 		<constant name="COUNTERCLOCKWISE" value="1" enum="ClockDirection">
 		</constant>
-		<constant name="HALIGN_LEFT" value="0" enum="HAlign">
+		<constant name="HORIZONTAL_ALIGNMENT_LEFT" value="0" enum="HorizontalAlignment">
 			Horizontal left alignment, usually for text-derived classes.
 		</constant>
-		<constant name="HALIGN_CENTER" value="1" enum="HAlign">
+		<constant name="HORIZONTAL_ALIGNMENT_CENTER" value="1" enum="HorizontalAlignment">
 			Horizontal center alignment, usually for text-derived classes.
 		</constant>
-		<constant name="HALIGN_RIGHT" value="2" enum="HAlign">
+		<constant name="HORIZONTAL_ALIGNMENT_RIGHT" value="2" enum="HorizontalAlignment">
 			Horizontal right alignment, usually for text-derived classes.
 		</constant>
-		<constant name="HALIGN_FILL" value="3" enum="HAlign">
+		<constant name="HORIZONTAL_ALIGNMENT_FILL" value="3" enum="HorizontalAlignment">
 			Expand row to fit width, usually for text-derived classes.
 		</constant>
-		<constant name="VALIGN_TOP" value="0" enum="VAlign">
+		<constant name="VERTICAL_ALIGNMENT_TOP" value="0" enum="VerticalAlignment">
 			Vertical top alignment, usually for text-derived classes.
 		</constant>
-		<constant name="VALIGN_CENTER" value="1" enum="VAlign">
+		<constant name="VERTICAL_ALIGNMENT_CENTER" value="1" enum="VerticalAlignment">
 			Vertical center alignment, usually for text-derived classes.
 		</constant>
-		<constant name="VALIGN_BOTTOM" value="2" enum="VAlign">
+		<constant name="VERTICAL_ALIGNMENT_BOTTOM" value="2" enum="VerticalAlignment">
 			Vertical bottom alignment, usually for text-derived classes.
 		</constant>
-		<constant name="SPKEY" value="16777216">
+		<constant name="VERTICAL_ALIGNMENT_FILL" value="3" enum="VerticalAlignment">
+			Expand rows to fit height, usually for text-derived classes.
+		</constant>
+		<constant name="INLINE_ALIGNMENT_TOP_TO" value="0" enum="InlineAlignment">
+			Aligns the top of the inline object (e.g. image, table) to the position of the text specified by [code]INLINE_ALIGNMENT_TO_*[/code] constant.
+		</constant>
+		<constant name="INLINE_ALIGNMENT_CENTER_TO" value="1" enum="InlineAlignment">
+			Aligns the center of the inline object (e.g. image, table) to the position of the text specified by [code]INLINE_ALIGNMENT_TO_*[/code] constant.
+		</constant>
+		<constant name="INLINE_ALIGNMENT_BOTTOM_TO" value="2" enum="InlineAlignment">
+			Aligns the bottom of the inline object (e.g. image, table) to the position of the text specified by [code]INLINE_ALIGNMENT_TO_*[/code] constant.
+		</constant>
+		<constant name="INLINE_ALIGNMENT_TO_TOP" value="0" enum="InlineAlignment">
+			Aligns the position of the inline object (e.g. image, table) specified by [code]INLINE_ALIGNMENT_*_TO[/code] constant to the top of the text.
+		</constant>
+		<constant name="INLINE_ALIGNMENT_TO_CENTER" value="4" enum="InlineAlignment">
+			Aligns the position of the inline object (e.g. image, table) specified by [code]INLINE_ALIGNMENT_*_TO[/code] constant to the center of the text.
+		</constant>
+		<constant name="INLINE_ALIGNMENT_TO_BASELINE" value="8" enum="InlineAlignment">
+			Aligns the position of the inline object (e.g. image, table) specified by [code]INLINE_ALIGNMENT_*_TO[/code] constant to the baseline of the text.
+		</constant>
+		<constant name="INLINE_ALIGNMENT_TO_BOTTOM" value="12" enum="InlineAlignment">
+			Aligns inline object (e.g. image, table) to the bottom of the text.
+		</constant>
+		<constant name="INLINE_ALIGNMENT_TOP" value="0" enum="InlineAlignment">
+			Aligns top of the inline object (e.g. image, table) to the top of the text. Equivalent to [code]INLINE_ALIGNMENT_TOP_TO | INLINE_ALIGNMENT_TO_TOP[/code].
+		</constant>
+		<constant name="INLINE_ALIGNMENT_CENTER" value="5" enum="InlineAlignment">
+			Aligns center of the inline object (e.g. image, table) to the center of the text. Equivalent to [code]INLINE_ALIGNMENT_CENTER_TO | INLINE_ALIGNMENT_TO_CENTER[/code].
+		</constant>
+		<constant name="INLINE_ALIGNMENT_BOTTOM" value="14" enum="InlineAlignment">
+			Aligns bottom of the inline object (e.g. image, table) to the bottom of the text. Equivalent to [code]INLINE_ALIGNMENT_BOTTOM_TO | INLINE_ALIGNMENT_TO_BOTTOM[/code].
+		</constant>
+		<constant name="INLINE_ALIGNMENT_IMAGE_MASK" value="3" enum="InlineAlignment">
+			A bit mask for [code]INLINE_ALIGNMENT_*_TO[/code] alignment constants.
+		</constant>
+		<constant name="INLINE_ALIGNMENT_TEXT_MASK" value="12" enum="InlineAlignment">
+			A bit mask for [code]INLINE_ALIGNMENT_TO_*[/code] alignment constants.
+		</constant>
+		<constant name="KEY_SPECIAL" value="16777216" enum="Key">
 			Keycodes with this bit applied are non-printable.
 		</constant>
 		<constant name="KEY_ESCAPE" value="16777217" enum="Key">
@@ -1893,12 +2038,6 @@
 		<constant name="MOUSE_BUTTON_MIDDLE" value="3" enum="MouseButton">
 			Middle mouse button.
 		</constant>
-		<constant name="MOUSE_BUTTON_XBUTTON1" value="8" enum="MouseButton">
-			Extra mouse button 1 (only present on some mice).
-		</constant>
-		<constant name="MOUSE_BUTTON_XBUTTON2" value="9" enum="MouseButton">
-			Extra mouse button 2 (only present on some mice).
-		</constant>
 		<constant name="MOUSE_BUTTON_WHEEL_UP" value="4" enum="MouseButton">
 			Mouse wheel up.
 		</constant>
@@ -1910,6 +2049,12 @@
 		</constant>
 		<constant name="MOUSE_BUTTON_WHEEL_RIGHT" value="7" enum="MouseButton">
 			Mouse wheel right button (only present on some mice).
+		</constant>
+		<constant name="MOUSE_BUTTON_XBUTTON1" value="8" enum="MouseButton">
+			Extra mouse button 1 (only present on some mice).
+		</constant>
+		<constant name="MOUSE_BUTTON_XBUTTON2" value="9" enum="MouseButton">
+			Extra mouse button 2 (only present on some mice).
 		</constant>
 		<constant name="MOUSE_BUTTON_MASK_LEFT" value="1" enum="MouseButton">
 			Left mouse button mask.
@@ -1995,8 +2140,11 @@
 		<constant name="JOY_BUTTON_SDL_MAX" value="21" enum="JoyButton">
 			The number of SDL game controller buttons.
 		</constant>
-		<constant name="JOY_BUTTON_MAX" value="36" enum="JoyButton">
-			The maximum number of game controller buttons: Android supports up to 36 buttons.
+		<constant name="JOY_BUTTON_MAX" value="128" enum="JoyButton">
+			The maximum number of game controller buttons supported by the engine. The actual limit may be lower on specific platforms:
+			- Android: Up to 36 buttons.
+			- Linux: Up to 80 buttons.
+			- Windows and macOS: Up to 128 buttons.
 		</constant>
 		<constant name="JOY_AXIS_INVALID" value="-1" enum="JoyAxis">
 			An invalid game controller axis.
@@ -2026,25 +2174,58 @@
 			The maximum number of game controller axes: OpenVR supports up to 5 Joysticks making a total of 10 axes.
 		</constant>
 		<constant name="MIDI_MESSAGE_NOTE_OFF" value="8" enum="MIDIMessage">
-			MIDI note OFF message.
+			MIDI note OFF message. See the documentation of [InputEventMIDI] for information of how to use MIDI inputs.
 		</constant>
 		<constant name="MIDI_MESSAGE_NOTE_ON" value="9" enum="MIDIMessage">
-			MIDI note ON message.
+			MIDI note ON message. See the documentation of [InputEventMIDI] for information of how to use MIDI inputs.
 		</constant>
 		<constant name="MIDI_MESSAGE_AFTERTOUCH" value="10" enum="MIDIMessage">
-			MIDI aftertouch message.
+			MIDI aftertouch message. This message is most often sent by pressing down on the key after it "bottoms out".
 		</constant>
 		<constant name="MIDI_MESSAGE_CONTROL_CHANGE" value="11" enum="MIDIMessage">
-			MIDI control change message.
+			MIDI control change message. This message is sent when a controller value changes. Controllers include devices such as pedals and levers.
 		</constant>
 		<constant name="MIDI_MESSAGE_PROGRAM_CHANGE" value="12" enum="MIDIMessage">
-			MIDI program change message.
+			MIDI program change message. This message sent when the program patch number changes.
 		</constant>
 		<constant name="MIDI_MESSAGE_CHANNEL_PRESSURE" value="13" enum="MIDIMessage">
-			MIDI channel pressure message.
+			MIDI channel pressure message. This message is most often sent by pressing down on the key after it "bottoms out". This message is different from polyphonic after-touch as it indicates the highest pressure across all keys.
 		</constant>
 		<constant name="MIDI_MESSAGE_PITCH_BEND" value="14" enum="MIDIMessage">
-			MIDI pitch bend message.
+			MIDI pitch bend message. This message is sent to indicate a change in the pitch bender (wheel or lever, typically).
+		</constant>
+		<constant name="MIDI_MESSAGE_SYSTEM_EXCLUSIVE" value="240" enum="MIDIMessage">
+			MIDI system exclusive message. This has behavior exclusive to the device you're receiving input from. Getting this data is not implemented in Godot.
+		</constant>
+		<constant name="MIDI_MESSAGE_QUARTER_FRAME" value="241" enum="MIDIMessage">
+			MIDI quarter frame message. Contains timing information that is used to synchronize MIDI devices. Getting this data is not implemented in Godot.
+		</constant>
+		<constant name="MIDI_MESSAGE_SONG_POSITION_POINTER" value="242" enum="MIDIMessage">
+			MIDI song position pointer message. Gives the number of 16th notes since the start of the song. Getting this data is not implemented in Godot.
+		</constant>
+		<constant name="MIDI_MESSAGE_SONG_SELECT" value="243" enum="MIDIMessage">
+			MIDI song select message. Specifies which sequence or song is to be played. Getting this data is not implemented in Godot.
+		</constant>
+		<constant name="MIDI_MESSAGE_TUNE_REQUEST" value="246" enum="MIDIMessage">
+			MIDI tune request message. Upon receiving a tune request, all analog synthesizers should tune their oscillators.
+		</constant>
+		<constant name="MIDI_MESSAGE_TIMING_CLOCK" value="248" enum="MIDIMessage">
+			MIDI timing clock message. Sent 24 times per quarter note when synchronization is required.
+		</constant>
+		<constant name="MIDI_MESSAGE_START" value="250" enum="MIDIMessage">
+			MIDI start message. Start the current sequence playing. This message will be followed with Timing Clocks.
+		</constant>
+		<constant name="MIDI_MESSAGE_CONTINUE" value="251" enum="MIDIMessage">
+			MIDI continue message. Continue at the point the sequence was stopped.
+		</constant>
+		<constant name="MIDI_MESSAGE_STOP" value="252" enum="MIDIMessage">
+			MIDI stop message. Stop the current sequence.
+		</constant>
+		<constant name="MIDI_MESSAGE_ACTIVE_SENSING" value="254" enum="MIDIMessage">
+			MIDI active sensing message. This message is intended to be sent repeatedly to tell the receiver that a connection is alive.
+		</constant>
+		<constant name="MIDI_MESSAGE_SYSTEM_RESET" value="255" enum="MIDIMessage">
+			MIDI system reset message. Reset all receivers in the system to power-up status. It should not be sent on power-up itself.
 		</constant>
 		<constant name="OK" value="0" enum="Error">
 			Methods that return [enum Error] return [constant OK] when no error occurred. Note that many functions don't return an error code but will print error messages to standard output.
@@ -2276,6 +2457,8 @@
 		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS" value="23" enum="PropertyHint">
 			Hints that an image is compressed using lossless compression.
 		</constant>
+		<constant name="PROPERTY_HINT_OBJECT_ID" value="24" enum="PropertyHint">
+		</constant>
 		<constant name="PROPERTY_HINT_TYPE_STRING" value="25" enum="PropertyHint">
 			Hint that a property represents a particular type. If a property is [constant TYPE_STRING], allows to set a type from the create dialog. If you need to create an [Array] to contain elements of a specific type, the [code]hint_string[/code] must encode nested types using [code]":"[/code] and [code]"/"[/code] for specifying [Resource] types. For instance:
 			[codeblock]
@@ -2284,7 +2467,44 @@
 			hint_string = "%s/%s:Resource" % [TYPE_OBJECT, TYPE_OBJECT] # Array of resources.
 			hint_string = "%s:%s/%s:Resource" % [TYPE_ARRAY, TYPE_OBJECT, TYPE_OBJECT] # Two-dimensional array of resources.
 			[/codeblock]
-			[b]Note:[/b] the final colon is required to specify for properly detecting built-in types.
+			[b]Note:[/b] The final colon is required to specify for properly detecting built-in types.
+		</constant>
+		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="26" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_METHOD_OF_VARIANT_TYPE" value="27" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_METHOD_OF_BASE_TYPE" value="28" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_METHOD_OF_INSTANCE" value="29" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_METHOD_OF_SCRIPT" value="30" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE" value="31" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_PROPERTY_OF_BASE_TYPE" value="32" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_PROPERTY_OF_INSTANCE" value="33" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_PROPERTY_OF_SCRIPT" value="34" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="35" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="36" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_SAVE_FILE" value="37" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="38" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="40" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="39" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_LOCALE_ID" value="41" enum="PropertyHint">
+			Hints that a string property is a locale code. Editing it will show a locale dialog for picking language and country.
+		</constant>
+		<constant name="PROPERTY_HINT_MAX" value="42" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags">
 		</constant>
 		<constant name="PROPERTY_USAGE_STORAGE" value="1" enum="PropertyUsageFlags">
 			The property is serialized and saved in the scene file (default).
@@ -2325,13 +2545,45 @@
 		<constant name="PROPERTY_USAGE_SCRIPT_VARIABLE" value="8192" enum="PropertyUsageFlags">
 			The property is a script variable which should be serialized and saved in the scene file.
 		</constant>
+		<constant name="PROPERTY_USAGE_STORE_IF_NULL" value="16384" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_ANIMATE_AS_TRIGGER" value="32768" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED" value="65536" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="131072" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_CLASS_IS_ENUM" value="262144" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_NIL_IS_VARIANT" value="524288" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_INTERNAL" value="1048576" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE" value="2097152" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_HIGH_END_GFX" value="4194304" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT" value="8388608" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT" value="16777216" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_KEYING_INCREMENTS" value="33554432" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="67108864" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT" value="134217728" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_EDITOR_BASIC_SETTING" value="268435456" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_ARRAY" value="1073741824" enum="PropertyUsageFlags">
+		</constant>
 		<constant name="PROPERTY_USAGE_DEFAULT" value="7" enum="PropertyUsageFlags">
 			Default usage (storage, editor and network).
 		</constant>
 		<constant name="PROPERTY_USAGE_DEFAULT_INTL" value="71" enum="PropertyUsageFlags">
 			Default usage for translatable strings (storage, editor, network and internationalized).
 		</constant>
-		<constant name="PROPERTY_USAGE_NOEDITOR" value="5" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_NO_EDITOR" value="5" enum="PropertyUsageFlags">
 			Default usage but without showing the property in the editor (storage, network).
 		</constant>
 		<constant name="METHOD_FLAG_NORMAL" value="1" enum="MethodFlags">
@@ -2357,8 +2609,29 @@
 		</constant>
 		<constant name="METHOD_FLAG_STATIC" value="256" enum="MethodFlags">
 		</constant>
+		<constant name="METHOD_FLAG_OBJECT_CORE" value="512" enum="MethodFlags">
+			Used internally. Allows to not dump core virtuals such as [code]_notification[/code] to the JSON API.
+		</constant>
 		<constant name="METHOD_FLAGS_DEFAULT" value="1" enum="MethodFlags">
 			Default method flags.
+		</constant>
+		<constant name="RPC_MODE_DISABLED" value="0" enum="RPCMode">
+			Used with [method Node.rpc_config] to disable a method or property for all RPC calls, making it unavailable. Default for all methods.
+		</constant>
+		<constant name="RPC_MODE_ANY_PEER" value="1" enum="RPCMode">
+			Used with [method Node.rpc_config] to set a method to be callable remotely by any peer. Analogous to the [code]@rpc(any)[/code] annotation. Calls are accepted from all remote peers, no matter if they are node's authority or not.
+		</constant>
+		<constant name="RPC_MODE_AUTH" value="2" enum="RPCMode">
+			Used with [method Node.rpc_config] to set a method to be callable remotely only by the current multiplayer authority (which is the server by default). Analogous to the [code]@rpc(auth)[/code] annotation. See [method Node.set_multiplayer_authority].
+		</constant>
+		<constant name="TRANSFER_MODE_UNRELIABLE" value="0" enum="TransferMode">
+			Packets are not acknowledged, no resend attempts are made for lost packets. Packets may arrive in any order. Potentially faster than [constant TRANSFER_MODE_UNRELIABLE_ORDERED]. Use for non-critical data, and always consider whether the order matters.
+		</constant>
+		<constant name="TRANSFER_MODE_UNRELIABLE_ORDERED" value="1" enum="TransferMode">
+			Packets are not acknowledged, no resend attempts are made for lost packets. Packets are received in the order they were sent in. Potentially faster than [constant TRANSFER_MODE_RELIABLE]. Use for non-critical data or data that would be outdated if received late due to resend attempt(s) anyway, for example movement and positional data.
+		</constant>
+		<constant name="TRANSFER_MODE_RELIABLE" value="2" enum="TransferMode">
+			Packets must be received and resend attempts should be made until the packets are acknowledged. Packets must be received in the order they were sent in. Most reliable transfer mode, but potentially the slowest due to the overhead. Use for critical data that must be transmitted and arrive in order, for example an ability being triggered or a chat message. Consider carefully if the information really is critical, and use sparingly.
 		</constant>
 		<constant name="TYPE_NIL" value="0" enum="Variant.Type">
 			Variable is [code]null[/code].
@@ -2438,31 +2711,31 @@
 		<constant name="TYPE_ARRAY" value="25" enum="Variant.Type">
 			Variable is of type [Array].
 		</constant>
-		<constant name="TYPE_RAW_ARRAY" value="26" enum="Variant.Type">
+		<constant name="TYPE_PACKED_BYTE_ARRAY" value="26" enum="Variant.Type">
 			Variable is of type [PackedByteArray].
 		</constant>
-		<constant name="TYPE_INT32_ARRAY" value="27" enum="Variant.Type">
+		<constant name="TYPE_PACKED_INT32_ARRAY" value="27" enum="Variant.Type">
 			Variable is of type [PackedInt32Array].
 		</constant>
-		<constant name="TYPE_INT64_ARRAY" value="28" enum="Variant.Type">
+		<constant name="TYPE_PACKED_INT64_ARRAY" value="28" enum="Variant.Type">
 			Variable is of type [PackedInt64Array].
 		</constant>
-		<constant name="TYPE_FLOAT32_ARRAY" value="29" enum="Variant.Type">
+		<constant name="TYPE_PACKED_FLOAT32_ARRAY" value="29" enum="Variant.Type">
 			Variable is of type [PackedFloat32Array].
 		</constant>
-		<constant name="TYPE_FLOAT64_ARRAY" value="30" enum="Variant.Type">
+		<constant name="TYPE_PACKED_FLOAT64_ARRAY" value="30" enum="Variant.Type">
 			Variable is of type [PackedFloat64Array].
 		</constant>
-		<constant name="TYPE_STRING_ARRAY" value="31" enum="Variant.Type">
+		<constant name="TYPE_PACKED_STRING_ARRAY" value="31" enum="Variant.Type">
 			Variable is of type [PackedStringArray].
 		</constant>
-		<constant name="TYPE_VECTOR2_ARRAY" value="32" enum="Variant.Type">
+		<constant name="TYPE_PACKED_VECTOR2_ARRAY" value="32" enum="Variant.Type">
 			Variable is of type [PackedVector2Array].
 		</constant>
-		<constant name="TYPE_VECTOR3_ARRAY" value="33" enum="Variant.Type">
+		<constant name="TYPE_PACKED_VECTOR3_ARRAY" value="33" enum="Variant.Type">
 			Variable is of type [PackedVector3Array].
 		</constant>
-		<constant name="TYPE_COLOR_ARRAY" value="34" enum="Variant.Type">
+		<constant name="TYPE_PACKED_COLOR_ARRAY" value="34" enum="Variant.Type">
 			Variable is of type [PackedColorArray].
 		</constant>
 		<constant name="TYPE_MAX" value="35" enum="Variant.Type">

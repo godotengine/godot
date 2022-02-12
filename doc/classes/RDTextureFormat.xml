@@ -40,6 +40,4 @@
 		<member name="width" type="int" setter="set_width" getter="get_width" default="1">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

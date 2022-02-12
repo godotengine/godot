@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -265,8 +265,8 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 		//create new faces from horizon edges
 		List<List<Face>::Element *> new_faces; //new faces
 
-		for (Map<Edge, FaceConnect>::Element *E = lit_edges.front(); E; E = E->next()) {
-			FaceConnect &fc = E->get();
+		for (KeyValue<Edge, FaceConnect> &E : lit_edges) {
+			FaceConnect &fc = E.value;
 			if (fc.left && fc.right) {
 				continue; //edge is uninteresting, not on horizon
 			}
@@ -275,8 +275,8 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 
 			Face face;
 			face.vertices[0] = f.points_over[next];
-			face.vertices[1] = E->key().vertices[0];
-			face.vertices[2] = E->key().vertices[1];
+			face.vertices[1] = E.key.vertices[0];
+			face.vertices[2] = E.key.vertices[1];
 
 			Plane p(p_points[face.vertices[0]], p_points[face.vertices[1]], p_points[face.vertices[2]]);
 
@@ -418,13 +418,13 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 				}
 
 				// remove all edge connections to this face
-				for (Map<Edge, RetFaceConnect>::Element *G = ret_edges.front(); G; G = G->next()) {
-					if (G->get().left == O) {
-						G->get().left = nullptr;
+				for (KeyValue<Edge, RetFaceConnect> &G : ret_edges) {
+					if (G.value.left == O) {
+						G.value.left = nullptr;
 					}
 
-					if (G->get().right == O) {
-						G->get().right = nullptr;
+					if (G.value.right == O) {
+						G.value.right = nullptr;
 					}
 				}
 
@@ -444,10 +444,10 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 	}
 	r_mesh.edges.resize(ret_edges.size());
 	idx = 0;
-	for (Map<Edge, RetFaceConnect>::Element *E = ret_edges.front(); E; E = E->next()) {
+	for (const KeyValue<Edge, RetFaceConnect> &E : ret_edges) {
 		Geometry3D::MeshData::Edge e;
-		e.a = E->key().vertices[0];
-		e.b = E->key().vertices[1];
+		e.a = E.key.vertices[0];
+		e.b = E.key.vertices[1];
 		r_mesh.edges.write[idx++] = e;
 	}
 

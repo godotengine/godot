@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #include "editor_run.h"
 
 #include "core/config/project_settings.h"
+#include "editor/editor_node.h"
 #include "editor_settings.h"
 #include "servers/display_server.h"
 
@@ -42,20 +43,17 @@ String EditorRun::get_running_scene() const {
 	return running_scene;
 }
 
-Error EditorRun::run(const String &p_scene, const String &p_custom_args, const List<String> &p_breakpoints, const bool &p_skip_breakpoints) {
+Error EditorRun::run(const String &p_scene) {
 	List<String> args;
 
 	String resource_path = ProjectSettings::get_singleton()->get_resource_path();
-	String remote_host = EditorSettings::get_singleton()->get("network/debug/remote_host");
-	int remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
-
-	if (resource_path != "") {
+	if (!resource_path.is_empty()) {
 		args.push_back("--path");
 		args.push_back(resource_path.replace(" ", "%20"));
 	}
 
 	args.push_back("--remote-debug");
-	args.push_back("tcp://" + remote_host + ":" + String::num(remote_port));
+	args.push_back(EditorDebuggerNode::get_singleton()->get_server_uri());
 
 	args.push_back("--allow_focus_steal_pid");
 	args.push_back(itos(OS::get_singleton()->get_process_id()));
@@ -100,15 +98,15 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 	screen_rect.position = DisplayServer::get_singleton()->screen_get_position(screen);
 	screen_rect.size = DisplayServer::get_singleton()->screen_get_size(screen);
 
-	Size2 desired_size;
-	desired_size.x = ProjectSettings::get_singleton()->get("display/window/size/width");
-	desired_size.y = ProjectSettings::get_singleton()->get("display/window/size/height");
+	Size2 window_size;
+	window_size.x = ProjectSettings::get_singleton()->get("display/window/size/viewport_width");
+	window_size.y = ProjectSettings::get_singleton()->get("display/window/size/viewport_height");
 
-	Size2 test_size;
-	test_size.x = ProjectSettings::get_singleton()->get("display/window/size/test_width");
-	test_size.y = ProjectSettings::get_singleton()->get("display/window/size/test_height");
-	if (test_size.x > 0 && test_size.y > 0) {
-		desired_size = test_size;
+	Size2 desired_size;
+	desired_size.x = ProjectSettings::get_singleton()->get("display/window/size/window_width_override");
+	desired_size.y = ProjectSettings::get_singleton()->get("display/window/size/window_height_override");
+	if (desired_size.x > 0 && desired_size.y > 0) {
+		window_size = desired_size;
 	}
 
 	int window_placement = EditorSettings::get_singleton()->get("run/window_placement/rect");
@@ -138,7 +136,7 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 			args.push_back(itos(screen_rect.position.x) + "," + itos(screen_rect.position.y));
 		} break;
 		case 1: { // centered
-			Vector2 pos = (screen_rect.position) + ((screen_rect.size - desired_size) / 2).floor();
+			Vector2 pos = (screen_rect.position) + ((screen_rect.size - window_size) / 2).floor();
 			args.push_back("--position");
 			args.push_back(itos(pos.x) + "," + itos(pos.y));
 		} break;
@@ -162,10 +160,13 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 		} break;
 	}
 
-	if (p_breakpoints.size()) {
+	List<String> breakpoints;
+	EditorNode::get_editor_data().get_editor_breakpoints(&breakpoints);
+
+	if (!breakpoints.is_empty()) {
 		args.push_back("--breakpoints");
 		String bpoints;
-		for (const List<String>::Element *E = p_breakpoints.front(); E; E = E->next()) {
+		for (const List<String>::Element *E = breakpoints.front(); E; E = E->next()) {
 			bpoints += E->get().replace(" ", "%20");
 			if (E->next()) {
 				bpoints += ",";
@@ -175,33 +176,34 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 		args.push_back(bpoints);
 	}
 
-	if (p_skip_breakpoints) {
+	if (EditorDebuggerNode::get_singleton()->is_skip_breakpoints()) {
 		args.push_back("--skip-breakpoints");
 	}
 
-	if (p_scene != "") {
+	if (!p_scene.is_empty()) {
 		args.push_back(p_scene);
 	}
 
 	String exec = OS::get_singleton()->get_executable_path();
 
-	if (p_custom_args != "") {
+	const String raw_custom_args = ProjectSettings::get_singleton()->get("editor/run/main_run_args");
+	if (!raw_custom_args.is_empty()) {
 		// Allow the user to specify a command to run, similar to Steam's launch options.
 		// In this case, Godot will no longer be run directly; it's up to the underlying command
 		// to run it. For instance, this can be used on Linux to force a running project
 		// to use Optimus using `prime-run` or similar.
 		// Example: `prime-run %command% --time-scale 0.5`
-		const int placeholder_pos = p_custom_args.find("%command%");
+		const int placeholder_pos = raw_custom_args.find("%command%");
 
 		Vector<String> custom_args;
 
 		if (placeholder_pos != -1) {
 			// Prepend executable-specific custom arguments.
 			// If nothing is placed before `%command%`, behave as if no placeholder was specified.
-			Vector<String> exec_args = p_custom_args.substr(0, placeholder_pos).split(" ", false);
+			Vector<String> exec_args = raw_custom_args.substr(0, placeholder_pos).split(" ", false);
 			if (exec_args.size() >= 1) {
 				exec = exec_args[0];
-				exec_args.remove(0);
+				exec_args.remove_at(0);
 
 				// Append the Godot executable name before we append executable arguments
 				// (since the order is reversed when using `push_front()`).
@@ -214,13 +216,13 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 			}
 
 			// Append Godot-specific custom arguments.
-			custom_args = p_custom_args.substr(placeholder_pos + String("%command%").size()).split(" ", false);
+			custom_args = raw_custom_args.substr(placeholder_pos + String("%command%").size()).split(" ", false);
 			for (int i = 0; i < custom_args.size(); i++) {
 				args.push_back(custom_args[i].replace(" ", "%20"));
 			}
 		} else {
 			// Append Godot-specific custom arguments.
-			custom_args = p_custom_args.split(" ", false);
+			custom_args = raw_custom_args.split(" ", false);
 			for (int i = 0; i < custom_args.size(); i++) {
 				args.push_back(custom_args[i].replace(" ", "%20"));
 			}
@@ -236,13 +238,13 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 	int instances = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_instances", 1);
 	for (int i = 0; i < instances; i++) {
 		OS::ProcessID pid = 0;
-		Error err = OS::get_singleton()->create_process(exec, args, &pid);
+		Error err = OS::get_singleton()->create_instance(args, &pid);
 		ERR_FAIL_COND_V(err, err);
 		pids.push_back(pid);
 	}
 
 	status = STATUS_PLAY;
-	if (p_scene != "") {
+	if (!p_scene.is_empty()) {
 		running_scene = p_scene;
 	}
 

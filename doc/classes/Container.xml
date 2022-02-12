@@ -10,6 +10,20 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_get_allowed_size_flags_horizontal" qualifiers="virtual const">
+			<return type="PackedInt32Array" />
+			<description>
+				Implement to return a list of allowed horizontal [enum Control.SizeFlags] for child nodes. This doesn't technically prevent the usages of any other size flags, if your implementation requires that. This only limits the options available to the user in the inspector dock.
+				[b]Note:[/b] Having no size flags is equal to having [constant Control.SIZE_SHRINK_BEGIN]. As such, this value is always implicitly allowed.
+			</description>
+		</method>
+		<method name="_get_allowed_size_flags_vertical" qualifiers="virtual const">
+			<return type="PackedInt32Array" />
+			<description>
+				Implement to return a list of allowed vertical [enum Control.SizeFlags] for child nodes. This doesn't technically prevent the usages of any other size flags, if your implementation requires that. This only limits the options available to the user in the inspector dock.
+				[b]Note:[/b] Having no size flags is equal to having [constant Control.SIZE_SHRINK_BEGIN]. As such, this value is always implicitly allowed.
+			</description>
+		</method>
 		<method name="fit_child_in_rect">
 			<return type="void" />
 			<argument index="0" name="child" type="Control" />
@@ -26,9 +40,14 @@
 		</method>
 	</methods>
 	<members>
-		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" override="true" enum="Control.MouseFilter" default="1" />
+		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="1" />
 	</members>
 	<signals>
+		<signal name="pre_sort_children">
+			<description>
+				Emitted when children are going to be sorted.
+			</description>
+		</signal>
 		<signal name="sort_children">
 			<description>
 				Emitted when sorting the children is needed.
@@ -36,7 +55,10 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="NOTIFICATION_SORT_CHILDREN" value="50">
+		<constant name="NOTIFICATION_PRE_SORT_CHILDREN" value="50">
+			Notification just before children are going to be sorted, in case there's something to process beforehand.
+		</constant>
+		<constant name="NOTIFICATION_SORT_CHILDREN" value="51">
 			Notification for when sorting the children, it must be obeyed immediately.
 		</constant>
 	</constants>

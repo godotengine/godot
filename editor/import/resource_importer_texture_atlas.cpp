@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -59,7 +59,7 @@ String ResourceImporterTextureAtlas::get_resource_type() const {
 	return "Texture2D";
 }
 
-bool ResourceImporterTextureAtlas::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterTextureAtlas::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
 	return true;
 }
 
@@ -71,9 +71,10 @@ String ResourceImporterTextureAtlas::get_preset_name(int p_idx) const {
 	return String();
 }
 
-void ResourceImporterTextureAtlas::get_import_options(List<ImportOption> *r_options, int p_preset) const {
+void ResourceImporterTextureAtlas::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "atlas_file", PROPERTY_HINT_SAVE_FILE, "*.png"), ""));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "import_mode", PROPERTY_HINT_ENUM, "Region,Mesh2D"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "crop_to_region"), false));
 }
 
 String ResourceImporterTextureAtlas::get_option_group_file() const {
@@ -131,9 +132,9 @@ static void _plot_triangle(Vector2i *vertices, const Vector2i &p_offset, bool p_
 	double xf = x[0];
 	double xt = x[0] + dx_upper; // if y[0] == y[1], special case
 	int max_y = MIN(y[2], height - p_offset.y - 1);
-	for (int yi = y[0]; yi <= max_y; yi++) {
+	for (int yi = y[0]; yi < max_y; yi++) {
 		if (yi >= 0) {
-			for (int xi = (xf > 0 ? int(xf) : 0); xi <= (xt < width ? xt : width - 1); xi++) {
+			for (int xi = (xf > 0 ? int(xf) : 0); xi < (xt <= src_width ? xt : src_width); xi++) {
 				int px = xi, py = yi;
 				int sx = px, sy = py;
 				sx = CLAMP(sx, 0, src_width - 1);
@@ -155,7 +156,7 @@ static void _plot_triangle(Vector2i *vertices, const Vector2i &p_offset, bool p_
 				p_image->set_pixel(px, py, color);
 			}
 
-			for (int xi = (xf < width ? int(xf) : width - 1); xi >= (xt > 0 ? xt : 0); xi--) {
+			for (int xi = (xf < src_width ? int(xf) : src_width - 1); xi >= (xt > 0 ? xt : 0); xi--) {
 				int px = xi, py = yi;
 				int sx = px, sy = py;
 				sx = CLAMP(sx, 0, src_width - 1);
@@ -206,6 +207,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 		ERR_CONTINUE(err != OK);
 
 		pack_data.image = image;
+		pack_data.is_cropped = options["crop_to_region"];
 
 		int mode = options["import_mode"];
 
@@ -324,7 +326,10 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 			atlas_texture.instantiate();
 			atlas_texture->set_atlas(cache);
 			atlas_texture->set_region(Rect2(offset, pack_data.region.size));
-			atlas_texture->set_margin(Rect2(pack_data.region.position, Size2(pack_data.image->get_width(), pack_data.image->get_height()) - pack_data.region.size));
+
+			if (!pack_data.is_cropped) {
+				atlas_texture->set_margin(Rect2(pack_data.region.position, pack_data.image->get_size() - pack_data.region.size));
+			}
 
 			texture = atlas_texture;
 		} else {

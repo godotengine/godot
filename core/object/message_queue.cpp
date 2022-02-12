@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -227,16 +227,16 @@ void MessageQueue::statistics() {
 	print_line("TOTAL BYTES: " + itos(buffer_end));
 	print_line("NULL count: " + itos(null_count));
 
-	for (Map<StringName, int>::Element *E = set_count.front(); E; E = E->next()) {
-		print_line("SET " + E->key() + ": " + itos(E->get()));
+	for (const KeyValue<StringName, int> &E : set_count) {
+		print_line("SET " + E.key + ": " + itos(E.value));
 	}
 
-	for (Map<Callable, int>::Element *E = call_count.front(); E; E = E->next()) {
-		print_line("CALL " + E->key() + ": " + itos(E->get()));
+	for (const KeyValue<Callable, int> &E : call_count) {
+		print_line("CALL " + E.key + ": " + itos(E.value));
 	}
 
-	for (Map<int, int>::Element *E = notify_count.front(); E; E = E->next()) {
-		print_line("NOTIFY " + itos(E->key()) + ": " + itos(E->get()));
+	for (const KeyValue<int, int> &E : notify_count) {
+		print_line("NOTIFY " + itos(E.key) + ": " + itos(E.value));
 	}
 }
 

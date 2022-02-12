@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,8 +46,8 @@ public:
 	virtual int get_preset_count() const override;
 	virtual String get_preset_name(int p_idx) const override;
 
-	virtual void get_import_options(List<ImportOption> *r_options, int p_preset = 0) const override;
-	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const override;
+	virtual void get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset = 0) const override;
+	virtual bool get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const override;
 
 	static void _compress_ima_adpcm(const Vector<float> &p_data, Vector<uint8_t> &dst_data) {
 		/*p_sample_data->data = (void*)malloc(len);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,7 +48,7 @@ void BitMap::create_from_image_alpha(const Ref<Image> &p_image, float p_threshol
 	img->convert(Image::FORMAT_LA8);
 	ERR_FAIL_COND(img->get_format() != Image::FORMAT_LA8);
 
-	create(Size2(img->get_width(), img->get_height()));
+	create(img->get_size());
 
 	const uint8_t *r = img->get_data().ptr();
 	uint8_t *w = bitmask.ptrw();
@@ -667,14 +667,16 @@ void BitMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_true_bit_count"), &BitMap::get_true_bit_count);
 
 	ClassDB::bind_method(D_METHOD("get_size"), &BitMap::get_size);
+	ClassDB::bind_method(D_METHOD("resize", "new_size"), &BitMap::resize);
 
 	ClassDB::bind_method(D_METHOD("_set_data"), &BitMap::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"), &BitMap::_get_data);
 
 	ClassDB::bind_method(D_METHOD("grow_mask", "pixels", "rect"), &BitMap::grow_mask);
+	ClassDB::bind_method(D_METHOD("convert_to_image"), &BitMap::convert_to_image);
 	ClassDB::bind_method(D_METHOD("opaque_to_polygons", "rect", "epsilon"), &BitMap::_opaque_to_polygons_bind, DEFVAL(2.0));
 
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 }
 
 BitMap::BitMap() {}

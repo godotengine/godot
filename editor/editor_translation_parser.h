@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,13 +32,18 @@
 #define EDITOR_TRANSLATION_PARSER_H
 
 #include "core/error/error_list.h"
+#include "core/object/gdvirtual.gen.inc"
 #include "core/object/ref_counted.h"
+#include "core/object/script_language.h"
 
 class EditorTranslationParserPlugin : public RefCounted {
 	GDCLASS(EditorTranslationParserPlugin, RefCounted);
 
 protected:
 	static void _bind_methods();
+
+	GDVIRTUAL3(_parse_file, String, Array, Array)
+	GDVIRTUAL0RC(Vector<String>, _get_recognized_extensions)
 
 public:
 	virtual Error parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural);

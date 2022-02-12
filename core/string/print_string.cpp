@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -69,7 +69,7 @@ void remove_print_handler(PrintHandlerList *p_handler) {
 	ERR_FAIL_COND(l == nullptr);
 }
 
-void print_line(String p_string) {
+void __print_line(String p_string) {
 	if (!_print_line_enabled) {
 		return;
 	}
@@ -107,4 +107,8 @@ void print_verbose(String p_string) {
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		print_line(p_string);
 	}
+}
+
+String stringify_variants(Variant p_var) {
+	return p_var.operator String();
 }

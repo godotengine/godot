@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -201,12 +201,12 @@ void SplitContainer::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			minimum_size_changed();
+			update_minimum_size();
 		} break;
 	}
 }
 
-void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
+void SplitContainer::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (collapsed || !_getch(0) || !_getch(1) || dragger_visibility != DRAGGER_VISIBLE) {
@@ -216,7 +216,7 @@ void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
 				int sep = get_theme_constant(SNAME("separation"));
 
@@ -336,9 +336,31 @@ bool SplitContainer::is_collapsed() const {
 	return collapsed;
 }
 
-void SplitContainer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &SplitContainer::_gui_input);
+Vector<int> SplitContainer::get_allowed_size_flags_horizontal() const {
+	Vector<int> flags;
+	flags.append(SIZE_FILL);
+	if (!vertical) {
+		flags.append(SIZE_EXPAND);
+	}
+	flags.append(SIZE_SHRINK_BEGIN);
+	flags.append(SIZE_SHRINK_CENTER);
+	flags.append(SIZE_SHRINK_END);
+	return flags;
+}
 
+Vector<int> SplitContainer::get_allowed_size_flags_vertical() const {
+	Vector<int> flags;
+	flags.append(SIZE_FILL);
+	if (vertical) {
+		flags.append(SIZE_EXPAND);
+	}
+	flags.append(SIZE_SHRINK_BEGIN);
+	flags.append(SIZE_SHRINK_CENTER);
+	flags.append(SIZE_SHRINK_END);
+	return flags;
+}
+
+void SplitContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_split_offset", "offset"), &SplitContainer::set_split_offset);
 	ClassDB::bind_method(D_METHOD("get_split_offset"), &SplitContainer::get_split_offset);
 	ClassDB::bind_method(D_METHOD("clamp_split_offset"), &SplitContainer::clamp_split_offset);

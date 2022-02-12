@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,8 +41,6 @@ class XRInterface;
 class XRPositionalTracker;
 
 /**
-	@author Bastiaan Olij <mux213@gmail.com>
-
 	The XR server is a singleton object that gives access to the various
 	objects and SDKs that are available on the system.
 	Because there can be multiple SDKs active this is exposed as an array
@@ -60,9 +58,10 @@ class XRServer : public Object {
 
 public:
 	enum TrackerType {
-		TRACKER_CONTROLLER = 0x01, /* tracks a controller */
-		TRACKER_BASESTATION = 0x02, /* tracks location of a base station */
-		TRACKER_ANCHOR = 0x04, /* tracks an anchor point, used in AR to track a real live location */
+		TRACKER_HEAD = 0x01, /* tracks the position of the players head (or in case of handheld AR, location of the phone) */
+		TRACKER_CONTROLLER = 0x02, /* tracks a controller */
+		TRACKER_BASESTATION = 0x04, /* tracks location of a base station */
+		TRACKER_ANCHOR = 0x08, /* tracks an anchor point, used in AR to track a real live location */
 		TRACKER_UNKNOWN = 0x80, /* unknown tracker */
 
 		TRACKER_ANY_KNOWN = 0x7f, /* all except unknown */
@@ -77,17 +76,13 @@ public:
 
 private:
 	Vector<Ref<XRInterface>> interfaces;
-	Vector<Ref<XRPositionalTracker>> trackers;
+	Dictionary trackers;
 
 	Ref<XRInterface> primary_interface; /* we'll identify one interface as primary, this will be used by our viewports */
 
-	real_t world_scale; /* scale by which we multiply our tracker positions */
+	double world_scale; /* scale by which we multiply our tracker positions */
 	Transform3D world_origin; /* our world origin point, maps a location in our virtual world to the origin point in our real world tracking volume */
 	Transform3D reference_frame; /* our reference frame */
-
-	uint64_t last_process_usec; /* for frame timing, usec when we did our processing */
-	uint64_t last_commit_usec; /* for frame timing, usec when we finished committing both eyes */
-	uint64_t last_frame_usec; /* time it took between process and committing, we should probably average this over the last x frames */
 
 protected:
 	static XRServer *singleton;
@@ -107,8 +102,8 @@ public:
 
 		I may remove access to this property in GDScript in favour of exposing it on the XROrigin3D node
 	*/
-	real_t get_world_scale() const;
-	void set_world_scale(real_t p_world_scale);
+	double get_world_scale() const;
+	void set_world_scale(double p_world_scale);
 
 	/*
 		The world maps the 0,0,0 coordinate of our real world coordinate system for our tracking volume to a location in our
@@ -159,26 +154,33 @@ public:
 	*/
 	Ref<XRInterface> get_primary_interface() const;
 	void set_primary_interface(const Ref<XRInterface> &p_primary_interface);
-	void clear_primary_interface_if(const Ref<XRInterface> &p_primary_interface); /* this is automatically called if an interface destructs */
 
 	/*
 		Our trackers are objects that expose the orientation and position of physical devices such as controller, anchor points, etc.
 		They are created and managed by our active AR/VR interfaces.
 	*/
-	bool is_tracker_id_in_use_for_type(TrackerType p_tracker_type, int p_tracker_id) const;
-	int get_free_tracker_id_for_type(TrackerType p_tracker_type);
 	void add_tracker(Ref<XRPositionalTracker> p_tracker);
 	void remove_tracker(Ref<XRPositionalTracker> p_tracker);
-	int get_tracker_count() const;
-	Ref<XRPositionalTracker> get_tracker(int p_index) const;
-	Ref<XRPositionalTracker> find_by_type_and_id(TrackerType p_tracker_type, int p_tracker_id) const;
+	Dictionary get_trackers(int p_tracker_types);
+	Ref<XRPositionalTracker> get_tracker(const StringName &p_name) const;
 
-	uint64_t get_last_process_usec();
-	uint64_t get_last_commit_usec();
-	uint64_t get_last_frame_usec();
+	/*
+		We don't know which trackers and actions will existing during runtime but we can request suggested names from our interfaces to help our IDE UI.
+	*/
+	PackedStringArray get_suggested_tracker_names() const;
+	PackedStringArray get_suggested_pose_names(const StringName &p_tracker_name) const;
+	// Q: Should we add get_suggested_input_names and get_suggested_haptic_names even though we don't use them for the IDE?
 
+	// Process is called before we handle our physics process and game process. This is where our interfaces will update controller data and such.
 	void _process();
-	void _mark_commit();
+
+	// Pre-render is called right before we're rendering our viewports.
+	// This is where interfaces such as OpenVR and OpenXR will update positioning data.
+	// Many of these interfaces will also do a predictive sync which ensures we run at a steady framerate.
+	void pre_render();
+
+	// End-frame is called right after Godot has finished its rendering bits.
+	void end_frame();
 
 	XRServer();
 	~XRServer();
@@ -189,4 +191,4 @@ public:
 VARIANT_ENUM_CAST(XRServer::TrackerType);
 VARIANT_ENUM_CAST(XRServer::RotationMode);
 
-#endif
+#endif // XR_SERVER_H

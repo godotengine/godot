@@ -49,7 +49,7 @@ namespace GodotTools.Ides.Rider
                 if (!paths.Any())
                     return;
 
-                var newPath = paths.Last().Path;
+                string newPath = paths.Last().Path;
                 Globals.EditorDef(EditorPathSettingName, newPath);
                 editorSettings.SetSetting(EditorPathSettingName, newPath);
             }
@@ -57,7 +57,8 @@ namespace GodotTools.Ides.Rider
 
         public static bool IsExternalEditorSetToRider(EditorSettings editorSettings)
         {
-            return editorSettings.HasSetting(EditorPathSettingName) && IsRider((string)editorSettings.GetSetting(EditorPathSettingName));
+            return editorSettings.HasSetting(EditorPathSettingName) &&
+                IsRider((string)editorSettings.GetSetting(EditorPathSettingName));
         }
 
         public static bool IsRider(string path)
@@ -66,7 +67,7 @@ namespace GodotTools.Ides.Rider
                 return false;
 
             var fileInfo = new FileInfo(path);
-            var filename = fileInfo.Name.ToLowerInvariant();
+            string filename = fileInfo.Name.ToLowerInvariant();
             return filename.StartsWith("rider", StringComparison.Ordinal);
         }
 
@@ -83,7 +84,7 @@ namespace GodotTools.Ides.Rider
             if (!paths.Any())
                 return null;
 
-            var newPath = paths.Last().Path;
+            string newPath = paths.Last().Path;
             editorSettings.SetSetting(EditorPathSettingName, newPath);
             Globals.EditorDef(EditorPathSettingName, newPath);
             return newPath;
@@ -96,8 +97,8 @@ namespace GodotTools.Ides.Rider
 
         public static void OpenFile(string slnPath, string scriptPath, int line)
         {
-            var pathFromSettings = GetRiderPathFromSettings();
-            var path = CheckAndUpdatePath(pathFromSettings);
+            string pathFromSettings = GetRiderPathFromSettings();
+            string path = CheckAndUpdatePath(pathFromSettings);
 
             var args = new List<string>();
             args.Add(slnPath);

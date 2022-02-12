@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,6 @@
 #include "core/templates/self_list.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
-#include "servers/rendering/shader_language.h"
 #include "servers/rendering_server.h"
 
 class Material : public Resource {
@@ -53,6 +52,7 @@ protected:
 	_FORCE_INLINE_ RID _get_material() const { return material; }
 	static void _bind_methods();
 	virtual bool _can_do_next_pass() const { return false; }
+	virtual bool _can_use_render_priority() const { return false; }
 
 	void _validate_property(PropertyInfo &property) const override;
 
@@ -93,6 +93,7 @@ protected:
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 
 	virtual bool _can_do_next_pass() const override;
+	virtual bool _can_use_render_priority() const override;
 
 	void _shader_changed();
 
@@ -440,6 +441,7 @@ private:
 	_FORCE_INLINE_ void _queue_shader_change();
 	_FORCE_INLINE_ bool _is_shader_dirty() const;
 
+	bool is_initialized = false;
 	bool orm;
 
 	Color albedo;
@@ -534,6 +536,7 @@ protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &property) const override;
 	virtual bool _can_do_next_pass() const override { return true; }
+	virtual bool _can_use_render_priority() const override { return true; }
 
 public:
 	void set_albedo(const Color &p_albedo);

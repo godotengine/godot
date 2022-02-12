@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -273,7 +273,7 @@ String OS_LinuxBSD::get_cache_path() const {
 	}
 }
 
-String OS_LinuxBSD::get_system_dir(SystemDir p_dir) const {
+String OS_LinuxBSD::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	String xdgparam;
 
 	switch (p_dir) {
@@ -419,7 +419,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	String mnt = get_mountpoint(p_path);
 
 	// If there is a directory "[Mountpoint]/.Trash-[UID], use it as the trash can.
-	if (mnt != "") {
+	if (!mnt.is_empty()) {
 		String path(mnt + "/.Trash-" + itos(getuid()));
 		struct stat s;
 		if (!stat(path.utf8().get_data(), &s)) {
@@ -428,27 +428,27 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	}
 
 	// Otherwise, if ${XDG_DATA_HOME} is defined, use "${XDG_DATA_HOME}/Trash" as the trash can.
-	if (trash_path == "") {
+	if (trash_path.is_empty()) {
 		char *dhome = getenv("XDG_DATA_HOME");
 		if (dhome) {
-			trash_path = String(dhome) + "/Trash";
+			trash_path = String::utf8(dhome) + "/Trash";
 		}
 	}
 
 	// Otherwise, if ${HOME} is defined, use "${HOME}/.local/share/Trash" as the trash can.
-	if (trash_path == "") {
+	if (trash_path.is_empty()) {
 		char *home = getenv("HOME");
 		if (home) {
-			trash_path = String(home) + "/.local/share/Trash";
+			trash_path = String::utf8(home) + "/.local/share/Trash";
 		}
 	}
 
 	// Issue an error if none of the previous locations is appropriate for the trash can.
-	ERR_FAIL_COND_V_MSG(trash_path == "", FAILED, "Could not determine the trash can location");
+	ERR_FAIL_COND_V_MSG(trash_path.is_empty(), FAILED, "Could not determine the trash can location");
 
 	// Create needed directories for decided trash can location.
 	{
-		DirAccess *dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		DirAccessRef dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		Error err = dir_access->make_dir_recursive(trash_path);
 
 		// Issue an error if trash can is not created properly.
@@ -457,13 +457,15 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Could not create the trash path \"" + trash_path + "\"/files");
 		err = dir_access->make_dir_recursive(trash_path + "/info");
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Could not create the trash path \"" + trash_path + "\"/info");
-		memdelete(dir_access);
 	}
 
 	// The trash can is successfully created, now we check that we don't exceed our file name length limit.
 	// If the file name is too long trim it so we can add the identifying number and ".trashinfo".
 	// Assumes that the file name length limit is 255 characters.
-	String file_name = basename(p_path.utf8().get_data());
+	String file_name = p_path.get_file();
+	if (file_name.length() == 0) {
+		file_name = p_path.get_base_dir().get_file();
+	}
 	if (file_name.length() > 240) {
 		file_name = file_name.substr(0, file_name.length() - 15);
 	}
@@ -494,16 +496,15 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	String trash_info = "[Trash Info]\nPath=" + p_path.uri_encode() + "\nDeletionDate=" + timestamp + "\n";
 	{
 		Error err;
-		FileAccess *file = FileAccess::open(trash_path + "/info/" + file_name + ".trashinfo", FileAccess::WRITE, &err);
+		FileAccessRef file = FileAccess::open(trash_path + "/info/" + file_name + ".trashinfo", FileAccess::WRITE, &err);
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Can't create trashinfo file:" + trash_path + "/info/" + file_name + ".trashinfo");
 		file->store_string(trash_info);
 		file->close();
 
 		// Rename our resource before moving it to the trash can.
-		DirAccess *dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		DirAccessRef dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		err = dir_access->rename(p_path, p_path.get_base_dir() + "/" + file_name);
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Can't rename file \"" + p_path + "\"");
-		memdelete(dir_access);
 	}
 
 	// Move the given resource to the trash can.

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,39 +56,42 @@
 #include "camera/camera_feed.h"
 #include "camera_server.h"
 #include "core/extension/native_extension_manager.h"
+#include "debugger/servers_debugger.h"
 #include "display_server.h"
 #include "navigation_server_2d.h"
 #include "navigation_server_3d.h"
-#include "physics_2d/physics_server_2d_sw.h"
-#include "physics_2d/physics_server_2d_wrap_mt.h"
-#include "physics_3d/physics_server_3d_sw.h"
-#include "physics_3d/physics_server_3d_wrap_mt.h"
+#include "physics_2d/godot_physics_server_2d.h"
+#include "physics_3d/godot_physics_server_3d.h"
 #include "physics_server_2d.h"
+#include "physics_server_2d_wrap_mt.h"
 #include "physics_server_3d.h"
+#include "physics_server_3d_wrap_mt.h"
 #include "rendering/renderer_compositor.h"
 #include "rendering/rendering_device.h"
 #include "rendering/rendering_device_binds.h"
 #include "rendering_server.h"
 #include "servers/rendering/shader_types.h"
+#include "text/text_server_extension.h"
 #include "text_server.h"
 #include "xr/xr_interface.h"
+#include "xr/xr_interface_extension.h"
 #include "xr/xr_positional_tracker.h"
 #include "xr_server.h"
 
 ShaderTypes *shader_types = nullptr;
 
 PhysicsServer3D *_createGodotPhysics3DCallback() {
-	bool using_threads = GLOBAL_GET("physics/3d/run_on_thread");
+	bool using_threads = GLOBAL_GET("physics/3d/run_on_separate_thread");
 
-	PhysicsServer3D *physics_server = memnew(PhysicsServer3DSW(using_threads));
+	PhysicsServer3D *physics_server = memnew(GodotPhysicsServer3D(using_threads));
 
 	return memnew(PhysicsServer3DWrapMT(physics_server, using_threads));
 }
 
 PhysicsServer2D *_createGodotPhysics2DCallback() {
-	bool using_threads = GLOBAL_GET("physics/2d/run_on_thread");
+	bool using_threads = GLOBAL_GET("physics/2d/run_on_separate_thread");
 
-	PhysicsServer2D *physics_server = memnew(PhysicsServer2DSW(using_threads));
+	PhysicsServer2D *physics_server = memnew(GodotPhysicsServer2D(using_threads));
 
 	return memnew(PhysicsServer2DWrapMT(physics_server, using_threads));
 }
@@ -106,15 +109,11 @@ static bool has_server_feature_callback(const String &p_feature) {
 void preregister_server_types() {
 	shader_types = memnew(ShaderTypes);
 
-	GLOBAL_DEF("internationalization/rendering/text_driver", "");
-	String text_driver_options;
-	for (int i = 0; i < TextServerManager::get_interface_count(); i++) {
-		if (i > 0) {
-			text_driver_options += ",";
-		}
-		text_driver_options += TextServerManager::get_interface_name(i);
-	}
-	ProjectSettings::get_singleton()->set_custom_property_info("internationalization/rendering/text_driver", PropertyInfo(Variant::STRING, "internationalization/rendering/text_driver", PROPERTY_HINT_ENUM, text_driver_options));
+	GDREGISTER_CLASS(TextServerManager);
+	GDREGISTER_VIRTUAL_CLASS(TextServer);
+	GDREGISTER_CLASS(TextServerExtension);
+
+	Engine::get_singleton()->add_singleton(Engine::Singleton("TextServerManager", TextServerManager::get_singleton(), "TextServerManager"));
 }
 
 void register_server_types() {
@@ -123,10 +122,6 @@ void register_server_types() {
 	GDREGISTER_VIRTUAL_CLASS(DisplayServer);
 	GDREGISTER_VIRTUAL_CLASS(RenderingServer);
 	GDREGISTER_CLASS(AudioServer);
-
-	GDREGISTER_CLASS(TextServerManager);
-	GDREGISTER_VIRTUAL_CLASS(TextServer);
-	TextServer::initialize_hex_code_box_fonts();
 
 	GDREGISTER_VIRTUAL_CLASS(PhysicsServer2D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsServer3D);
@@ -138,13 +133,15 @@ void register_server_types() {
 	GDREGISTER_VIRTUAL_CLASS(RenderingDevice);
 
 	GDREGISTER_VIRTUAL_CLASS(XRInterface);
+	GDREGISTER_CLASS(XRInterfaceExtension); // can't register this as virtual because we need a creation function for our extensions.
+	GDREGISTER_CLASS(XRPose);
 	GDREGISTER_CLASS(XRPositionalTracker);
 
-	GDREGISTER_VIRTUAL_CLASS(AudioStream);
-	GDREGISTER_VIRTUAL_CLASS(AudioStreamPlayback);
+	GDREGISTER_CLASS(AudioStream);
+	GDREGISTER_CLASS(AudioStreamPlayback);
 	GDREGISTER_VIRTUAL_CLASS(AudioStreamPlaybackResampled);
 	GDREGISTER_CLASS(AudioStreamMicrophone);
-	GDREGISTER_CLASS(AudioStreamRandomPitch);
+	GDREGISTER_CLASS(AudioStreamRandomizer);
 	GDREGISTER_VIRTUAL_CLASS(AudioEffect);
 	GDREGISTER_VIRTUAL_CLASS(AudioEffectInstance);
 	GDREGISTER_CLASS(AudioEffectEQ);
@@ -213,13 +210,21 @@ void register_server_types() {
 
 	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectBodyState2D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectSpaceState2D);
-	GDREGISTER_CLASS(PhysicsTestMotionResult2D);
+	GDREGISTER_CLASS(PhysicsRayQueryParameters2D);
+	GDREGISTER_CLASS(PhysicsPointQueryParameters2D);
 	GDREGISTER_CLASS(PhysicsShapeQueryParameters2D);
+	GDREGISTER_CLASS(PhysicsTestMotionParameters2D);
+	GDREGISTER_CLASS(PhysicsTestMotionResult2D);
 
-	GDREGISTER_CLASS(PhysicsShapeQueryParameters3D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectBodyState3D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectSpaceState3D);
+	GDREGISTER_CLASS(PhysicsRayQueryParameters3D);
+	GDREGISTER_CLASS(PhysicsPointQueryParameters3D);
+	GDREGISTER_CLASS(PhysicsShapeQueryParameters3D);
+	GDREGISTER_CLASS(PhysicsTestMotionParameters3D);
 	GDREGISTER_CLASS(PhysicsTestMotionResult3D);
+
+	ServersDebugger::initialize();
 
 	// Physics 2D
 	GLOBAL_DEF(PhysicsServer2DManager::setting_property_name, "DEFAULT");
@@ -239,10 +244,11 @@ void register_server_types() {
 }
 
 void unregister_server_types() {
+	ServersDebugger::deinitialize();
+
 	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
 
 	memdelete(shader_types);
-	TextServer::finish_hex_code_box_fonts();
 }
 
 void register_server_singletons() {
@@ -253,7 +259,6 @@ void register_server_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer3D", PhysicsServer3D::get_singleton(), "PhysicsServer3D"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer2D", NavigationServer2D::get_singleton_mut(), "NavigationServer2D"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer3D", NavigationServer3D::get_singleton_mut(), "NavigationServer3D"));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("TextServerManager", TextServerManager::get_singleton(), "TextServerManager"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("XRServer", XRServer::get_singleton(), "XRServer"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("CameraServer", CameraServer::get_singleton(), "CameraServer"));
 }

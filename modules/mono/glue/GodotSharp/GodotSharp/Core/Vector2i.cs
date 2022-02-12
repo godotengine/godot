@@ -17,27 +17,40 @@ namespace Godot
     {
         /// <summary>
         /// Enumerated index values for the axes.
-        /// Returned by <see cref="MaxAxis"/> and <see cref="MinAxis"/>.
+        /// Returned by <see cref="MaxAxisIndex"/> and <see cref="MinAxisIndex"/>.
         /// </summary>
         public enum Axis
         {
+            /// <summary>
+            /// The vector's X axis.
+            /// </summary>
             X = 0,
+            /// <summary>
+            /// The vector's Y axis.
+            /// </summary>
             Y
         }
 
         /// <summary>
-        /// The vector's X component. Also accessible by using the index position `[0]`.
+        /// The vector's X component. Also accessible by using the index position <c>[0]</c>.
         /// </summary>
         public int x;
+
         /// <summary>
-        /// The vector's Y component. Also accessible by using the index position `[1]`.
+        /// The vector's Y component. Also accessible by using the index position <c>[1]</c>.
         /// </summary>
         public int y;
 
         /// <summary>
         /// Access vector components using their index.
         /// </summary>
-        /// <value>`[0]` is equivalent to `.x`, `[1]` is equivalent to `.y`.</value>
+        /// <exception cref="IndexOutOfRangeException">
+        /// Thrown when the given the <paramref name="index"/> is not 0 or 1.
+        /// </exception>
+        /// <value>
+        /// <c>[0]</c> is equivalent to <see cref="x"/>,
+        /// <c>[1]</c> is equivalent to <see cref="y"/>.
+        /// </value>
         public int this[int index]
         {
             get
@@ -81,7 +94,7 @@ namespace Godot
         /// Returns this vector's angle with respect to the X axis, or (1, 0) vector, in radians.
         ///
         /// Equivalent to the result of <see cref="Mathf.Atan2(real_t, real_t)"/> when
-        /// called with the vector's `y` and `x` as parameters: `Mathf.Atan2(v.y, v.x)`.
+        /// called with the vector's <see cref="y"/> and <see cref="x"/> as parameters: <c>Mathf.Atan2(v.y, v.x)</c>.
         /// </summary>
         /// <returns>The angle of this vector, in radians.</returns>
         public real_t Angle()
@@ -110,9 +123,9 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the aspect ratio of this vector, the ratio of `x` to `y`.
+        /// Returns the aspect ratio of this vector, the ratio of <see cref="x"/> to <see cref="y"/>.
         /// </summary>
-        /// <returns>The `x` component divided by the `y` component.</returns>
+        /// <returns>The <see cref="x"/> component divided by the <see cref="y"/> component.</returns>
         public real_t Aspect()
         {
             return x / (real_t)y;
@@ -120,7 +133,7 @@ namespace Godot
 
         /// <summary>
         /// Returns a new vector with all components clamped between the
-        /// components of `min` and `max` using
+        /// components of <paramref name="min"/> and <paramref name="max"/> using
         /// <see cref="Mathf.Clamp(int, int, int)"/>.
         /// </summary>
         /// <param name="min">The vector with minimum allowed values.</param>
@@ -136,50 +149,51 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the cross product of this vector and `b`.
+        /// Returns the cross product of this vector and <paramref name="with"/>.
         /// </summary>
-        /// <param name="b">The other vector.</param>
+        /// <param name="with">The other vector.</param>
         /// <returns>The cross product vector.</returns>
-        public int Cross(Vector2i b)
+        public int Cross(Vector2i with)
         {
-            return x * b.y - y * b.x;
+            return x * with.y - y * with.x;
         }
 
         /// <summary>
-        /// Returns the squared distance between this vector and `b`.
+        /// Returns the squared distance between this vector and <paramref name="to"/>.
         /// This method runs faster than <see cref="DistanceTo"/>, so prefer it if
         /// you need to compare vectors or need the squared distance for some formula.
         /// </summary>
-        /// <param name="b">The other vector to use.</param>
+        /// <param name="to">The other vector to use.</param>
         /// <returns>The squared distance between the two vectors.</returns>
-        public int DistanceSquaredTo(Vector2i b)
+        public int DistanceSquaredTo(Vector2i to)
         {
-            return (b - this).LengthSquared();
+            return (to - this).LengthSquared();
         }
 
         /// <summary>
-        /// Returns the distance between this vector and `b`.
+        /// Returns the distance between this vector and <paramref name="to"/>.
         /// </summary>
-        /// <param name="b">The other vector to use.</param>
+        /// <param name="to">The other vector to use.</param>
         /// <returns>The distance between the two vectors.</returns>
-        public real_t DistanceTo(Vector2i b)
+        public real_t DistanceTo(Vector2i to)
         {
-            return (b - this).Length();
+            return (to - this).Length();
         }
 
         /// <summary>
-        /// Returns the dot product of this vector and `b`.
+        /// Returns the dot product of this vector and <paramref name="with"/>.
         /// </summary>
-        /// <param name="b">The other vector to use.</param>
+        /// <param name="with">The other vector to use.</param>
         /// <returns>The dot product of the two vectors.</returns>
-        public int Dot(Vector2i b)
+        public int Dot(Vector2i with)
         {
-            return x * b.x + y * b.y;
+            return x * with.x + y * with.y;
         }
 
         /// <summary>
         /// Returns the length (magnitude) of this vector.
         /// </summary>
+        /// <seealso cref="LengthSquared"/>
         /// <returns>The length of this vector.</returns>
         public real_t Length()
         {
@@ -204,30 +218,33 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the axis of the vector's largest value. See <see cref="Axis"/>.
+        /// Returns the axis of the vector's highest value. See <see cref="Axis"/>.
         /// If both components are equal, this method returns <see cref="Axis.X"/>.
         /// </summary>
-        /// <returns>The index of the largest axis.</returns>
-        public Axis MaxAxis()
+        /// <returns>The index of the highest axis.</returns>
+        public Axis MaxAxisIndex()
         {
             return x < y ? Axis.Y : Axis.X;
         }
 
         /// <summary>
-        /// Returns the axis of the vector's smallest value. See <see cref="Axis"/>.
+        /// Returns the axis of the vector's lowest value. See <see cref="Axis"/>.
         /// If both components are equal, this method returns <see cref="Axis.Y"/>.
         /// </summary>
-        /// <returns>The index of the smallest axis.</returns>
-        public Axis MinAxis()
+        /// <returns>The index of the lowest axis.</returns>
+        public Axis MinAxisIndex()
         {
             return x < y ? Axis.X : Axis.Y;
         }
 
         /// <summary>
-        /// Returns a vector composed of the <see cref="Mathf.PosMod(int, int)"/> of this vector's components and `mod`.
+        /// Returns a vector composed of the <see cref="Mathf.PosMod(int, int)"/> of this vector's components
+        /// and <paramref name="mod"/>.
         /// </summary>
         /// <param name="mod">A value representing the divisor of the operation.</param>
-        /// <returns>A vector with each component <see cref="Mathf.PosMod(int, int)"/> by `mod`.</returns>
+        /// <returns>
+        /// A vector with each component <see cref="Mathf.PosMod(int, int)"/> by <paramref name="mod"/>.
+        /// </returns>
         public Vector2i PosMod(int mod)
         {
             Vector2i v = this;
@@ -237,10 +254,13 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a vector composed of the <see cref="Mathf.PosMod(int, int)"/> of this vector's components and `modv`'s components.
+        /// Returns a vector composed of the <see cref="Mathf.PosMod(int, int)"/> of this vector's components
+        /// and <paramref name="modv"/>'s components.
         /// </summary>
         /// <param name="modv">A vector representing the divisors of the operation.</param>
-        /// <returns>A vector with each component <see cref="Mathf.PosMod(int, int)"/> by `modv`'s components.</returns>
+        /// <returns>
+        /// A vector with each component <see cref="Mathf.PosMod(int, int)"/> by <paramref name="modv"/>'s components.
+        /// </returns>
         public Vector2i PosMod(Vector2i modv)
         {
             Vector2i v = this;
@@ -254,7 +274,7 @@ namespace Godot
         /// on the signs of this vector's components, or zero if the component is zero,
         /// by calling <see cref="Mathf.Sign(int)"/> on each component.
         /// </summary>
-        /// <returns>A vector with all components as either `1`, `-1`, or `0`.</returns>
+        /// <returns>A vector with all components as either <c>1</c>, <c>-1</c>, or <c>0</c>.</returns>
         public Vector2i Sign()
         {
             Vector2i v = this;
@@ -283,35 +303,35 @@ namespace Godot
         private static readonly Vector2i _left = new Vector2i(-1, 0);
 
         /// <summary>
-        /// Zero vector, a vector with all components set to `0`.
+        /// Zero vector, a vector with all components set to <c>0</c>.
         /// </summary>
-        /// <value>Equivalent to `new Vector2i(0, 0)`</value>
+        /// <value>Equivalent to <c>new Vector2i(0, 0)</c>.</value>
         public static Vector2i Zero { get { return _zero; } }
         /// <summary>
-        /// One vector, a vector with all components set to `1`.
+        /// One vector, a vector with all components set to <c>1</c>.
         /// </summary>
-        /// <value>Equivalent to `new Vector2i(1, 1)`</value>
+        /// <value>Equivalent to <c>new Vector2i(1, 1)</c>.</value>
         public static Vector2i One { get { return _one; } }
 
         /// <summary>
         /// Up unit vector. Y is down in 2D, so this vector points -Y.
         /// </summary>
-        /// <value>Equivalent to `new Vector2i(0, -1)`</value>
+        /// <value>Equivalent to <c>new Vector2i(0, -1)</c>.</value>
         public static Vector2i Up { get { return _up; } }
         /// <summary>
         /// Down unit vector. Y is down in 2D, so this vector points +Y.
         /// </summary>
-        /// <value>Equivalent to `new Vector2i(0, 1)`</value>
+        /// <value>Equivalent to <c>new Vector2i(0, 1)</c>.</value>
         public static Vector2i Down { get { return _down; } }
         /// <summary>
         /// Right unit vector. Represents the direction of right.
         /// </summary>
-        /// <value>Equivalent to `new Vector2i(1, 0)`</value>
+        /// <value>Equivalent to <c>new Vector2i(1, 0)</c>.</value>
         public static Vector2i Right { get { return _right; } }
         /// <summary>
         /// Left unit vector. Represents the direction of left.
         /// </summary>
-        /// <value>Equivalent to `new Vector2i(-1, 0)`</value>
+        /// <value>Equivalent to <c>new Vector2i(-1, 0)</c>.</value>
         public static Vector2i Left { get { return _left; } }
 
         /// <summary>
@@ -346,6 +366,13 @@ namespace Godot
             this.y = Mathf.RoundToInt(v.y);
         }
 
+        /// <summary>
+        /// Adds each component of the <see cref="Vector2i"/>
+        /// with the components of the given <see cref="Vector2i"/>.
+        /// </summary>
+        /// <param name="left">The left vector.</param>
+        /// <param name="right">The right vector.</param>
+        /// <returns>The added vector.</returns>
         public static Vector2i operator +(Vector2i left, Vector2i right)
         {
             left.x += right.x;
@@ -353,6 +380,13 @@ namespace Godot
             return left;
         }
 
+        /// <summary>
+        /// Subtracts each component of the <see cref="Vector2i"/>
+        /// by the components of the given <see cref="Vector2i"/>.
+        /// </summary>
+        /// <param name="left">The left vector.</param>
+        /// <param name="right">The right vector.</param>
+        /// <returns>The subtracted vector.</returns>
         public static Vector2i operator -(Vector2i left, Vector2i right)
         {
             left.x -= right.x;
@@ -360,6 +394,14 @@ namespace Godot
             return left;
         }
 
+        /// <summary>
+        /// Returns the negative value of the <see cref="Vector2i"/>.
+        /// This is the same as writing <c>new Vector2i(-v.x, -v.y)</c>.
+        /// This operation flips the direction of the vector while
+        /// keeping the same magnitude.
+        /// </summary>
+        /// <param name="vec">The vector to negate/flip.</param>
+        /// <returns>The negated/flipped vector.</returns>
         public static Vector2i operator -(Vector2i vec)
         {
             vec.x = -vec.x;
@@ -367,6 +409,13 @@ namespace Godot
             return vec;
         }
 
+        /// <summary>
+        /// Multiplies each component of the <see cref="Vector2i"/>
+        /// by the given <see langword="int"/>.
+        /// </summary>
+        /// <param name="vec">The vector to multiply.</param>
+        /// <param name="scale">The scale to multiply by.</param>
+        /// <returns>The multiplied vector.</returns>
         public static Vector2i operator *(Vector2i vec, int scale)
         {
             vec.x *= scale;
@@ -374,6 +423,13 @@ namespace Godot
             return vec;
         }
 
+        /// <summary>
+        /// Multiplies each component of the <see cref="Vector2i"/>
+        /// by the given <see langword="int"/>.
+        /// </summary>
+        /// <param name="scale">The scale to multiply by.</param>
+        /// <param name="vec">The vector to multiply.</param>
+        /// <returns>The multiplied vector.</returns>
         public static Vector2i operator *(int scale, Vector2i vec)
         {
             vec.x *= scale;
@@ -381,6 +437,13 @@ namespace Godot
             return vec;
         }
 
+        /// <summary>
+        /// Multiplies each component of the <see cref="Vector2i"/>
+        /// by the components of the given <see cref="Vector2i"/>.
+        /// </summary>
+        /// <param name="left">The left vector.</param>
+        /// <param name="right">The right vector.</param>
+        /// <returns>The multiplied vector.</returns>
         public static Vector2i operator *(Vector2i left, Vector2i right)
         {
             left.x *= right.x;
@@ -388,6 +451,13 @@ namespace Godot
             return left;
         }
 
+        /// <summary>
+        /// Multiplies each component of the <see cref="Vector2i"/>
+        /// by the given <see langword="int"/>.
+        /// </summary>
+        /// <param name="vec">The dividend vector.</param>
+        /// <param name="divisor">The divisor value.</param>
+        /// <returns>The divided vector.</returns>
         public static Vector2i operator /(Vector2i vec, int divisor)
         {
             vec.x /= divisor;
@@ -395,6 +465,13 @@ namespace Godot
             return vec;
         }
 
+        /// <summary>
+        /// Divides each component of the <see cref="Vector2i"/>
+        /// by the components of the given <see cref="Vector2i"/>.
+        /// </summary>
+        /// <param name="vec">The dividend vector.</param>
+        /// <param name="divisorv">The divisor vector.</param>
+        /// <returns>The divided vector.</returns>
         public static Vector2i operator /(Vector2i vec, Vector2i divisorv)
         {
             vec.x /= divisorv.x;
@@ -402,6 +479,22 @@ namespace Godot
             return vec;
         }
 
+        /// <summary>
+        /// Gets the remainder of each component of the <see cref="Vector2i"/>
+        /// with the components of the given <see langword="int"/>.
+        /// This operation uses truncated division, which is often not desired
+        /// as it does not work well with negative numbers.
+        /// Consider using <see cref="PosMod(int)"/> instead
+        /// if you want to handle negative numbers.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// GD.Print(new Vector2i(10, -20) % 7); // Prints "(3, -6)"
+        /// </code>
+        /// </example>
+        /// <param name="vec">The dividend vector.</param>
+        /// <param name="divisor">The divisor value.</param>
+        /// <returns>The remainder vector.</returns>
         public static Vector2i operator %(Vector2i vec, int divisor)
         {
             vec.x %= divisor;
@@ -409,6 +502,22 @@ namespace Godot
             return vec;
         }
 
+        /// <summary>
+        /// Gets the remainder of each component of the <see cref="Vector2i"/>
+        /// with the components of the given <see cref="Vector2i"/>.
+        /// This operation uses truncated division, which is often not desired
+        /// as it does not work well with negative numbers.
+        /// Consider using <see cref="PosMod(Vector2i)"/> instead
+        /// if you want to handle negative numbers.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// GD.Print(new Vector2i(10, -20) % new Vector2i(7, 8)); // Prints "(3, -4)"
+        /// </code>
+        /// </example>
+        /// <param name="vec">The dividend vector.</param>
+        /// <param name="divisorv">The divisor vector.</param>
+        /// <returns>The remainder vector.</returns>
         public static Vector2i operator %(Vector2i vec, Vector2i divisorv)
         {
             vec.x %= divisorv.x;
@@ -416,6 +525,13 @@ namespace Godot
             return vec;
         }
 
+        /// <summary>
+        /// Performs a bitwise AND operation with this <see cref="Vector2i"/>
+        /// and the given <see langword="int"/>.
+        /// </summary>
+        /// <param name="vec">The vector to AND with.</param>
+        /// <param name="and">The integer to AND with.</param>
+        /// <returns>The result of the bitwise AND.</returns>
         public static Vector2i operator &(Vector2i vec, int and)
         {
             vec.x &= and;
@@ -423,6 +539,13 @@ namespace Godot
             return vec;
         }
 
+        /// <summary>
+        /// Performs a bitwise AND operation with this <see cref="Vector2i"/>
+        /// and the given <see cref="Vector2i"/>.
+        /// </summary>
+        /// <param name="vec">The left vector to AND with.</param>
+        /// <param name="andv">The right vector to AND with.</param>
+        /// <returns>The result of the bitwise AND.</returns>
         public static Vector2i operator &(Vector2i vec, Vector2i andv)
         {
             vec.x &= andv.x;
@@ -430,62 +553,132 @@ namespace Godot
             return vec;
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the vectors are equal.
+        /// </summary>
+        /// <param name="left">The left vector.</param>
+        /// <param name="right">The right vector.</param>
+        /// <returns>Whether or not the vectors are equal.</returns>
         public static bool operator ==(Vector2i left, Vector2i right)
         {
             return left.Equals(right);
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the vectors are not equal.
+        /// </summary>
+        /// <param name="left">The left vector.</param>
+        /// <param name="right">The right vector.</param>
+        /// <returns>Whether or not the vectors are not equal.</returns>
         public static bool operator !=(Vector2i left, Vector2i right)
         {
             return !left.Equals(right);
         }
 
+        /// <summary>
+        /// Compares two <see cref="Vector2i"/> vectors by first checking if
+        /// the X value of the <paramref name="left"/> vector is less than
+        /// the X value of the <paramref name="right"/> vector.
+        /// If the X values are exactly equal, then it repeats this check
+        /// with the Y values of the two vectors.
+        /// This operator is useful for sorting vectors.
+        /// </summary>
+        /// <param name="left">The left vector.</param>
+        /// <param name="right">The right vector.</param>
+        /// <returns>Whether or not the left is less than the right.</returns>
         public static bool operator <(Vector2i left, Vector2i right)
         {
-            if (left.x.Equals(right.x))
+            if (left.x == right.x)
             {
                 return left.y < right.y;
             }
             return left.x < right.x;
         }
 
+        /// <summary>
+        /// Compares two <see cref="Vector2i"/> vectors by first checking if
+        /// the X value of the <paramref name="left"/> vector is greater than
+        /// the X value of the <paramref name="right"/> vector.
+        /// If the X values are exactly equal, then it repeats this check
+        /// with the Y values of the two vectors.
+        /// This operator is useful for sorting vectors.
+        /// </summary>
+        /// <param name="left">The left vector.</param>
+        /// <param name="right">The right vector.</param>
+        /// <returns>Whether or not the left is greater than the right.</returns>
         public static bool operator >(Vector2i left, Vector2i right)
         {
-            if (left.x.Equals(right.x))
+            if (left.x == right.x)
             {
                 return left.y > right.y;
             }
             return left.x > right.x;
         }
 
+        /// <summary>
+        /// Compares two <see cref="Vector2i"/> vectors by first checking if
+        /// the X value of the <paramref name="left"/> vector is less than
+        /// or equal to the X value of the <paramref name="right"/> vector.
+        /// If the X values are exactly equal, then it repeats this check
+        /// with the Y values of the two vectors.
+        /// This operator is useful for sorting vectors.
+        /// </summary>
+        /// <param name="left">The left vector.</param>
+        /// <param name="right">The right vector.</param>
+        /// <returns>Whether or not the left is less than or equal to the right.</returns>
         public static bool operator <=(Vector2i left, Vector2i right)
         {
-            if (left.x.Equals(right.x))
+            if (left.x == right.x)
             {
                 return left.y <= right.y;
             }
-            return left.x <= right.x;
+            return left.x < right.x;
         }
 
+        /// <summary>
+        /// Compares two <see cref="Vector2i"/> vectors by first checking if
+        /// the X value of the <paramref name="left"/> vector is greater than
+        /// or equal to the X value of the <paramref name="right"/> vector.
+        /// If the X values are exactly equal, then it repeats this check
+        /// with the Y values of the two vectors.
+        /// This operator is useful for sorting vectors.
+        /// </summary>
+        /// <param name="left">The left vector.</param>
+        /// <param name="right">The right vector.</param>
+        /// <returns>Whether or not the left is greater than or equal to the right.</returns>
         public static bool operator >=(Vector2i left, Vector2i right)
         {
-            if (left.x.Equals(right.x))
+            if (left.x == right.x)
             {
                 return left.y >= right.y;
             }
-            return left.x >= right.x;
+            return left.x > right.x;
         }
 
+        /// <summary>
+        /// Converts this <see cref="Vector2i"/> to a <see cref="Vector2"/>.
+        /// </summary>
+        /// <param name="value">The vector to convert.</param>
         public static implicit operator Vector2(Vector2i value)
         {
             return new Vector2(value.x, value.y);
         }
 
+        /// <summary>
+        /// Converts a <see cref="Vector2"/> to a <see cref="Vector2i"/>.
+        /// </summary>
+        /// <param name="value">The vector to convert.</param>
         public static explicit operator Vector2i(Vector2 value)
         {
             return new Vector2i(value);
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the vector is equal
+        /// to the given object (<see paramref="obj"/>).
+        /// </summary>
+        /// <param name="obj">The object to compare with.</param>
+        /// <returns>Whether or not the vector and the object are equal.</returns>
         public override bool Equals(object obj)
         {
             if (obj is Vector2i)
@@ -496,21 +689,38 @@ namespace Godot
             return false;
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the vectors are equal.
+        /// </summary>
+        /// <param name="other">The other vector.</param>
+        /// <returns>Whether or not the vectors are equal.</returns>
         public bool Equals(Vector2i other)
         {
             return x == other.x && y == other.y;
         }
 
+        /// <summary>
+        /// Serves as the hash function for <see cref="Vector2i"/>.
+        /// </summary>
+        /// <returns>A hash code for this vector.</returns>
         public override int GetHashCode()
         {
             return y.GetHashCode() ^ x.GetHashCode();
         }
 
+        /// <summary>
+        /// Converts this <see cref="Vector2i"/> to a string.
+        /// </summary>
+        /// <returns>A string representation of this vector.</returns>
         public override string ToString()
         {
             return $"({x}, {y})";
         }
 
+        /// <summary>
+        /// Converts this <see cref="Vector2i"/> to a string with the given <paramref name="format"/>.
+        /// </summary>
+        /// <returns>A string representation of this vector.</returns>
         public string ToString(string format)
         {
             return $"({x.ToString(format)}, {y.ToString(format)})";

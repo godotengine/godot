@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,7 @@
 #include "core/os/thread.h"
 #include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/multimesh_instance_3d.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/resources/box_shape_3d.h"
 #include "scene/resources/capsule_shape_3d.h"
@@ -45,14 +46,15 @@
 #include "scene/resources/primitive_meshes.h"
 #include "scene/resources/shape_3d.h"
 #include "scene/resources/sphere_shape_3d.h"
-#include "scene/resources/world_margin_shape_3d.h"
+#include "scene/resources/world_boundary_shape_3d.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #endif
 
-#include "modules/modules_enabled.gen.h"
+#include "modules/modules_enabled.gen.h" // For csg, gridmap.
+
 #ifdef MODULE_CSG_ENABLED
 #include "modules/csg/csg_shape.h"
 #endif
@@ -62,17 +64,17 @@
 
 NavigationMeshGenerator *NavigationMeshGenerator::singleton = nullptr;
 
-void NavigationMeshGenerator::_add_vertex(const Vector3 &p_vec3, Vector<float> &p_verticies) {
-	p_verticies.push_back(p_vec3.x);
-	p_verticies.push_back(p_vec3.y);
-	p_verticies.push_back(p_vec3.z);
+void NavigationMeshGenerator::_add_vertex(const Vector3 &p_vec3, Vector<float> &p_vertices) {
+	p_vertices.push_back(p_vec3.x);
+	p_vertices.push_back(p_vec3.y);
+	p_vertices.push_back(p_vec3.z);
 }
 
-void NavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Transform3D &p_xform, Vector<float> &p_verticies, Vector<int> &p_indices) {
+void NavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Transform3D &p_xform, Vector<float> &p_vertices, Vector<int> &p_indices) {
 	int current_vertex_count;
 
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
-		current_vertex_count = p_verticies.size() / 3;
+		current_vertex_count = p_vertices.size() / 3;
 
 		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
 			continue;
@@ -99,7 +101,7 @@ void NavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Transform
 			const int *ir = mesh_indices.ptr();
 
 			for (int j = 0; j < mesh_vertices.size(); j++) {
-				_add_vertex(p_xform.xform(vr[j]), p_verticies);
+				_add_vertex(p_xform.xform(vr[j]), p_vertices);
 			}
 
 			for (int j = 0; j < face_count; j++) {
@@ -111,9 +113,9 @@ void NavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Transform
 		} else {
 			face_count = mesh_vertices.size() / 3;
 			for (int j = 0; j < face_count; j++) {
-				_add_vertex(p_xform.xform(vr[j * 3 + 0]), p_verticies);
-				_add_vertex(p_xform.xform(vr[j * 3 + 2]), p_verticies);
-				_add_vertex(p_xform.xform(vr[j * 3 + 1]), p_verticies);
+				_add_vertex(p_xform.xform(vr[j * 3 + 0]), p_vertices);
+				_add_vertex(p_xform.xform(vr[j * 3 + 2]), p_vertices);
+				_add_vertex(p_xform.xform(vr[j * 3 + 1]), p_vertices);
 
 				p_indices.push_back(current_vertex_count + (j * 3 + 0));
 				p_indices.push_back(current_vertex_count + (j * 3 + 1));
@@ -123,14 +125,14 @@ void NavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Transform
 	}
 }
 
-void NavigationMeshGenerator::_add_faces(const PackedVector3Array &p_faces, const Transform3D &p_xform, Vector<float> &p_verticies, Vector<int> &p_indices) {
+void NavigationMeshGenerator::_add_faces(const PackedVector3Array &p_faces, const Transform3D &p_xform, Vector<float> &p_vertices, Vector<int> &p_indices) {
 	int face_count = p_faces.size() / 3;
-	int current_vertex_count = p_verticies.size() / 3;
+	int current_vertex_count = p_vertices.size() / 3;
 
 	for (int j = 0; j < face_count; j++) {
-		_add_vertex(p_xform.xform(p_faces[j * 3 + 0]), p_verticies);
-		_add_vertex(p_xform.xform(p_faces[j * 3 + 1]), p_verticies);
-		_add_vertex(p_xform.xform(p_faces[j * 3 + 2]), p_verticies);
+		_add_vertex(p_xform.xform(p_faces[j * 3 + 0]), p_vertices);
+		_add_vertex(p_xform.xform(p_faces[j * 3 + 1]), p_vertices);
+		_add_vertex(p_xform.xform(p_faces[j * 3 + 2]), p_vertices);
 
 		p_indices.push_back(current_vertex_count + (j * 3 + 0));
 		p_indices.push_back(current_vertex_count + (j * 3 + 2));
@@ -138,12 +140,27 @@ void NavigationMeshGenerator::_add_faces(const PackedVector3Array &p_faces, cons
 	}
 }
 
-void NavigationMeshGenerator::_parse_geometry(Transform3D p_accumulated_transform, Node *p_node, Vector<float> &p_verticies, Vector<int> &p_indices, int p_generate_from, uint32_t p_collision_mask, bool p_recurse_children) {
+void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_transform, Node *p_node, Vector<float> &p_vertices, Vector<int> &p_indices, NavigationMesh::ParsedGeometryType p_generate_from, uint32_t p_collision_mask, bool p_recurse_children) {
 	if (Object::cast_to<MeshInstance3D>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
 		MeshInstance3D *mesh_instance = Object::cast_to<MeshInstance3D>(p_node);
 		Ref<Mesh> mesh = mesh_instance->get_mesh();
 		if (mesh.is_valid()) {
-			_add_mesh(mesh, p_accumulated_transform * mesh_instance->get_transform(), p_verticies, p_indices);
+			_add_mesh(mesh, p_navmesh_transform * mesh_instance->get_global_transform(), p_vertices, p_indices);
+		}
+	}
+
+	if (Object::cast_to<MultiMeshInstance3D>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
+		MultiMeshInstance3D *multimesh_instance = Object::cast_to<MultiMeshInstance3D>(p_node);
+		Ref<MultiMesh> multimesh = multimesh_instance->get_multimesh();
+		Ref<Mesh> mesh = multimesh->get_mesh();
+		if (mesh.is_valid()) {
+			int n = multimesh->get_visible_instance_count();
+			if (n == -1) {
+				n = multimesh->get_instance_count();
+			}
+			for (int i = 0; i < n; i++) {
+				_add_mesh(mesh, p_navmesh_transform * multimesh_instance->get_global_transform() * multimesh->get_instance_transform(i), p_vertices, p_indices);
+			}
 		}
 	}
 
@@ -154,7 +171,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform3D p_accumulated_transfor
 		if (!meshes.is_empty()) {
 			Ref<Mesh> mesh = meshes[1];
 			if (mesh.is_valid()) {
-				_add_mesh(mesh, p_accumulated_transform * csg_shape->get_transform(), p_verticies, p_indices);
+				_add_mesh(mesh, p_navmesh_transform * csg_shape->get_global_transform(), p_vertices, p_indices);
 			}
 		}
 	}
@@ -169,7 +186,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform3D p_accumulated_transfor
 				if (Object::cast_to<CollisionShape3D>(child)) {
 					CollisionShape3D *col_shape = Object::cast_to<CollisionShape3D>(child);
 
-					Transform3D transform = p_accumulated_transform * static_body->get_transform() * col_shape->get_transform();
+					Transform3D transform = p_navmesh_transform * static_body->get_global_transform() * col_shape->get_transform();
 
 					Ref<Mesh> mesh;
 					Ref<Shape3D> s = col_shape->get_shape();
@@ -187,7 +204,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform3D p_accumulated_transfor
 						Ref<CapsuleMesh> capsule_mesh;
 						capsule_mesh.instantiate();
 						capsule_mesh->set_radius(capsule->get_radius());
-						capsule_mesh->set_mid_height(capsule->get_height() / 2.0);
+						capsule_mesh->set_height(capsule->get_height());
 						mesh = capsule_mesh;
 					}
 
@@ -212,7 +229,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform3D p_accumulated_transfor
 
 					ConcavePolygonShape3D *concave_polygon = Object::cast_to<ConcavePolygonShape3D>(*s);
 					if (concave_polygon) {
-						_add_faces(concave_polygon->get_faces(), transform, p_verticies, p_indices);
+						_add_faces(concave_polygon->get_faces(), transform, p_vertices, p_indices);
 					}
 
 					ConvexPolygonShape3D *convex_polygon = Object::cast_to<ConvexPolygonShape3D>(*s);
@@ -235,12 +252,12 @@ void NavigationMeshGenerator::_parse_geometry(Transform3D p_accumulated_transfor
 								}
 							}
 
-							_add_faces(faces, transform, p_verticies, p_indices);
+							_add_faces(faces, transform, p_vertices, p_indices);
 						}
 					}
 
 					if (mesh.is_valid()) {
-						_add_mesh(mesh, transform, p_verticies, p_indices);
+						_add_mesh(mesh, transform, p_vertices, p_indices);
 					}
 				}
 			}
@@ -248,27 +265,108 @@ void NavigationMeshGenerator::_parse_geometry(Transform3D p_accumulated_transfor
 	}
 
 #ifdef MODULE_GRIDMAP_ENABLED
-	if (Object::cast_to<GridMap>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
-		GridMap *gridmap_instance = Object::cast_to<GridMap>(p_node);
-		Array meshes = gridmap_instance->get_meshes();
-		Transform3D xform = gridmap_instance->get_transform();
-		for (int i = 0; i < meshes.size(); i += 2) {
-			Ref<Mesh> mesh = meshes[i + 1];
-			if (mesh.is_valid()) {
-				_add_mesh(mesh, p_accumulated_transform * xform * (Transform3D)meshes[i], p_verticies, p_indices);
+	GridMap *gridmap = Object::cast_to<GridMap>(p_node);
+
+	if (gridmap) {
+		if (p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
+			Array meshes = gridmap->get_meshes();
+			Transform3D xform = gridmap->get_global_transform();
+			for (int i = 0; i < meshes.size(); i += 2) {
+				Ref<Mesh> mesh = meshes[i + 1];
+				if (mesh.is_valid()) {
+					_add_mesh(mesh, p_navmesh_transform * xform * (Transform3D)meshes[i], p_vertices, p_indices);
+				}
+			}
+		}
+
+		if (p_generate_from != NavigationMesh::PARSED_GEOMETRY_MESH_INSTANCES && (gridmap->get_collision_layer() & p_collision_mask)) {
+			Array shapes = gridmap->get_collision_shapes();
+			for (int i = 0; i < shapes.size(); i += 2) {
+				RID shape = shapes[i + 1];
+				PhysicsServer3D::ShapeType type = PhysicsServer3D::get_singleton()->shape_get_type(shape);
+				Variant data = PhysicsServer3D::get_singleton()->shape_get_data(shape);
+				Ref<Mesh> mesh;
+
+				switch (type) {
+					case PhysicsServer3D::SHAPE_SPHERE: {
+						real_t radius = data;
+						Ref<SphereMesh> sphere_mesh;
+						sphere_mesh.instantiate();
+						sphere_mesh->set_radius(radius);
+						sphere_mesh->set_height(radius * 2.0);
+						mesh = sphere_mesh;
+					} break;
+					case PhysicsServer3D::SHAPE_BOX: {
+						Vector3 extents = data;
+						Ref<BoxMesh> box_mesh;
+						box_mesh.instantiate();
+						box_mesh->set_size(2.0 * extents);
+						mesh = box_mesh;
+					} break;
+					case PhysicsServer3D::SHAPE_CAPSULE: {
+						Dictionary dict = data;
+						real_t radius = dict["radius"];
+						real_t height = dict["height"];
+						Ref<CapsuleMesh> capsule_mesh;
+						capsule_mesh.instantiate();
+						capsule_mesh->set_radius(radius);
+						capsule_mesh->set_height(height);
+						mesh = capsule_mesh;
+					} break;
+					case PhysicsServer3D::SHAPE_CYLINDER: {
+						Dictionary dict = data;
+						real_t radius = dict["radius"];
+						real_t height = dict["height"];
+						Ref<CylinderMesh> cylinder_mesh;
+						cylinder_mesh.instantiate();
+						cylinder_mesh->set_height(height);
+						cylinder_mesh->set_bottom_radius(radius);
+						cylinder_mesh->set_top_radius(radius);
+						mesh = cylinder_mesh;
+					} break;
+					case PhysicsServer3D::SHAPE_CONVEX_POLYGON: {
+						PackedVector3Array vertices = data;
+						Geometry3D::MeshData md;
+
+						Error err = ConvexHullComputer::convex_hull(vertices, md);
+
+						if (err == OK) {
+							PackedVector3Array faces;
+
+							for (int j = 0; j < md.faces.size(); ++j) {
+								Geometry3D::MeshData::Face face = md.faces[j];
+
+								for (int k = 2; k < face.indices.size(); ++k) {
+									faces.push_back(md.vertices[face.indices[0]]);
+									faces.push_back(md.vertices[face.indices[k - 1]]);
+									faces.push_back(md.vertices[face.indices[k]]);
+								}
+							}
+
+							_add_faces(faces, shapes[i], p_vertices, p_indices);
+						}
+					} break;
+					case PhysicsServer3D::SHAPE_CONCAVE_POLYGON: {
+						Dictionary dict = data;
+						PackedVector3Array faces = Variant(dict["faces"]);
+						_add_faces(faces, shapes[i], p_vertices, p_indices);
+					} break;
+					default: {
+						WARN_PRINT("Unsupported collision shape type.");
+					} break;
+				}
+
+				if (mesh.is_valid()) {
+					_add_mesh(mesh, shapes[i], p_vertices, p_indices);
+				}
 			}
 		}
 	}
 #endif
 
-	if (Object::cast_to<Node3D>(p_node)) {
-		Node3D *spatial = Object::cast_to<Node3D>(p_node);
-		p_accumulated_transform = p_accumulated_transform * spatial->get_transform();
-	}
-
 	if (p_recurse_children) {
 		for (int i = 0; i < p_node->get_child_count(); i++) {
-			_parse_geometry(p_accumulated_transform, p_node->get_child(i), p_verticies, p_indices, p_generate_from, p_collision_mask, p_recurse_children);
+			_parse_geometry(p_navmesh_transform, p_node->get_child(i), p_vertices, p_indices, p_generate_from, p_collision_mask, p_recurse_children);
 		}
 	}
 }
@@ -489,7 +587,7 @@ NavigationMeshGenerator::~NavigationMeshGenerator() {
 }
 
 void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node) {
-	ERR_FAIL_COND(!p_nav_mesh.is_valid());
+	ERR_FAIL_COND_MSG(!p_nav_mesh.is_valid(), "Invalid navigation mesh.");
 
 #ifdef TOOLS_ENABLED
 	EditorProgress *ep(nullptr);
@@ -513,9 +611,9 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 		p_node->get_tree()->get_nodes_in_group(p_nav_mesh->get_source_group_name(), &parse_nodes);
 	}
 
-	Transform3D navmesh_xform = Object::cast_to<Node3D>(p_node)->get_transform().affine_inverse();
+	Transform3D navmesh_xform = Object::cast_to<Node3D>(p_node)->get_global_transform().affine_inverse();
 	for (Node *E : parse_nodes) {
-		int geometry_type = p_nav_mesh->get_parsed_geometry_type();
+		NavigationMesh::ParsedGeometryType geometry_type = p_nav_mesh->get_parsed_geometry_type();
 		uint32_t collision_mask = p_nav_mesh->get_collision_mask();
 		bool recurse_children = p_nav_mesh->get_source_geometry_mode() != NavigationMesh::SOURCE_GEOMETRY_GROUPS_EXPLICIT;
 		_parse_geometry(navmesh_xform, E, vertices, indices, geometry_type, collision_mask, recurse_children);

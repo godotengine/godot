@@ -9,8 +9,6 @@
 	<tutorials>
 		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/524</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="collision/exclude_nodes" type="bool" setter="set_exclude_nodes_from_collision" getter="get_exclude_nodes_from_collision" default="true">
 			If [code]true[/code], the two bodies of the nodes are not able to collide with each other.
@@ -25,6 +23,4 @@
 			The priority used to define which solver is executed first for multiple joints. The lower the value, the higher the priority.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

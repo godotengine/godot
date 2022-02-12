@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,12 +30,6 @@
 
 #include "visible_on_screen_notifier_2d.h"
 
-#include "core/config/engine.h"
-#include "gpu_particles_2d.h"
-#include "scene/2d/animated_sprite_2d.h"
-#include "scene/2d/physics_body_2d.h"
-#include "scene/animation/animation_player.h"
-#include "scene/main/window.h"
 #include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -460,14 +460,6 @@ void ClusterBuilderRD::bake_cluster() {
 				RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(ClusterBuilderSharedDataRD::ClusterRender::PushConstant));
 
 				uint32_t instances = 1;
-#if 0
-				for (uint32_t j = i+1; j < element_count; j++) {
-					if (elements[i].type!=elements[j].type) {
-						break;
-					}
-					instances++;
-				}
-#endif
 				RD::get_singleton()->draw_list_draw(draw_list, true, instances);
 				i += instances;
 			}

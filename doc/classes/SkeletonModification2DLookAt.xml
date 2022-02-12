@@ -87,6 +87,4 @@
 			The NodePath to the node that is the target for the LookAt modification. This node is what the modification will rotate the [Bone2D] to.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

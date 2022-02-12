@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@
 #include "main/main.h"
 #include "platform/javascript/display_server_javascript.h"
 
-#include "modules/modules_enabled.gen.h"
+#include "modules/modules_enabled.gen.h" // For websocket.
 #ifdef MODULE_WEBSOCKET_ENABLED
 #include "modules/websocket/remote_debugger_peer_websocket.h"
 #endif
@@ -45,6 +45,7 @@
 #include <emscripten.h>
 #include <stdlib.h>
 
+#include "api/javascript_singleton.h"
 #include "godot_js.h"
 
 void OS_JavaScript::alert(const String &p_alert, const String &p_title) {
@@ -63,9 +64,7 @@ void OS_JavaScript::initialize() {
 }
 
 void OS_JavaScript::resume_audio() {
-	if (audio_driver_javascript) {
-		audio_driver_javascript->resume();
-	}
+	AudioDriverJavaScript::resume();
 }
 
 void OS_JavaScript::set_main_loop(MainLoop *p_main_loop) {
@@ -101,19 +100,19 @@ void OS_JavaScript::delete_main_loop() {
 
 void OS_JavaScript::finalize() {
 	delete_main_loop();
-	if (audio_driver_javascript) {
-		memdelete(audio_driver_javascript);
-		audio_driver_javascript = nullptr;
+	for (AudioDriverJavaScript *driver : audio_drivers) {
+		memdelete(driver);
 	}
+	audio_drivers.clear();
 }
 
 // Miscellaneous
 
-Error OS_JavaScript::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+Error OS_JavaScript::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
 	return create_process(p_path, p_arguments);
 }
 
-Error OS_JavaScript::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
+Error OS_JavaScript::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
 	Array args;
 	for (const String &E : p_arguments) {
 		args.push_back(E);
@@ -137,12 +136,12 @@ int OS_JavaScript::get_processor_count() const {
 }
 
 bool OS_JavaScript::_check_internal_feature_support(const String &p_feature) {
-	if (p_feature == "HTML5" || p_feature == "web") {
+	if (p_feature == "html5" || p_feature == "web") {
 		return true;
 	}
 
 #ifdef JAVASCRIPT_EVAL_ENABLED
-	if (p_feature == "JavaScript") {
+	if (p_feature == "javascript") {
 		return true;
 	}
 #endif
@@ -205,6 +204,19 @@ void OS_JavaScript::file_access_close_callback(const String &p_file, int p_flags
 	}
 }
 
+void OS_JavaScript::update_pwa_state_callback() {
+	if (OS_JavaScript::get_singleton()) {
+		OS_JavaScript::get_singleton()->pwa_is_waiting = true;
+	}
+	if (JavaScript::get_singleton()) {
+		JavaScript::get_singleton()->emit_signal("pwa_update_available");
+	}
+}
+
+Error OS_JavaScript::pwa_update() {
+	return godot_js_pwa_update() ? FAILED : OK;
+}
+
 bool OS_JavaScript::is_userfs_persistent() const {
 	return idb_available;
 }
@@ -228,9 +240,16 @@ OS_JavaScript::OS_JavaScript() {
 	godot_js_config_locale_get(locale_ptr, 16);
 	setenv("LANG", locale_ptr, true);
 
+	godot_js_pwa_cb(&OS_JavaScript::update_pwa_state_callback);
+
 	if (AudioDriverJavaScript::is_available()) {
-		audio_driver_javascript = memnew(AudioDriverJavaScript);
-		AudioDriverManager::add_driver(audio_driver_javascript);
+#ifdef NO_THREADS
+		audio_drivers.push_back(memnew(AudioDriverScriptProcessor));
+#endif
+		audio_drivers.push_back(memnew(AudioDriverWorklet));
+	}
+	for (int i = 0; i < audio_drivers.size(); i++) {
+		AudioDriverManager::add_driver(audio_drivers[i]);
 	}
 
 	idb_available = godot_js_os_fs_is_persistent();

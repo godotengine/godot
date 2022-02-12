@@ -9,8 +9,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="curve" type="Curve3D" setter="set_curve" getter="get_curve">
 			A [Curve3D] describing the path.
@@ -23,6 +21,4 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

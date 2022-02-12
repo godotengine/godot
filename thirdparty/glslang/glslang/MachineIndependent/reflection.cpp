@@ -907,8 +907,8 @@ public:
             case EbtFloat16:    return GL_FLOAT16_VEC2_NV             + offset;
             case EbtInt:        return GL_INT_VEC2                    + offset;
             case EbtUint:       return GL_UNSIGNED_INT_VEC2           + offset;
-            case EbtInt64:      return GL_INT64_ARB                   + offset;
-            case EbtUint64:     return GL_UNSIGNED_INT64_ARB          + offset;
+            case EbtInt64:      return GL_INT64_VEC2_ARB              + offset;
+            case EbtUint64:     return GL_UNSIGNED_INT64_VEC2_ARB     + offset;
             case EbtBool:       return GL_BOOL_VEC2                   + offset;
             case EbtAtomicUint: return GL_UNSIGNED_INT_ATOMIC_COUNTER + offset;
             default:            return 0;
@@ -1138,6 +1138,8 @@ void TReflection::buildCounterIndices(const TIntermediate& intermediate)
         if (index >= 0)
             indexToUniformBlock[i].counterIndex = index;
     }
+#else
+    (void)intermediate;
 #endif
 }
 

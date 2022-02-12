@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,6 +52,15 @@ EditorFileDialog::RegisterFunc EditorFileDialog::unregister_func = nullptr;
 
 void EditorFileDialog::popup_file_dialog() {
 	popup_centered_clamped(Size2(1050, 700) * EDSCALE, 0.8);
+	_focus_file_text();
+}
+
+void EditorFileDialog::_focus_file_text() {
+	int lp = file->get_text().rfind(".");
+	if (lp != -1) {
+		file->select(0, lp);
+		file->grab_focus();
+	}
 }
 
 VBoxContainer *EditorFileDialog::get_vbox() {
@@ -86,7 +95,7 @@ void EditorFileDialog::_notification(int p_what) {
 				if (preview_wheel_index >= 8) {
 					preview_wheel_index = 0;
 				}
-				Ref<Texture2D> frame = item_list->get_theme_icon("Progress" + itos(preview_wheel_index + 1), "EditorIcons");
+				Ref<Texture2D> frame = item_list->get_theme_icon("Progress" + itos(preview_wheel_index + 1), SNAME("EditorIcons"));
 				preview->set_texture(frame);
 				preview_wheel_timeout = 0.1;
 			}
@@ -121,10 +130,22 @@ void EditorFileDialog::_notification(int p_what) {
 		if (!is_visible()) {
 			set_process_unhandled_input(false);
 		}
+	} else if (p_what == NOTIFICATION_WM_WINDOW_FOCUS_IN) {
+		// Check if the current directory was removed externally (much less likely to happen while editor window is focused).
+		String previous_dir = get_current_dir();
+		while (!dir_access->dir_exists(get_current_dir())) {
+			_go_up();
+
+			// In case we can't go further up, use some fallback and break.
+			if (get_current_dir() == previous_dir) {
+				_dir_submitted(OS::get_singleton()->get_user_data_dir());
+				break;
+			}
+		}
 	}
 }
 
-void EditorFileDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
+void EditorFileDialog::unhandled_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventKey> k = p_event;
@@ -209,7 +230,14 @@ Vector<String> EditorFileDialog::get_selected_files() const {
 
 void EditorFileDialog::update_dir() {
 	if (drives->is_visible()) {
-		drives->select(dir_access->get_current_drive());
+		if (dir_access->get_current_dir().is_network_share_path()) {
+			_update_drives(false);
+			drives->add_item(RTR("Network"));
+			drives->set_item_disabled(drives->get_item_count() - 1, true);
+			drives->select(drives->get_item_count() - 1);
+		} else {
+			drives->select(dir_access->get_current_drive());
+		}
 	}
 	dir->set_text(dir_access->get_current_dir(false));
 
@@ -274,7 +302,7 @@ void EditorFileDialog::_post_popup() {
 		file_box->set_visible(true);
 	}
 
-	if (is_visible() && get_current_file() != "") {
+	if (is_visible() && !get_current_file().is_empty()) {
 		_request_single_thumbnail(get_current_dir().plus_file(get_current_file()));
 	}
 
@@ -302,7 +330,7 @@ void EditorFileDialog::_post_popup() {
 			bool exists = dir_access->dir_exists(recentd[i]);
 			if (!exists) {
 				// Remove invalid directory from the list of Recent directories.
-				recentd.remove(i--);
+				recentd.remove_at(i--);
 			} else {
 				recent->add_item(name, folder);
 				recent->set_item_metadata(recent->get_item_count() - 1, recentd[i]);
@@ -576,7 +604,7 @@ void EditorFileDialog::_item_dc_selected(int p_item) {
 void EditorFileDialog::_item_list_item_rmb_selected(int p_item, const Vector2 &p_pos) {
 	// Right click on specific file(s) or folder(s).
 	item_menu->clear();
-	item_menu->set_size(Size2(1, 1));
+	item_menu->reset_size();
 
 	// Allow specific actions only on one item.
 	bool single_item_selected = item_list->get_selected_items().size() == 1;
@@ -588,7 +616,7 @@ void EditorFileDialog::_item_list_item_rmb_selected(int p_item, const Vector2 &p
 			continue;
 		}
 		Dictionary item_meta = item_list->get_item_metadata(i);
-		if (String(item_meta["path"]).begins_with("res://.godot")) {
+		if (String(item_meta["path"]).begins_with(ProjectSettings::get_singleton()->get_project_data_path())) {
 			allow_delete = false;
 			break;
 		}
@@ -598,7 +626,7 @@ void EditorFileDialog::_item_list_item_rmb_selected(int p_item, const Vector2 &p
 		item_menu->add_icon_item(item_list->get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), TTR("Copy Path"), ITEM_MENU_COPY_PATH);
 	}
 	if (allow_delete) {
-		item_menu->add_icon_item(item_list->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Delete"), ITEM_MENU_DELETE, KEY_DELETE);
+		item_menu->add_icon_item(item_list->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Delete"), ITEM_MENU_DELETE, Key::KEY_DELETE);
 	}
 	if (single_item_selected) {
 		item_menu->add_separator();
@@ -608,7 +636,8 @@ void EditorFileDialog::_item_list_item_rmb_selected(int p_item, const Vector2 &p
 	}
 
 	if (item_menu->get_item_count() > 0) {
-		item_menu->set_position(item_list->get_global_position() + p_pos);
+		item_menu->set_position(item_list->get_screen_position() + p_pos);
+		item_menu->reset_size();
 		item_menu->popup();
 	}
 }
@@ -620,16 +649,17 @@ void EditorFileDialog::_item_list_rmb_clicked(const Vector2 &p_pos) {
 	}
 
 	item_menu->clear();
-	item_menu->set_size(Size2(1, 1));
+	item_menu->reset_size();
 
 	if (can_create_dir) {
-		item_menu->add_icon_item(item_list->get_theme_icon(SNAME("folder"), SNAME("FileDialog")), TTR("New Folder..."), ITEM_MENU_NEW_FOLDER, KEY_MASK_CMD | KEY_N);
+		item_menu->add_icon_item(item_list->get_theme_icon(SNAME("folder"), SNAME("FileDialog")), TTR("New Folder..."), ITEM_MENU_NEW_FOLDER, KeyModifierMask::CMD | Key::N);
 	}
-	item_menu->add_icon_item(item_list->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")), TTR("Refresh"), ITEM_MENU_REFRESH, KEY_F5);
+	item_menu->add_icon_item(item_list->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")), TTR("Refresh"), ITEM_MENU_REFRESH, Key::F5);
 	item_menu->add_separator();
 	item_menu->add_icon_item(item_list->get_theme_icon(SNAME("Filesystem"), SNAME("EditorIcons")), TTR("Open in File Manager"), ITEM_MENU_SHOW_IN_EXPLORER);
 
-	item_menu->set_position(item_list->get_global_position() + p_pos);
+	item_menu->set_position(item_list->get_screen_position() + p_pos);
+	item_menu->reset_size();
 	item_menu->popup();
 }
 
@@ -721,13 +751,14 @@ void EditorFileDialog::update_file_list() {
 	item_list->clear();
 
 	// Scroll back to the top after opening a directory
-	item_list->get_v_scroll()->set_value(0);
+	item_list->get_v_scroll_bar()->set_value(0);
 
 	if (display_mode == DISPLAY_THUMBNAILS) {
 		item_list->set_max_columns(0);
 		item_list->set_icon_mode(ItemList::ICON_MODE_TOP);
 		item_list->set_fixed_column_width(thumbnail_size * 3 / 2);
 		item_list->set_max_text_lines(2);
+		item_list->set_text_overrun_behavior(TextParagraph::OVERRUN_TRIM_ELLIPSIS);
 		item_list->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
 
 		if (thumbnail_size < 64) {
@@ -760,10 +791,11 @@ void EditorFileDialog::update_file_list() {
 	List<String> files;
 	List<String> dirs;
 
-	String item;
+	String item = dir_access->get_next();
 
-	while ((item = dir_access->get_next()) != "") {
+	while (!item.is_empty()) {
 		if (item == "." || item == "..") {
+			item = dir_access->get_next();
 			continue;
 		}
 
@@ -774,6 +806,7 @@ void EditorFileDialog::update_file_list() {
 				dirs.push_back(item);
 			}
 		}
+		item = dir_access->get_next();
 	}
 
 	dirs.sort_custom<NaturalNoCaseComparator>();
@@ -957,7 +990,7 @@ String EditorFileDialog::get_current_path() const {
 }
 
 void EditorFileDialog::set_current_dir(const String &p_dir) {
-	if (p_dir.is_rel_path()) {
+	if (p_dir.is_relative_path()) {
 		dir_access->change_dir(OS::get_singleton()->get_resource_dir());
 	}
 	dir_access->change_dir(p_dir);
@@ -969,11 +1002,7 @@ void EditorFileDialog::set_current_file(const String &p_file) {
 	file->set_text(p_file);
 	update_dir();
 	invalidate();
-	int lp = p_file.rfind(".");
-	if (lp != -1) {
-		file->select(0, lp);
-		file->grab_focus();
-	}
+	_focus_file_text();
 
 	if (is_visible()) {
 		_request_single_thumbnail(get_current_dir().plus_file(get_current_file()));
@@ -1116,7 +1145,7 @@ void EditorFileDialog::_delete_items() {
 		}
 	}
 	if (folders.size() + files.size() > 0) {
-		remove_dialog->set_size(Size2(1, 1));
+		remove_dialog->reset_size();
 		remove_dialog->show(folders, files);
 	}
 }
@@ -1130,7 +1159,7 @@ void EditorFileDialog::_select_drive(int p_idx) {
 	_push_history();
 }
 
-void EditorFileDialog::_update_drives() {
+void EditorFileDialog::_update_drives(bool p_select) {
 	int dc = dir_access->get_drive_count();
 	if (dc == 0 || access != ACCESS_FILESYSTEM) {
 		drives->hide();
@@ -1148,8 +1177,9 @@ void EditorFileDialog::_update_drives() {
 			String d = dir_access->get_drive(i);
 			drives->add_item(dir_access->get_drive(i));
 		}
-
-		drives->select(dir_access->get_current_drive());
+		if (p_select) {
+			drives->select(dir_access->get_current_drive());
+		}
 	}
 }
 
@@ -1296,7 +1326,7 @@ void EditorFileDialog::_recent_selected(int p_idx) {
 }
 
 void EditorFileDialog::_go_up() {
-	dir_access->change_dir("..");
+	dir_access->change_dir(get_current_dir().get_base_dir());
 	update_file_list();
 	update_dir();
 	_push_history();
@@ -1354,8 +1384,6 @@ EditorFileDialog::DisplayMode EditorFileDialog::get_display_mode() const {
 }
 
 void EditorFileDialog::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_unhandled_input"), &EditorFileDialog::_unhandled_input);
-
 	ClassDB::bind_method(D_METHOD("_cancel_pressed"), &EditorFileDialog::_cancel_pressed);
 
 	ClassDB::bind_method(D_METHOD("clear_filters"), &EditorFileDialog::clear_filters);
@@ -1446,7 +1474,7 @@ void EditorFileDialog::_save_to_recent() {
 	for (int i = 0; i < recent.size(); i++) {
 		bool cres = recent[i].begins_with("res://");
 		if (recent[i] == dir || (res == cres && count > max)) {
-			recent.remove(i);
+			recent.remove_at(i);
 			i--;
 		} else {
 			count++;
@@ -1477,18 +1505,18 @@ EditorFileDialog::EditorFileDialog() {
 	mode = FILE_MODE_SAVE_FILE;
 	set_title(TTR("Save a File"));
 
-	ED_SHORTCUT("file_dialog/go_back", TTR("Go Back"), KEY_MASK_ALT | KEY_LEFT);
-	ED_SHORTCUT("file_dialog/go_forward", TTR("Go Forward"), KEY_MASK_ALT | KEY_RIGHT);
-	ED_SHORTCUT("file_dialog/go_up", TTR("Go Up"), KEY_MASK_ALT | KEY_UP);
-	ED_SHORTCUT("file_dialog/refresh", TTR("Refresh"), KEY_F5);
-	ED_SHORTCUT("file_dialog/toggle_hidden_files", TTR("Toggle Hidden Files"), KEY_MASK_CMD | KEY_H);
-	ED_SHORTCUT("file_dialog/toggle_favorite", TTR("Toggle Favorite"), KEY_MASK_ALT | KEY_F);
-	ED_SHORTCUT("file_dialog/toggle_mode", TTR("Toggle Mode"), KEY_MASK_ALT | KEY_V);
-	ED_SHORTCUT("file_dialog/create_folder", TTR("Create Folder"), KEY_MASK_CMD | KEY_N);
-	ED_SHORTCUT("file_dialog/delete", TTR("Delete"), KEY_DELETE);
-	ED_SHORTCUT("file_dialog/focus_path", TTR("Focus Path"), KEY_MASK_CMD | KEY_D);
-	ED_SHORTCUT("file_dialog/move_favorite_up", TTR("Move Favorite Up"), KEY_MASK_CMD | KEY_UP);
-	ED_SHORTCUT("file_dialog/move_favorite_down", TTR("Move Favorite Down"), KEY_MASK_CMD | KEY_DOWN);
+	ED_SHORTCUT("file_dialog/go_back", TTR("Go Back"), KeyModifierMask::ALT | Key::LEFT);
+	ED_SHORTCUT("file_dialog/go_forward", TTR("Go Forward"), KeyModifierMask::ALT | Key::RIGHT);
+	ED_SHORTCUT("file_dialog/go_up", TTR("Go Up"), KeyModifierMask::ALT | Key::UP);
+	ED_SHORTCUT("file_dialog/refresh", TTR("Refresh"), Key::F5);
+	ED_SHORTCUT("file_dialog/toggle_hidden_files", TTR("Toggle Hidden Files"), KeyModifierMask::CMD | Key::H);
+	ED_SHORTCUT("file_dialog/toggle_favorite", TTR("Toggle Favorite"), KeyModifierMask::ALT | Key::F);
+	ED_SHORTCUT("file_dialog/toggle_mode", TTR("Toggle Mode"), KeyModifierMask::ALT | Key::V);
+	ED_SHORTCUT("file_dialog/create_folder", TTR("Create Folder"), KeyModifierMask::CMD | Key::N);
+	ED_SHORTCUT("file_dialog/delete", TTR("Delete"), Key::KEY_DELETE);
+	ED_SHORTCUT("file_dialog/focus_path", TTR("Focus Path"), KeyModifierMask::CMD | Key::D);
+	ED_SHORTCUT("file_dialog/move_favorite_up", TTR("Move Favorite Up"), KeyModifierMask::CMD | Key::UP);
+	ED_SHORTCUT("file_dialog/move_favorite_down", TTR("Move Favorite Down"), KeyModifierMask::CMD | Key::DOWN);
 
 	HBoxContainer *pathhb = memnew(HBoxContainer);
 
@@ -1645,6 +1673,7 @@ EditorFileDialog::EditorFileDialog() {
 	item_list->connect("item_rmb_selected", callable_mp(this, &EditorFileDialog::_item_list_item_rmb_selected));
 	item_list->connect("rmb_clicked", callable_mp(this, &EditorFileDialog::_item_list_rmb_clicked));
 	item_list->set_allow_rmb_select(true);
+
 	list_vb->add_child(item_list);
 
 	item_menu = memnew(PopupMenu);

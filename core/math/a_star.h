@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,13 +31,13 @@
 #ifndef A_STAR_H
 #define A_STAR_H
 
+#include "core/object/gdvirtual.gen.inc"
 #include "core/object/ref_counted.h"
+#include "core/object/script_language.h"
 #include "core/templates/oa_hash_map.h"
 
 /**
-	A* pathfinding algorithm
-
-	@author Juan Linietsky <reduzio@gmail.com>
+	A* pathfinding algorithm.
 */
 
 class AStar : public RefCounted {
@@ -122,6 +122,9 @@ protected:
 	virtual real_t _estimate_cost(int p_from_id, int p_to_id);
 	virtual real_t _compute_cost(int p_from_id, int p_to_id);
 
+	GDVIRTUAL2RC(real_t, _estimate_cost, int64_t, int64_t)
+	GDVIRTUAL2RC(real_t, _compute_cost, int64_t, int64_t)
+
 public:
 	int get_available_point_id() const;
 
@@ -133,7 +136,7 @@ public:
 	void remove_point(int p_id);
 	bool has_point(int p_id) const;
 	Vector<int> get_point_connections(int p_id);
-	Array get_points();
+	Array get_point_ids();
 
 	void set_point_disabled(int p_id, bool p_disabled = true);
 	bool is_point_disabled(int p_id) const;
@@ -169,6 +172,9 @@ protected:
 	virtual real_t _estimate_cost(int p_from_id, int p_to_id);
 	virtual real_t _compute_cost(int p_from_id, int p_to_id);
 
+	GDVIRTUAL2RC(real_t, _estimate_cost, int64_t, int64_t)
+	GDVIRTUAL2RC(real_t, _compute_cost, int64_t, int64_t)
+
 public:
 	int get_available_point_id() const;
 
@@ -180,7 +186,7 @@ public:
 	void remove_point(int p_id);
 	bool has_point(int p_id) const;
 	Vector<int> get_point_connections(int p_id);
-	Array get_points();
+	Array get_point_ids();
 
 	void set_point_disabled(int p_id, bool p_disabled = true);
 	bool is_point_disabled(int p_id) const;

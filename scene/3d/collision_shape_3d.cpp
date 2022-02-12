@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,19 +30,10 @@
 
 #include "collision_shape_3d.h"
 
-#include "core/math/quick_hull.h"
 #include "mesh_instance_3d.h"
 #include "physics_body_3d.h"
-#include "scene/resources/box_shape_3d.h"
-#include "scene/resources/capsule_shape_3d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
-#include "scene/resources/ray_shape_3d.h"
-#include "scene/resources/sphere_shape_3d.h"
-#include "scene/resources/world_margin_shape_3d.h"
-#include "servers/rendering_server.h"
-
-//TODO: Implement CylinderShape and HeightMapShape?
 
 void CollisionShape3D::make_convex_from_siblings() {
 	Node *p = get_parent();
@@ -124,7 +115,7 @@ TypedArray<String> CollisionShape3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<CollisionObject3D>(get_parent())) {
-		warnings.push_back(TTR("CollisionShape3D only serves to provide a collision shape to a CollisionObject3D derived node. Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, CharacterBody3D, etc. to give them a shape."));
+		warnings.push_back(TTR("CollisionShape3D only serves to provide a collision shape to a CollisionObject3D derived node. Please only use it as a child of Area3D, StaticBody3D, RigidDynamicBody3D, CharacterBody3D, etc. to give them a shape."));
 	}
 
 	if (!shape.is_valid()) {
@@ -132,10 +123,9 @@ TypedArray<String> CollisionShape3D::get_configuration_warnings() const {
 	}
 
 	if (shape.is_valid() &&
-			Object::cast_to<RigidBody3D>(get_parent()) &&
-			Object::cast_to<ConcavePolygonShape3D>(*shape) &&
-			Object::cast_to<RigidBody3D>(get_parent())->get_mode() != RigidBody3D::MODE_STATIC) {
-		warnings.push_back(TTR("ConcavePolygonShape3D doesn't support RigidBody3D in another mode than static."));
+			Object::cast_to<RigidDynamicBody3D>(get_parent()) &&
+			Object::cast_to<ConcavePolygonShape3D>(*shape)) {
+		warnings.push_back(TTR("ConcavePolygonShape3D doesn't support RigidDynamicBody3D in another mode than static."));
 	}
 
 	return warnings;

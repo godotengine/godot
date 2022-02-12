@@ -142,7 +142,7 @@
 			<argument index="5" name="clear_color_values" type="PackedColorArray" default="PackedColorArray()" />
 			<argument index="6" name="clear_depth" type="float" default="1.0" />
 			<argument index="7" name="clear_stencil" type="int" default="0" />
-			<argument index="8" name="region" type="Rect2" default="Rect2i(0, 0, 0, 0)" />
+			<argument index="8" name="region" type="Rect2" default="Rect2(0, 0, 0, 0)" />
 			<argument index="9" name="storage_textures" type="Array" default="[]" />
 			<description>
 			</description>
@@ -165,7 +165,7 @@
 			<argument index="6" name="clear_color_values" type="PackedColorArray" default="PackedColorArray()" />
 			<argument index="7" name="clear_depth" type="float" default="1.0" />
 			<argument index="8" name="clear_stencil" type="int" default="0" />
-			<argument index="9" name="region" type="Rect2" default="Rect2i(0, 0, 0, 0)" />
+			<argument index="9" name="region" type="Rect2" default="Rect2(0, 0, 0, 0)" />
 			<argument index="10" name="storage_textures" type="RID[]" default="[]" />
 			<description>
 			</description>
@@ -217,7 +217,7 @@
 		<method name="draw_list_enable_scissor">
 			<return type="void" />
 			<argument index="0" name="draw_list" type="int" />
-			<argument index="1" name="rect" type="Rect2" default="Rect2i(0, 0, 0, 0)" />
+			<argument index="1" name="rect" type="Rect2" default="Rect2(0, 0, 0, 0)" />
 			<description>
 			</description>
 		</method>
@@ -305,7 +305,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="free">
+		<method name="free_rid">
 			<return type="void" />
 			<argument index="0" name="rid" type="RID" />
 			<description>
@@ -359,6 +359,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_driver_resource">
+			<return type="int" />
+			<argument index="0" name="resource" type="int" enum="RenderingDevice.DriverResource" />
+			<argument index="1" name="rid" type="RID" />
+			<argument index="2" name="index" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="get_frame_delay" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -366,7 +374,7 @@
 		</method>
 		<method name="get_memory_usage" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="arg0" type="int" enum="RenderingDevice.MemoryType" />
+			<argument index="0" name="type" type="int" enum="RenderingDevice.MemoryType" />
 			<description>
 			</description>
 		</method>
@@ -448,6 +456,7 @@
 		<method name="shader_compile_binary_from_spirv">
 			<return type="PackedByteArray" />
 			<argument index="0" name="spirv_data" type="RDShaderSPIRV" />
+			<argument index="1" name="name" type="String" default="&quot;&quot;" />
 			<description>
 			</description>
 		</method>
@@ -465,8 +474,9 @@
 			</description>
 		</method>
 		<method name="shader_create_from_spirv">
-			<return type="PackedByteArray" />
+			<return type="RID" />
 			<argument index="0" name="spirv_data" type="RDShaderSPIRV" />
+			<argument index="1" name="name" type="String" default="&quot;&quot;" />
 			<description>
 			</description>
 		</method>
@@ -550,7 +560,8 @@
 			<argument index="1" name="with_texture" type="RID" />
 			<argument index="2" name="layer" type="int" />
 			<argument index="3" name="mipmap" type="int" />
-			<argument index="4" name="slice_type" type="int" enum="RenderingDevice.TextureSliceType" default="0" />
+			<argument index="4" name="mipmaps" type="int" default="1" />
+			<argument index="5" name="slice_type" type="int" enum="RenderingDevice.TextureSliceType" default="0" />
 			<description>
 			</description>
 		</method>
@@ -643,6 +654,50 @@
 		<constant name="BARRIER_MASK_ALL" value="7">
 		</constant>
 		<constant name="BARRIER_MASK_NO_BARRIER" value="8">
+		</constant>
+		<constant name="DEVICE_TYPE_OTHER" value="0" enum="DeviceType">
+			Rendering device type does not match any of the other enum values or is unknown.
+		</constant>
+		<constant name="DEVICE_TYPE_INTEGRATED_GPU" value="1" enum="DeviceType">
+			Rendering device is an integrated GPU, which is typically [i](but not always)[/i] slower than dedicated GPUs ([constant DEVICE_TYPE_DISCRETE_GPU]). On Android and iOS, the rendering device type is always considered to be [constant DEVICE_TYPE_INTEGRATED_GPU].
+		</constant>
+		<constant name="DEVICE_TYPE_DISCRETE_GPU" value="2" enum="DeviceType">
+			Rendering device is a dedicated GPU, which is typically [i](but not always)[/i] faster than integrated GPUs ([constant DEVICE_TYPE_INTEGRATED_GPU]).
+		</constant>
+		<constant name="DEVICE_TYPE_VIRTUAL_GPU" value="3" enum="DeviceType">
+			Rendering device is an emulated GPU in a virtual environment. This is typically much slower than the host GPU, which means the expected performance level on a dedicated GPU will be roughly equivalent to [constant DEVICE_TYPE_INTEGRATED_GPU]. Virtual machine GPU passthrough (such as VFIO) will not report the device type as [constant DEVICE_TYPE_VIRTUAL_GPU]. Instead, the host GPU's device type will be reported as if the GPU was not emulated.
+		</constant>
+		<constant name="DEVICE_TYPE_CPU" value="4" enum="DeviceType">
+			Rendering device is provided by software emulation (such as Lavapipe or [url=https://github.com/google/swiftshader]SwiftShader[/url]). This is the slowest kind of rendering device available; it's typically much slower than [constant DEVICE_TYPE_INTEGRATED_GPU].
+		</constant>
+		<constant name="DEVICE_TYPE_MAX" value="5" enum="DeviceType">
+			Represents the size of the [enum DeviceType] enum.
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_DEVICE" value="0" enum="DriverResource">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_PHYSICAL_DEVICE" value="1" enum="DriverResource">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_INSTANCE" value="2" enum="DriverResource">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_QUEUE" value="3" enum="DriverResource">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_QUEUE_FAMILY_INDEX" value="4" enum="DriverResource">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_IMAGE" value="5" enum="DriverResource">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_IMAGE_VIEW" value="6" enum="DriverResource">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_IMAGE_NATIVE_TEXTURE_FORMAT" value="7" enum="DriverResource">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_SAMPLER" value="8" enum="DriverResource">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_DESCRIPTOR_SET" value="9" enum="DriverResource">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_BUFFER" value="10" enum="DriverResource">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_COMPUTE_PIPELINE" value="11" enum="DriverResource">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_RENDER_PIPELINE" value="12" enum="DriverResource">
 		</constant>
 		<constant name="DATA_FORMAT_R4G4_UNORM_PACK8" value="0" enum="DataFormat">
 		</constant>
@@ -1080,23 +1135,7 @@
 		</constant>
 		<constant name="DATA_FORMAT_G16_B16_R16_3PLANE_444_UNORM" value="217" enum="DataFormat">
 		</constant>
-		<constant name="DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG" value="218" enum="DataFormat">
-		</constant>
-		<constant name="DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG" value="219" enum="DataFormat">
-		</constant>
-		<constant name="DATA_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG" value="220" enum="DataFormat">
-		</constant>
-		<constant name="DATA_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG" value="221" enum="DataFormat">
-		</constant>
-		<constant name="DATA_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG" value="222" enum="DataFormat">
-		</constant>
-		<constant name="DATA_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG" value="223" enum="DataFormat">
-		</constant>
-		<constant name="DATA_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG" value="224" enum="DataFormat">
-		</constant>
-		<constant name="DATA_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG" value="225" enum="DataFormat">
-		</constant>
-		<constant name="DATA_FORMAT_MAX" value="226" enum="DataFormat">
+		<constant name="DATA_FORMAT_MAX" value="218" enum="DataFormat">
 		</constant>
 		<constant name="TEXTURE_TYPE_1D" value="0" enum="TextureType">
 		</constant>
@@ -1148,7 +1187,7 @@
 		</constant>
 		<constant name="TEXTURE_USAGE_CAN_COPY_TO_BIT" value="256" enum="TextureUsageBits">
 		</constant>
-		<constant name="TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT" value="512" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_INPUT_ATTACHMENT_BIT" value="512" enum="TextureUsageBits">
 		</constant>
 		<constant name="TEXTURE_SWIZZLE_IDENTITY" value="0" enum="TextureSwizzle">
 		</constant>

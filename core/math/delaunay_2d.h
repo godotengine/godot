@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 #define DELAUNAY_2D_H
 
 #include "core/math/rect2.h"
+#include "core/templates/vector.h"
 
 class Delaunay2D {
 public:
@@ -101,7 +102,7 @@ public:
 		}
 
 		float delta_max = MAX(rect.size.width, rect.size.height);
-		Vector2 center = rect.position + rect.size * 0.5;
+		Vector2 center = rect.get_center();
 
 		points.push_back(Vector2(center.x - 20 * delta_max, center.y - delta_max));
 		points.push_back(Vector2(center.x, center.y + 20 * delta_max));
@@ -123,7 +124,7 @@ public:
 
 			for (int j = 0; j < triangles.size(); j++) {
 				if (triangles[j].bad) {
-					triangles.remove(j);
+					triangles.remove_at(j);
 					j--;
 				}
 			}
@@ -154,7 +155,7 @@ public:
 				}
 			}
 			if (invalid) {
-				triangles.remove(i);
+				triangles.remove_at(i);
 				i--;
 			}
 		}

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "core/io/resource_loader.h"
 #include "visual_script.h"
 #include "visual_script_builtin_funcs.h"
-#include "visual_script_editor.h"
 #include "visual_script_expression.h"
 #include "visual_script_flow_control.h"
 #include "visual_script_func_nodes.h"
@@ -42,8 +41,10 @@
 #include "visual_script_yield_nodes.h"
 
 VisualScriptLanguage *visual_script_language = nullptr;
+
 #ifdef TOOLS_ENABLED
-static _VisualScriptEditor *vs_editor_singleton = nullptr;
+#include "editor/visual_script_editor.h"
+static VisualScriptCustomNodes *vs_custom_nodes_singleton = nullptr;
 #endif
 
 void register_visual_script_types() {
@@ -114,10 +115,10 @@ void register_visual_script_types() {
 
 #ifdef TOOLS_ENABLED
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
-	GDREGISTER_CLASS(_VisualScriptEditor);
+	GDREGISTER_CLASS(VisualScriptCustomNodes);
 	ClassDB::set_current_api(ClassDB::API_CORE);
-	vs_editor_singleton = memnew(_VisualScriptEditor);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("VisualScriptEditor", _VisualScriptEditor::get_singleton()));
+	vs_custom_nodes_singleton = memnew(VisualScriptCustomNodes);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("VisualScriptCustomNodes", VisualScriptCustomNodes::get_singleton()));
 
 	VisualScriptEditor::register_editor();
 #endif
@@ -130,8 +131,8 @@ void unregister_visual_script_types() {
 
 #ifdef TOOLS_ENABLED
 	VisualScriptEditor::free_clipboard();
-	if (vs_editor_singleton) {
-		memdelete(vs_editor_singleton);
+	if (vs_custom_nodes_singleton) {
+		memdelete(vs_custom_nodes_singleton);
 	}
 #endif
 	if (visual_script_language) {

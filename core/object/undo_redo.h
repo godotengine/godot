@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -61,6 +61,7 @@ private:
 		};
 
 		Type type;
+		bool force_keep_in_merge_ends;
 		Ref<RefCounted> ref;
 		ObjectID object;
 		StringName name;
@@ -76,6 +77,7 @@ private:
 
 	Vector<Action> actions;
 	int current_action = -1;
+	bool force_keep_in_merge_ends = false;
 	int action_level = 0;
 	MergeMode merge_mode = MERGE_DISABLE;
 	bool merging = false;
@@ -109,6 +111,9 @@ public:
 	void add_do_reference(Object *p_object);
 	void add_undo_reference(Object *p_object);
 
+	void start_force_keep_in_merge_ends();
+	void end_force_keep_in_merge_ends();
+
 	bool is_committing_action() const;
 	void commit_action(bool p_execute = true);
 
@@ -121,8 +126,8 @@ public:
 	String get_action_name(int p_id);
 	void clear_history(bool p_increase_version = true);
 
-	bool has_undo();
-	bool has_redo();
+	bool has_undo() const;
+	bool has_redo() const;
 
 	uint64_t get_version() const;
 

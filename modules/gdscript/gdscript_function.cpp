@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -120,11 +120,11 @@ void GDScriptFunction::debug_get_stack_member_state(int p_line, List<Pair<String
 	}
 
 	List<_GDFKCS> stackpositions;
-	for (Map<StringName, _GDFKC>::Element *E = sdmap.front(); E; E = E->next()) {
+	for (const KeyValue<StringName, _GDFKC> &E : sdmap) {
 		_GDFKCS spp;
-		spp.id = E->key();
-		spp.order = E->get().order;
-		spp.pos = E->get().pos.back()->get();
+		spp.id = E.key;
+		spp.order = E.value.order;
+		spp.pos = E.value.pos.back()->get();
 		stackpositions.push_back(spp);
 	}
 
@@ -248,7 +248,7 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 
 	// If the return value is a GDScriptFunctionState reference,
 	// then the function did await again after resuming.
-	if (ret.is_ref()) {
+	if (ret.is_ref_counted()) {
 		GDScriptFunctionState *gdfs = Object::cast_to<GDScriptFunctionState>(ret);
 		if (gdfs && gdfs->function == function) {
 			completed = false;

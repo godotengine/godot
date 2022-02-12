@@ -16,15 +16,15 @@
 		[b]Note:[/b] Theme items are [i]not[/i] [Object] properties. This means you can't access their values using [method Object.get] and [method Object.set]. Instead, use the [code]get_theme_*[/code] and [code]add_theme_*_override[/code] methods provided by this class.
 	</description>
 	<tutorials>
-		<link title="GUI tutorial index">https://docs.godotengine.org/en/latest/tutorials/ui/index.html</link>
-		<link title="Custom drawing in 2D">https://docs.godotengine.org/en/latest/tutorials/2d/custom_drawing_in_2d.html</link>
-		<link title="Control node gallery">https://docs.godotengine.org/en/latest/tutorials/ui/control_node_gallery.html</link>
+		<link title="GUI documentation index">$DOCS_URL/tutorials/ui/index.html</link>
+		<link title="Custom drawing in 2D">$DOCS_URL/tutorials/2d/custom_drawing_in_2d.html</link>
+		<link title="Control node gallery">$DOCS_URL/tutorials/ui/control_node_gallery.html</link>
 		<link title="All GUI Demos">https://github.com/godotengine/godot-demo-projects/tree/master/gui</link>
 	</tutorials>
 	<methods>
-		<method name="_can_drop_data" qualifiers="virtual">
+		<method name="_can_drop_data" qualifiers="virtual const">
 			<return type="bool" />
-			<argument index="0" name="position" type="Vector2" />
+			<argument index="0" name="at_position" type="Vector2" />
 			<argument index="1" name="data" type="Variant" />
 			<description>
 				Godot calls this method to test if [code]data[/code] from a control's [method _get_drag_data] can be dropped at [code]position[/code]. [code]position[/code] is local to this control.
@@ -49,7 +49,7 @@
 		</method>
 		<method name="_drop_data" qualifiers="virtual">
 			<return type="void" />
-			<argument index="0" name="position" type="Vector2" />
+			<argument index="0" name="at_position" type="Vector2" />
 			<argument index="1" name="data" type="Variant" />
 			<description>
 				Godot calls this method to pass you the [code]data[/code] from a control's [method _get_drag_data] result. Godot first calls [method _can_drop_data] to test if [code]data[/code] is allowed to drop at [code]position[/code] where [code]position[/code] is local to this control.
@@ -73,9 +73,9 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="_get_drag_data" qualifiers="virtual">
+		<method name="_get_drag_data" qualifiers="virtual const">
 			<return type="Variant" />
-			<argument index="0" name="position" type="Vector2" />
+			<argument index="0" name="at_position" type="Vector2" />
 			<description>
 				Godot calls this method to get data that can be dragged and dropped onto controls that expect drop data. Returns [code]null[/code] if there is no data to drag. Controls that want to receive drop data should implement [method _can_drop_data] and [method _drop_data]. [code]position[/code] is local to this control. Drag may be forced with [method force_drag].
 				A preview that will follow the mouse that should represent the data can be set with [method set_drag_preview]. A good time to set the preview is in this method.
@@ -97,11 +97,12 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="_get_minimum_size" qualifiers="virtual">
+		<method name="_get_minimum_size" qualifiers="virtual const">
 			<return type="Vector2" />
 			<description>
 				Virtual method to be implemented by the user. Returns the minimum size for this control. Alternative to [member rect_min_size] for controlling minimum size via code. The actual minimum size will be the max value of these two (in each axis separately).
 				If not overridden, defaults to [constant Vector2.ZERO].
+				[b]Note:[/b] This method will not be called when the script is attached to a [Control] node that already overrides its minimum size (e.g. [Label], [Button], [PanelContainer] etc.). It can only be used with most basic GUI nodes, like [Control], [Container], [Panel] etc.
 			</description>
 		</method>
 		<method name="_gui_input" qualifiers="virtual">
@@ -137,19 +138,20 @@
 				* control is obstructed by another [Control] on top of it, which doesn't have [member mouse_filter] set to [constant MOUSE_FILTER_IGNORE];
 				* control's parent has [member mouse_filter] set to [constant MOUSE_FILTER_STOP] or has accepted the event;
 				* it happens outside the parent's rectangle and the parent has either [member rect_clip_content] enabled.
+				[b]Note:[/b] Event position is relative to the control origin.
 			</description>
 		</method>
 		<method name="_has_point" qualifiers="virtual const">
 			<return type="bool" />
-			<argument index="0" name="" type="Vector2" />
+			<argument index="0" name="position" type="Vector2" />
 			<description>
 				Virtual method to be implemented by the user. Returns whether the given [code]point[/code] is inside this control.
 				If not overridden, default behavior is checking if the point is within control's Rect.
 				[b]Note:[/b] If you want to check if a point is inside the control, you can use [code]get_rect().has_point(point)[/code].
 			</description>
 		</method>
-		<method name="_make_custom_tooltip" qualifiers="virtual">
-			<return type="Control" />
+		<method name="_make_custom_tooltip" qualifiers="virtual const">
+			<return type="Object" />
 			<argument index="0" name="for_text" type="String" />
 			<description>
 				Virtual method to be implemented by the user. Returns a [Control] node that should be used as a tooltip instead of the default one. The [code]for_text[/code] includes the contents of the [member hint_tooltip] property.
@@ -193,13 +195,13 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="_structured_text_parser" qualifiers="virtual">
-			<return type="void" />
+		<method name="_structured_text_parser" qualifiers="virtual const">
+			<return type="Array" />
 			<argument index="0" name="args" type="Array" />
 			<argument index="1" name="text" type="String" />
 			<description>
 				User defined BiDi algorithm override function.
-				Return [code]Array[/code] of [code]Vector2i[/code] text ranges, in the left-to-right order. Ranges should cover full source [code]text[/code] without overlaps. BiDi algorithm will be used on each range separately.
+				Returns [code]Array[/code] of [code]Vector2i[/code] text ranges, in the left-to-right order. Ranges should cover full source [code]text[/code] without overlaps. BiDi algorithm will be used on each range separately.
 			</description>
 		</method>
 		<method name="accept_event">
@@ -306,6 +308,18 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="begin_bulk_theme_override">
+			<return type="void" />
+			<description>
+				Prevents [code]*_theme_*_override[/code] methods from emitting [constant NOTIFICATION_THEME_CHANGED] until [method end_bulk_theme_override] is called.
+			</description>
+		</method>
+		<method name="end_bulk_theme_override">
+			<return type="void" />
+			<description>
+				Ends a bulk theme override update. See [method begin_bulk_theme_override].
+			</description>
+		</method>
 		<method name="find_next_valid_focus" qualifiers="const">
 			<return type="Control" />
 			<description>
@@ -364,12 +378,6 @@
 			<argument index="0" name="side" type="int" enum="Side" />
 			<description>
 				Returns the focus neighbor for the specified [enum Side]. A getter method for [member focus_neighbor_bottom], [member focus_neighbor_left], [member focus_neighbor_right] and [member focus_neighbor_top].
-			</description>
-		</method>
-		<method name="get_focus_owner" qualifiers="const">
-			<return type="Control" />
-			<description>
-				Returns the control that has the keyboard focus or [code]null[/code] if none.
 			</description>
 		</method>
 		<method name="get_global_rect" qualifiers="const">
@@ -442,6 +450,27 @@
 			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
 			<description>
 				Returns a constant from the first matching [Theme] in the tree if that [Theme] has a constant item with the specified [code]name[/code] and [code]theme_type[/code].
+				See [method get_theme_color] for details.
+			</description>
+		</method>
+		<method name="get_theme_default_base_scale" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the default base scale value from the first matching [Theme] in the tree if that [Theme] has a valid [member Theme.default_base_scale] value.
+				See [method get_theme_color] for details.
+			</description>
+		</method>
+		<method name="get_theme_default_font" qualifiers="const">
+			<return type="Font" />
+			<description>
+				Returns the default font from the first matching [Theme] in the tree if that [Theme] has a valid [member Theme.default_font] value.
+				See [method get_theme_color] for details.
+			</description>
+		</method>
+		<method name="get_theme_default_font_size" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the default font size value from the first matching [Theme] in the tree if that [Theme] has a valid [member Theme.default_font_size] value.
 				See [method get_theme_color] for details.
 			</description>
 		</method>
@@ -620,16 +649,16 @@
 				See [method add_theme_stylebox_override].
 			</description>
 		</method>
+		<method name="is_drag_successful" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if drag operation is successful.
+			</description>
+		</method>
 		<method name="is_layout_rtl" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if layout is right-to-left.
-			</description>
-		</method>
-		<method name="minimum_size_changed">
-			<return type="void" />
-			<description>
-				Invalidates the size cache in this node and in parent nodes up to top_level. Intended to be used with [method get_minimum_size] when the return value is changed. Setting [member rect_min_size] directly calls this method automatically.
 			</description>
 		</method>
 		<method name="release_focus">
@@ -678,6 +707,12 @@
 			<argument index="0" name="name" type="StringName" />
 			<description>
 				Removes a local override for a theme [StyleBox] with the specified [code]name[/code] previously added by [method add_theme_stylebox_override] or via the Inspector dock.
+			</description>
+		</method>
+		<method name="reset_size">
+			<return type="void" />
+			<description>
+				Resets the size to [method get_combined_minimum_size]. This is equivalent to calling [code]set_size(Vector2())[/code] (or any size below the minimum).
 			</description>
 		</method>
 		<method name="set_anchor">
@@ -729,10 +764,10 @@
 		</method>
 		<method name="set_drag_forwarding">
 			<return type="void" />
-			<argument index="0" name="target" type="Control" />
+			<argument index="0" name="target" type="Object" />
 			<description>
-				Forwards the handling of this control's drag and drop to [code]target[/code] control.
-				Forwarding can be implemented in the target control similar to the methods [method _get_drag_data], [method _can_drop_data], and [method _drop_data] but with two differences:
+				Forwards the handling of this control's drag and drop to [code]target[/code] object.
+				Forwarding can be implemented in the target object similar to the methods [method _get_drag_data], [method _can_drop_data], and [method _drop_data] but with two differences:
 				1. The function name must be suffixed with [b]_fw[/b]
 				2. The function must take an extra argument that is the control doing the forwarding
 				[codeblocks]
@@ -887,6 +922,12 @@
 				If [code]keep_offsets[/code] is [code]true[/code], control's anchors will be updated instead of offsets.
 			</description>
 		</method>
+		<method name="update_minimum_size">
+			<return type="void" />
+			<description>
+				Invalidates the size cache in this node and in parent nodes up to top level. Intended to be used with [method get_minimum_size] when the return value is changed. Setting [member rect_min_size] directly calls this method automatically.
+			</description>
+		</method>
 		<method name="warp_mouse">
 			<return type="void" />
 			<argument index="0" name="to_position" type="Vector2" />
@@ -909,7 +950,8 @@
 			Anchors the top edge of the node to the origin, the center or the end of its parent control. It changes how the top offset updates when the node moves or changes size. You can use one of the [enum Anchor] constants for convenience.
 		</member>
 		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" default="true">
-			Toggles if any text should automatically change to its translated version depending on the current locale.
+			Toggles if any text should automatically change to its translated version depending on the current locale. Note that this will not affect any internal nodes (e.g. the popup of a [MenuButton]).
+			Also decides if the node's strings should be parsed for POT generation.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" enum="Control.FocusMode" default="0">
 			The focus access mode for the control (None, Click or All). Only one Control can be focused at the same time, and it will receive keyboard signals.
@@ -1008,8 +1050,8 @@
 		</member>
 		<member name="rect_scale" type="Vector2" setter="set_scale" getter="get_scale" default="Vector2(1, 1)">
 			The node's scale, relative to its [member rect_size]. Change this property to scale the node around its [member rect_pivot_offset]. The Control's [member hint_tooltip] will also scale according to this value.
-			[b]Note:[/b] This property is mainly intended to be used for animation purposes. Text inside the Control will look pixelated or blurry when the Control is scaled. To support multiple resolutions in your project, use an appropriate viewport stretch mode as described in the [url=https://docs.godotengine.org/en/latest/tutorials/viewports/multiple_resolutions.html]documentation[/url] instead of scaling Controls individually.
-			[b]Note:[/b] If the Control node is a child of a [Container] node, the scale will be reset to [code]Vector2(1, 1)[/code] when the scene is instantiated. To set the Control's scale when it's instantiated, wait for one frame using [code]yield(get_tree(), "idle_frame")[/code] then set its [member rect_scale] property.
+			[b]Note:[/b] This property is mainly intended to be used for animation purposes. Text inside the Control will look pixelated or blurry when the Control is scaled. To support multiple resolutions in your project, use an appropriate viewport stretch mode as described in the [url=$DOCS_URL/tutorials/viewports/multiple_resolutions.html]documentation[/url] instead of scaling Controls individually.
+			[b]Note:[/b] If the Control node is a child of a [Container] node, the scale will be reset to [code]Vector2(1, 1)[/code] when the scene is instantiated. To set the Control's scale when it's instantiated, wait for one frame using [code]await get_tree().process_frame[/code] then set its [member rect_scale] property.
 		</member>
 		<member name="rect_size" type="Vector2" setter="_set_size" getter="get_size" default="Vector2(0, 0)">
 			The size of the node's bounding rectangle, in pixels. [Container] nodes update this property automatically.
@@ -1065,6 +1107,12 @@
 			<description>
 				Emitted when the mouse leaves the control's [code]Rect[/code] area, provided its [member mouse_filter] lets the event reach it.
 				[b]Note:[/b] [signal mouse_exited] will be emitted if the mouse enters a child [Control] node, even if the mouse cursor is still inside the parent's [code]Rect[/code] area.
+				If you want to check whether the mouse truly left the area, ignoring any top nodes, you can use code like this:
+				[codeblock]
+				func _on_mouse_exited():
+				    if not Rect2(Vector2(), rect_size).has_point(get_local_mouse_position()):
+				        # Not hovering over area.
+				[/codeblock]
 			</description>
 		</signal>
 		<signal name="resized">
@@ -1230,20 +1278,24 @@
 		<constant name="PRESET_MODE_KEEP_SIZE" value="3" enum="LayoutPresetMode">
 			The control's size will not change.
 		</constant>
+		<constant name="SIZE_SHRINK_BEGIN" value="0" enum="SizeFlags">
+			Tells the parent [Container] to align the node with its start, either the top or the left edge. It is mutually exclusive with [constant SIZE_FILL] and other shrink size flags, but can be used with [constant SIZE_EXPAND] in some containers. Use with [member size_flags_horizontal] and [member size_flags_vertical].
+			[b]Note:[/b] Setting this flag is equal to not having any size flags.
+		</constant>
 		<constant name="SIZE_FILL" value="1" enum="SizeFlags">
-			Tells the parent [Container] to expand the bounds of this node to fill all the available space without pushing any other node. Use with [member size_flags_horizontal] and [member size_flags_vertical].
+			Tells the parent [Container] to expand the bounds of this node to fill all the available space without pushing any other node. It is mutually exclusive with shrink size flags. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
 		<constant name="SIZE_EXPAND" value="2" enum="SizeFlags">
 			Tells the parent [Container] to let this node take all the available space on the axis you flag. If multiple neighboring nodes are set to expand, they'll share the space based on their stretch ratio. See [member size_flags_stretch_ratio]. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
 		<constant name="SIZE_EXPAND_FILL" value="3" enum="SizeFlags">
-			Sets the node's size flags to both fill and expand. See the 2 constants above for more information.
+			Sets the node's size flags to both fill and expand. See [constant SIZE_FILL] and [constant SIZE_EXPAND] for more information.
 		</constant>
 		<constant name="SIZE_SHRINK_CENTER" value="4" enum="SizeFlags">
-			Tells the parent [Container] to center the node in itself. It centers the control based on its bounding box, so it doesn't work with the fill or expand size flags. Use with [member size_flags_horizontal] and [member size_flags_vertical].
+			Tells the parent [Container] to center the node in the available space. It is mutually exclusive with [constant SIZE_FILL] and other shrink size flags, but can be used with [constant SIZE_EXPAND] in some containers. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
 		<constant name="SIZE_SHRINK_END" value="8" enum="SizeFlags">
-			Tells the parent [Container] to align the node with its end, either the bottom or the right edge. It doesn't work with the fill or expand size flags. Use with [member size_flags_horizontal] and [member size_flags_vertical].
+			Tells the parent [Container] to align the node with its end, either the bottom or the right edge. It is mutually exclusive with [constant SIZE_FILL] and other shrink size flags, but can be used with [constant SIZE_EXPAND] in some containers. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
 		<constant name="MOUSE_FILTER_STOP" value="0" enum="MouseFilter">
 			The control will receive mouse button input events through [method _gui_input] if clicked on. And the control will receive the [signal mouse_entered] and [signal mouse_exited] signals. These events are automatically marked as handled, and they will not propagate further to other controls. This also results in blocking signals in other controls.

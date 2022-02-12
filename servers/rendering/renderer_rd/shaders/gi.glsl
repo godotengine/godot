@@ -68,19 +68,15 @@ sdfgi;
 #define MAX_VOXEL_GI_INSTANCES 8
 
 struct VoxelGIData {
-	mat4 xform;
-	vec3 bounds;
-	float dynamic_range;
+	mat4 xform; // 64 - 64
 
-	float bias;
-	float normal_bias;
-	bool blend_ambient;
-	uint texture_slot;
+	vec3 bounds; // 12 - 76
+	float dynamic_range; // 4 - 80
 
-	uint pad0;
-	uint pad1;
-	uint pad2;
-	uint mipmaps;
+	float bias; // 4 - 84
+	float normal_bias; // 4 - 88
+	bool blend_ambient; // 4 - 92
+	uint mipmaps; // 4 - 96
 };
 
 layout(set = 0, binding = 16, std140) uniform VoxelGIs {
@@ -97,12 +93,10 @@ layout(push_constant, binding = 0, std430) uniform Params {
 
 	vec4 proj_info;
 
-	vec3 ao_color;
 	uint max_voxel_gi_instances;
-
 	bool high_quality_vct;
 	bool orthogonal;
-	uint pad[2];
+	uint pad;
 
 	mat3x4 cam_rotation;
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,8 +54,8 @@ struct Version {
 
 	bool operator==(const Version &p_other) const {
 		return godot_api_hash == p_other.godot_api_hash &&
-			   bindings_version == p_other.bindings_version &&
-			   cs_glue_version == p_other.cs_glue_version;
+				bindings_version == p_other.bindings_version &&
+				cs_glue_version == p_other.cs_glue_version;
 	}
 
 	Version() {}
@@ -293,8 +293,10 @@ public:
 	gdmono::ScopeExitDomainUnload __gdmono__scope__exit__domain__unload__(m_mono_domain); \
 	(void)__gdmono__scope__exit__domain__unload__;
 
-class _GodotSharp : public Object {
-	GDCLASS(_GodotSharp, Object);
+namespace mono_bind {
+
+class GodotSharp : public Object {
+	GDCLASS(GodotSharp, Object);
 
 	friend class GDMono;
 
@@ -303,11 +305,11 @@ class _GodotSharp : public Object {
 	void _reload_assemblies(bool p_soft_reload);
 
 protected:
-	static _GodotSharp *singleton;
+	static GodotSharp *singleton;
 	static void _bind_methods();
 
 public:
-	static _GodotSharp *get_singleton() { return singleton; }
+	static GodotSharp *get_singleton() { return singleton; }
 
 	void attach_thread();
 	void detach_thread();
@@ -323,8 +325,10 @@ public:
 	bool is_runtime_shutting_down();
 	bool is_runtime_initialized();
 
-	_GodotSharp();
-	~_GodotSharp();
+	GodotSharp();
+	~GodotSharp();
 };
+
+} // namespace mono_bind
 
 #endif // GD_MONO_H

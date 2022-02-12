@@ -35,7 +35,7 @@
 		<member name="draw_center" type="bool" setter="set_draw_center" getter="is_draw_center_enabled" default="true">
 			If [code]true[/code], draw the panel's center. Else, only draw the 9-slice's borders.
 		</member>
-		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" override="true" enum="Control.MouseFilter" default="2" />
+		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="2" />
 		<member name="patch_margin_bottom" type="int" setter="set_patch_margin" getter="get_patch_margin" default="0">
 			The height of the 9-slice's bottom row. A margin of 16 means the 9-slice's bottom corners and side will have a height of 16 pixels. You can set all 4 margin values individually to create panels with non-uniform borders.
 		</member>
@@ -68,11 +68,11 @@
 		</constant>
 		<constant name="AXIS_STRETCH_MODE_TILE" value="1" enum="AxisStretchMode">
 			Repeats the center texture across the NinePatchRect. This won't cause any visible distortion. The texture must be seamless for this to work without displaying artifacts between edges.
-			[b]Note:[/b] Only supported when using the GLES3 renderer. When using the GLES2 renderer, this will behave like [constant AXIS_STRETCH_MODE_STRETCH].
+			[b]Note:[/b] Only supported when using the Vulkan renderer. When using the OpenGL renderer, this will behave like [constant AXIS_STRETCH_MODE_STRETCH].
 		</constant>
 		<constant name="AXIS_STRETCH_MODE_TILE_FIT" value="2" enum="AxisStretchMode">
 			Repeats the center texture across the NinePatchRect, but will also stretch the texture to make sure each tile is visible in full. This may cause the texture to be distorted, but less than [constant AXIS_STRETCH_MODE_STRETCH]. The texture must be seamless for this to work without displaying artifacts between edges.
-			[b]Note:[/b] Only supported when using the GLES3 renderer. When using the GLES2 renderer, this will behave like [constant AXIS_STRETCH_MODE_STRETCH].
+			[b]Note:[/b] Only supported when using the Vulkan renderer. When using the OpenGL renderer, this will behave like [constant AXIS_STRETCH_MODE_STRETCH].
 		</constant>
 	</constants>
 </class>

@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="initial_offset" type="float" setter="set_initial_offset" getter="get_initial_offset" default="25.0">
 			The body B's initial anchor position defined by the joint's origin and a local offset [member initial_offset] along the joint's Y axis (along the groove).
@@ -18,6 +16,4 @@
 			The groove's length. The groove is from the joint's origin towards [member length] along the joint's local Y axis.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

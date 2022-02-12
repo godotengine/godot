@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,6 @@
 #ifndef PARALLAX_BACKGROUND_H
 #define PARALLAX_BACKGROUND_H
 
-#include "scene/2d/camera_2d.h"
-#include "scene/2d/node_2d.h"
 #include "scene/main/canvas_layer.h"
 
 class ParallaxBackground : public CanvasLayer {

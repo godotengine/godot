@@ -30,6 +30,4 @@
 		<member name="uniform_type" type="int" setter="set_uniform_type" getter="get_uniform_type" enum="RenderingDevice.UniformType" default="3">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

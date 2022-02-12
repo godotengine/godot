@@ -19,11 +19,11 @@
 		[b]Note:[/b] As soon as a [RichTextLabel] contains at least one [RichTextEffect], it will continuously process the effect unless the project is paused. This may impact battery life negatively.
 	</description>
 	<tutorials>
-		<link title="BBCode in RichTextLabel">https://docs.godotengine.org/en/latest/tutorials/gui/bbcode_in_richtextlabel.html</link>
+		<link title="BBCode in RichTextLabel">$DOCS_URL/tutorials/ui/bbcode_in_richtextlabel.html</link>
 		<link title="RichTextEffect test project (third-party)">https://github.com/Eoin-ONeill-Yokai/Godot-Rich-Text-Effect-Test-Project</link>
 	</tutorials>
 	<methods>
-		<method name="_process_custom_fx" qualifiers="virtual">
+		<method name="_process_custom_fx" qualifiers="virtual const">
 			<return type="bool" />
 			<argument index="0" name="char_fx" type="CharFXTransform" />
 			<description>
@@ -31,6 +31,4 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

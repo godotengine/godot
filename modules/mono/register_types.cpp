@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,15 +38,15 @@ CSharpLanguage *script_language_cs = nullptr;
 Ref<ResourceFormatLoaderCSharpScript> resource_loader_cs;
 Ref<ResourceFormatSaverCSharpScript> resource_saver_cs;
 
-_GodotSharp *_godotsharp = nullptr;
+mono_bind::GodotSharp *_godotsharp = nullptr;
 
 void register_mono_types() {
 	GDREGISTER_CLASS(CSharpScript);
 
-	_godotsharp = memnew(_GodotSharp);
+	_godotsharp = memnew(mono_bind::GodotSharp);
 
-	GDREGISTER_CLASS(_GodotSharp);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("GodotSharp", _GodotSharp::get_singleton()));
+	GDREGISTER_CLASS(mono_bind::GodotSharp);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("GodotSharp", mono_bind::GodotSharp::get_singleton()));
 
 	script_language_cs = memnew(CSharpLanguage);
 	script_language_cs->set_language_index(ScriptServer::get_language_count());

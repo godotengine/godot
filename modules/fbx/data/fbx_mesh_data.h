@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,7 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/ordered_hash_map.h"
 #include "editor/import/resource_importer_scene.h"
-#include "editor/import/scene_importer_mesh_node_3d.h"
+#include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/surface_tool.h"
 
@@ -64,7 +64,7 @@ struct SurfaceData {
 };
 
 struct VertexWeightMapping {
-	Vector<real_t> weights;
+	Vector<float> weights;
 	Vector<int> bones;
 	// This extra vector is used because the bone id is computed in a second step.
 	// TODO Get rid of this extra step is a good idea.
@@ -98,7 +98,7 @@ struct FBXMeshData : RefCounted {
 	// translate fbx mesh data from document context to FBX Mesh Geometry Context
 	bool valid_weight_indexes = false;
 
-	EditorSceneImporterMeshNode3D *create_fbx_mesh(const ImportState &state, const FBXDocParser::MeshGeometry *p_mesh_geometry, const FBXDocParser::Model *model, bool use_compression);
+	ImporterMeshInstance3D *create_fbx_mesh(const ImportState &state, const FBXDocParser::MeshGeometry *p_mesh_geometry, const FBXDocParser::Model *model, bool use_compression);
 
 	void gen_weight_info(Ref<SurfaceTool> st, int vertex_id) const;
 
@@ -107,7 +107,7 @@ struct FBXMeshData : RefCounted {
 	int max_weight_count = 0;
 	uint64_t armature_id = 0;
 	bool valid_armature_id = false;
-	EditorSceneImporterMeshNode3D *godot_mesh_instance = nullptr;
+	ImporterMeshInstance3D *godot_mesh_instance = nullptr;
 
 private:
 	void sanitize_vertex_weights(const ImportState &state);

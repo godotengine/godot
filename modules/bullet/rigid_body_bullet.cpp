@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,12 +41,6 @@
 #include <BulletCollision/CollisionShapes/btConvexPointCloudShape.h>
 #include <BulletDynamics/Dynamics/btRigidBody.h>
 #include <btBulletCollisionCommon.h>
-
-#include <assert.h>
-
-/**
-	@author AndreaCatania
-*/
 
 BulletPhysicsDirectBodyState3D *BulletPhysicsDirectBodyState3D::singleton = nullptr;
 
@@ -112,6 +106,16 @@ void BulletPhysicsDirectBodyState3D::set_transform(const Transform3D &p_transfor
 
 Transform3D BulletPhysicsDirectBodyState3D::get_transform() const {
 	return body->get_transform();
+}
+
+Vector3 BulletPhysicsDirectBodyState3D::get_velocity_at_local_position(const Vector3 &p_position) const {
+	btVector3 local_position;
+	G_TO_B(p_position, local_position);
+
+	Vector3 velocity;
+	B_TO_G(body->btBody->getVelocityInLocalPoint(local_position), velocity);
+
+	return velocity;
 }
 
 void BulletPhysicsDirectBodyState3D::add_central_force(const Vector3 &p_force) {
@@ -293,6 +297,7 @@ RigidBodyBullet::~RigidBodyBullet() {
 
 void RigidBodyBullet::init_kinematic_utilities() {
 	kinematic_utilities = memnew(KinematicUtilities(this));
+	reload_kinematic_shapes();
 }
 
 void RigidBodyBullet::destroy_kinematic_utilities() {
@@ -409,7 +414,7 @@ void RigidBodyBullet::on_collision_checker_start() {
 
 void RigidBodyBullet::on_collision_checker_end() {
 	// Always true if active and not a static or kinematic body
-	isTransformChanged = btBody->isActive() && !btBody->isStaticOrKinematicObject();
+	updated = btBody->isActive() && !btBody->isStaticOrKinematicObject();
 }
 
 bool RigidBodyBullet::add_collision_object(RigidBodyBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, const real_t &p_appliedImpulse, int p_other_shape_index, int p_local_shape_index) {
@@ -519,26 +524,23 @@ void RigidBodyBullet::set_mode(PhysicsServer3D::BodyMode p_mode) {
 	can_integrate_forces = false;
 	destroy_kinematic_utilities();
 	// The mode change is relevant to its mass
+	mode = p_mode;
 	switch (p_mode) {
 		case PhysicsServer3D::BODY_MODE_KINEMATIC:
-			mode = PhysicsServer3D::BODY_MODE_KINEMATIC;
 			reload_axis_lock();
 			_internal_set_mass(0);
 			init_kinematic_utilities();
 			break;
 		case PhysicsServer3D::BODY_MODE_STATIC:
-			mode = PhysicsServer3D::BODY_MODE_STATIC;
 			reload_axis_lock();
 			_internal_set_mass(0);
 			break;
 		case PhysicsServer3D::BODY_MODE_DYNAMIC:
-			mode = PhysicsServer3D::BODY_MODE_DYNAMIC;
 			reload_axis_lock();
 			_internal_set_mass(0 == mass ? 1 : mass);
 			scratch_space_override_modificator();
 			break;
-		case PhysicsServer3D::MODE_DYNAMIC_LOCKED:
-			mode = PhysicsServer3D::MODE_DYNAMIC_LOCKED;
+		case PhysicsServer3D::MODE_DYNAMIC_LINEAR:
 			reload_axis_lock();
 			_internal_set_mass(0 == mass ? 1 : mass);
 			scratch_space_override_modificator();
@@ -711,7 +713,7 @@ bool RigidBodyBullet::is_axis_locked(PhysicsServer3D::BodyAxis p_axis) const {
 
 void RigidBodyBullet::reload_axis_lock() {
 	btBody->setLinearFactor(btVector3(btScalar(!is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_X)), btScalar(!is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_Y)), btScalar(!is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_Z))));
-	if (PhysicsServer3D::MODE_DYNAMIC_LOCKED == mode) {
+	if (PhysicsServer3D::MODE_DYNAMIC_LINEAR == mode) {
 		/// When character angular is always locked
 		btBody->setAngularFactor(btVector3(0., 0., 0.));
 	} else {
@@ -1006,7 +1008,7 @@ void RigidBodyBullet::_internal_set_mass(real_t p_mass) {
 	// Rigidbody is dynamic if and only if mass is non Zero, otherwise static
 	const bool isDynamic = p_mass != 0.f;
 	if (isDynamic) {
-		if (PhysicsServer3D::BODY_MODE_DYNAMIC != mode && PhysicsServer3D::MODE_DYNAMIC_LOCKED != mode) {
+		if (PhysicsServer3D::BODY_MODE_DYNAMIC != mode && PhysicsServer3D::MODE_DYNAMIC_LINEAR != mode) {
 			return;
 		}
 

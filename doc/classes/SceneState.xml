@@ -59,6 +59,13 @@
 				Returns the path to the node that owns the method connected to the signal at [code]idx[/code], relative to the root node.
 			</description>
 		</method>
+		<method name="get_connection_unbinds" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="idx" type="int" />
+			<description>
+				Returns the number of unbound parameters for the signal at [code]idx[/code].
+			</description>
+		</method>
 		<method name="get_node_count" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -166,6 +173,10 @@
 		</constant>
 		<constant name="GEN_EDIT_STATE_MAIN" value="2" enum="GenEditState">
 			If passed to [method PackedScene.instantiate], provides local scene resources to the local scene. Only the main scene should receive the main edit state.
+			[b]Note:[/b] Only available in editor builds.
+		</constant>
+		<constant name="GEN_EDIT_STATE_MAIN_INHERITED" value="3" enum="GenEditState">
+			If passed to [method PackedScene.instantiate], it's similar to [constant GEN_EDIT_STATE_MAIN], but for the case where the scene is being instantiated to be the base of another one.
 			[b]Note:[/b] Only available in editor builds.
 		</constant>
 	</constants>

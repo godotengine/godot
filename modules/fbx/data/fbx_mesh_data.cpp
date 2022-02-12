@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #include "fbx_mesh_data.h"
 
 #include "core/templates/local_vector.h"
+#include "scene/resources/importer_mesh.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/surface_tool.h"
 
@@ -101,7 +102,7 @@ HashMap<int, Vector2> collect_uv(const Vector<VertexData<Vector2>> *p_data, Hash
 	return collection;
 }
 
-EditorSceneImporterMeshNode3D *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDocParser::MeshGeometry *p_mesh_geometry, const FBXDocParser::Model *model, bool use_compression) {
+ImporterMeshInstance3D *FBXMeshData::create_fbx_mesh(const ImportState &state, const FBXDocParser::MeshGeometry *p_mesh_geometry, const FBXDocParser::Model *model, bool use_compression) {
 	mesh_geometry = p_mesh_geometry;
 	// todo: make this just use a uint64_t FBX ID this is a copy of our original materials unfortunately.
 	const std::vector<const FBXDocParser::Material *> &material_lookup = model->GetMaterials();
@@ -166,7 +167,7 @@ EditorSceneImporterMeshNode3D *FBXMeshData::create_fbx_mesh(const ImportState &s
 
 	sanitize_vertex_weights(state);
 
-	// Re organize polygon vertices to to correctly take into account strange
+	// Reorganize polygon vertices to correctly take into account strange
 	// UVs.
 	reorganize_vertices(
 			polygon_indices,
@@ -344,7 +345,7 @@ EditorSceneImporterMeshNode3D *FBXMeshData::create_fbx_mesh(const ImportState &s
 	}
 
 	// Phase 6. Compose the mesh and return it.
-	Ref<EditorSceneImporterMesh> mesh;
+	Ref<ImporterMesh> mesh;
 	mesh.instantiate();
 
 	// Add blend shape info.
@@ -356,7 +357,6 @@ EditorSceneImporterMeshNode3D *FBXMeshData::create_fbx_mesh(const ImportState &s
 	mesh->set_blend_shape_mode(Mesh::BLEND_SHAPE_MODE_NORMALIZED);
 
 	// Add surfaces.
-	int in_mesh_surface_id = 0;
 	for (const SurfaceId *surface_id = surfaces.next(nullptr); surface_id != nullptr; surface_id = surfaces.next(surface_id)) {
 		SurfaceData *surface = surfaces.getptr(*surface_id);
 
@@ -376,11 +376,9 @@ EditorSceneImporterMeshNode3D *FBXMeshData::create_fbx_mesh(const ImportState &s
 		} else {
 			mesh->add_surface(Mesh::PRIMITIVE_TRIANGLES, mesh_array, blend_shapes);
 		}
-
-		in_mesh_surface_id += 1;
 	}
 
-	EditorSceneImporterMeshNode3D *godot_mesh = memnew(EditorSceneImporterMeshNode3D);
+	ImporterMeshInstance3D *godot_mesh = memnew(ImporterMeshInstance3D);
 	godot_mesh->set_mesh(mesh);
 	const String name = ImportUtils::FBXNodeToName(model->Name());
 	godot_mesh->set_name(name); // hurry up compiling >.<
@@ -433,7 +431,7 @@ void FBXMeshData::sanitize_vertex_weights(const ImportState &state) {
 
 		{
 			// Sort
-			real_t *weights_ptr = vm->weights.ptrw();
+			float *weights_ptr = vm->weights.ptrw();
 			int *bones_ptr = vm->bones.ptrw();
 			for (int i = 0; i < vm->weights.size(); i += 1) {
 				for (int x = i + 1; x < vm->weights.size(); x += 1) {
@@ -449,7 +447,7 @@ void FBXMeshData::sanitize_vertex_weights(const ImportState &state) {
 			// Resize
 			vm->weights.resize(max_vertex_influence_count);
 			vm->bones.resize(max_vertex_influence_count);
-			real_t *weights_ptr = vm->weights.ptrw();
+			float *weights_ptr = vm->weights.ptrw();
 			int *bones_ptr = vm->bones.ptrw();
 			for (int i = initial_size; i < max_vertex_influence_count; i += 1) {
 				weights_ptr[i] = 0.0;
@@ -1094,7 +1092,7 @@ HashMap<int, R> FBXMeshData::extract_per_vertex_data(
 					const int vertex_index = get_vertex_from_polygon_vertex(p_mesh_indices, polygon_vertex_index);
 					ERR_FAIL_COND_V_MSG(vertex_index < 0, (HashMap<int, R>()), "FBX file corrupted: #ERR05");
 					ERR_FAIL_COND_V_MSG(vertex_index >= p_vertex_count, (HashMap<int, R>()), "FBX file corrupted: #ERR06");
-					const int index_to_direct = p_mapping_data.index[polygon_vertex_index];
+					const int index_to_direct = get_vertex_from_polygon_vertex(p_mapping_data.index, polygon_vertex_index);
 					T value = p_mapping_data.data[index_to_direct];
 					aggregate_vertex_data[vertex_index].push_back({ polygon_id, value });
 				}
@@ -1299,7 +1297,7 @@ HashMap<int, T> FBXMeshData::extract_per_polygon(
 					} else {
 						ERR_FAIL_INDEX_V_MSG(polygon_index, (int)p_fbx_data.index.size(), (HashMap<int, T>()), "FBX file is corrupted: #ERR62");
 
-						const int index_to_direct = p_fbx_data.index[polygon_index];
+						const int index_to_direct = get_vertex_from_polygon_vertex(p_fbx_data.index, polygon_index);
 						T value = p_fbx_data.data[index_to_direct];
 						aggregate_polygon_data[polygon_index].push_back(value);
 					}

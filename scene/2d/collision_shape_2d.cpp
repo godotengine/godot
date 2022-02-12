@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,14 +31,8 @@
 #include "collision_shape_2d.h"
 
 #include "collision_object_2d.h"
-#include "core/config/engine.h"
-#include "scene/resources/capsule_shape_2d.h"
-#include "scene/resources/circle_shape_2d.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
-#include "scene/resources/line_shape_2d.h"
-#include "scene/resources/rectangle_shape_2d.h"
-#include "scene/resources/segment_shape_2d.h"
 
 void CollisionShape2D::_shape_changed() {
 	update();
@@ -94,6 +88,8 @@ void CollisionShape2D::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_DRAW: {
+			ERR_FAIL_COND(!is_inside_tree());
+
 			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
 				break;
 			}
@@ -125,15 +121,15 @@ void CollisionShape2D::_notification(int p_what) {
 				}
 				Vector2 line_to(0, 20);
 				draw_line(Vector2(), line_to, draw_col, 2);
-				Vector<Vector2> pts;
 				real_t tsize = 8;
-				pts.push_back(line_to + (Vector2(0, tsize)));
-				pts.push_back(line_to + (Vector2(Math_SQRT12 * tsize, 0)));
-				pts.push_back(line_to + (Vector2(-Math_SQRT12 * tsize, 0)));
-				Vector<Color> cols;
-				for (int i = 0; i < 3; i++) {
-					cols.push_back(draw_col);
-				}
+
+				Vector<Vector2> pts{
+					line_to + Vector2(0, tsize),
+					line_to + Vector2(Math_SQRT12 * tsize, 0),
+					line_to + Vector2(-Math_SQRT12 * tsize, 0)
+				};
+
+				Vector<Color> cols{ draw_col, draw_col, draw_col };
 
 				draw_primitive(pts, cols, Vector<Vector2>());
 			}
@@ -181,7 +177,7 @@ TypedArray<String> CollisionShape2D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<CollisionObject2D>(get_parent())) {
-		warnings.push_back(TTR("CollisionShape2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, CharacterBody2D, etc. to give them a shape."));
+		warnings.push_back(TTR("CollisionShape2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidDynamicBody2D, CharacterBody2D, etc. to give them a shape."));
 	}
 	if (!shape.is_valid()) {
 		warnings.push_back(TTR("A shape must be provided for CollisionShape2D to function. Please create a shape resource for it!"));

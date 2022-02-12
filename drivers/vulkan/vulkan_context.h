@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,8 +37,13 @@
 #include "core/templates/map.h"
 #include "core/templates/rid_owner.h"
 #include "servers/display_server.h"
+#include "servers/rendering/rendering_device.h"
 
+#ifdef USE_VOLK
+#include <volk.h>
+#else
 #include <vulkan/vulkan.h>
+#endif
 
 class VulkanContext {
 public:
@@ -62,6 +67,14 @@ public:
 		uint32_t max_instance_count;
 	};
 
+	struct ShaderCapabilities {
+		bool shader_float16_is_supported;
+	};
+
+	struct StorageBufferCapabilities {
+		bool storage_buffer_16_bit_access_is_supported;
+	};
+
 private:
 	enum {
 		MAX_EXTENSIONS = 128,
@@ -81,11 +94,15 @@ private:
 	// Vulkan 1.0 doesn't return version info so we assume this by default until we know otherwise
 	uint32_t vulkan_major = 1;
 	uint32_t vulkan_minor = 0;
+	uint32_t vulkan_patch = 0;
 	SubgroupCapabilities subgroup_capabilities;
 	MultiviewCapabilities multiview_capabilities;
+	ShaderCapabilities shader_capabilities;
+	StorageBufferCapabilities storage_buffer_capabilities;
 
 	String device_vendor;
 	String device_name;
+	VkPhysicalDeviceType device_type;
 	String pipeline_cache_id;
 	uint32_t device_api_version = 0;
 
@@ -207,7 +224,9 @@ private:
 			const char *pMessage,
 			void *pUserData);
 
-	Error _create_physical_device();
+	Error _create_instance();
+
+	Error _create_physical_device(VkSurfaceKHR p_surface);
 
 	Error _initialize_queues(VkSurfaceKHR p_surface);
 
@@ -229,20 +248,20 @@ protected:
 
 	Error _get_preferred_validation_layers(uint32_t *count, const char *const **names);
 
-	VkInstance _get_instance() {
-		return inst;
-	}
-
 public:
 	uint32_t get_vulkan_major() const { return vulkan_major; };
 	uint32_t get_vulkan_minor() const { return vulkan_minor; };
 	SubgroupCapabilities get_subgroup_capabilities() const { return subgroup_capabilities; };
 	MultiviewCapabilities get_multiview_capabilities() const { return multiview_capabilities; };
+	ShaderCapabilities get_shader_capabilities() const { return shader_capabilities; };
+	StorageBufferCapabilities get_storage_buffer_capabilities() const { return storage_buffer_capabilities; };
 
 	VkDevice get_device();
 	VkPhysicalDevice get_physical_device();
+	VkInstance get_instance() { return inst; }
 	int get_swapchain_image_count() const;
-	uint32_t get_graphics_queue() const;
+	VkQueue get_graphics_queue() const;
+	uint32_t get_graphics_queue_family_index() const;
 
 	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
 	int window_get_width(DisplayServer::WindowID p_window = 0);
@@ -275,6 +294,7 @@ public:
 
 	String get_device_vendor_name() const;
 	String get_device_name() const;
+	RenderingDevice::DeviceType get_device_type() const;
 	String get_device_pipeline_cache_uuid() const;
 
 	void set_vsync_mode(DisplayServer::WindowID p_window, DisplayServer::VSyncMode p_mode);

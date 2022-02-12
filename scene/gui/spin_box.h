@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,6 +40,7 @@ class SpinBox : public Range {
 
 	LineEdit *line_edit;
 	int last_w = 0;
+	bool update_on_text_changed = false;
 
 	Timer *range_click_timer;
 	void _range_click_timeout();
@@ -47,6 +48,8 @@ class SpinBox : public Range {
 
 	void _text_submitted(const String &p_string);
 	virtual void _value_changed(double) override;
+	void _text_changed(const String &p_string);
+
 	String prefix;
 	String suffix;
 
@@ -65,7 +68,7 @@ class SpinBox : public Range {
 	inline void _adjust_width_for_icon(const Ref<Texture2D> &icon);
 
 protected:
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 	void _notification(int p_what);
 
@@ -76,10 +79,10 @@ public:
 
 	virtual Size2 get_minimum_size() const override;
 
-	void set_align(LineEdit::Align p_align);
-	LineEdit::Align get_align() const;
+	void set_horizontal_alignment(HorizontalAlignment p_alignment);
+	HorizontalAlignment get_horizontal_alignment() const;
 
-	void set_editable(bool p_editable);
+	void set_editable(bool p_enabled);
 	bool is_editable() const;
 
 	void set_suffix(const String &p_suffix);
@@ -87,6 +90,9 @@ public:
 
 	void set_prefix(const String &p_prefix);
 	String get_prefix() const;
+
+	void set_update_on_text_changed(bool p_enabled);
+	bool get_update_on_text_changed() const;
 
 	void apply();
 

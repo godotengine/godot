@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,7 +47,7 @@ public:
 
 private:
 	YieldMode yield_mode;
-	float wait_time;
+	double wait_time;
 
 protected:
 	virtual void _validate_property(PropertyInfo &property) const override;
@@ -73,8 +73,8 @@ public:
 	void set_yield_mode(YieldMode p_mode);
 	YieldMode get_yield_mode();
 
-	void set_wait_time(float p_time);
-	float get_wait_time();
+	void set_wait_time(double p_time);
+	double get_wait_time();
 
 	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 

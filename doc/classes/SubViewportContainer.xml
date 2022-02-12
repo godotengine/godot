@@ -9,8 +9,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="stretch" type="bool" setter="set_stretch" getter="is_stretch_enabled" default="false">
 			If [code]true[/code], the sub-viewport will be scaled to the control's size.
@@ -21,6 +19,4 @@
 			[b]Note:[/b] [member stretch] must be [code]true[/code] for this property to work.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

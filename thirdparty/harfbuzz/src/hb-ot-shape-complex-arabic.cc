@@ -259,7 +259,7 @@ struct arabic_shape_plan_t
 void *
 data_create_arabic (const hb_ot_shape_plan_t *plan)
 {
-  arabic_shape_plan_t *arabic_plan = (arabic_shape_plan_t *) calloc (1, sizeof (arabic_shape_plan_t));
+  arabic_shape_plan_t *arabic_plan = (arabic_shape_plan_t *) hb_calloc (1, sizeof (arabic_shape_plan_t));
   if (unlikely (!arabic_plan))
     return nullptr;
 
@@ -282,7 +282,7 @@ data_destroy_arabic (void *data)
 
   arabic_fallback_plan_destroy (arabic_plan->fallback_plan);
 
-  free (data);
+  hb_free (data);
 }
 
 static void
@@ -321,6 +321,20 @@ arabic_joining (hb_buffer_t *buffer)
       info[prev].arabic_shaping_action() = entry->prev_action;
       buffer->unsafe_to_break (prev, i + 1);
     }
+    else
+    {
+      if (prev == UINT_MAX)
+      {
+        if (this_type >= JOINING_TYPE_R)
+	  buffer->unsafe_to_concat_from_outbuffer (0, i + 1);
+      }
+      else
+      {
+	if (this_type >= JOINING_TYPE_R ||
+	    (2 <= state && state <= 5) /* States that have a possible prev_action. */)
+	  buffer->unsafe_to_concat (prev, i + 1);
+      }
+    }
 
     info[i].arabic_shaping_action() = entry->curr_action;
 
@@ -337,7 +351,14 @@ arabic_joining (hb_buffer_t *buffer)
 
     const arabic_state_table_entry *entry = &arabic_state_table[state][this_type];
     if (entry->prev_action != NONE && prev != UINT_MAX)
+    {
       info[prev].arabic_shaping_action() = entry->prev_action;
+      buffer->unsafe_to_break (prev, buffer->len);
+    }
+    else if (2 <= state && state <= 5) /* States that have a possible prev_action. */
+    {
+      buffer->unsafe_to_concat (prev, buffer->len);
+    }
     break;
   }
 }
@@ -349,7 +370,7 @@ mongolian_variation_selectors (hb_buffer_t *buffer)
   unsigned int count = buffer->len;
   hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = 1; i < count; i++)
-    if (unlikely (hb_in_range<hb_codepoint_t> (info[i].codepoint, 0x180Bu, 0x180Du)))
+    if (unlikely (hb_in_ranges<hb_codepoint_t> (info[i].codepoint, 0x180Bu, 0x180Du, 0x180Fu, 0x180Fu)))
       info[i].arabic_shaping_action() = info[i - 1].arabic_shaping_action();
 }
 

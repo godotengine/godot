@@ -30,6 +30,4 @@
 		<member name="base_error" type="String" setter="set_base_error" getter="get_base_error" default="&quot;&quot;">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

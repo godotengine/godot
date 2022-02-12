@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SkeletonModification3DStackHolder" inherits="SkeletonModification3D" version="4.0">
+	<brief_description>
+		A modification that holds and executes a [SkeletonModificationStack3D].
+	</brief_description>
+	<description>
+		This [SkeletonModification3D] holds a reference to a [SkeletonModificationStack3D], allowing you to use multiple modification stacks on a single [Skeleton3D].
+		[b]Note:[/b] The modifications in the held [SkeletonModificationStack3D] will only be executed if their execution mode matches the execution mode of the SkeletonModification3DStackHolder.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_held_modification_stack" qualifiers="const">
+			<return type="SkeletonModificationStack3D" />
+			<description>
+				Returns the [SkeletonModificationStack3D] that this modification is holding.
+			</description>
+		</method>
+		<method name="set_held_modification_stack">
+			<return type="void" />
+			<argument index="0" name="held_modification_stack" type="SkeletonModificationStack3D" />
+			<description>
+				Sets the [SkeletonModificationStack3D] that this modification is holding. This modification stack will then be executed when this modification is executed.
+			</description>
+		</method>
+	</methods>
+</class>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -62,7 +62,7 @@ extern void godot_webxr_initialize(
 extern void godot_webxr_uninitialize();
 
 extern int godot_webxr_get_view_count();
-extern int *godot_webxr_get_render_targetsize();
+extern int *godot_webxr_get_render_target_size();
 extern float *godot_webxr_get_transform_for_eye(int p_eye);
 extern float *godot_webxr_get_projection_for_eye(int p_eye);
 extern int godot_webxr_get_external_texture_for_eye(int p_eye);

@@ -6,8 +6,8 @@
 	<description>
 		Contains global variables accessible from everywhere. Use [method get_setting], [method set_setting] or [method has_setting] to access them. Variables stored in [code]project.godot[/code] are also loaded into ProjectSettings, making this object very useful for reading custom game configuration options.
 		When naming a Project Settings property, use the full path to the setting including the category. For example, [code]"application/config/name"[/code] for the project name. Category and property names can be viewed in the Project Settings dialog.
-		[b]Feature tags:[/b] Project settings can be overridden for specific platforms and configurations (debug, release, ...) using [url=https://docs.godotengine.org/en/latest/tutorials/export/feature_tags.html]feature tags[/url].
-		[b]Overriding:[/b] Any project setting can be overridden by creating a file named [code]override.cfg[/code] in the project's root directory. This can also be used in exported projects by placing this file in the same directory as the project binary. Overriding will still take the base project settings' [url=https://docs.godotengine.org/en/latest/tutorials/export/feature_tags.html]feature tags[/url] in account. Therefore, make sure to [i]also[/i] override the setting with the desired feature tags if you want them to override base project settings on all platforms and configurations.
+		[b]Feature tags:[/b] Project settings can be overridden for specific platforms and configurations (debug, release, ...) using [url=$DOCS_URL/tutorials/export/feature_tags.html]feature tags[/url].
+		[b]Overriding:[/b] Any project setting can be overridden by creating a file named [code]override.cfg[/code] in the project's root directory. This can also be used in exported projects by placing this file in the same directory as the project binary. Overriding will still take the base project settings' [url=$DOCS_URL/tutorials/export/feature_tags.html]feature tags[/url] in account. Therefore, make sure to [i]also[/i] override the setting with the desired feature tags if you want them to override base project settings on all platforms and configurations.
 	</description>
 	<tutorials>
 		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
@@ -87,7 +87,7 @@
 			<return type="String" />
 			<argument index="0" name="path" type="String" />
 			<description>
-				Returns the absolute, native OS path corresponding to the localized [code]path[/code] (starting with [code]res://[/code] or [code]user://[/code]). The returned path will vary depending on the operating system and user preferences. See [url=https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html]File paths in Godot projects[/url] to see what those paths convert to. See also [method localize_path].
+				Returns the absolute, native OS path corresponding to the localized [code]path[/code] (starting with [code]res://[/code] or [code]user://[/code]). The returned path will vary depending on the operating system and user preferences. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] to see what those paths convert to. See also [method localize_path].
 				[b]Note:[/b] [method globalize_path] with [code]res://[/code] will not work in an exported project. Instead, prepend the executable's base directory to the path when running from an exported project:
 				[codeblock]
 				var path = ""
@@ -188,6 +188,7 @@
 				ProjectSettings.SetSetting("application/config/name", "Example");
 				[/csharp]
 				[/codeblocks]
+				This can also be used to erase custom project settings. To do this change the setting value to [code]null[/code].
 			</description>
 		</method>
 	</methods>
@@ -196,13 +197,17 @@
 			Background color for the boot splash.
 		</member>
 		<member name="application/boot_splash/fullsize" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], scale the boot splash image to the full window length when engine starts. If [code]false[/code], the engine will leave it at the default pixel size.
+			If [code]true[/code], scale the boot splash image to the full window size (preserving the aspect ratio) when the engine starts. If [code]false[/code], the engine will leave it at the default pixel size.
 		</member>
 		<member name="application/boot_splash/image" type="String" setter="" getter="" default="&quot;&quot;">
-			Path to an image used as the boot splash.
+			Path to an image used as the boot splash. If left empty, the default Godot Engine splash will be displayed instead.
+			[b]Note:[/b] Only effective if [member application/boot_splash/show_image] is [code]true[/code].
+		</member>
+		<member name="application/boot_splash/show_image" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], displays the image specified in [member application/boot_splash/image] when the engine starts. If [code]false[/code], only displays the plain color specified in [member application/boot_splash/bg_color].
 		</member>
 		<member name="application/boot_splash/use_filter" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], applies linear filtering when scaling the image (recommended for high resolution artwork). If [code]false[/code], uses nearest-neighbor interpolation (recommended for pixel art).
+			If [code]true[/code], applies linear filtering when scaling the image (recommended for high-resolution artwork). If [code]false[/code], uses nearest-neighbor interpolation (recommended for pixel art).
 		</member>
 		<member name="application/config/custom_user_dir_name" type="String" setter="" getter="" default="&quot;&quot;">
 			This user directory is used for storing persistent data ([code]user://[/code] filesystem). If left empty, [code]user://[/code] resolves to a project-specific folder in Godot's own configuration folder (see [method OS.get_user_data_dir]). If a custom directory name is defined, this name will be used instead and appended to the system-specific user data directory (same parent folder as the Godot configuration folder documented in [method OS.get_user_data_dir]).
@@ -219,7 +224,7 @@
 		</member>
 		<member name="application/config/name" type="String" setter="" getter="" default="&quot;&quot;">
 			The project's name. It is used both by the Project Manager and by exporters. The project name can be translated by translating its value in localization files. The window title will be set to match the project name automatically on startup.
-			[b]Note:[/b] Changing this value will also change the user data folder's path if [member application/config/use_custom_user_dir] is [code]false[/code]. After renaming the project, you will no longer be able to access existing data in [code]user://[/code] unless you rename the old folder to match the new project name. See [url=https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html]Data paths[/url] in the documentation for more information.
+			[b]Note:[/b] Changing this value will also change the user data folder's path if [member application/config/use_custom_user_dir] is [code]false[/code]. After renaming the project, you will no longer be able to access existing data in [code]user://[/code] unless you rename the old folder to match the new project name. See [url=$DOCS_URL/tutorials/io/data_paths.html]Data paths[/url] in the documentation for more information.
 		</member>
 		<member name="application/config/project_settings_override" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies a file to override project settings. For example: [code]user://custom_settings.cfg[/code]. See "Overriding" in the [ProjectSettings] class description at the top for more information.
@@ -227,6 +232,12 @@
 		</member>
 		<member name="application/config/use_custom_user_dir" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the project will save user data to its own user directory (see [member application/config/custom_user_dir_name]). This setting is only effective on desktop platforms. A name must be set in the [member application/config/custom_user_dir_name] setting for this to take effect. If [code]false[/code], the project will save user data to [code](OS user data directory)/Godot/app_userdata/(project name)[/code].
+		</member>
+		<member name="application/config/use_hidden_project_data_directory" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the project will use a hidden directory ([code].godot[/code]) for storing project-specific data (metadata, shader cache, etc.).
+			If [code]false[/code], a non-hidden directory ([code]godot[/code]) will be used instead.
+			[b]Note:[/b] Restart the application after changing this setting.
+			[b]Note:[/b] Changing this value can help on platforms or with third-party tools where hidden directory patterns are disallowed. Only modify this setting if you know that your environment requires it, as changing the default can impact compatibility with some external tools or plugins which expect the default [code].godot[/code] folder.
 		</member>
 		<member name="application/config/windows_native_icon" type="String" setter="" getter="" default="&quot;&quot;">
 			Icon set in [code].ico[/code] format used on Windows to set the game's icon. This is done automatically on start by calling [method DisplayServer.set_native_icon].
@@ -279,8 +290,13 @@
 		<member name="audio/driver/mix_rate" type="int" setter="" getter="" default="44100">
 			The mixing rate used for audio (in Hz). In general, it's better to not touch this and leave it to the host operating system.
 		</member>
+		<member name="audio/driver/mix_rate.web" type="int" setter="" getter="" default="0">
+			Safer override for [member audio/driver/mix_rate] in the Web platform. Here [code]0[/code] means "let the browser choose" (since some browsers do not like forcing the mix rate).
+		</member>
 		<member name="audio/driver/output_latency" type="int" setter="" getter="" default="15">
-			Output latency in milliseconds for audio. Lower values will result in lower audio latency at the cost of increased CPU usage. Low values may result in audible cracking on slower hardware.
+			Specifies the preferred output latency in milliseconds for audio. Lower values will result in lower audio latency at the cost of increased CPU usage. Low values may result in audible cracking on slower hardware.
+			Audio output latency may be constrained by the host operating system and audio hardware drivers. If the host can not provide the specified audio output latency then Godot will attempt to use the nearest latency allowed by the host. As such you should always use [method AudioServer.get_output_latency] to determine the actual audio output latency.
+			[b]Note:[/b] This setting is ignored on all versions of Windows prior to Windows 10.
 		</member>
 		<member name="audio/driver/output_latency.web" type="int" setter="" getter="" default="50">
 			Safer override for [member audio/driver/output_latency] in the Web platform, to avoid audio issues especially on mobile devices.
@@ -315,9 +331,6 @@
 		<member name="debug/file_logging/max_log_files" type="int" setter="" getter="" default="5">
 			Specifies the maximum amount of log files allowed (used for rotation).
 		</member>
-		<member name="debug/gdscript/completion/autocomplete_setters_and_getters" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], displays getters and setters in autocompletion results in the script editor. This setting is meant to be used when porting old projects (Godot 2), as using member variables is the preferred style from Godot 3 onwards.
-		</member>
 		<member name="debug/gdscript/warnings/assert_always_false" type="bool" setter="" getter="" default="true">
 		</member>
 		<member name="debug/gdscript/warnings/assert_always_true" type="bool" setter="" getter="" default="true">
@@ -327,6 +340,9 @@
 		</member>
 		<member name="debug/gdscript/warnings/deprecated_keyword" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when deprecated keywords are used.
+		</member>
+		<member name="debug/gdscript/warnings/empty_file" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], enables warnings when an empty file is parsed.
 		</member>
 		<member name="debug/gdscript/warnings/enable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables specific GDScript warnings (see [code]debug/gdscript/warnings/*[/code] settings). If [code]false[/code], disables all GDScript warnings.
@@ -339,6 +355,8 @@
 		</member>
 		<member name="debug/gdscript/warnings/incompatible_ternary" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when a ternary operator may emit values with incompatible types.
+		</member>
+		<member name="debug/gdscript/warnings/int_assigned_to_enum" type="bool" setter="" getter="" default="true">
 		</member>
 		<member name="debug/gdscript/warnings/integer_division" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when dividing an integer by another integer (the decimal part will be discarded).
@@ -353,6 +371,9 @@
 		</member>
 		<member name="debug/gdscript/warnings/return_value_discarded" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when calling a function without using its return value (by assigning it to a variable or using it as a function argument). Such return values are sometimes used to denote possible errors using the [enum Error] enum.
+		</member>
+		<member name="debug/gdscript/warnings/shadowed_global_identifier" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], enables warnings when defining a local or subclass member variable, signal, or enum that would have the same name as a built-in function or global class name, which possibly shadow it.
 		</member>
 		<member name="debug/gdscript/warnings/shadowed_variable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when defining a local or subclass member variable that would shadow a variable at an upper level (such as a member variable).
@@ -411,8 +432,9 @@
 		</member>
 		<member name="debug/settings/fps/force_fps" type="int" setter="" getter="" default="0">
 			Maximum number of frames per second allowed. The actual number of frames per second may still be below this value if the game is lagging.
-			If [member display/window/vsync/vsync_mode] is set to [code]Enabled[/code] or [code]Adaptive[/code], it takes precedence and the forced FPS number cannot exceed the monitor's refresh rate.
+			If [member display/window/vsync/vsync_mode] is set to [code]Enabled[/code] or [code]Adaptive[/code], it takes precedence and the forced FPS number cannot exceed the monitor's refresh rate. See also [member physics/common/physics_ticks_per_second].
 			This setting is therefore mostly relevant for lowering the maximum FPS below VSync, e.g. to perform non-real-time rendering of static frames, or test the project under lag conditions.
+			[b]Note:[/b] This property is only read when the project starts. To change the rendering FPS cap at runtime, set [member Engine.target_fps] instead.
 		</member>
 		<member name="debug/settings/gdscript/max_call_stack" type="int" setter="" getter="" default="1024">
 			Maximum call stack allowed for debugging GDScript.
@@ -423,8 +445,10 @@
 		<member name="debug/settings/stdout/print_fps" type="bool" setter="" getter="" default="false">
 			Print frames per second to standard output every second.
 		</member>
+		<member name="debug/settings/stdout/print_gpu_profile" type="bool" setter="" getter="" default="false">
+		</member>
 		<member name="debug/settings/stdout/verbose_stdout" type="bool" setter="" getter="" default="false">
-			Print more information to standard output when running. It displays information such as memory leaks, which scenes and resources are being loaded, etc.
+			Print more information to standard output when running. It displays information such as memory leaks, which scenes and resources are being loaded, etc. This can also be enabled using the [code]--verbose[/code] or [code]-v[/code] command line argument, even on an exported project. See also [method OS.is_stdout_verbose] and [method @GlobalScope.print_verbose].
 		</member>
 		<member name="debug/settings/visual_script/max_call_stack" type="int" setter="" getter="" default="1024">
 			Maximum call stack in visual scripting, to avoid infinite recursion.
@@ -456,15 +480,16 @@
 		<member name="display/mouse_cursor/tooltip_position_offset" type="Vector2" setter="" getter="" default="Vector2(10, 10)">
 			Position offset for tooltips, relative to the mouse cursor's hotspot.
 		</member>
-		<member name="display/window/dpi/allow_hidpi" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], allows HiDPI display on Windows, macOS, and the HTML5 platform. This setting has no effect on desktop Linux, as DPI-awareness fallbacks are not supported there.
+		<member name="display/window/dpi/allow_hidpi" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], allows HiDPI display on Windows, macOS, Android, iOS and HTML5. If [code]false[/code], the platform's low-DPI fallback will be used on HiDPI displays, which causes the window to be displayed in a blurry or pixelated manner (and can cause various window management bugs). Therefore, it is recommended to make your project scale to [url=$DOCS_URL/tutorials/viewports/multiple_resolutions.html]multiple resolutions[/url] instead of disabling this setting.
+			[b]Note:[/b] This setting has no effect on Linux as DPI-awareness fallbacks are not supported there.
 		</member>
 		<member name="display/window/energy_saving/keep_screen_on" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], keeps the screen on (even in case of inactivity), so the screensaver does not take over. Works on desktop and mobile platforms.
 		</member>
 		<member name="display/window/handheld/orientation" type="int" setter="" getter="" default="0">
 			The default screen orientation to use on mobile devices. See [enum DisplayServer.ScreenOrientation] for possible values.
-			[b]Note:[/b] When set to a portrait orientation, this project setting does not flip the project resolution's width and height automatically. Instead, you have to set [member display/window/size/width] and [member display/window/size/height] accordingly.
+			[b]Note:[/b] When set to a portrait orientation, this project setting does not flip the project resolution's width and height automatically. Instead, you have to set [member display/window/size/viewport_width] and [member display/window/size/viewport_height] accordingly.
 		</member>
 		<member name="display/window/ios/hide_home_indicator" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the home indicator is hidden automatically. This only affects iOS devices without a physical home button.
@@ -479,24 +504,26 @@
 		</member>
 		<member name="display/window/size/fullscreen" type="bool" setter="" getter="" default="false">
 			Sets the main window to full screen when the project starts. Note that this is not [i]exclusive[/i] fullscreen. On Windows and Linux, a borderless window is used to emulate fullscreen. On macOS, a new desktop is used to display the running project.
-			Regardless of the platform, enabling fullscreen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=https://docs.godotengine.org/en/latest/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling fullscreen mode.
+			Regardless of the platform, enabling fullscreen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling fullscreen mode.
 			[b]Note:[/b] This setting is ignored on iOS, Android, and HTML5.
-		</member>
-		<member name="display/window/size/height" type="int" setter="" getter="" default="600">
-			Sets the game's main viewport height. On desktop platforms, this is the default window size. Stretch mode settings also use this as a reference when enabled.
 		</member>
 		<member name="display/window/size/resizable" type="bool" setter="" getter="" default="true">
 			Allows the window to be resizable by default.
 			[b]Note:[/b] This setting is ignored on iOS and Android.
 		</member>
-		<member name="display/window/size/test_height" type="int" setter="" getter="" default="0">
-			If greater than zero, overrides the window height when running the game. Useful for testing stretch modes.
+		<member name="display/window/size/viewport_height" type="int" setter="" getter="" default="600">
+			Sets the game's main viewport height. On desktop platforms, this is also the initial window height.
 		</member>
-		<member name="display/window/size/test_width" type="int" setter="" getter="" default="0">
-			If greater than zero, overrides the window width when running the game. Useful for testing stretch modes.
+		<member name="display/window/size/viewport_width" type="int" setter="" getter="" default="1024">
+			Sets the game's main viewport width. On desktop platforms, this is also the initial window width.
 		</member>
-		<member name="display/window/size/width" type="int" setter="" getter="" default="1024">
-			Sets the game's main viewport width. On desktop platforms, this is the default window size. Stretch mode settings also use this as a reference when enabled.
+		<member name="display/window/size/window_height_override" type="int" setter="" getter="" default="0">
+			On desktop platforms, sets the game's initial window height.
+			[b]Note:[/b] By default, or when set to 0, the initial window height is the [member display/window/size/viewport_height]. This setting is ignored on iOS, Android, and HTML5.
+		</member>
+		<member name="display/window/size/window_width_override" type="int" setter="" getter="" default="0">
+			On desktop platforms, sets the game's initial window width.
+			[b]Note:[/b] By default, or when set to 0, the initial window width is the viewport [member display/window/size/viewport_width]. This setting is ignored on iOS, Android, and HTML5.
 		</member>
 		<member name="display/window/vsync/vsync_mode" type="int" setter="" getter="" default="1">
 			Sets the VSync mode for the main game window.
@@ -537,8 +564,7 @@
 		<member name="gui/theme/custom_font" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to a custom [Font] resource to use as default for all GUI elements of the project.
 		</member>
-		<member name="gui/theme/use_hidpi" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], makes sure the theme used works with HiDPI.
+		<member name="gui/theme/default_theme_scale" type="float" setter="" getter="" default="1.0">
 		</member>
 		<member name="gui/timers/incremental_search_max_interval_msec" type="int" setter="" getter="" default="2000">
 			Timer setting for incremental search in [Tree], [ItemList], etc. controls (in milliseconds).
@@ -623,19 +649,19 @@
 		</member>
 		<member name="input/ui_text_backspace_all_to_left" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_text_backspace_all_to_left.OSX" type="Dictionary" setter="" getter="">
+		<member name="input/ui_text_backspace_all_to_left.macos" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_backspace_word" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_text_backspace_word.OSX" type="Dictionary" setter="" getter="">
+		<member name="input/ui_text_backspace_word.macos" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_caret_document_end" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_text_caret_document_end.OSX" type="Dictionary" setter="" getter="">
+		<member name="input/ui_text_caret_document_end.macos" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_caret_document_start" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_text_caret_document_start.OSX" type="Dictionary" setter="" getter="">
+		<member name="input/ui_text_caret_document_start.macos" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_caret_down" type="Dictionary" setter="" getter="">
 		</member>
@@ -643,11 +669,11 @@
 		</member>
 		<member name="input/ui_text_caret_line_end" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_text_caret_line_end.OSX" type="Dictionary" setter="" getter="">
+		<member name="input/ui_text_caret_line_end.macos" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_caret_line_start" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_text_caret_line_start.OSX" type="Dictionary" setter="" getter="">
+		<member name="input/ui_text_caret_line_start.macos" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_caret_page_down" type="Dictionary" setter="" getter="">
 		</member>
@@ -659,11 +685,11 @@
 		</member>
 		<member name="input/ui_text_caret_word_left" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_text_caret_word_left.OSX" type="Dictionary" setter="" getter="">
+		<member name="input/ui_text_caret_word_left.macos" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_caret_word_right" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_text_caret_word_right.OSX" type="Dictionary" setter="" getter="">
+		<member name="input/ui_text_caret_word_right.macos" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_completion_accept" type="Dictionary" setter="" getter="">
 		</member>
@@ -677,11 +703,11 @@
 		</member>
 		<member name="input/ui_text_delete_all_to_right" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_text_delete_all_to_right.OSX" type="Dictionary" setter="" getter="">
+		<member name="input/ui_text_delete_all_to_right.macos" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_delete_word" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_text_delete_word.OSX" type="Dictionary" setter="" getter="">
+		<member name="input/ui_text_delete_word.macos" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_indent" type="Dictionary" setter="" getter="">
 		</member>
@@ -693,11 +719,11 @@
 		</member>
 		<member name="input/ui_text_scroll_down" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_text_scroll_down.OSX" type="Dictionary" setter="" getter="">
+		<member name="input/ui_text_scroll_down.macos" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_scroll_up" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_text_scroll_up.OSX" type="Dictionary" setter="" getter="">
+		<member name="input/ui_text_scroll_up.macos" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_select_all" type="Dictionary" setter="" getter="">
 		</member>
@@ -715,10 +741,16 @@
 			Default [InputEventAction] to move up in the UI.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
+		<member name="input_devices/buffering/agile_event_flushing" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], key/touch/joystick events will be flushed just before every idle and physics frame.
+			If [code]false[/code], such events will be flushed only once per process frame, between iterations of the engine.
+			Enabling this can greatly improve the responsiveness to input, specially in devices that need to run multiple physics frames per visible (process) frame, because they can't run at the target frame rate.
+			[b]Note:[/b] Currently implemented only on Android.
+		</member>
 		<member name="input_devices/pen_tablet/driver" type="String" setter="" getter="">
 			Specifies the tablet driver to use. If left empty, the default driver will be used.
 		</member>
-		<member name="input_devices/pen_tablet/driver.Windows" type="String" setter="" getter="">
+		<member name="input_devices/pen_tablet/driver.windows" type="String" setter="" getter="">
 			Override for [member input_devices/pen_tablet/driver] on Windows.
 		</member>
 		<member name="input_devices/pointing/emulate_mouse_from_touch" type="bool" setter="" getter="" default="true">
@@ -741,14 +773,39 @@
 		<member name="internationalization/locale/test" type="String" setter="" getter="" default="&quot;&quot;">
 			If non-empty, this locale will be used when running the project from the editor.
 		</member>
+		<member name="internationalization/pseudolocalization/double_vowels" type="bool" setter="" getter="" default="false">
+			Double vowels in strings during pseudolocalization to simulate the lengthening of text due to localization.
+		</member>
+		<member name="internationalization/pseudolocalization/expansion_ratio" type="float" setter="" getter="" default="0.0">
+			The expansion ratio to use during pseudolocalization. A value of [code]0.3[/code] is sufficient for most practical purposes, and will increase the length of each string by 30%.
+		</member>
+		<member name="internationalization/pseudolocalization/fake_bidi" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], emulate bidirectional (right-to-left) text when pseudolocalization is enabled. This can be used to spot issues with RTL layout and UI mirroring that will crop up if the project is localized to RTL languages such as Arabic or Hebrew.
+		</member>
+		<member name="internationalization/pseudolocalization/override" type="bool" setter="" getter="" default="false">
+			Replace all characters in the string with [code]*[/code]. Useful for finding non-localizable strings.
+		</member>
+		<member name="internationalization/pseudolocalization/prefix" type="String" setter="" getter="" default="&quot;[&quot;">
+			Prefix that will be prepended to the pseudolocalized string.
+		</member>
+		<member name="internationalization/pseudolocalization/replace_with_accents" type="bool" setter="" getter="" default="true">
+			Replace all characters with their accented variants during pseudolocalization.
+		</member>
+		<member name="internationalization/pseudolocalization/skip_placeholders" type="bool" setter="" getter="" default="true">
+			Skip placeholders for string formatting like [code]%s[/code] or [code]%f[/code] during pseudolocalization. Useful to identify strings which need additional control characters to display correctly.
+		</member>
+		<member name="internationalization/pseudolocalization/suffix" type="String" setter="" getter="" default="&quot;]&quot;">
+			Suffix that will be appended to the pseudolocalized string.
+		</member>
+		<member name="internationalization/pseudolocalization/use_pseudolocalization" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], enables pseudolocalization for the project. This can be used to spot untranslatable strings or layout issues that may occur once the project is localized to languages that have longer strings than the source language.
+			[b]Note:[/b] This property is only read when the project starts. To toggle pseudolocalization at run-time, use [member TranslationServer.pseudolocalization_enabled] instead.
+		</member>
 		<member name="internationalization/rendering/force_right_to_left_layout_direction" type="bool" setter="" getter="" default="false">
 			Force layout direction and text writing direction to RTL for all locales.
 		</member>
 		<member name="internationalization/rendering/text_driver" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies the [TextServer] to use. If left empty, the default will be used.
-		</member>
-		<member name="layer_names/2d_navigation/layer_0" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D navigation layer 0. If left empty, the layer will display as "Layer 0".
 		</member>
 		<member name="layer_names/2d_navigation/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 1. If left empty, the layer will display as "Layer 1".
@@ -825,6 +882,9 @@
 		<member name="layer_names/2d_navigation/layer_31" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 31. If left empty, the layer will display as "Layer 31".
 		</member>
+		<member name="layer_names/2d_navigation/layer_32" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D navigation layer 32. If left empty, the layer will display as "Layer 32".
+		</member>
 		<member name="layer_names/2d_navigation/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 4. If left empty, the layer will display as "Layer 4".
 		</member>
@@ -842,9 +902,6 @@
 		</member>
 		<member name="layer_names/2d_navigation/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 9. If left empty, the layer will display as "Layer 9".
-		</member>
-		<member name="layer_names/2d_physics/layer_0" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D physics layer 0. If left empty, the layer will display as "Layer 0".
 		</member>
 		<member name="layer_names/2d_physics/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 1. If left empty, the layer will display as "Layer 1".
@@ -921,6 +978,9 @@
 		<member name="layer_names/2d_physics/layer_31" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 31. If left empty, the layer will display as "Layer 31".
 		</member>
+		<member name="layer_names/2d_physics/layer_32" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D physics layer 32. If left empty, the layer will display as "Layer 32".
+		</member>
 		<member name="layer_names/2d_physics/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 4. If left empty, the layer will display as "Layer 4".
 		</member>
@@ -938,9 +998,6 @@
 		</member>
 		<member name="layer_names/2d_physics/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D physics layer 9. If left empty, the layer will display as "Layer 9".
-		</member>
-		<member name="layer_names/2d_render/layer_0" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D render layer 0. If left empty, the layer will display as "Layer 0".
 		</member>
 		<member name="layer_names/2d_render/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D render layer 1. If left empty, the layer will display as "Layer 1".
@@ -978,6 +1035,9 @@
 		<member name="layer_names/2d_render/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D render layer 2. If left empty, the layer will display as "Layer 2".
 		</member>
+		<member name="layer_names/2d_render/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 2D render layer 20. If left empty, the layer will display as "Layer 20".
+		</member>
 		<member name="layer_names/2d_render/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D render layer 3. If left empty, the layer will display as "Layer 3".
 		</member>
@@ -998,9 +1058,6 @@
 		</member>
 		<member name="layer_names/2d_render/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D render layer 9. If left empty, the layer will display as "Layer 9".
-		</member>
-		<member name="layer_names/3d_navigation/layer_0" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D navigation layer 0. If left empty, the layer will display as "Layer 0".
 		</member>
 		<member name="layer_names/3d_navigation/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 1. If left empty, the layer will display as "Layer 1".
@@ -1077,6 +1134,9 @@
 		<member name="layer_names/3d_navigation/layer_31" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 31. If left empty, the layer will display as "Layer 31".
 		</member>
+		<member name="layer_names/3d_navigation/layer_32" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D navigation layer 32. If left empty, the layer will display as "Layer 32".
+		</member>
 		<member name="layer_names/3d_navigation/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 4. If left empty, the layer will display as "Layer 4".
 		</member>
@@ -1094,9 +1154,6 @@
 		</member>
 		<member name="layer_names/3d_navigation/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 9. If left empty, the layer will display as "Layer 9".
-		</member>
-		<member name="layer_names/3d_physics/layer_0" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D physics layer 0. If left empty, the layer will display as "Layer 0".
 		</member>
 		<member name="layer_names/3d_physics/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 1. If left empty, the layer will display as "Layer 1".
@@ -1173,6 +1230,9 @@
 		<member name="layer_names/3d_physics/layer_31" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 31. If left empty, the layer will display as "Layer 31".
 		</member>
+		<member name="layer_names/3d_physics/layer_32" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D physics layer 32. If left empty, the layer will display as "Layer 32".
+		</member>
 		<member name="layer_names/3d_physics/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 4. If left empty, the layer will display as "Layer 4".
 		</member>
@@ -1190,9 +1250,6 @@
 		</member>
 		<member name="layer_names/3d_physics/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 9. If left empty, the layer will display as "Layer 9".
-		</member>
-		<member name="layer_names/3d_render/layer_0" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 2D render layer 0. If left empty, the layer will display as "Layer 0".
 		</member>
 		<member name="layer_names/3d_render/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D render layer 1. If left empty, the layer will display as "Layer 1".
@@ -1229,6 +1286,9 @@
 		</member>
 		<member name="layer_names/3d_render/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D render layer 2. If left empty, the layer will display as "Layer 2".
+		</member>
+		<member name="layer_names/3d_render/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D render layer 20. If left empty, the layer will display as "Layer 20".
 		</member>
 		<member name="layer_names/3d_render/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D render layer 3. If left empty, the layer will display as "Layer 3".
@@ -1267,14 +1327,14 @@
 		</member>
 		<member name="mono/profiler/enabled" type="bool" setter="" getter="" default="false">
 		</member>
-		<member name="mono/project/auto_update_project" type="bool" setter="" getter="" default="true">
+		<member name="mono/runtime/unhandled_exception_policy" type="int" setter="" getter="" default="0">
+			The policy to use for unhandled Mono (C#) exceptions. The default "Terminate Application" exits the project as soon as an unhandled exception is thrown. "Log Error" logs an error message to the console instead, and will not interrupt the project execution when an unhandled exception is thrown.
+			[b]Note:[/b] The unhandled exception policy is always set to "Log Error" in the editor, which also includes C# [code]tool[/code] scripts running within the editor as well as editor plugin code.
 		</member>
-		<member name="mono/unhandled_exception_policy" type="int" setter="" getter="" default="0">
-		</member>
-		<member name="navigation/2d/default_cell_size" type="int" setter="" getter="" default="10">
+		<member name="navigation/2d/default_cell_size" type="int" setter="" getter="" default="1">
 			Default cell size for 2D navigation maps. See [method NavigationServer2D.map_set_cell_size].
 		</member>
-		<member name="navigation/2d/default_edge_connection_margin" type="int" setter="" getter="" default="5">
+		<member name="navigation/2d/default_edge_connection_margin" type="int" setter="" getter="" default="1">
 			Default edge connection margin for 2D navigation maps. See [method NavigationServer2D.map_set_edge_connection_margin].
 		</member>
 		<member name="navigation/3d/default_cell_size" type="float" setter="" getter="" default="0.3">
@@ -1316,7 +1376,7 @@
 		</member>
 		<member name="physics/2d/default_angular_damp" type="float" setter="" getter="" default="1.0">
 			The default angular damp in 2D.
-			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_fps], [code]60[/code] by default) will bring the object to a stop in one iteration.
+			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_ticks_per_second], [code]60[/code] by default) will bring the object to a stop in one iteration.
 		</member>
 		<member name="physics/2d/default_gravity" type="float" setter="" getter="" default="980.0">
 			The default gravity strength in 2D (in pixels per second squared).
@@ -1348,14 +1408,14 @@
 		</member>
 		<member name="physics/2d/default_linear_damp" type="float" setter="" getter="" default="0.1">
 			The default linear damp in 2D.
-			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_fps], [code]60[/code] by default) will bring the object to a stop in one iteration.
+			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_ticks_per_second], [code]60[/code] by default) will bring the object to a stop in one iteration.
 		</member>
 		<member name="physics/2d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
 			Sets which physics engine to use for 2D physics.
 			"DEFAULT" and "GodotPhysics2D" are the same, as there is currently no alternative 2D physics server implemented.
 		</member>
-		<member name="physics/2d/run_on_thread" type="bool" setter="" getter="" default="false">
-			Sets whether 2D physics is run on the main thread or a separate one. Running the server on a thread increases performance, but restricts API access to only physics process.
+		<member name="physics/2d/run_on_separate_thread" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the 2D physics server runs on a separate thread, making better use of multi-core CPUs. If [code]false[/code], the 2D physics server runs on the main thread. Running the physics server on a separate thread can increase performance, but restricts API access to only physics process.
 		</member>
 		<member name="physics/2d/sleep_threshold_angular" type="float" setter="" getter="" default="0.139626">
 			Threshold angular velocity under which a 2D physics body will be considered inactive. See [constant PhysicsServer2D.SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD].
@@ -1363,12 +1423,32 @@
 		<member name="physics/2d/sleep_threshold_linear" type="float" setter="" getter="" default="2.0">
 			Threshold linear velocity under which a 2D physics body will be considered inactive. See [constant PhysicsServer2D.SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD].
 		</member>
+		<member name="physics/2d/solver/contact_max_allowed_penetration" type="float" setter="" getter="" default="0.3">
+			Maximum distance a shape can penetrate another shape before it is considered a collision. See [constant PhysicsServer2D.SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION].
+		</member>
+		<member name="physics/2d/solver/contact_max_separation" type="float" setter="" getter="" default="1.5">
+			Maximum distance a shape can be from another before they are considered separated and the contact is discarded. See [constant PhysicsServer2D.SPACE_PARAM_CONTACT_MAX_SEPARATION].
+		</member>
+		<member name="physics/2d/solver/contact_recycle_radius" type="float" setter="" getter="" default="1.0">
+			Maximum distance a pair of bodies has to move before their collision status has to be recalculated. See [constant PhysicsServer2D.SPACE_PARAM_CONTACT_RECYCLE_RADIUS].
+		</member>
+		<member name="physics/2d/solver/default_constraint_bias" type="float" setter="" getter="" default="0.2">
+			Default solver bias for all physics constraints. Defines how much bodies react to enforce constraints. See [constant PhysicsServer2D.SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS].
+			Individual constraints can have a specific bias value (see [member Joint2D.bias]).
+		</member>
+		<member name="physics/2d/solver/default_contact_bias" type="float" setter="" getter="" default="0.8">
+			Default solver bias for all physics contacts. Defines how much bodies react to enforce contact separation. See [constant PhysicsServer2D.SPACE_PARAM_CONTACT_DEFAULT_BIAS].
+			Individual shapes can have a specific bias value (see [member Shape2D.custom_solver_bias]).
+		</member>
+		<member name="physics/2d/solver/solver_iterations" type="int" setter="" getter="" default="16">
+			Number of solver iterations for all contacts and constraints. The greater the amount of iterations, the more accurate the collisions will be. However, a greater amount of iterations requires more CPU power, which can decrease performance. See [constant PhysicsServer2D.SPACE_PARAM_SOLVER_ITERATIONS].
+		</member>
 		<member name="physics/2d/time_before_sleep" type="float" setter="" getter="" default="0.5">
 			Time (in seconds) of inactivity before which a 2D physics body will put to sleep. See [constant PhysicsServer2D.SPACE_PARAM_BODY_TIME_TO_SLEEP].
 		</member>
 		<member name="physics/3d/default_angular_damp" type="float" setter="" getter="" default="0.1">
 			The default angular damp in 3D.
-			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_fps], [code]60[/code] by default) will bring the object to a stop in one iteration.
+			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_ticks_per_second], [code]60[/code] by default) will bring the object to a stop in one iteration.
 		</member>
 		<member name="physics/3d/default_gravity" type="float" setter="" getter="" default="9.8">
 			The default gravity strength in 3D (in meters per second squared).
@@ -1400,32 +1480,64 @@
 		</member>
 		<member name="physics/3d/default_linear_damp" type="float" setter="" getter="" default="0.1">
 			The default linear damp in 3D.
-			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_fps], [code]60[/code] by default) will bring the object to a stop in one iteration.
+			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_ticks_per_second], [code]60[/code] by default) will bring the object to a stop in one iteration.
 		</member>
 		<member name="physics/3d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
 			Sets which physics engine to use for 3D physics.
 			"DEFAULT" is currently the [url=https://bulletphysics.org]Bullet[/url] physics engine. The "GodotPhysics3D" engine is still supported as an alternative.
 		</member>
-		<member name="physics/3d/run_on_thread" type="bool" setter="" getter="" default="false">
-			Sets whether 3D physics is run on the main thread or a separate one. Running the server on a thread increases performance, but restricts API access to only physics process.
+		<member name="physics/3d/run_on_separate_thread" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the 3D physics server runs on a separate thread, making better use of multi-core CPUs. If [code]false[/code], the 3D physics server runs on the main thread. Running the physics server on a separate thread can increase performance, but restricts API access to only physics process.
 		</member>
 		<member name="physics/3d/sleep_threshold_angular" type="float" setter="" getter="" default="0.139626">
+			Threshold angular velocity under which a 3D physics body will be considered inactive. See [constant PhysicsServer3D.SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD].
 		</member>
 		<member name="physics/3d/sleep_threshold_linear" type="float" setter="" getter="" default="0.1">
+			Threshold linear velocity under which a 3D physics body will be considered inactive. See [constant PhysicsServer3D.SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD].
+		</member>
+		<member name="physics/3d/solver/contact_max_allowed_penetration" type="float" setter="" getter="" default="0.01">
+			Maximum distance a shape can penetrate another shape before it is considered a collision. See [constant PhysicsServer3D.SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION].
+		</member>
+		<member name="physics/3d/solver/contact_max_separation" type="float" setter="" getter="" default="0.05">
+			Maximum distance a shape can be from another before they are considered separated and the contact is discarded. See [constant PhysicsServer3D.SPACE_PARAM_CONTACT_MAX_SEPARATION].
+		</member>
+		<member name="physics/3d/solver/contact_recycle_radius" type="float" setter="" getter="" default="0.01">
+			Maximum distance a pair of bodies has to move before their collision status has to be recalculated. See [constant PhysicsServer3D.SPACE_PARAM_CONTACT_RECYCLE_RADIUS].
+		</member>
+		<member name="physics/3d/solver/default_contact_bias" type="float" setter="" getter="" default="0.8">
+			Default solver bias for all physics contacts. Defines how much bodies react to enforce contact separation. See [constant PhysicsServer3D.SPACE_PARAM_CONTACT_DEFAULT_BIAS].
+			Individual shapes can have a specific bias value (see [member Shape3D.custom_solver_bias]).
+		</member>
+		<member name="physics/3d/solver/solver_iterations" type="int" setter="" getter="" default="16">
+			Number of solver iterations for all contacts and constraints. The greater the amount of iterations, the more accurate the collisions will be. However, a greater amount of iterations requires more CPU power, which can decrease performance. See [constant PhysicsServer3D.SPACE_PARAM_SOLVER_ITERATIONS].
 		</member>
 		<member name="physics/3d/time_before_sleep" type="float" setter="" getter="" default="0.5">
+			Time (in seconds) of inactivity before which a 3D physics body will put to sleep. See [constant PhysicsServer3D.SPACE_PARAM_BODY_TIME_TO_SLEEP].
 		</member>
 		<member name="physics/common/enable_object_picking" type="bool" setter="" getter="" default="true">
 			Enables [member Viewport.physics_object_picking] on the root viewport.
-		</member>
-		<member name="physics/common/physics_fps" type="int" setter="" getter="" default="60">
-			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run.
-			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.iterations_per_second] instead.
 		</member>
 		<member name="physics/common/physics_jitter_fix" type="float" setter="" getter="" default="0.5">
 			Controls how much physics ticks are synchronized with real time. For 0 or less, the ticks are synchronized. Such values are recommended for network games, where clock synchronization matters. Higher values cause higher deviation of in-game clock and real clock, but allows smoothing out framerate jitters. The default value of 0.5 should be fine for most; values above 2 could cause the game to react to dropped frames with a noticeable delay and are not recommended.
 			[b]Note:[/b] For best results, when using a custom physics interpolation solution, the physics jitter fix should be disabled by setting [member physics/common/physics_jitter_fix] to [code]0[/code].
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_jitter_fix] instead.
+		</member>
+		<member name="physics/common/physics_ticks_per_second" type="int" setter="" getter="" default="60">
+			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run. See also [member debug/settings/fps/force_fps].
+			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_ticks_per_second] instead.
+			[b]Note:[/b] Only 8 physics ticks may be simulated per rendered frame at most. If more than 8 physics ticks have to be simulated per rendered frame to keep up with rendering, the game will appear to slow down (even if [code]delta[/code] is used consistently in physics calculations). Therefore, it is recommended not to increase [member physics/common/physics_ticks_per_second] above 240. Otherwise, the game will slow down when the rendering framerate goes below 30 FPS.
+		</member>
+		<member name="rendering/2d/opengl/batching_send_null" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="rendering/2d/opengl/batching_stream" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="rendering/2d/opengl/legacy_orphan_buffers" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="rendering/2d/opengl/legacy_stream" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="rendering/2d/options/ninepatch_mode" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="rendering/2d/options/use_software_skinning" type="bool" setter="" getter="" default="true">
 		</member>
 		<member name="rendering/2d/sdf/oversize" type="int" setter="" getter="" default="1">
 		</member>
@@ -1438,7 +1550,7 @@
 		<member name="rendering/2d/snap/snap_2d_vertices_to_pixel" type="bool" setter="" getter="" default="false">
 		</member>
 		<member name="rendering/anti_aliasing/quality/msaa" type="int" setter="" getter="" default="0">
-			Sets the number of MSAA samples to use (as a power of two). MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware.
+			Sets the number of MSAA samples to use (as a power of two). MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware. See also bilinear scaling 3d [member rendering/scaling_3d/mode] for supersampling, which provides higher quality but is much more expensive.
 		</member>
 		<member name="rendering/anti_aliasing/quality/screen_space_aa" type="int" setter="" getter="" default="0">
 			Sets the screen-space antialiasing mode for the default screen [Viewport]. Screen-space antialiasing works by selectively blurring edges in a post-process shader. It differs from MSAA which takes multiple coverage samples while rendering objects. Screen-space AA methods are typically faster than MSAA and will smooth out specular aliasing, but tend to make scenes appear blurry.
@@ -1452,7 +1564,33 @@
 		</member>
 		<member name="rendering/anti_aliasing/screen_space_roughness_limiter/limit" type="float" setter="" getter="" default="0.18">
 		</member>
-		<member name="rendering/camera/depth_of_field/depth_of_field_bokeh_quality" type="int" setter="" getter="" default="2">
+		<member name="rendering/batching/debug/diagnose_frame" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="rendering/batching/debug/flash_batching" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="rendering/batching/lights/max_join_items" type="int" setter="" getter="" default="32">
+		</member>
+		<member name="rendering/batching/lights/scissor_area_threshold" type="float" setter="" getter="" default="1.0">
+		</member>
+		<member name="rendering/batching/options/single_rect_fallback" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="rendering/batching/options/use_batching" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="rendering/batching/options/use_batching_in_editor" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="rendering/batching/parameters/batch_buffer_size" type="int" setter="" getter="" default="16384">
+		</member>
+		<member name="rendering/batching/parameters/colored_vertex_format_threshold" type="float" setter="" getter="" default="0.25">
+		</member>
+		<member name="rendering/batching/parameters/item_reordering_lookahead" type="int" setter="" getter="" default="4">
+		</member>
+		<member name="rendering/batching/parameters/max_join_item_commands" type="int" setter="" getter="" default="16">
+		</member>
+		<member name="rendering/batching/precision/uv_contract" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="rendering/batching/precision/uv_contract_amount" type="int" setter="" getter="" default="100">
+		</member>
+		<member name="rendering/camera/depth_of_field/depth_of_field_bokeh_quality" type="int" setter="" getter="" default="1">
 			Sets the quality of the depth of field effect. Higher quality takes more samples, which is slower but looks smoother.
 		</member>
 		<member name="rendering/camera/depth_of_field/depth_of_field_bokeh_shape" type="int" setter="" getter="" default="1">
@@ -1461,14 +1599,13 @@
 		<member name="rendering/camera/depth_of_field/depth_of_field_use_jitter" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], jitters DOF samples to make effect slightly blurrier and hide lines created from low sample rates. This can result in a slightly grainy appearance when used with a low number of samples.
 		</member>
-		<member name="rendering/driver/depth_prepass/disable_for_vendors" type="String" setter="" getter="" default="&quot;PowerVR,Mali,Adreno,Apple&quot;">
-			Disables depth pre-pass for some GPU vendors (usually mobile), as their architecture already does this.
-		</member>
 		<member name="rendering/driver/depth_prepass/enable" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], performs a previous depth pass before rendering materials. This increases performance in scenes with high overdraw, when complex materials and lighting are used.
+			If [code]true[/code], performs a previous depth pass before rendering 3D materials. This increases performance significantly in scenes with high overdraw, when complex materials and lighting are used. However, in scenes with few occluded surfaces, the depth prepass may reduce performance. If your game is viewed from a fixed angle that makes it easy to avoid overdraw (such as top-down or side-scrolling perspective), consider disabling the depth prepass to improve performance. This setting can be changed at run-time to optimize performance depending on the scene currently being viewed.
+			[b]Note:[/b] Only supported when using the Vulkan Clustered backend (not Vulkan Mobile or OpenGL). When using Vulkan Mobile or OpenGL, there is no depth prepass performed.
 		</member>
-		<member name="rendering/driver/driver_name" type="String" setter="" getter="" default="&quot;Vulkan&quot;">
-			The video driver to use (currently only "Vulkan" is implemented).
+		<member name="rendering/driver/driver_name" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+			The video driver to use.
+			[b]Note:[/b] OpenGL support is currently incomplete. Only basic 2D rendering is supported, and single-window mode is required for correct operation.
 			[b]Note:[/b] The backend in use can be overridden at runtime via the [code]--rendering-driver[/code] command line argument.
 			[b]FIXME:[/b] No longer valid after DisplayServer split:
 			In such cases, this property is not updated, so use [code]OS.get_current_video_driver[/code] to query it at run-time.
@@ -1480,7 +1617,7 @@
 			Default background clear color. Overridable per [Viewport] using its [Environment]. See [member Environment.background_mode] and [member Environment.background_color] in particular. To change this default color programmatically, use [method RenderingServer.set_default_clear_color].
 		</member>
 		<member name="rendering/environment/defaults/default_environment" type="String" setter="" getter="" default="&quot;&quot;">
-			[Environment] that will be used as a fallback environment in case a scene does not specify its own environment. The default environment is loaded in at scene load time regardless of whether you have set an environment or not. If you do not rely on the fallback environment, it is best to delete [code]default_env.tres[/code], or to specify a different default environment here.
+			[Environment] that will be used as a fallback environment in case a scene does not specify its own environment. The default environment is loaded in at scene load time regardless of whether you have set an environment or not. If you do not rely on the fallback environment, you do not need to set this property.
 		</member>
 		<member name="rendering/environment/glow/upscale_mode" type="int" setter="" getter="" default="1">
 			Sets how the glow effect is upscaled before being copied onto the screen. Linear is faster, but looks blocky. Bicubic is slower but looks smooth.
@@ -1515,6 +1652,24 @@
 		<member name="rendering/environment/ssao/quality" type="int" setter="" getter="" default="2">
 			Sets the quality of the screen-space ambient occlusion effect. Higher values take more samples and so will result in better quality, at the cost of performance. Setting to [code]ULTRA[/code] will use the [member rendering/environment/ssao/adaptive_target] setting.
 		</member>
+		<member name="rendering/environment/ssil/adaptive_target" type="float" setter="" getter="" default="0.5">
+			Quality target to use when [member rendering/environment/ssil/quality] is set to [code]ULTRA[/code]. A value of [code]0.0[/code] provides a quality and speed similar to [code]MEDIUM[/code] while a value of [code]1.0[/code] provides much higher quality than any of the other settings at the cost of performance. When using the adaptive target, the performance cost scales with the complexity of the scene.
+		</member>
+		<member name="rendering/environment/ssil/blur_passes" type="int" setter="" getter="" default="4">
+			Number of blur passes to use when computing screen-space indirect lighting. A higher number will result in a smoother look, but will be slower to compute and will have less high-frequency detail.
+		</member>
+		<member name="rendering/environment/ssil/fadeout_from" type="float" setter="" getter="" default="50.0">
+			Distance at which the screen-space indirect lighting effect starts to fade out. Use this hide screen-space indirect lighting at great distances.
+		</member>
+		<member name="rendering/environment/ssil/fadeout_to" type="float" setter="" getter="" default="300.0">
+			Distance at which the screen-space indirect lighting is fully faded out. Use this hide screen-space indirect lighting at great distances.
+		</member>
+		<member name="rendering/environment/ssil/half_size" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], screen-space indirect lighting will be rendered at half size and then upscaled before being added to the scene. This is significantly faster but may miss small details and may result in some objects appearing to glow at their edges.
+		</member>
+		<member name="rendering/environment/ssil/quality" type="int" setter="" getter="" default="2">
+			Sets the quality of the screen-space indirect lighting effect. Higher values take more samples and so will result in better quality, at the cost of performance. Setting to [code]ULTRA[/code] will use the [member rendering/environment/ssil/adaptive_target] setting.
+		</member>
 		<member name="rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale" type="float" setter="" getter="" default="0.01">
 			Scales the depth over which the subsurface scattering effect is applied. A high value may allow light to scatter into a part of the mesh or another mesh that is close in screen space but far in depth.
 		</member>
@@ -1525,20 +1680,29 @@
 			Scales the distance over which samples are taken for subsurface scattering effect. Changing this does not impact performance, but higher values will result in significant artifacts as the samples will become obviously spread out. A lower value results in a smaller spread of scattered light.
 		</member>
 		<member name="rendering/environment/volumetric_fog/use_filter" type="int" setter="" getter="" default="1">
+			Enables filtering of the volumetric fog effect prior to integration. This substantially blurs the fog which reduces fine details but also smooths out harsh edges and aliasing artifacts. Disable when more detail is required.
 		</member>
-		<member name="rendering/environment/volumetric_fog/volume_depth" type="int" setter="" getter="" default="128">
+		<member name="rendering/environment/volumetric_fog/volume_depth" type="int" setter="" getter="" default="64">
+			Number of slices to use along the depth of the froxel buffer for volumetric fog. A lower number will be more efficient but may result in artifacts appearing during camera movement.
 		</member>
 		<member name="rendering/environment/volumetric_fog/volume_size" type="int" setter="" getter="" default="64">
+			Base size used to determine size of froxel buffer in the camera X-axis and Y-axis. The final size is scaled by the aspect ratio of the screen, so actual values may differ from what is set. Set a larger size for more detailed fog, set a smaller size for better performance.
+		</member>
+		<member name="rendering/gles2/compatibility/disable_half_float" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="rendering/gles2/compatibility/enable_high_float.Android" type="bool" setter="" getter="" default="false">
 		</member>
 		<member name="rendering/global_illumination/gi/use_half_resolution" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], renders [VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) buffers at halved resolution (e.g. 960×540 when the viewport size is 1920×1080). This improves performance significantly when VoxelGI or SDFGI is enabled, at the cost of artifacts that may be visible on polygon edges. The loss in quality becomes less noticeable as the viewport resolution increases. [LightmapGI] rendering is not affected by this setting.
+			[b]Note:[/b] This property is only read when the project starts. To set half-resolution GI at run-time, call [method RenderingServer.gi_set_use_half_resolution] instead.
 		</member>
-		<member name="rendering/global_illumination/sdfgi/frames_to_converge" type="int" setter="" getter="" default="4">
+		<member name="rendering/global_illumination/sdfgi/frames_to_converge" type="int" setter="" getter="" default="5">
 		</member>
 		<member name="rendering/global_illumination/sdfgi/frames_to_update_lights" type="int" setter="" getter="" default="2">
 		</member>
 		<member name="rendering/global_illumination/sdfgi/probe_ray_count" type="int" setter="" getter="" default="1">
 		</member>
-		<member name="rendering/global_illumination/voxel_gi/quality" type="int" setter="" getter="" default="1">
+		<member name="rendering/global_illumination/voxel_gi/quality" type="int" setter="" getter="" default="0">
 		</member>
 		<member name="rendering/lightmapping/bake_performance/max_rays_per_pass" type="int" setter="" getter="" default="32">
 		</member>
@@ -1577,12 +1741,19 @@
 		<member name="rendering/limits/time/time_rollover_secs" type="float" setter="" getter="" default="3600">
 		</member>
 		<member name="rendering/mesh_lod/lod_change/threshold_pixels" type="float" setter="" getter="" default="1.0">
+			The automatic LOD bias to use for meshes rendered within the [ReflectionProbe]. Higher values will use less detailed versions of meshes that have LOD variations generated. If set to [code]0.0[/code], automatic LOD is disabled. Increase [member rendering/mesh_lod/lod_change/threshold_pixels] to improve performance at the cost of geometry detail.
+			[b]Note:[/b] [member rendering/mesh_lod/lod_change/threshold_pixels] does not affect [GeometryInstance3D] visibility ranges (also known as "manual" LOD or hierarchical LOD).
+			[b]Note:[/b] This property is only read when the project starts. To adjust the automatic LOD threshold at runtime, set [member Viewport.mesh_lod_threshold] on the root [Viewport].
 		</member>
 		<member name="rendering/occlusion_culling/bvh_build_quality" type="int" setter="" getter="" default="2">
+			The [url=https://en.wikipedia.org/wiki/Bounding_volume_hierarchy]BVH[/url] quality to use when rendering the occlusion culling buffer. Higher values will result in more accurate occlusion culling, at the cost of higher CPU usage.
 		</member>
 		<member name="rendering/occlusion_culling/occlusion_rays_per_thread" type="int" setter="" getter="" default="512">
+			Higher values will result in more accurate occlusion culling, at the cost of higher CPU usage. The occlusion culling buffer's pixel count is roughly equal to [code]occlusion_rays_per_thread * number_of_logical_cpu_cores[/code], so it will depend on the system's CPU. Therefore, CPUs with fewer cores will use a lower resolution to attempt keeping performance costs even across devices.
 		</member>
 		<member name="rendering/occlusion_culling/use_occlusion_culling" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], [OccluderInstance3D] nodes will be usable for occlusion culling in 3D in the root viewport. In custom viewports, [member Viewport.use_occlusion_culling] must be set to [code]true[/code] instead.
+			[b]Note:[/b] Enabling occlusion culling has a cost on the CPU. Only enable occlusion culling if you actually plan to use it. Large open scenes with few or no objects blocking the view will generally not benefit much from occlusion culling. Large open scenes generally benefit more from mesh LOD and visibility ranges ([member GeometryInstance3D.visibility_range_begin] and [member GeometryInstance3D.visibility_range_end]) compared to occlusion culling.
 		</member>
 		<member name="rendering/reflections/reflection_atlas/reflection_count" type="int" setter="" getter="" default="64">
 			Number of cubemaps to store in the reflection atlas. The number of [ReflectionProbe]s in a scene will be limited by this amount. A higher number requires more VRAM.
@@ -1610,6 +1781,18 @@
 		</member>
 		<member name="rendering/reflections/sky_reflections/texture_array_reflections.mobile" type="bool" setter="" getter="" default="false">
 			Lower-end override for [member rendering/reflections/sky_reflections/texture_array_reflections] on mobile devices, due to performance concerns or driver support.
+		</member>
+		<member name="rendering/scaling_3d/fsr_mipmap_bias" type="float" setter="" getter="" default="0.0">
+			Affects the final texture sharpness by reading from a lower or higher mipmap. Negative values make textures sharper, while positive values make textures blurrier. When using FSR, this value is used to adjust the mipmap bias calculated internally which is based on the selected quality. The formula for this is [code]-log2(1.0 / scale) + mipmap_bias[/code]
+		</member>
+		<member name="rendering/scaling_3d/fsr_sharpness" type="float" setter="" getter="" default="0.2">
+			Determines how sharp the upscaled image will be when using the FSR upscaling mode. Sharpness halves with every whole number. Values go from 0.0 (sharpest) to 2.0. Values above 2.0 won't make a visible difference.
+		</member>
+		<member name="rendering/scaling_3d/mode" type="int" setter="" getter="" default="0">
+			Sets the scaling 3D mode. Bilinear scaling renders at different resolution to either undersample or supersample the viewport. FidelityFX Super Resolution 1.0, abbreviated to FSR, is an upscaling technology that produces high quality images at fast framerates by using a spatially aware upscaling algorithm. FSR is slightly more expensive than bilinear, but it produces significantly higher image quality. FSR should be used where possible.
+		</member>
+		<member name="rendering/scaling_3d/scale" type="float" setter="" getter="" default="1.0">
+			Scales the 3D render buffer based on the viewport size uses an image filter specified in [member rendering/scaling_3d/mode] to scale the output image to the full viewport size. Values lower than [code]1.0[/code] can be used to speed up 3D rendering at the cost of quality (undersampling). Values greater than [code]1.0[/code] are only valid for bilinear mode and can be used to improve 3D rendering quality at a high performance cost (supersampling). See also [member rendering/anti_aliasing/quality/msaa] for multi-sample antialiasing, which is significantly cheaper but only smoothens the edges of polygons.
 		</member>
 		<member name="rendering/shader_compiler/shader_cache/compress" type="bool" setter="" getter="" default="true">
 		</member>
@@ -1649,6 +1832,8 @@
 		</member>
 		<member name="rendering/shadows/directional_shadow/soft_shadow_quality" type="int" setter="" getter="" default="2">
 			Quality setting for shadows cast by [DirectionalLight3D]s. Higher quality settings use more samples when reading from shadow maps and are thus slower. Low quality settings may result in shadows looking grainy.
+			[b]Note:[/b] The Soft Very Low setting will automatically multiply [i]constant[/i] shadow blur by 0.75x to reduce the amount of noise visible. This automatic blur change only affects the constant blur factor defined in [member Light3D.shadow_blur], not the variable blur performed by [DirectionalLight3D]s' [member Light3D.light_angular_distance].
+			[b]Note:[/b] The Soft High and Soft Ultra settings will automatically multiply [i]constant[/i] shadow blur by 1.5× and 2× respectively to make better use of the increased sample count. This increased blur also improves stability of dynamic object shadows.
 		</member>
 		<member name="rendering/shadows/directional_shadow/soft_shadow_quality.mobile" type="int" setter="" getter="" default="0">
 			Lower-end override for [member rendering/shadows/directional_shadow/soft_shadow_quality] on mobile devices, due to performance concerns or driver support.
@@ -1675,6 +1860,8 @@
 		</member>
 		<member name="rendering/shadows/shadows/soft_shadow_quality" type="int" setter="" getter="" default="2">
 			Quality setting for shadows cast by [OmniLight3D]s and [SpotLight3D]s. Higher quality settings use more samples when reading from shadow maps and are thus slower. Low quality settings may result in shadows looking grainy.
+			[b]Note:[/b] The Soft Very Low setting will automatically multiply [i]constant[/i] shadow blur by 0.75x to reduce the amount of noise visible. This automatic blur change only affects the constant blur factor defined in [member Light3D.shadow_blur], not the variable blur performed by [DirectionalLight3D]s' [member Light3D.light_angular_distance].
+			[b]Note:[/b] The Soft High and Soft Ultra settings will automatically multiply shadow blur by 1.5× and 2× respectively to make better use of the increased sample count. This increased blur also improves stability of dynamic object shadows.
 		</member>
 		<member name="rendering/shadows/shadows/soft_shadow_quality.mobile" type="int" setter="" getter="" default="0">
 			Lower-end override for [member rendering/shadows/shadows/soft_shadow_quality] on mobile devices, due to performance concerns or driver support.
@@ -1683,9 +1870,11 @@
 		</member>
 		<member name="rendering/textures/default_filters/anisotropic_filtering_level" type="int" setter="" getter="" default="2">
 			Sets the maximum number of samples to take when using anisotropic filtering on textures (as a power of two). A higher sample count will result in sharper textures at oblique angles, but is more expensive to compute. A value of [code]0[/code] forcibly disables anisotropic filtering, even on materials where it is enabled.
+			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this setting at run-time.
 		</member>
 		<member name="rendering/textures/default_filters/use_nearest_mipmap_filter" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses nearest-neighbor mipmap filtering when using mipmaps (also called "bilinear filtering"), which will result in visible seams appearing between mipmap stages. This may increase performance in mobile as less memory bandwidth is used. If [code]false[/code], linear mipmap filtering (also called "trilinear filtering") is used.
+			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this setting at run-time.
 		</member>
 		<member name="rendering/textures/light_projectors/filter" type="int" setter="" getter="" default="3">
 		</member>
@@ -1697,23 +1886,19 @@
 		</member>
 		<member name="rendering/textures/vram_compression/import_bptc" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the BPTC algorithm. This texture compression algorithm is only supported on desktop platforms, and only when using the Vulkan renderer.
-			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor.
+			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
 		</member>
 		<member name="rendering/textures/vram_compression/import_etc" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the Ericsson Texture Compression algorithm. This algorithm doesn't support alpha channels in textures.
-			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor.
+			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
 		</member>
 		<member name="rendering/textures/vram_compression/import_etc2" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the Ericsson Texture Compression 2 algorithm. This texture compression algorithm is only supported when using the Vulkan renderer.
-			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor.
-		</member>
-		<member name="rendering/textures/vram_compression/import_pvrtc" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], the texture importer will import VRAM-compressed textures using the PowerVR Texture Compression algorithm. This texture compression algorithm is only supported on iOS.
-			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor.
+			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
 		</member>
 		<member name="rendering/textures/vram_compression/import_s3tc" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the S3 Texture Compression algorithm. This algorithm is only supported on desktop platforms and consoles.
-			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor.
+			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
 		</member>
 		<member name="rendering/vulkan/descriptor_pools/max_descriptors_per_pool" type="int" setter="" getter="" default="64">
 		</member>
@@ -1731,6 +1916,4 @@
 			If [code]true[/code], XR support is enabled in Godot, this ensures required shaders are compiled.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

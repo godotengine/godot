@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,7 +50,9 @@ void CollisionObject2D::_notification(int p_what) {
 			}
 
 			if (!disabled || (disable_mode != DISABLE_MODE_REMOVE)) {
-				RID space = get_world_2d()->get_space();
+				Ref<World2D> world_ref = get_world_2d();
+				ERR_FAIL_COND(!world_ref.is_valid());
+				RID space = world_ref->get_space();
 				if (area) {
 					PhysicsServer2D::get_singleton()->area_set_space(rid, space);
 				} else {
@@ -147,36 +149,40 @@ uint32_t CollisionObject2D::get_collision_mask() const {
 	return collision_mask;
 }
 
-void CollisionObject2D::set_collision_layer_bit(int p_bit, bool p_value) {
-	ERR_FAIL_INDEX_MSG(p_bit, 32, "Collision layer bit must be between 0 and 31 inclusive.");
+void CollisionObject2D::set_collision_layer_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Collision layer number must be between 1 and 32 inclusive.");
 	uint32_t collision_layer = get_collision_layer();
 	if (p_value) {
-		collision_layer |= 1 << p_bit;
+		collision_layer |= 1 << (p_layer_number - 1);
 	} else {
-		collision_layer &= ~(1 << p_bit);
+		collision_layer &= ~(1 << (p_layer_number - 1));
 	}
 	set_collision_layer(collision_layer);
 }
 
-bool CollisionObject2D::get_collision_layer_bit(int p_bit) const {
-	ERR_FAIL_INDEX_V_MSG(p_bit, 32, false, "Collision layer bit must be between 0 and 31 inclusive.");
-	return get_collision_layer() & (1 << p_bit);
+bool CollisionObject2D::get_collision_layer_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Collision layer number must be between 1 and 32 inclusive.");
+	return get_collision_layer() & (1 << (p_layer_number - 1));
 }
 
-void CollisionObject2D::set_collision_mask_bit(int p_bit, bool p_value) {
-	ERR_FAIL_INDEX_MSG(p_bit, 32, "Collision mask bit must be between 0 and 31 inclusive.");
+void CollisionObject2D::set_collision_mask_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Collision layer number must be between 1 and 32 inclusive.");
 	uint32_t mask = get_collision_mask();
 	if (p_value) {
-		mask |= 1 << p_bit;
+		mask |= 1 << (p_layer_number - 1);
 	} else {
-		mask &= ~(1 << p_bit);
+		mask &= ~(1 << (p_layer_number - 1));
 	}
 	set_collision_mask(mask);
 }
 
-bool CollisionObject2D::get_collision_mask_bit(int p_bit) const {
-	ERR_FAIL_INDEX_V_MSG(p_bit, 32, false, "Collision mask bit must be between 0 and 31 inclusive.");
-	return get_collision_mask() & (1 << p_bit);
+bool CollisionObject2D::get_collision_mask_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Collision layer number must be between 1 and 32 inclusive.");
+	return get_collision_mask() & (1 << (p_layer_number - 1));
 }
 
 void CollisionObject2D::set_disable_mode(DisableMode p_mode) {
@@ -262,7 +268,7 @@ uint32_t CollisionObject2D::create_shape_owner(Object *p_owner) {
 		id = shapes.back()->key() + 1;
 	}
 
-	sd.owner = p_owner;
+	sd.owner_id = p_owner ? p_owner->get_instance_id() : ObjectID();
 
 	shapes[id] = sd;
 
@@ -338,15 +344,15 @@ real_t CollisionObject2D::get_shape_owner_one_way_collision_margin(uint32_t p_ow
 }
 
 void CollisionObject2D::get_shape_owners(List<uint32_t> *r_owners) {
-	for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
-		r_owners->push_back(E->key());
+	for (const KeyValue<uint32_t, ShapeData> &E : shapes) {
+		r_owners->push_back(E.key);
 	}
 }
 
 Array CollisionObject2D::_get_shape_owners() {
 	Array ret;
-	for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
-		ret.push_back(E->key());
+	for (const KeyValue<uint32_t, ShapeData> &E : shapes) {
+		ret.push_back(E.key);
 	}
 
 	return ret;
@@ -376,7 +382,7 @@ Transform2D CollisionObject2D::shape_owner_get_transform(uint32_t p_owner) const
 Object *CollisionObject2D::shape_owner_get_owner(uint32_t p_owner) const {
 	ERR_FAIL_COND_V(!shapes.has(p_owner), nullptr);
 
-	return shapes[p_owner].owner;
+	return ObjectDB::get_instance(shapes[p_owner].owner_id);
 }
 
 void CollisionObject2D::shape_owner_add_shape(uint32_t p_owner, const Ref<Shape2D> &p_shape) {
@@ -428,12 +434,12 @@ void CollisionObject2D::shape_owner_remove_shape(uint32_t p_owner, int p_shape) 
 		PhysicsServer2D::get_singleton()->body_remove_shape(rid, index_to_remove);
 	}
 
-	shapes[p_owner].shapes.remove(p_shape);
+	shapes[p_owner].shapes.remove_at(p_shape);
 
-	for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
-		for (int i = 0; i < E->get().shapes.size(); i++) {
-			if (E->get().shapes[i].index > index_to_remove) {
-				E->get().shapes.write[i].index -= 1;
+	for (KeyValue<uint32_t, ShapeData> &E : shapes) {
+		for (int i = 0; i < E.value.shapes.size(); i++) {
+			if (E.value.shapes[i].index > index_to_remove) {
+				E.value.shapes.write[i].index -= 1;
 			}
 		}
 	}
@@ -450,18 +456,18 @@ void CollisionObject2D::shape_owner_clear_shapes(uint32_t p_owner) {
 }
 
 uint32_t CollisionObject2D::shape_find_owner(int p_shape_index) const {
-	ERR_FAIL_INDEX_V(p_shape_index, total_subshapes, 0);
+	ERR_FAIL_INDEX_V(p_shape_index, total_subshapes, UINT32_MAX);
 
-	for (const Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
-		for (int i = 0; i < E->get().shapes.size(); i++) {
-			if (E->get().shapes[i].index == p_shape_index) {
-				return E->key();
+	for (const KeyValue<uint32_t, ShapeData> &E : shapes) {
+		for (int i = 0; i < E.value.shapes.size(); i++) {
+			if (E.value.shapes[i].index == p_shape_index) {
+				return E.key;
 			}
 		}
 	}
 
 	//in theory it should be unreachable
-	return 0;
+	ERR_FAIL_V_MSG(UINT32_MAX, "Can't find owner for shape index " + itos(p_shape_index) + ".");
 }
 
 void CollisionObject2D::set_pickable(bool p_enabled) {
@@ -477,10 +483,8 @@ bool CollisionObject2D::is_pickable() const {
 	return pickable;
 }
 
-void CollisionObject2D::_input_event(Node *p_viewport, const Ref<InputEvent> &p_input_event, int p_shape) {
-	if (get_script_instance()) {
-		get_script_instance()->call(SceneStringNames::get_singleton()->_input_event, p_viewport, p_input_event, p_shape);
-	}
+void CollisionObject2D::_input_event_call(Viewport *p_viewport, const Ref<InputEvent> &p_input_event, int p_shape) {
+	GDVIRTUAL_CALL(_input_event, p_viewport, p_input_event, p_shape);
 	emit_signal(SceneStringNames::get_singleton()->input_event, p_viewport, p_input_event, p_shape);
 }
 
@@ -565,10 +569,10 @@ void CollisionObject2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collision_layer"), &CollisionObject2D::get_collision_layer);
 	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &CollisionObject2D::set_collision_mask);
 	ClassDB::bind_method(D_METHOD("get_collision_mask"), &CollisionObject2D::get_collision_mask);
-	ClassDB::bind_method(D_METHOD("set_collision_layer_bit", "bit", "value"), &CollisionObject2D::set_collision_layer_bit);
-	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &CollisionObject2D::get_collision_layer_bit);
-	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &CollisionObject2D::set_collision_mask_bit);
-	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &CollisionObject2D::get_collision_mask_bit);
+	ClassDB::bind_method(D_METHOD("set_collision_layer_value", "layer_number", "value"), &CollisionObject2D::set_collision_layer_value);
+	ClassDB::bind_method(D_METHOD("get_collision_layer_value", "layer_number"), &CollisionObject2D::get_collision_layer_value);
+	ClassDB::bind_method(D_METHOD("set_collision_mask_value", "layer_number", "value"), &CollisionObject2D::set_collision_mask_value);
+	ClassDB::bind_method(D_METHOD("get_collision_mask_value", "layer_number"), &CollisionObject2D::get_collision_mask_value);
 	ClassDB::bind_method(D_METHOD("set_disable_mode", "mode"), &CollisionObject2D::set_disable_mode);
 	ClassDB::bind_method(D_METHOD("get_disable_mode"), &CollisionObject2D::get_disable_mode);
 	ClassDB::bind_method(D_METHOD("set_pickable", "enabled"), &CollisionObject2D::set_pickable);
@@ -593,7 +597,7 @@ void CollisionObject2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shape_owner_clear_shapes", "owner_id"), &CollisionObject2D::shape_owner_clear_shapes);
 	ClassDB::bind_method(D_METHOD("shape_find_owner", "shape_index"), &CollisionObject2D::shape_find_owner);
 
-	BIND_VMETHOD(MethodInfo("_input_event", PropertyInfo(Variant::OBJECT, "viewport"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::INT, "shape_idx")));
+	GDVIRTUAL_BIND(_input_event, "viewport", "event", "shape_idx");
 
 	ADD_SIGNAL(MethodInfo("input_event", PropertyInfo(Variant::OBJECT, "viewport", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::INT, "shape_idx")));
 	ADD_SIGNAL(MethodInfo("mouse_entered"));

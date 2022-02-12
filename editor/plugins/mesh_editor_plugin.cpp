@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,11 +32,11 @@
 
 #include "editor/editor_scale.h"
 
-void MeshEditor::_gui_input(Ref<InputEvent> p_event) {
+void MeshEditor::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
+	if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
 		rot_x -= mm->get_relative().y * 0.01;
 		rot_y -= mm->get_relative().x * 0.01;
 		if (rot_x < -Math_PI / 2) {
@@ -80,7 +80,7 @@ void MeshEditor::edit(Ref<Mesh> p_mesh) {
 	_update_rotation();
 
 	AABB aabb = mesh->get_aabb();
-	Vector3 ofs = aabb.position + aabb.size * 0.5;
+	Vector3 ofs = aabb.get_center();
 	float m = aabb.get_longest_axis_size();
 	if (m != 0) {
 		m = 1.0 / m;
@@ -101,10 +101,6 @@ void MeshEditor::_button_pressed(Node *p_button) {
 	if (p_button == light_2_switch) {
 		light2->set_visible(!light_2_switch->is_pressed());
 	}
-}
-
-void MeshEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &MeshEditor::_gui_input);
 }
 
 MeshEditor::MeshEditor() {

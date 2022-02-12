@@ -57,6 +57,4 @@
 		<member name="skin_root" type="int" setter="set_skin_root" getter="get_skin_root" default="-1">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,7 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 	while (true) {
 		String line = f->get_line();
 		ERR_FAIL_COND_V(f->eof_reached(), ERR_FILE_UNRECOGNIZED);
-		if (line == "") { // empty line indicates end of header
+		if (line.is_empty()) { // empty line indicates end of header
 			break;
 		}
 		if (line.begins_with("FORMAT=")) { // leave option to implement other commands
@@ -65,7 +65,7 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 
 	Vector<uint8_t> imgdata;
 
-	imgdata.resize(height * width * sizeof(uint32_t));
+	imgdata.resize(height * width * (int)sizeof(uint32_t));
 
 	{
 		uint8_t *w = imgdata.ptrw();
@@ -75,7 +75,7 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 		if (width < 8 || width >= 32768) {
 			// Read flat data
 
-			f->get_buffer(ptr, width * height * 4);
+			f->get_buffer(ptr, (uint64_t)width * height * 4);
 		} else {
 			// Read RLE-encoded data
 

@@ -6,6 +6,6 @@ layout(push_constant, binding = 1, std430) uniform PushConstant {
 	float exposure_adjust;
 	float min_luminance;
 	float max_luminance;
-	float pad;
+	uint pad1;
 }
 settings;

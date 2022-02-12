@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,13 +29,12 @@
 /*************************************************************************/
 
 #include "editor_about.h"
-#include "editor_node.h"
 
 #include "core/authors.gen.h"
 #include "core/donors.gen.h"
 #include "core/license.gen.h"
 #include "core/version.h"
-#include "core/version_hash.gen.h"
+#include "editor_node.h"
 
 // The metadata key used to store and retrieve the version text to copy to the clipboard.
 static const String META_TEXT_TO_COPY = "text_to_copy";
@@ -125,7 +124,7 @@ EditorAbout::EditorAbout() {
 	vbc->connect("theme_changed", callable_mp(this, &EditorAbout::_theme_changed));
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	hbc->set_alignment(BoxContainer::ALIGN_CENTER);
+	hbc->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	hbc->add_theme_constant_override("separation", 30 * EDSCALE);
 	add_child(vbc);
 	vbc->add_child(hbc);
@@ -154,8 +153,8 @@ EditorAbout::EditorAbout() {
 
 	Label *about_text = memnew(Label);
 	about_text->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
-	about_text->set_text(String::utf8("\xc2\xa9 2007-2021 Juan Linietsky, Ariel Manzur.\n\xc2\xa9 2014-2021 ") +
-						 TTR("Godot Engine contributors") + "\n");
+	about_text->set_text(String::utf8("\xc2\xa9 2007-2022 Juan Linietsky, Ariel Manzur.\n\xc2\xa9 2014-2022 ") +
+			TTR("Godot Engine contributors") + "\n");
 	version_info_vbc->add_child(about_text);
 
 	hbc->add_child(version_info_vbc);

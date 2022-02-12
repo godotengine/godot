@@ -40,7 +40,7 @@
 
 /* This lists font tables that the hb_face_t will contain and lazily
  * load.  Don't add a table unless it's used though.  This is not
- * exactly free. */
+ * exactly zero-cost. */
 
 /* v--- Add new tables in the right place here. */
 
@@ -67,8 +67,11 @@ HB_OT_ACCELERATOR (OT, meta)
 #endif
 
 /* Vertical layout. */
+#ifndef HB_NO_VERTICAL
 HB_OT_TABLE (OT, vhea)
 HB_OT_ACCELERATOR (OT, vmtx)
+HB_OT_TABLE (OT, VORG)
+#endif
 
 /* TrueType outlines. */
 HB_OT_ACCELERATOR (OT, glyf)
@@ -77,7 +80,6 @@ HB_OT_ACCELERATOR (OT, glyf)
 #ifndef HB_NO_CFF
 HB_OT_ACCELERATOR (OT, cff1)
 HB_OT_ACCELERATOR (OT, cff2)
-HB_OT_TABLE (OT, VORG)
 #endif
 
 /* OpenType variations. */

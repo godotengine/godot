@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -121,7 +121,7 @@ bool ArrayPropertyEdit::_set(const StringName &p_name, const Variant &p_value) {
 		}
 
 	} else if (pn.begins_with("indices")) {
-		if (pn.find("_") != -1) {
+		if (pn.contains("_")) {
 			//type
 			int idx = pn.get_slicec('/', 1).get_slicec('_', 0).to_int();
 
@@ -178,7 +178,7 @@ bool ArrayPropertyEdit::_get(const StringName &p_name, Variant &r_ret) const {
 			return true;
 		}
 	} else if (pn.begins_with("indices")) {
-		if (pn.find("_") != -1) {
+		if (pn.contains("_")) {
 			//type
 			int idx = pn.get_slicec('/', 1).get_slicec('_', 0).to_int();
 			bool valid;

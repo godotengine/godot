@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,6 @@
 
 #include "navigation_region_2d.h"
 
-#include "core/config/engine.h"
 #include "core/core_string_names.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/mutex.h"
@@ -105,8 +104,8 @@ void NavigationPolygon::_set_polygons(const TypedArray<Vector<int32_t>> &p_array
 	}
 }
 
-Array NavigationPolygon::_get_polygons() const {
-	Array ret;
+TypedArray<Vector<int32_t>> NavigationPolygon::_get_polygons() const {
+	TypedArray<Vector<int32_t>> ret;
 	ret.resize(polygons.size());
 	for (int i = 0; i < ret.size(); i++) {
 		ret[i] = polygons[i].indices;
@@ -123,8 +122,8 @@ void NavigationPolygon::_set_outlines(const TypedArray<Vector<Vector2>> &p_array
 	rect_cache_dirty = true;
 }
 
-Array NavigationPolygon::_get_outlines() const {
-	Array ret;
+TypedArray<Vector<Vector2>> NavigationPolygon::_get_outlines() const {
+	TypedArray<Vector<Vector2>> ret;
 	ret.resize(outlines.size());
 	for (int i = 0; i < ret.size(); i++) {
 		ret[i] = outlines[i];
@@ -208,7 +207,7 @@ void NavigationPolygon::set_outline(int p_idx, const Vector<Vector2> &p_outline)
 
 void NavigationPolygon::remove_outline(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, outlines.size());
-	outlines.remove(p_idx);
+	outlines.remove_at(p_idx);
 	rect_cache_dirty = true;
 }
 
@@ -300,7 +299,7 @@ void NavigationPolygon::make_polygons_from_outlines() {
 	}
 
 	polygons.clear();
-	vertices.resize(0);
+	vertices.clear();
 
 	Map<Vector2, int> points;
 	for (List<TPPLPoly>::Element *I = out_poly.front(); I; I = I->next()) {
@@ -347,9 +346,9 @@ void NavigationPolygon::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_outlines", "outlines"), &NavigationPolygon::_set_outlines);
 	ClassDB::bind_method(D_METHOD("_get_outlines"), &NavigationPolygon::_get_outlines);
 
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "outlines", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_outlines", "_get_outlines");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "outlines", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_outlines", "_get_outlines");
 }
 
 void NavigationRegion2D::set_enabled(bool p_enabled) {
@@ -364,10 +363,10 @@ void NavigationRegion2D::set_enabled(bool p_enabled) {
 
 	if (!enabled) {
 		NavigationServer2D::get_singleton()->region_set_map(region, RID());
-		NavigationServer2D::get_singleton()->disconnect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
+		NavigationServer2D::get_singleton_mut()->disconnect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
 	} else {
 		NavigationServer2D::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
-		NavigationServer2D::get_singleton()->connect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
+		NavigationServer2D::get_singleton_mut()->connect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
 	}
 
 	if (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()) {
@@ -403,7 +402,7 @@ void NavigationRegion2D::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (enabled) {
 				NavigationServer2D::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
-				NavigationServer2D::get_singleton()->connect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
+				NavigationServer2D::get_singleton_mut()->connect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
 			}
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -412,7 +411,7 @@ void NavigationRegion2D::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			NavigationServer2D::get_singleton()->region_set_map(region, RID());
 			if (enabled) {
-				NavigationServer2D::get_singleton()->disconnect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
+				NavigationServer2D::get_singleton_mut()->disconnect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
 			}
 		} break;
 		case NOTIFICATION_DRAW: {
@@ -455,7 +454,7 @@ void NavigationRegion2D::_notification(int p_what) {
 				// Draw the region
 				Transform2D xform = get_global_transform();
 				const NavigationServer2D *ns = NavigationServer2D::get_singleton();
-				float radius = ns->map_get_edge_connection_margin(get_world_2d()->get_navigation_map()) / 2.0;
+				real_t radius = ns->map_get_edge_connection_margin(get_world_2d()->get_navigation_map()) / 2.0;
 				for (int i = 0; i < ns->region_get_connections_count(region); i++) {
 					// Two main points
 					Vector2 a = ns->region_get_connection_pathway_start(region, i);
@@ -465,7 +464,7 @@ void NavigationRegion2D::_notification(int p_what) {
 					draw_line(a, b, doors_color);
 
 					// Draw a circle to illustrate the margins.
-					float angle = (b - a).angle();
+					real_t angle = a.angle_to_point(b);
 					draw_arc(a, radius, angle + Math_PI / 2.0, angle - Math_PI / 2.0 + Math_TAU, 10, doors_color);
 					draw_arc(b, radius, angle - Math_PI / 2.0, angle + Math_PI / 2.0, 10, doors_color);
 				}

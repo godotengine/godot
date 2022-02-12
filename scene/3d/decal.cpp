@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,48 +53,48 @@ Ref<Texture2D> Decal::get_texture(DecalTexture p_type) const {
 	return textures[p_type];
 }
 
-void Decal::set_emission_energy(float p_energy) {
+void Decal::set_emission_energy(real_t p_energy) {
 	emission_energy = p_energy;
 	RS::get_singleton()->decal_set_emission_energy(decal, emission_energy);
 }
 
-float Decal::get_emission_energy() const {
+real_t Decal::get_emission_energy() const {
 	return emission_energy;
 }
 
-void Decal::set_albedo_mix(float p_mix) {
+void Decal::set_albedo_mix(real_t p_mix) {
 	albedo_mix = p_mix;
 	RS::get_singleton()->decal_set_albedo_mix(decal, albedo_mix);
 }
 
-float Decal::get_albedo_mix() const {
+real_t Decal::get_albedo_mix() const {
 	return albedo_mix;
 }
 
-void Decal::set_upper_fade(float p_fade) {
+void Decal::set_upper_fade(real_t p_fade) {
 	upper_fade = p_fade;
 	RS::get_singleton()->decal_set_fade(decal, upper_fade, lower_fade);
 }
 
-float Decal::get_upper_fade() const {
+real_t Decal::get_upper_fade() const {
 	return upper_fade;
 }
 
-void Decal::set_lower_fade(float p_fade) {
+void Decal::set_lower_fade(real_t p_fade) {
 	lower_fade = p_fade;
 	RS::get_singleton()->decal_set_fade(decal, upper_fade, lower_fade);
 }
 
-float Decal::get_lower_fade() const {
+real_t Decal::get_lower_fade() const {
 	return lower_fade;
 }
 
-void Decal::set_normal_fade(float p_fade) {
+void Decal::set_normal_fade(real_t p_fade) {
 	normal_fade = p_fade;
 	RS::get_singleton()->decal_set_normal_fade(decal, normal_fade);
 }
 
-float Decal::get_normal_fade() const {
+real_t Decal::get_normal_fade() const {
 	return normal_fade;
 }
 
@@ -117,21 +117,21 @@ bool Decal::is_distance_fade_enabled() const {
 	return distance_fade_enabled;
 }
 
-void Decal::set_distance_fade_begin(float p_distance) {
+void Decal::set_distance_fade_begin(real_t p_distance) {
 	distance_fade_begin = p_distance;
 	RS::get_singleton()->decal_set_distance_fade(decal, distance_fade_enabled, distance_fade_begin, distance_fade_length);
 }
 
-float Decal::get_distance_fade_begin() const {
+real_t Decal::get_distance_fade_begin() const {
 	return distance_fade_begin;
 }
 
-void Decal::set_distance_fade_length(float p_length) {
+void Decal::set_distance_fade_length(real_t p_length) {
 	distance_fade_length = p_length;
 	RS::get_singleton()->decal_set_distance_fade(decal, distance_fade_enabled, distance_fade_begin, distance_fade_length);
 }
 
-float Decal::get_distance_fade_length() const {
+real_t Decal::get_distance_fade_length() const {
 	return distance_fade_length;
 }
 
@@ -158,8 +158,9 @@ Vector<Face3> Decal::get_faces(uint32_t p_usage_flags) const {
 
 void Decal::_validate_property(PropertyInfo &property) const {
 	if (!distance_fade_enabled && (property.name == "distance_fade_begin" || property.name == "distance_fade_length")) {
-		property.usage = PROPERTY_USAGE_NOEDITOR;
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
+	VisualInstance3D::_validate_property(property);
 }
 
 TypedArray<String> Decal::get_configuration_warnings() const {
@@ -174,9 +175,6 @@ TypedArray<String> Decal::get_configuration_warnings() const {
 	}
 
 	if (cull_mask == 0) {
-		// NOTE: This warning will not be emitted if none of the 20 checkboxes
-		// exposed in the editor are checked. This is because there are
-		// currently 12 unexposed layers in the editor inspector.
 		warnings.push_back(TTR("The decal's Cull Mask has no bits enabled, which means the decal will not paint objects on any layer.\nTo resolve this, enable at least one bit in the Cull Mask property."));
 	}
 

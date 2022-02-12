@@ -30,6 +30,4 @@
 		<member name="library" type="GDNativeLibrary" setter="set_library" getter="get_library">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

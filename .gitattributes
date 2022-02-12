@@ -5,6 +5,8 @@ thirdparty/* linguist-vendored
 
 # Normalize EOL for all files that Git considers text files
 * text=auto eol=lf
+# Except for bat files, which are Windows only files
+*.bat eol=crlf
 
 # The above only works properly for Git 2.10+, so for older versions
 # we need to manually list the binary files we don't want modified.

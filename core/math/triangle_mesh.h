@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,11 +37,13 @@
 class TriangleMesh : public RefCounted {
 	GDCLASS(TriangleMesh, RefCounted);
 
+public:
 	struct Triangle {
 		Vector3 normal;
 		int indices[3];
 	};
 
+private:
 	Vector<Triangle> triangles;
 	Vector<Vector3> vertices;
 
@@ -86,8 +88,8 @@ public:
 	Vector3 get_area_normal(const AABB &p_aabb) const;
 	Vector<Face3> get_faces() const;
 
-	Vector<Triangle> get_triangles() const { return triangles; }
-	Vector<Vector3> get_vertices() const { return vertices; }
+	const Vector<Triangle> &get_triangles() const { return triangles; }
+	const Vector<Vector3> &get_vertices() const { return vertices; }
 	void get_indices(Vector<int> *r_triangles_indices) const;
 
 	void create(const Vector<Vector3> &p_faces);

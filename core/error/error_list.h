@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,11 @@
  * values can be more detailed in the future.
  *
  * This is a generic error list, mainly for organizing a language of returning errors.
+ *
+ * Errors:
+ * - Are added to the Error enum in core/error/error_list.h
+ * - Have a description added to error_names in core/error/error_list.cpp
+ * - Are bound with BIND_CORE_ENUM_CONSTANT() in core/core_constants.cpp
  */
 
 enum Error {
@@ -88,6 +93,9 @@ enum Error {
 	ERR_HELP, ///< user requested help!!
 	ERR_BUG, ///< a bug in the software certainly happened, due to a double check failing or unexpected behavior.
 	ERR_PRINTER_ON_FIRE, /// the parallel port printer is engulfed in flames
+	ERR_MAX, // Not being returned, value represents the number of errors
 };
+
+extern const char *error_names[];
 
 #endif // ERROR_LIST_H

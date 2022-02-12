@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -223,8 +223,8 @@ List<ClassAPI> generate_c_api_classes() {
 				enum_api_map[enum_name] = enum_api;
 			}
 		}
-		for (const Map<StringName, EnumAPI>::Element *E = enum_api_map.front(); E; E = E->next()) {
-			global_constants_api.enums.push_back(E->get());
+		for (const KeyValue<StringName, EnumAPI> &E : enum_api_map) {
+			global_constants_api.enums.push_back(E.value);
 		}
 		global_constants_api.constants.sort_custom<ConstantAPIComparator>();
 		api.push_back(global_constants_api);
@@ -242,13 +242,9 @@ List<ClassAPI> generate_c_api_classes() {
 		class_api.class_name = class_name;
 		class_api.super_class_name = ClassDB::get_parent_class(class_name);
 		{
-			String name = class_name;
-			if (name.begins_with("_")) {
-				name.remove(0);
-			}
-			class_api.is_singleton = Engine::get_singleton()->has_singleton(name);
+			class_api.is_singleton = Engine::get_singleton()->has_singleton(class_name);
 			if (class_api.is_singleton) {
-				class_api.singleton_name = name;
+				class_api.singleton_name = class_name;
 			}
 		}
 		class_api.is_instantiable = !class_api.is_singleton && ClassDB::can_instantiate(class_name);
@@ -292,7 +288,7 @@ List<ClassAPI> generate_c_api_classes() {
 					String type;
 					String name = argument.name;
 
-					if (argument.name.find(":") != -1) {
+					if (argument.name.contains(":")) {
 						type = argument.name.get_slice(":", 1);
 						name = argument.name.get_slice(":", 0);
 					} else {
@@ -328,7 +324,7 @@ List<ClassAPI> generate_c_api_classes() {
 				property_api.getter = ClassDB::get_property_getter(class_name, p->get().name);
 				property_api.setter = ClassDB::get_property_setter(class_name, p->get().name);
 
-				if (p->get().name.find(":") != -1) {
+				if (p->get().name.contains(":")) {
 					property_api.type = p->get().name.get_slice(":", 1);
 					property_api.name = p->get().name.get_slice(":", 0);
 				} else {
@@ -359,7 +355,7 @@ List<ClassAPI> generate_c_api_classes() {
 				//method name
 				method_api.method_name = method_info.name;
 				//method return type
-				if (method_api.method_name.find(":") != -1) {
+				if (method_api.method_name.contains(":")) {
 					method_api.return_type = method_api.method_name.get_slice(":", 1);
 					method_api.method_name = method_api.method_name.get_slice(":", 0);
 				} else {
@@ -392,7 +388,7 @@ List<ClassAPI> generate_c_api_classes() {
 
 					arg_name = arg_info.name;
 
-					if (arg_info.name.find(":") != -1) {
+					if (arg_info.name.contains(":")) {
 						arg_type = arg_info.name.get_slice(":", 1);
 						arg_name = arg_info.name.get_slice(":", 0);
 					} else if (arg_info.hint == PROPERTY_HINT_RESOURCE_TYPE) {
@@ -401,7 +397,7 @@ List<ClassAPI> generate_c_api_classes() {
 						arg_type = "Variant";
 					} else if (arg_info.type == Variant::OBJECT) {
 						arg_type = arg_info.class_name;
-						if (arg_type == "") {
+						if (arg_type.is_empty()) {
 							arg_type = Variant::get_type_name(arg_info.type);
 						}
 					} else {

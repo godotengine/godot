@@ -7,23 +7,23 @@
 		Plane represents a normalized plane equation. Basically, "normal" is the normal of the plane (a,b,c normalized), and "d" is the distance from the origin to the plane (in the direction of "normal"). "Over" or "Above" the plane is considered the side of the plane towards where the normal is pointing.
 	</description>
 	<tutorials>
-		<link title="Math tutorial index">https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
+		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
 	</tutorials>
-	<methods>
-		<method name="Plane" qualifiers="constructor">
+	<constructors>
+		<constructor name="Plane">
 			<return type="Plane" />
 			<description>
 				Constructs a default-initialized [Plane] with all components set to [code]0[/code].
 			</description>
-		</method>
-		<method name="Plane" qualifiers="constructor">
+		</constructor>
+		<constructor name="Plane">
 			<return type="Plane" />
 			<argument index="0" name="from" type="Plane" />
 			<description>
 				Constructs a [Plane] as a copy of the given [Plane].
 			</description>
-		</method>
-		<method name="Plane" qualifiers="constructor">
+		</constructor>
+		<constructor name="Plane">
 			<return type="Plane" />
 			<argument index="0" name="a" type="float" />
 			<argument index="1" name="b" type="float" />
@@ -32,24 +32,31 @@
 			<description>
 				Creates a plane from the four parameters. The three components of the resulting plane's [member normal] are [code]a[/code], [code]b[/code] and [code]c[/code], and the plane has a distance of [code]d[/code] from the origin.
 			</description>
-		</method>
-		<method name="Plane" qualifiers="constructor">
+		</constructor>
+		<constructor name="Plane">
+			<return type="Plane" />
+			<argument index="0" name="normal" type="Vector3" />
+			<description>
+				Creates a plane from the normal vector. The plane will intersect the origin.
+			</description>
+		</constructor>
+		<constructor name="Plane">
 			<return type="Plane" />
 			<argument index="0" name="normal" type="Vector3" />
 			<argument index="1" name="d" type="float" />
 			<description>
-				Creates a plane from the normal and the plane's distance to the origin.
+				Creates a plane from the normal vector and the plane's distance from the origin.
 			</description>
-		</method>
-		<method name="Plane" qualifiers="constructor">
+		</constructor>
+		<constructor name="Plane">
 			<return type="Plane" />
-			<argument index="0" name="point" type="Vector3" />
-			<argument index="1" name="normal" type="Vector3" />
+			<argument index="0" name="normal" type="Vector3" />
+			<argument index="1" name="point" type="Vector3" />
 			<description>
-				Creates a plane from the given position and a plane normal.
+				Creates a plane from the normal vector and a point on the plane.
 			</description>
-		</method>
-		<method name="Plane" qualifiers="constructor">
+		</constructor>
+		<constructor name="Plane">
 			<return type="Plane" />
 			<argument index="0" name="point1" type="Vector3" />
 			<argument index="1" name="point2" type="Vector3" />
@@ -57,7 +64,9 @@
 			<description>
 				Creates a plane from the three points, given in clockwise order.
 			</description>
-		</method>
+		</constructor>
+	</constructors>
+	<methods>
 		<method name="center" qualifiers="const">
 			<return type="Vector3" />
 			<description>
@@ -123,28 +132,6 @@
 				Returns a copy of the plane, normalized.
 			</description>
 		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Plane" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="Plane" />
-			<description>
-			</description>
-		</method>
-		<method name="operator unary+" qualifiers="operator">
-			<return type="Plane" />
-			<description>
-			</description>
-		</method>
-		<method name="operator unary-" qualifiers="operator">
-			<return type="Plane" />
-			<description>
-			</description>
-		</method>
 		<method name="project" qualifiers="const">
 			<return type="Vector3" />
 			<argument index="0" name="point" type="Vector3" />
@@ -183,4 +170,44 @@
 			A plane that extends in the X and Y axes (normal vector points +Z).
 		</constant>
 	</constants>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="Plane" />
+			<description>
+				Returns [code]true[/code] if the planes are not equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="Plane" />
+			<description>
+				Returns [code]true[/code] if the planes are exactly equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+			</description>
+		</operator>
+		<operator name="operator unary+">
+			<return type="Plane" />
+			<description>
+				Returns the same value as if the [code]+[/code] was not there. Unary [code]+[/code] does nothing, but sometimes it can make your code more readable.
+			</description>
+		</operator>
+		<operator name="operator unary-">
+			<return type="Plane" />
+			<description>
+				Returns the negative value of the [Plane]. This is the same as writing [code]Plane(-p.normal, -p.d)[/code]. This operation flips the direction of the normal vector and also flips the distance value, resulting in a Plane that is in the same place, but facing the opposite direction.
+			</description>
+		</operator>
+	</operators>
 </class>

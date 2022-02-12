@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -85,7 +85,7 @@ protected:
 	float cell_size = 0.3f;
 	float cell_height = 0.2f;
 	float agent_height = 2.0f;
-	float agent_radius = 0.6f;
+	float agent_radius = 1.0f;
 	float agent_max_climb = 0.9f;
 	float agent_max_slope = 45.0f;
 	float region_min_size = 8.0f;
@@ -109,20 +109,20 @@ protected:
 
 public:
 	// Recast settings
-	void set_sample_partition_type(int p_value);
-	int get_sample_partition_type() const;
+	void set_sample_partition_type(SamplePartitionType p_value);
+	SamplePartitionType get_sample_partition_type() const;
 
-	void set_parsed_geometry_type(int p_value);
-	int get_parsed_geometry_type() const;
+	void set_parsed_geometry_type(ParsedGeometryType p_value);
+	ParsedGeometryType get_parsed_geometry_type() const;
 
 	void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const;
 
-	void set_collision_mask_bit(int p_bit, bool p_value);
-	bool get_collision_mask_bit(int p_bit) const;
+	void set_collision_mask_value(int p_layer_number, bool p_value);
+	bool get_collision_mask_value(int p_layer_number) const;
 
-	void set_source_geometry_mode(int p_geometry_mode);
-	int get_source_geometry_mode() const;
+	void set_source_geometry_mode(SourceGeometryMode p_geometry_mode);
+	SourceGeometryMode get_source_geometry_mode() const;
 
 	void set_source_group_name(StringName p_group_name);
 	StringName get_source_group_name() const;
@@ -189,5 +189,9 @@ public:
 
 	NavigationMesh();
 };
+
+VARIANT_ENUM_CAST(NavigationMesh::SamplePartitionType);
+VARIANT_ENUM_CAST(NavigationMesh::ParsedGeometryType);
+VARIANT_ENUM_CAST(NavigationMesh::SourceGeometryMode);
 
 #endif // NAVIGATION_MESH_H

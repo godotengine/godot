@@ -26,20 +26,26 @@
 		<method name="get_camera_transform" qualifiers="const">
 			<return type="Transform3D" />
 			<description>
-				Gets the camera transform. Subclassed cameras such as [ClippedCamera3D] may provide different transforms than the [Node] transform.
+				Returns the transform of the camera plus the vertical ([member v_offset]) and horizontal ([member h_offset]) offsets; and any other adjustments made to the position and orientation of the camera by subclassed cameras such as [XRCamera3D].
 			</description>
 		</method>
-		<method name="get_cull_mask_bit" qualifiers="const">
+		<method name="get_cull_mask_value" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="layer" type="int" />
+			<argument index="0" name="layer_number" type="int" />
 			<description>
-				Returns [code]true[/code] if the given [code]layer[/code] in the [member cull_mask] is enabled, [code]false[/code] otherwise.
+				Returns whether or not the specified layer of the [member cull_mask] is enabled, given a [code]layer_number[/code] between 1 and 20.
 			</description>
 		</method>
 		<method name="get_frustum" qualifiers="const">
 			<return type="Array" />
 			<description>
 				Returns the camera's frustum planes in world space units as an array of [Plane]s in the following order: near, far, left, top, right, bottom. Not to be confused with [member frustum_offset].
+			</description>
+		</method>
+		<method name="get_pyramid_shape_rid">
+			<return type="RID" />
+			<description>
+				Returns the RID of a pyramid shape encompassing the camera's view frustum, ignoring the camera's near plane. The tip of the pyramid represents the position of the camera.
 			</description>
 		</method>
 		<method name="is_position_behind" qualifiers="const">
@@ -92,12 +98,12 @@
 				Returns a 3D position in world space, that is the result of projecting a point on the [Viewport] rectangle by the camera projection. This is useful for casting rays in the form of (origin, normal) for object intersection or picking.
 			</description>
 		</method>
-		<method name="set_cull_mask_bit">
+		<method name="set_cull_mask_value">
 			<return type="void" />
-			<argument index="0" name="layer" type="int" />
-			<argument index="1" name="enable" type="bool" />
+			<argument index="0" name="layer_number" type="int" />
+			<argument index="1" name="value" type="bool" />
 			<description>
-				Enables or disables the given [code]layer[/code] in the [member cull_mask].
+				Based on [code]value[/code], enables or disables the specified layer in the [member cull_mask], given a [code]layer_number[/code] between 1 and 20.
 			</description>
 		</method>
 		<method name="set_frustum">
@@ -212,10 +218,10 @@
 			Disables [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] simulation (default).
 		</constant>
 		<constant name="DOPPLER_TRACKING_IDLE_STEP" value="1" enum="DopplerTracking">
-			Simulate [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] by tracking positions of objects that are changed in [code]_process[/code]. Changes in the relative velocity of this camera compared to those objects affect how Audio is perceived (changing the Audio's [code]pitch shift[/code]).
+			Simulate [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] by tracking positions of objects that are changed in [code]_process[/code]. Changes in the relative velocity of this camera compared to those objects affect how audio is perceived (changing the audio's [member AudioStreamPlayer3D.pitch_scale]).
 		</constant>
 		<constant name="DOPPLER_TRACKING_PHYSICS_STEP" value="2" enum="DopplerTracking">
-			Simulate [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] by tracking positions of objects that are changed in [code]_physics_process[/code]. Changes in the relative velocity of this camera compared to those objects affect how Audio is perceived (changing the Audio's [code]pitch shift[/code]).
+			Simulate [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] by tracking positions of objects that are changed in [code]_physics_process[/code]. Changes in the relative velocity of this camera compared to those objects affect how audio is perceived (changing the audio's [member AudioStreamPlayer3D.pitch_scale]).
 		</constant>
 	</constants>
 </class>

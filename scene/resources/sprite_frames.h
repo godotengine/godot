@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@ class SpriteFrames : public Resource {
 	GDCLASS(SpriteFrames, Resource);
 
 	struct Anim {
-		float speed = 5.0;
+		double speed = 5.0;
 		bool loop = true;
 		Vector<Ref<Texture2D>> frames;
 	};
@@ -64,8 +64,8 @@ public:
 	void get_animation_list(List<StringName> *r_animations) const;
 	Vector<String> get_animation_names() const;
 
-	void set_animation_speed(const StringName &p_anim, float p_fps);
-	float get_animation_speed(const StringName &p_anim) const;
+	void set_animation_speed(const StringName &p_anim, double p_fps);
+	double get_animation_speed(const StringName &p_anim) const;
 
 	void set_animation_loop(const StringName &p_anim, bool p_loop);
 	bool get_animation_loop(const StringName &p_anim) const;

@@ -91,7 +91,7 @@ namespace GodotTools.ProjectEditor
             return identifier;
         }
 
-        static bool IsKeyword(string value, bool anyDoubleUnderscore)
+        private static bool IsKeyword(string value, bool anyDoubleUnderscore)
         {
             // Identifiers that start with double underscore are meant to be used for reserved keywords.
             // Only existing keywords are enforced, but it may be useful to forbid any identifier
@@ -103,14 +103,14 @@ namespace GodotTools.ProjectEditor
             }
             else
             {
-                if (DoubleUnderscoreKeywords.Contains(value))
+                if (_doubleUnderscoreKeywords.Contains(value))
                     return true;
             }
 
-            return Keywords.Contains(value);
+            return _keywords.Contains(value);
         }
 
-        private static readonly HashSet<string> DoubleUnderscoreKeywords = new HashSet<string>
+        private static readonly HashSet<string> _doubleUnderscoreKeywords = new HashSet<string>
         {
             "__arglist",
             "__makeref",
@@ -118,7 +118,7 @@ namespace GodotTools.ProjectEditor
             "__refvalue",
         };
 
-        private static readonly HashSet<string> Keywords = new HashSet<string>
+        private static readonly HashSet<string> _keywords = new HashSet<string>
         {
             "as",
             "do",

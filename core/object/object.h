@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,10 +52,6 @@
 #define VARIANT_ARGPTRS_PASS *argptr[0], *argptr[1], *argptr[2], *argptr[3], *argptr[4], *argptr[5], *argptr[6]], *argptr[7]
 #define VARIANT_ARGS_FROM_ARRAY(m_arr) m_arr[0], m_arr[1], m_arr[2], m_arr[3], m_arr[4], m_arr[5], m_arr[6], m_arr[7]
 
-/**
-@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 enum PropertyHint {
 	PROPERTY_HINT_NONE, ///< no hint provided.
 	PROPERTY_HINT_RANGE, ///< hint_text = "min,max[,step][,or_greater][,or_lesser][,noslider][,radians][,degrees][,exp][,suffix:<keyword>] range.
@@ -97,6 +93,8 @@ enum PropertyHint {
 	PROPERTY_HINT_SAVE_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,". This opens a save dialog
 	PROPERTY_HINT_INT_IS_OBJECTID,
 	PROPERTY_HINT_ARRAY_TYPE,
+	PROPERTY_HINT_INT_IS_POINTER,
+	PROPERTY_HINT_LOCALE_ID,
 	PROPERTY_HINT_MAX,
 	// When updating PropertyHint, also sync the hardcoded list in VisualScriptEditorVariableEdit
 };
@@ -131,26 +129,39 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_DEFERRED_SET_RESOURCE = 1 << 26, // when loading, the resource for this property can be set at the end of loading
 	PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT = 1 << 27, // For Object properties, instantiate them when creating in editor.
 	PROPERTY_USAGE_EDITOR_BASIC_SETTING = 1 << 28, //for project or editor settings, show when basic settings are selected
+	PROPERTY_USAGE_READ_ONLY = 1 << 29, // Mark a property as read-only in the inspector.
+	PROPERTY_USAGE_ARRAY = 1 << 30, // Used in the inspector to group properties as elements of an array.
 
 	PROPERTY_USAGE_DEFAULT = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_NETWORK,
 	PROPERTY_USAGE_DEFAULT_INTL = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_NETWORK | PROPERTY_USAGE_INTERNATIONALIZED,
-	PROPERTY_USAGE_NOEDITOR = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_NETWORK,
+	PROPERTY_USAGE_NO_EDITOR = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_NETWORK,
 };
 
-#define ADD_SIGNAL(m_signal) ClassDB::add_signal(get_class_static(), m_signal)
-#define ADD_PROPERTY(m_property, m_setter, m_getter) ClassDB::add_property(get_class_static(), m_property, _scs_create(m_setter), _scs_create(m_getter))
-#define ADD_PROPERTYI(m_property, m_setter, m_getter, m_index) ClassDB::add_property(get_class_static(), m_property, _scs_create(m_setter), _scs_create(m_getter), m_index)
-#define ADD_PROPERTY_DEFAULT(m_property, m_default) ClassDB::set_property_default_value(get_class_static(), m_property, m_default)
-#define ADD_GROUP(m_name, m_prefix) ClassDB::add_property_group(get_class_static(), m_name, m_prefix)
-#define ADD_SUBGROUP(m_name, m_prefix) ClassDB::add_property_subgroup(get_class_static(), m_name, m_prefix)
+#define ADD_SIGNAL(m_signal) ::ClassDB::add_signal(get_class_static(), m_signal)
+#define ADD_PROPERTY(m_property, m_setter, m_getter) ::ClassDB::add_property(get_class_static(), m_property, _scs_create(m_setter), _scs_create(m_getter))
+#define ADD_PROPERTYI(m_property, m_setter, m_getter, m_index) ::ClassDB::add_property(get_class_static(), m_property, _scs_create(m_setter), _scs_create(m_getter), m_index)
+#define ADD_PROPERTY_DEFAULT(m_property, m_default) ::ClassDB::set_property_default_value(get_class_static(), m_property, m_default)
+#define ADD_GROUP(m_name, m_prefix) ::ClassDB::add_property_group(get_class_static(), m_name, m_prefix)
+#define ADD_GROUP_INDENT(m_name, m_prefix, m_depth) ::ClassDB::add_property_group(get_class_static(), m_name, m_prefix, m_depth)
+#define ADD_SUBGROUP(m_name, m_prefix) ::ClassDB::add_property_subgroup(get_class_static(), m_name, m_prefix)
+#define ADD_SUBGROUP_INDENT(m_name, m_prefix, m_depth) ::ClassDB::add_property_subgroup(get_class_static(), m_name, m_prefix, m_depth)
+#define ADD_LINKED_PROPERTY(m_property, m_linked_property) ::ClassDB::add_linked_property(get_class_static(), m_property, m_linked_property)
+
+#define ADD_ARRAY_COUNT(m_label, m_count_property, m_count_property_setter, m_count_property_getter, m_prefix) ClassDB::add_property_array_count(get_class_static(), m_label, m_count_property, _scs_create(m_count_property_setter), _scs_create(m_count_property_getter), m_prefix)
+#define ADD_ARRAY_COUNT_WITH_USAGE_FLAGS(m_label, m_count_property, m_count_property_setter, m_count_property_getter, m_prefix, m_property_usage_flags) ClassDB::add_property_array_count(get_class_static(), m_label, m_count_property, _scs_create(m_count_property_setter), _scs_create(m_count_property_getter), m_prefix, m_property_usage_flags)
+#define ADD_ARRAY(m_array_path, m_prefix) ClassDB::add_property_array(get_class_static(), m_array_path, m_prefix)
 
 struct PropertyInfo {
 	Variant::Type type = Variant::NIL;
 	String name;
-	StringName class_name; //for classes
+	StringName class_name; // For classes
 	PropertyHint hint = PROPERTY_HINT_NONE;
 	String hint_string;
 	uint32_t usage = PROPERTY_USAGE_DEFAULT;
+
+#ifdef TOOLS_ENABLED
+	Vector<String> linked_properties;
+#endif
 
 	_FORCE_INLINE_ PropertyInfo added_usage(uint32_t p_fl) const {
 		PropertyInfo pi = *this;
@@ -276,7 +287,14 @@ struct ObjectNativeExtension {
 };
 
 #define GDVIRTUAL_CALL(m_name, ...) _gdvirtual_##m_name##_call(__VA_ARGS__)
-#define GDVIRTUAL_BIND(m_name) ClassDB::add_virtual_method(get_class_static(), _gdvirtual_##m_name##_get_method_info());
+#define GDVIRTUAL_CALL_PTR(m_obj, m_name, ...) m_obj->_gdvirtual_##m_name##_call(__VA_ARGS__)
+#ifdef DEBUG_METHODS_ENABLED
+#define GDVIRTUAL_BIND(m_name, ...) ::ClassDB::add_virtual_method(get_class_static(), _gdvirtual_##m_name##_get_method_info(), true, sarray(__VA_ARGS__));
+#else
+#define GDVIRTUAL_BIND(m_name, ...)
+#endif
+#define GDVIRTUAL_IS_OVERRIDDEN(m_name) _gdvirtual_##m_name##_overridden()
+#define GDVIRTUAL_IS_OVERRIDDEN_PTR(m_obj, m_name) m_obj->_gdvirtual_##m_name##_overridden()
 
 /*
    the following is an incomprehensible blob of hacks and workarounds to compensate for many of the fallencies in C++. As a plus, this macro pretty much alone defines the object model.
@@ -298,7 +316,7 @@ private:
 private:                                                                                                                                         \
 	void operator=(const m_class &p_rval) {}                                                                                                     \
 	mutable StringName _class_name;                                                                                                              \
-	friend class ClassDB;                                                                                                                        \
+	friend class ::ClassDB;                                                                                                                      \
                                                                                                                                                  \
 public:                                                                                                                                          \
 	virtual String get_class() const override {                                                                                                  \
@@ -333,15 +351,12 @@ public:                                                                         
 	static String get_category_static() {                                                                                                        \
 		String category = m_inherits::get_category_static();                                                                                     \
 		if (_get_category != m_inherits::_get_category) {                                                                                        \
-			if (category != "") {                                                                                                                \
+			if (!category.is_empty()) {                                                                                                          \
 				category += "/";                                                                                                                 \
 			}                                                                                                                                    \
 			category += _get_category();                                                                                                         \
 		}                                                                                                                                        \
 		return category;                                                                                                                         \
-	}                                                                                                                                            \
-	static String inherits_static() {                                                                                                            \
-		return String(#m_inherits);                                                                                                              \
 	}                                                                                                                                            \
 	virtual bool is_class(const String &p_class) const override {                                                                                \
 		if (_get_extension() && _get_extension()->is_class(p_class)) {                                                                           \
@@ -371,7 +386,7 @@ public:                                                                         
 			return;                                                                                                                              \
 		}                                                                                                                                        \
 		m_inherits::initialize_class();                                                                                                          \
-		ClassDB::_add_class<m_class>();                                                                                                          \
+		::ClassDB::_add_class<m_class>();                                                                                                        \
 		if (m_class::_get_bind_methods() != m_inherits::_get_bind_methods()) {                                                                   \
 			_bind_methods();                                                                                                                     \
 		}                                                                                                                                        \
@@ -383,7 +398,7 @@ protected:                                                                      
 		initialize_class();                                                                                                                      \
 	}                                                                                                                                            \
 	_FORCE_INLINE_ bool (Object::*_get_get() const)(const StringName &p_name, Variant &) const {                                                 \
-		return (bool (Object::*)(const StringName &, Variant &) const) & m_class::_get;                                                          \
+		return (bool(Object::*)(const StringName &, Variant &) const) & m_class::_get;                                                           \
 	}                                                                                                                                            \
 	virtual bool _getv(const StringName &p_name, Variant &r_ret) const override {                                                                \
 		if (m_class::_get_get() != m_inherits::_get_get()) {                                                                                     \
@@ -394,7 +409,7 @@ protected:                                                                      
 		return m_inherits::_getv(p_name, r_ret);                                                                                                 \
 	}                                                                                                                                            \
 	_FORCE_INLINE_ bool (Object::*_get_set() const)(const StringName &p_name, const Variant &p_property) {                                       \
-		return (bool (Object::*)(const StringName &, const Variant &)) & m_class::_set;                                                          \
+		return (bool(Object::*)(const StringName &, const Variant &)) & m_class::_set;                                                           \
 	}                                                                                                                                            \
 	virtual bool _setv(const StringName &p_name, const Variant &p_property) override {                                                           \
 		if (m_inherits::_setv(p_name, p_property)) {                                                                                             \
@@ -406,7 +421,7 @@ protected:                                                                      
 		return false;                                                                                                                            \
 	}                                                                                                                                            \
 	_FORCE_INLINE_ void (Object::*_get_get_property_list() const)(List<PropertyInfo> * p_list) const {                                           \
-		return (void (Object::*)(List<PropertyInfo> *) const) & m_class::_get_property_list;                                                     \
+		return (void(Object::*)(List<PropertyInfo> *) const) & m_class::_get_property_list;                                                      \
 	}                                                                                                                                            \
 	virtual void _get_property_listv(List<PropertyInfo> *p_list, bool p_reversed) const override {                                               \
 		if (!p_reversed) {                                                                                                                       \
@@ -414,20 +429,20 @@ protected:                                                                      
 		}                                                                                                                                        \
 		p_list->push_back(PropertyInfo(Variant::NIL, get_class_static(), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));                \
 		if (!_is_gpl_reversed()) {                                                                                                               \
-			ClassDB::get_property_list(#m_class, p_list, true, this);                                                                            \
+			::ClassDB::get_property_list(#m_class, p_list, true, this);                                                                          \
 		}                                                                                                                                        \
 		if (m_class::_get_get_property_list() != m_inherits::_get_get_property_list()) {                                                         \
 			_get_property_list(p_list);                                                                                                          \
 		}                                                                                                                                        \
 		if (_is_gpl_reversed()) {                                                                                                                \
-			ClassDB::get_property_list(#m_class, p_list, true, this);                                                                            \
+			::ClassDB::get_property_list(#m_class, p_list, true, this);                                                                          \
 		}                                                                                                                                        \
 		if (p_reversed) {                                                                                                                        \
 			m_inherits::_get_property_listv(p_list, p_reversed);                                                                                 \
 		}                                                                                                                                        \
 	}                                                                                                                                            \
 	_FORCE_INLINE_ void (Object::*_get_notification() const)(int) {                                                                              \
-		return (void (Object::*)(int)) & m_class::_notification;                                                                                 \
+		return (void(Object::*)(int)) & m_class::_notification;                                                                                  \
 	}                                                                                                                                            \
 	virtual void _notificationv(int p_notification, bool p_reversed) override {                                                                  \
 		if (!p_reversed) {                                                                                                                       \
@@ -687,8 +702,9 @@ public:
 	static String get_category_static() { return String(); }
 
 	virtual String get_class() const {
-		if (_extension)
+		if (_extension) {
 			return _extension->class_name.operator String();
+		}
 		return "Object";
 	}
 	virtual String get_save_class() const { return get_class(); } //class stored when saving
@@ -808,6 +824,7 @@ public:
 	void *get_instance_binding(void *p_token, const GDNativeInstanceBindingCallbacks *p_callbacks);
 	// Used on creation by binding only.
 	void set_instance_binding(void *p_token, void *p_binding, const GDNativeInstanceBindingCallbacks *p_callbacks);
+	bool has_instance_binding(void *p_token);
 
 	void clear_internal_resource_paths();
 

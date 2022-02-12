@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,6 +56,9 @@ private:
 protected:
 	static void _bind_methods();
 
+	GDVIRTUAL0RC(String, _get_name)
+	GDVIRTUAL0RC(Array, _get_supported_languages)
+
 public:
 	virtual String _get_name() const;
 	virtual Array _get_supported_languages() const;
@@ -74,7 +77,7 @@ private:
 
 public:
 	virtual void _update_cache() override;
-	virtual Dictionary _get_line_syntax_highlighting(int p_line) override { return highlighter->get_line_syntax_highlighting(p_line); }
+	virtual Dictionary _get_line_syntax_highlighting_impl(int p_line) override { return highlighter->get_line_syntax_highlighting(p_line); }
 
 	virtual String _get_name() const override { return TTR("Standard"); }
 
@@ -152,14 +155,17 @@ public:
 	virtual void tag_saved_version() = 0;
 	virtual void reload(bool p_soft) {}
 	virtual Array get_breakpoints() = 0;
+	virtual void set_breakpoint(int p_line, bool p_enabled) = 0;
+	virtual void clear_breakpoints() = 0;
 	virtual void add_callback(const String &p_function, PackedStringArray p_args) = 0;
 	virtual void update_settings() = 0;
 	virtual void set_debugger_active(bool p_active) = 0;
 	virtual bool can_lose_focus_on_node_selection() { return true; }
+	virtual void update_toggle_scripts_button() {}
 
 	virtual bool show_members_overview() = 0;
 
-	virtual void set_tooltip_request_func(String p_method, Object *p_obj) = 0;
+	virtual void set_tooltip_request_func(const Callable &p_toolip_callback) = 0;
 	virtual Control *get_edit_menu() = 0;
 	virtual void clear_edit_menu() = 0;
 	virtual void set_find_replace_bar(FindReplaceBar *p_bar) = 0;
@@ -303,11 +309,15 @@ class ScriptEditor : public PanelContainer {
 	int history_pos;
 
 	List<String> previous_scripts;
+	List<int> script_close_queue;
 
 	void _tab_changed(int p_which);
 	void _menu_option(int p_option);
 	void _theme_option(int p_option);
 	void _show_save_theme_as_dialog();
+	bool _has_docs_tab() const;
+	bool _has_script_tab() const;
+	void _prepare_file_menu();
 
 	Tree *disk_changed_list;
 	ConfirmationDialog *disk_changed;
@@ -335,6 +345,7 @@ class ScriptEditor : public PanelContainer {
 	void _close_docs_tab();
 	void _close_other_tabs();
 	void _close_all_tabs();
+	void _queue_close_tabs();
 
 	void _copy_script_path();
 
@@ -344,6 +355,7 @@ class ScriptEditor : public PanelContainer {
 
 	bool pending_auto_reload;
 	bool auto_reload_running_scripts;
+	void _trigger_live_script_reload();
 	void _live_auto_reload_running_scripts();
 
 	void _update_selected_editor_menu();
@@ -356,27 +368,32 @@ class ScriptEditor : public PanelContainer {
 
 	void _add_callback(Object *p_obj, const String &p_function, const PackedStringArray &p_args);
 	void _res_saved_callback(const Ref<Resource> &p_res);
+	void _scene_saved_callback(const String &p_path);
 
+	bool open_textfile_after_create = true;
 	bool trim_trailing_whitespace_on_save;
 	bool use_space_indentation;
 	bool convert_indent_on_save;
-
-	void _trim_trailing_whitespace(TextEdit *tx);
 
 	void _goto_script_line2(int p_line);
 	void _goto_script_line(REF p_script, int p_line);
 	void _set_execution(REF p_script, int p_line);
 	void _clear_execution(REF p_script);
 	void _breaked(bool p_breaked, bool p_can_debug);
-	void _update_window_menu();
 	void _script_created(Ref<Script> p_script);
+	void _set_breakpoint(REF p_scrpt, int p_line, bool p_enabled);
+	void _clear_breakpoints();
+	Array _get_cached_breakpoints_for_script(const String &p_path) const;
 
 	ScriptEditorBase *_get_current_editor() const;
 	Array _get_open_script_editors() const;
 
+	Ref<ConfigFile> script_editor_cache;
+	void _save_editor_state(ScriptEditorBase *p_editor);
 	void _save_layout();
 	void _editor_settings_changed();
 	void _filesystem_changed();
+	void _files_moved(const String &p_old_file, const String &p_new_file);
 	void _file_removed(const String &p_file);
 	void _autosave_scripts();
 	void _update_autosave_timer();
@@ -401,19 +418,19 @@ class ScriptEditor : public PanelContainer {
 
 	void _tree_changed();
 
-	void _script_split_dragged(float);
+	void _split_dragged(float);
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
-	void _unhandled_key_input(const Ref<InputEvent> &p_event);
+	virtual void input(const Ref<InputEvent> &p_event) override;
+	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 
 	void _script_list_gui_input(const Ref<InputEvent> &ev);
 	void _make_script_list_context_menu();
 
 	void _help_search(String p_text);
-	void _help_index(String p_text);
 
 	void _history_forward();
 	void _history_back();
@@ -436,7 +453,8 @@ class ScriptEditor : public PanelContainer {
 	Ref<Script> _get_current_script();
 	Array _get_open_scripts() const;
 
-	Ref<TextFile> _load_text_file(const String &p_path, Error *r_error);
+	Set<String> textfile_extensions;
+	Ref<TextFile> _load_text_file(const String &p_path, Error *r_error) const;
 	Error _save_text_file(Ref<TextFile> p_text_file, const String &p_path);
 
 	void _on_find_in_files_requested(String text);
@@ -460,6 +478,8 @@ public:
 	bool is_scripts_panel_toggled();
 	void apply_scripts() const;
 	void open_script_create_dialog(const String &p_base_name, const String &p_base_path);
+	void open_text_file_create_dialog(const String &p_base_path, const String &p_base_name = "");
+	RES open_file(const String &p_file);
 
 	void ensure_select_current();
 

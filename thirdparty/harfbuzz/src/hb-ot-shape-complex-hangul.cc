@@ -80,7 +80,7 @@ struct hangul_shape_plan_t
 static void *
 data_create_hangul (const hb_ot_shape_plan_t *plan)
 {
-  hangul_shape_plan_t *hangul_plan = (hangul_shape_plan_t *) calloc (1, sizeof (hangul_shape_plan_t));
+  hangul_shape_plan_t *hangul_plan = (hangul_shape_plan_t *) hb_calloc (1, sizeof (hangul_shape_plan_t));
   if (unlikely (!hangul_plan))
     return nullptr;
 
@@ -93,7 +93,7 @@ data_create_hangul (const hb_ot_shape_plan_t *plan)
 static void
 data_destroy_hangul (void *data)
 {
-  free (data);
+  hb_free (data);
 }
 
 /* Constants for algorithmic hangul syllable [de]composition. */
@@ -140,7 +140,7 @@ preprocess_text_hangul (const hb_ot_shape_plan_t *plan HB_UNUSED,
    *
    *   - LV can be precomposed, or decomposed.  Lets call those
    *     <LV> and <L,V>,
-   *   - LVT can be fully precomposed, partically precomposed, or
+   *   - LVT can be fully precomposed, partially precomposed, or
    *     fully decomposed.  Ie. <LVT>, <LV,T>, or <L,V,T>.
    *
    * The composition / decomposition is mechanical.  However, not
@@ -392,7 +392,7 @@ preprocess_text_hangul (const hb_ot_shape_plan_t *plan HB_UNUSED,
      */
     (void) buffer->next_glyph ();
   }
-  buffer->swap_buffers ();
+  buffer->sync ();
 }
 
 static void

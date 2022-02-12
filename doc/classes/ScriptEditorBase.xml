@@ -9,9 +9,9 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_add_syntax_highlighter" qualifiers="virtual">
+		<method name="add_syntax_highlighter">
 			<return type="void" />
-			<argument index="0" name="highlighter" type="Object" />
+			<argument index="0" name="highlighter" type="EditorSyntaxHighlighter" />
 			<description>
 				Adds a [EditorSyntaxHighlighter] to the open script.
 			</description>
@@ -71,6 +71,4 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

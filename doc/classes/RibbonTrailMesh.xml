@@ -6,8 +6,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="curve" type="Curve" setter="set_curve" getter="get_curve">
 		</member>

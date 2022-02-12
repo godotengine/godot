@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,22 +30,26 @@
 
 #include "camera_matrix.h"
 
+#include "core/math/aabb.h"
 #include "core/math/math_funcs.h"
+#include "core/math/plane.h"
+#include "core/math/rect2.h"
+#include "core/math/transform_3d.h"
 #include "core/string/print_string.h"
 
 float CameraMatrix::determinant() const {
 	return matrix[0][3] * matrix[1][2] * matrix[2][1] * matrix[3][0] - matrix[0][2] * matrix[1][3] * matrix[2][1] * matrix[3][0] -
-		   matrix[0][3] * matrix[1][1] * matrix[2][2] * matrix[3][0] + matrix[0][1] * matrix[1][3] * matrix[2][2] * matrix[3][0] +
-		   matrix[0][2] * matrix[1][1] * matrix[2][3] * matrix[3][0] - matrix[0][1] * matrix[1][2] * matrix[2][3] * matrix[3][0] -
-		   matrix[0][3] * matrix[1][2] * matrix[2][0] * matrix[3][1] + matrix[0][2] * matrix[1][3] * matrix[2][0] * matrix[3][1] +
-		   matrix[0][3] * matrix[1][0] * matrix[2][2] * matrix[3][1] - matrix[0][0] * matrix[1][3] * matrix[2][2] * matrix[3][1] -
-		   matrix[0][2] * matrix[1][0] * matrix[2][3] * matrix[3][1] + matrix[0][0] * matrix[1][2] * matrix[2][3] * matrix[3][1] +
-		   matrix[0][3] * matrix[1][1] * matrix[2][0] * matrix[3][2] - matrix[0][1] * matrix[1][3] * matrix[2][0] * matrix[3][2] -
-		   matrix[0][3] * matrix[1][0] * matrix[2][1] * matrix[3][2] + matrix[0][0] * matrix[1][3] * matrix[2][1] * matrix[3][2] +
-		   matrix[0][1] * matrix[1][0] * matrix[2][3] * matrix[3][2] - matrix[0][0] * matrix[1][1] * matrix[2][3] * matrix[3][2] -
-		   matrix[0][2] * matrix[1][1] * matrix[2][0] * matrix[3][3] + matrix[0][1] * matrix[1][2] * matrix[2][0] * matrix[3][3] +
-		   matrix[0][2] * matrix[1][0] * matrix[2][1] * matrix[3][3] - matrix[0][0] * matrix[1][2] * matrix[2][1] * matrix[3][3] -
-		   matrix[0][1] * matrix[1][0] * matrix[2][2] * matrix[3][3] + matrix[0][0] * matrix[1][1] * matrix[2][2] * matrix[3][3];
+			matrix[0][3] * matrix[1][1] * matrix[2][2] * matrix[3][0] + matrix[0][1] * matrix[1][3] * matrix[2][2] * matrix[3][0] +
+			matrix[0][2] * matrix[1][1] * matrix[2][3] * matrix[3][0] - matrix[0][1] * matrix[1][2] * matrix[2][3] * matrix[3][0] -
+			matrix[0][3] * matrix[1][2] * matrix[2][0] * matrix[3][1] + matrix[0][2] * matrix[1][3] * matrix[2][0] * matrix[3][1] +
+			matrix[0][3] * matrix[1][0] * matrix[2][2] * matrix[3][1] - matrix[0][0] * matrix[1][3] * matrix[2][2] * matrix[3][1] -
+			matrix[0][2] * matrix[1][0] * matrix[2][3] * matrix[3][1] + matrix[0][0] * matrix[1][2] * matrix[2][3] * matrix[3][1] +
+			matrix[0][3] * matrix[1][1] * matrix[2][0] * matrix[3][2] - matrix[0][1] * matrix[1][3] * matrix[2][0] * matrix[3][2] -
+			matrix[0][3] * matrix[1][0] * matrix[2][1] * matrix[3][2] + matrix[0][0] * matrix[1][3] * matrix[2][1] * matrix[3][2] +
+			matrix[0][1] * matrix[1][0] * matrix[2][3] * matrix[3][2] - matrix[0][0] * matrix[1][1] * matrix[2][3] * matrix[3][2] -
+			matrix[0][2] * matrix[1][1] * matrix[2][0] * matrix[3][3] + matrix[0][1] * matrix[1][2] * matrix[2][0] * matrix[3][3] +
+			matrix[0][2] * matrix[1][0] * matrix[2][1] * matrix[3][3] - matrix[0][0] * matrix[1][2] * matrix[2][1] * matrix[3][3] -
+			matrix[0][1] * matrix[1][0] * matrix[2][2] * matrix[3][3] + matrix[0][0] * matrix[1][1] * matrix[2][2] * matrix[3][3];
 }
 
 void CameraMatrix::set_identity() {
@@ -341,11 +345,12 @@ bool CameraMatrix::get_endpoints(const Transform3D &p_transform, Vector3 *p_8poi
 Vector<Plane> CameraMatrix::get_projection_planes(const Transform3D &p_transform) const {
 	/** Fast Plane Extraction from combined modelview/projection matrices.
 	 * References:
-	 * https://web.archive.org/web/20011221205252/http://www.markmorley.com/opengl/frustumculling.html
-	 * https://web.archive.org/web/20061020020112/http://www2.ravensoft.com/users/ggribb/plane%20extraction.pdf
+	 * https://web.archive.org/web/20011221205252/https://www.markmorley.com/opengl/frustumculling.html
+	 * https://web.archive.org/web/20061020020112/https://www2.ravensoft.com/users/ggribb/plane%20extraction.pdf
 	 */
 
 	Vector<Plane> planes;
+	planes.resize(6);
 
 	const real_t *matrix = (const real_t *)this->matrix;
 
@@ -360,7 +365,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform3D &p_transform
 	new_plane.normal = -new_plane.normal;
 	new_plane.normalize();
 
-	planes.push_back(p_transform.xform(new_plane));
+	planes.write[0] = p_transform.xform(new_plane);
 
 	///////--- Far Plane ---///////
 	new_plane = Plane(matrix[3] - matrix[2],
@@ -371,7 +376,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform3D &p_transform
 	new_plane.normal = -new_plane.normal;
 	new_plane.normalize();
 
-	planes.push_back(p_transform.xform(new_plane));
+	planes.write[1] = p_transform.xform(new_plane);
 
 	///////--- Left Plane ---///////
 	new_plane = Plane(matrix[3] + matrix[0],
@@ -382,7 +387,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform3D &p_transform
 	new_plane.normal = -new_plane.normal;
 	new_plane.normalize();
 
-	planes.push_back(p_transform.xform(new_plane));
+	planes.write[2] = p_transform.xform(new_plane);
 
 	///////--- Top Plane ---///////
 	new_plane = Plane(matrix[3] - matrix[1],
@@ -393,7 +398,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform3D &p_transform
 	new_plane.normal = -new_plane.normal;
 	new_plane.normalize();
 
-	planes.push_back(p_transform.xform(new_plane));
+	planes.write[3] = p_transform.xform(new_plane);
 
 	///////--- Right Plane ---///////
 	new_plane = Plane(matrix[3] - matrix[0],
@@ -404,7 +409,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform3D &p_transform
 	new_plane.normal = -new_plane.normal;
 	new_plane.normalize();
 
-	planes.push_back(p_transform.xform(new_plane));
+	planes.write[4] = p_transform.xform(new_plane);
 
 	///////--- Bottom Plane ---///////
 	new_plane = Plane(matrix[3] + matrix[1],
@@ -415,7 +420,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform3D &p_transform
 	new_plane.normal = -new_plane.normal;
 	new_plane.normalize();
 
-	planes.push_back(p_transform.xform(new_plane));
+	planes.write[5] = p_transform.xform(new_plane);
 
 	return planes;
 }

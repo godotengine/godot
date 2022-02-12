@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -73,6 +73,12 @@ public:
 		NAME_CASING_SNAKE_CASE
 	};
 
+	enum InternalMode {
+		INTERNAL_MODE_DISABLED,
+		INTERNAL_MODE_FRONT,
+		INTERNAL_MODE_BACK,
+	};
+
 	struct Comparator {
 		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->is_greater_than(p_a); }
 	};
@@ -90,13 +96,15 @@ private:
 	};
 
 	struct Data {
-		String filename;
+		String scene_file_path;
 		Ref<SceneState> instance_state;
 		Ref<SceneState> inherited_state;
 
 		Node *parent = nullptr;
 		Node *owner = nullptr;
 		Vector<Node *> children;
+		int internal_children_front = 0;
+		int internal_children_back = 0;
 		int pos = -1;
 		int depth = -1;
 		int blocked = 0; // Safeguard that throws an error when attempting to modify the tree in a harmful way while being traversed.
@@ -119,8 +127,8 @@ private:
 		ProcessMode process_mode = PROCESS_MODE_INHERIT;
 		Node *process_owner = nullptr;
 
-		int network_master = 1; // Server by default.
-		Vector<MultiplayerAPI::RPCConfig> rpc_methods;
+		int multiplayer_authority = 1; // Server by default.
+		Vector<Multiplayer::RPCConfig> rpc_methods;
 
 		// Variables used to properly sort the node when processing, ignored otherwise.
 		// TODO: Should move all the stuff below to bits.
@@ -164,7 +172,6 @@ private:
 	void _propagate_ready();
 	void _propagate_exit_tree();
 	void _propagate_after_exit_tree();
-	void _propagate_validate_owner();
 	void _print_stray_nodes();
 	void _propagate_process_owner(Node *p_owner, int p_pause_notification, int p_enabled_notification);
 	Array _get_node_and_resource(const NodePath &p_path);
@@ -172,11 +179,14 @@ private:
 	void _duplicate_signals(const Node *p_original, Node *p_copy) const;
 	Node *_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap = nullptr) const;
 
-	TypedArray<Node> _get_children() const;
+	TypedArray<Node> _get_children(bool p_include_internal = true) const;
 	Array _get_groups() const;
 
 	Variant _rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Variant _rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+
+	_FORCE_INLINE_ bool _is_internal_front() const { return data.parent && data.pos < data.parent->data.internal_children_front; }
+	_FORCE_INLINE_ bool _is_internal_back() const { return data.parent && data.pos >= data.parent->data.children.size() - data.parent->data.internal_children_back; }
 
 	friend class SceneTree;
 
@@ -207,6 +217,27 @@ protected:
 	void _set_owner_nocheck(Node *p_owner);
 	void _set_name_nocheck(const StringName &p_name);
 
+	//call from SceneTree
+	void _call_input(const Ref<InputEvent> &p_event);
+	void _call_unhandled_input(const Ref<InputEvent> &p_event);
+	void _call_unhandled_key_input(const Ref<InputEvent> &p_event);
+
+protected:
+	virtual void input(const Ref<InputEvent> &p_event);
+	virtual void unhandled_input(const Ref<InputEvent> &p_event);
+	virtual void unhandled_key_input(const Ref<InputEvent> &p_key_event);
+
+	GDVIRTUAL1(_process, double)
+	GDVIRTUAL1(_physics_process, double)
+	GDVIRTUAL0(_enter_tree)
+	GDVIRTUAL0(_exit_tree)
+	GDVIRTUAL0(_ready)
+	GDVIRTUAL0RC(Vector<String>, _get_configuration_warnings)
+
+	GDVIRTUAL1(_input, Ref<InputEvent>)
+	GDVIRTUAL1(_unhandled_input, Ref<InputEvent>)
+	GDVIRTUAL1(_unhandled_key_input, Ref<InputEvent>)
+
 public:
 	enum {
 		// you can make your own, but don't use the same numbers as other notifications in other nodes
@@ -223,7 +254,7 @@ public:
 		NOTIFICATION_INSTANCED = 20,
 		NOTIFICATION_DRAG_BEGIN = 21,
 		NOTIFICATION_DRAG_END = 22,
-		NOTIFICATION_PATH_CHANGED = 23,
+		NOTIFICATION_PATH_RENAMED = 23,
 		//NOTIFICATION_TRANSLATION_CHANGED = 24, moved below
 		NOTIFICATION_INTERNAL_PROCESS = 25,
 		NOTIFICATION_INTERNAL_PHYSICS_PROCESS = 26,
@@ -262,12 +293,12 @@ public:
 	StringName get_name() const;
 	void set_name(const String &p_name);
 
-	void add_child(Node *p_child, bool p_legible_unique_name = false);
+	void add_child(Node *p_child, bool p_legible_unique_name = false, InternalMode p_internal = INTERNAL_MODE_DISABLED);
 	void add_sibling(Node *p_sibling, bool p_legible_unique_name = false);
 	void remove_child(Node *p_child);
 
-	int get_child_count() const;
-	Node *get_child(int p_index) const;
+	int get_child_count(bool p_include_internal = true) const;
+	Node *get_child(int p_index, bool p_include_internal = true) const;
 	bool has_node(const NodePath &p_path) const;
 	Node *get_node(const NodePath &p_path) const;
 	Node *get_node_or_null(const NodePath &p_path) const;
@@ -305,6 +336,7 @@ public:
 	int get_persistent_group_count() const;
 
 	void move_child(Node *p_child, int p_pos);
+	void _move_child(Node *p_child, int p_pos, bool p_ignore_end = false);
 	void raise();
 
 	void set_owner(Node *p_owner);
@@ -312,15 +344,15 @@ public:
 	void get_owned_by(Node *p_by, List<Node *> *p_owned);
 
 	void remove_and_skip();
-	int get_index() const;
+	int get_index(bool p_include_internal = true) const;
 
 	Ref<Tween> create_tween();
 
 	void print_tree();
 	void print_tree_pretty();
 
-	void set_filename(const String &p_filename);
-	String get_filename() const;
+	void set_scene_file_path(const String &p_scene_file_path);
+	String get_scene_file_path() const;
 
 	void set_editor_description(const String &p_editor_description);
 	String get_editor_description() const;
@@ -328,6 +360,13 @@ public:
 	void set_editable_instance(Node *p_node, bool p_editable);
 	bool is_editable_instance(const Node *p_node) const;
 	Node *get_deepest_editable_node(Node *p_start_node) const;
+
+#ifdef TOOLS_ENABLED
+	void set_property_pinned(const String &p_property, bool p_pinned);
+	bool is_property_pinned(const StringName &p_property) const;
+	virtual StringName get_property_store_alias(const StringName &p_property) const;
+#endif
+	void get_storable_properties(Set<StringName> &r_storable_properties) const;
 
 	virtual String to_string() override;
 
@@ -339,11 +378,11 @@ public:
 
 	/* PROCESSING */
 	void set_physics_process(bool p_process);
-	float get_physics_process_delta_time() const;
+	double get_physics_process_delta_time() const;
 	bool is_physics_processing() const;
 
 	void set_process(bool p_process);
-	float get_process_delta_time() const;
+	double get_process_delta_time() const;
 	bool is_processing() const;
 
 	void set_physics_process_internal(bool p_process_internal);
@@ -403,7 +442,6 @@ public:
 	void queue_delete();
 
 	//hacks for speed
-	static void set_human_readable_collision_renaming(bool p_enabled);
 	static void init_node_hrcr();
 
 	void force_parent_owned() { data.parent_owned = true; } //hack to avoid duplicate nodes
@@ -428,12 +466,12 @@ public:
 	bool is_displayed_folded() const;
 	/* NETWORK */
 
-	void set_network_master(int p_peer_id, bool p_recursive = true);
-	int get_network_master() const;
-	bool is_network_master() const;
+	virtual void set_multiplayer_authority(int p_peer_id, bool p_recursive = true);
+	int get_multiplayer_authority() const;
+	bool is_multiplayer_authority() const;
 
-	uint16_t rpc_config(const StringName &p_method, MultiplayerAPI::RPCMode p_rpc_mode, MultiplayerPeer::TransferMode p_transfer_mode, int p_channel = 0); // config a local method for RPC
-	Vector<MultiplayerAPI::RPCConfig> get_node_rpc_methods() const;
+	uint16_t rpc_config(const StringName &p_method, Multiplayer::RPCMode p_rpc_mode, bool p_call_local = false, Multiplayer::TransferMode p_transfer_mode = Multiplayer::TRANSFER_MODE_RELIABLE, int p_channel = 0); // config a local method for RPC
+	Vector<Multiplayer::RPCConfig> get_node_rpc_methods() const;
 
 	void rpc(const StringName &p_method, VARIANT_ARG_LIST); // RPC, honors RPCMode, TransferMode, channel
 	void rpc_id(int p_peer_id, const StringName &p_method, VARIANT_ARG_LIST); // RPC to specific peer(s), honors RPCMode, TransferMode, channel

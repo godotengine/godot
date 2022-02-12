@@ -4,7 +4,7 @@
  *
  *   Auto-fitter glyph loading routines (body).
  *
- * Copyright (C) 2003-2020 by
+ * Copyright (C) 2003-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -105,7 +105,6 @@
                               globals->stem_darkening_for_ppem;
 
     FT_Fixed  em_size  = af_intToFixed( face->units_per_EM );
-    FT_Fixed  em_ratio = FT_DivFix( af_intToFixed( 1000 ), em_size );
 
     FT_Matrix  scale_down_matrix = { 0x10000L, 0, 0, 0x10000L };
 
@@ -142,12 +141,11 @@
 
 
       darken_by_font_units_x =
-        af_intToFixed( af_loader_compute_darkening( loader,
-                                                    face,
-                                                    stdVW ) );
-      darken_x = FT_DivFix( FT_MulFix( darken_by_font_units_x,
-                                       size_metrics->x_scale ),
-                            em_ratio );
+         af_loader_compute_darkening( loader,
+                                      face,
+                                      stdVW ) ;
+      darken_x = FT_MulFix( darken_by_font_units_x,
+                            size_metrics->x_scale );
 
       globals->standard_vertical_width = stdVW;
       globals->stem_darkening_for_ppem = size_metrics->x_ppem;
@@ -161,12 +159,11 @@
 
 
       darken_by_font_units_y =
-        af_intToFixed( af_loader_compute_darkening( loader,
-                                                    face,
-                                                    stdHW ) );
-      darken_y = FT_DivFix( FT_MulFix( darken_by_font_units_y,
-                                       size_metrics->y_scale ),
-                            em_ratio );
+         af_loader_compute_darkening( loader,
+                                      face,
+                                      stdHW ) ;
+      darken_y = FT_MulFix( darken_by_font_units_y,
+                            size_metrics->y_scale );
 
       globals->standard_horizontal_width = stdHW;
       globals->stem_darkening_for_ppem   = size_metrics->x_ppem;
@@ -299,12 +296,6 @@
     error = af_loader_reset( loader, module, face );
     if ( error )
       goto Exit;
-
-#ifdef FT_OPTION_AUTOFIT2
-    /* XXX: undocumented hook to activate the latin2 writing system. */
-    if ( load_flags & ( 1UL << 20 ) )
-      style_options = AF_STYLE_LTN2_DFLT;
-#endif
 
     /*
      * Glyphs (really code points) are assigned to scripts.  Script
@@ -482,8 +473,8 @@
           FT_Pos  pp2x = loader->pp2.x;
 
 
-          loader->pp1.x = FT_PIX_ROUND( pp1x + hints->xmin_delta );
-          loader->pp2.x = FT_PIX_ROUND( pp2x + hints->xmax_delta );
+          loader->pp1.x = FT_PIX_ROUND( pp1x );
+          loader->pp2.x = FT_PIX_ROUND( pp2x );
 
           slot->lsb_delta = loader->pp1.x - pp1x;
           slot->rsb_delta = loader->pp2.x - pp2x;
@@ -594,7 +585,7 @@
    *
    * XXX: Currently a crude adaption of the original algorithm.  Do better?
    */
-  FT_LOCAL_DEF( FT_Int32 )
+  FT_LOCAL_DEF( FT_Fixed )
   af_loader_compute_darkening( AF_Loader  loader,
                                FT_Face    face,
                                FT_Pos     standard_width )
@@ -713,7 +704,7 @@
     }
 
     /* Convert darken_amount from per 1000 em to true character space. */
-    return af_fixedToInt( FT_DivFix( darken_amount, em_ratio ) );
+    return FT_DivFix( darken_amount, em_ratio );
   }
 
 

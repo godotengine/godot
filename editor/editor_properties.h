@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 
 #include "editor/create_dialog.h"
 #include "editor/editor_inspector.h"
+#include "editor/editor_locale_dialog.h"
 #include "editor/editor_resource_picker.h"
 #include "editor/editor_spin_slider.h"
 #include "editor/property_selector.h"
@@ -59,6 +60,7 @@ class EditorPropertyText : public EditorProperty {
 	void _text_submitted(const String &p_string);
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	static void _bind_methods();
 
 public:
@@ -81,6 +83,7 @@ class EditorPropertyMultilineText : public EditorProperty {
 	void _open_big_text();
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -115,6 +118,7 @@ class EditorPropertyTextEnum : public EditorProperty {
 	void _custom_value_cancelled();
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	static void _bind_methods();
 	void _notification(int p_what);
 
@@ -139,6 +143,7 @@ class EditorPropertyPath : public EditorProperty {
 	void _path_focus_exited();
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	static void _bind_methods();
 	void _notification(int p_what);
 
@@ -147,6 +152,26 @@ public:
 	void set_save_mode();
 	virtual void update_property() override;
 	EditorPropertyPath();
+};
+
+class EditorPropertyLocale : public EditorProperty {
+	GDCLASS(EditorPropertyLocale, EditorProperty);
+	EditorLocaleDialog *dialog;
+	LineEdit *locale;
+	Button *locale_edit;
+
+	void _locale_selected(const String &p_locale);
+	void _locale_pressed();
+	void _locale_focus_exited();
+
+protected:
+	static void _bind_methods();
+	void _notification(int p_what);
+
+public:
+	void setup(const String &p_hit_string);
+	virtual void update_property() override;
+	EditorPropertyLocale();
 };
 
 class EditorPropertyClassName : public EditorProperty {
@@ -161,6 +186,7 @@ private:
 	void _dialog_created();
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	static void _bind_methods();
 
 public:
@@ -182,7 +208,6 @@ public:
 		MEMBER_PROPERTY_OF_BASE_TYPE, ///< a property of a base type
 		MEMBER_PROPERTY_OF_INSTANCE, ///< a property of an instance
 		MEMBER_PROPERTY_OF_SCRIPT, ///< a property of a script & base
-
 	};
 
 private:
@@ -195,6 +220,7 @@ private:
 	void _property_select();
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	static void _bind_methods();
 
 public:
@@ -210,6 +236,7 @@ class EditorPropertyCheck : public EditorProperty {
 	void _checkbox_pressed();
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	static void _bind_methods();
 
 public:
@@ -224,6 +251,7 @@ class EditorPropertyEnum : public EditorProperty {
 	void _option_selected(int p_which);
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	static void _bind_methods();
 
 public:
@@ -242,6 +270,7 @@ class EditorPropertyFlags : public EditorProperty {
 	void _flag_toggled();
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	static void _bind_methods();
 
 public:
@@ -250,7 +279,46 @@ public:
 	EditorPropertyFlags();
 };
 
-class EditorPropertyLayersGrid;
+///////////////////// LAYERS /////////////////////////
+
+class EditorPropertyLayersGrid : public Control {
+	GDCLASS(EditorPropertyLayersGrid, Control);
+
+private:
+	Vector<Rect2> flag_rects;
+	Rect2 expand_rect;
+	bool expand_hovered = false;
+	bool expanded = false;
+	int expansion_rows = 0;
+	int hovered_index = -1;
+	bool read_only = false;
+	int renamed_layer_index = -1;
+	PopupMenu *layer_rename;
+	ConfirmationDialog *rename_dialog;
+	LineEdit *rename_dialog_text;
+
+	void _rename_pressed(int p_menu);
+	void _rename_operation_confirm();
+	Size2 get_grid_size() const;
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	uint32_t value = 0;
+	int layer_group_size = 0;
+	int layer_count = 0;
+	Vector<String> names;
+	Vector<String> tooltips;
+
+	void set_read_only(bool p_read_only);
+	virtual Size2 get_minimum_size() const override;
+	virtual String get_tooltip(const Point2 &p_pos) const override;
+	void gui_input(const Ref<InputEvent> &p_ev) override;
+	void set_flag(uint32_t p_flag);
+	EditorPropertyLayersGrid();
+};
 
 class EditorPropertyLayers : public EditorProperty {
 	GDCLASS(EditorPropertyLayers, EditorProperty);
@@ -268,18 +336,22 @@ public:
 private:
 	EditorPropertyLayersGrid *grid;
 	void _grid_changed(uint32_t p_grid);
+	String basename;
 	LayerType layer_type;
 	PopupMenu *layers;
 	Button *button;
 
 	void _button_pressed();
 	void _menu_pressed(int p_menu);
+	void _refresh_names();
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	static void _bind_methods();
 
 public:
 	void setup(LayerType p_layer_type);
+	void set_layer_name(int p_index, const String &p_name);
 	virtual void update_property() override;
 	EditorPropertyLayers();
 };
@@ -291,6 +363,7 @@ class EditorPropertyInteger : public EditorProperty {
 	void _value_changed(int64_t p_val);
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	static void _bind_methods();
 
 public:
@@ -306,6 +379,7 @@ class EditorPropertyObjectID : public EditorProperty {
 	void _edit_pressed();
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	static void _bind_methods();
 
 public:
@@ -322,6 +396,7 @@ class EditorPropertyFloat : public EditorProperty {
 	void _value_changed(double p_val);
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	static void _bind_methods();
 
 public:
@@ -363,6 +438,7 @@ class EditorPropertyEasing : public EditorProperty {
 	void _notification(int p_what);
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	static void _bind_methods();
 
 public:
@@ -378,6 +454,7 @@ class EditorPropertyVector2 : public EditorProperty {
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -394,6 +471,7 @@ class EditorPropertyRect2 : public EditorProperty {
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -411,6 +489,7 @@ class EditorPropertyVector3 : public EditorProperty {
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -429,6 +508,7 @@ class EditorPropertyVector2i : public EditorProperty {
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -445,6 +525,7 @@ class EditorPropertyRect2i : public EditorProperty {
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -461,6 +542,7 @@ class EditorPropertyVector3i : public EditorProperty {
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -477,6 +559,7 @@ class EditorPropertyPlane : public EditorProperty {
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -493,6 +576,7 @@ class EditorPropertyQuaternion : public EditorProperty {
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -509,6 +593,7 @@ class EditorPropertyAABB : public EditorProperty {
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -525,13 +610,14 @@ class EditorPropertyTransform2D : public EditorProperty {
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
 	virtual void update_property() override;
 	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
-	EditorPropertyTransform2D();
+	EditorPropertyTransform2D(bool p_include_origin = true);
 };
 
 class EditorPropertyBasis : public EditorProperty {
@@ -541,6 +627,7 @@ class EditorPropertyBasis : public EditorProperty {
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -557,6 +644,7 @@ class EditorPropertyTransform3D : public EditorProperty {
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -578,6 +666,7 @@ class EditorPropertyColor : public EditorProperty {
 	Color last_color;
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	static void _bind_methods();
 
 public:
@@ -599,7 +688,12 @@ class EditorPropertyNodePath : public EditorProperty {
 	void _node_assign();
 	void _node_clear();
 
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+	bool is_drop_valid(const Dictionary &p_drag_data) const;
+
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	static void _bind_methods();
 	void _notification(int p_what);
 
@@ -630,20 +724,22 @@ class EditorPropertyResource : public EditorProperty {
 	bool updating_theme = false;
 	bool opened_editor = false;
 
-	void _resource_selected(const RES &p_resource);
+	void _resource_selected(const RES &p_resource, bool p_edit);
 	void _resource_changed(const RES &p_resource);
 
 	void _viewport_selected(const NodePath &p_path);
 
-	void _sub_inspector_property_keyed(const String &p_property, const Variant &p_value, bool);
+	void _sub_inspector_property_keyed(const String &p_property, const Variant &p_value, bool p_advance);
 	void _sub_inspector_resource_selected(const RES &p_resource, const String &p_property);
 	void _sub_inspector_object_id_selected(int p_id);
 
 	void _open_editor_pressed();
 	void _fold_other_editors(Object *p_self);
 	void _update_property_bg();
+	void _update_preferred_shader();
 
 protected:
+	virtual void _set_read_only(bool p_read_only) override;
 	static void _bind_methods();
 	void _notification(int p_what);
 
@@ -667,9 +763,7 @@ class EditorInspectorDefaultPlugin : public EditorInspectorPlugin {
 
 public:
 	virtual bool can_handle(Object *p_object) override;
-	virtual void parse_begin(Object *p_object) override;
 	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false) override;
-	virtual void parse_end() override;
 
 	static EditorProperty *get_editor_for_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false);
 };

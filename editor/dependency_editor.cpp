@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -74,16 +74,16 @@ void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, Map<String
 
 		String path = efsd->get_file_path(i);
 
-		for (Map<String, String>::Element *E = candidates[file].front(); E; E = E->next()) {
-			if (E->get() == String()) {
-				E->get() = path;
+		for (KeyValue<String, String> &E : candidates[file]) {
+			if (E.value.is_empty()) {
+				E.value = path;
 				continue;
 			}
 
 			//must match the best, using subdirs
-			String existing = E->get().replace_first("res://", "");
+			String existing = E.value.replace_first("res://", "");
 			String current = path.replace_first("res://", "");
-			String lost = E->key().replace_first("res://", "");
+			String lost = E.key.replace_first("res://", "");
 
 			Vector<String> existingv = existing.split("/");
 			existingv.reverse();
@@ -107,7 +107,7 @@ void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, Map<String
 			if (current_score > existing_score) {
 				//if it was the same, could track distance to new path but..
 
-				E->get() = path; //replace by more accurate
+				E.value = path; //replace by more accurate
 			}
 		}
 	}
@@ -133,10 +133,10 @@ void DependencyEditor::_fix_all() {
 
 	Map<String, String> remaps;
 
-	for (Map<String, Map<String, String>>::Element *E = candidates.front(); E; E = E->next()) {
-		for (Map<String, String>::Element *F = E->get().front(); F; F = F->next()) {
-			if (F->get() != String()) {
-				remaps[F->key()] = F->get();
+	for (KeyValue<String, Map<String, String>> &E : candidates) {
+		for (const KeyValue<String, String> &F : E.value) {
+			if (!F.value.is_empty()) {
+				remaps[F.key] = F.value;
 			}
 		}
 	}
@@ -171,7 +171,7 @@ void DependencyEditor::_update_list() {
 		String path;
 		String type;
 
-		if (n.find("::") != -1) {
+		if (n.contains("::")) {
 			path = n.get_slice("::", 0);
 			type = n.get_slice("::", 1);
 		} else {
@@ -270,12 +270,13 @@ DependencyEditor::DependencyEditor() {
 /////////////////////////////////////
 void DependencyEditorOwners::_list_rmb_select(int p_item, const Vector2 &p_pos) {
 	file_options->clear();
-	file_options->set_size(Size2(1, 1));
+	file_options->reset_size();
 	if (p_item >= 0) {
 		file_options->add_item(TTR("Open"), FILE_OPEN);
 	}
 
-	file_options->set_position(owners->get_global_position() + p_pos);
+	file_options->set_position(owners->get_screen_position() + p_pos);
+	file_options->reset_size();
 	file_options->popup();
 }
 
@@ -464,7 +465,7 @@ void DependencyRemoveDialog::show(const Vector<String> &p_folders, const Vector<
 	if (removed_deps.is_empty()) {
 		owners->hide();
 		text->set_text(TTR("Remove the selected files from the project? (Cannot be undone.)\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently."));
-		set_size(Size2());
+		reset_size();
 		popup_centered();
 	} else {
 		_build_removed_dependency_tree(removed_deps);

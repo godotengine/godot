@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,9 +31,7 @@
 #include "ray_cast_3d.h"
 
 #include "collision_object_3d.h"
-#include "core/config/engine.h"
 #include "mesh_instance_3d.h"
-#include "servers/physics_server_3d.h"
 
 void RayCast3D::set_target_position(const Vector3 &p_point) {
 	target_position = p_point;
@@ -60,20 +58,22 @@ uint32_t RayCast3D::get_collision_mask() const {
 	return collision_mask;
 }
 
-void RayCast3D::set_collision_mask_bit(int p_bit, bool p_value) {
-	ERR_FAIL_INDEX_MSG(p_bit, 32, "Collision mask bit must be between 0 and 31 inclusive.");
+void RayCast3D::set_collision_mask_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Collision layer number must be between 1 and 32 inclusive.");
 	uint32_t mask = get_collision_mask();
 	if (p_value) {
-		mask |= 1 << p_bit;
+		mask |= 1 << (p_layer_number - 1);
 	} else {
-		mask &= ~(1 << p_bit);
+		mask &= ~(1 << (p_layer_number - 1));
 	}
 	set_collision_mask(mask);
 }
 
-bool RayCast3D::get_collision_mask_bit(int p_bit) const {
-	ERR_FAIL_INDEX_V_MSG(p_bit, 32, false, "Collision mask bit must be between 0 and 31 inclusive.");
-	return get_collision_mask() & (1 << p_bit);
+bool RayCast3D::get_collision_mask_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Collision layer number must be between 1 and 32 inclusive.");
+	return get_collision_mask() & (1 << (p_layer_number - 1));
 }
 
 bool RayCast3D::is_colliding() const {
@@ -212,9 +212,17 @@ void RayCast3D::_update_raycast_state() {
 		to = Vector3(0, 0.01, 0);
 	}
 
-	PhysicsDirectSpaceState3D::RayResult rr;
+	PhysicsDirectSpaceState3D::RayParameters ray_params;
+	ray_params.from = gt.get_origin();
+	ray_params.to = gt.xform(to);
+	ray_params.exclude = exclude;
+	ray_params.collision_mask = collision_mask;
+	ray_params.collide_with_bodies = collide_with_bodies;
+	ray_params.collide_with_areas = collide_with_areas;
+	ray_params.hit_from_inside = hit_from_inside;
 
-	if (dss->intersect_ray(gt.get_origin(), gt.xform(to), rr, exclude, collision_mask, collide_with_bodies, collide_with_areas)) {
+	PhysicsDirectSpaceState3D::RayResult rr;
+	if (dss->intersect_ray(ray_params, rr)) {
 		collided = true;
 		against = rr.collider_id;
 		collision_point = rr.position;
@@ -235,46 +243,53 @@ void RayCast3D::add_exception_rid(const RID &p_rid) {
 	exclude.insert(p_rid);
 }
 
-void RayCast3D::add_exception(const Object *p_object) {
-	ERR_FAIL_NULL(p_object);
-	const CollisionObject3D *co = Object::cast_to<CollisionObject3D>(p_object);
-	if (!co) {
-		return;
-	}
-	add_exception_rid(co->get_rid());
+void RayCast3D::add_exception(const CollisionObject3D *p_node) {
+	ERR_FAIL_NULL_MSG(p_node, "The passed Node must be an instance of CollisionObject3D.");
+	add_exception_rid(p_node->get_rid());
 }
 
 void RayCast3D::remove_exception_rid(const RID &p_rid) {
 	exclude.erase(p_rid);
 }
 
-void RayCast3D::remove_exception(const Object *p_object) {
-	ERR_FAIL_NULL(p_object);
-	const CollisionObject3D *co = Object::cast_to<CollisionObject3D>(p_object);
-	if (!co) {
-		return;
-	}
-	remove_exception_rid(co->get_rid());
+void RayCast3D::remove_exception(const CollisionObject3D *p_node) {
+	ERR_FAIL_NULL_MSG(p_node, "The passed Node must be an instance of CollisionObject3D.");
+	remove_exception_rid(p_node->get_rid());
 }
 
 void RayCast3D::clear_exceptions() {
 	exclude.clear();
+
+	if (exclude_parent_body && is_inside_tree()) {
+		CollisionObject3D *parent = Object::cast_to<CollisionObject3D>(get_parent());
+		if (parent) {
+			exclude.insert(parent->get_rid());
+		}
+	}
 }
 
-void RayCast3D::set_collide_with_areas(bool p_clip) {
-	collide_with_areas = p_clip;
+void RayCast3D::set_collide_with_areas(bool p_enabled) {
+	collide_with_areas = p_enabled;
 }
 
 bool RayCast3D::is_collide_with_areas_enabled() const {
 	return collide_with_areas;
 }
 
-void RayCast3D::set_collide_with_bodies(bool p_clip) {
-	collide_with_bodies = p_clip;
+void RayCast3D::set_collide_with_bodies(bool p_enabled) {
+	collide_with_bodies = p_enabled;
 }
 
 bool RayCast3D::is_collide_with_bodies_enabled() const {
 	return collide_with_bodies;
+}
+
+void RayCast3D::set_hit_from_inside(bool p_enabled) {
+	hit_from_inside = p_enabled;
+}
+
+bool RayCast3D::is_hit_from_inside_enabled() const {
+	return hit_from_inside;
 }
 
 void RayCast3D::_bind_methods() {
@@ -303,8 +318,8 @@ void RayCast3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &RayCast3D::set_collision_mask);
 	ClassDB::bind_method(D_METHOD("get_collision_mask"), &RayCast3D::get_collision_mask);
 
-	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &RayCast3D::set_collision_mask_bit);
-	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &RayCast3D::get_collision_mask_bit);
+	ClassDB::bind_method(D_METHOD("set_collision_mask_value", "layer_number", "value"), &RayCast3D::set_collision_mask_value);
+	ClassDB::bind_method(D_METHOD("get_collision_mask_value", "layer_number"), &RayCast3D::get_collision_mask_value);
 
 	ClassDB::bind_method(D_METHOD("set_exclude_parent_body", "mask"), &RayCast3D::set_exclude_parent_body);
 	ClassDB::bind_method(D_METHOD("get_exclude_parent_body"), &RayCast3D::get_exclude_parent_body);
@@ -314,6 +329,9 @@ void RayCast3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_collide_with_bodies", "enable"), &RayCast3D::set_collide_with_bodies);
 	ClassDB::bind_method(D_METHOD("is_collide_with_bodies_enabled"), &RayCast3D::is_collide_with_bodies_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_hit_from_inside", "enable"), &RayCast3D::set_hit_from_inside);
+	ClassDB::bind_method(D_METHOD("is_hit_from_inside_enabled"), &RayCast3D::is_hit_from_inside_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_debug_shape_custom_color", "debug_shape_custom_color"), &RayCast3D::set_debug_shape_custom_color);
 	ClassDB::bind_method(D_METHOD("get_debug_shape_custom_color"), &RayCast3D::get_debug_shape_custom_color);
@@ -325,6 +343,7 @@ void RayCast3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclude_parent"), "set_exclude_parent_body", "get_exclude_parent_body");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "target_position"), "set_target_position", "get_target_position");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hit_from_inside"), "set_hit_from_inside", "is_hit_from_inside_enabled");
 
 	ADD_GROUP("Collide With", "collide_with");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collide_with_areas", "is_collide_with_areas_enabled");
@@ -335,7 +354,7 @@ void RayCast3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_shape_thickness", PROPERTY_HINT_RANGE, "1,5"), "set_debug_shape_thickness", "get_debug_shape_thickness");
 }
 
-float RayCast3D::get_debug_shape_thickness() const {
+int RayCast3D::get_debug_shape_thickness() const {
 	return debug_shape_thickness;
 }
 
@@ -364,7 +383,7 @@ void RayCast3D::_update_debug_shape_vertices() {
 	}
 }
 
-void RayCast3D::set_debug_shape_thickness(const float p_debug_shape_thickness) {
+void RayCast3D::set_debug_shape_thickness(const int p_debug_shape_thickness) {
 	debug_shape_thickness = p_debug_shape_thickness;
 	update_gizmos();
 

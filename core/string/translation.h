@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,8 @@
 #define TRANSLATION_H
 
 #include "core/io/resource.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/script_language.h"
 
 class Translation : public Resource {
 	GDCLASS(Translation, Resource);
@@ -47,6 +49,9 @@ class Translation : public Resource {
 
 protected:
 	static void _bind_methods();
+
+	GDVIRTUAL2RC(StringName, _get_message, StringName, StringName);
+	GDVIRTUAL4RC(StringName, _get_plural_message, StringName, StringName, int, StringName);
 
 public:
 	void set_locale(const String &p_locale);
@@ -73,9 +78,27 @@ class TranslationServer : public Object {
 	Ref<Translation> tool_translation;
 	Ref<Translation> doc_translation;
 
-	Map<String, String> locale_name_map;
-
 	bool enabled = true;
+
+	bool pseudolocalization_enabled = false;
+	bool pseudolocalization_accents_enabled = false;
+	bool pseudolocalization_double_vowels_enabled = false;
+	bool pseudolocalization_fake_bidi_enabled = false;
+	bool pseudolocalization_override_enabled = false;
+	bool pseudolocalization_skip_placeholders_enabled = false;
+	bool editor_pseudolocalization = false;
+	float expansion_ratio = 0.0;
+	String pseudolocalization_prefix;
+	String pseudolocalization_suffix;
+
+	StringName tool_pseudolocalize(const StringName &p_message) const;
+	String get_override_string(String &p_message) const;
+	String double_vowels(String &p_message) const;
+	String replace_with_accented_string(String &p_message) const;
+	String wrap_with_fakebidi_characters(String &p_message) const;
+	String add_padding(String &p_message, int p_length) const;
+	const char32_t *get_accented_version(char32_t p_character) const;
+	bool is_placeholder(String &p_message, int p_index) const;
 
 	static TranslationServer *singleton;
 	bool _load_translations(const String &p_from);
@@ -83,6 +106,23 @@ class TranslationServer : public Object {
 	StringName _get_message_from_translations(const StringName &p_message, const StringName &p_context, const String &p_locale, bool plural, const String &p_message_plural = "", int p_n = 0) const;
 
 	static void _bind_methods();
+
+	struct LocaleScriptInfo {
+		String name;
+		String script;
+		String default_country;
+		Set<String> supported_countries;
+	};
+	static Vector<LocaleScriptInfo> locale_script_info;
+
+	static Map<String, String> language_map;
+	static Map<String, String> script_map;
+	static Map<String, String> locale_rename_map;
+	static Map<String, String> country_name_map;
+	static Map<String, String> country_rename_map;
+	static Map<String, String> variant_map;
+
+	void init_locale_info();
 
 public:
 	_FORCE_INLINE_ static TranslationServer *get_singleton() { return singleton; }
@@ -94,6 +134,15 @@ public:
 	String get_locale() const;
 	Ref<Translation> get_translation_object(const String &p_locale);
 
+	Vector<String> get_all_languages() const;
+	String get_language_name(const String &p_language) const;
+
+	Vector<String> get_all_scripts() const;
+	String get_script_name(const String &p_script) const;
+
+	Vector<String> get_all_countries() const;
+	String get_country_name(const String &p_country) const;
+
 	String get_locale_name(const String &p_locale) const;
 
 	Array get_loaded_locales() const;
@@ -104,11 +153,16 @@ public:
 	StringName translate(const StringName &p_message, const StringName &p_context = "") const;
 	StringName translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
 
-	static Vector<String> get_all_locales();
-	static Vector<String> get_all_locale_names();
-	static bool is_locale_valid(const String &p_locale);
-	static String standardize_locale(const String &p_locale);
-	static String get_language_code(const String &p_locale);
+	StringName pseudolocalize(const StringName &p_message) const;
+
+	bool is_pseudolocalization_enabled() const;
+	void set_pseudolocalization_enabled(bool p_enabled);
+	void set_editor_pseudolocalization(bool p_enabled);
+	void reload_pseudolocalization();
+
+	String standardize_locale(const String &p_locale) const;
+
+	int compare_locales(const String &p_locale_a, const String &p_locale_b) const;
 
 	String get_tool_locale();
 	void set_tool_translation(const Ref<Translation> &p_translation);

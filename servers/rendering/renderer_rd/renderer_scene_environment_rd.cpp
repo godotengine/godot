@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,13 +32,12 @@
 
 uint64_t RendererSceneEnvironmentRD::auto_exposure_counter = 2;
 
-void RendererSceneEnvironmentRD::set_ambient_light(const Color &p_color, RS::EnvironmentAmbientSource p_ambient, float p_energy, float p_sky_contribution, RS::EnvironmentReflectionSource p_reflection_source, const Color &p_ao_color) {
+void RendererSceneEnvironmentRD::set_ambient_light(const Color &p_color, RS::EnvironmentAmbientSource p_ambient, float p_energy, float p_sky_contribution, RS::EnvironmentReflectionSource p_reflection_source) {
 	ambient_light = p_color;
 	ambient_source = p_ambient;
 	ambient_light_energy = p_energy;
 	ambient_sky_contribution = p_sky_contribution;
 	reflection_source = p_reflection_source;
-	ao_color = p_ao_color;
 }
 
 void RendererSceneEnvironmentRD::set_tonemap(RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) {
@@ -55,7 +54,7 @@ void RendererSceneEnvironmentRD::set_tonemap(RS::EnvironmentToneMapper p_tone_ma
 	auto_exp_scale = p_auto_exp_scale;
 }
 
-void RendererSceneEnvironmentRD::set_glow(bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap) {
+void RendererSceneEnvironmentRD::set_glow(bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, float p_glow_map_strength, RID p_glow_map) {
 	ERR_FAIL_COND_MSG(p_levels.size() != 7, "Size of array of glow levels must be 7");
 	glow_enabled = p_enable;
 	glow_levels = p_levels;
@@ -67,9 +66,11 @@ void RendererSceneEnvironmentRD::set_glow(bool p_enable, Vector<float> p_levels,
 	glow_hdr_bleed_threshold = p_hdr_bleed_threshold;
 	glow_hdr_bleed_scale = p_hdr_bleed_scale;
 	glow_hdr_luminance_cap = p_hdr_luminance_cap;
+	glow_map_strength = p_glow_map_strength;
+	glow_map = p_glow_map;
 }
 
-void RendererSceneEnvironmentRD::set_sdfgi(bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) {
+void RendererSceneEnvironmentRD::set_sdfgi(bool p_enable, int p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) {
 	sdfgi_enabled = p_enable;
 	sdfgi_cascades = p_cascades;
 	sdfgi_min_cell_size = p_min_cell_size;
@@ -93,16 +94,19 @@ void RendererSceneEnvironmentRD::set_fog(bool p_enable, const Color &p_light_col
 	fog_aerial_perspective = p_fog_aerial_perspective;
 }
 
-void RendererSceneEnvironmentRD::set_volumetric_fog(bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount) {
+void RendererSceneEnvironmentRD::set_volumetric_fog(bool p_enable, float p_density, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject) {
 	volumetric_fog_enabled = p_enable;
 	volumetric_fog_density = p_density;
-	volumetric_fog_light = p_light;
-	volumetric_fog_light_energy = p_light_energy;
+	volumetric_fog_scattering = p_albedo;
+	volumetric_fog_emission = p_emission;
+	volumetric_fog_emission_energy = p_emission_energy;
+	volumetric_fog_anisotropy = p_anisotropy,
 	volumetric_fog_length = p_length;
 	volumetric_fog_detail_spread = p_detail_spread;
 	volumetric_fog_gi_inject = p_gi_inject;
 	volumetric_fog_temporal_reprojection = p_temporal_reprojection;
 	volumetric_fog_temporal_reprojection_amount = p_temporal_reprojection_amount;
+	volumetric_fog_ambient_inject = p_ambient_inject;
 }
 
 void RendererSceneEnvironmentRD::set_ssr(bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance) {

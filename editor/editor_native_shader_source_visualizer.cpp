@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,7 +51,7 @@ void EditorNativeShaderSourceVisualizer::_inspect_shader(RID p_shader) {
 		versions->add_child(vtab);
 		for (int j = 0; j < nsc.versions[i].stages.size(); j++) {
 			TextEdit *vtext = memnew(TextEdit);
-			vtext->set_readonly(true);
+			vtext->set_editable(false);
 			vtext->set_name(nsc.versions[i].stages[j].name);
 			vtext->set_text(nsc.versions[i].stages[j].code);
 			vtext->set_v_size_flags(Control::SIZE_EXPAND_FILL);

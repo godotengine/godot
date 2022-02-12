@@ -406,9 +406,9 @@ const GodotWebXR = {
 		return GodotWebXR.pose.views.length;
 	},
 
-	godot_webxr_get_render_targetsize__proxy: 'sync',
-	godot_webxr_get_render_targetsize__sig: 'i',
-	godot_webxr_get_render_targetsize: function () {
+	godot_webxr_get_render_target_size__proxy: 'sync',
+	godot_webxr_get_render_target_size__sig: 'i',
+	godot_webxr_get_render_target_size: function () {
 		if (!GodotWebXR.session || !GodotWebXR.pose) {
 			return 0;
 		}

@@ -109,6 +109,8 @@ struct hb_font_t
 
   int32_t x_scale;
   int32_t y_scale;
+  float slant;
+  float slant_xy;
   int64_t x_mult;
   int64_t y_mult;
 
@@ -217,9 +219,10 @@ struct hb_font_t
   }
 
   hb_bool_t get_nominal_glyph (hb_codepoint_t unicode,
-			       hb_codepoint_t *glyph)
+			       hb_codepoint_t *glyph,
+			       hb_codepoint_t not_found = 0)
   {
-    *glyph = 0;
+    *glyph = not_found;
     return klass->get.f.nominal_glyph (this, user_data,
 				       unicode, glyph,
 				       klass->user_data.nominal_glyph);
@@ -238,9 +241,10 @@ struct hb_font_t
   }
 
   hb_bool_t get_variation_glyph (hb_codepoint_t unicode, hb_codepoint_t variation_selector,
-				 hb_codepoint_t *glyph)
+				 hb_codepoint_t *glyph,
+				 hb_codepoint_t not_found = 0)
   {
-    *glyph = 0;
+    *glyph = not_found;
     return klass->get.f.variation_glyph (this, user_data,
 					 unicode, variation_selector, glyph,
 					 klass->user_data.variation_glyph);
@@ -615,12 +619,11 @@ struct hb_font_t
     signed upem = face->get_upem ();
     x_mult = ((int64_t) x_scale << 16) / upem;
     y_mult = ((int64_t) y_scale << 16) / upem;
+    slant_xy = y_scale ? slant * x_scale / y_scale : 0.f;
   }
 
   hb_position_t em_mult (int16_t v, int64_t mult)
-  {
-    return (hb_position_t) ((v * mult) >> 16);
-  }
+  { return (hb_position_t) ((v * mult + 32768) >> 16); }
   hb_position_t em_scalef (float v, int scale)
   { return (hb_position_t) roundf (v * scale / face->get_upem ()); }
   float em_fscale (int16_t v, int scale)

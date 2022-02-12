@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,10 +38,22 @@
 class VisualShaderNodeParticleEmitter : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeParticleEmitter, VisualShaderNode);
 
+protected:
+	bool mode_2d = false;
+	static void _bind_methods();
+
 public:
 	virtual int get_output_port_count() const override;
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
+	virtual bool has_output_port_preview(int p_port) const override;
+
+	virtual void set_mode_2d(bool p_enabled);
+	bool is_mode_2d() const;
+
+	Vector<StringName> get_editable_properties() const override;
+	virtual Map<StringName, String> get_editable_properties_names() const override;
+	bool is_show_prop_names() const override;
 
 	VisualShaderNodeParticleEmitter();
 };
@@ -56,7 +68,7 @@ public:
 	virtual PortType get_input_port_type(int p_port) const override;
 	virtual String get_input_port_name(int p_port) const override;
 
-	virtual String generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_global_per_node(Shader::Mode p_mode, int p_id) const override;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	VisualShaderNodeParticleSphereEmitter();
@@ -71,8 +83,9 @@ public:
 	virtual int get_input_port_count() const override;
 	virtual PortType get_input_port_type(int p_port) const override;
 	virtual String get_input_port_name(int p_port) const override;
+	virtual void set_mode_2d(bool p_enabled) override;
 
-	virtual String generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_global_per_node(Shader::Mode p_mode, int p_id) const override;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	VisualShaderNodeParticleBoxEmitter();
@@ -88,10 +101,62 @@ public:
 	virtual PortType get_input_port_type(int p_port) const override;
 	virtual String get_input_port_name(int p_port) const override;
 
-	virtual String generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_global_per_node(Shader::Mode p_mode, int p_id) const override;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	VisualShaderNodeParticleRingEmitter();
+};
+
+class VisualShaderNodeParticleMeshEmitter : public VisualShaderNodeParticleEmitter {
+	GDCLASS(VisualShaderNodeParticleMeshEmitter, VisualShaderNodeParticleEmitter);
+	Ref<Mesh> mesh;
+	bool use_all_surfaces = true;
+	int surface_index = 0;
+
+	Ref<ImageTexture> position_texture;
+	Ref<ImageTexture> normal_texture;
+	Ref<ImageTexture> color_texture;
+	Ref<ImageTexture> uv_texture;
+	Ref<ImageTexture> uv2_texture;
+
+	String _generate_code(VisualShader::Type p_type, int p_id, const String *p_output_vars, int p_index, const String &p_texture_name, PortType p_port_type) const;
+
+	void _update_texture(const Vector<Vector2> &p_array, Ref<ImageTexture> &r_texture);
+	void _update_texture(const Vector<Vector3> &p_array, Ref<ImageTexture> &r_texture);
+	void _update_texture(const Vector<Color> &p_array, Ref<ImageTexture> &r_texture);
+	void _update_textures();
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const override;
+
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
+
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
+
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	void set_mesh(Ref<Mesh> p_mesh);
+	Ref<Mesh> get_mesh() const;
+
+	void set_use_all_surfaces(bool p_enabled);
+	bool is_use_all_surfaces() const;
+
+	void set_surface_index(int p_surface_index);
+	int get_surface_index() const;
+
+	Vector<StringName> get_editable_properties() const override;
+	Map<StringName, String> get_editable_properties_names() const override;
+	Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const override;
+
+	VisualShaderNodeParticleMeshEmitter();
 };
 
 class VisualShaderNodeParticleMultiplyByAxisAngle : public VisualShaderNode {
@@ -112,6 +177,7 @@ public:
 	virtual int get_output_port_count() const override;
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
+	virtual bool has_output_port_preview(int p_port) const override;
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
@@ -135,6 +201,7 @@ public:
 	virtual int get_output_port_count() const override;
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
+	virtual bool has_output_port_preview(int p_port) const override;
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
@@ -147,7 +214,8 @@ class VisualShaderNodeParticleRandomness : public VisualShaderNode {
 public:
 	enum OpType {
 		OP_TYPE_SCALAR,
-		OP_TYPE_VECTOR,
+		OP_TYPE_VECTOR_2D,
+		OP_TYPE_VECTOR_3D,
 		OP_TYPE_MAX,
 	};
 
@@ -168,6 +236,7 @@ public:
 	virtual int get_output_port_count() const override;
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
+	virtual bool has_output_port_preview(int p_port) const override;
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
@@ -181,8 +250,8 @@ VARIANT_ENUM_CAST(VisualShaderNodeParticleRandomness::OpType)
 
 // Process nodes
 
-class VisualShaderNodeParticleAccelerator : public VisualShaderNodeOutput {
-	GDCLASS(VisualShaderNodeParticleAccelerator, VisualShaderNodeOutput);
+class VisualShaderNodeParticleAccelerator : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeParticleAccelerator, VisualShaderNode);
 
 public:
 	enum Mode {
@@ -209,6 +278,7 @@ public:
 	virtual int get_output_port_count() const override;
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
+	virtual bool has_output_port_preview(int p_port) const override;
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
@@ -274,7 +344,7 @@ public:
 
 	virtual bool is_show_prop_names() const override;
 	virtual bool is_generate_input_var(int p_port) const override;
-	virtual String get_input_port_default_hint(int p_port) const override;
+	virtual bool is_input_port_default(int p_port, Shader::Mode p_mode) const override;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	VisualShaderNodeParticleEmit();

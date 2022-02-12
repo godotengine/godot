@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,8 @@
 #include "scene/main/window.h"
 
 #include "core/templates/local_vector.h"
+
+class Panel;
 
 class Popup : public Window {
 	GDCLASS(Popup, Window);
@@ -78,7 +80,6 @@ protected:
 	virtual Size2 _get_contents_minimum_size() const override;
 
 public:
-	void set_child_rect(Control *p_child);
 	PopupPanel();
 };
 

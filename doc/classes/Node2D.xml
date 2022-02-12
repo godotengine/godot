@@ -7,7 +7,7 @@
 		A 2D game object, with a transform (position, rotation, and scale). All 2D nodes, including physics objects and sprites, inherit from Node2D. Use Node2D as a parent node to move, scale and rotate children in a 2D project. Also gives control of the node's render order.
 	</description>
 	<tutorials>
-		<link title="Custom drawing in 2D">https://docs.godotengine.org/en/latest/tutorials/2d/custom_drawing_in_2d.html</link>
+		<link title="Custom drawing in 2D">$DOCS_URL/tutorials/2d/custom_drawing_in_2d.html</link>
 		<link title="All 2D Demos">https://github.com/godotengine/godot-demo-projects/tree/master/2d</link>
 	</tutorials>
 	<methods>
@@ -23,6 +23,7 @@
 			<argument index="0" name="point" type="Vector2" />
 			<description>
 				Returns the angle between the node and the [code]point[/code] in radians.
+				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/node2d_get_angle_to.png]Illustration of the returned angle.[/url]
 			</description>
 		</method>
 		<method name="get_relative_transform_to_parent" qualifiers="const">
@@ -129,6 +130,4 @@
 			Z index. Controls the order in which the nodes render. A node with a higher Z index will display in front of others. Must be between [constant RenderingServer.CANVAS_ITEM_Z_MIN] and [constant RenderingServer.CANVAS_ITEM_Z_MAX] (inclusive).
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

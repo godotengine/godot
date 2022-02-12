@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,21 +33,21 @@
 RendererStorage *RendererStorage::base_singleton = nullptr;
 
 void RendererStorage::Dependency::changed_notify(DependencyChangedNotification p_notification) {
-	for (Map<DependencyTracker *, uint32_t>::Element *E = instances.front(); E; E = E->next()) {
-		if (E->key()->changed_callback) {
-			E->key()->changed_callback(p_notification, E->key());
+	for (const KeyValue<DependencyTracker *, uint32_t> &E : instances) {
+		if (E.key->changed_callback) {
+			E.key->changed_callback(p_notification, E.key);
 		}
 	}
 }
 
 void RendererStorage::Dependency::deleted_notify(const RID &p_rid) {
-	for (Map<DependencyTracker *, uint32_t>::Element *E = instances.front(); E; E = E->next()) {
-		if (E->key()->deleted_callback) {
-			E->key()->deleted_callback(p_rid, E->key());
+	for (const KeyValue<DependencyTracker *, uint32_t> &E : instances) {
+		if (E.key->deleted_callback) {
+			E.key->deleted_callback(p_rid, E.key);
 		}
 	}
-	for (Map<DependencyTracker *, uint32_t>::Element *E = instances.front(); E; E = E->next()) {
-		E->key()->dependencies.erase(this);
+	for (const KeyValue<DependencyTracker *, uint32_t> &E : instances) {
+		E.key->dependencies.erase(this);
 	}
 	instances.clear();
 }
@@ -56,8 +56,8 @@ RendererStorage::Dependency::~Dependency() {
 #ifdef DEBUG_ENABLED
 	if (instances.size()) {
 		WARN_PRINT("Leaked instance dependency: Bug - did not call instance_notify_deleted when freeing.");
-		for (Map<DependencyTracker *, uint32_t>::Element *E = instances.front(); E; E = E->next()) {
-			E->key()->dependencies.erase(this);
+		for (const KeyValue<DependencyTracker *, uint32_t> &E : instances) {
+			E.key->dependencies.erase(this);
 		}
 	}
 #endif

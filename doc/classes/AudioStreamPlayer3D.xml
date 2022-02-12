@@ -5,12 +5,12 @@
 	</brief_description>
 	<description>
 		Plays a sound effect with directed sound effects, dampens with distance if needed, generates effect of hearable position in space. For greater realism, a low-pass filter is automatically applied to distant sounds. This can be disabled by setting [member attenuation_filter_cutoff_hz] to [code]20500[/code].
-		By default, audio is heard from the camera position. This can be changed by adding a [Listener3D] node to the scene and enabling it by calling [method Listener3D.make_current] on it.
+		By default, audio is heard from the camera position. This can be changed by adding a [AudioListener3D] node to the scene and enabling it by calling [method AudioListener3D.make_current] on it.
 		See also [AudioStreamPlayer] to play a sound non-positionally.
 		[b]Note:[/b] Hiding an [AudioStreamPlayer3D] node does not disable its audio output. To temporarily disable an [AudioStreamPlayer3D]'s audio output, set [member unit_db] to a very low value like [code]-100[/code] (which isn't audible to human hearing).
 	</description>
 	<tutorials>
-		<link title="Audio streams">https://docs.godotengine.org/en/latest/tutorials/audio/audio_streams.html</link>
+		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_playback_position">
@@ -48,7 +48,7 @@
 	</methods>
 	<members>
 		<member name="area_mask" type="int" setter="set_area_mask" getter="get_area_mask" default="1">
-			Areas in which this sound plays.
+			Determines which [Area3D] layers affect the sound for reverb and audio bus effects. Areas can be used to redirect [AudioStream]s so that they play in a certain audio bus. An example of how you might use this is making a "water" area so that sounds played in the water are redirected through an audio bus to make them sound like they are being played underwater.
 		</member>
 		<member name="attenuation_filter_cutoff_hz" type="float" setter="set_attenuation_filter_cutoff_hz" getter="get_attenuation_filter_cutoff_hz" default="5000.0">
 			Dampens audio using a low-pass filter above this frequency, in Hz. To disable the dampening effect entirely, set this to [code]20500[/code] as this frequency is above the human hearing limit.
@@ -81,10 +81,10 @@
 			Sets the absolute maximum of the soundlevel, in decibels.
 		</member>
 		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance" default="0.0">
-			Sets the distance from which the [member out_of_range_mode] takes effect. Has no effect if set to 0.
+			The distance past which the sound can no longer be heard at all. Only has an effect if set to a value greater than [code]0.0[/code]. [member max_distance] works in tandem with [member unit_size]. However, unlike [member unit_size] whose behavior depends on the [member attenuation_model], [member max_distance] always works in a linear fashion. This can be used to prevent the [AudioStreamPlayer3D] from requiring audio mixing when the listener is far away, which saves CPU resources.
 		</member>
-		<member name="out_of_range_mode" type="int" setter="set_out_of_range_mode" getter="get_out_of_range_mode" enum="AudioStreamPlayer3D.OutOfRangeMode" default="0">
-			Decides if audio should pause when source is outside of [member max_distance] range.
+		<member name="max_polyphony" type="int" setter="set_max_polyphony" getter="get_max_polyphony" default="1">
+			The maximum number of sounds this node can play at the same time. Playing additional sounds after this value is reached will cut off the oldest sounds.
 		</member>
 		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale" default="1.0">
 			The pitch and the tempo of the audio, as a multiplier of the audio sample's sample rate.
@@ -123,13 +123,7 @@
 			Logarithmic dampening of loudness according to distance.
 		</constant>
 		<constant name="ATTENUATION_DISABLED" value="3" enum="AttenuationModel">
-			No dampening of loudness according to distance. The sound will still be heard positionally, unlike an [AudioStreamPlayer].
-		</constant>
-		<constant name="OUT_OF_RANGE_MIX" value="0" enum="OutOfRangeMode">
-			Mix this audio in, even when it's out of range. This increases CPU usage, but keeps the sound playing at the correct position if the camera leaves and enters the [AudioStreamPlayer3D]'s [member max_distance] radius.
-		</constant>
-		<constant name="OUT_OF_RANGE_PAUSE" value="1" enum="OutOfRangeMode">
-			Pause this audio when it gets out of range. This decreases CPU usage, but will cause the sound to restart if the camera leaves and enters the [AudioStreamPlayer3D]'s [member max_distance] radius.
+			No dampening of loudness according to distance. The sound will still be heard positionally, unlike an [AudioStreamPlayer]. [constant ATTENUATION_DISABLED] can be combined with a [member max_distance] value greater than [code]0.0[/code] to achieve linear attenuation clamped to a sphere of a defined size.
 		</constant>
 		<constant name="DOPPLER_TRACKING_DISABLED" value="0" enum="DopplerTracking">
 			Disables doppler tracking.

@@ -18,7 +18,7 @@
 		[/codeblocks]
 	</description>
 	<tutorials>
-		<link title="AnimationTree">https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
+		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_current_length" qualifiers="const">
@@ -72,8 +72,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" override="true" default="true" />
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="true" />
 	</members>
-	<constants>
-	</constants>
 </class>

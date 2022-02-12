@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioStreamOGGVorbis" inherits="AudioStream" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="loop" type="bool" setter="set_loop" getter="has_loop" default="false">
+			If [code]true[/code], the stream will automatically loop when it reaches the end.
+		</member>
+		<member name="loop_offset" type="float" setter="set_loop_offset" getter="get_loop_offset" default="0.0">
+			Time in seconds at which the stream starts after being looped.
+		</member>
+		<member name="packet_sequence" type="OGGPacketSequence" setter="set_packet_sequence" getter="get_packet_sequence">
+			Contains the raw OGG data for this stream.
+		</member>
+	</members>
+</class>

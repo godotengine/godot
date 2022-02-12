@@ -5,52 +5,52 @@
 	</brief_description>
 	<description>
 		Base resource for [AnimationTree] nodes. In general, it's not used directly, but you can create custom ones with custom blending formulas.
-	Inherit this when creating nodes mainly for use in [AnimationNodeBlendTree], otherwise [AnimationRootNode] should be used instead.
+		Inherit this when creating nodes mainly for use in [AnimationNodeBlendTree], otherwise [AnimationRootNode] should be used instead.
 	</description>
 	<tutorials>
-		<link title="AnimationTree">https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
+		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
-		<method name="_get_caption" qualifiers="virtual">
+		<method name="_get_caption" qualifiers="virtual const">
 			<return type="String" />
 			<description>
 				Gets the text caption for this node (used by some editors).
 			</description>
 		</method>
-		<method name="_get_child_by_name" qualifiers="virtual">
-			<return type="Object" />
-			<argument index="0" name="name" type="String" />
+		<method name="_get_child_by_name" qualifiers="virtual const">
+			<return type="AnimationNode" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Gets a child node by index (used by editors inheriting from [AnimationRootNode]).
 			</description>
 		</method>
-		<method name="_get_child_nodes" qualifiers="virtual">
+		<method name="_get_child_nodes" qualifiers="virtual const">
 			<return type="Dictionary" />
 			<description>
 				Gets all children nodes in order as a [code]name: node[/code] dictionary. Only useful when inheriting [AnimationRootNode].
 			</description>
 		</method>
-		<method name="_get_parameter_default_value" qualifiers="virtual">
+		<method name="_get_parameter_default_value" qualifiers="virtual const">
 			<return type="Variant" />
-			<argument index="0" name="name" type="StringName" />
+			<argument index="0" name="parameter" type="StringName" />
 			<description>
 				Gets the default value of a parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees.
 			</description>
 		</method>
-		<method name="_get_parameter_list" qualifiers="virtual">
+		<method name="_get_parameter_list" qualifiers="virtual const">
 			<return type="Array" />
 			<description>
 				Gets the property information for parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees. Format is similar to [method Object.get_property_list].
 			</description>
 		</method>
-		<method name="_has_filter" qualifiers="virtual">
+		<method name="_has_filter" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] whether you want the blend tree editor to display filter editing on this node.
 			</description>
 		</method>
-		<method name="_process" qualifiers="virtual">
-			<return type="void" />
+		<method name="_process" qualifiers="virtual const">
+			<return type="float" />
 			<argument index="0" name="time" type="float" />
 			<argument index="1" name="seek" type="bool" />
 			<description>
@@ -73,6 +73,7 @@
 			<argument index="2" name="delta" type="float" />
 			<argument index="3" name="seeked" type="bool" />
 			<argument index="4" name="blend" type="float" />
+			<argument index="5" name="pingponged" type="int" default="0" />
 			<description>
 				Blend an animation by [code]blend[/code] amount (name must be valid in the linked [AnimationPlayer]). A [code]time[/code] and [code]delta[/code] may be passed, as well as whether [code]seek[/code] happened.
 			</description>

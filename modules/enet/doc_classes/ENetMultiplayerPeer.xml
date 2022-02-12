@@ -4,11 +4,11 @@
 		A MultiplayerPeer implementation using the [url=http://enet.bespin.org/index.html]ENet[/url] library.
 	</brief_description>
 	<description>
-		A MultiplayerPeer implementation that should be passed to [member MultiplayerAPI.network_peer] after being initialized as either a client, server, or mesh. Events can then be handled by connecting to [MultiplayerAPI] signals. See [ENetConnection] for more information on the ENet library wrapper.
+		A MultiplayerPeer implementation that should be passed to [member MultiplayerAPI.multiplayer_peer] after being initialized as either a client, server, or mesh. Events can then be handled by connecting to [MultiplayerAPI] signals. See [ENetConnection] for more information on the ENet library wrapper.
 		[b]Note:[/b] ENet only uses UDP, not TCP. When forwarding the server port to make your server accessible on the public Internet, you only need to forward the server port in UDP. You can use the [UPNP] class to try to forward the server port automatically when starting the server.
 	</description>
 	<tutorials>
-		<link title="High-level multiplayer">https://docs.godotengine.org/en/latest/tutorials/networking/high_level_multiplayer.html</link>
+		<link title="High-level multiplayer">$DOCS_URL/tutorials/networking/high_level_multiplayer.html</link>
 		<link title="API documentation on the ENet website">http://enet.bespin.org/usergroup0.html</link>
 	</tutorials>
 	<methods>
@@ -18,7 +18,7 @@
 			<argument index="1" name="host" type="ENetConnection" />
 			<description>
 				Add a new remote peer with the given [code]peer_id[/code] connected to the given [code]host[/code].
-				Note: The [code]host[/code] must have exactly one peer in the [constant ENetPacketPeer.STATE_CONNECTED] state.
+				[b]Note:[/b] The [code]host[/code] must have exactly one peer in the [constant ENetPacketPeer.STATE_CONNECTED] state.
 			</description>
 		</method>
 		<method name="close_connection">
@@ -44,7 +44,7 @@
 			<return type="int" enum="Error" />
 			<argument index="0" name="unique_id" type="int" />
 			<description>
-				Initialize this [MultiplayerPeer] in mesh mode. The provided [code]unique_id[/code] will be used as the local peer network unique ID once assigned as the [member MultiplayerAPI.network_peer]. In the mesh configuration you will need to set up each new peer manually using [ENetConnection] before calling [method add_mesh_peer]. While this technique is more advanced, it allows for better control over the connection process (e.g. when dealing with NAT punch-through) and for better distribution of the network load (which would otherwise be more taxing on the server).
+				Initialize this [MultiplayerPeer] in mesh mode. The provided [code]unique_id[/code] will be used as the local peer network unique ID once assigned as the [member MultiplayerAPI.multiplayer_peer]. In the mesh configuration you will need to set up each new peer manually using [ENetConnection] before calling [method add_mesh_peer]. While this technique is more advanced, it allows for better control over the connection process (e.g. when dealing with NAT punch-through) and for better distribution of the network load (which would otherwise be more taxing on the server).
 			</description>
 		</method>
 		<method name="create_server">
@@ -62,7 +62,7 @@
 			<return type="ENetPacketPeer" />
 			<argument index="0" name="id" type="int" />
 			<description>
-				Return the [ENetPacketPeer] associated to the given [code]id[/code].
+				Returns the [ENetPacketPeer] associated to the given [code]id[/code].
 			</description>
 		</method>
 		<method name="set_bind_ip">
@@ -77,12 +77,8 @@
 		<member name="host" type="ENetConnection" setter="" getter="get_host">
 			The underlying [ENetConnection] created after [method create_client] and [method create_server].
 		</member>
-		<member name="refuse_new_connections" type="bool" setter="set_refuse_new_connections" getter="is_refusing_new_connections" override="true" default="false" />
 		<member name="server_relay" type="bool" setter="set_server_relay_enabled" getter="is_server_relay_enabled" default="true">
 			Enable or disable the server feature that notifies clients of other peers' connection/disconnection, and relays messages between them. When this option is [code]false[/code], clients won't be automatically notified of other peers and won't be able to send them packets through the server.
 		</member>
-		<member name="transfer_mode" type="int" setter="set_transfer_mode" getter="get_transfer_mode" override="true" enum="MultiplayerPeer.TransferMode" default="2" />
 	</members>
-	<constants>
-	</constants>
 </class>

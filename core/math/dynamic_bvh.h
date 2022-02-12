@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef DYNAMICBVH_H
-#define DYNAMICBVH_H
+#ifndef DYNAMIC_BVH_H
+#define DYNAMIC_BVH_H
 
 #include "core/math/aabb.h"
 #include "core/templates/list.h"
@@ -474,4 +474,4 @@ void DynamicBVH::ray_query(const Vector3 &p_from, const Vector3 &p_to, QueryResu
 	} while (depth > 0);
 }
 
-#endif // DYNAMICBVH_H
+#endif // DYNAMIC_BVH_H

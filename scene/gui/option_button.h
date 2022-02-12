@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,17 +45,21 @@ class OptionButton : public Button {
 	void _select(int p_which, bool p_emit = false);
 	void _select_int(int p_which);
 
-	Array _get_items() const;
-	void _set_items(const Array &p_items);
-
 	virtual void pressed() override;
 
 protected:
 	Size2 get_minimum_size() const override;
 	void _notification(int p_what);
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
 
 public:
+	// ATTENTION: This is used by the POT generator's scene parser. If the number of properties returned by `_get_items()` ever changes,
+	// this value should be updated to reflect the new size.
+	static const int ITEM_PROPERTY_SIZE = 5;
+
 	void add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id = -1);
 	void add_item(const String &p_label, int p_id = -1);
 
@@ -72,6 +76,7 @@ public:
 	Variant get_item_metadata(int p_idx) const;
 	bool is_item_disabled(int p_idx) const;
 
+	void set_item_count(int p_count);
 	int get_item_count() const;
 
 	void add_separator();

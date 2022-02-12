@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -279,8 +279,9 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			xml_output.append("[");
 			pos = brk_pos + 1;
 		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ")) {
-			String link_target = tag.substr(tag.find(" ") + 1, tag.length());
-			String link_tag = tag.substr(0, tag.find(" "));
+			const int tag_end = tag.find(" ");
+			const String link_tag = tag.substr(0, tag_end);
+			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
 
 			Vector<String> link_target_parts = link_target.split(".");
 
@@ -360,13 +361,38 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 					}
 				}
 			} else if (link_tag == "signal") {
-				// We do not declare signals in any way in C#, so there is nothing to reference
-				xml_output.append("<c>");
-				xml_output.append(link_target);
-				xml_output.append("</c>");
+				if (!target_itype || !target_itype->is_object_type) {
+					if (OS::get_singleton()->is_stdout_verbose()) {
+						if (target_itype) {
+							OS::get_singleton()->print("Cannot resolve signal reference for non-Godot.Object type in documentation: %s\n", link_target.utf8().get_data());
+						} else {
+							OS::get_singleton()->print("Cannot resolve type from signal reference in documentation: %s\n", link_target.utf8().get_data());
+						}
+					}
+
+					// TODO Map what we can
+					xml_output.append("<c>");
+					xml_output.append(link_target);
+					xml_output.append("</c>");
+				} else {
+					const SignalInterface *target_isignal = target_itype->find_signal_by_name(target_cname);
+
+					if (target_isignal) {
+						xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+						xml_output.append(target_itype->proxy_name);
+						xml_output.append(".");
+						xml_output.append(target_isignal->proxy_name);
+						xml_output.append("\"/>");
+					} else {
+						ERR_PRINT("Cannot resolve signal reference in documentation: '" + link_target + "'.");
+
+						xml_output.append("<c>");
+						xml_output.append(link_target);
+						xml_output.append("</c>");
+					}
+				}
 			} else if (link_tag == "enum") {
-				StringName search_cname = !target_itype ? target_cname :
-															StringName(target_itype->name + "." + (String)target_cname);
+				const StringName search_cname = !target_itype ? target_cname : StringName(target_itype->name + "." + (String)target_cname);
 
 				const Map<StringName, TypeInterface>::Element *enum_match = enum_types.find(search_cname);
 
@@ -387,7 +413,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 					xml_output.append(link_target);
 					xml_output.append("</c>");
 				}
-			} else if (link_tag == "const") {
+			} else if (link_tag == "constant") {
 				if (!target_itype || !target_itype->is_object_type) {
 					if (OS::get_singleton()->is_stdout_verbose()) {
 						if (target_itype) {
@@ -402,7 +428,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 					xml_output.append(link_target);
 					xml_output.append("</c>");
 				} else if (!target_itype && target_cname == name_cache.type_at_GlobalScope) {
-					String target_name = (String)target_cname;
+					const String target_name = (String)target_cname;
 
 					// Try to find as a global constant
 					const ConstantInterface *target_iconst = find_constant_by_name(target_name, global_constants);
@@ -439,7 +465,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 						}
 					}
 				} else {
-					String target_name = (String)target_cname;
+					const String target_name = (String)target_cname;
 
 					// Try to find the constant in the current class
 					const ConstantInterface *target_iconst = find_constant_by_name(target_name, target_itype->constants);
@@ -691,11 +717,11 @@ void BindingsGenerator::_apply_prefix_to_enum_constants(BindingsGenerator::EnumI
 				continue;
 			}
 
-			if (parts[curr_prefix_length][0] >= '0' && parts[curr_prefix_length][0] <= '9') {
+			if (is_digit(parts[curr_prefix_length][0])) {
 				// The name of enum constants may begin with a numeric digit when strip from the enum prefix,
 				// so we make the prefix for this constant one word shorter in those cases.
 				for (curr_prefix_length = curr_prefix_length - 1; curr_prefix_length > 0; curr_prefix_length--) {
-					if (parts[curr_prefix_length][0] < '0' || parts[curr_prefix_length][0] > '9') {
+					if (!is_digit(parts[curr_prefix_length][0])) {
 						break;
 					}
 				}
@@ -1524,7 +1550,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 		if (getter->return_type.cname != setter_first_arg.type.cname) {
 			// Special case for Node::set_name
 			bool whitelisted = getter->return_type.cname == name_cache.type_StringName &&
-							   setter_first_arg.type.cname == name_cache.type_String;
+					setter_first_arg.type.cname == name_cache.type_String;
 
 			ERR_FAIL_COND_V_MSG(!whitelisted, ERR_BUG,
 					"Return type from getter doesn't match first argument of setter for property: '" +
@@ -2481,29 +2507,29 @@ bool BindingsGenerator::_arg_default_value_is_assignable_to_type(const Variant &
 	switch (p_val.get_type()) {
 		case Variant::NIL:
 			return p_arg_type.is_object_type ||
-				   name_cache.is_nullable_type(p_arg_type.name);
+					name_cache.is_nullable_type(p_arg_type.name);
 		case Variant::BOOL:
 			return p_arg_type.name == name_cache.type_bool;
 		case Variant::INT:
 			return p_arg_type.name == name_cache.type_sbyte ||
-				   p_arg_type.name == name_cache.type_short ||
-				   p_arg_type.name == name_cache.type_int ||
-				   p_arg_type.name == name_cache.type_byte ||
-				   p_arg_type.name == name_cache.type_ushort ||
-				   p_arg_type.name == name_cache.type_uint ||
-				   p_arg_type.name == name_cache.type_long ||
-				   p_arg_type.name == name_cache.type_ulong ||
-				   p_arg_type.name == name_cache.type_float ||
-				   p_arg_type.name == name_cache.type_double ||
-				   p_arg_type.is_enum;
+					p_arg_type.name == name_cache.type_short ||
+					p_arg_type.name == name_cache.type_int ||
+					p_arg_type.name == name_cache.type_byte ||
+					p_arg_type.name == name_cache.type_ushort ||
+					p_arg_type.name == name_cache.type_uint ||
+					p_arg_type.name == name_cache.type_long ||
+					p_arg_type.name == name_cache.type_ulong ||
+					p_arg_type.name == name_cache.type_float ||
+					p_arg_type.name == name_cache.type_double ||
+					p_arg_type.is_enum;
 		case Variant::FLOAT:
 			return p_arg_type.name == name_cache.type_float ||
-				   p_arg_type.name == name_cache.type_double;
+					p_arg_type.name == name_cache.type_double;
 		case Variant::STRING:
 		case Variant::STRING_NAME:
 			return p_arg_type.name == name_cache.type_String ||
-				   p_arg_type.name == name_cache.type_StringName ||
-				   p_arg_type.name == name_cache.type_NodePath;
+					p_arg_type.name == name_cache.type_StringName ||
+					p_arg_type.name == name_cache.type_NodePath;
 		case Variant::NODE_PATH:
 			return p_arg_type.name == name_cache.type_NodePath;
 		case Variant::TRANSFORM2D:
@@ -2535,13 +2561,13 @@ bool BindingsGenerator::_arg_default_value_is_assignable_to_type(const Variant &
 			return p_arg_type.is_object_type;
 		case Variant::VECTOR2I:
 			return p_arg_type.name == name_cache.type_Vector2 ||
-				   p_arg_type.name == Variant::get_type_name(p_val.get_type());
+					p_arg_type.name == Variant::get_type_name(p_val.get_type());
 		case Variant::RECT2I:
 			return p_arg_type.name == name_cache.type_Rect2 ||
-				   p_arg_type.name == Variant::get_type_name(p_val.get_type());
+					p_arg_type.name == Variant::get_type_name(p_val.get_type());
 		case Variant::VECTOR3I:
 			return p_arg_type.name == name_cache.type_Vector3 ||
-				   p_arg_type.name == Variant::get_type_name(p_val.get_type());
+					p_arg_type.name == Variant::get_type_name(p_val.get_type());
 		default:
 			CRASH_NOW_MSG("Unexpected Variant type: " + itos(p_val.get_type()));
 			break;
@@ -2610,7 +2636,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		Map<StringName, StringName> accessor_methods;
 
 		for (const PropertyInfo &property : property_list) {
-			if (property.usage & PROPERTY_USAGE_GROUP || property.usage & PROPERTY_USAGE_SUBGROUP || property.usage & PROPERTY_USAGE_CATEGORY) {
+			if (property.usage & PROPERTY_USAGE_GROUP || property.usage & PROPERTY_USAGE_SUBGROUP || property.usage & PROPERTY_USAGE_CATEGORY || (property.type == Variant::NIL && property.usage & PROPERTY_USAGE_ARRAY)) {
 				continue;
 			}
 
@@ -2714,7 +2740,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				if (itype.cname != name_cache.type_Object || imethod.name != "free") {
 					WARN_PRINT("Notification: New unexpected virtual non-overridable method found."
 							   " We only expected Object.free, but found '" +
-							   itype.name + "." + imethod.name + "'.");
+							itype.name + "." + imethod.name + "'.");
 				}
 			} else if (return_info.type == Variant::INT && return_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
 				imethod.return_type.cname = return_info.class_name;
@@ -2723,7 +2749,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				imethod.return_type.cname = return_info.class_name;
 
 				bool bad_reference_hint = !imethod.is_virtual && return_info.hint != PROPERTY_HINT_RESOURCE_TYPE &&
-										  ClassDB::is_parent_class(return_info.class_name, name_cache.type_RefCounted);
+						ClassDB::is_parent_class(return_info.class_name, name_cache.type_RefCounted);
 				ERR_FAIL_COND_V_MSG(bad_reference_hint, false,
 						String() + "Return type is reference but hint is not '" _STR(PROPERTY_HINT_RESOURCE_TYPE) "'." +
 								" Are you returning a reference type by pointer? Method: '" + itype.name + "." + imethod.name + "'.");
@@ -3130,8 +3156,18 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
 		case Variant::CALLABLE:
+			ERR_FAIL_COND_V_MSG(r_iarg.type.cname != name_cache.type_Callable, false,
+					"Parameter of type '" + String(r_iarg.type.cname) + "' cannot have a default value of type '" + String(name_cache.type_Callable) + "'.");
+			ERR_FAIL_COND_V_MSG(!p_val.is_zero(), false,
+					"Parameter of type '" + String(r_iarg.type.cname) + "' can only have null/zero as the default value.");
+			r_iarg.default_argument = "default";
+			break;
 		case Variant::SIGNAL:
-			CRASH_NOW_MSG("Parameter of type '" + String(r_iarg.type.cname) + "' cannot have a default value.");
+			ERR_FAIL_COND_V_MSG(r_iarg.type.cname != name_cache.type_Signal, false,
+					"Parameter of type '" + String(r_iarg.type.cname) + "' cannot have a default value of type '" + String(name_cache.type_Signal) + "'.");
+			ERR_FAIL_COND_V_MSG(!p_val.is_zero(), false,
+					"Parameter of type '" + String(r_iarg.type.cname) + "' can only have null/zero as the default value.");
+			r_iarg.default_argument = "default";
 			break;
 		default:
 			CRASH_NOW_MSG("Unexpected Variant type: " + itos(p_val.get_type()));

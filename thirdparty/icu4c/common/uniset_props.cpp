@@ -638,7 +638,7 @@ void UnicodeSet::applyPattern(RuleCharacterIterator& chars,
         (this->*caseClosure)(USET_ADD_CASE_MAPPINGS);
     }
     if (invert) {
-        complement();
+        complement().removeAllStrings();  // code point complement
     }
 
     // Use the rebuilt pattern (patLocal) only if necessary.  Prefer the
@@ -791,7 +791,7 @@ UnicodeSet::applyIntPropertyValue(UProperty prop, int32_t value, UErrorCode& ec)
             if (U_FAILURE(ec)) { return *this; }
             copyFrom(*UnicodeSet::fromUSet(set), TRUE);
             if (value == 0) {
-                complement();
+                complement().removeAllStrings();  // code point complement
             }
         } else {
             clear();
@@ -958,7 +958,7 @@ UnicodeSet::applyPropertyAlias(const UnicodeString& prop,
 
     applyIntPropertyValue(p, v, ec);
     if(invert) {
-        complement();
+        complement().removeAllStrings();  // code point complement
     }
 
     if (isBogus() && U_SUCCESS(ec)) {
@@ -1101,9 +1101,9 @@ UnicodeSet& UnicodeSet::applyPropertyPattern(const UnicodeString& pattern,
 
     if (U_SUCCESS(ec)) {
         if (invert) {
-            complement();
+            complement().removeAllStrings();  // code point complement
         }
-            
+
         // Move to the limit position after the close delimiter if the
         // parse succeeded.
         ppos.setIndex(close + (posix ? 2 : 1));

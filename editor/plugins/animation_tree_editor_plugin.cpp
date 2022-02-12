@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,7 +55,7 @@ void AnimationTreeEditor::edit(AnimationTree *p_tree) {
 	tree = p_tree;
 
 	Vector<String> path;
-	if (tree->has_meta("_tree_edit_path")) {
+	if (tree && tree->has_meta("_tree_edit_path")) {
 		path = tree->get_meta("_tree_edit_path");
 		edit_path(path);
 	} else {
@@ -226,8 +226,7 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	AnimationNodeAnimation::get_editable_animation_list = get_animation_list;
 	path_edit = memnew(ScrollContainer);
 	add_child(path_edit);
-	path_edit->set_enable_h_scroll(true);
-	path_edit->set_enable_v_scroll(false);
+	path_edit->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	path_hb = memnew(HBoxContainer);
 	path_edit->add_child(path_hb);
 	path_hb->add_child(memnew(Label(TTR("Path:"))));

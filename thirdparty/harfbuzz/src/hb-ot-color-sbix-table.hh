@@ -145,7 +145,7 @@ struct SBIXStrike
     auto* out = c->serializer->start_embed<SBIXStrike> ();
     if (unlikely (!out)) return_trace (false);
     auto snap = c->serializer->snapshot ();
-    if (unlikely (!c->serializer->extend (*out, num_output_glyphs + 1))) return_trace (false);
+    if (unlikely (!c->serializer->extend (out, num_output_glyphs + 1))) return_trace (false);
     out->ppem = ppem;
     out->resolution = resolution;
     HBUINT32 head;
@@ -185,7 +185,7 @@ struct SBIXStrike
   HBUINT16	resolution;	/* The device pixel density (in PPI) for which this
 				 * strike was designed. (E.g., 96 PPI, 192 PPI.) */
   protected:
-  UnsizedArrayOf<LOffsetTo<SBIXGlyph>>
+  UnsizedArrayOf<Offset32To<SBIXGlyph>>
 		imageOffsetsZ;	/* Offset from the beginning of the strike data header
 				 * to bitmap data for an individual glyph ID. */
   public:
@@ -202,12 +202,12 @@ struct sbix
 
   struct accelerator_t
   {
-    void init (hb_face_t *face)
+    accelerator_t (hb_face_t *face)
     {
       table = hb_sanitize_context_t ().reference_table<sbix> (face);
       num_glyphs = face->get_num_glyphs ();
     }
-    void fini () { table.destroy (); }
+    ~accelerator_t () { table.destroy (); }
 
     bool has_data () const { return table->has_data (); }
 
@@ -352,11 +352,11 @@ struct sbix
   {
     TRACE_SERIALIZE (this);
 
-    auto *out = c->serializer->start_embed<LOffsetLArrayOf<SBIXStrike>> ();
+    auto *out = c->serializer->start_embed<Array32OfOffset32To<SBIXStrike>> ();
     if (unlikely (!out)) return_trace (false);
     if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
 
-    hb_vector_t<LOffsetTo<SBIXStrike>*> new_strikes;
+    hb_vector_t<Offset32To<SBIXStrike>*> new_strikes;
     hb_vector_t<hb_serialize_context_t::objidx_t> objidxs;
     for (int i = strikes.len - 1; i >= 0; --i)
     {
@@ -400,14 +400,17 @@ struct sbix
   HBUINT16	version;	/* Table version number — set to 1 */
   HBUINT16	flags;		/* Bit 0: Set to 1. Bit 1: Draw outlines.
 				 * Bits 2 to 15: reserved (set to 0). */
-  LOffsetLArrayOf<SBIXStrike>
+  Array32OfOffset32To<SBIXStrike>
 		strikes;	/* Offsets from the beginning of the 'sbix'
 				 * table to data for each individual bitmap strike. */
   public:
   DEFINE_SIZE_ARRAY (8, strikes);
 };
 
-struct sbix_accelerator_t : sbix::accelerator_t {};
+struct sbix_accelerator_t : sbix::accelerator_t {
+  sbix_accelerator_t (hb_face_t *face) : sbix::accelerator_t (face) {}
+};
+
 
 } /* namespace OT */
 

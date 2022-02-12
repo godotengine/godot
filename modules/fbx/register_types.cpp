@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,7 @@
 
 #ifdef TOOLS_ENABLED
 static void _editor_init() {
-	Ref<EditorSceneImporterFBX> import_fbx;
+	Ref<EditorSceneFormatImporterFBX> import_fbx;
 	import_fbx.instantiate();
 	ResourceImporterScene::get_singleton()->add_importer(import_fbx);
 }
@@ -46,7 +46,7 @@ void register_fbx_types() {
 	ClassDB::APIType prev_api = ClassDB::get_current_api();
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
 
-	GDREGISTER_CLASS(EditorSceneImporterFBX);
+	GDREGISTER_CLASS(EditorSceneFormatImporterFBX);
 
 	ClassDB::set_current_api(prev_api);
 

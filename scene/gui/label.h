@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,20 +37,6 @@ class Label : public Control {
 	GDCLASS(Label, Control);
 
 public:
-	enum Align {
-		ALIGN_LEFT,
-		ALIGN_CENTER,
-		ALIGN_RIGHT,
-		ALIGN_FILL
-	};
-
-	enum VAlign {
-		VALIGN_TOP,
-		VALIGN_CENTER,
-		VALIGN_BOTTOM,
-		VALIGN_FILL
-	};
-
 	enum AutowrapMode {
 		AUTOWRAP_OFF,
 		AUTOWRAP_ARBITRARY,
@@ -66,9 +52,17 @@ public:
 		OVERRUN_TRIM_WORD_ELLIPSIS,
 	};
 
+	enum VisibleCharactersBehavior {
+		VC_CHARS_BEFORE_SHAPING,
+		VC_CHARS_AFTER_SHAPING,
+		VC_GLYPHS_AUTO,
+		VC_GLYPHS_LTR,
+		VC_GLYPHS_RTL,
+	};
+
 private:
-	Align align = ALIGN_LEFT;
-	VAlign valign = VALIGN_TOP;
+	HorizontalAlignment horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT;
+	VerticalAlignment vertical_alignment = VERTICAL_ALIGNMENT_TOP;
 	String text;
 	String xl_text;
 	AutowrapMode autowrap_mode = AUTOWRAP_OFF;
@@ -79,6 +73,7 @@ private:
 
 	bool lines_dirty = true;
 	bool dirty = true;
+	bool font_dirty = true;
 	RID text_rid;
 	Vector<RID> lines_rid;
 
@@ -90,6 +85,7 @@ private:
 
 	float percent_visible = 1.0;
 
+	VisibleCharactersBehavior visible_chars_behavior = VC_CHARS_BEFORE_SHAPING;
 	int visible_chars = -1;
 	int lines_skipped = 0;
 	int max_lines_visible = -1;
@@ -109,11 +105,11 @@ protected:
 public:
 	virtual Size2 get_minimum_size() const override;
 
-	void set_align(Align p_align);
-	Align get_align() const;
+	void set_horizontal_alignment(HorizontalAlignment p_alignment);
+	HorizontalAlignment get_horizontal_alignment() const;
 
-	void set_valign(VAlign p_align);
-	VAlign get_valign() const;
+	void set_vertical_alignment(VerticalAlignment p_alignment);
+	VerticalAlignment get_vertical_alignment() const;
 
 	void set_text(const String &p_string);
 	String get_text() const;
@@ -139,6 +135,9 @@ public:
 
 	void set_uppercase(bool p_uppercase);
 	bool is_uppercase() const;
+
+	VisibleCharactersBehavior get_visible_characters_behavior() const;
+	void set_visible_characters_behavior(VisibleCharactersBehavior p_behavior);
 
 	void set_visible_characters(int p_amount);
 	int get_visible_characters() const;
@@ -167,9 +166,8 @@ public:
 	~Label();
 };
 
-VARIANT_ENUM_CAST(Label::Align);
-VARIANT_ENUM_CAST(Label::VAlign);
 VARIANT_ENUM_CAST(Label::AutowrapMode);
 VARIANT_ENUM_CAST(Label::OverrunBehavior);
+VARIANT_ENUM_CAST(Label::VisibleCharactersBehavior);
 
 #endif

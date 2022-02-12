@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,13 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "core/math/transform_2d.h" // Includes rect2.h but Rect2 needs Transform2D
+#include "rect2.h"
+
+#include "core/math/rect2i.h"
+#include "core/math/transform_2d.h"
+#include "core/string/ustring.h"
 
 bool Rect2::is_equal_approx(const Rect2 &p_rect) const {
 	return position.is_equal_approx(p_rect.position) && size.is_equal_approx(p_rect.size);
 }
 
 bool Rect2::intersects_segment(const Point2 &p_from, const Point2 &p_to, Point2 *r_pos, Point2 *r_normal) const {
+#ifdef MATH_CHECKS
+	if (unlikely(size.x < 0 || size.y < 0)) {
+		ERR_PRINT("Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.");
+	}
+#endif
 	real_t min = 0, max = 1;
 	int axis = 0;
 	real_t sign = 0;
@@ -95,6 +104,11 @@ bool Rect2::intersects_segment(const Point2 &p_from, const Point2 &p_to, Point2 
 }
 
 bool Rect2::intersects_transformed(const Transform2D &p_xform, const Rect2 &p_rect) const {
+#ifdef MATH_CHECKS
+	if (unlikely(size.x < 0 || size.y < 0 || p_rect.size.x < 0 || p_rect.size.y < 0)) {
+		ERR_PRINT("Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.");
+	}
+#endif
 	//SAT intersection between local and transformed rect2
 
 	Vector2 xf_points[4] = {
@@ -268,6 +282,6 @@ Rect2::operator String() const {
 	return "[P: " + position.operator String() + ", S: " + size + "]";
 }
 
-Rect2i::operator String() const {
-	return "[P: " + position.operator String() + ", S: " + size + "]";
+Rect2::operator Rect2i() const {
+	return Rect2i(position, size);
 }

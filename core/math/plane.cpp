@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -88,7 +88,7 @@ bool Plane::intersect_3(const Plane &p_plane1, const Plane &p_plane2, Vector3 *r
 		*r_result = ((vec3_cross(normal1, normal2) * p_plane0.d) +
 							(vec3_cross(normal2, normal0) * p_plane1.d) +
 							(vec3_cross(normal0, normal1) * p_plane2.d)) /
-					denom;
+				denom;
 	}
 
 	return true;

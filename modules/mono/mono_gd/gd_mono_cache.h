@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -111,9 +111,8 @@ struct CachedData {
 	GDMonoField *field_ExportAttribute_hintString;
 	GDMonoClass *class_SignalAttribute;
 	GDMonoClass *class_ToolAttribute;
-	GDMonoClass *class_RemoteAttribute;
-	GDMonoClass *class_MasterAttribute;
-	GDMonoClass *class_PuppetAttribute;
+	GDMonoClass *class_AnyPeerAttribute;
+	GDMonoClass *class_AuthorityAttribute;
 	GDMonoClass *class_GodotMethodAttribute;
 	GDMonoField *field_GodotMethodAttribute_methodName;
 	GDMonoClass *class_ScriptPathAttribute;
@@ -148,6 +147,8 @@ struct CachedData {
 	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericIEnumerable;
 	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericICollection;
 	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericIDictionary;
+
+	GDMonoMethodThunk<MonoReflectionType *, MonoReflectionType **> methodthunk_MarshalUtils_GetGenericTypeDefinition;
 
 	GDMonoMethodThunk<MonoReflectionType *, MonoReflectionType **> methodthunk_MarshalUtils_ArrayGetElementType;
 	GDMonoMethodThunk<MonoReflectionType *, MonoReflectionType **, MonoReflectionType **> methodthunk_MarshalUtils_DictionaryGetKeyValueTypes;

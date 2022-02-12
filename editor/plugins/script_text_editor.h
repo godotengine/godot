@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -62,6 +62,9 @@ class ScriptTextEditor : public ScriptEditorBase {
 	bool editor_enabled = false;
 
 	Vector<String> functions;
+	List<ScriptLanguage::Warning> warnings;
+	List<ScriptLanguage::ScriptError> errors;
+	Set<int> safe_lines;
 
 	List<Connection> missing_connections;
 
@@ -154,6 +157,8 @@ protected:
 	void _breakpoint_toggled(int p_row);
 
 	void _validate_script(); // No longer virtual.
+	void _update_warnings();
+	void _update_errors();
 	void _update_bookmark_list();
 	void _bookmark_item_pressed(int p_idx);
 
@@ -178,6 +183,7 @@ protected:
 	void _make_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, bool p_goto_definition, Vector2 p_pos);
 	void _text_edit_gui_input(const Ref<InputEvent> &ev);
 	void _color_changed(const Color &p_color);
+	void _prepare_edit_menu();
 
 	void _goto_line(int p_line) { goto_line(p_line); }
 	void _lookup_symbol(const String &p_symbol, int p_row, int p_column);
@@ -196,7 +202,7 @@ public:
 
 	virtual void add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) override;
 	virtual void set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) override;
-	void update_toggle_scripts_button();
+	void update_toggle_scripts_button() override;
 
 	virtual void apply_code() override;
 	virtual RES get_edited_resource() const override;
@@ -224,13 +230,15 @@ public:
 
 	virtual void reload(bool p_soft) override;
 	virtual Array get_breakpoints() override;
+	virtual void set_breakpoint(int p_line, bool p_enabled) override;
+	virtual void clear_breakpoints() override;
 
 	virtual void add_callback(const String &p_function, PackedStringArray p_args) override;
 	virtual void update_settings() override;
 
 	virtual bool show_members_overview() override;
 
-	virtual void set_tooltip_request_func(String p_method, Object *p_obj) override;
+	virtual void set_tooltip_request_func(const Callable &p_toolip_callback) override;
 
 	virtual void set_debugger_active(bool p_active) override;
 

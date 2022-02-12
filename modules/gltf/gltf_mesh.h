@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,23 +33,27 @@
 
 #include "core/io/resource.h"
 #include "editor/import/resource_importer_scene.h"
-#include "editor/import/scene_importer_mesh.h"
+#include "scene/3d/importer_mesh_instance_3d.h"
+#include "scene/resources/importer_mesh.h"
 #include "scene/resources/mesh.h"
 
 class GLTFMesh : public Resource {
 	GDCLASS(GLTFMesh, Resource);
 
 private:
-	Ref<EditorSceneImporterMesh> mesh;
+	Ref<ImporterMesh> mesh;
 	Vector<float> blend_weights;
+	Array instance_materials;
 
 protected:
 	static void _bind_methods();
 
 public:
-	Ref<EditorSceneImporterMesh> get_mesh();
-	void set_mesh(Ref<EditorSceneImporterMesh> p_mesh);
+	Ref<ImporterMesh> get_mesh();
+	void set_mesh(Ref<ImporterMesh> p_mesh);
 	Vector<float> get_blend_weights();
 	void set_blend_weights(Vector<float> p_blend_weights);
+	Array get_instance_materials();
+	void set_instance_materials(Array p_instance_materials);
 };
 #endif // GLTF_MESH_H

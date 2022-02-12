@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,14 +60,6 @@ static SegmentIntersectionResult segment_intersection(
 	}
 
 	return SEGMENT_PARALLEL;
-}
-
-// TODO I'm pretty sure there is an even faster way to swap things
-template <typename T>
-static inline void swap(T &a, T &b) {
-	T tmp = a;
-	a = b;
-	b = tmp;
 }
 
 static float calculate_total_distance(const Vector<Vector2> &points) {
@@ -136,9 +128,9 @@ void LineBuilder::build() {
 	_interpolate_color = gradient != nullptr;
 	bool retrieve_curve = curve != nullptr;
 	bool distance_required = _interpolate_color ||
-							 retrieve_curve ||
-							 texture_mode == Line2D::LINE_TEXTURE_TILE ||
-							 texture_mode == Line2D::LINE_TEXTURE_STRETCH;
+			retrieve_curve ||
+			texture_mode == Line2D::LINE_TEXTURE_TILE ||
+			texture_mode == Line2D::LINE_TEXTURE_STRETCH;
 	if (distance_required) {
 		total_distance = calculate_total_distance(points);
 		//Adjust totalDistance.

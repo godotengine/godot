@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -62,6 +62,10 @@ String AudioStreamGenerator::get_stream_name() const {
 
 float AudioStreamGenerator::get_length() const {
 	return 0;
+}
+
+bool AudioStreamGenerator::is_monophonic() const {
+	return true;
 }
 
 void AudioStreamGenerator::_bind_methods() {
@@ -138,7 +142,7 @@ void AudioStreamGeneratorPlayback::clear_buffer() {
 	mixed = 0;
 }
 
-void AudioStreamGeneratorPlayback::_mix_internal(AudioFrame *p_buffer, int p_frames) {
+int AudioStreamGeneratorPlayback::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	int read_amount = buffer.data_left();
 	if (p_frames < read_amount) {
 		read_amount = p_frames;
@@ -156,6 +160,7 @@ void AudioStreamGeneratorPlayback::_mix_internal(AudioFrame *p_buffer, int p_fra
 	}
 
 	mixed += p_frames / generator->get_mix_rate();
+	return read_amount < p_frames ? read_amount : p_frames;
 }
 
 float AudioStreamGeneratorPlayback::get_stream_sampling_rate() {

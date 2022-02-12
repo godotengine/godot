@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,6 +54,7 @@ Size2 SubViewportContainer::get_minimum_size() const {
 
 void SubViewportContainer::set_stretch(bool p_enable) {
 	stretch = p_enable;
+	update_minimum_size();
 	queue_sort();
 	update();
 }
@@ -88,6 +89,14 @@ void SubViewportContainer::set_stretch_shrink(int p_shrink) {
 
 int SubViewportContainer::get_stretch_shrink() const {
 	return shrink;
+}
+
+Vector<int> SubViewportContainer::get_allowed_size_flags_horizontal() const {
+	return Vector<int>();
+}
+
+Vector<int> SubViewportContainer::get_allowed_size_flags_vertical() const {
+	return Vector<int>();
 }
 
 void SubViewportContainer::_notification(int p_what) {
@@ -139,7 +148,7 @@ void SubViewportContainer::_notification(int p_what) {
 	}
 }
 
-void SubViewportContainer::_input(const Ref<InputEvent> &p_event) {
+void SubViewportContainer::input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (Engine::get_singleton()->is_editor_hint()) {
@@ -162,11 +171,11 @@ void SubViewportContainer::_input(const Ref<InputEvent> &p_event) {
 			continue;
 		}
 
-		c->input(ev);
+		c->push_input(ev);
 	}
 }
 
-void SubViewportContainer::_unhandled_input(const Ref<InputEvent> &p_event) {
+void SubViewportContainer::unhandled_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (Engine::get_singleton()->is_editor_hint()) {
@@ -189,13 +198,11 @@ void SubViewportContainer::_unhandled_input(const Ref<InputEvent> &p_event) {
 			continue;
 		}
 
-		c->unhandled_input(ev);
+		c->push_unhandled_input(ev);
 	}
 }
 
 void SubViewportContainer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_unhandled_input", "event"), &SubViewportContainer::_unhandled_input);
-	ClassDB::bind_method(D_METHOD("_input", "event"), &SubViewportContainer::_input);
 	ClassDB::bind_method(D_METHOD("set_stretch", "enable"), &SubViewportContainer::set_stretch);
 	ClassDB::bind_method(D_METHOD("is_stretch_enabled"), &SubViewportContainer::is_stretch_enabled);
 

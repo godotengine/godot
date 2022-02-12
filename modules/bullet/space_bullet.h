@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,10 +43,6 @@
 #include <LinearMath/btTransform.h>
 #include <LinearMath/btVector3.h>
 
-/**
-	@author AndreaCatania
-*/
-
 class AreaBullet;
 class btBroadphaseInterface;
 class btCollisionDispatcher;
@@ -76,13 +72,13 @@ private:
 public:
 	BulletPhysicsDirectSpaceState(SpaceBullet *p_space);
 
-	virtual int intersect_point(const Vector3 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) override;
-	virtual bool intersect_ray(const Vector3 &p_from, const Vector3 &p_to, RayResult &r_result, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false, bool p_pick_ray = false) override;
-	virtual int intersect_shape(const RID &p_shape, const Transform3D &p_xform, real_t p_margin, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) override;
-	virtual bool cast_motion(const RID &p_shape, const Transform3D &p_xform, const Vector3 &p_motion, real_t p_margin, real_t &r_closest_safe, real_t &r_closest_unsafe, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false, ShapeRestInfo *r_info = nullptr) override;
+	virtual int intersect_point(const Vector3 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = UINT32_MAX, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) override;
+	virtual bool intersect_ray(const Vector3 &p_from, const Vector3 &p_to, RayResult &r_result, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = UINT32_MAX, bool p_collide_with_bodies = true, bool p_collide_with_areas = false, bool p_pick_ray = false) override;
+	virtual int intersect_shape(const RID &p_shape, const Transform3D &p_xform, real_t p_margin, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = UINT32_MAX, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) override;
+	virtual bool cast_motion(const RID &p_shape, const Transform3D &p_xform, const Vector3 &p_motion, real_t p_margin, real_t &r_closest_safe, real_t &r_closest_unsafe, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = UINT32_MAX, bool p_collide_with_bodies = true, bool p_collide_with_areas = false, ShapeRestInfo *r_info = nullptr) override;
 	/// Returns the list of contacts pairs in this order: Local contact, other body contact
-	virtual bool collide_shape(RID p_shape, const Transform3D &p_shape_xform, real_t p_margin, Vector3 *r_results, int p_result_max, int &r_result_count, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) override;
-	virtual bool rest_info(RID p_shape, const Transform3D &p_shape_xform, real_t p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) override;
+	virtual bool collide_shape(RID p_shape, const Transform3D &p_shape_xform, real_t p_margin, Vector3 *r_results, int p_result_max, int &r_result_count, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = UINT32_MAX, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) override;
+	virtual bool rest_info(RID p_shape, const Transform3D &p_shape_xform, real_t p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = UINT32_MAX, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) override;
 	virtual Vector3 get_closest_point_to_object_volume(RID p_object, const Vector3 p_point) const override;
 };
 
@@ -188,7 +184,7 @@ public:
 	real_t get_linear_damp() const { return linear_damp; }
 	real_t get_angular_damp() const { return angular_damp; }
 
-	bool test_body_motion(RigidBodyBullet *p_body, const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia, PhysicsServer3D::MotionResult *r_result, bool p_exclude_raycast_shapes);
+	bool test_body_motion(RigidBodyBullet *p_body, const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia, PhysicsServer3D::MotionResult *r_result, bool p_exclude_raycast_shapes, const Set<RID> &p_exclude = Set<RID>());
 	int test_ray_separation(RigidBodyBullet *p_body, const Transform3D &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, PhysicsServer3D::SeparationResult *r_results, int p_result_max, real_t p_margin);
 
 private:
@@ -209,7 +205,7 @@ private:
 		RecoverResult() {}
 	};
 
-	bool recover_from_penetration(RigidBodyBullet *p_body, const btTransform &p_body_position, btScalar p_recover_movement_scale, bool p_infinite_inertia, btVector3 &r_delta_recover_movement, RecoverResult *r_recover_result = nullptr);
+	bool recover_from_penetration(RigidBodyBullet *p_body, const btTransform &p_body_position, btScalar p_recover_movement_scale, bool p_infinite_inertia, btVector3 &r_delta_recover_movement, RecoverResult *r_recover_result = nullptr, const Set<RID> &p_exclude = Set<RID>());
 	/// This is an API that recover a kinematic object from penetration
 	/// This allow only Convex Convex test and it always use GJK algorithm, With this API we don't benefit of Bullet special accelerated functions
 	bool RFP_convex_convex_test(const btConvexShape *p_shapeA, const btConvexShape *p_shapeB, btCollisionObject *p_objectB, int p_shapeId_A, int p_shapeId_B, const btTransform &p_transformA, const btTransform &p_transformB, btScalar p_recover_movement_scale, btVector3 &r_delta_recover_movement, RecoverResult *r_recover_result = nullptr);
@@ -220,4 +216,5 @@ private:
 	int add_separation_result(PhysicsServer3D::SeparationResult *r_results, const SpaceBullet::RecoverResult &p_recover_result, int p_shape_id, const btCollisionObject *p_other_object) const;
 	int recover_from_penetration_ray(RigidBodyBullet *p_body, const btTransform &p_body_position, btScalar p_recover_movement_scale, bool p_infinite_inertia, int p_result_max, btVector3 &r_delta_recover_movement, PhysicsServer3D::SeparationResult *r_results);
 };
-#endif
+
+#endif // SPACE_BULLET_H

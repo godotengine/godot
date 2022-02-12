@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 #define NETWORKED_MULTIPLAYER_ENET_H
 
 #include "core/crypto/crypto.h"
-#include "core/io/multiplayer_peer.h"
+#include "core/multiplayer/multiplayer_peer.h"
 
 #include "enet_connection.h"
 #include <enet/enet.h>
@@ -65,10 +65,7 @@ private:
 	uint32_t unique_id = 0;
 
 	int target_peer = 0;
-	int transfer_channel = 0;
-	TransferMode transfer_mode = TRANSFER_MODE_RELIABLE;
 
-	bool refuse_connections = false;
 	bool server_relay = true;
 
 	ConnectionStatus connection_status = CONNECTION_DISCONNECTED;
@@ -87,9 +84,9 @@ private:
 	Packet current_packet;
 
 	void _pop_current_packet();
-	bool _poll_server();
-	bool _poll_client();
-	bool _poll_mesh();
+	bool _parse_server_event(ENetConnection::EventType p_event_type, ENetConnection::Event &p_event);
+	bool _parse_client_event(ENetConnection::EventType p_event_type, ENetConnection::Event &p_event);
+	bool _parse_mesh_event(ENetConnection::EventType p_event_type, ENetConnection::Event &p_event, int p_peer_id);
 	void _relay(int p_from, int p_to, enet_uint8 p_channel, ENetPacket *p_packet);
 	void _notify_peers(int p_id, bool p_connected);
 	void _destroy_unused(ENetPacket *p_packet);
@@ -101,14 +98,22 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual void set_transfer_channel(int p_channel) override;
-	virtual int get_transfer_channel() const override;
-
-	virtual void set_transfer_mode(TransferMode p_mode) override;
-	virtual TransferMode get_transfer_mode() const override;
 	virtual void set_target_peer(int p_peer) override;
-
 	virtual int get_packet_peer() const override;
+
+	virtual void poll() override;
+	virtual bool is_server() const override;
+	// Overridden so we can instrument the DTLSServer when needed.
+	virtual void set_refuse_new_connections(bool p_enabled) override;
+
+	virtual ConnectionStatus get_connection_status() const override;
+
+	virtual int get_unique_id() const override;
+
+	virtual int get_max_packet_size() const override;
+	virtual int get_available_packet_count() const override;
+	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override;
+	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
 
 	Error create_server(int p_port, int p_max_clients = 32, int p_max_channels = 0, int p_in_bandwidth = 0, int p_out_bandwidth = 0);
 	Error create_client(const String &p_address, int p_port, int p_channel_count = 0, int p_in_bandwidth = 0, int p_out_bandwidth = 0, int p_local_port = 0);
@@ -118,23 +123,6 @@ public:
 	void close_connection(uint32_t wait_usec = 100);
 
 	void disconnect_peer(int p_peer, bool now = false);
-
-	virtual void poll() override;
-
-	virtual bool is_server() const override;
-
-	virtual int get_available_packet_count() const override;
-	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override; ///< buffer is GONE after next get_packet
-	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
-
-	virtual int get_max_packet_size() const override;
-
-	virtual ConnectionStatus get_connection_status() const override;
-
-	virtual void set_refuse_new_connections(bool p_enable) override;
-	virtual bool is_refusing_new_connections() const override;
-
-	virtual int get_unique_id() const override;
 
 	void set_bind_ip(const IPAddress &p_ip);
 	void set_server_relay_enabled(bool p_enabled);

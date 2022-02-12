@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,18 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BODYBULLET_H
-#define BODYBULLET_H
+#ifndef RIGID_BODY_BULLET_H
+#define RIGID_BODY_BULLET_H
 
 #include "collision_object_bullet.h"
 #include "space_bullet.h"
 
 #include <BulletCollision/BroadphaseCollision/btCollisionAlgorithm.h>
 #include <LinearMath/btTransform.h>
-
-/**
-	@author AndreaCatania
-*/
 
 class AreaBullet;
 class SpaceBullet;
@@ -109,6 +105,8 @@ public:
 
 	virtual void set_transform(const Transform3D &p_transform) override;
 	virtual Transform3D get_transform() const override;
+
+	virtual Vector3 get_velocity_at_local_position(const Vector3 &p_position) const override;
 
 	virtual void add_central_force(const Vector3 &p_force) override;
 	virtual void add_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) override;
@@ -299,7 +297,7 @@ public:
 	void reload_axis_lock();
 
 	/// Doc:
-	/// https://web.archive.org/web/20180404091446/http://www.bulletphysics.org/mediawiki-1.5.8/index.php/Anti_tunneling_by_Motion_Clamping
+	/// https://web.archive.org/web/20180404091446/https://www.bulletphysics.org/mediawiki-1.5.8/index.php/Anti_tunneling_by_Motion_Clamping
 	void set_continuous_collision_detection(bool p_enable);
 	bool is_continuous_collision_detection_enabled() const;
 
@@ -327,4 +325,4 @@ private:
 	void _internal_set_mass(real_t p_mass);
 };
 
-#endif
+#endif // RIGID_BODY_BULLET_H

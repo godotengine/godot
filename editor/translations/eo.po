@@ -1,6 +1,6 @@
 # Esperanto translation of the Godot Engine editor
-# Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.
-# Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
+# Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.
+# Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 # Scott Starkey <yekrats@gmail.com>, 2019.
 # AlexHoratio <yukithetupper@gmail.com>, 2019.
@@ -17,15 +17,16 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2021-07-31 19:44+0000\n"
-"Last-Translator: mourning20s <mourning20s@protonmail.com>\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"PO-Revision-Date: 2021-10-06 00:12+0000\n"
+"Last-Translator: Manuel González <mgoopazo@gmail.com>\n"
 "Language-Team: Esperanto <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eo/>\n"
 "Language: eo\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.8-dev\n"
+"X-Generator: Weblate 4.9-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -327,6 +328,10 @@ msgid "Duplicate Key(s)"
 msgstr "Duobligi Ŝlosilo(j)n"
 
 #: editor/animation_track_editor.cpp
+msgid "Add RESET Value(s)"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
 msgstr "Forigi Ŝlosilo(j)n"
 
@@ -346,6 +351,7 @@ msgstr "Aliigi Animadon Iteracion Modon"
 msgid "Remove Anim Track"
 msgstr "Forigi animacian trakon"
 
+#. TRANSLATORS: %s will be replaced by a phrase describing the target of track.
 #: editor/animation_track_editor.cpp
 msgid "Create NEW track for %s and insert key?"
 msgstr "Krei NOVAN trakon por %s kaj enmeti ŝlosilon?"
@@ -360,6 +366,7 @@ msgstr "Krei %d NOVAJN trakojn kaj enmeti ŝlosilojn?"
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -370,9 +377,24 @@ msgstr "Krei"
 msgid "Anim Insert"
 msgstr "Animado Enmetu"
 
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+msgid "node '%s'"
+msgstr "nodo '%s'"
+
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+msgid "animation"
+msgstr "animacio"
+
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
 msgstr "AnimationPlayer ne povas animi si mem, nur aliajn ludantojn."
+
+#. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+#: editor/animation_track_editor.cpp
+msgid "property '%s'"
+msgstr "atributo"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -479,6 +501,11 @@ msgstr ""
 "trako."
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Add RESET Keys"
+msgstr "Animado Skali Ŝlosilojn"
+
+#: editor/animation_track_editor.cpp
 msgid ""
 "This animation belongs to an imported scene, so changes to imported tracks "
 "will not be saved.\n"
@@ -583,7 +610,7 @@ msgstr "Iri al Antaŭa Paŝo"
 
 #: editor/animation_track_editor.cpp
 msgid "Apply Reset"
-msgstr ""
+msgstr "Almeti rekomencigon"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize Animation"
@@ -602,9 +629,8 @@ msgid "Use Bezier Curves"
 msgstr "Uzu Bezier-kurbojn"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Create RESET Track(s)"
-msgstr "Alglui trakojn"
+msgstr "Krei RESET-trako(j)n"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
@@ -808,6 +834,7 @@ msgstr "Aldoni"
 #: editor/groups_editor.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp
 msgid "Remove"
@@ -859,8 +886,7 @@ msgstr "Ne povas konekti signalo"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
-#: editor/plugins/version_control_editor_plugin.cpp editor/project_export.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 #: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -929,9 +955,8 @@ msgid "Edit..."
 msgstr "Redakti..."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Go to Method"
-msgstr "Iru al metodo"
+msgstr "Iri al metodo"
 
 #: editor/create_dialog.cpp
 msgid "Change %s Type"
@@ -949,9 +974,9 @@ msgstr "Kreu novan %s"
 msgid "No results for \"%s\"."
 msgstr "Ne rezultoj por \"%s\"."
 
-#: editor/create_dialog.cpp
+#: editor/create_dialog.cpp editor/property_selector.cpp
 msgid "No description available for %s."
-msgstr ""
+msgstr "Ne priskribo disponeblas por %s."
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
@@ -1011,7 +1036,7 @@ msgstr ""
 msgid "Dependencies"
 msgstr "Dependecoj"
 
-#: editor/dependency_editor.cpp
+#: editor/dependency_editor.cpp editor/editor_resource_picker.cpp
 msgid "Resource"
 msgstr "Rimedo"
 
@@ -1051,17 +1076,16 @@ msgid "Owners Of:"
 msgstr "Proprietuloj de:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove the selected files from the project? (Cannot be undone.)\n"
 "Depending on your filesystem configuration, the files will either be moved "
 "to the system trash or deleted permanently."
 msgstr ""
-"Forigi selektajn dosierojn el la projekto? (ne malfaro)\n"
-"Vi povas trovi la forigajn dosierojn en la sistema rubujo por restaŭri ilin."
+"Forigi la elektitajn dosierojn el la projekto? (ne malfareblas)\n"
+"Depende de la agordo de via dosiersistemo, la dosierojn aŭ movos al rubujo "
+"de la sistemo aŭ forigos ĉiame."
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
@@ -1069,9 +1093,11 @@ msgid ""
 "Depending on your filesystem configuration, the files will either be moved "
 "to the system trash or deleted permanently."
 msgstr ""
-"La forigotaj dosieroj bezonas por ke aliaj risurcoj funkciadi.\n"
-"Forigu ilin iel? (ne malfaro)\n"
-"Vi povas trovi la forigajn dosierojn en la sistema rubujo por restaŭri ilin."
+"La forigotaj dosieroj estas bezoni de aliaj risurcoj por ke ili eblas "
+"funkciadi.\n"
+"Forigi ilin iel? (ne malfareblas)\n"
+"Depende de la agordo de via dosiersistemo, la dosierojn aŭ movos al rubujo "
+"de la sistemo aŭ forigos ĉiame."
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -1241,55 +1267,51 @@ msgid "Licenses"
 msgstr "Permesiloj"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
-msgstr "Eraro dum malfermi pakaĵan dosieron (ne estas en ZIP-formo)."
+msgstr ""
+"Eraro dum malfermi pakaĵan dosieron por \"%s\" (ne estas de ZIP-formo)."
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "%s (already exists)"
 msgstr "%s (jam ekzistante)"
 
 #: editor/editor_asset_installer.cpp
 msgid "Contents of asset \"%s\" - %d file(s) conflict with your project:"
 msgstr ""
+"Enhavaĵoj de pakaĵo \"%s\" - %d dosiero(j) konfliktas kun via projekto:"
 
 #: editor/editor_asset_installer.cpp
 msgid "Contents of asset \"%s\" - No files conflict with your project:"
-msgstr ""
+msgstr "Enhavaĵoj de pakaĵo \"%s\" - Ne dosiero konfliktas kun via projekto:"
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
-msgstr "Maldensigas havaĵojn"
+msgstr "Malkompaktigas havaĵojn"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "The following files failed extraction from asset \"%s\":"
-msgstr "La jenaj dosieroj malplenumis malkompaktigi el la pakaĵo:"
+msgstr "La jenajn dosierojn malsukcesis malkompaktigi el la pakaĵo \"%s\":"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "(and %s more files)"
-msgstr "Kaj %s pli dosieroj."
+msgstr "(kaj %s pli dosieroj)"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Asset \"%s\" installed successfully!"
-msgstr "Pakaĵo instalis sukcese!"
+msgstr "Pakaĵo \"%s\" instalis sukcese!"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
-msgstr "Sukcese!"
+msgstr "Sukceso!"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
 msgstr "Instali"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Asset Installer"
-msgstr "Pakaĵa instalilo"
+msgstr "Instalilo de pakaĵo"
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
@@ -1316,9 +1338,8 @@ msgid "Toggle Audio Bus Mute"
 msgstr "Baskuli la muta reĝimo de la aŭdia buso"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Toggle Audio Bus Bypass Effects"
-msgstr "Baskuli preterpasajn efektojn de aŭdia buso"
+msgstr "Baskuli la preterpasajn efektojn de aŭdbuso"
 
 #: editor/editor_audio_buses.cpp
 msgid "Select Audio Bus Send"
@@ -1353,9 +1374,8 @@ msgid "Bypass"
 msgstr "Preterpase"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Bus Options"
-msgstr "Busaj agordoj"
+msgstr "Agordoj de buso"
 
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -1469,6 +1489,10 @@ msgid "Invalid name."
 msgstr "Malvalida nomo."
 
 #: editor/editor_autoload_settings.cpp
+msgid "Cannot begin with a digit."
+msgstr ""
+
+#: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
 msgstr "Validaj signoj:"
 
@@ -1521,13 +1545,13 @@ msgid "Can't add autoload:"
 msgstr "Ne aldoneblas aŭtoŝargon:"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "%s is an invalid path. File does not exist."
-msgstr "Dosiero ne ekzistas."
+msgstr "%s estas invalida dosierindiko. Dosiero ne ekzistas."
 
 #: editor/editor_autoload_settings.cpp
 msgid "%s is an invalid path. Not in resource path (res://)."
 msgstr ""
+"%s estas invalida dosierindiko. Ne estas ĉe risurca dosierindiko (res://)."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -1551,9 +1575,8 @@ msgid "Name"
 msgstr "Nomo"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Global Variable"
-msgstr "Renomi variablon"
+msgstr "Malloka variablo"
 
 #: editor/editor_data.cpp
 msgid "Paste Params"
@@ -1575,7 +1598,9 @@ msgstr "Aktualigas la scenon..."
 msgid "[empty]"
 msgstr "[malplena]"
 
-#: editor/editor_data.cpp
+#: editor/editor_data.cpp editor/plugins/script_text_editor.cpp
+#: editor/plugins/text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "[unsaved]"
 msgstr "[ne konservis]"
 
@@ -1596,6 +1621,7 @@ msgstr "Krei dosierujon"
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp editor/filesystem_dock.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
+#: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp scene/gui/file_dialog.cpp
 msgid "Name:"
 msgstr "Nomo:"
@@ -1677,22 +1703,21 @@ msgstr ""
 "Ebligu 'Import Pvrtc' en projektaj agordoj, aŭ malŝalti 'Driver Fallback "
 "Enabled'."
 
-#: editor/editor_export.cpp platform/android/export/export.cpp
+#: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom debug template not found."
 msgstr "Propra sencimiga ŝablonon ne trovitis."
 
-#: editor/editor_export.cpp platform/android/export/export.cpp
+#: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom release template not found."
 msgstr "Propra eldona ŝablono ne trovitis."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Template file not found:"
-msgstr "Ŝablonan dosieron ne trovitis:"
+msgstr "Ŝablonan dosieron ne trovis:"
 
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
@@ -1713,7 +1738,7 @@ msgstr "Biblioteko de havaĵoj"
 
 #: editor/editor_feature_profile.cpp
 msgid "Scene Tree Editing"
-msgstr "Redaktado de scena arbo"
+msgstr "Redaktado de scenoarbo"
 
 #: editor/editor_feature_profile.cpp
 msgid "Node Dock"
@@ -1729,48 +1754,51 @@ msgstr "Doko de enporto"
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to view and edit 3D scenes."
-msgstr ""
+msgstr "Permesas vidi kaj redakti 3D-scenojn."
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to edit scripts using the integrated script editor."
-msgstr ""
+msgstr "Permesas redakti skriptojn per la integrita skript-redaktilo."
 
 #: editor/editor_feature_profile.cpp
 msgid "Provides built-in access to the Asset Library."
-msgstr ""
+msgstr "Provizas integritan atingon al la Biblioteko de havaĵoj."
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows editing the node hierarchy in the Scene dock."
-msgstr ""
+msgstr "Permesas redakti la hierarkion de nodoj en la Sceno-doko."
 
 #: editor/editor_feature_profile.cpp
 msgid ""
 "Allows to work with signals and groups of the node selected in the Scene "
 "dock."
 msgstr ""
+"Permesas labori la signalojn kaj la grupojn de la nodo elektitas en la Sceno-"
+"doko."
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to browse the local file system via a dedicated dock."
-msgstr ""
+msgstr "Permesas esplori la lokan dosiersistemon per dediĉita doko."
 
 #: editor/editor_feature_profile.cpp
 msgid ""
 "Allows to configure import settings for individual assets. Requires the "
 "FileSystem dock to function."
 msgstr ""
+"Permesas agordi enportajn agordojn por individuaj havaĵoj. Bezonas ke la "
+"doko Dosiersistemo funkcias."
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "(current)"
-msgstr "(Aktuala)"
+msgstr "(aktuale)"
 
 #: editor/editor_feature_profile.cpp
 msgid "(none)"
-msgstr ""
+msgstr "(nenio)"
 
 #: editor/editor_feature_profile.cpp
 msgid "Remove currently selected profile, '%s'? Cannot be undone."
-msgstr ""
+msgstr "Forigi aktuale elektitan profilon '%s'? Ne malfareblas."
 
 #: editor/editor_feature_profile.cpp
 msgid "Profile must be a valid filename and must not contain '.'"
@@ -1801,19 +1829,16 @@ msgid "Enable Contextual Editor"
 msgstr "Ŝalti kuntekstan redaktilon"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Class Properties:"
-msgstr "Maletendi ĉiajn atributojn"
+msgstr "Atributoj de la klaso:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Main Features:"
-msgstr "Ŝaltitaj eblecoj:"
+msgstr "Ĉefa eblaĵoj:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Nodes and Classes:"
-msgstr "Ŝaltitaj klasoj:"
+msgstr "Nodoj kaj klasoj:"
 
 #: editor/editor_feature_profile.cpp
 msgid "File '%s' format is invalid, import aborted."
@@ -1830,7 +1855,6 @@ msgid "Error saving profile to path: '%s'."
 msgstr "Eraras konservi profilon al dosierindiko: '%s'."
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Reset to Default"
 msgstr "Rekomencigi al defaŭltoj"
 
@@ -1839,14 +1863,12 @@ msgid "Current Profile:"
 msgstr "Aktuala profilo:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Create Profile"
-msgstr "Viŝi profilon"
+msgstr "Krei profilon"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Remove Profile"
-msgstr "Forigi punkton"
+msgstr "Forigi profilon"
 
 #: editor/editor_feature_profile.cpp
 msgid "Available Profiles:"
@@ -1866,18 +1888,17 @@ msgid "Export"
 msgstr "Eksporti"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Configure Selected Profile:"
-msgstr "Aktuala profilo:"
+msgstr "Agordi elektitan profilon:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Extra Options:"
-msgstr "Agordoj de klaso:"
+msgstr "Pli agordoj:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Create or import a profile to edit available classes and properties."
 msgstr ""
+"Krei aŭ enporti profilon por redakti disponeblajn klasojn kaj atributojn."
 
 #: editor/editor_feature_profile.cpp
 msgid "New profile name:"
@@ -1904,7 +1925,6 @@ msgid "Select Current Folder"
 msgstr "Elekti aktualan dosierujon"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "File exists, overwrite?"
 msgstr "Dosiero ekzistas, superskribi?"
 
@@ -1930,7 +1950,6 @@ msgid "New Folder..."
 msgstr "Nova dosierujo..."
 
 #: editor/editor_file_dialog.cpp editor/find_in_files.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "Aktualigi"
 
@@ -2047,7 +2066,8 @@ msgstr "Dosierujoj kaj dosieroj:"
 msgid "Preview:"
 msgstr "Antaŭrigardo:"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "File:"
 msgstr "Dosiero:"
 
@@ -2067,7 +2087,7 @@ msgstr ""
 msgid "(Re)Importing Assets"
 msgstr "(Re)enportas havaĵoj"
 
-#: editor/editor_help.cpp editor/plugins/spatial_editor_plugin.cpp
+#: editor/editor_help.cpp
 msgid "Top"
 msgstr "Supro"
 
@@ -2097,7 +2117,8 @@ msgid "Properties"
 msgstr "Atributoj"
 
 #: editor/editor_help.cpp
-msgid "override:"
+#, fuzzy
+msgid "overrides %s:"
 msgstr "redifino:"
 
 #: editor/editor_help.cpp
@@ -2112,13 +2133,30 @@ msgstr "Metodoj"
 msgid "Theme Properties"
 msgstr "Etosaj atributoj"
 
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Enumeracioj"
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Colors"
+msgstr "Elekti koloron"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
 msgstr "Konstantoj"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Fonts"
+msgstr ""
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Icons"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Styles"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Enumeracioj"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -2205,7 +2243,7 @@ msgstr "Metodo"
 msgid "Signal"
 msgstr "Signalo"
 
-#: editor/editor_help_search.cpp
+#: editor/editor_help_search.cpp modules/visual_script/visual_script_nodes.cpp
 msgid "Constant"
 msgstr "Konstanto"
 
@@ -2221,14 +2259,53 @@ msgstr "Etosa atributo"
 msgid "Property:"
 msgstr "Atributo:"
 
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Pin value"
+msgstr "(valoro)"
+
+#: editor/editor_inspector.cpp
+msgid ""
+"Pinning a value forces it to be saved even if it's equal to the default."
+msgstr ""
+
+#: editor/editor_inspector.cpp
+msgid "Pin value [Disabled because '%s' is editor-only]"
+msgstr ""
+
 #: editor/editor_inspector.cpp editor/scene_tree_dock.cpp
+#: modules/visual_script/visual_script_func_nodes.cpp
+#: modules/visual_script/visual_script_nodes.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Set %s"
-msgstr ""
+msgstr "Agordis %s"
 
 #: editor/editor_inspector.cpp
 msgid "Set Multiple:"
 msgstr "Agordi pluroblan:"
+
+#: editor/editor_inspector.cpp
+msgid "Pinned %s"
+msgstr ""
+
+#: editor/editor_inspector.cpp
+msgid "Unpinned %s"
+msgstr ""
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Copy Property"
+msgstr "Atributoj"
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Paste Property"
+msgstr "Atributoj"
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Copy Property Path"
+msgstr "Atributoj"
 
 #: editor/editor_log.cpp
 msgid "Output:"
@@ -2299,6 +2376,20 @@ msgid "New Window"
 msgstr "Nova Fenestro"
 
 #: editor/editor_node.cpp
+msgid ""
+"Spins when the editor window redraws.\n"
+"Update Continuously is enabled, which can increase power usage. Click to "
+"disable it."
+msgstr ""
+"Rotacius kiam la fenestro de la redaktilo redesegniĝus.\n"
+"'Ĝisdatigi konstante' estas ŝaltita, kiu eblas pliiĝi kurentuzado. Alklaku "
+"por malŝalti ĝin."
+
+#: editor/editor_node.cpp
+msgid "Spins when the editor window redraws."
+msgstr "Rotacius kiam la fenestron de la redaktilo redesegniĝi."
+
+#: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
 msgstr "Enportitaj risurcoj ne povas konservi."
 
@@ -2329,19 +2420,16 @@ msgid "Can't open file for writing:"
 msgstr "Ne malfermeblas dosieron por skribi:"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Requested file format unknown:"
-msgstr "Petitan dosierformon senkonatas:"
+msgstr "Petitan dosierformon nekonas:"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Error while saving."
-msgstr "Eraro dum la konservo."
+msgstr "Eraro dum la konservado."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Can't open '%s'. The file could have been moved or deleted."
-msgstr "Ne malfermeblas '%s'. La dosiero estus movita aŭ forigita."
+msgstr "Ne malfermeblas '%s'. La dosiero eble estis movita aŭ forigita."
 
 #: editor/editor_node.cpp
 msgid "Error while parsing '%s'."
@@ -2390,6 +2478,15 @@ msgid ""
 msgstr ""
 "Ne eble konservi scenon. Verŝajne dependoj (ekzemploj aŭ heredito) ne "
 "verigus."
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Could not save one or more scenes!"
+msgstr "Ne eble komencas subprocezon!"
+
+#: editor/editor_node.cpp
+msgid "Save All Scenes"
+msgstr "Konservi ĉiujn scenojn"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "Can't overwrite scene that is still open!"
@@ -2526,39 +2623,42 @@ msgid "Save changes to '%s' before closing?"
 msgstr "Konservi ŝanĝojn al '%s' antaŭ fermo?"
 
 #: editor/editor_node.cpp
+msgid "%s no longer exists! Please specify a new save location."
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid ""
 "The current scene has no root node, but %d modified external resource(s) "
 "were saved anyway."
 msgstr ""
+"La aktula sceno havas ne radika nodo, sed %d modifita(j) ekstera(j) "
+"risurco(j) konserviĝis iel."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
-msgstr "Radika nodo estas necesita por konservi la scenon."
+msgstr ""
+"Radikan nodon bezonas por konservi la scenon. Vi eblas aldoni radikan nodon "
+"per la Scenoarbo-doko."
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
 msgstr "Konservi sceno kiel..."
 
 #: editor/editor_node.cpp modules/gltf/editor_scene_exporter_gltf_plugin.cpp
-#, fuzzy
 msgid "This operation can't be done without a scene."
-msgstr "Ĉi tiu funkciado ne povas fari sen sceno."
+msgstr "Ĉi tian operacion ne povas fari sen sceno."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Export Mesh Library"
-msgstr "Eksporti maŝajn bibliotekon"
+msgstr "Eksporti bibliotekon de maŝoj"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "This operation can't be done without a root node."
-msgstr "Ĉi tiu funkciado ne povas fari sen radika nodo."
+msgstr "Ĉi tian operacion ne povas fari sen radika nodo."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Export Tile Set"
 msgstr "Eksporti kahelaron"
 
@@ -2571,13 +2671,38 @@ msgid "Current scene not saved. Open anyway?"
 msgstr "Nuna sceno ne estas konservita. Malfermi ĉuikaze?"
 
 #: editor/editor_node.cpp
+msgid "Can't undo while mouse buttons are pressed."
+msgstr "Ne povu malfari dum musbutonoj estas premitaj."
+
+#: editor/editor_node.cpp
+msgid "Nothing to undo."
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Undo: %s"
+msgstr "Malfari"
+
+#: editor/editor_node.cpp
+msgid "Can't redo while mouse buttons are pressed."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Nothing to redo."
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Redo: %s"
+msgstr "Refari"
+
+#: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
 msgstr "Ne povas reŝarĝi scenon, kiu konservis neniam."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reload Saved Scene"
-msgstr "Konservi scenon"
+msgstr "Reŝargi konservitan scenon"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2621,13 +2746,12 @@ msgstr ""
 "Konservi ŝanĝojn al la jena(j) sceno(j) antaŭ malfermi projektan mastrumilon?"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "This option is deprecated. Situations where refresh must be forced are now "
 "considered a bug. Please report."
 msgstr ""
-"Tiu ĉi opcio estas evitinda. Statoj en kiu aktualigo deviĝi estas nun "
-"konsideri kiel cimo. Bonvolu raporti."
+"Tia ĉi opcio estas evitinda. Statoj en kiu bezonus ĝisdatigo nun konsideras "
+"kiel cimo. Bonvolu raporti."
 
 #: editor/editor_node.cpp
 msgid "Pick a Main Scene"
@@ -2678,13 +2802,12 @@ msgstr ""
 "estas en ila reĝimo."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
-"Sceno '%s' aŭtomate enportiĝis, do ne eblas redakti ĝin.\n"
-"Por ŝanĝu ĝin, nova heredita sceno povas kreiĝi."
+"Sceno '%s' aŭtomate enportiĝis, do ĝin ne eblas modifi.\n"
+"Por ŝanĝi ĝin, povas krei novan hereditan scenon."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2853,10 +2976,6 @@ msgid "Save Scene"
 msgstr "Konservi scenon"
 
 #: editor/editor_node.cpp
-msgid "Save All Scenes"
-msgstr "Konservi ĉiujn scenojn"
-
-#: editor/editor_node.cpp
 msgid "Convert To..."
 msgstr "Konverti al..."
 
@@ -2879,9 +2998,8 @@ msgid "Redo"
 msgstr "Refari"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Miscellaneous project or scene-wide tools."
-msgstr "Diversa projekto aŭ sceno-abundaj iloj."
+msgstr "Diversa projekto aŭ tut-scenaj iloj."
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp
@@ -2893,14 +3011,12 @@ msgid "Project Settings..."
 msgstr "Projektaj agordoj..."
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Version Control"
 msgstr "Versikontrolo"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Set Up Version Control"
-msgstr "Altlevi versitenan sistemon"
+msgstr "Agordi versikontrolon"
 
 #: editor/editor_node.cpp
 msgid "Shut Down Version Control"
@@ -2915,22 +3031,21 @@ msgid "Install Android Build Template..."
 msgstr "Instali Androidan muntadan ŝablonon..."
 
 #: editor/editor_node.cpp
-msgid "Open Project Data Folder"
-msgstr "Malfermi projektan datuman dosierujon"
+#, fuzzy
+msgid "Open User Data Folder"
+msgstr "Malfermi datumajn dosierujon de la redaktilo"
 
 #: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
 msgstr "Iloj"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Orphan Resource Explorer..."
-msgstr "Eksplorilo da orfaj risurcoj..."
+msgstr "Eksplorilo de orfaj risurcoj..."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reload Current Project"
-msgstr "Renomi projekton"
+msgstr "Renomi aktualan projekton"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
@@ -2954,14 +3069,17 @@ msgid ""
 "mobile device).\n"
 "You don't need to enable it to use the GDScript debugger locally."
 msgstr ""
+"Kiam ĉi tiu opcio ŝaltus, uzado de unu-alklaka disponigo igos la "
+"komandodosieron provus konekti al la IP-adreso de ĉi tiu komputilo por ke la "
+"rulata projekto eblus sencimigi.\n"
+"Ĉi tiu opcio destiniĝas por fora sencimigado (tipe kun portebla aparato).\n"
+"Vi ne devas ŝalti ĝin por uzi la GDScript-sencimigilon loke."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Small Deploy with Network Filesystem"
-msgstr "Eta disponigo kun reta dosiersistemo"
+msgstr "Malgranda disponigo kun reta dosiersistemo"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, using one-click deploy for Android will only "
 "export an executable without the project data.\n"
@@ -2970,53 +3088,65 @@ msgid ""
 "On Android, deploying will use the USB cable for faster performance. This "
 "option speeds up testing for projects with large assets."
 msgstr ""
-"Kiam ĉi tiun agordon estas ŝaltita, eksporti aŭ malfaldi produktos minimuman "
-"plenumeblan dosieron.\n"
-"La dosiersistemon disponigas el la projekto fare de editilo per la reto.\n"
-"En Android, malfaldo uzantos la USB-kablon por pli rapida rendimento. Ĉi tui "
-"agordo rapidigas testadon por ludoj kun larĝa areo."
+"Kiam ĉi tiun agordon ŝaltus, uzado de unu-alklaka disponigo por Android nur "
+"eksportos komandodosieron sen la datumoj de projekto.\n"
+"La dosiersistemo proviziĝos el la projekto per la redaktilo per la reto.\n"
+"Per Android, disponigado uzos la USB-kablon por pli rapida rendimento. Ĉi "
+"tiu opcio rapidigas testadon por projektoj kun grandaj havaĵoj."
 
 #: editor/editor_node.cpp
 msgid "Visible Collision Shapes"
 msgstr "Videblaj koliziaj formoj"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, collision shapes and raycast nodes (for 2D and "
 "3D) will be visible in the running project."
 msgstr ""
-"Koliziaj formoj kaj radĵetaj nodoj (por 2D kaj 3D) estos videblaj en la "
-"rulas ludo, se ĉi tiu agordo estas ŝaltita."
+"Kiam ĉi tia opcio ŝaltus, koliziaj formoj kaj radĵetaj nodoj (por 2D kaj 3D) "
+"estos videblaj en la rula projekto."
 
 #: editor/editor_node.cpp
 msgid "Visible Navigation"
 msgstr "Videbla navigacio"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, navigation meshes and polygons will be visible "
 "in the running project."
 msgstr ""
-"Navigaciaj maŝoj kaj poligonoj estos videblaj en la rulas ludo, se ĉi tiu "
-"agordo estas ŝaltita."
+"Kiam ĉi tiu opcio ŝaltus, navigaciaj maŝoj kaj plurlateroj estos videblaj en "
+"la rula projekto."
+
+#: editor/editor_node.cpp
+msgid "Force Shader Fallbacks"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
+"When this option is enabled, shaders will be used in their fallback form "
+"(either visible via an ubershader or hidden) during all the run time.\n"
+"This is useful for verifying the look and performance of fallbacks, which "
+"are normally displayed briefly.\n"
+"Asynchronous shader compilation must be enabled in the project settings for "
+"this option to make a difference."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Synchronize Scene Changes"
 msgstr "Sinkronigi ŝanĝojn en sceno"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, any changes made to the scene in the editor "
 "will be replicated in the running project.\n"
 "When used remotely on a device, this is more efficient when the network "
 "filesystem option is enabled."
 msgstr ""
-"Kiam tuin ĉi agordo estas ŝaltita, iuj ŝanĝoj ke faris al la scenon en la "
-"editilo replikos en la rulas ludo.\n"
-"Kiam uzantis malproksime en aparato, estas pli efika kun reta dosiersistemo."
+"Kiam ĉi tiu opcio ŝaltus, iuj ŝanĝoj ke faris al la scenon en la redaktilo "
+"replikos en la rula projekto.\n"
+"Kiam uzantus fore en aparato, tiu estas pli efika kiam la reta dosiersistema "
+"opcio estas ŝaltita."
 
 #: editor/editor_node.cpp
 msgid "Synchronize Script Changes"
@@ -3059,10 +3189,6 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "Baskuli plenekranon"
-
-#: editor/editor_node.cpp
-msgid "Toggle System Console"
-msgstr "Baskuli la konzolon de sistemo"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data/Settings Folder"
@@ -3169,10 +3295,6 @@ msgid "Save & Restart"
 msgstr "Konservi kaj rekomenci"
 
 #: editor/editor_node.cpp
-msgid "Spins when the editor window redraws."
-msgstr "Rotacius kiam la fenestron de la redaktilo redesegniĝi."
-
-#: editor/editor_node.cpp
 msgid "Update Continuously"
 msgstr "Ĝisdatigi kontinue"
 
@@ -3259,6 +3381,11 @@ msgid "Merge With Existing"
 msgstr "Kunfandi kun ekzistanta"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid "Apply MeshInstance Transforms"
+msgstr "Aliigi Transformon de Animado"
+
+#: editor/editor_node.cpp
 msgid "Open & Run a Script"
 msgstr "Malfermi & ruli skripto"
 
@@ -3289,6 +3416,7 @@ msgid "Load Errors"
 msgstr "Ŝargaj eraroj"
 
 #: editor/editor_node.cpp editor/plugins/tile_map_editor_plugin.cpp
+#: modules/visual_script/visual_script_nodes.cpp
 msgid "Select"
 msgstr "Elekti"
 
@@ -3370,7 +3498,6 @@ msgid "Author"
 msgstr "Aŭtoroj"
 
 #: editor/editor_plugin_settings.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Status"
 msgstr ""
@@ -3516,6 +3643,10 @@ msgstr ""
 "La elektinta risurco (%s) ne kongruas ian atenditan tipon por ĉi tiu "
 "atributo (%s)."
 
+#: editor/editor_resource_picker.cpp
+msgid "Quick Load"
+msgstr ""
+
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
 msgid "Make Unique"
 msgstr "Farigi unikan"
@@ -3608,6 +3739,12 @@ msgstr "Scena dosierindiko:"
 #: editor/editor_sub_scene.cpp
 msgid "Import From Node:"
 msgstr "Enporti el nodo:"
+
+#. TRANSLATORS: %s refers to the name of a version control system (e.g. "Git").
+#: editor/editor_vcs_interface.cpp
+#, fuzzy
+msgid "%s Error"
+msgstr "Eraro!"
 
 #: editor/export_template_manager.cpp
 msgid "Open the folder containing these templates."
@@ -3825,6 +3962,16 @@ msgstr ""
 #, fuzzy
 msgid "Download from:"
 msgstr "Elŝuta eraro"
+
+#: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Open in Web Browser"
+msgstr "Ruli en foliumilo"
+
+#: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Copy Mirror URL"
+msgstr "Kopii eraro"
 
 #: editor/export_template_manager.cpp
 msgid "Download and Install"
@@ -4132,6 +4279,10 @@ msgstr "Trovi en dosierojn"
 msgid "Find:"
 msgstr "Trovi:"
 
+#: editor/find_in_files.cpp editor/rename_dialog.cpp
+msgid "Replace:"
+msgstr "Anstataŭigo:"
+
 #: editor/find_in_files.cpp
 msgid "Folder:"
 msgstr "Dosierujo:"
@@ -4157,6 +4308,11 @@ msgstr "Trovi..."
 msgid "Replace..."
 msgstr "Anstataŭigi..."
 
+#: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Replace in Files"
+msgstr "Anstataŭigi Ĉiujn"
+
 #: editor/find_in_files.cpp
 msgid "Find: "
 msgstr "Trovi: "
@@ -4166,8 +4322,9 @@ msgid "Replace: "
 msgstr "Anstataŭigi: "
 
 #: editor/find_in_files.cpp
-msgid "Replace all (no undo)"
-msgstr "Anstataŭigi ciujn (senrevene)"
+#, fuzzy
+msgid "Replace All (NO UNDO)"
+msgstr "Anstataŭigi Ĉiujn"
 
 #: editor/find_in_files.cpp
 msgid "Searching..."
@@ -4349,16 +4506,24 @@ msgid "Clear Default for '%s'"
 msgstr "Vakigi defaŭlton por '%s'"
 
 #: editor/import_dock.cpp
+msgid "Reimport"
+msgstr "Reenporti"
+
+#: editor/import_dock.cpp
+msgid ""
+"You have pending changes that haven't been applied yet. Click Reimport to "
+"apply changes made to the import options.\n"
+"Selecting another resource in the FileSystem dock without clicking Reimport "
+"first will discard changes made in the Import dock."
+msgstr ""
+
+#: editor/import_dock.cpp
 msgid "Import As:"
 msgstr "Enporti kiel:"
 
 #: editor/import_dock.cpp
 msgid "Preset"
 msgstr "Antaŭagordo"
-
-#: editor/import_dock.cpp
-msgid "Reimport"
-msgstr "Reenporti"
 
 #: editor/import_dock.cpp
 msgid "Save Scenes, Re-Import, and Restart"
@@ -4375,6 +4540,12 @@ msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
 msgstr ""
 "AVERTO: Havaĵoj ekzistas ke uzis ĉi tiu risurcon, ili povas ĉesi ŝargi dece."
+
+#: editor/import_dock.cpp
+msgid ""
+"Select a resource file in the filesystem or in the inspector to adjust "
+"import settings."
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -4489,6 +4660,7 @@ msgid "Subfolder:"
 msgstr "Subdosierujo:"
 
 #: editor/plugin_config_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Author:"
 msgstr "Aŭtoro:"
 
@@ -5635,6 +5807,18 @@ msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr "Movi CanvasItem \"%s\" al (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Locked"
+msgstr "Ŝlosi elektiton"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Grouped"
+msgstr "Grupoj"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
 "Children of containers have their anchors and margins values overridden by "
 "their parent."
@@ -5830,6 +6014,11 @@ msgstr "Alt-klavo+ŝovado: Movi"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
+msgid "Alt+Drag: Scale selected node."
+msgstr "Alt-klavo+ŝovado: Movi"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "V: Set selected node's pivot position."
 msgstr "Forigi elektitan nodon aŭ transpason."
 
@@ -5859,6 +6048,10 @@ msgstr "Rotaciada reĝimo"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode"
 msgstr "Skalada reĝimo"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Shift: Scale proportionally."
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5957,8 +6150,20 @@ msgstr "Ŝlosi la elektitan objekton samloke (ne movebla)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Lock Selected Node(s)"
+msgstr "Ŝlosi elektiton"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unlock the selected object (can be moved)."
 msgstr "Malŝlosi la elektitan objekton (movebla)."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Unlock Selected Node(s)"
+msgstr "Malŝlosi elektiton"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5967,8 +6172,20 @@ msgstr "Certigu la infanojn de la objekto ne estas elekteblajn."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Group Selected Node(s)"
+msgstr "Grupigi elektiton"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Restores the object's children's ability to be selected."
 msgstr "Restaŭras la elekteblecon de la infanoj de la objekto."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Ungroup Selected Node(s)"
+msgstr "Malgrupigi elektiton"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Skeleton Options"
@@ -6148,6 +6365,7 @@ msgid "Zoom to 1600%"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Add %s"
 msgstr "Aldoni %s"
 
@@ -6584,7 +6802,11 @@ msgid "Remove Selected Item"
 msgstr ""
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-msgid "Import from Scene"
+msgid "Import from Scene (Ignore Transforms)"
+msgstr ""
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+msgid "Import from Scene (Apply Transforms)"
 msgstr ""
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
@@ -7172,6 +7394,15 @@ msgstr "Nombrado de generintaj punktoj:"
 msgid "Flip Portal"
 msgstr ""
 
+#: editor/plugins/room_manager_editor_plugin.cpp
+msgid "Occluder Set Transform"
+msgstr ""
+
+#: editor/plugins/room_manager_editor_plugin.cpp
+#, fuzzy
+msgid "Center Node"
+msgstr "Krei nodon"
+
 #: editor/plugins/root_motion_editor_plugin.cpp
 msgid "AnimationTree has no path set to an AnimationPlayer"
 msgstr ""
@@ -7304,12 +7535,14 @@ msgid "Move Down"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Next script"
-msgstr ""
+#, fuzzy
+msgid "Next Script"
+msgstr "Nova skripto"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Previous script"
-msgstr ""
+#, fuzzy
+msgid "Previous Script"
+msgstr "Antaŭa tabo"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "File"
@@ -7597,6 +7830,11 @@ msgid "Find in Files..."
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Replace in Files..."
+msgstr "Anstataŭigi..."
+
+#: editor/plugins/script_text_editor.cpp
 msgid "Contextual Help"
 msgstr "Kunteksta Helpo"
 
@@ -7656,11 +7894,11 @@ msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr ""
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Create Rest Pose from Bones"
+msgid "Set Rest Pose to Bones"
 msgstr ""
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Set Rest Pose to Bones"
+msgid "Create Rest Pose from Bones"
 msgstr ""
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
@@ -7668,12 +7906,14 @@ msgid "Skeleton2D"
 msgstr ""
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Make Rest Pose (From Bones)"
-msgstr ""
+#, fuzzy
+msgid "Reset to Rest Pose"
+msgstr "Rekomencigi al defaŭltoj"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Set Bones to Rest Pose"
-msgstr ""
+#, fuzzy
+msgid "Overwrite Rest Pose"
+msgstr "Superskribi"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 msgid "Create physical bones"
@@ -7697,6 +7937,68 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Perspective"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Top Orthogonal"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Top Perspective"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Bottom Orthogonal"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Perspective"
+msgstr "Malsupre maldekstre"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Left Orthogonal"
+msgstr "Maldekstra butono"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Left Perspective"
+msgstr "Malsupre maldekstre"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Right Orthogonal"
+msgstr "Dekstra butono"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Right Perspective"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Front Orthogonal"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Front Perspective"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Rear Orthogonal"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Rear Perspective"
+msgstr ""
+
+#. TRANSLATORS: This will be appended to the view name when Auto Orthogonal is enabled.
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid " [auto]"
+msgstr ""
+
+#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid " [portals active]"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -7816,15 +8118,7 @@ msgid "Bottom View."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Bottom"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Left View."
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Left"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -7832,23 +8126,11 @@ msgid "Right View."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Right"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Front View."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Front"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rear View."
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Rear"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -8049,6 +8331,26 @@ msgid "Right View"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Down"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Left"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Right"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View Up"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Orbit View 180"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Switch Perspective/Orthogonal View"
 msgstr ""
 
@@ -8067,6 +8369,19 @@ msgstr ""
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Toggle Freelook"
 msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Decrease Field of View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Increase Field of View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Reset Field of View to Default"
+msgstr "Rekomencigi al defaŭltoj"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8119,6 +8434,10 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Portal Culling"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "View Occlusion Culling"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -8187,8 +8506,9 @@ msgid "Post"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Nameless gizmo"
-msgstr ""
+#, fuzzy
+msgid "Unnamed Gizmo"
+msgstr "Sennoma projekto"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Mesh2D"
@@ -8440,19 +8760,6 @@ msgid "TextureRegion"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Colors"
-msgstr "Elekti koloron"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Fonts"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Icons"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Styleboxes"
 msgstr ""
 
@@ -8655,6 +8962,12 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"Select a theme type from the list to edit its items.\n"
+"You can add a custom type or import a type with its items from another theme."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
 msgid "Remove All Color Items"
 msgstr "Forigi elementon"
@@ -8683,6 +8996,12 @@ msgstr "Forigi elementon"
 #, fuzzy
 msgid "Remove All StyleBox Items"
 msgstr "Forigi elementon"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid ""
+"This theme type is empty.\n"
+"Add more items to it manually or by importing from another theme."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8822,6 +9141,30 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
+msgid "Add Type"
+msgstr "Tipo"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Filter the list of types or create a new custom type:"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Available Node-based types:"
+msgstr "Disponeblaj profiloj:"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Type name is empty!"
+msgstr "La dosiernomo estas malplena."
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Are you sure you want to create an empty type?"
+msgstr "Ĉu vi certe volas malfermi plurajn projektojn?"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Confirm Item Rename"
 msgstr "Agordi kapton"
 
@@ -8847,20 +9190,6 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
-msgid "Add Type"
-msgstr "Tipo"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Item Type"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Node Types:"
-msgstr "Nomo de nodo:"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Show Default"
 msgstr "Ŝargi defaŭlton"
 
@@ -8875,6 +9204,10 @@ msgstr "Redifinoj"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Override all default type items."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Item Type"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -9434,7 +9767,7 @@ msgid "TileSet"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No VCS addons are available."
+msgid "No VCS plugins are available."
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -9442,16 +9775,55 @@ msgid "Error"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No files added to stage"
+msgid ""
+"Remote settings are empty. VCS features that use the network may not work."
 msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "No commit message was provided."
+msgstr "Ne nomon provizis."
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "VCS Addon is not initialized"
+#, fuzzy
+msgid "Staged Changes"
+msgstr "Ŝanĝu"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Unstaged Changes"
+msgstr "Ŝanĝu"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Commit:"
+msgstr "Komunumo"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Date:"
 msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Subtitle:"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Do you want to remove the %s branch?"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Do you want to remove the %s remote?"
+msgstr "Ĉu vi certe volas malfermi plurajn projektojn?"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Apply"
+msgstr "Almeti rekomencigon"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Version Control System"
@@ -9462,7 +9834,37 @@ msgid "Initialize"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "Staging area"
+#, fuzzy
+msgid "Remote Login"
+msgstr "Forigi punkton"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Username"
+msgstr "Renomi"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Password"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "SSH Public Key Path"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Select SSH public key path"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "SSH Private Key Path"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Select SSH private key path"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "SSH Passphrase"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -9471,8 +9873,110 @@ msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
-msgid "Changes"
+msgid "Discard all changes"
+msgstr "Parametro ŝanĝiĝis"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Stage all changes"
+msgstr "Memoras lokajn ŝanĝojn..."
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Unstage all changes"
+msgstr "Parametro ŝanĝiĝis"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Commit Message"
 msgstr "Ŝanĝu"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Commit Changes"
+msgstr "Ŝanĝu"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Commit List"
+msgstr "Ŝanĝu"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Commit list size"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "10"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "20"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "30"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Branches"
+msgstr "Matĉoj:"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Create New Branch"
+msgstr "Krei novan projekton"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Branch"
+msgstr "Forigi animacian trakon"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Branch Name"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Remotes"
+msgstr "Fora"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Create New Remote"
+msgstr "Krei novan projekton"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Remote"
+msgstr "Forigi elementon"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Remote Name"
+msgstr "Fora "
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Remote URL"
+msgstr "Fora "
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Fetch"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Pull"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Push"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Force Push"
+msgstr "Risurca Vojo"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Modified"
@@ -9493,31 +9997,22 @@ msgid "Typechange"
 msgstr "Ŝanĝu"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
-msgid "Stage Selected"
-msgstr "Skali Elektaron"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
-msgid "Stage All"
-msgstr "Elektaro ĉiuj"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
-msgid "Commit Changes"
-msgstr "Ŝanĝu"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "View file diffs before committing them to the latest version"
+msgid "Unmerged"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No file diff is active"
+#, fuzzy
+msgid "View:"
+msgstr "Vido"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Split"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "Detect changes in file diff"
-msgstr ""
+#, fuzzy
+msgid "Unified"
+msgstr "Modifita"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only)"
@@ -10889,12 +11384,12 @@ msgid ""
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Key "
-msgstr "Klavo "
-
-#: editor/project_settings_editor.cpp
 msgid "Physical Key"
 msgstr ""
+
+#: editor/project_settings_editor.cpp
+msgid "Key "
+msgstr "Klavo "
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"
@@ -11280,10 +11775,6 @@ msgid "Batch Rename"
 msgstr "Renomi staple"
 
 #: editor/rename_dialog.cpp
-msgid "Replace:"
-msgstr "Anstataŭigo:"
-
-#: editor/rename_dialog.cpp
 msgid "Prefix:"
 msgstr "Prefikso:"
 
@@ -11561,6 +12052,20 @@ msgid ""
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"Can't save a branch which is a child of an already instantiated scene.\n"
+"To save this branch into its own scene, open the original scene, right click "
+"on this branch, and select \"Save Branch as Scene\"."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"Can't save a branch which is part of an inherited scene.\n"
+"To save this branch into its own scene, open the original scene, right click "
+"on this branch, and select \"Save Branch as Scene\"."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Save New Scene As..."
 msgstr "Konservi novan scenon kiel..."
 
@@ -11834,7 +12339,7 @@ msgstr "Renomi nodon"
 
 #: editor/scene_tree_editor.cpp
 msgid "Scene Tree (Nodes):"
-msgstr "Scena arbo (nodoj):"
+msgstr "Scenoarbo (nodoj):"
 
 #: editor/scene_tree_editor.cpp
 msgid "Node Configuration Warning!"
@@ -12088,6 +12593,7 @@ msgid "Export list to a CSV file"
 msgstr "Eksporti liston al CSV dosiero"
 
 #: editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_nodes.cpp
 msgid "Resource Path"
 msgstr "Risurca Vojo"
 
@@ -12207,6 +12713,23 @@ msgstr ""
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Ray Shape Length"
 msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Set Room Point Position"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Set Portal Point Position"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Set Occluder Sphere Radius"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Occluder Sphere Position"
+msgstr "Krei okludan plurlateron"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
@@ -12492,67 +13015,76 @@ msgstr ""
 msgid "Class name can't be a reserved keyword"
 msgstr ""
 
+#: modules/mono/csharp_script.cpp
+msgid "Build Solution"
+msgstr ""
+
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
 msgstr ""
 
-#: modules/recast/navigation_mesh_editor_plugin.cpp
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
+#: scene/3d/navigation_mesh_instance.cpp
+msgid "A NavigationMesh resource must be set or created for this node to work."
+msgstr ""
+
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
 msgid "Bake NavMesh"
 msgstr ""
 
-#: modules/recast/navigation_mesh_editor_plugin.cpp
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
 msgstr ""
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Setting up Configuration..."
 msgstr ""
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Calculating grid size..."
 msgstr ""
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Creating heightfield..."
 msgstr ""
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Marking walkable triangles..."
 msgstr ""
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Constructing compact heightfield..."
 msgstr ""
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Eroding walkable area..."
 msgstr ""
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Partitioning..."
 msgstr ""
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Creating contours..."
 msgstr ""
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Creating polymesh..."
 msgstr ""
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Converting to native navigation mesh..."
 msgstr ""
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Navigation Mesh Generator Setup:"
 msgstr ""
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Parsing Geometry..."
 msgstr ""
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Done!"
 msgstr ""
 
@@ -12909,6 +13441,40 @@ msgstr "Aktualigi"
 msgid "Edit Member"
 msgstr ""
 
+#: modules/visual_script/visual_script_expression.cpp
+#, fuzzy
+msgid "Expression"
+msgstr "Uzi regulesprimojn"
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Return"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+#, fuzzy
+msgid "Condition"
+msgstr "animacio"
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "if (cond) is:"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "While"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "while (cond):"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Iterator"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "for (elem) in (input):"
+msgstr ""
+
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
 msgstr ""
@@ -12919,6 +13485,86 @@ msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator became invalid: "
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Sequence"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+#, fuzzy
+msgid "in order:"
+msgstr "Renomas dosierujon:"
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Switch"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "'input' is:"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+#, fuzzy
+msgid "Type Cast"
+msgstr "Tipo"
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Is %s?"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "On %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "On Self"
+msgstr "Memo"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Subtract %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Multiply %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Divide %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "Mod %s"
+msgstr "Aldoni %s"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "ShiftLeft %s"
+msgstr "Agordis %s"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "ShiftRight %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "BitAnd %s"
+msgstr "Aldoni %s"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "BitOr %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "BitXor %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#: modules/visual_script/visual_script_nodes.cpp
+#: modules/visual_script/visual_script_property_selector.cpp
+msgid "Get %s"
 msgstr ""
 
 #: modules/visual_script/visual_script_func_nodes.cpp
@@ -12937,12 +13583,31 @@ msgstr ""
 msgid "Invalid index property name '%s' in node %s."
 msgstr ""
 
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "Emit %s"
+msgstr "Agordis %s"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Function"
+msgstr "Funkcioj:"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Compose Array"
+msgstr "Regrandigi Vicon"
+
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid argument of type: "
 msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid arguments: "
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "a if cond, else b"
 msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -12954,6 +13619,65 @@ msgid "VariableSet not found in script: "
 msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Preload"
+msgstr "Reŝargi"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Get Index"
+msgstr "Indekso:"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Set Index"
+msgstr "Defini stirilon"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Global Constant"
+msgstr "Konstanto"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Class Constant"
+msgstr "Konstanto"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Basic Constant"
+msgstr "Konstanto"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Math Constant"
+msgstr "Konstanto"
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "Get Engine Singleton"
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Get Scene Node"
+msgstr "Nova radiko de sceno"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Get Scene Tree"
+msgstr "Redaktado de scenoarbo"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Get Self"
+msgstr "Memo"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "CustomNode"
+msgstr "Eltondi nodo(j)n"
+
+#: modules/visual_script/visual_script_nodes.cpp
 msgid "Custom node has no _step() method, can't process graph."
 msgstr ""
 
@@ -12963,173 +13687,244 @@ msgid ""
 "(error)."
 msgstr ""
 
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "SubCall"
+msgstr "Alvokoj"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Construct %s"
+msgstr "Konstantoj"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Get Local Var"
+msgstr "Uzi lokan spacon"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Set Local Var"
+msgstr "Uzi lokan spacon"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Action %s"
+msgstr "Faro"
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "Deconstruct %s"
+msgstr ""
+
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search VisualScript"
 msgstr ""
 
-#: modules/visual_script/visual_script_property_selector.cpp
-msgid "Get %s"
+#: modules/visual_script/visual_script_yield_nodes.cpp
+msgid "Yield"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: modules/visual_script/visual_script_yield_nodes.cpp
+msgid "Wait"
+msgstr ""
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+#, fuzzy
+msgid "Next Frame"
+msgstr "Posta tabo"
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+#, fuzzy
+msgid "Next Physics Frame"
+msgstr "Fiziko-kadro %"
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+msgid "%s sec(s)"
+msgstr ""
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+#, fuzzy
+msgid "WaitSignal"
+msgstr "Signalo"
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+#, fuzzy
+msgid "WaitNodeSignal"
+msgstr "Signalo"
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+#, fuzzy
+msgid "WaitInstanceSignal"
+msgstr "Ekzemplodoni"
+
+#: platform/android/export/export_plugin.cpp
 msgid "Package name is missing."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Package segments must be of non-zero length."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "The character '%s' is not allowed in Android application package names."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "A digit cannot be the first character in a package segment."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "The character '%s' cannot be the first character in a package segment."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "The package must have at least one '.' separator."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Select device from the list"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Running on %s"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Exporting APK..."
 msgstr "Eksporti..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Uninstalling..."
 msgstr "Malinstali"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Installing to device, please wait..."
 msgstr "Ŝargas, bonvolu atendi..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not install to device: %s"
 msgstr "Ne eble komencas subprocezon!"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Running on device..."
 msgstr "Rulas propran skripton..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not execute on device."
 msgstr "Ne povis krei dosierujon."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unable to find the 'apksigner' tool."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Either Debug Keystore, Debug User AND Debug Password settings must be "
 "configured OR none of them."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Either Release Keystore, Release User AND Release Password settings must be "
 "configured OR none of them."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "A valid Android SDK path is required in Editor Settings."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid Android SDK path in Editor Settings."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Missing 'platform-tools' directory!"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unable to find Android SDK platform-tools' adb command."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Please check in the Android SDK directory specified in Editor Settings."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Missing 'build-tools' directory!"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid public key for APK expansion."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid package name:"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
-"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
-"\"."
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"or \"OpenXR\"."
 msgstr ""
 
-#: platform/android/export/export.cpp
-msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+#: platform/android/export/export_plugin.cpp
+msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
 
-#: platform/android/export/export.cpp
-msgid ""
-"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
-msgstr ""
-
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
+"enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "'apksigner' could not be found.\n"
 "Please check the command is available in the Android SDK build-tools "
@@ -13137,61 +13932,61 @@ msgid ""
 "The resulting %s is unsigned."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Signing debug %s..."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Signing release %s..."
 msgstr ""
 "Skanas dosierojn,\n"
 "Bonvolu atendi..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Could not find keystore, unable to export."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "'apksigner' returned with error #%d"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Verifying %s..."
 msgstr "Aldonas %s..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "'apksigner' verification of %s failed."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Exporting for Android"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "APK Expansion not compatible with Android App Bundle."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Unsupported export format!\n"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Android build version mismatch:\n"
 "   Template installed: %s\n"
@@ -13199,57 +13994,57 @@ msgid ""
 "Please reinstall Android build template from 'Project' menu."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Unable to overwrite res://android/build/res/*.xml files with project name"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not export project files to gradle project\n"
 msgstr "Ne eblas redakti project.godot en projekta dosierindiko."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Could not write expansion package file!"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Building Android Project (gradle)"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Building of Android project failed, check output for the error.\n"
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Moving output"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Unable to copy and rename export file, check gradle project directory for "
 "outputs."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Package not found: %s"
 msgstr "Enhavo de pakaĵo:"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Creating APK..."
 msgstr "Konektas..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Could not find template APK to export:\n"
 "%s"
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid ""
 "Missing libraries in the export template for the selected architectures: "
 "%s.\n"
@@ -13257,21 +14052,21 @@ msgid ""
 "architectures in the export preset."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Adding files..."
 msgstr "Aldonas %s..."
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not export project files"
 msgstr "Ne eble komencas subprocezon!"
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Aligning APK..."
 msgstr ""
 
-#: platform/android/export/export.cpp
+#: platform/android/export/export_plugin.cpp
 msgid "Could not unzip temporary unaligned APK."
 msgstr ""
 
@@ -13510,6 +14305,16 @@ msgstr ""
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr ""
 
+#: scene/2d/navigation_agent_2d.cpp
+msgid "The NavigationAgent2D can be used only under a Node2D node."
+msgstr ""
+
+#: scene/2d/navigation_obstacle_2d.cpp
+msgid ""
+"The NavigationObstacle2D only serves to provide collision avoidance to a "
+"Node2D object."
+msgstr ""
+
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
@@ -13531,7 +14336,16 @@ msgstr ""
 msgid ""
 "GPU-based particles are not supported by the GLES2 video driver.\n"
 "Use the CPUParticles2D node instead. You can use the \"Convert to "
-"CPUParticles\" option for this purpose."
+"CPUParticles2D\" toolbar option for this purpose."
+msgstr ""
+
+#: scene/2d/particles_2d.cpp
+msgid ""
+"On macOS, Particles2D rendering is much slower than CPUParticles2D due to "
+"transform feedback being implemented on the CPU instead of the GPU.\n"
+"Consider using CPUParticles2D instead when targeting macOS.\n"
+"You can use the \"Convert to CPUParticles2D\" toolbar option for this "
+"purpose."
 msgstr ""
 
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
@@ -13716,21 +14530,43 @@ msgstr ""
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr ""
 
-#: scene/3d/navigation_mesh.cpp
-msgid "A NavigationMesh resource must be set or created for this node to work."
+#: scene/3d/navigation_agent.cpp
+msgid "The NavigationAgent can be used only under a spatial node."
 msgstr ""
 
-#: scene/3d/navigation_mesh.cpp
+#: scene/3d/navigation_mesh_instance.cpp
 msgid ""
 "NavigationMeshInstance must be a child or grandchild to a Navigation node. "
 "It only provides navigation data."
+msgstr ""
+
+#: scene/3d/navigation_obstacle.cpp
+msgid ""
+"The NavigationObstacle only serves to provide collision avoidance to a "
+"spatial object."
+msgstr ""
+
+#: scene/3d/occluder.cpp
+msgid "No shape is set."
+msgstr ""
+
+#: scene/3d/occluder.cpp
+msgid "Only uniform scales are supported."
 msgstr ""
 
 #: scene/3d/particles.cpp
 msgid ""
 "GPU-based particles are not supported by the GLES2 video driver.\n"
 "Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
-"\" option for this purpose."
+"\" toolbar option for this purpose."
+msgstr ""
+
+#: scene/3d/particles.cpp
+msgid ""
+"On macOS, Particles rendering is much slower than CPUParticles due to "
+"transform feedback being implemented on the CPU instead of the GPU.\n"
+"Consider using CPUParticles instead when targeting macOS.\n"
+"You can use the \"Convert to CPUParticles\" toolbar option for this purpose."
 msgstr ""
 
 #: scene/3d/particles.cpp
@@ -13837,6 +14673,42 @@ msgstr ""
 
 #: scene/3d/room_manager.cpp
 msgid "There should only be one RoomManager in the SceneTree."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"RoomList path is invalid.\n"
+"Please check the RoomList branch has been assigned in the RoomManager."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "RoomList contains no Rooms, aborting."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "Misnamed nodes detected, check output log for details. Aborting."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid "Portal link room not found, check output log for details."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Portal autolink failed, check output log for details.\n"
+"Check the portal is facing outwards from the source room."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Room overlap detected, cameras may work incorrectly in overlapping area.\n"
+"Check output log for details."
+msgstr ""
+
+#: scene/3d/room_manager.cpp
+msgid ""
+"Error calculating room bounds.\n"
+"Ensure all rooms contain geometry or manual bounds."
 msgstr ""
 
 #: scene/3d/soft_body.cpp
@@ -13979,6 +14851,14 @@ msgstr ""
 msgid "Enable grid minimap."
 msgstr ""
 
+#: scene/gui/nine_patch_rect.cpp
+msgid ""
+"The Tile and Tile Fit options for Axis Stretch properties are only effective "
+"when using the GLES3 rendering backend.\n"
+"The GLES2 backend is currently in use, so these modes will act like Stretch "
+"instead."
+msgstr ""
+
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -14007,6 +14887,14 @@ msgid ""
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
 
+#: scene/main/timer.cpp
+msgid ""
+"Very low timer wait times (< 0.05 seconds) may behave in significantly "
+"different ways depending on the rendered or physics frame rate.\n"
+"Consider using a script's process loop instead of relying on a Timer for "
+"very low wait times."
+msgstr ""
+
 #: scene/main/viewport.cpp
 msgid ""
 "This viewport is not set as render target. If you intend for it to display "
@@ -14016,7 +14904,13 @@ msgid ""
 msgstr ""
 
 #: scene/main/viewport.cpp
-msgid "Viewport size must be greater than 0 to render anything."
+msgid ""
+"The Viewport size must be greater than or equal to 2 pixels on both "
+"dimensions to render anything."
+msgstr ""
+
+#: scene/resources/occluder_shape.cpp
+msgid "OccluderShapeSphere Set Spheres"
 msgstr ""
 
 #: scene/resources/visual_shader_nodes.cpp
@@ -14056,10 +14950,6 @@ msgid ""
 msgstr ""
 
 #: servers/visual/shader_language.cpp
-msgid "Fragment-stage varying could not been accessed in custom function!"
-msgstr ""
-
-#: servers/visual/shader_language.cpp
 msgid "Assignment to function."
 msgstr ""
 
@@ -14070,161 +14960,3 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstantoj ne povas esti modifitaj."
-
-#~ msgid "Singleton"
-#~ msgstr "Unuopo"
-
-#~ msgid "Erase profile '%s'? (no undo)"
-#~ msgstr "Viŝi profilon '%s'? (ne malfaro)"
-
-#~ msgid "Enabled Properties:"
-#~ msgstr "Ŝaltitaj atributoj:"
-
-#~ msgid "Unset"
-#~ msgstr "Malagordi"
-
-#~ msgid "Class Options"
-#~ msgstr "Agordoj de klaso"
-
-#~ msgid "Set"
-#~ msgstr "Agordi"
-
-#~ msgid "Saved %s modified resource(s)."
-#~ msgstr "Konservis %s modifikita(j)n risurco(j)n."
-
-#~ msgid "Q&A"
-#~ msgstr "Demandoj kaj respondoj"
-
-#~ msgid "Status:"
-#~ msgstr "Stato:"
-
-#~ msgid "Edit:"
-#~ msgstr "Redakti:"
-
-#~ msgid "Redownload"
-#~ msgstr "Reelŝuti"
-
-#~ msgid "(Installed)"
-#~ msgstr "(Instalita)"
-
-#~ msgid "(Missing)"
-#~ msgstr "(Manka)"
-
-#~ msgid "Request Failed."
-#~ msgstr "Demando eraris."
-
-#~ msgid "Redirect Loop."
-#~ msgstr "Alidirekta iteracio."
-
-#~ msgid "Download Complete."
-#~ msgstr "Elŝuto kompleta."
-
-#~ msgid "Remove Template"
-#~ msgstr "Forigi ŝablonon"
-
-#~ msgid "Download Templates"
-#~ msgstr "Elŝutilo de ŝablonoj"
-
-#~ msgid "Select mirror from list: (Shift+Click: Open in Browser)"
-#~ msgstr ""
-#~ "Elekti spegulon el listo: (Majuskliga klavo+Alklako: Malfermi en "
-#~ "retumilon)"
-
-#~ msgid "Move to Trash"
-#~ msgstr "Movi al rubujo"
-
-#~ msgid "Expand All Properties"
-#~ msgstr "Etendi ĉiajn atributojn"
-
-#~ msgid "Copy Params"
-#~ msgstr "Kopii parametrojn"
-
-#~ msgid "Open in Help"
-#~ msgstr "Malfermi en helpo"
-
-#~ msgid ""
-#~ "Game Camera Override\n"
-#~ "No game instance running."
-#~ msgstr ""
-#~ "Transpaso de la luda fotilo\n"
-#~ "Ne luda ekzemplo ruliĝas."
-
-#~ msgid "Drag: Rotate"
-#~ msgstr "Ŝovado: Rotacii"
-
-#~ msgid "Press 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving)."
-#~ msgstr ""
-#~ "Premi 'V' por ŝanĝi pivoton, 'Majuskliga klavo+V' por ŝovi pivoton (dum "
-#~ "movado)."
-
-#~ msgid "Alt+RMB: Depth list selection"
-#~ msgstr "Alt-klavo+dekstra musbutono: Elektado el profunda listo"
-
-#~ msgid "Templates"
-#~ msgstr "Ŝablonoj"
-
-#~ msgid "Add Remapped Path"
-#~ msgstr "Aldoni dosierindikon de remapo"
-
-#~ msgid "An animation player can't animate itself, only other players."
-#~ msgstr "Animado legilo ne volas animi si mem, nur aliajn ludantojn."
-
-#~ msgid "Clipboard is empty"
-#~ msgstr "Tondujo estas malplena"
-
-#~ msgid "No"
-#~ msgstr "Ne"
-
-#, fuzzy
-#~ msgid "This scene has never been saved. Save before running?"
-#~ msgstr "Ĉi tiu sceno konservis neniam. Konservi antaŭ ruli?"
-
-#~ msgid "Search complete"
-#~ msgstr "Serĉo finiĝis"
-
-#, fuzzy
-#~ msgid "Default editor layout overridden."
-#~ msgstr "Automatan aranĝon de editilo transpasis."
-
-#, fuzzy
-#~ msgid "Pack File"
-#~ msgstr "Malfermi dosieron"
-
-#~ msgid "FileSystem and Import Docks"
-#~ msgstr "Dosiersistema kaj enporta dokoj"
-
-#~ msgid ""
-#~ "When exporting or deploying, the resulting executable will attempt to "
-#~ "connect to the IP of this computer in order to be debugged."
-#~ msgstr ""
-#~ "Kiam eksportas aŭ malfaldas, la rezulta plenumebla provos konekti al la "
-#~ "IP de ĉi tiu komputilo por estos sencimigita."
-
-#~ msgid "Revert"
-#~ msgstr "Malfari"
-
-#~ msgid "This action cannot be undone. Revert anyway?"
-#~ msgstr "Tiun ĉi agon ne povos malfari. Certe daŭrigi?"
-
-#, fuzzy
-#~ msgid "Help improve the Godot documentation by giving feedback."
-#~ msgstr "Helpi plibonigi la Godotan dokumentadon per doni reagon."
-
-#~ msgid "Replaced %d occurrence(s)."
-#~ msgstr "Anstataŭigis %d apero(j)n."
-
-#, fuzzy
-#~ msgid "Brief Description"
-#~ msgstr "Priskribo:"
-
-#~ msgid "Input"
-#~ msgstr "Enigo"
-
-#~ msgid "No Matches"
-#~ msgstr "Ne Rezultoj"
-
-#~ msgid "Unknown font format."
-#~ msgstr "Nekonata tipara formo."
-
-#~ msgid "Invalid font size."
-#~ msgstr "Nevalida tipara grando."

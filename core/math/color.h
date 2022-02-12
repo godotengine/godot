@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@
 #include "core/math/math_funcs.h"
 #include "core/string/ustring.h"
 
-struct Color {
+struct _NO_DISCARD_ Color {
 	union {
 		struct {
 			float r;
@@ -51,6 +51,7 @@ struct Color {
 	uint64_t to_rgba64() const;
 	uint64_t to_argb64() const;
 	uint64_t to_abgr64() const;
+	String to_html(bool p_alpha = true) const;
 	float get_h() const;
 	float get_s() const;
 	float get_v() const;
@@ -92,6 +93,10 @@ struct Color {
 	Color clamp(const Color &p_min = Color(0, 0, 0, 0), const Color &p_max = Color(1, 1, 1, 1)) const;
 	void invert();
 	Color inverted() const;
+
+	_FORCE_INLINE_ float get_luminance() const {
+		return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+	}
 
 	_FORCE_INLINE_ Color lerp(const Color &p_to, float p_weight) const {
 		Color res = *this;
@@ -189,8 +194,7 @@ struct Color {
 	static String get_named_color_name(int p_idx);
 	static Color get_named_color(int p_idx);
 	static Color from_string(const String &p_string, const Color &p_default);
-	String to_html(bool p_alpha = true) const;
-	Color from_hsv(float p_h, float p_s, float p_v, float p_a) const;
+	static Color from_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0);
 	static Color from_rgbe9995(uint32_t p_rgbe);
 
 	_FORCE_INLINE_ bool operator<(const Color &p_color) const; //used in set keys

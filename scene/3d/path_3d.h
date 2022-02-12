@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -83,17 +83,17 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_offset(float p_offset);
-	float get_offset() const;
+	void set_offset(real_t p_offset);
+	real_t get_offset() const;
 
-	void set_h_offset(float p_h_offset);
-	float get_h_offset() const;
+	void set_h_offset(real_t p_h_offset);
+	real_t get_h_offset() const;
 
-	void set_v_offset(float p_v_offset);
-	float get_v_offset() const;
+	void set_v_offset(real_t p_v_offset);
+	real_t get_v_offset() const;
 
-	void set_unit_offset(float p_unit_offset);
-	float get_unit_offset() const;
+	void set_unit_offset(real_t p_unit_offset);
+	real_t get_unit_offset() const;
 
 	void set_loop(bool p_loop);
 	bool has_loop() const;

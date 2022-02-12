@@ -28,7 +28,7 @@
 		Animations are just data containers, and must be added to nodes such as an [AnimationPlayer] to be played back. Animation tracks have different types, each with its own set of dedicated methods. Check [enum TrackType] to see available types.
 	</description>
 	<tutorials>
-		<link title="Animation tutorial index">https://docs.godotengine.org/en/latest/tutorials/animation/index.html</link>
+		<link title="Animation documentation index">$DOCS_URL/tutorials/animation/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_track">
@@ -130,6 +130,14 @@
 				Sets the stream of the key identified by [code]key_idx[/code] to value [code]stream[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
 			</description>
 		</method>
+		<method name="bezier_track_get_key_handle_mode" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="track_idx" type="int" />
+			<argument index="1" name="key_idx" type="int" />
+			<description>
+				Returns the handle mode of the key identified by [code]index[/code]. See [enum HandleMode] for possible values. The [code]track_idx[/code] must be the index of a Bezier Track.
+			</description>
+		</method>
 		<method name="bezier_track_get_key_in_handle" qualifiers="const">
 			<return type="Vector2" />
 			<argument index="0" name="track_idx" type="int" />
@@ -161,6 +169,7 @@
 			<argument index="2" name="value" type="float" />
 			<argument index="3" name="in_handle" type="Vector2" default="Vector2(0, 0)" />
 			<argument index="4" name="out_handle" type="Vector2" default="Vector2(0, 0)" />
+			<argument index="5" name="handle_mode" type="int" enum="Animation.HandleMode" default="1" />
 			<description>
 				Inserts a Bezier Track key at the given [code]time[/code] in seconds. The [code]track_idx[/code] must be the index of a Bezier Track.
 				[code]in_handle[/code] is the left-side weight of the added Bezier curve point, [code]out_handle[/code] is the right-side one, while [code]value[/code] is the actual value at this point.
@@ -174,11 +183,22 @@
 				Returns the interpolated value at the given [code]time[/code] (in seconds). The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
+		<method name="bezier_track_set_key_handle_mode">
+			<return type="void" />
+			<argument index="0" name="track_idx" type="int" />
+			<argument index="1" name="key_idx" type="int" />
+			<argument index="2" name="key_handle_mode" type="int" enum="Animation.HandleMode" />
+			<argument index="3" name="balanced_value_time_ratio" type="float" default="1.0" />
+			<description>
+				Changes the handle mode of the keyframe at the given [code]index[/code]. See [enum HandleMode] for possible values. The [code]track_idx[/code] must be the index of a Bezier Track.
+			</description>
+		</method>
 		<method name="bezier_track_set_key_in_handle">
 			<return type="void" />
 			<argument index="0" name="track_idx" type="int" />
 			<argument index="1" name="key_idx" type="int" />
 			<argument index="2" name="in_handle" type="Vector2" />
+			<argument index="3" name="balanced_value_time_ratio" type="float" default="1.0" />
 			<description>
 				Sets the in handle of the key identified by [code]key_idx[/code] to value [code]in_handle[/code]. The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
@@ -188,6 +208,7 @@
 			<argument index="0" name="track_idx" type="int" />
 			<argument index="1" name="key_idx" type="int" />
 			<argument index="2" name="out_handle" type="Vector2" />
+			<argument index="3" name="balanced_value_time_ratio" type="float" default="1.0" />
 			<description>
 				Sets the out handle of the key identified by [code]key_idx[/code] to value [code]out_handle[/code]. The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
@@ -201,10 +222,26 @@
 				Sets the value of the key identified by [code]key_idx[/code] to the given value. The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
+		<method name="blend_shape_track_insert_key">
+			<return type="int" />
+			<argument index="0" name="track_idx" type="int" />
+			<argument index="1" name="time" type="float" />
+			<argument index="2" name="amount" type="float" />
+			<description>
+			</description>
+		</method>
 		<method name="clear">
 			<return type="void" />
 			<description>
 				Clear the animation (clear all tracks and reset all).
+			</description>
+		</method>
+		<method name="compress">
+			<return type="void" />
+			<argument index="0" name="page_size" type="int" default="8192" />
+			<argument index="1" name="fps" type="int" default="120" />
+			<argument index="2" name="split_tolerance" type="float" default="4.0" />
+			<description>
 			</description>
 		</method>
 		<method name="copy_track">
@@ -218,6 +255,7 @@
 		<method name="find_track" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="path" type="NodePath" />
+			<argument index="1" name="type" type="int" enum="Animation.TrackType" />
 			<description>
 				Returns the index of the specified track. If the track is not found, return -1.
 			</description>
@@ -253,11 +291,35 @@
 				Returns the arguments values to be called on a method track for a given key in a given track.
 			</description>
 		</method>
+		<method name="position_track_insert_key">
+			<return type="int" />
+			<argument index="0" name="track_idx" type="int" />
+			<argument index="1" name="time" type="float" />
+			<argument index="2" name="position" type="Vector3" />
+			<description>
+			</description>
+		</method>
 		<method name="remove_track">
 			<return type="void" />
 			<argument index="0" name="track_idx" type="int" />
 			<description>
 				Removes a track by specifying the track index.
+			</description>
+		</method>
+		<method name="rotation_track_insert_key">
+			<return type="int" />
+			<argument index="0" name="track_idx" type="int" />
+			<argument index="1" name="time" type="float" />
+			<argument index="2" name="rotation" type="Quaternion" />
+			<description>
+			</description>
+		</method>
+		<method name="scale_track_insert_key">
+			<return type="int" />
+			<argument index="0" name="track_idx" type="int" />
+			<argument index="1" name="time" type="float" />
+			<argument index="2" name="scale" type="Vector3" />
+			<description>
 			</description>
 		</method>
 		<method name="track_find_key" qualifiers="const">
@@ -336,6 +398,12 @@
 			<argument index="3" name="transition" type="float" default="1" />
 			<description>
 				Insert a generic key in a given track.
+			</description>
+		</method>
+		<method name="track_is_compressed" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="track_idx" type="int" />
+			<description>
 			</description>
 		</method>
 		<method name="track_is_enabled" qualifiers="const">
@@ -466,25 +534,6 @@
 				Swaps the track [code]idx[/code]'s index position with the track [code]with_idx[/code].
 			</description>
 		</method>
-		<method name="transform_track_insert_key">
-			<return type="int" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="time" type="float" />
-			<argument index="2" name="location" type="Vector3" />
-			<argument index="3" name="rotation" type="Quaternion" />
-			<argument index="4" name="scale" type="Vector3" />
-			<description>
-				Insert a transform key for a transform track.
-			</description>
-		</method>
-		<method name="transform_track_interpolate" qualifiers="const">
-			<return type="Array" />
-			<argument index="0" name="track_idx" type="int" />
-			<argument index="1" name="time_sec" type="float" />
-			<description>
-				Returns the interpolated value of a transform track at a given time (in seconds). An array consisting of 3 elements: position ([Vector3]), rotation ([Quaternion]) and scale ([Vector3]).
-			</description>
-		</method>
 		<method name="value_track_get_key_indices" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<argument index="0" name="track_idx" type="int" />
@@ -523,8 +572,8 @@
 			The total length of the animation (in seconds).
 			[b]Note:[/b] Length is not delimited by the last key, as this one may be before or after the end to ensure correct interpolation and looping.
 		</member>
-		<member name="loop" type="bool" setter="set_loop" getter="has_loop" default="false">
-			A flag indicating that the animation must loop. This is used for correct interpolation of animation cycles, and for hinting the player that it must restart the animation.
+		<member name="loop_mode" type="int" setter="set_loop_mode" getter="get_loop_mode" enum="Animation.LoopMode" default="0">
+			Determines the behavior of both ends of the animation timeline during animation playback. This is used for correct interpolation of animation cycles, and for hinting the player that it must restart the animation.
 		</member>
 		<member name="step" type="float" setter="set_step" getter="get_step" default="0.1">
 			The animation step value.
@@ -541,19 +590,24 @@
 		<constant name="TYPE_VALUE" value="0" enum="TrackType">
 			Value tracks set values in node properties, but only those which can be Interpolated.
 		</constant>
-		<constant name="TYPE_TRANSFORM3D" value="1" enum="TrackType">
-			Transform3D tracks are used to change node local transforms or skeleton pose bones of 3D nodes. Transitions are interpolated.
+		<constant name="TYPE_POSITION_3D" value="1" enum="TrackType">
 		</constant>
-		<constant name="TYPE_METHOD" value="2" enum="TrackType">
+		<constant name="TYPE_ROTATION_3D" value="2" enum="TrackType">
+		</constant>
+		<constant name="TYPE_SCALE_3D" value="3" enum="TrackType">
+		</constant>
+		<constant name="TYPE_BLEND_SHAPE" value="4" enum="TrackType">
+		</constant>
+		<constant name="TYPE_METHOD" value="5" enum="TrackType">
 			Method tracks call functions with given arguments per key.
 		</constant>
-		<constant name="TYPE_BEZIER" value="3" enum="TrackType">
+		<constant name="TYPE_BEZIER" value="6" enum="TrackType">
 			Bezier tracks are used to interpolate a value using custom curves. They can also be used to animate sub-properties of vectors and colors (e.g. alpha value of a [Color]).
 		</constant>
-		<constant name="TYPE_AUDIO" value="4" enum="TrackType">
+		<constant name="TYPE_AUDIO" value="7" enum="TrackType">
 			Audio tracks are used to play an audio stream with either type of [AudioStreamPlayer]. The stream can be trimmed and previewed in the animation.
 		</constant>
-		<constant name="TYPE_ANIMATION" value="5" enum="TrackType">
+		<constant name="TYPE_ANIMATION" value="8" enum="TrackType">
 			Animation tracks play animations in other [AnimationPlayer] nodes.
 		</constant>
 		<constant name="INTERPOLATION_NEAREST" value="0" enum="InterpolationType">
@@ -576,6 +630,21 @@
 		</constant>
 		<constant name="UPDATE_CAPTURE" value="3" enum="UpdateMode">
 			Same as linear interpolation, but also interpolates from the current value (i.e. dynamically at runtime) if the first key isn't at 0 seconds.
+		</constant>
+		<constant name="LOOP_NONE" value="0" enum="LoopMode">
+			At both ends of the animation, the animation will stop playing.
+		</constant>
+		<constant name="LOOP_LINEAR" value="1" enum="LoopMode">
+			At both ends of the animation, the animation will be repeated without changing the playback direction.
+		</constant>
+		<constant name="LOOP_PINGPONG" value="2" enum="LoopMode">
+			Repeats playback and reverse playback at both ends of the animation.
+		</constant>
+		<constant name="HANDLE_MODE_FREE" value="0" enum="HandleMode">
+			Assigning the free handle mode to a Bezier Track's keyframe allows you to edit the keyframe's left and right handles independently from one another.
+		</constant>
+		<constant name="HANDLE_MODE_BALANCED" value="1" enum="HandleMode">
+			Assigning the balanced handle mode to a Bezier Track's keyframe makes it so the two handles of the keyframe always stay aligned when changing either the keyframe's left or right handle.
 		</constant>
 	</constants>
 </class>

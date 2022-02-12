@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -83,7 +83,7 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 	}
 	img->convert(Image::FORMAT_RGBA8);
 	ERR_FAIL_COND(img->get_format() != Image::FORMAT_RGBA8);
-	Size2i s = Size2(img->get_width(), img->get_height());
+	Size2i s = img->get_size();
 	ERR_FAIL_COND(s.width == 0 || s.height == 0);
 
 	Vector<Point2> valid_positions;

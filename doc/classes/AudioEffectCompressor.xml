@@ -14,8 +14,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="attack_us" type="float" setter="set_attack_us" getter="get_attack_us" default="20.0">
 			Compressor's reaction time when the signal exceeds the threshold, in microseconds. Value can range from 20 to 2000.
@@ -39,6 +37,4 @@
 			The level above which compression is applied to the audio. Value can range from -60 to 0.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

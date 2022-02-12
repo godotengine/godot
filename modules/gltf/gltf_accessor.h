@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,9 @@
 #define GLTF_ACCESSOR_H
 
 #include "core/io/resource.h"
+
 #include "gltf_document.h"
+#include "gltf_document_extension.h"
 
 struct GLTFAccessor : public Resource {
 	GDCLASS(GLTFAccessor, Resource);
@@ -44,8 +46,7 @@ private:
 	int component_type = 0;
 	bool normalized = false;
 	int count = 0;
-	GLTFDocument::GLTFType
-			type = GLTFDocument::TYPE_SCALAR;
+	GLTFDocument::GLTFType type = GLTFDocument::TYPE_SCALAR;
 	Vector<double> min;
 	Vector<double> max;
 	int sparse_count = 0;

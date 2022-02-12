@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,16 +49,11 @@ public:
 private:
 	typedef DebuggerMarshalls::OutputError ErrorMessage;
 
-	struct NetworkProfiler;
-	struct ServersProfiler;
-	struct ScriptsProfiler;
-	struct VisualProfiler;
-	struct PerformanceProfiler;
+	class MultiplayerProfiler;
+	class PerformanceProfiler;
 
-	NetworkProfiler *network_profiler = nullptr;
-	ServersProfiler *servers_profiler = nullptr;
-	VisualProfiler *visual_profiler = nullptr;
-	PerformanceProfiler *performance_profiler = nullptr;
+	Ref<MultiplayerProfiler> multiplayer_profiler;
+	Ref<PerformanceProfiler> performance_profiler;
 
 	Ref<RemoteDebuggerPeer> peer;
 
@@ -89,7 +84,7 @@ private:
 	PrintHandlerList phl;
 	static void _print_handler(void *p_this, const String &p_string, bool p_error);
 	ErrorHandlerList eh;
-	static void _err_handler(void *p_this, const char *p_func, const char *p_file, int p_line, const char *p_err, const char *p_descr, ErrorHandlerType p_type);
+	static void _err_handler(void *p_this, const char *p_func, const char *p_file, int p_line, const char *p_err, const char *p_descr, bool p_editor_notify, ErrorHandlerType p_type);
 
 	ErrorMessage _create_overflow_error(const String &p_what, const String &p_descr);
 	Error _put_msg(String p_message, Array p_data);
@@ -97,7 +92,6 @@ private:
 	bool is_peer_connected() { return peer->is_peer_connected(); }
 	void flush_output();
 
-	void _send_resource_usage();
 	void _send_stack_vars(List<String> &p_names, List<Variant> &p_vals, int p_type);
 
 	Error _profiler_capture(const String &p_cmd, const Array &p_data, bool &r_captured);
@@ -111,7 +105,7 @@ public:
 	// Overrides
 	void poll_events(bool p_is_idle);
 	void send_message(const String &p_message, const Array &p_args);
-	void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, ErrorHandlerType p_type);
+	void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type);
 	void debug(bool p_can_continue = true, bool p_is_error_breakpoint = false);
 
 	RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,6 +45,7 @@
 #include <fcntl.h>
 #include <io.h>
 #include <stdio.h>
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 class OS_UWP : public OS {
@@ -58,7 +59,7 @@ public:
 		bool alt = false, shift = false, control = false;
 		MessageType type = KEY_EVENT_MESSAGE;
 		bool pressed = false;
-		unsigned int keycode = 0;
+		Key keycode = Key::NONE;
 		unsigned int physical_keycode = 0;
 		unsigned int unicode = 0;
 		bool echo = false;
@@ -106,7 +107,7 @@ private:
 	bool control_mem;
 	bool meta_mem;
 	bool force_quit;
-	MouseButton last_button_state = MOUSE_BUTTON_NONE;
+	MouseButton last_button_state = MouseButton::NONE;
 
 	CursorShape cursor_shape;
 
@@ -115,11 +116,6 @@ private:
 	JoypadUWP ^ joypad;
 
 	Windows::System::Display::DisplayRequest ^ display_request;
-
-	void _post_dpad(DWORD p_dpad, int p_device, bool p_pressed);
-
-	void _drag_event(int idx, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	void _touch_event(int idx, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	ref class ManagedType {
 	public:
@@ -189,8 +185,8 @@ public:
 
 	virtual String get_name() const;
 
-	virtual Date get_date(bool utc) const;
-	virtual Time get_time(bool utc) const;
+	virtual Date get_date(bool p_utc) const;
+	virtual Time get_time(bool p_utc) const;
 	virtual TimeZoneInfo get_time_zone_info() const;
 	virtual uint64_t get_unix_time() const;
 
@@ -199,8 +195,8 @@ public:
 	virtual void delay_usec(uint32_t p_usec) const;
 	virtual uint64_t get_ticks_usec() const;
 
-	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr);
-	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr);
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false);
+	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false);
 	virtual Error kill(const ProcessID &p_pid);
 
 	virtual bool has_environment(const String &p_var) const;

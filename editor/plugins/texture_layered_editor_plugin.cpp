@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,11 +34,11 @@
 #include "core/io/resource_loader.h"
 #include "editor/editor_settings.h"
 
-void TextureLayeredEditor::_gui_input(Ref<InputEvent> p_event) {
+void TextureLayeredEditor::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
+	if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
 		y_rot += -mm->get_relative().x * 0.01;
 		x_rot += mm->get_relative().y * 0.01;
 		_update_material();
@@ -106,6 +106,8 @@ void TextureLayeredEditor::_update_material() {
 void TextureLayeredEditor::_make_shaders() {
 	shaders[0].instantiate();
 	shaders[0]->set_code(R"(
+// TextureLayeredEditor preview shader (2D array).
+
 shader_type canvas_item;
 
 uniform sampler2DArray tex;
@@ -118,6 +120,8 @@ void fragment() {
 
 	shaders[1].instantiate();
 	shaders[1]->set_code(R"(
+// TextureLayeredEditor preview shader (cubemap).
+
 shader_type canvas_item;
 
 uniform samplerCube tex;
@@ -132,6 +136,8 @@ void fragment() {
 
 	shaders[2].instantiate();
 	shaders[2]->set_code(R"(
+// TextureLayeredEditor preview shader (cubemap array).
+
 shader_type canvas_item;
 
 uniform samplerCubeArray tex;
@@ -214,7 +220,6 @@ void TextureLayeredEditor::edit(Ref<TextureLayered> p_texture) {
 }
 
 void TextureLayeredEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &TextureLayeredEditor::_gui_input);
 	ClassDB::bind_method(D_METHOD("_layer_changed"), &TextureLayeredEditor::_layer_changed);
 }
 
@@ -244,7 +249,7 @@ TextureLayeredEditor::TextureLayeredEditor() {
 	info->set_v_grow_direction(GROW_DIRECTION_BEGIN);
 	info->add_theme_color_override("font_color", Color(1, 1, 1, 1));
 	info->add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.5));
-	info->add_theme_constant_override("shadow_as_outline", 1);
+	info->add_theme_constant_override("shadow_outline_size", 1);
 	info->add_theme_constant_override("shadow_offset_x", 2);
 	info->add_theme_constant_override("shadow_offset_y", 2);
 

@@ -20,7 +20,7 @@
 #define TRACESTATS(i) (void)0
 #endif
 
-#define ATTRIBUTES 8
+#define ATTRIBUTES 3
 
 // This work is based on:
 // Michael Garland and Paul S. Heckbert. Surface simplification using quadric error metrics. 1997
@@ -358,7 +358,7 @@ static void classifyVertices(unsigned char* result, unsigned int* loop, unsigned
 
 #if TRACE
 	printf("locked: many open edges %d, disconnected seam %d, many seam edges %d, many wedges %d\n",
-	       int(stats[0]), int(stats[1]), int(stats[2]), int(stats[3]));
+	    int(stats[0]), int(stats[1]), int(stats[2]), int(stats[3]));
 #endif
 }
 
@@ -445,6 +445,7 @@ struct Collapse
 		float error;
 		unsigned int errorui;
 	};
+	float distance_error;
 };
 
 static float normalize(Vector3& v)
@@ -519,6 +520,34 @@ static float quadricError(const Quadric& Q, const Vector3& v)
 		r -= 2 * a * (v.x * Q.gx[k] + v.y * Q.gy[k] + v.z * Q.gz[k] + Q.gw[k]);
 	}
 #endif
+
+	float s = Q.w == 0.f ? 0.f : 1.f / Q.w;
+
+	return fabsf(r) * s;
+}
+
+static float quadricErrorNoAttributes(const Quadric& Q, const Vector3& v)
+{
+	float rx = Q.b0;
+	float ry = Q.b1;
+	float rz = Q.b2;
+
+	rx += Q.a10 * v.y;
+	ry += Q.a21 * v.z;
+	rz += Q.a20 * v.x;
+
+	rx *= 2;
+	ry *= 2;
+	rz *= 2;
+
+	rx += Q.a00 * v.x;
+	ry += Q.a11 * v.y;
+	rz += Q.a22 * v.z;
+
+	float r = Q.c;
+	r += rx * v.x;
+	r += ry * v.y;
+	r += rz * v.z;
 
 	float s = Q.w == 0.f ? 0.f : 1.f / Q.w;
 
@@ -680,7 +709,7 @@ static void quadricUpdateAttributes(Quadric& Q, const Vector3& p0, const Vector3
 }
 #endif
 
-static void fillFaceQuadrics(Quadric* vertex_quadrics, const unsigned int* indices, size_t index_count, const Vector3* vertex_positions, const unsigned int* remap)
+static void fillFaceQuadrics(Quadric* vertex_quadrics, Quadric* vertex_no_attrib_quadrics, const unsigned int* indices, size_t index_count, const Vector3* vertex_positions, const unsigned int* remap)
 {
 	for (size_t i = 0; i < index_count; i += 3)
 	{
@@ -690,6 +719,9 @@ static void fillFaceQuadrics(Quadric* vertex_quadrics, const unsigned int* indic
 
 		Quadric Q;
 		quadricFromTriangle(Q, vertex_positions[i0], vertex_positions[i1], vertex_positions[i2], 1.f);
+		quadricAdd(vertex_no_attrib_quadrics[remap[i0]], Q);
+		quadricAdd(vertex_no_attrib_quadrics[remap[i1]], Q);
+		quadricAdd(vertex_no_attrib_quadrics[remap[i2]], Q);
 
 #if ATTRIBUTES
 		quadricUpdateAttributes(Q, vertex_positions[i0], vertex_positions[i1], vertex_positions[i2], Q.w);
@@ -700,7 +732,7 @@ static void fillFaceQuadrics(Quadric* vertex_quadrics, const unsigned int* indic
 	}
 }
 
-static void fillEdgeQuadrics(Quadric* vertex_quadrics, const unsigned int* indices, size_t index_count, const Vector3* vertex_positions, const unsigned int* remap, const unsigned char* vertex_kind, const unsigned int* loop, const unsigned int* loopback)
+static void fillEdgeQuadrics(Quadric* vertex_quadrics, Quadric* vertex_no_attrib_quadrics, const unsigned int* indices, size_t index_count, const Vector3* vertex_positions, const unsigned int* remap, const unsigned char* vertex_kind, const unsigned int* loop, const unsigned int* loopback)
 {
 	for (size_t i = 0; i < index_count; i += 3)
 	{
@@ -744,6 +776,9 @@ static void fillEdgeQuadrics(Quadric* vertex_quadrics, const unsigned int* indic
 
 			quadricAdd(vertex_quadrics[remap[i0]], Q);
 			quadricAdd(vertex_quadrics[remap[i1]], Q);
+
+			quadricAdd(vertex_no_attrib_quadrics[remap[i0]], Q);
+			quadricAdd(vertex_no_attrib_quadrics[remap[i1]], Q);
 		}
 	}
 }
@@ -848,7 +883,7 @@ static size_t pickEdgeCollapses(Collapse* collapses, const unsigned int* indices
 	return collapse_count;
 }
 
-static void rankEdgeCollapses(Collapse* collapses, size_t collapse_count, const Vector3* vertex_positions, const Quadric* vertex_quadrics, const unsigned int* remap)
+static void rankEdgeCollapses(Collapse* collapses, size_t collapse_count, const Vector3* vertex_positions, const Quadric* vertex_quadrics, const Quadric* vertex_no_attrib_quadrics, const unsigned int* remap)
 {
 	for (size_t i = 0; i < collapse_count; ++i)
 	{
@@ -868,10 +903,14 @@ static void rankEdgeCollapses(Collapse* collapses, size_t collapse_count, const 
 		float ei = quadricError(qi, vertex_positions[i1]);
 		float ej = quadricError(qj, vertex_positions[j1]);
 
+		const Quadric& naqi = vertex_no_attrib_quadrics[remap[i0]];
+		const Quadric& naqj = vertex_no_attrib_quadrics[remap[j0]];
+
 		// pick edge direction with minimal error
 		c.v0 = ei <= ej ? i0 : j0;
 		c.v1 = ei <= ej ? i1 : j1;
 		c.error = ei <= ej ? ei : ej;
+		c.distance_error = ei <= ej ? quadricErrorNoAttributes(naqi, vertex_positions[i1]) :  quadricErrorNoAttributes(naqj, vertex_positions[j1]);
 	}
 }
 
@@ -968,7 +1007,7 @@ static void sortEdgeCollapses(unsigned int* sort_order, const Collapse* collapse
 	}
 }
 
-static size_t performEdgeCollapses(unsigned int* collapse_remap, unsigned char* collapse_locked, Quadric* vertex_quadrics, const Collapse* collapses, size_t collapse_count, const unsigned int* collapse_order, const unsigned int* remap, const unsigned int* wedge, const unsigned char* vertex_kind, const Vector3* vertex_positions, const EdgeAdjacency& adjacency, size_t triangle_collapse_goal, float error_limit, float& result_error)
+static size_t performEdgeCollapses(unsigned int* collapse_remap, unsigned char* collapse_locked, Quadric* vertex_quadrics, Quadric* vertex_no_attrib_quadrics, const Collapse* collapses, size_t collapse_count, const unsigned int* collapse_order, const unsigned int* remap, const unsigned int* wedge, const unsigned char* vertex_kind, const Vector3* vertex_positions, const EdgeAdjacency& adjacency, size_t triangle_collapse_goal, float error_limit, float& result_error)
 {
 	size_t edge_collapses = 0;
 	size_t triangle_collapses = 0;
@@ -1030,6 +1069,7 @@ static size_t performEdgeCollapses(unsigned int* collapse_remap, unsigned char* 
 		assert(collapse_remap[r1] == r1);
 
 		quadricAdd(vertex_quadrics[r1], vertex_quadrics[r0]);
+		quadricAdd(vertex_no_attrib_quadrics[r1], vertex_no_attrib_quadrics[r0]);
 
 		if (vertex_kind[i0] == Kind_Complex)
 		{
@@ -1067,15 +1107,15 @@ static size_t performEdgeCollapses(unsigned int* collapse_remap, unsigned char* 
 		triangle_collapses += (vertex_kind[i0] == Kind_Border) ? 1 : 2;
 		edge_collapses++;
 
-		result_error = result_error < c.error ? c.error : result_error;
+		result_error = result_error < c.distance_error ? c.distance_error : result_error;
 	}
 
 #if TRACE
 	float error_goal_perfect = edge_collapse_goal < collapse_count ? collapses[collapse_order[edge_collapse_goal]].error : 0.f;
 
 	printf("removed %d triangles, error %e (goal %e); evaluated %d/%d collapses (done %d, skipped %d, invalid %d)\n",
-		int(triangle_collapses), sqrtf(result_error), sqrtf(error_goal_perfect),
-		int(stats[0]), int(collapse_count), int(edge_collapses), int(stats[1]), int(stats[2]));
+	    int(triangle_collapses), sqrtf(result_error), sqrtf(error_goal_perfect),
+	    int(stats[0]), int(collapse_count), int(edge_collapses), int(stats[1]), int(stats[2]));
 #endif
 
 	return edge_collapses;
@@ -1433,7 +1473,7 @@ size_t meshopt_simplifyWithAttributes(unsigned int* destination, const unsigned 
 		kinds[vertex_kind[i]] += remap[i] == i;
 
 	printf("kinds: manifold %d, border %d, seam %d, complex %d, locked %d\n",
-	       int(kinds[Kind_Manifold]), int(kinds[Kind_Border]), int(kinds[Kind_Seam]), int(kinds[Kind_Complex]), int(kinds[Kind_Locked]));
+	    int(kinds[Kind_Manifold]), int(kinds[Kind_Border]), int(kinds[Kind_Seam]), int(kinds[Kind_Complex]), int(kinds[Kind_Locked]));
 #endif
 
 	Vector3* vertex_positions = allocator.allocate<Vector3>(vertex_count);
@@ -1455,9 +1495,11 @@ size_t meshopt_simplifyWithAttributes(unsigned int* destination, const unsigned 
 
 	Quadric* vertex_quadrics = allocator.allocate<Quadric>(vertex_count);
 	memset(vertex_quadrics, 0, vertex_count * sizeof(Quadric));
+	Quadric* vertex_no_attrib_quadrics = allocator.allocate<Quadric>(vertex_count);
+	memset(vertex_no_attrib_quadrics, 0, vertex_count * sizeof(Quadric));
 
-	fillFaceQuadrics(vertex_quadrics, indices, index_count, vertex_positions, remap);
-	fillEdgeQuadrics(vertex_quadrics, indices, index_count, vertex_positions, remap, vertex_kind, loop, loopback);
+	fillFaceQuadrics(vertex_quadrics, vertex_no_attrib_quadrics, indices, index_count, vertex_positions, remap);
+	fillEdgeQuadrics(vertex_quadrics, vertex_no_attrib_quadrics, indices, index_count, vertex_positions, remap, vertex_kind, loop, loopback);
 
 	if (result != indices)
 		memcpy(result, indices, index_count * sizeof(unsigned int));
@@ -1488,7 +1530,7 @@ size_t meshopt_simplifyWithAttributes(unsigned int* destination, const unsigned 
 		if (edge_collapse_count == 0)
 			break;
 
-		rankEdgeCollapses(edge_collapses, edge_collapse_count, vertex_positions, vertex_quadrics, remap);
+		rankEdgeCollapses(edge_collapses, edge_collapse_count, vertex_positions, vertex_quadrics, vertex_no_attrib_quadrics, remap);
 
 #if TRACE > 1
 		dumpEdgeCollapses(edge_collapses, edge_collapse_count, vertex_kind);
@@ -1507,7 +1549,7 @@ size_t meshopt_simplifyWithAttributes(unsigned int* destination, const unsigned 
 		printf("pass %d: ", int(pass_count++));
 #endif
 
-		size_t collapses = performEdgeCollapses(collapse_remap, collapse_locked, vertex_quadrics, edge_collapses, edge_collapse_count, collapse_order, remap, wedge, vertex_kind, vertex_positions, adjacency, triangle_collapse_goal, error_limit, result_error);
+		size_t collapses = performEdgeCollapses(collapse_remap, collapse_locked, vertex_quadrics, vertex_no_attrib_quadrics, edge_collapses, edge_collapse_count, collapse_order, remap, wedge, vertex_kind, vertex_positions, adjacency, triangle_collapse_goal, error_limit, result_error);
 
 		// no edges can be collapsed any more due to hitting the error limit or triangle collapse limit
 		if (collapses == 0)
@@ -1607,9 +1649,9 @@ size_t meshopt_simplifySloppy(unsigned int* destination, const unsigned int* ind
 
 #if TRACE
 		printf("pass %d (%s): grid size %d, triangles %d, %s\n",
-		       pass, (pass == 0) ? "guess" : (pass <= kInterpolationPasses) ? "lerp" : "binary",
-		       grid_size, int(triangles),
-		       (triangles <= target_index_count / 3) ? "under" : "over");
+		    pass, (pass == 0) ? "guess" : (pass <= kInterpolationPasses) ? "lerp" : "binary",
+		    grid_size, int(triangles),
+		    (triangles <= target_index_count / 3) ? "under" : "over");
 #endif
 
 		float tip = interpolate(float(target_index_count / 3), float(min_grid), float(min_triangles), float(grid_size), float(triangles), float(max_grid), float(max_triangles));
@@ -1736,9 +1778,9 @@ size_t meshopt_simplifyPoints(unsigned int* destination, const float* vertex_pos
 
 #if TRACE
 		printf("pass %d (%s): grid size %d, vertices %d, %s\n",
-		       pass, (pass == 0) ? "guess" : (pass <= kInterpolationPasses) ? "lerp" : "binary",
-		       grid_size, int(vertices),
-		       (vertices <= target_vertex_count) ? "under" : "over");
+		    pass, (pass == 0) ? "guess" : (pass <= kInterpolationPasses) ? "lerp" : "binary",
+		    grid_size, int(vertices),
+		    (vertices <= target_vertex_count) ? "under" : "over");
 #endif
 
 		float tip = interpolate(float(target_vertex_count), float(min_grid), float(min_vertices), float(grid_size), float(vertices), float(max_grid), float(max_vertices));

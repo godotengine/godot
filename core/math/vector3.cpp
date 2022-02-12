@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,22 +32,22 @@
 
 #include "core/math/basis.h"
 
-void Vector3::rotate(const Vector3 &p_axis, real_t p_phi) {
+void Vector3::rotate(const Vector3 &p_axis, const real_t p_phi) {
 	*this = Basis(p_axis, p_phi).xform(*this);
 }
 
-Vector3 Vector3::rotated(const Vector3 &p_axis, real_t p_phi) const {
+Vector3 Vector3::rotated(const Vector3 &p_axis, const real_t p_phi) const {
 	Vector3 r = *this;
 	r.rotate(p_axis, p_phi);
 	return r;
 }
 
-void Vector3::set_axis(int p_axis, real_t p_value) {
+void Vector3::set_axis(const int p_axis, const real_t p_value) {
 	ERR_FAIL_INDEX(p_axis, 3);
 	coord[p_axis] = p_value;
 }
 
-real_t Vector3::get_axis(int p_axis) const {
+real_t Vector3::get_axis(const int p_axis) const {
 	ERR_FAIL_INDEX_V(p_axis, 3, 0);
 	return operator[](p_axis);
 }
@@ -59,13 +59,13 @@ Vector3 Vector3::clamp(const Vector3 &p_min, const Vector3 &p_max) const {
 			CLAMP(z, p_min.z, p_max.z));
 }
 
-void Vector3::snap(Vector3 p_step) {
+void Vector3::snap(const Vector3 p_step) {
 	x = Math::snapped(x, p_step.x);
 	y = Math::snapped(y, p_step.y);
 	z = Math::snapped(z, p_step.z);
 }
 
-Vector3 Vector3::snapped(Vector3 p_step) const {
+Vector3 Vector3::snapped(const Vector3 p_step) const {
 	Vector3 v = *this;
 	v.snap(p_step);
 	return v;
@@ -82,7 +82,7 @@ Vector3 Vector3::limit_length(const real_t p_len) const {
 	return v;
 }
 
-Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_weight) const {
+Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight) const {
 	Vector3 p0 = p_pre_a;
 	Vector3 p1 = *this;
 	Vector3 p2 = p_b;
@@ -93,10 +93,11 @@ Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, c
 	real_t t3 = t2 * t;
 
 	Vector3 out;
-	out = 0.5 * ((p1 * 2.0) +
-						(-p0 + p2) * t +
-						(2.0 * p0 - 5.0 * p1 + 4.0 * p2 - p3) * t2 +
-						(-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3);
+	out = 0.5 *
+			((p1 * 2.0) +
+					(-p0 + p2) * t +
+					(2.0 * p0 - 5.0 * p1 + 4.0 * p2 - p3) * t2 +
+					(-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3);
 	return out;
 }
 
@@ -107,18 +108,12 @@ Vector3 Vector3::move_toward(const Vector3 &p_to, const real_t p_delta) const {
 	return len <= p_delta || len < CMP_EPSILON ? p_to : v + vd / len * p_delta;
 }
 
-Basis Vector3::outer(const Vector3 &p_b) const {
-	Vector3 row0(x * p_b.x, x * p_b.y, x * p_b.z);
-	Vector3 row1(y * p_b.x, y * p_b.y, y * p_b.z);
-	Vector3 row2(z * p_b.x, z * p_b.y, z * p_b.z);
+Basis Vector3::outer(const Vector3 &p_with) const {
+	Vector3 row0(x * p_with.x, x * p_with.y, x * p_with.z);
+	Vector3 row1(y * p_with.x, y * p_with.y, y * p_with.z);
+	Vector3 row2(z * p_with.x, z * p_with.y, z * p_with.z);
 
 	return Basis(row0, row1, row2);
-}
-
-Basis Vector3::to_diagonal_matrix() const {
-	return Basis(x, 0, 0,
-			0, y, 0,
-			0, 0, z);
 }
 
 bool Vector3::is_equal_approx(const Vector3 &p_v) const {

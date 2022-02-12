@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,8 +68,8 @@ void RemoteDebuggerPeerTCP::close() {
 	running = false;
 	thread.wait_to_finish();
 	tcp_client->disconnect_from_host();
-	out_buf.resize(0);
-	in_buf.resize(0);
+	out_buf.clear();
+	in_buf.clear();
 }
 
 RemoteDebuggerPeerTCP::RemoteDebuggerPeerTCP(Ref<StreamPeerTCP> p_tcp) {
@@ -190,7 +190,8 @@ Error RemoteDebuggerPeerTCP::connect_to_host(const String &p_host, uint16_t p_po
 }
 
 void RemoteDebuggerPeerTCP::_thread_func(void *p_ud) {
-	const uint64_t min_tick = 100;
+	// Update in time for 144hz monitors
+	const uint64_t min_tick = 6900;
 	RemoteDebuggerPeerTCP *peer = (RemoteDebuggerPeerTCP *)p_ud;
 	while (peer->running && peer->is_peer_connected()) {
 		uint64_t ticks_usec = OS::get_singleton()->get_ticks_usec();
@@ -225,7 +226,7 @@ RemoteDebuggerPeer *RemoteDebuggerPeerTCP::create(const String &p_uri) {
 	String debug_host = p_uri.replace("tcp://", "");
 	uint16_t debug_port = 6007;
 
-	if (debug_host.find(":") != -1) {
+	if (debug_host.contains(":")) {
 		int sep_pos = debug_host.rfind(":");
 		debug_port = debug_host.substr(sep_pos + 1).to_int();
 		debug_host = debug_host.substr(0, sep_pos);

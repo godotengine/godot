@@ -4,7 +4,7 @@
  *
  *   OpenType common tables validation (specification).
  *
- * Copyright (C) 2004-2020 by
+ * Copyright (C) 2004-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -105,10 +105,11 @@ FT_BEGIN_HEADER
                 FT_Byte*  pp = (FT_Byte*)_size ## _p;               \
                                                                     \
                                                                     \
-                FT_TRACE3(( "\n"                                    \
-                            "Invalid offset to optional table `%s'" \
-                            " set to zero.\n"                       \
-                            "\n", #_size ));                        \
+                FT_TRACE3(( "\n" ));                                \
+                FT_TRACE3(( "Invalid offset to optional table `%s'" \
+                            " set to zero.\n",                      \
+                            #_size ));                              \
+                FT_TRACE3(( "\n" ));                                \
                                                                     \
                 _size = pp[0] = pp[1] = 0;                          \
               }                                                     \
@@ -127,10 +128,11 @@ FT_BEGIN_HEADER
                 FT_Byte*  pp = (FT_Byte*)_size ## _p;               \
                                                                     \
                                                                     \
-                FT_TRACE3(( "\n"                                    \
-                            "Invalid offset to optional table `%s'" \
-                            " set to zero.\n"                       \
-                            "\n", #_size ));                        \
+                FT_TRACE3(( "\n" ));                                \
+                FT_TRACE3(( "Invalid offset to optional table `%s'" \
+                            " set to zero.\n",                      \
+                            #_size ));                              \
+                FT_TRACE3(( "\n" ));                                \
                                                                     \
                 _size = pp[0] = pp[1] = pp[2] = pp[3] = 0;          \
               }                                                     \
@@ -178,24 +180,24 @@ FT_BEGIN_HEADER
 #define OTV_ENTER                                                                \
           FT_BEGIN_STMNT                                                         \
             otvalid->debug_indent += 2;                                          \
-            FT_TRACE4(( "%*.s", otvalid->debug_indent, 0 ));                     \
+            FT_TRACE4(( "%*.s", otvalid->debug_indent, "" ));                    \
             FT_TRACE4(( "%s table\n",                                            \
                         otvalid->debug_function_name[otvalid->nesting_level] )); \
           FT_END_STMNT
 
-#define OTV_NAME_ENTER( name )                               \
-          FT_BEGIN_STMNT                                     \
-            otvalid->debug_indent += 2;                      \
-            FT_TRACE4(( "%*.s", otvalid->debug_indent, 0 )); \
-            FT_TRACE4(( "%s table\n", name ));               \
+#define OTV_NAME_ENTER( name )                                \
+          FT_BEGIN_STMNT                                      \
+            otvalid->debug_indent += 2;                       \
+            FT_TRACE4(( "%*.s", otvalid->debug_indent, "" )); \
+            FT_TRACE4(( "%s table\n", name ));                \
           FT_END_STMNT
 
 #define OTV_EXIT  otvalid->debug_indent -= 2
 
-#define OTV_TRACE( s )                                       \
-          FT_BEGIN_STMNT                                     \
-            FT_TRACE4(( "%*.s", otvalid->debug_indent, 0 )); \
-            FT_TRACE4( s );                                  \
+#define OTV_TRACE( s )                                        \
+          FT_BEGIN_STMNT                                      \
+            FT_TRACE4(( "%*.s", otvalid->debug_indent, "" )); \
+            FT_TRACE4( s );                                   \
           FT_END_STMNT
 
 #else   /* !FT_DEBUG_LEVEL_TRACE */

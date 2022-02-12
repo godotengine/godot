@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -249,29 +249,29 @@ private:
 
 public:
 	/**
-	* return a const iterator to the beginning of the list.
-	*/
+	 * return a const iterator to the beginning of the list.
+	 */
 	_FORCE_INLINE_ const Element *front() const {
 		return _data ? _data->first : nullptr;
 	}
 
 	/**
-	* return an iterator to the beginning of the list.
-	*/
+	 * return an iterator to the beginning of the list.
+	 */
 	_FORCE_INLINE_ Element *front() {
 		return _data ? _data->first : nullptr;
 	}
 
 	/**
- 	* return a const iterator to the last member of the list.
-	*/
+	 * return a const iterator to the last member of the list.
+	 */
 	_FORCE_INLINE_ const Element *back() const {
 		return _data ? _data->last : nullptr;
 	}
 
 	/**
- 	* return an iterator to the last member of the list.
-	*/
+	 * return an iterator to the last member of the list.
+	 */
 	_FORCE_INLINE_ Element *back() {
 		return _data ? _data->last : nullptr;
 	}

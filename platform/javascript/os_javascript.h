@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,16 +40,18 @@
 
 class OS_JavaScript : public OS_Unix {
 	MainLoop *main_loop = nullptr;
-	AudioDriverJavaScript *audio_driver_javascript = nullptr;
+	List<AudioDriverJavaScript *> audio_drivers;
 
 	bool idb_is_syncing = false;
 	bool idb_available = false;
 	bool idb_needs_sync = false;
+	bool pwa_is_waiting = false;
 
 	static void main_loop_callback();
 
 	static void file_access_close_callback(const String &p_file, int p_flags);
 	static void fs_sync_callback();
+	static void update_pwa_state_callback();
 
 protected:
 	void initialize() override;
@@ -65,16 +67,20 @@ public:
 	// Override return type to make writing static callbacks less tedious.
 	static OS_JavaScript *get_singleton();
 
+	bool pwa_needs_update() const { return pwa_is_waiting; }
+	Error pwa_update();
+
 	void initialize_joypads() override;
 
 	MainLoop *get_main_loop() const override;
 	bool main_loop_iterate();
 
-	Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr) override;
-	Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
+	Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) override;
+	Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
 	Error kill(const ProcessID &p_pid) override;
 	int get_process_id() const override;
 	int get_processor_count() const override;
+	int get_default_thread_pool_size() const override { return 1; }
 
 	String get_executable_path() const override;
 	Error shell_open(String p_uri) override;
@@ -89,6 +95,7 @@ public:
 	String get_user_data_dir() const override;
 
 	bool is_userfs_persistent() const override;
+	bool is_single_window() const override { return true; }
 
 	void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 

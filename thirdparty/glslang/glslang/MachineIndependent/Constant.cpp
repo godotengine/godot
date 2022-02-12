@@ -529,7 +529,12 @@ TIntermTyped* TIntermConstantUnion::fold(TOperator op, const TType& returnType) 
             case EbtDouble:
             case EbtFloat16:
             case EbtFloat: newConstArray[i].setDConst(-unionArray[i].getDConst()); break;
-            case EbtInt:   newConstArray[i].setIConst(-unionArray[i].getIConst()); break;
+            // Note: avoid UBSAN error regarding negating 0x80000000
+            case EbtInt:   newConstArray[i].setIConst(
+                                unionArray[i].getIConst() == 0x80000000
+                                    ? -0x7FFFFFFF - 1
+                                    : -unionArray[i].getIConst());
+                           break;
             case EbtUint:  newConstArray[i].setUConst(static_cast<unsigned int>(-static_cast<int>(unionArray[i].getUConst())));  break;
 #ifndef GLSLANG_WEB
             case EbtInt8:  newConstArray[i].setI8Const(-unionArray[i].getI8Const()); break;
@@ -599,17 +604,11 @@ TIntermTyped* TIntermConstantUnion::fold(TOperator op, const TType& returnType) 
             newConstArray[i].setDConst(log(unionArray[i].getDConst()));
             break;
         case EOpExp2:
-            {
-                const double inv_log2_e = 0.69314718055994530941723212145818;
-                newConstArray[i].setDConst(exp(unionArray[i].getDConst() * inv_log2_e));
-                break;
-            }
+            newConstArray[i].setDConst(exp2(unionArray[i].getDConst()));
+            break;
         case EOpLog2:
-            {
-                const double log2_e = 1.4426950408889634073599246810019;
-                newConstArray[i].setDConst(log2_e * log(unionArray[i].getDConst()));
-                break;
-            }
+            newConstArray[i].setDConst(log2(unionArray[i].getDConst()));
+            break;
         case EOpSqrt:
             newConstArray[i].setDConst(sqrt(unionArray[i].getDConst()));
             break;

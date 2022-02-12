@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,7 +48,7 @@ void MultiMeshEditor::_populate() {
 
 	Ref<Mesh> mesh;
 
-	if (mesh_source->get_text() == "") {
+	if (mesh_source->get_text().is_empty()) {
 		Ref<MultiMesh> multimesh;
 		multimesh = node->get_multimesh();
 		if (multimesh.is_null()) {
@@ -89,7 +89,7 @@ void MultiMeshEditor::_populate() {
 		}
 	}
 
-	if (surface_source->get_text() == "") {
+	if (surface_source->get_text().is_empty()) {
 		err_dialog->set_text(TTR("No surface source specified."));
 		err_dialog->popup_centered();
 		return;

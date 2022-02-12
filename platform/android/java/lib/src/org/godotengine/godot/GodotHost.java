@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,4 +53,15 @@ public interface GodotHost {
 	 * Invoked on the render thread when the Godot main loop has started.
 	 */
 	default void onGodotMainLoopStarted() {}
+
+	/**
+	 * Invoked on the UI thread as the last step of the Godot instance clean up phase.
+	 */
+	default void onGodotForceQuit(Godot instance) {}
+
+	/**
+	 * Invoked on the GL thread when the Godot instance wants to be restarted. It's up to the host
+	 * to perform the appropriate action(s).
+	 */
+	default void onGodotRestartRequested(Godot instance) {}
 }

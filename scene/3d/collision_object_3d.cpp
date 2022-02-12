@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,6 @@
 
 #include "collision_object_3d.h"
 
-#include "core/config/engine.h"
 #include "scene/scene_string_names.h"
 
 void CollisionObject3D::_notification(int p_what) {
@@ -38,8 +37,8 @@ void CollisionObject3D::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (_are_collision_shapes_visible()) {
 				debug_shape_old_transform = get_global_transform();
-				for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
-					debug_shapes_to_update.insert(E->key());
+				for (const KeyValue<uint32_t, ShapeData> &E : shapes) {
+					debug_shapes_to_update.insert(E.key);
 				}
 				_update_debug_shapes();
 			}
@@ -65,7 +64,9 @@ void CollisionObject3D::_notification(int p_what) {
 			}
 
 			if (!disabled || (disable_mode != DISABLE_MODE_REMOVE)) {
-				RID space = get_world_3d()->get_space();
+				Ref<World3D> world_ref = get_world_3d();
+				ERR_FAIL_COND(!world_ref.is_valid());
+				RID space = world_ref->get_space();
 				if (area) {
 					PhysicsServer3D::get_singleton()->area_set_space(rid, space);
 				} else {
@@ -146,36 +147,40 @@ uint32_t CollisionObject3D::get_collision_mask() const {
 	return collision_mask;
 }
 
-void CollisionObject3D::set_collision_layer_bit(int p_bit, bool p_value) {
-	ERR_FAIL_INDEX_MSG(p_bit, 32, "Collision layer bit must be between 0 and 31 inclusive.");
+void CollisionObject3D::set_collision_layer_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Collision layer number must be between 1 and 32 inclusive.");
 	uint32_t collision_layer = get_collision_layer();
 	if (p_value) {
-		collision_layer |= 1 << p_bit;
+		collision_layer |= 1 << (p_layer_number - 1);
 	} else {
-		collision_layer &= ~(1 << p_bit);
+		collision_layer &= ~(1 << (p_layer_number - 1));
 	}
 	set_collision_layer(collision_layer);
 }
 
-bool CollisionObject3D::get_collision_layer_bit(int p_bit) const {
-	ERR_FAIL_INDEX_V_MSG(p_bit, 32, false, "Collision layer bit must be between 0 and 31 inclusive.");
-	return get_collision_layer() & (1 << p_bit);
+bool CollisionObject3D::get_collision_layer_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Collision layer number must be between 1 and 32 inclusive.");
+	return get_collision_layer() & (1 << (p_layer_number - 1));
 }
 
-void CollisionObject3D::set_collision_mask_bit(int p_bit, bool p_value) {
-	ERR_FAIL_INDEX_MSG(p_bit, 32, "Collision mask bit must be between 0 and 31 inclusive.");
+void CollisionObject3D::set_collision_mask_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Collision layer number must be between 1 and 32 inclusive.");
 	uint32_t mask = get_collision_mask();
 	if (p_value) {
-		mask |= 1 << p_bit;
+		mask |= 1 << (p_layer_number - 1);
 	} else {
-		mask &= ~(1 << p_bit);
+		mask &= ~(1 << (p_layer_number - 1));
 	}
 	set_collision_mask(mask);
 }
 
-bool CollisionObject3D::get_collision_mask_bit(int p_bit) const {
-	ERR_FAIL_INDEX_V_MSG(p_bit, 32, false, "Collision mask bit must be between 0 and 31 inclusive.");
-	return get_collision_mask() & (1 << p_bit);
+bool CollisionObject3D::get_collision_mask_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Collision layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Collision layer number must be between 1 and 32 inclusive.");
+	return get_collision_mask() & (1 << (p_layer_number - 1));
 }
 
 void CollisionObject3D::set_disable_mode(DisableMode p_mode) {
@@ -251,10 +256,8 @@ void CollisionObject3D::_apply_enabled() {
 	}
 }
 
-void CollisionObject3D::_input_event(Node *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape) {
-	if (get_script_instance()) {
-		get_script_instance()->call(SceneStringNames::get_singleton()->_input_event, p_camera, p_input_event, p_pos, p_normal, p_shape);
-	}
+void CollisionObject3D::_input_event_call(Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape) {
+	GDVIRTUAL_CALL(_input_event, p_camera, p_input_event, p_pos, p_normal, p_shape);
 	emit_signal(SceneStringNames::get_singleton()->input_event, p_camera, p_input_event, p_pos, p_normal, p_shape);
 }
 
@@ -323,8 +326,8 @@ void CollisionObject3D::_update_shape_data(uint32_t p_owner) {
 }
 
 void CollisionObject3D::_shape_changed(const Ref<Shape3D> &p_shape) {
-	for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
-		ShapeData &shapedata = E->get();
+	for (KeyValue<uint32_t, ShapeData> &E : shapes) {
+		ShapeData &shapedata = E.value;
 		ShapeData::ShapeBase *shapes = shapedata.shapes.ptrw();
 		for (int i = 0; i < shapedata.shapes.size(); i++) {
 			ShapeData::ShapeBase &s = shapes[i];
@@ -379,8 +382,8 @@ void CollisionObject3D::_update_debug_shapes() {
 }
 
 void CollisionObject3D::_clear_debug_shapes() {
-	for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
-		ShapeData &shapedata = E->get();
+	for (KeyValue<uint32_t, ShapeData> &E : shapes) {
+		ShapeData &shapedata = E.value;
 		ShapeData::ShapeBase *shapes = shapedata.shapes.ptrw();
 		for (int i = 0; i < shapedata.shapes.size(); i++) {
 			ShapeData::ShapeBase &s = shapes[i];
@@ -399,8 +402,8 @@ void CollisionObject3D::_clear_debug_shapes() {
 void CollisionObject3D::_on_transform_changed() {
 	if (debug_shapes_count > 0 && !debug_shape_old_transform.is_equal_approx(get_global_transform())) {
 		debug_shape_old_transform = get_global_transform();
-		for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
-			ShapeData &shapedata = E->get();
+		for (KeyValue<uint32_t, ShapeData> &E : shapes) {
+			ShapeData &shapedata = E.value;
 			const ShapeData::ShapeBase *shapes = shapedata.shapes.ptr();
 			for (int i = 0; i < shapedata.shapes.size(); i++) {
 				RS::get_singleton()->instance_set_transform(shapes[i].debug_shape, debug_shape_old_transform * shapedata.xform);
@@ -423,10 +426,10 @@ void CollisionObject3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collision_layer"), &CollisionObject3D::get_collision_layer);
 	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &CollisionObject3D::set_collision_mask);
 	ClassDB::bind_method(D_METHOD("get_collision_mask"), &CollisionObject3D::get_collision_mask);
-	ClassDB::bind_method(D_METHOD("set_collision_layer_bit", "bit", "value"), &CollisionObject3D::set_collision_layer_bit);
-	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &CollisionObject3D::get_collision_layer_bit);
-	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &CollisionObject3D::set_collision_mask_bit);
-	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &CollisionObject3D::get_collision_mask_bit);
+	ClassDB::bind_method(D_METHOD("set_collision_layer_value", "layer_number", "value"), &CollisionObject3D::set_collision_layer_value);
+	ClassDB::bind_method(D_METHOD("get_collision_layer_value", "layer_number"), &CollisionObject3D::get_collision_layer_value);
+	ClassDB::bind_method(D_METHOD("set_collision_mask_value", "layer_number", "value"), &CollisionObject3D::set_collision_mask_value);
+	ClassDB::bind_method(D_METHOD("get_collision_mask_value", "layer_number"), &CollisionObject3D::get_collision_mask_value);
 	ClassDB::bind_method(D_METHOD("set_disable_mode", "mode"), &CollisionObject3D::set_disable_mode);
 	ClassDB::bind_method(D_METHOD("get_disable_mode"), &CollisionObject3D::get_disable_mode);
 	ClassDB::bind_method(D_METHOD("set_ray_pickable", "ray_pickable"), &CollisionObject3D::set_ray_pickable);
@@ -450,7 +453,7 @@ void CollisionObject3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shape_owner_clear_shapes", "owner_id"), &CollisionObject3D::shape_owner_clear_shapes);
 	ClassDB::bind_method(D_METHOD("shape_find_owner", "shape_index"), &CollisionObject3D::shape_find_owner);
 
-	BIND_VMETHOD(MethodInfo("_input_event", PropertyInfo(Variant::OBJECT, "camera"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "position"), PropertyInfo(Variant::VECTOR3, "normal"), PropertyInfo(Variant::INT, "shape_idx")));
+	GDVIRTUAL_BIND(_input_event, "camera", "event", "position", "normal", "shape_idx");
 
 	ADD_SIGNAL(MethodInfo("input_event", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "position"), PropertyInfo(Variant::VECTOR3, "normal"), PropertyInfo(Variant::INT, "shape_idx")));
 	ADD_SIGNAL(MethodInfo("mouse_entered"));
@@ -481,7 +484,7 @@ uint32_t CollisionObject3D::create_shape_owner(Object *p_owner) {
 		id = shapes.back()->key() + 1;
 	}
 
-	sd.owner = p_owner;
+	sd.owner_id = p_owner ? p_owner->get_instance_id() : ObjectID();
 
 	shapes[id] = sd;
 
@@ -522,15 +525,15 @@ bool CollisionObject3D::is_shape_owner_disabled(uint32_t p_owner) const {
 }
 
 void CollisionObject3D::get_shape_owners(List<uint32_t> *r_owners) {
-	for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
-		r_owners->push_back(E->key());
+	for (const KeyValue<uint32_t, ShapeData> &E : shapes) {
+		r_owners->push_back(E.key);
 	}
 }
 
 Array CollisionObject3D::_get_shape_owners() {
 	Array ret;
-	for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
-		ret.push_back(E->key());
+	for (const KeyValue<uint32_t, ShapeData> &E : shapes) {
+		ret.push_back(E.key);
 	}
 
 	return ret;
@@ -560,7 +563,7 @@ Transform3D CollisionObject3D::shape_owner_get_transform(uint32_t p_owner) const
 Object *CollisionObject3D::shape_owner_get_owner(uint32_t p_owner) const {
 	ERR_FAIL_COND_V(!shapes.has(p_owner), nullptr);
 
-	return shapes[p_owner].owner;
+	return ObjectDB::get_instance(shapes[p_owner].owner_id);
 }
 
 void CollisionObject3D::shape_owner_add_shape(uint32_t p_owner, const Ref<Shape3D> &p_shape) {
@@ -625,12 +628,12 @@ void CollisionObject3D::shape_owner_remove_shape(uint32_t p_owner, int p_shape) 
 		--debug_shapes_count;
 	}
 
-	shapes[p_owner].shapes.remove(p_shape);
+	shapes[p_owner].shapes.remove_at(p_shape);
 
-	for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
-		for (int i = 0; i < E->get().shapes.size(); i++) {
-			if (E->get().shapes[i].index > index_to_remove) {
-				E->get().shapes.write[i].index -= 1;
+	for (KeyValue<uint32_t, ShapeData> &E : shapes) {
+		for (int i = 0; i < E.value.shapes.size(); i++) {
+			if (E.value.shapes[i].index > index_to_remove) {
+				E.value.shapes.write[i].index -= 1;
 			}
 		}
 	}
@@ -647,18 +650,18 @@ void CollisionObject3D::shape_owner_clear_shapes(uint32_t p_owner) {
 }
 
 uint32_t CollisionObject3D::shape_find_owner(int p_shape_index) const {
-	ERR_FAIL_INDEX_V(p_shape_index, total_subshapes, 0);
+	ERR_FAIL_INDEX_V(p_shape_index, total_subshapes, UINT32_MAX);
 
-	for (const Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
-		for (int i = 0; i < E->get().shapes.size(); i++) {
-			if (E->get().shapes[i].index == p_shape_index) {
-				return E->key();
+	for (const KeyValue<uint32_t, ShapeData> &E : shapes) {
+		for (int i = 0; i < E.value.shapes.size(); i++) {
+			if (E.value.shapes[i].index == p_shape_index) {
+				return E.key;
 			}
 		}
 	}
 
 	//in theory it should be unreachable
-	return 0;
+	ERR_FAIL_V_MSG(UINT32_MAX, "Can't find owner for shape index " + itos(p_shape_index) + ".");
 }
 
 CollisionObject3D::CollisionObject3D(RID p_rid, bool p_area) {

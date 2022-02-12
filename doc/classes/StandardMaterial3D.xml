@@ -5,9 +5,6 @@
 	<description>
 	</description>
 	<tutorials>
+		<link title="Standard Material 3D">$DOCS_URL/tutorials/3d/standard_material_3d.html</link>
 	</tutorials>
-	<methods>
-	</methods>
-	<constants>
-	</constants>
 </class>

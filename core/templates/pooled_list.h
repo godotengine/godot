@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,13 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#pragma once
+#ifndef POOLED_LIST_H
+#define POOLED_LIST_H
+
+#include "core/templates/local_vector.h"
 
 // Simple template to provide a pool with O(1) allocate and free.
 // The freelist could alternatively be a linked list placed within the unused elements
 // to use less memory, however a separate freelist is probably more cache friendly.
-
-// NOTE : Take great care when using this with non POD types. The construction and destruction
+//
+// NOTE: Take great care when using this with non POD types. The construction and destruction
 // is done in the LocalVector, NOT as part of the pool. So requesting a new item does not guarantee
 // a constructor is run, and free does not guarantee a destructor.
 // You should generally handle clearing
@@ -42,9 +45,6 @@
 // This is by design for fastest use in the BVH. If you want a more general pool
 // that does call constructors / destructors on request / free, this should probably be
 // a separate template.
-
-#include "core/templates/local_vector.h"
-
 template <class T, bool force_trivial = false>
 class PooledList {
 	LocalVector<T, uint32_t, force_trivial> list;
@@ -93,3 +93,5 @@ public:
 		_used_size--;
 	}
 };
+
+#endif // POOLED_LIST_H

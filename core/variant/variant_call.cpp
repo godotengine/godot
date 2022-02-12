@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -752,8 +752,9 @@ struct _VariantCall {
 
 	static PackedInt32Array func_PackedByteArray_decode_s32_array(PackedByteArray *p_instance) {
 		uint64_t size = p_instance->size();
-		const uint8_t *r = p_instance->ptr();
 		PackedInt32Array dest;
+		ERR_FAIL_COND_V_MSG(size < sizeof(int32_t), dest, "Size didn't match array of size int32_t, maybe you are trying to convert to the wrong type?");
+		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(int32_t));
 		memcpy(dest.ptrw(), r, size);
 		return dest;
@@ -761,8 +762,9 @@ struct _VariantCall {
 
 	static PackedInt64Array func_PackedByteArray_decode_s64_array(PackedByteArray *p_instance) {
 		uint64_t size = p_instance->size();
-		const uint8_t *r = p_instance->ptr();
 		PackedInt64Array dest;
+		ERR_FAIL_COND_V_MSG(size < sizeof(int64_t), dest, "Size didn't match array of size int64_t, maybe you are trying to convert to the wrong type?");
+		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(int64_t));
 		memcpy(dest.ptrw(), r, size);
 		return dest;
@@ -770,8 +772,9 @@ struct _VariantCall {
 
 	static PackedFloat32Array func_PackedByteArray_decode_float_array(PackedByteArray *p_instance) {
 		uint64_t size = p_instance->size();
-		const uint8_t *r = p_instance->ptr();
 		PackedFloat32Array dest;
+		ERR_FAIL_COND_V_MSG(size < sizeof(float), dest, "Size didn't match array of size float, maybe you are trying to convert to the wrong type?");
+		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(float));
 		memcpy(dest.ptrw(), r, size);
 		return dest;
@@ -779,8 +782,9 @@ struct _VariantCall {
 
 	static PackedFloat64Array func_PackedByteArray_decode_double_array(PackedByteArray *p_instance) {
 		uint64_t size = p_instance->size();
-		const uint8_t *r = p_instance->ptr();
 		PackedFloat64Array dest;
+		ERR_FAIL_COND_V_MSG(size < sizeof(double), dest, "Size didn't match array of size double, maybe you are trying to convert to the wrong type?");
+		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(double));
 		memcpy(dest.ptrw(), r, size);
 		return dest;
@@ -1241,8 +1245,8 @@ void Variant::get_constants_for_type(Variant::Type p_type, List<StringName> *p_c
 	for (List<StringName>::Element *E = cd.value_ordered.front(); E; E = E->next()) {
 		p_constants->push_back(E->get());
 #else
-	for (Map<StringName, int>::Element *E = cd.value.front(); E; E = E->next()) {
-		p_constants->push_back(E->key());
+	for (const KeyValue<StringName, int> &E : cd.value) {
+		p_constants->push_back(E.key);
 #endif
 	}
 
@@ -1250,8 +1254,8 @@ void Variant::get_constants_for_type(Variant::Type p_type, List<StringName> *p_c
 	for (List<StringName>::Element *E = cd.variant_value_ordered.front(); E; E = E->next()) {
 		p_constants->push_back(E->get());
 #else
-	for (Map<StringName, Variant>::Element *E = cd.variant_value.front(); E; E = E->next()) {
-		p_constants->push_back(E->key());
+	for (const KeyValue<StringName, Variant> &E : cd.variant_value) {
+		p_constants->push_back(E.key);
 #endif
 	}
 }
@@ -1366,6 +1370,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(String, naturalnocasecmp_to, sarray("to"), varray());
 	bind_method(String, length, sarray(), varray());
 	bind_method(String, substr, sarray("from", "len"), varray(-1));
+	bind_method(String, get_slice, sarray("delimiter", "slice"), varray());
+	bind_method(String, get_slicec, sarray("delimiter", "slice"), varray());
+	bind_method(String, get_slice_count, sarray("delimiter"), varray());
 	bind_methodv(String, find, static_cast<int (String::*)(const String &, int) const>(&String::find), sarray("what", "from"), varray(0));
 	bind_method(String, count, sarray("what", "from", "to"), varray(0, 0));
 	bind_method(String, countn, sarray("what", "from", "to"), varray(0, 0));
@@ -1377,7 +1384,7 @@ static void _register_variant_builtin_methods() {
 	bind_methodv(String, begins_with, static_cast<bool (String::*)(const String &) const>(&String::begins_with), sarray("text"), varray());
 	bind_method(String, ends_with, sarray("text"), varray());
 	bind_method(String, is_subsequence_of, sarray("text"), varray());
-	bind_method(String, is_subsequence_ofi, sarray("text"), varray());
+	bind_method(String, is_subsequence_ofn, sarray("text"), varray());
 	bind_method(String, bigrams, sarray(), varray());
 	bind_method(String, similarity, sarray("text"), varray());
 
@@ -1406,9 +1413,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(String, get_basename, sarray(), varray());
 	bind_method(String, plus_file, sarray("file"), varray());
 	bind_method(String, unicode_at, sarray("at"), varray());
+	bind_method(String, indent, sarray("prefix"), varray());
 	bind_method(String, dedent, sarray(), varray());
-	// FIXME: String needs to be immutable when binding
-	//bind_method(String, erase, sarray("position", "chars"), varray());
 	bind_method(String, hash, sarray(), varray());
 	bind_method(String, md5_text, sarray(), varray());
 	bind_method(String, sha1_text, sarray(), varray());
@@ -1417,11 +1423,11 @@ static void _register_variant_builtin_methods() {
 	bind_method(String, sha1_buffer, sarray(), varray());
 	bind_method(String, sha256_buffer, sarray(), varray());
 	bind_method(String, is_empty, sarray(), varray());
-	// FIXME: Static function, not sure how to bind
-	//bind_method(String, humanize_size, sarray("size"), varray());
+	bind_methodv(String, contains, static_cast<bool (String::*)(const String &) const>(&String::contains), sarray("what"), varray());
 
 	bind_method(String, is_absolute_path, sarray(), varray());
-	bind_method(String, is_rel_path, sarray(), varray());
+	bind_method(String, is_relative_path, sarray(), varray());
+	bind_method(String, simplify_path, sarray(), varray());
 	bind_method(String, get_base_dir, sarray(), varray());
 	bind_method(String, get_file, sarray(), varray());
 	bind_method(String, xml_escape, sarray("escape_quotes"), varray(false));
@@ -1469,7 +1475,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2, angle, sarray(), varray());
 	bind_method(Vector2, angle_to, sarray("to"), varray());
 	bind_method(Vector2, angle_to_point, sarray("to"), varray());
-	bind_method(Vector2, direction_to, sarray("b"), varray());
+	bind_method(Vector2, direction_to, sarray("to"), varray());
 	bind_method(Vector2, distance_to, sarray("to"), varray());
 	bind_method(Vector2, distance_squared_to, sarray("to"), varray());
 	bind_method(Vector2, length, sarray(), varray());
@@ -1484,6 +1490,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2, lerp, sarray("to", "weight"), varray());
 	bind_method(Vector2, slerp, sarray("to", "weight"), varray());
 	bind_method(Vector2, cubic_interpolate, sarray("b", "pre_a", "post_b", "weight"), varray());
+	bind_method(Vector2, max_axis_index, sarray(), varray());
+	bind_method(Vector2, min_axis_index, sarray(), varray());
 	bind_method(Vector2, move_toward, sarray("to", "delta"), varray());
 	bind_method(Vector2, rotated, sarray("phi"), varray());
 	bind_method(Vector2, orthogonal, sarray(), varray());
@@ -1501,15 +1509,22 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2, clamp, sarray("min", "max"), varray());
 	bind_method(Vector2, snapped, sarray("step"), varray());
 
+	bind_static_method(Vector2, from_angle, sarray("angle"), varray());
+
 	/* Vector2i */
 
 	bind_method(Vector2i, aspect, sarray(), varray());
+	bind_method(Vector2i, max_axis_index, sarray(), varray());
+	bind_method(Vector2i, min_axis_index, sarray(), varray());
+	bind_method(Vector2i, length, sarray(), varray());
+	bind_method(Vector2i, length_squared, sarray(), varray());
 	bind_method(Vector2i, sign, sarray(), varray());
 	bind_method(Vector2i, abs, sarray(), varray());
 	bind_method(Vector2i, clamp, sarray("min", "max"), varray());
 
 	/* Rect2 */
 
+	bind_method(Rect2, get_center, sarray(), varray());
 	bind_method(Rect2, get_area, sarray(), varray());
 	bind_method(Rect2, has_no_area, sarray(), varray());
 	bind_method(Rect2, has_point, sarray("point"), varray());
@@ -1526,6 +1541,7 @@ static void _register_variant_builtin_methods() {
 
 	/* Rect2i */
 
+	bind_method(Rect2i, get_center, sarray(), varray());
 	bind_method(Rect2i, get_area, sarray(), varray());
 	bind_method(Rect2i, has_no_area, sarray(), varray());
 	bind_method(Rect2i, has_point, sarray("point"), varray());
@@ -1541,13 +1557,13 @@ static void _register_variant_builtin_methods() {
 
 	/* Vector3 */
 
-	bind_method(Vector3, min_axis, sarray(), varray());
-	bind_method(Vector3, max_axis, sarray(), varray());
+	bind_method(Vector3, min_axis_index, sarray(), varray());
+	bind_method(Vector3, max_axis_index, sarray(), varray());
 	bind_method(Vector3, angle_to, sarray("to"), varray());
 	bind_method(Vector3, signed_angle_to, sarray("to", "axis"), varray());
-	bind_method(Vector3, direction_to, sarray("b"), varray());
-	bind_method(Vector3, distance_to, sarray("b"), varray());
-	bind_method(Vector3, distance_squared_to, sarray("b"), varray());
+	bind_method(Vector3, direction_to, sarray("to"), varray());
+	bind_method(Vector3, distance_to, sarray("to"), varray());
+	bind_method(Vector3, distance_squared_to, sarray("to"), varray());
 	bind_method(Vector3, length, sarray(), varray());
 	bind_method(Vector3, length_squared, sarray(), varray());
 	bind_method(Vector3, limit_length, sarray("length"), varray(1.0));
@@ -1565,7 +1581,6 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3, dot, sarray("with"), varray());
 	bind_method(Vector3, cross, sarray("with"), varray());
 	bind_method(Vector3, outer, sarray("with"), varray());
-	bind_method(Vector3, to_diagonal_matrix, sarray(), varray());
 	bind_method(Vector3, abs, sarray(), varray());
 	bind_method(Vector3, floor, sarray(), varray());
 	bind_method(Vector3, ceil, sarray(), varray());
@@ -1577,11 +1592,15 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3, bounce, sarray("n"), varray());
 	bind_method(Vector3, reflect, sarray("n"), varray());
 	bind_method(Vector3, sign, sarray(), varray());
+	bind_method(Vector3, octahedron_encode, sarray(), varray());
+	bind_static_method(Vector3, octahedron_decode, sarray("uv"), varray());
 
 	/* Vector3i */
 
-	bind_method(Vector3i, min_axis, sarray(), varray());
-	bind_method(Vector3i, max_axis, sarray(), varray());
+	bind_method(Vector3i, min_axis_index, sarray(), varray());
+	bind_method(Vector3i, max_axis_index, sarray(), varray());
+	bind_method(Vector3i, length, sarray(), varray());
+	bind_method(Vector3i, length_squared, sarray(), varray());
 	bind_method(Vector3i, sign, sarray(), varray());
 	bind_method(Vector3i, abs, sarray(), varray());
 	bind_method(Vector3i, clamp, sarray("min", "max"), varray());
@@ -1613,6 +1632,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(Quaternion, slerpni, sarray("to", "weight"), varray());
 	bind_method(Quaternion, cubic_slerp, sarray("b", "pre_a", "post_b", "weight"), varray());
 	bind_method(Quaternion, get_euler, sarray(), varray());
+	bind_method(Quaternion, get_axis, sarray(), varray());
+	bind_method(Quaternion, get_angle, sarray(), varray());
 
 	/* Color */
 
@@ -1622,17 +1643,16 @@ static void _register_variant_builtin_methods() {
 	bind_method(Color, to_argb64, sarray(), varray());
 	bind_method(Color, to_abgr64, sarray(), varray());
 	bind_method(Color, to_rgba64, sarray(), varray());
+	bind_method(Color, to_html, sarray("with_alpha"), varray(true));
 
 	bind_method(Color, clamp, sarray("min", "max"), varray(Color(0, 0, 0, 0), Color(1, 1, 1, 1)));
 	bind_method(Color, inverted, sarray(), varray());
 	bind_method(Color, lerp, sarray("to", "weight"), varray());
 	bind_method(Color, lightened, sarray("amount"), varray());
 	bind_method(Color, darkened, sarray("amount"), varray());
-	bind_method(Color, to_html, sarray("with_alpha"), varray(true));
 	bind_method(Color, blend, sarray("over"), varray());
+	bind_method(Color, get_luminance, sarray(), varray());
 
-	// FIXME: Color is immutable, need to probably find a way to do this via constructor
-	//ADDFUNC4R(COLOR, COLOR, Color, from_hsv, FLOAT, "h", FLOAT, "s", FLOAT, "v", FLOAT, "a", varray(1.0));
 	bind_method(Color, is_equal_approx, sarray("to"), varray());
 
 	bind_static_method(Color, hex, sarray("hex"), varray());
@@ -1644,10 +1664,12 @@ static void _register_variant_builtin_methods() {
 	bind_static_method(Color, get_named_color_name, sarray("idx"), varray());
 	bind_static_method(Color, get_named_color, sarray("idx"), varray());
 	bind_static_method(Color, from_string, sarray("str", "default"), varray());
+	bind_static_method(Color, from_hsv, sarray("h", "s", "v", "alpha"), varray(1.0));
 	bind_static_method(Color, from_rgbe9995, sarray("rgbe"), varray());
 
 	/* RID */
 
+	bind_method(RID, is_valid, sarray(), varray());
 	bind_method(RID, get_id, sarray(), varray());
 
 	/* NodePath */
@@ -1686,7 +1708,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Signal, get_object_id, sarray(), varray());
 	bind_method(Signal, get_name, sarray(), varray());
 
-	bind_method(Signal, connect, sarray("callable", "binds", "flags"), varray(Array(), 0));
+	bind_method(Signal, connect, sarray("callable", "flags"), varray(0));
 	bind_method(Signal, disconnect, sarray("callable"), varray());
 	bind_method(Signal, is_connected, sarray("callable"), varray());
 	bind_method(Signal, get_connections, sarray(), varray());
@@ -1700,6 +1722,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Transform2D, get_rotation, sarray(), varray());
 	bind_method(Transform2D, get_origin, sarray(), varray());
 	bind_method(Transform2D, get_scale, sarray(), varray());
+	bind_method(Transform2D, get_skew, sarray(), varray());
 	bind_method(Transform2D, orthonormalized, sarray(), varray());
 	bind_method(Transform2D, rotated, sarray("phi"), varray());
 	bind_method(Transform2D, scaled, sarray("scale"), varray());
@@ -1709,7 +1732,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(Transform2D, interpolate_with, sarray("xform", "weight"), varray());
 	bind_method(Transform2D, is_equal_approx, sarray("xform"), varray());
 	bind_method(Transform2D, set_rotation, sarray("rotation"), varray());
-	bind_method(Transform2D, looking_at, sarray("target"), varray(Transform2D()));
+	bind_method(Transform2D, set_scale, sarray("scale"), varray());
+	bind_method(Transform2D, set_skew, sarray("skew"), varray());
+	bind_method(Transform2D, looking_at, sarray("target"), varray(Vector2()));
 
 	/* Basis */
 
@@ -1720,7 +1745,7 @@ static void _register_variant_builtin_methods() {
 	bind_methodv(Basis, rotated, static_cast<Basis (Basis::*)(const Vector3 &, real_t) const>(&Basis::rotated), sarray("axis", "phi"), varray());
 	bind_method(Basis, scaled, sarray("scale"), varray());
 	bind_method(Basis, get_scale, sarray(), varray());
-	bind_method(Basis, get_euler, sarray(), varray());
+	bind_method(Basis, get_euler, sarray("order"), varray(Basis::EULER_ORDER_YXZ));
 	bind_method(Basis, tdotx, sarray("with"), varray());
 	bind_method(Basis, tdoty, sarray("with"), varray());
 	bind_method(Basis, tdotz, sarray("with"), varray());
@@ -1728,12 +1753,16 @@ static void _register_variant_builtin_methods() {
 	bind_method(Basis, slerp, sarray("to", "weight"), varray());
 	bind_method(Basis, is_equal_approx, sarray("b"), varray());
 	bind_method(Basis, get_rotation_quaternion, sarray(), varray());
+	bind_static_method(Basis, looking_at, sarray("target", "up"), varray(Vector3(0, 1, 0)));
+	bind_static_method(Basis, from_scale, sarray("scale"), varray());
+	bind_static_method(Basis, from_euler, sarray("euler", "order"), varray(Basis::EULER_ORDER_YXZ));
 
 	/* AABB */
 
 	bind_method(AABB, abs, sarray(), varray());
-	bind_method(AABB, get_area, sarray(), varray());
-	bind_method(AABB, has_no_area, sarray(), varray());
+	bind_method(AABB, get_center, sarray(), varray());
+	bind_method(AABB, get_volume, sarray(), varray());
+	bind_method(AABB, has_no_volume, sarray(), varray());
 	bind_method(AABB, has_no_surface, sarray(), varray());
 	bind_method(AABB, has_point, sarray("point"), varray());
 	bind_method(AABB, is_equal_approx, sarray("aabb"), varray());
@@ -1764,6 +1793,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Transform3D, scaled, sarray("scale"), varray());
 	bind_method(Transform3D, translated, sarray("offset"), varray());
 	bind_method(Transform3D, looking_at, sarray("target", "up"), varray(Vector3(0, 1, 0)));
+	bind_method(Transform3D, sphere_interpolate_with, sarray("xform", "weight"), varray());
 	bind_method(Transform3D, interpolate_with, sarray("xform", "weight"), varray());
 	bind_method(Transform3D, is_equal_approx, sarray("xform"), varray());
 
@@ -1793,7 +1823,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Array, append_array, sarray("array"), varray());
 	bind_method(Array, resize, sarray("size"), varray());
 	bind_method(Array, insert, sarray("position", "value"), varray());
-	bind_method(Array, remove, sarray("position"), varray());
+	bind_method(Array, remove_at, sarray("position"), varray());
 	bind_method(Array, fill, sarray("value"), varray());
 	bind_method(Array, erase, sarray("value"), varray());
 	bind_method(Array, front, sarray(), varray());
@@ -1805,6 +1835,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Array, has, sarray("value"), varray());
 	bind_method(Array, pop_back, sarray(), varray());
 	bind_method(Array, pop_front, sarray(), varray());
+	bind_method(Array, pop_at, sarray("position"), varray());
 	bind_method(Array, sort, sarray(), varray());
 	bind_method(Array, sort_custom, sarray("func"), varray());
 	bind_method(Array, shuffle, sarray(), varray());
@@ -1812,7 +1843,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Array, bsearch_custom, sarray("value", "func", "before"), varray(true));
 	bind_method(Array, reverse, sarray(), varray());
 	bind_method(Array, duplicate, sarray("deep"), varray(false));
-	bind_method(Array, slice, sarray("begin", "end", "step", "deep"), varray(1, false));
+	bind_method(Array, slice, sarray("begin", "end", "step", "deep"), varray(INT_MAX, 1, false));
 	bind_method(Array, filter, sarray("method"), varray());
 	bind_method(Array, map, sarray("method"), varray());
 	bind_method(Array, reduce, sarray("method", "accum"), varray(Variant()));
@@ -1826,14 +1857,15 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedByteArray, push_back, sarray("value"), varray());
 	bind_method(PackedByteArray, append, sarray("value"), varray());
 	bind_method(PackedByteArray, append_array, sarray("array"), varray());
-	bind_method(PackedByteArray, remove, sarray("index"), varray());
+	bind_method(PackedByteArray, remove_at, sarray("index"), varray());
 	bind_method(PackedByteArray, insert, sarray("at_index", "value"), varray());
 	bind_method(PackedByteArray, fill, sarray("value"), varray());
 	bind_method(PackedByteArray, resize, sarray("new_size"), varray());
 	bind_method(PackedByteArray, has, sarray("value"), varray());
 	bind_method(PackedByteArray, reverse, sarray(), varray());
-	bind_method(PackedByteArray, subarray, sarray("from", "to"), varray());
+	bind_method(PackedByteArray, slice, sarray("begin", "end"), varray(INT_MAX));
 	bind_method(PackedByteArray, sort, sarray(), varray());
+	bind_method(PackedByteArray, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedByteArray, duplicate, sarray(), varray());
 
 	bind_function(PackedByteArray, get_string_from_ascii, _VariantCall::func_PackedByteArray_get_string_from_ascii, sarray(), varray());
@@ -1886,15 +1918,16 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedInt32Array, push_back, sarray("value"), varray());
 	bind_method(PackedInt32Array, append, sarray("value"), varray());
 	bind_method(PackedInt32Array, append_array, sarray("array"), varray());
-	bind_method(PackedInt32Array, remove, sarray("index"), varray());
+	bind_method(PackedInt32Array, remove_at, sarray("index"), varray());
 	bind_method(PackedInt32Array, insert, sarray("at_index", "value"), varray());
 	bind_method(PackedInt32Array, fill, sarray("value"), varray());
 	bind_method(PackedInt32Array, resize, sarray("new_size"), varray());
 	bind_method(PackedInt32Array, has, sarray("value"), varray());
 	bind_method(PackedInt32Array, reverse, sarray(), varray());
-	bind_method(PackedInt32Array, subarray, sarray("from", "to"), varray());
+	bind_method(PackedInt32Array, slice, sarray("begin", "end"), varray(INT_MAX));
 	bind_method(PackedInt32Array, to_byte_array, sarray(), varray());
 	bind_method(PackedInt32Array, sort, sarray(), varray());
+	bind_method(PackedInt32Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedInt32Array, duplicate, sarray(), varray());
 
 	/* Int64 Array */
@@ -1905,15 +1938,16 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedInt64Array, push_back, sarray("value"), varray());
 	bind_method(PackedInt64Array, append, sarray("value"), varray());
 	bind_method(PackedInt64Array, append_array, sarray("array"), varray());
-	bind_method(PackedInt64Array, remove, sarray("index"), varray());
+	bind_method(PackedInt64Array, remove_at, sarray("index"), varray());
 	bind_method(PackedInt64Array, insert, sarray("at_index", "value"), varray());
 	bind_method(PackedInt64Array, fill, sarray("value"), varray());
 	bind_method(PackedInt64Array, resize, sarray("new_size"), varray());
 	bind_method(PackedInt64Array, has, sarray("value"), varray());
 	bind_method(PackedInt64Array, reverse, sarray(), varray());
-	bind_method(PackedInt64Array, subarray, sarray("from", "to"), varray());
+	bind_method(PackedInt64Array, slice, sarray("begin", "end"), varray(INT_MAX));
 	bind_method(PackedInt64Array, to_byte_array, sarray(), varray());
 	bind_method(PackedInt64Array, sort, sarray(), varray());
+	bind_method(PackedInt64Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedInt64Array, duplicate, sarray(), varray());
 
 	/* Float32 Array */
@@ -1924,15 +1958,16 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedFloat32Array, push_back, sarray("value"), varray());
 	bind_method(PackedFloat32Array, append, sarray("value"), varray());
 	bind_method(PackedFloat32Array, append_array, sarray("array"), varray());
-	bind_method(PackedFloat32Array, remove, sarray("index"), varray());
+	bind_method(PackedFloat32Array, remove_at, sarray("index"), varray());
 	bind_method(PackedFloat32Array, insert, sarray("at_index", "value"), varray());
 	bind_method(PackedFloat32Array, fill, sarray("value"), varray());
 	bind_method(PackedFloat32Array, resize, sarray("new_size"), varray());
 	bind_method(PackedFloat32Array, has, sarray("value"), varray());
 	bind_method(PackedFloat32Array, reverse, sarray(), varray());
-	bind_method(PackedFloat32Array, subarray, sarray("from", "to"), varray());
+	bind_method(PackedFloat32Array, slice, sarray("begin", "end"), varray(INT_MAX));
 	bind_method(PackedFloat32Array, to_byte_array, sarray(), varray());
 	bind_method(PackedFloat32Array, sort, sarray(), varray());
+	bind_method(PackedFloat32Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedFloat32Array, duplicate, sarray(), varray());
 
 	/* Float64 Array */
@@ -1943,15 +1978,16 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedFloat64Array, push_back, sarray("value"), varray());
 	bind_method(PackedFloat64Array, append, sarray("value"), varray());
 	bind_method(PackedFloat64Array, append_array, sarray("array"), varray());
-	bind_method(PackedFloat64Array, remove, sarray("index"), varray());
+	bind_method(PackedFloat64Array, remove_at, sarray("index"), varray());
 	bind_method(PackedFloat64Array, insert, sarray("at_index", "value"), varray());
 	bind_method(PackedFloat64Array, fill, sarray("value"), varray());
 	bind_method(PackedFloat64Array, resize, sarray("new_size"), varray());
 	bind_method(PackedFloat64Array, has, sarray("value"), varray());
 	bind_method(PackedFloat64Array, reverse, sarray(), varray());
-	bind_method(PackedFloat64Array, subarray, sarray("from", "to"), varray());
+	bind_method(PackedFloat64Array, slice, sarray("begin", "end"), varray(INT_MAX));
 	bind_method(PackedFloat64Array, to_byte_array, sarray(), varray());
 	bind_method(PackedFloat64Array, sort, sarray(), varray());
+	bind_method(PackedFloat64Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedFloat64Array, duplicate, sarray(), varray());
 
 	/* String Array */
@@ -1962,15 +1998,16 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedStringArray, push_back, sarray("value"), varray());
 	bind_method(PackedStringArray, append, sarray("value"), varray());
 	bind_method(PackedStringArray, append_array, sarray("array"), varray());
-	bind_method(PackedStringArray, remove, sarray("index"), varray());
+	bind_method(PackedStringArray, remove_at, sarray("index"), varray());
 	bind_method(PackedStringArray, insert, sarray("at_index", "value"), varray());
 	bind_method(PackedStringArray, fill, sarray("value"), varray());
 	bind_method(PackedStringArray, resize, sarray("new_size"), varray());
 	bind_method(PackedStringArray, has, sarray("value"), varray());
 	bind_method(PackedStringArray, reverse, sarray(), varray());
-	bind_method(PackedStringArray, subarray, sarray("from", "to"), varray());
+	bind_method(PackedStringArray, slice, sarray("begin", "end"), varray(INT_MAX));
 	bind_method(PackedStringArray, to_byte_array, sarray(), varray());
 	bind_method(PackedStringArray, sort, sarray(), varray());
+	bind_method(PackedStringArray, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedStringArray, duplicate, sarray(), varray());
 
 	/* Vector2 Array */
@@ -1981,15 +2018,16 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedVector2Array, push_back, sarray("value"), varray());
 	bind_method(PackedVector2Array, append, sarray("value"), varray());
 	bind_method(PackedVector2Array, append_array, sarray("array"), varray());
-	bind_method(PackedVector2Array, remove, sarray("index"), varray());
+	bind_method(PackedVector2Array, remove_at, sarray("index"), varray());
 	bind_method(PackedVector2Array, insert, sarray("at_index", "value"), varray());
 	bind_method(PackedVector2Array, fill, sarray("value"), varray());
 	bind_method(PackedVector2Array, resize, sarray("new_size"), varray());
 	bind_method(PackedVector2Array, has, sarray("value"), varray());
 	bind_method(PackedVector2Array, reverse, sarray(), varray());
-	bind_method(PackedVector2Array, subarray, sarray("from", "to"), varray());
+	bind_method(PackedVector2Array, slice, sarray("begin", "end"), varray(INT_MAX));
 	bind_method(PackedVector2Array, to_byte_array, sarray(), varray());
 	bind_method(PackedVector2Array, sort, sarray(), varray());
+	bind_method(PackedVector2Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedVector2Array, duplicate, sarray(), varray());
 
 	/* Vector3 Array */
@@ -2000,15 +2038,16 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedVector3Array, push_back, sarray("value"), varray());
 	bind_method(PackedVector3Array, append, sarray("value"), varray());
 	bind_method(PackedVector3Array, append_array, sarray("array"), varray());
-	bind_method(PackedVector3Array, remove, sarray("index"), varray());
+	bind_method(PackedVector3Array, remove_at, sarray("index"), varray());
 	bind_method(PackedVector3Array, insert, sarray("at_index", "value"), varray());
 	bind_method(PackedVector3Array, fill, sarray("value"), varray());
 	bind_method(PackedVector3Array, resize, sarray("new_size"), varray());
 	bind_method(PackedVector3Array, has, sarray("value"), varray());
 	bind_method(PackedVector3Array, reverse, sarray(), varray());
-	bind_method(PackedVector3Array, subarray, sarray("from", "to"), varray());
+	bind_method(PackedVector3Array, slice, sarray("begin", "end"), varray(INT_MAX));
 	bind_method(PackedVector3Array, to_byte_array, sarray(), varray());
 	bind_method(PackedVector3Array, sort, sarray(), varray());
+	bind_method(PackedVector3Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedVector3Array, duplicate, sarray(), varray());
 
 	/* Color Array */
@@ -2019,15 +2058,16 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedColorArray, push_back, sarray("value"), varray());
 	bind_method(PackedColorArray, append, sarray("value"), varray());
 	bind_method(PackedColorArray, append_array, sarray("array"), varray());
-	bind_method(PackedColorArray, remove, sarray("index"), varray());
+	bind_method(PackedColorArray, remove_at, sarray("index"), varray());
 	bind_method(PackedColorArray, insert, sarray("at_index", "value"), varray());
 	bind_method(PackedColorArray, fill, sarray("value"), varray());
 	bind_method(PackedColorArray, resize, sarray("new_size"), varray());
 	bind_method(PackedColorArray, has, sarray("value"), varray());
 	bind_method(PackedColorArray, reverse, sarray(), varray());
-	bind_method(PackedColorArray, subarray, sarray("from", "to"), varray());
+	bind_method(PackedColorArray, slice, sarray("begin", "end"), varray(INT_MAX));
 	bind_method(PackedColorArray, to_byte_array, sarray(), varray());
 	bind_method(PackedColorArray, sort, sarray(), varray());
+	bind_method(PackedColorArray, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedColorArray, duplicate, sarray(), varray());
 
 	/* Register constants */
@@ -2084,6 +2124,13 @@ static void _register_variant_builtin_methods() {
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "RIGHT", Vector2i(1, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "UP", Vector2i(0, -1));
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "DOWN", Vector2i(0, 1));
+
+	_VariantCall::add_constant(Variant::BASIS, "EULER_ORDER_XYZ", Basis::EULER_ORDER_XYZ);
+	_VariantCall::add_constant(Variant::BASIS, "EULER_ORDER_XZY", Basis::EULER_ORDER_XZY);
+	_VariantCall::add_constant(Variant::BASIS, "EULER_ORDER_YXZ", Basis::EULER_ORDER_YXZ);
+	_VariantCall::add_constant(Variant::BASIS, "EULER_ORDER_YZX", Basis::EULER_ORDER_YZX);
+	_VariantCall::add_constant(Variant::BASIS, "EULER_ORDER_ZXY", Basis::EULER_ORDER_ZXY);
+	_VariantCall::add_constant(Variant::BASIS, "EULER_ORDER_ZYX", Basis::EULER_ORDER_ZYX);
 
 	_VariantCall::add_variant_constant(Variant::TRANSFORM2D, "IDENTITY", Transform2D());
 	_VariantCall::add_variant_constant(Variant::TRANSFORM2D, "FLIP_X", Transform2D(-1, 0, 0, 1, 0, 0));

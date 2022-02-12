@@ -8,13 +8,9 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="type" type="int" setter="set_deconstruct_type" getter="get_deconstruct_type" enum="Variant.Type" default="0">
 			The type to deconstruct.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

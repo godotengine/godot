@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 #define ACTION_MAP_EDITOR_H
 
 #include "editor/editor_data.h"
+#include <scene/gui/color_rect.h>
 
 // Confirmation Dialog used when configuring an input event.
 // Separate from ActionMapEditor for code cleanliness and separation of responsibilities.
@@ -60,6 +61,7 @@ private:
 
 	// Listening for input
 	Label *event_as_text;
+	ColorRect *mouse_detection_rect;
 
 	// List of All Key/Mouse/Joypad input options.
 	int allowed_input_types;
@@ -166,6 +168,7 @@ private:
 	void _event_config_confirmed();
 
 	void _add_action_pressed();
+	bool _has_action(const String &p_name) const;
 	void _add_action(const String &p_name);
 	void _action_edited();
 

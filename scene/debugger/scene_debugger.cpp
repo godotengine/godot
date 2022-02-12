@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,30 +31,121 @@
 #include "scene_debugger.h"
 
 #include "core/debugger/engine_debugger.h"
+#include "core/debugger/engine_profiler.h"
 #include "core/io/marshalls.h"
 #include "core/object/script_language.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 
-void SceneDebugger::initialize() {
+Array SceneDebugger::RPCProfilerFrame::serialize() {
+	Array arr;
+	arr.push_back(infos.size() * 4);
+	for (int i = 0; i < infos.size(); ++i) {
+		arr.push_back(uint64_t(infos[i].node));
+		arr.push_back(infos[i].node_path);
+		arr.push_back(infos[i].incoming_rpc);
+		arr.push_back(infos[i].outgoing_rpc);
+	}
+	return arr;
+}
+
+bool SceneDebugger::RPCProfilerFrame::deserialize(const Array &p_arr) {
+	ERR_FAIL_COND_V(p_arr.size() < 1, false);
+	uint32_t size = p_arr[0];
+	ERR_FAIL_COND_V(size % 4, false);
+	ERR_FAIL_COND_V((uint32_t)p_arr.size() != size + 1, false);
+	infos.resize(size / 4);
+	int idx = 1;
+	for (uint32_t i = 0; i < size / 4; ++i) {
+		infos.write[i].node = uint64_t(p_arr[idx]);
+		infos.write[i].node_path = p_arr[idx + 1];
+		infos.write[i].incoming_rpc = p_arr[idx + 2];
+		infos.write[i].outgoing_rpc = p_arr[idx + 3];
+	}
+	return true;
+}
+
+class SceneDebugger::RPCProfiler : public EngineProfiler {
+	Map<ObjectID, RPCNodeInfo> rpc_node_data;
+	uint64_t last_profile_time = 0;
+
+	void init_node(const ObjectID p_node) {
+		if (rpc_node_data.has(p_node)) {
+			return;
+		}
+		rpc_node_data.insert(p_node, RPCNodeInfo());
+		rpc_node_data[p_node].node = p_node;
+		rpc_node_data[p_node].node_path = Object::cast_to<Node>(ObjectDB::get_instance(p_node))->get_path();
+		rpc_node_data[p_node].incoming_rpc = 0;
+		rpc_node_data[p_node].outgoing_rpc = 0;
+	}
+
+public:
+	void toggle(bool p_enable, const Array &p_opts) {
+		rpc_node_data.clear();
+	}
+
+	void add(const Array &p_data) {
+		ERR_FAIL_COND(p_data.size() < 2);
+		const ObjectID id = p_data[0];
+		const String what = p_data[1];
+		init_node(id);
+		RPCNodeInfo &info = rpc_node_data[id];
+		if (what == "rpc_in") {
+			info.incoming_rpc++;
+		} else if (what == "rpc_out") {
+			info.outgoing_rpc++;
+		}
+	}
+
+	void tick(double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
+		uint64_t pt = OS::get_singleton()->get_ticks_msec();
+		if (pt - last_profile_time > 100) {
+			last_profile_time = pt;
+			RPCProfilerFrame frame;
+			for (const KeyValue<ObjectID, RPCNodeInfo> &E : rpc_node_data) {
+				frame.infos.push_back(E.value);
+			}
+			rpc_node_data.clear();
+			EngineDebugger::get_singleton()->send_message("multiplayer:rpc", frame.serialize());
+		}
+	}
+};
+
+SceneDebugger *SceneDebugger::singleton = nullptr;
+
+SceneDebugger::SceneDebugger() {
+	singleton = this;
+	rpc_profiler.instantiate();
+	rpc_profiler->bind("rpc");
 #ifdef DEBUG_ENABLED
 	LiveEditor::singleton = memnew(LiveEditor);
 	EngineDebugger::register_message_capture("scene", EngineDebugger::Capture(nullptr, SceneDebugger::parse_message));
 #endif
 }
 
-void SceneDebugger::deinitialize() {
+SceneDebugger::~SceneDebugger() {
 #ifdef DEBUG_ENABLED
 	if (LiveEditor::singleton) {
-		// Should be removed automatically when deiniting debugger, but just in case
-		if (EngineDebugger::has_capture("scene")) {
-			EngineDebugger::unregister_message_capture("scene");
-		}
+		EngineDebugger::unregister_message_capture("scene");
 		memdelete(LiveEditor::singleton);
 		LiveEditor::singleton = nullptr;
 	}
 #endif
+	singleton = nullptr;
+}
+
+void SceneDebugger::initialize() {
+	if (EngineDebugger::is_active()) {
+		memnew(SceneDebugger);
+	}
+}
+
+void SceneDebugger::deinitialize() {
+	if (singleton) {
+		memdelete(singleton);
+	}
 }
 
 #ifdef DEBUG_ENABLED
@@ -88,13 +179,13 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 
 	} else if (p_msg == "override_camera_2D:transform") {
 		ERR_FAIL_COND_V(p_args.size() < 1, ERR_INVALID_DATA);
-		Transform2D transform = p_args[1];
+		Transform2D transform = p_args[0];
 		scene_tree->get_root()->set_canvas_transform_override(transform);
-
+#ifndef _3D_DISABLED
 	} else if (p_msg == "override_camera_3D:set") {
 		ERR_FAIL_COND_V(p_args.size() < 1, ERR_INVALID_DATA);
 		bool enable = p_args[0];
-		scene_tree->get_root()->enable_camera_override(enable);
+		scene_tree->get_root()->enable_camera_3d_override(enable);
 
 	} else if (p_msg == "override_camera_3D:transform") {
 		ERR_FAIL_COND_V(p_args.size() < 5, ERR_INVALID_DATA);
@@ -104,12 +195,12 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 		float near = p_args[3];
 		float far = p_args[4];
 		if (is_perspective) {
-			scene_tree->get_root()->set_camera_override_perspective(size_or_fov, near, far);
+			scene_tree->get_root()->set_camera_3d_override_perspective(size_or_fov, near, far);
 		} else {
-			scene_tree->get_root()->set_camera_override_orthogonal(size_or_fov, near, far);
+			scene_tree->get_root()->set_camera_3d_override_orthogonal(size_or_fov, near, far);
 		}
-		scene_tree->get_root()->set_camera_override_transform(transform);
-
+		scene_tree->get_root()->set_camera_3d_override_transform(transform);
+#endif // _3D_DISABLED
 	} else if (p_msg == "set_object_property") {
 		ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
 		_set_object_property(p_args[0], p_args[1], p_args[2]);
@@ -226,7 +317,7 @@ void SceneDebugger::add_to_cache(const String &p_filename, Node *p_node) {
 		return;
 	}
 
-	if (EngineDebugger::get_script_debugger() && p_filename != String()) {
+	if (EngineDebugger::get_script_debugger() && !p_filename.is_empty()) {
 		debugger->live_scene_edit_cache[p_filename].insert(p_node);
 	}
 }
@@ -249,8 +340,8 @@ void SceneDebugger::remove_from_cache(const String &p_filename, Node *p_node) {
 	Map<Node *, Map<ObjectID, Node *>> &remove_list = debugger->live_edit_remove_list;
 	Map<Node *, Map<ObjectID, Node *>>::Element *F = remove_list.find(p_node);
 	if (F) {
-		for (Map<ObjectID, Node *>::Element *G = F->get().front(); G; G = G->next()) {
-			memdelete(G->get());
+		for (const KeyValue<ObjectID, Node *> &G : F->get()) {
+			memdelete(G.value);
 		}
 		remove_list.erase(F);
 	}
@@ -339,15 +430,15 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 	}
 	// Constants
 	for (ScriptConstantsMap::Element *sc = constants.front(); sc; sc = sc->next()) {
-		for (Map<StringName, Variant>::Element *E = sc->get().front(); E; E = E->next()) {
+		for (const KeyValue<StringName, Variant> &E : sc->get()) {
 			String script_path = sc->key() == p_script ? "" : sc->key()->get_path().get_file() + "/";
-			if (E->value().get_type() == Variant::OBJECT) {
-				Variant id = ((Object *)E->value())->get_instance_id();
-				PropertyInfo pi(id.get_type(), "Constants/" + E->key(), PROPERTY_HINT_OBJECT_ID, "Object");
+			if (E.value.get_type() == Variant::OBJECT) {
+				Variant id = ((Object *)E.value)->get_instance_id();
+				PropertyInfo pi(id.get_type(), "Constants/" + E.key, PROPERTY_HINT_OBJECT_ID, "Object");
 				properties.push_back(SceneDebuggerProperty(pi, id));
 			} else {
-				PropertyInfo pi(E->value().get_type(), "Constants/" + script_path + E->key());
-				properties.push_back(SceneDebuggerProperty(pi, E->value()));
+				PropertyInfo pi(E.value.get_type(), "Constants/" + script_path + E.key);
+				properties.push_back(SceneDebuggerProperty(pi, E.value));
 			}
 		}
 	}
@@ -367,7 +458,7 @@ void SceneDebuggerObject::serialize(Array &r_arr, int p_max_size) {
 
 		PropertyHint hint = pi.hint;
 		String hint_string = pi.hint_string;
-		if (!res.is_null()) {
+		if (!res.is_null() && !res->get_path().is_empty()) {
 			var = res->get_path();
 		} else { //only send information that can be sent..
 			int len = 0; //test how big is this to encode

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,12 +32,18 @@
 #define RESOURCE_SAVER_H
 
 #include "core/io/resource.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/script_language.h"
 
 class ResourceFormatSaver : public RefCounted {
 	GDCLASS(ResourceFormatSaver, RefCounted);
 
 protected:
 	static void _bind_methods();
+
+	GDVIRTUAL3R(int64_t, _save, String, RES, uint32_t)
+	GDVIRTUAL1RC(bool, _recognize, RES)
+	GDVIRTUAL1RC(Vector<String>, _get_recognized_extensions, RES)
 
 public:
 	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);

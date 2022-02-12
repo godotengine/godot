@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,6 +43,7 @@ enum MethodFlags {
 	METHOD_FLAG_FROM_SCRIPT = 64,
 	METHOD_FLAG_VARARG = 128,
 	METHOD_FLAG_STATIC = 256,
+	METHOD_FLAG_OBJECT_CORE = 512,
 	METHOD_FLAGS_DEFAULT = METHOD_FLAG_NORMAL,
 };
 
@@ -63,18 +64,16 @@ class MethodBind {
 	bool _returns = false;
 
 protected:
-#ifdef DEBUG_METHODS_ENABLED
 	Variant::Type *argument_types = nullptr;
+#ifdef DEBUG_METHODS_ENABLED
 	Vector<StringName> arg_names;
 #endif
 	void _set_const(bool p_const);
 	void _set_returns(bool p_returns);
-#ifdef DEBUG_METHODS_ENABLED
 	virtual Variant::Type _gen_argument_type(int p_arg) const = 0;
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const = 0;
 	void _generate_argument_types(int p_count);
 
-#endif
 	void set_argument_count(int p_count) { argument_count = p_count; }
 
 public:
@@ -101,7 +100,6 @@ public:
 		}
 	}
 
-#ifdef DEBUG_METHODS_ENABLED
 	_FORCE_INLINE_ Variant::Type get_argument_type(int p_argument) const {
 		ERR_FAIL_COND_V(p_argument < -1 || p_argument > argument_count, Variant::NIL);
 		return argument_types[p_argument + 1];
@@ -110,6 +108,7 @@ public:
 	PropertyInfo get_argument_info(int p_argument) const;
 	PropertyInfo get_return_info() const;
 
+#ifdef DEBUG_METHODS_ENABLED
 	void set_argument_names(const Vector<StringName> &p_names); // Set by ClassDB, can't be inferred otherwise.
 	Vector<StringName> get_argument_names() const;
 
@@ -148,12 +147,9 @@ public:
 
 protected:
 	NativeCall call_method = nullptr;
-#ifdef DEBUG_METHODS_ENABLED
 	MethodInfo arguments;
-#endif
 
 public:
-#ifdef DEBUG_METHODS_ENABLED
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const {
 		if (p_arg < 0) {
 			return arguments.return_val;
@@ -168,12 +164,9 @@ public:
 		return _gen_argument_type_info(p_arg).type;
 	}
 
+#ifdef DEBUG_METHODS_ENABLED
 	virtual GodotTypeInfo::Metadata get_argument_meta(int) const {
 		return GodotTypeInfo::METADATA_NONE;
-	}
-#else
-	virtual Variant::Type _gen_argument_type(int p_arg) const {
-		return Variant::NIL;
 	}
 #endif
 
@@ -184,25 +177,29 @@ public:
 
 	void set_method_info(const MethodInfo &p_info, bool p_return_nil_is_variant) {
 		set_argument_count(p_info.arguments.size());
-#ifdef DEBUG_METHODS_ENABLED
 		Variant::Type *at = memnew_arr(Variant::Type, p_info.arguments.size() + 1);
 		at[0] = p_info.return_val.type;
 		if (p_info.arguments.size()) {
+#ifdef DEBUG_METHODS_ENABLED
 			Vector<StringName> names;
 			names.resize(p_info.arguments.size());
+#endif
 			for (int i = 0; i < p_info.arguments.size(); i++) {
 				at[i + 1] = p_info.arguments[i].type;
+#ifdef DEBUG_METHODS_ENABLED
 				names.write[i] = p_info.arguments[i].name;
+#endif
 			}
 
+#ifdef DEBUG_METHODS_ENABLED
 			set_argument_names(names);
+#endif
 		}
 		argument_types = at;
 		arguments = p_info;
 		if (p_return_nil_is_variant) {
 			arguments.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 		}
-#endif
 	}
 
 	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) {
@@ -247,7 +244,6 @@ class MethodBindT : public MethodBind {
 	void (MB_T::*method)(P...);
 
 protected:
-#ifdef DEBUG_METHODS_ENABLED
 // GCC raises warnings in the case P = {} as the comparison is always false...
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
@@ -269,7 +265,6 @@ protected:
 		call_get_argument_type_info<P...>(p_arg, pi);
 		return pi;
 	}
-#endif
 
 public:
 #ifdef DEBUG_METHODS_ENABLED
@@ -297,9 +292,7 @@ public:
 
 	MethodBindT(void (MB_T::*p_method)(P...)) {
 		method = p_method;
-#ifdef DEBUG_METHODS_ENABLED
 		_generate_argument_types(sizeof...(P));
-#endif
 		set_argument_count(sizeof...(P));
 	}
 };
@@ -326,7 +319,6 @@ class MethodBindTC : public MethodBind {
 	void (MB_T::*method)(P...) const;
 
 protected:
-#ifdef DEBUG_METHODS_ENABLED
 // GCC raises warnings in the case P = {} as the comparison is always false...
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
@@ -348,7 +340,6 @@ protected:
 		call_get_argument_type_info<P...>(p_arg, pi);
 		return pi;
 	}
-#endif
 
 public:
 #ifdef DEBUG_METHODS_ENABLED
@@ -377,9 +368,7 @@ public:
 	MethodBindTC(void (MB_T::*p_method)(P...) const) {
 		method = p_method;
 		_set_const(true);
-#ifdef DEBUG_METHODS_ENABLED
 		_generate_argument_types(sizeof...(P));
-#endif
 		set_argument_count(sizeof...(P));
 	}
 };
@@ -407,7 +396,6 @@ class MethodBindTR : public MethodBind {
 	(P...);
 
 protected:
-#ifdef DEBUG_METHODS_ENABLED
 // GCC raises warnings in the case P = {} as the comparison is always false...
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
@@ -432,7 +420,6 @@ protected:
 	}
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
-#endif
 #endif
 
 public:
@@ -467,9 +454,7 @@ public:
 	MethodBindTR(R (MB_T::*p_method)(P...)) {
 		method = p_method;
 		_set_returns(true);
-#ifdef DEBUG_METHODS_ENABLED
 		_generate_argument_types(sizeof...(P));
-#endif
 		set_argument_count(sizeof...(P));
 	}
 };
@@ -498,7 +483,6 @@ class MethodBindTRC : public MethodBind {
 	(P...) const;
 
 protected:
-#ifdef DEBUG_METHODS_ENABLED
 // GCC raises warnings in the case P = {} as the comparison is always false...
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
@@ -523,7 +507,6 @@ protected:
 	}
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
-#endif
 #endif
 
 public:
@@ -559,9 +542,7 @@ public:
 		method = p_method;
 		_set_returns(true);
 		_set_const(true);
-#ifdef DEBUG_METHODS_ENABLED
 		_generate_argument_types(sizeof...(P));
-#endif
 		set_argument_count(sizeof...(P));
 	}
 };

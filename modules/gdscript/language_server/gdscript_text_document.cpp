@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -217,8 +217,8 @@ Array GDScriptTextDocument::completion(const Dictionary &p_params) {
 	} else if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
 		arr = native_member_completions.duplicate();
 
-		for (Map<String, ExtendGDScriptParser *>::Element *E = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.front(); E; E = E->next()) {
-			ExtendGDScriptParser *script = E->get();
+		for (KeyValue<String, ExtendGDScriptParser *> &E : GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts) {
+			ExtendGDScriptParser *script = E.value;
 			const Array &items = script->get_member_completions();
 
 			const int start_size = arr.size();
@@ -291,8 +291,8 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 		}
 	} else if (item.kind == lsp::CompletionItemKind::Event) {
 		if (params.context.triggerKind == lsp::CompletionTriggerKind::TriggerCharacter && (params.context.triggerCharacter == "(")) {
-			const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", false) ? "'" : "\"";
-			item.insertText = quote_style + item.label + quote_style;
+			const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
+			item.insertText = item.label.quote(quote_style);
 		}
 	}
 
@@ -431,9 +431,13 @@ void GDScriptTextDocument::sync_script_content(const String &p_path, const Strin
 	GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_script(path, p_content);
 
 	EditorFileSystem::get_singleton()->update_file(path);
-	Ref<GDScript> script = ResourceLoader::load(path);
-	script->load_source_code(path);
-	script->reload(true);
+	Error error;
+	Ref<GDScript> script = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REUSE, &error);
+	if (error == OK) {
+		if (script->load_source_code(path) == OK) {
+			script->reload(true);
+		}
+	}
 }
 
 void GDScriptTextDocument::show_native_symbol_in_editor(const String &p_symbol_id) {

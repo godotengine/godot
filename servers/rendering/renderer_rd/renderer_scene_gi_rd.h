@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -110,8 +110,8 @@ private:
 		float pad[3];
 	};
 
-	VoxelGILight *voxel_gi_lights;
-	uint32_t voxel_gi_max_lights;
+	VoxelGILight *voxel_gi_lights = nullptr;
+	uint32_t voxel_gi_max_lights = 32;
 	RID voxel_gi_lights_uniform;
 
 	enum {
@@ -383,7 +383,7 @@ public:
 	mutable RID_Owner<VoxelGIInstance> voxel_gi_instance_owner;
 
 	_FORCE_INLINE_ VoxelGIInstance *get_probe_instance(RID p_probe) const {
-		return voxel_gi_instance_owner.getornull(p_probe);
+		return voxel_gi_instance_owner.get_or_null(p_probe);
 	};
 
 	_FORCE_INLINE_ RID voxel_gi_instance_get_texture(RID p_probe) {
@@ -392,7 +392,7 @@ public:
 		return voxel_gi->texture;
 	};
 
-	RS::VoxelGIQuality voxel_gi_quality = RS::VOXEL_GI_QUALITY_HIGH;
+	RS::VoxelGIQuality voxel_gi_quality = RS::VOXEL_GI_QUALITY_LOW;
 
 	/* SDFGI */
 
@@ -495,7 +495,7 @@ public:
 		float solid_cell_ratio = 0;
 		uint32_t solid_cell_count = 0;
 
-		RS::EnvironmentSDFGICascades cascade_mode;
+		int num_cascades = 6;
 		float min_cell_size = 0;
 		uint32_t probe_axis_count = 0; //amount of probes per axis, this is an odd number because it encloses endpoints
 
@@ -504,12 +504,12 @@ public:
 		RID cascades_ubo;
 
 		bool uses_occlusion = false;
-		float bounce_feedback = 0.0;
-		bool reads_sky = false;
+		float bounce_feedback = 0.5;
+		bool reads_sky = true;
 		float energy = 1.0;
 		float normal_bias = 1.1;
 		float probe_bias = 1.1;
-		RS::EnvironmentSDFGIYScale y_scale_mode = RS::ENV_SDFGI_Y_SCALE_DISABLED;
+		RS::EnvironmentSDFGIYScale y_scale_mode = RS::ENV_SDFGI_Y_SCALE_75_PERCENT;
 
 		float y_mult = 1.0;
 
@@ -536,7 +536,7 @@ public:
 	};
 
 	RS::EnvironmentSDFGIRayCount sdfgi_ray_count = RS::ENV_SDFGI_RAY_COUNT_16;
-	RS::EnvironmentSDFGIFramesToConverge sdfgi_frames_to_converge = RS::ENV_SDFGI_CONVERGE_IN_10_FRAMES;
+	RS::EnvironmentSDFGIFramesToConverge sdfgi_frames_to_converge = RS::ENV_SDFGI_CONVERGE_IN_30_FRAMES;
 	RS::EnvironmentSDFGIFramesToUpdateLight sdfgi_frames_to_update_light = RS::ENV_SDFGI_UPDATE_LIGHT_IN_4_FRAMES;
 
 	float sdfgi_solid_cell_ratio = 0.25;
@@ -602,19 +602,15 @@ public:
 	};
 
 	struct VoxelGIData {
-		float xform[16];
-		float bounds[3];
-		float dynamic_range;
+		float xform[16]; // 64 - 64
 
-		float bias;
-		float normal_bias;
-		uint32_t blend_ambient;
-		uint32_t texture_slot;
+		float bounds[3]; // 12 - 76
+		float dynamic_range; // 4 - 80
 
-		uint32_t pad0;
-		uint32_t pad1;
-		uint32_t pad2;
-		uint32_t mipmaps;
+		float bias; // 4 - 84
+		float normal_bias; // 4 - 88
+		uint32_t blend_ambient; // 4 - 92
+		uint32_t mipmaps; // 4 - 96
 	};
 
 	struct PushConstant {
@@ -623,12 +619,11 @@ public:
 		float z_far;
 
 		float proj_info[4];
-		float ao_color[3];
-		uint32_t max_voxel_gi_instances;
 
+		uint32_t max_voxel_gi_instances;
 		uint32_t high_quality_vct;
 		uint32_t orthogonal;
-		uint32_t pad[2];
+		uint32_t pad;
 
 		float cam_rotation[12];
 	};

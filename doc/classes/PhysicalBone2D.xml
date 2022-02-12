@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicalBone2D" inherits="RigidBody2D" version="4.0">
+<class name="PhysicalBone2D" inherits="RigidDynamicBody2D" version="4.0">
 	<brief_description>
 		A 2D node that can be used for physically aware bones in 2D.
 	</brief_description>
 	<description>
-		The [code]PhysicalBone2D[/code] node is a [RigidBody2D]-based node that can be used to make [Bone2D] nodes in a [Skeleton2D] react to physics. This node is very similar to the [PhysicalBone3D] node, just for 2D instead of 3D.
+		The [code]PhysicalBone2D[/code] node is a [RigidDynamicBody2D]-based node that can be used to make [Bone2D] nodes in a [Skeleton2D] react to physics. This node is very similar to the [PhysicalBone3D] node, just for 2D instead of 3D.
 		[b]Note:[/b] To have the Bone2D nodes visually follow the [code]PhysicalBone2D[/code] node, use a [SkeletonModification2DPhysicalBones] modification on the [Skeleton2D] node with the [Bone2D] nodes.
 		[b]Note:[/b] The PhysicalBone2D node does not automatically create a [Joint2D] node to keep [code]PhysicalBone2D[/code] nodes together. You will need to create these manually. For most cases, you want to use a [PinJoint2D] node. The [code]PhysicalBone2D[/code] node can automatically configure the [Joint2D] node once it's been created as a child node.
 	</description>
@@ -42,6 +42,4 @@
 			[b]Note:[/b] To have the Bone2D nodes visually follow the [code]PhysicalBone2D[/code] node, use a [SkeletonModification2DPhysicalBones] modification on the [Skeleton2D] node with the [Bone2D] nodes.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

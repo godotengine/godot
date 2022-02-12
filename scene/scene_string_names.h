@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -89,6 +89,7 @@ public:
 	StringName focus_entered;
 	StringName focus_exited;
 
+	StringName pre_sort_children;
 	StringName sort_children;
 
 	StringName finished;
@@ -96,8 +97,12 @@ public:
 	StringName animation_finished;
 	StringName animation_changed;
 	StringName animation_started;
+	StringName RESET;
 
 	StringName pose_updated;
+	StringName bone_pose_changed;
+	StringName bone_enabled_changed;
+	StringName show_rest_only_changed;
 
 	StringName body_shape_entered;
 	StringName body_entered;
@@ -109,9 +114,6 @@ public:
 
 	StringName _body_inout;
 	StringName _area_inout;
-
-	StringName _get_gizmo_geometry;
-	StringName _can_gizmo_scale;
 
 	StringName _physics_process;
 	StringName _process;
@@ -156,6 +158,7 @@ public:
 
 	StringName _spatial_editor_group;
 	StringName _request_gizmo;
+	StringName _set_subgizmo_selection;
 	StringName _clear_subgizmo_selection;
 
 	StringName offset;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -81,7 +81,7 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 					}
 
 					// Copy the properties.
-					TileData *original_tile_data = Object::cast_to<TileData>(atlas_source->get_tile_data(tile_id, alternative_id));
+					TileData *original_tile_data = atlas_source->get_tile_data(tile_id, alternative_id);
 					List<PropertyInfo> properties;
 					original_tile_data->get_property_list(&properties);
 					for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
@@ -94,12 +94,14 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 				}
 
 				// Copy the texture.
-				Rect2i src_rect = atlas_source->get_tile_texture_region(tile_id);
-				Rect2 dst_rect_wide = Rect2i(new_tile_rect_in_altas.position * new_texture_region_size, new_tile_rect_in_altas.size * new_texture_region_size);
-				if (dst_rect_wide.get_end().x > output_image->get_width() || dst_rect_wide.get_end().y > output_image->get_height()) {
-					output_image->crop(MAX(dst_rect_wide.get_end().x, output_image->get_width()), MAX(dst_rect_wide.get_end().y, output_image->get_height()));
+				for (int frame = 0; frame < atlas_source->get_tile_animation_frames_count(tile_id); frame++) {
+					Rect2i src_rect = atlas_source->get_tile_texture_region(tile_id, frame);
+					Rect2 dst_rect_wide = Rect2i(new_tile_rect_in_altas.position * new_texture_region_size, new_tile_rect_in_altas.size * new_texture_region_size);
+					if (dst_rect_wide.get_end().x > output_image->get_width() || dst_rect_wide.get_end().y > output_image->get_height()) {
+						output_image->crop(MAX(dst_rect_wide.get_end().x, output_image->get_width()), MAX(dst_rect_wide.get_end().y, output_image->get_height()));
+					}
+					output_image->blit_rect(atlas_source->get_texture()->get_image(), src_rect, dst_rect_wide.get_center() - src_rect.size / 2);
 				}
-				output_image->blit_rect(atlas_source->get_texture()->get_image(), src_rect, (dst_rect_wide.get_position() + dst_rect_wide.get_end()) / 2 - src_rect.size / 2);
 			}
 
 			// Compute the atlas offset.
@@ -116,6 +118,7 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 		output_image_texture.instantiate();
 		output_image_texture->create_from_image(output_image);
 
+		merged->set_name(p_atlas_sources[0]->get_name());
 		merged->set_texture(output_image_texture);
 		merged->set_texture_region_size(new_texture_region_size);
 	}
@@ -298,7 +301,7 @@ AtlasMergingDialog::AtlasMergingDialog() {
 	preview = memnew(TextureRect);
 	preview->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	preview->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	preview->set_expand(true);
+	preview->set_ignore_texture_size(true);
 	preview->hide();
 	preview->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
 	atlas_merging_right_panel->add_child(preview);
@@ -306,8 +309,8 @@ AtlasMergingDialog::AtlasMergingDialog() {
 	select_2_atlases_label = memnew(Label);
 	select_2_atlases_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	select_2_atlases_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	select_2_atlases_label->set_align(Label::ALIGN_CENTER);
-	select_2_atlases_label->set_valign(Label::VALIGN_CENTER);
+	select_2_atlases_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	select_2_atlases_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	select_2_atlases_label->set_text(TTR("Please select two atlases or more."));
 	atlas_merging_right_panel->add_child(select_2_atlases_label);
 

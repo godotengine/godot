@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeTransformFunc.Function" default="0">
 			The function to be computed. See [enum Function] for options.
@@ -21,6 +19,9 @@
 		</constant>
 		<constant name="FUNC_TRANSPOSE" value="1" enum="Function">
 			Perform the transpose operation on the [Transform3D] matrix.
+		</constant>
+		<constant name="FUNC_MAX" value="2" enum="Function">
+			Represents the size of the [enum Function] enum.
 		</constant>
 	</constants>
 </class>

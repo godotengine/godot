@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,13 +38,16 @@
 #include "renderer_scene_cull.h"
 #include "rendering_server_globals.h"
 
-// careful, these may run in different threads than the visual server
+// careful, these may run in different threads than the rendering server
 
 int RenderingServerDefault::changes = 0;
 
 /* FREE */
 
 void RenderingServerDefault::_free(RID p_rid) {
+	if (unlikely(p_rid.is_null())) {
+		return;
+	}
 	if (RSG::storage->free(p_rid)) {
 		return;
 	}
@@ -61,14 +64,8 @@ void RenderingServerDefault::_free(RID p_rid) {
 
 /* EVENT QUEUING */
 
-void RenderingServerDefault::request_frame_drawn_callback(Object *p_where, const StringName &p_method, const Variant &p_userdata) {
-	ERR_FAIL_NULL(p_where);
-	FrameDrawnCallbacks fdc;
-	fdc.object = p_where->get_instance_id();
-	fdc.method = p_method;
-	fdc.param = p_userdata;
-
-	frame_drawn_callbacks.push_back(fdc);
+void RenderingServerDefault::request_frame_drawn_callback(const Callable &p_callable) {
+	frame_drawn_callbacks.push_back(p_callable);
 }
 
 void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
@@ -96,19 +93,23 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 
 	RSG::rasterizer->end_frame(p_swap_buffers);
 
+	XRServer *xr_server = XRServer::get_singleton();
+	if (xr_server != nullptr) {
+		// let our XR server know we're done so we can get our frame timing
+		xr_server->end_frame();
+	}
+
 	RSG::canvas->update_visibility_notifiers();
 	RSG::scene->update_visibility_notifiers();
 
 	while (frame_drawn_callbacks.front()) {
-		Object *obj = ObjectDB::get_instance(frame_drawn_callbacks.front()->get().object);
-		if (obj) {
-			Callable::CallError ce;
-			const Variant *v = &frame_drawn_callbacks.front()->get().param;
-			obj->call(frame_drawn_callbacks.front()->get().method, &v, 1, ce);
-			if (ce.error != Callable::CallError::CALL_OK) {
-				String err = Variant::get_call_error_text(obj, frame_drawn_callbacks.front()->get().method, &v, 1, ce);
-				ERR_PRINT("Error calling frame drawn function: " + err);
-			}
+		Callable c = frame_drawn_callbacks.front()->get();
+		Variant result;
+		Callable::CallError ce;
+		c.call(nullptr, 0, result, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			String err = Variant::get_callable_error_text(c, nullptr, 0, ce);
+			ERR_PRINT("Error calling frame drawn function: " + err);
 		}
 
 		frame_drawn_callbacks.pop_front();
@@ -134,8 +135,8 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 			}
 
 			if (RSG::storage->capturing_timestamps) {
-				new_profile.write[i].gpu_msec = float((time_gpu - base_gpu) / 1000) / 1000.0;
-				new_profile.write[i].cpu_msec = float(time_cpu - base_cpu) / 1000.0;
+				new_profile.write[i].gpu_msec = double((time_gpu - base_gpu) / 1000) / 1000.0;
+				new_profile.write[i].cpu_msec = double(time_cpu - base_cpu) / 1000.0;
 				new_profile.write[i].name = RSG::storage->get_captured_timestamp_name(i);
 			}
 		}
@@ -149,7 +150,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 		if (print_frame_profile_ticks_from == 0) {
 			print_frame_profile_ticks_from = OS::get_singleton()->get_ticks_usec();
 		}
-		float total_time = 0.0;
+		double total_time = 0.0;
 
 		for (int i = 0; i < frame_profile.size() - 1; i++) {
 			String name = frame_profile[i].name;
@@ -157,7 +158,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 				continue;
 			}
 
-			float time = frame_profile[i + 1].gpu_msec - frame_profile[i].gpu_msec;
+			double time = frame_profile[i + 1].gpu_msec - frame_profile[i].gpu_msec;
 
 			if (name[0] != '<' && name[0] != '>') {
 				if (print_gpu_profile_task_time.has(name)) {
@@ -179,7 +180,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 
 			float print_threshold = 0.01;
 			for (OrderedHashMap<String, float>::Element E = print_gpu_profile_task_time.front(); E; E = E.next()) {
-				float time = E.value() / float(print_frame_profile_frame_count);
+				double time = E.value() / double(print_frame_profile_frame_count);
 				if (time > print_threshold) {
 					print_line("\t-" + E.key() + ": " + rtos(time) + "ms");
 				}
@@ -193,7 +194,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	RSG::storage->update_memory_info();
 }
 
-float RenderingServerDefault::get_frame_setup_time_cpu() const {
+double RenderingServerDefault::get_frame_setup_time_cpu() const {
 	return frame_setup_time;
 }
 
@@ -258,6 +259,10 @@ String RenderingServerDefault::get_video_adapter_name() const {
 
 String RenderingServerDefault::get_video_adapter_vendor() const {
 	return RSG::storage->get_video_adapter_vendor();
+}
+
+RenderingDevice::DeviceType RenderingServerDefault::get_video_adapter_type() const {
+	return RSG::storage->get_video_adapter_type();
 }
 
 void RenderingServerDefault::set_frame_profiling_enabled(bool p_enable) {

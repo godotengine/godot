@@ -68,8 +68,6 @@ struct code_pair_t
 typedef hb_vector_t<unsigned char> str_buff_t;
 struct str_buff_vec_t : hb_vector_t<str_buff_t>
 {
-  void fini () { SUPER::fini_deep (); }
-
   unsigned int total_size () const
   {
     unsigned int size = 0;
@@ -126,7 +124,7 @@ struct CFFIndex
     else
     {
       /* serialize CFFIndex header */
-      if (unlikely (!c->extend_min (*this))) return_trace (false);
+      if (unlikely (!c->extend_min (this))) return_trace (false);
       this->count = byteArray.length;
       this->offSize = offSize_;
       if (unlikely (!c->allocate_size<HBUINT8> (offSize_ * (byteArray.length + 1))))
@@ -214,7 +212,7 @@ struct CFFIndex
     unsigned off_size = calcOffSize (total);
 
     /* serialize CFFIndex header */
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
+    if (unlikely (!c->extend_min (this))) return_trace (false);
     this->count = it.len ();
     this->offSize = off_size;
     if (unlikely (!c->allocate_size<HBUINT8> (off_size * (it.len () + 1))))
@@ -335,7 +333,7 @@ struct CFFIndexOf : CFFIndex<COUNT>
   {
     TRACE_SERIALIZE (this);
     /* serialize CFFIndex header */
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
+    if (unlikely (!c->extend_min (this))) return_trace (false);
     this->count = dataArrayLen;
     this->offSize = offSize_;
     if (unlikely (!c->allocate_size<HBUINT8> (offSize_ * (dataArrayLen + 1))))
@@ -373,7 +371,7 @@ struct Dict : UnsizedByteStr
   {
     TRACE_SERIALIZE (this);
     for (unsigned int i = 0; i < dictval.get_count (); i++)
-      if (unlikely (!opszr.serialize (c, dictval[i], hb_forward<Ts> (ds)...)))
+      if (unlikely (!opszr.serialize (c, dictval[i], std::forward<Ts> (ds)...)))
 	return_trace (false);
 
     return_trace (true);

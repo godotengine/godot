@@ -4,6 +4,7 @@ Import("env")
 
 android_files = [
     "os_android.cpp",
+    "android_input_handler.cpp",
     "file_access_android.cpp",
     "audio_driver_opensl.cpp",
     "dir_access_jandroid.cpp",
@@ -17,6 +18,7 @@ android_files = [
     "jni_utils.cpp",
     "android_keys_utils.cpp",
     "display_server_android.cpp",
+    "plugin/godot_plugin_jni.cpp",
     "vulkan/vulkan_context_android.cpp",
 ]
 

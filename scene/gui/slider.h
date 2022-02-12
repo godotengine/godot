@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,7 +50,7 @@ class Slider : public Range {
 	bool scrollable = true;
 
 protected:
-	void _gui_input(Ref<InputEvent> p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _notification(int p_what);
 	static void _bind_methods();
 	bool ticks_on_borders = false;

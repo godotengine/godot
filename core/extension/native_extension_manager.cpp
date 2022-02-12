@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "native_extension_manager.h"
+#include "core/io/file_access.h"
 
 NativeExtensionManager::LoadStatus NativeExtensionManager::load_extension(const String &p_path) {
 	if (native_extension_map.has(p_path)) {
@@ -76,10 +77,15 @@ NativeExtensionManager::LoadStatus NativeExtensionManager::unload_extension(cons
 	native_extension_map.erase(p_path);
 	return LOAD_STATUS_OK;
 }
+
+bool NativeExtensionManager::is_extension_loaded(const String &p_path) const {
+	return native_extension_map.has(p_path);
+}
+
 Vector<String> NativeExtensionManager::get_loaded_extensions() const {
 	Vector<String> ret;
-	for (const Map<String, Ref<NativeExtension>>::Element *E = native_extension_map.front(); E; E = E->next()) {
-		ret.push_back(E->key());
+	for (const KeyValue<String, Ref<NativeExtension>> &E : native_extension_map) {
+		ret.push_back(E.key);
 	}
 	return ret;
 }
@@ -91,18 +97,29 @@ Ref<NativeExtension> NativeExtensionManager::get_extension(const String &p_path)
 
 void NativeExtensionManager::initialize_extensions(NativeExtension::InitializationLevel p_level) {
 	ERR_FAIL_COND(int32_t(p_level) - 1 != level);
-	for (Map<String, Ref<NativeExtension>>::Element *E = native_extension_map.front(); E; E = E->next()) {
-		E->get()->initialize_library(p_level);
+	for (KeyValue<String, Ref<NativeExtension>> &E : native_extension_map) {
+		E.value->initialize_library(p_level);
 	}
 	level = p_level;
 }
 
 void NativeExtensionManager::deinitialize_extensions(NativeExtension::InitializationLevel p_level) {
 	ERR_FAIL_COND(int32_t(p_level) != level);
-	for (Map<String, Ref<NativeExtension>>::Element *E = native_extension_map.front(); E; E = E->next()) {
-		E->get()->deinitialize_library(p_level);
+	for (KeyValue<String, Ref<NativeExtension>> &E : native_extension_map) {
+		E.value->deinitialize_library(p_level);
 	}
 	level = int32_t(p_level) - 1;
+}
+
+void NativeExtensionManager::load_extensions() {
+	FileAccessRef f = FileAccess::open(NativeExtension::get_extension_list_config_file(), FileAccess::READ);
+	while (f && !f->eof_reached()) {
+		String s = f->get_line().strip_edges();
+		if (!s.is_empty()) {
+			LoadStatus err = load_extension(s);
+			ERR_CONTINUE_MSG(err == LOAD_STATUS_FAILED, "Error loading extension: " + s);
+		}
+	}
 }
 
 NativeExtensionManager *NativeExtensionManager::get_singleton() {
@@ -112,6 +129,8 @@ void NativeExtensionManager::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_extension", "path"), &NativeExtensionManager::load_extension);
 	ClassDB::bind_method(D_METHOD("reload_extension", "path"), &NativeExtensionManager::reload_extension);
 	ClassDB::bind_method(D_METHOD("unload_extension", "path"), &NativeExtensionManager::unload_extension);
+	ClassDB::bind_method(D_METHOD("is_extension_loaded", "path"), &NativeExtensionManager::is_extension_loaded);
+
 	ClassDB::bind_method(D_METHOD("get_loaded_extensions"), &NativeExtensionManager::get_loaded_extensions);
 	ClassDB::bind_method(D_METHOD("get_extension", "path"), &NativeExtensionManager::get_extension);
 

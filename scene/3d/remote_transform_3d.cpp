@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,7 +68,7 @@ void RemoteTransform3D::_update_remote() {
 			Transform3D our_trans = get_global_transform();
 
 			if (update_remote_rotation) {
-				n->set_rotation(our_trans.basis.get_rotation());
+				n->set_rotation(our_trans.basis.get_euler_normalized(Basis::EulerOrder(n->get_rotation_order())));
 			}
 
 			if (update_remote_scale) {
@@ -90,7 +90,7 @@ void RemoteTransform3D::_update_remote() {
 			Transform3D our_trans = get_transform();
 
 			if (update_remote_rotation) {
-				n->set_rotation(our_trans.basis.get_rotation());
+				n->set_rotation(our_trans.basis.get_euler_normalized(Basis::EulerOrder(n->get_rotation_order())));
 			}
 
 			if (update_remote_scale) {

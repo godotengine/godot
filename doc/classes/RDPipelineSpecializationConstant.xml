@@ -6,14 +6,10 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="constant_id" type="int" setter="set_constant_id" getter="get_constant_id" default="0">
 		</member>
 		<member name="value" type="Variant" setter="set_value" getter="get_value">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -6,8 +6,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="attenuation" type="float" setter="set_attenuation" getter="get_attenuation" default="1.0">
 		</member>
@@ -18,6 +16,4 @@
 		<member name="strength" type="float" setter="set_strength" getter="get_strength" default="1.0">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

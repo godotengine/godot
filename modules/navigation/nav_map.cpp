@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,10 +35,6 @@
 #include "rvo_agent.h"
 
 #include <algorithm>
-
-/**
-	@author AndreaCatania
-*/
 
 #define THREE_POINTS_CROSS_PRODUCT(m_a, m_b, m_c) (((m_c) - (m_a)).cross((m_b) - (m_a)))
 
@@ -613,17 +609,17 @@ void NavMap::sync() {
 		}
 
 		Vector<gd::Edge::Connection> free_edges;
-		for (Map<gd::EdgeKey, Vector<gd::Edge::Connection>>::Element *E = connections.front(); E; E = E->next()) {
-			if (E->get().size() == 2) {
+		for (KeyValue<gd::EdgeKey, Vector<gd::Edge::Connection>> &E : connections) {
+			if (E.value.size() == 2) {
 				// Connect edge that are shared in different polygons.
-				gd::Edge::Connection &c1 = E->get().write[0];
-				gd::Edge::Connection &c2 = E->get().write[1];
+				gd::Edge::Connection &c1 = E.value.write[0];
+				gd::Edge::Connection &c2 = E.value.write[1];
 				c1.polygon->edges[c1.edge].connections.push_back(c2);
 				c2.polygon->edges[c2.edge].connections.push_back(c1);
 				// Note: The pathway_start/end are full for those connection and do not need to be modified.
 			} else {
-				CRASH_COND_MSG(E->get().size() != 1, vformat("Number of connection != 1. Found: %d", E->get().size()));
-				free_edges.push_back(E->get()[0]);
+				CRASH_COND_MSG(E.value.size() != 1, vformat("Number of connection != 1. Found: %d", E.value.size()));
+				free_edges.push_back(E.value[0]);
 			}
 		}
 
@@ -664,7 +660,7 @@ void NavMap::sync() {
 				} else {
 					other1 = other_edge_p1.lerp(other_edge_p2, (1.0 - projected_p1_ratio) / (projected_p2_ratio - projected_p1_ratio));
 				}
-				if ((self1 - other1).length() > edge_connection_margin) {
+				if (other1.distance_to(self1) > edge_connection_margin) {
 					continue;
 				}
 
@@ -675,7 +671,7 @@ void NavMap::sync() {
 				} else {
 					other2 = other_edge_p1.lerp(other_edge_p2, (0.0 - projected_p1_ratio) / (projected_p2_ratio - projected_p1_ratio));
 				}
-				if ((self2 - other2).length() > edge_connection_margin) {
+				if (other2.distance_to(self2) > edge_connection_margin) {
 					continue;
 				}
 

@@ -161,7 +161,7 @@ static void SetBitDepths(const HuffmanTree* const tree,
 // especially when population counts are longer than 2**tree_limit, but
 // we are not planning to use this with extremely long blocks.
 //
-// See http://en.wikipedia.org/wiki/Huffman_coding
+// See https://en.wikipedia.org/wiki/Huffman_coding
 static void GenerateOptimalTree(const uint32_t* const histogram,
                                 int histogram_size,
                                 HuffmanTree* tree, int tree_depth_limit,
@@ -404,8 +404,7 @@ static void ConvertBitDepthsToSymbols(HuffmanTreeCode* const tree) {
 // Main entry point
 
 void VP8LCreateHuffmanTree(uint32_t* const histogram, int tree_depth_limit,
-                           uint8_t* const buf_rle,
-                           HuffmanTree* const huff_tree,
+                           uint8_t* const buf_rle, HuffmanTree* const huff_tree,
                            HuffmanTreeCode* const huff_code) {
   const int num_symbols = huff_code->num_symbols;
   memset(buf_rle, 0, num_symbols * sizeof(*buf_rle));

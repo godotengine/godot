@@ -52,6 +52,4 @@
 		<member name="use_magnet" type="bool" setter="set_use_magnet" getter="is_using_magnet" default="false">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

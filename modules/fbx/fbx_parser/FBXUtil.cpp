@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -169,10 +169,10 @@ char EncodeBase64(char byte) {
 }
 
 /** Encodes a block of 4 bytes to base64 encoding
-*  @param bytes Bytes to encode.
-*  @param out_string String to write encoded values to.
-*  @param string_pos Position in out_string.
-*/
+ *  @param bytes Bytes to encode.
+ *  @param out_string String to write encoded values to.
+ *  @param string_pos Position in out_string.
+ */
 void EncodeByteBlock(const char *bytes, std::string &out_string, size_t string_pos) {
 	char b0 = (bytes[0] & 0xFC) >> 2;
 	char b1 = (bytes[0] & 0x03) << 4 | ((bytes[1] & 0xF0) >> 4);

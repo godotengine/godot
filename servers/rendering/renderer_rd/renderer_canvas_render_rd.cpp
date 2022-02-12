@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "renderer_canvas_render_rd.h"
+
 #include "core/config/project_settings.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/math_defs.h"
@@ -280,7 +281,7 @@ RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Ve
 			vd.stride = 0;
 
 			descriptions.write[4] = vd;
-			buffers.write[4] = storage->mesh_get_default_rd_buffer(RendererStorageRD::DEFAULT_RD_BUFFER_BONES);
+			buffers.write[4] = storage->mesh_get_default_rd_buffer(RendererStorageRD::DEFAULT_RD_BUFFER_WEIGHTS);
 		}
 
 		//check that everything is as it should be
@@ -480,6 +481,10 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 			case Item::Command::TYPE_RECT: {
 				const Item::CommandRect *rect = static_cast<const Item::CommandRect *>(c);
 
+				if (rect->flags & CANVAS_RECT_TILE) {
+					current_repeat = RenderingServer::CanvasItemTextureRepeat::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED;
+				}
+
 				//bind pipeline
 				{
 					RID pipeline = pipeline_variants->variants[light_mode][PIPELINE_VARIANT_QUAD].get_render_pipeline(RD::INVALID_ID, p_framebuffer_format);
@@ -535,6 +540,14 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 					}
 
 					src_rect = Rect2(0, 0, 1, 1);
+				}
+
+				if (rect->flags & CANVAS_RECT_MSDF) {
+					push_constant.flags |= FLAGS_USE_MSDF;
+					push_constant.msdf[0] = rect->px_range; // Pixel range.
+					push_constant.msdf[1] = rect->outline; // Outline size.
+					push_constant.msdf[2] = 0.f; // Reserved.
+					push_constant.msdf[3] = 0.f; // Reserved.
 				}
 
 				push_constant.modulation[0] = rect->modulate.r * base_color.r;
@@ -744,6 +757,10 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 					}
 
 					instance_count = storage->multimesh_get_instances_to_draw(multimesh);
+
+					if (instance_count == 0) {
+						break;
+					}
 
 					RID uniform_set = storage->multimesh_get_2d_uniform_set(multimesh, shader.default_version_rd_shader, TRANSFORMS_UNIFORM_SET);
 					RD::get_singleton()->draw_list_bind_uniform_set(p_draw_list, uniform_set, TRANSFORMS_UNIFORM_SET);
@@ -1074,7 +1091,7 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 			}
 		}
 
-		RID material = ci->material;
+		RID material = ci->material_owner == nullptr ? ci->material : ci->material_owner->material;
 
 		if (material.is_null() && ci->canvas_group != nullptr) {
 			material = default_canvas_group_material;
@@ -1089,7 +1106,8 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 			if (material_data) {
 				if (material_data->shader_data->version.is_valid() && material_data->shader_data->valid) {
 					pipeline_variants = &material_data->shader_data->pipeline_variants;
-					if (material_data->uniform_set.is_valid()) {
+					// Update uniform set.
+					if (material_data->uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(material_data->uniform_set)) { // Material may not have a uniform set.
 						RD::get_singleton()->draw_list_bind_uniform_set(draw_list, material_data->uniform_set, MATERIAL_UNIFORM_SET);
 					}
 				} else {
@@ -1131,7 +1149,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				continue;
 			}
 
-			CanvasLight *clight = canvas_light_owner.getornull(l->light_internal);
+			CanvasLight *clight = canvas_light_owner.get_or_null(l->light_internal);
 			if (!clight) { //unused or invalid texture
 				l->render_index_cache = -1;
 				l = l->next_ptr;
@@ -1194,7 +1212,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				continue;
 			}
 
-			CanvasLight *clight = canvas_light_owner.getornull(l->light_internal);
+			CanvasLight *clight = canvas_light_owner.get_or_null(l->light_internal);
 			if (!clight) { //unused or invalid texture
 				l->render_index_cache = -1;
 				l = l->next_ptr;
@@ -1341,8 +1359,10 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 			}
 		}
 
-		if (ci->material.is_valid()) {
-			MaterialData *md = (MaterialData *)storage->material_get_data(ci->material, RendererStorageRD::SHADER_TYPE_2D);
+		RID material = ci->material_owner == nullptr ? ci->material : ci->material_owner->material;
+
+		if (material.is_valid()) {
+			MaterialData *md = (MaterialData *)storage->material_get_data(material, RendererStorageRD::SHADER_TYPE_2D);
 			if (md && md->shader_data->valid) {
 				if (md->shader_data->uses_screen_texture && canvas_group_owner == nullptr) {
 					if (!material_screen_texture_found) {
@@ -1356,14 +1376,6 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				}
 				if (md->shader_data->uses_time) {
 					time_used = true;
-				}
-				if (md->last_frame != RendererCompositorRD::singleton->get_frame_number()) {
-					md->last_frame = RendererCompositorRD::singleton->get_frame_number();
-					if (!RD::get_singleton()->uniform_set_is_valid(md->uniform_set)) {
-						// uniform set may be gone because a dependency was erased. In this case, it will happen
-						// if a texture is deleted, so just re-create it.
-						storage->material_force_update_textures(ci->material, RendererStorageRD::SHADER_TYPE_2D);
-					}
 				}
 			}
 		}
@@ -1379,6 +1391,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 						update_skeletons = true;
 					}
 				}
+				c = c->next;
 			}
 		}
 
@@ -1465,7 +1478,7 @@ RID RendererCanvasRenderRD::light_create() {
 }
 
 void RendererCanvasRenderRD::light_set_texture(RID p_rid, RID p_texture) {
-	CanvasLight *cl = canvas_light_owner.getornull(p_rid);
+	CanvasLight *cl = canvas_light_owner.get_or_null(p_rid);
 	ERR_FAIL_COND(!cl);
 	if (cl->texture == p_texture) {
 		return;
@@ -1481,7 +1494,7 @@ void RendererCanvasRenderRD::light_set_texture(RID p_rid, RID p_texture) {
 }
 
 void RendererCanvasRenderRD::light_set_use_shadow(RID p_rid, bool p_enable) {
-	CanvasLight *cl = canvas_light_owner.getornull(p_rid);
+	CanvasLight *cl = canvas_light_owner.get_or_null(p_rid);
 	ERR_FAIL_COND(!cl);
 
 	cl->shadow.enabled = p_enable;
@@ -1521,7 +1534,7 @@ void RendererCanvasRenderRD::_update_shadow_atlas() {
 	}
 }
 void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders) {
-	CanvasLight *cl = canvas_light_owner.getornull(p_rid);
+	CanvasLight *cl = canvas_light_owner.get_or_null(p_rid);
 	ERR_FAIL_COND(!cl->shadow.enabled);
 
 	_update_shadow_atlas();
@@ -1569,13 +1582,10 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 		push_constant.z_far = p_far;
 		push_constant.pad = 0;
 
-		/*if (i == 0)
-			*p_xform_cache = projection;*/
-
 		LightOccluderInstance *instance = p_occluders;
 
 		while (instance) {
-			OccluderPolygon *co = occluder_polygon_owner.getornull(instance->occluder);
+			OccluderPolygon *co = occluder_polygon_owner.get_or_null(instance->occluder);
 
 			if (!co || co->index_array.is_null() || !(p_light_mask & instance->light_mask)) {
 				instance = instance->next;
@@ -1599,14 +1609,14 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 }
 
 void RendererCanvasRenderRD::light_update_directional_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_cull_distance, const Rect2 &p_clip_rect, LightOccluderInstance *p_occluders) {
-	CanvasLight *cl = canvas_light_owner.getornull(p_rid);
+	CanvasLight *cl = canvas_light_owner.get_or_null(p_rid);
 	ERR_FAIL_COND(!cl->shadow.enabled);
 
 	_update_shadow_atlas();
 
 	Vector2 light_dir = p_light_xform.elements[1].normalized();
 
-	Vector2 center = p_clip_rect.position + p_clip_rect.size * 0.5;
+	Vector2 center = p_clip_rect.get_center();
 
 	float to_edge_distance = ABS(light_dir.dot(p_clip_rect.get_support(light_dir)) - light_dir.dot(center));
 
@@ -1650,7 +1660,7 @@ void RendererCanvasRenderRD::light_update_directional_shadow(RID p_rid, int p_sh
 	LightOccluderInstance *instance = p_occluders;
 
 	while (instance) {
-		OccluderPolygon *co = occluder_polygon_owner.getornull(instance->occluder);
+		OccluderPolygon *co = occluder_polygon_owner.get_or_null(instance->occluder);
 
 		if (!co || co->index_array.is_null() || !(p_light_mask & instance->light_mask)) {
 			instance = instance->next;
@@ -1716,7 +1726,7 @@ void RendererCanvasRenderRD::render_sdf(RID p_render_target, LightOccluderInstan
 	LightOccluderInstance *instance = p_occluders;
 
 	while (instance) {
-		OccluderPolygon *co = occluder_polygon_owner.getornull(instance->occluder);
+		OccluderPolygon *co = occluder_polygon_owner.get_or_null(instance->occluder);
 
 		if (!co || co->sdf_index_array.is_null()) {
 			instance = instance->next;
@@ -1750,7 +1760,7 @@ RID RendererCanvasRenderRD::occluder_polygon_create() {
 }
 
 void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Vector<Vector2> &p_points, bool p_closed) {
-	OccluderPolygon *oc = occluder_polygon_owner.getornull(p_occluder);
+	OccluderPolygon *oc = occluder_polygon_owner.get_or_null(p_occluder);
 	ERR_FAIL_COND(!oc);
 
 	Vector<Vector2> lines;
@@ -1919,7 +1929,7 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 }
 
 void RendererCanvasRenderRD::occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode) {
-	OccluderPolygon *oc = occluder_polygon_owner.getornull(p_occluder);
+	OccluderPolygon *oc = occluder_polygon_owner.get_or_null(p_occluder);
 	ERR_FAIL_COND(!oc);
 	oc->cull_mode = p_mode;
 }
@@ -1935,19 +1945,19 @@ void RendererCanvasRenderRD::ShaderData::set_code(const String &p_code) {
 	uses_sdf = false;
 	uses_time = false;
 
-	if (code == String()) {
+	if (code.is_empty()) {
 		return; //just invalid, but no error
 	}
 
-	ShaderCompilerRD::GeneratedCode gen_code;
+	ShaderCompiler::GeneratedCode gen_code;
 
 	int blend_mode = BLEND_MODE_MIX;
 	uses_screen_texture = false;
 
-	ShaderCompilerRD::IdentifierActions actions;
-	actions.entry_point_stages["vertex"] = ShaderCompilerRD::STAGE_VERTEX;
-	actions.entry_point_stages["fragment"] = ShaderCompilerRD::STAGE_FRAGMENT;
-	actions.entry_point_stages["light"] = ShaderCompilerRD::STAGE_FRAGMENT;
+	ShaderCompiler::IdentifierActions actions;
+	actions.entry_point_stages["vertex"] = ShaderCompiler::STAGE_VERTEX;
+	actions.entry_point_stages["fragment"] = ShaderCompiler::STAGE_FRAGMENT;
+	actions.entry_point_stages["light"] = ShaderCompiler::STAGE_FRAGMENT;
 
 	actions.render_mode_values["blend_add"] = Pair<int *, int>(&blend_mode, BLEND_MODE_ADD);
 	actions.render_mode_values["blend_mix"] = Pair<int *, int>(&blend_mode, BLEND_MODE_MIX);
@@ -1965,8 +1975,7 @@ void RendererCanvasRenderRD::ShaderData::set_code(const String &p_code) {
 	RendererCanvasRenderRD *canvas_singleton = (RendererCanvasRenderRD *)RendererCanvasRender::singleton;
 
 	Error err = canvas_singleton->shader.compiler.compile(RS::SHADER_CANVAS_ITEM, code, &actions, path, gen_code);
-
-	ERR_FAIL_COND(err != OK);
+	ERR_FAIL_COND_MSG(err != OK, "Shader compilation failed.");
 
 	if (version.is_null()) {
 		version = canvas_singleton->shader.canvas_shader.version_create();
@@ -1985,7 +1994,7 @@ void RendererCanvasRenderRD::ShaderData::set_code(const String &p_code) {
 	print_line("\n**fragment_code:\n" + gen_code.fragment);
 	print_line("\n**light_code:\n" + gen_code.light);
 #endif
-	canvas_singleton->shader.canvas_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompilerRD::STAGE_VERTEX], gen_code.stage_globals[ShaderCompilerRD::STAGE_FRAGMENT], gen_code.defines);
+	canvas_singleton->shader.canvas_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines);
 	ERR_FAIL_COND(!canvas_singleton->shader.canvas_shader.version_is_valid(version));
 
 	ubo_size = gen_code.uniform_total_size;
@@ -2107,46 +2116,55 @@ void RendererCanvasRenderRD::ShaderData::set_code(const String &p_code) {
 	valid = true;
 }
 
-void RendererCanvasRenderRD::ShaderData::set_default_texture_param(const StringName &p_name, RID p_texture) {
+void RendererCanvasRenderRD::ShaderData::set_default_texture_param(const StringName &p_name, RID p_texture, int p_index) {
 	if (!p_texture.is_valid()) {
-		default_texture_params.erase(p_name);
+		if (default_texture_params.has(p_name) && default_texture_params[p_name].has(p_index)) {
+			default_texture_params[p_name].erase(p_index);
+
+			if (default_texture_params[p_name].is_empty()) {
+				default_texture_params.erase(p_name);
+			}
+		}
 	} else {
-		default_texture_params[p_name] = p_texture;
+		if (!default_texture_params.has(p_name)) {
+			default_texture_params[p_name] = Map<int, RID>();
+		}
+		default_texture_params[p_name][p_index] = p_texture;
 	}
 }
 
 void RendererCanvasRenderRD::ShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
 	Map<int, StringName> order;
 
-	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = uniforms.front(); E; E = E->next()) {
-		if (E->get().scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_LOCAL) {
+	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
+		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_LOCAL) {
 			continue;
 		}
-		if (E->get().texture_order >= 0) {
-			order[E->get().texture_order + 100000] = E->key();
+		if (E.value.texture_order >= 0) {
+			order[E.value.texture_order + 100000] = E.key;
 		} else {
-			order[E->get().order] = E->key();
+			order[E.value.order] = E.key;
 		}
 	}
 
-	for (Map<int, StringName>::Element *E = order.front(); E; E = E->next()) {
-		PropertyInfo pi = ShaderLanguage::uniform_to_property_info(uniforms[E->get()]);
-		pi.name = E->get();
+	for (const KeyValue<int, StringName> &E : order) {
+		PropertyInfo pi = ShaderLanguage::uniform_to_property_info(uniforms[E.value]);
+		pi.name = E.value;
 		p_param_list->push_back(pi);
 	}
 }
 
 void RendererCanvasRenderRD::ShaderData::get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const {
-	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = uniforms.front(); E; E = E->next()) {
-		if (E->get().scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
+	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
+		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
 			continue;
 		}
 
 		RendererStorage::InstanceShaderParam p;
-		p.info = ShaderLanguage::uniform_to_property_info(E->get());
-		p.info.name = E->key(); //supply name
-		p.index = E->get().instance_index;
-		p.default_value = ShaderLanguage::constant_value_to_variant(E->get().default_value, E->get().type, E->get().hint);
+		p.info = ShaderLanguage::uniform_to_property_info(E.value);
+		p.info.name = E.key; //supply name
+		p.index = E.value.instance_index;
+		p.default_value = ShaderLanguage::constant_value_to_variant(E.value.default_value, E.value.type, E.value.array_size, E.value.hint);
 		p_param_list->push_back(p);
 	}
 }
@@ -2171,7 +2189,7 @@ Variant RendererCanvasRenderRD::ShaderData::get_default_parameter(const StringNa
 	if (uniforms.has(p_parameter)) {
 		ShaderLanguage::ShaderNode::Uniform uniform = uniforms[p_parameter];
 		Vector<ShaderLanguage::ConstantNode::Value> default_value = uniform.default_value;
-		return ShaderLanguage::constant_value_to_variant(default_value, uniform.type, uniform.hint);
+		return ShaderLanguage::constant_value_to_variant(default_value, uniform.type, uniform.array_size, uniform.hint);
 	}
 	return Variant();
 }
@@ -2214,7 +2232,6 @@ RendererCanvasRenderRD::MaterialData::~MaterialData() {
 RendererStorageRD::MaterialData *RendererCanvasRenderRD::_create_material_func(ShaderData *p_shader) {
 	MaterialData *material_data = memnew(MaterialData);
 	material_data->shader_data = p_shader;
-	material_data->last_frame = false;
 	//update will happen later anyway so do nothing.
 	return material_data;
 }
@@ -2333,7 +2350,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD(RendererStorageRD *p_storage) {
 
 	{
 		//shader compiler
-		ShaderCompilerRD::DefaultIdentifierActions actions;
+		ShaderCompiler::DefaultIdentifierActions actions;
 
 		actions.renames["VERTEX"] = "vertex";
 		actions.renames["LIGHT_VERTEX"] = "light_vertex";
@@ -2365,6 +2382,8 @@ RendererCanvasRenderRD::RendererCanvasRenderRD(RendererStorageRD *p_storage) {
 		actions.renames["SCREEN_PIXEL_SIZE"] = "canvas_data.screen_pixel_size";
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
 		actions.renames["POINT_COORD"] = "gl_PointCoord";
+		actions.renames["INSTANCE_ID"] = "gl_InstanceIndex";
+		actions.renames["VERTEX_ID"] = "gl_VertexIndex";
 
 		actions.renames["LIGHT_POSITION"] = "light_position";
 		actions.renames["LIGHT_COLOR"] = "light_color";
@@ -2571,6 +2590,8 @@ RendererCanvasRenderRD::RendererCanvasRenderRD(RendererStorageRD *p_storage) {
 		storage->shader_initialize(default_canvas_group_shader);
 
 		storage->shader_set_code(default_canvas_group_shader, R"(
+// Default CanvasGroup shader.
+
 shader_type canvas_item;
 
 void fragment() {
@@ -2594,7 +2615,7 @@ void fragment() {
 
 bool RendererCanvasRenderRD::free(RID p_rid) {
 	if (canvas_light_owner.owns(p_rid)) {
-		CanvasLight *cl = canvas_light_owner.getornull(p_rid);
+		CanvasLight *cl = canvas_light_owner.get_or_null(p_rid);
 		ERR_FAIL_COND_V(!cl, false);
 		light_set_use_shadow(p_rid, false);
 		canvas_light_owner.free(p_rid);

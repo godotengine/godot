@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -115,7 +115,7 @@ Error GDScriptLanguageProtocol::LSPeer::send_data() {
 		// Response sent
 		if (res_sent >= c_res.size() - 1) {
 			res_sent = 0;
-			res_queue.remove(0);
+			res_queue.remove_at(0);
 		}
 	}
 	return OK;
@@ -212,11 +212,11 @@ void GDScriptLanguageProtocol::initialized(const Variant &p_params) {
 	lsp::GodotCapabilities capabilities;
 
 	DocTools *doc = EditorHelp::get_doc_data();
-	for (Map<String, DocData::ClassDoc>::Element *E = doc->class_list.front(); E; E = E->next()) {
+	for (const KeyValue<String, DocData::ClassDoc> &E : doc->class_list) {
 		lsp::GodotNativeClassInfo gdclass;
-		gdclass.name = E->get().name;
-		gdclass.class_doc = &(E->get());
-		if (ClassDB::ClassInfo *ptr = ClassDB::classes.getptr(StringName(E->get().name))) {
+		gdclass.name = E.value.name;
+		gdclass.class_doc = &(E.value);
+		if (ClassDB::ClassInfo *ptr = ClassDB::classes.getptr(StringName(E.value.name))) {
 			gdclass.class_info = ptr;
 		}
 		capabilities.native_classes.push_back(gdclass);
@@ -279,6 +279,23 @@ void GDScriptLanguageProtocol::notify_client(const String &p_method, const Varia
 	ERR_FAIL_COND(peer == nullptr);
 
 	Dictionary message = make_notification(p_method, p_params);
+	String msg = Variant(message).to_json_string();
+	msg = format_output(msg);
+	peer->res_queue.push_back(msg.utf8());
+}
+
+void GDScriptLanguageProtocol::request_client(const String &p_method, const Variant &p_params, int p_client_id) {
+	if (p_client_id == -1) {
+		ERR_FAIL_COND_MSG(latest_client_id == -1,
+				"GDScript LSP: Can't notify client as none was connected.");
+		p_client_id = latest_client_id;
+	}
+	ERR_FAIL_COND(!clients.has(p_client_id));
+	Ref<LSPeer> peer = clients.get(p_client_id);
+	ERR_FAIL_COND(peer == nullptr);
+
+	Dictionary message = make_request(p_method, p_params, next_server_id);
+	next_server_id++;
 	String msg = Variant(message).to_json_string();
 	msg = format_output(msg);
 	peer->res_queue.push_back(msg.utf8());

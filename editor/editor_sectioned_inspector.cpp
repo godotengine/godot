@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,7 +45,7 @@ class SectionedInspectorFilter : public Object {
 		}
 
 		String name = p_name;
-		if (section != "") {
+		if (!section.is_empty()) {
 			name = section + "/" + name;
 		}
 
@@ -60,7 +60,7 @@ class SectionedInspectorFilter : public Object {
 		}
 
 		String name = p_name;
-		if (section != "") {
+		if (!section.is_empty()) {
 			name = section + "/" + name;
 		}
 
@@ -89,7 +89,7 @@ class SectionedInspectorFilter : public Object {
 
 			if (pi.name.begins_with(section + "/")) {
 				pi.name = pi.name.replace_first(section + "/", "");
-				if (!allow_sub && pi.name.find("/") != -1) {
+				if (!allow_sub && pi.name.contains("/")) {
 					continue;
 				}
 				p_list->push_back(pi);
@@ -155,7 +155,7 @@ String SectionedInspector::get_current_section() const {
 String SectionedInspector::get_full_item_path(const String &p_item) {
 	String base = get_current_section();
 
-	if (base != "") {
+	if (!base.is_empty()) {
 		return base + "/" + p_item;
 	} else {
 		return p_item;
@@ -227,7 +227,7 @@ void SectionedInspector::update_category_list() {
 			continue;
 		}
 
-		if (pi.name.find(":") != -1 || pi.name == "script" || pi.name == "resource_name" || pi.name == "resource_path" || pi.name == "resource_local_to_scene" || pi.name.begins_with("_global_script")) {
+		if (pi.name.contains(":") || pi.name == "script" || pi.name == "resource_name" || pi.name == "resource_path" || pi.name == "resource_local_to_scene" || pi.name.begins_with("_global_script")) {
 			continue;
 		}
 

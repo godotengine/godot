@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 #define USTRING_GODOT_H
 // Note: Renamed to avoid conflict with ICU header with the same name.
 
+#include "core/string/char_utils.h"
 #include "core/templates/cowdata.h"
 #include "core/templates/vector.h"
 #include "core/typedefs.h"
@@ -51,11 +52,15 @@ class CharProxy {
 	CowData<T> &_cowdata;
 	static const T _null = 0;
 
-	_FORCE_INLINE_ CharProxy(const int &p_index, CowData<T> &cowdata) :
+	_FORCE_INLINE_ CharProxy(const int &p_index, CowData<T> &p_cowdata) :
 			_index(p_index),
-			_cowdata(cowdata) {}
+			_cowdata(p_cowdata) {}
 
 public:
+	_FORCE_INLINE_ CharProxy(const CharProxy<T> &p_other) :
+			_index(p_other._index),
+			_cowdata(p_other._cowdata) {}
+
 	_FORCE_INLINE_ operator T() const {
 		if (unlikely(_index == _cowdata.size())) {
 			return _null;
@@ -68,12 +73,12 @@ public:
 		return _cowdata.ptr() + _index;
 	}
 
-	_FORCE_INLINE_ void operator=(const T &other) const {
-		_cowdata.set(_index, other);
+	_FORCE_INLINE_ void operator=(const T &p_other) const {
+		_cowdata.set(_index, p_other);
 	}
 
-	_FORCE_INLINE_ void operator=(const CharProxy<T> &other) const {
-		_cowdata.set(_index, other.operator T());
+	_FORCE_INLINE_ void operator=(const CharProxy<T> &p_other) const {
+		_cowdata.set(_index, p_other.operator T());
 	}
 };
 
@@ -104,13 +109,10 @@ public:
 
 	_FORCE_INLINE_ Char16String() {}
 	_FORCE_INLINE_ Char16String(const Char16String &p_str) { _cowdata._ref(p_str._cowdata); }
-	_FORCE_INLINE_ Char16String &operator=(const Char16String &p_str) {
-		_cowdata._ref(p_str._cowdata);
-		return *this;
-	}
+	_FORCE_INLINE_ void operator=(const Char16String &p_str) { _cowdata._ref(p_str._cowdata); }
 	_FORCE_INLINE_ Char16String(const char16_t *p_cstr) { copy_from(p_cstr); }
 
-	Char16String &operator=(const char16_t *p_cstr);
+	void operator=(const char16_t *p_cstr);
 	bool operator<(const Char16String &p_right) const;
 	Char16String &operator+=(char16_t p_char);
 	int length() const { return size() ? size() - 1 : 0; }
@@ -148,13 +150,10 @@ public:
 
 	_FORCE_INLINE_ CharString() {}
 	_FORCE_INLINE_ CharString(const CharString &p_str) { _cowdata._ref(p_str._cowdata); }
-	_FORCE_INLINE_ CharString &operator=(const CharString &p_str) {
-		_cowdata._ref(p_str._cowdata);
-		return *this;
-	}
+	_FORCE_INLINE_ void operator=(const CharString &p_str) { _cowdata._ref(p_str._cowdata); }
 	_FORCE_INLINE_ CharString(const char *p_cstr) { copy_from(p_cstr); }
 
-	CharString &operator=(const char *p_cstr);
+	void operator=(const char *p_cstr);
 	bool operator<(const CharString &p_right) const;
 	CharString &operator+=(char p_char);
 	int length() const { return size() ? size() - 1 : 0; }
@@ -205,7 +204,7 @@ public:
 	_FORCE_INLINE_ char32_t *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const char32_t *ptr() const { return _cowdata.ptr(); }
 
-	void remove(int p_index) { _cowdata.remove(p_index); }
+	void remove_at(int p_index) { _cowdata.remove_at(p_index); }
 
 	_FORCE_INLINE_ void clear() { resize(0); }
 
@@ -287,7 +286,7 @@ public:
 	bool ends_with(const String &p_string) const;
 	bool is_enclosed_in(const String &p_string) const;
 	bool is_subsequence_of(const String &p_string) const;
-	bool is_subsequence_ofi(const String &p_string) const;
+	bool is_subsequence_ofn(const String &p_string) const;
 	bool is_quoted() const;
 	Vector<String> bigrams() const;
 	float similarity(const String &p_string) const;
@@ -358,6 +357,7 @@ public:
 
 	String left(int p_pos) const;
 	String right(int p_pos) const;
+	String indent(const String &p_prefix) const;
 	String dedent() const;
 	String strip_edges(bool left = true, bool right = true) const;
 	String strip_escapes() const;
@@ -395,10 +395,12 @@ public:
 	Vector<uint8_t> sha256_buffer() const;
 
 	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
+	_FORCE_INLINE_ bool contains(const char *p_str) const { return find(p_str) != -1; }
+	_FORCE_INLINE_ bool contains(const String &p_str) const { return find(p_str) != -1; }
 
 	// path functions
 	bool is_absolute_path() const;
-	bool is_rel_path() const;
+	bool is_relative_path() const;
 	bool is_resource_file() const;
 	String path_to(const String &p_path) const;
 	String path_to_file(const String &p_path) const;
@@ -406,6 +408,7 @@ public:
 	String get_file() const;
 	static String humanize_size(uint64_t p_size);
 	String simplify_path() const;
+	bool is_network_share_path() const;
 
 	String xml_escape(bool p_escape_quotes = false) const;
 	String xml_unescape() const;
@@ -438,11 +441,7 @@ public:
 
 	_FORCE_INLINE_ String() {}
 	_FORCE_INLINE_ String(const String &p_str) { _cowdata._ref(p_str._cowdata); }
-
-	String &operator=(const String &p_str) {
-		_cowdata._ref(p_str._cowdata);
-		return *this;
-	}
+	_FORCE_INLINE_ void operator=(const String &p_str) { _cowdata._ref(p_str._cowdata); }
 
 	Vector<uint8_t> to_ascii_buffer() const;
 	Vector<uint8_t> to_utf8_buffer() const;
@@ -523,10 +522,10 @@ String DTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 #define TTRGET(m_value) TTR(m_value)
 
 #else
-#define TTR(m_value) (String())
-#define TTRN(m_value) (String())
-#define DTR(m_value) (String())
-#define DTRN(m_value) (String())
+#define TTR(m_value) String()
+#define TTRN(m_value) String()
+#define DTR(m_value) String()
+#define DTRN(m_value) String()
 #define TTRC(m_value) (m_value)
 #define TTRGET(m_value) (m_value)
 #endif
@@ -535,7 +534,6 @@ String DTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 String RTR(const String &p_text, const String &p_context = "");
 String RTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context = "");
 
-bool is_symbol(char32_t c);
 bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end);
 
 _FORCE_INLINE_ void sarray_add_str(Vector<String> &arr) {

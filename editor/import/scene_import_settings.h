@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -84,6 +84,8 @@ class SceneImportSettings : public ConfirmationDialog {
 	MeshInstance3D *mesh_preview;
 	Ref<SphereMesh> material_preview;
 
+	Ref<StandardMaterial3D> collider_mat;
+
 	float cam_rot_x;
 	float cam_rot_y;
 	float cam_zoom;
@@ -145,6 +147,7 @@ class SceneImportSettings : public ConfirmationDialog {
 
 	bool selecting = false;
 
+	void _update_view_gizmos();
 	void _update_camera();
 	void _select(Tree *p_from, String p_type, String p_id);
 	void _material_tree_selected();
@@ -190,6 +193,7 @@ protected:
 	void _notification(int p_what);
 
 public:
+	void update_view();
 	void open_settings(const String &p_path);
 	static SceneImportSettings *get_singleton();
 	SceneImportSettings();

@@ -77,6 +77,7 @@ _hb_ot_metrics_get_position_common (hb_font_t           *font,
   (face->table.TABLE->has_data () && \
     (position && (*position = font->em_scalef_y (_fix_ascender_descender ( \
       face->table.TABLE->ATTR + GET_VAR, metrics_tag))), true))
+
   case HB_OT_METRICS_TAG_HORIZONTAL_ASCENDER:
     return (face->table.OS2->use_typo_metrics () && GET_METRIC_Y (OS2, sTypoAscender)) ||
 	   GET_METRIC_Y (hhea, ascender);
@@ -86,9 +87,13 @@ _hb_ot_metrics_get_position_common (hb_font_t           *font,
   case HB_OT_METRICS_TAG_HORIZONTAL_LINE_GAP:
     return (face->table.OS2->use_typo_metrics () && GET_METRIC_Y (OS2, sTypoLineGap)) ||
 	   GET_METRIC_Y (hhea, lineGap);
+
+#ifndef HB_NO_VERTICAL
   case HB_OT_METRICS_TAG_VERTICAL_ASCENDER:  return GET_METRIC_X (vhea, ascender);
   case HB_OT_METRICS_TAG_VERTICAL_DESCENDER: return GET_METRIC_X (vhea, descender);
   case HB_OT_METRICS_TAG_VERTICAL_LINE_GAP:  return GET_METRIC_X (vhea, lineGap);
+#endif
+
 #undef GET_METRIC_Y
 #undef GET_METRIC_X
 #undef GET_VAR
@@ -155,12 +160,55 @@ hb_ot_metrics_get_position (hb_font_t           *font,
     (position && (*position = font->em_scalef_y (face->table.TABLE->ATTR + GET_VAR)), true))
   case HB_OT_METRICS_TAG_HORIZONTAL_CLIPPING_ASCENT:  return GET_METRIC_Y (OS2, usWinAscent);
   case HB_OT_METRICS_TAG_HORIZONTAL_CLIPPING_DESCENT: return GET_METRIC_Y (OS2, usWinDescent);
-  case HB_OT_METRICS_TAG_HORIZONTAL_CARET_RISE:       return GET_METRIC_Y (hhea, caretSlopeRise);
-  case HB_OT_METRICS_TAG_HORIZONTAL_CARET_RUN:        return GET_METRIC_X (hhea, caretSlopeRun);
+
+  case HB_OT_METRICS_TAG_HORIZONTAL_CARET_RISE:
+  case HB_OT_METRICS_TAG_HORIZONTAL_CARET_RUN:
+  {
+    unsigned mult = 1u;
+
+    if (font->slant)
+    {
+      unsigned rise = face->table.hhea->caretSlopeRise;
+      unsigned upem = face->get_upem ();
+      mult = (rise && rise < upem) ? hb_min (upem / rise, 256u) : 1u;
+    }
+
+    if (metrics_tag == HB_OT_METRICS_TAG_HORIZONTAL_CARET_RISE)
+    {
+      bool ret = GET_METRIC_Y (hhea, caretSlopeRise);
+
+      if (position)
+	*position *= mult;
+
+      return ret;
+    }
+    else
+    {
+      hb_position_t rise = 0;
+
+      if (font->slant && position && GET_METRIC_Y (hhea, caretSlopeRise))
+	rise = *position;
+
+      bool ret = GET_METRIC_X (hhea, caretSlopeRun);
+
+      if (position)
+      {
+	*position *= mult;
+
+	if (font->slant)
+	  *position += _hb_roundf (mult * font->slant_xy * rise);
+      }
+
+      return ret;
+    }
+  }
   case HB_OT_METRICS_TAG_HORIZONTAL_CARET_OFFSET:     return GET_METRIC_X (hhea, caretOffset);
+
+#ifndef HB_NO_VERTICAL
   case HB_OT_METRICS_TAG_VERTICAL_CARET_RISE:         return GET_METRIC_X (vhea, caretSlopeRise);
   case HB_OT_METRICS_TAG_VERTICAL_CARET_RUN:          return GET_METRIC_Y (vhea, caretSlopeRun);
   case HB_OT_METRICS_TAG_VERTICAL_CARET_OFFSET:       return GET_METRIC_Y (vhea, caretOffset);
+#endif
   case HB_OT_METRICS_TAG_X_HEIGHT:                    return GET_METRIC_Y (OS2->v2 (), sxHeight);
   case HB_OT_METRICS_TAG_CAP_HEIGHT:                  return GET_METRIC_Y (OS2->v2 (), sCapHeight);
   case HB_OT_METRICS_TAG_SUBSCRIPT_EM_X_SIZE:         return GET_METRIC_X (OS2, ySubscriptXSize);

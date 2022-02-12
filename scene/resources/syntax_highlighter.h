@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,8 @@
 #define SYNTAX_HIGHLIGHTER_H
 
 #include "core/io/resource.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/script_language.h"
 
 class TextEdit;
 
@@ -48,9 +50,12 @@ protected:
 
 	static void _bind_methods();
 
+	GDVIRTUAL1RC(Dictionary, _get_line_syntax_highlighting, int)
+	GDVIRTUAL0(_clear_highlighting_cache)
+	GDVIRTUAL0(_update_cache)
 public:
 	Dictionary get_line_syntax_highlighting(int p_line);
-	virtual Dictionary _get_line_syntax_highlighting(int p_line) { return Dictionary(); }
+	virtual Dictionary _get_line_syntax_highlighting_impl(int p_line) { return Dictionary(); }
 
 	void clear_highlighting_cache();
 	virtual void _clear_highlighting_cache() {}
@@ -93,7 +98,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual Dictionary _get_line_syntax_highlighting(int p_line) override;
+	virtual Dictionary _get_line_syntax_highlighting_impl(int p_line) override;
 
 	virtual void _clear_highlighting_cache() override;
 	virtual void _update_cache() override;

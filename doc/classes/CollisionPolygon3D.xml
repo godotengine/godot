@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="depth" type="float" setter="set_depth" getter="get_depth" default="1.0">
 			Length that the resulting collision extends in either direction perpendicular to its polygon.
@@ -25,6 +23,4 @@
 			[b]Note:[/b] The returned value is a copy of the original. Methods which mutate the size or properties of the return value will not impact the original polygon. To change properties of the polygon, assign it to a temporary variable and make changes before reassigning the [code]polygon[/code] member.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

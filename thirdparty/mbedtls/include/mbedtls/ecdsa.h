@@ -12,13 +12,7 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
- *
- *  This file is provided under the Apache License 2.0, or the
- *  GNU General Public License v2.0 or later.
- *
- *  **********
- *  Apache License 2.0:
+ *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -31,60 +25,44 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  **********
- *
- *  **********
- *  GNU General Public License v2.0 or later:
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- *  **********
  */
 
 #ifndef MBEDTLS_ECDSA_H
 #define MBEDTLS_ECDSA_H
 
 #if !defined(MBEDTLS_CONFIG_FILE)
-#include "config.h"
+#include "mbedtls/config.h"
 #else
 #include MBEDTLS_CONFIG_FILE
 #endif
 
-#include "ecp.h"
-#include "md.h"
+#include "mbedtls/ecp.h"
+#include "mbedtls/md.h"
 
-/*
- * RFC-4492 page 20:
+/**
+ * \brief           Maximum ECDSA signature size for a given curve bit size
  *
+ * \param bits      Curve size in bits
+ * \return          Maximum signature size in bytes
+ *
+ * \note            This macro returns a compile-time constant if its argument
+ *                  is one. It may evaluate its argument multiple times.
+ */
+/*
  *     Ecdsa-Sig-Value ::= SEQUENCE {
  *         r       INTEGER,
  *         s       INTEGER
  *     }
  *
- * Size is at most
- *    1 (tag) + 1 (len) + 1 (initial 0) + ECP_MAX_BYTES for each of r and s,
- *    twice that + 1 (tag) + 2 (len) for the sequence
- * (assuming ECP_MAX_BYTES is less than 126 for r and s,
- * and less than 124 (total len <= 255) for the sequence)
+ * For each of r and s, the value (V) may include an extra initial "0" bit.
  */
-#if MBEDTLS_ECP_MAX_BYTES > 124
-#error "MBEDTLS_ECP_MAX_BYTES bigger than expected, please fix MBEDTLS_ECDSA_MAX_LEN"
-#endif
+#define MBEDTLS_ECDSA_MAX_SIG_LEN( bits )                               \
+    ( /*T,L of SEQUENCE*/ ( ( bits ) >= 61 * 8 ? 3 : 2 ) +              \
+      /*T,L of r,s*/        2 * ( ( ( bits ) >= 127 * 8 ? 3 : 2 ) +     \
+      /*V of r,s*/                ( ( bits ) + 8 ) / 8 ) )
+
 /** The maximal size of an ECDSA signature in Bytes. */
-#define MBEDTLS_ECDSA_MAX_LEN  ( 3 + 2 * ( 3 + MBEDTLS_ECP_MAX_BYTES ) )
+#define MBEDTLS_ECDSA_MAX_LEN  MBEDTLS_ECDSA_MAX_SIG_LEN( MBEDTLS_ECP_MAX_BITS )
 
 #ifdef __cplusplus
 extern "C" {
@@ -146,6 +124,16 @@ typedef void mbedtls_ecdsa_restart_ctx;
 #endif /* MBEDTLS_ECP_RESTARTABLE */
 
 /**
+ * \brief          This function checks whether a given group can be used
+ *                 for ECDSA.
+ *
+ * \param gid      The ECP group ID to check.
+ *
+ * \return         \c 1 if the group can be used, \c 0 otherwise
+ */
+int mbedtls_ecdsa_can_do( mbedtls_ecp_group_id gid );
+
+/**
  * \brief           This function computes the ECDSA signature of a
  *                  previously-hashed message.
  *
@@ -186,6 +174,12 @@ int mbedtls_ecdsa_sign( mbedtls_ecp_group *grp, mbedtls_mpi *r, mbedtls_mpi *s,
                 int (*f_rng)(void *, unsigned char *, size_t), void *p_rng );
 
 #if defined(MBEDTLS_ECDSA_DETERMINISTIC)
+#if ! defined(MBEDTLS_DEPRECATED_REMOVED)
+#if defined(MBEDTLS_DEPRECATED_WARNING)
+#define MBEDTLS_DEPRECATED    __attribute__((deprecated))
+#else
+#define MBEDTLS_DEPRECATED
+#endif
 /**
  * \brief           This function computes the ECDSA signature of a
  *                  previously-hashed message, deterministic version.
@@ -237,7 +231,10 @@ int mbedtls_ecdsa_sign( mbedtls_ecp_group *grp, mbedtls_mpi *r, mbedtls_mpi *s,
 int mbedtls_ecdsa_sign_det( mbedtls_ecp_group *grp, mbedtls_mpi *r,
                             mbedtls_mpi *s, const mbedtls_mpi *d,
                             const unsigned char *buf, size_t blen,
-                            mbedtls_md_type_t md_alg );
+                            mbedtls_md_type_t md_alg ) MBEDTLS_DEPRECATED;
+#undef MBEDTLS_DEPRECATED
+#endif /* MBEDTLS_DEPRECATED_REMOVED */
+
 /**
  * \brief           This function computes the ECDSA signature of a
  *                  previously-hashed message, deterministic version.
@@ -278,12 +275,11 @@ int mbedtls_ecdsa_sign_det( mbedtls_ecp_group *grp, mbedtls_mpi *r,
  *                  error code on failure.
  */
 int mbedtls_ecdsa_sign_det_ext( mbedtls_ecp_group *grp, mbedtls_mpi *r,
-                                mbedtls_mpi *s, const mbedtls_mpi *d,
-                                const unsigned char *buf, size_t blen,
-                                mbedtls_md_type_t md_alg,
-                                int (*f_rng_blind)(void *, unsigned char *,
-                                                   size_t),
-                                void *p_rng_blind );
+                            mbedtls_mpi *s, const mbedtls_mpi *d,
+                            const unsigned char *buf, size_t blen,
+                            mbedtls_md_type_t md_alg,
+                            int (*f_rng_blind)(void *, unsigned char *, size_t),
+                            void *p_rng_blind );
 #endif /* MBEDTLS_ECDSA_DETERMINISTIC */
 
 /**
@@ -362,7 +358,8 @@ int mbedtls_ecdsa_verify( mbedtls_ecp_group *grp,
  *                  the signature written. Must not be \c NULL.
  * \param f_rng     The RNG function. This must not be \c NULL if
  *                  #MBEDTLS_ECDSA_DETERMINISTIC is unset. Otherwise,
- *                  it is unused and may be set to \c NULL.
+ *                  it is used only for blinding and may be set to \c NULL, but
+ *                  doing so is DEPRECATED.
  * \param p_rng     The RNG context to be passed to \p f_rng. This may be
  *                  \c NULL if \p f_rng is \c NULL or doesn't use a context.
  *

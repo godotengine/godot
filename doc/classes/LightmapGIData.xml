@@ -48,6 +48,4 @@
 		<member name="light_texture" type="TextureLayered" setter="set_light_texture" getter="get_light_texture">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

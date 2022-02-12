@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,9 +38,9 @@ void GDNativeLibraryEditor::edit(Ref<GDNativeLibrary> p_library) {
 	library = p_library;
 	Ref<ConfigFile> config = p_library->get_config_file();
 
-	for (Map<String, NativePlatformConfig>::Element *E = platforms.front(); E; E = E->next()) {
-		for (List<String>::Element *it = E->value().entries.front(); it; it = it->next()) {
-			String target = E->key() + "." + it->get();
+	for (KeyValue<String, NativePlatformConfig> &E : platforms) {
+		for (List<String>::Element *it = E.value.entries.front(); it; it = it->next()) {
+			String target = E.key + "." + it->get();
 			TargetConfig ecfg;
 			ecfg.library = config->get_value("entry", target, "");
 			ecfg.dependencies = config->get_value("dependencies", target, Array());
@@ -110,7 +110,7 @@ void GDNativeLibraryEditor::_update_tree() {
 
 		TreeItem *new_arch = tree->create_item(platform);
 		new_arch->set_text(0, TTR("Double click to create a new entry"));
-		new_arch->set_text_align(0, TreeItem::ALIGN_CENTER);
+		new_arch->set_text_alignment(0, HORIZONTAL_ALIGNMENT_CENTER);
 		new_arch->set_custom_color(0, get_theme_color(SNAME("accent_color"), SNAME("Editor")));
 		new_arch->set_expand_right(0, true);
 		new_arch->set_metadata(1, E->key());
@@ -245,9 +245,9 @@ void GDNativeLibraryEditor::_translate_to_config_file() {
 		config->erase_section("entry");
 		config->erase_section("dependencies");
 
-		for (Map<String, NativePlatformConfig>::Element *E = platforms.front(); E; E = E->next()) {
-			for (List<String>::Element *it = E->value().entries.front(); it; it = it->next()) {
-				String target = E->key() + "." + it->get();
+		for (KeyValue<String, NativePlatformConfig> &E : platforms) {
+			for (List<String>::Element *it = E.value.entries.front(); it; it = it->next()) {
+				String target = E.key + "." + it->get();
 				if (entry_configs[target].library.is_empty() && entry_configs[target].dependencies.is_empty()) {
 					continue;
 				}
@@ -315,7 +315,6 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 
 		NativePlatformConfig platform_ios;
 		platform_ios.name = "iOS";
-		platform_ios.entries.push_back("armv7");
 		platform_ios.entries.push_back("arm64");
 		platform_ios.entries.push_back("x86_64");
 		// iOS can use both Static and Dynamic libraries.
@@ -335,15 +334,15 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 	hbox->add_child(label);
 	filter = memnew(MenuButton);
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
-	filter->set_text_align(filter->ALIGN_LEFT);
+	filter->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 	hbox->add_child(filter);
 	PopupMenu *filter_list = filter->get_popup();
 	filter_list->set_hide_on_checkable_item_selection(false);
 
 	int idx = 0;
-	for (Map<String, NativePlatformConfig>::Element *E = platforms.front(); E; E = E->next()) {
-		filter_list->add_check_item(E->get().name, idx);
-		filter_list->set_item_metadata(idx, E->key());
+	for (const KeyValue<String, NativePlatformConfig> &E : platforms) {
+		filter_list->add_check_item(E.value.name, idx);
+		filter_list->set_item_metadata(idx, E.key);
 		filter_list->set_item_checked(idx, true);
 		idx += 1;
 	}

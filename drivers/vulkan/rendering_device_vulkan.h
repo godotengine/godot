@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,7 +44,11 @@
 #endif
 #include "vk_mem_alloc.h"
 
+#ifdef USE_VOLK
+#include <volk.h>
+#else
 #include <vulkan/vulkan.h>
+#endif
 
 class VulkanContext;
 
@@ -171,7 +175,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	// These are temporary buffers on CPU memory that hold
 	// the information until the CPU fetches it and places it
 	// either on GPU buffers, or images (textures). It ensures
-	// updates are properly synchronized with whathever the
+	// updates are properly synchronized with whatever the
 	// GPU is doing.
 	//
 	// The logic here is as follows, only 3 of these
@@ -635,6 +639,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		Vector<VkPipelineShaderStageCreateInfo> pipeline_stages;
 		Vector<SpecializationConstant> specialization_constants;
 		VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
+		String name; //used for debug
 	};
 
 	String _shader_uniform_debug(RID p_shader, int p_set = -1);
@@ -808,7 +813,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	// When using split command lists, this is
 	// implemented internally using secondary command
 	// buffers. As they can be created in threads,
-	// each needs it's own command pool.
+	// each needs its own command pool.
 
 	struct SplitDrawListAllocator {
 		VkCommandPool command_pool = VK_NULL_HANDLE;
@@ -1032,13 +1037,14 @@ public:
 	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t>> &p_data = Vector<Vector<uint8_t>>());
 	virtual RID texture_create_shared(const TextureView &p_view, RID p_with_texture);
 
-	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, TextureSliceType p_slice_type = TEXTURE_SLICE_2D);
+	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps = 1, TextureSliceType p_slice_type = TEXTURE_SLICE_2D);
 	virtual Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL);
 	virtual Vector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer);
 
 	virtual bool texture_is_format_supported_for_usage(DataFormat p_format, uint32_t p_usage) const;
 	virtual bool texture_is_shared(RID p_texture);
 	virtual bool texture_is_valid(RID p_texture);
+	virtual Size2i texture_size(RID p_texture);
 
 	virtual Error texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, uint32_t p_post_barrier = BARRIER_MASK_ALL);
 	virtual Error texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, uint32_t p_post_barrier = BARRIER_MASK_ALL);
@@ -1084,7 +1090,7 @@ public:
 	/****************/
 
 	virtual String shader_get_binary_cache_key() const;
-	virtual Vector<uint8_t> shader_compile_binary_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv);
+	virtual Vector<uint8_t> shader_compile_binary_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name = "");
 
 	virtual RID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary);
 
@@ -1149,6 +1155,7 @@ public:
 	virtual void draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect);
 	virtual void draw_list_disable_scissor(DrawListID p_list);
 
+	virtual uint32_t draw_list_get_current_pass();
 	virtual DrawListID draw_list_switch_to_next_pass();
 	virtual Error draw_list_switch_to_next_pass_split(uint32_t p_splits, DrawListID *r_split_ids);
 
@@ -1218,7 +1225,10 @@ public:
 
 	virtual String get_device_vendor_name() const;
 	virtual String get_device_name() const;
+	virtual RenderingDevice::DeviceType get_device_type() const;
 	virtual String get_device_pipeline_cache_uuid() const;
+
+	virtual uint64_t get_driver_resource(DriverResource p_resource, RID p_rid = RID(), uint64_t p_index = 0);
 
 	RenderingDeviceVulkan();
 	~RenderingDeviceVulkan();

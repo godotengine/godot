@@ -35,6 +35,4 @@
 		<member name="source_vertex" type="String" setter="set_stage_source" getter="get_stage_source" default="&quot;&quot;">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

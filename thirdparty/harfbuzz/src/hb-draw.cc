@@ -191,7 +191,7 @@ hb_draw_funcs_destroy (hb_draw_funcs_t *funcs)
 {
   if (!hb_object_destroy (funcs)) return;
 
-  free (funcs);
+  hb_free (funcs);
 }
 
 /**

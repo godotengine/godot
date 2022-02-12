@@ -69,13 +69,13 @@ vec3 ImportanceSampleGGX(vec2 Xi, float Roughness, vec3 N) {
 	return TangentX * H.x + TangentY * H.y + N * H.z;
 }
 
-// http://graphicrants.blogspot.com.au/2013/08/specular-brdf-reference.html
+// https://graphicrants.blogspot.com.au/2013/08/specular-brdf-reference.html
 float GGX(float NdotV, float a) {
 	float k = a / 2.0;
 	return NdotV / (NdotV * (1.0 - k) + k);
 }
 
-// http://graphicrants.blogspot.com.au/2013/08/specular-brdf-reference.html
+// https://graphicrants.blogspot.com.au/2013/08/specular-brdf-reference.html
 float G_Smith(float a, float nDotV, float nDotL) {
 	return GGX(nDotL, a * a) * GGX(nDotV, a * a);
 }

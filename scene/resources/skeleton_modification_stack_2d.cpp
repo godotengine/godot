@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -172,7 +172,7 @@ void SkeletonModificationStack2D::add_modification(Ref<SkeletonModification2D> p
 
 void SkeletonModificationStack2D::delete_modification(int p_mod_idx) {
 	ERR_FAIL_INDEX(p_mod_idx, modifications.size());
-	modifications.remove(p_mod_idx);
+	modifications.remove_at(p_mod_idx);
 
 #ifdef TOOLS_ENABLED
 	set_editor_gizmos_dirty(true);
@@ -195,6 +195,7 @@ void SkeletonModificationStack2D::set_modification(int p_mod_idx, Ref<SkeletonMo
 }
 
 void SkeletonModificationStack2D::set_modification_count(int p_count) {
+	ERR_FAIL_COND_MSG(p_count < 0, "Modification count cannot be less than zero.");
 	modifications.resize(p_count);
 	notify_property_list_changed();
 
@@ -247,7 +248,7 @@ void SkeletonModificationStack2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("delete_modification", "mod_idx"), &SkeletonModificationStack2D::delete_modification);
 	ClassDB::bind_method(D_METHOD("set_modification", "mod_idx", "modification"), &SkeletonModificationStack2D::set_modification);
 
-	ClassDB::bind_method(D_METHOD("set_modification_count"), &SkeletonModificationStack2D::set_modification_count);
+	ClassDB::bind_method(D_METHOD("set_modification_count", "count"), &SkeletonModificationStack2D::set_modification_count);
 	ClassDB::bind_method(D_METHOD("get_modification_count"), &SkeletonModificationStack2D::get_modification_count);
 
 	ClassDB::bind_method(D_METHOD("get_is_setup"), &SkeletonModificationStack2D::get_is_setup);

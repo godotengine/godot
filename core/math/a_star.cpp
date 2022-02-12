@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,6 @@
 
 #include "core/math/geometry_3d.h"
 #include "core/object/script_language.h"
-#include "scene/scene_string_names.h"
 
 int AStar::get_available_point_id() const {
 	if (points.has(last_free_id)) {
@@ -47,8 +46,8 @@ int AStar::get_available_point_id() const {
 }
 
 void AStar::add_point(int p_id, const Vector3 &p_pos, real_t p_weight_scale) {
-	ERR_FAIL_COND(p_id < 0);
-	ERR_FAIL_COND(p_weight_scale < 1);
+	ERR_FAIL_COND_MSG(p_id < 0, vformat("Can't add a point with negative id: %d.", p_id));
+	ERR_FAIL_COND_MSG(p_weight_scale < 1, vformat("Can't add a point with weight scale less than one: %f.", p_weight_scale));
 
 	Point *found_pt;
 	bool p_exists = points.lookup(p_id, found_pt);
@@ -72,7 +71,7 @@ void AStar::add_point(int p_id, const Vector3 &p_pos, real_t p_weight_scale) {
 Vector3 AStar::get_point_position(int p_id) const {
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
-	ERR_FAIL_COND_V(!p_exists, Vector3());
+	ERR_FAIL_COND_V_MSG(!p_exists, Vector3(), vformat("Can't get point's position. Point with id: %d doesn't exist.", p_id));
 
 	return p->pos;
 }
@@ -80,7 +79,7 @@ Vector3 AStar::get_point_position(int p_id) const {
 void AStar::set_point_position(int p_id, const Vector3 &p_pos) {
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
-	ERR_FAIL_COND(!p_exists);
+	ERR_FAIL_COND_MSG(!p_exists, vformat("Can't set point's position. Point with id: %d doesn't exist.", p_id));
 
 	p->pos = p_pos;
 }
@@ -88,7 +87,7 @@ void AStar::set_point_position(int p_id, const Vector3 &p_pos) {
 real_t AStar::get_point_weight_scale(int p_id) const {
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
-	ERR_FAIL_COND_V(!p_exists, 0);
+	ERR_FAIL_COND_V_MSG(!p_exists, 0, vformat("Can't get point's weight scale. Point with id: %d doesn't exist.", p_id));
 
 	return p->weight_scale;
 }
@@ -96,8 +95,8 @@ real_t AStar::get_point_weight_scale(int p_id) const {
 void AStar::set_point_weight_scale(int p_id, real_t p_weight_scale) {
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
-	ERR_FAIL_COND(!p_exists);
-	ERR_FAIL_COND(p_weight_scale < 1);
+	ERR_FAIL_COND_MSG(!p_exists, vformat("Can't set point's weight scale. Point with id: %d doesn't exist.", p_id));
+	ERR_FAIL_COND_MSG(p_weight_scale < 1, vformat("Can't set point's weight scale less than one: %f.", p_weight_scale));
 
 	p->weight_scale = p_weight_scale;
 }
@@ -105,7 +104,7 @@ void AStar::set_point_weight_scale(int p_id, real_t p_weight_scale) {
 void AStar::remove_point(int p_id) {
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
-	ERR_FAIL_COND(!p_exists);
+	ERR_FAIL_COND_MSG(!p_exists, vformat("Can't remove point. Point with id: %d doesn't exist.", p_id));
 
 	for (OAHashMap<int, Point *>::Iterator it = p->neighbours.iter(); it.valid; it = p->neighbours.next_iter(it)) {
 		Segment s(p_id, (*it.key));
@@ -129,15 +128,15 @@ void AStar::remove_point(int p_id) {
 }
 
 void AStar::connect_points(int p_id, int p_with_id, bool bidirectional) {
-	ERR_FAIL_COND(p_id == p_with_id);
+	ERR_FAIL_COND_MSG(p_id == p_with_id, vformat("Can't connect point with id: %d to itself.", p_id));
 
 	Point *a;
 	bool from_exists = points.lookup(p_id, a);
-	ERR_FAIL_COND(!from_exists);
+	ERR_FAIL_COND_MSG(!from_exists, vformat("Can't connect points. Point with id: %d doesn't exist.", p_id));
 
 	Point *b;
 	bool to_exists = points.lookup(p_with_id, b);
-	ERR_FAIL_COND(!to_exists);
+	ERR_FAIL_COND_MSG(!to_exists, vformat("Can't connect points. Point with id: %d doesn't exist.", p_with_id));
 
 	a->neighbours.set(b->id, b);
 
@@ -169,11 +168,11 @@ void AStar::connect_points(int p_id, int p_with_id, bool bidirectional) {
 void AStar::disconnect_points(int p_id, int p_with_id, bool bidirectional) {
 	Point *a;
 	bool a_exists = points.lookup(p_id, a);
-	ERR_FAIL_COND(!a_exists);
+	ERR_FAIL_COND_MSG(!a_exists, vformat("Can't disconnect points. Point with id: %d doesn't exist.", p_id));
 
 	Point *b;
 	bool b_exists = points.lookup(p_with_id, b);
-	ERR_FAIL_COND(!b_exists);
+	ERR_FAIL_COND_MSG(!b_exists, vformat("Can't disconnect points. Point with id: %d doesn't exist.", p_with_id));
 
 	Segment s(p_id, p_with_id);
 	int remove_direction = bidirectional ? (int)Segment::BIDIRECTIONAL : s.direction;
@@ -210,7 +209,7 @@ bool AStar::has_point(int p_id) const {
 	return points.has(p_id);
 }
 
-Array AStar::get_points() {
+Array AStar::get_point_ids() {
 	Array point_list;
 
 	for (OAHashMap<int, Point *>::Iterator it = points.iter(); it.valid; it = points.next_iter(it)) {
@@ -223,7 +222,7 @@ Array AStar::get_points() {
 Vector<int> AStar::get_point_connections(int p_id) {
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
-	ERR_FAIL_COND_V(!p_exists, Vector<int>());
+	ERR_FAIL_COND_V_MSG(!p_exists, Vector<int>(), vformat("Can't get point's connections. Point with id: %d doesn't exist.", p_id));
 
 	Vector<int> point_list;
 
@@ -239,7 +238,7 @@ bool AStar::are_points_connected(int p_id, int p_with_id, bool bidirectional) co
 	const Set<Segment>::Element *element = segments.find(s);
 
 	return element != nullptr &&
-		   (bidirectional || (element->get().direction & s.direction) == s.direction);
+			(bidirectional || (element->get().direction & s.direction) == s.direction);
 }
 
 void AStar::clear() {
@@ -260,8 +259,8 @@ int AStar::get_point_capacity() const {
 }
 
 void AStar::reserve_space(int p_num_nodes) {
-	ERR_FAIL_COND_MSG(p_num_nodes <= 0, "New capacity must be greater than 0, was: " + itos(p_num_nodes) + ".");
-	ERR_FAIL_COND_MSG((uint32_t)p_num_nodes < points.get_capacity(), "New capacity must be greater than current capacity: " + itos(points.get_capacity()) + ", new was: " + itos(p_num_nodes) + ".");
+	ERR_FAIL_COND_MSG(p_num_nodes <= 0, vformat("New capacity must be greater than 0, new was: %d.", p_num_nodes));
+	ERR_FAIL_COND_MSG((uint32_t)p_num_nodes < points.get_capacity(), vformat("New capacity must be greater than current capacity: %d, new was: %d.", points.get_capacity(), p_num_nodes));
 	points.reserve(p_num_nodes);
 }
 
@@ -344,7 +343,7 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 		}
 
 		sorter.pop_heap(0, open_list.size(), open_list.ptrw()); // Remove the current point from the open list
-		open_list.remove(open_list.size() - 1);
+		open_list.remove_at(open_list.size() - 1);
 		p->closed_pass = pass; // Mark the point as closed
 
 		for (OAHashMap<int, Point *>::Iterator it = p->neighbours.iter(); it.valid; it = p->neighbours.next_iter(it)) {
@@ -382,33 +381,35 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 }
 
 real_t AStar::_estimate_cost(int p_from_id, int p_to_id) {
-	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_estimate_cost)) {
-		return get_script_instance()->call(SceneStringNames::get_singleton()->_estimate_cost, p_from_id, p_to_id);
+	real_t scost;
+	if (GDVIRTUAL_CALL(_estimate_cost, p_from_id, p_to_id, scost)) {
+		return scost;
 	}
 
 	Point *from_point;
 	bool from_exists = points.lookup(p_from_id, from_point);
-	ERR_FAIL_COND_V(!from_exists, 0);
+	ERR_FAIL_COND_V_MSG(!from_exists, 0, vformat("Can't estimate cost. Point with id: %d doesn't exist.", p_from_id));
 
 	Point *to_point;
 	bool to_exists = points.lookup(p_to_id, to_point);
-	ERR_FAIL_COND_V(!to_exists, 0);
+	ERR_FAIL_COND_V_MSG(!to_exists, 0, vformat("Can't estimate cost. Point with id: %d doesn't exist.", p_to_id));
 
 	return from_point->pos.distance_to(to_point->pos);
 }
 
 real_t AStar::_compute_cost(int p_from_id, int p_to_id) {
-	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_compute_cost)) {
-		return get_script_instance()->call(SceneStringNames::get_singleton()->_compute_cost, p_from_id, p_to_id);
+	real_t scost;
+	if (GDVIRTUAL_CALL(_compute_cost, p_from_id, p_to_id, scost)) {
+		return scost;
 	}
 
 	Point *from_point;
 	bool from_exists = points.lookup(p_from_id, from_point);
-	ERR_FAIL_COND_V(!from_exists, 0);
+	ERR_FAIL_COND_V_MSG(!from_exists, 0, vformat("Can't compute cost. Point with id: %d doesn't exist.", p_from_id));
 
 	Point *to_point;
 	bool to_exists = points.lookup(p_to_id, to_point);
-	ERR_FAIL_COND_V(!to_exists, 0);
+	ERR_FAIL_COND_V_MSG(!to_exists, 0, vformat("Can't compute cost. Point with id: %d doesn't exist.", p_to_id));
 
 	return from_point->pos.distance_to(to_point->pos);
 }
@@ -416,11 +417,11 @@ real_t AStar::_compute_cost(int p_from_id, int p_to_id) {
 Vector<Vector3> AStar::get_point_path(int p_from_id, int p_to_id) {
 	Point *a;
 	bool from_exists = points.lookup(p_from_id, a);
-	ERR_FAIL_COND_V(!from_exists, Vector<Vector3>());
+	ERR_FAIL_COND_V_MSG(!from_exists, Vector<Vector3>(), vformat("Can't get point path. Point with id: %d doesn't exist.", p_from_id));
 
 	Point *b;
 	bool to_exists = points.lookup(p_to_id, b);
-	ERR_FAIL_COND_V(!to_exists, Vector<Vector3>());
+	ERR_FAIL_COND_V_MSG(!to_exists, Vector<Vector3>(), vformat("Can't get point path. Point with id: %d doesn't exist.", p_to_id));
 
 	if (a == b) {
 		Vector<Vector3> ret;
@@ -465,11 +466,11 @@ Vector<Vector3> AStar::get_point_path(int p_from_id, int p_to_id) {
 Vector<int> AStar::get_id_path(int p_from_id, int p_to_id) {
 	Point *a;
 	bool from_exists = points.lookup(p_from_id, a);
-	ERR_FAIL_COND_V(!from_exists, Vector<int>());
+	ERR_FAIL_COND_V_MSG(!from_exists, Vector<int>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_from_id));
 
 	Point *b;
 	bool to_exists = points.lookup(p_to_id, b);
-	ERR_FAIL_COND_V(!to_exists, Vector<int>());
+	ERR_FAIL_COND_V_MSG(!to_exists, Vector<int>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_to_id));
 
 	if (a == b) {
 		Vector<int> ret;
@@ -514,7 +515,7 @@ Vector<int> AStar::get_id_path(int p_from_id, int p_to_id) {
 void AStar::set_point_disabled(int p_id, bool p_disabled) {
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
-	ERR_FAIL_COND(!p_exists);
+	ERR_FAIL_COND_MSG(!p_exists, vformat("Can't set if point is disabled. Point with id: %d doesn't exist.", p_id));
 
 	p->enabled = !p_disabled;
 }
@@ -522,7 +523,7 @@ void AStar::set_point_disabled(int p_id, bool p_disabled) {
 bool AStar::is_point_disabled(int p_id) const {
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
-	ERR_FAIL_COND_V(!p_exists, false);
+	ERR_FAIL_COND_V_MSG(!p_exists, false, vformat("Can't get if point is disabled. Point with id: %d doesn't exist.", p_id));
 
 	return !p->enabled;
 }
@@ -537,7 +538,7 @@ void AStar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_point", "id"), &AStar::remove_point);
 	ClassDB::bind_method(D_METHOD("has_point", "id"), &AStar::has_point);
 	ClassDB::bind_method(D_METHOD("get_point_connections", "id"), &AStar::get_point_connections);
-	ClassDB::bind_method(D_METHOD("get_points"), &AStar::get_points);
+	ClassDB::bind_method(D_METHOD("get_point_ids"), &AStar::get_point_ids);
 
 	ClassDB::bind_method(D_METHOD("set_point_disabled", "id", "disabled"), &AStar::set_point_disabled, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_point_disabled", "id"), &AStar::is_point_disabled);
@@ -557,8 +558,8 @@ void AStar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id"), &AStar::get_point_path);
 	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id"), &AStar::get_id_path);
 
-	BIND_VMETHOD(MethodInfo(Variant::FLOAT, "_estimate_cost", PropertyInfo(Variant::INT, "from_id"), PropertyInfo(Variant::INT, "to_id")));
-	BIND_VMETHOD(MethodInfo(Variant::FLOAT, "_compute_cost", PropertyInfo(Variant::INT, "from_id"), PropertyInfo(Variant::INT, "to_id")));
+	GDVIRTUAL_BIND(_estimate_cost, "from_id", "to_id")
+	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
 }
 
 AStar::~AStar() {
@@ -604,8 +605,8 @@ Vector<int> AStar2D::get_point_connections(int p_id) {
 	return astar.get_point_connections(p_id);
 }
 
-Array AStar2D::get_points() {
-	return astar.get_points();
+Array AStar2D::get_point_ids() {
+	return astar.get_point_ids();
 }
 
 void AStar2D::set_point_disabled(int p_id, bool p_disabled) {
@@ -654,33 +655,35 @@ Vector2 AStar2D::get_closest_position_in_segment(const Vector2 &p_point) const {
 }
 
 real_t AStar2D::_estimate_cost(int p_from_id, int p_to_id) {
-	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_estimate_cost)) {
-		return get_script_instance()->call(SceneStringNames::get_singleton()->_estimate_cost, p_from_id, p_to_id);
+	real_t scost;
+	if (GDVIRTUAL_CALL(_estimate_cost, p_from_id, p_to_id, scost)) {
+		return scost;
 	}
 
 	AStar::Point *from_point;
 	bool from_exists = astar.points.lookup(p_from_id, from_point);
-	ERR_FAIL_COND_V(!from_exists, 0);
+	ERR_FAIL_COND_V_MSG(!from_exists, 0, vformat("Can't estimate cost. Point with id: %d doesn't exist.", p_from_id));
 
 	AStar::Point *to_point;
 	bool to_exists = astar.points.lookup(p_to_id, to_point);
-	ERR_FAIL_COND_V(!to_exists, 0);
+	ERR_FAIL_COND_V_MSG(!to_exists, 0, vformat("Can't estimate cost. Point with id: %d doesn't exist.", p_to_id));
 
 	return from_point->pos.distance_to(to_point->pos);
 }
 
 real_t AStar2D::_compute_cost(int p_from_id, int p_to_id) {
-	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_compute_cost)) {
-		return get_script_instance()->call(SceneStringNames::get_singleton()->_compute_cost, p_from_id, p_to_id);
+	real_t scost;
+	if (GDVIRTUAL_CALL(_compute_cost, p_from_id, p_to_id, scost)) {
+		return scost;
 	}
 
 	AStar::Point *from_point;
 	bool from_exists = astar.points.lookup(p_from_id, from_point);
-	ERR_FAIL_COND_V(!from_exists, 0);
+	ERR_FAIL_COND_V_MSG(!from_exists, 0, vformat("Can't compute cost. Point with id: %d doesn't exist.", p_from_id));
 
 	AStar::Point *to_point;
 	bool to_exists = astar.points.lookup(p_to_id, to_point);
-	ERR_FAIL_COND_V(!to_exists, 0);
+	ERR_FAIL_COND_V_MSG(!to_exists, 0, vformat("Can't compute cost. Point with id: %d doesn't exist.", p_to_id));
 
 	return from_point->pos.distance_to(to_point->pos);
 }
@@ -688,15 +691,14 @@ real_t AStar2D::_compute_cost(int p_from_id, int p_to_id) {
 Vector<Vector2> AStar2D::get_point_path(int p_from_id, int p_to_id) {
 	AStar::Point *a;
 	bool from_exists = astar.points.lookup(p_from_id, a);
-	ERR_FAIL_COND_V(!from_exists, Vector<Vector2>());
+	ERR_FAIL_COND_V_MSG(!from_exists, Vector<Vector2>(), vformat("Can't get point path. Point with id: %d doesn't exist.", p_from_id));
 
 	AStar::Point *b;
 	bool to_exists = astar.points.lookup(p_to_id, b);
-	ERR_FAIL_COND_V(!to_exists, Vector<Vector2>());
+	ERR_FAIL_COND_V_MSG(!to_exists, Vector<Vector2>(), vformat("Can't get point path. Point with id: %d doesn't exist.", p_to_id));
 
 	if (a == b) {
-		Vector<Vector2> ret;
-		ret.push_back(Vector2(a->pos.x, a->pos.y));
+		Vector<Vector2> ret = { Vector2(a->pos.x, a->pos.y) };
 		return ret;
 	}
 
@@ -737,11 +739,11 @@ Vector<Vector2> AStar2D::get_point_path(int p_from_id, int p_to_id) {
 Vector<int> AStar2D::get_id_path(int p_from_id, int p_to_id) {
 	AStar::Point *a;
 	bool from_exists = astar.points.lookup(p_from_id, a);
-	ERR_FAIL_COND_V(!from_exists, Vector<int>());
+	ERR_FAIL_COND_V_MSG(!from_exists, Vector<int>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_from_id));
 
 	AStar::Point *b;
 	bool to_exists = astar.points.lookup(p_to_id, b);
-	ERR_FAIL_COND_V(!to_exists, Vector<int>());
+	ERR_FAIL_COND_V_MSG(!to_exists, Vector<int>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_to_id));
 
 	if (a == b) {
 		Vector<int> ret;
@@ -808,7 +810,7 @@ bool AStar2D::_solve(AStar::Point *begin_point, AStar::Point *end_point) {
 		}
 
 		sorter.pop_heap(0, open_list.size(), open_list.ptrw()); // Remove the current point from the open list
-		open_list.remove(open_list.size() - 1);
+		open_list.remove_at(open_list.size() - 1);
 		p->closed_pass = astar.pass; // Mark the point as closed
 
 		for (OAHashMap<int, AStar::Point *>::Iterator it = p->neighbours.iter(); it.valid; it = p->neighbours.next_iter(it)) {
@@ -855,7 +857,7 @@ void AStar2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_point", "id"), &AStar2D::remove_point);
 	ClassDB::bind_method(D_METHOD("has_point", "id"), &AStar2D::has_point);
 	ClassDB::bind_method(D_METHOD("get_point_connections", "id"), &AStar2D::get_point_connections);
-	ClassDB::bind_method(D_METHOD("get_points"), &AStar2D::get_points);
+	ClassDB::bind_method(D_METHOD("get_point_ids"), &AStar2D::get_point_ids);
 
 	ClassDB::bind_method(D_METHOD("set_point_disabled", "id", "disabled"), &AStar2D::set_point_disabled, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_point_disabled", "id"), &AStar2D::is_point_disabled);
@@ -875,6 +877,6 @@ void AStar2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id"), &AStar2D::get_point_path);
 	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id"), &AStar2D::get_id_path);
 
-	BIND_VMETHOD(MethodInfo(Variant::FLOAT, "_estimate_cost", PropertyInfo(Variant::INT, "from_id"), PropertyInfo(Variant::INT, "to_id")));
-	BIND_VMETHOD(MethodInfo(Variant::FLOAT, "_compute_cost", PropertyInfo(Variant::INT, "from_id"), PropertyInfo(Variant::INT, "to_id")));
+	GDVIRTUAL_BIND(_estimate_cost, "from_id", "to_id")
+	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
 }

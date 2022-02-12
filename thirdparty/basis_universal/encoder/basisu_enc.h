@@ -1634,6 +1634,14 @@ namespace basisu
 
 				if ((!l_weight) || (!r_weight))
 				{
+					l_children.resize(0);
+					new_l_child.set(0.0f);
+					l_ttsum = 0.0f;
+					l_weight = 0;
+					r_children.resize(0);
+					new_r_child.set(0.0f);
+					r_ttsum = 0.0f;
+					r_weight = 0;
 					TrainingVectorType firstVec;
 					for (uint32_t i = 0; i < node.m_training_vecs.size(); i++)
 					{
@@ -1660,7 +1668,7 @@ namespace basisu
 						}
 					}
 
-					if (!l_weight)
+					if ((!l_weight) || (!r_weight))
 						return false;
 				}
 

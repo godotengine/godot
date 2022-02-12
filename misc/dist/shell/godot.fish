@@ -2,8 +2,8 @@
 # To use it, install this file in `~/.config/fish/completions` then restart your shell.
 # You can also `source` this file directly in your shell startup file.
 #
-# Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.
-# Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
+# Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.
+# Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -59,7 +59,6 @@ complete -c godot -s w -l windowed -d "Request windowed mode"
 complete -c godot -s t -l always-on-top -d "Request an always-on-top window"
 complete -c godot -l resolution -d "Request window resolution" -x
 complete -c godot -l position -d "Request window position" -x
-complete -c godot -l low-dpi -d "Force low-DPI mode (macOS and Windows only)"
 complete -c godot -l headless -d "Enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script"
 
 # Debug options:

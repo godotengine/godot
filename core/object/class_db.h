@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,8 +45,6 @@
 
 #define DEFVAL(m_defval) (m_defval)
 
-#ifdef DEBUG_METHODS_ENABLED
-
 struct MethodDefinition {
 	StringName name;
 	Vector<StringName> args;
@@ -71,26 +69,6 @@ MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_
 MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_arg2, const char *p_arg3, const char *p_arg4, const char *p_arg5, const char *p_arg6, const char *p_arg7, const char *p_arg8, const char *p_arg9, const char *p_arg10, const char *p_arg11);
 MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_arg2, const char *p_arg3, const char *p_arg4, const char *p_arg5, const char *p_arg6, const char *p_arg7, const char *p_arg8, const char *p_arg9, const char *p_arg10, const char *p_arg11, const char *p_arg12);
 MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_arg2, const char *p_arg3, const char *p_arg4, const char *p_arg5, const char *p_arg6, const char *p_arg7, const char *p_arg8, const char *p_arg9, const char *p_arg10, const char *p_arg11, const char *p_arg12, const char *p_arg13);
-
-#else
-
-//#define NO_VARIADIC_MACROS
-
-#ifdef NO_VARIADIC_MACROS
-
-static _FORCE_INLINE_ const char *D_METHOD(const char *m_name, ...) {
-	return m_name;
-}
-
-#else
-
-// When DEBUG_METHODS_ENABLED is set this will let the engine know
-// the argument names for easier debugging.
-#define D_METHOD(m_c, ...) m_c
-
-#endif
-
-#endif
 
 class ClassDB {
 public:
@@ -132,6 +110,7 @@ public:
 		List<MethodInfo> virtual_methods;
 		Map<StringName, MethodInfo> virtual_methods_map;
 		StringName category;
+		Map<StringName, Vector<Error>> method_error_values;
 #endif
 		HashMap<StringName, PropertySetGet> property_setget;
 
@@ -155,11 +134,7 @@ public:
 	static HashMap<StringName, StringName> resource_base_extensions;
 	static HashMap<StringName, StringName> compat_classes;
 
-#ifdef DEBUG_METHODS_ENABLED
 	static MethodBind *bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const MethodDefinition &method_name, const Variant **p_defs, int p_defcount);
-#else
-	static MethodBind *bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const char *method_name, const Variant **p_defs, int p_defcount);
-#endif
 
 	static APIType current_api;
 
@@ -189,6 +164,7 @@ public:
 		t->creation_func = &creator<T>;
 		t->exposed = true;
 		t->class_ptr = T::get_class_ptr_static();
+		t->api = current_api;
 		T::register_custom_data_to_otdb();
 	}
 
@@ -200,6 +176,7 @@ public:
 		ERR_FAIL_COND(!t);
 		t->exposed = true;
 		t->class_ptr = T::get_class_ptr_static();
+		t->api = current_api;
 		//nothing
 	}
 
@@ -220,6 +197,7 @@ public:
 		t->creation_func = &_create_ptr_func<T>;
 		t->exposed = true;
 		t->class_ptr = T::get_class_ptr_static();
+		t->api = current_api;
 		T::register_custom_data_to_otdb();
 	}
 
@@ -233,7 +211,7 @@ public:
 	static bool is_parent_class(const StringName &p_class, const StringName &p_inherits);
 	static bool can_instantiate(const StringName &p_class);
 	static Object *instantiate(const StringName &p_class);
-	static void instance_get_native_extension_data(ObjectNativeExtension **r_extension, GDExtensionClassInstancePtr *r_extension_instance);
+	static void set_object_extension_instance(Object *p_object, const StringName &p_class, GDExtensionClassInstancePtr p_instance);
 
 	static APIType get_api_type(const StringName &p_class);
 
@@ -330,7 +308,7 @@ public:
 
 		if (type->method_map.has(p_name)) {
 			memdelete(bind);
-			// overloading not supported
+			// Overloading not supported
 			ERR_FAIL_V_MSG(nullptr, "Method already bound: " + instance_type + "::" + p_name + ".");
 		}
 		type->method_map[p_name] = bind;
@@ -350,10 +328,13 @@ public:
 	static bool get_signal(const StringName &p_class, const StringName &p_signal, MethodInfo *r_signal);
 	static void get_signal_list(const StringName &p_class, List<MethodInfo> *p_signals, bool p_no_inheritance = false);
 
-	static void add_property_group(const StringName &p_class, const String &p_name, const String &p_prefix = "");
-	static void add_property_subgroup(const StringName &p_class, const String &p_name, const String &p_prefix = "");
+	static void add_property_group(const StringName &p_class, const String &p_name, const String &p_prefix = "", int p_indent_depth = 0);
+	static void add_property_subgroup(const StringName &p_class, const String &p_name, const String &p_prefix = "", int p_indent_depth = 0);
+	static void add_property_array_count(const StringName &p_class, const String &p_label, const StringName &p_count_property, const StringName &p_count_setter, const StringName &p_count_getter, const String &p_array_element_prefix, uint32_t p_count_usage = PROPERTY_USAGE_DEFAULT);
+	static void add_property_array(const StringName &p_class, const StringName &p_path, const String &p_array_element_prefix);
 	static void add_property(const StringName &p_class, const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter, int p_index = -1);
 	static void set_property_default_value(const StringName &p_class, const StringName &p_name, const Variant &p_default);
+	static void add_linked_property(const StringName &p_class, const String &p_property, const String &p_linked_property);
 	static void get_property_list(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance = false, const Object *p_validator = nullptr);
 	static bool get_property_info(const StringName &p_class, const StringName &p_property, PropertyInfo *r_info, bool p_no_inheritance = false, const Object *p_validator = nullptr);
 	static bool set_property(Object *p_object, const StringName &p_property, const Variant &p_value, bool *r_valid = nullptr);
@@ -371,7 +352,7 @@ public:
 	static bool get_method_info(const StringName &p_class, const StringName &p_method, MethodInfo *r_info, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
 	static MethodBind *get_method(const StringName &p_class, const StringName &p_name);
 
-	static void add_virtual_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual = true);
+	static void add_virtual_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual = true, const Vector<String> &p_arg_names = Vector<String>(), bool p_object_core = false);
 	static void get_virtual_methods(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false);
 
 	static void bind_integer_constant(const StringName &p_class, const StringName &p_enum, const StringName &p_name, int p_constant);
@@ -384,6 +365,8 @@ public:
 	static void get_enum_constants(const StringName &p_class, const StringName &p_enum, List<StringName> *p_constants, bool p_no_inheritance = false);
 	static bool has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 
+	static void set_method_error_return_values(const StringName &p_class, const StringName &p_method, const Vector<Error> &p_values);
+	static Vector<Error> get_method_error_return_values(const StringName &p_class, const StringName &p_method);
 	static Variant class_get_default_property_value(const StringName &p_class, const StringName &p_property, bool *r_valid = nullptr);
 
 	static StringName get_category(const StringName &p_node);
@@ -409,39 +392,53 @@ public:
 #ifdef DEBUG_METHODS_ENABLED
 
 #define BIND_CONSTANT(m_constant) \
-	ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
+	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
 
 #define BIND_ENUM_CONSTANT(m_constant) \
-	ClassDB::bind_integer_constant(get_class_static(), __constant_get_enum_name(m_constant, #m_constant), #m_constant, m_constant);
+	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_enum_name(m_constant, #m_constant), #m_constant, m_constant);
+
+_FORCE_INLINE_ void errarray_add_str(Vector<Error> &arr) {
+}
+
+_FORCE_INLINE_ void errarray_add_str(Vector<Error> &arr, const Error &p_err) {
+	arr.push_back(p_err);
+}
+
+template <class... P>
+_FORCE_INLINE_ void errarray_add_str(Vector<Error> &arr, const Error &p_err, P... p_args) {
+	arr.push_back(p_err);
+	errarray_add_str(arr, p_args...);
+}
+
+template <class... P>
+_FORCE_INLINE_ Vector<Error> errarray(P... p_args) {
+	Vector<Error> arr;
+	errarray_add_str(arr, p_args...);
+	return arr;
+}
+
+#define BIND_METHOD_ERR_RETURN_DOC(m_method, ...) \
+	::ClassDB::set_method_error_return_values(get_class_static(), m_method, errarray(__VA_ARGS__));
 
 #else
 
 #define BIND_CONSTANT(m_constant) \
-	ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
+	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
 
 #define BIND_ENUM_CONSTANT(m_constant) \
-	ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
+	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
 
-#endif
-
-#ifdef TOOLS_ENABLED
-
-#define BIND_VMETHOD(m_method) \
-	ClassDB::add_virtual_method(get_class_static(), m_method);
-
-#else
-
-#define BIND_VMETHOD(m_method)
+#define BIND_METHOD_ERR_RETURN_DOC(m_method, ...)
 
 #endif
 
 #define GDREGISTER_CLASS(m_class)                    \
 	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) { \
-		ClassDB::register_class<m_class>();          \
+		::ClassDB::register_class<m_class>();        \
 	}
-#define GDREGISTER_VIRTUAL_CLASS(m_class)            \
-	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) { \
-		ClassDB::register_virtual_class<m_class>();  \
+#define GDREGISTER_VIRTUAL_CLASS(m_class)             \
+	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) {  \
+		::ClassDB::register_virtual_class<m_class>(); \
 	}
 
 #include "core/disabled_classes.gen.h"

@@ -6,8 +6,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="flags" type="int" setter="set_flags" getter="get_flags" enum="VisualShaderNodeParticleEmit.EmitFlags" default="31">
 		</member>

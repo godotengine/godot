@@ -362,47 +362,15 @@ struct cff1_subr_subsetter_t : subr_subsetter_t<cff1_subr_subsetter_t, CFF1Subrs
 
 struct cff_subset_plan {
   cff_subset_plan ()
-    : info (),
-      orig_fdcount (0),
-      subset_fdcount (1),
-      subset_fdselect_format (0),
-      drop_hints (false),
-      desubroutinize(false)
   {
-    topdict_mod.init ();
-    subset_fdselect_ranges.init ();
-    fdmap.init ();
-    subset_charstrings.init ();
-    subset_globalsubrs.init ();
-    subset_localsubrs.init ();
-    fontdicts_mod.init ();
-    subset_enc_code_ranges.init ();
-    subset_enc_supp_codes.init ();
-    subset_charset_ranges.init ();
-    sidmap.init ();
     for (unsigned int i = 0; i < name_dict_values_t::ValCount; i++)
       topDictModSIDs[i] = CFF_UNDEF_SID;
-  }
-
-  ~cff_subset_plan ()
-  {
-    topdict_mod.fini ();
-    subset_fdselect_ranges.fini ();
-    fdmap.fini ();
-    subset_charstrings.fini_deep ();
-    subset_globalsubrs.fini_deep ();
-    subset_localsubrs.fini_deep ();
-    fontdicts_mod.fini ();
-    subset_enc_code_ranges.fini ();
-    subset_enc_supp_codes.fini ();
-    subset_charset_ranges.fini ();
-    sidmap.fini ();
   }
 
   void plan_subset_encoding (const OT::cff1::accelerator_subset_t &acc, hb_subset_plan_t *plan)
   {
     const Encoding *encoding = acc.encoding;
-    unsigned int  size0, size1, supp_size;
+    unsigned int  size0, size1;
     hb_codepoint_t  code, last_code = CFF_UNDEF_CODE;
     hb_vector_t<hb_codepoint_t> supp_codes;
 
@@ -412,7 +380,6 @@ struct cff_subset_plan {
       return;
     }
 
-    supp_size = 0;
     supp_codes.init ();
 
     subset_enc_num_codes = plan->num_output_glyphs () - 1;
@@ -448,7 +415,6 @@ struct cff_subset_plan {
 	  code_pair_t pair = { supp_codes[i], sid };
 	  subset_enc_supp_codes.push (pair);
 	}
-	supp_size += SuppEncoding::static_size * supp_codes.length;
       }
     }
     supp_codes.fini ();
@@ -545,8 +511,8 @@ struct cff_subset_plan {
 
     num_glyphs = plan->num_output_glyphs ();
     orig_fdcount = acc.fdCount;
-    drop_hints = plan->drop_hints;
-    desubroutinize = plan->desubroutinize;
+    drop_hints = plan->flags & HB_SUBSET_FLAGS_NO_HINTING;
+    desubroutinize = plan->flags & HB_SUBSET_FLAGS_DESUBROUTINIZE;
 
     /* check whether the subset renumbers any glyph IDs */
     gid_renum = false;
@@ -674,9 +640,9 @@ struct cff_subset_plan {
   cff1_sub_table_info_t		info;
 
   unsigned int    num_glyphs;
-  unsigned int    orig_fdcount;
-  unsigned int    subset_fdcount;
-  unsigned int    subset_fdselect_format;
+  unsigned int    orig_fdcount = 0;
+  unsigned int    subset_fdcount = 1;
+  unsigned int    subset_fdselect_format = 0;
   hb_vector_t<code_pair_t>   subset_fdselect_ranges;
 
   /* font dict index remap table from fullset FDArray to subset FDArray.
@@ -688,7 +654,7 @@ struct cff_subset_plan {
   hb_vector_t<str_buff_vec_t>	subset_localsubrs;
   hb_vector_t<cff1_font_dict_values_mod_t>  fontdicts_mod;
 
-  bool		drop_hints;
+  bool		drop_hints = false;
 
   bool		gid_renum;
   bool		subset_encoding;
@@ -704,7 +670,7 @@ struct cff_subset_plan {
   remap_sid_t	sidmap;
   unsigned int	topDictModSIDs[name_dict_values_t::ValCount];
 
-  bool		desubroutinize;
+  bool		desubroutinize = false;
 };
 
 static bool _serialize_cff1 (hb_serialize_context_t *c,
@@ -919,12 +885,6 @@ _hb_subset_cff1 (const OT::cff1::accelerator_subset_t  &acc,
   return _serialize_cff1 (c->serializer, cff_plan, acc, c->plan->num_output_glyphs ());
 }
 
-/**
- * hb_subset_cff1:
- * Subsets the CFF table according to a provided plan.
- *
- * Return value: subsetted cff table.
- **/
 bool
 hb_subset_cff1 (hb_subset_context_t *c)
 {

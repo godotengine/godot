@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,6 +60,34 @@ public:
 		DEVICE_DIRECTX
 	};
 
+	// This enum matches VkPhysicalDeviceType (except for `DEVICE_TYPE_MAX`).
+	// Unlike VkPhysicalDeviceType, DeviceType is exposed to the scripting API.
+	enum DeviceType {
+		DEVICE_TYPE_OTHER,
+		DEVICE_TYPE_INTEGRATED_GPU,
+		DEVICE_TYPE_DISCRETE_GPU,
+		DEVICE_TYPE_VIRTUAL_GPU,
+		DEVICE_TYPE_CPU,
+		DEVICE_TYPE_MAX,
+	};
+
+	enum DriverResource {
+		DRIVER_RESOURCE_VULKAN_DEVICE = 0,
+		DRIVER_RESOURCE_VULKAN_PHYSICAL_DEVICE,
+		DRIVER_RESOURCE_VULKAN_INSTANCE,
+		DRIVER_RESOURCE_VULKAN_QUEUE,
+		DRIVER_RESOURCE_VULKAN_QUEUE_FAMILY_INDEX,
+		DRIVER_RESOURCE_VULKAN_IMAGE,
+		DRIVER_RESOURCE_VULKAN_IMAGE_VIEW,
+		DRIVER_RESOURCE_VULKAN_IMAGE_NATIVE_TEXTURE_FORMAT,
+		DRIVER_RESOURCE_VULKAN_SAMPLER,
+		DRIVER_RESOURCE_VULKAN_DESCRIPTOR_SET,
+		DRIVER_RESOURCE_VULKAN_BUFFER,
+		DRIVER_RESOURCE_VULKAN_COMPUTE_PIPELINE,
+		DRIVER_RESOURCE_VULKAN_RENDER_PIPELINE,
+		//next driver continue enum from 1000 to keep order
+	};
+
 	enum ShaderStage {
 		SHADER_STAGE_VERTEX,
 		SHADER_STAGE_FRAGMENT,
@@ -103,6 +131,7 @@ public:
 
 		// features
 		bool supports_multiview = false; // If true this device supports multiview options
+		bool supports_fsr_half_float = false; // If true this device supports FSR scaling 3D in half float mode, otherwise use the fallback mode
 	};
 
 	typedef String (*ShaderSPIRVGetCacheKeyFunction)(const Capabilities *p_capabilities);
@@ -363,14 +392,6 @@ public:
 		DATA_FORMAT_G16_B16_R16_3PLANE_422_UNORM,
 		DATA_FORMAT_G16_B16R16_2PLANE_422_UNORM,
 		DATA_FORMAT_G16_B16_R16_3PLANE_444_UNORM,
-		DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG,
-		DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG,
-		DATA_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG,
-		DATA_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG,
-		DATA_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG,
-		DATA_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG,
-		DATA_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG,
-		DATA_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG,
 		DATA_FORMAT_MAX
 	};
 
@@ -422,7 +443,7 @@ public:
 		TEXTURE_USAGE_CAN_UPDATE_BIT = (1 << 6),
 		TEXTURE_USAGE_CAN_COPY_FROM_BIT = (1 << 7),
 		TEXTURE_USAGE_CAN_COPY_TO_BIT = (1 << 8),
-		TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT = (1 << 9),
+		TEXTURE_USAGE_INPUT_ATTACHMENT_BIT = (1 << 9),
 	};
 
 	enum TextureSwizzle {
@@ -487,7 +508,7 @@ public:
 		TEXTURE_SLICE_2D_ARRAY,
 	};
 
-	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, TextureSliceType p_slice_type = TEXTURE_SLICE_2D) = 0;
+	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps = 1, TextureSliceType p_slice_type = TEXTURE_SLICE_2D) = 0;
 
 	virtual Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL) = 0;
 	virtual Vector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer) = 0; // CPU textures will return immediately, while GPU textures will most likely force a flush
@@ -495,6 +516,7 @@ public:
 	virtual bool texture_is_format_supported_for_usage(DataFormat p_format, uint32_t p_usage) const = 0;
 	virtual bool texture_is_shared(RID p_texture) = 0;
 	virtual bool texture_is_valid(RID p_texture) = 0;
+	virtual Size2i texture_size(RID p_texture) = 0;
 
 	virtual Error texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, uint32_t p_post_barrier = BARRIER_MASK_ALL) = 0;
 	virtual Error texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, uint32_t p_post_barrier = BARRIER_MASK_ALL) = 0;
@@ -668,9 +690,9 @@ public:
 	};
 
 	virtual String shader_get_binary_cache_key() const = 0;
-	virtual Vector<uint8_t> shader_compile_binary_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv) = 0;
+	virtual Vector<uint8_t> shader_compile_binary_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name = "") = 0;
 
-	virtual RID shader_create_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv);
+	virtual RID shader_create_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name = "");
 	virtual RID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary) = 0;
 
 	virtual uint32_t shader_get_vertex_input_attribute_mask(RID p_shader) = 0;
@@ -720,7 +742,7 @@ public:
 
 	virtual RID uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set) = 0;
 	virtual bool uniform_set_is_valid(RID p_uniform_set) = 0;
-	typedef void (*UniformSetInvalidatedCallback)(const RID &, void *);
+	typedef void (*UniformSetInvalidatedCallback)(void *);
 	virtual void uniform_set_set_invalidation_callback(RID p_uniform_set, UniformSetInvalidatedCallback p_callback, void *p_userdata) = 0;
 
 	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL) = 0;
@@ -1065,6 +1087,7 @@ public:
 	virtual void draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect) = 0;
 	virtual void draw_list_disable_scissor(DrawListID p_list) = 0;
 
+	virtual uint32_t draw_list_get_current_pass() = 0;
 	virtual DrawListID draw_list_switch_to_next_pass() = 0;
 	virtual Error draw_list_switch_to_next_pass_split(uint32_t p_splits, DrawListID *r_split_ids) = 0;
 
@@ -1179,7 +1202,10 @@ public:
 
 	virtual String get_device_vendor_name() const = 0;
 	virtual String get_device_name() const = 0;
+	virtual RenderingDevice::DeviceType get_device_type() const = 0;
 	virtual String get_device_pipeline_cache_uuid() const = 0;
+
+	virtual uint64_t get_driver_resource(DriverResource p_resource, RID p_rid = RID(), uint64_t p_index = 0) = 0;
 
 	static RenderingDevice *get_singleton();
 	RenderingDevice();
@@ -1188,7 +1214,7 @@ protected:
 	//binders to script API
 	RID _texture_create(const Ref<RDTextureFormat> &p_format, const Ref<RDTextureView> &p_view, const TypedArray<PackedByteArray> &p_data = Array());
 	RID _texture_create_shared(const Ref<RDTextureView> &p_view, RID p_with_texture);
-	RID _texture_create_shared_from_slice(const Ref<RDTextureView> &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, TextureSliceType p_slice_type = TEXTURE_SLICE_2D);
+	RID _texture_create_shared_from_slice(const Ref<RDTextureView> &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps = 1, TextureSliceType p_slice_type = TEXTURE_SLICE_2D);
 
 	FramebufferFormatID _framebuffer_format_create(const TypedArray<RDAttachmentFormat> &p_attachments, uint32_t p_view_count);
 	FramebufferFormatID _framebuffer_format_create_multipass(const TypedArray<RDAttachmentFormat> &p_attachments, const TypedArray<RDFramebufferPass> &p_passes, uint32_t p_view_count);
@@ -1199,8 +1225,8 @@ protected:
 	RID _vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const TypedArray<RID> &p_src_buffers);
 
 	Ref<RDShaderSPIRV> _shader_compile_spirv_from_source(const Ref<RDShaderSource> &p_source, bool p_allow_cache = true);
-	Vector<uint8_t> _shader_compile_binary_from_spirv(const Ref<RDShaderSPIRV> &p_bytecode);
-	RID _shader_create_from_spirv(const Ref<RDShaderSPIRV> &p_spirv);
+	Vector<uint8_t> _shader_compile_binary_from_spirv(const Ref<RDShaderSPIRV> &p_bytecode, const String &p_shader_name = "");
+	RID _shader_create_from_spirv(const Ref<RDShaderSPIRV> &p_spirv, const String &p_shader_name = "");
 
 	RID _uniform_set_create(const Array &p_uniforms, RID p_shader, uint32_t p_shader_set);
 
@@ -1215,6 +1241,8 @@ protected:
 	Vector<int64_t> _draw_list_switch_to_next_pass_split(uint32_t p_splits);
 };
 
+VARIANT_ENUM_CAST(RenderingDevice::DeviceType)
+VARIANT_ENUM_CAST(RenderingDevice::DriverResource)
 VARIANT_ENUM_CAST(RenderingDevice::ShaderStage)
 VARIANT_ENUM_CAST(RenderingDevice::ShaderLanguage)
 VARIANT_ENUM_CAST(RenderingDevice::CompareOperator)

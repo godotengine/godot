@@ -34,6 +34,13 @@
 				Returns the list of recognized extensions for a resource type.
 			</description>
 		</method>
+		<method name="get_resource_uid">
+			<return type="int" />
+			<argument index="0" name="path" type="String" />
+			<description>
+				Returns the ID associated with a given resource path, or [code]-1[/code] when no such ID exists.
+			</description>
+		</method>
 		<method name="has_cached">
 			<return type="bool" />
 			<argument index="0" name="path" type="String" />

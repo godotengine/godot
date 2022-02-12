@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,7 @@
 #ifndef TOOLS_ENABLED
 #if defined _MSC_VER
 #pragma section("pck", read)
-__declspec(allocate("pck")) static char dummy[8] = { 0 };
+__declspec(allocate("pck")) static const char dummy[8] = { 0 };
 #elif defined __GNUC__
 static const char dummy[8] __attribute__((section("pck"), used)) = { 0 };
 #endif
@@ -139,6 +139,11 @@ int widechar_main(int argc, wchar_t **argv) {
 	OS_Windows os(nullptr);
 
 	setlocale(LC_CTYPE, "");
+
+#ifndef TOOLS_ENABLED
+	// Workaround to prevent LTCG (MSVC LTO) from removing "pck" section
+	const char *dummy_guard = dummy;
+#endif
 
 	char **argv_utf8 = new char *[argc];
 

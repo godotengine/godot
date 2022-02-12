@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,20 +36,33 @@
 #include "servers/audio/audio_filter_sw.h"
 #include "servers/audio_server.h"
 
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/script_language.h"
+#include "core/variant/native_ptr.h"
+
 class AudioStreamPlayback : public RefCounted {
 	GDCLASS(AudioStreamPlayback, RefCounted);
 
+protected:
+	static void _bind_methods();
+	GDVIRTUAL1(_start, float)
+	GDVIRTUAL0(_stop)
+	GDVIRTUAL0RC(bool, _is_playing)
+	GDVIRTUAL0RC(int, _get_loop_count)
+	GDVIRTUAL0RC(float, _get_playback_position)
+	GDVIRTUAL1(_seek, float)
+	GDVIRTUAL3R(int, _mix, GDNativePtr<AudioFrame>, float, int)
 public:
-	virtual void start(float p_from_pos = 0.0) = 0;
-	virtual void stop() = 0;
-	virtual bool is_playing() const = 0;
+	virtual void start(float p_from_pos = 0.0);
+	virtual void stop();
+	virtual bool is_playing() const;
 
-	virtual int get_loop_count() const = 0; //times it looped
+	virtual int get_loop_count() const; //times it looped
 
-	virtual float get_playback_position() const = 0;
-	virtual void seek(float p_time) = 0;
+	virtual float get_playback_position() const;
+	virtual void seek(float p_time);
 
-	virtual void mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) = 0;
+	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames);
 };
 
 class AudioStreamPlaybackResampled : public AudioStreamPlayback {
@@ -64,15 +77,17 @@ class AudioStreamPlaybackResampled : public AudioStreamPlayback {
 	};
 
 	AudioFrame internal_buffer[INTERNAL_BUFFER_LEN + CUBIC_INTERP_HISTORY];
+	unsigned int internal_buffer_end = -1;
 	uint64_t mix_offset;
 
 protected:
 	void _begin_resample();
-	virtual void _mix_internal(AudioFrame *p_buffer, int p_frames) = 0;
+	// Returns the number of frames that were mixed.
+	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames) = 0;
 	virtual float get_stream_sampling_rate() = 0;
 
 public:
-	virtual void mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
+	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
 
 	AudioStreamPlaybackResampled() { mix_offset = 0; }
 };
@@ -84,11 +99,17 @@ class AudioStream : public Resource {
 protected:
 	static void _bind_methods();
 
-public:
-	virtual Ref<AudioStreamPlayback> instance_playback() = 0;
-	virtual String get_stream_name() const = 0;
+	GDVIRTUAL0RC(Ref<AudioStreamPlayback>, _instance_playback)
+	GDVIRTUAL0RC(String, _get_stream_name)
+	GDVIRTUAL0RC(float, _get_length)
+	GDVIRTUAL0RC(bool, _is_monophonic)
 
-	virtual float get_length() const = 0; //if supported, otherwise return 0
+public:
+	virtual Ref<AudioStreamPlayback> instance_playback();
+	virtual String get_stream_name() const;
+
+	virtual float get_length() const;
+	virtual bool is_monophonic() const;
 };
 
 // Microphone
@@ -110,6 +131,8 @@ public:
 
 	virtual float get_length() const override; //if supported, otherwise return 0
 
+	virtual bool is_monophonic() const override;
+
 	AudioStreamMicrophone();
 };
 
@@ -123,11 +146,11 @@ class AudioStreamPlaybackMicrophone : public AudioStreamPlaybackResampled {
 	Ref<AudioStreamMicrophone> microphone;
 
 protected:
-	virtual void _mix_internal(AudioFrame *p_buffer, int p_frames) override;
+	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames) override;
 	virtual float get_stream_sampling_rate() override;
 
 public:
-	virtual void mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
+	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
 
 	virtual void start(float p_from_pos = 0.0) override;
 	virtual void stop() override;
@@ -144,42 +167,86 @@ public:
 
 //
 
-class AudioStreamPlaybackRandomPitch;
+class AudioStreamPlaybackRandomizer;
 
-class AudioStreamRandomPitch : public AudioStream {
-	GDCLASS(AudioStreamRandomPitch, AudioStream);
-	friend class AudioStreamPlaybackRandomPitch;
+class AudioStreamRandomizer : public AudioStream {
+	GDCLASS(AudioStreamRandomizer, AudioStream);
 
-	Set<AudioStreamPlaybackRandomPitch *> playbacks;
-	Ref<AudioStream> audio_stream;
-	float random_pitch;
+public:
+	enum PlaybackMode {
+		PLAYBACK_RANDOM_NO_REPEATS,
+		PLAYBACK_RANDOM,
+		PLAYBACK_SEQUENTIAL,
+	};
+
+private:
+	friend class AudioStreamPlaybackRandomizer;
+
+	struct PoolEntry {
+		Ref<AudioStream> stream;
+		float weight;
+	};
+
+	Set<AudioStreamPlaybackRandomizer *> playbacks;
+	Vector<PoolEntry> audio_stream_pool;
+	float random_pitch_scale;
+	float random_volume_offset_db;
+
+	Ref<AudioStreamPlayback> instance_playback_random();
+	Ref<AudioStreamPlayback> instance_playback_no_repeats();
+	Ref<AudioStreamPlayback> instance_playback_sequential();
+
+	Ref<AudioStream> last_playback = nullptr;
+	PlaybackMode playback_mode = PLAYBACK_RANDOM_NO_REPEATS;
 
 protected:
 	static void _bind_methods();
 
-public:
-	void set_audio_stream(const Ref<AudioStream> &p_audio_stream);
-	Ref<AudioStream> get_audio_stream() const;
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
-	void set_random_pitch(float p_pitch);
+public:
+	void add_stream(int p_index);
+	void move_stream(int p_index_from, int p_index_to);
+	void remove_stream(int p_index);
+
+	void set_stream(int p_index, Ref<AudioStream> p_stream);
+	Ref<AudioStream> get_stream(int p_index) const;
+	void set_stream_probability_weight(int p_index, float p_weight);
+	float get_stream_probability_weight(int p_index) const;
+
+	void set_streams_count(int p_count);
+	int get_streams_count() const;
+
+	void set_random_pitch(float p_pitch_scale);
 	float get_random_pitch() const;
+
+	void set_random_volume_offset_db(float p_volume_offset_db);
+	float get_random_volume_offset_db() const;
+
+	void set_playback_mode(PlaybackMode p_playback_mode);
+	PlaybackMode get_playback_mode() const;
 
 	virtual Ref<AudioStreamPlayback> instance_playback() override;
 	virtual String get_stream_name() const override;
 
 	virtual float get_length() const override; //if supported, otherwise return 0
+	virtual bool is_monophonic() const override;
 
-	AudioStreamRandomPitch();
+	AudioStreamRandomizer();
 };
 
-class AudioStreamPlaybackRandomPitch : public AudioStreamPlayback {
-	GDCLASS(AudioStreamPlaybackRandomPitch, AudioStreamPlayback);
-	friend class AudioStreamRandomPitch;
+class AudioStreamPlaybackRandomizer : public AudioStreamPlayback {
+	GDCLASS(AudioStreamPlaybackRandomizer, AudioStreamPlayback);
+	friend class AudioStreamRandomizer;
 
-	Ref<AudioStreamRandomPitch> random_pitch;
+	Ref<AudioStreamRandomizer> randomizer;
 	Ref<AudioStreamPlayback> playback;
 	Ref<AudioStreamPlayback> playing;
+
 	float pitch_scale;
+	float volume_scale;
 
 public:
 	virtual void start(float p_from_pos = 0.0) override;
@@ -191,9 +258,11 @@ public:
 	virtual float get_playback_position() const override;
 	virtual void seek(float p_time) override;
 
-	virtual void mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
+	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
 
-	~AudioStreamPlaybackRandomPitch();
+	~AudioStreamPlaybackRandomizer();
 };
+
+VARIANT_ENUM_CAST(AudioStreamRandomizer::PlaybackMode);
 
 #endif // AUDIO_STREAM_H

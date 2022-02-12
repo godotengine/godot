@@ -181,6 +181,4 @@
 			Whether the gravity vector, [member gravity], should be applied to the Jiggle joints, assuming they are not overriding the default settings.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

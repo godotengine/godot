@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,7 @@ void ScrollBar::set_can_focus_by_default(bool p_can_focus) {
 	focus_by_default = p_can_focus;
 }
 
-void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
+void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventMouseMotion> m = p_event;
@@ -54,17 +54,17 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 	if (b.is_valid()) {
 		accept_event();
 
-		if (b->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && b->is_pressed()) {
+		if (b->get_button_index() == MouseButton::WHEEL_DOWN && b->is_pressed()) {
 			set_value(get_value() + get_page() / 4.0);
 			accept_event();
 		}
 
-		if (b->get_button_index() == MOUSE_BUTTON_WHEEL_UP && b->is_pressed()) {
+		if (b->get_button_index() == MouseButton::WHEEL_UP && b->is_pressed()) {
 			set_value(get_value() - get_page() / 4.0);
 			accept_event();
 		}
 
-		if (b->get_button_index() != MOUSE_BUTTON_LEFT) {
+		if (b->get_button_index() != MouseButton::LEFT) {
 			return;
 		}
 
@@ -80,12 +80,16 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 			double total = orientation == VERTICAL ? get_size().height : get_size().width;
 
 			if (ofs < decr_size) {
+				decr_active = true;
 				set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+				update();
 				return;
 			}
 
 			if (ofs > total - incr_size) {
+				incr_active = true;
 				set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+				update();
 				return;
 			}
 
@@ -130,6 +134,8 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 			}
 
 		} else {
+			incr_active = false;
+			decr_active = false;
 			drag.active = false;
 			update();
 		}
@@ -215,8 +221,24 @@ void ScrollBar::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
 		RID ci = get_canvas_item();
 
-		Ref<Texture2D> decr = highlight == HIGHLIGHT_DECR ? get_theme_icon(SNAME("decrement_highlight")) : get_theme_icon(SNAME("decrement"));
-		Ref<Texture2D> incr = highlight == HIGHLIGHT_INCR ? get_theme_icon(SNAME("increment_highlight")) : get_theme_icon(SNAME("increment"));
+		Ref<Texture2D> decr, incr;
+
+		if (decr_active) {
+			decr = get_theme_icon(SNAME("decrement_pressed"));
+		} else if (highlight == HIGHLIGHT_DECR) {
+			decr = get_theme_icon(SNAME("decrement_highlight"));
+		} else {
+			decr = get_theme_icon(SNAME("decrement"));
+		}
+
+		if (incr_active) {
+			incr = get_theme_icon(SNAME("increment_pressed"));
+		} else if (highlight == HIGHLIGHT_INCR) {
+			incr = get_theme_icon(SNAME("increment_highlight"));
+		} else {
+			incr = get_theme_icon(SNAME("increment"));
+		}
+
 		Ref<StyleBox> bg = has_focus() ? get_theme_stylebox(SNAME("scroll_focus")) : get_theme_stylebox(SNAME("scroll"));
 
 		Ref<StyleBox> grabber;
@@ -503,7 +525,7 @@ void ScrollBar::_drag_node_input(const Ref<InputEvent> &p_input) {
 	Ref<InputEventMouseButton> mb = p_input;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() != 1) {
+		if (mb->get_button_index() != MouseButton::LEFT) {
 			return;
 		}
 
@@ -538,7 +560,7 @@ void ScrollBar::_drag_node_input(const Ref<InputEvent> &p_input) {
 
 	if (mm.is_valid()) {
 		if (drag_node_touching && !drag_node_touching_deaccel) {
-			Vector2 motion = Vector2(mm->get_relative().x, mm->get_relative().y);
+			Vector2 motion = mm->get_relative();
 
 			drag_node_accum -= motion;
 			Vector2 diff = drag_node_from + drag_node_accum;
@@ -597,7 +619,6 @@ bool ScrollBar::is_smooth_scroll_enabled() const {
 }
 
 void ScrollBar::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &ScrollBar::_gui_input);
 	ClassDB::bind_method(D_METHOD("set_custom_step", "step"), &ScrollBar::set_custom_step);
 	ClassDB::bind_method(D_METHOD("get_custom_step"), &ScrollBar::get_custom_step);
 

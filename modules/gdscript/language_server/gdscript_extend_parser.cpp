@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -165,7 +165,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 			case ClassNode::Member::VARIABLE: {
 				lsp::DocumentSymbol symbol;
 				symbol.name = m.variable->identifier->name;
-				symbol.kind = m.variable->property == VariableNode::PropertyStyle::PROP_NONE ? lsp::SymbolKind::Variable : lsp::SymbolKind::Property;
+				symbol.kind = m.variable->property == VariableNode::PROP_NONE ? lsp::SymbolKind::Variable : lsp::SymbolKind::Property;
 				symbol.deprecated = false;
 				symbol.range.start.line = LINE_NUMBER_TO_INDEX(m.variable->start_line);
 				symbol.range.start.character = LINE_NUMBER_TO_INDEX(m.variable->start_column);
@@ -269,7 +269,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 					if (j > 0) {
 						symbol.detail += ", ";
 					}
-					symbol.detail += m.signal->parameters[i]->identifier->name;
+					symbol.detail += m.signal->parameters[j]->identifier->name;
 				}
 				symbol.detail += ")";
 
@@ -491,7 +491,7 @@ String ExtendGDScriptParser::get_text_for_completion(const lsp::Position &p_curs
 	return longthing;
 }
 
-String ExtendGDScriptParser::get_text_for_lookup_symbol(const lsp::Position &p_cursor, const String &p_symbol, bool p_func_requred) const {
+String ExtendGDScriptParser::get_text_for_lookup_symbol(const lsp::Position &p_cursor, const String &p_symbol, bool p_func_required) const {
 	String longthing;
 	int len = lines.size();
 	for (int i = 0; i < len; i++) {
@@ -513,7 +513,7 @@ String ExtendGDScriptParser::get_text_for_lookup_symbol(const lsp::Position &p_c
 
 			longthing += first_part;
 			longthing += String::chr(0xFFFF); //not unicode, represents the cursor
-			if (p_func_requred) {
+			if (p_func_required) {
 				longthing += "("; // tell the parser this is a function call
 			}
 			longthing += last_part;
@@ -532,13 +532,16 @@ String ExtendGDScriptParser::get_text_for_lookup_symbol(const lsp::Position &p_c
 String ExtendGDScriptParser::get_identifier_under_position(const lsp::Position &p_position, Vector2i &p_offset) const {
 	ERR_FAIL_INDEX_V(p_position.line, lines.size(), "");
 	String line = lines[p_position.line];
+	if (line.is_empty()) {
+		return "";
+	}
 	ERR_FAIL_INDEX_V(p_position.character, line.size(), "");
 
 	int start_pos = p_position.character;
 	for (int c = p_position.character; c >= 0; c--) {
 		start_pos = c;
 		char32_t ch = line[c];
-		bool valid_char = (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_';
+		bool valid_char = is_ascii_identifier_char(ch);
 		if (!valid_char) {
 			break;
 		}
@@ -547,7 +550,7 @@ String ExtendGDScriptParser::get_identifier_under_position(const lsp::Position &
 	int end_pos = p_position.character;
 	for (int c = p_position.character; c < line.length(); c++) {
 		char32_t ch = line[c];
-		bool valid_char = (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_';
+		bool valid_char = is_ascii_identifier_char(ch);
 		if (!valid_char) {
 			break;
 		}

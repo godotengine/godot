@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,14 +42,13 @@ const Vector3i RendererSceneGIRD::SDFGI::Cascade::DIRTY_ALL = Vector3i(0x7FFFFFF
 void RendererSceneGIRD::SDFGI::create(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size, RendererSceneGIRD *p_gi) {
 	storage = p_gi->storage;
 	gi = p_gi;
-	cascade_mode = p_env->sdfgi_cascades;
+	num_cascades = p_env->sdfgi_cascades;
 	min_cell_size = p_env->sdfgi_min_cell_size;
 	uses_occlusion = p_env->sdfgi_use_occlusion;
 	y_scale_mode = p_env->sdfgi_y_scale;
-	static const float y_scale[3] = { 1.0, 1.5, 2.0 };
+	static const float y_scale[3] = { 2.0, 1.5, 1.0 };
 	y_mult = y_scale[y_scale_mode];
-	static const int cascasde_size[3] = { 4, 6, 8 };
-	cascades.resize(cascasde_size[cascade_mode]);
+	cascades.resize(num_cascades);
 	probe_axis_count = SDFGI::PROBE_DIVISOR + 1;
 	solid_cell_ratio = gi->sdfgi_solid_cell_ratio;
 	solid_cell_count = uint32_t(float(cascade_size * cascade_size * cascade_size) * solid_cell_ratio);
@@ -716,7 +715,10 @@ void RendererSceneGIRD::SDFGI::create(RendererSceneEnvironmentRD *p_env, const V
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 13;
 			RID parent_average;
-			if (i < cascades.size() - 1) {
+			if (cascades.size() == 1) {
+				// If there is only one SDFGI cascade, we can't use the previous cascade for blending.
+				parent_average = cascades[i].lightprobe_average_tex;
+			} else if (i < cascades.size() - 1) {
 				parent_average = cascades[i + 1].lightprobe_average_tex;
 			} else {
 				parent_average = cascades[i - 1].lightprobe_average_tex; //to use something, but it won't be used
@@ -1305,7 +1307,6 @@ void RendererSceneGIRD::SDFGI::debug_probes(RD::DrawListID p_draw_list, RID p_fr
 	RD::get_singleton()->draw_list_draw(p_draw_list, false, total_probes, total_points);
 
 	if (gi->sdfgi_debug_probe_dir != Vector3()) {
-		print_line("CLICK DEBUG ME?");
 		uint32_t cascade = 0;
 		Vector3 offset = Vector3((Vector3i(1, 1, 1) * -int32_t(cascade_size >> 1) + cascades[cascade].position)) * cascades[cascade].cell_size * Vector3(1.0, 1.0 / y_mult, 1.0);
 		Vector3 probe_size = cascades[cascade].cell_size * (cascade_size / SDFGI::PROBE_DIVISOR) * Vector3(1.0, 1.0 / y_mult, 1.0);
@@ -1333,11 +1334,6 @@ void RendererSceneGIRD::SDFGI::debug_probes(RD::DrawListID p_draw_list, RID p_fr
 			}
 		}
 
-		if (gi->sdfgi_debug_probe_enabled) {
-			print_line("found: " + gi->sdfgi_debug_probe_index);
-		} else {
-			print_line("no found");
-		}
 		gi->sdfgi_debug_probe_dir = Vector3();
 	}
 
@@ -1450,7 +1446,7 @@ void RendererSceneGIRD::SDFGI::pre_process_gi(const Transform3D &p_transform, Re
 				break;
 			}
 
-			RendererSceneRenderRD::LightInstance *li = p_scene_render->light_instance_owner.getornull(p_scene_render->render_state.sdfgi_update_data->directional_lights->get(j));
+			RendererSceneRenderRD::LightInstance *li = p_scene_render->light_instance_owner.get_or_null(p_scene_render->render_state.sdfgi_update_data->directional_lights->get(j));
 			ERR_CONTINUE(!li);
 
 			if (storage->light_directional_is_sky_only(li->light)) {
@@ -1469,7 +1465,7 @@ void RendererSceneGIRD::SDFGI::pre_process_gi(const Transform3D &p_transform, Re
 			lights[idx].color[1] = color.g;
 			lights[idx].color[2] = color.b;
 			lights[idx].type = RS::LIGHT_DIRECTIONAL;
-			lights[idx].energy = storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY);
+			lights[idx].energy = storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY) * storage->light_get_param(li->light, RS::LIGHT_PARAM_INDIRECT_ENERGY);
 			lights[idx].has_shadow = storage->light_has_shadow(li->light);
 
 			idx++;
@@ -1484,7 +1480,7 @@ void RendererSceneGIRD::SDFGI::pre_process_gi(const Transform3D &p_transform, Re
 				break;
 			}
 
-			RendererSceneRenderRD::LightInstance *li = p_scene_render->light_instance_owner.getornull(p_scene_render->render_state.sdfgi_update_data->positional_light_instances[j]);
+			RendererSceneRenderRD::LightInstance *li = p_scene_render->light_instance_owner.get_or_null(p_scene_render->render_state.sdfgi_update_data->positional_light_instances[j]);
 			ERR_CONTINUE(!li);
 
 			uint32_t max_sdfgi_cascade = storage->light_get_max_sdfgi_cascade(li->light);
@@ -1514,7 +1510,7 @@ void RendererSceneGIRD::SDFGI::pre_process_gi(const Transform3D &p_transform, Re
 			lights[idx].color[1] = color.g;
 			lights[idx].color[2] = color.b;
 			lights[idx].type = storage->light_get_type(li->light);
-			lights[idx].energy = storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY);
+			lights[idx].energy = storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY) * storage->light_get_param(li->light, RS::LIGHT_PARAM_INDIRECT_ENERGY);
 			lights[idx].has_shadow = storage->light_has_shadow(li->light);
 			lights[idx].attenuation = storage->light_get_param(li->light, RS::LIGHT_PARAM_ATTENUATION);
 			lights[idx].radius = storage->light_get_param(li->light, RS::LIGHT_PARAM_RANGE);
@@ -1534,7 +1530,7 @@ void RendererSceneGIRD::SDFGI::pre_process_gi(const Transform3D &p_transform, Re
 
 void RendererSceneGIRD::SDFGI::render_region(RID p_render_buffers, int p_region, const PagedArray<RendererSceneRender::GeometryInstance *> &p_instances, RendererSceneRenderRD *p_scene_render) {
 	//print_line("rendering region " + itos(p_region));
-	RendererSceneRenderRD::RenderBuffers *rb = p_scene_render->render_buffers_owner.getornull(p_render_buffers);
+	RendererSceneRenderRD::RenderBuffers *rb = p_scene_render->render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND(!rb); // we wouldn't be here if this failed but...
 	AABB bounds;
 	Vector3i from;
@@ -1864,7 +1860,7 @@ void RendererSceneGIRD::SDFGI::render_region(RID p_render_buffers, int p_region,
 		Ref<Image> img;
 		img.instantiate();
 		for (uint32_t i = 0; i < cascade_size; i++) {
-			Vector<uint8_t> subarr = data.subarray(128 * 128 * i, 128 * 128 * (i + 1) - 1);
+			Vector<uint8_t> subarr = data.slice(128 * 128 * i, 128 * 128 * (i + 1));
 			img->create(cascade_size, cascade_size, false, Image::FORMAT_L8, subarr);
 			img->save_png("res://cascade_sdf_" + itos(cascade) + "_" + itos(i) + ".png");
 		}
@@ -1877,7 +1873,7 @@ void RendererSceneGIRD::SDFGI::render_region(RID p_render_buffers, int p_region,
 		Ref<Image> img;
 		img.instantiate();
 		for (uint32_t i = 0; i < cascade_size; i++) {
-			Vector<uint8_t> subarr = data.subarray(128 * 128 * i * 2, 128 * 128 * (i + 1) * 2 - 1);
+			Vector<uint8_t> subarr = data.slice(128 * 128 * i * 2, 128 * 128 * (i + 1) * 2);
 			img->createcascade_size, cascade_size, false, Image::FORMAT_RGB565, subarr);
 			img->convert(Image::FORMAT_RGBA8);
 			img->save_png("res://cascade_" + itos(cascade) + "_" + itos(i) + ".png");
@@ -1892,7 +1888,7 @@ void RendererSceneGIRD::SDFGI::render_region(RID p_render_buffers, int p_region,
 }
 
 void RendererSceneGIRD::SDFGI::render_static_lights(RID p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const PagedArray<RID> *p_positional_light_cull_result, RendererSceneRenderRD *p_scene_render) {
-	RendererSceneRenderRD::RenderBuffers *rb = p_scene_render->render_buffers_owner.getornull(p_render_buffers);
+	RendererSceneRenderRD::RenderBuffers *rb = p_scene_render->render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND(!rb); // we wouldn't be here if this failed but...
 
 	RD::get_singleton()->draw_command_begin_label("SDFGI Render Static Lighs");
@@ -1921,7 +1917,7 @@ void RendererSceneGIRD::SDFGI::render_static_lights(RID p_render_buffers, uint32
 					break;
 				}
 
-				RendererSceneRenderRD::LightInstance *li = p_scene_render->light_instance_owner.getornull(p_positional_light_cull_result[i][j]);
+				RendererSceneRenderRD::LightInstance *li = p_scene_render->light_instance_owner.get_or_null(p_positional_light_cull_result[i][j]);
 				ERR_CONTINUE(!li);
 
 				uint32_t max_sdfgi_cascade = storage->light_get_max_sdfgi_cascade(li->light);
@@ -1953,7 +1949,7 @@ void RendererSceneGIRD::SDFGI::render_static_lights(RID p_render_buffers, uint32
 				lights[idx].color[0] = color.r;
 				lights[idx].color[1] = color.g;
 				lights[idx].color[2] = color.b;
-				lights[idx].energy = storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY);
+				lights[idx].energy = storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY) * storage->light_get_param(li->light, RS::LIGHT_PARAM_INDIRECT_ENERGY);
 				lights[idx].has_shadow = storage->light_has_shadow(li->light);
 				lights[idx].attenuation = storage->light_get_param(li->light, RS::LIGHT_PARAM_ATTENUATION);
 				lights[idx].radius = storage->light_get_param(li->light, RS::LIGHT_PARAM_RANGE);
@@ -2065,7 +2061,7 @@ void RendererSceneGIRD::VoxelGIInstance::update(bool p_update_light_instances, c
 
 			for (int i = 0; i < levels.size(); i++) {
 				VoxelGIInstance::Mipmap mipmap;
-				mipmap.texture = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), texture, 0, i, RD::TEXTURE_SLICE_3D);
+				mipmap.texture = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), texture, 0, i, 1, RD::TEXTURE_SLICE_3D);
 				mipmap.level = levels.size() - i - 1;
 				mipmap.cell_offset = 0;
 				for (uint32_t j = 0; j < mipmap.level; j++) {
@@ -2182,8 +2178,9 @@ void RendererSceneGIRD::VoxelGIInstance::update(bool p_update_light_instances, c
 					dmap.texture = RD::get_singleton()->texture_create(dtf, RD::TextureView());
 
 					if (dynamic_maps.size() == 0) {
-						//render depth for first one
-						dtf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D32_SFLOAT, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D32_SFLOAT : RD::DATA_FORMAT_X8_D24_UNORM_PACK32;
+						// Render depth for first one.
+						// Use 16-bit depth when supported to improve performance.
+						dtf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D16_UNORM, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D16_UNORM : RD::DATA_FORMAT_X8_D24_UNORM_PACK32;
 						dtf.usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 						dmap.fb_depth = RD::get_singleton()->texture_create(dtf, RD::TextureView());
 					}
@@ -2575,7 +2572,7 @@ void RendererSceneGIRD::VoxelGIInstance::update(bool p_update_light_instances, c
 				Vector3 render_dir = render_z[j];
 				Vector3 up_dir = render_up[j];
 
-				Vector3 center = aabb.position + aabb.size * 0.5;
+				Vector3 center = aabb.get_center();
 				Transform3D xform;
 				xform.set_look_at(center - aabb.size * 0.5 * render_dir, center, up_dir);
 
@@ -2812,8 +2809,6 @@ void RendererSceneGIRD::init(RendererStorageRD *p_storage, RendererSceneSkyRD *p
 	{
 		//kinda complicated to compute the amount of slots, we try to use as many as we can
 
-		voxel_gi_max_lights = 32;
-
 		voxel_gi_lights = memnew_arr(VoxelGILight, voxel_gi_max_lights);
 		voxel_gi_lights_uniform = RD::get_singleton()->uniform_buffer_create(voxel_gi_max_lights * sizeof(VoxelGILight));
 		voxel_gi_quality = RS::VoxelGIQuality(CLAMP(int(GLOBAL_GET("rendering/global_illumination/voxel_gi/quality")), 0, 1));
@@ -3009,7 +3004,9 @@ void RendererSceneGIRD::free() {
 	sdfgi_shader.integrate.version_free(sdfgi_shader.integrate_shader);
 	sdfgi_shader.preprocess.version_free(sdfgi_shader.preprocess_shader);
 
-	memdelete_arr(voxel_gi_lights);
+	if (voxel_gi_lights) {
+		memdelete_arr(voxel_gi_lights);
+	}
 }
 
 RendererSceneGIRD::SDFGI *RendererSceneGIRD::create_sdfgi(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size) {
@@ -3024,7 +3021,7 @@ void RendererSceneGIRD::setup_voxel_gi_instances(RID p_render_buffers, const Tra
 	r_voxel_gi_instances_used = 0;
 
 	// feels a little dirty to use our container this way but....
-	RendererSceneRenderRD::RenderBuffers *rb = p_scene_render->render_buffers_owner.getornull(p_render_buffers);
+	RendererSceneRenderRD::RenderBuffers *rb = p_scene_render->render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND(rb == nullptr);
 
 	RID voxel_gi_buffer = p_scene_render->render_buffers_get_voxel_gi_buffer(p_render_buffers);
@@ -3098,12 +3095,14 @@ void RendererSceneGIRD::setup_voxel_gi_instances(RID p_render_buffers, const Tra
 		}
 		rb->gi.uniform_set = RID();
 		if (rb->volumetric_fog) {
-			if (RD::get_singleton()->uniform_set_is_valid(rb->volumetric_fog->uniform_set)) {
-				RD::get_singleton()->free(rb->volumetric_fog->uniform_set);
-				RD::get_singleton()->free(rb->volumetric_fog->uniform_set2);
+			if (RD::get_singleton()->uniform_set_is_valid(rb->volumetric_fog->fog_uniform_set)) {
+				RD::get_singleton()->free(rb->volumetric_fog->fog_uniform_set);
+				RD::get_singleton()->free(rb->volumetric_fog->process_uniform_set);
+				RD::get_singleton()->free(rb->volumetric_fog->process_uniform_set2);
 			}
-			rb->volumetric_fog->uniform_set = RID();
-			rb->volumetric_fog->uniform_set2 = RID();
+			rb->volumetric_fog->fog_uniform_set = RID();
+			rb->volumetric_fog->process_uniform_set = RID();
+			rb->volumetric_fog->process_uniform_set2 = RID();
 		}
 	}
 
@@ -3119,9 +3118,8 @@ void RendererSceneGIRD::setup_voxel_gi_instances(RID p_render_buffers, const Tra
 void RendererSceneGIRD::process_gi(RID p_render_buffers, RID p_normal_roughness_buffer, RID p_voxel_gi_buffer, RID p_environment, const CameraMatrix &p_projection, const Transform3D &p_transform, const PagedArray<RID> &p_voxel_gi_instances, RendererSceneRenderRD *p_scene_render) {
 	RD::get_singleton()->draw_command_begin_label("GI Render");
 
-	RendererSceneRenderRD::RenderBuffers *rb = p_scene_render->render_buffers_owner.getornull(p_render_buffers);
+	RendererSceneRenderRD::RenderBuffers *rb = p_scene_render->render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND(rb == nullptr);
-	RendererSceneEnvironmentRD *env = p_scene_render->environment_owner.getornull(p_environment);
 
 	if (rb->ambient_buffer.is_null() || rb->gi.using_half_size_gi != half_resolution) {
 		if (rb->ambient_buffer.is_valid()) {
@@ -3131,8 +3129,8 @@ void RendererSceneGIRD::process_gi(RID p_render_buffers, RID p_normal_roughness_
 
 		RD::TextureFormat tf;
 		tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
-		tf.width = rb->width;
-		tf.height = rb->height;
+		tf.width = rb->internal_width;
+		tf.height = rb->internal_height;
 		if (half_resolution) {
 			tf.width >>= 1;
 			tf.height >>= 1;
@@ -3145,13 +3143,13 @@ void RendererSceneGIRD::process_gi(RID p_render_buffers, RID p_normal_roughness_
 
 	PushConstant push_constant;
 
-	push_constant.screen_size[0] = rb->width;
-	push_constant.screen_size[1] = rb->height;
+	push_constant.screen_size[0] = rb->internal_width;
+	push_constant.screen_size[1] = rb->internal_height;
 	push_constant.z_near = p_projection.get_z_near();
 	push_constant.z_far = p_projection.get_z_far();
 	push_constant.orthogonal = p_projection.is_orthogonal();
-	push_constant.proj_info[0] = -2.0f / (rb->width * p_projection.matrix[0][0]);
-	push_constant.proj_info[1] = -2.0f / (rb->height * p_projection.matrix[1][1]);
+	push_constant.proj_info[0] = -2.0f / (rb->internal_width * p_projection.matrix[0][0]);
+	push_constant.proj_info[1] = -2.0f / (rb->internal_height * p_projection.matrix[1][1]);
 	push_constant.proj_info[2] = (1.0f - p_projection.matrix[0][2]) / p_projection.matrix[0][0];
 	push_constant.proj_info[3] = (1.0f + p_projection.matrix[1][2]) / p_projection.matrix[1][1];
 	push_constant.max_voxel_gi_instances = MIN((uint64_t)MAX_VOXEL_GI_INSTANCES, p_voxel_gi_instances.size());
@@ -3159,16 +3157,6 @@ void RendererSceneGIRD::process_gi(RID p_render_buffers, RID p_normal_roughness_
 
 	bool use_sdfgi = rb->sdfgi != nullptr;
 	bool use_voxel_gi_instances = push_constant.max_voxel_gi_instances > 0;
-
-	if (env) {
-		push_constant.ao_color[0] = env->ao_color.r;
-		push_constant.ao_color[1] = env->ao_color.g;
-		push_constant.ao_color[2] = env->ao_color.b;
-	} else {
-		push_constant.ao_color[0] = 0;
-		push_constant.ao_color[1] = 0;
-		push_constant.ao_color[2] = 0;
-	}
 
 	push_constant.cam_rotation[0] = p_transform.basis[0][0];
 	push_constant.cam_rotation[1] = p_transform.basis[1][0];
@@ -3353,9 +3341,9 @@ void RendererSceneGIRD::process_gi(RID p_render_buffers, RID p_normal_roughness_
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
 
 	if (rb->gi.using_half_size_gi) {
-		RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->width >> 1, rb->height >> 1, 1);
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->internal_width >> 1, rb->internal_height >> 1, 1);
 	} else {
-		RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->width, rb->height, 1);
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->internal_width, rb->internal_height, 1);
 	}
 	//do barrier later to allow oeverlap
 	//RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_NO_BARRIER); //no barriers, let other compute, raster and transfer happen at the same time
@@ -3393,7 +3381,7 @@ void RendererSceneGIRD::voxel_gi_update(RID p_probe, bool p_update_light_instanc
 }
 
 void RendererSceneGIRD::debug_voxel_gi(RID p_voxel_gi, RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha) {
-	VoxelGIInstance *voxel_gi = voxel_gi_instance_owner.getornull(p_voxel_gi);
+	VoxelGIInstance *voxel_gi = voxel_gi_instance_owner.get_or_null(p_voxel_gi);
 	ERR_FAIL_COND(!voxel_gi);
 
 	voxel_gi->debug(p_draw_list, p_framebuffer, p_camera_with_transform, p_lighting, p_emission, p_alpha);

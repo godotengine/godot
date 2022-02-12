@@ -39,45 +39,57 @@ namespace GodotTools.Internals
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_ResDataDir();
+
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_ResMetadataDir();
+
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_ResAssembliesBaseDir();
+
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_ResAssembliesDir();
+
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_ResConfigDir();
+
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_ResTempDir();
+
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_ResTempAssembliesBaseDir();
+
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_ResTempAssembliesDir();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_MonoUserDir();
+
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_MonoLogsDir();
 
         #region Tools-only
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_MonoSolutionsDir();
+
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_BuildLogsDirs();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_ProjectSlnPath();
+
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_ProjectCsProjPath();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_DataEditorToolsDir();
+
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_DataEditorPrebuiltApiDir();
         #endregion
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_DataMonoEtcDir();
+
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_DataMonoLibDir();
 

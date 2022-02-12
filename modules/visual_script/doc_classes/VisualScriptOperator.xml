@@ -12,8 +12,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="operator" type="int" setter="set_operator" getter="get_operator" enum="Variant.Operator" default="6">
 			The operation to be performed. See [enum Variant.Operator] for available options.
@@ -22,6 +20,4 @@
 			The type of the values for this operation. See [enum Variant.Type] for available options.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -56,7 +56,7 @@ struct DataMap
 
   protected:
   Tag		tag;		/* A tag indicating the type of metadata. */
-  LNNOffsetTo<UnsizedArrayOf<HBUINT8>>
+  NNOffset32To<UnsizedArrayOf<HBUINT8>>
 		dataZ;		/* Offset in bytes from the beginning of the
 				 * metadata table to the data for this tag. */
   HBUINT32	dataLength;	/* Length of the data. The data is not required to
@@ -71,9 +71,9 @@ struct meta
 
   struct accelerator_t
   {
-    void init (hb_face_t *face)
+    accelerator_t (hb_face_t *face)
     { table = hb_sanitize_context_t ().reference_table<meta> (face); }
-    void fini () { table.destroy (); }
+    ~accelerator_t () { table.destroy (); }
 
     hb_blob_t *reference_entry (hb_tag_t tag) const
     { return table->dataMaps.lsearch (tag).reference_entry (table.get_blob ()); }
@@ -113,13 +113,15 @@ struct meta
 				 * Offset from the beginning of the table to the data.
 				 * Per OT specification:
 				 * Reserved. Not used; should be set to 0. */
-  LArrayOf<DataMap>
+  Array32Of<DataMap>
 		dataMaps;/* Array of data map records. */
   public:
   DEFINE_SIZE_ARRAY (16, dataMaps);
 };
 
-struct meta_accelerator_t : meta::accelerator_t {};
+struct meta_accelerator_t : meta::accelerator_t {
+  meta_accelerator_t (hb_face_t *face) : meta::accelerator_t (face) {}
+};
 
 } /* namespace OT */
 

@@ -61,6 +61,4 @@
 			Length of the internal ring buffer, in seconds. Setting the buffer length will have no effect if already initialized.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

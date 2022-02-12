@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 
 #include "camera_osx.h"
 #include "servers/camera/camera_feed.h"
+
 #import <AVFoundation/AVFoundation.h>
 
 //////////////////////////////////////////////////////////////////////////
@@ -113,16 +114,10 @@
 	if (output) {
 		[self removeOutput:output];
 		[output setSampleBufferDelegate:nil queue:nullptr];
-		[output release];
 		output = nullptr;
 	}
 
 	[self commitConfiguration];
-}
-
-- (void)dealloc {
-	// bye bye
-	[super dealloc];
 }
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
@@ -180,7 +175,7 @@
 			uint8_t *w = img_data[1].ptrw();
 			memcpy(w, dataCbCr, 2 * new_width * new_height);
 
-			///TODO GLES2 doesn't support FORMAT_RG8, need to do some form of conversion
+			///TODO OpenGL doesn't support FORMAT_RG8, need to do some form of conversion
 			img[1].instantiate();
 			img[1]->create(new_width, new_height, 0, Image::FORMAT_RG8, img_data[1]);
 		}
@@ -207,7 +202,6 @@ public:
 	AVCaptureDevice *get_device() const;
 
 	CameraFeedOSX();
-	~CameraFeedOSX();
 
 	void set_device(AVCaptureDevice *p_device);
 
@@ -226,11 +220,10 @@ CameraFeedOSX::CameraFeedOSX() {
 
 void CameraFeedOSX::set_device(AVCaptureDevice *p_device) {
 	device = p_device;
-	[device retain];
 
 	// get some info
 	NSString *device_name = p_device.localizedName;
-	name = device_name.UTF8String;
+	name = String::utf8(device_name.UTF8String);
 	position = CameraFeed::FEED_UNSPECIFIED;
 	if ([p_device position] == AVCaptureDevicePositionBack) {
 		position = CameraFeed::FEED_BACK;
@@ -239,24 +232,27 @@ void CameraFeedOSX::set_device(AVCaptureDevice *p_device) {
 	};
 };
 
-CameraFeedOSX::~CameraFeedOSX() {
-	if (capture_session != nullptr) {
-		[capture_session release];
-		capture_session = nullptr;
-	};
-
-	if (device != nullptr) {
-		[device release];
-		device = nullptr;
-	};
-};
-
 bool CameraFeedOSX::activate_feed() {
 	if (capture_session) {
-		// already recording!
+		// Already recording!
 	} else {
-		// start camera capture
-		capture_session = [[MyCaptureSession alloc] initForFeed:this andDevice:device];
+		// Start camera capture, check permission.
+		if (@available(macOS 10.14, *)) {
+			AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+			if (status == AVAuthorizationStatusAuthorized) {
+				capture_session = [[MyCaptureSession alloc] initForFeed:this andDevice:device];
+			} else if (status == AVAuthorizationStatusNotDetermined) {
+				// Request permission.
+				[AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo
+										 completionHandler:^(BOOL granted) {
+											 if (granted) {
+												 capture_session = [[MyCaptureSession alloc] initForFeed:this andDevice:device];
+											 }
+										 }];
+			}
+		} else {
+			capture_session = [[MyCaptureSession alloc] initForFeed:this andDevice:device];
+		}
 	};
 
 	return true;
@@ -266,7 +262,6 @@ void CameraFeedOSX::deactivate_feed() {
 	// end camera capture if we have one
 	if (capture_session) {
 		[capture_session cleanup];
-		[capture_session release];
 		capture_session = nullptr;
 	};
 };
@@ -301,8 +296,6 @@ void CameraFeedOSX::deactivate_feed() {
 	// remove notifications
 	[[NSNotificationCenter defaultCenter] removeObserver:self name:AVCaptureDeviceWasConnectedNotification object:nil];
 	[[NSNotificationCenter defaultCenter] removeObserver:self name:AVCaptureDeviceWasDisconnectedNotification object:nil];
-
-	[super dealloc];
 }
 
 @end
@@ -359,8 +352,4 @@ CameraOSX::CameraOSX() {
 
 	// should only have one of these....
 	device_notifications = [[MyDeviceNotifications alloc] initForServer:this];
-};
-
-CameraOSX::~CameraOSX() {
-	[device_notifications release];
 };

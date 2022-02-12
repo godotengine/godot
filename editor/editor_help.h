@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #ifndef EDITOR_HELP_H
 #define EDITOR_HELP_H
 
+#include "core/os/thread.h"
 #include "editor/code_editor.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_plugin.h"
@@ -57,7 +58,6 @@ class FindBar : public HBoxContainer {
 
 	int results_count;
 
-	void _show_search();
 	void _hide_bar();
 
 	void _search_text_changed(const String &p_text);
@@ -66,11 +66,9 @@ class FindBar : public HBoxContainer {
 	void _update_results_count();
 	void _update_matches_label();
 
-	void _update_size();
-
 protected:
 	void _notification(int p_what);
-	void _unhandled_input(const Ref<InputEvent> &p_event);
+	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
 
 	bool _search(bool p_search_previous = false);
 
@@ -123,20 +121,26 @@ class EditorHelp : public VBoxContainer {
 	ConfirmationDialog *search_dialog;
 	LineEdit *search;
 	FindBar *find_bar;
+	HBoxContainer *status_bar;
+	Button *toggle_scripts_button;
 
 	String base_path;
 
-	Color title_color;
 	Color text_color;
+	Color title_color;
 	Color headline_color;
-	Color base_type_color;
-	Color type_color;
 	Color comment_color;
 	Color symbol_color;
 	Color value_color;
 	Color qualifier_color;
+	Color type_color;
 
-	void _init_colors();
+	Ref<Font> doc_font;
+	Ref<Font> doc_bold_font;
+	Ref<Font> doc_title_font;
+	Ref<Font> doc_code_font;
+
+	void _update_theme();
 	void _help_callback(const String &p_topic);
 
 	void _add_text(const String &p_bbcode);
@@ -146,19 +150,30 @@ class EditorHelp : public VBoxContainer {
 	void _add_type(const String &p_type, const String &p_enum = String());
 	void _add_method(const DocData::MethodDoc &p_method, bool p_overview = true);
 
+	void _add_bulletpoint();
+
 	void _class_list_select(const String &p_select);
 	void _class_desc_select(const String &p_select);
 	void _class_desc_input(const Ref<InputEvent> &p_input);
-	void _class_desc_resized();
+	void _class_desc_resized(bool p_force_update_theme);
+	int display_margin = 0;
 
 	Error _goto_desc(const String &p_class, int p_vscr = -1);
 	//void _update_history_buttons();
+	void _update_method_list(const Vector<DocData::MethodDoc> p_methods, bool &r_method_descrpitons);
+	void _update_method_descriptions(const DocData::ClassDoc p_classdoc, const Vector<DocData::MethodDoc> p_methods, const String &p_method_type);
 	void _update_doc();
 
 	void _request_help(const String &p_string);
 	void _search(bool p_search_previous = false);
 
 	String _fix_constant(const String &p_constant) const;
+	void _toggle_scripts_pressed();
+
+	static Thread thread;
+
+	static void _wait_for_thread();
+	static void _gen_doc_thread(void *p_udata);
 
 protected:
 	void _notification(int p_what);
@@ -166,7 +181,8 @@ protected:
 
 public:
 	static void generate_doc();
-	static DocTools *get_doc_data() { return doc; }
+	static DocTools *get_doc_data();
+	static void cleanup_doc();
 
 	void go_to_help(const String &p_help);
 	void go_to_class(const String &p_class, int p_scroll = 0);
@@ -184,6 +200,8 @@ public:
 
 	int get_scroll() const;
 	void set_scroll(int p_scroll);
+
+	void update_toggle_scripts_button();
 
 	EditorHelp();
 	~EditorHelp();

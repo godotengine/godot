@@ -4,7 +4,7 @@
 		A class for generating pseudo-random numbers.
 	</brief_description>
 	<description>
-		RandomNumberGenerator is a class for generating pseudo-random numbers. It currently uses [url=http://www.pcg-random.org/]PCG32[/url].
+		RandomNumberGenerator is a class for generating pseudo-random numbers. It currently uses [url=https://www.pcg-random.org/]PCG32[/url].
 		[b]Note:[/b] The underlying algorithm is an implementation detail. As a result, it should not be depended upon for reproducible random streams across Godot versions.
 		To generate a random float number (within a given range) based on a time-dependant seed:
 		[codeblock]
@@ -16,7 +16,7 @@
 		[b]Note:[/b] The default values of [member seed] and [member state] properties are pseudo-random, and changes when calling [method randomize]. The [code]0[/code] value documented here is a placeholder, and not the actual default seed.
 	</description>
 	<tutorials>
-		<link title="Random number generation">https://docs.godotengine.org/en/latest/tutorials/math/random_number_generation.html</link>
+		<link title="Random number generation">$DOCS_URL/tutorials/math/random_number_generation.html</link>
 	</tutorials>
 	<methods>
 		<method name="randf">
@@ -86,6 +86,4 @@
 			[b]Note:[/b] Do not set state to arbitrary values, since the random number generator requires the state to have certain qualities to behave properly. It should only be set to values that came from the state property itself. To initialize the random number generator with arbitrary input, use [member seed] instead.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

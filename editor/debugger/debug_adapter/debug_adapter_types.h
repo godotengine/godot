@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,11 @@ namespace DAP {
 
 enum ErrorType {
 	UNKNOWN,
-	WRONG_PATH
+	WRONG_PATH,
+	NOT_RUNNING,
+	TIMEOUT,
+	UNKNOWN_PLATFORM,
+	MISSING_DEVICE
 };
 
 struct Checksum {
@@ -118,10 +122,14 @@ struct Breakpoint {
 
 struct BreakpointLocation {
 	int line;
+	int endLine = -1;
 
 	_FORCE_INLINE_ Dictionary to_json() const {
 		Dictionary dict;
 		dict["line"] = line;
+		if (endLine >= 0) {
+			dict["endLine"] = endLine;
+		}
 
 		return dict;
 	}

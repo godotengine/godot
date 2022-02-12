@@ -6,7 +6,8 @@ namespace Godot
 {
     public class GodotSynchronizationContext : SynchronizationContext
     {
-        private readonly BlockingCollection<KeyValuePair<SendOrPostCallback, object>> _queue = new BlockingCollection<KeyValuePair<SendOrPostCallback, object>>();
+        private readonly BlockingCollection<KeyValuePair<SendOrPostCallback, object>> _queue =
+            new BlockingCollection<KeyValuePair<SendOrPostCallback, object>>();
 
         public override void Post(SendOrPostCallback d, object state)
         {

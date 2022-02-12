@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,8 +50,8 @@ class ProjectSettingsEditor : public AcceptDialog {
 	Timer *timer;
 
 	TabContainer *tab_container;
-	SectionedInspector *inspector;
-	ActionMapEditor *action_map;
+	SectionedInspector *general_settings_inspector;
+	ActionMapEditor *action_map_editor;
 	LocalizationEditor *localization_editor;
 	EditorAutoloadSettings *autoload_settings;
 	ShaderGlobalsEditor *shaders_global_variables_editor;
@@ -81,6 +81,8 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _feature_selected(int p_index);
 	void _select_type(Variant::Type p_type);
 
+	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
+
 	String _get_setting_name() const;
 	void _setting_edited(const String &p_name);
 	void _setting_selected(const String &p_path);
@@ -99,8 +101,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _action_renamed(const String &p_old_name, const String &p_new_name);
 	void _action_reordered(const String &p_action_name, const String &p_relative_to, bool p_before);
 	void _update_action_map_editor();
-
-	ProjectSettingsEditor();
+	void _update_theme();
 
 protected:
 	void _notification(int p_what);

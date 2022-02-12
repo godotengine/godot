@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,10 @@
 
 #ifndef EDITOR_SCENE_IMPORTER_GLTF_H
 #define EDITOR_SCENE_IMPORTER_GLTF_H
-
+#ifdef TOOLS_ENABLED
 #include "gltf_state.h"
+
+#include "gltf_document_extension.h"
 
 #include "editor/import/resource_importer_scene.h"
 #include "scene/main/node.h"
@@ -39,42 +41,15 @@
 
 class Animation;
 
-#ifdef TOOLS_ENABLED
-class EditorSceneImporterGLTF : public EditorSceneImporter {
-	GDCLASS(EditorSceneImporterGLTF, EditorSceneImporter);
+class EditorSceneFormatImporterGLTF : public EditorSceneFormatImporter {
+	GDCLASS(EditorSceneFormatImporterGLTF, EditorSceneFormatImporter);
 
 public:
 	virtual uint32_t get_import_flags() const override;
 	virtual void get_extensions(List<String> *r_extensions) const override;
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags,
-			int p_bake_fps,
-			List<String> *r_missing_deps = nullptr,
-			Error *r_err = nullptr) override;
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = nullptr) override;
 	virtual Ref<Animation> import_animation(const String &p_path,
-			uint32_t p_flags, int p_bake_fps) override;
+			uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps) override;
 };
-#endif
-
-class PackedSceneGLTF : public PackedScene {
-	GDCLASS(PackedSceneGLTF, PackedScene);
-
-protected:
-	static void _bind_methods();
-
-public:
-	virtual void save_scene(Node *p_node, const String &p_path, const String &p_src_path,
-			uint32_t p_flags, int p_bake_fps,
-			List<String> *r_missing_deps, Error *r_err = nullptr);
-	virtual void _build_parent_hierachy(Ref<GLTFState> state);
-	virtual Error export_gltf(Node *p_root, String p_path, int32_t p_flags = 0,
-			real_t p_bake_fps = 1000.0f);
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags,
-			int p_bake_fps,
-			List<String> *r_missing_deps,
-			Error *r_err,
-			Ref<GLTFState> r_state);
-	virtual Node *import_gltf_scene(const String &p_path, uint32_t p_flags, float p_bake_fps, Ref<GLTFState> r_state = Ref<GLTFState>());
-	virtual void pack_gltf(String p_path, int32_t p_flags = 0,
-			real_t p_bake_fps = 1000.0f, Ref<GLTFState> r_state = Ref<GLTFState>());
-};
+#endif // TOOLS_ENABLED
 #endif // EDITOR_SCENE_IMPORTER_GLTF_H

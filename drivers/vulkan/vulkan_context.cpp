@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/string/ustring.h"
+#include "core/templates/local_vector.h"
 #include "core/version.h"
 #include "servers/rendering/rendering_device.h"
 
@@ -41,7 +42,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <vector>
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #define APP_SHORT_NAME "GodotEngine"
@@ -137,10 +137,10 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(
 	}
 
 	String error_message(type_string +
-						 " - Message Id Number: " + String::num_int64(pCallbackData->messageIdNumber) +
-						 " | Message Id Name: " + pCallbackData->pMessageIdName +
-						 "\n\t" + pCallbackData->pMessage +
-						 objects_string + labels_string);
+			" - Message Id Number: " + String::num_int64(pCallbackData->messageIdNumber) +
+			" | Message Id Name: " + pCallbackData->pMessageIdName +
+			"\n\t" + pCallbackData->pMessage +
+			objects_string + labels_string);
 
 	// Convert VK severity to our own log macros.
 	switch (messageSeverity) {
@@ -175,7 +175,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_report_callback(
 		const char *pMessage,
 		void *pUserData) {
 	String debugMessage = String("Vulkan Debug Report: object - ") +
-						  String::num_int64(object) + "\n" + pMessage;
+			String::num_int64(object) + "\n" + pMessage;
 
 	switch (flags) {
 		case VK_DEBUG_REPORT_DEBUG_BIT_EXT:
@@ -212,7 +212,7 @@ VkBool32 VulkanContext::_check_layers(uint32_t check_count, const char *const *c
 }
 
 Error VulkanContext::_get_preferred_validation_layers(uint32_t *count, const char *const **names) {
-	static const std::vector<std::vector<const char *>> instance_validation_layers_alt{
+	static const LocalVector<LocalVector<const char *>> instance_validation_layers_alt{
 		// Preferred set of validation layers
 		{ "VK_LAYER_KHRONOS_validation" },
 
@@ -249,10 +249,10 @@ Error VulkanContext::_get_preferred_validation_layers(uint32_t *count, const cha
 	}
 
 	for (uint32_t i = 0; i < instance_validation_layers_alt.size(); i++) {
-		if (_check_layers(instance_validation_layers_alt[i].size(), instance_validation_layers_alt[i].data(), instance_layer_count, instance_layers)) {
+		if (_check_layers(instance_validation_layers_alt[i].size(), instance_validation_layers_alt[i].ptr(), instance_layer_count, instance_layers)) {
 			*count = instance_validation_layers_alt[i].size();
 			if (names != nullptr) {
-				*names = instance_validation_layers_alt[i].data();
+				*names = instance_validation_layers_alt[i].ptr();
 			}
 			break;
 		}
@@ -273,24 +273,23 @@ Error VulkanContext::_obtain_vulkan_version() {
 		uint32_t api_version;
 		VkResult res = func(&api_version);
 		if (res == VK_SUCCESS) {
-			vulkan_major = VK_VERSION_MAJOR(api_version);
-			vulkan_minor = VK_VERSION_MINOR(api_version);
-			uint32_t vulkan_patch = VK_VERSION_PATCH(api_version);
-
-			print_line("Vulkan API " + itos(vulkan_major) + "." + itos(vulkan_minor) + "." + itos(vulkan_patch));
+			vulkan_major = VK_API_VERSION_MAJOR(api_version);
+			vulkan_minor = VK_API_VERSION_MINOR(api_version);
+			vulkan_patch = VK_API_VERSION_PATCH(api_version);
 		} else {
 			// according to the documentation this shouldn't fail with anything except a memory allocation error
 			// in which case we're in deep trouble anyway
 			ERR_FAIL_V(ERR_CANT_CREATE);
 		}
 	} else {
-		print_line("vkEnumerateInstanceVersion not available, assuming Vulkan 1.0");
+		print_line("vkEnumerateInstanceVersion not available, assuming Vulkan 1.0.");
 	}
 
 	// we don't go above 1.2
 	if ((vulkan_major > 1) || (vulkan_major == 1 && vulkan_minor > 2)) {
 		vulkan_major = 1;
 		vulkan_minor = 2;
+		vulkan_patch = 0;
 	}
 
 	return OK;
@@ -526,7 +525,7 @@ Error VulkanContext::_check_capabilities() {
 		// check our extended features
 		VkPhysicalDeviceMultiviewFeatures multiview_features;
 		multiview_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
-		multiview_features.pNext = NULL;
+		multiview_features.pNext = nullptr;
 
 		VkPhysicalDeviceFeatures2 device_features;
 		device_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
@@ -536,6 +535,24 @@ Error VulkanContext::_check_capabilities() {
 		multiview_capabilities.is_supported = multiview_features.multiview;
 		multiview_capabilities.geometry_shader_is_supported = multiview_features.multiviewGeometryShader;
 		multiview_capabilities.tessellation_shader_is_supported = multiview_features.multiviewTessellationShader;
+
+		VkPhysicalDeviceShaderFloat16Int8FeaturesKHR shader_features;
+		shader_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR;
+		shader_features.pNext = nullptr;
+
+		device_features.pNext = &shader_features;
+
+		device_features_func(gpu, &device_features);
+		shader_capabilities.shader_float16_is_supported = shader_features.shaderFloat16;
+
+		VkPhysicalDevice16BitStorageFeaturesKHR storage_feature;
+		storage_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR;
+		storage_feature.pNext = nullptr;
+
+		device_features.pNext = &storage_feature;
+
+		device_features_func(gpu, &device_features);
+		storage_buffer_capabilities.storage_buffer_16_bit_access_is_supported = storage_feature.storageBuffer16BitAccess;
 	}
 
 	// check extended properties
@@ -598,7 +615,7 @@ Error VulkanContext::_check_capabilities() {
 	return OK;
 }
 
-Error VulkanContext::_create_physical_device() {
+Error VulkanContext::_create_instance() {
 	/* obtain version */
 	_obtain_vulkan_version();
 
@@ -611,15 +628,13 @@ Error VulkanContext::_create_physical_device() {
 	}
 
 	CharString cs = ProjectSettings::get_singleton()->get("application/config/name").operator String().utf8();
-	String name = "GodotEngine " + String(VERSION_FULL_NAME);
-	CharString namecs = name.utf8();
 	const VkApplicationInfo app = {
 		/*sType*/ VK_STRUCTURE_TYPE_APPLICATION_INFO,
 		/*pNext*/ nullptr,
 		/*pApplicationName*/ cs.get_data(),
 		/*applicationVersion*/ 0,
-		/*pEngineName*/ namecs.get_data(),
-		/*engineVersion*/ 0,
+		/*pEngineName*/ VERSION_NAME,
+		/*engineVersion*/ VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH),
 		/*apiVersion*/ VK_MAKE_VERSION(vulkan_major, vulkan_minor, 0)
 	};
 	VkInstanceCreateInfo inst_info{};
@@ -632,10 +647,10 @@ Error VulkanContext::_create_physical_device() {
 	}
 
 	/*
-	   * This is info for a temp callback to use during CreateInstance.
-	   * After the instance is created, we use the instance-based
-	   * function to register the final callback.
-	   */
+	 * This is info for a temp callback to use during CreateInstance.
+	 * After the instance is created, we use the instance-based
+	 * function to register the final callback.
+	 */
 	VkDebugUtilsMessengerCreateInfoEXT dbg_messenger_create_info;
 	VkDebugReportCallbackCreateInfoEXT dbg_report_callback_create_info{};
 	if (enabled_debug_utils) {
@@ -646,24 +661,22 @@ Error VulkanContext::_create_physical_device() {
 		dbg_messenger_create_info.messageSeverity =
 				VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
 		dbg_messenger_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-												VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-												VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+				VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+				VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 		dbg_messenger_create_info.pfnUserCallback = _debug_messenger_callback;
 		dbg_messenger_create_info.pUserData = this;
 		inst_info.pNext = &dbg_messenger_create_info;
 	} else if (enabled_debug_report) {
 		dbg_report_callback_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
 		dbg_report_callback_create_info.flags = VK_DEBUG_REPORT_INFORMATION_BIT_EXT |
-												VK_DEBUG_REPORT_WARNING_BIT_EXT |
-												VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT |
-												VK_DEBUG_REPORT_ERROR_BIT_EXT |
-												VK_DEBUG_REPORT_DEBUG_BIT_EXT;
+				VK_DEBUG_REPORT_WARNING_BIT_EXT |
+				VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT |
+				VK_DEBUG_REPORT_ERROR_BIT_EXT |
+				VK_DEBUG_REPORT_DEBUG_BIT_EXT;
 		dbg_report_callback_create_info.pfnCallback = _debug_report_callback;
 		dbg_report_callback_create_info.pUserData = this;
 		inst_info.pNext = &dbg_report_callback_create_info;
 	}
-
-	uint32_t gpu_count;
 
 	VkResult err = vkCreateInstance(&inst_info, nullptr, &inst);
 	ERR_FAIL_COND_V_MSG(err == VK_ERROR_INCOMPATIBLE_DRIVER, ERR_CANT_CREATE,
@@ -681,10 +694,89 @@ Error VulkanContext::_create_physical_device() {
 
 	inst_initialized = true;
 
-	/* Make initial call to query gpu_count, then second call for gpu info*/
-	err = vkEnumeratePhysicalDevices(inst, &gpu_count, nullptr);
-	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+#ifdef USE_VOLK
+	volkLoadInstance(inst);
+#endif
 
+	if (enabled_debug_utils) {
+		// Setup VK_EXT_debug_utils function pointers always (we use them for
+		// debug labels and names).
+		CreateDebugUtilsMessengerEXT =
+				(PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(inst, "vkCreateDebugUtilsMessengerEXT");
+		DestroyDebugUtilsMessengerEXT =
+				(PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(inst, "vkDestroyDebugUtilsMessengerEXT");
+		SubmitDebugUtilsMessageEXT =
+				(PFN_vkSubmitDebugUtilsMessageEXT)vkGetInstanceProcAddr(inst, "vkSubmitDebugUtilsMessageEXT");
+		CmdBeginDebugUtilsLabelEXT =
+				(PFN_vkCmdBeginDebugUtilsLabelEXT)vkGetInstanceProcAddr(inst, "vkCmdBeginDebugUtilsLabelEXT");
+		CmdEndDebugUtilsLabelEXT =
+				(PFN_vkCmdEndDebugUtilsLabelEXT)vkGetInstanceProcAddr(inst, "vkCmdEndDebugUtilsLabelEXT");
+		CmdInsertDebugUtilsLabelEXT =
+				(PFN_vkCmdInsertDebugUtilsLabelEXT)vkGetInstanceProcAddr(inst, "vkCmdInsertDebugUtilsLabelEXT");
+		SetDebugUtilsObjectNameEXT =
+				(PFN_vkSetDebugUtilsObjectNameEXT)vkGetInstanceProcAddr(inst, "vkSetDebugUtilsObjectNameEXT");
+		if (nullptr == CreateDebugUtilsMessengerEXT || nullptr == DestroyDebugUtilsMessengerEXT ||
+				nullptr == SubmitDebugUtilsMessageEXT || nullptr == CmdBeginDebugUtilsLabelEXT ||
+				nullptr == CmdEndDebugUtilsLabelEXT || nullptr == CmdInsertDebugUtilsLabelEXT ||
+				nullptr == SetDebugUtilsObjectNameEXT) {
+			ERR_FAIL_V_MSG(ERR_CANT_CREATE,
+					"GetProcAddr: Failed to init VK_EXT_debug_utils\n"
+					"GetProcAddr: Failure");
+		}
+
+		err = CreateDebugUtilsMessengerEXT(inst, &dbg_messenger_create_info, nullptr, &dbg_messenger);
+		switch (err) {
+			case VK_SUCCESS:
+				break;
+			case VK_ERROR_OUT_OF_HOST_MEMORY:
+				ERR_FAIL_V_MSG(ERR_CANT_CREATE,
+						"CreateDebugUtilsMessengerEXT: out of host memory\n"
+						"CreateDebugUtilsMessengerEXT Failure");
+				break;
+			default:
+				ERR_FAIL_V_MSG(ERR_CANT_CREATE,
+						"CreateDebugUtilsMessengerEXT: unknown failure\n"
+						"CreateDebugUtilsMessengerEXT Failure");
+				ERR_FAIL_V(ERR_CANT_CREATE);
+				break;
+		}
+	} else if (enabled_debug_report) {
+		CreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(inst, "vkCreateDebugReportCallbackEXT");
+		DebugReportMessageEXT = (PFN_vkDebugReportMessageEXT)vkGetInstanceProcAddr(inst, "vkDebugReportMessageEXT");
+		DestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(inst, "vkDestroyDebugReportCallbackEXT");
+
+		if (nullptr == CreateDebugReportCallbackEXT || nullptr == DebugReportMessageEXT || nullptr == DestroyDebugReportCallbackEXT) {
+			ERR_FAIL_V_MSG(ERR_CANT_CREATE,
+					"GetProcAddr: Failed to init VK_EXT_debug_report\n"
+					"GetProcAddr: Failure");
+		}
+
+		err = CreateDebugReportCallbackEXT(inst, &dbg_report_callback_create_info, nullptr, &dbg_debug_report);
+		switch (err) {
+			case VK_SUCCESS:
+				break;
+			case VK_ERROR_OUT_OF_HOST_MEMORY:
+				ERR_FAIL_V_MSG(ERR_CANT_CREATE,
+						"CreateDebugReportCallbackEXT: out of host memory\n"
+						"CreateDebugReportCallbackEXT Failure");
+				break;
+			default:
+				ERR_FAIL_V_MSG(ERR_CANT_CREATE,
+						"CreateDebugReportCallbackEXT: unknown failure\n"
+						"CreateDebugReportCallbackEXT Failure");
+				ERR_FAIL_V(ERR_CANT_CREATE);
+				break;
+		}
+	}
+
+	return OK;
+}
+
+Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
+	/* Make initial call to query gpu_count, then second call for gpu info*/
+	uint32_t gpu_count = 0;
+	VkResult err = vkEnumeratePhysicalDevices(inst, &gpu_count, nullptr);
+	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 	ERR_FAIL_COND_V_MSG(gpu_count == 0, ERR_CANT_CREATE,
 			"vkEnumeratePhysicalDevices reported zero accessible devices.\n\n"
 			"Do you have a compatible Vulkan installable client driver (ICD) installed?\n"
@@ -696,36 +788,6 @@ Error VulkanContext::_create_physical_device() {
 		free(physical_devices);
 		ERR_FAIL_V(ERR_CANT_CREATE);
 	}
-
-	// TODO: At least on Linux Laptops integrated GPUs fail with Vulkan in many instances.
-	//   The device should really be a preference, but for now choosing a discrete GPU over the
-	//   integrated one is better than the default.
-
-	// Default to first device
-	uint32_t device_index = 0;
-
-	for (uint32_t i = 0; i < gpu_count; ++i) {
-		VkPhysicalDeviceProperties props;
-		vkGetPhysicalDeviceProperties(physical_devices[i], &props);
-
-		if (props.deviceType == VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
-			// Prefer discrete GPU.
-			device_index = i;
-			break;
-		}
-	}
-
-	gpu = physical_devices[device_index];
-	free(physical_devices);
-
-	/* Look for device extensions */
-	uint32_t device_extension_count = 0;
-	VkBool32 swapchainExtFound = 0;
-	enabled_extension_count = 0;
-	memset(extension_names, 0, sizeof(extension_names));
-
-	/* Get identifier properties */
-	vkGetPhysicalDeviceProperties(gpu, &gpu_props);
 
 	static const struct {
 		uint32_t id;
@@ -740,7 +802,121 @@ Error VulkanContext::_create_physical_device() {
 		{ 0x8086, "Intel" },
 		{ 0, nullptr },
 	};
+
+	// TODO: At least on Linux Laptops integrated GPUs fail with Vulkan in many instances.
+	//   The device should really be a preference, but for now choosing a discrete GPU over the
+	//   integrated one is better than the default.
+
+	int32_t device_index = -1;
+	int type_selected = -1;
+	print_verbose("Vulkan devices:");
+	for (uint32_t i = 0; i < gpu_count; ++i) {
+		VkPhysicalDeviceProperties props;
+		vkGetPhysicalDeviceProperties(physical_devices[i], &props);
+
+		bool present_supported = false;
+
+		uint32_t device_queue_family_count = 0;
+		vkGetPhysicalDeviceQueueFamilyProperties(physical_devices[i], &device_queue_family_count, nullptr);
+		VkQueueFamilyProperties *device_queue_props = (VkQueueFamilyProperties *)malloc(device_queue_family_count * sizeof(VkQueueFamilyProperties));
+		vkGetPhysicalDeviceQueueFamilyProperties(physical_devices[i], &device_queue_family_count, device_queue_props);
+		for (uint32_t j = 0; j < device_queue_family_count; j++) {
+			VkBool32 supports;
+			vkGetPhysicalDeviceSurfaceSupportKHR(physical_devices[i], j, p_surface, &supports);
+			if (supports && ((device_queue_props[j].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0)) {
+				present_supported = true;
+			} else {
+				continue;
+			}
+		}
+		String name = props.deviceName;
+		String vendor = "Unknown";
+		String dev_type;
+		switch (props.deviceType) {
+			case VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU: {
+				dev_type = "Discrete";
+			} break;
+			case VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU: {
+				dev_type = "Integrated";
+			} break;
+			case VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU: {
+				dev_type = "Virtual";
+			} break;
+			case VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_CPU: {
+				dev_type = "CPU";
+			} break;
+			default: {
+				dev_type = "Other";
+			} break;
+		}
+		uint32_t vendor_idx = 0;
+		while (vendor_names[vendor_idx].name != nullptr) {
+			if (props.vendorID == vendor_names[vendor_idx].id) {
+				vendor = vendor_names[vendor_idx].name;
+				break;
+			}
+			vendor_idx++;
+		}
+		free(device_queue_props);
+		print_verbose("  #" + itos(i) + ": " + vendor + " " + name + " - " + (present_supported ? "Supported" : "Unsupported") + ", " + dev_type);
+
+		if (present_supported) { // Select first supported device of preferred type: Discrete > Integrated > Virtual > CPU > Other.
+			switch (props.deviceType) {
+				case VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU: {
+					if (type_selected < 4) {
+						type_selected = 4;
+						device_index = i;
+					}
+				} break;
+				case VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU: {
+					if (type_selected < 3) {
+						type_selected = 3;
+						device_index = i;
+					}
+				} break;
+				case VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU: {
+					if (type_selected < 2) {
+						type_selected = 2;
+						device_index = i;
+					}
+				} break;
+				case VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_CPU: {
+					if (type_selected < 1) {
+						type_selected = 1;
+						device_index = i;
+					}
+				} break;
+				default: {
+					if (type_selected < 0) {
+						type_selected = 0;
+						device_index = i;
+					}
+				} break;
+			}
+		}
+	}
+
+	int32_t user_device_index = Engine::get_singleton()->get_gpu_index(); // Force user selected GPU.
+	if (user_device_index >= 0 && user_device_index < (int32_t)gpu_count) {
+		device_index = user_device_index;
+	}
+
+	ERR_FAIL_COND_V_MSG(device_index == -1, ERR_CANT_CREATE, "None of Vulkan devices supports both graphics and present queues.");
+
+	gpu = physical_devices[device_index];
+	free(physical_devices);
+
+	/* Look for device extensions */
+	uint32_t device_extension_count = 0;
+	VkBool32 swapchainExtFound = 0;
+	enabled_extension_count = 0;
+	memset(extension_names, 0, sizeof(extension_names));
+
+	/* Get identifier properties */
+	vkGetPhysicalDeviceProperties(gpu, &gpu_props);
+
 	device_name = gpu_props.deviceName;
+	device_type = gpu_props.deviceType;
 	pipeline_cache_id = String::hex_encode_buffer(gpu_props.pipelineCacheUUID, VK_UUID_SIZE);
 	pipeline_cache_id += "-driver-" + itos(gpu_props.driverVersion);
 	{
@@ -755,7 +931,9 @@ Error VulkanContext::_create_physical_device() {
 		}
 	}
 
-	print_line("Using Vulkan Device #" + itos(device_index) + ": " + device_vendor + " - " + device_name);
+	print_line(
+			"Vulkan API " + itos(vulkan_major) + "." + itos(vulkan_minor) + "." + itos(vulkan_patch) +
+			" - " + "Using Vulkan Device #" + itos(device_index) + ": " + device_vendor + " - " + device_name);
 
 	device_api_version = gpu_props.apiVersion;
 
@@ -829,77 +1007,6 @@ Error VulkanContext::_create_physical_device() {
 			" extension.\n\nDo you have a compatible Vulkan installable client driver (ICD) installed?\n"
 			"vkCreateInstance Failure");
 
-	if (enabled_debug_utils) {
-		// Setup VK_EXT_debug_utils function pointers always (we use them for
-		// debug labels and names).
-		CreateDebugUtilsMessengerEXT =
-				(PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(inst, "vkCreateDebugUtilsMessengerEXT");
-		DestroyDebugUtilsMessengerEXT =
-				(PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(inst, "vkDestroyDebugUtilsMessengerEXT");
-		SubmitDebugUtilsMessageEXT =
-				(PFN_vkSubmitDebugUtilsMessageEXT)vkGetInstanceProcAddr(inst, "vkSubmitDebugUtilsMessageEXT");
-		CmdBeginDebugUtilsLabelEXT =
-				(PFN_vkCmdBeginDebugUtilsLabelEXT)vkGetInstanceProcAddr(inst, "vkCmdBeginDebugUtilsLabelEXT");
-		CmdEndDebugUtilsLabelEXT =
-				(PFN_vkCmdEndDebugUtilsLabelEXT)vkGetInstanceProcAddr(inst, "vkCmdEndDebugUtilsLabelEXT");
-		CmdInsertDebugUtilsLabelEXT =
-				(PFN_vkCmdInsertDebugUtilsLabelEXT)vkGetInstanceProcAddr(inst, "vkCmdInsertDebugUtilsLabelEXT");
-		SetDebugUtilsObjectNameEXT =
-				(PFN_vkSetDebugUtilsObjectNameEXT)vkGetInstanceProcAddr(inst, "vkSetDebugUtilsObjectNameEXT");
-		if (nullptr == CreateDebugUtilsMessengerEXT || nullptr == DestroyDebugUtilsMessengerEXT ||
-				nullptr == SubmitDebugUtilsMessageEXT || nullptr == CmdBeginDebugUtilsLabelEXT ||
-				nullptr == CmdEndDebugUtilsLabelEXT || nullptr == CmdInsertDebugUtilsLabelEXT ||
-				nullptr == SetDebugUtilsObjectNameEXT) {
-			ERR_FAIL_V_MSG(ERR_CANT_CREATE,
-					"GetProcAddr: Failed to init VK_EXT_debug_utils\n"
-					"GetProcAddr: Failure");
-		}
-
-		err = CreateDebugUtilsMessengerEXT(inst, &dbg_messenger_create_info, nullptr, &dbg_messenger);
-		switch (err) {
-			case VK_SUCCESS:
-				break;
-			case VK_ERROR_OUT_OF_HOST_MEMORY:
-				ERR_FAIL_V_MSG(ERR_CANT_CREATE,
-						"CreateDebugUtilsMessengerEXT: out of host memory\n"
-						"CreateDebugUtilsMessengerEXT Failure");
-				break;
-			default:
-				ERR_FAIL_V_MSG(ERR_CANT_CREATE,
-						"CreateDebugUtilsMessengerEXT: unknown failure\n"
-						"CreateDebugUtilsMessengerEXT Failure");
-				ERR_FAIL_V(ERR_CANT_CREATE);
-				break;
-		}
-	} else if (enabled_debug_report) {
-		CreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(inst, "vkCreateDebugReportCallbackEXT");
-		DebugReportMessageEXT = (PFN_vkDebugReportMessageEXT)vkGetInstanceProcAddr(inst, "vkDebugReportMessageEXT");
-		DestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(inst, "vkDestroyDebugReportCallbackEXT");
-
-		if (nullptr == CreateDebugReportCallbackEXT || nullptr == DebugReportMessageEXT || nullptr == DestroyDebugReportCallbackEXT) {
-			ERR_FAIL_V_MSG(ERR_CANT_CREATE,
-					"GetProcAddr: Failed to init VK_EXT_debug_report\n"
-					"GetProcAddr: Failure");
-		}
-
-		err = CreateDebugReportCallbackEXT(inst, &dbg_report_callback_create_info, nullptr, &dbg_debug_report);
-		switch (err) {
-			case VK_SUCCESS:
-				break;
-			case VK_ERROR_OUT_OF_HOST_MEMORY:
-				ERR_FAIL_V_MSG(ERR_CANT_CREATE,
-						"CreateDebugReportCallbackEXT: out of host memory\n"
-						"CreateDebugReportCallbackEXT Failure");
-				break;
-			default:
-				ERR_FAIL_V_MSG(ERR_CANT_CREATE,
-						"CreateDebugReportCallbackEXT: unknown failure\n"
-						"CreateDebugReportCallbackEXT Failure");
-				ERR_FAIL_V(ERR_CANT_CREATE);
-				break;
-		}
-	}
-
 	/* Call with nullptr data to get count */
 	vkGetPhysicalDeviceQueueFamilyProperties(gpu, &queue_family_count, nullptr);
 	ERR_FAIL_COND_V(queue_family_count == 0, ERR_CANT_CREATE);
@@ -935,6 +1042,7 @@ Error VulkanContext::_create_physical_device() {
 		}
 	}
 
+	device_initialized = true;
 	return OK;
 }
 
@@ -972,37 +1080,35 @@ Error VulkanContext::_create_device() {
 		sdevice.queueCreateInfoCount = 2;
 	}
 
-#ifdef VK_VERSION_1_2
 	VkPhysicalDeviceVulkan11Features vulkan11features;
-
-	vulkan11features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
-	vulkan11features.pNext = nullptr;
-	// !BAS! Need to figure out which ones of these we want enabled...
-	vulkan11features.storageBuffer16BitAccess = 0;
-	vulkan11features.uniformAndStorageBuffer16BitAccess = 0;
-	vulkan11features.storagePushConstant16 = 0;
-	vulkan11features.storageInputOutput16 = 0;
-	vulkan11features.multiview = multiview_capabilities.is_supported;
-	vulkan11features.multiviewGeometryShader = multiview_capabilities.geometry_shader_is_supported;
-	vulkan11features.multiviewTessellationShader = multiview_capabilities.tessellation_shader_is_supported;
-	vulkan11features.variablePointersStorageBuffer = 0;
-	vulkan11features.variablePointers = 0;
-	vulkan11features.protectedMemory = 0;
-	vulkan11features.samplerYcbcrConversion = 0;
-	vulkan11features.shaderDrawParameters = 0;
-
-	sdevice.pNext = &vulkan11features;
-#elif VK_VERSION_1_1
 	VkPhysicalDeviceMultiviewFeatures multiview_features;
+	if (vulkan_major > 1 || vulkan_minor >= 2) {
+		vulkan11features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+		vulkan11features.pNext = nullptr;
+		// !BAS! Need to figure out which ones of these we want enabled...
+		vulkan11features.storageBuffer16BitAccess = 0;
+		vulkan11features.uniformAndStorageBuffer16BitAccess = 0;
+		vulkan11features.storagePushConstant16 = 0;
+		vulkan11features.storageInputOutput16 = 0;
+		vulkan11features.multiview = multiview_capabilities.is_supported;
+		vulkan11features.multiviewGeometryShader = multiview_capabilities.geometry_shader_is_supported;
+		vulkan11features.multiviewTessellationShader = multiview_capabilities.tessellation_shader_is_supported;
+		vulkan11features.variablePointersStorageBuffer = 0;
+		vulkan11features.variablePointers = 0;
+		vulkan11features.protectedMemory = 0;
+		vulkan11features.samplerYcbcrConversion = 0;
+		vulkan11features.shaderDrawParameters = 0;
 
-	multiview_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
-	multiview_features.pNext = nullptr;
-	multiview_features.multiview = multiview_capabilities.is_supported;
-	multiview_features.multiviewGeometryShader = multiview_capabilities.geometry_shader_is_supported;
-	multiview_features.multiviewTessellationShader = multiview_capabilities.tessellation_shader_is_supported;
+		sdevice.pNext = &vulkan11features;
+	} else if (vulkan_major == 1 && vulkan_minor == 1) {
+		multiview_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
+		multiview_features.pNext = nullptr;
+		multiview_features.multiview = multiview_capabilities.is_supported;
+		multiview_features.multiviewGeometryShader = multiview_capabilities.geometry_shader_is_supported;
+		multiview_features.multiviewTessellationShader = multiview_capabilities.tessellation_shader_is_supported;
 
-	sdevice.pNext = &multiview_features;
-#endif
+		sdevice.pNext = &multiview_features;
+	}
 
 	err = vkCreateDevice(gpu, &sdevice, nullptr, &device);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
@@ -1189,25 +1295,17 @@ bool VulkanContext::_use_validation_layers() {
 Error VulkanContext::_window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, VkSurfaceKHR p_surface, int p_width, int p_height) {
 	ERR_FAIL_COND_V(windows.has(p_window_id), ERR_INVALID_PARAMETER);
 
+	if (!device_initialized) {
+		Error err = _create_physical_device(p_surface);
+		ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
+	}
+
 	if (!queues_initialized) {
 		// We use a single GPU, but we need a surface to initialize the
 		// queues, so this process must be deferred until a surface
 		// is created.
 		Error err = _initialize_queues(p_surface);
 		ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
-	} else {
-		// make sure any of the surfaces supports present (validation layer complains if this is not done).
-		bool any_supports_present = false;
-		for (uint32_t i = 0; i < queue_family_count; i++) {
-			VkBool32 supports;
-			fpGetPhysicalDeviceSurfaceSupportKHR(gpu, i, p_surface, &supports);
-			if (supports) {
-				any_supports_present = true;
-				break;
-			}
-		}
-
-		ERR_FAIL_COND_V_MSG(!any_supports_present, ERR_CANT_CREATE, "Surface passed for sub-window creation does not support presenting");
 	}
 
 	Window window;
@@ -1669,12 +1767,17 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 }
 
 Error VulkanContext::initialize() {
-	Error err = _create_physical_device();
-	if (err) {
+#ifdef USE_VOLK
+	if (volkInitialize() != VK_SUCCESS) {
+		return FAILED;
+	}
+#endif
+
+	Error err = _create_instance();
+	if (err != OK) {
 		return err;
 	}
 
-	device_initialized = true;
 	return OK;
 }
 
@@ -1747,8 +1850,8 @@ Error VulkanContext::prepare_buffers() {
 	vkWaitForFences(device, 1, &fences[frame_index], VK_TRUE, UINT64_MAX);
 	vkResetFences(device, 1, &fences[frame_index]);
 
-	for (Map<int, Window>::Element *E = windows.front(); E; E = E->next()) {
-		Window *w = &E->get();
+	for (KeyValue<int, Window> &E : windows) {
+		Window *w = &E.value;
 
 		w->semaphore_acquired = false;
 
@@ -1829,8 +1932,8 @@ Error VulkanContext::swap_buffers() {
 	VkSemaphore *semaphores_to_acquire = (VkSemaphore *)alloca(windows.size() * sizeof(VkSemaphore));
 	uint32_t semaphores_to_acquire_count = 0;
 
-	for (Map<int, Window>::Element *E = windows.front(); E; E = E->next()) {
-		Window *w = &E->get();
+	for (KeyValue<int, Window> &E : windows) {
+		Window *w = &E.value;
 
 		if (w->semaphore_acquired) {
 			semaphores_to_acquire[semaphores_to_acquire_count++] = w->image_acquired_semaphores[frame_index];
@@ -1868,8 +1971,8 @@ Error VulkanContext::swap_buffers() {
 		VkCommandBuffer *cmdbufptr = (VkCommandBuffer *)alloca(sizeof(VkCommandBuffer *) * windows.size());
 		submit_info.pCommandBuffers = cmdbufptr;
 
-		for (Map<int, Window>::Element *E = windows.front(); E; E = E->next()) {
-			Window *w = &E->get();
+		for (KeyValue<int, Window> &E : windows) {
+			Window *w = &E.value;
 
 			if (w->swapchain == VK_NULL_HANDLE) {
 				continue;
@@ -1903,8 +2006,8 @@ Error VulkanContext::swap_buffers() {
 	present.pSwapchains = pSwapchains;
 	present.pImageIndices = pImageIndices;
 
-	for (Map<int, Window>::Element *E = windows.front(); E; E = E->next()) {
-		Window *w = &E->get();
+	for (KeyValue<int, Window> &E : windows) {
+		Window *w = &E.value;
 
 		if (w->swapchain == VK_NULL_HANDLE) {
 			continue;
@@ -2021,7 +2124,11 @@ int VulkanContext::get_swapchain_image_count() const {
 	return swapchainImageCount;
 }
 
-uint32_t VulkanContext::get_graphics_queue() const {
+VkQueue VulkanContext::get_graphics_queue() const {
+	return graphics_queue;
+}
+
+uint32_t VulkanContext::get_graphics_queue_family_index() const {
 	return graphics_queue_family_index;
 }
 
@@ -2072,12 +2179,12 @@ RID VulkanContext::local_device_create() {
 }
 
 VkDevice VulkanContext::local_device_get_vk_device(RID p_local_device) {
-	LocalDevice *ld = local_device_owner.getornull(p_local_device);
+	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	return ld->device;
 }
 
 void VulkanContext::local_device_push_command_buffers(RID p_local_device, const VkCommandBuffer *p_buffers, int p_count) {
-	LocalDevice *ld = local_device_owner.getornull(p_local_device);
+	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	ERR_FAIL_COND(ld->waiting);
 
 	VkSubmitInfo submit_info;
@@ -2107,7 +2214,7 @@ void VulkanContext::local_device_push_command_buffers(RID p_local_device, const 
 }
 
 void VulkanContext::local_device_sync(RID p_local_device) {
-	LocalDevice *ld = local_device_owner.getornull(p_local_device);
+	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	ERR_FAIL_COND(!ld->waiting);
 
 	vkDeviceWaitIdle(ld->device);
@@ -2115,7 +2222,7 @@ void VulkanContext::local_device_sync(RID p_local_device) {
 }
 
 void VulkanContext::local_device_free(RID p_local_device) {
-	LocalDevice *ld = local_device_owner.getornull(p_local_device);
+	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	vkDestroyDevice(ld->device, nullptr);
 	local_device_owner.free(p_local_device);
 }
@@ -2180,6 +2287,11 @@ String VulkanContext::get_device_vendor_name() const {
 String VulkanContext::get_device_name() const {
 	return device_name;
 }
+
+RenderingDevice::DeviceType VulkanContext::get_device_type() const {
+	return RenderingDevice::DeviceType(device_type);
+}
+
 String VulkanContext::get_device_pipeline_cache_uuid() const {
 	return pipeline_cache_id;
 }

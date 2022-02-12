@@ -9,6 +9,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="convert_to_image" qualifiers="const">
+			<return type="Image" />
+			<description>
+				Returns an image of the same size as the bitmap and with a [enum Image.Format] of type [code]FORMAT_L8[/code]. [code]true[/code] bits of the bitmap are being converted into white pixels, and [code]false[/code] bits into black.
+			</description>
+		</method>
 		<method name="create">
 			<return type="void" />
 			<argument index="0" name="size" type="Vector2" />
@@ -48,7 +54,7 @@
 			<argument index="0" name="pixels" type="int" />
 			<argument index="1" name="rect" type="Rect2" />
 			<description>
-				Applies morphological dilation to the bitmap. The first argument is the dilation amount, Rect2 is the area where the dilation will be applied.
+				Applies morphological dilation or erosion to the bitmap. If [code]pixels[/code] is positive, dilation is applied to the bitmap. If [code]pixels[/code] is negative, erosion is applied to the bitmap. [code]rect[/code] defines the area where the morphological operation is applied. Pixels located outside the [code]rect[/code] are unaffected by [method grow_mask].
 			</description>
 		</method>
 		<method name="opaque_to_polygons" qualifiers="const">
@@ -62,6 +68,13 @@
 				Rect2(Vector2(), get_size())
 				[/codeblock]
 				[code]epsilon[/code] is passed to RDP to control how accurately the polygons cover the bitmap: a lower [code]epsilon[/code] corresponds to more points in the polygons.
+			</description>
+		</method>
+		<method name="resize">
+			<return type="void" />
+			<argument index="0" name="new_size" type="Vector2" />
+			<description>
+				Resizes the image to [code]new_size[/code].
 			</description>
 		</method>
 		<method name="set_bit">
@@ -81,6 +94,4 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

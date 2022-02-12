@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,7 +44,7 @@
 ///////////////////////////////////////
 
 void SkeletonModification2D::_execute(float p_delta) {
-	call("_execute", p_delta);
+	GDVIRTUAL_CALL(_execute, p_delta);
 
 	if (!enabled) {
 		return;
@@ -59,11 +59,11 @@ void SkeletonModification2D::_setup_modification(SkeletonModificationStack2D *p_
 		WARN_PRINT("Could not setup modification with name " + get_name());
 	}
 
-	call("_setup_modification", p_stack);
+	GDVIRTUAL_CALL(_setup_modification, Ref<SkeletonModificationStack2D>(p_stack));
 }
 
 void SkeletonModification2D::_draw_editor_gizmo() {
-	call("_draw_editor_gizmo");
+	GDVIRTUAL_CALL(_draw_editor_gizmo);
 }
 
 void SkeletonModification2D::set_enabled(bool p_enabled) {
@@ -96,37 +96,25 @@ float SkeletonModification2D::clamp_angle(float p_angle, float p_min_bound, floa
 		p_max_bound = Math_TAU + p_max_bound;
 	}
 	if (p_min_bound > p_max_bound) {
-		float tmp = p_min_bound;
-		p_min_bound = p_max_bound;
-		p_max_bound = tmp;
+		SWAP(p_min_bound, p_max_bound);
 	}
+
+	bool is_beyond_bounds = (p_angle < p_min_bound || p_angle > p_max_bound);
+	bool is_within_bounds = (p_angle > p_min_bound && p_angle < p_max_bound);
 
 	// Note: May not be the most optimal way to clamp, but it always constraints to the nearest angle.
-	if (p_invert == false) {
-		if (p_angle < p_min_bound || p_angle > p_max_bound) {
-			Vector2 min_bound_vec = Vector2(Math::cos(p_min_bound), Math::sin(p_min_bound));
-			Vector2 max_bound_vec = Vector2(Math::cos(p_max_bound), Math::sin(p_max_bound));
-			Vector2 angle_vec = Vector2(Math::cos(p_angle), Math::sin(p_angle));
+	if ((!p_invert && is_beyond_bounds) || (p_invert && is_within_bounds)) {
+		Vector2 min_bound_vec = Vector2(Math::cos(p_min_bound), Math::sin(p_min_bound));
+		Vector2 max_bound_vec = Vector2(Math::cos(p_max_bound), Math::sin(p_max_bound));
+		Vector2 angle_vec = Vector2(Math::cos(p_angle), Math::sin(p_angle));
 
-			if (angle_vec.distance_squared_to(min_bound_vec) <= angle_vec.distance_squared_to(max_bound_vec)) {
-				p_angle = p_min_bound;
-			} else {
-				p_angle = p_max_bound;
-			}
-		}
-	} else {
-		if (p_angle > p_min_bound && p_angle < p_max_bound) {
-			Vector2 min_bound_vec = Vector2(Math::cos(p_min_bound), Math::sin(p_min_bound));
-			Vector2 max_bound_vec = Vector2(Math::cos(p_max_bound), Math::sin(p_max_bound));
-			Vector2 angle_vec = Vector2(Math::cos(p_angle), Math::sin(p_angle));
-
-			if (angle_vec.distance_squared_to(min_bound_vec) <= angle_vec.distance_squared_to(max_bound_vec)) {
-				p_angle = p_min_bound;
-			} else {
-				p_angle = p_max_bound;
-			}
+		if (angle_vec.distance_squared_to(min_bound_vec) <= angle_vec.distance_squared_to(max_bound_vec)) {
+			p_angle = p_min_bound;
+		} else {
+			p_angle = p_max_bound;
 		}
 	}
+
 	return p_angle;
 }
 
@@ -152,9 +140,7 @@ void SkeletonModification2D::editor_draw_angle_constraints(Bone2D *p_operation_b
 		arc_angle_max = (Math_PI * 2) + arc_angle_max;
 	}
 	if (arc_angle_min > arc_angle_max) {
-		float tmp = arc_angle_min;
-		arc_angle_min = arc_angle_max;
-		arc_angle_max = tmp;
+		SWAP(arc_angle_min, arc_angle_max);
 	}
 	arc_angle_min += p_operation_bone->get_bone_angle();
 	arc_angle_max += p_operation_bone->get_bone_angle();
@@ -166,13 +152,13 @@ void SkeletonModification2D::editor_draw_angle_constraints(Bone2D *p_operation_b
 
 			if (operation_bone_parent_bone) {
 				stack->skeleton->draw_set_transform(
-						stack->skeleton->get_global_transform().affine_inverse().xform(p_operation_bone->get_global_position()),
+						stack->skeleton->to_local(p_operation_bone->get_global_position()),
 						operation_bone_parent_bone->get_global_rotation() - stack->skeleton->get_global_rotation());
 			} else {
-				stack->skeleton->draw_set_transform(stack->skeleton->get_global_transform().affine_inverse().xform(p_operation_bone->get_global_position()));
+				stack->skeleton->draw_set_transform(stack->skeleton->to_local(p_operation_bone->get_global_position()));
 			}
 		} else {
-			stack->skeleton->draw_set_transform(stack->skeleton->get_global_transform().affine_inverse().xform(p_operation_bone->get_global_position()));
+			stack->skeleton->draw_set_transform(stack->skeleton->to_local(p_operation_bone->get_global_position()));
 		}
 
 		if (p_constraint_inverted) {
@@ -186,7 +172,7 @@ void SkeletonModification2D::editor_draw_angle_constraints(Bone2D *p_operation_b
 		stack->skeleton->draw_line(Vector2(0, 0), Vector2(Math::cos(arc_angle_max), Math::sin(arc_angle_max)) * p_operation_bone->get_length(), bone_ik_color, 1.0);
 
 	} else {
-		stack->skeleton->draw_set_transform(stack->skeleton->get_global_transform().affine_inverse().xform(p_operation_bone->get_global_position()));
+		stack->skeleton->draw_set_transform(stack->skeleton->to_local(p_operation_bone->get_global_position()));
 		stack->skeleton->draw_arc(Vector2(0, 0), p_operation_bone->get_length(), 0, Math_PI * 2, 32, bone_ik_color, 1.0);
 		stack->skeleton->draw_line(Vector2(0, 0), Vector2(1, 0) * p_operation_bone->get_length(), bone_ik_color, 1.0);
 	}
@@ -228,9 +214,9 @@ bool SkeletonModification2D::get_editor_draw_gizmo() const {
 }
 
 void SkeletonModification2D::_bind_methods() {
-	BIND_VMETHOD(MethodInfo("_execute", PropertyInfo(Variant::FLOAT, "delta")));
-	BIND_VMETHOD(MethodInfo("_setup_modification", PropertyInfo(Variant::OBJECT, "modification_stack", PROPERTY_HINT_RESOURCE_TYPE, "SkeletonModificationStack2D")));
-	BIND_VMETHOD(MethodInfo("_draw_editor_gizmo"));
+	GDVIRTUAL_BIND(_execute, "delta");
+	GDVIRTUAL_BIND(_setup_modification, "modification_stack")
+	GDVIRTUAL_BIND(_draw_editor_gizmo)
 
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &SkeletonModification2D::set_enabled);
 	ClassDB::bind_method(D_METHOD("get_enabled"), &SkeletonModification2D::get_enabled);

@@ -11,22 +11,28 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_get_dependencies" qualifiers="virtual">
-			<return type="void" />
+		<method name="_exists" qualifiers="virtual const">
+			<return type="bool" />
 			<argument index="0" name="path" type="String" />
-			<argument index="1" name="add_types" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_dependencies" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="add_types" type="bool" />
 			<description>
 				If implemented, gets the dependencies of a given resource. If [code]add_types[/code] is [code]true[/code], paths should be appended [code]::TypeName[/code], where [code]TypeName[/code] is the class name of the dependency.
 				[b]Note:[/b] Custom resource types defined by scripts aren't known by the [ClassDB], so you might just return [code]"Resource"[/code] for them.
 			</description>
 		</method>
-		<method name="_get_recognized_extensions" qualifiers="virtual">
+		<method name="_get_recognized_extensions" qualifiers="virtual const">
 			<return type="PackedStringArray" />
 			<description>
 				Gets the list of extensions for files this loader is able to read.
 			</description>
 		</method>
-		<method name="_get_resource_type" qualifiers="virtual">
+		<method name="_get_resource_type" qualifiers="virtual const">
 			<return type="String" />
 			<argument index="0" name="path" type="String" />
 			<description>
@@ -34,15 +40,21 @@
 				[b]Note:[/b] Custom resource types defined by scripts aren't known by the [ClassDB], so you might just return [code]"Resource"[/code] for them.
 			</description>
 		</method>
-		<method name="_handles_type" qualifiers="virtual">
+		<method name="_get_resource_uid" qualifiers="virtual const">
+			<return type="int" />
+			<argument index="0" name="path" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_handles_type" qualifiers="virtual const">
 			<return type="bool" />
-			<argument index="0" name="typename" type="StringName" />
+			<argument index="0" name="type" type="StringName" />
 			<description>
 				Tells which resource class this loader can load.
 				[b]Note:[/b] Custom resource types defined by scripts aren't known by the [ClassDB], so you might just handle [code]"Resource"[/code] for them.
 			</description>
 		</method>
-		<method name="_load" qualifiers="virtual">
+		<method name="_load" qualifiers="virtual const">
 			<return type="Variant" />
 			<argument index="0" name="path" type="String" />
 			<argument index="1" name="original_path" type="String" />
@@ -53,10 +65,10 @@
 				The [code]cache_mode[/code] property defines whether and how the cache should be used or updated when loading the resource. See [enum CacheMode] for details.
 			</description>
 		</method>
-		<method name="_rename_dependencies" qualifiers="virtual">
+		<method name="_rename_dependencies" qualifiers="virtual const">
 			<return type="int" />
 			<argument index="0" name="path" type="String" />
-			<argument index="1" name="renames" type="String" />
+			<argument index="1" name="renames" type="Dictionary" />
 			<description>
 				If implemented, renames dependencies within the given resource and saves it. [code]renames[/code] is a dictionary [code]{ String =&gt; String }[/code] mapping old dependency paths to new paths.
 				Returns [constant OK] on success, or an [enum Error] constant in case of failure.

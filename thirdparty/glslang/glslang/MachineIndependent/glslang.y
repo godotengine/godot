@@ -116,6 +116,9 @@ using namespace glslang;
             glslang::TIntermNodePair nodePair;
             glslang::TIntermTyped* intermTypedNode;
             glslang::TAttributes* attributes;
+            glslang::TSpirvRequirement* spirvReq;
+            glslang::TSpirvInstruction* spirvInst;
+            glslang::TSpirvTypeParameters* spirvTypeParams;
         };
         union {
             glslang::TPublicType type;
@@ -271,6 +274,11 @@ extern int yylex(YYSTYPE*, TParseContext&);
 %token <lex> SUBPASSINPUT SUBPASSINPUTMS ISUBPASSINPUT ISUBPASSINPUTMS USUBPASSINPUT USUBPASSINPUTMS
 %token <lex> F16SUBPASSINPUT F16SUBPASSINPUTMS
 
+// spirv intrinsics
+%token <lex> SPIRV_INSTRUCTION SPIRV_EXECUTION_MODE SPIRV_EXECUTION_MODE_ID
+%token <lex> SPIRV_DECORATE SPIRV_DECORATE_ID SPIRV_DECORATE_STRING
+%token <lex> SPIRV_TYPE SPIRV_STORAGE_CLASS SPIRV_BY_REFERENCE SPIRV_LITERAL
+
 
 
 %token <lex> LEFT_OP RIGHT_OP
@@ -362,6 +370,19 @@ extern int yylex(YYSTYPE*, TParseContext&);
 %type <interm.attributes> attribute attribute_list single_attribute
 %type <interm.intermNode> demote_statement
 %type <interm.intermTypedNode> initializer_list
+%type <interm.spirvReq> spirv_requirements_list spirv_requirements_parameter
+%type <interm.intermNode> spirv_extension_list spirv_capability_list
+%type <interm.intermNode> spirv_execution_mode_qualifier
+%type <interm.intermNode> spirv_execution_mode_parameter_list spirv_execution_mode_parameter spirv_execution_mode_id_parameter_list
+%type <interm.type> spirv_storage_class_qualifier
+%type <interm.type> spirv_decorate_qualifier
+%type <interm.intermNode> spirv_decorate_parameter_list spirv_decorate_parameter
+%type <interm.intermNode> spirv_decorate_id_parameter_list
+%type <interm.intermNode> spirv_decorate_string_parameter_list
+%type <interm.type> spirv_type_specifier
+%type <interm.spirvTypeParams> spirv_type_parameter_list spirv_type_parameter
+%type <interm.spirvInst> spirv_instruction_qualifier
+%type <interm.spirvInst> spirv_instruction_qualifier_list spirv_instruction_qualifier_id
 
 
 %start translation_unit
@@ -875,6 +896,20 @@ declaration
         $$ = 0;
         // TODO: 4.0 functionality: subroutines: make the identifier a user type for this signature
     }
+
+    | spirv_instruction_qualifier function_prototype SEMICOLON {
+        parseContext.requireExtensions($2.loc, 1, &E_GL_EXT_spirv_intrinsics, "SPIR-V instruction qualifier");
+        $2.function->setSpirvInstruction(*$1); // Attach SPIR-V intruction qualifier
+        parseContext.handleFunctionDeclarator($2.loc, *$2.function, true /* prototype */);
+        $$ = 0;
+        // TODO: 4.0 functionality: subroutines: make the identifier a user type for this signature
+    }
+    | spirv_execution_mode_qualifier SEMICOLON {
+        parseContext.globalCheck($2.loc, "SPIR-V execution mode qualifier");
+        parseContext.requireExtensions($2.loc, 1, &E_GL_EXT_spirv_intrinsics, "SPIR-V execution mode qualifier");
+        $$ = 0;
+    }
+
     | init_declarator_list SEMICOLON {
         if ($1.intermNode && $1.intermNode->getAsAggregate())
             $1.intermNode->getAsAggregate()->setOperator(EOpSequence);
@@ -943,6 +978,25 @@ function_prototype
     : function_declarator RIGHT_PAREN  {
         $$.function = $1;
         $$.loc = $2.loc;
+    }
+    | function_declarator RIGHT_PAREN attribute {
+        $$.function = $1;
+        $$.loc = $2.loc;
+        parseContext.requireExtensions($2.loc, 1, &E_GL_EXT_subgroup_uniform_control_flow, "attribute");
+        parseContext.handleFunctionAttributes($2.loc, *$3, $$.function);
+    }
+    | attribute function_declarator RIGHT_PAREN {
+        $$.function = $2;
+        $$.loc = $3.loc;
+        parseContext.requireExtensions($3.loc, 1, &E_GL_EXT_subgroup_uniform_control_flow, "attribute");
+        parseContext.handleFunctionAttributes($3.loc, *$1, $$.function);
+    }
+    | attribute function_declarator RIGHT_PAREN attribute {
+        $$.function = $2;
+        $$.loc = $3.loc;
+        parseContext.requireExtensions($3.loc, 1, &E_GL_EXT_subgroup_uniform_control_flow, "attribute");
+        parseContext.handleFunctionAttributes($3.loc, *$1, $$.function);
+        parseContext.handleFunctionAttributes($3.loc, *$4, $$.function);
     }
     ;
 
@@ -1346,6 +1400,25 @@ single_type_qualifier
     }
     | non_uniform_qualifier {
         $$ = $1;
+    }
+    | spirv_storage_class_qualifier {
+        parseContext.globalCheck($1.loc, "spirv_storage_class");
+        parseContext.requireExtensions($1.loc, 1, &E_GL_EXT_spirv_intrinsics, "SPIR-V storage class qualifier");
+        $$ = $1;
+    }
+    | spirv_decorate_qualifier {
+        parseContext.requireExtensions($1.loc, 1, &E_GL_EXT_spirv_intrinsics, "SPIR-V decorate qualifier");
+        $$ = $1;
+    }
+    | SPIRV_BY_REFERENCE {
+        parseContext.requireExtensions($1.loc, 1, &E_GL_EXT_spirv_intrinsics, "spirv_by_reference");
+        $$.init($1.loc);
+        $$.qualifier.setSpirvByReference();
+    }
+    | SPIRV_LITERAL {
+        parseContext.requireExtensions($1.loc, 1, &E_GL_EXT_spirv_intrinsics, "spirv_by_literal");
+        $$.init($1.loc);
+        $$.qualifier.setSpirvLiteral();
     }
 
     ;
@@ -3407,6 +3480,10 @@ type_specifier_nonarray
         $$.basicType = EbtUint;
         $$.coopmat = true;
     }
+    | spirv_type_specifier {
+        parseContext.requireExtensions($1.loc, 1, &E_GL_EXT_spirv_intrinsics, "SPIR-V type specifier");
+        $$ = $1;
+    }
 
     | struct_specifier {
         $$ = $1;
@@ -3575,6 +3652,12 @@ initializer
         parseContext.profileRequires($1.loc, ~EEsProfile, 420, E_GL_ARB_shading_language_420pack, initFeature);
         $$ = $2;
     }
+    | LEFT_BRACE RIGHT_BRACE {
+        const char* initFeature = "empty { } initializer";
+        parseContext.profileRequires($1.loc, EEsProfile, 0, E_GL_EXT_null_initializer, initFeature);
+        parseContext.profileRequires($1.loc, ~EEsProfile, 0, E_GL_EXT_null_initializer, initFeature);
+        $$ = parseContext.intermediate.makeAggregate($1.loc);
+    }
 
     ;
 
@@ -3707,6 +3790,7 @@ selection_statement
     }
 
     | attribute selection_statement_nonattributed {
+        parseContext.requireExtensions($2->getLoc(), 1, &E_GL_EXT_control_flow_attributes, "attribute");
         parseContext.handleSelectionAttributes(*$1, $2);
         $$ = $2;
     }
@@ -3754,6 +3838,7 @@ switch_statement
     }
 
     | attribute switch_statement_nonattributed {
+        parseContext.requireExtensions($2->getLoc(), 1, &E_GL_EXT_control_flow_attributes, "attribute");
         parseContext.handleSwitchAttributes(*$1, $2);
         $$ = $2;
     }
@@ -3818,6 +3903,7 @@ iteration_statement
     }
 
     | attribute iteration_statement_nonattributed {
+        parseContext.requireExtensions($2->getLoc(), 1, &E_GL_EXT_control_flow_attributes, "attribute");
         parseContext.handleLoopAttributes(*$1, $2);
         $$ = $2;
     }
@@ -4021,7 +4107,6 @@ function_definition
 attribute
     : LEFT_BRACKET LEFT_BRACKET attribute_list RIGHT_BRACKET RIGHT_BRACKET {
         $$ = $3;
-        parseContext.requireExtensions($1.loc, 1, &E_GL_EXT_control_flow_attributes, "attribute");
     }
 
 attribute_list
@@ -4038,6 +4123,275 @@ single_attribute
     }
     | IDENTIFIER LEFT_PAREN constant_expression RIGHT_PAREN {
         $$ = parseContext.makeAttributes(*$1.string, $3);
+    }
+
+
+
+spirv_requirements_list
+    : spirv_requirements_parameter {
+        $$ = $1;
+    }
+    | spirv_requirements_list COMMA spirv_requirements_parameter {
+        $$ = parseContext.mergeSpirvRequirements($2.loc, $1, $3);
+    }
+
+spirv_requirements_parameter
+    : IDENTIFIER EQUAL LEFT_BRACKET spirv_extension_list RIGHT_BRACKET {
+        $$ = parseContext.makeSpirvRequirement($2.loc, *$1.string, $4->getAsAggregate(), nullptr);
+    }
+    | IDENTIFIER EQUAL LEFT_BRACKET spirv_capability_list RIGHT_BRACKET {
+        $$ = parseContext.makeSpirvRequirement($2.loc, *$1.string, nullptr, $4->getAsAggregate());
+    }
+
+spirv_extension_list
+    : STRING_LITERAL {
+        $$ = parseContext.intermediate.makeAggregate(parseContext.intermediate.addConstantUnion($1.string, $1.loc, true));
+    }
+    | spirv_extension_list COMMA STRING_LITERAL {
+        $$ = parseContext.intermediate.growAggregate($1, parseContext.intermediate.addConstantUnion($3.string, $3.loc, true));
+    }
+
+spirv_capability_list
+    : INTCONSTANT {
+        $$ = parseContext.intermediate.makeAggregate(parseContext.intermediate.addConstantUnion($1.i, $1.loc, true));
+    }
+    | spirv_capability_list COMMA INTCONSTANT {
+        $$ = parseContext.intermediate.growAggregate($1, parseContext.intermediate.addConstantUnion($3.i, $3.loc, true));
+    }
+
+spirv_execution_mode_qualifier
+    : SPIRV_EXECUTION_MODE LEFT_PAREN INTCONSTANT RIGHT_PAREN {
+        parseContext.intermediate.insertSpirvExecutionMode($3.i);
+        $$ = 0;
+    }
+    | SPIRV_EXECUTION_MODE LEFT_PAREN spirv_requirements_list COMMA INTCONSTANT RIGHT_PAREN {
+        parseContext.intermediate.insertSpirvRequirement($3);
+        parseContext.intermediate.insertSpirvExecutionMode($5.i);
+        $$ = 0;
+    }
+    | SPIRV_EXECUTION_MODE LEFT_PAREN INTCONSTANT COMMA spirv_execution_mode_parameter_list RIGHT_PAREN {
+        parseContext.intermediate.insertSpirvExecutionMode($3.i, $5->getAsAggregate());
+        $$ = 0;
+    }
+    | SPIRV_EXECUTION_MODE LEFT_PAREN spirv_requirements_list COMMA INTCONSTANT COMMA spirv_execution_mode_parameter_list RIGHT_PAREN {
+        parseContext.intermediate.insertSpirvRequirement($3);
+        parseContext.intermediate.insertSpirvExecutionMode($5.i, $7->getAsAggregate());
+        $$ = 0;
+    }
+    | SPIRV_EXECUTION_MODE_ID LEFT_PAREN INTCONSTANT COMMA spirv_execution_mode_id_parameter_list RIGHT_PAREN {
+        parseContext.intermediate.insertSpirvExecutionModeId($3.i, $5->getAsAggregate());
+        $$ = 0;
+    }
+    | SPIRV_EXECUTION_MODE_ID LEFT_PAREN spirv_requirements_list COMMA INTCONSTANT COMMA spirv_execution_mode_id_parameter_list RIGHT_PAREN {
+        parseContext.intermediate.insertSpirvRequirement($3);
+        parseContext.intermediate.insertSpirvExecutionModeId($5.i, $7->getAsAggregate());
+        $$ = 0;
+    }
+
+spirv_execution_mode_parameter_list
+    : spirv_execution_mode_parameter {
+        $$ = parseContext.intermediate.makeAggregate($1);
+    }
+    | spirv_execution_mode_parameter_list COMMA spirv_execution_mode_parameter {
+        $$ = parseContext.intermediate.growAggregate($1, $3);
+    }
+
+spirv_execution_mode_parameter
+    : FLOATCONSTANT {
+        $$ = parseContext.intermediate.addConstantUnion($1.d, EbtFloat, $1.loc, true);
+    }
+    | INTCONSTANT {
+        $$ = parseContext.intermediate.addConstantUnion($1.i, $1.loc, true);
+    }
+    | UINTCONSTANT {
+        $$ = parseContext.intermediate.addConstantUnion($1.u, $1.loc, true);
+    }
+    | BOOLCONSTANT {
+        $$ = parseContext.intermediate.addConstantUnion($1.b, $1.loc, true);
+    }
+    | STRING_LITERAL {
+        $$ = parseContext.intermediate.addConstantUnion($1.string, $1.loc, true);
+    }
+
+spirv_execution_mode_id_parameter_list
+    : constant_expression {
+        if ($1->getBasicType() != EbtFloat &&
+            $1->getBasicType() != EbtInt &&
+            $1->getBasicType() != EbtUint &&
+            $1->getBasicType() != EbtBool &&
+            $1->getBasicType() != EbtString)
+            parseContext.error($1->getLoc(), "this type not allowed", $1->getType().getBasicString(), "");
+        $$ = parseContext.intermediate.makeAggregate($1);
+    }
+    | spirv_execution_mode_id_parameter_list COMMA constant_expression {
+        if ($3->getBasicType() != EbtFloat &&
+            $3->getBasicType() != EbtInt &&
+            $3->getBasicType() != EbtUint &&
+            $3->getBasicType() != EbtBool &&
+            $3->getBasicType() != EbtString)
+            parseContext.error($3->getLoc(), "this type not allowed", $3->getType().getBasicString(), "");
+        $$ = parseContext.intermediate.growAggregate($1, $3);
+    }
+
+spirv_storage_class_qualifier
+    : SPIRV_STORAGE_CLASS LEFT_PAREN INTCONSTANT RIGHT_PAREN {
+        $$.init($1.loc);
+        $$.qualifier.storage = EvqSpirvStorageClass;
+        $$.qualifier.spirvStorageClass = $3.i;
+    }
+    | SPIRV_STORAGE_CLASS LEFT_PAREN spirv_requirements_list COMMA INTCONSTANT RIGHT_PAREN {
+        $$.init($1.loc);
+        parseContext.intermediate.insertSpirvRequirement($3);
+        $$.qualifier.storage = EvqSpirvStorageClass;
+        $$.qualifier.spirvStorageClass = $5.i;
+    }
+
+spirv_decorate_qualifier
+    : SPIRV_DECORATE LEFT_PAREN INTCONSTANT RIGHT_PAREN{
+        $$.init($1.loc);
+        $$.qualifier.setSpirvDecorate($3.i);
+    }
+    | SPIRV_DECORATE LEFT_PAREN spirv_requirements_list COMMA INTCONSTANT RIGHT_PAREN{
+        $$.init($1.loc);
+        parseContext.intermediate.insertSpirvRequirement($3);
+        $$.qualifier.setSpirvDecorate($5.i);
+    }
+    | SPIRV_DECORATE LEFT_PAREN INTCONSTANT COMMA spirv_decorate_parameter_list RIGHT_PAREN {
+        $$.init($1.loc);
+        $$.qualifier.setSpirvDecorate($3.i, $5->getAsAggregate());
+    }
+    | SPIRV_DECORATE LEFT_PAREN spirv_requirements_list COMMA INTCONSTANT COMMA spirv_decorate_parameter_list RIGHT_PAREN {
+        $$.init($1.loc);
+        parseContext.intermediate.insertSpirvRequirement($3);
+        $$.qualifier.setSpirvDecorate($5.i, $7->getAsAggregate());
+    }
+    | SPIRV_DECORATE_ID LEFT_PAREN INTCONSTANT COMMA spirv_decorate_id_parameter_list RIGHT_PAREN {
+        $$.init($1.loc);
+        $$.qualifier.setSpirvDecorateId($3.i, $5->getAsAggregate());
+    }
+    | SPIRV_DECORATE_ID LEFT_PAREN spirv_requirements_list COMMA INTCONSTANT COMMA spirv_decorate_id_parameter_list RIGHT_PAREN {
+        $$.init($1.loc);
+        parseContext.intermediate.insertSpirvRequirement($3);
+        $$.qualifier.setSpirvDecorateId($5.i, $7->getAsAggregate());
+    }
+    | SPIRV_DECORATE_STRING LEFT_PAREN INTCONSTANT COMMA spirv_decorate_string_parameter_list RIGHT_PAREN {
+        $$.init($1.loc);
+        $$.qualifier.setSpirvDecorateString($3.i, $5->getAsAggregate());
+    }
+    | SPIRV_DECORATE_STRING LEFT_PAREN spirv_requirements_list COMMA INTCONSTANT COMMA spirv_decorate_string_parameter_list RIGHT_PAREN {
+        $$.init($1.loc);
+        parseContext.intermediate.insertSpirvRequirement($3);
+        $$.qualifier.setSpirvDecorateString($5.i, $7->getAsAggregate());
+    }
+
+spirv_decorate_parameter_list
+    : spirv_decorate_parameter {
+        $$ = parseContext.intermediate.makeAggregate($1);
+    }
+    | spirv_decorate_parameter_list COMMA spirv_decorate_parameter {
+        $$ = parseContext.intermediate.growAggregate($1, $3);
+    }
+
+spirv_decorate_parameter
+    : FLOATCONSTANT {
+        $$ = parseContext.intermediate.addConstantUnion($1.d, EbtFloat, $1.loc, true);
+    }
+    | INTCONSTANT {
+        $$ = parseContext.intermediate.addConstantUnion($1.i, $1.loc, true);
+    }
+    | UINTCONSTANT {
+        $$ = parseContext.intermediate.addConstantUnion($1.u, $1.loc, true);
+    }
+    | BOOLCONSTANT {
+        $$ = parseContext.intermediate.addConstantUnion($1.b, $1.loc, true);
+    }
+
+spirv_decorate_id_parameter_list
+    : constant_expression {
+        if ($1->getBasicType() != EbtFloat &&
+            $1->getBasicType() != EbtInt &&
+            $1->getBasicType() != EbtUint &&
+            $1->getBasicType() != EbtBool)
+            parseContext.error($1->getLoc(), "this type not allowed", $1->getType().getBasicString(), "");
+        $$ = parseContext.intermediate.makeAggregate($1);
+    }
+    | spirv_decorate_id_parameter_list COMMA constant_expression {
+        if ($3->getBasicType() != EbtFloat &&
+            $3->getBasicType() != EbtInt &&
+            $3->getBasicType() != EbtUint &&
+            $3->getBasicType() != EbtBool)
+            parseContext.error($3->getLoc(), "this type not allowed", $3->getType().getBasicString(), "");
+        $$ = parseContext.intermediate.growAggregate($1, $3);
+    }
+
+spirv_decorate_string_parameter_list
+    : STRING_LITERAL {
+        $$ = parseContext.intermediate.makeAggregate(
+            parseContext.intermediate.addConstantUnion($1.string, $1.loc, true));
+    }
+    | spirv_decorate_string_parameter_list COMMA STRING_LITERAL {
+        $$ = parseContext.intermediate.growAggregate($1, parseContext.intermediate.addConstantUnion($3.string, $3.loc, true));
+    }
+
+spirv_type_specifier
+    : SPIRV_TYPE LEFT_PAREN spirv_instruction_qualifier_list COMMA spirv_type_parameter_list RIGHT_PAREN {
+        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+        $$.setSpirvType(*$3, $5);
+    }
+    | SPIRV_TYPE LEFT_PAREN spirv_requirements_list COMMA spirv_instruction_qualifier_list COMMA spirv_type_parameter_list RIGHT_PAREN {
+        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+        parseContext.intermediate.insertSpirvRequirement($3);
+        $$.setSpirvType(*$5, $7);
+    }
+    | SPIRV_TYPE LEFT_PAREN spirv_instruction_qualifier_list RIGHT_PAREN {
+        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+        $$.setSpirvType(*$3);
+    }
+    | SPIRV_TYPE LEFT_PAREN spirv_requirements_list COMMA spirv_instruction_qualifier_list RIGHT_PAREN {
+        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+        parseContext.intermediate.insertSpirvRequirement($3);
+        $$.setSpirvType(*$5);
+    }
+
+spirv_type_parameter_list
+    : spirv_type_parameter {
+        $$ = $1;
+    }
+    | spirv_type_parameter_list COMMA spirv_type_parameter {
+        $$ = parseContext.mergeSpirvTypeParameters($1, $3);
+    }
+
+spirv_type_parameter
+    : constant_expression {
+        $$ = parseContext.makeSpirvTypeParameters($1->getLoc(), $1->getAsConstantUnion());
+    }
+    | type_specifier {
+        $$ = parseContext.makeSpirvTypeParameters($1);
+    }
+
+spirv_instruction_qualifier
+    : SPIRV_INSTRUCTION LEFT_PAREN spirv_instruction_qualifier_list RIGHT_PAREN {
+        $$ = $3;
+    }
+    | SPIRV_INSTRUCTION LEFT_PAREN spirv_requirements_list COMMA spirv_instruction_qualifier_list RIGHT_PAREN {
+        parseContext.intermediate.insertSpirvRequirement($3);
+        $$ = $5;
+    }
+
+spirv_instruction_qualifier_list
+    : spirv_instruction_qualifier_id {
+        $$ = $1;
+    }
+    | spirv_instruction_qualifier_list COMMA spirv_instruction_qualifier_id {
+        $$ = parseContext.mergeSpirvInstruction($2.loc, $1, $3);
+    }
+
+spirv_instruction_qualifier_id
+    : IDENTIFIER EQUAL STRING_LITERAL {
+        $$ = parseContext.makeSpirvInstruction($2.loc, *$1.string, *$3.string);
+    }
+    | IDENTIFIER EQUAL INTCONSTANT {
+        $$ = parseContext.makeSpirvInstruction($2.loc, *$1.string, $3.i);
     }
 
 

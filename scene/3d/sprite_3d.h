@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef SPRITE_3D_H
 #define SPRITE_3D_H
 
-#include "scene/2d/animated_sprite_2d.h"
 #include "scene/3d/visual_instance_3d.h"
+#include "scene/resources/sprite_frames.h"
 
 class SpriteBase3D : public GeometryInstance3D {
 	GDCLASS(SpriteBase3D, GeometryInstance3D);
@@ -69,10 +69,9 @@ private:
 	bool vflip = false;
 
 	Color modulate = Color(1, 1, 1, 1);
-	float opacity = 1.0;
 
 	Vector3::Axis axis = Vector3::AXIS_Z;
-	float pixel_size = 0.01;
+	real_t pixel_size = 0.01;
 	AABB aabb;
 
 	RID mesh;
@@ -118,20 +117,11 @@ public:
 	void set_flip_v(bool p_flip);
 	bool is_flipped_v() const;
 
-	void set_region_enabled(bool p_region);
-	bool is_region_enabled() const;
-
-	void set_region_rect(const Rect2 &p_region_rect);
-	Rect2 get_region_rect() const;
-
 	void set_modulate(const Color &p_color);
 	Color get_modulate() const;
 
-	void set_opacity(float p_amount);
-	float get_opacity() const;
-
-	void set_pixel_size(float p_amount);
-	float get_pixel_size() const;
+	void set_pixel_size(real_t p_amount);
+	real_t get_pixel_size() const;
 
 	void set_axis(Vector3::Axis p_axis);
 	Vector3::Axis get_axis() const;
@@ -213,7 +203,7 @@ class AnimatedSprite3D : public SpriteBase3D {
 
 	bool centered = false;
 
-	float timeout = 0;
+	double timeout = 0.0;
 
 	void _res_changed();
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -61,7 +61,7 @@ public:
 private:
 	bool no_change_propagation = false;
 
-	void _emit_theme_changed();
+	void _emit_theme_changed(bool p_notify_list_changed = false);
 
 	HashMap<StringName, HashMap<StringName, Ref<Texture2D>>> icon_map;
 	HashMap<StringName, HashMap<StringName, Ref<StyleBox>>> style_map;
@@ -96,15 +96,21 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
-	static Ref<Theme> project_default_theme;
+	// Universal Theme resources used when no other theme has the item.
 	static Ref<Theme> default_theme;
-	static Ref<Texture2D> default_icon;
-	static Ref<StyleBox> default_style;
-	static Ref<Font> default_font;
-	static int default_font_size;
+	static Ref<Theme> project_default_theme;
 
-	Ref<Font> default_theme_font;
-	int default_theme_font_size = -1;
+	// Universal default values, final fallback for every theme.
+	static float fallback_base_scale;
+	static Ref<Texture2D> fallback_icon;
+	static Ref<StyleBox> fallback_style;
+	static Ref<Font> fallback_font;
+	static int fallback_font_size;
+
+	// Default values configurable for each individual theme.
+	float default_base_scale = 0.0;
+	Ref<Font> default_font;
+	int default_font_size = -1;
 
 	static void _bind_methods();
 
@@ -120,16 +126,29 @@ public:
 	static Ref<Theme> get_project_default();
 	static void set_project_default(const Ref<Theme> &p_project_default);
 
-	static void set_default_icon(const Ref<Texture2D> &p_icon);
-	static void set_default_style(const Ref<StyleBox> &p_style);
-	static void set_default_font(const Ref<Font> &p_font);
-	static void set_default_font_size(int p_font_size);
+	static void set_fallback_base_scale(float p_base_scale);
+	static void set_fallback_icon(const Ref<Texture2D> &p_icon);
+	static void set_fallback_style(const Ref<StyleBox> &p_style);
+	static void set_fallback_font(const Ref<Font> &p_font);
+	static void set_fallback_font_size(int p_font_size);
 
-	void set_default_theme_font(const Ref<Font> &p_default_font);
-	Ref<Font> get_default_theme_font() const;
+	static float get_fallback_base_scale();
+	static Ref<Texture2D> get_fallback_icon();
+	static Ref<StyleBox> get_fallback_style();
+	static Ref<Font> get_fallback_font();
+	static int get_fallback_font_size();
 
-	void set_default_theme_font_size(int p_font_size);
-	int get_default_theme_font_size() const;
+	void set_default_base_scale(float p_base_scale);
+	float get_default_base_scale() const;
+	bool has_default_base_scale() const;
+
+	void set_default_font(const Ref<Font> &p_default_font);
+	Ref<Font> get_default_font() const;
+	bool has_default_font() const;
+
+	void set_default_font_size(int p_font_size);
+	int get_default_font_size() const;
+	bool has_default_font_size() const;
 
 	void set_icon(const StringName &p_name, const StringName &p_theme_type, const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_icon(const StringName &p_name, const StringName &p_theme_type) const;
@@ -139,6 +158,7 @@ public:
 	void clear_icon(const StringName &p_name, const StringName &p_theme_type);
 	void get_icon_list(StringName p_theme_type, List<StringName> *p_list) const;
 	void add_icon_type(const StringName &p_theme_type);
+	void remove_icon_type(const StringName &p_theme_type);
 	void get_icon_type_list(List<StringName> *p_list) const;
 
 	void set_stylebox(const StringName &p_name, const StringName &p_theme_type, const Ref<StyleBox> &p_style);
@@ -149,6 +169,7 @@ public:
 	void clear_stylebox(const StringName &p_name, const StringName &p_theme_type);
 	void get_stylebox_list(StringName p_theme_type, List<StringName> *p_list) const;
 	void add_stylebox_type(const StringName &p_theme_type);
+	void remove_stylebox_type(const StringName &p_theme_type);
 	void get_stylebox_type_list(List<StringName> *p_list) const;
 
 	void set_font(const StringName &p_name, const StringName &p_theme_type, const Ref<Font> &p_font);
@@ -159,6 +180,7 @@ public:
 	void clear_font(const StringName &p_name, const StringName &p_theme_type);
 	void get_font_list(StringName p_theme_type, List<StringName> *p_list) const;
 	void add_font_type(const StringName &p_theme_type);
+	void remove_font_type(const StringName &p_theme_type);
 	void get_font_type_list(List<StringName> *p_list) const;
 
 	void set_font_size(const StringName &p_name, const StringName &p_theme_type, int p_font_size);
@@ -169,6 +191,7 @@ public:
 	void clear_font_size(const StringName &p_name, const StringName &p_theme_type);
 	void get_font_size_list(StringName p_theme_type, List<StringName> *p_list) const;
 	void add_font_size_type(const StringName &p_theme_type);
+	void remove_font_size_type(const StringName &p_theme_type);
 	void get_font_size_type_list(List<StringName> *p_list) const;
 
 	void set_color(const StringName &p_name, const StringName &p_theme_type, const Color &p_color);
@@ -179,6 +202,7 @@ public:
 	void clear_color(const StringName &p_name, const StringName &p_theme_type);
 	void get_color_list(StringName p_theme_type, List<StringName> *p_list) const;
 	void add_color_type(const StringName &p_theme_type);
+	void remove_color_type(const StringName &p_theme_type);
 	void get_color_type_list(List<StringName> *p_list) const;
 
 	void set_constant(const StringName &p_name, const StringName &p_theme_type, int p_constant);
@@ -189,6 +213,7 @@ public:
 	void clear_constant(const StringName &p_name, const StringName &p_theme_type);
 	void get_constant_list(StringName p_theme_type, List<StringName> *p_list) const;
 	void add_constant_type(const StringName &p_theme_type);
+	void remove_constant_type(const StringName &p_theme_type);
 	void get_constant_type_list(List<StringName> *p_list) const;
 
 	void set_theme_item(DataType p_data_type, const StringName &p_name, const StringName &p_theme_type, const Variant &p_value);
@@ -199,6 +224,7 @@ public:
 	void clear_theme_item(DataType p_data_type, const StringName &p_name, const StringName &p_theme_type);
 	void get_theme_item_list(DataType p_data_type, StringName p_theme_type, List<StringName> *p_list) const;
 	void add_theme_item_type(DataType p_data_type, const StringName &p_theme_type);
+	void remove_theme_item_type(DataType p_data_type, const StringName &p_theme_type);
 	void get_theme_item_type_list(DataType p_data_type, List<StringName> *p_list) const;
 
 	void set_type_variation(const StringName &p_theme_type, const StringName &p_base_type);
@@ -207,11 +233,12 @@ public:
 	StringName get_type_variation_base(const StringName &p_theme_type) const;
 	void get_type_variation_list(const StringName &p_base_type, List<StringName> *p_list) const;
 
+	void add_type(const StringName &p_theme_type);
+	void remove_type(const StringName &p_theme_type);
 	void get_type_list(List<StringName> *p_list) const;
 	void get_type_dependencies(const StringName &p_base_type, const StringName &p_type_variant, List<StringName> *p_list);
 
-	void copy_default_theme();
-	void copy_theme(const Ref<Theme> &p_other);
+	void merge_with(const Ref<Theme> &p_other);
 	void clear();
 
 	Theme();

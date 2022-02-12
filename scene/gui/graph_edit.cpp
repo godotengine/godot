@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,10 +35,7 @@
 #include "core/os/keyboard.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-
-#ifdef TOOLS_ENABLED
-#include "editor/editor_scale.h"
-#endif
+#include "scene/gui/view_panner.h"
 
 constexpr int MINIMAP_OFFSET = 12;
 constexpr int MINIMAP_PADDING = 5;
@@ -49,10 +46,6 @@ bool GraphEditFilter::has_point(const Point2 &p_point) const {
 
 GraphEditFilter::GraphEditFilter(GraphEdit *p_edit) {
 	ge = p_edit;
-}
-
-void GraphEditMinimap::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &GraphEditMinimap::_gui_input);
 }
 
 GraphEditMinimap::GraphEditMinimap(GraphEdit *p_edit) {
@@ -148,7 +141,7 @@ Vector2 GraphEditMinimap::_convert_to_graph_position(const Vector2 &p_position) 
 	return graph_position;
 }
 
-void GraphEditMinimap::_gui_input(const Ref<InputEvent> &p_ev) {
+void GraphEditMinimap::gui_input(const Ref<InputEvent> &p_ev) {
 	ERR_FAIL_COND(p_ev.is_null());
 
 	if (!ge->is_minimap_enabled()) {
@@ -158,7 +151,7 @@ void GraphEditMinimap::_gui_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseButton> mb = p_ev;
 	Ref<InputEventMouseMotion> mm = p_ev;
 
-	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
 		if (mb->is_pressed()) {
 			is_pressing = true;
 
@@ -360,17 +353,6 @@ void GraphEdit::_graph_node_raised(Node *p_gn) {
 	} else {
 		gn->raise();
 	}
-	int first_not_comment = 0;
-	for (int i = 0; i < get_child_count(); i++) {
-		GraphNode *gn2 = Object::cast_to<GraphNode>(get_child(i));
-		if (gn2 && !gn2->is_comment()) {
-			first_not_comment = i;
-			break;
-		}
-	}
-
-	move_child(connections_layer, first_not_comment);
-	top_layer->raise();
 	emit_signal(SNAME("node_selected"), p_gn);
 }
 
@@ -450,6 +432,9 @@ void GraphEdit::_notification(int p_what) {
 		zoom_plus->set_icon(get_theme_icon(SNAME("more")));
 		snap_button->set_icon(get_theme_icon(SNAME("snap")));
 		minimap_button->set_icon(get_theme_icon(SNAME("minimap")));
+		layout_button->set_icon(get_theme_icon(SNAME("layout")));
+
+		zoom_label->set_custom_minimum_size(Size2(48, 0) * get_theme_default_base_scale());
 	}
 	if (p_what == NOTIFICATION_READY) {
 		Size2 hmin = h_scroll->get_combined_minimum_size();
@@ -517,8 +502,46 @@ void GraphEdit::_notification(int p_what) {
 	}
 }
 
+void GraphEdit::_update_comment_enclosed_nodes_list(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes) {
+	Rect2 comment_node_rect = p_node->get_rect();
+	Vector<GraphNode *> enclosed_nodes;
+
+	for (int i = 0; i < get_child_count(); i++) {
+		GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
+		if (!gn || gn->is_selected()) {
+			continue;
+		}
+
+		Rect2 node_rect = gn->get_rect();
+		bool included = comment_node_rect.encloses(node_rect);
+		if (included) {
+			enclosed_nodes.push_back(gn);
+		}
+	}
+
+	p_comment_enclosed_nodes.set(p_node->get_name(), enclosed_nodes);
+}
+
+void GraphEdit::_set_drag_comment_enclosed_nodes(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes, bool p_drag) {
+	for (int i = 0; i < p_comment_enclosed_nodes[p_node->get_name()].size(); i++) {
+		p_comment_enclosed_nodes[p_node->get_name()][i]->set_drag(p_drag);
+	}
+}
+
+void GraphEdit::_set_position_of_comment_enclosed_nodes(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes, Vector2 p_drag_accum) {
+	for (int i = 0; i < p_comment_enclosed_nodes[p_node->get_name()].size(); i++) {
+		Vector2 pos = (p_comment_enclosed_nodes[p_node->get_name()][i]->get_drag_from() * zoom + drag_accum) / zoom;
+		if (is_using_snap() ^ Input::get_singleton()->is_key_pressed(Key::CTRL)) {
+			const int snap = get_snap();
+			pos = pos.snapped(Vector2(snap, snap));
+		}
+		p_comment_enclosed_nodes[p_node->get_name()][i]->set_position_offset(pos);
+	}
+}
+
 bool GraphEdit::_filter_input(const Point2 &p_point) {
 	Ref<Texture2D> port = get_theme_icon(SNAME("port"), SNAME("GraphNode"));
+	Vector2i port_size = Vector2i(port->get_width(), port->get_height());
 
 	for (int i = get_child_count() - 1; i >= 0; i--) {
 		GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
@@ -527,15 +550,13 @@ bool GraphEdit::_filter_input(const Point2 &p_point) {
 		}
 
 		for (int j = 0; j < gn->get_connection_output_count(); j++) {
-			Vector2 pos = gn->get_connection_output_position(j) + gn->get_position();
-			if (is_in_hot_zone(pos / zoom, p_point / zoom)) {
+			if (is_in_output_hotzone(gn, j, p_point / zoom, port_size)) {
 				return true;
 			}
 		}
 
 		for (int j = 0; j < gn->get_connection_input_count(); j++) {
-			Vector2 pos = gn->get_connection_input_position(j) + gn->get_position();
-			if (is_in_hot_zone(pos / zoom, p_point / zoom)) {
+			if (is_in_input_hotzone(gn, j, p_point / zoom, port_size)) {
 				return true;
 			}
 		}
@@ -546,9 +567,11 @@ bool GraphEdit::_filter_input(const Point2 &p_point) {
 
 void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseButton> mb = p_ev;
-	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT && mb->is_pressed()) {
-		connecting_valid = false;
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
 		Ref<Texture2D> port = get_theme_icon(SNAME("port"), SNAME("GraphNode"));
+		Vector2i port_size = Vector2i(port->get_width(), port->get_height());
+
+		connecting_valid = false;
 		click_pos = mb->get_position() / zoom;
 		for (int i = get_child_count() - 1; i >= 0; i--) {
 			GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
@@ -558,7 +581,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 			for (int j = 0; j < gn->get_connection_output_count(); j++) {
 				Vector2 pos = gn->get_connection_output_position(j) + gn->get_position();
-				if (is_in_hot_zone(pos / zoom, click_pos)) {
+				if (is_in_output_hotzone(gn, j, click_pos, port_size)) {
 					if (valid_left_disconnect_types.has(gn->get_connection_output_type(j))) {
 						//check disconnect
 						for (const Connection &E : connections) {
@@ -578,6 +601,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 									to = get_node(String(connecting_from)); //maybe it was erased
 									if (Object::cast_to<GraphNode>(to)) {
 										connecting = true;
+										emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, false);
 									}
 									return;
 								}
@@ -594,13 +618,14 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					connecting_target = false;
 					connecting_to = pos;
 					just_disconnected = false;
+					emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, true);
 					return;
 				}
 			}
 
 			for (int j = 0; j < gn->get_connection_input_count(); j++) {
 				Vector2 pos = gn->get_connection_input_position(j) + gn->get_position();
-				if (is_in_hot_zone(pos / zoom, click_pos)) {
+				if (is_in_input_hotzone(gn, j, click_pos, port_size)) {
 					if (right_disconnects || valid_right_disconnect_types.has(gn->get_connection_input_type(j))) {
 						//check disconnect
 						for (const Connection &E : connections) {
@@ -620,6 +645,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 									fr = get_node(String(connecting_from)); //maybe it was erased
 									if (Object::cast_to<GraphNode>(fr)) {
 										connecting = true;
+										emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, true);
 									}
 									return;
 								}
@@ -636,7 +662,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					connecting_target = false;
 					connecting_to = pos;
 					just_disconnected = false;
-
+					emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, false);
 					return;
 				}
 			}
@@ -649,10 +675,12 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 		connecting_target = false;
 		top_layer->update();
 		minimap->update();
-		connecting_valid = just_disconnected || click_pos.distance_to(connecting_to / zoom) > 20.0 * zoom;
+		connecting_valid = just_disconnected || click_pos.distance_to(connecting_to / zoom) > 20.0;
 
 		if (connecting_valid) {
 			Ref<Texture2D> port = get_theme_icon(SNAME("port"), SNAME("GraphNode"));
+			Vector2i port_size = Vector2i(port->get_width(), port->get_height());
+
 			Vector2 mpos = mm->get_position() / zoom;
 			for (int i = get_child_count() - 1; i >= 0; i--) {
 				GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
@@ -664,7 +692,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					for (int j = 0; j < gn->get_connection_output_count(); j++) {
 						Vector2 pos = gn->get_connection_output_position(j) + gn->get_position();
 						int type = gn->get_connection_output_type(j);
-						if ((type == connecting_type || valid_connection_types.has(ConnType(type, connecting_type))) && is_in_hot_zone(pos / zoom, mpos)) {
+						if ((type == connecting_type || valid_connection_types.has(ConnType(type, connecting_type))) && is_in_output_hotzone(gn, j, mpos, port_size)) {
 							connecting_target = true;
 							connecting_to = pos;
 							connecting_target_to = gn->get_name();
@@ -676,7 +704,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					for (int j = 0; j < gn->get_connection_input_count(); j++) {
 						Vector2 pos = gn->get_connection_input_position(j) + gn->get_position();
 						int type = gn->get_connection_input_type(j);
-						if ((type == connecting_type || valid_connection_types.has(ConnType(type, connecting_type))) && is_in_hot_zone(pos / zoom, mpos)) {
+						if ((type == connecting_type || valid_connection_types.has(ConnType(type, connecting_type))) && is_in_input_hotzone(gn, j, mpos, port_size)) {
 							connecting_target = true;
 							connecting_to = pos;
 							connecting_target_to = gn->get_name();
@@ -689,7 +717,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 		}
 	}
 
-	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT && !mb->is_pressed()) {
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
 		if (connecting_valid) {
 			if (connecting && connecting_target) {
 				String from = connecting_from;
@@ -706,7 +734,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 			} else if (!just_disconnected) {
 				String from = connecting_from;
 				int from_slot = connecting_index;
-				Vector2 ofs = Vector2(mb->get_position().x, mb->get_position().y);
+				Vector2 ofs = mb->get_position();
 
 				if (!connecting_out) {
 					emit_signal(SNAME("connection_from_empty"), from, from_slot, ofs);
@@ -716,11 +744,9 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 			}
 		}
 
-		connecting = false;
-		top_layer->update();
-		minimap->update();
-		update();
-		connections_layer->update();
+		if (connecting) {
+			force_connection_drag_end();
+		}
 	}
 }
 
@@ -747,7 +773,27 @@ bool GraphEdit::_check_clickable_control(Control *p_control, const Vector2 &pos)
 	}
 }
 
-bool GraphEdit::is_in_hot_zone(const Vector2 &pos, const Vector2 &p_mouse_pos) {
+bool GraphEdit::is_in_input_hotzone(GraphNode *p_graph_node, int p_slot_index, const Vector2 &p_mouse_pos, const Vector2i &p_port_size) {
+	bool success;
+	if (GDVIRTUAL_CALL(_is_in_input_hotzone, p_graph_node, p_slot_index, p_mouse_pos, success)) {
+		return success;
+	} else {
+		Vector2 pos = p_graph_node->get_connection_input_position(p_slot_index) + p_graph_node->get_position();
+		return is_in_port_hotzone(pos / zoom, p_mouse_pos, p_port_size, true);
+	}
+}
+
+bool GraphEdit::is_in_output_hotzone(GraphNode *p_graph_node, int p_slot_index, const Vector2 &p_mouse_pos, const Vector2i &p_port_size) {
+	bool success;
+	if (GDVIRTUAL_CALL(_is_in_output_hotzone, p_graph_node, p_slot_index, p_mouse_pos, success)) {
+		return success;
+	} else {
+		Vector2 pos = p_graph_node->get_connection_output_position(p_slot_index) + p_graph_node->get_position();
+		return is_in_port_hotzone(pos / zoom, p_mouse_pos, p_port_size, false);
+	}
+}
+
+bool GraphEdit::is_in_port_hotzone(const Vector2 &pos, const Vector2 &p_mouse_pos, const Vector2i &p_port_size, bool p_left) {
 	if (!Rect2(pos.x - port_grab_distance_horizontal, pos.y - port_grab_distance_vertical, port_grab_distance_horizontal * 2, port_grab_distance_vertical * 2).has_point(p_mouse_pos)) {
 		return false;
 	}
@@ -783,69 +829,33 @@ bool GraphEdit::is_in_hot_zone(const Vector2 &pos, const Vector2 &p_mouse_pos) {
 	return true;
 }
 
-template <class Vector2>
-static _FORCE_INLINE_ Vector2 _bezier_interp(real_t t, Vector2 start, Vector2 control_1, Vector2 control_2, Vector2 end) {
-	/* Formula from Wikipedia article on Bezier curves. */
-	real_t omt = (1.0 - t);
-	real_t omt2 = omt * omt;
-	real_t omt3 = omt2 * omt;
-	real_t t2 = t * t;
-	real_t t3 = t2 * t;
-
-	return start * omt3 + control_1 * omt2 * t * 3.0 + control_2 * omt * t2 * 3.0 + end * t3;
-}
-
-void GraphEdit::_bake_segment2d(Vector<Vector2> &points, Vector<Color> &colors, float p_begin, float p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_min_depth, int p_max_depth, float p_tol, const Color &p_color, const Color &p_to_color, int &lines) const {
-	float mp = p_begin + (p_end - p_begin) * 0.5;
-	Vector2 beg = _bezier_interp(p_begin, p_a, p_a + p_out, p_b + p_in, p_b);
-	Vector2 mid = _bezier_interp(mp, p_a, p_a + p_out, p_b + p_in, p_b);
-	Vector2 end = _bezier_interp(p_end, p_a, p_a + p_out, p_b + p_in, p_b);
-
-	Vector2 na = (mid - beg).normalized();
-	Vector2 nb = (end - mid).normalized();
-	float dp = Math::rad2deg(Math::acos(na.dot(nb)));
-
-	if (p_depth >= p_min_depth && (dp < p_tol || p_depth >= p_max_depth)) {
-		points.push_back((beg + end) * 0.5);
-		colors.push_back(p_color.lerp(p_to_color, mp));
-		lines++;
-	} else {
-		_bake_segment2d(points, colors, p_begin, mp, p_a, p_out, p_b, p_in, p_depth + 1, p_min_depth, p_max_depth, p_tol, p_color, p_to_color, lines);
-		_bake_segment2d(points, colors, mp, p_end, p_a, p_out, p_b, p_in, p_depth + 1, p_min_depth, p_max_depth, p_tol, p_color, p_to_color, lines);
-	}
-}
-
-void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width, float p_bezier_ratio) {
-	//cubic bezier code
-	float diff = p_to.x - p_from.x;
-	float cp_offset;
-	int cp_len = get_theme_constant(SNAME("bezier_len_pos")) * p_bezier_ratio;
-	int cp_neg_len = get_theme_constant(SNAME("bezier_len_neg")) * p_bezier_ratio;
-
-	if (diff > 0) {
-		cp_offset = MIN(cp_len, diff * 0.5);
-	} else {
-		cp_offset = MAX(MIN(cp_len - diff, cp_neg_len), -diff * 0.5);
+PackedVector2Array GraphEdit::get_connection_line(const Vector2 &p_from, const Vector2 &p_to) {
+	Vector<Vector2> ret;
+	if (GDVIRTUAL_CALL(_get_connection_line, p_from, p_to, ret)) {
+		return ret;
 	}
 
-	Vector2 c1 = Vector2(cp_offset * zoom, 0);
-	Vector2 c2 = Vector2(-cp_offset * zoom, 0);
-
-	int lines = 0;
-
-	Vector<Point2> points;
+	Curve2D curve;
 	Vector<Color> colors;
-	points.push_back(p_from);
-	colors.push_back(p_color);
-	_bake_segment2d(points, colors, 0, 1, p_from, c1, p_to, c2, 0, 3, 9, 3, p_color, p_to_color, lines);
-	points.push_back(p_to);
-	colors.push_back(p_to_color);
+	curve.add_point(p_from);
+	curve.set_point_out(0, Vector2(60, 0));
+	curve.add_point(p_to);
+	curve.set_point_in(1, Vector2(-60, 0));
+	return curve.tessellate();
+}
 
-#ifdef TOOLS_ENABLED
-	p_where->draw_polyline_colors(points, colors, Math::floor(p_width * EDSCALE), lines_antialiased);
-#else
-	p_where->draw_polyline_colors(points, colors, p_width, lines_antialiased);
-#endif
+void GraphEdit::_draw_connection_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width, float p_zoom) {
+	Vector<Vector2> points = get_connection_line(p_from / p_zoom, p_to / p_zoom);
+	Vector<Vector2> scaled_points;
+	Vector<Color> colors;
+	float length = (p_from / p_zoom).distance_to(p_to / p_zoom);
+	for (int i = 0; i < points.size(); i++) {
+		float d = (p_from / p_zoom).distance_to(points[i]) / length;
+		colors.push_back(p_color.lerp(p_to_color, d));
+		scaled_points.push_back(points[i] * p_zoom);
+	}
+
+	p_where->draw_polyline_colors(scaled_points, colors, Math::floor(p_width * get_theme_default_base_scale()), lines_antialiased);
 }
 
 void GraphEdit::_connections_layer_draw() {
@@ -891,7 +901,7 @@ void GraphEdit::_connections_layer_draw() {
 			color = color.lerp(activity_color, E->get().activity);
 			tocolor = tocolor.lerp(activity_color, E->get().activity);
 		}
-		_draw_cos_line(connections_layer, frompos, topos, color, tocolor, lines_thickness);
+		_draw_connection_line(connections_layer, frompos, topos, color, tocolor, lines_thickness, zoom);
 	}
 
 	while (to_erase.size()) {
@@ -930,7 +940,7 @@ void GraphEdit::_top_layer_draw() {
 		if (!connecting_out) {
 			SWAP(pos, topos);
 		}
-		_draw_cos_line(top_layer, pos, topos, col, col, lines_thickness);
+		_draw_connection_line(top_layer, pos, topos, col, col, lines_thickness, zoom);
 	}
 
 	if (box_selecting) {
@@ -1034,7 +1044,7 @@ void GraphEdit::_minimap_draw() {
 			from_color = from_color.lerp(activity_color, E.activity);
 			to_color = to_color.lerp(activity_color, E.activity);
 		}
-		_draw_cos_line(minimap, from_position, to_position, from_color, to_color, 1.0, 0.5);
+		_draw_connection_line(minimap, from_position, to_position, from_color, to_color, 0.1, minimap->_convert_from_graph_position(Vector2(zoom, zoom)).length());
 	}
 
 	// Draw the "camera" viewport.
@@ -1058,15 +1068,13 @@ void GraphEdit::set_selected(Node *p_child) {
 	}
 }
 
-void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
+void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 	ERR_FAIL_COND(p_ev.is_null());
+	if (panner->gui_input(p_ev, warped_panning ? get_global_rect() : Rect2())) {
+		return;
+	}
 
 	Ref<InputEventMouseMotion> mm = p_ev;
-	if (mm.is_valid() && (mm->get_button_mask() & MOUSE_BUTTON_MASK_MIDDLE || (mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT && Input::get_singleton()->is_key_pressed(KEY_SPACE)))) {
-		Vector2i relative = Input::get_singleton()->warp_mouse_motion(mm, get_global_rect());
-		h_scroll->set_value(h_scroll->get_value() - relative.x);
-		v_scroll->set_value(v_scroll->get_value() - relative.y);
-	}
 
 	if (mm.is_valid() && dragging) {
 		if (!moving_selection) {
@@ -1083,12 +1091,15 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 
 				// Snapping can be toggled temporarily by holding down Ctrl.
 				// This is done here as to not toggle the grid when holding down Ctrl.
-				if (is_using_snap() ^ Input::get_singleton()->is_key_pressed(KEY_CTRL)) {
+				if (is_using_snap() ^ Input::get_singleton()->is_key_pressed(Key::CTRL)) {
 					const int snap = get_snap();
 					pos = pos.snapped(Vector2(snap, snap));
 				}
 
 				gn->set_position_offset(pos);
+				if (gn->is_comment()) {
+					_set_position_of_comment_enclosed_nodes(gn, comment_enclosed_nodes, drag_accum);
+				}
 			}
 		}
 	}
@@ -1096,10 +1107,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 	if (mm.is_valid() && box_selecting) {
 		box_selecting_to = mm->get_position();
 
-		box_selecting_rect = Rect2(MIN(box_selecting_from.x, box_selecting_to.x),
-				MIN(box_selecting_from.y, box_selecting_to.y),
-				ABS(box_selecting_from.x - box_selecting_to.x),
-				ABS(box_selecting_from.y - box_selecting_to.y));
+		box_selecting_rect = Rect2(box_selecting_from.min(box_selecting_to), (box_selecting_from - box_selecting_to).abs());
 
 		for (int i = get_child_count() - 1; i >= 0; i--) {
 			GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
@@ -1135,7 +1143,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 
 	Ref<InputEventMouseButton> b = p_ev;
 	if (b.is_valid()) {
-		if (b->get_button_index() == MOUSE_BUTTON_RIGHT && b->is_pressed()) {
+		if (b->get_button_index() == MouseButton::RIGHT && b->is_pressed()) {
 			if (box_selecting) {
 				box_selecting = false;
 				for (int i = get_child_count() - 1; i >= 0; i--) {
@@ -1156,17 +1164,15 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 				minimap->update();
 			} else {
 				if (connecting) {
-					connecting = false;
-					top_layer->update();
-					minimap->update();
+					force_connection_drag_end();
 				} else {
-					emit_signal(SNAME("popup_request"), b->get_global_position());
+					emit_signal(SNAME("popup_request"), get_screen_position() + b->get_position());
 				}
 			}
 		}
 
-		if (b->get_button_index() == MOUSE_BUTTON_LEFT && !b->is_pressed() && dragging) {
-			if (!just_selected && drag_accum == Vector2() && Input::get_singleton()->is_key_pressed(KEY_CTRL)) {
+		if (b->get_button_index() == MouseButton::LEFT && !b->is_pressed() && dragging) {
+			if (!just_selected && drag_accum == Vector2() && Input::get_singleton()->is_key_pressed(Key::CTRL)) {
 				//deselect current node
 				for (int i = get_child_count() - 1; i >= 0; i--) {
 					GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
@@ -1187,6 +1193,9 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 					GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
 					if (gn && gn->is_selected()) {
 						gn->set_drag(false);
+						if (gn->is_comment()) {
+							_set_drag_comment_enclosed_nodes(gn, comment_enclosed_nodes, false);
+						}
 					}
 				}
 			}
@@ -1204,7 +1213,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 			connections_layer->update();
 		}
 
-		if (b->get_button_index() == MOUSE_BUTTON_LEFT && b->is_pressed()) {
+		if (b->get_button_index() == MouseButton::LEFT && b->is_pressed()) {
 			GraphNode *gn = nullptr;
 
 			for (int i = get_child_count() - 1; i >= 0; i--) {
@@ -1230,7 +1239,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 				dragging = true;
 				drag_accum = Vector2();
 				just_selected = !gn->is_selected();
-				if (!gn->is_selected() && !Input::get_singleton()->is_key_pressed(KEY_CTRL)) {
+				if (!gn->is_selected() && !Input::get_singleton()->is_key_pressed(Key::CTRL)) {
 					for (int i = 0; i < get_child_count(); i++) {
 						GraphNode *o_gn = Object::cast_to<GraphNode>(get_child(i));
 						if (o_gn) {
@@ -1254,6 +1263,10 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 					}
 					if (o_gn->is_selected()) {
 						o_gn->set_drag(true);
+						if (o_gn->is_comment()) {
+							_update_comment_enclosed_nodes_list(o_gn, comment_enclosed_nodes);
+							_set_drag_comment_enclosed_nodes(o_gn, comment_enclosed_nodes, true);
+						}
 					}
 				}
 
@@ -1261,7 +1274,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 				if (_filter_input(b->get_position())) {
 					return;
 				}
-				if (Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
+				if (panner->is_panning()) {
 					return;
 				}
 
@@ -1306,28 +1319,12 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 			}
 		}
 
-		if (b->get_button_index() == MOUSE_BUTTON_LEFT && !b->is_pressed() && box_selecting) {
+		if (b->get_button_index() == MouseButton::LEFT && !b->is_pressed() && box_selecting) {
 			box_selecting = false;
 			box_selecting_rect = Rect2();
 			previous_selected.clear();
 			top_layer->update();
 			minimap->update();
-		}
-
-		int scroll_direction = (b->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) - (b->get_button_index() == MOUSE_BUTTON_WHEEL_UP);
-		if (scroll_direction != 0) {
-			if (b->is_ctrl_pressed()) {
-				if (b->is_shift_pressed()) {
-					// Horizontal scrolling.
-					h_scroll->set_value(h_scroll->get_value() + (h_scroll->get_page() * b->get_factor() / 8) * scroll_direction);
-				} else {
-					// Vertical scrolling.
-					v_scroll->set_value(v_scroll->get_value() + (v_scroll->get_page() * b->get_factor() / 8) * scroll_direction);
-				}
-			} else {
-				// Zooming.
-				set_zoom_custom(scroll_direction < 0 ? zoom * zoom_step : zoom / zoom_step, b->get_position());
-			}
 		}
 	}
 
@@ -1359,6 +1356,23 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 	}
 }
 
+void GraphEdit::_scroll_callback(Vector2 p_scroll_vec, bool p_alt) {
+	if (p_scroll_vec.x != 0) {
+		h_scroll->set_value(h_scroll->get_value() + (h_scroll->get_page() * Math::abs(p_scroll_vec.x) / 8) * SIGN(p_scroll_vec.x));
+	} else {
+		v_scroll->set_value(v_scroll->get_value() + (v_scroll->get_page() * Math::abs(p_scroll_vec.y) / 8) * SIGN(p_scroll_vec.y));
+	}
+}
+
+void GraphEdit::_pan_callback(Vector2 p_scroll_vec) {
+	h_scroll->set_value(h_scroll->get_value() - p_scroll_vec.x);
+	v_scroll->set_value(v_scroll->get_value() - p_scroll_vec.y);
+}
+
+void GraphEdit::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt) {
+	set_zoom_custom(p_scroll_vec.y < 0 ? zoom * zoom_step : zoom / zoom_step, p_origin);
+}
+
 void GraphEdit::set_connection_activity(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port, float p_activity) {
 	for (Connection &E : connections) {
 		if (E.from == p_from && E.from_port == p_from_port && E.to == p_to && E.to_port == p_to_port) {
@@ -1379,6 +1393,26 @@ void GraphEdit::clear_connections() {
 	minimap->update();
 	update();
 	connections_layer->update();
+}
+
+void GraphEdit::force_connection_drag_end() {
+	ERR_FAIL_COND_MSG(!connecting, "Drag end requested without active drag!");
+	connecting = false;
+	connecting_valid = false;
+	top_layer->update();
+	minimap->update();
+	update();
+	connections_layer->update();
+	emit_signal(SNAME("connection_drag_ended"));
+}
+
+void GraphEdit::set_panning_scheme(PanningScheme p_scheme) {
+	panning_scheme = p_scheme;
+	panner->set_control_scheme((ViewPanner::ControlScheme)p_scheme);
+}
+
+GraphEdit::PanningScheme GraphEdit::get_panning_scheme() const {
+	return panning_scheme;
 }
 
 void GraphEdit::set_zoom(float p_zoom) {
@@ -1646,6 +1680,515 @@ HBoxContainer *GraphEdit::get_zoom_hbox() {
 	return zoom_hb;
 }
 
+Ref<ViewPanner> GraphEdit::get_panner() {
+	return panner;
+}
+
+void GraphEdit::set_warped_panning(bool p_warped) {
+	warped_panning = p_warped;
+}
+
+int GraphEdit::_set_operations(SET_OPERATIONS p_operation, Set<StringName> &r_u, const Set<StringName> &r_v) {
+	switch (p_operation) {
+		case GraphEdit::IS_EQUAL: {
+			for (Set<StringName>::Element *E = r_u.front(); E; E = E->next()) {
+				if (!r_v.has(E->get())) {
+					return 0;
+				}
+			}
+			return r_u.size() == r_v.size();
+		} break;
+		case GraphEdit::IS_SUBSET: {
+			if (r_u.size() == r_v.size() && !r_u.size()) {
+				return 1;
+			}
+			for (Set<StringName>::Element *E = r_u.front(); E; E = E->next()) {
+				if (!r_v.has(E->get())) {
+					return 0;
+				}
+			}
+			return 1;
+		} break;
+		case GraphEdit::DIFFERENCE: {
+			for (Set<StringName>::Element *E = r_u.front(); E; E = E->next()) {
+				if (r_v.has(E->get())) {
+					r_u.erase(E->get());
+				}
+			}
+			return r_u.size();
+		} break;
+		case GraphEdit::UNION: {
+			for (Set<StringName>::Element *E = r_v.front(); E; E = E->next()) {
+				if (!r_u.has(E->get())) {
+					r_u.insert(E->get());
+				}
+			}
+			return r_u.size();
+		} break;
+		default:
+			break;
+	}
+	return -1;
+}
+
+HashMap<int, Vector<StringName>> GraphEdit::_layering(const Set<StringName> &r_selected_nodes, const HashMap<StringName, Set<StringName>> &r_upper_neighbours) {
+	HashMap<int, Vector<StringName>> l;
+
+	Set<StringName> p = r_selected_nodes, q = r_selected_nodes, u, z;
+	int current_layer = 0;
+	bool selected = false;
+
+	while (!_set_operations(GraphEdit::IS_EQUAL, q, u)) {
+		_set_operations(GraphEdit::DIFFERENCE, p, u);
+		for (const Set<StringName>::Element *E = p.front(); E; E = E->next()) {
+			Set<StringName> n = r_upper_neighbours[E->get()];
+			if (_set_operations(GraphEdit::IS_SUBSET, n, z)) {
+				Vector<StringName> t;
+				t.push_back(E->get());
+				if (!l.has(current_layer)) {
+					l.set(current_layer, Vector<StringName>{});
+				}
+				selected = true;
+				t.append_array(l[current_layer]);
+				l.set(current_layer, t);
+				Set<StringName> V;
+				V.insert(E->get());
+				_set_operations(GraphEdit::UNION, u, V);
+			}
+		}
+		if (!selected) {
+			current_layer++;
+			_set_operations(GraphEdit::UNION, z, u);
+		}
+		selected = false;
+	}
+
+	return l;
+}
+
+Vector<StringName> GraphEdit::_split(const Vector<StringName> &r_layer, const HashMap<StringName, Dictionary> &r_crossings) {
+	if (!r_layer.size()) {
+		return Vector<StringName>();
+	}
+
+	StringName p = r_layer[Math::random(0, r_layer.size() - 1)];
+	Vector<StringName> left;
+	Vector<StringName> right;
+
+	for (int i = 0; i < r_layer.size(); i++) {
+		if (p != r_layer[i]) {
+			StringName q = r_layer[i];
+			int cross_pq = r_crossings[p][q];
+			int cross_qp = r_crossings[q][p];
+			if (cross_pq > cross_qp) {
+				left.push_back(q);
+			} else {
+				right.push_back(q);
+			}
+		}
+	}
+
+	left.push_back(p);
+	left.append_array(right);
+	return left;
+}
+
+void GraphEdit::_horizontal_alignment(Dictionary &r_root, Dictionary &r_align, const HashMap<int, Vector<StringName>> &r_layers, const HashMap<StringName, Set<StringName>> &r_upper_neighbours, const Set<StringName> &r_selected_nodes) {
+	for (const Set<StringName>::Element *E = r_selected_nodes.front(); E; E = E->next()) {
+		r_root[E->get()] = E->get();
+		r_align[E->get()] = E->get();
+	}
+
+	if (r_layers.size() == 1) {
+		return;
+	}
+
+	for (unsigned int i = 1; i < r_layers.size(); i++) {
+		Vector<StringName> lower_layer = r_layers[i];
+		Vector<StringName> upper_layer = r_layers[i - 1];
+		int r = -1;
+
+		for (int j = 0; j < lower_layer.size(); j++) {
+			Vector<Pair<int, StringName>> up;
+			StringName current_node = lower_layer[j];
+			for (int k = 0; k < upper_layer.size(); k++) {
+				StringName adjacent_neighbour = upper_layer[k];
+				if (r_upper_neighbours[current_node].has(adjacent_neighbour)) {
+					up.push_back(Pair<int, StringName>(k, adjacent_neighbour));
+				}
+			}
+
+			int start = (up.size() - 1) / 2;
+			int end = (up.size() - 1) % 2 ? start + 1 : start;
+			for (int p = start; p <= end; p++) {
+				StringName Align = r_align[current_node];
+				if (Align == current_node && r < up[p].first) {
+					r_align[up[p].second] = lower_layer[j];
+					r_root[current_node] = r_root[up[p].second];
+					r_align[current_node] = r_root[up[p].second];
+					r = up[p].first;
+				}
+			}
+		}
+	}
+}
+
+void GraphEdit::_crossing_minimisation(HashMap<int, Vector<StringName>> &r_layers, const HashMap<StringName, Set<StringName>> &r_upper_neighbours) {
+	if (r_layers.size() == 1) {
+		return;
+	}
+
+	for (unsigned int i = 1; i < r_layers.size(); i++) {
+		Vector<StringName> upper_layer = r_layers[i - 1];
+		Vector<StringName> lower_layer = r_layers[i];
+		HashMap<StringName, Dictionary> c;
+
+		for (int j = 0; j < lower_layer.size(); j++) {
+			StringName p = lower_layer[j];
+			Dictionary d;
+
+			for (int k = 0; k < lower_layer.size(); k++) {
+				unsigned int crossings = 0;
+				StringName q = lower_layer[k];
+
+				if (j != k) {
+					for (int h = 1; h < upper_layer.size(); h++) {
+						if (r_upper_neighbours[p].has(upper_layer[h])) {
+							for (int g = 0; g < h; g++) {
+								if (r_upper_neighbours[q].has(upper_layer[g])) {
+									crossings++;
+								}
+							}
+						}
+					}
+				}
+				d[q] = crossings;
+			}
+			c.set(p, d);
+		}
+
+		r_layers.set(i, _split(lower_layer, c));
+	}
+}
+
+void GraphEdit::_calculate_inner_shifts(Dictionary &r_inner_shifts, const Dictionary &r_root, const Dictionary &r_node_names, const Dictionary &r_align, const Set<StringName> &r_block_heads, const HashMap<StringName, Pair<int, int>> &r_port_info) {
+	for (const Set<StringName>::Element *E = r_block_heads.front(); E; E = E->next()) {
+		real_t left = 0;
+		StringName u = E->get();
+		StringName v = r_align[u];
+		while (u != v && (StringName)r_root[u] != v) {
+			String _connection = String(u) + " " + String(v);
+			GraphNode *gfrom = Object::cast_to<GraphNode>(r_node_names[u]);
+			GraphNode *gto = Object::cast_to<GraphNode>(r_node_names[v]);
+
+			Pair<int, int> ports = r_port_info[_connection];
+			int pfrom = ports.first;
+			int pto = ports.second;
+			Vector2 frompos = gfrom->get_connection_output_position(pfrom);
+			Vector2 topos = gto->get_connection_input_position(pto);
+
+			real_t s = (real_t)r_inner_shifts[u] + (frompos.y - topos.y) / zoom;
+			r_inner_shifts[v] = s;
+			left = MIN(left, s);
+
+			u = v;
+			v = (StringName)r_align[v];
+		}
+
+		u = E->get();
+		do {
+			r_inner_shifts[u] = (real_t)r_inner_shifts[u] - left;
+			u = (StringName)r_align[u];
+		} while (u != E->get());
+	}
+}
+
+float GraphEdit::_calculate_threshold(StringName p_v, StringName p_w, const Dictionary &r_node_names, const HashMap<int, Vector<StringName>> &r_layers, const Dictionary &r_root, const Dictionary &r_align, const Dictionary &r_inner_shift, real_t p_current_threshold, const HashMap<StringName, Vector2> &r_node_positions) {
+#define MAX_ORDER 2147483647
+#define ORDER(node, layers)                            \
+	for (unsigned int i = 0; i < layers.size(); i++) { \
+		int index = layers[i].find(node);              \
+		if (index > 0) {                               \
+			order = index;                             \
+			break;                                     \
+		}                                              \
+		order = MAX_ORDER;                             \
+	}
+
+	int order = MAX_ORDER;
+	float threshold = p_current_threshold;
+	if (p_v == p_w) {
+		int min_order = MAX_ORDER;
+		Connection incoming;
+		for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
+			if (E->get().to == p_w) {
+				ORDER(E->get().from, r_layers);
+				if (min_order > order) {
+					min_order = order;
+					incoming = E->get();
+				}
+			}
+		}
+
+		if (incoming.from != StringName()) {
+			GraphNode *gfrom = Object::cast_to<GraphNode>(r_node_names[incoming.from]);
+			GraphNode *gto = Object::cast_to<GraphNode>(r_node_names[p_w]);
+			Vector2 frompos = gfrom->get_connection_output_position(incoming.from_port);
+			Vector2 topos = gto->get_connection_input_position(incoming.to_port);
+
+			//If connected block node is selected, calculate thershold or add current block to list
+			if (gfrom->is_selected()) {
+				Vector2 connected_block_pos = r_node_positions[r_root[incoming.from]];
+				if (connected_block_pos.y != FLT_MAX) {
+					//Connected block is placed. Calculate threshold
+					threshold = connected_block_pos.y + (real_t)r_inner_shift[incoming.from] - (real_t)r_inner_shift[p_w] + frompos.y - topos.y;
+				}
+			}
+		}
+	}
+	if (threshold == FLT_MIN && (StringName)r_align[p_w] == p_v) {
+		//This time, pick an outgoing edge and repeat as above!
+		int min_order = MAX_ORDER;
+		Connection outgoing;
+		for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
+			if (E->get().from == p_w) {
+				ORDER(E->get().to, r_layers);
+				if (min_order > order) {
+					min_order = order;
+					outgoing = E->get();
+				}
+			}
+		}
+
+		if (outgoing.to != StringName()) {
+			GraphNode *gfrom = Object::cast_to<GraphNode>(r_node_names[p_w]);
+			GraphNode *gto = Object::cast_to<GraphNode>(r_node_names[outgoing.to]);
+			Vector2 frompos = gfrom->get_connection_output_position(outgoing.from_port);
+			Vector2 topos = gto->get_connection_input_position(outgoing.to_port);
+
+			//If connected block node is selected, calculate thershold or add current block to list
+			if (gto->is_selected()) {
+				Vector2 connected_block_pos = r_node_positions[r_root[outgoing.to]];
+				if (connected_block_pos.y != FLT_MAX) {
+					//Connected block is placed. Calculate threshold
+					threshold = connected_block_pos.y + (real_t)r_inner_shift[outgoing.to] - (real_t)r_inner_shift[p_w] + frompos.y - topos.y;
+				}
+			}
+		}
+	}
+#undef MAX_ORDER
+#undef ORDER
+	return threshold;
+}
+
+void GraphEdit::_place_block(StringName p_v, float p_delta, const HashMap<int, Vector<StringName>> &r_layers, const Dictionary &r_root, const Dictionary &r_align, const Dictionary &r_node_name, const Dictionary &r_inner_shift, Dictionary &r_sink, Dictionary &r_shift, HashMap<StringName, Vector2> &r_node_positions) {
+#define PRED(node, layers)                             \
+	for (unsigned int i = 0; i < layers.size(); i++) { \
+		int index = layers[i].find(node);              \
+		if (index > 0) {                               \
+			predecessor = layers[i][index - 1];        \
+			break;                                     \
+		}                                              \
+		predecessor = StringName();                    \
+	}
+
+	StringName predecessor;
+	StringName successor;
+	Vector2 pos = r_node_positions[p_v];
+
+	if (pos.y == FLT_MAX) {
+		pos.y = 0;
+		bool initial = false;
+		StringName w = p_v;
+		real_t threshold = FLT_MIN;
+		do {
+			PRED(w, r_layers);
+			if (predecessor != StringName()) {
+				StringName u = r_root[predecessor];
+				_place_block(u, p_delta, r_layers, r_root, r_align, r_node_name, r_inner_shift, r_sink, r_shift, r_node_positions);
+				threshold = _calculate_threshold(p_v, w, r_node_name, r_layers, r_root, r_align, r_inner_shift, threshold, r_node_positions);
+				if ((StringName)r_sink[p_v] == p_v) {
+					r_sink[p_v] = r_sink[u];
+				}
+
+				Vector2 predecessor_root_pos = r_node_positions[u];
+				Vector2 predecessor_node_size = Object::cast_to<GraphNode>(r_node_name[predecessor])->get_size();
+				if (r_sink[p_v] != r_sink[u]) {
+					real_t sc = pos.y + (real_t)r_inner_shift[w] - predecessor_root_pos.y - (real_t)r_inner_shift[predecessor] - predecessor_node_size.y - p_delta;
+					r_shift[r_sink[u]] = MIN(sc, (real_t)r_shift[r_sink[u]]);
+				} else {
+					real_t sb = predecessor_root_pos.y + (real_t)r_inner_shift[predecessor] + predecessor_node_size.y - (real_t)r_inner_shift[w] + p_delta;
+					sb = MAX(sb, threshold);
+					if (initial) {
+						pos.y = sb;
+					} else {
+						pos.y = MAX(pos.y, sb);
+					}
+					initial = false;
+				}
+			}
+			threshold = _calculate_threshold(p_v, w, r_node_name, r_layers, r_root, r_align, r_inner_shift, threshold, r_node_positions);
+			w = r_align[w];
+		} while (w != p_v);
+		r_node_positions.set(p_v, pos);
+	}
+
+#undef PRED
+}
+
+void GraphEdit::arrange_nodes() {
+	if (!arranging_graph) {
+		arranging_graph = true;
+	} else {
+		return;
+	}
+
+	Dictionary node_names;
+	Set<StringName> selected_nodes;
+
+	for (int i = get_child_count() - 1; i >= 0; i--) {
+		GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
+		if (!gn) {
+			continue;
+		}
+
+		node_names[gn->get_name()] = gn;
+	}
+
+	HashMap<StringName, Set<StringName>> upper_neighbours;
+	HashMap<StringName, Pair<int, int>> port_info;
+	Vector2 origin(FLT_MAX, FLT_MAX);
+
+	float gap_v = 100.0f;
+	float gap_h = 100.0f;
+
+	for (int i = get_child_count() - 1; i >= 0; i--) {
+		GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
+		if (!gn) {
+			continue;
+		}
+
+		if (gn->is_selected()) {
+			selected_nodes.insert(gn->get_name());
+			Set<StringName> s;
+			for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
+				GraphNode *p_from = Object::cast_to<GraphNode>(node_names[E->get().from]);
+				if (E->get().to == gn->get_name() && p_from->is_selected()) {
+					if (!s.has(p_from->get_name())) {
+						s.insert(p_from->get_name());
+					}
+					String s_connection = String(p_from->get_name()) + " " + String(E->get().to);
+					StringName _connection(s_connection);
+					Pair<int, int> ports(E->get().from_port, E->get().to_port);
+					if (port_info.has(_connection)) {
+						Pair<int, int> p_ports = port_info[_connection];
+						if (p_ports.first < ports.first) {
+							ports = p_ports;
+						}
+					}
+					port_info.set(_connection, ports);
+				}
+			}
+			upper_neighbours.set(gn->get_name(), s);
+		}
+	}
+
+	if (!selected_nodes.size()) {
+		arranging_graph = false;
+		return;
+	}
+
+	HashMap<int, Vector<StringName>> layers = _layering(selected_nodes, upper_neighbours);
+	_crossing_minimisation(layers, upper_neighbours);
+
+	Dictionary root, align, sink, shift;
+	_horizontal_alignment(root, align, layers, upper_neighbours, selected_nodes);
+
+	HashMap<StringName, Vector2> new_positions;
+	Vector2 default_position(FLT_MAX, FLT_MAX);
+	Dictionary inner_shift;
+	Set<StringName> block_heads;
+
+	for (const Set<StringName>::Element *E = selected_nodes.front(); E; E = E->next()) {
+		inner_shift[E->get()] = 0.0f;
+		sink[E->get()] = E->get();
+		shift[E->get()] = FLT_MAX;
+		new_positions.set(E->get(), default_position);
+		if ((StringName)root[E->get()] == E->get()) {
+			block_heads.insert(E->get());
+		}
+	}
+
+	_calculate_inner_shifts(inner_shift, root, node_names, align, block_heads, port_info);
+
+	for (const Set<StringName>::Element *E = block_heads.front(); E; E = E->next()) {
+		_place_block(E->get(), gap_v, layers, root, align, node_names, inner_shift, sink, shift, new_positions);
+	}
+	origin.y = Object::cast_to<GraphNode>(node_names[layers[0][0]])->get_position_offset().y - (new_positions[layers[0][0]].y + (float)inner_shift[layers[0][0]]);
+	origin.x = Object::cast_to<GraphNode>(node_names[layers[0][0]])->get_position_offset().x;
+
+	for (const Set<StringName>::Element *E = block_heads.front(); E; E = E->next()) {
+		StringName u = E->get();
+		float start_from = origin.y + new_positions[E->get()].y;
+		do {
+			Vector2 cal_pos;
+			cal_pos.y = start_from + (real_t)inner_shift[u];
+			new_positions.set(u, cal_pos);
+			u = align[u];
+		} while (u != E->get());
+	}
+
+	// Compute horizontal coordinates individually for layers to get uniform gap.
+	float start_from = origin.x;
+	float largest_node_size = 0.0f;
+
+	for (unsigned int i = 0; i < layers.size(); i++) {
+		Vector<StringName> layer = layers[i];
+		for (int j = 0; j < layer.size(); j++) {
+			float current_node_size = Object::cast_to<GraphNode>(node_names[layer[j]])->get_size().x;
+			largest_node_size = MAX(largest_node_size, current_node_size);
+		}
+
+		for (int j = 0; j < layer.size(); j++) {
+			float current_node_size = Object::cast_to<GraphNode>(node_names[layer[j]])->get_size().x;
+			Vector2 cal_pos = new_positions[layer[j]];
+
+			if (current_node_size == largest_node_size) {
+				cal_pos.x = start_from;
+			} else {
+				float current_node_start_pos = start_from;
+				if (current_node_size < largest_node_size / 2) {
+					if (!(i || j)) {
+						start_from -= (largest_node_size - current_node_size);
+					}
+					current_node_start_pos = start_from + largest_node_size - current_node_size;
+				}
+				cal_pos.x = current_node_start_pos;
+			}
+			new_positions.set(layer[j], cal_pos);
+		}
+
+		start_from += largest_node_size + gap_h;
+		largest_node_size = 0.0f;
+	}
+
+	emit_signal(SNAME("begin_node_move"));
+	for (const Set<StringName>::Element *E = selected_nodes.front(); E; E = E->next()) {
+		GraphNode *gn = Object::cast_to<GraphNode>(node_names[E->get()]);
+		gn->set_drag(true);
+		Vector2 pos = (new_positions[E->get()]);
+
+		if (is_using_snap()) {
+			const int snap = get_snap();
+			pos = pos.snapped(Vector2(snap, snap));
+		}
+		gn->set_position_offset(pos);
+		gn->set_drag(false);
+	}
+	emit_signal(SNAME("end_node_move"));
+	arranging_graph = false;
+}
+
 void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("connect_node", "from", "from_port", "to", "to_port"), &GraphEdit::connect_node);
 	ClassDB::bind_method(D_METHOD("is_node_connected", "from", "from_port", "to", "to_port"), &GraphEdit::is_node_connected);
@@ -1653,6 +2196,7 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_connection_activity", "from", "from_port", "to", "to_port", "amount"), &GraphEdit::set_connection_activity);
 	ClassDB::bind_method(D_METHOD("get_connection_list"), &GraphEdit::_get_connection_list);
 	ClassDB::bind_method(D_METHOD("clear_connections"), &GraphEdit::clear_connections);
+	ClassDB::bind_method(D_METHOD("force_connection_drag_end"), &GraphEdit::force_connection_drag_end);
 	ClassDB::bind_method(D_METHOD("get_scroll_ofs"), &GraphEdit::get_scroll_ofs);
 	ClassDB::bind_method(D_METHOD("set_scroll_ofs", "ofs"), &GraphEdit::set_scroll_ofs);
 
@@ -1663,6 +2207,10 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_valid_connection_type", "from_type", "to_type"), &GraphEdit::add_valid_connection_type);
 	ClassDB::bind_method(D_METHOD("remove_valid_connection_type", "from_type", "to_type"), &GraphEdit::remove_valid_connection_type);
 	ClassDB::bind_method(D_METHOD("is_valid_connection_type", "from_type", "to_type"), &GraphEdit::is_valid_connection_type);
+	ClassDB::bind_method(D_METHOD("get_connection_line", "from", "to"), &GraphEdit::get_connection_line);
+
+	ClassDB::bind_method(D_METHOD("set_panning_scheme", "scheme"), &GraphEdit::set_panning_scheme);
+	ClassDB::bind_method(D_METHOD("get_panning_scheme"), &GraphEdit::get_panning_scheme);
 
 	ClassDB::bind_method(D_METHOD("set_zoom", "zoom"), &GraphEdit::set_zoom);
 	ClassDB::bind_method(D_METHOD("get_zoom"), &GraphEdit::get_zoom);
@@ -1702,17 +2250,23 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_right_disconnects", "enable"), &GraphEdit::set_right_disconnects);
 	ClassDB::bind_method(D_METHOD("is_right_disconnects_enabled"), &GraphEdit::is_right_disconnects_enabled);
 
-	ClassDB::bind_method(D_METHOD("_gui_input"), &GraphEdit::_gui_input);
 	ClassDB::bind_method(D_METHOD("_update_scroll_offset"), &GraphEdit::_update_scroll_offset);
+	GDVIRTUAL_BIND(_is_in_input_hotzone, "graph_node", "slot_index", "mouse_position");
+	GDVIRTUAL_BIND(_is_in_output_hotzone, "graph_node", "slot_index", "mouse_position");
 
 	ClassDB::bind_method(D_METHOD("get_zoom_hbox"), &GraphEdit::get_zoom_hbox);
 
+	ClassDB::bind_method(D_METHOD("arrange_nodes"), &GraphEdit::arrange_nodes);
+
 	ClassDB::bind_method(D_METHOD("set_selected", "node"), &GraphEdit::set_selected);
+
+	GDVIRTUAL_BIND(_get_connection_line, "from", "to")
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "right_disconnects"), "set_right_disconnects", "is_right_disconnects_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scroll_offset"), "set_scroll_ofs", "get_scroll_ofs");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "snap_distance"), "set_snap", "get_snap");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_snap"), "set_use_snap", "is_using_snap");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "panning_scheme", PROPERTY_HINT_ENUM, "Scroll Zooms,Scroll Pans"), "set_panning_scheme", "get_panning_scheme");
 
 	ADD_GROUP("Connection Lines", "connection_lines");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "connection_lines_thickness"), "set_connection_lines_thickness", "get_connection_lines_thickness");
@@ -1744,6 +2298,11 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("begin_node_move"));
 	ADD_SIGNAL(MethodInfo("end_node_move"));
 	ADD_SIGNAL(MethodInfo("scroll_offset_changed", PropertyInfo(Variant::VECTOR2, "ofs")));
+	ADD_SIGNAL(MethodInfo("connection_drag_started", PropertyInfo(Variant::STRING, "from"), PropertyInfo(Variant::STRING, "slot"), PropertyInfo(Variant::BOOL, "is_output")));
+	ADD_SIGNAL(MethodInfo("connection_drag_ended"));
+
+	BIND_ENUM_CONSTANT(SCROLL_ZOOMS);
+	BIND_ENUM_CONSTANT(SCROLL_PANS);
 }
 
 GraphEdit::GraphEdit() {
@@ -1756,15 +2315,19 @@ GraphEdit::GraphEdit() {
 	// Allow zooming 4 times from the default zoom level.
 	zoom_max = (1 * Math::pow(zoom_step, 4));
 
+	panner.instantiate();
+	panner->set_callbacks(callable_mp(this, &GraphEdit::_scroll_callback), callable_mp(this, &GraphEdit::_pan_callback), callable_mp(this, &GraphEdit::_zoom_callback));
+
 	top_layer = memnew(GraphEditFilter(this));
-	add_child(top_layer);
+	add_child(top_layer, false, INTERNAL_MODE_BACK);
 	top_layer->set_mouse_filter(MOUSE_FILTER_PASS);
 	top_layer->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	top_layer->connect("draw", callable_mp(this, &GraphEdit::_top_layer_draw));
 	top_layer->connect("gui_input", callable_mp(this, &GraphEdit::_top_layer_input));
+	top_layer->connect("focus_exited", callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
 
 	connections_layer = memnew(Control);
-	add_child(connections_layer);
+	add_child(connections_layer, false, INTERNAL_MODE_FRONT);
 	connections_layer->connect("draw", callable_mp(this, &GraphEdit::_connections_layer_draw));
 	connections_layer->set_name("CLAYER");
 	connections_layer->set_disable_visibility_clip(true); // so it can draw freely and be offset
@@ -1796,12 +2359,8 @@ GraphEdit::GraphEdit() {
 	zoom_hb->add_child(zoom_label);
 	zoom_label->set_visible(false);
 	zoom_label->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
-	zoom_label->set_align(Label::ALIGN_CENTER);
-#ifdef TOOLS_ENABLED
-	zoom_label->set_custom_minimum_size(Size2(48, 0) * EDSCALE);
-#else
+	zoom_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	zoom_label->set_custom_minimum_size(Size2(48, 0));
-#endif
 	_update_zoom_label();
 
 	zoom_minus = memnew(Button);
@@ -1850,6 +2409,13 @@ GraphEdit::GraphEdit() {
 	minimap_button->set_pressed(true);
 	minimap_button->set_focus_mode(FOCUS_NONE);
 	zoom_hb->add_child(minimap_button);
+
+	layout_button = memnew(Button);
+	layout_button->set_flat(true);
+	zoom_hb->add_child(layout_button);
+	layout_button->set_tooltip(RTR("Arrange nodes."));
+	layout_button->connect("pressed", callable_mp(this, &GraphEdit::arrange_nodes));
+	layout_button->set_focus_mode(FOCUS_NONE);
 
 	Vector2 minimap_size = Vector2(240, 160);
 	float minimap_opacity = 0.65;

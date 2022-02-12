@@ -98,13 +98,6 @@
 				Returns the space assigned to the area.
 			</description>
 		</method>
-		<method name="area_get_space_override_mode" qualifiers="const">
-			<return type="int" enum="PhysicsServer2D.AreaSpaceOverrideMode" />
-			<argument index="0" name="area" type="RID" />
-			<description>
-				Returns the space override mode for the area.
-			</description>
-		</method>
 		<method name="area_get_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<argument index="0" name="area" type="RID" />
@@ -123,8 +116,7 @@
 		<method name="area_set_area_monitor_callback">
 			<return type="void" />
 			<argument index="0" name="area" type="RID" />
-			<argument index="1" name="receiver" type="Object" />
-			<argument index="2" name="method" type="StringName" />
+			<argument index="1" name="callback" type="Callable" />
 			<description>
 			</description>
 		</method>
@@ -147,8 +139,7 @@
 		<method name="area_set_monitor_callback">
 			<return type="void" />
 			<argument index="0" name="area" type="RID" />
-			<argument index="1" name="receiver" type="Object" />
-			<argument index="2" name="method" type="StringName" />
+			<argument index="1" name="callback" type="Callable" />
 			<description>
 				Sets the function to call when any body/area enters or exits the area. This callback will be called for any object interacting with the area, and takes five parameters:
 				1: [constant AREA_BODY_ADDED] or [constant AREA_BODY_REMOVED], depending on whether the object entered or exited the area.
@@ -209,27 +200,12 @@
 				Assigns a space to the area.
 			</description>
 		</method>
-		<method name="area_set_space_override_mode">
-			<return type="void" />
-			<argument index="0" name="area" type="RID" />
-			<argument index="1" name="mode" type="int" enum="PhysicsServer2D.AreaSpaceOverrideMode" />
-			<description>
-				Sets the space override mode for the area. See [enum AreaSpaceOverrideMode] for a list of available modes.
-			</description>
-		</method>
 		<method name="area_set_transform">
 			<return type="void" />
 			<argument index="0" name="area" type="RID" />
 			<argument index="1" name="transform" type="Transform2D" />
 			<description>
 				Sets the transform matrix for an area.
-			</description>
-		</method>
-		<method name="body_add_central_force">
-			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="force" type="Vector2" />
-			<description>
 			</description>
 		</method>
 		<method name="body_add_collision_exception">
@@ -240,13 +216,31 @@
 				Adds a body to the list of bodies exempt from collisions.
 			</description>
 		</method>
-		<method name="body_add_force">
+		<method name="body_add_constant_central_force">
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="force" type="Vector2" />
+			<description>
+				Adds a constant directional force without affecting rotation that keeps being applied over time until cleared with [code]body_set_constant_force(body, Vector2(0, 0))[/code].
+				This is equivalent to using [method body_add_constant_force] at the body's center of mass.
+			</description>
+		</method>
+		<method name="body_add_constant_force">
 			<return type="void" />
 			<argument index="0" name="body" type="RID" />
 			<argument index="1" name="force" type="Vector2" />
 			<argument index="2" name="position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Adds a positioned force to the applied force and torque. As with [method body_apply_impulse], both the force and the offset from the body origin are in global coordinates. A force differs from an impulse in that, while the two are forces, the impulse clears itself after being applied.
+				Adds a constant positioned force to the body that keeps being applied over time until cleared with [code]body_set_constant_force(body, Vector2(0, 0))[/code].
+				[code]position[/code] is the offset from the body origin in global coordinates.
+			</description>
+		</method>
+		<method name="body_add_constant_torque">
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="torque" type="float" />
+			<description>
+				Adds a constant rotational force without affecting position that keeps being applied over time until cleared with [code]body_set_constant_torque(body, 0)[/code].
 			</description>
 		</method>
 		<method name="body_add_shape">
@@ -259,11 +253,13 @@
 				Adds a shape to the body, along with a transform matrix. Shapes are usually referenced by their index, so you should track which shape has a given index.
 			</description>
 		</method>
-		<method name="body_add_torque">
+		<method name="body_apply_central_force">
 			<return type="void" />
 			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="torque" type="float" />
+			<argument index="1" name="force" type="Vector2" />
 			<description>
+				Applies a directional force without affecting rotation. A force is time dependent and meant to be applied every physics update.
+				This is equivalent to using [method body_apply_force] at the body's center of mass.
 			</description>
 		</method>
 		<method name="body_apply_central_impulse">
@@ -271,6 +267,19 @@
 			<argument index="0" name="body" type="RID" />
 			<argument index="1" name="impulse" type="Vector2" />
 			<description>
+				Applies a directional impulse without affecting rotation.
+				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
+				This is equivalent to using [method body_apply_impulse] at the body's center of mass.
+			</description>
+		</method>
+		<method name="body_apply_force">
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="force" type="Vector2" />
+			<argument index="2" name="position" type="Vector2" default="Vector2(0, 0)" />
+			<description>
+				Applies a positioned force to the body. A force is time dependent and meant to be applied every physics update.
+				[code]position[/code] is the offset from the body origin in global coordinates.
 			</description>
 		</method>
 		<method name="body_apply_impulse">
@@ -279,7 +288,17 @@
 			<argument index="1" name="impulse" type="Vector2" />
 			<argument index="2" name="position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Adds a positioned impulse to the applied force and torque. Both the force and the offset from the body origin are in global coordinates.
+				Applies a positioned impulse to the body.
+				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
+				[code]position[/code] is the offset from the body origin in global coordinates.
+			</description>
+		</method>
+		<method name="body_apply_torque">
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="torque" type="float" />
+			<description>
+				Applies a rotational force without affecting position. A force is time dependent and meant to be applied every physics update.
 			</description>
 		</method>
 		<method name="body_apply_torque_impulse">
@@ -287,6 +306,8 @@
 			<argument index="0" name="body" type="RID" />
 			<argument index="1" name="impulse" type="float" />
 			<description>
+				Applies a rotational impulse to the body without affecting the position.
+				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
 			</description>
 		</method>
 		<method name="body_attach_canvas_instance_id">
@@ -337,6 +358,22 @@
 				Returns the physics layer or layers a body can collide with.
 			</description>
 		</method>
+		<method name="body_get_constant_force" qualifiers="const">
+			<return type="Vector2" />
+			<argument index="0" name="body" type="RID" />
+			<description>
+				Returns the body's total constant positional forces applied during each physics update.
+				See [method body_add_constant_force] and [method body_add_constant_central_force].
+			</description>
+		</method>
+		<method name="body_get_constant_torque" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="body" type="RID" />
+			<description>
+				Returns the body's total constant rotational forces applied during each physics update.
+				See [method body_add_constant_torque].
+			</description>
+		</method>
 		<method name="body_get_continuous_collision_detection_mode" qualifiers="const">
 			<return type="int" enum="PhysicsServer2D.CCDMode" />
 			<argument index="0" name="body" type="RID" />
@@ -348,7 +385,7 @@
 			<return type="PhysicsDirectBodyState2D" />
 			<argument index="0" name="body" type="RID" />
 			<description>
-				Returns the [PhysicsDirectBodyState2D] of the body.
+				Returns the [PhysicsDirectBodyState2D] of the body. Returns [code]null[/code] if the body is destroyed or removed from the physics space.
 			</description>
 		</method>
 		<method name="body_get_max_contacts_reported" qualifiers="const">
@@ -373,7 +410,7 @@
 			</description>
 		</method>
 		<method name="body_get_param" qualifiers="const">
-			<return type="float" />
+			<return type="Variant" />
 			<argument index="0" name="body" type="RID" />
 			<argument index="1" name="param" type="int" enum="PhysicsServer2D.BodyParameter" />
 			<description>
@@ -393,14 +430,6 @@
 			<argument index="0" name="body" type="RID" />
 			<description>
 				Returns the number of shapes assigned to a body.
-			</description>
-		</method>
-		<method name="body_get_shape_metadata" qualifiers="const">
-			<return type="Variant" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="shape_idx" type="int" />
-			<description>
-				Returns the metadata of a shape of a body.
 			</description>
 		</method>
 		<method name="body_get_shape_transform" qualifiers="const">
@@ -449,6 +478,13 @@
 				Removes a shape from a body. The shape is not deleted, so it can be reused afterwards.
 			</description>
 		</method>
+		<method name="body_reset_mass_properties">
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<description>
+				Restores the default inertia and center of mass based on shapes to cancel any custom values previously set using [method body_set_param].
+			</description>
+		</method>
 		<method name="body_set_axis_velocity">
 			<return type="void" />
 			<argument index="0" name="body" type="RID" />
@@ -473,6 +509,24 @@
 				Sets the physics layer or layers a body can collide with.
 			</description>
 		</method>
+		<method name="body_set_constant_force">
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="force" type="Vector2" />
+			<description>
+				Sets the body's total constant positional forces applied during each physics update.
+				See [method body_add_constant_force] and [method body_add_constant_central_force].
+			</description>
+		</method>
+		<method name="body_set_constant_torque">
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="torque" type="float" />
+			<description>
+				Sets the body's total constant rotational forces applied during each physics update.
+				See [method body_add_constant_torque].
+			</description>
+		</method>
 		<method name="body_set_continuous_collision_detection_mode">
 			<return type="void" />
 			<argument index="0" name="body" type="RID" />
@@ -489,6 +543,9 @@
 			<argument index="2" name="userdata" type="Variant" default="null" />
 			<description>
 				Sets the function used to calculate physics for an object, if that object allows it (see [method body_set_omit_force_integration]).
+				The force integration function takes 2 arguments:
+				[code]state:[/code] [PhysicsDirectBodyState2D] used to retrieve and modify the body's state.
+				[code]userdata:[/code] Optional user data, if it was passed when calling [code]body_set_force_integration_callback[/code].
 			</description>
 		</method>
 		<method name="body_set_max_contacts_reported">
@@ -519,7 +576,7 @@
 			<return type="void" />
 			<argument index="0" name="body" type="RID" />
 			<argument index="1" name="param" type="int" enum="PhysicsServer2D.BodyParameter" />
-			<argument index="2" name="value" type="float" />
+			<argument index="2" name="value" type="Variant" />
 			<description>
 				Sets a body parameter. See [enum BodyParameter] for a list of available parameters.
 			</description>
@@ -552,15 +609,6 @@
 				Disables shape in body if [code]disable[/code] is [code]true[/code].
 			</description>
 		</method>
-		<method name="body_set_shape_metadata">
-			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="shape_idx" type="int" />
-			<argument index="2" name="metadata" type="Variant" />
-			<description>
-				Sets metadata of a shape within a body. This metadata is different from [method Object.set_meta], and can be retrieved on shape queries.
-			</description>
-		</method>
 		<method name="body_set_shape_transform">
 			<return type="void" />
 			<argument index="0" name="body" type="RID" />
@@ -591,15 +639,10 @@
 		<method name="body_test_motion">
 			<return type="bool" />
 			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="from" type="Transform2D" />
-			<argument index="2" name="motion" type="Vector2" />
-			<argument index="3" name="infinite_inertia" type="bool" />
-			<argument index="4" name="margin" type="float" default="0.08" />
-			<argument index="5" name="result" type="PhysicsTestMotionResult2D" default="null" />
-			<argument index="6" name="exclude_raycast_shapes" type="bool" default="true" />
-			<argument index="7" name="exclude" type="Array" default="[]" />
+			<argument index="1" name="parameters" type="PhysicsTestMotionParameters2D" />
+			<argument index="2" name="result" type="PhysicsTestMotionResult2D" default="null" />
 			<description>
-				Returns [code]true[/code] if a collision would result from moving in the given direction from a given point in space. Margin increases the size of the shapes involved in the collision detection. [PhysicsTestMotionResult2D] can be passed to return additional information in.
+				Returns [code]true[/code] if a collision would result from moving along a motion vector from a given point in space. [PhysicsTestMotionParameters2D] is passed to set motion parameters. [PhysicsTestMotionResult2D] can be passed to return additional information.
 			</description>
 		</method>
 		<method name="capsule_shape_create">
@@ -718,16 +761,6 @@
 				Sets a joint parameter. See [enum JointParam] for a list of available parameters.
 			</description>
 		</method>
-		<method name="line_shape_create">
-			<return type="RID" />
-			<description>
-			</description>
-		</method>
-		<method name="ray_shape_create">
-			<return type="RID" />
-			<description>
-			</description>
-		</method>
 		<method name="rectangle_shape_create">
 			<return type="RID" />
 			<description>
@@ -738,18 +771,16 @@
 			<description>
 			</description>
 		</method>
+		<method name="separation_ray_shape_create">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="set_active">
 			<return type="void" />
 			<argument index="0" name="active" type="bool" />
 			<description>
 				Activates or deactivates the 2D physics engine.
-			</description>
-		</method>
-		<method name="set_collision_iterations">
-			<return type="void" />
-			<argument index="0" name="iterations" type="int" />
-			<description>
-				Sets the amount of iterations for calculating velocities of colliding bodies. The greater the amount of iterations, the more accurate the collisions will be. However, a greater amount of iterations requires more CPU power, which can decrease performance. The default value is [code]8[/code].
 			</description>
 		</method>
 		<method name="shape_get_data" qualifiers="const">
@@ -819,38 +850,48 @@
 				Sets the value for a space parameter. See [enum SpaceParameter] for a list of available parameters.
 			</description>
 		</method>
+		<method name="world_boundary_shape_create">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 		<constant name="SPACE_PARAM_CONTACT_RECYCLE_RADIUS" value="0" enum="SpaceParameter">
 			Constant to set/get the maximum distance a pair of bodies has to move before their collision status has to be recalculated.
 		</constant>
 		<constant name="SPACE_PARAM_CONTACT_MAX_SEPARATION" value="1" enum="SpaceParameter">
-			Constant to set/get the maximum distance a shape can be from another before they are considered separated.
+			Constant to set/get the maximum distance a shape can be from another before they are considered separated and the contact is discarded.
 		</constant>
-		<constant name="SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION" value="2" enum="SpaceParameter">
+		<constant name="SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION" value="2" enum="SpaceParameter">
 			Constant to set/get the maximum distance a shape can penetrate another shape before it is considered a collision.
 		</constant>
-		<constant name="SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD" value="3" enum="SpaceParameter">
+		<constant name="SPACE_PARAM_CONTACT_DEFAULT_BIAS" value="3" enum="SpaceParameter">
+			Constant to set/get the default solver bias for all physics contacts. A solver bias is a factor controlling how much two objects "rebound", after overlapping, to avoid leaving them in that state because of numerical imprecision.
+		</constant>
+		<constant name="SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD" value="4" enum="SpaceParameter">
 			Constant to set/get the threshold linear velocity of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after the time given.
 		</constant>
-		<constant name="SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD" value="4" enum="SpaceParameter">
+		<constant name="SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD" value="5" enum="SpaceParameter">
 			Constant to set/get the threshold angular velocity of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after the time given.
 		</constant>
-		<constant name="SPACE_PARAM_BODY_TIME_TO_SLEEP" value="5" enum="SpaceParameter">
+		<constant name="SPACE_PARAM_BODY_TIME_TO_SLEEP" value="6" enum="SpaceParameter">
 			Constant to set/get the maximum time of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after this time.
 		</constant>
-		<constant name="SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS" value="6" enum="SpaceParameter">
+		<constant name="SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS" value="7" enum="SpaceParameter">
 			Constant to set/get the default solver bias for all physics constraints. A solver bias is a factor controlling how much two objects "rebound", after violating a constraint, to avoid leaving them in that state because of numerical imprecision.
 		</constant>
-		<constant name="SPACE_PARAM_TEST_MOTION_MIN_CONTACT_DEPTH" value="7" enum="SpaceParameter">
+		<constant name="SPACE_PARAM_SOLVER_ITERATIONS" value="8" enum="SpaceParameter">
+			Constant to set/get the number of solver iterations for all contacts and constraints. The greater the amount of iterations, the more accurate the collisions will be. However, a greater amount of iterations requires more CPU power, which can decrease performance.
 		</constant>
-		<constant name="SHAPE_LINE" value="0" enum="ShapeType">
-			This is the constant for creating line shapes. A line shape is an infinite line with an origin point, and a normal. Thus, it can be used for front/behind checks.
+		<constant name="SHAPE_WORLD_BOUNDARY" value="0" enum="ShapeType">
+			This is the constant for creating world boundary shapes. A world boundary shape is an [i]infinite[/i] line with an origin point, and a normal. Thus, it can be used for front/behind checks.
 		</constant>
-		<constant name="SHAPE_RAY" value="1" enum="ShapeType">
+		<constant name="SHAPE_SEPARATION_RAY" value="1" enum="ShapeType">
+			This is the constant for creating separation ray shapes. A separation ray is defined by a length and separates itself from what is touching its far endpoint. Useful for character controllers.
 		</constant>
 		<constant name="SHAPE_SEGMENT" value="2" enum="ShapeType">
-			This is the constant for creating segment shapes. A segment shape is a line from a point A to a point B. It can be checked for intersections.
+			This is the constant for creating segment shapes. A segment shape is a [i]finite[/i] line from a point A to a point B. It can be checked for intersections.
 		</constant>
 		<constant name="SHAPE_CIRCLE" value="3" enum="ShapeType">
 			This is the constant for creating circle shapes. A circle shape only has a radius. It can be used for intersections and inside/outside checks.
@@ -870,28 +911,37 @@
 		<constant name="SHAPE_CUSTOM" value="8" enum="ShapeType">
 			This constant is used internally by the engine. Any attempt to create this kind of shape results in an error.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY" value="0" enum="AreaParameter">
+		<constant name="AREA_PARAM_GRAVITY_OVERRIDE_MODE" value="0" enum="AreaParameter">
+			Constant to set/get gravity override mode in an area. See [enum AreaSpaceOverrideMode] for possible values.
+		</constant>
+		<constant name="AREA_PARAM_GRAVITY" value="1" enum="AreaParameter">
 			Constant to set/get gravity strength in an area.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY_VECTOR" value="1" enum="AreaParameter">
+		<constant name="AREA_PARAM_GRAVITY_VECTOR" value="2" enum="AreaParameter">
 			Constant to set/get gravity vector/center in an area.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY_IS_POINT" value="2" enum="AreaParameter">
+		<constant name="AREA_PARAM_GRAVITY_IS_POINT" value="3" enum="AreaParameter">
 			Constant to set/get whether the gravity vector of an area is a direction, or a center point.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY_DISTANCE_SCALE" value="3" enum="AreaParameter">
+		<constant name="AREA_PARAM_GRAVITY_DISTANCE_SCALE" value="4" enum="AreaParameter">
 			Constant to set/get the falloff factor for point gravity of an area. The greater this value is, the faster the strength of gravity decreases with the square of distance.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY_POINT_ATTENUATION" value="4" enum="AreaParameter">
+		<constant name="AREA_PARAM_GRAVITY_POINT_ATTENUATION" value="5" enum="AreaParameter">
 			This constant was used to set/get the falloff factor for point gravity. It has been superseded by [constant AREA_PARAM_GRAVITY_DISTANCE_SCALE].
 		</constant>
-		<constant name="AREA_PARAM_LINEAR_DAMP" value="5" enum="AreaParameter">
-			Constant to set/get the linear dampening factor of an area.
+		<constant name="AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE" value="6" enum="AreaParameter">
+			Constant to set/get linear damping override mode in an area. See [enum AreaSpaceOverrideMode] for possible values.
 		</constant>
-		<constant name="AREA_PARAM_ANGULAR_DAMP" value="6" enum="AreaParameter">
-			Constant to set/get the angular dampening factor of an area.
+		<constant name="AREA_PARAM_LINEAR_DAMP" value="7" enum="AreaParameter">
+			Constant to set/get the linear damping factor of an area.
 		</constant>
-		<constant name="AREA_PARAM_PRIORITY" value="7" enum="AreaParameter">
+		<constant name="AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE" value="8" enum="AreaParameter">
+			Constant to set/get angular damping override mode in an area. See [enum AreaSpaceOverrideMode] for possible values.
+		</constant>
+		<constant name="AREA_PARAM_ANGULAR_DAMP" value="9" enum="AreaParameter">
+			Constant to set/get the angular damping factor of an area.
+		</constant>
+		<constant name="AREA_PARAM_PRIORITY" value="10" enum="AreaParameter">
 			Constant to set/get the priority (order of processing) of an area.
 		</constant>
 		<constant name="AREA_SPACE_OVERRIDE_DISABLED" value="0" enum="AreaSpaceOverrideMode">
@@ -910,7 +960,7 @@
 			This area replaces any gravity/damp calculated so far, but keeps calculating the rest of the areas, down to the default one.
 		</constant>
 		<constant name="BODY_MODE_STATIC" value="0" enum="BodyMode">
-			Constant for static bodies. In this mode, a body can be only moved by user code.
+			Constant for static bodies. In this mode, a body can be only moved by user code and doesn't collide with other bodies along its path when moved.
 		</constant>
 		<constant name="BODY_MODE_KINEMATIC" value="1" enum="BodyMode">
 			Constant for kinematic bodies. In this mode, a body can be only moved by user code and collides with other bodies along its path.
@@ -918,8 +968,8 @@
 		<constant name="BODY_MODE_DYNAMIC" value="2" enum="BodyMode">
 			Constant for dynamic bodies. In this mode, a body can be pushed by other bodies and has forces applied.
 		</constant>
-		<constant name="BODY_MODE_DYNAMIC_LOCKED" value="3" enum="BodyMode">
-			Constant for locked dynamic bodies. In this mode, a body is dynamic but can not rotate, and only its linear velocity is affected by external forces.
+		<constant name="BODY_MODE_DYNAMIC_LINEAR" value="3" enum="BodyMode">
+			Constant for linear dynamic bodies. In this mode, a body is dynamic but can not rotate, and only its linear velocity is affected by external forces.
 		</constant>
 		<constant name="BODY_PARAM_BOUNCE" value="0" enum="BodyParameter">
 			Constant to set/get a body's bounce factor.
@@ -933,17 +983,32 @@
 		<constant name="BODY_PARAM_INERTIA" value="3" enum="BodyParameter">
 			Constant to set/get a body's inertia.
 		</constant>
-		<constant name="BODY_PARAM_GRAVITY_SCALE" value="4" enum="BodyParameter">
+		<constant name="BODY_PARAM_CENTER_OF_MASS" value="4" enum="BodyParameter">
+			Constant to set/get a body's center of mass position in the body's local coordinate system.
+		</constant>
+		<constant name="BODY_PARAM_GRAVITY_SCALE" value="5" enum="BodyParameter">
 			Constant to set/get a body's gravity multiplier.
 		</constant>
-		<constant name="BODY_PARAM_LINEAR_DAMP" value="5" enum="BodyParameter">
+		<constant name="BODY_PARAM_LINEAR_DAMP_MODE" value="6" enum="BodyParameter">
+			Constant to set/get a body's linear dampening mode. See [enum BodyDampMode] for possible values.
+		</constant>
+		<constant name="BODY_PARAM_ANGULAR_DAMP_MODE" value="7" enum="BodyParameter">
+			Constant to set/get a body's angular dampening mode. See [enum BodyDampMode] for possible values.
+		</constant>
+		<constant name="BODY_PARAM_LINEAR_DAMP" value="8" enum="BodyParameter">
 			Constant to set/get a body's linear dampening factor.
 		</constant>
-		<constant name="BODY_PARAM_ANGULAR_DAMP" value="6" enum="BodyParameter">
+		<constant name="BODY_PARAM_ANGULAR_DAMP" value="9" enum="BodyParameter">
 			Constant to set/get a body's angular dampening factor.
 		</constant>
-		<constant name="BODY_PARAM_MAX" value="7" enum="BodyParameter">
+		<constant name="BODY_PARAM_MAX" value="10" enum="BodyParameter">
 			Represents the size of the [enum BodyParameter] enum.
+		</constant>
+		<constant name="BODY_DAMP_MODE_COMBINE" value="0" enum="BodyDampMode">
+			The body's damping value is added to any value set in areas or the default value.
+		</constant>
+		<constant name="BODY_DAMP_MODE_REPLACE" value="1" enum="BodyDampMode">
+			The body's damping value replaces any value set in areas or the default value.
 		</constant>
 		<constant name="BODY_STATE_TRANSFORM" value="0" enum="BodyState">
 			Constant to set/get the current transform matrix of the body.

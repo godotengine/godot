@@ -86,7 +86,46 @@ hb_segment_properties_hash (const hb_segment_properties_t *p)
 	 (intptr_t) (p->language);
 }
 
+/**
+ * hb_segment_properties_overlay:
+ * @p: #hb_segment_properties_t to fill in.
+ * @src: #hb_segment_properties_t to fill in from.
+ *
+ * Fills in missing fields of @p from @src in a considered manner.
+ *
+ * First, if @p does not have direction set, direction is copied from @src.
+ *
+ * Next, if @p and @src have the same direction (which can be unset), if @p
+ * does not have script set, script is copied from @src.
+ *
+ * Finally, if @p and @src have the same direction and script (which either
+ * can be unset), if @p does not have language set, language is copied from
+ * @src.
+ *
+ * Since: 3.3.0
+ **/
+void
+hb_segment_properties_overlay (hb_segment_properties_t *p,
+			       const hb_segment_properties_t *src)
+{
+  if (unlikely (!p || !src))
+    return;
 
+  if (!p->direction)
+    p->direction = src->direction;
+
+  if (p->direction != src->direction)
+    return;
+
+  if (!p->script)
+    p->script = src->script;
+
+  if (p->script != src->script)
+    return;
+
+  if (!p->language)
+    p->language = src->language;
+}
 
 /* Here is how the buffer works internally:
  *
@@ -96,14 +135,15 @@ hb_segment_properties_hash (const hb_segment_properties_t *p)
  * As an optimization, both info and out_info may point to the
  * same piece of memory, which is owned by info.  This remains the
  * case as long as out_len doesn't exceed i at any time.
- * In that case, swap_buffers() is no-op and the glyph operations operate
- * mostly in-place.
+ * In that case, sync() is mostly no-op and the glyph operations
+ * operate mostly in-place.
  *
  * As soon as out_info gets longer than info, out_info is moved over
- * to an alternate buffer (which we reuse the pos buffer for!), and its
+ * to an alternate buffer (which we reuse the pos buffer for), and its
  * current contents (out_len entries) are copied to the new place.
- * This should all remain transparent to the user.  swap_buffers() then
- * switches info and out_info.
+ *
+ * This should all remain transparent to the user.  sync() then
+ * switches info over to out_info and does housekeeping.
  */
 
 
@@ -136,8 +176,8 @@ hb_buffer_t::enlarge (unsigned int size)
   if (unlikely (hb_unsigned_mul_overflows (new_allocated, sizeof (info[0]))))
     goto done;
 
-  new_pos = (hb_glyph_position_t *) realloc (pos, new_allocated * sizeof (pos[0]));
-  new_info = (hb_glyph_info_t *) realloc (info, new_allocated * sizeof (info[0]));
+  new_pos = (hb_glyph_position_t *) hb_realloc (pos, new_allocated * sizeof (pos[0]));
+  new_info = (hb_glyph_info_t *) hb_realloc (info, new_allocated * sizeof (info[0]));
 
 done:
   if (unlikely (!new_pos || !new_info))
@@ -216,13 +256,27 @@ hb_buffer_t::get_scratch_buffer (unsigned int *size)
 /* HarfBuzz-Internal API */
 
 void
+hb_buffer_t::similar (const hb_buffer_t &src)
+{
+  hb_unicode_funcs_destroy (unicode);
+  unicode = hb_unicode_funcs_reference (src.unicode);
+  flags = src.flags;
+  cluster_level = src.cluster_level;
+  replacement = src.invisible;
+  invisible = src.invisible;
+  not_found = src.not_found;
+}
+
+void
 hb_buffer_t::reset ()
 {
   hb_unicode_funcs_destroy (unicode);
   unicode = hb_unicode_funcs_reference (hb_unicode_funcs_get_default ());
   flags = HB_BUFFER_FLAG_DEFAULT;
+  cluster_level = HB_BUFFER_CLUSTER_LEVEL_DEFAULT;
   replacement = HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT;
   invisible = 0;
+  not_found = 0;
 
   clear ();
 }
@@ -230,11 +284,10 @@ hb_buffer_t::reset ()
 void
 hb_buffer_t::clear ()
 {
+  content_type = HB_BUFFER_CONTENT_TYPE_INVALID;
   hb_segment_properties_t default_props = HB_SEGMENT_PROPERTIES_DEFAULT;
   props = default_props;
-  scratch_flags = HB_BUFFER_SCRATCH_FLAG_DEFAULT;
 
-  content_type = HB_BUFFER_CONTENT_TYPE_INVALID;
   successful = true;
   have_output = false;
   have_positions = false;
@@ -242,15 +295,43 @@ hb_buffer_t::clear ()
   idx = 0;
   len = 0;
   out_len = 0;
-  out_info = info;
 
-  serial = 0;
+  out_info = info;
 
   memset (context, 0, sizeof context);
   memset (context_len, 0, sizeof context_len);
 
   deallocate_var_all ();
+  serial = 0;
+  scratch_flags = HB_BUFFER_SCRATCH_FLAG_DEFAULT;
 }
+
+void
+hb_buffer_t::enter ()
+{
+  deallocate_var_all ();
+  serial = 0;
+  scratch_flags = HB_BUFFER_SCRATCH_FLAG_DEFAULT;
+  if (likely (!hb_unsigned_mul_overflows (len, HB_BUFFER_MAX_LEN_FACTOR)))
+  {
+    max_len = hb_max (len * HB_BUFFER_MAX_LEN_FACTOR,
+		      (unsigned) HB_BUFFER_MAX_LEN_MIN);
+  }
+  if (likely (!hb_unsigned_mul_overflows (len, HB_BUFFER_MAX_OPS_FACTOR)))
+  {
+    max_ops = hb_max (len * HB_BUFFER_MAX_OPS_FACTOR,
+		      (unsigned) HB_BUFFER_MAX_OPS_MIN);
+  }
+}
+void
+hb_buffer_t::leave ()
+{
+  max_len = HB_BUFFER_MAX_LEN_DEFAULT;
+  max_ops = HB_BUFFER_MAX_OPS_DEFAULT;
+  deallocate_var_all ();
+  serial = 0;
+}
+
 
 void
 hb_buffer_t::add (hb_codepoint_t  codepoint,
@@ -282,21 +363,12 @@ hb_buffer_t::add_info (const hb_glyph_info_t &glyph_info)
 
 
 void
-hb_buffer_t::remove_output ()
-{
-  have_output = false;
-  have_positions = false;
-
-  out_len = 0;
-  out_info = info;
-}
-
-void
 hb_buffer_t::clear_output ()
 {
   have_output = true;
   have_positions = false;
 
+  idx = 0;
   out_len = 0;
   out_info = info;
 }
@@ -314,31 +386,25 @@ hb_buffer_t::clear_positions ()
 }
 
 void
-hb_buffer_t::swap_buffers ()
+hb_buffer_t::sync ()
 {
-  if (unlikely (!successful)) return;
+  assert (have_output);
 
   assert (idx <= len);
-  if (unlikely (!next_glyphs (len - idx))) return;
 
-  assert (have_output);
-  have_output = false;
+  if (unlikely (!successful || !next_glyphs (len - idx)))
+    goto reset;
 
   if (out_info != info)
   {
-    hb_glyph_info_t *tmp;
-    tmp = info;
+    pos = (hb_glyph_position_t *) info;
     info = out_info;
-    out_info = tmp;
-
-    pos = (hb_glyph_position_t *) out_info;
   }
-
-  unsigned int tmp;
-  tmp = len;
   len = out_len;
-  out_len = tmp;
 
+reset:
+  have_output = false;
+  out_len = 0;
   idx = 0;
 }
 
@@ -373,12 +439,11 @@ hb_buffer_t::move_to (unsigned int i)
     /* This will blow in our face if memory allocation fails later
      * in this same lookup...
      *
-     * We used to shift with extra 32 items, instead of the 0 below.
+     * We used to shift with extra 32 items.
      * But that would leave empty slots in the buffer in case of allocation
-     * failures.  Setting to zero for now to avoid other problems (see
-     * comments in shift_forward().  This can cause O(N^2) behavior more
-     * severely than adding 32 empty slots can... */
-    if (unlikely (idx < count && !shift_forward (count + 0))) return false;
+     * failures.  See comments in shift_forward().  This can cause O(N^2)
+     * behavior more severely than adding 32 empty slots can... */
+    if (unlikely (idx < count && !shift_forward (count - idx))) return false;
 
     assert (idx >= count);
 
@@ -407,52 +472,6 @@ hb_buffer_t::set_masks (hb_mask_t    value,
   for (unsigned int i = 0; i < count; i++)
     if (cluster_start <= info[i].cluster && info[i].cluster < cluster_end)
       info[i].mask = (info[i].mask & not_mask) | value;
-}
-
-void
-hb_buffer_t::reverse_range (unsigned int start,
-			    unsigned int end)
-{
-  if (end - start < 2)
-    return;
-
-  hb_array_t<hb_glyph_info_t> (info, len).reverse (start, end);
-
-  if (have_positions) {
-    hb_array_t<hb_glyph_position_t> (pos, len).reverse (start, end);
-  }
-}
-
-void
-hb_buffer_t::reverse ()
-{
-  if (unlikely (!len))
-    return;
-
-  reverse_range (0, len);
-}
-
-void
-hb_buffer_t::reverse_clusters ()
-{
-  unsigned int i, start, count, last_cluster;
-
-  if (unlikely (!len))
-    return;
-
-  reverse ();
-
-  count = len;
-  start = 0;
-  last_cluster = info[0].cluster;
-  for (i = 1; i < count; i++) {
-    if (last_cluster != info[i].cluster) {
-      reverse_range (start, i);
-      start = i;
-      last_cluster = info[i].cluster;
-    }
-  }
-  reverse_range (start, i);
 }
 
 void
@@ -554,32 +573,6 @@ done:
 }
 
 void
-hb_buffer_t::unsafe_to_break_impl (unsigned int start, unsigned int end)
-{
-  unsigned int cluster = UINT_MAX;
-  cluster = _unsafe_to_break_find_min_cluster (info, start, end, cluster);
-  _unsafe_to_break_set_mask (info, start, end, cluster);
-}
-void
-hb_buffer_t::unsafe_to_break_from_outbuffer (unsigned int start, unsigned int end)
-{
-  if (!have_output)
-  {
-    unsafe_to_break_impl (start, end);
-    return;
-  }
-
-  assert (start <= out_len);
-  assert (idx <= end);
-
-  unsigned int cluster = UINT_MAX;
-  cluster = _unsafe_to_break_find_min_cluster (out_info, start, out_len, cluster);
-  cluster = _unsafe_to_break_find_min_cluster (info, idx, end, cluster);
-  _unsafe_to_break_set_mask (out_info, start, out_len, cluster);
-  _unsafe_to_break_set_mask (info, idx, end, cluster);
-}
-
-void
 hb_buffer_t::guess_segment_properties ()
 {
   assert_unicode ();
@@ -623,14 +616,14 @@ DEFINE_NULL_INSTANCE (hb_buffer_t) =
   HB_BUFFER_CLUSTER_LEVEL_DEFAULT,
   HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT,
   0, /* invisible */
-  HB_BUFFER_SCRATCH_FLAG_DEFAULT,
-  HB_BUFFER_MAX_LEN_DEFAULT,
-  HB_BUFFER_MAX_OPS_DEFAULT,
+  0, /* not_found */
+
 
   HB_BUFFER_CONTENT_TYPE_INVALID,
   HB_SEGMENT_PROPERTIES_DEFAULT,
+
   false, /* successful */
-  true, /* have_output */
+  false, /* have_output */
   true  /* have_positions */
 
   /* Zero is good enough for everything else. */
@@ -665,6 +658,46 @@ hb_buffer_create ()
   buffer->reset ();
 
   return buffer;
+}
+
+/**
+ * hb_buffer_create_similar:
+ * @src: An #hb_buffer_t
+ *
+ * Creates a new #hb_buffer_t, similar to hb_buffer_create(). The only
+ * difference is that the buffer is configured similarly to @src.
+ *
+ * Return value: (transfer full):
+ * A newly allocated #hb_buffer_t, similar to hb_buffer_create().
+ *
+ * Since: 3.3.0
+ **/
+hb_buffer_t *
+hb_buffer_create_similar (const hb_buffer_t *src)
+{
+  hb_buffer_t *buffer = hb_buffer_create ();
+
+  buffer->similar (*src);
+
+  return buffer;
+}
+
+/**
+ * hb_buffer_reset:
+ * @buffer: An #hb_buffer_t
+ *
+ * Resets the buffer to its initial status, as if it was just newly created
+ * with hb_buffer_create().
+ *
+ * Since: 0.9.2
+ **/
+void
+hb_buffer_reset (hb_buffer_t *buffer)
+{
+  if (unlikely (hb_object_is_immutable (buffer)))
+    return;
+
+  buffer->reset ();
 }
 
 /**
@@ -717,14 +750,14 @@ hb_buffer_destroy (hb_buffer_t *buffer)
 
   hb_unicode_funcs_destroy (buffer->unicode);
 
-  free (buffer->info);
-  free (buffer->pos);
+  hb_free (buffer->info);
+  hb_free (buffer->pos);
 #ifndef HB_NO_BUFFER_MESSAGE
   if (buffer->message_destroy)
     buffer->message_destroy (buffer->message_data);
 #endif
 
-  free (buffer);
+  hb_free (buffer);
 }
 
 /**
@@ -1173,24 +1206,46 @@ hb_buffer_get_invisible_glyph (hb_buffer_t    *buffer)
   return buffer->invisible;
 }
 
-
 /**
- * hb_buffer_reset:
+ * hb_buffer_set_not_found_glyph:
  * @buffer: An #hb_buffer_t
+ * @not_found: the not-found #hb_codepoint_t
  *
- * Resets the buffer to its initial status, as if it was just newly created
- * with hb_buffer_create().
+ * Sets the #hb_codepoint_t that replaces characters not found in
+ * the font during shaping.
  *
- * Since: 0.9.2
+ * The not-found glyph defaults to zero, sometimes knows as the
+ * ".notdef" glyph.  This API allows for differentiating the two.
+ *
+ * Since: 3.1.0
  **/
 void
-hb_buffer_reset (hb_buffer_t *buffer)
+hb_buffer_set_not_found_glyph (hb_buffer_t    *buffer,
+			       hb_codepoint_t  not_found)
 {
   if (unlikely (hb_object_is_immutable (buffer)))
     return;
 
-  buffer->reset ();
+  buffer->not_found = not_found;
 }
+
+/**
+ * hb_buffer_get_not_found_glyph:
+ * @buffer: An #hb_buffer_t
+ *
+ * See hb_buffer_set_not_found_glyph().
+ *
+ * Return value:
+ * The @buffer not-found #hb_codepoint_t
+ *
+ * Since: 3.1.0
+ **/
+hb_codepoint_t
+hb_buffer_get_not_found_glyph (hb_buffer_t    *buffer)
+{
+  return buffer->not_found;
+}
+
 
 /**
  * hb_buffer_clear_contents:
@@ -1363,6 +1418,11 @@ hb_buffer_get_glyph_infos (hb_buffer_t  *buffer,
  * Returns @buffer glyph position array.  Returned pointer
  * is valid as long as @buffer contents are not modified.
  *
+ * If buffer did not have positions before, the positions will be
+ * initialized to zeros, unless this function is called from
+ * within a buffer message callback (see hb_buffer_set_message_func()),
+ * in which case %NULL is returned.
+ *
  * Return value: (transfer none) (array length=length):
  * The @buffer glyph position array.
  * The value valid as long as buffer has not been modified.
@@ -1373,11 +1433,16 @@ hb_glyph_position_t *
 hb_buffer_get_glyph_positions (hb_buffer_t  *buffer,
 			       unsigned int *length)
 {
-  if (!buffer->have_positions)
-    buffer->clear_positions ();
-
   if (length)
     *length = buffer->len;
+
+  if (!buffer->have_positions)
+  {
+    if (unlikely (buffer->message_depth))
+      return nullptr;
+
+    buffer->clear_positions ();
+  }
 
   return (hb_glyph_position_t *) buffer->pos;
 }
@@ -1757,9 +1822,33 @@ hb_buffer_append (hb_buffer_t *buffer,
   if (!buffer->have_positions && source->have_positions)
     buffer->clear_positions ();
 
+  hb_segment_properties_overlay (&buffer->props, &source->props);
+
   memcpy (buffer->info + orig_len, source->info + start, (end - start) * sizeof (buffer->info[0]));
   if (buffer->have_positions)
     memcpy (buffer->pos + orig_len, source->pos + start, (end - start) * sizeof (buffer->pos[0]));
+
+  if (source->content_type == HB_BUFFER_CONTENT_TYPE_UNICODE)
+  {
+    /* See similar logic in add_utf. */
+
+    /* pre-context */
+    if (!orig_len && start + source->context_len[0] > 0)
+    {
+      buffer->clear_context (0);
+      while (start > 0 && buffer->context_len[0] < buffer->CONTEXT_LENGTH)
+	buffer->context[0][buffer->context_len[0]++] = source->info[--start].codepoint;
+      for (auto i = 0u; i < source->context_len[0] && buffer->context_len[0] < buffer->CONTEXT_LENGTH; i++)
+	buffer->context[0][buffer->context_len[0]++] = source->context[0][i];
+    }
+
+    /* post-context */
+    buffer->clear_context (1);
+    while (end < source->len && buffer->context_len[1] < buffer->CONTEXT_LENGTH)
+      buffer->context[1][buffer->context_len[1]++] = source->info[end++].codepoint;
+    for (auto i = 0u; i < source->context_len[1] && buffer->context_len[1] < buffer->CONTEXT_LENGTH; i++)
+      buffer->context[1][buffer->context_len[1]++] = source->context[1][i];
+  }
 }
 
 

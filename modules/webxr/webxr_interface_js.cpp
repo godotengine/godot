@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -163,9 +163,14 @@ String WebXRInterfaceJS::get_reference_space_type() const {
 
 Ref<XRPositionalTracker> WebXRInterfaceJS::get_controller(int p_controller_id) const {
 	XRServer *xr_server = XRServer::get_singleton();
-	ERR_FAIL_NULL_V(xr_server, nullptr);
+	ERR_FAIL_NULL_V(xr_server, Ref<XRPositionalTracker>());
 
-	return xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, p_controller_id);
+	// TODO support more then two controllers
+	if (p_controller_id >= 0 && p_controller_id < 2) {
+		return controllers[p_controller_id];
+	};
+
+	return Ref<XRPositionalTracker>();
 }
 
 String WebXRInterfaceJS::get_visibility_state() const {
@@ -199,7 +204,7 @@ StringName WebXRInterfaceJS::get_name() const {
 	return "WebXR";
 };
 
-int WebXRInterfaceJS::get_capabilities() const {
+uint32_t WebXRInterfaceJS::get_capabilities() const {
 	return XRInterface::XR_STEREO | XRInterface::XR_MONO;
 };
 
@@ -223,6 +228,13 @@ bool WebXRInterfaceJS::initialize() {
 		if (requested_reference_space_types.size() == 0) {
 			return false;
 		}
+
+		// we must create a tracker for our head
+		head_tracker.instantiate();
+		head_tracker->set_tracker_type(XRServer::TRACKER_HEAD);
+		head_tracker->set_tracker_name("head");
+		head_tracker->set_tracker_desc("Players head");
+		xr_server->add_tracker(head_tracker);
 
 		// make this our primary interface
 		xr_server->set_primary_interface(this);
@@ -255,8 +267,16 @@ void WebXRInterfaceJS::uninitialize() {
 	if (initialized) {
 		XRServer *xr_server = XRServer::get_singleton();
 		if (xr_server != nullptr) {
-			// no longer our primary interface
-			xr_server->clear_primary_interface_if(this);
+			if (head_tracker.is_valid()) {
+				xr_server->remove_tracker(head_tracker);
+
+				head_tracker.unref();
+			}
+
+			if (xr_server->get_primary_interface() == this) {
+				// no longer our primary interface
+				xr_server->set_primary_interface(nullptr);
+			}
 		}
 
 		godot_webxr_uninitialize();
@@ -285,12 +305,12 @@ Transform3D WebXRInterfaceJS::_js_matrix_to_transform(float *p_js_matrix) {
 	return transform;
 }
 
-Size2 WebXRInterfaceJS::get_render_targetsize() {
+Size2 WebXRInterfaceJS::get_render_target_size() {
 	if (render_targetsize.width != 0 && render_targetsize.height != 0) {
 		return render_targetsize;
 	}
 
-	int *js_size = godot_webxr_get_render_targetsize();
+	int *js_size = godot_webxr_get_render_target_size();
 	if (!initialized || js_size == nullptr) {
 		// As a temporary default (until WebXR is fully initialized), use half the window size.
 		Size2 temp = DisplayServer::get_singleton()->window_get_size();
@@ -341,7 +361,7 @@ Transform3D WebXRInterfaceJS::get_transform_for_view(uint32_t p_view, const Tran
 	return p_cam_transform * xr_server->get_reference_frame() * transform_for_eye;
 };
 
-CameraMatrix WebXRInterfaceJS::get_projection_for_view(uint32_t p_view, real_t p_aspect, real_t p_z_near, real_t p_z_far) {
+CameraMatrix WebXRInterfaceJS::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
 	CameraMatrix eye;
 
 	float *js_matrix = godot_webxr_get_projection_for_eye(p_view + 1);
@@ -365,21 +385,7 @@ CameraMatrix WebXRInterfaceJS::get_projection_for_view(uint32_t p_view, real_t p
 	return eye;
 }
 
-unsigned int WebXRInterfaceJS::get_external_texture_for_eye(XRInterface::Eyes p_eye) {
-	if (!initialized) {
-		return 0;
-	}
-	return godot_webxr_get_external_texture_for_eye(p_eye);
-}
-
-void WebXRInterfaceJS::commit_for_eye(XRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) {
-	if (!initialized) {
-		return;
-	}
-	godot_webxr_commit_for_eye(p_eye);
-}
-
-Vector<BlitToScreen> WebXRInterfaceJS::commit_views(RID p_render_target, const Rect2 &p_screen_rect) {
+Vector<BlitToScreen> WebXRInterfaceJS::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
 	Vector<BlitToScreen> blit_to_screen;
 
 	if (!initialized) {
@@ -387,9 +393,9 @@ Vector<BlitToScreen> WebXRInterfaceJS::commit_views(RID p_render_target, const R
 	}
 
 	// @todo Refactor this to be based on "views" rather than "eyes".
-	godot_webxr_commit_for_eye(XRInterface::EYE_LEFT);
+	godot_webxr_commit_for_eye(1);
 	if (godot_webxr_get_view_count() > 1) {
-		godot_webxr_commit_for_eye(XRInterface::EYE_RIGHT);
+		godot_webxr_commit_for_eye(2);
 	}
 
 	return blit_to_screen;
@@ -398,6 +404,11 @@ Vector<BlitToScreen> WebXRInterfaceJS::commit_views(RID p_render_target, const R
 void WebXRInterfaceJS::process() {
 	if (initialized) {
 		godot_webxr_sample_controller_data();
+
+		if (head_tracker.is_valid()) {
+			// TODO set default pose to our head location (i.e. get_camera_transform without world scale and reference frame applied)
+			// head_tracker->set_pose("default", head_transform, Vector3(), Vector3());
+		}
 
 		int controller_count = godot_webxr_get_controller_count();
 		if (controller_count == 0) {
@@ -414,51 +425,70 @@ void WebXRInterfaceJS::_update_tracker(int p_controller_id) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	Ref<XRPositionalTracker> tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, p_controller_id + 1);
+	// need to support more then two controllers...
+	if (p_controller_id < 0 || p_controller_id > 1) {
+		return;
+	}
+
+	Ref<XRPositionalTracker> tracker = controllers[p_controller_id];
 	if (godot_webxr_is_controller_connected(p_controller_id)) {
 		if (tracker.is_null()) {
 			tracker.instantiate();
 			tracker->set_tracker_type(XRServer::TRACKER_CONTROLLER);
 			// Controller id's 0 and 1 are always the left and right hands.
 			if (p_controller_id < 2) {
-				tracker->set_tracker_name(p_controller_id == 0 ? "Left" : "Right");
+				tracker->set_tracker_name(p_controller_id == 0 ? "left_hand" : "right_hand");
+				tracker->set_tracker_desc(p_controller_id == 0 ? "Left hand controller" : "Right hand controller");
 				tracker->set_tracker_hand(p_controller_id == 0 ? XRPositionalTracker::TRACKER_HAND_LEFT : XRPositionalTracker::TRACKER_HAND_RIGHT);
+			} else {
+				char name[1024];
+				sprintf(name, "tracker_%i", p_controller_id);
+				tracker->set_tracker_name(name);
+				tracker->set_tracker_desc(name);
 			}
-			// Use the ids we're giving to our "virtual" gamepads.
-			tracker->set_joy_id(p_controller_id + 100);
 			xr_server->add_tracker(tracker);
 		}
 
-		Input *input = Input::get_singleton();
-
 		float *tracker_matrix = godot_webxr_get_controller_transform(p_controller_id);
 		if (tracker_matrix) {
+			// Note, poses should NOT have world scale and our reference frame applied!
 			Transform3D transform = _js_matrix_to_transform(tracker_matrix);
-			tracker->set_position(transform.origin);
-			tracker->set_orientation(transform.basis);
+			tracker->set_pose("default", transform, Vector3(), Vector3());
 			free(tracker_matrix);
 		}
 
+		// TODO implement additional poses such as "aim" and "grip"
+
 		int *buttons = godot_webxr_get_controller_buttons(p_controller_id);
 		if (buttons) {
+			// TODO buttons should be named properly, this is just a temporary fix
 			for (int i = 0; i < buttons[0]; i++) {
-				input->joy_button(p_controller_id + 100, (JoyButton)i, *((float *)buttons + (i + 1)));
+				char name[1024];
+				sprintf(name, "button_%i", i);
+
+				float value = *((float *)buttons + (i + 1));
+				bool state = value > 0.0;
+				tracker->set_input(name, state);
 			}
 			free(buttons);
 		}
 
 		int *axes = godot_webxr_get_controller_axes(p_controller_id);
 		if (axes) {
+			// TODO again just a temporary fix, split these between proper float and vector2 inputs
 			for (int i = 0; i < axes[0]; i++) {
-				Input::JoyAxisValue joy_axis;
-				joy_axis.min = -1;
-				joy_axis.value = *((float *)axes + (i + 1));
-				input->joy_axis(p_controller_id + 100, (JoyAxis)i, joy_axis);
+				char name[1024];
+				sprintf(name, "axis_%i", i);
+
+				float value = *((float *)axes + (i + 1));
+				;
+				tracker->set_input(name, value);
 			}
 			free(axes);
 		}
 	} else if (tracker.is_valid()) {
 		xr_server->remove_tracker(tracker);
+		controllers[p_controller_id].unref();
 	}
 }
 
@@ -468,14 +498,10 @@ void WebXRInterfaceJS::_on_controller_changed() {
 	for (int i = 0; i < 2; i++) {
 		bool controller_connected = godot_webxr_is_controller_connected(i);
 		if (controllers_state[i] != controller_connected) {
-			Input::get_singleton()->joy_connection_changed(i + 100, controller_connected, i == 0 ? "Left" : "Right", "");
+			// Input::get_singleton()->joy_connection_changed(i + 100, controller_connected, i == 0 ? "Left" : "Right", "");
 			controllers_state[i] = controller_connected;
 		}
 	}
-}
-
-void WebXRInterfaceJS::notification(int p_what) {
-	// Nothing to do here.
 }
 
 WebXRInterfaceJS::WebXRInterfaceJS() {

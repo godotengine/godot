@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -914,6 +914,14 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 5;
 			} break;
 				DISASSEMBLE_ITERATE_TYPES(DISASSEMBLE_ITERATE);
+			case OPCODE_STORE_GLOBAL: {
+				text += "store global ";
+				text += DADDR(1);
+				text += " = ";
+				text += String::num_int64(_code_ptr[ip + 2]);
+
+				incr += 3;
+			} break;
 			case OPCODE_STORE_NAMED_GLOBAL: {
 				text += "store named global ";
 				text += DADDR(1);

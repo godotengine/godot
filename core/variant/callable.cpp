@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -114,8 +114,9 @@ ObjectID Callable::get_object_id() const {
 }
 
 StringName Callable::get_method() const {
-	ERR_FAIL_COND_V_MSG(is_custom(), StringName(),
-			vformat("Can't get method on CallableCustom \"%s\".", operator String()));
+	if (is_custom()) {
+		return get_custom()->get_method();
+	}
 	return method;
 }
 
@@ -310,6 +311,10 @@ Callable::~Callable() {
 	}
 }
 
+StringName CallableCustom::get_method() const {
+	ERR_FAIL_V_MSG(StringName(), vformat("Can't get method on CallableCustom \"%s\".", get_as_text()));
+}
+
 void CallableCustom::rpc(int p_peer_id, const Variant **p_arguments, int p_argcount, Callable::CallError &r_call_error) const {
 	r_call_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 	r_call_error.argument = 0;
@@ -377,11 +382,11 @@ Error Signal::emit(const Variant **p_arguments, int p_argcount) const {
 	return obj->emit_signal(name, p_arguments, p_argcount);
 }
 
-Error Signal::connect(const Callable &p_callable, const Vector<Variant> &p_binds, uint32_t p_flags) {
+Error Signal::connect(const Callable &p_callable, uint32_t p_flags) {
 	Object *object = get_object();
 	ERR_FAIL_COND_V(!object, ERR_UNCONFIGURED);
 
-	return object->connect(name, p_callable, p_binds, p_flags);
+	return object->connect(name, p_callable, varray(), p_flags);
 }
 
 void Signal::disconnect(const Callable &p_callable) {

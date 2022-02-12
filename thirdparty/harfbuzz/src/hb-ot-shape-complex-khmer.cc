@@ -42,7 +42,8 @@ khmer_features[] =
 {
   /*
    * Basic features.
-   * These features are applied in order, one at a time, after reordering.
+   * These features are applied all at once, before reordering, constrained
+   * to the syllable.
    */
   {HB_TAG('p','r','e','f'), F_MANUAL_JOINERS},
   {HB_TAG('b','l','w','f'), F_MANUAL_JOINERS},
@@ -147,7 +148,7 @@ struct khmer_shape_plan_t
 static void *
 data_create_khmer (const hb_ot_shape_plan_t *plan)
 {
-  khmer_shape_plan_t *khmer_plan = (khmer_shape_plan_t *) calloc (1, sizeof (khmer_shape_plan_t));
+  khmer_shape_plan_t *khmer_plan = (khmer_shape_plan_t *) hb_calloc (1, sizeof (khmer_shape_plan_t));
   if (unlikely (!khmer_plan))
     return nullptr;
 
@@ -161,7 +162,7 @@ data_create_khmer (const hb_ot_shape_plan_t *plan)
 static void
 data_destroy_khmer (void *data)
 {
-  free (data);
+  hb_free (data);
 }
 
 static void

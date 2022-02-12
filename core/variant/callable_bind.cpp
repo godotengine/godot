@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -70,12 +70,19 @@ bool CallableCustomBind::_less_func(const CallableCustom *p_a, const CallableCus
 CallableCustom::CompareEqualFunc CallableCustomBind::get_compare_equal_func() const {
 	return _equal_func;
 }
+
 CallableCustom::CompareLessFunc CallableCustomBind::get_compare_less_func() const {
 	return _less_func;
 }
+
+StringName CallableCustomBind::get_method() const {
+	return callable.get_method();
+}
+
 ObjectID CallableCustomBind::get_object() const {
 	return callable.get_object_id();
 }
+
 const Callable *CallableCustomBind::get_base_comparator() const {
 	return &callable;
 }
@@ -140,12 +147,19 @@ bool CallableCustomUnbind::_less_func(const CallableCustom *p_a, const CallableC
 CallableCustom::CompareEqualFunc CallableCustomUnbind::get_compare_equal_func() const {
 	return _equal_func;
 }
+
 CallableCustom::CompareLessFunc CallableCustomUnbind::get_compare_less_func() const {
 	return _less_func;
 }
+
+StringName CallableCustomUnbind::get_method() const {
+	return callable.get_method();
+}
+
 ObjectID CallableCustomUnbind::get_object() const {
 	return callable.get_object_id();
 }
+
 const Callable *CallableCustomUnbind::get_base_comparator() const {
 	return &callable;
 }
@@ -169,7 +183,8 @@ CallableCustomUnbind::~CallableCustomUnbind() {
 }
 
 Callable callable_bind(const Callable &p_callable, const Variant &p_arg1) {
-	return p_callable.bind((const Variant **)&p_arg1, 1);
+	const Variant *args[1] = { &p_arg1 };
+	return p_callable.bind(args, 1);
 }
 
 Callable callable_bind(const Callable &p_callable, const Variant &p_arg1, const Variant &p_arg2) {

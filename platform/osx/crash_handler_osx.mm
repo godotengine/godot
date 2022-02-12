@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
+#include "core/version.h"
 #include "main/main.h"
 
 #include <string.h>
@@ -85,11 +86,18 @@ static void handle_crash(int sig) {
 	}
 
 	// Dump the backtrace to stderr with a message to the user
+	fprintf(stderr, "\n================================================================\n");
 	fprintf(stderr, "%s: Program crashed with signal %d\n", __FUNCTION__, sig);
 
 	if (OS::get_singleton()->get_main_loop())
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_CRASH);
 
+	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
+	if (String(VERSION_HASH).is_empty()) {
+		fprintf(stderr, "Engine version: %s\n", VERSION_FULL_NAME);
+	} else {
+		fprintf(stderr, "Engine version: %s (%s)\n", VERSION_FULL_NAME, VERSION_HASH);
+	}
 	fprintf(stderr, "Dumping the backtrace. %s\n", msg.utf8().get_data());
 	char **strings = backtrace_symbols(bt_buffer, size);
 	if (strings) {
@@ -125,8 +133,13 @@ static void handle_crash(int sig) {
 
 				args.push_back("-o");
 				args.push_back(_execpath);
+#if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__)
 				args.push_back("-arch");
 				args.push_back("x86_64");
+#elif defined(__aarch64__)
+				args.push_back("-arch");
+				args.push_back("arm64");
+#endif
 				args.push_back("-l");
 				snprintf(str, 1024, "%p", load_addr);
 				args.push_back(str);
@@ -137,7 +150,7 @@ static void handle_crash(int sig) {
 				String out = "";
 				Error err = OS::get_singleton()->execute(String("atos"), args, &out, &ret);
 				if (err == OK && out.substr(0, 2) != "0x") {
-					out.erase(out.length() - 1, 1);
+					out = out.substr(0, out.length() - 1);
 					output = out;
 				}
 			}
@@ -148,6 +161,7 @@ static void handle_crash(int sig) {
 		free(strings);
 	}
 	fprintf(stderr, "-- END OF BACKTRACE --\n");
+	fprintf(stderr, "================================================================\n");
 
 	// Abort to pass the error to the OS
 	abort();

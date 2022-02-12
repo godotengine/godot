@@ -6,8 +6,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="cull_mode" type="int" setter="set_cull_mode" getter="get_cull_mode" enum="RenderingDevice.PolygonCullMode" default="0">
 		</member>
@@ -32,6 +30,4 @@
 		<member name="wireframe" type="bool" setter="set_wireframe" getter="get_wireframe" default="false">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

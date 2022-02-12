@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -87,7 +87,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 
 			// In PO file, "msgctxt" appears before "msgid". If we encounter a "msgctxt", we add what we have read
 			// and set "entered_context" to true to prevent adding twice.
-			if (!skip_this && msg_id != "") {
+			if (!skip_this && !msg_id.is_empty()) {
 				if (status == STATUS_READING_STRING) {
 					translation->add_message(msg_id, msg_str, msg_context);
 				} else if (status == STATUS_READING_PLURAL) {
@@ -125,7 +125,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 				ERR_FAIL_V_MSG(RES(), "Unexpected 'msgid', was expecting 'msgstr' while parsing: " + path + ":" + itos(line));
 			}
 
-			if (msg_id != "") {
+			if (!msg_id.is_empty()) {
 				if (!skip_this && !entered_context) {
 					if (status == STATUS_READING_STRING) {
 						translation->add_message(msg_id, msg_str, msg_context);
@@ -137,7 +137,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 						translation->add_plural_message(msg_id, msgs_plural, msg_context);
 					}
 				}
-			} else if (config == "") {
+			} else if (config.is_empty()) {
 				config = msg_str;
 				// Record plural rule.
 				int p_start = config.find("Plural-Forms");
@@ -178,8 +178,8 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 			status = STATUS_READING_STRING;
 		}
 
-		if (l == "" || l.begins_with("#")) {
-			if (l.find("fuzzy") != -1) {
+		if (l.is_empty() || l.begins_with("#")) {
+			if (l.contains("fuzzy")) {
 				skip_next = true;
 			}
 			line++;
@@ -236,15 +236,15 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 
 	// Add the last set of data from last iteration.
 	if (status == STATUS_READING_STRING) {
-		if (msg_id != "") {
+		if (!msg_id.is_empty()) {
 			if (!skip_this) {
 				translation->add_message(msg_id, msg_str, msg_context);
 			}
-		} else if (config == "") {
+		} else if (config.is_empty()) {
 			config = msg_str;
 		}
 	} else if (status == STATUS_READING_PLURAL) {
-		if (!skip_this && msg_id != "") {
+		if (!skip_this && !msg_id.is_empty()) {
 			if (plural_index != plural_forms - 1) {
 				memdelete(f);
 				ERR_FAIL_V_MSG(RES(), "Number of 'msgstr[]' doesn't match with number of plural forms: " + path + ":" + itos(line));
@@ -253,7 +253,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 		}
 	}
 
-	ERR_FAIL_COND_V_MSG(config == "", RES(), "No config found in file: " + path + ".");
+	ERR_FAIL_COND_V_MSG(config.is_empty(), RES(), "No config found in file: " + path + ".");
 
 	Vector<String> configs = config.split("\n");
 	for (int i = 0; i < configs.size(); i++) {

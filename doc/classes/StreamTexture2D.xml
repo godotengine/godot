@@ -22,6 +22,4 @@
 			The StreamTexture's file path to a [code].stex[/code] file.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

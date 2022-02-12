@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,10 +30,7 @@
 
 #include "gpu_particles_3d.h"
 
-#include "core/os/os.h"
 #include "scene/resources/particles_material.h"
-
-#include "servers/rendering_server.h"
 
 AABB GPUParticles3D::get_aabb() const {
 	return AABB();
@@ -59,7 +56,7 @@ void GPUParticles3D::set_amount(int p_amount) {
 	RS::get_singleton()->particles_set_amount(particles, amount);
 }
 
-void GPUParticles3D::set_lifetime(float p_lifetime) {
+void GPUParticles3D::set_lifetime(double p_lifetime) {
 	ERR_FAIL_COND_MSG(p_lifetime <= 0, "Particles lifetime must be greater than 0.");
 	lifetime = p_lifetime;
 	RS::get_singleton()->particles_set_lifetime(particles, lifetime);
@@ -81,17 +78,17 @@ void GPUParticles3D::set_one_shot(bool p_one_shot) {
 	}
 }
 
-void GPUParticles3D::set_pre_process_time(float p_time) {
+void GPUParticles3D::set_pre_process_time(double p_time) {
 	pre_process_time = p_time;
 	RS::get_singleton()->particles_set_pre_process_time(particles, pre_process_time);
 }
 
-void GPUParticles3D::set_explosiveness_ratio(float p_ratio) {
+void GPUParticles3D::set_explosiveness_ratio(real_t p_ratio) {
 	explosiveness_ratio = p_ratio;
 	RS::get_singleton()->particles_set_explosiveness_ratio(particles, explosiveness_ratio);
 }
 
-void GPUParticles3D::set_randomness_ratio(float p_ratio) {
+void GPUParticles3D::set_randomness_ratio(real_t p_ratio) {
 	randomness_ratio = p_ratio;
 	RS::get_singleton()->particles_set_randomness_ratio(particles, randomness_ratio);
 }
@@ -118,12 +115,12 @@ void GPUParticles3D::set_process_material(const Ref<Material> &p_material) {
 	update_configuration_warnings();
 }
 
-void GPUParticles3D::set_speed_scale(float p_scale) {
+void GPUParticles3D::set_speed_scale(double p_scale) {
 	speed_scale = p_scale;
 	RS::get_singleton()->particles_set_speed_scale(particles, p_scale);
 }
 
-void GPUParticles3D::set_collision_base_size(float p_size) {
+void GPUParticles3D::set_collision_base_size(real_t p_size) {
 	collision_base_size = p_size;
 	RS::get_singleton()->particles_set_collision_base_size(particles, p_size);
 }
@@ -136,7 +133,7 @@ int GPUParticles3D::get_amount() const {
 	return amount;
 }
 
-float GPUParticles3D::get_lifetime() const {
+double GPUParticles3D::get_lifetime() const {
 	return lifetime;
 }
 
@@ -144,15 +141,15 @@ bool GPUParticles3D::get_one_shot() const {
 	return one_shot;
 }
 
-float GPUParticles3D::get_pre_process_time() const {
+double GPUParticles3D::get_pre_process_time() const {
 	return pre_process_time;
 }
 
-float GPUParticles3D::get_explosiveness_ratio() const {
+real_t GPUParticles3D::get_explosiveness_ratio() const {
 	return explosiveness_ratio;
 }
 
-float GPUParticles3D::get_randomness_ratio() const {
+real_t GPUParticles3D::get_randomness_ratio() const {
 	return randomness_ratio;
 }
 
@@ -168,11 +165,11 @@ Ref<Material> GPUParticles3D::get_process_material() const {
 	return process_material;
 }
 
-float GPUParticles3D::get_speed_scale() const {
+double GPUParticles3D::get_speed_scale() const {
 	return speed_scale;
 }
 
-float GPUParticles3D::get_collision_base_size() const {
+real_t GPUParticles3D::get_collision_base_size() const {
 	return collision_base_size;
 }
 
@@ -186,7 +183,8 @@ void GPUParticles3D::set_trail_enabled(bool p_enabled) {
 	RS::get_singleton()->particles_set_trails(particles, trail_enabled, trail_length);
 	update_configuration_warnings();
 }
-void GPUParticles3D::set_trail_length(float p_seconds) {
+
+void GPUParticles3D::set_trail_length(double p_seconds) {
 	ERR_FAIL_COND(p_seconds < 0.001);
 	trail_length = p_seconds;
 	RS::get_singleton()->particles_set_trails(particles, trail_enabled, trail_length);
@@ -195,7 +193,8 @@ void GPUParticles3D::set_trail_length(float p_seconds) {
 bool GPUParticles3D::is_trail_enabled() const {
 	return trail_enabled;
 }
-float GPUParticles3D::get_trail_length() const {
+
+double GPUParticles3D::get_trail_length() const {
 	return trail_length;
 }
 
@@ -278,7 +277,7 @@ TypedArray<String> GPUParticles3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (RenderingServer::get_singleton()->is_low_end()) {
-		warnings.push_back(TTR("GPU-based particles are not supported by the GLES2 video driver.\nUse the CPUParticles3D node instead. You can use the \"Convert to CPUParticles3D\" option for this purpose."));
+		warnings.push_back(TTR("GPU-based particles are not supported by the OpenGL video driver.\nUse the CPUParticles3D node instead. You can use the \"Convert to CPUParticles3D\" option for this purpose."));
 	}
 
 	bool meshes_found = false;
@@ -313,7 +312,7 @@ TypedArray<String> GPUParticles3D::get_configuration_warnings() const {
 	} else {
 		const ParticlesMaterial *process = Object::cast_to<ParticlesMaterial>(process_material.ptr());
 		if (!anim_material_found && process &&
-				(process->get_param(ParticlesMaterial::PARAM_ANIM_SPEED) != 0.0 || process->get_param(ParticlesMaterial::PARAM_ANIM_OFFSET) != 0.0 ||
+				(process->get_param_max(ParticlesMaterial::PARAM_ANIM_SPEED) != 0.0 || process->get_param_max(ParticlesMaterial::PARAM_ANIM_OFFSET) != 0.0 ||
 						process->get_param_texture(ParticlesMaterial::PARAM_ANIM_SPEED).is_valid() || process->get_param_texture(ParticlesMaterial::PARAM_ANIM_OFFSET).is_valid())) {
 			warnings.push_back(TTR("Particles animation requires the usage of a BaseMaterial3D whose Billboard Mode is set to \"Particle Billboard\"."));
 		}
@@ -389,6 +388,8 @@ void GPUParticles3D::_validate_property(PropertyInfo &property) const {
 			return;
 		}
 	}
+
+	GeometryInstance3D::_validate_property(property);
 }
 
 void GPUParticles3D::emit_particle(const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
@@ -470,7 +471,7 @@ void GPUParticles3D::_skinning_changed() {
 			if (draw_pass.is_valid() && draw_pass->get_builtin_bind_pose_count() > 0) {
 				xforms.resize(draw_pass->get_builtin_bind_pose_count());
 				for (int j = 0; j < draw_pass->get_builtin_bind_pose_count(); j++) {
-					xforms.write[i] = draw_pass->get_builtin_bind_pose(j);
+					xforms.write[j] = draw_pass->get_builtin_bind_pose(j);
 				}
 				break;
 			}
@@ -485,6 +486,7 @@ void GPUParticles3D::set_skin(const Ref<Skin> &p_skin) {
 	skin = p_skin;
 	_skinning_changed();
 }
+
 Ref<Skin> GPUParticles3D::get_skin() const {
 	return skin;
 }
@@ -562,6 +564,7 @@ void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_transform_align"), &GPUParticles3D::get_transform_align);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
+	ADD_PROPERTY_DEFAULT("emitting", true); // Workaround for doctool in headless mode, as dummy rasterizer always returns false.
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1000000,1,exp"), "set_amount", "get_amount");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "sub_emitter", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "GPUParticles3D"), "set_sub_emitter", "get_sub_emitter");
 	ADD_GROUP("Time", "");

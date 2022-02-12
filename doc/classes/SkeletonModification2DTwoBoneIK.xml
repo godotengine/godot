@@ -77,6 +77,4 @@
 			The NodePath to the node that is the target for the TwoBoneIK modification. This node is what the modification will use when bending the [Bone2D] nodes.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

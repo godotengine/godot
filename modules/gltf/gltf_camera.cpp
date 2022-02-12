@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,13 +35,13 @@ void GLTFCamera::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_perspective", "perspective"), &GLTFCamera::set_perspective);
 	ClassDB::bind_method(D_METHOD("get_fov_size"), &GLTFCamera::get_fov_size);
 	ClassDB::bind_method(D_METHOD("set_fov_size", "fov_size"), &GLTFCamera::set_fov_size);
-	ClassDB::bind_method(D_METHOD("get_zfar"), &GLTFCamera::get_zfar);
-	ClassDB::bind_method(D_METHOD("set_zfar", "zfar"), &GLTFCamera::set_zfar);
-	ClassDB::bind_method(D_METHOD("get_znear"), &GLTFCamera::get_znear);
-	ClassDB::bind_method(D_METHOD("set_znear", "znear"), &GLTFCamera::set_znear);
+	ClassDB::bind_method(D_METHOD("get_depth_far"), &GLTFCamera::get_depth_far);
+	ClassDB::bind_method(D_METHOD("set_depth_far", "zdepth_far"), &GLTFCamera::set_depth_far);
+	ClassDB::bind_method(D_METHOD("get_depth_near"), &GLTFCamera::get_depth_near);
+	ClassDB::bind_method(D_METHOD("set_depth_near", "zdepth_near"), &GLTFCamera::set_depth_near);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "perspective"), "set_perspective", "get_perspective"); // bool
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fov_size"), "set_fov_size", "get_fov_size"); // float
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "zfar"), "set_zfar", "get_zfar"); // float
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "znear"), "set_znear", "get_znear"); // float
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth_far"), "set_depth_far", "get_depth_far"); // float
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth_near"), "set_depth_near", "get_depth_near"); // float
 }

@@ -17,6 +17,8 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	vec4 projections[MAX_VIEWS];
 	vec4 position_multiplier;
 	float time;
+	float luminance_multiplier;
+	float pad[2];
 }
 params;
 
@@ -55,6 +57,8 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	vec4 projections[MAX_VIEWS];
 	vec4 position_multiplier;
 	float time;
+	float luminance_multiplier;
+	float pad[2];
 }
 params;
 
@@ -199,17 +203,17 @@ void main() {
 	vec3 inverted_cube_normal = cube_normal;
 	inverted_cube_normal.z *= -1.0;
 #ifdef USES_HALF_RES_COLOR
-	half_res_color = texture(samplerCube(half_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), inverted_cube_normal);
+	half_res_color = texture(samplerCube(half_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), inverted_cube_normal) * params.luminance_multiplier;
 #endif
 #ifdef USES_QUARTER_RES_COLOR
-	quarter_res_color = texture(samplerCube(quarter_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), inverted_cube_normal);
+	quarter_res_color = texture(samplerCube(quarter_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), inverted_cube_normal) * params.luminance_multiplier;
 #endif
 #else
 #ifdef USES_HALF_RES_COLOR
-	half_res_color = textureLod(sampler2D(half_res, material_samplers[SAMPLER_LINEAR_CLAMP]), uv, 0.0);
+	half_res_color = textureLod(sampler2D(half_res, material_samplers[SAMPLER_LINEAR_CLAMP]), uv, 0.0) * params.luminance_multiplier;
 #endif
 #ifdef USES_QUARTER_RES_COLOR
-	quarter_res_color = textureLod(sampler2D(quarter_res, material_samplers[SAMPLER_LINEAR_CLAMP]), uv, 0.0);
+	quarter_res_color = textureLod(sampler2D(quarter_res, material_samplers[SAMPLER_LINEAR_CLAMP]), uv, 0.0) * params.luminance_multiplier;
 #endif
 #endif
 
@@ -246,4 +250,7 @@ void main() {
 	if (!AT_CUBEMAP_PASS && !AT_HALF_RES_PASS && !AT_QUARTER_RES_PASS) {
 		frag_color.a = 0.0;
 	}
+
+	// For mobile renderer we're dividing by 2.0 as we're using a UNORM buffer
+	frag_color.rgb = frag_color.rgb / params.luminance_multiplier;
 }

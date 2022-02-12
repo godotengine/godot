@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -66,11 +66,13 @@ class EditorSpinSlider : public Range {
 	Popup *value_input_popup = nullptr;
 	LineEdit *value_input = nullptr;
 	bool value_input_just_closed = false;
+	bool value_input_dirty = false;
 
 	void _grabber_gui_input(const Ref<InputEvent> &p_event);
 	void _value_input_closed();
 	void _value_input_submitted(const String &);
 	void _value_focus_exited();
+	void _value_input_gui_input(const Ref<InputEvent> &p_event);
 	bool hide_slider;
 	bool flat;
 
@@ -81,10 +83,11 @@ class EditorSpinSlider : public Range {
 
 	void _update_value_input_stylebox();
 	void _ensure_input_popup();
+	void _draw_spin_slider();
 
 protected:
 	void _notification(int p_what);
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	static void _bind_methods();
 	void _grabber_mouse_entered();
 	void _grabber_mouse_exited();

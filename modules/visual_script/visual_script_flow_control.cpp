@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -70,7 +70,7 @@ PropertyInfo VisualScriptReturn::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptReturn::get_caption() const {
-	return "Return";
+	return TTR("Return");
 }
 
 String VisualScriptReturn::get_text() const {
@@ -201,11 +201,11 @@ PropertyInfo VisualScriptCondition::get_output_value_port_info(int p_idx) const 
 }
 
 String VisualScriptCondition::get_caption() const {
-	return "Condition";
+	return TTR("Condition");
 }
 
 String VisualScriptCondition::get_text() const {
-	return "if (cond) is:  ";
+	return TTR("if (cond) is:");
 }
 
 void VisualScriptCondition::_bind_methods() {
@@ -281,11 +281,11 @@ PropertyInfo VisualScriptWhile::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptWhile::get_caption() const {
-	return "While";
+	return TTR("While");
 }
 
 String VisualScriptWhile::get_text() const {
-	return "while (cond): ";
+	return TTR("while (cond):");
 }
 
 void VisualScriptWhile::_bind_methods() {
@@ -364,11 +364,11 @@ PropertyInfo VisualScriptIterator::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptIterator::get_caption() const {
-	return "Iterator";
+	return TTR("Iterator");
 }
 
 String VisualScriptIterator::get_text() const {
-	return "for (elem) in (input): ";
+	return TTR("for (elem) in (input):");
 }
 
 void VisualScriptIterator::_bind_methods() {
@@ -478,11 +478,11 @@ PropertyInfo VisualScriptSequence::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptSequence::get_caption() const {
-	return "Sequence";
+	return TTR("Sequence");
 }
 
 String VisualScriptSequence::get_text() const {
-	return "in order: ";
+	return TTR("in order:");
 }
 
 void VisualScriptSequence::set_steps(int p_steps) {
@@ -587,11 +587,11 @@ PropertyInfo VisualScriptSwitch::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptSwitch::get_caption() const {
-	return "Switch";
+	return TTR("Switch");
 }
 
 String VisualScriptSwitch::get_text() const {
-	return "'input' is:";
+	return TTR("'input' is:");
 }
 
 class VisualScriptNodeInstanceSwitch : public VisualScriptNodeInstance {
@@ -720,14 +720,14 @@ PropertyInfo VisualScriptTypeCast::get_output_value_port_info(int p_idx) const {
 }
 
 String VisualScriptTypeCast::get_caption() const {
-	return "Type Cast";
+	return TTR("Type Cast");
 }
 
 String VisualScriptTypeCast::get_text() const {
-	if (script != String()) {
-		return "Is " + script.get_file() + "?";
+	if (!script.is_empty()) {
+		return vformat(TTR("Is %s?"), script.get_file());
 	} else {
-		return "Is " + base_type + "?";
+		return vformat(TTR("Is %s?"), base_type);
 	}
 }
 
@@ -762,7 +762,7 @@ String VisualScriptTypeCast::get_base_script() const {
 VisualScriptTypeCast::TypeGuess VisualScriptTypeCast::guess_output_type(TypeGuess *p_inputs, int p_output) const {
 	TypeGuess tg;
 	tg.type = Variant::OBJECT;
-	if (script != String()) {
+	if (!script.is_empty()) {
 		tg.script = ResourceLoader::load(script);
 	}
 	//if (!tg.script.is_valid()) {
@@ -793,7 +793,7 @@ public:
 			return 0;
 		}
 
-		if (script != String()) {
+		if (!script.is_empty()) {
 			Ref<Script> obj_script = obj->get_script();
 			if (!obj_script.is_valid()) {
 				return 1; //well, definitely not the script because object we got has no script.
@@ -853,7 +853,7 @@ void VisualScriptTypeCast::_bind_methods() {
 
 	String script_ext_hint;
 	for (const String &E : script_extensions) {
-		if (script_ext_hint != String()) {
+		if (!script_ext_hint.is_empty()) {
 			script_ext_hint += ",";
 		}
 		script_ext_hint += "*." + E;

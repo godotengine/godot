@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -74,8 +74,8 @@ String RenderingDevice::shader_get_spirv_cache_key() const {
 	return String();
 }
 
-RID RenderingDevice::shader_create_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv) {
-	Vector<uint8_t> bytecode = shader_compile_binary_from_spirv(p_spirv);
+RID RenderingDevice::shader_create_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name) {
+	Vector<uint8_t> bytecode = shader_compile_binary_from_spirv(p_spirv, p_shader_name);
 	ERR_FAIL_COND_V(bytecode.size() == 0, RID());
 	return shader_create_from_bytecode(bytecode);
 }
@@ -98,10 +98,10 @@ RID RenderingDevice::_texture_create_shared(const Ref<RDTextureView> &p_view, RI
 	return texture_create_shared(p_view->base, p_with_texture);
 }
 
-RID RenderingDevice::_texture_create_shared_from_slice(const Ref<RDTextureView> &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, TextureSliceType p_slice_type) {
+RID RenderingDevice::_texture_create_shared_from_slice(const Ref<RDTextureView> &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps, TextureSliceType p_slice_type) {
 	ERR_FAIL_COND_V(p_view.is_null(), RID());
 
-	return texture_create_shared_from_slice(p_view->base, p_with_texture, p_layer, p_mipmap, p_slice_type);
+	return texture_create_shared_from_slice(p_view->base, p_with_texture, p_layer, p_mipmap, p_mipmaps, p_slice_type);
 }
 
 RenderingDevice::FramebufferFormatID RenderingDevice::_framebuffer_format_create(const TypedArray<RDAttachmentFormat> &p_attachments, uint32_t p_view_count) {
@@ -185,14 +185,18 @@ Ref<RDShaderSPIRV> RenderingDevice::_shader_compile_spirv_from_source(const Ref<
 		String error;
 
 		ShaderStage stage = ShaderStage(i);
-		Vector<uint8_t> spirv = shader_compile_spirv_from_source(stage, p_source->get_stage_source(stage), p_source->get_language(), &error, p_allow_cache);
-		bytecode->set_stage_bytecode(stage, spirv);
-		bytecode->set_stage_compile_error(stage, error);
+		String source = p_source->get_stage_source(stage);
+
+		if (!source.is_empty()) {
+			Vector<uint8_t> spirv = shader_compile_spirv_from_source(stage, source, p_source->get_language(), &error, p_allow_cache);
+			bytecode->set_stage_bytecode(stage, spirv);
+			bytecode->set_stage_compile_error(stage, error);
+		}
 	}
 	return bytecode;
 }
 
-Vector<uint8_t> RenderingDevice::_shader_compile_binary_from_spirv(const Ref<RDShaderSPIRV> &p_spirv) {
+Vector<uint8_t> RenderingDevice::_shader_compile_binary_from_spirv(const Ref<RDShaderSPIRV> &p_spirv, const String &p_shader_name) {
 	ERR_FAIL_COND_V(p_spirv.is_null(), Vector<uint8_t>());
 
 	Vector<ShaderStageSPIRVData> stage_data;
@@ -201,7 +205,7 @@ Vector<uint8_t> RenderingDevice::_shader_compile_binary_from_spirv(const Ref<RDS
 		ShaderStageSPIRVData sd;
 		sd.shader_stage = stage;
 		String error = p_spirv->get_stage_compile_error(stage);
-		ERR_FAIL_COND_V_MSG(error != String(), Vector<uint8_t>(), "Can't create a shader from an errored bytecode. Check errors in source bytecode.");
+		ERR_FAIL_COND_V_MSG(!error.is_empty(), Vector<uint8_t>(), "Can't create a shader from an errored bytecode. Check errors in source bytecode.");
 		sd.spir_v = p_spirv->get_stage_bytecode(stage);
 		if (sd.spir_v.is_empty()) {
 			continue;
@@ -209,10 +213,10 @@ Vector<uint8_t> RenderingDevice::_shader_compile_binary_from_spirv(const Ref<RDS
 		stage_data.push_back(sd);
 	}
 
-	return shader_compile_binary_from_spirv(stage_data);
+	return shader_compile_binary_from_spirv(stage_data, p_shader_name);
 }
 
-RID RenderingDevice::_shader_create_from_spirv(const Ref<RDShaderSPIRV> &p_spirv) {
+RID RenderingDevice::_shader_create_from_spirv(const Ref<RDShaderSPIRV> &p_spirv, const String &p_shader_name) {
 	ERR_FAIL_COND_V(p_spirv.is_null(), RID());
 
 	Vector<ShaderStageSPIRVData> stage_data;
@@ -221,7 +225,7 @@ RID RenderingDevice::_shader_create_from_spirv(const Ref<RDShaderSPIRV> &p_spirv
 		ShaderStageSPIRVData sd;
 		sd.shader_stage = stage;
 		String error = p_spirv->get_stage_compile_error(stage);
-		ERR_FAIL_COND_V_MSG(error != String(), RID(), "Can't create a shader from an errored bytecode. Check errors in source bytecode.");
+		ERR_FAIL_COND_V_MSG(!error.is_empty(), RID(), "Can't create a shader from an errored bytecode. Check errors in source bytecode.");
 		sd.spir_v = p_spirv->get_stage_bytecode(stage);
 		if (sd.spir_v.is_empty()) {
 			continue;
@@ -360,7 +364,7 @@ void RenderingDevice::_compute_list_set_push_constant(ComputeListID p_list, cons
 void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_create", "format", "view", "data"), &RenderingDevice::_texture_create, DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("texture_create_shared", "view", "with_texture"), &RenderingDevice::_texture_create_shared);
-	ClassDB::bind_method(D_METHOD("texture_create_shared_from_slice", "view", "with_texture", "layer", "mipmap", "slice_type"), &RenderingDevice::_texture_create_shared_from_slice, DEFVAL(TEXTURE_SLICE_2D));
+	ClassDB::bind_method(D_METHOD("texture_create_shared_from_slice", "view", "with_texture", "layer", "mipmap", "mipmaps", "slice_type"), &RenderingDevice::_texture_create_shared_from_slice, DEFVAL(1), DEFVAL(TEXTURE_SLICE_2D));
 
 	ClassDB::bind_method(D_METHOD("texture_update", "texture", "layer", "data", "post_barrier"), &RenderingDevice::texture_update, DEFVAL(BARRIER_MASK_ALL));
 	ClassDB::bind_method(D_METHOD("texture_get_data", "texture", "layer"), &RenderingDevice::texture_get_data);
@@ -392,8 +396,8 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("index_array_create", "index_buffer", "index_offset", "index_count"), &RenderingDevice::index_array_create);
 
 	ClassDB::bind_method(D_METHOD("shader_compile_spirv_from_source", "shader_source", "allow_cache"), &RenderingDevice::_shader_compile_spirv_from_source, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("shader_compile_binary_from_spirv", "spirv_data"), &RenderingDevice::_shader_compile_binary_from_spirv);
-	ClassDB::bind_method(D_METHOD("shader_create_from_spirv", "spirv_data"), &RenderingDevice::_shader_compile_binary_from_spirv);
+	ClassDB::bind_method(D_METHOD("shader_compile_binary_from_spirv", "spirv_data", "name"), &RenderingDevice::_shader_compile_binary_from_spirv, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("shader_create_from_spirv", "spirv_data", "name"), &RenderingDevice::_shader_create_from_spirv, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("shader_create_from_bytecode", "binary_data"), &RenderingDevice::shader_create_from_bytecode);
 	ClassDB::bind_method(D_METHOD("shader_get_vertex_input_attribute_mask", "shader"), &RenderingDevice::shader_get_vertex_input_attribute_mask);
 
@@ -420,8 +424,8 @@ void RenderingDevice::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("draw_list_begin_for_screen", "screen", "clear_color"), &RenderingDevice::draw_list_begin_for_screen, DEFVAL(DisplayServer::MAIN_WINDOW_ID), DEFVAL(Color()));
 
-	ClassDB::bind_method(D_METHOD("draw_list_begin", "framebuffer", "initial_color_action", "final_color_action", "initial_depth_action", "final_depth_action", "clear_color_values", "clear_depth", "clear_stencil", "region", "storage_textures"), &RenderingDevice::draw_list_begin, DEFVAL(Vector<Color>()), DEFVAL(1.0), DEFVAL(0), DEFVAL(Rect2i()), DEFVAL(TypedArray<RID>()));
-	ClassDB::bind_method(D_METHOD("draw_list_begin_split", "framebuffer", "splits", "initial_color_action", "final_color_action", "initial_depth_action", "final_depth_action", "clear_color_values", "clear_depth", "clear_stencil", "region", "storage_textures"), &RenderingDevice::_draw_list_begin_split, DEFVAL(Vector<Color>()), DEFVAL(1.0), DEFVAL(0), DEFVAL(Rect2i()), DEFVAL(TypedArray<RID>()));
+	ClassDB::bind_method(D_METHOD("draw_list_begin", "framebuffer", "initial_color_action", "final_color_action", "initial_depth_action", "final_depth_action", "clear_color_values", "clear_depth", "clear_stencil", "region", "storage_textures"), &RenderingDevice::draw_list_begin, DEFVAL(Vector<Color>()), DEFVAL(1.0), DEFVAL(0), DEFVAL(Rect2()), DEFVAL(TypedArray<RID>()));
+	ClassDB::bind_method(D_METHOD("draw_list_begin_split", "framebuffer", "splits", "initial_color_action", "final_color_action", "initial_depth_action", "final_depth_action", "clear_color_values", "clear_depth", "clear_stencil", "region", "storage_textures"), &RenderingDevice::_draw_list_begin_split, DEFVAL(Vector<Color>()), DEFVAL(1.0), DEFVAL(0), DEFVAL(Rect2()), DEFVAL(TypedArray<RID>()));
 
 	ClassDB::bind_method(D_METHOD("draw_list_bind_render_pipeline", "draw_list", "render_pipeline"), &RenderingDevice::draw_list_bind_render_pipeline);
 	ClassDB::bind_method(D_METHOD("draw_list_bind_uniform_set", "draw_list", "uniform_set", "set_index"), &RenderingDevice::draw_list_bind_uniform_set);
@@ -431,7 +435,7 @@ void RenderingDevice::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("draw_list_draw", "draw_list", "use_indices", "instances", "procedural_vertex_count"), &RenderingDevice::draw_list_draw, DEFVAL(0));
 
-	ClassDB::bind_method(D_METHOD("draw_list_enable_scissor", "draw_list", "rect"), &RenderingDevice::draw_list_enable_scissor, DEFVAL(Rect2i()));
+	ClassDB::bind_method(D_METHOD("draw_list_enable_scissor", "draw_list", "rect"), &RenderingDevice::draw_list_enable_scissor, DEFVAL(Rect2()));
 	ClassDB::bind_method(D_METHOD("draw_list_disable_scissor", "draw_list"), &RenderingDevice::draw_list_disable_scissor);
 
 	ClassDB::bind_method(D_METHOD("draw_list_switch_to_next_pass"), &RenderingDevice::draw_list_switch_to_next_pass);
@@ -447,7 +451,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("compute_list_add_barrier", "compute_list"), &RenderingDevice::compute_list_add_barrier);
 	ClassDB::bind_method(D_METHOD("compute_list_end", "post_barrier"), &RenderingDevice::compute_list_end, DEFVAL(BARRIER_MASK_ALL));
 
-	ClassDB::bind_method(D_METHOD("free", "rid"), &RenderingDevice::free);
+	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &RenderingDevice::free);
 
 	ClassDB::bind_method(D_METHOD("capture_timestamp", "name"), &RenderingDevice::capture_timestamp);
 	ClassDB::bind_method(D_METHOD("get_captured_timestamps_count"), &RenderingDevice::get_captured_timestamps_count);
@@ -476,13 +480,36 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_device_name"), &RenderingDevice::get_device_name);
 	ClassDB::bind_method(D_METHOD("get_device_pipeline_cache_uuid"), &RenderingDevice::get_device_pipeline_cache_uuid);
 
-	ClassDB::bind_method(D_METHOD("get_memory_usage"), &RenderingDevice::get_memory_usage);
+	ClassDB::bind_method(D_METHOD("get_memory_usage", "type"), &RenderingDevice::get_memory_usage);
+
+	ClassDB::bind_method(D_METHOD("get_driver_resource", "resource", "rid", "index"), &RenderingDevice::get_driver_resource);
 
 	BIND_CONSTANT(BARRIER_MASK_RASTER);
 	BIND_CONSTANT(BARRIER_MASK_COMPUTE);
 	BIND_CONSTANT(BARRIER_MASK_TRANSFER);
 	BIND_CONSTANT(BARRIER_MASK_ALL);
 	BIND_CONSTANT(BARRIER_MASK_NO_BARRIER);
+
+	BIND_ENUM_CONSTANT(DEVICE_TYPE_OTHER);
+	BIND_ENUM_CONSTANT(DEVICE_TYPE_INTEGRATED_GPU);
+	BIND_ENUM_CONSTANT(DEVICE_TYPE_DISCRETE_GPU);
+	BIND_ENUM_CONSTANT(DEVICE_TYPE_VIRTUAL_GPU);
+	BIND_ENUM_CONSTANT(DEVICE_TYPE_CPU);
+	BIND_ENUM_CONSTANT(DEVICE_TYPE_MAX);
+
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_DEVICE);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_PHYSICAL_DEVICE);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_INSTANCE);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_QUEUE);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_QUEUE_FAMILY_INDEX);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_IMAGE);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_IMAGE_VIEW);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_IMAGE_NATIVE_TEXTURE_FORMAT);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_SAMPLER);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_DESCRIPTOR_SET);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_BUFFER);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_COMPUTE_PIPELINE);
+	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_RENDER_PIPELINE);
 
 	BIND_ENUM_CONSTANT(DATA_FORMAT_R4G4_UNORM_PACK8);
 	BIND_ENUM_CONSTANT(DATA_FORMAT_R4G4B4A4_UNORM_PACK16);
@@ -702,14 +729,6 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(DATA_FORMAT_G16_B16_R16_3PLANE_422_UNORM);
 	BIND_ENUM_CONSTANT(DATA_FORMAT_G16_B16R16_2PLANE_422_UNORM);
 	BIND_ENUM_CONSTANT(DATA_FORMAT_G16_B16_R16_3PLANE_444_UNORM);
-	BIND_ENUM_CONSTANT(DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG);
-	BIND_ENUM_CONSTANT(DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG);
-	BIND_ENUM_CONSTANT(DATA_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG);
-	BIND_ENUM_CONSTANT(DATA_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG);
-	BIND_ENUM_CONSTANT(DATA_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG);
-	BIND_ENUM_CONSTANT(DATA_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG);
-	BIND_ENUM_CONSTANT(DATA_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG);
-	BIND_ENUM_CONSTANT(DATA_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG);
 	BIND_ENUM_CONSTANT(DATA_FORMAT_MAX);
 
 	BIND_ENUM_CONSTANT(TEXTURE_TYPE_1D);
@@ -739,7 +758,7 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(TEXTURE_USAGE_CAN_UPDATE_BIT);
 	BIND_ENUM_CONSTANT(TEXTURE_USAGE_CAN_COPY_FROM_BIT);
 	BIND_ENUM_CONSTANT(TEXTURE_USAGE_CAN_COPY_TO_BIT);
-	BIND_ENUM_CONSTANT(TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT);
+	BIND_ENUM_CONSTANT(TEXTURE_USAGE_INPUT_ATTACHMENT_BIT);
 
 	BIND_ENUM_CONSTANT(TEXTURE_SWIZZLE_IDENTITY);
 	BIND_ENUM_CONSTANT(TEXTURE_SWIZZLE_ZERO);

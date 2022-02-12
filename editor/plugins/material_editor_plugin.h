@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,6 +39,7 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/gui/color_rect.h"
 #include "scene/resources/material.h"
 
 class SubViewportContainer;
@@ -46,22 +47,27 @@ class SubViewportContainer;
 class MaterialEditor : public Control {
 	GDCLASS(MaterialEditor, Control);
 
-	SubViewportContainer *vc;
-	SubViewport *viewport;
-	MeshInstance3D *sphere_instance;
-	MeshInstance3D *box_instance;
-	DirectionalLight3D *light1;
-	DirectionalLight3D *light2;
-	Camera3D *camera;
+	HBoxContainer *layout_2d = nullptr;
+	ColorRect *rect_instance = nullptr;
+
+	SubViewportContainer *vc = nullptr;
+	SubViewport *viewport = nullptr;
+	MeshInstance3D *sphere_instance = nullptr;
+	MeshInstance3D *box_instance = nullptr;
+	DirectionalLight3D *light1 = nullptr;
+	DirectionalLight3D *light2 = nullptr;
+	Camera3D *camera = nullptr;
 
 	Ref<SphereMesh> sphere_mesh;
 	Ref<BoxMesh> box_mesh;
 
-	TextureButton *sphere_switch;
-	TextureButton *box_switch;
+	HBoxContainer *layout_3d = nullptr;
 
-	TextureButton *light_1_switch;
-	TextureButton *light_2_switch;
+	TextureButton *sphere_switch = nullptr;
+	TextureButton *box_switch = nullptr;
+
+	TextureButton *light_1_switch = nullptr;
+	TextureButton *light_2_switch = nullptr;
 
 	Ref<Material> material;
 
@@ -86,6 +92,8 @@ public:
 	virtual bool can_handle(Object *p_object) override;
 	virtual void parse_begin(Object *p_object) override;
 
+	void _undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value);
+
 	EditorInspectorPluginMaterial();
 };
 
@@ -100,6 +108,15 @@ public:
 
 class StandardMaterial3DConversionPlugin : public EditorResourceConversionPlugin {
 	GDCLASS(StandardMaterial3DConversionPlugin, EditorResourceConversionPlugin);
+
+public:
+	virtual String converts_to() const override;
+	virtual bool handles(const Ref<Resource> &p_resource) const override;
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const override;
+};
+
+class ORMMaterial3DConversionPlugin : public EditorResourceConversionPlugin {
+	GDCLASS(ORMMaterial3DConversionPlugin, EditorResourceConversionPlugin);
 
 public:
 	virtual String converts_to() const override;
@@ -145,6 +162,15 @@ public:
 
 class PhysicalSkyMaterialConversionPlugin : public EditorResourceConversionPlugin {
 	GDCLASS(PhysicalSkyMaterialConversionPlugin, EditorResourceConversionPlugin);
+
+public:
+	virtual String converts_to() const override;
+	virtual bool handles(const Ref<Resource> &p_resource) const override;
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const override;
+};
+
+class FogMaterialConversionPlugin : public EditorResourceConversionPlugin {
+	GDCLASS(FogMaterialConversionPlugin, EditorResourceConversionPlugin);
 
 public:
 	virtual String converts_to() const override;

@@ -206,9 +206,11 @@
 		<constant name="ARRAY_FORMAT_INDEX" value="4096" enum="ArrayFormat">
 			Mesh array uses indices.
 		</constant>
-		<constant name="ARRAY_FORMAT_BLEND_SHAPE_MASK" value="2147475463" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_BLEND_SHAPE_MASK" value="7" enum="ArrayFormat">
 		</constant>
 		<constant name="ARRAY_FORMAT_CUSTOM_BASE" value="13" enum="ArrayFormat">
+		</constant>
+		<constant name="ARRAY_FORMAT_CUSTOM_BITS" value="3" enum="ArrayFormat">
 		</constant>
 		<constant name="ARRAY_FORMAT_CUSTOM0_SHIFT" value="13" enum="ArrayFormat">
 		</constant>

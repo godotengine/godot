@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,11 @@
 /*************************************************************************/
 
 #include "vulkan_context_x11.h"
-#include <vulkan/vulkan_xlib.h>
+#ifdef USE_VOLK
+#include <volk.h>
+#else
+#include <vulkan/vulkan.h>
+#endif
 
 const char *VulkanContextX11::_get_platform_surface_extension() const {
 	return VK_KHR_XLIB_SURFACE_EXTENSION_NAME;
@@ -44,7 +48,7 @@ Error VulkanContextX11::window_create(DisplayServer::WindowID p_window_id, Displ
 	createInfo.window = p_window;
 
 	VkSurfaceKHR surface;
-	VkResult err = vkCreateXlibSurfaceKHR(_get_instance(), &createInfo, nullptr, &surface);
+	VkResult err = vkCreateXlibSurfaceKHR(get_instance(), &createInfo, nullptr, &surface);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 	return _window_create(p_window_id, p_vsync_mode, surface, p_width, p_height);
 }

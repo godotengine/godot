@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 #define MAIN_LOOP_H
 
 #include "core/input/input_event.h"
+#include "core/object/gdvirtual.gen.inc"
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
 
@@ -43,6 +44,11 @@ class MainLoop : public Object {
 
 protected:
 	static void _bind_methods();
+
+	GDVIRTUAL0(_initialize)
+	GDVIRTUAL1R(bool, _physics_process, double)
+	GDVIRTUAL1R(bool, _process, double)
+	GDVIRTUAL0(_finalize)
 
 public:
 	enum {

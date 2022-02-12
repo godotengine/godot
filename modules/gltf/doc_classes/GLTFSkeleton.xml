@@ -52,6 +52,4 @@
 		<member name="roots" type="PackedInt32Array" setter="set_roots" getter="get_roots" default="PackedInt32Array()">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

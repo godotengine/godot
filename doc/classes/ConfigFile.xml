@@ -84,8 +84,10 @@
 		}
 		[/csharp]
 		[/codeblocks]
+		Any operation that mutates the ConfigFile such as [method set_value], [method clear], or [method erase_section], only changes what is loaded in memory. If you want to write the change to a file, you have to save the changes with [method save], [method save_encrypted], or [method save_encrypted_pass].
 		Keep in mind that section and property names can't contain spaces. Anything after a space will be ignored on save and on load.
 		ConfigFiles can also contain manually written comment lines starting with a semicolon ([code];[/code]). Those lines will be ignored when parsing the file. Note that comments will be lost when saving the ConfigFile. This can still be useful for dedicated server configuration files, which are typically never overwritten without explicit user action.
+		[b]Note:[/b] The file extension given to a ConfigFile does not have any impact on its formatting or behavior. By convention, the [code].cfg[/code] extension is used here, but any other extension such as [code].ini[/code] is also valid. Since neither [code].cfg[/code] nor [code].ini[/code] are standardized, Godot's ConfigFile formatting may differ from files written by other programs.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -93,6 +95,7 @@
 		<method name="clear">
 			<return type="void" />
 			<description>
+				Removes the entire contents of the config.
 			</description>
 		</method>
 		<method name="erase_section">
@@ -149,6 +152,8 @@
 		</method>
 		<method name="load">
 			<return type="int" enum="Error" />
+			<returns_error number="0"/>
+			<returns_error number="12"/>
 			<argument index="0" name="path" type="String" />
 			<description>
 				Loads the config file specified as a parameter. The file's contents are parsed and loaded in the [ConfigFile] object which the method was called on.
@@ -217,6 +222,4 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

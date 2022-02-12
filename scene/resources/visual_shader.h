@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,6 +57,7 @@ public:
 		TYPE_START_CUSTOM,
 		TYPE_PROCESS_CUSTOM,
 		TYPE_SKY,
+		TYPE_FOG,
 		TYPE_MAX
 	};
 
@@ -69,7 +70,7 @@ public:
 
 	struct DefaultTextureParam {
 		StringName name;
-		Ref<Texture2D> param;
+		List<Ref<Texture2D>> params;
 	};
 
 private:
@@ -100,8 +101,6 @@ private:
 
 	HashMap<String, int> modes;
 	Set<StringName> flags;
-
-	static RenderModeEnums render_mode_enums[];
 
 	mutable SafeFlag dirty;
 	void _queue_update();
@@ -215,7 +214,8 @@ public:
 	enum PortType {
 		PORT_TYPE_SCALAR,
 		PORT_TYPE_SCALAR_INT,
-		PORT_TYPE_VECTOR,
+		PORT_TYPE_VECTOR_2D,
+		PORT_TYPE_VECTOR_3D,
 		PORT_TYPE_BOOLEAN,
 		PORT_TYPE_TRANSFORM,
 		PORT_TYPE_SAMPLER,
@@ -230,7 +230,7 @@ public:
 	virtual PortType get_input_port_type(int p_port) const = 0;
 	virtual String get_input_port_name(int p_port) const = 0;
 
-	virtual void set_input_port_default_value(int p_port, const Variant &p_value);
+	virtual void set_input_port_default_value(int p_port, const Variant &p_value, const Variant &p_prev_value = Variant());
 	Variant get_input_port_default_value(int p_port) const; // if NIL (default if node does not set anything) is returned, it means no default value is wanted if disconnected, thus no input var must be supplied (empty string will be supplied)
 	Array get_default_input_values() const;
 	virtual void set_default_input_values(const Array &p_values);
@@ -241,7 +241,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const = 0;
 	virtual String get_output_port_name(int p_port) const = 0;
 
-	virtual String get_input_port_default_hint(int p_port) const;
+	virtual bool is_input_port_default(int p_port, Shader::Mode p_mode) const;
 
 	void set_output_port_for_preview(int p_index);
 	int get_output_port_for_preview() const;
@@ -253,6 +253,8 @@ public:
 	bool is_input_port_connected(int p_port) const;
 	void set_input_port_connected(int p_port, bool p_connected);
 	virtual bool is_generate_input_var(int p_port) const;
+
+	virtual bool has_output_port_preview(int p_port) const;
 
 	virtual bool is_output_port_expandable(int p_port) const;
 	void _set_output_ports_expanded(const Array &p_data);
@@ -269,10 +271,11 @@ public:
 	void set_disabled(bool p_disabled = true);
 
 	virtual Vector<StringName> get_editable_properties() const;
+	virtual Map<StringName, String> get_editable_properties_names() const;
 
 	virtual Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const;
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
-	virtual String generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
+	virtual String generate_global_per_node(Shader::Mode p_mode, int p_id) const;
 	virtual String generate_global_per_func(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	// If no output is connected, the output var passed will be empty. If no input is connected and input is NIL, the input var passed will be empty.
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const = 0;
@@ -309,16 +312,30 @@ protected:
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
 
-	virtual void set_input_port_default_value(int p_port, const Variant &p_value) override;
+	virtual void set_input_port_default_value(int p_port, const Variant &p_value, const Variant &p_prev_value = Variant()) override;
 	virtual void set_default_input_values(const Array &p_values) override;
 	virtual void remove_input_port_default_value(int p_port) override;
 	virtual void clear_default_input_values() override;
+
+	GDVIRTUAL0RC(String, _get_name)
+	GDVIRTUAL0RC(String, _get_description)
+	GDVIRTUAL0RC(String, _get_category)
+	GDVIRTUAL0RC(int, _get_return_icon_type)
+	GDVIRTUAL0RC(int, _get_input_port_count)
+	GDVIRTUAL1RC(int, _get_input_port_type, int)
+	GDVIRTUAL1RC(String, _get_input_port_name, int)
+	GDVIRTUAL0RC(int, _get_output_port_count)
+	GDVIRTUAL1RC(int, _get_output_port_type, int)
+	GDVIRTUAL1RC(String, _get_output_port_name, int)
+	GDVIRTUAL4RC(String, _get_code, TypedArray<String>, TypedArray<String>, Shader::Mode, VisualShader::Type)
+	GDVIRTUAL1RC(String, _get_global_code, Shader::Mode)
+	GDVIRTUAL0RC(bool, _is_highend)
 
 protected:
 	void _set_input_port_default_value(int p_port, const Variant &p_value);
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
-	virtual String generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_global_per_node(Shader::Mode p_mode, int p_id) const override;
 
 	static void _bind_methods();
 
@@ -435,6 +452,7 @@ public:
 		QUAL_NONE,
 		QUAL_GLOBAL,
 		QUAL_INSTANCE,
+		QUAL_MAX,
 	};
 
 private:
@@ -475,7 +493,8 @@ public:
 		UNIFORM_TYPE_FLOAT,
 		UNIFORM_TYPE_INT,
 		UNIFORM_TYPE_BOOLEAN,
-		UNIFORM_TYPE_VECTOR,
+		UNIFORM_TYPE_VECTOR2,
+		UNIFORM_TYPE_VECTOR3,
 		UNIFORM_TYPE_TRANSFORM,
 		UNIFORM_TYPE_COLOR,
 		UNIFORM_TYPE_SAMPLER,
@@ -677,5 +696,7 @@ public:
 
 	VisualShaderNodeGlobalExpression();
 };
+
+extern String make_unique_id(VisualShader::Type p_type, int p_id, const String &p_name);
 
 #endif // VISUAL_SHADER_H

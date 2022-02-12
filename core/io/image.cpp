@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,14 +30,17 @@
 
 #include "image.h"
 
+#include "core/error/error_list.h"
 #include "core/error/error_macros.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
 #include "core/string/print_string.h"
 #include "core/templates/hash_map.h"
+#include "core/variant/dictionary.h"
 
 #include <stdio.h>
+#include <cmath>
 
 const char *Image::format_names[Image::FORMAT_MAX] = {
 	"Lum8", //luminance
@@ -65,10 +68,6 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 	"BPTC_RGBA",
 	"BPTC_RGBF",
 	"BPTC_RGBFU",
-	"PVRTC1_2", //pvrtc
-	"PVRTC1_2A",
-	"PVRTC1_4",
-	"PVRTC1_4A",
 	"ETC", //etc1
 	"ETC2_R11", //etc2
 	"ETC2_R11S", //signed", NOT srgb.
@@ -86,20 +85,14 @@ SaveEXRFunc Image::save_exr_func = nullptr;
 
 SavePNGBufferFunc Image::save_png_buffer_func = nullptr;
 
-void Image::_put_pixelb(int p_x, int p_y, uint32_t p_pixelsize, uint8_t *p_data, const uint8_t *p_pixel) {
-	uint32_t ofs = (p_y * width + p_x) * p_pixelsize;
-
-	for (uint32_t i = 0; i < p_pixelsize; i++) {
-		p_data[ofs + i] = p_pixel[i];
-	}
+void Image::_put_pixelb(int p_x, int p_y, uint32_t p_pixel_size, uint8_t *p_data, const uint8_t *p_pixel) {
+	uint32_t ofs = (p_y * width + p_x) * p_pixel_size;
+	memcpy(p_data + ofs, p_pixel, p_pixel_size);
 }
 
-void Image::_get_pixelb(int p_x, int p_y, uint32_t p_pixelsize, const uint8_t *p_data, uint8_t *p_pixel) {
-	uint32_t ofs = (p_y * width + p_x) * p_pixelsize;
-
-	for (uint32_t i = 0; i < p_pixelsize; i++) {
-		p_pixel[i] = p_data[ofs + i];
-	}
+void Image::_get_pixelb(int p_x, int p_y, uint32_t p_pixel_size, const uint8_t *p_data, uint8_t *p_pixel) {
+	uint32_t ofs = (p_y * width + p_x) * p_pixel_size;
+	memcpy(p_pixel, p_data + ofs, p_pixel_size);
 }
 
 int Image::get_format_pixel_size(Format p_format) {
@@ -154,14 +147,6 @@ int Image::get_format_pixel_size(Format p_format) {
 			return 1; //float /
 		case FORMAT_BPTC_RGBFU:
 			return 1; //unsigned float
-		case FORMAT_PVRTC1_2:
-			return 1; //pvrtc
-		case FORMAT_PVRTC1_2A:
-			return 1;
-		case FORMAT_PVRTC1_4:
-			return 1;
-		case FORMAT_PVRTC1_4A:
-			return 1;
 		case FORMAT_ETC:
 			return 1; //etc1
 		case FORMAT_ETC2_R11:
@@ -199,16 +184,6 @@ void Image::get_format_min_pixel_size(Format p_format, int &r_w, int &r_h) {
 			r_w = 4;
 			r_h = 4;
 		} break;
-		case FORMAT_PVRTC1_2:
-		case FORMAT_PVRTC1_2A: {
-			r_w = 16;
-			r_h = 8;
-		} break;
-		case FORMAT_PVRTC1_4A:
-		case FORMAT_PVRTC1_4: {
-			r_w = 8;
-			r_h = 8;
-		} break;
 		case FORMAT_ETC: {
 			r_w = 4;
 			r_h = 4;
@@ -241,10 +216,8 @@ void Image::get_format_min_pixel_size(Format p_format, int &r_w, int &r_h) {
 }
 
 int Image::get_format_pixel_rshift(Format p_format) {
-	if (p_format == FORMAT_DXT1 || p_format == FORMAT_RGTC_R || p_format == FORMAT_PVRTC1_4 || p_format == FORMAT_PVRTC1_4A || p_format == FORMAT_ETC || p_format == FORMAT_ETC2_R11 || p_format == FORMAT_ETC2_R11S || p_format == FORMAT_ETC2_RGB8 || p_format == FORMAT_ETC2_RGB8A1) {
+	if (p_format == FORMAT_DXT1 || p_format == FORMAT_RGTC_R || p_format == FORMAT_ETC || p_format == FORMAT_ETC2_R11 || p_format == FORMAT_ETC2_R11S || p_format == FORMAT_ETC2_RGB8 || p_format == FORMAT_ETC2_RGB8A1) {
 		return 1;
-	} else if (p_format == FORMAT_PVRTC1_2 || p_format == FORMAT_PVRTC1_2A) {
-		return 2;
 	} else {
 		return 0;
 	}
@@ -258,14 +231,6 @@ int Image::get_format_block_size(Format p_format) {
 		case FORMAT_RGTC_R: //bc4
 		case FORMAT_RGTC_RG: { //bc5		case case FORMAT_DXT1:
 
-			return 4;
-		}
-		case FORMAT_PVRTC1_2:
-		case FORMAT_PVRTC1_2A: {
-			return 4;
-		}
-		case FORMAT_PVRTC1_4A:
-		case FORMAT_PVRTC1_4: {
 			return 4;
 		}
 		case FORMAT_ETC: {
@@ -797,7 +762,7 @@ static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict
 					uint32_t interp_down = p01 + (((p11 - p01) * src_xofs_frac) >> FRAC_BITS);
 					uint32_t interp = interp_up + (((interp_down - interp_up) * src_yofs_frac) >> FRAC_BITS);
 					interp >>= FRAC_BITS;
-					p_dst[i * p_dst_width * CC + j * CC + l] = interp;
+					p_dst[i * p_dst_width * CC + j * CC + l] = uint8_t(interp);
 				} else if (sizeof(T) == 2) { //half float
 
 					float xofs_frac = float(src_xofs_frac) / (1 << FRAC_BITS);
@@ -1472,12 +1437,11 @@ int Image::_get_dst_image_size(int p_width, int p_height, Format p_format, int &
 		}
 
 		// Set mipmap size.
-		// It might be necessary to put this after the minimum mipmap size check because of the possible occurrence of "1 >> 1".
 		if (r_mm_width) {
-			*r_mm_width = bw >> 1;
+			*r_mm_width = w;
 		}
 		if (r_mm_height) {
-			*r_mm_height = bh >> 1;
+			*r_mm_height = h;
 		}
 
 		// Reach target mipmap.
@@ -2095,7 +2059,7 @@ void Image::create(const char **p_xpm) {
 						for (int i = 0; i < 6; i++) {
 							char v = line_ptr[i];
 
-							if (v >= '0' && v <= '9') {
+							if (is_digit(v)) {
 								v -= '0';
 							} else if (v >= 'A' && v <= 'F') {
 								v = (v - 'A') + 10;
@@ -2228,8 +2192,6 @@ bool Image::is_invisible() const {
 
 		} break;
 
-		case FORMAT_PVRTC1_2A:
-		case FORMAT_PVRTC1_4A:
 		case FORMAT_DXT3:
 		case FORMAT_DXT5: {
 			detected = true;
@@ -2270,8 +2232,6 @@ Image::AlphaMode Image::detect_alpha() const {
 			}
 
 		} break;
-		case FORMAT_PVRTC1_2A:
-		case FORMAT_PVRTC1_4A:
 		case FORMAT_DXT3:
 		case FORMAT_DXT5: {
 			detected = true;
@@ -2367,8 +2327,6 @@ Error Image::decompress() {
 		_image_decompress_bc(this);
 	} else if (format >= FORMAT_BPTC_RGBA && format <= FORMAT_BPTC_RGBFU && _image_decompress_bptc) {
 		_image_decompress_bptc(this);
-	} else if (format >= FORMAT_PVRTC1_2 && format <= FORMAT_PVRTC1_4A && _image_decompress_pvrtc) {
-		_image_decompress_pvrtc(this);
 	} else if (format == FORMAT_ETC && _image_decompress_etc1) {
 		_image_decompress_etc1(this);
 	} else if (format >= FORMAT_ETC2_R11 && format <= FORMAT_ETC2_RA_AS_RG && _image_decompress_etc2) {
@@ -2390,10 +2348,6 @@ Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels
 		case COMPRESS_S3TC: {
 			ERR_FAIL_COND_V(!_image_compress_bc_func, ERR_UNAVAILABLE);
 			_image_compress_bc_func(this, p_lossy_quality, p_channels);
-		} break;
-		case COMPRESS_PVRTC1_4: {
-			ERR_FAIL_COND_V(!_image_compress_pvrtc1_4bpp_func, ERR_UNAVAILABLE);
-			_image_compress_pvrtc1_4bpp_func(this);
 		} break;
 		case COMPRESS_ETC: {
 			ERR_FAIL_COND_V(!_image_compress_etc1_func, ERR_UNAVAILABLE);
@@ -2506,7 +2460,7 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Po
 		clipped_src_rect.position.y = ABS(p_dest.y);
 	}
 
-	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0) {
+	if (clipped_src_rect.has_no_area()) {
 		return;
 	}
 
@@ -2561,7 +2515,7 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 		clipped_src_rect.position.y = ABS(p_dest.y);
 	}
 
-	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0) {
+	if (clipped_src_rect.has_no_area()) {
 		return;
 	}
 
@@ -2615,7 +2569,7 @@ void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const P
 		clipped_src_rect.position.y = ABS(p_dest.y);
 	}
 
-	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0) {
+	if (clipped_src_rect.has_no_area()) {
 		return;
 	}
 
@@ -2664,7 +2618,7 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 		clipped_src_rect.position.y = ABS(p_dest.y);
 	}
 
-	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0) {
+	if (clipped_src_rect.has_no_area()) {
 		return;
 	}
 
@@ -2697,24 +2651,55 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 	}
 }
 
-void Image::fill(const Color &c) {
+// Repeats `p_pixel` `p_count` times in consecutive memory.
+// Results in the original pixel and `p_count - 1` subsequent copies of it.
+void Image::_repeat_pixel_over_subsequent_memory(uint8_t *p_pixel, int p_pixel_size, int p_count) {
+	int offset = 1;
+	for (int stride = 1; offset + stride <= p_count; stride *= 2) {
+		memcpy(p_pixel + offset * p_pixel_size, p_pixel, stride * p_pixel_size);
+		offset += stride;
+	}
+	if (offset < p_count) {
+		memcpy(p_pixel + offset * p_pixel_size, p_pixel, (p_count - offset) * p_pixel_size);
+	}
+}
+
+void Image::fill(const Color &p_color) {
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot fill in compressed or custom image formats.");
 
-	uint8_t *wp = data.ptrw();
-	uint8_t *dst_data_ptr = wp;
+	uint8_t *dst_data_ptr = data.ptrw();
 
 	int pixel_size = get_format_pixel_size(format);
 
-	// put first pixel with the format-aware API
-	set_pixel(0, 0, c);
+	// Put first pixel with the format-aware API.
+	_set_color_at_ofs(dst_data_ptr, 0, p_color);
 
-	for (int y = 0; y < height; y++) {
-		for (int x = 0; x < width; x++) {
-			uint8_t *dst = &dst_data_ptr[(y * width + x) * pixel_size];
+	_repeat_pixel_over_subsequent_memory(dst_data_ptr, pixel_size, width * height);
+}
 
-			for (int k = 0; k < pixel_size; k++) {
-				dst[k] = dst_data_ptr[k];
-			}
+void Image::fill_rect(const Rect2 &p_rect, const Color &p_color) {
+	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot fill rect in compressed or custom image formats.");
+
+	Rect2i r = Rect2i(0, 0, width, height).intersection(p_rect.abs());
+	if (r.has_no_area()) {
+		return;
+	}
+
+	uint8_t *dst_data_ptr = data.ptrw();
+
+	int pixel_size = get_format_pixel_size(format);
+
+	// Put first pixel with the format-aware API.
+	uint8_t *rect_first_pixel_ptr = &dst_data_ptr[(r.position.y * width + r.position.x) * pixel_size];
+	_set_color_at_ofs(rect_first_pixel_ptr, 0, p_color);
+
+	if (r.size.x == width) {
+		// No need to fill rows separately.
+		_repeat_pixel_over_subsequent_memory(rect_first_pixel_ptr, pixel_size, width * r.size.y);
+	} else {
+		_repeat_pixel_over_subsequent_memory(rect_first_pixel_ptr, pixel_size, r.size.x);
+		for (int y = 1; y < r.size.y; y++) {
+			memcpy(rect_first_pixel_ptr + y * width * pixel_size, rect_first_pixel_ptr, r.size.x * pixel_size);
 		}
 	}
 }
@@ -2727,10 +2712,8 @@ ImageMemLoadFunc Image::_bmp_mem_loader_func = nullptr;
 
 void (*Image::_image_compress_bc_func)(Image *, float, Image::UsedChannels) = nullptr;
 void (*Image::_image_compress_bptc_func)(Image *, float, Image::UsedChannels) = nullptr;
-void (*Image::_image_compress_pvrtc1_4bpp_func)(Image *) = nullptr;
 void (*Image::_image_compress_etc1_func)(Image *, float) = nullptr;
 void (*Image::_image_compress_etc2_func)(Image *, float, Image::UsedChannels) = nullptr;
-void (*Image::_image_decompress_pvrtc)(Image *) = nullptr;
 void (*Image::_image_decompress_bc)(Image *) = nullptr;
 void (*Image::_image_decompress_bptc)(Image *) = nullptr;
 void (*Image::_image_decompress_etc1)(Image *) = nullptr;
@@ -3155,11 +3138,14 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("rgbe_to_srgb"), &Image::rgbe_to_srgb);
 	ClassDB::bind_method(D_METHOD("bump_map_to_normal_map", "bump_scale"), &Image::bump_map_to_normal_map, DEFVAL(1.0));
 
+	ClassDB::bind_method(D_METHOD("compute_image_metrics", "compared_image", "use_luma"), &Image::compute_image_metrics);
+
 	ClassDB::bind_method(D_METHOD("blit_rect", "src", "src_rect", "dst"), &Image::blit_rect);
 	ClassDB::bind_method(D_METHOD("blit_rect_mask", "src", "mask", "src_rect", "dst"), &Image::blit_rect_mask);
 	ClassDB::bind_method(D_METHOD("blend_rect", "src", "src_rect", "dst"), &Image::blend_rect);
 	ClassDB::bind_method(D_METHOD("blend_rect_mask", "src", "mask", "src_rect", "dst"), &Image::blend_rect_mask);
 	ClassDB::bind_method(D_METHOD("fill", "color"), &Image::fill);
+	ClassDB::bind_method(D_METHOD("fill_rect", "rect", "color"), &Image::fill_rect);
 
 	ClassDB::bind_method(D_METHOD("get_used_rect"), &Image::get_used_rect);
 	ClassDB::bind_method(D_METHOD("get_rect", "rect"), &Image::get_rect);
@@ -3212,10 +3198,6 @@ void Image::_bind_methods() {
 	BIND_ENUM_CONSTANT(FORMAT_BPTC_RGBA); //btpc bc6h
 	BIND_ENUM_CONSTANT(FORMAT_BPTC_RGBF); //float /
 	BIND_ENUM_CONSTANT(FORMAT_BPTC_RGBFU); //unsigned float
-	BIND_ENUM_CONSTANT(FORMAT_PVRTC1_2); //pvrtc
-	BIND_ENUM_CONSTANT(FORMAT_PVRTC1_2A);
-	BIND_ENUM_CONSTANT(FORMAT_PVRTC1_4);
-	BIND_ENUM_CONSTANT(FORMAT_PVRTC1_4A);
 	BIND_ENUM_CONSTANT(FORMAT_ETC); //etc1
 	BIND_ENUM_CONSTANT(FORMAT_ETC2_R11); //etc2
 	BIND_ENUM_CONSTANT(FORMAT_ETC2_R11S); //signed ); NOT srgb.
@@ -3239,7 +3221,6 @@ void Image::_bind_methods() {
 	BIND_ENUM_CONSTANT(ALPHA_BLEND);
 
 	BIND_ENUM_CONSTANT(COMPRESS_S3TC);
-	BIND_ENUM_CONSTANT(COMPRESS_PVRTC1_4);
 	BIND_ENUM_CONSTANT(COMPRESS_ETC);
 	BIND_ENUM_CONSTANT(COMPRESS_ETC2);
 	BIND_ENUM_CONSTANT(COMPRESS_BPTC);
@@ -3643,4 +3624,129 @@ Ref<Resource> Image::duplicate(bool p_subresources) const {
 
 void Image::set_as_black() {
 	memset(data.ptrw(), 0, data.size());
+}
+
+Dictionary Image::compute_image_metrics(const Ref<Image> p_compared_image, bool p_luma_metric) {
+	// https://github.com/richgel999/bc7enc_rdo/blob/master/LICENSE
+	//
+	// This is free and unencumbered software released into the public domain.
+	// Anyone is free to copy, modify, publish, use, compile, sell, or distribute this
+	// software, either in source code form or as a compiled binary, for any purpose,
+	// commercial or non - commercial, and by any means.
+	// In jurisdictions that recognize copyright laws, the author or authors of this
+	// software dedicate any and all copyright interest in the software to the public
+	// domain. We make this dedication for the benefit of the public at large and to
+	// the detriment of our heirs and successors. We intend this dedication to be an
+	// overt act of relinquishment in perpetuity of all present and future rights to
+	// this software under copyright law.
+	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
+	// AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+	// ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+	// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+	Dictionary result;
+	result["max"] = INFINITY;
+	result["mean"] = INFINITY;
+	result["mean_squared"] = INFINITY;
+	result["root_mean_squared"] = INFINITY;
+	result["peak_snr"] = 0.0f;
+
+	ERR_FAIL_NULL_V(p_compared_image, result);
+	Error err = OK;
+	Ref<Image> compared_image = duplicate(true);
+	if (compared_image->is_compressed()) {
+		err = compared_image->decompress();
+	}
+	ERR_FAIL_COND_V(err != OK, result);
+	Ref<Image> source_image = p_compared_image->duplicate(true);
+	if (source_image->is_compressed()) {
+		err = source_image->decompress();
+	}
+	ERR_FAIL_COND_V(err != OK, result);
+
+	ERR_FAIL_COND_V(err != OK, result);
+
+	ERR_FAIL_COND_V_MSG((compared_image->get_format() >= Image::FORMAT_RH) && (compared_image->get_format() <= Image::FORMAT_RGBE9995), result, "Metrics on HDR images are not supported.");
+	ERR_FAIL_COND_V_MSG((source_image->get_format() >= Image::FORMAT_RH) && (source_image->get_format() <= Image::FORMAT_RGBE9995), result, "Metrics on HDR images are not supported.");
+
+	double image_metric_max, image_metric_mean, image_metric_mean_squared, image_metric_root_mean_squared, image_metric_peak_snr = 0.0;
+	const bool average_component_error = true;
+
+	const uint32_t width = MIN(compared_image->get_width(), source_image->get_width());
+	const uint32_t height = MIN(compared_image->get_height(), source_image->get_height());
+
+	// Histogram approach originally due to Charles Bloom.
+	double hist[256];
+	memset(hist, 0, sizeof(hist));
+
+	for (uint32_t y = 0; y < height; y++) {
+		for (uint32_t x = 0; x < width; x++) {
+			const Color color_a = compared_image->get_pixel(x, y);
+
+			const Color color_b = source_image->get_pixel(x, y);
+
+			if (!p_luma_metric) {
+				ERR_FAIL_COND_V_MSG(color_a.r > 1.0f, Dictionary(), "Can't compare HDR colors.");
+				ERR_FAIL_COND_V_MSG(color_b.r > 1.0f, Dictionary(), "Can't compare HDR colors.");
+				hist[Math::abs(color_a.get_r8() - color_b.get_r8())]++;
+				ERR_FAIL_COND_V_MSG(color_a.g > 1.0f, Dictionary(), "Can't compare HDR colors.");
+				ERR_FAIL_COND_V_MSG(color_b.g > 1.0f, Dictionary(), "Can't compare HDR colors.");
+				hist[Math::abs(color_a.get_g8() - color_b.get_g8())]++;
+				ERR_FAIL_COND_V_MSG(color_a.b > 1.0f, Dictionary(), "Can't compare HDR colors.");
+				ERR_FAIL_COND_V_MSG(color_b.b > 1.0f, Dictionary(), "Can't compare HDR colors.");
+				hist[Math::abs(color_a.get_b8() - color_b.get_b8())]++;
+				ERR_FAIL_COND_V_MSG(color_a.a > 1.0f, Dictionary(), "Can't compare HDR colors.");
+				ERR_FAIL_COND_V_MSG(color_b.a > 1.0f, Dictionary(), "Can't compare HDR colors.");
+				hist[Math::abs(color_a.get_a8() - color_b.get_a8())]++;
+			} else {
+				ERR_FAIL_COND_V_MSG(color_a.r > 1.0f, Dictionary(), "Can't compare HDR colors.");
+				ERR_FAIL_COND_V_MSG(color_b.r > 1.0f, Dictionary(), "Can't compare HDR colors.");
+				// REC709 weightings
+				int luma_a = (13938U * color_a.get_r8() + 46869U * color_a.get_g8() + 4729U * color_a.get_b8() + 32768U) >> 16U;
+				int luma_b = (13938U * color_b.get_r8() + 46869U * color_b.get_g8() + 4729U * color_b.get_b8() + 32768U) >> 16U;
+				hist[Math::abs(luma_a - luma_b)]++;
+			}
+		}
+	}
+
+	image_metric_max = 0;
+	double sum = 0.0f, sum2 = 0.0f;
+	for (uint32_t i = 0; i < 256; i++) {
+		if (!hist[i]) {
+			continue;
+		}
+
+		image_metric_max = MAX(image_metric_max, i);
+
+		double x = i * hist[i];
+
+		sum += x;
+		sum2 += i * x;
+	}
+
+	// See http://richg42.blogspot.com/2016/09/how-to-compute-psnr-from-old-berkeley.html
+	double total_values = width * height;
+
+	if (average_component_error) {
+		total_values *= 4;
+	}
+
+	image_metric_mean = CLAMP(sum / total_values, 0.0f, 255.0f);
+	image_metric_mean_squared = CLAMP(sum2 / total_values, 0.0f, 255.0f * 255.0f);
+
+	image_metric_root_mean_squared = sqrt(image_metric_mean_squared);
+
+	if (!image_metric_root_mean_squared) {
+		image_metric_peak_snr = 1e+10f;
+	} else {
+		image_metric_peak_snr = CLAMP(log10(255.0f / image_metric_root_mean_squared) * 20.0f, 0.0f, 500.0f);
+	}
+	result["max"] = image_metric_max;
+	result["mean"] = image_metric_mean;
+	result["mean_squared"] = image_metric_mean_squared;
+	result["root_mean_squared"] = image_metric_root_mean_squared;
+	result["peak_snr"] = image_metric_peak_snr;
+	return result;
 }

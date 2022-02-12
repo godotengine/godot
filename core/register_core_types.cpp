@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,18 +37,18 @@
 #include "core/crypto/aes_context.h"
 #include "core/crypto/crypto.h"
 #include "core/crypto/hashing_context.h"
+#include "core/debugger/engine_profiler.h"
 #include "core/extension/native_extension.h"
 #include "core/extension/native_extension_manager.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
+#include "core/input/shortcut.h"
 #include "core/io/config_file.h"
 #include "core/io/dtls_server.h"
 #include "core/io/http_client.h"
 #include "core/io/image_loader.h"
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
-#include "core/io/multiplayer_api.h"
-#include "core/io/multiplayer_peer.h"
 #include "core/io/packed_data_container.h"
 #include "core/io/packet_peer.h"
 #include "core/io/packet_peer_dtls.h"
@@ -68,6 +68,8 @@
 #include "core/math/geometry_3d.h"
 #include "core/math/random_number_generator.h"
 #include "core/math/triangle_mesh.h"
+#include "core/multiplayer/multiplayer_api.h"
+#include "core/multiplayer/multiplayer_peer.h"
 #include "core/object/class_db.h"
 #include "core/object/undo_redo.h"
 #include "core/os/main_loop.h"
@@ -82,19 +84,20 @@ static Ref<ResourceFormatLoaderImage> resource_format_image;
 static Ref<TranslationLoaderPO> resource_format_po;
 static Ref<ResourceFormatSaverCrypto> resource_format_saver_crypto;
 static Ref<ResourceFormatLoaderCrypto> resource_format_loader_crypto;
+static Ref<NativeExtensionResourceLoader> resource_loader_native_extension;
 
-static _ResourceLoader *_resource_loader = nullptr;
-static _ResourceSaver *_resource_saver = nullptr;
-static _OS *_os = nullptr;
-static _Engine *_engine = nullptr;
-static _ClassDB *_classdb = nullptr;
-static _Marshalls *_marshalls = nullptr;
-static _EngineDebugger *_engine_debugger = nullptr;
+static core_bind::ResourceLoader *_resource_loader = nullptr;
+static core_bind::ResourceSaver *_resource_saver = nullptr;
+static core_bind::OS *_os = nullptr;
+static core_bind::Engine *_engine = nullptr;
+static core_bind::special::ClassDB *_classdb = nullptr;
+static core_bind::Marshalls *_marshalls = nullptr;
+static core_bind::EngineDebugger *_engine_debugger = nullptr;
 
 static IP *ip = nullptr;
 
-static _Geometry2D *_geometry_2d = nullptr;
-static _Geometry3D *_geometry_3d = nullptr;
+static core_bind::Geometry2D *_geometry_2d = nullptr;
+static core_bind::Geometry3D *_geometry_3d = nullptr;
 
 extern Mutex _global_mutex;
 
@@ -143,10 +146,12 @@ void register_core_types() {
 	GDREGISTER_CLASS(Resource);
 	GDREGISTER_CLASS(Image);
 
+	GDREGISTER_CLASS(Shortcut);
 	GDREGISTER_VIRTUAL_CLASS(InputEvent);
 	GDREGISTER_VIRTUAL_CLASS(InputEventWithModifiers);
 	GDREGISTER_VIRTUAL_CLASS(InputEventFromWindow);
 	GDREGISTER_CLASS(InputEventKey);
+	GDREGISTER_CLASS(InputEventShortcut);
 	GDREGISTER_VIRTUAL_CLASS(InputEventMouse);
 	GDREGISTER_CLASS(InputEventMouseButton);
 	GDREGISTER_CLASS(InputEventMouseMotion);
@@ -164,11 +169,13 @@ void register_core_types() {
 	GDREGISTER_VIRTUAL_CLASS(IP);
 
 	GDREGISTER_VIRTUAL_CLASS(StreamPeer);
+	GDREGISTER_CLASS(StreamPeerExtension);
 	GDREGISTER_CLASS(StreamPeerBuffer);
 	GDREGISTER_CLASS(StreamPeerTCP);
 	GDREGISTER_CLASS(TCPServer);
 
 	GDREGISTER_VIRTUAL_CLASS(PacketPeer);
+	GDREGISTER_CLASS(PacketPeerExtension);
 	GDREGISTER_CLASS(PacketPeerStream);
 	GDREGISTER_CLASS(PacketPeerUDP);
 	GDREGISTER_CLASS(UDPServer);
@@ -192,6 +199,7 @@ void register_core_types() {
 	ResourceLoader::add_resource_format_loader(resource_format_loader_crypto);
 
 	GDREGISTER_VIRTUAL_CLASS(MultiplayerPeer);
+	GDREGISTER_CLASS(MultiplayerPeerExtension);
 	GDREGISTER_CLASS(MultiplayerAPI);
 	GDREGISTER_CLASS(MainLoop);
 	GDREGISTER_CLASS(Translation);
@@ -202,11 +210,11 @@ void register_core_types() {
 	GDREGISTER_CLASS(ResourceFormatLoader);
 	GDREGISTER_CLASS(ResourceFormatSaver);
 
-	GDREGISTER_CLASS(_File);
-	GDREGISTER_CLASS(_Directory);
-	GDREGISTER_CLASS(_Thread);
-	GDREGISTER_CLASS(_Mutex);
-	GDREGISTER_CLASS(_Semaphore);
+	GDREGISTER_CLASS(core_bind::File);
+	GDREGISTER_CLASS(core_bind::Directory);
+	GDREGISTER_CLASS(core_bind::Thread);
+	GDREGISTER_CLASS(core_bind::Mutex);
+	GDREGISTER_CLASS(core_bind::Semaphore);
 
 	GDREGISTER_CLASS(XMLParser);
 	GDREGISTER_CLASS(JSON);
@@ -230,22 +238,27 @@ void register_core_types() {
 
 	GDREGISTER_VIRTUAL_CLASS(ResourceUID);
 
+	GDREGISTER_CLASS(EngineProfiler);
+
 	resource_uid = memnew(ResourceUID);
 
 	native_extension_manager = memnew(NativeExtensionManager);
 
+	resource_loader_native_extension.instantiate();
+	ResourceLoader::add_resource_format_loader(resource_loader_native_extension);
+
 	ip = IP::create();
 
-	_geometry_2d = memnew(_Geometry2D);
-	_geometry_3d = memnew(_Geometry3D);
+	_geometry_2d = memnew(core_bind::Geometry2D);
+	_geometry_3d = memnew(core_bind::Geometry3D);
 
-	_resource_loader = memnew(_ResourceLoader);
-	_resource_saver = memnew(_ResourceSaver);
-	_os = memnew(_OS);
-	_engine = memnew(_Engine);
-	_classdb = memnew(_ClassDB);
-	_marshalls = memnew(_Marshalls);
-	_engine_debugger = memnew(_EngineDebugger);
+	_resource_loader = memnew(core_bind::ResourceLoader);
+	_resource_saver = memnew(core_bind::ResourceSaver);
+	_os = memnew(core_bind::OS);
+	_engine = memnew(core_bind::Engine);
+	_classdb = memnew(core_bind::special::ClassDB);
+	_marshalls = memnew(core_bind::Marshalls);
+	_engine_debugger = memnew(core_bind::EngineDebugger);
 }
 
 void register_core_settings() {
@@ -262,35 +275,35 @@ void register_core_settings() {
 void register_core_singletons() {
 	GDREGISTER_CLASS(ProjectSettings);
 	GDREGISTER_VIRTUAL_CLASS(IP);
-	GDREGISTER_CLASS(_Geometry2D);
-	GDREGISTER_CLASS(_Geometry3D);
-	GDREGISTER_CLASS(_ResourceLoader);
-	GDREGISTER_CLASS(_ResourceSaver);
-	GDREGISTER_CLASS(_OS);
-	GDREGISTER_CLASS(_Engine);
-	GDREGISTER_CLASS(_ClassDB);
-	GDREGISTER_CLASS(_Marshalls);
+	GDREGISTER_CLASS(core_bind::Geometry2D);
+	GDREGISTER_CLASS(core_bind::Geometry3D);
+	GDREGISTER_CLASS(core_bind::ResourceLoader);
+	GDREGISTER_CLASS(core_bind::ResourceSaver);
+	GDREGISTER_CLASS(core_bind::OS);
+	GDREGISTER_CLASS(core_bind::Engine);
+	GDREGISTER_CLASS(core_bind::special::ClassDB);
+	GDREGISTER_CLASS(core_bind::Marshalls);
 	GDREGISTER_CLASS(TranslationServer);
 	GDREGISTER_VIRTUAL_CLASS(Input);
 	GDREGISTER_CLASS(InputMap);
 	GDREGISTER_CLASS(Expression);
-	GDREGISTER_CLASS(_EngineDebugger);
+	GDREGISTER_CLASS(core_bind::EngineDebugger);
 	GDREGISTER_CLASS(Time);
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ProjectSettings", ProjectSettings::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("IP", IP::get_singleton(), "IP"));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry2D", _Geometry2D::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry3D", _Geometry3D::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceLoader", _ResourceLoader::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceSaver", _ResourceSaver::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("OS", _OS::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Engine", _Engine::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry2D", core_bind::Geometry2D::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry3D", core_bind::Geometry3D::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceLoader", core_bind::ResourceLoader::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceSaver", core_bind::ResourceSaver::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("OS", core_bind::OS::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Engine", core_bind::Engine::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ClassDB", _classdb));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Marshalls", _Marshalls::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Marshalls", core_bind::Marshalls::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("TranslationServer", TranslationServer::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Input", Input::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("InputMap", InputMap::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("EngineDebugger", _EngineDebugger::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("EngineDebugger", core_bind::EngineDebugger::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Time", Time::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NativeExtensionManager", NativeExtensionManager::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceUID", ResourceUID::get_singleton()));
@@ -298,13 +311,8 @@ void register_core_singletons() {
 
 void register_core_extensions() {
 	// Hardcoded for now.
-	if (ProjectSettings::get_singleton()->has_setting("native_extensions/paths")) {
-		Vector<String> paths = ProjectSettings::get_singleton()->get("native_extensions/paths");
-		for (int i = 0; i < paths.size(); i++) {
-			NativeExtensionManager::LoadStatus status = native_extension_manager->load_extension(paths[i]);
-			ERR_CONTINUE_MSG(status != NativeExtensionManager::LOAD_STATUS_OK, "Error loading extension: " + paths[i]);
-		}
-	}
+	NativeExtension::initialize_native_extensions();
+	native_extension_manager->load_extensions();
 	native_extension_manager->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_CORE);
 }
 
@@ -348,6 +356,9 @@ void unregister_core_types() {
 	if (ip) {
 		memdelete(ip);
 	}
+
+	ResourceLoader::remove_resource_format_loader(resource_loader_native_extension);
+	resource_loader_native_extension.unref();
 
 	ResourceLoader::finalize();
 

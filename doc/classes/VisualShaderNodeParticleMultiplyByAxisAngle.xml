@@ -6,12 +6,8 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="degrees_mode" type="bool" setter="set_degrees_mode" getter="is_degrees_mode" default="true">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

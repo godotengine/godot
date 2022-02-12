@@ -10,8 +10,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="motion_mirroring" type="Vector2" setter="set_mirroring" getter="get_mirroring" default="Vector2(0, 0)">
 			The ParallaxLayer's [Texture2D] mirroring. Useful for creating an infinite scrolling background. If an axis is set to [code]0[/code], the [Texture2D] will not be mirrored.
@@ -23,6 +21,4 @@
 			Multiplies the ParallaxLayer's motion. If an axis is set to [code]0[/code], it will not scroll.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

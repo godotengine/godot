@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,8 @@
 #include "gdnative/rect2.h"
 
 #include "core/math/rect2.h"
+#include "core/math/rect2i.h"
+#include "core/os/memory.h"
 
 static_assert(sizeof(godot_rect2) == sizeof(Rect2), "Rect2 size mismatch");
 static_assert(sizeof(godot_rect2i) == sizeof(Rect2i), "Rect2i size mismatch");

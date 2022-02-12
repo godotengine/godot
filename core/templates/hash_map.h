@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,6 @@
 
 /**
  * @class HashMap
- * @author Juan Linietsky <reduzio@gmail.com>
  *
  * Implementation of a standard Hashing HashMap, for quick lookups of Data associated with a Key.
  * The implementation provides hashers for the default types, if you need a special kind of hasher, provide
@@ -48,12 +47,13 @@
  * @param TKey  Key, search is based on it, needs to be hasheable. It is unique in this container.
  * @param TData Data, data associated with the key
  * @param Hasher Hasher object, needs to provide a valid static hash function for TKey
- * @param Comparator comparator object, needs to be able to safely compare two TKey values. It needs to ensure that x == x for any items inserted in the map. Bear in mind that nan != nan when implementing an equality check.
+ * @param Comparator comparator object, needs to be able to safely compare two TKey values.
+ * It needs to ensure that x == x for any items inserted in the map. Bear in mind that nan != nan when implementing an equality check.
  * @param MIN_HASH_TABLE_POWER Miminum size of the hash table, as a power of two. You rarely need to change this parameter.
  * @param RELATIONSHIP Relationship at which the hash table is resized. if amount of elements is RELATIONSHIP
  * times bigger than the hash table, table is resized to solve this condition. if RELATIONSHIP is zero, table is always MIN_HASH_TABLE_POWER.
  *
-*/
+ */
 
 template <class TKey, class TData, class Hasher = HashMapHasherDefault, class Comparator = HashMapComparatorDefault<TKey>, uint8_t MIN_HASH_TABLE_POWER = 3, uint8_t RELATIONSHIP = 8>
 class HashMap {
@@ -62,7 +62,9 @@ public:
 		TKey key;
 		TData data;
 
-		Pair() {}
+		Pair(const TKey &p_key) :
+				key(p_key),
+				data() {}
 		Pair(const TKey &p_key, const TData &p_data) :
 				key(p_key),
 				data(p_data) {
@@ -90,6 +92,12 @@ public:
 		const TData &value() const {
 			return pair.value();
 		}
+
+		Element(const TKey &p_key) :
+				pair(p_key) {}
+		Element(const Element &p_other) :
+				hash(p_other.hash),
+				pair(p_other.pair.key, p_other.pair.data) {}
 	};
 
 private:
@@ -192,14 +200,12 @@ private:
 
 	Element *create_element(const TKey &p_key) {
 		/* if element doesn't exist, create it */
-		Element *e = memnew(Element);
+		Element *e = memnew(Element(p_key));
 		ERR_FAIL_COND_V_MSG(!e, nullptr, "Out of memory.");
 		uint32_t hash = Hasher::hash(p_key);
 		uint32_t index = hash & ((1 << hash_table_power) - 1);
 		e->next = hash_table[index];
 		e->hash = hash;
-		e->pair.key = p_key;
-		e->pair.data = TData();
 
 		hash_table[index] = e;
 		elements++;
@@ -228,9 +234,7 @@ private:
 			const Element *e = p_t.hash_table[i];
 
 			while (e) {
-				Element *le = memnew(Element); /* local element */
-
-				*le = *e; /* copy data */
+				Element *le = memnew(Element(*e)); /* local element */
 
 				/* add to list and reassign pointers */
 				le->next = hash_table[i];
@@ -454,8 +458,8 @@ public:
 	 *
 	 * 		print( *k );
 	 * 	}
-         *
-	*/
+	 *
+	 */
 	const TKey *next(const TKey *p_key) const {
 		if (unlikely(!hash_table)) {
 			return nullptr;

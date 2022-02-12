@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,11 +29,7 @@
 /*************************************************************************/
 
 #include "spring_arm_3d.h"
-
-#include "core/config/engine.h"
-#include "scene/3d/collision_object_3d.h"
-#include "scene/resources/sphere_shape_3d.h"
-#include "servers/physics_server_3d.h"
+#include "scene/3d/camera_3d.h"
 
 void SpringArm3D::_notification(int p_what) {
 	switch (p_what) {
@@ -138,29 +134,65 @@ void SpringArm3D::process_spring() {
 	Vector3 motion;
 	const Vector3 cast_direction(get_global_transform().basis.xform(Vector3(0, 0, 1)));
 
+	motion = Vector3(cast_direction * (spring_length));
+
 	if (shape.is_null()) {
-		motion = Vector3(cast_direction * (spring_length));
-		PhysicsDirectSpaceState3D::RayResult r;
-		bool intersected = get_world_3d()->get_direct_space_state()->intersect_ray(get_global_transform().origin, get_global_transform().origin + motion, r, excluded_objects, mask);
-		if (intersected) {
-			real_t dist = get_global_transform().origin.distance_to(r.position);
-			dist -= margin;
-			motion_delta = dist / (spring_length);
+		Camera3D *camera = nullptr;
+		for (int i = get_child_count() - 1; 0 <= i; --i) {
+			camera = Object::cast_to<Camera3D>(get_child(i));
+			if (camera) {
+				break;
+			}
+		}
+
+		if (camera != nullptr) {
+			//use camera rotation, but spring arm position
+			Transform3D base_transform = camera->get_global_transform();
+			base_transform.origin = get_global_transform().origin;
+
+			PhysicsDirectSpaceState3D::ShapeParameters shape_params;
+			shape_params.shape_rid = camera->get_pyramid_shape_rid();
+			shape_params.transform = base_transform;
+			shape_params.motion = motion;
+			shape_params.exclude = excluded_objects;
+			shape_params.collision_mask = mask;
+
+			get_world_3d()->get_direct_space_state()->cast_motion(shape_params, motion_delta, motion_delta_unsafe);
+		} else {
+			PhysicsDirectSpaceState3D::RayParameters ray_params;
+			ray_params.from = get_global_transform().origin;
+			ray_params.to = get_global_transform().origin + motion;
+			ray_params.exclude = excluded_objects;
+			ray_params.collision_mask = mask;
+
+			PhysicsDirectSpaceState3D::RayResult r;
+			bool intersected = get_world_3d()->get_direct_space_state()->intersect_ray(ray_params, r);
+			if (intersected) {
+				real_t dist = get_global_transform().origin.distance_to(r.position);
+				dist -= margin;
+				motion_delta = dist / (spring_length);
+			}
 		}
 	} else {
-		motion = Vector3(cast_direction * spring_length);
-		get_world_3d()->get_direct_space_state()->cast_motion(shape->get_rid(), get_global_transform(), motion, 0, motion_delta, motion_delta_unsafe, excluded_objects, mask);
+		PhysicsDirectSpaceState3D::ShapeParameters shape_params;
+		shape_params.shape_rid = shape->get_rid();
+		shape_params.transform = get_global_transform();
+		shape_params.motion = motion;
+		shape_params.exclude = excluded_objects;
+		shape_params.collision_mask = mask;
+
+		get_world_3d()->get_direct_space_state()->cast_motion(shape_params, motion_delta, motion_delta_unsafe);
 	}
 
 	current_spring_length = spring_length * motion_delta;
-	Transform3D childs_transform;
-	childs_transform.origin = get_global_transform().origin + cast_direction * (spring_length * motion_delta);
+	Transform3D child_transform;
+	child_transform.origin = get_global_transform().origin + cast_direction * (spring_length * motion_delta);
 
 	for (int i = get_child_count() - 1; 0 <= i; --i) {
 		Node3D *child = Object::cast_to<Node3D>(get_child(i));
 		if (child) {
-			childs_transform.basis = child->get_global_transform().basis;
-			child->set_global_transform(childs_transform);
+			child_transform.basis = child->get_global_transform().basis;
+			child->set_global_transform(child_transform);
 		}
 	}
 }

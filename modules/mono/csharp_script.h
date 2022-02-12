@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -101,8 +101,7 @@ private:
 
 	bool tool = false;
 	bool valid = false;
-
-	bool builtin;
+	bool reload_invalidated = false;
 
 	GDMonoClass *base = nullptr;
 	GDMonoClass *native = nullptr;
@@ -136,7 +135,7 @@ private:
 	Map<StringName, EventSignal> event_signals;
 	bool signals_invalidated = true;
 
-	Vector<MultiplayerAPI::RPCConfig> rpc_functions;
+	Vector<Multiplayer::RPCConfig> rpc_functions;
 
 #ifdef TOOLS_ENABLED
 	List<PropertyInfo> exported_members_cache; // members_cache
@@ -154,7 +153,7 @@ private:
 	Set<StringName> exported_members_names;
 #endif
 
-	Map<StringName, PropertyInfo> member_info;
+	OrderedHashMap<StringName, PropertyInfo> member_info;
 
 	void _clear();
 
@@ -179,7 +178,7 @@ private:
 	static void update_script_class_info(Ref<CSharpScript> p_script);
 	static void initialize_for_managed_type(Ref<CSharpScript> p_script, GDMonoClass *p_class, GDMonoClass *p_native);
 
-	MultiplayerAPI::RPCMode _member_get_rpc_mode(IMonoClassMember *p_member) const;
+	Multiplayer::RPCMode _member_get_rpc_mode(IMonoClassMember *p_member) const;
 
 protected:
 	static void _bind_methods();
@@ -215,7 +214,7 @@ public:
 	void get_script_signal_list(List<MethodInfo> *r_signals) const override;
 
 	bool get_property_default_value(const StringName &p_property, Variant &r_value) const override;
-	void get_script_property_list(List<PropertyInfo> *p_list) const override;
+	void get_script_property_list(List<PropertyInfo> *r_list) const override;
 	void update_exports() override;
 
 	void get_members(Set<StringName> *p_members) override;
@@ -234,7 +233,7 @@ public:
 
 	int get_member_line(const StringName &p_member) const override;
 
-	const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const override;
+	const Vector<Multiplayer::RPCConfig> get_rpc_methods() const override;
 
 #ifdef TOOLS_ENABLED
 	bool is_placeholder_fallback_enabled() const override { return placeholder_fallback_enabled; }
@@ -293,7 +292,7 @@ public:
 	void get_property_list(List<PropertyInfo> *p_properties) const override;
 	Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid) const override;
 
-	/* TODO */ void get_method_list(List<MethodInfo> *p_list) const override {}
+	void get_method_list(List<MethodInfo> *p_list) const override;
 	bool has_method(const StringName &p_method) const override;
 	Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
@@ -311,7 +310,7 @@ public:
 	void refcount_incremented() override;
 	bool refcount_decremented() override;
 
-	const Vector<MultiplayerAPI::RPCConfig> get_rpc_methods() const override;
+	const Vector<Multiplayer::RPCConfig> get_rpc_methods() const override;
 
 	void notification(int p_notification) override;
 	void _call_notification(int p_notification);
@@ -401,7 +400,18 @@ class CSharpLanguage : public ScriptLanguage {
 	static void _editor_init_callback();
 #endif
 
+	static void *_instance_binding_create_callback(void *p_token, void *p_instance);
+	static void _instance_binding_free_callback(void *p_token, void *p_instance, void *p_binding);
+	static GDNativeBool _instance_binding_reference_callback(void *p_token, void *p_binding, GDNativeBool p_reference);
+
+	static GDNativeInstanceBindingCallbacks _instance_binding_callbacks;
+
 public:
+	static void *get_instance_binding(Object *p_object);
+	static void *get_existing_instance_binding(Object *p_object);
+	static void set_instance_binding(Object *p_object, void *p_binding);
+	static bool has_instance_binding(Object *p_object);
+
 	StringNameCache string_names;
 
 	const Mutex &get_language_bind_mutex() { return language_bind_mutex; }
@@ -452,9 +462,9 @@ public:
 	bool is_control_flow_keyword(String p_keyword) const override;
 	void get_comment_delimiters(List<String> *p_delimiters) const override;
 	void get_string_delimiters(List<String> *p_delimiters) const override;
-	Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const override;
 	bool is_using_templates() override;
-	void make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script) override;
+	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
+	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) override;
 	/* TODO */ bool validate(const String &p_script, const String &p_path, List<String> *r_functions,
 			List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const override {
 		return true;
@@ -506,12 +516,6 @@ public:
 	/* THREAD ATTACHING */
 	void thread_enter() override;
 	void thread_exit() override;
-
-	// Don't use these. I'm watching you
-	void *alloc_instance_binding_data(Object *p_object) override;
-	void free_instance_binding_data(void *p_data) override;
-	void refcount_incremented_instance_binding(Object *p_object) override;
-	bool refcount_decremented_instance_binding(Object *p_object) override;
 
 	Map<Object *, CSharpScriptBinding>::Element *insert_script_binding(Object *p_object, const CSharpScriptBinding &p_script_binding);
 	bool setup_csharp_script_binding(CSharpScriptBinding &r_script_binding, Object *p_object);

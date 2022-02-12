@@ -149,7 +149,7 @@ struct NameRecord
   HBUINT16	languageID;	/* Language ID. */
   HBUINT16	nameID;		/* Name ID. */
   HBUINT16	length;		/* String length (in bytes). */
-  NNOffsetTo<UnsizedArrayOf<HBUINT8>>
+  NNOffset16To<UnsizedArrayOf<HBUINT8>>
 		offset;		/* String offset from start of storage area (in bytes). */
   public:
   DEFINE_SIZE_STATIC (12);
@@ -214,7 +214,7 @@ struct name
     this->format = 0;
     this->count = it.len ();
 
-    NameRecord *name_records = (NameRecord *) calloc (it.len (), NameRecord::static_size);
+    NameRecord *name_records = (NameRecord *) hb_calloc (it.len (), NameRecord::static_size);
     if (unlikely (!name_records)) return_trace (false);
 
     hb_array_t<NameRecord> records (name_records, it.len ());
@@ -228,9 +228,10 @@ struct name
     records.qsort ();
 
     c->copy_all (records, src_string_pool);
-    free (records.arrayZ);
+    hb_free (records.arrayZ);
 
-    if (unlikely (c->ran_out_of_room)) return_trace (false);
+
+    if (unlikely (c->ran_out_of_room ())) return_trace (false);
 
     this->stringOffset = c->length ();
 
@@ -248,10 +249,14 @@ struct name
     + nameRecordZ.as_array (count)
     | hb_filter (c->plan->name_ids, &NameRecord::nameID)
     | hb_filter (c->plan->name_languages, &NameRecord::languageID)
-    | hb_filter ([&] (const NameRecord& namerecord) { return c->plan->name_legacy || namerecord.isUnicode (); })
+    | hb_filter ([&] (const NameRecord& namerecord) {
+      return
+          (c->plan->flags & HB_SUBSET_FLAGS_NAME_LEGACY)
+          || namerecord.isUnicode ();
+    })
     ;
 
-    name_prime->serialize (c->serializer, it, hb_addressof (this + stringOffset));
+    name_prime->serialize (c->serializer, it, std::addressof (this + stringOffset));
     return_trace (name_prime->count);
   }
 
@@ -274,7 +279,7 @@ struct name
 
   struct accelerator_t
   {
-    void init (hb_face_t *face)
+    accelerator_t (hb_face_t *face)
     {
       this->table = hb_sanitize_context_t ().reference_table<name> (face);
       assert (this->table.get_length () >= this->table->stringOffset);
@@ -283,7 +288,6 @@ struct name
       const hb_array_t<const NameRecord> all_names (this->table->nameRecordZ.arrayZ,
 						    this->table->count);
 
-      this->names.init ();
       this->names.alloc (all_names.length);
 
       for (unsigned int i = 0; i < all_names.length; i++)
@@ -313,10 +317,8 @@ struct name
       }
       this->names.resize (j);
     }
-
-    void fini ()
+    ~accelerator_t ()
     {
-      this->names.fini ();
       this->table.destroy ();
     }
 
@@ -357,7 +359,7 @@ struct name
   /* We only implement format 0 for now. */
   HBUINT16	format;		/* Format selector (=0/1). */
   HBUINT16	count;		/* Number of name records. */
-  NNOffsetTo<UnsizedArrayOf<HBUINT8>>
+  NNOffset16To<UnsizedArrayOf<HBUINT8>>
 		stringOffset;	/* Offset to start of string storage (from start of table). */
   UnsizedArrayOf<NameRecord>
 		nameRecordZ;	/* The name records where count is the number of records. */
@@ -368,7 +370,9 @@ struct name
 #undef entry_index
 #undef entry_score
 
-struct name_accelerator_t : name::accelerator_t {};
+struct name_accelerator_t : name::accelerator_t {
+  name_accelerator_t (hb_face_t *face) : name::accelerator_t (face) {}
+};
 
 } /* namespace OT */
 

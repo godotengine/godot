@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,6 @@
 
 #include "scene/gui/color_picker.h"
 #include "scene/gui/popup.h"
-#include "scene/resources/default_theme/theme_data.h"
 #include "scene/resources/gradient.h"
 
 class GradientEdit : public Control {
@@ -42,11 +41,20 @@ class GradientEdit : public Control {
 	PopupPanel *popup;
 	ColorPicker *picker;
 
-	Ref<ImageTexture> checker;
-
 	bool grabbing = false;
 	int grabbed = -1;
 	Vector<Gradient::Point> points;
+	Gradient::InterpolationMode interpolation_mode = Gradient::GRADIENT_INTERPOLATE_LINEAR;
+
+	Ref<Gradient> gradient_cache;
+	Ref<GradientTexture1D> preview_texture;
+
+	// Make sure to use the scaled value below.
+	const int BASE_SPACING = 3;
+	const int BASE_POINT_WIDTH = 8;
+
+	int draw_spacing = BASE_SPACING;
+	int draw_point_width = BASE_POINT_WIDTH;
 
 	void _draw_checker(int x, int y, int w, int h);
 	void _color_changed(const Color &p_color);
@@ -54,16 +62,20 @@ class GradientEdit : public Control {
 	void _show_color_picker();
 
 protected:
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	void set_ramp(const Vector<float> &p_offsets, const Vector<Color> &p_colors);
-	Vector<float> get_offsets() const;
+	void set_ramp(const Vector<real_t> &p_offsets, const Vector<Color> &p_colors);
+	Vector<real_t> get_offsets() const;
 	Vector<Color> get_colors() const;
 	void set_points(Vector<Gradient::Point> &p_points);
 	Vector<Gradient::Point> &get_points();
+	void set_interpolation_mode(Gradient::InterpolationMode p_interp_mode);
+	Gradient::InterpolationMode get_interpolation_mode();
+	ColorPicker *get_picker();
+
 	virtual Size2 get_minimum_size() const override;
 
 	GradientEdit();

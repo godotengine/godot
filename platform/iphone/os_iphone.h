@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,9 +45,6 @@
 #include "platform/iphone/vulkan_context_iphone.h"
 #endif
 
-extern void godot_ios_plugins_initialize();
-extern void godot_ios_plugins_deinitialize();
-
 class OSIPhone : public OS_Unix {
 private:
 	static HashMap<String, void *> dynamic_symbol_lookup_table;
@@ -75,6 +72,7 @@ private:
 	virtual void finalize() override;
 
 	String user_data_dir;
+	String cache_dir;
 
 	bool is_focused = false;
 
@@ -83,7 +81,7 @@ private:
 public:
 	static OSIPhone *get_singleton();
 
-	OSIPhone(String p_data_dir);
+	OSIPhone(String p_data_dir, String p_cache_dir);
 	~OSIPhone();
 
 	void initialize_modules();
@@ -105,6 +103,8 @@ public:
 
 	void set_user_data_dir(String p_dir);
 	virtual String get_user_data_dir() const override;
+
+	virtual String get_cache_path() const override;
 
 	virtual String get_locale() const override;
 

@@ -94,13 +94,14 @@ params;
 
 //check it, but also return distance and barycentric coords (for uv lookup)
 bool ray_hits_triangle(vec3 from, vec3 dir, float max_dist, vec3 p0, vec3 p1, vec3 p2, out float r_distance, out vec3 r_barycentric) {
+	const float EPSILON = 0.00001;
 	const vec3 e0 = p1 - p0;
 	const vec3 e1 = p0 - p2;
 	vec3 triangle_normal = cross(e1, e0);
 
 	float n_dot_dir = dot(triangle_normal, dir);
 
-	if (abs(n_dot_dir) < 0.01) {
+	if (abs(n_dot_dir) < EPSILON) {
 		return false;
 	}
 
@@ -115,7 +116,12 @@ bool ray_hits_triangle(vec3 from, vec3 dir, float max_dist, vec3 p0, vec3 p1, ve
 	return (r_distance > params.bias) && (r_distance < max_dist) && all(greaterThanEqual(r_barycentric, vec3(0.0)));
 }
 
-bool trace_ray(vec3 p_from, vec3 p_to
+const uint RAY_MISS = 0;
+const uint RAY_FRONT = 1;
+const uint RAY_BACK = 2;
+const uint RAY_ANY = 3;
+
+uint trace_ray(vec3 p_from, vec3 p_to
 #if defined(MODE_BOUNCE_LIGHT) || defined(MODE_LIGHT_PROBES)
 		,
 		out uint r_triangle, out vec3 r_barycentric
@@ -125,6 +131,7 @@ bool trace_ray(vec3 p_from, vec3 p_to
 		out float r_distance, out vec3 r_normal
 #endif
 ) {
+
 	/* world coords */
 
 	vec3 rel = p_to - p_from;
@@ -142,7 +149,7 @@ bool trace_ray(vec3 p_from, vec3 p_to
 	ivec3 icell = ivec3(from_cell);
 	ivec3 iendcell = ivec3(to_cell);
 	vec3 dir_cell = normalize(rel_cell);
-	vec3 delta = abs(1.0 / dir_cell); //vec3(length(rel_cell)) / rel_cell);
+	vec3 delta = min(abs(1.0 / dir_cell), params.grid_size); // use params.grid_size as max to prevent infinity values
 	ivec3 step = ivec3(sign(rel_cell));
 	vec3 side = (sign(rel_cell) * (vec3(icell) - from_cell) + (sign(rel_cell) * 0.5) + 0.5) * delta;
 
@@ -150,79 +157,66 @@ bool trace_ray(vec3 p_from, vec3 p_to
 	while (all(greaterThanEqual(icell, ivec3(0))) && all(lessThan(icell, ivec3(params.grid_size))) && iters < 1000) {
 		uvec2 cell_data = texelFetch(usampler3D(grid, linear_sampler), icell, 0).xy;
 		if (cell_data.x > 0) { //triangles here
-			bool hit = false;
-#if defined(MODE_UNOCCLUDE)
-			bool hit_backface = false;
-#endif
+			uint hit = RAY_MISS;
 			float best_distance = 1e20;
 
 			for (uint i = 0; i < cell_data.x; i++) {
 				uint tidx = grid_indices.data[cell_data.y + i];
 
 				//Ray-Box test
-				vec3 t0 = (boxes.data[tidx].min_bounds - p_from) * inv_dir;
-				vec3 t1 = (boxes.data[tidx].max_bounds - p_from) * inv_dir;
+				Triangle triangle = triangles.data[tidx];
+				vec3 t0 = (triangle.min_bounds - p_from) * inv_dir;
+				vec3 t1 = (triangle.max_bounds - p_from) * inv_dir;
 				vec3 tmin = min(t0, t1), tmax = max(t0, t1);
 
-				if (max(tmin.x, max(tmin.y, tmin.z)) <= min(tmax.x, min(tmax.y, tmax.z))) {
+				if (max(tmin.x, max(tmin.y, tmin.z)) > min(tmax.x, min(tmax.y, tmax.z))) {
 					continue; //ray box failed
 				}
 
 				//prepare triangle vertices
-				vec3 vtx0 = vertices.data[triangles.data[tidx].indices.x].position;
-				vec3 vtx1 = vertices.data[triangles.data[tidx].indices.y].position;
-				vec3 vtx2 = vertices.data[triangles.data[tidx].indices.z].position;
-#if defined(MODE_UNOCCLUDE)
+				vec3 vtx0 = vertices.data[triangle.indices.x].position;
+				vec3 vtx1 = vertices.data[triangle.indices.y].position;
+				vec3 vtx2 = vertices.data[triangle.indices.z].position;
+#if defined(MODE_UNOCCLUDE) || defined(MODE_BOUNCE_LIGHT) || defined(MODE_LIGHT_PROBES)
 				vec3 normal = -normalize(cross((vtx0 - vtx1), (vtx0 - vtx2)));
 
 				bool backface = dot(normal, dir) >= 0.0;
 #endif
+
 				float distance;
 				vec3 barycentric;
 
 				if (ray_hits_triangle(p_from, dir, rel_len, vtx0, vtx1, vtx2, distance, barycentric)) {
 #ifdef MODE_DIRECT_LIGHT
-					return true; //any hit good
+					return RAY_ANY; //any hit good
 #endif
 
-#if defined(MODE_UNOCCLUDE)
+#if defined(MODE_UNOCCLUDE) || defined(MODE_BOUNCE_LIGHT) || defined(MODE_LIGHT_PROBES)
 					if (!backface) {
 						// the case of meshes having both a front and back face in the same plane is more common than
 						// expected, so if this is a front-face, bias it closer to the ray origin, so it always wins over the back-face
 						distance = max(params.bias, distance - params.bias);
 					}
 
-					hit = true;
-
 					if (distance < best_distance) {
-						hit_backface = backface;
+						hit = backface ? RAY_BACK : RAY_FRONT;
 						best_distance = distance;
+#if defined(MODE_UNOCCLUDE)
 						r_distance = distance;
 						r_normal = normal;
-					}
-
 #endif
-
 #if defined(MODE_BOUNCE_LIGHT) || defined(MODE_LIGHT_PROBES)
-
-					hit = true;
-					if (distance < best_distance) {
-						best_distance = distance;
 						r_triangle = tidx;
 						r_barycentric = barycentric;
+#endif
 					}
 #endif
 				}
 			}
-#if defined(MODE_UNOCCLUDE)
+#if defined(MODE_UNOCCLUDE) || defined(MODE_BOUNCE_LIGHT) || defined(MODE_LIGHT_PROBES)
 
-			if (hit) {
-				return hit_backface;
-			}
-#endif
-#if defined(MODE_BOUNCE_LIGHT) || defined(MODE_LIGHT_PROBES)
-			if (hit) {
-				return true;
+			if (hit != RAY_MISS) {
+				return hit;
 			}
 #endif
 		}
@@ -238,22 +232,42 @@ bool trace_ray(vec3 p_from, vec3 p_to
 		iters++;
 	}
 
-	return false;
+	return RAY_MISS;
+}
+
+// https://www.reedbeta.com/blog/hash-functions-for-gpu-rendering/
+uint hash(uint value) {
+	uint state = value * 747796405u + 2891336453u;
+	uint word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
+	return (word >> 22u) ^ word;
+}
+
+uint random_seed(ivec3 seed) {
+	return hash(seed.x ^ hash(seed.y ^ hash(seed.z)));
+}
+
+// generates a random value in range [0.0, 1.0)
+float randomize(inout uint value) {
+	value = hash(value);
+	return float(value / 4294967296.0);
 }
 
 const float PI = 3.14159265f;
-const float GOLDEN_ANGLE = PI * (3.0 - sqrt(5.0));
 
-vec3 vogel_hemisphere(uint p_index, uint p_count, float p_offset) {
-	float r = sqrt(float(p_index) + 0.5f) / sqrt(float(p_count));
-	float theta = float(p_index) * GOLDEN_ANGLE + p_offset;
-	float y = cos(r * PI * 0.5);
-	float l = sin(r * PI * 0.5);
-	return vec3(l * cos(theta), l * sin(theta), y);
+// http://www.realtimerendering.com/raytracinggems/unofficial_RayTracingGems_v1.4.pdf (chapter 15)
+vec3 generate_hemisphere_uniform_direction(inout uint noise) {
+	float noise1 = randomize(noise);
+	float noise2 = randomize(noise) * 2.0 * PI;
+
+	float factor = sqrt(1 - (noise1 * noise1));
+	return vec3(factor * cos(noise2), factor * sin(noise2), noise1);
 }
 
-float quick_hash(vec2 pos) {
-	return fract(sin(dot(pos * 19.19, vec2(49.5791, 97.413))) * 49831.189237);
+vec3 generate_hemisphere_cosine_weighted_direction(inout uint noise) {
+	float noise1 = randomize(noise);
+	float noise2 = randomize(noise) * 2.0 * PI;
+
+	return vec3(sqrt(noise1) * cos(noise2), sqrt(noise1) * sin(noise2), sqrt(1.0 - noise1));
 }
 
 float get_omni_attenuation(float distance, float inv_range, float decay) {
@@ -338,7 +352,7 @@ void main() {
 			continue; //no need to do anything
 		}
 
-		if (!trace_ray(position + light_dir * params.bias, light_pos)) {
+		if (trace_ray(position + light_dir * params.bias, light_pos) == RAY_MISS) {
 			vec3 light = lights.data[i].color * lights.data[i].energy * attenuation;
 			if (lights.data[i].static_bake) {
 				static_light += light;
@@ -409,14 +423,17 @@ void main() {
 			vec4(0.0, 0.0, 0.0, 1.0));
 #endif
 	vec3 light_average = vec3(0.0);
+	float active_rays = 0.0;
+	uint noise = random_seed(ivec3(params.ray_from, atlas_pos));
 	for (uint i = params.ray_from; i < params.ray_to; i++) {
-		vec3 ray_dir = normal_mat * vogel_hemisphere(i, params.ray_count, quick_hash(vec2(atlas_pos)));
+		vec3 ray_dir = normal_mat * generate_hemisphere_cosine_weighted_direction(noise);
 
 		uint tidx;
 		vec3 barycentric;
 
 		vec3 light = vec3(0.0);
-		if (trace_ray(position + ray_dir * params.bias, position + ray_dir * length(params.world_size), tidx, barycentric)) {
+		uint trace_result = trace_ray(position + ray_dir * params.bias, position + ray_dir * length(params.world_size), tidx, barycentric);
+		if (trace_result == RAY_FRONT) {
 			//hit a triangle
 			vec2 uv0 = vertices.data[triangles.data[tidx].indices.x].uv;
 			vec2 uv1 = vertices.data[triangles.data[tidx].indices.y].uv;
@@ -424,20 +441,24 @@ void main() {
 			vec3 uvw = vec3(barycentric.x * uv0 + barycentric.y * uv1 + barycentric.z * uv2, float(triangles.data[tidx].slice));
 
 			light = textureLod(sampler2DArray(source_light, linear_sampler), uvw, 0.0).rgb;
-		} else if (params.env_transform[0][3] == 0.0) { // Use env_transform[0][3] to indicate when we are computing the first bounce
-			// Did not hit a triangle, reach out for the sky
-			vec3 sky_dir = normalize(mat3(params.env_transform) * ray_dir);
+			active_rays += 1.0;
+		} else if (trace_result == RAY_MISS) {
+			if (params.env_transform[0][3] == 0.0) { // Use env_transform[0][3] to indicate when we are computing the first bounce
+				// Did not hit a triangle, reach out for the sky
+				vec3 sky_dir = normalize(mat3(params.env_transform) * ray_dir);
 
-			vec2 st = vec2(
-					atan(sky_dir.x, sky_dir.z),
-					acos(sky_dir.y));
+				vec2 st = vec2(
+						atan(sky_dir.x, sky_dir.z),
+						acos(sky_dir.y));
 
-			if (st.x < 0.0)
-				st.x += PI * 2.0;
+				if (st.x < 0.0)
+					st.x += PI * 2.0;
 
-			st /= vec2(PI * 2.0, PI);
+				st /= vec2(PI * 2.0, PI);
 
-			light = textureLod(sampler2D(environment, linear_sampler), st, 0.0).rgb;
+				light = textureLod(sampler2D(environment, linear_sampler), st, 0.0).rgb;
+			}
+			active_rays += 1.0;
 		}
 
 		light_average += light;
@@ -461,7 +482,9 @@ void main() {
 	if (params.ray_from == 0) {
 		light_total = vec3(0.0);
 	} else {
-		light_total = imageLoad(bounce_accum, ivec3(atlas_pos, params.atlas_slice)).rgb;
+		vec4 accum = imageLoad(bounce_accum, ivec3(atlas_pos, params.atlas_slice));
+		light_total = accum.rgb;
+		active_rays += accum.a;
 	}
 
 	light_total += light_average;
@@ -476,7 +499,9 @@ void main() {
 
 #endif
 	if (params.ray_to == params.ray_count) {
-		light_total /= float(params.ray_count);
+		if (active_rays > 0) {
+			light_total /= active_rays;
+		}
 		imageStore(dest_light, ivec3(atlas_pos, params.atlas_slice), vec4(light_total, 1.0));
 #ifndef USE_SH_LIGHTMAPS
 		vec4 accum = imageLoad(accum_light, ivec3(atlas_pos, params.atlas_slice));
@@ -484,7 +509,7 @@ void main() {
 		imageStore(accum_light, ivec3(atlas_pos, params.atlas_slice), accum);
 #endif
 	} else {
-		imageStore(bounce_accum, ivec3(atlas_pos, params.atlas_slice), vec4(light_total, 1.0));
+		imageStore(bounce_accum, ivec3(atlas_pos, params.atlas_slice), vec4(light_total, active_rays));
 	}
 
 #endif
@@ -517,7 +542,7 @@ void main() {
 		float d;
 		vec3 norm;
 
-		if (trace_ray(base_pos, ray_to, d, norm)) {
+		if (trace_ray(base_pos, ray_to, d, norm) == RAY_BACK) {
 			if (d < min_d) {
 				vertex_pos = base_pos + rays[i] * d + norm * params.bias * 10.0; //this bias needs to be greater than the regular bias, because otherwise later, rays will go the other side when pointing back.
 				min_d = d;
@@ -546,8 +571,9 @@ void main() {
 			vec4(0.0),
 			vec4(0.0));
 
+	uint noise = random_seed(ivec3(params.ray_from, probe_index, 49502741 /* some prime */));
 	for (uint i = params.ray_from; i < params.ray_to; i++) {
-		vec3 ray_dir = vogel_hemisphere(i, params.ray_count, quick_hash(vec2(float(probe_index), 0.0)));
+		vec3 ray_dir = generate_hemisphere_uniform_direction(noise);
 		if (bool(i & 1)) {
 			//throw to both sides, so alternate them
 			ray_dir.z *= -1.0;
@@ -557,7 +583,8 @@ void main() {
 		vec3 barycentric;
 		vec3 light;
 
-		if (trace_ray(position + ray_dir * params.bias, position + ray_dir * length(params.world_size), tidx, barycentric)) {
+		uint trace_result = trace_ray(position + ray_dir * params.bias, position + ray_dir * length(params.world_size), tidx, barycentric);
+		if (trace_result == RAY_FRONT) {
 			vec2 uv0 = vertices.data[triangles.data[tidx].indices.x].uv;
 			vec2 uv1 = vertices.data[triangles.data[tidx].indices.y].uv;
 			vec2 uv2 = vertices.data[triangles.data[tidx].indices.z].uv;
@@ -565,7 +592,7 @@ void main() {
 
 			light = textureLod(sampler2DArray(source_light, linear_sampler), uvw, 0.0).rgb;
 			light += textureLod(sampler2DArray(source_direct_light, linear_sampler), uvw, 0.0).rgb;
-		} else {
+		} else if (trace_result == RAY_MISS) {
 			//did not hit a triangle, reach out for the sky
 			vec3 sky_dir = normalize(mat3(params.env_transform) * ray_dir);
 

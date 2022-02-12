@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,21 +33,17 @@
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"
 #include "core/io/certs_compressed.gen.h"
-#include "core/io/compression.h"
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
-#include "core/io/file_access_memory.h"
 #include "core/io/ip.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/io/translation_loader_po.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/version.h"
-#include "editor/doc_translations.gen.h"
 #include "editor/editor_node.h"
-#include "editor/editor_translations.gen.h"
+#include "editor/editor_translation.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
@@ -73,14 +69,15 @@ bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value)
 
 	if (p_name == "shortcuts") {
 		Array arr = p_value;
-		ERR_FAIL_COND_V(arr.size() && arr.size() & 1, true);
-		for (int i = 0; i < arr.size(); i += 2) {
-			String name = arr[i];
-			Ref<InputEvent> shortcut = arr[i + 1];
+		for (int i = 0; i < arr.size(); i++) {
+			Dictionary dict = arr[i];
+			String name = dict["name"];
+
+			Array shortcut_events = dict["shortcuts"];
 
 			Ref<Shortcut> sc;
 			sc.instantiate();
-			sc->set_shortcut(shortcut);
+			sc->set_events(shortcut_events);
 			add_shortcut(name, sc);
 		}
 
@@ -138,47 +135,75 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 	_THREAD_SAFE_METHOD_
 
 	if (p_name == "shortcuts") {
-		Array arr;
-		for (const Map<String, Ref<Shortcut>>::Element *E = shortcuts.front(); E; E = E->next()) {
-			Ref<Shortcut> sc = E->get();
+		Array save_array;
+		const OrderedHashMap<String, List<Ref<InputEvent>>> &builtin_list = InputMap::get_singleton()->get_builtins();
+		for (const KeyValue<String, Ref<Shortcut>> &shortcut_definition : shortcuts) {
+			Ref<Shortcut> sc = shortcut_definition.value;
 
-			if (builtin_action_overrides.has(E->key())) {
+			if (builtin_list.has(shortcut_definition.key)) {
 				// This shortcut was auto-generated from built in actions: don't save.
+				// If the builtin is overridden, it will be saved in the "builtin_action_overrides" section below.
 				continue;
 			}
 
-			if (optimize_save) {
-				if (!sc->has_meta("original")) {
-					continue; //this came from settings but is not any longer used
-				}
+			Array shortcut_events = sc->get_events();
 
-				Ref<InputEvent> original = sc->get_meta("original");
-				if (sc->is_shortcut(original) || (original.is_null() && sc->get_shortcut().is_null())) {
-					continue; //not changed from default, don't save
-				}
+			Dictionary dict;
+			dict["name"] = shortcut_definition.key;
+			dict["shortcuts"] = shortcut_events;
+
+			if (!sc->has_meta("original")) {
+				// Getting the meta when it doesn't exist will return an empty array. If the 'shortcut_events' have been cleared,
+				// we still want save the shortcut in this case so that shortcuts that the user has customised are not reset,
+				// even if the 'original' has not been populated yet. This can happen when calling save() from the Project Manager.
+				save_array.push_back(dict);
+				continue;
 			}
 
-			arr.push_back(E->key());
-			arr.push_back(sc->get_shortcut());
+			Array original_events = sc->get_meta("original");
+
+			bool is_same = Shortcut::is_event_array_equal(original_events, shortcut_events);
+			if (is_same) {
+				continue; // Not changed from default; don't save.
+			}
+
+			save_array.push_back(dict);
 		}
-		r_ret = arr;
+		r_ret = save_array;
 		return true;
 	} else if (p_name == "builtin_action_overrides") {
 		Array actions_arr;
-		for (Map<String, List<Ref<InputEvent>>>::Element *E = builtin_action_overrides.front(); E; E = E->next()) {
-			List<Ref<InputEvent>> events = E->get();
+		for (const KeyValue<String, List<Ref<InputEvent>>> &action_override : builtin_action_overrides) {
+			List<Ref<InputEvent>> events = action_override.value;
 
-			// TODO: skip actions which are the same as the builtin.
 			Dictionary action_dict;
-			action_dict["name"] = E->key();
+			action_dict["name"] = action_override.key;
 
+			// Convert the list to an array, and only keep key events as this is for the editor.
 			Array events_arr;
-			for (List<Ref<InputEvent>>::Element *I = events.front(); I; I = I->next()) {
-				events_arr.push_back(I->get());
+			for (const Ref<InputEvent> &ie : events) {
+				Ref<InputEventKey> iek = ie;
+				if (iek.is_valid()) {
+					events_arr.append(iek);
+				}
+			}
+
+			Array defaults_arr;
+			List<Ref<InputEvent>> defaults = InputMap::get_singleton()->get_builtins()[action_override.key];
+			for (const Ref<InputEvent> &default_input_event : defaults) {
+				if (default_input_event.is_valid()) {
+					defaults_arr.append(default_input_event);
+				}
+			}
+
+			bool same = Shortcut::is_event_array_equal(events_arr, defaults_arr);
+
+			// Don't save if same as default.
+			if (same) {
+				continue;
 			}
 
 			action_dict["events"] = events_arr;
-
 			actions_arr.push_back(action_dict);
 		}
 
@@ -264,8 +289,8 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(pi);
 	}
 
-	p_list->push_back(PropertyInfo(Variant::ARRAY, "shortcuts", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL)); //do not edit
-	p_list->push_back(PropertyInfo(Variant::ARRAY, "builtin_action_overrides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+	p_list->push_back(PropertyInfo(Variant::ARRAY, "shortcuts", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL)); //do not edit
+	p_list->push_back(PropertyInfo(Variant::ARRAY, "builtin_action_overrides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 }
 
 void EditorSettings::_add_property_info_bind(const Dictionary &p_info) {
@@ -300,13 +325,20 @@ bool EditorSettings::has_default_value(const String &p_setting) const {
 
 void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_THREAD_SAFE_METHOD_
+// Sets up the editor setting with a default value and hint PropertyInfo.
+#define EDITOR_SETTING(m_type, m_property_hint, m_name, m_default_value, m_hint_string) \
+	_initial_set(m_name, m_default_value);                                              \
+	hints[m_name] = PropertyInfo(m_type, m_name, m_property_hint, m_hint_string);
+
+#define EDITOR_SETTING_USAGE(m_type, m_property_hint, m_name, m_default_value, m_hint_string, m_usage) \
+	_initial_set(m_name, m_default_value);                                                             \
+	hints[m_name] = PropertyInfo(m_type, m_name, m_property_hint, m_hint_string, m_usage);
 
 	/* Languages */
 
 	{
 		String lang_hint = "en";
 		String host_lang = OS::get_singleton()->get_locale();
-		host_lang = TranslationServer::standardize_locale(host_lang);
 
 		// Skip locales if Text server lack required features.
 		Vector<String> locales_to_skip;
@@ -332,129 +364,106 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		}
 
 		String best;
-		EditorTranslationList *etl = _editor_translations;
-
-		while (etl->data) {
-			const String &locale = etl->lang;
-
+		int best_score = 0;
+		for (const String &locale : get_editor_locales()) {
 			// Skip locales which we can't render properly (see above comment).
 			// Test against language code without regional variants (e.g. ur_PK).
 			String lang_code = locale.get_slice("_", 0);
-			if (locales_to_skip.find(lang_code) != -1) {
-				etl++;
+			if (locales_to_skip.has(lang_code)) {
 				continue;
 			}
 
 			lang_hint += ",";
 			lang_hint += locale;
 
-			if (host_lang == locale) {
+			int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);
+			if (score > 0 && score >= best_score) {
 				best = locale;
+				best_score = score;
+				if (score == 10) {
+					break; // Exact match, skip the rest.
+				}
 			}
-
-			if (best == String() && host_lang.begins_with(locale)) {
-				best = locale;
-			}
-
-			etl++;
 		}
-
-		if (best == String()) {
+		if (best_score == 0) {
 			best = "en";
 		}
 
-		_initial_set("interface/editor/editor_language", best);
-		set_restart_if_changed("interface/editor/editor_language", true);
-		hints["interface/editor/editor_language"] = PropertyInfo(Variant::STRING, "interface/editor/editor_language", PROPERTY_HINT_ENUM, lang_hint, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+		EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_ENUM, "interface/editor/editor_language", best, lang_hint, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	}
 
 	/* Interface */
 
 	// Editor
-	_initial_set("interface/editor/display_scale", 0);
 	// Display what the Auto display scale setting effectively corresponds to.
-	float scale = get_auto_display_scale();
-	hints["interface/editor/display_scale"] = PropertyInfo(Variant::INT, "interface/editor/display_scale", PROPERTY_HINT_ENUM, vformat("Auto (%d%%),75%%,100%%,125%%,150%%,175%%,200%%,Custom", Math::round(scale * 100)), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
-	_initial_set("interface/editor/custom_display_scale", 1.0f);
-	hints["interface/editor/custom_display_scale"] = PropertyInfo(Variant::FLOAT, "interface/editor/custom_display_scale", PROPERTY_HINT_RANGE, "0.5,3,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
-	_initial_set("interface/editor/main_font_size", 14);
-	hints["interface/editor/main_font_size"] = PropertyInfo(Variant::INT, "interface/editor/main_font_size", PROPERTY_HINT_RANGE, "8,48,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
-	_initial_set("interface/editor/code_font_size", 14);
-	hints["interface/editor/code_font_size"] = PropertyInfo(Variant::INT, "interface/editor/code_font_size", PROPERTY_HINT_RANGE, "8,48,1", PROPERTY_USAGE_DEFAULT);
-	_initial_set("interface/editor/code_font_contextual_ligatures", 0);
-	hints["interface/editor/code_font_contextual_ligatures"] = PropertyInfo(Variant::INT, "interface/editor/code_font_contextual_ligatures", PROPERTY_HINT_ENUM, "Default,Disable Contextual Alternates (Coding Ligatures),Use Custom OpenType Feature Set", PROPERTY_USAGE_DEFAULT);
+	const String display_scale_hint_string = vformat("Auto (%d%%),75%%,100%%,125%%,150%%,175%%,200%%,Custom", Math::round(get_auto_display_scale() * 100));
+	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/display_scale", 0, display_scale_hint_string, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+
+	_initial_set("interface/editor/enable_debugging_pseudolocalization", false);
+	set_restart_if_changed("interface/editor/enable_debugging_pseudolocalization", true);
+	// Use pseudolocalization in editor.
+
+	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/editor/custom_display_scale", 1.0, "0.5,3,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/main_font_size", 14, "8,48,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/code_font_size", 14, "8,48,1")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/code_font_contextual_ligatures", 0, "Default,Disable Contextual Alternates (Coding Ligatures),Use Custom OpenType Feature Set")
 	_initial_set("interface/editor/code_font_custom_opentype_features", "");
 	_initial_set("interface/editor/code_font_custom_variations", "");
 	_initial_set("interface/editor/font_antialiased", true);
-	_initial_set("interface/editor/font_hinting", 0);
 #ifdef OSX_ENABLED
-	hints["interface/editor/font_hinting"] = PropertyInfo(Variant::INT, "interface/editor/font_hinting", PROPERTY_HINT_ENUM, "Auto (None),None,Light,Normal", PROPERTY_USAGE_DEFAULT);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/font_hinting", 0, "Auto (None),None,Light,Normal")
 #else
-	hints["interface/editor/font_hinting"] = PropertyInfo(Variant::INT, "interface/editor/font_hinting", PROPERTY_HINT_ENUM, "Auto (Light),None,Light,Normal", PROPERTY_USAGE_DEFAULT);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/font_hinting", 0, "Auto (Light),None,Light,Normal")
 #endif
-	_initial_set("interface/editor/main_font", "");
-	hints["interface/editor/main_font"] = PropertyInfo(Variant::STRING, "interface/editor/main_font", PROPERTY_HINT_GLOBAL_FILE, "*.ttf,*.otf", PROPERTY_USAGE_DEFAULT);
-	_initial_set("interface/editor/main_font_bold", "");
-	hints["interface/editor/main_font_bold"] = PropertyInfo(Variant::STRING, "interface/editor/main_font_bold", PROPERTY_HINT_GLOBAL_FILE, "*.ttf,*.otf", PROPERTY_USAGE_DEFAULT);
-	_initial_set("interface/editor/code_font", "");
-	hints["interface/editor/code_font"] = PropertyInfo(Variant::STRING, "interface/editor/code_font", PROPERTY_HINT_GLOBAL_FILE, "*.ttf,*.otf", PROPERTY_USAGE_DEFAULT);
-	_initial_set("interface/editor/low_processor_mode_sleep_usec", 6900); // ~144 FPS
-	hints["interface/editor/low_processor_mode_sleep_usec"] = PropertyInfo(Variant::FLOAT, "interface/editor/low_processor_mode_sleep_usec", PROPERTY_HINT_RANGE, "1,100000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
-	_initial_set("interface/editor/unfocused_low_processor_mode_sleep_usec", 100000); // 10 FPS
-	// Allow an unfocused FPS limit as low as 1 FPS for those who really need low power usage
-	// (but don't need to preview particles or shaders while the editor is unfocused).
-	// With very low FPS limits, the editor can take a small while to become usable after being focused again,
-	// so this should be used at the user's discretion.
-	hints["interface/editor/unfocused_low_processor_mode_sleep_usec"] = PropertyInfo(Variant::FLOAT, "interface/editor/unfocused_low_processor_mode_sleep_usec", PROPERTY_HINT_RANGE, "1,1000000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/editor/main_font", "", "*.ttf,*.otf")
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/editor/main_font_bold", "", "*.ttf,*.otf")
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/editor/code_font", "", "*.ttf,*.otf")
+	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/editor/low_processor_mode_sleep_usec", 6900, "1,100000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	// Default unfocused usec sleep is for 10 FPS. Allow an unfocused FPS limit
+	// as low as 1 FPS for those who really need low power usage (but don't need
+	// to preview particles or shaders while the editor is unfocused). With very
+	// low FPS limits, the editor can take a small while to become usable after
+	// being focused again, so this should be used at the user's discretion.
+	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/editor/unfocused_low_processor_mode_sleep_usec", 100000, "1,1000000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 	_initial_set("interface/editor/separate_distraction_mode", false);
 	_initial_set("interface/editor/automatically_open_screenshots", true);
-	_initial_set("interface/editor/single_window_mode", false);
-	hints["interface/editor/single_window_mode"] = PropertyInfo(Variant::BOOL, "interface/editor/single_window_mode", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
-	_initial_set("interface/editor/hide_console_window", false);
+	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/single_window_mode", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	_initial_set("interface/editor/mouse_extra_buttons_navigate_history", true);
 	_initial_set("interface/editor/save_each_scene_on_quit", true); // Regression
+#ifdef DEV_ENABLED
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/show_internal_errors_in_toast_notifications", 0, "Auto (Enabled),Enabled,Disabled")
+#else
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/show_internal_errors_in_toast_notifications", 0, "Auto (Disabled),Enabled,Disabled")
+#endif
 
 	// Inspector
-	_initial_set("interface/inspector/max_array_dictionary_items_per_page", 20);
-	hints["interface/inspector/max_array_dictionary_items_per_page"] = PropertyInfo(Variant::INT, "interface/inspector/max_array_dictionary_items_per_page", PROPERTY_HINT_RANGE, "10,100,1", PROPERTY_USAGE_DEFAULT);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "interface/inspector/max_array_dictionary_items_per_page", 20, "10,100,1")
 
 	// Theme
-	_initial_set("interface/theme/preset", "Default");
-	hints["interface/theme/preset"] = PropertyInfo(Variant::STRING, "interface/theme/preset", PROPERTY_HINT_ENUM, "Default,Breeze Dark,Godot 2,Grey,Light,Solarized (Dark),Solarized (Light),Custom", PROPERTY_USAGE_DEFAULT);
-	_initial_set("interface/theme/icon_and_font_color", 0);
-	hints["interface/theme/icon_and_font_color"] = PropertyInfo(Variant::INT, "interface/theme/icon_and_font_color", PROPERTY_HINT_ENUM, "Auto,Dark,Light", PROPERTY_USAGE_DEFAULT);
-	_initial_set("interface/theme/base_color", Color(0.2, 0.23, 0.31));
-	hints["interface/theme/base_color"] = PropertyInfo(Variant::COLOR, "interface/theme/base_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
-	_initial_set("interface/theme/accent_color", Color(0.41, 0.61, 0.91));
-	hints["interface/theme/accent_color"] = PropertyInfo(Variant::COLOR, "interface/theme/accent_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
-	_initial_set("interface/theme/contrast", 0.3);
-	hints["interface/theme/contrast"] = PropertyInfo(Variant::FLOAT, "interface/theme/contrast", PROPERTY_HINT_RANGE, "-1, 1, 0.01");
-	_initial_set("interface/theme/icon_saturation", 1.0);
-	hints["interface/theme/icon_saturation"] = PropertyInfo(Variant::FLOAT, "interface/theme/icon_saturation", PROPERTY_HINT_RANGE, "0,2,0.01", PROPERTY_USAGE_DEFAULT);
-	_initial_set("interface/theme/relationship_line_opacity", 0.1);
-	hints["interface/theme/relationship_line_opacity"] = PropertyInfo(Variant::FLOAT, "interface/theme/relationship_line_opacity", PROPERTY_HINT_RANGE, "0.00, 1, 0.01");
-	_initial_set("interface/theme/border_size", 0);
-	hints["interface/theme/border_size"] = PropertyInfo(Variant::INT, "interface/theme/border_size", PROPERTY_HINT_RANGE, "0,2,1", PROPERTY_USAGE_DEFAULT);
-	_initial_set("interface/theme/corner_radius", 3);
-	hints["interface/theme/corner_radius"] = PropertyInfo(Variant::INT, "interface/theme/corner_radius", PROPERTY_HINT_RANGE, "0,6,1", PROPERTY_USAGE_DEFAULT);
-	_initial_set("interface/theme/additional_spacing", 0);
-	hints["interface/theme/additional_spacing"] = PropertyInfo(Variant::FLOAT, "interface/theme/additional_spacing", PROPERTY_HINT_RANGE, "0,5,0.1", PROPERTY_USAGE_DEFAULT);
-	_initial_set("interface/theme/custom_theme", "");
-	hints["interface/theme/custom_theme"] = PropertyInfo(Variant::STRING, "interface/theme/custom_theme", PROPERTY_HINT_GLOBAL_FILE, "*.res,*.tres,*.theme", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_ENUM, "interface/theme/preset", "Default", "Default,Breeze Dark,Godot 2,Grey,Light,Solarized (Dark),Solarized (Light),Custom")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/theme/icon_and_font_color", 0, "Auto,Dark,Light")
+	EDITOR_SETTING(Variant::COLOR, PROPERTY_HINT_NONE, "interface/theme/base_color", Color(0.2, 0.23, 0.31), "")
+	EDITOR_SETTING(Variant::COLOR, PROPERTY_HINT_NONE, "interface/theme/accent_color", Color(0.41, 0.61, 0.91), "")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/theme/contrast", 0.3, "-1,1,0.01")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/theme/icon_saturation", 1.0, "0,2,0.01")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/theme/relationship_line_opacity", 0.1, "0.00,1,0.01")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "interface/theme/border_size", 0, "0,2,1")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "interface/theme/corner_radius", 3, "0,6,1")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/theme/additional_spacing", 0.0, "0,5,0.1")
+	EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/theme/custom_theme", "", "*.res,*.tres,*.theme", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 
 	// Scene tabs
 	_initial_set("interface/scene_tabs/show_thumbnail_on_hover", true);
 	_initial_set("interface/scene_tabs/resize_if_many_tabs", true);
-	_initial_set("interface/scene_tabs/minimum_width", 50);
-	hints["interface/scene_tabs/minimum_width"] = PropertyInfo(Variant::INT, "interface/scene_tabs/minimum_width", PROPERTY_HINT_RANGE, "50,500,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "interface/scene_tabs/minimum_width", 50, "50,500,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 	_initial_set("interface/scene_tabs/show_script_button", false);
 
 	/* Filesystem */
 
 	// Directories
-	_initial_set("filesystem/directories/autoscan_project_path", "");
-	hints["filesystem/directories/autoscan_project_path"] = PropertyInfo(Variant::STRING, "filesystem/directories/autoscan_project_path", PROPERTY_HINT_GLOBAL_DIR);
-	_initial_set("filesystem/directories/default_project_path", OS::get_singleton()->has_environment("HOME") ? OS::get_singleton()->get_environment("HOME") : OS::get_singleton()->get_system_dir(OS::SYSTEM_DIR_DOCUMENTS));
-	hints["filesystem/directories/default_project_path"] = PropertyInfo(Variant::STRING, "filesystem/directories/default_project_path", PROPERTY_HINT_GLOBAL_DIR);
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_DIR, "filesystem/directories/autoscan_project_path", "", "")
+	const String fs_dir_default_project_path = OS::get_singleton()->has_environment("HOME") ? OS::get_singleton()->get_environment("HOME") : OS::get_singleton()->get_system_dir(OS::SYSTEM_DIR_DOCUMENTS);
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_DIR, "filesystem/directories/default_project_path", fs_dir_default_project_path, "")
 
 	// On save
 	_initial_set("filesystem/on_save/compress_binary_resources", true);
@@ -462,97 +471,91 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// File dialog
 	_initial_set("filesystem/file_dialog/show_hidden_files", false);
-	_initial_set("filesystem/file_dialog/display_mode", 0);
-	hints["filesystem/file_dialog/display_mode"] = PropertyInfo(Variant::INT, "filesystem/file_dialog/display_mode", PROPERTY_HINT_ENUM, "Thumbnails,List");
-	_initial_set("filesystem/file_dialog/thumbnail_size", 64);
-	hints["filesystem/file_dialog/thumbnail_size"] = PropertyInfo(Variant::INT, "filesystem/file_dialog/thumbnail_size", PROPERTY_HINT_RANGE, "32,128,16");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "filesystem/file_dialog/display_mode", 0, "Thumbnails,List")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "filesystem/file_dialog/thumbnail_size", 64, "32,128,16")
 
 	/* Docks */
 
 	// SceneTree
 	_initial_set("docks/scene_tree/start_create_dialog_fully_expanded", false);
+	_initial_set("docks/scene_tree/auto_expand_to_selected", true);
 
 	// FileSystem
-	_initial_set("docks/filesystem/thumbnail_size", 64);
-	hints["docks/filesystem/thumbnail_size"] = PropertyInfo(Variant::INT, "docks/filesystem/thumbnail_size", PROPERTY_HINT_RANGE, "32,128,16");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "docks/filesystem/thumbnail_size", 64, "32,128,16")
 	_initial_set("docks/filesystem/always_show_folders", true);
+	_initial_set("docks/filesystem/textfile_extensions", "txt,md,cfg,ini,log,json,yml,yaml,toml");
 
 	// Property editor
 	_initial_set("docks/property_editor/auto_refresh_interval", 0.2); //update 5 times per second by default
-	_initial_set("docks/property_editor/subresource_hue_tint", 0.75);
-	hints["docks/property_editor/subresource_hue_tint"] = PropertyInfo(Variant::FLOAT, "docks/property_editor/subresource_hue_tint", PROPERTY_HINT_RANGE, "0,1,0.01", PROPERTY_USAGE_DEFAULT);
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "docks/property_editor/subresource_hue_tint", 0.75, "0,1,0.01")
 
 	/* Text editor */
 
 	// Theme
-	_initial_set("text_editor/theme/color_theme", "Default");
-	hints["text_editor/theme/color_theme"] = PropertyInfo(Variant::STRING, "text_editor/theme/color_theme", PROPERTY_HINT_ENUM, "Default,Godot 2,Custom");
-	_initial_set("text_editor/theme/line_spacing", 6);
-	hints["text_editor/theme/line_spacing"] = PropertyInfo(Variant::INT, "text_editor/theme/line_spacing", PROPERTY_HINT_RANGE, "0,50,1");
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_ENUM, "text_editor/theme/color_theme", "Default", "Default,Godot 2,Custom")
 
+	// Theme: Highlighting
 	_load_godot2_text_editor_theme();
 
-	// Highlighting
-	_initial_set("text_editor/highlighting/highlight_all_occurrences", true);
-	_initial_set("text_editor/highlighting/highlight_current_line", true);
-	_initial_set("text_editor/highlighting/highlight_type_safe_lines", true);
-
-	// Indent
-	_initial_set("text_editor/indent/type", 0);
-	hints["text_editor/indent/type"] = PropertyInfo(Variant::INT, "text_editor/indent/type", PROPERTY_HINT_ENUM, "Tabs,Spaces");
-	_initial_set("text_editor/indent/size", 4);
-	hints["text_editor/indent/size"] = PropertyInfo(Variant::INT, "text_editor/indent/size", PROPERTY_HINT_RANGE, "1, 64, 1"); // size of 0 crashes.
-	_initial_set("text_editor/indent/auto_indent", true);
-	_initial_set("text_editor/indent/convert_indent_on_save", true);
-	_initial_set("text_editor/indent/draw_tabs", true);
-	_initial_set("text_editor/indent/draw_spaces", false);
-
-	// Navigation
-	_initial_set("text_editor/navigation/smooth_scrolling", true);
-	_initial_set("text_editor/navigation/v_scroll_speed", 80);
-	_initial_set("text_editor/navigation/show_minimap", true);
-	_initial_set("text_editor/navigation/minimap_width", 80);
-	hints["text_editor/navigation/minimap_width"] = PropertyInfo(Variant::INT, "text_editor/navigation/minimap_width", PROPERTY_HINT_RANGE, "50,250,1");
-
 	// Appearance
-	_initial_set("text_editor/appearance/show_line_numbers", true);
-	_initial_set("text_editor/appearance/line_numbers_zero_padded", false);
-	_initial_set("text_editor/appearance/show_bookmark_gutter", true);
-	_initial_set("text_editor/appearance/show_info_gutter", true);
-	_initial_set("text_editor/appearance/code_folding", true);
-	_initial_set("text_editor/appearance/word_wrap", false);
-	_initial_set("text_editor/appearance/show_line_length_guidelines", true);
-	_initial_set("text_editor/appearance/line_length_guideline_soft_column", 80);
-	hints["text_editor/appearance/line_length_guideline_soft_column"] = PropertyInfo(Variant::INT, "text_editor/appearance/line_length_guideline_soft_column", PROPERTY_HINT_RANGE, "20, 160, 1");
-	_initial_set("text_editor/appearance/line_length_guideline_hard_column", 100);
-	hints["text_editor/appearance/line_length_guideline_hard_column"] = PropertyInfo(Variant::INT, "text_editor/appearance/line_length_guideline_hard_column", PROPERTY_HINT_RANGE, "20, 160, 1");
+	// Appearance: Caret
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/appearance/caret/type", 0, "Line,Block")
+	_initial_set("text_editor/appearance/caret/caret_blink", true);
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "text_editor/appearance/caret/caret_blink_speed", 0.5, "0.1,10,0.01")
+	_initial_set("text_editor/appearance/caret/highlight_current_line", true);
+	_initial_set("text_editor/appearance/caret/highlight_all_occurrences", true);
+
+	// Appearance: Guidelines
+	_initial_set("text_editor/appearance/guidelines/show_line_length_guidelines", true);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/appearance/guidelines/line_length_guideline_soft_column", 80, "20,160,1")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/appearance/guidelines/line_length_guideline_hard_column", 100, "20,160,1")
+
+	// Appearance: Gutters
+	_initial_set("text_editor/appearance/gutters/show_line_numbers", true);
+	_initial_set("text_editor/appearance/gutters/line_numbers_zero_padded", false);
+	_initial_set("text_editor/appearance/gutters/highlight_type_safe_lines", true);
+	_initial_set("text_editor/appearance/gutters/show_bookmark_gutter", true);
+	_initial_set("text_editor/appearance/gutters/show_info_gutter", true);
+
+	// Appearance: Minimap
+	_initial_set("text_editor/appearance/minimap/show_minimap", true);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/appearance/minimap/minimap_width", 80, "50,250,1")
+
+	// Appearance: Lines
+	_initial_set("text_editor/appearance/lines/code_folding", true);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/appearance/lines/word_wrap", 0, "None,Boundary")
+
+	// Appearance: Whitespace
+	_initial_set("text_editor/appearance/whitespace/draw_tabs", true);
+	_initial_set("text_editor/appearance/whitespace/draw_spaces", false);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/appearance/whitespace/line_spacing", 6, "0,50,1")
+
+	// Behavior
+	// Behavior: Navigation
+	_initial_set("text_editor/behavior/navigation/move_caret_on_right_click", true);
+	_initial_set("text_editor/behavior/navigation/scroll_past_end_of_file", false);
+	_initial_set("text_editor/behavior/navigation/smooth_scrolling", true);
+	_initial_set("text_editor/behavior/navigation/v_scroll_speed", 80);
+
+	// Behavior: Indent
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/behavior/indent/type", 0, "Tabs,Spaces")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/behavior/indent/size", 4, "1,64,1") // size of 0 crashes.
+	_initial_set("text_editor/behavior/indent/auto_indent", true);
+
+	// Behavior: Files
+	_initial_set("text_editor/behavior/files/trim_trailing_whitespace_on_save", false);
+	_initial_set("text_editor/behavior/files/autosave_interval_secs", 0);
+	_initial_set("text_editor/behavior/files/restore_scripts_on_load", true);
+	_initial_set("text_editor/behavior/files/convert_indent_on_save", true);
 
 	// Script list
 	_initial_set("text_editor/script_list/show_members_overview", true);
-
-	// Files
-	_initial_set("text_editor/files/trim_trailing_whitespace_on_save", false);
-	_initial_set("text_editor/files/autosave_interval_secs", 0);
-	_initial_set("text_editor/files/restore_scripts_on_load", true);
-
-	// Tools
-	_initial_set("text_editor/tools/create_signal_callbacks", true);
-	_initial_set("text_editor/tools/sort_members_outline_alphabetically", false);
-
-	// Cursor
-	_initial_set("text_editor/cursor/scroll_past_end_of_file", false);
-	_initial_set("text_editor/cursor/block_caret", false);
-	_initial_set("text_editor/cursor/caret_blink", true);
-	_initial_set("text_editor/cursor/caret_blink_speed", 0.5);
-	hints["text_editor/cursor/caret_blink_speed"] = PropertyInfo(Variant::FLOAT, "text_editor/cursor/caret_blink_speed", PROPERTY_HINT_RANGE, "0.1, 10, 0.01");
-	_initial_set("text_editor/cursor/right_click_moves_caret", true);
+	_initial_set("text_editor/script_list/sort_members_outline_alphabetically", false);
 
 	// Completion
-	_initial_set("text_editor/completion/idle_parse_delay", 2.0);
-	hints["text_editor/completion/idle_parse_delay"] = PropertyInfo(Variant::FLOAT, "text_editor/completion/idle_parse_delay", PROPERTY_HINT_RANGE, "0.1, 10, 0.01");
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "text_editor/completion/idle_parse_delay", 2.0, "0.1,10,0.01")
 	_initial_set("text_editor/completion/auto_brace_complete", true);
-	_initial_set("text_editor/completion/code_complete_delay", 0.3);
-	hints["text_editor/completion/code_complete_delay"] = PropertyInfo(Variant::FLOAT, "text_editor/completion/code_complete_delay", PROPERTY_HINT_RANGE, "0.01, 5, 0.01");
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "text_editor/completion/code_complete_delay", 0.3, "0.01,5,0.01")
 	_initial_set("text_editor/completion/put_callhint_tooltip_below_current_line", true);
 	_initial_set("text_editor/completion/complete_file_paths", true);
 	_initial_set("text_editor/completion/add_type_hints", false);
@@ -560,14 +563,10 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Help
 	_initial_set("text_editor/help/show_help_index", true);
-	_initial_set("text_editor/help/help_font_size", 15);
-	hints["text_editor/help/help_font_size"] = PropertyInfo(Variant::INT, "text_editor/help/help_font_size", PROPERTY_HINT_RANGE, "8,48,1");
-	_initial_set("text_editor/help/help_source_font_size", 14);
-	hints["text_editor/help/help_source_font_size"] = PropertyInfo(Variant::INT, "text_editor/help/help_source_font_size", PROPERTY_HINT_RANGE, "8,48,1");
-	_initial_set("text_editor/help/help_title_font_size", 23);
-	hints["text_editor/help/help_title_font_size"] = PropertyInfo(Variant::INT, "text_editor/help/help_title_font_size", PROPERTY_HINT_RANGE, "8,48,1");
-	_initial_set("text_editor/help/class_reference_examples", 0);
-	hints["text_editor/help/class_reference_examples"] = PropertyInfo(Variant::INT, "text_editor/help/class_reference_examples", PROPERTY_HINT_ENUM, "GDScript,C#,GDScript and C#");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/help/help_font_size", 15, "8,48,1")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/help/help_source_font_size", 14, "8,48,1")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/help/help_title_font_size", 23, "8,48,1")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/help/class_reference_examples", 0, "GDScript,C#,GDScript and C#")
 
 	/* Editors */
 
@@ -575,39 +574,23 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/grid_map/pick_distance", 5000.0);
 
 	// 3D
-	_initial_set("editors/3d/primary_grid_color", Color(0.56, 0.56, 0.56, 0.5));
-	hints["editors/3d/primary_grid_color"] = PropertyInfo(Variant::COLOR, "editors/3d/primary_grid_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
-
-	_initial_set("editors/3d/secondary_grid_color", Color(0.38, 0.38, 0.38, 0.5));
-	hints["editors/3d/secondary_grid_color"] = PropertyInfo(Variant::COLOR, "editors/3d/secondary_grid_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
+	EDITOR_SETTING(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d/primary_grid_color", Color(0.56, 0.56, 0.56, 0.5), "")
+	EDITOR_SETTING(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d/secondary_grid_color", Color(0.38, 0.38, 0.38, 0.5), "")
 
 	// Use a similar color to the 2D editor selection.
-	_initial_set("editors/3d/selection_box_color", Color(1.0, 0.5, 0));
-	hints["editors/3d/selection_box_color"] = PropertyInfo(Variant::COLOR, "editors/3d/selection_box_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d/selection_box_color", Color(1.0, 0.5, 0), "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 
 	// If a line is a multiple of this, it uses the primary grid color.
 	// Use a power of 2 value by default as it's more common to use powers of 2 in level design.
-	_initial_set("editors/3d/primary_grid_steps", 8);
-	hints["editors/3d/primary_grid_steps"] = PropertyInfo(Variant::INT, "editors/3d/primary_grid_steps", PROPERTY_HINT_RANGE, "1,100,1", PROPERTY_USAGE_DEFAULT);
-
-	// At 1000, the grid mostly looks like it has no edge.
-	_initial_set("editors/3d/grid_size", 200);
-	hints["editors/3d/grid_size"] = PropertyInfo(Variant::INT, "editors/3d/grid_size", PROPERTY_HINT_RANGE, "1,2000,1", PROPERTY_USAGE_DEFAULT);
-
-	// Default largest grid size is 100m, 10^2 (primary grid lines are 1km apart when primary_grid_steps is 10).
-	_initial_set("editors/3d/grid_division_level_max", 2);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "editors/3d/primary_grid_steps", 8, "1,100,1")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "editors/3d/grid_size", 200, "1,2000,1")
 	// Higher values produce graphical artifacts when far away unless View Z-Far
 	// is increased significantly more than it really should need to be.
-	hints["editors/3d/grid_division_level_max"] = PropertyInfo(Variant::INT, "editors/3d/grid_division_level_max", PROPERTY_HINT_RANGE, "-1,3,1", PROPERTY_USAGE_DEFAULT);
-
-	// Default smallest grid size is 1m, 10^0.
-	_initial_set("editors/3d/grid_division_level_min", 0);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "editors/3d/grid_division_level_max", 2, "-1,3,1")
 	// Lower values produce graphical artifacts regardless of view clipping planes, so limit to -2 as a lower bound.
-	hints["editors/3d/grid_division_level_min"] = PropertyInfo(Variant::INT, "editors/3d/grid_division_level_min", PROPERTY_HINT_RANGE, "-2,2,1", PROPERTY_USAGE_DEFAULT);
-
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "editors/3d/grid_division_level_min", 0, "-2,2,1")
 	// -0.2 seems like a sensible default. -1.0 gives Blender-like behavior, 0.5 gives huge grids.
-	_initial_set("editors/3d/grid_division_level_bias", -0.2);
-	hints["editors/3d/grid_division_level_bias"] = PropertyInfo(Variant::FLOAT, "editors/3d/grid_division_level_bias", PROPERTY_HINT_RANGE, "-1.0,0.5,0.1", PROPERTY_USAGE_DEFAULT);
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/grid_division_level_bias", -0.2, "-1.0,0.5,0.1")
 
 	_initial_set("editors/3d/grid_xz_plane", true);
 	_initial_set("editors/3d/grid_xy_plane", false);
@@ -616,56 +599,35 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Use a lower default FOV for the 3D camera compared to the
 	// Camera3D node as the 3D viewport doesn't span the whole screen.
 	// This means it's technically viewed from a further distance, which warrants a narrower FOV.
-	_initial_set("editors/3d/default_fov", 70.0);
-	hints["editors/3d/default_fov"] = PropertyInfo(Variant::FLOAT, "editors/3d/default_fov", PROPERTY_HINT_RANGE, "1,179,0.1");
-	_initial_set("editors/3d/default_z_near", 0.05);
-	hints["editors/3d/default_z_near"] = PropertyInfo(Variant::FLOAT, "editors/3d/default_z_near", PROPERTY_HINT_RANGE, "0.01,10,0.01,or_greater");
-	_initial_set("editors/3d/default_z_far", 4000.0);
-	hints["editors/3d/default_z_far"] = PropertyInfo(Variant::FLOAT, "editors/3d/default_z_far", PROPERTY_HINT_RANGE, "0.1,4000,0.1,or_greater");
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/default_fov", 70.0, "1,179,0.1")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/default_z_near", 0.05, "0.01,10,0.01,or_greater")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/default_z_far", 4000.0, "0.1,4000,0.1,or_greater")
 
 	// 3D: Navigation
-	_initial_set("editors/3d/navigation/navigation_scheme", 0);
-	_initial_set("editors/3d/navigation/invert_y_axis", false);
 	_initial_set("editors/3d/navigation/invert_x_axis", false);
-	hints["editors/3d/navigation/navigation_scheme"] = PropertyInfo(Variant::INT, "editors/3d/navigation/navigation_scheme", PROPERTY_HINT_ENUM, "Godot,Maya,Modo");
-	_initial_set("editors/3d/navigation/zoom_style", 0);
-	hints["editors/3d/navigation/zoom_style"] = PropertyInfo(Variant::INT, "editors/3d/navigation/zoom_style", PROPERTY_HINT_ENUM, "Vertical, Horizontal");
+	_initial_set("editors/3d/navigation/invert_y_axis", false);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/navigation/navigation_scheme", 0, "Godot,Maya,Modo")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/navigation/zoom_style", 0, "Vertical,Horizontal")
 
 	_initial_set("editors/3d/navigation/emulate_numpad", false);
 	_initial_set("editors/3d/navigation/emulate_3_button_mouse", false);
-	_initial_set("editors/3d/navigation/orbit_modifier", 0);
-	hints["editors/3d/navigation/orbit_modifier"] = PropertyInfo(Variant::INT, "editors/3d/navigation/orbit_modifier", PROPERTY_HINT_ENUM, "None,Shift,Alt,Meta,Ctrl");
-	_initial_set("editors/3d/navigation/pan_modifier", 1);
-	hints["editors/3d/navigation/pan_modifier"] = PropertyInfo(Variant::INT, "editors/3d/navigation/pan_modifier", PROPERTY_HINT_ENUM, "None,Shift,Alt,Meta,Ctrl");
-	_initial_set("editors/3d/navigation/zoom_modifier", 4);
-	hints["editors/3d/navigation/zoom_modifier"] = PropertyInfo(Variant::INT, "editors/3d/navigation/zoom_modifier", PROPERTY_HINT_ENUM, "None,Shift,Alt,Meta,Ctrl");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/navigation/orbit_modifier", 0, "None,Shift,Alt,Meta,Ctrl")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/navigation/pan_modifier", 1, "None,Shift,Alt,Meta,Ctrl")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/navigation/zoom_modifier", 4, "None,Shift,Alt,Meta,Ctrl")
 	_initial_set("editors/3d/navigation/warped_mouse_panning", true);
 
 	// 3D: Navigation feel
-	_initial_set("editors/3d/navigation_feel/orbit_sensitivity", 0.4);
-	hints["editors/3d/navigation_feel/orbit_sensitivity"] = PropertyInfo(Variant::FLOAT, "editors/3d/navigation_feel/orbit_sensitivity", PROPERTY_HINT_RANGE, "0.0, 2, 0.01");
-	_initial_set("editors/3d/navigation_feel/orbit_inertia", 0.05);
-	hints["editors/3d/navigation_feel/orbit_inertia"] = PropertyInfo(Variant::FLOAT, "editors/3d/navigation_feel/orbit_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
-	_initial_set("editors/3d/navigation_feel/translation_inertia", 0.15);
-	hints["editors/3d/navigation_feel/translation_inertia"] = PropertyInfo(Variant::FLOAT, "editors/3d/navigation_feel/translation_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
-	_initial_set("editors/3d/navigation_feel/zoom_inertia", 0.075);
-	hints["editors/3d/navigation_feel/zoom_inertia"] = PropertyInfo(Variant::FLOAT, "editors/3d/navigation_feel/zoom_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
-	_initial_set("editors/3d/navigation_feel/manipulation_orbit_inertia", 0.075);
-	hints["editors/3d/navigation_feel/manipulation_orbit_inertia"] = PropertyInfo(Variant::FLOAT, "editors/3d/navigation_feel/manipulation_orbit_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
-	_initial_set("editors/3d/navigation_feel/manipulation_translation_inertia", 0.075);
-	hints["editors/3d/navigation_feel/manipulation_translation_inertia"] = PropertyInfo(Variant::FLOAT, "editors/3d/navigation_feel/manipulation_translation_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/navigation_feel/orbit_sensitivity", 0.25, "0.01,2,0.001")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/navigation_feel/orbit_inertia", 0.0, "0,1,0.001")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/navigation_feel/translation_inertia", 0.05, "0,1,0.001")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/navigation_feel/zoom_inertia", 0.05, "0,1,0.001")
 
 	// 3D: Freelook
-	_initial_set("editors/3d/freelook/freelook_navigation_scheme", false);
-	hints["editors/3d/freelook/freelook_navigation_scheme"] = PropertyInfo(Variant::INT, "editors/3d/freelook/freelook_navigation_scheme", PROPERTY_HINT_ENUM, "Default,Partially Axis-Locked (id Tech),Fully Axis-Locked (Minecraft)");
-	_initial_set("editors/3d/freelook/freelook_sensitivity", 0.4);
-	hints["editors/3d/freelook/freelook_sensitivity"] = PropertyInfo(Variant::FLOAT, "editors/3d/freelook/freelook_sensitivity", PROPERTY_HINT_RANGE, "0.0, 2, 0.01");
-	_initial_set("editors/3d/freelook/freelook_inertia", 0.1);
-	hints["editors/3d/freelook/freelook_inertia"] = PropertyInfo(Variant::FLOAT, "editors/3d/freelook/freelook_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
-	_initial_set("editors/3d/freelook/freelook_base_speed", 5.0);
-	hints["editors/3d/freelook/freelook_base_speed"] = PropertyInfo(Variant::FLOAT, "editors/3d/freelook/freelook_base_speed", PROPERTY_HINT_RANGE, "0.0, 10, 0.01");
-	_initial_set("editors/3d/freelook/freelook_activation_modifier", 0);
-	hints["editors/3d/freelook/freelook_activation_modifier"] = PropertyInfo(Variant::INT, "editors/3d/freelook/freelook_activation_modifier", PROPERTY_HINT_ENUM, "None,Shift,Alt,Meta,Ctrl");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/freelook/freelook_navigation_scheme", 0, "Default,Partially Axis-Locked (id Tech),Fully Axis-Locked (Minecraft)")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/freelook/freelook_sensitivity", 0.25, "0.01,2,0.001")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/freelook/freelook_inertia", 0.0, "0,1,0.001")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/freelook/freelook_base_speed", 5.0, "0,10,0.01")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/freelook/freelook_activation_modifier", 0, "None,Shift,Alt,Meta,Ctrl")
 	_initial_set("editors/3d/freelook/freelook_speed_zoom_link", false);
 
 	// 2D
@@ -681,18 +643,23 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/2d/bone_outline_size", 2);
 	_initial_set("editors/2d/viewport_border_color", Color(0.4, 0.4, 1.0, 0.4));
 	_initial_set("editors/2d/constrain_editor_view", true);
-	_initial_set("editors/2d/warped_mouse_panning", true);
-	_initial_set("editors/2d/simple_panning", false);
-	_initial_set("editors/2d/scroll_to_pan", false);
-	_initial_set("editors/2d/pan_speed", 20);
+
+	// Panning
+	// Enum should be in sync with ControlScheme in ViewPanner.
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/panning/2d_editor_panning_scheme", 0, "Scroll Zooms,Scroll Pans");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/panning/sub_editors_panning_scheme", 0, "Scroll Zooms,Scroll Pans");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/panning/animation_editors_panning_scheme", 1, "Scroll Zooms,Scroll Pans");
+	_initial_set("editors/panning/simple_panning", false);
+	_initial_set("editors/panning/warped_mouse_panning", true);
+	_initial_set("editors/panning/2d_editor_pan_speed", 20);
 
 	// Tiles editor
 	_initial_set("editors/tiles_editor/display_grid", true);
 	_initial_set("editors/tiles_editor/grid_color", Color(1.0, 0.5, 0.2, 0.5));
 
 	// Polygon editor
-	_initial_set("editors/poly_editor/point_grab_radius", 8);
-	_initial_set("editors/poly_editor/show_previous_outline", true);
+	_initial_set("editors/polygon_editor/point_grab_radius", 8);
+	_initial_set("editors/polygon_editor/show_previous_outline", true);
 
 	// Animation
 	_initial_set("editors/animation/autorename_animation_tracks", true);
@@ -703,28 +670,24 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/animation/onion_layers_future_color", Color(0, 1, 0));
 
 	// Visual editors
-	_initial_set("editors/visual_editors/minimap_opacity", 0.85);
-	hints["editors/visual_editors/minimap_opacity"] = PropertyInfo(Variant::FLOAT, "editors/visual_editors/minimap_opacity", PROPERTY_HINT_RANGE, "0.0,1.0,0.01", PROPERTY_USAGE_DEFAULT);
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/visual_editors/minimap_opacity", 0.85, "0.0,1.0,0.01")
 
 	/* Run */
 
 	// Window placement
-	_initial_set("run/window_placement/rect", 1);
-	hints["run/window_placement/rect"] = PropertyInfo(Variant::INT, "run/window_placement/rect", PROPERTY_HINT_ENUM, "Top Left,Centered,Custom Position,Force Maximized,Force Fullscreen");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "run/window_placement/rect", 1, "Top Left,Centered,Custom Position,Force Maximized,Force Fullscreen")
 	String screen_hints = "Same as Editor,Previous Monitor,Next Monitor";
 	for (int i = 0; i < DisplayServer::get_singleton()->get_screen_count(); i++) {
 		screen_hints += ",Monitor " + itos(i + 1);
 	}
 	_initial_set("run/window_placement/rect_custom_position", Vector2());
-	_initial_set("run/window_placement/screen", 0);
-	hints["run/window_placement/screen"] = PropertyInfo(Variant::INT, "run/window_placement/screen", PROPERTY_HINT_ENUM, screen_hints);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "run/window_placement/screen", 0, screen_hints)
 
 	// Auto save
 	_initial_set("run/auto_save/save_before_running", true);
 
 	// Output
-	_initial_set("run/output/font_size", 13);
-	hints["run/output/font_size"] = PropertyInfo(Variant::INT, "run/output/font_size", PROPERTY_HINT_RANGE, "8,48,1");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "run/output/font_size", 13, "8,48,1")
 	_initial_set("run/output/always_clear_output_on_play", true);
 	_initial_set("run/output/always_open_output_on_play", true);
 	_initial_set("run/output/always_close_output_on_stop", false);
@@ -734,17 +697,14 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Debug
 	_initial_set("network/debug/remote_host", "127.0.0.1"); // Hints provided in setup_network
 
-	_initial_set("network/debug/remote_port", 6007);
-	hints["network/debug/remote_port"] = PropertyInfo(Variant::INT, "network/debug/remote_port", PROPERTY_HINT_RANGE, "1,65535,1");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "network/debug/remote_port", 6007, "1,65535,1")
 
 	// SSL
-	_initial_set("network/ssl/editor_ssl_certificates", _SYSTEM_CERTS_PATH);
-	hints["network/ssl/editor_ssl_certificates"] = PropertyInfo(Variant::STRING, "network/ssl/editor_ssl_certificates", PROPERTY_HINT_GLOBAL_FILE, "*.crt,*.pem");
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "network/ssl/editor_ssl_certificates", _SYSTEM_CERTS_PATH, "*.crt,*.pem")
 
 	/* Extra config */
 
-	_initial_set("project_manager/sorting_order", 0);
-	hints["project_manager/sorting_order"] = PropertyInfo(Variant::INT, "project_manager/sorting_order", PROPERTY_HINT_ENUM, "Name,Path,Last Edited");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "project_manager/sorting_order", 0, "Name,Path,Last Edited")
 
 	if (p_extra_config.is_valid()) {
 		if (p_extra_config->has_section("init_projects") && p_extra_config->has_section_key("init_projects", "list")) {
@@ -769,41 +729,41 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 void EditorSettings::_load_godot2_text_editor_theme() {
 	// Godot 2 is only a dark theme; it doesn't have a light theme counterpart.
-	_initial_set("text_editor/highlighting/symbol_color", Color(0.73, 0.87, 1.0));
-	_initial_set("text_editor/highlighting/keyword_color", Color(1.0, 1.0, 0.7));
-	_initial_set("text_editor/highlighting/control_flow_keyword_color", Color(1.0, 0.85, 0.7));
-	_initial_set("text_editor/highlighting/base_type_color", Color(0.64, 1.0, 0.83));
-	_initial_set("text_editor/highlighting/engine_type_color", Color(0.51, 0.83, 1.0));
-	_initial_set("text_editor/highlighting/user_type_color", Color(0.42, 0.67, 0.93));
-	_initial_set("text_editor/highlighting/comment_color", Color(0.4, 0.4, 0.4));
-	_initial_set("text_editor/highlighting/string_color", Color(0.94, 0.43, 0.75));
-	_initial_set("text_editor/highlighting/background_color", Color(0.13, 0.12, 0.15));
-	_initial_set("text_editor/highlighting/completion_background_color", Color(0.17, 0.16, 0.2));
-	_initial_set("text_editor/highlighting/completion_selected_color", Color(0.26, 0.26, 0.27));
-	_initial_set("text_editor/highlighting/completion_existing_color", Color(0.13, 0.87, 0.87, 0.87));
-	_initial_set("text_editor/highlighting/completion_scroll_color", Color(1, 1, 1));
-	_initial_set("text_editor/highlighting/completion_font_color", Color(0.67, 0.67, 0.67));
-	_initial_set("text_editor/highlighting/text_color", Color(0.67, 0.67, 0.67));
-	_initial_set("text_editor/highlighting/line_number_color", Color(0.67, 0.67, 0.67, 0.4));
-	_initial_set("text_editor/highlighting/safe_line_number_color", Color(0.67, 0.78, 0.67, 0.6));
-	_initial_set("text_editor/highlighting/caret_color", Color(0.67, 0.67, 0.67));
-	_initial_set("text_editor/highlighting/caret_background_color", Color(0, 0, 0));
-	_initial_set("text_editor/highlighting/text_selected_color", Color(0, 0, 0));
-	_initial_set("text_editor/highlighting/selection_color", Color(0.41, 0.61, 0.91, 0.35));
-	_initial_set("text_editor/highlighting/brace_mismatch_color", Color(1, 0.2, 0.2));
-	_initial_set("text_editor/highlighting/current_line_color", Color(0.3, 0.5, 0.8, 0.15));
-	_initial_set("text_editor/highlighting/line_length_guideline_color", Color(0.3, 0.5, 0.8, 0.1));
-	_initial_set("text_editor/highlighting/word_highlighted_color", Color(0.8, 0.9, 0.9, 0.15));
-	_initial_set("text_editor/highlighting/number_color", Color(0.92, 0.58, 0.2));
-	_initial_set("text_editor/highlighting/function_color", Color(0.4, 0.64, 0.81));
-	_initial_set("text_editor/highlighting/member_variable_color", Color(0.9, 0.31, 0.35));
-	_initial_set("text_editor/highlighting/mark_color", Color(1.0, 0.4, 0.4, 0.4));
-	_initial_set("text_editor/highlighting/bookmark_color", Color(0.08, 0.49, 0.98));
-	_initial_set("text_editor/highlighting/breakpoint_color", Color(0.9, 0.29, 0.3));
-	_initial_set("text_editor/highlighting/executing_line_color", Color(0.98, 0.89, 0.27));
-	_initial_set("text_editor/highlighting/code_folding_color", Color(0.8, 0.8, 0.8, 0.8));
-	_initial_set("text_editor/highlighting/search_result_color", Color(0.05, 0.25, 0.05, 1));
-	_initial_set("text_editor/highlighting/search_result_border_color", Color(0.41, 0.61, 0.91, 0.38));
+	_initial_set("text_editor/theme/highlighting/symbol_color", Color(0.73, 0.87, 1.0));
+	_initial_set("text_editor/theme/highlighting/keyword_color", Color(1.0, 1.0, 0.7));
+	_initial_set("text_editor/theme/highlighting/control_flow_keyword_color", Color(1.0, 0.85, 0.7));
+	_initial_set("text_editor/theme/highlighting/base_type_color", Color(0.64, 1.0, 0.83));
+	_initial_set("text_editor/theme/highlighting/engine_type_color", Color(0.51, 0.83, 1.0));
+	_initial_set("text_editor/theme/highlighting/user_type_color", Color(0.42, 0.67, 0.93));
+	_initial_set("text_editor/theme/highlighting/comment_color", Color(0.4, 0.4, 0.4));
+	_initial_set("text_editor/theme/highlighting/string_color", Color(0.94, 0.43, 0.75));
+	_initial_set("text_editor/theme/highlighting/background_color", Color(0.13, 0.12, 0.15));
+	_initial_set("text_editor/theme/highlighting/completion_background_color", Color(0.17, 0.16, 0.2));
+	_initial_set("text_editor/theme/highlighting/completion_selected_color", Color(0.26, 0.26, 0.27));
+	_initial_set("text_editor/theme/highlighting/completion_existing_color", Color(0.87, 0.87, 0.87, 0.13));
+	_initial_set("text_editor/theme/highlighting/completion_scroll_color", Color(1, 1, 1));
+	_initial_set("text_editor/theme/highlighting/completion_font_color", Color(0.67, 0.67, 0.67));
+	_initial_set("text_editor/theme/highlighting/text_color", Color(0.67, 0.67, 0.67));
+	_initial_set("text_editor/theme/highlighting/line_number_color", Color(0.67, 0.67, 0.67, 0.4));
+	_initial_set("text_editor/theme/highlighting/safe_line_number_color", Color(0.67, 0.78, 0.67, 0.6));
+	_initial_set("text_editor/theme/highlighting/caret_color", Color(0.67, 0.67, 0.67));
+	_initial_set("text_editor/theme/highlighting/caret_background_color", Color(0, 0, 0));
+	_initial_set("text_editor/theme/highlighting/text_selected_color", Color(0, 0, 0));
+	_initial_set("text_editor/theme/highlighting/selection_color", Color(0.41, 0.61, 0.91, 0.35));
+	_initial_set("text_editor/theme/highlighting/brace_mismatch_color", Color(1, 0.2, 0.2));
+	_initial_set("text_editor/theme/highlighting/current_line_color", Color(0.3, 0.5, 0.8, 0.15));
+	_initial_set("text_editor/theme/highlighting/line_length_guideline_color", Color(0.3, 0.5, 0.8, 0.1));
+	_initial_set("text_editor/theme/highlighting/word_highlighted_color", Color(0.8, 0.9, 0.9, 0.15));
+	_initial_set("text_editor/theme/highlighting/number_color", Color(0.92, 0.58, 0.2));
+	_initial_set("text_editor/theme/highlighting/function_color", Color(0.4, 0.64, 0.81));
+	_initial_set("text_editor/theme/highlighting/member_variable_color", Color(0.9, 0.31, 0.35));
+	_initial_set("text_editor/theme/highlighting/mark_color", Color(1.0, 0.4, 0.4, 0.4));
+	_initial_set("text_editor/theme/highlighting/bookmark_color", Color(0.08, 0.49, 0.98));
+	_initial_set("text_editor/theme/highlighting/breakpoint_color", Color(0.9, 0.29, 0.3));
+	_initial_set("text_editor/theme/highlighting/executing_line_color", Color(0.98, 0.89, 0.27));
+	_initial_set("text_editor/theme/highlighting/code_folding_color", Color(0.8, 0.8, 0.8, 0.8));
+	_initial_set("text_editor/theme/highlighting/search_result_color", Color(0.05, 0.25, 0.05, 1));
+	_initial_set("text_editor/theme/highlighting/search_result_border_color", Color(0.41, 0.61, 0.91, 0.38));
 }
 
 bool EditorSettings::_save_text_editor_theme(String p_file) {
@@ -815,8 +775,8 @@ bool EditorSettings::_save_text_editor_theme(String p_file) {
 	keys.sort();
 
 	for (const String &key : keys) {
-		if (key.begins_with("text_editor/highlighting/") && key.find("color") >= 0) {
-			cf->set_value(theme_section, key.replace("text_editor/highlighting/", ""), ((Color)props[key].variant).to_html());
+		if (key.begins_with("text_editor/theme/highlighting/") && key.find("color") >= 0) {
+			cf->set_value(theme_section, key.replace("text_editor/theme/highlighting/", ""), ((Color)props[key].variant).to_html());
 		}
 	}
 
@@ -827,43 +787,6 @@ bool EditorSettings::_save_text_editor_theme(String p_file) {
 
 bool EditorSettings::_is_default_text_editor_theme(String p_theme_name) {
 	return p_theme_name == "default" || p_theme_name == "godot 2" || p_theme_name == "custom";
-}
-
-static Dictionary _get_builtin_script_templates() {
-	Dictionary templates;
-
-	// No Comments
-	templates["no_comments.gd"] =
-			"extends %BASE%\n"
-			"\n"
-			"\n"
-			"func _ready()%VOID_RETURN%:\n"
-			"%TS%pass\n";
-
-	// Empty
-	templates["empty.gd"] =
-			"extends %BASE%"
-			"\n"
-			"\n";
-
-	return templates;
-}
-
-static void _create_script_templates(const String &p_path) {
-	Dictionary templates = _get_builtin_script_templates();
-	List<Variant> keys;
-	templates.get_key_list(&keys);
-	FileAccessRef file = FileAccess::create(FileAccess::ACCESS_FILESYSTEM);
-	DirAccessRef dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	dir->change_dir(p_path);
-	for (int i = 0; i < keys.size(); i++) {
-		if (!dir->file_exists(keys[i])) {
-			Error err = file->reopen(p_path.plus_file((String)keys[i]), FileAccess::WRITE);
-			ERR_FAIL_COND(err != OK);
-			file->store_string(templates[keys[i]]);
-			file->close();
-		}
-	}
 }
 
 // PUBLIC METHODS
@@ -900,10 +823,7 @@ void EditorSettings::create() {
 	}
 
 	if (EditorPaths::get_singleton()->are_paths_valid()) {
-		_create_script_templates(EditorPaths::get_singleton()->get_config_dir().plus_file("script_templates"));
-
 		// Validate editor config file.
-
 		DirAccessRef dir = DirAccess::open(EditorPaths::get_singleton()->get_config_dir());
 		String config_file_name = "editor_settings-" + itos(VERSION_MAJOR) + ".tres";
 		config_file_path = EditorPaths::get_singleton()->get_config_dir().plus_file(config_file_name);
@@ -953,56 +873,16 @@ fail:
 }
 
 void EditorSettings::setup_language() {
+	TranslationServer::get_singleton()->set_editor_pseudolocalization(get("interface/editor/enable_debugging_pseudolocalization"));
 	String lang = get("interface/editor/editor_language");
 	if (lang == "en") {
 		return; // Default, nothing to do.
 	}
-
 	// Load editor translation for configured/detected locale.
-	EditorTranslationList *etl = _editor_translations;
-	while (etl->data) {
-		if (etl->lang == lang) {
-			Vector<uint8_t> data;
-			data.resize(etl->uncomp_size);
-			Compression::decompress(data.ptrw(), etl->uncomp_size, etl->data, etl->comp_size, Compression::MODE_DEFLATE);
-
-			FileAccessMemory *fa = memnew(FileAccessMemory);
-			fa->open_custom(data.ptr(), data.size());
-
-			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa);
-
-			if (tr.is_valid()) {
-				tr->set_locale(etl->lang);
-				TranslationServer::get_singleton()->set_tool_translation(tr);
-				break;
-			}
-		}
-
-		etl++;
-	}
+	load_editor_translations(lang);
 
 	// Load class reference translation.
-	DocTranslationList *dtl = _doc_translations;
-	while (dtl->data) {
-		if (dtl->lang == lang) {
-			Vector<uint8_t> data;
-			data.resize(dtl->uncomp_size);
-			Compression::decompress(data.ptrw(), dtl->uncomp_size, dtl->data, dtl->comp_size, Compression::MODE_DEFLATE);
-
-			FileAccessMemory *fa = memnew(FileAccessMemory);
-			fa->open_custom(data.ptr(), data.size());
-
-			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa);
-
-			if (tr.is_valid()) {
-				tr->set_locale(dtl->lang);
-				TranslationServer::get_singleton()->set_doc_translation(tr);
-				break;
-			}
-		}
-
-		dtl++;
-	}
+	load_doc_translations(lang);
 }
 
 void EditorSettings::setup_network() {
@@ -1026,7 +906,7 @@ void EditorSettings::setup_network() {
 		if (ip == current) {
 			selected = ip;
 		}
-		if (hint != "") {
+		if (!hint.is_empty()) {
 			hint += ",";
 		}
 		hint += ip;
@@ -1045,7 +925,7 @@ void EditorSettings::save() {
 		return;
 	}
 
-	if (singleton->config_file_path == "") {
+	if (singleton->config_file_path.is_empty()) {
 		ERR_PRINT("Cannot save EditorSettings config, no valid path");
 		return;
 	}
@@ -1255,7 +1135,7 @@ void EditorSettings::load_favorites() {
 	FileAccess *f = FileAccess::open(get_project_settings_dir().plus_file("favorites"), FileAccess::READ);
 	if (f) {
 		String line = f->get_line().strip_edges();
-		while (line != "") {
+		while (!line.is_empty()) {
 			favorites.push_back(line);
 			line = f->get_line().strip_edges();
 		}
@@ -1265,7 +1145,7 @@ void EditorSettings::load_favorites() {
 	f = FileAccess::open(get_project_settings_dir().plus_file("recent_dirs"), FileAccess::READ);
 	if (f) {
 		String line = f->get_line().strip_edges();
-		while (line != "") {
+		while (!line.is_empty()) {
 			recent_dirs.push_back(line);
 			line = f->get_line().strip_edges();
 		}
@@ -1278,7 +1158,7 @@ bool EditorSettings::is_dark_theme() {
 	int LIGHT_COLOR = 2;
 	Color base_color = get("interface/theme/base_color");
 	int icon_font_color_setting = get("interface/theme/icon_and_font_color");
-	return (icon_font_color_setting == AUTO_COLOR && ((base_color.r + base_color.g + base_color.b) / 3.0) < 0.5) || icon_font_color_setting == LIGHT_COLOR;
+	return (icon_font_color_setting == AUTO_COLOR && base_color.get_luminance() < 0.5) || icon_font_color_setting == LIGHT_COLOR;
 }
 
 void EditorSettings::list_text_editor_themes() {
@@ -1289,7 +1169,7 @@ void EditorSettings::list_text_editor_themes() {
 		List<String> custom_themes;
 		d->list_dir_begin();
 		String file = d->get_next();
-		while (file != String()) {
+		while (!file.is_empty()) {
 			if (file.get_extension() == "tet" && !_is_default_text_editor_theme(file.get_basename().to_lower())) {
 				custom_themes.push_back(file.get_basename());
 			}
@@ -1332,10 +1212,10 @@ void EditorSettings::load_text_editor_theme() {
 		String val = cf->get_value("color_theme", key);
 
 		// don't load if it's not already there!
-		if (has_setting("text_editor/highlighting/" + key)) {
+		if (has_setting("text_editor/theme/highlighting/" + key)) {
 			// make sure it is actually a color
 			if (val.is_valid_html_color() && key.find("color") >= 0) {
-				props["text_editor/highlighting/" + key].variant = Color::html(val); // change manually to prevent "Settings changed" console spam
+				props["text_editor/theme/highlighting/" + key].variant = Color::html(val); // change manually to prevent "Settings changed" console spam
 			}
 		}
 	}
@@ -1408,7 +1288,7 @@ Vector<String> EditorSettings::get_script_templates(const String &p_extension, c
 	if (d) {
 		d->list_dir_begin();
 		String file = d->get_next();
-		while (file != String()) {
+		while (!file.is_empty()) {
 			if (file.get_extension() == p_extension) {
 				templates.push_back(file.get_basename());
 			}
@@ -1457,7 +1337,7 @@ bool EditorSettings::is_shortcut(const String &p_name, const Ref<InputEvent> &p_
 	const Map<String, Ref<Shortcut>>::Element *E = shortcuts.find(p_name);
 	ERR_FAIL_COND_V_MSG(!E, false, "Unknown Shortcut: " + p_name + ".");
 
-	return E->get()->is_shortcut(p_event);
+	return E->get()->matches_event(p_event);
 }
 
 Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
@@ -1473,16 +1353,16 @@ Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
 	const Map<String, List<Ref<InputEvent>>>::Element *builtin_override = builtin_action_overrides.find(p_name);
 	if (builtin_override) {
 		sc.instantiate();
-		sc->set_shortcut(builtin_override->get().front()->get());
+		sc->set_events_list(&builtin_override->get());
 		sc->set_name(InputMap::get_singleton()->get_builtin_display_name(p_name));
 	}
 
 	// If there was no override, check the default builtins to see if it has an InputEvent for the provided name.
 	if (sc.is_null()) {
-		const OrderedHashMap<String, List<Ref<InputEvent>>>::ConstElement builtin_default = InputMap::get_singleton()->get_builtins().find(p_name);
+		const OrderedHashMap<String, List<Ref<InputEvent>>>::ConstElement builtin_default = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(p_name);
 		if (builtin_default) {
 			sc.instantiate();
-			sc->set_shortcut(builtin_default.get().front()->get());
+			sc->set_events_list(&builtin_default.get());
 			sc->set_name(InputMap::get_singleton()->get_builtin_display_name(p_name));
 		}
 	}
@@ -1497,8 +1377,8 @@ Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
 }
 
 void EditorSettings::get_shortcut_list(List<String> *r_shortcuts) {
-	for (const Map<String, Ref<Shortcut>>::Element *E = shortcuts.front(); E; E = E->next()) {
-		r_shortcuts->push_back(E->key());
+	for (const KeyValue<String, Ref<Shortcut>> &E : shortcuts) {
+		r_shortcuts->push_back(E.key);
 	}
 }
 
@@ -1514,46 +1394,94 @@ Ref<Shortcut> ED_GET_SHORTCUT(const String &p_path) {
 	return sc;
 }
 
-Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode) {
-#ifdef OSX_ENABLED
-	// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
-	if (p_keycode == KEY_DELETE) {
-		p_keycode = KEY_MASK_CMD | KEY_BACKSPACE;
+void ED_SHORTCUT_OVERRIDE(const String &p_path, const String &p_feature, Key p_keycode) {
+	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
+	ERR_FAIL_COND_MSG(!sc.is_valid(), "Used ED_SHORTCUT_OVERRIDE with invalid shortcut: " + p_path + ".");
+
+	PackedInt32Array arr;
+	arr.push_back((int32_t)p_keycode);
+
+	ED_SHORTCUT_OVERRIDE_ARRAY(p_path, p_feature, arr);
+}
+
+void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, const PackedInt32Array &p_keycodes) {
+	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
+	ERR_FAIL_COND_MSG(!sc.is_valid(), "Used ED_SHORTCUT_OVERRIDE_ARRAY with invalid shortcut: " + p_path + ".");
+
+	// Only add the override if the OS supports the provided feature.
+	if (!OS::get_singleton()->has_feature(p_feature)) {
+		return;
 	}
+
+	Array events;
+
+	for (int i = 0; i < p_keycodes.size(); i++) {
+		Key keycode = (Key)p_keycodes[i];
+
+#ifdef OSX_ENABLED
+		// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
+		if (keycode == Key::KEY_DELETE) {
+			keycode = KeyModifierMask::CMD | Key::BACKSPACE;
+		}
+#endif
+		Ref<InputEventKey> ie;
+		if (keycode != Key::NONE) {
+			ie = InputEventKey::create_reference(keycode);
+			events.push_back(ie);
+		}
+	}
+
+	// Directly override the existing shortcut.
+	sc->set_events(events);
+	sc->set_meta("original", events.duplicate(true));
+}
+
+Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, Key p_keycode) {
+	PackedInt32Array arr;
+	arr.push_back((int32_t)p_keycode);
+	return ED_SHORTCUT_ARRAY(p_path, p_name, arr);
+}
+
+Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, const PackedInt32Array &p_keycodes) {
+	Array events;
+
+	for (int i = 0; i < p_keycodes.size(); i++) {
+		Key keycode = (Key)p_keycodes[i];
+
+#ifdef OSX_ENABLED
+		// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
+		if (keycode == Key::KEY_DELETE) {
+			keycode = KeyModifierMask::CMD | Key::BACKSPACE;
+		}
 #endif
 
-	Ref<InputEventKey> ie;
-	if (p_keycode) {
-		ie.instantiate();
-
-		ie->set_unicode(p_keycode & KEY_CODE_MASK);
-		ie->set_keycode(p_keycode & KEY_CODE_MASK);
-		ie->set_shift_pressed(bool(p_keycode & KEY_MASK_SHIFT));
-		ie->set_alt_pressed(bool(p_keycode & KEY_MASK_ALT));
-		ie->set_ctrl_pressed(bool(p_keycode & KEY_MASK_CTRL));
-		ie->set_meta_pressed(bool(p_keycode & KEY_MASK_META));
+		Ref<InputEventKey> ie;
+		if (keycode != Key::NONE) {
+			ie = InputEventKey::create_reference(keycode);
+			events.push_back(ie);
+		}
 	}
 
 	if (!EditorSettings::get_singleton()) {
 		Ref<Shortcut> sc;
 		sc.instantiate();
 		sc->set_name(p_name);
-		sc->set_shortcut(ie);
-		sc->set_meta("original", ie);
+		sc->set_events(events);
+		sc->set_meta("original", events.duplicate(true));
 		return sc;
 	}
 
 	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 	if (sc.is_valid()) {
 		sc->set_name(p_name); //keep name (the ones that come from disk have no name)
-		sc->set_meta("original", ie); //to compare against changes
+		sc->set_meta("original", events.duplicate(true)); //to compare against changes
 		return sc;
 	}
 
 	sc.instantiate();
 	sc->set_name(p_name);
-	sc->set_shortcut(ie);
-	sc->set_meta("original", ie); //to compare against changes
+	sc->set_events(events);
+	sc->set_meta("original", events.duplicate(true)); //to compare against changes
 	EditorSettings::get_singleton()->add_shortcut(p_path, sc);
 
 	return sc;
@@ -1572,15 +1500,23 @@ void EditorSettings::set_builtin_action_override(const String &p_name, const Arr
 	// Check if the provided event array is same as built-in. If it is, it does not need to be added to the overrides.
 	// Note that event order must also be the same.
 	bool same_as_builtin = true;
-	OrderedHashMap<String, List<Ref<InputEvent>>>::ConstElement builtin_default = InputMap::get_singleton()->get_builtins().find(p_name);
+	OrderedHashMap<String, List<Ref<InputEvent>>>::ConstElement builtin_default = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(p_name);
 	if (builtin_default) {
 		List<Ref<InputEvent>> builtin_events = builtin_default.get();
 
-		if (p_events.size() == builtin_events.size()) {
+		// In the editor we only care about key events.
+		List<Ref<InputEventKey>> builtin_key_events;
+		for (Ref<InputEventKey> iek : builtin_events) {
+			if (iek.is_valid()) {
+				builtin_key_events.push_back(iek);
+			}
+		}
+
+		if (p_events.size() == builtin_key_events.size()) {
 			int event_idx = 0;
 
 			// Check equality of each event.
-			for (const Ref<InputEvent> &E : builtin_events) {
+			for (const Ref<InputEventKey> &E : builtin_key_events) {
 				if (!E->is_match(p_events[event_idx])) {
 					same_as_builtin = false;
 					break;
@@ -1600,7 +1536,7 @@ void EditorSettings::set_builtin_action_override(const String &p_name, const Arr
 
 	// Update the shortcut (if it is used somewhere in the editor) to be the first event of the new list.
 	if (shortcuts.has(p_name)) {
-		shortcuts[p_name]->set_shortcut(event_list.front()->get());
+		shortcuts[p_name]->set_events_list(&event_list);
 	}
 }
 

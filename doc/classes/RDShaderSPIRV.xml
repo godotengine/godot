@@ -56,6 +56,4 @@
 		<member name="compile_error_vertex" type="String" setter="set_stage_compile_error" getter="get_stage_compile_error" default="&quot;&quot;">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

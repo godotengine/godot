@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,7 +47,7 @@ class LightmapGIEditorPlugin : public EditorPlugin {
 	EditorFileDialog *file_dialog;
 	static EditorProgress *tmp_progress;
 	static bool bake_func_step(float p_progress, const String &p_description, void *, bool p_refresh);
-	static void bake_func_end();
+	static void bake_func_end(uint64_t p_time_started);
 
 	void _bake_select_file(const String &p_file);
 	void _bake();

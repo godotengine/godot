@@ -10,8 +10,8 @@
  * # Date: 2015-03-12, 21:17:00 GMT [AG]
  * # Date: 2019-11-08, 23:22:00 GMT [AG]
  *
- * # Scripts-13.0.0.txt
- * # Date: 2020-01-22, 00:07:43 GMT
+ * # Scripts-14.0.0.txt
+ * # Date: 2021-07-10, 00:35:31 GMT
  */
 
 #include "hb.hh"
@@ -435,7 +435,7 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
     default:
       break;
   }
-  buffer->swap_buffers ();
+  buffer->sync ();
 }
 
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,6 +47,12 @@ class VMap;
 
 #if !defined(NO_THREADS)
 SAFE_NUMERIC_TYPE_PUN_GUARANTEES(uint32_t)
+#endif
+
+// Silence a false positive warning (see GH-52119).
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wplacement-new"
 #endif
 
 template <class T>
@@ -161,7 +167,7 @@ public:
 
 	Error resize(int p_size);
 
-	_FORCE_INLINE_ void remove(int p_index) {
+	_FORCE_INLINE_ void remove_at(int p_index) {
 		ERR_FAIL_INDEX(p_index, size());
 		T *p = ptrw();
 		int len = size();
@@ -232,7 +238,7 @@ uint32_t CowData<T>::_copy_on_write() {
 
 		uint32_t *mem_new = (uint32_t *)Memory::alloc_static(_get_alloc_size(current_size), true);
 
-		new (mem_new - 2, sizeof(uint32_t), "") SafeNumeric<uint32_t>(1); //refcount
+		new (mem_new - 2) SafeNumeric<uint32_t>(1); //refcount
 		*(mem_new - 1) = current_size; //size
 
 		T *_data = (T *)(mem_new);
@@ -286,14 +292,14 @@ Error CowData<T>::resize(int p_size) {
 				uint32_t *ptr = (uint32_t *)Memory::alloc_static(alloc_size, true);
 				ERR_FAIL_COND_V(!ptr, ERR_OUT_OF_MEMORY);
 				*(ptr - 1) = 0; //size, currently none
-				new (ptr - 2, sizeof(uint32_t), "") SafeNumeric<uint32_t>(1); //refcount
+				new (ptr - 2) SafeNumeric<uint32_t>(1); //refcount
 
 				_ptr = (T *)ptr;
 
 			} else {
 				uint32_t *_ptrnew = (uint32_t *)Memory::realloc_static(_ptr, alloc_size, true);
 				ERR_FAIL_COND_V(!_ptrnew, ERR_OUT_OF_MEMORY);
-				new (_ptrnew - 2, sizeof(uint32_t), "") SafeNumeric<uint32_t>(rc); //refcount
+				new (_ptrnew - 2) SafeNumeric<uint32_t>(rc); //refcount
 
 				_ptr = (T *)(_ptrnew);
 			}
@@ -323,7 +329,7 @@ Error CowData<T>::resize(int p_size) {
 		if (alloc_size != current_alloc_size) {
 			uint32_t *_ptrnew = (uint32_t *)Memory::realloc_static(_ptr, alloc_size, true);
 			ERR_FAIL_COND_V(!_ptrnew, ERR_OUT_OF_MEMORY);
-			new (_ptrnew - 2, sizeof(uint32_t), "") SafeNumeric<uint32_t>(rc); //refcount
+			new (_ptrnew - 2) SafeNumeric<uint32_t>(rc); //refcount
 
 			_ptr = (T *)(_ptrnew);
 		}
@@ -379,5 +385,9 @@ template <class T>
 CowData<T>::~CowData() {
 	_unref(_ptr);
 }
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 #endif // COWDATA_H

@@ -14,11 +14,11 @@
 			<return type="void" />
 			<argument index="0" name="column" type="int" />
 			<argument index="1" name="button" type="Texture2D" />
-			<argument index="2" name="button_idx" type="int" default="-1" />
+			<argument index="2" name="id" type="int" default="-1" />
 			<argument index="3" name="disabled" type="bool" default="false" />
 			<argument index="4" name="tooltip" type="String" default="&quot;&quot;" />
 			<description>
-				Adds a button with [Texture2D] [code]button[/code] at column [code]column[/code]. The [code]button_idx[/code] index is used to identify the button when calling other methods. If not specified, the next available index is used, which may be retrieved by calling [method get_button_count] immediately after this method. Optionally, the button can be [code]disabled[/code] and have a [code]tooltip[/code].
+				Adds a button with [Texture2D] [code]button[/code] at column [code]column[/code]. The [code]id[/code] is used to identify the button. If not specified, the next available index is used, which may be retrieved by calling [method get_button_count] immediately after this method. Optionally, the button can be [code]disabled[/code] and have a [code]tooltip[/code].
 			</description>
 		</method>
 		<method name="call_recursive" qualifiers="vararg">
@@ -80,11 +80,27 @@
 				Returns the [Texture2D] of the button at index [code]button_idx[/code] in column [code]column[/code].
 			</description>
 		</method>
+		<method name="get_button_by_id" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="id" type="int" />
+			<description>
+				Returns the button index if there is a button with id [code]id[/code] in column [code]column[/code], otherwise returns -1.
+			</description>
+		</method>
 		<method name="get_button_count" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="column" type="int" />
 			<description>
 				Returns the number of buttons in column [code]column[/code]. May be used to get the most recently added button's index, if no index was specified.
+			</description>
+		</method>
+		<method name="get_button_id" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="button_idx" type="int" />
+			<description>
+				Returns the id for the button at index [code]button_idx[/code] in column [code]column[/code].
 			</description>
 		</method>
 		<method name="get_button_tooltip" qualifiers="const">
@@ -140,6 +156,14 @@
 			<return type="Font" />
 			<argument index="0" name="column" type="int" />
 			<description>
+				Returns custom font used to draw text in the column [code]column[/code].
+			</description>
+		</method>
+		<method name="get_custom_font_size" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="column" type="int" />
+			<description>
+				Returns custom font size used to draw text in the column [code]column[/code].
 			</description>
 		</method>
 		<method name="get_expand_right" qualifiers="const">
@@ -285,8 +309,8 @@
 				Returns the given column's text.
 			</description>
 		</method>
-		<method name="get_text_align" qualifiers="const">
-			<return type="int" enum="TreeItem.TextAlign" />
+		<method name="get_text_alignment" qualifiers="const">
+			<return type="int" enum="HorizontalAlignment" />
 			<argument index="0" name="column" type="int" />
 			<description>
 				Returns the given column's text alignment.
@@ -340,6 +364,13 @@
 				Returns [code]true[/code] if column [code]column[/code] is editable.
 			</description>
 		</method>
+		<method name="is_indeterminate" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="column" type="int" />
+			<description>
+				Returns [code]true[/code] if the given column is indeterminate.
+			</description>
+		</method>
 		<method name="is_selectable" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="column" type="int" />
@@ -356,7 +387,7 @@
 		</method>
 		<method name="move_after">
 			<return type="void" />
-			<argument index="0" name="item" type="Object" />
+			<argument index="0" name="item" type="TreeItem" />
 			<description>
 				Moves this TreeItem right after the given [code]item[/code].
 				[b]Note:[/b] You can't move to the root or move the root.
@@ -364,15 +395,23 @@
 		</method>
 		<method name="move_before">
 			<return type="void" />
-			<argument index="0" name="item" type="Object" />
+			<argument index="0" name="item" type="TreeItem" />
 			<description>
 				Moves this TreeItem right before the given [code]item[/code].
 				[b]Note:[/b] You can't move to the root or move the root.
 			</description>
 		</method>
+		<method name="propagate_check">
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="emit_signal" type="bool" default="true" />
+			<description>
+				Propagates this item's checked status to its children and parents for the given [code]column[/code]. It is possible to process the items affected by this method call by connecting to [signal Tree.check_propagated_to_item]. The order that the items affected will be processed is as follows: the item invoking this method, children of that item, and finally parents of that item. If [code]emit_signal[/code] is [code]false[/code], then [signal Tree.check_propagated_to_item] will not be emitted.
+			</description>
+		</method>
 		<method name="remove_child">
 			<return type="void" />
-			<argument index="0" name="child" type="Object" />
+			<argument index="0" name="child" type="TreeItem" />
 			<description>
 				Removes the given child [TreeItem] and all its children from the [Tree]. Note that it doesn't free the item from memory, so it can be reused later. To completely remove a [TreeItem] use [method Object.free].
 			</description>
@@ -415,7 +454,7 @@
 			<argument index="0" name="column" type="int" />
 			<argument index="1" name="checked" type="bool" />
 			<description>
-				If [code]true[/code], the column [code]column[/code] is checked.
+				If [code]true[/code], the column [code]column[/code] is checked. Clears column's indeterminate status.
 			</description>
 		</method>
 		<method name="set_custom_as_button">
@@ -457,6 +496,15 @@
 			<argument index="0" name="column" type="int" />
 			<argument index="1" name="font" type="Font" />
 			<description>
+				Sets custom font used to draw text in the column [code]column[/code].
+			</description>
+		</method>
+		<method name="set_custom_font_size">
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="font_size" type="int" />
+			<description>
+				Sets custom font size used to draw text in the column [code]column[/code].
 			</description>
 		</method>
 		<method name="set_editable">
@@ -505,6 +553,15 @@
 			<argument index="1" name="region" type="Rect2" />
 			<description>
 				Sets the given column's icon's texture region.
+			</description>
+		</method>
+		<method name="set_indeterminate">
+			<return type="void" />
+			<argument index="0" name="column" type="int" />
+			<argument index="1" name="indeterminate" type="bool" />
+			<description>
+				If [code]true[/code], the column [code]column[/code] is marked indeterminate.
+				[b]Note:[/b] If set [code]true[/code] from [code]false[/code], then column is cleared of checked status.
 			</description>
 		</method>
 		<method name="set_language">
@@ -590,12 +647,12 @@
 				Sets the given column's text value.
 			</description>
 		</method>
-		<method name="set_text_align">
+		<method name="set_text_alignment">
 			<return type="void" />
 			<argument index="0" name="column" type="int" />
-			<argument index="1" name="text_align" type="int" enum="TreeItem.TextAlign" />
+			<argument index="1" name="text_alignment" type="int" enum="HorizontalAlignment" />
 			<description>
-				Sets the given column's text alignment. See [enum TextAlign] for possible values.
+				Sets the given column's text alignment. See [enum HorizontalAlignment] for possible values.
 			</description>
 		</method>
 		<method name="set_text_direction">
@@ -645,15 +702,6 @@
 			Cell contains an icon.
 		</constant>
 		<constant name="CELL_MODE_CUSTOM" value="4" enum="TreeCellMode">
-		</constant>
-		<constant name="ALIGN_LEFT" value="0" enum="TextAlign">
-			Align text to the left. See [code]set_text_align()[/code].
-		</constant>
-		<constant name="ALIGN_CENTER" value="1" enum="TextAlign">
-			Center text. See [code]set_text_align()[/code].
-		</constant>
-		<constant name="ALIGN_RIGHT" value="2" enum="TextAlign">
-			Align text to the right. See [code]set_text_align()[/code].
 		</constant>
 	</constants>
 </class>

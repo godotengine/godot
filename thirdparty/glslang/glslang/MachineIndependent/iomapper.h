@@ -52,7 +52,7 @@ namespace glslang {
 
 class TIntermediate;
 struct TVarEntryInfo {
-    int id;
+    long long id;
     TIntermSymbol* symbol;
     bool live;
     int newBinding;
@@ -87,6 +87,35 @@ struct TVarEntryInfo {
             return lPoints > rPoints;
         }
     };
+
+    struct TOrderByPriorityAndLive {
+        // ordering:
+        // 1) do live variables first
+        // 2) has both binding and set
+        // 3) has binding but no set
+        // 4) has no binding but set
+        // 5) has no binding and no set
+        inline bool operator()(const TVarEntryInfo& l, const TVarEntryInfo& r) {
+
+            const TQualifier& lq = l.symbol->getQualifier();
+            const TQualifier& rq = r.symbol->getQualifier();
+
+            // simple rules:
+            // has binding gives 2 points
+            // has set gives 1 point
+            // who has the most points is more important.
+            int lPoints = (lq.hasBinding() ? 2 : 0) + (lq.hasSet() ? 1 : 0);
+            int rPoints = (rq.hasBinding() ? 2 : 0) + (rq.hasSet() ? 1 : 0);
+
+            if (l.live != r.live)
+                return l.live > r.live;
+
+            if (lPoints != rPoints)
+                return lPoints > rPoints;
+
+            return l.id < r.id;
+        }
+    };
 };
 
 // Base class for shared TIoMapResolver services, used by several derivations.
@@ -107,8 +136,8 @@ public:
     void endCollect(EShLanguage) override {}
     void reserverResourceSlot(TVarEntryInfo& /*ent*/, TInfoSink& /*infoSink*/) override {}
     void reserverStorageSlot(TVarEntryInfo& /*ent*/, TInfoSink& /*infoSink*/) override {}
-    int getBaseBinding(TResourceType res, unsigned int set) const;
-    const std::vector<std::string>& getResourceSetBinding() const;
+    int getBaseBinding(EShLanguage stage, TResourceType res, unsigned int set) const;
+    const std::vector<std::string>& getResourceSetBinding(EShLanguage stage) const;
     virtual TResourceType getResourceType(const glslang::TType& type) = 0;
     bool doAutoBindingMapping() const;
     bool doAutoLocationMapping() const;
@@ -122,9 +151,11 @@ public:
     int resolveInOutLocation(EShLanguage stage, TVarEntryInfo& ent) override;
     int resolveInOutComponent(EShLanguage /*stage*/, TVarEntryInfo& ent) override;
     int resolveInOutIndex(EShLanguage /*stage*/, TVarEntryInfo& ent) override;
-    void addStage(EShLanguage stage) override {
-        if (stage < EShLangCount)
+    void addStage(EShLanguage stage, TIntermediate& stageIntermediate) override {
+        if (stage < EShLangCount) {
             stageMask[stage] = true;
+            stageIntermediates[stage] = &stageIntermediate;
+        }
     }
     uint32_t computeTypeLocationSize(const TType& type, EShLanguage stage);
 
@@ -139,6 +170,8 @@ protected:
     int nextInputLocation;
     int nextOutputLocation;
     bool stageMask[EShLangCount + 1];
+    const TIntermediate* stageIntermediates[EShLangCount];
+
     // Return descriptor set specific base if there is one, and the generic base otherwise.
     int selectBaseBinding(int base, int descriptorSetBase) const {
         return descriptorSetBase != -1 ? descriptorSetBase : base;

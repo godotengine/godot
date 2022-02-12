@@ -1317,8 +1317,8 @@ public:
 		}
 		for (int k = 0; k < m_faceNodeContacts.size(); ++k)
 		{
-			int i = indices[k];
-			btSoftBody::DeformableFaceNodeContact& c = m_faceNodeContacts[i];
+			int idx = indices[k];
+			btSoftBody::DeformableFaceNodeContact& c = m_faceNodeContacts[idx];
 			btSoftBody::Node* node = c.m_node;
 			btSoftBody::Face* face = c.m_face;
 			const btVector3& w = c.m_bary;

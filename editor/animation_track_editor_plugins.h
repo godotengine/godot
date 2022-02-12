@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -124,7 +124,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual void _gui_input(const Ref<InputEvent> &p_event) override;
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;

@@ -122,12 +122,18 @@ namespace GodotTools.IdeMessaging
             this.logger = logger;
 
             string projectMetadataDir = Path.Combine(godotProjectDir, ".godot", "mono", "metadata");
+            // FileSystemWatcher requires an existing directory
+            if (!Directory.Exists(projectMetadataDir)) {
+                // Check if the non hidden version exists
+                string nonHiddenProjectMetadataDir = Path.Combine(godotProjectDir, "godot", "mono", "metadata");
+                if (Directory.Exists(nonHiddenProjectMetadataDir)) {
+                    projectMetadataDir = nonHiddenProjectMetadataDir;
+                } else {
+                    Directory.CreateDirectory(projectMetadataDir);
+                }
+            }
 
             MetaFilePath = Path.Combine(projectMetadataDir, GodotIdeMetadata.DefaultFileName);
-
-            // FileSystemWatcher requires an existing directory
-            if (!Directory.Exists(projectMetadataDir))
-                Directory.CreateDirectory(projectMetadataDir);
 
             fsWatcher = new FileSystemWatcher(projectMetadataDir, GodotIdeMetadata.DefaultFileName);
         }

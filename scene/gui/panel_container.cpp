@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -58,6 +58,24 @@ Size2 PanelContainer::get_minimum_size() const {
 		ms += style->get_minimum_size();
 	}
 	return ms;
+}
+
+Vector<int> PanelContainer::get_allowed_size_flags_horizontal() const {
+	Vector<int> flags;
+	flags.append(SIZE_FILL);
+	flags.append(SIZE_SHRINK_BEGIN);
+	flags.append(SIZE_SHRINK_CENTER);
+	flags.append(SIZE_SHRINK_END);
+	return flags;
+}
+
+Vector<int> PanelContainer::get_allowed_size_flags_vertical() const {
+	Vector<int> flags;
+	flags.append(SIZE_FILL);
+	flags.append(SIZE_SHRINK_BEGIN);
+	flags.append(SIZE_SHRINK_CENTER);
+	flags.append(SIZE_SHRINK_END);
+	return flags;
 }
 
 void PanelContainer::_notification(int p_what) {

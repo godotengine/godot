@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -235,7 +235,7 @@ Scope::~Scope() {
 
 // ------------------------------------------------------------------------------------------------
 Parser::Parser(const TokenList &tokens, bool is_binary) :
-		corrupt(false), tokens(tokens), cursor(tokens.begin()), is_binary(is_binary) {
+		tokens(tokens), cursor(tokens.begin()), is_binary(is_binary) {
 	root = new_Scope(*this, true);
 	scopes.push_back(root);
 }
@@ -575,7 +575,7 @@ void ReadBinaryDataArray(char type, uint32_t count, const char *&data, const cha
 		std::copy(data, end, buff.begin());
 	} else if (encmode == 1) {
 		// zlib/deflate, next comes ZIP head (0x78 0x01)
-		// see http://www.ietf.org/rfc/rfc1950.txt
+		// see https://www.ietf.org/rfc/rfc1950.txt
 
 		z_stream zstream;
 		zstream.opaque = Z_NULL;
@@ -660,13 +660,6 @@ void ParseVectorDataArray(std::vector<Vector3> &out, const ElementPtr el) {
 						static_cast<real_t>(d[1]),
 						static_cast<real_t>(d[2])));
 			}
-			// for debugging
-			/*for ( size_t i = 0; i < out.size(); i++ ) {
-                aiVector3D vec3( out[ i ] );
-                std::stringstream stream;
-                stream << " vec3.x = " << vec3.x << " vec3.y = " << vec3.y << " vec3.z = " << vec3.z << std::endl;
-                DefaultLogger::get()->info( stream.str() );
-            }*/
 		} else if (type == 'f') {
 			const float *f = reinterpret_cast<const float *>(&buff[0]);
 			for (unsigned int i = 0; i < count3; ++i, f += 3) {

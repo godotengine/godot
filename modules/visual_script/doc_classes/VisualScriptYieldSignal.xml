@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="base_type" type="StringName" setter="set_base_type" getter="get_base_type" default="&amp;&quot;Object&quot;">
 			The base type to be used when [member call_mode] is set to [constant CALL_MODE_INSTANCE].

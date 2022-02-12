@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -183,8 +183,8 @@ public:
 	virtual String shader_get_code(RID p_shader) const = 0;
 	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const = 0;
 
-	virtual void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture) = 0;
-	virtual RID shader_get_default_texture_param(RID p_shader, const StringName &p_name) const = 0;
+	virtual void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index) = 0;
+	virtual RID shader_get_default_texture_param(RID p_shader, const StringName &p_name, int p_index) const = 0;
 	virtual Variant shader_get_param_default(RID p_material, const StringName &p_param) const = 0;
 
 	virtual RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const = 0;
@@ -366,7 +366,7 @@ public:
 	virtual void reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) = 0;
 	virtual void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) = 0;
 	virtual void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) = 0;
-	virtual void reflection_probe_set_lod_threshold(RID p_probe, float p_ratio) = 0;
+	virtual void reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio) = 0;
 
 	virtual AABB reflection_probe_get_aabb(RID p_probe) const = 0;
 	virtual RS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const = 0;
@@ -375,7 +375,7 @@ public:
 	virtual Vector3 reflection_probe_get_origin_offset(RID p_probe) const = 0;
 	virtual float reflection_probe_get_origin_max_distance(RID p_probe) const = 0;
 	virtual bool reflection_probe_renders_shadows(RID p_probe) const = 0;
-	virtual float reflection_probe_get_lod_threshold(RID p_probe) const = 0;
+	virtual float reflection_probe_get_mesh_lod_threshold(RID p_probe) const = 0;
 
 	virtual void base_update_dependency(RID p_base, DependencyTracker *p_instance) = 0;
 	virtual void skeleton_update_dependency(RID p_base, DependencyTracker *p_instance) = 0;
@@ -468,23 +468,23 @@ public:
 	virtual bool particles_get_emitting(RID p_particles) = 0;
 
 	virtual void particles_set_amount(RID p_particles, int p_amount) = 0;
-	virtual void particles_set_lifetime(RID p_particles, float p_lifetime) = 0;
+	virtual void particles_set_lifetime(RID p_particles, double p_lifetime) = 0;
 	virtual void particles_set_one_shot(RID p_particles, bool p_one_shot) = 0;
-	virtual void particles_set_pre_process_time(RID p_particles, float p_time) = 0;
-	virtual void particles_set_explosiveness_ratio(RID p_particles, float p_ratio) = 0;
-	virtual void particles_set_randomness_ratio(RID p_particles, float p_ratio) = 0;
+	virtual void particles_set_pre_process_time(RID p_particles, double p_time) = 0;
+	virtual void particles_set_explosiveness_ratio(RID p_particles, real_t p_ratio) = 0;
+	virtual void particles_set_randomness_ratio(RID p_particles, real_t p_ratio) = 0;
 	virtual void particles_set_custom_aabb(RID p_particles, const AABB &p_aabb) = 0;
-	virtual void particles_set_speed_scale(RID p_particles, float p_scale) = 0;
+	virtual void particles_set_speed_scale(RID p_particles, double p_scale) = 0;
 	virtual void particles_set_use_local_coordinates(RID p_particles, bool p_enable) = 0;
 	virtual void particles_set_process_material(RID p_particles, RID p_material) = 0;
 	virtual void particles_set_fixed_fps(RID p_particles, int p_fps) = 0;
 	virtual void particles_set_interpolate(RID p_particles, bool p_enable) = 0;
 	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable) = 0;
-	virtual void particles_set_collision_base_size(RID p_particles, float p_size) = 0;
+	virtual void particles_set_collision_base_size(RID p_particles, real_t p_size) = 0;
 
 	virtual void particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align) = 0;
 
-	virtual void particles_set_trails(RID p_particles, bool p_enable, float p_length) = 0;
+	virtual void particles_set_trails(RID p_particles, bool p_enable, double p_length) = 0;
 	virtual void particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses) = 0;
 
 	virtual void particles_restart(RID p_particles) = 0;
@@ -523,17 +523,30 @@ public:
 
 	virtual void particles_collision_set_collision_type(RID p_particles_collision, RS::ParticlesCollisionType p_type) = 0;
 	virtual void particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask) = 0;
-	virtual void particles_collision_set_sphere_radius(RID p_particles_collision, float p_radius) = 0; //for spheres
+	virtual void particles_collision_set_sphere_radius(RID p_particles_collision, real_t p_radius) = 0; //for spheres
 	virtual void particles_collision_set_box_extents(RID p_particles_collision, const Vector3 &p_extents) = 0; //for non-spheres
-	virtual void particles_collision_set_attractor_strength(RID p_particles_collision, float p_strength) = 0;
-	virtual void particles_collision_set_attractor_directionality(RID p_particles_collision, float p_directionality) = 0;
-	virtual void particles_collision_set_attractor_attenuation(RID p_particles_collision, float p_curve) = 0;
+	virtual void particles_collision_set_attractor_strength(RID p_particles_collision, real_t p_strength) = 0;
+	virtual void particles_collision_set_attractor_directionality(RID p_particles_collision, real_t p_directionality) = 0;
+	virtual void particles_collision_set_attractor_attenuation(RID p_particles_collision, real_t p_curve) = 0;
 	virtual void particles_collision_set_field_texture(RID p_particles_collision, RID p_texture) = 0; //for SDF and vector field, heightfield is dynamic
 	virtual void particles_collision_height_field_update(RID p_particles_collision) = 0; //for SDF and vector field
 	virtual void particles_collision_set_height_field_resolution(RID p_particles_collision, RS::ParticlesCollisionHeightfieldResolution p_resolution) = 0; //for SDF and vector field
 	virtual AABB particles_collision_get_aabb(RID p_particles_collision) const = 0;
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const = 0;
 	virtual RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const = 0;
+
+	/* FOG VOLUMES */
+
+	virtual RID fog_volume_allocate() = 0;
+	virtual void fog_volume_initialize(RID p_rid) = 0;
+
+	virtual void fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) = 0;
+	virtual void fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents) = 0;
+	virtual void fog_volume_set_material(RID p_fog_volume, RID p_material) = 0;
+	virtual AABB fog_volume_get_aabb(RID p_fog_volume) const = 0;
+	virtual RS::FogVolumeShape fog_volume_get_shape(RID p_fog_volume) const = 0;
+
+	/* VISIBILITY NOTIFIER */
 
 	virtual RID visibility_notifier_allocate() = 0;
 	virtual void visibility_notifier_initialize(RID p_notifier) = 0;
@@ -607,6 +620,7 @@ public:
 	virtual uint64_t get_rendering_info(RS::RenderingInfo p_info) = 0;
 	virtual String get_video_adapter_name() const = 0;
 	virtual String get_video_adapter_vendor() const = 0;
+	virtual RenderingDevice::DeviceType get_video_adapter_type() const = 0;
 
 	static RendererStorage *base_singleton;
 

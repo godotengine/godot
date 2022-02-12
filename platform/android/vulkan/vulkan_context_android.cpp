@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,11 @@
 
 #include "vulkan_context_android.h"
 
-#include <vulkan/vulkan_android.h>
+#ifdef USE_VOLK
+#include <volk.h>
+#else
+#include <vulkan/vulkan.h>
+#endif
 
 const char *VulkanContextAndroid::_get_platform_surface_extension() const {
 	return VK_KHR_ANDROID_SURFACE_EXTENSION_NAME;
@@ -44,7 +48,7 @@ int VulkanContextAndroid::window_create(ANativeWindow *p_window, DisplayServer::
 	createInfo.window = p_window;
 
 	VkSurfaceKHR surface;
-	VkResult err = vkCreateAndroidSurfaceKHR(_get_instance(), &createInfo, nullptr, &surface);
+	VkResult err = vkCreateAndroidSurfaceKHR(get_instance(), &createInfo, nullptr, &surface);
 	if (err != VK_SUCCESS) {
 		ERR_FAIL_V_MSG(-1, "vkCreateAndroidSurfaceKHR failed with error " + itos(err));
 	}

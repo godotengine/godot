@@ -5,13 +5,7 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
- *
- *  This file is provided under the Apache License 2.0, or the
- *  GNU General Public License v2.0 or later.
- *
- *  **********
- *  Apache License 2.0:
+ *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -24,56 +18,55 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  **********
- *
- *  **********
- *  GNU General Public License v2.0 or later:
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- *  **********
  */
 #ifndef MBEDTLS_OID_H
 #define MBEDTLS_OID_H
 
 #if !defined(MBEDTLS_CONFIG_FILE)
-#include "config.h"
+#include "mbedtls/config.h"
 #else
 #include MBEDTLS_CONFIG_FILE
 #endif
 
-#include "asn1.h"
-#include "pk.h"
+#include "mbedtls/asn1.h"
+#include "mbedtls/pk.h"
 
 #include <stddef.h>
 
 #if defined(MBEDTLS_CIPHER_C)
-#include "cipher.h"
+#include "mbedtls/cipher.h"
 #endif
 
 #if defined(MBEDTLS_MD_C)
-#include "md.h"
+#include "mbedtls/md.h"
 #endif
 
-#if defined(MBEDTLS_X509_USE_C) || defined(MBEDTLS_X509_CREATE_C)
-#include "x509.h"
-#endif
+/** OID is not found. */
+#define MBEDTLS_ERR_OID_NOT_FOUND                         -0x002E
+/** output buffer is too small */
+#define MBEDTLS_ERR_OID_BUF_TOO_SMALL                     -0x000B
 
-#define MBEDTLS_ERR_OID_NOT_FOUND                         -0x002E  /**< OID is not found. */
-#define MBEDTLS_ERR_OID_BUF_TOO_SMALL                     -0x000B  /**< output buffer is too small */
+/* This is for the benefit of X.509, but defined here in order to avoid
+ * having a "backwards" include of x.509.h here */
+/*
+ * X.509 extension types (internal, arbitrary values for bitsets)
+ */
+#define MBEDTLS_OID_X509_EXT_AUTHORITY_KEY_IDENTIFIER    (1 << 0)
+#define MBEDTLS_OID_X509_EXT_SUBJECT_KEY_IDENTIFIER      (1 << 1)
+#define MBEDTLS_OID_X509_EXT_KEY_USAGE                   (1 << 2)
+#define MBEDTLS_OID_X509_EXT_CERTIFICATE_POLICIES        (1 << 3)
+#define MBEDTLS_OID_X509_EXT_POLICY_MAPPINGS             (1 << 4)
+#define MBEDTLS_OID_X509_EXT_SUBJECT_ALT_NAME            (1 << 5)
+#define MBEDTLS_OID_X509_EXT_ISSUER_ALT_NAME             (1 << 6)
+#define MBEDTLS_OID_X509_EXT_SUBJECT_DIRECTORY_ATTRS     (1 << 7)
+#define MBEDTLS_OID_X509_EXT_BASIC_CONSTRAINTS           (1 << 8)
+#define MBEDTLS_OID_X509_EXT_NAME_CONSTRAINTS            (1 << 9)
+#define MBEDTLS_OID_X509_EXT_POLICY_CONSTRAINTS          (1 << 10)
+#define MBEDTLS_OID_X509_EXT_EXTENDED_KEY_USAGE          (1 << 11)
+#define MBEDTLS_OID_X509_EXT_CRL_DISTRIBUTION_POINTS     (1 << 12)
+#define MBEDTLS_OID_X509_EXT_INIHIBIT_ANYPOLICY          (1 << 13)
+#define MBEDTLS_OID_X509_EXT_FRESHEST_CRL                (1 << 14)
+#define MBEDTLS_OID_X509_EXT_NS_CERT_TYPE                (1 << 16)
 
 /*
  * Top level OID tuples
@@ -129,7 +122,8 @@
  * { iso(1) identified-organization(3) dod(6) internet(1)
  *                      security(5) mechanisms(5) pkix(7) }
  */
-#define MBEDTLS_OID_PKIX                        MBEDTLS_OID_ISO_IDENTIFIED_ORG MBEDTLS_OID_ORG_DOD "\x01\x05\x05\x07"
+#define MBEDTLS_OID_INTERNET                    MBEDTLS_OID_ISO_IDENTIFIED_ORG MBEDTLS_OID_ORG_DOD "\x01"
+#define MBEDTLS_OID_PKIX                        MBEDTLS_OID_INTERNET "\x05\x05\x07"
 
 /*
  * Arc for standard naming attributes
@@ -175,6 +169,11 @@
 #define MBEDTLS_OID_FRESHEST_CRL                MBEDTLS_OID_ID_CE "\x2E" /**< id-ce-freshestCRL OBJECT IDENTIFIER ::=  { id-ce 46 } */
 
 /*
+ * Certificate policies
+ */
+#define MBEDTLS_OID_ANY_POLICY              MBEDTLS_OID_CERTIFICATE_POLICIES "\x00" /**< anyPolicy OBJECT IDENTIFIER ::= { id-ce-certificatePolicies 0 } */
+
+/*
  * Netscape certificate extensions
  */
 #define MBEDTLS_OID_NS_CERT                 MBEDTLS_OID_NETSCAPE "\x01"
@@ -207,6 +206,16 @@
 #define MBEDTLS_OID_EMAIL_PROTECTION            MBEDTLS_OID_KP "\x04" /**< id-kp-emailProtection OBJECT IDENTIFIER ::= { id-kp 4 } */
 #define MBEDTLS_OID_TIME_STAMPING               MBEDTLS_OID_KP "\x08" /**< id-kp-timeStamping OBJECT IDENTIFIER ::= { id-kp 8 } */
 #define MBEDTLS_OID_OCSP_SIGNING                MBEDTLS_OID_KP "\x09" /**< id-kp-OCSPSigning OBJECT IDENTIFIER ::= { id-kp 9 } */
+
+/**
+ * Wi-SUN Alliance Field Area Network
+ * { iso(1) identified-organization(3) dod(6) internet(1)
+ *                      private(4) enterprise(1) WiSUN(45605) FieldAreaNetwork(1) }
+ */
+#define MBEDTLS_OID_WISUN_FAN                   MBEDTLS_OID_INTERNET "\x04\x01\x82\xe4\x25\x01"
+
+#define MBEDTLS_OID_ON                          MBEDTLS_OID_PKIX "\x08" /**< id-on OBJECT IDENTIFIER ::= { id-pkix 8 } */
+#define MBEDTLS_OID_ON_HW_MODULE_NAME           MBEDTLS_OID_ON "\x04" /**< id-on-hardwareModuleName OBJECT IDENTIFIER ::= { id-on 4 } */
 
 /*
  * PKCS definition OIDs
@@ -252,6 +261,8 @@
 #define MBEDTLS_OID_DIGEST_ALG_SHA384           MBEDTLS_OID_NIST_ALG "\x02\x02" /**< id-sha384 OBJECT IDENTIFIER ::= { joint-iso-itu-t(2) country(16) us(840) organization(1) gov(101) csor(3) nistalgorithm(4) hashalgs(2) 2 } */
 
 #define MBEDTLS_OID_DIGEST_ALG_SHA512           MBEDTLS_OID_NIST_ALG "\x02\x03" /**< id-mbedtls_sha512 OBJECT IDENTIFIER ::= { joint-iso-itu-t(2) country(16) us(840) organization(1) gov(101) csor(3) nistalgorithm(4) hashalgs(2) 3 } */
+
+#define MBEDTLS_OID_DIGEST_ALG_RIPEMD160        MBEDTLS_OID_TELETRUST "\x03\x02\x01" /**< id-ripemd160 OBJECT IDENTIFIER :: { iso(1) identified-organization(3) teletrust(36) algorithm(3) hashAlgorithm(2) ripemd160(1) } */
 
 #define MBEDTLS_OID_HMAC_SHA1                   MBEDTLS_OID_RSA_COMPANY "\x02\x07" /**< id-hmacWithSHA1 OBJECT IDENTIFIER ::= { iso(1) member-body(2) us(840) rsadsi(113549) digestAlgorithm(2) 7 } */
 
@@ -449,7 +460,6 @@ typedef struct mbedtls_oid_descriptor_t
  */
 int mbedtls_oid_get_numeric_string( char *buf, size_t size, const mbedtls_asn1_buf *oid );
 
-#if defined(MBEDTLS_X509_USE_C) || defined(MBEDTLS_X509_CREATE_C)
 /**
  * \brief          Translate an X.509 extension OID into local values
  *
@@ -459,7 +469,6 @@ int mbedtls_oid_get_numeric_string( char *buf, size_t size, const mbedtls_asn1_b
  * \return         0 if successful, or MBEDTLS_ERR_OID_NOT_FOUND
  */
 int mbedtls_oid_get_x509_ext_type( const mbedtls_asn1_buf *oid, int *ext_type );
-#endif
 
 /**
  * \brief          Translate an X.509 attribute type OID into the short name
@@ -584,6 +593,16 @@ int mbedtls_oid_get_md_hmac( const mbedtls_asn1_buf *oid, mbedtls_md_type_t *md_
  * \return         0 if successful, or MBEDTLS_ERR_OID_NOT_FOUND
  */
 int mbedtls_oid_get_extended_key_usage( const mbedtls_asn1_buf *oid, const char **desc );
+
+/**
+ * \brief          Translate certificate policies OID into description
+ *
+ * \param oid      OID to use
+ * \param desc     place to store string pointer
+ *
+ * \return         0 if successful, or MBEDTLS_ERR_OID_NOT_FOUND
+ */
+int mbedtls_oid_get_certificate_policies( const mbedtls_asn1_buf *oid, const char **desc );
 
 /**
  * \brief          Translate md_type into hash algorithm OID

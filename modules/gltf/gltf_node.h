@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,6 @@
 class GLTFNode : public Resource {
 	GDCLASS(GLTFNode, Resource);
 	friend class GLTFDocument;
-	friend class PackedSceneGLTF;
 
 private:
 	// matrices need to be transformed to this
@@ -49,7 +48,7 @@ private:
 	GLTFSkinIndex skin = -1;
 	GLTFSkeletonIndex skeleton = -1;
 	bool joint = false;
-	Vector3 translation;
+	Vector3 position;
 	Quaternion rotation;
 	Vector3 scale = Vector3(1, 1, 1);
 	Vector<int> children;
@@ -83,8 +82,8 @@ public:
 	bool get_joint();
 	void set_joint(bool p_joint);
 
-	Vector3 get_translation();
-	void set_translation(Vector3 p_translation);
+	Vector3 get_position();
+	void set_position(Vector3 p_position);
 
 	Quaternion get_rotation();
 	void set_rotation(Quaternion p_rotation);

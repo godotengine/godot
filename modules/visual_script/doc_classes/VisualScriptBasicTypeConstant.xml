@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="basic_type" type="int" setter="set_basic_type" getter="get_basic_type" enum="Variant.Type" default="0">
 			The type to get the constant from.
@@ -18,6 +16,4 @@
 			The name of the constant to return.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

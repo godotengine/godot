@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -97,7 +97,7 @@ void NinePatchRect::set_texture(const Ref<Texture2D> &p_tex) {
 	if (texture.is_valid())
 		texture->set_flags(texture->get_flags()&(~Texture::FLAG_REPEAT)); //remove repeat from texture, it looks bad in sprites
 	*/
-	minimum_size_changed();
+	update_minimum_size();
 	emit_signal(SceneStringNames::get_singleton()->texture_changed);
 }
 
@@ -109,7 +109,7 @@ void NinePatchRect::set_patch_margin(Side p_side, int p_size) {
 	ERR_FAIL_INDEX((int)p_side, 4);
 	margin[p_side] = p_size;
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 int NinePatchRect::get_patch_margin(Side p_side) const {

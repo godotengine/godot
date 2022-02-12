@@ -522,7 +522,7 @@ hb_ot_tags_to_script_and_language (hb_tag_t       script_tag,
       unsigned char *buf;
       const char *lang_str = hb_language_to_string (*language);
       size_t len = strlen (lang_str);
-      buf = (unsigned char *) malloc (len + 16);
+      buf = (unsigned char *) hb_malloc (len + 16);
       if (unlikely (!buf))
       {
 	*language = nullptr;
@@ -544,7 +544,7 @@ hb_ot_tags_to_script_and_language (hb_tag_t       script_tag,
 	for (shift = 28; shift >= 0; shift -= 4)
 	  buf[len++] = TOHEX (script_tag >> shift);
 	*language = hb_language_from_string ((char *) buf, len);
-	free (buf);
+	hb_free (buf);
       }
     }
   }

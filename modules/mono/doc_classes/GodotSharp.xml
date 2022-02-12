@@ -11,66 +11,55 @@
 	</tutorials>
 	<methods>
 		<method name="attach_thread">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Attaches the current thread to the Mono runtime.
 			</description>
 		</method>
 		<method name="detach_thread">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Detaches the current thread from the Mono runtime.
 			</description>
 		</method>
 		<method name="get_domain_id">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the current MonoDomain ID.
 				[b]Note:[/b] The Mono runtime must be initialized for this method to work (use [method is_runtime_initialized] to check). If the Mono runtime isn't initialized at the time this method is called, the engine will crash.
 			</description>
 		</method>
 		<method name="get_scripts_domain_id">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the scripts MonoDomain's ID. This will be the same MonoDomain ID as [method get_domain_id], unless the scripts domain isn't loaded.
 				[b]Note:[/b] The Mono runtime must be initialized for this method to work (use [method is_runtime_initialized] to check). If the Mono runtime isn't initialized at the time this method is called, the engine will crash.
 			</description>
 		</method>
 		<method name="is_domain_finalizing_for_unload">
-			<return type="bool">
-			</return>
-			<argument index="0" name="domain_id" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="domain_id" type="int" />
 			<description>
 				Returns [code]true[/code] if the domain is being finalized, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="is_runtime_initialized">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the Mono runtime is initialized, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="is_runtime_shutting_down">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the Mono runtime is shutting down, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="is_scripts_domain_loaded">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the scripts domain is loaded, [code]false[/code] otherwise.
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,8 +37,6 @@
 #include "servers/rendering_server.h"
 
 /**
-	@author Bastiaan Olij <mux213@gmail.com>
-
 	The camera server is a singleton object that gives access to the various
 	camera feeds that can be used as the background for our environment.
 **/
@@ -103,10 +101,6 @@ public:
 	void set_RGB_img(const Ref<Image> &p_rgb_img);
 	void set_YCbCr_img(const Ref<Image> &p_ycbcr_img);
 	void set_YCbCr_imgs(const Ref<Image> &p_y_img, const Ref<Image> &p_cbcr_img);
-// FIXME: Disabled during Vulkan refactoring, should be ported.
-#if 0
-	void allocate_texture(int p_width, int p_height, Image::Format p_format, RenderingServer::TextureType p_texture_type, FeedDataType p_data_type);
-#endif
 
 	virtual bool activate_feed();
 	virtual void deactivate_feed();
@@ -115,4 +109,4 @@ public:
 VARIANT_ENUM_CAST(CameraFeed::FeedDataType);
 VARIANT_ENUM_CAST(CameraFeed::FeedPosition);
 
-#endif /* !CAMERA_FEED_H */
+#endif // CAMERA_FEED_H

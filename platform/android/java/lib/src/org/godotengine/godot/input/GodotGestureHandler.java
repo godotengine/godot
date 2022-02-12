@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,7 +75,7 @@ public class GodotGestureHandler extends GestureDetector.SimpleOnGestureListener
 		final int x = Math.round(event.getX());
 		final int y = Math.round(event.getY());
 		final int buttonMask = event.getButtonState();
-		queueEvent(() -> GodotLib.doubleTap(buttonMask, x, y));
+		GodotLib.doubleTap(buttonMask, x, y);
 		return true;
 	}
 
@@ -84,7 +84,7 @@ public class GodotGestureHandler extends GestureDetector.SimpleOnGestureListener
 		//Log.i("GodotGesture", "onScroll");
 		final int x = Math.round(distanceX);
 		final int y = Math.round(distanceY);
-		queueEvent(() -> GodotLib.scroll(x, y));
+		GodotLib.scroll(x, y);
 		return true;
 	}
 

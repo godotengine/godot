@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -129,6 +129,8 @@ public:
 
 	bool is_in_contact() const;
 
+	Node3D *get_contact_body() const;
+
 	void set_roll_influence(real_t p_value);
 	real_t get_roll_influence() const;
 
@@ -150,8 +152,8 @@ public:
 	VehicleWheel3D();
 };
 
-class VehicleBody3D : public RigidBody3D {
-	GDCLASS(VehicleBody3D, RigidBody3D);
+class VehicleBody3D : public RigidDynamicBody3D {
+	GDCLASS(VehicleBody3D, RigidDynamicBody3D);
 
 	real_t engine_force = 0.0;
 	real_t brake = 0.0;
@@ -192,7 +194,8 @@ class VehicleBody3D : public RigidBody3D {
 
 	static void _bind_methods();
 
-	void _direct_state_changed(Object *p_state) override;
+	static void _body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state);
+	virtual void _body_state_changed(PhysicsDirectBodyState3D *p_state) override;
 
 public:
 	void set_engine_force(real_t p_engine_force);

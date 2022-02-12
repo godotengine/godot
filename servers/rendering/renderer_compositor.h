@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,8 @@
 class RendererSceneRender;
 struct BlitToScreen {
 	RID render_target;
-	Rect2i rect;
+	Rect2 src_rect = Rect2(0.0, 0.0, 1.0, 1.0);
+	Rect2i dst_rect;
 
 	struct {
 		bool use_layer = false;
@@ -66,6 +67,7 @@ private:
 
 protected:
 	static RendererCompositor *(*_create_func)();
+	bool back_end = false;
 
 public:
 	static RendererCompositor *create();
@@ -85,9 +87,9 @@ public:
 	virtual void end_frame(bool p_swap_buffers) = 0;
 	virtual void finalize() = 0;
 	virtual uint64_t get_frame_number() const = 0;
-	virtual float get_frame_delta_time() const = 0;
+	virtual double get_frame_delta_time() const = 0;
 
-	virtual bool is_low_end() const = 0;
+	_FORCE_INLINE_ virtual bool is_low_end() const { return back_end; };
 	virtual bool is_xr_enabled() const;
 
 	RendererCompositor();

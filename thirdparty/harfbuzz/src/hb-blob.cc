@@ -72,14 +72,52 @@ hb_blob_create (const char        *data,
 		void              *user_data,
 		hb_destroy_func_t  destroy)
 {
-  hb_blob_t *blob;
-
-  if (!length ||
-      length >= 1u << 31 ||
-      !(blob = hb_object_create<hb_blob_t> ())) {
+  if (!length)
+  {
     if (destroy)
       destroy (user_data);
     return hb_blob_get_empty ();
+  }
+
+  hb_blob_t *blob = hb_blob_create_or_fail (data, length, mode,
+					    user_data, destroy);
+  return likely (blob) ? blob : hb_blob_get_empty ();
+}
+
+/**
+ * hb_blob_create_or_fail: (skip)
+ * @data: Pointer to blob data.
+ * @length: Length of @data in bytes.
+ * @mode: Memory mode for @data.
+ * @user_data: Data parameter to pass to @destroy.
+ * @destroy: (nullable): Callback to call when @data is not needed anymore.
+ *
+ * Creates a new "blob" object wrapping @data.  The @mode parameter is used
+ * to negotiate ownership and lifecycle of @data.
+ *
+ * Note that this function returns a freshly-allocated empty blob even if @length
+ * is zero. This is in contrast to hb_blob_create(), which returns the singleton
+ * empty blob (as returned by hb_blob_get_empty()) if @length is zero.
+ *
+ * Return value: New blob, or %NULL if failed.  Destroy with hb_blob_destroy().
+ *
+ * Since: 2.8.2
+ **/
+hb_blob_t *
+hb_blob_create_or_fail (const char        *data,
+			unsigned int       length,
+			hb_memory_mode_t   mode,
+			void              *user_data,
+			hb_destroy_func_t  destroy)
+{
+  hb_blob_t *blob;
+
+  if (length >= 1u << 31 ||
+      !(blob = hb_object_create<hb_blob_t> ()))
+  {
+    if (destroy)
+      destroy (user_data);
+    return nullptr;
   }
 
   blob->data = data;
@@ -91,9 +129,10 @@ hb_blob_create (const char        *data,
 
   if (blob->mode == HB_MEMORY_MODE_DUPLICATE) {
     blob->mode = HB_MEMORY_MODE_READONLY;
-    if (!blob->try_make_writable ()) {
+    if (!blob->try_make_writable ())
+    {
       hb_blob_destroy (blob);
-      return hb_blob_get_empty ();
+      return nullptr;
     }
   }
 
@@ -226,7 +265,7 @@ hb_blob_destroy (hb_blob_t *blob)
 
   blob->fini_shallow ();
 
-  free (blob);
+  hb_free (blob);
 }
 
 /**
@@ -452,7 +491,7 @@ hb_blob_t::try_make_writable ()
 
   char *new_data;
 
-  new_data = (char *) malloc (this->length);
+  new_data = (char *) hb_malloc (this->length);
   if (unlikely (!new_data))
     return false;
 
@@ -463,7 +502,7 @@ hb_blob_t::try_make_writable ()
   this->mode = HB_MEMORY_MODE_WRITABLE;
   this->data = new_data;
   this->user_data = new_data;
-  this->destroy = free;
+  this->destroy = hb_free;
 
   return true;
 }
@@ -517,7 +556,7 @@ _hb_mapped_file_destroy (void *file_)
   assert (0); // If we don't have mmap we shouldn't reach here
 #endif
 
-  free (file);
+  hb_free (file);
 }
 #endif
 
@@ -528,7 +567,7 @@ _open_resource_fork (const char *file_name, hb_mapped_file_t *file)
   size_t name_len = strlen (file_name);
   size_t len = name_len + sizeof (_PATH_RSRCFORKSPEC);
 
-  char *rsrc_name = (char *) malloc (len);
+  char *rsrc_name = (char *) hb_malloc (len);
   if (unlikely (!rsrc_name)) return -1;
 
   strncpy (rsrc_name, file_name, name_len);
@@ -536,7 +575,7 @@ _open_resource_fork (const char *file_name, hb_mapped_file_t *file)
 	   sizeof (_PATH_RSRCFORKSPEC) - 1);
 
   int fd = open (rsrc_name, O_RDONLY | O_BINARY, 0);
-  free (rsrc_name);
+  hb_free (rsrc_name);
 
   if (fd != -1)
   {
@@ -561,17 +600,37 @@ _open_resource_fork (const char *file_name, hb_mapped_file_t *file)
  * Creates a new blob containing the data from the
  * specified binary font file.
  *
- * Returns: An #hb_blob_t pointer with the content of the file
+ * Returns: An #hb_blob_t pointer with the content of the file,
+ * or hb_blob_get_empty() if failed.
  *
  * Since: 1.7.7
  **/
 hb_blob_t *
 hb_blob_create_from_file (const char *file_name)
 {
+  hb_blob_t *blob = hb_blob_create_from_file_or_fail (file_name);
+  return likely (blob) ? blob : hb_blob_get_empty ();
+}
+
+/**
+ * hb_blob_create_from_file_or_fail:
+ * @file_name: A font filename
+ *
+ * Creates a new blob containing the data from the
+ * specified binary font file.
+ *
+ * Returns: An #hb_blob_t pointer with the content of the file,
+ * or %NULL if failed.
+ *
+ * Since: 2.8.2
+ **/
+hb_blob_t *
+hb_blob_create_from_file_or_fail (const char *file_name)
+{
   /* Adopted from glib's gmappedfile.c with Matthias Clasen and
      Allison Lortie permission but changed a lot to suit our need. */
 #if defined(HAVE_MMAP) && !defined(HB_NO_MMAP)
-  hb_mapped_file_t *file = (hb_mapped_file_t *) calloc (1, sizeof (hb_mapped_file_t));
+  hb_mapped_file_t *file = (hb_mapped_file_t *) hb_calloc (1, sizeof (hb_mapped_file_t));
   if (unlikely (!file)) return hb_blob_get_empty ();
 
   int fd = open (file_name, O_RDONLY | O_BINARY, 0);
@@ -601,22 +660,22 @@ hb_blob_create_from_file (const char *file_name)
 
   close (fd);
 
-  return hb_blob_create (file->contents, file->length,
-			 HB_MEMORY_MODE_READONLY_MAY_MAKE_WRITABLE, (void *) file,
-			 (hb_destroy_func_t) _hb_mapped_file_destroy);
+  return hb_blob_create_or_fail (file->contents, file->length,
+				 HB_MEMORY_MODE_READONLY_MAY_MAKE_WRITABLE, (void *) file,
+				 (hb_destroy_func_t) _hb_mapped_file_destroy);
 
 fail:
   close (fd);
 fail_without_close:
-  free (file);
+  hb_free (file);
 
 #elif defined(_WIN32) && !defined(HB_NO_MMAP)
-  hb_mapped_file_t *file = (hb_mapped_file_t *) calloc (1, sizeof (hb_mapped_file_t));
+  hb_mapped_file_t *file = (hb_mapped_file_t *) hb_calloc (1, sizeof (hb_mapped_file_t));
   if (unlikely (!file)) return hb_blob_get_empty ();
 
   HANDLE fd;
   unsigned int size = strlen (file_name) + 1;
-  wchar_t * wchar_file_name = (wchar_t *) malloc (sizeof (wchar_t) * size);
+  wchar_t * wchar_file_name = (wchar_t *) hb_malloc (sizeof (wchar_t) * size);
   if (unlikely (!wchar_file_name)) goto fail_without_close;
   mbstowcs (wchar_file_name, file_name, size);
 #if !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
@@ -636,7 +695,7 @@ fail_without_close:
 		    OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL|FILE_FLAG_OVERLAPPED,
 		    nullptr);
 #endif
-  free (wchar_file_name);
+  hb_free (wchar_file_name);
 
   if (unlikely (fd == INVALID_HANDLE_VALUE)) goto fail_without_close;
 
@@ -661,22 +720,22 @@ fail_without_close:
   if (unlikely (!file->contents)) goto fail;
 
   CloseHandle (fd);
-  return hb_blob_create (file->contents, file->length,
-			 HB_MEMORY_MODE_READONLY_MAY_MAKE_WRITABLE, (void *) file,
-			 (hb_destroy_func_t) _hb_mapped_file_destroy);
+  return hb_blob_create_or_fail (file->contents, file->length,
+				 HB_MEMORY_MODE_READONLY_MAY_MAKE_WRITABLE, (void *) file,
+				 (hb_destroy_func_t) _hb_mapped_file_destroy);
 
 fail:
   CloseHandle (fd);
 fail_without_close:
-  free (file);
+  hb_free (file);
 
 #endif
 
   /* The following tries to read a file without knowing its size beforehand
      It's used as a fallback for systems without mmap or to read from pipes */
   unsigned long len = 0, allocated = BUFSIZ * 16;
-  char *data = (char *) malloc (allocated);
-  if (unlikely (!data)) return hb_blob_get_empty ();
+  char *data = (char *) hb_malloc (allocated);
+  if (unlikely (!data)) return nullptr;
 
   FILE *fp = fopen (file_name, "rb");
   if (unlikely (!fp)) goto fread_fail_without_close;
@@ -689,7 +748,7 @@ fail_without_close:
       /* Don't allocate and go more than ~536MB, our mmap reader still
 	 can cover files like that but lets limit our fallback reader */
       if (unlikely (allocated > (2 << 28))) goto fread_fail;
-      char *new_data = (char *) realloc (data, allocated);
+      char *new_data = (char *) hb_realloc (data, allocated);
       if (unlikely (!new_data)) goto fread_fail;
       data = new_data;
     }
@@ -706,13 +765,13 @@ fail_without_close:
   }
 	fclose (fp);
 
-  return hb_blob_create (data, len, HB_MEMORY_MODE_WRITABLE, data,
-			 (hb_destroy_func_t) free);
+  return hb_blob_create_or_fail (data, len, HB_MEMORY_MODE_WRITABLE, data,
+				 (hb_destroy_func_t) hb_free);
 
 fread_fail:
   fclose (fp);
 fread_fail_without_close:
-  free (data);
-  return hb_blob_get_empty ();
+  hb_free (data);
+  return nullptr;
 }
 #endif /* !HB_NO_OPEN */
