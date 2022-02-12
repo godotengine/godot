@@ -204,6 +204,10 @@ void DisplayServer::delete_sub_window(WindowID p_id) {
 	ERR_FAIL_MSG("Sub-windows not supported by this display server.");
 }
 
+void DisplayServer::window_set_exclusive(WindowID p_window, bool p_exclusive) {
+	// Do nothing, if not supported.
+}
+
 void DisplayServer::window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window) {
 	ERR_FAIL_MSG("Mouse passthrough not supported by this display server.");
 }
@@ -436,6 +440,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("window_can_draw", "window_id"), &DisplayServer::window_can_draw, DEFVAL(MAIN_WINDOW_ID));
 
 	ClassDB::bind_method(D_METHOD("window_set_transient", "window_id", "parent_window_id"), &DisplayServer::window_set_transient);
+	ClassDB::bind_method(D_METHOD("window_set_exclusive", "window_id", "exclusive"), &DisplayServer::window_set_exclusive);
 
 	ClassDB::bind_method(D_METHOD("window_set_ime_active", "active", "window_id"), &DisplayServer::window_set_ime_active, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_set_ime_position", "position", "window_id"), &DisplayServer::window_set_ime_position, DEFVAL(MAIN_WINDOW_ID));

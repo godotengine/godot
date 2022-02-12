@@ -830,6 +830,23 @@ void DisplayServerWindows::window_set_position(const Point2i &p_position, Window
 	_update_real_mouse_position(p_window);
 }
 
+void DisplayServerWindows::window_set_exclusive(WindowID p_window, bool p_exclusive) {
+	_THREAD_SAFE_METHOD_
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+	if (wd.exclusive != p_exclusive) {
+		wd.exclusive = p_exclusive;
+		if (wd.transient_parent != INVALID_WINDOW_ID) {
+			WindowData &wd_parent = windows[wd.transient_parent];
+			if (wd.exclusive) {
+				SetWindowLongPtr(wd.hWnd, GWLP_HWNDPARENT, (LONG_PTR)wd_parent.hWnd);
+			} else {
+				SetWindowLongPtr(wd.hWnd, GWLP_HWNDPARENT, (LONG_PTR) nullptr);
+			}
+		}
+	}
+}
+
 void DisplayServerWindows::window_set_transient(WindowID p_window, WindowID p_parent) {
 	_THREAD_SAFE_METHOD_
 
@@ -852,7 +869,9 @@ void DisplayServerWindows::window_set_transient(WindowID p_window, WindowID p_pa
 		wd_window.transient_parent = INVALID_WINDOW_ID;
 		wd_parent.transient_children.erase(p_window);
 
-		SetWindowLongPtr(wd_window.hWnd, GWLP_HWNDPARENT, (LONG_PTR) nullptr);
+		if (wd_window.exclusive) {
+			SetWindowLongPtr(wd_window.hWnd, GWLP_HWNDPARENT, (LONG_PTR) nullptr);
+		}
 	} else {
 		ERR_FAIL_COND(!windows.has(p_parent));
 		ERR_FAIL_COND_MSG(wd_window.transient_parent != INVALID_WINDOW_ID, "Window already has a transient parent");
@@ -861,7 +880,9 @@ void DisplayServerWindows::window_set_transient(WindowID p_window, WindowID p_pa
 		wd_window.transient_parent = p_parent;
 		wd_parent.transient_children.insert(p_window);
 
-		SetWindowLongPtr(wd_window.hWnd, GWLP_HWNDPARENT, (LONG_PTR)wd_parent.hWnd);
+		if (wd_window.exclusive) {
+			SetWindowLongPtr(wd_window.hWnd, GWLP_HWNDPARENT, (LONG_PTR)wd_parent.hWnd);
+		}
 	}
 }
 

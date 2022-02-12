@@ -644,6 +644,16 @@
 			<description>
 			</description>
 		</method>
+		<method name="window_set_exclusive">
+			<return type="void" />
+			<argument index="0" name="window_id" type="int" />
+			<argument index="1" name="exclusive" type="bool" />
+			<description>
+				If set to [code]true[/code], this window will always stay on top of its parent window, parent window will ignore input while this window is opened.
+				[b]Note:[/b] On macOS, exclusive windows are confined to the same space (virtual desktop or screen) as the parent window.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
 		<method name="window_set_flag">
 			<return type="void" />
 			<argument index="0" name="flag" type="int" enum="DisplayServer.WindowFlags" />
