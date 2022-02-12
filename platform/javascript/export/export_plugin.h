@@ -31,17 +31,19 @@
 #ifndef JAVASCRIPT_EXPORT_PLUGIN_H
 #define JAVASCRIPT_EXPORT_PLUGIN_H
 
+#include "core/config/project_settings.h"
 #include "core/io/image_loader.h"
 #include "core/io/stream_peer_ssl.h"
 #include "core/io/tcp_server.h"
 #include "core/io/zip_io.h"
 #include "editor/editor_export.h"
-#include "editor/editor_node.h"
 #include "main/splash.gen.h"
 #include "platform/javascript/logo.gen.h"
 #include "platform/javascript/run_icon.gen.h"
 
 #include "export_server.h"
+
+class EditorNode;
 
 class EditorExportPlatformJavaScript : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformJavaScript, EditorExportPlatform);

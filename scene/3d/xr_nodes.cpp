@@ -30,6 +30,7 @@
 
 #include "xr_nodes.h"
 
+#include "core/config/project_settings.h"
 #include "scene/main/viewport.h"
 #include "servers/xr/xr_interface.h"
 

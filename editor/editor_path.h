@@ -31,7 +31,7 @@
 #ifndef EDITOR_PATH_H
 #define EDITOR_PATH_H
 
-#include "editor_data.h"
+#include "editor/editor_data.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/popup_menu.h"

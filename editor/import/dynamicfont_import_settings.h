@@ -31,10 +31,6 @@
 #ifndef FONTDATA_IMPORT_SETTINGS_H
 #define FONTDATA_IMPORT_SETTINGS_H
 
-#include "editor/editor_file_dialog.h"
-#include "editor/editor_inspector.h"
-#include "editor/editor_locale_dialog.h"
-
 #include "editor/import/resource_importer_dynamicfont.h"
 
 #include "scene/gui/dialogs.h"
@@ -50,6 +46,9 @@
 #include "servers/text_server.h"
 
 class DynamicFontImportSettingsData;
+class EditorFileDialog;
+class EditorInspector;
+class EditorLocaleDialog;
 
 class DynamicFontImportSettings : public ConfirmationDialog {
 	GDCLASS(DynamicFontImportSettings, ConfirmationDialog)

@@ -31,13 +31,15 @@
 #ifndef ATLAS_MERGING_DIALOG_H
 #define ATLAS_MERGING_DIALOG_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_properties.h"
 
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/tile_set.h"
+
+class EditorNode;
+class EditorFileDialog;
 
 class AtlasMergingDialog : public ConfirmationDialog {
 	GDCLASS(AtlasMergingDialog, ConfirmationDialog);
@@ -49,7 +51,7 @@ private:
 	LocalVector<Map<Vector2i, Vector2i>> merged_mapping;
 	Ref<TileSet> tile_set;
 
-	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *undo_redo;
 
 	// Settings.
 	int next_line_after_column = 30;

@@ -32,7 +32,7 @@
 #define ACTION_MAP_EDITOR_H
 
 #include "editor/editor_data.h"
-#include <scene/gui/color_rect.h>
+#include "scene/gui/color_rect.h"
 
 // Confirmation Dialog used when configuring an input event.
 // Separate from ActionMapEditor for code cleanliness and separation of responsibilities.

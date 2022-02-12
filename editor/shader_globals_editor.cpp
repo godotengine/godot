@@ -29,7 +29,9 @@
 /*************************************************************************/
 
 #include "shader_globals_editor.h"
-#include "editor_node.h"
+
+#include "core/config/project_settings.h"
+#include "editor/editor_node.h"
 #include "servers/rendering/shader_language.h"
 
 static const char *global_var_type_names[RS::GLOBAL_VAR_TYPE_MAX] = {

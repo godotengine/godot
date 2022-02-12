@@ -30,6 +30,7 @@
 
 #include "font_editor_plugin.h"
 
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 
 void FontDataPreview::_notification(int p_what) {

@@ -29,9 +29,11 @@
 /*************************************************************************/
 
 #include "import_dock.h"
-#include "editor_node.h"
-#include "editor_resource_preview.h"
-#include "editor_scale.h"
+
+#include "core/config/project_settings.h"
+#include "editor/editor_node.h"
+#include "editor/editor_resource_preview.h"
+#include "editor/editor_scale.h"
 
 class ImportDockParameters : public Object {
 	GDCLASS(ImportDockParameters, Object);

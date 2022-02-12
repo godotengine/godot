@@ -30,11 +30,13 @@
 
 #include "localization_editor.h"
 
+#include "core/config/project_settings.h"
 #include "core/string/translation.h"
-#include "editor_node.h"
-#include "editor_scale.h"
-#include "editor_translation_parser.h"
-#include "pot_generator.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
+#include "editor/editor_translation_parser.h"
+#include "editor/pot_generator.h"
 #include "scene/gui/control.h"
 
 void LocalizationEditor::_notification(int p_what) {

@@ -29,6 +29,8 @@
 /*************************************************************************/
 
 #include "scroll_container.h"
+
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
 #include "scene/main/window.h"
 

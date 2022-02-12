@@ -31,7 +31,7 @@
 #include "tile_map.h"
 
 #include "core/io/marshalls.h"
-
+#include "scene/resources/world_2d.h"
 #include "servers/navigation_server_2d.h"
 
 Map<Vector2i, TileSet::CellNeighbor> TileMap::TerrainConstraint::get_overlapping_coords_and_peering_bits() const {

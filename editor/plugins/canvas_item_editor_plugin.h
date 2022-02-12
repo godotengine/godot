@@ -31,7 +31,6 @@
 #ifndef CANVAS_ITEM_EDITOR_PLUGIN_H
 #define CANVAS_ITEM_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_zoom_widget.h"
 #include "scene/gui/box_container.h"
@@ -39,9 +38,12 @@
 #include "scene/gui/label.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/spin_box.h"
+#include "scene/gui/split_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/main/canvas_item.h"
 
+class EditorNode;
+class EditorData;
 class CanvasItemEditorViewport;
 class ViewPanner;
 

@@ -30,6 +30,9 @@
 
 #include "voxel_gi_editor_plugin.h"
 
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
+
 void VoxelGIEditorPlugin::_bake() {
 	if (voxel_gi) {
 		if (voxel_gi->get_probe_data().is_null()) {

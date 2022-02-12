@@ -31,7 +31,7 @@
 #ifndef CREATE_DIALOG_H
 #define CREATE_DIALOG_H
 
-#include "editor_help.h"
+#include "editor/editor_help.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"

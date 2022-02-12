@@ -30,6 +30,7 @@
 
 #include "texture_editor_plugin.h"
 
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 
 TextureRect *TexturePreview::get_texture_display() {

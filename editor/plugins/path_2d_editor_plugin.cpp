@@ -33,6 +33,7 @@
 #include "canvas_item_editor_plugin.h"
 #include "core/io/file_access.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 

@@ -31,10 +31,12 @@
 #ifndef TEXTURE_LAYERED_EDITOR_PLUGIN_H
 #define TEXTURE_LAYERED_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
+#include "scene/gui/spin_box.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
+
+class EditorNode;
 
 class TextureLayeredEditor : public Control {
 	GDCLASS(TextureLayeredEditor, Control);

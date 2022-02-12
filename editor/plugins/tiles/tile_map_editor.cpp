@@ -32,6 +32,7 @@
 
 #include "tiles_editor_plugin.h"
 
+#include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
@@ -1978,7 +1979,11 @@ void TileMapEditorTilesPlugin::_bind_methods() {
 }
 
 TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
-	CanvasItemEditor::get_singleton()->get_viewport_control()->connect("mouse_exited", callable_mp(this, &TileMapEditorTilesPlugin::_mouse_exited_viewport));
+	undo_redo = EditorNode::get_undo_redo();
+
+	CanvasItemEditor::get_singleton()
+			->get_viewport_control()
+			->connect("mouse_exited", callable_mp(this, &TileMapEditorTilesPlugin::_mouse_exited_viewport));
 
 	// --- Shortcuts ---
 	ED_SHORTCUT("tiles_editor/cut", TTR("Cut"), KeyModifierMask::CMD | Key::X);
@@ -3242,6 +3247,8 @@ void TileMapEditorTerrainsPlugin::edit(ObjectID p_tile_map_id, int p_tile_map_la
 }
 
 TileMapEditorTerrainsPlugin::TileMapEditorTerrainsPlugin() {
+	undo_redo = EditorNode::get_undo_redo();
+
 	main_vbox_container = memnew(VBoxContainer);
 	main_vbox_container->connect("tree_entered", callable_mp(this, &TileMapEditorTerrainsPlugin::_update_theme));
 	main_vbox_container->connect("theme_changed", callable_mp(this, &TileMapEditorTerrainsPlugin::_update_theme));
@@ -3945,6 +3952,8 @@ void TileMapEditor::edit(TileMap *p_tile_map) {
 }
 
 TileMapEditor::TileMapEditor() {
+	undo_redo = EditorNode::get_undo_redo();
+
 	set_process_internal(true);
 
 	// Shortcuts.

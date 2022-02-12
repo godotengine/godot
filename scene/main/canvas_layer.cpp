@@ -29,8 +29,10 @@
 /*************************************************************************/
 
 #include "canvas_layer.h"
-#include "canvas_item.h"
-#include "viewport.h"
+
+#include "scene/main/canvas_item.h"
+#include "scene/main/viewport.h"
+#include "scene/resources/world_2d.h"
 
 void CanvasLayer::set_layer(int p_xform) {
 	layer = p_xform;

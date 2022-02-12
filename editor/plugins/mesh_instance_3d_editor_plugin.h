@@ -31,10 +31,11 @@
 #ifndef MESH_INSTANCE_EDITOR_PLUGIN_H
 #define MESH_INSTANCE_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/spin_box.h"
+
+class EditorNode;
 
 class MeshInstance3DEditor : public Control {
 	GDCLASS(MeshInstance3DEditor, Control);

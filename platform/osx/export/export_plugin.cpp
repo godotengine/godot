@@ -31,6 +31,7 @@
 #include "modules/modules_enabled.gen.h" // For regex.
 
 #include "codesign.h"
+#include "editor/editor_node.h"
 #include "export_plugin.h"
 
 void EditorExportPlatformOSX::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {

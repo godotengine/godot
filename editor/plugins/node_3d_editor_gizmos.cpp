@@ -33,6 +33,8 @@
 #include "core/math/convex_hull.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
+#include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/audio_listener_3d.h"
 #include "scene/3d/audio_stream_player_3d.h"

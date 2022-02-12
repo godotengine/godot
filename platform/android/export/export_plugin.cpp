@@ -30,6 +30,8 @@
 
 #include "export_plugin.h"
 
+#include "editor/editor_node.h"
+
 static const char *android_perms[] = {
 	"ACCESS_CHECKIN_PROPERTIES",
 	"ACCESS_COARSE_LOCATION",

@@ -34,8 +34,8 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
-#include "editor_node.h"
-#include "editor_settings.h"
+#include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 #include "scene/resources/packed_scene.h"
 
 void EditorHistory::cleanup_history() {

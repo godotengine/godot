@@ -32,8 +32,9 @@
 
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
-#include "editor_node.h"
-#include "editor_scale.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "project_settings_editor.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"

@@ -30,6 +30,7 @@
 
 #include "camera_2d.h"
 
+#include "core/config/project_settings.h"
 #include "scene/main/window.h"
 
 void Camera2D::_update_scroll() {

@@ -33,7 +33,8 @@
 
 #include "editor/action_map_editor.h"
 #include "editor/editor_inspector.h"
-#include "editor/editor_node.h"
+
+class EditorNode;
 
 class InputEventConfigContainer : public HBoxContainer {
 	GDCLASS(InputEventConfigContainer, HBoxContainer);

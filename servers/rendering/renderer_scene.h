@@ -31,7 +31,7 @@
 #ifndef RENDERINGSERVERSCENE_H
 #define RENDERINGSERVERSCENE_H
 
-#include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering_server.h"
 #include "servers/xr/xr_interface.h"
 
 class RendererScene {

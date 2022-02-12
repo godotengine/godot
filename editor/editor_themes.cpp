@@ -33,10 +33,10 @@
 #include "core/error/error_macros.h"
 #include "core/io/resource_loader.h"
 #include "core/variant/dictionary.h"
-#include "editor_fonts.h"
-#include "editor_icons.gen.h"
-#include "editor_scale.h"
-#include "editor_settings.h"
+#include "editor/editor_fonts.h"
+#include "editor/editor_icons.gen.h"
+#include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 
 #include "modules/modules_enabled.gen.h" // For svg.
 #ifdef MODULE_SVG_ENABLED

@@ -32,7 +32,6 @@
 #define LINKBUTTON_H
 
 #include "scene/gui/base_button.h"
-#include "scene/resources/bit_map.h"
 #include "scene/resources/text_line.h"
 
 class LinkButton : public BaseButton {

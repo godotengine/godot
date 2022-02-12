@@ -29,6 +29,9 @@
 /*************************************************************************/
 
 #include "shader_create_dialog.h"
+
+#include "core/config/project_settings.h"
+#include "editor/editor_file_dialog.h"
 #include "editor/editor_scale.h"
 #include "scene/resources/visual_shader.h"
 #include "servers/rendering/shader_types.h"

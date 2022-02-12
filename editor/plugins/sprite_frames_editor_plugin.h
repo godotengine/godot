@@ -31,15 +31,21 @@
 #ifndef SPRITE_FRAMES_EDITOR_PLUGIN_H
 #define SPRITE_FRAMES_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/2d/animated_sprite_2d.h"
+#include "scene/gui/button.h"
+#include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/file_dialog.h"
+#include "scene/gui/item_list.h"
 #include "scene/gui/scroll_container.h"
+#include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
+
+class EditorNode;
+struct EditorProgress;
+class EditorFileDialog;
 
 class SpriteFramesEditor : public HSplitContainer {
 	GDCLASS(SpriteFramesEditor, HSplitContainer);

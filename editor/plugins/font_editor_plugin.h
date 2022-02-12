@@ -31,10 +31,11 @@
 #ifndef FONT_EDITOR_PLUGIN_H
 #define FONT_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/resources/font.h"
 #include "scene/resources/text_line.h"
+
+class EditorNode;
 
 class FontDataPreview : public Control {
 	GDCLASS(FontDataPreview, Control);

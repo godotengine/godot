@@ -31,6 +31,8 @@
 #include "theme_editor_plugin.h"
 
 #include "core/os/keyboard.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
 #include "editor/editor_resource_picker.h"
 #include "editor/editor_scale.h"
 #include "editor/progress_dialog.h"

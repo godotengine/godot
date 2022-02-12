@@ -33,8 +33,9 @@
 
 #include "editor/editor_plugin.h"
 #include "editor/editor_vcs_interface.h"
-#include "scene/gui/container.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/rich_text_label.h"
+#include "scene/gui/split_container.h"
 #include "scene/gui/text_edit.h"
 #include "scene/gui/tree.h"
 

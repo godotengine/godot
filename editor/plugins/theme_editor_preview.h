@@ -32,25 +32,13 @@
 #define THEME_EDITOR_PREVIEW_H
 
 #include "scene/gui/box_container.h"
-#include "scene/gui/check_box.h"
-#include "scene/gui/check_button.h"
-#include "scene/gui/color_picker.h"
+#include "scene/gui/button.h"
 #include "scene/gui/color_rect.h"
-#include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/panel.h"
-#include "scene/gui/progress_bar.h"
 #include "scene/gui/scroll_container.h"
-#include "scene/gui/separator.h"
-#include "scene/gui/spin_box.h"
-#include "scene/gui/tab_container.h"
-#include "scene/gui/text_edit.h"
-#include "scene/gui/tree.h"
 #include "scene/resources/theme.h"
 
-#include "editor/editor_node.h"
+class EditorNode;
 
 class ThemeEditorPreview : public VBoxContainer {
 	GDCLASS(ThemeEditorPreview, VBoxContainer);

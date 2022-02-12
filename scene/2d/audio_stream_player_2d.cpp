@@ -33,6 +33,7 @@
 #include "scene/2d/area_2d.h"
 #include "scene/2d/audio_listener_2d.h"
 #include "scene/main/window.h"
+#include "scene/resources/world_2d.h"
 
 void AudioStreamPlayer2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {

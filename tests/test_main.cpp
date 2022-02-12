@@ -91,6 +91,11 @@
 #include "tests/test_macros.h"
 
 #include "scene/resources/default_theme/default_theme.h"
+#include "servers/navigation_server_2d.h"
+#include "servers/navigation_server_3d.h"
+#include "servers/physics_server_2d.h"
+#include "servers/physics_server_3d.h"
+#include "servers/rendering/rendering_server_default.h"
 
 int test_main(int argc, char *argv[]) {
 	bool run_tests = true;
@@ -155,10 +160,6 @@ int test_main(int argc, char *argv[]) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#include "servers/navigation_server_2d.h"
-#include "servers/navigation_server_3d.h"
-#include "servers/rendering/rendering_server_default.h"
 
 struct GodotTestCaseListener : public doctest::IReporter {
 	GodotTestCaseListener(const doctest::ContextOptions &p_in) {}

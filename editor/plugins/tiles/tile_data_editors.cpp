@@ -35,6 +35,7 @@
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 
+#include "editor/editor_node.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_scale.h"
 
@@ -743,6 +744,8 @@ void GenericTilePolygonEditor::_bind_methods() {
 }
 
 GenericTilePolygonEditor::GenericTilePolygonEditor() {
+	editor_undo_redo = EditorNode::get_undo_redo();
+
 	toolbar = memnew(HBoxContainer);
 	add_child(toolbar);
 
@@ -1168,6 +1171,8 @@ void TileDataDefaultEditor::_notification(int p_what) {
 }
 
 TileDataDefaultEditor::TileDataDefaultEditor() {
+	undo_redo = EditorNode::get_undo_redo();
+
 	label = memnew(Label);
 	label->set_text(TTR("Painting:"));
 	add_child(label);
@@ -1319,6 +1324,8 @@ void TileDataOcclusionShapeEditor::_notification(int p_what) {
 }
 
 TileDataOcclusionShapeEditor::TileDataOcclusionShapeEditor() {
+	undo_redo = EditorNode::get_undo_redo();
+
 	polygon_editor = memnew(GenericTilePolygonEditor);
 	add_child(polygon_editor);
 }
@@ -1516,6 +1523,8 @@ void TileDataCollisionEditor::_notification(int p_what) {
 }
 
 TileDataCollisionEditor::TileDataCollisionEditor() {
+	undo_redo = EditorNode::get_undo_redo();
+
 	polygon_editor = memnew(GenericTilePolygonEditor);
 	polygon_editor->set_multiple_polygon_mode(true);
 	polygon_editor->connect("polygons_changed", callable_mp(this, &TileDataCollisionEditor::_polygons_changed));
@@ -2487,6 +2496,8 @@ void TileDataTerrainsEditor::_notification(int p_what) {
 }
 
 TileDataTerrainsEditor::TileDataTerrainsEditor() {
+	undo_redo = EditorNode::get_undo_redo();
+
 	label = memnew(Label);
 	label->set_text("Painting:");
 	add_child(label);
@@ -2591,6 +2602,8 @@ void TileDataNavigationEditor::_notification(int p_what) {
 }
 
 TileDataNavigationEditor::TileDataNavigationEditor() {
+	undo_redo = EditorNode::get_undo_redo();
+
 	polygon_editor = memnew(GenericTilePolygonEditor);
 	polygon_editor->set_multiple_polygon_mode(true);
 	add_child(polygon_editor);

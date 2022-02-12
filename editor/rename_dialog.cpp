@@ -34,10 +34,10 @@
 #ifdef MODULE_REGEX_ENABLED
 
 #include "core/string/print_string.h"
-#include "editor_node.h"
-#include "editor_scale.h"
-#include "editor_settings.h"
-#include "editor_themes.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
+#include "editor/editor_themes.h"
 #include "modules/regex/regex.h"
 #include "plugins/script_editor_plugin.h"
 #include "scene/gui/control.h"

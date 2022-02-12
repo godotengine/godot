@@ -30,9 +30,9 @@
 
 #include "editor_run_native.h"
 
-#include "editor_export.h"
-#include "editor_node.h"
-#include "editor_scale.h"
+#include "editor/editor_export.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 
 void EditorRunNative::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {

@@ -31,8 +31,13 @@
 #ifndef MESH_LIBRARY_EDITOR_PLUGIN_H
 #define MESH_LIBRARY_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
 #include "scene/resources/mesh_library.h"
+
+class EditorNode;
+class EditorFileDialog;
+class ConfirmationDialog;
+class MenuButton;
 
 class MeshLibraryEditor : public Control {
 	GDCLASS(MeshLibraryEditor, Control);

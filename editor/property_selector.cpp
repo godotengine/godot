@@ -33,7 +33,7 @@
 #include "core/os/keyboard.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_node.h"
-#include "editor_scale.h"
+#include "editor/editor_scale.h"
 
 void PropertySelector::_text_changed(const String &p_newtext) {
 	_update_search();

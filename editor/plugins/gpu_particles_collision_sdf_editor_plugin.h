@@ -31,10 +31,13 @@
 #ifndef GPU_PARTICLES_COLLISION_SDF_EDITOR_PLUGIN_H
 #define GPU_PARTICLES_COLLISION_SDF_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/3d/gpu_particles_collision_3d.h"
 #include "scene/resources/material.h"
+
+class EditorNode;
+struct EditorProgress;
+class EditorFileDialog;
 
 class GPUParticlesCollisionSDF3DEditorPlugin : public EditorPlugin {
 	GDCLASS(GPUParticlesCollisionSDF3DEditorPlugin, EditorPlugin);

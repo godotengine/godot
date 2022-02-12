@@ -35,10 +35,10 @@
 #include "core/os/keyboard.h"
 #include "core/version_generated.gen.h"
 #include "doc_data_compressed.gen.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/plugins/script_editor_plugin.h"
-#include "editor_node.h"
-#include "editor_scale.h"
-#include "editor_settings.h"
 
 #define CONTRIBUTE_URL vformat("%s/community/contributing/updating_the_class_reference.html", VERSION_DOCS_URL)
 

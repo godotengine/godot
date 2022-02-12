@@ -30,6 +30,10 @@
 
 #include "dynamicfont_import_settings.h"
 
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_file_system.h"
+#include "editor/editor_inspector.h"
+#include "editor/editor_locale_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 

@@ -31,12 +31,12 @@
 #ifndef POLYGON_3D_EDITOR_PLUGIN_H
 #define POLYGON_3D_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/3d/collision_polygon_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/immediate_mesh.h"
 
+class EditorNode;
 class CanvasItemEditor;
 
 class Polygon3DEditor : public HBoxContainer {

@@ -30,6 +30,8 @@
 
 #include "tile_set_scenes_collection_source_editor.h"
 
+#include "editor/editor_file_system.h"
+#include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -452,6 +454,8 @@ void TileSetScenesCollectionSourceEditor::_bind_methods() {
 }
 
 TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
+	undo_redo = EditorNode::get_undo_redo();
+
 	// -- Right side --
 	HSplitContainer *split_container_right_side = memnew(HSplitContainer);
 	split_container_right_side->set_h_size_flags(SIZE_EXPAND_FILL);

@@ -31,10 +31,13 @@
 #ifndef VOXEL_GIEDITORPLUGIN_H
 #define VOXEL_GIEDITORPLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/3d/voxel_gi.h"
 #include "scene/resources/material.h"
+
+class EditorNode;
+class EditorFileDialog;
+struct EditorProgress;
 
 class VoxelGIEditorPlugin : public EditorPlugin {
 	GDCLASS(VoxelGIEditorPlugin, EditorPlugin);

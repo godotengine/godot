@@ -30,6 +30,7 @@
 
 #include "popup_menu.h"
 
+#include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"

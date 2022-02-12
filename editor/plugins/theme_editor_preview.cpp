@@ -30,11 +30,15 @@
 
 #include "theme_editor_preview.h"
 
+#include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/math/math_funcs.h"
-#include "scene/resources/packed_scene.h"
-
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "scene/gui/button.h"
+#include "scene/gui/color_picker.h"
+#include "scene/gui/progress_bar.h"
+#include "scene/resources/packed_scene.h"
 
 constexpr double REFRESH_TIMER = 1.5;
 

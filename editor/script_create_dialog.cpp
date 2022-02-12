@@ -35,9 +35,10 @@
 #include "core/io/resource_saver.h"
 #include "core/string/string_builder.h"
 #include "editor/create_dialog.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
-#include "editor_file_system.h"
 
 void ScriptCreateDialog::_notification(int p_what) {
 	switch (p_what) {

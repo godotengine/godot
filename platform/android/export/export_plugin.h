@@ -41,7 +41,6 @@
 #include "drivers/png/png_driver_common.h"
 #include "editor/editor_export.h"
 #include "editor/editor_log.h"
-#include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "main/splash.gen.h"
 #include "platform/android/logo.gen.h"

@@ -30,6 +30,7 @@
 
 #include "resource_importer_texture.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/config_file.h"
 #include "core/io/image_loader.h"
 #include "core/version.h"

@@ -34,7 +34,6 @@
 #include "core/io/file_access.h"
 #include "core/os/os.h"
 #include "editor/editor_export.h"
-#include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "platform/windows/logo.gen.h"
 

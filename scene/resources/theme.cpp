@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "theme.h"
+
 #include "core/string/print_string.h"
 
 // Universal Theme resources used when no other theme has the item.
