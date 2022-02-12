@@ -117,6 +117,10 @@
 	}
 }
 
+- (void)doCommandBySelector:(SEL)aSelector {
+	[self tryToPerform:aSelector with:self];
+}
+
 - (void)unmarkText {
 	ime_input_event_in_progress = false;
 	[[marked_text mutableString] setString:@""];
