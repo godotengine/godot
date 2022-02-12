@@ -1863,6 +1863,8 @@ void ProjectList::_bind_methods() {
 	ADD_SIGNAL(MethodInfo(SIGNAL_PROJECT_ASK_OPEN));
 }
 
+ProjectManager *ProjectManager::singleton = nullptr;
+
 void ProjectManager::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED:
@@ -1908,10 +1910,8 @@ void ProjectManager::_notification(int p_what) {
 	}
 }
 
-Map<String, Ref<Texture2D>> ProjectManager::icon_type_cache;
-
 Ref<Texture2D> ProjectManager::_file_dialog_get_icon(const String &p_path) {
-	return icon_type_cache["ObjectHR"];
+	return singleton->icon_type_cache["ObjectHR"];
 }
 
 void ProjectManager::_build_icon_type_cache(Ref<Theme> p_theme) {
@@ -2481,6 +2481,8 @@ void ProjectManager::_version_button_pressed() {
 }
 
 ProjectManager::ProjectManager() {
+	singleton = this;
+
 	// load settings
 	if (!EditorSettings::get_singleton()) {
 		EditorSettings::create();
@@ -2870,6 +2872,7 @@ ProjectManager::ProjectManager() {
 }
 
 ProjectManager::~ProjectManager() {
+	singleton = nullptr;
 	if (EditorSettings::get_singleton()) {
 		EditorSettings::destroy();
 	}
