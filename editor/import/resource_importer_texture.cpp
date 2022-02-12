@@ -215,7 +215,7 @@ void ResourceImporterTexture::get_import_options(const String &p_path, List<Impo
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/fix_alpha_border"), p_preset != PRESET_3D));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/premult_alpha"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/normal_map_invert_y"), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/HDR_as_SRGB"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/hdr_as_srgb"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/size_limit", PROPERTY_HINT_RANGE, "0,4096,1"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "detect_3d/compress_to", PROPERTY_HINT_ENUM, "Disabled,VRAM Compressed,Basis Universal"), (p_preset == PRESET_DETECT) ? 1 : 0));
 
@@ -400,21 +400,21 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 
 Error ResourceImporterTexture::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	CompressMode compress_mode = CompressMode(int(p_options["compress/mode"]));
-	float lossy = p_options["compress/lossy_quality"];
-	int pack_channels = p_options["compress/channel_pack"];
-	bool mipmaps = p_options["mipmaps/generate"];
-	uint32_t mipmap_limit = mipmaps ? uint32_t(p_options["mipmaps/limit"]) : uint32_t(-1);
-	bool fix_alpha_border = p_options["process/fix_alpha_border"];
-	bool premult_alpha = p_options["process/premult_alpha"];
-	bool normal_map_invert_y = p_options["process/normal_map_invert_y"];
-	bool stream = p_options["compress/streamed"];
-	int size_limit = p_options["process/size_limit"];
-	bool hdr_as_srgb = p_options["process/HDR_as_SRGB"];
-	int normal = p_options["compress/normal_map"];
-	int hdr_compression = p_options["compress/hdr_compression"];
-	int bptc_ldr = p_options["compress/bptc_ldr"];
-	int roughness = p_options["roughness/mode"];
-	String normal_map = p_options["roughness/src_normal"];
+	const float lossy = p_options["compress/lossy_quality"];
+	const int pack_channels = p_options["compress/channel_pack"];
+	const bool mipmaps = p_options["mipmaps/generate"];
+	const uint32_t mipmap_limit = mipmaps ? uint32_t(p_options["mipmaps/limit"]) : uint32_t(-1);
+	const bool fix_alpha_border = p_options["process/fix_alpha_border"];
+	const bool premult_alpha = p_options["process/premult_alpha"];
+	const bool normal_map_invert_y = p_options["process/normal_map_invert_y"];
+	const bool stream = p_options["compress/streamed"];
+	const int size_limit = p_options["process/size_limit"];
+	const bool hdr_as_srgb = p_options["process/hdr_as_srgb"];
+	const int normal = p_options["compress/normal_map"];
+	const int hdr_compression = p_options["compress/hdr_compression"];
+	const int bptc_ldr = p_options["compress/bptc_ldr"];
+	const int roughness = p_options["roughness/mode"];
+	const String normal_map = p_options["roughness/src_normal"];
 	float scale = 1.0;
 	if (p_options.has("svg/scale")) {
 		scale = p_options["svg/scale"];
