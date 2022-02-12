@@ -7354,8 +7354,8 @@ void Node3DEditor::_load_default_preview_settings() {
 	sun_angle_altitude->set_value(-Math::rad2deg(sun_rotation.x));
 	sun_angle_azimuth->set_value(180.0 - Math::rad2deg(sun_rotation.y));
 	sun_direction->update();
-	environ_sky_color->set_pick_color(Color::hex(0x91b2ceff));
-	environ_ground_color->set_pick_color(Color::hex(0x1f1f21ff));
+	environ_sky_color->set_pick_color(Color(0.385, 0.454, 0.55));
+	environ_ground_color->set_pick_color(Color(0.2, 0.169, 0.133));
 	environ_energy->set_value(1.0);
 	environ_glow_button->set_pressed(true);
 	environ_tonemap_button->set_pressed(true);
