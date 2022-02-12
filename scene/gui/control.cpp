@@ -1585,14 +1585,25 @@ void Control::set_anchor_and_offset(Side p_side, real_t p_anchor, real_t p_pos, 
 }
 
 void Control::_set_anchors_layout_preset(int p_preset) {
-	set_meta("_edit_layout_mode", (int)LayoutMode::LAYOUT_MODE_ANCHORS);
+	bool list_changed = false;
+
+	if (has_meta("_edit_layout_mode") && (int)get_meta("_edit_layout_mode") != (int)LayoutMode::LAYOUT_MODE_ANCHORS) {
+		list_changed = true;
+		set_meta("_edit_layout_mode", (int)LayoutMode::LAYOUT_MODE_ANCHORS);
+	}
 
 	if (p_preset == -1) {
-		set_meta("_edit_use_custom_anchors", true);
-		notify_property_list_changed();
+		if (!has_meta("_edit_use_custom_anchors") || !(bool)get_meta("_edit_use_custom_anchors")) {
+			set_meta("_edit_use_custom_anchors", true);
+			notify_property_list_changed();
+		}
 		return; // Keep settings as is.
 	}
-	set_meta("_edit_use_custom_anchors", false);
+
+	if (!has_meta("_edit_use_custom_anchors") || (bool)get_meta("_edit_use_custom_anchors")) {
+		list_changed = true;
+		set_meta("_edit_use_custom_anchors", false);
+	}
 
 	LayoutPreset preset = (LayoutPreset)p_preset;
 	// Set correct anchors.
@@ -1625,7 +1636,9 @@ void Control::_set_anchors_layout_preset(int p_preset) {
 	// Select correct grow directions.
 	set_grow_direction_preset(preset);
 
-	notify_property_list_changed();
+	if (list_changed) {
+		notify_property_list_changed();
+	}
 }
 
 int Control::_get_anchors_layout_preset() const {
