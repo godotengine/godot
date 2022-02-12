@@ -221,8 +221,8 @@
 		<method name="hash">
 			<return type="int" />
 			<description>
-				Returns a hashed integer value representing the array and its contents.
-				[b]Note:[/b] Arrays with equal contents can still produce different hashes. Only the exact same arrays will produce the same hashed integer value.
+				Returns a hashed 32-bit integer value representing the array and its contents.
+				[b]Note:[/b] [Array]s with equal content will always produce identical hash values. However, the reverse is not true. Returning identical hash values does [i]not[/i] imply the arrays are equal, because different arrays can have identical hash values due to hash collisions.
 			</description>
 		</method>
 		<method name="insert">
