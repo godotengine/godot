@@ -290,7 +290,7 @@ Vector<Vector<Point2>> Geometry2D::_polypath_offset(const Vector<Point2> &p_poly
 			et = etOpenRound;
 			break;
 	}
-	ClipperOffset co(2.0, 0.25 * SCALE_FACTOR); // Defaults from ClipperOffset.
+	ClipperOffset co(2.0, 0.25f * SCALE_FACTOR); // Defaults from ClipperOffset.
 	Path path;
 
 	// Need to scale points (Clipper's requirement for robust computation).

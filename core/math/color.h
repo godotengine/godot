@@ -95,7 +95,7 @@ struct _NO_DISCARD_ Color {
 	Color inverted() const;
 
 	_FORCE_INLINE_ float get_luminance() const {
-		return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+		return 0.2126f * r + 0.7152f * g + 0.0722f * b;
 	}
 
 	_FORCE_INLINE_ Color lerp(const Color &p_to, float p_weight) const {
@@ -144,7 +144,7 @@ struct _NO_DISCARD_ Color {
 
 		float exps = expp + 1.0f;
 
-		if (0.0 <= sMax && sMax < pow2to9) {
+		if (0.0f <= sMax && sMax < pow2to9) {
 			exps = expp;
 		}
 
@@ -157,7 +157,7 @@ struct _NO_DISCARD_ Color {
 
 	_FORCE_INLINE_ Color blend(const Color &p_over) const {
 		Color res;
-		float sa = 1.0 - p_over.a;
+		float sa = 1.0f - p_over.a;
 		res.a = a * sa + p_over.a;
 		if (res.a == 0) {
 			return Color(0, 0, 0, 0);
@@ -171,16 +171,16 @@ struct _NO_DISCARD_ Color {
 
 	_FORCE_INLINE_ Color to_linear() const {
 		return Color(
-				r < 0.04045 ? r * (1.0 / 12.92) : Math::pow((r + 0.055) * (1.0 / (1 + 0.055)), 2.4),
-				g < 0.04045 ? g * (1.0 / 12.92) : Math::pow((g + 0.055) * (1.0 / (1 + 0.055)), 2.4),
-				b < 0.04045 ? b * (1.0 / 12.92) : Math::pow((b + 0.055) * (1.0 / (1 + 0.055)), 2.4),
+				r < 0.04045f ? r * (1.0 / 12.92) : Math::pow((r + 0.055f) * (float)(1.0 / (1 + 0.055)), 2.4f),
+				g < 0.04045f ? g * (1.0 / 12.92) : Math::pow((g + 0.055f) * (float)(1.0 / (1 + 0.055)), 2.4f),
+				b < 0.04045f ? b * (1.0 / 12.92) : Math::pow((b + 0.055f) * (float)(1.0 / (1 + 0.055)), 2.4f),
 				a);
 	}
 	_FORCE_INLINE_ Color to_srgb() const {
 		return Color(
-				r < 0.0031308 ? 12.92 * r : (1.0 + 0.055) * Math::pow(r, 1.0f / 2.4f) - 0.055,
-				g < 0.0031308 ? 12.92 * g : (1.0 + 0.055) * Math::pow(g, 1.0f / 2.4f) - 0.055,
-				b < 0.0031308 ? 12.92 * b : (1.0 + 0.055) * Math::pow(b, 1.0f / 2.4f) - 0.055, a);
+				r < 0.0031308f ? 12.92f * r : (1.0f + 0.055f) * Math::pow(r, 1.0f / 2.4f) - 0.055f,
+				g < 0.0031308f ? 12.92f * g : (1.0f + 0.055f) * Math::pow(g, 1.0f / 2.4f) - 0.055f,
+				b < 0.0031308f ? 12.92f * b : (1.0f + 0.055f) * Math::pow(b, 1.0f / 2.4f) - 0.055f, a);
 	}
 
 	static Color hex(uint32_t p_hex);
@@ -201,13 +201,13 @@ struct _NO_DISCARD_ Color {
 	operator String() const;
 
 	// For the binder.
-	_FORCE_INLINE_ void set_r8(int32_t r8) { r = (CLAMP(r8, 0, 255) / 255.0); }
+	_FORCE_INLINE_ void set_r8(int32_t r8) { r = (CLAMP(r8, 0, 255) / 255.0f); }
 	_FORCE_INLINE_ int32_t get_r8() const { return int32_t(CLAMP(Math::round(r * 255.0f), 0.0f, 255.0f)); }
-	_FORCE_INLINE_ void set_g8(int32_t g8) { g = (CLAMP(g8, 0, 255) / 255.0); }
+	_FORCE_INLINE_ void set_g8(int32_t g8) { g = (CLAMP(g8, 0, 255) / 255.0f); }
 	_FORCE_INLINE_ int32_t get_g8() const { return int32_t(CLAMP(Math::round(g * 255.0f), 0.0f, 255.0f)); }
-	_FORCE_INLINE_ void set_b8(int32_t b8) { b = (CLAMP(b8, 0, 255) / 255.0); }
+	_FORCE_INLINE_ void set_b8(int32_t b8) { b = (CLAMP(b8, 0, 255) / 255.0f); }
 	_FORCE_INLINE_ int32_t get_b8() const { return int32_t(CLAMP(Math::round(b * 255.0f), 0.0f, 255.0f)); }
-	_FORCE_INLINE_ void set_a8(int32_t a8) { a = (CLAMP(a8, 0, 255) / 255.0); }
+	_FORCE_INLINE_ void set_a8(int32_t a8) { a = (CLAMP(a8, 0, 255) / 255.0f); }
 	_FORCE_INLINE_ int32_t get_a8() const { return int32_t(CLAMP(Math::round(a * 255.0f), 0.0f, 255.0f)); }
 
 	_FORCE_INLINE_ void set_h(float p_h) { set_hsv(p_h, get_s(), get_v()); }
@@ -234,7 +234,7 @@ struct _NO_DISCARD_ Color {
 		r = p_r;
 		g = p_g;
 		b = p_b;
-		a = 1.0;
+		a = 1.0f;
 	}
 
 	/**
