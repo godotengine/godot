@@ -71,6 +71,25 @@ float ProceduralSkyMaterial::get_sky_energy() const {
 	return sky_energy;
 }
 
+void ProceduralSkyMaterial::set_sky_cover(const Ref<Texture2D> &p_sky_cover) {
+	sky_cover = p_sky_cover;
+	RID tex_rid = p_sky_cover.is_valid() ? p_sky_cover->get_rid() : RID();
+	RS::get_singleton()->material_set_param(_get_material(), "sky_cover", tex_rid);
+}
+
+Ref<Texture2D> ProceduralSkyMaterial::get_sky_cover() const {
+	return sky_cover;
+}
+
+void ProceduralSkyMaterial::set_sky_cover_modulate(const Color &p_sky_cover_modulate) {
+	sky_cover_modulate = p_sky_cover_modulate;
+	RS::get_singleton()->material_set_param(_get_material(), "sky_cover_modulate", sky_cover_modulate);
+}
+
+Color ProceduralSkyMaterial::get_sky_cover_modulate() const {
+	return sky_cover_modulate;
+}
+
 void ProceduralSkyMaterial::set_ground_bottom_color(const Color &p_ground_bottom) {
 	ground_bottom_color = p_ground_bottom;
 	RS::get_singleton()->material_set_param(_get_material(), "ground_bottom_color", ground_bottom_color);
@@ -156,6 +175,12 @@ void ProceduralSkyMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sky_energy", "energy"), &ProceduralSkyMaterial::set_sky_energy);
 	ClassDB::bind_method(D_METHOD("get_sky_energy"), &ProceduralSkyMaterial::get_sky_energy);
 
+	ClassDB::bind_method(D_METHOD("set_sky_cover", "sky_cover"), &ProceduralSkyMaterial::set_sky_cover);
+	ClassDB::bind_method(D_METHOD("get_sky_cover"), &ProceduralSkyMaterial::get_sky_cover);
+
+	ClassDB::bind_method(D_METHOD("set_sky_cover_modulate", "color"), &ProceduralSkyMaterial::set_sky_cover_modulate);
+	ClassDB::bind_method(D_METHOD("get_sky_cover_modulate"), &ProceduralSkyMaterial::get_sky_cover_modulate);
+
 	ClassDB::bind_method(D_METHOD("set_ground_bottom_color", "color"), &ProceduralSkyMaterial::set_ground_bottom_color);
 	ClassDB::bind_method(D_METHOD("get_ground_bottom_color"), &ProceduralSkyMaterial::get_ground_bottom_color);
 
@@ -179,6 +204,8 @@ void ProceduralSkyMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "sky_horizon_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_sky_horizon_color", "get_sky_horizon_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sky_curve", PROPERTY_HINT_EXP_EASING), "set_sky_curve", "get_sky_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sky_energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_sky_energy", "get_sky_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sky_cover", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_sky_cover", "get_sky_cover");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "sky_cover_modulate"), "set_sky_cover_modulate", "get_sky_cover_modulate");
 
 	ADD_GROUP("Ground", "ground_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ground_bottom_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_ground_bottom_color", "get_ground_bottom_color");
@@ -212,6 +239,8 @@ uniform vec4 sky_top_color : hint_color = vec4(0.385, 0.454, 0.55, 1.0);
 uniform vec4 sky_horizon_color : hint_color = vec4(0.646, 0.656, 0.67, 1.0);
 uniform float sky_curve : hint_range(0, 1) = 0.15;
 uniform float sky_energy = 1.0;
+uniform sampler2D sky_cover : hint_black_albedo;
+uniform vec4 sky_cover_modulate : hint_color = vec4(1.0, 1.0, 1.0, 1.0);
 uniform vec4 ground_bottom_color : hint_color = vec4(0.2, 0.169, 0.133, 1.0);
 uniform vec4 ground_horizon_color : hint_color = vec4(0.646, 0.656, 0.67, 1.0);
 uniform float ground_curve : hint_range(0, 1) = 0.02;
@@ -265,6 +294,9 @@ void sky() {
 		}
 	}
 
+	vec4 sky_cover_texture = texture(sky_cover, SKY_COORDS);
+	sky += (sky_cover_texture.rgb * sky_cover_modulate.rgb) * sky_cover_texture.a * sky_cover_modulate.a * sky_energy;
+
 	c = (v_angle - (PI * 0.5)) / (PI * 0.5);
 	vec3 ground = mix(ground_horizon_color.rgb, ground_bottom_color.rgb, clamp(1.0 - pow(1.0 - c, 1.0 / ground_curve), 0.0, 1.0));
 	ground *= ground_energy;
@@ -281,6 +313,7 @@ ProceduralSkyMaterial::ProceduralSkyMaterial() {
 	set_sky_horizon_color(Color(0.6463, 0.6558, 0.6708));
 	set_sky_curve(0.15);
 	set_sky_energy(1.0);
+	set_sky_cover_modulate(Color(1, 1, 1));
 
 	set_ground_bottom_color(Color(0.2, 0.169, 0.133));
 	set_ground_horizon_color(Color(0.6463, 0.6558, 0.6708));
