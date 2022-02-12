@@ -315,6 +315,7 @@ subdir('thirdparty')
 godotcore_dep = declare_dependency(include_directories: INCDIRS,
                                    compile_args: CPP_ARGS,
                                    link_args: LINK_ARGS)
+meson.override_dependency('godotcore', godotcore_dep)
 
 subdir('platform')
 subdir('core')
