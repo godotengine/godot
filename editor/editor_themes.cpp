@@ -277,6 +277,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		exceptions.insert("StatusSuccess");
 		exceptions.insert("StatusWarning");
 		exceptions.insert("OverbrightIndicator");
+		exceptions.insert("GuiMiniCheckerboard");
 	}
 
 	// These ones should be converted even if we are using a dark theme.
