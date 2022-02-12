@@ -147,7 +147,7 @@
 		<method name="hash">
 			<return type="int" />
 			<description>
-				Returns a hashed integer value representing the dictionary contents. This can be used to compare dictionaries by value:
+				Returns a hashed 32-bit integer value representing the dictionary contents. This can be used to compare dictionaries by value:
 				[codeblock]
 				var dict1 = {0: 10}
 				var dict2 = {0: 10}
@@ -155,6 +155,7 @@
 				print(dict1.hash() == dict2.hash())
 				[/codeblock]
 				[b]Note:[/b] Dictionaries with the same keys/values but in a different order will have a different hash.
+				[b]Note:[/b] Dictionaries with equal content will always produce identical hash values. However, the reverse is not true. Returning identical hash values does [i]not[/i] imply the dictionaries are equal, because different dictionaries can have identical hash values due to hash collisions.
 			</description>
 		</method>
 		<method name="keys">
