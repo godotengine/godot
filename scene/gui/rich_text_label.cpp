@@ -514,7 +514,7 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 			} break;
 			case ITEM_IMAGE: {
 				ItemImage *img = (ItemImage *)it;
-				l.text_buf->add_object((uint64_t)it, img->image->get_size(), img->inline_align, 1);
+				l.text_buf->add_object((uint64_t)it, img->size, img->inline_align, 1);
 				text += String::chr(0xfffc);
 				l.char_count++;
 				remaining_characters--;
