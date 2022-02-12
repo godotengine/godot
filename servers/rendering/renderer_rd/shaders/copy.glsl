@@ -17,7 +17,7 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 #define FLAG_HIGH_QUALITY_GLOW (1 << 8)
 #define FLAG_ALPHA_TO_ONE (1 << 9)
 
-layout(push_constant, binding = 1, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	ivec4 section;
 	ivec2 target;
 	uint flags;

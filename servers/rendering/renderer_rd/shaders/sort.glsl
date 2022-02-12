@@ -47,7 +47,7 @@ layout(set = 1, binding = 0, std430) restrict buffer SortBuffer {
 }
 sort_buffer;
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	uint total_elements;
 	uint pad[3];
 	ivec4 job_params;

@@ -10,7 +10,7 @@ layout(rgba16, set = 0, binding = 0) uniform restrict writeonly image2D dest_ima
 layout(set = 1, binding = 0) uniform sampler2DArray source_texture;
 layout(r8, set = 2, binding = 0) uniform restrict readonly image2DArray source_edges;
 
-layout(push_constant, binding = 1, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	float inv_sharpness;
 	uint size_modifier;
 	vec2 pixel_size;

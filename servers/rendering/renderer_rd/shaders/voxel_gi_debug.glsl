@@ -20,7 +20,7 @@ layout(set = 0, binding = 2) uniform texture3D color_tex;
 
 layout(set = 0, binding = 3) uniform sampler tex_sampler;
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	mat4 projection;
 	uint cell_offset;
 	float dynamic_range;

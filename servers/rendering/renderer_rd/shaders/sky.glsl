@@ -12,7 +12,7 @@
 
 layout(location = 0) out vec2 uv_interp;
 
-layout(push_constant, binding = 1, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	mat3 orientation;
 	vec4 projections[MAX_VIEWS];
 	vec4 position_multiplier;
@@ -52,7 +52,7 @@ void main() {
 
 layout(location = 0) in vec2 uv_interp;
 
-layout(push_constant, binding = 1, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	mat3 orientation;
 	vec4 projections[MAX_VIEWS];
 	vec4 position_multiplier;

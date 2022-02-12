@@ -13,7 +13,7 @@ layout(rgba16f, set = 2, binding = 0) uniform restrict writeonly image2D dest_ss
 layout(r32f, set = 3, binding = 0) uniform restrict writeonly image2D dest_depth;
 layout(rgba8, set = 3, binding = 1) uniform restrict writeonly image2D dest_normal;
 
-layout(push_constant, binding = 1, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	ivec2 screen_size;
 	float camera_z_near;
 	float camera_z_far;

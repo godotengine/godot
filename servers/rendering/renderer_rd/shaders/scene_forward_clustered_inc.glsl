@@ -21,7 +21,7 @@
 #endif
 #endif
 
-layout(push_constant, binding = 0, std430) uniform DrawCall {
+layout(push_constant, std430) uniform DrawCall {
 	uint instance_index;
 	uint uv_offset;
 	uint pad0;
