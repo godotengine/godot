@@ -52,10 +52,6 @@
 #include "gd_mono_marshal.h"
 #include "gd_mono_utils.h"
 
-#ifdef TOOLS_ENABLED
-#include "main/main.h"
-#endif
-
 #ifdef ANDROID_ENABLED
 #include "android_mono_config.h"
 #include "support/android_support.h"
@@ -143,7 +139,7 @@ void gd_mono_debug_init() {
 
 	if (Engine::get_singleton()->is_editor_hint() ||
 			ProjectSettings::get_singleton()->get_resource_path().is_empty() ||
-			Main::is_project_manager()) {
+			Engine::get_singleton()->is_project_manager_hint()) {
 		if (da_args.size() == 0) {
 			return;
 		}
@@ -423,7 +419,7 @@ void GDMono::initialize_load_assemblies() {
 	bool tool_assemblies_loaded = _load_tools_assemblies();
 	CRASH_COND_MSG(!tool_assemblies_loaded, "Mono: Failed to load '" TOOLS_ASM_NAME "' assemblies.");
 
-	if (Main::is_project_manager()) {
+	if (Engine::get_singleton()->is_project_manager_hint()) {
 		return;
 	}
 #endif
@@ -815,7 +811,7 @@ bool GDMono::_load_core_api_assembly(LoadedApiAssembly &r_loaded_api_assembly, c
 	// For the editor and the editor player we want to load it from a specific path to make sure we can keep it up to date
 
 	// If running the project manager, load it from the prebuilt API directory
-	String assembly_dir = !Main::is_project_manager()
+	String assembly_dir = !Engine::get_singleton()->is_project_manager_hint()
 			? GodotSharpDirs::get_res_assemblies_base_dir().plus_file(p_config)
 			: GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file(p_config);
 
@@ -848,7 +844,7 @@ bool GDMono::_load_editor_api_assembly(LoadedApiAssembly &r_loaded_api_assembly,
 	// For the editor and the editor player we want to load it from a specific path to make sure we can keep it up to date
 
 	// If running the project manager, load it from the prebuilt API directory
-	String assembly_dir = !Main::is_project_manager()
+	String assembly_dir = !Engine::get_singleton()->is_project_manager_hint()
 			? GodotSharpDirs::get_res_assemblies_base_dir().plus_file(p_config)
 			: GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file(p_config);
 
@@ -932,7 +928,7 @@ void GDMono::_load_api_assemblies() {
 		// this time update them from the prebuilt assemblies directory before trying to load them again.
 
 		// Shouldn't happen. The project manager loads the prebuilt API assemblies
-		CRASH_COND_MSG(Main::is_project_manager(), "Failed to load one of the prebuilt API assemblies.");
+		CRASH_COND_MSG(Engine::get_singleton()->is_project_manager_hint(), "Failed to load one of the prebuilt API assemblies.");
 
 		// 1. Unload the scripts domain
 		Error domain_unload_err = _unload_scripts_domain();

@@ -161,7 +161,7 @@ public:
 	Vector<String> get_favorites() const;
 	void set_recent_dirs(const Vector<String> &p_recent_dirs);
 	Vector<String> get_recent_dirs() const;
-	void load_favorites();
+	void load_favorites_and_recent_dirs();
 
 	bool is_dark_theme();
 

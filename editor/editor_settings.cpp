@@ -845,7 +845,7 @@ void EditorSettings::create() {
 
 		singleton->setup_language();
 		singleton->setup_network();
-		singleton->load_favorites();
+		singleton->load_favorites_and_recent_dirs();
 		singleton->list_text_editor_themes();
 
 		return;
@@ -1103,7 +1103,13 @@ Variant EditorSettings::get_project_metadata(const String &p_section, const Stri
 
 void EditorSettings::set_favorites(const Vector<String> &p_favorites) {
 	favorites = p_favorites;
-	FileAccess *f = FileAccess::open(get_project_settings_dir().plus_file("favorites"), FileAccess::WRITE);
+	String favorites_file;
+	if (Engine::get_singleton()->is_project_manager_hint()) {
+		favorites_file = EditorPaths::get_singleton()->get_config_dir().plus_file("favorite_dirs");
+	} else {
+		favorites_file = get_project_settings_dir().plus_file("favorites");
+	}
+	FileAccess *f = FileAccess::open(favorites_file, FileAccess::WRITE);
 	if (f) {
 		for (int i = 0; i < favorites.size(); i++) {
 			f->store_line(favorites[i]);
@@ -1118,7 +1124,13 @@ Vector<String> EditorSettings::get_favorites() const {
 
 void EditorSettings::set_recent_dirs(const Vector<String> &p_recent_dirs) {
 	recent_dirs = p_recent_dirs;
-	FileAccess *f = FileAccess::open(get_project_settings_dir().plus_file("recent_dirs"), FileAccess::WRITE);
+	String recent_dirs_file;
+	if (Engine::get_singleton()->is_project_manager_hint()) {
+		recent_dirs_file = EditorPaths::get_singleton()->get_config_dir().plus_file("recent_dirs");
+	} else {
+		recent_dirs_file = get_project_settings_dir().plus_file("recent_dirs");
+	}
+	FileAccess *f = FileAccess::open(recent_dirs_file, FileAccess::WRITE);
 	if (f) {
 		for (int i = 0; i < recent_dirs.size(); i++) {
 			f->store_line(recent_dirs[i]);
@@ -1131,8 +1143,17 @@ Vector<String> EditorSettings::get_recent_dirs() const {
 	return recent_dirs;
 }
 
-void EditorSettings::load_favorites() {
-	FileAccess *f = FileAccess::open(get_project_settings_dir().plus_file("favorites"), FileAccess::READ);
+void EditorSettings::load_favorites_and_recent_dirs() {
+	String favorites_file;
+	String recent_dirs_file;
+	if (Engine::get_singleton()->is_project_manager_hint()) {
+		favorites_file = EditorPaths::get_singleton()->get_config_dir().plus_file("favorite_dirs");
+		recent_dirs_file = EditorPaths::get_singleton()->get_config_dir().plus_file("recent_dirs");
+	} else {
+		favorites_file = get_project_settings_dir().plus_file("favorites");
+		recent_dirs_file = get_project_settings_dir().plus_file("recent_dirs");
+	}
+	FileAccess *f = FileAccess::open(favorites_file, FileAccess::READ);
 	if (f) {
 		String line = f->get_line().strip_edges();
 		while (!line.is_empty()) {
@@ -1142,7 +1163,7 @@ void EditorSettings::load_favorites() {
 		memdelete(f);
 	}
 
-	f = FileAccess::open(get_project_settings_dir().plus_file("recent_dirs"), FileAccess::READ);
+	f = FileAccess::open(recent_dirs_file, FileAccess::READ);
 	if (f) {
 		String line = f->get_line().strip_edges();
 		while (!line.is_empty()) {

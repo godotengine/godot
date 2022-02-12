@@ -45,7 +45,6 @@ class Main {
 	static bool agile_input_event_flushing;
 
 public:
-	static bool is_project_manager();
 	static bool is_cmdline_tool();
 	static int test_entrypoint(int argc, char *argv[], bool &tests_need_run);
 	static Error setup(const char *execpath, int argc, char *argv[], bool p_second_phase = true);
