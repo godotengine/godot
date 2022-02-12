@@ -50,8 +50,10 @@ enum FilterOption {
 class ProjectManager : public Control {
 	GDCLASS(ProjectManager, Control);
 
-	static Map<String, Ref<Texture2D>> icon_type_cache;
-	static void _build_icon_type_cache(Ref<Theme> p_theme);
+	Map<String, Ref<Texture2D>> icon_type_cache;
+	void _build_icon_type_cache(Ref<Theme> p_theme);
+
+	static ProjectManager *singleton;
 
 	TabContainer *tabs;
 
@@ -139,6 +141,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	static ProjectManager *get_singleton() { return singleton; }
+
 	ProjectManager();
 	~ProjectManager();
 };

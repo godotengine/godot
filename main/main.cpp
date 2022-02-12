@@ -1212,6 +1212,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		// If we didn't find a project, we fall back to the project manager.
 		project_manager = !found_project && !cmdline_tool;
 	}
+
+	if (project_manager) {
+		Engine::get_singleton()->set_project_manager_hint(true);
+	}
 #endif
 
 	GLOBAL_DEF("debug/file_logging/enable_file_logging", false);
@@ -2540,7 +2544,6 @@ bool Main::start() {
 #ifdef TOOLS_ENABLED
 		if (project_manager) {
 			Engine::get_singleton()->set_editor_hint(true);
-			Engine::get_singleton()->set_project_manager_hint(true);
 			ProjectManager *pmanager = memnew(ProjectManager);
 			ProgressDialog *progress_dialog = memnew(ProgressDialog);
 			pmanager->add_child(progress_dialog);
