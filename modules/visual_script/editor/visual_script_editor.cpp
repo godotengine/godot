@@ -1510,6 +1510,7 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 		function_name_edit->popup();
 		function_name_box->set_text(selected);
 		function_name_box->select_all();
+		function_name_box->grab_focus();
 	}
 }
 
@@ -2098,9 +2099,13 @@ void VisualScriptEditor::_fn_name_box_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> key = p_event;
 	if (key.is_valid() && key->is_pressed() && key->get_keycode() == Key::ENTER) {
 		function_name_edit->hide();
-		_rename_function(selected, function_name_box->get_text());
+		_on_fn_name_box_confirmed();
 		function_name_box->clear();
 	}
+}
+
+void VisualScriptEditor::_on_fn_name_box_confirmed() {
+	_rename_function(selected, function_name_box->get_text());
 }
 
 Variant VisualScriptEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
@@ -4415,6 +4420,7 @@ void VisualScriptEditor::_member_option(int p_option) {
 				function_name_edit->popup();
 				function_name_box->set_text(selected);
 				function_name_box->select_all();
+				function_name_box->grab_focus();
 			}
 		} break;
 		case MEMBER_VARIABLE: {
@@ -4545,9 +4551,11 @@ VisualScriptEditor::VisualScriptEditor() {
 	member_popup->connect("id_pressed", callable_mp(this, &VisualScriptEditor::_member_option));
 
 	function_name_edit = memnew(AcceptDialog);
+	function_name_edit->set_title(TTR("Rename Function"));
 	function_name_box = memnew(LineEdit);
 	function_name_edit->add_child(function_name_box);
 	function_name_box->connect("gui_input", callable_mp(this, &VisualScriptEditor::_fn_name_box_input));
+	function_name_edit->get_ok_button()->connect("pressed", callable_mp(this, &VisualScriptEditor::_on_fn_name_box_confirmed));
 	function_name_box->set_expand_to_text_length_enabled(true);
 	add_child(function_name_edit);
 
