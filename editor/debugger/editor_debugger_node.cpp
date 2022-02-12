@@ -36,6 +36,7 @@
 #include "editor/editor_node.h"
 #include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
+#include "editor/scene_tree_dock.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/tab_container.h"
 

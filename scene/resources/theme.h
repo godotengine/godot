@@ -32,7 +32,6 @@
 #define THEME_H
 
 #include "core/io/resource.h"
-#include "core/io/resource_loader.h"
 #include "scene/resources/font.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"

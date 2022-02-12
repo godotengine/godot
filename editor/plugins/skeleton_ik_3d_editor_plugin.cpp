@@ -30,6 +30,7 @@
 
 #include "skeleton_ik_3d_editor_plugin.h"
 
+#include "editor/editor_node.h"
 #include "scene/3d/skeleton_ik_3d.h"
 
 void SkeletonIK3DEditorPlugin::_play() {

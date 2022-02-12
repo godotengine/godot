@@ -38,9 +38,9 @@
 #include "core/io/resource_saver.h"
 #include "core/os/os.h"
 #include "core/variant/variant_parser.h"
-#include "editor_node.h"
-#include "editor_resource_preview.h"
-#include "editor_settings.h"
+#include "editor/editor_node.h"
+#include "editor/editor_resource_preview.h"
+#include "editor/editor_settings.h"
 
 EditorFileSystem *EditorFileSystem::singleton = nullptr;
 //the name is the version, to keep compatibility with different versions of Godot

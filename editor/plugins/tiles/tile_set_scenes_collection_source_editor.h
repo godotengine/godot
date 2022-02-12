@@ -31,9 +31,14 @@
 #ifndef TILE_SET_SCENES_COLLECTION_SOURCE_EDITOR_H
 #define TILE_SET_SCENES_COLLECTION_SOURCE_EDITOR_H
 
-#include "editor/editor_node.h"
+#include "editor/editor_inspector.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/item_list.h"
 #include "scene/resources/tile_set.h"
+
+class EditorNode;
+class UndoRedo;
 
 class TileSetScenesCollectionSourceEditor : public HBoxContainer {
 	GDCLASS(TileSetScenesCollectionSourceEditor, HBoxContainer);
@@ -93,7 +98,7 @@ private:
 	TileSetScenesCollectionSource *tile_set_scenes_collection_source = nullptr;
 	int tile_set_source_id = -1;
 
-	UndoRedo *undo_redo = EditorNode::get_undo_redo();
+	UndoRedo *undo_redo;
 
 	bool tile_set_scenes_collection_source_changed_needs_update = false;
 

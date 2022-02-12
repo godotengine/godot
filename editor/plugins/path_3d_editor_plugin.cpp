@@ -33,6 +33,7 @@
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_node.h"
 #include "node_3d_editor_plugin.h"
 #include "scene/resources/curve.h"
 

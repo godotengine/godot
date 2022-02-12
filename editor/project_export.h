@@ -34,7 +34,6 @@
 #include "core/io/dir_access.h"
 #include "core/os/thread.h"
 #include "editor/editor_export.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_properties.h"
@@ -54,6 +53,7 @@
 #include "scene/main/timer.h"
 
 class EditorNode;
+class EditorFileDialog;
 
 class ProjectExportDialog : public ConfirmationDialog {
 	GDCLASS(ProjectExportDialog, ConfirmationDialog);

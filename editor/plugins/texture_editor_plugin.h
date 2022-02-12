@@ -31,9 +31,10 @@
 #ifndef TEXTURE_EDITOR_PLUGIN_H
 #define TEXTURE_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/resources/texture.h"
+
+class EditorNode;
 
 class TexturePreview : public MarginContainer {
 	GDCLASS(TexturePreview, MarginContainer);

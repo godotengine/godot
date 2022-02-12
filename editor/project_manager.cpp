@@ -30,6 +30,7 @@
 
 #include "project_manager.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
@@ -40,10 +41,10 @@
 #include "core/os/os.h"
 #include "core/string/translation.h"
 #include "core/version.h"
+#include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
+#include "editor/editor_themes.h"
 #include "editor/editor_vcs_interface.h"
-#include "editor_scale.h"
-#include "editor_settings.h"
-#include "editor_themes.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
@@ -53,6 +54,7 @@
 #include "scene/main/window.h"
 #include "servers/display_server.h"
 #include "servers/navigation_server_3d.h"
+#include "servers/physics_server_2d.h"
 
 static inline String get_project_key_from_path(const String &dir) {
 	return dir.replace("/", "::");

@@ -31,12 +31,14 @@
 #ifndef RESOURCE_PRELOADER_EDITOR_PLUGIN_H
 #define RESOURCE_PRELOADER_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/file_dialog.h"
 #include "scene/gui/tree.h"
 #include "scene/main/resource_preloader.h"
+
+class EditorNode;
+struct EditorProgress;
+class EditorFileDialog;
 
 class ResourcePreloaderEditor : public PanelContainer {
 	GDCLASS(ResourcePreloaderEditor, PanelContainer);

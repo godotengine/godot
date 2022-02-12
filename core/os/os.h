@@ -34,7 +34,6 @@
 #include "core/config/engine.h"
 #include "core/io/image.h"
 #include "core/io/logger.h"
-#include "core/os/main_loop.h"
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
 #include "core/templates/vector.h"

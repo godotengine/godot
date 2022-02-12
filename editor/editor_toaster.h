@@ -31,12 +31,12 @@
 #ifndef EDITOR_TOASTER_H
 #define EDITOR_TOASTER_H
 
-#include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
-#include "scene/gui/popup.h"
-
 #include "core/string/ustring.h"
 #include "core/templates/local_vector.h"
+#include "scene/gui/box_container.h"
+
+class Button;
+class PanelContainer;
 
 class EditorToaster : public HBoxContainer {
 	GDCLASS(EditorToaster, HBoxContainer);

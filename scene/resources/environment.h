@@ -34,7 +34,6 @@
 #include "core/io/resource.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/texture.h"
-#include "servers/rendering_server.h"
 
 class Environment : public Resource {
 	GDCLASS(Environment, Resource);

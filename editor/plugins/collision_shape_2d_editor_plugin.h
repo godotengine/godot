@@ -31,11 +31,11 @@
 #ifndef COLLISION_SHAPE_2D_EDITOR_PLUGIN_H
 #define COLLISION_SHAPE_2D_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 
 #include "scene/2d/collision_shape_2d.h"
 
+class EditorNode;
 class CanvasItemEditor;
 
 class CollisionShape2DEditor : public Control {

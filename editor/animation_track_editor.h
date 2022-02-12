@@ -37,7 +37,6 @@
 #include "editor/property_selector.h"
 
 #include "scene/gui/control.h"
-#include "scene/gui/file_dialog.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/slider.h"

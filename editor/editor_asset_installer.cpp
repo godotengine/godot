@@ -33,8 +33,9 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/zip_io.h"
-#include "editor_node.h"
-#include "progress_dialog.h"
+#include "editor/editor_file_system.h"
+#include "editor/editor_node.h"
+#include "editor/progress_dialog.h"
 
 void EditorAssetInstaller::_item_edited() {
 	if (updating) {

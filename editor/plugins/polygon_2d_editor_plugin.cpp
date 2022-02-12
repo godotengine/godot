@@ -38,7 +38,10 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "scene/2d/skeleton_2d.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/scroll_container.h"
+#include "scene/gui/separator.h"
+#include "scene/gui/slider.h"
 #include "scene/gui/view_panner.h"
 
 Node2D *Polygon2DEditor::_get_node() const {

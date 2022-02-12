@@ -31,10 +31,11 @@
 #ifndef PATH_2D_EDITOR_PLUGIN_H
 #define PATH_2D_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/2d/path_2d.h"
+#include "scene/gui/separator.h"
 
+class EditorNode;
 class CanvasItemEditor;
 
 class Path2DEditor : public HBoxContainer {

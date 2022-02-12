@@ -34,6 +34,7 @@
 #include "core/io/resource_loader.h"
 #include "core/os/keyboard.h"
 #include "editor/audio_stream_preview.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 

@@ -30,6 +30,8 @@
 
 #include "app_packager.h"
 
+#include "editor/editor_node.h"
+
 String AppxPackager::hash_block(const uint8_t *p_block_data, size_t p_block_len) {
 	unsigned char hash[32];
 	char base64[45];

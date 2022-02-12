@@ -31,12 +31,15 @@
 #ifndef CPU_PARTICLES_2D_EDITOR_PLUGIN_H
 #define CPU_PARTICLES_2D_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/2d/collision_polygon_2d.h"
 #include "scene/2d/cpu_particles_2d.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/file_dialog.h"
+
+class EditorNode;
+class EditorPlugin;
+class SpinBox;
+class EditorFileDialog;
 
 class CPUParticles2DEditorPlugin : public EditorPlugin {
 	GDCLASS(CPUParticles2DEditorPlugin, EditorPlugin);

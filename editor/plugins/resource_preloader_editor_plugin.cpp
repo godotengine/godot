@@ -32,6 +32,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 

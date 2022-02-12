@@ -31,7 +31,6 @@
 #ifndef ANIMATION_TREE_EDITOR_PLUGIN_H
 #define ANIMATION_TREE_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/property_editor.h"
 #include "scene/animation/animation_tree.h"
@@ -40,6 +39,8 @@
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
 
+class EditorNode;
+class EditorFileDialog;
 class AnimationTreeNodeEditorPlugin : public VBoxContainer {
 	GDCLASS(AnimationTreeNodeEditorPlugin, VBoxContainer);
 

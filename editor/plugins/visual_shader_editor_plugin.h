@@ -31,7 +31,6 @@
 #ifndef VISUAL_SHADER_EDITOR_PLUGIN_H
 #define VISUAL_SHADER_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/plugins/curve_editor_plugin.h"
 #include "editor/property_editor.h"
@@ -40,6 +39,8 @@
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
 #include "scene/resources/visual_shader.h"
+
+class EditorNode;
 
 class VisualShaderNodePlugin : public RefCounted {
 	GDCLASS(VisualShaderNodePlugin, RefCounted);

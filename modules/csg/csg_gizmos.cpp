@@ -29,6 +29,8 @@
 /*************************************************************************/
 
 #include "csg_gizmos.h"
+
+#include "editor/editor_settings.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
 

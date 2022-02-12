@@ -32,7 +32,6 @@
 #define TEXTURE_REGION_EDITOR_PLUGIN_H
 
 #include "canvas_item_editor_plugin.h"
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/3d/sprite_3d.h"
@@ -40,6 +39,7 @@
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 
+class EditorNode;
 class ViewPanner;
 
 class TextureRegionEditor : public VBoxContainer {

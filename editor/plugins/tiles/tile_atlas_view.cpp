@@ -36,7 +36,6 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"
-#include "scene/gui/texture_rect.h"
 #include "scene/gui/view_panner.h"
 
 #include "editor/editor_scale.h"

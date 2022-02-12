@@ -34,10 +34,10 @@
 #include "tile_atlas_view.h"
 #include "tile_data_editors.h"
 
-#include "editor/editor_node.h"
 #include "scene/gui/split_container.h"
 #include "scene/resources/tile_set.h"
 
+class EditorNode;
 class TileSet;
 
 class TileSetAtlasSourceEditor : public HBoxContainer {
@@ -115,7 +115,7 @@ private:
 	TileSetAtlasSource *tile_set_atlas_source = nullptr;
 	int tile_set_atlas_source_id = TileSet::INVALID_SOURCE;
 
-	UndoRedo *undo_redo = EditorNode::get_undo_redo();
+	UndoRedo *undo_redo;
 
 	bool tile_set_changed_needs_update = false;
 

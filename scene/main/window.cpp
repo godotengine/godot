@@ -30,6 +30,7 @@
 
 #include "window.h"
 
+#include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/string/translation.h"
 #include "scene/gui/control.h"

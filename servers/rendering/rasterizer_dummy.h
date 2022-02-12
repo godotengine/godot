@@ -31,7 +31,6 @@
 #ifndef RASTERIZER_DUMMY_H
 #define RASTERIZER_DUMMY_H
 
-#include "core/math/camera_matrix.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
 #include "scene/resources/mesh.h"

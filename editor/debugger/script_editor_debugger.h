@@ -35,7 +35,6 @@
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/editor_debugger_server.h"
-#include "editor/editor_file_dialog.h"
 #include "scene/gui/button.h"
 #include "scene/gui/margin_container.h"
 
@@ -50,6 +49,7 @@ class TreeItem;
 class HSplitContainer;
 class ItemList;
 class EditorProfiler;
+class EditorFileDialog;
 class EditorVisualProfiler;
 class EditorNetworkProfiler;
 class EditorPerformanceProfiler;

@@ -30,6 +30,9 @@
 
 #include "export_plugin.h"
 
+#include "core/config/project_settings.h"
+#include "editor/editor_node.h"
+
 Error EditorExportPlatformJavaScript::_extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa) {
 	FileAccess *src_f = nullptr;
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);

@@ -30,6 +30,7 @@
 
 #include "script_text_editor.h"
 
+#include "core/config/project_settings.h"
 #include "core/math/expression.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"

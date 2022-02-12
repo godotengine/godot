@@ -31,10 +31,13 @@
 #ifndef GRID_MAP_EDITOR_PLUGIN_H
 #define GRID_MAP_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "grid_map.h"
+#include "scene/gui/item_list.h"
+#include "scene/gui/slider.h"
+#include "scene/gui/spin_box.h"
 
+class EditorNode;
 class Node3DEditorPlugin;
 
 class GridMapEditor : public VBoxContainer {

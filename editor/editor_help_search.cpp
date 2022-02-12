@@ -31,9 +31,9 @@
 #include "editor_help_search.h"
 
 #include "core/os/keyboard.h"
-#include "editor_feature_profile.h"
-#include "editor_node.h"
-#include "editor_scale.h"
+#include "editor/editor_feature_profile.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 
 void EditorHelpSearch::_update_icons() {
 	search_box->set_right_icon(results_tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));

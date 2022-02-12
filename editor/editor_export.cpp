@@ -44,9 +44,9 @@
 #include "core/object/script_language.h"
 #include "core/version.h"
 #include "editor/editor_file_system.h"
+#include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 #include "editor/plugins/script_editor_plugin.h"
-#include "editor_node.h"
-#include "editor_settings.h"
 #include "scene/resources/resource_format_text.h"
 
 static int _get_pad(int p_alignment, int p_n) {

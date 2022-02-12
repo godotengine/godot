@@ -30,11 +30,13 @@
 
 #include "editor_properties.h"
 
+#include "core/config/project_settings.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
+#include "editor/editor_properties_array_dict.h"
 #include "editor/editor_resource_preview.h"
+#include "editor/editor_scale.h"
 #include "editor/filesystem_dock.h"
-#include "editor_node.h"
-#include "editor_properties_array_dict.h"
-#include "editor_scale.h"
 #include "scene/2d/gpu_particles_2d.h"
 #include "scene/3d/fog_volume.h"
 #include "scene/3d/gpu_particles_3d.h"

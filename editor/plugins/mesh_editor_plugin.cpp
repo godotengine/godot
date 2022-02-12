@@ -30,6 +30,7 @@
 
 #include "mesh_editor_plugin.h"
 
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 
 void MeshEditor::gui_input(const Ref<InputEvent> &p_event) {

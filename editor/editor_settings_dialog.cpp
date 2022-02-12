@@ -34,11 +34,11 @@
 #include "core/input/input_map.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
-#include "editor_file_system.h"
-#include "editor_log.h"
-#include "editor_node.h"
-#include "editor_scale.h"
-#include "editor_settings.h"
+#include "editor/editor_file_system.h"
+#include "editor/editor_log.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "scene/gui/margin_container.h"
 
 void EditorSettingsDialog::ok_pressed() {

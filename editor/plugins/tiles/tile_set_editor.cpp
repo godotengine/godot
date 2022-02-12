@@ -33,6 +33,7 @@
 #include "tile_data_editors.h"
 #include "tiles_editor_plugin.h"
 
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 
 #include "scene/gui/box_container.h"
@@ -656,6 +657,8 @@ void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
 
 TileSetEditor::TileSetEditor() {
 	singleton = this;
+
+	undo_redo = EditorNode::get_undo_redo();
 
 	set_process_internal(true);
 

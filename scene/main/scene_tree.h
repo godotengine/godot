@@ -35,8 +35,6 @@
 #include "core/os/thread_safe.h"
 #include "core/templates/self_list.h"
 #include "scene/resources/mesh.h"
-#include "scene/resources/world_2d.h"
-#include "scene/resources/world_3d.h"
 
 #undef Window
 
@@ -48,6 +46,7 @@ class Mesh;
 class MultiplayerAPI;
 class SceneDebugger;
 class Tween;
+class Viewport;
 
 class SceneTreeTimer : public RefCounted {
 	GDCLASS(SceneTreeTimer, RefCounted);

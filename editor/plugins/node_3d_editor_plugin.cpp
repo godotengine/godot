@@ -42,6 +42,7 @@
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "editor/plugins/script_editor_plugin.h"
+#include "editor/scene_tree_dock.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/light_3d.h"

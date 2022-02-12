@@ -35,6 +35,9 @@
 
 class ViewPanner;
 class ScrollContainer;
+class Panel;
+class HSlider;
+class SpinBox;
 
 class Polygon2DEditor : public AbstractPolygon2DEditor {
 	GDCLASS(Polygon2DEditor, AbstractPolygon2DEditor);

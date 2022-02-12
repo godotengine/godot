@@ -30,6 +30,9 @@
 
 #include "gpu_particles_collision_sdf_editor_plugin.h"
 
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
+
 void GPUParticlesCollisionSDF3DEditorPlugin::_bake() {
 	if (col_sdf) {
 		if (col_sdf->get_texture().is_null() || !col_sdf->get_texture()->get_path().is_resource_file()) {

@@ -29,6 +29,8 @@
 /*************************************************************************/
 
 #include "occluder_instance_3d.h"
+
+#include "core/config/project_settings.h"
 #include "core/core_string_names.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/triangulate.h"

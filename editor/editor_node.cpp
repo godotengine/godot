@@ -76,9 +76,12 @@
 #include "editor/editor_about.h"
 #include "editor/editor_audio_buses.h"
 #include "editor/editor_command_palette.h"
+#include "editor/editor_data.h"
 #include "editor/editor_export.h"
 #include "editor/editor_feature_profile.h"
+#include "editor/editor_file_dialog.h"
 #include "editor/editor_file_system.h"
+#include "editor/editor_folding.h"
 #include "editor/editor_help.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_layouts_dialog.h"
@@ -88,6 +91,7 @@
 #include "editor/editor_properties.h"
 #include "editor/editor_resource_picker.h"
 #include "editor/editor_resource_preview.h"
+#include "editor/editor_run.h"
 #include "editor/editor_run_native.h"
 #include "editor/editor_run_script.h"
 #include "editor/editor_scale.h"
@@ -193,6 +197,7 @@
 #include "editor/project_settings_editor.h"
 #include "editor/quick_open.h"
 #include "editor/register_exporters.h"
+#include "editor/scene_tree_dock.h"
 
 #include <stdio.h>
 #include <stdlib.h>

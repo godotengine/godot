@@ -31,10 +31,11 @@
 #ifndef SPRITE_EDITOR_PLUGIN_H
 #define SPRITE_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/gui/spin_box.h"
+
+class EditorNode;
 
 class Sprite2DEditor : public Control {
 	GDCLASS(Sprite2DEditor, Control);

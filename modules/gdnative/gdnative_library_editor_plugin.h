@@ -32,8 +32,15 @@
 #define GDNATIVE_LIBRARY_EDITOR_PLUGIN_H
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_node.h"
+
+#include "editor/editor_plugin.h"
 #include "gdnative.h"
+#include "scene/gui/control.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/tree.h"
+
+class EditorNode;
+class EditorFileDialog;
 
 class GDNativeLibraryEditor : public Control {
 	GDCLASS(GDNativeLibraryEditor, Control);

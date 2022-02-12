@@ -30,6 +30,8 @@
 
 #include "inspector_dock.h"
 
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 

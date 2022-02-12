@@ -49,8 +49,8 @@
 #include "create_dialog.h"
 
 #include "dependency_editor.h"
-#include "editor_dir_dialog.h"
-#include "editor_file_system.h"
+#include "editor/editor_dir_dialog.h"
+#include "editor/editor_file_system.h"
 #include "script_create_dialog.h"
 
 class EditorNode;

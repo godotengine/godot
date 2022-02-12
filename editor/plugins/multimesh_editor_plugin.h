@@ -31,10 +31,13 @@
 #ifndef MULTIMESH_EDITOR_PLUGIN_H
 #define MULTIMESH_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/3d/multimesh_instance_3d.h"
+#include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
+
+class EditorNode;
+class SceneTreeDialog;
 
 class MultiMeshEditor : public Control {
 	GDCLASS(MultiMeshEditor, Control);

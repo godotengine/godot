@@ -34,7 +34,6 @@
 #include "core/math/camera_matrix.h"
 #include "core/templates/paged_array.h"
 #include "servers/rendering/renderer_scene.h"
-#include "servers/rendering/renderer_storage.h"
 
 class RendererSceneRender {
 public:

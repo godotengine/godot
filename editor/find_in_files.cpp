@@ -30,10 +30,11 @@
 
 #include "find_in_files.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/os/os.h"
-#include "editor_node.h"
-#include "editor_scale.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"

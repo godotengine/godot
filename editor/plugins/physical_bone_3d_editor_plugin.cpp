@@ -30,6 +30,7 @@
 
 #include "physical_bone_3d_editor_plugin.h"
 
+#include "editor/editor_node.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/physics_body_3d.h"
 

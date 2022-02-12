@@ -31,7 +31,9 @@
 #include "gpu_particles_3d_editor_plugin.h"
 
 #include "core/io/resource_loader.h"
+#include "editor/editor_node.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/scene_tree_dock.h"
 #include "scene/3d/cpu_particles_3d.h"
 #include "scene/resources/particles_material.h"
 

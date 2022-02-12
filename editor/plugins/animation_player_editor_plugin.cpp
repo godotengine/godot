@@ -36,10 +36,13 @@
 #include "core/io/resource_saver.h"
 #include "core/os/keyboard.h"
 #include "editor/animation_track_editor.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/canvas_item_editor_plugin.h" // For onion skinning.
 #include "editor/plugins/node_3d_editor_plugin.h" // For onion skinning.
+#include "editor/scene_tree_dock.h"
 #include "scene/main/window.h"
 #include "scene/resources/animation.h"
 #include "scene/scene_string_names.h"

@@ -35,9 +35,9 @@
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/message_queue.h"
-#include "editor_node.h"
-#include "editor_scale.h"
-#include "editor_settings.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 
 bool EditorResourcePreviewGenerator::handles(const String &p_type) const {
 	bool success;

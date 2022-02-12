@@ -31,7 +31,7 @@
 #include "array_property_edit.h"
 
 #include "core/io/marshalls.h"
-#include "editor_node.h"
+#include "editor/editor_node.h"
 
 #define ITEMS_PER_PAGE 100
 

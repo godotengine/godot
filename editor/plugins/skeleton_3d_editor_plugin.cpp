@@ -32,6 +32,7 @@
 
 #include "core/io/resource_saver.h"
 #include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_scale.h"
 #include "editor/plugins/animation_player_editor_plugin.h"

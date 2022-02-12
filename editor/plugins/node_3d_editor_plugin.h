@@ -31,19 +31,24 @@
 #ifndef NODE_3D_EDITOR_PLUGIN_H
 #define NODE_3D_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_spin_slider.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/3d/world_environment.h"
+#include "scene/gui/color_picker.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/spin_box.h"
+#include "scene/gui/split_container.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/fog_material.h"
 #include "scene/resources/sky_material.h"
 
+class EditorNode;
+class EditorData;
 class Node3DEditor;
 class Node3DEditorViewport;
 class SubViewportContainer;

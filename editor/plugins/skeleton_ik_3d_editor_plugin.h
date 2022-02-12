@@ -31,9 +31,9 @@
 #ifndef SKELETON_IK_3D_EDITOR_PLUGIN_H
 #define SKELETON_IK_3D_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 
+class EditorNode;
 class SkeletonIK3D;
 
 class SkeletonIK3DEditorPlugin : public EditorPlugin {

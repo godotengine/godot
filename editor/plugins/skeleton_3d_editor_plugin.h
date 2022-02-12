@@ -31,7 +31,6 @@
 #ifndef SKELETON_3D_EDITOR_PLUGIN_H
 #define SKELETON_3D_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
 #include "node_3d_editor_plugin.h"
@@ -40,6 +39,7 @@
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/immediate_mesh.h"
 
+class EditorNode;
 class EditorInspectorPluginSkeleton;
 class Joint;
 class PhysicalBone3D;

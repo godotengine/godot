@@ -33,9 +33,9 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 
+class EditorNode;
 class NavigationRegion3D;
 
 class NavigationMeshEditor : public Control {

@@ -30,10 +30,12 @@
 
 #if TOOLS_ENABLED
 #include "editor_scene_exporter_gltf_plugin.h"
+
 #include "core/config/project_settings.h"
 #include "core/error/error_list.h"
 #include "core/object/object.h"
 #include "core/templates/vector.h"
+#include "editor/editor_file_dialog.h"
 #include "editor/editor_file_system.h"
 #include "gltf_document.h"
 #include "gltf_state.h"

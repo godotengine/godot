@@ -33,6 +33,7 @@
 #include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
 #include "scene/gui/center_container.h"
+#include "scene/gui/separator.h"
 
 /////////////////////////////////////////
 

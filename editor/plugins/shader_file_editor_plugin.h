@@ -41,6 +41,8 @@
 #include "scene/main/timer.h"
 #include "servers/rendering/rendering_device_binds.h"
 
+class ItemList;
+
 class ShaderFileEditor : public PanelContainer {
 	GDCLASS(ShaderFileEditor, PanelContainer);
 

@@ -31,7 +31,7 @@
 #include "animation_bezier_editor.h"
 
 #include "editor/editor_node.h"
-#include "editor_scale.h"
+#include "editor/editor_scale.h"
 #include "scene/gui/view_panner.h"
 #include "scene/resources/text_line.h"
 

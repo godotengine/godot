@@ -31,10 +31,12 @@
 #ifndef PARTICLES_EDITOR_PLUGIN_H
 #define PARTICLES_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/gui/spin_box.h"
+
+class EditorNode;
+class SceneTreeDialog;
 
 class GPUParticles3DEditorBase : public Control {
 	GDCLASS(GPUParticles3DEditorBase, Control);

@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 
 void TextureLayeredEditor::gui_input(const Ref<InputEvent> &p_event) {

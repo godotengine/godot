@@ -36,6 +36,7 @@
 #include "editor/editor_scale.h"
 #include "editor/progress_dialog.h"
 
+#include "editor/editor_node.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
@@ -2311,6 +2312,8 @@ void TileSetAtlasSourceEditor::_bind_methods() {
 }
 
 TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
+	undo_redo = EditorNode::get_undo_redo();
+
 	set_process_unhandled_key_input(true);
 	set_process_internal(true);
 

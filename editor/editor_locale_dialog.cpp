@@ -30,6 +30,7 @@
 
 #include "editor_locale_dialog.h"
 
+#include "core/config/project_settings.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "scene/gui/check_button.h"

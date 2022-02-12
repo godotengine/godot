@@ -31,18 +31,11 @@
 #ifndef IMPORT_DEFAULTS_EDITOR_H
 #define IMPORT_DEFAULTS_EDITOR_H
 
-#include "core/object/undo_redo.h"
-#include "editor/action_map_editor.h"
-#include "editor/editor_data.h"
-#include "editor/editor_plugin_settings.h"
-#include "editor/editor_sectioned_inspector.h"
-#include "editor/localization_editor.h"
-#include "editor/shader_globals_editor.h"
-#include "editor_autoload_settings.h"
-#include "scene/gui/center_container.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/option_button.h"
 
 class ImportDefaultsEditorSettings;
+class EditorInspector;
 
 class ImportDefaultsEditor : public VBoxContainer {
 	GDCLASS(ImportDefaultsEditor, VBoxContainer)

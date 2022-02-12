@@ -31,10 +31,11 @@
 #ifndef CURVE_EDITOR_PLUGIN_H
 #define CURVE_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_resource_preview.h"
 #include "scene/resources/curve.h"
+
+class EditorNode;
 
 // Edits a y(x) curve
 class CurveEditor : public Control {

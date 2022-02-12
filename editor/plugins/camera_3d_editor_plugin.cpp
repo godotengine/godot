@@ -30,6 +30,7 @@
 
 #include "camera_3d_editor_plugin.h"
 
+#include "editor/editor_node.h"
 #include "node_3d_editor_plugin.h"
 
 void Camera3DEditor::_node_removed(Node *p_node) {

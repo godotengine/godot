@@ -31,9 +31,10 @@
 #ifndef GRADIENT_EDITOR_PLUGIN_H
 #define GRADIENT_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/gui/gradient_edit.h"
+
+class EditorNode;
 
 class GradientEditor : public GradientEdit {
 	GDCLASS(GradientEditor, GradientEdit);

@@ -31,7 +31,7 @@
 #ifndef FLOW_CONTAINER_H
 #define FLOW_CONTAINER_H
 
-class Container;
+#include "scene/gui/container.h"
 
 class FlowContainer : public Container {
 	GDCLASS(FlowContainer, Container);

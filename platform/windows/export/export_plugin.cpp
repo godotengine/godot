@@ -30,6 +30,9 @@
 
 #include "export_plugin.h"
 
+#include "core/config/project_settings.h"
+#include "editor/editor_node.h"
+
 Error EditorExportPlatformWindows::sign_shared_object(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path) {
 	if (p_preset->get("codesign/enable")) {
 		return _code_sign(p_preset, p_path);

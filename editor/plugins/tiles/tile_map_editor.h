@@ -35,10 +35,19 @@
 
 #include "core/os/thread.h"
 #include "core/typedefs.h"
-#include "editor/editor_node.h"
 #include "scene/2d/tile_map.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/item_list.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/separator.h"
+#include "scene/gui/spin_box.h"
+#include "scene/gui/split_container.h"
 #include "scene/gui/tab_bar.h"
+#include "scene/gui/tree.h"
+
+class EditorNode;
+class UndoRedo;
 
 class TileMapEditorPlugin : public Object {
 public:
@@ -61,7 +70,7 @@ class TileMapEditorTilesPlugin : public TileMapEditorPlugin {
 	GDCLASS(TileMapEditorTilesPlugin, TileMapEditorPlugin);
 
 private:
-	UndoRedo *undo_redo = EditorNode::get_undo_redo();
+	UndoRedo *undo_redo;
 	ObjectID tile_map_id;
 	int tile_map_layer = -1;
 	virtual void edit(ObjectID p_tile_map_id, int p_tile_map_layer) override;
@@ -212,7 +221,7 @@ class TileMapEditorTerrainsPlugin : public TileMapEditorPlugin {
 	GDCLASS(TileMapEditorTerrainsPlugin, TileMapEditorPlugin);
 
 private:
-	UndoRedo *undo_redo = EditorNode::get_undo_redo();
+	UndoRedo *undo_redo;
 	ObjectID tile_map_id;
 	int tile_map_layer = -1;
 	virtual void edit(ObjectID p_tile_map_id, int p_tile_map_layer) override;
@@ -298,7 +307,7 @@ class TileMapEditor : public VBoxContainer {
 	GDCLASS(TileMapEditor, VBoxContainer);
 
 private:
-	UndoRedo *undo_redo = EditorNode::get_undo_redo();
+	UndoRedo *undo_redo;
 	bool tileset_changed_needs_update = false;
 	ObjectID tile_map_id;
 	int tile_map_layer = -1;

@@ -30,6 +30,7 @@
 
 #include "text_control_editor_plugin.h"
 
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/multi_node_edit.h"
 

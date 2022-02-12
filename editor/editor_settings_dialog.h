@@ -32,8 +32,8 @@
 #define EDITOR_SETTINGS_DIALOG_H
 
 #include "editor/action_map_editor.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_sectioned_inspector.h"
-#include "editor_inspector.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"

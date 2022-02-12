@@ -31,10 +31,11 @@
 #ifndef ABSTRACT_POLYGON_2D_EDITOR_H
 #define ABSTRACT_POLYGON_2D_EDITOR_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/2d/polygon_2d.h"
+#include "scene/gui/box_container.h"
 
+class EditorNode;
 class CanvasItemEditor;
 
 class AbstractPolygon2DEditor : public HBoxContainer {

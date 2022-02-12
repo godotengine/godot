@@ -30,6 +30,8 @@
 
 #include "export_plugin.h"
 
+#include "editor/editor_node.h"
+
 void EditorExportPlatformIOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
 	String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
 	// Vulkan and OpenGL ES 3.0 both mandate ETC2 support.

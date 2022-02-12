@@ -38,9 +38,9 @@
 #include "editor/editor_path.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/control.h"
 
 class EditorNode;
+class EditorFileDialog;
 
 class InspectorDock : public VBoxContainer {
 	GDCLASS(InspectorDock, VBoxContainer);

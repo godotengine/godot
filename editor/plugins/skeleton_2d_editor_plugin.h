@@ -31,10 +31,11 @@
 #ifndef SKELETON_2D_EDITOR_PLUGIN_H
 #define SKELETON_2D_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/2d/skeleton_2d.h"
 #include "scene/gui/spin_box.h"
+
+class EditorNode;
 
 class Skeleton2DEditor : public Control {
 	GDCLASS(Skeleton2DEditor, Control);

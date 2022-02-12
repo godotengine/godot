@@ -32,10 +32,8 @@
 #define CANVAS_ITEM_H
 
 #include "scene/main/node.h"
-#include "scene/main/scene_tree.h"
 #include "scene/resources/canvas_item_material.h"
 #include "scene/resources/font.h"
-#include "servers/text_server.h"
 
 class CanvasLayer;
 class MultiMesh;
