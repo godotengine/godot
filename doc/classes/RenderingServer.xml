@@ -1455,6 +1455,9 @@
 			<argument index="1" name="transparency" type="float" />
 			<description>
 				Sets the transparency for the given geometry instance. Equivalent to [member GeometryInstance3D.transparency].
+				A transparency of [code]0.0[/code] is fully opaque, while [code]1.0[/code] is fully transparent. Values greater than [code]0.0[/code] (exclusive) will force the geometry's materials to go through the transparent pipeline, which is slower to render and can exhibit rendering issues due to incorrect transparency sorting. However, unlike using a transparent material, setting [code]transparency[/code] to a value greater than [code]0.0[/code] (exclusive) will [i]not[/i] disable shadow rendering.
+				In spatial shaders, [code]1.0 - transparency[/code] is set as the default value of the [code]ALPHA[/code] built-in.
+				[b]Note:[/b] [code]transparency[/code] is clamped between [code]0.0[/code] and [code]1.0[/code], so this property cannot be used to make transparent materials more opaque than they originally are.
 			</description>
 		</method>
 		<method name="instance_geometry_set_visibility_range">
