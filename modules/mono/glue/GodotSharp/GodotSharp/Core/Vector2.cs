@@ -204,20 +204,10 @@ namespace Godot
         /// <returns>The interpolated vector.</returns>
         public Vector2 CubicInterpolate(Vector2 b, Vector2 preA, Vector2 postB, real_t weight)
         {
-            Vector2 p0 = preA;
-            Vector2 p1 = this;
-            Vector2 p2 = b;
-            Vector2 p3 = postB;
-
-            real_t t = weight;
-            real_t t2 = t * t;
-            real_t t3 = t2 * t;
-
-            return 0.5f * (
-                (p1 * 2.0f) +
-                ((-p0 + p2) * t) +
-                (((2.0f * p0) - (5.0f * p1) + (4 * p2) - p3) * t2) +
-                ((-p0 + (3.0f * p1) - (3.0f * p2) + p3) * t3)
+            return new Vector2
+            (
+                Mathf.CubicInterpolate(x, b.x, preA.x, postB.x, weight),
+                Mathf.CubicInterpolate(y, b.y, preA.y, postB.y, weight)
             );
         }
 

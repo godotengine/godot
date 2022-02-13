@@ -83,22 +83,11 @@ Vector3 Vector3::limit_length(const real_t p_len) const {
 }
 
 Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight) const {
-	Vector3 p0 = p_pre_a;
-	Vector3 p1 = *this;
-	Vector3 p2 = p_b;
-	Vector3 p3 = p_post_b;
-
-	real_t t = p_weight;
-	real_t t2 = t * t;
-	real_t t3 = t2 * t;
-
-	Vector3 out;
-	out = 0.5f *
-			((p1 * 2.0f) +
-					(-p0 + p2) * t +
-					(2.0f * p0 - 5.0f * p1 + 4.0f * p2 - p3) * t2 +
-					(-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
-	return out;
+	Vector3 res = *this;
+	res.x = Math::cubic_interpolate(res.x, p_b.x, p_pre_a.x, p_post_b.x, p_weight);
+	res.y = Math::cubic_interpolate(res.y, p_b.y, p_pre_a.y, p_post_b.y, p_weight);
+	res.z = Math::cubic_interpolate(res.z, p_b.z, p_pre_a.z, p_post_b.z, p_weight);
+	return res;
 }
 
 Vector3 Vector3::move_toward(const Vector3 &p_to, const real_t p_delta) const {
