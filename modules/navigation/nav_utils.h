@@ -131,6 +131,12 @@ struct NavigationPoly {
 	}
 };
 
+struct ClosestPointQueryResult {
+	Vector3 point;
+	Vector3 normal;
+	RID owner;
+};
+
 } // namespace gd
 
 #endif // NAV_UTILS_H
