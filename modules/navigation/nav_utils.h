@@ -161,6 +161,13 @@ struct FreeEdge {
 	Vector3 edge_dir;
 	float edge_len_squared;
 };
+
+struct ClosestPointQueryResult {
+	Vector3 point;
+	Vector3 normal;
+	RID owner;
+};
+
 } // namespace gd
 
 #endif // NAV_UTILS_H

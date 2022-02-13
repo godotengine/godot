@@ -97,12 +97,9 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 	for (size_t i(0); i < polygons.size(); i++) {
 		const gd::Polygon &p = polygons[i];
 
-		// For each point cast a face and check the distance between the origin/destination
-		for (size_t point_id = 0; point_id < p.points.size(); point_id++) {
-			const Vector3 p1 = p.points[point_id].pos;
-			const Vector3 p2 = p.points[(point_id + 1) % p.points.size()].pos;
-			const Vector3 p3 = p.points[(point_id + 2) % p.points.size()].pos;
-			const Face3 face(p1, p2, p3);
+		// For each face check the distance between the origin/destination
+		for (size_t point_id = 2; point_id < p.points.size(); point_id++) {
+			const Face3 face(p.points[0].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
 
 			Vector3 spoint = face.get_closest_point_to(p_origin);
 			float dpoint = spoint.distance_to(p_origin);
@@ -229,7 +226,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 			end_poly = reachable_end;
 			end_d = 1e20;
 			for (size_t point_id = 2; point_id < end_poly->points.size(); point_id++) {
-				Face3 f(end_poly->points[point_id - 2].pos, end_poly->points[point_id - 1].pos, end_poly->points[point_id].pos);
+				Face3 f(end_poly->points[0].pos, end_poly->points[point_id - 1].pos, end_poly->points[point_id].pos);
 				Vector3 spoint = f.get_closest_point_to(p_destination);
 				float dpoint = spoint.distance_to(p_destination);
 				if (dpoint < end_d) {
@@ -405,13 +402,12 @@ Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector
 	Vector3 closest_point;
 	real_t closest_point_d = 1e20;
 
-	// Find the initial poly and the end poly on this map.
 	for (size_t i(0); i < polygons.size(); i++) {
 		const gd::Polygon &p = polygons[i];
 
-		// For each point cast a face and check the distance to the segment
+		// For each face check the distance to the segment
 		for (size_t point_id = 2; point_id < p.points.size(); point_id += 1) {
-			const Face3 f(p.points[point_id - 2].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
+			const Face3 f(p.points[0].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
 			Vector3 inters;
 			if (f.intersects_segment(p_from, p_to, &inters)) {
 				const real_t d = closest_point_d = p_from.distance_to(inters);
@@ -451,82 +447,42 @@ Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector
 }
 
 Vector3 NavMap::get_closest_point(const Vector3 &p_point) const {
-	// TODO this is really not optimal, please redesign the API to directly return all this data
-
-	Vector3 closest_point;
-	real_t closest_point_d = 1e20;
-
-	// Find the initial poly and the end poly on this map.
-	for (size_t i(0); i < polygons.size(); i++) {
-		const gd::Polygon &p = polygons[i];
-
-		// For each point cast a face and check the distance to the point
-		for (size_t point_id = 2; point_id < p.points.size(); point_id += 1) {
-			const Face3 f(p.points[point_id - 2].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
-			const Vector3 inters = f.get_closest_point_to(p_point);
-			const real_t d = inters.distance_to(p_point);
-			if (d < closest_point_d) {
-				closest_point = inters;
-				closest_point_d = d;
-			}
-		}
-	}
-
-	return closest_point;
+	gd::ClosestPointQueryResult cp = get_closest_point_info(p_point);
+	return cp.point;
 }
 
 Vector3 NavMap::get_closest_point_normal(const Vector3 &p_point) const {
-	// TODO this is really not optimal, please redesign the API to directly return all this data
-
-	Vector3 closest_point;
-	Vector3 closest_point_normal;
-	real_t closest_point_d = 1e20;
-
-	// Find the initial poly and the end poly on this map.
-	for (size_t i(0); i < polygons.size(); i++) {
-		const gd::Polygon &p = polygons[i];
-
-		// For each point cast a face and check the distance to the point
-		for (size_t point_id = 2; point_id < p.points.size(); point_id += 1) {
-			const Face3 f(p.points[point_id - 2].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
-			const Vector3 inters = f.get_closest_point_to(p_point);
-			const real_t d = inters.distance_to(p_point);
-			if (d < closest_point_d) {
-				closest_point = inters;
-				closest_point_normal = f.get_plane().normal;
-				closest_point_d = d;
-			}
-		}
-	}
-
-	return closest_point_normal;
+	gd::ClosestPointQueryResult cp = get_closest_point_info(p_point);
+	return cp.normal;
 }
 
 RID NavMap::get_closest_point_owner(const Vector3 &p_point) const {
-	// TODO this is really not optimal, please redesign the API to directly return all this data
+	gd::ClosestPointQueryResult cp = get_closest_point_info(p_point);
+	return cp.owner;
+}
 
-	Vector3 closest_point;
-	RID closest_point_owner;
-	real_t closest_point_d = 1e20;
+gd::ClosestPointQueryResult NavMap::get_closest_point_info(const Vector3 &p_point) const {
+	gd::ClosestPointQueryResult result;
+	real_t closest_point_ds = 1e20;
 
-	// Find the initial poly and the end poly on this map.
 	for (size_t i(0); i < polygons.size(); i++) {
 		const gd::Polygon &p = polygons[i];
 
-		// For each point cast a face and check the distance to the point
+		// For each face check the distance to the point
 		for (size_t point_id = 2; point_id < p.points.size(); point_id += 1) {
-			const Face3 f(p.points[point_id - 2].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
+			const Face3 f(p.points[0].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
 			const Vector3 inters = f.get_closest_point_to(p_point);
-			const real_t d = inters.distance_to(p_point);
-			if (d < closest_point_d) {
-				closest_point = inters;
-				closest_point_owner = p.owner->get_self();
-				closest_point_d = d;
+			const real_t ds = inters.distance_squared_to(p_point);
+			if (ds < closest_point_ds) {
+				result.point = inters;
+				result.normal = f.get_plane().normal;
+				result.owner = p.owner->get_self();
+				closest_point_ds = ds;
 			}
 		}
 	}
 
-	return closest_point_owner;
+	return result;
 }
 
 void NavMap::add_region(NavRegion *p_region) {
