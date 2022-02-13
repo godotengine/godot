@@ -321,6 +321,15 @@ bool PanoramaSkyMaterial::is_filtering_enabled() const {
 	return filter;
 }
 
+void PanoramaSkyMaterial::set_modulate(const Color &p_modulate) {
+	modulate = p_modulate;
+	RS::get_singleton()->material_set_param(_get_material(), "modulate", modulate);
+}
+
+Color PanoramaSkyMaterial::get_modulate() const {
+	return modulate;
+}
+
 Shader::Mode PanoramaSkyMaterial::get_shader_mode() const {
 	return Shader::MODE_SKY;
 }
@@ -348,8 +357,12 @@ void PanoramaSkyMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_filtering_enabled", "enabled"), &PanoramaSkyMaterial::set_filtering_enabled);
 	ClassDB::bind_method(D_METHOD("is_filtering_enabled"), &PanoramaSkyMaterial::is_filtering_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_modulate", "modulate"), &PanoramaSkyMaterial::set_modulate);
+	ClassDB::bind_method(D_METHOD("get_modulate"), &PanoramaSkyMaterial::get_modulate);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "panorama", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_panorama", "get_panorama");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter"), "set_filtering_enabled", "is_filtering_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
 }
 
 Mutex PanoramaSkyMaterial::shader_mutex;
@@ -371,10 +384,14 @@ void PanoramaSkyMaterial::_update_shader() {
 			// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
 			RS::get_singleton()->shader_set_code(shader_cache[i], vformat(R"(
 // NOTE: Shader automatically converted from )" VERSION_NAME " " VERSION_FULL_CONFIG R"('s PanoramaSkyMaterial.
+
 shader_type sky;
+
 uniform sampler2D source_panorama : %s, hint_albedo;
+uniform vec4 modulate : hint_color = vec4(1.0, 1.0, 1.0, 1.0);
+
 void sky() {
-	COLOR = texture(source_panorama, SKY_COORDS).rgb;
+	COLOR = texture(source_panorama, SKY_COORDS).rgb * modulate.rgb * modulate.a;
 }
 )",
 																		  i ? "filter_linear" : "filter_nearest"));

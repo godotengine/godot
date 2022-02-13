@@ -115,6 +115,7 @@ private:
 	mutable bool shader_set = false;
 
 	bool filter = true;
+	Color modulate = Color(1, 1, 1);
 
 protected:
 	static void _bind_methods();
@@ -125,6 +126,9 @@ public:
 
 	void set_filtering_enabled(bool p_enabled);
 	bool is_filtering_enabled() const;
+
+	void set_modulate(const Color &p_modulate);
+	Color get_modulate() const;
 
 	virtual Shader::Mode get_shader_mode() const override;
 	virtual RID get_shader_rid() const override;
