@@ -102,6 +102,22 @@ Quaternion Quaternion::inverse() const {
 	return Quaternion(-x, -y, -z, w);
 }
 
+Quaternion Quaternion::log() const {
+	Quaternion src = *this;
+	Vector3 src_v = src.get_axis() * src.get_angle();
+	return Quaternion(src_v.x, src_v.y, src_v.z, 0);
+}
+
+Quaternion Quaternion::exp() const {
+	Quaternion src = *this;
+	Vector3 src_v = Vector3(src.x, src.y, src.z);
+	float theta = src_v.length();
+	if (theta < CMP_EPSILON) {
+		return Quaternion();
+	}
+	return Quaternion(src_v.normalized(), theta);
+}
+
 Quaternion Quaternion::slerp(const Quaternion &p_to, const real_t &p_weight) const {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion must be normalized.");
@@ -116,15 +132,9 @@ Quaternion Quaternion::slerp(const Quaternion &p_to, const real_t &p_weight) con
 	// adjust signs (if necessary)
 	if (cosom < 0.0f) {
 		cosom = -cosom;
-		to1.x = -p_to.x;
-		to1.y = -p_to.y;
-		to1.z = -p_to.z;
-		to1.w = -p_to.w;
+		to1 = -p_to;
 	} else {
-		to1.x = p_to.x;
-		to1.y = p_to.y;
-		to1.z = p_to.z;
-		to1.w = p_to.w;
+		to1 = p_to;
 	}
 
 	// calculate coefficients
@@ -178,11 +188,32 @@ Quaternion Quaternion::cubic_slerp(const Quaternion &p_b, const Quaternion &p_pr
 	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion must be normalized.");
 	ERR_FAIL_COND_V_MSG(!p_b.is_normalized(), Quaternion(), "The end quaternion must be normalized.");
 #endif
-	//the only way to do slerp :|
-	real_t t2 = (1.0f - p_weight) * p_weight * 2;
-	Quaternion sp = this->slerp(p_b, p_weight);
-	Quaternion sq = p_pre_a.slerpni(p_post_b, p_weight);
-	return sp.slerpni(sq, t2);
+	Quaternion ret = *this;
+	// Modify quaternions for shortest path
+	// https://math.stackexchange.com/questions/2650188/super-confused-by-squad-algorithm-for-quaternion-interpolation
+	Quaternion prep = (ret - p_pre_a).length_squared() < (ret + p_pre_a).length_squared() ? p_pre_a : p_pre_a * -1.0f;
+	Quaternion q_b = (ret - p_b).length_squared() < (ret + p_b).length_squared() ? p_b : p_b * -1.0f;
+	Quaternion postq = (p_b - p_post_b).length_squared() < (p_b + p_post_b).length_squared() ? p_post_b : p_post_b * -1.0f;
+
+	// calculate coefficients
+	if ((1.0 - Math::abs(dot(p_b))) > CMP_EPSILON) {
+		Quaternion ln_ret = ret.log();
+		Quaternion ln_to = q_b.log();
+		Quaternion ln_pre = prep.log();
+		Quaternion ln_post = postq.log();
+		Quaternion ln = Quaternion(0, 0, 0, 0);
+		ln.x = Math::cubic_interpolate(ln_ret.x, ln_to.x, ln_pre.x, ln_post.x, p_weight);
+		ln.y = Math::cubic_interpolate(ln_ret.y, ln_to.y, ln_pre.y, ln_post.y, p_weight);
+		ln.z = Math::cubic_interpolate(ln_ret.z, ln_to.z, ln_pre.z, ln_post.z, p_weight);
+		ret = ln.exp();
+	} else {
+		ret.x = Math::cubic_interpolate(ret.x, q_b.x, prep.x, postq.x, p_weight);
+		ret.y = Math::cubic_interpolate(ret.y, q_b.y, prep.y, postq.y, p_weight);
+		ret.z = Math::cubic_interpolate(ret.z, q_b.z, prep.z, postq.z, p_weight);
+		ret.w = Math::cubic_interpolate(ret.w, q_b.w, prep.w, postq.w, p_weight);
+	}
+	// calculate final values
+	return ret;
 }
 
 Quaternion::operator String() const {
@@ -190,6 +221,9 @@ Quaternion::operator String() const {
 }
 
 Vector3 Quaternion::get_axis() const {
+	if (Math::abs(w) > 1 - CMP_EPSILON) {
+		return Vector3(x, y, z);
+	}
 	real_t r = ((real_t)1) / Math::sqrt(1 - w * w);
 	return Vector3(x * r, y * r, z * r);
 }

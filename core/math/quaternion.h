@@ -60,6 +60,8 @@ struct _NO_DISCARD_ Quaternion {
 	Quaternion normalized() const;
 	bool is_normalized() const;
 	Quaternion inverse() const;
+	Quaternion log() const;
+	Quaternion exp() const;
 	_FORCE_INLINE_ real_t dot(const Quaternion &p_q) const;
 	real_t angle_to(const Quaternion &p_to) const;
 
