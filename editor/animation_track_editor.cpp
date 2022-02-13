@@ -1844,11 +1844,14 @@ void AnimationTimelineEdit::_pan_callback(Vector2 p_scroll_vec) {
 }
 
 void AnimationTimelineEdit::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt) {
-	if (p_scroll_vec.y < 0) {
-		get_zoom()->set_value(get_zoom()->get_value() * 1.05);
+	double new_zoom_value;
+	double current_zoom_value = get_zoom()->get_value();
+	if (current_zoom_value <= 0.1) {
+		new_zoom_value = MAX(0.01, current_zoom_value - 0.01 * SIGN(p_scroll_vec.y));
 	} else {
-		get_zoom()->set_value(get_zoom()->get_value() / 1.05);
+		new_zoom_value = p_scroll_vec.y > 0 ? MAX(0.01, current_zoom_value / 1.05) : current_zoom_value * 1.05;
 	}
+	get_zoom()->set_value(new_zoom_value);
 }
 
 void AnimationTimelineEdit::set_use_fps(bool p_use_fps) {
@@ -5332,11 +5335,14 @@ void AnimationTrackEditor::_pan_callback(Vector2 p_scroll_vec) {
 }
 
 void AnimationTrackEditor::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt) {
-	if (p_scroll_vec.y < 0) {
-		timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() * 1.05);
+	double new_zoom_value;
+	double current_zoom_value = timeline->get_zoom()->get_value();
+	if (current_zoom_value <= 0.1) {
+		new_zoom_value = MAX(0.01, current_zoom_value - 0.01 * SIGN(p_scroll_vec.y));
 	} else {
-		timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() / 1.05);
+		new_zoom_value = p_scroll_vec.y > 0 ? MAX(0.01, current_zoom_value / 1.05) : current_zoom_value * 1.05;
 	}
+	timeline->get_zoom()->set_value(new_zoom_value);
 }
 
 void AnimationTrackEditor::_cancel_bezier_edit() {
