@@ -241,7 +241,8 @@
 		<method name="hash" qualifiers="const">
 			<return type="int" />
 			<description>
-				Hashes the string and returns a 32-bit integer.
+				Returns the 32-bit hash value representing the string's contents.
+				[b]Note:[/b] [String]s with equal content will always produce identical hash values. However, the reverse is not true. Returning identical hash values does [i]not[/i] imply the strings are equal, because different strings can have identical hash values due to hash collisions.
 			</description>
 		</method>
 		<method name="hex_to_int" qualifiers="const">
