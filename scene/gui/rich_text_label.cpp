@@ -3727,6 +3727,28 @@ void RichTextLabel::scroll_to_line(int p_line) {
 	}
 }
 
+float RichTextLabel::get_line_offset(int p_line) {
+	int line_count = 0;
+	for (int i = 0; i < main->lines.size(); i++) {
+		if ((line_count <= p_line) && (p_line <= line_count + main->lines[i].text_buf->get_line_count())) {
+			float line_offset = 0.f;
+			for (int j = 0; j < p_line - line_count; j++) {
+				line_offset += main->lines[i].text_buf->get_line_size(j).y + get_theme_constant(SNAME("line_separation"));
+			}
+			return main->lines[i].offset.y + line_offset;
+		}
+		line_count += main->lines[i].text_buf->get_line_count();
+	}
+	return 0;
+}
+
+float RichTextLabel::get_paragraph_offset(int p_paragraph) {
+	if (0 <= p_paragraph && p_paragraph < main->lines.size()) {
+		return main->lines[p_paragraph].offset.y;
+	}
+	return 0;
+}
+
 int RichTextLabel::get_line_count() const {
 	int line_count = 0;
 	for (int i = 0; i < main->lines.size(); i++) {
@@ -4340,6 +4362,9 @@ void RichTextLabel::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_content_height"), &RichTextLabel::get_content_height);
 	ClassDB::bind_method(D_METHOD("get_content_width"), &RichTextLabel::get_content_width);
+
+	ClassDB::bind_method(D_METHOD("get_line_offset", "line"), &RichTextLabel::get_line_offset);
+	ClassDB::bind_method(D_METHOD("get_paragraph_offset", "paragraph"), &RichTextLabel::get_paragraph_offset);
 
 	ClassDB::bind_method(D_METHOD("parse_expressions_for_values", "expressions"), &RichTextLabel::parse_expressions_for_values);
 
