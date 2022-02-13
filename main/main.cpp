@@ -2823,7 +2823,7 @@ bool Main::start() {
 			startup_benchmark_file = String();
 		}
 #endif
-		GLOBAL_DEF_BASIC("display/window/stretch/mode", "disabled");
+		GLOBAL_DEF_BASIC("display/window/stretch/mode", "canvas_items");
 		ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/mode",
 				PropertyInfo(Variant::STRING,
 						"display/window/stretch/mode",
