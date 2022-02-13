@@ -2525,15 +2525,6 @@ ProjectManager::ProjectManager() {
 				editor_set_scale(EditorSettings::get_singleton()->get("interface/editor/custom_display_scale"));
 				break;
 		}
-
-		// Define a minimum window size to prevent UI elements from overlapping or being cut off
-		DisplayServer::get_singleton()->window_set_min_size(Size2(750, 420) * EDSCALE);
-
-		// TODO: Resize windows on hiDPI displays on Windows and Linux and remove the lines below
-		float scale_factor = MAX(1, EDSCALE);
-		Vector2i window_size = DisplayServer::get_singleton()->window_get_size();
-		DisplayServer::get_singleton()->window_set_size(Vector2i(window_size.x * scale_factor, window_size.y * scale_factor));
-
 		EditorFileDialog::get_icon_func = &ProjectManager::_file_dialog_get_icon;
 	}
 
@@ -2867,6 +2858,22 @@ ProjectManager::ProjectManager() {
 	}
 
 	SceneTree::get_singleton()->get_root()->connect("files_dropped", callable_mp(this, &ProjectManager::_files_dropped));
+
+	// Define a minimum window size to prevent UI elements from overlapping or being cut off
+	DisplayServer::get_singleton()->window_set_min_size(Size2(750, 420) * EDSCALE);
+
+	// Resize the bootsplash window based on Editor display scale EDSCALE.
+	float scale_factor = MAX(1, EDSCALE);
+	if (scale_factor > 1.0) {
+		Vector2i window_size = DisplayServer::get_singleton()->window_get_size();
+		Vector2i screen_size = DisplayServer::get_singleton()->screen_get_size();
+		window_size *= scale_factor;
+		Vector2i window_position;
+		window_position.x = (screen_size.x - window_size.x) / 2;
+		window_position.y = (screen_size.y - window_size.y) / 2;
+		DisplayServer::get_singleton()->window_set_size(window_size);
+		DisplayServer::get_singleton()->window_set_position(window_position);
+	}
 
 	OS::get_singleton()->set_low_processor_usage_mode(true);
 }
