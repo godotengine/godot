@@ -1237,7 +1237,6 @@ void ItemList::_notification(int p_what) {
 					if (rtl) {
 						text_ofs.x = size.width - text_ofs.x - max_len;
 					}
-					
 					items.write[i].text_buf->set_width(width - text_ofs.x);
 
 					if (rtl) {
