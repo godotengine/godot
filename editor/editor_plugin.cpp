@@ -523,6 +523,21 @@ void EditorPlugin::remove_tool_menu_item(const String &p_name) {
 	EditorNode::get_singleton()->remove_tool_menu_item(p_name);
 }
 
+// Accessing Configure Snap
+void EditorPlugin::set_snap_configuration(const Dictionary &configure_snap) {
+	CanvasItemEditor::get_singleton()->set_state(configure_snap);
+}
+
+Dictionary EditorPlugin::get_snap_configuration() {
+	Dictionary item_state = CanvasItemEditor::get_singleton()->get_state();
+	String snap_settings[]{ "grid_offset", "grid_step", "primary_grid_steps", "snap_rotation_offset", "snap_rotation_step", "snap_scale_step" };
+	Dictionary configure_snap;
+	for (String key : snap_settings) {
+		configure_snap[key] = item_state[key];
+	}
+	return configure_snap;
+}
+
 void EditorPlugin::set_input_event_forwarding_always_enabled() {
 	input_event_forwarding_always_enabled = true;
 	EditorPluginList *always_input_forwarding_list = EditorNode::get_singleton()->get_editor_plugins_force_input_forwarding();
@@ -895,6 +910,8 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_spatial_gizmo_plugin", "plugin"), &EditorPlugin::remove_spatial_gizmo_plugin);
 	ClassDB::bind_method(D_METHOD("add_inspector_plugin", "plugin"), &EditorPlugin::add_inspector_plugin);
 	ClassDB::bind_method(D_METHOD("remove_inspector_plugin", "plugin"), &EditorPlugin::remove_inspector_plugin);
+	ClassDB::bind_method(D_METHOD("set_snap_configuration", "configure_snap"), &EditorPlugin::set_snap_configuration);
+	ClassDB::bind_method(D_METHOD("get_snap_configuration"), &EditorPlugin::get_snap_configuration);
 	ClassDB::bind_method(D_METHOD("set_input_event_forwarding_always_enabled"), &EditorPlugin::set_input_event_forwarding_always_enabled);
 	ClassDB::bind_method(D_METHOD("set_force_draw_over_forwarding_enabled"), &EditorPlugin::set_force_draw_over_forwarding_enabled);
 

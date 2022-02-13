@@ -478,6 +478,12 @@
 				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
+		<method name="get_snap_configuration">
+			<return type="Dictionary" />
+			<description>
+				Returns a Dictionary listing the snap settings as seen in Configuration Snap.
+			</description>
+		</method>
 		<method name="get_undo_redo">
 			<return type="UndoRedo" />
 			<description>
@@ -619,6 +625,13 @@
 			<return type="void" />
 			<description>
 				Use this method if you always want to receive inputs from 3D view screen inside [method _forward_3d_gui_input]. It might be especially usable if your plugin will want to use raycast in the scene.
+			</description>
+		</method>
+		<method name="set_snap_configuration">
+			<return type="void" />
+			<argument index="0" name="configure_snap" type="Dictionary" />
+			<description>
+				Changes the Configure Snap settings. The following keys are used for [code]configure_snap[/code]: [code]grid_offset[/code], [code]grid_step[/code], [code]primary_grid_steps[/code], [code]snap_rotation_offset[/code], [code]snap_rotation_step[/code] and [code]snap_scale_step[/code].
 			</description>
 		</method>
 		<method name="update_overlays" qualifiers="const">
