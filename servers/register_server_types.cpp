@@ -72,6 +72,7 @@
 #include "rendering_server.h"
 #include "servers/extensions/physics_server_3d_extension.h"
 #include "servers/rendering/shader_types.h"
+#include "text/text_server_dummy.h"
 #include "text/text_server_extension.h"
 #include "text_server.h"
 #include "xr/xr_interface.h"
@@ -113,6 +114,7 @@ void preregister_server_types() {
 	GDREGISTER_CLASS(TextServerManager);
 	GDREGISTER_ABSTRACT_CLASS(TextServer);
 	GDREGISTER_CLASS(TextServerExtension);
+	GDREGISTER_CLASS(TextServerDummy);
 
 	GDREGISTER_NATIVE_STRUCT(Glyph, "int start = -1;int end = -1;uint8_t count = 0;uint8_t repeat = 1;uint16_t flags = 0;float x_off = 0.f;float y_off = 0.f;float advance = 0.f;RID font_rid;int font_size = 0;int32_t index = 0");
 	GDREGISTER_NATIVE_STRUCT(CaretInfo, "Rect2 leading_caret;Rect2 trailing_caret;TextServer::Direction leading_direction;TextServer::Direction trailing_direction");

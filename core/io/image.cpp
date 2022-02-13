@@ -3112,8 +3112,8 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("generate_mipmaps", "renormalize"), &Image::generate_mipmaps, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("clear_mipmaps"), &Image::clear_mipmaps);
 
-	ClassDB::bind_method(D_METHOD("create", "width", "height", "use_mipmaps", "format"), &Image::_create_empty);
-	ClassDB::bind_method(D_METHOD("create_from_data", "width", "height", "use_mipmaps", "format", "data"), &Image::_create_from_data);
+	ClassDB::bind_method(D_METHOD("create", "width", "height", "use_mipmaps", "format"), &Image::create_empty);
+	ClassDB::bind_method(D_METHOD("create_from_data", "width", "height", "use_mipmaps", "format", "data"), &Image::create_from_data);
 
 	ClassDB::bind_method(D_METHOD("is_empty"), &Image::is_empty);
 

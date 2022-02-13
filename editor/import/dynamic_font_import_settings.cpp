@@ -645,7 +645,7 @@ void DynamicFontImportSettings::_glyph_text_selected() {
 				selected_glyphs.insert(gl[i].index);
 			}
 		}
-		TS->free(text_rid);
+		TS->free_rid(text_rid);
 		label_glyphs->set_text(TTR("Preloaded glyphs: ") + itos(selected_glyphs.size()));
 	}
 	_range_selected();
