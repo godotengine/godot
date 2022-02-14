@@ -598,6 +598,8 @@ public:
 
 	void set_visible_characters(int p_visible);
 	int get_visible_characters() const;
+	int get_character_line(int p_char);
+	int get_character_paragraph(int p_char);
 	int get_total_character_count() const;
 	int get_total_glyph_count() const;
 

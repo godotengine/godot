@@ -49,6 +49,20 @@
 				Clears the tag stack and sets [member text] to an empty string.
 			</description>
 		</method>
+		<method name="get_character_line">
+			<return type="int" />
+			<argument index="0" name="character" type="int" />
+			<description>
+				Returns the line number of the character position provided.
+			</description>
+		</method>
+		<method name="get_character_paragraph">
+			<return type="int" />
+			<argument index="0" name="character" type="int" />
+			<description>
+				Returns the paragraph number of the character position provided.
+			</description>
+		</method>
 		<method name="get_content_height" qualifiers="const">
 			<return type="int" />
 			<description>
