@@ -89,7 +89,7 @@ def check_wayland_dependencies():
                 wayland_client_version, min_wayland_client_version
             )
         )
-        return False  
+        return False
 
     wayland_error = os.system("pkg-config xkbcommon --modversion > /dev/null")
     if wayland_error:

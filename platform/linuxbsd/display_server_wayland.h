@@ -91,7 +91,7 @@ class DisplayServerWayland : public DisplayServer {
 		Point2i position;
 		WindowID focused_window_id = INVALID_WINDOW_ID;
 		MouseButton pressed_button_mask = MouseButton::NONE;
-		
+
 		MouseButton last_button_pressed = MouseButton::NONE;
 		uint32_t button_time = 0;
 
@@ -269,16 +269,16 @@ public:
 
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
-	
+
 	virtual void mouse_warp_to_position(const Point2i &p_to) override;
 	virtual Point2i mouse_get_position() const override;
 	virtual MouseButton mouse_get_button_state() const override;
-	
+
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;
 	virtual void clipboard_set_primary(const String &p_text) override;
 	virtual String clipboard_get_primary() const override;
-	
+
 	virtual int get_screen_count() const override;
 	virtual Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
@@ -376,9 +376,9 @@ public:
 
 	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();
-	
+
 	static void register_wayland_driver();
-	
+
 	DisplayServerWayland(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
 	~DisplayServerWayland();
 };
