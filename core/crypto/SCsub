@@ -31,6 +31,8 @@ if not has_module:
         "aes.c",
         "base64.c",
         "constant_time.c",
+        "ctr_drbg.c",
+        "entropy.c",
         "md5.c",
         "sha1.c",
         "sha256.c",

@@ -46,6 +46,7 @@
 #include "windows_terminal_logger.h"
 
 #include <avrt.h>
+#include <bcrypt.h>
 #include <direct.h>
 #include <knownfolders.h>
 #include <process.h>
@@ -190,6 +191,12 @@ void OS_Windows::finalize_core() {
 
 	memdelete(process_map);
 	NetSocketPosix::cleanup();
+}
+
+Error OS_Windows::get_entropy(uint8_t *r_buffer, int p_bytes) {
+	NTSTATUS status = BCryptGenRandom(nullptr, r_buffer, p_bytes, BCRYPT_USE_SYSTEM_PREFERRED_RNG);
+	ERR_FAIL_COND_V(status, FAILED);
+	return OK;
 }
 
 Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
