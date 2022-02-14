@@ -74,7 +74,7 @@ class InputEventEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const override { return "InputEvent"; }
 
-	InputEventEditorPlugin(EditorNode *p_node);
+	InputEventEditorPlugin();
 };
 
 #endif // INPUT_EVENT_EDITOR_PLUGIN_H

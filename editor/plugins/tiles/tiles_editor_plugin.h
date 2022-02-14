@@ -53,8 +53,6 @@ public:
 	};
 
 private:
-	EditorNode *editor_node;
-
 	bool tile_map_changed_needs_update = false;
 	ObjectID tile_map_id;
 	Ref<TileSet> tile_set;
@@ -127,7 +125,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	TilesEditorPlugin(EditorNode *p_node);
+	TilesEditorPlugin();
 	~TilesEditorPlugin();
 };
 

@@ -171,7 +171,6 @@ class SceneTreeDock : public VBoxContainer {
 	void _do_create(Node *p_parent);
 	Node *scene_root;
 	Node *edited_scene;
-	EditorNode *editor;
 
 	VBoxContainer *create_root_dialog;
 	String selected_favorite_root;
@@ -319,7 +318,7 @@ public:
 
 	ScriptCreateDialog *get_script_create_dialog() { return script_create_dialog; }
 
-	SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSelection *p_editor_selection, EditorData &p_editor_data);
+	SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selection, EditorData &p_editor_data);
 	~SceneTreeDock();
 };
 

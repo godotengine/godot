@@ -45,7 +45,7 @@ void EditorInspectorPluginSubViewportPreview::parse_begin(Object *p_object) {
 	add_custom_control(sub_viewport_preview);
 }
 
-SubViewportPreviewEditorPlugin::SubViewportPreviewEditorPlugin(EditorNode *p_node) {
+SubViewportPreviewEditorPlugin::SubViewportPreviewEditorPlugin() {
 	Ref<EditorInspectorPluginSubViewportPreview> plugin;
 	plugin.instantiate();
 	add_inspector_plugin(plugin);

@@ -408,10 +408,10 @@ void GDNativeLibraryEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-GDNativeLibraryEditorPlugin::GDNativeLibraryEditorPlugin(EditorNode *p_node) {
+GDNativeLibraryEditorPlugin::GDNativeLibraryEditorPlugin() {
 	library_editor = memnew(GDNativeLibraryEditor);
 	library_editor->set_custom_minimum_size(Size2(0, 250 * EDSCALE));
-	button = p_node->add_bottom_panel_item(TTR("GDNativeLibrary"), library_editor);
+	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("GDNativeLibrary"), library_editor);
 	button->hide();
 }
 

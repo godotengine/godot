@@ -182,7 +182,6 @@ class ConnectionsDock : public VBoxContainer {
 
 	Node *selected_node;
 	ConnectionsDockTree *tree;
-	EditorNode *editor;
 
 	ConfirmationDialog *disconnect_all_dialog;
 	ConnectDialog *connect_dialog;
@@ -224,7 +223,7 @@ public:
 	void set_node(Node *p_node);
 	void update_tree();
 
-	ConnectionsDock(EditorNode *p_editor = nullptr);
+	ConnectionsDock();
 	~ConnectionsDock();
 };
 

@@ -774,7 +774,7 @@ void EditorInspectorPluginCurve::parse_begin(Object *p_object) {
 	add_custom_control(editor);
 }
 
-CurveEditorPlugin::CurveEditorPlugin(EditorNode *p_node) {
+CurveEditorPlugin::CurveEditorPlugin() {
 	Ref<EditorInspectorPluginCurve> curve_plugin;
 	curve_plugin.instantiate();
 	EditorInspector::add_inspector_plugin(curve_plugin);

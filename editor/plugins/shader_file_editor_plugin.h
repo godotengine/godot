@@ -68,14 +68,13 @@ public:
 	static ShaderFileEditor *singleton;
 	void edit(const Ref<RDShaderFile> &p_shader);
 
-	ShaderFileEditor(EditorNode *p_node);
+	ShaderFileEditor();
 };
 
 class ShaderFileEditorPlugin : public EditorPlugin {
 	GDCLASS(ShaderFileEditorPlugin, EditorPlugin);
 
 	ShaderFileEditor *shader_editor;
-	EditorNode *editor;
 	Button *button;
 
 public:
@@ -87,7 +86,7 @@ public:
 
 	ShaderFileEditor *get_shader_editor() const { return shader_editor; }
 
-	ShaderFileEditorPlugin(EditorNode *p_node);
+	ShaderFileEditorPlugin();
 	~ShaderFileEditorPlugin();
 };
 

@@ -51,7 +51,7 @@ class SubViewportPreviewEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const override { return "SubViewportPreview"; }
 
-	SubViewportPreviewEditorPlugin(EditorNode *p_node);
+	SubViewportPreviewEditorPlugin();
 };
 
 #endif // SUB_VIEWPORT_PREVIEW_EDITOR_PLUGIN_H

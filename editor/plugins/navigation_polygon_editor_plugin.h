@@ -57,14 +57,14 @@ protected:
 	virtual void _create_resource() override;
 
 public:
-	NavigationPolygonEditor(EditorNode *p_editor);
+	NavigationPolygonEditor();
 };
 
 class NavigationPolygonEditorPlugin : public AbstractPolygon2DEditorPlugin {
 	GDCLASS(NavigationPolygonEditorPlugin, AbstractPolygon2DEditorPlugin);
 
 public:
-	NavigationPolygonEditorPlugin(EditorNode *p_node);
+	NavigationPolygonEditorPlugin();
 };
 
 #endif // NAVIGATIONPOLYGONEDITORPLUGIN_H

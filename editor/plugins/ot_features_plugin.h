@@ -96,7 +96,7 @@ class OpenTypeFeaturesEditorPlugin : public EditorPlugin {
 	GDCLASS(OpenTypeFeaturesEditorPlugin, EditorPlugin);
 
 public:
-	OpenTypeFeaturesEditorPlugin(EditorNode *p_node);
+	OpenTypeFeaturesEditorPlugin();
 
 	virtual String get_name() const override { return "OpenTypeFeatures"; }
 };

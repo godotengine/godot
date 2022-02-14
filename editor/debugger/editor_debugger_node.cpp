@@ -89,7 +89,7 @@ EditorDebuggerNode::EditorDebuggerNode() {
 }
 
 ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
-	ScriptEditorDebugger *node = memnew(ScriptEditorDebugger(EditorNode::get_singleton()));
+	ScriptEditorDebugger *node = memnew(ScriptEditorDebugger);
 
 	int id = tabs->get_tab_count();
 	node->connect("stop_requested", callable_mp(this, &EditorDebuggerNode::_debugger_wants_stop), varray(id));

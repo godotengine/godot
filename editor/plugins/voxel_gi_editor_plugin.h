@@ -46,7 +46,6 @@ class VoxelGIEditorPlugin : public EditorPlugin {
 
 	HBoxContainer *bake_hb;
 	Button *bake;
-	EditorNode *editor;
 
 	EditorFileDialog *probe_file;
 
@@ -69,7 +68,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	VoxelGIEditorPlugin(EditorNode *p_node);
+	VoxelGIEditorPlugin();
 	~VoxelGIEditorPlugin();
 };
 

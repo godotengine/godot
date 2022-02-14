@@ -109,7 +109,6 @@ class Skeleton3DEditor : public VBoxContainer {
 		Transform3D relative_rest; // Relative to skeleton node.
 	};
 
-	EditorNode *editor;
 	EditorInspectorPluginSkeleton *editor_plugin;
 
 	Skeleton3D *skeleton;
@@ -213,7 +212,7 @@ public:
 	Quaternion get_bone_original_rotation() const { return bone_original_rotation; };
 	Vector3 get_bone_original_scale() const { return bone_original_scale; };
 
-	Skeleton3DEditor(EditorInspectorPluginSkeleton *e_plugin, EditorNode *p_editor, Skeleton3D *skeleton);
+	Skeleton3DEditor(EditorInspectorPluginSkeleton *e_plugin, Skeleton3D *skeleton);
 	~Skeleton3DEditor();
 };
 
@@ -223,7 +222,6 @@ class EditorInspectorPluginSkeleton : public EditorInspectorPlugin {
 	friend class Skeleton3DEditorPlugin;
 
 	Skeleton3DEditor *skel_editor;
-	EditorNode *editor;
 
 public:
 	virtual bool can_handle(Object *p_object) override;
@@ -234,7 +232,6 @@ class Skeleton3DEditorPlugin : public EditorPlugin {
 	GDCLASS(Skeleton3DEditorPlugin, EditorPlugin);
 
 	EditorInspectorPluginSkeleton *skeleton_plugin;
-	EditorNode *editor;
 
 public:
 	virtual EditorPlugin::AfterGUIInput forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override;
@@ -244,7 +241,7 @@ public:
 
 	virtual String get_name() const override { return "Skeleton3D"; }
 
-	Skeleton3DEditorPlugin(EditorNode *p_node);
+	Skeleton3DEditorPlugin();
 };
 
 class Skeleton3DGizmoPlugin : public EditorNode3DGizmoPlugin {

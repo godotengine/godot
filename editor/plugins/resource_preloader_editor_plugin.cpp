@@ -404,11 +404,11 @@ void ResourcePreloaderEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		//preloader_editor->show();
 		button->show();
-		editor->make_bottom_panel_item_visible(preloader_editor);
+		EditorNode::get_singleton()->make_bottom_panel_item_visible(preloader_editor);
 		//preloader_editor->set_process(true);
 	} else {
 		if (preloader_editor->is_visible_in_tree()) {
-			editor->hide_bottom_panel();
+			EditorNode::get_singleton()->hide_bottom_panel();
 		}
 		button->hide();
 		//preloader_editor->hide();
@@ -416,12 +416,11 @@ void ResourcePreloaderEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-ResourcePreloaderEditorPlugin::ResourcePreloaderEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
+ResourcePreloaderEditorPlugin::ResourcePreloaderEditorPlugin() {
 	preloader_editor = memnew(ResourcePreloaderEditor);
 	preloader_editor->set_custom_minimum_size(Size2(0, 250) * EDSCALE);
 
-	button = editor->add_bottom_panel_item(TTR("ResourcePreloader"), preloader_editor);
+	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("ResourcePreloader"), preloader_editor);
 	button->hide();
 
 	//preloader_editor->set_anchor( MARGIN_TOP, Control::ANCHOR_END);

@@ -702,9 +702,8 @@ AbstractPolygon2DEditor::PosVertex AbstractPolygon2DEditor::closest_edge_point(c
 	return closest;
 }
 
-AbstractPolygon2DEditor::AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wip_destructive) {
+AbstractPolygon2DEditor::AbstractPolygon2DEditor(bool p_wip_destructive) {
 	canvas_item_editor = nullptr;
-	editor = p_editor;
 	undo_redo = EditorNode::get_undo_redo();
 
 	wip_active = false;
@@ -758,9 +757,8 @@ void AbstractPolygon2DEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-AbstractPolygon2DEditorPlugin::AbstractPolygon2DEditorPlugin(EditorNode *p_node, AbstractPolygon2DEditor *p_polygon_editor, String p_class) :
+AbstractPolygon2DEditorPlugin::AbstractPolygon2DEditorPlugin(AbstractPolygon2DEditor *p_polygon_editor, String p_class) :
 		polygon_editor(p_polygon_editor),
-		editor(p_node),
 		klass(p_class) {
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(polygon_editor);
 	polygon_editor->hide();

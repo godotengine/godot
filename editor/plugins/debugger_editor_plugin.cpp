@@ -38,7 +38,7 @@
 #include "editor/fileserver/editor_file_server.h"
 #include "scene/gui/menu_button.h"
 
-DebuggerEditorPlugin::DebuggerEditorPlugin(EditorNode *p_editor, MenuButton *p_debug_menu) {
+DebuggerEditorPlugin::DebuggerEditorPlugin(MenuButton *p_debug_menu) {
 	EditorDebuggerServer::initialize();
 
 	ED_SHORTCUT("debugger/step_into", TTR("Step Into"), Key::F11);

@@ -981,14 +981,13 @@ Vector2 TextureRegionEditor::snap_point(Vector2 p_target) const {
 	return p_target;
 }
 
-TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
+TextureRegionEditor::TextureRegionEditor() {
 	node_sprite_2d = nullptr;
 	node_sprite_3d = nullptr;
 	node_ninepatch = nullptr;
 	obj_styleBox = Ref<StyleBoxTexture>(nullptr);
 	atlas_tex = Ref<AtlasTexture>(nullptr);
-	editor = p_editor;
-	undo_redo = editor->get_undo_redo();
+	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	snap_step = Vector2(10, 10);
 	snap_separation = Vector2(0, 0);
@@ -1146,11 +1145,11 @@ void TextureRegionEditorPlugin::make_visible(bool p_visible) {
 		is_node_configured |= region_editor->get_sprite_2d() && region_editor->get_sprite_2d()->is_region_enabled();
 		is_node_configured |= region_editor->get_sprite_3d() && region_editor->get_sprite_3d()->is_region_enabled();
 		if ((is_node_configured && !manually_hidden) || texture_region_button->is_pressed()) {
-			editor->make_bottom_panel_item_visible(region_editor);
+			EditorNode::get_singleton()->make_bottom_panel_item_visible(region_editor);
 		}
 	} else {
 		if (region_editor->is_visible_in_tree()) {
-			editor->hide_bottom_panel();
+			EditorNode::get_singleton()->hide_bottom_panel();
 			manually_hidden = false;
 		}
 		texture_region_button->hide();
@@ -1199,15 +1198,14 @@ void TextureRegionEditorPlugin::set_state(const Dictionary &p_state) {
 void TextureRegionEditorPlugin::_bind_methods() {
 }
 
-TextureRegionEditorPlugin::TextureRegionEditorPlugin(EditorNode *p_node) {
+TextureRegionEditorPlugin::TextureRegionEditorPlugin() {
 	manually_hidden = false;
-	editor = p_node;
 
-	region_editor = memnew(TextureRegionEditor(p_node));
+	region_editor = memnew(TextureRegionEditor);
 	region_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 	region_editor->hide();
 	region_editor->connect("visibility_changed", callable_mp(this, &TextureRegionEditorPlugin::_editor_visiblity_changed));
 
-	texture_region_button = p_node->add_bottom_panel_item(TTR("TextureRegion"), region_editor);
+	texture_region_button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("TextureRegion"), region_editor);
 	texture_region_button->hide();
 }

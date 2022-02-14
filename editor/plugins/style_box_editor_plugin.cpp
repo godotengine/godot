@@ -85,7 +85,7 @@ StyleBoxPreview::StyleBoxPreview() {
 	add_margin_child(TTR("Preview:"), preview);
 }
 
-StyleBoxEditorPlugin::StyleBoxEditorPlugin(EditorNode *p_node) {
+StyleBoxEditorPlugin::StyleBoxEditorPlugin() {
 	Ref<EditorInspectorPluginStyleBox> inspector_plugin;
 	inspector_plugin.instantiate();
 	add_inspector_plugin(inspector_plugin);

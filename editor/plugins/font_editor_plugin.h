@@ -71,7 +71,7 @@ class FontEditorPlugin : public EditorPlugin {
 	GDCLASS(FontEditorPlugin, EditorPlugin);
 
 public:
-	FontEditorPlugin(EditorNode *p_node);
+	FontEditorPlugin();
 
 	virtual String get_name() const override { return "Font"; }
 };

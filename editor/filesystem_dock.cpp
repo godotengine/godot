@@ -976,10 +976,10 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 			if (is_imported) {
 				ResourceImporterScene::get_singleton()->show_advanced_options(fpath);
 			} else {
-				editor->open_request(fpath);
+				EditorNode::get_singleton()->open_request(fpath);
 			}
 		} else {
-			editor->load_resource(fpath);
+			EditorNode::get_singleton()->load_resource(fpath);
 		}
 	}
 	_navigate_to_path(fpath, p_select_in_favorites);
@@ -1172,12 +1172,12 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 		// Update scene if it is open.
 		for (int i = 0; i < file_changed_paths.size(); ++i) {
 			String new_item_path = p_item.is_file ? new_path : file_changed_paths[i].replace_first(old_path, new_path);
-			if (ResourceLoader::get_resource_type(new_item_path) == "PackedScene" && editor->is_scene_open(file_changed_paths[i])) {
-				EditorData *ed = &editor->get_editor_data();
+			if (ResourceLoader::get_resource_type(new_item_path) == "PackedScene" && EditorNode::get_singleton()->is_scene_open(file_changed_paths[i])) {
+				EditorData *ed = &EditorNode::get_singleton()->get_editor_data();
 				for (int j = 0; j < ed->get_edited_scene_count(); j++) {
 					if (ed->get_scene_path(j) == file_changed_paths[i]) {
 						ed->get_edited_scene_root(j)->set_scene_file_path(new_item_path);
-						editor->save_layout();
+						EditorNode::get_singleton()->save_layout();
 						break;
 					}
 				}
@@ -1315,7 +1315,7 @@ void FileSystemDock::_update_dependencies_after_move(const Map<String, String> &
 		Error err = ResourceLoader::rename_dependencies(file, p_renames);
 		if (err == OK) {
 			if (ResourceLoader::get_resource_type(file) == "PackedScene") {
-				editor->reload_scene(file);
+				EditorNode::get_singleton()->reload_scene(file);
 			}
 		} else {
 			EditorNode::get_singleton()->add_io_error(TTR("Unable to update dependencies:") + "\n" + remaps[i] + "\n");
@@ -1384,7 +1384,7 @@ void FileSystemDock::_save_scenes_after_move(const Map<String, String> &p_rename
 		}
 	}
 
-	editor->save_scene_list(new_filenames);
+	EditorNode::get_singleton()->save_scene_list(new_filenames);
 }
 
 void FileSystemDock::_make_dir_confirm() {
@@ -1458,8 +1458,8 @@ void FileSystemDock::_make_scene_confirm() {
 	}
 	memdelete(da);
 
-	int idx = editor->new_scene();
-	editor->get_editor_data().set_scene_path(idx, scene_name);
+	int idx = EditorNode::get_singleton()->new_scene();
+	EditorNode::get_singleton()->get_editor_data().set_scene_path(idx, scene_name);
 }
 
 void FileSystemDock::_file_removed(String p_file) {
@@ -1536,14 +1536,14 @@ void FileSystemDock::_rename_operation_confirm() {
 	Map<String, String> folder_renames;
 	_try_move_item(to_rename, new_path, file_renames, folder_renames);
 
-	int current_tab = editor->get_current_tab();
+	int current_tab = EditorNode::get_singleton()->get_current_tab();
 	_save_scenes_after_move(file_renames); // save scenes before updating
 	_update_dependencies_after_move(file_renames);
 	_update_resource_paths_after_move(file_renames);
 	_update_project_settings_after_move(file_renames);
 	_update_favorites_list_after_move(file_renames, folder_renames);
 
-	editor->set_current_tab(current_tab);
+	EditorNode::get_singleton()->set_current_tab(current_tab);
 
 	print_verbose("FileSystem: calling rescan.");
 	_rescan();
@@ -1647,14 +1647,14 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_ove
 	}
 
 	if (is_moved) {
-		int current_tab = editor->get_current_tab();
+		int current_tab = EditorNode::get_singleton()->get_current_tab();
 		_save_scenes_after_move(file_renames); // Save scenes before updating.
 		_update_dependencies_after_move(file_renames);
 		_update_resource_paths_after_move(file_renames);
 		_update_project_settings_after_move(file_renames);
 		_update_favorites_list_after_move(file_renames, folder_renames);
 
-		editor->set_current_tab(current_tab);
+		EditorNode::get_singleton()->set_current_tab(current_tab);
 
 		print_verbose("FileSystem: calling rescan.");
 		_rescan();
@@ -2026,8 +2026,8 @@ void FileSystemDock::_resource_created() {
 		memdelete(node);
 	}
 
-	editor->push_item(r);
-	editor->save_resource_as(RES(r), fpath);
+	EditorNode::get_singleton()->push_item(r);
+	EditorNode::get_singleton()->save_resource_as(RES(r), fpath);
 }
 
 void FileSystemDock::_search_changed(const String &p_text, const Control *p_from) {
@@ -2837,10 +2837,9 @@ void FileSystemDock::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("display_mode_changed"));
 }
 
-FileSystemDock::FileSystemDock(EditorNode *p_editor) {
+FileSystemDock::FileSystemDock() {
 	singleton = this;
 	set_name("FileSystem");
-	editor = p_editor;
 	path = "res://";
 
 	// `KeyModifierMask::CMD | Key::C` conflicts with other editor shortcuts.
@@ -2980,7 +2979,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	deps_editor = memnew(DependencyEditor);
 	add_child(deps_editor);
 
-	owners_editor = memnew(DependencyEditorOwners(editor));
+	owners_editor = memnew(DependencyEditorOwners());
 	add_child(owners_editor);
 
 	remove_dialog = memnew(DependencyRemoveDialog);

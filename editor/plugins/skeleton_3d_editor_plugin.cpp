@@ -787,8 +787,7 @@ void Skeleton3DEditor::edit_mode_toggled(const bool pressed) {
 	_update_gizmo_visible();
 }
 
-Skeleton3DEditor::Skeleton3DEditor(EditorInspectorPluginSkeleton *e_plugin, EditorNode *p_editor, Skeleton3D *p_skeleton) :
-		editor(p_editor),
+Skeleton3DEditor::Skeleton3DEditor(EditorInspectorPluginSkeleton *e_plugin, Skeleton3D *p_skeleton) :
 		editor_plugin(e_plugin),
 		skeleton(p_skeleton) {
 	singleton = this;
@@ -822,7 +821,7 @@ void fragment() {
 }
 )");
 	handle_material->set_shader(handle_shader);
-	Ref<Texture2D> handle = editor->get_gui_base()->get_theme_icon(SNAME("EditorBoneHandle"), SNAME("EditorIcons"));
+	Ref<Texture2D> handle = EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("EditorBoneHandle"), SNAME("EditorIcons"));
 	handle_material->set_shader_param("point_size", handle->get_width());
 	handle_material->set_shader_param("texture_albedo", handle);
 
@@ -1013,15 +1012,12 @@ void EditorInspectorPluginSkeleton::parse_begin(Object *p_object) {
 	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_object);
 	ERR_FAIL_COND(!skeleton);
 
-	skel_editor = memnew(Skeleton3DEditor(this, editor, skeleton));
+	skel_editor = memnew(Skeleton3DEditor(this, skeleton));
 	add_custom_control(skel_editor);
 }
 
-Skeleton3DEditorPlugin::Skeleton3DEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
-
+Skeleton3DEditorPlugin::Skeleton3DEditorPlugin() {
 	skeleton_plugin = memnew(EditorInspectorPluginSkeleton);
-	skeleton_plugin->editor = editor;
 
 	EditorInspector::add_inspector_plugin(skeleton_plugin);
 

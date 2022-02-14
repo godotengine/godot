@@ -941,7 +941,7 @@ void ControlEditorToolbar::_notification(int p_what) {
 	}
 }
 
-ControlEditorToolbar::ControlEditorToolbar(EditorNode *p_editor) {
+ControlEditorToolbar::ControlEditorToolbar() {
 	anchor_layouts_icon = memnew(TextureRect);
 	anchor_layouts_icon->set_stretch_mode(TextureRect::StretchMode::STRETCH_KEEP_CENTERED);
 	add_child(anchor_layouts_icon);
@@ -1000,8 +1000,8 @@ ControlEditorToolbar::ControlEditorToolbar(EditorNode *p_editor) {
 	p = container_v_presets_menu->get_popup();
 	p->connect("id_pressed", callable_mp(this, &ControlEditorToolbar::_popup_callback));
 
-	undo_redo = p_editor->get_undo_redo();
-	editor_selection = p_editor->get_editor_selection();
+	undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	editor_selection = EditorNode::get_singleton()->get_editor_selection();
 	editor_selection->add_editor_plugin(this);
 	editor_selection->connect("selection_changed", callable_mp(this, &ControlEditorToolbar::_selection_changed));
 
@@ -1010,10 +1010,8 @@ ControlEditorToolbar::ControlEditorToolbar(EditorNode *p_editor) {
 
 ControlEditorToolbar *ControlEditorToolbar::singleton = nullptr;
 
-ControlEditorPlugin::ControlEditorPlugin(EditorNode *p_editor) {
-	editor = p_editor;
-
-	toolbar = memnew(ControlEditorToolbar(editor));
+ControlEditorPlugin::ControlEditorPlugin() {
+	toolbar = memnew(ControlEditorToolbar);
 	toolbar->hide();
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_MENU, toolbar);
 

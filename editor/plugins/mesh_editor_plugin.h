@@ -86,7 +86,7 @@ class MeshEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const override { return "Mesh"; }
 
-	MeshEditorPlugin(EditorNode *p_node);
+	MeshEditorPlugin();
 };
 
 #endif

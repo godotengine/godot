@@ -463,7 +463,6 @@ class VisualShaderEditorPlugin : public EditorPlugin {
 	GDCLASS(VisualShaderEditorPlugin, EditorPlugin);
 
 	VisualShaderEditor *visual_shader_editor = nullptr;
-	EditorNode *editor = nullptr;
 	Button *button = nullptr;
 
 public:
@@ -473,7 +472,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	VisualShaderEditorPlugin(EditorNode *p_node);
+	VisualShaderEditorPlugin();
 	~VisualShaderEditorPlugin();
 };
 

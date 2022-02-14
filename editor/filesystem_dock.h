@@ -114,7 +114,6 @@ private:
 	VSplitContainer *split_box;
 	VBoxContainer *file_list_vb;
 
-	EditorNode *editor;
 	Set<String> favorites;
 
 	Button *button_toggle_display_mode;
@@ -336,7 +335,7 @@ public:
 	void set_file_list_display_mode(FileListDisplayMode p_mode);
 	FileListDisplayMode get_file_list_display_mode() { return file_list_display_mode; };
 
-	FileSystemDock(EditorNode *p_editor);
+	FileSystemDock();
 	~FileSystemDock();
 };
 

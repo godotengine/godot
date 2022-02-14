@@ -98,7 +98,7 @@ bool EditorInspectorPluginFont::parse_property(Object *p_object, const Variant::
 
 /*************************************************************************/
 
-FontEditorPlugin::FontEditorPlugin(EditorNode *p_node) {
+FontEditorPlugin::FontEditorPlugin() {
 	Ref<EditorInspectorPluginFont> fd_plugin;
 	fd_plugin.instantiate();
 	EditorInspector::add_inspector_plugin(fd_plugin);

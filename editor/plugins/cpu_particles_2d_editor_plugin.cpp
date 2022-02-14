@@ -234,10 +234,9 @@ void CPUParticles2DEditorPlugin::_notification(int p_what) {
 void CPUParticles2DEditorPlugin::_bind_methods() {
 }
 
-CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin(EditorNode *p_node) {
+CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin() {
 	particles = nullptr;
-	editor = p_node;
-	undo_redo = editor->get_undo_redo();
+	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	toolbar = memnew(HBoxContainer);
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_MENU, toolbar);

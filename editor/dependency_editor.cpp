@@ -287,7 +287,7 @@ void DependencyEditorOwners::_select_file(int p_idx) {
 	String fpath = owners->get_item_text(p_idx);
 
 	if (ResourceLoader::get_resource_type(fpath) == "PackedScene") {
-		editor->open_request(fpath);
+		EditorNode::get_singleton()->open_request(fpath);
 		hide();
 		emit_signal(SNAME("confirmed"));
 	}
@@ -345,9 +345,7 @@ void DependencyEditorOwners::show(const String &p_path) {
 	set_title(TTR("Owners Of:") + " " + p_path.get_file());
 }
 
-DependencyEditorOwners::DependencyEditorOwners(EditorNode *p_editor) {
-	editor = p_editor;
-
+DependencyEditorOwners::DependencyEditorOwners() {
 	file_options = memnew(PopupMenu);
 	add_child(file_options);
 	file_options->connect("id_pressed", callable_mp(this, &DependencyEditorOwners::_file_option));

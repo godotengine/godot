@@ -90,7 +90,7 @@ class Texture3DEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const override { return "Texture3D"; }
 
-	Texture3DEditorPlugin(EditorNode *p_node);
+	Texture3DEditorPlugin();
 };
 
 #endif // TEXTURE_EDITOR_PLUGIN_H

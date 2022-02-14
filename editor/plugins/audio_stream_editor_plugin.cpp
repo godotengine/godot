@@ -272,8 +272,7 @@ void AudioStreamEditorPlugin::make_visible(bool p_visible) {
 	audio_editor->set_visible(p_visible);
 }
 
-AudioStreamEditorPlugin::AudioStreamEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
+AudioStreamEditorPlugin::AudioStreamEditorPlugin() {
 	audio_editor = memnew(AudioStreamEditor);
 	add_control_to_container(CONTAINER_PROPERTY_EDITOR_BOTTOM, audio_editor);
 	audio_editor->hide();

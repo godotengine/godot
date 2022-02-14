@@ -92,7 +92,7 @@ class TextureLayeredEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const override { return "TextureLayered"; }
 
-	TextureLayeredEditorPlugin(EditorNode *p_node);
+	TextureLayeredEditorPlugin();
 };
 
 #endif // TEXTURE_EDITOR_PLUGIN_H

@@ -61,7 +61,7 @@ void GPUParticles2DEditorPlugin::_file_selected(const String &p_file) {
 }
 
 void GPUParticles2DEditorPlugin::_selection_changed() {
-	List<Node *> selected_nodes = editor->get_editor_selection()->get_selected_node_list();
+	List<Node *> selected_nodes = EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list();
 
 	if (selected_particles.is_empty() && selected_nodes.is_empty()) {
 		return;
@@ -365,10 +365,9 @@ void GPUParticles2DEditorPlugin::_notification(int p_what) {
 void GPUParticles2DEditorPlugin::_bind_methods() {
 }
 
-GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin(EditorNode *p_node) {
+GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 	particles = nullptr;
-	editor = p_node;
-	undo_redo = editor->get_undo_redo();
+	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	toolbar = memnew(HBoxContainer);
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_MENU, toolbar);

@@ -190,7 +190,6 @@ class FindInFilesPanel;
 class ScriptEditor : public PanelContainer {
 	GDCLASS(ScriptEditor, PanelContainer);
 
-	EditorNode *editor;
 	enum {
 		FILE_NEW,
 		FILE_NEW_TEXTFILE,
@@ -524,7 +523,7 @@ public:
 
 	static void register_create_script_editor_function(CreateScriptEditorFunc p_func);
 
-	ScriptEditor(EditorNode *p_editor);
+	ScriptEditor();
 	~ScriptEditor();
 };
 
@@ -532,7 +531,6 @@ class ScriptEditorPlugin : public EditorPlugin {
 	GDCLASS(ScriptEditorPlugin, EditorPlugin);
 
 	ScriptEditor *script_editor;
-	EditorNode *editor;
 
 public:
 	virtual String get_name() const override { return "Script"; }
@@ -555,7 +553,7 @@ public:
 
 	virtual void edited_scene_changed() override;
 
-	ScriptEditorPlugin(EditorNode *p_node);
+	ScriptEditorPlugin();
 	~ScriptEditorPlugin();
 };
 

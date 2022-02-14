@@ -516,10 +516,9 @@ void Path2DEditor::_handle_option_pressed(int p_option) {
 	}
 }
 
-Path2DEditor::Path2DEditor(EditorNode *p_editor) {
+Path2DEditor::Path2DEditor() {
 	canvas_item_editor = nullptr;
-	editor = p_editor;
-	undo_redo = editor->get_undo_redo();
+	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 	mirror_handle_angle = true;
 	mirror_handle_length = true;
 	on_edge = false;
@@ -610,9 +609,8 @@ void Path2DEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-Path2DEditorPlugin::Path2DEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
-	path2d_editor = memnew(Path2DEditor(p_node));
+Path2DEditorPlugin::Path2DEditorPlugin() {
+	path2d_editor = memnew(Path2DEditor);
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(path2d_editor);
 	path2d_editor->hide();
 }

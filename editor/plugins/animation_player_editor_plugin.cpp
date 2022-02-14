@@ -104,10 +104,10 @@ void AnimationPlayerEditor::_notification(int p_what) {
 
 			get_tree()->connect("node_removed", callable_mp(this, &AnimationPlayerEditor::_node_removed));
 
-			add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
+			add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
+			add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
@@ -376,7 +376,7 @@ void AnimationPlayerEditor::_animation_save_in_path(const Ref<Resource> &p_resou
 	}
 
 	((Resource *)p_resource.ptr())->set_path(path);
-	editor->emit_signal(SNAME("resource_saved"), p_resource);
+	EditorNode::get_singleton()->emit_signal(SNAME("resource_saved"), p_resource);
 }
 
 void AnimationPlayerEditor::_animation_save(const Ref<Resource> &p_resource) {
@@ -697,7 +697,7 @@ void AnimationPlayerEditor::set_state(const Dictionary &p_state) {
 		if (Object::cast_to<AnimationPlayer>(n) && EditorNode::get_singleton()->get_editor_selection()->is_selected(n)) {
 			player = Object::cast_to<AnimationPlayer>(n);
 			_update_player();
-			editor->make_bottom_panel_item_visible(this);
+			EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
 			set_process(true);
 			ensure_visibility();
 
@@ -720,7 +720,7 @@ void AnimationPlayerEditor::_animation_resource_edit() {
 	if (animation->get_item_count()) {
 		String current = animation->get_item_text(animation->get_selected());
 		Ref<Animation> anim = player->get_animation(current);
-		editor->edit_resource(anim);
+		EditorNode::get_singleton()->edit_resource(anim);
 	}
 }
 
@@ -1198,7 +1198,7 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 
 			String current2 = animation->get_item_text(animation->get_selected());
 			Ref<Animation> anim2 = player->get_animation(current2);
-			editor->edit_resource(anim2);
+			EditorNode::get_singleton()->edit_resource(anim2);
 		} break;
 	}
 }
@@ -1542,8 +1542,7 @@ AnimationPlayer *AnimationPlayerEditor::get_player() const {
 	return player;
 }
 
-AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlayerEditorPlugin *p_plugin) {
-	editor = p_editor;
+AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plugin) {
 	plugin = p_plugin;
 	singleton = this;
 
@@ -1849,17 +1848,16 @@ bool AnimationPlayerEditorPlugin::handles(Object *p_object) const {
 
 void AnimationPlayerEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		editor->make_bottom_panel_item_visible(anim_editor);
+		EditorNode::get_singleton()->make_bottom_panel_item_visible(anim_editor);
 		anim_editor->set_process(true);
 		anim_editor->ensure_visibility();
 	}
 }
 
-AnimationPlayerEditorPlugin::AnimationPlayerEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
-	anim_editor = memnew(AnimationPlayerEditor(editor, this));
+AnimationPlayerEditorPlugin::AnimationPlayerEditorPlugin() {
+	anim_editor = memnew(AnimationPlayerEditor(this));
 	anim_editor->set_undo_redo(EditorNode::get_undo_redo());
-	editor->add_bottom_panel_item(TTR("Animation"), anim_editor);
+	EditorNode::get_singleton()->add_bottom_panel_item(TTR("Animation"), anim_editor);
 }
 
 AnimationPlayerEditorPlugin::~AnimationPlayerEditorPlugin() {

@@ -245,7 +245,7 @@ void ShaderFileEditor::_shader_changed() {
 
 ShaderFileEditor *ShaderFileEditor::singleton = nullptr;
 
-ShaderFileEditor::ShaderFileEditor(EditorNode *p_node) {
+ShaderFileEditor::ShaderFileEditor() {
 	singleton = this;
 	HSplitContainer *main_hs = memnew(HSplitContainer);
 
@@ -301,22 +301,21 @@ bool ShaderFileEditorPlugin::handles(Object *p_object) const {
 void ShaderFileEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		button->show();
-		editor->make_bottom_panel_item_visible(shader_editor);
+		EditorNode::get_singleton()->make_bottom_panel_item_visible(shader_editor);
 
 	} else {
 		button->hide();
 		if (shader_editor->is_visible_in_tree()) {
-			editor->hide_bottom_panel();
+			EditorNode::get_singleton()->hide_bottom_panel();
 		}
 	}
 }
 
-ShaderFileEditorPlugin::ShaderFileEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
-	shader_editor = memnew(ShaderFileEditor(p_node));
+ShaderFileEditorPlugin::ShaderFileEditorPlugin() {
+	shader_editor = memnew(ShaderFileEditor);
 
 	shader_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
-	button = editor->add_bottom_panel_item(TTR("ShaderFile"), shader_editor);
+	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("ShaderFile"), shader_editor);
 	button->hide();
 }
 

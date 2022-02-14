@@ -1562,11 +1562,10 @@ void AssetLibraryEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-AssetLibraryEditorPlugin::AssetLibraryEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
+AssetLibraryEditorPlugin::AssetLibraryEditorPlugin() {
 	addon_library = memnew(EditorAssetLibrary);
 	addon_library->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	editor->get_main_control()->add_child(addon_library);
+	EditorNode::get_singleton()->get_main_control()->add_child(addon_library);
 	addon_library->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	addon_library->hide();
 }

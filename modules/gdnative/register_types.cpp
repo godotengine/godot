@@ -226,7 +226,7 @@ static void editor_init_callback() {
 
 	EditorExport::get_singleton()->add_export_plugin(export_plugin);
 
-	EditorNode::get_singleton()->add_editor_plugin(memnew(GDNativeLibraryEditorPlugin(EditorNode::get_singleton())));
+	EditorNode::get_singleton()->add_editor_plugin(memnew(GDNativeLibraryEditorPlugin));
 }
 
 #endif

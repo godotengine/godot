@@ -205,7 +205,7 @@ void EditorInspectorPlugin3DTexture::parse_begin(Object *p_object) {
 	add_custom_control(editor);
 }
 
-Texture3DEditorPlugin::Texture3DEditorPlugin(EditorNode *p_node) {
+Texture3DEditorPlugin::Texture3DEditorPlugin() {
 	Ref<EditorInspectorPlugin3DTexture> plugin;
 	plugin.instantiate();
 	add_inspector_plugin(plugin);

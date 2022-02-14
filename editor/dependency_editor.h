@@ -38,7 +38,6 @@
 
 class EditorFileDialog;
 class EditorFileSystemDirectory;
-class EditorNode;
 
 class DependencyEditor : public AcceptDialog {
 	GDCLASS(DependencyEditor, AcceptDialog);
@@ -74,7 +73,6 @@ class DependencyEditorOwners : public AcceptDialog {
 
 	ItemList *owners;
 	PopupMenu *file_options;
-	EditorNode *editor;
 	String editing;
 
 	void _fill_owners(EditorFileSystemDirectory *efsd);
@@ -91,7 +89,7 @@ private:
 
 public:
 	void show(const String &p_path);
-	DependencyEditorOwners(EditorNode *p_editor);
+	DependencyEditorOwners();
 };
 
 class DependencyRemoveDialog : public ConfirmationDialog {

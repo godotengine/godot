@@ -254,7 +254,7 @@ void MeshLibraryEditor::_menu_cbk(int p_option) {
 void MeshLibraryEditor::_bind_methods() {
 }
 
-MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
+MeshLibraryEditor::MeshLibraryEditor() {
 	file = memnew(EditorFileDialog);
 	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	//not for now?
@@ -283,7 +283,6 @@ MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 	menu->get_popup()->connect("id_pressed", callable_mp(this, &MeshLibraryEditor::_menu_cbk));
 	menu->hide();
 
-	editor = p_editor;
 	cd_remove = memnew(ConfirmationDialog);
 	add_child(cd_remove);
 	cd_remove->get_ok_button()->connect("pressed", callable_mp(this, &MeshLibraryEditor::_menu_remove_confirm));
@@ -317,14 +316,12 @@ void MeshLibraryEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-MeshLibraryEditorPlugin::MeshLibraryEditorPlugin(EditorNode *p_node) {
+MeshLibraryEditorPlugin::MeshLibraryEditorPlugin() {
 	EDITOR_DEF("editors/grid_map/preview_size", 64);
-	mesh_library_editor = memnew(MeshLibraryEditor(p_node));
+	mesh_library_editor = memnew(MeshLibraryEditor);
 
-	p_node->get_main_control()->add_child(mesh_library_editor);
+	EditorNode::get_singleton()->get_main_control()->add_child(mesh_library_editor);
 	mesh_library_editor->set_anchors_and_offsets_preset(Control::PRESET_TOP_WIDE);
 	mesh_library_editor->set_end(Point2(0, 22));
 	mesh_library_editor->hide();
-
-	editor = nullptr;
 }
