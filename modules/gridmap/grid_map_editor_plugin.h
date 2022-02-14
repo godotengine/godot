@@ -37,7 +37,6 @@
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 
-class EditorNode;
 class Node3DEditorPlugin;
 
 class GridMapEditor : public VBoxContainer {

@@ -46,7 +46,6 @@
 #include "scene/gui/tab_bar.h"
 #include "scene/gui/tree.h"
 
-class EditorNode;
 class UndoRedo;
 
 class TileMapEditorPlugin : public Object {

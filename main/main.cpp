@@ -81,6 +81,7 @@
 #include "editor/doc_data_class_path.gen.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_translation.h"
 #include "editor/progress_dialog.h"

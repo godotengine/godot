@@ -34,8 +34,6 @@
 #include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
 
-class EditorNode;
-
 /*************************************************************************/
 
 class OpenTypeFeaturesEditor : public EditorProperty {

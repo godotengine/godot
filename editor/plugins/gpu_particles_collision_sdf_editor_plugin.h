@@ -35,7 +35,6 @@
 #include "scene/3d/gpu_particles_collision_3d.h"
 #include "scene/resources/material.h"
 
-class EditorNode;
 struct EditorProgress;
 class EditorFileDialog;
 

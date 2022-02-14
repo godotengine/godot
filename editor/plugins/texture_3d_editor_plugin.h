@@ -36,8 +36,6 @@
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
 
-class EditorNode;
-
 class Texture3DEditor : public Control {
 	GDCLASS(Texture3DEditor, Control);
 

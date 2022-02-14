@@ -28,11 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "modules/modules_enabled.gen.h" // For regex.
+#include "export_plugin.h"
 
 #include "codesign.h"
+
 #include "editor/editor_node.h"
-#include "export_plugin.h"
+#include "editor/editor_paths.h"
+
+#include "modules/modules_enabled.gen.h" // For regex.
 
 void EditorExportPlatformOSX::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
 	if (p_preset->get("texture_format/s3tc")) {

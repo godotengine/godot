@@ -32,9 +32,9 @@
 
 #include "core/input/input.h"
 #include "core/io/marshalls.h"
-#include "editor/editor_node.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_scale.h"
+#include "editor/inspector_dock.h"
 
 bool EditorPropertyArrayObject::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;

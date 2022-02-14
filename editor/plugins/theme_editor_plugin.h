@@ -44,7 +44,6 @@
 #include "scene/gui/tree.h"
 #include "scene/resources/theme.h"
 
-class EditorNode;
 class EditorFileDialog;
 
 class ThemeItemImportTree : public VBoxContainer {

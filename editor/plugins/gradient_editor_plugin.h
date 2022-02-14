@@ -34,8 +34,6 @@
 #include "editor/editor_plugin.h"
 #include "scene/gui/gradient_edit.h"
 
-class EditorNode;
-
 class GradientEditor : public GradientEdit {
 	GDCLASS(GradientEditor, GradientEdit);
 

@@ -37,7 +37,6 @@
 #include "scene/gui/split_container.h"
 #include "scene/resources/tile_set.h"
 
-class EditorNode;
 class TileSet;
 
 class TileSetAtlasSourceEditor : public HBoxContainer {

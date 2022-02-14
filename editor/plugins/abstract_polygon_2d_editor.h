@@ -35,7 +35,6 @@
 #include "scene/2d/polygon_2d.h"
 #include "scene/gui/box_container.h"
 
-class EditorNode;
 class CanvasItemEditor;
 
 class AbstractPolygon2DEditor : public HBoxContainer {

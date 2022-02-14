@@ -30,7 +30,25 @@
 
 #include "export_plugin.h"
 
+#include "gradle_export_util.h"
+
+#include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
+#include "core/io/image_loader.h"
+#include "core/io/json.h"
+#include "core/io/marshalls.h"
+#include "core/version.h"
+#include "drivers/png/png_driver_common.h"
+#include "editor/editor_log.h"
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
+#include "editor/editor_settings.h"
+#include "main/splash.gen.h"
+#include "platform/android/logo.gen.h"
+#include "platform/android/run_icon.gen.h"
+
+#include <string.h>
 
 static const char *android_perms[] = {
 	"ACCESS_CHECKIN_PROPERTIES",

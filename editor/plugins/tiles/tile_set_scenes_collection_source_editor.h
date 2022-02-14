@@ -37,7 +37,6 @@
 #include "scene/gui/item_list.h"
 #include "scene/resources/tile_set.h"
 
-class EditorNode;
 class UndoRedo;
 
 class TileSetScenesCollectionSourceEditor : public HBoxContainer {

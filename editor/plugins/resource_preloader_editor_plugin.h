@@ -36,8 +36,6 @@
 #include "scene/gui/tree.h"
 #include "scene/main/resource_preloader.h"
 
-class EditorNode;
-struct EditorProgress;
 class EditorFileDialog;
 
 class ResourcePreloaderEditor : public PanelContainer {

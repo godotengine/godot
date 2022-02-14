@@ -50,7 +50,6 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #endif
 
 #include "modules/modules_enabled.gen.h" // For csg, gridmap.

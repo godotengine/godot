@@ -39,8 +39,8 @@
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
 
-class EditorNode;
 class EditorFileDialog;
+
 class AnimationTreeNodeEditorPlugin : public VBoxContainer {
 	GDCLASS(AnimationTreeNodeEditorPlugin, VBoxContainer);
 

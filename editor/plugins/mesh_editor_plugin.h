@@ -38,8 +38,6 @@
 #include "scene/gui/subviewport_container.h"
 #include "scene/resources/material.h"
 
-class EditorNode;
-
 class MeshEditor : public SubViewportContainer {
 	GDCLASS(MeshEditor, SubViewportContainer);
 

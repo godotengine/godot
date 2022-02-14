@@ -35,8 +35,6 @@
 #include "scene/resources/font.h"
 #include "scene/resources/text_line.h"
 
-class EditorNode;
-
 class FontDataPreview : public Control {
 	GDCLASS(FontDataPreview, Control);
 

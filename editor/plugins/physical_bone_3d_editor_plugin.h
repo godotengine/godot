@@ -36,8 +36,6 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 
-class EditorNode;
-
 class PhysicalBone3DEditor : public Object {
 	GDCLASS(PhysicalBone3DEditor, Object);
 

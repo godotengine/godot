@@ -32,12 +32,9 @@
 #define TILE_PROXIES_MANAGER_DIALOG_H
 
 #include "editor/editor_properties.h"
-
 #include "scene/2d/tile_map.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
-
-class EditorNode;
 
 class TileProxiesManagerDialog : public ConfirmationDialog {
 	GDCLASS(TileProxiesManagerDialog, ConfirmationDialog);

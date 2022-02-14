@@ -35,7 +35,6 @@
 #include "editor/editor_data.h"
 #include "editor/groups_editor.h"
 #include "editor/quick_open.h"
-#include "editor/rename_dialog.h"
 #include "editor/reparent_dialog.h"
 #include "editor/script_create_dialog.h"
 #include "scene/animation/animation_player.h"
@@ -48,8 +47,10 @@
 #include "scene_tree_editor.h"
 
 #include "modules/modules_enabled.gen.h" // For regex.
+#ifdef MODULE_REGEX_ENABLED
+class RenameDialog;
+#endif // MODULE_REGEX_ENABLED
 
-class EditorNode;
 class ShaderCreateDialog;
 
 class SceneTreeDock : public VBoxContainer {

@@ -34,7 +34,6 @@
 #include "core/donors.gen.h"
 #include "core/license.gen.h"
 #include "core/version.h"
-#include "editor/editor_node.h"
 
 // The metadata key used to store and retrieve the version text to copy to the clipboard.
 static const String META_TEXT_TO_COPY = "text_to_copy";

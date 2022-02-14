@@ -33,6 +33,7 @@
 #include "tile_data_editors.h"
 #include "tiles_editor_plugin.h"
 
+#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 

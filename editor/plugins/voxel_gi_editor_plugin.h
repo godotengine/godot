@@ -35,7 +35,6 @@
 #include "scene/3d/voxel_gi.h"
 #include "scene/resources/material.h"
 
-class EditorNode;
 class EditorFileDialog;
 struct EditorProgress;
 

@@ -36,6 +36,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/fileserver/editor_file_server.h"
+#include "editor/plugins/script_editor_plugin.h"
 #include "scene/gui/menu_button.h"
 
 DebuggerEditorPlugin::DebuggerEditorPlugin(MenuButton *p_debug_menu) {

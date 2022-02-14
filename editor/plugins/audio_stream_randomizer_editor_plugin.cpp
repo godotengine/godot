@@ -30,6 +30,8 @@
 
 #include "audio_stream_randomizer_editor_plugin.h"
 
+#include "editor/editor_node.h"
+
 void AudioStreamRandomizerEditorPlugin::edit(Object *p_object) {
 }
 

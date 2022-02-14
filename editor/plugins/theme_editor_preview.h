@@ -38,8 +38,6 @@
 #include "scene/gui/scroll_container.h"
 #include "scene/resources/theme.h"
 
-class EditorNode;
-
 class ThemeEditorPreview : public VBoxContainer {
 	GDCLASS(ThemeEditorPreview, VBoxContainer);
 

@@ -39,7 +39,6 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/tree.h"
 
-class EditorNode;
 class EditorFileDialog;
 
 class GDNativeLibraryEditor : public Control {
@@ -114,5 +113,7 @@ public:
 
 	GDNativeLibraryEditorPlugin();
 };
-#endif
+
+#endif // TOOLS_ENABLED
+
 #endif // GDNATIVE_LIBRARY_EDITOR_PLUGIN_H

@@ -43,8 +43,6 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
-class EditorNode;
-struct EditorProgress;
 class EditorFileDialog;
 
 class SpriteFramesEditor : public HSplitContainer {

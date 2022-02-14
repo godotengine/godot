@@ -39,7 +39,6 @@
 #include "scene/gui/margin_container.h"
 
 class Tree;
-class EditorNode;
 class LineEdit;
 class TabContainer;
 class RichTextLabel;

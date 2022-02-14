@@ -35,12 +35,12 @@
 #include "editor/plugins/curve_editor_plugin.h"
 #include "editor/property_editor.h"
 #include "scene/gui/button.h"
+#include "scene/gui/code_edit.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/popup.h"
+#include "scene/gui/rich_text_label.h"
 #include "scene/gui/tree.h"
 #include "scene/resources/visual_shader.h"
-
-class EditorNode;
 
 class VisualShaderNodePlugin : public RefCounted {
 	GDCLASS(VisualShaderNodePlugin, RefCounted);

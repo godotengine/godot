@@ -31,8 +31,14 @@
 #ifndef ACTION_MAP_EDITOR_H
 #define ACTION_MAP_EDITOR_H
 
-#include "editor/editor_data.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/check_button.h"
 #include "scene/gui/color_rect.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/label.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/tab_container.h"
+#include "scene/gui/tree.h"
 
 // Confirmation Dialog used when configuring an input event.
 // Separate from ActionMapEditor for code cleanliness and separation of responsibilities.

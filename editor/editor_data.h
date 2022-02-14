@@ -33,10 +33,10 @@
 
 #include "core/object/undo_redo.h"
 #include "core/templates/list.h"
-#include "core/templates/pair.h"
-#include "editor/editor_plugin.h"
-#include "editor/plugins/script_editor_plugin.h"
 #include "scene/resources/texture.h"
+
+class ConfigFile;
+class EditorPlugin;
 
 class EditorHistory {
 	enum {
@@ -58,8 +58,6 @@ class EditorHistory {
 
 	Vector<History> history;
 	int current;
-
-	//Vector<EditorPlugin*> editor_plugins;
 
 	struct PropertyData {
 		String name;

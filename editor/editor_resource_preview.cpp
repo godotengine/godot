@@ -36,6 +36,7 @@
 #include "core/io/resource_saver.h"
 #include "core/object/message_queue.h"
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 

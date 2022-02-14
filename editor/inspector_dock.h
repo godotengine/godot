@@ -31,15 +31,17 @@
 #ifndef INSPECTOR_DOCK_H
 #define INSPECTOR_DOCK_H
 
-#include "editor/animation_track_editor.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_data.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_path.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/tree.h"
 
-class EditorNode;
 class EditorFileDialog;
 
 class InspectorDock : public VBoxContainer {

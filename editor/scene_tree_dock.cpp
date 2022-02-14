@@ -54,6 +54,9 @@
 #include "servers/rendering_server.h"
 
 #include "modules/modules_enabled.gen.h" // For regex.
+#ifdef MODULE_REGEX_ENABLED
+#include "editor/rename_dialog.h"
+#endif // MODULE_REGEX_ENABLED
 
 void SceneTreeDock::_nodes_drag_begin() {
 	if (restore_script_editor_on_drag) {

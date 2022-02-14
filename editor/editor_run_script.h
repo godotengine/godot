@@ -33,7 +33,9 @@
 
 #include "core/object/ref_counted.h"
 #include "editor/editor_plugin.h"
+
 class EditorNode;
+
 class EditorScript : public RefCounted {
 	GDCLASS(EditorScript, RefCounted);
 

@@ -33,12 +33,7 @@
 #include "core/os/keyboard.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
-#include "line_edit.h"
-
-#ifdef TOOLS_ENABLED
-#include "editor/editor_node.h"
-#include "scene/main/window.h" // Only used to check for more modals when dimming the editor.
-#endif
+#include "scene/gui/line_edit.h"
 
 // AcceptDialog
 

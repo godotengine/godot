@@ -36,6 +36,7 @@
 #include "core/version.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/project_settings_editor.h"

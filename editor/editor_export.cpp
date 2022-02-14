@@ -45,6 +45,7 @@
 #include "core/version.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "scene/resources/resource_format_text.h"

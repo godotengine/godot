@@ -36,6 +36,8 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/filesystem_dock.h"
+#include "editor/plugins/script_editor_plugin.h"
+#include "editor/quick_open.h"
 #include "editor/scene_tree_dock.h"
 
 HashMap<StringName, List<StringName>> EditorResourcePicker::allowed_types_cache;

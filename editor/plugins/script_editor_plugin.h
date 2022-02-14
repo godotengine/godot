@@ -47,8 +47,6 @@
 #include "scene/main/timer.h"
 #include "scene/resources/text_file.h"
 
-class EditorNode;
-struct EditorProgress;
 class EditorFileDialog;
 
 class EditorSyntaxHighlighter : public SyntaxHighlighter {

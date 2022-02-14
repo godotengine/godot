@@ -31,9 +31,8 @@
 #ifndef EDITORPREVIEWPLUGINS_H
 #define EDITORPREVIEWPLUGINS_H
 
-#include "editor/editor_resource_preview.h"
-
 #include "core/templates/safe_refcount.h"
+#include "editor/editor_resource_preview.h"
 
 void post_process_preview(Ref<Image> p_image);
 

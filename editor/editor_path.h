@@ -31,10 +31,13 @@
 #ifndef EDITOR_PATH_H
 #define EDITOR_PATH_H
 
-#include "editor/editor_data.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
+#include "scene/gui/label.h"
 #include "scene/gui/popup_menu.h"
+#include "scene/gui/texture_rect.h"
+
+class EditorHistory;
 
 class EditorPath : public Button {
 	GDCLASS(EditorPath, Button);

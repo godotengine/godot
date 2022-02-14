@@ -39,7 +39,6 @@
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 
-class EditorNode;
 class ViewPanner;
 
 class TextureRegionEditor : public VBoxContainer {

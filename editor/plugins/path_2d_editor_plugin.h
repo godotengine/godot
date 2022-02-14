@@ -35,7 +35,6 @@
 #include "scene/2d/path_2d.h"
 #include "scene/gui/separator.h"
 
-class EditorNode;
 class CanvasItemEditor;
 
 class Path2DEditor : public HBoxContainer {

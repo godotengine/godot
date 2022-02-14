@@ -36,7 +36,6 @@
 #include "scene/2d/cpu_particles_2d.h"
 #include "scene/gui/box_container.h"
 
-class EditorNode;
 class EditorPlugin;
 class SpinBox;
 class EditorFileDialog;

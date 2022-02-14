@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  resource_importer_dynamicfont.cpp                                    */
+/*  resource_importer_dynamic_font.cpp                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,12 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "resource_importer_dynamicfont.h"
+#include "resource_importer_dynamic_font.h"
 
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
-#include "dynamicfont_import_settings.h"
-#include "editor/editor_node.h"
+#include "editor/import/dynamic_font_import_settings.h"
+#include "scene/resources/font.h"
+#include "servers/text_server.h"
 
 #include "modules/modules_enabled.gen.h" // For freetype.
 

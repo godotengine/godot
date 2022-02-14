@@ -30,11 +30,6 @@
 
 #include "texture_3d_editor_plugin.h"
 
-#include "core/config/project_settings.h"
-#include "core/io/resource_loader.h"
-#include "editor/editor_node.h"
-#include "editor/editor_settings.h"
-
 void Texture3DEditor::_texture_rect_draw() {
 	texture_rect->draw_rect(Rect2(Point2(), texture_rect->get_size()), Color(1, 1, 1, 1));
 }

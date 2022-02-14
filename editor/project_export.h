@@ -52,7 +52,6 @@
 #include "scene/gui/tree.h"
 #include "scene/main/timer.h"
 
-class EditorNode;
 class EditorFileDialog;
 
 class ProjectExportDialog : public ConfirmationDialog {
