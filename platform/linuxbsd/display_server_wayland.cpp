@@ -315,9 +315,8 @@ void DisplayServerWayland::_wl_pointer_on_button(void *data, struct wl_pointer *
 			button_pressed = MouseButton::RIGHT;
 			break;
 
+		// TODO: Handle more buttons.
 		default: {
-			// TODO: Handle more bttons
-			break;
 		}
 	}
 
@@ -343,16 +342,12 @@ void DisplayServerWayland::_wl_pointer_on_axis(void *data, struct wl_pointer *wl
 		case WL_POINTER_AXIS_VERTICAL_SCROLL: {
 			button_pressed = value >= 0 ? MouseButton::WHEEL_DOWN : MouseButton::WHEEL_UP;
 			pd.scroll_vector.y = wl_fixed_to_double(value);
-
-			break;
-		}
+		} break;
 
 		case WL_POINTER_AXIS_HORIZONTAL_SCROLL: {
 			button_pressed = value >= 0 ? MouseButton::WHEEL_RIGHT: MouseButton::WHEEL_LEFT;
 			pd.scroll_vector.x = wl_fixed_to_double(value);
-
-			break;
-		}
+		} break;
 	}
 
 	// These buttons will get unpressed when the event is sent.
@@ -1154,8 +1149,7 @@ void DisplayServerWayland::process_events() {
 				}
 
 				memdelete(msg_data);
-				break;
-			}
+			} break;
 
 			case TYPE_WINDOW_EVENT: {
 				WaylandWindowEventMessage *msg_data = (WaylandWindowEventMessage*) msg.data;
@@ -1175,16 +1169,14 @@ void DisplayServerWayland::process_events() {
 				}
 
 				memdelete(msg_data);
-				break;
-			}
+			} break;
 
 			case TYPE_INPUT_EVENT: {
 				Ref<InputEvent> *ev = (Ref<InputEvent>*) msg.data;
 				Input::get_singleton()->parse_input_event(*ev);
 
 				memdelete(ev);
-				break;
-			}
+			} break;
 		}
 
 		wls.message_queue.pop_front();
