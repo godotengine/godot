@@ -1249,7 +1249,7 @@ void ItemList::_notification(int p_what) {
 						items[i].text_buf->draw_outline(get_canvas_item(), text_ofs, outline_size, font_outline_color);
 					}
 
-					if(width - text_ofs.x > 0) {
+					if (width - text_ofs.x > 0) {
 						items[i].text_buf->draw(get_canvas_item(), text_ofs, modulate);
 					}
 				}
