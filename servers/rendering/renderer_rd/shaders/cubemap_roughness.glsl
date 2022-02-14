@@ -28,8 +28,10 @@ void main() {
 	} else {
 		vec4 sum = vec4(0.0, 0.0, 0.0, 0.0);
 
+		float rotation = quick_hash(id.y * uint(params.face_size) + id.x); // Add some random rotation to the Hammersley sequence
 		for (uint sampleNum = 0u; sampleNum < params.sample_count; sampleNum++) {
 			vec2 xi = Hammersley(sampleNum, params.sample_count);
+			xi.x += rotation;
 
 			vec3 H = ImportanceSampleGGX(xi, params.roughness, N);
 			vec3 V = N;

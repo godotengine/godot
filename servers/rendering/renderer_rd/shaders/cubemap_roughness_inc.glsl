@@ -92,3 +92,11 @@ float radicalInverse_VdC(uint bits) {
 vec2 Hammersley(uint i, uint N) {
 	return vec2(float(i) / float(N), radicalInverse_VdC(i));
 }
+
+float quick_hash(uint x) {
+	const uint k = 1103515245U;
+	x = ((x >> 8U) ^ x) * k;
+	x = ((x >> 8U) ^ x) * k;
+	x = ((x >> 8U) ^ x) * k;
+	return float(x) * (1.0 / float(0xffffffffU));
+}
