@@ -1227,9 +1227,15 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_current_scene"), &SceneTree::get_current_scene);
 
 	ClassDB::bind_method(D_METHOD("change_scene", "path"), &SceneTree::change_scene);
+	BIND_METHOD_ERR_RETURN_DOC("change_scene", ERR_CANT_OPEN);
+	BIND_METHOD_ERR_RETURN_DOC("change_scene", ERR_CANT_CREATE);
 	ClassDB::bind_method(D_METHOD("change_scene_to", "packed_scene"), &SceneTree::change_scene_to);
+	BIND_METHOD_ERR_RETURN_DOC("change_scene_to", ERR_CANT_CREATE);
 
 	ClassDB::bind_method(D_METHOD("reload_current_scene"), &SceneTree::reload_current_scene);
+	BIND_METHOD_ERR_RETURN_DOC("reload_current_scene", ERR_UNCONFIGURED);
+	BIND_METHOD_ERR_RETURN_DOC("reload_current_scene", ERR_CANT_OPEN);
+	BIND_METHOD_ERR_RETURN_DOC("reload_current_scene", ERR_CANT_CREATE);
 
 	ClassDB::bind_method(D_METHOD("_change_scene"), &SceneTree::_change_scene);
 

@@ -2265,6 +2265,8 @@ void VisualShader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("can_connect_nodes", "type", "from_node", "from_port", "to_node", "to_port"), &VisualShader::can_connect_nodes);
 
 	ClassDB::bind_method(D_METHOD("connect_nodes", "type", "from_node", "from_port", "to_node", "to_port"), &VisualShader::connect_nodes);
+	BIND_METHOD_ERR_RETURN_DOC("connect_nodes", ERR_CANT_CONNECT);
+	BIND_METHOD_ERR_RETURN_DOC("connect_nodes", ERR_INVALID_PARAMETER);
 	ClassDB::bind_method(D_METHOD("disconnect_nodes", "type", "from_node", "from_port", "to_node", "to_port"), &VisualShader::disconnect_nodes);
 	ClassDB::bind_method(D_METHOD("connect_nodes_forced", "type", "from_node", "from_port", "to_node", "to_port"), &VisualShader::connect_nodes_forced);
 

@@ -521,7 +521,9 @@ void MeshDataTool::set_material(const Ref<Material> &p_material) {
 void MeshDataTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &MeshDataTool::clear);
 	ClassDB::bind_method(D_METHOD("create_from_surface", "mesh", "surface"), &MeshDataTool::create_from_surface);
+	BIND_METHOD_ERR_RETURN_DOC("create_from_surface", ERR_INVALID_PARAMETER);
 	ClassDB::bind_method(D_METHOD("commit_to_surface", "mesh"), &MeshDataTool::commit_to_surface);
+	BIND_METHOD_ERR_RETURN_DOC("commit_to_surface", ERR_INVALID_PARAMETER);
 
 	ClassDB::bind_method(D_METHOD("get_format"), &MeshDataTool::get_format);
 

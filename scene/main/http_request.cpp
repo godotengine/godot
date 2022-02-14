@@ -572,7 +572,15 @@ void HTTPRequest::_timeout() {
 
 void HTTPRequest::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("request", "url", "custom_headers", "ssl_validate_domain", "method", "request_data"), &HTTPRequest::request, DEFVAL(PackedStringArray()), DEFVAL(true), DEFVAL(HTTPClient::METHOD_GET), DEFVAL(String()));
+	BIND_METHOD_ERR_RETURN_DOC("request", ERR_UNCONFIGURED);
+	BIND_METHOD_ERR_RETURN_DOC("request", ERR_BUSY);
+	BIND_METHOD_ERR_RETURN_DOC("request", ERR_CANT_CONNECT);
+	BIND_METHOD_ERR_RETURN_DOC("request", ERR_INVALID_PARAMETER);
 	ClassDB::bind_method(D_METHOD("request_raw", "url", "custom_headers", "ssl_validate_domain", "method", "request_data_raw"), &HTTPRequest::request_raw, DEFVAL(PackedStringArray()), DEFVAL(true), DEFVAL(HTTPClient::METHOD_GET), DEFVAL(PackedByteArray()));
+	BIND_METHOD_ERR_RETURN_DOC("request_raw", ERR_UNCONFIGURED);
+	BIND_METHOD_ERR_RETURN_DOC("request_raw", ERR_BUSY);
+	BIND_METHOD_ERR_RETURN_DOC("request_raw", ERR_CANT_CONNECT);
+	BIND_METHOD_ERR_RETURN_DOC("request_raw", ERR_INVALID_PARAMETER);
 	ClassDB::bind_method(D_METHOD("cancel_request"), &HTTPRequest::cancel_request);
 
 	ClassDB::bind_method(D_METHOD("get_http_client_status"), &HTTPRequest::get_http_client_status);

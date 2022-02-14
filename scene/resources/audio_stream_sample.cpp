@@ -635,6 +635,8 @@ void AudioStreamSample::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_stereo"), &AudioStreamSample::is_stereo);
 
 	ClassDB::bind_method(D_METHOD("save_to_wav", "path"), &AudioStreamSample::save_to_wav);
+	BIND_METHOD_ERR_RETURN_DOC("save_to_wav", ERR_UNAVAILABLE);
+	BIND_METHOD_ERR_RETURN_DOC("save_to_wav", ERR_FILE_CANT_WRITE);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_data", "get_data");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "format", PROPERTY_HINT_ENUM, "8-Bit,16-Bit,IMA-ADPCM"), "set_format", "get_format");

@@ -66,6 +66,8 @@ _FORCE_INLINE_ void FontData::_ensure_rid(int p_cache_index) const {
 
 void FontData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_bitmap_font", "path"), &FontData::load_bitmap_font);
+	BIND_METHOD_ERR_RETURN_DOC("load_bitmap_font", ERR_CANT_CREATE);
+	BIND_METHOD_ERR_RETURN_DOC("load_bitmap_font", ERR_FILE_CANT_READ);
 	ClassDB::bind_method(D_METHOD("load_dynamic_font", "path"), &FontData::load_dynamic_font);
 
 	ClassDB::bind_method(D_METHOD("set_data", "data"), &FontData::set_data);

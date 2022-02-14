@@ -1807,6 +1807,8 @@ bool AnimationPlayer::can_apply_reset() const {
 
 void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_animation", "name", "animation"), &AnimationPlayer::add_animation);
+	BIND_METHOD_ERR_RETURN_DOC("add_animation", ERR_INVALID_PARAMETER);
+	BIND_METHOD_ERR_RETURN_DOC("add_animation", ERR_INVALID_PARAMETER);
 	ClassDB::bind_method(D_METHOD("remove_animation", "name"), &AnimationPlayer::remove_animation);
 	ClassDB::bind_method(D_METHOD("rename_animation", "name", "newname"), &AnimationPlayer::rename_animation);
 	ClassDB::bind_method(D_METHOD("has_animation", "name"), &AnimationPlayer::has_animation);

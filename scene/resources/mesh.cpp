@@ -1916,6 +1916,9 @@ void ArrayMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("regen_normal_maps"), &ArrayMesh::regen_normal_maps);
 	ClassDB::set_method_flags(get_class_static(), _scs_create("regen_normal_maps"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 	ClassDB::bind_method(D_METHOD("lightmap_unwrap", "transform", "texel_size"), &ArrayMesh::lightmap_unwrap);
+	BIND_METHOD_ERR_RETURN_DOC("lightmap_unwrap", ERR_UNCONFIGURED);
+	BIND_METHOD_ERR_RETURN_DOC("lightmap_unwrap", ERR_UNAVAILABLE);
+	BIND_METHOD_ERR_RETURN_DOC("lightmap_unwrap", ERR_CANT_CREATE);
 	ClassDB::set_method_flags(get_class_static(), _scs_create("lightmap_unwrap"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 	ClassDB::bind_method(D_METHOD("get_faces"), &ArrayMesh::get_faces);
 	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &ArrayMesh::generate_triangle_mesh);
