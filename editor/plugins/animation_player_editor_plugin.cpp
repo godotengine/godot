@@ -308,7 +308,7 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 }
 
 void AnimationPlayerEditor::_animation_new() {
-	renaming = false;
+	name_dialog_op = TOOL_NEW_ANIM;
 	name_title->set_text(TTR("New Animation Name:"));
 
 	int count = 1;
@@ -341,7 +341,7 @@ void AnimationPlayerEditor::_animation_rename() {
 
 	name_title->set_text(TTR("Change Animation Name:"));
 	name->set_text(selected_name);
-	renaming = true;
+	name_dialog_op = TOOL_RENAME_ANIM;
 	name_dialog->popup_centered(Size2(300, 90));
 	name->select_all();
 	name->grab_focus();
@@ -494,7 +494,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 		return;
 	}
 
-	if (renaming && animation->get_item_count() > 0 && animation->get_item_text(animation->get_selected()) == new_name) {
+	if (name_dialog_op == TOOL_RENAME_ANIM && animation->get_item_count() > 0 && animation->get_item_text(animation->get_selected()) == new_name) {
 		name_dialog->hide();
 		return;
 	}
@@ -505,37 +505,57 @@ void AnimationPlayerEditor::_animation_name_edited() {
 		return;
 	}
 
-	if (renaming) {
-		String current = animation->get_item_text(animation->get_selected());
-		Ref<Animation> anim = player->get_animation(current);
+	switch (name_dialog_op) {
+		case TOOL_RENAME_ANIM: {
+			String current = animation->get_item_text(animation->get_selected());
+			Ref<Animation> anim = player->get_animation(current);
 
-		undo_redo->create_action(TTR("Rename Animation"));
-		undo_redo->add_do_method(player, "rename_animation", current, new_name);
-		undo_redo->add_do_method(anim.ptr(), "set_name", new_name);
-		undo_redo->add_undo_method(player, "rename_animation", new_name, current);
-		undo_redo->add_undo_method(anim.ptr(), "set_name", current);
-		undo_redo->add_do_method(this, "_animation_player_changed", player);
-		undo_redo->add_undo_method(this, "_animation_player_changed", player);
-		undo_redo->commit_action();
+			undo_redo->create_action(TTR("Rename Animation"));
+			undo_redo->add_do_method(player, "rename_animation", current, new_name);
+			undo_redo->add_do_method(anim.ptr(), "set_name", new_name);
+			undo_redo->add_undo_method(player, "rename_animation", new_name, current);
+			undo_redo->add_undo_method(anim.ptr(), "set_name", current);
+			undo_redo->add_do_method(this, "_animation_player_changed", player);
+			undo_redo->add_undo_method(this, "_animation_player_changed", player);
+			undo_redo->commit_action();
 
-		_select_anim_by_name(new_name);
+			_select_anim_by_name(new_name);
+		} break;
 
-	} else {
-		Ref<Animation> new_anim = Ref<Animation>(memnew(Animation));
-		new_anim->set_name(new_name);
+		case TOOL_NEW_ANIM: {
+			Ref<Animation> new_anim = Ref<Animation>(memnew(Animation));
+			new_anim->set_name(new_name);
 
-		undo_redo->create_action(TTR("Add Animation"));
-		undo_redo->add_do_method(player, "add_animation", new_name, new_anim);
-		undo_redo->add_undo_method(player, "remove_animation", new_name);
-		undo_redo->add_do_method(this, "_animation_player_changed", player);
-		undo_redo->add_undo_method(this, "_animation_player_changed", player);
-		if (animation->get_item_count() == 0) {
-			undo_redo->add_do_method(this, "_start_onion_skinning");
-			undo_redo->add_undo_method(this, "_stop_onion_skinning");
-		}
-		undo_redo->commit_action();
+			undo_redo->create_action(TTR("Add Animation"));
+			undo_redo->add_do_method(player, "add_animation", new_name, new_anim);
+			undo_redo->add_undo_method(player, "remove_animation", new_name);
+			undo_redo->add_do_method(this, "_animation_player_changed", player);
+			undo_redo->add_undo_method(this, "_animation_player_changed", player);
+			if (animation->get_item_count() == 0) {
+				undo_redo->add_do_method(this, "_start_onion_skinning");
+				undo_redo->add_undo_method(this, "_stop_onion_skinning");
+			}
+			undo_redo->commit_action();
 
-		_select_anim_by_name(new_name);
+			_select_anim_by_name(new_name);
+		} break;
+
+		case TOOL_DUPLICATE_ANIM: {
+			String current = animation->get_item_text(animation->get_selected());
+			Ref<Animation> anim = player->get_animation(current);
+
+			Ref<Animation> new_anim = _animation_clone(anim);
+
+			undo_redo->create_action(TTR("Duplicate Animation"));
+			undo_redo->add_do_method(player, "add_animation", new_name, new_anim);
+			undo_redo->add_undo_method(player, "remove_animation", new_name);
+			undo_redo->add_do_method(player, "animation_set_next", new_name, player->animation_get_next(current));
+			undo_redo->add_do_method(this, "_animation_player_changed", player);
+			undo_redo->add_undo_method(this, "_animation_player_changed", player);
+			undo_redo->commit_action();
+
+			_select_anim_by_name(new_name);
+		} break;
 	}
 
 	name_dialog->hide();
@@ -968,28 +988,17 @@ void AnimationPlayerEditor::_animation_duplicate() {
 		return;
 	}
 
-	Ref<Animation> new_anim = _animation_clone(anim);
 	String new_name = current;
 	while (player->has_animation(new_name)) {
 		new_name = new_name + " (copy)";
 	}
-	new_anim->set_name(new_name);
 
-	undo_redo->create_action(TTR("Duplicate Animation"));
-	undo_redo->add_do_method(player, "add_animation", new_name, new_anim);
-	undo_redo->add_undo_method(player, "remove_animation", new_name);
-	undo_redo->add_do_method(player, "animation_set_next", new_name, player->animation_get_next(current));
-	undo_redo->add_do_method(this, "_animation_player_changed", player);
-	undo_redo->add_undo_method(this, "_animation_player_changed", player);
-	undo_redo->commit_action();
-
-	for (int i = 0; i < animation->get_item_count(); i++) {
-		if (animation->get_item_text(i) == new_name) {
-			animation->select(i);
-			_animation_selected(i);
-			return;
-		}
-	}
+	name_title->set_text(TTR("New Animation Name:"));
+	name->set_text(new_name);
+	name_dialog_op = TOOL_DUPLICATE_ANIM;
+	name_dialog->popup_centered(Size2(300, 90));
+	name->select_all();
+	name->grab_focus();
 }
 
 Ref<Animation> AnimationPlayerEditor::_animation_clone(Ref<Animation> p_anim) {
@@ -1139,9 +1148,7 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 		} break;
 		case TOOL_DUPLICATE_ANIM: {
 			_animation_duplicate();
-
-			[[fallthrough]]; // Allow immediate rename after animation is duplicated
-		}
+		} break;
 		case TOOL_RENAME_ANIM: {
 			_animation_rename();
 		} break;
@@ -1610,7 +1617,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/paste_animation", TTR("Paste")), TOOL_PASTE_ANIM);
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/paste_animation_as_reference", TTR("Paste As Reference")), TOOL_PASTE_ANIM_REF);
 	tool_anim->get_popup()->add_separator();
-	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/duplicate_animation", TTR("Duplicate")), TOOL_DUPLICATE_ANIM);
+	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/duplicate_animation", TTR("Duplicate...")), TOOL_DUPLICATE_ANIM);
 	tool_anim->get_popup()->add_separator();
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/rename_animation", TTR("Rename...")), TOOL_RENAME_ANIM);
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/edit_transitions", TTR("Edit Transitions...")), TOOL_EDIT_TRANSITIONS);
@@ -1726,7 +1733,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	frame->connect("value_changed", callable_mp(this, &AnimationPlayerEditor::_seek_value_changed), make_binds(true, false));
 	scale->connect("text_submitted", callable_mp(this, &AnimationPlayerEditor::_scale_changed));
 
-	renaming = false;
 	last_active = false;
 	timeline_position = 0;
 
