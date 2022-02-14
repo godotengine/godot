@@ -7033,7 +7033,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(ControlEditorPlugin));
 
 	for (int i = 0; i < EditorPlugins::get_plugin_count(); i++) {
-		add_editor_plugin(EditorPlugins::create(i, this));
+		add_editor_plugin(EditorPlugins::create(i));
 	}
 
 	for (int i = 0; i < plugin_init_callback_count; i++) {
