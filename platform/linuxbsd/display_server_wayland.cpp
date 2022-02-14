@@ -370,7 +370,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 	if (old_pd.time != pd.time && pd.focused_window_id != INVALID_WINDOW_ID) {
 		if (old_pd.position != pd.position) {
 			WaylandMessage msg;
-			msg.type = TYPE_INPUT_EVENT;
+			msg.type = WaylandMessageType::INPUT_EVENT;
 
 			// We need to use Ref's custom `->` operator, so we have to necessarily
 			// dereference its pointer.
@@ -409,7 +409,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 				MouseButton test_button_mask = mouse_button_to_mask(test_button);
 				if ((pressed_mask_delta & test_button_mask) != MouseButton::NONE) {
 					WaylandMessage msg;
-					msg.type = TYPE_INPUT_EVENT;
+					msg.type = WaylandMessageType::INPUT_EVENT;
 
 					// We need to use Ref's custom `->` operator, so we have to necessarily
 					// dereference its pointer.
@@ -455,7 +455,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 							|| test_button == MouseButton::WHEEL_LEFT
 							|| test_button == MouseButton::WHEEL_RIGHT) {
 						WaylandMessage msg_up;
-						msg_up.type = TYPE_INPUT_EVENT;
+						msg_up.type = WaylandMessageType::INPUT_EVENT;
 
 						// FIXME: This is ugly, I can't find a clean way to clone an InputEvent.
 						// This works for now, despite being horrible.
@@ -534,7 +534,7 @@ void DisplayServerWayland::_wl_keyboard_on_enter(void *data, struct wl_keyboard 
 	}
 
 	WaylandMessage msg;
-	msg.type=TYPE_WINDOW_EVENT;
+	msg.type = WaylandMessageType::WINDOW_EVENT;
 
 	WaylandWindowEventMessage *msg_data = memnew(WaylandWindowEventMessage);
 	msg_data->id = ks.focused_window_id;
@@ -551,7 +551,7 @@ void DisplayServerWayland::_wl_keyboard_on_leave(void *data, struct wl_keyboard 
 	KeyboardState &ks = wls->seat_state.keyboard_state;
 
 	WaylandMessage msg;
-	msg.type=TYPE_WINDOW_EVENT;
+	msg.type = WaylandMessageType::WINDOW_EVENT;
 
 	WaylandWindowEventMessage *msg_data = memnew(WaylandWindowEventMessage);
 	msg_data->id = ks.focused_window_id;
@@ -595,7 +595,7 @@ void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *w
 	}
 
 	WaylandMessage msg;
-	msg.type = TYPE_INPUT_EVENT;
+	msg.type = WaylandMessageType::INPUT_EVENT;
 	msg.data = &k;
 	wls->message_queue.push_back(msg);
 }
@@ -636,7 +636,7 @@ void DisplayServerWayland::_xdg_surface_on_configure(void *data, struct xdg_surf
 	xdg_surface_set_window_geometry(wd->xdg_surface, 0, 0, wd->rect.size.width, wd->rect.size.height);
 
 	WaylandMessage msg;
-	msg.type = TYPE_WINDOW_RECT;
+	msg.type = WaylandMessageType::WINDOW_RECT;
 
 	WaylandWindowRectMessage *msg_data = memnew(WaylandWindowRectMessage);
 
@@ -661,7 +661,7 @@ void DisplayServerWayland::_xdg_toplevel_on_close(void *data, struct xdg_topleve
 	WindowData *wd = (WindowData*) data;
 
 	WaylandMessage msg;
-	msg.type = TYPE_WINDOW_EVENT;
+	msg.type = WaylandMessageType::WINDOW_EVENT;
 
 	WaylandWindowEventMessage *msg_data = memnew(WaylandWindowEventMessage);
 
@@ -1123,7 +1123,7 @@ void DisplayServerWayland::process_events() {
 		WaylandMessage &msg = wls.message_queue.front()->get();
 
 		switch (msg.type) {
-			case TYPE_WINDOW_RECT: {
+			case WaylandMessageType::WINDOW_RECT: {
 				// TODO: Assertions.
 
 				WaylandWindowRectMessage *msg_data = (WaylandWindowRectMessage*) msg.data;
@@ -1151,7 +1151,7 @@ void DisplayServerWayland::process_events() {
 				memdelete(msg_data);
 			} break;
 
-			case TYPE_WINDOW_EVENT: {
+			case WaylandMessageType::WINDOW_EVENT: {
 				WaylandWindowEventMessage *msg_data = (WaylandWindowEventMessage*) msg.data;
 
 				if (wls.windows.has(msg_data->id)) {
@@ -1171,7 +1171,7 @@ void DisplayServerWayland::process_events() {
 				memdelete(msg_data);
 			} break;
 
-			case TYPE_INPUT_EVENT: {
+			case WaylandMessageType::INPUT_EVENT: {
 				Ref<InputEvent> *ev = (Ref<InputEvent>*) msg.data;
 				Input::get_singleton()->parse_input_event(*ev);
 

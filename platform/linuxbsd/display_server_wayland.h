@@ -31,10 +31,10 @@ class DisplayServerWayland : public DisplayServer {
 	// Wayland stuff.
 
 	// TODO: Add the rest of the events.
-	enum WaylandMessageType {
-		TYPE_WINDOW_RECT, // WaylandWindowRectMessage
-		TYPE_WINDOW_EVENT, // WaylandWindowEventMessage
-		TYPE_INPUT_EVENT, // Ref<InputEvent>
+	enum class WaylandMessageType {
+		WINDOW_RECT, // WaylandWindowRectMessage
+		WINDOW_EVENT, // WaylandWindowEventMessage
+		INPUT_EVENT, // Ref<InputEvent>
 	};
 
 	// Messages used for sending stuff to the main thread to be dispatched there.
