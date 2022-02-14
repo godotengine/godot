@@ -155,7 +155,9 @@ float Environment::get_ambient_light_energy() const {
 }
 
 void Environment::set_ambient_light_sky_contribution(float p_ratio) {
-	ambient_sky_contribution = p_ratio;
+	// Sky contribution values outside the [0.0; 1.0] range don't make sense and
+	// can result in negative colors.
+	ambient_sky_contribution = CLAMP(p_ratio, 0.0, 1.0);
 	_update_ambient_light();
 }
 
