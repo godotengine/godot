@@ -53,7 +53,7 @@ bool SceneExporterGLTFPlugin::has_main_screen() const {
 	return false;
 }
 
-SceneExporterGLTFPlugin::SceneExporterGLTFPlugin(EditorNode *_p_node) {
+SceneExporterGLTFPlugin::SceneExporterGLTFPlugin() {
 	file_export_lib = memnew(EditorFileDialog);
 	EditorNode::get_singleton()->get_gui_base()->add_child(file_export_lib);
 	file_export_lib->connect("file_selected", callable_mp(this, &SceneExporterGLTFPlugin::_gltf2_dialog_action));

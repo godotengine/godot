@@ -45,7 +45,7 @@ class SceneExporterGLTFPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const override;
 	bool has_main_screen() const override;
-	SceneExporterGLTFPlugin(EditorNode *_p_node);
+	SceneExporterGLTFPlugin();
 };
 #endif // TOOLS_ENABLED
 #endif // EDITOR_SCENE_EXPORTER_GLTF_PLUGIN_H

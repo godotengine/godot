@@ -257,7 +257,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	GridMapEditorPlugin(EditorNode *_p_node);
+	GridMapEditorPlugin();
 	~GridMapEditorPlugin();
 };
 
