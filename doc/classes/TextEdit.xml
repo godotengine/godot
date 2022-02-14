@@ -641,7 +641,7 @@
 		</theme_item>
 		<theme_item name="completion_font_color" data_type="color" type="Color" default="Color( 0.67, 0.67, 0.67, 1 )">
 		</theme_item>
-		<theme_item name="completion_scroll_color" data_type="color" type="Color" default="Color( 1, 1, 1, 1 )">
+		<theme_item name="completion_scroll_color" data_type="color" type="Color" default="Color( 1, 1, 1, 0.29 )">
 		</theme_item>
 		<theme_item name="completion_selected_color" data_type="color" type="Color" default="Color( 0.26, 0.26, 0.27, 1 )">
 		</theme_item>
@@ -684,7 +684,7 @@
 		</theme_item>
 		<theme_item name="completion_max_width" data_type="constant" type="int" default="50">
 		</theme_item>
-		<theme_item name="completion_scroll_width" data_type="constant" type="int" default="3">
+		<theme_item name="completion_scroll_width" data_type="constant" type="int" default="6">
 		</theme_item>
 		<theme_item name="line_spacing" data_type="constant" type="int" default="4">
 			Sets the spacing between the lines.
