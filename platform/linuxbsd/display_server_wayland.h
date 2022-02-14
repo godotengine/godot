@@ -178,6 +178,7 @@ class DisplayServerWayland : public DisplayServer {
 	static bool _keyboard_state_configure_key_event(KeyboardState &ks, Ref<InputEventKey> p_event, xkb_keycode_t p_keycode, bool pressed);
 
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
+	void _destroy_window(WindowID p_id);
 
 	static void _poll_events_thread(void *p_wls);
 

@@ -152,6 +152,31 @@ DisplayServerWayland::WindowID DisplayServerWayland::_create_window(WindowMode p
 	return id;
 }
 
+void DisplayServerWayland::_destroy_window(WindowID p_id) {
+	MutexLock mutex_lock(wls.mutex);
+	WindowData &wd = wls.windows[p_id];
+
+#ifdef VULKAN_ENABLED
+	if (wd.buffer_created && context_vulkan) {
+		context_vulkan->window_destroy(p_id);
+	}
+#endif
+
+	if (wd.xdg_toplevel) {
+		xdg_toplevel_destroy(wd.xdg_toplevel);
+	}
+
+	if (wd.xdg_surface) {
+		xdg_surface_destroy(wd.xdg_surface);
+	}
+
+	if (wd.wl_surface) {
+		wl_surface_destroy(wd.wl_surface);
+	}
+
+	wls.windows.erase(p_id);
+}
+
 void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
 	WaylandState *wls = (WaylandState*) data;
 
@@ -805,28 +830,10 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 }
 
 void DisplayServerWayland::delete_sub_window(DisplayServer::WindowID p_id) {
-	MutexLock mutex_lock(wls.mutex);
-	WindowData &wd = wls.windows[p_id];
+	ERR_FAIL_COND(!wls.windows.has(p_id));
+	ERR_FAIL_COND_MSG(p_id == MAIN_WINDOW_ID, "Main window can't be deleted");
 
-#ifdef VULKAN_ENABLED
-	if (wd.buffer_created && context_vulkan) {
-		context_vulkan->window_destroy(p_id);
-	}
-#endif
-
-	if (wd.xdg_toplevel) {
-		xdg_toplevel_destroy(wd.xdg_toplevel);
-	}
-
-	if (wd.xdg_surface) {
-		xdg_surface_destroy(wd.xdg_surface);
-	}
-
-	if (wd.wl_surface) {
-		wl_surface_destroy(wd.wl_surface);
-	}
-
-	wls.windows.erase(p_id);
+	_destroy_window(p_id);
 }
 
 
@@ -1339,7 +1346,7 @@ DisplayServerWayland::~DisplayServerWayland() {
 
 	// Destroy all windows.
 	for (KeyValue<WindowID, WindowData> &E : wls.windows) {
-		delete_sub_window(E.key);
+		_destroy_window(E.key);
 	}
 
 	// Wait for all events to be handled, and in turn unblock the events thread.
