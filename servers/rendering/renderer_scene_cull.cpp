@@ -3683,6 +3683,15 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 			_instance_update_mesh_instance(p_instance);
 		}
 
+		if (p_instance->base_type == RS::INSTANCE_PARTICLES) {
+			// update the process material dependency
+
+			RID particle_material = RSG::storage->particles_get_process_material(p_instance->base);
+			if (particle_material.is_valid()) {
+				RSG::storage->material_update_dependency(particle_material, &p_instance->dependency_tracker);
+			}
+		}
+
 		if ((1 << p_instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) {
 			InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(p_instance->base_data);
 

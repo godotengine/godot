@@ -318,6 +318,12 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["MASS"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["ACTIVE"] = ShaderLanguage::TYPE_BOOL;
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["CUSTOM"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["USERDATA1"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["USERDATA2"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["USERDATA3"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["USERDATA4"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["USERDATA5"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["USERDATA6"] = ShaderLanguage::TYPE_VEC4;
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["TRANSFORM"] = ShaderLanguage::TYPE_MAT4;
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["LIFETIME"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_PARTICLES].functions["start"].built_ins["DELTA"] = constt(ShaderLanguage::TYPE_FLOAT);
@@ -338,6 +344,12 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["ACTIVE"] = ShaderLanguage::TYPE_BOOL;
 	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["RESTART"] = constt(ShaderLanguage::TYPE_BOOL);
 	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["CUSTOM"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["USERDATA1"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["USERDATA2"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["USERDATA3"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["USERDATA4"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["USERDATA5"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["USERDATA6"] = ShaderLanguage::TYPE_VEC4;
 	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["TRANSFORM"] = ShaderLanguage::TYPE_MAT4;
 	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["LIFETIME"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["DELTA"] = constt(ShaderLanguage::TYPE_FLOAT);

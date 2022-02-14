@@ -112,6 +112,24 @@ struct ParticleData {
 	uint flags;
 	vec4 color;
 	vec4 custom;
+#ifdef USERDATA1_USED
+	vec4 userdata1;
+#endif
+#ifdef USERDATA2_USED
+	vec4 userdata2;
+#endif
+#ifdef USERDATA3_USED
+	vec4 userdata3;
+#endif
+#ifdef USERDATA4_USED
+	vec4 userdata4;
+#endif
+#ifdef USERDATA5_USED
+	vec4 userdata5;
+#endif
+#ifdef USERDATA6_USED
+	vec4 userdata6;
+#endif
 };
 
 layout(set = 1, binding = 1, std430) restrict buffer Particles {

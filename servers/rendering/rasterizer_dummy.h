@@ -560,6 +560,7 @@ public:
 	void particles_set_speed_scale(RID p_particles, double p_scale) override {}
 	void particles_set_use_local_coordinates(RID p_particles, bool p_enable) override {}
 	void particles_set_process_material(RID p_particles, RID p_material) override {}
+	RID particles_get_process_material(RID p_particles) const override { return RID(); }
 	void particles_set_fixed_fps(RID p_particles, int p_fps) override {}
 	void particles_set_interpolate(RID p_particles, bool p_enable) override {}
 	void particles_set_fractional_delta(RID p_particles, bool p_enable) override {}
