@@ -5,6 +5,7 @@
 
 // FIXME: Linux only?
 #include <sys/mman.h>
+#include <poll.h>
 
 #include "servers/display_server.h"
 #include "key_mapping_xkb.h"

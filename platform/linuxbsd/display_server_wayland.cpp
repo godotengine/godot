@@ -11,9 +11,30 @@
 void DisplayServerWayland::_poll_events_thread(void *p_wls) {
 	WaylandState *wls = (WaylandState*) p_wls;
 
-	while (!wls->events_thread_done.is_set()) {
-		// Wait for all events.
-		wl_display_dispatch(wls->display);
+	struct pollfd poll_fd;
+	poll_fd.fd = wl_display_get_fd(wls->display);
+	poll_fd.events = POLLIN | POLLHUP;
+
+	while (true) {
+		// Empty the event queue while it's full.
+		while (wl_display_prepare_read(wls->display) != 0) {
+			MutexLock mutex_lock(wls->mutex);
+			wl_display_dispatch_pending(wls->display);
+		}
+
+		// Wait for the event file descriptor to have new data.
+		poll(&poll_fd, 1, -1);
+
+		if (wls->events_thread_done.is_set()) {
+			wl_display_cancel_read(wls->display);
+			break;
+		}
+
+		if (poll_fd.revents | POLLIN) {
+			wl_display_read_events(wls->display);
+		} else {
+			wl_display_cancel_read(wls->display);
+		}
 	}
 }
 
@@ -133,7 +154,6 @@ DisplayServerWayland::WindowID DisplayServerWayland::_create_window(WindowMode p
 
 void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
 	WaylandState *wls = (WaylandState*) data;
-	MutexLock mutex_lock(wls->mutex);
 
 	WaylandGlobals &globals = wls->globals;
 
@@ -164,7 +184,6 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 
 void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_registry *wl_registry, uint32_t name) {
 	WaylandState *wls = (WaylandState*) data;
-	MutexLock mutex_lock(wls->mutex);
 
 	WaylandGlobals &globals = wls->globals;
 
@@ -186,7 +205,6 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 
 void DisplayServerWayland::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat, uint32_t capabilities) {
 	WaylandState *wls = (WaylandState*) data;
-	MutexLock mutex_lock(wls->mutex);
 
 	SeatState &seat_state = wls->seat_state;
 
@@ -217,7 +235,6 @@ void DisplayServerWayland::_wl_seat_on_name(void *data, struct wl_seat *wl_seat,
 
 void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y) {
 	WaylandState *wls = (WaylandState*) data;
-	MutexLock mutex_lock(wls->mutex);
 
 	PointerData &pd = wls->seat_state.pointer_state.data_buffer;
 
@@ -237,7 +254,6 @@ void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *w
 
 void DisplayServerWayland::_wl_pointer_on_leave(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface) {
 	WaylandState *wls = (WaylandState*) data;
-	MutexLock mutex_lock(wls->mutex);
 
 	PointerData &pd = wls->seat_state.pointer_state.data_buffer;
 	pd.focused_window_id = INVALID_WINDOW_ID;
@@ -245,7 +261,6 @@ void DisplayServerWayland::_wl_pointer_on_leave(void *data, struct wl_pointer *w
 
 void DisplayServerWayland::_wl_pointer_on_motion(void *data, struct wl_pointer *wl_pointer, uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y) {
 	WaylandState *wls = (WaylandState*) data;
-	MutexLock mutex_lock(wls->mutex);
 
 	PointerData &pd = wls->seat_state.pointer_state.data_buffer;
 
@@ -257,7 +272,6 @@ void DisplayServerWayland::_wl_pointer_on_motion(void *data, struct wl_pointer *
 
 void DisplayServerWayland::_wl_pointer_on_button(void *data, struct wl_pointer *wl_pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state) {
 	WaylandState *wls = (WaylandState*) data;
-	MutexLock mutex_lock(wls->mutex);
 
 	PointerData &pd = wls->seat_state.pointer_state.data_buffer;
 
@@ -295,7 +309,6 @@ void DisplayServerWayland::_wl_pointer_on_button(void *data, struct wl_pointer *
 
 void DisplayServerWayland::_wl_pointer_on_axis(void *data, struct wl_pointer *wl_pointer, uint32_t time, uint32_t axis, wl_fixed_t value) {
 	WaylandState *wls = (WaylandState*) data;
-	MutexLock mutex_lock(wls->mutex);
 
 	PointerData &pd = wls->seat_state.pointer_state.data_buffer;
 
@@ -327,7 +340,6 @@ void DisplayServerWayland::_wl_pointer_on_axis(void *data, struct wl_pointer *wl
 
 void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_pointer) {
 	WaylandState *wls = (WaylandState*) data;
-	MutexLock mutex_lock(wls->mutex);
 
 	PointerState &ps = wls->seat_state.pointer_state;
 	KeyboardState &ks = wls->seat_state.keyboard_state;
@@ -473,7 +485,6 @@ void DisplayServerWayland::_wl_keyboard_on_keymap(void *data, struct wl_keyboard
 	ERR_FAIL_COND_MSG(format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1, "Unsupported keymap format announced from the Wayland compositor.");
 
 	WaylandState *wls = (WaylandState*) data;
-	MutexLock mutex_lock(wls->mutex);
 
 	KeyboardState &ks = wls->seat_state.keyboard_state;
 
@@ -490,7 +501,6 @@ void DisplayServerWayland::_wl_keyboard_on_keymap(void *data, struct wl_keyboard
 
 void DisplayServerWayland::_wl_keyboard_on_enter(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface, struct wl_array *keys) {
 	WaylandState *wls = (WaylandState*) data;
-	MutexLock mutex_lock(wls->mutex);
 
 	KeyboardState &ks = wls->seat_state.keyboard_state;
 
@@ -517,7 +527,6 @@ void DisplayServerWayland::_wl_keyboard_on_enter(void *data, struct wl_keyboard 
 
 void DisplayServerWayland::_wl_keyboard_on_leave(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface) {
 	WaylandState *wls = (WaylandState*) data;
-	MutexLock mutex_lock(wls->mutex);
 
 	KeyboardState &ks = wls->seat_state.keyboard_state;
 
@@ -538,7 +547,6 @@ void DisplayServerWayland::_wl_keyboard_on_leave(void *data, struct wl_keyboard 
 
 void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state) {
 	WaylandState *wls = (WaylandState*) data;
-	MutexLock mutex_lock(wls->mutex);
 
 	KeyboardState &ks = wls->seat_state.keyboard_state;
 
@@ -574,7 +582,6 @@ void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *w
 
 void DisplayServerWayland::_wl_keyboard_on_modifiers(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group) {
 	WaylandState *wls = (WaylandState*) data;
-	MutexLock mutex_lock(wls->mutex);
 
 	KeyboardState &ks = wls->seat_state.keyboard_state;
 
@@ -588,7 +595,6 @@ void DisplayServerWayland::_wl_keyboard_on_modifiers(void *data, struct wl_keybo
 
 void DisplayServerWayland::_wl_keyboard_on_repeat_info(void *data, struct wl_keyboard *wl_keyboard, int32_t rate, int32_t delay) {
 	WaylandState *wls = (WaylandState*) data;
-	MutexLock mutex_lock(wls->mutex);
 
 	KeyboardState &ks = wls->seat_state.keyboard_state;
 
@@ -603,7 +609,6 @@ void DisplayServerWayland::_xdg_wm_base_on_ping(void *data, struct xdg_wm_base *
 
 
 void DisplayServerWayland::_xdg_surface_on_configure(void *data, struct xdg_surface *xdg_surface, uint32_t serial) {
-	// FIXME: We should synchronize Wayland's state here.
 	xdg_surface_ack_configure(xdg_surface, serial);
 
 	WindowData *wd = (WindowData*) data;
@@ -624,7 +629,6 @@ void DisplayServerWayland::_xdg_surface_on_configure(void *data, struct xdg_surf
 }
 
 void DisplayServerWayland::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states) {
-	// FIXME: We should synchronize Wayland's state here.
 	WindowData *wd = (WindowData*) data;
 
 	if (width != 0 && height != 0) {
@@ -1333,15 +1337,15 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 DisplayServerWayland::~DisplayServerWayland() {
 	wls.events_thread_done.set();
 
-	// Wait for all events to be handled, and in turn unblock the events thread.
-	wl_display_roundtrip(wls.display);
-
-	events_thread.wait_to_finish();
-
 	// Destroy all windows.
 	for (KeyValue<WindowID, WindowData> &E : wls.windows) {
 		delete_sub_window(E.key);
 	}
+
+	// Wait for all events to be handled, and in turn unblock the events thread.
+	wl_display_roundtrip(wls.display);
+
+	events_thread.wait_to_finish();
 
 	wl_display_disconnect(wls.display);
 
