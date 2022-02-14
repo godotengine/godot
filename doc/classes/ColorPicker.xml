@@ -116,8 +116,6 @@
 		<theme_item name="color_hue" data_type="icon" type="Texture2D">
 			Custom texture for the hue selection slider on the right.
 		</theme_item>
-		<theme_item name="color_sample" data_type="icon" type="Texture2D">
-		</theme_item>
 		<theme_item name="overbright_indicator" data_type="icon" type="Texture2D">
 			The indicator used to signalize that the color value is outside the 0-1 range.
 		</theme_item>

@@ -864,7 +864,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	theme->set_icon("screen_picker", "ColorPicker", icons["color_picker_pipette"]);
 	theme->set_icon("add_preset", "ColorPicker", icons["add"]);
 	theme->set_icon("color_hue", "ColorPicker", icons["color_picker_hue"]);
-	theme->set_icon("color_sample", "ColorPicker", icons["color_picker_sample"]);
 	theme->set_icon("sample_bg", "ColorPicker", icons["mini_checkerboard"]);
 	theme->set_icon("overbright_indicator", "ColorPicker", icons["color_picker_overbright"]);
 	theme->set_icon("bar_arrow", "ColorPicker", icons["color_picker_bar_arrow"]);
