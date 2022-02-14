@@ -94,7 +94,8 @@ static Error _decode_string(const uint8_t *&buf, int &len, int *r_len, String &r
 	return OK;
 }
 
-Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int *r_len, bool p_allow_objects) {
+Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int *r_len, bool p_allow_objects, int p_depth) {
+	ERR_FAIL_COND_V_MSG(p_depth > Variant::MAX_RECURSION_DEPTH, ERR_OUT_OF_MEMORY, "Variant is too deep. Bailing.");
 	const uint8_t *buf = p_buffer;
 	int len = p_len;
 
@@ -585,7 +586,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 						Variant value;
 						int used;
-						err = decode_variant(value, buf, len, &used, p_allow_objects);
+						err = decode_variant(value, buf, len, &used, p_allow_objects, p_depth + 1);
 						if (err) {
 							return err;
 						}
@@ -635,7 +636,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				Variant key, value;
 
 				int used;
-				Error err = decode_variant(key, buf, len, &used, p_allow_objects);
+				Error err = decode_variant(key, buf, len, &used, p_allow_objects, p_depth + 1);
 				ERR_FAIL_COND_V_MSG(err != OK, err, "Error when trying to decode Variant.");
 
 				buf += used;
@@ -644,7 +645,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 					(*r_len) += used;
 				}
 
-				err = decode_variant(value, buf, len, &used, p_allow_objects);
+				err = decode_variant(value, buf, len, &used, p_allow_objects, p_depth + 1);
 				ERR_FAIL_COND_V_MSG(err != OK, err, "Error when trying to decode Variant.");
 
 				buf += used;
@@ -677,7 +678,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			for (int i = 0; i < count; i++) {
 				int used = 0;
 				Variant v;
-				Error err = decode_variant(v, buf, len, &used, p_allow_objects);
+				Error err = decode_variant(v, buf, len, &used, p_allow_objects, p_depth + 1);
 				ERR_FAIL_COND_V_MSG(err != OK, err, "Error when trying to decode Variant.");
 				buf += used;
 				len -= used;
