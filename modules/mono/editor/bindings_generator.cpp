@@ -278,7 +278,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 		} else if (code_tag) {
 			xml_output.append("[");
 			pos = brk_pos + 1;
-		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ")) {
+		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("theme_item ")) {
 			const int tag_end = tag.find(" ");
 			const String link_tag = tag.substr(0, tag_end);
 			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
@@ -552,6 +552,11 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 						}
 					}
 				}
+			} else if (link_tag == "theme_item") {
+				// We do not declare theme_items in any way in C#, so there is nothing to reference
+				xml_output.append("<c>");
+				xml_output.append(link_target);
+				xml_output.append("</c>");
 			}
 
 			pos = brk_end + 1;
