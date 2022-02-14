@@ -1,18 +1,48 @@
+/*************************************************************************/
+/*  display_server_wayland.h                                             */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #ifndef DISPLAY_SERVER_WAYLAND_H
 #define DISPLAY_SERVER_WAYLAND_H
 
 #ifdef WAYLAND_ENABLED
 
 // FIXME: Linux only?
-#include <sys/mman.h>
 #include <poll.h>
+#include <sys/mman.h>
 
-#include "servers/display_server.h"
 #include "key_mapping_xkb.h"
+#include "servers/display_server.h"
 
-#include "wayland-client.h"
 #include "thirdparty/wayland/wayland.h"
 #include "thirdparty/xdg-shell/xdg-shell.h"
+#include "wayland-client.h"
 
 // FIXME: Since this platform is called linuxbsd, can we avoid this include?
 #include "linux/input-event-codes.h"
@@ -239,7 +269,7 @@ class DisplayServerWayland : public DisplayServer {
 	};
 
 	static constexpr struct wl_keyboard_listener wl_keyboard_listener = {
-		.keymap =_wl_keyboard_on_keymap,
+		.keymap = _wl_keyboard_on_keymap,
 		.enter = _wl_keyboard_on_enter,
 		.leave = _wl_keyboard_on_leave,
 		.key = _wl_keyboard_on_key,
@@ -262,7 +292,6 @@ class DisplayServerWayland : public DisplayServer {
 	};
 
 public:
-
 	virtual bool has_feature(Feature p_feature) const override;
 
 	virtual String get_name() const override;
@@ -286,10 +315,10 @@ public:
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 
-	#if defined(DBUS_ENABLED)
+#if defined(DBUS_ENABLED)
 	virtual void screen_set_keep_on(bool p_enable) override;
 	virtual bool screen_is_kept_on() const override;
-	#endif
+#endif
 
 	virtual Vector<DisplayServer::WindowID> get_window_list() const override;
 

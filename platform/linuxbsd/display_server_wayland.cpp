@@ -1,3 +1,33 @@
+/*************************************************************************/
+/*  display_server_wayland.cpp                                           */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #include "display_server_wayland.h"
 
 #ifdef WAYLAND_ENABLED
@@ -9,7 +39,7 @@
 // Implementation specific methods.
 
 void DisplayServerWayland::_poll_events_thread(void *p_wls) {
-	WaylandState *wls = (WaylandState*) p_wls;
+	WaylandState *wls = (WaylandState *)p_wls;
 
 	struct pollfd poll_fd;
 	poll_fd.fd = wl_display_get_fd(wls->display);
@@ -178,7 +208,7 @@ void DisplayServerWayland::_destroy_window(WindowID p_id) {
 }
 
 void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
-	WaylandState *wls = (WaylandState*) data;
+	WaylandState *wls = (WaylandState *)data;
 
 	WaylandGlobals &globals = wls->globals;
 
@@ -186,14 +216,14 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 	if (strcmp(interface, wl_compositor_interface.name) == 0) {
 		// This will select the latest version supported by the server.
 		// I'm not sure whether this is the best thing to do.
-		globals.wl_compositor = (struct wl_compositor*) wl_registry_bind(wl_registry, name, &wl_compositor_interface, version);
+		globals.wl_compositor = (struct wl_compositor *)wl_registry_bind(wl_registry, name, &wl_compositor_interface, version);
 		globals.wl_compositor_name = name;
 		return;
 	}
 
 	// `wl_seat_interface` is defined in `thirdparty/wayland/wayland.c`
 	if (strcmp(interface, wl_seat_interface.name) == 0) {
-		globals.wl_seat = (struct wl_seat*) wl_registry_bind(wl_registry, name, &wl_seat_interface, version);
+		globals.wl_seat = (struct wl_seat *)wl_registry_bind(wl_registry, name, &wl_seat_interface, version);
 		globals.wl_seat_name = name;
 		wl_seat_add_listener(globals.wl_seat, &wl_seat_listener, wls);
 		return;
@@ -201,14 +231,14 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 
 	// `xdg_wm_base_interface` is defined in `thirdparty/xdg-shell/xdg-shell.c`
 	if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
-		globals.xdg_wm_base = (struct xdg_wm_base*) wl_registry_bind(wl_registry, name, &xdg_wm_base_interface, version);
+		globals.xdg_wm_base = (struct xdg_wm_base *)wl_registry_bind(wl_registry, name, &xdg_wm_base_interface, version);
 		globals.xdg_wm_base_name = name;
 		return;
 	}
 }
 
 void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_registry *wl_registry, uint32_t name) {
-	WaylandState *wls = (WaylandState*) data;
+	WaylandState *wls = (WaylandState *)data;
 
 	WaylandGlobals &globals = wls->globals;
 
@@ -232,7 +262,7 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 }
 
 void DisplayServerWayland::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat, uint32_t capabilities) {
-	WaylandState *wls = (WaylandState*) data;
+	WaylandState *wls = (WaylandState *)data;
 
 	SeatState &seat_state = wls->seat_state;
 
@@ -262,7 +292,7 @@ void DisplayServerWayland::_wl_seat_on_name(void *data, struct wl_seat *wl_seat,
 }
 
 void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y) {
-	WaylandState *wls = (WaylandState*) data;
+	WaylandState *wls = (WaylandState *)data;
 
 	PointerData &pd = wls->seat_state.pointer_state.data_buffer;
 
@@ -281,14 +311,14 @@ void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *w
 }
 
 void DisplayServerWayland::_wl_pointer_on_leave(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface) {
-	WaylandState *wls = (WaylandState*) data;
+	WaylandState *wls = (WaylandState *)data;
 
 	PointerData &pd = wls->seat_state.pointer_state.data_buffer;
 	pd.focused_window_id = INVALID_WINDOW_ID;
 }
 
 void DisplayServerWayland::_wl_pointer_on_motion(void *data, struct wl_pointer *wl_pointer, uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y) {
-	WaylandState *wls = (WaylandState*) data;
+	WaylandState *wls = (WaylandState *)data;
 
 	PointerData &pd = wls->seat_state.pointer_state.data_buffer;
 
@@ -299,7 +329,7 @@ void DisplayServerWayland::_wl_pointer_on_motion(void *data, struct wl_pointer *
 }
 
 void DisplayServerWayland::_wl_pointer_on_button(void *data, struct wl_pointer *wl_pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state) {
-	WaylandState *wls = (WaylandState*) data;
+	WaylandState *wls = (WaylandState *)data;
 
 	PointerData &pd = wls->seat_state.pointer_state.data_buffer;
 
@@ -335,7 +365,7 @@ void DisplayServerWayland::_wl_pointer_on_button(void *data, struct wl_pointer *
 }
 
 void DisplayServerWayland::_wl_pointer_on_axis(void *data, struct wl_pointer *wl_pointer, uint32_t time, uint32_t axis, wl_fixed_t value) {
-	WaylandState *wls = (WaylandState*) data;
+	WaylandState *wls = (WaylandState *)data;
 
 	PointerData &pd = wls->seat_state.pointer_state.data_buffer;
 
@@ -348,7 +378,7 @@ void DisplayServerWayland::_wl_pointer_on_axis(void *data, struct wl_pointer *wl
 		} break;
 
 		case WL_POINTER_AXIS_HORIZONTAL_SCROLL: {
-			button_pressed = value >= 0 ? MouseButton::WHEEL_RIGHT: MouseButton::WHEEL_LEFT;
+			button_pressed = value >= 0 ? MouseButton::WHEEL_RIGHT : MouseButton::WHEEL_LEFT;
 			pd.scroll_vector.x = wl_fixed_to_double(value);
 		} break;
 	}
@@ -362,7 +392,7 @@ void DisplayServerWayland::_wl_pointer_on_axis(void *data, struct wl_pointer *wl
 }
 
 void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_pointer) {
-	WaylandState *wls = (WaylandState*) data;
+	WaylandState *wls = (WaylandState *)data;
 
 	PointerState &ps = wls->seat_state.pointer_state;
 	KeyboardState &ks = wls->seat_state.keyboard_state;
@@ -405,10 +435,9 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 			MouseButton pressed_mask_delta = old_pd.pressed_button_mask ^ pd.pressed_button_mask;
 
 			// This is the cleanest and simplest approach I could find to avoid writing the same code 7 times.
-			for (MouseButton test_button : {MouseButton::LEFT, MouseButton::MIDDLE, MouseButton::RIGHT,
-					MouseButton::WHEEL_UP, MouseButton::WHEEL_DOWN, MouseButton::WHEEL_LEFT,
-					MouseButton::WHEEL_RIGHT}) {
-
+			for (MouseButton test_button : { MouseButton::LEFT, MouseButton::MIDDLE, MouseButton::RIGHT,
+						 MouseButton::WHEEL_UP, MouseButton::WHEEL_DOWN, MouseButton::WHEEL_LEFT,
+						 MouseButton::WHEEL_RIGHT }) {
 				MouseButton test_button_mask = mouse_button_to_mask(test_button);
 				if ((pressed_mask_delta & test_button_mask) != MouseButton::NONE) {
 					WaylandMessage msg;
@@ -431,12 +460,9 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 					mb->set_button_index(test_button);
 					mb->set_pressed((pd.pressed_button_mask & test_button_mask) != MouseButton::NONE);
 
-					if (pd.last_button_pressed == old_pd.last_button_pressed
-							&& (pd.button_time - old_pd.button_time) < 400
-							&& Vector2(pd.position).distance_to(Vector2(old_pd.position)) < 5) {
+					if (pd.last_button_pressed == old_pd.last_button_pressed && (pd.button_time - old_pd.button_time) < 400 && Vector2(pd.position).distance_to(Vector2(old_pd.position)) < 5) {
 						mb->set_double_click(true);
 					}
-
 
 					if (test_button == MouseButton::WHEEL_UP || test_button == MouseButton::WHEEL_DOWN) {
 						mb->set_factor(abs(pd.scroll_vector.y));
@@ -453,10 +479,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 					// Wayland specification defines axis_stop events as optional and says to
 					// treat all axis events as unterminated. As such, we have to manually do
 					// it ourselves.
-					if (test_button == MouseButton::WHEEL_UP
-							|| test_button == MouseButton::WHEEL_DOWN
-							|| test_button == MouseButton::WHEEL_LEFT
-							|| test_button == MouseButton::WHEEL_RIGHT) {
+					if (test_button == MouseButton::WHEEL_UP || test_button == MouseButton::WHEEL_DOWN || test_button == MouseButton::WHEEL_LEFT || test_button == MouseButton::WHEEL_RIGHT) {
 						WaylandMessage msg_up;
 						msg_up.type = WaylandMessageType::INPUT_EVENT;
 
@@ -464,7 +487,6 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 						// This works for now, despite being horrible.
 						Ref<InputEventMouseButton> &mb_up = *memnew(Ref<InputEventMouseButton>);
 						mb_up.instantiate();
-
 
 						// Set all pressed modifiers.
 						_get_key_modifier_state(ks, mb);
@@ -503,27 +525,26 @@ void DisplayServerWayland::_wl_pointer_on_axis_stop(void *data, struct wl_pointe
 void DisplayServerWayland::_wl_pointer_on_axis_discrete(void *data, struct wl_pointer *wl_pointer, uint32_t axis, int32_t discrete) {
 }
 
-
 void DisplayServerWayland::_wl_keyboard_on_keymap(void *data, struct wl_keyboard *wl_keyboard, uint32_t format, int32_t fd, uint32_t size) {
 	ERR_FAIL_COND_MSG(format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1, "Unsupported keymap format announced from the Wayland compositor.");
 
-	WaylandState *wls = (WaylandState*) data;
+	WaylandState *wls = (WaylandState *)data;
 
 	KeyboardState &ks = wls->seat_state.keyboard_state;
 
 	// TODO: Unmap on destruction.
-	ks.keymap_buffer = (const char*) mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
+	ks.keymap_buffer = (const char *)mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
 	ks.keymap_buffer_size = size;
 
 	ks.xkb_keymap = xkb_keymap_new_from_string(ks.xkb_context, ks.keymap_buffer,
-		XKB_KEYMAP_FORMAT_TEXT_V1, XKB_KEYMAP_COMPILE_NO_FLAGS);
+			XKB_KEYMAP_FORMAT_TEXT_V1, XKB_KEYMAP_COMPILE_NO_FLAGS);
 
 	// TODO: Handle layout changes.
 	ks.xkb_state = xkb_state_new(ks.xkb_keymap);
 }
 
 void DisplayServerWayland::_wl_keyboard_on_enter(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface, struct wl_array *keys) {
-	WaylandState *wls = (WaylandState*) data;
+	WaylandState *wls = (WaylandState *)data;
 
 	KeyboardState &ks = wls->seat_state.keyboard_state;
 
@@ -549,7 +570,7 @@ void DisplayServerWayland::_wl_keyboard_on_enter(void *data, struct wl_keyboard 
 }
 
 void DisplayServerWayland::_wl_keyboard_on_leave(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface) {
-	WaylandState *wls = (WaylandState*) data;
+	WaylandState *wls = (WaylandState *)data;
 
 	KeyboardState &ks = wls->seat_state.keyboard_state;
 
@@ -569,7 +590,7 @@ void DisplayServerWayland::_wl_keyboard_on_leave(void *data, struct wl_keyboard 
 }
 
 void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state) {
-	WaylandState *wls = (WaylandState*) data;
+	WaylandState *wls = (WaylandState *)data;
 
 	KeyboardState &ks = wls->seat_state.keyboard_state;
 
@@ -589,7 +610,7 @@ void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *w
 
 	// We need to use Ref's custom `->` operator, so we have to necessarily
 	// dereference its pointer.
-	Ref<InputEventKey> &k= *memnew(Ref<InputEventKey>);
+	Ref<InputEventKey> &k = *memnew(Ref<InputEventKey>);
 	k.instantiate();
 
 	if (!_keyboard_state_configure_key_event(ks, k, xkb_keycode, pressed)) {
@@ -604,7 +625,7 @@ void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *w
 }
 
 void DisplayServerWayland::_wl_keyboard_on_modifiers(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group) {
-	WaylandState *wls = (WaylandState*) data;
+	WaylandState *wls = (WaylandState *)data;
 
 	KeyboardState &ks = wls->seat_state.keyboard_state;
 
@@ -617,7 +638,7 @@ void DisplayServerWayland::_wl_keyboard_on_modifiers(void *data, struct wl_keybo
 }
 
 void DisplayServerWayland::_wl_keyboard_on_repeat_info(void *data, struct wl_keyboard *wl_keyboard, int32_t rate, int32_t delay) {
-	WaylandState *wls = (WaylandState*) data;
+	WaylandState *wls = (WaylandState *)data;
 
 	KeyboardState &ks = wls->seat_state.keyboard_state;
 
@@ -625,16 +646,14 @@ void DisplayServerWayland::_wl_keyboard_on_repeat_info(void *data, struct wl_key
 	ks.repeat_start_delay_msec = delay;
 }
 
-
 void DisplayServerWayland::_xdg_wm_base_on_ping(void *data, struct xdg_wm_base *xdg_wm_base, uint32_t serial) {
 	xdg_wm_base_pong(xdg_wm_base, serial);
 }
 
-
 void DisplayServerWayland::_xdg_surface_on_configure(void *data, struct xdg_surface *xdg_surface, uint32_t serial) {
 	xdg_surface_ack_configure(xdg_surface, serial);
 
-	WindowData *wd = (WindowData*) data;
+	WindowData *wd = (WindowData *)data;
 
 	xdg_surface_set_window_geometry(wd->xdg_surface, 0, 0, wd->rect.size.width, wd->rect.size.height);
 
@@ -652,7 +671,7 @@ void DisplayServerWayland::_xdg_surface_on_configure(void *data, struct xdg_surf
 }
 
 void DisplayServerWayland::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states) {
-	WindowData *wd = (WindowData*) data;
+	WindowData *wd = (WindowData *)data;
 
 	if (width != 0 && height != 0) {
 		wd->rect.size.width = width;
@@ -661,7 +680,7 @@ void DisplayServerWayland::_xdg_toplevel_on_configure(void *data, struct xdg_top
 }
 
 void DisplayServerWayland::_xdg_toplevel_on_close(void *data, struct xdg_toplevel *xdg_toplevel) {
-	WindowData *wd = (WindowData*) data;
+	WindowData *wd = (WindowData *)data;
 
 	WaylandMessage msg;
 	msg.type = WaylandMessageType::WINDOW_EVENT;
@@ -699,7 +718,6 @@ void DisplayServerWayland::mouse_set_mode(MouseMode p_mode) {
 	// TODO
 	print_verbose("wayland stub mouse_set_mode");
 }
-
 
 DisplayServerWayland::MouseMode DisplayServerWayland::mouse_get_mode() const {
 	// TODO
@@ -801,7 +819,6 @@ Vector<DisplayServer::WindowID> DisplayServerWayland::get_window_list() const {
 	return Vector<DisplayServer::WindowID>();
 }
 
-
 DisplayServer::WindowID DisplayServerWayland::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
 	// TODO: Actually create subwindows instead of some broken toplevel window.
 	return _create_window(p_mode, p_vsync_mode, p_flags, p_rect);
@@ -834,7 +851,6 @@ void DisplayServerWayland::delete_sub_window(DisplayServer::WindowID p_id) {
 	_destroy_window(p_id);
 }
 
-
 DisplayServer::WindowID DisplayServerWayland::get_window_at_screen_position(const Point2i &p_position) const {
 	// TODO
 	print_verbose("wayland stub get_window_at_screen_position");
@@ -846,13 +862,11 @@ void DisplayServerWayland::window_attach_instance_id(ObjectID p_instance, Displa
 	print_verbose("wayland stub window_attach_instance_id");
 }
 
-
 ObjectID DisplayServerWayland::window_get_attached_instance_id(DisplayServer::WindowID p_window) const {
 	// TODO
 	print_verbose("wayland stub window_get_attached_instance_id");
 	return ObjectID();
 }
-
 
 void DisplayServerWayland::window_set_title(const String &p_title, DisplayServer::WindowID p_window) {
 	MutexLock mutex_lock(wls.mutex);
@@ -870,7 +884,6 @@ void DisplayServerWayland::window_set_mouse_passthrough(const Vector<Vector2> &p
 	// TODO
 	print_verbose("wayland stub window_set_mouse_passthrough");
 }
-
 
 void DisplayServerWayland::window_set_rect_changed_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
 	MutexLock mutex_lock(wls.mutex);
@@ -897,7 +910,6 @@ void DisplayServerWayland::window_set_input_text_callback(const Callable &p_call
 	// TODO
 	print_verbose("wayland stub window_set_input_text_callback");
 }
-
 
 void DisplayServerWayland::window_set_drop_files_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
 	// TODO
@@ -944,7 +956,6 @@ void DisplayServerWayland::gl_window_make_current(DisplayServer::WindowID p_wind
 	// TODO
 	print_verbose("wayland stub gl_window_make_current");
 }
-
 
 void DisplayServerWayland::window_set_transient(DisplayServer::WindowID p_window, DisplayServer::WindowID p_parent) {
 	MutexLock mutex_lock(wls.mutex);
@@ -1037,7 +1048,6 @@ bool DisplayServerWayland::window_can_draw(DisplayServer::WindowID p_window) con
 	return true;
 }
 
-
 bool DisplayServerWayland::can_any_window_draw() const {
 	// TODO: Implement this. For now a simple return true will work tough
 	return true;
@@ -1052,7 +1062,6 @@ void DisplayServerWayland::window_set_ime_position(const Point2i &p_pos, Display
 	// TODO
 	print_verbose("wayland stub window_set_ime_position");
 }
-
 
 void DisplayServerWayland::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, DisplayServer::WindowID p_window) {
 	// TODO: Figure out whether it is possible to disable VSync with Wayland
@@ -1081,7 +1090,6 @@ void DisplayServerWayland::cursor_set_custom_image(const RES &p_cursor, CursorSh
 	// TODO
 	print_verbose("wayland stub cursor_set_custom_image");
 }
-
 
 int DisplayServerWayland::keyboard_get_layout_count() const {
 	// TODO
@@ -1118,7 +1126,6 @@ Key DisplayServerWayland::keyboard_get_keycode_from_physical(Key p_keycode) cons
 	return Key::NONE;
 }
 
-
 void DisplayServerWayland::process_events() {
 	MutexLock mutex_lock(wls.mutex);
 
@@ -1129,7 +1136,7 @@ void DisplayServerWayland::process_events() {
 			case WaylandMessageType::WINDOW_RECT: {
 				// TODO: Assertions.
 
-				WaylandWindowRectMessage *msg_data = (WaylandWindowRectMessage*) msg.data;
+				WaylandWindowRectMessage *msg_data = (WaylandWindowRectMessage *)msg.data;
 
 				if (wls.windows.has(msg_data->id)) {
 					WindowData &wd = wls.windows[msg_data->id];
@@ -1147,7 +1154,7 @@ void DisplayServerWayland::process_events() {
 						Variant ret;
 						Callable::CallError ce;
 
-						wd.rect_changed_callback.call((const Variant**) &arg, 1, ret, ce);
+						wd.rect_changed_callback.call((const Variant **)&arg, 1, ret, ce);
 					}
 				}
 
@@ -1155,7 +1162,7 @@ void DisplayServerWayland::process_events() {
 			} break;
 
 			case WaylandMessageType::WINDOW_EVENT: {
-				WaylandWindowEventMessage *msg_data = (WaylandWindowEventMessage*) msg.data;
+				WaylandWindowEventMessage *msg_data = (WaylandWindowEventMessage *)msg.data;
 
 				if (wls.windows.has(msg_data->id)) {
 					WindowData &wd = wls.windows[msg_data->id];
@@ -1167,7 +1174,7 @@ void DisplayServerWayland::process_events() {
 						Variant ret;
 						Callable::CallError ce;
 
-						wd.window_event_callback.call((const Variant**) &arg, 1, ret, ce);
+						wd.window_event_callback.call((const Variant **)&arg, 1, ret, ce);
 					}
 				}
 
@@ -1175,7 +1182,7 @@ void DisplayServerWayland::process_events() {
 			} break;
 
 			case WaylandMessageType::INPUT_EVENT: {
-				Ref<InputEvent> *ev = (Ref<InputEvent>*) msg.data;
+				Ref<InputEvent> *ev = (Ref<InputEvent> *)msg.data;
 				Input::get_singleton()->parse_input_event(*ev);
 
 				memdelete(ev);
@@ -1189,7 +1196,7 @@ void DisplayServerWayland::process_events() {
 
 	if (ks.repeat_key_delay_msec && ks.repeating_keycode != XKB_KEYCODE_INVALID) {
 		uint64_t current_ticks = OS::get_singleton()->get_ticks_msec();
-		uint64_t delayed_start_ticks =  ks.last_repeat_start_msec + ks.repeat_start_delay_msec;
+		uint64_t delayed_start_ticks = ks.last_repeat_start_msec + ks.repeat_start_delay_msec;
 
 		if (ks.last_repeat_msec < delayed_start_ticks) {
 			ks.last_repeat_msec = delayed_start_ticks;
@@ -1235,12 +1242,10 @@ void DisplayServerWayland::swap_buffers() {
 	print_verbose("wayland stub swap_buffers");
 }
 
-
 void DisplayServerWayland::set_context(Context p_context) {
 	// TODO
 	print_verbose("wayland stub set_context");
 }
-
 
 void DisplayServerWayland::set_native_icon(const String &p_filename) {
 	// TODO
@@ -1259,12 +1264,12 @@ Vector<String> DisplayServerWayland::get_rendering_drivers_func() {
 	drivers.push_back("vulkan");
 #endif
 
-// TODO
-/*
- * #ifdef GLES3_ENABLED
- * 	drivers.push_back("opengl3");
- * #endif
- */
+	// TODO
+	/*
+	 * #ifdef GLES3_ENABLED
+	 * 	drivers.push_back("opengl3");
+	 * #endif
+	 */
 
 	return drivers;
 }
@@ -1273,9 +1278,9 @@ DisplayServer *DisplayServerWayland::create_func(const String &p_rendering_drive
 	DisplayServer *ds = memnew(DisplayServerWayland(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error));
 	if (r_error != OK) {
 		OS::get_singleton()->alert("Your video card driver does not support any of the supported Vulkan or OpenGL versions.\n"
-			"Please update your drivers or if you have a very old or integrated GPU, upgrade it.\n"
-			"If you have updated your graphics drivers recently, try rebooting.",
-			"Unable to initialize Video driver");
+								   "Please update your drivers or if you have a very old or integrated GPU, upgrade it.\n"
+								   "If you have updated your graphics drivers recently, try rebooting.",
+				"Unable to initialize Video driver");
 	}
 	return ds;
 }
@@ -1319,7 +1324,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	}
 #endif
 
-	WindowID main_window_id =_create_window(p_mode, p_vsync_mode, p_flags, screen_get_usable_rect());
+	WindowID main_window_id = _create_window(p_mode, p_vsync_mode, p_flags, screen_get_usable_rect());
 	show_window(main_window_id);
 
 #ifdef VULKAN_ENABLED
