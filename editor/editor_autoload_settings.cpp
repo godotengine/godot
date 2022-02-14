@@ -692,11 +692,16 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 	undo_redo->commit_action();
 }
 
-bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_path) {
-	String name = p_name;
+bool EditorAutoloadSettings::autoload_name_is_valid(const String &p_name, String *r_error) {
+	if (!_autoload_name_is_valid(p_name, r_error)) {
+		return false;
+	}
+	return true;
+}
 
+bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_path, bool p_use_undoredo) {
 	String error;
-	if (!_autoload_name_is_valid(name, &error)) {
+	if (!_autoload_name_is_valid(p_name, &error)) {
 		EditorNode::get_singleton()->show_warning(TTR("Can't add AutoLoad:") + "\n" + error);
 		return false;
 	}
@@ -712,7 +717,14 @@ bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 		return false;
 	}
 
-	name = "autoload/" + name;
+	String name = "autoload/" + p_name;
+
+	if (!p_use_undoredo) {
+		ProjectSettings::get_singleton()->set(name, "*" + path);
+		update_autoload();
+		emit_signal(autoload_changed);
+		return true;
+	}
 
 	UndoRedo *undo_redo = EditorNode::get_undo_redo();
 

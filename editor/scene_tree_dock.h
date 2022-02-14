@@ -36,7 +36,6 @@
 #include "editor/groups_editor.h"
 #include "editor/quick_open.h"
 #include "editor/reparent_dialog.h"
-#include "editor/script_create_dialog.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -52,6 +51,7 @@ class RenameDialog;
 #endif // MODULE_REGEX_ENABLED
 
 class ShaderCreateDialog;
+class ScriptCreateDialog;
 
 class SceneTreeDock : public VBoxContainer {
 	GDCLASS(SceneTreeDock, VBoxContainer);
@@ -317,7 +317,7 @@ public:
 	List<Node *> paste_nodes();
 	List<Node *> get_node_clipboard() const;
 
-	ScriptCreateDialog *get_script_create_dialog() { return script_create_dialog; }
+	ScriptCreateDialog *get_script_create_dialog();
 
 	SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selection, EditorData &p_editor_data);
 	~SceneTreeDock();

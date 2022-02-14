@@ -62,6 +62,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	Button *path_button;
 	EditorFileDialog *file_browse;
 	CheckBox *internal;
+	CheckBox *autoload;
 	CheckBox *use_templates;
 	VBoxContainer *path_vb;
 	AcceptDialog *alert;
@@ -79,8 +80,10 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	bool is_parent_name_valid;
 	bool is_class_name_valid;
 	bool is_built_in;
+	bool is_autoload = false;
 	bool is_using_templates;
 	bool built_in_enabled;
+	bool autoload_enabled = false;
 	bool load_enabled;
 	int current_language;
 	int default_language;
@@ -98,8 +101,10 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	bool _can_be_built_in();
 	void _path_changed(const String &p_path = String());
 	void _path_submitted(const String &p_path = String());
+	void _name_changed(const String &p_name = String());
 	void _language_changed(int l = 0);
 	void _built_in_pressed();
+	void _autoload_pressed();
 	void _use_template_pressed();
 	bool _validate_parent(const String &p_string);
 	bool _validate_class(const String &p_string);
@@ -130,7 +135,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void config(const String &p_base_name, const String &p_base_path, bool p_built_in_enabled = true, bool p_load_enabled = true);
+	void config(const String &p_base_name, const String &p_base_path, bool p_built_in_enabled = true, bool p_autoload_enabled = false, bool p_load_enabled = true);
 	void set_inheritance_base_type(const String &p_base);
 	ScriptCreateDialog();
 };

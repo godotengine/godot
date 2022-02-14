@@ -36,7 +36,6 @@
 #include "editor/editor_help.h"
 #include "editor/editor_help_search.h"
 #include "editor/editor_plugin.h"
-#include "editor/script_create_dialog.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
@@ -184,6 +183,7 @@ typedef ScriptEditorBase *(*CreateScriptEditorFunc)(const RES &p_resource);
 class EditorScriptCodeCompletionCache;
 class FindInFilesDialog;
 class FindInFilesPanel;
+class ScriptCreateDialog;
 
 class ScriptEditor : public PanelContainer {
 	GDCLASS(ScriptEditor, PanelContainer);

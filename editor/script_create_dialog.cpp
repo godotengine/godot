@@ -39,6 +39,7 @@
 #include "editor/editor_file_system.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/project_settings_editor.h"
 
 void ScriptCreateDialog::_notification(int p_what) {
 	switch (p_what) {
@@ -98,7 +99,7 @@ bool ScriptCreateDialog::_can_be_built_in() {
 	return (supports_built_in && built_in_enabled);
 }
 
-void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_path, bool p_built_in_enabled, bool p_load_enabled) {
+void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_path, bool p_built_in_enabled, bool p_autoload_enabled, bool p_load_enabled) {
 	class_name->set_text("");
 	class_name->deselect();
 	parent_name->set_text(p_base_name);
@@ -115,6 +116,7 @@ void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_
 	file_path->deselect();
 
 	built_in_enabled = p_built_in_enabled;
+	autoload_enabled = p_autoload_enabled;
 	load_enabled = p_load_enabled;
 
 	_language_changed(current_language);
@@ -334,6 +336,11 @@ void ScriptCreateDialog::_create_new() {
 			alert->popup_centered();
 			return;
 		}
+		if (is_autoload) {
+			EditorAutoloadSettings *settings = ProjectSettingsEditor::get_singleton()->get_autoload_settings();
+			settings->autoload_add(internal_name->get_text(), lpath);
+			settings->update_autoload();
+		}
 	}
 
 	emit_signal(SNAME("script_created"), scr);
@@ -426,6 +433,16 @@ void ScriptCreateDialog::_built_in_pressed() {
 	_update_dialog();
 }
 
+void ScriptCreateDialog::_autoload_pressed() {
+	if (autoload->is_pressed()) {
+		is_autoload = true;
+		internal_name->set_text(_get_class_name().capitalize().replace(" ", ""));
+	} else {
+		is_autoload = false;
+	}
+	_update_dialog();
+}
+
 void ScriptCreateDialog::_use_template_pressed() {
 	is_using_templates = use_templates->is_pressed();
 	EditorSettings::get_singleton()->set_meta("script_setup/use_script_templates", is_using_templates);
@@ -488,6 +505,13 @@ void ScriptCreateDialog::_browse_class_in_tree() {
 	select_class->get_ok_button()->set_text(TTR("Inherit"));
 }
 
+void ScriptCreateDialog::_name_changed(const String &p_name) {
+	if (!is_autoload) {
+		return;
+	}
+	_update_dialog();
+}
+
 void ScriptCreateDialog::_path_changed(const String &p_path) {
 	if (is_built_in) {
 		return;
@@ -513,6 +537,10 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 	memdelete(f);
 
 	is_path_valid = true;
+	if (is_autoload) {
+		internal_name->set_text(_get_class_name().capitalize().replace(" ", ""));
+	}
+
 	_update_dialog();
 }
 
@@ -638,6 +666,18 @@ void ScriptCreateDialog::_update_dialog() {
 		_msg_script_valid(false, TTR("Invalid path."));
 		script_ok = false;
 	}
+	if (is_autoload) {
+		if (ProjectSettings::get_singleton()->has_setting("autoload/" + internal_name->get_text())) {
+			_msg_script_valid(false, TTR("Invalid name.") + "\n" + TTR("Must not collide with an existing autoload script class name."));
+			script_ok = false;
+		} else {
+			String error;
+			if (!ProjectSettingsEditor::get_singleton()->get_autoload_settings()->autoload_name_is_valid(internal_name->get_text(), &error)) {
+				_msg_script_valid(false, error);
+				script_ok = false;
+			}
+		}
+	}
 	if (has_named_classes && (is_new_script_created && !is_class_name_valid)) {
 		_msg_script_valid(false, TTR("Invalid class name."));
 		script_ok = false;
@@ -692,15 +732,26 @@ void ScriptCreateDialog::_update_dialog() {
 	}
 	internal->set_disabled(!_can_be_built_in());
 
+	if (!autoload_enabled) {
+		autoload->set_pressed(false);
+	}
+	autoload->set_disabled(!autoload_enabled);
+
 	// Is Script created or loaded from existing file?
 
 	builtin_warning_label->set_visible(is_built_in);
 
-	path_controls[0]->set_visible(!is_built_in);
-	path_controls[1]->set_visible(!is_built_in);
-	name_controls[0]->set_visible(is_built_in);
-	name_controls[1]->set_visible(is_built_in);
-
+	if (is_autoload) {
+		path_controls[0]->show();
+		path_controls[1]->show();
+		name_controls[0]->show();
+		name_controls[1]->show();
+	} else {
+		path_controls[0]->set_visible(!is_built_in);
+		path_controls[1]->set_visible(!is_built_in);
+		name_controls[0]->set_visible(is_built_in);
+		name_controls[1]->set_visible(is_built_in);
+	}
 	// Check if the script name is the same as the parent class.
 	// This warning isn't relevant if the script is built-in.
 	script_name_warning_label->set_visible(!is_built_in && _get_class_name() == parent_name->get_text());
@@ -719,7 +770,11 @@ void ScriptCreateDialog::_update_dialog() {
 			_msg_path_valid(true, TTR("Built-in script (into scene file)."));
 		}
 		if (is_new_script_created && is_path_valid) {
-			_msg_path_valid(true, TTR("Will create a new script file."));
+			if (is_autoload) {
+				_msg_path_valid(true, TTR("Will create a new script file and add it to the autoload list."));
+			} else {
+				_msg_path_valid(true, TTR("Will create a new script file."));
+			}
 		}
 	} else {
 		if (load_enabled) {
@@ -880,7 +935,7 @@ String ScriptCreateDialog::_get_script_origin_label(const ScriptLanguage::Templa
 }
 
 void ScriptCreateDialog::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("config", "inherits", "path", "built_in_enabled", "load_enabled"), &ScriptCreateDialog::config, DEFVAL(true), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("config", "inherits", "path", "built_in_enabled", "autoload_enabled", "load_enabled"), &ScriptCreateDialog::config, DEFVAL(true), DEFVAL(false), DEFVAL(true));
 
 	ADD_SIGNAL(MethodInfo("script_created", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
 }
@@ -1016,6 +1071,14 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	gc->add_child(memnew(Label(TTR("Built-in Script:"))));
 	gc->add_child(internal);
 
+	/* AutoLoad Script */
+
+	autoload = memnew(CheckBox);
+	autoload->set_text(TTR("On"));
+	autoload->connect("pressed", callable_mp(this, &ScriptCreateDialog::_autoload_pressed));
+	gc->add_child(memnew(Label(TTR("AutoLoad Script:"))));
+	gc->add_child(autoload);
+
 	/* Path */
 
 	hb = memnew(HBoxContainer);
@@ -1039,6 +1102,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	internal_name = memnew(LineEdit);
 	internal_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	internal_name->connect("text_submitted", callable_mp(this, &ScriptCreateDialog::_path_submitted));
+	internal_name->connect("text_changed", callable_mp(this, &ScriptCreateDialog::_name_changed));
 	label = memnew(Label(TTR("Name:")));
 	gc->add_child(label);
 	gc->add_child(internal_name);

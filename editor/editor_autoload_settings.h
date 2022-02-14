@@ -103,8 +103,9 @@ protected:
 
 public:
 	void update_autoload();
-	bool autoload_add(const String &p_name, const String &p_path);
+	bool autoload_add(const String &p_name, const String &p_path, bool p_use_undoredo = true);
 	void autoload_remove(const String &p_name);
+	bool autoload_name_is_valid(const String &p_name, String *r_error = nullptr);
 
 	EditorAutoloadSettings();
 	~EditorAutoloadSettings();

@@ -36,7 +36,6 @@
 #include "editor/editor_dir_dialog.h"
 #include "editor/editor_file_system.h"
 #include "editor/plugins/script_editor_plugin.h"
-#include "editor/script_create_dialog.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
@@ -47,6 +46,7 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
 
+class ScriptCreateDialog;
 class ShaderCreateDialog;
 
 class FileSystemDock : public VBoxContainer {

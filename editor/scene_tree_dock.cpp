@@ -3301,6 +3301,10 @@ void SceneTreeDock::_update_configuration_warning() {
 	}
 }
 
+ScriptCreateDialog *SceneTreeDock::get_script_create_dialog() {
+	return script_create_dialog;
+}
+
 SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selection, EditorData &p_editor_data) {
 	singleton = this;
 	set_name("Scene");
