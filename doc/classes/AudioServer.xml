@@ -32,7 +32,7 @@
 		<method name="capture_get_device">
 			<return type="String" />
 			<description>
-				Name of the current device for audio input (see [method capture_get_device_list]).
+				Name of the current device for audio input (see [method capture_get_device_list]). The value [code]"Default"[/code] means that the system-wide default audio input is currently used.
 			</description>
 		</method>
 		<method name="capture_get_device_list">
@@ -45,7 +45,7 @@
 			<return type="void" />
 			<argument index="0" name="name" type="String" />
 			<description>
-				Sets which audio input device is used for audio capture.
+				Sets which audio input device is used for audio capture. On systems with multiple audio inputs (such as analog and USB), this can be used to select the audio input device. Setting the value [code]"Default"[/code] will record audio from the system-wide default audio input. If an invalid device name is set, the value will be reverted back to [code]"Default"[/code].
 			</description>
 		</method>
 		<method name="generate_bus_layout" qualifiers="const">
@@ -309,7 +309,7 @@
 			Number of available audio buses.
 		</member>
 		<member name="device" type="String" setter="set_device" getter="get_device" default="&quot;Default&quot;">
-			Name of the current device for audio output (see [method get_device_list]).
+			Name of the current device for audio output (see [method get_device_list]). On systems with multiple audio outputs (such as analog, USB and HDMI audio), this can be used to select the audio output device. The value [code]"Default"[/code] will play audio on the system-wide default audio output. If an invalid device name is set, the value will be reverted back to [code]"Default"[/code].
 		</member>
 		<member name="global_rate_scale" type="float" setter="set_global_rate_scale" getter="get_global_rate_scale" default="1.0">
 			Scales the rate at which audio is played (i.e. setting it to [code]0.5[/code] will make the audio be played twice as fast).
