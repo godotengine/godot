@@ -6308,14 +6308,15 @@ void fragment() {
 			// Lines to visualize transforms locked to an axis/plane
 			{
 				Ref<SurfaceTool> surftool = memnew(SurfaceTool);
-				surftool->begin(Mesh::PRIMITIVE_LINES);
+				surftool->begin(Mesh::PRIMITIVE_LINE_STRIP);
 
 				Vector3 vec;
 				vec[i] = 1;
 
 				// line extending through infinity(ish)
-				surftool->add_vertex(vec * -99999);
-				surftool->add_vertex(vec * 99999);
+				surftool->add_vertex(vec * -1048576);
+				surftool->add_vertex(Vector3());
+				surftool->add_vertex(vec * 1048576);
 				surftool->set_material(mat_hl);
 				surftool->commit(axis_gizmo[i]);
 			}
