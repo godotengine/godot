@@ -166,15 +166,13 @@ Error LightmapperCPU::_layout_atlas(int p_max_size, Vector2i *r_atlas_size, int 
 			}
 
 			float mem_utilization = static_cast<float>(mem_occupied) / mem_used;
-			if (slices * atlas_size.y <= 16384) { // Maximum Image size
-				if (mem_used < best_atlas_memory || (mem_used == best_atlas_memory && mem_utilization > best_atlas_mem_utilization)) {
-					best_atlas_size = atlas_size;
-					best_atlas_offsets = curr_atlas_offsets;
-					best_atlas_slices = slices;
-					best_atlas_memory = mem_used;
-					best_atlas_mem_utilization = mem_utilization;
-					best_scaled_sizes = scaled_sizes;
-				}
+			if (mem_used < best_atlas_memory || (mem_used == best_atlas_memory && mem_utilization > best_atlas_mem_utilization)) {
+				best_atlas_size = atlas_size;
+				best_atlas_offsets = curr_atlas_offsets;
+				best_atlas_slices = slices;
+				best_atlas_memory = mem_used;
+				best_atlas_mem_utilization = mem_utilization;
+				best_scaled_sizes = scaled_sizes;
 			}
 
 			if (recovery_percent == 0) {
@@ -1430,22 +1428,24 @@ LightmapperCPU::BakeError LightmapperCPU::bake(BakeQuality p_quality, bool p_use
 		parameters.environment_panorama->lock();
 	}
 
-	for (unsigned int i = 0; i < mesh_instances.size(); i++) {
-		if (!mesh_instances[i].generate_lightmap) {
-			continue;
-		}
-
-		if (p_step_function) {
-			float p = float(i) / n_lit_meshes;
-			bool cancelled = p_step_function(0.4 + p * 0.4, vformat("%s (%d/%d)", TTR("Indirect lighting"), i, mesh_instances.size()), p_bake_userdata, false);
-			if (cancelled) {
-				return BAKE_ERROR_USER_ABORTED;
+	if (parameters.bounces > 0) {
+		for (unsigned int i = 0; i < mesh_instances.size(); i++) {
+			if (!mesh_instances[i].generate_lightmap) {
+				continue;
 			}
-		}
 
-		if (!scene_lightmaps[i].empty()) {
-			if (_parallel_run(scene_lightmaps[i].size(), "Computing indirect light", &LightmapperCPU::_compute_indirect_light, scene_lightmaps[i].ptr(), p_substep_function)) {
-				return BAKE_ERROR_USER_ABORTED;
+			if (p_step_function) {
+				float p = float(i) / n_lit_meshes;
+				bool cancelled = p_step_function(0.4 + p * 0.4, vformat("%s (%d/%d)", TTR("Indirect lighting"), i, mesh_instances.size()), p_bake_userdata, false);
+				if (cancelled) {
+					return BAKE_ERROR_USER_ABORTED;
+				}
+			}
+
+			if (!scene_lightmaps[i].empty()) {
+				if (_parallel_run(scene_lightmaps[i].size(), "Computing indirect light", &LightmapperCPU::_compute_indirect_light, scene_lightmaps[i].ptr(), p_substep_function)) {
+					return BAKE_ERROR_USER_ABORTED;
+				}
 			}
 		}
 	}
