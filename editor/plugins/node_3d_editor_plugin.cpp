@@ -1889,7 +1889,12 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (_edit.mode != TRANSFORM_NONE) {
+		if (_edit.mode == TRANSFORM_NONE) {
+			if (k->get_keycode() == Key::ESCAPE && !cursor.region_select) {
+				_clear_selected();
+				return;
+			}
+		} else {
 			// We're actively transforming, handle keys specially
 			TransformPlane new_plane = TRANSFORM_VIEW;
 			String new_message;
