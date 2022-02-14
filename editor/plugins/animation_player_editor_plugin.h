@@ -124,7 +124,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 	ConfirmationDialog *name_dialog;
 	ConfirmationDialog *error_dialog;
-	bool renaming;
+	int name_dialog_op;
 
 	bool updating;
 	bool updating_blends;
