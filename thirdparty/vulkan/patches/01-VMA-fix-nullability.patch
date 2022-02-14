@@ -1,0 +1,80 @@
+diff --git a/thirdparty/vulkan/vk_mem_alloc.h b/thirdparty/vulkan/vk_mem_alloc.h
+index 52b403bede..d88c305a7c 100644
+--- a/thirdparty/vulkan/vk_mem_alloc.h
++++ b/thirdparty/vulkan/vk_mem_alloc.h
+@@ -2366,7 +2366,7 @@ VMA_CALL_PRE VkBool32 VMA_CALL_POST vmaIsVirtualBlockEmpty(
+ */
+ VMA_CALL_PRE void VMA_CALL_POST vmaGetVirtualAllocationInfo(
+     VmaVirtualBlock VMA_NOT_NULL virtualBlock,
+-    VmaVirtualAllocation allocation, VmaVirtualAllocationInfo* VMA_NOT_NULL pVirtualAllocInfo);
++    VmaVirtualAllocation VMA_NOT_NULL_NON_DISPATCHABLE allocation, VmaVirtualAllocationInfo* VMA_NOT_NULL pVirtualAllocInfo);
+ 
+ /** \brief Allocates new virtual allocation inside given #VmaVirtualBlock.
+ 
+diff --git a/thirdparty/vulkan/vk_mem_alloc.h b/thirdparty/vulkan/vk_mem_alloc.h
+index d1138a7bc8..74c66b9789 100644
+--- a/thirdparty/vulkan/vk_mem_alloc.h
++++ b/thirdparty/vulkan/vk_mem_alloc.h
+@@ -2386,7 +2386,7 @@ If the allocation fails due to not enough free space available, `VK_ERROR_OUT_OF
+ VMA_CALL_PRE VkResult VMA_CALL_POST vmaVirtualAllocate(
+     VmaVirtualBlock VMA_NOT_NULL virtualBlock,
+     const VmaVirtualAllocationCreateInfo* VMA_NOT_NULL pCreateInfo,
+-    VmaVirtualAllocation* VMA_NOT_NULL pAllocation,
++    VmaVirtualAllocation VMA_NULLABLE_NON_DISPATCHABLE* VMA_NOT_NULL pAllocation,
+     VkDeviceSize* VMA_NULLABLE pOffset);
+ 
+ /** \brief Frees virtual allocation inside given #VmaVirtualBlock.
+@@ -2391,7 +2391,7 @@ It is correct to call this function with `allocation == VK_NULL_HANDLE` - it doe
+ */
+ VMA_CALL_PRE void VMA_CALL_POST vmaVirtualFree(
+     VmaVirtualBlock VMA_NOT_NULL virtualBlock,
+-    VmaVirtualAllocation allocation);
++    VmaVirtualAllocation VMA_NULLABLE_NON_DISPATCHABLE allocation);
+ 
+ /** \brief Frees all virtual allocations inside given #VmaVirtualBlock.
+ 
+@@ -2408,7 +2408,7 @@ VMA_CALL_PRE void VMA_CALL_POST vmaClearVirtualBlock(
+ */
+ VMA_CALL_PRE void VMA_CALL_POST vmaSetVirtualAllocationUserData(
+     VmaVirtualBlock VMA_NOT_NULL virtualBlock,
+-    VmaVirtualAllocation allocation,
++    VmaVirtualAllocation VMA_NOT_NULL_NON_DISPATCHABLE allocation,
+     void* VMA_NULLABLE pUserData);
+ 
+ /** \brief Calculates and returns statistics about virtual allocations and memory usage in given #VmaVirtualBlock.
+@@ -17835,7 +17835,7 @@ VMA_CALL_PRE VkBool32 VMA_CALL_POST vmaIsVirtualBlockEmpty(VmaVirtualBlock VMA_N
+ }
+ 
+ VMA_CALL_PRE void VMA_CALL_POST vmaGetVirtualAllocationInfo(VmaVirtualBlock VMA_NOT_NULL virtualBlock,
+-    VmaVirtualAllocation allocation, VmaVirtualAllocationInfo* VMA_NOT_NULL pVirtualAllocInfo)
++    VmaVirtualAllocation VMA_NOT_NULL_NON_DISPATCHABLE allocation, VmaVirtualAllocationInfo* VMA_NOT_NULL pVirtualAllocInfo)
+ {
+     VMA_ASSERT(virtualBlock != VK_NULL_HANDLE && pVirtualAllocInfo != VMA_NULL);
+     VMA_DEBUG_LOG("vmaGetVirtualAllocationInfo");
+@@ -17853,7 +17853,7 @@ VMA_CALL_PRE VkResult VMA_CALL_POST vmaVirtualAllocate(VmaVirtualBlock VMA_NOT_N
+     return virtualBlock->Allocate(*pCreateInfo, *pAllocation, pOffset);
+ }
+ 
+-VMA_CALL_PRE void VMA_CALL_POST vmaVirtualFree(VmaVirtualBlock VMA_NOT_NULL virtualBlock, VmaVirtualAllocation allocation)
++VMA_CALL_PRE void VMA_CALL_POST vmaVirtualFree(VmaVirtualBlock VMA_NOT_NULL virtualBlock, VmaVirtualAllocation VMA_NULLABLE_NON_DISPATCHABLE allocation)
+ {
+     if(allocation != VK_NULL_HANDLE)
+     {
+@@ -17873,7 +17873,7 @@ VMA_CALL_PRE void VMA_CALL_POST vmaClearVirtualBlock(VmaVirtualBlock VMA_NOT_NUL
+ }
+ 
+ VMA_CALL_PRE void VMA_CALL_POST vmaSetVirtualAllocationUserData(VmaVirtualBlock VMA_NOT_NULL virtualBlock,
+-    VmaVirtualAllocation allocation, void* VMA_NULLABLE pUserData)
++    VmaVirtualAllocation VMA_NOT_NULL_NON_DISPATCHABLE allocation, void* VMA_NULLABLE pUserData)
+ {
+     VMA_ASSERT(virtualBlock != VK_NULL_HANDLE);
+     VMA_DEBUG_LOG("vmaSetVirtualAllocationUserData");
+@@ -17848,7 +17848,7 @@ VMA_CALL_PRE void VMA_CALL_POST vmaGetVirtualAllocationInfo(VmaVirtualBlock VMA_
+ }
+ 
+ VMA_CALL_PRE VkResult VMA_CALL_POST vmaVirtualAllocate(VmaVirtualBlock VMA_NOT_NULL virtualBlock,
+-    const VmaVirtualAllocationCreateInfo* VMA_NOT_NULL pCreateInfo, VmaVirtualAllocation* VMA_NOT_NULL pAllocation,
++    const VmaVirtualAllocationCreateInfo* VMA_NOT_NULL pCreateInfo, VmaVirtualAllocation VMA_NULLABLE_NON_DISPATCHABLE* VMA_NOT_NULL pAllocation,
+     VkDeviceSize* VMA_NULLABLE pOffset)
+ {
+     VMA_ASSERT(virtualBlock != VK_NULL_HANDLE && pCreateInfo != VMA_NULL && pAllocation != VMA_NULL);

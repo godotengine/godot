@@ -43,6 +43,8 @@
 
 //#define FORCE_FULL_BARRIER
 
+static const uint32_t SMALL_ALLOCATION_MAX_SIZE = 4096;
+
 // Get the Vulkan object information and possible stage access types (bitwise OR'd with incoming values)
 RenderingDeviceVulkan::Buffer *RenderingDeviceVulkan::_get_buffer_from_owner(RID p_buffer, VkPipelineStageFlags &r_stage_mask, VkAccessFlags &r_access_mask, uint32_t p_post_barrier) {
 	Buffer *buffer = nullptr;
@@ -1333,7 +1335,7 @@ Error RenderingDeviceVulkan::_buffer_allocate(Buffer *p_buffer, uint32_t p_size,
 	allocInfo.requiredFlags = 0;
 	allocInfo.preferredFlags = 0;
 	allocInfo.memoryTypeBits = 0;
-	allocInfo.pool = nullptr;
+	allocInfo.pool = p_size <= SMALL_ALLOCATION_MAX_SIZE ? small_allocs_pool : nullptr;
 	allocInfo.pUserData = nullptr;
 
 	VkResult err = vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &p_buffer->buffer, &p_buffer->allocation, nullptr);
@@ -1836,13 +1838,16 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 
 	//allocate memory
 
+	uint32_t width, height;
+	uint32_t image_size = get_image_format_required_size(p_format.format, p_format.width, p_format.height, p_format.depth, p_format.mipmaps, &width, &height);
+
 	VmaAllocationCreateInfo allocInfo;
 	allocInfo.flags = 0;
+	allocInfo.pool = image_size <= SMALL_ALLOCATION_MAX_SIZE ? small_allocs_pool : nullptr;
 	allocInfo.usage = p_format.usage_bits & TEXTURE_USAGE_CPU_READ_BIT ? VMA_MEMORY_USAGE_CPU_ONLY : VMA_MEMORY_USAGE_GPU_ONLY;
 	allocInfo.requiredFlags = 0;
 	allocInfo.preferredFlags = 0;
 	allocInfo.memoryTypeBits = 0;
-	allocInfo.pool = nullptr;
 	allocInfo.pUserData = nullptr;
 
 	Texture texture;
@@ -8808,6 +8813,18 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 		vmaCreateAllocator(&allocatorInfo, &allocator);
 	}
 
+	{ //create pool for small objects
+		VmaPoolCreateInfo pci;
+		pci.flags = VMA_POOL_CREATE_LINEAR_ALGORITHM_BIT;
+		pci.blockSize = 0;
+		pci.minBlockCount = 0;
+		pci.maxBlockCount = SIZE_MAX;
+		pci.priority = 0.5f;
+		pci.minAllocationAlignment = 0;
+		pci.pMemoryAllocateNext = nullptr;
+		vmaCreatePool(allocator, &pci, &small_allocs_pool);
+	}
+
 	frames = memnew_arr(Frame, frame_count);
 	frame = 0;
 	//create setup and frame buffers
@@ -9276,6 +9293,7 @@ void RenderingDeviceVulkan::finalize() {
 	for (int i = 0; i < staging_buffer_blocks.size(); i++) {
 		vmaDestroyBuffer(allocator, staging_buffer_blocks[i].buffer, staging_buffer_blocks[i].allocation);
 	}
+	vmaDestroyPool(allocator, small_allocs_pool);
 	vmaDestroyAllocator(allocator);
 
 	while (vertex_formats.size()) {
