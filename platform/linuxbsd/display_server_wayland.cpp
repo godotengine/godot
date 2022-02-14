@@ -608,21 +608,19 @@ void DisplayServerWayland::_xdg_surface_on_configure(void *data, struct xdg_surf
 
 	WindowData *wd = (WindowData*) data;
 
-	if (wd->buffer_created) {
-		xdg_surface_set_window_geometry(wd->xdg_surface, 0, 0, wd->rect.size.width, wd->rect.size.height);
+	xdg_surface_set_window_geometry(wd->xdg_surface, 0, 0, wd->rect.size.width, wd->rect.size.height);
 
-		WaylandMessage msg;
-		msg.type = TYPE_WINDOW_RECT;
+	WaylandMessage msg;
+	msg.type = TYPE_WINDOW_RECT;
 
-		WaylandWindowRectMessage *msg_data = memnew(WaylandWindowRectMessage);
+	WaylandWindowRectMessage *msg_data = memnew(WaylandWindowRectMessage);
 
-		msg_data->id = wd->id;
-		msg_data->rect = wd->rect;
+	msg_data->id = wd->id;
+	msg_data->rect = wd->rect;
 
-		msg.data = msg_data;
+	msg.data = msg_data;
 
-		wd->message_queue->push_back(msg);
-	}
+	wd->message_queue->push_back(msg);
 }
 
 void DisplayServerWayland::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states) {
@@ -803,8 +801,28 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 }
 
 void DisplayServerWayland::delete_sub_window(DisplayServer::WindowID p_id) {
-	// TODO
-	print_verbose("wayland stub delete_sub_window");
+	MutexLock mutex_lock(wls.mutex);
+	WindowData &wd = wls.windows[p_id];
+
+#ifdef VULKAN_ENABLED
+	if (wd.buffer_created && context_vulkan) {
+		context_vulkan->window_destroy(p_id);
+	}
+#endif
+
+	if (wd.xdg_toplevel) {
+		xdg_toplevel_destroy(wd.xdg_toplevel);
+	}
+
+	if (wd.xdg_surface) {
+		xdg_surface_destroy(wd.xdg_surface);
+	}
+
+	if (wd.wl_surface) {
+		wl_surface_destroy(wd.wl_surface);
+	}
+
+	wls.windows.erase(p_id);
 }
 
 
@@ -920,8 +938,9 @@ void DisplayServerWayland::gl_window_make_current(DisplayServer::WindowID p_wind
 
 
 void DisplayServerWayland::window_set_transient(DisplayServer::WindowID p_window, DisplayServer::WindowID p_parent) {
-	// TODO
-	print_verbose("wayland stub window_set_transient");
+	MutexLock mutex_lock(wls.mutex);
+
+	xdg_toplevel_set_parent(wls.windows[p_window].xdg_toplevel, wls.windows[p_parent].xdg_toplevel);
 }
 
 void DisplayServerWayland::window_set_min_size(const Size2i p_size, DisplayServer::WindowID p_window) {
@@ -945,11 +964,10 @@ void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::W
 	xdg_surface_set_window_geometry(wd.xdg_surface, 0, 0, wd.rect.size.width, wd.rect.size.height);
 
 #ifdef VULKAN_ENABLED
-	if (context_vulkan) {
+	if (wd.buffer_created && context_vulkan) {
 		context_vulkan->window_resize(p_window, wd.rect.size.width, wd.rect.size.height);
 	}
 #endif
-	wl_surface_commit(wd.wl_surface);
 }
 
 Size2i DisplayServerWayland::window_get_size(DisplayServer::WindowID p_window) const {
@@ -1104,22 +1122,24 @@ void DisplayServerWayland::process_events() {
 
 				WaylandWindowRectMessage *msg_data = (WaylandWindowRectMessage*) msg.data;
 
-				WindowData &wd = wls.windows[msg_data->id];
+				if (wls.windows.has(msg_data->id)) {
+					WindowData &wd = wls.windows[msg_data->id];
 
 #ifdef VULKAN_ENABLED
-				if (context_vulkan) {
-					context_vulkan->window_resize(msg_data->id, msg_data->rect.size.width, msg_data->rect.size.height);
-				}
+					if (wd.buffer_created && context_vulkan) {
+						context_vulkan->window_resize(msg_data->id, msg_data->rect.size.width, msg_data->rect.size.height);
+					}
 #endif
 
-				if (!wd.rect_changed_callback.is_null()) {
-					Variant var_rect = Variant(msg_data->rect);
-					Variant *arg = &var_rect;
+					if (!wd.rect_changed_callback.is_null()) {
+						Variant var_rect = Variant(msg_data->rect);
+						Variant *arg = &var_rect;
 
-					Variant ret;
-					Callable::CallError ce;
+						Variant ret;
+						Callable::CallError ce;
 
-					wd.rect_changed_callback.call((const Variant**) &arg, 1, ret, ce);
+						wd.rect_changed_callback.call((const Variant**) &arg, 1, ret, ce);
+					}
 				}
 
 				memdelete(msg_data);
@@ -1129,16 +1149,18 @@ void DisplayServerWayland::process_events() {
 			case TYPE_WINDOW_EVENT: {
 				WaylandWindowEventMessage *msg_data = (WaylandWindowEventMessage*) msg.data;
 
-				WindowData &wd = wls.windows[msg_data->id];
+				if (wls.windows.has(msg_data->id)) {
+					WindowData &wd = wls.windows[msg_data->id];
 
-				if (!wd.window_event_callback.is_null()) {
-					Variant var_event = Variant(msg_data->event);
-					Variant *arg = &var_event;
+					if (!wd.window_event_callback.is_null()) {
+						Variant var_event = Variant(msg_data->event);
+						Variant *arg = &var_event;
 
-					Variant ret;
-					Callable::CallError ce;
+						Variant ret;
+						Callable::CallError ce;
 
-					wd.window_event_callback.call((const Variant**) &arg, 1, ret, ce);
+						wd.window_event_callback.call((const Variant**) &arg, 1, ret, ce);
+					}
 				}
 
 				memdelete(msg_data);
@@ -1318,24 +1340,7 @@ DisplayServerWayland::~DisplayServerWayland() {
 
 	// Destroy all windows.
 	for (KeyValue<WindowID, WindowData> &E : wls.windows) {
-#ifdef VULKAN_ENABLED
-		if (context_vulkan) {
-			context_vulkan->window_destroy(E.key);
-		}
-#endif
-		WindowData &wd = E.value;
-
-		if (wd.xdg_toplevel) {
-			xdg_toplevel_destroy(wd.xdg_toplevel);
-		}
-
-		if (wd.xdg_surface) {
-			xdg_surface_destroy(wd.xdg_surface);
-		}
-
-		if (wd.wl_surface) {
-			wl_surface_destroy(wd.wl_surface);
-		}
+		delete_sub_window(E.key);
 	}
 
 	wl_display_disconnect(wls.display);
