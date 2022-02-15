@@ -1,5 +1,5 @@
 //
-/// Copyright (c) 2017-2022 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2017-2022 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -307,9 +307,9 @@ extern "C" {
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-//
+// 
 //    INTERFACE
-//
+// 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1127,26 +1127,31 @@ typedef struct VmaAllocationCreateInfo
     /** \brief Intended usage of memory.
 
     You can leave #VMA_MEMORY_USAGE_UNKNOWN if you specify memory requirements in other way. \n
+    If `pool` is not null, this member is ignored.
     */
     VmaMemoryUsage usage;
     /** \brief Flags that must be set in a Memory Type chosen for an allocation.
 
-    Leave 0 if you specify memory requirements in other way.*/
+    Leave 0 if you specify memory requirements in other way. \n
+    If `pool` is not null, this member is ignored.*/
     VkMemoryPropertyFlags requiredFlags;
     /** \brief Flags that preferably should be set in a memory type chosen for an allocation.
 
-    Set to 0 if no additional flags are preferred.*/
+    Set to 0 if no additional flags are preferred. \n
+    If `pool` is not null, this member is ignored. */
     VkMemoryPropertyFlags preferredFlags;
     /** \brief Bitmask containing one bit set for every memory type acceptable for this allocation.
 
     Value 0 is equivalent to `UINT32_MAX` - it means any memory type is accepted if
     it meets other requirements specified by this structure, with no further
     restrictions on memory type index. \n
+    If `pool` is not null, this member is ignored.
     */
     uint32_t memoryTypeBits;
     /** \brief Pool that this allocation should be created in.
 
-    Leave `VK_NULL_HANDLE` to allocate from default pool.
+    Leave `VK_NULL_HANDLE` to allocate from default pool. If not null, members:
+    `usage`, `requiredFlags`, `preferredFlags`, `memoryTypeBits` are ignored.
     */
     VmaPool VMA_NULLABLE pool;
     /** \brief Custom general-purpose pointer that will be stored in #VmaAllocation, can be read as VmaAllocationInfo::pUserData and changed using vmaSetAllocationUserData().
@@ -1168,6 +1173,9 @@ typedef struct VmaAllocationCreateInfo
 /// Describes parameter of created #VmaPool.
 typedef struct VmaPoolCreateInfo
 {
+    /** \brief Vulkan memory type index to allocate this pool from.
+    */
+    uint32_t memoryTypeIndex;
     /** \brief Use combination of #VmaPoolCreateFlagBits.
     */
     VmaPoolCreateFlags flags;
@@ -1484,7 +1492,7 @@ typedef struct VmaVirtualAllocationCreateInfo
 typedef struct VmaVirtualAllocationInfo
 {
     /** \brief Offset of the allocation.
-
+     
     Offset at which the allocation was made.
     */
     VkDeviceSize offset;
@@ -2466,9 +2474,9 @@ VMA_CALL_PRE void VMA_CALL_POST vmaFreeStatsString(
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-//
+// 
 //    IMPLEMENTATION
-//
+// 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -4813,7 +4821,7 @@ public:
     VmaIntrusiveLinkedList& operator=(VmaIntrusiveLinkedList&& src);
     VmaIntrusiveLinkedList& operator=(const VmaIntrusiveLinkedList&) = delete;
     ~VmaIntrusiveLinkedList() { VMA_HEAVY_ASSERT(IsEmpty()); }
-
+    
     size_t GetCount() const { return m_Count; }
     bool IsEmpty() const { return m_Count == 0; }
     ItemType* Front() { return m_Front; }
@@ -5224,7 +5232,7 @@ public:
     // Writes a string value inside "".
     // pStr can contain any ANSI characters, including '"', new line etc. - they will be properly escaped.
     void WriteString(const char* pStr);
-
+    
     // Begins writing a string value.
     // Call BeginString, ContinueString, ContinueString, ..., EndString instead of
     // WriteString to conveniently build the string content incrementally, made of
@@ -6098,7 +6106,7 @@ void VmaBlockMetadata::DebugLogAllocation(VkDeviceSize offset, VkDeviceSize size
         }
 #endif // VMA_STATS_STRING_ENABLED
     }
-
+    
 }
 
 #if VMA_STATS_STRING_ENABLED
@@ -6408,7 +6416,7 @@ uint32_t VmaBlockBufferImageGranularity::OffsetToPageIndex(VkDeviceSize offset) 
 void VmaBlockBufferImageGranularity::AllocPage(RegionInfo& page, uint8_t allocType)
 {
     // When current alloc type is free then it can be overriden by new type
-    if (page.allocCount == 0 || page.allocCount > 0 && page.allocType == VMA_SUBALLOCATION_TYPE_FREE)
+    if (page.allocCount == 0 || (page.allocCount > 0 && page.allocType == VMA_SUBALLOCATION_TYPE_FREE))
         page.allocType = allocType;
 
     ++page.allocCount;
@@ -10467,7 +10475,7 @@ public:
     uint32_t GetAlgorithm() const { return m_Algorithm; }
     bool HasExplicitBlockSize() const { return m_ExplicitBlockSize; }
     float GetPriority() const { return m_Priority; }
-    void* const GetAllocationNextPtr() const { return m_pMemoryAllocateNext; }
+    void* GetAllocationNextPtr() const { return m_pMemoryAllocateNext; }
 
     VkResult CreateMinBlocks();
     void AddPoolStats(VmaPoolStats* pStats);
@@ -10763,7 +10771,7 @@ private:
 
         struct FreeSpace
         {
-            size_t blockInfoIndex; // SIZE_MAX means this structure is invalid.
+            size_t blockInfoIndex; // SIZE_MAX means this structure is invalid. 
             VkDeviceSize offset;
             VkDeviceSize size;
         } m_FreeSpaces[MAX_COUNT];
@@ -10896,12 +10904,13 @@ struct VmaPool_T
     friend struct VmaPoolListItemTraits;
     VMA_CLASS_NO_COPY(VmaPool_T)
 public:
-    VmaBlockVector* m_pBlockVectors[VK_MAX_MEMORY_TYPES];
-    VmaDedicatedAllocationList m_DedicatedAllocations[VK_MAX_MEMORY_TYPES];
+    VmaBlockVector m_BlockVector;
+    VmaDedicatedAllocationList m_DedicatedAllocations;
 
     VmaPool_T(
         VmaAllocator hAllocator,
-        const VmaPoolCreateInfo& createInfo);
+        const VmaPoolCreateInfo& createInfo,
+        VkDeviceSize preferredBlockSize);
     ~VmaPool_T();
 
     uint32_t GetId() const { return m_Id; }
@@ -10915,7 +10924,6 @@ public:
 #endif
 
 private:
-    const VmaAllocator m_hAllocator;
     uint32_t m_Id;
     char* m_Name;
     VmaPool_T* m_PrevPool = VMA_NULL;
@@ -11063,7 +11071,7 @@ VmaVirtualBlock_T::VmaVirtualBlock_T(const VmaVirtualBlockCreateInfo& createInfo
     switch (algorithm)
     {
     case 0:
-        m_Metadata = vma_new(GetAllocationCallbacks(), VmaBlockMetadata_Generic)(VK_NULL_HANDLE, 1, true);
+        m_Metadata = vma_new(GetAllocationCallbacks(), VmaBlockMetadata_TLSF)(VK_NULL_HANDLE, 1, true);
         break;
     case VMA_VIRTUAL_BLOCK_CREATE_BUDDY_ALGORITHM_BIT:
         m_Metadata = vma_new(GetAllocationCallbacks(), VmaBlockMetadata_Buddy)(VK_NULL_HANDLE, 1, true);
@@ -11397,10 +11405,8 @@ private:
 
     void ValidateVulkanFunctions();
 
-public: // I'm sorry
     VkDeviceSize CalcPreferredBlockSize(uint32_t memTypeIndex);
 
-private:
     VkResult AllocateMemoryOfType(
         VmaPool pool,
         VkDeviceSize size,
@@ -11573,7 +11579,7 @@ void VmaDeviceMemoryBlock::Init(
         VMA_ASSERT(0);
         // Fall-through.
     case 0:
-        m_pMetadata = vma_new(hAllocator, VmaBlockMetadata_Generic)(hAllocator->GetAllocationCallbacks(),
+        m_pMetadata = vma_new(hAllocator, VmaBlockMetadata_TLSF)(hAllocator->GetAllocationCallbacks(),
             bufferImageGranularity, false); // isVirtual
     }
     m_pMetadata->Init(newSize);
@@ -14170,36 +14176,30 @@ void VmaDefragmentationContext_T::AddPools(uint32_t poolCount, const VmaPool* pP
     {
         VmaPool pool = pPools[poolIndex];
         VMA_ASSERT(pool);
-        for(uint32_t memTypeIndex = 0; memTypeIndex < m_hAllocator->GetMemoryTypeCount(); ++memTypeIndex)
+        // Pools with algorithm other than default are not defragmented.
+        if (pool->m_BlockVector.GetAlgorithm() == 0)
         {
-            if(pool->m_pBlockVectors[memTypeIndex])
+            VmaBlockVectorDefragmentationContext* pBlockVectorDefragCtx = VMA_NULL;
+
+            for (size_t i = m_CustomPoolContexts.size(); i--; )
             {
-                // Pools with algorithm other than default are not defragmented.
-                if (pool->m_pBlockVectors[memTypeIndex]->GetAlgorithm() == 0)
+                if (m_CustomPoolContexts[i]->GetCustomPool() == pool)
                 {
-                    VmaBlockVectorDefragmentationContext* pBlockVectorDefragCtx = VMA_NULL;
-
-                    for (size_t i = m_CustomPoolContexts.size(); i--; )
-                    {
-                        if (m_CustomPoolContexts[i]->GetCustomPool() == pool)
-                        {
-                            pBlockVectorDefragCtx = m_CustomPoolContexts[i];
-                            break;
-                        }
-                    }
-
-                    if (!pBlockVectorDefragCtx)
-                    {
-                        pBlockVectorDefragCtx = vma_new(m_hAllocator, VmaBlockVectorDefragmentationContext)(
-                            m_hAllocator,
-                            pool,
-                            pool->m_pBlockVectors[memTypeIndex]);
-                        m_CustomPoolContexts.push_back(pBlockVectorDefragCtx);
-                    }
-
-                    pBlockVectorDefragCtx->AddAll();
+                    pBlockVectorDefragCtx = m_CustomPoolContexts[i];
+                    break;
                 }
             }
+
+            if (!pBlockVectorDefragCtx)
+            {
+                pBlockVectorDefragCtx = vma_new(m_hAllocator, VmaBlockVectorDefragmentationContext)(
+                    m_hAllocator,
+                    pool,
+                    &pool->m_BlockVector);
+                m_CustomPoolContexts.push_back(pBlockVectorDefragCtx);
+            }
+
+            pBlockVectorDefragCtx->AddAll();
         }
     }
 }
@@ -14214,7 +14214,6 @@ void VmaDefragmentationContext_T::AddAllocations(
     {
         const VmaAllocation hAlloc = pAllocations[allocIndex];
         VMA_ASSERT(hAlloc);
-        const uint32_t memTypeIndex = hAlloc->GetMemoryTypeIndex();
         // DedicatedAlloc cannot be defragmented.
         if (hAlloc->GetType() == VmaAllocation_T::ALLOCATION_TYPE_BLOCK)
         {
@@ -14225,7 +14224,7 @@ void VmaDefragmentationContext_T::AddAllocations(
             if (hAllocPool != VK_NULL_HANDLE)
             {
                 // Pools with algorithm other than default are not defragmented.
-                if (hAllocPool->m_pBlockVectors[memTypeIndex]->GetAlgorithm() == 0)
+                if (hAllocPool->m_BlockVector.GetAlgorithm() == 0)
                 {
                     for (size_t i = m_CustomPoolContexts.size(); i--; )
                     {
@@ -14240,7 +14239,7 @@ void VmaDefragmentationContext_T::AddAllocations(
                         pBlockVectorDefragCtx = vma_new(m_hAllocator, VmaBlockVectorDefragmentationContext)(
                             m_hAllocator,
                             hAllocPool,
-                            hAllocPool->m_pBlockVectors[memTypeIndex]);
+                            &hAllocPool->m_BlockVector);
                         m_CustomPoolContexts.push_back(pBlockVectorDefragCtx);
                     }
                 }
@@ -14248,6 +14247,7 @@ void VmaDefragmentationContext_T::AddAllocations(
             // This allocation belongs to default pool.
             else
             {
+                const uint32_t memTypeIndex = hAlloc->GetMemoryTypeIndex();
                 pBlockVectorDefragCtx = m_DefaultPoolContexts[memTypeIndex];
                 if (!pBlockVectorDefragCtx)
                 {
@@ -14481,61 +14481,41 @@ VkResult VmaDefragmentationContext_T::DefragmentPassEnd()
 #ifndef _VMA_POOL_T_FUNCTIONS
 VmaPool_T::VmaPool_T(
     VmaAllocator hAllocator,
-    const VmaPoolCreateInfo& createInfo) :
-    m_hAllocator(hAllocator),
-    m_pBlockVectors{},
+    const VmaPoolCreateInfo& createInfo,
+    VkDeviceSize preferredBlockSize)
+    : m_BlockVector(
+        hAllocator,
+        this, // hParentPool
+        createInfo.memoryTypeIndex,
+        createInfo.blockSize != 0 ? createInfo.blockSize : preferredBlockSize,
+        createInfo.minBlockCount,
+        createInfo.maxBlockCount,
+        (createInfo.flags& VMA_POOL_CREATE_IGNORE_BUFFER_IMAGE_GRANULARITY_BIT) != 0 ? 1 : hAllocator->GetBufferImageGranularity(),
+        createInfo.blockSize != 0, // explicitBlockSize
+        createInfo.flags & VMA_POOL_CREATE_ALGORITHM_MASK, // algorithm
+        createInfo.priority,
+        VMA_MAX(hAllocator->GetMemoryTypeMinAlignment(createInfo.memoryTypeIndex), createInfo.minAllocationAlignment),
+        createInfo.pMemoryAllocateNext),
     m_Id(0),
-    m_Name(VMA_NULL)
-{
-    for(uint32_t memTypeIndex = 0; memTypeIndex < hAllocator->GetMemoryTypeCount(); ++memTypeIndex)
-    {
-        // Create only supported types
-        if((hAllocator->GetGlobalMemoryTypeBits() & (1u << memTypeIndex)) != 0)
-        {
-            m_pBlockVectors[memTypeIndex] = vma_new(hAllocator, VmaBlockVector)(
-                hAllocator,
-                this, // hParentPool
-                memTypeIndex,
-                createInfo.blockSize != 0 ? createInfo.blockSize : hAllocator->CalcPreferredBlockSize(memTypeIndex),
-                createInfo.minBlockCount,
-                createInfo.maxBlockCount,
-                (createInfo.flags& VMA_POOL_CREATE_IGNORE_BUFFER_IMAGE_GRANULARITY_BIT) != 0 ? 1 : hAllocator->GetBufferImageGranularity(),
-                false, // explicitBlockSize
-                createInfo.flags & VMA_POOL_CREATE_ALGORITHM_MASK, // algorithm
-                createInfo.priority,
-                VMA_MAX(hAllocator->GetMemoryTypeMinAlignment(memTypeIndex), createInfo.minAllocationAlignment),
-                createInfo.pMemoryAllocateNext);
-        }
-    }
-}
+    m_Name(VMA_NULL) {}
 
 VmaPool_T::~VmaPool_T()
 {
     VMA_ASSERT(m_PrevPool == VMA_NULL && m_NextPool == VMA_NULL);
-    for(uint32_t memTypeIndex = 0; memTypeIndex < m_hAllocator->GetMemoryTypeCount(); ++memTypeIndex)
-    {
-        vma_delete(m_hAllocator, m_pBlockVectors[memTypeIndex]);
-    }
 }
 
 void VmaPool_T::SetName(const char* pName)
 {
-    for(uint32_t memTypeIndex = 0; memTypeIndex < m_hAllocator->GetMemoryTypeCount(); ++memTypeIndex)
-    {
-        if(m_pBlockVectors[memTypeIndex])
-        {
-            const VkAllocationCallbacks* allocs = m_pBlockVectors[memTypeIndex]->GetAllocator()->GetAllocationCallbacks();
-            VmaFreeString(allocs, m_Name);
+    const VkAllocationCallbacks* allocs = m_BlockVector.GetAllocator()->GetAllocationCallbacks();
+    VmaFreeString(allocs, m_Name);
 
-            if (pName != VMA_NULL)
-            {
-                m_Name = VmaCreateStringCopy(allocs, pName);
-            }
-            else
-            {
-                m_Name = VMA_NULL;
-            }
-        }
+    if (pName != VMA_NULL)
+    {
+        m_Name = VmaCreateStringCopy(allocs, pName);
+    }
+    else
+    {
+        m_Name = VMA_NULL;
     }
 }
 #endif // _VMA_POOL_T_FUNCTIONS
@@ -15397,22 +15377,15 @@ VkResult VmaAllocator_T::CalcAllocationParams(
         inoutCreateInfo.flags |= VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
     }
 
-    if(inoutCreateInfo.pool != VK_NULL_HANDLE && (inoutCreateInfo.flags & VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT) != 0)
+    if(inoutCreateInfo.pool != VK_NULL_HANDLE)
     {
-        // Assuming here every block has the same block size and priority.
-        for(uint32_t memTypeIndex = 0; memTypeIndex < GetMemoryTypeCount(); ++memTypeIndex)
+        if(inoutCreateInfo.pool->m_BlockVector.HasExplicitBlockSize() &&
+            (inoutCreateInfo.flags & VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT) != 0)
         {
-            if(inoutCreateInfo.pool->m_pBlockVectors[memTypeIndex])
-            {
-                if(inoutCreateInfo.pool->m_pBlockVectors[memTypeIndex]->HasExplicitBlockSize())
-                {
-                    VMA_ASSERT(0 && "Specifying VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT while current custom pool doesn't support dedicated allocations.");
-                    return VK_ERROR_FEATURE_NOT_PRESENT;
-                }
-                inoutCreateInfo.priority = inoutCreateInfo.pool->m_pBlockVectors[memTypeIndex]->GetPriority();
-                break;
-            }
+            VMA_ASSERT(0 && "Specifying VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT while current custom pool doesn't support dedicated allocations.");
+            return VK_ERROR_FEATURE_NOT_PRESENT;
         }
+        inoutCreateInfo.priority = inoutCreateInfo.pool->m_BlockVector.GetPriority();
     }
 
     if((inoutCreateInfo.flags & VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT) != 0 &&
@@ -15456,46 +15429,67 @@ VkResult VmaAllocator_T::AllocateMemory(
     if(res != VK_SUCCESS)
         return res;
 
-    // Bit mask of memory Vulkan types acceptable for this allocation.
-    uint32_t memoryTypeBits = vkMemReq.memoryTypeBits;
-    uint32_t memTypeIndex = UINT32_MAX;
-    res = vmaFindMemoryTypeIndex(this, memoryTypeBits, &createInfoFinal, &memTypeIndex);
-    // Can't find any single memory type matching requirements. res is VK_ERROR_FEATURE_NOT_PRESENT.
-    if(res != VK_SUCCESS)
-        return res;
-    do
+    if(createInfoFinal.pool != VK_NULL_HANDLE)
     {
-        VmaBlockVector* blockVector = createInfoFinal.pool == VK_NULL_HANDLE ? m_pBlockVectors[memTypeIndex] : createInfoFinal.pool->m_pBlockVectors[memTypeIndex];
-        VMA_ASSERT(blockVector && "Trying to use unsupported memory type!");
-        VmaDedicatedAllocationList& dedicatedAllocations = createInfoFinal.pool == VK_NULL_HANDLE ? m_DedicatedAllocations[memTypeIndex] : createInfoFinal.pool->m_DedicatedAllocations[memTypeIndex];
-        res = AllocateMemoryOfType(
+        VmaBlockVector& blockVector = createInfoFinal.pool->m_BlockVector;
+        return AllocateMemoryOfType(
             createInfoFinal.pool,
             vkMemReq.size,
             vkMemReq.alignment,
-            requiresDedicatedAllocation || prefersDedicatedAllocation,
+            prefersDedicatedAllocation,
             dedicatedBuffer,
             dedicatedBufferUsage,
             dedicatedImage,
             createInfoFinal,
-            memTypeIndex,
+            blockVector.GetMemoryTypeIndex(),
             suballocType,
-            dedicatedAllocations,
-            *blockVector,
+            createInfoFinal.pool->m_DedicatedAllocations,
+            blockVector,
             allocationCount,
             pAllocations);
-        // Allocation succeeded
-        if(res == VK_SUCCESS)
-            return VK_SUCCESS;
-
-        // Remove old memTypeIndex from list of possibilities.
-        memoryTypeBits &= ~(1u << memTypeIndex);
-        // Find alternative memTypeIndex.
+    }
+    else
+    {
+        // Bit mask of memory Vulkan types acceptable for this allocation.
+        uint32_t memoryTypeBits = vkMemReq.memoryTypeBits;
+        uint32_t memTypeIndex = UINT32_MAX;
         res = vmaFindMemoryTypeIndex(this, memoryTypeBits, &createInfoFinal, &memTypeIndex);
-    } while(res == VK_SUCCESS);
+        // Can't find any single memory type matching requirements. res is VK_ERROR_FEATURE_NOT_PRESENT.
+        if(res != VK_SUCCESS)
+            return res;
+        do
+        {
+            VmaBlockVector* blockVector = m_pBlockVectors[memTypeIndex];
+            VMA_ASSERT(blockVector && "Trying to use unsupported memory type!");
+            res = AllocateMemoryOfType(
+                VK_NULL_HANDLE,
+                vkMemReq.size,
+                vkMemReq.alignment,
+                requiresDedicatedAllocation || prefersDedicatedAllocation,
+                dedicatedBuffer,
+                dedicatedBufferUsage,
+                dedicatedImage,
+                createInfoFinal,
+                memTypeIndex,
+                suballocType,
+                m_DedicatedAllocations[memTypeIndex],
+                *blockVector,
+                allocationCount,
+                pAllocations);
+            // Allocation succeeded
+            if(res == VK_SUCCESS)
+                return VK_SUCCESS;
 
-    // No other matching memory type index could be found.
-    // Not returning res, which is VK_ERROR_FEATURE_NOT_PRESENT, because we already failed to allocate once.
-    return VK_ERROR_OUT_OF_DEVICE_MEMORY;
+            // Remove old memTypeIndex from list of possibilities.
+            memoryTypeBits &= ~(1u << memTypeIndex);
+            // Find alternative memTypeIndex.
+            res = vmaFindMemoryTypeIndex(this, memoryTypeBits, &createInfoFinal, &memTypeIndex);
+        } while(res == VK_SUCCESS);
+
+        // No other matching memory type index could be found.
+        // Not returning res, which is VK_ERROR_FEATURE_NOT_PRESENT, because we already failed to allocate once.
+        return VK_ERROR_OUT_OF_DEVICE_MEMORY;
+    }
 }
 
 void VmaAllocator_T::FreeMemory(
@@ -15521,16 +15515,16 @@ void VmaAllocator_T::FreeMemory(
                 {
                     VmaBlockVector* pBlockVector = VMA_NULL;
                     VmaPool hPool = allocation->GetParentPool();
-                    const uint32_t memTypeIndex = allocation->GetMemoryTypeIndex();
                     if(hPool != VK_NULL_HANDLE)
                     {
-                        pBlockVector = hPool->m_pBlockVectors[memTypeIndex];
+                        pBlockVector = &hPool->m_BlockVector;
                     }
                     else
                     {
+                        const uint32_t memTypeIndex = allocation->GetMemoryTypeIndex();
                         pBlockVector = m_pBlockVectors[memTypeIndex];
+                        VMA_ASSERT(pBlockVector && "Trying to free memory of unsupported type!");
                     }
-                    VMA_ASSERT(pBlockVector && "Trying to free memory of unsupported type!");
                     pBlockVector->Free(allocation);
                 }
                 break;
@@ -15570,17 +15564,11 @@ void VmaAllocator_T::CalculateStats(VmaStats* pStats)
         VmaMutexLockRead lock(m_PoolsMutex, m_UseMutex);
         for(VmaPool pool = m_Pools.Front(); pool != VMA_NULL; pool = m_Pools.GetNext(pool))
         {
-            for(uint32_t memTypeIndex = 0; memTypeIndex < GetMemoryTypeCount(); ++memTypeIndex)
-            {
-                if (pool->m_pBlockVectors[memTypeIndex])
-                {
-                    VmaBlockVector& blockVector = *pool->m_pBlockVectors[memTypeIndex];
-                    blockVector.AddStats(pStats);
-                    const uint32_t memTypeIndex = blockVector.GetMemoryTypeIndex();
-                    const uint32_t memHeapIndex = MemoryTypeIndexToHeapIndex(memTypeIndex);
-                    pool->m_DedicatedAllocations[memTypeIndex].AddStats(pStats, memTypeIndex, memHeapIndex);
-                }
-            }
+            VmaBlockVector& blockVector = pool->m_BlockVector;
+            blockVector.AddStats(pStats);
+            const uint32_t memTypeIndex = blockVector.GetMemoryTypeIndex();
+            const uint32_t memHeapIndex = MemoryTypeIndexToHeapIndex(memTypeIndex);
+            pool->m_DedicatedAllocations.AddStats(pStats, memTypeIndex, memHeapIndex);
         }
     }
 
@@ -15732,26 +15720,27 @@ VkResult VmaAllocator_T::CreatePool(const VmaPoolCreateInfo* pCreateInfo, VmaPoo
     {
         return VK_ERROR_INITIALIZATION_FAILED;
     }
+    // Memory type index out of range or forbidden.
+    if(pCreateInfo->memoryTypeIndex >= GetMemoryTypeCount() ||
+        ((1u << pCreateInfo->memoryTypeIndex) & m_GlobalMemoryTypeBits) == 0)
+    {
+        return VK_ERROR_FEATURE_NOT_PRESENT;
+    }
     if(newCreateInfo.minAllocationAlignment > 0)
     {
         VMA_ASSERT(VmaIsPow2(newCreateInfo.minAllocationAlignment));
     }
 
-    *pPool = vma_new(this, VmaPool_T)(this, newCreateInfo);
+    const VkDeviceSize preferredBlockSize = CalcPreferredBlockSize(newCreateInfo.memoryTypeIndex);
 
-    for(uint32_t memTypeIndex = 0; memTypeIndex < GetMemoryTypeCount(); ++memTypeIndex)
+    *pPool = vma_new(this, VmaPool_T)(this, newCreateInfo, preferredBlockSize);
+
+    VkResult res = (*pPool)->m_BlockVector.CreateMinBlocks();
+    if(res != VK_SUCCESS)
     {
-        // Create only supported types
-        if((m_GlobalMemoryTypeBits & (1u << memTypeIndex)) != 0)
-        {
-            VkResult res = (*pPool)->m_pBlockVectors[memTypeIndex]->CreateMinBlocks();
-            if(res != VK_SUCCESS)
-            {
-                vma_delete(this, *pPool);
-                *pPool = VMA_NULL;
-                return res;
-            }
-        }
+        vma_delete(this, *pPool);
+        *pPool = VMA_NULL;
+        return res;
     }
 
     // Add to m_Pools.
@@ -15783,14 +15772,8 @@ void VmaAllocator_T::GetPoolStats(VmaPool pool, VmaPoolStats* pPoolStats)
     pPoolStats->unusedRangeCount = 0;
     pPoolStats->blockCount = 0;
 
-    for(uint32_t memTypeIndex = 0; memTypeIndex < GetMemoryTypeCount(); ++memTypeIndex)
-    {
-        if((m_GlobalMemoryTypeBits & (1u << memTypeIndex)) != 0)
-        {
-            pool->m_pBlockVectors[memTypeIndex]->AddPoolStats(pPoolStats);
-            pool->m_DedicatedAllocations[memTypeIndex].AddPoolStats(pPoolStats);
-        }
-    }
+    pool->m_BlockVector.AddPoolStats(pPoolStats);
+    pool->m_DedicatedAllocations.AddPoolStats(pPoolStats);
 }
 
 void VmaAllocator_T::SetCurrentFrameIndex(uint32_t frameIndex)
@@ -15807,13 +15790,7 @@ void VmaAllocator_T::SetCurrentFrameIndex(uint32_t frameIndex)
 
 VkResult VmaAllocator_T::CheckPoolCorruption(VmaPool hPool)
 {
-    for(uint32_t memTypeIndex = 0; memTypeIndex < GetMemoryTypeCount(); ++memTypeIndex)
-    {
-        if((m_GlobalMemoryTypeBits & (1u << memTypeIndex)) != 0)
-        {
-            return hPool->m_pBlockVectors[memTypeIndex]->CheckCorruption();
-        }
-    }
+    return hPool->m_BlockVector.CheckCorruption();
 }
 
 VkResult VmaAllocator_T::CheckCorruption(uint32_t memoryTypeBits)
@@ -15845,21 +15822,18 @@ VkResult VmaAllocator_T::CheckCorruption(uint32_t memoryTypeBits)
         VmaMutexLockRead lock(m_PoolsMutex, m_UseMutex);
         for(VmaPool pool = m_Pools.Front(); pool != VMA_NULL; pool = m_Pools.GetNext(pool))
         {
-            for(uint32_t memTypeIndex = 0; memTypeIndex < GetMemoryTypeCount(); ++memTypeIndex)
+            if(((1u << pool->m_BlockVector.GetMemoryTypeIndex()) & memoryTypeBits) != 0)
             {
-                if(pool->m_pBlockVectors[memTypeIndex] && ((1u << memTypeIndex) & memoryTypeBits) != 0)
+                VkResult localRes = pool->m_BlockVector.CheckCorruption();
+                switch(localRes)
                 {
-                    VkResult localRes = pool->m_pBlockVectors[memTypeIndex]->CheckCorruption();
-                    switch(localRes)
-                    {
-                    case VK_ERROR_FEATURE_NOT_PRESENT:
-                        break;
-                    case VK_SUCCESS:
-                        finalRes = VK_SUCCESS;
-                        break;
-                    default:
-                        return localRes;
-                    }
+                case VK_ERROR_FEATURE_NOT_PRESENT:
+                    break;
+                case VK_SUCCESS:
+                    finalRes = VK_SUCCESS;
+                    break;
+                default:
+                    return localRes;
                 }
             }
         }
@@ -16181,7 +16155,7 @@ void VmaAllocator_T::FreeDedicatedMemory(const VmaAllocation allocation)
     else
     {
         // Custom pool
-        parentPool->m_DedicatedAllocations[memTypeIndex].Unregister(allocation);
+        parentPool->m_DedicatedAllocations.Unregister(allocation);
     }
 
     VkDeviceMemory hMemory = allocation->GetMemory();
@@ -16456,18 +16430,12 @@ void VmaAllocator_T::PrintDetailedMap(VmaJsonWriter& json)
                 json.EndString();
 
                 json.BeginObject();
-                for(uint32_t memTypeIndex = 0; memTypeIndex < GetMemoryTypeCount(); ++memTypeIndex)
-                {
-                    if (pool->m_pBlockVectors[memTypeIndex])
-                    {
-                        pool->m_pBlockVectors[memTypeIndex]->PrintDetailedMap(json);
-                    }
+                pool->m_BlockVector.PrintDetailedMap(json);
 
-                    if (!pool->m_DedicatedAllocations[memTypeIndex].IsEmpty())
-                    {
-                        json.WriteString("DedicatedAllocations");
-                        pool->m_DedicatedAllocations->BuildStatsString(json);
-                    }
+                if (!pool->m_DedicatedAllocations.IsEmpty())
+                {
+                    json.WriteString("DedicatedAllocations");
+                    pool->m_DedicatedAllocations.BuildStatsString(json);
                 }
                 json.EndObject();
             }
