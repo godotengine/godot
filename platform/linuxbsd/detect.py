@@ -21,15 +21,14 @@ def can_build():
         print("Error: pkg-config not found. Aborting.")
         return False
 
-# TODO: Make X11 and Wayland coesist peacefully.
-#    if env["x11"]:
-#        return check_x11_dependencies()
-#
-#    if env["wayland"]:
-#        return check_wayland_dependencies()
-#
+    # TODO: Make X11 and Wayland coesist peacefully.
+    #    if env["x11"]:
+    #        return check_x11_dependencies()
+    #
+    #    if env["wayland"]:
+    #        return check_wayland_dependencies()
+    #
     return True
-
 
 
 def check_x11_dependencies():
@@ -70,6 +69,7 @@ def check_x11_dependencies():
 
     return True
 
+
 def check_wayland_dependencies():
     wayland_error = os.system("pkg-config wayland-client --modversion > /dev/null")
     if wayland_error:
@@ -93,10 +93,11 @@ def check_wayland_dependencies():
 
     wayland_error = os.system("pkg-config xkbcommon --modversion > /dev/null")
     if wayland_error:
-            print("Error: xkbcommon library not found. Aborting.")
-            return False
+        print("Error: xkbcommon library not found. Aborting.")
+        return False
 
     return True
+
 
 def get_opts():
     from SCons.Variables import BoolVariable, EnumVariable
@@ -258,13 +259,13 @@ def configure(env):
 
     ## Dependencies
 
-    #env.ParseConfig("pkg-config x11 --cflags --libs")
-    #env.ParseConfig("pkg-config xcursor --cflags --libs")
-    #env.ParseConfig("pkg-config xinerama --cflags --libs")
-    #env.ParseConfig("pkg-config xext --cflags --libs")
-    #env.ParseConfig("pkg-config xrandr --cflags --libs")
-    #env.ParseConfig("pkg-config xrender --cflags --libs")
-    #env.ParseConfig("pkg-config xi --cflags --libs")
+    # env.ParseConfig("pkg-config x11 --cflags --libs")
+    # env.ParseConfig("pkg-config xcursor --cflags --libs")
+    # env.ParseConfig("pkg-config xinerama --cflags --libs")
+    # env.ParseConfig("pkg-config xext --cflags --libs")
+    # env.ParseConfig("pkg-config xrandr --cflags --libs")
+    # env.ParseConfig("pkg-config xrender --cflags --libs")
+    # env.ParseConfig("pkg-config xi --cflags --libs")
 
     env.ParseConfig("pkg-config wayland-client --cflags --libs")
     env.ParseConfig("pkg-config xkbcommon --cflags --libs")
@@ -439,8 +440,8 @@ def configure(env):
             env.Append(LIBS=["glslang", "SPIRV"])
 
     # TODO: Make this work, maybe reporting a missing conditional
-    #env.Append(CPPDEFINES=["GLES3_ENABLED"])
-    #env.Append(LIBS=["GL"])
+    # env.Append(CPPDEFINES=["GLES3_ENABLED"])
+    # env.Append(LIBS=["GL"])
 
     env.Append(LIBS=["pthread"])
 
