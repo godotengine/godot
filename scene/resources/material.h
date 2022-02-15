@@ -126,7 +126,6 @@ public:
 		TEXTURE_DETAIL_ALBEDO,
 		TEXTURE_DETAIL_NORMAL,
 		TEXTURE_MAX
-
 	};
 
 	enum DetailUV {
@@ -255,6 +254,7 @@ private:
 			uint64_t grow : 1;
 			uint64_t proximity_fade : 1;
 			uint64_t distance_fade : 2;
+            uint64_t clip_plane : 1;
 			uint64_t emission_op : 1;
 			uint64_t texture_metallic : 1;
 			uint64_t texture_roughness : 1;
@@ -301,6 +301,7 @@ private:
 		mk.grow = grow_enabled;
 		mk.proximity_fade = proximity_fade_enabled;
 		mk.distance_fade = distance_fade;
+        mk.clip_plane = clip_plane_enabled;
 		mk.emission_op = emission_op;
 		mk.texture_metallic = textures[TEXTURE_METALLIC].is_valid() ? 1 : 0;
 		mk.texture_roughness = textures[TEXTURE_ROUGHNESS].is_valid() ? 1 : 0;
@@ -342,6 +343,7 @@ private:
 		StringName proximity_fade_distance;
 		StringName distance_fade_min;
 		StringName distance_fade_max;
+        StringName clip_plane;
 		StringName ao_light_affect;
 
 		StringName metallic_texture_channel;
@@ -415,6 +417,9 @@ private:
 	DistanceFadeMode distance_fade;
 	float distance_fade_max_distance;
 	float distance_fade_min_distance;
+
+    bool clip_plane_enabled;
+    Plane clip_plane;
 
 	BlendMode blend_mode;
 	BlendMode detail_blend_mode;
@@ -609,6 +614,12 @@ public:
 
 	void set_distance_fade_min_distance(float p_distance);
 	float get_distance_fade_min_distance() const;
+    
+    void set_clip_plane(bool p_enable);
+    bool is_clip_plane_enabled() const;
+
+    void set_clipping_plane(Plane p_clip_plane);
+    Plane get_clipping_plane() const;
 
 	void set_emission_operator(EmissionOperator p_op);
 	EmissionOperator get_emission_operator() const;

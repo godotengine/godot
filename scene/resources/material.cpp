@@ -320,6 +320,8 @@ void SpatialMaterial::init_shaders() {
 	shader_names->distance_fade_min = "distance_fade_min";
 	shader_names->distance_fade_max = "distance_fade_max";
 
+    shader_names->clip_plane = "clip_plane";
+
 	shader_names->metallic_texture_channel = "metallic_texture_channel";
 	shader_names->roughness_texture_channel = "roughness_texture_channel";
 	shader_names->ao_texture_channel = "ao_texture_channel";
@@ -739,8 +741,27 @@ void SpatialMaterial::_update_shader() {
 		code += "\treturn samp;\n";
 		code += "}\n";
 	}
+
+    code += "\n\n";
+    if (clip_plane_enabled) {
+        code += "uniform vec4 clip_plane;\n";
+        code += "bool clip(vec3 p_vertex, mat4 p_camera_matrix) {\n";
+        code += "\tvec3 pos = (p_camera_matrix * vec4(p_vertex, 1.0)).xyz;\n";
+        code += "\treturn (\n";
+        code += "\t\tclip_plane.x * pos.x +\n";
+        code += "\t\tclip_plane.y * pos.y +\n";
+        code += "\t\tclip_plane.z * pos.z +\n";
+        code += "\t\tclip_plane.w\n";
+        code += "\t) < 0.0;\n";
+        code += "}\n";
+    }
+
 	code += "\n\n";
 	code += "void fragment() {\n";
+
+    if (clip_plane_enabled) {
+        code += "\tif (clip(VERTEX, CAMERA_MATRIX)) {discard;}\n";
+    }
 
 	if (!flags[FLAG_UV1_USE_TRIPLANAR]) {
 		code += "\tvec2 base_uv = UV;\n";
@@ -1801,6 +1822,25 @@ float SpatialMaterial::get_distance_fade_min_distance() const {
 	return distance_fade_min_distance;
 }
 
+void SpatialMaterial::set_clip_plane(bool p_enable) {
+    clip_plane_enabled = p_enable;
+	_queue_shader_change();
+	_change_notify();
+}
+
+bool SpatialMaterial::is_clip_plane_enabled() const {
+    return clip_plane_enabled;
+}
+
+void SpatialMaterial::set_clipping_plane(Plane p_clip_plane) {
+    clip_plane = p_clip_plane;
+    VS::get_singleton()->material_set_param(_get_material(), shader_names->clip_plane, p_clip_plane);
+}
+
+Plane SpatialMaterial::get_clipping_plane() const {
+    return clip_plane;
+}
+
 void SpatialMaterial::set_emission_operator(EmissionOperator p_op) {
 	if (emission_op == p_op) {
 		return;
@@ -1994,6 +2034,12 @@ void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_distance_fade_min_distance", "distance"), &SpatialMaterial::set_distance_fade_min_distance);
 	ClassDB::bind_method(D_METHOD("get_distance_fade_min_distance"), &SpatialMaterial::get_distance_fade_min_distance);
 
+    ClassDB::bind_method(D_METHOD("set_clip_plane", "enabled"), &SpatialMaterial::set_clip_plane);
+    ClassDB::bind_method(D_METHOD("is_clip_plane_enabled"), &SpatialMaterial::is_clip_plane_enabled);
+
+    ClassDB::bind_method(D_METHOD("set_clipping_plane", "clip_plane"), &SpatialMaterial::set_clipping_plane);
+    ClassDB::bind_method(D_METHOD("get_clipping_plane"), &SpatialMaterial::get_clipping_plane);
+
 	ADD_GROUP("Flags", "flags_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_transparent"), "set_feature", "get_feature", FEATURE_TRANSPARENT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_use_shadow_to_opacity"), "set_flag", "get_flag", FLAG_USE_SHADOW_TO_OPACITY);
@@ -2115,6 +2161,10 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "detail_uv_layer", PROPERTY_HINT_ENUM, "UV1,UV2"), "set_detail_uv", "get_detail_uv");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "detail_albedo", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_DETAIL_ALBEDO);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "detail_normal", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_DETAIL_NORMAL);
+
+    ADD_GROUP("Clip Plane", "clip_plane_");
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_plane_enabled"), "set_clip_plane", "is_clip_plane_enabled");
+    ADD_PROPERTY(PropertyInfo(Variant::PLANE, "clip_plane"), "set_clipping_plane", "get_clipping_plane");
 
 	ADD_GROUP("UV1", "uv1_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv1_scale"), "set_uv1_scale", "get_uv1_scale");
@@ -2277,6 +2327,9 @@ SpatialMaterial::SpatialMaterial() :
 	set_proximity_fade_distance(1);
 	set_distance_fade_min_distance(0);
 	set_distance_fade_max_distance(10);
+
+    clip_plane_enabled = false;
+    set_clipping_plane(Plane(0.0, 0.0, 0.0, 0.0));
 
 	set_ao_light_affect(0.0);
 
