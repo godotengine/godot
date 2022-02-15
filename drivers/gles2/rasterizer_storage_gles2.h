@@ -1356,7 +1356,8 @@ public:
 	virtual String get_video_adapter_name() const;
 	virtual String get_video_adapter_vendor() const;
 
-	void buffer_orphan_and_upload(unsigned int p_buffer_size, unsigned int p_offset, unsigned int p_data_size, const void *p_data, GLenum p_target = GL_ARRAY_BUFFER, GLenum p_usage = GL_DYNAMIC_DRAW, bool p_optional_orphan = false) const;
+	// NOTE : THESE SIZES ARE IN BYTES. BUFFER SIZES MAY NOT BE SPECIFIED IN BYTES SO REMEMBER TO CONVERT THEM WHEN CALLING.
+	void buffer_orphan_and_upload(unsigned int p_buffer_size_bytes, unsigned int p_offset_bytes, unsigned int p_data_size_bytes, const void *p_data, GLenum p_target = GL_ARRAY_BUFFER, GLenum p_usage = GL_DYNAMIC_DRAW, bool p_optional_orphan = false) const;
 	bool safe_buffer_sub_data(unsigned int p_total_buffer_size, GLenum p_target, unsigned int p_offset, unsigned int p_data_size, const void *p_data, unsigned int &r_offset_after) const;
 
 	RasterizerStorageGLES2();
@@ -1376,17 +1377,18 @@ inline bool RasterizerStorageGLES2::safe_buffer_sub_data(unsigned int p_total_bu
 
 // standardize the orphan / upload in one place so it can be changed per platform as necessary, and avoid future
 // bugs causing pipeline stalls
-inline void RasterizerStorageGLES2::buffer_orphan_and_upload(unsigned int p_buffer_size, unsigned int p_offset, unsigned int p_data_size, const void *p_data, GLenum p_target, GLenum p_usage, bool p_optional_orphan) const {
+// NOTE : THESE SIZES ARE IN BYTES. BUFFER SIZES MAY NOT BE SPECIFIED IN BYTES SO REMEMBER TO CONVERT THEM WHEN CALLING.
+inline void RasterizerStorageGLES2::buffer_orphan_and_upload(unsigned int p_buffer_size_bytes, unsigned int p_offset_bytes, unsigned int p_data_size_bytes, const void *p_data, GLenum p_target, GLenum p_usage, bool p_optional_orphan) const {
 	// Orphan the buffer to avoid CPU/GPU sync points caused by glBufferSubData
 	// Was previously #ifndef GLES_OVER_GL however this causes stalls on desktop mac also (and possibly other)
 	if (!p_optional_orphan || (config.should_orphan)) {
-		glBufferData(p_target, p_buffer_size, nullptr, p_usage);
+		glBufferData(p_target, p_buffer_size_bytes, nullptr, p_usage);
 #ifdef RASTERIZER_EXTRA_CHECKS
 		// fill with garbage off the end of the array
-		if (p_buffer_size) {
-			unsigned int start = p_offset + p_data_size;
+		if (p_buffer_size_bytes) {
+			unsigned int start = p_offset_bytes + p_data_size_bytes;
 			unsigned int end = start + 1024;
-			if (end < p_buffer_size) {
+			if (end < p_buffer_size_bytes) {
 				uint8_t *garbage = (uint8_t *)alloca(1024);
 				for (int n = 0; n < 1024; n++) {
 					garbage[n] = Math::random(0, 255);
@@ -1396,8 +1398,8 @@ inline void RasterizerStorageGLES2::buffer_orphan_and_upload(unsigned int p_buff
 		}
 #endif
 	}
-	DEV_ASSERT((p_offset + p_data_size) <= p_buffer_size);
-	glBufferSubData(p_target, p_offset, p_data_size, p_data);
+	ERR_FAIL_COND((p_offset_bytes + p_data_size_bytes) > p_buffer_size_bytes);
+	glBufferSubData(p_target, p_offset_bytes, p_data_size_bytes, p_data);
 }
 
 #endif // RASTERIZERSTORAGEGLES2_H
