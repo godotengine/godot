@@ -1163,25 +1163,25 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 	if (k.is_valid()) {
 		if (k->is_pressed()) {
 			if (ED_GET_SHORTCUT("canvas_item_editor/zoom_3.125_percent")->matches_event(p_event)) {
-				_update_zoom((1.0 / 32.0) * MAX(1, EDSCALE));
+				_shortcut_zoom_set(1.0 / 32.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_6.25_percent")->matches_event(p_event)) {
-				_update_zoom((1.0 / 16.0) * MAX(1, EDSCALE));
+				_shortcut_zoom_set(1.0 / 16.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_12.5_percent")->matches_event(p_event)) {
-				_update_zoom((1.0 / 8.0) * MAX(1, EDSCALE));
+				_shortcut_zoom_set(1.0 / 8.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_25_percent")->matches_event(p_event)) {
-				_update_zoom((1.0 / 4.0) * MAX(1, EDSCALE));
+				_shortcut_zoom_set(1.0 / 4.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_50_percent")->matches_event(p_event)) {
-				_update_zoom((1.0 / 2.0) * MAX(1, EDSCALE));
+				_shortcut_zoom_set(1.0 / 2.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_100_percent")->matches_event(p_event)) {
-				_update_zoom(1.0 * MAX(1, EDSCALE));
+				_shortcut_zoom_set(1.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_200_percent")->matches_event(p_event)) {
-				_update_zoom(2.0 * MAX(1, EDSCALE));
+				_shortcut_zoom_set(2.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_400_percent")->matches_event(p_event)) {
-				_update_zoom(4.0 * MAX(1, EDSCALE));
+				_shortcut_zoom_set(4.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_800_percent")->matches_event(p_event)) {
-				_update_zoom(8.0 * MAX(1, EDSCALE));
+				_shortcut_zoom_set(8.0);
 			} else if (ED_GET_SHORTCUT("canvas_item_editor/zoom_1600_percent")->matches_event(p_event)) {
-				_update_zoom(16.0 * MAX(1, EDSCALE));
+				_shortcut_zoom_set(16.0);
 			}
 		}
 	}
@@ -4008,6 +4008,10 @@ void CanvasItemEditor::_zoom_on_position(real_t p_zoom, Point2 p_position) {
 
 void CanvasItemEditor::_update_zoom(real_t p_zoom) {
 	_zoom_on_position(p_zoom, viewport_scrollable->get_size() / 2.0);
+}
+
+void CanvasItemEditor::_shortcut_zoom_set(real_t p_zoom) {
+	_zoom_on_position(p_zoom * MAX(1, EDSCALE), viewport->get_local_mouse_position());
 }
 
 void CanvasItemEditor::_button_toggle_smart_snap(bool p_status) {
