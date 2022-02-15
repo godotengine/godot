@@ -1328,15 +1328,30 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 			Rect2i rect = Rect2i(tile_map->world_to_map(drag_start_mouse_pos), tile_map->world_to_map(mpos) - tile_map->world_to_map(drag_start_mouse_pos)).abs();
 			rect.size += Vector2i(1, 1);
 
+			int picked_source = -1;
 			TypedArray<Vector2i> coords_array;
 			for (int x = rect.position.x; x < rect.get_end().x; x++) {
 				for (int y = rect.position.y; y < rect.get_end().y; y++) {
 					Vector2i coords = Vector2i(x, y);
-					if (tile_map->get_cell_source_id(tile_map_layer, coords) != TileSet::INVALID_SOURCE) {
+
+					int source = tile_map->get_cell_source_id(tile_map_layer, coords);
+					if (source != TileSet::INVALID_SOURCE) {
 						coords_array.push_back(coords);
+						if (picked_source == -1) {
+							picked_source = source;
+						} else if (picked_source != source) {
+							picked_source = -2;
+						}
 					}
 				}
 			}
+
+			if (picked_source >= 0) {
+				sources_list->set_current(picked_source);
+				sources_list->ensure_current_is_visible();
+				TilesEditorPlugin::get_singleton()->set_sources_lists_current(picked_source);
+			}
+
 			Ref<TileMapPattern> new_selection_pattern = tile_map->get_pattern(tile_map_layer, coords_array);
 			if (!new_selection_pattern->is_empty()) {
 				selection_pattern = new_selection_pattern;
