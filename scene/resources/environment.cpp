@@ -96,7 +96,9 @@ void Environment::set_ambient_light_energy(float p_energy) {
 	VS::get_singleton()->environment_set_ambient_light(environment, ambient_color, ambient_energy, ambient_sky_contribution);
 }
 void Environment::set_ambient_light_sky_contribution(float p_energy) {
-	ambient_sky_contribution = p_energy;
+	// Sky contribution values outside the [0.0; 1.0] range don't make sense and
+	// can result in negative colors.
+	ambient_sky_contribution = CLAMP(p_energy, 0.0, 1.0);
 	VS::get_singleton()->environment_set_ambient_light(environment, ambient_color, ambient_energy, ambient_sky_contribution);
 }
 
