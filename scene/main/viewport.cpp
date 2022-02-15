@@ -1714,7 +1714,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				if (gui.tooltip_popup) {
 					if (gui.tooltip_control) {
 						String tooltip = _gui_get_tooltip(over, gui.tooltip_control->get_global_transform().xform_inv(mpos));
-
+						tooltip = tooltip.strip_edges();
 						if (tooltip.length() == 0) {
 							_gui_cancel_tooltip();
 						} else if (gui.tooltip_label) {
