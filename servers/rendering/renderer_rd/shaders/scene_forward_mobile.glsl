@@ -793,7 +793,7 @@ void main() {
 			float fade = pow(1.0 - (uv_local.y > 0.0 ? uv_local.y : -uv_local.y), uv_local.y > 0.0 ? decals.data[decal_index].upper_fade : decals.data[decal_index].lower_fade);
 
 			if (decals.data[decal_index].normal_fade > 0.0) {
-				fade *= smoothstep(decals.data[decal_index].normal_fade, 1.0, dot(normal_interp, decals.data[decal_index].normal) * 0.5 + 0.5);
+				fade *= smoothstep(decals.data[decal_index].normal_fade, 1.0, dot(normal, decals.data[decal_index].normal) * 0.5 + 0.5);
 			}
 
 			//we need ddx/ddy for mipmaps, so simulate them
