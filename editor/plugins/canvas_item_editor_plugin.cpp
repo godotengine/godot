@@ -4690,7 +4690,7 @@ void CanvasItemEditor::_button_zoom_plus() {
 }
 
 void CanvasItemEditor::_shortcut_zoom_set(float p_zoom) {
-	_zoom_on_position(p_zoom * MAX(1, EDSCALE), viewport_scrollable->get_size() / 2.0);
+	_zoom_on_position(p_zoom * MAX(1, EDSCALE), viewport->get_local_mouse_position());
 }
 
 void CanvasItemEditor::_button_toggle_smart_snap(bool p_status) {
