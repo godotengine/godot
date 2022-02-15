@@ -36,7 +36,6 @@
 #include "scene/gui/color_rect.h"
 #include "scene/resources/texture.h"
 
-class EditorNode;
 class AudioStreamEditor : public ColorRect {
 	GDCLASS(AudioStreamEditor, ColorRect);
 

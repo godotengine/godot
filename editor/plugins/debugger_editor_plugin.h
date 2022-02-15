@@ -33,7 +33,6 @@
 
 #include "editor/editor_plugin.h"
 
-class EditorNode;
 class EditorFileServer;
 class MenuButton;
 class PopupMenu;

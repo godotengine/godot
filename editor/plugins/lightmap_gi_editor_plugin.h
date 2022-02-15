@@ -35,7 +35,6 @@
 #include "scene/3d/lightmap_gi.h"
 #include "scene/resources/material.h"
 
-class EditorNode;
 struct EditorProgress;
 class EditorFileDialog;
 

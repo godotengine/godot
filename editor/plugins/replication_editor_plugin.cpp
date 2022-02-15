@@ -30,6 +30,7 @@
 
 #include "replication_editor_plugin.h"
 
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/inspector_dock.h"
 #include "scene/gui/dialogs.h"

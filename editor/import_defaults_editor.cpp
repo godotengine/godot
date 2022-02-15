@@ -31,6 +31,7 @@
 #include "import_defaults_editor.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_importer.h"
 #include "editor/action_map_editor.h"
 #include "editor/editor_autoload_settings.h"
 #include "editor/editor_plugin_settings.h"

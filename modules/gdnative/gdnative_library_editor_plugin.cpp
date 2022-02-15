@@ -29,7 +29,9 @@
 /*************************************************************************/
 
 #ifdef TOOLS_ENABLED
+
 #include "gdnative_library_editor_plugin.h"
+
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"

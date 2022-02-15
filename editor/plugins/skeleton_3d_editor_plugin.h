@@ -39,7 +39,6 @@
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/immediate_mesh.h"
 
-class EditorNode;
 class EditorInspectorPluginSkeleton;
 class Joint;
 class PhysicalBone3D;

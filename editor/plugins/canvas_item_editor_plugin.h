@@ -42,7 +42,6 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/main/canvas_item.h"
 
-class EditorNode;
 class EditorData;
 class CanvasItemEditorViewport;
 class ViewPanner;

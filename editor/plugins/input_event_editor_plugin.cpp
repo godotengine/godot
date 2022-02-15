@@ -30,8 +30,6 @@
 
 #include "input_event_editor_plugin.h"
 
-#include "editor/editor_node.h"
-
 void InputEventConfigContainer::_bind_methods() {
 }
 

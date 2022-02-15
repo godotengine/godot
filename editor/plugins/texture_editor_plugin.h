@@ -34,8 +34,6 @@
 #include "editor/editor_plugin.h"
 #include "scene/resources/texture.h"
 
-class EditorNode;
-
 class TexturePreview : public MarginContainer {
 	GDCLASS(TexturePreview, MarginContainer);
 

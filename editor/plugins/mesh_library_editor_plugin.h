@@ -34,7 +34,6 @@
 #include "editor/editor_plugin.h"
 #include "scene/resources/mesh_library.h"
 
-class EditorNode;
 class EditorFileDialog;
 class ConfirmationDialog;
 class MenuButton;

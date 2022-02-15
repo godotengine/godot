@@ -36,7 +36,6 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/immediate_mesh.h"
 
-class EditorNode;
 class CanvasItemEditor;
 
 class Polygon3DEditor : public HBoxContainer {

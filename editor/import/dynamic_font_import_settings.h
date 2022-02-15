@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  dynamicfont_import_settings.h                                        */
+/*  dynamic_font_import_settings.h                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef FONTDATA_IMPORT_SETTINGS_H
-#define FONTDATA_IMPORT_SETTINGS_H
+#ifndef DYNAMIC_FONT_IMPORT_SETTINGS_H
+#define DYNAMIC_FONT_IMPORT_SETTINGS_H
 
-#include "editor/import/resource_importer_dynamicfont.h"
+#include "editor/import/resource_importer_dynamic_font.h"
 
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
@@ -41,7 +41,6 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
 #include "scene/gui/tree.h"
-
 #include "scene/resources/font.h"
 #include "servers/text_server.h"
 
@@ -179,4 +178,4 @@ public:
 	DynamicFontImportSettings();
 };
 
-#endif // FONTDATA_IMPORT_SETTINGS_H
+#endif // DYNAMIC_FONT_IMPORT_SETTINGS_H

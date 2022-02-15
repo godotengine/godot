@@ -30,13 +30,11 @@
 
 #include "polygon_2d_editor_plugin.h"
 
-#include "canvas_item_editor_plugin.h"
-#include "core/input/input.h"
-#include "core/io/file_access.h"
+#include "core/input/input_event.h"
 #include "core/math/geometry_2d.h"
-#include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/plugins/canvas_item_editor_plugin.h"
 #include "scene/2d/skeleton_2d.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/scroll_container.h"

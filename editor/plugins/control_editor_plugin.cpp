@@ -30,6 +30,7 @@
 
 #include "control_editor_plugin.h"
 
+#include "editor/editor_node.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 
 void ControlPositioningWarning::_update_warning() {

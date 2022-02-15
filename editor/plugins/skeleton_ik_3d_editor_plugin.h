@@ -33,7 +33,6 @@
 
 #include "editor/editor_plugin.h"
 
-class EditorNode;
 class SkeletonIK3D;
 
 class SkeletonIK3DEditorPlugin : public EditorPlugin {

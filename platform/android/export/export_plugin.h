@@ -28,28 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "core/config/project_settings.h"
-#include "core/io/dir_access.h"
-#include "core/io/file_access.h"
-#include "core/io/image_loader.h"
-#include "core/io/json.h"
-#include "core/io/marshalls.h"
+#include "godot_plugin_config.h"
+
 #include "core/io/zip_io.h"
 #include "core/os/os.h"
-#include "core/templates/safe_refcount.h"
-#include "core/version.h"
-#include "drivers/png/png_driver_common.h"
 #include "editor/editor_export.h"
-#include "editor/editor_log.h"
-#include "editor/editor_settings.h"
-#include "main/splash.gen.h"
-#include "platform/android/logo.gen.h"
-#include "platform/android/run_icon.gen.h"
-
-#include "godot_plugin_config.h"
-#include "gradle_export_util.h"
-
-#include <string.h>
 
 const String SPLASH_CONFIG_XML_CONTENT = R"SPLASH(<?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">

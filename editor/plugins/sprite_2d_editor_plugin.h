@@ -35,8 +35,6 @@
 #include "scene/2d/sprite_2d.h"
 #include "scene/gui/spin_box.h"
 
-class EditorNode;
-
 class Sprite2DEditor : public Control {
 	GDCLASS(Sprite2DEditor, Control);
 

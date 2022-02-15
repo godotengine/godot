@@ -40,7 +40,6 @@
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
 
-class EditorNode;
 class ProgressBar;
 class EditorFileDialog;
 

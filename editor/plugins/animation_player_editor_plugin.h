@@ -31,6 +31,7 @@
 #ifndef ANIMATION_PLAYER_EDITOR_PLUGIN_H
 #define ANIMATION_PLAYER_EDITOR_PLUGIN_H
 
+#include "editor/animation_track_editor.h"
 #include "editor/editor_plugin.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/dialogs.h"
@@ -39,9 +40,7 @@
 #include "scene/gui/texture_button.h"
 #include "scene/gui/tree.h"
 
-class EditorNode;
 class EditorFileDialog;
-class AnimationTrackEditor;
 class AnimationPlayerEditorPlugin;
 
 class AnimationPlayerEditor : public VBoxContainer {

@@ -43,8 +43,6 @@
 
 /*************************************************************************/
 
-class EditorNode;
-
 class TextControlEditor : public HBoxContainer {
 	GDCLASS(TextControlEditor, HBoxContainer);
 

@@ -34,7 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/os/os.h"
-#include "main/main.h" // For `is_project_manager`.
+#include "main/main.h"
 
 EditorPaths *EditorPaths::singleton = nullptr;
 

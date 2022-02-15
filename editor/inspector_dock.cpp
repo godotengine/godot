@@ -33,7 +33,7 @@
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
-#include "editor/plugins/animation_player_editor_plugin.h"
+#include "editor/plugins/script_editor_plugin.h"
 
 InspectorDock *InspectorDock::singleton = nullptr;
 

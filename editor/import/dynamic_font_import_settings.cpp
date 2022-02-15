@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  dynamicfont_import_settings.cpp                                      */
+/*  dynamic_font_import_settings.cpp                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "dynamicfont_import_settings.h"
+#include "dynamic_font_import_settings.h"
 
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_file_system.h"

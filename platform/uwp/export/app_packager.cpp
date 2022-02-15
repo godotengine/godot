@@ -31,6 +31,7 @@
 #include "app_packager.h"
 
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 
 String AppxPackager::hash_block(const uint8_t *p_block_data, size_t p_block_len) {
 	unsigned char hash[32];

@@ -37,7 +37,6 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/spin_box.h"
 
-class EditorNode;
 class EditorFileDialog;
 
 class GPUParticles2DEditorPlugin : public EditorPlugin {

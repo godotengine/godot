@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  resource_importer_dynamicfont.h                                      */
+/*  resource_importer_dynamic_font.h                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RESOURCE_IMPORTER_FONT_DATA_H
-#define RESOURCE_IMPORTER_FONT_DATA_H
+#ifndef RESOURCE_IMPORTER_DYNAMIC_FONT_H
+#define RESOURCE_IMPORTER_DYNAMIC_FONT_H
 
 #include "core/io/resource_importer.h"
-#include "scene/resources/font.h"
-#include "servers/text_server.h"
 
 class ResourceImporterDynamicFont : public ResourceImporter {
 	GDCLASS(ResourceImporterDynamicFont, ResourceImporter);
@@ -68,4 +66,4 @@ public:
 	ResourceImporterDynamicFont();
 };
 
-#endif // RESOURCE_IMPORTER_FONTDATA_H
+#endif // RESOURCE_IMPORTER_DYNAMIC_FONT_H

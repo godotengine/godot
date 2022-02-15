@@ -31,7 +31,6 @@
 #ifndef REPLICATION_EDITOR_PLUGIN_H
 #define REPLICATION_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/resources/scene_replication_config.h"
 

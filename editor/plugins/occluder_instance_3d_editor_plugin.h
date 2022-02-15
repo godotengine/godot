@@ -35,8 +35,6 @@
 #include "scene/3d/occluder_instance_3d.h"
 #include "scene/resources/material.h"
 
-class EditorNode;
-struct EditorProgress;
 class EditorFileDialog;
 
 class OccluderInstance3DEditorPlugin : public EditorPlugin {

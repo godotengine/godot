@@ -35,7 +35,6 @@
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/gui/spin_box.h"
 
-class EditorNode;
 class SceneTreeDialog;
 
 class GPUParticles3DEditorBase : public Control {

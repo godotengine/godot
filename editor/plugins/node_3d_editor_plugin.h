@@ -47,7 +47,6 @@
 #include "scene/resources/fog_material.h"
 #include "scene/resources/sky_material.h"
 
-class EditorNode;
 class EditorData;
 class Node3DEditor;
 class Node3DEditorViewport;

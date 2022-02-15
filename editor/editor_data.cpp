@@ -31,11 +31,11 @@
 #include "editor_data.h"
 
 #include "core/config/project_settings.h"
-#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
+#include "editor/editor_plugin.h"
+#include "editor/plugins/script_editor_plugin.h"
 #include "scene/resources/packed_scene.h"
 
 void EditorHistory::cleanup_history() {

@@ -42,12 +42,13 @@
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/import_dock.h"
 #include "editor/scene_tree_dock.h"
-#include "import_dock.h"
+#include "editor/shader_create_dialog.h"
+#include "scene/gui/label.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display_server.h"
-#include "shader_create_dialog.h"
 
 FileSystemDock *FileSystemDock::singleton = nullptr;
 

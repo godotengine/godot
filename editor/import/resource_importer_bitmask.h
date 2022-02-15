@@ -31,10 +31,7 @@
 #ifndef RESOURCE_IMPORTER_BITMASK_H
 #define RESOURCE_IMPORTER_BITMASK_H
 
-#include "core/io/image.h"
 #include "core/io/resource_importer.h"
-
-class StreamBitMap;
 
 class ResourceImporterBitMap : public ResourceImporter {
 	GDCLASS(ResourceImporterBitMap, ResourceImporter);

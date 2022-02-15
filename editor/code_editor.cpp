@@ -31,14 +31,11 @@
 #include "code_editor.h"
 
 #include "core/input/input.h"
-#include "core/object/message_queue.h"
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
-#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
-#include "scene/gui/margin_container.h"
-#include "scene/gui/separator.h"
+#include "editor/plugins/script_editor_plugin.h"
 #include "scene/resources/font.h"
 
 void GotoLineDialog::popup_find_line(CodeEdit *p_edit) {

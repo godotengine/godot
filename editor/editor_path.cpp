@@ -30,6 +30,7 @@
 
 #include "editor_path.h"
 
+#include "editor/editor_data.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 

@@ -30,16 +30,12 @@
 
 #include "connections_dialog.h"
 
-#include "core/string/print_string.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/scene_tree_dock.h"
 #include "plugins/script_editor_plugin.h"
-#include "scene/gui/label.h"
-#include "scene/gui/popup_menu.h"
-#include "scene/gui/spin_box.h"
 
 static Node *_find_first_script(Node *p_root, Node *p_node) {
 	if (p_node != p_root && p_node->get_owner() != p_root) {
