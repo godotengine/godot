@@ -65,6 +65,14 @@ void CanvasLayer::set_visible(bool p_visible) {
 	}
 }
 
+void CanvasLayer::show() {
+	set_visible(true);
+}
+
+void CanvasLayer::hide() {
+	set_visible(false);
+}
+
 bool CanvasLayer::is_visible() const {
 	return visible;
 }
@@ -294,6 +302,8 @@ void CanvasLayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_visible", "visible"), &CanvasLayer::set_visible);
 	ClassDB::bind_method(D_METHOD("is_visible"), &CanvasLayer::is_visible);
+	ClassDB::bind_method(D_METHOD("show"), &CanvasLayer::show);
+	ClassDB::bind_method(D_METHOD("hide"), &CanvasLayer::hide);
 
 	ClassDB::bind_method(D_METHOD("set_transform", "transform"), &CanvasLayer::set_transform);
 	ClassDB::bind_method(D_METHOD("get_transform"), &CanvasLayer::get_transform);
