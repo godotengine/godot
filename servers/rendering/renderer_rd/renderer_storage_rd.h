@@ -751,6 +751,8 @@ private:
 		RID particle_instance_buffer;
 		RID frame_params_buffer;
 
+		uint32_t userdata_count = 0;
+
 		RID particles_material_uniform_set;
 		RID particles_copy_uniform_set;
 		RID particles_transforms_buffer_uniform_set;
@@ -849,12 +851,14 @@ private:
 			uint32_t order_by_lifetime;
 			uint32_t lifetime_split;
 			uint32_t lifetime_reverse;
-			uint32_t pad;
+			uint32_t copy_mode_2d;
 		};
 
 		enum {
+			MAX_USERDATAS = 6
+		};
+		enum {
 			COPY_MODE_FILL_INSTANCES,
-			COPY_MODE_FILL_INSTANCES_2D,
 			COPY_MODE_FILL_SORT_BUFFER,
 			COPY_MODE_FILL_INSTANCES_WITH_SORT_BUFFER,
 			COPY_MODE_MAX,
@@ -862,7 +866,7 @@ private:
 
 		ParticlesCopyShaderRD copy_shader;
 		RID copy_shader_version;
-		RID copy_pipelines[COPY_MODE_MAX];
+		RID copy_pipelines[COPY_MODE_MAX * (MAX_USERDATAS + 1)];
 
 		LocalVector<float> pose_update_buffer;
 
@@ -888,7 +892,10 @@ private:
 
 		RID pipeline;
 
-		bool uses_time;
+		bool uses_time = false;
+
+		bool userdatas_used[ParticlesShader::MAX_USERDATAS] = {};
+		uint32_t userdata_count = 0;
 
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
@@ -2162,6 +2169,8 @@ public:
 	void particles_set_speed_scale(RID p_particles, double p_scale);
 	void particles_set_use_local_coordinates(RID p_particles, bool p_enable);
 	void particles_set_process_material(RID p_particles, RID p_material);
+	RID particles_get_process_material(RID p_particles) const;
+
 	void particles_set_fixed_fps(RID p_particles, int p_fps);
 	void particles_set_interpolate(RID p_particles, bool p_enable);
 	void particles_set_fractional_delta(RID p_particles, bool p_enable);

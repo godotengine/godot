@@ -2660,6 +2660,9 @@ void RasterizerStorageGLES3::particles_set_use_local_coordinates(RID p_particles
 
 void RasterizerStorageGLES3::particles_set_process_material(RID p_particles, RID p_material) {
 }
+RID RasterizerStorageGLES3::particles_get_process_material(RID p_particles) const {
+	return RID();
+}
 
 void RasterizerStorageGLES3::particles_set_fixed_fps(RID p_particles, int p_fps) {
 }
