@@ -956,6 +956,7 @@ void EditorShaderPicker::set_create_options(Object *p_menu_node) {
 	}
 
 	menu_node->add_icon_item(get_theme_icon(SNAME("Shader"), SNAME("EditorIcons")), TTR("New Shader"), OBJ_MENU_NEW_SHADER);
+	menu_node->add_icon_item(get_theme_icon(SNAME("VisualShader"), SNAME("EditorIcons")), TTR("New Visual Shader"), OBJ_MENU_NEW_SHADER);
 	menu_node->add_separator();
 }
 
