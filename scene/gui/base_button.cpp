@@ -81,42 +81,50 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void BaseButton::_notification(int p_what) {
-	if (p_what == NOTIFICATION_MOUSE_ENTER) {
-		status.hovering = true;
-		update();
-	}
+	switch (p_what) {
+		case NOTIFICATION_MOUSE_ENTER: {
+			status.hovering = true;
+			update();
+		} break;
 
-	if (p_what == NOTIFICATION_MOUSE_EXIT) {
-		status.hovering = false;
-		update();
-	}
-	if (p_what == NOTIFICATION_DRAG_BEGIN || p_what == NOTIFICATION_SCROLL_BEGIN) {
-		if (status.press_attempt) {
+		case NOTIFICATION_MOUSE_EXIT: {
+			status.hovering = false;
+			update();
+		} break;
+
+		case NOTIFICATION_DRAG_BEGIN:
+		case NOTIFICATION_SCROLL_BEGIN: {
+			if (status.press_attempt) {
+				status.press_attempt = false;
+				update();
+			}
+		} break;
+
+		case NOTIFICATION_FOCUS_ENTER: {
+			update();
+		} break;
+
+		case NOTIFICATION_FOCUS_EXIT: {
+			if (status.press_attempt) {
+				status.press_attempt = false;
+				update();
+			} else if (status.hovering) {
+				update();
+			}
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED:
+		case NOTIFICATION_EXIT_TREE: {
+			if (p_what == NOTIFICATION_VISIBILITY_CHANGED && is_visible_in_tree()) {
+				break;
+			}
+			if (!toggle_mode) {
+				status.pressed = false;
+			}
+			status.hovering = false;
 			status.press_attempt = false;
-			update();
-		}
-	}
-
-	if (p_what == NOTIFICATION_FOCUS_ENTER) {
-		update();
-	}
-
-	if (p_what == NOTIFICATION_FOCUS_EXIT) {
-		if (status.press_attempt) {
-			status.press_attempt = false;
-			update();
-		} else if (status.hovering) {
-			update();
-		}
-	}
-
-	if (p_what == NOTIFICATION_EXIT_TREE || (p_what == NOTIFICATION_VISIBILITY_CHANGED && !is_visible_in_tree())) {
-		if (!toggle_mode) {
-			status.pressed = false;
-		}
-		status.hovering = false;
-		status.press_attempt = false;
-		status.pressing_inside = false;
+			status.pressing_inside = false;
+		} break;
 	}
 }
 

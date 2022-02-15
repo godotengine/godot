@@ -67,21 +67,25 @@ void AcceptDialog::_notification(int p_what) {
 				}
 			}
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			bg->add_theme_style_override("panel", bg->get_theme_stylebox(SNAME("panel"), SNAME("AcceptDialog")));
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			if (parent_visible) {
 				parent_visible->disconnect("focus_entered", callable_mp(this, &AcceptDialog::_parent_focused));
 				parent_visible = nullptr;
 			}
 		} break;
+
 		case NOTIFICATION_READY:
 		case NOTIFICATION_WM_SIZE_CHANGED: {
 			if (is_visible()) {
 				_update_child_rects();
 			}
 		} break;
+
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
 			_cancel_pressed();
 		} break;

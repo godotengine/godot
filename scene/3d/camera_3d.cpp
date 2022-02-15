@@ -108,14 +108,15 @@ void Camera3D::_notification(int p_what) {
 			if (current || first_camera) {
 				viewport->_camera_3d_set(this);
 			}
-
 		} break;
+
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			_request_camera_update();
 			if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
 				velocity_tracker->update_position(get_global_transform().origin);
 			}
 		} break;
+
 		case NOTIFICATION_EXIT_WORLD: {
 			if (!get_tree()->is_node_being_edited(this)) {
 				if (is_current()) {
@@ -131,13 +132,14 @@ void Camera3D::_notification(int p_what) {
 				viewport->_camera_3d_remove(this);
 				viewport = nullptr;
 			}
-
 		} break;
+
 		case NOTIFICATION_BECAME_CURRENT: {
 			if (viewport) {
 				viewport->find_world_3d()->_register_camera(this);
 			}
 		} break;
+
 		case NOTIFICATION_LOST_CURRENT: {
 			if (viewport) {
 				viewport->find_world_3d()->_remove_camera(this);

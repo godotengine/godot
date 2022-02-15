@@ -206,15 +206,7 @@ Transform2D Camera2D::get_camera_transform() {
 	if (rotating) {
 		xform.set_rotation(angle);
 	}
-	xform.set_origin(screen_rect.position /*.floor()*/);
-
-	/*
-	if (0) {
-		xform = get_global_transform() * xform;
-	} else {
-		xform.elements[2]+=get_global_transform().get_origin();
-	}
-*/
+	xform.set_origin(screen_rect.position);
 
 	return (xform).affine_inverse();
 }
@@ -224,14 +216,14 @@ void Camera2D::_notification(int p_what) {
 		case NOTIFICATION_INTERNAL_PROCESS:
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			_update_scroll();
-
 		} break;
+
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (!is_processing_internal() && !is_physics_processing_internal()) {
 				_update_scroll();
 			}
-
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			ERR_FAIL_COND(!is_inside_tree());
 			if (custom_viewport && ObjectDB::get_instance(custom_viewport_id)) {
@@ -256,8 +248,8 @@ void Camera2D::_notification(int p_what) {
 			_update_process_callback();
 			_update_scroll();
 			first = true;
-
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			if (is_current()) {
 				if (viewport && !(custom_viewport && !ObjectDB::get_instance(custom_viewport_id))) {
@@ -269,8 +261,8 @@ void Camera2D::_notification(int p_what) {
 			remove_from_group(group_name);
 			remove_from_group(canvas_group_name);
 			viewport = nullptr;
-
 		} break;
+
 #ifdef TOOLS_ENABLED
 		case NOTIFICATION_DRAW: {
 			if (!is_inside_tree() || !Engine::get_singleton()->is_editor_hint()) {

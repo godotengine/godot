@@ -103,10 +103,12 @@ void NavigationAgent3D::_notification(int p_what) {
 			}
 			set_physics_process_internal(true);
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			agent_parent = nullptr;
 			set_physics_process_internal(false);
 		} break;
+
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (agent_parent) {
 				NavigationServer3D::get_singleton()->agent_set_position(agent, agent_parent->get_global_transform().origin);

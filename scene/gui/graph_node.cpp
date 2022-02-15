@@ -31,6 +31,7 @@
 #include "graph_node.h"
 
 #include "core/string/translation.h"
+
 #ifdef TOOLS_ENABLED
 #include "graph_edit.h"
 #endif

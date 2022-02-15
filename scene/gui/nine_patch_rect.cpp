@@ -34,18 +34,20 @@
 #include "servers/rendering_server.h"
 
 void NinePatchRect::_notification(int p_what) {
-	if (p_what == NOTIFICATION_DRAW) {
-		if (texture.is_null()) {
-			return;
-		}
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
+			if (texture.is_null()) {
+				return;
+			}
 
-		Rect2 rect = Rect2(Point2(), get_size());
-		Rect2 src_rect = region_rect;
+			Rect2 rect = Rect2(Point2(), get_size());
+			Rect2 src_rect = region_rect;
 
-		texture->get_rect_region(rect, src_rect, rect, src_rect);
+			texture->get_rect_region(rect, src_rect, rect, src_rect);
 
-		RID ci = get_canvas_item();
-		RS::get_singleton()->canvas_item_add_nine_patch(ci, rect, src_rect, texture->get_rid(), Vector2(margin[SIDE_LEFT], margin[SIDE_TOP]), Vector2(margin[SIDE_RIGHT], margin[SIDE_BOTTOM]), RS::NinePatchAxisMode(axis_h), RS::NinePatchAxisMode(axis_v), draw_center);
+			RID ci = get_canvas_item();
+			RS::get_singleton()->canvas_item_add_nine_patch(ci, rect, src_rect, texture->get_rid(), Vector2(margin[SIDE_LEFT], margin[SIDE_TOP]), Vector2(margin[SIDE_RIGHT], margin[SIDE_BOTTOM]), RS::NinePatchAxisMode(axis_h), RS::NinePatchAxisMode(axis_v), draw_center);
+		} break;
 	}
 }
 

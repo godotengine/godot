@@ -31,27 +31,32 @@
 #include "canvas_modulate.h"
 
 void CanvasModulate::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_CANVAS) {
-		if (is_visible_in_tree()) {
-			RS::get_singleton()->canvas_set_modulate(get_canvas(), color);
-			add_to_group("_canvas_modulate_" + itos(get_canvas().get_id()));
-		}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_CANVAS: {
+			if (is_visible_in_tree()) {
+				RS::get_singleton()->canvas_set_modulate(get_canvas(), color);
+				add_to_group("_canvas_modulate_" + itos(get_canvas().get_id()));
+			}
+		} break;
 
-	} else if (p_what == NOTIFICATION_EXIT_CANVAS) {
-		if (is_visible_in_tree()) {
-			RS::get_singleton()->canvas_set_modulate(get_canvas(), Color(1, 1, 1, 1));
-			remove_from_group("_canvas_modulate_" + itos(get_canvas().get_id()));
-		}
-	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (is_visible_in_tree()) {
-			RS::get_singleton()->canvas_set_modulate(get_canvas(), color);
-			add_to_group("_canvas_modulate_" + itos(get_canvas().get_id()));
-		} else {
-			RS::get_singleton()->canvas_set_modulate(get_canvas(), Color(1, 1, 1, 1));
-			remove_from_group("_canvas_modulate_" + itos(get_canvas().get_id()));
-		}
+		case NOTIFICATION_EXIT_CANVAS: {
+			if (is_visible_in_tree()) {
+				RS::get_singleton()->canvas_set_modulate(get_canvas(), Color(1, 1, 1, 1));
+				remove_from_group("_canvas_modulate_" + itos(get_canvas().get_id()));
+			}
+		} break;
 
-		update_configuration_warnings();
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible_in_tree()) {
+				RS::get_singleton()->canvas_set_modulate(get_canvas(), color);
+				add_to_group("_canvas_modulate_" + itos(get_canvas().get_id()));
+			} else {
+				RS::get_singleton()->canvas_set_modulate(get_canvas(), Color(1, 1, 1, 1));
+				remove_from_group("_canvas_modulate_" + itos(get_canvas().get_id()));
+			}
+
+			update_configuration_warnings();
+		} break;
 	}
 }
 

@@ -93,223 +93,228 @@ void Bone2D::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void Bone2D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		Node *parent = get_parent();
-		parent_bone = Object::cast_to<Bone2D>(parent);
-		skeleton = nullptr;
-		while (parent) {
-			skeleton = Object::cast_to<Skeleton2D>(parent);
-			if (skeleton) {
-				break;
-			}
-			if (!Object::cast_to<Bone2D>(parent)) {
-				break; //skeletons must be chained to Bone2Ds.
-			}
-
-			parent = parent->get_parent();
-		}
-
-		if (skeleton) {
-			Skeleton2D::Bone bone;
-			bone.bone = this;
-			skeleton->bones.push_back(bone);
-			skeleton->_make_bone_setup_dirty();
-		}
-
-		cache_transform = get_transform();
-		copy_transform_to_cache = true;
-
-#ifdef TOOLS_ENABLED
-		// Only draw the gizmo in the editor!
-		if (Engine::get_singleton()->is_editor_hint() == false) {
-			return;
-		}
-
-		update();
-#endif // TOOLS_ENABLED
-	}
-
-	else if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
-		if (skeleton) {
-			skeleton->_make_transform_dirty();
-		}
-		if (copy_transform_to_cache) {
-			cache_transform = get_transform();
-		}
-#ifdef TOOLS_ENABLED
-		// Only draw the gizmo in the editor!
-		if (Engine::get_singleton()->is_editor_hint() == false) {
-			return;
-		}
-
-		update();
-
-		if (get_parent()) {
-			Bone2D *parent_bone = Object::cast_to<Bone2D>(get_parent());
-			if (parent_bone) {
-				parent_bone->update();
-			}
-		}
-#endif // TOOLS_ENABLED
-	}
-
-	else if (p_what == NOTIFICATION_MOVED_IN_PARENT) {
-		if (skeleton) {
-			skeleton->_make_bone_setup_dirty();
-		}
-		if (copy_transform_to_cache) {
-			cache_transform = get_transform();
-		}
-	}
-
-	else if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (skeleton) {
-			for (int i = 0; i < skeleton->bones.size(); i++) {
-				if (skeleton->bones[i].bone == this) {
-					skeleton->bones.remove_at(i);
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			Node *parent = get_parent();
+			parent_bone = Object::cast_to<Bone2D>(parent);
+			skeleton = nullptr;
+			while (parent) {
+				skeleton = Object::cast_to<Skeleton2D>(parent);
+				if (skeleton) {
 					break;
 				}
-			}
-			skeleton->_make_bone_setup_dirty();
-			skeleton = nullptr;
-		}
-		parent_bone = nullptr;
-		set_transform(cache_transform);
-	}
+				if (!Object::cast_to<Bone2D>(parent)) {
+					break; //skeletons must be chained to Bone2Ds.
+				}
 
-	else if (p_what == NOTIFICATION_READY) {
-		if (autocalculate_length_and_angle) {
-			calculate_length_and_rotation();
-		}
-	}
+				parent = parent->get_parent();
+			}
+
+			if (skeleton) {
+				Skeleton2D::Bone bone;
+				bone.bone = this;
+				skeleton->bones.push_back(bone);
+				skeleton->_make_bone_setup_dirty();
+			}
+
+			cache_transform = get_transform();
+			copy_transform_to_cache = true;
+
 #ifdef TOOLS_ENABLED
-	else if (p_what == NOTIFICATION_EDITOR_PRE_SAVE || p_what == NOTIFICATION_EDITOR_POST_SAVE) {
-		Transform2D tmp_trans = get_transform();
-		set_transform(cache_transform);
-		cache_transform = tmp_trans;
-	}
-	// Bone2D Editor gizmo drawing:
+			// Only draw the gizmo in the editor!
+			if (Engine::get_singleton()->is_editor_hint() == false) {
+				return;
+			}
+
+			update();
+#endif // TOOLS_ENABLED
+		} break;
+
+		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
+			if (skeleton) {
+				skeleton->_make_transform_dirty();
+			}
+			if (copy_transform_to_cache) {
+				cache_transform = get_transform();
+			}
+#ifdef TOOLS_ENABLED
+			// Only draw the gizmo in the editor!
+			if (Engine::get_singleton()->is_editor_hint() == false) {
+				return;
+			}
+
+			update();
+
+			if (get_parent()) {
+				Bone2D *parent_bone = Object::cast_to<Bone2D>(get_parent());
+				if (parent_bone) {
+					parent_bone->update();
+				}
+			}
+#endif // TOOLS_ENABLED
+		} break;
+
+		case NOTIFICATION_MOVED_IN_PARENT: {
+			if (skeleton) {
+				skeleton->_make_bone_setup_dirty();
+			}
+			if (copy_transform_to_cache) {
+				cache_transform = get_transform();
+			}
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			if (skeleton) {
+				for (int i = 0; i < skeleton->bones.size(); i++) {
+					if (skeleton->bones[i].bone == this) {
+						skeleton->bones.remove_at(i);
+						break;
+					}
+				}
+				skeleton->_make_bone_setup_dirty();
+				skeleton = nullptr;
+			}
+			parent_bone = nullptr;
+			set_transform(cache_transform);
+		} break;
+
+		case NOTIFICATION_READY: {
+			if (autocalculate_length_and_angle) {
+				calculate_length_and_rotation();
+			}
+		} break;
+
+#ifdef TOOLS_ENABLED
+		case NOTIFICATION_EDITOR_PRE_SAVE:
+		case NOTIFICATION_EDITOR_POST_SAVE: {
+			Transform2D tmp_trans = get_transform();
+			set_transform(cache_transform);
+			cache_transform = tmp_trans;
+		} break;
+
+		// Bone2D Editor gizmo drawing:
 #ifndef _MSC_VER
 #warning TODO Bone2D gizmo drawing needs to be moved to an editor plugin
 #endif
-	else if (p_what == NOTIFICATION_DRAW) {
-		// Only draw the gizmo in the editor!
-		if (Engine::get_singleton()->is_editor_hint() == false) {
-			return;
-		}
-
-		if (editor_gizmo_rid.is_null()) {
-			editor_gizmo_rid = RenderingServer::get_singleton()->canvas_item_create();
-			RenderingServer::get_singleton()->canvas_item_set_parent(editor_gizmo_rid, get_canvas_item());
-			RenderingServer::get_singleton()->canvas_item_set_z_as_relative_to_parent(editor_gizmo_rid, true);
-			RenderingServer::get_singleton()->canvas_item_set_z_index(editor_gizmo_rid, 10);
-		}
-		RenderingServer::get_singleton()->canvas_item_clear(editor_gizmo_rid);
-
-		if (!_editor_show_bone_gizmo) {
-			return;
-		}
-
-		// Undo scaling
-		Transform2D editor_gizmo_trans = Transform2D();
-		editor_gizmo_trans.set_scale(Vector2(1, 1) / get_global_scale());
-		RenderingServer::get_singleton()->canvas_item_set_transform(editor_gizmo_rid, editor_gizmo_trans);
-
-		Color bone_color1 = EditorSettings::get_singleton()->get("editors/2d/bone_color1");
-		Color bone_color2 = EditorSettings::get_singleton()->get("editors/2d/bone_color2");
-		Color bone_ik_color = EditorSettings::get_singleton()->get("editors/2d/bone_ik_color");
-		Color bone_outline_color = EditorSettings::get_singleton()->get("editors/2d/bone_outline_color");
-		Color bone_selected_color = EditorSettings::get_singleton()->get("editors/2d/bone_selected_color");
-
-		bool Bone2D_found = false;
-		for (int i = 0; i < get_child_count(); i++) {
-			Bone2D *child_node = nullptr;
-			child_node = Object::cast_to<Bone2D>(get_child(i));
-			if (!child_node) {
-				continue;
-			}
-			Bone2D_found = true;
-
-			Vector<Vector2> bone_shape;
-			Vector<Vector2> bone_shape_outline;
-
-			_editor_get_bone_shape(&bone_shape, &bone_shape_outline, child_node);
-
-			Vector<Color> colors;
-			if (has_meta("_local_pose_override_enabled_")) {
-				colors.push_back(bone_ik_color);
-				colors.push_back(bone_ik_color);
-				colors.push_back(bone_ik_color);
-				colors.push_back(bone_ik_color);
-			} else {
-				colors.push_back(bone_color1);
-				colors.push_back(bone_color2);
-				colors.push_back(bone_color1);
-				colors.push_back(bone_color2);
+		case NOTIFICATION_DRAW: {
+			// Only draw the gizmo in the editor!
+			if (Engine::get_singleton()->is_editor_hint() == false) {
+				return;
 			}
 
-			Vector<Color> outline_colors;
-			if (CanvasItemEditor::get_singleton()->editor_selection->is_selected(this)) {
-				outline_colors.push_back(bone_selected_color);
-				outline_colors.push_back(bone_selected_color);
-				outline_colors.push_back(bone_selected_color);
-				outline_colors.push_back(bone_selected_color);
-				outline_colors.push_back(bone_selected_color);
-				outline_colors.push_back(bone_selected_color);
-			} else {
-				outline_colors.push_back(bone_outline_color);
-				outline_colors.push_back(bone_outline_color);
-				outline_colors.push_back(bone_outline_color);
-				outline_colors.push_back(bone_outline_color);
-				outline_colors.push_back(bone_outline_color);
-				outline_colors.push_back(bone_outline_color);
+			if (editor_gizmo_rid.is_null()) {
+				editor_gizmo_rid = RenderingServer::get_singleton()->canvas_item_create();
+				RenderingServer::get_singleton()->canvas_item_set_parent(editor_gizmo_rid, get_canvas_item());
+				RenderingServer::get_singleton()->canvas_item_set_z_as_relative_to_parent(editor_gizmo_rid, true);
+				RenderingServer::get_singleton()->canvas_item_set_z_index(editor_gizmo_rid, 10);
+			}
+			RenderingServer::get_singleton()->canvas_item_clear(editor_gizmo_rid);
+
+			if (!_editor_show_bone_gizmo) {
+				return;
 			}
 
-			RenderingServer::get_singleton()->canvas_item_add_polygon(editor_gizmo_rid, bone_shape_outline, outline_colors);
-			RenderingServer::get_singleton()->canvas_item_add_polygon(editor_gizmo_rid, bone_shape, colors);
-		}
+			// Undo scaling
+			Transform2D editor_gizmo_trans = Transform2D();
+			editor_gizmo_trans.set_scale(Vector2(1, 1) / get_global_scale());
+			RenderingServer::get_singleton()->canvas_item_set_transform(editor_gizmo_rid, editor_gizmo_trans);
 
-		if (!Bone2D_found) {
-			Vector<Vector2> bone_shape;
-			Vector<Vector2> bone_shape_outline;
+			Color bone_color1 = EditorSettings::get_singleton()->get("editors/2d/bone_color1");
+			Color bone_color2 = EditorSettings::get_singleton()->get("editors/2d/bone_color2");
+			Color bone_ik_color = EditorSettings::get_singleton()->get("editors/2d/bone_ik_color");
+			Color bone_outline_color = EditorSettings::get_singleton()->get("editors/2d/bone_outline_color");
+			Color bone_selected_color = EditorSettings::get_singleton()->get("editors/2d/bone_selected_color");
 
-			_editor_get_bone_shape(&bone_shape, &bone_shape_outline, nullptr);
+			bool Bone2D_found = false;
+			for (int i = 0; i < get_child_count(); i++) {
+				Bone2D *child_node = nullptr;
+				child_node = Object::cast_to<Bone2D>(get_child(i));
+				if (!child_node) {
+					continue;
+				}
+				Bone2D_found = true;
 
-			Vector<Color> colors;
-			if (has_meta("_local_pose_override_enabled_")) {
-				colors.push_back(bone_ik_color);
-				colors.push_back(bone_ik_color);
-				colors.push_back(bone_ik_color);
-				colors.push_back(bone_ik_color);
-			} else {
-				colors.push_back(bone_color1);
-				colors.push_back(bone_color2);
-				colors.push_back(bone_color1);
-				colors.push_back(bone_color2);
+				Vector<Vector2> bone_shape;
+				Vector<Vector2> bone_shape_outline;
+
+				_editor_get_bone_shape(&bone_shape, &bone_shape_outline, child_node);
+
+				Vector<Color> colors;
+				if (has_meta("_local_pose_override_enabled_")) {
+					colors.push_back(bone_ik_color);
+					colors.push_back(bone_ik_color);
+					colors.push_back(bone_ik_color);
+					colors.push_back(bone_ik_color);
+				} else {
+					colors.push_back(bone_color1);
+					colors.push_back(bone_color2);
+					colors.push_back(bone_color1);
+					colors.push_back(bone_color2);
+				}
+
+				Vector<Color> outline_colors;
+				if (CanvasItemEditor::get_singleton()->editor_selection->is_selected(this)) {
+					outline_colors.push_back(bone_selected_color);
+					outline_colors.push_back(bone_selected_color);
+					outline_colors.push_back(bone_selected_color);
+					outline_colors.push_back(bone_selected_color);
+					outline_colors.push_back(bone_selected_color);
+					outline_colors.push_back(bone_selected_color);
+				} else {
+					outline_colors.push_back(bone_outline_color);
+					outline_colors.push_back(bone_outline_color);
+					outline_colors.push_back(bone_outline_color);
+					outline_colors.push_back(bone_outline_color);
+					outline_colors.push_back(bone_outline_color);
+					outline_colors.push_back(bone_outline_color);
+				}
+
+				RenderingServer::get_singleton()->canvas_item_add_polygon(editor_gizmo_rid, bone_shape_outline, outline_colors);
+				RenderingServer::get_singleton()->canvas_item_add_polygon(editor_gizmo_rid, bone_shape, colors);
 			}
 
-			Vector<Color> outline_colors;
-			if (CanvasItemEditor::get_singleton()->editor_selection->is_selected(this)) {
-				outline_colors.push_back(bone_selected_color);
-				outline_colors.push_back(bone_selected_color);
-				outline_colors.push_back(bone_selected_color);
-				outline_colors.push_back(bone_selected_color);
-				outline_colors.push_back(bone_selected_color);
-				outline_colors.push_back(bone_selected_color);
-			} else {
-				outline_colors.push_back(bone_outline_color);
-				outline_colors.push_back(bone_outline_color);
-				outline_colors.push_back(bone_outline_color);
-				outline_colors.push_back(bone_outline_color);
-				outline_colors.push_back(bone_outline_color);
-				outline_colors.push_back(bone_outline_color);
-			}
+			if (!Bone2D_found) {
+				Vector<Vector2> bone_shape;
+				Vector<Vector2> bone_shape_outline;
 
-			RenderingServer::get_singleton()->canvas_item_add_polygon(editor_gizmo_rid, bone_shape_outline, outline_colors);
-			RenderingServer::get_singleton()->canvas_item_add_polygon(editor_gizmo_rid, bone_shape, colors);
-		}
+				_editor_get_bone_shape(&bone_shape, &bone_shape_outline, nullptr);
+
+				Vector<Color> colors;
+				if (has_meta("_local_pose_override_enabled_")) {
+					colors.push_back(bone_ik_color);
+					colors.push_back(bone_ik_color);
+					colors.push_back(bone_ik_color);
+					colors.push_back(bone_ik_color);
+				} else {
+					colors.push_back(bone_color1);
+					colors.push_back(bone_color2);
+					colors.push_back(bone_color1);
+					colors.push_back(bone_color2);
+				}
+
+				Vector<Color> outline_colors;
+				if (CanvasItemEditor::get_singleton()->editor_selection->is_selected(this)) {
+					outline_colors.push_back(bone_selected_color);
+					outline_colors.push_back(bone_selected_color);
+					outline_colors.push_back(bone_selected_color);
+					outline_colors.push_back(bone_selected_color);
+					outline_colors.push_back(bone_selected_color);
+					outline_colors.push_back(bone_selected_color);
+				} else {
+					outline_colors.push_back(bone_outline_color);
+					outline_colors.push_back(bone_outline_color);
+					outline_colors.push_back(bone_outline_color);
+					outline_colors.push_back(bone_outline_color);
+					outline_colors.push_back(bone_outline_color);
+					outline_colors.push_back(bone_outline_color);
+				}
+
+				RenderingServer::get_singleton()->canvas_item_add_polygon(editor_gizmo_rid, bone_shape_outline, outline_colors);
+				RenderingServer::get_singleton()->canvas_item_add_polygon(editor_gizmo_rid, bone_shape, colors);
+			}
+		} break;
+#endif // TOOLS_ENABLED
 	}
-#endif // TOOLS_ENALBED
 }
 
 #ifdef TOOLS_ENABLED

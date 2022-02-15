@@ -100,51 +100,54 @@ Vector<int> SubViewportContainer::get_allowed_size_flags_vertical() const {
 }
 
 void SubViewportContainer::_notification(int p_what) {
-	if (p_what == NOTIFICATION_RESIZED) {
-		if (!stretch) {
-			return;
-		}
-
-		for (int i = 0; i < get_child_count(); i++) {
-			SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
-			if (!c) {
-				continue;
+	switch (p_what) {
+		case NOTIFICATION_RESIZED: {
+			if (!stretch) {
+				return;
 			}
 
-			c->set_size(get_size() / shrink);
-		}
-	}
+			for (int i = 0; i < get_child_count(); i++) {
+				SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
+				if (!c) {
+					continue;
+				}
 
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		for (int i = 0; i < get_child_count(); i++) {
-			SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
-			if (!c) {
-				continue;
+				c->set_size(get_size() / shrink);
 			}
+		} break;
 
-			if (is_visible_in_tree()) {
-				c->set_update_mode(SubViewport::UPDATE_ALWAYS);
-			} else {
-				c->set_update_mode(SubViewport::UPDATE_DISABLED);
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			for (int i = 0; i < get_child_count(); i++) {
+				SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
+				if (!c) {
+					continue;
+				}
+
+				if (is_visible_in_tree()) {
+					c->set_update_mode(SubViewport::UPDATE_ALWAYS);
+				} else {
+					c->set_update_mode(SubViewport::UPDATE_DISABLED);
+				}
+
+				c->set_handle_input_locally(false); //do not handle input locally here
 			}
+		} break;
 
-			c->set_handle_input_locally(false); //do not handle input locally here
-		}
-	}
+		case NOTIFICATION_DRAW: {
+			for (int i = 0; i < get_child_count(); i++) {
+				SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
+				if (!c) {
+					continue;
+				}
 
-	if (p_what == NOTIFICATION_DRAW) {
-		for (int i = 0; i < get_child_count(); i++) {
-			SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
-			if (!c) {
-				continue;
+				if (stretch) {
+					draw_texture_rect(c->get_texture(), Rect2(Vector2(), get_size()));
+				} else {
+					draw_texture_rect(c->get_texture(), Rect2(Vector2(), c->get_size()));
+				}
 			}
-
-			if (stretch) {
-				draw_texture_rect(c->get_texture(), Rect2(Vector2(), get_size()));
-			} else {
-				draw_texture_rect(c->get_texture(), Rect2(Vector2(), c->get_size()));
-			}
-		}
+		} break;
 	}
 }
 

@@ -32,7 +32,6 @@
 
 #include "core/object/message_queue.h"
 #include "core/string/translation.h"
-
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
@@ -313,6 +312,7 @@ void TabBar::_notification(int p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			update();
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			for (int i = 0; i < tabs.size(); ++i) {
@@ -332,6 +332,7 @@ void TabBar::_notification(int p_what) {
 				ensure_tab_visible(current);
 			}
 		} break;
+
 		case NOTIFICATION_DRAW: {
 			if (tabs.is_empty()) {
 				return;

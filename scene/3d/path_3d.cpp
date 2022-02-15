@@ -30,9 +30,6 @@
 
 #include "path_3d.h"
 
-void Path3D::_notification(int p_what) {
-}
-
 void Path3D::_curve_changed() {
 	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint()) {
 		update_gizmos();
@@ -223,8 +220,8 @@ void PathFollow3D::_notification(int p_what) {
 					_update_transform(false);
 				}
 			}
-
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			path = nullptr;
 		} break;

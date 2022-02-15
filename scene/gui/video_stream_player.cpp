@@ -134,7 +134,6 @@ void VideoStreamPlayer::_notification(int p_notification) {
 			if (stream.is_valid() && autoplay && !Engine::get_singleton()->is_editor_hint()) {
 				play();
 			}
-
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -162,7 +161,6 @@ void VideoStreamPlayer::_notification(int p_notification) {
 			if (!playback->is_playing()) {
 				emit_signal(SceneStringNames::get_singleton()->finished);
 			}
-
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -175,10 +173,9 @@ void VideoStreamPlayer::_notification(int p_notification) {
 
 			Size2 s = expand ? get_size() : texture->get_size();
 			draw_texture_rect(texture, Rect2(Point2(), s), false);
-
 		} break;
-	};
-};
+	}
+}
 
 Size2 VideoStreamPlayer::get_minimum_size() const {
 	if (!expand && !texture.is_null()) {

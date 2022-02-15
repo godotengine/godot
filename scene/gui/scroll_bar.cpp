@@ -218,195 +218,198 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void ScrollBar::_notification(int p_what) {
-	if (p_what == NOTIFICATION_DRAW) {
-		RID ci = get_canvas_item();
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
+			RID ci = get_canvas_item();
 
-		Ref<Texture2D> decr, incr;
+			Ref<Texture2D> decr, incr;
 
-		if (decr_active) {
-			decr = get_theme_icon(SNAME("decrement_pressed"));
-		} else if (highlight == HIGHLIGHT_DECR) {
-			decr = get_theme_icon(SNAME("decrement_highlight"));
-		} else {
-			decr = get_theme_icon(SNAME("decrement"));
-		}
+			if (decr_active) {
+				decr = get_theme_icon(SNAME("decrement_pressed"));
+			} else if (highlight == HIGHLIGHT_DECR) {
+				decr = get_theme_icon(SNAME("decrement_highlight"));
+			} else {
+				decr = get_theme_icon(SNAME("decrement"));
+			}
 
-		if (incr_active) {
-			incr = get_theme_icon(SNAME("increment_pressed"));
-		} else if (highlight == HIGHLIGHT_INCR) {
-			incr = get_theme_icon(SNAME("increment_highlight"));
-		} else {
-			incr = get_theme_icon(SNAME("increment"));
-		}
+			if (incr_active) {
+				incr = get_theme_icon(SNAME("increment_pressed"));
+			} else if (highlight == HIGHLIGHT_INCR) {
+				incr = get_theme_icon(SNAME("increment_highlight"));
+			} else {
+				incr = get_theme_icon(SNAME("increment"));
+			}
 
-		Ref<StyleBox> bg = has_focus() ? get_theme_stylebox(SNAME("scroll_focus")) : get_theme_stylebox(SNAME("scroll"));
+			Ref<StyleBox> bg = has_focus() ? get_theme_stylebox(SNAME("scroll_focus")) : get_theme_stylebox(SNAME("scroll"));
 
-		Ref<StyleBox> grabber;
-		if (drag.active) {
-			grabber = get_theme_stylebox(SNAME("grabber_pressed"));
-		} else if (highlight == HIGHLIGHT_RANGE) {
-			grabber = get_theme_stylebox(SNAME("grabber_highlight"));
-		} else {
-			grabber = get_theme_stylebox(SNAME("grabber"));
-		}
+			Ref<StyleBox> grabber;
+			if (drag.active) {
+				grabber = get_theme_stylebox(SNAME("grabber_pressed"));
+			} else if (highlight == HIGHLIGHT_RANGE) {
+				grabber = get_theme_stylebox(SNAME("grabber_highlight"));
+			} else {
+				grabber = get_theme_stylebox(SNAME("grabber"));
+			}
 
-		Point2 ofs;
+			Point2 ofs;
 
-		decr->draw(ci, Point2());
+			decr->draw(ci, Point2());
 
-		if (orientation == HORIZONTAL) {
-			ofs.x += decr->get_width();
-		} else {
-			ofs.y += decr->get_height();
-		}
+			if (orientation == HORIZONTAL) {
+				ofs.x += decr->get_width();
+			} else {
+				ofs.y += decr->get_height();
+			}
 
-		Size2 area = get_size();
+			Size2 area = get_size();
 
-		if (orientation == HORIZONTAL) {
-			area.width -= incr->get_width() + decr->get_width();
-		} else {
-			area.height -= incr->get_height() + decr->get_height();
-		}
+			if (orientation == HORIZONTAL) {
+				area.width -= incr->get_width() + decr->get_width();
+			} else {
+				area.height -= incr->get_height() + decr->get_height();
+			}
 
-		bg->draw(ci, Rect2(ofs, area));
+			bg->draw(ci, Rect2(ofs, area));
 
-		if (orientation == HORIZONTAL) {
-			ofs.width += area.width;
-		} else {
-			ofs.height += area.height;
-		}
+			if (orientation == HORIZONTAL) {
+				ofs.width += area.width;
+			} else {
+				ofs.height += area.height;
+			}
 
-		incr->draw(ci, ofs);
-		Rect2 grabber_rect;
+			incr->draw(ci, ofs);
+			Rect2 grabber_rect;
 
-		if (orientation == HORIZONTAL) {
-			grabber_rect.size.width = get_grabber_size();
-			grabber_rect.size.height = get_size().height;
-			grabber_rect.position.y = 0;
-			grabber_rect.position.x = get_grabber_offset() + decr->get_width() + bg->get_margin(SIDE_LEFT);
-		} else {
-			grabber_rect.size.width = get_size().width;
-			grabber_rect.size.height = get_grabber_size();
-			grabber_rect.position.y = get_grabber_offset() + decr->get_height() + bg->get_margin(SIDE_TOP);
-			grabber_rect.position.x = 0;
-		}
+			if (orientation == HORIZONTAL) {
+				grabber_rect.size.width = get_grabber_size();
+				grabber_rect.size.height = get_size().height;
+				grabber_rect.position.y = 0;
+				grabber_rect.position.x = get_grabber_offset() + decr->get_width() + bg->get_margin(SIDE_LEFT);
+			} else {
+				grabber_rect.size.width = get_size().width;
+				grabber_rect.size.height = get_grabber_size();
+				grabber_rect.position.y = get_grabber_offset() + decr->get_height() + bg->get_margin(SIDE_TOP);
+				grabber_rect.position.x = 0;
+			}
 
-		grabber->draw(ci, grabber_rect);
-	}
+			grabber->draw(ci, grabber_rect);
+		} break;
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (has_node(drag_node_path)) {
-			Node *n = get_node(drag_node_path);
-			drag_node = Object::cast_to<Control>(n);
-		}
+		case NOTIFICATION_ENTER_TREE: {
+			if (has_node(drag_node_path)) {
+				Node *n = get_node(drag_node_path);
+				drag_node = Object::cast_to<Control>(n);
+			}
 
-		if (drag_node) {
-			drag_node->connect("gui_input", callable_mp(this, &ScrollBar::_drag_node_input));
-			drag_node->connect("tree_exiting", callable_mp(this, &ScrollBar::_drag_node_exit), varray(), CONNECT_ONESHOT);
-		}
-	}
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (drag_node) {
-			drag_node->disconnect("gui_input", callable_mp(this, &ScrollBar::_drag_node_input));
-			drag_node->disconnect("tree_exiting", callable_mp(this, &ScrollBar::_drag_node_exit));
-		}
+			if (drag_node) {
+				drag_node->connect("gui_input", callable_mp(this, &ScrollBar::_drag_node_input));
+				drag_node->connect("tree_exiting", callable_mp(this, &ScrollBar::_drag_node_exit), varray(), CONNECT_ONESHOT);
+			}
+		} break;
 
-		drag_node = nullptr;
-	}
+		case NOTIFICATION_EXIT_TREE: {
+			if (drag_node) {
+				drag_node->disconnect("gui_input", callable_mp(this, &ScrollBar::_drag_node_input));
+				drag_node->disconnect("tree_exiting", callable_mp(this, &ScrollBar::_drag_node_exit));
+			}
 
-	if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
-		if (scrolling) {
-			if (get_value() != target_scroll) {
-				double target = target_scroll - get_value();
-				double dist = sqrt(target * target);
-				double vel = ((target / dist) * 500) * get_physics_process_delta_time();
+			drag_node = nullptr;
+		} break;
 
-				if (Math::abs(vel) >= dist) {
-					set_value(target_scroll);
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			if (scrolling) {
+				if (get_value() != target_scroll) {
+					double target = target_scroll - get_value();
+					double dist = sqrt(target * target);
+					double vel = ((target / dist) * 500) * get_physics_process_delta_time();
+
+					if (Math::abs(vel) >= dist) {
+						set_value(target_scroll);
+						scrolling = false;
+						set_physics_process_internal(false);
+					} else {
+						set_value(get_value() + vel);
+					}
+				} else {
 					scrolling = false;
 					set_physics_process_internal(false);
+				}
+
+			} else if (drag_node_touching) {
+				if (drag_node_touching_deaccel) {
+					Vector2 pos = Vector2(orientation == HORIZONTAL ? get_value() : 0, orientation == VERTICAL ? get_value() : 0);
+					pos += drag_node_speed * get_physics_process_delta_time();
+
+					bool turnoff = false;
+
+					if (orientation == HORIZONTAL) {
+						if (pos.x < 0) {
+							pos.x = 0;
+							turnoff = true;
+						}
+
+						if (pos.x > (get_max() - get_page())) {
+							pos.x = get_max() - get_page();
+							turnoff = true;
+						}
+
+						set_value(pos.x);
+
+						float sgn_x = drag_node_speed.x < 0 ? -1 : 1;
+						float val_x = Math::abs(drag_node_speed.x);
+						val_x -= 1000 * get_physics_process_delta_time();
+
+						if (val_x < 0) {
+							turnoff = true;
+						}
+
+						drag_node_speed.x = sgn_x * val_x;
+
+					} else {
+						if (pos.y < 0) {
+							pos.y = 0;
+							turnoff = true;
+						}
+
+						if (pos.y > (get_max() - get_page())) {
+							pos.y = get_max() - get_page();
+							turnoff = true;
+						}
+
+						set_value(pos.y);
+
+						float sgn_y = drag_node_speed.y < 0 ? -1 : 1;
+						float val_y = Math::abs(drag_node_speed.y);
+						val_y -= 1000 * get_physics_process_delta_time();
+
+						if (val_y < 0) {
+							turnoff = true;
+						}
+						drag_node_speed.y = sgn_y * val_y;
+					}
+
+					if (turnoff) {
+						set_physics_process_internal(false);
+						drag_node_touching = false;
+						drag_node_touching_deaccel = false;
+					}
+
 				} else {
-					set_value(get_value() + vel);
+					if (time_since_motion == 0 || time_since_motion > 0.1) {
+						Vector2 diff = drag_node_accum - last_drag_node_accum;
+						last_drag_node_accum = drag_node_accum;
+						drag_node_speed = diff / get_physics_process_delta_time();
+					}
+
+					time_since_motion += get_physics_process_delta_time();
 				}
-			} else {
-				scrolling = false;
-				set_physics_process_internal(false);
 			}
+		} break;
 
-		} else if (drag_node_touching) {
-			if (drag_node_touching_deaccel) {
-				Vector2 pos = Vector2(orientation == HORIZONTAL ? get_value() : 0, orientation == VERTICAL ? get_value() : 0);
-				pos += drag_node_speed * get_physics_process_delta_time();
-
-				bool turnoff = false;
-
-				if (orientation == HORIZONTAL) {
-					if (pos.x < 0) {
-						pos.x = 0;
-						turnoff = true;
-					}
-
-					if (pos.x > (get_max() - get_page())) {
-						pos.x = get_max() - get_page();
-						turnoff = true;
-					}
-
-					set_value(pos.x);
-
-					float sgn_x = drag_node_speed.x < 0 ? -1 : 1;
-					float val_x = Math::abs(drag_node_speed.x);
-					val_x -= 1000 * get_physics_process_delta_time();
-
-					if (val_x < 0) {
-						turnoff = true;
-					}
-
-					drag_node_speed.x = sgn_x * val_x;
-
-				} else {
-					if (pos.y < 0) {
-						pos.y = 0;
-						turnoff = true;
-					}
-
-					if (pos.y > (get_max() - get_page())) {
-						pos.y = get_max() - get_page();
-						turnoff = true;
-					}
-
-					set_value(pos.y);
-
-					float sgn_y = drag_node_speed.y < 0 ? -1 : 1;
-					float val_y = Math::abs(drag_node_speed.y);
-					val_y -= 1000 * get_physics_process_delta_time();
-
-					if (val_y < 0) {
-						turnoff = true;
-					}
-					drag_node_speed.y = sgn_y * val_y;
-				}
-
-				if (turnoff) {
-					set_physics_process_internal(false);
-					drag_node_touching = false;
-					drag_node_touching_deaccel = false;
-				}
-
-			} else {
-				if (time_since_motion == 0 || time_since_motion > 0.1) {
-					Vector2 diff = drag_node_accum - last_drag_node_accum;
-					last_drag_node_accum = drag_node_accum;
-					drag_node_speed = diff / get_physics_process_delta_time();
-				}
-
-				time_since_motion += get_physics_process_delta_time();
-			}
-		}
-	}
-
-	if (p_what == NOTIFICATION_MOUSE_EXIT) {
-		highlight = HIGHLIGHT_NONE;
-		update();
+		case NOTIFICATION_MOUSE_EXIT: {
+			highlight = HIGHLIGHT_NONE;
+			update();
+		} break;
 	}
 }
 

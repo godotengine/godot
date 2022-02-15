@@ -616,6 +616,7 @@ void SceneTree::_notification(int p_notification) {
 				get_root()->propagate_notification(p_notification);
 			}
 		} break;
+
 		case NOTIFICATION_OS_MEMORY_WARNING:
 		case NOTIFICATION_OS_IME_UPDATE:
 		case NOTIFICATION_WM_ABOUT:
@@ -624,13 +625,11 @@ void SceneTree::_notification(int p_notification) {
 		case NOTIFICATION_APPLICATION_PAUSED:
 		case NOTIFICATION_APPLICATION_FOCUS_IN:
 		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
-			get_root()->propagate_notification(p_notification); //pass these to nodes, since they are mirrored
+			// Pass these to nodes, since they are mirrored.
+			get_root()->propagate_notification(p_notification);
 		} break;
-
-		default:
-			break;
-	};
-};
+	}
+}
 
 void SceneTree::set_auto_accept_quit(bool p_enable) {
 	accept_quit = p_enable;

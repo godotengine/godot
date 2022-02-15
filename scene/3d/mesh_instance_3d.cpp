@@ -328,8 +328,10 @@ void MeshInstance3D::create_multiple_convex_collisions() {
 }
 
 void MeshInstance3D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		_resolve_skeleton_path();
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			_resolve_skeleton_path();
+		} break;
 	}
 }
 

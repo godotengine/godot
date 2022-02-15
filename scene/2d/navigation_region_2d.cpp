@@ -406,15 +406,18 @@ void NavigationRegion2D::_notification(int p_what) {
 				NavigationServer2D::get_singleton_mut()->connect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
 			}
 		} break;
+
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			NavigationServer2D::get_singleton()->region_set_transform(region, get_global_transform());
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			NavigationServer2D::get_singleton()->region_set_map(region, RID());
 			if (enabled) {
 				NavigationServer2D::get_singleton_mut()->disconnect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
 			}
 		} break;
+
 		case NOTIFICATION_DRAW: {
 			if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()) && navpoly.is_valid()) {
 				Vector<Vector2> verts = navpoly->get_vertices();

@@ -228,9 +228,9 @@ Line2D::LineCapMode Line2D::get_end_cap_mode() const {
 
 void Line2D::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_DRAW:
+		case NOTIFICATION_DRAW: {
 			_draw();
-			break;
+		} break;
 	}
 }
 

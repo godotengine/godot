@@ -1251,65 +1251,67 @@ void CPUParticles3D::_update_render_thread() {
 }
 
 void CPUParticles3D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		set_process_internal(emitting);
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			set_process_internal(emitting);
 
-		// first update before rendering to avoid one frame delay after emitting starts
-		if (emitting && (time == 0)) {
+			// first update before rendering to avoid one frame delay after emitting starts
+			if (emitting && (time == 0)) {
+				_update_internal();
+			}
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			_set_redraw(false);
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			// first update before rendering to avoid one frame delay after emitting starts
+			if (emitting && (time == 0)) {
+				_update_internal();
+			}
+		} break;
+
+		case NOTIFICATION_INTERNAL_PROCESS: {
 			_update_internal();
-		}
-	}
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		_set_redraw(false);
-	}
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			inv_emission_transform = get_global_transform().affine_inverse();
 
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		// first update before rendering to avoid one frame delay after emitting starts
-		if (emitting && (time == 0)) {
-			_update_internal();
-		}
-	}
+			if (!local_coords) {
+				int pc = particles.size();
 
-	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
-		_update_internal();
-	}
+				float *w = particle_data.ptrw();
+				const Particle *r = particles.ptr();
+				float *ptr = w;
 
-	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
-		inv_emission_transform = get_global_transform().affine_inverse();
+				for (int i = 0; i < pc; i++) {
+					Transform3D t = inv_emission_transform * r[i].transform;
 
-		if (!local_coords) {
-			int pc = particles.size();
+					if (r[i].active) {
+						ptr[0] = t.basis.elements[0][0];
+						ptr[1] = t.basis.elements[0][1];
+						ptr[2] = t.basis.elements[0][2];
+						ptr[3] = t.origin.x;
+						ptr[4] = t.basis.elements[1][0];
+						ptr[5] = t.basis.elements[1][1];
+						ptr[6] = t.basis.elements[1][2];
+						ptr[7] = t.origin.y;
+						ptr[8] = t.basis.elements[2][0];
+						ptr[9] = t.basis.elements[2][1];
+						ptr[10] = t.basis.elements[2][2];
+						ptr[11] = t.origin.z;
+					} else {
+						memset(ptr, 0, sizeof(float) * 12);
+					}
 
-			float *w = particle_data.ptrw();
-			const Particle *r = particles.ptr();
-			float *ptr = w;
-
-			for (int i = 0; i < pc; i++) {
-				Transform3D t = inv_emission_transform * r[i].transform;
-
-				if (r[i].active) {
-					ptr[0] = t.basis.elements[0][0];
-					ptr[1] = t.basis.elements[0][1];
-					ptr[2] = t.basis.elements[0][2];
-					ptr[3] = t.origin.x;
-					ptr[4] = t.basis.elements[1][0];
-					ptr[5] = t.basis.elements[1][1];
-					ptr[6] = t.basis.elements[1][2];
-					ptr[7] = t.origin.y;
-					ptr[8] = t.basis.elements[2][0];
-					ptr[9] = t.basis.elements[2][1];
-					ptr[10] = t.basis.elements[2][2];
-					ptr[11] = t.origin.z;
-				} else {
-					memset(ptr, 0, sizeof(float) * 12);
+					ptr += 20;
 				}
 
-				ptr += 20;
+				can_update.set();
 			}
-
-			can_update.set();
-		}
+		} break;
 	}
 }
 

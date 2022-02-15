@@ -33,13 +33,15 @@
 #include "core/config/engine.h"
 
 void ReferenceRect::_notification(int p_what) {
-	if (p_what == NOTIFICATION_DRAW) {
-		if (!is_inside_tree()) {
-			return;
-		}
-		if (Engine::get_singleton()->is_editor_hint() || !editor_only) {
-			draw_rect(Rect2(Point2(), get_size()), border_color, false, border_width);
-		}
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
+			if (!is_inside_tree()) {
+				return;
+			}
+			if (Engine::get_singleton()->is_editor_hint() || !editor_only) {
+				draw_rect(Rect2(Point2(), get_size()), border_color, false, border_width);
+			}
+		} break;
 	}
 }
 

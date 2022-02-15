@@ -1091,9 +1091,11 @@ void CPUParticles2D::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			set_process_internal(emitting);
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			_set_redraw(false);
 		} break;
+
 		case NOTIFICATION_DRAW: {
 			// first update before rendering to avoid one frame delay after emitting starts
 			if (emitting && (time == 0)) {
@@ -1111,9 +1113,11 @@ void CPUParticles2D::_notification(int p_what) {
 
 			RS::get_singleton()->canvas_item_add_multimesh(get_canvas_item(), multimesh, texrid);
 		} break;
+
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			_update_internal();
 		} break;
+
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			inv_emission_transform = get_global_transform().affine_inverse();
 

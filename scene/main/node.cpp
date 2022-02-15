@@ -54,12 +54,12 @@ void Node::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_PROCESS: {
 			GDVIRTUAL_CALL(_process, get_process_delta_time());
-
 		} break;
+
 		case NOTIFICATION_PHYSICS_PROCESS: {
 			GDVIRTUAL_CALL(_physics_process, get_physics_process_delta_time());
-
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			ERR_FAIL_COND(!get_viewport());
 			ERR_FAIL_COND(!get_tree());
@@ -88,8 +88,8 @@ void Node::_notification(int p_notification) {
 
 			get_tree()->node_count++;
 			orphan_node_count--;
-
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			ERR_FAIL_COND(!get_viewport());
 			ERR_FAIL_COND(!get_tree());
@@ -113,12 +113,14 @@ void Node::_notification(int p_notification) {
 				data.path_cache = nullptr;
 			}
 		} break;
+
 		case NOTIFICATION_PATH_RENAMED: {
 			if (data.path_cache) {
 				memdelete(data.path_cache);
 				data.path_cache = nullptr;
 			}
 		} break;
+
 		case NOTIFICATION_READY: {
 			if (GDVIRTUAL_IS_OVERRIDDEN(_input)) {
 				set_process_input(true);
@@ -141,9 +143,11 @@ void Node::_notification(int p_notification) {
 
 			GDVIRTUAL_CALL(_ready);
 		} break;
+
 		case NOTIFICATION_POSTINITIALIZE: {
 			data.in_constructor = false;
 		} break;
+
 		case NOTIFICATION_PREDELETE: {
 			if (data.parent) {
 				data.parent->remove_child(this);

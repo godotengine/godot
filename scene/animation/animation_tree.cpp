@@ -1586,29 +1586,37 @@ void AnimationTree::advance(real_t p_time) {
 }
 
 void AnimationTree::_notification(int p_what) {
-	if (active && p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS && process_callback == ANIMATION_PROCESS_PHYSICS) {
-		_process_graph(get_physics_process_delta_time());
-	}
-
-	if (active && p_what == NOTIFICATION_INTERNAL_PROCESS && process_callback == ANIMATION_PROCESS_IDLE) {
-		_process_graph(get_process_delta_time());
-	}
-
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		_clear_caches();
-		if (last_animation_player.is_valid()) {
-			Object *player = ObjectDB::get_instance(last_animation_player);
-			if (player) {
-				player->disconnect("caches_cleared", callable_mp(this, &AnimationTree::_clear_caches));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			if (last_animation_player.is_valid()) {
+				Object *player = ObjectDB::get_instance(last_animation_player);
+				if (player) {
+					player->connect("caches_cleared", callable_mp(this, &AnimationTree::_clear_caches));
+				}
 			}
-		}
-	} else if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (last_animation_player.is_valid()) {
-			Object *player = ObjectDB::get_instance(last_animation_player);
-			if (player) {
-				player->connect("caches_cleared", callable_mp(this, &AnimationTree::_clear_caches));
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			_clear_caches();
+			if (last_animation_player.is_valid()) {
+				Object *player = ObjectDB::get_instance(last_animation_player);
+				if (player) {
+					player->disconnect("caches_cleared", callable_mp(this, &AnimationTree::_clear_caches));
+				}
 			}
-		}
+		} break;
+
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (active && process_callback == ANIMATION_PROCESS_IDLE) {
+				_process_graph(get_process_delta_time());
+			}
+		} break;
+
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			if (active && process_callback == ANIMATION_PROCESS_PHYSICS) {
+				_process_graph(get_physics_process_delta_time());
+			}
+		} break;
 	}
 }
 

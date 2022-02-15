@@ -134,8 +134,8 @@ void TouchScreenButton::_notification(int p_what) {
 				draw_set_transform_matrix(get_canvas_transform().translated(pos));
 				shape->draw(get_canvas_item(), draw_col);
 			}
-
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			if (!Engine::get_singleton()->is_editor_hint() && !!DisplayServer::get_singleton()->screen_is_touchscreen(DisplayServer::get_singleton()->window_get_current_screen(get_viewport()->get_window_id())) && visibility == VISIBILITY_TOUCHSCREEN_ONLY) {
 				return;
@@ -145,13 +145,14 @@ void TouchScreenButton::_notification(int p_what) {
 			if (!Engine::get_singleton()->is_editor_hint()) {
 				set_process_input(is_visible_in_tree());
 			}
-
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			if (is_pressed()) {
 				_release(true);
 			}
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (Engine::get_singleton()->is_editor_hint()) {
 				break;
@@ -165,6 +166,7 @@ void TouchScreenButton::_notification(int p_what) {
 				}
 			}
 		} break;
+
 		case NOTIFICATION_PAUSED: {
 			if (is_pressed()) {
 				_release();

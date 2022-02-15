@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "container.h"
+
 #include "core/object/message_queue.h"
 #include "scene/scene_string_names.h"
 
@@ -177,12 +178,12 @@ void Container::_notification(int p_what) {
 			pending_sort = false;
 			queue_sort();
 		} break;
-		case NOTIFICATION_RESIZED: {
-			queue_sort();
-		} break;
+
+		case NOTIFICATION_RESIZED:
 		case NOTIFICATION_THEME_CHANGED: {
 			queue_sort();
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible_in_tree()) {
 				queue_sort();
