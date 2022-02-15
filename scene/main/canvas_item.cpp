@@ -305,6 +305,7 @@ void CanvasItem::_notification(int p_what) {
 				get_tree()->xform_change_list.add(&xform_change);
 			}
 		} break;
+
 		case NOTIFICATION_MOVED_IN_PARENT: {
 			if (!is_inside_tree()) {
 				break;
@@ -317,8 +318,8 @@ void CanvasItem::_notification(int p_what) {
 				ERR_FAIL_COND(!p);
 				RenderingServer::get_singleton()->canvas_item_set_draw_index(canvas_item, get_index());
 			}
-
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			if (xform_change.in_list()) {
 				get_tree()->xform_change_list.remove(&xform_change);
@@ -334,9 +335,7 @@ void CanvasItem::_notification(int p_what) {
 			global_invalid = true;
 			visible_in_tree = false;
 		} break;
-		case NOTIFICATION_DRAW:
-		case NOTIFICATION_TRANSFORM_CHANGED: {
-		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			emit_signal(SceneStringNames::get_singleton()->visibility_changed);
 		} break;

@@ -168,15 +168,18 @@ void SplitContainer::_notification(int p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			queue_sort();
 		} break;
+
 		case NOTIFICATION_SORT_CHILDREN: {
 			_resort();
 		} break;
+
 		case NOTIFICATION_MOUSE_EXIT: {
 			mouse_inside = false;
 			if (get_theme_constant(SNAME("autohide"))) {
 				update();
 			}
 		} break;
+
 		case NOTIFICATION_DRAW: {
 			if (!_getch(0) || !_getch(1)) {
 				return;
@@ -200,6 +203,7 @@ void SplitContainer::_notification(int p_what) {
 				draw_texture(tex, Point2i(middle_sep + (sep - tex->get_width()) / 2, (size.y - tex->get_height()) / 2));
 			}
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			update_minimum_size();
 		} break;

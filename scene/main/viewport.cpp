@@ -406,8 +406,8 @@ void Viewport::_notification(int p_what) {
 #endif // _3D_DISABLED
 				set_physics_process_internal(true);
 			}
-
 		} break;
+
 		case NOTIFICATION_READY: {
 #ifndef _3D_DISABLED
 			if (audio_listener_3d_set.size() && !audio_listener_3d) {
@@ -438,6 +438,7 @@ void Viewport::_notification(int p_what) {
 			}
 #endif // _3D_DISABLED
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			_gui_cancel_tooltip();
 
@@ -461,6 +462,7 @@ void Viewport::_notification(int p_what) {
 			RS::get_singleton()->viewport_set_active(viewport, false);
 			RenderingServer::get_singleton()->viewport_set_parent_viewport(viewport, RID());
 		} break;
+
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (!get_tree()) {
 				return;
@@ -493,9 +495,11 @@ void Viewport::_notification(int p_what) {
 			}
 #endif // _3D_DISABLED
 		} break;
+
 		case NOTIFICATION_WM_MOUSE_ENTER: {
 			gui.mouse_in_window = true;
 		} break;
+
 		case NOTIFICATION_WM_MOUSE_EXIT: {
 			gui.mouse_in_window = false;
 			_drop_physics_mouseover();
@@ -504,6 +508,7 @@ void Viewport::_notification(int p_what) {
 			// not mouse_focus, because, for example, we want to continue
 			// dragging a scrollbar even if the mouse has left the window.
 		} break;
+
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
 			_drop_physics_mouseover();
 			if (gui.mouse_focus && !gui.forced_mouse_focus) {
@@ -3939,11 +3944,14 @@ Transform2D SubViewport::_stretch_transform() {
 }
 
 void SubViewport::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
-	}
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		RS::get_singleton()->viewport_set_active(get_viewport_rid(), false);
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			RS::get_singleton()->viewport_set_active(get_viewport_rid(), false);
+		} break;
 	}
 }
 

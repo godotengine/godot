@@ -91,6 +91,7 @@ void OptionButton::_notification(int p_what) {
 			}
 			arrow->draw(ci, ofs, clr);
 		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			popup->set_layout_direction((Window::LayoutDirection)get_layout_direction());
@@ -107,6 +108,7 @@ void OptionButton::_notification(int p_what) {
 				}
 			}
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible_in_tree()) {
 				popup->hide();

@@ -71,8 +71,11 @@ bool VisibleOnScreenNotifier3D::is_on_screen() const {
 }
 
 void VisibleOnScreenNotifier3D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_EXIT_TREE) {
-		on_screen = false;
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_EXIT_TREE: {
+			on_screen = false;
+		} break;
 	}
 }
 
@@ -161,21 +164,23 @@ void VisibleOnScreenEnabler3D::_update_enable_mode(bool p_enable) {
 	}
 }
 void VisibleOnScreenEnabler3D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (Engine::get_singleton()->is_editor_hint()) {
-			return;
-		}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			if (Engine::get_singleton()->is_editor_hint()) {
+				return;
+			}
 
-		node_id = ObjectID();
-		Node *node = get_node(enable_node_path);
-		if (node) {
-			node_id = node->get_instance_id();
-			node->set_process_mode(PROCESS_MODE_DISABLED);
-		}
-	}
+			node_id = ObjectID();
+			Node *node = get_node(enable_node_path);
+			if (node) {
+				node_id = node->get_instance_id();
+				node->set_process_mode(PROCESS_MODE_DISABLED);
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		node_id = ObjectID();
+		case NOTIFICATION_EXIT_TREE: {
+			node_id = ObjectID();
+		} break;
 	}
 }
 

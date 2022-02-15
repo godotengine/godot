@@ -807,9 +807,6 @@ String AnimationNodeStateMachine::get_caption() const {
 	return "StateMachine";
 }
 
-void AnimationNodeStateMachine::_notification(int p_what) {
-}
-
 Ref<AnimationNode> AnimationNodeStateMachine::get_child_by_name(const StringName &p_name) {
 	return get_node(p_name);
 }

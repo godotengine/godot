@@ -66,23 +66,25 @@ void SpriteBase3D::_propagate_color_changed() {
 }
 
 void SpriteBase3D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (!pending_update) {
-			_im_update();
-		}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			if (!pending_update) {
+				_im_update();
+			}
 
-		parent_sprite = Object::cast_to<SpriteBase3D>(get_parent());
-		if (parent_sprite) {
-			pI = parent_sprite->children.push_back(this);
-		}
-	}
+			parent_sprite = Object::cast_to<SpriteBase3D>(get_parent());
+			if (parent_sprite) {
+				pI = parent_sprite->children.push_back(this);
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (parent_sprite) {
-			parent_sprite->children.erase(pI);
-			pI = nullptr;
-			parent_sprite = nullptr;
-		}
+		case NOTIFICATION_EXIT_TREE: {
+			if (parent_sprite) {
+				parent_sprite->children.erase(pI);
+				pI = nullptr;
+				parent_sprite = nullptr;
+			}
+		} break;
 	}
 }
 

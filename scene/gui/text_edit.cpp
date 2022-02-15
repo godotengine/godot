@@ -432,32 +432,38 @@ void TextEdit::_notification(int p_what) {
 			}
 			_update_wrap_at_column(true);
 		} break;
+
 		case NOTIFICATION_RESIZED: {
 			_update_scrollbars();
 			_update_wrap_at_column();
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
 				call_deferred(SNAME("_update_scrollbars"));
 				call_deferred(SNAME("_update_wrap_at_column"));
 			}
 		} break;
+
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_caches();
 			_update_wrap_at_column(true);
 		} break;
+
 		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
 			window_has_focus = true;
 			draw_caret = true;
 			update();
 		} break;
+
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
 			window_has_focus = false;
 			draw_caret = false;
 			update();
 		} break;
+
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (scrolling && get_v_scroll() != target_v_scroll) {
 				double target_y = target_v_scroll - get_v_scroll();
@@ -479,6 +485,7 @@ void TextEdit::_notification(int p_what) {
 				set_physics_process_internal(false);
 			}
 		} break;
+
 		case NOTIFICATION_DRAW: {
 			if (first_draw) {
 				// Size may not be the final one, so attempts to ensure caret was visible may have failed.
@@ -1427,6 +1434,7 @@ void TextEdit::_notification(int p_what) {
 				}
 			}
 		} break;
+
 		case NOTIFICATION_FOCUS_ENTER: {
 			if (caret_blink_enabled) {
 				caret_blink_timer->start();
@@ -1458,6 +1466,7 @@ void TextEdit::_notification(int p_what) {
 				DisplayServer::get_singleton()->virtual_keyboard_show(get_text(), get_global_rect(), true, -1, caret_start, caret_end);
 			}
 		} break;
+
 		case NOTIFICATION_FOCUS_EXIT: {
 			if (caret_blink_enabled) {
 				caret_blink_timer->stop();
@@ -1481,6 +1490,7 @@ void TextEdit::_notification(int p_what) {
 				deselect();
 			}
 		} break;
+
 		case MainLoop::NOTIFICATION_OS_IME_UPDATE: {
 			if (has_focus()) {
 				ime_text = DisplayServer::get_singleton()->ime_get_text();
@@ -1497,7 +1507,8 @@ void TextEdit::_notification(int p_what) {
 				update();
 			}
 		} break;
-		case Control::NOTIFICATION_DRAG_BEGIN: {
+
+		case NOTIFICATION_DRAG_BEGIN: {
 			selection.selecting_mode = SelectionMode::SELECTION_MODE_NONE;
 			drag_action = true;
 			dragging_minimap = false;
@@ -1505,7 +1516,8 @@ void TextEdit::_notification(int p_what) {
 			can_drag_minimap = false;
 			click_select_held->stop();
 		} break;
-		case Control::NOTIFICATION_DRAG_END: {
+
+		case NOTIFICATION_DRAG_END: {
 			if (is_drag_successful()) {
 				if (selection.drag_attempt) {
 					selection.drag_attempt = false;

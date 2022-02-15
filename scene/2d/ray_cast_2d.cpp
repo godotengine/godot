@@ -150,11 +150,11 @@ void RayCast2D::_notification(int p_what) {
 				}
 			}
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			if (enabled) {
 				set_physics_process_internal(false);
 			}
-
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -163,16 +163,13 @@ void RayCast2D::_notification(int p_what) {
 				break;
 			}
 			_draw_debug_shape();
-
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (!enabled) {
 				break;
 			}
-
 			_update_raycast_state();
-
 		} break;
 	}
 }

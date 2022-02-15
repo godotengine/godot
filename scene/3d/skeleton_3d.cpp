@@ -318,11 +318,9 @@ void Skeleton3D::_notification(int p_what) {
 					rs->skeleton_bone_set_transform(skeleton, i, bonesptr[bone_index].pose_global * skin->get_bind_pose(i));
 				}
 			}
-
 #ifdef TOOLS_ENABLED
 			emit_signal(SceneStringNames::get_singleton()->pose_updated);
 #endif // TOOLS_ENABLED
-
 		} break;
 
 #ifndef _3D_DISABLED
@@ -344,19 +342,14 @@ void Skeleton3D::_notification(int p_what) {
 			if (modification_stack.is_valid()) {
 				execute_modifications(get_physics_process_delta_time(), SkeletonModificationStack3D::EXECUTION_MODE::execution_mode_physics_process);
 			}
-
 		} break;
-#endif // _3D_DISABLED
 
-#ifndef _3D_DISABLED
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (modification_stack.is_valid()) {
 				execute_modifications(get_process_delta_time(), SkeletonModificationStack3D::EXECUTION_MODE::execution_mode_process);
 			}
 		} break;
-#endif // _3D_DISABLED
 
-#ifndef _3D_DISABLED
 		case NOTIFICATION_READY: {
 			set_physics_process_internal(true);
 			set_process_internal(true);

@@ -1176,16 +1176,18 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 }
 
 void LightmapGI::_notification(int p_what) {
-	if (p_what == NOTIFICATION_POST_ENTER_TREE) {
-		if (light_data.is_valid()) {
-			_assign_lightmaps();
-		}
-	}
+	switch (p_what) {
+		case NOTIFICATION_POST_ENTER_TREE: {
+			if (light_data.is_valid()) {
+				_assign_lightmaps();
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (light_data.is_valid()) {
-			_clear_lightmaps();
-		}
+		case NOTIFICATION_EXIT_TREE: {
+			if (light_data.is_valid()) {
+				_clear_lightmaps();
+			}
+		} break;
 	}
 }
 

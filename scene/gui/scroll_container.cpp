@@ -316,97 +316,102 @@ void ScrollContainer::_update_dimensions() {
 }
 
 void ScrollContainer::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_LAYOUT_DIRECTION_CHANGED || p_what == NOTIFICATION_TRANSLATION_CHANGED) {
-		_updating_scrollbars = true;
-		call_deferred(SNAME("_update_scrollbar_position"));
-	};
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			_updating_scrollbars = true;
+			call_deferred(SNAME("_update_scrollbar_position"));
+		} break;
 
-	if (p_what == NOTIFICATION_READY) {
-		Viewport *viewport = get_viewport();
-		ERR_FAIL_COND(!viewport);
-		viewport->connect("gui_focus_changed", callable_mp(this, &ScrollContainer::_gui_focus_changed));
-		_update_dimensions();
-	}
+		case NOTIFICATION_READY: {
+			Viewport *viewport = get_viewport();
+			ERR_FAIL_COND(!viewport);
+			viewport->connect("gui_focus_changed", callable_mp(this, &ScrollContainer::_gui_focus_changed));
+			_update_dimensions();
+		} break;
 
-	if (p_what == NOTIFICATION_SORT_CHILDREN) {
-		_update_dimensions();
-	};
+		case NOTIFICATION_SORT_CHILDREN: {
+			_update_dimensions();
+		} break;
 
-	if (p_what == NOTIFICATION_DRAW) {
-		Ref<StyleBox> sb = get_theme_stylebox(SNAME("bg"));
-		draw_style_box(sb, Rect2(Vector2(), get_size()));
+		case NOTIFICATION_DRAW: {
+			Ref<StyleBox> sb = get_theme_stylebox(SNAME("bg"));
+			draw_style_box(sb, Rect2(Vector2(), get_size()));
 
-		update_scrollbars();
-	}
+			update_scrollbars();
+		} break;
 
-	if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
-		if (drag_touching) {
-			if (drag_touching_deaccel) {
-				Vector2 pos = Vector2(h_scroll->get_value(), v_scroll->get_value());
-				pos += drag_speed * get_physics_process_delta_time();
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			if (drag_touching) {
+				if (drag_touching_deaccel) {
+					Vector2 pos = Vector2(h_scroll->get_value(), v_scroll->get_value());
+					pos += drag_speed * get_physics_process_delta_time();
 
-				bool turnoff_h = false;
-				bool turnoff_v = false;
+					bool turnoff_h = false;
+					bool turnoff_v = false;
 
-				if (pos.x < 0) {
-					pos.x = 0;
-					turnoff_h = true;
+					if (pos.x < 0) {
+						pos.x = 0;
+						turnoff_h = true;
+					}
+					if (pos.x > (h_scroll->get_max() - h_scroll->get_page())) {
+						pos.x = h_scroll->get_max() - h_scroll->get_page();
+						turnoff_h = true;
+					}
+
+					if (pos.y < 0) {
+						pos.y = 0;
+						turnoff_v = true;
+					}
+					if (pos.y > (v_scroll->get_max() - v_scroll->get_page())) {
+						pos.y = v_scroll->get_max() - v_scroll->get_page();
+						turnoff_v = true;
+					}
+
+					if (horizontal_scroll_mode != SCROLL_MODE_DISABLED) {
+						h_scroll->set_value(pos.x);
+					}
+					if (vertical_scroll_mode != SCROLL_MODE_DISABLED) {
+						v_scroll->set_value(pos.y);
+					}
+
+					float sgn_x = drag_speed.x < 0 ? -1 : 1;
+					float val_x = Math::abs(drag_speed.x);
+					val_x -= 1000 * get_physics_process_delta_time();
+
+					if (val_x < 0) {
+						turnoff_h = true;
+					}
+
+					float sgn_y = drag_speed.y < 0 ? -1 : 1;
+					float val_y = Math::abs(drag_speed.y);
+					val_y -= 1000 * get_physics_process_delta_time();
+
+					if (val_y < 0) {
+						turnoff_v = true;
+					}
+
+					drag_speed = Vector2(sgn_x * val_x, sgn_y * val_y);
+
+					if (turnoff_h && turnoff_v) {
+						_cancel_drag();
+					}
+
+				} else {
+					if (time_since_motion == 0 || time_since_motion > 0.1) {
+						Vector2 diff = drag_accum - last_drag_accum;
+						last_drag_accum = drag_accum;
+						drag_speed = diff / get_physics_process_delta_time();
+					}
+
+					time_since_motion += get_physics_process_delta_time();
 				}
-				if (pos.x > (h_scroll->get_max() - h_scroll->get_page())) {
-					pos.x = h_scroll->get_max() - h_scroll->get_page();
-					turnoff_h = true;
-				}
-
-				if (pos.y < 0) {
-					pos.y = 0;
-					turnoff_v = true;
-				}
-				if (pos.y > (v_scroll->get_max() - v_scroll->get_page())) {
-					pos.y = v_scroll->get_max() - v_scroll->get_page();
-					turnoff_v = true;
-				}
-
-				if (horizontal_scroll_mode != SCROLL_MODE_DISABLED) {
-					h_scroll->set_value(pos.x);
-				}
-				if (vertical_scroll_mode != SCROLL_MODE_DISABLED) {
-					v_scroll->set_value(pos.y);
-				}
-
-				float sgn_x = drag_speed.x < 0 ? -1 : 1;
-				float val_x = Math::abs(drag_speed.x);
-				val_x -= 1000 * get_physics_process_delta_time();
-
-				if (val_x < 0) {
-					turnoff_h = true;
-				}
-
-				float sgn_y = drag_speed.y < 0 ? -1 : 1;
-				float val_y = Math::abs(drag_speed.y);
-				val_y -= 1000 * get_physics_process_delta_time();
-
-				if (val_y < 0) {
-					turnoff_v = true;
-				}
-
-				drag_speed = Vector2(sgn_x * val_x, sgn_y * val_y);
-
-				if (turnoff_h && turnoff_v) {
-					_cancel_drag();
-				}
-
-			} else {
-				if (time_since_motion == 0 || time_since_motion > 0.1) {
-					Vector2 diff = drag_accum - last_drag_accum;
-					last_drag_accum = drag_accum;
-					drag_speed = diff / get_physics_process_delta_time();
-				}
-
-				time_since_motion += get_physics_process_delta_time();
 			}
-		}
+		} break;
 	}
-};
+}
 
 void ScrollContainer::update_scrollbars() {
 	Size2 size = get_size();

@@ -122,8 +122,10 @@ AABB Occluder3D::get_aabb() const {
 }
 
 void Occluder3D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_POSTINITIALIZE) {
-		_update();
+	switch (p_what) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			_update();
+		} break;
 	}
 }
 

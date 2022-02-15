@@ -32,7 +32,6 @@
 
 #include "core/object/message_queue.h"
 #include "core/string/translation.h"
-
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
@@ -326,6 +325,7 @@ void TabContainer::_notification(int p_what) {
 				first_tab_cache--;
 			}
 		} break;
+
 		case NOTIFICATION_DRAW: {
 			RID canvas = get_canvas_item();
 			Size2 size = get_size();
@@ -522,6 +522,7 @@ void TabContainer::_notification(int p_what) {
 				}
 			}
 		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {

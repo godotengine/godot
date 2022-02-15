@@ -36,70 +36,72 @@
 #include "scene/resources/world_2d.h"
 
 void AudioStreamPlayer2D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		AudioServer::get_singleton()->add_listener_changed_callback(_listener_changed_cb, this);
-		if (autoplay && !Engine::get_singleton()->is_editor_hint()) {
-			play();
-		}
-	}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			AudioServer::get_singleton()->add_listener_changed_callback(_listener_changed_cb, this);
+			if (autoplay && !Engine::get_singleton()->is_editor_hint()) {
+				play();
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		stop();
-		AudioServer::get_singleton()->remove_listener_changed_callback(_listener_changed_cb, this);
-	}
+		case NOTIFICATION_EXIT_TREE: {
+			stop();
+			AudioServer::get_singleton()->remove_listener_changed_callback(_listener_changed_cb, this);
+		} break;
 
-	if (p_what == NOTIFICATION_PAUSED) {
-		if (!can_process()) {
-			// Node can't process so we start fading out to silence
-			set_stream_paused(true);
-		}
-	}
+		case NOTIFICATION_PAUSED: {
+			if (!can_process()) {
+				// Node can't process so we start fading out to silence.
+				set_stream_paused(true);
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_UNPAUSED) {
-		set_stream_paused(false);
-	}
+		case NOTIFICATION_UNPAUSED: {
+			set_stream_paused(false);
+		} break;
 
-	if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
-		//update anything related to position first, if possible of course
-		if (setplay.get() > 0 || (active.is_set() && last_mix_count != AudioServer::get_singleton()->get_mix_count())) {
-			_update_panning();
-		}
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			// Update anything related to position first, if possible of course.
+			if (setplay.get() > 0 || (active.is_set() && last_mix_count != AudioServer::get_singleton()->get_mix_count())) {
+				_update_panning();
+			}
 
-		if (setplay.get() >= 0 && stream.is_valid()) {
-			active.set();
-			Ref<AudioStreamPlayback> new_playback = stream->instance_playback();
-			ERR_FAIL_COND_MSG(new_playback.is_null(), "Failed to instantiate playback.");
-			AudioServer::get_singleton()->start_playback_stream(new_playback, _get_actual_bus(), volume_vector, setplay.get(), pitch_scale);
-			stream_playbacks.push_back(new_playback);
-			setplay.set(-1);
-		}
+			if (setplay.get() >= 0 && stream.is_valid()) {
+				active.set();
+				Ref<AudioStreamPlayback> new_playback = stream->instance_playback();
+				ERR_FAIL_COND_MSG(new_playback.is_null(), "Failed to instantiate playback.");
+				AudioServer::get_singleton()->start_playback_stream(new_playback, _get_actual_bus(), volume_vector, setplay.get(), pitch_scale);
+				stream_playbacks.push_back(new_playback);
+				setplay.set(-1);
+			}
 
-		if (!stream_playbacks.is_empty() && active.is_set()) {
-			// Stop playing if no longer active.
-			Vector<Ref<AudioStreamPlayback>> playbacks_to_remove;
-			for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
-				if (playback.is_valid() && !AudioServer::get_singleton()->is_playback_active(playback) && !AudioServer::get_singleton()->is_playback_paused(playback)) {
-					playbacks_to_remove.push_back(playback);
+			if (!stream_playbacks.is_empty() && active.is_set()) {
+				// Stop playing if no longer active.
+				Vector<Ref<AudioStreamPlayback>> playbacks_to_remove;
+				for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+					if (playback.is_valid() && !AudioServer::get_singleton()->is_playback_active(playback) && !AudioServer::get_singleton()->is_playback_paused(playback)) {
+						playbacks_to_remove.push_back(playback);
+					}
+				}
+				// Now go through and remove playbacks that have finished. Removing elements from a Vector in a range based for is asking for trouble.
+				for (Ref<AudioStreamPlayback> &playback : playbacks_to_remove) {
+					stream_playbacks.erase(playback);
+				}
+				if (!playbacks_to_remove.is_empty() && stream_playbacks.is_empty()) {
+					// This node is no longer actively playing audio.
+					active.clear();
+					set_physics_process_internal(false);
+				}
+				if (!playbacks_to_remove.is_empty()) {
+					emit_signal(SNAME("finished"));
 				}
 			}
-			// Now go through and remove playbacks that have finished. Removing elements from a Vector in a range based for is asking for trouble.
-			for (Ref<AudioStreamPlayback> &playback : playbacks_to_remove) {
-				stream_playbacks.erase(playback);
-			}
-			if (!playbacks_to_remove.is_empty() && stream_playbacks.is_empty()) {
-				// This node is no longer actively playing audio.
-				active.clear();
-				set_physics_process_internal(false);
-			}
-			if (!playbacks_to_remove.is_empty()) {
-				emit_signal(SNAME("finished"));
-			}
-		}
 
-		while (stream_playbacks.size() > max_polyphony) {
-			AudioServer::get_singleton()->stop_playback_stream(stream_playbacks[0]);
-			stream_playbacks.remove_at(0);
-		}
+			while (stream_playbacks.size() > max_polyphony) {
+				AudioServer::get_singleton()->stop_playback_stream(stream_playbacks[0]);
+				stream_playbacks.remove_at(0);
+			}
+		} break;
 	}
 }
 

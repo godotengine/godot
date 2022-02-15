@@ -84,34 +84,40 @@ Size2 CheckBox::get_minimum_size() const {
 }
 
 void CheckBox::_notification(int p_what) {
-	if ((p_what == NOTIFICATION_THEME_CHANGED) || (p_what == NOTIFICATION_LAYOUT_DIRECTION_CHANGED || (p_what == NOTIFICATION_TRANSLATION_CHANGED))) {
-		if (is_layout_rtl()) {
-			_set_internal_margin(SIDE_LEFT, 0.f);
-			_set_internal_margin(SIDE_RIGHT, get_icon_size().width);
-		} else {
-			_set_internal_margin(SIDE_LEFT, get_icon_size().width);
-			_set_internal_margin(SIDE_RIGHT, 0.f);
-		}
-	} else if (p_what == NOTIFICATION_DRAW) {
-		RID ci = get_canvas_item();
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (is_layout_rtl()) {
+				_set_internal_margin(SIDE_LEFT, 0.f);
+				_set_internal_margin(SIDE_RIGHT, get_icon_size().width);
+			} else {
+				_set_internal_margin(SIDE_LEFT, get_icon_size().width);
+				_set_internal_margin(SIDE_RIGHT, 0.f);
+			}
+		} break;
 
-		Ref<Texture2D> on = Control::get_theme_icon(vformat("%s%s", is_radio() ? "radio_checked" : "checked", is_disabled() ? "_disabled" : ""));
-		Ref<Texture2D> off = Control::get_theme_icon(vformat("%s%s", is_radio() ? "radio_unchecked" : "unchecked", is_disabled() ? "_disabled" : ""));
-		Ref<StyleBox> sb = get_theme_stylebox(SNAME("normal"));
+		case NOTIFICATION_DRAW: {
+			RID ci = get_canvas_item();
 
-		Vector2 ofs;
-		if (is_layout_rtl()) {
-			ofs.x = get_size().x - sb->get_margin(SIDE_RIGHT) - get_icon_size().width;
-		} else {
-			ofs.x = sb->get_margin(SIDE_LEFT);
-		}
-		ofs.y = int((get_size().height - get_icon_size().height) / 2) + get_theme_constant(SNAME("check_vadjust"));
+			Ref<Texture2D> on = Control::get_theme_icon(vformat("%s%s", is_radio() ? "radio_checked" : "checked", is_disabled() ? "_disabled" : ""));
+			Ref<Texture2D> off = Control::get_theme_icon(vformat("%s%s", is_radio() ? "radio_unchecked" : "unchecked", is_disabled() ? "_disabled" : ""));
+			Ref<StyleBox> sb = get_theme_stylebox(SNAME("normal"));
 
-		if (is_pressed()) {
-			on->draw(ci, ofs);
-		} else {
-			off->draw(ci, ofs);
-		}
+			Vector2 ofs;
+			if (is_layout_rtl()) {
+				ofs.x = get_size().x - sb->get_margin(SIDE_RIGHT) - get_icon_size().width;
+			} else {
+				ofs.x = sb->get_margin(SIDE_LEFT);
+			}
+			ofs.y = int((get_size().height - get_icon_size().height) / 2) + get_theme_constant(SNAME("check_vadjust"));
+
+			if (is_pressed()) {
+				on->draw(ci, ofs);
+			} else {
+				off->draw(ci, ofs);
+			}
+		} break;
 	}
 }
 

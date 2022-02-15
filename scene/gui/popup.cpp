@@ -74,19 +74,19 @@ void Popup::_notification(int p_what) {
 				emit_signal(SNAME("popup_hide"));
 				popped_up = false;
 			}
-
 		} break;
+
 		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
 			if (has_focus()) {
 				popped_up = true;
 			}
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			_deinitialize_visible_parents();
 		} break;
-		case NOTIFICATION_WM_CLOSE_REQUEST: {
-			_close_pressed();
-		} break;
+
+		case NOTIFICATION_WM_CLOSE_REQUEST:
 		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
 			_close_pressed();
 		} break;
@@ -241,13 +241,20 @@ void PopupPanel::_update_child_rects() {
 }
 
 void PopupPanel::_notification(int p_what) {
-	if (p_what == NOTIFICATION_THEME_CHANGED) {
-		panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), get_class_name()));
-	} else if (p_what == NOTIFICATION_READY || p_what == NOTIFICATION_ENTER_TREE) {
-		panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), get_class_name()));
-		_update_child_rects();
-	} else if (p_what == NOTIFICATION_WM_SIZE_CHANGED) {
-		_update_child_rects();
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), get_class_name()));
+		} break;
+
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_READY: {
+			panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), get_class_name()));
+			_update_child_rects();
+		} break;
+
+		case NOTIFICATION_WM_SIZE_CHANGED: {
+			_update_child_rects();
+		} break;
 	}
 }
 

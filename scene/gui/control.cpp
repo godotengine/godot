@@ -691,17 +691,17 @@ void Control::_update_canvas_item_transform() {
 
 void Control::_notification(int p_notification) {
 	switch (p_notification) {
-		case NOTIFICATION_ENTER_TREE: {
-		} break;
 		case NOTIFICATION_POST_ENTER_TREE: {
 			data.minimum_size_valid = false;
 			data.is_rtl_dirty = true;
 			_size_changed();
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			release_focus();
 			get_viewport()->_gui_remove_control(this);
 		} break;
+
 		case NOTIFICATION_READY: {
 #ifdef DEBUG_ENABLED
 			connect("ready", callable_mp(this, &Control::_clear_size_warning), varray(), CONNECT_DEFERRED | CONNECT_ONESHOT);
@@ -764,6 +764,7 @@ void Control::_notification(int p_notification) {
 				viewport->connect("size_changed", callable_mp(this, &Control::_size_changed));
 			}
 		} break;
+
 		case NOTIFICATION_EXIT_CANVAS: {
 			if (data.parent_canvas_item) {
 				data.parent_canvas_item->disconnect("item_rect_changed", callable_mp(this, &Control::_size_changed));
@@ -784,8 +785,8 @@ void Control::_notification(int p_notification) {
 			data.parent_canvas_item = nullptr;
 			data.parent_window = nullptr;
 			data.is_rtl_dirty = true;
-
 		} break;
+
 		case NOTIFICATION_MOVED_IN_PARENT: {
 			// some parents need to know the order of the children to draw (like TabContainer)
 			// update if necessary
@@ -797,50 +798,52 @@ void Control::_notification(int p_notification) {
 			if (data.RI) {
 				get_viewport()->_gui_set_root_order_dirty();
 			}
-
 		} break;
+
 		case NOTIFICATION_RESIZED: {
 			emit_signal(SceneStringNames::get_singleton()->resized);
 		} break;
+
 		case NOTIFICATION_DRAW: {
 			_update_canvas_item_transform();
 			RenderingServer::get_singleton()->canvas_item_set_custom_rect(get_canvas_item(), !data.disable_visibility_clip, Rect2(Point2(), get_size()));
 			RenderingServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), data.clip_contents);
-			//emit_signal(SceneStringNames::get_singleton()->draw);
-
 		} break;
+
 		case NOTIFICATION_MOUSE_ENTER: {
 			emit_signal(SceneStringNames::get_singleton()->mouse_entered);
 		} break;
+
 		case NOTIFICATION_MOUSE_EXIT: {
 			emit_signal(SceneStringNames::get_singleton()->mouse_exited);
 		} break;
+
 		case NOTIFICATION_FOCUS_ENTER: {
 			emit_signal(SceneStringNames::get_singleton()->focus_entered);
 			update();
 		} break;
+
 		case NOTIFICATION_FOCUS_EXIT: {
 			emit_signal(SceneStringNames::get_singleton()->focus_exited);
 			update();
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			update_minimum_size();
 			update();
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible_in_tree()) {
 				if (get_viewport() != nullptr) {
 					get_viewport()->_gui_hide_control(this);
 				}
-
-				//remove key focus
-
 			} else {
 				data.minimum_size_valid = false;
 				_size_changed();
 			}
-
 		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			if (is_inside_tree()) {

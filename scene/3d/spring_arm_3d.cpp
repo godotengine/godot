@@ -29,23 +29,26 @@
 /*************************************************************************/
 
 #include "spring_arm_3d.h"
+
 #include "scene/3d/camera_3d.h"
 
 void SpringArm3D::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_ENTER_TREE: {
 			if (!Engine::get_singleton()->is_editor_hint()) {
 				set_physics_process_internal(true);
 			}
-			break;
-		case NOTIFICATION_EXIT_TREE:
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
 			if (!Engine::get_singleton()->is_editor_hint()) {
 				set_physics_process_internal(false);
 			}
-			break;
-		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS:
+		} break;
+
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			process_spring();
-			break;
+		} break;
 	}
 }
 

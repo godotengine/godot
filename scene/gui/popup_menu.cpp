@@ -736,6 +736,7 @@ void PopupMenu::_notification(int p_what) {
 				set_submenu_popup_delay(pm_delay);
 			}
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED:
 		case Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -748,23 +749,25 @@ void PopupMenu::_notification(int p_what) {
 			child_controls_changed();
 			control->update();
 		} break;
+
 		case NOTIFICATION_WM_MOUSE_ENTER: {
 			grab_focus();
 		} break;
+
 		case NOTIFICATION_WM_MOUSE_EXIT: {
 			if (mouse_over >= 0 && (items[mouse_over].submenu.is_empty() || submenu_over != -1)) {
 				mouse_over = -1;
 				control->update();
 			}
 		} break;
+
 		case NOTIFICATION_POST_POPUP: {
 			initial_button_mask = Input::get_singleton()->get_mouse_button_mask();
 			during_grabbed_click = (bool)initial_button_mask;
 		} break;
-		case NOTIFICATION_WM_SIZE_CHANGED: {
-		} break;
+
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			//only used when using operating system windows
+			// Only used when using operating system windows.
 			if (!is_embedded() && autohide_areas.size()) {
 				Point2 mouse_pos = DisplayServer::get_singleton()->mouse_get_position();
 				mouse_pos -= get_position();
@@ -777,6 +780,7 @@ void PopupMenu::_notification(int p_what) {
 				}
 			}
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
 				if (mouse_over >= 0) {
