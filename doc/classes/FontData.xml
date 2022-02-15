@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="FontData" inherits="Resource" version="4.0">
+<class name="FontData" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Font source data and prerendered glyph cache, imported from dynamic or bitmap font.
 		Supported font formats:
