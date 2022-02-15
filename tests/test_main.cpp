@@ -206,7 +206,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			memnew(InputMap);
 			InputMap::get_singleton()->load_default();
 
-			make_default_theme(1.0, Ref<Font>());
+			make_default_theme(1.0, Ref<Font>(), TextServer::SUBPIXEL_POSITIONING_AUTO, TextServer::HINTING_LIGHT, true);
 
 			memnew(SceneTree);
 			SceneTree::get_singleton()->initialize();

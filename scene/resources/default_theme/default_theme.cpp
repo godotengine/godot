@@ -1018,7 +1018,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	default_style = make_flat_stylebox(Color(1, 0.365, 0.365), 4, 4, 4, 4, 0, false, 2);
 }
 
-void make_default_theme(float p_scale, Ref<Font> p_font) {
+void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPositioning p_subpixel, TextServer::Hinting p_hinting, bool p_aa) {
 	Ref<Theme> t;
 	t.instantiate();
 
@@ -1040,6 +1040,9 @@ void make_default_theme(float p_scale, Ref<Font> p_font) {
 		Ref<FontData> dynamic_font_data;
 		dynamic_font_data.instantiate();
 		dynamic_font_data->set_data_ptr(_font_OpenSans_SemiBold, _font_OpenSans_SemiBold_size);
+		dynamic_font_data->set_subpixel_positioning(p_subpixel);
+		dynamic_font_data->set_hinting(p_hinting);
+		dynamic_font_data->set_antialiased(p_aa);
 		dynamic_font->add_data(dynamic_font_data);
 
 		default_font = dynamic_font;

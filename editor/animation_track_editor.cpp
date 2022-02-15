@@ -1576,10 +1576,10 @@ void AnimationTimelineEdit::_notification(int p_what) {
 		int decimals = 2;
 		bool step_found = false;
 
-		const int period_width = font->get_char_size('.', 0, font_size).width;
-		int max_digit_width = font->get_char_size('0', 0, font_size).width;
+		const float period_width = font->get_char_size('.', 0, font_size).width;
+		float max_digit_width = font->get_char_size('0', 0, font_size).width;
 		for (int i = 1; i <= 9; i++) {
-			const int digit_width = font->get_char_size('0' + i, 0, font_size).width;
+			const float digit_width = font->get_char_size('0' + i, 0, font_size).width;
 			max_digit_width = MAX(digit_width, max_digit_width);
 		}
 		const int max_sc = int(Math::ceil(zoomw / scale));

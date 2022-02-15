@@ -134,6 +134,11 @@ public:
 	GDVIRTUAL2(_font_set_hinting, RID, Hinting);
 	GDVIRTUAL1RC(Hinting, _font_get_hinting, RID);
 
+	virtual void font_set_subpixel_positioning(RID p_font_rid, SubpixelPositioning p_subpixel) override;
+	virtual SubpixelPositioning font_get_subpixel_positioning(RID p_font_rid) const override;
+	GDVIRTUAL2(_font_set_subpixel_positioning, RID, SubpixelPositioning);
+	GDVIRTUAL1RC(SubpixelPositioning, _font_get_subpixel_positioning, RID);
+
 	virtual void font_set_variation_coordinates(RID p_font_rid, const Dictionary &p_variation_coordinates) override;
 	virtual Dictionary font_get_variation_coordinates(RID p_font_rid) const override;
 	GDVIRTUAL2(_font_set_variation_coordinates, RID, Dictionary);

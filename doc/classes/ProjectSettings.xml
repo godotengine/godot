@@ -564,6 +564,15 @@
 		<member name="gui/theme/custom_font" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to a custom [Font] resource to use as default for all GUI elements of the project.
 		</member>
+		<member name="gui/theme/default_font_antialiased" type="bool" setter="" getter="" default="true">
+			If set to [code]true[/code], default font uses 8-bit anitialiased glyph rendering.  See [member FontData.antialiased].
+		</member>
+		<member name="gui/theme/default_font_hinting" type="int" setter="" getter="" default="1">
+			Default font hinting mode. See [member FontData.hinting].
+		</member>
+		<member name="gui/theme/default_font_subpixel_positioning" type="int" setter="" getter="" default="1">
+			Default font glyph sub-pixel positioning mode. See [member FontData.subpixel_positioning].
+		</member>
 		<member name="gui/theme/default_theme_scale" type="float" setter="" getter="" default="1.0">
 		</member>
 		<member name="gui/timers/incremental_search_max_interval_msec" type="int" setter="" getter="" default="2000">
