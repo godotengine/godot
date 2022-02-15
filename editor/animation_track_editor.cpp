@@ -1658,63 +1658,67 @@ void AnimationTimelineEdit::_gui_input(const Ref<InputEvent> &p_event) {
 
 	const Ref<InputEventMouseButton> mb = p_event;
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_command() && mb->get_button_index() == BUTTON_WHEEL_UP) {
-		get_zoom()->set_value(get_zoom()->get_value() * 1.05);
-		accept_event();
-	}
-
-	if (mb.is_valid() && mb->is_pressed() && mb->get_command() && mb->get_button_index() == BUTTON_WHEEL_DOWN) {
-		get_zoom()->set_value(get_zoom()->get_value() / 1.05);
-		accept_event();
-	}
-
-	if (mb.is_valid() && mb->is_pressed() && mb->get_alt() && mb->get_button_index() == BUTTON_WHEEL_UP) {
-		if (track_edit) {
-			track_edit->get_editor()->goto_prev_step(true);
+	if (mb.is_valid()) {
+		if (mb->is_pressed() && mb->get_command() && (mb->get_button_index() == BUTTON_WHEEL_UP || mb->get_button_index() == BUTTON_WHEEL_DOWN)) {
+			double new_zoom_value;
+			double current_zoom_value = get_zoom()->get_value();
+			int direction = mb->get_button_index() == BUTTON_WHEEL_UP ? 1 : -1;
+			if (current_zoom_value <= 0.1) {
+				new_zoom_value = MAX(0.01, current_zoom_value + 0.01 * direction);
+			} else {
+				new_zoom_value = direction < 0 ? MAX(0.01, current_zoom_value / 1.05) : current_zoom_value * 1.05;
+			}
+			get_zoom()->set_value(new_zoom_value);
+			accept_event();
 		}
-		accept_event();
-	}
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_alt() && mb->get_button_index() == BUTTON_WHEEL_DOWN) {
-		if (track_edit) {
-			track_edit->get_editor()->goto_next_step(true);
+		if (mb->is_pressed() && mb->get_alt() && mb->get_button_index() == BUTTON_WHEEL_UP) {
+			if (track_edit) {
+				track_edit->get_editor()->goto_prev_step(true);
+			}
+			accept_event();
 		}
-		accept_event();
-	}
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && hsize_rect.has_point(mb->get_position())) {
-		dragging_hsize = true;
-		dragging_hsize_from = mb->get_position().x;
-		dragging_hsize_at = name_limit;
-	}
-
-	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && dragging_hsize) {
-		dragging_hsize = false;
-	}
-	if (mb.is_valid() && mb->get_position().x > get_name_limit() && mb->get_position().x < (get_size().width - get_buttons_width())) {
-		if (!panning_timeline && mb->get_button_index() == BUTTON_LEFT) {
-			int x = mb->get_position().x - get_name_limit();
-
-			float ofs = x / get_zoom_scale() + get_value();
-			emit_signal("timeline_changed", ofs, false);
-			dragging_timeline = true;
+		if (mb->is_pressed() && mb->get_alt() && mb->get_button_index() == BUTTON_WHEEL_DOWN) {
+			if (track_edit) {
+				track_edit->get_editor()->goto_next_step(true);
+			}
+			accept_event();
 		}
-		if (!dragging_timeline && mb->get_button_index() == BUTTON_MIDDLE) {
-			int x = mb->get_position().x - get_name_limit();
-			panning_timeline_from = x / get_zoom_scale();
-			panning_timeline = true;
-			panning_timeline_at = get_value();
+
+		if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && hsize_rect.has_point(mb->get_position())) {
+			dragging_hsize = true;
+			dragging_hsize_from = mb->get_position().x;
+			dragging_hsize_at = name_limit;
+		}
+
+		if (!mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && dragging_hsize) {
+			dragging_hsize = false;
+		}
+		if (mb->get_position().x > get_name_limit() && mb->get_position().x < (get_size().width - get_buttons_width())) {
+			if (!panning_timeline && mb->get_button_index() == BUTTON_LEFT) {
+				int x = mb->get_position().x - get_name_limit();
+
+				float ofs = x / get_zoom_scale() + get_value();
+				emit_signal("timeline_changed", ofs, false);
+				dragging_timeline = true;
+			}
+			if (!dragging_timeline && mb->get_button_index() == BUTTON_MIDDLE) {
+				int x = mb->get_position().x - get_name_limit();
+				panning_timeline_from = x / get_zoom_scale();
+				panning_timeline = true;
+				panning_timeline_at = get_value();
+			}
+		}
+
+		if (dragging_timeline && mb->get_button_index() == BUTTON_LEFT && !mb->is_pressed()) {
+			dragging_timeline = false;
+		}
+
+		if (panning_timeline && mb->get_button_index() == BUTTON_MIDDLE && !mb->is_pressed()) {
+			panning_timeline = false;
 		}
 	}
-
-	if (dragging_timeline && mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && !mb->is_pressed()) {
-		dragging_timeline = false;
-	}
-
-	if (panning_timeline && mb.is_valid() && mb->get_button_index() == BUTTON_MIDDLE && !mb->is_pressed()) {
-		panning_timeline = false;
-	}
-
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid()) {
@@ -5004,49 +5008,54 @@ void AnimationTrackEditor::_box_selection_draw() {
 void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_command() && mb->get_button_index() == BUTTON_WHEEL_UP) {
-		timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() * 1.05);
-		scroll->accept_event();
-	}
-
-	if (mb.is_valid() && mb->is_pressed() && mb->get_command() && mb->get_button_index() == BUTTON_WHEEL_DOWN) {
-		timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() / 1.05);
-		scroll->accept_event();
-	}
-
-	if (mb.is_valid() && mb->is_pressed() && mb->get_alt() && mb->get_button_index() == BUTTON_WHEEL_UP) {
-		goto_prev_step(true);
-		scroll->accept_event();
-	}
-
-	if (mb.is_valid() && mb->is_pressed() && mb->get_alt() && mb->get_button_index() == BUTTON_WHEEL_DOWN) {
-		goto_next_step(true);
-		scroll->accept_event();
-	}
-
-	if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT) {
-		if (mb->is_pressed()) {
-			box_selecting = true;
-			box_selecting_from = scroll->get_global_transform().xform(mb->get_position());
-			box_select_rect = Rect2();
-		} else if (box_selecting) {
-			if (box_selection->is_visible_in_tree()) {
-				//only if moved
-				for (int i = 0; i < track_edits.size(); i++) {
-					Rect2 local_rect = box_select_rect;
-					local_rect.position -= track_edits[i]->get_global_position();
-					track_edits[i]->append_to_selection(local_rect, mb->get_command());
-				}
-
-				if (_get_track_selected() == -1 && track_edits.size() > 0) { //minimal hack to make shortcuts work
-					track_edits[track_edits.size() - 1]->grab_focus();
-				}
+	if (mb.is_valid()) {
+		if (mb->is_pressed() && mb->get_command() && (mb->get_button_index() == BUTTON_WHEEL_UP || mb->get_button_index() == BUTTON_WHEEL_DOWN)) {
+			double new_zoom_value;
+			double current_zoom_value = timeline->get_zoom()->get_value();
+			int direction = mb->get_button_index() == BUTTON_WHEEL_UP ? 1 : -1;
+			if (current_zoom_value <= 0.1) {
+				new_zoom_value = MAX(0.01, current_zoom_value + 0.01 * direction);
 			} else {
-				_clear_selection(); //clear it
+				new_zoom_value = direction < 0 ? MAX(0.01, current_zoom_value / 1.05) : current_zoom_value * 1.05;
 			}
+			timeline->get_zoom()->set_value(new_zoom_value);
+			accept_event();
+		}
 
-			box_selection->hide();
-			box_selecting = false;
+		if (mb->is_pressed() && mb->get_alt() && mb->get_button_index() == BUTTON_WHEEL_UP) {
+			goto_prev_step(true);
+			scroll->accept_event();
+		}
+
+		if (mb->is_pressed() && mb->get_alt() && mb->get_button_index() == BUTTON_WHEEL_DOWN) {
+			goto_next_step(true);
+			scroll->accept_event();
+		}
+
+		if (mb->get_button_index() == BUTTON_LEFT) {
+			if (mb->is_pressed()) {
+				box_selecting = true;
+				box_selecting_from = scroll->get_global_transform().xform(mb->get_position());
+				box_select_rect = Rect2();
+			} else if (box_selecting) {
+				if (box_selection->is_visible_in_tree()) {
+					//only if moved
+					for (int i = 0; i < track_edits.size(); i++) {
+						Rect2 local_rect = box_select_rect;
+						local_rect.position -= track_edits[i]->get_global_position();
+						track_edits[i]->append_to_selection(local_rect, mb->get_command());
+					}
+
+					if (_get_track_selected() == -1 && track_edits.size() > 0) { //minimal hack to make shortcuts work
+						track_edits[track_edits.size() - 1]->grab_focus();
+					}
+				} else {
+					_clear_selection(); //clear it
+				}
+
+				box_selection->hide();
+				box_selecting = false;
+			}
 		}
 	}
 
