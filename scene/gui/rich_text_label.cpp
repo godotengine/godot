@@ -3718,7 +3718,7 @@ void RichTextLabel::scroll_to_line(int p_line) {
 		if ((line_count <= p_line) && (line_count + main->lines[i].text_buf->get_line_count() >= p_line)) {
 			float line_offset = 0.f;
 			for (int j = 0; j < p_line - line_count; j++) {
-				line_offset += main->lines[i].text_buf->get_line_size(j).y;
+				line_offset += main->lines[i].text_buf->get_line_size(j).y + get_theme_constant(SNAME("line_separation"));
 			}
 			vscroll->set_value(main->lines[i].offset.y + line_offset);
 			return;
