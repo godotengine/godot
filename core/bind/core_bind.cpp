@@ -960,6 +960,10 @@ int _OS::get_processor_count() const {
 	return OS::get_singleton()->get_processor_count();
 }
 
+String _OS::get_processor_name() const {
+	return OS::get_singleton()->get_processor_name();
+}
+
 bool _OS::is_stdout_verbose() const {
 	return OS::get_singleton()->is_stdout_verbose();
 }
@@ -1319,6 +1323,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_low_processor_usage_mode_sleep_usec"), &_OS::get_low_processor_usage_mode_sleep_usec);
 
 	ClassDB::bind_method(D_METHOD("get_processor_count"), &_OS::get_processor_count);
+	ClassDB::bind_method(D_METHOD("get_processor_name"), &_OS::get_processor_name);
 
 	ClassDB::bind_method(D_METHOD("get_executable_path"), &_OS::get_executable_path);
 	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "blocking", "output", "read_stderr", "open_console"), &_OS::execute, DEFVAL(true), DEFVAL(Array()), DEFVAL(false), DEFVAL(false));

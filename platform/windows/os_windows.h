@@ -520,6 +520,7 @@ public:
 	virtual String get_locale() const;
 
 	virtual int get_processor_count() const;
+	virtual String get_processor_name() const;
 
 	virtual LatinKeyboardVariant get_latin_keyboard_variant() const;
 	virtual int keyboard_get_layout_count() const;

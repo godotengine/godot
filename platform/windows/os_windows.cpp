@@ -3130,6 +3130,26 @@ int OS_Windows::get_processor_count() const {
 	return sysinfo.dwNumberOfProcessors;
 }
 
+String OS_Windows::get_processor_name() const {
+	const String id = "Hardware\\Description\\System\\CentralProcessor\\0";
+
+	HKEY hkey;
+	if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, (LPCWSTR)(id.c_str()), 0, KEY_QUERY_VALUE, &hkey) != ERROR_SUCCESS) {
+		ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
+	}
+
+	WCHAR buffer[256];
+	DWORD buffer_len = 256;
+	DWORD vtype = REG_SZ;
+	if (RegQueryValueExW(hkey, L"ProcessorNameString", NULL, &vtype, (LPBYTE)buffer, &buffer_len) == ERROR_SUCCESS) {
+		RegCloseKey(hkey);
+		return String((const wchar_t *)buffer, buffer_len).strip_edges();
+	} else {
+		RegCloseKey(hkey);
+		ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
+	}
+}
+
 OS::LatinKeyboardVariant OS_Windows::get_latin_keyboard_variant() const {
 	unsigned long azerty[] = {
 		0x00020401, // Arabic (102) AZERTY

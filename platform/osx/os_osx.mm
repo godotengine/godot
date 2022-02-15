@@ -41,6 +41,8 @@
 #include "servers/visual/visual_server_raster.h"
 
 #include <mach-o/dyld.h>
+#include <os/log.h>
+#include <sys/sysctl.h>
 
 #include <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
@@ -48,9 +50,6 @@
 #include <IOKit/IOKitLib.h>
 #include <IOKit/hid/IOHIDKeys.h>
 #include <IOKit/hid/IOHIDLib.h>
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101200
-#include <os/log.h>
-#endif
 
 #include <dlfcn.h>
 #include <fcntl.h>
@@ -1508,6 +1507,15 @@ void OS_OSX::set_ime_active(const bool p_active) {
 
 void OS_OSX::set_ime_position(const Point2 &p_pos) {
 	im_position = p_pos;
+}
+
+String OS_OSX::get_processor_name() const {
+	char buffer[256];
+	size_t buffer_len = 256;
+	if (sysctlbyname("machdep.cpu.brand_string", &buffer, &buffer_len, NULL, 0) == 0) {
+		return String::utf8(buffer, buffer_len);
+	}
+	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
 }
 
 void OS_OSX::initialize_core() {
