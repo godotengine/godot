@@ -131,6 +131,8 @@ class DisplayServerWayland : public DisplayServer {
 	};
 
 	struct PointerState {
+		struct wl_pointer *wl_pointer = nullptr;
+
 		// This variable is needed to buffer all pointer changes until a
 		// wl_pointer.frame event, as per Wayland's specification. Everything is
 		// first set in `data_buffer` and then `data` is set with its contents on
@@ -141,14 +143,16 @@ class DisplayServerWayland : public DisplayServer {
 	};
 
 	struct KeyboardState {
-		const char *keymap_buffer = nullptr;
-		uint32_t keymap_buffer_size = 0;
-
-		WindowID focused_window_id = INVALID_WINDOW_ID;
+		struct wl_keyboard *wl_keyboard = nullptr;
 
 		struct xkb_context *xkb_context = nullptr;
 		struct xkb_keymap *xkb_keymap = nullptr;
 		struct xkb_state *xkb_state = nullptr;
+
+		const char *keymap_buffer = nullptr;
+		uint32_t keymap_buffer_size = 0;
+
+		WindowID focused_window_id = INVALID_WINDOW_ID;
 
 		int32_t repeat_key_delay_msec = 0;
 		int32_t repeat_start_delay_msec = 0;
@@ -161,16 +165,6 @@ class DisplayServerWayland : public DisplayServer {
 		bool ctrl_pressed = false;
 		bool alt_pressed = false;
 		bool meta_pressed = false;
-	};
-
-	struct SeatState {
-		struct wl_pointer *wl_pointer = nullptr;
-		struct wl_keyboard *wl_keyboard = nullptr;
-
-		PointerState pointer_state;
-		PointerState old_pointer_state;
-
-		KeyboardState keyboard_state;
 	};
 
 	// TODO: Perhaps we could make this just contain references to in-class
@@ -186,8 +180,8 @@ class DisplayServerWayland : public DisplayServer {
 		WindowID window_id_counter = MAIN_WINDOW_ID;
 		Map<WindowID, WindowData> windows;
 
-		// TODO: Investigate what to do with multiple seats.
-		SeatState seat_state;
+		PointerState pointer_state;
+		KeyboardState keyboard_state;
 
 		SafeFlag events_thread_done;
 
