@@ -310,6 +310,7 @@ public:
 	virtual String get_ime_text() const;
 
 	virtual String get_unique_id() const;
+	virtual String get_processor_name() const;
 
 	virtual OS::PowerState get_power_state();
 	virtual int get_power_seconds_left();

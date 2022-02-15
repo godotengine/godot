@@ -512,6 +512,10 @@ int OS::get_processor_count() const {
 	return 1;
 }
 
+String OS::get_processor_name() const {
+	return "";
+}
+
 Error OS::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
 	return FAILED;
 }

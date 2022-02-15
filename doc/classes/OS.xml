@@ -345,7 +345,14 @@
 		<method name="get_processor_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the number of threads available on the host machine.
+				Returns the number of [i]logical[/i] CPU cores available on the host machine. On CPUs with HyperThreading enabled, this number will be greater than the number of [i]physical[/i] CPU cores.
+			</description>
+		</method>
+		<method name="get_processor_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the name of the CPU model on the host machine (e.g. "Intel(R) Core(TM) i7-6700K CPU @ 4.00GHz").
+				[b]Note:[/b] This method is only implemented on Windows, macOS, Linux and iOS. On Android, HTML5 and UWP, [method get_processor_name] returns an empty string.
 			</description>
 		</method>
 		<method name="get_real_window_size" qualifiers="const">

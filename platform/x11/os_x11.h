@@ -329,6 +329,7 @@ public:
 	virtual void set_ime_position(const Point2 &p_pos);
 
 	virtual String get_unique_id() const;
+	virtual String get_processor_name() const;
 
 	virtual void move_window_to_foreground();
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");

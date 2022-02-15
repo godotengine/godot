@@ -123,6 +123,7 @@ public:
 	String get_locale() const;
 
 	String get_unique_id() const;
+	virtual String get_processor_name() const;
 
 	virtual void vibrate_handheld(int p_duration_ms = 500);
 
