@@ -18,6 +18,18 @@
 				Returns the RID of the canvas used by this layer.
 			</description>
 		</method>
+		<method name="hide">
+			<return type="void" />
+			<description>
+				Hides any [CanvasItem] under this [CanvasLayer]. This is equivalent to setting [member visible] to [code]false[/code].
+			</description>
+		</method>
+		<method name="show">
+			<return type="void" />
+			<description>
+				Shows any [CanvasItem] under this [CanvasLayer]. This is equivalent to setting [member visible] to [code]true[/code].
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="custom_viewport" type="Node" setter="set_custom_viewport" getter="get_custom_viewport">
