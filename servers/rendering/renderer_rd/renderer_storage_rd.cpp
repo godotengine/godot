@@ -3578,14 +3578,14 @@ void RendererStorageRD::mesh_instance_set_blend_shape_weight(RID p_mesh_instance
 
 void RendererStorageRD::_mesh_instance_clear(MeshInstance *mi) {
 	for (uint32_t i = 0; i < mi->surfaces.size(); i++) {
-		if (mi->surfaces[i].vertex_buffer.is_valid()) {
-			RD::get_singleton()->free(mi->surfaces[i].vertex_buffer);
-		}
 		if (mi->surfaces[i].versions) {
 			for (uint32_t j = 0; j < mi->surfaces[i].version_count; j++) {
 				RD::get_singleton()->free(mi->surfaces[i].versions[j].vertex_array);
 			}
 			memfree(mi->surfaces[i].versions);
+		}
+		if (mi->surfaces[i].vertex_buffer.is_valid()) {
+			RD::get_singleton()->free(mi->surfaces[i].vertex_buffer);
 		}
 	}
 	mi->surfaces.clear();
