@@ -496,11 +496,11 @@ void Viewport::_notification(int p_what) {
 #endif // _3D_DISABLED
 		} break;
 
-		case NOTIFICATION_WM_MOUSE_ENTER: {
+		case NOTIFICATION_VP_MOUSE_ENTER: {
 			gui.mouse_in_window = true;
 		} break;
 
-		case NOTIFICATION_WM_MOUSE_EXIT: {
+		case NOTIFICATION_VP_MOUSE_EXIT: {
 			gui.mouse_in_window = false;
 			_drop_physics_mouseover();
 			_drop_mouse_over();
