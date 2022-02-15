@@ -3497,8 +3497,6 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	menu_subresources->set_name("Sub-Resources");
 	menu_subresources->connect("id_pressed", callable_mp(this, &SceneTreeDock::_tool_selected), make_binds(false));
 	menu->add_child(menu_subresources);
-	first_enter = true;
-	restore_script_editor_on_drag = false;
 
 	menu_properties = memnew(PopupMenu);
 	add_child(menu_properties);
@@ -3511,9 +3509,6 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 
 	set_process_input(true);
 	set_process(true);
-
-	profile_allow_editing = true;
-	profile_allow_script_editing = true;
 
 	EDITOR_DEF("interface/editors/show_scene_tree_root_selection", true);
 	EDITOR_DEF("interface/editors/derive_script_globals_by_name", true);

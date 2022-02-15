@@ -194,7 +194,6 @@ void EditorFileSystemDirectory::_bind_methods() {
 EditorFileSystemDirectory::EditorFileSystemDirectory() {
 	modified_time = 0;
 	parent = nullptr;
-	verified = false;
 }
 
 EditorFileSystemDirectory::~EditorFileSystemDirectory() {
@@ -2383,14 +2382,7 @@ EditorFileSystem::EditorFileSystem() {
 	filesystem = memnew(EditorFileSystemDirectory); //like, empty
 	filesystem->parent = nullptr;
 
-	scanning = false;
-	importing = false;
-	use_threads = true;
 	new_filesystem = nullptr;
-
-	abort_scan = false;
-	scanning_changes = false;
-	scanning_changes_done = false;
 
 	// This should probably also work on Unix and use the string it returns for FAT32 or exFAT
 	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
@@ -2398,9 +2390,6 @@ EditorFileSystem::EditorFileSystem() {
 
 	scan_total = 0;
 	update_script_classes_queued.clear();
-	first_scan = true;
-	scan_changes_pending = false;
-	revalidate_import_files = false;
 	import_threads.init();
 	ResourceUID::get_singleton()->clear(); //will be updated on scan
 	ResourceSaver::set_get_resource_id_for_path(_resource_saver_get_resource_id_for_path);

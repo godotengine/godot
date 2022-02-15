@@ -41,24 +41,24 @@ class EditorSpinSlider : public Range {
 	String label;
 	String suffix;
 	int updown_offset;
-	bool hover_updown;
-	bool mouse_hover;
+	bool hover_updown = false;
+	bool mouse_hover = false;
 
 	TextureRect *grabber;
 	int grabber_range;
 
-	bool mouse_over_spin;
-	bool mouse_over_grabber;
-	bool mousewheel_over_grabber;
+	bool mouse_over_spin = false;
+	bool mouse_over_grabber = false;
+	bool mousewheel_over_grabber = false;
 
-	bool grabbing_grabber;
+	bool grabbing_grabber = false;
 	int grabbing_from;
 	float grabbing_ratio;
 
-	bool grabbing_spinner_attempt;
-	bool grabbing_spinner;
+	bool grabbing_spinner_attempt = false;
+	bool grabbing_spinner = false;
 
-	bool read_only;
+	bool read_only = false;
 	float grabbing_spinner_dist_cache;
 	Vector2 grabbing_spinner_mouse_pos;
 	double pre_grab_value;
@@ -73,8 +73,8 @@ class EditorSpinSlider : public Range {
 	void _value_input_submitted(const String &);
 	void _value_focus_exited();
 	void _value_input_gui_input(const Ref<InputEvent> &p_event);
-	bool hide_slider;
-	bool flat;
+	bool hide_slider = false;
+	bool flat = false;
 
 	void _evaluate_input_text();
 

@@ -1122,8 +1122,6 @@ void ActionMapEditor::use_external_search_box(LineEdit *p_searchbox) {
 }
 
 ActionMapEditor::ActionMapEditor() {
-	show_builtin_actions = false;
-
 	// Main Vbox Container
 	VBoxContainer *main_vbox = memnew(VBoxContainer);
 	main_vbox->set_anchors_and_offsets_preset(PRESET_WIDE);

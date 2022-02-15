@@ -771,9 +771,7 @@ void EditorAudioBus::_bind_methods() {
 
 EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	buses = p_buses;
-	updating_bus = false;
 	is_master = p_is_master;
-	hovering_drop = false;
 
 	set_tooltip(TTR("Drag & drop to rearrange."));
 
@@ -992,7 +990,6 @@ void EditorAudioBusDrop::_bind_methods() {
 }
 
 EditorAudioBusDrop::EditorAudioBusDrop() {
-	hovering_drop = false;
 }
 
 void EditorAudioBuses::_update_buses() {

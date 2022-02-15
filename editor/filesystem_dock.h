@@ -154,7 +154,7 @@ private:
 	ShaderCreateDialog *make_shader_dialog;
 	CreateDialog *new_resource_dialog;
 
-	bool always_show_folders;
+	bool always_show_folders = false;
 
 	class FileOrFolder {
 	public:
@@ -177,13 +177,13 @@ private:
 
 	String path;
 
-	bool initialized;
+	bool initialized = false;
 
-	bool updating_tree;
+	bool updating_tree = false;
 	int tree_update_id;
 	Tree *tree;
 	ItemList *files;
-	bool import_dock_needs_update;
+	bool import_dock_needs_update = false;
 
 	bool holding_branch = false;
 	Vector<TreeItem *> tree_items_selected_on_drag_begin;

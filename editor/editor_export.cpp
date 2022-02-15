@@ -678,7 +678,6 @@ void EditorExportPlugin::_bind_methods() {
 }
 
 EditorExportPlugin::EditorExportPlugin() {
-	skipped = false;
 }
 
 EditorExportPlatform::FeatureContainers EditorExportPlatform::get_feature_containers(const Ref<EditorExportPreset> &p_preset) {
@@ -1722,7 +1721,6 @@ EditorExport::EditorExport() {
 	save_timer->set_wait_time(0.8);
 	save_timer->set_one_shot(true);
 	save_timer->connect("timeout", callable_mp(this, &EditorExport::_save));
-	block_save = false;
 
 	_export_presets_updated = "export_presets_updated";
 

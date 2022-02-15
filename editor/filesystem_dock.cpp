@@ -3172,10 +3172,7 @@ FileSystemDock::FileSystemDock() {
 	searched_string = String();
 	uncollapsed_paths_before_search = Vector<String>();
 
-	updating_tree = false;
 	tree_update_id = 0;
-	initialized = false;
-	import_dock_needs_update = false;
 
 	history_pos = 0;
 	history_max_size = 20;
@@ -3184,8 +3181,6 @@ FileSystemDock::FileSystemDock() {
 	display_mode = DISPLAY_MODE_TREE_ONLY;
 	old_display_mode = DISPLAY_MODE_TREE_ONLY;
 	file_list_display_mode = FILE_LIST_DISPLAY_THUMBNAILS;
-
-	always_show_folders = false;
 }
 
 FileSystemDock::~FileSystemDock() {

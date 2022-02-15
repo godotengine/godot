@@ -5841,16 +5841,7 @@ EditorNode::EditorNode() {
 	}
 
 	singleton = this;
-	exiting = false;
-	dimmed = false;
 	last_checked_version = 0;
-	changing_scene = false;
-	_initializing_addons = false;
-	docks_visible = true;
-	restoring_scenes = false;
-	cmdline_export_mode = false;
-	scene_distraction = false;
-	script_distraction = false;
 
 	TranslationServer::get_singleton()->set_enabled(false);
 	// load settings
@@ -7112,9 +7103,6 @@ EditorNode::EditorNode() {
 	current = nullptr;
 	saving_resource = Ref<Resource>();
 
-	reference_resource_mem = true;
-	save_external_resources_mem = true;
-
 	set_process(true);
 
 	open_imported = memnew(ConfirmationDialog);
@@ -7125,7 +7113,6 @@ EditorNode::EditorNode() {
 	gui_base->add_child(open_imported);
 
 	saved_version = 1;
-	unsaved_cache = true;
 	_last_instantiated_scene = nullptr;
 
 	quick_open = memnew(EditorQuickOpen);
@@ -7139,10 +7126,7 @@ EditorNode::EditorNode() {
 	_update_recent_scenes();
 
 	editor_data.restore_editor_global_states();
-	convert_old = false;
-	opening_prev = false;
 	set_process_unhandled_input(true);
-	_playing_edited = false;
 
 	load_errors = memnew(RichTextLabel);
 	load_error_dialog = memnew(AcceptDialog);
@@ -7182,8 +7166,6 @@ EditorNode::EditorNode() {
 	ImportDock::get_singleton()->initialize_import_options();
 
 	FileAccess::set_file_close_fail_notify_callback(_file_access_close_error_notify);
-
-	waiting_for_first_scan = true;
 
 	print_handler.printfunc = _print_handler;
 	print_handler.userdata = this;

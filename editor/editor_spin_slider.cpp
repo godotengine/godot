@@ -655,14 +655,10 @@ void EditorSpinSlider::_ensure_input_popup() {
 }
 
 EditorSpinSlider::EditorSpinSlider() {
-	flat = false;
-	grabbing_spinner_attempt = false;
-	grabbing_spinner = false;
 	grabbing_spinner_dist_cache = 0;
 	pre_grab_value = 0;
 	set_focus_mode(FOCUS_ALL);
 	updown_offset = -1;
-	hover_updown = false;
 	grabber = memnew(TextureRect);
 	add_child(grabber);
 	grabber->hide();
@@ -671,12 +667,5 @@ EditorSpinSlider::EditorSpinSlider() {
 	grabber->connect("mouse_entered", callable_mp(this, &EditorSpinSlider::_grabber_mouse_entered));
 	grabber->connect("mouse_exited", callable_mp(this, &EditorSpinSlider::_grabber_mouse_exited));
 	grabber->connect("gui_input", callable_mp(this, &EditorSpinSlider::_grabber_gui_input));
-	mouse_over_spin = false;
-	mouse_over_grabber = false;
-	mousewheel_over_grabber = false;
-	grabbing_grabber = false;
 	grabber_range = 1;
-	value_input_just_closed = false;
-	hide_slider = false;
-	read_only = false;
 }

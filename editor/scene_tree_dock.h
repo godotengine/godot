@@ -105,7 +105,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	Vector<ObjectID> subresources;
 
-	bool restore_script_editor_on_drag;
+	bool restore_script_editor_on_drag = false;
 	bool reset_create_dialog = false;
 
 	int current_option;
@@ -166,7 +166,7 @@ class SceneTreeDock : public VBoxContainer {
 	PopupMenu *menu_properties;
 	ConfirmationDialog *clear_inherit_confirm;
 
-	bool first_enter;
+	bool first_enter = true;
 
 	void _create();
 	void _do_create(Node *p_parent);
@@ -261,8 +261,8 @@ class SceneTreeDock : public VBoxContainer {
 	void _create_remap_for_node(Node *p_node, Map<RES, RES> &r_remap);
 	void _create_remap_for_resource(RES p_resource, Map<RES, RES> &r_remap);
 
-	bool profile_allow_editing;
-	bool profile_allow_script_editing;
+	bool profile_allow_editing = true;
+	bool profile_allow_script_editing = true;
 
 	static void _update_configuration_warning();
 

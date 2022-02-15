@@ -86,8 +86,8 @@ class FindReplaceBar : public HBoxContainer {
 	int result_col;
 	int results_count;
 
-	bool replace_all_mode;
-	bool preserve_cursor;
+	bool replace_all_mode = false;
+	bool preserve_cursor = false;
 
 	void _get_search_from(int &r_line, int &r_col);
 	void _update_results_count();
@@ -206,8 +206,8 @@ protected:
 	void _notification(int);
 	static void _bind_methods();
 
-	bool is_warnings_panel_opened;
-	bool is_errors_panel_opened;
+	bool is_warnings_panel_opened = false;
+	bool is_errors_panel_opened = false;
 
 public:
 	void trim_trailing_whitespace();

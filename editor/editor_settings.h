@@ -92,8 +92,8 @@ private:
 	Vector<String> favorites;
 	Vector<String> recent_dirs;
 
-	bool save_changed_setting;
-	bool optimize_save; //do not save stuff that came from config but was not set from engine
+	bool save_changed_setting = true;
+	bool optimize_save = true; //do not save stuff that came from config but was not set from engine
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _set_only(const StringName &p_name, const Variant &p_value);

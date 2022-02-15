@@ -1128,9 +1128,6 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	// Script export parameters.
 
-	updating_script_key = false;
-	updating_enc_filters = false;
-
 	VBoxContainer *sec_vb = memnew(VBoxContainer);
 	sec_vb->set_name(TTR("Encryption"));
 
@@ -1194,8 +1191,6 @@ ProjectExportDialog::ProjectExportDialog() {
 	delete_confirm->connect("confirmed", callable_mp(this, &ProjectExportDialog::_delete_preset_confirm));
 
 	// Export buttons, dialogs and errors.
-
-	updating = false;
 
 	get_cancel_button()->set_text(TTR("Close"));
 	get_ok_button()->set_text(TTR("Export PCK/ZIP..."));

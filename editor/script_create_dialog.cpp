@@ -1026,7 +1026,6 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	hb->add_child(parent_browse_button);
 	gc->add_child(memnew(Label(TTR("Inherits:"))));
 	gc->add_child(hb);
-	is_browsing_parent = false;
 
 	/* Class Name */
 
@@ -1037,8 +1036,6 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	gc->add_child(class_name);
 
 	/* Templates */
-
-	is_using_templates = true;
 	gc->add_child(memnew(Label(TTR("Template:"))));
 	HBoxContainer *template_hb = memnew(HBoxContainer);
 	template_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1079,7 +1076,6 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	Label *label = memnew(Label(TTR("Path:")));
 	gc->add_child(label);
 	gc->add_child(hb);
-	re_check_path = false;
 	path_controls[0] = label;
 	path_controls[1] = hb;
 
@@ -1116,17 +1112,4 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	set_hide_on_ok(false);
 	set_title(TTR("Attach Node Script"));
-
-	is_parent_name_valid = false;
-	is_class_name_valid = false;
-	is_path_valid = false;
-
-	has_named_classes = false;
-	supports_built_in = false;
-	can_inherit_from_file = false;
-	is_built_in = false;
-	built_in_enabled = true;
-	load_enabled = true;
-
-	is_new_script_created = true;
 }

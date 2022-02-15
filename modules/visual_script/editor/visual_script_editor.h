@@ -148,7 +148,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _update_graph_connections();
 	void _update_graph(int p_only_id = -1);
 
-	bool updating_members;
+	bool updating_members = false;
 
 	void _update_members();
 	String _sanitized_variant_text(const StringName &property_name);

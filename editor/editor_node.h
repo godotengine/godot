@@ -263,8 +263,8 @@ private:
 	TextureRect *tab_preview;
 	int tab_closing;
 
-	bool exiting;
-	bool dimmed;
+	bool exiting = false;
+	bool dimmed = false;
 
 	int old_split_ofs;
 	VSplitContainer *top_split;
@@ -380,15 +380,15 @@ private:
 	Button *dock_tab_move_right;
 	int dock_popup_selected;
 	Timer *dock_drag_timer;
-	bool docks_visible;
+	bool docks_visible = true;
 
 	HBoxContainer *tabbar_container;
 	Button *distraction_free;
 	Button *scene_tab_add;
 	Control *scene_tab_add_ph;
 
-	bool scene_distraction;
-	bool script_distraction;
+	bool scene_distraction = false;
+	bool script_distraction = false;
 
 	String _tmp_import_path;
 
@@ -397,18 +397,15 @@ private:
 	Object *current;
 	Ref<Resource> saving_resource;
 
-	bool _playing_edited;
+	bool _playing_edited = false;
 	String run_custom_filename;
-	bool reference_resource_mem;
-	bool save_external_resources_mem;
+	bool reference_resource_mem = true;
 	uint64_t saved_version;
 	uint64_t last_checked_version;
-	bool unsaved_cache;
+	bool unsaved_cache = true;
 	String open_navigate;
-	bool changing_scene;
-	bool waiting_for_first_scan;
-
-	bool waiting_for_sources_changed;
+	bool changing_scene = false;
+	bool waiting_for_first_scan = true;
 
 	uint64_t update_spinner_step_msec;
 	uint64_t update_spinner_step_frame;
@@ -457,7 +454,7 @@ private:
 
 	String external_file;
 	List<String> previous_scenes;
-	bool opening_prev;
+	bool opening_prev = false;
 
 	void _dialog_action(String p_file);
 
@@ -534,7 +531,7 @@ private:
 
 	void _exit_editor(int p_exit_code);
 
-	bool convert_old;
+	bool convert_old = false;
 
 	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
 
@@ -551,7 +548,7 @@ private:
 	Map<String, Ref<Texture2D>> icon_type_cache;
 	void _build_icon_type_cache();
 
-	bool _initializing_addons;
+	bool _initializing_addons = false;
 	Map<String, EditorPlugin *> plugin_addons;
 
 	static Ref<Texture2D> _file_dialog_get_icon(const String &p_path);
@@ -587,7 +584,7 @@ private:
 		bool pack_only = false;
 	} export_defer;
 
-	bool cmdline_export_mode;
+	bool cmdline_export_mode = false;
 
 	static EditorNode *singleton;
 
@@ -627,7 +624,7 @@ private:
 	void _update_dock_slots_visibility();
 	void _dock_tab_changed(int p_tab);
 
-	bool restoring_scenes;
+	bool restoring_scenes = false;
 	void _save_open_scenes_to_config(Ref<ConfigFile> p_layout, const String &p_section);
 	void _load_open_scenes_from_config(Ref<ConfigFile> p_layout, const String &p_section);
 

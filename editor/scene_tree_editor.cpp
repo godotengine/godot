@@ -1197,17 +1197,11 @@ void SceneTreeEditor::_bind_methods() {
 }
 
 SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_open_instance) {
-	connect_to_script_mode = false;
-	connecting_signal = false;
 	undo_redo = nullptr;
-	tree_dirty = true;
 	selected = nullptr;
 
-	marked_selectable = false;
-	marked_children_selectable = false;
 	can_rename = p_can_rename;
 	can_open_instance = p_can_open_instance;
-	display_foreign = false;
 	editor_selection = nullptr;
 
 	if (p_label) {
@@ -1249,11 +1243,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	add_child(warning);
 	warning->set_title(TTR("Node Configuration Warning!"));
 
-	show_enabled_subscene = false;
-
 	last_hash = 0;
-	pending_test_update = false;
-	updating_tree = false;
 	blocked = 0;
 
 	update_timer = memnew(Timer);

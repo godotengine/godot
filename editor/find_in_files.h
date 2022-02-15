@@ -210,7 +210,7 @@ private:
 	ProgressBar *_progress_bar;
 	Map<String, TreeItem *> _file_items;
 	Map<TreeItem *, Result> _result_items;
-	bool _with_replace;
+	bool _with_replace = false;
 
 	HBoxContainer *_replace_container;
 	LineEdit *_replace_line_edit;

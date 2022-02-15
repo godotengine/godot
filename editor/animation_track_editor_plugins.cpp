@@ -1119,7 +1119,6 @@ void AnimationTrackEditTypeAudio::gui_input(const Ref<InputEvent> &p_event) {
 			get_undo_redo()->commit_action();
 		}
 
-		len_resizing = false;
 		len_resizing_index = -1;
 		update();
 		accept_event();
