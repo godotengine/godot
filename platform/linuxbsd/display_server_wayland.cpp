@@ -273,6 +273,7 @@ void DisplayServerWayland::_wl_seat_on_capabilities(void *data, struct wl_seat *
 		wl_pointer_add_listener(seat_state.wl_pointer, &wl_pointer_listener, wls);
 	} else if (seat_state.wl_pointer) {
 		wl_pointer_destroy(seat_state.wl_pointer);
+		seat_state.wl_pointer = nullptr;
 	}
 
 	if (capabilities & WL_SEAT_CAPABILITY_KEYBOARD) {
@@ -285,6 +286,7 @@ void DisplayServerWayland::_wl_seat_on_capabilities(void *data, struct wl_seat *
 		wl_keyboard_add_listener(seat_state.wl_keyboard, &wl_keyboard_listener, wls);
 	} else if (seat_state.wl_keyboard) {
 		wl_keyboard_destroy(seat_state.wl_keyboard);
+		seat_state.wl_keyboard = nullptr;
 	}
 }
 
