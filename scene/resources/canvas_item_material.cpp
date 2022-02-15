@@ -175,6 +175,7 @@ bool CanvasItemMaterial::_is_shader_dirty() const {
 void CanvasItemMaterial::set_blend_mode(BlendMode p_blend_mode) {
 	blend_mode = p_blend_mode;
 	_queue_shader_change();
+	emit_changed();
 }
 
 CanvasItemMaterial::BlendMode CanvasItemMaterial::get_blend_mode() const {
@@ -184,6 +185,7 @@ CanvasItemMaterial::BlendMode CanvasItemMaterial::get_blend_mode() const {
 void CanvasItemMaterial::set_light_mode(LightMode p_light_mode) {
 	light_mode = p_light_mode;
 	_queue_shader_change();
+	emit_changed();
 }
 
 CanvasItemMaterial::LightMode CanvasItemMaterial::get_light_mode() const {
@@ -194,6 +196,7 @@ void CanvasItemMaterial::set_particles_animation(bool p_particles_anim) {
 	particles_animation = p_particles_anim;
 	_queue_shader_change();
 	notify_property_list_changed();
+	emit_changed();
 }
 
 bool CanvasItemMaterial::get_particles_animation() const {
@@ -203,6 +206,7 @@ bool CanvasItemMaterial::get_particles_animation() const {
 void CanvasItemMaterial::set_particles_anim_h_frames(int p_frames) {
 	particles_anim_h_frames = p_frames;
 	RS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_h_frames, p_frames);
+	emit_changed();
 }
 
 int CanvasItemMaterial::get_particles_anim_h_frames() const {
@@ -212,6 +216,7 @@ int CanvasItemMaterial::get_particles_anim_h_frames() const {
 void CanvasItemMaterial::set_particles_anim_v_frames(int p_frames) {
 	particles_anim_v_frames = p_frames;
 	RS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_v_frames, p_frames);
+	emit_changed();
 }
 
 int CanvasItemMaterial::get_particles_anim_v_frames() const {
@@ -221,6 +226,7 @@ int CanvasItemMaterial::get_particles_anim_v_frames() const {
 void CanvasItemMaterial::set_particles_anim_loop(bool p_loop) {
 	particles_anim_loop = p_loop;
 	RS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_loop, particles_anim_loop);
+	emit_changed();
 }
 
 bool CanvasItemMaterial::get_particles_anim_loop() const {

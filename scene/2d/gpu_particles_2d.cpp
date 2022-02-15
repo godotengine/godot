@@ -34,6 +34,82 @@
 
 #ifdef TOOLS_ENABLED
 #include "core/config/engine.h"
+
+void GPUParticles2D::set_material(const Ref<Material> &p_material) {
+	if (get_use_parent_material() && material_in_use.is_valid()) {
+		material_in_use->disconnect("changed", callable_mp(this, &GPUParticles2D::_material_changed));
+		vis_rect_hvframes = Vector2(1, 1);
+	}
+	if (get_material().is_valid()) {
+		get_material()->disconnect("changed", callable_mp(this, &GPUParticles2D::_material_changed));
+		vis_rect_hvframes = Vector2(1, 1);
+	}
+
+	CanvasItem::set_material(p_material);
+
+	if (get_material().is_valid()) {
+		get_material()->connect("changed", callable_mp(this, &GPUParticles2D::_material_changed));
+	}
+	update();
+}
+
+void GPUParticles2D::_material_changed() {
+	if (get_use_parent_material() && material_in_use.is_valid()) {
+		_calc_vis_rect_hvframes(material_in_use);
+	} else if (get_material().is_valid()) {
+		CanvasItemMaterial *mat = Object::cast_to<CanvasItemMaterial>(get_material().ptr());
+		_calc_vis_rect_hvframes(mat);
+	} else {
+		vis_rect_hvframes = Vector2(1, 1);
+	}
+	update();
+}
+
+void GPUParticles2D::_calc_vis_rect_hvframes(Ref<CanvasItemMaterial> p_material) {
+	if (p_material.is_valid() && p_material->get_particles_animation()) {
+		vis_rect_hvframes = Vector2(p_material->get_particles_anim_h_frames(), p_material->get_particles_anim_v_frames());
+	} else {
+		vis_rect_hvframes = Vector2(1, 1);
+	}
+}
+
+void GPUParticles2D::set_use_parent_material(bool p_use_parent_material) {
+	if (p_use_parent_material) {
+		if (get_use_parent_material() && material_in_use.is_valid()) {
+			material_in_use->disconnect("changed", callable_mp(this, &GPUParticles2D::_material_changed));
+			vis_rect_hvframes = Vector2(1, 1);
+		}
+		if (get_material().is_valid()) {
+			get_material()->disconnect("changed", callable_mp(this, &GPUParticles2D::_material_changed));
+			vis_rect_hvframes = Vector2(1, 1);
+		}
+
+		CanvasItem::set_use_parent_material(p_use_parent_material);
+		CanvasItem *ci = this;
+		while (ci && ci->get_use_parent_material()) {
+			Node *n = ci->get_parent();
+			ci = Object::cast_to<CanvasItem>(n);
+		}
+
+		material_in_use = ci->get_material();
+
+		_calc_vis_rect_hvframes(material_in_use);
+		if (material_in_use.is_valid()) {
+			material_in_use->connect("changed", callable_mp(this, &GPUParticles2D::_material_changed));
+		}
+
+		_material_changed();
+
+	} else {
+		CanvasItem::set_use_parent_material(p_use_parent_material);
+		vis_rect_hvframes = Vector2(1, 1);
+		if (get_material().is_valid()) {
+			get_material()->connect("changed", callable_mp(this, &GPUParticles2D::_material_changed));
+			_material_changed();
+		}
+	}
+	update();
+}
 #endif
 
 void GPUParticles2D::set_emitting(bool p_emitting) {
@@ -377,6 +453,11 @@ void GPUParticles2D::restart() {
 }
 
 void GPUParticles2D::_notification(int p_what) {
+#ifdef TOOLS_ENABLED
+	if (p_what == NOTIFICATION_READY && Engine::get_singleton()->is_editor_hint()) {
+		_material_changed();
+	}
+#endif
 	if (p_what == NOTIFICATION_DRAW) {
 		RID texture_rid;
 		Size2 size;
@@ -493,7 +574,10 @@ void GPUParticles2D::_notification(int p_what) {
 
 #ifdef TOOLS_ENABLED
 		if (show_visibility_rect) {
-			draw_rect(visibility_rect, Color(0, 0.7, 0.9, 0.4), false);
+			Rect2 render_visibility_rect;
+			render_visibility_rect.size = visibility_rect.size * vis_rect_hvframes;
+			render_visibility_rect.position = visibility_rect.position * vis_rect_hvframes;
+			draw_rect(render_visibility_rect, Color(0, 0.7, 0.9, 0.4), false);
 		}
 #endif
 	}
@@ -633,6 +717,10 @@ GPUParticles2D::GPUParticles2D() {
 	mesh = RS::get_singleton()->mesh_create();
 	RS::get_singleton()->particles_set_draw_passes(particles, 1);
 	RS::get_singleton()->particles_set_draw_pass_mesh(particles, 0, mesh);
+
+#ifdef TOOLS_ENABLED
+	vis_rect_hvframes = Vector2(1, 1);
+#endif
 
 	one_shot = false; // Needed so that set_emitting doesn't access uninitialized values
 	set_emitting(true);
