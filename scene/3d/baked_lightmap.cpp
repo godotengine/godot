@@ -954,23 +954,35 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 	bool use_srgb = use_color && !use_hdr;
 
 	if (gen_atlas) {
-		Ref<Image> large_image;
-		large_image.instance();
-		large_image->create(images[0]->get_width(), images[0]->get_height() * images.size(), false, images[0]->get_format());
-		for (int i = 0; i < images.size(); i++) {
-			large_image->blit_rect(images[i], Rect2(0, 0, images[0]->get_width(), images[0]->get_height()), Point2(0, images[0]->get_height() * i));
-		}
+		int slice_count = images.size();
+		int slice_width = images[0]->get_width();
+		int slice_height = images[0]->get_height();
 
-		Ref<TextureLayered> texture;
+		int slices_per_texture = Image::MAX_HEIGHT / slice_height;
+		int texture_count = Math::ceil(slice_count / (float)slices_per_texture);
+
+		Vector<Ref<TextureLayered>> textures;
+		textures.resize(texture_count);
 		String base_path = p_data_save_path.get_basename();
 
-		if (ResourceLoader::import) {
-			_save_image(base_path, large_image, use_srgb);
+		int last_count = slice_count % slices_per_texture;
+		for (int i = 0; i < texture_count; i++) {
+			String texture_path = texture_count > 1 ? base_path + "_" + itos(i) : base_path;
+			int texture_slice_count = (i == texture_count - 1 && last_count != 0) ? last_count : slices_per_texture;
+
+			Ref<Image> large_image;
+			large_image.instance();
+			large_image->create(slice_width, slice_height * texture_slice_count, false, images[0]->get_format());
+
+			for (int j = 0; j < texture_slice_count; j++) {
+				large_image->blit_rect(images[i * slices_per_texture + j], Rect2(0, 0, slice_width, slice_height), Point2(0, slice_height * j));
+			}
+			_save_image(texture_path, large_image, use_srgb);
 
 			Ref<ConfigFile> config;
 			config.instance();
-			if (FileAccess::exists(base_path + ".import")) {
-				config->load(base_path + ".import");
+			if (FileAccess::exists(texture_path + ".import")) {
+				config->load(texture_path + ".import");
 			} else {
 				// Set only if settings don't exist, to keep user choice
 				config->set_value("params", "compress/mode", 0);
@@ -983,49 +995,28 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 			config->set_value("params", "flags/mipmaps", false);
 			config->set_value("params", "flags/srgb", use_srgb);
 			config->set_value("params", "slices/horizontal", 1);
-			config->set_value("params", "slices/vertical", images.size());
-			config->save(base_path + ".import");
+			config->set_value("params", "slices/vertical", texture_slice_count);
 
-			ResourceLoader::import(base_path);
-			texture = ResourceLoader::load(base_path); //if already loaded, it will be updated on refocus?
-		} else {
-			base_path += ".texarr";
-			Ref<TextureLayered> tex;
-			bool set_path = true;
-			if (ResourceCache::has(base_path)) {
-				tex = Ref<Resource>((Resource *)ResourceCache::get(base_path));
-				set_path = false;
-			}
+			config->save(texture_path + ".import");
 
-			if (!tex.is_valid()) {
-				tex.instance();
-			}
-
-			tex->create(images[0]->get_width(), images[0]->get_height(), images.size(), images[0]->get_format(), Texture::FLAGS_DEFAULT);
-			for (int i = 0; i < images.size(); i++) {
-				tex->set_layer_data(images[i], i);
-			}
-
-			ResourceSaver::save(base_path, tex, ResourceSaver::FLAG_CHANGE_PATH);
-			if (set_path) {
-				tex->set_path(base_path);
-			}
-			texture = tex;
+			ResourceLoader::import(texture_path);
+			textures.write[i] = ResourceLoader::load(texture_path); //if already loaded, it will be updated on refocus?
 		}
 
 		for (int i = 0; i < lightmapper->get_bake_mesh_count(); i++) {
-			if (meshes_found[i].generate_lightmap) {
-				Dictionary d = lightmapper->get_bake_mesh_userdata(i);
-				NodePath np = d["path"];
-				int32_t subindex = -1;
-				if (d.has("subindex")) {
-					subindex = d["subindex"];
-				}
-
-				Rect2 uv_rect = lightmapper->get_bake_mesh_uv_scale(i);
-				int slice_index = lightmapper->get_bake_mesh_texture_slice(i);
-				data->add_user(np, texture, slice_index, uv_rect, subindex);
+			if (!meshes_found[i].generate_lightmap) {
+				continue;
 			}
+			Dictionary d = lightmapper->get_bake_mesh_userdata(i);
+			NodePath np = d["path"];
+			int32_t subindex = -1;
+			if (d.has("subindex")) {
+				subindex = d["subindex"];
+			}
+
+			Rect2 uv_rect = lightmapper->get_bake_mesh_uv_scale(i);
+			int slice_index = lightmapper->get_bake_mesh_texture_slice(i);
+			data->add_user(np, textures[slice_index / slices_per_texture], slice_index % slices_per_texture, uv_rect, subindex);
 		}
 	} else {
 		for (int i = 0; i < lightmapper->get_bake_mesh_count(); i++) {
