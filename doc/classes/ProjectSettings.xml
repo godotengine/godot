@@ -272,6 +272,14 @@
 		<member name="application/run/main_scene" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to the main scene file that will be loaded when the project runs.
 		</member>
+		<member name="application/run/max_fps_when_unfocused" type="int" setter="" getter="" default="10">
+			If set to a value above [code]0[/code], applies a FPS limit while the project window is unfocused. The default value is optimized to reduce power usage while the project window is unfocused at the cost of smoothness. Since minimizing the window will consider the window as unfocused, this FPS limit also applies when the project window is minimized.
+			Set [member debug/settings/fps/force_fps] to value above [code]0[/code] to apply a FPS limit while the window is focused.
+			[b]Note:[/b] Changes to this setting will be applied when the window is unfocused for the next time.
+		</member>
+		<member name="application/run/max_fps_when_unfocused.editor" type="int" setter="" getter="" default="0">
+			Editor override to avoid interfering with profiling tools when running the project from the editor. The default value disables the FPS limit when the project window is unfocused.
+		</member>
 		<member name="audio/buses/channel_disable_threshold_db" type="float" setter="" getter="" default="-60.0">
 			Audio buses will disable automatically when sound goes below a given dB threshold for a given time. This saves CPU as effects assigned to that bus will no longer do any processing.
 		</member>
@@ -431,9 +439,10 @@
 			Message to be displayed before the backtrace when the engine crashes.
 		</member>
 		<member name="debug/settings/fps/force_fps" type="int" setter="" getter="" default="0">
-			Maximum number of frames per second allowed. The actual number of frames per second may still be below this value if the game is lagging.
-			If [member display/window/vsync/vsync_mode] is set to [code]Enabled[/code] or [code]Adaptive[/code], it takes precedence and the forced FPS number cannot exceed the monitor's refresh rate. See also [member physics/common/physics_ticks_per_second].
+			If set to a value above [code]0[/code], limits the maximum number of frames per second allowed. The actual number of frames per second may still be below this value if the game is lagging. See also [member physics/common/physics_ticks_per_second].
+			If [member display/window/vsync/vsync_mode] is set to [code]Enabled[/code] or [code]Adaptive[/code], it takes precedence and the forced FPS number cannot exceed the monitor's refresh rate.
 			This setting is therefore mostly relevant for lowering the maximum FPS below VSync, e.g. to perform non-real-time rendering of static frames, or test the project under lag conditions.
+			See also [member application/run/max_fps_when_unfocused], which limits FPS when the project window is unfocused (and is enabled by default).
 			[b]Note:[/b] This property is only read when the project starts. To change the rendering FPS cap at runtime, set [member Engine.target_fps] instead.
 		</member>
 		<member name="debug/settings/gdscript/max_call_stack" type="int" setter="" getter="" default="1024">

@@ -1472,6 +1472,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					PROPERTY_HINT_RANGE,
 					"0,33200,1,or_greater")); // No negative numbers
 
+	GLOBAL_DEF("application/run/max_fps_when_unfocused", 10);
+	ProjectSettings::get_singleton()->set_custom_property_info("application/run/max_fps_when_unfocused",
+			PropertyInfo(Variant::INT,
+					"application/run/max_fps_when_unfocused",
+					PROPERTY_HINT_RANGE,
+					"0,120,1,or_greater")); // No negative numbers
+	// Disable FPS limit when unfocused when the project is run from the editor.
+	// This avoids interfering with performance profilers.
+	GLOBAL_DEF("application/run/max_fps_when_unfocused.editor", 0);
+
 	GLOBAL_DEF("display/window/ios/hide_home_indicator", true);
 	GLOBAL_DEF("input_devices/pointing/ios/touch_delay", 0.150);
 

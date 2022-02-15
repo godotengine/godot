@@ -616,14 +616,34 @@ void SceneTree::_notification(int p_notification) {
 				get_root()->propagate_notification(p_notification);
 			}
 		} break;
+		case NOTIFICATION_APPLICATION_FOCUS_IN: {
+			// If the unfocused FPS limit is set to 0, don't restore it at all. Otherwise,
+			// an user-applied FPS limit would be set back to the `force_fps` value when the project window is refocused.
+			if (!Engine::get_singleton()->is_editor_hint() && int(GLOBAL_GET("application/run/max_fps_when_unfocused")) >= 1) {
+				// Restore the previous FPS limit.
+				Engine::get_singleton()->set_target_fps(previous_target_fps);
+			}
+
+			get_root()->propagate_notification(p_notification);
+		} break;
+		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
+			// If the unfocused FPS limit is set to 0, don't apply it at all. Otherwise,
+			// an user-applied FPS limit would be removed while the project window is unfocused.
+			if (!Engine::get_singleton()->is_editor_hint() && int(GLOBAL_GET("application/run/max_fps_when_unfocused")) >= 1) {
+				// Apply a FPS limit to reduce power usage while the window is unfocused
+				// (or minimized, since the window is considered to be unfocused when minimized).
+				previous_target_fps = Engine::get_singleton()->get_target_fps();
+				Engine::get_singleton()->set_target_fps(int(GLOBAL_GET("application/run/max_fps_when_unfocused")));
+			}
+
+			get_root()->propagate_notification(p_notification);
+		} break;
 		case NOTIFICATION_OS_MEMORY_WARNING:
 		case NOTIFICATION_OS_IME_UPDATE:
 		case NOTIFICATION_WM_ABOUT:
 		case NOTIFICATION_CRASH:
 		case NOTIFICATION_APPLICATION_RESUMED:
-		case NOTIFICATION_APPLICATION_PAUSED:
-		case NOTIFICATION_APPLICATION_FOCUS_IN:
-		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
+		case NOTIFICATION_APPLICATION_PAUSED: {
 			get_root()->propagate_notification(p_notification); //pass these to nodes, since they are mirrored
 		} break;
 
@@ -1326,6 +1346,8 @@ SceneTree::SceneTree() {
 	GLOBAL_DEF("debug/shapes/collision/draw_2d_outlines", true);
 
 	Math::randomize();
+
+	previous_target_fps = GLOBAL_GET("debug/settings/fps/force_fps");
 
 	// Create with mainloop.
 

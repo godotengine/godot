@@ -112,6 +112,7 @@ private:
 	StringName node_renamed_name = "node_renamed";
 
 	int64_t current_frame = 0;
+	int previous_target_fps = 0;
 	int node_count = 0;
 
 #ifdef TOOLS_ENABLED
