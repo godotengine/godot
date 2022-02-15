@@ -588,7 +588,7 @@ void Sprite3D::_draw() {
 	set_aabb(aabb);
 
 	RID shader_rid;
-	StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, &shader_rid);
+	StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), normal_map.is_valid(), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, &shader_rid);
 	if (last_shader != shader_rid) {
 		RS::get_singleton()->material_set_shader(get_material(), shader_rid);
 		last_shader = shader_rid;
@@ -596,6 +596,18 @@ void Sprite3D::_draw() {
 	if (last_texture != texture->get_rid()) {
 		RS::get_singleton()->material_set_param(get_material(), "texture_albedo", texture->get_rid());
 		last_texture = texture->get_rid();
+	}
+	if (!normal_map.is_valid() && last_normal_map != RID()) {
+		last_normal_map = RID();
+		RS::get_singleton()->material_set_param(get_material(), "texture_normal", Variant());
+	}
+	if (normal_map.is_valid() && last_normal_map != normal_map->get_rid()) {
+		RS::get_singleton()->material_set_param(get_material(), "texture_normal", normal_map->get_rid());
+		last_normal_map = normal_map->get_rid();
+	}
+	if (normal_map.is_valid() && last_normal_scale != normal_scale) {
+		RS::get_singleton()->material_set_param(get_material(), "normal_scale", normal_scale);
+		last_normal_scale = normal_scale;
 	}
 }
 
@@ -616,6 +628,39 @@ void Sprite3D::set_texture(const Ref<Texture2D> &p_texture) {
 
 Ref<Texture2D> Sprite3D::get_texture() const {
 	return texture;
+}
+
+void Sprite3D::set_normal_map(const Ref<Texture2D> &p_texture) {
+	if (p_texture == normal_map) {
+		return;
+	}
+	if (normal_map.is_valid()) {
+		normal_map->disconnect(CoreStringNames::get_singleton()->changed, Callable(this, "_queue_update"));
+	}
+	normal_map = p_texture;
+	if (normal_map.is_valid()) {
+		normal_map->connect(CoreStringNames::get_singleton()->changed, Callable(this, "_queue_update"));
+	}
+	_queue_update();
+	emit_signal(SceneStringNames::get_singleton()->texture_changed);
+}
+
+Ref<Texture2D> Sprite3D::get_normal_map() const {
+	return normal_map;
+}
+
+void Sprite3D::set_normal_scale(float p_normal_scale) {
+	if (p_normal_scale == normal_scale) {
+		return;
+	}
+
+	normal_scale = p_normal_scale;
+	_queue_update();
+	emit_signal(SceneStringNames::get_singleton()->texture_changed);
+}
+
+float Sprite3D::get_normal_scale() const {
+	return normal_scale;
 }
 
 void Sprite3D::set_region_enabled(bool p_region) {
@@ -738,6 +783,12 @@ void Sprite3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &Sprite3D::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &Sprite3D::get_texture);
 
+	ClassDB::bind_method(D_METHOD("set_normal_map", "texture"), &Sprite3D::set_normal_map);
+	ClassDB::bind_method(D_METHOD("get_normal_map"), &Sprite3D::get_normal_map);
+
+	ClassDB::bind_method(D_METHOD("set_normal_scale", "normal_scale"), &Sprite3D::set_normal_scale);
+	ClassDB::bind_method(D_METHOD("get_normal_scale"), &Sprite3D::get_normal_scale);
+
 	ClassDB::bind_method(D_METHOD("set_region_enabled", "enabled"), &Sprite3D::set_region_enabled);
 	ClassDB::bind_method(D_METHOD("is_region_enabled"), &Sprite3D::is_region_enabled);
 
@@ -757,6 +808,8 @@ void Sprite3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_hframes"), &Sprite3D::get_hframes);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_normal_map", "get_normal_map");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "normal_scale", PROPERTY_HINT_RANGE, "-16,16,0.01"), "set_normal_scale", "get_normal_scale");
 	ADD_GROUP("Animation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_hframes", "get_hframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");
@@ -954,7 +1007,7 @@ void AnimatedSprite3D::_draw() {
 	set_aabb(aabb);
 
 	RID shader_rid;
-	StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, &shader_rid);
+	StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), false, get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, &shader_rid);
 	if (last_shader != shader_rid) {
 		RS::get_singleton()->material_set_shader(get_material(), shader_rid);
 		last_shader = shader_rid;

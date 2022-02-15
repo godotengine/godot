@@ -18,6 +18,12 @@
 		<member name="hframes" type="int" setter="set_hframes" getter="get_hframes" default="1">
 			The number of columns in the sprite sheet.
 		</member>
+		<member name="normal_map" type="Texture" setter="set_normal_map" getter="get_normal_map">
+			[Texture2D] object to be used as the normal map.
+		</member>
+		<member name="normal_scale" type="float" setter="set_normal_scale" getter="get_normal_scale" default="1.0">
+			The strength of the normal map's effect.
+		</member>
 		<member name="region_enabled" type="bool" setter="set_region_enabled" getter="is_region_enabled" default="false">
 		</member>
 		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect" default="Rect2(0, 0, 0, 0)">
