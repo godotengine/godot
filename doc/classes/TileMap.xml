@@ -158,8 +158,9 @@
 		<method name="get_surrounding_tiles">
 			<return type="Vector2i[]" />
 			<argument index="0" name="coords" type="Vector2i" />
+			<argument index="1" name="p_include_diagonal_tiles" type="bool" />
 			<description>
-				Returns the list of all neighbourings cells to the one at [code]coords[/code]
+				Returns the list of all neighbouring cells to the one at [code]coords[/code]
 			</description>
 		</method>
 		<method name="get_used_cells" qualifiers="const">
