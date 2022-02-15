@@ -562,8 +562,6 @@ void InputEventConfigurationDialog::_notification(int p_what) {
 
 			_update_input_list();
 		} break;
-		default:
-			break;
 	}
 }
 
@@ -1014,8 +1012,6 @@ void ActionMapEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			action_list_search->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 		} break;
-		default:
-			break;
 	}
 }
 

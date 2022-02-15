@@ -121,14 +121,17 @@ void EditorSettingsDialog::_notification(int p_what) {
 				set_process_unhandled_input(false);
 			}
 		} break;
+
 		case NOTIFICATION_READY: {
 			undo_redo->set_method_notify_callback(EditorDebuggerNode::_method_changeds, nullptr);
 			undo_redo->set_property_notify_callback(EditorDebuggerNode::_property_changeds, nullptr);
 			undo_redo->set_commit_notify_callback(_undo_redo_callback, this);
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			_update_icons();
 		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			_update_icons();
 			// Update theme colors.

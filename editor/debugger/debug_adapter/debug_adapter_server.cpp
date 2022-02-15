@@ -42,12 +42,14 @@ DebugAdapterServer::DebugAdapterServer() {
 
 void DebugAdapterServer::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_ENTER_TREE: {
 			start();
-			break;
-		case NOTIFICATION_EXIT_TREE:
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
 			stop();
-			break;
+		} break;
+
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			// The main loop can be run again during request processing, which modifies internal state of the protocol.
 			// Thus, "polling" is needed to prevent it from parsing other requests while the current one isn't finished.
@@ -57,6 +59,7 @@ void DebugAdapterServer::_notification(int p_what) {
 				polling = false;
 			}
 		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			protocol._request_timeout = EditorSettings::get_singleton()->get("network/debug_adapter/request_timeout");
 			protocol._sync_breakpoints = EditorSettings::get_singleton()->get("network/debug_adapter/sync_breakpoints");

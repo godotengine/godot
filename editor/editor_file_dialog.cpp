@@ -69,48 +69,60 @@ VBoxContainer *EditorFileDialog::get_vbox() {
 }
 
 void EditorFileDialog::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY || p_what == NOTIFICATION_THEME_CHANGED || p_what == Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED || p_what == NOTIFICATION_TRANSLATION_CHANGED) {
-		_update_icons();
-	} else if (p_what == NOTIFICATION_PROCESS) {
-		if (preview_waiting) {
-			preview_wheel_timeout -= get_process_delta_time();
-			if (preview_wheel_timeout <= 0) {
-				preview_wheel_index++;
-				if (preview_wheel_index >= 8) {
-					preview_wheel_index = 0;
+	switch (p_what) {
+		case NOTIFICATION_READY:
+		case NOTIFICATION_THEME_CHANGED:
+		case Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			_update_icons();
+		} break;
+
+		case NOTIFICATION_PROCESS: {
+			if (preview_waiting) {
+				preview_wheel_timeout -= get_process_delta_time();
+				if (preview_wheel_timeout <= 0) {
+					preview_wheel_index++;
+					if (preview_wheel_index >= 8) {
+						preview_wheel_index = 0;
+					}
+					Ref<Texture2D> frame = item_list->get_theme_icon("Progress" + itos(preview_wheel_index + 1), SNAME("EditorIcons"));
+					preview->set_texture(frame);
+					preview_wheel_timeout = 0.1;
 				}
-				Ref<Texture2D> frame = item_list->get_theme_icon("Progress" + itos(preview_wheel_index + 1), SNAME("EditorIcons"));
-				preview->set_texture(frame);
-				preview_wheel_timeout = 0.1;
 			}
-		}
+		} break;
 
-	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		bool is_showing_hidden = EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files");
-		if (show_hidden_files != is_showing_hidden) {
-			set_show_hidden_files(is_showing_hidden);
-		}
-		set_display_mode((DisplayMode)EditorSettings::get_singleton()->get("filesystem/file_dialog/display_mode").operator int());
-
-		_update_icons();
-		// DO NOT CALL UPDATE FILE LIST HERE, ALL HUNDREDS OF HIDDEN DIALOGS WILL RESPOND, CALL INVALIDATE INSTEAD
-		invalidate();
-	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (!is_visible()) {
-			set_process_unhandled_input(false);
-		}
-	} else if (p_what == NOTIFICATION_WM_WINDOW_FOCUS_IN) {
-		// Check if the current directory was removed externally (much less likely to happen while editor window is focused).
-		String previous_dir = get_current_dir();
-		while (!dir_access->dir_exists(get_current_dir())) {
-			_go_up();
-
-			// In case we can't go further up, use some fallback and break.
-			if (get_current_dir() == previous_dir) {
-				_dir_submitted(OS::get_singleton()->get_user_data_dir());
-				break;
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			bool is_showing_hidden = EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files");
+			if (show_hidden_files != is_showing_hidden) {
+				set_show_hidden_files(is_showing_hidden);
 			}
-		}
+			set_display_mode((DisplayMode)EditorSettings::get_singleton()->get("filesystem/file_dialog/display_mode").operator int());
+
+			_update_icons();
+			// DO NOT CALL UPDATE FILE LIST HERE, ALL HUNDREDS OF HIDDEN DIALOGS WILL RESPOND, CALL INVALIDATE INSTEAD
+			invalidate();
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible()) {
+				set_process_unhandled_input(false);
+			}
+		} break;
+
+		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
+			// Check if the current directory was removed externally (much less likely to happen while editor window is focused).
+			String previous_dir = get_current_dir();
+			while (!dir_access->dir_exists(get_current_dir())) {
+				_go_up();
+
+				// In case we can't go further up, use some fallback and break.
+				if (get_current_dir() == previous_dir) {
+					_dir_submitted(OS::get_singleton()->get_user_data_dir());
+					break;
+				}
+			}
+		} break;
 	}
 }
 

@@ -504,34 +504,37 @@ void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_d
 }
 
 void EditorPropertyArray::_notification(int p_what) {
-	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
-		change_type->clear();
-		for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-			String type = Variant::get_type_name(Variant::Type(i));
-			change_type->add_icon_item(get_theme_icon(type, SNAME("EditorIcons")), type, i);
-		}
-		change_type->add_separator();
-		change_type->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Remove Item"), Variant::VARIANT_MAX);
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_ENTER_TREE: {
+			change_type->clear();
+			for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+				String type = Variant::get_type_name(Variant::Type(i));
+				change_type->add_icon_item(get_theme_icon(type, SNAME("EditorIcons")), type, i);
+			}
+			change_type->add_separator();
+			change_type->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Remove Item"), Variant::VARIANT_MAX);
 
-		if (Object::cast_to<Button>(button_add_item)) {
-			button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-		}
-	}
+			if (Object::cast_to<Button>(button_add_item)) {
+				button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_DRAG_BEGIN) {
-		if (is_visible_in_tree()) {
-			if (_is_drop_valid(get_viewport()->gui_get_drag_data())) {
-				dropping = true;
+		case NOTIFICATION_DRAG_BEGIN: {
+			if (is_visible_in_tree()) {
+				if (_is_drop_valid(get_viewport()->gui_get_drag_data())) {
+					dropping = true;
+					edit->update();
+				}
+			}
+		} break;
+
+		case NOTIFICATION_DRAG_END: {
+			if (dropping) {
+				dropping = false;
 				edit->update();
 			}
-		}
-	}
-
-	if (p_what == NOTIFICATION_DRAG_END) {
-		if (dropping) {
-			dropping = false;
-			edit->update();
-		}
+		} break;
 	}
 }
 
@@ -1151,18 +1154,21 @@ void EditorPropertyDictionary::_object_id_selected(const StringName &p_property,
 }
 
 void EditorPropertyDictionary::_notification(int p_what) {
-	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
-		change_type->clear();
-		for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-			String type = Variant::get_type_name(Variant::Type(i));
-			change_type->add_icon_item(get_theme_icon(type, SNAME("EditorIcons")), type, i);
-		}
-		change_type->add_separator();
-		change_type->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Remove Item"), Variant::VARIANT_MAX);
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_ENTER_TREE: {
+			change_type->clear();
+			for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+				String type = Variant::get_type_name(Variant::Type(i));
+				change_type->add_icon_item(get_theme_icon(type, SNAME("EditorIcons")), type, i);
+			}
+			change_type->add_separator();
+			change_type->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Remove Item"), Variant::VARIANT_MAX);
 
-		if (Object::cast_to<Button>(button_add_item)) {
-			button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-		}
+			if (Object::cast_to<Button>(button_add_item)) {
+				button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			}
+		} break;
 	}
 }
 

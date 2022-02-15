@@ -42,23 +42,27 @@
 #define PREVIEW_LIST_MAX_SIZE 10
 
 void EditorAutoloadSettings::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		List<String> afn;
-		ResourceLoader::get_recognized_extensions_for_type("Script", &afn);
-		ResourceLoader::get_recognized_extensions_for_type("PackedScene", &afn);
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			List<String> afn;
+			ResourceLoader::get_recognized_extensions_for_type("Script", &afn);
+			ResourceLoader::get_recognized_extensions_for_type("PackedScene", &afn);
 
-		for (const String &E : afn) {
-			file_dialog->add_filter("*." + E);
-		}
-
-		for (const AutoLoadInfo &info : autoload_cache) {
-			if (info.node && info.in_editor) {
-				get_tree()->get_root()->call_deferred(SNAME("add_child"), info.node);
+			for (const String &E : afn) {
+				file_dialog->add_filter("*." + E);
 			}
-		}
-		browse_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
-	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
-		browse_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
+
+			for (const AutoLoadInfo &info : autoload_cache) {
+				if (info.node && info.in_editor) {
+					get_tree()->get_root()->call_deferred(SNAME("add_child"), info.node);
+				}
+			}
+			browse_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			browse_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
+		} break;
 	}
 }
 

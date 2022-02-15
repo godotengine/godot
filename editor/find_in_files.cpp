@@ -103,9 +103,11 @@ void FindInFiles::set_filter(const Set<String> &exts) {
 	_extension_filter = exts;
 }
 
-void FindInFiles::_notification(int p_notification) {
-	if (p_notification == NOTIFICATION_PROCESS) {
-		_process();
+void FindInFiles::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_PROCESS: {
+			_process();
+		} break;
 	}
 }
 
@@ -456,26 +458,28 @@ Set<String> FindInFilesDialog::get_filter() const {
 }
 
 void FindInFilesDialog::_notification(int p_what) {
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (is_visible()) {
-			// Doesn't work more than once if not deferred...
-			_search_text_line_edit->call_deferred(SNAME("grab_focus"));
-			_search_text_line_edit->select_all();
-			// Extensions might have changed in the meantime, we clean them and instance them again.
-			for (int i = 0; i < _filters_container->get_child_count(); i++) {
-				_filters_container->get_child(i)->queue_delete();
-			}
-			Array exts = ProjectSettings::get_singleton()->get("editor/script/search_in_file_extensions");
-			for (int i = 0; i < exts.size(); ++i) {
-				CheckBox *cb = memnew(CheckBox);
-				cb->set_text(exts[i]);
-				if (!_filters_preferences.has(exts[i])) {
-					_filters_preferences[exts[i]] = true;
+	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible()) {
+				// Doesn't work more than once if not deferred...
+				_search_text_line_edit->call_deferred(SNAME("grab_focus"));
+				_search_text_line_edit->select_all();
+				// Extensions might have changed in the meantime, we clean them and instance them again.
+				for (int i = 0; i < _filters_container->get_child_count(); i++) {
+					_filters_container->get_child(i)->queue_delete();
 				}
-				cb->set_pressed(_filters_preferences[exts[i]]);
-				_filters_container->add_child(cb);
+				Array exts = ProjectSettings::get_singleton()->get("editor/script/search_in_file_extensions");
+				for (int i = 0; i < exts.size(); ++i) {
+					CheckBox *cb = memnew(CheckBox);
+					cb->set_text(exts[i]);
+					if (!_filters_preferences.has(exts[i])) {
+						_filters_preferences[exts[i]] = true;
+					}
+					cb->set_pressed(_filters_preferences[exts[i]]);
+					_filters_container->add_child(cb);
+				}
 			}
-		}
+		} break;
 	}
 }
 
@@ -687,11 +691,15 @@ void FindInFilesPanel::stop_search() {
 }
 
 void FindInFilesPanel::_notification(int p_what) {
-	if (p_what == NOTIFICATION_PROCESS) {
-		_progress_bar->set_as_ratio(_finder->get_progress());
-	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
-		_search_text_label->add_theme_font_override("font", get_theme_font(SNAME("source"), SNAME("EditorFonts")));
-		_results_display->add_theme_font_override("font", get_theme_font(SNAME("source"), SNAME("EditorFonts")));
+	switch (p_what) {
+		case NOTIFICATION_PROCESS: {
+			_progress_bar->set_as_ratio(_finder->get_progress());
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			_search_text_label->add_theme_font_override("font", get_theme_font(SNAME("source"), SNAME("EditorFonts")));
+			_results_display->add_theme_font_override("font", get_theme_font(SNAME("source"), SNAME("EditorFonts")));
+		} break;
 	}
 }
 

@@ -277,8 +277,10 @@ void ConnectDialog::_update_ok_enabled() {
 }
 
 void ConnectDialog::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		bind_editor->edit(cdbinds);
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			bind_editor->edit(cdbinds);
+		} break;
 	}
 }
 
@@ -938,6 +940,7 @@ void ConnectionsDock::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			update_tree();
 		} break;

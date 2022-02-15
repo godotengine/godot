@@ -103,22 +103,96 @@ void EditorProperty::emit_changed(const StringName &p_property, const Variant &p
 }
 
 void EditorProperty::_notification(int p_what) {
-	if (p_what == NOTIFICATION_SORT_CHILDREN) {
-		Size2 size = get_size();
-		Rect2 rect;
-		Rect2 bottom_rect;
+	switch (p_what) {
+		case NOTIFICATION_SORT_CHILDREN: {
+			Size2 size = get_size();
+			Rect2 rect;
+			Rect2 bottom_rect;
 
-		right_child_rect = Rect2();
-		bottom_child_rect = Rect2();
+			right_child_rect = Rect2();
+			bottom_child_rect = Rect2();
 
-		{
-			int child_room = size.width * (1.0 - split_ratio);
-			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
-			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
-			int height = font->get_height(font_size);
-			bool no_children = true;
+			{
+				int child_room = size.width * (1.0 - split_ratio);
+				Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
+				int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
+				int height = font->get_height(font_size);
+				bool no_children = true;
 
-			//compute room needed
+				//compute room needed
+				for (int i = 0; i < get_child_count(); i++) {
+					Control *c = Object::cast_to<Control>(get_child(i));
+					if (!c) {
+						continue;
+					}
+					if (c->is_set_as_top_level()) {
+						continue;
+					}
+					if (c == bottom_editor) {
+						continue;
+					}
+
+					Size2 minsize = c->get_combined_minimum_size();
+					child_room = MAX(child_room, minsize.width);
+					height = MAX(height, minsize.height);
+					no_children = false;
+				}
+
+				if (no_children) {
+					text_size = size.width;
+					rect = Rect2(size.width - 1, 0, 1, height);
+				} else {
+					text_size = MAX(0, size.width - (child_room + 4 * EDSCALE));
+					if (is_layout_rtl()) {
+						rect = Rect2(1, 0, child_room, height);
+					} else {
+						rect = Rect2(size.width - child_room, 0, child_room, height);
+					}
+				}
+
+				if (bottom_editor) {
+					int m = 0; //get_constant("item_margin", "Tree");
+
+					bottom_rect = Rect2(m, rect.size.height + get_theme_constant(SNAME("vseparation")), size.width - m, bottom_editor->get_combined_minimum_size().height);
+				}
+
+				if (keying) {
+					Ref<Texture2D> key;
+
+					if (use_keying_next()) {
+						key = get_theme_icon(SNAME("KeyNext"), SNAME("EditorIcons"));
+					} else {
+						key = get_theme_icon(SNAME("Key"), SNAME("EditorIcons"));
+					}
+
+					rect.size.x -= key->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
+					if (is_layout_rtl()) {
+						rect.position.x += key->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
+					}
+
+					if (no_children) {
+						text_size -= key->get_width() + 4 * EDSCALE;
+					}
+				}
+
+				if (deletable) {
+					Ref<Texture2D> close;
+
+					close = get_theme_icon(SNAME("Close"), SNAME("EditorIcons"));
+
+					rect.size.x -= close->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
+
+					if (is_layout_rtl()) {
+						rect.position.x += close->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
+					}
+
+					if (no_children) {
+						text_size -= close->get_width() + 4 * EDSCALE;
+					}
+				}
+			}
+
+			//set children
 			for (int i = 0; i < get_child_count(); i++) {
 				Control *c = Object::cast_to<Control>(get_child(i));
 				if (!c) {
@@ -131,28 +205,128 @@ void EditorProperty::_notification(int p_what) {
 					continue;
 				}
 
-				Size2 minsize = c->get_combined_minimum_size();
-				child_room = MAX(child_room, minsize.width);
-				height = MAX(height, minsize.height);
-				no_children = false;
-			}
-
-			if (no_children) {
-				text_size = size.width;
-				rect = Rect2(size.width - 1, 0, 1, height);
-			} else {
-				text_size = MAX(0, size.width - (child_room + 4 * EDSCALE));
-				if (is_layout_rtl()) {
-					rect = Rect2(1, 0, child_room, height);
-				} else {
-					rect = Rect2(size.width - child_room, 0, child_room, height);
-				}
+				fit_child_in_rect(c, rect);
+				right_child_rect = rect;
 			}
 
 			if (bottom_editor) {
-				int m = 0; //get_constant("item_margin", "Tree");
+				fit_child_in_rect(bottom_editor, bottom_rect);
+				bottom_child_rect = bottom_rect;
+			}
 
-				bottom_rect = Rect2(m, rect.size.height + get_theme_constant(SNAME("vseparation")), size.width - m, bottom_editor->get_combined_minimum_size().height);
+			update(); //need to redraw text
+		} break;
+
+		case NOTIFICATION_DRAW: {
+			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
+			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
+			Color dark_color = get_theme_color(SNAME("dark_color_2"), SNAME("Editor"));
+			bool rtl = is_layout_rtl();
+
+			Size2 size = get_size();
+			if (bottom_editor) {
+				size.height = bottom_editor->get_offset(SIDE_TOP);
+			} else if (label_reference) {
+				size.height = label_reference->get_size().height;
+			}
+
+			Ref<StyleBox> sb;
+			if (selected) {
+				sb = get_theme_stylebox(SNAME("bg_selected"));
+			} else {
+				sb = get_theme_stylebox(SNAME("bg"));
+			}
+
+			draw_style_box(sb, Rect2(Vector2(), size));
+
+			if (draw_top_bg && right_child_rect != Rect2()) {
+				draw_rect(right_child_rect, dark_color);
+			}
+			if (bottom_child_rect != Rect2()) {
+				draw_rect(bottom_child_rect, dark_color);
+			}
+
+			Color color;
+			if (draw_warning) {
+				color = get_theme_color(is_read_only() ? SNAME("readonly_warning_color") : SNAME("warning_color"));
+			} else {
+				color = get_theme_color(is_read_only() ? SNAME("readonly_color") : SNAME("property_color"));
+			}
+			if (label.contains(".")) {
+				// FIXME: Move this to the project settings editor, as this is only used
+				// for project settings feature tag overrides.
+				color.a = 0.5;
+			}
+
+			int ofs = get_theme_constant(SNAME("font_offset"));
+			int text_limit = text_size - ofs;
+
+			if (checkable) {
+				Ref<Texture2D> checkbox;
+				if (checked) {
+					checkbox = get_theme_icon(SNAME("GuiChecked"), SNAME("EditorIcons"));
+				} else {
+					checkbox = get_theme_icon(SNAME("GuiUnchecked"), SNAME("EditorIcons"));
+				}
+
+				Color color2(1, 1, 1);
+				if (check_hover) {
+					color2.r *= 1.2;
+					color2.g *= 1.2;
+					color2.b *= 1.2;
+				}
+				check_rect = Rect2(ofs, ((size.height - checkbox->get_height()) / 2), checkbox->get_width(), checkbox->get_height());
+				if (rtl) {
+					draw_texture(checkbox, Vector2(size.width - check_rect.position.x - checkbox->get_width(), check_rect.position.y), color2);
+				} else {
+					draw_texture(checkbox, check_rect.position, color2);
+				}
+				int check_ofs = get_theme_constant(SNAME("hseparator"), SNAME("Tree")) + checkbox->get_width() + get_theme_constant(SNAME("hseparation"), SNAME("CheckBox"));
+				ofs += check_ofs;
+				text_limit -= check_ofs;
+			} else {
+				check_rect = Rect2();
+			}
+
+			if (can_revert && !is_read_only()) {
+				Ref<Texture2D> reload_icon = get_theme_icon(SNAME("ReloadSmall"), SNAME("EditorIcons"));
+				text_limit -= reload_icon->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree")) * 2;
+				revert_rect = Rect2(ofs + text_limit, (size.height - reload_icon->get_height()) / 2, reload_icon->get_width(), reload_icon->get_height());
+
+				Color color2(1, 1, 1);
+				if (revert_hover) {
+					color2.r *= 1.2;
+					color2.g *= 1.2;
+					color2.b *= 1.2;
+				}
+				if (rtl) {
+					draw_texture(reload_icon, Vector2(size.width - revert_rect.position.x - reload_icon->get_width(), revert_rect.position.y), color2);
+				} else {
+					draw_texture(reload_icon, revert_rect.position, color2);
+				}
+			} else {
+				revert_rect = Rect2();
+			}
+
+			if (!pin_hidden && pinned) {
+				Ref<Texture2D> pinned_icon = get_theme_icon(SNAME("Pin"), SNAME("EditorIcons"));
+				int margin_w = get_theme_constant(SNAME("hseparator"), SNAME("Tree")) * 2;
+				int total_icon_w = margin_w + pinned_icon->get_width();
+				int text_w = font->get_string_size(label, font_size, rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT, text_limit - total_icon_w).x;
+				int y = (size.height - pinned_icon->get_height()) / 2;
+				if (rtl) {
+					draw_texture(pinned_icon, Vector2(size.width - ofs - text_w - total_icon_w, y), color);
+				} else {
+					draw_texture(pinned_icon, Vector2(ofs + text_w + margin_w, y), color);
+				}
+				text_limit -= total_icon_w;
+			}
+
+			int v_ofs = (size.height - font->get_height(font_size)) / 2;
+			if (rtl) {
+				draw_string(font, Point2(size.width - ofs - text_limit, v_ofs + font->get_ascent(font_size)), label, HORIZONTAL_ALIGNMENT_RIGHT, text_limit, font_size, color);
+			} else {
+				draw_string(font, Point2(ofs, v_ofs + font->get_ascent(font_size)), label, HORIZONTAL_ALIGNMENT_LEFT, text_limit, font_size, color);
 			}
 
 			if (keying) {
@@ -164,14 +338,23 @@ void EditorProperty::_notification(int p_what) {
 					key = get_theme_icon(SNAME("Key"), SNAME("EditorIcons"));
 				}
 
-				rect.size.x -= key->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
-				if (is_layout_rtl()) {
-					rect.position.x += key->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
+				ofs = size.width - key->get_width() - get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
+
+				Color color2(1, 1, 1);
+				if (keying_hover) {
+					color2.r *= 1.2;
+					color2.g *= 1.2;
+					color2.b *= 1.2;
+				}
+				keying_rect = Rect2(ofs, ((size.height - key->get_height()) / 2), key->get_width(), key->get_height());
+				if (rtl) {
+					draw_texture(key, Vector2(size.width - keying_rect.position.x - key->get_width(), keying_rect.position.y), color2);
+				} else {
+					draw_texture(key, keying_rect.position, color2);
 				}
 
-				if (no_children) {
-					text_size -= key->get_width() + 4 * EDSCALE;
-				}
+			} else {
+				keying_rect = Rect2();
 			}
 
 			if (deletable) {
@@ -179,205 +362,24 @@ void EditorProperty::_notification(int p_what) {
 
 				close = get_theme_icon(SNAME("Close"), SNAME("EditorIcons"));
 
-				rect.size.x -= close->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
+				ofs = size.width - close->get_width() - get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
 
-				if (is_layout_rtl()) {
-					rect.position.x += close->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
+				Color color2(1, 1, 1);
+				if (delete_hover) {
+					color2.r *= 1.2;
+					color2.g *= 1.2;
+					color2.b *= 1.2;
 				}
-
-				if (no_children) {
-					text_size -= close->get_width() + 4 * EDSCALE;
+				delete_rect = Rect2(ofs, ((size.height - close->get_height()) / 2), close->get_width(), close->get_height());
+				if (rtl) {
+					draw_texture(close, Vector2(size.width - delete_rect.position.x - close->get_width(), delete_rect.position.y), color2);
+				} else {
+					draw_texture(close, delete_rect.position, color2);
 				}
-			}
-		}
-
-		//set children
-		for (int i = 0; i < get_child_count(); i++) {
-			Control *c = Object::cast_to<Control>(get_child(i));
-			if (!c) {
-				continue;
-			}
-			if (c->is_set_as_top_level()) {
-				continue;
-			}
-			if (c == bottom_editor) {
-				continue;
-			}
-
-			fit_child_in_rect(c, rect);
-			right_child_rect = rect;
-		}
-
-		if (bottom_editor) {
-			fit_child_in_rect(bottom_editor, bottom_rect);
-			bottom_child_rect = bottom_rect;
-		}
-
-		update(); //need to redraw text
-	}
-
-	if (p_what == NOTIFICATION_DRAW) {
-		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
-		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
-		Color dark_color = get_theme_color(SNAME("dark_color_2"), SNAME("Editor"));
-		bool rtl = is_layout_rtl();
-
-		Size2 size = get_size();
-		if (bottom_editor) {
-			size.height = bottom_editor->get_offset(SIDE_TOP);
-		} else if (label_reference) {
-			size.height = label_reference->get_size().height;
-		}
-
-		Ref<StyleBox> sb;
-		if (selected) {
-			sb = get_theme_stylebox(SNAME("bg_selected"));
-		} else {
-			sb = get_theme_stylebox(SNAME("bg"));
-		}
-
-		draw_style_box(sb, Rect2(Vector2(), size));
-
-		if (draw_top_bg && right_child_rect != Rect2()) {
-			draw_rect(right_child_rect, dark_color);
-		}
-		if (bottom_child_rect != Rect2()) {
-			draw_rect(bottom_child_rect, dark_color);
-		}
-
-		Color color;
-		if (draw_warning) {
-			color = get_theme_color(is_read_only() ? SNAME("readonly_warning_color") : SNAME("warning_color"));
-		} else {
-			color = get_theme_color(is_read_only() ? SNAME("readonly_color") : SNAME("property_color"));
-		}
-		if (label.contains(".")) {
-			// FIXME: Move this to the project settings editor, as this is only used
-			// for project settings feature tag overrides.
-			color.a = 0.5;
-		}
-
-		int ofs = get_theme_constant(SNAME("font_offset"));
-		int text_limit = text_size - ofs;
-
-		if (checkable) {
-			Ref<Texture2D> checkbox;
-			if (checked) {
-				checkbox = get_theme_icon(SNAME("GuiChecked"), SNAME("EditorIcons"));
 			} else {
-				checkbox = get_theme_icon(SNAME("GuiUnchecked"), SNAME("EditorIcons"));
+				delete_rect = Rect2();
 			}
-
-			Color color2(1, 1, 1);
-			if (check_hover) {
-				color2.r *= 1.2;
-				color2.g *= 1.2;
-				color2.b *= 1.2;
-			}
-			check_rect = Rect2(ofs, ((size.height - checkbox->get_height()) / 2), checkbox->get_width(), checkbox->get_height());
-			if (rtl) {
-				draw_texture(checkbox, Vector2(size.width - check_rect.position.x - checkbox->get_width(), check_rect.position.y), color2);
-			} else {
-				draw_texture(checkbox, check_rect.position, color2);
-			}
-			int check_ofs = get_theme_constant(SNAME("hseparator"), SNAME("Tree")) + checkbox->get_width() + get_theme_constant(SNAME("hseparation"), SNAME("CheckBox"));
-			ofs += check_ofs;
-			text_limit -= check_ofs;
-		} else {
-			check_rect = Rect2();
-		}
-
-		if (can_revert && !is_read_only()) {
-			Ref<Texture2D> reload_icon = get_theme_icon(SNAME("ReloadSmall"), SNAME("EditorIcons"));
-			text_limit -= reload_icon->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree")) * 2;
-			revert_rect = Rect2(ofs + text_limit, (size.height - reload_icon->get_height()) / 2, reload_icon->get_width(), reload_icon->get_height());
-
-			Color color2(1, 1, 1);
-			if (revert_hover) {
-				color2.r *= 1.2;
-				color2.g *= 1.2;
-				color2.b *= 1.2;
-			}
-			if (rtl) {
-				draw_texture(reload_icon, Vector2(size.width - revert_rect.position.x - reload_icon->get_width(), revert_rect.position.y), color2);
-			} else {
-				draw_texture(reload_icon, revert_rect.position, color2);
-			}
-		} else {
-			revert_rect = Rect2();
-		}
-
-		if (!pin_hidden && pinned) {
-			Ref<Texture2D> pinned_icon = get_theme_icon(SNAME("Pin"), SNAME("EditorIcons"));
-			int margin_w = get_theme_constant(SNAME("hseparator"), SNAME("Tree")) * 2;
-			int total_icon_w = margin_w + pinned_icon->get_width();
-			int text_w = font->get_string_size(label, font_size, rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT, text_limit - total_icon_w).x;
-			int y = (size.height - pinned_icon->get_height()) / 2;
-			if (rtl) {
-				draw_texture(pinned_icon, Vector2(size.width - ofs - text_w - total_icon_w, y), color);
-			} else {
-				draw_texture(pinned_icon, Vector2(ofs + text_w + margin_w, y), color);
-			}
-			text_limit -= total_icon_w;
-		}
-
-		int v_ofs = (size.height - font->get_height(font_size)) / 2;
-		if (rtl) {
-			draw_string(font, Point2(size.width - ofs - text_limit, v_ofs + font->get_ascent(font_size)), label, HORIZONTAL_ALIGNMENT_RIGHT, text_limit, font_size, color);
-		} else {
-			draw_string(font, Point2(ofs, v_ofs + font->get_ascent(font_size)), label, HORIZONTAL_ALIGNMENT_LEFT, text_limit, font_size, color);
-		}
-
-		if (keying) {
-			Ref<Texture2D> key;
-
-			if (use_keying_next()) {
-				key = get_theme_icon(SNAME("KeyNext"), SNAME("EditorIcons"));
-			} else {
-				key = get_theme_icon(SNAME("Key"), SNAME("EditorIcons"));
-			}
-
-			ofs = size.width - key->get_width() - get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
-
-			Color color2(1, 1, 1);
-			if (keying_hover) {
-				color2.r *= 1.2;
-				color2.g *= 1.2;
-				color2.b *= 1.2;
-			}
-			keying_rect = Rect2(ofs, ((size.height - key->get_height()) / 2), key->get_width(), key->get_height());
-			if (rtl) {
-				draw_texture(key, Vector2(size.width - keying_rect.position.x - key->get_width(), keying_rect.position.y), color2);
-			} else {
-				draw_texture(key, keying_rect.position, color2);
-			}
-
-		} else {
-			keying_rect = Rect2();
-		}
-
-		if (deletable) {
-			Ref<Texture2D> close;
-
-			close = get_theme_icon(SNAME("Close"), SNAME("EditorIcons"));
-
-			ofs = size.width - close->get_width() - get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
-
-			Color color2(1, 1, 1);
-			if (delete_hover) {
-				color2.r *= 1.2;
-				color2.g *= 1.2;
-				color2.b *= 1.2;
-			}
-			delete_rect = Rect2(ofs, ((size.height - close->get_height()) / 2), close->get_width(), close->get_height());
-			if (rtl) {
-				draw_texture(close, Vector2(size.width - delete_rect.position.x - close->get_width(), delete_rect.position.y), color2);
-			} else {
-				draw_texture(close, delete_rect.position, color2);
-			}
-		} else {
-			delete_rect = Rect2();
-		}
+		} break;
 	}
 }
 
@@ -1078,30 +1080,32 @@ void EditorInspectorPlugin::_bind_methods() {
 ////////////////////////////////////////////////
 
 void EditorInspectorCategory::_notification(int p_what) {
-	if (p_what == NOTIFICATION_DRAW) {
-		Ref<StyleBox> sb = get_theme_stylebox(SNAME("prop_category_style"), SNAME("Editor"));
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
+			Ref<StyleBox> sb = get_theme_stylebox(SNAME("prop_category_style"), SNAME("Editor"));
 
-		draw_style_box(sb, Rect2(Vector2(), get_size()));
+			draw_style_box(sb, Rect2(Vector2(), get_size()));
 
-		Ref<Font> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
-		int font_size = get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
+			Ref<Font> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
+			int font_size = get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
 
-		int hs = get_theme_constant(SNAME("hseparation"), SNAME("Tree"));
+			int hs = get_theme_constant(SNAME("hseparation"), SNAME("Tree"));
 
-		int w = font->get_string_size(label, font_size).width;
-		if (icon.is_valid()) {
-			w += hs + icon->get_width();
-		}
+			int w = font->get_string_size(label, font_size).width;
+			if (icon.is_valid()) {
+				w += hs + icon->get_width();
+			}
 
-		int ofs = (get_size().width - w) / 2;
+			int ofs = (get_size().width - w) / 2;
 
-		if (icon.is_valid()) {
-			draw_texture(icon, Point2(ofs, (get_size().height - icon->get_height()) / 2).floor());
-			ofs += hs + icon->get_width();
-		}
+			if (icon.is_valid()) {
+				draw_texture(icon, Point2(ofs, (get_size().height - icon->get_height()) / 2).floor());
+				ofs += hs + icon->get_width();
+			}
 
-		Color color = get_theme_color(SNAME("font_color"), SNAME("Tree"));
-		draw_string(font, Point2(ofs, font->get_ascent(font_size) + (get_size().height - font->get_height(font_size)) / 2).floor(), label, HORIZONTAL_ALIGNMENT_LEFT, get_size().width, font_size, color);
+			Color color = get_theme_color(SNAME("font_color"), SNAME("Tree"));
+			draw_string(font, Point2(ofs, font->get_ascent(font_size) + (get_size().height - font->get_height(font_size)) / 2).floor(), label, HORIZONTAL_ALIGNMENT_LEFT, get_size().width, font_size, color);
+		} break;
 	}
 }
 
@@ -1152,6 +1156,7 @@ void EditorInspectorSection::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			update_minimum_size();
 		} break;
+
 		case NOTIFICATION_SORT_CHILDREN: {
 			if (!vbox_added) {
 				return;
@@ -1205,6 +1210,7 @@ void EditorInspectorSection::_notification(int p_what) {
 				fit_child_in_rect(c, Rect2(offset, size));
 			}
 		} break;
+
 		case NOTIFICATION_DRAW: {
 			// Get the section header font.
 			Ref<Font> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
@@ -1299,6 +1305,7 @@ void EditorInspectorSection::_notification(int p_what) {
 				draw_style_box(section_indent_style, indent_rect);
 			}
 		} break;
+
 		case NOTIFICATION_DRAG_BEGIN: {
 			Dictionary dd = get_viewport()->gui_get_drag_data();
 
@@ -1317,10 +1324,12 @@ void EditorInspectorSection::_notification(int p_what) {
 			dropping = children_can_drop;
 			update();
 		} break;
+
 		case NOTIFICATION_DRAG_END: {
 			dropping = false;
 			update();
 		} break;
+
 		case NOTIFICATION_MOUSE_ENTER: {
 			if (dropping) {
 				dropping_unfold_timer->start();
@@ -2025,6 +2034,7 @@ void EditorInspectorArray::_notification(int p_what) {
 			add_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			update_minimum_size();
 		} break;
+
 		case NOTIFICATION_DRAG_BEGIN: {
 			Dictionary dict = get_viewport()->gui_get_drag_data();
 			if (dict.has("type") && dict["type"] == "property_array_element" && String(dict["property_array_prefix"]) == array_element_prefix) {
@@ -2032,6 +2042,7 @@ void EditorInspectorArray::_notification(int p_what) {
 				control_dropping->update();
 			}
 		} break;
+
 		case NOTIFICATION_DRAG_END: {
 			if (dropping) {
 				dropping = false;
@@ -2183,11 +2194,14 @@ void EditorPaginator::update(int p_page, int p_max_page) {
 }
 
 void EditorPaginator::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		first_page_button->set_icon(get_theme_icon(SNAME("PageFirst"), SNAME("EditorIcons")));
-		prev_page_button->set_icon(get_theme_icon(SNAME("PagePrevious"), SNAME("EditorIcons")));
-		next_page_button->set_icon(get_theme_icon(SNAME("PageNext"), SNAME("EditorIcons")));
-		last_page_button->set_icon(get_theme_icon(SNAME("PageLast"), SNAME("EditorIcons")));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			first_page_button->set_icon(get_theme_icon(SNAME("PageFirst"), SNAME("EditorIcons")));
+			prev_page_button->set_icon(get_theme_icon(SNAME("PagePrevious"), SNAME("EditorIcons")));
+			next_page_button->set_icon(get_theme_icon(SNAME("PageNext"), SNAME("EditorIcons")));
+			last_page_button->set_icon(get_theme_icon(SNAME("PageLast"), SNAME("EditorIcons")));
+		} break;
 	}
 }
 
@@ -3426,80 +3440,84 @@ void EditorInspector::_node_removed(Node *p_node) {
 }
 
 void EditorInspector::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY) {
-		EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &EditorInspector::_feature_profile_changed));
-		set_process(is_visible_in_tree());
-		_update_inspector_bg();
-	}
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &EditorInspector::_feature_profile_changed));
+			set_process(is_visible_in_tree());
+			_update_inspector_bg();
+		} break;
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (!sub_inspector) {
-			get_tree()->connect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
-		}
-	}
-	if (p_what == NOTIFICATION_PREDELETE) {
-		edit(nullptr); //just in case
-	}
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (!sub_inspector) {
-			get_tree()->disconnect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
-		}
-		edit(nullptr);
-	}
+		case NOTIFICATION_ENTER_TREE: {
+			if (!sub_inspector) {
+				get_tree()->connect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		set_process(is_visible_in_tree());
-	}
+		case NOTIFICATION_PREDELETE: {
+			edit(nullptr); //just in case
+		} break;
 
-	if (p_what == NOTIFICATION_PROCESS) {
-		if (update_scroll_request >= 0) {
-			get_v_scroll_bar()->call_deferred(SNAME("set_value"), update_scroll_request);
-			update_scroll_request = -1;
-		}
-		if (refresh_countdown > 0) {
-			refresh_countdown -= get_process_delta_time();
-			if (refresh_countdown <= 0) {
-				for (const KeyValue<StringName, List<EditorProperty *>> &F : editor_property_map) {
-					for (EditorProperty *E : F.value) {
-						if (!E->is_cache_valid()) {
+		case NOTIFICATION_EXIT_TREE: {
+			if (!sub_inspector) {
+				get_tree()->disconnect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
+			}
+			edit(nullptr);
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			set_process(is_visible_in_tree());
+		} break;
+
+		case NOTIFICATION_PROCESS: {
+			if (update_scroll_request >= 0) {
+				get_v_scroll_bar()->call_deferred(SNAME("set_value"), update_scroll_request);
+				update_scroll_request = -1;
+			}
+			if (refresh_countdown > 0) {
+				refresh_countdown -= get_process_delta_time();
+				if (refresh_countdown <= 0) {
+					for (const KeyValue<StringName, List<EditorProperty *>> &F : editor_property_map) {
+						for (EditorProperty *E : F.value) {
+							if (!E->is_cache_valid()) {
+								E->update_property();
+								E->update_revert_and_pin_status();
+								E->update_cache();
+							}
+						}
+					}
+					refresh_countdown = float(EditorSettings::get_singleton()->get("docks/property_editor/auto_refresh_interval"));
+				}
+			}
+
+			changing++;
+
+			if (update_tree_pending) {
+				update_tree();
+				update_tree_pending = false;
+				pending.clear();
+
+			} else {
+				while (pending.size()) {
+					StringName prop = pending.front()->get();
+					if (editor_property_map.has(prop)) {
+						for (EditorProperty *E : editor_property_map[prop]) {
 							E->update_property();
 							E->update_revert_and_pin_status();
 							E->update_cache();
 						}
 					}
+					pending.erase(pending.front());
 				}
-				refresh_countdown = float(EditorSettings::get_singleton()->get("docks/property_editor/auto_refresh_interval"));
 			}
-		}
 
-		changing++;
+			changing--;
+		} break;
 
-		if (update_tree_pending) {
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			_update_inspector_bg();
+
 			update_tree();
-			update_tree_pending = false;
-			pending.clear();
-
-		} else {
-			while (pending.size()) {
-				StringName prop = pending.front()->get();
-				if (editor_property_map.has(prop)) {
-					for (EditorProperty *E : editor_property_map[prop]) {
-						E->update_property();
-						E->update_revert_and_pin_status();
-						E->update_cache();
-					}
-				}
-				pending.erase(pending.front());
-			}
-		}
-
-		changing--;
-	}
-
-	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		_update_inspector_bg();
-
-		update_tree();
+		} break;
 	}
 }
 

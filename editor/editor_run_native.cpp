@@ -35,61 +35,63 @@
 #include "editor/editor_scale.h"
 
 void EditorRunNative::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		for (int i = 0; i < EditorExport::get_singleton()->get_export_platform_count(); i++) {
-			Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(i);
-			if (eep.is_null()) {
-				continue;
-			}
-			Ref<ImageTexture> icon = eep->get_run_icon();
-			if (!icon.is_null()) {
-				Ref<Image> im = icon->get_image();
-				im = im->duplicate();
-				im->clear_mipmaps();
-				if (!im->is_empty()) {
-					im->resize(16 * EDSCALE, 16 * EDSCALE);
-					Ref<ImageTexture> small_icon;
-					small_icon.instantiate();
-					small_icon->create_from_image(im);
-					MenuButton *mb = memnew(MenuButton);
-					mb->get_popup()->connect("id_pressed", callable_mp(this, &EditorRunNative::run_native), varray(i));
-					mb->connect("pressed", callable_mp(this, &EditorRunNative::run_native), varray(-1, i));
-					mb->set_icon(small_icon);
-					add_child(mb);
-					menus[i] = mb;
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			for (int i = 0; i < EditorExport::get_singleton()->get_export_platform_count(); i++) {
+				Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(i);
+				if (eep.is_null()) {
+					continue;
 				}
-			}
-		}
-	}
-
-	if (p_what == NOTIFICATION_PROCESS) {
-		bool changed = EditorExport::get_singleton()->poll_export_platforms() || first;
-
-		if (changed) {
-			for (KeyValue<int, MenuButton *> &E : menus) {
-				Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(E.key);
-				MenuButton *mb = E.value;
-				int dc = eep->get_options_count();
-
-				if (dc == 0) {
-					mb->hide();
-				} else {
-					mb->get_popup()->clear();
-					mb->show();
-					if (dc == 1) {
-						mb->set_tooltip(eep->get_option_tooltip(0));
-					} else {
-						mb->set_tooltip(eep->get_options_tooltip());
-						for (int i = 0; i < dc; i++) {
-							mb->get_popup()->add_icon_item(eep->get_option_icon(i), eep->get_option_label(i));
-							mb->get_popup()->set_item_tooltip(mb->get_popup()->get_item_count() - 1, eep->get_option_tooltip(i));
-						}
+				Ref<ImageTexture> icon = eep->get_run_icon();
+				if (!icon.is_null()) {
+					Ref<Image> im = icon->get_image();
+					im = im->duplicate();
+					im->clear_mipmaps();
+					if (!im->is_empty()) {
+						im->resize(16 * EDSCALE, 16 * EDSCALE);
+						Ref<ImageTexture> small_icon;
+						small_icon.instantiate();
+						small_icon->create_from_image(im);
+						MenuButton *mb = memnew(MenuButton);
+						mb->get_popup()->connect("id_pressed", callable_mp(this, &EditorRunNative::run_native), varray(i));
+						mb->connect("pressed", callable_mp(this, &EditorRunNative::run_native), varray(-1, i));
+						mb->set_icon(small_icon);
+						add_child(mb);
+						menus[i] = mb;
 					}
 				}
 			}
+		} break;
 
-			first = false;
-		}
+		case NOTIFICATION_PROCESS: {
+			bool changed = EditorExport::get_singleton()->poll_export_platforms() || first;
+
+			if (changed) {
+				for (KeyValue<int, MenuButton *> &E : menus) {
+					Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(E.key);
+					MenuButton *mb = E.value;
+					int dc = eep->get_options_count();
+
+					if (dc == 0) {
+						mb->hide();
+					} else {
+						mb->get_popup()->clear();
+						mb->show();
+						if (dc == 1) {
+							mb->set_tooltip(eep->get_option_tooltip(0));
+						} else {
+							mb->set_tooltip(eep->get_options_tooltip());
+							for (int i = 0; i < dc; i++) {
+								mb->get_popup()->add_icon_item(eep->get_option_icon(i), eep->get_option_label(i));
+								mb->get_popup()->set_item_tooltip(mb->get_popup()->get_item_count() - 1, eep->get_option_tooltip(i));
+							}
+						}
+					}
+				}
+
+				first = false;
+			}
+		} break;
 	}
 }
 

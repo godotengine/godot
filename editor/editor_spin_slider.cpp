@@ -430,47 +430,49 @@ void EditorSpinSlider::_draw_spin_slider() {
 void EditorSpinSlider::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_THEME_CHANGED: {
 			_update_value_input_stylebox();
-			break;
+		} break;
 
-		case NOTIFICATION_INTERNAL_PROCESS:
+		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (value_input_dirty) {
 				value_input_dirty = false;
 				value_input->set_text(get_text_value());
 			}
 			set_process_internal(false);
-			break;
+		} break;
 
-		case NOTIFICATION_DRAW:
+		case NOTIFICATION_DRAW: {
 			_draw_spin_slider();
-			break;
+		} break;
 
 		case NOTIFICATION_WM_WINDOW_FOCUS_IN:
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT:
-		case NOTIFICATION_EXIT_TREE:
+		case NOTIFICATION_EXIT_TREE: {
 			if (grabbing_spinner) {
 				grabber->hide();
 				Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 				grabbing_spinner = false;
 				grabbing_spinner_attempt = false;
 			}
-			break;
+		} break;
 
-		case NOTIFICATION_MOUSE_ENTER:
+		case NOTIFICATION_MOUSE_ENTER: {
 			mouse_over_spin = true;
 			update();
-			break;
-		case NOTIFICATION_MOUSE_EXIT:
+		} break;
+
+		case NOTIFICATION_MOUSE_EXIT: {
 			mouse_over_spin = false;
 			update();
-			break;
-		case NOTIFICATION_FOCUS_ENTER:
+		} break;
+
+		case NOTIFICATION_FOCUS_ENTER: {
 			if ((Input::get_singleton()->is_action_pressed("ui_focus_next") || Input::get_singleton()->is_action_pressed("ui_focus_prev")) && !value_input_just_closed) {
 				_focus_entered();
 			}
 			value_input_just_closed = false;
-			break;
+		} break;
 	}
 }
 

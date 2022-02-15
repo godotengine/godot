@@ -85,29 +85,31 @@ GotoLineDialog::GotoLineDialog() {
 }
 
 void FindReplaceBar::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY) {
-		find_prev->set_icon(get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")));
-		find_next->set_icon(get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons")));
-		hide_button->set_normal_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-		hide_button->set_hover_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-		hide_button->set_pressed_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-		hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
-	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		set_process_unhandled_input(is_visible_in_tree());
-	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		find_prev->set_icon(get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")));
-		find_next->set_icon(get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons")));
-		hide_button->set_normal_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-		hide_button->set_hover_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-		hide_button->set_pressed_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-		hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
-	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
-		matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), SNAME("Editor")));
-	} else if (p_what == NOTIFICATION_PREDELETE) {
-		if (base_text_editor) {
-			base_text_editor->remove_find_replace_bar();
-			base_text_editor = nullptr;
-		}
+	switch (p_what) {
+		case NOTIFICATION_READY:
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			find_prev->set_icon(get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")));
+			find_next->set_icon(get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons")));
+			hide_button->set_normal_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+			hide_button->set_hover_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+			hide_button->set_pressed_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+			hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			set_process_unhandled_input(is_visible_in_tree());
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), SNAME("Editor")));
+		} break;
+
+		case NOTIFICATION_PREDELETE: {
+			if (base_text_editor) {
+				base_text_editor->remove_find_replace_bar();
+				base_text_editor = nullptr;
+			}
+		} break;
 	}
 }
 
@@ -1658,44 +1660,47 @@ void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void CodeTextEditor::_update_status_bar_theme() {
+	error_button->set_icon(get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")));
+	error_button->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+	error_button->add_theme_font_override("font", get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
+	error_button->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
+
+	warning_button->set_icon(get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons")));
+	warning_button->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+	warning_button->add_theme_font_override("font", get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
+	warning_button->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
+
+	line_and_col_txt->add_theme_font_override("font", get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
+	line_and_col_txt->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
+}
+
 void CodeTextEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_ENTER_TREE: {
+			_update_status_bar_theme();
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
-			error_button->set_icon(get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")));
-			error_button->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
-			error_button->add_theme_font_override("font", get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
-			error_button->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
-
-			warning_button->set_icon(get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons")));
-			warning_button->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
-			warning_button->add_theme_font_override("font", get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
-			warning_button->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
-
-			line_and_col_txt->add_theme_font_override("font", get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
-			line_and_col_txt->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
-
-			if (p_what == NOTIFICATION_ENTER_TREE) {
-				break;
-			}
+			_update_status_bar_theme();
 			if (toggle_scripts_button->is_visible()) {
 				update_toggle_scripts_button();
 			}
 			_update_text_editor_theme();
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (toggle_scripts_button->is_visible()) {
 				update_toggle_scripts_button();
 			}
 			set_process_input(is_visible_in_tree());
 		} break;
+
 		case NOTIFICATION_PREDELETE: {
 			if (find_replace_bar) {
 				find_replace_bar->set_text_edit(nullptr);
 			}
 		} break;
-		default:
-			break;
 	}
 }
 

@@ -309,18 +309,20 @@ EditorFeatureProfile::EditorFeatureProfile() {}
 //////////////////////////
 
 void EditorFeatureProfileManager::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY) {
-		current_profile = EDITOR_GET("_default_feature_profile");
-		if (!current_profile.is_empty()) {
-			current.instantiate();
-			Error err = current->load_from_file(EditorSettings::get_singleton()->get_feature_profiles_dir().plus_file(current_profile + ".profile"));
-			if (err != OK) {
-				ERR_PRINT("Error loading default feature profile: " + current_profile);
-				current_profile = String();
-				current.unref();
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			current_profile = EDITOR_GET("_default_feature_profile");
+			if (!current_profile.is_empty()) {
+				current.instantiate();
+				Error err = current->load_from_file(EditorSettings::get_singleton()->get_feature_profiles_dir().plus_file(current_profile + ".profile"));
+				if (err != OK) {
+					ERR_PRINT("Error loading default feature profile: " + current_profile);
+					current_profile = String();
+					current.unref();
+				}
 			}
-		}
-		_update_profile_list(current_profile);
+			_update_profile_list(current_profile);
+		} break;
 	}
 }
 
