@@ -258,7 +258,7 @@ void EditorProperty::_notification(int p_what) {
 		}
 
 		int ofs = get_theme_constant(SNAME("font_offset"));
-		int text_limit = text_size;
+		int text_limit = text_size - ofs;
 
 		if (checkable) {
 			Ref<Texture2D> checkbox;
@@ -280,8 +280,9 @@ void EditorProperty::_notification(int p_what) {
 			} else {
 				draw_texture(checkbox, check_rect.position, color2);
 			}
-			ofs += get_theme_constant(SNAME("hseparator"), SNAME("Tree")) + checkbox->get_width() + get_theme_constant(SNAME("hseparation"), SNAME("CheckBox"));
-			text_limit -= ofs;
+			int check_ofs = get_theme_constant(SNAME("hseparator"), SNAME("Tree")) + checkbox->get_width() + get_theme_constant(SNAME("hseparation"), SNAME("CheckBox"));
+			ofs += check_ofs;
+			text_limit -= check_ofs;
 		} else {
 			check_rect = Rect2();
 		}
@@ -289,7 +290,7 @@ void EditorProperty::_notification(int p_what) {
 		if (can_revert && !is_read_only()) {
 			Ref<Texture2D> reload_icon = get_theme_icon(SNAME("ReloadSmall"), SNAME("EditorIcons"));
 			text_limit -= reload_icon->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree")) * 2;
-			revert_rect = Rect2(text_limit + get_theme_constant(SNAME("hseparator"), SNAME("Tree")), (size.height - reload_icon->get_height()) / 2, reload_icon->get_width(), reload_icon->get_height());
+			revert_rect = Rect2(ofs + text_limit, (size.height - reload_icon->get_height()) / 2, reload_icon->get_width(), reload_icon->get_height());
 
 			Color color2(1, 1, 1);
 			if (revert_hover) {
