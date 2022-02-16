@@ -217,6 +217,7 @@ void ResourceImporterTexture::get_import_options(const String &p_path, List<Impo
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/premult_alpha"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/normal_map_invert_y"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/hdr_as_srgb"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/hdr_clamp_exposure"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/size_limit", PROPERTY_HINT_RANGE, "0,4096,1"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "detect_3d/compress_to", PROPERTY_HINT_ENUM, "Disabled,VRAM Compressed,Basis Universal"), (p_preset == PRESET_DETECT) ? 1 : 0));
 
@@ -411,6 +412,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	const bool stream = p_options["compress/streamed"];
 	const int size_limit = p_options["process/size_limit"];
 	const bool hdr_as_srgb = p_options["process/hdr_as_srgb"];
+	const bool hdr_clamp_exposure = p_options["process/hdr_clamp_exposure"];
 	const int normal = p_options["compress/normal_map"];
 	const int hdr_compression = p_options["compress/hdr_compression"];
 	const int bptc_ldr = p_options["compress/bptc_ldr"];
@@ -478,6 +480,34 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 			for (int j = 0; j < height; j++) {
 				const Color color = image->get_pixel(i, j);
 				image->set_pixel(i, j, Color(color.r, 1 - color.g, color.b));
+			}
+		}
+	}
+
+	if (hdr_clamp_exposure) {
+		// Clamp HDR exposure following Filament's tonemapping formula.
+		// This can be used to reduce fireflies in environment maps or reduce the influence
+		// of the sun from an HDRI panorama on environment lighting (when a DirectionalLight3D is used instead).
+		const int height = image->get_height();
+		const int width = image->get_width();
+
+		// These values are chosen arbitrarily and seem to produce good results with 4,096 samples.
+		const float linear = 4096.0;
+		const float compressed = 16384.0;
+
+		for (int i = 0; i < width; i++) {
+			for (int j = 0; j < height; j++) {
+				const Color color = image->get_pixel(i, j);
+				const float luma = color.get_luminance();
+
+				Color clamped_color;
+				if (luma <= linear) {
+					clamped_color = color;
+				} else {
+					clamped_color = (color / luma) * ((linear * linear - compressed * luma) / (2 * linear - compressed - luma));
+				}
+
+				image->set_pixel(i, j, clamped_color);
 			}
 		}
 	}
