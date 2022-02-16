@@ -104,6 +104,7 @@ void EditorToaster::_notification(int p_what) {
 				main_button->update();
 			}
 		} break;
+
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (vbox_container->is_visible()) {
@@ -134,12 +135,11 @@ void EditorToaster::_notification(int p_what) {
 			main_button->update();
 			disable_notifications_button->update();
 		} break;
+
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			_update_vbox_position();
 			_update_disable_notifications_button();
 		} break;
-		default:
-			break;
 	}
 }
 

@@ -796,8 +796,8 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			search->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 
 			reason->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
-
 		} break;
+
 		case NOTIFICATION_PROCESS: {
 			if (is_session_active()) {
 				peer->poll();
@@ -857,6 +857,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 				break;
 			};
 		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (tabs->has_theme_stylebox_override("panel")) {
 				tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));

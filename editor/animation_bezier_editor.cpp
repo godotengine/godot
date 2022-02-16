@@ -220,310 +220,65 @@ void AnimationBezierTrackEdit::_draw_line_clipped(const Vector2 &p_from, const V
 }
 
 void AnimationBezierTrackEdit::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
-	}
-	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
-		bezier_icon = get_theme_icon(SNAME("KeyBezierPoint"), SNAME("EditorIcons"));
-		bezier_handle_icon = get_theme_icon(SNAME("KeyBezierHandle"), SNAME("EditorIcons"));
-		selected_icon = get_theme_icon(SNAME("KeyBezierSelected"), SNAME("EditorIcons"));
-	}
-	if (p_what == NOTIFICATION_DRAW) {
-		if (animation.is_null()) {
-			return;
+	switch (p_what) {
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
+		} break;
+
+		case NOTIFICATION_ENTER_TREE: {
+			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
+			[[fallthrough]];
 		}
+		case NOTIFICATION_THEME_CHANGED: {
+			bezier_icon = get_theme_icon(SNAME("KeyBezierPoint"), SNAME("EditorIcons"));
+			bezier_handle_icon = get_theme_icon(SNAME("KeyBezierHandle"), SNAME("EditorIcons"));
+			selected_icon = get_theme_icon(SNAME("KeyBezierSelected"), SNAME("EditorIcons"));
+		} break;
 
-		int limit = timeline->get_name_limit();
-
-		if (has_focus()) {
-			Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
-			accent.a *= 0.7;
-			draw_rect(Rect2(Point2(), get_size()), accent, false, Math::round(EDSCALE));
-		}
-
-		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
-		Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
-		int hsep = get_theme_constant(SNAME("hseparation"), SNAME("ItemList"));
-		int vsep = get_theme_constant(SNAME("vseparation"), SNAME("ItemList"));
-		Color linecolor = color;
-		linecolor.a = 0.2;
-
-		draw_line(Point2(limit, 0), Point2(limit, get_size().height), linecolor, Math::round(EDSCALE));
-
-		int right_limit = get_size().width;
-
-		int vofs = vsep;
-		int margin = 0;
-
-		Map<int, Color> subtrack_colors;
-		Color selected_track_color;
-		subtracks.clear();
-		subtrack_icons.clear();
-
-		Map<String, Vector<int>> track_indices;
-		int track_count = animation->get_track_count();
-		for (int i = 0; i < track_count; ++i) {
-			if (animation->track_get_type(i) != Animation::TrackType::TYPE_BEZIER) {
-				continue;
+		case NOTIFICATION_DRAW: {
+			if (animation.is_null()) {
+				return;
 			}
 
-			String base_path = animation->track_get_path(i);
-			if (is_filtered) {
-				if (root && root->has_node(base_path)) {
-					Node *node = root->get_node(base_path);
-					if (!node) {
-						continue; // No node, no filter.
-					}
-					if (!EditorNode::get_singleton()->get_editor_selection()->is_selected(node)) {
-						continue; // Skip track due to not selected.
-					}
-				}
+			int limit = timeline->get_name_limit();
+
+			if (has_focus()) {
+				Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+				accent.a *= 0.7;
+				draw_rect(Rect2(Point2(), get_size()), accent, false, Math::round(EDSCALE));
 			}
 
-			int end = base_path.find(":");
-			if (end != -1) {
-				base_path = base_path.substr(0, end + 1);
-			}
-			Vector<int> indices = track_indices.has(base_path) ? track_indices[base_path] : Vector<int>();
-			indices.push_back(i);
-			track_indices[base_path] = indices;
-		}
+			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+			Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
+			int hsep = get_theme_constant(SNAME("hseparation"), SNAME("ItemList"));
+			int vsep = get_theme_constant(SNAME("vseparation"), SNAME("ItemList"));
+			Color linecolor = color;
+			linecolor.a = 0.2;
 
-		for (const KeyValue<String, Vector<int>> &E : track_indices) {
-			String base_path = E.key;
+			draw_line(Point2(limit, 0), Point2(limit, get_size().height), linecolor, Math::round(EDSCALE));
 
-			Vector<int> tracks = E.value;
+			int right_limit = get_size().width;
 
-			// NAMES AND ICON
-			{
-				NodePath path = animation->track_get_path(tracks[0]);
+			int vofs = vsep;
+			int margin = 0;
 
-				Node *node = nullptr;
+			Map<int, Color> subtrack_colors;
+			Color selected_track_color;
+			subtracks.clear();
+			subtrack_icons.clear();
 
-				if (root && root->has_node(path)) {
-					node = root->get_node(path);
-				}
-
-				String text;
-
-				if (node) {
-					int ofs = 0;
-
-					Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(node, "Node");
-
-					text = node->get_name();
-					ofs += hsep;
-
-					TextLine text_buf = TextLine(text, font, font_size);
-					text_buf.set_width(limit - ofs - icon->get_width() - hsep);
-
-					int h = MAX(text_buf.get_size().y, icon->get_height());
-
-					draw_texture(icon, Point2(ofs, vofs + int(h - icon->get_height()) / 2));
-					ofs += icon->get_width();
-
-					margin = icon->get_width();
-
-					Vector2 string_pos = Point2(ofs, vofs);
-					string_pos = string_pos.floor();
-					text_buf.draw(get_canvas_item(), string_pos, color);
-
-					vofs += h + vsep;
-				}
-			}
-
-			Ref<Texture2D> remove = get_theme_icon(SNAME("Remove"), SNAME("EditorIcons"));
-			float remove_hpos = limit - hsep - remove->get_width();
-
-			Ref<Texture2D> lock = get_theme_icon(SNAME("Lock"), SNAME("EditorIcons"));
-			Ref<Texture2D> unlock = get_theme_icon(SNAME("Unlock"), SNAME("EditorIcons"));
-			float lock_hpos = remove_hpos - hsep - lock->get_width();
-
-			Ref<Texture2D> visible = get_theme_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons"));
-			Ref<Texture2D> hidden = get_theme_icon(SNAME("GuiVisibilityHidden"), SNAME("EditorIcons"));
-			float visibility_hpos = lock_hpos - hsep - visible->get_width();
-
-			Ref<Texture2D> solo = get_theme_icon(SNAME("AudioBusSolo"), SNAME("EditorIcons"));
-			float solo_hpos = visibility_hpos - hsep - solo->get_width();
-
-			float buttons_width = remove->get_width() + lock->get_width() + visible->get_width() + solo->get_width() + hsep * 3;
-
-			for (int i = 0; i < tracks.size(); ++i) {
-				// RELATED TRACKS TITLES
-
-				int current_track = tracks[i];
-
-				String path = animation->track_get_path(current_track);
-				path = path.replace_first(base_path, "");
-
-				Color cc = color;
-				TextLine text_buf = TextLine(path, font, font_size);
-				text_buf.set_width(limit - margin - buttons_width);
-
-				Rect2 rect = Rect2(margin, vofs, solo_hpos - hsep - solo->get_width(), text_buf.get_size().y + vsep);
-
-				cc.a *= 0.7;
-				float h;
-				if (path.ends_with(":x")) {
-					h = 0;
-				} else if (path.ends_with(":y")) {
-					h = 0.33f;
-				} else if (path.ends_with(":z")) {
-					h = 0.66f;
-				} else {
-					uint32_t hash = path.hash();
-					hash = ((hash >> 16) ^ hash) * 0x45d9f3b;
-					hash = ((hash >> 16) ^ hash) * 0x45d9f3b;
-					hash = (hash >> 16) ^ hash;
-					h = (hash % 65535) / 65536.0;
-				}
-
-				if (current_track != selected_track) {
-					Color track_color;
-					if (locked_tracks.has(current_track)) {
-						track_color.set_hsv(h, 0, 0.4);
-					} else {
-						track_color.set_hsv(h, 0.2, 0.8);
-					}
-					track_color.a = 0.5;
-					draw_rect(Rect2(0, vofs, margin - hsep, text_buf.get_size().y * 0.8), track_color);
-					subtrack_colors[current_track] = track_color;
-
-					subtracks[current_track] = rect;
-				} else {
-					Color ac = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
-					ac.a = 0.5;
-					draw_rect(rect, ac);
-					if (locked_tracks.has(selected_track)) {
-						selected_track_color.set_hsv(h, 0.0, 0.4);
-					} else {
-						selected_track_color.set_hsv(h, 0.8, 0.8);
-					}
-				}
-
-				Vector2 string_pos = Point2(margin, vofs);
-				text_buf.draw(get_canvas_item(), string_pos, cc);
-
-				float icon_start_height = vofs + rect.size.y / 2;
-				Rect2 remove_rect = Rect2(remove_hpos, icon_start_height - remove->get_height() / 2, remove->get_width(), remove->get_height());
-				draw_texture(remove, remove_rect.position);
-
-				Rect2 lock_rect = Rect2(lock_hpos, icon_start_height - lock->get_height() / 2, lock->get_width(), lock->get_height());
-				if (locked_tracks.has(current_track)) {
-					draw_texture(lock, lock_rect.position);
-				} else {
-					draw_texture(unlock, lock_rect.position);
-				}
-
-				Rect2 visible_rect = Rect2(visibility_hpos, icon_start_height - visible->get_height() / 2, visible->get_width(), visible->get_height());
-				if (hidden_tracks.has(current_track)) {
-					draw_texture(hidden, visible_rect.position);
-				} else {
-					draw_texture(visible, visible_rect.position);
-				}
-
-				Rect2 solo_rect = Rect2(solo_hpos, icon_start_height - solo->get_height() / 2, solo->get_width(), solo->get_height());
-				draw_texture(solo, solo_rect.position);
-
-				Map<int, Rect2> track_icons;
-				track_icons[REMOVE_ICON] = remove_rect;
-				track_icons[LOCK_ICON] = lock_rect;
-				track_icons[VISIBILITY_ICON] = visible_rect;
-				track_icons[SOLO_ICON] = solo_rect;
-
-				subtrack_icons[current_track] = track_icons;
-
-				vofs += text_buf.get_size().y + vsep;
-			}
-		}
-
-		Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
-
-		{ //guides
-			float min_left_scale = font->get_height(font_size) + vsep;
-
-			float scale = (min_left_scale * 2) * v_zoom;
-			float step = Math::pow(10.0, Math::round(Math::log(scale / 5.0) / Math::log(10.0))) * 5.0;
-			scale = Math::snapped(scale, step);
-
-			while (scale / v_zoom < min_left_scale * 2) {
-				scale += step;
-			}
-
-			bool first = true;
-			int prev_iv = 0;
-			for (int i = font->get_height(font_size); i < get_size().height; i++) {
-				float ofs = get_size().height / 2 - i;
-				ofs *= v_zoom;
-				ofs += v_scroll;
-
-				int iv = int(ofs / scale);
-				if (ofs < 0) {
-					iv -= 1;
-				}
-				if (!first && iv != prev_iv) {
-					Color lc = linecolor;
-					lc.a *= 0.5;
-					draw_line(Point2(limit, i), Point2(right_limit, i), lc, Math::round(EDSCALE));
-					Color c = color;
-					c.a *= 0.5;
-					draw_string(font, Point2(limit + 8, i - 2), TS->format_number(rtos(Math::snapped((iv + 1) * scale, step))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, c);
-				}
-
-				first = false;
-				prev_iv = iv;
-			}
-		}
-
-		{ //draw OTHER curves
-
-			float scale = timeline->get_zoom_scale();
-			Ref<Texture2D> point = get_theme_icon(SNAME("KeyValue"), SNAME("EditorIcons"));
-			for (const KeyValue<int, Color> &E : subtrack_colors) {
-				if (hidden_tracks.has(E.key)) {
-					continue;
-				}
-				_draw_track(E.key, E.value);
-
-				for (int i = 0; i < animation->track_get_key_count(E.key); i++) {
-					float offset = animation->track_get_key_time(E.key, i);
-					float value = animation->bezier_track_get_key_value(E.key, i);
-
-					Vector2 pos((offset - timeline->get_value()) * scale + limit, _bezier_h_to_pixel(value));
-
-					if (pos.x >= limit && pos.x <= right_limit) {
-						draw_texture(point, pos - point->get_size() / 2, E.value);
-					}
-				}
-			}
-
-			if (track_count > 0 && !hidden_tracks.has(selected_track)) {
-				//draw edited curve
-				_draw_track(selected_track, selected_track_color);
-			}
-		}
-
-		//draw editor handles
-		{
-			edit_points.clear();
-			float scale = timeline->get_zoom_scale();
-
+			Map<String, Vector<int>> track_indices;
+			int track_count = animation->get_track_count();
 			for (int i = 0; i < track_count; ++i) {
-				if (animation->track_get_type(i) != Animation::TrackType::TYPE_BEZIER || hidden_tracks.has(i)) {
+				if (animation->track_get_type(i) != Animation::TrackType::TYPE_BEZIER) {
 					continue;
 				}
 
-				if (hidden_tracks.has(i) || locked_tracks.has(i)) {
-					continue;
-				}
-
-				int key_count = animation->track_get_key_count(i);
-				String path = animation->track_get_path(i);
-
+				String base_path = animation->track_get_path(i);
 				if (is_filtered) {
-					if (root && root->has_node(path)) {
-						Node *node = root->get_node(path);
+					if (root && root->has_node(base_path)) {
+						Node *node = root->get_node(base_path);
 						if (!node) {
 							continue; // No node, no filter.
 						}
@@ -533,102 +288,355 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					}
 				}
 
-				for (int j = 0; j < key_count; ++j) {
-					float offset = animation->track_get_key_time(i, j);
-					float value = animation->bezier_track_get_key_value(i, j);
+				int end = base_path.find(":");
+				if (end != -1) {
+					base_path = base_path.substr(0, end + 1);
+				}
+				Vector<int> indices = track_indices.has(base_path) ? track_indices[base_path] : Vector<int>();
+				indices.push_back(i);
+				track_indices[base_path] = indices;
+			}
 
-					if (moving_selection && selection.has(IntPair(i, j))) {
-						offset += moving_selection_offset.x;
-						value += moving_selection_offset.y;
+			for (const KeyValue<String, Vector<int>> &E : track_indices) {
+				String base_path = E.key;
+
+				Vector<int> tracks = E.value;
+
+				// NAMES AND ICON
+				{
+					NodePath path = animation->track_get_path(tracks[0]);
+
+					Node *node = nullptr;
+
+					if (root && root->has_node(path)) {
+						node = root->get_node(path);
 					}
 
-					Vector2 pos((offset - timeline->get_value()) * scale + limit, _bezier_h_to_pixel(value));
+					String text;
 
-					Vector2 in_vec = animation->bezier_track_get_key_in_handle(i, j);
-					if (moving_handle != 0 && moving_handle_track == i && moving_handle_key == j) {
-						in_vec = moving_handle_left;
+					if (node) {
+						int ofs = 0;
+
+						Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(node, "Node");
+
+						text = node->get_name();
+						ofs += hsep;
+
+						TextLine text_buf = TextLine(text, font, font_size);
+						text_buf.set_width(limit - ofs - icon->get_width() - hsep);
+
+						int h = MAX(text_buf.get_size().y, icon->get_height());
+
+						draw_texture(icon, Point2(ofs, vofs + int(h - icon->get_height()) / 2));
+						ofs += icon->get_width();
+
+						margin = icon->get_width();
+
+						Vector2 string_pos = Point2(ofs, vofs);
+						string_pos = string_pos.floor();
+						text_buf.draw(get_canvas_item(), string_pos, color);
+
+						vofs += h + vsep;
 					}
-					Vector2 pos_in(((offset + in_vec.x) - timeline->get_value()) * scale + limit, _bezier_h_to_pixel(value + in_vec.y));
+				}
 
-					Vector2 out_vec = animation->bezier_track_get_key_out_handle(i, j);
+				Ref<Texture2D> remove = get_theme_icon(SNAME("Remove"), SNAME("EditorIcons"));
+				float remove_hpos = limit - hsep - remove->get_width();
 
-					if (moving_handle != 0 && moving_handle_track == i && moving_handle_key == j) {
-						out_vec = moving_handle_right;
+				Ref<Texture2D> lock = get_theme_icon(SNAME("Lock"), SNAME("EditorIcons"));
+				Ref<Texture2D> unlock = get_theme_icon(SNAME("Unlock"), SNAME("EditorIcons"));
+				float lock_hpos = remove_hpos - hsep - lock->get_width();
+
+				Ref<Texture2D> visible = get_theme_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons"));
+				Ref<Texture2D> hidden = get_theme_icon(SNAME("GuiVisibilityHidden"), SNAME("EditorIcons"));
+				float visibility_hpos = lock_hpos - hsep - visible->get_width();
+
+				Ref<Texture2D> solo = get_theme_icon(SNAME("AudioBusSolo"), SNAME("EditorIcons"));
+				float solo_hpos = visibility_hpos - hsep - solo->get_width();
+
+				float buttons_width = remove->get_width() + lock->get_width() + visible->get_width() + solo->get_width() + hsep * 3;
+
+				for (int i = 0; i < tracks.size(); ++i) {
+					// RELATED TRACKS TITLES
+
+					int current_track = tracks[i];
+
+					String path = animation->track_get_path(current_track);
+					path = path.replace_first(base_path, "");
+
+					Color cc = color;
+					TextLine text_buf = TextLine(path, font, font_size);
+					text_buf.set_width(limit - margin - buttons_width);
+
+					Rect2 rect = Rect2(margin, vofs, solo_hpos - hsep - solo->get_width(), text_buf.get_size().y + vsep);
+
+					cc.a *= 0.7;
+					float h;
+					if (path.ends_with(":x")) {
+						h = 0;
+					} else if (path.ends_with(":y")) {
+						h = 0.33f;
+					} else if (path.ends_with(":z")) {
+						h = 0.66f;
+					} else {
+						uint32_t hash = path.hash();
+						hash = ((hash >> 16) ^ hash) * 0x45d9f3b;
+						hash = ((hash >> 16) ^ hash) * 0x45d9f3b;
+						hash = (hash >> 16) ^ hash;
+						h = (hash % 65535) / 65536.0;
 					}
 
-					Vector2 pos_out(((offset + out_vec.x) - timeline->get_value()) * scale + limit, _bezier_h_to_pixel(value + out_vec.y));
-
-					if (i == selected_track || selection.has(IntPair(i, j))) {
-						_draw_line_clipped(pos, pos_in, accent, limit, right_limit);
-						_draw_line_clipped(pos, pos_out, accent, limit, right_limit);
-					}
-
-					EditPoint ep;
-					ep.track = i;
-					ep.key = j;
-					if (pos.x >= limit && pos.x <= right_limit) {
-						ep.point_rect.position = (pos - bezier_icon->get_size() / 2).floor();
-						ep.point_rect.size = bezier_icon->get_size();
-						if (selection.has(IntPair(i, j))) {
-							draw_texture(selected_icon, ep.point_rect.position);
-							draw_string(font, ep.point_rect.position + Vector2(8, -font->get_height(font_size) - 8), TTR("Time:") + " " + TS->format_number(rtos(Math::snapped(offset, 0.001))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, accent);
-							draw_string(font, ep.point_rect.position + Vector2(8, -8), TTR("Value:") + " " + TS->format_number(rtos(Math::snapped(value, 0.001))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, accent);
+					if (current_track != selected_track) {
+						Color track_color;
+						if (locked_tracks.has(current_track)) {
+							track_color.set_hsv(h, 0, 0.4);
 						} else {
-							Color track_color = Color(1, 1, 1, 1);
-							if (i != selected_track) {
-								track_color = subtrack_colors[i];
+							track_color.set_hsv(h, 0.2, 0.8);
+						}
+						track_color.a = 0.5;
+						draw_rect(Rect2(0, vofs, margin - hsep, text_buf.get_size().y * 0.8), track_color);
+						subtrack_colors[current_track] = track_color;
+
+						subtracks[current_track] = rect;
+					} else {
+						Color ac = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+						ac.a = 0.5;
+						draw_rect(rect, ac);
+						if (locked_tracks.has(selected_track)) {
+							selected_track_color.set_hsv(h, 0.0, 0.4);
+						} else {
+							selected_track_color.set_hsv(h, 0.8, 0.8);
+						}
+					}
+
+					Vector2 string_pos = Point2(margin, vofs);
+					text_buf.draw(get_canvas_item(), string_pos, cc);
+
+					float icon_start_height = vofs + rect.size.y / 2;
+					Rect2 remove_rect = Rect2(remove_hpos, icon_start_height - remove->get_height() / 2, remove->get_width(), remove->get_height());
+					draw_texture(remove, remove_rect.position);
+
+					Rect2 lock_rect = Rect2(lock_hpos, icon_start_height - lock->get_height() / 2, lock->get_width(), lock->get_height());
+					if (locked_tracks.has(current_track)) {
+						draw_texture(lock, lock_rect.position);
+					} else {
+						draw_texture(unlock, lock_rect.position);
+					}
+
+					Rect2 visible_rect = Rect2(visibility_hpos, icon_start_height - visible->get_height() / 2, visible->get_width(), visible->get_height());
+					if (hidden_tracks.has(current_track)) {
+						draw_texture(hidden, visible_rect.position);
+					} else {
+						draw_texture(visible, visible_rect.position);
+					}
+
+					Rect2 solo_rect = Rect2(solo_hpos, icon_start_height - solo->get_height() / 2, solo->get_width(), solo->get_height());
+					draw_texture(solo, solo_rect.position);
+
+					Map<int, Rect2> track_icons;
+					track_icons[REMOVE_ICON] = remove_rect;
+					track_icons[LOCK_ICON] = lock_rect;
+					track_icons[VISIBILITY_ICON] = visible_rect;
+					track_icons[SOLO_ICON] = solo_rect;
+
+					subtrack_icons[current_track] = track_icons;
+
+					vofs += text_buf.get_size().y + vsep;
+				}
+			}
+
+			Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+
+			{ //guides
+				float min_left_scale = font->get_height(font_size) + vsep;
+
+				float scale = (min_left_scale * 2) * v_zoom;
+				float step = Math::pow(10.0, Math::round(Math::log(scale / 5.0) / Math::log(10.0))) * 5.0;
+				scale = Math::snapped(scale, step);
+
+				while (scale / v_zoom < min_left_scale * 2) {
+					scale += step;
+				}
+
+				bool first = true;
+				int prev_iv = 0;
+				for (int i = font->get_height(font_size); i < get_size().height; i++) {
+					float ofs = get_size().height / 2 - i;
+					ofs *= v_zoom;
+					ofs += v_scroll;
+
+					int iv = int(ofs / scale);
+					if (ofs < 0) {
+						iv -= 1;
+					}
+					if (!first && iv != prev_iv) {
+						Color lc = linecolor;
+						lc.a *= 0.5;
+						draw_line(Point2(limit, i), Point2(right_limit, i), lc, Math::round(EDSCALE));
+						Color c = color;
+						c.a *= 0.5;
+						draw_string(font, Point2(limit + 8, i - 2), TS->format_number(rtos(Math::snapped((iv + 1) * scale, step))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, c);
+					}
+
+					first = false;
+					prev_iv = iv;
+				}
+			}
+
+			{ //draw OTHER curves
+
+				float scale = timeline->get_zoom_scale();
+				Ref<Texture2D> point = get_theme_icon(SNAME("KeyValue"), SNAME("EditorIcons"));
+				for (const KeyValue<int, Color> &E : subtrack_colors) {
+					if (hidden_tracks.has(E.key)) {
+						continue;
+					}
+					_draw_track(E.key, E.value);
+
+					for (int i = 0; i < animation->track_get_key_count(E.key); i++) {
+						float offset = animation->track_get_key_time(E.key, i);
+						float value = animation->bezier_track_get_key_value(E.key, i);
+
+						Vector2 pos((offset - timeline->get_value()) * scale + limit, _bezier_h_to_pixel(value));
+
+						if (pos.x >= limit && pos.x <= right_limit) {
+							draw_texture(point, pos - point->get_size() / 2, E.value);
+						}
+					}
+				}
+
+				if (track_count > 0 && !hidden_tracks.has(selected_track)) {
+					//draw edited curve
+					_draw_track(selected_track, selected_track_color);
+				}
+			}
+
+			//draw editor handles
+			{
+				edit_points.clear();
+				float scale = timeline->get_zoom_scale();
+
+				for (int i = 0; i < track_count; ++i) {
+					if (animation->track_get_type(i) != Animation::TrackType::TYPE_BEZIER || hidden_tracks.has(i)) {
+						continue;
+					}
+
+					if (hidden_tracks.has(i) || locked_tracks.has(i)) {
+						continue;
+					}
+
+					int key_count = animation->track_get_key_count(i);
+					String path = animation->track_get_path(i);
+
+					if (is_filtered) {
+						if (root && root->has_node(path)) {
+							Node *node = root->get_node(path);
+							if (!node) {
+								continue; // No node, no filter.
 							}
-							draw_texture(bezier_icon, ep.point_rect.position, track_color);
-						}
-						ep.point_rect = ep.point_rect.grow(ep.point_rect.size.width * 0.5);
-					}
-					if (i == selected_track || selection.has(IntPair(i, j))) {
-						if (pos_in.x >= limit && pos_in.x <= right_limit) {
-							ep.in_rect.position = (pos_in - bezier_handle_icon->get_size() / 2).floor();
-							ep.in_rect.size = bezier_handle_icon->get_size();
-							draw_texture(bezier_handle_icon, ep.in_rect.position);
-							ep.in_rect = ep.in_rect.grow(ep.in_rect.size.width * 0.5);
-						}
-						if (pos_out.x >= limit && pos_out.x <= right_limit) {
-							ep.out_rect.position = (pos_out - bezier_handle_icon->get_size() / 2).floor();
-							ep.out_rect.size = bezier_handle_icon->get_size();
-							draw_texture(bezier_handle_icon, ep.out_rect.position);
-							ep.out_rect = ep.out_rect.grow(ep.out_rect.size.width * 0.5);
+							if (!EditorNode::get_singleton()->get_editor_selection()->is_selected(node)) {
+								continue; // Skip track due to not selected.
+							}
 						}
 					}
-					if (!locked_tracks.has(i)) {
-						edit_points.push_back(ep);
+
+					for (int j = 0; j < key_count; ++j) {
+						float offset = animation->track_get_key_time(i, j);
+						float value = animation->bezier_track_get_key_value(i, j);
+
+						if (moving_selection && selection.has(IntPair(i, j))) {
+							offset += moving_selection_offset.x;
+							value += moving_selection_offset.y;
+						}
+
+						Vector2 pos((offset - timeline->get_value()) * scale + limit, _bezier_h_to_pixel(value));
+
+						Vector2 in_vec = animation->bezier_track_get_key_in_handle(i, j);
+						if (moving_handle != 0 && moving_handle_track == i && moving_handle_key == j) {
+							in_vec = moving_handle_left;
+						}
+						Vector2 pos_in(((offset + in_vec.x) - timeline->get_value()) * scale + limit, _bezier_h_to_pixel(value + in_vec.y));
+
+						Vector2 out_vec = animation->bezier_track_get_key_out_handle(i, j);
+
+						if (moving_handle != 0 && moving_handle_track == i && moving_handle_key == j) {
+							out_vec = moving_handle_right;
+						}
+
+						Vector2 pos_out(((offset + out_vec.x) - timeline->get_value()) * scale + limit, _bezier_h_to_pixel(value + out_vec.y));
+
+						if (i == selected_track || selection.has(IntPair(i, j))) {
+							_draw_line_clipped(pos, pos_in, accent, limit, right_limit);
+							_draw_line_clipped(pos, pos_out, accent, limit, right_limit);
+						}
+
+						EditPoint ep;
+						ep.track = i;
+						ep.key = j;
+						if (pos.x >= limit && pos.x <= right_limit) {
+							ep.point_rect.position = (pos - bezier_icon->get_size() / 2).floor();
+							ep.point_rect.size = bezier_icon->get_size();
+							if (selection.has(IntPair(i, j))) {
+								draw_texture(selected_icon, ep.point_rect.position);
+								draw_string(font, ep.point_rect.position + Vector2(8, -font->get_height(font_size) - 8), TTR("Time:") + " " + TS->format_number(rtos(Math::snapped(offset, 0.001))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, accent);
+								draw_string(font, ep.point_rect.position + Vector2(8, -8), TTR("Value:") + " " + TS->format_number(rtos(Math::snapped(value, 0.001))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, accent);
+							} else {
+								Color track_color = Color(1, 1, 1, 1);
+								if (i != selected_track) {
+									track_color = subtrack_colors[i];
+								}
+								draw_texture(bezier_icon, ep.point_rect.position, track_color);
+							}
+							ep.point_rect = ep.point_rect.grow(ep.point_rect.size.width * 0.5);
+						}
+						if (i == selected_track || selection.has(IntPair(i, j))) {
+							if (pos_in.x >= limit && pos_in.x <= right_limit) {
+								ep.in_rect.position = (pos_in - bezier_handle_icon->get_size() / 2).floor();
+								ep.in_rect.size = bezier_handle_icon->get_size();
+								draw_texture(bezier_handle_icon, ep.in_rect.position);
+								ep.in_rect = ep.in_rect.grow(ep.in_rect.size.width * 0.5);
+							}
+							if (pos_out.x >= limit && pos_out.x <= right_limit) {
+								ep.out_rect.position = (pos_out - bezier_handle_icon->get_size() / 2).floor();
+								ep.out_rect.size = bezier_handle_icon->get_size();
+								draw_texture(bezier_handle_icon, ep.out_rect.position);
+								ep.out_rect = ep.out_rect.grow(ep.out_rect.size.width * 0.5);
+							}
+						}
+						if (!locked_tracks.has(i)) {
+							edit_points.push_back(ep);
+						}
+					}
+				}
+
+				for (int i = 0; i < edit_points.size(); ++i) {
+					if (edit_points[i].track == selected_track) {
+						EditPoint ep = edit_points[i];
+						edit_points.remove_at(i);
+						edit_points.insert(0, ep);
 					}
 				}
 			}
 
-			for (int i = 0; i < edit_points.size(); ++i) {
-				if (edit_points[i].track == selected_track) {
-					EditPoint ep = edit_points[i];
-					edit_points.remove_at(i);
-					edit_points.insert(0, ep);
+			if (box_selecting) {
+				Vector2 bs_from = box_selection_from;
+				Vector2 bs_to = box_selection_to;
+				if (bs_from.x > bs_to.x) {
+					SWAP(bs_from.x, bs_to.x);
 				}
+				if (bs_from.y > bs_to.y) {
+					SWAP(bs_from.y, bs_to.y);
+				}
+				draw_rect(
+						Rect2(bs_from, bs_to - bs_from),
+						get_theme_color(SNAME("box_selection_fill_color"), SNAME("Editor")));
+				draw_rect(
+						Rect2(bs_from, bs_to - bs_from),
+						get_theme_color(SNAME("box_selection_stroke_color"), SNAME("Editor")),
+						false,
+						Math::round(EDSCALE));
 			}
-		}
-
-		if (box_selecting) {
-			Vector2 bs_from = box_selection_from;
-			Vector2 bs_to = box_selection_to;
-			if (bs_from.x > bs_to.x) {
-				SWAP(bs_from.x, bs_to.x);
-			}
-			if (bs_from.y > bs_to.y) {
-				SWAP(bs_from.y, bs_to.y);
-			}
-			draw_rect(
-					Rect2(bs_from, bs_to - bs_from),
-					get_theme_color(SNAME("box_selection_fill_color"), SNAME("Editor")));
-			draw_rect(
-					Rect2(bs_from, bs_to - bs_from),
-					get_theme_color(SNAME("box_selection_stroke_color"), SNAME("Editor")),
-					false,
-					Math::round(EDSCALE));
-		}
+		} break;
 	}
 }
 

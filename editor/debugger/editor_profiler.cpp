@@ -393,9 +393,13 @@ void EditorProfiler::_clear_pressed() {
 }
 
 void EditorProfiler::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_LAYOUT_DIRECTION_CHANGED || p_what == NOTIFICATION_TRANSLATION_CHANGED) {
-		activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
-		clear_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
+			clear_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
+		} break;
 	}
 }
 

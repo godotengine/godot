@@ -1770,17 +1770,17 @@ void EditorHelp::_notification(int p_what) {
 			_wait_for_thread();
 			_update_doc();
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			if (is_inside_tree()) {
 				_class_desc_resized(true);
 			}
 			update_toggle_scripts_button();
 		} break;
-		case NOTIFICATION_VISIBILITY_CHANGED:
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
 			update_toggle_scripts_button();
-			break;
-		default:
-			break;
+		} break;
 	}
 }
 
@@ -2041,6 +2041,7 @@ void FindBar::_notification(int p_what) {
 			hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
 			matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), SNAME("Editor")));
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			set_process_unhandled_input(is_visible_in_tree());
 		} break;

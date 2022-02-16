@@ -46,10 +46,12 @@ bool ScriptServer::languages_finished = false;
 ScriptEditRequestFunction ScriptServer::edit_request_func = nullptr;
 
 void Script::_notification(int p_what) {
-	if (p_what == NOTIFICATION_POSTINITIALIZE) {
-		if (EngineDebugger::is_active()) {
-			EngineDebugger::get_script_debugger()->set_break_language(get_language());
-		}
+	switch (p_what) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			if (EngineDebugger::is_active()) {
+				EngineDebugger::get_script_debugger()->set_break_language(get_language());
+			}
+		} break;
 	}
 }
 

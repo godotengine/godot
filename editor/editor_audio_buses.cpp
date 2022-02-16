@@ -98,6 +98,7 @@ void EditorAudioBus::_notification(int p_what) {
 			update_bus();
 			set_process(true);
 		} break;
+
 		case NOTIFICATION_DRAW: {
 			if (is_master) {
 				draw_style_box(get_theme_stylebox(SNAME("disabled"), SNAME("Button")), Rect2(Vector2(), get_size()));
@@ -113,6 +114,7 @@ void EditorAudioBus::_notification(int p_what) {
 				draw_rect(Rect2(Point2(), get_size()), accent, false);
 			}
 		} break;
+
 		case NOTIFICATION_PROCESS: {
 			if (cc != AudioServer::get_singleton()->get_bus_channels(get_index())) {
 				cc = AudioServer::get_singleton()->get_bus_channels(get_index());
@@ -157,6 +159,7 @@ void EditorAudioBus::_notification(int p_what) {
 				}
 			}
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			for (int i = 0; i < CHANNELS_MAX; i++) {
 				channel[i].peak_l = -100;
@@ -952,12 +955,14 @@ void EditorAudioBusDrop::_notification(int p_what) {
 				draw_rect(Rect2(Point2(), get_size()), accent, false);
 			}
 		} break;
+
 		case NOTIFICATION_MOUSE_ENTER: {
 			if (!hovering_drop) {
 				hovering_drop = true;
 				update();
 			}
 		} break;
+
 		case NOTIFICATION_MOUSE_EXIT:
 		case NOTIFICATION_DRAG_END: {
 			if (hovering_drop) {
@@ -1017,15 +1022,18 @@ void EditorAudioBuses::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			bus_scroll->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 		} break;
+
 		case NOTIFICATION_READY: {
 			_update_buses();
 		} break;
+
 		case NOTIFICATION_DRAG_END: {
 			if (drop_end) {
 				drop_end->queue_delete();
 				drop_end = nullptr;
 			}
 		} break;
+
 		case NOTIFICATION_PROCESS: {
 			// Check if anything was edited.
 			bool edited = AudioServer::get_singleton()->is_edited();
@@ -1401,6 +1409,7 @@ void EditorAudioMeterNotches::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			notch_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
 		} break;
+
 		case NOTIFICATION_DRAW: {
 			_draw_audio_notches();
 		} break;

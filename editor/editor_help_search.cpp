@@ -111,9 +111,11 @@ void EditorHelpSearch::_notification(int p_what) {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "search_help", Rect2(get_position(), get_size()));
 			}
 		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			_update_icons();
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			connect("confirmed", callable_mp(this, &EditorHelpSearch::_confirmed));
 			_update_icons();

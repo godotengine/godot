@@ -93,12 +93,11 @@ void EditorLog::_notification(int p_what) {
 			_update_theme();
 			_load_state();
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_theme();
 			_rebuild_log();
 		} break;
-		default:
-			break;
 	}
 }
 

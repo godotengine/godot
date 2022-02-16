@@ -429,9 +429,11 @@ void CreateDialog::_notification(int p_what) {
 			connect("confirmed", callable_mp(this, &CreateDialog::_confirmed));
 			_update_theme();
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("confirmed", callable_mp(this, &CreateDialog::_confirmed));
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
 				search_box->call_deferred(SNAME("grab_focus")); // still not visible
@@ -440,6 +442,7 @@ void CreateDialog::_notification(int p_what) {
 				EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "create_new_node", Rect2(get_position(), get_size()));
 			}
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_theme();
 		} break;

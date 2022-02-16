@@ -189,6 +189,8 @@ class CodeTextEditor : public VBoxContainer {
 	void _set_show_warnings_panel(bool p_show);
 	void _error_pressed(const Ref<InputEvent> &p_event);
 
+	void _update_status_bar_theme();
+
 	void _delete_line(int p_line);
 	void _toggle_scripts_pressed();
 
