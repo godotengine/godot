@@ -216,8 +216,18 @@ void MultiMesh::set_visible_instance_count(int p_count) {
 	VisualServer::get_singleton()->multimesh_set_visible_instances(multimesh, p_count);
 	visible_instance_count = p_count;
 }
+
+void MultiMesh::set_physics_interpolation_quality(PhysicsInterpolationQuality p_quality) {
+	_physics_interpolation_quality = p_quality;
+	VisualServer::get_singleton()->multimesh_set_physics_interpolation_quality(multimesh, (int)p_quality);
+}
+
 int MultiMesh::get_visible_instance_count() const {
 	return visible_instance_count;
+}
+
+void MultiMesh::reset_instance_physics_interpolation(int p_instance) {
+	VisualServer::get_singleton()->multimesh_instance_reset_physics_interpolation(multimesh, p_instance);
 }
 
 void MultiMesh::set_instance_transform(int p_instance, const Transform &p_transform) {
@@ -253,6 +263,14 @@ Color MultiMesh::get_instance_custom_data(int p_instance) const {
 
 void MultiMesh::set_as_bulk_array(const PoolVector<float> &p_array) {
 	VisualServer::get_singleton()->multimesh_set_as_bulk_array(multimesh, p_array);
+}
+
+void MultiMesh::set_as_bulk_array_interpolated(const PoolVector<float> &p_array_curr, const PoolVector<float> &p_array_prev) {
+	VisualServer::get_singleton()->multimesh_set_as_bulk_array_interpolated(multimesh, p_array_curr, p_array_prev);
+}
+
+void MultiMesh::set_physics_interpolated(bool p_interpolated) {
+	VisualServer::get_singleton()->multimesh_set_physics_interpolated(multimesh, p_interpolated);
 }
 
 AABB MultiMesh::get_aabb() const {
@@ -303,6 +321,8 @@ void MultiMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_instance_count"), &MultiMesh::get_instance_count);
 	ClassDB::bind_method(D_METHOD("set_visible_instance_count", "count"), &MultiMesh::set_visible_instance_count);
 	ClassDB::bind_method(D_METHOD("get_visible_instance_count"), &MultiMesh::get_visible_instance_count);
+	ClassDB::bind_method(D_METHOD("set_physics_interpolation_quality", "quality"), &MultiMesh::set_physics_interpolation_quality);
+	ClassDB::bind_method(D_METHOD("get_physics_interpolation_quality"), &MultiMesh::get_physics_interpolation_quality);
 	ClassDB::bind_method(D_METHOD("set_instance_transform", "instance", "transform"), &MultiMesh::set_instance_transform);
 	ClassDB::bind_method(D_METHOD("set_instance_transform_2d", "instance", "transform"), &MultiMesh::set_instance_transform_2d);
 	ClassDB::bind_method(D_METHOD("get_instance_transform", "instance"), &MultiMesh::get_instance_transform);
@@ -311,7 +331,9 @@ void MultiMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_instance_color", "instance"), &MultiMesh::get_instance_color);
 	ClassDB::bind_method(D_METHOD("set_instance_custom_data", "instance", "custom_data"), &MultiMesh::set_instance_custom_data);
 	ClassDB::bind_method(D_METHOD("get_instance_custom_data", "instance"), &MultiMesh::get_instance_custom_data);
+	ClassDB::bind_method(D_METHOD("reset_instance_physics_interpolation", "instance"), &MultiMesh::reset_instance_physics_interpolation);
 	ClassDB::bind_method(D_METHOD("set_as_bulk_array", "array"), &MultiMesh::set_as_bulk_array);
+	ClassDB::bind_method(D_METHOD("set_as_bulk_array_interpolated", "array_current", "array_previous"), &MultiMesh::set_as_bulk_array_interpolated);
 	ClassDB::bind_method(D_METHOD("get_aabb"), &MultiMesh::get_aabb);
 
 	ClassDB::bind_method(D_METHOD("_set_transform_array"), &MultiMesh::_set_transform_array);
@@ -334,6 +356,9 @@ void MultiMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_COLOR_ARRAY, "color_array", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_color_array", "_get_color_array");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_COLOR_ARRAY, "custom_data_array", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_custom_data_array", "_get_custom_data_array");
 
+	ADD_GROUP("Physics Interpolation", "physics_interpolation");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_interpolation_quality", PROPERTY_HINT_ENUM, "Fast,High"), "set_physics_interpolation_quality", "get_physics_interpolation_quality");
+
 	BIND_ENUM_CONSTANT(TRANSFORM_2D);
 	BIND_ENUM_CONSTANT(TRANSFORM_3D);
 
@@ -344,6 +369,9 @@ void MultiMesh::_bind_methods() {
 	BIND_ENUM_CONSTANT(CUSTOM_DATA_NONE);
 	BIND_ENUM_CONSTANT(CUSTOM_DATA_8BIT);
 	BIND_ENUM_CONSTANT(CUSTOM_DATA_FLOAT);
+
+	BIND_ENUM_CONSTANT(INTERP_QUALITY_FAST);
+	BIND_ENUM_CONSTANT(INTERP_QUALITY_HIGH);
 }
 
 MultiMesh::MultiMesh() {
@@ -353,6 +381,7 @@ MultiMesh::MultiMesh() {
 	transform_format = TRANSFORM_2D;
 	visible_instance_count = -1;
 	instance_count = 0;
+	_physics_interpolation_quality = INTERP_QUALITY_FAST;
 }
 
 MultiMesh::~MultiMesh() {

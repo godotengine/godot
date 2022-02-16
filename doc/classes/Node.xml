@@ -379,6 +379,21 @@
 				Returns [code]true[/code] if the local system is the master of this node.
 			</description>
 		</method>
+		<method name="is_physics_interpolated" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the physics interpolated flag is set for this Node (see [method set_physics_interpolated]).
+				[b]Note:[/b] Interpolation will only be active is both the flag is set [b]and[/b] physics interpolation is enabled within the [SceneTree]. This can be tested using [method is_physics_interpolated_and_enabled].
+			</description>
+		</method>
+		<method name="is_physics_interpolated_and_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if physics interpolation is enabled (see [method set_physics_interpolated]) [b]and[/b] enabled in the [SceneTree].
+				This is a convenience version of [method is_physics_interpolated] that also checks whether physics interpolation is enabled globally.
+				See [member SceneTree.physics_interpolation] and [member ProjectSettings.physics/common/physics_interpolation].
+			</description>
+		</method>
 		<method name="is_physics_processing" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -531,6 +546,15 @@
 				Requests that [code]_ready[/code] be called again. Note that the method won't be called immediately, but is scheduled for when the node is added to the scene tree again (see [method _ready]). [code]_ready[/code] is called only for the node which requested it, which means that you need to request ready for each child if you want them to call [code]_ready[/code] too (in which case, [code]_ready[/code] will be called in the same order as it would normally).
 			</description>
 		</method>
+		<method name="reset_physics_interpolation">
+			<return type="void" />
+			<description>
+				When physics interpolation is active, moving a node to a radically different transform (such as placement within a level) can result in a visible glitch as the object is rendered moving from the old to new position over the physics tick.
+				This glitch can be prevented by calling [code]reset_physics_interpolation[/code], which temporarily turns off interpolation until the physics tick is complete.
+				[constant NOTIFICATION_RESET_PHYSICS_INTERPOLATION] will be received by the node and all children recursively.
+				[b]Note:[/b] This function should be called [b]after[/b] moving the node, rather than before.
+			</description>
+		</method>
 		<method name="rpc" qualifiers="vararg">
 			<return type="Variant" />
 			<argument index="0" name="method" type="String" />
@@ -625,6 +649,14 @@
 			<argument index="1" name="recursive" type="bool" default="true" />
 			<description>
 				Sets the node's network master to the peer with the given peer ID. The network master is the peer that has authority over the node on the network. Useful in conjunction with the [code]master[/code] and [code]puppet[/code] keywords. Inherited from the parent node by default, which ultimately defaults to peer ID 1 (the server). If [code]recursive[/code], the given peer is recursively set as the master for all children of this node.
+			</description>
+		</method>
+		<method name="set_physics_interpolated">
+			<return type="void" />
+			<argument index="0" name="enable" type="bool" />
+			<description>
+				Enables or disables physics interpolation per node, offering a finer grain of control than turning physics interpolation on and off globally.
+				[b]Note:[/b] This can be especially useful for [Camera]s, where custom interpolation can sometimes give superior results.
 			</description>
 		</method>
 		<method name="set_physics_process">
@@ -808,6 +840,9 @@
 		</constant>
 		<constant name="NOTIFICATION_POST_ENTER_TREE" value="27">
 			Notification received when the node is ready, just before [constant NOTIFICATION_READY] is received. Unlike the latter, it's sent every time the node enters tree, instead of only once.
+		</constant>
+		<constant name="NOTIFICATION_RESET_PHYSICS_INTERPOLATION" value="28">
+			Notification received when [method reset_physics_interpolation] is called on the node or parent nodes.
 		</constant>
 		<constant name="NOTIFICATION_WM_MOUSE_ENTER" value="1002">
 			Notification received from the OS when the mouse enters the game window.

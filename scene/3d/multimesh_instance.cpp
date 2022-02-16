@@ -36,12 +36,26 @@ void MultiMeshInstance::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multimesh", PROPERTY_HINT_RESOURCE_TYPE, "MultiMesh"), "set_multimesh", "get_multimesh");
 }
 
+void MultiMeshInstance::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE) {
+		_refresh_interpolated();
+	}
+}
+
 void MultiMeshInstance::set_multimesh(const Ref<MultiMesh> &p_multimesh) {
 	multimesh = p_multimesh;
 	if (multimesh.is_valid()) {
 		set_base(multimesh->get_rid());
+		_refresh_interpolated();
 	} else {
 		set_base(RID());
+	}
+}
+
+void MultiMeshInstance::_refresh_interpolated() {
+	if (is_inside_tree() && multimesh.is_valid()) {
+		bool interpolated = is_physics_interpolated_and_enabled();
+		multimesh->set_physics_interpolated(interpolated);
 	}
 }
 
@@ -59,6 +73,11 @@ AABB MultiMeshInstance::get_aabb() const {
 	} else {
 		return multimesh->get_aabb();
 	}
+}
+
+void MultiMeshInstance::_physics_interpolated_changed() {
+	VisualInstance::_physics_interpolated_changed();
+	_refresh_interpolated();
 }
 
 MultiMeshInstance::MultiMeshInstance() {

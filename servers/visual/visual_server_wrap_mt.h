@@ -54,6 +54,8 @@ class VisualServerWrapMT : public VisualServer {
 	SafeNumeric<uint64_t> draw_pending;
 	void thread_draw(bool p_swap_buffers, double frame_step);
 	void thread_flush();
+	void thread_scenario_tick(RID p_scenario);
+	void thread_scenario_pre_draw(RID p_scenario, bool p_will_draw);
 
 	void thread_exit();
 
@@ -207,6 +209,11 @@ public:
 	FUNC2RC(Color, multimesh_instance_get_custom_data, RID, int)
 
 	FUNC2(multimesh_set_as_bulk_array, RID, const PoolVector<float> &)
+
+	FUNC3(multimesh_set_as_bulk_array_interpolated, RID, const PoolVector<float> &, const PoolVector<float> &)
+	FUNC2(multimesh_set_physics_interpolated, RID, bool)
+	FUNC2(multimesh_set_physics_interpolation_quality, RID, int)
+	FUNC2(multimesh_instance_reset_physics_interpolation, RID, int)
 
 	FUNC2(multimesh_set_visible_instances, RID, int)
 	FUNC1RC(int, multimesh_get_visible_instances, RID)
@@ -367,10 +374,13 @@ public:
 	/* CAMERA API */
 
 	FUNCRID(camera)
+	FUNC2(camera_set_scenario, RID, RID)
 	FUNC4(camera_set_perspective, RID, float, float, float)
 	FUNC4(camera_set_orthogonal, RID, float, float, float)
 	FUNC5(camera_set_frustum, RID, float, Vector2, float, float)
 	FUNC2(camera_set_transform, RID, const Transform &)
+	FUNC2(camera_set_interpolated, RID, bool)
+	FUNC1(camera_reset_physics_interpolation, RID)
 	FUNC2(camera_set_cull_mask, RID, uint32_t)
 	FUNC2(camera_set_environment, RID, RID)
 	FUNC2(camera_set_use_vertical_aspect, RID, bool)
@@ -464,6 +474,7 @@ public:
 	FUNC2(scenario_set_environment, RID, RID)
 	FUNC3(scenario_set_reflection_atlas_size, RID, int, int)
 	FUNC2(scenario_set_fallback_environment, RID, RID)
+	FUNC2(scenario_set_physics_interpolation_enabled, RID, bool)
 
 	/* INSTANCING API */
 	FUNCRID(instance)
@@ -472,6 +483,8 @@ public:
 	FUNC2(instance_set_scenario, RID, RID)
 	FUNC2(instance_set_layer_mask, RID, uint32_t)
 	FUNC2(instance_set_transform, RID, const Transform &)
+	FUNC2(instance_set_interpolated, RID, bool)
+	FUNC1(instance_reset_physics_interpolation, RID)
 	FUNC2(instance_attach_object_instance_id, RID, ObjectID)
 	FUNC3(instance_set_blend_shape_weight, RID, int, float)
 	FUNC3(instance_set_surface_material, RID, int, RID)
@@ -657,6 +670,8 @@ public:
 	virtual void finish();
 	virtual void draw(bool p_swap_buffers, double frame_step);
 	virtual void sync();
+	virtual void scenario_tick(RID p_scenario);
+	virtual void scenario_pre_draw(RID p_scenario, bool p_will_draw);
 	FUNC1RC(bool, has_changed, ChangedPriority)
 
 	/* RENDER INFO */
