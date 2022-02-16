@@ -316,9 +316,11 @@ void register_core_extensions() {
 	native_extension_manager->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_CORE);
 }
 
-void unregister_core_types() {
+void unregister_core_extensions() {
 	native_extension_manager->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_CORE);
+}
 
+void unregister_core_types() {
 	memdelete(native_extension_manager);
 
 	memdelete(resource_uid);
