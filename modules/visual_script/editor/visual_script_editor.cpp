@@ -3396,7 +3396,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 		vnode = n;
 	} else if (p_category == String("class_property")) {
 		Vector<String> property_path = p_text.split(":");
-		if (held_ctrl) {
+		if (held_ctrl || property_path[0] == "VisualScriptPropertySet") {
 			Ref<VisualScriptPropertySet> n;
 			n.instantiate();
 			n->set_property(property_path[1]);
