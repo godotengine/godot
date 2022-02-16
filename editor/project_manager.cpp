@@ -647,8 +647,10 @@ private:
 	}
 
 	void _notification(int p_what) {
-		if (p_what == NOTIFICATION_WM_CLOSE_REQUEST) {
-			_remove_created_folder();
+		switch (p_what) {
+			case NOTIFICATION_WM_CLOSE_REQUEST: {
+				_remove_created_folder();
+			} break;
 		}
 	}
 
@@ -978,10 +980,12 @@ public:
 				hover = true;
 				update();
 			} break;
+
 			case NOTIFICATION_MOUSE_EXIT: {
 				hover = false;
 				update();
 			} break;
+
 			case NOTIFICATION_DRAW: {
 				if (hover) {
 					draw_style_box(get_theme_stylebox(SNAME("hover"), SNAME("Tree")), Rect2(Point2(), get_size()));
@@ -1143,18 +1147,20 @@ void ProjectList::update_icons_async() {
 }
 
 void ProjectList::_notification(int p_what) {
-	if (p_what == NOTIFICATION_PROCESS) {
-		// Load icons as a coroutine to speed up launch when you have hundreds of projects
-		if (_icon_load_index < _projects.size()) {
-			Item &item = _projects.write[_icon_load_index];
-			if (item.control->icon_needs_reload) {
-				load_project_icon(_icon_load_index);
-			}
-			_icon_load_index++;
+	switch (p_what) {
+		case NOTIFICATION_PROCESS: {
+			// Load icons as a coroutine to speed up launch when you have hundreds of projects
+			if (_icon_load_index < _projects.size()) {
+				Item &item = _projects.write[_icon_load_index];
+				if (item.control->icon_needs_reload) {
+					load_project_icon(_icon_load_index);
+				}
+				_icon_load_index++;
 
-		} else {
-			set_process(false);
-		}
+			} else {
+				set_process(false);
+			}
+		} break;
 	}
 }
 
@@ -1872,17 +1878,20 @@ void ProjectManager::_notification(int p_what) {
 			settings_hb->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT);
 			update();
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			search_box->set_clear_button_enabled(true);
 
 			Engine::get_singleton()->set_editor_hint(false);
 		} break;
+
 		case NOTIFICATION_RESIZED: {
 			if (open_templates->is_visible()) {
 				open_templates->popup_centered();
 			}
 		} break;
+
 		case NOTIFICATION_READY: {
 			int default_sorting = (int)EditorSettings::get_singleton()->get("project_manager/sorting_order");
 			filter_option->select(default_sorting);
@@ -1898,12 +1907,15 @@ void ProjectManager::_notification(int p_what) {
 				search_box->grab_focus();
 			}
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			set_process_unhandled_key_input(is_visible_in_tree());
 		} break;
+
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
 			_dim_window();
 		} break;
+
 		case NOTIFICATION_WM_ABOUT: {
 			_show_about();
 		} break;

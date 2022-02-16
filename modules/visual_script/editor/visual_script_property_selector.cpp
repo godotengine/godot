@@ -118,9 +118,11 @@ void VisualScriptPropertySelector::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			_update_icons();
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			connect("confirmed", callable_mp(this, &VisualScriptPropertySelector::_confirmed));
 		} break;
+
 		case NOTIFICATION_PROCESS: {
 			// Update background search.
 			if (search_runner.is_valid()) {

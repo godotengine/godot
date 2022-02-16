@@ -1160,13 +1160,11 @@ void TileDataDefaultEditor::setup_property_editor(Variant::Type p_type, String p
 void TileDataDefaultEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_THEME_CHANGED: {
 			picker_button->set_icon(get_theme_icon(SNAME("ColorPick"), SNAME("EditorIcons")));
 			tile_bool_checked = get_theme_icon(SNAME("TileChecked"), SNAME("EditorIcons"));
 			tile_bool_unchecked = get_theme_icon(SNAME("TileUnchecked"), SNAME("EditorIcons"));
-			break;
-		default:
-			break;
+		} break;
 	}
 }
 
@@ -1315,11 +1313,9 @@ void TileDataOcclusionShapeEditor::_tile_set_changed() {
 
 void TileDataOcclusionShapeEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_ENTER_TREE: {
 			polygon_editor->set_polygons_color(get_tree()->get_debug_collisions_color());
-			break;
-		default:
-			break;
+		} break;
 	}
 }
 
@@ -1514,11 +1510,9 @@ void TileDataCollisionEditor::_tile_set_changed() {
 
 void TileDataCollisionEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_ENTER_TREE: {
 			polygon_editor->set_polygons_color(get_tree()->get_debug_collisions_color());
-			break;
-		default:
-			break;
+		} break;
 	}
 }
 
@@ -2487,11 +2481,9 @@ void TileDataTerrainsEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform
 void TileDataTerrainsEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_THEME_CHANGED: {
 			picker_button->set_icon(get_theme_icon(SNAME("ColorPick"), SNAME("EditorIcons")));
-			break;
-		default:
-			break;
+		} break;
 	}
 }
 
@@ -2593,11 +2585,9 @@ void TileDataNavigationEditor::_tile_set_changed() {
 
 void TileDataNavigationEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_ENTER_TREE: {
 			polygon_editor->set_polygons_color(get_tree()->get_debug_navigation_color());
-			break;
-		default:
-			break;
+		} break;
 	}
 }
 

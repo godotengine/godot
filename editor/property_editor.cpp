@@ -94,8 +94,10 @@ Ref<Resource> EditorResourceConversionPlugin::convert(const Ref<Resource> &p_res
 }
 
 void CustomPropertyEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_WM_CLOSE_REQUEST) {
-		hide();
+	switch (p_what) {
+		case NOTIFICATION_WM_CLOSE_REQUEST: {
+			hide();
+		} break;
 	}
 }
 

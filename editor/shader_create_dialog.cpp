@@ -57,6 +57,7 @@ void ShaderCreateDialog::_notification(int p_what) {
 			current_mode = EditorSettings::get_singleton()->get_project_metadata("shader_setup", "last_selected_mode", 0);
 			mode_menu->select(current_mode);
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_theme();
 		} break;

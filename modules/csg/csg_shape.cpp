@@ -491,61 +491,63 @@ Vector<Face3> CSGShape3D::get_faces(uint32_t p_usage_flags) const {
 }
 
 void CSGShape3D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		Node *parentn = get_parent();
-		if (parentn) {
-			parent = Object::cast_to<CSGShape3D>(parentn);
-			if (parent) {
-				set_base(RID());
-				root_mesh.unref();
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			Node *parentn = get_parent();
+			if (parentn) {
+				parent = Object::cast_to<CSGShape3D>(parentn);
+				if (parent) {
+					set_base(RID());
+					root_mesh.unref();
+				}
 			}
-		}
 
-		if (use_collision && is_root_shape()) {
-			root_collision_shape.instantiate();
-			root_collision_instance = PhysicsServer3D::get_singleton()->body_create();
-			PhysicsServer3D::get_singleton()->body_set_mode(root_collision_instance, PhysicsServer3D::BODY_MODE_STATIC);
-			PhysicsServer3D::get_singleton()->body_set_state(root_collision_instance, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
-			PhysicsServer3D::get_singleton()->body_add_shape(root_collision_instance, root_collision_shape->get_rid());
-			PhysicsServer3D::get_singleton()->body_set_space(root_collision_instance, get_world_3d()->get_space());
-			PhysicsServer3D::get_singleton()->body_attach_object_instance_id(root_collision_instance, get_instance_id());
-			set_collision_layer(collision_layer);
-			set_collision_mask(collision_mask);
-		}
+			if (use_collision && is_root_shape()) {
+				root_collision_shape.instantiate();
+				root_collision_instance = PhysicsServer3D::get_singleton()->body_create();
+				PhysicsServer3D::get_singleton()->body_set_mode(root_collision_instance, PhysicsServer3D::BODY_MODE_STATIC);
+				PhysicsServer3D::get_singleton()->body_set_state(root_collision_instance, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
+				PhysicsServer3D::get_singleton()->body_add_shape(root_collision_instance, root_collision_shape->get_rid());
+				PhysicsServer3D::get_singleton()->body_set_space(root_collision_instance, get_world_3d()->get_space());
+				PhysicsServer3D::get_singleton()->body_attach_object_instance_id(root_collision_instance, get_instance_id());
+				set_collision_layer(collision_layer);
+				set_collision_mask(collision_mask);
+			}
 
-		_make_dirty();
-	}
+			_make_dirty();
+		} break;
 
-	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
-		if (use_collision && is_root_shape() && root_collision_instance.is_valid()) {
-			PhysicsServer3D::get_singleton()->body_set_state(root_collision_instance, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
-		}
-	}
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			if (use_collision && is_root_shape() && root_collision_instance.is_valid()) {
+				PhysicsServer3D::get_singleton()->body_set_state(root_collision_instance, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
-		if (parent) {
-			parent->_make_dirty();
-		}
-	}
+		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
+			if (parent) {
+				parent->_make_dirty();
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (parent) {
-			parent->_make_dirty();
-		}
-	}
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (parent) {
+				parent->_make_dirty();
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (parent) {
-			parent->_make_dirty();
-		}
-		parent = nullptr;
+		case NOTIFICATION_EXIT_TREE: {
+			if (parent) {
+				parent->_make_dirty();
+			}
+			parent = nullptr;
 
-		if (use_collision && is_root_shape() && root_collision_instance.is_valid()) {
-			PhysicsServer3D::get_singleton()->free(root_collision_instance);
-			root_collision_instance = RID();
-			root_collision_shape.unref();
-		}
-		_make_dirty();
+			if (use_collision && is_root_shape() && root_collision_instance.is_valid()) {
+				PhysicsServer3D::get_singleton()->free(root_collision_instance);
+				root_collision_instance = RID();
+				root_collision_shape.unref();
+			}
+			_make_dirty();
+		} break;
 	}
 }
 

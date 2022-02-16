@@ -421,10 +421,14 @@ void PropertySelector::_hide_requested() {
 }
 
 void PropertySelector::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		connect("confirmed", callable_mp(this, &PropertySelector::_confirmed));
-	} else if (p_what == NOTIFICATION_EXIT_TREE) {
-		disconnect("confirmed", callable_mp(this, &PropertySelector::_confirmed));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			connect("confirmed", callable_mp(this, &PropertySelector::_confirmed));
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			disconnect("confirmed", callable_mp(this, &PropertySelector::_confirmed));
+		} break;
 	}
 }
 

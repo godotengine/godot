@@ -703,8 +703,8 @@ void GridMap::_notification(int p_what) {
 				RS::get_singleton()->instance_set_scenario(baked_meshes[i].instance, get_world_3d()->get_scenario());
 				RS::get_singleton()->instance_set_transform(baked_meshes[i].instance, get_global_transform());
 			}
-
 		} break;
+
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			Transform3D new_xform = get_global_transform();
 			if (new_xform == last_transform) {
@@ -721,6 +721,7 @@ void GridMap::_notification(int p_what) {
 				RS::get_singleton()->instance_set_transform(baked_meshes[i].instance, get_global_transform());
 			}
 		} break;
+
 		case NOTIFICATION_EXIT_WORLD: {
 			for (const KeyValue<OctantKey, Octant *> &E : octant_map) {
 				_octant_exit_world(E.key);
@@ -732,8 +733,8 @@ void GridMap::_notification(int p_what) {
 			for (int i = 0; i < baked_meshes.size(); i++) {
 				RS::get_singleton()->instance_set_scenario(baked_meshes[i].instance, RID());
 			}
-
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			_update_visibility();
 		} break;

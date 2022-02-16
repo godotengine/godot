@@ -229,6 +229,7 @@ void EditorQuickOpen::_notification(int p_what) {
 
 			search_box->set_clear_button_enabled(true);
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("confirmed", callable_mp(this, &EditorQuickOpen::_confirmed));
 		} break;

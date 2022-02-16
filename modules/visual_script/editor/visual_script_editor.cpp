@@ -3978,6 +3978,7 @@ void VisualScriptEditor::_notification(int p_what) {
 				_update_graph();
 			}
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			update_toggle_scripts_button();
 			members_section->set_visible(is_visible_in_tree());

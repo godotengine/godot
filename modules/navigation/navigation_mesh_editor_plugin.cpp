@@ -46,10 +46,12 @@ void NavigationMeshEditor::_node_removed(Node *p_node) {
 	}
 }
 
-void NavigationMeshEditor::_notification(int p_option) {
-	if (p_option == NOTIFICATION_ENTER_TREE) {
-		button_bake->set_icon(get_theme_icon(SNAME("Bake"), SNAME("EditorIcons")));
-		button_reset->set_icon(get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
+void NavigationMeshEditor::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			button_bake->set_icon(get_theme_icon(SNAME("Bake"), SNAME("EditorIcons")));
+			button_reset->set_icon(get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
+		} break;
 	}
 }
 

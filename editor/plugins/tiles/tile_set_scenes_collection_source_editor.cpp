@@ -330,12 +330,13 @@ void TileSetScenesCollectionSourceEditor::_update_scenes_list() {
 void TileSetScenesCollectionSourceEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_THEME_CHANGED: {
 			scene_tile_add_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			scene_tile_delete_button->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 			_update_scenes_list();
-			break;
-		case NOTIFICATION_INTERNAL_PROCESS:
+		} break;
+
+		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (tile_set_scenes_collection_source_changed_needs_update) {
 				// Update everything.
 				_update_source_inspector();
@@ -344,14 +345,13 @@ void TileSetScenesCollectionSourceEditor::_notification(int p_what) {
 				_update_tile_inspector();
 				tile_set_scenes_collection_source_changed_needs_update = false;
 			}
-			break;
-		case NOTIFICATION_VISIBILITY_CHANGED:
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
 			// Update things just in case.
 			_update_scenes_list();
 			_update_action_buttons();
-			break;
-		default:
-			break;
+		} break;
 	}
 }
 
