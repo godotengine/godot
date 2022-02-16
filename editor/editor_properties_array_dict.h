@@ -147,6 +147,7 @@ class EditorPropertyDictionary : public EditorProperty {
 	EditorSpinSlider *size_slider;
 	EditorSpinSlider *page_slider;
 	HBoxContainer *page_hbox;
+	Button *button_add_item;
 
 	void _page_changed(double p_page);
 	void _edit_pressed();

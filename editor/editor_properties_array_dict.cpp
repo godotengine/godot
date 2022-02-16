@@ -501,20 +501,33 @@ void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_d
 }
 
 void EditorPropertyArray::_notification(int p_what) {
-	if (p_what == NOTIFICATION_DRAG_BEGIN) {
-		if (is_visible_in_tree()) {
-			if (_is_drop_valid(get_viewport()->gui_get_drag_data())) {
-				dropping = true;
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			change_type->clear();
+			for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+				String type = Variant::get_type_name(Variant::Type(i));
+				change_type->add_icon_item(get_icon(type, "EditorIcons"), type, i);
+			}
+			change_type->add_separator();
+			change_type->add_icon_item(get_icon("Remove", "EditorIcons"), TTR("Remove Item"), Variant::VARIANT_MAX);
+		} break;
+
+		case NOTIFICATION_DRAG_BEGIN: {
+			if (is_visible_in_tree()) {
+				if (_is_drop_valid(get_viewport()->gui_get_drag_data())) {
+					dropping = true;
+					edit->update();
+				}
+			}
+		} break;
+
+		case NOTIFICATION_DRAG_END: {
+			if (dropping) {
+				dropping = false;
 				edit->update();
 			}
-		}
-	}
-
-	if (p_what == NOTIFICATION_DRAG_END) {
-		if (dropping) {
-			dropping = false;
-			edit->update();
-		}
+		} break;
 	}
 }
 
@@ -1092,10 +1105,11 @@ void EditorPropertyDictionary::update_property() {
 			prop->update_property();
 
 			if (i == amount + 1) {
-				Button *butt_add_item = memnew(Button);
-				butt_add_item->set_text(TTR("Add Key/Value Pair"));
-				butt_add_item->connect("pressed", this, "_add_key_value");
-				add_vbox->add_child(butt_add_item);
+				button_add_item = memnew(Button);
+				button_add_item->set_text(TTR("Add Key/Value Pair"));
+				button_add_item->set_icon(get_icon("Add", "EditorIcons"));
+				button_add_item->connect("pressed", this, "_add_key_value");
+				add_vbox->add_child(button_add_item);
 			}
 		}
 
@@ -1115,6 +1129,22 @@ void EditorPropertyDictionary::_object_id_selected(const String &p_property, Obj
 }
 
 void EditorPropertyDictionary::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			change_type->clear();
+			for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+				String type = Variant::get_type_name(Variant::Type(i));
+				change_type->add_icon_item(get_icon(type, "EditorIcons"), type, i);
+			}
+			change_type->add_separator();
+			change_type->add_icon_item(get_icon("Remove", "EditorIcons"), TTR("Remove Item"), Variant::VARIANT_MAX);
+
+			if (Object::cast_to<Button>(button_add_item)) {
+				button_add_item->set_icon(get_icon("Add", "EditorIcons"));
+			}
+		} break;
+	}
 }
 
 void EditorPropertyDictionary::_edit_pressed() {
@@ -1160,16 +1190,10 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 	add_focusable(edit);
 	vbox = nullptr;
 	page_slider = nullptr;
+	button_add_item = nullptr;
 	updating = false;
 	change_type = memnew(PopupMenu);
 	add_child(change_type);
 	change_type->connect("id_pressed", this, "_change_type_menu");
-
-	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-		String type = Variant::get_type_name(Variant::Type(i));
-		change_type->add_item(type, i);
-	}
-	change_type->add_separator();
-	change_type->add_item(TTR("Remove Item"), Variant::VARIANT_MAX);
 	changing_type_index = -1;
 }
