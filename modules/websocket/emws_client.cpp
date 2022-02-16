@@ -31,6 +31,7 @@
 #ifdef JAVASCRIPT_ENABLED
 
 #include "emws_client.h"
+
 #include "core/config/project_settings.h"
 #include "core/io/ip.h"
 #include "emscripten.h"
@@ -45,8 +46,9 @@ void EMWSClient::_esws_on_message(void *obj, const uint8_t *p_data, int p_data_s
 	EMWSClient *client = static_cast<EMWSClient *>(obj);
 
 	Error err = static_cast<EMWSPeer *>(*client->get_peer(1))->read_msg(p_data, p_data_size, p_is_string == 1);
-	if (err == OK)
+	if (err == OK) {
 		client->_on_peer_packet();
+	}
 }
 
 void EMWSClient::_esws_on_error(void *obj) {
@@ -71,8 +73,9 @@ Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port,
 
 	String proto_string;
 	for (int i = 0; i < p_protocols.size(); i++) {
-		if (i != 0)
+		if (i != 0) {
 			proto_string += ",";
+		}
 		proto_string += p_protocols[i];
 	}
 
@@ -109,8 +112,9 @@ Ref<WebSocketPeer> EMWSClient::get_peer(int p_peer_id) const {
 
 MultiplayerPeer::ConnectionStatus EMWSClient::get_connection_status() const {
 	if (_peer->is_connected_to_host()) {
-		if (_is_connecting)
+		if (_is_connecting) {
 			return CONNECTION_CONNECTING;
+		}
 		return CONNECTION_CONNECTED;
 	}
 

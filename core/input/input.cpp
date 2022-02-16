@@ -1145,7 +1145,6 @@ Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, J
 								// It doesn't make sense for a full axis to map to a button,
 								// but keeping as a default for a trigger with a positive half-axis.
 								event.value = (shifted_positive_value * 2) - 1;
-								;
 								break;
 						}
 						return event;

@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "display_server_iphone.h"
+
 #import "app_delegate.h"
 #include "core/config/project_settings.h"
 #include "core/io/file_access_pack.h"
@@ -231,7 +232,7 @@ void DisplayServerIPhone::touch_press(int p_idx, int p_x, int p_y, bool p_presse
 		ev->set_position(Vector2(p_x, p_y));
 		perform_event(ev);
 	}
-};
+}
 
 void DisplayServerIPhone::touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y) {
 	if (!GLOBAL_DEF("debug/disable_touch", false)) {
@@ -241,16 +242,16 @@ void DisplayServerIPhone::touch_drag(int p_idx, int p_prev_x, int p_prev_y, int 
 		ev->set_position(Vector2(p_x, p_y));
 		ev->set_relative(Vector2(p_x - p_prev_x, p_y - p_prev_y));
 		perform_event(ev);
-	};
-};
+	}
+}
 
 void DisplayServerIPhone::perform_event(const Ref<InputEvent> &p_event) {
 	Input::get_singleton()->parse_input_event(p_event);
-};
+}
 
 void DisplayServerIPhone::touches_cancelled(int p_idx) {
 	touch_press(p_idx, -1, -1, false, false);
-};
+}
 
 // MARK: Keyboard
 
@@ -263,13 +264,13 @@ void DisplayServerIPhone::key(Key p_key, bool p_pressed) {
 	ev->set_physical_keycode(p_key);
 	ev->set_unicode((char32_t)p_key);
 	perform_event(ev);
-};
+}
 
 // MARK: Motion
 
 void DisplayServerIPhone::update_gravity(float p_x, float p_y, float p_z) {
 	Input::get_singleton()->set_gravity(Vector3(p_x, p_y, p_z));
-};
+}
 
 void DisplayServerIPhone::update_accelerometer(float p_x, float p_y, float p_z) {
 	// Found out the Z should not be negated! Pass as is!
@@ -279,15 +280,15 @@ void DisplayServerIPhone::update_accelerometer(float p_x, float p_y, float p_z) 
 			p_z / kDisplayServerIPhoneAcceleration);
 
 	Input::get_singleton()->set_accelerometer(v_accelerometer);
-};
+}
 
 void DisplayServerIPhone::update_magnetometer(float p_x, float p_y, float p_z) {
 	Input::get_singleton()->set_magnetometer(Vector3(p_x, p_y, p_z));
-};
+}
 
 void DisplayServerIPhone::update_gyroscope(float p_x, float p_y, float p_z) {
 	Input::get_singleton()->set_gyroscope(Vector3(p_x, p_y, p_z));
-};
+}
 
 // MARK: -
 
@@ -520,7 +521,7 @@ void DisplayServerIPhone::window_move_to_foreground(WindowID p_window) {
 
 float DisplayServerIPhone::screen_get_max_scale() const {
 	return screen_get_scale(SCREEN_OF_MAIN_WINDOW);
-};
+}
 
 void DisplayServerIPhone::screen_set_orientation(DisplayServer::ScreenOrientation p_orientation, int p_screen) {
 	screen_orientation = p_orientation;

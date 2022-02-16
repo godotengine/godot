@@ -89,8 +89,9 @@ static void handle_crash(int sig) {
 	fprintf(stderr, "\n================================================================\n");
 	fprintf(stderr, "%s: Program crashed with signal %d\n", __FUNCTION__, sig);
 
-	if (OS::get_singleton()->get_main_loop())
+	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_CRASH);
+	}
 
 	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
 	if (String(VERSION_HASH).is_empty()) {
@@ -119,8 +120,9 @@ static void handle_crash(int sig) {
 						snprintf(fname, 1024, "%s", demangled);
 					}
 
-					if (demangled)
+					if (demangled) {
 						free(demangled);
+					}
 				}
 			}
 
@@ -177,8 +179,9 @@ CrashHandler::~CrashHandler() {
 }
 
 void CrashHandler::disable() {
-	if (disabled)
+	if (disabled) {
 		return;
+	}
 
 #ifdef CRASH_HANDLER_ENABLED
 	signal(SIGSEGV, nullptr);

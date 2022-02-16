@@ -696,10 +696,6 @@ Rect2 Sprite3D::get_item_rect() const {
 	if (texture.is_null()) {
 		return Rect2(0, 0, 1, 1);
 	}
-	/*
-	if (texture.is_null())
-		return CanvasItem::get_item_rect();
-	*/
 
 	Size2 s;
 

@@ -428,15 +428,6 @@ Vector<Color> Polygon2D::get_vertex_colors() const {
 
 void Polygon2D::set_texture(const Ref<Texture2D> &p_texture) {
 	texture = p_texture;
-
-	/*if (texture.is_valid()) {
-		uint32_t flags=texture->get_flags();
-		flags&=~Texture::FLAG_REPEAT;
-		if (tex_tile)
-			flags|=Texture::FLAG_REPEAT;
-
-		texture->set_flags(flags);
-	}*/
 	update();
 }
 

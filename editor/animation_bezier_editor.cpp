@@ -1289,10 +1289,6 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			// 3-move the keys (re insert them)
 			for (SelectionSet::Element *E = selection.back(); E; E = E->prev()) {
 				float newpos = editor->snap_time(animation->track_get_key_time(E->get().first, E->get().second) + moving_selection_offset.x);
-				/*
-				if (newpos<0)
-					continue; //no add at the beginning
-				*/
 				Array key = animation->track_get_key_value(E->get().first, E->get().second);
 				float h = key[0];
 				h += moving_selection_offset.y;
@@ -1303,10 +1299,6 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			// 4-(undo) remove inserted keys
 			for (SelectionSet::Element *E = selection.back(); E; E = E->prev()) {
 				float newpos = editor->snap_time(animation->track_get_key_time(E->get().first, E->get().second) + moving_selection_offset.x);
-				/*
-				if (newpos<0)
-					continue; //no remove what no inserted
-				*/
 				undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", E->get().first, newpos);
 			}
 

@@ -1701,8 +1701,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 	bool skip = (p_item == root && hide_root);
 
 	if (!skip && (p_pos.y + label_h - cache.offset.y) > 0) {
-		//draw separation.
-		//if (p_item->get_parent()!=root || !hide_root)
+		// Draw separation.
 
 		ERR_FAIL_COND_V(cache.font.is_null(), -1);
 
@@ -2259,11 +2258,6 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 					emit_signal(SNAME("item_selected"));
 					emitted_row = true;
 				}
-				/*
-					if (p_col==i)
-						p_current->selected_signal.call(p_col);
-					*/
-
 			} else if (c.selected) {
 				if (p_selected != p_current) {
 					// Deselect other rows.
@@ -4065,10 +4059,6 @@ int Tree::get_edited_column() const {
 }
 
 TreeItem *Tree::get_next_selected(TreeItem *p_item) {
-	/*
-	if (!p_item)
-		return nullptr;
-	*/
 	if (!root) {
 		return nullptr;
 	}

@@ -3916,8 +3916,9 @@ Ref<Script> EditorNode::get_object_custom_type_base(const Object *p_object) cons
 	if (script.is_valid()) {
 		// Uncommenting would break things! Consider adding a parameter if you need it.
 		// StringName name = EditorNode::get_editor_data().script_class_get_name(base_script->get_path());
-		// if (name != StringName())
+		// if (name != StringName()) {
 		// 	return name;
+		// }
 
 		// should probably be deprecated in 4.x
 		StringName base = script->get_instance_base_type();
@@ -5745,7 +5746,6 @@ static void _execute_thread(void *p_ud) {
 	}
 
 	eta->done.set();
-	;
 }
 
 int EditorNode::execute_and_show_output(const String &p_title, const String &p_path, const List<String> &p_arguments, bool p_close_on_ok, bool p_close_on_errors) {

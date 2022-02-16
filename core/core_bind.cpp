@@ -2291,8 +2291,8 @@ void Engine::register_singleton(const StringName &p_name, Object *p_object) {
 	s.ptr = p_object;
 	s.user_created = true;
 	::Engine::get_singleton()->add_singleton(s);
-	;
 }
+
 void Engine::unregister_singleton(const StringName &p_name) {
 	ERR_FAIL_COND_MSG(!has_singleton(p_name), "Attempt to remove unregistered singleton: " + String(p_name));
 	ERR_FAIL_COND_MSG(!::Engine::get_singleton()->is_singleton_user_created(p_name), "Attempt to remove non-user created singleton: " + String(p_name));

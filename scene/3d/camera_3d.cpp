@@ -82,12 +82,6 @@ void Camera3D::_update_camera() {
 
 	RenderingServer::get_singleton()->camera_set_transform(camera, get_camera_transform());
 
-	// here goes listener stuff
-	/*
-	if (viewport_ptr && is_inside_scene() && is_current())
-		get_viewport()->_camera_3d_transform_changed_notify();
-	*/
-
 	if (get_tree()->is_node_being_edited(this) || !is_current()) {
 		return;
 	}

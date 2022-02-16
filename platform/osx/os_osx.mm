@@ -441,7 +441,7 @@ void OS_OSX::run() {
 		} @catch (NSException *exception) {
 			ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
 		}
-	};
+	}
 
 	main_loop->finalize();
 }

@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #import "joypad_iphone.h"
+
 #include "core/config/project_settings.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "main/main.h"
@@ -139,10 +140,10 @@ void JoypadIPhone::start_processing() {
 	for (NSNumber *key in keys) {
 		int joy_id = [key intValue];
 		return joy_id;
-	};
+	}
 
 	return -1;
-};
+}
 
 - (void)addiOSJoypad:(GCController *)controller {
 	//     get a new id for our controller
@@ -156,7 +157,7 @@ void JoypadIPhone::start_processing() {
 	// assign our player index
 	if (controller.playerIndex == GCControllerPlayerIndexUnset) {
 		controller.playerIndex = [self getFreePlayerIndex];
-	};
+	}
 
 	// tell Godot about our new controller
 	Input::get_singleton()->joy_connection_changed(joy_id, true, String::utf8([controller.vendorName UTF8String]));
@@ -202,8 +203,8 @@ void JoypadIPhone::start_processing() {
 
 		// and remove it from our dictionary
 		[self.connectedJoypads removeObjectForKey:key];
-	};
-};
+	}
+}
 
 - (GCControllerPlayerIndex)getFreePlayerIndex {
 	bool have_player_1 = false;
@@ -223,9 +224,9 @@ void JoypadIPhone::start_processing() {
 				have_player_3 = true;
 			} else if (controller.playerIndex == GCControllerPlayerIndex4) {
 				have_player_4 = true;
-			};
-		};
-	};
+			}
+		}
+	}
 
 	if (!have_player_1) {
 		return GCControllerPlayerIndex1;
@@ -237,7 +238,7 @@ void JoypadIPhone::start_processing() {
 		return GCControllerPlayerIndex4;
 	} else {
 		return GCControllerPlayerIndexUnset;
-	};
+	}
 }
 
 - (void)setControllerInputHandler:(GCController *)controller {
@@ -285,7 +286,7 @@ void JoypadIPhone::start_processing() {
 						gamepad.dpad.left.isPressed);
 				Input::get_singleton()->joy_button(joy_id, JoyButton::DPAD_RIGHT,
 						gamepad.dpad.right.isPressed);
-			};
+			}
 
 			if (element == gamepad.leftThumbstick) {
 				float value = gamepad.leftThumbstick.xAxis.value;
@@ -303,7 +304,7 @@ void JoypadIPhone::start_processing() {
 			} else if (element == gamepad.rightTrigger) {
 				float value = gamepad.rightTrigger.value;
 				Input::get_singleton()->joy_axis(joy_id, JoyAxis::TRIGGER_RIGHT, value);
-			};
+			}
 		};
 	} else if (controller.microGamepad != nil) {
 		// micro gamepads were added in OS 9 and feature just 2 buttons and a d-pad
@@ -329,7 +330,7 @@ void JoypadIPhone::start_processing() {
 						gamepad.dpad.down.isPressed);
 				Input::get_singleton()->joy_button(joy_id, JoyButton::DPAD_LEFT, gamepad.dpad.left.isPressed);
 				Input::get_singleton()->joy_button(joy_id, JoyButton::DPAD_RIGHT, gamepad.dpad.right.isPressed);
-			};
+			}
 		};
 	}
 
@@ -338,6 +339,6 @@ void JoypadIPhone::start_processing() {
 
 	///@TODO need to add support for controllerPausedHandler which should be a
 	/// toggle
-};
+}
 
 @end

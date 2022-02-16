@@ -151,8 +151,9 @@ void gd_mono_debug_init() {
 						  .utf8();
 	}
 #else
-	if (da_args.length() == 0)
+	if (da_args.length() == 0) {
 		return; // Exported games don't use the project settings to setup the debugger agent
+	}
 #endif
 
 	// Debugging enabled
@@ -226,8 +227,9 @@ void GDMono::add_mono_shared_libs_dir_to_path() {
 		path_value += mono_reg_info.bin_dir;
 	}
 #else
-	if (DirAccess::exists(bundled_bin_dir))
+	if (DirAccess::exists(bundled_bin_dir)) {
 		path_value += bundled_bin_dir;
+	}
 #endif // TOOLS_ENABLED
 
 #else
@@ -1269,8 +1271,9 @@ GDMono::~GDMono() {
 
 		print_verbose("Mono: Finalizing scripts domain...");
 
-		if (mono_domain_get() != root_domain)
+		if (mono_domain_get() != root_domain) {
 			mono_domain_set(root_domain, true);
+		}
 
 		finalizing_scripts_domain = true;
 

@@ -150,12 +150,15 @@ uint32_t SurfaceTool::TriangleHasher::hash(const int *p_triangle) {
 	int t1 = p_triangle[1];
 	int t2 = p_triangle[2];
 
-	if (t0 > t1)
+	if (t0 > t1) {
 		SWAP(t0, t1);
-	if (t1 > t2)
+	}
+	if (t1 > t2) {
 		SWAP(t1, t2);
-	if (t0 > t1)
+	}
+	if (t0 > t1) {
 		SWAP(t0, t1);
+	}
 
 	return (t0 * 73856093) ^ (t1 * 19349663) ^ (t2 * 83492791);
 }
@@ -165,23 +168,29 @@ bool SurfaceTool::TriangleHasher::compare(const int *p_lhs, const int *p_rhs) {
 	int r1 = p_rhs[1];
 	int r2 = p_rhs[2];
 
-	if (r0 > r1)
+	if (r0 > r1) {
 		SWAP(r0, r1);
-	if (r1 > r2)
+	}
+	if (r1 > r2) {
 		SWAP(r1, r2);
-	if (r0 > r1)
+	}
+	if (r0 > r1) {
 		SWAP(r0, r1);
+	}
 
 	int l0 = p_lhs[0];
 	int l1 = p_lhs[1];
 	int l2 = p_lhs[2];
 
-	if (l0 > l1)
+	if (l0 > l1) {
 		SWAP(l0, l1);
-	if (l1 > l2)
+	}
+	if (l1 > l2) {
 		SWAP(l1, l2);
-	if (l0 > l1)
+	}
+	if (l0 > l1) {
 		SWAP(l0, l1);
+	}
 
 	return l0 == r0 && l1 == r1 && l2 == r2;
 }

@@ -1417,19 +1417,6 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			d.get_key_list(&keys);
 
 			for (const Variant &E : keys) {
-				/*
-				CharString utf8 = E->->utf8();
-
-				if (buf) {
-					encode_uint32(utf8.length()+1,buf);
-					buf+=4;
-					memcpy(buf,utf8.get_data(),utf8.length()+1);
-				}
-
-				r_len+=4+utf8.length()+1;
-				while (r_len%4)
-					r_len++; //pad
-				*/
 				int len;
 				Error err = encode_variant(E, buf, len, p_full_objects, p_depth + 1);
 				ERR_FAIL_COND_V(err, err);

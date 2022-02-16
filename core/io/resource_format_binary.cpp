@@ -1607,11 +1607,6 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 			d.get_key_list(&keys);
 
 			for (const Variant &E : keys) {
-				/*
-				if (!_check_type(dict[E]))
-					continue;
-				*/
-
 				write_variant(f, E, resource_map, external_resources, string_map);
 				write_variant(f, d[E], resource_map, external_resources, string_map);
 			}

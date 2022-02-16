@@ -238,7 +238,7 @@ void JoypadLinux::close_joypad(int p_id) {
 	if (p_id == -1) {
 		for (int i = 0; i < JOYPADS_MAX; i++) {
 			close_joypad(i);
-		};
+		}
 		return;
 	} else if (p_id < 0) {
 		return;
@@ -251,7 +251,7 @@ void JoypadLinux::close_joypad(int p_id) {
 		joy.fd = -1;
 		attached_devices.remove_at(attached_devices.find(joy.devpath));
 		input->joy_connection_changed(p_id, false, "");
-	};
+	}
 }
 
 static String _hex_str(uint8_t p_byte) {
@@ -516,7 +516,7 @@ void JoypadLinux::process_joypads() {
 		}
 		if (len == 0 || (len < 0 && errno != EAGAIN)) {
 			close_joypad(i);
-		};
+		}
 
 		if (joy->force_feedback) {
 			uint64_t timestamp = input->get_joy_vibration_timestamp(i);

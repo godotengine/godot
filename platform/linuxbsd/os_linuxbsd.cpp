@@ -356,7 +356,7 @@ void OS_LinuxBSD::run() {
 		if (Main::iteration()) {
 			break;
 		}
-	};
+	}
 
 	main_loop->finalize();
 }

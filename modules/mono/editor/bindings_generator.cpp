@@ -2149,8 +2149,9 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 	}
 
 	output.append("#ifdef TOOLS_ENABLED\n");
-	for (const InternalCall &internal_call : editor_custom_icalls)
+	for (const InternalCall &internal_call : editor_custom_icalls) {
 		ADD_INTERNAL_CALL_REGISTRATION(internal_call);
+	}
 	output.append("#endif // TOOLS_ENABLED\n");
 
 	for (const InternalCall &internal_call : method_icalls) {

@@ -240,11 +240,11 @@ void VideoStreamPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 	if (!expand) {
 		update_minimum_size();
 	}
-};
+}
 
 Ref<VideoStream> VideoStreamPlayer::get_stream() const {
 	return stream;
-};
+}
 
 void VideoStreamPlayer::play() {
 	ERR_FAIL_COND(!is_inside_tree());
@@ -254,10 +254,8 @@ void VideoStreamPlayer::play() {
 	playback->stop();
 	playback->play();
 	set_process_internal(true);
-	//	AudioServer::get_singleton()->stream_set_active(stream_rid,true);
-	//	AudioServer::get_singleton()->stream_set_volume_scale(stream_rid,volume);
 	last_audio_time = 0;
-};
+}
 
 void VideoStreamPlayer::stop() {
 	if (!is_inside_tree()) {
@@ -268,11 +266,10 @@ void VideoStreamPlayer::stop() {
 	}
 
 	playback->stop();
-	//	AudioServer::get_singleton()->stream_set_active(stream_rid,false);
 	resampler.flush();
 	set_process_internal(false);
 	last_audio_time = 0;
-};
+}
 
 bool VideoStreamPlayer::is_playing() const {
 	if (playback.is_null()) {
@@ -280,16 +277,16 @@ bool VideoStreamPlayer::is_playing() const {
 	}
 
 	return playback->is_playing();
-};
+}
 
 void VideoStreamPlayer::set_paused(bool p_paused) {
 	paused = p_paused;
 	if (playback.is_valid()) {
 		playback->set_paused(p_paused);
 		set_process_internal(!p_paused);
-	};
+	}
 	last_audio_time = 0;
-};
+}
 
 bool VideoStreamPlayer::is_paused() const {
 	return paused;
@@ -313,11 +310,11 @@ int VideoStreamPlayer::get_audio_track() const {
 
 void VideoStreamPlayer::set_volume(float p_vol) {
 	volume = p_vol;
-};
+}
 
 float VideoStreamPlayer::get_volume() const {
 	return volume;
-};
+}
 
 void VideoStreamPlayer::set_volume_db(float p_db) {
 	if (p_db < -79) {
@@ -325,7 +322,7 @@ void VideoStreamPlayer::set_volume_db(float p_db) {
 	} else {
 		set_volume(Math::db2linear(p_db));
 	}
-};
+}
 
 float VideoStreamPlayer::get_volume_db() const {
 	if (volume == 0) {
@@ -333,21 +330,21 @@ float VideoStreamPlayer::get_volume_db() const {
 	} else {
 		return Math::linear2db(volume);
 	}
-};
+}
 
 String VideoStreamPlayer::get_stream_name() const {
 	if (stream.is_null()) {
 		return "<No Stream>";
 	}
 	return stream->get_name();
-};
+}
 
 float VideoStreamPlayer::get_stream_position() const {
 	if (playback.is_null()) {
 		return 0;
 	}
 	return playback->get_playback_position();
-};
+}
 
 void VideoStreamPlayer::set_stream_position(float p_position) {
 	if (playback.is_valid()) {
@@ -365,14 +362,14 @@ Ref<Texture2D> VideoStreamPlayer::get_video_texture() const {
 
 void VideoStreamPlayer::set_autoplay(bool p_enable) {
 	autoplay = p_enable;
-};
+}
 
 bool VideoStreamPlayer::has_autoplay() const {
 	return autoplay;
-};
+}
 
 void VideoStreamPlayer::set_bus(const StringName &p_bus) {
-	//if audio is active, must lock this
+	// If audio is active, must lock this.
 	AudioServer::get_singleton()->lock();
 	bus = p_bus;
 	AudioServer::get_singleton()->unlock();
@@ -446,7 +443,6 @@ void VideoStreamPlayer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "audio_track", PROPERTY_HINT_RANGE, "0,128,1"), "set_audio_track", "get_audio_track");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "VideoStream"), "set_stream", "get_stream");
-	//ADD_PROPERTY( PropertyInfo(Variant::BOOL, "stream/loop"), "set_loop", "has_loop") ;
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,0.01"), "set_volume_db", "get_volume_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume", PROPERTY_HINT_RANGE, "0,15,0.01,exp", PROPERTY_USAGE_NONE), "set_volume", "get_volume");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "has_autoplay");
@@ -461,7 +457,5 @@ void VideoStreamPlayer::_bind_methods() {
 VideoStreamPlayer::VideoStreamPlayer() {}
 
 VideoStreamPlayer::~VideoStreamPlayer() {
-	//	if (stream_rid.is_valid())
-	//		AudioServer::get_singleton()->free(stream_rid);
-	resampler.clear(); //Not necessary here, but make in consistent with other "stream_player" classes
-};
+	resampler.clear(); // Not necessary here, but make in consistent with other "stream_player" classes.
+}

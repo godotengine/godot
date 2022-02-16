@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "godot_body_pair_2d.h"
+
 #include "godot_collision_solver_2d.h"
 #include "godot_space_2d.h"
 
@@ -303,7 +304,7 @@ bool GodotBodyPair2D::setup(real_t p_step) {
 			bool valid = false;
 			for (int i = 0; i < contact_count; i++) {
 				Contact &c = contacts[i];
-				if (c.normal.dot(direction) > -CMP_EPSILON) { //greater (normal inverted)
+				if (c.normal.dot(direction) > -CMP_EPSILON) { // Greater (normal inverted).
 					continue;
 				}
 				valid = true;
@@ -321,7 +322,7 @@ bool GodotBodyPair2D::setup(real_t p_step) {
 			bool valid = false;
 			for (int i = 0; i < contact_count; i++) {
 				Contact &c = contacts[i];
-				if (c.normal.dot(direction) < CMP_EPSILON) { //less (normal ok)
+				if (c.normal.dot(direction) < CMP_EPSILON) { // Less (normal ok).
 					continue;
 				}
 				valid = true;

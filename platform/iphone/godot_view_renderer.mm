@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #import "godot_view_renderer.h"
+
 #include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
 #import "display_server_iphone.h"
@@ -101,7 +102,7 @@
 			double dval = [n doubleValue];
 
 			ProjectSettings::get_singleton()->set("Info.plist/" + ukey, dval);
-		};
+		}
 		// do stuff
 	}
 }

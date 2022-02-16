@@ -231,7 +231,7 @@ String DisplayServerWindows::clipboard_get() const {
 	String ret;
 	if (!OpenClipboard(windows[last_focused_window].hWnd)) {
 		ERR_FAIL_V_MSG("", "Unable to open clipboard.");
-	};
+	}
 
 	if (IsClipboardFormatAvailable(CF_UNICODETEXT)) {
 		HGLOBAL mem = GetClipboardData(CF_UNICODETEXT);
@@ -240,8 +240,8 @@ String DisplayServerWindows::clipboard_get() const {
 			if (ptr != nullptr) {
 				ret = String::utf16((const char16_t *)ptr);
 				GlobalUnlock(mem);
-			};
-		};
+			}
+		}
 
 	} else if (IsClipboardFormatAvailable(CF_TEXT)) {
 		HGLOBAL mem = GetClipboardData(CF_UNICODETEXT);
@@ -250,9 +250,9 @@ String DisplayServerWindows::clipboard_get() const {
 			if (ptr != nullptr) {
 				ret.parse_utf8((const char *)ptr);
 				GlobalUnlock(mem);
-			};
-		};
-	};
+			}
+		}
+	}
 
 	CloseClipboard();
 
@@ -422,8 +422,9 @@ static int QueryDpiForMonitor(HMONITOR hmon, _MonitorDpiType dpiType = MDT_Defau
 		getDPIForMonitor = Shcore ? (GetDPIForMonitor_t)GetProcAddress(Shcore, "GetDpiForMonitor") : nullptr;
 
 		if ((Shcore == nullptr) || (getDPIForMonitor == nullptr)) {
-			if (Shcore)
+			if (Shcore) {
 				FreeLibrary(Shcore);
+			}
 			Shcore = (HMODULE)INVALID_HANDLE_VALUE;
 		}
 	}
@@ -1326,8 +1327,9 @@ void DisplayServerWindows::window_set_ime_position(const Point2i &p_pos, WindowI
 	wd.im_position = p_pos;
 
 	HIMC himc = ImmGetContext(wd.hWnd);
-	if (himc == (HIMC)0)
+	if (himc == (HIMC)0) {
 		return;
+	}
 
 	COMPOSITIONFORM cps;
 	cps.dwStyle = CFS_FORCE_POSITION;
@@ -2026,7 +2028,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		} else {
 			return DefWindowProcW(hWnd, uMsg, wParam, lParam);
 		}
-	};
+	}
 
 	WindowID window_id = INVALID_WINDOW_ID;
 	bool window_created = false;
@@ -2131,8 +2133,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				case SC_MONITORPOWER: // Monitor trying to enter powersave?
 					return 0; // Prevent from happening.
 				case SC_KEYMENU:
-					if ((lParam >> 16) <= 0)
+					if ((lParam >> 16) <= 0) {
 						return 0;
+					}
 			}
 		} break;
 		case WM_CLOSE: // Did we receive a close message?
@@ -2164,8 +2167,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				return 0;
 			}
 
-			if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize)
+			if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize) {
 				OutputDebugString(TEXT("GetRawInputData does not return correct size !\n"));
+			}
 
 			RAWINPUT *raw = (RAWINPUT *)lpb;
 
@@ -2260,8 +2264,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					ScreenToClient(windows[window_id].hWnd, &coords);
 
 					// Don't calculate relative mouse movement if we don't have focus in CAPTURED mode.
-					if (!windows[window_id].window_has_focus && mouse_mode == MOUSE_MODE_CAPTURED)
+					if (!windows[window_id].window_has_focus && mouse_mode == MOUSE_MODE_CAPTURED) {
 						break;
+					}
 
 					Ref<InputEventMouseMotion> mm;
 					mm.instantiate();
@@ -2306,8 +2311,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
 					old_x = mm->get_position().x;
 					old_y = mm->get_position().y;
-					if (windows[window_id].window_has_focus)
+					if (windows[window_id].window_has_focus) {
 						Input::get_singleton()->parse_input_event(mm);
+					}
 				}
 				return 0;
 			}
@@ -2547,8 +2553,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
 			old_x = mm->get_position().x;
 			old_y = mm->get_position().y;
-			if (windows[window_id].window_has_focus)
+			if (windows[window_id].window_has_focus) {
 				Input::get_singleton()->parse_input_event(mm);
+			}
 
 		} break;
 		case WM_LBUTTONDOWN:
@@ -2694,8 +2701,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			if (uMsg != WM_MOUSEWHEEL && uMsg != WM_MOUSEHWHEEL) {
 				if (mb->is_pressed()) {
-					if (++pressrc > 0 && mouse_mode != MOUSE_MODE_CAPTURED)
+					if (++pressrc > 0 && mouse_mode != MOUSE_MODE_CAPTURED) {
 						SetCapture(hWnd);
+					}
 				} else {
 					if (--pressrc <= 0) {
 						if (mouse_mode != MOUSE_MODE_CAPTURED) {
@@ -2823,14 +2831,17 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_SYSKEYUP:
 		case WM_KEYUP:
 		case WM_KEYDOWN: {
-			if (wParam == VK_SHIFT)
+			if (wParam == VK_SHIFT) {
 				shift_mem = (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN);
-			if (wParam == VK_CONTROL)
+			}
+			if (wParam == VK_CONTROL) {
 				control_mem = (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN);
+			}
 			if (wParam == VK_MENU) {
 				alt_mem = (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN);
-				if (lParam & (1 << 24))
+				if (lParam & (1 << 24)) {
 					gr_mem = alt_mem;
+				}
 			}
 
 			if (mouse_mode == MOUSE_MODE_CAPTURED) {
@@ -2839,10 +2850,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					_send_window_event(windows[window_id], WINDOW_EVENT_CLOSE_REQUEST);
 				}
 			}
-			/*
-			if (wParam==VK_WIN) TODO wtf is this?
-				meta_mem=uMsg==WM_KEYDOWN;
-			*/
 			[[fallthrough]];
 		}
 		case WM_CHAR: {
@@ -2857,10 +2864,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			ke.uMsg = uMsg;
 			ke.window_id = window_id;
 
-			if (ke.uMsg == WM_SYSKEYDOWN)
+			if (ke.uMsg == WM_SYSKEYDOWN) {
 				ke.uMsg = WM_KEYDOWN;
-			if (ke.uMsg == WM_SYSKEYUP)
+			}
+			if (ke.uMsg == WM_SYSKEYUP) {
 				ke.uMsg = WM_KEYUP;
+			}
 
 			ke.wParam = wParam;
 			ke.lParam = lParam;
@@ -2888,7 +2897,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 							_drag_event(window_id, touch_pos.x, touch_pos.y, ti.dwID);
 						} else if (ti.dwFlags & (TOUCHEVENTF_UP | TOUCHEVENTF_DOWN)) {
 							_touch_event(window_id, ti.dwFlags & TOUCHEVENTF_DOWN, touch_pos.x, touch_pos.y, ti.dwID);
-						};
+						}
 					}
 					bHandled = TRUE;
 				} else {
@@ -2901,7 +2910,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			if (bHandled) {
 				CloseTouchInputHandle((HTOUCHINPUT)lParam);
 				return 0;
-			};
+			}
 
 		} break;
 		case WM_DEVICECHANGE: {
@@ -2955,8 +2964,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		default: {
 			if (user_proc) {
 				return CallWindowProcW(user_proc, hWnd, uMsg, wParam, lParam);
-			};
-		};
+			}
+		}
 	}
 
 	return DefWindowProcW(hWnd, uMsg, wParam, lParam);
@@ -2964,10 +2973,11 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	DisplayServerWindows *ds_win = static_cast<DisplayServerWindows *>(DisplayServer::get_singleton());
-	if (ds_win)
+	if (ds_win) {
 		return ds_win->WndProc(hWnd, uMsg, wParam, lParam);
-	else
+	} else {
 		return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+	}
 }
 
 void DisplayServerWindows::_process_activate_event(WindowID p_window_id, WPARAM wParam, LPARAM lParam) {
@@ -3034,8 +3044,9 @@ void DisplayServerWindows::_process_key_events() {
 						k->set_ctrl_pressed(false);
 					}
 
-					if (k->get_unicode() < 32)
+					if (k->get_unicode() < 32) {
 						k->set_unicode(0);
+					}
 
 					Input::get_singleton()->parse_input_event(k);
 				} else {
@@ -3090,8 +3101,9 @@ void DisplayServerWindows::_process_key_events() {
 					k->set_ctrl_pressed(false);
 				}
 
-				if (k->get_unicode() < 32)
+				if (k->get_unicode() < 32) {
 					k->set_unicode(0);
+				}
 
 				k->set_echo((ke.uMsg == WM_KEYDOWN && (ke.lParam & (1 << 30))));
 
@@ -3395,7 +3407,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	wc.cbWndExtra = 0;
 	wc.hInstance = hInstance ? hInstance : GetModuleHandle(nullptr);
 	wc.hIcon = LoadIcon(nullptr, IDI_WINLOGO);
-	wc.hCursor = nullptr; //LoadCursor(nullptr, IDC_ARROW);
+	wc.hCursor = nullptr;
 	wc.hbrBackground = nullptr;
 	wc.lpszMenuName = nullptr;
 	wc.lpszClassName = L"Engine";
@@ -3446,7 +3458,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 			return;
 		}
 
-		//		gl_manager->set_use_vsync(current_videomode.use_vsync);
+		//gl_manager->set_use_vsync(current_videomode.use_vsync);
 		RasterizerGLES3::make_current();
 	}
 #endif
@@ -3476,14 +3488,13 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	}
 #endif
 
-	//set_ime_active(false);
-
 	if (!OS::get_singleton()->is_in_low_processor_usage_mode()) {
 		SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
 		DWORD index = 0;
 		HANDLE handle = AvSetMmThreadCharacteristics("Games", &index);
-		if (handle)
+		if (handle) {
 			AvSetMmThreadPriority(handle, AVRT_PRIORITY_CRITICAL);
+		}
 
 		// This is needed to make sure that background work does not starve the main thread.
 		// This is only setting the priority of this thread, not the whole process.
@@ -3537,10 +3548,10 @@ DisplayServerWindows::~DisplayServerWindows() {
 
 	if (user_proc) {
 		SetWindowLongPtr(windows[MAIN_WINDOW_ID].hWnd, GWLP_WNDPROC, (LONG_PTR)user_proc);
-	};
+	}
 
 #ifdef GLES3_ENABLED
-		// destroy windows .. NYI?
+	// destroy windows .. NYI?
 #endif
 
 	if (windows.has(MAIN_WINDOW_ID)) {

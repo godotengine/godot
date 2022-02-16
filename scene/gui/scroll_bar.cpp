@@ -426,11 +426,6 @@ double ScrollBar::get_grabber_size() const {
 	}
 
 	float page = (get_page() > 0) ? get_page() : 0;
-	/*
-	if (grabber_range < get_step())
-		grabber_range=get_step();
-	*/
-
 	double area_size = get_area_size();
 	double grabber_size = page / range * area_size;
 	return grabber_size + get_grabber_min_size();
