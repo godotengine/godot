@@ -551,6 +551,9 @@ public:
 	int get_paragraph_count() const;
 	int get_visible_paragraph_count() const;
 
+	float get_line_offset(int p_line);
+	float get_paragraph_offset(int p_paragraph);
+
 	void scroll_to_line(int p_line);
 	int get_line_count() const;
 	int get_visible_line_count() const;

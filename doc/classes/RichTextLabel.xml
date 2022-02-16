@@ -81,10 +81,24 @@
 				Returns the total number of lines in the text. Wrapped text is counted as multiple lines.
 			</description>
 		</method>
+		<method name="get_line_offset">
+			<return type="float" />
+			<argument index="0" name="line" type="int" />
+			<description>
+				Returns the vertical offset of the line found at the provided index.
+			</description>
+		</method>
 		<method name="get_paragraph_count" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the total number of paragraphs (newlines or [code]p[/code] tags in the tag stack's text tags). Considers wrapped text as one paragraph.
+			</description>
+		</method>
+		<method name="get_paragraph_offset">
+			<return type="float" />
+			<argument index="0" name="paragraph" type="int" />
+			<description>
+				Returns the vertical offset of the paragraph found at the provided index.
 			</description>
 		</method>
 		<method name="get_parsed_text" qualifiers="const">
