@@ -1651,7 +1651,7 @@ void GDScriptFunction::debug_get_stack_member_state(int p_line, List<Pair<String
 	Map<StringName, _GDFKC> sdmap;
 	for (const List<StackDebug>::Element *E = stack_debug.front(); E; E = E->next()) {
 		const StackDebug &sd = E->get();
-		if (sd.line > p_line) {
+		if (sd.line >= p_line) {
 			break;
 		}
 
