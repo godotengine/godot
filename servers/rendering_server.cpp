@@ -2860,11 +2860,11 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/shader_compiler/shader_cache/strip_debug", false);
 	GLOBAL_DEF("rendering/shader_compiler/shader_cache/strip_debug.release", true);
 
-	GLOBAL_DEF("rendering/reflections/sky_reflections/roughness_layers", 8);
+	GLOBAL_DEF_RST("rendering/reflections/sky_reflections/roughness_layers", 8); // Assumes a 256x256 cubemap
 	GLOBAL_DEF_RST("rendering/reflections/sky_reflections/texture_array_reflections", true);
 	GLOBAL_DEF("rendering/reflections/sky_reflections/texture_array_reflections.mobile", false);
-	GLOBAL_DEF("rendering/reflections/sky_reflections/ggx_samples", 1024);
-	GLOBAL_DEF("rendering/reflections/sky_reflections/ggx_samples.mobile", 128);
+	GLOBAL_DEF_RST("rendering/reflections/sky_reflections/ggx_samples", 32);
+	GLOBAL_DEF("rendering/reflections/sky_reflections/ggx_samples.mobile", 16);
 	GLOBAL_DEF("rendering/reflections/sky_reflections/fast_filter_high_quality", false);
 	GLOBAL_DEF("rendering/reflections/reflection_atlas/reflection_size", 256);
 	GLOBAL_DEF("rendering/reflections/reflection_atlas/reflection_size.mobile", 128);
