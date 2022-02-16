@@ -1666,10 +1666,7 @@ public:
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
 		bool valid;
-		// *p_output[0] points to the same place as *p_inputs[2] so we need a temp to store the value before the change in the next line
-		Variant temp = *p_inputs[2];
-		*p_outputs[0] = *p_inputs[0];
-		p_outputs[0]->set(*p_inputs[1], temp, &valid);
+		((Variant *)p_inputs[0])->set(*p_inputs[1], *p_inputs[2], &valid);
 
 		if (!valid) {
 			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
