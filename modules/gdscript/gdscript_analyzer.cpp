@@ -1414,7 +1414,7 @@ void GDScriptAnalyzer::resolve_variable(GDScriptParser::VariableNode *p_variable
 				parser->push_warning(p_variable->initializer, GDScriptWarning::NARROWING_CONVERSION);
 #endif
 			}
-			if (p_variable->initializer->get_datatype().is_variant()) {
+			if (p_variable->initializer->get_datatype().is_variant() && !type.is_variant()) {
 				// TODO: Warn unsafe assign.
 				mark_node_unsafe(p_variable->initializer);
 				p_variable->use_conversion_assign = true;
