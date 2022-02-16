@@ -83,6 +83,13 @@
 				Returns an array of [Vector3] with the non-empty cell coordinates in the grid map.
 			</description>
 		</method>
+		<method name="get_used_cells_by_item" qualifiers="const">
+			<return type="Array" />
+			<argument index="0" name="item" type="int" />
+			<description>
+				Returns an array of all cells with the given item index specified in [code]item[/code].
+			</description>
+		</method>
 		<method name="make_baked_meshes">
 			<return type="void" />
 			<argument index="0" name="gen_lightmap_uv" type="bool" default="false" />
