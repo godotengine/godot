@@ -3373,91 +3373,98 @@ void VisualShaderEditor::_sbox_input(const Ref<InputEvent> &p_ie) {
 }
 
 void VisualShaderEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		node_filter->set_clear_button_enabled(true);
+	switch (p_what) {
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
+			graph->set_warped_panning(bool(EditorSettings::get_singleton()->get("editors/panning/warped_mouse_panning")));
+		} break;
 
-		// collapse tree by default
+		case NOTIFICATION_ENTER_TREE: {
+			node_filter->set_clear_button_enabled(true);
 
-		TreeItem *category = members->get_root()->get_first_child();
-		while (category) {
-			category->set_collapsed(true);
-			TreeItem *sub_category = category->get_first_child();
-			while (sub_category) {
-				sub_category->set_collapsed(true);
-				sub_category = sub_category->get_next();
-			}
-			category = category->get_next();
-		}
-	}
+			// collapse tree by default
 
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
-		graph->set_warped_panning(bool(EditorSettings::get_singleton()->get("editors/panning/warped_mouse_panning")));
-	}
-
-	if (p_what == NOTIFICATION_DRAG_BEGIN) {
-		Dictionary dd = get_viewport()->gui_get_drag_data();
-		if (members->is_visible_in_tree() && dd.has("id")) {
-			members->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
-		}
-	} else if (p_what == NOTIFICATION_DRAG_END) {
-		members->set_drop_mode_flags(0);
-	}
-
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		highend_label->set_modulate(get_theme_color(SNAME("vulkan_color"), SNAME("Editor")));
-
-		node_filter->set_right_icon(Control::get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-
-		preview_shader->set_icon(Control::get_theme_icon(SNAME("Shader"), SNAME("EditorIcons")));
-
-		{
-			Color background_color = EDITOR_GET("text_editor/theme/highlighting/background_color");
-			Color text_color = EDITOR_GET("text_editor/theme/highlighting/text_color");
-			Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
-			Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
-			Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
-			Color symbol_color = EDITOR_GET("text_editor/theme/highlighting/symbol_color");
-			Color function_color = EDITOR_GET("text_editor/theme/highlighting/function_color");
-			Color number_color = EDITOR_GET("text_editor/theme/highlighting/number_color");
-			Color members_color = EDITOR_GET("text_editor/theme/highlighting/member_variable_color");
-
-			preview_text->add_theme_color_override("background_color", background_color);
-
-			for (const String &E : keyword_list) {
-				if (ShaderLanguage::is_control_flow_keyword(E)) {
-					syntax_highlighter->add_keyword_color(E, control_flow_keyword_color);
-				} else {
-					syntax_highlighter->add_keyword_color(E, keyword_color);
+			TreeItem *category = members->get_root()->get_first_child();
+			while (category) {
+				category->set_collapsed(true);
+				TreeItem *sub_category = category->get_first_child();
+				while (sub_category) {
+					sub_category->set_collapsed(true);
+					sub_category = sub_category->get_next();
 				}
+				category = category->get_next();
 			}
 
-			preview_text->add_theme_font_override("font", get_theme_font(SNAME("expression"), SNAME("EditorFonts")));
-			preview_text->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("expression_size"), SNAME("EditorFonts")));
-			preview_text->add_theme_color_override("font_color", text_color);
-			syntax_highlighter->set_number_color(number_color);
-			syntax_highlighter->set_symbol_color(symbol_color);
-			syntax_highlighter->set_function_color(function_color);
-			syntax_highlighter->set_member_variable_color(members_color);
-			syntax_highlighter->clear_color_regions();
-			syntax_highlighter->add_color_region("/*", "*/", comment_color, false);
-			syntax_highlighter->add_color_region("//", "", comment_color, true);
-
-			preview_text->clear_comment_delimiters();
-			preview_text->add_comment_delimiter("/*", "*/", false);
-			preview_text->add_comment_delimiter("//", "", true);
-
-			error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
-			error_label->add_theme_font_override("font", get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
-			error_label->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
-			error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
+			graph->set_warped_panning(bool(EditorSettings::get_singleton()->get("editors/panning/warped_mouse_panning")));
+			[[fallthrough]];
 		}
+		case NOTIFICATION_THEME_CHANGED: {
+			highend_label->set_modulate(get_theme_color(SNAME("vulkan_color"), SNAME("Editor")));
 
-		tools->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Tools"), SNAME("EditorIcons")));
+			node_filter->set_right_icon(Control::get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 
-		if (p_what == NOTIFICATION_THEME_CHANGED && is_visible_in_tree()) {
-			_update_graph();
-		}
+			preview_shader->set_icon(Control::get_theme_icon(SNAME("Shader"), SNAME("EditorIcons")));
+
+			{
+				Color background_color = EDITOR_GET("text_editor/theme/highlighting/background_color");
+				Color text_color = EDITOR_GET("text_editor/theme/highlighting/text_color");
+				Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
+				Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
+				Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
+				Color symbol_color = EDITOR_GET("text_editor/theme/highlighting/symbol_color");
+				Color function_color = EDITOR_GET("text_editor/theme/highlighting/function_color");
+				Color number_color = EDITOR_GET("text_editor/theme/highlighting/number_color");
+				Color members_color = EDITOR_GET("text_editor/theme/highlighting/member_variable_color");
+
+				preview_text->add_theme_color_override("background_color", background_color);
+
+				for (const String &E : keyword_list) {
+					if (ShaderLanguage::is_control_flow_keyword(E)) {
+						syntax_highlighter->add_keyword_color(E, control_flow_keyword_color);
+					} else {
+						syntax_highlighter->add_keyword_color(E, keyword_color);
+					}
+				}
+
+				preview_text->add_theme_font_override("font", get_theme_font(SNAME("expression"), SNAME("EditorFonts")));
+				preview_text->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("expression_size"), SNAME("EditorFonts")));
+				preview_text->add_theme_color_override("font_color", text_color);
+				syntax_highlighter->set_number_color(number_color);
+				syntax_highlighter->set_symbol_color(symbol_color);
+				syntax_highlighter->set_function_color(function_color);
+				syntax_highlighter->set_member_variable_color(members_color);
+				syntax_highlighter->clear_color_regions();
+				syntax_highlighter->add_color_region("/*", "*/", comment_color, false);
+				syntax_highlighter->add_color_region("//", "", comment_color, true);
+
+				preview_text->clear_comment_delimiters();
+				preview_text->add_comment_delimiter("/*", "*/", false);
+				preview_text->add_comment_delimiter("//", "", true);
+
+				error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
+				error_label->add_theme_font_override("font", get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
+				error_label->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
+				error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			}
+
+			tools->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Tools"), SNAME("EditorIcons")));
+
+			if (p_what == NOTIFICATION_THEME_CHANGED && is_visible_in_tree()) {
+				_update_graph();
+			}
+		} break;
+
+		case NOTIFICATION_DRAG_BEGIN: {
+			Dictionary dd = get_viewport()->gui_get_drag_data();
+			if (members->is_visible_in_tree() && dd.has("id")) {
+				members->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
+			}
+		} break;
+
+		case NOTIFICATION_DRAG_END: {
+			members->set_drop_mode_flags(0);
+		} break;
 	}
 }
 
@@ -5052,8 +5059,10 @@ class VisualShaderNodePluginInputEditor : public OptionButton {
 
 public:
 	void _notification(int p_what) {
-		if (p_what == NOTIFICATION_READY) {
-			connect("item_selected", callable_mp(this, &VisualShaderNodePluginInputEditor::_item_selected));
+		switch (p_what) {
+			case NOTIFICATION_READY: {
+				connect("item_selected", callable_mp(this, &VisualShaderNodePluginInputEditor::_item_selected));
+			} break;
 		}
 	}
 
@@ -5100,8 +5109,10 @@ class VisualShaderNodePluginUniformRefEditor : public OptionButton {
 
 public:
 	void _notification(int p_what) {
-		if (p_what == NOTIFICATION_READY) {
-			connect("item_selected", callable_mp(this, &VisualShaderNodePluginUniformRefEditor::_item_selected));
+		switch (p_what) {
+			case NOTIFICATION_READY: {
+				connect("item_selected", callable_mp(this, &VisualShaderNodePluginUniformRefEditor::_item_selected));
+			} break;
 		}
 	}
 
@@ -5514,29 +5525,31 @@ Size2 VisualShaderNodePortPreview::get_minimum_size() const {
 }
 
 void VisualShaderNodePortPreview::_notification(int p_what) {
-	if (p_what == NOTIFICATION_DRAW) {
-		Vector<Vector2> points = {
-			Vector2(),
-			Vector2(get_size().width, 0),
-			get_size(),
-			Vector2(0, get_size().height)
-		};
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
+			Vector<Vector2> points = {
+				Vector2(),
+				Vector2(get_size().width, 0),
+				get_size(),
+				Vector2(0, get_size().height)
+			};
 
-		Vector<Vector2> uvs = {
-			Vector2(0, 0),
-			Vector2(1, 0),
-			Vector2(1, 1),
-			Vector2(0, 1)
-		};
+			Vector<Vector2> uvs = {
+				Vector2(0, 0),
+				Vector2(1, 0),
+				Vector2(1, 1),
+				Vector2(0, 1)
+			};
 
-		Vector<Color> colors = {
-			Color(1, 1, 1, 1),
-			Color(1, 1, 1, 1),
-			Color(1, 1, 1, 1),
-			Color(1, 1, 1, 1)
-		};
+			Vector<Color> colors = {
+				Color(1, 1, 1, 1),
+				Color(1, 1, 1, 1),
+				Color(1, 1, 1, 1),
+				Color(1, 1, 1, 1)
+			};
 
-		draw_primitive(points, colors, uvs);
+			draw_primitive(points, colors, uvs);
+		} break;
 	}
 }
 

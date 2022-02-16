@@ -1456,15 +1456,17 @@ GridMapEditor::~GridMapEditor() {
 }
 
 void GridMapEditorPlugin::_notification(int p_what) {
-	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		switch ((int)EditorSettings::get_singleton()->get("editors/grid_map/editor_side")) {
-			case 0: { // Left.
-				Node3DEditor::get_singleton()->move_control_to_left_panel(grid_map_editor);
-			} break;
-			case 1: { // Right.
-				Node3DEditor::get_singleton()->move_control_to_right_panel(grid_map_editor);
-			} break;
-		}
+	switch (p_what) {
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			switch ((int)EditorSettings::get_singleton()->get("editors/grid_map/editor_side")) {
+				case 0: { // Left.
+					Node3DEditor::get_singleton()->move_control_to_left_panel(grid_map_editor);
+				} break;
+				case 1: { // Right.
+					Node3DEditor::get_singleton()->move_control_to_right_panel(grid_map_editor);
+				} break;
+			}
+		} break;
 	}
 }
 

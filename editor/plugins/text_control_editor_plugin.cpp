@@ -34,8 +34,8 @@
 #include "editor/editor_scale.h"
 #include "editor/multi_node_edit.h"
 
-void TextControlEditor::_notification(int p_notification) {
-	switch (p_notification) {
+void TextControlEditor::_notification(int p_what) {
+	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (!EditorFileSystem::get_singleton()->is_connected("filesystem_changed", callable_mp(this, &TextControlEditor::_reload_fonts))) {
 				EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &TextControlEditor::_reload_fonts), make_binds(""));
@@ -45,13 +45,12 @@ void TextControlEditor::_notification(int p_notification) {
 		case NOTIFICATION_THEME_CHANGED: {
 			clear_formatting->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			if (EditorFileSystem::get_singleton()->is_connected("filesystem_changed", callable_mp(this, &TextControlEditor::_reload_fonts))) {
 				EditorFileSystem::get_singleton()->disconnect("filesystem_changed", callable_mp(this, &TextControlEditor::_reload_fonts));
 			}
 		} break;
-		default:
-			break;
 	}
 }
 
