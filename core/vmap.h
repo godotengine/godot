@@ -141,6 +141,9 @@ public:
 	}
 
 	int find_nearest(const T &p_val) const {
+		if (_cowdata.empty()) {
+			return -1;
+		}
 		bool exact;
 		return _find(p_val, exact);
 	}
