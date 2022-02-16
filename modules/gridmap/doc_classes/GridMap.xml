@@ -16,6 +16,23 @@
 		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/126</link>
 	</tutorials>
 	<methods>
+		<method name="_input_event" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="camera" type="Camera3D" />
+			<argument index="1" name="event" type="InputEvent" />
+			<argument index="2" name="collision" type="Dictionary" />
+			<description>
+				Receives unhandled [InputEvent]s. Requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set. The [code]collision[/code] dictionary contains the following field:
+				[code]position[/code]: The location in world space of the mouse pointer on the surface of the collided shape.
+				[code]normal[/code]: Normal vector of the surface at the collision point.
+				[code]rid[/code]: The RID identifier of the static body that owns the collided shape. Each octant in the grid has its own static body. So a [GridMap] can have multiple static bodies.
+				[code]shape_idx[/code]: The index of the collided shape.
+				[code]cell[/code]: The cell in the grid where the shape is located.
+				[code]item_shape[/code]: The shape index within the cell. This index is taken according to the shapes order in the [member mesh_library] for the item present in that cell.
+				Connecting to the [signal input_event] signal allows to easily pick up these events.
+				[b]Note:[/b] If the mouse is being dragged after entering one of the shapes, and [member input_capture_on_drag] is [code]true[/code], this function will continue to be called, but the values in the [code]collision[/code] dictionary won't be valid.
+			</description>
+		</method>
 		<method name="clear">
 			<return type="void" />
 			<description>
@@ -169,11 +186,17 @@
 			This does not affect the size of the meshes. See [member cell_scale].
 		</member>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
-			The physics layers this GridMap is in.
+			The physics layers this [GridMap] is in.
 			GridMaps act as static bodies, meaning they aren't affected by gravity or other forces. They only affect other physics bodies that collide with them.
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
-			The physics layers this GridMap detects collisions in. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
+			The physics layers this [GridMap] detects collisions in. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
+		</member>
+		<member name="input_capture_on_drag" type="bool" setter="set_capture_input_on_drag" getter="is_capturing_input_on_drag" default="false">
+			If [code]true[/code], the [GridMap] will continue to receive input events as the mouse is dragged across its shapes.
+		</member>
+		<member name="input_ray_pickable" type="bool" setter="set_ray_pickable" getter="is_ray_pickable" default="true">
+			If [code]true[/code], this object is pickable. A pickable object can detect the mouse pointer entering/leaving, and if the mouse is inside it, report input events. Requires at least one [member collision_layer] bit to be set.
 		</member>
 		<member name="mesh_library" type="MeshLibrary" setter="set_mesh_library" getter="get_mesh_library">
 			The assigned [MeshLibrary].
@@ -190,6 +213,28 @@
 			<argument index="0" name="cell_size" type="Vector3" />
 			<description>
 				Emitted when [member cell_size] changes.
+			</description>
+		</signal>
+		<signal name="input_event">
+			<argument index="0" name="camera" type="Node" />
+			<argument index="1" name="event" type="InputEvent" />
+			<argument index="2" name="collision" type="Dictionary" />
+			<description>
+				Emitted when the object receives an unhandled [InputEvent]. See the [method _input_event] method for more information about the input parameters.
+			</description>
+		</signal>
+		<signal name="mouse_entered">
+			<argument index="0" name="cell" type="Vector3i" />
+			<argument index="1" name="item_shape" type="int" />
+			<description>
+				Emitted when the mouse pointer enters any of this object's shapes or moves from one shape to another. The shape that the mouse is interacting with is located at [code]cell[/code] and has the index [code]item_shape[/code] within that cell. Requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
+			</description>
+		</signal>
+		<signal name="mouse_exited">
+			<argument index="0" name="cell" type="Vector3i" />
+			<argument index="1" name="item_shape" type="int" />
+			<description>
+				Emitted when the mouse pointer exits any of this object's shapes or moves from one shape to another. The shape that the mouse is interacting with is located at [code]cell[/code] and has the index [code]item_shape[/code] within that cell. Requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
 			</description>
 		</signal>
 	</signals>

@@ -154,7 +154,7 @@ public:
 	bool is_ray_pickable() const;
 
 	void set_capture_input_on_drag(bool p_capture);
-	bool get_capture_input_on_drag() const;
+	bool is_capturing_input_on_drag() const;
 
 	_FORCE_INLINE_ RID get_rid() const { return rid; }
 

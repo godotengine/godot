@@ -34,12 +34,18 @@
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 
+#include "modules/modules_enabled.gen.h" // For gridmap.
+
 #ifndef _3D_DISABLED
 class Camera3D;
 class CollisionObject3D;
 class AudioListener3D;
 class World3D;
 #endif // _3D_DISABLED
+
+#ifdef MODULE_GRIDMAP_ENABLED
+class GridMap;
+#endif
 
 class AudioListener2D;
 class Camera2D;
@@ -241,6 +247,10 @@ private:
 	List<Ref<InputEvent>> physics_picking_events;
 	ObjectID physics_object_capture;
 	ObjectID physics_object_over;
+#ifdef MODULE_GRIDMAP_ENABLED
+	int physics_shape_over = -1;
+	RID physics_rid_over = RID();
+#endif
 	Transform3D physics_last_object_transform;
 	Transform3D physics_last_camera_transform;
 	ObjectID physics_last_id;
@@ -627,6 +637,9 @@ public:
 	void _audio_listener_3d_make_next_current(AudioListener3D *p_exclude);
 
 	void _collision_object_3d_input_event(CollisionObject3D *p_object, Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape);
+#ifdef MODULE_GRIDMAP_ENABLED
+	void _gridmap_input_event(GridMap *p_gridmap, Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, RID p_rid, int p_shape);
+#endif
 
 	struct Camera3DOverrideData {
 		Transform3D transform;

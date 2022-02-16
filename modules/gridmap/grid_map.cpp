@@ -198,6 +198,46 @@ bool GridMap::get_collision_mask_value(int p_layer_number) const {
 	return get_collision_mask() & (1 << (p_layer_number - 1));
 }
 
+void GridMap::set_ray_pickable(bool p_ray_pickable) {
+	ray_pickable = p_ray_pickable;
+	_update_pickable();
+}
+
+bool GridMap::is_ray_pickable() const {
+	return ray_pickable;
+}
+
+void GridMap::set_capture_input_on_drag(bool p_capture) {
+	capture_input_on_drag = p_capture;
+}
+
+bool GridMap::is_capturing_input_on_drag() const {
+	return capture_input_on_drag;
+}
+
+Vector3i GridMap::static_body_get_shape_cell(RID p_body, int p_shape) const {
+	return _get_staticbody_shape_data(p_body, p_shape).first;
+}
+
+int GridMap::static_body_get_item_shape_index(RID p_body, int p_shape) const {
+	return _get_staticbody_shape_data(p_body, p_shape).second;
+}
+
+Pair<GridMap::IndexKey, int> GridMap::_get_staticbody_shape_data(RID p_body, int p_shape) const {
+	const Map<RID, Map<int, Pair<IndexKey, int>> *>::Element *SM = bodies_map.find(p_body);
+	if (!SM) {
+		Pair<IndexKey, int> p = Pair<IndexKey, int>(IndexKey(), 0);
+		ERR_FAIL_V_MSG(p, "Static body RID not owned by GridMap.");
+	}
+	Map<int, Pair<IndexKey, int>> *shapes_map = SM->get();
+	Map<int, Pair<IndexKey, int>>::Element *P = shapes_map->find(p_shape);
+	if (!P) {
+		Pair<IndexKey, int> p = Pair<IndexKey, int>(IndexKey(), 0);
+		ERR_FAIL_V_MSG(p, "Incorrect shape index for GridMap static body.");
+	}
+	return P->get();
+}
+
 Array GridMap::get_collision_shapes() const {
 	Array shapes;
 	for (const KeyValue<OctantKey, Octant *> &E : octant_map) {
@@ -357,6 +397,7 @@ void GridMap::set_cell_item(const Vector3i &p_position, int p_item, int p_rot) {
 			RenderingServer::get_singleton()->instance_set_base(g->collision_debug_instance, g->collision_debug);
 		}
 
+		bodies_map[g->static_body] = &g->shapes_map;
 		octant_map[octantkey] = g;
 
 		if (is_inside_world()) {
@@ -481,6 +522,8 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 	 */
 
 	Map<int, List<Pair<Transform3D, IndexKey>>> multimesh_items;
+	int shapeidx = 0;
+	g.shapes_map.clear();
 
 	for (Set<IndexKey>::Element *E = g.cells.front(); E; E = E->next()) {
 		ERR_CONTINUE(!cell_map.has(E->get()));
@@ -519,6 +562,9 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 				continue;
 			}
 			PhysicsServer3D::get_singleton()->body_add_shape(g.static_body, shapes[i].shape->get_rid(), xform * shapes[i].local_transform);
+			g.shapes_map[shapeidx] = Pair<IndexKey, int>(E->get(), i);
+			shapeidx++;
+
 			if (g.collision_debug.is_valid()) {
 				shapes.write[i].shape->add_vertices_to_array(col_debug, xform * shapes[i].local_transform);
 			}
@@ -673,7 +719,9 @@ void GridMap::_octant_clean_up(const OctantKey &p_key) {
 		RS::get_singleton()->free(g.collision_debug_instance);
 	}
 
+	bodies_map.erase(g.static_body);
 	PhysicsServer3D::get_singleton()->free(g.static_body);
+	g.shapes_map.clear();
 
 	// Erase navigation
 	for (const KeyValue<IndexKey, Octant::NavMesh> &E : g.navmesh_ids) {
@@ -704,6 +752,7 @@ void GridMap::_notification(int p_what) {
 				RS::get_singleton()->instance_set_transform(baked_meshes[i].instance, get_global_transform());
 			}
 
+			_update_pickable();
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			Transform3D new_xform = get_global_transform();
@@ -736,6 +785,7 @@ void GridMap::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			_update_visibility();
+			_update_pickable();
 		} break;
 	}
 }
@@ -789,6 +839,7 @@ void GridMap::_clear_internal() {
 
 	octant_map.clear();
 	cell_map.clear();
+	bodies_map.clear();
 }
 
 void GridMap::clear() {
@@ -819,7 +870,59 @@ void GridMap::_update_octants_callback() {
 	}
 
 	_update_visibility();
+	_update_pickable();
 	awaiting_update = false;
+}
+
+void GridMap::_update_pickable() {
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	bool pickable = ray_pickable && is_visible_in_tree();
+	for (KeyValue<OctantKey, Octant *> &E : octant_map) {
+		Octant *o = E.value;
+		PhysicsServer3D::get_singleton()->body_set_ray_pickable(o->static_body, pickable);
+	}
+}
+
+void GridMap::_input_event_call(Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, RID p_rid, int p_shape) {
+	Vector3i cell = Vector3i();
+	int item_shape = 0;
+	if (p_rid != RID()) {
+		Pair<IndexKey, int> p = _get_staticbody_shape_data(p_rid, p_shape);
+		cell = p.first;
+		item_shape = p.second;
+	}
+	Dictionary collision;
+	collision["position"] = p_pos;
+	collision["normal"] = p_normal;
+	collision["rid"] = p_rid;
+	collision["shape_idx"] = p_shape;
+	collision["cell"] = cell;
+	collision["item_shape"] = item_shape;
+	GDVIRTUAL_CALL(_input_event, p_camera, p_input_event, collision);
+	emit_signal(SceneStringNames::get_singleton()->input_event, p_camera, p_input_event, collision);
+}
+
+void GridMap::_mouse_enter(RID p_rid, int p_shape) {
+	Pair<IndexKey, int> p = _get_staticbody_shape_data(p_rid, p_shape);
+	Vector3i cell = p.first;
+	int item_shape = p.second;
+	if (get_script_instance()) {
+		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_enter, cell, item_shape);
+	}
+	emit_signal(SceneStringNames::get_singleton()->mouse_entered, cell, item_shape);
+}
+
+void GridMap::_mouse_exit(RID p_rid, int p_shape) {
+	Pair<IndexKey, int> p = _get_staticbody_shape_data(p_rid, p_shape);
+	Vector3i cell = p.first;
+	int item_shape = p.second;
+	if (get_script_instance()) {
+		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_exit, cell, item_shape);
+	}
+	emit_signal(SceneStringNames::get_singleton()->mouse_exited, cell, item_shape);
 }
 
 void GridMap::_bind_methods() {
@@ -837,6 +940,11 @@ void GridMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_physics_material", "material"), &GridMap::set_physics_material);
 	ClassDB::bind_method(D_METHOD("get_physics_material"), &GridMap::get_physics_material);
+
+	ClassDB::bind_method(D_METHOD("set_ray_pickable", "ray_pickable"), &GridMap::set_ray_pickable);
+	ClassDB::bind_method(D_METHOD("is_ray_pickable"), &GridMap::is_ray_pickable);
+	ClassDB::bind_method(D_METHOD("set_capture_input_on_drag", "enable"), &GridMap::set_capture_input_on_drag);
+	ClassDB::bind_method(D_METHOD("is_capturing_input_on_drag"), &GridMap::is_capturing_input_on_drag);
 
 	ClassDB::bind_method(D_METHOD("set_bake_navigation", "bake_navigation"), &GridMap::set_bake_navigation);
 	ClassDB::bind_method(D_METHOD("is_baking_navigation"), &GridMap::is_baking_navigation);
@@ -898,13 +1006,21 @@ void GridMap::_bind_methods() {
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
+	ADD_GROUP("Input", "input_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_ray_pickable"), "set_ray_pickable", "is_ray_pickable");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_capture_on_drag"), "set_capture_input_on_drag", "is_capturing_input_on_drag");
 	ADD_GROUP("Navigation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bake_navigation"), "set_bake_navigation", "is_baking_navigation");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
 
+	GDVIRTUAL_BIND(_input_event, "camera", "event", "collision");
+
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 
 	ADD_SIGNAL(MethodInfo("cell_size_changed", PropertyInfo(Variant::VECTOR3, "cell_size")));
+	ADD_SIGNAL(MethodInfo("input_event", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::DICTIONARY, "collision")));
+	ADD_SIGNAL(MethodInfo("mouse_entered", PropertyInfo(Variant::VECTOR3I, "cell"), PropertyInfo(Variant::INT, "item_shape")));
+	ADD_SIGNAL(MethodInfo("mouse_exited", PropertyInfo(Variant::VECTOR3I, "cell"), PropertyInfo(Variant::INT, "item_shape")));
 }
 
 void GridMap::set_clip(bool p_enabled, bool p_clip_above, int p_floor, Vector3::Axis p_axis) {

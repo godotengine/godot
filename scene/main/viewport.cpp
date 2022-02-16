@@ -59,6 +59,10 @@
 #include "servers/audio_server.h"
 #include "servers/rendering/rendering_server_globals.h"
 
+#ifdef MODULE_GRIDMAP_ENABLED
+#include "modules/gridmap/grid_map.h"
+#endif
+
 void ViewportTexture::setup_local_to_scene() {
 	Node *local_scene = get_local_scene();
 	if (!local_scene) {
@@ -535,13 +539,6 @@ void Viewport::_process_picking() {
 
 	_drop_physics_mouseover(true);
 
-#ifndef _3D_DISABLED
-	Vector2 last_pos(1e20, 1e20);
-	CollisionObject3D *last_object = nullptr;
-	ObjectID last_id;
-	PhysicsDirectSpaceState3D::RayResult result;
-#endif // _3D_DISABLED
-
 	PhysicsDirectSpaceState2D *ss2d = PhysicsServer2D::get_singleton()->space_get_direct_state(find_world_2d()->get_space());
 
 	if (physics_has_last_mousepos) {
@@ -571,6 +568,16 @@ void Viewport::_process_picking() {
 			physics_picking_events.push_back(mm);
 		}
 	}
+
+#ifndef _3D_DISABLED
+	Vector2 last_pos(1e20, 1e20);
+	CollisionObject3D *last_object = nullptr;
+	ObjectID last_id;
+	PhysicsDirectSpaceState3D::RayResult result;
+#ifdef MODULE_GRIDMAP_ENABLED
+	GridMap *last_gridmap = nullptr;
+#endif
+#endif // _3D_DISABLED
 
 	while (physics_picking_events.size()) {
 		Ref<InputEvent> ev = physics_picking_events.front()->get();
@@ -719,9 +726,21 @@ void Viewport::_process_picking() {
 				if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
 					physics_object_capture = ObjectID();
 				}
-
 			} else {
+#ifdef MODULE_GRIDMAP_ENABLED
+				GridMap *gm = Object::cast_to<GridMap>(ObjectDB::get_instance(physics_object_capture));
+				if (gm && camera_3d) {
+					_gridmap_input_event(gm, camera_3d, ev, Vector3(), Vector3(), RID(), 0);
+					captured = true;
+					if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
+						physics_object_capture = ObjectID();
+					}
+				} else {
+					physics_object_capture = ObjectID();
+				}
+#else
 				physics_object_capture = ObjectID();
+#endif
 			}
 		}
 
@@ -729,11 +748,21 @@ void Viewport::_process_picking() {
 			// None.
 		} else if (pos == last_pos) {
 			if (last_id.is_valid()) {
-				if (ObjectDB::get_instance(last_id) && last_object) {
-					// Good, exists.
-					_collision_object_3d_input_event(last_object, camera_3d, ev, result.position, result.normal, result.shape);
-					if (last_object->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
-						physics_object_capture = last_id;
+				if (ObjectDB::get_instance(last_id)) {
+					if (last_object) {
+						// Collider is a CollisionObject3D.
+						_collision_object_3d_input_event(last_object, camera_3d, ev, result.position, result.normal, result.shape);
+						if (last_object->is_capturing_input_on_drag() && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
+							physics_object_capture = last_id;
+						}
+#ifdef MODULE_GRIDMAP_ENABLED
+					} else if (last_gridmap) {
+						// Collider is a GridMap.
+						_gridmap_input_event(last_gridmap, camera_3d, ev, result.position, result.normal, result.rid, result.shape);
+						if (last_gridmap->is_capturing_input_on_drag() && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
+							physics_object_capture = last_id;
+						}
+#endif // MODULE_GRIDMAP_ENABLED
 					}
 				}
 			}
@@ -753,24 +782,63 @@ void Viewport::_process_picking() {
 
 					bool col = space->intersect_ray(ray_params, result);
 					ObjectID new_collider;
+#ifdef MODULE_GRIDMAP_ENABLED
+					int new_shape = -1;
+					RID new_rid;
+#endif
 					if (col) {
 						CollisionObject3D *co = Object::cast_to<CollisionObject3D>(result.collider);
-						if (co && co->can_process()) {
-							_collision_object_3d_input_event(co, camera_3d, ev, result.position, result.normal, result.shape);
-							last_object = co;
-							last_id = result.collider_id;
-							new_collider = last_id;
-							if (co->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
-								physics_object_capture = last_id;
+						if (co) {
+							if (co->can_process()) {
+								_collision_object_3d_input_event(co, camera_3d, ev, result.position, result.normal, result.shape);
+								last_object = co;
+								last_id = result.collider_id;
+								new_collider = last_id;
+#ifdef MODULE_GRIDMAP_ENABLED
+								last_gridmap = nullptr;
+								new_shape = -1;
+								new_rid = RID();
+#endif
+								if (co->is_capturing_input_on_drag() && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
+									physics_object_capture = last_id;
+								}
+							}
+#ifdef MODULE_GRIDMAP_ENABLED
+						} else {
+							GridMap *gm = Object::cast_to<GridMap>(result.collider);
+							if (gm && gm->can_process()) {
+								_gridmap_input_event(gm, camera_3d, ev, result.position, result.normal, result.rid, result.shape);
+								last_gridmap = gm;
+								last_id = result.collider_id;
+								new_collider = last_id;
+								new_rid = result.rid;
+								new_shape = result.shape;
+								last_object = nullptr;
+								if (gm->is_capturing_input_on_drag() && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
+									physics_object_capture = last_id;
+								}
 							}
 						}
 					}
 
+					if (is_mouse && (new_collider != physics_object_over || new_rid != physics_rid_over || new_shape != physics_shape_over)) {
+#else
+						}
+					}
+
 					if (is_mouse && new_collider != physics_object_over) {
+#endif
 						if (physics_object_over.is_valid()) {
 							CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_over));
 							if (co) {
 								co->_mouse_exit();
+#ifdef MODULE_GRIDMAP_ENABLED
+							} else {
+								GridMap *gm = Object::cast_to<GridMap>(ObjectDB::get_instance(physics_object_over));
+								if (gm) {
+									gm->_mouse_exit(physics_rid_over, physics_shape_over);
+								}
+#endif // MODULE_GRIDMAP_ENABLED
 							}
 						}
 
@@ -778,10 +846,21 @@ void Viewport::_process_picking() {
 							CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(new_collider));
 							if (co) {
 								co->_mouse_enter();
+#ifdef MODULE_GRIDMAP_ENABLED
+							} else {
+								GridMap *gm = Object::cast_to<GridMap>(ObjectDB::get_instance(new_collider));
+								if (gm) {
+									gm->_mouse_enter(new_rid, new_shape);
+								}
+#endif // MODULE_GRIDMAP_ENABLED
 							}
 						}
 
 						physics_object_over = new_collider;
+#ifdef MODULE_GRIDMAP_ENABLED
+						physics_rid_over = new_rid;
+						physics_shape_over = new_shape;
+#endif
 					}
 				}
 
@@ -2214,11 +2293,35 @@ void Viewport::_drop_physics_mouseover(bool p_paused_only) {
 			if (!co->is_inside_tree()) {
 				physics_object_over = ObjectID();
 				physics_object_capture = ObjectID();
+#ifdef MODULE_GRIDMAP_ENABLED
+				physics_rid_over = RID();
+				physics_shape_over = -1;
+#endif
 			} else if (!(p_paused_only && co->can_process())) {
 				co->_mouse_exit();
 				physics_object_over = ObjectID();
 				physics_object_capture = ObjectID();
+#ifdef MODULE_GRIDMAP_ENABLED
+				physics_rid_over = RID();
+				physics_shape_over = -1;
+#endif
 			}
+#ifdef MODULE_GRIDMAP_ENABLED
+		} else {
+			GridMap *gm = Object::cast_to<GridMap>(ObjectDB::get_instance(physics_object_over));
+			if (gm) {
+				if (!gm->is_inside_tree()) {
+					physics_object_over = ObjectID();
+					physics_object_capture = ObjectID();
+					physics_rid_over = RID();
+					physics_shape_over = -1;
+				} else if (!(p_paused_only && gm->can_process())) {
+					gm->_mouse_exit(physics_rid_over, physics_shape_over);
+					physics_rid_over = RID();
+					physics_shape_over = -1;
+				}
+			}
+#endif // MODULE_GRIDMAP_ENABLED
 		}
 	}
 #endif // _3D_DISABLED
@@ -3175,6 +3278,26 @@ void Viewport::_collision_object_3d_input_event(CollisionObject3D *p_object, Cam
 	physics_last_camera_transform = camera_transform;
 	physics_last_id = id;
 }
+
+#ifdef MODULE_GRIDMAP_ENABLED
+void Viewport::_gridmap_input_event(GridMap *p_gridmap, Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, RID p_rid, int p_shape) {
+	Transform3D gridmap_transform = p_gridmap->get_global_transform();
+	Transform3D camera_transform = p_camera->get_global_transform();
+	ObjectID id = p_gridmap->get_instance_id();
+
+	// Avoid sending the fake event unnecessarily if nothing really changed in the context.
+	if (gridmap_transform == physics_last_object_transform && camera_transform == physics_last_camera_transform && physics_last_id == id) {
+		Ref<InputEventMouseMotion> mm = p_input_event;
+		if (mm.is_valid() && mm->get_device() == InputEvent::DEVICE_ID_INTERNAL) {
+			return; // Discarded.
+		}
+	}
+	p_gridmap->_input_event_call(camera_3d, p_input_event, p_pos, p_normal, p_rid, p_shape);
+	physics_last_object_transform = gridmap_transform;
+	physics_last_camera_transform = camera_transform;
+	physics_last_id = id;
+}
+#endif // MODULE_GRIDMAP_ENABLED
 
 Camera3D *Viewport::get_camera_3d() const {
 	return camera_3d;
