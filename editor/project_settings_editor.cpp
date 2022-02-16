@@ -169,6 +169,10 @@ void ProjectSettingsEditor::_notification(int p_what) {
 			popup_add->set_item_icon(popup_add->get_item_index(INPUT_MOUSE_BUTTON), get_icon("Mouse", "EditorIcons"));
 			_update_actions();
 		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			_update_theme();
+		} break;
 	}
 }
 
@@ -880,7 +884,7 @@ void ProjectSettingsEditor::_item_adds(String) {
 void ProjectSettingsEditor::_item_add() {
 	// Initialize the property with the default value for the given type.
 	Variant::CallError ce;
-	const Variant value = Variant::construct(Variant::Type(type->get_selected_id()), nullptr, 0, ce);
+	const Variant value = Variant::construct(Variant::Type(type_box->get_selected_id()), nullptr, 0, ce);
 
 	String name = property->get_text().strip_edges();
 
@@ -1734,6 +1738,18 @@ void ProjectSettingsEditor::_editor_restart_close() {
 	restart_container->hide();
 }
 
+void ProjectSettingsEditor::_update_theme() {
+	type_box->clear();
+	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+		// There's no point in adding Nil types, and Object types
+		// can't be serialized correctly in the project settings.
+		if (i != Variant::NIL && i != Variant::OBJECT) {
+			const String type = Variant::get_type_name(Variant::Type(i));
+			type_box->add_icon_item(get_icon(type, "EditorIcons"), type, i);
+		}
+	}
+}
+
 void ProjectSettingsEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_unhandled_input"), &ProjectSettingsEditor::_unhandled_input);
 	ClassDB::bind_method(D_METHOD("_item_selected"), &ProjectSettingsEditor::_item_selected);
@@ -1837,17 +1853,9 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	add_prop_bar->add_child(l);
 	l->set_text(TTR("Type:"));
 
-	type = memnew(OptionButton);
-	type->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
-	add_prop_bar->add_child(type);
-
-	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-		// There's no point in adding Nil types, and Object types
-		// can't be serialized correctly in the project settings.
-		if (i != Variant::NIL && i != Variant::OBJECT) {
-			type->add_item(Variant::get_type_name(Variant::Type(i)), i);
-		}
-	}
+	type_box = memnew(OptionButton);
+	type_box->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
+	add_prop_bar->add_child(type_box);
 
 	Button *add = memnew(Button);
 	add_prop_bar->add_child(add);
