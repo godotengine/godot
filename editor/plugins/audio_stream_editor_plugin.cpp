@@ -39,29 +39,32 @@
 #include "editor/editor_settings.h"
 
 void AudioStreamEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY) {
-		AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AudioStreamEditor::_preview_changed));
-	}
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AudioStreamEditor::_preview_changed));
+		} break;
 
-	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
-		_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
-		_stop_button->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
-		_preview->set_color(get_theme_color(SNAME("dark_color_2"), SNAME("Editor")));
-		set_color(get_theme_color(SNAME("dark_color_1"), SNAME("Editor")));
+		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_ENTER_TREE: {
+			_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+			_stop_button->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
+			_preview->set_color(get_theme_color(SNAME("dark_color_2"), SNAME("Editor")));
+			set_color(get_theme_color(SNAME("dark_color_1"), SNAME("Editor")));
 
-		_indicator->update();
-		_preview->update();
-	}
+			_indicator->update();
+			_preview->update();
+		} break;
 
-	if (p_what == NOTIFICATION_PROCESS) {
-		_current = _player->get_playback_position();
-		_indicator->update();
-	}
+		case NOTIFICATION_PROCESS: {
+			_current = _player->get_playback_position();
+			_indicator->update();
+		} break;
 
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (!is_visible_in_tree()) {
-			_stop();
-		}
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible_in_tree()) {
+				_stop();
+			}
+		} break;
 	}
 }
 

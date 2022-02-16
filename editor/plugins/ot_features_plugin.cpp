@@ -46,12 +46,15 @@ void OpenTypeFeaturesEditor::update_property() {
 }
 
 void OpenTypeFeaturesEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			Color base = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 
-		button->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
-		button->set_size(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons"))->get_size());
-		spin->set_custom_label_color(true, base);
+			button->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+			button->set_size(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons"))->get_size());
+			spin->set_custom_label_color(true, base);
+		} break;
 	}
 }
 
@@ -139,10 +142,13 @@ void OpenTypeFeaturesAdd::_features_menu() {
 }
 
 void OpenTypeFeaturesAdd::_notification(int p_what) {
-	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
-		set_label("");
-		button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-		button->set_size(get_theme_icon(SNAME("Add"), SNAME("EditorIcons"))->get_size());
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_ENTER_TREE: {
+			set_label("");
+			button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			button->set_size(get_theme_icon(SNAME("Add"), SNAME("EditorIcons"))->get_size());
+		} break;
 	}
 }
 

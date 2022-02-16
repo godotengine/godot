@@ -900,13 +900,18 @@ String DynamicFontImportSettings::_pad_zeros(const String &p_hex) const {
 }
 
 void DynamicFontImportSettings::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY) {
-		connect("confirmed", callable_mp(this, &DynamicFontImportSettings::_re_import));
-	} else if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		add_lang->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-		add_script->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-		add_var->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-		add_ot->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			connect("confirmed", callable_mp(this, &DynamicFontImportSettings::_re_import));
+		} break;
+
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			add_lang->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			add_script->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			add_var->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			add_ot->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+		} break;
 	}
 }
 

@@ -177,8 +177,10 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 }
 
 void DebuggerEditorPlugin::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY) {
-		_update_debug_options();
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			_update_debug_options();
+		} break;
 	}
 }
 

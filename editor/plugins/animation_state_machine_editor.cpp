@@ -884,169 +884,174 @@ void AnimationNodeStateMachineEditor::_update_graph() {
 }
 
 void AnimationNodeStateMachineEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_LAYOUT_DIRECTION_CHANGED || p_what == NOTIFICATION_TRANSLATION_CHANGED) {
-		error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
-		error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
-		panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 
-		tool_select->set_icon(get_theme_icon(SNAME("ToolSelect"), SNAME("EditorIcons")));
-		tool_create->set_icon(get_theme_icon(SNAME("ToolAddNode"), SNAME("EditorIcons")));
-		tool_connect->set_icon(get_theme_icon(SNAME("ToolConnect"), SNAME("EditorIcons")));
+			tool_select->set_icon(get_theme_icon(SNAME("ToolSelect"), SNAME("EditorIcons")));
+			tool_create->set_icon(get_theme_icon(SNAME("ToolAddNode"), SNAME("EditorIcons")));
+			tool_connect->set_icon(get_theme_icon(SNAME("ToolConnect"), SNAME("EditorIcons")));
 
-		transition_mode->clear();
-		transition_mode->add_icon_item(get_theme_icon(SNAME("TransitionImmediate"), SNAME("EditorIcons")), TTR("Immediate"));
-		transition_mode->add_icon_item(get_theme_icon(SNAME("TransitionSync"), SNAME("EditorIcons")), TTR("Sync"));
-		transition_mode->add_icon_item(get_theme_icon(SNAME("TransitionEnd"), SNAME("EditorIcons")), TTR("At End"));
+			transition_mode->clear();
+			transition_mode->add_icon_item(get_theme_icon(SNAME("TransitionImmediate"), SNAME("EditorIcons")), TTR("Immediate"));
+			transition_mode->add_icon_item(get_theme_icon(SNAME("TransitionSync"), SNAME("EditorIcons")), TTR("Sync"));
+			transition_mode->add_icon_item(get_theme_icon(SNAME("TransitionEnd"), SNAME("EditorIcons")), TTR("At End"));
 
-		tool_erase->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
-		tool_autoplay->set_icon(get_theme_icon(SNAME("AutoPlay"), SNAME("EditorIcons")));
-		tool_end->set_icon(get_theme_icon(SNAME("AutoEnd"), SNAME("EditorIcons")));
+			tool_erase->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+			tool_autoplay->set_icon(get_theme_icon(SNAME("AutoPlay"), SNAME("EditorIcons")));
+			tool_end->set_icon(get_theme_icon(SNAME("AutoEnd"), SNAME("EditorIcons")));
 
-		play_mode->clear();
-		play_mode->add_icon_item(get_theme_icon(SNAME("PlayTravel"), SNAME("EditorIcons")), TTR("Travel"));
-		play_mode->add_icon_item(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")), TTR("Immediate"));
-	}
+			play_mode->clear();
+			play_mode->add_icon_item(get_theme_icon(SNAME("PlayTravel"), SNAME("EditorIcons")), TTR("Travel"));
+			play_mode->add_icon_item(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")), TTR("Immediate"));
+		} break;
 
-	if (p_what == NOTIFICATION_PROCESS) {
-		String error;
+		case NOTIFICATION_PROCESS: {
+			String error;
 
-		Ref<AnimationNodeStateMachinePlayback> playback = AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
+			Ref<AnimationNodeStateMachinePlayback> playback = AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
 
-		if (error_time > 0) {
-			error = error_text;
-			error_time -= get_process_delta_time();
-		} else if (!AnimationTreeEditor::get_singleton()->get_tree()->is_active()) {
-			error = TTR("AnimationTree is inactive.\nActivate to enable playback, check node warnings if activation fails.");
-		} else if (AnimationTreeEditor::get_singleton()->get_tree()->is_state_invalid()) {
-			error = AnimationTreeEditor::get_singleton()->get_tree()->get_invalid_state_reason();
-			/*} else if (state_machine->get_parent().is_valid() && state_machine->get_parent()->is_class("AnimationNodeStateMachine")) {
-			if (state_machine->get_start_node() == StringName() || state_machine->get_end_node() == StringName()) {
-				error = TTR("Start and end nodes are needed for a sub-transition.");
-			}*/
-		} else if (playback.is_null()) {
-			error = vformat(TTR("No playback resource set at path: %s."), AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
-		}
-
-		if (error != error_label->get_text()) {
-			error_label->set_text(error);
-			if (!error.is_empty()) {
-				error_panel->show();
-			} else {
-				error_panel->hide();
+			if (error_time > 0) {
+				error = error_text;
+				error_time -= get_process_delta_time();
+			} else if (!AnimationTreeEditor::get_singleton()->get_tree()->is_active()) {
+				error = TTR("AnimationTree is inactive.\nActivate to enable playback, check node warnings if activation fails.");
+			} else if (AnimationTreeEditor::get_singleton()->get_tree()->is_state_invalid()) {
+				error = AnimationTreeEditor::get_singleton()->get_tree()->get_invalid_state_reason();
+				/*} else if (state_machine->get_parent().is_valid() && state_machine->get_parent()->is_class("AnimationNodeStateMachine")) {
+				if (state_machine->get_start_node() == StringName() || state_machine->get_end_node() == StringName()) {
+					error = TTR("Start and end nodes are needed for a sub-transition.");
+				}*/
+			} else if (playback.is_null()) {
+				error = vformat(TTR("No playback resource set at path: %s."), AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
 			}
-		}
 
-		for (int i = 0; i < transition_lines.size(); i++) {
-			int tidx = -1;
-			for (int j = 0; j < state_machine->get_transition_count(); j++) {
-				if (transition_lines[i].from_node == state_machine->get_transition_from(j) && transition_lines[i].to_node == state_machine->get_transition_to(j)) {
-					tidx = j;
+			if (error != error_label->get_text()) {
+				error_label->set_text(error);
+				if (!error.is_empty()) {
+					error_panel->show();
+				} else {
+					error_panel->hide();
+				}
+			}
+
+			for (int i = 0; i < transition_lines.size(); i++) {
+				int tidx = -1;
+				for (int j = 0; j < state_machine->get_transition_count(); j++) {
+					if (transition_lines[i].from_node == state_machine->get_transition_from(j) && transition_lines[i].to_node == state_machine->get_transition_to(j)) {
+						tidx = j;
+						break;
+					}
+				}
+
+				if (tidx == -1) { //missing transition, should redraw
+					state_machine_draw->update();
+					break;
+				}
+
+				if (transition_lines[i].disabled != state_machine->get_transition(tidx)->is_disabled()) {
+					state_machine_draw->update();
+					break;
+				}
+
+				if (transition_lines[i].auto_advance != state_machine->get_transition(tidx)->has_auto_advance()) {
+					state_machine_draw->update();
+					break;
+				}
+
+				if (transition_lines[i].advance_condition_name != state_machine->get_transition(tidx)->get_advance_condition_name()) {
+					state_machine_draw->update();
+					break;
+				}
+
+				if (transition_lines[i].mode != state_machine->get_transition(tidx)->get_switch_mode()) {
+					state_machine_draw->update();
+					break;
+				}
+
+				bool acstate = transition_lines[i].advance_condition_name != StringName() && bool(AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + String(transition_lines[i].advance_condition_name)));
+
+				if (transition_lines[i].advance_condition_state != acstate) {
+					state_machine_draw->update();
 					break;
 				}
 			}
 
-			if (tidx == -1) { //missing transition, should redraw
-				state_machine_draw->update();
-				break;
+			bool same_travel_path = true;
+			Vector<StringName> tp;
+			bool is_playing = false;
+			StringName current_node;
+			StringName blend_from_node;
+			play_pos = 0;
+			current_length = 0;
+
+			if (playback.is_valid()) {
+				tp = playback->get_travel_path();
+				is_playing = playback->is_playing();
+				current_node = playback->get_current_node();
+				blend_from_node = playback->get_blend_from_node();
+				play_pos = playback->get_current_play_pos();
+				current_length = playback->get_current_length();
 			}
 
-			if (transition_lines[i].disabled != state_machine->get_transition(tidx)->is_disabled()) {
-				state_machine_draw->update();
-				break;
-			}
-
-			if (transition_lines[i].auto_advance != state_machine->get_transition(tidx)->has_auto_advance()) {
-				state_machine_draw->update();
-				break;
-			}
-
-			if (transition_lines[i].advance_condition_name != state_machine->get_transition(tidx)->get_advance_condition_name()) {
-				state_machine_draw->update();
-				break;
-			}
-
-			if (transition_lines[i].mode != state_machine->get_transition(tidx)->get_switch_mode()) {
-				state_machine_draw->update();
-				break;
-			}
-
-			bool acstate = transition_lines[i].advance_condition_name != StringName() && bool(AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + String(transition_lines[i].advance_condition_name)));
-
-			if (transition_lines[i].advance_condition_state != acstate) {
-				state_machine_draw->update();
-				break;
-			}
-		}
-
-		bool same_travel_path = true;
-		Vector<StringName> tp;
-		bool is_playing = false;
-		StringName current_node;
-		StringName blend_from_node;
-		play_pos = 0;
-		current_length = 0;
-
-		if (playback.is_valid()) {
-			tp = playback->get_travel_path();
-			is_playing = playback->is_playing();
-			current_node = playback->get_current_node();
-			blend_from_node = playback->get_blend_from_node();
-			play_pos = playback->get_current_play_pos();
-			current_length = playback->get_current_length();
-		}
-
-		{
-			if (last_travel_path.size() != tp.size()) {
-				same_travel_path = false;
-			} else {
-				for (int i = 0; i < last_travel_path.size(); i++) {
-					if (last_travel_path[i] != tp[i]) {
-						same_travel_path = false;
-						break;
+			{
+				if (last_travel_path.size() != tp.size()) {
+					same_travel_path = false;
+				} else {
+					for (int i = 0; i < last_travel_path.size(); i++) {
+						if (last_travel_path[i] != tp[i]) {
+							same_travel_path = false;
+							break;
+						}
 					}
 				}
 			}
-		}
 
-		//update if travel state changed
-		if (!same_travel_path || last_active != is_playing || last_current_node != current_node || last_blend_from_node != blend_from_node) {
-			state_machine_draw->update();
-			last_travel_path = tp;
-			last_current_node = current_node;
-			last_active = is_playing;
-			last_blend_from_node = blend_from_node;
-			state_machine_play_pos->update();
-		}
+			//update if travel state changed
+			if (!same_travel_path || last_active != is_playing || last_current_node != current_node || last_blend_from_node != blend_from_node) {
+				state_machine_draw->update();
+				last_travel_path = tp;
+				last_current_node = current_node;
+				last_active = is_playing;
+				last_blend_from_node = blend_from_node;
+				state_machine_play_pos->update();
+			}
 
-		{
-			if (current_node != StringName() && state_machine->has_node(current_node)) {
-				String next = current_node;
-				Ref<AnimationNodeStateMachine> anodesm = state_machine->get_node(next);
-				Ref<AnimationNodeStateMachinePlayback> current_node_playback;
+			{
+				if (current_node != StringName() && state_machine->has_node(current_node)) {
+					String next = current_node;
+					Ref<AnimationNodeStateMachine> anodesm = state_machine->get_node(next);
+					Ref<AnimationNodeStateMachinePlayback> current_node_playback;
 
-				while (anodesm.is_valid()) {
-					current_node_playback = AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + next + "/playback");
-					next += "/" + current_node_playback->get_current_node();
-					anodesm = anodesm->get_node(current_node_playback->get_current_node());
-				}
+					while (anodesm.is_valid()) {
+						current_node_playback = AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + next + "/playback");
+						next += "/" + current_node_playback->get_current_node();
+						anodesm = anodesm->get_node(current_node_playback->get_current_node());
+					}
 
-				// when current_node is a state machine, use playback of current_node to set play_pos
-				if (current_node_playback.is_valid()) {
-					play_pos = current_node_playback->get_current_play_pos();
-					current_length = current_node_playback->get_current_length();
+					// when current_node is a state machine, use playback of current_node to set play_pos
+					if (current_node_playback.is_valid()) {
+						play_pos = current_node_playback->get_current_play_pos();
+						current_length = current_node_playback->get_current_length();
+					}
 				}
 			}
-		}
 
-		if (last_play_pos != play_pos) {
-			last_play_pos = play_pos;
-			state_machine_play_pos->update();
-		}
-	}
+			if (last_play_pos != play_pos) {
+				last_play_pos = play_pos;
+				state_machine_play_pos->update();
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		over_node = StringName();
-		set_process(is_visible_in_tree());
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			over_node = StringName();
+			set_process(is_visible_in_tree());
+		} break;
 	}
 }
 

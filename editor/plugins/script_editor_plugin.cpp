@@ -356,6 +356,7 @@ void ScriptEditorQuickOpen::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			search_box->set_right_icon(search_options->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("confirmed", callable_mp(this, &ScriptEditorQuickOpen::_confirmed));
 		} break;
@@ -1667,9 +1668,6 @@ void ScriptEditor::_notification(int p_what) {
 			}
 
 		} break;
-
-		default:
-			break;
 	}
 }
 

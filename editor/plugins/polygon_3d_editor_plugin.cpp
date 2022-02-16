@@ -50,6 +50,7 @@ void Polygon3DEditor::_notification(int p_what) {
 			get_tree()->connect("node_removed", callable_mp(this, &Polygon3DEditor::_node_removed));
 
 		} break;
+
 		case NOTIFICATION_PROCESS: {
 			if (!node) {
 				return;

@@ -145,19 +145,21 @@ void AnimationTreeEditor::enter_editor(const String &p_path) {
 }
 
 void AnimationTreeEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_PROCESS) {
-		ObjectID root;
-		if (tree && tree->get_tree_root().is_valid()) {
-			root = tree->get_tree_root()->get_instance_id();
-		}
+	switch (p_what) {
+		case NOTIFICATION_PROCESS: {
+			ObjectID root;
+			if (tree && tree->get_tree_root().is_valid()) {
+				root = tree->get_tree_root()->get_instance_id();
+			}
 
-		if (root != current_root) {
-			edit_path(Vector<String>());
-		}
+			if (root != current_root) {
+				edit_path(Vector<String>());
+			}
 
-		if (button_path.size() != edited_path.size()) {
-			edit_path(edited_path);
-		}
+			if (button_path.size() != edited_path.size()) {
+				edit_path(edited_path);
+			}
+		} break;
 	}
 }
 
