@@ -247,10 +247,7 @@ float Line2D::get_sharp_limit() const {
 }
 
 void Line2D::set_round_precision(int p_precision) {
-	if (p_precision < 1) {
-		p_precision = 1;
-	}
-	_round_precision = p_precision;
+	_round_precision = MAX(1, p_precision);
 	update();
 }
 
@@ -409,7 +406,7 @@ void Line2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "end_cap_mode", PROPERTY_HINT_ENUM, "None,Box,Round"), "set_end_cap_mode", "get_end_cap_mode");
 	ADD_GROUP("Border", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sharp_limit"), "set_sharp_limit", "get_sharp_limit");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "round_precision"), "set_round_precision", "get_round_precision");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "round_precision", PROPERTY_HINT_RANGE, "1,32,1"), "set_round_precision", "get_round_precision");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "antialiased"), "set_antialiased", "get_antialiased");
 
 	BIND_ENUM_CONSTANT(LINE_JOINT_SHARP);
