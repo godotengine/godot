@@ -38,15 +38,10 @@
 #include "editor/editor_settings.h"
 
 void ResourcePreloaderEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		load->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
-	}
-
-	if (p_what == NOTIFICATION_READY) {
-		//NodePath("/root")->connect("node_removed", this,"_node_removed",Vector<Variant>(),true);
-	}
-
-	if (p_what == NOTIFICATION_DRAW) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			load->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
+		} break;
 	}
 }
 

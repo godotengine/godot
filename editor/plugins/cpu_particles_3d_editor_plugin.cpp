@@ -43,8 +43,10 @@ void CPUParticles3DEditor::_node_removed(Node *p_node) {
 }
 
 void CPUParticles3DEditor::_notification(int p_notification) {
-	if (p_notification == NOTIFICATION_ENTER_TREE) {
-		options->set_icon(get_theme_icon(SNAME("CPUParticles3D"), SNAME("EditorIcons")));
+	switch (p_notification) {
+		case NOTIFICATION_ENTER_TREE: {
+			options->set_icon(get_theme_icon(SNAME("CPUParticles3D"), SNAME("EditorIcons")));
+		} break;
 	}
 }
 

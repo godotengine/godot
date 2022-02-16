@@ -154,6 +154,7 @@ void AbstractPolygon2DEditor::_notification(int p_what) {
 			button_edit->set_icon(get_theme_icon(SNAME("CurveEdit"), SNAME("EditorIcons")));
 			button_delete->set_icon(get_theme_icon(SNAME("CurveDelete"), SNAME("EditorIcons")));
 		} break;
+
 		case NOTIFICATION_READY: {
 			disable_polygon_editing(false, String());
 

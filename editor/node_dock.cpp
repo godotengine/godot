@@ -52,9 +52,12 @@ void NodeDock::_bind_methods() {
 }
 
 void NodeDock::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		connections_button->set_icon(get_theme_icon(SNAME("Signals"), SNAME("EditorIcons")));
-		groups_button->set_icon(get_theme_icon(SNAME("Groups"), SNAME("EditorIcons")));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			connections_button->set_icon(get_theme_icon(SNAME("Signals"), SNAME("EditorIcons")));
+			groups_button->set_icon(get_theme_icon(SNAME("Groups"), SNAME("EditorIcons")));
+		} break;
 	}
 }
 

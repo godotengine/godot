@@ -531,39 +531,42 @@ void AnimationNodeBlendSpace1DEditor::_open_editor() {
 }
 
 void AnimationNodeBlendSpace1DEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
-		error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
-		panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
-		tool_blend->set_icon(get_theme_icon(SNAME("EditPivot"), SNAME("EditorIcons")));
-		tool_select->set_icon(get_theme_icon(SNAME("ToolSelect"), SNAME("EditorIcons")));
-		tool_create->set_icon(get_theme_icon(SNAME("EditKey"), SNAME("EditorIcons")));
-		tool_erase->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
-		snap->set_icon(get_theme_icon(SNAME("SnapGrid"), SNAME("EditorIcons")));
-		open_editor->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
-	}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			tool_blend->set_icon(get_theme_icon(SNAME("EditPivot"), SNAME("EditorIcons")));
+			tool_select->set_icon(get_theme_icon(SNAME("ToolSelect"), SNAME("EditorIcons")));
+			tool_create->set_icon(get_theme_icon(SNAME("EditKey"), SNAME("EditorIcons")));
+			tool_erase->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+			snap->set_icon(get_theme_icon(SNAME("SnapGrid"), SNAME("EditorIcons")));
+			open_editor->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
+		} break;
 
-	if (p_what == NOTIFICATION_PROCESS) {
-		String error;
+		case NOTIFICATION_PROCESS: {
+			String error;
 
-		if (!AnimationTreeEditor::get_singleton()->get_tree()->is_active()) {
-			error = TTR("AnimationTree is inactive.\nActivate to enable playback, check node warnings if activation fails.");
-		} else if (AnimationTreeEditor::get_singleton()->get_tree()->is_state_invalid()) {
-			error = AnimationTreeEditor::get_singleton()->get_tree()->get_invalid_state_reason();
-		}
-
-		if (error != error_label->get_text()) {
-			error_label->set_text(error);
-			if (!error.is_empty()) {
-				error_panel->show();
-			} else {
-				error_panel->hide();
+			if (!AnimationTreeEditor::get_singleton()->get_tree()->is_active()) {
+				error = TTR("AnimationTree is inactive.\nActivate to enable playback, check node warnings if activation fails.");
+			} else if (AnimationTreeEditor::get_singleton()->get_tree()->is_state_invalid()) {
+				error = AnimationTreeEditor::get_singleton()->get_tree()->get_invalid_state_reason();
 			}
-		}
-	}
 
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		set_process(is_visible_in_tree());
+			if (error != error_label->get_text()) {
+				error_label->set_text(error);
+				if (!error.is_empty()) {
+					error_panel->show();
+				} else {
+					error_panel->hide();
+				}
+			}
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			set_process(is_visible_in_tree());
+		} break;
 	}
 }
 

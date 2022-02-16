@@ -97,8 +97,10 @@ Size2 CurveEditor::get_minimum_size() const {
 }
 
 void CurveEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_DRAW) {
-		_draw();
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
+			_draw();
+		} break;
 	}
 }
 

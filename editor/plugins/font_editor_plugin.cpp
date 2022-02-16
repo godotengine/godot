@@ -33,14 +33,16 @@
 #include "editor/editor_scale.h"
 
 void FontDataPreview::_notification(int p_what) {
-	if (p_what == NOTIFICATION_DRAW) {
-		Color text_color = get_theme_color(SNAME("font_color"), SNAME("Label"));
-		Color line_color = text_color;
-		line_color.a *= 0.6;
-		Vector2 pos = (get_size() - line->get_size()) / 2;
-		line->draw(get_canvas_item(), pos, text_color);
-		draw_line(Vector2(0, pos.y + line->get_line_ascent()), Vector2(pos.x - 5, pos.y + line->get_line_ascent()), line_color);
-		draw_line(Vector2(pos.x + line->get_size().x + 5, pos.y + line->get_line_ascent()), Vector2(get_size().x, pos.y + line->get_line_ascent()), line_color);
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
+			Color text_color = get_theme_color(SNAME("font_color"), SNAME("Label"));
+			Color line_color = text_color;
+			line_color.a *= 0.6;
+			Vector2 pos = (get_size() - line->get_size()) / 2;
+			line->draw(get_canvas_item(), pos, text_color);
+			draw_line(Vector2(0, pos.y + line->get_line_ascent()), Vector2(pos.x - 5, pos.y + line->get_line_ascent()), line_color);
+			draw_line(Vector2(pos.x + line->get_size().x + 5, pos.y + line->get_line_ascent()), Vector2(get_size().x, pos.y + line->get_line_ascent()), line_color);
+		} break;
 	}
 }
 
