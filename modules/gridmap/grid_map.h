@@ -259,6 +259,7 @@ public:
 	float get_cell_scale() const;
 
 	Array get_used_cells() const;
+	Array get_used_cells_by_item(int p_item) const;
 
 	Array get_meshes() const;
 
