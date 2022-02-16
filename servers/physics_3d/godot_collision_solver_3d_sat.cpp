@@ -345,10 +345,6 @@ static void _generate_contacts_face_face(const Vector3 *p_points_A, int p_point_
 
 	for (int i = 0; i < clipbuf_len; i++) {
 		real_t d = plane_B.distance_to(clipbuf_src[i]);
-		/*
-		if (d>CMP_EPSILON)
-			continue;
-		*/
 
 		Vector3 closest_B = clipbuf_src[i] - plane_B.normal * d;
 

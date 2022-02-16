@@ -192,7 +192,6 @@ void QuadOccluder3D::set_size(const Vector2 &p_size) {
 	}
 
 	size = p_size.max(Vector2());
-	;
 	_update();
 }
 
@@ -237,7 +236,6 @@ void BoxOccluder3D::set_size(const Vector3 &p_size) {
 	}
 
 	size = Vector3(MAX(p_size.x, 0.0f), MAX(p_size.y, 0.0f), MAX(p_size.z, 0.0f));
-	;
 	_update();
 }
 

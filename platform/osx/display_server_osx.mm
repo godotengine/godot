@@ -790,8 +790,9 @@ String DisplayServerOSX::global_menu_get_item_submenu(const String &p_menu_root,
 			const NSMenu *sub_menu = [menu_item submenu];
 			if (sub_menu) {
 				for (Map<String, NSMenu *>::Element *E = submenu.front(); E; E = E->next()) {
-					if (E->get() == sub_menu)
+					if (E->get() == sub_menu) {
 						return E->key();
+					}
 				}
 			}
 		}

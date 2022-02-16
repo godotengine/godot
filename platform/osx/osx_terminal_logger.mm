@@ -40,10 +40,11 @@ void OSXTerminalLogger::log_error(const char *p_function, const char *p_file, in
 	}
 
 	const char *err_details;
-	if (p_rationale && p_rationale[0])
+	if (p_rationale && p_rationale[0]) {
 		err_details = p_rationale;
-	else
+	} else {
 		err_details = p_code;
+	}
 
 	switch (p_type) {
 		case ERR_WARNING:

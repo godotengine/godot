@@ -464,14 +464,6 @@ void ShaderEditor::_bind_methods() {
 }
 
 void ShaderEditor::ensure_select_current() {
-	/*
-	if (tab_container->get_child_count() && tab_container->get_current_tab()>=0) {
-		ShaderTextEditor *ste = Object::cast_to<ShaderTextEditor>(tab_container->get_child(tab_container->get_current_tab()));
-		if (!ste)
-			return;
-		Ref<Shader> shader = ste->get_edited_shader();
-		get_scene()->get_root_node()->call("_resource_selected",shader);
-	}*/
 }
 
 void ShaderEditor::goto_line_selection(int p_line, int p_begin, int p_end) {

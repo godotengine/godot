@@ -245,8 +245,9 @@ namespace godot {
 namespace details {
 inline String enum_qualified_name_to_class_info_name(const String &p_qualified_name) {
 	Vector<String> parts = p_qualified_name.split("::", false);
-	if (parts.size() <= 2)
+	if (parts.size() <= 2) {
 		return String(".").join(parts);
+	}
 	// Contains namespace. We only want the class and enum names.
 	return parts[parts.size() - 2] + "." + parts[parts.size() - 1];
 }

@@ -429,7 +429,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 						memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], &value, 4);
 					}
-				} else { // if (type == Variant::PACKED_FLOAT64_ARRAY)
+				} else { // PACKED_FLOAT64_ARRAY
 					Vector<double> array = p_arrays[ai];
 					ERR_FAIL_COND_V(array.size() != p_vertex_array_len * 4, ERR_INVALID_PARAMETER);
 					const double *src = array.ptr();
@@ -573,7 +573,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 							memcpy(&sw[p_offsets[ai] + i * p_skin_stride], data, 2 * bone_count);
 						}
 					}
-				} else { // if (type == Variant::PACKED_FLOAT64_ARRAY)
+				} else { // PACKED_FLOAT64_ARRAY
 					Vector<double> array = p_arrays[ai];
 					ERR_FAIL_COND_V(array.size() != (int32_t)(p_vertex_array_len * bone_count), ERR_INVALID_PARAMETER);
 					const double *src = array.ptr();

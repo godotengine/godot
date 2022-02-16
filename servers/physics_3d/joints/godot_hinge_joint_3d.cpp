@@ -213,16 +213,12 @@ bool GodotHingeJoint3D::setup(real_t p_step) {
 	m_solveLimit = false;
 	m_accLimitImpulse = real_t(0.);
 
-	//if (m_lowerLimit < m_upperLimit)
 	if (m_useLimit && m_lowerLimit <= m_upperLimit) {
-		//if (hingeAngle <= m_lowerLimit*m_limitSoftness)
 		if (hingeAngle <= m_lowerLimit) {
 			m_correction = (m_lowerLimit - hingeAngle);
 			m_limitSign = 1.0f;
 			m_solveLimit = true;
-		}
-		//else if (hingeAngle >= m_upperLimit*m_limitSoftness)
-		else if (hingeAngle >= m_upperLimit) {
+		} else if (hingeAngle >= m_upperLimit) {
 			m_correction = m_upperLimit - hingeAngle;
 			m_limitSign = -1.0f;
 			m_solveLimit = true;

@@ -41,7 +41,6 @@ void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
 	}
 
 	frame_metrics.write[last_metric] = p_metric;
-	//	_make_metric_ptrs(frame_metrics.write[last_metric]);
 
 	List<String> stack;
 	for (int i = 0; i < frame_metrics[last_metric].areas.size(); i++) {
@@ -478,19 +477,6 @@ void EditorVisualProfiler::_graph_tex_draw() {
 
 	graph->draw_string(font, Vector2(font->get_string_size("X", font_size).x, font->get_ascent(font_size) + 2), "CPU:", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 0.8));
 	graph->draw_string(font, Vector2(font->get_string_size("X", font_size).x + graph->get_size().width / 2, font->get_ascent(font_size) + 2), "GPU:", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 0.8));
-
-	/*
-	if (hover_metric != -1 && frame_metrics[hover_metric].valid) {
-		int max_frames = frame_metrics.size();
-		int frame = frame_metrics[hover_metric].frame_number - (frame_metrics[last_metric].frame_number - max_frames + 1);
-		if (frame < 0)
-			frame = 0;
-
-		int cur_x = frame * graph->get_size().x / max_frames;
-
-		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), Color(1, 1, 1, 0.4));
-	}
-*/
 }
 
 void EditorVisualProfiler::_graph_tex_mouse_exit() {

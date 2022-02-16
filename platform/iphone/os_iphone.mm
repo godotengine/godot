@@ -31,6 +31,7 @@
 #ifdef IPHONE_ENABLED
 
 #include "os_iphone.h"
+
 #import "app_delegate.h"
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
@@ -169,7 +170,7 @@ void OSIPhone::delete_main_loop() {
 	if (main_loop) {
 		main_loop->finalize();
 		memdelete(main_loop);
-	};
+	}
 
 	main_loop = nullptr;
 }
@@ -198,7 +199,7 @@ void OSIPhone::finalize() {
 	deinitialize_modules();
 
 	// Already gets called
-	//    delete_main_loop();
+	//delete_main_loop();
 }
 
 // MARK: Dynamic Libraries
@@ -231,12 +232,13 @@ Error OSIPhone::get_dynamic_library_symbol_handle(void *p_library_handle, const 
 
 String OSIPhone::get_name() const {
 	return "iOS";
-};
+}
 
 String OSIPhone::get_model_name() const {
 	String model = ios->get_model();
-	if (model != "")
+	if (model != "") {
 		return model;
+	}
 
 	return OS_Unix::get_model_name();
 }
@@ -254,7 +256,7 @@ Error OSIPhone::shell_open(String p_uri) {
 	[[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
 
 	return OK;
-};
+}
 
 void OSIPhone::set_user_data_dir(String p_dir) {
 	DirAccess *da = DirAccess::open(p_dir);

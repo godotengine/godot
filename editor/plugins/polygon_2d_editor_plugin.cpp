@@ -1068,7 +1068,7 @@ void Polygon2DEditor::_uv_draw() {
 		if (uv_create && i == uvs.size() - 1) {
 			next_point = uv_create_to;
 		}
-		if (i < uv_draw_max /*&& polygons.size() == 0 &&  polygon_create.size() == 0*/) { //if using or creating polygons, do not show outline (will show polygons instead)
+		if (i < uv_draw_max) { // If using or creating polygons, do not show outline (will show polygons instead).
 			uv_edit_draw->draw_line(mtx.xform(uvs[i]), mtx.xform(next_point), poly_line_color, Math::round(EDSCALE));
 		}
 	}

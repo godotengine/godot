@@ -1200,7 +1200,7 @@ uint32_t RenderingDeviceVulkan::get_image_required_mipmaps(uint32_t p_width, uin
 		d = MAX(1, d >> 1);
 
 		mipmaps++;
-	};
+	}
 
 	return mipmaps;
 }
@@ -3679,7 +3679,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		// Set view masks for each subpass
 		for (uint32_t i = 0; i < subpasses.size(); i++) {
 			view_masks.push_back(view_mask);
-		};
+		}
 
 		render_pass_multiview_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
 		render_pass_multiview_create_info.pNext = nullptr;
@@ -6326,7 +6326,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 
 				attachment_states.push_back(state);
 				idx++;
-			};
+			}
 		}
 
 		ERR_FAIL_COND_V(attachment_states.size() != p_blend_state.attachments.size(), RID());
@@ -9013,49 +9013,49 @@ uint64_t RenderingDeviceVulkan::get_driver_resource(DriverResource p_resource, R
 	switch (p_resource) {
 		case DRIVER_RESOURCE_VULKAN_DEVICE: {
 			return (uint64_t)context->get_device();
-		}; break;
+		} break;
 		case DRIVER_RESOURCE_VULKAN_PHYSICAL_DEVICE: {
 			return (uint64_t)context->get_physical_device();
-		}; break;
+		} break;
 		case DRIVER_RESOURCE_VULKAN_INSTANCE: {
 			return (uint64_t)context->get_instance();
-		}; break;
+		} break;
 		case DRIVER_RESOURCE_VULKAN_QUEUE: {
 			return (uint64_t)context->get_graphics_queue();
-		}; break;
+		} break;
 		case DRIVER_RESOURCE_VULKAN_QUEUE_FAMILY_INDEX: {
 			return context->get_graphics_queue_family_index();
-		}; break;
+		} break;
 		case DRIVER_RESOURCE_VULKAN_IMAGE: {
 			Texture *tex = texture_owner.get_or_null(p_rid);
 			ERR_FAIL_NULL_V(tex, 0);
 
 			return (uint64_t)tex->image;
-		}; break;
+		} break;
 		case DRIVER_RESOURCE_VULKAN_IMAGE_VIEW: {
 			Texture *tex = texture_owner.get_or_null(p_rid);
 			ERR_FAIL_NULL_V(tex, 0);
 
 			return (uint64_t)tex->view;
-		}; break;
+		} break;
 		case DRIVER_RESOURCE_VULKAN_IMAGE_NATIVE_TEXTURE_FORMAT: {
 			Texture *tex = texture_owner.get_or_null(p_rid);
 			ERR_FAIL_NULL_V(tex, 0);
 
 			return vulkan_formats[tex->format];
-		}; break;
+		} break;
 		case DRIVER_RESOURCE_VULKAN_SAMPLER: {
 			VkSampler *sampler = sampler_owner.get_or_null(p_rid);
 			ERR_FAIL_NULL_V(sampler, 0);
 
 			return uint64_t(*sampler);
-		}; break;
+		} break;
 		case DRIVER_RESOURCE_VULKAN_DESCRIPTOR_SET: {
 			UniformSet *uniform_set = uniform_set_owner.get_or_null(p_rid);
 			ERR_FAIL_NULL_V(uniform_set, 0);
 
 			return uint64_t(uniform_set->descriptor_set);
-		}; break;
+		} break;
 		case DRIVER_RESOURCE_VULKAN_BUFFER: {
 			Buffer *buffer = nullptr;
 			if (vertex_buffer_owner.owns(p_rid)) {
@@ -9073,23 +9073,23 @@ uint64_t RenderingDeviceVulkan::get_driver_resource(DriverResource p_resource, R
 			ERR_FAIL_NULL_V(buffer, 0);
 
 			return uint64_t(buffer->buffer);
-		}; break;
+		} break;
 		case DRIVER_RESOURCE_VULKAN_COMPUTE_PIPELINE: {
 			ComputePipeline *compute_pipeline = compute_pipeline_owner.get_or_null(p_rid);
 			ERR_FAIL_NULL_V(compute_pipeline, 0);
 
 			return uint64_t(compute_pipeline->pipeline);
-		}; break;
+		} break;
 		case DRIVER_RESOURCE_VULKAN_RENDER_PIPELINE: {
 			RenderPipeline *render_pipeline = render_pipeline_owner.get_or_null(p_rid);
 			ERR_FAIL_NULL_V(render_pipeline, 0);
 
 			return uint64_t(render_pipeline->pipeline);
-		}; break;
+		} break;
 		default: {
 			// not supported for this driver
 			return 0;
-		}; break;
+		} break;
 	}
 }
 

@@ -1894,7 +1894,6 @@ void RendererSceneGIRD::SDFGI::render_static_lights(RID p_render_buffers, uint32
 	RD::get_singleton()->draw_command_begin_label("SDFGI Render Static Lighs");
 
 	update_cascades();
-	; //need cascades updated for this
 
 	SDFGIShader::Light lights[SDFGI::MAX_STATIC_LIGHTS];
 	uint32_t light_count[SDFGI::MAX_STATIC_LIGHTS];

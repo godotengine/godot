@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "platform/javascript/display_server_javascript.h"
+#include "display_server_javascript.h"
 
 #ifdef GLES3_ENABLED
 #include "drivers/gles3/rasterizer_gles3.h"
@@ -325,12 +325,13 @@ void DisplayServerJavaScript::cursor_set_custom_image(const RES &p_cursor, Curso
 
 		image = image->duplicate();
 
-		if (atlas_texture.is_valid())
+		if (atlas_texture.is_valid()) {
 			image->crop_from_point(
 					atlas_rect.position.x,
 					atlas_rect.position.y,
 					texture_size.width,
 					texture_size.height);
+		}
 
 		if (image->get_format() != Image::FORMAT_RGBA8) {
 			image->convert(Image::FORMAT_RGBA8);
@@ -618,8 +619,9 @@ void DisplayServerJavaScript::set_icon(const Ref<Image> &p_icon) {
 		ERR_FAIL_COND(icon->decompress() != OK);
 	}
 	if (icon->get_format() != Image::FORMAT_RGBA8) {
-		if (icon == p_icon)
+		if (icon == p_icon) {
 			icon = icon->duplicate();
+		}
 		icon->convert(Image::FORMAT_RGBA8);
 	}
 
@@ -891,8 +893,9 @@ Size2i DisplayServerJavaScript::window_get_real_size(WindowID p_window) const {
 }
 
 void DisplayServerJavaScript::window_set_mode(WindowMode p_mode, WindowID p_window) {
-	if (window_mode == p_mode)
+	if (window_mode == p_mode) {
 		return;
+	}
 
 	switch (p_mode) {
 		case WINDOW_MODE_WINDOWED: {

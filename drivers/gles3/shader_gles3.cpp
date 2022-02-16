@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "shader_gles3.h"
+
 #ifdef GLES3_ENABLED
 
 #include "core/io/compression.h"

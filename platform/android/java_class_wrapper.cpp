@@ -29,13 +29,15 @@
 /*************************************************************************/
 
 #include "api/java_class_wrapper.h"
+
 #include "string_android.h"
 #include "thread_jandroid.h"
 
 bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error, Variant &ret) {
 	Map<StringName, List<MethodInfo>>::Element *M = methods.find(p_method);
-	if (!M)
+	if (!M) {
 		return false;
+	}
 
 	JNIEnv *env = get_jni_env();
 	ERR_FAIL_COND_V(env == nullptr, false);
@@ -68,8 +70,9 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 					//bug?
 				} break;
 				case ARG_TYPE_BOOLEAN: {
-					if (p_args[i]->get_type() != Variant::BOOL)
+					if (p_args[i]->get_type() != Variant::BOOL) {
 						arg_expected = Variant::BOOL;
+					}
 				} break;
 				case ARG_NUMBER_CLASS_BIT | ARG_TYPE_BYTE:
 				case ARG_NUMBER_CLASS_BIT | ARG_TYPE_CHAR:
@@ -81,27 +84,27 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				case ARG_TYPE_SHORT:
 				case ARG_TYPE_INT:
 				case ARG_TYPE_LONG: {
-					if (!p_args[i]->is_num())
+					if (!p_args[i]->is_num()) {
 						arg_expected = Variant::INT;
-
+					}
 				} break;
 				case ARG_NUMBER_CLASS_BIT | ARG_TYPE_FLOAT:
 				case ARG_NUMBER_CLASS_BIT | ARG_TYPE_DOUBLE:
 				case ARG_TYPE_FLOAT:
 				case ARG_TYPE_DOUBLE: {
-					if (!p_args[i]->is_num())
+					if (!p_args[i]->is_num()) {
 						arg_expected = Variant::FLOAT;
-
+					}
 				} break;
 				case ARG_TYPE_STRING: {
-					if (p_args[i]->get_type() != Variant::STRING)
+					if (p_args[i]->get_type() != Variant::STRING) {
 						arg_expected = Variant::STRING;
-
+					}
 				} break;
 				case ARG_TYPE_CLASS: {
-					if (p_args[i]->get_type() != Variant::OBJECT)
+					if (p_args[i]->get_type() != Variant::OBJECT) {
 						arg_expected = Variant::OBJECT;
-					else {
+					} else {
 						Ref<RefCounted> ref = *p_args[i];
 						if (!ref.is_null()) {
 							if (Object::cast_to<JavaObject>(ref.ptr())) {
@@ -118,12 +121,11 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 							}
 						}
 					}
-
 				} break;
 				default: {
-					if (p_args[i]->get_type() != Variant::ARRAY)
+					if (p_args[i]->get_type() != Variant::ARRAY) {
 						arg_expected = Variant::ARRAY;
-
+					}
 				} break;
 			}
 
@@ -135,15 +137,17 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				break;
 			}
 		}
-		if (!valid)
+		if (!valid) {
 			continue;
+		}
 
 		method = &E;
 		break;
 	}
 
-	if (!method)
+	if (!method) {
 		return true; //no version convinces
+	}
 
 	r_error.error = Callable::CallError::CALL_OK;
 
@@ -780,9 +784,9 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 
 			for (int i = 0; i < count; i++) {
 				jobject o = env->GetObjectArrayElement(arr, i);
-				if (!o)
+				if (!o) {
 					ret.push_back(Variant());
-				else {
+				} else {
 					bool val = env->CallBooleanMethod(o, JavaClassWrapper::singleton->Boolean_booleanValue);
 					ret.push_back(val);
 				}
@@ -801,9 +805,9 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 
 			for (int i = 0; i < count; i++) {
 				jobject o = env->GetObjectArrayElement(arr, i);
-				if (!o)
+				if (!o) {
 					ret.push_back(Variant());
-				else {
+				} else {
 					int val = env->CallByteMethod(o, JavaClassWrapper::singleton->Byte_byteValue);
 					ret.push_back(val);
 				}
@@ -821,9 +825,9 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 
 			for (int i = 0; i < count; i++) {
 				jobject o = env->GetObjectArrayElement(arr, i);
-				if (!o)
+				if (!o) {
 					ret.push_back(Variant());
-				else {
+				} else {
 					int val = env->CallCharMethod(o, JavaClassWrapper::singleton->Character_characterValue);
 					ret.push_back(val);
 				}
@@ -841,9 +845,9 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 
 			for (int i = 0; i < count; i++) {
 				jobject o = env->GetObjectArrayElement(arr, i);
-				if (!o)
+				if (!o) {
 					ret.push_back(Variant());
-				else {
+				} else {
 					int val = env->CallShortMethod(o, JavaClassWrapper::singleton->Short_shortValue);
 					ret.push_back(val);
 				}
@@ -861,9 +865,9 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 
 			for (int i = 0; i < count; i++) {
 				jobject o = env->GetObjectArrayElement(arr, i);
-				if (!o)
+				if (!o) {
 					ret.push_back(Variant());
-				else {
+				} else {
 					int val = env->CallIntMethod(o, JavaClassWrapper::singleton->Integer_integerValue);
 					ret.push_back(val);
 				}
@@ -881,9 +885,9 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 
 			for (int i = 0; i < count; i++) {
 				jobject o = env->GetObjectArrayElement(arr, i);
-				if (!o)
+				if (!o) {
 					ret.push_back(Variant());
-				else {
+				} else {
 					int64_t val = env->CallLongMethod(o, JavaClassWrapper::singleton->Long_longValue);
 					ret.push_back(val);
 				}
@@ -901,9 +905,9 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 
 			for (int i = 0; i < count; i++) {
 				jobject o = env->GetObjectArrayElement(arr, i);
-				if (!o)
+				if (!o) {
 					ret.push_back(Variant());
-				else {
+				} else {
 					float val = env->CallFloatMethod(o, JavaClassWrapper::singleton->Float_floatValue);
 					ret.push_back(val);
 				}
@@ -921,9 +925,9 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 
 			for (int i = 0; i < count; i++) {
 				jobject o = env->GetObjectArrayElement(arr, i);
-				if (!o)
+				if (!o) {
 					ret.push_back(Variant());
-				else {
+				} else {
 					double val = env->CallDoubleMethod(o, JavaClassWrapper::singleton->Double_doubleValue);
 					ret.push_back(val);
 				}
@@ -942,9 +946,9 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 
 			for (int i = 0; i < count; i++) {
 				jobject o = env->GetObjectArrayElement(arr, i);
-				if (!o)
+				if (!o) {
 					ret.push_back(Variant());
-				else {
+				} else {
 					String val = jstring_to_string((jstring)o, env);
 					ret.push_back(val);
 				}
@@ -962,18 +966,15 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 }
 
 Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
-	if (class_cache.has(p_class))
+	if (class_cache.has(p_class)) {
 		return class_cache[p_class];
+	}
 
 	JNIEnv *env = get_jni_env();
 	ERR_FAIL_COND_V(env == nullptr, Ref<JavaClass>());
 
 	jclass bclass = env->FindClass(p_class.utf8().get_data());
 	ERR_FAIL_COND_V(!bclass, Ref<JavaClass>());
-
-	//jmethodID getDeclaredMethods = env->GetMethodID(bclass,"getDeclaredMethods", "()[Ljava/lang/reflect/Method;");
-
-	//ERR_FAIL_COND_V(!getDeclaredMethods,Ref<JavaClass>());
 
 	jobjectArray methods = (jobjectArray)env->CallObjectMethod(bclass, getDeclaredMethods);
 
@@ -1057,8 +1058,9 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 			float new_likeliness = 0;
 			float existing_likeliness = 0;
 
-			if (E->get().param_types.size() != mi.param_types.size())
+			if (E->get().param_types.size() != mi.param_types.size()) {
 				continue;
+			}
 			bool valid = true;
 			for (int j = 0; j < E->get().param_types.size(); j++) {
 				Variant::Type _new;
@@ -1075,8 +1077,9 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 				existing_likeliness = existing_l;
 			}
 
-			if (!valid)
+			if (!valid) {
 				continue;
+			}
 
 			if (new_likeliness > existing_likeliness) {
 				java_class->methods[str_method].erase(E);
@@ -1087,10 +1090,11 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 		}
 
 		if (!discard) {
-			if (mi._static)
+			if (mi._static) {
 				mi.method = env->GetStaticMethodID(bclass, str_method.utf8().get_data(), signature.utf8().get_data());
-			else
+			} else {
 				mi.method = env->GetMethodID(bclass, str_method.utf8().get_data(), signature.utf8().get_data());
+			}
 
 			ERR_CONTINUE(!mi.method);
 
@@ -1100,7 +1104,7 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 		env->DeleteLocalRef(obj);
 		env->DeleteLocalRef(param_types);
 		env->DeleteLocalRef(return_type);
-	};
+	}
 
 	env->DeleteLocalRef(methods);
 

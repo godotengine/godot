@@ -4794,7 +4794,7 @@ DisplayServerX11::~DisplayServerX11() {
 		if (img[i] != nullptr) {
 			XcursorImageDestroy(img[i]);
 		}
-	};
+	}
 
 	if (xim) {
 		XCloseIM(xim);

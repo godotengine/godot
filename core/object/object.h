@@ -245,13 +245,7 @@ struct MethodInfo {
 	MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5);
 };
 
-// old cast_to
-//if ( is_type(T::get_class_static()) )
-//return static_cast<T*>(this);
-////else
-//return nullptr;
-
-// API used to extend in GDNative and other C compatible compiled languages
+// API used to extend in GDNative and other C compatible compiled languages.
 class MethodBind;
 
 struct ObjectNativeExtension {
@@ -297,8 +291,10 @@ struct ObjectNativeExtension {
 #define GDVIRTUAL_IS_OVERRIDDEN_PTR(m_obj, m_name) m_obj->_gdvirtual_##m_name##_overridden()
 
 /*
-   the following is an incomprehensible blob of hacks and workarounds to compensate for many of the fallencies in C++. As a plus, this macro pretty much alone defines the object model.
-*/
+ * The following is an incomprehensible blob of hacks and workarounds to
+ * compensate for many of the fallacies in C++. As a plus, this macro pretty
+ * much alone defines the object model.
+ */
 
 #define REVERSE_GET_PROPERTY_LIST                                  \
 public:                                                            \
@@ -534,7 +530,7 @@ private:
 	Set<String> editor_section_folding;
 #endif
 	ScriptInstance *script_instance = nullptr;
-	Variant script; //reference does not yet exist, store it in a
+	Variant script; // Reference does not exist yet, store it in a Variant.
 	Dictionary metadata;
 	mutable StringName _class_name;
 	mutable const StringName *_class_ptr = nullptr;
@@ -583,6 +579,7 @@ protected:
 		}
 		return can_die;
 	}
+
 	friend class NativeExtensionMethodBind;
 	_ALWAYS_INLINE_ const ObjectNativeExtension *_get_extension() const { return _extension; }
 	_ALWAYS_INLINE_ GDExtensionClassInstancePtr _get_extension_instance() const { return _extension_instance; }
@@ -617,9 +614,6 @@ protected:
 	static void get_valid_parents_static(List<String> *p_parents);
 	static void _get_valid_parents_static(List<String> *p_parents);
 
-	//Variant _call_bind(const StringName& p_name, const Variant& p_arg1 = Variant(), const Variant& p_arg2 = Variant(), const Variant& p_arg3 = Variant(), const Variant& p_arg4 = Variant());
-	//void _call_deferred_bind(const StringName& p_name, const Variant& p_arg1 = Variant(), const Variant& p_arg2 = Variant(), const Variant& p_arg3 = Variant(), const Variant& p_arg4 = Variant());
-
 	Variant _call_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Variant _call_deferred_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
@@ -641,7 +635,7 @@ protected:
 
 	void _disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force = false);
 
-public: //should be protected, but bug in clang++
+public: // Should be protected, but bug in clang++.
 	static void initialize_class();
 	_FORCE_INLINE_ static void register_custom_data_to_otdb() {}
 
@@ -729,8 +723,6 @@ public:
 	}
 
 	/* IAPI */
-	//void set(const String& p_name, const Variant& p_value);
-	//Variant get(const String& p_name) const;
 
 	void set(const StringName &p_name, const Variant &p_value, bool *r_valid = nullptr);
 	Variant get(const StringName &p_name, bool *r_valid = nullptr) const;
@@ -748,7 +740,7 @@ public:
 	void notification(int p_notification, bool p_reversed = false);
 	virtual String to_string();
 
-	//used mainly by script, get and set all INCLUDING string
+	// Used mainly by script, get and set all INCLUDING string.
 	virtual Variant getvar(const Variant &p_key, bool *r_valid = nullptr) const;
 	virtual void setvar(const Variant &p_key, const Variant &p_value, bool *r_valid = nullptr);
 
@@ -756,8 +748,6 @@ public:
 
 	void set_script(const Variant &p_script);
 	Variant get_script() const;
-
-	/* SCRIPT */
 
 	bool has_meta(const StringName &p_name) const;
 	void set_meta(const StringName &p_name, const Variant &p_value);
@@ -768,13 +758,15 @@ public:
 #ifdef TOOLS_ENABLED
 	void set_edited(bool p_edited);
 	bool is_edited() const;
-	uint32_t get_edited_version() const; //this function is used to check when something changed beyond a point, it's used mainly for generating previews
+	// This function is used to check when something changed beyond a point, it's used mainly for generating previews.
+	uint32_t get_edited_version() const;
 #endif
 
 	void set_script_instance(ScriptInstance *p_instance);
 	_FORCE_INLINE_ ScriptInstance *get_script_instance() const { return script_instance; }
 
-	void set_script_and_instance(const Variant &p_script, ScriptInstance *p_instance); //some script languages can't control instance creation, so this function eases the process
+	// Some script languages can't control instance creation, so this function eases the process.
+	void set_script_and_instance(const Variant &p_script, ScriptInstance *p_instance);
 
 	void add_user_signal(const MethodInfo &p_signal);
 	Error emit_signal(const StringName &p_name, VARIANT_ARG_LIST);
@@ -803,10 +795,11 @@ public:
 
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
 
-	String tr(const StringName &p_message, const StringName &p_context = "") const; // translate message (internationalization)
+	// Translate message (internationalization).
+	String tr(const StringName &p_message, const StringName &p_context = "") const;
 	String tr_n(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
 
-	bool _is_queued_for_deletion = false; // set to true by SceneTree::queue_delete()
+	bool _is_queued_for_deletion = false; // Set to true by SceneTree::queue_delete().
 	bool is_queued_for_deletion() const;
 
 	_FORCE_INLINE_ void set_message_translation(bool p_enable) { _can_translate = p_enable; }
@@ -838,14 +831,14 @@ bool predelete_handler(Object *p_object);
 void postinitialize_handler(Object *p_object);
 
 class ObjectDB {
-//this needs to add up to 63, 1 bit is for reference
+// This needs to add up to 63, 1 bit is for reference.
 #define OBJECTDB_VALIDATOR_BITS 39
 #define OBJECTDB_VALIDATOR_MASK ((uint64_t(1) << OBJECTDB_VALIDATOR_BITS) - 1)
 #define OBJECTDB_SLOT_MAX_COUNT_BITS 24
 #define OBJECTDB_SLOT_MAX_COUNT_MASK ((uint64_t(1) << OBJECTDB_SLOT_MAX_COUNT_BITS) - 1)
 #define OBJECTDB_REFERENCE_BIT (uint64_t(1) << (OBJECTDB_SLOT_MAX_COUNT_BITS + OBJECTDB_VALIDATOR_BITS))
 
-	struct ObjectSlot { //128 bits per slot
+	struct ObjectSlot { // 128 bits per slot.
 		uint64_t validator : OBJECTDB_VALIDATOR_BITS;
 		uint64_t next_free : OBJECTDB_SLOT_MAX_COUNT_BITS;
 		uint64_t is_ref_counted : 1;
@@ -875,7 +868,7 @@ public:
 		uint64_t id = p_instance_id;
 		uint32_t slot = id & OBJECTDB_SLOT_MAX_COUNT_MASK;
 
-		ERR_FAIL_COND_V(slot >= slot_max, nullptr); //this should never happen unless RID is corrupted
+		ERR_FAIL_COND_V(slot >= slot_max, nullptr); // This should never happen unless RID is corrupted.
 
 		spin_lock.lock();
 

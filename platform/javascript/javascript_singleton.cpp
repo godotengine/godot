@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "api/javascript_singleton.h"
+
 #include "emscripten.h"
 #include "os_javascript.h"
 

@@ -61,7 +61,6 @@ void AudioEffectStereoEnhanceInstance::process(const AudioFrame *p_src_frames, A
 
 			//r is delayed
 			r = delay_ringbuff[(ringbuff_pos - delay_frames) & ringbuff_mask];
-			;
 		}
 
 		p_dst_frames[i].l = l;

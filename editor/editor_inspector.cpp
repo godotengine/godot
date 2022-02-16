@@ -1858,7 +1858,6 @@ int EditorInspectorArray::_drop_position() const {
 
 void EditorInspectorArray::_new_size_line_edit_text_changed(String p_text) {
 	bool valid = false;
-	;
 	if (p_text.is_valid_int()) {
 		int val = p_text.to_int();
 		if (val > 0 && val != count) {
@@ -1870,7 +1869,6 @@ void EditorInspectorArray::_new_size_line_edit_text_changed(String p_text) {
 
 void EditorInspectorArray::_new_size_line_edit_text_submitted(String p_text) {
 	bool valid = false;
-	;
 	if (p_text.is_valid_int()) {
 		int val = p_text.to_int();
 		if (val > 0 && val != count) {
