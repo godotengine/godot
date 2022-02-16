@@ -5060,6 +5060,9 @@ GLTFMeshIndex GLTFDocument::_convert_mesh_to_gltf(Ref<GLTFState> state, MeshInst
 			String mat_name;
 			if (mat.is_valid()) {
 				mat_name = mat->get_name();
+			} else {
+				// Assign default material when no material is assigned.
+				mat = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
 			}
 			current_mesh->add_surface(import_mesh->surface_get_primitive_type(surface_i),
 					array, import_mesh->surface_get_blend_shape_arrays(surface_i), import_mesh->surface_get_lods(surface_i), mat,
