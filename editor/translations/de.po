@@ -75,13 +75,14 @@
 # Zae Chao <zaevi@live.com>, 2021.
 # Tim <tim14speckenwirth@gmail.com>, 2021.
 # Antonio Noack <corperateraider@gmail.com>, 2022.
+# ‎ <artism90@googlemail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-01-12 16:52+0000\n"
-"Last-Translator: So Wieso <sowieso@dukun.de>\n"
+"PO-Revision-Date: 2022-02-16 08:44+0000\n"
+"Last-Translator: ‎ <artism90@googlemail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -89,7 +90,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.10.1\n"
+"X-Generator: Weblate 4.11-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -577,8 +578,8 @@ msgid ""
 "\n"
 "To enable the ability to add custom tracks, navigate to the scene's import "
 "settings and set\n"
-"\"Animation > Storage\" to \"Files\", enable \"Animation > Keep Custom Tracks"
-"\", then re-import.\n"
+"\"Animation > Storage\" to \"Files\", enable \"Animation > Keep Custom "
+"Tracks\", then re-import.\n"
 "Alternatively, use an import preset that imports animations to separate "
 "files."
 msgstr ""
@@ -1449,7 +1450,7 @@ msgid "Bus Options"
 msgstr "Audiobusoptionen"
 
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/scene_tree_dock.cpp
 msgid "Duplicate"
 msgstr "Duplizieren"
 
@@ -2249,8 +2250,9 @@ msgid ""
 "There is currently no description for this property. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"Es gibt zurzeit keine Beschreibung dieses Objekts. [color=$color][url="
-"$url]Ergänzungen durch eigene Beiträge[/url][/color] sind sehr erwünscht!"
+"Es gibt zurzeit keine Beschreibung dieses Objekts. [color=$color]"
+"[url=$url]Ergänzungen durch eigene Beiträge[/url][/color] sind sehr "
+"erwünscht!"
 
 #: editor/editor_help.cpp
 msgid "Method Descriptions"
@@ -2258,11 +2260,12 @@ msgstr "Methoden-Beschreibung"
 
 #: editor/editor_help.cpp
 msgid ""
-"There is currently no description for this method. Please help us by [color="
-"$color][url=$url]contributing one[/url][/color]!"
+"There is currently no description for this method. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"Es gibt zurzeit keine Beschreibung dieser Methode. [color=$color][url="
-"$url]Ergänzungen durch eigene Beiträge[/url][/color] sind sehr erwünscht!"
+"Es gibt zurzeit keine Beschreibung dieser Methode. [color=$color]"
+"[url=$url]Ergänzungen durch eigene Beiträge[/url][/color] sind sehr "
+"erwünscht!"
 
 #: editor/editor_help_search.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -3121,9 +3124,8 @@ msgid "Install Android Build Template..."
 msgstr "Android-Build-Vorlage installieren..."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open User Data Folder"
-msgstr "Editordateiverzeichnis öffnen"
+msgstr "Datei-Ordner des Nutzers öffnen"
 
 #: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
@@ -3334,7 +3336,7 @@ msgstr "Dokumentationsvorschläge senden"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr "Gemeinschaft"
+msgstr "Community"
 
 #: editor/editor_node.cpp
 msgid "About Godot"
@@ -3394,8 +3396,14 @@ msgid "Update Continuously"
 msgstr "Fortlaufend aktualisieren"
 
 #: editor/editor_node.cpp
-msgid "Update When Changed"
+#, fuzzy
+msgid "Update All Changes"
 msgstr "Bei Änderungen aktualisieren"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Update Vital Changes"
+msgstr "Materialänderungen:"
 
 #: editor/editor_node.cpp
 msgid "Hide Update Spinner"
@@ -3842,9 +3850,8 @@ msgstr "Aus Node importieren:"
 
 #. TRANSLATORS: %s refers to the name of a version control system (e.g. "Git").
 #: editor/editor_vcs_interface.cpp
-#, fuzzy
 msgid "%s Error"
-msgstr "Fehler"
+msgstr "%s Fehler"
 
 #: editor/export_template_manager.cpp
 msgid "Open the folder containing these templates."
@@ -4169,6 +4176,14 @@ msgstr "Name enthält ungültige Zeichen."
 
 #: editor/filesystem_dock.cpp
 msgid ""
+"This file extension is not recognized by the editor.\n"
+"If you want to rename it anyway, use your operating system's file manager.\n"
+"After renaming to an unknown extension, the file won't be shown in the "
+"editor anymore."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
+msgid ""
 "The following files or folders conflict with items in the target location "
 "'%s':\n"
 "\n"
@@ -4287,7 +4302,7 @@ msgstr "Nach Bearbeitungszeit sortieren (Aktuelles zuerst)"
 msgid "Sort by First Modified"
 msgstr "Nach Bearbeitungszeit sortieren (Aktuelles zuletzt)"
 
-#: editor/filesystem_dock.cpp
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate..."
 msgstr "Duplizieren..."
 
@@ -5105,6 +5120,10 @@ msgid "Rename Animation"
 msgstr "Animation umbenennen"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Duplicate Animation"
+msgstr "Animation duplizieren"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Next Changed"
 msgstr "Blende über in nächste Geänderte"
 
@@ -5115,10 +5134,6 @@ msgstr "Überblendungszeit ändern"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
 msgstr "Animation laden"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Duplicate Animation"
-msgstr "Animation duplizieren"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "No animation to copy!"
@@ -8023,7 +8038,7 @@ msgstr "IK abspielen"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orthogonal"
-msgstr "Senkrecht"
+msgstr "Orthogonal"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Perspective"
@@ -9830,7 +9845,6 @@ msgid "TileSet"
 msgstr "Kachelsatz"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "No VCS plugins are available."
 msgstr "Keine Versionsverwaltungserweiterungen verfügbar."
 
@@ -9842,53 +9856,48 @@ msgstr "Fehler"
 msgid ""
 "Remote settings are empty. VCS features that use the network may not work."
 msgstr ""
+"Keine Remote-Einstellungen vorhanden. VCS-Netzwerk-Funktionen werden "
+"wahrscheinlich nicht funktionieren."
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "No commit message was provided."
-msgstr "Kein Name angegeben."
+msgstr "Keine Commit-Nachricht angegeben."
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit"
 msgstr "Speicherpunkt"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Staged Changes"
-msgstr "Shader-Änderungen:"
+msgstr "Vorgemerkte Änderungen"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Unstaged Changes"
-msgstr "Shader-Änderungen:"
+msgstr "Nicht vorgemerkte Änderungen"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Commit:"
-msgstr "Speicherpunkt"
+msgstr "Commit:"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Date:"
-msgstr ""
+msgstr "Datum:"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Subtitle:"
-msgstr "Unterbaum"
+msgstr "Untertitel:"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Do you want to remove the %s branch?"
-msgstr ""
+msgstr "Soll Zweig %s wirklich entfernt werden?"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Do you want to remove the %s remote?"
-msgstr "Soll wirklich ein leerer Typ erstellt werden?"
+msgstr "Soll die Remote %s wirklich entfernt werden?"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Apply"
-msgstr "Zurücksetzen durchführen"
+msgstr "Anwenden"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Version Control System"
@@ -9899,148 +9908,132 @@ msgid "Initialize"
 msgstr "Initialisieren"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remote Login"
-msgstr "Punkt entfernen"
+msgstr "Remote-Logininformationen"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Username"
-msgstr "Umbenennen"
+msgstr "Nutzername"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Password"
-msgstr ""
+msgstr "Passwort"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "SSH Public Key Path"
-msgstr ""
+msgstr "Pfad des öffentlichen SSH-Schlüssels"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Select SSH public key path"
-msgstr ""
+msgstr "Pfad zum öffentlichen SSH-Schlüssel auswählen"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "SSH Private Key Path"
-msgstr ""
+msgstr "Pfad des privaten SSH-Schlüssels"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Select SSH private key path"
-msgstr ""
+msgstr "Pfad des privaten SSH-Schlüssels auswählen"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "SSH Passphrase"
-msgstr ""
+msgstr "SSH-Passphrase"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Detect new changes"
 msgstr "Neue Veränderungen beachten"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Discard all changes"
-msgstr "Schließen und Änderungen speichern?"
+msgstr "Alle Änderungen verwerfen"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Stage all changes"
-msgstr "Speichere lokale Änderungen..."
+msgstr "Alle Änderungen vormerken"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Unstage all changes"
-msgstr "Materialänderungen:"
+msgstr "Alle Änderungen nicht vormerken"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Commit Message"
-msgstr "Änderungen als Speicherpunkt sichern"
+msgstr "Commit-Nachricht"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
 msgstr "Änderungen als Speicherpunkt sichern"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Commit List"
-msgstr "Speicherpunkt"
+msgstr "Commit-Liste"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit list size"
-msgstr ""
+msgstr "Größe der Commit-Liste"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "10"
-msgstr ""
+msgstr "10"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "20"
-msgstr ""
+msgstr "20"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "30"
-msgstr ""
+msgstr "30"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Branches"
-msgstr "Treffer:"
+msgstr "Zweige"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Create New Branch"
-msgstr "Erstelle neues Projekt"
+msgstr "Neuen Zweig erstellen"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Branch"
-msgstr "Spur entfernen"
+msgstr "Zweig entfernen"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Branch Name"
-msgstr ""
+msgstr "Zweigname"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remotes"
-msgstr "Fern"
+msgstr "Remotes"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Create New Remote"
-msgstr "Erstelle neues Projekt"
+msgstr "Neues Remote eintragen"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Remote"
-msgstr "Entferne Element"
+msgstr "Remote entfernen"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remote Name"
-msgstr "Fern "
+msgstr "Remote-Name"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Remote URL"
-msgstr "Fern "
+msgstr "Remote-URL"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Fetch"
-msgstr ""
+msgstr "Fetch"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Pull"
-msgstr ""
+msgstr "Pull"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Push"
-msgstr ""
+msgstr "Push"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Force Push"
-msgstr "Quell-Mesh:"
+msgstr "Force Push"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Modified"
@@ -10060,22 +10053,19 @@ msgstr "Dateitypänderung"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Unmerged"
-msgstr ""
+msgstr "Nicht zusammengeführt"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "View:"
-msgstr "Ansicht"
+msgstr "Ansicht:"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Split"
-msgstr "Pfad aufteilen"
+msgstr "Teilen"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Unified"
-msgstr "Bearbeitet"
+msgstr "Vereinheitlicht"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only)"
@@ -12299,7 +12289,7 @@ msgstr "Benutzerschnittstelle"
 
 #: editor/scene_tree_dock.cpp
 msgid "Other Node"
-msgstr "Anderes Node"
+msgstr "Anderer Node"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes from a foreign scene!"
@@ -12926,6 +12916,16 @@ msgstr "Occluder-Sphärenradius festlegen"
 #: editor/spatial_editor_gizmos.cpp
 msgid "Set Occluder Sphere Position"
 msgstr "Occluder-Sphärenposition festlegen"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Occluder Polygon Point Position"
+msgstr "Portal-Point-Position festlegen"
+
+#: editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Set Occluder Hole Point Position"
+msgstr "Kurvenpunktposition festlegen"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
@@ -13643,38 +13643,36 @@ msgid "Edit Member"
 msgstr "Mitglied bearbeiten"
 
 #: modules/visual_script/visual_script_expression.cpp
-#, fuzzy
 msgid "Expression"
-msgstr "Ausdruck eintragen"
+msgstr "Ausdruck"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Return"
-msgstr ""
+msgstr "Rückgabewert"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-#, fuzzy
 msgid "Condition"
-msgstr "Animation"
+msgstr "Bedingung"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "if (cond) is:"
-msgstr ""
+msgstr "if (Bedingung) ist:"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "While"
-msgstr ""
+msgstr "Während"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "while (cond):"
-msgstr ""
+msgstr "while (Bedinung):"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator"
-msgstr ""
+msgstr "Iterator"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "for (elem) in (input):"
-msgstr ""
+msgstr "for (Element) in (Eingabe):"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
@@ -13690,79 +13688,71 @@ msgstr "Iterator wurde ungültig: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Sequence"
-msgstr ""
+msgstr "Sequenz"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-#, fuzzy
 msgid "in order:"
-msgstr "Benenne Ordner um:"
+msgstr "in Reihenfolge:"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-#, fuzzy
 msgid "Switch"
-msgstr "Neigung:"
+msgstr "Durchwechseln"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "'input' is:"
-msgstr ""
+msgstr "‚input‘ ist:"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-#, fuzzy
 msgid "Type Cast"
-msgstr "Typen:"
+msgstr "Typkonvertierung"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Is %s?"
-msgstr ""
+msgstr "Ist %s?"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "On %s"
-msgstr ""
+msgstr "auf %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "On Self"
-msgstr "Selbst"
+msgstr "Auf selbst"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Subtract %s"
-msgstr "Bei Zeichen %s"
+msgstr "%s abziehen"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Multiply %s"
-msgstr ""
+msgstr "%s multiplizieren"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Divide %s"
-msgstr ""
+msgstr "Durch %s dividieren"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Mod %s"
-msgstr "%s hinzufügen"
+msgstr "modulo %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "ShiftLeft %s"
-msgstr "%s setzen"
+msgstr "Linksshift %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "ShiftRight %s"
-msgstr ""
+msgstr "Rechtsshift %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "BitAnd %s"
-msgstr "%s angeheftet"
+msgstr "Bitweises Und %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "BitOr %s"
-msgstr ""
+msgstr "Bitweises Oder %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "BitXor %s"
-msgstr ""
+msgstr "Bitweises Exklusivoder %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 #: modules/visual_script/visual_script_nodes.cpp
@@ -13787,19 +13777,16 @@ msgid "Invalid index property name '%s' in node %s."
 msgstr "Ungültiger Indexeigenschaftsname ‚%s‘ in Node %s."
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Emit %s"
-msgstr "%s setzen"
+msgstr "%s emittieren"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Function"
-msgstr "Funktionen"
+msgstr "Funktion"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Compose Array"
-msgstr "Größe des Arrays ändern"
+msgstr "Array zusammenstellen"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid argument of type: "
@@ -13811,7 +13798,7 @@ msgstr ": Ungültige Parameter: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "a if cond, else b"
-msgstr ""
+msgstr "Falls Bedingung a, ansonsten b"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableGet not found in script: "
@@ -13822,64 +13809,52 @@ msgid "VariableSet not found in script: "
 msgstr "VariableSet nicht im Skript gefunden: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Preload"
-msgstr "Neu laden"
+msgstr "Vorladen"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Get Index"
-msgstr "Z-Index"
+msgstr "Index lesen"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Set Index"
-msgstr "Z-Index"
+msgstr "Index schreiben"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Global Constant"
-msgstr "Konstante"
+msgstr "Globale Konstante"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Class Constant"
-msgstr "Konstante"
+msgstr "Klassenkonstante"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Basic Constant"
-msgstr "Konstante"
+msgstr "Normale Konstante"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Math Constant"
-msgstr "Konstante"
+msgstr "Mathematische Konstante"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Get Engine Singleton"
-msgstr "GDNative Singleton wurde aktiviert"
+msgstr "Engine-Singleton erhalten"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Get Scene Node"
-msgstr "Zeitsuch-Node"
+msgstr "Szenen-Node erhalten"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Get Scene Tree"
-msgstr "Szenenbaum-Bearbeitung"
+msgstr "Szenenbaum erhalten"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Get Self"
-msgstr "Selbst"
+msgstr "Selbst erhalten"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "CustomNode"
-msgstr "Nodes trennen"
+msgstr "Benutzerdefiniertes Node"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Custom node has no _step() method, can't process graph."
@@ -13896,33 +13871,28 @@ msgstr ""
 "String (für Fehler) sein."
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "SubCall"
-msgstr "Aufrufe"
+msgstr "Unteraufruf"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Construct %s"
-msgstr "Konstanten"
+msgstr "%s konstruieren"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Get Local Var"
-msgstr "Lokalkoordinaten verwenden"
+msgstr "Lokale Variable erhalten"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Set Local Var"
-msgstr "Lokalkoordinaten verwenden"
+msgstr "Lokale Variable setzen"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Action %s"
-msgstr "Aktion"
+msgstr "Aktion %s"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Deconstruct %s"
-msgstr ""
+msgstr "Zerlege %s"
 
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search VisualScript"
@@ -13930,40 +13900,35 @@ msgstr "VisualScript suchen"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "Yield"
-msgstr ""
+msgstr "Übergebe"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "Wait"
-msgstr ""
+msgstr "Warte"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
-#, fuzzy
 msgid "Next Frame"
-msgstr "Frame verschieben"
+msgstr "Nächster Frame"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
-#, fuzzy
 msgid "Next Physics Frame"
-msgstr "Physik-relative Renderzeit %"
+msgstr "Nächster Physik-Frame"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "%s sec(s)"
-msgstr ""
+msgstr "%s sek"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
-#, fuzzy
 msgid "WaitSignal"
-msgstr "Ereignis"
+msgstr "Wartesignal"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
-#, fuzzy
 msgid "WaitNodeSignal"
-msgstr "Ereignis"
+msgstr "Node-Wartesignal"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
-#, fuzzy
 msgid "WaitInstanceSignal"
-msgstr "Instanz"
+msgstr "Instanz-Wartesignal"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Package name is missing."
@@ -14334,10 +14299,6 @@ msgstr ""
 msgid "Invalid Identifier:"
 msgstr "Ungültiger Bezeichner:"
 
-#: platform/iphone/export/export.cpp
-msgid "Required icon is not specified in the preset."
-msgstr "Benötigtes Icon wurde nicht in der Vorlage festgelegt."
-
 #: platform/javascript/export/export.cpp
 msgid "Stop HTTP Server"
 msgstr "HTTP Server Anhalten"
@@ -14378,16 +14339,202 @@ msgstr "Konnte HTTP-Server-Verzeichnis nicht erstellen:"
 msgid "Error starting HTTP server:"
 msgstr "Fehler beim Starten des HTTP-Servers:"
 
+#: platform/osx/export/codesign.cpp
+msgid "Can't get filesystem access."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to get Info.plist hash."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Invalid Info.plist, no exe name."
+msgstr "Ungültiger Projektname."
+
+#: platform/osx/export/codesign.cpp
+msgid "Invalid Info.plist, no bundle id."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Invalid Info.plist, can't load."
+msgstr "Ungültige Geometrie, Polygon kann nicht erzeugt werden."
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Failed to create \"%s\" subfolder."
+msgstr "Ordner konnte nicht erstellt werden."
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to extract thin binary."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Invalid binary format."
+msgstr "Ungültiger Basispfad."
+
+#: platform/osx/export/codesign.cpp
+msgid "Already signed!"
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Failed to process nested resources."
+msgstr "Laden der Ressource gescheitert."
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to create _CodeSignature subfolder."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Failed to get CodeResources hash."
+msgstr "Laden der Ressource gescheitert."
+
+#: platform/osx/export/codesign.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Invalid entitlements file."
+msgstr "Ungültige Dateiendung."
+
+#: platform/osx/export/codesign.cpp
+#, fuzzy
+msgid "Invalid executable file."
+msgstr "Ungültige Dateiendung."
+
+#: platform/osx/export/codesign.cpp
+msgid "Can't resize signature load command."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Failed to create fat binary."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Unknown bundle type."
+msgstr ""
+
+#: platform/osx/export/codesign.cpp
+msgid "Unknown object type."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Note: The notarization process generally takes less than an hour. When the "
+"process is completed, you'll receive an email."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"You can check progress manually by opening a Terminal and running the "
+"following command:"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Run the following command to staple the notarization ticket to the exported "
+"application (optional):"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "No identity found."
+msgstr "Keine Symbole gefunden."
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Creating app bundle"
+msgstr "Erzeuge Miniaturansicht"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Could not find template app to export:"
+msgstr ""
+"Konnte keine APK-Vorlage zum Exportieren finden:\n"
+"%s"
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Relative symlinks are not supported on this OS, the exported project might "
+"be broken!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Requested template binary '%s' not found. It might be missing from your "
+"template archive."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Making PKG"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Ad-hoc signed applications require the 'Disable Library Validation' "
+"entitlement to load dynamic libraries."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Code signing bundle"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Making DMG"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Code signing DMG"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Making ZIP"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Notarization requires the app to be archived first, select the DMG or ZIP "
+"export format instead."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Sending archive for notarization"
+msgstr ""
+
 #: platform/osx/export/export.cpp
 msgid "Invalid bundle identifier:"
 msgstr "Ungültiger Bundle-Bezeichner:"
 
 #: platform/osx/export/export.cpp
-msgid "Notarization: code signing required."
+msgid ""
+"Warning: Built-in \"codesign\" is selected in the Editor Settings. Code "
+"signing is limited to ad-hoc signature only."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Warning: Xcode command line tools are not installed, using built-in "
+"\"codesign\". Code signing is limited to ad-hoc signature only."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Notarization: Notarization with an ad-hoc signature is not supported."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Notarization: Code signing is required for notarization."
 msgstr "Beglaubigung: Code-Signierung wird benötigt."
 
 #: platform/osx/export/export.cpp
-msgid "Notarization: hardened runtime required."
+#, fuzzy
+msgid "Notarization: Hardened runtime is required for notarization."
+msgstr "Beglaubigung: Abgehärtete Ausführungsumgebung wird benötigt."
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Notarization: Timestamp runtime is required for notarization."
 msgstr "Beglaubigung: Abgehärtete Ausführungsumgebung wird benötigt."
 
 #: platform/osx/export/export.cpp
@@ -14397,6 +14544,69 @@ msgstr "Beglaubigung: Apple-ID-Name nicht angegeben."
 #: platform/osx/export/export.cpp
 msgid "Notarization: Apple ID password not specified."
 msgstr "Beglaubigung: Apple-ID-Passwort nicht angegeben."
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Warning: Notarization is disabled. The exported project will be blocked by "
+"Gatekeeper if it's downloaded from an unknown source."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Code signing is disabled. The exported project will not run on Macs with "
+"enabled Gatekeeper and Apple Silicon powered Macs."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Hardened Runtime is not compatible with ad-hoc signature, and will be "
+"disabled!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Timestamping is not compatible with ad-hoc signature, and will be disabled!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Warning: Notarization is not supported from this OS. The exported project "
+"will be blocked by Gatekeeper if it's downloaded from an unknown source."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Microphone access is enabled, but usage description is not "
+"specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Camera access is enabled, but usage description is not specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Location information access is enabled, but usage description is "
+"not specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Address book access is enabled, but usage description is not "
+"specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Calendar access is enabled, but usage description is not specified."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Privacy: Photo library access is enabled, but usage description is not "
+"specified."
+msgstr ""
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package short name."
@@ -14450,6 +14660,27 @@ msgstr "Ungültige Abmessungen für 310x150-Breitlogo (sollte 310x150 sein)."
 msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr "Ungültige Abmessungen für Startbildschirm (sollte 620x300 sein)."
 
+#: platform/windows/export/export.cpp
+msgid ""
+"The rcedit tool must be configured in the Editor Settings (Export > Windows "
+"> Rcedit) to change the icon or app information data."
+msgstr ""
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Invalid icon path:"
+msgstr "Ungültiger Pfad."
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Invalid file version:"
+msgstr "Ungültige Dateiendung."
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Invalid product version:"
+msgstr "Ungültige Produkt-GUID."
+
 #: scene/2d/animated_sprite.cpp
 msgid ""
 "A SpriteFrames resource must be created or set in the \"Frames\" property in "
@@ -14484,8 +14715,8 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"CollisionPolygon2D liefert nur eine Kollisionsform für ein von "
-"CollisionObject2D abgeleitetes Node. Es kann nur als Unterobjekt von Area2D, "
+"CollisionPolygon2D liefert nur eine Kollisionsform für einen von "
+"CollisionObject2D abgeleiteten Node. Es kann nur als Unterobjekt von Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D usw. eingehängt werden, um diesen "
 "eine Form zu geben."
 
@@ -14511,8 +14742,8 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"CollisionShape2D liefert nur eine Kollisionsform für ein von "
-"CollisionObject2D abgeleitetes Node. Es kann nur als Unterobjekt von Area2D, "
+"CollisionShape2D liefert nur eine Kollisionsform für einen von "
+"CollisionObject2D abgeleiteten Node. Es kann nur als Unterobjekt von Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D usw. eingehängt werden, um diesen "
 "eine Form zu geben."
 
@@ -14620,15 +14851,14 @@ msgstr ""
 "ParallaxBackground-Node verwenden."
 
 #: scene/2d/particles_2d.cpp
-#, fuzzy
 msgid ""
 "GPU-based particles are not supported by the GLES2 video driver.\n"
 "Use the CPUParticles2D node instead. You can use the \"Convert to "
 "CPUParticles2D\" toolbar option for this purpose."
 msgstr ""
 "GPU-basierte Partikel werden vom GLES2-Grafiktreiber nicht unterstützt.\n"
-"Stattdessen bitte CPUParticles2D-Nodes verwenden. Die „In CPU-Partikel "
-"konvertieren“-Funktion kann dazu verwendet werden."
+"Stattdessen bitte CPUParticles2D-Nodes verwenden. Die Funktion „Zu "
+"CPUParticles2D konvertieren“ der Werkzeugleiste kann dazu verwendet werden."
 
 #: scene/2d/particles_2d.cpp
 msgid ""
@@ -14638,6 +14868,12 @@ msgid ""
 "You can use the \"Convert to CPUParticles2D\" toolbar option for this "
 "purpose."
 msgstr ""
+"Unter MacOS ist das Rendern von Particles2Ds wesentlich langsamer als "
+"CPUParticles2Ds, da die Transforms über die CPU statt über die GPU "
+"abgewickelt werden.\n"
+"Für MacOS als Zielplattform werden CPUParticles2D empfohlen.\n"
+"Die Option „Zu CPUParticles2D konvertieren“ der Werkzeugleiste kann dafür "
+"verwendet werden."
 
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid ""
@@ -14675,7 +14911,7 @@ msgstr ""
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
 msgstr ""
-"Die Pfad-Eigenschaft muss auf ein gültiges Node2D-Node zeigen um zu "
+"Die Pfad-Eigenschaft muss auf ein gültiges Node2D-Node zeigen, um zu "
 "funktionieren."
 
 #: scene/2d/skeleton_2d.cpp
@@ -14704,7 +14940,7 @@ msgstr ""
 "Eine TileMap mit aktivierter „Use Parent“-Option benötigt ein Eltern-Node "
 "des Typs CollisionObject2D, welcher der TileMap eine Form verleiht. Sie "
 "sollte als Unterobjekt von Area2D, StaticBody2D, RigidBody2D, "
-"KinematicBody2D, usw. verwendet werden, um ihnen eine Form zu geben."
+"KinematicBody2D, usw. verwendet werden, um diesen eine Form zu geben."
 
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
@@ -14901,15 +15137,14 @@ msgid "Only uniform scales are supported."
 msgstr "Es werden nur gleichförmige Skalierungen unterstützt."
 
 #: scene/3d/particles.cpp
-#, fuzzy
 msgid ""
 "GPU-based particles are not supported by the GLES2 video driver.\n"
-"Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
-"\" toolbar option for this purpose."
+"Use the CPUParticles node instead. You can use the \"Convert to "
+"CPUParticles\" toolbar option for this purpose."
 msgstr ""
 "GPU-basierte Partikel werden vom GLES2-Grafiktreiber nicht unterstützt.\n"
-"Stattdessen bitte CPUParticles-Nodes verwenden. Die „In CPU-Partikel "
-"konvertieren“-Funktion kann dazu verwendet werden."
+"Stattdessen bitte CPUParticles-Nodes verwenden. Die Funktion „Zu "
+"CPUParticles konvertieren“ der Werkzeugleiste kann dazu verwendet werden."
 
 #: scene/3d/particles.cpp
 msgid ""
@@ -14918,6 +15153,12 @@ msgid ""
 "Consider using CPUParticles instead when targeting macOS.\n"
 "You can use the \"Convert to CPUParticles\" toolbar option for this purpose."
 msgstr ""
+"Unter MacOS ist das Rendern von Particles wesentlich langsamer als "
+"CPUParticles, da die Transforms über die CPU statt über die GPU abgewickelt "
+"werden.\n"
+"Für MacOS als Zielplattform werden CPUParticles empfohlen.\n"
+"Die Option „Zu CPUParticles konvertieren“ der Werkzeugleiste kann dafür "
+"verwendet werden."
 
 #: scene/3d/particles.cpp
 msgid ""
@@ -15075,7 +15316,7 @@ msgid ""
 "Check the portal is facing outwards from the source room."
 msgstr ""
 "Portal-Autolink fehlgeschlagen, siehe Log-Ausgabe für Details.\n"
-"Zeigt das Portal nach außen vom Quellraum ausgesehen?"
+"Portal muss vom Quellraum nach außen zeigen."
 
 #: scene/3d/room_manager.cpp
 msgid ""
@@ -15202,9 +15443,10 @@ msgstr ""
 "AnimationTree."
 
 #: scene/gui/color_picker.cpp
+#, fuzzy
 msgid ""
 "Color: #%s\n"
-"LMB: Set color\n"
+"LMB: Apply color\n"
 "RMB: Remove preset"
 msgstr ""
 "Farbe: #%s\n"
