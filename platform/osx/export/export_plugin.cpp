@@ -441,7 +441,7 @@ Error EditorExportPlatformOSX::_notarize(const Ref<EditorExportPreset> &p_preset
 		print_line(TTR("Note: The notarization process generally takes less than an hour. When the process is completed, you'll receive an email."));
 		print_line("      " + TTR("You can check progress manually by opening a Terminal and running the following command:"));
 		print_line("          \"xcrun altool --notarization-history 0 -u <your email> -p <app-specific pwd>\"");
-		print_line("      " + TTR("Run the following command to staple notarization ticket to the exported application (optional):"));
+		print_line("      " + TTR("Run the following command to staple the notarization ticket to the exported application (optional):"));
 		print_line("          \"xcrun stapler staple <app path>\"");
 	}
 
@@ -826,7 +826,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 		if (((info.external_fa >> 16L) & 0120000) == 0120000) {
 #ifndef UNIX_ENABLED
-			WARN_PRINT(vformat("Relative symlinks are not supported on this OS, exported project might be broken!"));
+			WARN_PRINT(vformat("Relative symlinks are not supported on this OS, the exported project might be broken!"));
 #endif
 			// Handle symlinks in the archive.
 			file = tmp_app_path_name.plus_file(file);
@@ -1130,7 +1130,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			ad_hoc = (sign_identity == "" || sign_identity == "-");
 			bool lib_validation = p_preset->get("codesign/entitlements/disable_library_validation");
 			if ((!dylibs_found.is_empty() || !shared_objects.is_empty()) && sign_enabled && ad_hoc && !lib_validation) {
-				ERR_PRINT("Application with an ad-hoc signature require 'Disable Library Validation' entitlement to load dynamic libraries.");
+				ERR_PRINT("Ad-hoc signed applications require the 'Disable Library Validation' entitlement to load dynamic libraries.");
 				err = ERR_CANT_CREATE;
 			}
 		}
@@ -1209,7 +1209,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		bool noto_enabled = p_preset->get("notarization/enable");
 		if (err == OK && noto_enabled) {
 			if (export_format == "app") {
-				WARN_PRINT("Notarization require app to be archived first, select DMG or ZIP export format instead.");
+				WARN_PRINT("Notarization requires the app to be archived first, select the DMG or ZIP export format instead.");
 			} else {
 				if (ep.step(TTR("Sending archive for notarization"), 4)) {
 					return ERR_SKIP;
@@ -1406,7 +1406,7 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 
 	if (noto_enabled) {
 		if (ad_hoc) {
-			err += TTR("Notarization: Notarization with the ad-hoc signature is not supported.") + "\n";
+			err += TTR("Notarization: Notarization with an ad-hoc signature is not supported.") + "\n";
 			valid = false;
 		}
 		if (!sign_enabled) {
@@ -1430,9 +1430,9 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 			valid = false;
 		}
 	} else {
-		err += TTR("Warning: Notarization is disabled. Exported project will be blocked by Gatekeeper, if it's downloaded from an unknown source.") + "\n";
+		err += TTR("Warning: Notarization is disabled. The exported project will be blocked by Gatekeeper if it's downloaded from an unknown source.") + "\n";
 		if (!sign_enabled) {
-			err += TTR("Code signing is disabled. Exported project will not run on Macs with enabled Gatekeeper and Apple Silicon powered Macs.") + "\n";
+			err += TTR("Code signing is disabled. The exported project will not run on Macs with enabled Gatekeeper and Apple Silicon powered Macs.") + "\n";
 		} else {
 			if ((bool)p_preset->get("codesign/hardened_runtime") && ad_hoc) {
 				err += TTR("Hardened Runtime is not compatible with ad-hoc signature, and will be disabled!") + "\n";
@@ -1443,9 +1443,9 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 		}
 	}
 #else
-	err += TTR("Warning: Notarization is not supported on this OS. Exported project will be blocked by Gatekeeper, if it's downloaded from an unknown source.") + "\n";
+	err += TTR("Warning: Notarization is not supported from this OS. The exported project will be blocked by Gatekeeper if it's downloaded from an unknown source.") + "\n";
 	if (!sign_enabled) {
-		err += TTR("Code signing is disabled. Exported project will not run on Macs with enabled Gatekeeper and Apple Silicon powered Macs.") + "\n";
+		err += TTR("Code signing is disabled. The exported project will not run on Macs with enabled Gatekeeper and Apple Silicon powered Macs.") + "\n";
 	}
 #endif
 
