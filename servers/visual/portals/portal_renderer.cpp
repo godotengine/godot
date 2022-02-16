@@ -117,10 +117,13 @@ void PortalRenderer::_rghost_remove_from_rooms(uint32_t p_pool_id) {
 }
 
 void PortalRenderer::_occluder_remove_from_rooms(uint32_t p_pool_id) {
-	VSOccluder &occ = _occluder_pool[p_pool_id];
+	VSOccluder_Instance &occ = _occluder_instance_pool[p_pool_id];
 	if (_loaded && (occ.room_id != -1)) {
 		VSRoom &room = get_room(occ.room_id);
-		room.remove_occluder(p_pool_id);
+		bool res = room.remove_occluder(p_pool_id);
+		if (!res) {
+			WARN_PRINT_ONCE("OccluderInstance was not present in Room");
+		}
 	}
 }
 
@@ -467,22 +470,38 @@ void PortalRenderer::rghost_destroy(RGhostHandle p_handle) {
 	_rghost_pool.free(p_handle);
 }
 
-OccluderHandle PortalRenderer::occluder_create(VSOccluder::Type p_type) {
+OccluderInstanceHandle PortalRenderer::occluder_instance_create() {
 	uint32_t pool_id = 0;
-	VSOccluder *occ = _occluder_pool.request(pool_id);
+	VSOccluder_Instance *occ = _occluder_instance_pool.request(pool_id);
 	occ->create();
 
-	// specific type
-	occ->type = p_type;
-	CRASH_COND(p_type == VSOccluder::OT_UNDEFINED);
-
-	OccluderHandle handle = pool_id + 1;
+	OccluderInstanceHandle handle = pool_id + 1;
 	return handle;
 }
 
-void PortalRenderer::occluder_set_active(OccluderHandle p_handle, bool p_active) {
+void PortalRenderer::occluder_instance_link(OccluderInstanceHandle p_handle, OccluderResourceHandle p_resource_handle) {
 	p_handle--;
-	VSOccluder &occ = _occluder_pool[p_handle];
+	VSOccluder_Instance &occ = _occluder_instance_pool[p_handle];
+
+	// Unlink with any already linked, and destroy world resources
+	if (occ.resource_pool_id != UINT32_MAX) {
+		// Watch for bugs in future with the room within, this is not changed here,
+		// but could potentially be removed and re-added in future if we use sprawling.
+		occluder_instance_destroy(p_handle + 1, false);
+		occ.resource_pool_id = UINT32_MAX;
+	}
+
+	p_resource_handle--;
+	VSOccluder_Resource &res = VSG::scene->get_portal_resources().get_pool_occluder_resource(p_resource_handle);
+
+	occ.resource_pool_id = p_resource_handle;
+	occ.type = res.type;
+	occ.revision = 0;
+}
+
+void PortalRenderer::occluder_instance_set_active(OccluderInstanceHandle p_handle, bool p_active) {
+	p_handle--;
+	VSOccluder_Instance &occ = _occluder_instance_pool[p_handle];
 
 	if (occ.active == p_active) {
 		return;
@@ -493,18 +512,23 @@ void PortalRenderer::occluder_set_active(OccluderHandle p_handle, bool p_active)
 	occluder_refresh_room_within(p_handle);
 }
 
-void PortalRenderer::occluder_set_transform(OccluderHandle p_handle, const Transform &p_xform) {
+void PortalRenderer::occluder_instance_set_transform(OccluderInstanceHandle p_handle, const Transform &p_xform) {
 	p_handle--;
-	VSOccluder &occ = _occluder_pool[p_handle];
+	VSOccluder_Instance &occ = _occluder_instance_pool[p_handle];
 	occ.xform = p_xform;
 
 	// mark as dirty as the world space spheres will be out of date
-	occ.dirty = true;
+	occ.revision = 0;
+
+	// The room within is based on the xform, rather than the AABB so this
+	// should still work even though the world space transform is deferred.
+	// N.B. Occluders are a single room based on the center of the Occluder transform,
+	// this may need to be improved at a later date.
 	occluder_refresh_room_within(p_handle);
 }
 
 void PortalRenderer::occluder_refresh_room_within(uint32_t p_occluder_pool_id) {
-	VSOccluder &occ = _occluder_pool[p_occluder_pool_id];
+	VSOccluder_Instance &occ = _occluder_instance_pool[p_occluder_pool_id];
 
 	// if we aren't loaded, the room within can't be valid
 	if (!_loaded) {
@@ -547,156 +571,47 @@ void PortalRenderer::occluder_refresh_room_within(uint32_t p_occluder_pool_id) {
 	}
 }
 
-void PortalRenderer::occluder_update_mesh(OccluderHandle p_handle, const Geometry::OccluderMeshData &p_mesh_data) {
+void PortalRenderer::occluder_instance_destroy(OccluderInstanceHandle p_handle, bool p_free) {
 	p_handle--;
-	VSOccluder &occ = _occluder_pool[p_handle];
-	ERR_FAIL_COND(occ.type != VSOccluder::OT_MESH);
 
-	// needs world points updating next time
-	occ.dirty = true;
-
-	const LocalVectori<Geometry::OccluderMeshData::Face> &faces = p_mesh_data.faces;
-	const LocalVectori<Vector3> &vertices = p_mesh_data.vertices;
-
-	// first deal with the situation where the number of polys has changed (rare)
-	if (occ.list_ids.size() != faces.size()) {
-		// not the most efficient, but works...
-		// remove existing
-		for (int n = 0; n < occ.list_ids.size(); n++) {
-			uint32_t id = occ.list_ids[n];
-			_occluder_mesh_pool.free(id);
-		}
-
-		occ.list_ids.clear();
-		// create new
-		for (int n = 0; n < faces.size(); n++) {
-			uint32_t id;
-			VSOccluder_Mesh *poly = _occluder_mesh_pool.request(id);
-			poly->create();
-			occ.list_ids.push_back(id);
-		}
+	if (p_free) {
+		_occluder_remove_from_rooms(p_handle);
 	}
-
-	// new data
-	for (int n = 0; n < occ.list_ids.size(); n++) {
-		uint32_t id = occ.list_ids[n];
-
-		VSOccluder_Mesh &opoly = _occluder_mesh_pool[id];
-		Occlusion::PolyPlane &poly = opoly.poly_local;
-
-		// source face
-		const Geometry::OccluderMeshData::Face &face = faces[n];
-		opoly.two_way = face.two_way;
-
-		// make sure the number of holes is correct
-		if (face.holes.size() != opoly.num_holes) {
-			// slow but hey ho
-			// delete existing holes
-			for (int i = 0; i < opoly.num_holes; i++) {
-				_occluder_hole_pool.free(opoly.hole_pool_ids[i]);
-				opoly.hole_pool_ids[i] = UINT32_MAX;
-			}
-			// create any new holes
-			opoly.num_holes = face.holes.size();
-			for (int i = 0; i < opoly.num_holes; i++) {
-				uint32_t hole_id;
-				VSOccluder_Hole *hole = _occluder_hole_pool.request(hole_id);
-				opoly.hole_pool_ids[i] = hole_id;
-				hole->create();
-			}
-		}
-
-		poly.plane = face.plane;
-
-		poly.num_verts = MIN(face.indices.size(), Occlusion::PolyPlane::MAX_POLY_VERTS);
-
-		// make sure the world poly also has the correct num verts
-		opoly.poly_world.num_verts = poly.num_verts;
-
-		for (int c = 0; c < poly.num_verts; c++) {
-			int vert_index = face.indices[c];
-
-			if (vert_index < vertices.size()) {
-				poly.verts[c] = vertices[vert_index];
-			} else {
-				WARN_PRINT_ONCE("occluder_update_mesh : poly index out of range");
-			}
-		}
-
-		// holes
-		for (int h = 0; h < opoly.num_holes; h++) {
-			VSOccluder_Hole &dhole = get_pool_occluder_hole(opoly.hole_pool_ids[h]);
-			const Geometry::OccluderMeshData::Hole &shole = face.holes[h];
-
-			dhole.poly_local.num_verts = shole.indices.size();
-			dhole.poly_local.num_verts = MIN(dhole.poly_local.num_verts, Occlusion::Poly::MAX_POLY_VERTS);
-			dhole.poly_world.num_verts = dhole.poly_local.num_verts;
-
-			for (int c = 0; c < dhole.poly_local.num_verts; c++) {
-				int vert_index = shole.indices[c];
-				if (vert_index < vertices.size()) {
-					dhole.poly_local.verts[c] = vertices[vert_index];
-				} else {
-					WARN_PRINT_ONCE("occluder_update_mesh : hole index out of range");
-				}
-			}
-		}
-	}
-}
-
-void PortalRenderer::occluder_update_spheres(OccluderHandle p_handle, const Vector<Plane> &p_spheres) {
-	p_handle--;
-	VSOccluder &occ = _occluder_pool[p_handle];
-	ERR_FAIL_COND(occ.type != VSOccluder::OT_SPHERE);
-
-	// first deal with the situation where the number of spheres has changed (rare)
-	if (occ.list_ids.size() != p_spheres.size()) {
-		// not the most efficient, but works...
-		// remove existing
-		for (int n = 0; n < occ.list_ids.size(); n++) {
-			uint32_t id = occ.list_ids[n];
-			_occluder_sphere_pool.free(id);
-		}
-
-		occ.list_ids.clear();
-		// create new
-		for (int n = 0; n < p_spheres.size(); n++) {
-			uint32_t id;
-			VSOccluder_Sphere *sphere = _occluder_sphere_pool.request(id);
-			sphere->create();
-			occ.list_ids.push_back(id);
-		}
-	}
-
-	// new positions
-	for (int n = 0; n < occ.list_ids.size(); n++) {
-		uint32_t id = occ.list_ids[n];
-		VSOccluder_Sphere &sphere = _occluder_sphere_pool[id];
-		sphere.local.from_plane(p_spheres[n]);
-	}
-
-	// mark as dirty as the world space spheres will be out of date
-	occ.dirty = true;
-}
-
-void PortalRenderer::occluder_destroy(OccluderHandle p_handle) {
-	p_handle--;
 
 	// depending on the occluder type, remove the spheres etc
-	VSOccluder &occ = _occluder_pool[p_handle];
+	VSOccluder_Instance &occ = _occluder_instance_pool[p_handle];
 	switch (occ.type) {
-		case VSOccluder::OT_SPHERE: {
-			occluder_update_spheres(p_handle + 1, Vector<Plane>());
+		case VSOccluder_Instance::OT_SPHERE: {
+			// free any spheres owned by the occluder
+			for (int n = 0; n < occ.list_ids.size(); n++) {
+				uint32_t id = occ.list_ids[n];
+				_occluder_world_sphere_pool.free(id);
+			}
+			occ.list_ids.clear();
 		} break;
-		case VSOccluder::OT_MESH: {
-			occluder_update_mesh(p_handle + 1, Geometry::OccluderMeshData());
+		case VSOccluder_Instance::OT_MESH: {
+			// free any polys owned by the occluder
+			for (int n = 0; n < occ.list_ids.size(); n++) {
+				uint32_t id = occ.list_ids[n];
+				VSOccluder_Poly &poly = _occluder_world_poly_pool[id];
+
+				// free any holes owned by the poly
+				for (int h = 0; h < poly.num_holes; h++) {
+					_occluder_world_hole_pool.free(poly.hole_pool_ids[h]);
+				}
+				// blanks
+				poly.create();
+				_occluder_world_poly_pool.free(id);
+			}
+			occ.list_ids.clear();
 		} break;
 		default: {
 		} break;
 	}
 
-	_occluder_remove_from_rooms(p_handle);
-	_occluder_pool.free(p_handle);
+	if (p_free) {
+		_occluder_instance_pool.free(p_handle);
+	}
 }
 
 // Rooms
@@ -1047,9 +962,9 @@ void PortalRenderer::_load_finalize_roaming() {
 		rghost_update(_rghost_pool.get_active_id(n) + 1, aabb, true);
 	}
 
-	for (unsigned int n = 0; n < _occluder_pool.active_size(); n++) {
-		VSOccluder &occ = _occluder_pool.get_active(n);
-		int occluder_id = _occluder_pool.get_active_id(n);
+	for (unsigned int n = 0; n < _occluder_instance_pool.active_size(); n++) {
+		VSOccluder_Instance &occ = _occluder_instance_pool.get_active(n);
+		int occluder_id = _occluder_instance_pool.get_active_id(n);
 
 		// make sure occluder is in the correct room
 		occ.room_id = find_room_within(occ.pt_center, -1);

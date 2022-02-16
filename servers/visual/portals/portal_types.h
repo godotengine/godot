@@ -55,7 +55,8 @@ typedef uint32_t RoomHandle;
 typedef uint32_t RoomGroupHandle;
 typedef uint32_t OcclusionHandle;
 typedef uint32_t RGhostHandle;
-typedef uint32_t OccluderHandle;
+typedef uint32_t OccluderInstanceHandle;
+typedef uint32_t OccluderResourceHandle;
 
 struct VSPortal {
 	enum ClipResult {
@@ -380,12 +381,12 @@ struct VSRoom {
 	LocalVector<uint32_t, int32_t> _roomgroup_ids;
 };
 
-struct VSOccluder {
+// Possibly shared data, in local space
+struct VSOccluder_Resource {
 	void create() {
 		type = OT_UNDEFINED;
-		room_id = -1;
-		dirty = false;
-		active = true;
+		revision = 0;
+		list_ids.clear();
 	}
 
 	// these should match the values in VisualServer::OccluderType
@@ -395,6 +396,28 @@ struct VSOccluder {
 		OT_MESH,
 		OT_NUM_TYPES,
 	} type;
+
+	// If the revision of the instance and the resource don't match,
+	// then the local versions have been updated and need transforming
+	// to world space in the instance (i.e. it is dirty)
+	uint32_t revision;
+
+	// ids of multiple objects in the appropriate occluder pool:
+	// local space for resources, and world space for occluder instances
+	LocalVector<uint32_t, int32_t> list_ids;
+};
+
+struct VSOccluder_Instance : public VSOccluder_Resource {
+	void create() {
+		VSOccluder_Resource::create();
+		room_id = -1;
+		active = true;
+		resource_pool_id = UINT32_MAX;
+	}
+
+	// Occluder instance can be bound to one resource (which will include data in local space)
+	// This should be set back to NULL if the resource is deleted
+	uint32_t resource_pool_id;
 
 	// which is the primary room this group of occluders is in
 	// (it may sprawl into multiple rooms)
@@ -409,14 +432,8 @@ struct VSOccluder {
 	// global xform
 	Transform xform;
 
-	// whether world space need calculating
-	bool dirty;
-
 	// controlled by the visible flag on the occluder
 	bool active;
-
-	// ids of multiple objects in the appropriate occluder pool
-	LocalVector<uint32_t, int32_t> list_ids;
 };
 
 namespace Occlusion {
@@ -472,42 +489,27 @@ struct PolyPlane : public Poly {
 
 } // namespace Occlusion
 
-struct VSOccluder_Sphere {
-	void create() {
-		local.create();
-		world.create();
-	}
-
-	Occlusion::Sphere local;
-	Occlusion::Sphere world;
+struct VSOccluder_Sphere : public Occlusion::Sphere {
 };
 
-struct VSOccluder_Mesh {
+struct VSOccluder_Poly {
 	static const int MAX_POLY_HOLES = PortalDefines::OCCLUSION_POLY_MAX_HOLES;
 	void create() {
-		poly_local.create();
-		poly_world.create();
+		poly.create();
 		num_holes = 0;
 		two_way = false;
 		for (int n = 0; n < MAX_POLY_HOLES; n++) {
 			hole_pool_ids[n] = UINT32_MAX;
 		}
 	}
-	Occlusion::PolyPlane poly_local;
-	Occlusion::PolyPlane poly_world;
+	Occlusion::PolyPlane poly;
 	bool two_way;
 
 	int num_holes;
 	uint32_t hole_pool_ids[MAX_POLY_HOLES];
 };
 
-struct VSOccluder_Hole {
-	void create() {
-		poly_local.create();
-		poly_world.create();
-	}
-	Occlusion::Poly poly_local;
-	Occlusion::Poly poly_world;
+struct VSOccluder_Hole : public Occlusion::Poly {
 };
 
 #endif

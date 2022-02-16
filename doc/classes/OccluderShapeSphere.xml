@@ -28,7 +28,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="spheres" type="Array" setter="set_spheres" getter="get_spheres" default="[  ]">
+		<member name="spheres" type="Array" setter="set_spheres" getter="get_spheres" default="[ Plane( 0, 0, 0, 1 ) ]">
 			The sphere data can be accessed as an array of [Plane]s. The position of each sphere is stored in the [code]normal[/code], and the radius is stored in the [code]d[/code] value of the plane.
 		</member>
 	</members>

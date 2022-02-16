@@ -161,13 +161,9 @@ private:
 		return false;
 	}
 
-	bool calculate_poly_goodness_of_fit(const VSOccluder_Mesh &p_opoly, real_t &r_fit);
+	bool calculate_poly_goodness_of_fit(const VSOccluder_Poly &p_opoly, real_t &r_fit);
 	void whittle_polys();
 	void precalc_poly_edge_planes(const Vector3 &p_pt_camera);
-
-	bool is_vso_poly_culled(const VSOccluder_Mesh &p_opoly, const LocalVector<Plane> &p_planes) const {
-		return is_poly_culled(p_opoly.poly_world, p_planes);
-	}
 
 	// If all the points of the poly are beyond one of the planes (e.g. frustum), it is completely culled.
 	bool is_poly_culled(const Occlusion::PolyPlane &p_opoly, const LocalVector<Plane> &p_planes) const {

@@ -603,12 +603,16 @@ public:
 	BIND2(roomgroup_add_room, RID, RID)
 
 	// Occluders
-	BIND0R(RID, occluder_create)
-	BIND3(occluder_set_scenario, RID, RID, OccluderType)
-	BIND2(occluder_spheres_update, RID, const Vector<Plane> &)
-	BIND2(occluder_mesh_update, RID, const Geometry::OccluderMeshData &)
-	BIND2(occluder_set_transform, RID, const Transform &)
-	BIND2(occluder_set_active, RID, bool)
+	BIND0R(RID, occluder_instance_create)
+	BIND2(occluder_instance_set_scenario, RID, RID)
+	BIND2(occluder_instance_link_resource, RID, RID)
+	BIND2(occluder_instance_set_transform, RID, const Transform &)
+	BIND2(occluder_instance_set_active, RID, bool)
+
+	BIND0R(RID, occluder_resource_create)
+	BIND2(occluder_resource_prepare, RID, OccluderType)
+	BIND2(occluder_resource_spheres_update, RID, const Vector<Plane> &)
+	BIND2(occluder_resource_mesh_update, RID, const Geometry::OccluderMeshData &)
 	BIND1(set_use_occlusion_culling, bool)
 	BIND1RC(Geometry::MeshData, occlusion_debug_get_current_polys, RID)
 
