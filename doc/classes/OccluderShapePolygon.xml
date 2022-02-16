@@ -37,7 +37,7 @@
 			Allows changing the polygon geometry from code.
 		</member>
 		<member name="two_way" type="bool" setter="set_two_way" getter="is_two_way" default="true">
-			Specifies whether the occluder should operate one way only, or from both sides.
+			Specifies whether the occluder should operate from both sides. If [code]false[/code], the occluder will operate one way only.
 		</member>
 	</members>
 	<constants>
