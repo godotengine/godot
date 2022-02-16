@@ -345,9 +345,9 @@ public:
 			return true;
 		}
 		// Then check for approximate equality.
-		float tolerance = CMP_EPSILON * abs(a);
-		if (tolerance < CMP_EPSILON) {
-			tolerance = CMP_EPSILON;
+		float tolerance = CMP_EPSILON_32 * abs(a);
+		if (tolerance < CMP_EPSILON_32) {
+			tolerance = CMP_EPSILON_32;
 		}
 		return abs(a - b) < tolerance;
 	}
@@ -362,7 +362,7 @@ public:
 	}
 
 	static _ALWAYS_INLINE_ bool is_zero_approx(float s) {
-		return abs(s) < CMP_EPSILON;
+		return abs(s) < CMP_EPSILON_32;
 	}
 
 	static _ALWAYS_INLINE_ bool is_equal_approx(double a, double b) {
@@ -371,9 +371,9 @@ public:
 			return true;
 		}
 		// Then check for approximate equality.
-		double tolerance = CMP_EPSILON * abs(a);
-		if (tolerance < CMP_EPSILON) {
-			tolerance = CMP_EPSILON;
+		double tolerance = CMP_EPSILON_64 * abs(a);
+		if (tolerance < CMP_EPSILON_64) {
+			tolerance = CMP_EPSILON_64;
 		}
 		return abs(a - b) < tolerance;
 	}
@@ -388,7 +388,7 @@ public:
 	}
 
 	static _ALWAYS_INLINE_ bool is_zero_approx(double s) {
-		return abs(s) < CMP_EPSILON;
+		return abs(s) < CMP_EPSILON_64;
 	}
 
 	static _ALWAYS_INLINE_ float absf(float g) {
