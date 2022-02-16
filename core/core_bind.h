@@ -218,6 +218,7 @@ public:
 	bool is_stdout_verbose() const;
 
 	int get_processor_count() const;
+	String get_processor_name() const;
 
 	enum SystemDir {
 		SYSTEM_DIR_DESKTOP,

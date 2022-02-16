@@ -358,6 +358,10 @@ int OS::get_processor_count() const {
 	return 1;
 }
 
+String OS::get_processor_name() const {
+	return "";
+}
+
 bool OS::can_use_threads() const {
 #ifdef NO_THREADS
 	return false;
