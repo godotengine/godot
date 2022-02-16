@@ -1263,11 +1263,11 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	commit_list_size_button = memnew(OptionButton);
 	commit_list_size_button->set_tooltip(TTR("Commit list size"));
-	commit_list_size_button->add_item(TTR("10"));
+	commit_list_size_button->add_item("10");
 	commit_list_size_button->set_item_metadata(0, 10);
-	commit_list_size_button->add_item(TTR("20"));
+	commit_list_size_button->add_item("20");
 	commit_list_size_button->set_item_metadata(0, 20);
-	commit_list_size_button->add_item(TTR("30"));
+	commit_list_size_button->add_item("30");
 	commit_list_size_button->set_item_metadata(0, 30);
 	commit_list_size_button->connect("pressed", this, "_refresh_commit_list");
 	commit_list_hbc->add_child(commit_list_size_button);
