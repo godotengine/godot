@@ -1371,6 +1371,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					int gizmo_handle = -1;
 
 					clicked = _select_ray(b->get_position(), b->get_shift(), clicked_includes_current, &gizmo_handle, b->get_shift());
+					selection_in_progress = true;
 
 					//clicking is always deferred to either move or release
 
@@ -1423,6 +1424,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						surface->update();
 					}
 
+					selection_in_progress = false;
 					if (_edit.mode != TRANSFORM_NONE) {
 						static const char *_transform_name[4] = {
 							TTRC("None"),
@@ -1513,22 +1515,24 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				nav_mode = NAVIGATION_ORBIT;
 			} else {
 				const bool movement_threshold_passed = _edit.original_mouse_pos.distance_to(_edit.mouse_pos) > 8 * EDSCALE;
-				if (clicked && movement_threshold_passed) {
-					if (!clicked_includes_current) {
-						_select_clicked(clicked_wants_append, true);
-						// Processing was deferred.
+				if (selection_in_progress && movement_threshold_passed) {
+					if (get_selected_count() == 0 || clicked_wants_append) {
+						cursor.region_select = true;
+						cursor.region_begin = _edit.original_mouse_pos;
+						clicked = 0;
 					}
-
-					_compute_edit(_edit.mouse_pos);
-					clicked = 0;
-
-					_edit.mode = TRANSFORM_TRANSLATE;
 				}
 
 				if (cursor.region_select) {
 					cursor.region_end = m->get_position();
 					surface->update();
 					return;
+				}
+
+				if (clicked && movement_threshold_passed) {
+					_compute_edit(_edit.mouse_pos);
+					clicked = 0;
+					_edit.mode = TRANSFORM_TRANSLATE;
 				}
 
 				if (_edit.mode == TRANSFORM_NONE) {
