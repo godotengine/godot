@@ -266,6 +266,7 @@ public:
 	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
 	int window_get_width(DisplayServer::WindowID p_window = 0);
 	int window_get_height(DisplayServer::WindowID p_window = 0);
+	bool window_is_valid_swapchain(DisplayServer::WindowID p_window = 0);
 	void window_destroy(DisplayServer::WindowID p_window_id);
 	VkFramebuffer window_get_framebuffer(DisplayServer::WindowID p_window = 0);
 	VkRenderPass window_get_render_pass(DisplayServer::WindowID p_window = 0);
