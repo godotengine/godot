@@ -103,7 +103,7 @@ ext.getGodotLibraryVersionName = { ->
 ext.generateGodotLibraryVersion = { List<String> requiredKeys ->
     // Attempt to read the version from the `version.py` file.
     String libraryVersionName = ""
-    int libraryVersionCode = 1
+    int libraryVersionCode = 0
 
     File versionFile = new File("../../../version.py")
     if (versionFile.isFile()) {
@@ -126,10 +126,20 @@ ext.generateGodotLibraryVersion = { List<String> requiredKeys ->
         if (requiredKeys.empty) {
             libraryVersionName = map.values().join(".")
             try {
-                libraryVersionCode = Integer.parseInt(map["patch"]) +
-                    (Integer.parseInt(map["minor"]) * 100) +
-                    (Integer.parseInt(map["major"]) * 10000)
-            } catch (NumberFormatException ignore) {}
+                if (map.containsKey("patch")) {
+                    libraryVersionCode = Integer.parseInt(map["patch"])
+                }
+
+                if (map.containsKey("minor")) {
+                    libraryVersionCode += (Integer.parseInt(map["minor"]) * 100)
+                }
+
+                if (map.containsKey("major")) {
+                    libraryVersionCode += (Integer.parseInt(map["major"]) * 10000)
+                }
+            } catch (NumberFormatException ignore) {
+                libraryVersionCode = 1
+            }
         }
     }
 
@@ -137,6 +147,11 @@ ext.generateGodotLibraryVersion = { List<String> requiredKeys ->
         // Fallback value in case we're unable to read the file.
         libraryVersionName = "custom_build"
     }
+
+    if (libraryVersionCode == 0) {
+        libraryVersionCode = 1
+    }
+
     return [libraryVersionName, libraryVersionCode]
 }
 
@@ -147,7 +162,10 @@ ext.getGodotLibraryVersion = { ->
 
 ext.getGodotPublishVersion = { ->
     List<String> requiredKeys = ["major", "minor", "patch", "status"]
-    return generateGodotLibraryVersion(requiredKeys)
+    String versionName = ""
+    int versionCode = 1
+    (versionName, versionCode) = generateGodotLibraryVersion(requiredKeys)
+    return versionName
 }
 
 final String VALUE_SEPARATOR_REGEX = "\\|"
