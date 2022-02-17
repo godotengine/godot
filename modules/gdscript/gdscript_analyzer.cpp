@@ -1241,7 +1241,7 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 	bool list_resolved = false;
 
 	// Optimize constant range() call to not allocate an array.
-	// Use int, Vector2, Vector3 instead, which also can be used as range iterators.
+	// Use int, Vector2i, Vector3i instead, which also can be used as range iterators.
 	if (p_for->list && p_for->list->type == GDScriptParser::Node::CALL) {
 		GDScriptParser::CallNode *call = static_cast<GDScriptParser::CallNode *>(p_for->list);
 		GDScriptParser::Node::Type callee_type = call->get_callee_type();
