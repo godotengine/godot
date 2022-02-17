@@ -1344,27 +1344,45 @@ bool Node::has_node(const NodePath &p_path) const {
 	return get_node_or_null(p_path) != nullptr;
 }
 
-Node *Node::find_node(const String &p_mask, bool p_recursive, bool p_owned) const {
+TypedArray<Node> Node::find_nodes(const String &p_mask, const String &p_type, bool p_recursive, bool p_owned) const {
+	TypedArray<Node> ret;
+	ERR_FAIL_COND_V(p_mask.is_empty() && p_type.is_empty(), ret);
+
 	Node *const *cptr = data.children.ptr();
 	int ccount = data.children.size();
 	for (int i = 0; i < ccount; i++) {
 		if (p_owned && !cptr[i]->data.owner) {
 			continue;
 		}
-		if (cptr[i]->data.name.operator String().match(p_mask)) {
-			return cptr[i];
+
+		if (!p_mask.is_empty()) {
+			if (!cptr[i]->data.name.operator String().match(p_mask)) {
+				continue;
+			} else if (p_type.is_empty()) {
+				ret.append(cptr[i]);
+			}
 		}
 
-		if (!p_recursive) {
-			continue;
+		if (cptr[i]->is_class(p_type)) {
+			ret.append(cptr[i]);
+		} else if (cptr[i]->get_script_instance()) {
+			Ref<Script> script = cptr[i]->get_script_instance()->get_script();
+			while (script.is_valid()) {
+				if ((ScriptServer::is_global_class(p_type) && ScriptServer::get_global_class_path(p_type) == script->get_path()) || p_type == script->get_path()) {
+					ret.append(cptr[i]);
+					break;
+				}
+
+				script = script->get_base_script();
+			}
 		}
 
-		Node *ret = cptr[i]->find_node(p_mask, true, p_owned);
-		if (ret) {
-			return ret;
+		if (p_recursive) {
+			ret.append_array(cptr[i]->find_nodes(p_mask, p_type, true, p_owned));
 		}
 	}
-	return nullptr;
+
+	return ret;
 }
 
 Node *Node::get_parent() const {
@@ -2706,7 +2724,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_node", "path"), &Node::get_node);
 	ClassDB::bind_method(D_METHOD("get_node_or_null", "path"), &Node::get_node_or_null);
 	ClassDB::bind_method(D_METHOD("get_parent"), &Node::get_parent);
-	ClassDB::bind_method(D_METHOD("find_node", "mask", "recursive", "owned"), &Node::find_node, DEFVAL(true), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("find_nodes", "mask", "type", "recursive", "owned"), &Node::find_nodes, DEFVAL(""), DEFVAL(true), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("find_parent", "mask"), &Node::find_parent);
 	ClassDB::bind_method(D_METHOD("has_node_and_resource", "path"), &Node::has_node_and_resource);
 	ClassDB::bind_method(D_METHOD("get_node_and_resource", "path"), &Node::_get_node_and_resource);
