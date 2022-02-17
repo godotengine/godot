@@ -35,15 +35,15 @@ android {
     }
 
     buildTypes {
-        release_debug {
+        dev {
             initWith debug
         }
     }
 
-    flavorDimensions "tools"
+    flavorDimensions "products"
     productFlavors {
-        toolsEnabled {}
-        toolsDisabled {}
+        editor {}
+        template {}
     }
 
     lintOptions {
@@ -71,32 +71,43 @@ android {
         }
 
         debug.jniLibs.srcDirs = ['libs/debug']
-        release_debug.jniLibs.srcDirs = ['libs/release_debug']
+        dev.jniLibs.srcDirs = ['libs/dev']
         release.jniLibs.srcDirs = ['libs/release']
 
-        // Tools enabled jni library
-        toolsEnabledDebug.jniLibs.srcDirs = ['libs/tools/debug']
-        toolsEnabledRelease_debug.jniLibs.srcDirs = ['libs/tools/release_debug']
-        toolsEnabledRelease.jniLibs.srcDirs = ['libs/tools/release']
+        // Editor jni library
+        editorDebug.jniLibs.srcDirs = ['libs/tools/debug']
+        editorDev.jniLibs.srcDirs = ['libs/tools/dev']
+    }
+
+    // Disable 'editorRelease'.
+    // The editor can't be used with target=release as debugging tools are then not
+    // included, and it would crash on errors instead of reporting them.
+    variantFilter { variant ->
+        if (variant.name == "editorRelease") {
+            setIgnore(true)
+        }
     }
 
     libraryVariants.all { variant ->
         def flavorName = variant.getFlavorName()
-        def buildType = variant.buildType.name.capitalize()
-
         if (flavorName == null || flavorName == "") {
             throw new GradleException("Invalid product flavor: $flavorName")
         }
 
-        boolean toolsFlag = flavorName == "toolsEnabled"
+        boolean toolsFlag = flavorName == "editor"
 
-        def releaseTarget = buildType.toLowerCase()
-        if (releaseTarget == null || releaseTarget == "") {
-            throw new GradleException("Invalid build type: " + buildType)
+        def buildType = variant.buildType.name
+        if (buildType == null || buildType == "" || !supportedTargetsMap.containsKey(buildType)) {
+            throw new GradleException("Invalid build type: $buildType")
+        }
+
+        def sconsTarget = supportedTargetsMap[buildType]
+        if (sconsTarget == null || sconsTarget == "") {
+            throw new GradleException("Invalid scons target: $sconsTarget")
         }
 
         // Update the name of the generated library
-        def outputSuffix = "${releaseTarget}.aar"
+        def outputSuffix = "${buildType}.aar"
         if (toolsFlag) {
             outputSuffix = "tools.$outputSuffix"
         }
@@ -138,24 +149,24 @@ android {
 
         for (String selectedAbi : selectedAbis) {
             if (!supportedAbis.contains(selectedAbi)) {
-                throw new GradleException("Invalid selected abi: " + selectedAbi)
+                throw new GradleException("Invalid selected abi: $selectedAbi")
             }
 
             // Creating gradle task to generate the native libraries for the selected abi.
             def taskName = getSconsTaskName(flavorName, buildType, selectedAbi)
             tasks.create(name: taskName, type: Exec) {
                 executable sconsExecutableFile.absolutePath
-                args "--directory=${pathToRootDir}", "platform=android", "tools=${toolsFlag}", "target=${releaseTarget}", "android_arch=${selectedAbi}", "-j" + Runtime.runtime.availableProcessors()
+                args "--directory=${pathToRootDir}", "platform=android", "tools=${toolsFlag}", "target=${sconsTarget}", "android_arch=${selectedAbi}", "-j" + Runtime.runtime.availableProcessors()
             }
 
             // Schedule the tasks so the generated libs are present before the aar file is packaged.
-            tasks["merge${flavorName.capitalize()}${buildType}JniLibFolders"].dependsOn taskName
+            tasks["merge${flavorName.capitalize()}${buildType.capitalize()}JniLibFolders"].dependsOn taskName
         }
     }
 
     // TODO: Enable when issues with AGP 7.1+ are resolved (https://github.com/GodotVR/godot_openxr/issues/187).
 //    publishing {
-//        singleVariant("release") {
+//        singleVariant("templateRelease") {
 //            withSourcesJar()
 //            withJavadocJar()
 //        }

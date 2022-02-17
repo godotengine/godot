@@ -7,19 +7,14 @@ version = PUBLISH_VERSION
 afterEvaluate {
     publishing {
         publications {
-            release(MavenPublication) {
+            templateRelease(MavenPublication) {
+                from components.templateRelease
+
                 // The coordinates of the library, being set from variables that
                 // we'll set up later
                 groupId ossrhGroupId
                 artifactId PUBLISH_ARTIFACT_ID
                 version PUBLISH_VERSION
-
-                // Two artifacts, the `aar` (or `jar`) and the sources
-                if (project.plugins.findPlugin("com.android.library")) {
-                    from components.release
-                } else {
-                    from components.java
-                }
 
                 // Mostly self-explanatory metadata
                 pom {
