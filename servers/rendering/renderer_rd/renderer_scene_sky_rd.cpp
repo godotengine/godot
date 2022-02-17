@@ -473,12 +473,13 @@ void RendererSceneSkyRD::ReflectionData::create_reflection_fast_filter(RendererS
 		}
 		RD::get_singleton()->draw_command_end_label(); // Filter radiance
 	} else {
+		RD::get_singleton()->draw_command_begin_label("Downsample radiance map");
 		effects->cubemap_downsample(radiance_base_cubemap, downsampled_layer.mipmaps[0].view, downsampled_layer.mipmaps[0].size);
 
 		for (int i = 1; i < downsampled_layer.mipmaps.size(); i++) {
 			effects->cubemap_downsample(downsampled_layer.mipmaps[i - 1].view, downsampled_layer.mipmaps[i].view, downsampled_layer.mipmaps[i].size);
 		}
-
+		RD::get_singleton()->draw_command_end_label(); // Downsample Radiance
 		Vector<RID> views;
 		if (p_use_arrays) {
 			for (int i = 1; i < layers.size(); i++) {
@@ -489,8 +490,9 @@ void RendererSceneSkyRD::ReflectionData::create_reflection_fast_filter(RendererS
 				views.push_back(layers[0].views[i]);
 			}
 		}
-
+		RD::get_singleton()->draw_command_begin_label("Fast filter radiance");
 		effects->cubemap_filter(downsampled_radiance_cubemap, views, p_use_arrays);
+		RD::get_singleton()->draw_command_end_label(); // Filter radiance
 	}
 }
 
@@ -500,12 +502,25 @@ void RendererSceneSkyRD::ReflectionData::create_reflection_importance_sample(Ren
 	bool prefer_raster_effects = effects->get_prefer_raster_effects();
 
 	if (prefer_raster_effects) {
-		// Need to ask clayjohn but p_cube_side is set to 10, looks like in the compute shader we're doing all 6 sides in one call
-		// here we need to do them one by one so ignoring p_cube_side
+		if (p_base_layer == 1) {
+			RD::get_singleton()->draw_command_begin_label("Downsample radiance map");
+			for (int k = 0; k < 6; k++) {
+				effects->cubemap_downsample_raster(radiance_base_cubemap, downsampled_layer.mipmaps[0].framebuffers[k], k, downsampled_layer.mipmaps[0].size);
+			}
+
+			for (int i = 1; i < downsampled_layer.mipmaps.size(); i++) {
+				for (int k = 0; k < 6; k++) {
+					effects->cubemap_downsample_raster(downsampled_layer.mipmaps[i - 1].view, downsampled_layer.mipmaps[i].framebuffers[k], k, downsampled_layer.mipmaps[i].size);
+				}
+			}
+			RD::get_singleton()->draw_command_end_label(); // Downsample Radiance
+		}
+
+		RD::get_singleton()->draw_command_begin_label("High Quality filter radiance");
 		if (p_use_arrays) {
 			for (int k = 0; k < 6; k++) {
 				effects->cubemap_roughness_raster(
-						radiance_base_cubemap,
+						downsampled_radiance_cubemap,
 						layers[p_base_layer].mipmaps[0].framebuffers[k],
 						k,
 						p_sky_ggx_samples_quality,
@@ -515,7 +530,7 @@ void RendererSceneSkyRD::ReflectionData::create_reflection_importance_sample(Ren
 		} else {
 			for (int k = 0; k < 6; k++) {
 				effects->cubemap_roughness_raster(
-						layers[0].views[p_base_layer - 1],
+						downsampled_radiance_cubemap,
 						layers[0].mipmaps[p_base_layer].framebuffers[k],
 						k,
 						p_sky_ggx_samples_quality,
@@ -524,12 +539,22 @@ void RendererSceneSkyRD::ReflectionData::create_reflection_importance_sample(Ren
 			}
 		}
 	} else {
+		if (p_base_layer == 1) {
+			RD::get_singleton()->draw_command_begin_label("Downsample radiance map");
+			effects->cubemap_downsample(radiance_base_cubemap, downsampled_layer.mipmaps[0].view, downsampled_layer.mipmaps[0].size);
+
+			for (int i = 1; i < downsampled_layer.mipmaps.size(); i++) {
+				effects->cubemap_downsample(downsampled_layer.mipmaps[i - 1].view, downsampled_layer.mipmaps[i].view, downsampled_layer.mipmaps[i].size);
+			}
+			RD::get_singleton()->draw_command_end_label(); // Downsample Radiance
+		}
+
+		RD::get_singleton()->draw_command_begin_label("High Quality filter radiance");
 		if (p_use_arrays) {
-			//render directly to the layers
-			effects->cubemap_roughness(radiance_base_cubemap, layers[p_base_layer].views[0], p_cube_side, p_sky_ggx_samples_quality, float(p_base_layer) / (layers.size() - 1.0), layers[p_base_layer].mipmaps[0].size.x);
+			effects->cubemap_roughness(downsampled_radiance_cubemap, layers[p_base_layer].views[0], p_cube_side, p_sky_ggx_samples_quality, float(p_base_layer) / (layers.size() - 1.0), layers[p_base_layer].mipmaps[0].size.x);
 		} else {
 			effects->cubemap_roughness(
-					layers[0].views[p_base_layer - 1],
+					downsampled_radiance_cubemap,
 					layers[0].views[p_base_layer],
 					p_cube_side,
 					p_sky_ggx_samples_quality,
@@ -537,6 +562,7 @@ void RendererSceneSkyRD::ReflectionData::create_reflection_importance_sample(Ren
 					layers[0].mipmaps[p_base_layer].size.x);
 		}
 	}
+	RD::get_singleton()->draw_command_end_label(); // Filter radiance
 }
 
 void RendererSceneSkyRD::ReflectionData::update_reflection_mipmaps(RendererStorageRD *p_storage, int p_start, int p_end) {
