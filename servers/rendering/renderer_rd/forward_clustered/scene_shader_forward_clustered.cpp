@@ -234,10 +234,10 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 		}
 	}
 
-	RD::PipelineColorBlendState blend_state_blend;
-	blend_state_blend.attachments.push_back(blend_attachment);
-	RD::PipelineColorBlendState blend_state_opaque = RD::PipelineColorBlendState::create_disabled(1);
-	RD::PipelineColorBlendState blend_state_opaque_specular = RD::PipelineColorBlendState::create_disabled(2);
+	// Color pass -> attachment 0: Color/Diffuse, attachment 1: Separate Specular
+	RD::PipelineColorBlendState blend_state_color_blend;
+	blend_state_color_blend.attachments = { blend_attachment, RD::PipelineColorBlendState::Attachment() };
+	RD::PipelineColorBlendState blend_state_color_opaque = RD::PipelineColorBlendState::create_disabled(2);
 	RD::PipelineColorBlendState blend_state_depth_normal_roughness = RD::PipelineColorBlendState::create_disabled(1);
 	RD::PipelineColorBlendState blend_state_depth_normal_roughness_giprobe = RD::PipelineColorBlendState::create_disabled(2);
 
@@ -280,18 +280,8 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 					SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI,
 					SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL,
 					SHADER_VERSION_DEPTH_PASS_WITH_SDF,
-					SHADER_VERSION_COLOR_PASS,
-					SHADER_VERSION_COLOR_PASS_WITH_SEPARATE_SPECULAR,
-					SHADER_VERSION_COLOR_PASS,
-					SHADER_VERSION_LIGHTMAP_COLOR_PASS,
-					SHADER_VERSION_LIGHTMAP_COLOR_PASS_WITH_SEPARATE_SPECULAR,
-					SHADER_VERSION_LIGHTMAP_COLOR_PASS,
-
 					SHADER_VERSION_DEPTH_PASS_MULTIVIEW,
-					SHADER_VERSION_COLOR_PASS_MULTIVIEW,
-					SHADER_VERSION_COLOR_PASS_MULTIVIEW,
-					SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW,
-					SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW,
+					SHADER_VERSION_COLOR_PASS,
 				};
 
 				shader_version = shader_version_table[k];
@@ -307,38 +297,62 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 				RD::PipelineDepthStencilState depth_stencil = depth_stencil_state;
 				RD::PipelineMultisampleState multisample_state;
 
-				if (k == PIPELINE_VERSION_TRANSPARENT_PASS || k == PIPELINE_VERSION_LIGHTMAP_TRANSPARENT_PASS || k == PIPELINE_VERSION_TRANSPARENT_PASS_MULTIVIEW || k == PIPELINE_VERSION_LIGHTMAP_TRANSPARENT_PASS_MULTIVIEW) {
-					if (alpha_antialiasing_mode == ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE) {
-						multisample_state.enable_alpha_to_coverage = true;
-					} else if (alpha_antialiasing_mode == ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE) {
-						multisample_state.enable_alpha_to_coverage = true;
-						multisample_state.enable_alpha_to_one = true;
-					}
+				if (k == PIPELINE_VERSION_COLOR_PASS) {
+					for (int l = 0; l < PIPELINE_COLOR_PASS_FLAG_COUNT; l++) {
+						if (!shader_singleton->valid_color_pass_pipelines.has(l)) {
+							continue;
+						}
 
-					blend_state = blend_state_blend;
+						int shader_flags = 0;
+						if (l & PIPELINE_COLOR_PASS_FLAG_TRANSPARENT) {
+							if (alpha_antialiasing_mode == ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE) {
+								multisample_state.enable_alpha_to_coverage = true;
+							} else if (alpha_antialiasing_mode == ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE) {
+								multisample_state.enable_alpha_to_coverage = true;
+								multisample_state.enable_alpha_to_one = true;
+							}
 
-					if (depth_draw == DEPTH_DRAW_OPAQUE) {
-						depth_stencil.enable_depth_write = false; //alpha does not draw depth
+							blend_state = blend_state_color_blend;
+
+							if (depth_draw == DEPTH_DRAW_OPAQUE) {
+								depth_stencil.enable_depth_write = false; //alpha does not draw depth
+							}
+						} else {
+							blend_state = blend_state_color_opaque;
+
+							if (l & PIPELINE_COLOR_PASS_FLAG_SEPARATE_SPECULAR) {
+								shader_flags |= SHADER_COLOR_PASS_FLAG_SEPARATE_SPECULAR;
+							}
+						}
+
+						if (l & PIPELINE_COLOR_PASS_FLAG_LIGHTMAP) {
+							shader_flags |= SHADER_COLOR_PASS_FLAG_LIGHTMAP;
+						}
+
+						if (l & PIPELINE_COLOR_PASS_FLAG_MULTIVIEW) {
+							shader_flags |= SHADER_COLOR_PASS_FLAG_MULTIVIEW;
+						}
+
+						int variant = shader_version + shader_flags;
+						RID shader_variant = shader_singleton->shader.version_get_shader(version, variant);
+						color_pipelines[i][j][l].setup(shader_variant, primitive_rd, raster_state, multisample_state, depth_stencil, blend_state, 0, singleton->default_specialization_constants);
 					}
-				} else if (k == PIPELINE_VERSION_OPAQUE_PASS || k == PIPELINE_VERSION_LIGHTMAP_OPAQUE_PASS || k == PIPELINE_VERSION_OPAQUE_PASS_MULTIVIEW || k == PIPELINE_VERSION_LIGHTMAP_OPAQUE_PASS_MULTIVIEW) {
-					blend_state = blend_state_opaque;
-				} else if (k == PIPELINE_VERSION_DEPTH_PASS || k == PIPELINE_VERSION_DEPTH_PASS_MULTIVIEW || k == PIPELINE_VERSION_DEPTH_PASS_DP) {
-					//none, leave empty
-				} else if (k == PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS) {
-					blend_state = blend_state_depth_normal_roughness;
-				} else if (k == PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI) {
-					blend_state = blend_state_depth_normal_roughness_giprobe;
-				} else if (k == PIPELINE_VERSION_DEPTH_PASS_WITH_MATERIAL) {
-					blend_state = RD::PipelineColorBlendState::create_disabled(5); //writes to normal and roughness in opaque way
-				} else if (k == PIPELINE_VERSION_DEPTH_PASS_WITH_SDF) {
-					blend_state = RD::PipelineColorBlendState(); //no color targets for SDF
 				} else {
-					//specular write
-					blend_state = blend_state_opaque_specular;
-				}
+					if (k == PIPELINE_VERSION_DEPTH_PASS || k == PIPELINE_VERSION_DEPTH_PASS_DP || k == PIPELINE_VERSION_DEPTH_PASS_MULTIVIEW) {
+						//none, leave empty
+					} else if (k == PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS) {
+						blend_state = blend_state_depth_normal_roughness;
+					} else if (k == PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI) {
+						blend_state = blend_state_depth_normal_roughness_giprobe;
+					} else if (k == PIPELINE_VERSION_DEPTH_PASS_WITH_MATERIAL) {
+						blend_state = RD::PipelineColorBlendState::create_disabled(5); //writes to normal and roughness in opaque way
+					} else if (k == PIPELINE_VERSION_DEPTH_PASS_WITH_SDF) {
+						blend_state = RD::PipelineColorBlendState(); //no color targets for SDF
+					}
 
-				RID shader_variant = shader_singleton->shader.version_get_shader(version, shader_version);
-				pipelines[i][j][k].setup(shader_variant, primitive_rd, raster_state, multisample_state, depth_stencil, blend_state, 0, singleton->default_specialization_constants);
+					RID shader_variant = shader_singleton->shader.version_get_shader(version, shader_version);
+					pipelines[i][j][k].setup(shader_variant, primitive_rd, raster_state, multisample_state, depth_stencil, blend_state, 0, singleton->default_specialization_constants);
+				}
 			}
 		}
 	}
@@ -509,24 +523,37 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_NORMAL_ROUGHNESS\n#define MODE_RENDER_VOXEL_GI\n"); // SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_GIPROBE
 		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_MATERIAL\n"); // SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL
 		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_SDF\n"); // SHADER_VERSION_DEPTH_PASS_WITH_SDF
-		shader_versions.push_back(""); // SHADER_VERSION_COLOR_PASS
-		shader_versions.push_back("\n#define MODE_MULTIPLE_RENDER_TARGETS\n"); // SHADER_VERSION_COLOR_PASS_WITH_SEPARATE_SPECULAR
-		shader_versions.push_back("\n#define USE_LIGHTMAP\n"); // SHADER_VERSION_LIGHTMAP_COLOR_PASS
-		shader_versions.push_back("\n#define MODE_MULTIPLE_RENDER_TARGETS\n#define USE_LIGHTMAP\n"); // SHADER_VERSION_LIGHTMAP_COLOR_PASS_WITH_SEPARATE_SPECULAR
-
-		// multiview versions of our shaders
 		shader_versions.push_back("\n#define USE_MULTIVIEW\n#define MODE_RENDER_DEPTH\n"); // SHADER_VERSION_DEPTH_PASS_MULTIVIEW
-		shader_versions.push_back("\n#define USE_MULTIVIEW\n"); // SHADER_VERSION_COLOR_PASS_MULTIVIEW
-		shader_versions.push_back("\n#define USE_MULTIVIEW\n#define USE_LIGHTMAP\n"); // SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW
+
+		Vector<String> color_pass_flags = {
+			"\n#define MODE_SEPARATE_SPECULAR\n", // SHADER_COLOR_PASS_FLAG_SEPARATE_SPECULAR
+			"\n#define USE_LIGHTMAP\n", // SHADER_COLOR_PASS_FLAG_LIGHTMAP
+			"\n#define USE_MULTIVIEW\n", // SHADER_COLOR_PASS_FLAG_MULTIVIEW
+		};
+
+		for (int i = 0; i < SHADER_COLOR_PASS_FLAG_COUNT; i++) {
+			String version = "";
+			for (int j = 0; (1 << j) < SHADER_COLOR_PASS_FLAG_COUNT; j += 1) {
+				if ((1 << j) & i) {
+					version += color_pass_flags[j];
+				}
+			}
+			shader_versions.push_back(version);
+		}
 
 		shader.initialize(shader_versions, p_defines);
 
 		if (!RendererCompositorRD::singleton->is_xr_enabled()) {
 			shader.set_variant_enabled(SHADER_VERSION_DEPTH_PASS_MULTIVIEW, false);
-			shader.set_variant_enabled(SHADER_VERSION_COLOR_PASS_MULTIVIEW, false);
-			shader.set_variant_enabled(SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW, false);
+			// TODO Add a way to enable/disable color pass flags
 		}
 	}
+
+	valid_color_pass_pipelines.insert(0);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_TRANSPARENT);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_SEPARATE_SPECULAR);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_MULTIVIEW);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_TRANSPARENT | PIPELINE_COLOR_PASS_FLAG_MULTIVIEW);
 
 	material_storage->shader_set_data_request_function(RendererRD::SHADER_TYPE_3D, _create_shader_funcs);
 	material_storage->material_set_data_request_function(RendererRD::SHADER_TYPE_3D, _create_material_funcs);
