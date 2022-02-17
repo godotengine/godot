@@ -2034,6 +2034,13 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
+		if (_edit.mode == TRANSFORM_NONE && !cursor.region_select) {
+			if (k->get_scancode() == KEY_ESCAPE) {
+				_clear_selected();
+				return;
+			}
+		}
+
 		if (EditorSettings::get_singleton()->get("editors/3d/navigation/emulate_numpad")) {
 			const uint32_t code = k->get_scancode();
 			if (code >= KEY_0 && code <= KEY_9) {
