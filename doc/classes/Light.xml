@@ -62,7 +62,8 @@
 			The color of shadows cast by this light.
 		</member>
 		<member name="shadow_contact" type="float" setter="set_param" getter="get_param" default="0.0">
-			Attempts to reduce [member shadow_bias] gap.
+			Attempts to reduce [member shadow_bias] gap by rendering screen-space contact shadows. This has a performance impact, especially at higher values.
+			[b]Note:[/b] Contact shadows can look broken, so leaving this property to [code]0.0[/code] is recommended.
 		</member>
 		<member name="shadow_enabled" type="bool" setter="set_shadow" getter="has_shadow" default="false">
 			If [code]true[/code], the light will cast shadows.

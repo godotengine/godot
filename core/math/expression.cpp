@@ -749,6 +749,14 @@ static bool _is_number(CharType c) {
 	return (c >= '0' && c <= '9');
 }
 
+static bool _is_hex_digit(char32_t c) {
+	return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+}
+
+static bool _is_binary_digit(char32_t c) {
+	return (c == '0' || c == '1');
+}
+
 Error Expression::_get_token(Token &r_token) {
 	while (true) {
 #define GET_CHAR() (str_ofs >= expression.length() ? 0 : expression[str_ofs++])
@@ -1011,28 +1019,56 @@ Error Expression::_get_token(Token &r_token) {
 					String num;
 #define READING_SIGN 0
 #define READING_INT 1
-#define READING_DEC 2
-#define READING_EXP 3
-#define READING_DONE 4
+#define READING_HEX 2
+#define READING_BIN 3
+#define READING_DEC 4
+#define READING_EXP 5
+#define READING_DONE 6
 					int reading = READING_INT;
 
 					CharType c = cchar;
 					bool exp_sign = false;
 					bool exp_beg = false;
+					bool bin_beg = false;
+					bool hex_beg = false;
 					bool is_float = false;
+					bool is_first_char = true;
 
 					while (true) {
 						switch (reading) {
 							case READING_INT: {
 								if (_is_number(c)) {
-									//pass
+									if (is_first_char && c == '0') {
+										if (next_char == 'b') {
+											reading = READING_BIN;
+										} else if (next_char == 'x') {
+											reading = READING_HEX;
+										}
+									}
 								} else if (c == '.') {
 									reading = READING_DEC;
 									is_float = true;
 								} else if (c == 'e') {
 									reading = READING_EXP;
+									is_float = true;
 								} else {
 									reading = READING_DONE;
+								}
+
+							} break;
+							case READING_BIN: {
+								if (bin_beg && !_is_binary_digit(c)) {
+									reading = READING_DONE;
+								} else if (c == 'b') {
+									bin_beg = true;
+								}
+
+							} break;
+							case READING_HEX: {
+								if (hex_beg && !_is_hex_digit(c)) {
+									reading = READING_DONE;
+								} else if (c == 'x') {
+									hex_beg = true;
 								}
 
 							} break;
@@ -1051,9 +1087,6 @@ Error Expression::_get_token(Token &r_token) {
 									exp_beg = true;
 
 								} else if ((c == '-' || c == '+') && !exp_sign && !exp_beg) {
-									if (c == '-') {
-										is_float = true;
-									}
 									exp_sign = true;
 
 								} else {
@@ -1067,6 +1100,7 @@ Error Expression::_get_token(Token &r_token) {
 						}
 						num += String::chr(c);
 						c = GET_CHAR();
+						is_first_char = false;
 					}
 
 					str_ofs--;
@@ -1075,6 +1109,10 @@ Error Expression::_get_token(Token &r_token) {
 
 					if (is_float) {
 						r_token.value = num.to_double();
+					} else if (bin_beg) {
+						r_token.value = num.bin_to_int64();
+					} else if (hex_beg) {
+						r_token.value = num.hex_to_int64();
 					} else {
 						r_token.value = num.to_int64();
 					}

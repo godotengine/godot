@@ -258,6 +258,13 @@ void RayCast2D::remove_exception(const Object *p_object) {
 
 void RayCast2D::clear_exceptions() {
 	exclude.clear();
+
+	if (exclude_parent_body && is_inside_tree()) {
+		CollisionObject2D *parent = Object::cast_to<CollisionObject2D>(get_parent());
+		if (parent) {
+			exclude.insert(parent->get_rid());
+		}
+	}
 }
 
 void RayCast2D::set_collide_with_areas(bool p_clip) {

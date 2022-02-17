@@ -107,3 +107,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 void _err_print_index_error(const char *p_function, const char *p_file, int p_line, int64_t p_index, int64_t p_size, const char *p_index_str, const char *p_size_str, const String &p_message, bool fatal) {
 	_err_print_index_error(p_function, p_file, p_line, p_index, p_size, p_index_str, p_size_str, p_message.utf8().get_data(), fatal);
 }
+
+void _err_flush_stdout() {
+	fflush(stdout);
+}

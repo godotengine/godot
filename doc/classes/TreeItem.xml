@@ -18,7 +18,7 @@
 			<argument index="3" name="disabled" type="bool" default="false" />
 			<argument index="4" name="tooltip" type="String" default="&quot;&quot;" />
 			<description>
-				Adds a button with [Texture] [code]button[/code] at column [code]column[/code]. The [code]button_idx[/code] index is used to identify the button when calling other methods. If not specified, the next available index is used, which may be retrieved by calling [method get_button_count] immediately after this method. Optionally, the button can be [code]disabled[/code] and have a [code]tooltip[/code].
+				Adds a button with [Texture] [code]button[/code] at column [code]column[/code]. The [code]button_idx[/code] is used to identify the button. If not specified, the next available index is used, which may be retrieved by calling [method get_button_count] immediately after this method. Optionally, the button can be [code]disabled[/code] and have a [code]tooltip[/code].
 			</description>
 		</method>
 		<method name="call_recursive" qualifiers="vararg">
@@ -69,7 +69,7 @@
 			<return type="int" />
 			<argument index="0" name="column" type="int" />
 			<description>
-				Returns the number of buttons in column [code]column[/code]. May be used to get the most recently added button's index, if no index was specified.
+				Returns the number of buttons in column [code]column[/code].
 			</description>
 		</method>
 		<method name="get_button_tooltip" qualifiers="const">

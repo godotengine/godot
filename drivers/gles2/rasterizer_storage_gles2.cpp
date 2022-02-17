@@ -2287,6 +2287,7 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 				if (p_format & VS::ARRAY_COMPRESS_VERTEX) {
 					attribs[i].type = _GL_HALF_FLOAT_OES;
 					positions_stride += attribs[i].size * 2;
+					uses_half_float = true;
 				} else {
 					attribs[i].type = GL_FLOAT;
 					positions_stride += attribs[i].size * 4;
@@ -3969,7 +3970,7 @@ void RasterizerStorageGLES2::update_dirty_blend_shapes() {
 					s->blend_shape_buffer_size = buffer_size;
 					glBufferData(GL_ARRAY_BUFFER, buffer_size * sizeof(float), transform_buffer.read().ptr(), GL_DYNAMIC_DRAW);
 				} else {
-					buffer_orphan_and_upload(s->blend_shape_buffer_size, 0, buffer_size * sizeof(float), transform_buffer.read().ptr(), GL_ARRAY_BUFFER, true);
+					buffer_orphan_and_upload(s->blend_shape_buffer_size * sizeof(float), 0, buffer_size * sizeof(float), transform_buffer.read().ptr(), GL_ARRAY_BUFFER, true);
 				}
 				glBindBuffer(GL_ARRAY_BUFFER, 0);
 			}
@@ -3991,7 +3992,7 @@ void RasterizerStorageGLES2::_update_skeleton_transform_buffer(const PoolVector<
 		glBufferData(GL_ARRAY_BUFFER, buffer_size, p_data.read().ptr(), GL_DYNAMIC_DRAW);
 	} else {
 		// this may not be best, it could be better to use glBufferData in both cases.
-		buffer_orphan_and_upload(resources.skeleton_transform_buffer_size, 0, buffer_size, p_data.read().ptr(), GL_ARRAY_BUFFER, true);
+		buffer_orphan_and_upload(resources.skeleton_transform_buffer_size * sizeof(float), 0, buffer_size, p_data.read().ptr(), GL_ARRAY_BUFFER, true);
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -6178,6 +6179,13 @@ void RasterizerStorageGLES2::initialize() {
 	config.etc1_supported = config.extensions.has("GL_OES_compressed_ETC1_RGB8_texture") || config.extensions.has("WEBGL_compressed_texture_etc1");
 	config.pvrtc_supported = config.extensions.has("GL_IMG_texture_compression_pvrtc") || config.extensions.has("WEBGL_compressed_texture_pvrtc");
 	config.support_npot_repeat_mipmap = config.extensions.has("GL_OES_texture_npot");
+
+	// If the desktop build is using S3TC, and you export / run from the IDE for android, if the device supports
+	// S3TC it will crash trying to load these textures, as they are not exported in the APK. This is a simple way
+	// to prevent Android devices trying to load S3TC, by faking lack of hardware support.
+#if defined(ANDROID_ENABLED) || defined(IPHONE_ENABLED)
+	config.s3tc_supported = false;
+#endif
 
 #ifdef JAVASCRIPT_ENABLED
 	// RenderBuffer internal format must be 16 bits in WebGL,
