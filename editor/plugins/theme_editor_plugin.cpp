@@ -2158,7 +2158,12 @@ OrderedHashMap<StringName, bool> ThemeTypeEditor::_get_type_items(String p_type_
 
 	if (include_default) {
 		names.clear();
-		(Theme::get_default().operator->()->*get_list_func)(p_type_name, &names);
+		String default_type = p_type_name;
+		if (edited_theme->get_type_variation_base(p_type_name) != StringName()) {
+			default_type = edited_theme->get_type_variation_base(p_type_name);
+		}
+
+		(Theme::get_default().operator->()->*get_list_func)(default_type, &names);
 		names.sort_custom<StringName::AlphCompare>();
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 			items[E->get()] = false;
@@ -2483,6 +2488,20 @@ void ThemeTypeEditor::_update_type_items() {
 			stylebox_items_list->add_child(item_control);
 		}
 	}
+
+	// Various type settings.
+	if (edited_type.empty() || ClassDB::class_exists(edited_type)) {
+		type_variation_edit->set_editable(false);
+		type_variation_edit->set_text("");
+		type_variation_button->hide();
+		type_variation_locked->set_visible(!edited_type.empty());
+	} else {
+		type_variation_edit->set_editable(true);
+		type_variation_edit->set_text(edited_theme->get_type_variation_base(edited_type));
+		_add_focusable(type_variation_edit);
+		type_variation_button->show();
+		type_variation_locked->hide();
+	}
 }
 
 void ThemeTypeEditor::_list_type_selected(int p_index) {
@@ -2491,11 +2510,19 @@ void ThemeTypeEditor::_list_type_selected(int p_index) {
 }
 
 void ThemeTypeEditor::_add_type_button_cbk() {
+	add_type_mode = ADD_THEME_TYPE;
+	add_type_dialog->set_title(TTR("Add Item Type"));
+	add_type_dialog->get_ok()->set_text(TTR("Add Type"));
+	add_type_dialog->set_include_own_types(false);
 	add_type_dialog->popup_centered(Size2(560, 420) * EDSCALE);
 }
 
 void ThemeTypeEditor::_add_default_type_items() {
 	List<StringName> names;
+	String default_type = edited_type;
+	if (edited_theme->get_type_variation_base(edited_type) != StringName()) {
+		default_type = edited_theme->get_type_variation_base(edited_type);
+	}
 
 	updating = true;
 	// Prevent changes from immediately being reported while the operation is still ongoing.
@@ -2503,7 +2530,7 @@ void ThemeTypeEditor::_add_default_type_items() {
 
 	{
 		names.clear();
-		Theme::get_default()->get_icon_list(edited_type, &names);
+		Theme::get_default()->get_icon_list(default_type, &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 			if (!edited_theme->has_icon(E->get(), edited_type)) {
 				edited_theme->set_icon(E->get(), edited_type, Ref<Texture>());
@@ -2512,7 +2539,7 @@ void ThemeTypeEditor::_add_default_type_items() {
 	}
 	{
 		names.clear();
-		Theme::get_default()->get_stylebox_list(edited_type, &names);
+		Theme::get_default()->get_stylebox_list(default_type, &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 			if (!edited_theme->has_stylebox(E->get(), edited_type)) {
 				edited_theme->set_stylebox(E->get(), edited_type, Ref<StyleBox>());
@@ -2521,7 +2548,7 @@ void ThemeTypeEditor::_add_default_type_items() {
 	}
 	{
 		names.clear();
-		Theme::get_default()->get_font_list(edited_type, &names);
+		Theme::get_default()->get_font_list(default_type, &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 			if (!edited_theme->has_font(E->get(), edited_type)) {
 				edited_theme->set_font(E->get(), edited_type, Ref<Font>());
@@ -2530,7 +2557,7 @@ void ThemeTypeEditor::_add_default_type_items() {
 	}
 	{
 		names.clear();
-		Theme::get_default()->get_color_list(edited_type, &names);
+		Theme::get_default()->get_color_list(default_type, &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 			if (!edited_theme->has_color(E->get(), edited_type)) {
 				edited_theme->set_color(E->get(), edited_type, Theme::get_default()->get_color(E->get(), edited_type));
@@ -2539,7 +2566,7 @@ void ThemeTypeEditor::_add_default_type_items() {
 	}
 	{
 		names.clear();
-		Theme::get_default()->get_constant_list(edited_type, &names);
+		Theme::get_default()->get_constant_list(default_type, &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 			if (!edited_theme->has_constant(E->get(), edited_type)) {
 				edited_theme->set_constant(E->get(), edited_type, Theme::get_default()->get_constant(E->get(), edited_type));
@@ -2817,8 +2844,28 @@ void ThemeTypeEditor::_update_stylebox_from_leading() {
 	edited_theme->_unfreeze_and_propagate_changes();
 }
 
+void ThemeTypeEditor::_type_variation_changed(const String p_value) {
+	if (p_value.empty()) {
+		edited_theme->clear_type_variation(edited_type);
+	} else {
+		edited_theme->set_type_variation(edited_type, StringName(p_value));
+	}
+}
+
+void ThemeTypeEditor::_add_type_variation_cbk() {
+	add_type_mode = ADD_VARIATION_BASE;
+	add_type_dialog->set_title(TTR("Set Variation Base Type"));
+	add_type_dialog->get_ok()->set_text(TTR("Set Base Type"));
+	add_type_dialog->set_include_own_types(true);
+	add_type_dialog->popup_centered(Size2(560, 420) * EDSCALE);
+}
+
 void ThemeTypeEditor::_add_type_dialog_selected(const String p_type_name) {
-	select_type(p_type_name);
+	if (add_type_mode == ADD_THEME_TYPE) {
+		select_type(p_type_name);
+	} else if (add_type_mode == ADD_VARIATION_BASE) {
+		_type_variation_changed(p_type_name);
+	}
 }
 
 void ThemeTypeEditor::_notification(int p_what) {
@@ -2832,9 +2879,12 @@ void ThemeTypeEditor::_notification(int p_what) {
 			data_type_tabs->set_tab_icon(2, get_icon("Font", "EditorIcons"));
 			data_type_tabs->set_tab_icon(3, get_icon("ImageTexture", "EditorIcons"));
 			data_type_tabs->set_tab_icon(4, get_icon("StyleBoxFlat", "EditorIcons"));
+			data_type_tabs->set_tab_icon(5, get_icon("Tools", "EditorIcons"));
 
 			data_type_tabs->add_style_override("tab_selected", get_stylebox("tab_selected_odd", "TabContainer"));
 			data_type_tabs->add_style_override("panel", get_stylebox("panel_odd", "TabContainer"));
+
+			type_variation_button->set_icon(get_icon("Add", "EditorIcons"));
 		} break;
 	}
 }
@@ -2847,6 +2897,7 @@ void ThemeTypeEditor::_bind_methods() {
 	ClassDB::bind_method("_list_type_selected", &ThemeTypeEditor::_list_type_selected);
 
 	ClassDB::bind_method("_add_type_button_cbk", &ThemeTypeEditor::_add_type_button_cbk);
+	ClassDB::bind_method("_add_type_variation_cbk", &ThemeTypeEditor::_add_type_variation_cbk);
 	ClassDB::bind_method("_add_type_dialog_selected", &ThemeTypeEditor::_add_type_dialog_selected);
 	ClassDB::bind_method("_add_default_type_items", &ThemeTypeEditor::_add_default_type_items);
 
@@ -2868,6 +2919,7 @@ void ThemeTypeEditor::_bind_methods() {
 	ClassDB::bind_method("_pin_leading_stylebox", &ThemeTypeEditor::_pin_leading_stylebox);
 	ClassDB::bind_method("_unpin_leading_stylebox", &ThemeTypeEditor::_unpin_leading_stylebox);
 	ClassDB::bind_method("_update_stylebox_from_leading", &ThemeTypeEditor::_update_stylebox_from_leading);
+	ClassDB::bind_method("_type_variation_changed", &ThemeTypeEditor::_type_variation_changed);
 }
 
 void ThemeTypeEditor::set_edited_theme(const Ref<Theme> &p_theme) {
@@ -2878,6 +2930,8 @@ void ThemeTypeEditor::set_edited_theme(const Ref<Theme> &p_theme) {
 	edited_theme = p_theme;
 	edited_theme->connect("changed", this, "_update_type_list_debounced");
 	_update_type_list();
+
+	add_type_dialog->set_edited_theme(edited_theme);
 }
 
 void ThemeTypeEditor::select_type(String p_type_name) {
@@ -2955,6 +3009,45 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	font_items_list = _create_item_list(Theme::DATA_TYPE_FONT);
 	icon_items_list = _create_item_list(Theme::DATA_TYPE_ICON);
 	stylebox_items_list = _create_item_list(Theme::DATA_TYPE_STYLEBOX);
+
+	VBoxContainer *type_settings_tab = memnew(VBoxContainer);
+	type_settings_tab->set_custom_minimum_size(Size2(0, 160) * EDSCALE);
+	data_type_tabs->add_child(type_settings_tab);
+	data_type_tabs->set_tab_title(data_type_tabs->get_tab_count() - 1, "");
+
+	ScrollContainer *type_settings_sc = memnew(ScrollContainer);
+	type_settings_sc->set_v_size_flags(SIZE_EXPAND_FILL);
+	type_settings_sc->set_enable_h_scroll(false);
+	type_settings_tab->add_child(type_settings_sc);
+	VBoxContainer *type_settings_list = memnew(VBoxContainer);
+	type_settings_list->set_h_size_flags(SIZE_EXPAND_FILL);
+	type_settings_sc->add_child(type_settings_list);
+
+	VBoxContainer *type_variation_vb = memnew(VBoxContainer);
+	type_settings_list->add_child(type_variation_vb);
+
+	HBoxContainer *type_variation_hb = memnew(HBoxContainer);
+	type_variation_vb->add_child(type_variation_hb);
+	Label *type_variation_label = memnew(Label);
+	type_variation_hb->add_child(type_variation_label);
+	type_variation_label->set_text(TTR("Base Type"));
+	type_variation_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	type_variation_edit = memnew(LineEdit);
+	type_variation_hb->add_child(type_variation_edit);
+	type_variation_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	type_variation_edit->connect("text_changed", this, "_type_variation_changed");
+	type_variation_edit->connect("focus_exited", this, "_update_type_items");
+	type_variation_button = memnew(Button);
+	type_variation_hb->add_child(type_variation_button);
+	type_variation_button->set_tooltip(TTR("Select the variation base type from a list of available types."));
+	type_variation_button->connect("pressed", this, "_add_type_variation_cbk");
+
+	type_variation_locked = memnew(Label);
+	type_variation_vb->add_child(type_variation_locked);
+	type_variation_locked->set_align(Label::ALIGN_CENTER);
+	type_variation_locked->set_autowrap(true);
+	type_variation_locked->set_text(TTR("A type associated with a built-in class cannot be marked as a variation of another type."));
+	type_variation_locked->hide();
 
 	add_type_dialog = memnew(ThemeTypeDialog);
 	add_type_dialog->set_title(TTR("Add Item Type"));
