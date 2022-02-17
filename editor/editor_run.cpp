@@ -131,29 +131,33 @@ Error EditorRun::run(const String &p_scene) {
 	}
 
 	switch (window_placement) {
+		// Coordinates are clamped to be always positive, as certain multi-monitor setups
+		// can cause them to become negative. However, negative window coordinates make no sense
+		// as window coordinates are absolute (and not relative to each monitor).
 		case 0: { // top left
+			const Vector2 pos = screen_rect.position.max(Vector2(0, 0));
 			args.push_back("--position");
-			args.push_back(itos(screen_rect.position.x) + "," + itos(screen_rect.position.y));
+			args.push_back(itos(pos.x) + "," + itos(pos.y));
 		} break;
 		case 1: { // centered
-			Vector2 pos = (screen_rect.position) + ((screen_rect.size - window_size) / 2).floor();
+			const Vector2 pos = (screen_rect.position) + ((screen_rect.size - window_size) / 2).floor().max(Vector2(0, 0));
 			args.push_back("--position");
 			args.push_back(itos(pos.x) + "," + itos(pos.y));
 		} break;
 		case 2: { // custom pos
-			Vector2 pos = EditorSettings::get_singleton()->get("run/window_placement/rect_custom_position");
+			Vector2 pos = Vector2(EditorSettings::get_singleton()->get("run/window_placement/rect_custom_position")).max(Vector2(0, 0));
 			pos += screen_rect.position;
 			args.push_back("--position");
 			args.push_back(itos(pos.x) + "," + itos(pos.y));
 		} break;
 		case 3: { // force maximized
-			Vector2 pos = screen_rect.position;
+			const Vector2 pos = screen_rect.position.max(Vector2(0, 0));
 			args.push_back("--position");
 			args.push_back(itos(pos.x) + "," + itos(pos.y));
 			args.push_back("--maximized");
 		} break;
 		case 4: { // force fullscreen
-			Vector2 pos = screen_rect.position;
+			const Vector2 pos = screen_rect.position.max(Vector2(0, 0));
 			args.push_back("--position");
 			args.push_back(itos(pos.x) + "," + itos(pos.y));
 			args.push_back("--fullscreen");
