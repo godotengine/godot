@@ -514,45 +514,62 @@ Error VulkanContext::_check_capabilities() {
 	subgroup_capabilities.supportedStages = 0;
 	subgroup_capabilities.supportedOperations = 0;
 	subgroup_capabilities.quadOperationsInAllStages = false;
+	shader_capabilities.shader_float16_is_supported = false;
+	shader_capabilities.shader_int8_is_supported = false;
+	storage_buffer_capabilities.storage_buffer_16_bit_access_is_supported = false;
+	storage_buffer_capabilities.uniform_and_storage_buffer_16_bit_access_is_supported = false;
+	storage_buffer_capabilities.storage_push_constant_16_is_supported = false;
+	storage_buffer_capabilities.storage_input_output_16 = false;
 
 	// check for extended features
-	PFN_vkGetPhysicalDeviceFeatures2 device_features_func = (PFN_vkGetPhysicalDeviceFeatures2)vkGetInstanceProcAddr(inst, "vkGetPhysicalDeviceFeatures2");
-	if (device_features_func == nullptr) {
+	PFN_vkGetPhysicalDeviceFeatures2 vkGetPhysicalDeviceFeatures2_func = (PFN_vkGetPhysicalDeviceFeatures2)vkGetInstanceProcAddr(inst, "vkGetPhysicalDeviceFeatures2");
+	if (vkGetPhysicalDeviceFeatures2_func == nullptr) {
 		// In Vulkan 1.0 might be accessible under its original extension name
-		device_features_func = (PFN_vkGetPhysicalDeviceFeatures2)vkGetInstanceProcAddr(inst, "vkGetPhysicalDeviceFeatures2KHR");
+		vkGetPhysicalDeviceFeatures2_func = (PFN_vkGetPhysicalDeviceFeatures2)vkGetInstanceProcAddr(inst, "vkGetPhysicalDeviceFeatures2KHR");
 	}
-	if (device_features_func != nullptr) {
+	if (vkGetPhysicalDeviceFeatures2_func != nullptr) {
 		// check our extended features
-		VkPhysicalDeviceMultiviewFeatures multiview_features;
-		multiview_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
-		multiview_features.pNext = nullptr;
+		VkPhysicalDeviceShaderFloat16Int8FeaturesKHR shader_features = {
+			/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR,
+			/*pNext*/ nullptr,
+			/*shaderFloat16*/ false,
+			/*shaderInt8*/ false,
+		};
+
+		VkPhysicalDevice16BitStorageFeaturesKHR storage_feature = {
+			/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR,
+			/*pNext*/ &shader_features,
+			/*storageBuffer16BitAccess*/ false,
+			/*uniformAndStorageBuffer16BitAccess*/ false,
+			/*storagePushConstant16*/ false,
+			/*storageInputOutput16*/ false,
+		};
+
+		VkPhysicalDeviceMultiviewFeatures multiview_features = {
+			/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES,
+			/*pNext*/ &storage_feature,
+			/*multiview*/ false,
+			/*multiviewGeometryShader*/ false,
+			/*multiviewTessellationShader*/ false,
+		};
 
 		VkPhysicalDeviceFeatures2 device_features;
 		device_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
 		device_features.pNext = &multiview_features;
 
-		device_features_func(gpu, &device_features);
+		vkGetPhysicalDeviceFeatures2_func(gpu, &device_features);
+
 		multiview_capabilities.is_supported = multiview_features.multiview;
 		multiview_capabilities.geometry_shader_is_supported = multiview_features.multiviewGeometryShader;
 		multiview_capabilities.tessellation_shader_is_supported = multiview_features.multiviewTessellationShader;
 
-		VkPhysicalDeviceShaderFloat16Int8FeaturesKHR shader_features;
-		shader_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR;
-		shader_features.pNext = nullptr;
-
-		device_features.pNext = &shader_features;
-
-		device_features_func(gpu, &device_features);
 		shader_capabilities.shader_float16_is_supported = shader_features.shaderFloat16;
+		shader_capabilities.shader_int8_is_supported = shader_features.shaderInt8;
 
-		VkPhysicalDevice16BitStorageFeaturesKHR storage_feature;
-		storage_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR;
-		storage_feature.pNext = nullptr;
-
-		device_features.pNext = &storage_feature;
-
-		device_features_func(gpu, &device_features);
 		storage_buffer_capabilities.storage_buffer_16_bit_access_is_supported = storage_feature.storageBuffer16BitAccess;
+		storage_buffer_capabilities.uniform_and_storage_buffer_16_bit_access_is_supported = storage_feature.uniformAndStorageBuffer16BitAccess;
+		storage_buffer_capabilities.storage_push_constant_16_is_supported = storage_feature.storagePushConstant16;
+		storage_buffer_capabilities.storage_input_output_16 = storage_feature.storageInputOutput16;
 	}
 
 	// check extended properties
@@ -1057,9 +1074,61 @@ Error VulkanContext::_create_device() {
 	queues[0].pQueuePriorities = queue_priorities;
 	queues[0].flags = 0;
 
+	// Before we retrieved what is supported, here we tell Vulkan we want to enable these features using the same structs.
+	void *nextptr = nullptr;
+
+	VkPhysicalDeviceShaderFloat16Int8FeaturesKHR shader_features = {
+		/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR,
+		/*pNext*/ nextptr,
+		/*shaderFloat16*/ shader_capabilities.shader_float16_is_supported,
+		/*shaderInt8*/ shader_capabilities.shader_int8_is_supported,
+	};
+	nextptr = &shader_features;
+
+	VkPhysicalDeviceVulkan11Features vulkan11features;
+	VkPhysicalDevice16BitStorageFeaturesKHR storage_feature;
+	VkPhysicalDeviceMultiviewFeatures multiview_features;
+	if (vulkan_major > 1 || vulkan_minor >= 2) {
+		// In Vulkan 1.2 and newer we use a newer struct to enable various features
+
+		vulkan11features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+		vulkan11features.pNext = nextptr;
+		vulkan11features.storageBuffer16BitAccess = storage_buffer_capabilities.storage_buffer_16_bit_access_is_supported;
+		vulkan11features.uniformAndStorageBuffer16BitAccess = storage_buffer_capabilities.uniform_and_storage_buffer_16_bit_access_is_supported;
+		vulkan11features.storagePushConstant16 = storage_buffer_capabilities.storage_push_constant_16_is_supported;
+		vulkan11features.storageInputOutput16 = storage_buffer_capabilities.storage_input_output_16;
+		vulkan11features.multiview = multiview_capabilities.is_supported;
+		vulkan11features.multiviewGeometryShader = multiview_capabilities.geometry_shader_is_supported;
+		vulkan11features.multiviewTessellationShader = multiview_capabilities.tessellation_shader_is_supported;
+		vulkan11features.variablePointersStorageBuffer = 0;
+		vulkan11features.variablePointers = 0;
+		vulkan11features.protectedMemory = 0;
+		vulkan11features.samplerYcbcrConversion = 0;
+		vulkan11features.shaderDrawParameters = 0;
+		nextptr = &vulkan11features;
+	} else {
+		// On Vulkan 1.0 and 1.1 we use our older structs to initialise these features
+		storage_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR;
+		storage_feature.pNext = nextptr;
+		storage_feature.storageBuffer16BitAccess = storage_buffer_capabilities.storage_buffer_16_bit_access_is_supported;
+		storage_feature.uniformAndStorageBuffer16BitAccess = storage_buffer_capabilities.uniform_and_storage_buffer_16_bit_access_is_supported;
+		storage_feature.storagePushConstant16 = storage_buffer_capabilities.storage_push_constant_16_is_supported;
+		storage_feature.storageInputOutput16 = storage_buffer_capabilities.storage_input_output_16;
+		nextptr = &storage_feature;
+
+		if (vulkan_major == 1 && vulkan_minor == 1) {
+			multiview_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
+			multiview_features.pNext = nextptr;
+			multiview_features.multiview = multiview_capabilities.is_supported;
+			multiview_features.multiviewGeometryShader = multiview_capabilities.geometry_shader_is_supported;
+			multiview_features.multiviewTessellationShader = multiview_capabilities.tessellation_shader_is_supported;
+			nextptr = &multiview_features;
+		}
+	}
+
 	VkDeviceCreateInfo sdevice = {
 		/*sType*/ VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-		/*pNext*/ nullptr,
+		/*pNext*/ nextptr,
 		/*flags*/ 0,
 		/*queueCreateInfoCount*/ 1,
 		/*pQueueCreateInfos*/ queues,
@@ -1068,7 +1137,6 @@ Error VulkanContext::_create_device() {
 		/*enabledExtensionCount*/ enabled_extension_count,
 		/*ppEnabledExtensionNames*/ (const char *const *)extension_names,
 		/*pEnabledFeatures*/ &physical_device_features, // If specific features are required, pass them in here
-
 	};
 	if (separate_present_queue) {
 		queues[1].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -1078,36 +1146,6 @@ Error VulkanContext::_create_device() {
 		queues[1].pQueuePriorities = queue_priorities;
 		queues[1].flags = 0;
 		sdevice.queueCreateInfoCount = 2;
-	}
-
-	VkPhysicalDeviceVulkan11Features vulkan11features;
-	VkPhysicalDeviceMultiviewFeatures multiview_features;
-	if (vulkan_major > 1 || vulkan_minor >= 2) {
-		vulkan11features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
-		vulkan11features.pNext = nullptr;
-		// !BAS! Need to figure out which ones of these we want enabled...
-		vulkan11features.storageBuffer16BitAccess = 0;
-		vulkan11features.uniformAndStorageBuffer16BitAccess = 0;
-		vulkan11features.storagePushConstant16 = 0;
-		vulkan11features.storageInputOutput16 = 0;
-		vulkan11features.multiview = multiview_capabilities.is_supported;
-		vulkan11features.multiviewGeometryShader = multiview_capabilities.geometry_shader_is_supported;
-		vulkan11features.multiviewTessellationShader = multiview_capabilities.tessellation_shader_is_supported;
-		vulkan11features.variablePointersStorageBuffer = 0;
-		vulkan11features.variablePointers = 0;
-		vulkan11features.protectedMemory = 0;
-		vulkan11features.samplerYcbcrConversion = 0;
-		vulkan11features.shaderDrawParameters = 0;
-
-		sdevice.pNext = &vulkan11features;
-	} else if (vulkan_major == 1 && vulkan_minor == 1) {
-		multiview_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
-		multiview_features.pNext = nullptr;
-		multiview_features.multiview = multiview_capabilities.is_supported;
-		multiview_features.multiviewGeometryShader = multiview_capabilities.geometry_shader_is_supported;
-		multiview_features.multiviewTessellationShader = multiview_capabilities.tessellation_shader_is_supported;
-
-		sdevice.pNext = &multiview_features;
 	}
 
 	err = vkCreateDevice(gpu, &sdevice, nullptr, &device);

@@ -69,10 +69,14 @@ public:
 
 	struct ShaderCapabilities {
 		bool shader_float16_is_supported;
+		bool shader_int8_is_supported;
 	};
 
 	struct StorageBufferCapabilities {
 		bool storage_buffer_16_bit_access_is_supported;
+		bool uniform_and_storage_buffer_16_bit_access_is_supported;
+		bool storage_push_constant_16_is_supported;
+		bool storage_input_output_16;
 	};
 
 private:
