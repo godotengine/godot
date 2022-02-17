@@ -116,7 +116,7 @@
 			<return type="bool" />
 			<argument index="0" name="path" type="NodePath" />
 			<description>
-				Returns [code]true[/code] whether a given path is filtered.
+				Returns whether the given path is filtered.
 			</description>
 		</method>
 		<method name="process" qualifiers="virtual">
@@ -149,7 +149,7 @@
 			<argument index="0" name="name" type="String" />
 			<argument index="1" name="value" type="Variant" />
 			<description>
-				Sets a custom parameter. These are used as local storage, because resources can be reused across the tree or scenes.
+				Sets a custom parameter. These are used as local memory, because resources can be reused across the tree or scenes.
 			</description>
 		</method>
 	</methods>
@@ -161,7 +161,7 @@
 	<signals>
 		<signal name="removed_from_graph">
 			<description>
-				Called when the node was removed from the graph.
+				Emitted when the node was removed from the graph.
 			</description>
 		</signal>
 		<signal name="tree_changed">
