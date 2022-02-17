@@ -1097,7 +1097,7 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 		_write_string(f, 1, "<tutorials>");
 		for (int i = 0; i < c.tutorials.size(); i++) {
 			TutorialDoc tutorial = c.tutorials.get(i);
-			String title_attribute = (!tutorial.title.empty()) ? " title=\"" + tutorial.title.xml_escape() + "\"" : "";
+			String title_attribute = (!tutorial.title.empty()) ? " title=\"" + _translate_doc_string(tutorial.title).xml_escape() + "\"" : "";
 			_write_string(f, 2, "<link" + title_attribute + ">" + tutorial.link.xml_escape() + "</link>");
 		}
 		_write_string(f, 1, "</tutorials>");
