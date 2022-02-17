@@ -79,7 +79,8 @@
 			The points that form the lines. The line is drawn between every point set in this array. Points are interpreted as local vectors.
 		</member>
 		<member name="round_precision" type="int" setter="set_round_precision" getter="get_round_precision" default="8">
-			The smoothness of the rounded joints and caps. This is only used if a cap or joint is set as round.
+			The smoothness of the rounded joints and caps. Higher values result in smoother corners, but are more demanding to render and update. This is only used if a cap or joint is set as round.
+			[b]Note:[/b] The default value is tuned for lines with the default [member width]. For thin lines, this value should be reduced to a number between [code]2[/code] and [code]4[/code] to improve performance.
 		</member>
 		<member name="sharp_limit" type="float" setter="set_sharp_limit" getter="get_sharp_limit" default="2.0">
 			The direction difference in radians between vector points. This value is only used if [member joint_mode] is set to [constant LINE_JOINT_SHARP].
