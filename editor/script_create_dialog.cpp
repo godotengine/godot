@@ -1038,6 +1038,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	internal_name = memnew(LineEdit);
 	internal_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	internal_name->connect("text_submitted", callable_mp(this, &ScriptCreateDialog::_path_submitted));
 	label = memnew(Label(TTR("Name:")));
 	gc->add_child(label);
 	gc->add_child(internal_name);
