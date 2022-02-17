@@ -327,6 +327,7 @@ private:
 	Vector<_RayResult> selection_results;
 	bool clicked_includes_current;
 	bool clicked_wants_append;
+	bool selection_in_progress = false;
 
 	PopupMenu *selection_menu;
 
