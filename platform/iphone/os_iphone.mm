@@ -54,6 +54,7 @@
 
 #import <UIKit/UIKit.h>
 #include <dlfcn.h>
+#include <sys/sysctl.h>
 #import <sys/utsname.h>
 
 extern int gl_view_base_fb; // from gl_view.mm
@@ -663,6 +664,15 @@ void OSIPhone::native_video_stop() {
 	if (native_video_is_playing()) {
 		[AppDelegate.viewController.videoView stopVideo];
 	}
+}
+
+String OSIPhone::get_processor_name() const {
+	char buffer[256];
+	size_t buffer_len = 256;
+	if (sysctlbyname("machdep.cpu.brand_string", &buffer, &buffer_len, NULL, 0) == 0) {
+		return String::utf8(buffer, buffer_len);
+	}
+	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
 }
 
 void OSIPhone::vibrate_handheld(int p_duration_ms) {
