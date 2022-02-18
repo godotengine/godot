@@ -404,6 +404,8 @@ Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Mesh>
 		box.instantiate();
 		if (p_options.has(SNAME("primitive/size"))) {
 			box->set_size(p_options[SNAME("primitive/size")]);
+		} else {
+			box->set_size(Vector3(2.0, 2.0, 2.0));
 		}
 
 		Vector<Ref<Shape3D>> shapes;
