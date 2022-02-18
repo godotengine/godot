@@ -539,14 +539,21 @@ void DisplayServerWayland::_wl_keyboard_on_keymap(void *data, struct wl_keyboard
 
 	KeyboardState &ks = wls->keyboard_state;
 
+	if (ks.keymap_buffer) {
+		// We have already a mapped buffer, so we unmap it. There's no need to reset
+		// its pointer or size, as we're gonna set them below.
+		munmap((void *)ks.keymap_buffer, ks.keymap_buffer_size);
+	}
+
 	// TODO: Unmap on destruction.
 	ks.keymap_buffer = (const char *)mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
 	ks.keymap_buffer_size = size;
 
+	xkb_keymap_unref(ks.xkb_keymap);
 	ks.xkb_keymap = xkb_keymap_new_from_string(ks.xkb_context, ks.keymap_buffer,
 			XKB_KEYMAP_FORMAT_TEXT_V1, XKB_KEYMAP_COMPILE_NO_FLAGS);
 
-	// TODO: Handle layout changes.
+	xkb_state_unref(ks.xkb_state);
 	ks.xkb_state = xkb_state_new(ks.xkb_keymap);
 }
 
