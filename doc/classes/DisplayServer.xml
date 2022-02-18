@@ -515,7 +515,7 @@
 		<method name="virtual_keyboard_show">
 			<return type="void" />
 			<argument index="0" name="existing_text" type="String" />
-			<argument index="1" name="position" type="Rect2" default="Rect2i(0, 0, 0, 0)" />
+			<argument index="1" name="position" type="Rect2" default="Rect2(0, 0, 0, 0)" />
 			<argument index="2" name="multiline" type="bool" default="false" />
 			<argument index="3" name="max_length" type="int" default="-1" />
 			<argument index="4" name="cursor_start" type="int" default="-1" />
