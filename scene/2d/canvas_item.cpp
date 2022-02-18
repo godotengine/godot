@@ -353,16 +353,29 @@ bool CanvasItem::is_visible_in_tree() const {
 	return visible && parent_visible_in_tree;
 }
 
-void CanvasItem::_propagate_visibility_changed(bool p_visible, bool p_was_visible) {
+void CanvasItem::_propagate_visibility_changed(bool p_visible, bool p_is_source) {
 	if (p_visible && first_draw) { //avoid propagating it twice
 		first_draw = false;
 	}
-	parent_visible_in_tree = p_visible;
+	if (!p_is_source) {
+		Node *parent = get_parent();
+		CanvasItem *ci = Object::cast_to<CanvasItem>(parent);
+		if (ci) {
+			parent_visible_in_tree = ci->is_visible_in_tree();
+		} else {
+			CanvasLayer *cl = Object::cast_to<CanvasLayer>(parent);
+			if (cl) {
+				parent_visible_in_tree = cl->is_visible();
+			} else {
+				WARN_PRINT("_propagate_visibility_changed with unexpected parent.");
+			}
+		}
+	}
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
 
 	if (visible && p_visible) {
 		update();
-	} else if (!p_visible && (visible || p_was_visible)) {
+	} else if (!p_visible && (visible || p_is_source)) {
 		emit_signal(SceneStringNames::get_singleton()->hide);
 	}
 	_block();
@@ -390,7 +403,7 @@ void CanvasItem::set_visible(bool p_visible) {
 		return;
 	}
 
-	_propagate_visibility_changed(p_visible, !p_visible);
+	_propagate_visibility_changed(p_visible, true);
 	_change_notify("visible");
 }
 
