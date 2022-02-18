@@ -23,6 +23,7 @@
 			<description>
 				Bakes the effect from all [GeometryInstance]s marked with [member GeometryInstance.use_in_baked_light] and [Light]s marked with either [constant Light.BAKE_INDIRECT] or [constant Light.BAKE_ALL]. If [code]create_visual_debug[/code] is [code]true[/code], after baking the light, this will generate a [MultiMesh] that has a cube representing each solid cell with each cube colored to the cell's albedo color. This can be used to visualize the [GIProbe]'s data and debug any issues that may be occurring.
 				[b]Note:[/b] [method bake] works from the editor and in exported projects. This makes it suitable for procedurally generated or user-built levels. Baking a [GIProbe] generally takes from 5 to 20 seconds in most scenes. Reducing [member subdiv] can speed up baking.
+				[b]Note:[/b] [GeometryInstance]s and [Light]s must be fully ready before [method bake] is called. If you are procedurally creating those and some meshes or lights are missing from your baked [GIProbe], use [code]call_deferred("bake")[/code] instead of calling [method bake] directly.
 			</description>
 		</method>
 		<method name="debug_bake">
