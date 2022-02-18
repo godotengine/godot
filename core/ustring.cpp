@@ -220,11 +220,7 @@ void String::copy_from(const char *p_cstr) {
 		return;
 	}
 
-	int len = 0;
-	const char *ptr = p_cstr;
-	while (*(ptr++) != 0) {
-		len++;
-	}
+	const size_t len = strlen(p_cstr);
 
 	if (len == 0) {
 		resize(0);
@@ -235,7 +231,7 @@ void String::copy_from(const char *p_cstr) {
 
 	CharType *dst = this->ptrw();
 
-	for (int i = 0; i < len + 1; i++) {
+	for (size_t i = 0; i <= len; i++) {
 		dst[i] = p_cstr[i];
 	}
 }
@@ -274,8 +270,9 @@ void String::copy_from_unchecked(const CharType *p_char, const int p_length) {
 
 void String::copy_from(const CharType &p_char) {
 	resize(2);
-	set(0, p_char);
-	set(1, 0);
+	CharType *dst = ptrw();
+	dst[0] = p_char;
+	dst[1] = 0;
 }
 
 bool String::operator==(const String &p_str) const {
