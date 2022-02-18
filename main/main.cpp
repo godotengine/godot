@@ -487,7 +487,6 @@ void Main::test_cleanup() {
 	}
 
 	unregister_core_driver_types();
-	unregister_core_extensions();
 	unregister_core_types();
 
 	OS::get_singleton()->finalize_core();
@@ -555,7 +554,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	globals = memnew(ProjectSettings);
 
 	register_core_settings(); //here globals are present
-	register_core_extensions(); // core extensions must be registered after core settings and before display
 
 	translation_server = memnew(TranslationServer);
 	performance = memnew(Performance);
@@ -636,6 +634,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			continue;
 		}
 #endif
+
 		List<String>::Element *N = I->next();
 
 		if (I->get() == "-h" || I->get() == "--help" || I->get() == "/?") { // display help
@@ -1272,6 +1271,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	Logger::set_flush_stdout_on_print(ProjectSettings::get_singleton()->get("application/run/flush_stdout_on_print"));
 
 	OS::get_singleton()->set_cmdline(execpath, main_args);
+
+	register_core_extensions(); //before display
 	// possibly be worth changing the default from vulkan to something lower spec,
 	// for the project manager, depending on how smooth the fallback is.
 	GLOBAL_DEF_RST("rendering/driver/driver_name", "vulkan");
@@ -1528,7 +1529,6 @@ error:
 	}
 
 	unregister_core_driver_types();
-	unregister_core_extensions();
 	unregister_core_types();
 
 	OS::get_singleton()->_cmdline.clear();
@@ -2888,7 +2888,6 @@ void Main::cleanup(bool p_force) {
 	memdelete(message_queue);
 
 	unregister_core_driver_types();
-	unregister_core_extensions();
 	unregister_core_types();
 
 	OS::get_singleton()->finalize_core();
