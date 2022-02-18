@@ -685,8 +685,12 @@ Ref<Translation> TranslationServer::get_tool_translation() const {
 
 String TranslationServer::get_tool_locale() {
 #ifdef TOOLS_ENABLED
-	if (TranslationServer::get_singleton()->get_tool_translation().is_valid() && (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint())) {
-		return tool_translation->get_locale();
+	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
+		if (TranslationServer::get_singleton()->get_tool_translation().is_valid()) {
+			return tool_translation->get_locale();
+		} else {
+			return "en";
+		}
 	} else {
 #else
 	{
