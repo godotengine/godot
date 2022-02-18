@@ -712,14 +712,12 @@ void DisplayServerWayland::_xdg_toplevel_on_close(void *data, struct xdg_topleve
 // Interface mthods
 
 bool DisplayServerWayland::has_feature(Feature p_feature) const {
-	// TODO
-
-	/*
 	switch (p_feature) {
+		case FEATURE_MOUSE:
+			return true;
 		default: {
 		}
 	}
-	*/
 
 	return false;
 }
