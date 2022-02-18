@@ -266,13 +266,10 @@ void String::copy_from(const CharType *p_cstr, const int p_clip_to) {
 // p_length <= p_char strlen
 void String::copy_from_unchecked(const CharType *p_char, const int p_length) {
 	resize(p_length + 1);
-	set(p_length, 0);
 
 	CharType *dst = ptrw();
-
-	for (int i = 0; i < p_length; i++) {
-		dst[i] = p_char[i];
-	}
+	memcpy(dst, p_char, p_length * sizeof(CharType));
+	dst[p_length] = 0;
 }
 
 void String::copy_from(const CharType &p_char) {
