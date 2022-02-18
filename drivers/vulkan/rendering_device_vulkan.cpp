@@ -6652,6 +6652,10 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin_for_screen(Di
 
 	VkCommandBuffer command_buffer = frames[frame].draw_command_buffer;
 
+	if (!context->window_is_valid_swapchain(p_screen)) {
+		return INVALID_ID;
+	}
+
 	Size2i size = Size2i(context->window_get_width(p_screen), context->window_get_height(p_screen));
 
 	_draw_list_allocate(Rect2i(Vector2i(), size), 0, 0);

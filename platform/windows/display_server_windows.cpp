@@ -2778,13 +2778,14 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					window.width = window_client_rect.size.width;
 					window.height = window_client_rect.size.height;
 
-#if defined(VULKAN_ENABLED)
-					if (context_vulkan && window_created) {
-						context_vulkan->window_resize(window_id, window.width, window.height);
-					}
-#endif
 					rect_changed = true;
 				}
+#if defined(VULKAN_ENABLED)
+				if (context_vulkan && window_created) {
+					// Note: Trigger resize event to update swapchains when window is minimized/restored, even if size is not changed.
+					context_vulkan->window_resize(window_id, window.width, window.height);
+				}
+#endif
 			}
 
 			if (!window.minimized && (!(window_pos_params->flags & SWP_NOMOVE) || window_pos_params->flags & SWP_FRAMECHANGED)) {

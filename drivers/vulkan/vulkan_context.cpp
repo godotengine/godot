@@ -1386,6 +1386,12 @@ int VulkanContext::window_get_height(DisplayServer::WindowID p_window) {
 	return windows[p_window].height;
 }
 
+bool VulkanContext::window_is_valid_swapchain(DisplayServer::WindowID p_window) {
+	ERR_FAIL_COND_V(!windows.has(p_window), false);
+	Window *w = &windows[p_window];
+	return w->swapchain_image_resources != VK_NULL_HANDLE;
+}
+
 VkRenderPass VulkanContext::window_get_render_pass(DisplayServer::WindowID p_window) {
 	ERR_FAIL_COND_V(!windows.has(p_window), VK_NULL_HANDLE);
 	Window *w = &windows[p_window];
@@ -1398,7 +1404,11 @@ VkFramebuffer VulkanContext::window_get_framebuffer(DisplayServer::WindowID p_wi
 	ERR_FAIL_COND_V(!buffers_prepared, VK_NULL_HANDLE);
 	Window *w = &windows[p_window];
 	//vulkan use of currentbuffer
-	return w->swapchain_image_resources[w->current_buffer].framebuffer;
+	if (w->swapchain_image_resources != VK_NULL_HANDLE) {
+		return w->swapchain_image_resources[w->current_buffer].framebuffer;
+	} else {
+		return VK_NULL_HANDLE;
+	}
 }
 
 void VulkanContext::window_destroy(DisplayServer::WindowID p_window_id) {
