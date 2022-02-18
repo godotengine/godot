@@ -259,16 +259,18 @@ def configure(env):
 
     ## Dependencies
 
-    # env.ParseConfig("pkg-config x11 --cflags --libs")
-    # env.ParseConfig("pkg-config xcursor --cflags --libs")
-    # env.ParseConfig("pkg-config xinerama --cflags --libs")
-    # env.ParseConfig("pkg-config xext --cflags --libs")
-    # env.ParseConfig("pkg-config xrandr --cflags --libs")
-    # env.ParseConfig("pkg-config xrender --cflags --libs")
-    # env.ParseConfig("pkg-config xi --cflags --libs")
+    if env["x11"]:
+        env.ParseConfig("pkg-config x11 --cflags --libs")
+        env.ParseConfig("pkg-config xcursor --cflags --libs")
+        env.ParseConfig("pkg-config xinerama --cflags --libs")
+        env.ParseConfig("pkg-config xext --cflags --libs")
+        env.ParseConfig("pkg-config xrandr --cflags --libs")
+        env.ParseConfig("pkg-config xrender --cflags --libs")
+        env.ParseConfig("pkg-config xi --cflags --libs")
 
-    env.ParseConfig("pkg-config wayland-client --cflags --libs")
-    env.ParseConfig("pkg-config xkbcommon --cflags --libs")
+    if env["wayland"]:
+        env.ParseConfig("pkg-config wayland-client --cflags --libs")
+        env.ParseConfig("pkg-config xkbcommon --cflags --libs")
 
     if env["touch"]:
         env.Append(CPPDEFINES=["TOUCH_ENABLED"])
