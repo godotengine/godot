@@ -643,7 +643,7 @@ void DisplayServerWayland::_wl_keyboard_on_modifiers(void *data, struct wl_keybo
 
 	KeyboardState &ks = wls->keyboard_state;
 
-	xkb_state_update_mask(ks.xkb_state, mods_depressed, mods_latched, mods_locked, 0, 0, group);
+	xkb_state_update_mask(ks.xkb_state, mods_depressed, mods_latched, mods_locked, ks.current_layout_index, ks.current_layout_index, group);
 
 	ks.shift_pressed = xkb_state_mod_name_is_active(ks.xkb_state, XKB_MOD_NAME_SHIFT, XKB_STATE_MODS_DEPRESSED);
 	ks.ctrl_pressed = xkb_state_mod_name_is_active(ks.xkb_state, XKB_MOD_NAME_CTRL, XKB_STATE_MODS_DEPRESSED);
@@ -1112,32 +1112,43 @@ void DisplayServerWayland::cursor_set_custom_image(const RES &p_cursor, CursorSh
 }
 
 int DisplayServerWayland::keyboard_get_layout_count() const {
-	// TODO
-	print_verbose("wayland stub keyboard_get_layout_count");
+	MutexLock mutex_lock(wls.mutex);
+
+	if (wls.keyboard_state.xkb_keymap) {
+		return xkb_keymap_num_layouts(wls.keyboard_state.xkb_keymap);
+	}
+
 	return 0;
 }
 
 int DisplayServerWayland::keyboard_get_current_layout() const {
-	// TODO
-	print_verbose("wayland stub keyboard_get_current_layout");
-	return 0;
+	MutexLock mutex_lock(wls.mutex);
+
+	return wls.keyboard_state.current_layout_index;
 }
 
 void DisplayServerWayland::keyboard_set_current_layout(int p_index) {
-	// TODO
-	print_verbose("wayland stub keyboard_set_current_layout");
+	MutexLock mutex_lock(wls.mutex);
+
+	wls.keyboard_state.current_layout_index = p_index;
 }
 
 String DisplayServerWayland::keyboard_get_layout_language(int p_index) const {
-	// TODO
-	print_verbose("wayland stub keyboard_get_layout_language");
-	return "";
+	// xkbcommon exposes only the layout's name, which looks like it overlaps with
+	// its language.
+	return keyboard_get_layout_name(p_index);
 }
 
 String DisplayServerWayland::keyboard_get_layout_name(int p_index) const {
-	// TODO
-	print_verbose("wayland stub keyboard_get_layout_name");
-	return "";
+	MutexLock mutex_lock(wls.mutex);
+
+	String ret;
+
+	if (wls.keyboard_state.xkb_keymap) {
+		ret.parse_utf8(xkb_keymap_layout_get_name(wls.keyboard_state.xkb_keymap, p_index));
+	}
+
+	return ret;
 }
 
 Key DisplayServerWayland::keyboard_get_keycode_from_physical(Key p_keycode) const {

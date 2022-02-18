@@ -152,6 +152,8 @@ class DisplayServerWayland : public DisplayServer {
 		const char *keymap_buffer = nullptr;
 		uint32_t keymap_buffer_size = 0;
 
+		xkb_layout_index_t current_layout_index = 0;
+
 		WindowID focused_window_id = INVALID_WINDOW_ID;
 
 		int32_t repeat_key_delay_msec = 0;
