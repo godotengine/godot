@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/input/input_map.h"
 #include "core/math/camera_matrix.h"
 #include "core/math/math_funcs.h"
 #include "core/os/keyboard.h"
@@ -2291,26 +2292,6 @@ Point2i Node3DEditorViewport::_get_warped_mouse_motion(const Ref<InputEventMouse
 	return relative;
 }
 
-static bool is_shortcut_pressed(const String &p_path) {
-	Ref<Shortcut> shortcut = ED_GET_SHORTCUT(p_path);
-	if (shortcut.is_null()) {
-		return false;
-	}
-
-	const Array shortcuts = shortcut->get_events();
-	Ref<InputEventKey> k;
-	if (shortcuts.size() > 0) {
-		k = shortcuts.front();
-	}
-
-	if (k.is_null()) {
-		return false;
-	}
-	const Input &input = *Input::get_singleton();
-	Key keycode = k->get_keycode();
-	return input.is_key_pressed(keycode);
-}
-
 void Node3DEditorViewport::_update_freelook(real_t delta) {
 	if (!is_freelook_active()) {
 		return;
@@ -2340,31 +2321,34 @@ void Node3DEditorViewport::_update_freelook(real_t delta) {
 
 	Vector3 direction;
 
-	if (is_shortcut_pressed("spatial_editor/freelook_left")) {
+	// Use actions from the inputmap, as this is the only way to reliably detect input in this method.
+	// See #54469 for more discussion and explanation.
+	Input *inp = Input::get_singleton();
+	if (inp->is_action_pressed("spatial_editor/freelook_left")) {
 		direction -= right;
 	}
-	if (is_shortcut_pressed("spatial_editor/freelook_right")) {
+	if (inp->is_action_pressed("spatial_editor/freelook_right")) {
 		direction += right;
 	}
-	if (is_shortcut_pressed("spatial_editor/freelook_forward")) {
+	if (inp->is_action_pressed("spatial_editor/freelook_forward")) {
 		direction += forward;
 	}
-	if (is_shortcut_pressed("spatial_editor/freelook_backwards")) {
+	if (inp->is_action_pressed("spatial_editor/freelook_backwards")) {
 		direction -= forward;
 	}
-	if (is_shortcut_pressed("spatial_editor/freelook_up")) {
+	if (inp->is_action_pressed("spatial_editor/freelook_up")) {
 		direction += up;
 	}
-	if (is_shortcut_pressed("spatial_editor/freelook_down")) {
+	if (inp->is_action_pressed("spatial_editor/freelook_down")) {
 		direction -= up;
 	}
 
 	real_t speed = freelook_speed;
 
-	if (is_shortcut_pressed("spatial_editor/freelook_speed_modifier")) {
+	if (inp->is_action_pressed("spatial_editor/freelook_speed_modifier")) {
 		speed *= 3.0;
 	}
-	if (is_shortcut_pressed("spatial_editor/freelook_slow_modifier")) {
+	if (inp->is_action_pressed("spatial_editor/freelook_slow_modifier")) {
 		speed *= 0.333333;
 	}
 
@@ -4427,6 +4411,28 @@ void Node3DEditorViewport::finish_transform() {
 	surface->update();
 }
 
+// Register a shortcut and also add it as an input action with the same events.
+void Node3DEditorViewport::register_shortcut_action(const String &p_path, const String &p_name, Key p_keycode) {
+	Ref<Shortcut> sc = ED_SHORTCUT(p_path, p_name, p_keycode);
+	shortcut_changed_callback(sc, p_path);
+	// Connect to the change event on the shortcut so the input binding can be updated.
+	sc->connect("changed", callable_mp(this, &Node3DEditorViewport::shortcut_changed_callback), varray(sc, p_path));
+}
+
+// Update the action in the InputMap to the provided shortcut events.
+void Node3DEditorViewport::shortcut_changed_callback(const Ref<Shortcut> p_shortcut, const String &p_shortcut_path) {
+	InputMap *im = InputMap::get_singleton();
+	if (im->has_action(p_shortcut_path)) {
+		im->action_erase_events(p_shortcut_path);
+	} else {
+		im->add_action(p_shortcut_path);
+	}
+
+	for (int i = 0; i < p_shortcut->get_events().size(); i++) {
+		im->action_add_event(p_shortcut_path, p_shortcut->get_events()[i]);
+	}
+}
+
 Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p_index) {
 	cpu_time_history_index = 0;
 	gpu_time_history_index = 0;
@@ -4586,14 +4592,15 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 		view_menu->get_popup()->set_item_tooltip(shadeless_idx, unsupported_tooltip);
 	}
 
-	ED_SHORTCUT("spatial_editor/freelook_left", TTR("Freelook Left"), Key::A);
-	ED_SHORTCUT("spatial_editor/freelook_right", TTR("Freelook Right"), Key::D);
-	ED_SHORTCUT("spatial_editor/freelook_forward", TTR("Freelook Forward"), Key::W);
-	ED_SHORTCUT("spatial_editor/freelook_backwards", TTR("Freelook Backwards"), Key::S);
-	ED_SHORTCUT("spatial_editor/freelook_up", TTR("Freelook Up"), Key::E);
-	ED_SHORTCUT("spatial_editor/freelook_down", TTR("Freelook Down"), Key::Q);
-	ED_SHORTCUT("spatial_editor/freelook_speed_modifier", TTR("Freelook Speed Modifier"), Key::SHIFT);
-	ED_SHORTCUT("spatial_editor/freelook_slow_modifier", TTR("Freelook Slow Modifier"), Key::ALT);
+	register_shortcut_action("spatial_editor/freelook_left", TTR("Freelook Left"), Key::A);
+	register_shortcut_action("spatial_editor/freelook_right", TTR("Freelook Right"), Key::D);
+	register_shortcut_action("spatial_editor/freelook_forward", TTR("Freelook Forward"), Key::W);
+	register_shortcut_action("spatial_editor/freelook_backwards", TTR("Freelook Backwards"), Key::S);
+	register_shortcut_action("spatial_editor/freelook_up", TTR("Freelook Up"), Key::E);
+	register_shortcut_action("spatial_editor/freelook_down", TTR("Freelook Down"), Key::Q);
+	register_shortcut_action("spatial_editor/freelook_speed_modifier", TTR("Freelook Speed Modifier"), Key::SHIFT);
+	register_shortcut_action("spatial_editor/freelook_slow_modifier", TTR("Freelook Slow Modifier"), Key::ALT);
+
 	ED_SHORTCUT("spatial_editor/lock_transform_x", TTR("Lock Transformation to X axis"), Key::X);
 	ED_SHORTCUT("spatial_editor/lock_transform_y", TTR("Lock Transformation to Y axis"), Key::Y);
 	ED_SHORTCUT("spatial_editor/lock_transform_z", TTR("Lock Transformation to Z axis"), Key::Z);

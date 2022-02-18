@@ -415,6 +415,9 @@ private:
 	void update_transform(Point2 p_mousepos, bool p_shift);
 	void finish_transform();
 
+	void register_shortcut_action(const String &p_path, const String &p_name, Key p_keycode);
+	void shortcut_changed_callback(const Ref<Shortcut> p_shortcut, const String &p_shortcut_path);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
