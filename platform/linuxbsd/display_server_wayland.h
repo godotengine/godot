@@ -40,8 +40,8 @@
 #include "key_mapping_xkb.h"
 #include "servers/display_server.h"
 
+#include "thirdparty/wayland-protocols/xdg-shell/xdg-shell.h"
 #include "thirdparty/wayland/wayland.h"
-#include "thirdparty/xdg-shell/xdg-shell.h"
 #include "wayland-client.h"
 
 // FIXME: Since this platform is called linuxbsd, can we avoid this include?

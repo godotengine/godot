@@ -229,7 +229,7 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 		return;
 	}
 
-	// `xdg_wm_base_interface` is defined in `thirdparty/xdg-shell/xdg-shell.c`
+	// `xdg_wm_base_interface` is defined in `thirdparty/wayland-protocols/xdg-shell/xdg-shell.c`
 	if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
 		globals.xdg_wm_base = (struct xdg_wm_base *)wl_registry_bind(wl_registry, name, &xdg_wm_base_interface, version);
 		globals.xdg_wm_base_name = name;

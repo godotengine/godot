@@ -28,7 +28,7 @@ if "x11" in env and env["x11"]:
 if "wayland" in env and env["wayland"]:
     common_linuxbsd += [
         thirdparty_dir + "/wayland/wayland.c",
-        thirdparty_dir + "/xdg-shell/xdg-shell.c",
+        thirdparty_dir + "/wayland-protocols/xdg-shell/xdg-shell.c",
         "display_server_wayland.cpp",
         "key_mapping_xkb.cpp",
     ]
