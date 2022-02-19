@@ -901,6 +901,7 @@ void ResourceLoaderBinary::open(FileAccess *p_f, bool p_no_resources, bool p_kee
 	if (flags & ResourceFormatSaverBinaryInstance::FORMAT_FLAG_UIDS) {
 		using_uids = true;
 	}
+	f->real_is_double = (flags & ResourceFormatSaverBinaryInstance::FORMAT_FLAG_REAL_T_IS_DOUBLE) != 0;
 
 	if (using_uids) {
 		uid = f->get_64();
@@ -1897,7 +1898,13 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 
 	save_unicode_string(f, p_resource->get_class());
 	f->store_64(0); //offset to import metadata
-	f->store_32(FORMAT_FLAG_NAMED_SCENE_IDS | FORMAT_FLAG_UIDS);
+	{
+		uint32_t format_flags = FORMAT_FLAG_NAMED_SCENE_IDS | FORMAT_FLAG_UIDS;
+#ifdef REAL_T_IS_DOUBLE
+		format_flags |= FORMAT_FLAG_REAL_T_IS_DOUBLE;
+#endif
+		f->store_32(format_flags);
+	}
 	ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(p_path, true);
 	f->store_64(uid);
 	for (int i = 0; i < ResourceFormatSaverBinaryInstance::RESERVED_FIELDS; i++) {
