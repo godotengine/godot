@@ -358,8 +358,12 @@ void EditorPropertySizeFlags::setup(const Vector<String> &p_options, bool p_vert
 
 	Control *gui_base = EditorNode::get_singleton()->get_gui_base();
 	String wide_preset_icon = SNAME("ControlAlignHCenterWide");
+	String begin_preset_icon = SNAME("ControlAlignCenterLeft");
+	String end_preset_icon = SNAME("ControlAlignCenterRight");
 	if (vertical) {
 		wide_preset_icon = SNAME("ControlAlignVCenterWide");
+		begin_preset_icon = SNAME("ControlAlignCenterTop");
+		end_preset_icon = SNAME("ControlAlignCenterBottom");
 	}
 
 	flag_presets->clear();
@@ -367,12 +371,12 @@ void EditorPropertySizeFlags::setup(const Vector<String> &p_options, bool p_vert
 		flag_presets->add_icon_item(gui_base->get_theme_icon(wide_preset_icon, SNAME("EditorIcons")), TTR("Fill"), SIZE_FLAGS_PRESET_FILL);
 	}
 	// Shrink Begin is the same as no flags at all, as such it cannot be disabled.
-	flag_presets->add_icon_item(gui_base->get_theme_icon(SNAME("ControlAlignCenterLeft"), SNAME("EditorIcons")), TTR("Shrink Begin"), SIZE_FLAGS_PRESET_SHRINK_BEGIN);
+	flag_presets->add_icon_item(gui_base->get_theme_icon(begin_preset_icon, SNAME("EditorIcons")), TTR("Shrink Begin"), SIZE_FLAGS_PRESET_SHRINK_BEGIN);
 	if (flags.has(SIZE_SHRINK_CENTER)) {
 		flag_presets->add_icon_item(gui_base->get_theme_icon(SNAME("ControlAlignCenter"), SNAME("EditorIcons")), TTR("Shrink Center"), SIZE_FLAGS_PRESET_SHRINK_CENTER);
 	}
 	if (flags.has(SIZE_SHRINK_END)) {
-		flag_presets->add_icon_item(gui_base->get_theme_icon(SNAME("ControlAlignCenterRight"), SNAME("EditorIcons")), TTR("Shrink End"), SIZE_FLAGS_PRESET_SHRINK_END);
+		flag_presets->add_icon_item(gui_base->get_theme_icon(end_preset_icon, SNAME("EditorIcons")), TTR("Shrink End"), SIZE_FLAGS_PRESET_SHRINK_END);
 	}
 	flag_presets->add_separator();
 	flag_presets->add_item(TTR("Custom"), SIZE_FLAGS_PRESET_CUSTOM);
