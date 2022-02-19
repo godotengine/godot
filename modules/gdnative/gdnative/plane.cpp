@@ -31,6 +31,7 @@
 #include "gdnative/plane.h"
 
 #include "core/math/plane.h"
+#include "core/os/memory.h"
 
 static_assert(sizeof(godot_plane) == sizeof(Plane), "Plane size mismatch");
 

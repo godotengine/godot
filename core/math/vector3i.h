@@ -32,8 +32,9 @@
 #define VECTOR3I_H
 
 #include "core/math/math_funcs.h"
-#include "core/string/ustring.h"
-#include "core/typedefs.h"
+
+class String;
+struct Vector3;
 
 struct _NO_DISCARD_ Vector3i {
 	enum Axis {
@@ -105,6 +106,7 @@ struct _NO_DISCARD_ Vector3i {
 	_FORCE_INLINE_ bool operator>=(const Vector3i &p_v) const;
 
 	operator String() const;
+	operator Vector3() const;
 
 	_FORCE_INLINE_ Vector3i() {}
 	_FORCE_INLINE_ Vector3i(const int32_t p_x, const int32_t p_y, const int32_t p_z) {
