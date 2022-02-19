@@ -3535,7 +3535,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 		print_error("Category not handled: " + p_category.quote());
 	}
 
-	if (Object::cast_to<VisualScriptFunctionCall>(vnode.ptr()) && p_category != "Class") {
+	if (Object::cast_to<VisualScriptFunctionCall>(vnode.ptr()) && p_category != "Class" && p_category != "VisualScriptNode") {
 		Vector<String> property_path = p_text.split(":");
 		String class_of_method = property_path[0];
 		String method_name = property_path[1];
