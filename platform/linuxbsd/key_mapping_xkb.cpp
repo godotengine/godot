@@ -310,6 +310,18 @@ Key KeyMappingXKB::get_scancode(unsigned int p_code) {
 	return keycode;
 }
 
+xkb_keycode_t KeyMappingXKB::get_xkb_keycode(Key p_keysym) {
+	unsigned int code = 0;
+	for (int i = 0; _scancode_to_keycode[i].keysym != Key::UNKNOWN; i++) {
+		if (_scancode_to_keycode[i].keysym == p_keysym) {
+			code = _scancode_to_keycode[i].keycode;
+			break;
+		}
+	}
+
+	return code;
+}
+
 Key KeyMappingXKB::get_keycode(xkb_keysym_t p_keysym) {
 	// kinda bruteforce.. could optimize.
 

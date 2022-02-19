@@ -1150,9 +1150,28 @@ String DisplayServerWayland::keyboard_get_layout_name(int p_index) const {
 }
 
 Key DisplayServerWayland::keyboard_get_keycode_from_physical(Key p_keycode) const {
-	// TODO
-	print_verbose("wayland stub keyboard_get_keycode_from_physical");
-	return Key::NONE;
+	MutexLock mutex_lock(wls.mutex);
+
+	xkb_keycode_t xkb_keycode = KeyMappingXKB::get_xkb_keycode(p_keycode);
+
+	Key key = KeyMappingXKB::get_keycode(xkb_state_key_get_one_sym(wls.keyboard_state.xkb_state, xkb_keycode));
+
+	// If not found, fallback to QWERTY.
+	// This should match the behavior of the event pump
+	if (key == Key::NONE) {
+		return p_keycode;
+	}
+
+	if (key >= Key::A + 32 && key <= Key::Z + 32) {
+		key -= 'a' - 'A';
+	}
+
+	// Make it consistent with the keys returned by `Input`.
+	if (key == Key::BACKTAB) {
+		key = Key::TAB;
+	}
+
+	return key;
 }
 
 void DisplayServerWayland::process_events() {
