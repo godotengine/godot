@@ -1978,24 +1978,25 @@ Error VulkanContext::swap_buffers() {
 	}
 
 	VkSemaphore *semaphores_to_acquire = (VkSemaphore *)alloca(windows.size() * sizeof(VkSemaphore));
+	VkPipelineStageFlags *pipe_stage_flags = (VkPipelineStageFlags *)alloca(windows.size() * sizeof(VkPipelineStageFlags));
 	uint32_t semaphores_to_acquire_count = 0;
 
 	for (KeyValue<int, Window> &E : windows) {
 		Window *w = &E.value;
 
 		if (w->semaphore_acquired) {
-			semaphores_to_acquire[semaphores_to_acquire_count++] = w->image_acquired_semaphores[frame_index];
+			semaphores_to_acquire[semaphores_to_acquire_count] = w->image_acquired_semaphores[frame_index];
+			pipe_stage_flags[semaphores_to_acquire_count] = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			semaphores_to_acquire_count++;
 		}
 	}
 
-	VkPipelineStageFlags pipe_stage_flags;
 	VkSubmitInfo submit_info;
 	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submit_info.pNext = nullptr;
-	submit_info.pWaitDstStageMask = &pipe_stage_flags;
-	pipe_stage_flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	submit_info.waitSemaphoreCount = semaphores_to_acquire_count;
 	submit_info.pWaitSemaphores = semaphores_to_acquire;
+	submit_info.pWaitDstStageMask = pipe_stage_flags;
 	submit_info.commandBufferCount = commands_to_submit;
 	submit_info.pCommandBuffers = commands_ptr;
 	submit_info.signalSemaphoreCount = 1;
@@ -2011,7 +2012,7 @@ Error VulkanContext::swap_buffers() {
 		// present queue before presenting, waiting for the draw complete
 		// semaphore and signalling the ownership released semaphore when finished
 		VkFence nullFence = VK_NULL_HANDLE;
-		pipe_stage_flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		pipe_stage_flags[0] = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		submit_info.waitSemaphoreCount = 1;
 		submit_info.pWaitSemaphores = &draw_complete_semaphores[frame_index];
 		submit_info.commandBufferCount = 0;
