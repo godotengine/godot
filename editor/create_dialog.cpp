@@ -235,19 +235,19 @@ void CreateDialog::_add_type(const String &p_type, const TypeCategory p_type_cat
 		}
 	} else {
 		if (ScriptServer::is_global_class(p_type)) {
-			inherits = EditorNode::get_editor_data().script_class_get_base(p_type);
-			if (inherits.is_empty()) {
-				Ref<Script> script = EditorNode::get_editor_data().script_class_load_script(p_type);
-				ERR_FAIL_COND(script.is_null());
+			Ref<Script> script = EditorNode::get_editor_data().script_class_load_script(p_type);
+			ERR_FAIL_COND(script.is_null());
 
-				Ref<Script> base = script->get_base_script();
-				if (base.is_null()) {
-					String extends;
-					script->get_language()->get_global_class_name(script->get_path(), &extends);
+			Ref<Script> base = script->get_base_script();
+			if (base.is_null()) {
+				String extends;
+				script->get_language()->get_global_class_name(script->get_path(), &extends);
 
-					inherits = extends;
-					inherited_type = TypeCategory::CPP_TYPE;
-				} else {
+				inherits = extends;
+				inherited_type = TypeCategory::CPP_TYPE;
+			} else {
+				inherits = script->get_language()->get_global_class_name(base->get_path());
+				if (inherits.is_empty()) {
 					inherits = base->get_path();
 					inherited_type = TypeCategory::PATH_TYPE;
 				}
