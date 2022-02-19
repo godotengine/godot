@@ -497,16 +497,16 @@ void Viewport::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_VP_MOUSE_ENTER: {
-			gui.mouse_in_window = true;
+			gui.mouse_in_viewport = true;
 		} break;
 
 		case NOTIFICATION_VP_MOUSE_EXIT: {
-			gui.mouse_in_window = false;
+			gui.mouse_in_viewport = false;
 			_drop_physics_mouseover();
 			_drop_mouse_over();
-			// When the mouse exits the window, we want to end mouse_over, but
+			// When the mouse exits the viewport, we want to end mouse_over, but
 			// not mouse_focus, because, for example, we want to continue
-			// dragging a scrollbar even if the mouse has left the window.
+			// dragging a scrollbar even if the mouse has left the viewport.
 		} break;
 
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
@@ -1683,7 +1683,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		Control *over = nullptr;
 		if (gui.mouse_focus) {
 			over = gui.mouse_focus;
-		} else if (gui.mouse_in_window) {
+		} else if (gui.mouse_in_viewport) {
 			over = gui_find_control(mpos);
 		}
 
