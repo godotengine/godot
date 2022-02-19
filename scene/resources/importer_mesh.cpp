@@ -287,7 +287,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 		const int *indices_ptr = indices.ptr();
 
 		if (normals.is_empty()) {
-			normals.resize(vertices.size());
+			normals.resize(index_count);
 			Vector3 *n_ptr = normals.ptrw();
 			for (unsigned int j = 0; j < index_count; j += 3) {
 				const Vector3 &v0 = vertices_ptr[indices_ptr[j + 0]];
