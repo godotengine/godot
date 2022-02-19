@@ -115,7 +115,7 @@ const CGFloat kGLGestureMovementDistance = 0.5;
 		return;
 	}
 
-	[self.godotView touchesMoved:cleared withEvent:event];
+	[self.godotView godotTouchesMoved:cleared withEvent:event];
 
 	[super touchesMoved:touches withEvent:event];
 }
