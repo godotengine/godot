@@ -38,6 +38,7 @@ class SubViewportContainer : public Container {
 
 	bool stretch = false;
 	int shrink = 1;
+	void _notify_viewports(int p_notification);
 
 protected:
 	void _notification(int p_what);
