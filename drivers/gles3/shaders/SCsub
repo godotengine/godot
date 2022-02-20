@@ -5,3 +5,4 @@ Import("env")
 if "GLES3_GLSL" in env["BUILDERS"]:
     env.GLES3_GLSL("canvas.glsl")
     env.GLES3_GLSL("copy.glsl")
+    env.GLES3_GLSL("sky.glsl")

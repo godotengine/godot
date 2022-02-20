@@ -51,13 +51,13 @@ private:
 	static Config *singleton;
 
 public:
-	bool shrink_textures_x2;
-	bool use_fast_texture_filter;
+	bool use_nearest_mip_filter;
 	bool use_skeleton_software;
 
 	int max_vertex_texture_image_units;
 	int max_texture_image_units;
 	int max_texture_size;
+	int max_uniform_buffer_size;
 
 	// TODO implement wireframe in OpenGL
 	// bool generate_wireframes;
@@ -84,12 +84,10 @@ public:
 	bool support_write_depth;
 	bool support_half_float_vertices;
 	bool support_npot_repeat_mipmap;
-	bool support_depth_texture;
 	bool support_depth_cubemaps;
-
 	bool support_shadow_cubemaps;
-
-	bool render_to_mipmap_supported;
+	bool support_anisotropic_filter;
+	float anisotropic_level;
 
 	GLuint depth_internalformat;
 	GLuint depth_type;

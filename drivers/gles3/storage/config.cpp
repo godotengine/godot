@@ -31,9 +31,12 @@
 #ifdef GLES3_ENABLED
 
 #include "config.h"
+#include "core/config/project_settings.h"
 #include "core/templates/vector.h"
 
 using namespace GLES3;
+
+#define _GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF
 
 Config *Config::singleton = nullptr;
 
@@ -41,30 +44,37 @@ Config::Config() {
 	singleton = this;
 
 	{
-		const GLubyte *extension_string = glGetString(GL_EXTENSIONS);
-
-		Vector<String> exts = String((const char *)extension_string).split(" ");
-
-		for (int i = 0; i < exts.size(); i++) {
-			extensions.insert(exts[i]);
+		int max_extensions = 0;
+		glGetIntegerv(GL_NUM_EXTENSIONS, &max_extensions);
+		for (int i = 0; i < max_extensions; i++) {
+			const GLubyte *s = glGetStringi(GL_EXTENSIONS, i);
+			if (!s) {
+				break;
+			}
+			extensions.insert((const char *)s);
 		}
 	}
 
 	keep_original_textures = true; // false
-	shrink_textures_x2 = false;
 	depth_internalformat = GL_DEPTH_COMPONENT;
 	depth_type = GL_UNSIGNED_INT;
 
+	srgb_decode_supported = extensions.has("GL_EXT_texture_sRGB_decode");
+	etc2_supported = true;
 #ifdef GLES_OVER_GL
 	float_texture_supported = true;
 	s3tc_supported = true;
-	etc_supported = false;
+	etc_supported = false; // extensions.has("GL_OES_compressed_ETC1_RGB8_texture");
+	bptc_supported = extensions.has("GL_ARB_texture_compression_bptc") || extensions.has("EXT_texture_compression_bptc");
+	rgtc_supported = extensions.has("GL_EXT_texture_compression_rgtc") || extensions.has("GL_ARB_texture_compression_rgtc") || extensions.has("EXT_texture_compression_rgtc");
 	support_npot_repeat_mipmap = true;
 	depth_buffer_internalformat = GL_DEPTH_COMPONENT24;
 #else
 	float_texture_supported = extensions.has("GL_ARB_texture_float") || extensions.has("GL_OES_texture_float");
 	s3tc_supported = extensions.has("GL_EXT_texture_compression_s3tc") || extensions.has("WEBGL_compressed_texture_s3tc");
 	etc_supported = extensions.has("GL_OES_compressed_ETC1_RGB8_texture") || extensions.has("WEBGL_compressed_texture_etc1");
+	bptc_supported = false;
+	rgtc_supported = false;
 	support_npot_repeat_mipmap = extensions.has("GL_OES_texture_npot");
 
 #ifdef JAVASCRIPT_ENABLED
@@ -87,22 +97,12 @@ Config::Config() {
 #endif
 
 #ifdef GLES_OVER_GL
-	//TODO: causes huge problems with desktop video drivers. Making false for now, needs to be true to render SCREEN_TEXTURE mipmaps
-	render_to_mipmap_supported = false;
-#else
-	//check if mipmaps can be used for SCREEN_TEXTURE and Glow on Mobile and web platforms
-	render_to_mipmap_supported = extensions.has("GL_OES_fbo_render_mipmap") && extensions.has("GL_EXT_texture_lod");
-#endif
-
-#ifdef GLES_OVER_GL
 	use_rgba_2d_shadows = false;
-	support_depth_texture = true;
 	use_rgba_3d_shadows = false;
 	support_depth_cubemaps = true;
 #else
 	use_rgba_2d_shadows = !(float_texture_supported && extensions.has("GL_EXT_texture_rg"));
-	support_depth_texture = extensions.has("GL_OES_depth_texture") || extensions.has("WEBGL_depth_texture");
-	use_rgba_3d_shadows = !support_depth_texture;
+	use_rgba_3d_shadows = false;
 	support_depth_cubemaps = extensions.has("GL_OES_depth_texture_cube_map");
 #endif
 
@@ -130,20 +130,25 @@ Config::Config() {
 		support_half_float_vertices = false;
 	}
 
-	etc_supported = extensions.has("GL_OES_compressed_ETC1_RGB8_texture");
-	latc_supported = extensions.has("GL_EXT_texture_compression_latc");
-	bptc_supported = extensions.has("GL_ARB_texture_compression_bptc");
-	rgtc_supported = extensions.has("GL_EXT_texture_compression_rgtc") || extensions.has("GL_ARB_texture_compression_rgtc") || extensions.has("EXT_texture_compression_rgtc");
-	bptc_supported = extensions.has("GL_ARB_texture_compression_bptc") || extensions.has("EXT_texture_compression_bptc");
-	srgb_decode_supported = extensions.has("GL_EXT_texture_sRGB_decode");
+	//picky requirements for these
+	support_shadow_cubemaps = support_write_depth && support_depth_cubemaps;
+	// the use skeleton software path should be used if either float texture is not supported,
+	// OR max_vertex_texture_image_units is zero
+	use_skeleton_software = (float_texture_supported == false) || (max_vertex_texture_image_units == 0);
 
 	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &max_vertex_texture_image_units);
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &max_texture_image_units);
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
+	glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &max_uniform_buffer_size);
+
+	support_anisotropic_filter = extensions.has("GL_EXT_texture_filter_anisotropic");
+	if (support_anisotropic_filter) {
+		glGetFloatv(_GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &anisotropic_level);
+		anisotropic_level = MIN(float(1 << int(ProjectSettings::get_singleton()->get("rendering/textures/default_filters/anisotropic_filtering_level"))), anisotropic_level);
+	}
 
 	force_vertex_shading = false; //GLOBAL_GET("rendering/quality/shading/force_vertex_shading");
-	use_fast_texture_filter = false; //GLOBAL_GET("rendering/quality/filters/use_nearest_mipmap_filter");
-	// should_orphan = GLOBAL_GET("rendering/options/api_usage_legacy/orphan_buffers");
+	use_nearest_mip_filter = GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter");
 }
 
 Config::~Config() {
