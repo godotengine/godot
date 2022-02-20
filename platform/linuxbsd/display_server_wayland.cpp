@@ -823,7 +823,7 @@ void DisplayServerWayland::screen_set_keep_on(bool p_enable) {
 	print_verbose("wayland stub screen_set_keep_on");
 }
 
-bool screen_is_kept_on() {
+bool screen_is_kept_on() const {
 	// TODO
 	print_verbose("wayland stub screen_is_kept_on");
 	return false;
