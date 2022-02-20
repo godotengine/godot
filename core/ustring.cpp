@@ -108,9 +108,12 @@ bool CharString::operator<(const CharString &p_right) const {
 }
 
 CharString &CharString::operator+=(char p_char) {
-	resize(size() ? size() + 1 : 2);
-	set(length(), 0);
-	set(length() - 1, p_char);
+	const int lhs_len = length();
+	resize(lhs_len + 2);
+
+	char *dst = ptrw();
+	dst[lhs_len] = p_char;
+	dst[lhs_len + 1] = 0;
 
 	return *this;
 }
@@ -312,27 +315,23 @@ String String::operator+(const String &p_str) const {
 }
 
 String &String::operator+=(const String &p_str) {
-	if (empty()) {
+	const int lhs_len = length();
+	if (lhs_len == 0) {
 		*this = p_str;
 		return *this;
 	}
 
-	if (p_str.empty()) {
+	const int rhs_len = p_str.length();
+	if (rhs_len == 0) {
 		return *this;
 	}
 
-	int from = length();
-
-	resize(length() + p_str.size());
+	resize(lhs_len + rhs_len + 1);
 
 	const CharType *src = p_str.c_str();
-	CharType *dst = ptrw();
+	CharType *dst = ptrw() + lhs_len;
 
-	set(length(), 0);
-
-	for (int i = 0; i < p_str.length(); i++) {
-		dst[from + i] = src[i];
-	}
+	memcpy(dst, src, (rhs_len + 1) * sizeof(CharType));
 
 	return *this;
 }
@@ -343,9 +342,12 @@ String &String::operator+=(const CharType *p_str) {
 }
 
 String &String::operator+=(CharType p_char) {
-	resize(size() ? size() + 1 : 2);
-	set(length(), 0);
-	set(length() - 1, p_char);
+	const int lhs_len = length();
+	resize(lhs_len + 2);
+
+	CharType *dst = ptrw();
+	dst[lhs_len] = p_char;
+	dst[lhs_len + 1] = 0;
 
 	return *this;
 }
@@ -355,22 +357,15 @@ String &String::operator+=(const char *p_str) {
 		return *this;
 	}
 
-	int src_len = 0;
-	const char *ptr = p_str;
-	while (*(ptr++) != 0) {
-		src_len++;
-	}
+	const size_t rhs_len = strlen(p_str);
+	const int lhs_len = length();
 
-	int from = length();
+	resize(lhs_len + rhs_len + 1);
 
-	resize(from + src_len + 1);
+	CharType *dst = ptrw() + lhs_len;
 
-	CharType *dst = ptrw();
-
-	set(length(), 0);
-
-	for (int i = 0; i < src_len; i++) {
-		dst[from + i] = p_str[i];
+	for (size_t i = 0; i <= rhs_len; i++) {
+		dst[i] = p_str[i];
 	}
 
 	return *this;
