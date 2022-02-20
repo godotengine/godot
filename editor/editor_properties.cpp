@@ -3361,10 +3361,8 @@ struct EditorPropertyRangeHint {
 static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const String &p_hint_text, double p_default_step) {
 	EditorPropertyRangeHint hint;
 	hint.step = p_default_step;
-	bool degrees = false;
-
+	Vector<String> slices = p_hint_text.split(",");
 	if (p_hint == PROPERTY_HINT_RANGE) {
-		Vector<String> slices = p_hint_text.split(",");
 		ERR_FAIL_COND_V_MSG(slices.size() < 2, hint,
 				vformat("Invalid PROPERTY_HINT_RANGE with hint \"%s\": Missing required min and/or max values.", p_hint_text));
 
@@ -3381,11 +3379,7 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 		hint.hide_slider = false;
 		for (int i = 2; i < slices.size(); i++) {
 			String slice = slices[i].strip_edges();
-			if (slice == "radians") {
-				hint.radians = true;
-			} else if (slice == "degrees") {
-				degrees = true;
-			} else if (slice == "or_greater") {
+			if (slice == "or_greater") {
 				hint.greater = true;
 			} else if (slice == "or_lesser") {
 				hint.lesser = true;
@@ -3393,9 +3387,18 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 				hint.hide_slider = true;
 			} else if (slice == "exp") {
 				hint.exp_range = true;
-			} else if (slice.begins_with("suffix:")) {
-				hint.suffix = " " + slice.replace_first("suffix:", "").strip_edges();
 			}
+		}
+	}
+	bool degrees = false;
+	for (int i = 0; i < slices.size(); i++) {
+		String slice = slices[i].strip_edges();
+		if (slice == "radians") {
+			hint.radians = true;
+		} else if (slice == "degrees") {
+			degrees = true;
+		} else if (slice.begins_with("suffix:")) {
+			hint.suffix = " " + slice.replace_first("suffix:", "").strip_edges();
 		}
 	}
 
