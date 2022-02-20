@@ -31,12 +31,10 @@
 #ifndef CONTROL_H
 #define CONTROL_H
 
-#include "core/input/shortcut.h"
 #include "core/math/transform_2d.h"
 #include "core/object/gdvirtual.gen.inc"
 #include "core/templates/rid.h"
 #include "scene/main/canvas_item.h"
-#include "scene/main/node.h"
 #include "scene/main/timer.h"
 #include "scene/resources/theme.h"
 
@@ -67,12 +65,13 @@ public:
 	};
 
 	enum SizeFlags {
+		SIZE_SHRINK_BEGIN = 0,
 		SIZE_FILL = 1,
 		SIZE_EXPAND = 2,
-		SIZE_EXPAND_FILL = SIZE_EXPAND | SIZE_FILL,
-		SIZE_SHRINK_CENTER = 4, //ignored by expand or fill
-		SIZE_SHRINK_END = 8, //ignored by expand or fill
+		SIZE_SHRINK_CENTER = 4,
+		SIZE_SHRINK_END = 8,
 
+		SIZE_EXPAND_FILL = SIZE_EXPAND | SIZE_FILL,
 	};
 
 	enum MouseFilter {
@@ -126,6 +125,13 @@ public:
 		PRESET_MODE_KEEP_WIDTH,
 		PRESET_MODE_KEEP_HEIGHT,
 		PRESET_MODE_KEEP_SIZE
+	};
+
+	enum LayoutMode {
+		LAYOUT_MODE_POSITION,
+		LAYOUT_MODE_ANCHORS,
+		LAYOUT_MODE_CONTAINER,
+		LAYOUT_MODE_UNCONTROLLED,
 	};
 
 	enum LayoutDirection {
@@ -230,7 +236,7 @@ private:
 
 	} data;
 
-	static constexpr unsigned properties_managed_by_container_count = 11;
+	static constexpr unsigned properties_managed_by_container_count = 12;
 	static String properties_managed_by_container[properties_managed_by_container_count];
 
 	void _window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Point2 *p_points, real_t p_min, real_t &r_closest_dist, Control **r_closest);
@@ -240,6 +246,12 @@ private:
 	void _set_position(const Point2 &p_point);
 	void _set_global_position(const Point2 &p_point);
 	void _set_size(const Size2 &p_size);
+
+	void _set_layout_mode(LayoutMode p_mode);
+	LayoutMode _get_layout_mode() const;
+
+	void _set_anchors_layout_preset(int p_preset);
+	int _get_anchors_layout_preset() const;
 
 	void _theme_changed();
 	void _notify_theme_changed();
@@ -285,9 +297,10 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
+	virtual void _validate_property(PropertyInfo &property) const override;
+
 	void _notification(int p_notification);
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const override;
 
 	//bind helpers
 
@@ -378,6 +391,7 @@ public:
 	void set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets = true);
 	void set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resize_mode = PRESET_MODE_MINSIZE, int p_margin = 0);
 	void set_anchors_and_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resize_mode = PRESET_MODE_MINSIZE, int p_margin = 0);
+	void set_grow_direction_preset(LayoutPreset p_preset);
 
 	void set_anchor(Side p_side, real_t p_anchor, bool p_keep_offset = true, bool p_push_opposite_anchor = true);
 	real_t get_anchor(Side p_side) const;
@@ -563,6 +577,7 @@ VARIANT_ENUM_CAST(Control::LayoutPresetMode);
 VARIANT_ENUM_CAST(Control::MouseFilter);
 VARIANT_ENUM_CAST(Control::GrowDirection);
 VARIANT_ENUM_CAST(Control::Anchor);
+VARIANT_ENUM_CAST(Control::LayoutMode);
 VARIANT_ENUM_CAST(Control::LayoutDirection);
 VARIANT_ENUM_CAST(Control::TextDirection);
 VARIANT_ENUM_CAST(Control::StructuredTextParser);

@@ -41,7 +41,7 @@ int VisualShaderNodeSDFToScreenUV::get_input_port_count() const {
 }
 
 VisualShaderNodeSDFToScreenUV::PortType VisualShaderNodeSDFToScreenUV::get_input_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_2D;
 }
 
 String VisualShaderNodeSDFToScreenUV::get_input_port_name(int p_port) const {
@@ -53,7 +53,7 @@ int VisualShaderNodeSDFToScreenUV::get_output_port_count() const {
 }
 
 VisualShaderNodeSDFToScreenUV::PortType VisualShaderNodeSDFToScreenUV::get_output_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_2D;
 }
 
 String VisualShaderNodeSDFToScreenUV::get_output_port_name(int p_port) const {
@@ -61,7 +61,7 @@ String VisualShaderNodeSDFToScreenUV::get_output_port_name(int p_port) const {
 }
 
 String VisualShaderNodeSDFToScreenUV::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	return "		" + p_output_vars[0] + " = vec3(sdf_to_screen_uv(" + (p_input_vars[0].is_empty() ? "vec2(0.0)" : p_input_vars[0] + ".xy") + "), 0.0f);\n";
+	return "		" + p_output_vars[0] + " = sdf_to_screen_uv(" + (p_input_vars[0].is_empty() ? "vec2(0.0)" : p_input_vars[0]) + ");\n";
 }
 
 VisualShaderNodeSDFToScreenUV::VisualShaderNodeSDFToScreenUV() {
@@ -78,7 +78,7 @@ int VisualShaderNodeScreenUVToSDF::get_input_port_count() const {
 }
 
 VisualShaderNodeScreenUVToSDF::PortType VisualShaderNodeScreenUVToSDF::get_input_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_2D;
 }
 
 String VisualShaderNodeScreenUVToSDF::get_input_port_name(int p_port) const {
@@ -90,7 +90,7 @@ int VisualShaderNodeScreenUVToSDF::get_output_port_count() const {
 }
 
 VisualShaderNodeScreenUVToSDF::PortType VisualShaderNodeScreenUVToSDF::get_output_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_2D;
 }
 
 String VisualShaderNodeScreenUVToSDF::get_output_port_name(int p_port) const {
@@ -105,7 +105,7 @@ bool VisualShaderNodeScreenUVToSDF::is_input_port_default(int p_port, Shader::Mo
 }
 
 String VisualShaderNodeScreenUVToSDF::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	return "		" + p_output_vars[0] + " = vec3(screen_uv_to_sdf(" + (p_input_vars[0].is_empty() ? "SCREEN_UV" : p_input_vars[0] + ".xy") + "), 0.0f);\n";
+	return "		" + p_output_vars[0] + " = screen_uv_to_sdf(" + (p_input_vars[0].is_empty() ? "SCREEN_UV" : p_input_vars[0]) + ");\n";
 }
 
 VisualShaderNodeScreenUVToSDF::VisualShaderNodeScreenUVToSDF() {
@@ -122,7 +122,7 @@ int VisualShaderNodeTextureSDF::get_input_port_count() const {
 }
 
 VisualShaderNodeTextureSDF::PortType VisualShaderNodeTextureSDF::get_input_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_2D;
 }
 
 String VisualShaderNodeTextureSDF::get_input_port_name(int p_port) const {
@@ -142,7 +142,7 @@ String VisualShaderNodeTextureSDF::get_output_port_name(int p_port) const {
 }
 
 String VisualShaderNodeTextureSDF::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	return "		" + p_output_vars[0] + " = texture_sdf(" + (p_input_vars[0].is_empty() ? "vec2(0.0)" : p_input_vars[0] + ".xy") + ");\n";
+	return "		" + p_output_vars[0] + " = texture_sdf(" + (p_input_vars[0].is_empty() ? "vec2(0.0)" : p_input_vars[0]) + ");\n";
 }
 
 VisualShaderNodeTextureSDF::VisualShaderNodeTextureSDF() {
@@ -159,7 +159,7 @@ int VisualShaderNodeTextureSDFNormal::get_input_port_count() const {
 }
 
 VisualShaderNodeTextureSDFNormal::PortType VisualShaderNodeTextureSDFNormal::get_input_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_2D;
 }
 
 String VisualShaderNodeTextureSDFNormal::get_input_port_name(int p_port) const {
@@ -171,7 +171,7 @@ int VisualShaderNodeTextureSDFNormal::get_output_port_count() const {
 }
 
 VisualShaderNodeTextureSDFNormal::PortType VisualShaderNodeTextureSDFNormal::get_output_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_2D;
 }
 
 String VisualShaderNodeTextureSDFNormal::get_output_port_name(int p_port) const {
@@ -179,7 +179,7 @@ String VisualShaderNodeTextureSDFNormal::get_output_port_name(int p_port) const 
 }
 
 String VisualShaderNodeTextureSDFNormal::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	return "		" + p_output_vars[0] + " = vec3(texture_sdf_normal(" + (p_input_vars[0].is_empty() ? "vec2(0.0)" : p_input_vars[0] + ".xy") + "), 0.0f);\n";
+	return "		" + p_output_vars[0] + " = texture_sdf_normal(" + (p_input_vars[0].is_empty() ? "vec2(0.0)" : p_input_vars[0]) + ");\n";
 }
 
 VisualShaderNodeTextureSDFNormal::VisualShaderNodeTextureSDFNormal() {
@@ -197,7 +197,7 @@ int VisualShaderNodeSDFRaymarch::get_input_port_count() const {
 
 VisualShaderNodeSDFRaymarch::PortType VisualShaderNodeSDFRaymarch::get_input_port_type(int p_port) const {
 	if (p_port == 0 || p_port == 1) {
-		return PORT_TYPE_VECTOR;
+		return PORT_TYPE_VECTOR_2D;
 	}
 	return PORT_TYPE_SCALAR;
 }
@@ -221,7 +221,7 @@ VisualShaderNodeSDFRaymarch::PortType VisualShaderNodeSDFRaymarch::get_output_po
 	} else if (p_port == 1) {
 		return PORT_TYPE_BOOLEAN;
 	} else if (p_port == 2) {
-		return PORT_TYPE_VECTOR;
+		return PORT_TYPE_VECTOR_2D;
 	}
 	return PORT_TYPE_SCALAR;
 }
@@ -245,13 +245,13 @@ String VisualShaderNodeSDFRaymarch::generate_code(Shader::Mode p_mode, VisualSha
 	if (p_input_vars[0].is_empty()) {
 		code += "				vec2 __from_pos = vec2(0.0f);\n";
 	} else {
-		code += "				vec2 __from_pos = " + p_input_vars[0] + ".xy;\n";
+		code += "				vec2 __from_pos = " + p_input_vars[0] + ";\n";
 	}
 
 	if (p_input_vars[1].is_empty()) {
 		code += "				vec2 __to_pos = vec2(0.0f);\n";
 	} else {
-		code += "				vec2 __to_pos = " + p_input_vars[1] + ".xy;\n";
+		code += "				vec2 __to_pos = " + p_input_vars[1] + ";\n";
 	}
 
 	code += "\n				vec2 __at = __from_pos;\n";
@@ -271,7 +271,7 @@ String VisualShaderNodeSDFRaymarch::generate_code(Shader::Mode p_mode, VisualSha
 	code += "				float __dist = min(__max_dist, __accum);\n";
 	code += "				" + p_output_vars[0] + " = __dist;\n";
 	code += "				" + p_output_vars[1] + " = __accum < __max_dist;\n";
-	code += "				" + p_output_vars[2] + " = vec3(__from_pos + __dir * __dist, 0.0f);\n";
+	code += "				" + p_output_vars[2] + " = __from_pos + __dir * __dist;\n";
 
 	code += "		}\n";
 

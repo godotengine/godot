@@ -32,9 +32,10 @@
 
 #include "core/io/dir_access.h"
 #include "core/io/json.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
-#include "editor_node.h"
-#include "editor_scale.h"
 
 const char *EditorFeatureProfile::feature_names[FEATURE_MAX] = {
 	TTRC("3D Editor"),
@@ -308,18 +309,20 @@ EditorFeatureProfile::EditorFeatureProfile() {}
 //////////////////////////
 
 void EditorFeatureProfileManager::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY) {
-		current_profile = EDITOR_GET("_default_feature_profile");
-		if (!current_profile.is_empty()) {
-			current.instantiate();
-			Error err = current->load_from_file(EditorSettings::get_singleton()->get_feature_profiles_dir().plus_file(current_profile + ".profile"));
-			if (err != OK) {
-				ERR_PRINT("Error loading default feature profile: " + current_profile);
-				current_profile = String();
-				current.unref();
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			current_profile = EDITOR_GET("_default_feature_profile");
+			if (!current_profile.is_empty()) {
+				current.instantiate();
+				Error err = current->load_from_file(EditorSettings::get_singleton()->get_feature_profiles_dir().plus_file(current_profile + ".profile"));
+				if (err != OK) {
+					ERR_PRINT("Error loading default feature profile: " + current_profile);
+					current_profile = String();
+					current.unref();
+				}
 			}
-		}
-		_update_profile_list(current_profile);
+			_update_profile_list(current_profile);
+		} break;
 	}
 }
 
@@ -592,7 +595,15 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 	List<PropertyInfo> props;
 	ClassDB::get_property_list(class_name, &props, true);
 
-	if (props.size() > 0) {
+	bool has_editor_props = false;
+	for (const PropertyInfo &E : props) {
+		if (E.usage & PROPERTY_USAGE_EDITOR) {
+			has_editor_props = true;
+			break;
+		}
+	}
+
+	if (has_editor_props) {
 		TreeItem *properties = property_list->create_item(root);
 		properties->set_text(0, TTR("Class Properties:"));
 

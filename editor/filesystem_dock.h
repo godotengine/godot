@@ -31,29 +31,22 @@
 #ifndef FILESYSTEM_DOCK_H
 #define FILESYSTEM_DOCK_H
 
+#include "editor/create_dialog.h"
+#include "editor/dependency_editor.h"
+#include "editor/editor_dir_dialog.h"
+#include "editor/editor_file_system.h"
+#include "editor/plugins/script_editor_plugin.h"
+#include "editor/script_create_dialog.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
-#include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
-#include "scene/main/timer.h"
 
-#include "core/io/dir_access.h"
-#include "core/os/thread.h"
-
-#include "create_dialog.h"
-
-#include "dependency_editor.h"
-#include "editor_dir_dialog.h"
-#include "editor_file_system.h"
-#include "script_create_dialog.h"
-
-class EditorNode;
 class ShaderCreateDialog;
 
 class FileSystemDock : public VBoxContainer {
@@ -114,7 +107,6 @@ private:
 	VSplitContainer *split_box;
 	VBoxContainer *file_list_vb;
 
-	EditorNode *editor;
 	Set<String> favorites;
 
 	Button *button_toggle_display_mode;
@@ -336,7 +328,7 @@ public:
 	void set_file_list_display_mode(FileListDisplayMode p_mode);
 	FileListDisplayMode get_file_list_display_mode() { return file_list_display_mode; };
 
-	FileSystemDock(EditorNode *p_editor);
+	FileSystemDock();
 	~FileSystemDock();
 };
 

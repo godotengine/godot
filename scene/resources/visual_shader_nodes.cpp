@@ -37,7 +37,7 @@ VisualShaderNodeVectorBase::PortType VisualShaderNodeVectorBase::get_input_port_
 		case OP_TYPE_VECTOR_2D:
 			return PORT_TYPE_VECTOR_2D;
 		case OP_TYPE_VECTOR_3D:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		default:
 			break;
 	}
@@ -49,7 +49,7 @@ VisualShaderNodeVectorBase::PortType VisualShaderNodeVectorBase::get_output_port
 		case OP_TYPE_VECTOR_2D:
 			return PORT_TYPE_VECTOR_2D;
 		case OP_TYPE_VECTOR_3D:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		default:
 			break;
 	}
@@ -291,7 +291,7 @@ int VisualShaderNodeColorConstant::get_input_port_count() const {
 }
 
 VisualShaderNodeColorConstant::PortType VisualShaderNodeColorConstant::get_input_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeColorConstant::get_input_port_name(int p_port) const {
@@ -303,7 +303,7 @@ int VisualShaderNodeColorConstant::get_output_port_count() const {
 }
 
 VisualShaderNodeColorConstant::PortType VisualShaderNodeColorConstant::get_output_port_type(int p_port) const {
-	return p_port == 0 ? PORT_TYPE_VECTOR : PORT_TYPE_SCALAR;
+	return p_port == 0 ? PORT_TYPE_VECTOR_3D : PORT_TYPE_SCALAR;
 }
 
 String VisualShaderNodeColorConstant::get_output_port_name(int p_port) const {
@@ -426,7 +426,7 @@ int VisualShaderNodeVec3Constant::get_input_port_count() const {
 }
 
 VisualShaderNodeVec3Constant::PortType VisualShaderNodeVec3Constant::get_input_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeVec3Constant::get_input_port_name(int p_port) const {
@@ -438,7 +438,7 @@ int VisualShaderNodeVec3Constant::get_output_port_count() const {
 }
 
 VisualShaderNodeVec3Constant::PortType VisualShaderNodeVec3Constant::get_output_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeVec3Constant::get_output_port_name(int p_port) const {
@@ -488,7 +488,7 @@ int VisualShaderNodeTransformConstant::get_input_port_count() const {
 }
 
 VisualShaderNodeTransformConstant::PortType VisualShaderNodeTransformConstant::get_input_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeTransformConstant::get_input_port_name(int p_port) const {
@@ -591,7 +591,7 @@ VisualShaderNodeTexture::PortType VisualShaderNodeTexture::get_output_port_type(
 	if (p_port == 0 && source == SOURCE_DEPTH) {
 		return PORT_TYPE_SCALAR;
 	}
-	return p_port == 0 ? PORT_TYPE_VECTOR : PORT_TYPE_SCALAR;
+	return p_port == 0 ? PORT_TYPE_VECTOR_3D : PORT_TYPE_SCALAR;
 }
 
 String VisualShaderNodeTexture::get_output_port_name(int p_port) const {
@@ -1064,7 +1064,7 @@ int VisualShaderNodeCurveXYZTexture::get_output_port_count() const {
 }
 
 VisualShaderNodeCurveXYZTexture::PortType VisualShaderNodeCurveXYZTexture::get_output_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeCurveXYZTexture::get_output_port_name(int p_port) const {
@@ -1135,7 +1135,7 @@ int VisualShaderNodeSample3D::get_input_port_count() const {
 VisualShaderNodeSample3D::PortType VisualShaderNodeSample3D::get_input_port_type(int p_port) const {
 	switch (p_port) {
 		case 0:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		case 1:
 			return PORT_TYPE_SCALAR;
 		case 2:
@@ -1161,7 +1161,7 @@ int VisualShaderNodeSample3D::get_output_port_count() const {
 }
 
 VisualShaderNodeSample3D::PortType VisualShaderNodeSample3D::get_output_port_type(int p_port) const {
-	return p_port == 0 ? PORT_TYPE_VECTOR : PORT_TYPE_SCALAR;
+	return p_port == 0 ? PORT_TYPE_VECTOR_3D : PORT_TYPE_SCALAR;
 }
 
 String VisualShaderNodeSample3D::get_output_port_name(int p_port) const {
@@ -1398,7 +1398,7 @@ int VisualShaderNodeCubemap::get_input_port_count() const {
 VisualShaderNodeCubemap::PortType VisualShaderNodeCubemap::get_input_port_type(int p_port) const {
 	switch (p_port) {
 		case 0:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		case 1:
 			return PORT_TYPE_SCALAR;
 		case 2:
@@ -1426,7 +1426,7 @@ int VisualShaderNodeCubemap::get_output_port_count() const {
 }
 
 VisualShaderNodeCubemap::PortType VisualShaderNodeCubemap::get_output_port_type(int p_port) const {
-	return p_port == 0 ? PORT_TYPE_VECTOR : PORT_TYPE_SCALAR;
+	return p_port == 0 ? PORT_TYPE_VECTOR_3D : PORT_TYPE_SCALAR;
 }
 
 String VisualShaderNodeCubemap::get_output_port_name(int p_port) const {
@@ -2020,7 +2020,7 @@ int VisualShaderNodeColorOp::get_input_port_count() const {
 }
 
 VisualShaderNodeColorOp::PortType VisualShaderNodeColorOp::get_input_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeColorOp::get_input_port_name(int p_port) const {
@@ -2032,7 +2032,7 @@ int VisualShaderNodeColorOp::get_output_port_count() const {
 }
 
 VisualShaderNodeColorOp::PortType VisualShaderNodeColorOp::get_output_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeColorOp::get_output_port_name(int p_port) const {
@@ -2293,7 +2293,7 @@ int VisualShaderNodeTransformVecMult::get_input_port_count() const {
 }
 
 VisualShaderNodeTransformVecMult::PortType VisualShaderNodeTransformVecMult::get_input_port_type(int p_port) const {
-	return p_port == 0 ? PORT_TYPE_TRANSFORM : PORT_TYPE_VECTOR;
+	return p_port == 0 ? PORT_TYPE_TRANSFORM : PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeTransformVecMult::get_input_port_name(int p_port) const {
@@ -2305,7 +2305,7 @@ int VisualShaderNodeTransformVecMult::get_output_port_count() const {
 }
 
 VisualShaderNodeTransformVecMult::PortType VisualShaderNodeTransformVecMult::get_output_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeTransformVecMult::get_output_port_name(int p_port) const {
@@ -2815,7 +2815,7 @@ int VisualShaderNodeColorFunc::get_input_port_count() const {
 }
 
 VisualShaderNodeColorFunc::PortType VisualShaderNodeColorFunc::get_input_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeColorFunc::get_input_port_name(int p_port) const {
@@ -2827,7 +2827,7 @@ int VisualShaderNodeColorFunc::get_output_port_count() const {
 }
 
 VisualShaderNodeColorFunc::PortType VisualShaderNodeColorFunc::get_output_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeColorFunc::get_output_port_name(int p_port) const {
@@ -3124,7 +3124,7 @@ int VisualShaderNodeDotProduct::get_input_port_count() const {
 }
 
 VisualShaderNodeDotProduct::PortType VisualShaderNodeDotProduct::get_input_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeDotProduct::get_input_port_name(int p_port) const {
@@ -3258,7 +3258,7 @@ VisualShaderNodeDerivativeFunc::PortType VisualShaderNodeDerivativeFunc::get_inp
 		case OP_TYPE_VECTOR_2D:
 			return PORT_TYPE_VECTOR_2D;
 		case OP_TYPE_VECTOR_3D:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		default:
 			break;
 	}
@@ -3278,7 +3278,7 @@ VisualShaderNodeDerivativeFunc::PortType VisualShaderNodeDerivativeFunc::get_out
 		case OP_TYPE_VECTOR_2D:
 			return PORT_TYPE_VECTOR_2D;
 		case OP_TYPE_VECTOR_3D:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		default:
 			break;
 	}
@@ -3389,7 +3389,7 @@ VisualShaderNodeClamp::PortType VisualShaderNodeClamp::get_input_port_type(int p
 		case OP_TYPE_VECTOR_2D:
 			return PORT_TYPE_VECTOR_2D;
 		case OP_TYPE_VECTOR_3D:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		default:
 			break;
 	}
@@ -3418,7 +3418,7 @@ VisualShaderNodeClamp::PortType VisualShaderNodeClamp::get_output_port_type(int 
 		case OP_TYPE_VECTOR_2D:
 			return PORT_TYPE_VECTOR_2D;
 		case OP_TYPE_VECTOR_3D:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		default:
 			break;
 	}
@@ -3570,7 +3570,7 @@ int VisualShaderNodeOuterProduct::get_input_port_count() const {
 }
 
 VisualShaderNodeOuterProduct::PortType VisualShaderNodeOuterProduct::get_input_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeOuterProduct::get_input_port_name(int p_port) const {
@@ -3625,10 +3625,10 @@ VisualShaderNodeStep::PortType VisualShaderNodeStep::get_input_port_type(int p_p
 			}
 			break;
 		case OP_TYPE_VECTOR_3D:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		case OP_TYPE_VECTOR_3D_SCALAR:
 			if (p_port == 1) {
-				return PORT_TYPE_VECTOR;
+				return PORT_TYPE_VECTOR_3D;
 			}
 			break;
 		default:
@@ -3658,9 +3658,9 @@ VisualShaderNodeStep::PortType VisualShaderNodeStep::get_output_port_type(int p_
 		case OP_TYPE_VECTOR_2D_SCALAR:
 			return PORT_TYPE_VECTOR_2D;
 		case OP_TYPE_VECTOR_3D:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		case OP_TYPE_VECTOR_3D_SCALAR:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		default:
 			break;
 	}
@@ -3757,10 +3757,10 @@ VisualShaderNodeSmoothStep::PortType VisualShaderNodeSmoothStep::get_input_port_
 			}
 			break;
 		case OP_TYPE_VECTOR_3D:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		case OP_TYPE_VECTOR_3D_SCALAR:
 			if (p_port == 2) {
-				return PORT_TYPE_VECTOR; // x
+				return PORT_TYPE_VECTOR_3D; // x
 			}
 			break;
 		default:
@@ -3792,9 +3792,9 @@ VisualShaderNodeSmoothStep::PortType VisualShaderNodeSmoothStep::get_output_port
 		case OP_TYPE_VECTOR_2D_SCALAR:
 			return PORT_TYPE_VECTOR_2D;
 		case OP_TYPE_VECTOR_3D:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		case OP_TYPE_VECTOR_3D_SCALAR:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		default:
 			break;
 	}
@@ -3954,7 +3954,7 @@ VisualShaderNodeVectorRefract::PortType VisualShaderNodeVectorRefract::get_input
 		return PORT_TYPE_SCALAR;
 	}
 
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeVectorRefract::get_input_port_name(int p_port) const {
@@ -3974,7 +3974,7 @@ int VisualShaderNodeVectorRefract::get_output_port_count() const {
 }
 
 VisualShaderNodeVectorRefract::PortType VisualShaderNodeVectorRefract::get_output_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeVectorRefract::get_output_port_name(int p_port) const {
@@ -4011,12 +4011,12 @@ VisualShaderNodeMix::PortType VisualShaderNodeMix::get_input_port_type(int p_por
 			}
 			return PORT_TYPE_VECTOR_2D;
 		case OP_TYPE_VECTOR_3D:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		case OP_TYPE_VECTOR_3D_SCALAR:
 			if (p_port == 2) {
 				break;
 			}
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		default:
 			break;
 	}
@@ -4044,9 +4044,9 @@ VisualShaderNodeMix::PortType VisualShaderNodeMix::get_output_port_type(int p_po
 		case OP_TYPE_VECTOR_2D_SCALAR:
 			return PORT_TYPE_VECTOR_2D;
 		case OP_TYPE_VECTOR_3D:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		case OP_TYPE_VECTOR_3D_SCALAR:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		default:
 			break;
 	}
@@ -4245,7 +4245,7 @@ int VisualShaderNodeTransformCompose::get_input_port_count() const {
 }
 
 VisualShaderNodeTransformCompose::PortType VisualShaderNodeTransformCompose::get_input_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeTransformCompose::get_input_port_name(int p_port) const {
@@ -4402,7 +4402,7 @@ int VisualShaderNodeTransformDecompose::get_output_port_count() const {
 }
 
 VisualShaderNodeTransformDecompose::PortType VisualShaderNodeTransformDecompose::get_output_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeTransformDecompose::get_output_port_name(int p_port) const {
@@ -4933,7 +4933,7 @@ int VisualShaderNodeColorUniform::get_input_port_count() const {
 }
 
 VisualShaderNodeColorUniform::PortType VisualShaderNodeColorUniform::get_input_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeColorUniform::get_input_port_name(int p_port) const {
@@ -4945,7 +4945,7 @@ int VisualShaderNodeColorUniform::get_output_port_count() const {
 }
 
 VisualShaderNodeColorUniform::PortType VisualShaderNodeColorUniform::get_output_port_type(int p_port) const {
-	return p_port == 0 ? PORT_TYPE_VECTOR : PORT_TYPE_SCALAR;
+	return p_port == 0 ? PORT_TYPE_VECTOR_3D : PORT_TYPE_SCALAR;
 }
 
 String VisualShaderNodeColorUniform::get_output_port_name(int p_port) const {
@@ -5137,7 +5137,7 @@ int VisualShaderNodeVec3Uniform::get_input_port_count() const {
 }
 
 VisualShaderNodeVec3Uniform::PortType VisualShaderNodeVec3Uniform::get_input_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeVec3Uniform::get_input_port_name(int p_port) const {
@@ -5149,7 +5149,7 @@ int VisualShaderNodeVec3Uniform::get_output_port_count() const {
 }
 
 VisualShaderNodeVec3Uniform::PortType VisualShaderNodeVec3Uniform::get_output_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeVec3Uniform::get_output_port_name(int p_port) const {
@@ -5237,7 +5237,7 @@ int VisualShaderNodeTransformUniform::get_input_port_count() const {
 }
 
 VisualShaderNodeTransformUniform::PortType VisualShaderNodeTransformUniform::get_input_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeTransformUniform::get_input_port_name(int p_port) const {
@@ -5358,7 +5358,7 @@ int VisualShaderNodeTextureUniform::get_output_port_count() const {
 VisualShaderNodeTextureUniform::PortType VisualShaderNodeTextureUniform::get_output_port_type(int p_port) const {
 	switch (p_port) {
 		case 0:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		case 1:
 			return PORT_TYPE_SCALAR;
 		case 2:
@@ -5680,7 +5680,7 @@ int VisualShaderNodeTextureUniformTriplanar::get_input_port_count() const {
 
 VisualShaderNodeTextureUniform::PortType VisualShaderNodeTextureUniformTriplanar::get_input_port_type(int p_port) const {
 	if (p_port == 0 || p_port == 1) {
-		return PORT_TYPE_VECTOR;
+		return PORT_TYPE_VECTOR_3D;
 	}
 	return PORT_TYPE_SCALAR;
 }
@@ -5694,7 +5694,7 @@ String VisualShaderNodeTextureUniformTriplanar::get_input_port_name(int p_port) 
 	return "";
 }
 
-String VisualShaderNodeTextureUniformTriplanar::generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+String VisualShaderNodeTextureUniformTriplanar::generate_global_per_node(Shader::Mode p_mode, int p_id) const {
 	String code;
 
 	code += "// TRIPLANAR FUNCTION GLOBAL CODE\n";
@@ -5996,7 +5996,7 @@ VisualShaderNodeIf::PortType VisualShaderNodeIf::get_input_port_type(int p_port)
 	if (p_port == 0 || p_port == 1 || p_port == 2) {
 		return PORT_TYPE_SCALAR;
 	}
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeIf::get_input_port_name(int p_port) const {
@@ -6023,7 +6023,7 @@ int VisualShaderNodeIf::get_output_port_count() const {
 }
 
 VisualShaderNodeIf::PortType VisualShaderNodeIf::get_output_port_type(int p_port) const {
-	return PORT_TYPE_VECTOR;
+	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeIf::get_output_port_name(int p_port) const {
@@ -6078,7 +6078,7 @@ VisualShaderNodeSwitch::PortType VisualShaderNodeSwitch::get_input_port_type(int
 			case OP_TYPE_VECTOR_2D:
 				return PORT_TYPE_VECTOR_2D;
 			case OP_TYPE_VECTOR_3D:
-				return PORT_TYPE_VECTOR;
+				return PORT_TYPE_VECTOR_3D;
 			case OP_TYPE_BOOLEAN:
 				return PORT_TYPE_BOOLEAN;
 			case OP_TYPE_TRANSFORM:
@@ -6114,7 +6114,7 @@ VisualShaderNodeSwitch::PortType VisualShaderNodeSwitch::get_output_port_type(in
 		case OP_TYPE_VECTOR_2D:
 			return PORT_TYPE_VECTOR_2D;
 		case OP_TYPE_VECTOR_3D:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		case OP_TYPE_BOOLEAN:
 			return PORT_TYPE_BOOLEAN;
 		case OP_TYPE_TRANSFORM:
@@ -6224,15 +6224,15 @@ int VisualShaderNodeFresnel::get_input_port_count() const {
 VisualShaderNodeFresnel::PortType VisualShaderNodeFresnel::get_input_port_type(int p_port) const {
 	switch (p_port) {
 		case 0:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		case 1:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		case 2:
 			return PORT_TYPE_BOOLEAN;
 		case 3:
 			return PORT_TYPE_SCALAR;
 		default:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 	}
 }
 
@@ -6418,7 +6418,7 @@ VisualShaderNodeCompare::PortType VisualShaderNodeCompare::get_input_port_type(i
 		case CTYPE_VECTOR_2D:
 			return PORT_TYPE_VECTOR_2D;
 		case CTYPE_VECTOR_3D:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		case CTYPE_BOOLEAN:
 			return PORT_TYPE_BOOLEAN;
 		case CTYPE_TRANSFORM:
@@ -6670,7 +6670,7 @@ VisualShaderNodeMultiplyAdd::PortType VisualShaderNodeMultiplyAdd::get_input_por
 		case OP_TYPE_VECTOR_2D:
 			return PORT_TYPE_VECTOR_2D;
 		case OP_TYPE_VECTOR_3D:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		default:
 			break;
 	}
@@ -6697,7 +6697,7 @@ VisualShaderNodeMultiplyAdd::PortType VisualShaderNodeMultiplyAdd::get_output_po
 		case OP_TYPE_VECTOR_2D:
 			return PORT_TYPE_VECTOR_2D;
 		case OP_TYPE_VECTOR_3D:
-			return PORT_TYPE_VECTOR;
+			return PORT_TYPE_VECTOR_3D;
 		default:
 			break;
 	}

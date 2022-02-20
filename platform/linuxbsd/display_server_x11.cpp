@@ -33,6 +33,7 @@
 #ifdef X11_ENABLED
 
 #include "core/config/project_settings.h"
+#include "core/math/math_funcs.h"
 #include "core/string/print_string.h"
 #include "core/string/ustring.h"
 #include "detect_prime_x11.h"
@@ -1076,7 +1077,7 @@ float DisplayServerX11::screen_get_refresh_rate(int p_screen) const {
 				monitors = xrr_get_monitors(x11_display, windows[MAIN_WINDOW_ID].x11_window, true, &count);
 				ERR_FAIL_INDEX_V(p_screen, count, SCREEN_REFRESH_RATE_FALLBACK);
 			} else {
-				ERR_PRINT("An error occured while trying to get the screen refresh rate.");
+				ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
 				return SCREEN_REFRESH_RATE_FALLBACK;
 			}
 
@@ -1098,19 +1099,20 @@ float DisplayServerX11::screen_get_refresh_rate(int p_screen) const {
 				for (int mode = 0; mode < screen_info->nmode; mode++) {
 					XRRModeInfo m_info = screen_info->modes[mode];
 					if (m_info.id == current_mode) {
-						return (float)m_info.dotClock / ((float)m_info.hTotal * (float)m_info.vTotal);
+						// Snap to nearest 0.01 to stay consistent with other platforms.
+						return Math::snapped((float)m_info.dotClock / ((float)m_info.hTotal * (float)m_info.vTotal), 0.01);
 					}
 				}
 			}
 
-			ERR_PRINT("An error occured while trying to get the screen refresh rate."); // We should have returned the refresh rate by now. An error must have occured.
+			ERR_PRINT("An error occurred while trying to get the screen refresh rate."); // We should have returned the refresh rate by now. An error must have occurred.
 			return SCREEN_REFRESH_RATE_FALLBACK;
 		} else {
-			ERR_PRINT("An error occured while trying to get the screen refresh rate.");
+			ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
 			return SCREEN_REFRESH_RATE_FALLBACK;
 		}
 	}
-	ERR_PRINT("An error occured while trying to get the screen refresh rate.");
+	ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
 	return SCREEN_REFRESH_RATE_FALLBACK;
 }
 
@@ -1833,7 +1835,7 @@ void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled) {
 		Hints hints;
 		Atom property;
 		hints.flags = 2;
-		hints.decorations = window_get_flag(WINDOW_FLAG_BORDERLESS, p_window) ? 0 : 1;
+		hints.decorations = wd.borderless ? 0 : 1;
 		property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
 		if (property != None) {
 			XChangeProperty(x11_display, wd.x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
@@ -4792,7 +4794,7 @@ DisplayServerX11::~DisplayServerX11() {
 		if (img[i] != nullptr) {
 			XcursorImageDestroy(img[i]);
 		}
-	};
+	}
 
 	if (xim) {
 		XCloseIM(xim);

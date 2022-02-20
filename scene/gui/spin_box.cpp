@@ -196,34 +196,44 @@ inline void SpinBox::_adjust_width_for_icon(const Ref<Texture2D> &icon) {
 }
 
 void SpinBox::_notification(int p_what) {
-	if (p_what == NOTIFICATION_DRAW) {
-		Ref<Texture2D> updown = get_theme_icon(SNAME("updown"));
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
+			Ref<Texture2D> updown = get_theme_icon(SNAME("updown"));
 
-		_adjust_width_for_icon(updown);
+			_adjust_width_for_icon(updown);
 
-		RID ci = get_canvas_item();
-		Size2i size = get_size();
+			RID ci = get_canvas_item();
+			Size2i size = get_size();
 
-		if (is_layout_rtl()) {
-			updown->draw(ci, Point2i(0, (size.height - updown->get_height()) / 2));
-		} else {
-			updown->draw(ci, Point2i(size.width - updown->get_width(), (size.height - updown->get_height()) / 2));
-		}
+			if (is_layout_rtl()) {
+				updown->draw(ci, Point2i(0, (size.height - updown->get_height()) / 2));
+			} else {
+				updown->draw(ci, Point2i(size.width - updown->get_width(), (size.height - updown->get_height()) / 2));
+			}
+		} break;
 
-	} else if (p_what == NOTIFICATION_FOCUS_EXIT) {
-		//_value_changed(0);
-	} else if (p_what == NOTIFICATION_ENTER_TREE) {
-		_adjust_width_for_icon(get_theme_icon(SNAME("updown")));
-		_value_changed(0);
-	} else if (p_what == NOTIFICATION_EXIT_TREE) {
-		_release_mouse();
-	} else if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
-		_value_changed(0);
-	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
-		call_deferred(SNAME("update_minimum_size"));
-		get_line_edit()->call_deferred(SNAME("update_minimum_size"));
-	} else if (p_what == NOTIFICATION_LAYOUT_DIRECTION_CHANGED || p_what == NOTIFICATION_TRANSLATION_CHANGED) {
-		update();
+		case NOTIFICATION_ENTER_TREE: {
+			_adjust_width_for_icon(get_theme_icon(SNAME("updown")));
+			_value_changed(0);
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			_release_mouse();
+		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			_value_changed(0);
+			update();
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			call_deferred(SNAME("update_minimum_size"));
+			get_line_edit()->call_deferred(SNAME("update_minimum_size"));
+		} break;
+
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
+			update();
+		} break;
 	}
 }
 

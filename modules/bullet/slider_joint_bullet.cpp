@@ -334,7 +334,6 @@ real_t SliderJointBullet::getMaxAngMotorForce() {
 
 real_t SliderJointBullet::getLinearPos() {
 	return sliderConstraint->getLinearPos();
-	;
 }
 
 void SliderJointBullet::set_param(PhysicsServer3D::SliderJointParam p_param, real_t p_value) {

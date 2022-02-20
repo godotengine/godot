@@ -552,7 +552,6 @@ void cluster_get_item_range(uint p_offset, out uint item_min, out uint item_max,
 	uint item_min_max = cluster_buffer.data[p_offset];
 	item_min = item_min_max & 0xFFFF;
 	item_max = item_min_max >> 16;
-	;
 
 	item_from = item_min >> 5;
 	item_to = (item_max == 0) ? 0 : ((item_max - 1) >> 5) + 1; //side effect of how it is stored, as item_max 0 means no elements

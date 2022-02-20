@@ -32,10 +32,10 @@
 
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
-#include "editor_feature_profile.h"
-#include "editor_node.h"
-#include "editor_scale.h"
-#include "editor_settings.h"
+#include "editor/editor_feature_profile.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 
 void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const String &p_select_type) {
 	_fill_type_list();
@@ -235,19 +235,19 @@ void CreateDialog::_add_type(const String &p_type, const TypeCategory p_type_cat
 		}
 	} else {
 		if (ScriptServer::is_global_class(p_type)) {
-			inherits = EditorNode::get_editor_data().script_class_get_base(p_type);
-			if (inherits.is_empty()) {
-				Ref<Script> script = EditorNode::get_editor_data().script_class_load_script(p_type);
-				ERR_FAIL_COND(script.is_null());
+			Ref<Script> script = EditorNode::get_editor_data().script_class_load_script(p_type);
+			ERR_FAIL_COND(script.is_null());
 
-				Ref<Script> base = script->get_base_script();
-				if (base.is_null()) {
-					String extends;
-					script->get_language()->get_global_class_name(script->get_path(), &extends);
+			Ref<Script> base = script->get_base_script();
+			if (base.is_null()) {
+				String extends;
+				script->get_language()->get_global_class_name(script->get_path(), &extends);
 
-					inherits = extends;
-					inherited_type = TypeCategory::CPP_TYPE;
-				} else {
+				inherits = extends;
+				inherited_type = TypeCategory::CPP_TYPE;
+			} else {
+				inherits = script->get_language()->get_global_class_name(base->get_path());
+				if (inherits.is_empty()) {
 					inherits = base->get_path();
 					inherited_type = TypeCategory::PATH_TYPE;
 				}
@@ -429,9 +429,11 @@ void CreateDialog::_notification(int p_what) {
 			connect("confirmed", callable_mp(this, &CreateDialog::_confirmed));
 			_update_theme();
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("confirmed", callable_mp(this, &CreateDialog::_confirmed));
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
 				search_box->call_deferred(SNAME("grab_focus")); // still not visible
@@ -440,20 +442,21 @@ void CreateDialog::_notification(int p_what) {
 				EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "create_new_node", Rect2(get_position(), get_size()));
 			}
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_theme();
 		} break;
 	}
 }
 
-void CreateDialog::select_type(const String &p_type) {
+void CreateDialog::select_type(const String &p_type, bool p_center_on_item) {
 	if (!search_options_types.has(p_type)) {
 		return;
 	}
 
 	TreeItem *to_select = search_options_types[p_type];
 	to_select->select(0);
-	search_options->scroll_to_item(to_select);
+	search_options->scroll_to_item(to_select, p_center_on_item);
 
 	if (EditorHelp::get_doc_data()->class_list.has(p_type) && !DTR(EditorHelp::get_doc_data()->class_list[p_type].brief_description).is_empty()) {
 		// Display both class name and description, since the help bit may be displayed
@@ -503,24 +506,14 @@ Variant CreateDialog::instance_selected() {
 	} else {
 		obj = ClassDB::instantiate(selected->get_text(0));
 	}
-
-	// Check if any Object-type property should be instantiated.
-	List<PropertyInfo> pinfo;
-	((Object *)obj)->get_property_list(&pinfo);
-
-	for (const PropertyInfo &pi : pinfo) {
-		if (pi.type == Variant::OBJECT && pi.usage & PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT) {
-			Object *prop = ClassDB::instantiate(pi.class_name);
-			((Object *)obj)->set(pi.name, prop);
-		}
-	}
+	EditorNode::get_editor_data().instantiate_object_properties(obj);
 
 	return obj;
 }
 
 void CreateDialog::_item_selected() {
 	String name = get_selected_type();
-	select_type(name);
+	select_type(name, false);
 }
 
 void CreateDialog::_hide_requested() {

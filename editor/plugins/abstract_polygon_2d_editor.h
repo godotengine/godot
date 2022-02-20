@@ -31,9 +31,9 @@
 #ifndef ABSTRACT_POLYGON_2D_EDITOR_H
 #define ABSTRACT_POLYGON_2D_EDITOR_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/2d/polygon_2d.h"
+#include "scene/gui/box_container.h"
 
 class CanvasItemEditor;
 
@@ -86,7 +86,6 @@ class AbstractPolygon2DEditor : public HBoxContainer {
 	bool _polygon_editing_enabled;
 
 	CanvasItemEditor *canvas_item_editor;
-	EditorNode *editor;
 	Panel *panel;
 	ConfirmationDialog *create_resource;
 
@@ -144,14 +143,13 @@ public:
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 
 	void edit(Node *p_polygon);
-	AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wip_destructive = true);
+	AbstractPolygon2DEditor(bool p_wip_destructive = true);
 };
 
 class AbstractPolygon2DEditorPlugin : public EditorPlugin {
 	GDCLASS(AbstractPolygon2DEditorPlugin, EditorPlugin);
 
 	AbstractPolygon2DEditor *polygon_editor;
-	EditorNode *editor;
 	String klass;
 
 public:
@@ -164,7 +162,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	AbstractPolygon2DEditorPlugin(EditorNode *p_node, AbstractPolygon2DEditor *p_polygon_editor, String p_class);
+	AbstractPolygon2DEditorPlugin(AbstractPolygon2DEditor *p_polygon_editor, String p_class);
 	~AbstractPolygon2DEditorPlugin();
 };
 

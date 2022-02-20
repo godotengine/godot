@@ -31,7 +31,6 @@
 #ifndef ANIMATION_BLEND_SPACE_1D_EDITOR_H
 #define ANIMATION_BLEND_SPACE_1D_EDITOR_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/plugins/animation_tree_editor_plugin.h"
 #include "editor/property_editor.h"

@@ -32,8 +32,8 @@
 #define SCENE_TREE_EDITOR_H
 
 #include "core/object/undo_redo.h"
-#include "editor_data.h"
-#include "editor_settings.h"
+#include "editor/editor_data.h"
+#include "editor/editor_settings.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"

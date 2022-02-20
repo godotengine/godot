@@ -30,6 +30,8 @@
 
 #include "export_plugin.h"
 
+#include "editor/editor_node.h"
+
 void EditorExportPlatformIOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
 	String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
 	// Vulkan and OpenGL ES 3.0 both mandate ETC2 support.
@@ -43,7 +45,6 @@ void EditorExportPlatformIOS::get_preset_features(const Ref<EditorExportPreset> 
 
 Vector<EditorExportPlatformIOS::ExportArchitecture> EditorExportPlatformIOS::_get_supported_architectures() {
 	Vector<ExportArchitecture> archs;
-	archs.push_back(ExportArchitecture("armv7", false)); // Disabled by default, not included in official templates.
 	archs.push_back(ExportArchitecture("arm64", true));
 	return archs;
 }

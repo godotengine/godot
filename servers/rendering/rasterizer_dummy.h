@@ -31,7 +31,6 @@
 #ifndef RASTERIZER_DUMMY_H
 #define RASTERIZER_DUMMY_H
 
-#include "core/math/camera_matrix.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
 #include "scene/resources/mesh.h"
@@ -72,11 +71,11 @@ public:
 	/* SHADOW ATLAS API */
 
 	RID shadow_atlas_create() override { return RID(); }
-	void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = false) override {}
+	void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = true) override {}
 	void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) override {}
 	bool shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version) override { return false; }
 
-	void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = false) override {}
+	void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = true) override {}
 	int get_directional_light_shadow_size(RID p_light_intance) override { return 0; }
 	void set_directional_shadow_count(int p_count) override {}
 
@@ -561,6 +560,7 @@ public:
 	void particles_set_speed_scale(RID p_particles, double p_scale) override {}
 	void particles_set_use_local_coordinates(RID p_particles, bool p_enable) override {}
 	void particles_set_process_material(RID p_particles, RID p_material) override {}
+	RID particles_get_process_material(RID p_particles) const override { return RID(); }
 	void particles_set_fixed_fps(RID p_particles, int p_fps) override {}
 	void particles_set_interpolate(RID p_particles, bool p_enable) override {}
 	void particles_set_fractional_delta(RID p_particles, bool p_enable) override {}

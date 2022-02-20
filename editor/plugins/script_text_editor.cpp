@@ -30,6 +30,7 @@
 
 #include "script_text_editor.h"
 
+#include "core/config/project_settings.h"
 #include "core/math/expression.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
@@ -398,10 +399,10 @@ Ref<Texture2D> ScriptTextEditor::get_theme_icon() {
 			icon_name += "Internal";
 		}
 
-		if (get_parent_control()->has_theme_icon(icon_name, "EditorIcons")) {
-			return get_parent_control()->get_theme_icon(icon_name, "EditorIcons");
-		} else if (get_parent_control()->has_theme_icon(script->get_class(), "EditorIcons")) {
-			return get_parent_control()->get_theme_icon(script->get_class(), "EditorIcons");
+		if (get_parent_control()->has_theme_icon(icon_name, SNAME("EditorIcons"))) {
+			return get_parent_control()->get_theme_icon(icon_name, SNAME("EditorIcons"));
+		} else if (get_parent_control()->has_theme_icon(script->get_class(), SNAME("EditorIcons"))) {
+			return get_parent_control()->get_theme_icon(script->get_class(), SNAME("EditorIcons"));
 		}
 	}
 
@@ -930,21 +931,22 @@ void ScriptTextEditor::_update_connected_methods() {
 				continue;
 			}
 
-			if (methods_found.has(connection.callable.get_method())) {
+			const StringName method = connection.callable.get_method();
+			if (methods_found.has(method)) {
 				continue;
 			}
 
-			if (!ClassDB::has_method(script->get_instance_base_type(), connection.callable.get_method())) {
+			if (!ClassDB::has_method(script->get_instance_base_type(), method)) {
 				int line = -1;
 
 				for (int j = 0; j < functions.size(); j++) {
 					String name = functions[j].get_slice(":", 0);
-					if (name == connection.callable.get_method()) {
+					if (name == method) {
 						line = functions[j].get_slice(":", 1).to_int() - 1;
-						text_edit->set_line_gutter_metadata(line, connection_gutter, connection.callable.get_method());
+						text_edit->set_line_gutter_metadata(line, connection_gutter, method);
 						text_edit->set_line_gutter_icon(line, connection_gutter, get_parent_control()->get_theme_icon(SNAME("Slot"), SNAME("EditorIcons")));
 						text_edit->set_line_gutter_clickable(line, connection_gutter, true);
-						methods_found.insert(connection.callable.get_method());
+						methods_found.insert(method);
 						break;
 					}
 				}
@@ -957,7 +959,7 @@ void ScriptTextEditor::_update_connected_methods() {
 				bool found_inherited_function = false;
 				Ref<Script> inherited_script = script->get_base_script();
 				while (!inherited_script.is_null()) {
-					if (inherited_script->has_method(connection.callable.get_method())) {
+					if (inherited_script->has_method(method)) {
 						found_inherited_function = true;
 						break;
 					}
@@ -1341,8 +1343,6 @@ void ScriptTextEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			code_editor->get_text_editor()->set_gutter_width(connection_gutter, code_editor->get_text_editor()->get_line_height());
 		} break;
-		default:
-			break;
 	}
 }
 
@@ -1373,7 +1373,7 @@ void ScriptTextEditor::reload(bool p_soft) {
 		return;
 	}
 	scr->set_source_code(te->get_text());
-	bool soft = p_soft || scr->get_instance_base_type() == "EditorPlugin"; //always soft-reload editor plugins
+	bool soft = p_soft || scr->get_instance_base_type() == "EditorPlugin"; // Always soft-reload editor plugins.
 
 	scr->get_language()->reload_tool_script(scr, soft);
 }

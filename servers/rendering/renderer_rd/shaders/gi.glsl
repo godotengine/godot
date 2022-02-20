@@ -86,7 +86,7 @@ voxel_gi_instances;
 
 layout(set = 0, binding = 17) uniform texture3D voxel_gi_textures[MAX_VOXEL_GI_INSTANCES];
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	ivec2 screen_size;
 	float z_near;
 	float z_far;

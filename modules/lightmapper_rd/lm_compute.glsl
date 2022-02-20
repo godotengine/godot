@@ -70,7 +70,7 @@ layout(rgba16f, set = 1, binding = 0) uniform restrict writeonly image2DArray de
 layout(set = 1, binding = 1) uniform texture2DArray source_light;
 #endif
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	ivec2 atlas_size; // x used for light probe mode total probes
 	uint ray_count;
 	uint ray_to;

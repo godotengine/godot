@@ -16,7 +16,7 @@ layout(r8, set = 2, binding = 1) uniform restrict writeonly image2D dest_radius;
 #endif
 layout(r32f, set = 3, binding = 0) uniform restrict readonly image2D source_depth;
 
-layout(push_constant, binding = 2, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	vec4 proj_info;
 
 	bool orthogonal;

@@ -53,8 +53,9 @@ class CSharpLanguage;
 #ifdef NO_SAFE_CAST
 template <typename TScriptInstance, typename TScriptLanguage>
 TScriptInstance *cast_script_instance(ScriptInstance *p_inst) {
-	if (!p_inst)
+	if (!p_inst) {
 		return nullptr;
+	}
 	return p_inst->get_language() == TScriptLanguage::get_singleton() ? static_cast<TScriptInstance *>(p_inst) : nullptr;
 }
 #else

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RichTextLabel" inherits="Control" version="4.0">
+<class name="RichTextLabel" inherits="Control" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Label that displays rich text.
 	</brief_description>
@@ -49,10 +49,30 @@
 				Clears the tag stack and sets [member text] to an empty string.
 			</description>
 		</method>
+		<method name="get_character_line">
+			<return type="int" />
+			<argument index="0" name="character" type="int" />
+			<description>
+				Returns the line number of the character position provided.
+			</description>
+		</method>
+		<method name="get_character_paragraph">
+			<return type="int" />
+			<argument index="0" name="character" type="int" />
+			<description>
+				Returns the paragraph number of the character position provided.
+			</description>
+		</method>
 		<method name="get_content_height" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the height of the content.
+			</description>
+		</method>
+		<method name="get_content_width" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the width of the content.
 			</description>
 		</method>
 		<method name="get_line_count" qualifiers="const">
@@ -61,10 +81,24 @@
 				Returns the total number of lines in the text. Wrapped text is counted as multiple lines.
 			</description>
 		</method>
+		<method name="get_line_offset">
+			<return type="float" />
+			<argument index="0" name="line" type="int" />
+			<description>
+				Returns the vertical offset of the line found at the provided index.
+			</description>
+		</method>
 		<method name="get_paragraph_count" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the total number of paragraphs (newlines or [code]p[/code] tags in the tag stack's text tags). Considers wrapped text as one paragraph.
+			</description>
+		</method>
+		<method name="get_paragraph_offset">
+			<return type="float" />
+			<argument index="0" name="paragraph" type="int" />
+			<description>
+				Returns the vertical offset of the paragraph found at the provided index.
 			</description>
 		</method>
 		<method name="get_parsed_text" qualifiers="const">

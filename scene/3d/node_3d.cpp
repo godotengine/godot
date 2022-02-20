@@ -147,8 +147,8 @@ void Node3D::_notification(int p_what) {
 
 			notification(NOTIFICATION_ENTER_WORLD);
 			_update_visibility_parent(true);
-
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			notification(NOTIFICATION_EXIT_WORLD, true);
 			if (xform_change.in_list()) {
@@ -162,6 +162,7 @@ void Node3D::_notification(int p_what) {
 			data.top_level_active = false;
 			_update_visibility_parent(true);
 		} break;
+
 		case NOTIFICATION_ENTER_WORLD: {
 			data.inside_world = true;
 			data.viewport = nullptr;
@@ -192,6 +193,7 @@ void Node3D::_notification(int p_what) {
 			}
 #endif
 		} break;
+
 		case NOTIFICATION_EXIT_WORLD: {
 #ifdef TOOLS_ENABLED
 			clear_gizmos();
@@ -203,7 +205,6 @@ void Node3D::_notification(int p_what) {
 
 			data.viewport = nullptr;
 			data.inside_world = false;
-
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -213,9 +214,6 @@ void Node3D::_notification(int p_what) {
 			}
 #endif
 		} break;
-
-		default: {
-		}
 	}
 }
 

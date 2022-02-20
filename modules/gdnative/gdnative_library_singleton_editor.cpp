@@ -32,6 +32,7 @@
 #include "gdnative_library_singleton_editor.h"
 #include "gdnative.h"
 
+#include "core/config/project_settings.h"
 #include "editor/editor_node.h"
 
 Set<String> GDNativeLibrarySingletonEditor::_find_singletons_recursive(EditorFileSystemDirectory *p_dir) {
@@ -182,10 +183,12 @@ void GDNativeLibrarySingletonEditor::_item_edited() {
 }
 
 void GDNativeLibrarySingletonEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (is_visible_in_tree()) {
-			_update_libraries();
-		}
+	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible_in_tree()) {
+				_update_libraries();
+			}
+		} break;
 	}
 }
 

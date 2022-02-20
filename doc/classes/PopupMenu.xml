@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PopupMenu" inherits="Popup" version="4.0">
+<class name="PopupMenu" inherits="Popup" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		PopupMenu displays a list of options.
 	</brief_description>
 	<description>
-		[PopupMenu] is a [Control] that displays a list of options. They are popular in toolbars or context menus.
+		[PopupMenu] is a modal window used to display a list of options. They are popular in toolbars or context menus.
 		The size of a [PopupMenu] can be limited by using [member Window.max_size]. If the height of the list of items is larger than the maximum height of the [PopupMenu], a [ScrollContainer] within the popup will allow the user to scroll the contents.
 		If no maximum size is set, or if it is set to 0, the [PopupMenu] height will be limited by its parent rect.
 	</description>
@@ -329,6 +329,13 @@
 			<description>
 				Removes the item at the given [code]index[/code] from the menu.
 				[b]Note:[/b] The indices of items after the removed item will be shifted by one.
+			</description>
+		</method>
+		<method name="scroll_to_item">
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<description>
+				Moves the scroll view to make the item at the given [code]index[/code] visible.
 			</description>
 		</method>
 		<method name="set_current_index">

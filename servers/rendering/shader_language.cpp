@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "shader_language.h"
+
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "servers/rendering_server.h"
@@ -632,7 +633,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 
 					char32_t last_char = str[str.length() - 1];
 
-					if (hexa_found) { // Integer(hex)
+					if (hexa_found) { // Integer (hex).
 						if (str.size() > 11 || !str.is_valid_hex_number(true)) { // > 0xFFFFFFFF
 							return _make_token(TK_ERROR, "Invalid (hexadecimal) numeric constant");
 						}
@@ -5255,8 +5256,10 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					return nullptr;
 				} else {
 #ifdef DEBUG_ENABLED
-					if (check_warnings && HAS_WARNING(ShaderWarning::FORMATTING_ERROR_FLAG)) {
-						_add_line_warning(ShaderWarning::FORMATTING_ERROR, RTR("Empty statement. Remove ';' to fix this warning."));
+					if (!p_block || (p_block->block_type != BlockNode::BLOCK_TYPE_FOR_INIT && p_block->block_type != BlockNode::BLOCK_TYPE_FOR_CONDITION)) {
+						if (check_warnings && HAS_WARNING(ShaderWarning::FORMATTING_ERROR_FLAG)) {
+							_add_line_warning(ShaderWarning::FORMATTING_ERROR, RTR("Empty statement. Remove ';' to fix this warning."));
+						}
 					}
 #endif // DEBUG_ENABLED
 					_set_tkpos(prepos);
@@ -6370,6 +6373,8 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 		}
 
 		bool is_struct = shader->structs.has(tk.text);
+		bool is_var_init = false;
+		bool is_condition = false;
 
 		if (tk.type == TK_CURLY_BRACKET_CLOSE) { //end of block
 			if (p_just_one) {
@@ -6380,6 +6385,8 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			return OK;
 
 		} else if (tk.type == TK_CONST || is_token_precision(tk.type) || is_token_nonvoid_datatype(tk.type) || is_struct) {
+			is_var_init = true;
+
 			String struct_name = "";
 			if (is_struct) {
 				struct_name = tk.text;
@@ -6489,9 +6496,17 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				decl.name = name;
 
 #ifdef DEBUG_ENABLED
-				if (check_warnings && HAS_WARNING(ShaderWarning::UNUSED_LOCAL_VARIABLE_FLAG)) {
-					if (p_block && p_block->parent_function) {
-						StringName func_name = p_block->parent_function->name;
+				if (check_warnings && HAS_WARNING(ShaderWarning::UNUSED_LOCAL_VARIABLE_FLAG) && p_block) {
+					FunctionNode *parent_function = nullptr;
+					{
+						BlockNode *block = p_block;
+						while (block && !block->parent_function) {
+							block = block->parent_block;
+						}
+						parent_function = block->parent_function;
+					}
+					if (parent_function) {
+						StringName func_name = parent_function->name;
 
 						if (!used_local_vars.has(func_name)) {
 							used_local_vars.insert(func_name, Map<StringName, Usage>());
@@ -7319,25 +7334,13 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			if (!expr) {
 				return ERR_PARSE_ERROR;
 			}
-
-			bool empty = false;
+			is_condition = expr->type == Node::TYPE_OPERATOR && expr->get_datatype() == TYPE_BOOL;
 
 			if (expr->type == Node::TYPE_OPERATOR) {
 				OperatorNode *op = static_cast<OperatorNode *>(expr);
 				if (op->op == OP_EMPTY) {
-					empty = true;
-				}
-			}
-			if (p_block->block_type == BlockNode::BLOCK_TYPE_FOR_INIT) {
-				if (!empty && expr->type != BlockNode::TYPE_VARIABLE_DECLARATION) {
-					_set_error(RTR("The left expression is expected to be a variable declaration."));
-					return ERR_PARSE_ERROR;
-				}
-			}
-			if (p_block->block_type == BlockNode::BLOCK_TYPE_FOR_CONDITION) {
-				if (!empty && expr->get_datatype() != TYPE_BOOL) {
-					_set_error(RTR("The middle expression is expected to be boolean."));
-					return ERR_PARSE_ERROR;
+					is_var_init = true;
+					is_condition = true;
 				}
 			}
 
@@ -7346,6 +7349,10 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 
 			if (p_block->block_type == BlockNode::BLOCK_TYPE_FOR_CONDITION) {
 				if (tk.type == TK_COMMA) {
+					if (!is_condition) {
+						_set_error(RTR("The middle expression is expected to be a boolean operator."));
+						return ERR_PARSE_ERROR;
+					}
 					continue;
 				}
 				if (tk.type != TK_SEMICOLON) {
@@ -7362,6 +7369,17 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				}
 			} else if (tk.type != TK_SEMICOLON) {
 				_set_expected_error(";");
+				return ERR_PARSE_ERROR;
+			}
+		}
+
+		if (p_block) {
+			if (p_block->block_type == BlockNode::BLOCK_TYPE_FOR_INIT && !is_var_init) {
+				_set_error(RTR("The left expression is expected to be a variable declaration."));
+				return ERR_PARSE_ERROR;
+			}
+			if (p_block->block_type == BlockNode::BLOCK_TYPE_FOR_CONDITION && !is_condition) {
+				_set_error(RTR("The middle expression is expected to be a boolean operator."));
 				return ERR_PARSE_ERROR;
 			}
 		}
@@ -7854,7 +7872,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 					if (is_sampler_type(type)) {
 						if (uniform_scope == ShaderNode::Uniform::SCOPE_INSTANCE) {
-							_set_error(vformat(RTR("Uniforms with '%s' qualifiers can't be of sampler type.", "instance")));
+							_set_error(vformat(RTR("The '%s' qualifier is not supported for sampler types."), "SCOPE_INSTANCE"));
 							return ERR_PARSE_ERROR;
 						}
 						uniform2.texture_order = texture_uniforms++;
@@ -7870,7 +7888,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						}
 					} else {
 						if (uniform_scope == ShaderNode::Uniform::SCOPE_INSTANCE && (type == TYPE_MAT2 || type == TYPE_MAT3 || type == TYPE_MAT4)) {
-							_set_error(vformat(RTR("Uniforms with '%s' qualifier can't be of matrix type.", "instance")));
+							_set_error(vformat(RTR("The '%s' qualifier is not supported for matrix types."), "SCOPE_INSTANCE"));
 							return ERR_PARSE_ERROR;
 						}
 						uniform2.texture_order = -1;

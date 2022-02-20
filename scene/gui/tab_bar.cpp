@@ -32,7 +32,6 @@
 
 #include "core/object/message_queue.h"
 #include "core/string/translation.h"
-
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
@@ -313,6 +312,7 @@ void TabBar::_notification(int p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			update();
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			for (int i = 0; i < tabs.size(); ++i) {
@@ -332,6 +332,7 @@ void TabBar::_notification(int p_what) {
 				ensure_tab_visible(current);
 			}
 		} break;
+
 		case NOTIFICATION_DRAW: {
 			if (tabs.is_empty()) {
 				return;
@@ -524,13 +525,14 @@ void TabBar::set_tab_count(int p_count) {
 		offset = MIN(offset, p_count - 1);
 		max_drawn_tab = MIN(max_drawn_tab, p_count - 1);
 		current = MIN(current, p_count - 1);
+
+		_update_cache();
+		_ensure_no_over_offset();
+		if (scroll_to_selected) {
+			ensure_tab_visible(current);
+		}
 	}
 
-	_update_cache();
-	_ensure_no_over_offset();
-	if (scroll_to_selected) {
-		ensure_tab_visible(current);
-	}
 	update();
 	update_minimum_size();
 	notify_property_list_changed();
@@ -761,6 +763,8 @@ void TabBar::_update_hover() {
 		return;
 	}
 
+	ERR_FAIL_COND(tabs.is_empty());
+
 	const Point2 &pos = get_local_mouse_position();
 	// Test hovering to display right or close button.
 	int hover_now = -1;
@@ -959,7 +963,6 @@ void TabBar::clear_tabs() {
 	current = 0;
 	previous = 0;
 
-	_update_cache();
 	update();
 	update_minimum_size();
 	notify_property_list_changed();
@@ -973,18 +976,21 @@ void TabBar::remove_tab(int p_idx) {
 	}
 
 	if (current < 0) {
+		offset = 0;
+		max_drawn_tab = 0;
 		current = 0;
 		previous = 0;
-	}
-	if (current >= tabs.size()) {
-		current = tabs.size() - 1;
+	} else {
+		offset = MIN(offset, tabs.size() - 1);
+		max_drawn_tab = MIN(max_drawn_tab, tabs.size() - 1);
+
+		_update_cache();
+		_ensure_no_over_offset();
+		if (scroll_to_selected && !tabs.is_empty()) {
+			ensure_tab_visible(current);
+		}
 	}
 
-	_update_cache();
-	_ensure_no_over_offset();
-	if (scroll_to_selected && !tabs.is_empty()) {
-		ensure_tab_visible(current);
-	}
 	update();
 	update_minimum_size();
 	notify_property_list_changed();
@@ -1436,7 +1442,6 @@ void TabBar::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void TabBar::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update_hover"), &TabBar::_update_hover);
 	ClassDB::bind_method(D_METHOD("set_tab_count", "count"), &TabBar::set_tab_count);
 	ClassDB::bind_method(D_METHOD("get_tab_count"), &TabBar::get_tab_count);
 	ClassDB::bind_method(D_METHOD("set_current_tab", "tab_idx"), &TabBar::set_current_tab);

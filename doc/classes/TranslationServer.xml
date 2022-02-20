@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TranslationServer" inherits="Object" version="4.0">
+<class name="TranslationServer" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Server that manages all translations.
 	</brief_description>
@@ -91,6 +91,13 @@
 				Returns readable script name for the [code]script[/code] code.
 			</description>
 		</method>
+		<method name="get_tool_locale">
+			<return type="String" />
+			<description>
+				Returns the current locale of the editor.
+				[b]Note:[/b] When called from an exported project returns the same value as [method get_locale].
+			</description>
+		</method>
 		<method name="get_translation_object">
 			<return type="Translation" />
 			<argument index="0" name="locale" type="String" />
@@ -131,7 +138,7 @@
 			<return type="String" />
 			<argument index="0" name="locale" type="String" />
 			<description>
-				Retunrs [code]locale[/code] string standardized to match known locales (e.g. [code]en-US[/code] would be matched to [code]en_US[/code]).
+				Returns [code]locale[/code] string standardized to match known locales (e.g. [code]en-US[/code] would be matched to [code]en_US[/code]).
 			</description>
 		</method>
 		<method name="translate" qualifiers="const">

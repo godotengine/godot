@@ -74,7 +74,7 @@ layout(set = 0, binding = 5) uniform texture3D color_texture;
 
 #ifndef MODE_DYNAMIC
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	ivec3 limits;
 	uint stack_size;
 
@@ -108,7 +108,7 @@ layout(rgba8, set = 0, binding = 5) uniform restrict writeonly image3D color_tex
 
 #ifdef MODE_DYNAMIC
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	ivec3 limits;
 	uint light_count; //when not lighting
 	ivec3 x_dir;

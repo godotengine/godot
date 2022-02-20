@@ -31,7 +31,6 @@
 #ifndef REPLICATION_EDITOR_PLUGIN_H
 #define REPLICATION_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/resources/scene_replication_config.h"
 
@@ -43,7 +42,6 @@ class ReplicationEditor : public VBoxContainer {
 	GDCLASS(ReplicationEditor, VBoxContainer);
 
 private:
-	EditorNode *editor;
 	MultiplayerSynchronizer *current = nullptr;
 
 	AcceptDialog *error_dialog = nullptr;
@@ -78,7 +76,7 @@ public:
 	MultiplayerSynchronizer *get_current() const { return current; }
 	void property_keyed(const String &p_property);
 
-	ReplicationEditor(EditorNode *p_node);
+	ReplicationEditor();
 	~ReplicationEditor() {}
 };
 
@@ -86,7 +84,6 @@ class ReplicationEditorPlugin : public EditorPlugin {
 	GDCLASS(ReplicationEditorPlugin, EditorPlugin);
 
 private:
-	EditorNode *editor;
 	ReplicationEditor *repl_editor;
 
 	void _node_removed(Node *p_node);
@@ -101,7 +98,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	ReplicationEditorPlugin(EditorNode *p_node);
+	ReplicationEditorPlugin();
 	~ReplicationEditorPlugin();
 };
 

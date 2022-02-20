@@ -33,32 +33,13 @@
 #include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/debugger/engine_profiler.h"
 #include "core/debugger/script_debugger.h"
 #include "core/input/input.h"
 #include "core/object/script_language.h"
 #include "core/os/os.h"
-#include "scene/main/node.h"
-#include "servers/display_server.h"
 
-template <typename T>
-void RemoteDebugger::_bind_profiler(const String &p_name, T *p_prof) {
-	EngineDebugger::Profiler prof(
-			p_prof,
-			[](void *p_user, bool p_enable, const Array &p_opts) {
-				((T *)p_user)->toggle(p_enable, p_opts);
-			},
-			[](void *p_user, const Array &p_data) {
-				((T *)p_user)->add(p_data);
-			},
-			[](void *p_user, double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
-				((T *)p_user)->tick(p_frame_time, p_idle_time, p_physics_time, p_physics_frame_time);
-			});
-	EngineDebugger::register_profiler(p_name, prof);
-}
-
-struct RemoteDebugger::NetworkProfiler {
-public:
-	typedef DebuggerMarshalls::MultiplayerNodeInfo NodeInfo;
+class RemoteDebugger::MultiplayerProfiler : public EngineProfiler {
 	struct BandwidthFrame {
 		uint32_t timestamp;
 		int packet_size;
@@ -69,11 +50,6 @@ public:
 	int bandwidth_out_ptr = 0;
 	Vector<BandwidthFrame> bandwidth_out;
 	uint64_t last_bandwidth_time = 0;
-
-	Map<ObjectID, NodeInfo> multiplayer_node_data;
-	uint64_t last_profile_time = 0;
-
-	NetworkProfiler() {}
 
 	int bandwidth_usage(const Vector<BandwidthFrame> &p_buffer, int p_pointer) {
 		ERR_FAIL_COND_V(p_buffer.size() == 0, 0);
@@ -96,22 +72,8 @@ public:
 		return total_bandwidth;
 	}
 
-	void init_node(const ObjectID p_node) {
-		if (multiplayer_node_data.has(p_node)) {
-			return;
-		}
-		multiplayer_node_data.insert(p_node, DebuggerMarshalls::MultiplayerNodeInfo());
-		multiplayer_node_data[p_node].node = p_node;
-		multiplayer_node_data[p_node].node_path = Object::cast_to<Node>(ObjectDB::get_instance(p_node))->get_path();
-		multiplayer_node_data[p_node].incoming_rpc = 0;
-		multiplayer_node_data[p_node].incoming_rset = 0;
-		multiplayer_node_data[p_node].outgoing_rpc = 0;
-		multiplayer_node_data[p_node].outgoing_rset = 0;
-	}
-
+public:
 	void toggle(bool p_enable, const Array &p_opts) {
-		multiplayer_node_data.clear();
-
 		if (!p_enable) {
 			bandwidth_in.clear();
 			bandwidth_out.clear();
@@ -130,37 +92,18 @@ public:
 	}
 
 	void add(const Array &p_data) {
-		ERR_FAIL_COND(p_data.size() < 1);
-		const String type = p_data[0];
-		if (type == "node") {
-			ERR_FAIL_COND(p_data.size() < 3);
-			const ObjectID id = p_data[1];
-			const String what = p_data[2];
-			init_node(id);
-			NodeInfo &info = multiplayer_node_data[id];
-			if (what == "rpc_in") {
-				info.incoming_rpc++;
-			} else if (what == "rpc_out") {
-				info.outgoing_rpc++;
-			} else if (what == "rset_in") {
-				info.incoming_rset = 0;
-			} else if (what == "rset_out") {
-				info.outgoing_rset++;
-			}
-		} else if (type == "bandwidth") {
-			ERR_FAIL_COND(p_data.size() < 4);
-			const String inout = p_data[1];
-			int time = p_data[2];
-			int size = p_data[3];
-			if (inout == "in") {
-				bandwidth_in.write[bandwidth_in_ptr].timestamp = time;
-				bandwidth_in.write[bandwidth_in_ptr].packet_size = size;
-				bandwidth_in_ptr = (bandwidth_in_ptr + 1) % bandwidth_in.size();
-			} else if (inout == "out") {
-				bandwidth_out.write[bandwidth_out_ptr].timestamp = time;
-				bandwidth_out.write[bandwidth_out_ptr].packet_size = size;
-				bandwidth_out_ptr = (bandwidth_out_ptr + 1) % bandwidth_out.size();
-			}
+		ERR_FAIL_COND(p_data.size() < 3);
+		const String inout = p_data[0];
+		int time = p_data[1];
+		int size = p_data[2];
+		if (inout == "in") {
+			bandwidth_in.write[bandwidth_in_ptr].timestamp = time;
+			bandwidth_in.write[bandwidth_in_ptr].packet_size = size;
+			bandwidth_in_ptr = (bandwidth_in_ptr + 1) % bandwidth_in.size();
+		} else if (inout == "out") {
+			bandwidth_out.write[bandwidth_out_ptr].timestamp = time;
+			bandwidth_out.write[bandwidth_out_ptr].packet_size = size;
+			bandwidth_out_ptr = (bandwidth_out_ptr + 1) % bandwidth_out.size();
 		}
 	}
 
@@ -174,208 +117,17 @@ public:
 			Array arr;
 			arr.push_back(incoming_bandwidth);
 			arr.push_back(outgoing_bandwidth);
-			EngineDebugger::get_singleton()->send_message("network:bandwidth", arr);
-		}
-		if (pt - last_profile_time > 100) {
-			last_profile_time = pt;
-			DebuggerMarshalls::NetworkProfilerFrame frame;
-			for (const KeyValue<ObjectID, NodeInfo> &E : multiplayer_node_data) {
-				frame.infos.push_back(E.value);
-			}
-			multiplayer_node_data.clear();
-			EngineDebugger::get_singleton()->send_message("network:profile_frame", frame.serialize());
+			EngineDebugger::get_singleton()->send_message("multiplayer:bandwidth", arr);
 		}
 	}
 };
 
-struct RemoteDebugger::ScriptsProfiler {
-	typedef DebuggerMarshalls::ScriptFunctionSignature FunctionSignature;
-	typedef DebuggerMarshalls::ScriptFunctionInfo FunctionInfo;
-	struct ProfileInfoSort {
-		bool operator()(ScriptLanguage::ProfilingInfo *A, ScriptLanguage::ProfilingInfo *B) const {
-			return A->total_time < B->total_time;
-		}
-	};
-	Vector<ScriptLanguage::ProfilingInfo> info;
-	Vector<ScriptLanguage::ProfilingInfo *> ptrs;
-	Map<StringName, int> sig_map;
-	int max_frame_functions = 16;
-
-	void toggle(bool p_enable, const Array &p_opts) {
-		if (p_enable) {
-			sig_map.clear();
-			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-				ScriptServer::get_language(i)->profiling_start();
-			}
-			if (p_opts.size() == 1 && p_opts[0].get_type() == Variant::INT) {
-				max_frame_functions = MAX(0, int(p_opts[0]));
-			}
-		} else {
-			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-				ScriptServer::get_language(i)->profiling_stop();
-			}
-		}
-	}
-
-	void write_frame_data(Vector<FunctionInfo> &r_funcs, uint64_t &r_total, bool p_accumulated) {
-		int ofs = 0;
-		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-			if (p_accumulated) {
-				ofs += ScriptServer::get_language(i)->profiling_get_accumulated_data(&info.write[ofs], info.size() - ofs);
-			} else {
-				ofs += ScriptServer::get_language(i)->profiling_get_frame_data(&info.write[ofs], info.size() - ofs);
-			}
-		}
-
-		for (int i = 0; i < ofs; i++) {
-			ptrs.write[i] = &info.write[i];
-		}
-
-		SortArray<ScriptLanguage::ProfilingInfo *, ProfileInfoSort> sa;
-		sa.sort(ptrs.ptrw(), ofs);
-
-		int to_send = MIN(ofs, max_frame_functions);
-
-		// Check signatures first, and compute total time.
-		r_total = 0;
-		for (int i = 0; i < to_send; i++) {
-			if (!sig_map.has(ptrs[i]->signature)) {
-				int idx = sig_map.size();
-				FunctionSignature sig;
-				sig.name = ptrs[i]->signature;
-				sig.id = idx;
-				EngineDebugger::get_singleton()->send_message("servers:function_signature", sig.serialize());
-				sig_map[ptrs[i]->signature] = idx;
-			}
-			r_total += ptrs[i]->self_time;
-		}
-
-		// Send frame, script time, functions information then
-		r_funcs.resize(to_send);
-
-		FunctionInfo *w = r_funcs.ptrw();
-		for (int i = 0; i < to_send; i++) {
-			if (sig_map.has(ptrs[i]->signature)) {
-				w[i].sig_id = sig_map[ptrs[i]->signature];
-			}
-			w[i].call_count = ptrs[i]->call_count;
-			w[i].total_time = ptrs[i]->total_time / 1000000.0;
-			w[i].self_time = ptrs[i]->self_time / 1000000.0;
-		}
-	}
-
-	ScriptsProfiler() {
-		info.resize(GLOBAL_GET("debug/settings/profiler/max_functions"));
-		ptrs.resize(info.size());
-	}
-};
-
-struct RemoteDebugger::ServersProfiler {
-	bool skip_profile_frame = false;
-	typedef DebuggerMarshalls::ServerInfo ServerInfo;
-	typedef DebuggerMarshalls::ServerFunctionInfo ServerFunctionInfo;
-
-	Map<StringName, ServerInfo> server_data;
-	ScriptsProfiler scripts_profiler;
-
-	double frame_time = 0;
-	double idle_time = 0;
-	double physics_time = 0;
-	double physics_frame_time = 0;
-
-	void toggle(bool p_enable, const Array &p_opts) {
-		skip_profile_frame = false;
-		if (p_enable) {
-			server_data.clear(); // Clear old profiling data.
-		} else {
-			_send_frame_data(true); // Send final frame.
-		}
-		scripts_profiler.toggle(p_enable, p_opts);
-	}
-
-	void add(const Array &p_data) {
-		String name = p_data[0];
-		if (!server_data.has(name)) {
-			ServerInfo info;
-			info.name = name;
-			server_data[name] = info;
-		}
-		ServerInfo &srv = server_data[name];
-
-		ServerFunctionInfo fi;
-		fi.name = p_data[1];
-		fi.time = p_data[2];
-		srv.functions.push_back(fi);
-	}
-
-	void tick(double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
-		frame_time = p_frame_time;
-		idle_time = p_idle_time;
-		physics_time = p_physics_time;
-		physics_frame_time = p_physics_frame_time;
-		_send_frame_data(false);
-	}
-
-	void _send_frame_data(bool p_final) {
-		DebuggerMarshalls::ServersProfilerFrame frame;
-		frame.frame_number = Engine::get_singleton()->get_process_frames();
-		frame.frame_time = frame_time;
-		frame.idle_time = idle_time;
-		frame.physics_time = physics_time;
-		frame.physics_frame_time = physics_frame_time;
-		Map<StringName, ServerInfo>::Element *E = server_data.front();
-		while (E) {
-			if (!p_final) {
-				frame.servers.push_back(E->get());
-			}
-			E->get().functions.clear();
-			E = E->next();
-		}
-		uint64_t time = 0;
-		scripts_profiler.write_frame_data(frame.script_functions, time, p_final);
-		frame.script_time = USEC_TO_SEC(time);
-		if (skip_profile_frame) {
-			skip_profile_frame = false;
-			return;
-		}
-		if (p_final) {
-			EngineDebugger::get_singleton()->send_message("servers:profile_total", frame.serialize());
-		} else {
-			EngineDebugger::get_singleton()->send_message("servers:profile_frame", frame.serialize());
-		}
-	}
-};
-
-struct RemoteDebugger::VisualProfiler {
-	typedef DebuggerMarshalls::ServerInfo ServerInfo;
-	typedef DebuggerMarshalls::ServerFunctionInfo ServerFunctionInfo;
-
-	Map<StringName, ServerInfo> server_data;
-
-	void toggle(bool p_enable, const Array &p_opts) {
-		RS::get_singleton()->set_frame_profiling_enabled(p_enable);
-	}
-
-	void add(const Array &p_data) {}
-
-	void tick(double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
-		Vector<RS::FrameProfileArea> profile_areas = RS::get_singleton()->get_frame_profile();
-		DebuggerMarshalls::VisualProfilerFrame frame;
-		if (!profile_areas.size()) {
-			return;
-		}
-
-		frame.frame_number = RS::get_singleton()->get_frame_profile_frame();
-		frame.areas.append_array(profile_areas);
-		EngineDebugger::get_singleton()->send_message("visual:profile_frame", frame.serialize());
-	}
-};
-
-struct RemoteDebugger::PerformanceProfiler {
+class RemoteDebugger::PerformanceProfiler : public EngineProfiler {
 	Object *performance = nullptr;
 	int last_perf_time = 0;
 	uint64_t last_monitor_modification_time = 0;
 
+public:
 	void toggle(bool p_enable, const Array &p_opts) {}
 	void add(const Array &p_data) {}
 	void tick(double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
@@ -420,29 +172,6 @@ struct RemoteDebugger::PerformanceProfiler {
 		performance = p_performance;
 	}
 };
-
-void RemoteDebugger::_send_resource_usage() {
-	DebuggerMarshalls::ResourceUsage usage;
-
-	List<RS::TextureInfo> tinfo;
-	RS::get_singleton()->texture_debug_usage(&tinfo);
-
-	for (const RS::TextureInfo &E : tinfo) {
-		DebuggerMarshalls::ResourceInfo info;
-		info.path = E.path;
-		info.vram = E.bytes;
-		info.id = E.texture;
-		info.type = "Texture";
-		if (E.depth == 0) {
-			info.format = itos(E.width) + "x" + itos(E.height) + " " + Image::get_format_name(E.format);
-		} else {
-			info.format = itos(E.width) + "x" + itos(E.height) + "x" + itos(E.depth) + " " + Image::get_format_name(E.format);
-		}
-		usage.infos.push_back(info);
-	}
-
-	EngineDebugger::get_singleton()->send_message("memory:usage", usage.serialize());
-}
 
 Error RemoteDebugger::_put_msg(String p_message, Array p_data) {
 	Array msg;
@@ -710,18 +439,12 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 	msg.push_back(script_lang->debug_get_stack_level_count() > 0);
 	send_message("debug_enter", msg);
 
-	servers_profiler->skip_profile_frame = true; // Avoid frame time spike in debug.
-
 	Input::MouseMode mouse_mode = Input::get_singleton()->get_mouse_mode();
 	if (mouse_mode != Input::MOUSE_MODE_VISIBLE) {
 		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 	}
 
-	uint64_t loop_begin_usec = 0;
-	uint64_t loop_time_sec = 0;
 	while (is_peer_connected()) {
-		loop_begin_usec = OS::get_singleton()->get_ticks_usec();
-
 		flush_output();
 		peer->poll();
 
@@ -748,7 +471,6 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			} else if (command == "continue") {
 				script_debugger->set_depth(-1);
 				script_debugger->set_lines_left(-1);
-				DisplayServer::get_singleton()->window_move_to_foreground();
 				break;
 
 			} else if (command == "break") {
@@ -824,13 +546,6 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			OS::get_singleton()->delay_usec(10000);
 			OS::get_singleton()->process_and_drop_events();
 		}
-
-		// This is for the camera override to stay live even when the game is paused from the editor
-		loop_time_sec = (OS::get_singleton()->get_ticks_usec() - loop_begin_usec) / 1000000.0f;
-		RenderingServer::get_singleton()->sync();
-		if (RenderingServer::get_singleton()->has_changed()) {
-			RenderingServer::get_singleton()->draw(true, loop_time_sec * Engine::get_singleton()->get_time_scale());
-		}
 	}
 
 	send_message("debug_exit", Array());
@@ -897,8 +612,6 @@ Error RemoteDebugger::_core_capture(const String &p_cmd, const Array &p_data, bo
 	} else if (p_cmd == "set_skip_breakpoints") {
 		ERR_FAIL_COND_V(p_data.size() < 1, ERR_INVALID_DATA);
 		script_debugger->set_skip_breakpoints(p_data[0]);
-	} else if (p_cmd == "memory") {
-		_send_resource_usage();
 	} else if (p_cmd == "break") {
 		script_debugger->debug(script_debugger->get_break_language());
 	} else {
@@ -928,23 +641,15 @@ RemoteDebugger::RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer) {
 	max_errors_per_second = GLOBAL_GET("network/limits/debugger/max_errors_per_second");
 	max_warnings_per_second = GLOBAL_GET("network/limits/debugger/max_warnings_per_second");
 
-	// Network Profiler
-	network_profiler = memnew(NetworkProfiler);
-	_bind_profiler("network", network_profiler);
-
-	// Servers Profiler (audio/physics/...)
-	servers_profiler = memnew(ServersProfiler);
-	_bind_profiler("servers", servers_profiler);
-
-	// Visual Profiler (cpu/gpu times)
-	visual_profiler = memnew(VisualProfiler);
-	_bind_profiler("visual", visual_profiler);
+	// Multiplayer Profiler
+	multiplayer_profiler.instantiate();
+	multiplayer_profiler->bind("multiplayer");
 
 	// Performance Profiler
 	Object *perf = Engine::get_singleton()->get_singleton_object("Performance");
 	if (perf) {
-		performance_profiler = memnew(PerformanceProfiler(perf));
-		_bind_profiler("performance", performance_profiler);
+		performance_profiler = Ref<PerformanceProfiler>(memnew(PerformanceProfiler(perf)));
+		performance_profiler->bind("performance");
 		profiler_enable("performance", true);
 	}
 
@@ -973,17 +678,4 @@ RemoteDebugger::RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer) {
 RemoteDebugger::~RemoteDebugger() {
 	remove_print_handler(&phl);
 	remove_error_handler(&eh);
-
-	EngineDebugger::get_singleton()->unregister_profiler("servers");
-	EngineDebugger::get_singleton()->unregister_profiler("network");
-	EngineDebugger::get_singleton()->unregister_profiler("visual");
-	if (EngineDebugger::has_profiler("performance")) {
-		EngineDebugger::get_singleton()->unregister_profiler("performance");
-	}
-	memdelete(servers_profiler);
-	memdelete(network_profiler);
-	memdelete(visual_profiler);
-	if (performance_profiler) {
-		memdelete(performance_profiler);
-	}
 }

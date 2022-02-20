@@ -473,12 +473,13 @@ void RendererSceneSkyRD::ReflectionData::create_reflection_fast_filter(RendererS
 		}
 		RD::get_singleton()->draw_command_end_label(); // Filter radiance
 	} else {
+		RD::get_singleton()->draw_command_begin_label("Downsample radiance map");
 		effects->cubemap_downsample(radiance_base_cubemap, downsampled_layer.mipmaps[0].view, downsampled_layer.mipmaps[0].size);
 
 		for (int i = 1; i < downsampled_layer.mipmaps.size(); i++) {
 			effects->cubemap_downsample(downsampled_layer.mipmaps[i - 1].view, downsampled_layer.mipmaps[i].view, downsampled_layer.mipmaps[i].size);
 		}
-
+		RD::get_singleton()->draw_command_end_label(); // Downsample Radiance
 		Vector<RID> views;
 		if (p_use_arrays) {
 			for (int i = 1; i < layers.size(); i++) {
@@ -489,8 +490,9 @@ void RendererSceneSkyRD::ReflectionData::create_reflection_fast_filter(RendererS
 				views.push_back(layers[0].views[i]);
 			}
 		}
-
+		RD::get_singleton()->draw_command_begin_label("Fast filter radiance");
 		effects->cubemap_filter(downsampled_radiance_cubemap, views, p_use_arrays);
+		RD::get_singleton()->draw_command_end_label(); // Filter radiance
 	}
 }
 
@@ -500,12 +502,25 @@ void RendererSceneSkyRD::ReflectionData::create_reflection_importance_sample(Ren
 	bool prefer_raster_effects = effects->get_prefer_raster_effects();
 
 	if (prefer_raster_effects) {
-		// Need to ask clayjohn but p_cube_side is set to 10, looks like in the compute shader we're doing all 6 sides in one call
-		// here we need to do them one by one so ignoring p_cube_side
+		if (p_base_layer == 1) {
+			RD::get_singleton()->draw_command_begin_label("Downsample radiance map");
+			for (int k = 0; k < 6; k++) {
+				effects->cubemap_downsample_raster(radiance_base_cubemap, downsampled_layer.mipmaps[0].framebuffers[k], k, downsampled_layer.mipmaps[0].size);
+			}
+
+			for (int i = 1; i < downsampled_layer.mipmaps.size(); i++) {
+				for (int k = 0; k < 6; k++) {
+					effects->cubemap_downsample_raster(downsampled_layer.mipmaps[i - 1].view, downsampled_layer.mipmaps[i].framebuffers[k], k, downsampled_layer.mipmaps[i].size);
+				}
+			}
+			RD::get_singleton()->draw_command_end_label(); // Downsample Radiance
+		}
+
+		RD::get_singleton()->draw_command_begin_label("High Quality filter radiance");
 		if (p_use_arrays) {
 			for (int k = 0; k < 6; k++) {
 				effects->cubemap_roughness_raster(
-						radiance_base_cubemap,
+						downsampled_radiance_cubemap,
 						layers[p_base_layer].mipmaps[0].framebuffers[k],
 						k,
 						p_sky_ggx_samples_quality,
@@ -515,7 +530,7 @@ void RendererSceneSkyRD::ReflectionData::create_reflection_importance_sample(Ren
 		} else {
 			for (int k = 0; k < 6; k++) {
 				effects->cubemap_roughness_raster(
-						layers[0].views[p_base_layer - 1],
+						downsampled_radiance_cubemap,
 						layers[0].mipmaps[p_base_layer].framebuffers[k],
 						k,
 						p_sky_ggx_samples_quality,
@@ -524,12 +539,22 @@ void RendererSceneSkyRD::ReflectionData::create_reflection_importance_sample(Ren
 			}
 		}
 	} else {
+		if (p_base_layer == 1) {
+			RD::get_singleton()->draw_command_begin_label("Downsample radiance map");
+			effects->cubemap_downsample(radiance_base_cubemap, downsampled_layer.mipmaps[0].view, downsampled_layer.mipmaps[0].size);
+
+			for (int i = 1; i < downsampled_layer.mipmaps.size(); i++) {
+				effects->cubemap_downsample(downsampled_layer.mipmaps[i - 1].view, downsampled_layer.mipmaps[i].view, downsampled_layer.mipmaps[i].size);
+			}
+			RD::get_singleton()->draw_command_end_label(); // Downsample Radiance
+		}
+
+		RD::get_singleton()->draw_command_begin_label("High Quality filter radiance");
 		if (p_use_arrays) {
-			//render directly to the layers
-			effects->cubemap_roughness(radiance_base_cubemap, layers[p_base_layer].views[0], p_cube_side, p_sky_ggx_samples_quality, float(p_base_layer) / (layers.size() - 1.0), layers[p_base_layer].mipmaps[0].size.x);
+			effects->cubemap_roughness(downsampled_radiance_cubemap, layers[p_base_layer].views[0], p_cube_side, p_sky_ggx_samples_quality, float(p_base_layer) / (layers.size() - 1.0), layers[p_base_layer].mipmaps[0].size.x);
 		} else {
 			effects->cubemap_roughness(
-					layers[0].views[p_base_layer - 1],
+					downsampled_radiance_cubemap,
 					layers[0].views[p_base_layer],
 					p_cube_side,
 					p_sky_ggx_samples_quality,
@@ -537,6 +562,7 @@ void RendererSceneSkyRD::ReflectionData::create_reflection_importance_sample(Ren
 					layers[0].mipmaps[p_base_layer].size.x);
 		}
 	}
+	RD::get_singleton()->draw_command_end_label(); // Filter radiance
 }
 
 void RendererSceneSkyRD::ReflectionData::update_reflection_mipmaps(RendererStorageRD *p_storage, int p_start, int p_end) {
@@ -1040,8 +1066,8 @@ RendererSceneSkyRD::~RendererSceneSkyRD() {
 	RD::get_singleton()->free(index_buffer); //array gets freed as dependency
 }
 
-void RendererSceneSkyRD::setup(RendererSceneEnvironmentRD *p_env, RID p_render_buffers, const CameraMatrix &p_projection, const Transform3D &p_transform, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render) {
-	ERR_FAIL_COND(!p_env); // I guess without an environment we also can't have a sky...
+void RendererSceneSkyRD::setup(RendererSceneEnvironmentRD *p_env, RID p_render_buffers, const PagedArray<RID> &p_lights, const CameraMatrix &p_projection, const Transform3D &p_transform, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render) {
+	ERR_FAIL_COND(!p_env);
 
 	SkyMaterialData *material = nullptr;
 	Sky *sky = get_sky(p_env->sky);
@@ -1122,15 +1148,67 @@ void RendererSceneSkyRD::setup(RendererSceneEnvironmentRD *p_env, RID p_render_b
 		}
 
 		if (shader_data->uses_light) {
+			sky_scene_state.ubo.directional_light_count = 0;
+			// Run through the list of lights in the scene and pick out the Directional Lights.
+			// This can't be done in RenderSceneRenderRD::_setup lights because that needs to be called
+			// after the depth prepass, but this runs before the depth prepass
+			for (int i = 0; i < (int)p_lights.size(); i++) {
+				RendererSceneRenderRD::LightInstance *li = p_scene_render->light_instance_owner.get_or_null(p_lights[i]);
+				if (!li) {
+					continue;
+				}
+				RID base = li->light;
+
+				ERR_CONTINUE(base.is_null());
+
+				RS::LightType type = storage->light_get_type(base);
+				if (type == RS::LIGHT_DIRECTIONAL) {
+					SkyDirectionalLightData &sky_light_data = sky_scene_state.directional_lights[sky_scene_state.ubo.directional_light_count];
+					Transform3D light_transform = li->transform;
+					Vector3 world_direction = light_transform.basis.xform(Vector3(0, 0, 1)).normalized();
+
+					sky_light_data.direction[0] = world_direction.x;
+					sky_light_data.direction[1] = world_direction.y;
+					sky_light_data.direction[2] = -world_direction.z;
+
+					float sign = storage->light_is_negative(base) ? -1 : 1;
+					sky_light_data.energy = sign * storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY);
+
+					Color linear_col = storage->light_get_color(base).to_linear();
+					sky_light_data.color[0] = linear_col.r;
+					sky_light_data.color[1] = linear_col.g;
+					sky_light_data.color[2] = linear_col.b;
+
+					sky_light_data.enabled = true;
+
+					float angular_diameter = storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
+					if (angular_diameter > 0.0) {
+						// I know tan(0) is 0, but let's not risk it with numerical precision.
+						// technically this will keep expanding until reaching the sun, but all we care
+						// is expand until we reach the radius of the near plane (there can't be more occluders than that)
+						angular_diameter = Math::tan(Math::deg2rad(angular_diameter));
+					} else {
+						angular_diameter = 0.0;
+					}
+					sky_light_data.size = angular_diameter;
+					sky_scene_state.ubo.directional_light_count++;
+					if (sky_scene_state.ubo.directional_light_count >= sky_scene_state.max_directional_lights) {
+						break;
+					}
+				}
+			}
 			// Check whether the directional_light_buffer changes
 			bool light_data_dirty = false;
 
+			// Light buffer is dirty if we have fewer or more lights
+			// If we have fewer lights, make sure that old lights are disabled
 			if (sky_scene_state.ubo.directional_light_count != sky_scene_state.last_frame_directional_light_count) {
 				light_data_dirty = true;
 				for (uint32_t i = sky_scene_state.ubo.directional_light_count; i < sky_scene_state.max_directional_lights; i++) {
 					sky_scene_state.directional_lights[i].enabled = false;
 				}
 			}
+
 			if (!light_data_dirty) {
 				for (uint32_t i = 0; i < sky_scene_state.ubo.directional_light_count; i++) {
 					if (sky_scene_state.directional_lights[i].direction[0] != sky_scene_state.last_frame_directional_lights[i].direction[0] ||

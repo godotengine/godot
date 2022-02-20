@@ -35,16 +35,19 @@
 #include "editor/editor_inspector.h"
 #include "editor/scene_tree_editor.h"
 #include "scene/gui/button.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/popup.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/gui/spin_box.h"
 #include "scene/gui/tree.h"
 
-class PopupMenu;
 class ConnectDialogBinds;
-class SpinBox;
 
 class ConnectDialog : public ConfirmationDialog {
 	GDCLASS(ConnectDialog, ConfirmationDialog);
@@ -182,7 +185,6 @@ class ConnectionsDock : public VBoxContainer {
 
 	Node *selected_node;
 	ConnectionsDockTree *tree;
-	EditorNode *editor;
 
 	ConfirmationDialog *disconnect_all_dialog;
 	ConnectDialog *connect_dialog;
@@ -224,7 +226,7 @@ public:
 	void set_node(Node *p_node);
 	void update_tree();
 
-	ConnectionsDock(EditorNode *p_editor = nullptr);
+	ConnectionsDock();
 	~ConnectionsDock();
 };
 

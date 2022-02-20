@@ -37,7 +37,6 @@
 #include "editor/property_selector.h"
 
 #include "scene/gui/control.h"
-#include "scene/gui/file_dialog.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/slider.h"
@@ -164,7 +163,6 @@ class AnimationTrackEdit : public Control {
 	Rect2 interp_mode_rect;
 	Rect2 loop_wrap_rect;
 	Rect2 remove_rect;
-	Rect2 bezier_edit_rect;
 
 	Ref<Texture2D> type_icon;
 	Ref<Texture2D> selected_icon;
@@ -300,6 +298,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	EditorSpinSlider *step;
 	TextureRect *zoom_icon;
 	Button *snap;
+	Button *bezier_edit_icon;
 	OptionButton *snap_mode;
 
 	Button *imported_anim_warning;
@@ -431,6 +430,7 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	Vector<Ref<AnimationTrackEditPlugin>> track_edit_plugins;
 
+	void _toggle_bezier_edit();
 	void _cancel_bezier_edit();
 	void _bezier_edit(int p_for_track);
 

@@ -31,9 +31,7 @@
 #ifndef TILE_PROXIES_MANAGER_DIALOG_H
 #define TILE_PROXIES_MANAGER_DIALOG_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_properties.h"
-
 #include "scene/2d/tile_map.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
@@ -45,7 +43,7 @@ private:
 	int commited_actions_count = 0;
 	Ref<TileSet> tile_set;
 
-	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *undo_redo;
 
 	TileMapCell from;
 	TileMapCell to;

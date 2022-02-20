@@ -55,10 +55,10 @@ protected:
 	static void _bind_methods();
 
 	void _set_polygons(const TypedArray<Vector<int32_t>> &p_array);
-	Array _get_polygons() const;
+	TypedArray<Vector<int32_t>> _get_polygons() const;
 
 	void _set_outlines(const TypedArray<Vector<Vector2>> &p_array);
-	Array _get_outlines() const;
+	TypedArray<Vector<Vector2>> _get_outlines() const;
 
 public:
 #ifdef TOOLS_ENABLED

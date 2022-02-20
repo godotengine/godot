@@ -30,6 +30,7 @@
 
 #include "resource_importer_texture.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/config_file.h"
 #include "core/io/image_loader.h"
 #include "core/version.h"
@@ -215,7 +216,7 @@ void ResourceImporterTexture::get_import_options(const String &p_path, List<Impo
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/fix_alpha_border"), p_preset != PRESET_3D));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/premult_alpha"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/normal_map_invert_y"), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/HDR_as_SRGB"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/hdr_as_srgb"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/size_limit", PROPERTY_HINT_RANGE, "0,4096,1"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "detect_3d/compress_to", PROPERTY_HINT_ENUM, "Disabled,VRAM Compressed,Basis Universal"), (p_preset == PRESET_DETECT) ? 1 : 0));
 
@@ -400,21 +401,21 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 
 Error ResourceImporterTexture::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	CompressMode compress_mode = CompressMode(int(p_options["compress/mode"]));
-	float lossy = p_options["compress/lossy_quality"];
-	int pack_channels = p_options["compress/channel_pack"];
-	bool mipmaps = p_options["mipmaps/generate"];
-	uint32_t mipmap_limit = mipmaps ? uint32_t(p_options["mipmaps/limit"]) : uint32_t(-1);
-	bool fix_alpha_border = p_options["process/fix_alpha_border"];
-	bool premult_alpha = p_options["process/premult_alpha"];
-	bool normal_map_invert_y = p_options["process/normal_map_invert_y"];
-	bool stream = p_options["compress/streamed"];
-	int size_limit = p_options["process/size_limit"];
-	bool hdr_as_srgb = p_options["process/HDR_as_SRGB"];
-	int normal = p_options["compress/normal_map"];
-	int hdr_compression = p_options["compress/hdr_compression"];
-	int bptc_ldr = p_options["compress/bptc_ldr"];
-	int roughness = p_options["roughness/mode"];
-	String normal_map = p_options["roughness/src_normal"];
+	const float lossy = p_options["compress/lossy_quality"];
+	const int pack_channels = p_options["compress/channel_pack"];
+	const bool mipmaps = p_options["mipmaps/generate"];
+	const uint32_t mipmap_limit = mipmaps ? uint32_t(p_options["mipmaps/limit"]) : uint32_t(-1);
+	const bool fix_alpha_border = p_options["process/fix_alpha_border"];
+	const bool premult_alpha = p_options["process/premult_alpha"];
+	const bool normal_map_invert_y = p_options["process/normal_map_invert_y"];
+	const bool stream = p_options["compress/streamed"];
+	const int size_limit = p_options["process/size_limit"];
+	const bool hdr_as_srgb = p_options["process/hdr_as_srgb"];
+	const int normal = p_options["compress/normal_map"];
+	const int hdr_compression = p_options["compress/hdr_compression"];
+	const int bptc_ldr = p_options["compress/bptc_ldr"];
+	const int roughness = p_options["roughness/mode"];
+	const String normal_map = p_options["roughness/src_normal"];
 	float scale = 1.0;
 	if (p_options.has("svg/scale")) {
 		scale = p_options["svg/scale"];
@@ -496,11 +497,10 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		//must import in all formats, in order of priority (so platform choses the best supported one. IE, etc2 over etc).
 		//Android, GLES 2.x
 
-		bool ok_on_pc = false;
-		bool is_hdr = (image->get_format() >= Image::FORMAT_RF && image->get_format() <= Image::FORMAT_RGBE9995);
+		const bool is_hdr = (image->get_format() >= Image::FORMAT_RF && image->get_format() <= Image::FORMAT_RGBE9995);
 		bool is_ldr = (image->get_format() >= Image::FORMAT_L8 && image->get_format() <= Image::FORMAT_RGB565);
-		bool can_bptc = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_bptc");
-		bool can_s3tc = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_s3tc");
+		const bool can_bptc = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_bptc");
+		const bool can_s3tc = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_s3tc");
 
 		if (can_bptc) {
 			//add to the list anyway
@@ -525,29 +525,24 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 				}
 			}
 
-			if (can_compress_hdr) {
-				if (!can_bptc) {
-					//fallback to RGBE99995
-					if (image->get_format() != Image::FORMAT_RGBE9995) {
-						image->convert(Image::FORMAT_RGBE9995);
-					}
+			if (!can_compress_hdr) {
+				//fallback to RGBE99995
+				if (image->get_format() != Image::FORMAT_RGBE9995) {
+					image->convert(Image::FORMAT_RGBE9995);
 				}
-			} else {
-				can_bptc = false;
 			}
 		}
 
-		if (is_ldr && can_bptc) {
-			if (bptc_ldr == 0 || (bptc_ldr == 1 && !has_alpha)) {
-				can_bptc = false;
-			}
-		}
-
+		bool ok_on_pc = false;
 		if (can_bptc || can_s3tc) {
-			_save_stex(image, p_save_path + ".s3tc.stex", compress_mode, lossy, can_bptc ? Image::COMPRESS_BPTC : Image::COMPRESS_S3TC, mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
+			ok_on_pc = true;
+			Image::CompressMode image_compress_mode = Image::COMPRESS_BPTC;
+			if (!bptc_ldr && can_s3tc && is_ldr) {
+				image_compress_mode = Image::COMPRESS_S3TC;
+			}
+			_save_stex(image, p_save_path + ".s3tc.stex", compress_mode, lossy, image_compress_mode, mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
 			r_platform_variants->push_back("s3tc");
 			formats_imported.push_back("s3tc");
-			ok_on_pc = true;
 		}
 
 		if (ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc2")) {

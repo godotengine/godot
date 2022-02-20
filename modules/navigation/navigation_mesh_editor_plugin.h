@@ -33,7 +33,6 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 
 class NavigationRegion3D;
@@ -58,7 +57,7 @@ class NavigationMeshEditor : public Control {
 protected:
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
-	void _notification(int p_option);
+	void _notification(int p_what);
 
 public:
 	void edit(NavigationRegion3D *p_nav_region);
@@ -70,7 +69,6 @@ class NavigationMeshEditorPlugin : public EditorPlugin {
 	GDCLASS(NavigationMeshEditorPlugin, EditorPlugin);
 
 	NavigationMeshEditor *navigation_mesh_editor;
-	EditorNode *editor;
 
 public:
 	virtual String get_name() const override { return "NavigationMesh"; }
@@ -79,7 +77,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	NavigationMeshEditorPlugin(EditorNode *p_node);
+	NavigationMeshEditorPlugin();
 	~NavigationMeshEditorPlugin();
 };
 

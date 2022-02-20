@@ -33,8 +33,11 @@
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/scene_tree_dock.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/margin_container.h"
@@ -285,7 +288,7 @@ void SpriteFramesEditor::_sheet_spin_changed(double) {
 }
 
 void SpriteFramesEditor::_prepare_sprite_sheet(const String &p_file) {
-	Ref<Resource> texture = ResourceLoader::load(p_file);
+	Ref<Texture2D> texture = ResourceLoader::load(p_file);
 	if (!texture.is_valid()) {
 		EditorNode::get_singleton()->show_warning(TTR("Unable to load images"));
 		ERR_FAIL_COND(!texture.is_valid());
@@ -1326,20 +1329,19 @@ bool SpriteFramesEditorPlugin::handles(Object *p_object) const {
 void SpriteFramesEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		button->show();
-		editor->make_bottom_panel_item_visible(frames_editor);
+		EditorNode::get_singleton()->make_bottom_panel_item_visible(frames_editor);
 	} else {
 		button->hide();
 		if (frames_editor->is_visible_in_tree()) {
-			editor->hide_bottom_panel();
+			EditorNode::get_singleton()->hide_bottom_panel();
 		}
 	}
 }
 
-SpriteFramesEditorPlugin::SpriteFramesEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
+SpriteFramesEditorPlugin::SpriteFramesEditorPlugin() {
 	frames_editor = memnew(SpriteFramesEditor);
 	frames_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
-	button = editor->add_bottom_panel_item(TTR("SpriteFrames"), frames_editor);
+	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("SpriteFrames"), frames_editor);
 	button->hide();
 }
 

@@ -31,7 +31,7 @@
 #include "resource_uid.h"
 
 #include "core/config/project_settings.h"
-#include "core/crypto/crypto.h"
+#include "core/crypto/crypto_core.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 
@@ -82,20 +82,14 @@ ResourceUID::ID ResourceUID::text_to_id(const String &p_text) const {
 	return ID(uid & 0x7FFFFFFFFFFFFFFF);
 }
 
-ResourceUID::ID ResourceUID::create_id() const {
-	mutex.lock();
-	if (crypto.is_null()) {
-		crypto = Ref<Crypto>(Crypto::create());
-	}
-	mutex.unlock();
+ResourceUID::ID ResourceUID::create_id() {
 	while (true) {
-		PackedByteArray bytes = crypto->generate_random_bytes(8);
-		ERR_FAIL_COND_V(bytes.size() != 8, INVALID_ID);
-		const uint64_t *ptr64 = (const uint64_t *)bytes.ptr();
-		ID id = int64_t((*ptr64) & 0x7FFFFFFFFFFFFFFF);
-		mutex.lock();
+		ID id = INVALID_ID;
+		MutexLock lock(mutex);
+		Error err = ((CryptoCore::RandomGenerator *)crypto)->get_random_bytes((uint8_t *)&id, sizeof(id));
+		ERR_FAIL_COND_V(err != OK, INVALID_ID);
+		id &= 0x7FFFFFFFFFFFFFFF;
 		bool exists = unique_ids.has(id);
-		mutex.unlock();
 		if (!exists) {
 			return id;
 		}
@@ -261,6 +255,9 @@ ResourceUID *ResourceUID::singleton = nullptr;
 ResourceUID::ResourceUID() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
+	crypto = memnew(CryptoCore::RandomGenerator);
+	((CryptoCore::RandomGenerator *)crypto)->init();
 }
 ResourceUID::~ResourceUID() {
+	memdelete((CryptoCore::RandomGenerator *)crypto);
 }

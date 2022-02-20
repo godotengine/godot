@@ -969,10 +969,11 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 
 		if (inst->fade_near || inst->fade_far) {
 			float fade_dist = inst->transform.origin.distance_to(p_render_data->cam_transform.origin);
+			// Use `smoothstep()` to make opacity changes more gradual and less noticeable to the player.
 			if (inst->fade_far && fade_dist > inst->fade_far_begin) {
-				fade_alpha = MAX(0.0, 1.0 - (fade_dist - inst->fade_far_begin) / (inst->fade_far_end - inst->fade_far_begin));
+				fade_alpha = Math::smoothstep(0.0f, 1.0f, 1.0f - (fade_dist - inst->fade_far_begin) / (inst->fade_far_end - inst->fade_far_begin));
 			} else if (inst->fade_near && fade_dist < inst->fade_near_end) {
-				fade_alpha = MAX(0.0, (fade_dist - inst->fade_near_begin) / (inst->fade_near_end - inst->fade_near_begin));
+				fade_alpha = Math::smoothstep(0.0f, 1.0f, (fade_dist - inst->fade_near_begin) / (inst->fade_near_end - inst->fade_near_begin));
 			}
 		}
 
@@ -1390,7 +1391,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				projection = correction * p_render_data->cam_projection;
 			}
 
-			sky.setup(env, p_render_data->render_buffers, projection, p_render_data->cam_transform, screen_size, this);
+			sky.setup(env, p_render_data->render_buffers, *p_render_data->lights, projection, p_render_data->cam_transform, screen_size, this);
 
 			RID sky_rid = env->sky;
 			if (sky_rid.is_valid()) {

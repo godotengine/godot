@@ -30,6 +30,7 @@
 
 #include "viewport.h"
 
+#include "core/config/project_settings.h"
 #include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/object/message_queue.h"
@@ -405,8 +406,8 @@ void Viewport::_notification(int p_what) {
 #endif // _3D_DISABLED
 				set_physics_process_internal(true);
 			}
-
 		} break;
+
 		case NOTIFICATION_READY: {
 #ifndef _3D_DISABLED
 			if (audio_listener_3d_set.size() && !audio_listener_3d) {
@@ -437,6 +438,7 @@ void Viewport::_notification(int p_what) {
 			}
 #endif // _3D_DISABLED
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			_gui_cancel_tooltip();
 
@@ -460,6 +462,7 @@ void Viewport::_notification(int p_what) {
 			RS::get_singleton()->viewport_set_active(viewport, false);
 			RenderingServer::get_singleton()->viewport_set_parent_viewport(viewport, RID());
 		} break;
+
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (!get_tree()) {
 				return;
@@ -492,17 +495,20 @@ void Viewport::_notification(int p_what) {
 			}
 #endif // _3D_DISABLED
 		} break;
-		case NOTIFICATION_WM_MOUSE_ENTER: {
-			gui.mouse_in_window = true;
+
+		case NOTIFICATION_VP_MOUSE_ENTER: {
+			gui.mouse_in_viewport = true;
 		} break;
-		case NOTIFICATION_WM_MOUSE_EXIT: {
-			gui.mouse_in_window = false;
+
+		case NOTIFICATION_VP_MOUSE_EXIT: {
+			gui.mouse_in_viewport = false;
 			_drop_physics_mouseover();
 			_drop_mouse_over();
-			// When the mouse exits the window, we want to end mouse_over, but
+			// When the mouse exits the viewport, we want to end mouse_over, but
 			// not mouse_focus, because, for example, we want to continue
-			// dragging a scrollbar even if the mouse has left the window.
+			// dragging a scrollbar even if the mouse has left the viewport.
 		} break;
+
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
 			_drop_physics_mouseover();
 			if (gui.mouse_focus && !gui.forced_mouse_focus) {
@@ -1677,7 +1683,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		Control *over = nullptr;
 		if (gui.mouse_focus) {
 			over = gui.mouse_focus;
-		} else if (gui.mouse_in_window) {
+		} else if (gui.mouse_in_viewport) {
 			over = gui_find_control(mpos);
 		}
 
@@ -1713,7 +1719,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				if (gui.tooltip_popup) {
 					if (gui.tooltip_control) {
 						String tooltip = _gui_get_tooltip(over, gui.tooltip_control->get_global_transform().xform_inv(mpos));
-
+						tooltip = tooltip.strip_edges();
 						if (tooltip.length() == 0) {
 							_gui_cancel_tooltip();
 						} else if (gui.tooltip_label) {
@@ -3938,11 +3944,14 @@ Transform2D SubViewport::_stretch_transform() {
 }
 
 void SubViewport::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
-	}
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		RS::get_singleton()->viewport_set_active(get_viewport_rid(), false);
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			RS::get_singleton()->viewport_set_active(get_viewport_rid(), false);
+		} break;
 	}
 }
 

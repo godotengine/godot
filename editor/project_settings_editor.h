@@ -31,15 +31,16 @@
 #ifndef PROJECT_SETTINGS_EDITOR_H
 #define PROJECT_SETTINGS_EDITOR_H
 
+#include "core/config/project_settings.h"
 #include "core/object/undo_redo.h"
 #include "editor/action_map_editor.h"
+#include "editor/editor_autoload_settings.h"
 #include "editor/editor_data.h"
 #include "editor/editor_plugin_settings.h"
 #include "editor/editor_sectioned_inspector.h"
 #include "editor/import_defaults_editor.h"
 #include "editor/localization_editor.h"
 #include "editor/shader_globals_editor.h"
-#include "editor_autoload_settings.h"
 #include "scene/gui/tab_container.h"
 
 class ProjectSettingsEditor : public AcceptDialog {

@@ -163,8 +163,9 @@ int widechar_main(int argc, wchar_t **argv) {
 		return 255;
 	}
 
-	if (Main::start())
+	if (Main::start()) {
 		os.run();
+	}
 	Main::cleanup();
 
 	for (int i = 0; i < argc; ++i) {
@@ -173,7 +174,7 @@ int widechar_main(int argc, wchar_t **argv) {
 	delete[] argv_utf8;
 
 	return os.get_exit_code();
-};
+}
 
 int _main() {
 	LPWSTR *wc_argv;

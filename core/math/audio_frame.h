@@ -140,4 +140,16 @@ struct AudioFrame {
 	_ALWAYS_INLINE_ AudioFrame() {}
 };
 
+_ALWAYS_INLINE_ AudioFrame operator*(float p_scalar, const AudioFrame &p_frame) {
+	return AudioFrame(p_frame.l * p_scalar, p_frame.r * p_scalar);
+}
+
+_ALWAYS_INLINE_ AudioFrame operator*(int32_t p_scalar, const AudioFrame &p_frame) {
+	return AudioFrame(p_frame.l * p_scalar, p_frame.r * p_scalar);
+}
+
+_ALWAYS_INLINE_ AudioFrame operator*(int64_t p_scalar, const AudioFrame &p_frame) {
+	return AudioFrame(p_frame.l * p_scalar, p_frame.r * p_scalar);
+}
+
 #endif // AUDIO_FRAME_H

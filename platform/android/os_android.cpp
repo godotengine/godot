@@ -81,17 +81,18 @@ void OS_Android::alert(const String &p_alert, const String &p_title) {
 void OS_Android::initialize_core() {
 	OS_Unix::initialize_core();
 
-	if (use_apk_expansion)
+	if (use_apk_expansion) {
 		FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
-	else {
+	} else {
 		FileAccess::make_default<FileAccessAndroid>(FileAccess::ACCESS_RESOURCES);
 	}
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_FILESYSTEM);
-	if (use_apk_expansion)
+	if (use_apk_expansion) {
 		DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_RESOURCES);
-	else
+	} else {
 		DirAccess::make_default<DirAccessJAndroid>(DirAccess::ACCESS_RESOURCES);
+	}
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
 
@@ -162,20 +163,23 @@ MainLoop *OS_Android::get_main_loop() const {
 }
 
 void OS_Android::main_loop_begin() {
-	if (main_loop)
+	if (main_loop) {
 		main_loop->initialize();
+	}
 }
 
 bool OS_Android::main_loop_iterate() {
-	if (!main_loop)
+	if (!main_loop) {
 		return false;
+	}
 	DisplayServerAndroid::get_singleton()->process_events();
 	return Main::iteration();
 }
 
 void OS_Android::main_loop_end() {
-	if (main_loop)
+	if (main_loop) {
 		main_loop->finalize();
+	}
 }
 
 void OS_Android::main_loop_focusout() {
@@ -207,8 +211,9 @@ String OS_Android::get_locale() const {
 
 String OS_Android::get_model_name() const {
 	String model = godot_io_java->get_model();
-	if (!model.is_empty())
+	if (!model.is_empty()) {
 		return model;
+	}
 
 	return OS_Unix::get_model_name();
 }
@@ -218,8 +223,9 @@ String OS_Android::get_data_path() const {
 }
 
 String OS_Android::get_user_data_dir() const {
-	if (!data_dir_cache.is_empty())
+	if (!data_dir_cache.is_empty()) {
 		return data_dir_cache;
+	}
 
 	String data_dir = godot_io_java->get_user_data_dir();
 	if (!data_dir.is_empty()) {
@@ -230,8 +236,9 @@ String OS_Android::get_user_data_dir() const {
 }
 
 String OS_Android::get_cache_path() const {
-	if (!cache_dir_cache.is_empty())
+	if (!cache_dir_cache.is_empty()) {
 		return cache_dir_cache;
+	}
 
 	String cache_dir = godot_io_java->get_cache_dir();
 	if (!cache_dir.is_empty()) {
@@ -243,8 +250,9 @@ String OS_Android::get_cache_path() const {
 
 String OS_Android::get_unique_id() const {
 	String unique_id = godot_io_java->get_unique_id();
-	if (!unique_id.is_empty())
+	if (!unique_id.is_empty()) {
 		return unique_id;
+	}
 
 	return OS::get_unique_id();
 }

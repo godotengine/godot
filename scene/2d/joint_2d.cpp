@@ -162,6 +162,7 @@ void Joint2D::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			_update_joint();
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			if (joint.is_valid()) {
 				_disconnect_signals();

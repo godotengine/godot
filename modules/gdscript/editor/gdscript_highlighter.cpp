@@ -31,6 +31,7 @@
 #include "gdscript_highlighter.h"
 #include "../gdscript.h"
 #include "../gdscript_tokenizer.h"
+#include "core/config/project_settings.h"
 #include "editor/editor_settings.h"
 
 Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_line) {

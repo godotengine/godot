@@ -225,6 +225,9 @@ void TParseVersions::initializeExtensionBehavior()
     extensionBehavior[E_GL_ARB_shading_language_packing]     = EBhDisable;
     extensionBehavior[E_GL_ARB_texture_query_lod]            = EBhDisable;
     extensionBehavior[E_GL_ARB_vertex_attrib_64bit]          = EBhDisable;
+    extensionBehavior[E_GL_ARB_draw_instanced]               = EBhDisable;
+    extensionBehavior[E_GL_ARB_fragment_coord_conventions]   = EBhDisable;
+
 
     extensionBehavior[E_GL_KHR_shader_subgroup_basic]            = EBhDisable;
     extensionBehavior[E_GL_KHR_shader_subgroup_vote]             = EBhDisable;
@@ -465,6 +468,8 @@ void TParseVersions::getPreamble(std::string& preamble)
             "#define GL_ARB_shader_storage_buffer_object 1\n"
             "#define GL_ARB_texture_query_lod 1\n"
             "#define GL_ARB_vertex_attrib_64bit 1\n"
+            "#define GL_ARB_draw_instanced 1\n"
+            "#define GL_ARB_fragment_coord_conventions 1\n"
             "#define GL_EXT_shader_non_constant_global_initializers 1\n"
             "#define GL_EXT_shader_image_load_formatted 1\n"
             "#define GL_EXT_post_depth_coverage 1\n"
@@ -482,6 +487,7 @@ void TParseVersions::getPreamble(std::string& preamble)
             "#define GL_EXT_debug_printf 1\n"
             "#define GL_EXT_fragment_shading_rate 1\n"
             "#define GL_EXT_shared_memory_block 1\n"
+            "#define GL_EXT_shader_integer_mix 1\n"
 
             // GL_KHR_shader_subgroup
             "#define GL_KHR_shader_subgroup_basic 1\n"

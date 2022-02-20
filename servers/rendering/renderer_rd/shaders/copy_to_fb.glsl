@@ -6,7 +6,7 @@
 
 layout(location = 0) out vec2 uv_interp;
 
-layout(push_constant, binding = 1, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	vec4 section;
 	vec2 pixel_size;
 	bool flip_y;
@@ -39,7 +39,7 @@ void main() {
 
 #VERSION_DEFINES
 
-layout(push_constant, binding = 1, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	vec4 section;
 	vec2 pixel_size;
 	bool flip_y;

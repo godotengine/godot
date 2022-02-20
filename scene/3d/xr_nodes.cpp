@@ -30,6 +30,7 @@
 
 #include "xr_nodes.h"
 
+#include "core/config/project_settings.h"
 #include "scene/main/viewport.h"
 #include "servers/xr/xr_interface.h"
 
@@ -43,16 +44,17 @@ void XRCamera3D::_notification(int p_what) {
 			if (origin != nullptr) {
 				origin->set_tracked_camera(this);
 			}
-		}; break;
+		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			// need to find our XROrigin3D parent and let it know we're no longer its camera!
 			XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
 			if (origin != nullptr && origin->get_tracked_camera() == this) {
 				origin->set_tracked_camera(nullptr);
 			}
-		}; break;
-	};
-};
+		} break;
+	}
+}
 
 void XRCamera3D::_changed_tracker(const StringName p_tracker_name, int p_tracker_type) {
 	if (p_tracker_name == tracker_name) {
@@ -482,22 +484,22 @@ void XRController3D::_unbind_tracker() {
 
 void XRController3D::_button_pressed(const String &p_name) {
 	// just pass it on...
-	emit_signal("button_pressed", p_name);
+	emit_signal(SNAME("button_pressed"), p_name);
 }
 
 void XRController3D::_button_released(const String &p_name) {
 	// just pass it on...
-	emit_signal("button_released", p_name);
+	emit_signal(SNAME("button_released"), p_name);
 }
 
 void XRController3D::_input_value_changed(const String &p_name, float p_value) {
 	// just pass it on...
-	emit_signal("input_value_changed", p_name, p_value);
+	emit_signal(SNAME("input_value_changed"), p_name, p_value);
 }
 
 void XRController3D::_input_axis_changed(const String &p_name, Vector2 p_value) {
 	// just pass it on...
-	emit_signal("input_axis_changed", p_name, p_value);
+	emit_signal(SNAME("input_axis_changed"), p_name, p_value);
 }
 
 bool XRController3D::is_button_pressed(const StringName &p_name) const {
@@ -656,10 +658,12 @@ void XROrigin3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			set_process_internal(true);
-		}; break;
+		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			set_process_internal(false);
-		}; break;
+		} break;
+
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			// set our world origin to our node transform
 			xr_server->set_world_origin(get_global_transform());
@@ -672,11 +676,9 @@ void XROrigin3D::_notification(int p_what) {
 
 				// now apply this to our camera
 				tracked_camera->set_transform(t);
-			};
-		}; break;
-		default:
-			break;
-	};
+			}
+		} break;
+	}
 
 	// send our notification to all active XE interfaces, they may need to react to it also
 	for (int i = 0; i < xr_server->get_interface_count(); i++) {

@@ -58,7 +58,7 @@ lights;
 
 #endif
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	ivec3 limits;
 	uint stack_size;
 

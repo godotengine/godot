@@ -30,33 +30,37 @@
 
 #include "localization_editor.h"
 
+#include "core/config/project_settings.h"
 #include "core/string/translation.h"
-#include "editor_node.h"
-#include "editor_scale.h"
-#include "editor_translation_parser.h"
-#include "pot_generator.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
+#include "editor/editor_translation_parser.h"
+#include "editor/pot_generator.h"
 #include "scene/gui/control.h"
 
 void LocalizationEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		translation_list->connect("button_pressed", callable_mp(this, &LocalizationEditor::_translation_delete));
-		translation_pot_list->connect("button_pressed", callable_mp(this, &LocalizationEditor::_pot_delete));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			translation_list->connect("button_pressed", callable_mp(this, &LocalizationEditor::_translation_delete));
+			translation_pot_list->connect("button_pressed", callable_mp(this, &LocalizationEditor::_pot_delete));
 
-		List<String> tfn;
-		ResourceLoader::get_recognized_extensions_for_type("Translation", &tfn);
-		for (const String &E : tfn) {
-			translation_file_open->add_filter("*." + E);
-		}
+			List<String> tfn;
+			ResourceLoader::get_recognized_extensions_for_type("Translation", &tfn);
+			for (const String &E : tfn) {
+				translation_file_open->add_filter("*." + E);
+			}
 
-		List<String> rfn;
-		ResourceLoader::get_recognized_extensions_for_type("Resource", &rfn);
-		for (const String &E : rfn) {
-			translation_res_file_open_dialog->add_filter("*." + E);
-			translation_res_option_file_open_dialog->add_filter("*." + E);
-		}
+			List<String> rfn;
+			ResourceLoader::get_recognized_extensions_for_type("Resource", &rfn);
+			for (const String &E : rfn) {
+				translation_res_file_open_dialog->add_filter("*." + E);
+				translation_res_option_file_open_dialog->add_filter("*." + E);
+			}
 
-		_update_pot_file_extensions();
-		pot_generate_dialog->add_filter("*.pot");
+			_update_pot_file_extensions();
+			pot_generate_dialog->add_filter("*.pot");
+		} break;
 	}
 }
 

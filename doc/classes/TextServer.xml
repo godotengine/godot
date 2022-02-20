@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TextServer" inherits="RefCounted" version="4.0">
+<class name="TextServer" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Interface for the fonts and complex text layouts.
 	</brief_description>
@@ -328,6 +328,13 @@
 				Returns font style name.
 			</description>
 		</method>
+		<method name="font_get_subpixel_positioning" qualifiers="const">
+			<return type="int" enum="TextServer.SubpixelPositioning" />
+			<argument index="0" name="font_rid" type="RID" />
+			<description>
+				Returns font sub-pixel glyph positioning mode.
+			</description>
+		</method>
 		<method name="font_get_supported_chars" qualifiers="const">
 			<return type="String" />
 			<argument index="0" name="font_rid" type="RID" />
@@ -613,7 +620,7 @@
 		<method name="font_set_hinting">
 			<return type="void" />
 			<argument index="0" name="font_rid" type="RID" />
-			<argument index="1" name="_hinting" type="int" enum="TextServer.Hinting" />
+			<argument index="1" name="hinting" type="int" enum="TextServer.Hinting" />
 			<description>
 				Sets font hinting mode. Used by dynamic fonts only.
 			</description>
@@ -727,7 +734,15 @@
 			<argument index="0" name="font_rid" type="RID" />
 			<argument index="1" name="name" type="String" />
 			<description>
-				Set the font style name.
+				Sets the font style name.
+			</description>
+		</method>
+		<method name="font_set_subpixel_positioning">
+			<return type="void" />
+			<argument index="0" name="font_rid" type="RID" />
+			<argument index="1" name="subpixel_positioning" type="int" enum="TextServer.SubpixelPositioning" />
+			<description>
+				Sets font sub-pixel glyph positioning mode.
 			</description>
 		</method>
 		<method name="font_set_texture_image">
@@ -1492,6 +1507,21 @@
 		</constant>
 		<constant name="HINTING_NORMAL" value="2" enum="Hinting">
 			Use the default font hinting mode (crisper but less smooth).
+		</constant>
+		<constant name="SUBPIXEL_POSITIONING_DISABLED" value="0" enum="SubpixelPositioning">
+			Glyph horizontal position is rounded to the whole pixel size, each glyph is rasterized once.
+		</constant>
+		<constant name="SUBPIXEL_POSITIONING_AUTO" value="1" enum="SubpixelPositioning">
+			Glyph horizontal position is rounded based on font size.
+			- To one quarter of the pixel size if font size is smaller or equal to [code]16[/code].
+			- To one half of the pixel size if font size is smaller or equal to [code]20[/code].
+			- To the whole pixel size for larger fonts.
+		</constant>
+		<constant name="SUBPIXEL_POSITIONING_ONE_HALF" value="2" enum="SubpixelPositioning">
+			Glyph horizontal position is rounded to one half of the pixel size, each glyph is rasterized up to two times.
+		</constant>
+		<constant name="SUBPIXEL_POSITIONING_ONE_QUARTER" value="3" enum="SubpixelPositioning">
+			Glyph horizontal position is rounded to one quarter of the pixel size, each glyph is rasterized up to four times.
 		</constant>
 		<constant name="FEATURE_BIDI_LAYOUT" value="1" enum="Feature">
 			TextServer supports bidirectional layouts.

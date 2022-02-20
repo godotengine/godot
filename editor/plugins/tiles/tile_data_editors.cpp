@@ -35,12 +35,13 @@
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 
+#include "editor/editor_node.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_scale.h"
 
 void TileDataEditor::_tile_set_changed_plan_update() {
 	_tile_set_changed_update_needed = true;
-	call_deferred("_tile_set_changed_deferred_update");
+	call_deferred(SNAME("_tile_set_changed_deferred_update"));
 }
 
 void TileDataEditor::_tile_set_changed_deferred_update() {
@@ -743,6 +744,8 @@ void GenericTilePolygonEditor::_bind_methods() {
 }
 
 GenericTilePolygonEditor::GenericTilePolygonEditor() {
+	editor_undo_redo = EditorNode::get_undo_redo();
+
 	toolbar = memnew(HBoxContainer);
 	add_child(toolbar);
 
@@ -1157,17 +1160,17 @@ void TileDataDefaultEditor::setup_property_editor(Variant::Type p_type, String p
 void TileDataDefaultEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_THEME_CHANGED: {
 			picker_button->set_icon(get_theme_icon(SNAME("ColorPick"), SNAME("EditorIcons")));
 			tile_bool_checked = get_theme_icon(SNAME("TileChecked"), SNAME("EditorIcons"));
 			tile_bool_unchecked = get_theme_icon(SNAME("TileUnchecked"), SNAME("EditorIcons"));
-			break;
-		default:
-			break;
+		} break;
 	}
 }
 
 TileDataDefaultEditor::TileDataDefaultEditor() {
+	undo_redo = EditorNode::get_undo_redo();
+
 	label = memnew(Label);
 	label->set_text(TTR("Painting:"));
 	add_child(label);
@@ -1310,15 +1313,15 @@ void TileDataOcclusionShapeEditor::_tile_set_changed() {
 
 void TileDataOcclusionShapeEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_ENTER_TREE: {
 			polygon_editor->set_polygons_color(get_tree()->get_debug_collisions_color());
-			break;
-		default:
-			break;
+		} break;
 	}
 }
 
 TileDataOcclusionShapeEditor::TileDataOcclusionShapeEditor() {
+	undo_redo = EditorNode::get_undo_redo();
+
 	polygon_editor = memnew(GenericTilePolygonEditor);
 	add_child(polygon_editor);
 }
@@ -1507,15 +1510,15 @@ void TileDataCollisionEditor::_tile_set_changed() {
 
 void TileDataCollisionEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_ENTER_TREE: {
 			polygon_editor->set_polygons_color(get_tree()->get_debug_collisions_color());
-			break;
-		default:
-			break;
+		} break;
 	}
 }
 
 TileDataCollisionEditor::TileDataCollisionEditor() {
+	undo_redo = EditorNode::get_undo_redo();
+
 	polygon_editor = memnew(GenericTilePolygonEditor);
 	polygon_editor->set_multiple_polygon_mode(true);
 	polygon_editor->connect("polygons_changed", callable_mp(this, &TileDataCollisionEditor::_polygons_changed));
@@ -2478,15 +2481,15 @@ void TileDataTerrainsEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform
 void TileDataTerrainsEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_THEME_CHANGED: {
 			picker_button->set_icon(get_theme_icon(SNAME("ColorPick"), SNAME("EditorIcons")));
-			break;
-		default:
-			break;
+		} break;
 	}
 }
 
 TileDataTerrainsEditor::TileDataTerrainsEditor() {
+	undo_redo = EditorNode::get_undo_redo();
+
 	label = memnew(Label);
 	label->set_text("Painting:");
 	add_child(label);
@@ -2582,15 +2585,15 @@ void TileDataNavigationEditor::_tile_set_changed() {
 
 void TileDataNavigationEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_ENTER_TREE: {
 			polygon_editor->set_polygons_color(get_tree()->get_debug_navigation_color());
-			break;
-		default:
-			break;
+		} break;
 	}
 }
 
 TileDataNavigationEditor::TileDataNavigationEditor() {
+	undo_redo = EditorNode::get_undo_redo();
+
 	polygon_editor = memnew(GenericTilePolygonEditor);
 	polygon_editor->set_multiple_polygon_mode(true);
 	add_child(polygon_editor);

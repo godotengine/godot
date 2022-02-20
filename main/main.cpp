@@ -50,7 +50,6 @@
 #include "core/register_core_types.h"
 #include "core/string/translation.h"
 #include "core/version.h"
-#include "core/version_hash.gen.h"
 #include "drivers/register_driver_types.h"
 #include "main/app_icon.gen.h"
 #include "main/main_timer_sync.h"
@@ -82,6 +81,7 @@
 #include "editor/doc_data_class_path.gen.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_translation.h"
 #include "editor/progress_dialog.h"
@@ -183,13 +183,6 @@ bool profile_gpu = false;
 
 /* Helper methods */
 
-// Used by Mono module, should likely be registered in Engine singleton instead
-// FIXME: This is also not 100% accurate, `project_manager` is only true when it was requested,
-// but not if e.g. we fail to load and project and fallback to the manager.
-bool Main::is_project_manager() {
-	return project_manager;
-}
-
 bool Main::is_cmdline_tool() {
 	return cmdline_tool;
 }
@@ -200,7 +193,7 @@ static String unescape_cmdline(const String &p_str) {
 
 static String get_full_version_string() {
 	String hash = String(VERSION_HASH);
-	if (hash.length() != 0) {
+	if (!hash.is_empty()) {
 		hash = "." + hash.left(9);
 	}
 	return String(VERSION_FULL_BUILD) + hash;
@@ -935,7 +928,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 			editor = true;
 		} else if (I->get() == "-p" || I->get() == "--project-manager") { // starts project manager
-
 			project_manager = true;
 		} else if (I->get() == "--debug-server") {
 			if (I->next()) {
@@ -1204,11 +1196,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (editor) {
 		packed_data->set_disabled(true);
 		globals->set_disable_feature_overrides(true);
-	}
-#endif
-
-#ifdef TOOLS_ENABLED
-	if (editor) {
 		Engine::get_singleton()->set_editor_hint(true);
 		main_args.push_back("--editor");
 		if (!init_windowed) {
@@ -1220,6 +1207,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (!project_manager && !editor) {
 		// If we didn't find a project, we fall back to the project manager.
 		project_manager = !found_project && !cmdline_tool;
+	}
+
+	if (project_manager) {
+		Engine::get_singleton()->set_project_manager_hint(true);
 	}
 #endif
 
@@ -2250,9 +2241,8 @@ bool Main::start() {
 		}
 	}
 
-	if (main_loop->is_class("SceneTree")) {
-		SceneTree *sml = Object::cast_to<SceneTree>(main_loop);
-
+	SceneTree *sml = Object::cast_to<SceneTree>(main_loop);
+	if (sml) {
 #ifdef DEBUG_ENABLED
 		if (debug_collisions) {
 			sml->set_debug_collisions_hint(true);
@@ -2294,20 +2284,18 @@ bool Main::start() {
 					RES res = ResourceLoader::load(info.path);
 					ERR_CONTINUE_MSG(res.is_null(), "Can't autoload: " + info.path);
 					Node *n = nullptr;
-					if (res->is_class("PackedScene")) {
-						Ref<PackedScene> ps = res;
-						n = ps->instantiate();
-					} else if (res->is_class("Script")) {
-						Ref<Script> script_res = res;
+					Ref<PackedScene> scn = res;
+					Ref<Script> script_res = res;
+					if (scn.is_valid()) {
+						n = scn->instantiate();
+					} else if (script_res.is_valid()) {
 						StringName ibt = script_res->get_instance_base_type();
 						bool valid_type = ClassDB::is_parent_class(ibt, "Node");
 						ERR_CONTINUE_MSG(!valid_type, "Script does not inherit a Node: " + info.path);
 
 						Object *obj = ClassDB::instantiate(ibt);
 
-						ERR_CONTINUE_MSG(obj == nullptr,
-								"Cannot instance script for autoload, expected 'Node' inheritance, got: " +
-										String(ibt));
+						ERR_CONTINUE_MSG(!obj, "Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt) + ".");
 
 						n = Object::cast_to<Node>(obj);
 						n->set_script(script_res);
@@ -2793,8 +2781,6 @@ void Main::cleanup(bool p_force) {
 		ERR_FAIL_COND(!_start_success);
 	}
 
-	EngineDebugger::deinitialize();
-
 	ResourceLoader::remove_custom_loaders();
 	ResourceSaver::remove_custom_savers();
 
@@ -2836,6 +2822,8 @@ void Main::cleanup(bool p_force) {
 	unregister_platform_apis();
 	unregister_scene_types();
 	unregister_server_types();
+
+	EngineDebugger::deinitialize();
 
 	if (xr_server) {
 		memdelete(xr_server);

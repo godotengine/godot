@@ -653,7 +653,6 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 
 	List<int> ids;
 	script->get_node_list(&ids);
-	StringName editor_icons = "EditorIcons";
 
 	for (int &E : ids) {
 		if (p_only_id >= 0 && p_only_id != E) {
@@ -1082,6 +1081,7 @@ void VisualScriptEditor::_update_members() {
 		Control::get_theme_icon(SNAME("Basis"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("Color"), SNAME("EditorIcons")),
+		Control::get_theme_icon(SNAME("StringName"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("NodePath"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("RID"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("MiniObject"), SNAME("EditorIcons")),
@@ -1091,7 +1091,9 @@ void VisualScriptEditor::_update_members() {
 		Control::get_theme_icon(SNAME("Array"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("PackedByteArray"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("PackedInt32Array"), SNAME("EditorIcons")),
+		Control::get_theme_icon(SNAME("PackedInt64Array"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("PackedFloat32Array"), SNAME("EditorIcons")),
+		Control::get_theme_icon(SNAME("PackedFloat64Array"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("PackedStringArray"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("PackedVector2Array"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("PackedVector3Array"), SNAME("EditorIcons")),
@@ -1511,6 +1513,7 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 		function_name_edit->popup();
 		function_name_box->set_text(selected);
 		function_name_box->select_all();
+		function_name_box->grab_focus();
 	}
 }
 
@@ -2099,9 +2102,13 @@ void VisualScriptEditor::_fn_name_box_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> key = p_event;
 	if (key.is_valid() && key->is_pressed() && key->get_keycode() == Key::ENTER) {
 		function_name_edit->hide();
-		_rename_function(selected, function_name_box->get_text());
+		_on_fn_name_box_confirmed();
 		function_name_box->clear();
 	}
+}
+
+void VisualScriptEditor::_on_fn_name_box_confirmed() {
+	_rename_function(selected, function_name_box->get_text());
 }
 
 Variant VisualScriptEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
@@ -3974,6 +3981,7 @@ void VisualScriptEditor::_notification(int p_what) {
 				_update_graph();
 			}
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			update_toggle_scripts_button();
 			members_section->set_visible(is_visible_in_tree());
@@ -4416,6 +4424,7 @@ void VisualScriptEditor::_member_option(int p_option) {
 				function_name_edit->popup();
 				function_name_box->set_text(selected);
 				function_name_box->select_all();
+				function_name_box->grab_focus();
 			}
 		} break;
 		case MEMBER_VARIABLE: {
@@ -4546,9 +4555,11 @@ VisualScriptEditor::VisualScriptEditor() {
 	member_popup->connect("id_pressed", callable_mp(this, &VisualScriptEditor::_member_option));
 
 	function_name_edit = memnew(AcceptDialog);
+	function_name_edit->set_title(TTR("Rename Function"));
 	function_name_box = memnew(LineEdit);
 	function_name_edit->add_child(function_name_box);
 	function_name_box->connect("gui_input", callable_mp(this, &VisualScriptEditor::_fn_name_box_input));
+	function_name_edit->get_ok_button()->connect("pressed", callable_mp(this, &VisualScriptEditor::_on_fn_name_box_confirmed));
 	function_name_box->set_expand_to_text_length_enabled(true);
 	add_child(function_name_edit);
 

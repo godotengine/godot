@@ -31,15 +31,13 @@
 #ifndef EDITOR_SETTINGS_H
 #define EDITOR_SETTINGS_H
 
-#include "core/input/shortcut.h"
 #include "core/io/config_file.h"
 #include "core/io/resource.h"
-#include "core/object/class_db.h"
 #include "core/os/thread_safe.h"
-#include "core/string/translation.h"
-#include "editor/editor_paths.h"
 
 class EditorPlugin;
+class InputEvent;
+class Shortcut;
 
 class EditorSettings : public Resource {
 	GDCLASS(EditorSettings, Resource);
@@ -161,7 +159,7 @@ public:
 	Vector<String> get_favorites() const;
 	void set_recent_dirs(const Vector<String> &p_recent_dirs);
 	Vector<String> get_recent_dirs() const;
-	void load_favorites();
+	void load_favorites_and_recent_dirs();
 
 	bool is_dark_theme();
 

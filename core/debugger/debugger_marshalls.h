@@ -32,86 +32,8 @@
 #define DEBUGGER_MARSHARLLS_H
 
 #include "core/object/script_language.h"
-#include "servers/rendering_server.h"
 
 struct DebuggerMarshalls {
-	// Memory usage
-	struct ResourceInfo {
-		String path;
-		String format;
-		String type;
-		RID id;
-		int vram = 0;
-		bool operator<(const ResourceInfo &p_img) const { return vram == p_img.vram ? id < p_img.id : vram > p_img.vram; }
-	};
-
-	struct ResourceUsage {
-		List<ResourceInfo> infos;
-
-		Array serialize();
-		bool deserialize(const Array &p_arr);
-	};
-
-	// Network profiler
-	struct MultiplayerNodeInfo {
-		ObjectID node;
-		String node_path;
-		int incoming_rpc = 0;
-		int incoming_rset = 0;
-		int outgoing_rpc = 0;
-		int outgoing_rset = 0;
-	};
-
-	struct NetworkProfilerFrame {
-		Vector<MultiplayerNodeInfo> infos;
-
-		Array serialize();
-		bool deserialize(const Array &p_arr);
-	};
-
-	// Script Profiler
-	class ScriptFunctionSignature {
-	public:
-		StringName name;
-		int id = -1;
-
-		Array serialize();
-		bool deserialize(const Array &p_arr);
-	};
-
-	struct ScriptFunctionInfo {
-		StringName name;
-		int sig_id = -1;
-		int call_count = 0;
-		double self_time = 0;
-		double total_time = 0;
-	};
-
-	// Servers profiler
-	struct ServerFunctionInfo {
-		StringName name;
-		double time = 0;
-	};
-
-	struct ServerInfo {
-		StringName name;
-		List<ServerFunctionInfo> functions;
-	};
-
-	struct ServersProfilerFrame {
-		int frame_number = 0;
-		double frame_time = 0;
-		double idle_time = 0;
-		double physics_time = 0;
-		double physics_frame_time = 0;
-		double script_time = 0;
-		List<ServerInfo> servers;
-		Vector<ScriptFunctionInfo> script_functions;
-
-		Array serialize();
-		bool deserialize(const Array &p_arr);
-	};
-
 	struct ScriptStackVariable {
 		String name;
 		Variant value;
@@ -141,15 +63,6 @@ struct DebuggerMarshalls {
 		String error_descr;
 		bool warning = false;
 		Vector<ScriptLanguage::StackInfo> callstack;
-
-		Array serialize();
-		bool deserialize(const Array &p_arr);
-	};
-
-	// Visual Profiler
-	struct VisualProfilerFrame {
-		uint64_t frame_number = 0;
-		Vector<RS::FrameProfileArea> areas;
 
 		Array serialize();
 		bool deserialize(const Array &p_arr);

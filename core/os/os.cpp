@@ -358,6 +358,10 @@ int OS::get_processor_count() const {
 	return 1;
 }
 
+String OS::get_processor_name() const {
+	return "";
+}
+
 bool OS::can_use_threads() const {
 #ifdef NO_THREADS
 	return false;
@@ -387,16 +391,18 @@ bool OS::has_feature(const String &p_feature) {
 		return true;
 	}
 #else
-	if (p_feature == "release")
+	if (p_feature == "release") {
 		return true;
+	}
 #endif
 #ifdef TOOLS_ENABLED
 	if (p_feature == "editor") {
 		return true;
 	}
 #else
-	if (p_feature == "standalone")
+	if (p_feature == "standalone") {
 		return true;
+	}
 #endif
 
 	if (sizeof(void *) == 8 && p_feature == "64") {

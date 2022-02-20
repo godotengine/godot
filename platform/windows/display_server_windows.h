@@ -339,6 +339,7 @@ class DisplayServerWindows : public DisplayServer {
 		bool always_on_top = false;
 		bool no_focus = false;
 		bool window_has_focus = false;
+		bool exclusive = false;
 
 		// Used to transfer data between events using timer.
 		WPARAM saved_wparam;
@@ -499,6 +500,7 @@ public:
 	virtual void window_set_position(const Point2i &p_position, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual void window_set_transient(WindowID p_window, WindowID p_parent) override;
+	virtual void window_set_exclusive(WindowID p_window, bool p_exclusive) override;
 
 	virtual void window_set_max_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual Size2i window_get_max_size(WindowID p_window = MAIN_WINDOW_ID) const override;

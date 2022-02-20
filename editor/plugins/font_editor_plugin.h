@@ -31,7 +31,6 @@
 #ifndef FONT_EDITOR_PLUGIN_H
 #define FONT_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/resources/font.h"
 #include "scene/resources/text_line.h"
@@ -70,7 +69,7 @@ class FontEditorPlugin : public EditorPlugin {
 	GDCLASS(FontEditorPlugin, EditorPlugin);
 
 public:
-	FontEditorPlugin(EditorNode *p_node);
+	FontEditorPlugin();
 
 	virtual String get_name() const override { return "Font"; }
 };

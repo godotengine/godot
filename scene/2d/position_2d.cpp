@@ -90,6 +90,7 @@ void Position2D::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			update();
 		} break;
+
 		case NOTIFICATION_DRAW: {
 			if (!is_inside_tree()) {
 				break;
@@ -97,7 +98,6 @@ void Position2D::_notification(int p_what) {
 			if (Engine::get_singleton()->is_editor_hint()) {
 				_draw_cross();
 			}
-
 		} break;
 	}
 }

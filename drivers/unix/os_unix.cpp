@@ -65,6 +65,21 @@
 #include <time.h>
 #include <unistd.h>
 
+#if defined(OSX_ENABLED) || (defined(__ANDROID_API__) && __ANDROID_API__ >= 28)
+// Random location for getentropy. Fitting.
+#include <sys/random.h>
+#define UNIX_GET_ENTROPY
+#elif defined(__FreeBSD__) || defined(__OpenBSD__) || (defined(__GLIBC_MINOR__) && (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 26))
+// In <unistd.h>.
+// One day... (defined(_XOPEN_SOURCE) && _XOPEN_SOURCE >= 700)
+// https://publications.opengroup.org/standards/unix/c211
+#define UNIX_GET_ENTROPY
+#endif
+
+#if !defined(UNIX_GET_ENTROPY) && !defined(NO_URANDOM)
+#include <fcntl.h>
+#endif
+
 /// Clock Setup function (used by get_ticks_usec)
 static uint64_t _clock_start = 0;
 #if defined(__APPLE__)
@@ -91,7 +106,7 @@ static void _setup_clock() {
 
 void OS_Unix::debug_break() {
 	assert(false);
-};
+}
 
 static void handle_interrupt(int sig) {
 	if (!EngineDebugger::is_active()) {
@@ -150,6 +165,31 @@ String OS_Unix::get_stdin_string(bool p_block) {
 	return "";
 }
 
+Error OS_Unix::get_entropy(uint8_t *r_buffer, int p_bytes) {
+#if defined(UNIX_GET_ENTROPY)
+	int left = p_bytes;
+	int ofs = 0;
+	do {
+		int chunk = MIN(left, 256);
+		ERR_FAIL_COND_V(getentropy(r_buffer + ofs, chunk), FAILED);
+		left -= chunk;
+		ofs += chunk;
+	} while (left > 0);
+#elif !defined(NO_URANDOM)
+	int r = open("/dev/urandom", O_RDONLY);
+	ERR_FAIL_COND_V(r < 0, FAILED);
+	int left = p_bytes;
+	do {
+		ssize_t ret = read(r, r_buffer, p_bytes);
+		ERR_FAIL_COND_V(ret <= 0, FAILED);
+		left -= ret;
+	} while (left > 0);
+#else
+	return ERR_UNAVAILABLE;
+#endif
+	return OK;
+}
+
 String OS_Unix::get_name() const {
 	return "Unix";
 }
@@ -158,7 +198,7 @@ double OS_Unix::get_unix_time() const {
 	struct timeval tv_now;
 	gettimeofday(&tv_now, nullptr);
 	return (double)tv_now.tv_sec + double(tv_now.tv_usec) / 1000000;
-};
+}
 
 OS::Date OS_Unix::get_date(bool p_utc) const {
 	time_t t = time(nullptr);
@@ -370,7 +410,7 @@ Error OS_Unix::kill(const ProcessID &p_pid) {
 
 int OS_Unix::get_process_id() const {
 	return getpid();
-};
+}
 
 bool OS_Unix::has_environment(const String &p_var) const {
 	return getenv(p_var.utf8().get_data()) != nullptr;
@@ -515,8 +555,9 @@ String OS_Unix::get_executable_path() const {
 
 	char *resolved_path = new char[buff_size + 1];
 
-	if (_NSGetExecutablePath(resolved_path, &buff_size) == 1)
+	if (_NSGetExecutablePath(resolved_path, &buff_size) == 1) {
 		WARN_PRINT("MAXPATHLEN is too small");
+	}
 
 	String path(resolved_path);
 	delete[] resolved_path;

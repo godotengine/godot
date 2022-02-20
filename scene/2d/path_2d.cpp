@@ -86,36 +86,41 @@ bool Path2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 #endif
 
 void Path2D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_DRAW && curve.is_valid()) {
-		//draw the curve!!
+	switch (p_what) {
+		// Draw the curve if navigation debugging is enabled.
+		case NOTIFICATION_DRAW: {
+			if (!curve.is_valid()) {
+				break;
+			}
 
-		if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_navigation_hint()) {
-			return;
-		}
+			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_navigation_hint()) {
+				return;
+			}
 
-		if (curve->get_point_count() < 2) {
-			return;
-		}
+			if (curve->get_point_count() < 2) {
+				return;
+			}
 
 #ifdef TOOLS_ENABLED
-		const real_t line_width = 2 * EDSCALE;
+			const real_t line_width = 2 * EDSCALE;
 #else
-		const real_t line_width = 2;
+			const real_t line_width = 2;
 #endif
-		const Color color = Color(0.5, 0.6, 1.0, 0.7);
+			const Color color = Color(0.5, 0.6, 1.0, 0.7);
 
-		_cached_draw_pts.resize(curve->get_point_count() * 8);
-		int count = 0;
+			_cached_draw_pts.resize(curve->get_point_count() * 8);
+			int count = 0;
 
-		for (int i = 0; i < curve->get_point_count(); i++) {
-			for (int j = 0; j < 8; j++) {
-				real_t frac = j * (1.0 / 8.0);
-				Vector2 p = curve->interpolate(i, frac);
-				_cached_draw_pts.set(count++, p);
+			for (int i = 0; i < curve->get_point_count(); i++) {
+				for (int j = 0; j < 8; j++) {
+					real_t frac = j * (1.0 / 8.0);
+					Vector2 p = curve->interpolate(i, frac);
+					_cached_draw_pts.set(count++, p);
+				}
 			}
-		}
 
-		draw_polyline(_cached_draw_pts, color, line_width, true);
+			draw_polyline(_cached_draw_pts, color, line_width, true);
+		} break;
 	}
 }
 
@@ -226,8 +231,8 @@ void PathFollow2D::_notification(int p_what) {
 			if (path) {
 				_update_transform();
 			}
-
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			path = nullptr;
 		} break;

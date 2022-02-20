@@ -32,7 +32,7 @@
 
 #include "core/object/message_queue.h"
 #include "core/os/os.h"
-#include "editor_scale.h"
+#include "editor/editor_scale.h"
 #include "main/main.h"
 #include "servers/display_server.h"
 

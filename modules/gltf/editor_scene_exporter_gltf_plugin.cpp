@@ -30,10 +30,12 @@
 
 #if TOOLS_ENABLED
 #include "editor_scene_exporter_gltf_plugin.h"
+
 #include "core/config/project_settings.h"
 #include "core/error/error_list.h"
 #include "core/object/object.h"
 #include "core/templates/vector.h"
+#include "editor/editor_file_dialog.h"
 #include "editor/editor_file_system.h"
 #include "gltf_document.h"
 #include "gltf_state.h"
@@ -51,10 +53,9 @@ bool SceneExporterGLTFPlugin::has_main_screen() const {
 	return false;
 }
 
-SceneExporterGLTFPlugin::SceneExporterGLTFPlugin(EditorNode *p_node) {
-	editor = p_node;
+SceneExporterGLTFPlugin::SceneExporterGLTFPlugin() {
 	file_export_lib = memnew(EditorFileDialog);
-	editor->get_gui_base()->add_child(file_export_lib);
+	EditorNode::get_singleton()->get_gui_base()->add_child(file_export_lib);
 	file_export_lib->connect("file_selected", callable_mp(this, &SceneExporterGLTFPlugin::_gltf2_dialog_action));
 	file_export_lib->set_title(TTR("Export Library"));
 	file_export_lib->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
@@ -68,9 +69,9 @@ SceneExporterGLTFPlugin::SceneExporterGLTFPlugin(EditorNode *p_node) {
 }
 
 void SceneExporterGLTFPlugin::_gltf2_dialog_action(String p_file) {
-	Node *root = editor->get_tree()->get_edited_scene_root();
+	Node *root = EditorNode::get_singleton()->get_tree()->get_edited_scene_root();
 	if (!root) {
-		editor->show_accept(TTR("This operation can't be done without a scene."), TTR("OK"));
+		EditorNode::get_singleton()->show_accept(TTR("This operation can't be done without a scene."), TTR("OK"));
 		return;
 	}
 	List<String> deps;
@@ -91,9 +92,9 @@ void SceneExporterGLTFPlugin::_gltf2_dialog_action(String p_file) {
 }
 
 void SceneExporterGLTFPlugin::convert_scene_to_gltf2() {
-	Node *root = editor->get_tree()->get_edited_scene_root();
+	Node *root = EditorNode::get_singleton()->get_tree()->get_edited_scene_root();
 	if (!root) {
-		editor->show_accept(TTR("This operation can't be done without a scene."), TTR("OK"));
+		EditorNode::get_singleton()->show_accept(TTR("This operation can't be done without a scene."), TTR("OK"));
 		return;
 	}
 	String filename = String(root->get_scene_file_path().get_file().get_basename());

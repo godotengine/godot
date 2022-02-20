@@ -36,9 +36,10 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/fileserver/editor_file_server.h"
+#include "editor/plugins/script_editor_plugin.h"
 #include "scene/gui/menu_button.h"
 
-DebuggerEditorPlugin::DebuggerEditorPlugin(EditorNode *p_editor, MenuButton *p_debug_menu) {
+DebuggerEditorPlugin::DebuggerEditorPlugin(MenuButton *p_debug_menu) {
 	EditorDebuggerServer::initialize();
 
 	ED_SHORTCUT("debugger/step_into", TTR("Step Into"), Key::F11);
@@ -176,8 +177,10 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 }
 
 void DebuggerEditorPlugin::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY) {
-		_update_debug_options();
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			_update_debug_options();
+		} break;
 	}
 }
 

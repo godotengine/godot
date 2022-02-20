@@ -2215,7 +2215,9 @@ BaseMaterial3D::EmissionOperator BaseMaterial3D::get_emission_operator() const {
 
 RID BaseMaterial3D::get_shader_rid() const {
 	MutexLock lock(material_mutex);
-	((BaseMaterial3D *)this)->_update_shader();
+	if (element.in_list()) { // _is_shader_dirty() would create anoder mutex lock
+		((BaseMaterial3D *)this)->_update_shader();
+	}
 	ERR_FAIL_COND_V(!shader_map.has(current_key), RID());
 	return shader_map[current_key].shader;
 }

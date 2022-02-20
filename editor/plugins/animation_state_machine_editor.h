@@ -31,7 +31,6 @@
 #ifndef ANIMATION_STATE_MACHINE_EDITOR_H
 #define ANIMATION_STATE_MACHINE_EDITOR_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/plugins/animation_tree_editor_plugin.h"
 #include "editor/property_editor.h"
@@ -40,6 +39,8 @@
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
+
+class EditorFileDialog;
 
 class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	GDCLASS(AnimationNodeStateMachineEditor, AnimationTreeNodeEditorPlugin);

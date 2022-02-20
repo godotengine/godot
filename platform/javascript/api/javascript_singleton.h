@@ -59,6 +59,8 @@ public:
 	Ref<JavaScriptObject> create_callback(const Callable &p_callable);
 	Variant _create_object_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	void download_buffer(Vector<uint8_t> p_arr, const String &p_name, const String &p_mime = "application/octet-stream");
+	bool pwa_needs_update() const;
+	Error pwa_update();
 
 	static JavaScript *get_singleton();
 	JavaScript();

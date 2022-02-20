@@ -917,7 +917,7 @@ struct glyf
 
   struct accelerator_t
   {
-    accelerator_t (hb_face_t *face_)
+    accelerator_t (hb_face_t *face)
     {
       short_offset = false;
       num_glyphs = 0;
@@ -930,7 +930,6 @@ struct glyf
 #ifndef HB_NO_VERTICAL
       vmtx = nullptr;
 #endif
-      face = face_;
       const OT::head &head = *face->table.head;
       if (head.indexToLocFormat > 1 || head.glyphDataFormat > 0)
 	/* Unknown format.  Leave num_glyphs=0, that takes care of disabling us. */
@@ -1287,7 +1286,6 @@ struct glyf
     unsigned int num_glyphs;
     hb_blob_ptr_t<loca> loca_table;
     hb_blob_ptr_t<glyf> glyf_table;
-    hb_face_t *face;
   };
 
   struct SubsetGlyph

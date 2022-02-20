@@ -454,8 +454,9 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_c
 
 Error AudioDriverWASAPI::init_render_device(bool reinit) {
 	Error err = audio_device_init(&audio_output, false, reinit);
-	if (err != OK)
+	if (err != OK) {
 		return err;
+	}
 
 	switch (audio_output.channels) {
 		case 2: // Stereo
@@ -485,8 +486,9 @@ Error AudioDriverWASAPI::init_render_device(bool reinit) {
 
 Error AudioDriverWASAPI::init_capture_device(bool reinit) {
 	Error err = audio_device_init(&audio_input, true, reinit);
-	if (err != OK)
+	if (err != OK) {
 		return err;
+	}
 
 	// Get the max frames
 	UINT32 max_frames;

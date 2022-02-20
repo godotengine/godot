@@ -37,9 +37,8 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
+#include "scene/gui/box_container.h"
 #include "scene/main/window.h"
-
-#include "box_container.h"
 
 #include <limits.h>
 
@@ -202,7 +201,7 @@ void TreeItem::propagate_check(int p_column, bool p_emit_signal) {
 	bool ch = cells[p_column].checked;
 
 	if (p_emit_signal) {
-		tree->emit_signal("check_propagated_to_item", this, p_column);
+		tree->emit_signal(SNAME("check_propagated_to_item"), this, p_column);
 	}
 	_propagate_check_through_children(p_column, ch, p_emit_signal);
 	_propagate_check_through_parents(p_column, p_emit_signal);
@@ -213,7 +212,7 @@ void TreeItem::_propagate_check_through_children(int p_column, bool p_checked, b
 	while (current) {
 		current->set_checked(p_column, p_checked);
 		if (p_emit_signal) {
-			current->tree->emit_signal("check_propagated_to_item", current, p_column);
+			current->tree->emit_signal(SNAME("check_propagated_to_item"), current, p_column);
 		}
 		current->_propagate_check_through_children(p_column, p_checked, p_emit_signal);
 		current = current->get_next();
@@ -252,7 +251,7 @@ void TreeItem::_propagate_check_through_parents(int p_column, bool p_emit_signal
 	}
 
 	if (p_emit_signal) {
-		current->tree->emit_signal("check_propagated_to_item", current, p_column);
+		current->tree->emit_signal(SNAME("check_propagated_to_item"), current, p_column);
 	}
 	current->_propagate_check_through_parents(p_column, p_emit_signal);
 }
@@ -905,6 +904,12 @@ String TreeItem::get_button_tooltip(int p_column, int p_idx) const {
 	return cells[p_column].buttons[p_idx].tooltip;
 }
 
+int TreeItem::get_button_id(int p_column, int p_idx) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), -1);
+	ERR_FAIL_INDEX_V(p_idx, cells[p_column].buttons.size(), -1);
+	return cells[p_column].buttons[p_idx].id;
+}
+
 void TreeItem::erase_button(int p_column, int p_idx) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	ERR_FAIL_INDEX(p_idx, cells[p_column].buttons.size());
@@ -1283,9 +1288,11 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_custom_as_button", "column", "enable"), &TreeItem::set_custom_as_button);
 	ClassDB::bind_method(D_METHOD("is_custom_set_as_button", "column"), &TreeItem::is_custom_set_as_button);
 
-	ClassDB::bind_method(D_METHOD("add_button", "column", "button", "button_idx", "disabled", "tooltip"), &TreeItem::add_button, DEFVAL(-1), DEFVAL(false), DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("add_button", "column", "button", "id", "disabled", "tooltip"), &TreeItem::add_button, DEFVAL(-1), DEFVAL(false), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_button_count", "column"), &TreeItem::get_button_count);
 	ClassDB::bind_method(D_METHOD("get_button_tooltip", "column", "button_idx"), &TreeItem::get_button_tooltip);
+	ClassDB::bind_method(D_METHOD("get_button_id", "column", "button_idx"), &TreeItem::get_button_id);
+	ClassDB::bind_method(D_METHOD("get_button_by_id", "column", "id"), &TreeItem::get_button_by_id);
 	ClassDB::bind_method(D_METHOD("get_button", "column", "button_idx"), &TreeItem::get_button);
 	ClassDB::bind_method(D_METHOD("set_button", "column", "button_idx", "button"), &TreeItem::set_button);
 	ClassDB::bind_method(D_METHOD("erase_button", "column", "button_idx"), &TreeItem::erase_button);
@@ -1694,8 +1701,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 	bool skip = (p_item == root && hide_root);
 
 	if (!skip && (p_pos.y + label_h - cache.offset.y) > 0) {
-		//draw separation.
-		//if (p_item->get_parent()!=root || !hide_root)
+		// Draw separation.
 
 		ERR_FAIL_COND_V(cache.font.is_null(), -1);
 
@@ -2252,11 +2258,6 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 					emit_signal(SNAME("item_selected"));
 					emitted_row = true;
 				}
-				/*
-					if (p_col==i)
-						p_current->selected_signal.call(p_col);
-					*/
-
 			} else if (c.selected) {
 				if (p_selected != p_current) {
 					// Deselect other rows.
@@ -2490,7 +2491,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 			/* process selection */
 
 			if (p_double_click && (!c.editable || c.mode == TreeItem::CELL_MODE_CUSTOM || c.mode == TreeItem::CELL_MODE_ICON /*|| c.mode==TreeItem::CELL_MODE_CHECK*/)) { //it's confusing for check
-
+				// Emits the "item_activated" signal.
 				propagate_mouse_activated = true;
 
 				incr_search.clear();
@@ -3628,178 +3629,187 @@ int Tree::_get_title_button_height() const {
 }
 
 void Tree::_notification(int p_what) {
-	if (p_what == NOTIFICATION_FOCUS_ENTER) {
-		if (get_viewport()) {
-			focus_in_id = get_viewport()->get_processed_events_count();
-		}
-	}
-	if (p_what == NOTIFICATION_MOUSE_EXIT) {
-		if (cache.hover_type != Cache::CLICK_NONE) {
-			cache.hover_type = Cache::CLICK_NONE;
+	switch (p_what) {
+		case NOTIFICATION_FOCUS_ENTER: {
+			if (get_viewport()) {
+				focus_in_id = get_viewport()->get_processed_events_count();
+			}
+		} break;
+
+		case NOTIFICATION_MOUSE_EXIT: {
+			if (cache.hover_type != Cache::CLICK_NONE) {
+				cache.hover_type = Cache::CLICK_NONE;
+				update();
+			}
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			drag_touching = false;
+		} break;
+
+		case NOTIFICATION_ENTER_TREE: {
+			update_cache();
+		} break;
+
+		case NOTIFICATION_DRAG_END: {
+			drop_mode_flags = 0;
+			scrolling = false;
+			set_physics_process_internal(false);
 			update();
-		}
-	}
+		} break;
 
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		drag_touching = false;
-	}
+		case NOTIFICATION_DRAG_BEGIN: {
+			single_select_defer = nullptr;
+			if (cache.scroll_speed > 0) {
+				scrolling = true;
+				set_physics_process_internal(true);
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		update_cache();
-	}
-	if (p_what == NOTIFICATION_DRAG_END) {
-		drop_mode_flags = 0;
-		scrolling = false;
-		set_physics_process_internal(false);
-		update();
-	}
-	if (p_what == NOTIFICATION_DRAG_BEGIN) {
-		single_select_defer = nullptr;
-		if (cache.scroll_speed > 0) {
-			scrolling = true;
-			set_physics_process_internal(true);
-		}
-	}
-	if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
-		if (drag_touching) {
-			if (drag_touching_deaccel) {
-				float pos = v_scroll->get_value();
-				pos += drag_speed * get_physics_process_delta_time();
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			if (drag_touching) {
+				if (drag_touching_deaccel) {
+					float pos = v_scroll->get_value();
+					pos += drag_speed * get_physics_process_delta_time();
 
-				bool turnoff = false;
-				if (pos < 0) {
-					pos = 0;
-					turnoff = true;
-					set_physics_process_internal(false);
-					drag_touching = false;
-					drag_touching_deaccel = false;
-				}
-				if (pos > (v_scroll->get_max() - v_scroll->get_page())) {
-					pos = v_scroll->get_max() - v_scroll->get_page();
-					turnoff = true;
-				}
+					bool turnoff = false;
+					if (pos < 0) {
+						pos = 0;
+						turnoff = true;
+						set_physics_process_internal(false);
+						drag_touching = false;
+						drag_touching_deaccel = false;
+					}
+					if (pos > (v_scroll->get_max() - v_scroll->get_page())) {
+						pos = v_scroll->get_max() - v_scroll->get_page();
+						turnoff = true;
+					}
 
-				v_scroll->set_value(pos);
-				float sgn = drag_speed < 0 ? -1 : 1;
-				float val = Math::abs(drag_speed);
-				val -= 1000 * get_physics_process_delta_time();
+					v_scroll->set_value(pos);
+					float sgn = drag_speed < 0 ? -1 : 1;
+					float val = Math::abs(drag_speed);
+					val -= 1000 * get_physics_process_delta_time();
 
-				if (val < 0) {
-					turnoff = true;
-				}
-				drag_speed = sgn * val;
+					if (val < 0) {
+						turnoff = true;
+					}
+					drag_speed = sgn * val;
 
-				if (turnoff) {
-					set_physics_process_internal(false);
-					drag_touching = false;
-					drag_touching_deaccel = false;
+					if (turnoff) {
+						set_physics_process_internal(false);
+						drag_touching = false;
+						drag_touching_deaccel = false;
+					}
 				}
 			}
-		}
 
-		Point2 mouse_position = get_viewport()->get_mouse_position() - get_global_position();
-		if (scrolling && get_rect().grow(cache.scroll_border).has_point(mouse_position)) {
-			Point2 point;
+			Point2 mouse_position = get_viewport()->get_mouse_position() - get_global_position();
+			if (scrolling && get_rect().grow(cache.scroll_border).has_point(mouse_position)) {
+				Point2 point;
 
-			if ((ABS(mouse_position.x) < ABS(mouse_position.x - get_size().width)) && (ABS(mouse_position.x) < cache.scroll_border)) {
-				point.x = mouse_position.x - cache.scroll_border;
-			} else if (ABS(mouse_position.x - get_size().width) < cache.scroll_border) {
-				point.x = mouse_position.x - (get_size().width - cache.scroll_border);
-			}
-
-			if ((ABS(mouse_position.y) < ABS(mouse_position.y - get_size().height)) && (ABS(mouse_position.y) < cache.scroll_border)) {
-				point.y = mouse_position.y - cache.scroll_border;
-			} else if (ABS(mouse_position.y - get_size().height) < cache.scroll_border) {
-				point.y = mouse_position.y - (get_size().height - cache.scroll_border);
-			}
-
-			point *= cache.scroll_speed * get_physics_process_delta_time();
-			point += get_scroll();
-			h_scroll->set_value(point.x);
-			v_scroll->set_value(point.y);
-		}
-	}
-
-	if (p_what == NOTIFICATION_DRAW) {
-		update_cache();
-		update_scrollbars();
-		RID ci = get_canvas_item();
-
-		Ref<StyleBox> bg = cache.bg;
-		Color font_outline_color = get_theme_color(SNAME("font_outline_color"));
-		int outline_size = get_theme_constant(SNAME("outline_size"));
-
-		Point2 draw_ofs;
-		draw_ofs += bg->get_offset();
-		Size2 draw_size = get_size() - bg->get_minimum_size();
-		if (h_scroll->is_visible()) {
-			draw_size.width -= h_scroll->get_minimum_size().width;
-		}
-
-		bg->draw(ci, Rect2(Point2(), get_size()));
-
-		int tbh = _get_title_button_height();
-
-		draw_ofs.y += tbh;
-		draw_size.y -= tbh;
-
-		cache.rtl = is_layout_rtl();
-
-		if (root && get_size().x > 0 && get_size().y > 0) {
-			draw_item(Point2(), draw_ofs, draw_size, root);
-		}
-
-		if (show_column_titles) {
-			//title buttons
-			int ofs2 = cache.bg->get_margin(SIDE_LEFT);
-			for (int i = 0; i < columns.size(); i++) {
-				Ref<StyleBox> sb = (cache.click_type == Cache::CLICK_TITLE && cache.click_index == i) ? cache.title_button_pressed : ((cache.hover_type == Cache::CLICK_TITLE && cache.hover_index == i) ? cache.title_button_hover : cache.title_button);
-				Ref<Font> f = cache.tb_font;
-				Rect2 tbrect = Rect2(ofs2 - cache.offset.x, bg->get_margin(SIDE_TOP), get_column_width(i), tbh);
-				if (cache.rtl) {
-					tbrect.position.x = get_size().width - tbrect.size.x - tbrect.position.x;
+				if ((ABS(mouse_position.x) < ABS(mouse_position.x - get_size().width)) && (ABS(mouse_position.x) < cache.scroll_border)) {
+					point.x = mouse_position.x - cache.scroll_border;
+				} else if (ABS(mouse_position.x - get_size().width) < cache.scroll_border) {
+					point.x = mouse_position.x - (get_size().width - cache.scroll_border);
 				}
-				sb->draw(ci, tbrect);
-				ofs2 += tbrect.size.width;
-				//text
-				int clip_w = tbrect.size.width - sb->get_minimum_size().width;
-				columns.write[i].text_buf->set_width(clip_w);
 
-				Vector2 text_pos = tbrect.position + Point2i(sb->get_offset().x + (tbrect.size.width - columns[i].text_buf->get_size().x) / 2, (tbrect.size.height - columns[i].text_buf->get_size().y) / 2);
-				if (outline_size > 0 && font_outline_color.a > 0) {
-					columns[i].text_buf->draw_outline(ci, text_pos, outline_size, font_outline_color);
+				if ((ABS(mouse_position.y) < ABS(mouse_position.y - get_size().height)) && (ABS(mouse_position.y) < cache.scroll_border)) {
+					point.y = mouse_position.y - cache.scroll_border;
+				} else if (ABS(mouse_position.y - get_size().height) < cache.scroll_border) {
+					point.y = mouse_position.y - (get_size().height - cache.scroll_border);
 				}
-				columns[i].text_buf->draw(ci, text_pos, cache.title_button_color);
+
+				point *= cache.scroll_speed * get_physics_process_delta_time();
+				point += get_scroll();
+				h_scroll->set_value(point.x);
+				v_scroll->set_value(point.y);
 			}
-		}
+		} break;
 
-		// Draw the background focus outline last, so that it is drawn in front of the section headings.
-		// Otherwise, section heading backgrounds can appear to be in front of the focus outline when scrolling.
-		if (has_focus()) {
-			RenderingServer::get_singleton()->canvas_item_add_clip_ignore(ci, true);
-			const Ref<StyleBox> bg_focus = get_theme_stylebox(SNAME("bg_focus"));
-			bg_focus->draw(ci, Rect2(Point2(), get_size()));
-			RenderingServer::get_singleton()->canvas_item_add_clip_ignore(ci, false);
-		}
-	}
+		case NOTIFICATION_DRAW: {
+			update_cache();
+			update_scrollbars();
+			RID ci = get_canvas_item();
 
-	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_LAYOUT_DIRECTION_CHANGED || p_what == NOTIFICATION_TRANSLATION_CHANGED) {
-		update_cache();
-		_update_all();
-	}
+			Ref<StyleBox> bg = cache.bg;
+			Color font_outline_color = get_theme_color(SNAME("font_outline_color"));
+			int outline_size = get_theme_constant(SNAME("outline_size"));
 
-	if (p_what == NOTIFICATION_RESIZED || p_what == NOTIFICATION_TRANSFORM_CHANGED) {
-		if (popup_edited_item != nullptr) {
-			Rect2 rect = popup_edited_item->get_meta("__focus_rect");
-			Vector2 ofs(0, (text_editor->get_size().height - rect.size.height) / 2);
-			Point2i textedpos = get_global_position() + rect.position - ofs;
-
-			if (cache.text_editor_position != textedpos) {
-				cache.text_editor_position = textedpos;
-				text_editor->set_position(textedpos);
-				value_editor->set_position(textedpos + Point2i(0, text_editor->get_size().height));
+			Point2 draw_ofs;
+			draw_ofs += bg->get_offset();
+			Size2 draw_size = get_size() - bg->get_minimum_size();
+			if (h_scroll->is_visible()) {
+				draw_size.width -= h_scroll->get_minimum_size().width;
 			}
-		}
+
+			bg->draw(ci, Rect2(Point2(), get_size()));
+
+			int tbh = _get_title_button_height();
+
+			draw_ofs.y += tbh;
+			draw_size.y -= tbh;
+
+			cache.rtl = is_layout_rtl();
+
+			if (root && get_size().x > 0 && get_size().y > 0) {
+				draw_item(Point2(), draw_ofs, draw_size, root);
+			}
+
+			if (show_column_titles) {
+				//title buttons
+				int ofs2 = cache.bg->get_margin(SIDE_LEFT);
+				for (int i = 0; i < columns.size(); i++) {
+					Ref<StyleBox> sb = (cache.click_type == Cache::CLICK_TITLE && cache.click_index == i) ? cache.title_button_pressed : ((cache.hover_type == Cache::CLICK_TITLE && cache.hover_index == i) ? cache.title_button_hover : cache.title_button);
+					Ref<Font> f = cache.tb_font;
+					Rect2 tbrect = Rect2(ofs2 - cache.offset.x, bg->get_margin(SIDE_TOP), get_column_width(i), tbh);
+					if (cache.rtl) {
+						tbrect.position.x = get_size().width - tbrect.size.x - tbrect.position.x;
+					}
+					sb->draw(ci, tbrect);
+					ofs2 += tbrect.size.width;
+					//text
+					int clip_w = tbrect.size.width - sb->get_minimum_size().width;
+					columns.write[i].text_buf->set_width(clip_w);
+
+					Vector2 text_pos = tbrect.position + Point2i(sb->get_offset().x + (tbrect.size.width - columns[i].text_buf->get_size().x) / 2, (tbrect.size.height - columns[i].text_buf->get_size().y) / 2);
+					if (outline_size > 0 && font_outline_color.a > 0) {
+						columns[i].text_buf->draw_outline(ci, text_pos, outline_size, font_outline_color);
+					}
+					columns[i].text_buf->draw(ci, text_pos, cache.title_button_color);
+				}
+			}
+
+			// Draw the background focus outline last, so that it is drawn in front of the section headings.
+			// Otherwise, section heading backgrounds can appear to be in front of the focus outline when scrolling.
+			if (has_focus()) {
+				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(ci, true);
+				const Ref<StyleBox> bg_focus = get_theme_stylebox(SNAME("bg_focus"));
+				bg_focus->draw(ci, Rect2(Point2(), get_size()));
+				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(ci, false);
+			}
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			update_cache();
+			_update_all();
+		} break;
+
+		case NOTIFICATION_RESIZED:
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			if (popup_edited_item != nullptr) {
+				Rect2 rect = popup_edited_item->get_meta("__focus_rect");
+				Vector2 ofs(0, (text_editor->get_size().height - rect.size.height) / 2);
+				Point2i textedpos = get_global_position() + rect.position - ofs;
+
+				if (cache.text_editor_position != textedpos) {
+					cache.text_editor_position = textedpos;
+					text_editor->set_position(textedpos);
+					value_editor->set_position(textedpos + Point2i(0, text_editor->get_size().height));
+				}
+			}
+		} break;
 	}
 }
 
@@ -4049,10 +4059,6 @@ int Tree::get_edited_column() const {
 }
 
 TreeItem *Tree::get_next_selected(TreeItem *p_item) {
-	/*
-	if (!p_item)
-		return nullptr;
-	*/
 	if (!root) {
 		return nullptr;
 	}
@@ -4409,21 +4415,29 @@ Point2 Tree::get_scroll() const {
 	return ofs;
 }
 
-void Tree::scroll_to_item(TreeItem *p_item) {
+void Tree::scroll_to_item(TreeItem *p_item, bool p_center_on_item) {
 	if (!is_visible_in_tree()) {
-		// hack to work around crash in get_item_rect() if Tree is not in tree.
-		return;
+		return; // Hack to work around crash in get_item_rect() if Tree is not in tree.
 	}
 
-	// make sure the scrollbar min and max are up to date with latest changes.
 	update_scrollbars();
 
-	const Rect2 r = get_item_rect(p_item);
+	const real_t tree_height = get_size().y;
+	const Rect2 item_rect = get_item_rect(p_item);
+	const real_t item_y = item_rect.position.y;
+	const real_t item_height = item_rect.size.y + cache.vseparation;
 
-	if (r.position.y <= v_scroll->get_value()) {
-		v_scroll->set_value(r.position.y);
-	} else if (r.position.y + r.size.y + 2 * cache.vseparation > v_scroll->get_value() + get_size().y) {
-		v_scroll->set_value(r.position.y + r.size.y + 2 * cache.vseparation - get_size().y);
+	if (p_center_on_item) {
+		v_scroll->set_value(item_y - (tree_height - item_height) / 2.0f);
+	} else {
+		if (item_y < v_scroll->get_value()) {
+			v_scroll->set_value(item_y);
+		} else {
+			const real_t new_position = item_y + item_height - tree_height;
+			if (new_position > v_scroll->get_value()) {
+				v_scroll->set_value(new_position);
+			}
+		}
 	}
 }
 
@@ -4848,6 +4862,7 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_at_position", "position"), &Tree::get_item_at_position);
 	ClassDB::bind_method(D_METHOD("get_column_at_position", "position"), &Tree::get_column_at_position);
 	ClassDB::bind_method(D_METHOD("get_drop_section_at_position", "position"), &Tree::get_drop_section_at_position);
+	ClassDB::bind_method(D_METHOD("get_button_id_at_position", "position"), &Tree::get_button_id_at_position);
 
 	ClassDB::bind_method(D_METHOD("ensure_cursor_is_visible"), &Tree::ensure_cursor_is_visible);
 
@@ -4868,7 +4883,7 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_column_title_language", "column"), &Tree::get_column_title_language);
 
 	ClassDB::bind_method(D_METHOD("get_scroll"), &Tree::get_scroll);
-	ClassDB::bind_method(D_METHOD("scroll_to_item", "item"), &Tree::scroll_to_item);
+	ClassDB::bind_method(D_METHOD("scroll_to_item", "item", "center_on_item"), &Tree::scroll_to_item, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_h_scroll_enabled", "h_scroll"), &Tree::set_h_scroll_enabled);
 	ClassDB::bind_method(D_METHOD("is_h_scroll_enabled"), &Tree::is_h_scroll_enabled);

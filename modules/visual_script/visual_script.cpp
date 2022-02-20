@@ -930,8 +930,6 @@ void VisualScript::get_script_property_list(List<PropertyInfo> *p_list) const {
 	get_variable_list(&vars);
 
 	for (const StringName &E : vars) {
-		//if (!variables[E]._export)
-		//	continue;
 		PropertyInfo pi = variables[E].info;
 		pi.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
 		p_list->push_back(pi);
@@ -1163,9 +1161,6 @@ void VisualScript::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("custom_signal_swap_argument", "name", "argidx", "withidx"), &VisualScript::custom_signal_swap_argument);
 	ClassDB::bind_method(D_METHOD("remove_custom_signal", "name"), &VisualScript::remove_custom_signal);
 	ClassDB::bind_method(D_METHOD("rename_custom_signal", "name", "new_name"), &VisualScript::rename_custom_signal);
-
-	//ClassDB::bind_method(D_METHOD("set_variable_info","name","info"),&VScript::set_variable_info);
-	//ClassDB::bind_method(D_METHOD("get_variable_info","name"),&VScript::set_variable_info);
 
 	ClassDB::bind_method(D_METHOD("set_instance_base_type", "type"), &VisualScript::set_instance_base_type);
 

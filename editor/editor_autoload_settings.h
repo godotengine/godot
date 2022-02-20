@@ -31,9 +31,11 @@
 #ifndef EDITOR_AUTOLOAD_SETTINGS_H
 #define EDITOR_AUTOLOAD_SETTINGS_H
 
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/tree.h"
 
-#include "editor_file_dialog.h"
+class EditorFileDialog;
 
 class EditorAutoloadSettings : public VBoxContainer {
 	GDCLASS(EditorAutoloadSettings, VBoxContainer);

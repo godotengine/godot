@@ -31,7 +31,6 @@
 #ifndef OT_FEATURES_PLUGIN_H
 #define OT_FEATURES_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
 
@@ -95,7 +94,7 @@ class OpenTypeFeaturesEditorPlugin : public EditorPlugin {
 	GDCLASS(OpenTypeFeaturesEditorPlugin, EditorPlugin);
 
 public:
-	OpenTypeFeaturesEditorPlugin(EditorNode *p_node);
+	OpenTypeFeaturesEditorPlugin();
 
 	virtual String get_name() const override { return "OpenTypeFeatures"; }
 };

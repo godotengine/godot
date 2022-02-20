@@ -29,23 +29,26 @@
 /*************************************************************************/
 
 #include "spring_arm_3d.h"
+
 #include "scene/3d/camera_3d.h"
 
 void SpringArm3D::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_ENTER_TREE: {
 			if (!Engine::get_singleton()->is_editor_hint()) {
 				set_physics_process_internal(true);
 			}
-			break;
-		case NOTIFICATION_EXIT_TREE:
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
 			if (!Engine::get_singleton()->is_editor_hint()) {
 				set_physics_process_internal(false);
 			}
-			break;
-		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS:
+		} break;
+
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			process_spring();
-			break;
+		} break;
 	}
 }
 
@@ -185,14 +188,14 @@ void SpringArm3D::process_spring() {
 	}
 
 	current_spring_length = spring_length * motion_delta;
-	Transform3D childs_transform;
-	childs_transform.origin = get_global_transform().origin + cast_direction * (spring_length * motion_delta);
+	Transform3D child_transform;
+	child_transform.origin = get_global_transform().origin + cast_direction * (spring_length * motion_delta);
 
 	for (int i = get_child_count() - 1; 0 <= i; --i) {
 		Node3D *child = Object::cast_to<Node3D>(get_child(i));
 		if (child) {
-			childs_transform.basis = child->get_global_transform().basis;
-			child->set_global_transform(childs_transform);
+			child_transform.basis = child->get_global_transform().basis;
+			child->set_global_transform(child_transform);
 		}
 	}
 }

@@ -164,6 +164,8 @@ public:
 	enum {
 		FORMAT_FLAG_NAMED_SCENE_IDS = 1,
 		FORMAT_FLAG_UIDS = 2,
+		FORMAT_FLAG_REAL_T_IS_DOUBLE = 4,
+
 		// Amount of reserved 32-bit fields in resource header
 		RESERVED_FIELDS = 11
 	};

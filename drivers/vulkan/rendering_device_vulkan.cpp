@@ -43,6 +43,8 @@
 
 //#define FORCE_FULL_BARRIER
 
+static const uint32_t SMALL_ALLOCATION_MAX_SIZE = 4096;
+
 // Get the Vulkan object information and possible stage access types (bitwise OR'd with incoming values)
 RenderingDeviceVulkan::Buffer *RenderingDeviceVulkan::_get_buffer_from_owner(RID p_buffer, VkPipelineStageFlags &r_stage_mask, VkAccessFlags &r_access_mask, uint32_t p_post_barrier) {
 	Buffer *buffer = nullptr;
@@ -1198,7 +1200,7 @@ uint32_t RenderingDeviceVulkan::get_image_required_mipmaps(uint32_t p_width, uin
 		d = MAX(1, d >> 1);
 
 		mipmaps++;
-	};
+	}
 
 	return mipmaps;
 }
@@ -1333,7 +1335,7 @@ Error RenderingDeviceVulkan::_buffer_allocate(Buffer *p_buffer, uint32_t p_size,
 	allocInfo.requiredFlags = 0;
 	allocInfo.preferredFlags = 0;
 	allocInfo.memoryTypeBits = 0;
-	allocInfo.pool = nullptr;
+	allocInfo.pool = p_size <= SMALL_ALLOCATION_MAX_SIZE ? small_allocs_pool : nullptr;
 	allocInfo.pUserData = nullptr;
 
 	VkResult err = vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &p_buffer->buffer, &p_buffer->allocation, nullptr);
@@ -1836,13 +1838,16 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 
 	//allocate memory
 
+	uint32_t width, height;
+	uint32_t image_size = get_image_format_required_size(p_format.format, p_format.width, p_format.height, p_format.depth, p_format.mipmaps, &width, &height);
+
 	VmaAllocationCreateInfo allocInfo;
 	allocInfo.flags = 0;
+	allocInfo.pool = image_size <= SMALL_ALLOCATION_MAX_SIZE ? small_allocs_pool : nullptr;
 	allocInfo.usage = p_format.usage_bits & TEXTURE_USAGE_CPU_READ_BIT ? VMA_MEMORY_USAGE_CPU_ONLY : VMA_MEMORY_USAGE_GPU_ONLY;
 	allocInfo.requiredFlags = 0;
 	allocInfo.preferredFlags = 0;
 	allocInfo.memoryTypeBits = 0;
-	allocInfo.pool = nullptr;
 	allocInfo.pUserData = nullptr;
 
 	Texture texture;
@@ -3674,7 +3679,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		// Set view masks for each subpass
 		for (uint32_t i = 0; i < subpasses.size(); i++) {
 			view_masks.push_back(view_mask);
-		};
+		}
 
 		render_pass_multiview_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
 		render_pass_multiview_create_info.pNext = nullptr;
@@ -6321,7 +6326,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 
 				attachment_states.push_back(state);
 				idx++;
-			};
+			}
 		}
 
 		ERR_FAIL_COND_V(attachment_states.size() != p_blend_state.attachments.size(), RID());
@@ -6646,6 +6651,10 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin_for_screen(Di
 	ERR_FAIL_COND_V_MSG(compute_list != nullptr, INVALID_ID, "Only one draw/compute list can be active at the same time.");
 
 	VkCommandBuffer command_buffer = frames[frame].draw_command_buffer;
+
+	if (!context->window_is_valid_swapchain(p_screen)) {
+		return INVALID_ID;
+	}
 
 	Size2i size = Size2i(context->window_get_width(p_screen), context->window_get_height(p_screen));
 
@@ -8808,6 +8817,18 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 		vmaCreateAllocator(&allocatorInfo, &allocator);
 	}
 
+	{ //create pool for small objects
+		VmaPoolCreateInfo pci;
+		pci.flags = VMA_POOL_CREATE_LINEAR_ALGORITHM_BIT;
+		pci.blockSize = 0;
+		pci.minBlockCount = 0;
+		pci.maxBlockCount = SIZE_MAX;
+		pci.priority = 0.5f;
+		pci.minAllocationAlignment = 0;
+		pci.pMemoryAllocateNext = nullptr;
+		vmaCreatePool(allocator, &pci, &small_allocs_pool);
+	}
+
 	frames = memnew_arr(Frame, frame_count);
 	frame = 0;
 	//create setup and frame buffers
@@ -8996,49 +9017,49 @@ uint64_t RenderingDeviceVulkan::get_driver_resource(DriverResource p_resource, R
 	switch (p_resource) {
 		case DRIVER_RESOURCE_VULKAN_DEVICE: {
 			return (uint64_t)context->get_device();
-		}; break;
+		} break;
 		case DRIVER_RESOURCE_VULKAN_PHYSICAL_DEVICE: {
 			return (uint64_t)context->get_physical_device();
-		}; break;
+		} break;
 		case DRIVER_RESOURCE_VULKAN_INSTANCE: {
 			return (uint64_t)context->get_instance();
-		}; break;
+		} break;
 		case DRIVER_RESOURCE_VULKAN_QUEUE: {
 			return (uint64_t)context->get_graphics_queue();
-		}; break;
+		} break;
 		case DRIVER_RESOURCE_VULKAN_QUEUE_FAMILY_INDEX: {
 			return context->get_graphics_queue_family_index();
-		}; break;
+		} break;
 		case DRIVER_RESOURCE_VULKAN_IMAGE: {
 			Texture *tex = texture_owner.get_or_null(p_rid);
 			ERR_FAIL_NULL_V(tex, 0);
 
 			return (uint64_t)tex->image;
-		}; break;
+		} break;
 		case DRIVER_RESOURCE_VULKAN_IMAGE_VIEW: {
 			Texture *tex = texture_owner.get_or_null(p_rid);
 			ERR_FAIL_NULL_V(tex, 0);
 
 			return (uint64_t)tex->view;
-		}; break;
+		} break;
 		case DRIVER_RESOURCE_VULKAN_IMAGE_NATIVE_TEXTURE_FORMAT: {
 			Texture *tex = texture_owner.get_or_null(p_rid);
 			ERR_FAIL_NULL_V(tex, 0);
 
 			return vulkan_formats[tex->format];
-		}; break;
+		} break;
 		case DRIVER_RESOURCE_VULKAN_SAMPLER: {
 			VkSampler *sampler = sampler_owner.get_or_null(p_rid);
 			ERR_FAIL_NULL_V(sampler, 0);
 
 			return uint64_t(*sampler);
-		}; break;
+		} break;
 		case DRIVER_RESOURCE_VULKAN_DESCRIPTOR_SET: {
 			UniformSet *uniform_set = uniform_set_owner.get_or_null(p_rid);
 			ERR_FAIL_NULL_V(uniform_set, 0);
 
 			return uint64_t(uniform_set->descriptor_set);
-		}; break;
+		} break;
 		case DRIVER_RESOURCE_VULKAN_BUFFER: {
 			Buffer *buffer = nullptr;
 			if (vertex_buffer_owner.owns(p_rid)) {
@@ -9056,23 +9077,23 @@ uint64_t RenderingDeviceVulkan::get_driver_resource(DriverResource p_resource, R
 			ERR_FAIL_NULL_V(buffer, 0);
 
 			return uint64_t(buffer->buffer);
-		}; break;
+		} break;
 		case DRIVER_RESOURCE_VULKAN_COMPUTE_PIPELINE: {
 			ComputePipeline *compute_pipeline = compute_pipeline_owner.get_or_null(p_rid);
 			ERR_FAIL_NULL_V(compute_pipeline, 0);
 
 			return uint64_t(compute_pipeline->pipeline);
-		}; break;
+		} break;
 		case DRIVER_RESOURCE_VULKAN_RENDER_PIPELINE: {
 			RenderPipeline *render_pipeline = render_pipeline_owner.get_or_null(p_rid);
 			ERR_FAIL_NULL_V(render_pipeline, 0);
 
 			return uint64_t(render_pipeline->pipeline);
-		}; break;
+		} break;
 		default: {
 			// not supported for this driver
 			return 0;
-		}; break;
+		} break;
 	}
 }
 
@@ -9276,6 +9297,7 @@ void RenderingDeviceVulkan::finalize() {
 	for (int i = 0; i < staging_buffer_blocks.size(); i++) {
 		vmaDestroyBuffer(allocator, staging_buffer_blocks[i].buffer, staging_buffer_blocks[i].allocation);
 	}
+	vmaDestroyPool(allocator, small_allocs_pool);
 	vmaDestroyAllocator(allocator);
 
 	while (vertex_formats.size()) {

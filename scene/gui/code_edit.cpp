@@ -74,6 +74,7 @@ void CodeEdit::_notification(int p_what) {
 
 			line_length_guideline_color = get_theme_color(SNAME("line_length_guideline_color"));
 		} break;
+
 		case NOTIFICATION_DRAW: {
 			RID ci = get_canvas_item();
 			const Size2 size = get_size();
@@ -84,7 +85,7 @@ void CodeEdit::_notification(int p_what) {
 			if (line_length_guideline_columns.size() > 0) {
 				const int xmargin_beg = style_normal->get_margin(SIDE_LEFT) + get_total_gutter_width();
 				const int xmargin_end = size.width - style_normal->get_margin(SIDE_RIGHT) - (is_drawing_minimap() ? get_minimap_width() : 0);
-				const int char_size = Math::round(font->get_char_size('0', 0, font_size).width);
+				const float char_size = font->get_char_size('0', 0, font_size).width;
 
 				for (int i = 0; i < line_length_guideline_columns.size(); i++) {
 					const int xoffset = xmargin_beg + char_size * (int)line_length_guideline_columns[i] - get_h_scroll();

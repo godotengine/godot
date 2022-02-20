@@ -31,7 +31,6 @@
 #ifndef GRADIENT_EDITOR_PLUGIN_H
 #define GRADIENT_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/gui/gradient_edit.h"
 
@@ -83,7 +82,7 @@ class GradientEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const override { return "Gradient"; }
 
-	GradientEditorPlugin(EditorNode *p_node);
+	GradientEditorPlugin();
 };
 
 #endif // GRADIENT_EDITOR_PLUGIN_H

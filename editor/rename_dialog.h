@@ -37,9 +37,11 @@
 #include "core/object/undo_redo.h"
 #include "editor/scene_tree_editor.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/spin_box.h"
+#include "scene/gui/tab_container.h"
 
 class RenameDialog : public ConfirmationDialog {
 	GDCLASS(RenameDialog, ConfirmationDialog);

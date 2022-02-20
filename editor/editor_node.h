@@ -32,16 +32,12 @@
 #define EDITOR_NODE_H
 
 #include "core/templates/safe_refcount.h"
-#include "editor/editor_data.h"
 #include "editor/editor_export.h"
 #include "editor/editor_folding.h"
 #include "editor/editor_native_shader_source_visualizer.h"
 #include "editor/editor_run.h"
-#include "editor/editor_toaster.h"
 #include "editor/inspector_dock.h"
 #include "editor/property_editor.h"
-#include "editor/scene_tree_dock.h"
-#include "scene/gui/link_button.h"
 
 typedef void (*EditorNodeInitCallback)();
 typedef void (*EditorPluginInitializeCallback)();
@@ -50,16 +46,20 @@ typedef bool (*EditorBuildCallback)();
 class AcceptDialog;
 class AudioStreamPreviewGenerator;
 class BackgroundProgress;
+class Button;
 class CenterContainer;
 class ConfirmationDialog;
 class Control;
 class DependencyEditor;
 class DependencyErrorDialog;
+class DynamicFontImportSettings;
 class EditorAbout;
 class EditorCommandPalette;
 class EditorExport;
+class EditorExtensionManager;
 class EditorFeatureProfileManager;
 class EditorFileServer;
+class EditorFolding;
 class EditorInspector;
 class EditorLayoutsDialog;
 class EditorLog;
@@ -67,12 +67,16 @@ class EditorPlugin;
 class EditorPluginList;
 class EditorQuickOpen;
 class EditorResourcePreview;
+class EditorRun;
 class EditorRunNative;
 class EditorSettingsDialog;
+class EditorToaster;
 class ExportTemplateManager;
+class FileDialog;
 class FileSystemDock;
 class HSplitContainer;
 class ImportDock;
+class LinkButton;
 class MenuButton;
 class NodeDock;
 class OrphanResourcesDialog;
@@ -83,17 +87,14 @@ class ProgressDialog;
 class ProjectExportDialog;
 class ProjectSettingsEditor;
 class RunSettingsDialog;
+class SceneImportSettings;
 class ScriptCreateDialog;
-class TabContainer;
+class SubViewport;
 class TabBar;
+class TabContainer;
 class TextureProgressBar;
-class Button;
 class VSplitContainer;
 class Window;
-class SubViewport;
-class SceneImportSettings;
-class EditorExtensionManager;
-class DynamicFontImportSettings;
 
 class EditorNode : public Node {
 	GDCLASS(EditorNode, Node);

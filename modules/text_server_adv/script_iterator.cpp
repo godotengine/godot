@@ -82,7 +82,7 @@ ScriptIterator::ScriptIterator(const String &p_string, int p_start, int p_length
 					paren_stack[paren_sp].pair_index = ch;
 					paren_stack[paren_sp].script_code = script_code;
 				} else if (paren_sp >= 0) {
-					// If it's a close character, find the matching open on the stack, and use that script code. Any non-matching open characters above it on the stack will be poped.
+					// If it's a close character, find the matching open on the stack, and use that script code. Any non-matching open characters above it on the stack will be popped.
 					UChar32 paired_ch = u_getBidiPairedBracket(ch);
 					while (paren_sp >= 0 && paren_stack[paren_sp].pair_index != paired_ch) {
 						paren_sp -= 1;

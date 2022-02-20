@@ -114,7 +114,7 @@ Quaternion Quaternion::slerp(const Quaternion &p_to, const real_t &p_weight) con
 	cosom = dot(p_to);
 
 	// adjust signs (if necessary)
-	if (cosom < 0.0) {
+	if (cosom < 0.0f) {
 		cosom = -cosom;
 		to1.x = -p_to.x;
 		to1.y = -p_to.y;
@@ -129,7 +129,7 @@ Quaternion Quaternion::slerp(const Quaternion &p_to, const real_t &p_weight) con
 
 	// calculate coefficients
 
-	if ((1.0 - cosom) > CMP_EPSILON) {
+	if ((1.0f - cosom) > CMP_EPSILON) {
 		// standard case (slerp)
 		omega = Math::acos(cosom);
 		sinom = Math::sin(omega);
@@ -138,7 +138,7 @@ Quaternion Quaternion::slerp(const Quaternion &p_to, const real_t &p_weight) con
 	} else {
 		// "from" and "to" quaternions are very close
 		//  ... so we can do a linear interpolation
-		scale0 = 1.0 - p_weight;
+		scale0 = 1.0f - p_weight;
 		scale1 = p_weight;
 	}
 	// calculate final values
@@ -158,14 +158,14 @@ Quaternion Quaternion::slerpni(const Quaternion &p_to, const real_t &p_weight) c
 
 	real_t dot = from.dot(p_to);
 
-	if (Math::absf(dot) > 0.9999) {
+	if (Math::absf(dot) > 0.9999f) {
 		return from;
 	}
 
 	real_t theta = Math::acos(dot),
-		   sinT = 1.0 / Math::sin(theta),
+		   sinT = 1.0f / Math::sin(theta),
 		   newFactor = Math::sin(p_weight * theta) * sinT,
-		   invFactor = Math::sin((1.0 - p_weight) * theta) * sinT;
+		   invFactor = Math::sin((1.0f - p_weight) * theta) * sinT;
 
 	return Quaternion(invFactor * from.x + newFactor * p_to.x,
 			invFactor * from.y + newFactor * p_to.y,
@@ -179,7 +179,7 @@ Quaternion Quaternion::cubic_slerp(const Quaternion &p_b, const Quaternion &p_pr
 	ERR_FAIL_COND_V_MSG(!p_b.is_normalized(), Quaternion(), "The end quaternion must be normalized.");
 #endif
 	//the only way to do slerp :|
-	real_t t2 = (1.0 - p_weight) * p_weight * 2;
+	real_t t2 = (1.0f - p_weight) * p_weight * 2;
 	Quaternion sp = this->slerp(p_b, p_weight);
 	Quaternion sq = p_pre_a.slerpni(p_post_b, p_weight);
 	return sp.slerpni(sq, t2);
@@ -209,8 +209,8 @@ Quaternion::Quaternion(const Vector3 &p_axis, real_t p_angle) {
 		z = 0;
 		w = 0;
 	} else {
-		real_t sin_angle = Math::sin(p_angle * 0.5);
-		real_t cos_angle = Math::cos(p_angle * 0.5);
+		real_t sin_angle = Math::sin(p_angle * 0.5f);
+		real_t cos_angle = Math::cos(p_angle * 0.5f);
 		real_t s = sin_angle / d;
 		x = p_axis.x * s;
 		y = p_axis.y * s;
@@ -224,9 +224,9 @@ Quaternion::Quaternion(const Vector3 &p_axis, real_t p_angle) {
 // and similar for other axes.
 // This implementation uses YXZ convention (Z is the first rotation).
 Quaternion::Quaternion(const Vector3 &p_euler) {
-	real_t half_a1 = p_euler.y * 0.5;
-	real_t half_a2 = p_euler.x * 0.5;
-	real_t half_a3 = p_euler.z * 0.5;
+	real_t half_a1 = p_euler.y * 0.5f;
+	real_t half_a2 = p_euler.x * 0.5f;
+	real_t half_a3 = p_euler.z * 0.5f;
 
 	// R = Y(a1).X(a2).Z(a3) convention for Euler angles.
 	// Conversion to quaternion as listed in https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19770024290.pdf (page A-6)

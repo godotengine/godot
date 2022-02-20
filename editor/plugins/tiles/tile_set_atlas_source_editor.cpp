@@ -36,6 +36,7 @@
 #include "editor/editor_scale.h"
 #include "editor/progress_dialog.h"
 
+#include "editor/editor_node.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
@@ -2269,7 +2270,7 @@ void TileSetAtlasSourceEditor::_auto_remove_tiles() {
 void TileSetAtlasSourceEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_THEME_CHANGED: {
 			tool_setup_atlas_source_button->set_icon(get_theme_icon(SNAME("Tools"), SNAME("EditorIcons")));
 			tool_select_button->set_icon(get_theme_icon(SNAME("ToolSelect"), SNAME("EditorIcons")));
 			tool_paint_button->set_icon(get_theme_icon(SNAME("CanvasItem"), SNAME("EditorIcons")));
@@ -2280,8 +2281,9 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 
 			resize_handle = get_theme_icon(SNAME("EditorHandle"), SNAME("EditorIcons"));
 			resize_handle_disabled = get_theme_icon(SNAME("EditorHandleDisabled"), SNAME("EditorIcons"));
-			break;
-		case NOTIFICATION_INTERNAL_PROCESS:
+		} break;
+
+		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (tile_set_changed_needs_update) {
 				// Update everything.
 				_update_source_inspector();
@@ -2297,9 +2299,7 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 
 				tile_set_changed_needs_update = false;
 			}
-			break;
-		default:
-			break;
+		} break;
 	}
 }
 
@@ -2311,6 +2311,8 @@ void TileSetAtlasSourceEditor::_bind_methods() {
 }
 
 TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
+	undo_redo = EditorNode::get_undo_redo();
+
 	set_process_unhandled_key_input(true);
 	set_process_internal(true);
 
@@ -2593,7 +2595,7 @@ void EditorPropertyTilePolygon::_polygons_changed() {
 				changed_properties.push_back(vformat(element_pattern, i));
 				values.push_back(generic_tile_polygon_editor->get_polygon(i));
 			}
-			emit_signal("multiple_properties_changed", changed_properties, values, false);
+			emit_signal(SNAME("multiple_properties_changed"), changed_properties, values, false);
 		}
 	}
 }

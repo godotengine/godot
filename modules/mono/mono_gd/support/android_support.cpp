@@ -134,8 +134,9 @@ String determine_app_native_lib_dir() {
 }
 
 String get_app_native_lib_dir() {
-	if (app_native_lib_dir_cache.is_empty())
+	if (app_native_lib_dir_cache.is_empty()) {
 		app_native_lib_dir_cache = determine_app_native_lib_dir();
+	}
 	return app_native_lib_dir_cache;
 }
 
@@ -144,10 +145,11 @@ int gd_mono_convert_dl_flags(int flags) {
 
 	int lflags = flags & MONO_DL_LOCAL ? 0 : RTLD_GLOBAL;
 
-	if (flags & MONO_DL_LAZY)
+	if (flags & MONO_DL_LAZY) {
 		lflags |= RTLD_LAZY;
-	else
+	} else {
 		lflags |= RTLD_NOW;
+	}
 
 	return lflags;
 }
@@ -164,8 +166,9 @@ void *godot_dl_handle = nullptr;
 
 void *try_dlopen(const String &p_so_path, int p_flags) {
 	if (!FileAccess::exists(p_so_path)) {
-		if (OS::get_singleton()->is_stdout_verbose())
+		if (OS::get_singleton()->is_stdout_verbose()) {
 			OS::get_singleton()->print("Cannot find shared library: '%s'\n", p_so_path.utf8().get_data());
+		}
 		return nullptr;
 	}
 
@@ -174,13 +177,15 @@ void *try_dlopen(const String &p_so_path, int p_flags) {
 	void *handle = dlopen(p_so_path.utf8().get_data(), lflags);
 
 	if (!handle) {
-		if (OS::get_singleton()->is_stdout_verbose())
+		if (OS::get_singleton()->is_stdout_verbose()) {
 			OS::get_singleton()->print("Failed to open shared library: '%s'. Error: '%s'\n", p_so_path.utf8().get_data(), dlerror());
+		}
 		return nullptr;
 	}
 
-	if (OS::get_singleton()->is_stdout_verbose())
+	if (OS::get_singleton()->is_stdout_verbose()) {
 		OS::get_singleton()->print("Successfully loaded shared library: '%s'\n", p_so_path.utf8().get_data());
+	}
 
 	return handle;
 }
@@ -217,20 +222,23 @@ void *gd_mono_android_dlopen(const char *p_name, int p_flags, char **r_err, void
 void *gd_mono_android_dlsym(void *p_handle, const char *p_name, char **r_err, void *p_user_data) {
 	void *sym_addr = dlsym(p_handle, p_name);
 
-	if (sym_addr)
+	if (sym_addr) {
 		return sym_addr;
+	}
 
 	if (p_handle == mono_dl_handle && godot_dl_handle) {
 		// Looking up for '__Internal' P/Invoke. We want to search in both the Mono and Godot shared libraries.
 		// This is needed to resolve the monodroid P/Invoke functions that are defined at the bottom of the file.
 		sym_addr = dlsym(godot_dl_handle, p_name);
 
-		if (sym_addr)
+		if (sym_addr) {
 			return sym_addr;
+		}
 	}
 
-	if (r_err)
+	if (r_err) {
 		*r_err = str_format_new("%s\n", dlerror());
+	}
 
 	return nullptr;
 }
@@ -239,8 +247,9 @@ void *gd_mono_android_dlclose(void *p_handle, void *p_user_data) {
 	dlclose(p_handle);
 
 	// Not sure if this ever happens. Does Mono close the handle for the main module?
-	if (p_handle == mono_dl_handle)
+	if (p_handle == mono_dl_handle) {
 		mono_dl_handle = nullptr;
+	}
 
 	return nullptr;
 }
@@ -292,13 +301,15 @@ MonoBoolean _gd_mono_init_cert_store() {
 
 	ScopedLocalRef<jobject> certStoreLocal(env, env->CallStaticObjectMethod(keyStoreClass, getInstance, androidCAStoreString.get()));
 
-	if (jni_exception_check(env))
+	if (jni_exception_check(env)) {
 		return 0;
+	}
 
 	env->CallVoidMethod(certStoreLocal, load, nullptr);
 
-	if (jni_exception_check(env))
+	if (jni_exception_check(env)) {
 		return 0;
+	}
 
 	certStore = env->NewGlobalRef(certStoreLocal);
 
@@ -309,8 +320,9 @@ MonoArray *_gd_mono_android_cert_store_lookup(MonoString *p_alias) {
 	// The JNI code is the equivalent of:
 	//
 	// Certificate certificate = certStore.getCertificate(alias);
-	// if (certificate == null)
+	// if (certificate == null) {
 	//	return null;
+	// }
 	// return certificate.getEncoded();
 
 	MonoError mono_error;
@@ -340,8 +352,9 @@ MonoArray *_gd_mono_android_cert_store_lookup(MonoString *p_alias) {
 
 	ScopedLocalRef<jobject> certificate(env, env->CallObjectMethod(certStore, getCertificate, js_alias.get()));
 
-	if (!certificate)
+	if (!certificate) {
 		return nullptr;
+	}
 
 	ScopedLocalRef<jbyteArray> encoded(env, (jbyteArray)env->CallObjectMethod(certificate, getEncoded));
 	jsize encodedLength = env->GetArrayLength(encoded);
@@ -374,11 +387,13 @@ void initialize() {
 void cleanup() {
 	// This is called after shutting down the Mono runtime
 
-	if (mono_dl_handle)
+	if (mono_dl_handle) {
 		gd_mono_android_dlclose(mono_dl_handle, nullptr);
+	}
 
-	if (godot_dl_handle)
+	if (godot_dl_handle) {
 		gd_mono_android_dlclose(godot_dl_handle, nullptr);
+	}
 
 	JNIEnv *env = get_jni_env();
 
@@ -431,8 +446,9 @@ GD_PINVOKE_EXPORT mono_bool _monodroid_get_network_interface_up_state(const char
 	//
 	// NetworkInterface.getByName(p_ifname).isUp()
 
-	if (!r_is_up || !p_ifname || strlen(p_ifname) == 0)
+	if (!r_is_up || !p_ifname || strlen(p_ifname) == 0) {
 		return 0;
+	}
 
 	*r_is_up = 0;
 
@@ -450,8 +466,9 @@ GD_PINVOKE_EXPORT mono_bool _monodroid_get_network_interface_up_state(const char
 	ScopedLocalRef<jstring> js_ifname(env, env->NewStringUTF(p_ifname));
 	ScopedLocalRef<jobject> networkInterface(env, env->CallStaticObjectMethod(networkInterfaceClass, getByName, js_ifname.get()));
 
-	if (!networkInterface)
+	if (!networkInterface) {
 		return 0;
+	}
 
 	*r_is_up = (mono_bool)env->CallBooleanMethod(networkInterface, isUp);
 
@@ -463,8 +480,9 @@ GD_PINVOKE_EXPORT mono_bool _monodroid_get_network_interface_supports_multicast(
 	//
 	// NetworkInterface.getByName(p_ifname).supportsMulticast()
 
-	if (!r_supports_multicast || !p_ifname || strlen(p_ifname) == 0)
+	if (!r_supports_multicast || !p_ifname || strlen(p_ifname) == 0) {
 		return 0;
+	}
 
 	*r_supports_multicast = 0;
 
@@ -482,8 +500,9 @@ GD_PINVOKE_EXPORT mono_bool _monodroid_get_network_interface_supports_multicast(
 	ScopedLocalRef<jstring> js_ifname(env, env->NewStringUTF(p_ifname));
 	ScopedLocalRef<jobject> networkInterface(env, env->CallStaticObjectMethod(networkInterfaceClass, getByName, js_ifname.get()));
 
-	if (!networkInterface)
+	if (!networkInterface) {
 		return 0;
+	}
 
 	*r_supports_multicast = (mono_bool)env->CallBooleanMethod(networkInterface, supportsMulticast);
 
@@ -528,8 +547,9 @@ static void interop_get_active_network_dns_servers(char **r_dns_servers, int *dn
 
 	ScopedLocalRef<jobject> connectivityManager(env, env->CallObjectMethod(applicationContext, getSystemService, connectivityServiceString.get()));
 
-	if (!connectivityManager)
+	if (!connectivityManager) {
 		return;
+	}
 
 	ScopedLocalRef<jclass> connectivityManagerClass(env, env->FindClass("android/net/ConnectivityManager"));
 	ERR_FAIL_NULL(connectivityManagerClass);
@@ -539,8 +559,9 @@ static void interop_get_active_network_dns_servers(char **r_dns_servers, int *dn
 
 	ScopedLocalRef<jobject> activeNetwork(env, env->CallObjectMethod(connectivityManager, getActiveNetwork));
 
-	if (!activeNetwork)
+	if (!activeNetwork) {
 		return;
+	}
 
 	jmethodID getLinkProperties = env->GetMethodID(connectivityManagerClass,
 			"getLinkProperties", "(Landroid/net/Network;)Landroid/net/LinkProperties;");
@@ -548,8 +569,9 @@ static void interop_get_active_network_dns_servers(char **r_dns_servers, int *dn
 
 	ScopedLocalRef<jobject> linkProperties(env, env->CallObjectMethod(connectivityManager, getLinkProperties, activeNetwork.get()));
 
-	if (!linkProperties)
+	if (!linkProperties) {
 		return;
+	}
 
 	ScopedLocalRef<jclass> linkPropertiesClass(env, env->FindClass("android/net/LinkProperties"));
 	ERR_FAIL_NULL(linkPropertiesClass);
@@ -559,8 +581,9 @@ static void interop_get_active_network_dns_servers(char **r_dns_servers, int *dn
 
 	ScopedLocalRef<jobject> dnsServers(env, env->CallObjectMethod(linkProperties, getDnsServers));
 
-	if (!dnsServers)
+	if (!dnsServers) {
 		return;
+	}
 
 	ScopedLocalRef<jclass> listClass(env, env->FindClass("java/util/List"));
 	ERR_FAIL_NULL(listClass);
@@ -570,11 +593,13 @@ static void interop_get_active_network_dns_servers(char **r_dns_servers, int *dn
 
 	int dnsServersCount = env->CallIntMethod(dnsServers, listSize);
 
-	if (dnsServersCount > dns_servers_len)
+	if (dnsServersCount > dns_servers_len) {
 		dnsServersCount = dns_servers_len;
+	}
 
-	if (dnsServersCount <= 0)
+	if (dnsServersCount <= 0) {
 		return;
+	}
 
 	jmethodID listGet = env->GetMethodID(listClass, "get", "(I)Ljava/lang/Object;");
 	ERR_FAIL_NULL(listGet);
@@ -587,8 +612,9 @@ static void interop_get_active_network_dns_servers(char **r_dns_servers, int *dn
 
 	for (int i = 0; i < dnsServersCount; i++) {
 		ScopedLocalRef<jobject> dnsServer(env, env->CallObjectMethod(dnsServers, listGet, (jint)i));
-		if (!dnsServer)
+		if (!dnsServer) {
 			continue;
+		}
 
 		ScopedLocalRef<jstring> hostAddress(env, (jstring)env->CallObjectMethod(dnsServer, getHostAddress));
 		const char *host_address = env->GetStringUTFChars(hostAddress, 0);
@@ -603,8 +629,9 @@ static void interop_get_active_network_dns_servers(char **r_dns_servers, int *dn
 }
 
 GD_PINVOKE_EXPORT int32_t _monodroid_get_dns_servers(void **r_dns_servers_array) {
-	if (!r_dns_servers_array)
+	if (!r_dns_servers_array) {
 		return -1;
+	}
 
 	*r_dns_servers_array = nullptr;
 
@@ -661,13 +688,15 @@ GD_PINVOKE_EXPORT const char *_monodroid_timezone_get_default_id() {
 
 	ScopedLocalRef<jobject> defaultTimeZone(env, env->CallStaticObjectMethod(timeZoneClass, getDefault));
 
-	if (!defaultTimeZone)
+	if (!defaultTimeZone) {
 		return nullptr;
+	}
 
 	ScopedLocalRef<jstring> defaultTimeZoneID(env, (jstring)env->CallObjectMethod(defaultTimeZone, getID));
 
-	if (!defaultTimeZoneID)
+	if (!defaultTimeZoneID) {
 		return nullptr;
+	}
 
 	const char *default_time_zone_id = env->GetStringUTFChars(defaultTimeZoneID, 0);
 
