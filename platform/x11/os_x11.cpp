@@ -3758,9 +3758,11 @@ static String get_mountpoint(const String &p_path) {
 }
 
 Error OS_X11::move_to_trash(const String &p_path) {
+	String path = p_path.rstrip("/"); // Strip trailing slash when path points to a directory
+
 	int err_code;
 	List<String> args;
-	args.push_back(p_path);
+	args.push_back(path);
 	args.push_front("trash"); // The command is `gio trash <file_name>` so we need to add it to args.
 	Error result = execute("gio", args, true, nullptr, nullptr, &err_code); // For GNOME based machines.
 	if (result == OK && !err_code) {
@@ -3790,14 +3792,14 @@ Error OS_X11::move_to_trash(const String &p_path) {
 
 	// If the commands `kioclient5`, `gio` or `gvfs-trash` don't exist on the system we do it manually.
 	String trash_path = "";
-	String mnt = get_mountpoint(p_path);
+	String mnt = get_mountpoint(path);
 
 	// If there is a directory "[Mountpoint]/.Trash-[UID], use it as the trash can.
 	if (mnt != "") {
-		String path(mnt + "/.Trash-" + itos(getuid()));
+		String mountpoint_trash_path(mnt + "/.Trash-" + itos(getuid()));
 		struct stat s;
-		if (!stat(path.utf8().get_data(), &s)) {
-			trash_path = path;
+		if (!stat(mountpoint_trash_path.utf8().get_data(), &s)) {
+			trash_path = mountpoint_trash_path;
 		}
 	}
 
@@ -3828,18 +3830,15 @@ Error OS_X11::move_to_trash(const String &p_path) {
 		// Issue an error if trash can is not created proprely.
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Could not create the trash path \"" + trash_path + "\"");
 		err = dir_access->make_dir_recursive(trash_path + "/files");
-		ERR_FAIL_COND_V_MSG(err != OK, err, "Could not create the trash path \"" + trash_path + "\"/files");
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Could not create the trash path \"" + trash_path + "/files\"");
 		err = dir_access->make_dir_recursive(trash_path + "/info");
-		ERR_FAIL_COND_V_MSG(err != OK, err, "Could not create the trash path \"" + trash_path + "\"/info");
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Could not create the trash path \"" + trash_path + "/info\"");
 	}
 
 	// The trash can is successfully created, now we check that we don't exceed our file name length limit.
 	// If the file name is too long trim it so we can add the identifying number and ".trashinfo".
 	// Assumes that the file name length limit is 255 characters.
-	String file_name = p_path.get_file();
-	if (file_name.length() == 0) {
-		file_name = p_path.get_base_dir().get_file();
-	}
+	String file_name = path.get_file();
 	if (file_name.length() > 240) {
 		file_name = file_name.substr(0, file_name.length() - 15);
 	}
@@ -3862,29 +3861,31 @@ Error OS_X11::move_to_trash(const String &p_path) {
 	}
 	file_name = fn;
 
+	String renamed_path = path.get_base_dir() + "/" + file_name;
+
 	// Generates the .trashinfo file
 	OS::Date date = OS::get_singleton()->get_date(false);
 	OS::Time time = OS::get_singleton()->get_time(false);
 	String timestamp = vformat("%04d-%02d-%02dT%02d:%02d:", date.year, (int)date.month, date.day, time.hour, time.min);
 	timestamp = vformat("%s%02d", timestamp, time.sec); // vformat only supports up to 6 arguments.
-	String trash_info = "[Trash Info]\nPath=" + p_path.http_escape() + "\nDeletionDate=" + timestamp + "\n";
+	String trash_info = "[Trash Info]\nPath=" + path.http_escape() + "\nDeletionDate=" + timestamp + "\n";
 	{
 		Error err;
 		FileAccessRef file = FileAccess::open(trash_path + "/info/" + file_name + ".trashinfo", FileAccess::WRITE, &err);
-		ERR_FAIL_COND_V_MSG(err != OK, err, "Can't create trashinfo file:" + trash_path + "/info/" + file_name + ".trashinfo");
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Can't create trashinfo file: \"" + trash_path + "/info/" + file_name + ".trashinfo\"");
 		file->store_string(trash_info);
 		file->close();
 
 		// Rename our resource before moving it to the trash can.
 		DirAccessRef dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		err = dir_access->rename(p_path, p_path.get_base_dir() + "/" + file_name);
-		ERR_FAIL_COND_V_MSG(err != OK, err, "Can't rename file \"" + p_path + "\"");
+		err = dir_access->rename(path, renamed_path);
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Can't rename file \"" + path + "\" to \"" + renamed_path + "\"");
 	}
 
 	// Move the given resource to the trash can.
 	// Do not use DirAccess:rename() because it can't move files across multiple mountpoints.
 	List<String> mv_args;
-	mv_args.push_back(p_path.get_base_dir() + "/" + file_name);
+	mv_args.push_back(renamed_path);
 	mv_args.push_back(trash_path + "/files");
 	{
 		int retval;
@@ -3892,11 +3893,11 @@ Error OS_X11::move_to_trash(const String &p_path) {
 
 		// Issue an error if "mv" failed to move the given resource to the trash can.
 		if (err != OK || retval != 0) {
-			ERR_PRINT("move_to_trash: Could not move the resource \"" + p_path + "\" to the trash can \"" + trash_path + "/files\"");
+			ERR_PRINT("move_to_trash: Could not move the resource \"" + path + "\" to the trash can \"" + trash_path + "/files\"");
 			DirAccess *dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-			err = dir_access->rename(p_path.get_base_dir() + "/" + file_name, p_path);
+			err = dir_access->rename(renamed_path, path);
 			memdelete(dir_access);
-			ERR_FAIL_COND_V_MSG(err != OK, err, "Could not rename " + p_path.get_base_dir() + "/" + file_name + " back to its original name:" + p_path);
+			ERR_FAIL_COND_V_MSG(err != OK, err, "Could not rename \"" + renamed_path + "\" back to its original name: \"" + path + "\"");
 			return FAILED;
 		}
 	}
