@@ -671,6 +671,30 @@ Version: 3.0.0-development (2022-02-08), commit `a1895bc76547370564d604faa27e0b7
 Patches in the `patches` directory should be re-applied after updates (order must be followed among the number-prefixed ones).
 
 
+## wayland
+
+- Upstream: https://gitlab.freedesktop.org/wayland/wayland
+- Version: 1.20.0 (75c1a93e2067220fa06208f20f8f096bb463ec08, 2021)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `protocol/wayland.xml`
+- `COPYING`
+
+
+# wayland-protocols
+
+- Upstream: https://gitlab.freedesktop.org/wayland/wayland-protocols
+- Version: 1.24 (bb7b3985eded147104331830a370195dffd1cdab, 2021)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `stable/xdg-shell/xdg-shell.xml`
+- `COPYING`
+
+
 ## wslay
 
 - Upstream: https://github.com/tatsuhiro-t/wslay

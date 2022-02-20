@@ -76,6 +76,11 @@ def check_wayland_dependencies():
         print("Error: wayland-client library not found. Aborting.")
         return False
 
+    wayland_error = os.system("pkg-config wayland-scanner --modversion > /dev/null")
+    if wayland_error:
+        print("Error: wayland-scanner not found. Aborting.")
+        return False
+
     # We need at least version 1.20
     min_wayland_client_version = "1.20"
 
