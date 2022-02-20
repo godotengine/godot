@@ -36,7 +36,8 @@ if "wayland" in env and env["wayland"]:
         ),
         "WAYLAND_API_CODE": Builder(
             action=Action(
-                "wayland-scanner private-code ${SOURCE} ${TARGET}", 'Building Wayland protocol marshalling code: "${TARGET}"'
+                "wayland-scanner private-code ${SOURCE} ${TARGET}",
+                'Building Wayland protocol marshalling code: "${TARGET}"',
             ),
             single_source=True,
         ),
