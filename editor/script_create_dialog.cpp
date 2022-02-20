@@ -37,8 +37,72 @@
 #include "editor/create_dialog.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_file_system.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+
+static String _get_parent_class_of_script(String p_path) {
+	if (!ResourceLoader::exists(p_path, "Script")) {
+		return "Object"; // A script eventually inherits from Object.
+	}
+
+	Ref<Script> script = ResourceLoader::load(p_path, "Script");
+	ERR_FAIL_COND_V(script.is_null(), "Object");
+
+	String class_name;
+	Ref<Script> base = script->get_base_script();
+
+	// Inherits from a built-in class.
+	if (base.is_null()) {
+		script->get_language()->get_global_class_name(script->get_path(), &class_name);
+		return class_name;
+	}
+
+	// Inherits from a script that has class_name.
+	class_name = script->get_language()->get_global_class_name(base->get_path());
+	if (!class_name.is_empty()) {
+		return class_name;
+	}
+
+	// Inherits from a plain script.
+	return _get_parent_class_of_script(base->get_path());
+}
+
+static Vector<String> _get_hierarchy(String p_class_name) {
+	Vector<String> hierarchy;
+
+	String class_name = p_class_name;
+	while (true) {
+		// A registered class.
+		if (ClassDB::class_exists(class_name)) {
+			hierarchy.push_back(class_name);
+
+			class_name = ClassDB::get_parent_class(class_name);
+			continue;
+		}
+
+		// A class defined in script with class_name.
+		if (ScriptServer::is_global_class(class_name)) {
+			hierarchy.push_back(class_name);
+
+			Ref<Script> script = EditorNode::get_editor_data().script_class_load_script(class_name);
+			ERR_BREAK(script.is_null());
+			class_name = _get_parent_class_of_script(script->get_path());
+			continue;
+		}
+
+		break;
+	}
+
+	if (hierarchy.is_empty()) {
+		if (p_class_name.is_valid_identifier()) {
+			hierarchy.push_back(p_class_name);
+		}
+		hierarchy.push_back("Object");
+	}
+
+	return hierarchy;
+}
 
 void ScriptCreateDialog::_notification(int p_what) {
 	switch (p_what) {
@@ -353,18 +417,6 @@ void ScriptCreateDialog::_load_exist() {
 	hide();
 }
 
-Vector<String> ScriptCreateDialog::get_hierarchy(String p_object) const {
-	Vector<String> hierarchy;
-	hierarchy.append(p_object);
-
-	String parent_class = ClassDB::get_parent_class(p_object);
-	while (parent_class.is_valid_identifier()) {
-		hierarchy.append(parent_class);
-		parent_class = ClassDB::get_parent_class(parent_class);
-	}
-	return hierarchy;
-}
-
 void ScriptCreateDialog::_language_changed(int l) {
 	language = ScriptServer::get_language(l);
 
@@ -553,14 +605,14 @@ void ScriptCreateDialog::_update_template_menu() {
 		}
 		String inherits_base_type = parent_name->get_text();
 
-		// If it inherits from a script, select Object instead.
+		// If it inherits from a script, get its parent class first.
 		if (inherits_base_type[0] == '"') {
-			inherits_base_type = "Object";
+			inherits_base_type = _get_parent_class_of_script(inherits_base_type.unquote());
 		}
 
 		// Get all ancestor node for selected base node.
 		// There templates will also fit the base node.
-		Vector<String> hierarchy = get_hierarchy(inherits_base_type);
+		Vector<String> hierarchy = _get_hierarchy(inherits_base_type);
 		int last_used_template = -1;
 		int preselected_template = -1;
 		int previous_ancestor_level = -1;
