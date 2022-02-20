@@ -46,8 +46,8 @@ NativeExtensionManager::LoadStatus NativeExtensionManager::load_extension(const 
 			return LOAD_STATUS_NEEDS_RESTART;
 		}
 		//initialize up to current level
-		for (int32_t i = minimum_level; i < level; i++) {
-			extension->initialize_library(NativeExtension::InitializationLevel(level));
+		for (int32_t i = minimum_level; i <= level; i++) {
+			extension->initialize_library(NativeExtension::InitializationLevel(i));
 		}
 	}
 	native_extension_map[p_path] = extension;
@@ -69,9 +69,9 @@ NativeExtensionManager::LoadStatus NativeExtensionManager::unload_extension(cons
 		if (minimum_level < MIN(level, NativeExtension::INITIALIZATION_LEVEL_SCENE)) {
 			return LOAD_STATUS_NEEDS_RESTART;
 		}
-		//initialize up to current level
+		// deinitialize down to current level
 		for (int32_t i = level; i >= minimum_level; i--) {
-			extension->deinitialize_library(NativeExtension::InitializationLevel(level));
+			extension->deinitialize_library(NativeExtension::InitializationLevel(i));
 		}
 	}
 	native_extension_map.erase(p_path);
