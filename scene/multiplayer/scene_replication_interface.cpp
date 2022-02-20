@@ -147,6 +147,11 @@ Error SceneReplicationInterface::_send_raw(const uint8_t *p_buffer, int p_size, 
 	ERR_FAIL_COND_V(!p_buffer || p_size < 1, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(!multiplayer, ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V(!multiplayer->has_multiplayer_peer(), ERR_UNCONFIGURED);
+
+#ifdef DEBUG_ENABLED
+	multiplayer->profile_bandwidth("out", p_size);
+#endif
+
 	Ref<MultiplayerPeer> peer = multiplayer->get_multiplayer_peer();
 	peer->set_target_peer(p_peer);
 	peer->set_transfer_channel(0);
@@ -186,12 +191,10 @@ Error SceneReplicationInterface::_send_spawn(Node *p_node, MultiplayerSpawner *p
 	}
 
 	// Prepare simplified path.
-	const Node *root_node = multiplayer->get_root_node();
-	ERR_FAIL_COND_V(!root_node, ERR_UNCONFIGURED);
-	NodePath rel_path = (root_node->get_path()).rel_path_to(p_spawner->get_path());
+	NodePath rel_path = multiplayer->get_root_path().rel_path_to(p_spawner->get_path());
 
 	int path_id = 0;
-	multiplayer->send_confirm_path(p_spawner, rel_path, p_peer, path_id);
+	multiplayer->send_object_cache(p_spawner, rel_path, p_peer, path_id);
 
 	// Encode name and parent ID.
 	CharString cname = p_node->get_name().operator String().utf8();
@@ -243,7 +246,7 @@ Error SceneReplicationInterface::on_spawn_receive(int p_from, const uint8_t *p_b
 	ofs += 1;
 	uint32_t node_target = decode_uint32(&p_buffer[ofs]);
 	ofs += 4;
-	MultiplayerSpawner *spawner = Object::cast_to<MultiplayerSpawner>(multiplayer->get_cached_node(p_from, node_target));
+	MultiplayerSpawner *spawner = Object::cast_to<MultiplayerSpawner>(multiplayer->get_cached_object(p_from, node_target));
 	ERR_FAIL_COND_V(!spawner, ERR_DOES_NOT_EXIST);
 	ERR_FAIL_COND_V(p_from != spawner->get_multiplayer_authority(), ERR_UNAUTHORIZED);
 
@@ -349,11 +352,9 @@ void SceneReplicationInterface::_send_sync(int p_peer, uint64_t p_msec) {
 			uint32_t net_id = rep_state->get_net_id(oid);
 			if (net_id == 0) {
 				// First time path based ID.
-				const Node *root_node = multiplayer->get_root_node();
-				ERR_FAIL_COND(!root_node);
-				NodePath rel_path = (root_node->get_path()).rel_path_to(sync->get_path());
+				NodePath rel_path = multiplayer->get_root_path().rel_path_to(sync->get_path());
 				int path_id = 0;
-				multiplayer->send_confirm_path(sync, rel_path, p_peer, path_id);
+				multiplayer->send_object_cache(sync, rel_path, p_peer, path_id);
 				net_id = path_id;
 				rep_state->set_net_id(oid, net_id | 0x80000000);
 			}
@@ -381,7 +382,7 @@ Error SceneReplicationInterface::on_sync_receive(int p_from, const uint8_t *p_bu
 		ofs += 4;
 		Node *node = nullptr;
 		if (net_id & 0x80000000) {
-			MultiplayerSynchronizer *sync = Object::cast_to<MultiplayerSynchronizer>(multiplayer->get_cached_node(p_from, net_id & 0x7FFFFFFF));
+			MultiplayerSynchronizer *sync = Object::cast_to<MultiplayerSynchronizer>(multiplayer->get_cached_object(p_from, net_id & 0x7FFFFFFF));
 			ERR_FAIL_COND_V(!sync || sync->get_multiplayer_authority() != p_from, ERR_UNAUTHORIZED);
 			node = sync->get_node(sync->get_root_path());
 		} else {

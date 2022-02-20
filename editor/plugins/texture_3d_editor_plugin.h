@@ -31,8 +31,8 @@
 #ifndef TEXTURE_3D_EDITOR_PLUGIN_H
 #define TEXTURE_3D_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
+#include "scene/gui/spin_box.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
 
@@ -88,7 +88,7 @@ class Texture3DEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const override { return "Texture3D"; }
 
-	Texture3DEditorPlugin(EditorNode *p_node);
+	Texture3DEditorPlugin();
 };
 
 #endif // TEXTURE_EDITOR_PLUGIN_H

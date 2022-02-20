@@ -39,7 +39,7 @@ layout(set = 2, binding = 0, std430) buffer Counter {
 counter;
 #endif
 
-layout(push_constant, binding = 1, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	vec2 half_screen_pixel_size;
 	float intensity;
 	float pad;

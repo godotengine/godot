@@ -29,9 +29,14 @@
 /*************************************************************************/
 
 #include "scene_import_settings.h"
+
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_file_system.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
+#include "scene/animation/animation_player.h"
 #include "scene/resources/importer_mesh.h"
 #include "scene/resources/surface_tool.h"
 
@@ -372,9 +377,10 @@ void SceneImportSettings::_update_view_gizmos() {
 			continue;
 		}
 
-		MeshInstance3D *collider_view = static_cast<MeshInstance3D *>(mesh_node->find_node("collider_view"));
-		CRASH_COND_MSG(collider_view == nullptr, "This is unreachable, since the collider view is always created even when the collision is not used! If this is triggered there is a bug on the function `_fill_scene`.");
+		TypedArray<Node> descendants = mesh_node->find_nodes("collider_view", "MeshInstance3D");
+		CRASH_COND_MSG(descendants.is_empty(), "This is unreachable, since the collider view is always created even when the collision is not used! If this is triggered there is a bug on the function `_fill_scene`.");
 
+		MeshInstance3D *collider_view = static_cast<MeshInstance3D *>(descendants[0].operator Object *());
 		collider_view->set_visible(generate_collider);
 		if (generate_collider) {
 			// This collider_view doesn't have a mesh so we need to generate a new one.
@@ -832,8 +838,10 @@ void SceneImportSettings::_re_import() {
 }
 
 void SceneImportSettings::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY) {
-		connect("confirmed", callable_mp(this, &SceneImportSettings::_re_import));
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			connect("confirmed", callable_mp(this, &SceneImportSettings::_re_import));
+		} break;
 	}
 }
 

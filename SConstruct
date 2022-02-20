@@ -179,9 +179,11 @@ opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loade
 
 # Advanced options
 opts.Add(BoolVariable("dev", "If yes, alias for verbose=yes warnings=extra werror=yes", False))
-opts.Add(BoolVariable("progress", "Show a progress indicator during compilation", True))
 opts.Add(BoolVariable("tests", "Build the unit tests", False))
+opts.Add(BoolVariable("fast_unsafe", "Enable unsafe options for faster rebuilds", False))
+opts.Add(BoolVariable("compiledb", "Generate compilation DB (`compile_commands.json`) for external tools", False))
 opts.Add(BoolVariable("verbose", "Enable verbose output for the compilation", False))
+opts.Add(BoolVariable("progress", "Show a progress indicator during compilation", True))
 opts.Add(EnumVariable("warnings", "Level of compilation warnings", "all", ("extra", "all", "moderate", "no")))
 opts.Add(BoolVariable("werror", "Treat compiler warnings as errors", False))
 opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all generated binary files", "")
@@ -360,6 +362,17 @@ if env_base["target"] == "debug":
     # working on the engine itself.
     env_base.Append(CPPDEFINES=["DEV_ENABLED"])
 
+# SCons speed optimization controlled by the `fast_unsafe` option, which provide
+# more than 10 s speed up for incremental rebuilds.
+# Unsafe as they reduce the certainty of rebuilding all changed files, so it's
+# enabled by default for `debug` builds, and can be overridden from command line.
+# Ref: https://github.com/SCons/scons/wiki/GoFastButton
+if methods.get_cmdline_bool("fast_unsafe", env_base["target"] == "debug"):
+    # Renamed to `content-timestamp` in SCons >= 4.2, keeping MD5 for compat.
+    env_base.Decider("MD5-timestamp")
+    env_base.SetOption("implicit_cache", 1)
+    env_base.SetOption("max_drift", 60)
+
 if env_base["use_precise_math_checks"]:
     env_base.Append(CPPDEFINES=["PRECISE_MATH_CHECKS"])
 
@@ -385,14 +398,15 @@ if selected_platform in platform_list:
     else:
         env = env_base.Clone()
 
-    # Generating the compilation DB (`compile_commands.json`) requires SCons 4.0.0 or later.
-    from SCons import __version__ as scons_raw_version
+    if env["compiledb"]:
+        # Generating the compilation DB (`compile_commands.json`) requires SCons 4.0.0 or later.
+        from SCons import __version__ as scons_raw_version
 
-    scons_ver = env._get_major_minor_revision(scons_raw_version)
+        scons_ver = env._get_major_minor_revision(scons_raw_version)
 
-    if scons_ver >= (4, 0, 0):
-        env.Tool("compilation_db")
-        env.Alias("compiledb", env.CompilationDatabase())
+        if scons_ver >= (4, 0, 0):
+            env.Tool("compilation_db")
+            env.Alias("compiledb", env.CompilationDatabase())
 
     # 'dev' and 'production' are aliases to set default options if they haven't been set
     # manually by the user.
@@ -817,6 +831,7 @@ elif selected_platform != "":
 
 # The following only makes sense when the 'env' is defined, and assumes it is.
 if "env" in locals():
+    # FIXME: This method mixes both cosmetic progress stuff and cache handling...
     methods.show_progress(env)
     # TODO: replace this with `env.Dump(format="json")`
     # once we start requiring SCons 4.0 as min version.

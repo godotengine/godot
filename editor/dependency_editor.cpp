@@ -30,10 +30,13 @@
 
 #include "dependency_editor.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
-#include "editor_node.h"
-#include "editor_scale.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_file_system.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "scene/gui/margin_container.h"
 
 void DependencyEditor::_searched(const String &p_path) {
@@ -284,7 +287,7 @@ void DependencyEditorOwners::_select_file(int p_idx) {
 	String fpath = owners->get_item_text(p_idx);
 
 	if (ResourceLoader::get_resource_type(fpath) == "PackedScene") {
-		editor->open_request(fpath);
+		EditorNode::get_singleton()->open_request(fpath);
 		hide();
 		emit_signal(SNAME("confirmed"));
 	}
@@ -342,9 +345,7 @@ void DependencyEditorOwners::show(const String &p_path) {
 	set_title(TTR("Owners Of:") + " " + p_path.get_file());
 }
 
-DependencyEditorOwners::DependencyEditorOwners(EditorNode *p_editor) {
-	editor = p_editor;
-
+DependencyEditorOwners::DependencyEditorOwners() {
 	file_options = memnew(PopupMenu);
 	add_child(file_options);
 	file_options->connect("id_pressed", callable_mp(this, &DependencyEditorOwners::_file_option));

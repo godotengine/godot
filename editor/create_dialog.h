@@ -31,7 +31,7 @@
 #ifndef CREATE_DIALOG_H
 #define CREATE_DIALOG_H
 
-#include "editor_help.h"
+#include "editor/editor_help.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
@@ -79,7 +79,7 @@ class CreateDialog : public ConfirmationDialog {
 
 	void _sbox_input(const Ref<InputEvent> &p_ie);
 	void _text_changed(const String &p_newtext);
-	void select_type(const String &p_type);
+	void select_type(const String &p_type, bool p_center_on_item = true);
 	void _item_selected();
 	void _hide_requested();
 

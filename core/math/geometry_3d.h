@@ -77,15 +77,15 @@ public:
 
 		// Compute the line parameters of the two closest points.
 		if (D < CMP_EPSILON) { // The lines are almost parallel.
-			sN = 0.0; // Force using point P0 on segment S1
-			sD = 1.0; // to prevent possible division by 0.0 later.
+			sN = 0.0f; // Force using point P0 on segment S1
+			sD = 1.0f; // to prevent possible division by 0.0 later.
 			tN = e;
 			tD = c;
 		} else { // Get the closest points on the infinite lines
 			sN = (b * e - c * d);
 			tN = (a * e - b * d);
-			if (sN < 0.0) { // sc < 0 => the s=0 edge is visible.
-				sN = 0.0;
+			if (sN < 0.0f) { // sc < 0 => the s=0 edge is visible.
+				sN = 0.0f;
 				tN = e;
 				tD = c;
 			} else if (sN > sD) { // sc > 1 => the s=1 edge is visible.
@@ -95,11 +95,11 @@ public:
 			}
 		}
 
-		if (tN < 0.0) { // tc < 0 => the t=0 edge is visible.
-			tN = 0.0;
+		if (tN < 0.0f) { // tc < 0 => the t=0 edge is visible.
+			tN = 0.0f;
 			// Recompute sc for this edge.
-			if (-d < 0.0) {
-				sN = 0.0;
+			if (-d < 0.0f) {
+				sN = 0.0f;
 			} else if (-d > a) {
 				sN = sD;
 			} else {
@@ -109,7 +109,7 @@ public:
 		} else if (tN > tD) { // tc > 1 => the t=1 edge is visible.
 			tN = tD;
 			// Recompute sc for this edge.
-			if ((-d + b) < 0.0) {
+			if ((-d + b) < 0.0f) {
 				sN = 0;
 			} else if ((-d + b) > a) {
 				sN = sD;
@@ -119,8 +119,8 @@ public:
 			}
 		}
 		// Finally do the division to get sc and tc.
-		sc = (Math::is_zero_approx(sN) ? 0.0 : sN / sD);
-		tc = (Math::is_zero_approx(tN) ? 0.0 : tN / tD);
+		sc = (Math::is_zero_approx(sN) ? 0.0f : sN / sD);
+		tc = (Math::is_zero_approx(tN) ? 0.0f : tN / tD);
 
 		// Get the difference of the two closest points.
 		Vector3 dP = w + (sc * u) - (tc * v); // = S1(sc) - S2(tc)
@@ -137,12 +137,12 @@ public:
 			return false;
 		}
 
-		real_t f = 1.0 / a;
+		real_t f = 1.0f / a;
 
 		Vector3 s = p_from - p_v0;
 		real_t u = f * s.dot(h);
 
-		if (u < 0.0 || u > 1.0) {
+		if (u < 0.0f || u > 1.0f) {
 			return false;
 		}
 
@@ -150,7 +150,7 @@ public:
 
 		real_t v = f * p_dir.dot(q);
 
-		if (v < 0.0 || u + v > 1.0) {
+		if (v < 0.0f || u + v > 1.0f) {
 			return false;
 		}
 
@@ -158,7 +158,7 @@ public:
 		// the intersection point is on the line.
 		real_t t = f * e2.dot(q);
 
-		if (t > 0.00001) { // ray intersection
+		if (t > 0.00001f) { // ray intersection
 			if (r_res) {
 				*r_res = p_from + p_dir * t;
 			}
@@ -178,12 +178,12 @@ public:
 			return false;
 		}
 
-		real_t f = 1.0 / a;
+		real_t f = 1.0f / a;
 
 		Vector3 s = p_from - p_v0;
 		real_t u = f * s.dot(h);
 
-		if (u < 0.0 || u > 1.0) {
+		if (u < 0.0f || u > 1.0f) {
 			return false;
 		}
 
@@ -191,7 +191,7 @@ public:
 
 		real_t v = f * rel.dot(q);
 
-		if (v < 0.0 || u + v > 1.0) {
+		if (v < 0.0f || u + v > 1.0f) {
 			return false;
 		}
 
@@ -199,7 +199,7 @@ public:
 		// the intersection point is on the line.
 		real_t t = f * e2.dot(q);
 
-		if (t > CMP_EPSILON && t <= 1.0) { // Ray intersection.
+		if (t > CMP_EPSILON && t <= 1.0f) { // Ray intersection.
 			if (r_res) {
 				*r_res = p_from + rel * t;
 			}
@@ -260,7 +260,7 @@ public:
 		ERR_FAIL_COND_V(p_cylinder_axis < 0, false);
 		ERR_FAIL_COND_V(p_cylinder_axis > 2, false);
 		Vector3 cylinder_axis;
-		cylinder_axis[p_cylinder_axis] = 1.0;
+		cylinder_axis[p_cylinder_axis] = 1.0f;
 
 		// First check if they are parallel.
 		Vector3 normal = (rel / rel_l);
@@ -271,7 +271,7 @@ public:
 
 		if (crs_l < CMP_EPSILON) {
 			Vector3 side_axis;
-			side_axis[(p_cylinder_axis + 1) % 3] = 1.0; // Any side axis OK.
+			side_axis[(p_cylinder_axis + 1) % 3] = 1.0f; // Any side axis OK.
 			axis_dir = side_axis;
 		} else {
 			axis_dir = crs / crs_l;
@@ -288,7 +288,7 @@ public:
 		if (w2 < CMP_EPSILON) {
 			return false; // Avoid numerical error.
 		}
-		Size2 size(Math::sqrt(w2), p_height * 0.5);
+		Size2 size(Math::sqrt(w2), p_height * 0.5f);
 
 		Vector3 side_dir = axis_dir.cross(cylinder_axis).normalized();
 
@@ -417,15 +417,15 @@ public:
 		Vector3 p = p_point - p_segment[0];
 		Vector3 n = p_segment[1] - p_segment[0];
 		real_t l2 = n.length_squared();
-		if (l2 < 1e-20) {
+		if (l2 < 1e-20f) {
 			return p_segment[0]; // Both points are the same, just give any.
 		}
 
 		real_t d = n.dot(p) / l2;
 
-		if (d <= 0.0) {
+		if (d <= 0.0f) {
 			return p_segment[0]; // Before first point.
-		} else if (d >= 1.0) {
+		} else if (d >= 1.0f) {
 			return p_segment[1]; // After first point.
 		} else {
 			return p_segment[0] + n * d; // Inside.
@@ -436,7 +436,7 @@ public:
 		Vector3 p = p_point - p_segment[0];
 		Vector3 n = p_segment[1] - p_segment[0];
 		real_t l2 = n.length_squared();
-		if (l2 < 1e-20) {
+		if (l2 < 1e-20f) {
 			return p_segment[0]; // Both points are the same, just give any.
 		}
 
@@ -907,9 +907,9 @@ public:
 
 	_FORCE_INLINE_ static Vector3 octahedron_map_decode(const Vector2 &p_uv) {
 		// https://twitter.com/Stubbesaurus/status/937994790553227264
-		Vector2 f = p_uv * 2.0 - Vector2(1.0, 1.0);
+		Vector2 f = p_uv * 2.0f - Vector2(1.0f, 1.0f);
 		Vector3 n = Vector3(f.x, f.y, 1.0f - Math::abs(f.x) - Math::abs(f.y));
-		float t = CLAMP(-n.z, 0.0, 1.0);
+		float t = CLAMP(-n.z, 0.0f, 1.0f);
 		n.x += n.x >= 0 ? -t : t;
 		n.y += n.y >= 0 ? -t : t;
 		return n.normalized();

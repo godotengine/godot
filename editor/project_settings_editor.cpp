@@ -531,11 +531,13 @@ void ProjectSettingsEditor::_notification(int p_what) {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "project_settings", Rect2(get_position(), get_size()));
 			}
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			general_settings_inspector->edit(ps);
 			_update_action_map_editor();
 			_update_theme();
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_theme();
 		} break;

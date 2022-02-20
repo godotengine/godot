@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "editor_import_plugin.h"
+
 #include "core/object/script_language.h"
 
 EditorImportPlugin::EditorImportPlugin() {

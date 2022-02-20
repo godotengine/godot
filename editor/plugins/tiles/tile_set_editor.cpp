@@ -33,6 +33,8 @@
 #include "tile_data_editors.h"
 #include "tiles_editor_plugin.h"
 
+#include "editor/editor_file_system.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 
 #include "scene/gui/box_container.h"
@@ -331,14 +333,15 @@ void TileSetEditor::_set_source_sort(int p_sort) {
 void TileSetEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_THEME_CHANGED: {
 			sources_delete_button->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 			sources_add_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			source_sort_button->set_icon(get_theme_icon(SNAME("Sort"), SNAME("EditorIcons")));
 			sources_advanced_menu_button->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
 			missing_texture_texture = get_theme_icon(SNAME("TileSet"), SNAME("EditorIcons"));
-			break;
-		case NOTIFICATION_INTERNAL_PROCESS:
+		} break;
+
+		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (tile_set_changed_needs_update) {
 				if (tile_set.is_valid()) {
 					tile_set->set_edited(true);
@@ -347,9 +350,7 @@ void TileSetEditor::_notification(int p_what) {
 				_update_patterns_list();
 				tile_set_changed_needs_update = false;
 			}
-			break;
-		default:
-			break;
+		} break;
 	}
 }
 
@@ -656,6 +657,8 @@ void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
 
 TileSetEditor::TileSetEditor() {
 	singleton = this;
+
+	undo_redo = EditorNode::get_undo_redo();
 
 	set_process_internal(true);
 

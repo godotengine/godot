@@ -157,7 +157,7 @@ Vector3 Face3::get_random_point_inside() const {
 		SWAP(a, b);
 	}
 
-	return vertex[0] * a + vertex[1] * (b - a) + vertex[2] * (1.0 - b);
+	return vertex[0] * a + vertex[1] * (b - a) + vertex[2] * (1.0f - b);
 }
 
 Plane Face3::get_plane(ClockDirection p_dir) const {
@@ -165,11 +165,11 @@ Plane Face3::get_plane(ClockDirection p_dir) const {
 }
 
 Vector3 Face3::get_median_point() const {
-	return (vertex[0] + vertex[1] + vertex[2]) / 3.0;
+	return (vertex[0] + vertex[1] + vertex[2]) / 3.0f;
 }
 
 real_t Face3::get_area() const {
-	return vec3_cross(vertex[0] - vertex[1], vertex[0] - vertex[2]).length() * 0.5;
+	return vec3_cross(vertex[0] - vertex[1], vertex[0] - vertex[2]).length() * 0.5f;
 }
 
 ClockDirection Face3::get_clock_dir() const {
@@ -223,7 +223,7 @@ bool Face3::intersects_aabb(const AABB &p_aabb) const {
 
 			Vector3 axis = vec3_cross(e1, e2);
 
-			if (axis.length_squared() < 0.0001) {
+			if (axis.length_squared() < 0.0001f) {
 				continue; // coplanar
 			}
 			axis.normalize();

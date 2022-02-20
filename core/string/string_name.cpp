@@ -84,12 +84,15 @@ void StringName::cleanup() {
 	for (int i = 0; i < STRING_TABLE_LEN; i++) {
 		while (_table[i]) {
 			_Data *d = _table[i];
-			lost_strings++;
-			if (d->static_count.get() != d->refcount.get() && OS::get_singleton()->is_stdout_verbose()) {
-				if (d->cname) {
-					print_line("Orphan StringName: " + String(d->cname));
-				} else {
-					print_line("Orphan StringName: " + String(d->name));
+			if (d->static_count.get() != d->refcount.get()) {
+				lost_strings++;
+
+				if (OS::get_singleton()->is_stdout_verbose()) {
+					if (d->cname) {
+						print_line("Orphan StringName: " + String(d->cname));
+					} else {
+						print_line("Orphan StringName: " + String(d->name));
+					}
 				}
 			}
 

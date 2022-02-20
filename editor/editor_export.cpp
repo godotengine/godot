@@ -44,9 +44,10 @@
 #include "core/object/script_language.h"
 #include "core/version.h"
 #include "editor/editor_file_system.h"
+#include "editor/editor_node.h"
+#include "editor/editor_paths.h"
+#include "editor/editor_settings.h"
 #include "editor/plugins/script_editor_plugin.h"
-#include "editor_node.h"
-#include "editor_settings.h"
 #include "scene/resources/resource_format_text.h"
 
 static int _get_pad(int p_alignment, int p_n) {
@@ -404,9 +405,9 @@ Ref<ImageTexture> EditorExportPlatform::get_option_icon(int p_index) const {
 	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 	ERR_FAIL_COND_V(theme.is_null(), Ref<ImageTexture>());
 	if (EditorNode::get_singleton()->get_main_control()->is_layout_rtl()) {
-		return theme->get_icon("PlayBackwards", "EditorIcons");
+		return theme->get_icon(SNAME("PlayBackwards"), SNAME("EditorIcons"));
 	} else {
-		return theme->get_icon("Play", "EditorIcons");
+		return theme->get_icon(SNAME("Play"), SNAME("EditorIcons"));
 	}
 }
 
@@ -1543,6 +1544,7 @@ void EditorExport::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			load_config();
 		} break;
+
 		case NOTIFICATION_PROCESS: {
 			update_export_presets();
 		} break;

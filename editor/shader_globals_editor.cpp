@@ -29,7 +29,9 @@
 /*************************************************************************/
 
 #include "shader_globals_editor.h"
-#include "editor_node.h"
+
+#include "core/config/project_settings.h"
+#include "editor/editor_node.h"
 #include "servers/rendering/shader_language.h"
 
 static const char *global_var_type_names[RS::GLOBAL_VAR_TYPE_MAX] = {
@@ -436,13 +438,16 @@ void ShaderGlobalsEditor::_bind_methods() {
 }
 
 void ShaderGlobalsEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (is_visible_in_tree()) {
-			inspector->edit(interface);
-		}
-	}
-	if (p_what == NOTIFICATION_PREDELETE) {
-		inspector->edit(nullptr);
+	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible_in_tree()) {
+				inspector->edit(interface);
+			}
+		} break;
+
+		case NOTIFICATION_PREDELETE: {
+			inspector->edit(nullptr);
+		} break;
 	}
 }
 

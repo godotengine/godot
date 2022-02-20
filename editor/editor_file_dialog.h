@@ -32,6 +32,7 @@
 #define EDITORFILEDIALOG_H
 
 #include "core/io/dir_access.h"
+#include "editor/plugins/editor_preview_plugins.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
@@ -88,7 +89,7 @@ private:
 
 	Button *makedir;
 	Access access;
-	//Button *action;
+
 	VBoxContainer *vbox;
 	FileMode mode;
 	bool can_create_dir;
@@ -109,10 +110,11 @@ private:
 	HBoxContainer *file_box;
 	LineEdit *file;
 	OptionButton *filter;
-	AcceptDialog *mkdirerr;
+	AcceptDialog *error_dialog;
 	DirAccess *dir_access;
 	ConfirmationDialog *confirm_save;
-	DependencyRemoveDialog *remove_dialog;
+	DependencyRemoveDialog *dep_remove_dialog;
+	ConfirmationDialog *global_remove_dialog;
 
 	Button *mode_thumbnails;
 	Button *mode_list;
@@ -133,9 +135,11 @@ private:
 
 	Vector<String> filters;
 
+	bool previews_enabled;
 	bool preview_waiting;
 	int preview_wheel_index;
 	float preview_wheel_timeout;
+
 	static bool default_show_hidden_files;
 	static DisplayMode default_display_mode;
 	bool show_hidden_files;
@@ -179,8 +183,10 @@ private:
 	void _make_dir_confirm();
 
 	void _delete_items();
+	void _delete_files_global();
 
 	void _update_drives(bool p_select = true);
+	void _update_icons();
 
 	void _go_up();
 	void _go_back();
@@ -189,7 +195,7 @@ private:
 	virtual void _post_popup() override;
 
 	void _save_to_recent();
-	//callback function is callback(String p_path,Ref<Texture2D> preview,Variant udata) preview null if could not load
+	// Callback function is callback(String p_path,Ref<Texture2D> preview,Variant udata) preview null if could not load.
 
 	void _thumbnail_result(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata);
 	void _thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata);
@@ -202,7 +208,7 @@ private:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-	//bind helpers
+
 public:
 	void popup_file_dialog();
 	void clear_filters();
@@ -230,16 +236,18 @@ public:
 	void set_access(Access p_access);
 	Access get_access() const;
 
-	void set_show_hidden_files(bool p_show);
-	bool is_showing_hidden_files() const;
-
 	static void set_default_show_hidden_files(bool p_show);
 	static void set_default_display_mode(DisplayMode p_mode);
+	void set_show_hidden_files(bool p_show);
+	bool is_showing_hidden_files() const;
 
 	void invalidate();
 
 	void set_disable_overwrite_warning(bool p_disable);
 	bool is_overwrite_warning_disabled() const;
+
+	void set_previews_enabled(bool p_enabled);
+	bool are_previews_enabled();
 
 	EditorFileDialog();
 	~EditorFileDialog();

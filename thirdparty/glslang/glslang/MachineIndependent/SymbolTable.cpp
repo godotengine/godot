@@ -279,8 +279,14 @@ TFunction::~TFunction()
 //
 TSymbolTableLevel::~TSymbolTableLevel()
 {
-    for (tLevel::iterator it = level.begin(); it != level.end(); ++it)
-        delete (*it).second;
+    for (tLevel::iterator it = level.begin(); it != level.end(); ++it) {
+        const TString& name = it->first;
+        auto retargetIter = std::find_if(retargetedSymbols.begin(), retargetedSymbols.end(),
+                                      [&name](const std::pair<TString, TString>& i) { return i.first == name; });
+        if (retargetIter == retargetedSymbols.end())
+            delete (*it).second;
+    }
+
 
     delete [] defaultPrecision;
 }
@@ -418,6 +424,10 @@ TSymbolTableLevel* TSymbolTableLevel::clone() const
     TSymbolTableLevel *symTableLevel = new TSymbolTableLevel();
     symTableLevel->anonId = anonId;
     symTableLevel->thisLevel = thisLevel;
+    symTableLevel->retargetedSymbols.clear();
+    for (auto &s : retargetedSymbols) {
+        symTableLevel->retargetedSymbols.push_back({s.first, s.second});
+    }
     std::vector<bool> containerCopied(anonId, false);
     tLevel::const_iterator iter;
     for (iter = level.begin(); iter != level.end(); ++iter) {
@@ -433,8 +443,21 @@ TSymbolTableLevel* TSymbolTableLevel::clone() const
                 symTableLevel->insert(*container, false);
                 containerCopied[anon->getAnonId()] = true;
             }
-        } else
+        } else {
+            const TString& name = iter->first;
+            auto retargetIter = std::find_if(retargetedSymbols.begin(), retargetedSymbols.end(),
+                                          [&name](const std::pair<TString, TString>& i) { return i.first == name; });
+            if (retargetIter != retargetedSymbols.end())
+                continue;
             symTableLevel->insert(*iter->second->clone(), false);
+        }
+    }
+    // Now point retargeted symbols to the newly created versions of them
+    for (auto &s : retargetedSymbols) {
+        TSymbol* sym = symTableLevel->find(s.second);
+        if (!sym)
+            continue;
+        symTableLevel->insert(s.first, sym);
     }
 
     return symTableLevel;

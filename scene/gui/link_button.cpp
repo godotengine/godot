@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "link_button.h"
+
 #include "core/string/translation.h"
 
 void LinkButton::_shape() {
@@ -148,18 +149,20 @@ void LinkButton::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			xl_text = atr(text);
 			_shape();
-
 			update_minimum_size();
 			update();
 		} break;
+
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			update();
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			_shape();
 			update_minimum_size();
 			update();
 		} break;
+
 		case NOTIFICATION_DRAW: {
 			RID ci = get_canvas_item();
 			Size2 size = get_size();
@@ -230,7 +233,6 @@ void LinkButton::_notification(int p_what) {
 					draw_line(Vector2(0, y), Vector2(width, y), color, text_buf->get_line_underline_thickness());
 				}
 			}
-
 		} break;
 	}
 }

@@ -30,15 +30,12 @@
 
 #include "connections_dialog.h"
 
-#include "core/string/print_string.h"
 #include "editor/doc_tools.h"
-#include "editor_node.h"
-#include "editor_scale.h"
-#include "editor_settings.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
+#include "editor/scene_tree_dock.h"
 #include "plugins/script_editor_plugin.h"
-#include "scene/gui/label.h"
-#include "scene/gui/popup_menu.h"
-#include "scene/gui/spin_box.h"
 
 static Node *_find_first_script(Node *p_root, Node *p_node) {
 	if (p_node != p_root && p_node->get_owner() != p_root) {
@@ -280,8 +277,10 @@ void ConnectDialog::_update_ok_enabled() {
 }
 
 void ConnectDialog::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		bind_editor->edit(cdbinds);
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			bind_editor->edit(cdbinds);
+		} break;
 	}
 }
 
@@ -639,7 +638,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 	it = nullptr;
 
 	if (add_script_function) {
-		editor->emit_signal(SNAME("script_add_function_request"), target, cd.method, script_function_args);
+		EditorNode::get_singleton()->emit_signal(SNAME("script_add_function_request"), target, cd.method, script_function_args);
 		hide();
 	}
 
@@ -851,7 +850,7 @@ void ConnectionsDock::_go_to_script(TreeItem &p_item) {
 	}
 
 	if (script.is_valid() && ScriptEditor::get_singleton()->script_goto_method(script, cd.method)) {
-		editor->call("_editor_select", EditorNode::EDITOR_SCRIPT);
+		EditorNode::get_singleton()->call("_editor_select", EditorNode::EDITOR_SCRIPT);
 	}
 }
 
@@ -941,6 +940,7 @@ void ConnectionsDock::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			update_tree();
 		} break;
@@ -988,8 +988,8 @@ void ConnectionsDock::update_tree() {
 					name = scr->get_class();
 				}
 
-				if (has_theme_icon(scr->get_class(), "EditorIcons")) {
-					icon = get_theme_icon(scr->get_class(), "EditorIcons");
+				if (has_theme_icon(scr->get_class(), SNAME("EditorIcons"))) {
+					icon = get_theme_icon(scr->get_class(), SNAME("EditorIcons"));
 				}
 			}
 		} else {
@@ -1146,8 +1146,7 @@ void ConnectionsDock::update_tree() {
 	connect_button->set_disabled(true);
 }
 
-ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
-	editor = p_editor;
+ConnectionsDock::ConnectionsDock() {
 	set_name(TTR("Signals"));
 
 	VBoxContainer *vbc = this;

@@ -584,47 +584,49 @@ GPUParticlesCollisionSDF3D::~GPUParticlesCollisionSDF3D() {
 ////////////////////////////
 
 void GPUParticlesCollisionHeightField3D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
-		if (update_mode == UPDATE_MODE_ALWAYS) {
-			RS::get_singleton()->particles_collision_height_field_update(_get_collision());
-		}
+	switch (p_what) {
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (update_mode == UPDATE_MODE_ALWAYS) {
+				RS::get_singleton()->particles_collision_height_field_update(_get_collision());
+			}
 
-		if (follow_camera_mode && get_viewport()) {
-			Camera3D *cam = get_viewport()->get_camera_3d();
-			if (cam) {
-				Transform3D xform = get_global_transform();
-				Vector3 x_axis = xform.basis.get_axis(Vector3::AXIS_X).normalized();
-				Vector3 z_axis = xform.basis.get_axis(Vector3::AXIS_Z).normalized();
-				float x_len = xform.basis.get_scale().x;
-				float z_len = xform.basis.get_scale().z;
+			if (follow_camera_mode && get_viewport()) {
+				Camera3D *cam = get_viewport()->get_camera_3d();
+				if (cam) {
+					Transform3D xform = get_global_transform();
+					Vector3 x_axis = xform.basis.get_axis(Vector3::AXIS_X).normalized();
+					Vector3 z_axis = xform.basis.get_axis(Vector3::AXIS_Z).normalized();
+					float x_len = xform.basis.get_scale().x;
+					float z_len = xform.basis.get_scale().z;
 
-				Vector3 cam_pos = cam->get_global_transform().origin;
-				Transform3D new_xform = xform;
+					Vector3 cam_pos = cam->get_global_transform().origin;
+					Transform3D new_xform = xform;
 
-				while (x_axis.dot(cam_pos - new_xform.origin) > x_len) {
-					new_xform.origin += x_axis * x_len;
-				}
-				while (x_axis.dot(cam_pos - new_xform.origin) < -x_len) {
-					new_xform.origin -= x_axis * x_len;
-				}
+					while (x_axis.dot(cam_pos - new_xform.origin) > x_len) {
+						new_xform.origin += x_axis * x_len;
+					}
+					while (x_axis.dot(cam_pos - new_xform.origin) < -x_len) {
+						new_xform.origin -= x_axis * x_len;
+					}
 
-				while (z_axis.dot(cam_pos - new_xform.origin) > z_len) {
-					new_xform.origin += z_axis * z_len;
-				}
-				while (z_axis.dot(cam_pos - new_xform.origin) < -z_len) {
-					new_xform.origin -= z_axis * z_len;
-				}
+					while (z_axis.dot(cam_pos - new_xform.origin) > z_len) {
+						new_xform.origin += z_axis * z_len;
+					}
+					while (z_axis.dot(cam_pos - new_xform.origin) < -z_len) {
+						new_xform.origin -= z_axis * z_len;
+					}
 
-				if (new_xform != xform) {
-					set_global_transform(new_xform);
-					RS::get_singleton()->particles_collision_height_field_update(_get_collision());
+					if (new_xform != xform) {
+						set_global_transform(new_xform);
+						RS::get_singleton()->particles_collision_height_field_update(_get_collision());
+					}
 				}
 			}
-		}
-	}
+		} break;
 
-	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
-		RS::get_singleton()->particles_collision_height_field_update(_get_collision());
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			RS::get_singleton()->particles_collision_height_field_update(_get_collision());
+		} break;
 	}
 }
 

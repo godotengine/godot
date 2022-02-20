@@ -339,6 +339,8 @@ Dictionary PhysicsDirectSpaceState3D::_intersect_ray(const Ref<PhysicsRayQueryPa
 }
 
 Array PhysicsDirectSpaceState3D::_intersect_point(const Ref<PhysicsPointQueryParameters3D> &p_point_query, int p_max_results) {
+	ERR_FAIL_COND_V(p_point_query.is_null(), Array());
+
 	Vector<ShapeResult> ret;
 	ret.resize(p_max_results);
 

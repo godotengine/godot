@@ -685,8 +685,12 @@ Ref<Translation> TranslationServer::get_tool_translation() const {
 
 String TranslationServer::get_tool_locale() {
 #ifdef TOOLS_ENABLED
-	if (TranslationServer::get_singleton()->get_tool_translation().is_valid() && (Engine::get_singleton()->is_editor_hint() || Main::is_project_manager())) {
-		return tool_translation->get_locale();
+	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
+		if (TranslationServer::get_singleton()->get_tool_translation().is_valid()) {
+			return tool_translation->get_locale();
+		} else {
+			return "en";
+		}
 	} else {
 #else
 	{
@@ -925,6 +929,7 @@ bool TranslationServer::is_placeholder(String &p_message, int p_index) const {
 void TranslationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_locale", "locale"), &TranslationServer::set_locale);
 	ClassDB::bind_method(D_METHOD("get_locale"), &TranslationServer::get_locale);
+	ClassDB::bind_method(D_METHOD("get_tool_locale"), &TranslationServer::get_tool_locale);
 
 	ClassDB::bind_method(D_METHOD("compare_locales", "locale_a", "locale_b"), &TranslationServer::compare_locales);
 	ClassDB::bind_method(D_METHOD("standardize_locale", "locale"), &TranslationServer::standardize_locale);

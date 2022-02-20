@@ -32,7 +32,6 @@
 
 #include "core/object/message_queue.h"
 #include "core/string/translation.h"
-
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
@@ -326,6 +325,7 @@ void TabContainer::_notification(int p_what) {
 				first_tab_cache--;
 			}
 		} break;
+
 		case NOTIFICATION_DRAW: {
 			RID canvas = get_canvas_item();
 			Size2 size = get_size();
@@ -522,6 +522,7 @@ void TabContainer::_notification(int p_what) {
 				}
 			}
 		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
@@ -704,7 +705,7 @@ void TabContainer::add_child_notify(Node *p_child) {
 	}
 
 	_refresh_texts();
-	call_deferred("_repaint");
+	call_deferred(SNAME("_repaint"));
 	update();
 
 	bool first = (_get_tabs().size() == 1);
@@ -1175,6 +1176,14 @@ void TabContainer::set_use_hidden_tabs_for_min_size(bool p_use_hidden_tabs) {
 
 bool TabContainer::get_use_hidden_tabs_for_min_size() const {
 	return use_hidden_tabs_for_min_size;
+}
+
+Vector<int> TabContainer::get_allowed_size_flags_horizontal() const {
+	return Vector<int>();
+}
+
+Vector<int> TabContainer::get_allowed_size_flags_vertical() const {
+	return Vector<int>();
 }
 
 void TabContainer::_bind_methods() {

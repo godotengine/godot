@@ -175,7 +175,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	theme->set_color("icon_hover_color", "Button", Color(1, 1, 1, 1));
 	theme->set_color("icon_hover_pressed_color", "Button", Color(1, 1, 1, 1));
 	theme->set_color("icon_focus_color", "Button", Color(1, 1, 1, 1));
-	theme->set_color("icon_disabled_color", "Button", Color(1, 1, 1, 1));
+	theme->set_color("icon_disabled_color", "Button", Color(1, 1, 1, 0.4));
 
 	theme->set_constant("hseparation", "Button", 2 * scale);
 
@@ -466,7 +466,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	theme->set_color("completion_background_color", "CodeEdit", Color(0.17, 0.16, 0.2));
 	theme->set_color("completion_selected_color", "CodeEdit", Color(0.26, 0.26, 0.27));
 	theme->set_color("completion_existing_color", "CodeEdit", Color(0.87, 0.87, 0.87, 0.13));
-	theme->set_color("completion_scroll_color", "CodeEdit", control_font_pressed_color);
+	theme->set_color("completion_scroll_color", "CodeEdit", control_font_pressed_color * Color(1, 1, 1, 0.29));
 	theme->set_color("completion_font_color", "CodeEdit", Color(0.67, 0.67, 0.67));
 	theme->set_color("font_color", "CodeEdit", control_font_color);
 	theme->set_color("font_selected_color", "CodeEdit", Color(0, 0, 0));
@@ -490,7 +490,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 
 	theme->set_constant("completion_lines", "CodeEdit", 7);
 	theme->set_constant("completion_max_width", "CodeEdit", 50);
-	theme->set_constant("completion_scroll_width", "CodeEdit", 3);
+	theme->set_constant("completion_scroll_width", "CodeEdit", 6);
 	theme->set_constant("line_spacing", "CodeEdit", 4 * scale);
 	theme->set_constant("outline_size", "CodeEdit", 0);
 
@@ -864,7 +864,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	theme->set_icon("screen_picker", "ColorPicker", icons["color_picker_pipette"]);
 	theme->set_icon("add_preset", "ColorPicker", icons["add"]);
 	theme->set_icon("color_hue", "ColorPicker", icons["color_picker_hue"]);
-	theme->set_icon("color_sample", "ColorPicker", icons["color_picker_sample"]);
 	theme->set_icon("sample_bg", "ColorPicker", icons["mini_checkerboard"]);
 	theme->set_icon("overbright_indicator", "ColorPicker", icons["color_picker_overbright"]);
 	theme->set_icon("bar_arrow", "ColorPicker", icons["color_picker_bar_arrow"]);
@@ -1019,7 +1018,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	default_style = make_flat_stylebox(Color(1, 0.365, 0.365), 4, 4, 4, 4, 0, false, 2);
 }
 
-void make_default_theme(float p_scale, Ref<Font> p_font) {
+void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPositioning p_subpixel, TextServer::Hinting p_hinting, bool p_aa) {
 	Ref<Theme> t;
 	t.instantiate();
 
@@ -1041,6 +1040,9 @@ void make_default_theme(float p_scale, Ref<Font> p_font) {
 		Ref<FontData> dynamic_font_data;
 		dynamic_font_data.instantiate();
 		dynamic_font_data->set_data_ptr(_font_OpenSans_SemiBold, _font_OpenSans_SemiBold_size);
+		dynamic_font_data->set_subpixel_positioning(p_subpixel);
+		dynamic_font_data->set_hinting(p_hinting);
+		dynamic_font_data->set_antialiased(p_aa);
 		dynamic_font->add_data(dynamic_font_data);
 
 		default_font = dynamic_font;

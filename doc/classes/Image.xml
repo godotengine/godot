@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Image" inherits="Resource" version="4.0">
+<class name="Image" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Image datatype.
 	</brief_description>
@@ -86,6 +86,15 @@
 			<argument index="1" name="channels" type="int" enum="Image.UsedChannels" />
 			<argument index="2" name="lossy_quality" type="float" default="0.7" />
 			<description>
+			</description>
+		</method>
+		<method name="compute_image_metrics">
+			<return type="Dictionary" />
+			<argument index="0" name="compared_image" type="Image" />
+			<argument index="1" name="use_luma" type="bool" />
+			<description>
+				Compute image metrics on the current image and the compared image.
+				The dictionary contains [code]max[/code], [code]mean[/code], [code]mean_squared[/code], [code]root_mean_squared[/code] and [code]peak_snr[/code].
 			</description>
 		</method>
 		<method name="convert">

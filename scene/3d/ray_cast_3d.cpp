@@ -171,8 +171,8 @@ void RayCast3D::_notification(int p_what) {
 					exclude.erase(Object::cast_to<CollisionObject3D>(get_parent())->get_rid());
 				}
 			}
-
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			if (enabled) {
 				set_physics_process_internal(false);
@@ -181,8 +181,8 @@ void RayCast3D::_notification(int p_what) {
 			if (debug_shape) {
 				_clear_debug_shape();
 			}
-
 		} break;
+
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (!enabled) {
 				break;
@@ -193,7 +193,6 @@ void RayCast3D::_notification(int p_what) {
 			if (prev_collision_state != collided && get_tree()->is_debugging_collisions_hint()) {
 				_update_debug_shape_material(true);
 			}
-
 		} break;
 	}
 }
@@ -259,6 +258,13 @@ void RayCast3D::remove_exception(const CollisionObject3D *p_node) {
 
 void RayCast3D::clear_exceptions() {
 	exclude.clear();
+
+	if (exclude_parent_body && is_inside_tree()) {
+		CollisionObject3D *parent = Object::cast_to<CollisionObject3D>(get_parent());
+		if (parent) {
+			exclude.insert(parent->get_rid());
+		}
+	}
 }
 
 void RayCast3D::set_collide_with_areas(bool p_enabled) {

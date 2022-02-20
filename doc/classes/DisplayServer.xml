@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="DisplayServer" inherits="Object" version="4.0">
+<class name="DisplayServer" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -403,8 +403,14 @@
 			<return type="float" />
 			<argument index="0" name="screen" type="int" default="-1" />
 			<description>
-				Returns the current refresh rate of the specified screen. If [code]screen[/code] is [code]SCREEN_OF_MAIN_WINDOW[/code] (the default value), a screen with the main window will be used.
-				[b]Note:[/b] Returns [code]60.0[/code] if the DisplayServer fails to find the refresh rate for the specified screen. On HTML5, [method screen_get_refresh_rate] will always return [code]60.0[/code] as there is no way to retrieve the refresh rate on that platform.
+				Returns the current refresh rate of the specified screen. If [code]screen[/code] is [constant SCREEN_OF_MAIN_WINDOW] (the default value), a screen with the main window will be used.
+				[b]Note:[/b] Returns [code]-1.0[/code] if the DisplayServer fails to find the refresh rate for the specified screen. On HTML5, [method screen_get_refresh_rate] will always return [code]-1.0[/code] as there is no way to retrieve the refresh rate on that platform.
+				To fallback to a default refresh rate if the method fails, try:
+				[codeblock]
+				var refresh_rate = DisplayServer.screen_get_refresh_rate()
+				if refresh_rate &lt; 0:
+				    refresh_rate = 60.0
+				[/codeblock]
 			</description>
 		</method>
 		<method name="screen_get_scale" qualifiers="const">
@@ -509,7 +515,7 @@
 		<method name="virtual_keyboard_show">
 			<return type="void" />
 			<argument index="0" name="existing_text" type="String" />
-			<argument index="1" name="position" type="Rect2" default="Rect2i(0, 0, 0, 0)" />
+			<argument index="1" name="position" type="Rect2" default="Rect2(0, 0, 0, 0)" />
 			<argument index="2" name="multiline" type="bool" default="false" />
 			<argument index="3" name="max_length" type="int" default="-1" />
 			<argument index="4" name="cursor_start" type="int" default="-1" />
@@ -636,6 +642,16 @@
 			<argument index="0" name="callback" type="Callable" />
 			<argument index="1" name="window_id" type="int" default="0" />
 			<description>
+			</description>
+		</method>
+		<method name="window_set_exclusive">
+			<return type="void" />
+			<argument index="0" name="window_id" type="int" />
+			<argument index="1" name="exclusive" type="bool" />
+			<description>
+				If set to [code]true[/code], this window will always stay on top of its parent window, parent window will ignore input while this window is opened.
+				[b]Note:[/b] On macOS, exclusive windows are confined to the same space (virtual desktop or screen) as the parent window.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
 		<method name="window_set_flag">

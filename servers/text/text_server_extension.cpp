@@ -85,6 +85,9 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_font_set_hinting, "font_rid", "hinting");
 	GDVIRTUAL_BIND(_font_get_hinting, "font_rid");
 
+	GDVIRTUAL_BIND(_font_set_subpixel_positioning, "font_rid", "subpixel_positioning");
+	GDVIRTUAL_BIND(_font_get_subpixel_positioning, "font_rid");
+
 	GDVIRTUAL_BIND(_font_set_variation_coordinates, "font_rid", "variation_coordinates");
 	GDVIRTUAL_BIND(_font_get_variation_coordinates, "font_rid");
 
@@ -510,6 +513,18 @@ TextServer::Hinting TextServerExtension::font_get_hinting(RID p_font_rid) const 
 		return (TextServer::Hinting)ret;
 	}
 	return TextServer::Hinting::HINTING_NONE;
+}
+
+void TextServerExtension::font_set_subpixel_positioning(RID p_font_rid, TextServer::SubpixelPositioning p_subpixel) {
+	GDVIRTUAL_CALL(_font_set_subpixel_positioning, p_font_rid, p_subpixel);
+}
+
+TextServer::SubpixelPositioning TextServerExtension::font_get_subpixel_positioning(RID p_font_rid) const {
+	TextServer::SubpixelPositioning ret;
+	if (GDVIRTUAL_CALL(_font_get_subpixel_positioning, p_font_rid, ret)) {
+		return (TextServer::SubpixelPositioning)ret;
+	}
+	return TextServer::SubpixelPositioning::SUBPIXEL_POSITIONING_DISABLED;
 }
 
 void TextServerExtension::font_set_variation_coordinates(RID p_font_rid, const Dictionary &p_variation_coordinates) {

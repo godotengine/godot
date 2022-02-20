@@ -30,6 +30,16 @@
 
 #include "import_defaults_editor.h"
 
+#include "core/config/project_settings.h"
+#include "core/io/resource_importer.h"
+#include "editor/action_map_editor.h"
+#include "editor/editor_autoload_settings.h"
+#include "editor/editor_plugin_settings.h"
+#include "editor/editor_sectioned_inspector.h"
+#include "editor/localization_editor.h"
+#include "editor/shader_globals_editor.h"
+#include "scene/gui/center_container.h"
+
 class ImportDefaultsEditorSettings : public Object {
 	GDCLASS(ImportDefaultsEditorSettings, Object)
 	friend class ImportDefaultsEditor;
@@ -70,8 +80,10 @@ protected:
 };
 
 void ImportDefaultsEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_PREDELETE) {
-		inspector->edit(nullptr);
+	switch (p_what) {
+		case NOTIFICATION_PREDELETE: {
+			inspector->edit(nullptr);
+		} break;
 	}
 }
 

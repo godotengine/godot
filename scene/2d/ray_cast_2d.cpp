@@ -31,6 +31,7 @@
 #include "ray_cast_2d.h"
 
 #include "collision_object_2d.h"
+#include "scene/resources/world_2d.h"
 
 void RayCast2D::set_target_position(const Vector2 &p_point) {
 	target_position = p_point;
@@ -149,11 +150,11 @@ void RayCast2D::_notification(int p_what) {
 				}
 			}
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			if (enabled) {
 				set_physics_process_internal(false);
 			}
-
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -162,16 +163,13 @@ void RayCast2D::_notification(int p_what) {
 				break;
 			}
 			_draw_debug_shape();
-
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (!enabled) {
 				break;
 			}
-
 			_update_raycast_state();
-
 		} break;
 	}
 }
@@ -279,6 +277,13 @@ void RayCast2D::remove_exception(const CollisionObject2D *p_node) {
 
 void RayCast2D::clear_exceptions() {
 	exclude.clear();
+
+	if (exclude_parent_body && is_inside_tree()) {
+		CollisionObject2D *parent = Object::cast_to<CollisionObject2D>(get_parent());
+		if (parent) {
+			exclude.insert(parent->get_rid());
+		}
+	}
 }
 
 void RayCast2D::set_collide_with_areas(bool p_enabled) {

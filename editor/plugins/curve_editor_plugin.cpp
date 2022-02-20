@@ -34,6 +34,7 @@
 #include "core/core_string_names.h"
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 
 CurveEditor::CurveEditor() {
@@ -96,8 +97,10 @@ Size2 CurveEditor::get_minimum_size() const {
 }
 
 void CurveEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_DRAW) {
-		_draw();
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
+			_draw();
+		} break;
 	}
 }
 
@@ -773,7 +776,7 @@ void EditorInspectorPluginCurve::parse_begin(Object *p_object) {
 	add_custom_control(editor);
 }
 
-CurveEditorPlugin::CurveEditorPlugin(EditorNode *p_node) {
+CurveEditorPlugin::CurveEditorPlugin() {
 	Ref<EditorInspectorPluginCurve> curve_plugin;
 	curve_plugin.instantiate();
 	EditorInspector::add_inspector_plugin(curve_plugin);

@@ -57,7 +57,7 @@ class EditorPluginCSG : public EditorPlugin {
 	GDCLASS(EditorPluginCSG, EditorPlugin);
 
 public:
-	EditorPluginCSG(EditorNode *p_editor);
+	EditorPluginCSG();
 };
 
 #endif // CSG_GIZMOS_H

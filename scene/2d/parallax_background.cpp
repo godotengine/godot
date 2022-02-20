@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "parallax_background.h"
+
 #include "parallax_layer.h"
 
 void ParallaxBackground::_notification(int p_what) {
@@ -36,8 +37,8 @@ void ParallaxBackground::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			group_name = "__cameras_" + itos(get_viewport().get_id());
 			add_to_group(group_name);
-
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			remove_from_group(group_name);
 		} break;

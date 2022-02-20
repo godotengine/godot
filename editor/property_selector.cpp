@@ -33,7 +33,7 @@
 #include "core/os/keyboard.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_node.h"
-#include "editor_scale.h"
+#include "editor/editor_scale.h"
 
 void PropertySelector::_text_changed(const String &p_newtext) {
 	_update_search();
@@ -214,10 +214,13 @@ void PropertySelector::_update_search() {
 			Variant::construct(type, v, nullptr, 0, ce);
 			v.get_method_list(&methods);
 		} else {
-			Object *obj = ObjectDB::get_instance(script);
-			if (Object::cast_to<Script>(obj)) {
+			Ref<Script> script_ref = Object::cast_to<Script>(ObjectDB::get_instance(script));
+			if (script_ref.is_valid()) {
 				methods.push_back(MethodInfo("*Script Methods"));
-				Object::cast_to<Script>(obj)->get_script_method_list(&methods);
+				if (script_ref->is_built_in()) {
+					script_ref->reload(true);
+				}
+				script_ref->get_script_method_list(&methods);
 			}
 
 			StringName base = base_type;
@@ -418,10 +421,14 @@ void PropertySelector::_hide_requested() {
 }
 
 void PropertySelector::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		connect("confirmed", callable_mp(this, &PropertySelector::_confirmed));
-	} else if (p_what == NOTIFICATION_EXIT_TREE) {
-		disconnect("confirmed", callable_mp(this, &PropertySelector::_confirmed));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			connect("confirmed", callable_mp(this, &PropertySelector::_confirmed));
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			disconnect("confirmed", callable_mp(this, &PropertySelector::_confirmed));
+		} break;
 	}
 }
 

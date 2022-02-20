@@ -678,11 +678,13 @@ Error ResourceLoaderBinary::load() {
 				internal_resources.write[i].path = path; // Update path.
 			}
 
-			if (cache_mode == ResourceFormatLoader::CACHE_MODE_REUSE) {
-				if (ResourceCache::has(path)) {
+			if (cache_mode == ResourceFormatLoader::CACHE_MODE_REUSE && ResourceCache::has(path)) {
+				RES cached = ResourceCache::get(path);
+				if (cached.is_valid()) {
 					//already loaded, don't do anything
 					stage++;
 					error = OK;
+					internal_index_cache[path] = cached;
 					continue;
 				}
 			}
@@ -899,6 +901,7 @@ void ResourceLoaderBinary::open(FileAccess *p_f, bool p_no_resources, bool p_kee
 	if (flags & ResourceFormatSaverBinaryInstance::FORMAT_FLAG_UIDS) {
 		using_uids = true;
 	}
+	f->real_is_double = (flags & ResourceFormatSaverBinaryInstance::FORMAT_FLAG_REAL_T_IS_DOUBLE) != 0;
 
 	if (using_uids) {
 		uid = f->get_64();
@@ -1605,11 +1608,6 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 			d.get_key_list(&keys);
 
 			for (const Variant &E : keys) {
-				/*
-				if (!_check_type(dict[E]))
-					continue;
-				*/
-
 				write_variant(f, E, resource_map, external_resources, string_map);
 				write_variant(f, d[E], resource_map, external_resources, string_map);
 			}
@@ -1900,7 +1898,13 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 
 	save_unicode_string(f, p_resource->get_class());
 	f->store_64(0); //offset to import metadata
-	f->store_32(FORMAT_FLAG_NAMED_SCENE_IDS | FORMAT_FLAG_UIDS);
+	{
+		uint32_t format_flags = FORMAT_FLAG_NAMED_SCENE_IDS | FORMAT_FLAG_UIDS;
+#ifdef REAL_T_IS_DOUBLE
+		format_flags |= FORMAT_FLAG_REAL_T_IS_DOUBLE;
+#endif
+		f->store_32(format_flags);
+	}
 	ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(p_path, true);
 	f->store_64(uid);
 	for (int i = 0; i < ResourceFormatSaverBinaryInstance::RESERVED_FIELDS; i++) {

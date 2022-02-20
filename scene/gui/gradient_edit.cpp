@@ -287,84 +287,85 @@ void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void GradientEdit::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (!picker->is_connected("color_changed", callable_mp(this, &GradientEdit::_color_changed))) {
-			picker->connect("color_changed", callable_mp(this, &GradientEdit::_color_changed));
-		}
-	}
-
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		draw_spacing = BASE_SPACING * get_theme_default_base_scale();
-		draw_point_width = BASE_POINT_WIDTH * get_theme_default_base_scale();
-	}
-
-	if (p_what == NOTIFICATION_DRAW) {
-		int w = get_size().x;
-		int h = get_size().y;
-
-		if (w == 0 || h == 0) {
-			return; // Safety check. We have division by 'h'. And in any case there is nothing to draw with such size.
-		}
-
-		int total_w = get_size().width - get_size().height - draw_spacing;
-
-		// Draw checker pattern for ramp.
-		draw_texture_rect(get_theme_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")), Rect2(0, 0, total_w, h), true);
-
-		// Draw color ramp.
-
-		gradient_cache->set_points(points);
-		gradient_cache->set_interpolation_mode(interpolation_mode);
-		preview_texture->set_gradient(gradient_cache);
-		draw_texture_rect(preview_texture, Rect2(0, 0, total_w, h));
-
-		// Draw point markers.
-		for (int i = 0; i < points.size(); i++) {
-			Color col = points[i].color.inverted();
-			col.a = 0.9;
-
-			draw_line(Vector2(points[i].offset * total_w, 0), Vector2(points[i].offset * total_w, h / 2), col);
-			Rect2 rect = Rect2(points[i].offset * total_w - draw_point_width / 2, h / 2, draw_point_width, h / 2);
-			draw_rect(rect, points[i].color, true);
-			draw_rect(rect, col, false);
-			if (grabbed == i) {
-				rect = rect.grow(-1);
-				if (has_focus()) {
-					draw_rect(rect, Color(1, 0, 0, 0.9), false);
-				} else {
-					draw_rect(rect, Color(0.6, 0, 0, 0.9), false);
-				}
-
-				rect = rect.grow(-1);
-				draw_rect(rect, col, false);
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			if (!picker->is_connected("color_changed", callable_mp(this, &GradientEdit::_color_changed))) {
+				picker->connect("color_changed", callable_mp(this, &GradientEdit::_color_changed));
 			}
+			[[fallthrough]];
 		}
+		case NOTIFICATION_THEME_CHANGED: {
+			draw_spacing = BASE_SPACING * get_theme_default_base_scale();
+			draw_point_width = BASE_POINT_WIDTH * get_theme_default_base_scale();
+		} break;
 
-		//Draw "button" for color selector
-		draw_texture_rect(get_theme_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")), Rect2(total_w + draw_spacing, 0, h, h), true);
-		if (grabbed != -1) {
-			//Draw with selection color
-			draw_rect(Rect2(total_w + draw_spacing, 0, h, h), points[grabbed].color);
-		} else {
-			//if no color selected draw grey color with 'X' on top.
-			draw_rect(Rect2(total_w + draw_spacing, 0, h, h), Color(0.5, 0.5, 0.5, 1));
-			draw_line(Vector2(total_w + draw_spacing, 0), Vector2(total_w + draw_spacing + h, h), Color(1, 1, 1, 0.6));
-			draw_line(Vector2(total_w + draw_spacing, h), Vector2(total_w + draw_spacing + h, 0), Color(1, 1, 1, 0.6));
-		}
+		case NOTIFICATION_DRAW: {
+			int w = get_size().x;
+			int h = get_size().y;
 
-		// Draw borders around color ramp if in focus.
-		if (has_focus()) {
-			draw_line(Vector2(-1, -1), Vector2(total_w + 1, -1), Color(1, 1, 1, 0.6));
-			draw_line(Vector2(total_w + 1, -1), Vector2(total_w + 1, h + 1), Color(1, 1, 1, 0.6));
-			draw_line(Vector2(total_w + 1, h + 1), Vector2(-1, h + 1), Color(1, 1, 1, 0.6));
-			draw_line(Vector2(-1, -1), Vector2(-1, h + 1), Color(1, 1, 1, 0.6));
-		}
-	}
+			if (w == 0 || h == 0) {
+				return; // Safety check. We have division by 'h'. And in any case there is nothing to draw with such size.
+			}
 
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (!is_visible()) {
-			grabbing = false;
-		}
+			int total_w = get_size().width - get_size().height - draw_spacing;
+
+			// Draw checker pattern for ramp.
+			draw_texture_rect(get_theme_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")), Rect2(0, 0, total_w, h), true);
+
+			// Draw color ramp.
+			gradient_cache->set_points(points);
+			gradient_cache->set_interpolation_mode(interpolation_mode);
+			preview_texture->set_gradient(gradient_cache);
+			draw_texture_rect(preview_texture, Rect2(0, 0, total_w, h));
+
+			// Draw point markers.
+			for (int i = 0; i < points.size(); i++) {
+				Color col = points[i].color.inverted();
+				col.a = 0.9;
+
+				draw_line(Vector2(points[i].offset * total_w, 0), Vector2(points[i].offset * total_w, h / 2), col);
+				Rect2 rect = Rect2(points[i].offset * total_w - draw_point_width / 2, h / 2, draw_point_width, h / 2);
+				draw_rect(rect, points[i].color, true);
+				draw_rect(rect, col, false);
+				if (grabbed == i) {
+					rect = rect.grow(-1);
+					if (has_focus()) {
+						draw_rect(rect, Color(1, 0, 0, 0.9), false);
+					} else {
+						draw_rect(rect, Color(0.6, 0, 0, 0.9), false);
+					}
+
+					rect = rect.grow(-1);
+					draw_rect(rect, col, false);
+				}
+			}
+
+			// Draw "button" for color selector.
+			draw_texture_rect(get_theme_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")), Rect2(total_w + draw_spacing, 0, h, h), true);
+			if (grabbed != -1) {
+				// Draw with selection color.
+				draw_rect(Rect2(total_w + draw_spacing, 0, h, h), points[grabbed].color);
+			} else {
+				// If no color selected draw grey color with 'X' on top.
+				draw_rect(Rect2(total_w + draw_spacing, 0, h, h), Color(0.5, 0.5, 0.5, 1));
+				draw_line(Vector2(total_w + draw_spacing, 0), Vector2(total_w + draw_spacing + h, h), Color(1, 1, 1, 0.6));
+				draw_line(Vector2(total_w + draw_spacing, h), Vector2(total_w + draw_spacing + h, 0), Color(1, 1, 1, 0.6));
+			}
+
+			// Draw borders around color ramp if in focus.
+			if (has_focus()) {
+				draw_line(Vector2(-1, -1), Vector2(total_w + 1, -1), Color(1, 1, 1, 0.6));
+				draw_line(Vector2(total_w + 1, -1), Vector2(total_w + 1, h + 1), Color(1, 1, 1, 0.6));
+				draw_line(Vector2(total_w + 1, h + 1), Vector2(-1, h + 1), Color(1, 1, 1, 0.6));
+				draw_line(Vector2(-1, -1), Vector2(-1, h + 1), Color(1, 1, 1, 0.6));
+			}
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible()) {
+				grabbing = false;
+			}
+		} break;
 	}
 }
 

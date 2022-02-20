@@ -248,6 +248,7 @@ public:
 	int get_button_count(int p_column) const;
 	String get_button_tooltip(int p_column, int p_idx) const;
 	Ref<Texture2D> get_button(int p_column, int p_idx) const;
+	int get_button_id(int p_column, int p_idx) const;
 	void erase_button(int p_column, int p_idx);
 	int get_button_by_id(int p_column, int p_id) const;
 	void set_button(int p_column, int p_idx, const Ref<Texture2D> &p_button);
@@ -682,7 +683,7 @@ public:
 	TreeItem *get_item_with_text(const String &p_find) const;
 
 	Point2 get_scroll() const;
-	void scroll_to_item(TreeItem *p_item);
+	void scroll_to_item(TreeItem *p_item, bool p_center_on_item = false);
 	void set_h_scroll_enabled(bool p_enable);
 	bool is_h_scroll_enabled() const;
 	void set_v_scroll_enabled(bool p_enable);

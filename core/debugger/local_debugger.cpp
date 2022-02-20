@@ -31,7 +31,6 @@
 #include "local_debugger.h"
 
 #include "core/debugger/script_debugger.h"
-#include "core/os/os.h"
 #include "scene/main/scene_tree.h"
 
 struct LocalDebugger::ScriptsProfiler {

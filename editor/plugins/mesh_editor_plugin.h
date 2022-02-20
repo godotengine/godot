@@ -31,7 +31,6 @@
 #ifndef MESH_EDITOR_PLUGIN_H
 #define MESH_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/light_3d.h"
@@ -85,7 +84,7 @@ class MeshEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const override { return "Mesh"; }
 
-	MeshEditorPlugin(EditorNode *p_node);
+	MeshEditorPlugin();
 };
 
 #endif

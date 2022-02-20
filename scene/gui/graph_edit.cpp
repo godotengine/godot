@@ -423,82 +423,86 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 }
 
 void GraphEdit::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		port_grab_distance_horizontal = get_theme_constant(SNAME("port_grab_distance_horizontal"));
-		port_grab_distance_vertical = get_theme_constant(SNAME("port_grab_distance_vertical"));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			port_grab_distance_horizontal = get_theme_constant(SNAME("port_grab_distance_horizontal"));
+			port_grab_distance_vertical = get_theme_constant(SNAME("port_grab_distance_vertical"));
 
-		zoom_minus->set_icon(get_theme_icon(SNAME("minus")));
-		zoom_reset->set_icon(get_theme_icon(SNAME("reset")));
-		zoom_plus->set_icon(get_theme_icon(SNAME("more")));
-		snap_button->set_icon(get_theme_icon(SNAME("snap")));
-		minimap_button->set_icon(get_theme_icon(SNAME("minimap")));
-		layout_button->set_icon(get_theme_icon(SNAME("layout")));
+			zoom_minus->set_icon(get_theme_icon(SNAME("minus")));
+			zoom_reset->set_icon(get_theme_icon(SNAME("reset")));
+			zoom_plus->set_icon(get_theme_icon(SNAME("more")));
+			snap_button->set_icon(get_theme_icon(SNAME("snap")));
+			minimap_button->set_icon(get_theme_icon(SNAME("minimap")));
+			layout_button->set_icon(get_theme_icon(SNAME("layout")));
 
-		zoom_label->set_custom_minimum_size(Size2(48, 0) * get_theme_default_base_scale());
-	}
-	if (p_what == NOTIFICATION_READY) {
-		Size2 hmin = h_scroll->get_combined_minimum_size();
-		Size2 vmin = v_scroll->get_combined_minimum_size();
+			zoom_label->set_custom_minimum_size(Size2(48, 0) * get_theme_default_base_scale());
+		} break;
 
-		h_scroll->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, 0);
-		h_scroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, 0);
-		h_scroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -hmin.height);
-		h_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
+		case NOTIFICATION_READY: {
+			Size2 hmin = h_scroll->get_combined_minimum_size();
+			Size2 vmin = v_scroll->get_combined_minimum_size();
 
-		v_scroll->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -vmin.width);
-		v_scroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, 0);
-		v_scroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 0);
-		v_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
-	}
-	if (p_what == NOTIFICATION_DRAW) {
-		draw_style_box(get_theme_stylebox(SNAME("bg")), Rect2(Point2(), get_size()));
+			h_scroll->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, 0);
+			h_scroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, 0);
+			h_scroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -hmin.height);
+			h_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
 
-		if (is_using_snap()) {
-			//draw grid
+			v_scroll->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -vmin.width);
+			v_scroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, 0);
+			v_scroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 0);
+			v_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
+		} break;
 
-			int snap = get_snap();
+		case NOTIFICATION_DRAW: {
+			draw_style_box(get_theme_stylebox(SNAME("bg")), Rect2(Point2(), get_size()));
 
-			Vector2 offset = get_scroll_ofs() / zoom;
-			Size2 size = get_size() / zoom;
+			if (is_using_snap()) {
+				// Draw grid.
+				int snap = get_snap();
 
-			Point2i from = (offset / float(snap)).floor();
-			Point2i len = (size / float(snap)).floor() + Vector2(1, 1);
+				Vector2 offset = get_scroll_ofs() / zoom;
+				Size2 size = get_size() / zoom;
 
-			Color grid_minor = get_theme_color(SNAME("grid_minor"));
-			Color grid_major = get_theme_color(SNAME("grid_major"));
+				Point2i from = (offset / float(snap)).floor();
+				Point2i len = (size / float(snap)).floor() + Vector2(1, 1);
 
-			for (int i = from.x; i < from.x + len.x; i++) {
-				Color color;
+				Color grid_minor = get_theme_color(SNAME("grid_minor"));
+				Color grid_major = get_theme_color(SNAME("grid_major"));
 
-				if (ABS(i) % 10 == 0) {
-					color = grid_major;
-				} else {
-					color = grid_minor;
+				for (int i = from.x; i < from.x + len.x; i++) {
+					Color color;
+
+					if (ABS(i) % 10 == 0) {
+						color = grid_major;
+					} else {
+						color = grid_minor;
+					}
+
+					float base_ofs = i * snap * zoom - offset.x * zoom;
+					draw_line(Vector2(base_ofs, 0), Vector2(base_ofs, get_size().height), color);
 				}
 
-				float base_ofs = i * snap * zoom - offset.x * zoom;
-				draw_line(Vector2(base_ofs, 0), Vector2(base_ofs, get_size().height), color);
-			}
+				for (int i = from.y; i < from.y + len.y; i++) {
+					Color color;
 
-			for (int i = from.y; i < from.y + len.y; i++) {
-				Color color;
+					if (ABS(i) % 10 == 0) {
+						color = grid_major;
+					} else {
+						color = grid_minor;
+					}
 
-				if (ABS(i) % 10 == 0) {
-					color = grid_major;
-				} else {
-					color = grid_minor;
+					float base_ofs = i * snap * zoom - offset.y * zoom;
+					draw_line(Vector2(0, base_ofs), Vector2(get_size().width, base_ofs), color);
 				}
-
-				float base_ofs = i * snap * zoom - offset.y * zoom;
-				draw_line(Vector2(0, base_ofs), Vector2(get_size().width, base_ofs), color);
 			}
-		}
-	}
+		} break;
 
-	if (p_what == NOTIFICATION_RESIZED) {
-		_update_scroll();
-		top_layer->update();
-		minimap->update();
+		case NOTIFICATION_RESIZED: {
+			_update_scroll();
+			top_layer->update();
+			minimap->update();
+		} break;
 	}
 }
 

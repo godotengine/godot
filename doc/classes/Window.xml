@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Window" inherits="Viewport" version="4.0">
+<class name="Window" inherits="Viewport" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for all windows.
 	</brief_description>
@@ -435,7 +435,7 @@
 		<constant name="CONTENT_SCALE_ASPECT_EXPAND" value="4" enum="ContentScaleAspect">
 		</constant>
 		<constant name="LAYOUT_DIRECTION_INHERITED" value="0" enum="LayoutDirection">
-			Automatic layout direction, determined from the parent control layout direction.
+			Automatic layout direction, determined from the parent window layout direction.
 		</constant>
 		<constant name="LAYOUT_DIRECTION_LOCALE" value="1" enum="LayoutDirection">
 			Automatic layout direction, determined from the current locale.

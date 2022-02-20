@@ -31,11 +31,11 @@
 #include "editor_data.h"
 
 #include "core/config/project_settings.h"
-#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
-#include "editor_node.h"
-#include "editor_settings.h"
+#include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
+#include "editor/plugins/script_editor_plugin.h"
 #include "scene/resources/packed_scene.h"
 
 void EditorHistory::cleanup_history() {
@@ -520,6 +520,21 @@ void EditorData::remove_custom_type(const String &p_type) {
 	}
 }
 
+void EditorData::instantiate_object_properties(Object *p_object) {
+	ERR_FAIL_NULL(p_object);
+	// Check if any Object-type property should be instantiated.
+	List<PropertyInfo> pinfo;
+	p_object->get_property_list(&pinfo);
+
+	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
+		PropertyInfo pi = E->get();
+		if (pi.type == Variant::OBJECT && pi.usage & PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT) {
+			Object *prop = ClassDB::instantiate(pi.class_name);
+			p_object->set(pi.name, prop);
+		}
+	}
+}
+
 int EditorData::add_edited_scene(int p_at_pos) {
 	if (p_at_pos < 0) {
 		p_at_pos = edited_scene.size();
@@ -574,11 +589,6 @@ void EditorData::remove_scene(int p_idx) {
 }
 
 bool EditorData::_find_updated_instances(Node *p_root, Node *p_node, Set<String> &checked_paths) {
-	/*
-	if (p_root!=p_node && p_node->get_owner()!=p_root && !p_root->is_editable_instance(p_node->get_owner()))
-		return false;
-	*/
-
 	Ref<SceneState> ss;
 
 	if (p_node == p_root) {
@@ -894,21 +904,12 @@ bool EditorData::script_class_is_parent(const String &p_class, const String &p_i
 		return false;
 	}
 
-	Ref<Script> script = script_class_load_script(p_class);
-	if (script.is_null()) {
-		return false;
-	}
-
-	String base = script_class_get_base(p_class);
-	Ref<Script> base_script = script->get_base_script();
-
-	while (p_inherits != base) {
+	String base = p_class;
+	while (base != p_inherits) {
 		if (ClassDB::class_exists(base)) {
 			return ClassDB::is_parent_class(base, p_inherits);
 		} else if (ScriptServer::is_global_class(base)) {
-			base = script_class_get_base(base);
-		} else if (base_script.is_valid()) {
-			return ClassDB::is_parent_class(base_script->get_instance_base_type(), p_inherits);
+			base = ScriptServer::get_global_class_base(base);
 		} else {
 			return false;
 		}

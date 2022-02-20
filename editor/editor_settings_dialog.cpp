@@ -34,11 +34,11 @@
 #include "core/input/input_map.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
-#include "editor_file_system.h"
-#include "editor_log.h"
-#include "editor_node.h"
-#include "editor_scale.h"
-#include "editor_settings.h"
+#include "editor/editor_file_system.h"
+#include "editor/editor_log.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "scene/gui/margin_container.h"
 
 void EditorSettingsDialog::ok_pressed() {
@@ -121,14 +121,17 @@ void EditorSettingsDialog::_notification(int p_what) {
 				set_process_unhandled_input(false);
 			}
 		} break;
+
 		case NOTIFICATION_READY: {
 			undo_redo->set_method_notify_callback(EditorDebuggerNode::_method_changeds, nullptr);
 			undo_redo->set_property_notify_callback(EditorDebuggerNode::_property_changeds, nullptr);
 			undo_redo->set_commit_notify_callback(_undo_redo_callback, this);
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			_update_icons();
 		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			_update_icons();
 			// Update theme colors.
@@ -272,15 +275,15 @@ void EditorSettingsDialog::_create_shortcut_treeitem(TreeItem *p_parent, const S
 	shortcut_item->set_text(1, sc_text);
 	if (sc_text == "None") {
 		// Fade out unassigned shortcut labels for easier visual grepping.
-		shortcut_item->set_custom_color(1, shortcuts->get_theme_color("font_color", "Label") * Color(1, 1, 1, 0.5));
+		shortcut_item->set_custom_color(1, shortcuts->get_theme_color(SNAME("font_color"), SNAME("Label")) * Color(1, 1, 1, 0.5));
 	}
 
 	if (p_allow_revert) {
-		shortcut_item->add_button(1, shortcuts->get_theme_icon("Reload", "EditorIcons"), SHORTCUT_REVERT);
+		shortcut_item->add_button(1, shortcuts->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")), SHORTCUT_REVERT);
 	}
 
-	shortcut_item->add_button(1, shortcuts->get_theme_icon("Add", "EditorIcons"), SHORTCUT_ADD);
-	shortcut_item->add_button(1, shortcuts->get_theme_icon("Close", "EditorIcons"), SHORTCUT_ERASE);
+	shortcut_item->add_button(1, shortcuts->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")), SHORTCUT_ADD);
+	shortcut_item->add_button(1, shortcuts->get_theme_icon(SNAME("Close"), SNAME("EditorIcons")), SHORTCUT_ERASE);
 
 	shortcut_item->set_meta("is_action", p_is_action);
 	shortcut_item->set_meta("type", "shortcut");
@@ -299,11 +302,11 @@ void EditorSettingsDialog::_create_shortcut_treeitem(TreeItem *p_parent, const S
 		event_item->set_text(0, shortcut_item->get_child_count() == 1 ? "Primary" : "");
 		event_item->set_text(1, ie->as_text());
 
-		event_item->add_button(1, shortcuts->get_theme_icon("Edit", "EditorIcons"), SHORTCUT_EDIT);
-		event_item->add_button(1, shortcuts->get_theme_icon("Close", "EditorIcons"), SHORTCUT_ERASE);
+		event_item->add_button(1, shortcuts->get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")), SHORTCUT_EDIT);
+		event_item->add_button(1, shortcuts->get_theme_icon(SNAME("Close"), SNAME("EditorIcons")), SHORTCUT_ERASE);
 
-		event_item->set_custom_bg_color(0, shortcuts->get_theme_color("dark_color_3", "Editor"));
-		event_item->set_custom_bg_color(1, shortcuts->get_theme_color("dark_color_3", "Editor"));
+		event_item->set_custom_bg_color(0, shortcuts->get_theme_color(SNAME("dark_color_3"), SNAME("Editor")));
+		event_item->set_custom_bg_color(1, shortcuts->get_theme_color(SNAME("dark_color_3"), SNAME("Editor")));
 
 		event_item->set_meta("is_action", p_is_action);
 		event_item->set_meta("type", "event");
@@ -365,6 +368,11 @@ void EditorSettingsDialog::_update_shortcuts() {
 
 		Array events; // Need to get the list of events into an array so it can be set as metadata on the item.
 		Vector<String> event_strings;
+
+		// Skip non-builtin actions.
+		if (!InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().has(action_name)) {
+			continue;
+		}
 
 		List<Ref<InputEvent>> all_default_events = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(action_name).value();
 		List<Ref<InputEventKey>> key_default_events;
@@ -510,6 +518,38 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 		} break;
 		default:
 			break;
+	}
+}
+
+void EditorSettingsDialog::_shortcut_cell_double_clicked() {
+	// When a shortcut cell is double clicked:
+	// If the cell has children and is in the bindings column, and if its first child is editable,
+	// then uncollapse the cell, and if the first child is the only child, then edit that child.
+	// If the cell is in the bindings column and can be edited, then edit it.
+	// If the cell is in the name column, then toggle collapse.
+	const ShortcutButton edit_btn_id = EditorSettingsDialog::SHORTCUT_EDIT;
+	const int edit_btn_col = 1;
+	TreeItem *ti = shortcuts->get_selected();
+	String type = ti->get_meta("type");
+	int col = shortcuts->get_selected_column();
+	if (type == "shortcut" && col == 0) {
+		if (ti->get_first_child()) {
+			ti->set_collapsed(!ti->is_collapsed());
+		}
+	} else if (type == "shortcut" && col == 1) {
+		if (ti->get_first_child()) {
+			TreeItem *child_ti = ti->get_first_child();
+			if (child_ti->get_button_by_id(edit_btn_col, edit_btn_id) != -1) {
+				ti->set_collapsed(false);
+				if (ti->get_child_count() == 1) {
+					_shortcut_button_pressed(child_ti, edit_btn_col, edit_btn_id);
+				}
+			}
+		}
+	} else if (type == "event" && col == 1) {
+		if (ti->get_button_by_id(edit_btn_col, edit_btn_id) != -1) {
+			_shortcut_button_pressed(ti, edit_btn_col, edit_btn_id);
+		}
 	}
 }
 
@@ -692,6 +732,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcuts->set_column_title(0, TTR("Name"));
 	shortcuts->set_column_title(1, TTR("Binding"));
 	shortcuts->connect("button_pressed", callable_mp(this, &EditorSettingsDialog::_shortcut_button_pressed));
+	shortcuts->connect("item_activated", callable_mp(this, &EditorSettingsDialog::_shortcut_cell_double_clicked));
 	tab_shortcuts->add_child(shortcuts);
 
 	shortcuts->set_drag_forwarding(this);

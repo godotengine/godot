@@ -61,21 +61,21 @@ public:
 			// First segment degenerates into a point.
 			s = 0.0;
 			t = f / e; // s = 0 => t = (b*s + f) / e = f / e
-			t = CLAMP(t, 0.0, 1.0);
+			t = CLAMP(t, 0.0f, 1.0f);
 		} else {
 			real_t c = d1.dot(r);
 			if (e <= CMP_EPSILON) {
 				// Second segment degenerates into a point.
 				t = 0.0;
-				s = CLAMP(-c / a, 0.0, 1.0); // t = 0 => s = (b*t - c) / a = -c / a
+				s = CLAMP(-c / a, 0.0f, 1.0f); // t = 0 => s = (b*t - c) / a = -c / a
 			} else {
 				// The general nondegenerate case starts here.
 				real_t b = d1.dot(d2);
 				real_t denom = a * e - b * b; // Always nonnegative.
 				// If segments not parallel, compute closest point on L1 to L2 and
 				// clamp to segment S1. Else pick arbitrary s (here 0).
-				if (denom != 0.0) {
-					s = CLAMP((b * f - c * e) / denom, 0.0, 1.0);
+				if (denom != 0.0f) {
+					s = CLAMP((b * f - c * e) / denom, 0.0f, 1.0f);
 				} else {
 					s = 0.0;
 				}
@@ -86,12 +86,12 @@ public:
 				//If t in [0,1] done. Else clamp t, recompute s for the new value
 				// of t using s = Dot((P2 + D2*t) - P1,D1) / Dot(D1,D1)= (t*b - c) / a
 				// and clamp s to [0, 1].
-				if (t < 0.0) {
+				if (t < 0.0f) {
 					t = 0.0;
-					s = CLAMP(-c / a, 0.0, 1.0);
-				} else if (t > 1.0) {
+					s = CLAMP(-c / a, 0.0f, 1.0f);
+				} else if (t > 1.0f) {
 					t = 1.0;
-					s = CLAMP((b - c) / a, 0.0, 1.0);
+					s = CLAMP((b - c) / a, 0.0f, 1.0f);
 				}
 			}
 		}
@@ -104,15 +104,15 @@ public:
 		Vector2 p = p_point - p_segment[0];
 		Vector2 n = p_segment[1] - p_segment[0];
 		real_t l2 = n.length_squared();
-		if (l2 < 1e-20) {
+		if (l2 < 1e-20f) {
 			return p_segment[0]; // Both points are the same, just give any.
 		}
 
 		real_t d = n.dot(p) / l2;
 
-		if (d <= 0.0) {
+		if (d <= 0.0f) {
 			return p_segment[0]; // Before first point.
-		} else if (d >= 1.0) {
+		} else if (d >= 1.0f) {
 			return p_segment[1]; // After first point.
 		} else {
 			return p_segment[0] + n * d; // Inside.
@@ -137,7 +137,7 @@ public:
 		Vector2 p = p_point - p_segment[0];
 		Vector2 n = p_segment[1] - p_segment[0];
 		real_t l2 = n.length_squared();
-		if (l2 < 1e-20) {
+		if (l2 < 1e-20f) {
 			return p_segment[0]; // Both points are the same, just give any.
 		}
 
@@ -198,7 +198,7 @@ public:
 		real_t ABpos = D.x + (C.x - D.x) * D.y / (D.y - C.y);
 
 		// Fail if segment C-D crosses line A-B outside of segment A-B.
-		if (ABpos < 0 || ABpos > 1.0) {
+		if (ABpos < 0 || ABpos > 1.0f) {
 			return false;
 		}
 

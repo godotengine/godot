@@ -149,7 +149,7 @@ void XRPositionalTracker::set_pose(const StringName &p_action_name, const Transf
 	new_pose->set_tracking_confidence(p_tracking_confidence);
 
 	poses[p_action_name] = new_pose;
-	emit_signal("pose_changed", new_pose);
+	emit_signal(SNAME("pose_changed"), new_pose);
 
 	// TODO discuss whether we also want to create and emit an InputEventXRPose event
 }
@@ -182,20 +182,20 @@ void XRPositionalTracker::set_input(const StringName &p_action_name, const Varia
 			case Variant::BOOL: {
 				bool pressed = p_value;
 				if (pressed) {
-					emit_signal("button_pressed", p_action_name);
+					emit_signal(SNAME("button_pressed"), p_action_name);
 				} else {
-					emit_signal("button_released", p_action_name);
+					emit_signal(SNAME("button_released"), p_action_name);
 				}
 
 				// TODO discuss whether we also want to create and emit an InputEventXRButton event
 			} break;
 			case Variant::FLOAT: {
-				emit_signal("input_value_changed", p_action_name, p_value);
+				emit_signal(SNAME("input_value_changed"), p_action_name, p_value);
 
 				// TODO discuss whether we also want to create and emit an InputEventXRValue event
 			} break;
 			case Variant::VECTOR2: {
-				emit_signal("input_axis_changed", p_action_name, p_value);
+				emit_signal(SNAME("input_axis_changed"), p_action_name, p_value);
 
 				// TODO discuss whether we also want to create and emit an InputEventXRAxis event
 			} break;

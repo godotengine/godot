@@ -54,15 +54,12 @@ void AudioEffectDelayInstance::_process_chunk(const AudioFrame *p_src_frames, Au
 
 	float tap_1_level_f = base->tap_1_active ? Math::db2linear(base->tap_1_level) : 0.0;
 	int tap_1_delay_frames = int((base->tap_1_delay_ms / 1000.0) * mix_rate);
-	;
 
 	float tap_2_level_f = base->tap_2_active ? Math::db2linear(base->tap_2_level) : 0.0;
 	int tap_2_delay_frames = int((base->tap_2_delay_ms / 1000.0) * mix_rate);
-	;
 
 	float feedback_level_f = base->feedback_active ? Math::db2linear(base->feedback_level) : 0.0;
 	unsigned int feedback_delay_frames = int((base->feedback_delay_ms / 1000.0) * mix_rate);
-	;
 
 	AudioFrame tap1_vol = AudioFrame(tap_1_level_f, tap_1_level_f);
 

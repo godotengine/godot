@@ -247,7 +247,6 @@ void AnimatedSprite2D::_notification(int p_what) {
 			}
 
 			texture->draw_rect_region(ci, dst_rect, Rect2(Vector2(), texture->get_size()), Color(1, 1, 1), false);
-
 		} break;
 	}
 }

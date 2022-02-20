@@ -32,7 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
-#include "editor_settings.h"
+#include "editor/editor_settings.h"
 #include "servers/display_server.h"
 
 EditorRun::Status EditorRun::get_status() const {

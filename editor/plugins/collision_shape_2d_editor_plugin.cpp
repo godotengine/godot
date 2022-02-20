@@ -32,6 +32,7 @@
 
 #include "canvas_item_editor_plugin.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_node.h"
 #include "scene/resources/capsule_shape_2d.h"
 #include "scene/resources/circle_shape_2d.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
@@ -323,6 +324,10 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 		return false;
 	}
 
+	if (!node->is_visible_in_tree()) {
+		return false;
+	}
+
 	if (shape_type == -1) {
 		return false;
 	}
@@ -442,6 +447,10 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 	}
 
 	if (!node->get_shape().is_valid()) {
+		return;
+	}
+
+	if (!node->is_visible_in_tree()) {
 		return;
 	}
 
@@ -574,12 +583,11 @@ void CollisionShape2DEditor::_bind_methods() {
 	ClassDB::bind_method("_get_current_shape_type", &CollisionShape2DEditor::_get_current_shape_type);
 }
 
-CollisionShape2DEditor::CollisionShape2DEditor(EditorNode *p_editor) {
+CollisionShape2DEditor::CollisionShape2DEditor() {
 	node = nullptr;
 	canvas_item_editor = nullptr;
-	editor = p_editor;
 
-	undo_redo = p_editor->get_undo_redo();
+	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	edit_handle = -1;
 	pressed = false;
@@ -601,11 +609,9 @@ void CollisionShape2DEditorPlugin::make_visible(bool visible) {
 	}
 }
 
-CollisionShape2DEditorPlugin::CollisionShape2DEditorPlugin(EditorNode *p_editor) {
-	editor = p_editor;
-
-	collision_shape_2d_editor = memnew(CollisionShape2DEditor(p_editor));
-	p_editor->get_gui_base()->add_child(collision_shape_2d_editor);
+CollisionShape2DEditorPlugin::CollisionShape2DEditorPlugin() {
+	collision_shape_2d_editor = memnew(CollisionShape2DEditor);
+	EditorNode::get_singleton()->get_gui_base()->add_child(collision_shape_2d_editor);
 }
 
 CollisionShape2DEditorPlugin::~CollisionShape2DEditorPlugin() {

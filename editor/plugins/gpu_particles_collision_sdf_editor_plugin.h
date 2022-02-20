@@ -31,10 +31,12 @@
 #ifndef GPU_PARTICLES_COLLISION_SDF_EDITOR_PLUGIN_H
 #define GPU_PARTICLES_COLLISION_SDF_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/3d/gpu_particles_collision_3d.h"
 #include "scene/resources/material.h"
+
+struct EditorProgress;
+class EditorFileDialog;
 
 class GPUParticlesCollisionSDF3DEditorPlugin : public EditorPlugin {
 	GDCLASS(GPUParticlesCollisionSDF3DEditorPlugin, EditorPlugin);
@@ -43,7 +45,6 @@ class GPUParticlesCollisionSDF3DEditorPlugin : public EditorPlugin {
 
 	HBoxContainer *bake_hb;
 	Button *bake;
-	EditorNode *editor;
 
 	EditorFileDialog *probe_file;
 
@@ -66,7 +67,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	GPUParticlesCollisionSDF3DEditorPlugin(EditorNode *p_node);
+	GPUParticlesCollisionSDF3DEditorPlugin();
 	~GPUParticlesCollisionSDF3DEditorPlugin();
 };
 

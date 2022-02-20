@@ -35,9 +35,10 @@
 #include "core/io/resource_saver.h"
 #include "core/string/string_builder.h"
 #include "editor/create_dialog.h"
-#include "editor/editor_node.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_file_system.h"
 #include "editor/editor_scale.h"
-#include "editor_file_system.h"
+#include "editor/editor_settings.h"
 
 void ScriptCreateDialog::_notification(int p_what) {
 	switch (p_what) {
@@ -656,7 +657,7 @@ void ScriptCreateDialog::_update_dialog() {
 		if (is_new_script_created) {
 			class_name->set_editable(true);
 			class_name->set_placeholder(TTR("Allowed: a-z, A-Z, 0-9, _ and ."));
-			Color placeholder_color = class_name->get_theme_color("font_placeholder_color");
+			Color placeholder_color = class_name->get_theme_color(SNAME("font_placeholder_color"));
 			placeholder_color.a = 0.3;
 			class_name->add_theme_color_override("font_placeholder_color", placeholder_color);
 		} else {
@@ -665,7 +666,7 @@ void ScriptCreateDialog::_update_dialog() {
 	} else {
 		class_name->set_editable(false);
 		class_name->set_placeholder(TTR("N/A"));
-		Color placeholder_color = class_name->get_theme_color("font_placeholder_color");
+		Color placeholder_color = class_name->get_theme_color(SNAME("font_placeholder_color"));
 		placeholder_color.a = 1;
 		class_name->add_theme_color_override("font_placeholder_color", placeholder_color);
 		class_name->set_text("");
@@ -763,10 +764,10 @@ void ScriptCreateDialog::_update_dialog() {
 }
 
 ScriptLanguage::ScriptTemplate ScriptCreateDialog::_get_current_template() const {
-	int selected_id = template_menu->get_selected_id();
+	int selected_index = template_menu->get_selected();
 	for (const ScriptLanguage::ScriptTemplate &t : template_list) {
 		if (is_using_templates) {
-			if (t.id == selected_id) {
+			if (t.id == selected_index) {
 				return t;
 			}
 		} else {
@@ -1037,6 +1038,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	internal_name = memnew(LineEdit);
 	internal_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	internal_name->connect("text_submitted", callable_mp(this, &ScriptCreateDialog::_path_submitted));
 	label = memnew(Label(TTR("Name:")));
 	gc->add_child(label);
 	gc->add_child(internal_name);

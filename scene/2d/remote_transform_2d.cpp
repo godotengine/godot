@@ -115,8 +115,8 @@ void RemoteTransform2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_update_cache();
-
 		} break;
+
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (!is_inside_tree()) {
 				break;
@@ -125,7 +125,6 @@ void RemoteTransform2D::_notification(int p_what) {
 			if (cache.is_valid()) {
 				_update_remote();
 			}
-
 		} break;
 	}
 }

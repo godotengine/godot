@@ -35,11 +35,13 @@
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/os/keyboard.h"
-#include "editor/animation_track_editor.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/canvas_item_editor_plugin.h" // For onion skinning.
 #include "editor/plugins/node_3d_editor_plugin.h" // For onion skinning.
+#include "editor/scene_tree_dock.h"
 #include "scene/main/window.h"
 #include "scene/resources/animation.h"
 #include "scene/scene_string_names.h"
@@ -92,6 +94,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			last_active = player->is_playing();
 			updating = false;
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			tool_anim->get_popup()->connect("id_pressed", callable_mp(this, &AnimationPlayerEditor::_animation_tool_menu));
 
@@ -101,11 +104,13 @@ void AnimationPlayerEditor::_notification(int p_what) {
 
 			get_tree()->connect("node_removed", callable_mp(this, &AnimationPlayerEditor::_node_removed));
 
-			add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
+			add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
 		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
+			add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
 		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
@@ -305,7 +310,7 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 }
 
 void AnimationPlayerEditor::_animation_new() {
-	renaming = false;
+	name_dialog_op = TOOL_NEW_ANIM;
 	name_title->set_text(TTR("New Animation Name:"));
 
 	int count = 1;
@@ -338,7 +343,7 @@ void AnimationPlayerEditor::_animation_rename() {
 
 	name_title->set_text(TTR("Change Animation Name:"));
 	name->set_text(selected_name);
-	renaming = true;
+	name_dialog_op = TOOL_RENAME_ANIM;
 	name_dialog->popup_centered(Size2(300, 90));
 	name->select_all();
 	name->grab_focus();
@@ -373,7 +378,7 @@ void AnimationPlayerEditor::_animation_save_in_path(const Ref<Resource> &p_resou
 	}
 
 	((Resource *)p_resource.ptr())->set_path(path);
-	editor->emit_signal(SNAME("resource_saved"), p_resource);
+	EditorNode::get_singleton()->emit_signal(SNAME("resource_saved"), p_resource);
 }
 
 void AnimationPlayerEditor::_animation_save(const Ref<Resource> &p_resource) {
@@ -491,7 +496,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 		return;
 	}
 
-	if (renaming && animation->get_item_count() > 0 && animation->get_item_text(animation->get_selected()) == new_name) {
+	if (name_dialog_op == TOOL_RENAME_ANIM && animation->get_item_count() > 0 && animation->get_item_text(animation->get_selected()) == new_name) {
 		name_dialog->hide();
 		return;
 	}
@@ -502,37 +507,57 @@ void AnimationPlayerEditor::_animation_name_edited() {
 		return;
 	}
 
-	if (renaming) {
-		String current = animation->get_item_text(animation->get_selected());
-		Ref<Animation> anim = player->get_animation(current);
+	switch (name_dialog_op) {
+		case TOOL_RENAME_ANIM: {
+			String current = animation->get_item_text(animation->get_selected());
+			Ref<Animation> anim = player->get_animation(current);
 
-		undo_redo->create_action(TTR("Rename Animation"));
-		undo_redo->add_do_method(player, "rename_animation", current, new_name);
-		undo_redo->add_do_method(anim.ptr(), "set_name", new_name);
-		undo_redo->add_undo_method(player, "rename_animation", new_name, current);
-		undo_redo->add_undo_method(anim.ptr(), "set_name", current);
-		undo_redo->add_do_method(this, "_animation_player_changed", player);
-		undo_redo->add_undo_method(this, "_animation_player_changed", player);
-		undo_redo->commit_action();
+			undo_redo->create_action(TTR("Rename Animation"));
+			undo_redo->add_do_method(player, "rename_animation", current, new_name);
+			undo_redo->add_do_method(anim.ptr(), "set_name", new_name);
+			undo_redo->add_undo_method(player, "rename_animation", new_name, current);
+			undo_redo->add_undo_method(anim.ptr(), "set_name", current);
+			undo_redo->add_do_method(this, "_animation_player_changed", player);
+			undo_redo->add_undo_method(this, "_animation_player_changed", player);
+			undo_redo->commit_action();
 
-		_select_anim_by_name(new_name);
+			_select_anim_by_name(new_name);
+		} break;
 
-	} else {
-		Ref<Animation> new_anim = Ref<Animation>(memnew(Animation));
-		new_anim->set_name(new_name);
+		case TOOL_NEW_ANIM: {
+			Ref<Animation> new_anim = Ref<Animation>(memnew(Animation));
+			new_anim->set_name(new_name);
 
-		undo_redo->create_action(TTR("Add Animation"));
-		undo_redo->add_do_method(player, "add_animation", new_name, new_anim);
-		undo_redo->add_undo_method(player, "remove_animation", new_name);
-		undo_redo->add_do_method(this, "_animation_player_changed", player);
-		undo_redo->add_undo_method(this, "_animation_player_changed", player);
-		if (animation->get_item_count() == 0) {
-			undo_redo->add_do_method(this, "_start_onion_skinning");
-			undo_redo->add_undo_method(this, "_stop_onion_skinning");
-		}
-		undo_redo->commit_action();
+			undo_redo->create_action(TTR("Add Animation"));
+			undo_redo->add_do_method(player, "add_animation", new_name, new_anim);
+			undo_redo->add_undo_method(player, "remove_animation", new_name);
+			undo_redo->add_do_method(this, "_animation_player_changed", player);
+			undo_redo->add_undo_method(this, "_animation_player_changed", player);
+			if (animation->get_item_count() == 0) {
+				undo_redo->add_do_method(this, "_start_onion_skinning");
+				undo_redo->add_undo_method(this, "_stop_onion_skinning");
+			}
+			undo_redo->commit_action();
 
-		_select_anim_by_name(new_name);
+			_select_anim_by_name(new_name);
+		} break;
+
+		case TOOL_DUPLICATE_ANIM: {
+			String current = animation->get_item_text(animation->get_selected());
+			Ref<Animation> anim = player->get_animation(current);
+
+			Ref<Animation> new_anim = _animation_clone(anim);
+
+			undo_redo->create_action(TTR("Duplicate Animation"));
+			undo_redo->add_do_method(player, "add_animation", new_name, new_anim);
+			undo_redo->add_undo_method(player, "remove_animation", new_name);
+			undo_redo->add_do_method(player, "animation_set_next", new_name, player->animation_get_next(current));
+			undo_redo->add_do_method(this, "_animation_player_changed", player);
+			undo_redo->add_undo_method(this, "_animation_player_changed", player);
+			undo_redo->commit_action();
+
+			_select_anim_by_name(new_name);
+		} break;
 	}
 
 	name_dialog->hide();
@@ -674,7 +699,7 @@ void AnimationPlayerEditor::set_state(const Dictionary &p_state) {
 		if (Object::cast_to<AnimationPlayer>(n) && EditorNode::get_singleton()->get_editor_selection()->is_selected(n)) {
 			player = Object::cast_to<AnimationPlayer>(n);
 			_update_player();
-			editor->make_bottom_panel_item_visible(this);
+			EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
 			set_process(true);
 			ensure_visibility();
 
@@ -697,7 +722,7 @@ void AnimationPlayerEditor::_animation_resource_edit() {
 	if (animation->get_item_count()) {
 		String current = animation->get_item_text(animation->get_selected());
 		Ref<Animation> anim = player->get_animation(current);
-		editor->edit_resource(anim);
+		EditorNode::get_singleton()->edit_resource(anim);
 	}
 }
 
@@ -965,28 +990,17 @@ void AnimationPlayerEditor::_animation_duplicate() {
 		return;
 	}
 
-	Ref<Animation> new_anim = _animation_clone(anim);
 	String new_name = current;
 	while (player->has_animation(new_name)) {
 		new_name = new_name + " (copy)";
 	}
-	new_anim->set_name(new_name);
 
-	undo_redo->create_action(TTR("Duplicate Animation"));
-	undo_redo->add_do_method(player, "add_animation", new_name, new_anim);
-	undo_redo->add_undo_method(player, "remove_animation", new_name);
-	undo_redo->add_do_method(player, "animation_set_next", new_name, player->animation_get_next(current));
-	undo_redo->add_do_method(this, "_animation_player_changed", player);
-	undo_redo->add_undo_method(this, "_animation_player_changed", player);
-	undo_redo->commit_action();
-
-	for (int i = 0; i < animation->get_item_count(); i++) {
-		if (animation->get_item_text(i) == new_name) {
-			animation->select(i);
-			_animation_selected(i);
-			return;
-		}
-	}
+	name_title->set_text(TTR("New Animation Name:"));
+	name->set_text(new_name);
+	name_dialog_op = TOOL_DUPLICATE_ANIM;
+	name_dialog->popup_centered(Size2(300, 90));
+	name->select_all();
+	name->grab_focus();
 }
 
 Ref<Animation> AnimationPlayerEditor::_animation_clone(Ref<Animation> p_anim) {
@@ -1136,9 +1150,7 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 		} break;
 		case TOOL_DUPLICATE_ANIM: {
 			_animation_duplicate();
-
-			[[fallthrough]]; // Allow immediate rename after animation is duplicated
-		}
+		} break;
 		case TOOL_RENAME_ANIM: {
 			_animation_rename();
 		} break;
@@ -1188,7 +1200,7 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 
 			String current2 = animation->get_item_text(animation->get_selected());
 			Ref<Animation> anim2 = player->get_animation(current2);
-			editor->edit_resource(anim2);
+			EditorNode::get_singleton()->edit_resource(anim2);
 		} break;
 	}
 }
@@ -1532,8 +1544,7 @@ AnimationPlayer *AnimationPlayerEditor::get_player() const {
 	return player;
 }
 
-AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlayerEditorPlugin *p_plugin) {
-	editor = p_editor;
+AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plugin) {
 	plugin = p_plugin;
 	singleton = this;
 
@@ -1607,7 +1618,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/paste_animation", TTR("Paste")), TOOL_PASTE_ANIM);
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/paste_animation_as_reference", TTR("Paste As Reference")), TOOL_PASTE_ANIM_REF);
 	tool_anim->get_popup()->add_separator();
-	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/duplicate_animation", TTR("Duplicate")), TOOL_DUPLICATE_ANIM);
+	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/duplicate_animation", TTR("Duplicate...")), TOOL_DUPLICATE_ANIM);
 	tool_anim->get_popup()->add_separator();
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/rename_animation", TTR("Rename...")), TOOL_RENAME_ANIM);
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/edit_transitions", TTR("Edit Transitions...")), TOOL_EDIT_TRANSITIONS);
@@ -1723,7 +1734,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	frame->connect("value_changed", callable_mp(this, &AnimationPlayerEditor::_seek_value_changed), make_binds(true, false));
 	scale->connect("text_submitted", callable_mp(this, &AnimationPlayerEditor::_scale_changed));
 
-	renaming = false;
 	last_active = false;
 	timeline_position = 0;
 
@@ -1840,17 +1850,16 @@ bool AnimationPlayerEditorPlugin::handles(Object *p_object) const {
 
 void AnimationPlayerEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		editor->make_bottom_panel_item_visible(anim_editor);
+		EditorNode::get_singleton()->make_bottom_panel_item_visible(anim_editor);
 		anim_editor->set_process(true);
 		anim_editor->ensure_visibility();
 	}
 }
 
-AnimationPlayerEditorPlugin::AnimationPlayerEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
-	anim_editor = memnew(AnimationPlayerEditor(editor, this));
+AnimationPlayerEditorPlugin::AnimationPlayerEditorPlugin() {
+	anim_editor = memnew(AnimationPlayerEditor(this));
 	anim_editor->set_undo_redo(EditorNode::get_undo_redo());
-	editor->add_bottom_panel_item(TTR("Animation"), anim_editor);
+	EditorNode::get_singleton()->add_bottom_panel_item(TTR("Animation"), anim_editor);
 }
 
 AnimationPlayerEditorPlugin::~AnimationPlayerEditorPlugin() {

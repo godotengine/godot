@@ -31,9 +31,6 @@
 #ifndef NODE_H
 #define NODE_H
 
-#include "core/config/project_settings.h"
-#include "core/object/class_db.h"
-#include "core/object/script_language.h"
 #include "core/string/node_path.h"
 #include "core/templates/map.h"
 #include "core/variant/typed_array.h"
@@ -271,6 +268,8 @@ public:
 		NOTIFICATION_WM_GO_BACK_REQUEST = 1007,
 		NOTIFICATION_WM_SIZE_CHANGED = 1008,
 		NOTIFICATION_WM_DPI_CHANGE = 1009,
+		NOTIFICATION_VP_MOUSE_ENTER = 1010,
+		NOTIFICATION_VP_MOUSE_EXIT = 1011,
 
 		NOTIFICATION_OS_MEMORY_WARNING = MainLoop::NOTIFICATION_OS_MEMORY_WARNING,
 		NOTIFICATION_TRANSLATION_CHANGED = MainLoop::NOTIFICATION_TRANSLATION_CHANGED,
@@ -302,7 +301,7 @@ public:
 	bool has_node(const NodePath &p_path) const;
 	Node *get_node(const NodePath &p_path) const;
 	Node *get_node_or_null(const NodePath &p_path) const;
-	Node *find_node(const String &p_mask, bool p_recursive = true, bool p_owned = true) const;
+	TypedArray<Node> find_nodes(const String &p_mask, const String &p_type = "", bool p_recursive = true, bool p_owned = true) const;
 	bool has_node_and_resource(const NodePath &p_path) const;
 	Node *get_node_and_resource(const NodePath &p_path, RES &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property = true) const;
 

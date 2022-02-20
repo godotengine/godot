@@ -30,6 +30,7 @@
 
 #include "camera_3d_editor_plugin.h"
 
+#include "editor/editor_node.h"
 #include "node_3d_editor_plugin.h"
 
 void Camera3DEditor::_node_removed(Node *p_node) {
@@ -95,10 +96,9 @@ void Camera3DEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-Camera3DEditorPlugin::Camera3DEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
+Camera3DEditorPlugin::Camera3DEditorPlugin() {
 	/*	camera_editor = memnew( CameraEditor );
-	editor->get_main_control()->add_child(camera_editor);
+	EditorNode::get_singleton()->get_main_control()->add_child(camera_editor);
 
 	camera_editor->set_anchor(SIDE_LEFT,Control::ANCHOR_END);
 	camera_editor->set_anchor(SIDE_RIGHT,Control::ANCHOR_END);

@@ -32,7 +32,6 @@
 #define THEME_H
 
 #include "core/io/resource.h"
-#include "core/io/resource_loader.h"
 #include "scene/resources/font.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
@@ -158,6 +157,7 @@ public:
 	void clear_icon(const StringName &p_name, const StringName &p_theme_type);
 	void get_icon_list(StringName p_theme_type, List<StringName> *p_list) const;
 	void add_icon_type(const StringName &p_theme_type);
+	void remove_icon_type(const StringName &p_theme_type);
 	void get_icon_type_list(List<StringName> *p_list) const;
 
 	void set_stylebox(const StringName &p_name, const StringName &p_theme_type, const Ref<StyleBox> &p_style);
@@ -168,6 +168,7 @@ public:
 	void clear_stylebox(const StringName &p_name, const StringName &p_theme_type);
 	void get_stylebox_list(StringName p_theme_type, List<StringName> *p_list) const;
 	void add_stylebox_type(const StringName &p_theme_type);
+	void remove_stylebox_type(const StringName &p_theme_type);
 	void get_stylebox_type_list(List<StringName> *p_list) const;
 
 	void set_font(const StringName &p_name, const StringName &p_theme_type, const Ref<Font> &p_font);
@@ -178,6 +179,7 @@ public:
 	void clear_font(const StringName &p_name, const StringName &p_theme_type);
 	void get_font_list(StringName p_theme_type, List<StringName> *p_list) const;
 	void add_font_type(const StringName &p_theme_type);
+	void remove_font_type(const StringName &p_theme_type);
 	void get_font_type_list(List<StringName> *p_list) const;
 
 	void set_font_size(const StringName &p_name, const StringName &p_theme_type, int p_font_size);
@@ -188,6 +190,7 @@ public:
 	void clear_font_size(const StringName &p_name, const StringName &p_theme_type);
 	void get_font_size_list(StringName p_theme_type, List<StringName> *p_list) const;
 	void add_font_size_type(const StringName &p_theme_type);
+	void remove_font_size_type(const StringName &p_theme_type);
 	void get_font_size_type_list(List<StringName> *p_list) const;
 
 	void set_color(const StringName &p_name, const StringName &p_theme_type, const Color &p_color);
@@ -198,6 +201,7 @@ public:
 	void clear_color(const StringName &p_name, const StringName &p_theme_type);
 	void get_color_list(StringName p_theme_type, List<StringName> *p_list) const;
 	void add_color_type(const StringName &p_theme_type);
+	void remove_color_type(const StringName &p_theme_type);
 	void get_color_type_list(List<StringName> *p_list) const;
 
 	void set_constant(const StringName &p_name, const StringName &p_theme_type, int p_constant);
@@ -208,6 +212,7 @@ public:
 	void clear_constant(const StringName &p_name, const StringName &p_theme_type);
 	void get_constant_list(StringName p_theme_type, List<StringName> *p_list) const;
 	void add_constant_type(const StringName &p_theme_type);
+	void remove_constant_type(const StringName &p_theme_type);
 	void get_constant_type_list(List<StringName> *p_list) const;
 
 	void set_theme_item(DataType p_data_type, const StringName &p_name, const StringName &p_theme_type, const Variant &p_value);
@@ -218,6 +223,7 @@ public:
 	void clear_theme_item(DataType p_data_type, const StringName &p_name, const StringName &p_theme_type);
 	void get_theme_item_list(DataType p_data_type, StringName p_theme_type, List<StringName> *p_list) const;
 	void add_theme_item_type(DataType p_data_type, const StringName &p_theme_type);
+	void remove_theme_item_type(DataType p_data_type, const StringName &p_theme_type);
 	void get_theme_item_type_list(DataType p_data_type, List<StringName> *p_list) const;
 
 	void set_type_variation(const StringName &p_theme_type, const StringName &p_base_type);
@@ -226,6 +232,8 @@ public:
 	StringName get_type_variation_base(const StringName &p_theme_type) const;
 	void get_type_variation_list(const StringName &p_base_type, List<StringName> *p_list) const;
 
+	void add_type(const StringName &p_theme_type);
+	void remove_type(const StringName &p_theme_type);
 	void get_type_list(List<StringName> *p_list) const;
 	void get_type_dependencies(const StringName &p_base_type, const StringName &p_type_variant, List<StringName> *p_list);
 

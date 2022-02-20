@@ -35,29 +35,29 @@
 #include "core/os/keyboard.h"
 #include "core/version_generated.gen.h"
 #include "doc_data_compressed.gen.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/plugins/script_editor_plugin.h"
-#include "editor_node.h"
-#include "editor_scale.h"
-#include "editor_settings.h"
 
 #define CONTRIBUTE_URL vformat("%s/community/contributing/updating_the_class_reference.html", VERSION_DOCS_URL)
 
 DocTools *EditorHelp::doc = nullptr;
 
 void EditorHelp::_update_theme() {
-	text_color = get_theme_color("text_color", "EditorHelp");
-	title_color = get_theme_color("title_color", "EditorHelp");
-	headline_color = get_theme_color("headline_color", "EditorHelp");
-	comment_color = get_theme_color("comment_color", "EditorHelp");
-	symbol_color = get_theme_color("symbol_color", "EditorHelp");
-	value_color = get_theme_color("value_color", "EditorHelp");
-	qualifier_color = get_theme_color("qualifier_color", "EditorHelp");
-	type_color = get_theme_color("type_color", "EditorHelp");
+	text_color = get_theme_color(SNAME("text_color"), SNAME("EditorHelp"));
+	title_color = get_theme_color(SNAME("title_color"), SNAME("EditorHelp"));
+	headline_color = get_theme_color(SNAME("headline_color"), SNAME("EditorHelp"));
+	comment_color = get_theme_color(SNAME("comment_color"), SNAME("EditorHelp"));
+	symbol_color = get_theme_color(SNAME("symbol_color"), SNAME("EditorHelp"));
+	value_color = get_theme_color(SNAME("value_color"), SNAME("EditorHelp"));
+	qualifier_color = get_theme_color(SNAME("qualifier_color"), SNAME("EditorHelp"));
+	type_color = get_theme_color(SNAME("type_color"), SNAME("EditorHelp"));
 
-	class_desc->add_theme_color_override("selection_color", get_theme_color("selection_color", "EditorHelp"));
-	class_desc->add_theme_constant_override("line_separation", get_theme_constant("line_separation", "EditorHelp"));
-	class_desc->add_theme_constant_override("table_hseparation", get_theme_constant("table_hseparation", "EditorHelp"));
-	class_desc->add_theme_constant_override("table_vseparation", get_theme_constant("table_vseparation", "EditorHelp"));
+	class_desc->add_theme_color_override("selection_color", get_theme_color(SNAME("selection_color"), SNAME("EditorHelp")));
+	class_desc->add_theme_constant_override("line_separation", get_theme_constant(SNAME("line_separation"), SNAME("EditorHelp")));
+	class_desc->add_theme_constant_override("table_hseparation", get_theme_constant(SNAME("table_hseparation"), SNAME("EditorHelp")));
+	class_desc->add_theme_constant_override("table_vseparation", get_theme_constant(SNAME("table_vseparation"), SNAME("EditorHelp")));
 
 	doc_font = get_theme_font(SNAME("doc"), SNAME("EditorFonts"));
 	doc_bold_font = get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts"));
@@ -1770,17 +1770,17 @@ void EditorHelp::_notification(int p_what) {
 			_wait_for_thread();
 			_update_doc();
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			if (is_inside_tree()) {
 				_class_desc_resized(true);
 			}
 			update_toggle_scripts_button();
 		} break;
-		case NOTIFICATION_VISIBILITY_CHANGED:
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
 			update_toggle_scripts_button();
-			break;
-		default:
-			break;
+		} break;
 	}
 }
 
@@ -2007,7 +2007,7 @@ FindBar::FindBar() {
 	hide_button = memnew(TextureButton);
 	add_child(hide_button);
 	hide_button->set_focus_mode(FOCUS_NONE);
-	hide_button->set_expand(true);
+	hide_button->set_ignore_texture_size(true);
 	hide_button->set_stretch_mode(TextureButton::STRETCH_KEEP_CENTERED);
 	hide_button->connect("pressed", callable_mp(this, &FindBar::_hide_bar));
 }
@@ -2041,6 +2041,7 @@ void FindBar::_notification(int p_what) {
 			hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
 			matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), SNAME("Editor")));
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			set_process_unhandled_input(is_visible_in_tree());
 		} break;

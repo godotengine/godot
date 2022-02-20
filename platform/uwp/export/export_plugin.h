@@ -41,6 +41,7 @@
 #include "core/version.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 
 #include "thirdparty/minizip/unzip.h"
 #include "thirdparty/minizip/zip.h"

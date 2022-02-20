@@ -633,7 +633,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				projection = correction * p_render_data->cam_projection;
 			}
 
-			sky.setup(env, p_render_data->render_buffers, projection, p_render_data->cam_transform, screen_size, this);
+			sky.setup(env, p_render_data->render_buffers, *p_render_data->lights, projection, p_render_data->cam_transform, screen_size, this);
 
 			RID sky_rid = env->sky;
 			if (sky_rid.is_valid()) {

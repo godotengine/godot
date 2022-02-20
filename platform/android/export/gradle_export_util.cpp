@@ -30,6 +30,8 @@
 
 #include "gradle_export_util.h"
 
+#include "core/config/project_settings.h"
+
 int _get_android_orientation_value(DisplayServer::ScreenOrientation screen_orientation) {
 	switch (screen_orientation) {
 		case DisplayServer::SCREEN_PORTRAIT:

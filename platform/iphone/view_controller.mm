@@ -203,7 +203,7 @@
 		case DisplayServer::SCREEN_LANDSCAPE:
 			return UIInterfaceOrientationMaskLandscapeLeft;
 	}
-};
+}
 
 - (BOOL)prefersStatusBarHidden {
 	return YES;

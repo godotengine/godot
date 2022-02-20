@@ -32,7 +32,7 @@
 #define EDITOR_QUICK_OPEN_H
 
 #include "core/templates/oa_hash_map.h"
-#include "editor_file_system.h"
+#include "editor/editor_file_system.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
 

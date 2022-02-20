@@ -51,6 +51,14 @@ protected:
 	void _setup(uint32_t *p_base_ptr, uint32_t p_ptr_size);
 
 public:
+	virtual StringName get_method() const {
+#ifdef DEBUG_METHODS_ENABLED
+		return StringName(text);
+#else
+		return StringName();
+#endif
+	}
+
 #ifdef DEBUG_METHODS_ENABLED
 	void set_text(const char *p_text) {
 		text = p_text;

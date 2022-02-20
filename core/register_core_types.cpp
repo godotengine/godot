@@ -37,6 +37,7 @@
 #include "core/crypto/aes_context.h"
 #include "core/crypto/crypto.h"
 #include "core/crypto/hashing_context.h"
+#include "core/debugger/engine_profiler.h"
 #include "core/extension/native_extension.h"
 #include "core/extension/native_extension_manager.h"
 #include "core/input/input.h"
@@ -236,6 +237,8 @@ void register_core_types() {
 	GDREGISTER_VIRTUAL_CLASS(NativeExtensionManager);
 
 	GDREGISTER_VIRTUAL_CLASS(ResourceUID);
+
+	GDREGISTER_CLASS(EngineProfiler);
 
 	resource_uid = memnew(ResourceUID);
 

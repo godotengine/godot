@@ -40,31 +40,33 @@ class SMBPitchShift {
 
 	float gInFIFO[MAX_FRAME_LENGTH];
 	float gOutFIFO[MAX_FRAME_LENGTH];
-	float gFFTworksp[2 * MAX_FRAME_LENGTH];
-	float gLastPhase[MAX_FRAME_LENGTH / 2 + 1];
-	float gSumPhase[MAX_FRAME_LENGTH / 2 + 1];
-	float gOutputAccum[2 * MAX_FRAME_LENGTH];
-	float gAnaFreq[MAX_FRAME_LENGTH];
-	float gAnaMagn[MAX_FRAME_LENGTH];
-	float gSynFreq[MAX_FRAME_LENGTH];
-	float gSynMagn[MAX_FRAME_LENGTH];
-	long gRover;
+	double gFFTworksp[2 * MAX_FRAME_LENGTH];
+	double gLastPhase[MAX_FRAME_LENGTH / 2 + 1];
+	double gSumPhase[MAX_FRAME_LENGTH / 2 + 1];
+	double gOutputAccum[2 * MAX_FRAME_LENGTH];
+	double gAnaFreq[MAX_FRAME_LENGTH];
+	double gAnaMagn[MAX_FRAME_LENGTH];
+	double gSynFreq[MAX_FRAME_LENGTH];
+	double gSynMagn[MAX_FRAME_LENGTH];
+	int64_t gRover;
+	float lastPitchShift;
 
-	void smbFft(float *fftBuffer, long fftFrameSize, long sign);
+	void smbFft(double *fftBuffer, int64_t fftFrameSize, int64_t sign);
 
 public:
-	void PitchShift(float pitchShift, long numSampsToProcess, long fftFrameSize, long osamp, float sampleRate, float *indata, float *outdata, int stride);
+	void PitchShift(float pitchShift, int64_t numSampsToProcess, int64_t fftFrameSize, int64_t osamp, float sampleRate, float *indata, float *outdata, int stride);
 
 	SMBPitchShift() {
 		gRover = 0;
 		memset(gInFIFO, 0, MAX_FRAME_LENGTH * sizeof(float));
 		memset(gOutFIFO, 0, MAX_FRAME_LENGTH * sizeof(float));
-		memset(gFFTworksp, 0, 2 * MAX_FRAME_LENGTH * sizeof(float));
-		memset(gLastPhase, 0, (MAX_FRAME_LENGTH / 2 + 1) * sizeof(float));
-		memset(gSumPhase, 0, (MAX_FRAME_LENGTH / 2 + 1) * sizeof(float));
-		memset(gOutputAccum, 0, 2 * MAX_FRAME_LENGTH * sizeof(float));
-		memset(gAnaFreq, 0, MAX_FRAME_LENGTH * sizeof(float));
-		memset(gAnaMagn, 0, MAX_FRAME_LENGTH * sizeof(float));
+		memset(gFFTworksp, 0, 2 * MAX_FRAME_LENGTH * sizeof(double));
+		memset(gLastPhase, 0, (MAX_FRAME_LENGTH / 2 + 1) * sizeof(double));
+		memset(gSumPhase, 0, (MAX_FRAME_LENGTH / 2 + 1) * sizeof(double));
+		memset(gOutputAccum, 0, 2 * MAX_FRAME_LENGTH * sizeof(double));
+		memset(gAnaFreq, 0, MAX_FRAME_LENGTH * sizeof(double));
+		memset(gAnaMagn, 0, MAX_FRAME_LENGTH * sizeof(double));
+		lastPitchShift = 1.0;
 	}
 };
 
@@ -101,9 +103,6 @@ public:
 	float pitch_scale;
 	int oversampling;
 	FFTSize fft_size;
-	float wet;
-	float dry;
-	bool filter;
 
 protected:
 	static void _bind_methods();

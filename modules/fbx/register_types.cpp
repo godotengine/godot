@@ -31,7 +31,7 @@
 #include "register_types.h"
 
 #include "editor/editor_node.h"
-#include "editor_scene_importer_fbx.h"
+#include "modules/fbx/editor_scene_importer_fbx.h"
 
 #ifdef TOOLS_ENABLED
 static void _editor_init() {

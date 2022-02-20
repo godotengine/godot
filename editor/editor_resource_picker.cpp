@@ -30,11 +30,15 @@
 
 #include "editor_resource_picker.h"
 
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
-#include "editor_node.h"
-#include "editor_scale.h"
-#include "editor_settings.h"
-#include "filesystem_dock.h"
+#include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
+#include "editor/filesystem_dock.h"
+#include "editor/plugins/script_editor_plugin.h"
+#include "editor/quick_open.h"
+#include "editor/scene_tree_dock.h"
 
 HashMap<StringName, List<StringName>> EditorResourcePicker::allowed_types_cache;
 
@@ -77,16 +81,16 @@ void EditorResourcePicker::_update_resource_preview(const String &p_path, const 
 		return;
 	}
 
-	String type = edited_resource->get_class_name();
-	if (ClassDB::is_parent_class(type, "Script")) {
-		assign_button->set_text(edited_resource->get_path().get_file());
+	Ref<Script> script = edited_resource;
+	if (script.is_valid()) {
+		assign_button->set_text(script->get_path().get_file());
 		return;
 	}
 
 	if (p_preview.is_valid()) {
 		preview_rect->set_offset(SIDE_LEFT, assign_button->get_icon()->get_width() + assign_button->get_theme_stylebox(SNAME("normal"))->get_default_margin(SIDE_LEFT) + get_theme_constant(SNAME("hseparation"), SNAME("Button")));
 
-		if (type == "GradientTexture1D") {
+		if (Ref<GradientTexture1D>(edited_resource).is_valid()) {
 			preview_rect->set_stretch_mode(TextureRect::STRETCH_SCALE);
 			assign_button->set_custom_minimum_size(Size2(1, 1));
 		} else {
@@ -377,6 +381,8 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			Resource *resp = Object::cast_to<Resource>(obj);
 			ERR_BREAK(!resp);
 
+			EditorNode::get_editor_data().instantiate_object_properties(obj);
+
 			edited_resource = RES(resp);
 			emit_signal(SNAME("resource_changed"), edited_resource);
 			_update_resource();
@@ -640,7 +646,7 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 			for (Set<String>::Element *E = allowed_types.front(); E; E = E->next()) {
 				String at = E->get().strip_edges();
 
-				if (at == "BaseMaterial3D" && ClassDB::is_parent_class(dropped_resource->get_class(), "Texture2D")) {
+				if (at == "BaseMaterial3D" && Ref<Texture2D>(dropped_resource).is_valid()) {
 					// Use existing resource if possible and only replace its data.
 					Ref<StandardMaterial3D> mat = edited_resource;
 					if (!mat.is_valid()) {
@@ -651,7 +657,7 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 					break;
 				}
 
-				if (at == "ShaderMaterial" && ClassDB::is_parent_class(dropped_resource->get_class(), "Shader")) {
+				if (at == "ShaderMaterial" && Ref<Shader>(dropped_resource).is_valid()) {
 					Ref<ShaderMaterial> mat = edited_resource;
 					if (!mat.is_valid()) {
 						mat.instantiate();
@@ -661,7 +667,7 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 					break;
 				}
 
-				if (at == "Font" && ClassDB::is_parent_class(dropped_resource->get_class(), "FontData")) {
+				if (at == "Font" && Ref<FontData>(dropped_resource).is_valid()) {
 					Ref<Font> font = edited_resource;
 					if (!font.is_valid()) {
 						font.instantiate();
@@ -671,7 +677,7 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 					break;
 				}
 
-				if (at == "Texture2D" && ClassDB::is_parent_class(dropped_resource->get_class(), "Image")) {
+				if (at == "Texture2D" && Ref<Image>(dropped_resource).is_valid()) {
 					Ref<ImageTexture> texture = edited_resource;
 					if (!texture.is_valid()) {
 						texture.instantiate();

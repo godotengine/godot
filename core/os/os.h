@@ -34,7 +34,6 @@
 #include "core/config/engine.h"
 #include "core/io/image.h"
 #include "core/io/logger.h"
-#include "core/os/main_loop.h"
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
 #include "core/templates/vector.h"
@@ -132,6 +131,8 @@ public:
 	void printerr(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 
 	virtual String get_stdin_string(bool p_block = true) = 0;
+
+	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) = 0; // Should return cryptographically-safe random bytes.
 
 	virtual PackedStringArray get_connected_midi_inputs();
 	virtual void open_midi_inputs();
@@ -301,6 +302,7 @@ public:
 	virtual void set_exit_code(int p_code);
 
 	virtual int get_processor_count() const;
+	virtual String get_processor_name() const;
 	virtual int get_default_thread_pool_size() const { return get_processor_count(); }
 
 	virtual String get_unique_id() const;

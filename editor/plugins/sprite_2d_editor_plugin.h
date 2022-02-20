@@ -31,7 +31,6 @@
 #ifndef SPRITE_EDITOR_PLUGIN_H
 #define SPRITE_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/gui/spin_box.h"
@@ -99,7 +98,6 @@ class Sprite2DEditorPlugin : public EditorPlugin {
 	GDCLASS(Sprite2DEditorPlugin, EditorPlugin);
 
 	Sprite2DEditor *sprite_editor;
-	EditorNode *editor;
 
 public:
 	virtual String get_name() const override { return "Sprite2D"; }
@@ -108,7 +106,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	Sprite2DEditorPlugin(EditorNode *p_node);
+	Sprite2DEditorPlugin();
 	~Sprite2DEditorPlugin();
 };
 

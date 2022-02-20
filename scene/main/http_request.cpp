@@ -464,20 +464,22 @@ void HTTPRequest::_request_done(int p_status, int p_code, const PackedStringArra
 }
 
 void HTTPRequest::_notification(int p_what) {
-	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
-		if (use_threads.is_set()) {
-			return;
-		}
-		bool done = _update_connection();
-		if (done) {
-			set_process_internal(false);
-		}
-	}
+	switch (p_what) {
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (use_threads.is_set()) {
+				return;
+			}
+			bool done = _update_connection();
+			if (done) {
+				set_process_internal(false);
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (requesting) {
-			cancel_request();
-		}
+		case NOTIFICATION_EXIT_TREE: {
+			if (requesting) {
+				cancel_request();
+			}
+		} break;
 	}
 }
 

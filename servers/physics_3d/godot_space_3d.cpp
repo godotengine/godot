@@ -926,6 +926,9 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 		// Allowed depth can't be lower than motion length, in order to handle contacts at low speed.
 		rcd.min_allowed_depth = MIN(motion_length, min_contact_depth);
 
+		body_aabb.position += p_parameters.motion * unsafe;
+		int amount = _cull_aabb_for_body(p_body, body_aabb);
+
 		int from_shape = best_shape != -1 ? best_shape : 0;
 		int to_shape = best_shape != -1 ? best_shape + 1 : p_body->get_shape_count();
 
@@ -936,10 +939,6 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 
 			Transform3D body_shape_xform = ugt * p_body->get_shape_transform(j);
 			GodotShape3D *body_shape = p_body->get_shape(j);
-
-			body_aabb.position += p_parameters.motion * unsafe;
-
-			int amount = _cull_aabb_for_body(p_body, body_aabb);
 
 			for (int i = 0; i < amount; i++) {
 				const GodotCollisionObject3D *col_obj = intersection_query_results[i];

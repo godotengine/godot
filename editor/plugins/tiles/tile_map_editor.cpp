@@ -32,6 +32,7 @@
 
 #include "tiles_editor_plugin.h"
 
+#include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
@@ -1327,15 +1328,30 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 			Rect2i rect = Rect2i(tile_map->world_to_map(drag_start_mouse_pos), tile_map->world_to_map(mpos) - tile_map->world_to_map(drag_start_mouse_pos)).abs();
 			rect.size += Vector2i(1, 1);
 
+			int picked_source = -1;
 			TypedArray<Vector2i> coords_array;
 			for (int x = rect.position.x; x < rect.get_end().x; x++) {
 				for (int y = rect.position.y; y < rect.get_end().y; y++) {
 					Vector2i coords = Vector2i(x, y);
-					if (tile_map->get_cell_source_id(tile_map_layer, coords) != TileSet::INVALID_SOURCE) {
+
+					int source = tile_map->get_cell_source_id(tile_map_layer, coords);
+					if (source != TileSet::INVALID_SOURCE) {
 						coords_array.push_back(coords);
+						if (picked_source == -1) {
+							picked_source = source;
+						} else if (picked_source != source) {
+							picked_source = -2;
+						}
 					}
 				}
 			}
+
+			if (picked_source >= 0) {
+				sources_list->set_current(picked_source);
+				sources_list->ensure_current_is_visible();
+				TilesEditorPlugin::get_singleton()->set_sources_lists_current(picked_source);
+			}
+
 			Ref<TileMapPattern> new_selection_pattern = tile_map->get_pattern(tile_map_layer, coords_array);
 			if (!new_selection_pattern->is_empty()) {
 				selection_pattern = new_selection_pattern;
@@ -1978,7 +1994,11 @@ void TileMapEditorTilesPlugin::_bind_methods() {
 }
 
 TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
-	CanvasItemEditor::get_singleton()->get_viewport_control()->connect("mouse_exited", callable_mp(this, &TileMapEditorTilesPlugin::_mouse_exited_viewport));
+	undo_redo = EditorNode::get_undo_redo();
+
+	CanvasItemEditor::get_singleton()
+			->get_viewport_control()
+			->connect("mouse_exited", callable_mp(this, &TileMapEditorTilesPlugin::_mouse_exited_viewport));
 
 	// --- Shortcuts ---
 	ED_SHORTCUT("tiles_editor/cut", TTR("Cut"), KeyModifierMask::CMD | Key::X);
@@ -3242,6 +3262,8 @@ void TileMapEditorTerrainsPlugin::edit(ObjectID p_tile_map_id, int p_tile_map_la
 }
 
 TileMapEditorTerrainsPlugin::TileMapEditorTerrainsPlugin() {
+	undo_redo = EditorNode::get_undo_redo();
+
 	main_vbox_container = memnew(VBoxContainer);
 	main_vbox_container->connect("tree_entered", callable_mp(this, &TileMapEditorTerrainsPlugin::_update_theme));
 	main_vbox_container->connect("theme_changed", callable_mp(this, &TileMapEditorTerrainsPlugin::_update_theme));
@@ -3352,15 +3374,16 @@ TileMapEditorTerrainsPlugin::~TileMapEditorTerrainsPlugin() {
 void TileMapEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_THEME_CHANGED: {
 			missing_tile_texture = get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons"));
 			warning_pattern_texture = get_theme_icon(SNAME("WarningPattern"), SNAME("EditorIcons"));
 			advanced_menu_button->set_icon(get_theme_icon(SNAME("Tools"), SNAME("EditorIcons")));
 			toggle_grid_button->set_icon(get_theme_icon(SNAME("Grid"), SNAME("EditorIcons")));
 			toggle_grid_button->set_pressed(EditorSettings::get_singleton()->get("editors/tiles_editor/display_grid"));
 			toogle_highlight_selected_layer_button->set_icon(get_theme_icon(SNAME("TileMapHighlightSelected"), SNAME("EditorIcons")));
-			break;
-		case NOTIFICATION_INTERNAL_PROCESS:
+		} break;
+
+		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (is_visible_in_tree() && tileset_changed_needs_update) {
 				_update_bottom_panel();
 				_update_layers_selection();
@@ -3368,11 +3391,13 @@ void TileMapEditor::_notification(int p_what) {
 				CanvasItemEditor::get_singleton()->update_viewport();
 				tileset_changed_needs_update = false;
 			}
-			break;
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED:
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			toggle_grid_button->set_pressed(EditorSettings::get_singleton()->get("editors/tiles_editor/display_grid"));
-			break;
-		case NOTIFICATION_VISIBILITY_CHANGED:
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
 			TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 			if (tile_map) {
 				if (is_visible_in_tree()) {
@@ -3381,7 +3406,7 @@ void TileMapEditor::_notification(int p_what) {
 					tile_map->set_selected_layer(-1);
 				}
 			}
-			break;
+		} break;
 	}
 }
 
@@ -3945,6 +3970,8 @@ void TileMapEditor::edit(TileMap *p_tile_map) {
 }
 
 TileMapEditor::TileMapEditor() {
+	undo_redo = EditorNode::get_undo_redo();
+
 	set_process_internal(true);
 
 	// Shortcuts.

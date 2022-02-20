@@ -31,6 +31,7 @@
 #include "gradient_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "node_3d_editor_plugin.h"
 
@@ -90,13 +91,15 @@ GradientEditor::GradientEditor() {
 ///////////////////////
 
 void GradientReverseButton::_notification(int p_what) {
-	if (p_what == NOTIFICATION_DRAW) {
-		Ref<Texture2D> icon = get_theme_icon(SNAME("ReverseGradient"), SNAME("EditorIcons"));
-		if (is_pressed()) {
-			draw_texture_rect(icon, Rect2(margin, margin, icon->get_width(), icon->get_height()), false, get_theme_color(SNAME("icon_pressed_color"), SNAME("Button")));
-		} else {
-			draw_texture_rect(icon, Rect2(margin, margin, icon->get_width(), icon->get_height()));
-		}
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
+			Ref<Texture2D> icon = get_theme_icon(SNAME("ReverseGradient"), SNAME("EditorIcons"));
+			if (is_pressed()) {
+				draw_texture_rect(icon, Rect2(margin, margin, icon->get_width(), icon->get_height()), false, get_theme_color(SNAME("icon_pressed_color"), SNAME("Button")));
+			} else {
+				draw_texture_rect(icon, Rect2(margin, margin, icon->get_width(), icon->get_height()));
+			}
+		} break;
 	}
 }
 
@@ -136,7 +139,7 @@ void EditorInspectorPluginGradient::_reverse_button_pressed() {
 	editor->reverse_gradient();
 }
 
-GradientEditorPlugin::GradientEditorPlugin(EditorNode *p_node) {
+GradientEditorPlugin::GradientEditorPlugin() {
 	Ref<EditorInspectorPluginGradient> plugin;
 	plugin.instantiate();
 	add_inspector_plugin(plugin);

@@ -29,7 +29,7 @@ layout(set = 0, binding = 0) uniform sampler2D source_ssao;
 
 layout(rg8, set = 1, binding = 0) uniform restrict writeonly image2D dest_image;
 
-layout(push_constant, binding = 1, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	float edge_sharpness;
 	float pad;
 	vec2 half_screen_pixel_size;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CodeEdit" inherits="TextEdit" version="4.0">
+<class name="CodeEdit" inherits="TextEdit" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Multiline text control intended for editing code.
 	</brief_description>
@@ -589,7 +589,7 @@
 		<theme_item name="completion_font_color" data_type="color" type="Color" default="Color(0.67, 0.67, 0.67, 1)">
 			Font [Color] for the code completion popup.
 		</theme_item>
-		<theme_item name="completion_scroll_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="completion_scroll_color" data_type="color" type="Color" default="Color(1, 1, 1, 0.29)">
 			[Color] of the scrollbar in the code completion popup.
 		</theme_item>
 		<theme_item name="completion_selected_color" data_type="color" type="Color" default="Color(0.26, 0.26, 0.27, 1)">
@@ -640,7 +640,7 @@
 		<theme_item name="completion_max_width" data_type="constant" type="int" default="50">
 			Max width of options in the code completion popup. Options longer then this will be cut off.
 		</theme_item>
-		<theme_item name="completion_scroll_width" data_type="constant" type="int" default="3">
+		<theme_item name="completion_scroll_width" data_type="constant" type="int" default="6">
 			Width of the scrollbar in the code completion popup.
 		</theme_item>
 		<theme_item name="line_spacing" data_type="constant" type="int" default="4">

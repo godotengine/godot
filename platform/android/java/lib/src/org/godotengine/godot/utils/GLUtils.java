@@ -147,8 +147,9 @@ public class GLUtils {
 				Log.i(TAG, String.format("  %s: %d\n", name, value[0]));
 			} else {
 				// Log.w(TAG, String.format("  %s: failed\n", name));
-				while (egl.eglGetError() != EGL10.EGL_SUCCESS)
-					;
+				while (egl.eglGetError() != EGL10.EGL_SUCCESS) {
+					// Continue.
+				}
 			}
 		}
 	}

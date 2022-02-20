@@ -202,15 +202,16 @@ void AnimationPlayer::_notification(int p_what) {
 				set_physics_process_internal(false);
 				set_process_internal(false);
 			}
-			//_set_process(false);
 			clear_caches();
 		} break;
+
 		case NOTIFICATION_READY: {
 			if (!Engine::get_singleton()->is_editor_hint() && animation_set.has(autoplay)) {
 				play(autoplay);
 				_animation_process(0);
 			}
 		} break;
+
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (process_callback == ANIMATION_PROCESS_PHYSICS) {
 				break;
@@ -220,6 +221,7 @@ void AnimationPlayer::_notification(int p_what) {
 				_animation_process(get_process_delta_time());
 			}
 		} break;
+
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (process_callback == ANIMATION_PROCESS_IDLE) {
 				break;
@@ -229,6 +231,7 @@ void AnimationPlayer::_notification(int p_what) {
 				_animation_process(get_physics_process_delta_time());
 			}
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			clear_caches();
 		} break;
@@ -592,18 +595,12 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 				}
 
 				if (update_mode == Animation::UPDATE_CONTINUOUS || update_mode == Animation::UPDATE_CAPTURE || (p_delta == 0 && update_mode == Animation::UPDATE_DISCRETE)) { //delta == 0 means seek
-
 					Variant value = a->value_track_interpolate(i, p_time);
 
 					if (value == Variant()) {
 						continue;
 					}
 
-					//thanks to trigger mode, this should be solved now..
-					/*
-					if (p_delta==0 && value.get_type()==Variant::STRING)
-						continue; // doing this with strings is messy, should find another way
-					*/
 					if (pa->accum_pass != accum_pass) {
 						ERR_CONTINUE(cache_update_prop_size >= NODE_CACHE_UPDATE_MAX);
 						cache_update_prop[cache_update_prop_size++] = pa;

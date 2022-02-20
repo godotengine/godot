@@ -6,7 +6,7 @@ using System;
 public partial class _CLASS_ : _BASE_
 {
     public const float Speed = 5.0f;
-    public const float JumpForce = 4.5f;
+    public const float JumpVelocity = 4.5f;
 
     // Get the gravity from the project settings to be synced with RigidDynamicBody nodes.
     public float gravity = (float)ProjectSettings.GetSetting("physics/3d/default_gravity");
@@ -21,7 +21,7 @@ public partial class _CLASS_ : _BASE_
 
         // Handle Jump.
         if (Input.IsActionJustPressed("ui_accept") && IsOnFloor())
-             motionVelocity.y = JumpForce;
+             motionVelocity.y = JumpVelocity;
 
         // Get the input direction and handle the movement/deceleration.
         // As good practice, you should replace UI actions with custom gameplay actions.

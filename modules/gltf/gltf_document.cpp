@@ -57,7 +57,6 @@
 #include "core/variant/typed_array.h"
 #include "core/variant/variant.h"
 #include "core/version.h"
-#include "core/version_hash.gen.h"
 #include "drivers/png/png_driver_common.h"
 #include "editor/import/resource_importer_scene.h"
 #include "scene/2d/node_2d.h"
@@ -3374,9 +3373,9 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 					orm_texture_index = _set_texture(state, orm_texture);
 				}
 				if (has_ao) {
-					Dictionary ot;
-					ot["index"] = orm_texture_index;
-					d["occlusionTexture"] = ot;
+					Dictionary occt;
+					occt["index"] = orm_texture_index;
+					d["occlusionTexture"] = occt;
 				}
 				if (has_roughness || has_metalness) {
 					mrt["index"] = orm_texture_index;
@@ -5061,6 +5060,9 @@ GLTFMeshIndex GLTFDocument::_convert_mesh_to_gltf(Ref<GLTFState> state, MeshInst
 			String mat_name;
 			if (mat.is_valid()) {
 				mat_name = mat->get_name();
+			} else {
+				// Assign default material when no material is assigned.
+				mat = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
 			}
 			current_mesh->add_surface(import_mesh->surface_get_primitive_type(surface_i),
 					array, import_mesh->surface_get_blend_shape_arrays(surface_i), import_mesh->surface_get_lods(surface_i), mat,
@@ -5323,14 +5325,31 @@ void GLTFDocument::_convert_csg_shape_to_gltf(CSGShape3D *p_current, GLTFNodeInd
 	if (meshes.size() != 2) {
 		return;
 	}
-	Ref<Material> mat;
-	if (csg->get_material_override().is_valid()) {
-		mat = csg->get_material_override();
+
+	Ref<ImporterMesh> mesh;
+	mesh.instantiate();
+	{
+		Ref<Mesh> csg_mesh = csg->get_meshes()[1];
+
+		for (int32_t surface_i = 0; surface_i < csg_mesh->get_surface_count(); surface_i++) {
+			Array array = csg_mesh->surface_get_arrays(surface_i);
+			Ref<Material> mat = csg_mesh->surface_get_material(surface_i);
+			String mat_name;
+			if (mat.is_valid()) {
+				mat_name = mat->get_name();
+			} else {
+				// Assign default material when no material is assigned.
+				mat = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+			}
+			mesh->add_surface(csg_mesh->surface_get_primitive_type(surface_i),
+					array, csg_mesh->surface_get_blend_shape_arrays(surface_i), csg_mesh->surface_get_lods(surface_i), mat,
+					mat_name, csg_mesh->surface_get_format(surface_i));
+		}
 	}
+
 	Ref<GLTFMesh> gltf_mesh;
 	gltf_mesh.instantiate();
-	Ref<ImporterMesh> array_mesh = csg->get_meshes()[1];
-	gltf_mesh->set_mesh(array_mesh);
+	gltf_mesh->set_mesh(mesh);
 	GLTFMeshIndex mesh_i = state->meshes.size();
 	state->meshes.push_back(gltf_mesh);
 	gltf_node->mesh = mesh_i;
@@ -6655,8 +6674,8 @@ Error GLTFDocument::_serialize_version(Ref<GLTFState> state) {
 	Dictionary asset;
 	asset["version"] = version;
 
-	String hash = VERSION_HASH;
-	asset["generator"] = String(VERSION_FULL_NAME) + String("@") + (hash.length() == 0 ? String("unknown") : hash);
+	String hash = String(VERSION_HASH);
+	asset["generator"] = String(VERSION_FULL_NAME) + String("@") + (hash.is_empty() ? String("unknown") : hash);
 	state->json["asset"] = asset;
 	ERR_FAIL_COND_V(!asset.has("version"), Error::FAILED);
 	ERR_FAIL_COND_V(!state->json.has("asset"), Error::FAILED);

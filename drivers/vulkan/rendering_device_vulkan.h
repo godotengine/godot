@@ -1016,6 +1016,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	void _free_pending_resources(int p_frame);
 
 	VmaAllocator allocator = nullptr;
+	VmaPool small_allocs_pool = nullptr;
 
 	VulkanContext *context = nullptr;
 

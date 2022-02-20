@@ -32,11 +32,13 @@
 
 #include "core/object/message_queue.h"
 #include "core/string/print_string.h"
+#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/node_dock.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
+#include "editor/plugins/script_editor_plugin.h"
 #include "scene/gui/label.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
@@ -362,6 +364,17 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll
 			}
 
 			_update_visibility_color(p_node, item);
+		} else if (p_node->is_class("CanvasLayer")) {
+			bool v = p_node->call("is_visible");
+			if (v) {
+				item->add_button(0, get_theme_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons")), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
+			} else {
+				item->add_button(0, get_theme_icon(SNAME("GuiVisibilityHidden"), SNAME("EditorIcons")), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
+			}
+
+			if (!p_node->is_connected("visibility_changed", callable_mp(this, &SceneTreeEditor::_node_visibility_changed))) {
+				p_node->connect("visibility_changed", callable_mp(this, &SceneTreeEditor::_node_visibility_changed), varray(p_node));
+			}
 		} else if (p_node->is_class("Node3D")) {
 			bool is_locked = p_node->has_meta("_edit_lock_");
 			if (is_locked) {
@@ -471,6 +484,9 @@ void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
 	if (p_node->is_class("CanvasItem")) {
 		visible = p_node->call("is_visible");
 		CanvasItemEditor::get_singleton()->get_viewport_control()->update();
+	} else if (p_node->is_class("CanvasLayer")) {
+		visible = p_node->call("is_visible");
+		CanvasItemEditor::get_singleton()->get_viewport_control()->update();
 	} else if (p_node->is_class("Node3D")) {
 		visible = p_node->call("is_visible");
 	}
@@ -514,7 +530,7 @@ void SceneTreeEditor::_node_removed(Node *p_node) {
 		p_node->disconnect("script_changed", callable_mp(this, &SceneTreeEditor::_node_script_changed));
 	}
 
-	if (p_node->is_class("Node3D") || p_node->is_class("CanvasItem")) {
+	if (p_node->is_class("Node3D") || p_node->is_class("CanvasItem") || p_node->is_class("CanvasLayer")) {
 		if (p_node->is_connected("visibility_changed", callable_mp(this, &SceneTreeEditor::_node_visibility_changed))) {
 			p_node->disconnect("visibility_changed", callable_mp(this, &SceneTreeEditor::_node_visibility_changed));
 		}
@@ -684,6 +700,7 @@ void SceneTreeEditor::_notification(int p_what) {
 
 			_update_tree();
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			get_tree()->disconnect("tree_changed", callable_mp(this, &SceneTreeEditor::_tree_changed));
 			get_tree()->disconnect("tree_process_mode_changed", callable_mp(this, &SceneTreeEditor::_tree_process_mode_changed));
@@ -692,6 +709,7 @@ void SceneTreeEditor::_notification(int p_what) {
 			tree->disconnect("item_collapsed", callable_mp(this, &SceneTreeEditor::_cell_collapsed));
 			get_tree()->disconnect("node_configuration_warning_changed", callable_mp(this, &SceneTreeEditor::_warning_changed));
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_tree();
 		} break;
@@ -1267,13 +1285,16 @@ void SceneTreeDialog::_notification(int p_what) {
 				tree->update_tree();
 			}
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			connect("confirmed", callable_mp(this, &SceneTreeDialog::_select));
 			_update_theme();
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_theme();
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("confirmed", callable_mp(this, &SceneTreeDialog::_select));
 		} break;

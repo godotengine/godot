@@ -33,6 +33,7 @@
 #include "core/core_string_names.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/mutex.h"
+#include "scene/resources/world_2d.h"
 #include "servers/navigation_server_2d.h"
 
 #include "thirdparty/misc/polypartition.h"
@@ -104,8 +105,8 @@ void NavigationPolygon::_set_polygons(const TypedArray<Vector<int32_t>> &p_array
 	}
 }
 
-Array NavigationPolygon::_get_polygons() const {
-	Array ret;
+TypedArray<Vector<int32_t>> NavigationPolygon::_get_polygons() const {
+	TypedArray<Vector<int32_t>> ret;
 	ret.resize(polygons.size());
 	for (int i = 0; i < ret.size(); i++) {
 		ret[i] = polygons[i].indices;
@@ -122,8 +123,8 @@ void NavigationPolygon::_set_outlines(const TypedArray<Vector<Vector2>> &p_array
 	rect_cache_dirty = true;
 }
 
-Array NavigationPolygon::_get_outlines() const {
-	Array ret;
+TypedArray<Vector<Vector2>> NavigationPolygon::_get_outlines() const {
+	TypedArray<Vector<Vector2>> ret;
 	ret.resize(outlines.size());
 	for (int i = 0; i < ret.size(); i++) {
 		ret[i] = outlines[i];
@@ -405,15 +406,18 @@ void NavigationRegion2D::_notification(int p_what) {
 				NavigationServer2D::get_singleton_mut()->connect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
 			}
 		} break;
+
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			NavigationServer2D::get_singleton()->region_set_transform(region, get_global_transform());
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			NavigationServer2D::get_singleton()->region_set_map(region, RID());
 			if (enabled) {
 				NavigationServer2D::get_singleton_mut()->disconnect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
 			}
 		} break;
+
 		case NOTIFICATION_DRAW: {
 			if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()) && navpoly.is_valid()) {
 				Vector<Vector2> verts = navpoly->get_vertices();

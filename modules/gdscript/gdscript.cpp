@@ -43,6 +43,7 @@
 #include "gdscript_cache.h"
 #include "gdscript_compiler.h"
 #include "gdscript_parser.h"
+#include "gdscript_rpc_callable.h"
 #include "gdscript_warning.h"
 
 #ifdef TESTS_ENABLED
@@ -1375,7 +1376,13 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 			while (sl) {
 				const Map<StringName, GDScriptFunction *>::Element *E = sl->member_functions.find(p_name);
 				if (E) {
-					r_ret = Callable(this->owner, E->key());
+					Multiplayer::RPCConfig config;
+					config.name = p_name;
+					if (sptr->rpc_functions.find(config) != -1) {
+						r_ret = Callable(memnew(GDScriptRPCCallable(this->owner, E->key())));
+					} else {
+						r_ret = Callable(this->owner, E->key());
+					}
 					return true; //index found
 				}
 				sl = sl->_base;

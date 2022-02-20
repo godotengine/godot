@@ -31,11 +31,12 @@
 #ifndef CODE_EDITOR_H
 #define CODE_EDITOR_H
 
-#include "editor/editor_plugin.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
-#include "scene/gui/check_button.h"
 #include "scene/gui/code_edit.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/main/timer.h"
 
@@ -187,6 +188,8 @@ class CodeTextEditor : public VBoxContainer {
 	void _set_show_errors_panel(bool p_show);
 	void _set_show_warnings_panel(bool p_show);
 	void _error_pressed(const Ref<InputEvent> &p_event);
+
+	void _update_status_bar_theme();
 
 	void _delete_line(int p_line);
 	void _toggle_scripts_pressed();

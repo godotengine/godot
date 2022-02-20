@@ -368,3 +368,58 @@ const GodotEventListeners = {
 	},
 };
 mergeInto(LibraryManager.library, GodotEventListeners);
+
+const GodotPWA = {
+
+	$GodotPWA__deps: ['$GodotRuntime', '$GodotEventListeners'],
+	$GodotPWA: {
+		hasUpdate: false,
+
+		updateState: function (cb, reg) {
+			if (!reg) {
+				return;
+			}
+			if (!reg.active) {
+				return;
+			}
+			if (reg.waiting) {
+				GodotPWA.hasUpdate = true;
+				cb();
+			}
+			GodotEventListeners.add(reg, 'updatefound', function () {
+				const installing = reg.installing;
+				GodotEventListeners.add(installing, 'statechange', function () {
+					if (installing.state === 'installed') {
+						GodotPWA.hasUpdate = true;
+						cb();
+					}
+				});
+			});
+		},
+	},
+
+	godot_js_pwa_cb__sig: 'vi',
+	godot_js_pwa_cb: function (p_update_cb) {
+		if ('serviceWorker' in navigator) {
+			const cb = GodotRuntime.get_func(p_update_cb);
+			navigator.serviceWorker.getRegistration().then(GodotPWA.updateState.bind(null, cb));
+		}
+	},
+
+	godot_js_pwa_update__sig: 'i',
+	godot_js_pwa_update: function () {
+		if ('serviceWorker' in navigator && GodotPWA.hasUpdate) {
+			navigator.serviceWorker.getRegistration().then(function (reg) {
+				if (!reg || !reg.waiting) {
+					return;
+				}
+				reg.waiting.postMessage('update');
+			});
+			return 0;
+		}
+		return 1;
+	},
+};
+
+autoAddDeps(GodotPWA, '$GodotPWA');
+mergeInto(LibraryManager.library, GodotPWA);

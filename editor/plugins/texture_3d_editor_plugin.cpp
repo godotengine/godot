@@ -30,27 +30,22 @@
 
 #include "texture_3d_editor_plugin.h"
 
-#include "core/config/project_settings.h"
-#include "core/io/resource_loader.h"
-#include "editor/editor_settings.h"
-
 void Texture3DEditor::_texture_rect_draw() {
 	texture_rect->draw_rect(Rect2(Point2(), texture_rect->get_size()), Color(1, 1, 1, 1));
 }
 
 void Texture3DEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY) {
-		//get_scene()->connect("node_removed",this,"_node_removed");
-	}
-	if (p_what == NOTIFICATION_RESIZED) {
-		_texture_rect_update_area();
-	}
+	switch (p_what) {
+		case NOTIFICATION_RESIZED: {
+			_texture_rect_update_area();
+		} break;
 
-	if (p_what == NOTIFICATION_DRAW) {
-		Ref<Texture2D> checkerboard = get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons"));
-		Size2 size = get_size();
+		case NOTIFICATION_DRAW: {
+			Ref<Texture2D> checkerboard = get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons"));
+			Size2 size = get_size();
 
-		draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
+			draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
+		} break;
 	}
 }
 
@@ -204,7 +199,7 @@ void EditorInspectorPlugin3DTexture::parse_begin(Object *p_object) {
 	add_custom_control(editor);
 }
 
-Texture3DEditorPlugin::Texture3DEditorPlugin(EditorNode *p_node) {
+Texture3DEditorPlugin::Texture3DEditorPlugin() {
 	Ref<EditorInspectorPlugin3DTexture> plugin;
 	plugin.instantiate();
 	add_inspector_plugin(plugin);

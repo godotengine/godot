@@ -50,7 +50,7 @@ void Transform2D::affine_invert() {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND(det == 0);
 #endif
-	real_t idet = 1.0 / det;
+	real_t idet = 1.0f / det;
 
 	SWAP(elements[0][0], elements[1][1]);
 	elements[0] *= Vector2(idet, -idet);
@@ -71,12 +71,12 @@ void Transform2D::rotate(const real_t p_phi) {
 
 real_t Transform2D::get_skew() const {
 	real_t det = basis_determinant();
-	return Math::acos(elements[0].normalized().dot(SIGN(det) * elements[1].normalized())) - Math_PI * 0.5;
+	return Math::acos(elements[0].normalized().dot(SIGN(det) * elements[1].normalized())) - Math_PI * 0.5f;
 }
 
 void Transform2D::set_skew(const real_t p_angle) {
 	real_t det = basis_determinant();
-	elements[1] = SIGN(det) * elements[0].rotated((Math_PI * 0.5 + p_angle)).normalized() * elements[1].length();
+	elements[1] = SIGN(det) * elements[0].rotated((Math_PI * 0.5f + p_angle)).normalized() * elements[1].length();
 }
 
 real_t Transform2D::get_rotation() const {
@@ -268,11 +268,11 @@ Transform2D Transform2D::interpolate_with(const Transform2D &p_transform, const 
 
 	real_t dot = v1.dot(v2);
 
-	dot = CLAMP(dot, -1.0, 1.0);
+	dot = CLAMP(dot, -1.0f, 1.0f);
 
 	Vector2 v;
 
-	if (dot > 0.9995) {
+	if (dot > 0.9995f) {
 		v = v1.lerp(v2, p_c).normalized(); //linearly interpolate to avoid numerical precision issues
 	} else {
 		real_t angle = p_c * Math::acos(dot);

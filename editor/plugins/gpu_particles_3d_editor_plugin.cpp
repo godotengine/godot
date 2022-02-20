@@ -31,7 +31,9 @@
 #include "gpu_particles_3d_editor_plugin.h"
 
 #include "core/io/resource_loader.h"
+#include "editor/editor_node.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/scene_tree_dock.h"
 #include "scene/3d/cpu_particles_3d.h"
 #include "scene/resources/particles_material.h"
 
@@ -229,9 +231,11 @@ void GPUParticles3DEditor::_node_removed(Node *p_node) {
 }
 
 void GPUParticles3DEditor::_notification(int p_notification) {
-	if (p_notification == NOTIFICATION_ENTER_TREE) {
-		options->set_icon(options->get_popup()->get_theme_icon(SNAME("GPUParticles3D"), SNAME("EditorIcons")));
-		get_tree()->connect("node_removed", callable_mp(this, &GPUParticles3DEditor::_node_removed));
+	switch (p_notification) {
+		case NOTIFICATION_ENTER_TREE: {
+			options->set_icon(options->get_popup()->get_theme_icon(SNAME("GPUParticles3D"), SNAME("EditorIcons")));
+			get_tree()->connect("node_removed", callable_mp(this, &GPUParticles3DEditor::_node_removed));
+		} break;
 	}
 }
 
@@ -455,10 +459,9 @@ void GPUParticles3DEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-GPUParticles3DEditorPlugin::GPUParticles3DEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
+GPUParticles3DEditorPlugin::GPUParticles3DEditorPlugin() {
 	particles_editor = memnew(GPUParticles3DEditor);
-	editor->get_main_control()->add_child(particles_editor);
+	EditorNode::get_singleton()->get_main_control()->add_child(particles_editor);
 
 	particles_editor->hide();
 }

@@ -31,6 +31,7 @@
 #include "graph_node.h"
 
 #include "core/string/translation.h"
+
 #ifdef TOOLS_ENABLED
 #include "graph_edit.h"
 #endif
@@ -957,6 +958,25 @@ void GraphNode::set_resizable(bool p_enable) {
 
 bool GraphNode::is_resizable() const {
 	return resizable;
+}
+
+Vector<int> GraphNode::get_allowed_size_flags_horizontal() const {
+	Vector<int> flags;
+	flags.append(SIZE_FILL);
+	flags.append(SIZE_SHRINK_BEGIN);
+	flags.append(SIZE_SHRINK_CENTER);
+	flags.append(SIZE_SHRINK_END);
+	return flags;
+}
+
+Vector<int> GraphNode::get_allowed_size_flags_vertical() const {
+	Vector<int> flags;
+	flags.append(SIZE_FILL);
+	flags.append(SIZE_EXPAND);
+	flags.append(SIZE_SHRINK_BEGIN);
+	flags.append(SIZE_SHRINK_CENTER);
+	flags.append(SIZE_SHRINK_END);
+	return flags;
 }
 
 void GraphNode::_bind_methods() {

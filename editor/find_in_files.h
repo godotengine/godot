@@ -60,7 +60,7 @@ public:
 	float get_progress() const;
 
 protected:
-	void _notification(int p_notification);
+	void _notification(int p_what);
 
 	static void _bind_methods();
 

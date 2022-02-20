@@ -235,8 +235,11 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_set_force_autohinter", "font_rid", "force_autohinter"), &TextServer::font_set_force_autohinter);
 	ClassDB::bind_method(D_METHOD("font_is_force_autohinter", "font_rid"), &TextServer::font_is_force_autohinter);
 
-	ClassDB::bind_method(D_METHOD("font_set_hinting", "font_rid", "_hinting"), &TextServer::font_set_hinting);
+	ClassDB::bind_method(D_METHOD("font_set_hinting", "font_rid", "hinting"), &TextServer::font_set_hinting);
 	ClassDB::bind_method(D_METHOD("font_get_hinting", "font_rid"), &TextServer::font_get_hinting);
+
+	ClassDB::bind_method(D_METHOD("font_set_subpixel_positioning", "font_rid", "subpixel_positioning"), &TextServer::font_set_subpixel_positioning);
+	ClassDB::bind_method(D_METHOD("font_get_subpixel_positioning", "font_rid"), &TextServer::font_get_subpixel_positioning);
 
 	ClassDB::bind_method(D_METHOD("font_set_variation_coordinates", "font_rid", "variation_coordinates"), &TextServer::font_set_variation_coordinates);
 	ClassDB::bind_method(D_METHOD("font_get_variation_coordinates", "font_rid"), &TextServer::font_get_variation_coordinates);
@@ -478,6 +481,12 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(HINTING_NONE);
 	BIND_ENUM_CONSTANT(HINTING_LIGHT);
 	BIND_ENUM_CONSTANT(HINTING_NORMAL);
+
+	/* SubpixelPositioning */
+	BIND_ENUM_CONSTANT(SUBPIXEL_POSITIONING_DISABLED);
+	BIND_ENUM_CONSTANT(SUBPIXEL_POSITIONING_AUTO);
+	BIND_ENUM_CONSTANT(SUBPIXEL_POSITIONING_ONE_HALF);
+	BIND_ENUM_CONSTANT(SUBPIXEL_POSITIONING_ONE_QUARTER);
 
 	/* Feature */
 	BIND_ENUM_CONSTANT(FEATURE_BIDI_LAYOUT);

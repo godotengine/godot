@@ -154,7 +154,7 @@ public:
 	virtual Size2 get_minimum_size() const override { return Size2(0, 200); }
 	void save_external_data(const String &p_str = "");
 
-	ShaderEditor(EditorNode *p_node);
+	ShaderEditor();
 };
 
 class ShaderEditorPlugin : public EditorPlugin {
@@ -162,7 +162,6 @@ class ShaderEditorPlugin : public EditorPlugin {
 
 	bool _2d;
 	ShaderEditor *shader_editor;
-	EditorNode *editor;
 	Button *button;
 
 public:
@@ -178,7 +177,7 @@ public:
 	virtual void save_external_data() override;
 	virtual void apply_changes() override;
 
-	ShaderEditorPlugin(EditorNode *p_node);
+	ShaderEditorPlugin();
 	~ShaderEditorPlugin();
 };
 

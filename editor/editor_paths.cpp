@@ -34,7 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/os/os.h"
-#include "main/main.h" // For `is_project_manager`.
+#include "main/main.h"
 
 EditorPaths *EditorPaths::singleton = nullptr;
 
@@ -193,7 +193,7 @@ EditorPaths::EditorPaths() {
 	// Validate or create project-specific editor data dir,
 	// including shader cache subdir.
 
-	if (Main::is_project_manager() || Main::is_cmdline_tool()) {
+	if (Engine::get_singleton()->is_project_manager_hint() || Main::is_cmdline_tool()) {
 		// Nothing to create, use shared editor data dir for shader cache.
 		Engine::get_singleton()->set_shader_cache_path(data_dir);
 	} else {

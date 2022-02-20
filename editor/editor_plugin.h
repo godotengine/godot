@@ -43,7 +43,6 @@
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 
-class EditorNode;
 class Node3D;
 class Camera3D;
 class EditorCommandPalette;
@@ -278,7 +277,7 @@ public:
 	void add_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser);
 	void remove_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser);
 
-	void add_import_plugin(const Ref<EditorImportPlugin> &p_importer);
+	void add_import_plugin(const Ref<EditorImportPlugin> &p_importer, bool p_first_priority = false);
 	void remove_import_plugin(const Ref<EditorImportPlugin> &p_importer);
 
 	void add_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
@@ -290,10 +289,10 @@ public:
 	void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 
-	void add_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer);
+	void add_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer, bool p_first_priority = false);
 	void remove_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer);
 
-	void add_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_importer);
+	void add_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_importer, bool p_first_priority = false);
 	void remove_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_importer);
 
 	void add_autoload_singleton(const String &p_name, const String &p_path);
@@ -312,7 +311,7 @@ public:
 VARIANT_ENUM_CAST(EditorPlugin::CustomControlContainer);
 VARIANT_ENUM_CAST(EditorPlugin::DockSlot);
 
-typedef EditorPlugin *(*EditorPluginCreateFunc)(EditorNode *);
+typedef EditorPlugin *(*EditorPluginCreateFunc)();
 
 class EditorPlugins {
 	enum {
@@ -323,15 +322,15 @@ class EditorPlugins {
 	static int creation_func_count;
 
 	template <class T>
-	static EditorPlugin *creator(EditorNode *p_node) {
-		return memnew(T(p_node));
+	static EditorPlugin *creator() {
+		return memnew(T);
 	}
 
 public:
 	static int get_plugin_count() { return creation_func_count; }
-	static EditorPlugin *create(int p_idx, EditorNode *p_editor) {
+	static EditorPlugin *create(int p_idx) {
 		ERR_FAIL_INDEX_V(p_idx, creation_func_count, nullptr);
-		return creation_funcs[p_idx](p_editor);
+		return creation_funcs[p_idx]();
 	}
 
 	template <class T>

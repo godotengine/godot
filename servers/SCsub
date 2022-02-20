@@ -12,6 +12,7 @@ SConscript("physics_2d/SCsub")
 SConscript("rendering/SCsub")
 SConscript("audio/SCsub")
 SConscript("text/SCsub")
+SConscript("debugger/SCsub")
 
 lib = env.add_library("servers", env.servers_sources)
 

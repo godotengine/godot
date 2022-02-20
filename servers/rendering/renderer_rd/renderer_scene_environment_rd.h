@@ -135,15 +135,15 @@ public:
 
 	/// SDFGI
 	bool sdfgi_enabled = false;
-	int sdfgi_cascades = 6;
+	int sdfgi_cascades = 4;
 	float sdfgi_min_cell_size = 0.2;
 	bool sdfgi_use_occlusion = false;
-	float sdfgi_bounce_feedback = 0.0;
-	bool sdfgi_read_sky_light = false;
+	float sdfgi_bounce_feedback = 0.5;
+	bool sdfgi_read_sky_light = true;
 	float sdfgi_energy = 1.0;
 	float sdfgi_normal_bias = 1.1;
 	float sdfgi_probe_bias = 1.1;
-	RS::EnvironmentSDFGIYScale sdfgi_y_scale = RS::ENV_SDFGI_Y_SCALE_DISABLED;
+	RS::EnvironmentSDFGIYScale sdfgi_y_scale = RS::ENV_SDFGI_Y_SCALE_75_PERCENT;
 
 	/// Adjustments
 

@@ -216,6 +216,7 @@ private:
 	} _data alignas(8);
 
 	void reference(const Variant &p_variant);
+	static bool initialize_ref(Object *p_object);
 
 	void _clear_internal();
 

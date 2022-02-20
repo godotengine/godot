@@ -1784,10 +1784,7 @@ public:
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 		bool valid;
-		// *p_output[0] points to the same place as *p_inputs[2] so we need a temp to store the value before the change in the next line
-		Variant temp = *p_inputs[2];
-		*p_outputs[0] = *p_inputs[0];
-		p_outputs[0]->set(*p_inputs[1], temp, &valid);
+		((Variant *)p_inputs[0])->set(*p_inputs[1], *p_inputs[2], &valid);
 
 		if (!valid) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
@@ -2495,7 +2492,7 @@ static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const
 VisualScriptSceneNode::TypeGuess VisualScriptSceneNode::guess_output_type(TypeGuess *p_inputs, int p_output) const {
 	VisualScriptSceneNode::TypeGuess tg;
 	tg.type = Variant::OBJECT;
-	tg.gdclass = "Node";
+	tg.gdclass = SNAME("Node");
 
 #ifdef TOOLS_ENABLED
 	Ref<Script> script = get_visual_script();
@@ -2649,7 +2646,7 @@ VisualScriptNodeInstance *VisualScriptSceneTree::instantiate(VisualScriptInstanc
 VisualScriptSceneTree::TypeGuess VisualScriptSceneTree::guess_output_type(TypeGuess *p_inputs, int p_output) const {
 	TypeGuess tg;
 	tg.type = Variant::OBJECT;
-	tg.gdclass = "SceneTree";
+	tg.gdclass = SNAME("SceneTree");
 	return tg;
 }
 
@@ -2766,11 +2763,11 @@ PropertyInfo VisualScriptSelf::get_input_value_port_info(int p_idx) const {
 }
 
 PropertyInfo VisualScriptSelf::get_output_value_port_info(int p_idx) const {
-	String type_name;
+	StringName type_name;
 	if (get_visual_script().is_valid()) {
 		type_name = get_visual_script()->get_instance_base_type();
 	} else {
-		type_name = "instance";
+		type_name = SNAME("instance");
 	}
 
 	return PropertyInfo(Variant::OBJECT, type_name);
@@ -2801,7 +2798,7 @@ VisualScriptNodeInstance *VisualScriptSelf::instantiate(VisualScriptInstance *p_
 VisualScriptSelf::TypeGuess VisualScriptSelf::guess_output_type(TypeGuess *p_inputs, int p_output) const {
 	VisualScriptSceneNode::TypeGuess tg;
 	tg.type = Variant::OBJECT;
-	tg.gdclass = "Object";
+	tg.gdclass = SNAME("Object");
 
 	Ref<Script> script = get_visual_script();
 	if (!script.is_valid()) {

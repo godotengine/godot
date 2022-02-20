@@ -34,27 +34,32 @@
 #include "scene/main/window.h"
 
 void WorldEnvironment::_notification(int p_what) {
-	if (p_what == Node3D::NOTIFICATION_ENTER_WORLD || p_what == Node3D::NOTIFICATION_ENTER_TREE) {
-		if (environment.is_valid()) {
-			add_to_group("_world_environment_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
-			_update_current_environment();
-		}
+	switch (p_what) {
+		case Node3D::NOTIFICATION_ENTER_WORLD:
+		case Node3D::NOTIFICATION_ENTER_TREE: {
+			if (environment.is_valid()) {
+				add_to_group("_world_environment_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
+				_update_current_environment();
+			}
 
-		if (camera_effects.is_valid()) {
-			add_to_group("_world_camera_effects_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
-			_update_current_camera_effects();
-		}
+			if (camera_effects.is_valid()) {
+				add_to_group("_world_camera_effects_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
+				_update_current_camera_effects();
+			}
+		} break;
 
-	} else if (p_what == Node3D::NOTIFICATION_EXIT_WORLD || p_what == Node3D::NOTIFICATION_EXIT_TREE) {
-		if (environment.is_valid()) {
-			remove_from_group("_world_environment_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
-			_update_current_environment();
-		}
+		case Node3D::NOTIFICATION_EXIT_WORLD:
+		case Node3D::NOTIFICATION_EXIT_TREE: {
+			if (environment.is_valid()) {
+				remove_from_group("_world_environment_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
+				_update_current_environment();
+			}
 
-		if (camera_effects.is_valid()) {
-			remove_from_group("_world_camera_effects_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
-			_update_current_camera_effects();
-		}
+			if (camera_effects.is_valid()) {
+				remove_from_group("_world_camera_effects_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
+				_update_current_camera_effects();
+			}
+		} break;
 	}
 }
 

@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "java_godot_io_wrapper.h"
+
 #include "core/error/error_list.h"
 
 // JNIEnv is only valid within the thread it belongs to, in a multi threading environment
@@ -141,12 +142,12 @@ float GodotIOJavaWrapper::get_screen_refresh_rate(float fallback) {
 	if (_get_screen_refresh_rate) {
 		JNIEnv *env = get_jni_env();
 		if (env == nullptr) {
-			ERR_PRINT("An error occured while trying to get screen refresh rate.");
+			ERR_PRINT("An error occurred while trying to get screen refresh rate.");
 			return fallback;
 		}
 		return (float)env->CallDoubleMethod(godot_io_instance, _get_screen_refresh_rate, (double)fallback);
 	}
-	ERR_PRINT("An error occured while trying to get the screen refresh rate.");
+	ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
 	return fallback;
 }
 

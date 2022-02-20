@@ -215,7 +215,7 @@ public:
 		PORT_TYPE_SCALAR,
 		PORT_TYPE_SCALAR_INT,
 		PORT_TYPE_VECTOR_2D,
-		PORT_TYPE_VECTOR,
+		PORT_TYPE_VECTOR_3D,
 		PORT_TYPE_BOOLEAN,
 		PORT_TYPE_TRANSFORM,
 		PORT_TYPE_SAMPLER,
@@ -275,7 +275,7 @@ public:
 
 	virtual Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const;
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
-	virtual String generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
+	virtual String generate_global_per_node(Shader::Mode p_mode, int p_id) const;
 	virtual String generate_global_per_func(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	// If no output is connected, the output var passed will be empty. If no input is connected and input is NIL, the input var passed will be empty.
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const = 0;
@@ -335,7 +335,7 @@ protected:
 	void _set_input_port_default_value(int p_port, const Variant &p_value);
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
-	virtual String generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_global_per_node(Shader::Mode p_mode, int p_id) const override;
 
 	static void _bind_methods();
 

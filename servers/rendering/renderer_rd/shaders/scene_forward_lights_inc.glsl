@@ -877,17 +877,17 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 		vec4 splane = (spot_lights.data[idx].shadow_matrix * vec4(vertex, 1.0));
 		splane /= splane.w;
 
-		vec2 proj_uv = normal_to_panorama(splane.xyz) * spot_lights.data[idx].projector_rect.zw;
+		vec2 proj_uv = splane.xy * spot_lights.data[idx].projector_rect.zw;
 
 		if (sc_projector_use_mipmaps) {
 			//ensure we have proper mipmaps
 			vec4 splane_ddx = (spot_lights.data[idx].shadow_matrix * vec4(vertex + vertex_ddx, 1.0));
 			splane_ddx /= splane_ddx.w;
-			vec2 proj_uv_ddx = normal_to_panorama(splane_ddx.xyz) * spot_lights.data[idx].projector_rect.zw - proj_uv;
+			vec2 proj_uv_ddx = splane_ddx.xy * spot_lights.data[idx].projector_rect.zw - proj_uv;
 
 			vec4 splane_ddy = (spot_lights.data[idx].shadow_matrix * vec4(vertex + vertex_ddy, 1.0));
 			splane_ddy /= splane_ddy.w;
-			vec2 proj_uv_ddy = normal_to_panorama(splane_ddy.xyz) * spot_lights.data[idx].projector_rect.zw - proj_uv;
+			vec2 proj_uv_ddy = splane_ddy.xy * spot_lights.data[idx].projector_rect.zw - proj_uv;
 
 			vec4 proj = textureGrad(sampler2D(decal_atlas_srgb, light_projector_sampler), proj_uv + spot_lights.data[idx].projector_rect.xy, proj_uv_ddx, proj_uv_ddy);
 			color *= proj.rgb * proj.a;

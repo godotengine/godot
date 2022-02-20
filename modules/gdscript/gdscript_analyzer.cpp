@@ -196,7 +196,7 @@ Error GDScriptAnalyzer::check_class_member_name_conflict(const GDScriptParser::C
 	}
 
 	if (current_data_type && current_data_type->kind == GDScriptParser::DataType::Kind::NATIVE) {
-		if (current_data_type->native_type != StringName("")) {
+		if (current_data_type->native_type != StringName()) {
 			return check_native_member_name_conflict(
 					p_member_name,
 					p_member_node,
@@ -250,7 +250,7 @@ Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, 
 	if (!p_class->extends_used) {
 		result.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
 		result.kind = GDScriptParser::DataType::NATIVE;
-		result.native_type = "RefCounted";
+		result.native_type = SNAME("RefCounted");
 	} else {
 		result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 
@@ -438,7 +438,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 
 	StringName first = p_type->type_chain[0]->name;
 
-	if (first == "Variant") {
+	if (first == SNAME("Variant")) {
 		result.kind = GDScriptParser::DataType::VARIANT;
 		if (p_type->type_chain.size() > 1) {
 			push_error(R"("Variant" type don't contain nested types.)", p_type->type_chain[1]);
@@ -447,9 +447,9 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 		return result;
 	}
 
-	if (first == "Object") {
+	if (first == SNAME("Object")) {
 		result.kind = GDScriptParser::DataType::NATIVE;
-		result.native_type = "Object";
+		result.native_type = SNAME("Object");
 		if (p_type->type_chain.size() > 1) {
 			push_error(R"("Object" type don't contain nested types.)", p_type->type_chain[1]);
 			return GDScriptParser::DataType();
@@ -2552,7 +2552,7 @@ void GDScriptAnalyzer::reduce_get_node(GDScriptParser::GetNodeNode *p_get_node) 
 	GDScriptParser::DataType result;
 	result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 	result.kind = GDScriptParser::DataType::NATIVE;
-	result.native_type = "Node";
+	result.native_type = SNAME("Node");
 	result.builtin_type = Variant::OBJECT;
 
 	if (!ClassDB::is_parent_class(parser->current_class->base_type.native_type, result.native_type)) {
@@ -3524,7 +3524,7 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 	result.builtin_type = p_property.type;
 	if (p_property.type == Variant::OBJECT) {
 		result.kind = GDScriptParser::DataType::NATIVE;
-		result.native_type = p_property.class_name == StringName() ? "Object" : p_property.class_name;
+		result.native_type = p_property.class_name == StringName() ? SNAME("Object") : p_property.class_name;
 	} else {
 		result.kind = GDScriptParser::DataType::BUILTIN;
 		result.builtin_type = p_property.type;
