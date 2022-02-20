@@ -59,6 +59,7 @@ void CapsuleShape2D::_update_shape() {
 }
 
 void CapsuleShape2D::set_radius(real_t p_radius) {
+	ERR_FAIL_COND_MSG(p_radius < 0, "CapsuleShape2D radius cannot be negative.");
 	radius = p_radius;
 	if (radius > height * 0.5) {
 		height = radius * 2.0;
@@ -71,6 +72,7 @@ real_t CapsuleShape2D::get_radius() const {
 }
 
 void CapsuleShape2D::set_height(real_t p_height) {
+	ERR_FAIL_COND_MSG(p_height < 0, "CapsuleShape2D height cannot be negative.");
 	height = p_height;
 	if (radius > height * 0.5) {
 		radius = height * 0.5;
