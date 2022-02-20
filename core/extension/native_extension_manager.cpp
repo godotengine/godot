@@ -40,12 +40,12 @@ NativeExtensionManager::LoadStatus NativeExtensionManager::load_extension(const 
 		return LOAD_STATUS_FAILED;
 	}
 
-	if (level >= 0) { //already initialized up to some level
+	if (level >= 0) { // Already initialized up to some level.
 		int32_t minimum_level = extension->get_minimum_library_initialization_level();
 		if (minimum_level < MIN(level, NativeExtension::INITIALIZATION_LEVEL_SCENE)) {
 			return LOAD_STATUS_NEEDS_RESTART;
 		}
-		//initialize up to current level
+		// Initialize up to current level.
 		for (int32_t i = minimum_level; i <= level; i++) {
 			extension->initialize_library(NativeExtension::InitializationLevel(i));
 		}
@@ -64,12 +64,12 @@ NativeExtensionManager::LoadStatus NativeExtensionManager::unload_extension(cons
 
 	Ref<NativeExtension> extension = native_extension_map[p_path];
 
-	if (level >= 0) { //already initialized up to some level
+	if (level >= 0) { // Already initialized up to some level.
 		int32_t minimum_level = extension->get_minimum_library_initialization_level();
 		if (minimum_level < MIN(level, NativeExtension::INITIALIZATION_LEVEL_SCENE)) {
 			return LOAD_STATUS_NEEDS_RESTART;
 		}
-		// deinitialize down to current level
+		// Deinitialize down to current level.
 		for (int32_t i = level; i >= minimum_level; i--) {
 			extension->deinitialize_library(NativeExtension::InitializationLevel(i));
 		}
