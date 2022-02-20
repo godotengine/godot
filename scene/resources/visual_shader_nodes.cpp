@@ -1796,8 +1796,7 @@ String VisualShaderNodeColorFunc::generate_code(Shader::Mode p_mode, VisualShade
 			code += "\t\tvec3 c = " + p_input_vars[0] + ";\n";
 			code += "\t\tfloat max1 = max(c.r, c.g);\n";
 			code += "\t\tfloat max2 = max(max1, c.b);\n";
-			code += "\t\tfloat max3 = max(max1, max2);\n";
-			code += "\t\t" + p_output_vars[0] + " = vec3(max3, max3, max3);\n";
+			code += "\t\t" + p_output_vars[0] + " = vec3(max2, max2, max2);\n";
 			code += "\t}\n";
 			break;
 		case FUNC_SEPIA:
