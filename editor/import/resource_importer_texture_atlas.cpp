@@ -72,6 +72,7 @@ void ResourceImporterTextureAtlas::get_import_options(List<ImportOption> *r_opti
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "atlas_file", PROPERTY_HINT_SAVE_FILE, "*.png"), ""));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "import_mode", PROPERTY_HINT_ENUM, "Region,Mesh2D"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "crop_to_region"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "trim_alpha_border_from_region"), true));
 }
 
 String ResourceImporterTextureAtlas::get_option_group_file() const {
@@ -207,14 +208,18 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 		pack_data.is_cropped = options["crop_to_region"];
 
 		int mode = options["import_mode"];
+		bool trim_alpha_border_from_region = options["trim_alpha_border_from_region"];
 
 		if (mode == IMPORT_MODE_REGION) {
 			pack_data.is_mesh = false;
 
 			EditorAtlasPacker::Chart chart;
 
-			//clip a region from the image
-			Rect2 used_rect = image->get_used_rect();
+			Rect2 used_rect = Rect2(Vector2(), image->get_size());
+			if (trim_alpha_border_from_region) {
+				// Clip a region from the image.
+				used_rect = image->get_used_rect();
+			}
 			pack_data.region = used_rect;
 
 			chart.vertices.push_back(used_rect.position);
