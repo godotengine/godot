@@ -423,8 +423,10 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll
 		}
 		item->set_as_cursor(0);
 	}
+	
+	bool is_kept_by_type = filter.begins_with(String("type:")) && filter.replace_first(String("type:"), "").is_subsequence_ofn(String(p_node->get_class()));
 
-	bool keep = (filter.is_subsequence_ofn(String(p_node->get_name())));
+	bool keep = (filter.is_subsequence_ofn(String(p_node->get_name())) || is_kept_by_type);
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		bool child_keep = _add_nodes(p_node->get_child(i), item, p_scroll_to_selected);
