@@ -94,6 +94,7 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 			il->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			il->set_same_column_width(true);
 			il->set_auto_height(true);
+            il->set_auto_width(false);
 			il->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 			il->add_constant_override("hseparation", 16 * EDSCALE);
 			while (*names_ptr) {
