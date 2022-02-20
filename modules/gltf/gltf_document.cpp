@@ -71,6 +71,28 @@
 #include "modules/regex/regex.h"
 #endif // MODULE_REGEX_ENABLED
 
+Ref<ArrayMesh> _mesh_to_array_mesh(Ref<Mesh> p_mesh) {
+	Ref<ArrayMesh> array_mesh = p_mesh;
+	if (array_mesh.is_valid()) {
+		return array_mesh;
+	}
+	array_mesh.instance();
+	if (p_mesh.is_null()) {
+		return array_mesh;
+	}
+
+	for (int32_t surface_i = 0; surface_i < p_mesh->get_surface_count(); surface_i++) {
+		Mesh::PrimitiveType primitive_type = p_mesh->surface_get_primitive_type(surface_i);
+		Array arrays = p_mesh->surface_get_arrays(surface_i);
+		Ref<Material> mat = p_mesh->surface_get_material(surface_i);
+		int32_t mat_idx = array_mesh->get_surface_count();
+		array_mesh->add_surface_from_arrays(primitive_type, arrays);
+		array_mesh->surface_set_material(mat_idx, mat);
+	}
+
+	return array_mesh;
+}
+
 Error GLTFDocument::serialize(Ref<GLTFState> state, Node *p_root, const String &p_path) {
 	uint64_t begin_time = OS::get_singleton()->get_ticks_usec();
 
@@ -5065,11 +5087,6 @@ GLTFMeshIndex GLTFDocument::_convert_mesh_to_gltf(Ref<GLTFState> state, MeshInst
 			Mesh::PrimitiveType primitive_type = godot_mesh->surface_get_primitive_type(surface_i);
 			Array arrays = godot_mesh->surface_get_arrays(surface_i);
 			Ref<Material> mat = godot_mesh->surface_get_material(surface_i);
-			Ref<ArrayMesh> godot_array_mesh = godot_mesh;
-			String surface_name;
-			if (godot_array_mesh.is_valid()) {
-				surface_name = godot_array_mesh->surface_get_name(surface_i);
-			}
 			if (p_mesh_instance->get_surface_material(surface_i).is_valid()) {
 				mat = p_mesh_instance->get_surface_material(surface_i);
 			}
@@ -5420,8 +5437,6 @@ void GLTFDocument::_convert_grid_map_to_gltf(GridMap *p_grid_map, GLTFNodeIndex 
 		Vector3 cell_location = cells[k];
 		int32_t cell = p_grid_map->get_cell_item(
 				cell_location.x, cell_location.y, cell_location.z);
-		MeshInstance *import_mesh_node = memnew(MeshInstance);
-		import_mesh_node->set_mesh(p_grid_map->get_mesh_library()->get_item_mesh(cell));
 		Transform cell_xform;
 		cell_xform.basis.set_orthogonal_index(
 				p_grid_map->get_cell_item_orientation(
@@ -5433,7 +5448,7 @@ void GLTFDocument::_convert_grid_map_to_gltf(GridMap *p_grid_map, GLTFNodeIndex 
 				cell_location.x, cell_location.y, cell_location.z));
 		Ref<GLTFMesh> gltf_mesh;
 		gltf_mesh.instance();
-		gltf_mesh = import_mesh_node;
+		gltf_mesh->set_mesh(_mesh_to_array_mesh(p_grid_map->get_mesh_library()->get_item_mesh(cell)));
 		new_gltf_node->mesh = state->meshes.size();
 		state->meshes.push_back(gltf_mesh);
 		new_gltf_node->xform = cell_xform * p_grid_map->get_transform();
