@@ -158,6 +158,9 @@ void TilesEditorPlugin::_update_editors() {
 	// Update the viewport.
 	CanvasItemEditor::get_singleton()->update_viewport();
 
+	// Make sure the tile set editor is visible if we have one assigned.
+	tileset_editor_button->set_visible(is_visible && tile_set.is_valid());
+
 	// Update visibility of bottom panel buttons.
 	if (tileset_editor_button->is_pressed() && !tile_set.is_valid()) {
 		if (tile_map) {
@@ -184,12 +187,14 @@ void TilesEditorPlugin::_notification(int p_what) {
 }
 
 void TilesEditorPlugin::make_visible(bool p_visible) {
-	if (p_visible) {
+	is_visible = p_visible;
+
+	if (is_visible) {
 		// Disable and hide invalid editors.
 		TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 		tileset_editor_button->set_visible(tile_set.is_valid());
 		tilemap_editor_button->set_visible(tile_map);
-		if (tile_map) {
+		if (tile_map && !is_editing_tile_set) {
 			EditorNode::get_singleton()->make_bottom_panel_item_visible(tilemap_editor);
 		} else {
 			EditorNode::get_singleton()->make_bottom_panel_item_visible(tileset_editor);
@@ -348,6 +353,8 @@ void TilesEditorPlugin::edit(Object *p_object) {
 
 	// Update edited objects.
 	tile_set = Ref<TileSet>();
+	is_editing_tile_set = false;
+
 	if (p_object) {
 		if (p_object->is_class("TileMap")) {
 			tile_map_id = p_object->get_instance_id();
@@ -362,6 +369,7 @@ void TilesEditorPlugin::edit(Object *p_object) {
 					tile_map_id = ObjectID();
 				}
 			}
+			is_editing_tile_set = true;
 			EditorNode::get_singleton()->make_bottom_panel_item_visible(tileset_editor);
 		}
 	}
