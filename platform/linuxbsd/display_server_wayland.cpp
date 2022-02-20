@@ -212,7 +212,6 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 
 	WaylandGlobals &globals = wls->globals;
 
-	// `wl_compositor_interface` is defined in `thirdparty/wayland/wayland.c`
 	if (strcmp(interface, wl_compositor_interface.name) == 0) {
 		// This will select the latest version supported by the server.
 		// I'm not sure whether this is the best thing to do.
@@ -221,7 +220,6 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 		return;
 	}
 
-	// `wl_seat_interface` is defined in `thirdparty/wayland/wayland.c`
 	if (strcmp(interface, wl_seat_interface.name) == 0) {
 		globals.wl_seat = (struct wl_seat *)wl_registry_bind(wl_registry, name, &wl_seat_interface, version);
 		globals.wl_seat_name = name;
@@ -229,7 +227,6 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 		return;
 	}
 
-	// `xdg_wm_base_interface` is defined in `thirdparty/wayland-protocols/xdg-shell/xdg-shell.c`
 	if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
 		globals.xdg_wm_base = (struct xdg_wm_base *)wl_registry_bind(wl_registry, name, &xdg_wm_base_interface, version);
 		globals.xdg_wm_base_name = name;
