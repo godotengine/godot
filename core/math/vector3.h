@@ -31,12 +31,13 @@
 #ifndef VECTOR3_H
 #define VECTOR3_H
 
+#include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
-#include "core/math/vector2.h"
-#include "core/math/vector3i.h"
-#include "core/string/ustring.h"
 
+class String;
 struct Basis;
+struct Vector2;
+struct Vector3i;
 
 struct _NO_DISCARD_ Vector3 {
 	static const int AXIS_COUNT = 3;
@@ -104,30 +105,8 @@ struct _NO_DISCARD_ Vector3 {
 	Vector3 cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight) const;
 	Vector3 move_toward(const Vector3 &p_to, const real_t p_delta) const;
 
-	_FORCE_INLINE_ Vector2 octahedron_encode() const {
-		Vector3 n = *this;
-		n /= Math::abs(n.x) + Math::abs(n.y) + Math::abs(n.z);
-		Vector2 o;
-		if (n.z >= 0.0f) {
-			o.x = n.x;
-			o.y = n.y;
-		} else {
-			o.x = (1.0f - Math::abs(n.y)) * (n.x >= 0.0f ? 1.0f : -1.0f);
-			o.y = (1.0f - Math::abs(n.x)) * (n.y >= 0.0f ? 1.0f : -1.0f);
-		}
-		o.x = o.x * 0.5f + 0.5f;
-		o.y = o.y * 0.5f + 0.5f;
-		return o;
-	}
-
-	static _FORCE_INLINE_ Vector3 octahedron_decode(const Vector2 &p_oct) {
-		Vector2 f(p_oct.x * 2.0f - 1.0f, p_oct.y * 2.0f - 1.0f);
-		Vector3 n(f.x, f.y, 1.0f - Math::abs(f.x) - Math::abs(f.y));
-		float t = CLAMP(-n.z, 0.0f, 1.0f);
-		n.x += n.x >= 0 ? -t : t;
-		n.y += n.y >= 0 ? -t : t;
-		return n.normalized();
-	}
+	Vector2 octahedron_encode() const;
+	static Vector3 octahedron_decode(const Vector2 &p_oct);
 
 	_FORCE_INLINE_ Vector3 cross(const Vector3 &p_with) const;
 	_FORCE_INLINE_ real_t dot(const Vector3 &p_with) const;
@@ -183,16 +162,9 @@ struct _NO_DISCARD_ Vector3 {
 	_FORCE_INLINE_ bool operator>=(const Vector3 &p_v) const;
 
 	operator String() const;
-	_FORCE_INLINE_ operator Vector3i() const {
-		return Vector3i(x, y, z);
-	}
+	operator Vector3i() const;
 
 	_FORCE_INLINE_ Vector3() {}
-	_FORCE_INLINE_ Vector3(const Vector3i &p_ivec) {
-		x = p_ivec.x;
-		y = p_ivec.y;
-		z = p_ivec.z;
-	}
 	_FORCE_INLINE_ Vector3(const real_t p_x, const real_t p_y, const real_t p_z) {
 		x = p_x;
 		y = p_y;
@@ -344,7 +316,7 @@ Vector3 &Vector3::operator*=(const real_t p_scalar) {
 }
 
 // Multiplication operators required to workaround issues with LLVM using implicit conversion
-// to Vector2i instead for integers where it should not.
+// to Vector3i instead for integers where it should not.
 
 _FORCE_INLINE_ Vector3 operator*(const float p_scalar, const Vector3 &p_vec) {
 	return p_vec * p_scalar;
