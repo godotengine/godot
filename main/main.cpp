@@ -2240,6 +2240,7 @@ bool Main::iteration() {
 
 		if (OS::get_singleton()->get_main_loop()->iteration(frame_slice * time_scale)) {
 			exit = true;
+			Engine::get_singleton()->_in_physics = false;
 			break;
 		}
 

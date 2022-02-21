@@ -41,6 +41,7 @@
 
 class PackedScene;
 class Node;
+class Spatial;
 class Viewport;
 class Material;
 class Mesh;
@@ -101,6 +102,11 @@ private:
 		bool changed;
 		Group() { changed = false; };
 	};
+
+	struct ClientPhysicsInterpolation {
+		SelfList<Spatial>::List _spatials_list;
+		void physics_process();
+	} _client_physics_interpolation;
 
 	Viewport *root;
 
@@ -410,6 +416,9 @@ public:
 
 	void set_physics_interpolation_enabled(bool p_enabled);
 	bool is_physics_interpolation_enabled() const;
+
+	void client_physics_interpolation_add_spatial(SelfList<Spatial> *p_elem);
+	void client_physics_interpolation_remove_spatial(SelfList<Spatial> *p_elem);
 
 	static void add_idle_callback(IdleCallback p_callback);
 	SceneTree();

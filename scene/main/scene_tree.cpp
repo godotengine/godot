@@ -104,6 +104,27 @@ SceneTreeTimer::SceneTreeTimer() {
 	process_pause = true;
 }
 
+// This should be called once per physics tick, to make sure the transform previous and current
+// is kept up to date on the few spatials that are using client side physics interpolation
+void SceneTree::ClientPhysicsInterpolation::physics_process() {
+	for (SelfList<Spatial> *E = _spatials_list.first(); E;) {
+		Spatial *spatial = E->self();
+
+		SelfList<Spatial> *current = E;
+
+		// get the next element here BEFORE we potentially delete one
+		E = E->next();
+
+		// This will return false if the spatial has timed out ..
+		// i.e. If get_global_transform_interpolated() has not been called
+		// for a few seconds, we can delete from the list to keep processing
+		// to a minimum.
+		if (!spatial->update_client_physics_interpolation_data()) {
+			_spatials_list.remove(current);
+		}
+	}
+}
+
 void SceneTree::tree_changed() {
 	tree_version++;
 	emit_signal(tree_changed_name);
@@ -498,6 +519,16 @@ bool SceneTree::is_physics_interpolation_enabled() const {
 	return _physics_interpolation_enabled;
 }
 
+void SceneTree::client_physics_interpolation_add_spatial(SelfList<Spatial> *p_elem) {
+	// This ensures that _update_physics_interpolation_data() will be called at least once every
+	// physics tick, to ensure the previous and current transforms are kept up to date.
+	_client_physics_interpolation._spatials_list.add(p_elem);
+}
+
+void SceneTree::client_physics_interpolation_remove_spatial(SelfList<Spatial> *p_elem) {
+	_client_physics_interpolation._spatials_list.remove(p_elem);
+}
+
 bool SceneTree::iteration(float p_time) {
 	root_lock++;
 
@@ -509,6 +540,11 @@ bool SceneTree::iteration(float p_time) {
 			VisualServer::get_singleton()->scenario_tick(scenario);
 		}
 	}
+
+	// Any objects performing client physics interpolation
+	// should be given an opportunity to keep their previous transforms
+	// up to take before each new physics tick.
+	_client_physics_interpolation.physics_process();
 
 	flush_transform_notifications();
 
