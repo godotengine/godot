@@ -1,4 +1,4 @@
-# Game Controller DB for Godot in SDL 2.0.10 format
+# Game Controller DB for Godot in SDL 2.0.16 format
 # Source: https://github.com/godotengine/godot
 
 # Windows
