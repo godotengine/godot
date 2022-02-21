@@ -541,8 +541,9 @@ public:
 
 	void push_text_input(const String &p_text);
 	void push_input(const Ref<InputEvent> &p_event, bool p_local_coords = false);
-	void push_gui_input(const Ref<InputEvent> &p_event, bool p_local_coords = false);
-	void push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords = false);
+	void push_local_input(const Ref<InputEvent> &p_event, bool p_local_coords = false);
+	void push_local_gui_input(const Ref<InputEvent> &p_event, bool p_local_coords = false);
+	void push_local_unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords = false);
 
 	void set_disable_input(bool p_disable);
 	bool is_input_disabled() const;

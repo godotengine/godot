@@ -1980,21 +1980,27 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		get_tree()->get_nodes_in_group("_viewports", &vps);
 		for (Node *node : vps) {
 			Viewport *vp = Object::cast_to<Viewport>(node);
-			if (vp == nullptr) {continue;}
-			if (vp->gui.key_focus == nullptr) {continue;}
+			if (vp == nullptr) {
+				continue;
+			}
+			if (vp->gui.key_focus == nullptr) {
+				continue;
+			}
 
 			Viewport *vp_parent = vp;
 			while (vp_parent && (vp_parent != this)) {
 				vp_parent = vp_parent->get_parent_viewport();
 			}
-			if (vp_parent != this) {continue;}
+			if (vp_parent != this) {
+				continue;
+			}
 
 			target_vp = vp;
 			break;
 		}
 		if (target_vp->gui.key_focus) {
 			Viewport::GUI &target_gui = target_vp->gui;
-			Control* &target_key_focus = target_vp->gui.key_focus;
+			Control *&target_key_focus = target_vp->gui.key_focus;
 			if (target_key_focus && !target_key_focus->is_visible_in_tree()) {
 				target_key_focus->release_focus();
 			}
@@ -2705,18 +2711,19 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 		return;
 	}
 
-	if (!_can_consume_input_events()) {
-		return;
-	}
-
 	if (!is_input_handled()) {
-		get_tree()->_call_input_pause(input_group, SceneTree::CALL_INPUT_TYPE_INPUT, ev, this);
+		push_local_input(ev);
 	}
-
+	if (!is_input_handled()) {
+		push_local_gui_input(ev);
+	}
+	if (!is_input_handled()) {
+		push_local_unhandled_input(ev);
+	}
 	event_count++;
 }
 
-void Viewport::push_gui_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
+void Viewport::push_local_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 	ERR_FAIL_COND(!is_inside_tree());
 
 	if (disable_input) {
@@ -2736,9 +2743,33 @@ void Viewport::push_gui_input(const Ref<InputEvent> &p_event, bool p_local_coord
 		ev = p_event;
 	}
 
-	if (is_embedding_subwindows() && _sub_windows_forward_input(p_event)) {
-		set_input_as_handled();
+	if (!_can_consume_input_events()) {
 		return;
+	}
+
+	if (!is_input_handled()) {
+		get_tree()->_call_input_pause(input_group, SceneTree::CALL_INPUT_TYPE_INPUT, ev, this);
+	}
+}
+
+void Viewport::push_local_gui_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
+	ERR_FAIL_COND(!is_inside_tree());
+
+	if (disable_input) {
+		return;
+	}
+
+	if (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_ancestor_of(this)) {
+		return;
+	}
+
+	local_input_handled = false;
+
+	Ref<InputEvent> ev;
+	if (!p_local_coords) {
+		ev = _make_input_local(p_event);
+	} else {
+		ev = p_event;
 	}
 
 	if (!_can_consume_input_events()) {
@@ -2750,7 +2781,7 @@ void Viewport::push_gui_input(const Ref<InputEvent> &p_event, bool p_local_coord
 	}
 }
 
-void Viewport::push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
+void Viewport::push_local_unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 	ERR_FAIL_COND(p_event.is_null());
 	ERR_FAIL_COND(!is_inside_tree());
 	local_input_handled = false;
@@ -3626,8 +3657,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_viewport_rid"), &Viewport::get_viewport_rid);
 	ClassDB::bind_method(D_METHOD("push_text_input", "text"), &Viewport::push_text_input);
 	ClassDB::bind_method(D_METHOD("push_input", "event", "in_local_coords"), &Viewport::push_input, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("push_gui_input", "event", "in_local_coords"), &Viewport::push_gui_input, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("push_unhandled_input", "event", "in_local_coords"), &Viewport::push_unhandled_input, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("push_local_input", "event", "in_local_coords"), &Viewport::push_local_gui_input, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("push_local_gui_input", "event", "in_local_coords"), &Viewport::push_local_gui_input, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("push_local_unhandled_input", "event", "in_local_coords"), &Viewport::push_local_unhandled_input, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("get_camera_2d"), &Viewport::get_camera_2d);
 	ClassDB::bind_method(D_METHOD("set_as_audio_listener_2d", "enable"), &Viewport::set_as_audio_listener_2d);

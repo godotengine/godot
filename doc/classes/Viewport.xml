@@ -129,20 +129,34 @@
 			<description>
 			</description>
 		</method>
-		<method name="push_gui_input">
-			<return type="void" />
-			<argument index="0" name="event" type="InputEvent" />
-			<argument index="1" name="in_local_coords" type="bool" default="false" />
-			<description>
-				Pushes an input event to [method Control._gui_input]
-			</description>
-		</method>
 		<method name="push_input">
 			<return type="void" />
 			<argument index="0" name="event" type="InputEvent" />
 			<argument index="1" name="in_local_coords" type="bool" default="false" />
 			<description>
-				Pushes an input event to [method Node._input]
+				Pushes an input event.
+			</description>
+		</method>
+		<method name="push_local_gui_input">
+			<return type="void" />
+			<argument index="0" name="event" type="InputEvent" />
+			<argument index="1" name="in_local_coords" type="bool" default="false" />
+			<description>
+			</description>
+		</method>
+		<method name="push_local_input">
+			<return type="void" />
+			<argument index="0" name="event" type="InputEvent" />
+			<argument index="1" name="in_local_coords" type="bool" default="false" />
+			<description>
+				The three push_local_*_input functions push an event to the three event passes respectively. Unlike push_input, they do not forward events to subwindows.
+			</description>
+		</method>
+		<method name="push_local_unhandled_input">
+			<return type="void" />
+			<argument index="0" name="event" type="InputEvent" />
+			<argument index="1" name="in_local_coords" type="bool" default="false" />
+			<description>
 			</description>
 		</method>
 		<method name="push_text_input">
@@ -150,14 +164,6 @@
 			<argument index="0" name="text" type="String" />
 			<description>
 				Returns [code]true[/code] if the viewport is currently embedding windows.
-			</description>
-		</method>
-		<method name="push_unhandled_input">
-			<return type="void" />
-			<argument index="0" name="event" type="InputEvent" />
-			<argument index="1" name="in_local_coords" type="bool" default="false" />
-			<description>
-				Pushes an input event to [method Node._unhandled_input]
 			</description>
 		</method>
 		<method name="set_input_as_handled">

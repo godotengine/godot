@@ -162,7 +162,7 @@ void SubViewportContainer::input(const Ref<InputEvent> &p_event) {
 			continue;
 		}
 
-		c->push_input(ev);
+		c->push_local_input(ev);
 	}
 }
 
@@ -189,7 +189,7 @@ void SubViewportContainer::gui_input(const Ref<InputEvent> &p_event) {
 			continue;
 		}
 
-		c->push_gui_input(ev);
+		c->push_local_gui_input(ev);
 	}
 }
 
@@ -216,7 +216,7 @@ void SubViewportContainer::unhandled_input(const Ref<InputEvent> &p_event) {
 			continue;
 		}
 
-		c->push_unhandled_input(ev);
+		c->push_local_unhandled_input(ev);
 	}
 }
 
