@@ -2097,7 +2097,14 @@ SceneTree::SceneTree() {
 	if (!root->get_world().is_valid()) {
 		root->set_world(Ref<World>(memnew(World)));
 	}
+
 	set_physics_interpolation_enabled(GLOBAL_DEF("physics/common/physics_interpolation", false));
+	// Always disable jitter fix if physics interpolation is enabled -
+	// Jitter fix will interfere with interpolation, and is not necessary
+	// when interpolation is active.
+	if (is_physics_interpolation_enabled()) {
+		Engine::get_singleton()->set_physics_jitter_fix(0);
+	}
 
 	// Initialize network state
 	multiplayer_poll = true;
