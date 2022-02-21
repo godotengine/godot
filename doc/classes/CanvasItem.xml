@@ -80,6 +80,17 @@
 				Draws a colored polygon of any amount of points, convex or concave. Unlike [method draw_polygon], a single color must be specified for the whole polygon.
 			</description>
 		</method>
+		<method name="draw_dashed_line">
+			<return type="void" />
+			<argument index="0" name="from" type="Vector2" />
+			<argument index="1" name="to" type="Vector2" />
+			<argument index="2" name="color" type="Color" />
+			<argument index="3" name="width" type="float" default="1.0" />
+			<argument index="4" name="dash" type="float" default="2.0" />
+			<description>
+				Draws a dashed line from a 2D point to another, with a given color and width. See also [method draw_multiline] and [method draw_polyline].
+			</description>
+		</method>
 		<method name="draw_end_animation">
 			<return type="void" />
 			<description>
