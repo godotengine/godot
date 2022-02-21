@@ -103,9 +103,12 @@ bool Char16String::operator<(const Char16String &p_right) const {
 }
 
 Char16String &Char16String::operator+=(char16_t p_char) {
-	resize(size() ? size() + 1 : 2);
-	set(length(), 0);
-	set(length() - 1, p_char);
+	const int lhs_len = length();
+	resize(lhs_len + 2);
+
+	char16_t *dst = ptrw();
+	dst[lhs_len] = p_char;
+	dst[lhs_len + 1] = 0;
 
 	return *this;
 }
@@ -158,9 +161,12 @@ bool CharString::operator<(const CharString &p_right) const {
 }
 
 CharString &CharString::operator+=(char p_char) {
-	resize(size() ? size() + 1 : 2);
-	set(length(), 0);
-	set(length() - 1, p_char);
+	const int lhs_len = length();
+	resize(lhs_len + 2);
+
+	char *dst = ptrw();
+	dst[lhs_len] = p_char;
+	dst[lhs_len + 1] = 0;
 
 	return *this;
 }
@@ -304,11 +310,7 @@ void String::copy_from(const char *p_cstr) {
 		return;
 	}
 
-	int len = 0;
-	const char *ptr = p_cstr;
-	while (*(ptr++) != 0) {
-		len++;
-	}
+	const size_t len = strlen(p_cstr);
 
 	if (len == 0) {
 		resize(0);
@@ -319,7 +321,7 @@ void String::copy_from(const char *p_cstr) {
 
 	char32_t *dst = this->ptrw();
 
-	for (int i = 0; i < len + 1; i++) {
+	for (size_t i = 0; i <= len; i++) {
 		dst[i] = p_cstr[i];
 	}
 }
@@ -374,13 +376,14 @@ void String::copy_from(const wchar_t *p_cstr, const int p_clip_to) {
 
 void String::copy_from(const char32_t &p_char) {
 	resize(2);
+	char32_t *dst = ptrw();
 	if ((p_char >= 0xd800 && p_char <= 0xdfff) || (p_char > 0x10ffff)) {
 		print_error("Unicode parsing error: Invalid unicode codepoint " + num_int64(p_char, 16) + ".");
-		set(0, 0xfffd);
+		dst[0] = 0xfffd;
 	} else {
-		set(0, p_char);
+		dst[0] = p_char;
 	}
-	set(1, 0);
+	dst[1] = 0;
 }
 
 void String::copy_from(const char32_t *p_cstr) {
@@ -429,9 +432,8 @@ void String::copy_from(const char32_t *p_cstr, const int p_clip_to) {
 // p_length <= p_char strlen
 void String::copy_from_unchecked(const char32_t *p_char, const int p_length) {
 	resize(p_length + 1);
-	set(p_length, 0);
-
 	char32_t *dst = ptrw();
+	dst[p_length] = 0;
 
 	for (int i = 0; i < p_length; i++) {
 		if ((p_char[i] >= 0xd800 && p_char[i] <= 0xdfff) || (p_char[i] > 0x10ffff)) {
@@ -484,27 +486,23 @@ String operator+(char32_t p_chr, const String &p_str) {
 }
 
 String &String::operator+=(const String &p_str) {
-	if (is_empty()) {
+	const int lhs_len = length();
+	if (lhs_len == 0) {
 		*this = p_str;
 		return *this;
 	}
 
-	if (p_str.is_empty()) {
+	const int rhs_len = p_str.length();
+	if (rhs_len == 0) {
 		return *this;
 	}
 
-	int from = length();
-
-	resize(length() + p_str.size());
+	resize(lhs_len + rhs_len + 1);
 
 	const char32_t *src = p_str.get_data();
-	char32_t *dst = ptrw();
+	char32_t *dst = ptrw() + lhs_len;
 
-	set(length(), 0);
-
-	for (int i = 0; i < p_str.length(); i++) {
-		dst[from + i] = src[i];
-	}
+	memcpy(dst, src, (rhs_len + 1) * sizeof(char32_t));
 
 	return *this;
 }
@@ -514,22 +512,15 @@ String &String::operator+=(const char *p_str) {
 		return *this;
 	}
 
-	int src_len = 0;
-	const char *ptr = p_str;
-	while (*(ptr++) != 0) {
-		src_len++;
-	}
+	const int lhs_len = length();
+	const size_t rhs_len = strlen(p_str);
 
-	int from = length();
+	resize(lhs_len + rhs_len + 1);
 
-	resize(from + src_len + 1);
+	char32_t *dst = ptrw() + lhs_len;
 
-	char32_t *dst = ptrw();
-
-	set(length(), 0);
-
-	for (int i = 0; i < src_len; i++) {
-		dst[from + i] = p_str[i];
+	for (size_t i = 0; i <= rhs_len; i++) {
+		dst[i] = p_str[i];
 	}
 
 	return *this;
@@ -552,14 +543,16 @@ String &String::operator+=(const char32_t *p_str) {
 }
 
 String &String::operator+=(char32_t p_char) {
-	resize(size() ? size() + 1 : 2);
-	set(length(), 0);
+	const int lhs_len = length();
+	resize(lhs_len + 2);
+	char32_t *dst = ptrw();
 	if ((p_char >= 0xd800 && p_char <= 0xdfff) || (p_char > 0x10ffff)) {
 		print_error("Unicode parsing error: Invalid unicode codepoint " + num_int64(p_char, 16) + ".");
-		set(length() - 1, 0xfffd);
+		dst[lhs_len] = 0xfffd;
 	} else {
-		set(length() - 1, p_char);
+		dst[lhs_len] = p_char;
 	}
+	dst[lhs_len + 1] = 0;
 
 	return *this;
 }
