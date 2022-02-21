@@ -1087,6 +1087,9 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 		// Allowed depth can't be lower than motion length, in order to handle contacts at low speed.
 		rcd.min_allowed_depth = MIN(motion_length, min_contact_depth);
 
+		body_aabb.position += p_motion * unsafe;
+		int amount = _cull_aabb_for_body(p_body, body_aabb);
+
 		int from_shape = best_shape != -1 ? best_shape : 0;
 		int to_shape = best_shape != -1 ? best_shape + 1 : p_body->get_shape_count();
 
@@ -1101,10 +1104,6 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 			if (p_exclude_raycast_shapes && body_shape->get_type() == Physics2DServer::SHAPE_RAY) {
 				continue;
 			}
-
-			body_aabb.position += p_motion * unsafe;
-
-			int amount = _cull_aabb_for_body(p_body, body_aabb);
 
 			for (int i = 0; i < amount; i++) {
 				const CollisionObject2DSW *col_obj = intersection_query_results[i];
