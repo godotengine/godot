@@ -550,8 +550,8 @@ Transform SkeletonIK::_get_target_transform() {
 	}
 
 	if (target_node_override && target_node_override->is_inside_tree()) {
-		// Make sure to use the interpolated transform as target. This will pass through
-		// to get_global_transform() when physics interpolation is off, and when using interpolation,
+		// Make sure to use the interpolated transform as target.
+		// This will pass through to get_global_transform() when physics interpolation is off, and when using interpolation,
 		// ensure that the target matches the interpolated visual position of the target when updating the IK each frame.
 		return target_node_override->get_global_transform_interpolated();
 	} else {
