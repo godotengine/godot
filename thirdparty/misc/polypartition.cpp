@@ -262,7 +262,7 @@ int TPPLPartition::RemoveHoles(TPPLPolyList *inpolys, TPPLPolyList *outpolys) {
           }
         }
         pointvisible = true;
-        for (iter2 = polys.front(); iter2; iter2->next()) {
+        for (iter2 = polys.front(); iter2; iter2 = iter2->next()) {
           if (iter2->get().IsHole()) {
             continue;
           }
