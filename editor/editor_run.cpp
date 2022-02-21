@@ -98,67 +98,79 @@ Error EditorRun::run(const String &p_scene) {
 	screen_rect.position = DisplayServer::get_singleton()->screen_get_position(screen);
 	screen_rect.size = DisplayServer::get_singleton()->screen_get_size(screen);
 
-	Size2 window_size;
-	window_size.x = ProjectSettings::get_singleton()->get("display/window/size/viewport_width");
-	window_size.y = ProjectSettings::get_singleton()->get("display/window/size/viewport_height");
-
-	Size2 desired_size;
-	desired_size.x = ProjectSettings::get_singleton()->get("display/window/size/window_width_override");
-	desired_size.y = ProjectSettings::get_singleton()->get("display/window/size/window_height_override");
-	if (desired_size.x > 0 && desired_size.y > 0) {
-		window_size = desired_size;
-	}
-
 	int window_placement = EditorSettings::get_singleton()->get("run/window_placement/rect");
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_HIDPI)) {
-		bool hidpi_proj = ProjectSettings::get_singleton()->get("display/window/dpi/allow_hidpi");
-		int display_scale = 1;
+	if (screen_rect != Rect2()) {
+		Size2 window_size;
+		window_size.x = ProjectSettings::get_singleton()->get("display/window/size/viewport_width");
+		window_size.y = ProjectSettings::get_singleton()->get("display/window/size/viewport_height");
 
-		if (OS::get_singleton()->is_hidpi_allowed()) {
-			if (hidpi_proj) {
-				display_scale = 1; // Both editor and project runs in hiDPI mode, do not scale.
-			} else {
-				display_scale = DisplayServer::get_singleton()->screen_get_max_scale(); // Editor is in hiDPI mode, project is not, scale down.
-			}
-		} else {
-			if (hidpi_proj) {
-				display_scale = (1.f / DisplayServer::get_singleton()->screen_get_max_scale()); // Editor is not in hiDPI mode, project is, scale up.
-			} else {
-				display_scale = 1; // Both editor and project runs in lowDPI mode, do not scale.
-			}
+		Size2 desired_size;
+		desired_size.x = ProjectSettings::get_singleton()->get("display/window/size/window_width_override");
+		desired_size.y = ProjectSettings::get_singleton()->get("display/window/size/window_height_override");
+		if (desired_size.x > 0 && desired_size.y > 0) {
+			window_size = desired_size;
 		}
-		screen_rect.position /= display_scale;
-		screen_rect.size /= display_scale;
-	}
 
-	switch (window_placement) {
-		case 0: { // top left
-			args.push_back("--position");
-			args.push_back(itos(screen_rect.position.x) + "," + itos(screen_rect.position.y));
-		} break;
-		case 1: { // centered
-			Vector2 pos = (screen_rect.position) + ((screen_rect.size - window_size) / 2).floor();
-			args.push_back("--position");
-			args.push_back(itos(pos.x) + "," + itos(pos.y));
-		} break;
-		case 2: { // custom pos
-			Vector2 pos = EditorSettings::get_singleton()->get("run/window_placement/rect_custom_position");
-			pos += screen_rect.position;
-			args.push_back("--position");
-			args.push_back(itos(pos.x) + "," + itos(pos.y));
-		} break;
-		case 3: { // force maximized
-			Vector2 pos = screen_rect.position;
-			args.push_back("--position");
-			args.push_back(itos(pos.x) + "," + itos(pos.y));
-			args.push_back("--maximized");
-		} break;
-		case 4: { // force fullscreen
-			Vector2 pos = screen_rect.position;
-			args.push_back("--position");
-			args.push_back(itos(pos.x) + "," + itos(pos.y));
-			args.push_back("--fullscreen");
-		} break;
+		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_HIDPI)) {
+			bool hidpi_proj = ProjectSettings::get_singleton()->get("display/window/dpi/allow_hidpi");
+			int display_scale = 1;
+
+			if (OS::get_singleton()->is_hidpi_allowed()) {
+				if (hidpi_proj) {
+					display_scale = 1; // Both editor and project runs in hiDPI mode, do not scale.
+				} else {
+					display_scale = DisplayServer::get_singleton()->screen_get_max_scale(); // Editor is in hiDPI mode, project is not, scale down.
+				}
+			} else {
+				if (hidpi_proj) {
+					display_scale = (1.f / DisplayServer::get_singleton()->screen_get_max_scale()); // Editor is not in hiDPI mode, project is, scale up.
+				} else {
+					display_scale = 1; // Both editor and project runs in lowDPI mode, do not scale.
+				}
+			}
+			screen_rect.position /= display_scale;
+			screen_rect.size /= display_scale;
+		}
+
+		switch (window_placement) {
+			case 0: { // top left
+				args.push_back("--position");
+				args.push_back(itos(screen_rect.position.x) + "," + itos(screen_rect.position.y));
+			} break;
+			case 1: { // centered
+				Vector2 pos = (screen_rect.position) + ((screen_rect.size - window_size) / 2).floor();
+				args.push_back("--position");
+				args.push_back(itos(pos.x) + "," + itos(pos.y));
+			} break;
+			case 2: { // custom pos
+				Vector2 pos = EditorSettings::get_singleton()->get("run/window_placement/rect_custom_position");
+				pos += screen_rect.position;
+				args.push_back("--position");
+				args.push_back(itos(pos.x) + "," + itos(pos.y));
+			} break;
+			case 3: { // force maximized
+				Vector2 pos = screen_rect.position;
+				args.push_back("--position");
+				args.push_back(itos(pos.x) + "," + itos(pos.y));
+				args.push_back("--maximized");
+			} break;
+			case 4: { // force fullscreen
+				Vector2 pos = screen_rect.position;
+				args.push_back("--position");
+				args.push_back(itos(pos.x) + "," + itos(pos.y));
+				args.push_back("--fullscreen");
+			} break;
+		}
+	} else {
+		// Unable to get screen info, skip setting position.
+		switch (window_placement) {
+			case 3: { // force maximized
+				args.push_back("--maximized");
+			} break;
+			case 4: { // force fullscreen
+				args.push_back("--fullscreen");
+			} break;
+		}
 	}
 
 	List<String> breakpoints;
