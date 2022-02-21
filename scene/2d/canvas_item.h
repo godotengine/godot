@@ -210,7 +210,7 @@ private:
 
 	void _toplevel_raise_self();
 
-	void _propagate_visibility_changed(bool p_visible, bool p_was_visible = false);
+	void _propagate_visibility_changed(bool p_visible, bool p_is_source = false);
 
 	void _update_callback();
 
