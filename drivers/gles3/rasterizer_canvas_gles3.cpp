@@ -1414,7 +1414,7 @@ void RasterizerCanvasGLES3::initialize() {
 
 	//state.lens_shader.init();
 
-	//state.canvas_shader.set_conditional(CanvasOldShaderGLES3::USE_PIXEL_SNAP, GLOBAL_DEF("rendering/quality/2d/use_pixel_snap", false));
+	//state.canvas_shader.set_conditional(CanvasOldShaderGLES3::USE_PIXEL_SNAP, GLOBAL_DEF(PropertyInfo(Variant::BOOL, "rendering/quality/2d/use_pixel_snap"), false));
 
 	{
 		default_canvas_group_shader = storage->shader_allocate();

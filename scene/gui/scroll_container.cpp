@@ -589,7 +589,7 @@ void ScrollContainer::_bind_methods() {
 	BIND_ENUM_CONSTANT(SCROLL_MODE_SHOW_ALWAYS);
 	BIND_ENUM_CONSTANT(SCROLL_MODE_SHOW_NEVER);
 
-	GLOBAL_DEF("gui/common/default_scroll_deadzone", 0);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "gui/common/default_scroll_deadzone"), 0);
 };
 
 ScrollContainer::ScrollContainer() {

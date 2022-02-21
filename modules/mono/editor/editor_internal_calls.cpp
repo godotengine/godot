@@ -296,7 +296,7 @@ float godot_icall_Globals_EditorScale() {
 MonoObject *godot_icall_Globals_GlobalDef(MonoString *p_setting, MonoObject *p_default_value, MonoBoolean p_restart_if_changed) {
 	String setting = GDMonoMarshal::mono_string_to_godot(p_setting);
 	Variant default_value = GDMonoMarshal::mono_object_to_variant(p_default_value);
-	Variant result = _GLOBAL_DEF(setting, default_value, (bool)p_restart_if_changed);
+	Variant result = _GLOBAL_DEF(PropertyInfo(Variant::BOOL, setting), default_value, (bool)p_restart_if_changed);
 	return GDMonoMarshal::variant_to_mono_object(result);
 }
 

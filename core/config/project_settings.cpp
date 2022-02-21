@@ -589,7 +589,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bool p_upwards, bool p_ignore_override) {
 	Error err = _setup(p_path, p_main_pack, p_upwards, p_ignore_override);
 	if (err == OK) {
-		String custom_settings = GLOBAL_DEF("application/config/project_settings_override", "");
+		String custom_settings = GLOBAL_DEF(PropertyInfo(Variant::STRING, "application/config/project_settings_override"), "");
 		if (!custom_settings.is_empty()) {
 			_load_settings_text(custom_settings);
 		}
@@ -1033,18 +1033,26 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 	}
 }
 
-Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed, bool p_ignore_value_in_docs, bool p_basic) {
-	Variant ret;
-	if (!ProjectSettings::get_singleton()->has_setting(p_var)) {
-		ProjectSettings::get_singleton()->set(p_var, p_default);
-	}
-	ret = ProjectSettings::get_singleton()->get(p_var);
+Variant _GLOBAL_DEF(const PropertyInfo &p_property_info, const Variant &p_default, bool p_restart_if_changed, bool p_ignore_value_in_docs, bool p_basic) {
+	String var_name = p_property_info.name;
 
-	ProjectSettings::get_singleton()->set_initial_value(p_var, p_default);
-	ProjectSettings::get_singleton()->set_builtin_order(p_var);
-	ProjectSettings::get_singleton()->set_as_basic(p_var, p_basic);
-	ProjectSettings::get_singleton()->set_restart_if_changed(p_var, p_restart_if_changed);
-	ProjectSettings::get_singleton()->set_ignore_value_in_docs(p_var, p_ignore_value_in_docs);
+	Variant ret;
+	if (!ProjectSettings::get_singleton()->has_setting(var_name)) {
+		ProjectSettings::get_singleton()->set(var_name, p_default);
+	}
+	ret = ProjectSettings::get_singleton()->get(var_name);
+
+	ProjectSettings::get_singleton()->set_initial_value(var_name, p_default);
+	ProjectSettings::get_singleton()->set_builtin_order(var_name);
+	ProjectSettings::get_singleton()->set_as_basic(var_name, p_basic);
+	ProjectSettings::get_singleton()->set_restart_if_changed(var_name, p_restart_if_changed);
+	ProjectSettings::get_singleton()->set_ignore_value_in_docs(var_name, p_ignore_value_in_docs);
+
+	// Don't add custom PropertyInfo if property is an override, so that it uses non-overriden property's PropertyInfo.
+	if (!var_name.contains(".")) {
+		ProjectSettings::get_singleton()->set_custom_property_info(p_property_info);
+	}
+
 	return ret;
 }
 
@@ -1082,13 +1090,12 @@ void ProjectSettings::_add_property_info_bind(const Dictionary &p_info) {
 		pinfo.hint_string = p_info["hint_string"];
 	}
 
-	set_custom_property_info(pinfo.name, pinfo);
+	set_custom_property_info(pinfo);
 }
 
-void ProjectSettings::set_custom_property_info(const String &p_prop, const PropertyInfo &p_info) {
-	ERR_FAIL_COND(!props.has(p_prop));
-	custom_prop_info[p_prop] = p_info;
-	custom_prop_info[p_prop].name = p_prop;
+void ProjectSettings::set_custom_property_info(const PropertyInfo &p_info) {
+	ERR_FAIL_COND(!props.has(p_info.name));
+	custom_prop_info[p_info.name] = p_info;
 }
 
 const Map<StringName, PropertyInfo> &ProjectSettings::get_custom_property_info() const {
@@ -1190,7 +1197,7 @@ void ProjectSettings::_add_builtin_input_map() {
 			action["events"] = events;
 
 			String action_name = "input/" + E.key();
-			GLOBAL_DEF(action_name, action);
+			GLOBAL_DEF(PropertyInfo(Variant::DICTIONARY, action_name), action);
 			input_presets.push_back(action_name);
 		}
 	}
@@ -1202,19 +1209,16 @@ ProjectSettings::ProjectSettings() {
 
 	singleton = this;
 
-	GLOBAL_DEF_BASIC("application/config/name", "");
-	GLOBAL_DEF_BASIC("application/config/description", "");
-	custom_prop_info["application/config/description"] = PropertyInfo(Variant::STRING, "application/config/description", PROPERTY_HINT_MULTILINE_TEXT);
-	GLOBAL_DEF_BASIC("application/run/main_scene", "");
-	custom_prop_info["application/run/main_scene"] = PropertyInfo(Variant::STRING, "application/run/main_scene", PROPERTY_HINT_FILE, "*.tscn,*.scn,*.res");
-	GLOBAL_DEF("application/run/disable_stdout", false);
-	GLOBAL_DEF("application/run/disable_stderr", false);
-	GLOBAL_DEF_RST("application/config/use_hidden_project_data_directory", true);
-	GLOBAL_DEF("application/config/use_custom_user_dir", false);
-	GLOBAL_DEF("application/config/custom_user_dir_name", "");
-	GLOBAL_DEF("application/config/project_settings_override", "");
-	GLOBAL_DEF_BASIC("audio/buses/default_bus_layout", "res://default_bus_layout.tres");
-	custom_prop_info["audio/buses/default_bus_layout"] = PropertyInfo(Variant::STRING, "audio/buses/default_bus_layout", PROPERTY_HINT_FILE, "*.tres");
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/config/name"), "");
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/config/description", PROPERTY_HINT_MULTILINE_TEXT), "");
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/run/main_scene", PROPERTY_HINT_FILE, "*.tscn,*.scn,*.res"), "");
+	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "application/run/disable_stdout"), false);
+	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "application/run/disable_stderr"), false);
+	GLOBAL_DEF_RST(PropertyInfo(Variant::BOOL, "application/config/use_hidden_project_data_directory"), true);
+	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "application/config/use_custom_user_dir"), false);
+	GLOBAL_DEF(PropertyInfo(Variant::STRING, "application/config/custom_user_dir_name"), "");
+	GLOBAL_DEF(PropertyInfo(Variant::STRING, "application/config/project_settings_override"), "");
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "audio/buses/default_bus_layout", PROPERTY_HINT_FILE, "*.tres"), "res://default_bus_layout.tres");
 
 	PackedStringArray extensions = PackedStringArray();
 	extensions.push_back("gd");
@@ -1223,39 +1227,25 @@ ProjectSettings::ProjectSettings() {
 	}
 	extensions.push_back("gdshader");
 
-	GLOBAL_DEF("editor/run/main_run_args", "");
+	GLOBAL_DEF(PropertyInfo(Variant::STRING, "editor/run/main_run_args"), "");
 
-	GLOBAL_DEF("editor/script/search_in_file_extensions", extensions);
-	custom_prop_info["editor/script/search_in_file_extensions"] = PropertyInfo(Variant::PACKED_STRING_ARRAY, "editor/script/search_in_file_extensions");
-
-	GLOBAL_DEF("editor/script/templates_search_path", "res://script_templates");
-	custom_prop_info["editor/script/templates_search_path"] = PropertyInfo(Variant::STRING, "editor/script/templates_search_path", PROPERTY_HINT_DIR);
+	GLOBAL_DEF(PropertyInfo(Variant::PACKED_STRING_ARRAY, "editor/script/search_in_file_extensions"), extensions);
+	GLOBAL_DEF(PropertyInfo(Variant::STRING, "editor/script/templates_search_path", PROPERTY_HINT_DIR), "res://script_templates");
 
 	_add_builtin_input_map();
 
-	// Keep the enum values in sync with the `DisplayServer::ScreenOrientation` enum.
-	custom_prop_info["display/window/handheld/orientation"] = PropertyInfo(Variant::INT, "display/window/handheld/orientation", PROPERTY_HINT_ENUM, "Landscape,Portrait,Reverse Landscape,Reverse Portrait,Sensor Landscape,Sensor Portrait,Sensor");
-	// Keep the enum values in sync with the `DisplayServer::VSyncMode` enum.
-	custom_prop_info["display/window/vsync/vsync_mode"] = PropertyInfo(Variant::INT, "display/window/vsync/vsync_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Adaptive,Mailbox");
-	custom_prop_info["rendering/driver/threads/thread_model"] = PropertyInfo(Variant::INT, "rendering/driver/threads/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");
-	GLOBAL_DEF("physics/2d/run_on_separate_thread", false);
-	GLOBAL_DEF("physics/3d/run_on_separate_thread", false);
+	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "physics/2d/run_on_separate_thread"), false);
+	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "physics/3d/run_on_separate_thread"), false);
 
-	GLOBAL_DEF("debug/settings/profiler/max_functions", 16384);
-	custom_prop_info["debug/settings/profiler/max_functions"] = PropertyInfo(Variant::INT, "debug/settings/profiler/max_functions", PROPERTY_HINT_RANGE, "128,65535,1");
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "debug/settings/profiler/max_functions", PROPERTY_HINT_RANGE, "128,65535,1"), 16384);
 
-	GLOBAL_DEF("compression/formats/zstd/long_distance_matching", Compression::zstd_long_distance_matching);
-	custom_prop_info["compression/formats/zstd/long_distance_matching"] = PropertyInfo(Variant::BOOL, "compression/formats/zstd/long_distance_matching");
-	GLOBAL_DEF("compression/formats/zstd/compression_level", Compression::zstd_level);
-	custom_prop_info["compression/formats/zstd/compression_level"] = PropertyInfo(Variant::INT, "compression/formats/zstd/compression_level", PROPERTY_HINT_RANGE, "1,22,1");
-	GLOBAL_DEF("compression/formats/zstd/window_log_size", Compression::zstd_window_log_size);
-	custom_prop_info["compression/formats/zstd/window_log_size"] = PropertyInfo(Variant::INT, "compression/formats/zstd/window_log_size", PROPERTY_HINT_RANGE, "10,30,1");
+	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "compression/formats/zstd/long_distance_matching"), Compression::zstd_long_distance_matching);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "compression/formats/zstd/compression_level", PROPERTY_HINT_RANGE, "1,22,1"), Compression::zstd_level);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "compression/formats/zstd/window_log_size", PROPERTY_HINT_RANGE, "10,30,1"), Compression::zstd_window_log_size);
 
-	GLOBAL_DEF("compression/formats/zlib/compression_level", Compression::zlib_level);
-	custom_prop_info["compression/formats/zlib/compression_level"] = PropertyInfo(Variant::INT, "compression/formats/zlib/compression_level", PROPERTY_HINT_RANGE, "-1,9,1");
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "compression/formats/zlib/compression_level", PROPERTY_HINT_RANGE, "-1,9,1"), Compression::zlib_level);
 
-	GLOBAL_DEF("compression/formats/gzip/compression_level", Compression::gzip_level);
-	custom_prop_info["compression/formats/gzip/compression_level"] = PropertyInfo(Variant::INT, "compression/formats/gzip/compression_level", PROPERTY_HINT_RANGE, "-1,9,1");
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "compression/formats/gzip/compression_level", PROPERTY_HINT_RANGE, "-1,9,1"), Compression::gzip_level);
 }
 
 ProjectSettings::~ProjectSettings() {

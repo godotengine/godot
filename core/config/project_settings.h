@@ -167,7 +167,7 @@ public:
 	Error load_custom(const String &p_path);
 	Error save_custom(const String &p_path = "", const CustomMap &p_custom = CustomMap(), const Vector<String> &p_custom_features = Vector<String>(), bool p_merge_with_current = true);
 	Error save();
-	void set_custom_property_info(const String &p_prop, const PropertyInfo &p_info);
+	void set_custom_property_info(const PropertyInfo &p_info);
 	const Map<StringName, PropertyInfo> &get_custom_property_info() const;
 	uint64_t get_last_saved_time() { return last_save_time; }
 
@@ -192,16 +192,17 @@ public:
 };
 
 //not a macro any longer
-Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed = false, bool p_ignore_value_in_docs = false, bool p_basic = false);
-#define GLOBAL_DEF(m_var, m_value) _GLOBAL_DEF(m_var, m_value)
-#define GLOBAL_DEF_RST(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true)
-#define GLOBAL_DEF_NOVAL(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, true)
-#define GLOBAL_DEF_RST_NOVAL(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, true)
-#define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get(m_var)
+Variant _GLOBAL_DEF(const PropertyInfo &m_property_info, const Variant &p_default, bool p_restart_if_changed = false, bool p_ignore_value_in_docs = false, bool p_basic = false);
+#define GLOBAL_DEF(m_property_info, m_value) _GLOBAL_DEF(m_property_info, m_value)
+#define GLOBAL_DEF_RST(m_property_info, m_value) _GLOBAL_DEF(m_property_info, m_value, true)
+#define GLOBAL_DEF_NOVAL(m_property_info, m_value) _GLOBAL_DEF(m_property_info, m_value, false, true)
+#define GLOBAL_DEF_RST_NOVAL(m_property_info, m_value) _GLOBAL_DEF(m_property_info, m_value, true, true)
 
-#define GLOBAL_DEF_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, false, true)
-#define GLOBAL_DEF_RST_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, false, true)
-#define GLOBAL_DEF_NOVAL_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, true, true)
-#define GLOBAL_DEF_RST_NOVAL_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, true, true)
+#define GLOBAL_DEF_BASIC(m_property_info, m_value) _GLOBAL_DEF(m_property_info, m_value, false, false, true)
+#define GLOBAL_DEF_RST_BASIC(m_property_info, m_value) _GLOBAL_DEF(m_property_info, m_value, true, false, true)
+#define GLOBAL_DEF_NOVAL_BASIC(m_property_info, m_value) _GLOBAL_DEF(m_property_info, m_value, false, true, true)
+#define GLOBAL_DEF_RST_NOVAL_BASIC(m_property_info, m_value) _GLOBAL_DEF(m_property_info, m_value, true, true, true)
+
+#define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get(m_var)
 
 #endif // PROJECT_SETTINGS_H

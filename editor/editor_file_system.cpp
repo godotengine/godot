@@ -2378,8 +2378,8 @@ void EditorFileSystem::_update_extensions() {
 
 EditorFileSystem::EditorFileSystem() {
 	ResourceLoader::import = _resource_import;
-	reimport_on_missing_imported_files = GLOBAL_DEF("editor/import/reimport_missing_imported_files", true);
-	GLOBAL_DEF("editor/import/use_multiple_threads", true);
+	reimport_on_missing_imported_files = GLOBAL_DEF(PropertyInfo(Variant::BOOL, "editor/import/reimport_missing_imported_files"), true);
+	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "editor/import/use_multiple_threads"), true);
 	singleton = this;
 	filesystem = memnew(EditorFileSystemDirectory); //like, empty
 	filesystem->parent = nullptr;

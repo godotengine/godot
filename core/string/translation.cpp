@@ -651,7 +651,7 @@ bool TranslationServer::_load_translations(const String &p_from) {
 }
 
 void TranslationServer::setup() {
-	String test = GLOBAL_DEF("internationalization/locale/test", "");
+	String test = GLOBAL_DEF(PropertyInfo(Variant::STRING, "internationalization/locale/test"), "");
 	test = test.strip_edges();
 	if (!test.is_empty()) {
 		set_locale(test);
@@ -659,19 +659,19 @@ void TranslationServer::setup() {
 		set_locale(OS::get_singleton()->get_locale());
 	}
 
-	fallback = GLOBAL_DEF("internationalization/locale/fallback", "en");
-	pseudolocalization_enabled = GLOBAL_DEF("internationalization/pseudolocalization/use_pseudolocalization", false);
-	pseudolocalization_accents_enabled = GLOBAL_DEF("internationalization/pseudolocalization/replace_with_accents", true);
-	pseudolocalization_double_vowels_enabled = GLOBAL_DEF("internationalization/pseudolocalization/double_vowels", false);
-	pseudolocalization_fake_bidi_enabled = GLOBAL_DEF("internationalization/pseudolocalization/fake_bidi", false);
-	pseudolocalization_override_enabled = GLOBAL_DEF("internationalization/pseudolocalization/override", false);
-	expansion_ratio = GLOBAL_DEF("internationalization/pseudolocalization/expansion_ratio", 0.0);
-	pseudolocalization_prefix = GLOBAL_DEF("internationalization/pseudolocalization/prefix", "[");
-	pseudolocalization_suffix = GLOBAL_DEF("internationalization/pseudolocalization/suffix", "]");
-	pseudolocalization_skip_placeholders_enabled = GLOBAL_DEF("internationalization/pseudolocalization/skip_placeholders", true);
+	fallback = GLOBAL_DEF(PropertyInfo(Variant::STRING, "internationalization/locale/fallback"), "en");
+	pseudolocalization_enabled = GLOBAL_DEF(PropertyInfo(Variant::BOOL, "internationalization/pseudolocalization/use_pseudolocalization"), false);
+	pseudolocalization_accents_enabled = GLOBAL_DEF(PropertyInfo(Variant::BOOL, "internationalization/pseudolocalization/replace_with_accents"), true);
+	pseudolocalization_double_vowels_enabled = GLOBAL_DEF(PropertyInfo(Variant::BOOL, "internationalization/pseudolocalization/double_vowels"), false);
+	pseudolocalization_fake_bidi_enabled = GLOBAL_DEF(PropertyInfo(Variant::BOOL, "internationalization/pseudolocalization/fake_bidi"), false);
+	pseudolocalization_override_enabled = GLOBAL_DEF(PropertyInfo(Variant::BOOL, "internationalization/pseudolocalization/override"), false);
+	expansion_ratio = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "internationalization/pseudolocalization/expansion_ratio"), 0.0);
+	pseudolocalization_prefix = GLOBAL_DEF(PropertyInfo(Variant::STRING, "internationalization/pseudolocalization/prefix"), "[");
+	pseudolocalization_suffix = GLOBAL_DEF(PropertyInfo(Variant::STRING, "internationalization/pseudolocalization/suffix"), "]");
+	pseudolocalization_skip_placeholders_enabled = GLOBAL_DEF(PropertyInfo(Variant::BOOL, "internationalization/pseudolocalization/skip_placeholders"), true);
 
 #ifdef TOOLS_ENABLED
-	ProjectSettings::get_singleton()->set_custom_property_info("internationalization/locale/fallback", PropertyInfo(Variant::STRING, "internationalization/locale/fallback", PROPERTY_HINT_LOCALE_ID, ""));
+	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(Variant::STRING, "internationalization/locale/fallback", PROPERTY_HINT_LOCALE_ID, ""));
 #endif
 }
 
