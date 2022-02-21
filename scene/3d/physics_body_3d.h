@@ -354,8 +354,8 @@ public:
 	};
 	bool move_and_slide();
 
-	const Vector3 &get_motion_velocity() const;
-	void set_motion_velocity(const Vector3 &p_velocity);
+	const Vector3 &get_velocity() const;
+	void set_velocity(const Vector3 &p_velocity);
 
 	bool is_on_floor() const;
 	bool is_on_floor_only() const;
@@ -416,7 +416,7 @@ private:
 	real_t floor_max_angle = Math::deg2rad((real_t)45.0);
 	real_t wall_min_slide_angle = Math::deg2rad((real_t)15.0);
 	Vector3 up_direction = Vector3(0.0, 1.0, 0.0);
-	Vector3 motion_velocity;
+	Vector3 velocity;
 	Vector3 floor_normal;
 	Vector3 wall_normal;
 	Vector3 ceiling_normal;
