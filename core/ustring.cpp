@@ -108,9 +108,12 @@ bool CharString::operator<(const CharString &p_right) const {
 }
 
 CharString &CharString::operator+=(char p_char) {
-	resize(size() ? size() + 1 : 2);
-	set(length(), 0);
-	set(length() - 1, p_char);
+	const int lhs_len = length();
+	resize(lhs_len + 2);
+
+	char *dst = ptrw();
+	dst[lhs_len] = p_char;
+	dst[lhs_len + 1] = 0;
 
 	return *this;
 }
@@ -217,11 +220,7 @@ void String::copy_from(const char *p_cstr) {
 		return;
 	}
 
-	int len = 0;
-	const char *ptr = p_cstr;
-	while (*(ptr++) != 0) {
-		len++;
-	}
+	const size_t len = strlen(p_cstr);
 
 	if (len == 0) {
 		resize(0);
@@ -232,7 +231,7 @@ void String::copy_from(const char *p_cstr) {
 
 	CharType *dst = this->ptrw();
 
-	for (int i = 0; i < len + 1; i++) {
+	for (size_t i = 0; i <= len; i++) {
 		dst[i] = p_cstr[i];
 	}
 }
@@ -263,19 +262,17 @@ void String::copy_from(const CharType *p_cstr, const int p_clip_to) {
 // p_length <= p_char strlen
 void String::copy_from_unchecked(const CharType *p_char, const int p_length) {
 	resize(p_length + 1);
-	set(p_length, 0);
 
 	CharType *dst = ptrw();
-
-	for (int i = 0; i < p_length; i++) {
-		dst[i] = p_char[i];
-	}
+	memcpy(dst, p_char, p_length * sizeof(CharType));
+	dst[p_length] = 0;
 }
 
 void String::copy_from(const CharType &p_char) {
 	resize(2);
-	set(0, p_char);
-	set(1, 0);
+	CharType *dst = ptrw();
+	dst[0] = p_char;
+	dst[1] = 0;
 }
 
 bool String::operator==(const String &p_str) const {
@@ -312,27 +309,23 @@ String String::operator+(const String &p_str) const {
 }
 
 String &String::operator+=(const String &p_str) {
-	if (empty()) {
+	const int lhs_len = length();
+	if (lhs_len == 0) {
 		*this = p_str;
 		return *this;
 	}
 
-	if (p_str.empty()) {
+	const int rhs_len = p_str.length();
+	if (rhs_len == 0) {
 		return *this;
 	}
 
-	int from = length();
-
-	resize(length() + p_str.size());
+	resize(lhs_len + rhs_len + 1);
 
 	const CharType *src = p_str.c_str();
-	CharType *dst = ptrw();
+	CharType *dst = ptrw() + lhs_len;
 
-	set(length(), 0);
-
-	for (int i = 0; i < p_str.length(); i++) {
-		dst[from + i] = src[i];
-	}
+	memcpy(dst, src, (rhs_len + 1) * sizeof(CharType));
 
 	return *this;
 }
@@ -343,9 +336,12 @@ String &String::operator+=(const CharType *p_str) {
 }
 
 String &String::operator+=(CharType p_char) {
-	resize(size() ? size() + 1 : 2);
-	set(length(), 0);
-	set(length() - 1, p_char);
+	const int lhs_len = length();
+	resize(lhs_len + 2);
+
+	CharType *dst = ptrw();
+	dst[lhs_len] = p_char;
+	dst[lhs_len + 1] = 0;
 
 	return *this;
 }
@@ -355,22 +351,15 @@ String &String::operator+=(const char *p_str) {
 		return *this;
 	}
 
-	int src_len = 0;
-	const char *ptr = p_str;
-	while (*(ptr++) != 0) {
-		src_len++;
-	}
+	const size_t rhs_len = strlen(p_str);
+	const int lhs_len = length();
 
-	int from = length();
+	resize(lhs_len + rhs_len + 1);
 
-	resize(from + src_len + 1);
+	CharType *dst = ptrw() + lhs_len;
 
-	CharType *dst = ptrw();
-
-	set(length(), 0);
-
-	for (int i = 0; i < src_len; i++) {
-		dst[from + i] = p_str[i];
+	for (size_t i = 0; i <= rhs_len; i++) {
+		dst[i] = p_str[i];
 	}
 
 	return *this;
