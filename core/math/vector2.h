@@ -60,9 +60,11 @@ struct _NO_DISCARD_CLASS_ Vector2 {
 	};
 
 	_FORCE_INLINE_ real_t &operator[](int p_idx) {
+		DEV_ASSERT((unsigned int)p_idx < 2);
 		return coord[p_idx];
 	}
 	_FORCE_INLINE_ const real_t &operator[](int p_idx) const {
+		DEV_ASSERT((unsigned int)p_idx < 2);
 		return coord[p_idx];
 	}
 
@@ -291,9 +293,11 @@ struct _NO_DISCARD_CLASS_ Vector2i {
 	};
 
 	_FORCE_INLINE_ int &operator[](int p_idx) {
+		DEV_ASSERT((unsigned int)p_idx < 2);
 		return coord[p_idx];
 	}
 	_FORCE_INLINE_ const int &operator[](int p_idx) const {
+		DEV_ASSERT((unsigned int)p_idx < 2);
 		return coord[p_idx];
 	}
 

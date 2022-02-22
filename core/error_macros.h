@@ -208,6 +208,7 @@ void _err_flush_stdout();
 #define CRASH_BAD_INDEX(m_index, m_size)                                                                                  \
 	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                               \
 		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), "", true); \
+		_err_flush_stdout();                                                                                              \
 		GENERATE_TRAP                                                                                                     \
 	} else                                                                                                                \
 		((void)0)
@@ -221,6 +222,7 @@ void _err_flush_stdout();
 #define CRASH_BAD_INDEX_MSG(m_index, m_size, m_msg)                                                                          \
 	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                  \
 		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, true); \
+		_err_flush_stdout();                                                                                                 \
 		GENERATE_TRAP                                                                                                        \
 	} else                                                                                                                   \
 		((void)0)
@@ -234,6 +236,7 @@ void _err_flush_stdout();
 #define CRASH_BAD_UNSIGNED_INDEX(m_index, m_size)                                                                         \
 	if (unlikely((m_index) >= (m_size))) {                                                                                \
 		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), "", true); \
+		_err_flush_stdout();                                                                                              \
 		GENERATE_TRAP                                                                                                     \
 	} else                                                                                                                \
 		((void)0)
@@ -305,6 +308,7 @@ void _err_flush_stdout();
 #define CRASH_COND(m_cond)                                                                                    \
 	if (unlikely(m_cond)) {                                                                                   \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: Condition \"" _STR(m_cond) "\" is true."); \
+		_err_flush_stdout();                                                                                  \
 		GENERATE_TRAP                                                                                         \
 	} else                                                                                                    \
 		((void)0)
@@ -316,6 +320,7 @@ void _err_flush_stdout();
 #define CRASH_COND_MSG(m_cond, m_msg)                                                                                \
 	if (unlikely(m_cond)) {                                                                                          \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: Condition \"" _STR(m_cond) "\" is true.", m_msg); \
+		_err_flush_stdout();                                                                                         \
 		GENERATE_TRAP                                                                                                \
 	} else                                                                                                           \
 		((void)0)
@@ -427,7 +432,7 @@ void _err_flush_stdout();
 #define CRASH_NOW()                                                                  \
 	if (true) {                                                                      \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: Method failed."); \
-		void _err_flush_stdout();                                                    \
+		_err_flush_stdout();                                                         \
 		GENERATE_TRAP                                                                \
 	} else                                                                           \
 		((void)0)
@@ -439,7 +444,7 @@ void _err_flush_stdout();
 #define CRASH_NOW_MSG(m_msg)                                                                \
 	if (true) {                                                                             \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: Method failed.", m_msg); \
-		void _err_flush_stdout();                                                           \
+		_err_flush_stdout();                                                                \
 		GENERATE_TRAP                                                                       \
 	} else                                                                                  \
 		((void)0)
@@ -523,7 +528,7 @@ void _err_flush_stdout();
 #define DEV_ASSERT(m_cond)                                                                                              \
 	if (unlikely(!(m_cond))) {                                                                                          \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: DEV_ASSERT failed  \"" _STR(m_cond) "\" is false."); \
-		void _err_flush_stdout();                                                                                       \
+		_err_flush_stdout();                                                                                            \
 		GENERATE_TRAP                                                                                                   \
 	} else                                                                                                              \
 		((void)0)
