@@ -2818,13 +2818,8 @@ void GIProbeGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 				continue;
 			}
 
-			Vector2 dir;
-			dir[j] = 1.0;
-			Vector2 ta, tb;
 			int j_n1 = (j + 1) % 3;
 			int j_n2 = (j + 2) % 3;
-			ta[j_n1] = 1.0;
-			tb[j_n2] = 1.0;
 
 			for (int k = 0; k < 4; k++) {
 				Vector3 from = aabb.position, to = aabb.position;
