@@ -1381,7 +1381,6 @@ public:
 			GLuint fbo;
 			GLuint color;
 			GLuint depth;
-			RID texture;
 
 			External() :
 					fbo(0),
