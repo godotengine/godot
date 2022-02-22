@@ -163,9 +163,9 @@ MonoObject *godot_icall_Object_weakref(Object *p_ptr) {
 	return GDMonoUtils::unmanaged_get_managed(wref.ptr());
 }
 
-int32_t godot_icall_SignalAwaiter_connect(Object *p_source, StringName *p_signal, Object *p_target, MonoObject *p_awaiter) {
+void godot_icall_SignalAwaiter_connect(Object *p_source, StringName *p_signal, Object *p_target, MonoObject *p_awaiter) {
 	StringName signal = p_signal ? *p_signal : StringName();
-	return (int32_t)gd_mono_connect_signal_awaiter(p_source, signal, p_target, p_awaiter);
+	gd_mono_connect_signal_awaiter(p_source, signal, p_target, p_awaiter);
 }
 
 MonoArray *godot_icall_DynamicGodotObject_SetMemberList(Object *p_ptr) {

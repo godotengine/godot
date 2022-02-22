@@ -36,15 +36,15 @@
 #include "mono_gd/gd_mono_marshal.h"
 #include "mono_gd/gd_mono_utils.h"
 
-Error gd_mono_connect_signal_awaiter(Object *p_source, const StringName &p_signal, Object *p_target, MonoObject *p_awaiter) {
-	ERR_FAIL_NULL_V(p_source, ERR_INVALID_DATA);
-	ERR_FAIL_NULL_V(p_target, ERR_INVALID_DATA);
+void gd_mono_connect_signal_awaiter(Object *p_source, const StringName &p_signal, Object *p_target, MonoObject *p_awaiter) {
+	ERR_FAIL_NULL(p_source);
+	ERR_FAIL_NULL(p_target);
 
 	// TODO: Use pooling for ManagedCallable instances.
 	SignalAwaiterCallable *awaiter_callable = memnew(SignalAwaiterCallable(p_target, p_awaiter, p_signal));
 	Callable callable = Callable(awaiter_callable);
 
-	return p_source->connect(p_signal, callable, Vector<Variant>(), Object::CONNECT_ONESHOT);
+	p_source->connect(p_signal, callable, Vector<Variant>(), Object::CONNECT_ONESHOT);
 }
 
 bool SignalAwaiterCallable::compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {

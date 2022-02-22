@@ -15,7 +15,7 @@ namespace Godot
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern Error godot_icall_SignalAwaiter_connect(IntPtr source, IntPtr signal, IntPtr target, SignalAwaiter awaiter);
+        internal static extern void godot_icall_SignalAwaiter_connect(IntPtr source, IntPtr signal, IntPtr target, SignalAwaiter awaiter);
 
         public bool IsCompleted
         {

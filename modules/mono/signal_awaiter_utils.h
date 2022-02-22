@@ -36,7 +36,7 @@
 #include "csharp_script.h"
 #include "mono_gc_handle.h"
 
-Error gd_mono_connect_signal_awaiter(Object *p_source, const StringName &p_signal, Object *p_target, MonoObject *p_awaiter);
+void gd_mono_connect_signal_awaiter(Object *p_source, const StringName &p_signal, Object *p_target, MonoObject *p_awaiter);
 
 class SignalAwaiterCallable : public CallableCustom {
 	ObjectID target_id;

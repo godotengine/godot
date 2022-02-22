@@ -382,11 +382,11 @@ Error Signal::emit(const Variant **p_arguments, int p_argcount) const {
 	return obj->emit_signal(name, p_arguments, p_argcount);
 }
 
-Error Signal::connect(const Callable &p_callable, uint32_t p_flags) {
+void Signal::connect(const Callable &p_callable, uint32_t p_flags) {
 	Object *object = get_object();
-	ERR_FAIL_COND_V(!object, ERR_UNCONFIGURED);
+	ERR_FAIL_COND(!object);
 
-	return object->connect(name, p_callable, varray(), p_flags);
+	object->connect(name, p_callable, varray(), p_flags);
 }
 
 void Signal::disconnect(const Callable &p_callable) {

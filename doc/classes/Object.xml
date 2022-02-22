@@ -148,7 +148,7 @@
 			</description>
 		</method>
 		<method name="connect">
-			<return type="int" enum="Error" />
+			<return type="void" />
 			<argument index="0" name="signal" type="StringName" />
 			<argument index="1" name="callable" type="Callable" />
 			<argument index="2" name="binds" type="Array" default="[]" />

@@ -32,7 +32,7 @@
 	</constructors>
 	<methods>
 		<method name="connect">
-			<return type="int" />
+			<return type="void" />
 			<argument index="0" name="callable" type="Callable" />
 			<argument index="1" name="flags" type="int" default="0" />
 			<description>

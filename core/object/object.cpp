@@ -1301,11 +1301,11 @@ void Object::get_signals_connected_to_this(List<Connection> *p_connections) cons
 	}
 }
 
-Error Object::connect(const StringName &p_signal, const Callable &p_callable, const Vector<Variant> &p_binds, uint32_t p_flags) {
-	ERR_FAIL_COND_V_MSG(p_callable.is_null(), ERR_INVALID_PARAMETER, "Cannot connect to '" + p_signal + "': the provided callable is null.");
+void Object::connect(const StringName &p_signal, const Callable &p_callable, const Vector<Variant> &p_binds, uint32_t p_flags) {
+	ERR_FAIL_COND_MSG(p_callable.is_null(), "Cannot connect to '" + p_signal + "': the provided callable is null.");
 
 	Object *target_object = p_callable.get_object();
-	ERR_FAIL_COND_V_MSG(!target_object, ERR_INVALID_PARAMETER, "Cannot connect to '" + p_signal + "' to callable '" + p_callable + "': the callable object is null.");
+	ERR_FAIL_COND_MSG(!target_object, "Cannot connect to '" + p_signal + "' to callable '" + p_callable + "': the callable object is null.");
 
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
@@ -1325,7 +1325,7 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, co
 #endif
 		}
 
-		ERR_FAIL_COND_V_MSG(!signal_is_valid, ERR_INVALID_PARAMETER, "In Object of type '" + String(get_class()) + "': Attempt to connect nonexistent signal '" + p_signal + "' to callable '" + p_callable + "'.");
+		ERR_FAIL_COND_MSG(!signal_is_valid, "In Object of type '" + String(get_class()) + "': Attempt to connect nonexistent signal '" + p_signal + "' to callable '" + p_callable + "'.");
 
 		signal_map[p_signal] = SignalData();
 		s = &signal_map[p_signal];
@@ -1337,9 +1337,9 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, co
 	if (s->slot_map.has(*target.get_base_comparator())) {
 		if (p_flags & CONNECT_REFERENCE_COUNTED) {
 			s->slot_map[*target.get_base_comparator()].reference_count++;
-			return OK;
+			return;
 		} else {
-			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Signal '" + p_signal + "' is already connected to given callable '" + p_callable + "' in that object.");
+			ERR_FAIL_MSG("Signal '" + p_signal + "' is already connected to given callable '" + p_callable + "' in that object.");
 		}
 	}
 
@@ -1359,7 +1359,7 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, co
 	//use callable version as key, so binds can be ignored
 	s->slot_map[*target.get_base_comparator()] = slot;
 
-	return OK;
+	return;
 }
 
 bool Object::is_connected(const StringName &p_signal, const Callable &p_callable) const {
