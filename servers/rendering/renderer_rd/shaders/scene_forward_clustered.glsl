@@ -15,11 +15,11 @@ layout(location = 0) in vec3 vertex_attrib;
 //only for pure render depth when normal is not used
 
 #ifdef NORMAL_USED
-layout(location = 1) in vec3 normal_attrib;
+layout(location = 1) in vec2 normal_attrib;
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-layout(location = 2) in vec4 tangent_attrib;
+layout(location = 2) in vec2 tangent_attrib;
 #endif
 
 #if defined(COLOR_USED)
@@ -57,6 +57,13 @@ layout(location = 10) in uvec4 bone_attrib;
 #if defined(WEIGHTS_USED) || defined(USE_PARTICLE_TRAILS)
 layout(location = 11) in vec4 weight_attrib;
 #endif
+
+vec3 oct_to_vec3(vec2 e) {
+	vec3 v = vec3(e.xy, 1.0 - abs(e.x) - abs(e.y));
+	float t = max(-v.z, 0.0);
+	v.xy += t * -sign(v.xy);
+	return v;
+}
 
 /* Varyings */
 
@@ -231,12 +238,13 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in SceneData sc
 
 	vec3 vertex = vertex_attrib;
 #ifdef NORMAL_USED
-	vec3 normal = normal_attrib * 2.0 - 1.0;
+	vec3 normal = oct_to_vec3(normal_attrib * 2.0 - 1.0);
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-	vec3 tangent = tangent_attrib.xyz * 2.0 - 1.0;
-	float binormalf = tangent_attrib.a * 2.0 - 1.0;
+	vec2 signed_tangent_attrib = tangent_attrib * 2.0 - 1.0;
+	vec3 tangent = oct_to_vec3(vec2(signed_tangent_attrib.x, abs(signed_tangent_attrib.y) * 2.0 - 1.0));
+	float binormalf = sign(signed_tangent_attrib.y);
 	vec3 binormal = normalize(cross(normal, tangent) * binormalf);
 #endif
 
