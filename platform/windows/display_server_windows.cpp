@@ -1037,9 +1037,7 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 			r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
 		}
 	}
-	if (!p_borderless) {
-		r_style |= WS_VISIBLE;
-	}
+	r_style |= WS_VISIBLE;
 
 	if (p_no_activate_focus) {
 		r_style_ex |= WS_EX_TOPMOST | WS_EX_NOACTIVATE;
