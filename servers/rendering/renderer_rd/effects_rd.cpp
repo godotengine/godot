@@ -2032,7 +2032,7 @@ void EffectsRD::cubemap_roughness(RID p_source_rd_texture, RID p_dest_texture, u
 	memset(&roughness.push_constant, 0, sizeof(CubemapRoughnessPushConstant));
 
 	roughness.push_constant.face_id = p_face_id > 9 ? 0 : p_face_id;
-	roughness.push_constant.roughness = p_roughness;
+	roughness.push_constant.roughness = p_roughness * p_roughness; // Shader expects roughness, not perceptual roughness, so multiply before passing in.
 	roughness.push_constant.sample_count = p_sample_count;
 	roughness.push_constant.use_direct_write = p_roughness == 0.0;
 	roughness.push_constant.face_size = p_size;
@@ -2060,7 +2060,7 @@ void EffectsRD::cubemap_roughness_raster(RID p_source_rd_texture, RID p_dest_fra
 	memset(&roughness.push_constant, 0, sizeof(CubemapRoughnessPushConstant));
 
 	roughness.push_constant.face_id = p_face_id;
-	roughness.push_constant.roughness = p_roughness;
+	roughness.push_constant.roughness = p_roughness * p_roughness; // Shader expects roughness, not perceptual roughness, so multiply before passing in.
 	roughness.push_constant.sample_count = p_sample_count;
 	roughness.push_constant.use_direct_write = p_roughness == 0.0;
 	roughness.push_constant.face_size = p_size;
