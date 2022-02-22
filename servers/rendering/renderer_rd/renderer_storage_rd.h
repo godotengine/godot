@@ -852,6 +852,8 @@ private:
 			uint32_t lifetime_split;
 			uint32_t lifetime_reverse;
 			uint32_t copy_mode_2d;
+
+			float inv_emission_transform[16];
 		};
 
 		enum {
