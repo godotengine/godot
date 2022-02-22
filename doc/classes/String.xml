@@ -265,6 +265,8 @@
 			<return type="String" />
 			<argument index="0" name="size" type="int" />
 			<description>
+				Converts an integer representing a number of bytes into a human-readable form.
+				Note that this output is in [url=https://en.wikipedia.org/wiki/Binary_prefix#IEC_prefixes]IEC prefix format[/url], and includes [code]B[/code], [code]KiB[/code], [code]MiB[/code], [code]GiB[/code], [code]TiB[/code], [code]PiB[/code], and [code]EiB[/code].
 			</description>
 		</method>
 		<method name="indent" qualifiers="const">
