@@ -829,7 +829,7 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 			if (expand_grid && !preview.is_empty()) {
 				drawn_grid_rect = Rect2i(preview.front()->key(), Vector2i(1, 1));
 				for (const KeyValue<Vector2i, TileMapCell> &E : preview) {
-					drawn_grid_rect.expand_to(E.key);
+					drawn_grid_rect.expand_to_include(E.key);
 				}
 			}
 		}
@@ -1577,8 +1577,7 @@ void TileMapEditorTilesPlugin::_update_selection_pattern_from_tileset_tiles_sele
 			if (E_cell) {
 				encompassing_rect_coords = Rect2i(E_cell->key(), Vector2i(1, 1));
 				for (; E_cell; E_cell = E_cell->next()) {
-					encompassing_rect_coords.expand_to(E_cell->key() + Vector2i(1, 1));
-					encompassing_rect_coords.expand_to(E_cell->key());
+					encompassing_rect_coords.expand_to_include(E_cell->key());
 				}
 			}
 		} else {
@@ -3001,7 +3000,7 @@ void TileMapEditorTerrainsPlugin::forward_canvas_draw_over_viewport(Control *p_o
 			if (expand_grid && !preview.is_empty()) {
 				drawn_grid_rect = Rect2i(preview.front()->get(), Vector2i(1, 1));
 				for (const Vector2i &E : preview) {
-					drawn_grid_rect.expand_to(E);
+					drawn_grid_rect.expand_to_include(E);
 				}
 			}
 		}
@@ -3880,13 +3879,10 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 	// Determine the drawn area.
 	Size2 screen_size = p_overlay->get_size();
-	Rect2i screen_rect;
-	screen_rect.position = tile_map->world_to_map(xform_inv.xform(Vector2()));
-	screen_rect.expand_to(tile_map->world_to_map(xform_inv.xform(Vector2(0, screen_size.height))));
-	screen_rect.expand_to(tile_map->world_to_map(xform_inv.xform(Vector2(screen_size.width, 0))));
-	screen_rect.expand_to(tile_map->world_to_map(xform_inv.xform(screen_size)));
-	screen_rect = screen_rect.grow(1);
-
+	Rect2i screen_rect = Rect2i(tile_map->world_to_map(xform_inv.xform(Vector2())), Size2i(1, 1));
+	screen_rect.expand_to_include(tile_map->world_to_map(xform_inv.xform(Vector2(0, screen_size.height))));
+	screen_rect.expand_to_include(tile_map->world_to_map(xform_inv.xform(Vector2(screen_size.width, 0))));
+	screen_rect.expand_to_include(tile_map->world_to_map(xform_inv.xform(screen_size)));
 	Rect2i tilemap_used_rect = tile_map->get_used_rect();
 
 	Rect2i displayed_rect = tilemap_used_rect.intersection(screen_rect);

@@ -1550,6 +1550,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Rect2i, intersection, sarray("b"), varray());
 	bind_method(Rect2i, merge, sarray("b"), varray());
 	bind_method(Rect2i, expand, sarray("to"), varray());
+	bind_method(Rect2i, expand_include, sarray("to"), varray());
 	bind_method(Rect2i, grow, sarray("amount"), varray());
 	bind_methodv(Rect2i, grow_side, &Rect2i::grow_side_bind, sarray("side", "amount"), varray());
 	bind_method(Rect2i, grow_individual, sarray("left", "top", "right", "bottom"), varray());

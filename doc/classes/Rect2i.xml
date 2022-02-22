@@ -85,6 +85,29 @@
 				var rect2 = rect.Expand(new Vector2i(0, -1));
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] If you need functionality that includes the point into the [Rect2i], use [method expand_include] instead.
+			</description>
+		</method>
+		<method name="expand_include" qualifiers="const">
+			<return type="Rect2i" />
+			<argument index="0" name="to" type="Vector2i" />
+			<description>
+				Returns a copy of this [Rect2i] expanded so that it contains the given point.
+				[codeblocks]
+				[gdscript]
+				# position (2, 1), size (1, 1)
+				var rect = Rect2i(Vector2i(2, 1), Vector2i(1, 1))
+				# position (2, 1), size (2, 2), so we fit both rect and Vector2i(3, 2)
+				var rect2 = rect.expand_include(Vector2i(3, 2))
+				[/gdscript]
+				[csharp]
+				# position (2, 1), size (1, 1)
+				var rect = new Rect2i(new Vector2i(2, 1), new Vector2i(1, 1));
+				# position (2, 1), size (2, 2), so we fit both rect and Vector2i(3, 2)
+				var rect2 = rect.ExpandInclude(new Vector2i(3, 2));
+				[/csharp]
+				[/codeblocks]
+				[b]Note:[/b] If you need functionality that mimicks [method Rect2.expand], use [method expand] instead.
 			</description>
 		</method>
 		<method name="get_area" qualifiers="const">

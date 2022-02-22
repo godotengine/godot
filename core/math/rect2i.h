@@ -216,6 +216,39 @@ struct _NO_DISCARD_ Rect2i {
 		size = end - begin;
 	}
 
+	_FORCE_INLINE_ Rect2i expand_include(const Vector2i &p_vector) const {
+		Rect2i r = *this;
+		r.expand_to_include(p_vector);
+		return r;
+	}
+
+	inline void expand_to_include(const Point2i &p_vector) {
+#ifdef MATH_CHECKS
+		if (unlikely(size.x < 0 || size.y < 0)) {
+			ERR_PRINT("Rect2i size is negative, this is not supported. Use Rect2i.abs() to get a Rect2i with a positive size.");
+		}
+#endif
+		Point2i begin = position;
+		Point2i end = position + size;
+
+		if (p_vector.x < begin.x) {
+			begin.x = p_vector.x;
+		}
+		if (p_vector.y < begin.y) {
+			begin.y = p_vector.y;
+		}
+
+		if (p_vector.x >= end.x) {
+			end.x = p_vector.x + 1;
+		}
+		if (p_vector.y >= end.y) {
+			end.y = p_vector.y + 1;
+		}
+
+		position = begin;
+		size = end - begin;
+	}
+
 	_FORCE_INLINE_ Rect2i abs() const {
 		return Rect2i(Point2i(position.x + MIN(size.x, 0), position.y + MIN(size.y, 0)), size.abs());
 	}

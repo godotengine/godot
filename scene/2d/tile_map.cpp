@@ -3374,19 +3374,16 @@ Rect2 TileMap::get_used_rect() { // Not const because of cache
 			const Map<Vector2i, TileMapCell> &tile_map = layers[i].tile_map;
 			if (tile_map.size() > 0) {
 				if (first) {
-					used_rect_cache = Rect2i(tile_map.front()->key().x, tile_map.front()->key().y, 0, 0);
+					used_rect_cache = Rect2i(tile_map.front()->key().x, tile_map.front()->key().y, 1, 1);
 					first = false;
 				}
 
 				for (const KeyValue<Vector2i, TileMapCell> &E : tile_map) {
-					used_rect_cache.expand_to(Vector2i(E.key.x, E.key.y));
+					used_rect_cache.expand_to_include(Vector2i(E.key.x, E.key.y));
 				}
 			}
 		}
 
-		if (!first) { // first is true if every layer is empty.
-			used_rect_cache.size += Vector2i(1, 1); // The cache expands to top-left coordinate, so we add one full tile.
-		}
 		used_rect_cache_dirty = false;
 	}
 
