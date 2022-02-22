@@ -108,6 +108,8 @@ extern void unregister_global_constants();
 
 static ResourceUID *resource_uid = nullptr;
 
+static bool _is_core_extensions_registered = false;
+
 void register_core_types() {
 	//consistency check
 	static_assert(sizeof(Callable) <= 16);
@@ -314,11 +316,16 @@ void register_core_extensions() {
 	NativeExtension::initialize_native_extensions();
 	native_extension_manager->load_extensions();
 	native_extension_manager->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_CORE);
+	_is_core_extensions_registered = true;
+}
+
+void unregister_core_extensions() {
+	if (_is_core_extensions_registered) {
+		native_extension_manager->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_CORE);
+	}
 }
 
 void unregister_core_types() {
-	native_extension_manager->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_CORE);
-
 	memdelete(native_extension_manager);
 
 	memdelete(resource_uid);
