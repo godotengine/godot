@@ -41,6 +41,7 @@
 #include "room_group.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/light.h"
+#include "scene/3d/particles.h"
 #include "scene/3d/sprite_3d.h"
 #include "visibility_notifier.h"
 
@@ -1325,9 +1326,7 @@ void RoomManager::_process_static(Room *p_room, Spatial *p_node, Vector<Vector3>
 			// MeshInstance is the most interesting type for portalling, so we handle this explicitly
 			MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 			if (mi) {
-				if (p_add_to_portal_renderer) {
-					convert_log("\t\t\tMESH\t" + mi->get_name());
-				}
+				bool added = false;
 
 				Vector<Vector3> object_pts;
 				AABB aabb;
@@ -1344,17 +1343,26 @@ void RoomManager::_process_static(Room *p_room, Spatial *p_node, Vector<Vector3>
 					}
 
 					if (p_add_to_portal_renderer) {
-						VisualServer::get_singleton()->room_add_instance(p_room->_room_rid, mi->get_instance(), mi->get_transformed_aabb(), object_pts);
+						// We are sending the VisualInstance AABB rather than the manually calced AABB, maybe we don't need to calc the AABB.
+						// If this works okay we can maybe later remove the manual AABB calculation in _bound_findpoints_mesh_instance().
+						VisualServer::get_singleton()->room_add_instance(p_room->_room_rid, mi->get_instance(), mi->get_transformed_aabb().grow(mi->get_extra_cull_margin()), object_pts);
+						added = true;
 					}
 				} // if bound found points
+
+				if (p_add_to_portal_renderer) {
+					String msg = "\t\t\tMESH\t" + mi->get_name();
+					if (!added) {
+						msg += "\t(unrecognized)";
+					}
+					convert_log(msg);
+				}
 			} else {
 				// geometry instance but not a mesh instance ..
-				if (p_add_to_portal_renderer) {
-					convert_log("\t\t\tGEOM\t" + gi->get_name());
-				}
-
 				Vector<Vector3> object_pts;
 				AABB aabb;
+
+				bool added = false;
 
 				// attempt to recognise this GeometryInstance and read back the geometry
 				// Note: never attempt to add dynamics to the room aabb
@@ -1368,9 +1376,24 @@ void RoomManager::_process_static(Room *p_room, Spatial *p_node, Vector<Vector3>
 					}
 
 					if (p_add_to_portal_renderer) {
-						VisualServer::get_singleton()->room_add_instance(p_room->_room_rid, gi->get_instance(), gi->get_transformed_aabb(), object_pts);
+						// if dynamic, we won't have properly calculated the aabb yet
+						if (is_dynamic) {
+							aabb = gi->get_transformed_aabb();
+						}
+
+						aabb.grow_by(gi->get_extra_cull_margin());
+						VisualServer::get_singleton()->room_add_instance(p_room->_room_rid, gi->get_instance(), aabb, object_pts);
+						added = true;
 					}
 				} // if bound found points
+
+				if (p_add_to_portal_renderer) {
+					String msg = "\t\t\tGEOM\t" + gi->get_name();
+					if (!added) {
+						msg += "\t(unrecognized)";
+					}
+					convert_log(msg);
+				}
 			}
 		} // if gi
 
@@ -1832,7 +1855,17 @@ bool RoomManager::_bound_findpoints_geom_instance(GeometryInstance *p_gi, Vector
 		return true;
 	}
 
-	return false;
+	// Particles have a "visibility aabb" we can use for this
+	Particles *particles = Object::cast_to<Particles>(p_gi);
+	if (particles) {
+		r_aabb = particles->get_global_transform().xform(particles->get_visibility_aabb());
+		return true;
+	}
+
+	// Fallback path for geometry that is not recognised
+	// (including CPUParticles, which will need to rely on an expansion margin)
+	r_aabb = p_gi->get_transformed_aabb();
+	return true;
 }
 
 bool RoomManager::_bound_findpoints_mesh_instance(MeshInstance *p_mi, Vector<Vector3> &r_room_pts, AABB &r_aabb) {
