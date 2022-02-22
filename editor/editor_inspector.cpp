@@ -3620,20 +3620,25 @@ void EditorInspector::_update_script_class_properties(const Object &p_object, Li
 			added.insert(pi.name);
 
 			r_list.insert_before(insert_here, pi);
+
+			List<PropertyInfo>::Element *prop_below = bottom->next();
+			while (prop_below) {
+				if (prop_below->get() == pi) {
+					List<PropertyInfo>::Element *to_delete = prop_below;
+					prop_below = prop_below->next();
+					r_list.erase(to_delete);
+				} else {
+					prop_below = prop_below->next();
+				}
+			}
 		}
 
 		// Script Variables -> NodeA (insert_here) -> A props... -> bottom
 		insert_here = category;
 	}
 
-	// NodeC -> C props... -> NodeB..C..
 	if (script_variables) {
 		r_list.erase(script_variables);
-		List<PropertyInfo>::Element *to_delete = bottom->next();
-		while (to_delete && !(to_delete->get().usage & PROPERTY_USAGE_CATEGORY)) {
-			r_list.erase(to_delete);
-			to_delete = bottom->next();
-		}
 		r_list.erase(bottom);
 	}
 }
