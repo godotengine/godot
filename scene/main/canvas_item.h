@@ -108,7 +108,8 @@ private:
 
 	void _top_level_raise_self();
 
-	void _propagate_visibility_changed(bool p_visible, bool p_is_source = false);
+	void _propagate_visibility_changed(bool p_parent_visible_in_tree);
+	void _handle_visibility_change(bool p_visible);
 
 	void _update_callback();
 
