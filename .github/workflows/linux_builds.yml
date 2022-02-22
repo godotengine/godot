@@ -22,7 +22,7 @@ jobs:
             cache-name: linux-editor-mono
             target: release_debug
             tools: true
-            sconsflags: module_mono_enabled=yes mono_glue=no
+            sconsflags: module_mono_enabled=yes mono_static=yes mono_glue=no
             bin: "./bin/godot.x11.opt.tools.64.mono"
             build-mono: true
             artifact: true
@@ -42,7 +42,7 @@ jobs:
             cache-name: linux-template-mono
             target: release
             tools: false
-            sconsflags: module_mono_enabled=yes mono_glue=no debug_symbols=no
+            sconsflags: module_mono_enabled=yes mono_static=yes mono_glue=no debug_symbols=no
             build-mono: false
             artifact: true
 
