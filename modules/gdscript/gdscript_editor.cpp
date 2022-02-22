@@ -1198,6 +1198,27 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 static bool _guess_identifier_type_from_base(GDScriptParser::CompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, const StringName &p_identifier, GDScriptCompletionIdentifier &r_type);
 static bool _guess_method_return_type_from_base(GDScriptParser::CompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, const StringName &p_method, GDScriptCompletionIdentifier &r_type);
 
+static bool _is_expression_named_identifier(const GDScriptParser::ExpressionNode *p_expression, const StringName &p_name) {
+	if (p_expression) {
+		switch (p_expression->type) {
+			case GDScriptParser::Node::IDENTIFIER: {
+				const GDScriptParser::IdentifierNode *id = static_cast<const GDScriptParser::IdentifierNode *>(p_expression);
+				if (id->name == p_name) {
+					return true;
+				}
+			} break;
+			case GDScriptParser::Node::CAST: {
+				const GDScriptParser::CastNode *cn = static_cast<const GDScriptParser::CastNode *>(p_expression);
+				return _is_expression_named_identifier(cn->operand, p_name);
+			} break;
+			default:
+				break;
+		}
+	}
+
+	return false;
+}
+
 static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context, const GDScriptParser::ExpressionNode *p_expression, GDScriptCompletionIdentifier &r_type) {
 	bool found = false;
 
@@ -1904,6 +1925,14 @@ static bool _guess_identifier_type_from_base(GDScriptParser::CompletionContext &
 										return true;
 									} else if (init->start_line == p_context.current_line) {
 										return false;
+										// Detects if variable is assigned to itself
+									} else if (_is_expression_named_identifier(init, member.variable->identifier->name)) {
+										if (member.variable->initializer->get_datatype().is_set()) {
+											r_type.type = member.variable->initializer->get_datatype();
+										} else if (member.variable->get_datatype().is_set() && !member.variable->get_datatype().is_variant()) {
+											r_type.type = member.variable->get_datatype();
+										}
+										return true;
 									} else if (_guess_expression_type(p_context, init, r_type)) {
 										return true;
 									} else if (init->get_datatype().is_set() && !init->get_datatype().is_variant()) {
