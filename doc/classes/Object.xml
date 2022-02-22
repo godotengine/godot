@@ -107,7 +107,7 @@
 			</description>
 		</method>
 		<method name="call_deferred" qualifiers="vararg">
-			<return type="void" />
+			<return type="Variant" />
 			<argument index="0" name="method" type="StringName" />
 			<description>
 				Calls the [code]method[/code] on the object during idle time. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
@@ -301,7 +301,7 @@
 			</description>
 		</method>
 		<method name="emit_signal" qualifiers="vararg">
-			<return type="void" />
+			<return type="int" enum="Error" />
 			<argument index="0" name="signal" type="StringName" />
 			<description>
 				Emits the given [code]signal[/code]. The signal must exist, so it should be a built-in signal of this class or one of its parent classes, or a user-defined signal. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:

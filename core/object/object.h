@@ -522,7 +522,7 @@ private:
 
 	void _add_user_signal(const String &p_name, const Array &p_args = Array());
 	bool _has_user_signal(const StringName &p_name) const;
-	Variant _emit_signal(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	Error _emit_signal(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Array _get_signal_list() const;
 	Array _get_signal_connection_list(const String &p_signal) const;
 	Array _get_incoming_connections() const;
