@@ -79,7 +79,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 	float NdotL = min(A + dot(N, L), 1.0);
 	float cNdotL = max(NdotL, 0.0); // clamped NdotL
 	float NdotV = dot(N, V);
-	float cNdotV = max(NdotV, 0.0);
+	float cNdotV = max(NdotV, 1e-4);
 
 #if defined(DIFFUSE_BURLEY) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED)
 	vec3 H = normalize(V + L);
@@ -210,7 +210,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 		// Clearcoat ignores normal_map, use vertex normal instead
 		float ccNdotL = max(min(A + dot(vertex_normal, L), 1.0), 0.0);
 		float ccNdotH = clamp(A + dot(vertex_normal, H), 0.0, 1.0);
-		float ccNdotV = max(dot(vertex_normal, V), 0.0);
+		float ccNdotV = max(dot(vertex_normal, V), 1e-4);
 
 #if !defined(SPECULAR_SCHLICK_GGX)
 		float cLdotH5 = SchlickFresnel(cLdotH);
