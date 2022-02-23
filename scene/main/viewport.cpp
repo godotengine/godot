@@ -2454,11 +2454,11 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					next = from->_get_focus_neighbour(MARGIN_BOTTOM);
 				}
 			} else {
-				if (p_event->is_action_pressed("ui_focus_next", true, true)) {
+				if (p_event->is_action_pressed("ui_focus_next", true)) {
 					next = from->find_next_valid_focus();
 				}
 
-				if (p_event->is_action_pressed("ui_focus_prev", true, true)) {
+				if (p_event->is_action_pressed("ui_focus_prev", true)) {
 					next = from->find_prev_valid_focus();
 				}
 
