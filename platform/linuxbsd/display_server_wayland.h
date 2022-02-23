@@ -40,7 +40,6 @@
 #include "key_mapping_xkb.h"
 #include "servers/display_server.h"
 
-#include "wayland-client.h"
 #include "wayland.gen.h"
 #include "xdg-shell.gen.h"
 
