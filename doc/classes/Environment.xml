@@ -194,6 +194,8 @@
 		</member>
 		<member name="glow_enabled" type="bool" setter="set_glow_enabled" getter="is_glow_enabled" default="false">
 			If [code]true[/code], the glow effect is enabled.
+			[b]Note:[/b] Only effective if [member ProjectSettings.rendering/quality/intended_usage/framebuffer_allocation] is [b]3D[/b] ([i]not[/i] [b]3D Without Effects[/b]). On mobile, [member ProjectSettings.rendering/quality/intended_usage/framebuffer_allocation] defaults to [b]3D Without Effects[/b] by default, so its [code].mobile[/code] override needs to be changed to [b]3D[/b].
+			[b]Note:[/b] When using GLES3 on mobile, HDR rendering is disabled by default for performance reasons. This means glow will only be visible if [member glow_hdr_threshold] is decreased below [code]1.0[/code] or if [member glow_bloom] is increased above [code]0.0[/code]. Also consider increasing [member glow_intensity] to [code]1.5[/code]. If you want glow to behave on mobile like it does on desktop (at a performance cost), enable [member ProjectSettings.rendering/quality/depth/hdr]'s [code].mobile[/code] override.
 		</member>
 		<member name="glow_hdr_luminance_cap" type="float" setter="set_glow_hdr_luminance_cap" getter="get_glow_hdr_luminance_cap" default="12.0">
 			The higher threshold of the HDR glow. Areas brighter than this threshold will be clamped for the purposes of the glow effect.
