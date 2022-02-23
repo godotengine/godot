@@ -49,7 +49,10 @@
 		<method name="bigrams" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
-				Returns the bigrams (pairs of consecutive letters) of this string.
+				Returns an array containing the bigrams (pairs of consecutive letters) of this string.
+				[codeblock]
+				print("Bigrams".bigrams()) # Prints "[Bi, ig, gr, ra, am, ms]"
+				[/codeblock]
 			</description>
 		</method>
 		<method name="bin_to_int" qualifiers="const">
@@ -101,6 +104,11 @@
 			<return type="String" />
 			<argument index="0" name="char" type="int" />
 			<description>
+				Directly converts an decimal integer to a unicode character. Tables of these characters can be found in various locations, for example [url=https://unicodelookup.com/]here.[/url]
+				[codeblock]
+				print(String.chr(65)) # Prints "A"
+				print(String.chr(129302)) # Prints "🤖" (robot face emoji)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="contains" qualifiers="const">
@@ -328,7 +336,14 @@
 		<method name="is_valid_float" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this string contains a valid float.
+				Returns [code]true[/code] if this string contains a valid float. This is inclusive of integers, and also supports exponents:
+				[codeblock]
+				print("1.7".is_valid_float()) # Prints "true"
+				print("24".is_valid_float()) # Prints "true"
+				print("7e3".is_valid_float()) # Prints "true"
+				print("24".is_valid_float()) # Prints "true"
+				print("Hello".is_valid_float()) # Prints "false"
+				[/codeblock]
 			</description>
 		</method>
 		<method name="is_valid_hex_number" qualifiers="const">
@@ -348,12 +363,24 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this string is a valid identifier. A valid identifier may contain only letters, digits and underscores ([code]_[/code]) and the first character may not be a digit.
+				[codeblock]
+				print("good_ident_1".is_valid_identifier()) # Prints "true"
+				print("1st_bad_ident".is_valid_identifier()) # Prints "false"
+				print("bad_ident_#2".is_valid_identifier()) # Prints "false"
+				[/codeblock]
 			</description>
 		</method>
 		<method name="is_valid_int" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this string contains a valid integer.
+				[codeblock]
+				print("7".is_valid_int()) # Prints "true"
+				print("14.6".is_valid_int()) # Prints "false"
+				print("L".is_valid_int()) # Prints "false"
+				print("+3".is_valid_int()) # Prints "true"
+				print("-12".is_valid_int()) # Prints "true"
+				[/codeblock]
 			</description>
 		</method>
 		<method name="is_valid_ip_address" qualifiers="const">
@@ -633,7 +660,13 @@
 			<return type="float" />
 			<argument index="0" name="text" type="String" />
 			<description>
-				Returns the similarity index of the text compared to this string. 1 means totally similar and 0 means totally dissimilar.
+				Returns the similarity index ([url=https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient]Sorensen-Dice coefficient[/url]) this string compared to another. 1.0 means totally similar and 0.0 means totally dissimilar.
+				[codeblock]
+				print("ABC123".similarity("ABC123")) # Prints "1"
+				print("ABC123".similarity("XYZ456")) # Prints "0"
+				print("ABC123".similarity("123ABC")) # Prints "0.8"
+				print("ABC123".similarity("abc123")) # Prints "0.4"
+				[/codeblock]
 			</description>
 		</method>
 		<method name="simplify_path" qualifiers="const">
