@@ -84,6 +84,41 @@
 #include <cstdint>
 #include <limits>
 
+static Ref<ImporterMesh> _mesh_to_importer_mesh(Ref<Mesh> p_mesh) {
+	Ref<ImporterMesh> importer_mesh;
+	importer_mesh.instantiate();
+	if (p_mesh.is_null()) {
+		return importer_mesh;
+	}
+
+	Ref<ArrayMesh> array_mesh = p_mesh;
+	if (p_mesh->get_blend_shape_count()) {
+		ArrayMesh::BlendShapeMode shape_mode = ArrayMesh::BLEND_SHAPE_MODE_NORMALIZED;
+		if (array_mesh.is_valid()) {
+			shape_mode = array_mesh->get_blend_shape_mode();
+		}
+		importer_mesh->set_blend_shape_mode(shape_mode);
+		for (int morph_i = 0; morph_i < p_mesh->get_blend_shape_count(); morph_i++) {
+			importer_mesh->add_blend_shape(p_mesh->get_blend_shape_name(morph_i));
+		}
+	}
+	for (int32_t surface_i = 0; surface_i < p_mesh->get_surface_count(); surface_i++) {
+		Array array = p_mesh->surface_get_arrays(surface_i);
+		Ref<Material> mat = p_mesh->surface_get_material(surface_i);
+		String mat_name;
+		if (mat.is_valid()) {
+			mat_name = mat->get_name();
+		} else {
+			// Assign default material when no material is assigned.
+			mat = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+		}
+		importer_mesh->add_surface(p_mesh->surface_get_primitive_type(surface_i),
+				array, p_mesh->surface_get_blend_shape_arrays(surface_i), p_mesh->surface_get_lods(surface_i), mat,
+				mat_name, p_mesh->surface_get_format(surface_i));
+	}
+	return importer_mesh;
+}
+
 Error GLTFDocument::_serialize(Ref<GLTFState> state, const String &p_path) {
 	if (!state->buffers.size()) {
 		state->buffers.push_back(Vector<uint8_t>());
@@ -5038,42 +5073,16 @@ GLTFMeshIndex GLTFDocument::_convert_mesh_to_gltf(Ref<GLTFState> state, MeshInst
 	if (p_mesh_instance->get_mesh().is_null()) {
 		return -1;
 	}
-	Ref<ImporterMesh> current_mesh;
-	current_mesh.instantiate();
+
+	Ref<Mesh> import_mesh = p_mesh_instance->get_mesh();
+	Ref<ImporterMesh> current_mesh = _mesh_to_importer_mesh(import_mesh);
 	Vector<float> blend_weights;
-	{
-		Ref<Mesh> import_mesh = p_mesh_instance->get_mesh();
-		Ref<ArrayMesh> import_array_mesh = p_mesh_instance->get_mesh();
-		if (import_mesh->get_blend_shape_count()) {
-			ArrayMesh::BlendShapeMode shape_mode = ArrayMesh::BLEND_SHAPE_MODE_NORMALIZED;
-			if (import_array_mesh.is_valid()) {
-				shape_mode = import_array_mesh->get_blend_shape_mode();
-			}
-			current_mesh->set_blend_shape_mode(shape_mode);
-			for (int morph_i = 0; morph_i < import_mesh->get_blend_shape_count(); morph_i++) {
-				current_mesh->add_blend_shape(import_mesh->get_blend_shape_name(morph_i));
-			}
-		}
-		for (int32_t surface_i = 0; surface_i < import_mesh->get_surface_count(); surface_i++) {
-			Array array = import_mesh->surface_get_arrays(surface_i);
-			Ref<Material> mat = import_mesh->surface_get_material(surface_i);
-			String mat_name;
-			if (mat.is_valid()) {
-				mat_name = mat->get_name();
-			} else {
-				// Assign default material when no material is assigned.
-				mat = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
-			}
-			current_mesh->add_surface(import_mesh->surface_get_primitive_type(surface_i),
-					array, import_mesh->surface_get_blend_shape_arrays(surface_i), import_mesh->surface_get_lods(surface_i), mat,
-					mat_name, import_mesh->surface_get_format(surface_i));
-		}
-		int32_t blend_count = import_mesh->get_blend_shape_count();
-		blend_weights.resize(blend_count);
-		for (int32_t blend_i = 0; blend_i < blend_count; blend_i++) {
-			blend_weights.write[blend_i] = 0.0f;
-		}
+	int32_t blend_count = import_mesh->get_blend_shape_count();
+	blend_weights.resize(blend_count);
+	for (int32_t blend_i = 0; blend_i < blend_count; blend_i++) {
+		blend_weights.write[blend_i] = 0.0f;
 	}
+
 	Ref<GLTFMesh> gltf_mesh;
 	gltf_mesh.instantiate();
 	Array instance_materials;
@@ -5415,8 +5424,6 @@ void GLTFDocument::_convert_grid_map_to_gltf(GridMap *p_grid_map, GLTFNodeIndex 
 		Vector3 cell_location = cells[k];
 		int32_t cell = p_grid_map->get_cell_item(
 				Vector3(cell_location.x, cell_location.y, cell_location.z));
-		ImporterMeshInstance3D *import_mesh_node = memnew(ImporterMeshInstance3D);
-		import_mesh_node->set_mesh(p_grid_map->get_mesh_library()->get_item_mesh(cell));
 		Transform3D cell_xform;
 		cell_xform.basis.set_orthogonal_index(
 				p_grid_map->get_cell_item_orientation(
@@ -5428,7 +5435,7 @@ void GLTFDocument::_convert_grid_map_to_gltf(GridMap *p_grid_map, GLTFNodeIndex 
 				Vector3(cell_location.x, cell_location.y, cell_location.z)));
 		Ref<GLTFMesh> gltf_mesh;
 		gltf_mesh.instantiate();
-		gltf_mesh = import_mesh_node;
+		gltf_mesh->set_mesh(_mesh_to_importer_mesh(p_grid_map->get_mesh_library()->get_item_mesh(cell)));
 		new_gltf_node->mesh = state->meshes.size();
 		state->meshes.push_back(gltf_mesh);
 		new_gltf_node->xform = cell_xform * p_grid_map->get_transform();
