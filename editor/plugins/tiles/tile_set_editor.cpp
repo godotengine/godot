@@ -505,7 +505,7 @@ void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_
 						for (int terrain_set_index = begin; terrain_set_index < end; terrain_set_index++) {
 							for (int l = 0; l < TileSet::CELL_NEIGHBOR_MAX; l++) {
 								TileSet::CellNeighbor bit = TileSet::CellNeighbor(l);
-								if (tile_data->is_valid_peering_bit_terrain(bit)) {
+								if (tile_data->is_valid_terrain_peering_bit(bit)) {
 									ADD_UNDO(tile_data, "terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[l]));
 								}
 							}
@@ -513,7 +513,7 @@ void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_
 					} else if (components.size() >= 2 && components[0].begins_with("terrain_set_") && components[0].trim_prefix("terrain_set_").is_valid_int() && components[1] == "terrain_") {
 						for (int terrain_index = 0; terrain_index < TileSet::CELL_NEIGHBOR_MAX; terrain_index++) {
 							TileSet::CellNeighbor bit = TileSet::CellNeighbor(terrain_index);
-							if (tile_data->is_valid_peering_bit_terrain(bit)) {
+							if (tile_data->is_valid_terrain_peering_bit(bit)) {
 								ADD_UNDO(tile_data, "terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[terrain_index]));
 							}
 						}
@@ -607,9 +607,10 @@ void TileSetEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p
 
 						if (components.size() == 2 && components[0].begins_with("terrain_set_") && components[0].trim_prefix("terrain_set_").is_valid_int() && components[1] == "mode") {
 							ADD_UNDO(tile_data, "terrain_set");
+							ADD_UNDO(tile_data, "terrain");
 							for (int l = 0; l < TileSet::CELL_NEIGHBOR_MAX; l++) {
 								TileSet::CellNeighbor bit = TileSet::CellNeighbor(l);
-								if (tile_data->is_valid_peering_bit_terrain(bit)) {
+								if (tile_data->is_valid_terrain_peering_bit(bit)) {
 									ADD_UNDO(tile_data, "terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[l]));
 								}
 							}
