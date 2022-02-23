@@ -348,9 +348,10 @@ PackedStringArray XRServer::get_suggested_pose_names(const StringName &p_tracker
 }
 
 void XRServer::_process() {
-	/* called from renderer_viewport.draw_viewports right before we start drawing our viewports */
+	// called from our main game loop before we handle physics and game logic
+	// note that we can have multiple interfaces active if we have interfaces that purely handle tracking
 
-	/* process all active interfaces */
+	// process all active interfaces
 	for (int i = 0; i < interfaces.size(); i++) {
 		if (!interfaces[i].is_valid()) {
 			// ignore, not a valid reference

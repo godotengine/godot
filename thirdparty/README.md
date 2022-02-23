@@ -474,6 +474,7 @@ Files extracted from the upstream source:
 - Files in `core/` folder.
 - `LICENSE.txt` and `CHANGELOG.md`
 
+
 ## oidn
 
 - Upstream: https://github.com/OpenImageDenoise/oidn
@@ -503,6 +504,30 @@ Patch files are provided in `oidn/patches/`.
 - core/transfer_function.cpp
 
 - scripts/resource_to_cpp.py (used in modules/denoise/resource_to_cpp.py)
+
+
+## openxr
+
+- Upstream: https://github.com/KhronosGroup/OpenXR-SDK
+- Version: 1.0.22 (458984d7f59d1ae6dc1b597d94b02e4f7132eaba, 2022)
+- License: Apache 2.0
+
+Files extracted from upstream source:
+
+- include/
+- src/common/
+- src/loader/
+- src/*.{c,h}
+- src/external/jsoncpp/include/
+- src/external/jsoncpp/src/lib_json/
+- LICENSE and COPYING.adoc
+
+Exclude:
+
+- src/external/android-jni-wrappers and src/external/jnipp (not used yet)
+- All CMake stuff: cmake/, CMakeLists.txt and *.cmake
+- All Gradle stuff: *gradle*, AndroidManifest.xml
+- All following files (and their .license files): *.{def,in,json,map,pom,rc}
 
 
 ## pcre2

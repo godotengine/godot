@@ -548,7 +548,6 @@ void RendererViewport::draw_viewports() {
 
 	// get our xr interface in case we need it
 	Ref<XRInterface> xr_interface;
-
 	XRServer *xr_server = XRServer::get_singleton();
 	if (xr_server != nullptr) {
 		// let our XR server know we're about to render our frames so we can get our frame timing
