@@ -32,6 +32,7 @@
 
 #include "core/bind/core_bind.h"
 #include "core/os/keyboard.h"
+#include "core/os/time.h"
 #include "core/script_language.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
@@ -232,6 +233,13 @@ void VersionControlEditorPlugin::_refresh_branch_list() {
 	}
 }
 
+String VersionControlEditorPlugin::_get_date_string_from(int64_t p_unix_timestamp, int64_t p_offset_minutes) const {
+	return vformat(
+			"%s %s",
+			Time::get_singleton()->get_datetime_string_from_unix_time(p_unix_timestamp + p_offset_minutes * 60, true),
+			Time::get_singleton()->get_offset_string_from_offset_minutes(p_offset_minutes));
+}
+
 void VersionControlEditorPlugin::_refresh_commit_list() {
 	CHECK_PLUGIN_INITIALIZED();
 
@@ -246,16 +254,18 @@ void VersionControlEditorPlugin::_refresh_commit_list() {
 		// Only display the first line of a commit message
 		int line_ending = commit.msg.find_char('\n');
 		String commit_display_msg = commit.msg.substr(0, line_ending);
+		String commit_date_string = _get_date_string_from(commit.unix_timestamp, commit.offset_minutes);
 
 		Dictionary meta_data;
 		meta_data["commit_id"] = commit.id;
 		meta_data["commit_title"] = commit_display_msg;
 		meta_data["commit_subtitle"] = commit.msg.substr(line_ending).strip_edges();
-		meta_data["commit_date"] = commit.date;
+		meta_data["commit_unix_timestamp"] = commit.unix_timestamp;
 		meta_data["commit_author"] = commit.author;
+		meta_data["commit_date_string"] = commit_date_string;
 
 		item->set_text(0, commit_display_msg);
-		item->set_text(1, commit.date.strip_edges());
+		item->set_text(1, commit_date_string);
 		item->set_text(2, commit.author.strip_edges());
 		item->set_metadata(0, meta_data);
 	}
@@ -591,12 +601,13 @@ void VersionControlEditorPlugin::_display_diff(int p_idx) {
 		String commit_subtitle = meta_data["commit_subtitle"];
 		String commit_date = meta_data["commit_date"];
 		String commit_author = meta_data["commit_author"];
+		String commit_date_string = meta_data["commit_date_string"];
 
 		diff->push_font(EditorNode::get_singleton()->get_gui_base()->get_font("doc_bold", "EditorFonts"));
 		diff->push_color(EditorNode::get_singleton()->get_gui_base()->get_color("accent_color", "Editor"));
 		diff->add_text(TTR("Commit:") + " " + commit_id + "\n");
 		diff->add_text(TTR("Author:") + " " + commit_author + "\n");
-		diff->add_text(TTR("Date:") + " " + commit_date + "\n");
+		diff->add_text(TTR("Date:") + " " + commit_date_string + "\n");
 		if (!commit_subtitle.empty()) {
 			diff->add_text(TTR("Subtitle:") + " " + commit_subtitle + "\n");
 		}

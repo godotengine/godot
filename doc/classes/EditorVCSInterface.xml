@@ -193,9 +193,10 @@
 			<argument index="0" name="msg" type="String" />
 			<argument index="1" name="author" type="String" />
 			<argument index="2" name="id" type="String" />
-			<argument index="3" name="date" type="String" />
+			<argument index="3" name="unix_timestamp" type="int" />
+			<argument index="4" name="offset_minutes" type="int" />
 			<description>
-				Helper function to create a commit [Dictionary] item. [code]msg[/code] is the commit message of the commit. [code]author[/code] is a human-readable string containing the author's details, e.g. the email and name configured in the VCS. [code]id[/code] is the identifier of the commit, in whichever format your VCS may provide an identifier to commits. [code]date[/code] is directly added to the commit item and displayed in the editor, and hence, it shall be a well-formatted, human-readable date string.
+				Helper function to create a commit [Dictionary] item. [code]msg[/code] is the commit message of the commit. [code]author[/code] is a single human-readable string containing all the author's details, e.g. the email and name configured in the VCS. [code]id[/code] is the identifier of the commit, in whichever format your VCS may provide an identifier to commits. [code]unix_timestamp[/code] is the UTC Unix timestamp of when the commit was created. [code]offset_minutes[/code] is the timezone offset in minutes, recorded from the system timezone where the commit was created.
 			</description>
 		</method>
 		<method name="create_diff_file">
