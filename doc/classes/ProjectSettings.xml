@@ -1813,12 +1813,6 @@
 		</member>
 		<member name="rendering/shader_compiler/shader_cache/use_zstd_compression" type="bool" setter="" getter="" default="true">
 		</member>
-		<member name="rendering/shading/overrides/force_blinn_over_ggx" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], uses faster but lower-quality Blinn model to generate blurred reflections instead of the GGX model.
-		</member>
-		<member name="rendering/shading/overrides/force_blinn_over_ggx.mobile" type="bool" setter="" getter="" default="true">
-			Lower-end override for [member rendering/shading/overrides/force_blinn_over_ggx] on mobile devices, due to performance concerns or driver support.
-		</member>
 		<member name="rendering/shading/overrides/force_lambert_over_burley" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses faster but lower-quality Lambert material lighting model instead of Burley.
 		</member>
