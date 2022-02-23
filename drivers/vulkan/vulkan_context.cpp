@@ -712,7 +712,7 @@ Error VulkanContext::_create_instance() {
 	inst_initialized = true;
 
 #ifdef USE_VOLK
-	volkLoadInstance(inst);
+	volkLoadInstanceOnly(inst);
 #endif
 
 	if (enabled_debug_utils) {
@@ -1149,6 +1149,10 @@ Error VulkanContext::_create_device() {
 	}
 
 	err = vkCreateDevice(gpu, &sdevice, nullptr, &device);
+#ifdef USE_VOLK
+	volkLoadDevice(device);
+#endif
+
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 	return OK;
