@@ -2073,6 +2073,9 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 		case WINDOW_FLAG_TRANSPARENT: {
 			//todo reimplement
 		} break;
+		case WINDOW_FLAG_NO_FOCUS: {
+			wd.no_focus = p_enabled;
+		} break;
 		default: {
 		}
 	}
@@ -2113,6 +2116,9 @@ bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
 			//todo reimplement
+		} break;
+		case WINDOW_FLAG_NO_FOCUS: {
+			return wd.no_focus;
 		} break;
 		default: {
 		}

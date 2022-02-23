@@ -1019,6 +1019,7 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 	r_style_ex = WS_EX_WINDOWEDGE;
 	if (p_main_window) {
 		r_style_ex |= WS_EX_APPWINDOW;
+		r_style |= WS_VISIBLE;
 	}
 
 	if (p_fullscreen || p_borderless) {
@@ -1037,11 +1038,15 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 			r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
 		}
 	}
-	r_style |= WS_VISIBLE;
 
 	if (p_no_activate_focus) {
 		r_style_ex |= WS_EX_TOPMOST | WS_EX_NOACTIVATE;
 	}
+
+	if (!p_borderless && !p_no_activate_focus) {
+		r_style |= WS_VISIBLE;
+	}
+
 	r_style |= WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 	r_style_ex |= WS_EX_ACCEPTFILES;
 }
@@ -1211,6 +1216,7 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 			wd.borderless = p_enabled;
 			_update_window_style(p_window);
 			_update_window_mouse_passthrough(p_window);
+			ShowWindow(wd.hWnd, wd.no_focus ? SW_SHOWNOACTIVATE : SW_SHOW); // Show the window.
 		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
 			ERR_FAIL_COND_MSG(wd.transient_parent != INVALID_WINDOW_ID && p_enabled, "Transient windows can't become on top");
@@ -1278,7 +1284,9 @@ void DisplayServerWindows::window_move_to_foreground(WindowID p_window) {
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	SetForegroundWindow(wd.hWnd);
+	if (!wd.no_focus) {
+		SetForegroundWindow(wd.hWnd);
+	}
 }
 
 bool DisplayServerWindows::window_can_draw(WindowID p_window) const {
@@ -2048,6 +2056,11 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 	// Process window messages.
 	switch (uMsg) {
+		case WM_MOUSEACTIVATE: {
+			if (windows[window_id].no_focus) {
+				return MA_NOACTIVATEANDEAT;
+			}
+		} break;
 		case WM_SETFOCUS: {
 			windows[window_id].window_has_focus = true;
 			last_focused_window = window_id;
