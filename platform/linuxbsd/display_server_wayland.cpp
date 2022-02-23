@@ -167,6 +167,7 @@ DisplayServerWayland::WindowID DisplayServerWayland::_create_window(WindowMode p
 	wd.xdg_surface = xdg_wm_base_get_xdg_surface(wls.globals.xdg_wm_base, wd.wl_surface);
 	wd.xdg_toplevel = xdg_surface_get_toplevel(wd.xdg_surface);
 
+	wl_surface_add_listener(wd.wl_surface, &wl_surface_listener, &wd);
 	xdg_surface_add_listener(wd.xdg_surface, &xdg_surface_listener, &wd);
 	xdg_toplevel_add_listener(wd.xdg_toplevel, &xdg_toplevel_listener, &wd);
 
@@ -271,7 +272,7 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 	}
 
 	// FIXME: This is a very bruteforce approach.
-	for (int i = 0; i < wls->screens.size(); i++) {
+	for (int i = 0; i < (int)wls->screens.size(); i++) {
 		ScreenData &sd = wls->screens[i];
 
 		if (sd.wl_output_name == name) {
@@ -283,9 +284,31 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 }
 
 void DisplayServerWayland::_wl_surface_on_enter(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {
+	WindowData *wd = (WindowData *)data;
+
+	wd->current_outputs.push_back(wl_output);
 }
 
 void DisplayServerWayland::_wl_surface_on_leave(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {
+	WindowData *wd = (WindowData *)data;
+
+	if (wd->current_outputs.size() != 0) {
+		// Thing that should allow to get somewhat on which screen the window is on.
+		//
+		// Due to the way Wayland isolates its windows from everything else, we can't
+		// accurately determine whether a window covers mostly one screen or the
+		// other. The closest way is to have a list for the outputs to pile up and
+		// pop either its head or tail depending on whether we're leaving the current
+		// (first in the queue) output or another one.
+		//
+		// This still has limitations, mind you, but I don't think that more can be
+		// done, at least not without another specialized protocol.
+		if (wd->current_outputs[0] == wl_output) {
+			wd->current_outputs.pop_front();
+		} else {
+			wd->current_outputs.pop_back();
+		}
+	}
 }
 
 void DisplayServerWayland::_wl_output_on_geometry(void *data, struct wl_output *wl_output, int32_t x, int32_t y, int32_t physical_width, int32_t physical_height, int32_t subpixel, const char *make, const char *model, int32_t transform) {
@@ -867,7 +890,7 @@ int DisplayServerWayland::get_screen_count() const {
 Point2i DisplayServerWayland::screen_get_position(int p_screen) const {
 	MutexLock mutex_lock(wls.mutex);
 
-	ERR_FAIL_INDEX_V(p_screen, wls.screens.size(), Point2i());
+	ERR_FAIL_INDEX_V(p_screen, (int)wls.screens.size(), Point2i());
 
 	return wls.screens[p_screen].position;
 }
@@ -875,7 +898,7 @@ Point2i DisplayServerWayland::screen_get_position(int p_screen) const {
 Size2i DisplayServerWayland::screen_get_size(int p_screen) const {
 	MutexLock mutex_lock(wls.mutex);
 
-	ERR_FAIL_INDEX_V(p_screen, wls.screens.size(), Size2i());
+	ERR_FAIL_INDEX_V(p_screen, (int)wls.screens.size(), Size2i());
 
 	return wls.screens[p_screen].size;
 }
@@ -899,7 +922,7 @@ float DisplayServerWayland::screen_get_refresh_rate(int p_screen) const {
 		p_screen = window_get_current_screen();
 	}
 
-	ERR_FAIL_INDEX_V(p_screen, wls.screens.size(), -1);
+	ERR_FAIL_INDEX_V(p_screen, (int)wls.screens.size(), -1);
 
 	return wls.screens[p_screen].refresh_rate;
 }
@@ -1030,9 +1053,28 @@ void DisplayServerWayland::window_set_drop_files_callback(const Callable &p_call
 }
 
 int DisplayServerWayland::window_get_current_screen(DisplayServer::WindowID p_window) const {
-	// TODO
-	print_verbose("wayland stub window_get_current_screen");
-	return 0;
+	MutexLock mutex_lock(wls.mutex);
+
+	// We've got only one screen, we don't need to even bother about which screen
+	// this window is on.
+	if (wls.screens.size() < 2) {
+		return 0;
+	}
+
+	const WindowData &wd = wls.windows[p_window];
+
+	if (wd.current_outputs.size() == 0) {
+		return 0;
+	}
+
+	// TODO: Perhaps cache this value at the time the window enters into a screen.
+	for (int i = 0; i < (int)wls.screens.size(); i++) {
+		if (wls.screens[i].wl_output == wd.current_outputs[0]) {
+			return i;
+		}
+	}
+
+	ERR_FAIL_V_MSG(0, "Window is on invalid screen.");
 }
 
 void DisplayServerWayland::window_set_current_screen(int p_screen, DisplayServer::WindowID p_window) {

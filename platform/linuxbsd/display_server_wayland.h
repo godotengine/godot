@@ -100,6 +100,8 @@ class DisplayServerWayland : public DisplayServer {
 		struct xdg_surface *xdg_surface = nullptr;
 		struct xdg_toplevel *xdg_toplevel = nullptr;
 
+		List<wl_output *> current_outputs;
+
 		bool buffer_created = false;
 
 		VSyncMode vsync_mode;
@@ -277,6 +279,11 @@ class DisplayServerWayland : public DisplayServer {
 	static constexpr struct wl_registry_listener registry_listener = {
 		.global = _wl_registry_on_global,
 		.global_remove = _wl_registry_on_global_remove,
+	};
+
+	static constexpr struct wl_surface_listener wl_surface_listener = {
+		.enter = _wl_surface_on_enter,
+		.leave = _wl_surface_on_leave,
 	};
 
 	static constexpr struct wl_output_listener wl_output_listener = {
