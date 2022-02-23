@@ -72,6 +72,7 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "debug/export_console_script", PROPERTY_HINT_ENUM, "No,Debug Only,Debug and Release"), 1));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.png,*.icns"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/bundle_identifier", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/signature"), ""));
@@ -677,6 +678,19 @@ Error EditorExportPlatformOSX::_create_dmg(const String &p_dmg_path, const Strin
 	return OK;
 }
 
+Error EditorExportPlatformOSX::_export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path) {
+	FileAccessRef f = FileAccess::open(p_path, FileAccess::WRITE);
+	ERR_FAIL_COND_V(!f, ERR_CANT_CREATE);
+
+	f->store_line("#!/bin/sh");
+	f->store_line("echo -ne '\\033c\\033]0;" + p_app_name + "\\a'");
+	f->store_line("function realpath() { python -c \"import os,sys; print(os.path.realpath(sys.argv[1]))\" \"$0\"; }");
+	f->store_line("base_path=\"$(dirname \"$(realpath \"$0\")\")\"");
+	f->store_line("\"$base_path/" + p_pkg_name + "\" \"$@\"");
+
+	return OK;
+}
+
 Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
@@ -743,22 +757,30 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 	// Create our application bundle.
 	String tmp_app_dir_name = pkg_name + ".app";
+	String tmp_base_path_name;
 	String tmp_app_path_name;
+	String scr_path;
 	if (export_format == "app") {
+		tmp_base_path_name = p_path.get_base_dir();
 		tmp_app_path_name = p_path;
+		scr_path = p_path.get_basename() + ".command";
 	} else {
-		tmp_app_path_name = EditorPaths::get_singleton()->get_cache_dir().plus_file(tmp_app_dir_name);
+		tmp_base_path_name = EditorPaths::get_singleton()->get_cache_dir().plus_file(pkg_name);
+		tmp_app_path_name = tmp_base_path_name.plus_file(tmp_app_dir_name);
+		scr_path = tmp_base_path_name.plus_file(pkg_name + ".command");
 	}
+
 	print_verbose("Exporting to " + tmp_app_path_name);
 
 	Error err = OK;
 
-	DirAccessRef tmp_app_dir = DirAccess::create_for_path(tmp_app_path_name);
+	DirAccessRef tmp_app_dir = DirAccess::create_for_path(tmp_base_path_name);
 	if (!tmp_app_dir) {
 		err = ERR_CANT_CREATE;
 	}
 
-	if (DirAccess::exists(tmp_app_dir_name)) {
+	DirAccess::remove_file_or_error(scr_path);
+	if (DirAccess::exists(tmp_app_path_name)) {
 		if (tmp_app_dir->change_dir(tmp_app_path_name) == OK) {
 			tmp_app_dir->erase_contents_recursive();
 		}
@@ -1039,6 +1061,15 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		err = ERR_FILE_NOT_FOUND;
 	}
 
+	// Save console script.
+	if (err == OK) {
+		int con_scr = p_preset->get("debug/export_console_script");
+		if ((con_scr == 1 && p_debug) || (con_scr == 2)) {
+			err = _export_debug_script(p_preset, pkg_name, tmp_app_path_name.get_file() + "/Contents/MacOS/" + pkg_name, scr_path);
+			FileAccess::set_unix_permissions(scr_path, 0755);
+		}
+	}
+
 	if (err == OK) {
 		if (ep.step(TTR("Making PKG"), 1)) {
 			return ERR_SKIP;
@@ -1275,7 +1306,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				if (ep.step(TTR("Making DMG"), 3)) {
 					return ERR_SKIP;
 				}
-				err = _create_dmg(p_path, pkg_name, tmp_app_path_name);
+				err = _create_dmg(p_path, pkg_name, tmp_base_path_name);
 			}
 			// Sign DMG.
 			if (err == OK && sign_enabled && !ad_hoc) {
@@ -1298,7 +1329,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				zlib_filefunc_def io_dst = zipio_create_io_from_file(&dst_f);
 				zipFile zip = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io_dst);
 
-				_zip_folder_recursive(zip, EditorPaths::get_singleton()->get_cache_dir(), pkg_name + ".app", pkg_name);
+				_zip_folder_recursive(zip, tmp_base_path_name, "", pkg_name);
 
 				zipClose(zip, nullptr);
 			}
@@ -1326,10 +1357,10 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			tmp_app_dir->remove(ent_path);
 		}
 		if (export_format != "app") {
-			if (tmp_app_dir->change_dir(tmp_app_path_name) == OK) {
+			if (tmp_app_dir->change_dir(tmp_base_path_name) == OK) {
 				tmp_app_dir->erase_contents_recursive();
 				tmp_app_dir->change_dir("..");
-				tmp_app_dir->remove(tmp_app_dir_name);
+				tmp_app_dir->remove(pkg_name);
 			}
 		}
 	}
@@ -1338,7 +1369,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 }
 
 void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String &p_root_path, const String &p_folder, const String &p_pkg_name) {
-	String dir = p_root_path.plus_file(p_folder);
+	String dir = p_folder.is_empty() ? p_root_path : p_root_path.plus_file(p_folder);
 
 	DirAccessRef da = DirAccess::open(dir);
 	da->list_dir_begin();
@@ -1392,7 +1423,7 @@ void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String
 		} else if (da->current_is_dir()) {
 			_zip_folder_recursive(p_zip, p_root_path, p_folder.plus_file(f), p_pkg_name);
 		} else {
-			bool is_executable = (p_folder.ends_with("MacOS") && (f == p_pkg_name)) || p_folder.ends_with("Helpers");
+			bool is_executable = (p_folder.ends_with("MacOS") && (f == p_pkg_name)) || p_folder.ends_with("Helpers") || f.ends_with(".command");
 
 			OS::Time time = OS::get_singleton()->get_time();
 			OS::Date date = OS::get_singleton()->get_date();

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  export_plugin.h                                                      */
+/*  export_plugin.cpp                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,26 +28,47 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WINDOWS_EXPORT_PLUGIN_H
-#define WINDOWS_EXPORT_PLUGIN_H
+#include "export_plugin.h"
 
-#include "core/io/file_access.h"
-#include "core/os/os.h"
-#include "editor/editor_export.h"
-#include "editor/editor_settings.h"
-#include "platform/windows/logo.gen.h"
+#include "core/config/project_settings.h"
+#include "editor/editor_node.h"
 
-class EditorExportPlatformWindows : public EditorExportPlatformPC {
-	void _rcedit_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path);
-	Error _code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path);
-	Error _export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path);
+Error EditorExportPlatformLinuxBSD::_export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path) {
+	FileAccessRef f = FileAccess::open(p_path, FileAccess::WRITE);
+	ERR_FAIL_COND_V(!f, ERR_CANT_CREATE);
 
-public:
-	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
-	virtual Error sign_shared_object(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path) override;
-	virtual void get_export_options(List<ExportOption> *r_options) override;
-	virtual bool get_export_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const override;
-	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;
-};
+	f->store_line("#!/bin/sh");
+	f->store_line("echo -ne '\\033c\\033]0;" + p_app_name + "\\a'");
+	f->store_line("base_path=\"$(dirname \"$(realpath \"$0\")\")\"");
+	f->store_line("\"$base_path/" + p_pkg_name + "\" \"$@\"");
 
-#endif
+	return OK;
+}
+
+Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, p_path, p_flags);
+
+	if (err != OK) {
+		return err;
+	}
+
+	String app_name;
+	if (String(ProjectSettings::get_singleton()->get("application/config/name")) != "") {
+		app_name = String(ProjectSettings::get_singleton()->get("application/config/name"));
+	} else {
+		app_name = "Unnamed";
+	}
+	app_name = OS::get_singleton()->get_safe_dir_name(app_name);
+
+	// Save console script.
+	if (err == OK) {
+		int con_scr = p_preset->get("debug/export_console_script");
+		if ((con_scr == 1 && p_debug) || (con_scr == 2)) {
+			String scr_path = p_path.get_basename() + ".sh";
+			err = _export_debug_script(p_preset, app_name, p_path.get_file(), scr_path);
+			FileAccess::set_unix_permissions(scr_path, 0755);
+		}
+	}
+
+	return err;
+}

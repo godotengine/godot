@@ -66,6 +66,7 @@ class EditorExportPlatformOSX : public EditorExportPlatform {
 			const String &p_ent_path);
 	Error _create_dmg(const String &p_dmg_path, const String &p_pkg_name, const String &p_app_path_name);
 	void _zip_folder_recursive(zipFile &p_zip, const String &p_root_path, const String &p_folder, const String &p_pkg_name);
+	Error _export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path);
 
 	bool use_codesign() const { return true; }
 #ifdef OSX_ENABLED
