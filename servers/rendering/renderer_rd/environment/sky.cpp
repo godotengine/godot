@@ -1319,6 +1319,9 @@ void SkyRD::setup(RID p_env, RID p_render_buffers, const PagedArray<RID> &p_ligh
 	sky_scene_state.ubo.fog_light_color[2] = fog_color.b * fog_energy;
 	sky_scene_state.ubo.fog_sun_scatter = RendererSceneRenderRD::get_singleton()->environment_get_fog_sun_scatter(p_env);
 
+	sky_scene_state.ubo.fog_sky_affect = RendererSceneRenderRD::get_singleton()->environment_get_fog_sky_affect(p_env);
+	sky_scene_state.ubo.volumetric_fog_sky_affect = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_sky_affect(p_env);
+
 	RD::get_singleton()->buffer_update(sky_scene_state.uniform_buffer, 0, sizeof(SkySceneState::UBO), &sky_scene_state.ubo);
 }
 
