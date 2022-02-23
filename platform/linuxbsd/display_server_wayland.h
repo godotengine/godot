@@ -117,6 +117,26 @@ class DisplayServerWayland : public DisplayServer {
 		List<WaylandMessage> *message_queue;
 	};
 
+	struct ScreenData {
+		struct wl_output *wl_output;
+		uint32_t wl_output_name = 0;
+
+		String name;
+		String description;
+
+		// Geometry data.
+		Point2i position;
+
+		String make;
+		String model;
+
+		Size2i size;
+		Size2i physical_size;
+
+		float refresh_rate;
+		int scale;
+	};
+
 	struct PointerData {
 		Point2i position;
 		WindowID focused_window_id = INVALID_WINDOW_ID;
@@ -182,6 +202,8 @@ class DisplayServerWayland : public DisplayServer {
 		WindowID window_id_counter = MAIN_WINDOW_ID;
 		Map<WindowID, WindowData> windows;
 
+		LocalVector<ScreenData> screens;
+
 		PointerState pointer_state;
 		KeyboardState keyboard_state;
 
@@ -215,6 +237,16 @@ class DisplayServerWayland : public DisplayServer {
 	static void _wl_registry_on_global(void *data, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version);
 	static void _wl_registry_on_global_remove(void *data, struct wl_registry *wl_registry, uint32_t name);
 
+	static void _wl_surface_on_enter(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output);
+	static void _wl_surface_on_leave(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output);
+
+	static void _wl_output_on_geometry(void *data, struct wl_output *wl_output, int32_t x, int32_t y, int32_t physical_width, int32_t physical_height, int32_t subpixel, const char *make, const char *model, int32_t transform);
+	static void _wl_output_on_mode(void *data, struct wl_output *wl_output, uint32_t flags, int32_t width, int32_t height, int32_t refresh);
+	static void _wl_output_on_done(void *data, struct wl_output *wl_output);
+	static void _wl_output_on_scale(void *data, struct wl_output *wl_output, int32_t factor);
+	static void _wl_output_on_name(void *data, struct wl_output *wl_output, const char *name);
+	static void _wl_output_on_description(void *data, struct wl_output *wl_output, const char *description);
+
 	static void _wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat, uint32_t capabilities);
 	static void _wl_seat_on_name(void *data, struct wl_seat *wl_seat, const char *name);
 
@@ -245,6 +277,15 @@ class DisplayServerWayland : public DisplayServer {
 	static constexpr struct wl_registry_listener registry_listener = {
 		.global = _wl_registry_on_global,
 		.global_remove = _wl_registry_on_global_remove,
+	};
+
+	static constexpr struct wl_output_listener wl_output_listener = {
+		.geometry = _wl_output_on_geometry,
+		.mode = _wl_output_on_mode,
+		.done = _wl_output_on_done,
+		.scale = _wl_output_on_scale,
+		.name = _wl_output_on_name,
+		.description = _wl_output_on_description,
 	};
 
 	static constexpr struct wl_seat_listener wl_seat_listener = {

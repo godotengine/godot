@@ -220,6 +220,19 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 		return;
 	}
 
+	if (strcmp(interface, wl_output_interface.name) == 0) {
+		ScreenData sd;
+		sd.wl_output = (struct wl_output *)wl_registry_bind(wl_registry, name, &wl_output_interface, version);
+		sd.wl_output_name = name;
+
+		wls->screens.push_back(sd);
+
+		// `LocalVector` copies the value, so we have to pass its new reference.
+		wl_output_add_listener(sd.wl_output, &wl_output_listener, &wls->screens[wls->screens.size() - 1]);
+
+		return;
+	}
+
 	if (strcmp(interface, wl_seat_interface.name) == 0) {
 		globals.wl_seat = (struct wl_seat *)wl_registry_bind(wl_registry, name, &wl_seat_interface, version);
 		globals.wl_seat_name = name;
@@ -256,6 +269,81 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 		globals.wl_compositor = nullptr;
 		return;
 	}
+
+	// FIXME: This is a very bruteforce approach.
+	for (int i = 0; i < wls->screens.size(); i++) {
+		ScreenData &sd = wls->screens[i];
+
+		if (sd.wl_output_name == name) {
+			wl_output_destroy(sd.wl_output);
+			wls->screens.remove_at(i);
+			return;
+		}
+	}
+}
+
+void DisplayServerWayland::_wl_surface_on_enter(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {
+}
+
+void DisplayServerWayland::_wl_surface_on_leave(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {
+}
+
+void DisplayServerWayland::_wl_output_on_geometry(void *data, struct wl_output *wl_output, int32_t x, int32_t y, int32_t physical_width, int32_t physical_height, int32_t subpixel, const char *make, const char *model, int32_t transform) {
+	ScreenData *sd = (ScreenData *)data;
+
+	sd->position.x = x;
+	sd->position.y = y;
+
+	sd->physical_size.width = physical_width;
+	sd->physical_size.height = physical_height;
+
+	sd->make.parse_utf8(make);
+	sd->model.parse_utf8(model);
+
+	// DEBUG
+	print_line("output geometry", x, y, physical_width, physical_height, subpixel, make, model, transform);
+}
+
+void DisplayServerWayland::_wl_output_on_mode(void *data, struct wl_output *wl_output, uint32_t flags, int32_t width, int32_t height, int32_t refresh) {
+	ScreenData *sd = (ScreenData *)data;
+
+	sd->size.width = width;
+	sd->size.height = height;
+
+	sd->refresh_rate = refresh ? refresh / 1000.0f : -1;
+
+	// DEBUG
+	print_line("output mode", flags, width, height, refresh);
+}
+
+void DisplayServerWayland::_wl_output_on_done(void *data, struct wl_output *wl_output) {
+	ScreenData *sd = (ScreenData *)data;
+
+	// DEBUG
+	String info_string = vformat("%dx%d px %dx%d mm %f FPS", sd->size.width, sd->size.height, sd->physical_size.width, sd->physical_size.height, sd->refresh_rate);
+	print_line(vformat("Output done: \"%s\" ", sd->name) + info_string);
+}
+
+void DisplayServerWayland::_wl_output_on_scale(void *data, struct wl_output *wl_output, int32_t factor) {
+	ScreenData *sd = (ScreenData *)data;
+
+	sd->scale = factor;
+}
+
+void DisplayServerWayland::_wl_output_on_name(void *data, struct wl_output *wl_output, const char *name) {
+	ScreenData *sd = (ScreenData *)data;
+	sd->name.parse_utf8(name);
+
+	// DEBUG
+	print_line("output name", name);
+}
+
+void DisplayServerWayland::_wl_output_on_description(void *data, struct wl_output *wl_output, const char *description) {
+	ScreenData *sd = (ScreenData *)data;
+	sd->description.parse_utf8(description);
+
+	// DEBUG
+	print_line("output description", description);
 }
 
 void DisplayServerWayland::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat, uint32_t capabilities) {
@@ -772,21 +860,24 @@ String DisplayServerWayland::clipboard_get_primary() const {
 }
 
 int DisplayServerWayland::get_screen_count() const {
-	// TODO
-	print_verbose("wayland stub get_screen_count");
-	return 1;
+	MutexLock mutex_lock(wls.mutex);
+	return wls.screens.size();
 }
 
 Point2i DisplayServerWayland::screen_get_position(int p_screen) const {
-	// TODO
-	print_verbose("wayland stub screen_get_position");
-	return Point2i(0, 0);
+	MutexLock mutex_lock(wls.mutex);
+
+	ERR_FAIL_INDEX_V(p_screen, wls.screens.size(), Point2i());
+
+	return wls.screens[p_screen].position;
 }
 
 Size2i DisplayServerWayland::screen_get_size(int p_screen) const {
-	// TODO
-	print_verbose("wayland stub screen_get_size");
-	return Point2i(1920, 1080);
+	MutexLock mutex_lock(wls.mutex);
+
+	ERR_FAIL_INDEX_V(p_screen, wls.screens.size(), Size2i());
+
+	return wls.screens[p_screen].size;
 }
 
 Rect2i DisplayServerWayland::screen_get_usable_rect(int p_screen) const {
@@ -802,9 +893,15 @@ int DisplayServerWayland::screen_get_dpi(int p_screen) const {
 }
 
 float DisplayServerWayland::screen_get_refresh_rate(int p_screen) const {
-	// TODO
-	print_verbose("wayland stub screen_get_refresh_rate");
-	return -1;
+	MutexLock mutex_lock(wls.mutex);
+
+	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
+		p_screen = window_get_current_screen();
+	}
+
+	ERR_FAIL_INDEX_V(p_screen, wls.screens.size(), -1);
+
+	return wls.screens[p_screen].refresh_rate;
 }
 
 bool DisplayServerWayland::screen_is_touchscreen(int p_screen) const {
