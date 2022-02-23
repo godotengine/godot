@@ -81,12 +81,28 @@ def get_flags():
 
 
 def build_res_file(target, source, env):
-    if env["bits"] == "32":
-        cmdbase = env["mingw_prefix_32"]
-    else:
-        cmdbase = env["mingw_prefix_64"]
-    cmdbase = cmdbase + "windres --include-dir . "
     import subprocess
+
+    try:
+        mingw_path = (
+            subprocess.Popen("cygpath -w /", shell=True, stdout=subprocess.PIPE)
+            .communicate()[0]
+            .decode("utf-8")
+            .strip()
+        )
+    except Exception:
+        mingw_path = ""
+
+    if env["bits"] == "32":
+        if os.path.exists(mingw_path + "mingw32\\bin\\windres.exe") and env["mingw_prefix_32"] == "":
+            cmdbase = mingw_path + "mingw32\\bin\\windres.exe --target=pe-i386 --include-dir . "
+        else:
+            cmdbase = env["mingw_prefix_32"] + "windres --target=pe-i386 --include-dir . "
+    else:
+        if os.path.exists(mingw_path + "mingw64\\bin\\windres.exe") and env["mingw_prefix_64"] == "":
+            cmdbase = mingw_path + "mingw64\\bin\\windres.exe --target=pe-x86-64 --include-dir . "
+        else:
+            cmdbase = env["mingw_prefix_64"] + "windres --target=pe-x86-64 --include-dir . "
 
     for x in range(len(source)):
         cmd = cmdbase + "-i " + str(source[x]) + " -o " + str(target[x])
