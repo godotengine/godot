@@ -4596,6 +4596,9 @@ String String::get_base_dir() const {
 	}
 
 	int sep = MAX(rs.rfind("/"), rs.rfind("\\"));
+	if (sep == rs.length() - 1) {
+		sep = MAX(rs.rfind("/", sep - 1), rs.rfind("\\", sep - 1));
+	}
 	if (sep == -1) {
 		return base;
 	}
