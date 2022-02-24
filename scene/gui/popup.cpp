@@ -42,26 +42,30 @@ void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
 }
 
 void Popup::_initialize_visible_parents() {
-	visible_parents.clear();
+	if (is_embedded()) {
+		visible_parents.clear();
 
-	Window *parent_window = this;
-	while (parent_window) {
-		parent_window = parent_window->get_parent_visible_window();
-		if (parent_window) {
-			visible_parents.push_back(parent_window);
-			parent_window->connect("focus_entered", callable_mp(this, &Popup::_parent_focused));
-			parent_window->connect("tree_exited", callable_mp(this, &Popup::_deinitialize_visible_parents));
+		Window *parent_window = this;
+		while (parent_window) {
+			parent_window = parent_window->get_parent_visible_window();
+			if (parent_window) {
+				visible_parents.push_back(parent_window);
+				parent_window->connect("focus_entered", callable_mp(this, &Popup::_parent_focused));
+				parent_window->connect("tree_exited", callable_mp(this, &Popup::_deinitialize_visible_parents));
+			}
 		}
 	}
 }
 
 void Popup::_deinitialize_visible_parents() {
-	for (uint32_t i = 0; i < visible_parents.size(); ++i) {
-		visible_parents[i]->disconnect("focus_entered", callable_mp(this, &Popup::_parent_focused));
-		visible_parents[i]->disconnect("tree_exited", callable_mp(this, &Popup::_deinitialize_visible_parents));
-	}
+	if (is_embedded()) {
+		for (uint32_t i = 0; i < visible_parents.size(); ++i) {
+			visible_parents[i]->disconnect("focus_entered", callable_mp(this, &Popup::_parent_focused));
+			visible_parents[i]->disconnect("tree_exited", callable_mp(this, &Popup::_deinitialize_visible_parents));
+		}
 
-	visible_parents.clear();
+		visible_parents.clear();
+	}
 }
 
 void Popup::_notification(int p_what) {
@@ -94,7 +98,7 @@ void Popup::_notification(int p_what) {
 }
 
 void Popup::_parent_focused() {
-	if (popped_up && close_on_parent_focus) {
+	if (popped_up && get_flag(FLAG_POPUP)) {
 		_close_pressed();
 	}
 }
@@ -111,19 +115,7 @@ void Popup::set_as_minsize() {
 	set_size(get_contents_minimum_size());
 }
 
-void Popup::set_close_on_parent_focus(bool p_close) {
-	close_on_parent_focus = p_close;
-}
-
-bool Popup::get_close_on_parent_focus() {
-	return close_on_parent_focus;
-}
-
 void Popup::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_close_on_parent_focus", "close"), &Popup::set_close_on_parent_focus);
-	ClassDB::bind_method(D_METHOD("get_close_on_parent_focus"), &Popup::get_close_on_parent_focus);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "close_on_parent_focus"), "set_close_on_parent_focus", "get_close_on_parent_focus");
-
 	ADD_SIGNAL(MethodInfo("popup_hide"));
 }
 
@@ -184,6 +176,7 @@ Popup::Popup() {
 	set_transient(true);
 	set_flag(FLAG_BORDERLESS, true);
 	set_flag(FLAG_RESIZE_DISABLED, true);
+	set_flag(FLAG_POPUP, true);
 
 	connect("window_input", callable_mp(this, &Popup::_input_from_window));
 }

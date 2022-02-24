@@ -54,6 +54,8 @@
 		return;
 	}
 
+	ds->popup_close(window_id);
+
 	DisplayServerOSX::WindowData &wd = ds->get_window(window_id);
 	while (wd.transient_children.size()) {
 		ds->window_set_transient(wd.transient_children.front()->get(), DisplayServerOSX::INVALID_WINDOW_ID);
