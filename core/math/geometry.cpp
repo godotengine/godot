@@ -160,8 +160,8 @@ static bool _connect_faces(_FaceClassify *p_faces, int len, int p_group) {
 					Vector3 vj2 = p_faces[j].face.vertex[l];
 					Vector3 vj1 = p_faces[j].face.vertex[(l + 1) % 3];
 
-					if (vi1.distance_to(vj1) < 0.00001 &&
-							vi2.distance_to(vj2) < 0.00001) {
+					if (vi1.distance_to(vj1) < 0.00001f &&
+							vi2.distance_to(vj2) < 0.00001f) {
 						if (p_faces[i].links[k].face != -1) {
 							ERR_PRINT("already linked\n");
 							error = true;
@@ -534,7 +534,7 @@ static inline void _build_faces(uint8_t ***p_cell_status, int x, int y, int z, i
 }
 
 PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_error) {
-#define _MIN_SIZE 1.0
+#define _MIN_SIZE 1.0f
 #define _MAX_LENGTH 20
 
 	int face_count = p_array.size();
@@ -551,7 +551,7 @@ PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_e
 		}
 	}
 
-	global_aabb.grow_by(0.01); // Avoid numerical error.
+	global_aabb.grow_by(0.01f); // Avoid numerical error.
 
 	// Determine amount of cells in grid axis.
 	int div_x, div_y, div_z;
@@ -716,7 +716,7 @@ Geometry::MeshData Geometry::build_convex_mesh(const PoolVector<Plane> &p_planes
 
 		Vector3 ref = Vector3(0.0, 1.0, 0.0);
 
-		if (ABS(p.normal.dot(ref)) > 0.95) {
+		if (ABS(p.normal.dot(ref)) > 0.95f) {
 			ref = Vector3(0.0, 0.0, 1.0); // Change axis.
 		}
 
@@ -740,7 +740,7 @@ Geometry::MeshData Geometry::build_convex_mesh(const PoolVector<Plane> &p_planes
 			Vector<Vector3> new_vertices;
 			Plane clip = p_planes[j];
 
-			if (clip.normal.dot(p.normal) > 0.95) {
+			if (clip.normal.dot(p.normal) > 0.95f) {
 				continue;
 			}
 
@@ -793,7 +793,7 @@ Geometry::MeshData Geometry::build_convex_mesh(const PoolVector<Plane> &p_planes
 		for (int j = 0; j < vertices.size(); j++) {
 			int idx = -1;
 			for (int k = 0; k < mesh.vertices.size(); k++) {
-				if (mesh.vertices[k].distance_to(vertices[j]) < 0.001) {
+				if (mesh.vertices[k].distance_to(vertices[j]) < 0.001f) {
 					idx = k;
 					break;
 				}
@@ -860,8 +860,8 @@ PoolVector<Plane> Geometry::build_cylinder_planes(real_t p_radius, real_t p_heig
 
 	for (int i = 0; i < p_sides; i++) {
 		Vector3 normal;
-		normal[(p_axis + 1) % 3] = Math::cos(i * (2.0 * Math_PI) / p_sides);
-		normal[(p_axis + 2) % 3] = Math::sin(i * (2.0 * Math_PI) / p_sides);
+		normal[(p_axis + 1) % 3] = Math::cos(i * (real_t)(2.0 * Math_PI) / p_sides);
+		normal[(p_axis + 2) % 3] = Math::sin(i * (real_t)(2.0 * Math_PI) / p_sides);
 
 		planes.push_back(Plane(normal, p_radius));
 	}
@@ -869,8 +869,8 @@ PoolVector<Plane> Geometry::build_cylinder_planes(real_t p_radius, real_t p_heig
 	Vector3 axis;
 	axis[p_axis] = 1.0;
 
-	planes.push_back(Plane(axis, p_height * 0.5));
-	planes.push_back(Plane(-axis, p_height * 0.5));
+	planes.push_back(Plane(axis, p_height * 0.5f));
+	planes.push_back(Plane(-axis, p_height * 0.5f));
 
 	return planes;
 }
@@ -881,17 +881,17 @@ PoolVector<Plane> Geometry::build_sphere_planes(real_t p_radius, int p_lats, int
 	PoolVector<Plane> planes;
 
 	Vector3 axis;
-	axis[p_axis] = 1.0;
+	axis[p_axis] = 1;
 
 	Vector3 axis_neg;
-	axis_neg[(p_axis + 1) % 3] = 1.0;
-	axis_neg[(p_axis + 2) % 3] = 1.0;
-	axis_neg[p_axis] = -1.0;
+	axis_neg[(p_axis + 1) % 3] = 1;
+	axis_neg[(p_axis + 2) % 3] = 1;
+	axis_neg[p_axis] = -1;
 
 	for (int i = 0; i < p_lons; i++) {
 		Vector3 normal;
-		normal[(p_axis + 1) % 3] = Math::cos(i * (2.0 * Math_PI) / p_lons);
-		normal[(p_axis + 2) % 3] = Math::sin(i * (2.0 * Math_PI) / p_lons);
+		normal[(p_axis + 1) % 3] = Math::cos(i * (real_t)(2.0 * Math_PI) / p_lons);
+		normal[(p_axis + 2) % 3] = Math::sin(i * (real_t)(2.0 * Math_PI) / p_lons);
 
 		planes.push_back(Plane(normal, p_radius));
 
@@ -913,23 +913,23 @@ PoolVector<Plane> Geometry::build_capsule_planes(real_t p_radius, real_t p_heigh
 	PoolVector<Plane> planes;
 
 	Vector3 axis;
-	axis[p_axis] = 1.0;
+	axis[p_axis] = 1;
 
 	Vector3 axis_neg;
-	axis_neg[(p_axis + 1) % 3] = 1.0;
-	axis_neg[(p_axis + 2) % 3] = 1.0;
-	axis_neg[p_axis] = -1.0;
+	axis_neg[(p_axis + 1) % 3] = 1;
+	axis_neg[(p_axis + 2) % 3] = 1;
+	axis_neg[p_axis] = -1;
 
 	for (int i = 0; i < p_sides; i++) {
 		Vector3 normal;
-		normal[(p_axis + 1) % 3] = Math::cos(i * (2.0 * Math_PI) / p_sides);
-		normal[(p_axis + 2) % 3] = Math::sin(i * (2.0 * Math_PI) / p_sides);
+		normal[(p_axis + 1) % 3] = Math::cos(i * (real_t)(2.0 * Math_PI) / p_sides);
+		normal[(p_axis + 2) % 3] = Math::sin(i * (real_t)(2.0 * Math_PI) / p_sides);
 
 		planes.push_back(Plane(normal, p_radius));
 
 		for (int j = 1; j <= p_lats; j++) {
 			Vector3 angle = normal.linear_interpolate(axis, j / (real_t)p_lats).normalized();
-			Vector3 pos = axis * p_height * 0.5 + angle * p_radius;
+			Vector3 pos = axis * p_height * 0.5f + angle * p_radius;
 			planes.push_back(Plane(pos, angle));
 			planes.push_back(Plane(pos * axis_neg, angle * axis_neg));
 		}
@@ -942,7 +942,7 @@ struct _AtlasWorkRect {
 	Size2i s;
 	Point2i p;
 	int idx;
-	_FORCE_INLINE_ bool operator<(const _AtlasWorkRect &p_r) const { return s.width > p_r.s.width; };
+	_FORCE_INLINE_ bool operator<(const _AtlasWorkRect &p_r) const { return s.width > p_r.s.width; }
 };
 
 struct _AtlasWorkRectResult {
@@ -1085,10 +1085,10 @@ Vector<Vector<Point2>> Geometry::_polypaths_do_operation(PolyBooleanOperation p_
 
 	// Need to scale points (Clipper's requirement for robust computation).
 	for (int i = 0; i != p_polypath_a.size(); ++i) {
-		path_a << IntPoint(p_polypath_a[i].x * SCALE_FACTOR, p_polypath_a[i].y * SCALE_FACTOR);
+		path_a << IntPoint(p_polypath_a[i].x * (real_t)SCALE_FACTOR, p_polypath_a[i].y * (real_t)SCALE_FACTOR);
 	}
 	for (int i = 0; i != p_polypath_b.size(); ++i) {
-		path_b << IntPoint(p_polypath_b[i].x * SCALE_FACTOR, p_polypath_b[i].y * SCALE_FACTOR);
+		path_b << IntPoint(p_polypath_b[i].x * (real_t)SCALE_FACTOR, p_polypath_b[i].y * (real_t)SCALE_FACTOR);
 	}
 	Clipper clp;
 	clp.AddPath(path_a, ptSubject, !is_a_open); // Forward compatible with Clipper 10.0.0.
@@ -1113,8 +1113,8 @@ Vector<Vector<Point2>> Geometry::_polypaths_do_operation(PolyBooleanOperation p_
 
 		for (Paths::size_type j = 0; j < scaled_path.size(); ++j) {
 			polypath.push_back(Point2(
-					static_cast<real_t>(scaled_path[j].X) / SCALE_FACTOR,
-					static_cast<real_t>(scaled_path[j].Y) / SCALE_FACTOR));
+					static_cast<real_t>(scaled_path[j].X) / (real_t)SCALE_FACTOR,
+					static_cast<real_t>(scaled_path[j].Y) / (real_t)SCALE_FACTOR));
 		}
 		polypaths.push_back(polypath);
 	}
@@ -1157,17 +1157,17 @@ Vector<Vector<Point2>> Geometry::_polypath_offset(const Vector<Point2> &p_polypa
 			et = etOpenRound;
 			break;
 	}
-	ClipperOffset co(2.0, 0.25 * SCALE_FACTOR); // Defaults from ClipperOffset.
+	ClipperOffset co(2.0f, 0.25f * (real_t)SCALE_FACTOR); // Defaults from ClipperOffset.
 	Path path;
 
 	// Need to scale points (Clipper's requirement for robust computation).
 	for (int i = 0; i != p_polypath.size(); ++i) {
-		path << IntPoint(p_polypath[i].x * SCALE_FACTOR, p_polypath[i].y * SCALE_FACTOR);
+		path << IntPoint(p_polypath[i].x * (real_t)SCALE_FACTOR, p_polypath[i].y * (real_t)SCALE_FACTOR);
 	}
 	co.AddPath(path, jt, et);
 
 	Paths paths;
-	co.Execute(paths, p_delta * SCALE_FACTOR); // Inflate/deflate.
+	co.Execute(paths, p_delta * (real_t)SCALE_FACTOR); // Inflate/deflate.
 
 	// Have to scale points down now.
 	Vector<Vector<Point2>> polypaths;
@@ -1179,8 +1179,8 @@ Vector<Vector<Point2>> Geometry::_polypath_offset(const Vector<Point2> &p_polypa
 
 		for (Paths::size_type j = 0; j < scaled_path.size(); ++j) {
 			polypath.push_back(Point2(
-					static_cast<real_t>(scaled_path[j].X) / SCALE_FACTOR,
-					static_cast<real_t>(scaled_path[j].Y) / SCALE_FACTOR));
+					static_cast<real_t>(scaled_path[j].X) / (real_t)SCALE_FACTOR,
+					static_cast<real_t>(scaled_path[j].Y) / (real_t)SCALE_FACTOR));
 		}
 		polypaths.push_back(polypath);
 	}
@@ -1189,7 +1189,7 @@ Vector<Vector<Point2>> Geometry::_polypath_offset(const Vector<Point2> &p_polypa
 
 real_t Geometry::calculate_convex_hull_volume(const Geometry::MeshData &p_md) {
 	if (!p_md.vertices.size()) {
-		return 0.0;
+		return 0;
 	}
 
 	// find center
@@ -1226,7 +1226,7 @@ real_t Geometry::calculate_convex_hull_volume(const Geometry::MeshData &p_md) {
 		volume += face_area * height;
 	}
 
-	volume *= (1.0 / 3.0) * 0.5;
+	volume *= (real_t)((1.0 / 3.0) * 0.5);
 	return volume;
 }
 
@@ -1394,7 +1394,7 @@ real_t Geometry::find_polygon_area(const Vector3 *p_verts, int p_num_verts) {
 		area += Math::sqrt(f.get_twice_area_squared());
 	}
 
-	return area * 0.5;
+	return area * 0.5f;
 }
 
 // adapted from:
@@ -1422,10 +1422,10 @@ void Geometry::sort_polygon_winding(Vector<Vector2> &r_verts, bool p_clockwise) 
 
 			// compute the cross product of vectors (center -> a) x (center -> b)
 			real_t det = (a.x - center.x) * (b.y - center.y) - (b.x - center.x) * (a.y - center.y);
-			if (det < 0.0) {
+			if (det < 0) {
 				return true;
 			}
-			if (det > 0.0) {
+			if (det > 0) {
 				return false;
 			}
 

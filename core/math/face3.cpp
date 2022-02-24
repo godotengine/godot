@@ -42,7 +42,7 @@ int Face3::split_by_plane(const Plane &p_plane, Face3 p_res[3], bool p_is_point_
 	int below_count = 0;
 
 	for (int i = 0; i < 3; i++) {
-		if (p_plane.has_point(vertex[i], CMP_EPSILON)) { // point is in plane
+		if (p_plane.has_point(vertex[i], (real_t)CMP_EPSILON)) { // point is in plane
 
 			ERR_FAIL_COND_V(above_count >= 4, 0);
 			above[above_count++] = vertex[i];
@@ -117,7 +117,7 @@ bool Face3::intersects_segment(const Vector3 &p_from, const Vector3 &p_dir, Vect
 
 bool Face3::is_degenerate() const {
 	Vector3 normal = vec3_cross(vertex[0] - vertex[1], vertex[0] - vertex[2]);
-	return (normal.length_squared() < CMP_EPSILON2);
+	return (normal.length_squared() < (real_t)CMP_EPSILON2);
 }
 
 Face3::Side Face3::get_side_of(const Face3 &p_face, ClockDirection p_clock_dir) const {
@@ -223,7 +223,7 @@ bool Face3::intersects_aabb(const AABB &p_aabb) const {
 
 			Vector3 axis = vec3_cross(e1, e2);
 
-			if (axis.length_squared() < 0.0001) {
+			if (axis.length_squared() < 0.0001f) {
 				continue; // coplanar
 			}
 			axis.normalize();
@@ -270,7 +270,7 @@ void Face3::get_support(const Vector3 &p_normal, const Transform &p_transform, V
 	Vector3 n = p_transform.basis.xform_inv(p_normal);
 
 	/** TEST FACE AS SUPPORT **/
-	if (get_plane().normal.dot(n) > _FACE_IS_VALID_SUPPORT_THRESHOLD) {
+	if (get_plane().normal.dot(n) > (real_t)_FACE_IS_VALID_SUPPORT_THRESHOLD) {
 		*p_count = MIN(3, p_max);
 
 		for (int i = 0; i < *p_count; i++) {
@@ -304,7 +304,7 @@ void Face3::get_support(const Vector3 &p_normal, const Transform &p_transform, V
 		// check if edge is valid as a support
 		real_t dot = (vertex[i] - vertex[(i + 1) % 3]).normalized().dot(n);
 		dot = ABS(dot);
-		if (dot < _EDGE_IS_VALID_SUPPORT_THRESHOLD) {
+		if (dot < (real_t)_EDGE_IS_VALID_SUPPORT_THRESHOLD) {
 			*p_count = MIN(2, p_max);
 
 			for (int j = 0; j < *p_count; j++) {

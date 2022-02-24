@@ -427,7 +427,7 @@ bool Vector3::is_normalized() const {
 }
 
 Vector3 Vector3::inverse() const {
-	return Vector3(1.0 / x, 1.0 / y, 1.0 / z);
+	return Vector3(1 / x, 1 / y, 1 / z);
 }
 
 void Vector3::zero() {
@@ -450,7 +450,7 @@ Vector3 Vector3::reflect(const Vector3 &p_normal) const {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V_MSG(!p_normal.is_normalized(), Vector3(), "The normal Vector3 must be normalized.");
 #endif
-	return 2.0 * p_normal * this->dot(p_normal) - *this;
+	return 2 * p_normal * this->dot(p_normal) - *this;
 }
 
 bool Vector3::is_equal_approx(const Vector3 &p_v, real_t p_tolerance) const {

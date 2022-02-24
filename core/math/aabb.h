@@ -58,7 +58,7 @@ public:
 	void set_position(const Vector3 &p_pos) { position = p_pos; }
 	const Vector3 &get_size() const { return size; }
 	void set_size(const Vector3 &p_size) { size = p_size; }
-	Vector3 get_center() const { return position + (size * 0.5); }
+	Vector3 get_center() const { return position + (size * 0.5f); }
 
 	bool operator==(const AABB &p_rval) const;
 	bool operator!=(const AABB &p_rval) const;
@@ -176,7 +176,7 @@ inline bool AABB::encloses(const AABB &p_aabb) const {
 }
 
 Vector3 AABB::get_support(const Vector3 &p_normal) const {
-	Vector3 half_extents = size * 0.5;
+	Vector3 half_extents = size * 0.5f;
 	Vector3 ofs = position + half_extents;
 
 	return Vector3(
@@ -210,7 +210,7 @@ Vector3 AABB::get_endpoint(int p_point) const {
 }
 
 bool AABB::intersects_convex_shape(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count) const {
-	Vector3 half_extents = size * 0.5;
+	Vector3 half_extents = size * 0.5f;
 	Vector3 ofs = position + half_extents;
 
 	for (int i = 0; i < p_plane_count; i++) {
@@ -252,7 +252,7 @@ bool AABB::intersects_convex_shape(const Plane *p_planes, int p_plane_count, con
 }
 
 bool AABB::inside_convex_shape(const Plane *p_planes, int p_plane_count) const {
-	Vector3 half_extents = size * 0.5;
+	Vector3 half_extents = size * 0.5f;
 	Vector3 ofs = position + half_extents;
 
 	for (int i = 0; i < p_plane_count; i++) {
@@ -322,7 +322,7 @@ inline void AABB::expand_to(const Vector3 &p_vector) {
 }
 
 void AABB::project_range_in_plane(const Plane &p_plane, real_t &r_min, real_t &r_max) const {
-	Vector3 half_extents(size.x * 0.5, size.y * 0.5, size.z * 0.5);
+	Vector3 half_extents = size * 0.5f;
 	Vector3 center(position.x + half_extents.x, position.y + half_extents.y, position.z + half_extents.z);
 
 	real_t length = p_plane.normal.abs().dot(half_extents);
@@ -360,9 +360,9 @@ inline real_t AABB::get_shortest_axis_size() const {
 }
 
 bool AABB::smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real_t t0, real_t t1) const {
-	real_t divx = 1.0 / p_dir.x;
-	real_t divy = 1.0 / p_dir.y;
-	real_t divz = 1.0 / p_dir.z;
+	real_t divx = 1 / p_dir.x;
+	real_t divy = 1 / p_dir.y;
+	real_t divz = 1 / p_dir.z;
 
 	Vector3 upbound = position + size;
 	real_t tmin, tmax, tymin, tymax, tzmin, tzmax;
@@ -412,9 +412,9 @@ void AABB::grow_by(real_t p_amount) {
 	position.x -= p_amount;
 	position.y -= p_amount;
 	position.z -= p_amount;
-	size.x += 2.0 * p_amount;
-	size.y += 2.0 * p_amount;
-	size.z += 2.0 * p_amount;
+	size.x += 2 * p_amount;
+	size.y += 2 * p_amount;
+	size.z += 2 * p_amount;
 }
 
 #endif // AABB_H

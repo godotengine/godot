@@ -161,11 +161,11 @@ Vector2 Vector2::cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, c
 	real_t t3 = t2 * t;
 
 	Vector2 out;
-	out = 0.5 *
-			((p1 * 2.0) +
+	out = 0.5f *
+			((p1 * 2) +
 					(-p0 + p2) * t +
-					(2.0 * p0 - 5.0 * p1 + 4 * p2 - p3) * t2 +
-					(-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3);
+					(2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 +
+					(-p0 + 3 * p1 - 3 * p2 + p3) * t3);
 	return out;
 }
 
@@ -173,7 +173,7 @@ Vector2 Vector2::move_toward(const Vector2 &p_to, const real_t p_delta) const {
 	Vector2 v = *this;
 	Vector2 vd = p_to - v;
 	real_t len = vd.length();
-	return len <= p_delta || len < CMP_EPSILON ? p_to : v + vd / len * p_delta;
+	return len <= p_delta || len < (real_t)CMP_EPSILON ? p_to : v + vd / len * p_delta;
 }
 
 // slide returns the component of the vector along the given plane, specified by its normal vector.
@@ -192,7 +192,7 @@ Vector2 Vector2::reflect(const Vector2 &p_normal) const {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V_MSG(!p_normal.is_normalized(), Vector2(), "The normal Vector2 must be normalized.");
 #endif
-	return 2.0 * p_normal * this->dot(p_normal) - *this;
+	return 2 * p_normal * this->dot(p_normal) - *this;
 }
 
 bool Vector2::is_equal_approx(const Vector2 &p_v) const {

@@ -83,7 +83,7 @@ int BSP_Tree::_get_points_inside(int p_node, const Vector3 *p_points, int *p_ind
 	real_t dist_min = p.distance_to(min);
 	real_t dist_max = p.distance_to(max);
 
-	if ((dist_min * dist_max) < CMP_EPSILON) { //intersection, test point by point
+	if ((dist_min * dist_max) < (real_t)CMP_EPSILON) { //intersection, test point by point
 
 		int under_count = 0;
 
@@ -213,7 +213,7 @@ int BSP_Tree::get_points_inside(const Vector3 *p_points, int p_point_count) cons
 			bounds.expand_to(p_points[i]);
 	}
 
-	Vector3 half_extents = bounds.size / 2.0;
+	Vector3 half_extents = bounds.size / 2;
 	return _get_points_inside(nodes.size() + 1, p_points, indices, bounds.pos + half_extents, half_extents, p_point_count);
 #endif
 }
@@ -530,7 +530,7 @@ BSP_Tree::BSP_Tree(const PoolVector<Face3> &p_faces, real_t p_error_radius) {
 
 	ERR_FAIL_COND(aabb.has_no_area());
 
-	int top = _bsp_create_node(faces_r.ptr(), indices, planes, nodes, aabb.get_longest_axis_size() * 0.0001);
+	int top = _bsp_create_node(faces_r.ptr(), indices, planes, nodes, aabb.get_longest_axis_size() * 0.0001f);
 
 	if (top < 0) {
 		nodes.clear();

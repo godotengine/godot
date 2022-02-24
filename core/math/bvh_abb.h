@@ -88,12 +88,12 @@ struct BVH_ABB {
 	}
 
 	POINT calculate_centre() const {
-		return POINT((calculate_size() * 0.5) + min);
+		return POINT((calculate_size() * 0.5f) + min);
 	}
 
 	real_t get_proximity_to(const BVH_ABB &p_b) const {
 		const POINT d = (min - neg_max) - (p_b.min - p_b.neg_max);
-		real_t proximity = 0.0;
+		real_t proximity = 0;
 		for (int axis = 0; axis < POINT::AXIS_COUNT; ++axis) {
 			proximity += Math::abs(d[axis]);
 		}
@@ -119,7 +119,7 @@ struct BVH_ABB {
 
 	bool intersects_plane(const Plane &p_p) const {
 		Vector3 size = calculate_size();
-		Vector3 half_extents = size * 0.5;
+		Vector3 half_extents = size * 0.5f;
 		Vector3 ofs = min + half_extents;
 
 		// forward side of plane?
@@ -143,7 +143,7 @@ struct BVH_ABB {
 
 	bool intersects_convex_optimized(const ConvexHull &p_hull, const uint32_t *p_plane_ids, uint32_t p_num_planes) const {
 		Vector3 size = calculate_size();
-		Vector3 half_extents = size * 0.5;
+		Vector3 half_extents = size * 0.5f;
 		Vector3 ofs = min + half_extents;
 
 		for (unsigned int i = 0; i < p_num_planes; i++) {
@@ -189,7 +189,7 @@ struct BVH_ABB {
 
 	bool is_point_within_hull(const ConvexHull &p_hull, const Vector3 &p_pt) const {
 		for (int n = 0; n < p_hull.num_planes; n++) {
-			if (p_hull.planes[n].distance_to(p_pt) > 0.0f) {
+			if (p_hull.planes[n].distance_to(p_pt) > 0) {
 				return false;
 			}
 		}
@@ -258,7 +258,7 @@ struct BVH_ABB {
 	// Actually surface area metric.
 	float get_area() const {
 		POINT d = calculate_size();
-		return 2.0f * (d.x * d.y + d.y * d.z + d.z * d.x);
+		return 2 * (d.x * d.y + d.y * d.z + d.z * d.x);
 	}
 
 	void set_to_max_opposite_extents() {

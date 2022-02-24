@@ -158,7 +158,7 @@ T *_nullptr() {
 #define ABSDIFF(x, y) (((x) < (y)) ? ((y) - (x)) : ((x) - (y)))
 
 #ifndef SGN
-#define SGN(m_v) (((m_v) < 0) ? (-1.0) : (+1.0))
+#define SGN(m_v) (((m_v) < 0) ? (-1.0f) : (+1.0f))
 #endif
 
 #ifndef MIN

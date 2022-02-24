@@ -43,9 +43,9 @@ real_t Quat::angle_to(const Quat &p_to) const {
 // and similar for other axes.
 // This implementation uses XYZ convention (Z is the first rotation).
 void Quat::set_euler_xyz(const Vector3 &p_euler) {
-	real_t half_a1 = p_euler.x * 0.5;
-	real_t half_a2 = p_euler.y * 0.5;
-	real_t half_a3 = p_euler.z * 0.5;
+	real_t half_a1 = p_euler.x * 0.5f;
+	real_t half_a2 = p_euler.y * 0.5f;
+	real_t half_a3 = p_euler.z * 0.5f;
 
 	// R = X(a1).Y(a2).Z(a3) convention for Euler angles.
 	// Conversion to quaternion as listed in https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19770024290.pdf (page A-2)
@@ -78,9 +78,9 @@ Vector3 Quat::get_euler_xyz() const {
 // and similar for other axes.
 // This implementation uses YXZ convention (Z is the first rotation).
 void Quat::set_euler_yxz(const Vector3 &p_euler) {
-	real_t half_a1 = p_euler.y * 0.5;
-	real_t half_a2 = p_euler.x * 0.5;
-	real_t half_a3 = p_euler.z * 0.5;
+	real_t half_a1 = p_euler.y * 0.5f;
+	real_t half_a2 = p_euler.x * 0.5f;
+	real_t half_a3 = p_euler.z * 0.5f;
 
 	// R = Y(a1).X(a2).Z(a3) convention for Euler angles.
 	// Conversion to quaternion as listed in https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19770024290.pdf (page A-6)
@@ -163,7 +163,7 @@ Quat Quat::slerp(const Quat &p_to, const real_t &p_weight) const {
 	cosom = dot(p_to);
 
 	// adjust signs (if necessary)
-	if (cosom < 0.0) {
+	if (cosom < 0) {
 		cosom = -cosom;
 		to1.x = -p_to.x;
 		to1.y = -p_to.y;
@@ -178,16 +178,16 @@ Quat Quat::slerp(const Quat &p_to, const real_t &p_weight) const {
 
 	// calculate coefficients
 
-	if ((1.0 - cosom) > CMP_EPSILON) {
+	if ((1 - cosom) > (real_t)CMP_EPSILON) {
 		// standard case (slerp)
 		omega = Math::acos(cosom);
 		sinom = Math::sin(omega);
-		scale0 = Math::sin((1.0 - p_weight) * omega) / sinom;
+		scale0 = Math::sin((1 - p_weight) * omega) / sinom;
 		scale1 = Math::sin(p_weight * omega) / sinom;
 	} else {
 		// "from" and "to" quaternions are very close
 		//  ... so we can do a linear interpolation
-		scale0 = 1.0 - p_weight;
+		scale0 = 1 - p_weight;
 		scale1 = p_weight;
 	}
 	// calculate final values
@@ -207,14 +207,14 @@ Quat Quat::slerpni(const Quat &p_to, const real_t &p_weight) const {
 
 	real_t dot = from.dot(p_to);
 
-	if (Math::absf(dot) > 0.9999) {
+	if (Math::absf(dot) > 0.9999f) {
 		return from;
 	}
 
 	real_t theta = Math::acos(dot),
-		   sinT = 1.0 / Math::sin(theta),
+		   sinT = 1 / Math::sin(theta),
 		   newFactor = Math::sin(p_weight * theta) * sinT,
-		   invFactor = Math::sin((1.0 - p_weight) * theta) * sinT;
+		   invFactor = Math::sin((1 - p_weight) * theta) * sinT;
 
 	return Quat(invFactor * from.x + newFactor * p_to.x,
 			invFactor * from.y + newFactor * p_to.y,
@@ -228,7 +228,7 @@ Quat Quat::cubic_slerp(const Quat &p_b, const Quat &p_pre_a, const Quat &p_post_
 	ERR_FAIL_COND_V_MSG(!p_b.is_normalized(), Quat(), "The end quaternion must be normalized.");
 #endif
 	//the only way to do slerp :|
-	real_t t2 = (1.0 - p_weight) * p_weight * 2;
+	real_t t2 = (1 - p_weight) * p_weight * 2;
 	Quat sp = this->slerp(p_b, p_weight);
 	Quat sq = p_pre_a.slerpni(p_post_b, p_weight);
 	return sp.slerpni(sq, t2);
@@ -246,8 +246,8 @@ void Quat::set_axis_angle(const Vector3 &axis, const real_t &angle) {
 	if (d == 0) {
 		set(0, 0, 0, 0);
 	} else {
-		real_t sin_angle = Math::sin(angle * 0.5);
-		real_t cos_angle = Math::cos(angle * 0.5);
+		real_t sin_angle = Math::sin(angle * 0.5f);
+		real_t cos_angle = Math::cos(angle * 0.5f);
 		real_t s = sin_angle / d;
 		set(axis.x * s, axis.y * s, axis.z * s,
 				cos_angle);

@@ -75,7 +75,7 @@ public:
 	// see the variable declarations for more info.
 	void params_set_node_expansion(real_t p_value) {
 		BVH_LOCKED_FUNCTION
-		if (p_value >= 0.0) {
+		if (p_value >= 0) {
 			tree._node_expansion = p_value;
 			tree._auto_node_expansion = false;
 		} else {

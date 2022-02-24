@@ -64,7 +64,7 @@ Quat TransformInterpolator::_basis_to_quat_unchecked(const Basis &p_basis) {
 	real_t trace = m.elements[0][0] + m.elements[1][1] + m.elements[2][2];
 	real_t temp[4];
 
-	if (trace > 0.0) {
+	if (trace > 0) {
 		real_t s = Math::sqrt(trace + 1.0f);
 		temp[3] = (s * 0.5f);
 		s = 0.5f / s;

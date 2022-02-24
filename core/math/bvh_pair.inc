@@ -64,9 +64,9 @@ struct ItemPairs {
 	// when the number of pairs is high, the density is high and a lower collision margin is better.
 	// when there are few local pairs, a larger margin is more optimal.
 	real_t scale_expansion_margin(real_t p_margin) const {
-		real_t x = real_t(num_pairs) * (1.0 / 9.0);
+		real_t x = (real_t)num_pairs * (real_t)(1.0 / 9.0);
 		x = MIN(x, 1.0);
-		x = 1.0 - x;
+		x = 1 - x;
 		return p_margin * x;
 	}
 };
