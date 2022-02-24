@@ -86,9 +86,10 @@ public:
 	String get_date_string_from_unix_time(int64_t p_unix_time_val) const;
 	String get_time_string_from_unix_time(int64_t p_unix_time_val) const;
 	Dictionary get_datetime_dict_from_string(String p_datetime, bool p_weekday = true) const;
-	String get_datetime_string_from_dict(Dictionary p_datetime, bool p_use_space = false) const;
-	int64_t get_unix_time_from_datetime_dict(Dictionary p_datetime) const;
+	String get_datetime_string_from_dict(const Dictionary p_datetime, bool p_use_space = false) const;
+	int64_t get_unix_time_from_datetime_dict(const Dictionary p_datetime) const;
 	int64_t get_unix_time_from_datetime_string(String p_datetime) const;
+	String get_offset_string_from_offset_minutes(int64_t p_offset_minutes) const;
 
 	// Methods that get information from OS.
 	Dictionary get_datetime_dict_from_system(bool p_utc = false) const;

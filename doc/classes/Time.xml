@@ -97,6 +97,13 @@
 				If [code]use_space[/code] is true, use a space instead of the letter T in the middle.
 			</description>
 		</method>
+		<method name="get_offset_string_from_offset_minutes" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="offset_minutes" type="int" />
+			<description>
+				Converts the given timezone offset in minutes to a timezone offset string. For example, -480 returns "-08:00", 345 returns "+05:45", and 0 returns "+00:00".
+			</description>
+		</method>
 		<method name="get_ticks_msec" qualifiers="const">
 			<return type="int" />
 			<description>
