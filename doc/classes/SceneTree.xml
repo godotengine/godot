@@ -204,7 +204,7 @@
 	</methods>
 	<members>
 		<member name="current_scene" type="Node" setter="set_current_scene" getter="get_current_scene">
-			The current scene.
+			The top node of the current scene.
 		</member>
 		<member name="debug_collisions_hint" type="bool" setter="set_debug_collisions_hint" getter="is_debugging_collisions_hint" default="false">
 			If [code]true[/code], collision shapes will be visible when running the game from the editor for debugging purposes.
@@ -213,7 +213,7 @@
 			If [code]true[/code], navigation polygons will be visible when running the game from the editor for debugging purposes.
 		</member>
 		<member name="edited_scene_root" type="Node" setter="set_edited_scene_root" getter="get_edited_scene_root">
-			The root of the edited scene.
+			The top node of the current editor scene.
 		</member>
 		<member name="multiplayer" type="MultiplayerAPI" setter="set_multiplayer" getter="get_multiplayer">
 			The default [MultiplayerAPI] instance for this [SceneTree].
