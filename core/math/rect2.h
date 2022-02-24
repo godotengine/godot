@@ -46,7 +46,7 @@ struct _NO_DISCARD_CLASS_ Rect2 {
 
 	real_t get_area() const { return size.width * size.height; }
 
-	_FORCE_INLINE_ Vector2 get_center() const { return position + (size * 0.5); }
+	_FORCE_INLINE_ Vector2 get_center() const { return position + (size * 0.5f); }
 
 	inline bool intersects(const Rect2 &p_rect, const bool p_include_borders = false) const {
 		if (p_include_borders) {
