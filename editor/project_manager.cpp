@@ -42,6 +42,7 @@
 #include "core/string/translation.h"
 #include "core/version.h"
 #include "editor/editor_file_dialog.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_themes.h"
@@ -56,10 +57,6 @@
 #include "servers/display_server.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/physics_server_2d.h"
-
-static inline String get_project_key_from_path(const String &dir) {
-	return dir.replace("/", "::");
-}
 
 class ProjectDialog : public ConfirmationDialog {
 	GDCLASS(ProjectDialog, ConfirmationDialog);
@@ -600,9 +597,6 @@ private:
 			if (dir.ends_with("/")) {
 				dir = dir.substr(0, dir.length() - 1);
 			}
-			String proj = get_project_key_from_path(dir);
-			EditorSettings::get_singleton()->set("projects/" + proj, dir);
-			EditorSettings::get_singleton()->save();
 
 			hide();
 			emit_signal(SNAME("project_created"), dir);
@@ -989,7 +983,6 @@ public:
 
 	// Can often be passed by copy
 	struct Item {
-		String project_key;
 		String project_name;
 		String description;
 		String path;
@@ -1006,8 +999,7 @@ public:
 
 		Item() {}
 
-		Item(const String &p_project,
-				const String &p_name,
+		Item(const String &p_name,
 				const String &p_description,
 				const String &p_path,
 				const String &p_icon,
@@ -1018,7 +1010,6 @@ public:
 				bool p_grayed,
 				bool p_missing,
 				int p_version) {
-			project_key = p_project;
 			project_name = p_name;
 			description = p_description;
 			path = p_path;
@@ -1034,7 +1025,7 @@ public:
 		}
 
 		_FORCE_INLINE_ bool operator==(const Item &l) const {
-			return project_key == l.project_key;
+			return path == l.path;
 		}
 	};
 
@@ -1047,6 +1038,7 @@ public:
 	void _global_menu_open_project(const Variant &p_tag);
 
 	void update_dock_menu();
+	void migrate_config();
 	void load_projects();
 	void set_search_term(String p_search_term);
 	void set_order_option(int p_option);
@@ -1062,6 +1054,8 @@ public:
 	bool is_any_project_missing() const;
 	void erase_missing_projects();
 	int refresh_project(const String &dir_path);
+	void add_project(const String &dir_path, bool favorite);
+	void save_config();
 
 private:
 	static void _bind_methods();
@@ -1082,12 +1076,15 @@ private:
 
 	String _search_term;
 	FilterOption _order_option;
-	HashSet<String> _selected_project_keys;
+	HashSet<String> _selected_project_paths;
 	String _last_clicked; // Project key
 	VBoxContainer *_scroll_children;
 	int _icon_load_index;
 
 	Vector<Item> _projects;
+
+	ConfigFile _config;
+	String _config_path;
 };
 
 struct ProjectListComparator {
@@ -1103,7 +1100,7 @@ struct ProjectListComparator {
 		}
 		switch (order_option) {
 			case PATH:
-				return a.project_key < b.project_key;
+				return a.path < b.path;
 			case EDIT_DATE:
 				return a.last_edited > b.last_edited;
 			default:
@@ -1120,6 +1117,7 @@ ProjectList::ProjectList() {
 
 	_icon_load_index = 0;
 	project_opening_initiated = false;
+	_config_path = EditorPaths::get_singleton()->get_data_dir().plus_file("projects.cfg");
 }
 
 ProjectList::~ProjectList() {
@@ -1171,9 +1169,8 @@ void ProjectList::load_project_icon(int p_index) {
 }
 
 // Load project data from p_property_key and return it in a ProjectList::Item. p_favorite is passed directly into the Item.
-ProjectList::Item ProjectList::load_project_data(const String &p_property_key, bool p_favorite) {
-	String path = EditorSettings::get_singleton()->get(p_property_key);
-	String conf = path.plus_file("project.godot");
+ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_favorite) {
+	String conf = p_path.plus_file("project.godot");
 	bool grayed = false;
 	bool missing = false;
 
@@ -1209,7 +1206,7 @@ ProjectList::Item ProjectList::load_project_data(const String &p_property_key, b
 		// when editing a project (but not when running it).
 		last_edited = FileAccess::get_modified_time(conf);
 
-		String fscache = path.plus_file(".fscache");
+		String fscache = p_path.plus_file(".fscache");
 		if (FileAccess::exists(fscache)) {
 			uint64_t cache_modified = FileAccess::get_modified_time(fscache);
 			if (cache_modified > last_edited) {
@@ -1222,9 +1219,38 @@ ProjectList::Item ProjectList::load_project_data(const String &p_property_key, b
 		print_line("Project is missing: " + conf);
 	}
 
-	const String project_key = p_property_key.get_slice("/", 1);
+	return Item(project_name, description, p_path, icon, main_scene, unsupported_features, last_edited, p_favorite, grayed, missing, config_version);
+}
 
-	return Item(project_key, project_name, description, path, icon, main_scene, unsupported_features, last_edited, p_favorite, grayed, missing, config_version);
+void ProjectList::migrate_config() {
+	// Proposal #1637 moved the project list from editor settings to a separate config file
+	// If the new config file doesn't exist, populate it from EditorSettings
+	if (FileAccess::exists(_config_path)) {
+		return;
+	}
+	print_line("Migrating legacy project list");
+
+	List<PropertyInfo> properties;
+	EditorSettings::get_singleton()->get_property_list(&properties);
+
+	for (const PropertyInfo &E : properties) {
+		// This is actually something like "projects/C:::Documents::Godot::Projects::MyGame"
+		String property_key = E.name;
+		if (!property_key.begins_with("projects/")) {
+			continue;
+		}
+
+		String path = EditorSettings::get_singleton()->get(property_key);
+		String favoriteKey = "favorite_projects/" + property_key.get_slice("/", 1);
+		bool favorite = EditorSettings::get_singleton()->has_setting(favoriteKey);
+		add_project(path, favorite);
+		if (favorite) {
+			EditorSettings::get_singleton()->erase(favoriteKey);
+		}
+		EditorSettings::get_singleton()->erase(property_key);
+	}
+
+	save_config();
 }
 
 void ProjectList::load_projects() {
@@ -1239,37 +1265,15 @@ void ProjectList::load_projects() {
 	}
 	_projects.clear();
 	_last_clicked = "";
-	_selected_project_keys.clear();
+	_selected_project_paths.clear();
 
-	// Load data
-	// TODO Would be nice to change how projects and favourites are stored... it complicates things a bit.
-	// Use a dictionary associating project path to metadata (like is_favorite).
+	List<String> sections;
+	_config.load(_config_path);
+	_config.get_sections(&sections);
 
-	List<PropertyInfo> properties;
-	EditorSettings::get_singleton()->get_property_list(&properties);
-
-	HashSet<String> favorites;
-	// Find favourites...
-	for (const PropertyInfo &E : properties) {
-		String property_key = E.name;
-		if (property_key.begins_with("favorite_projects/")) {
-			favorites.insert(property_key);
-		}
-	}
-
-	for (const PropertyInfo &E : properties) {
-		// This is actually something like "projects/C:::Documents::Godot::Projects::MyGame"
-		String property_key = E.name;
-		if (!property_key.begins_with("projects/")) {
-			continue;
-		}
-
-		String project_key = property_key.get_slice("/", 1);
-		bool favorite = favorites.has("favorite_projects/" + project_key);
-
-		Item item = load_project_data(property_key, favorite);
-
-		_projects.push_back(item);
+	for (const String &path : sections) {
+		bool favorite = _config.get_value(path, "favorite", false);
+		_projects.push_back(load_project_data(path, favorite));
 	}
 
 	// Create controls
@@ -1496,19 +1500,19 @@ void ProjectList::sort_projects() {
 
 const HashSet<String> &ProjectList::get_selected_project_keys() const {
 	// Faster if that's all you need
-	return _selected_project_keys;
+	return _selected_project_paths;
 }
 
 Vector<ProjectList::Item> ProjectList::get_selected_projects() const {
 	Vector<Item> items;
-	if (_selected_project_keys.size() == 0) {
+	if (_selected_project_paths.size() == 0) {
 		return items;
 	}
-	items.resize(_selected_project_keys.size());
+	items.resize(_selected_project_paths.size());
 	int j = 0;
 	for (int i = 0; i < _projects.size(); ++i) {
 		const Item &item = _projects[i];
-		if (_selected_project_keys.has(item.project_key)) {
+		if (_selected_project_paths.has(item.path)) {
 			items.write[j++] = item;
 		}
 	}
@@ -1522,41 +1526,40 @@ void ProjectList::ensure_project_visible(int p_index) {
 }
 
 int ProjectList::get_single_selected_index() const {
-	if (_selected_project_keys.size() == 0) {
+	if (_selected_project_paths.size() == 0) {
 		// Default selection
 		return 0;
 	}
 	String key;
-	if (_selected_project_keys.size() == 1) {
+	if (_selected_project_paths.size() == 1) {
 		// Only one selected
-		key = *_selected_project_keys.begin();
+		key = *_selected_project_paths.begin();
 	} else {
 		// Multiple selected, consider the last clicked one as "main"
 		key = _last_clicked;
 	}
 	for (int i = 0; i < _projects.size(); ++i) {
-		if (_projects[i].project_key == key) {
+		if (_projects[i].path == key) {
 			return i;
 		}
 	}
 	return 0;
 }
 
-void ProjectList::remove_project(int p_index, bool p_update_settings) {
+void ProjectList::remove_project(int p_index, bool p_update_config) {
 	const Item item = _projects[p_index]; // Take a copy
 
-	_selected_project_keys.erase(item.project_key);
+	_selected_project_paths.erase(item.path);
 
-	if (_last_clicked == item.project_key) {
+	if (_last_clicked == item.path) {
 		_last_clicked = "";
 	}
 
 	memdelete(item.control);
 	_projects.remove_at(p_index);
 
-	if (p_update_settings) {
-		EditorSettings::get_singleton()->erase("projects/" + item.project_key);
-		EditorSettings::get_singleton()->erase("favorite_projects/" + item.project_key);
+	if (p_update_config) {
+		_config.erase_section(item.path);
 		// Not actually saving the file, in case you are doing more changes to settings
 	}
 
@@ -1594,41 +1597,19 @@ void ProjectList::erase_missing_projects() {
 	}
 
 	print_line("Removed " + itos(deleted_count) + " projects from the list, remaining " + itos(remaining_count) + " projects");
-
-	EditorSettings::get_singleton()->save();
+	save_config();
 }
 
 int ProjectList::refresh_project(const String &dir_path) {
-	// Reads editor settings and reloads information about a specific project.
+	// Reloads information about a specific project.
 	// If it wasn't loaded and should be in the list, it is added (i.e new project).
 	// If it isn't in the list anymore, it is removed.
 	// If it is in the list but doesn't exist anymore, it is marked as missing.
 
-	String project_key = get_project_key_from_path(dir_path);
+	bool should_be_in_list = _config.has_section(dir_path);
+	bool is_favourite = _config.get_value(dir_path, "favorite", false);
 
-	// Read project manager settings
-	bool is_favourite = false;
-	bool should_be_in_list = false;
-	String property_key = "projects/" + project_key;
-	{
-		List<PropertyInfo> properties;
-		EditorSettings::get_singleton()->get_property_list(&properties);
-		String favorite_property_key = "favorite_projects/" + project_key;
-
-		bool found = false;
-		for (const PropertyInfo &E : properties) {
-			String prop = E.name;
-			if (!found && prop == property_key) {
-				found = true;
-			} else if (!is_favourite && prop == favorite_property_key) {
-				is_favourite = true;
-			}
-		}
-
-		should_be_in_list = found;
-	}
-
-	bool was_selected = _selected_project_keys.has(project_key);
+	bool was_selected = _selected_project_paths.has(dir_path);
 
 	// Remove item in any case
 	for (int i = 0; i < _projects.size(); ++i) {
@@ -1643,7 +1624,7 @@ int ProjectList::refresh_project(const String &dir_path) {
 	if (should_be_in_list) {
 		// Recreate it with updated info
 
-		Item item = load_project_data(property_key, is_favourite);
+		Item item = load_project_data(dir_path, is_favourite);
 
 		_projects.push_back(item);
 		create_project_item_control(_projects.size() - 1);
@@ -1651,7 +1632,7 @@ int ProjectList::refresh_project(const String &dir_path) {
 		sort_projects();
 
 		for (int i = 0; i < _projects.size(); ++i) {
-			if (_projects[i].project_key == project_key) {
+			if (_projects[i].path == dir_path) {
 				if (was_selected) {
 					select_project(i);
 					ensure_project_visible(i);
@@ -1667,13 +1648,23 @@ int ProjectList::refresh_project(const String &dir_path) {
 	return index;
 }
 
+void ProjectList::add_project(const String &dir_path, bool favorite) {
+	if (!_config.has_section(dir_path)) {
+		_config.set_value(dir_path, "favorite", favorite);
+	}
+}
+
+void ProjectList::save_config() {
+	_config.save(_config_path);
+}
+
 int ProjectList::get_project_count() const {
 	return _projects.size();
 }
 
 void ProjectList::select_project(int p_index) {
 	Vector<Item> previous_selected_items = get_selected_projects();
-	_selected_project_keys.clear();
+	_selected_project_paths.clear();
 
 	for (int i = 0; i < previous_selected_items.size(); ++i) {
 		previous_selected_items[i].control->update();
@@ -1695,7 +1686,7 @@ void ProjectList::select_first_visible_project() {
 
 	if (!found) {
 		// Deselect all projects if there are no visible projects in the list.
-		_selected_project_keys.clear();
+		_selected_project_paths.clear();
 	}
 }
 
@@ -1717,24 +1708,23 @@ void ProjectList::select_range(int p_begin, int p_end) {
 
 void ProjectList::toggle_select(int p_index) {
 	Item &item = _projects.write[p_index];
-	if (_selected_project_keys.has(item.project_key)) {
-		_selected_project_keys.erase(item.project_key);
+	if (_selected_project_paths.has(item.path)) {
+		_selected_project_paths.erase(item.path);
 	} else {
-		_selected_project_keys.insert(item.project_key);
+		_selected_project_paths.insert(item.path);
 	}
 	item.control->update();
 }
 
 void ProjectList::erase_selected_projects(bool p_delete_project_contents) {
-	if (_selected_project_keys.size() == 0) {
+	if (_selected_project_paths.size() == 0) {
 		return;
 	}
 
 	for (int i = 0; i < _projects.size(); ++i) {
 		Item &item = _projects.write[i];
-		if (_selected_project_keys.has(item.project_key) && item.control->is_visible()) {
-			EditorSettings::get_singleton()->erase("projects/" + item.project_key);
-			EditorSettings::get_singleton()->erase("favorite_projects/" + item.project_key);
+		if (_selected_project_paths.has(item.path) && item.control->is_visible()) {
+			_config.erase_section(item.path);
 
 			if (p_delete_project_contents) {
 				OS::get_singleton()->move_to_trash(item.path);
@@ -1746,9 +1736,8 @@ void ProjectList::erase_selected_projects(bool p_delete_project_contents) {
 		}
 	}
 
-	EditorSettings::get_singleton()->save();
-
-	_selected_project_keys.clear();
+	save_config();
+	_selected_project_paths.clear();
 	_last_clicked = "";
 
 	update_dock_menu();
@@ -1764,9 +1753,9 @@ void ProjectList::_panel_draw(Node *p_hb) {
 		hb->draw_line(Point2(0, hb->get_size().y + 1), Point2(hb->get_size().x, hb->get_size().y + 1), get_theme_color(SNAME("guide_color"), SNAME("Tree")));
 	}
 
-	String key = _projects[p_hb->get_index()].project_key;
+	String key = _projects[p_hb->get_index()].path;
 
-	if (_selected_project_keys.has(key)) {
+	if (_selected_project_paths.has(key)) {
 		hb->draw_style_box(get_theme_stylebox(SNAME("selected"), SNAME("Tree")), Rect2(Point2(), hb->get_size()));
 	}
 }
@@ -1778,11 +1767,11 @@ void ProjectList::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
 	const Item &clicked_project = _projects[clicked_index];
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
-		if (mb->is_shift_pressed() && _selected_project_keys.size() > 0 && !_last_clicked.is_empty() && clicked_project.project_key != _last_clicked) {
+		if (mb->is_shift_pressed() && _selected_project_paths.size() > 0 && !_last_clicked.is_empty() && clicked_project.path != _last_clicked) {
 			int anchor_index = -1;
 			for (int i = 0; i < _projects.size(); ++i) {
 				const Item &p = _projects[i];
-				if (p.project_key == _last_clicked) {
+				if (p.path == _last_clicked) {
 					anchor_index = p.control->get_index();
 					break;
 				}
@@ -1794,7 +1783,7 @@ void ProjectList::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
 			toggle_select(clicked_index);
 
 		} else {
-			_last_clicked = clicked_project.project_key;
+			_last_clicked = clicked_project.path;
 			select_project(clicked_index);
 		}
 
@@ -1816,12 +1805,8 @@ void ProjectList::_favorite_pressed(Node *p_hb) {
 
 	item.favorite = !item.favorite;
 
-	if (item.favorite) {
-		EditorSettings::get_singleton()->set("favorite_projects/" + item.project_key, item.path);
-	} else {
-		EditorSettings::get_singleton()->erase("favorite_projects/" + item.project_key);
-	}
-	EditorSettings::get_singleton()->save();
+	_config.set_value(item.path, "favorite", item.favorite);
+	save_config();
 
 	_projects.write[index] = item;
 
@@ -1831,7 +1816,7 @@ void ProjectList::_favorite_pressed(Node *p_hb) {
 
 	if (item.favorite) {
 		for (int i = 0; i < _projects.size(); ++i) {
-			if (_projects[i].project_key == item.project_key) {
+			if (_projects[i].path == item.path) {
 				ensure_project_visible(i);
 				break;
 			}
@@ -2089,6 +2074,8 @@ void ProjectManager::_on_projects_updated() {
 }
 
 void ProjectManager::_on_project_created(const String &dir) {
+	_project_list->add_project(dir, false);
+	_project_list->save_config();
 	search_box->clear();
 	int i = _project_list->refresh_project(dir);
 	_project_list->select_project(i);
@@ -2109,9 +2096,7 @@ void ProjectManager::_open_selected_projects() {
 
 	const HashSet<String> &selected_list = _project_list->get_selected_project_keys();
 
-	for (const String &E : selected_list) {
-		const String &selected = E;
-		String path = EditorSettings::get_singleton()->get("projects/" + selected);
+	for (const String &path : selected_list) {
 		String conf = path.plus_file("project.godot");
 
 		if (!FileAccess::exists(conf)) {
@@ -2120,7 +2105,7 @@ void ProjectManager::_open_selected_projects() {
 			return;
 		}
 
-		print_line("Editing project: " + path + " (" + selected + ")");
+		print_line("Editing project: " + path);
 
 		List<String> args;
 
@@ -2244,8 +2229,7 @@ void ProjectManager::_run_project_confirm() {
 			continue;
 		}
 
-		const String &selected = selected_list[i].project_key;
-		String path = EditorSettings::get_singleton()->get("projects/" + selected);
+		const String &path = selected_list[i].path;
 
 		// `.substr(6)` on `ProjectSettings::get_singleton()->get_imported_files_path()` strips away the leading "res://".
 		if (!DirAccess::exists(path.plus_file(ProjectSettings::get_singleton()->get_imported_files_path().substr(6)))) {
@@ -2254,7 +2238,7 @@ void ProjectManager::_run_project_confirm() {
 			continue;
 		}
 
-		print_line("Running project: " + path + " (" + selected + ")");
+		print_line("Running project: " + path);
 
 		List<String> args;
 
@@ -2285,7 +2269,7 @@ void ProjectManager::_run_project() {
 	}
 }
 
-void ProjectManager::_scan_dir(const String &path, List<String> *r_projects) {
+void ProjectManager::_scan_dir(const String &path) {
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	Error error = da->change_dir(path);
 	ERR_FAIL_COND_MSG(error != OK, "Could not scan directory at: " + path);
@@ -2293,26 +2277,18 @@ void ProjectManager::_scan_dir(const String &path, List<String> *r_projects) {
 	String n = da->get_next();
 	while (!n.is_empty()) {
 		if (da->current_is_dir() && !n.begins_with(".")) {
-			_scan_dir(da->get_current_dir().plus_file(n), r_projects);
+			_scan_dir(da->get_current_dir().plus_file(n));
 		} else if (n == "project.godot") {
-			r_projects->push_back(da->get_current_dir());
+			_project_list->add_project(da->get_current_dir(), false);
 		}
 		n = da->get_next();
 	}
 	da->list_dir_end();
 }
-
 void ProjectManager::_scan_begin(const String &p_base) {
 	print_line("Scanning projects at: " + p_base);
-	List<String> projects;
-	_scan_dir(p_base, &projects);
-	print_line("Found " + itos(projects.size()) + " projects.");
-
-	for (const String &E : projects) {
-		String proj = get_project_key_from_path(E);
-		EditorSettings::get_singleton()->set("projects/" + proj, E);
-	}
-	EditorSettings::get_singleton()->save();
+	_scan_dir(p_base);
+	_project_list->save_config();
 	_load_recent_projects();
 }
 
@@ -2338,9 +2314,7 @@ void ProjectManager::_rename_project() {
 	}
 
 	for (const String &E : selected_list) {
-		const String &selected = E;
-		String path = EditorSettings::get_singleton()->get("projects/" + selected);
-		npdialog->set_project_path(path);
+		npdialog->set_project_path(E);
 		npdialog->set_mode(ProjectDialog::MODE_RENAME);
 		npdialog->show_dialog();
 	}
@@ -2871,6 +2845,7 @@ ProjectManager::ProjectManager() {
 		_build_icon_type_cache(get_theme());
 	}
 
+	_project_list->migrate_config();
 	_load_recent_projects();
 
 	Ref<DirAccess> dir_access = DirAccess::create(DirAccess::AccessType::ACCESS_FILESYSTEM);
