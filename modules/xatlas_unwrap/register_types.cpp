@@ -57,6 +57,8 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 	xatlas::ChartOptions chart_options;
 	chart_options.fixWinding = true;
 
+	ERR_FAIL_COND_V_MSG(p_texel_size <= 0.0f, false, "Texel size must be greater than 0.");
+
 	xatlas::PackOptions pack_options;
 	pack_options.padding = 1;
 	pack_options.maxChartSize = 4094; // Lightmap atlassing needs 2 for padding between meshes, so 4096-2
