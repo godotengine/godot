@@ -284,7 +284,7 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 		item.documentation = symbol->render();
 	}
 
-	if ((item.kind == lsp::CompletionItemKind::Method || item.kind == lsp::CompletionItemKind::Function) && !item.label.ends_with("):")) {
+	if ((item.kind == lsp::CompletionItemKind::Method || item.kind == lsp::CompletionItemKind::Function) && !item.label.ends_with(":")) {
 		item.insertText = item.label + "(";
 		if (symbol && symbol->children.is_empty()) {
 			item.insertText += ")";
