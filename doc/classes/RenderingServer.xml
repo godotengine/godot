@@ -1650,6 +1650,17 @@
 				Sets the cull mask for this Light3D. Lights only affect objects in the selected layers. Equivalent to [member Light3D.light_cull_mask].
 			</description>
 		</method>
+		<method name="light_set_distance_fade">
+			<return type="void" />
+			<argument index="0" name="decal" type="RID" />
+			<argument index="1" name="enabled" type="bool" />
+			<argument index="2" name="begin" type="float" />
+			<argument index="3" name="shadow" type="float" />
+			<argument index="4" name="length" type="float" />
+			<description>
+				Sets the distance fade for this Light3D. This acts as a form of level of detail (LOD) and can be used to improve performance. Equivalent to [member Light3D.distance_fade_enabled], [member Light3D.distance_fade_begin], [member Light3D.distance_fade_shadow], and [member Light3D.distance_fade_length].
+			</description>
+		</method>
 		<method name="light_set_max_sdfgi_cascade">
 			<return type="void" />
 			<argument index="0" name="light" type="RID" />
