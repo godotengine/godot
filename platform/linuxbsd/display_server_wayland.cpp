@@ -214,16 +214,14 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 	WaylandGlobals &globals = wls->globals;
 
 	if (strcmp(interface, wl_compositor_interface.name) == 0) {
-		// This will select the latest version supported by the server.
-		// I'm not sure whether this is the best thing to do.
-		globals.wl_compositor = (struct wl_compositor *)wl_registry_bind(wl_registry, name, &wl_compositor_interface, version);
+		globals.wl_compositor = (struct wl_compositor *)wl_registry_bind(wl_registry, name, &wl_compositor_interface, 4);
 		globals.wl_compositor_name = name;
 		return;
 	}
 
 	if (strcmp(interface, wl_output_interface.name) == 0) {
 		ScreenData sd;
-		sd.wl_output = (struct wl_output *)wl_registry_bind(wl_registry, name, &wl_output_interface, version);
+		sd.wl_output = (struct wl_output *)wl_registry_bind(wl_registry, name, &wl_output_interface, 3);
 		sd.wl_output_name = name;
 
 		wls->screens.push_back(sd);
@@ -235,14 +233,14 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 	}
 
 	if (strcmp(interface, wl_seat_interface.name) == 0) {
-		globals.wl_seat = (struct wl_seat *)wl_registry_bind(wl_registry, name, &wl_seat_interface, version);
+		globals.wl_seat = (struct wl_seat *)wl_registry_bind(wl_registry, name, &wl_seat_interface, 7);
 		globals.wl_seat_name = name;
 		wl_seat_add_listener(globals.wl_seat, &wl_seat_listener, wls);
 		return;
 	}
 
 	if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
-		globals.xdg_wm_base = (struct xdg_wm_base *)wl_registry_bind(wl_registry, name, &xdg_wm_base_interface, version);
+		globals.xdg_wm_base = (struct xdg_wm_base *)wl_registry_bind(wl_registry, name, &xdg_wm_base_interface, 2);
 		globals.xdg_wm_base_name = name;
 		return;
 	}
@@ -340,33 +338,12 @@ void DisplayServerWayland::_wl_output_on_mode(void *data, struct wl_output *wl_o
 }
 
 void DisplayServerWayland::_wl_output_on_done(void *data, struct wl_output *wl_output) {
-	ScreenData *sd = (ScreenData *)data;
-
-	// DEBUG
-	String info_string = vformat("%dx%d px %dx%d mm %f FPS", sd->size.width, sd->size.height, sd->physical_size.width, sd->physical_size.height, sd->refresh_rate);
-	print_line(vformat("Output done: \"%s\" ", sd->name) + info_string);
 }
 
 void DisplayServerWayland::_wl_output_on_scale(void *data, struct wl_output *wl_output, int32_t factor) {
 	ScreenData *sd = (ScreenData *)data;
 
 	sd->scale = factor;
-}
-
-void DisplayServerWayland::_wl_output_on_name(void *data, struct wl_output *wl_output, const char *name) {
-	ScreenData *sd = (ScreenData *)data;
-	sd->name.parse_utf8(name);
-
-	// DEBUG
-	print_line("output name", name);
-}
-
-void DisplayServerWayland::_wl_output_on_description(void *data, struct wl_output *wl_output, const char *description) {
-	ScreenData *sd = (ScreenData *)data;
-	sd->description.parse_utf8(description);
-
-	// DEBUG
-	print_line("output description", description);
 }
 
 void DisplayServerWayland::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat, uint32_t capabilities) {
