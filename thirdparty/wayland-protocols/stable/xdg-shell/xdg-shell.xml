@@ -75,9 +75,7 @@
       <description summary="create a shell surface from a surface">
 	This creates an xdg_surface for the given surface. While xdg_surface
 	itself is not a role, the corresponding surface may only be assigned
-	a role extending xdg_surface, such as xdg_toplevel or xdg_popup. It is
-	illegal to create an xdg_surface for a wl_surface which already has an
-	assigned role and this will result in a protocol error.
+	a role extending xdg_surface, such as xdg_toplevel or xdg_popup.
 
 	This creates an xdg_surface for the given surface. An xdg_surface is
 	used as basis to define a role to a given surface, such as xdg_toplevel
@@ -391,7 +389,7 @@
 
     <request name="set_parent_configure" since="3">
       <description summary="set parent configure this is a response to">
-	Set the serial of an xdg_surface.configure event this positioner will be
+	Set the serial of a xdg_surface.configure event this positioner will be
 	used in response to. The compositor may use this information together
 	with set_parent_size to determine what future state the popup should be
 	constrained using.
@@ -427,11 +425,6 @@
       committed is a client error, and any attempts by a client to attach or
       manipulate a buffer prior to the first xdg_surface.configure call must
       also be treated as errors.
-
-      After creating a role-specific object and setting it up, the client must
-      perform an initial commit without any buffer attached. The compositor
-      will reply with an xdg_surface.configure event. The client must
-      acknowledge it and is then allowed to attach a buffer to map the surface.
 
       Mapping an xdg_surface-based role surface is defined as making it
       possible for the surface to be shown by the compositor. Note that
@@ -588,11 +581,7 @@
       by the compositor until it is explicitly mapped again.
       All active operations (e.g., move, resize) are canceled and all
       attributes (e.g. title, state, stacking, ...) are discarded for
-      an xdg_toplevel surface when it is unmapped. The xdg_toplevel returns to
-      the state it had right after xdg_surface.get_toplevel. The client
-      can re-map the toplevel by perfoming a commit without any buffer
-      attached, waiting for a configure event and handling it as usual (see
-      xdg_surface description).
+      an xdg_toplevel surface when it is unmapped.
 
       Attaching a null buffer to a toplevel unmaps the surface.
     </description>
@@ -809,25 +798,25 @@
 	</description>
       </entry>
       <entry name="tiled_left" value="5" since="2">
-	<description summary="the surface’s left edge is tiled">
+	<description summary="the surface is tiled">
 	  The window is currently in a tiled layout and the left edge is
 	  considered to be adjacent to another part of the tiling grid.
 	</description>
       </entry>
       <entry name="tiled_right" value="6" since="2">
-	<description summary="the surface’s right edge is tiled">
+	<description summary="the surface is tiled">
 	  The window is currently in a tiled layout and the right edge is
 	  considered to be adjacent to another part of the tiling grid.
 	</description>
       </entry>
       <entry name="tiled_top" value="7" since="2">
-	<description summary="the surface’s top edge is tiled">
+	<description summary="the surface is tiled">
 	  The window is currently in a tiled layout and the top edge is
 	  considered to be adjacent to another part of the tiling grid.
 	</description>
       </entry>
       <entry name="tiled_bottom" value="8" since="2">
-	<description summary="the surface’s bottom edge is tiled">
+	<description summary="the surface is tiled">
 	  The window is currently in a tiled layout and the bottom edge is
 	  considered to be adjacent to another part of the tiling grid.
 	</description>
@@ -1215,12 +1204,12 @@
 
 	If the popup is repositioned in response to a configure event for its
 	parent, the client should send an xdg_positioner.set_parent_configure
-	and possibly an xdg_positioner.set_parent_size request to allow the
+	and possibly a xdg_positioner.set_parent_size request to allow the
 	compositor to properly constrain the popup.
 
 	If the popup is repositioned together with a parent that is being
 	resized, but not in response to a configure event, the client should
-	send an xdg_positioner.set_parent_size request.
+	send a xdg_positioner.set_parent_size request.
       </description>
       <arg name="positioner" type="object" interface="xdg_positioner"/>
       <arg name="token" type="uint" summary="reposition request token"/>

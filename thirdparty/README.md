@@ -674,7 +674,7 @@ Patches in the `patches` directory should be re-applied after updates (order mus
 ## wayland
 
 - Upstream: https://gitlab.freedesktop.org/wayland/wayland
-- Version: 1.20.0 (75c1a93e2067220fa06208f20f8f096bb463ec08, 2021)
+- Version: 1.18.0 (eb1339edd398b9f5328816931e585db4229aa132, 2020)
 - License: MIT
 
 Files extracted from upstream source:
@@ -686,7 +686,7 @@ Files extracted from upstream source:
 # wayland-protocols
 
 - Upstream: https://gitlab.freedesktop.org/wayland/wayland-protocols
-- Version: 1.24 (bb7b3985eded147104331830a370195dffd1cdab, 2021)
+- Version: 1.20 (b0a25f26d3e8b5ad24773881a9a895dd9cc75466, 2020)
 - License: MIT
 
 Files extracted from upstream source:
