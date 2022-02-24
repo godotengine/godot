@@ -56,6 +56,7 @@
 #include "camera/camera_feed.h"
 #include "camera_server.h"
 #include "core/extension/native_extension_manager.h"
+#include "debugger/servers_debugger.h"
 #include "display_server.h"
 #include "navigation_server_2d.h"
 #include "navigation_server_3d.h"
@@ -80,7 +81,7 @@
 ShaderTypes *shader_types = nullptr;
 
 PhysicsServer3D *_createGodotPhysics3DCallback() {
-	bool using_threads = GLOBAL_GET("physics/3d/run_on_thread");
+	bool using_threads = GLOBAL_GET("physics/3d/run_on_separate_thread");
 
 	PhysicsServer3D *physics_server = memnew(GodotPhysicsServer3D(using_threads));
 
@@ -88,7 +89,7 @@ PhysicsServer3D *_createGodotPhysics3DCallback() {
 }
 
 PhysicsServer2D *_createGodotPhysics2DCallback() {
-	bool using_threads = GLOBAL_GET("physics/2d/run_on_thread");
+	bool using_threads = GLOBAL_GET("physics/2d/run_on_separate_thread");
 
 	PhysicsServer2D *physics_server = memnew(GodotPhysicsServer2D(using_threads));
 
@@ -140,7 +141,7 @@ void register_server_types() {
 	GDREGISTER_CLASS(AudioStreamPlayback);
 	GDREGISTER_VIRTUAL_CLASS(AudioStreamPlaybackResampled);
 	GDREGISTER_CLASS(AudioStreamMicrophone);
-	GDREGISTER_CLASS(AudioStreamRandomPitch);
+	GDREGISTER_CLASS(AudioStreamRandomizer);
 	GDREGISTER_VIRTUAL_CLASS(AudioEffect);
 	GDREGISTER_VIRTUAL_CLASS(AudioEffectInstance);
 	GDREGISTER_CLASS(AudioEffectEQ);
@@ -223,6 +224,8 @@ void register_server_types() {
 	GDREGISTER_CLASS(PhysicsTestMotionParameters3D);
 	GDREGISTER_CLASS(PhysicsTestMotionResult3D);
 
+	ServersDebugger::initialize();
+
 	// Physics 2D
 	GLOBAL_DEF(PhysicsServer2DManager::setting_property_name, "DEFAULT");
 	ProjectSettings::get_singleton()->set_custom_property_info(PhysicsServer2DManager::setting_property_name, PropertyInfo(Variant::STRING, PhysicsServer2DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"));
@@ -241,6 +244,8 @@ void register_server_types() {
 }
 
 void unregister_server_types() {
+	ServersDebugger::deinitialize();
+
 	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
 
 	memdelete(shader_types);

@@ -30,6 +30,9 @@
 
 #include "vector2.h"
 
+#include "core/math/vector2i.h"
+#include "core/string/ustring.h"
+
 real_t Vector2::angle() const {
 	return Math::atan2(y, x);
 }
@@ -150,22 +153,10 @@ Vector2 Vector2::limit_length(const real_t p_len) const {
 }
 
 Vector2 Vector2::cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, const real_t p_weight) const {
-	Vector2 p0 = p_pre_a;
-	Vector2 p1 = *this;
-	Vector2 p2 = p_b;
-	Vector2 p3 = p_post_b;
-
-	real_t t = p_weight;
-	real_t t2 = t * t;
-	real_t t3 = t2 * t;
-
-	Vector2 out;
-	out = 0.5 *
-			((p1 * 2.0) +
-					(-p0 + p2) * t +
-					(2.0 * p0 - 5.0 * p1 + 4 * p2 - p3) * t2 +
-					(-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3);
-	return out;
+	Vector2 res = *this;
+	res.x = Math::cubic_interpolate(res.x, p_b.x, p_pre_a.x, p_post_b.x, p_weight);
+	res.y = Math::cubic_interpolate(res.y, p_b.y, p_pre_a.y, p_post_b.y, p_weight);
+	return res;
 }
 
 Vector2 Vector2::move_toward(const Vector2 &p_to, const real_t p_delta) const {
@@ -191,7 +182,7 @@ Vector2 Vector2::reflect(const Vector2 &p_normal) const {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V_MSG(!p_normal.is_normalized(), Vector2(), "The normal Vector2 must be normalized.");
 #endif
-	return 2.0 * p_normal * this->dot(p_normal) - *this;
+	return 2.0f * p_normal * this->dot(p_normal) - *this;
 }
 
 bool Vector2::is_equal_approx(const Vector2 &p_v) const {
@@ -202,91 +193,6 @@ Vector2::operator String() const {
 	return "(" + String::num_real(x, false) + ", " + String::num_real(y, false) + ")";
 }
 
-/* Vector2i */
-
-Vector2i Vector2i::clamp(const Vector2i &p_min, const Vector2i &p_max) const {
-	return Vector2i(
-			CLAMP(x, p_min.x, p_max.x),
-			CLAMP(y, p_min.y, p_max.y));
-}
-
-int64_t Vector2i::length_squared() const {
-	return x * (int64_t)x + y * (int64_t)y;
-}
-
-double Vector2i::length() const {
-	return Math::sqrt((double)length_squared());
-}
-
-Vector2i Vector2i::operator+(const Vector2i &p_v) const {
-	return Vector2i(x + p_v.x, y + p_v.y);
-}
-
-void Vector2i::operator+=(const Vector2i &p_v) {
-	x += p_v.x;
-	y += p_v.y;
-}
-
-Vector2i Vector2i::operator-(const Vector2i &p_v) const {
-	return Vector2i(x - p_v.x, y - p_v.y);
-}
-
-void Vector2i::operator-=(const Vector2i &p_v) {
-	x -= p_v.x;
-	y -= p_v.y;
-}
-
-Vector2i Vector2i::operator*(const Vector2i &p_v1) const {
-	return Vector2i(x * p_v1.x, y * p_v1.y);
-}
-
-Vector2i Vector2i::operator*(const int32_t &rvalue) const {
-	return Vector2i(x * rvalue, y * rvalue);
-}
-
-void Vector2i::operator*=(const int32_t &rvalue) {
-	x *= rvalue;
-	y *= rvalue;
-}
-
-Vector2i Vector2i::operator/(const Vector2i &p_v1) const {
-	return Vector2i(x / p_v1.x, y / p_v1.y);
-}
-
-Vector2i Vector2i::operator/(const int32_t &rvalue) const {
-	return Vector2i(x / rvalue, y / rvalue);
-}
-
-void Vector2i::operator/=(const int32_t &rvalue) {
-	x /= rvalue;
-	y /= rvalue;
-}
-
-Vector2i Vector2i::operator%(const Vector2i &p_v1) const {
-	return Vector2i(x % p_v1.x, y % p_v1.y);
-}
-
-Vector2i Vector2i::operator%(const int32_t &rvalue) const {
-	return Vector2i(x % rvalue, y % rvalue);
-}
-
-void Vector2i::operator%=(const int32_t &rvalue) {
-	x %= rvalue;
-	y %= rvalue;
-}
-
-Vector2i Vector2i::operator-() const {
-	return Vector2i(-x, -y);
-}
-
-bool Vector2i::operator==(const Vector2i &p_vec2) const {
-	return x == p_vec2.x && y == p_vec2.y;
-}
-
-bool Vector2i::operator!=(const Vector2i &p_vec2) const {
-	return x != p_vec2.x || y != p_vec2.y;
-}
-
-Vector2i::operator String() const {
-	return "(" + itos(x) + ", " + itos(y) + ")";
+Vector2::operator Vector2i() const {
+	return Vector2i(x, y);
 }

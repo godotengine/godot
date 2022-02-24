@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="@GlobalScope" version="4.0">
+<class name="@GlobalScope" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Global scope constants and functions.
 	</brief_description>
@@ -219,6 +219,17 @@
 				# Prints 1.543081
 				print(cosh(1))
 				[/codeblock]
+			</description>
+		</method>
+		<method name="cubic_interpolate">
+			<return type="float" />
+			<argument index="0" name="from" type="float" />
+			<argument index="1" name="to" type="float" />
+			<argument index="2" name="pre" type="float" />
+			<argument index="3" name="post" type="float" />
+			<argument index="4" name="weight" type="float" />
+			<description>
+				Cubic interpolates between two values by the factor defined in [code]weight[/code] with pre and post values.
 			</description>
 		</method>
 		<method name="db2linear">
@@ -1266,6 +1277,12 @@
 		</constant>
 		<constant name="INLINE_ALIGNMENT_BOTTOM" value="14" enum="InlineAlignment">
 			Aligns bottom of the inline object (e.g. image, table) to the bottom of the text. Equivalent to [code]INLINE_ALIGNMENT_BOTTOM_TO | INLINE_ALIGNMENT_TO_BOTTOM[/code].
+		</constant>
+		<constant name="INLINE_ALIGNMENT_IMAGE_MASK" value="3" enum="InlineAlignment">
+			A bit mask for [code]INLINE_ALIGNMENT_*_TO[/code] alignment constants.
+		</constant>
+		<constant name="INLINE_ALIGNMENT_TEXT_MASK" value="12" enum="InlineAlignment">
+			A bit mask for [code]INLINE_ALIGNMENT_TO_*[/code] alignment constants.
 		</constant>
 		<constant name="KEY_SPECIAL" value="16777216" enum="Key">
 			Keycodes with this bit applied are non-printable.
@@ -2388,7 +2405,7 @@
 			Hints that an integer, float or string property is an enumerated value to pick in a list specified via a hint string such as [code]"Hello,Something,Else"[/code].
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM_SUGGESTION" value="3" enum="PropertyHint">
-			Hints that a string property is can be an enumerated value to pick in a list specified via a hint string such as [code]"Hello,Something,Else"[/code].
+			Hints that a string property can be an enumerated value to pick in a list specified via a hint string such as [code]"Hello,Something,Else"[/code].
 			Unlike [constant PROPERTY_HINT_ENUM] a property with this hint still accepts arbitrary values and can be empty. The list of values serves to suggest possible values.
 		</constant>
 		<constant name="PROPERTY_HINT_EXP_EASING" value="4" enum="PropertyHint">

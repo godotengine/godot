@@ -31,6 +31,7 @@
 #ifndef JAVASCRIPT_EXPORT_PLUGIN_H
 #define JAVASCRIPT_EXPORT_PLUGIN_H
 
+#include "core/config/project_settings.h"
 #include "core/io/image_loader.h"
 #include "core/io/stream_peer_ssl.h"
 #include "core/io/tcp_server.h"
@@ -87,7 +88,7 @@ class EditorExportPlatformJavaScript : public EditorExportPlatform {
 		icon.instantiate();
 		const String icon_path = String(GLOBAL_GET("application/config/icon")).strip_edges();
 		if (icon_path.is_empty() || ImageLoader::load_image(icon_path, icon) != OK) {
-			return EditorNode::get_singleton()->get_editor_theme()->get_icon("DefaultProjectIcon", "EditorIcons")->get_image();
+			return EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("DefaultProjectIcon"), SNAME("EditorIcons"))->get_image();
 		}
 		return icon;
 	}

@@ -12,7 +12,7 @@ layout(rgba16, set = 1, binding = 0) uniform restrict writeonly image2D dest_ima
 
 layout(r8, set = 2, binding = 0) uniform restrict readonly image2D source_edges;
 
-layout(push_constant, binding = 1, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	float edge_sharpness;
 	float pad;
 	vec2 half_screen_pixel_size;

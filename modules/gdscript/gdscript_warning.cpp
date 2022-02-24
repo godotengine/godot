@@ -152,6 +152,9 @@ String GDScriptWarning::get_message() const {
 			CHECK_SYMBOLS(3);
 			return vformat(R"(The %s '%s' has the same name as a %s.)", symbols[0], symbols[1], symbols[2]);
 		}
+		case INT_ASSIGNED_TO_ENUM: {
+			return "Integer used when an enum value is expected. If this is intended cast the integer to the enum type.";
+		}
 		case WARNING_MAX:
 			break; // Can't happen, but silences warning
 	}
@@ -199,6 +202,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"REDUNDANT_AWAIT",
 		"EMPTY_FILE",
 		"SHADOWED_GLOBAL_IDENTIFIER",
+		"INT_ASSIGNED_TO_ENUM",
 	};
 
 	static_assert((sizeof(names) / sizeof(*names)) == WARNING_MAX, "Amount of warning types don't match the amount of warning names.");

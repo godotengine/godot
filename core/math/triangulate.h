@@ -32,6 +32,7 @@
 #define TRIANGULATE_H
 
 #include "core/math/vector2.h"
+#include "core/templates/vector.h"
 
 /*
 https://www.flipcode.com/archives/Efficient_Polygon_Triangulation.shtml

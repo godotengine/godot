@@ -85,7 +85,7 @@ counter;
 layout(rg8, set = 2, binding = 0) uniform restrict writeonly image2D dest_image;
 
 // This push_constant is full - 128 bytes - if you need to add more data, consider adding to the uniform buffer instead
-layout(push_constant, binding = 3, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	ivec2 screen_size;
 	int pass;
 	int quality;

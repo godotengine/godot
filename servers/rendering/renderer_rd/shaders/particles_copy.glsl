@@ -16,6 +16,9 @@ struct ParticleData {
 	uint flags;
 	vec4 color;
 	vec4 custom;
+#ifdef USERDATA_COUNT
+	vec4 userdata[USERDATA_COUNT];
+#endif
 };
 
 layout(set = 0, binding = 1, std430) restrict readonly buffer Particles {
@@ -42,7 +45,7 @@ layout(set = 2, binding = 0, std430) restrict readonly buffer TrailBindPoses {
 }
 trail_bind_poses;
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	vec3 sort_direction;
 	uint total_particles;
 
@@ -57,7 +60,9 @@ layout(push_constant, binding = 0, std430) uniform Params {
 	bool order_by_lifetime;
 	uint lifetime_split;
 	bool lifetime_reverse;
-	uint pad;
+	bool copy_mode_2d;
+
+	mat4 inv_emission_transform;
 }
 params;
 
@@ -196,30 +201,33 @@ void main() {
 			txform = txform * trail_bind_poses.data[part_ofs];
 		}
 
+		if (params.copy_mode_2d) {
+			// In global mode, bring 2D particles to local coordinates
+			// as they will be drawn with the node position as origin.
+			txform = params.inv_emission_transform * txform;
+		}
+
 		txform = transpose(txform);
 	} else {
 		txform = mat4(vec4(0.0), vec4(0.0), vec4(0.0), vec4(0.0)); //zero scale, becomes invisible
 	}
 
-#ifdef MODE_2D
+	if (params.copy_mode_2d) {
+		uint write_offset = gl_GlobalInvocationID.x * (2 + 1 + 1); //xform + color + custom
 
-	uint write_offset = gl_GlobalInvocationID.x * (2 + 1 + 1); //xform + color + custom
+		instances.data[write_offset + 0] = txform[0];
+		instances.data[write_offset + 1] = txform[1];
+		instances.data[write_offset + 2] = particles.data[particle].color;
+		instances.data[write_offset + 3] = particles.data[particle].custom;
+	} else {
+		uint write_offset = gl_GlobalInvocationID.x * (3 + 1 + 1); //xform + color + custom
 
-	instances.data[write_offset + 0] = txform[0];
-	instances.data[write_offset + 1] = txform[1];
-	instances.data[write_offset + 2] = particles.data[particle].color;
-	instances.data[write_offset + 3] = particles.data[particle].custom;
-
-#else
-
-	uint write_offset = gl_GlobalInvocationID.x * (3 + 1 + 1); //xform + color + custom
-
-	instances.data[write_offset + 0] = txform[0];
-	instances.data[write_offset + 1] = txform[1];
-	instances.data[write_offset + 2] = txform[2];
-	instances.data[write_offset + 3] = particles.data[particle].color;
-	instances.data[write_offset + 4] = particles.data[particle].custom;
-#endif //MODE_2D
+		instances.data[write_offset + 0] = txform[0];
+		instances.data[write_offset + 1] = txform[1];
+		instances.data[write_offset + 2] = txform[2];
+		instances.data[write_offset + 3] = particles.data[particle].color;
+		instances.data[write_offset + 4] = particles.data[particle].custom;
+	}
 
 #endif
 }

@@ -39,7 +39,7 @@ namespace TestString {
 
 int u32scmp(const char32_t *l, const char32_t *r) {
 	for (; *l == *r && *l && *r; l++, r++) {
-		;
+		// Continue.
 	}
 	return *l - *r;
 }
@@ -243,6 +243,19 @@ TEST_CASE("[String] Testing for empty string") {
 	CHECK(String("").is_empty());
 	CHECK(String("").is_empty());
 	CHECK(String("").is_empty());
+}
+
+TEST_CASE("[String] Contains") {
+	String s = "C:\\Godot\\project\\string_test.tscn";
+	CHECK(s.contains(":\\"));
+	CHECK(s.contains("Godot"));
+	CHECK(s.contains(String("project\\string_test")));
+	CHECK(s.contains(String("\\string_test.tscn")));
+
+	CHECK(!s.contains("://"));
+	CHECK(!s.contains("Godoh"));
+	CHECK(!s.contains(String("project\\string test")));
+	CHECK(!s.contains(String("\\char_test.tscn")));
 }
 
 TEST_CASE("[String] Test chr") {

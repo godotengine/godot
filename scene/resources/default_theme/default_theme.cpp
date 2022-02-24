@@ -113,6 +113,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	const Color control_font_hover_color = Color(0.95, 0.95, 0.95);
 	const Color control_font_focus_color = Color(0.95, 0.95, 0.95);
 	const Color control_font_disabled_color = control_font_color * Color(1, 1, 1, 0.5);
+	const Color control_font_placeholder_color = Color(control_font_color.r, control_font_color.g, control_font_color.b, 0.6f);
 	const Color control_font_pressed_color = Color(1, 1, 1);
 	const Color control_selection_color = Color(0.5, 0.5, 0.5);
 
@@ -174,7 +175,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	theme->set_color("icon_hover_color", "Button", Color(1, 1, 1, 1));
 	theme->set_color("icon_hover_pressed_color", "Button", Color(1, 1, 1, 1));
 	theme->set_color("icon_focus_color", "Button", Color(1, 1, 1, 1));
-	theme->set_color("icon_disabled_color", "Button", Color(1, 1, 1, 1));
+	theme->set_color("icon_disabled_color", "Button", Color(1, 1, 1, 0.4));
 
 	theme->set_constant("hseparation", "Button", 2 * scale);
 
@@ -385,6 +386,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	theme->set_color("font_color", "LineEdit", control_font_color);
 	theme->set_color("font_selected_color", "LineEdit", control_font_pressed_color);
 	theme->set_color("font_uneditable_color", "LineEdit", control_font_disabled_color);
+	theme->set_color("font_placeholder_color", "LineEdit", control_font_placeholder_color);
 	theme->set_color("font_outline_color", "LineEdit", Color(1, 1, 1));
 	theme->set_color("caret_color", "LineEdit", control_font_hover_color);
 	theme->set_color("selection_color", "LineEdit", control_selection_color);
@@ -427,6 +429,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	theme->set_color("font_color", "TextEdit", control_font_color);
 	theme->set_color("font_selected_color", "TextEdit", control_font_pressed_color);
 	theme->set_color("font_readonly_color", "TextEdit", control_font_disabled_color);
+	theme->set_color("font_placeholder_color", "TextEdit", control_font_placeholder_color);
 	theme->set_color("font_outline_color", "TextEdit", Color(1, 1, 1));
 	theme->set_color("selection_color", "TextEdit", control_selection_color);
 	theme->set_color("current_line_color", "TextEdit", Color(0.25, 0.25, 0.26, 0.8));
@@ -463,11 +466,12 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	theme->set_color("completion_background_color", "CodeEdit", Color(0.17, 0.16, 0.2));
 	theme->set_color("completion_selected_color", "CodeEdit", Color(0.26, 0.26, 0.27));
 	theme->set_color("completion_existing_color", "CodeEdit", Color(0.87, 0.87, 0.87, 0.13));
-	theme->set_color("completion_scroll_color", "CodeEdit", control_font_pressed_color);
+	theme->set_color("completion_scroll_color", "CodeEdit", control_font_pressed_color * Color(1, 1, 1, 0.29));
 	theme->set_color("completion_font_color", "CodeEdit", Color(0.67, 0.67, 0.67));
 	theme->set_color("font_color", "CodeEdit", control_font_color);
 	theme->set_color("font_selected_color", "CodeEdit", Color(0, 0, 0));
 	theme->set_color("font_readonly_color", "CodeEdit", Color(control_font_color.r, control_font_color.g, control_font_color.b, 0.5f));
+	theme->set_color("font_placeholder_color", "CodeEdit", control_font_placeholder_color);
 	theme->set_color("font_outline_color", "CodeEdit", Color(1, 1, 1));
 	theme->set_color("selection_color", "CodeEdit", control_selection_color);
 	theme->set_color("bookmark_color", "CodeEdit", Color(0.5, 0.64, 1, 0.8));
@@ -486,7 +490,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 
 	theme->set_constant("completion_lines", "CodeEdit", 7);
 	theme->set_constant("completion_max_width", "CodeEdit", 50);
-	theme->set_constant("completion_scroll_width", "CodeEdit", 3);
+	theme->set_constant("completion_scroll_width", "CodeEdit", 6);
 	theme->set_constant("line_spacing", "CodeEdit", 4 * scale);
 	theme->set_constant("outline_size", "CodeEdit", 0);
 
@@ -817,8 +821,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	theme->set_stylebox("tab_selected", "TabBar", style_tab_selected);
 	theme->set_stylebox("tab_unselected", "TabBar", style_tab_unselected);
 	theme->set_stylebox("tab_disabled", "TabBar", style_tab_disabled);
-	theme->set_stylebox("close_bg_pressed", "TabBar", button_pressed);
-	theme->set_stylebox("close_bg_highlight", "TabBar", button_normal);
+	theme->set_stylebox("button_pressed", "TabBar", button_pressed);
+	theme->set_stylebox("button_highlight", "TabBar", button_normal);
 
 	theme->set_icon("increment", "TabBar", icons["scroll_button_right"]);
 	theme->set_icon("increment_highlight", "TabBar", icons["scroll_button_right_hl"]);
@@ -860,7 +864,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	theme->set_icon("screen_picker", "ColorPicker", icons["color_picker_pipette"]);
 	theme->set_icon("add_preset", "ColorPicker", icons["add"]);
 	theme->set_icon("color_hue", "ColorPicker", icons["color_picker_hue"]);
-	theme->set_icon("color_sample", "ColorPicker", icons["color_picker_sample"]);
 	theme->set_icon("sample_bg", "ColorPicker", icons["mini_checkerboard"]);
 	theme->set_icon("overbright_indicator", "ColorPicker", icons["color_picker_overbright"]);
 	theme->set_icon("bar_arrow", "ColorPicker", icons["color_picker_bar_arrow"]);
@@ -1015,7 +1018,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Te
 	default_style = make_flat_stylebox(Color(1, 0.365, 0.365), 4, 4, 4, 4, 0, false, 2);
 }
 
-void make_default_theme(float p_scale, Ref<Font> p_font) {
+void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPositioning p_subpixel, TextServer::Hinting p_hinting, bool p_aa) {
 	Ref<Theme> t;
 	t.instantiate();
 
@@ -1037,6 +1040,9 @@ void make_default_theme(float p_scale, Ref<Font> p_font) {
 		Ref<FontData> dynamic_font_data;
 		dynamic_font_data.instantiate();
 		dynamic_font_data->set_data_ptr(_font_OpenSans_SemiBold, _font_OpenSans_SemiBold_size);
+		dynamic_font_data->set_subpixel_positioning(p_subpixel);
+		dynamic_font_data->set_hinting(p_hinting);
+		dynamic_font_data->set_antialiased(p_aa);
 		dynamic_font->add_data(dynamic_font_data);
 
 		default_font = dynamic_font;

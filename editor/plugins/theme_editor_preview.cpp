@@ -30,11 +30,15 @@
 
 #include "theme_editor_preview.h"
 
+#include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/math/math_funcs.h"
-#include "scene/resources/packed_scene.h"
-
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "scene/gui/button.h"
+#include "scene/gui/color_picker.h"
+#include "scene/gui/progress_bar.h"
+#include "scene/resources/packed_scene.h"
 
 constexpr double REFRESH_TIMER = 1.5;
 
@@ -199,6 +203,7 @@ void ThemeEditorPreview::_notification(int p_what) {
 			theme_cache.preview_picker_font = get_theme_font(SNAME("status_source"), SNAME("EditorFonts"));
 			theme_cache.font_size = get_theme_font_size(SNAME("font_size"), SNAME("EditorFonts"));
 		} break;
+
 		case NOTIFICATION_PROCESS: {
 			time_left -= get_process_delta_time();
 			if (time_left < 0) {

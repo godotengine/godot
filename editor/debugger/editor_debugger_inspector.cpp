@@ -107,14 +107,13 @@ void EditorDebuggerInspector::_bind_methods() {
 
 void EditorDebuggerInspector::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_POSTINITIALIZE:
+		case NOTIFICATION_POSTINITIALIZE: {
 			connect("object_id_selected", callable_mp(this, &EditorDebuggerInspector::_object_selected));
-			break;
-		case NOTIFICATION_ENTER_TREE:
+		} break;
+
+		case NOTIFICATION_ENTER_TREE: {
 			edit(variables);
-			break;
-		default:
-			break;
+		} break;
 	}
 }
 
@@ -155,7 +154,7 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 		if (pinfo.type == Variant::OBJECT) {
 			if (var.get_type() == Variant::STRING) {
 				String path = var;
-				if (path.find("::") != -1) {
+				if (path.contains("::")) {
 					// built-in resource
 					String base_path = path.get_slice("::", 0);
 					RES dependency = ResourceLoader::load(base_path);

@@ -30,6 +30,8 @@
 
 #include "atlas_merging_dialog.h"
 
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 
 #include "scene/gui/control.h"
@@ -251,6 +253,8 @@ void AtlasMergingDialog::update_tile_set(Ref<TileSet> p_tile_set) {
 }
 
 AtlasMergingDialog::AtlasMergingDialog() {
+	undo_redo = EditorNode::get_singleton()->get_undo_redo();
+
 	// Atlas merging window.
 	set_title(TTR("Atlas Merging"));
 	set_hide_on_ok(false);

@@ -50,7 +50,6 @@
 #include "core/register_core_types.h"
 #include "core/string/translation.h"
 #include "core/version.h"
-#include "core/version_hash.gen.h"
 #include "drivers/register_driver_types.h"
 #include "main/app_icon.gen.h"
 #include "main/main_timer_sync.h"
@@ -82,6 +81,7 @@
 #include "editor/doc_data_class_path.gen.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_translation.h"
 #include "editor/progress_dialog.h"
@@ -183,13 +183,6 @@ bool profile_gpu = false;
 
 /* Helper methods */
 
-// Used by Mono module, should likely be registered in Engine singleton instead
-// FIXME: This is also not 100% accurate, `project_manager` is only true when it was requested,
-// but not if e.g. we fail to load and project and fallback to the manager.
-bool Main::is_project_manager() {
-	return project_manager;
-}
-
 bool Main::is_cmdline_tool() {
 	return cmdline_tool;
 }
@@ -200,7 +193,7 @@ static String unescape_cmdline(const String &p_str) {
 
 static String get_full_version_string() {
 	String hash = String(VERSION_HASH);
-	if (hash.length() != 0) {
+	if (!hash.is_empty()) {
 		hash = "." + hash.left(9);
 	}
 	return String(VERSION_FULL_BUILD) + hash;
@@ -494,6 +487,7 @@ void Main::test_cleanup() {
 	}
 
 	unregister_core_driver_types();
+	unregister_core_extensions();
 	unregister_core_types();
 
 	OS::get_singleton()->finalize_core();
@@ -641,7 +635,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			continue;
 		}
 #endif
-
 		List<String>::Element *N = I->next();
 
 		if (I->get() == "-h" || I->get() == "--help" || I->get() == "/?") { // display help
@@ -827,7 +820,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			if (I->next()) {
 				String vm = I->next()->get();
 
-				if (vm.find("x") == -1) { // invalid parameter format
+				if (!vm.contains("x")) { // invalid parameter format
 
 					OS::get_singleton()->print("Invalid resolution '%s', it should be e.g. '1280x720'.\n",
 							vm.utf8().get_data());
@@ -858,7 +851,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			if (I->next()) {
 				String vm = I->next()->get();
 
-				if (vm.find(",") == -1) { // invalid parameter format
+				if (!vm.contains(",")) { // invalid parameter format
 
 					OS::get_singleton()->print("Invalid position '%s', it should be e.g. '80,128'.\n",
 							vm.utf8().get_data());
@@ -935,12 +928,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 			editor = true;
 		} else if (I->get() == "-p" || I->get() == "--project-manager") { // starts project manager
-
 			project_manager = true;
 		} else if (I->get() == "--debug-server") {
 			if (I->next()) {
 				debug_server_uri = I->next()->get();
-				if (debug_server_uri.find("://") == -1) { // wrong address
+				if (!debug_server_uri.contains("://")) { // wrong address
 					OS::get_singleton()->print("Invalid debug server uri. It should be of the form <protocol>://<bind_address>:<port>.\n");
 					goto error;
 				}
@@ -1073,7 +1065,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--remote-debug") {
 			if (I->next()) {
 				debug_uri = I->next()->get();
-				if (debug_uri.find("://") == -1) { // wrong address
+				if (!debug_uri.contains("://")) { // wrong address
 					OS::get_singleton()->print(
 							"Invalid debug host address, it should be of the form <protocol>://<host/IP>:<port>.\n");
 					goto error;
@@ -1130,7 +1122,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (!remotefs.is_empty()) {
 		file_access_network_client = memnew(FileAccessNetworkClient);
 		int port;
-		if (remotefs.find(":") != -1) {
+		if (remotefs.contains(":")) {
 			port = remotefs.get_slicec(':', 1).to_int();
 			remotefs = remotefs.get_slicec(':', 0);
 		} else {
@@ -1164,6 +1156,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// Initialize user data dir.
 	OS::get_singleton()->ensure_user_data_dir();
+
+	register_core_extensions(); // core extensions must be registered after globals setup and before display
 
 	ResourceUID::get_singleton()->load_from_cache(); // load UUIDs from cache.
 
@@ -1204,11 +1198,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (editor) {
 		packed_data->set_disabled(true);
 		globals->set_disable_feature_overrides(true);
-	}
-#endif
-
-#ifdef TOOLS_ENABLED
-	if (editor) {
 		Engine::get_singleton()->set_editor_hint(true);
 		main_args.push_back("--editor");
 		if (!init_windowed) {
@@ -1220,6 +1209,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (!project_manager && !editor) {
 		// If we didn't find a project, we fall back to the project manager.
 		project_manager = !found_project && !cmdline_tool;
+	}
+
+	if (project_manager) {
+		Engine::get_singleton()->set_project_manager_hint(true);
 	}
 #endif
 
@@ -1281,7 +1274,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	OS::get_singleton()->set_cmdline(execpath, main_args);
 
-	register_core_extensions(); //before display
 	// possibly be worth changing the default from vulkan to something lower spec,
 	// for the project manager, depending on how smooth the fallback is.
 	GLOBAL_DEF_RST("rendering/driver/driver_name", "vulkan");
@@ -1310,12 +1302,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/viewport_width",
 			PropertyInfo(Variant::INT, "display/window/size/viewport_width",
 					PROPERTY_HINT_RANGE,
-					"0,7680,or_greater")); // 8K resolution
+					"0,7680,1,or_greater")); // 8K resolution
+
 	GLOBAL_DEF_BASIC("display/window/size/viewport_height", 600);
 	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/viewport_height",
 			PropertyInfo(Variant::INT, "display/window/size/viewport_height",
 					PROPERTY_HINT_RANGE,
-					"0,4320,or_greater")); // 8K resolution
+					"0,4320,1,or_greater")); // 8K resolution
+
 	GLOBAL_DEF_BASIC("display/window/size/resizable", true);
 	GLOBAL_DEF_BASIC("display/window/size/borderless", false);
 	GLOBAL_DEF_BASIC("display/window/size/fullscreen", false);
@@ -1325,13 +1319,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			PropertyInfo(Variant::INT,
 					"display/window/size/window_width_override",
 					PROPERTY_HINT_RANGE,
-					"0,7680,or_greater")); // 8K resolution
+					"0,7680,1,or_greater")); // 8K resolution
 	GLOBAL_DEF("display/window/size/window_height_override", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/window_height_override",
 			PropertyInfo(Variant::INT,
 					"display/window/size/window_height_override",
 					PROPERTY_HINT_RANGE,
-					"0,4320,or_greater")); // 8K resolution
+					"0,4320,1,or_greater")); // 8K resolution
 
 	if (use_custom_res) {
 		if (!force_res) {
@@ -1536,6 +1530,7 @@ error:
 	}
 
 	unregister_core_driver_types();
+	unregister_core_extensions();
 	unregister_core_types();
 
 	OS::get_singleton()->_cmdline.clear();
@@ -1968,6 +1963,10 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	return OK;
 }
 
+String Main::get_rendering_driver_name() {
+	return rendering_driver;
+}
+
 // everything the main loop needs to know about frame timings
 static MainTimerSync main_timer_sync;
 
@@ -2248,9 +2247,8 @@ bool Main::start() {
 		}
 	}
 
-	if (main_loop->is_class("SceneTree")) {
-		SceneTree *sml = Object::cast_to<SceneTree>(main_loop);
-
+	SceneTree *sml = Object::cast_to<SceneTree>(main_loop);
+	if (sml) {
 #ifdef DEBUG_ENABLED
 		if (debug_collisions) {
 			sml->set_debug_collisions_hint(true);
@@ -2292,20 +2290,18 @@ bool Main::start() {
 					RES res = ResourceLoader::load(info.path);
 					ERR_CONTINUE_MSG(res.is_null(), "Can't autoload: " + info.path);
 					Node *n = nullptr;
-					if (res->is_class("PackedScene")) {
-						Ref<PackedScene> ps = res;
-						n = ps->instantiate();
-					} else if (res->is_class("Script")) {
-						Ref<Script> script_res = res;
+					Ref<PackedScene> scn = res;
+					Ref<Script> script_res = res;
+					if (scn.is_valid()) {
+						n = scn->instantiate();
+					} else if (script_res.is_valid()) {
 						StringName ibt = script_res->get_instance_base_type();
 						bool valid_type = ClassDB::is_parent_class(ibt, "Node");
 						ERR_CONTINUE_MSG(!valid_type, "Script does not inherit a Node: " + info.path);
 
 						Object *obj = ClassDB::instantiate(ibt);
 
-						ERR_CONTINUE_MSG(obj == nullptr,
-								"Cannot instance script for autoload, expected 'Node' inheritance, got: " +
-										String(ibt));
+						ERR_CONTINUE_MSG(!obj, "Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt) + ".");
 
 						n = Object::cast_to<Node>(obj);
 						n->set_script(script_res);
@@ -2791,8 +2787,6 @@ void Main::cleanup(bool p_force) {
 		ERR_FAIL_COND(!_start_success);
 	}
 
-	EngineDebugger::deinitialize();
-
 	ResourceLoader::remove_custom_loaders();
 	ResourceSaver::remove_custom_savers();
 
@@ -2834,6 +2828,8 @@ void Main::cleanup(bool p_force) {
 	unregister_platform_apis();
 	unregister_scene_types();
 	unregister_server_types();
+
+	EngineDebugger::deinitialize();
 
 	if (xr_server) {
 		memdelete(xr_server);
@@ -2898,6 +2894,7 @@ void Main::cleanup(bool p_force) {
 	memdelete(message_queue);
 
 	unregister_core_driver_types();
+	unregister_core_extensions();
 	unregister_core_types();
 
 	OS::get_singleton()->finalize_core();

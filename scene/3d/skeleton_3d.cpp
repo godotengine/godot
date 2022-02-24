@@ -318,11 +318,9 @@ void Skeleton3D::_notification(int p_what) {
 					rs->skeleton_bone_set_transform(skeleton, i, bonesptr[bone_index].pose_global * skin->get_bind_pose(i));
 				}
 			}
-
 #ifdef TOOLS_ENABLED
 			emit_signal(SceneStringNames::get_singleton()->pose_updated);
 #endif // TOOLS_ENABLED
-
 		} break;
 
 #ifndef _3D_DISABLED
@@ -344,19 +342,14 @@ void Skeleton3D::_notification(int p_what) {
 			if (modification_stack.is_valid()) {
 				execute_modifications(get_physics_process_delta_time(), SkeletonModificationStack3D::EXECUTION_MODE::execution_mode_physics_process);
 			}
-
 		} break;
-#endif // _3D_DISABLED
 
-#ifndef _3D_DISABLED
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (modification_stack.is_valid()) {
 				execute_modifications(get_process_delta_time(), SkeletonModificationStack3D::EXECUTION_MODE::execution_mode_process);
 			}
 		} break;
-#endif // _3D_DISABLED
 
-#ifndef _3D_DISABLED
 		case NOTIFICATION_READY: {
 			set_physics_process_internal(true);
 			set_process_internal(true);
@@ -506,7 +499,7 @@ int Skeleton3D::get_bone_axis_forward_enum(int p_bone) {
 // Skeleton creation api
 
 void Skeleton3D::add_bone(const String &p_name) {
-	ERR_FAIL_COND(p_name.is_empty() || p_name.find(":") != -1 || p_name.find("/") != -1);
+	ERR_FAIL_COND(p_name.is_empty() || p_name.contains(":") || p_name.contains("/"));
 
 	for (int i = 0; i < bones.size(); i++) {
 		ERR_FAIL_COND(bones[i].name == p_name);

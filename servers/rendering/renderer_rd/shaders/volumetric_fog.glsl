@@ -33,7 +33,7 @@ layout(set = 0, binding = 2, std430) restrict readonly buffer GlobalVariableData
 }
 global_variables;
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	vec3 position;
 	float pad;
 

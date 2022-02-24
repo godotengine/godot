@@ -53,7 +53,8 @@ public:
 		WINDOW_MODE_WINDOWED,
 		WINDOW_MODE_MINIMIZED,
 		WINDOW_MODE_MAXIMIZED,
-		WINDOW_MODE_FULLSCREEN
+		WINDOW_MODE_FULLSCREEN,
+		WINDOW_MODE_EXCLUSIVE_FULLSCREEN,
 	};
 
 	// Keep the VSyncMode enum values in sync with the `display/window/vsync/vsync_mode`
@@ -174,6 +175,8 @@ public:
 		SCREEN_OF_MAIN_WINDOW = -1
 	};
 
+	const float SCREEN_REFRESH_RATE_FALLBACK = -1.0; // Returned by screen_get_refresh_rate if the method fails.
+
 	virtual int get_screen_count() const = 0;
 	virtual Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
@@ -188,6 +191,7 @@ public:
 		}
 		return scale;
 	}
+	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
 	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
 
 	// Keep the ScreenOrientation enum values in sync with the `display/window/handheld/orientation`
@@ -273,6 +277,7 @@ public:
 	virtual void window_set_position(const Point2i &p_position, WindowID p_window = MAIN_WINDOW_ID) = 0;
 
 	virtual void window_set_transient(WindowID p_window, WindowID p_parent) = 0;
+	virtual void window_set_exclusive(WindowID p_window, bool p_exclusive);
 
 	virtual void window_set_max_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual Size2i window_get_max_size(WindowID p_window = MAIN_WINDOW_ID) const = 0;

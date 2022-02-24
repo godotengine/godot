@@ -4410,7 +4410,7 @@ void TileSetAtlasSource::_clear_tiles_outside_texture() {
 
 void TileSetAtlasSource::_queue_update_padded_texture() {
 	padded_texture_needs_update = true;
-	call_deferred("_update_padded_texture");
+	call_deferred(SNAME("_update_padded_texture"));
 }
 
 void TileSetAtlasSource::_update_padded_texture() {
@@ -4432,9 +4432,13 @@ void TileSetAtlasSource::_update_padded_texture() {
 
 	Ref<Image> src = texture->get_image();
 
+	if (!src.is_valid()) {
+		return;
+	}
+
 	Ref<Image> image;
 	image.instantiate();
-	image->create(size.x, size.y, false, Image::FORMAT_RGBA8);
+	image->create(size.x, size.y, false, src->get_format());
 
 	for (KeyValue<Vector2i, TileAlternativesData> kv : tiles) {
 		for (int frame = 0; frame < (int)kv.value.animation_frames_durations.size(); frame++) {

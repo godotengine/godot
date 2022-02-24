@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CanvasItem" inherits="Node" version="4.0">
+<class name="CanvasItem" inherits="Node" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class of anything 2D.
 	</brief_description>
@@ -334,7 +334,7 @@
 		<method name="get_global_mouse_position" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the global position of the mouse.
+				Returns the mouse's position in the [CanvasLayer] that this [CanvasItem] is in using the coordinate system of the [CanvasLayer].
 			</description>
 		</method>
 		<method name="get_global_transform" qualifiers="const">
@@ -352,7 +352,7 @@
 		<method name="get_local_mouse_position" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the mouse position relative to this item's position.
+				Returns the mouse's position in this [CanvasItem] using the local coordinate system of this [CanvasItem].
 			</description>
 		</method>
 		<method name="get_transform" qualifiers="const">

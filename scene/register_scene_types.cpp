@@ -134,6 +134,11 @@
 #include "scene/main/timer.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
+#include "scene/multiplayer/multiplayer_spawner.h"
+#include "scene/multiplayer/multiplayer_synchronizer.h"
+#include "scene/multiplayer/scene_cache_interface.h"
+#include "scene/multiplayer/scene_replication_interface.h"
+#include "scene/multiplayer/scene_rpc_interface.h"
 #include "scene/resources/audio_stream_sample.h"
 #include "scene/resources/bit_map.h"
 #include "scene/resources/box_shape_3d.h"
@@ -301,6 +306,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(SubViewport);
 	GDREGISTER_CLASS(ViewportTexture);
 	GDREGISTER_CLASS(HTTPRequest);
+	GDREGISTER_CLASS(MultiplayerSpawner);
+	GDREGISTER_CLASS(MultiplayerSynchronizer);
 	GDREGISTER_CLASS(Timer);
 	GDREGISTER_CLASS(CanvasLayer);
 	GDREGISTER_CLASS(CanvasModulate);
@@ -463,7 +470,12 @@ void register_scene_types() {
 	GDREGISTER_CLASS(XROrigin3D);
 	GDREGISTER_CLASS(MeshInstance3D);
 	GDREGISTER_CLASS(OccluderInstance3D);
-	GDREGISTER_CLASS(Occluder3D);
+	GDREGISTER_VIRTUAL_CLASS(Occluder3D);
+	GDREGISTER_CLASS(ArrayOccluder3D);
+	GDREGISTER_CLASS(QuadOccluder3D);
+	GDREGISTER_CLASS(BoxOccluder3D);
+	GDREGISTER_CLASS(SphereOccluder3D);
+	GDREGISTER_CLASS(PolygonOccluder3D);
 	GDREGISTER_VIRTUAL_CLASS(SpriteBase3D);
 	GDREGISTER_CLASS(Sprite3D);
 	GDREGISTER_CLASS(AnimatedSprite3D);
@@ -555,11 +567,13 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeResizableBase);
 	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeGroupBase);
 	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeConstant);
+	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeVectorBase);
 	GDREGISTER_CLASS(VisualShaderNodeComment);
 	GDREGISTER_CLASS(VisualShaderNodeFloatConstant);
 	GDREGISTER_CLASS(VisualShaderNodeIntConstant);
 	GDREGISTER_CLASS(VisualShaderNodeBooleanConstant);
 	GDREGISTER_CLASS(VisualShaderNodeColorConstant);
+	GDREGISTER_CLASS(VisualShaderNodeVec2Constant);
 	GDREGISTER_CLASS(VisualShaderNodeVec3Constant);
 	GDREGISTER_CLASS(VisualShaderNodeTransformConstant);
 	GDREGISTER_CLASS(VisualShaderNodeFloatOp);
@@ -577,8 +591,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeDotProduct);
 	GDREGISTER_CLASS(VisualShaderNodeVectorLen);
 	GDREGISTER_CLASS(VisualShaderNodeDeterminant);
-	GDREGISTER_CLASS(VisualShaderNodeScalarDerivativeFunc);
-	GDREGISTER_CLASS(VisualShaderNodeVectorDerivativeFunc);
+	GDREGISTER_CLASS(VisualShaderNodeDerivativeFunc);
 	GDREGISTER_CLASS(VisualShaderNodeClamp);
 	GDREGISTER_CLASS(VisualShaderNodeFaceForward);
 	GDREGISTER_CLASS(VisualShaderNodeOuterProduct);
@@ -604,6 +617,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeIntUniform);
 	GDREGISTER_CLASS(VisualShaderNodeBooleanUniform);
 	GDREGISTER_CLASS(VisualShaderNodeColorUniform);
+	GDREGISTER_CLASS(VisualShaderNodeVec2Uniform);
 	GDREGISTER_CLASS(VisualShaderNodeVec3Uniform);
 	GDREGISTER_CLASS(VisualShaderNodeTransformUniform);
 	GDREGISTER_CLASS(VisualShaderNodeTextureUniform);
@@ -820,6 +834,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Font);
 	GDREGISTER_CLASS(Curve);
 
+	GDREGISTER_CLASS(SceneReplicationConfig);
+
 	GDREGISTER_CLASS(TextLine);
 	GDREGISTER_CLASS(TextParagraph);
 
@@ -1024,6 +1040,8 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("VisualShaderNodeVectorScalarStep", "VisualShaderNodeStep");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarSwitch", "VisualShaderNodeSwitch");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarTransformMult", "VisualShaderNodeTransformOp");
+	ClassDB::add_compatibility_class("VisualShaderNodeScalarDerivativeFunc", "VisualShaderNodeDerivativeFunc");
+	ClassDB::add_compatibility_class("VisualShaderNodeVectorDerivativeFunc", "VisualShaderNodeDerivativeFunc");
 	ClassDB::add_compatibility_class("World", "World3D");
 #endif /* DISABLE_DEPRECATED */
 
@@ -1046,6 +1064,9 @@ void register_scene_types() {
 	}
 
 	SceneDebugger::initialize();
+	SceneReplicationInterface::make_default();
+	SceneRPCInterface::make_default();
+	SceneCacheInterface::make_default();
 
 	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SCENE);
 }
@@ -1054,10 +1075,21 @@ void initialize_theme() {
 	// Allow creating the default theme at a different scale to suit higher/lower base resolutions.
 	float default_theme_scale = GLOBAL_DEF("gui/theme/default_theme_scale", 1.0);
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/default_theme_scale", PropertyInfo(Variant::FLOAT, "gui/theme/default_theme_scale", PROPERTY_HINT_RANGE, "0.5,8,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
+
 	String theme_path = GLOBAL_DEF_RST("gui/theme/custom", "");
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/custom", PropertyInfo(Variant::STRING, "gui/theme/custom", PROPERTY_HINT_FILE, "*.tres,*.res,*.theme", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
+
 	String font_path = GLOBAL_DEF_RST("gui/theme/custom_font", "");
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/custom_font", PropertyInfo(Variant::STRING, "gui/theme/custom_font", PROPERTY_HINT_FILE, "*.tres,*.res,*.font", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
+
+	bool font_antialiased = (bool)GLOBAL_DEF_RST("gui/theme/default_font_antialiased", true);
+	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/default_font_antialiased", PropertyInfo(Variant::BOOL, "gui/theme/default_font_antialiased", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
+
+	TextServer::Hinting font_hinting = (TextServer::Hinting)(int)GLOBAL_DEF_RST("gui/theme/default_font_hinting", TextServer::HINTING_LIGHT);
+	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/default_font_hinting", PropertyInfo(Variant::INT, "gui/theme/default_font_hinting", PROPERTY_HINT_ENUM, "None,Light,Normal", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
+
+	TextServer::SubpixelPositioning font_subpixel_positioning = (TextServer::SubpixelPositioning)(int)GLOBAL_DEF_RST("gui/theme/default_font_subpixel_positioning", TextServer::SUBPIXEL_POSITIONING_AUTO);
+	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/default_font_subpixel_positioning", PropertyInfo(Variant::INT, "gui/theme/default_font_subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One half of a pixel,One quarter of a pixel", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
 
 	Ref<Font> font;
 	if (!font_path.is_empty()) {
@@ -1069,7 +1101,7 @@ void initialize_theme() {
 
 	// Always make the default theme to avoid invalid default font/icon/style in the given theme.
 	if (RenderingServer::get_singleton()) {
-		make_default_theme(default_theme_scale, font);
+		make_default_theme(default_theme_scale, font, font_subpixel_positioning, font_hinting, font_antialiased);
 	}
 
 	if (!theme_path.is_empty()) {

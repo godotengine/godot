@@ -138,9 +138,9 @@ uint64_t DirAccessUnix::get_modified_time(String p_file) {
 		return flags.st_mtime;
 	} else {
 		ERR_FAIL_V(0);
-	};
+	}
 	return 0;
-};
+}
 
 String DirAccessUnix::get_next() {
 	if (!dir_stream) {
@@ -320,11 +320,11 @@ Error DirAccessUnix::make_dir(String p_dir) {
 
 	if (success) {
 		return OK;
-	};
+	}
 
 	if (err == EEXIST) {
 		return ERR_ALREADY_EXISTS;
-	};
+	}
 
 	return ERR_CANT_CREATE;
 }
@@ -474,14 +474,14 @@ uint64_t DirAccessUnix::get_space_left() {
 	struct statvfs vfs;
 	if (statvfs(current_dir.utf8().get_data(), &vfs) != 0) {
 		return 0;
-	};
+	}
 
 	return (uint64_t)vfs.f_bavail * (uint64_t)vfs.f_frsize;
 #else
 	// FIXME: Implement this.
 	return 0;
 #endif
-};
+}
 
 String DirAccessUnix::get_filesystem_type() const {
 	return ""; //TODO this should be implemented

@@ -504,7 +504,9 @@ public:
 
 		enum BlockType {
 			BLOCK_TYPE_STANDART,
-			BLOCK_TYPE_FOR,
+			BLOCK_TYPE_FOR_INIT,
+			BLOCK_TYPE_FOR_CONDITION,
+			BLOCK_TYPE_FOR_EXPRESSION,
 			BLOCK_TYPE_SWITCH,
 			BLOCK_TYPE_CASE,
 			BLOCK_TYPE_DEFAULT,
@@ -526,6 +528,7 @@ public:
 		Map<StringName, Variable> variables;
 		List<Node *> statements;
 		bool single_statement = false;
+		bool use_comma_between_statements = false;
 
 		BlockNode() :
 				Node(TYPE_BLOCK) {}

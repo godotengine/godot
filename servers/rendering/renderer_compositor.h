@@ -31,13 +31,11 @@
 #ifndef RENDERING_SERVER_COMPOSITOR_H
 #define RENDERING_SERVER_COMPOSITOR_H
 
-#include "core/math/camera_matrix.h"
-#include "core/templates/pair.h"
-#include "core/templates/self_list.h"
 #include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/renderer_scene.h"
 #include "servers/rendering/renderer_storage.h"
 #include "servers/rendering_server.h"
+
 class RendererSceneRender;
 struct BlitToScreen {
 	RID render_target;

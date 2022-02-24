@@ -33,9 +33,7 @@
 
 #include "tile_atlas_view.h"
 
-#include "editor/editor_node.h"
 #include "editor/editor_properties.h"
-
 #include "scene/2d/tile_map.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
@@ -95,7 +93,7 @@ private:
 	bool multiple_polygon_mode = false;
 
 	bool use_undo_redo = true;
-	UndoRedo *editor_undo_redo = EditorNode::get_undo_redo();
+	UndoRedo *editor_undo_redo;
 
 	// UI
 	int hovered_polygon_index = -1;
@@ -216,7 +214,7 @@ private:
 protected:
 	DummyObject *dummy_object = memnew(DummyObject);
 
-	UndoRedo *undo_redo = EditorNode::get_undo_redo();
+	UndoRedo *undo_redo;
 
 	StringName type;
 	String property;
@@ -281,7 +279,7 @@ private:
 	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, Map<TileMapCell, Variant> p_previous_values, Variant p_new_value) override;
 
 protected:
-	UndoRedo *undo_redo = EditorNode::get_undo_redo();
+	UndoRedo *undo_redo;
 
 	virtual void _tile_set_changed() override;
 
@@ -316,7 +314,7 @@ class TileDataCollisionEditor : public TileDataDefaultEditor {
 	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, Map<TileMapCell, Variant> p_previous_values, Variant p_new_value) override;
 
 protected:
-	UndoRedo *undo_redo = EditorNode::get_undo_redo();
+	UndoRedo *undo_redo;
 
 	virtual void _tile_set_changed() override;
 
@@ -368,7 +366,7 @@ protected:
 
 	void _notification(int p_what);
 
-	UndoRedo *undo_redo = EditorNode::get_undo_redo();
+	UndoRedo *undo_redo;
 
 public:
 	virtual Control *get_toolbar() override { return toolbar; };
@@ -401,7 +399,7 @@ private:
 	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, Map<TileMapCell, Variant> p_previous_values, Variant p_new_value) override;
 
 protected:
-	UndoRedo *undo_redo = EditorNode::get_undo_redo();
+	UndoRedo *undo_redo;
 
 	virtual void _tile_set_changed() override;
 

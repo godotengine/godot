@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "rasterizer_storage_gles3.h"
+
 #ifdef GLES3_ENABLED
 
 #include "core/config/project_settings.h"
@@ -2660,6 +2661,9 @@ void RasterizerStorageGLES3::particles_set_use_local_coordinates(RID p_particles
 
 void RasterizerStorageGLES3::particles_set_process_material(RID p_particles, RID p_material) {
 }
+RID RasterizerStorageGLES3::particles_get_process_material(RID p_particles) const {
+	return RID();
+}
 
 void RasterizerStorageGLES3::particles_set_fixed_fps(RID p_particles, int p_fps) {
 }
@@ -3713,10 +3717,11 @@ void RasterizerStorageGLES3::canvas_light_occluder_set_polylines(RID p_occluder,
 	co->lines = p_lines;
 
 	if (p_lines.size() != co->len) {
-		if (co->index_id)
+		if (co->index_id) {
 			glDeleteBuffers(1, &co->index_id);
-		if (co->vertex_id)
+		} if (co->vertex_id) {
 			glDeleteBuffers(1, &co->vertex_id);
+		}
 
 		co->index_id = 0;
 		co->vertex_id = 0;
@@ -4011,10 +4016,12 @@ bool RasterizerStorageGLES3::free(RID p_rid) {
 
 	} else if (canvas_occluder_owner.owns(p_rid)) {
 		CanvasOccluder *co = canvas_occluder_owner.get_or_null(p_rid);
-		if (co->index_id)
+		if (co->index_id) {
 			glDeleteBuffers(1, &co->index_id);
-		if (co->vertex_id)
+		}
+		if (co->vertex_id) {
 			glDeleteBuffers(1, &co->vertex_id);
+		}
 
 		canvas_occluder_owner.free(p_rid);
 		memdelete(co);

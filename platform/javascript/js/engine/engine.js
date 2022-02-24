@@ -189,6 +189,9 @@ const Engine = (function () {
 							preloader.preloadedFiles.length = 0; // Clear memory
 							me.rtenv['callMain'](me.config.args);
 							initPromise = null;
+							if (me.config.serviceWorker && 'serviceWorker' in navigator) {
+								navigator.serviceWorker.register(me.config.serviceWorker);
+							}
 							resolve();
 						});
 					});

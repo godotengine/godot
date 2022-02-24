@@ -288,7 +288,7 @@ List<ClassAPI> generate_c_api_classes() {
 					String type;
 					String name = argument.name;
 
-					if (argument.name.find(":") != -1) {
+					if (argument.name.contains(":")) {
 						type = argument.name.get_slice(":", 1);
 						name = argument.name.get_slice(":", 0);
 					} else {
@@ -324,7 +324,7 @@ List<ClassAPI> generate_c_api_classes() {
 				property_api.getter = ClassDB::get_property_getter(class_name, p->get().name);
 				property_api.setter = ClassDB::get_property_setter(class_name, p->get().name);
 
-				if (p->get().name.find(":") != -1) {
+				if (p->get().name.contains(":")) {
 					property_api.type = p->get().name.get_slice(":", 1);
 					property_api.name = p->get().name.get_slice(":", 0);
 				} else {
@@ -355,7 +355,7 @@ List<ClassAPI> generate_c_api_classes() {
 				//method name
 				method_api.method_name = method_info.name;
 				//method return type
-				if (method_api.method_name.find(":") != -1) {
+				if (method_api.method_name.contains(":")) {
 					method_api.return_type = method_api.method_name.get_slice(":", 1);
 					method_api.method_name = method_api.method_name.get_slice(":", 0);
 				} else {
@@ -388,7 +388,7 @@ List<ClassAPI> generate_c_api_classes() {
 
 					arg_name = arg_info.name;
 
-					if (arg_info.name.find(":") != -1) {
+					if (arg_info.name.contains(":")) {
 						arg_type = arg_info.name.get_slice(":", 1);
 						arg_name = arg_info.name.get_slice(":", 0);
 					} else if (arg_info.hint == PROPERTY_HINT_RESOURCE_TYPE) {

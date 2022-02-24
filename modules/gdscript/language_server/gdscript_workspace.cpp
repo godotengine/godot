@@ -63,7 +63,7 @@ void GDScriptWorkspace::apply_new_signal(Object *obj, String function, PackedStr
 	String function_signature = "func " + function;
 	String source = script->get_source_code();
 
-	if (source.find(function_signature) != -1) {
+	if (source.contains(function_signature)) {
 		return;
 	}
 
@@ -380,7 +380,7 @@ Error GDScriptWorkspace::initialize() {
 
 				symbol.children.push_back(symbol_arg);
 			}
-			if (data.qualifiers.find("vararg") != -1) {
+			if (data.qualifiers.contains("vararg")) {
 				params += params.is_empty() ? "..." : ", ...";
 			}
 

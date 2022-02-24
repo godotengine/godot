@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XRPositionalTracker" inherits="RefCounted" version="4.0">
+<class name="XRPositionalTracker" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A tracked object.
 	</brief_description>
@@ -71,9 +71,6 @@
 			The unique name of this tracker. The trackers that are available differ between various XR runtimes and can often be configured by the user. Godot maintains a number of reserved names that it expects the [XRInterface] to implement if applicable:
 			- [code]left_hand[/code] identifies the controller held in the players left hand
 			- [code]right_hand[/code] identifies the controller held in the players right hand
-		</member>
-		<member name="rumble" type="float" setter="set_rumble" getter="get_rumble" default="0.0">
-			The degree to which the tracker rumbles. Ranges from [code]0.0[/code] to [code]1.0[/code] with precision [code].01[/code].
 		</member>
 		<member name="type" type="int" setter="set_tracker_type" getter="get_tracker_type" enum="XRServer.TrackerType" default="128">
 			The type of tracker.

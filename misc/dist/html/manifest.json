@@ -5,7 +5,6 @@
   "lang": "en",
   "start_url": "./godot.tools.html",
   "display": "standalone",
-  "orientation": "landscape",
   "theme_color": "#202531",
   "icons": [
     {

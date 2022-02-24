@@ -34,11 +34,7 @@
 #include "core/math/quaternion.h"
 #include "core/math/vector3.h"
 
-class _NO_DISCARD_ Basis {
-private:
-	void _set_diagonal(const Vector3 &p_diag);
-
-public:
+struct _NO_DISCARD_ Basis {
 	Vector3 elements[3] = {
 		Vector3(1, 0, 0),
 		Vector3(0, 1, 0),
@@ -263,6 +259,10 @@ public:
 	}
 
 	_FORCE_INLINE_ Basis() {}
+
+private:
+	// Helper method.
+	void _set_diagonal(const Vector3 &p_diag);
 };
 
 _FORCE_INLINE_ void Basis::operator*=(const Basis &p_matrix) {
@@ -334,4 +334,5 @@ real_t Basis::determinant() const {
 			elements[1][0] * (elements[0][1] * elements[2][2] - elements[2][1] * elements[0][2]) +
 			elements[2][0] * (elements[0][1] * elements[1][2] - elements[1][1] * elements[0][2]);
 }
+
 #endif // BASIS_H

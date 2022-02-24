@@ -235,8 +235,11 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_set_force_autohinter", "font_rid", "force_autohinter"), &TextServer::font_set_force_autohinter);
 	ClassDB::bind_method(D_METHOD("font_is_force_autohinter", "font_rid"), &TextServer::font_is_force_autohinter);
 
-	ClassDB::bind_method(D_METHOD("font_set_hinting", "font_rid", "_hinting"), &TextServer::font_set_hinting);
+	ClassDB::bind_method(D_METHOD("font_set_hinting", "font_rid", "hinting"), &TextServer::font_set_hinting);
 	ClassDB::bind_method(D_METHOD("font_get_hinting", "font_rid"), &TextServer::font_get_hinting);
+
+	ClassDB::bind_method(D_METHOD("font_set_subpixel_positioning", "font_rid", "subpixel_positioning"), &TextServer::font_set_subpixel_positioning);
+	ClassDB::bind_method(D_METHOD("font_get_subpixel_positioning", "font_rid"), &TextServer::font_get_subpixel_positioning);
 
 	ClassDB::bind_method(D_METHOD("font_set_variation_coordinates", "font_rid", "variation_coordinates"), &TextServer::font_set_variation_coordinates);
 	ClassDB::bind_method(D_METHOD("font_get_variation_coordinates", "font_rid"), &TextServer::font_get_variation_coordinates);
@@ -363,9 +366,13 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_text_set_preserve_control", "shaped", "enabled"), &TextServer::shaped_text_set_preserve_control);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_preserve_control", "shaped"), &TextServer::shaped_text_get_preserve_control);
 
-	ClassDB::bind_method(D_METHOD("shaped_text_add_string", "shaped", "text", "fonts", "size", "opentype_features", "language"), &TextServer::shaped_text_add_string, DEFVAL(Dictionary()), DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("shaped_text_add_string", "shaped", "text", "fonts", "size", "opentype_features", "language", "meta"), &TextServer::shaped_text_add_string, DEFVAL(Dictionary()), DEFVAL(""), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("shaped_text_add_object", "shaped", "key", "size", "inline_align", "length"), &TextServer::shaped_text_add_object, DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("shaped_text_resize_object", "shaped", "key", "size", "inline_align"), &TextServer::shaped_text_resize_object, DEFVAL(INLINE_ALIGNMENT_CENTER));
+
+	ClassDB::bind_method(D_METHOD("shaped_get_span_count", "shaped"), &TextServer::shaped_get_span_count);
+	ClassDB::bind_method(D_METHOD("shaped_get_span_meta", "shaped", "index"), &TextServer::shaped_get_span_meta);
+	ClassDB::bind_method(D_METHOD("shaped_set_span_update_font", "shaped", "index", "fonts", "size", "opentype_features"), &TextServer::shaped_set_span_update_font, DEFVAL(Dictionary()));
 
 	ClassDB::bind_method(D_METHOD("shaped_text_substr", "shaped", "start", "length"), &TextServer::shaped_text_substr);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_parent", "shaped"), &TextServer::shaped_text_get_parent);
@@ -474,6 +481,12 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(HINTING_NONE);
 	BIND_ENUM_CONSTANT(HINTING_LIGHT);
 	BIND_ENUM_CONSTANT(HINTING_NORMAL);
+
+	/* SubpixelPositioning */
+	BIND_ENUM_CONSTANT(SUBPIXEL_POSITIONING_DISABLED);
+	BIND_ENUM_CONSTANT(SUBPIXEL_POSITIONING_AUTO);
+	BIND_ENUM_CONSTANT(SUBPIXEL_POSITIONING_ONE_HALF);
+	BIND_ENUM_CONSTANT(SUBPIXEL_POSITIONING_ONE_QUARTER);
 
 	/* Feature */
 	BIND_ENUM_CONSTANT(FEATURE_BIDI_LAYOUT);

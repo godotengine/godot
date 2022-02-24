@@ -58,8 +58,8 @@
     y = yStart;
 
     while (y < yEnd) {
-        x1 = _xa;
-        x2 = _xb;
+        x1 = (int32_t)_xa;
+        x2 = (int32_t)_xb;
 
         if (!region) {
             minx = INT32_MAX;

@@ -477,6 +477,7 @@ public:
 	virtual void particles_set_speed_scale(RID p_particles, double p_scale) = 0;
 	virtual void particles_set_use_local_coordinates(RID p_particles, bool p_enable) = 0;
 	virtual void particles_set_process_material(RID p_particles, RID p_material) = 0;
+	virtual RID particles_get_process_material(RID p_particles) const = 0;
 	virtual void particles_set_fixed_fps(RID p_particles, int p_fps) = 0;
 	virtual void particles_set_interpolate(RID p_particles, bool p_enable) = 0;
 	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable) = 0;

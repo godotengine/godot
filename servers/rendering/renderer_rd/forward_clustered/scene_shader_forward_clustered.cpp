@@ -557,7 +557,7 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		actions.renames["RIM"] = "rim";
 		actions.renames["RIM_TINT"] = "rim_tint";
 		actions.renames["CLEARCOAT"] = "clearcoat";
-		actions.renames["CLEARCOAT_GLOSS"] = "clearcoat_gloss";
+		actions.renames["CLEARCOAT_ROUGHNESS"] = "clearcoat_roughness";
 		actions.renames["ANISOTROPY"] = "anisotropy";
 		actions.renames["ANISOTROPY_FLOW"] = "anisotropy_flow";
 		actions.renames["SSS_STRENGTH"] = "sss_strength";
@@ -607,7 +607,7 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		actions.usage_defines["RIM"] = "#define LIGHT_RIM_USED\n";
 		actions.usage_defines["RIM_TINT"] = "@RIM";
 		actions.usage_defines["CLEARCOAT"] = "#define LIGHT_CLEARCOAT_USED\n";
-		actions.usage_defines["CLEARCOAT_GLOSS"] = "@CLEARCOAT";
+		actions.usage_defines["CLEARCOAT_ROUGHNESS"] = "@CLEARCOAT";
 		actions.usage_defines["ANISOTROPY"] = "#define LIGHT_ANISOTROPY_USED\n";
 		actions.usage_defines["ANISOTROPY_FLOW"] = "@ANISOTROPY";
 		actions.usage_defines["AO"] = "#define AO_USED\n";
@@ -663,20 +663,12 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 
 		actions.render_mode_defines["sss_mode_skin"] = "#define SSS_MODE_SKIN\n";
 
-		bool force_blinn = GLOBAL_GET("rendering/shading/overrides/force_blinn_over_ggx");
-
-		if (!force_blinn) {
-			actions.render_mode_defines["specular_schlick_ggx"] = "#define SPECULAR_SCHLICK_GGX\n";
-		} else {
-			actions.render_mode_defines["specular_schlick_ggx"] = "#define SPECULAR_BLINN\n";
-		}
+		actions.render_mode_defines["specular_schlick_ggx"] = "#define SPECULAR_SCHLICK_GGX\n";
 
 		actions.custom_samplers["SCREEN_TEXTURE"] = "material_samplers[3]"; // linear filter with mipmaps
 		actions.custom_samplers["DEPTH_TEXTURE"] = "material_samplers[3]";
 		actions.custom_samplers["NORMAL_ROUGHNESS_TEXTURE"] = "material_samplers[1]"; // linear filter
 
-		actions.render_mode_defines["specular_blinn"] = "#define SPECULAR_BLINN\n";
-		actions.render_mode_defines["specular_phong"] = "#define SPECULAR_PHONG\n";
 		actions.render_mode_defines["specular_toon"] = "#define SPECULAR_TOON\n";
 		actions.render_mode_defines["specular_disabled"] = "#define SPECULAR_DISABLED\n";
 		actions.render_mode_defines["shadows_disabled"] = "#define SHADOWS_DISABLED\n";

@@ -92,26 +92,30 @@ void FileDialog::_theme_changed() {
 }
 
 void FileDialog::_notification(int p_what) {
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (!is_visible()) {
-			set_process_unhandled_input(false);
-		}
-	}
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		dir_up->set_icon(vbox->get_theme_icon(SNAME("parent_folder"), SNAME("FileDialog")));
-		if (vbox->is_layout_rtl()) {
-			dir_prev->set_icon(vbox->get_theme_icon(SNAME("forward_folder"), SNAME("FileDialog")));
-			dir_next->set_icon(vbox->get_theme_icon(SNAME("back_folder"), SNAME("FileDialog")));
-		} else {
-			dir_prev->set_icon(vbox->get_theme_icon(SNAME("back_folder"), SNAME("FileDialog")));
-			dir_next->set_icon(vbox->get_theme_icon(SNAME("forward_folder"), SNAME("FileDialog")));
-		}
-		refresh->set_icon(vbox->get_theme_icon(SNAME("reload"), SNAME("FileDialog")));
-		show_hidden->set_icon(vbox->get_theme_icon(SNAME("toggle_hidden"), SNAME("FileDialog")));
-		_theme_changed();
-	}
-	if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
-		update_filters();
+	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible()) {
+				set_process_unhandled_input(false);
+			}
+		} break;
+
+		case NOTIFICATION_ENTER_TREE: {
+			dir_up->set_icon(vbox->get_theme_icon(SNAME("parent_folder"), SNAME("FileDialog")));
+			if (vbox->is_layout_rtl()) {
+				dir_prev->set_icon(vbox->get_theme_icon(SNAME("forward_folder"), SNAME("FileDialog")));
+				dir_next->set_icon(vbox->get_theme_icon(SNAME("back_folder"), SNAME("FileDialog")));
+			} else {
+				dir_prev->set_icon(vbox->get_theme_icon(SNAME("back_folder"), SNAME("FileDialog")));
+				dir_next->set_icon(vbox->get_theme_icon(SNAME("forward_folder"), SNAME("FileDialog")));
+			}
+			refresh->set_icon(vbox->get_theme_icon(SNAME("reload"), SNAME("FileDialog")));
+			show_hidden->set_icon(vbox->get_theme_icon(SNAME("toggle_hidden"), SNAME("FileDialog")));
+			_theme_changed();
+		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			update_filters();
+		} break;
 	}
 }
 

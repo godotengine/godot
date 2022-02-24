@@ -314,7 +314,7 @@ void AnimationNode::add_input(const String &p_name) {
 	//root nodes can't add inputs
 	ERR_FAIL_COND(Object::cast_to<AnimationRootNode>(this) != nullptr);
 	Input input;
-	ERR_FAIL_COND(p_name.find(".") != -1 || p_name.find("/") != -1);
+	ERR_FAIL_COND(p_name.contains(".") || p_name.contains("/"));
 	input.name = p_name;
 	inputs.push_back(input);
 	emit_changed();
@@ -322,7 +322,7 @@ void AnimationNode::add_input(const String &p_name) {
 
 void AnimationNode::set_input_name(int p_input, const String &p_name) {
 	ERR_FAIL_INDEX(p_input, inputs.size());
-	ERR_FAIL_COND(p_name.find(".") != -1 || p_name.find("/") != -1);
+	ERR_FAIL_COND(p_name.contains(".") || p_name.contains("/"));
 	inputs.write[p_input].name = p_name;
 	emit_changed();
 }
@@ -1586,29 +1586,37 @@ void AnimationTree::advance(real_t p_time) {
 }
 
 void AnimationTree::_notification(int p_what) {
-	if (active && p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS && process_callback == ANIMATION_PROCESS_PHYSICS) {
-		_process_graph(get_physics_process_delta_time());
-	}
-
-	if (active && p_what == NOTIFICATION_INTERNAL_PROCESS && process_callback == ANIMATION_PROCESS_IDLE) {
-		_process_graph(get_process_delta_time());
-	}
-
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		_clear_caches();
-		if (last_animation_player.is_valid()) {
-			Object *player = ObjectDB::get_instance(last_animation_player);
-			if (player) {
-				player->disconnect("caches_cleared", callable_mp(this, &AnimationTree::_clear_caches));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			if (last_animation_player.is_valid()) {
+				Object *player = ObjectDB::get_instance(last_animation_player);
+				if (player) {
+					player->connect("caches_cleared", callable_mp(this, &AnimationTree::_clear_caches));
+				}
 			}
-		}
-	} else if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (last_animation_player.is_valid()) {
-			Object *player = ObjectDB::get_instance(last_animation_player);
-			if (player) {
-				player->connect("caches_cleared", callable_mp(this, &AnimationTree::_clear_caches));
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			_clear_caches();
+			if (last_animation_player.is_valid()) {
+				Object *player = ObjectDB::get_instance(last_animation_player);
+				if (player) {
+					player->disconnect("caches_cleared", callable_mp(this, &AnimationTree::_clear_caches));
+				}
 			}
-		}
+		} break;
+
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (active && process_callback == ANIMATION_PROCESS_IDLE) {
+				_process_graph(get_process_delta_time());
+			}
+		} break;
+
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			if (active && process_callback == ANIMATION_PROCESS_PHYSICS) {
+				_process_graph(get_physics_process_delta_time());
+			}
+		} break;
 	}
 }
 

@@ -62,6 +62,7 @@ public:
 	int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override { return 96; /* 0 might cause issues */ }
 	float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const override { return 1; }
 	float screen_get_max_scale() const override { return 1; }
+	float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override { return SCREEN_REFRESH_RATE_FALLBACK; }
 
 	Vector<DisplayServer::WindowID> get_window_list() const override { return Vector<DisplayServer::WindowID>(); }
 

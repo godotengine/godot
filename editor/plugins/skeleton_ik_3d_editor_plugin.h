@@ -31,7 +31,6 @@
 #ifndef SKELETON_IK_3D_EDITOR_PLUGIN_H
 #define SKELETON_IK_3D_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 
 class SkeletonIK3D;
@@ -42,7 +41,6 @@ class SkeletonIK3DEditorPlugin : public EditorPlugin {
 	SkeletonIK3D *skeleton_ik;
 
 	Button *play_btn;
-	EditorNode *editor;
 
 	void _play();
 
@@ -56,7 +54,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	SkeletonIK3DEditorPlugin(EditorNode *p_node);
+	SkeletonIK3DEditorPlugin();
 	~SkeletonIK3DEditorPlugin();
 };
 

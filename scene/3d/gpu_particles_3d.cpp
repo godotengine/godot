@@ -423,38 +423,41 @@ NodePath GPUParticles3D::get_sub_emitter() const {
 }
 
 void GPUParticles3D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_PAUSED || p_what == NOTIFICATION_UNPAUSED) {
-		if (can_process()) {
-			RS::get_singleton()->particles_set_speed_scale(particles, speed_scale);
-		} else {
-			RS::get_singleton()->particles_set_speed_scale(particles, 0);
-		}
-	}
+	switch (p_what) {
+		case NOTIFICATION_PAUSED:
+		case NOTIFICATION_UNPAUSED: {
+			if (can_process()) {
+				RS::get_singleton()->particles_set_speed_scale(particles, speed_scale);
+			} else {
+				RS::get_singleton()->particles_set_speed_scale(particles, 0);
+			}
+		} break;
 
-	// Use internal process when emitting and one_shot is on so that when
-	// the shot ends the editor can properly update
-	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
-		if (one_shot && !is_emitting()) {
-			notify_property_list_changed();
-			set_process_internal(false);
-		}
-	}
+		// Use internal process when emitting and one_shot is on so that when
+		// the shot ends the editor can properly update.
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (one_shot && !is_emitting()) {
+				notify_property_list_changed();
+				set_process_internal(false);
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (sub_emitter != NodePath()) {
-			_attach_sub_emitter();
-		}
-	}
+		case NOTIFICATION_ENTER_TREE: {
+			if (sub_emitter != NodePath()) {
+				_attach_sub_emitter();
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		RS::get_singleton()->particles_set_subemitter(particles, RID());
-	}
+		case NOTIFICATION_EXIT_TREE: {
+			RS::get_singleton()->particles_set_subemitter(particles, RID());
+		} break;
 
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		// make sure particles are updated before rendering occurs if they were active before
-		if (is_visible_in_tree() && !RS::get_singleton()->particles_is_inactive(particles)) {
-			RS::get_singleton()->particles_request_process(particles);
-		}
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			// Make sure particles are updated before rendering occurs if they were active before.
+			if (is_visible_in_tree() && !RS::get_singleton()->particles_is_inactive(particles)) {
+				RS::get_singleton()->particles_request_process(particles);
+			}
+		} break;
 	}
 }
 

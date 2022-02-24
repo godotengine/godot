@@ -633,7 +633,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				projection = correction * p_render_data->cam_projection;
 			}
 
-			sky.setup(env, p_render_data->render_buffers, projection, p_render_data->cam_transform, screen_size, this);
+			sky.setup(env, p_render_data->render_buffers, *p_render_data->lights, projection, p_render_data->cam_transform, screen_size, this);
 
 			RID sky_rid = env->sky;
 			if (sky_rid.is_valid()) {
@@ -1427,6 +1427,10 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 					distance = distance_min;
 				} else if (distance_max <= 0.0) {
 					distance = -distance_max;
+				}
+
+				if (p_render_data->cam_ortogonal) {
+					distance = 1.0;
 				}
 
 				uint32_t indices;

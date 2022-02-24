@@ -65,10 +65,6 @@ void XRPositionalTracker::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("button_released", PropertyInfo(Variant::STRING, "name")));
 	ADD_SIGNAL(MethodInfo("input_value_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::FLOAT, "value")));
 	ADD_SIGNAL(MethodInfo("input_axis_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::VECTOR2, "vector")));
-
-	ClassDB::bind_method(D_METHOD("get_rumble"), &XRPositionalTracker::get_rumble);
-	ClassDB::bind_method(D_METHOD("set_rumble", "rumble"), &XRPositionalTracker::set_rumble);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rumble"), "set_rumble", "get_rumble");
 };
 
 void XRPositionalTracker::set_tracker_type(XRServer::TrackerType p_type) {
@@ -149,7 +145,7 @@ void XRPositionalTracker::set_pose(const StringName &p_action_name, const Transf
 	new_pose->set_tracking_confidence(p_tracking_confidence);
 
 	poses[p_action_name] = new_pose;
-	emit_signal("pose_changed", new_pose);
+	emit_signal(SNAME("pose_changed"), new_pose);
 
 	// TODO discuss whether we also want to create and emit an InputEventXRPose event
 }
@@ -182,20 +178,20 @@ void XRPositionalTracker::set_input(const StringName &p_action_name, const Varia
 			case Variant::BOOL: {
 				bool pressed = p_value;
 				if (pressed) {
-					emit_signal("button_pressed", p_action_name);
+					emit_signal(SNAME("button_pressed"), p_action_name);
 				} else {
-					emit_signal("button_released", p_action_name);
+					emit_signal(SNAME("button_released"), p_action_name);
 				}
 
 				// TODO discuss whether we also want to create and emit an InputEventXRButton event
 			} break;
 			case Variant::FLOAT: {
-				emit_signal("input_value_changed", p_action_name, p_value);
+				emit_signal(SNAME("input_value_changed"), p_action_name, p_value);
 
 				// TODO discuss whether we also want to create and emit an InputEventXRValue event
 			} break;
 			case Variant::VECTOR2: {
-				emit_signal("input_axis_changed", p_action_name, p_value);
+				emit_signal(SNAME("input_axis_changed"), p_action_name, p_value);
 
 				// TODO discuss whether we also want to create and emit an InputEventXRAxis event
 			} break;
@@ -206,21 +202,8 @@ void XRPositionalTracker::set_input(const StringName &p_action_name, const Varia
 	}
 }
 
-real_t XRPositionalTracker::get_rumble() const {
-	return rumble;
-};
-
-void XRPositionalTracker::set_rumble(real_t p_rumble) {
-	if (p_rumble > 0.0) {
-		rumble = p_rumble;
-	} else {
-		rumble = 0.0;
-	};
-};
-
 XRPositionalTracker::XRPositionalTracker() {
 	type = XRServer::TRACKER_UNKNOWN;
 	name = "Unknown";
 	hand = TRACKER_HAND_UNKNOWN;
-	rumble = 0.0;
 };

@@ -39,6 +39,8 @@
 #include "core/io/resource_loader.h"
 #include "core/math/delaunay_2d.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/animation/animation_player.h"
@@ -143,19 +145,21 @@ void AnimationTreeEditor::enter_editor(const String &p_path) {
 }
 
 void AnimationTreeEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_PROCESS) {
-		ObjectID root;
-		if (tree && tree->get_tree_root().is_valid()) {
-			root = tree->get_tree_root()->get_instance_id();
-		}
+	switch (p_what) {
+		case NOTIFICATION_PROCESS: {
+			ObjectID root;
+			if (tree && tree->get_tree_root().is_valid()) {
+				root = tree->get_tree_root()->get_instance_id();
+			}
 
-		if (root != current_root) {
-			edit_path(Vector<String>());
-		}
+			if (root != current_root) {
+				edit_path(Vector<String>());
+			}
 
-		if (button_path.size() != edited_path.size()) {
-			edit_path(edited_path);
-		}
+			if (button_path.size() != edited_path.size()) {
+				edit_path(edited_path);
+			}
+		} break;
 	}
 }
 
@@ -257,23 +261,22 @@ void AnimationTreeEditorPlugin::make_visible(bool p_visible) {
 		//editor->hide_animation_player_editors();
 		//editor->animation_panel_make_visible(true);
 		button->show();
-		editor->make_bottom_panel_item_visible(anim_tree_editor);
+		EditorNode::get_singleton()->make_bottom_panel_item_visible(anim_tree_editor);
 		anim_tree_editor->set_process(true);
 	} else {
 		if (anim_tree_editor->is_visible_in_tree()) {
-			editor->hide_bottom_panel();
+			EditorNode::get_singleton()->hide_bottom_panel();
 		}
 		button->hide();
 		anim_tree_editor->set_process(false);
 	}
 }
 
-AnimationTreeEditorPlugin::AnimationTreeEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
+AnimationTreeEditorPlugin::AnimationTreeEditorPlugin() {
 	anim_tree_editor = memnew(AnimationTreeEditor);
 	anim_tree_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
 
-	button = editor->add_bottom_panel_item(TTR("AnimationTree"), anim_tree_editor);
+	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("AnimationTree"), anim_tree_editor);
 	button->hide();
 }
 

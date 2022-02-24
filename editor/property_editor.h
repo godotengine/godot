@@ -31,7 +31,6 @@
 #ifndef PROPERTY_EDITOR_H
 #define PROPERTY_EDITOR_H
 
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_locale_dialog.h"
 #include "editor/scene_tree_editor.h"
 #include "scene/gui/button.h"
@@ -47,8 +46,9 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
-class PropertyValueEvaluator;
 class CreateDialog;
+class EditorFileDialog;
+class PropertyValueEvaluator;
 class PropertySelector;
 
 class EditorResourceConversionPlugin : public RefCounted {

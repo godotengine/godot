@@ -31,7 +31,7 @@
 #ifndef RENDERINGSERVERSCENE_H
 #define RENDERINGSERVERSCENE_H
 
-#include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering_server.h"
 #include "servers/xr/xr_interface.h"
 
 class RendererScene {
@@ -105,7 +105,7 @@ public:
 	virtual Variant instance_geometry_get_shader_parameter(RID p_instance, const StringName &p_parameter) const = 0;
 	virtual Variant instance_geometry_get_shader_parameter_default_value(RID p_instance, const StringName &p_parameter) const = 0;
 
-	virtual void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = false) = 0;
+	virtual void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = true) = 0;
 
 	/* SKY API */
 
@@ -187,7 +187,7 @@ public:
 	virtual void directional_shadow_quality_set(RS::ShadowQuality p_quality) = 0;
 
 	virtual RID shadow_atlas_create() = 0;
-	virtual void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_use_16_bits = false) = 0;
+	virtual void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_use_16_bits = true) = 0;
 	virtual void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) = 0;
 
 	/* Render Buffers */

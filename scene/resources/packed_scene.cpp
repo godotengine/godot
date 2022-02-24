@@ -529,10 +529,6 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 		if (!gi.persistent) {
 			continue;
 		}
-		/*
-		if (instance_state_node>=0 && instance_state->is_node_in_group(instance_state_node,gi.name))
-			continue; //group was instantiated, don't add here
-		*/
 
 		bool skip = false;
 		for (const SceneState::PackState &ia : states_stack) {

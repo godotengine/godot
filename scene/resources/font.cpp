@@ -60,6 +60,7 @@ _FORCE_INLINE_ void FontData::_ensure_rid(int p_cache_index) const {
 		TS->font_set_fixed_size(cache[p_cache_index], fixed_size);
 		TS->font_set_force_autohinter(cache[p_cache_index], force_autohinter);
 		TS->font_set_hinting(cache[p_cache_index], hinting);
+		TS->font_set_subpixel_positioning(cache[p_cache_index], subpixel_positioning);
 		TS->font_set_oversampling(cache[p_cache_index], oversampling);
 	}
 }
@@ -100,6 +101,9 @@ void FontData::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_hinting", "hinting"), &FontData::set_hinting);
 	ClassDB::bind_method(D_METHOD("get_hinting"), &FontData::get_hinting);
+
+	ClassDB::bind_method(D_METHOD("set_subpixel_positioning", "subpixel_positioning"), &FontData::set_subpixel_positioning);
+	ClassDB::bind_method(D_METHOD("get_subpixel_positioning"), &FontData::get_subpixel_positioning);
 
 	ClassDB::bind_method(D_METHOD("set_oversampling", "oversampling"), &FontData::set_oversampling);
 	ClassDB::bind_method(D_METHOD("get_oversampling"), &FontData::get_oversampling);
@@ -204,6 +208,7 @@ void FontData::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "font_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_font_name", "get_font_name");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "style_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_font_style_name", "get_font_style_name");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_style", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_font_style", "get_font_style");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One half of a pixel,One quarter of a pixel", PROPERTY_USAGE_STORAGE), "set_subpixel_positioning", "get_subpixel_positioning");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_multichannel_signed_distance_field", "is_multichannel_signed_distance_field");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_pixel_range", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_msdf_pixel_range", "get_msdf_pixel_range");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_msdf_size", "get_msdf_size");
@@ -430,6 +435,7 @@ void FontData::reset_state() {
 	msdf = false;
 	force_autohinter = false;
 	hinting = TextServer::HINTING_LIGHT;
+	subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
 	msdf_pixel_range = 14;
 	msdf_size = 128;
 	fixed_size = 0;
@@ -1362,6 +1368,21 @@ void FontData::set_hinting(TextServer::Hinting p_hinting) {
 
 TextServer::Hinting FontData::get_hinting() const {
 	return hinting;
+}
+
+void FontData::set_subpixel_positioning(TextServer::SubpixelPositioning p_subpixel) {
+	if (subpixel_positioning != p_subpixel) {
+		subpixel_positioning = p_subpixel;
+		for (int i = 0; i < cache.size(); i++) {
+			_ensure_rid(i);
+			TS->font_set_subpixel_positioning(cache[i], subpixel_positioning);
+		}
+		emit_changed();
+	}
+}
+
+TextServer::SubpixelPositioning FontData::get_subpixel_positioning() const {
+	return subpixel_positioning;
 }
 
 void FontData::set_oversampling(real_t p_oversampling) {

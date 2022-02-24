@@ -31,10 +31,10 @@
 #ifndef JNI_SINGLETON_H
 #define JNI_SINGLETON_H
 
-#include <core/config/engine.h>
-#include <core/variant/variant.h>
+#include "core/config/engine.h"
+#include "core/variant/variant.h"
 #ifdef ANDROID_ENABLED
-#include <platform/android/jni_utils.h>
+#include "platform/android/jni_utils.h"
 #endif
 
 class JNISingleton : public Object {
@@ -93,8 +93,9 @@ public:
 		for (int i = 0; i < p_argcount; i++) {
 			jvalret vr = _variant_to_jvalue(env, E->get().argtypes[i], p_args[i]);
 			v[i] = vr.val;
-			if (vr.obj)
+			if (vr.obj) {
 				to_erase.push_back(vr.obj);
+			}
 		}
 
 		Variant ret;
@@ -197,18 +198,19 @@ public:
 	}
 
 	void add_signal(const StringName &p_name, const Vector<Variant::Type> &p_args) {
-		if (p_args.size() == 0)
+		if (p_args.size() == 0) {
 			ADD_SIGNAL(MethodInfo(p_name));
-		else if (p_args.size() == 1)
+		} else if (p_args.size() == 1) {
 			ADD_SIGNAL(MethodInfo(p_name, PropertyInfo(p_args[0], "arg1")));
-		else if (p_args.size() == 2)
+		} else if (p_args.size() == 2) {
 			ADD_SIGNAL(MethodInfo(p_name, PropertyInfo(p_args[0], "arg1"), PropertyInfo(p_args[1], "arg2")));
-		else if (p_args.size() == 3)
+		} else if (p_args.size() == 3) {
 			ADD_SIGNAL(MethodInfo(p_name, PropertyInfo(p_args[0], "arg1"), PropertyInfo(p_args[1], "arg2"), PropertyInfo(p_args[2], "arg3")));
-		else if (p_args.size() == 4)
+		} else if (p_args.size() == 4) {
 			ADD_SIGNAL(MethodInfo(p_name, PropertyInfo(p_args[0], "arg1"), PropertyInfo(p_args[1], "arg2"), PropertyInfo(p_args[2], "arg3"), PropertyInfo(p_args[3], "arg4")));
-		else if (p_args.size() == 5)
+		} else if (p_args.size() == 5) {
 			ADD_SIGNAL(MethodInfo(p_name, PropertyInfo(p_args[0], "arg1"), PropertyInfo(p_args[1], "arg2"), PropertyInfo(p_args[2], "arg3"), PropertyInfo(p_args[3], "arg4"), PropertyInfo(p_args[4], "arg5")));
+		}
 	}
 
 #endif

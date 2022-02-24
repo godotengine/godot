@@ -204,6 +204,10 @@ void DisplayServer::delete_sub_window(WindowID p_id) {
 	ERR_FAIL_MSG("Sub-windows not supported by this display server.");
 }
 
+void DisplayServer::window_set_exclusive(WindowID p_window, bool p_exclusive) {
+	// Do nothing, if not supported.
+}
+
 void DisplayServer::window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window) {
 	ERR_FAIL_MSG("Mouse passthrough not supported by this display server.");
 }
@@ -380,6 +384,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("screen_get_scale", "screen"), &DisplayServer::screen_get_scale, DEFVAL(SCREEN_OF_MAIN_WINDOW));
 	ClassDB::bind_method(D_METHOD("screen_is_touchscreen", "screen"), &DisplayServer::screen_is_touchscreen, DEFVAL(SCREEN_OF_MAIN_WINDOW));
 	ClassDB::bind_method(D_METHOD("screen_get_max_scale"), &DisplayServer::screen_get_max_scale);
+	ClassDB::bind_method(D_METHOD("screen_get_refresh_rate", "screen"), &DisplayServer::screen_get_refresh_rate, DEFVAL(SCREEN_OF_MAIN_WINDOW));
 
 	ClassDB::bind_method(D_METHOD("screen_set_orientation", "orientation", "screen"), &DisplayServer::screen_set_orientation, DEFVAL(SCREEN_OF_MAIN_WINDOW));
 	ClassDB::bind_method(D_METHOD("screen_get_orientation", "screen"), &DisplayServer::screen_get_orientation, DEFVAL(SCREEN_OF_MAIN_WINDOW));
@@ -435,6 +440,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("window_can_draw", "window_id"), &DisplayServer::window_can_draw, DEFVAL(MAIN_WINDOW_ID));
 
 	ClassDB::bind_method(D_METHOD("window_set_transient", "window_id", "parent_window_id"), &DisplayServer::window_set_transient);
+	ClassDB::bind_method(D_METHOD("window_set_exclusive", "window_id", "exclusive"), &DisplayServer::window_set_exclusive);
 
 	ClassDB::bind_method(D_METHOD("window_set_ime_active", "active", "window_id"), &DisplayServer::window_set_ime_active, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_set_ime_position", "position", "window_id"), &DisplayServer::window_set_ime_position, DEFVAL(MAIN_WINDOW_ID));
@@ -445,7 +451,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("ime_get_selection"), &DisplayServer::ime_get_selection);
 	ClassDB::bind_method(D_METHOD("ime_get_text"), &DisplayServer::ime_get_text);
 
-	ClassDB::bind_method(D_METHOD("virtual_keyboard_show", "existing_text", "position", "multiline", "max_length", "cursor_start", "cursor_end"), &DisplayServer::virtual_keyboard_show, DEFVAL(Rect2i()), DEFVAL(false), DEFVAL(-1), DEFVAL(-1), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("virtual_keyboard_show", "existing_text", "position", "multiline", "max_length", "cursor_start", "cursor_end"), &DisplayServer::virtual_keyboard_show, DEFVAL(Rect2()), DEFVAL(false), DEFVAL(-1), DEFVAL(-1), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("virtual_keyboard_hide"), &DisplayServer::virtual_keyboard_hide);
 
 	ClassDB::bind_method(D_METHOD("virtual_keyboard_get_height"), &DisplayServer::virtual_keyboard_get_height);
@@ -539,6 +545,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(WINDOW_MODE_MINIMIZED);
 	BIND_ENUM_CONSTANT(WINDOW_MODE_MAXIMIZED);
 	BIND_ENUM_CONSTANT(WINDOW_MODE_FULLSCREEN);
+	BIND_ENUM_CONSTANT(WINDOW_MODE_EXCLUSIVE_FULLSCREEN);
 
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_RESIZE_DISABLED);
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_BORDERLESS);

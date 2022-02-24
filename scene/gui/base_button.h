@@ -31,6 +31,7 @@
 #ifndef BASE_BUTTON_H
 #define BASE_BUTTON_H
 
+#include "core/input/shortcut.h"
 #include "scene/gui/control.h"
 
 class ButtonGroup;

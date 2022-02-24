@@ -159,7 +159,7 @@ Error DirAccess::make_dir_recursive(String p_dir) {
 		base = full_dir.substr(0, pos + 1);
 	} else if (full_dir.begins_with("/")) {
 		base = "/";
-	} else if (full_dir.find(":/") != -1) {
+	} else if (full_dir.contains(":/")) {
 		base = full_dir.substr(0, full_dir.find(":/") + 2);
 	} else {
 		ERR_FAIL_V(ERR_INVALID_PARAMETER);

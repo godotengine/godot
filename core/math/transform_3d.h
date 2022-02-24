@@ -28,15 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TRANSFORM_H
-#define TRANSFORM_H
+#ifndef TRANSFORM_3D_H
+#define TRANSFORM_3D_H
 
 #include "core/math/aabb.h"
 #include "core/math/basis.h"
 #include "core/math/plane.h"
 
-class _NO_DISCARD_ Transform3D {
-public:
+struct _NO_DISCARD_ Transform3D {
 	Basis basis;
 	Vector3 origin;
 
@@ -265,4 +264,4 @@ _FORCE_INLINE_ Plane Transform3D::xform_inv_fast(const Plane &p_plane, const Tra
 	return Plane(normal, d);
 }
 
-#endif // TRANSFORM_H
+#endif // TRANSFORM_3D_H

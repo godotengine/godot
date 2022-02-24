@@ -30,6 +30,9 @@
 
 #include "vector3i.h"
 
+#include "core/math/vector3.h"
+#include "core/string/ustring.h"
+
 void Vector3i::set_axis(const int p_axis, const int32_t p_value) {
 	ERR_FAIL_INDEX(p_axis, 3);
 	coord[p_axis] = p_value;
@@ -57,4 +60,8 @@ Vector3i Vector3i::clamp(const Vector3i &p_min, const Vector3i &p_max) const {
 
 Vector3i::operator String() const {
 	return "(" + itos(x) + ", " + itos(y) + ", " + itos(z) + ")";
+}
+
+Vector3i::operator Vector3() const {
+	return Vector3(x, y, z);
 }

@@ -34,7 +34,6 @@
 #include "core/math/camera_matrix.h"
 #include "core/templates/paged_array.h"
 #include "servers/rendering/renderer_scene.h"
-#include "servers/rendering/renderer_storage.h"
 
 class RendererSceneRender {
 public:
@@ -80,11 +79,11 @@ public:
 	/* SHADOW ATLAS API */
 
 	virtual RID shadow_atlas_create() = 0;
-	virtual void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = false) = 0;
+	virtual void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = true) = 0;
 	virtual void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) = 0;
 	virtual bool shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version) = 0;
 
-	virtual void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = false) = 0;
+	virtual void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = true) = 0;
 	virtual int get_directional_light_shadow_size(RID p_light_intance) = 0;
 	virtual void set_directional_shadow_count(int p_count) = 0;
 

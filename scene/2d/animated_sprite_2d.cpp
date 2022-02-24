@@ -247,7 +247,6 @@ void AnimatedSprite2D::_notification(int p_what) {
 			}
 
 			texture->draw_rect_region(ci, dst_rect, Rect2(Vector2(), texture->get_size()), Color(1, 1, 1), false);
-
 		} break;
 	}
 }
@@ -417,7 +416,7 @@ void AnimatedSprite2D::_reset_timeout() {
 
 void AnimatedSprite2D::set_animation(const StringName &p_animation) {
 	ERR_FAIL_COND_MSG(frames == nullptr, vformat("There is no animation with name '%s'.", p_animation));
-	ERR_FAIL_COND_MSG(frames->get_animation_names().find(p_animation) == -1, vformat("There is no animation with name '%s'.", p_animation));
+	ERR_FAIL_COND_MSG(!frames->get_animation_names().has(p_animation), vformat("There is no animation with name '%s'.", p_animation));
 
 	if (animation == p_animation) {
 		return;

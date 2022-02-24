@@ -136,11 +136,11 @@ Error ResourceImporterOGGVorbis::import(const String &p_source_file, const Strin
 
 		// Have a page now.
 		if (!initialized_stream) {
-			ogg_stream_init(&stream_state, ogg_page_serialno(&page));
-			ERR_FAIL_COND_V_MSG((err = ogg_stream_check(&stream_state)), Error::ERR_INVALID_DATA, "Ogg stream error " + itos(err));
+			if (ogg_stream_init(&stream_state, ogg_page_serialno(&page))) {
+				ERR_FAIL_V_MSG(Error::ERR_OUT_OF_MEMORY, "Failed allocating memory for OGG Vorbis stream.");
+			}
 			initialized_stream = true;
 		}
-		ERR_FAIL_COND_V_MSG((err = ogg_stream_check(&stream_state)), Error::ERR_INVALID_DATA, "Ogg stream error " + itos(err));
 		ogg_stream_pagein(&stream_state, &page);
 		ERR_FAIL_COND_V_MSG((err = ogg_stream_check(&stream_state)), Error::ERR_INVALID_DATA, "Ogg stream error " + itos(err));
 		int desync_iters = 0;
@@ -160,10 +160,12 @@ Error ResourceImporterOGGVorbis::import(const String &p_source_file, const Strin
 				break;
 			}
 			if (packet_count == 0 && vorbis_synthesis_idheader(&packet) == 0) {
-				WARN_PRINT("Found a non-vorbis-header packet in a header position");
+				print_verbose("Found a non-vorbis-header packet in a header position");
 				// Clearly this logical stream is not a vorbis stream, so destroy it and try again with the next page.
-				ogg_stream_destroy(&stream_state);
-				initialized_stream = false;
+				if (initialized_stream) {
+					ogg_stream_clear(&stream_state);
+					initialized_stream = false;
+				}
 				break;
 			}
 			granule_pos = packet.granulepos;
@@ -177,6 +179,14 @@ Error ResourceImporterOGGVorbis::import(const String &p_source_file, const Strin
 		if (initialized_stream) {
 			ogg_packet_sequence->push_page(granule_pos, packet_data);
 		}
+	}
+	if (initialized_stream) {
+		ogg_stream_clear(&stream_state);
+	}
+	ogg_sync_clear(&sync_state);
+
+	if (ogg_packet_sequence->get_packet_granule_positions().is_empty()) {
+		ERR_FAIL_V_MSG(Error::ERR_FILE_CORRUPT, "OGG Vorbis decoding failed. Check that your data is a valid OGG Vorbis audio stream.");
 	}
 
 	ogg_vorbis_stream->set_packet_sequence(ogg_packet_sequence);

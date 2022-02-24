@@ -366,6 +366,16 @@ class BindingsGenerator {
 			return nullptr;
 		}
 
+		const MethodInterface *find_method_by_proxy_name(const String &p_proxy_name) const {
+			for (const MethodInterface &E : methods) {
+				if (E.proxy_name == p_proxy_name) {
+					return &E;
+				}
+			}
+
+			return nullptr;
+		}
+
 		const PropertyInterface *find_property_by_name(const StringName &p_cname) const {
 			for (const PropertyInterface &E : properties) {
 				if (E.cname == p_cname) {
@@ -386,8 +396,18 @@ class BindingsGenerator {
 			return nullptr;
 		}
 
-		const MethodInterface *find_method_by_proxy_name(const String &p_proxy_name) const {
-			for (const MethodInterface &E : methods) {
+		const SignalInterface *find_signal_by_name(const StringName &p_cname) const {
+			for (const SignalInterface &E : signals_) {
+				if (E.cname == p_cname) {
+					return &E;
+				}
+			}
+
+			return nullptr;
+		}
+
+		const SignalInterface *find_signal_by_proxy_name(const String &p_proxy_name) const {
+			for (const SignalInterface &E : signals_) {
 				if (E.proxy_name == p_proxy_name) {
 					return &E;
 				}

@@ -326,12 +326,12 @@ class DisplayServerWindows : public DisplayServer {
 
 		Vector<Vector2> mpath;
 
-		bool preserve_window_size = false;
 		bool pre_fs_valid = false;
 		RECT pre_fs_rect;
 		bool maximized = false;
 		bool minimized = false;
 		bool fullscreen = false;
+		bool multiwindow_fs = false;
 		bool borderless = false;
 		bool resizable = true;
 		bool window_focused = false;
@@ -339,6 +339,7 @@ class DisplayServerWindows : public DisplayServer {
 		bool always_on_top = false;
 		bool no_focus = false;
 		bool window_has_focus = false;
+		bool exclusive = false;
 
 		// Used to transfer data between events using timer.
 		WPARAM saved_wparam;
@@ -401,7 +402,7 @@ class DisplayServerWindows : public DisplayServer {
 	WNDPROC user_proc = nullptr;
 
 	void _send_window_event(const WindowData &wd, WindowEvent p_event);
-	void _get_window_style(bool p_main_window, bool p_fullscreen, bool p_borderless, bool p_resizable, bool p_maximized, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex);
+	void _get_window_style(bool p_main_window, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_maximized, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex);
 
 	MouseMode mouse_mode;
 	int restore_mouse_trails = 0;
@@ -458,6 +459,7 @@ public:
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 
 	virtual void screen_set_orientation(ScreenOrientation p_orientation, int p_screen = SCREEN_OF_MAIN_WINDOW) override;
@@ -498,6 +500,7 @@ public:
 	virtual void window_set_position(const Point2i &p_position, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual void window_set_transient(WindowID p_window, WindowID p_parent) override;
+	virtual void window_set_exclusive(WindowID p_window, bool p_exclusive) override;
 
 	virtual void window_set_max_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual Size2i window_get_max_size(WindowID p_window = MAIN_WINDOW_ID) const override;

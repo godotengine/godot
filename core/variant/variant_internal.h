@@ -111,6 +111,10 @@ public:
 		}
 	}
 
+	_FORCE_INLINE_ static bool initialize_ref(Object *object) {
+		return Variant::initialize_ref(object);
+	}
+
 	// Atomic types.
 	_FORCE_INLINE_ static bool *get_bool(Variant *v) { return &v->_data._bool; }
 	_FORCE_INLINE_ static const bool *get_bool(const Variant *v) { return &v->_data._bool; }
@@ -1430,10 +1434,15 @@ struct VariantTypeConstructor<Object *> {
 	_FORCE_INLINE_ static void variant_from_type(void *p_variant, void *p_value) {
 		Variant *variant = reinterpret_cast<Variant *>(p_variant);
 		VariantInitializer<Object *>::init(variant);
-		Object *value = *(reinterpret_cast<Object **>(p_value));
-		if (value) {
-			VariantInternalAccessor<Object *>::set(variant, value);
-			VariantInternalAccessor<ObjectID>::set(variant, value->get_instance_id());
+		Object *object = *(reinterpret_cast<Object **>(p_value));
+		if (object) {
+			if (object->is_ref_counted()) {
+				if (!VariantInternal::initialize_ref(object)) {
+					return;
+				}
+			}
+			VariantInternalAccessor<Object *>::set(variant, object);
+			VariantInternalAccessor<ObjectID>::set(variant, object->get_instance_id());
 		}
 	}
 

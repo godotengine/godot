@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #import "display_layer.h"
+
 #include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
 #include "display_server_iphone.h"
@@ -152,17 +153,6 @@
 		NSLog(@"failed to make complete framebuffer object %x", glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
 		return NO;
 	}
-
-	//    if (OS::get_singleton()) {
-	//        OS::VideoMode vm;
-	//        vm.fullscreen = true;
-	//        vm.width = backingWidth;
-	//        vm.height = backingHeight;
-	//        vm.resizable = false;
-	//        OS::get_singleton()->set_video_mode(vm);
-	//        OSIPhone::get_singleton()->set_base_framebuffer(viewFramebuffer);
-	//    };
-	//    gl_view_base_fb = viewFramebuffer;
 
 	return YES;
 }

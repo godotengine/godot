@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TileMap" inherits="Node2D" version="4.0">
+<class name="TileMap" inherits="Node2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Node for 2D tile-based maps.
 	</brief_description>
@@ -218,7 +218,7 @@
 			<return type="void" />
 			<argument index="0" name="layer" type="int" />
 			<description>
-				Moves the layer at index [code]layer_index[/code] to the given position [code]to_position[/code] in the array.
+				Removes the layer at index [code]layer[/code].
 			</description>
 		</method>
 		<method name="set_cell">

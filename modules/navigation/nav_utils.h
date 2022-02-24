@@ -32,6 +32,7 @@
 #define NAV_UTILS_H
 
 #include "core/math/vector3.h"
+#include "core/templates/vector.h"
 
 #include <vector>
 
@@ -129,6 +130,12 @@ struct NavigationPoly {
 	bool operator!=(const NavigationPoly &other) const {
 		return !operator==(other);
 	}
+};
+
+struct ClosestPointQueryResult {
+	Vector3 point;
+	Vector3 normal;
+	RID owner;
 };
 
 } // namespace gd

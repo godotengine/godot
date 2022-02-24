@@ -143,13 +143,15 @@ class DisplayServerX11 : public DisplayServer {
 		bool borderless = false;
 		bool resize_disabled = false;
 		Vector2i last_position_before_fs;
-		bool focused = false;
+		bool focused = true;
 		bool minimized = false;
 
 		unsigned int focus_order = 0;
 	};
 
 	Map<WindowID, WindowData> windows;
+
+	WindowID last_focused_window = INVALID_WINDOW_ID;
 
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
@@ -301,6 +303,7 @@ public:
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 
 #if defined(DBUS_ENABLED)

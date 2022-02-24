@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "joypad_uwp.h"
+
 #include "core/os/os.h"
 
 using namespace Windows::Gaming::Input;
@@ -45,8 +46,9 @@ void JoypadUWP::process_controllers() {
 	for (int i = 0; i < MAX_CONTROLLERS; i++) {
 		ControllerDevice &joy = controllers[i];
 
-		if (!joy.connected)
+		if (!joy.connected) {
 			break;
+		}
 
 		switch (joy.type) {
 			case ControllerType::GAMEPAD_CONTROLLER: {
@@ -76,8 +78,9 @@ void JoypadUWP::process_controllers() {
 					}
 				} else if (joy.vibrating && joy.ff_end_timestamp != 0) {
 					uint64_t current_time = OS::get_singleton()->get_ticks_usec();
-					if (current_time >= joy.ff_end_timestamp)
+					if (current_time >= joy.ff_end_timestamp) {
 						joypad_vibration_stop(i, current_time);
+					}
 				}
 
 				break;
@@ -87,8 +90,9 @@ void JoypadUWP::process_controllers() {
 }
 
 JoypadUWP::JoypadUWP() {
-	for (int i = 0; i < MAX_CONTROLLERS; i++)
+	for (int i = 0; i < MAX_CONTROLLERS; i++) {
 		controllers[i].id = i;
+	}
 }
 
 JoypadUWP::JoypadUWP(InputDefault *p_input) {

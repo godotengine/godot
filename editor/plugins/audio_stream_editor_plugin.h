@@ -31,7 +31,6 @@
 #ifndef AUDIO_STREAM_EDITOR_PLUGIN_H
 #define AUDIO_STREAM_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/audio/audio_stream_player.h"
 #include "scene/gui/color_rect.h"
@@ -77,7 +76,6 @@ class AudioStreamEditorPlugin : public EditorPlugin {
 	GDCLASS(AudioStreamEditorPlugin, EditorPlugin);
 
 	AudioStreamEditor *audio_editor;
-	EditorNode *editor;
 
 public:
 	virtual String get_name() const override { return "Audio"; }
@@ -86,7 +84,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	AudioStreamEditorPlugin(EditorNode *p_node);
+	AudioStreamEditorPlugin();
 	~AudioStreamEditorPlugin();
 };
 

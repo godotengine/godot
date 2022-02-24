@@ -30,6 +30,8 @@
 
 #include "tile_set_scenes_collection_source_editor.h"
 
+#include "editor/editor_file_system.h"
+#include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -328,12 +330,13 @@ void TileSetScenesCollectionSourceEditor::_update_scenes_list() {
 void TileSetScenesCollectionSourceEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_THEME_CHANGED: {
 			scene_tile_add_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			scene_tile_delete_button->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 			_update_scenes_list();
-			break;
-		case NOTIFICATION_INTERNAL_PROCESS:
+		} break;
+
+		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (tile_set_scenes_collection_source_changed_needs_update) {
 				// Update everything.
 				_update_source_inspector();
@@ -342,14 +345,13 @@ void TileSetScenesCollectionSourceEditor::_notification(int p_what) {
 				_update_tile_inspector();
 				tile_set_scenes_collection_source_changed_needs_update = false;
 			}
-			break;
-		case NOTIFICATION_VISIBILITY_CHANGED:
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
 			// Update things just in case.
 			_update_scenes_list();
 			_update_action_buttons();
-			break;
-		default:
-			break;
+		} break;
 	}
 }
 
@@ -452,6 +454,8 @@ void TileSetScenesCollectionSourceEditor::_bind_methods() {
 }
 
 TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
+	undo_redo = EditorNode::get_undo_redo();
+
 	// -- Right side --
 	HSplitContainer *split_container_right_side = memnew(HSplitContainer);
 	split_container_right_side->set_h_size_flags(SIZE_EXPAND_FILL);

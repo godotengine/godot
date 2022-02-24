@@ -1080,7 +1080,9 @@ namespace DCT_Upsample
 // Unconditionally frees all allocated m_blocks.
 void jpeg_decoder::free_all_blocks()
 {
+    delete(m_pStream);
     m_pStream = nullptr;
+
     for (mem_block *b = m_pMem_blocks; b; ) {
         mem_block *n = b->m_pNext;
         free(b);
@@ -2815,7 +2817,6 @@ int jpeg_decoder::begin_decoding()
 jpeg_decoder::~jpeg_decoder()
 {
     free_all_blocks();
-    delete(m_pStream);
 }
 
 

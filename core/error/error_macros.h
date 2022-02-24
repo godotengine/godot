@@ -69,6 +69,7 @@ void _err_print_error(const char *p_function, const char *p_file, int p_line, co
 void _err_print_error(const char *p_function, const char *p_file, int p_line, const String &p_error, const String &p_message, bool p_editor_notify = false, ErrorHandlerType p_type = ERR_HANDLER_ERROR);
 void _err_print_index_error(const char *p_function, const char *p_file, int p_line, int64_t p_index, int64_t p_size, const char *p_index_str, const char *p_size_str, const char *p_message = "", bool p_editor_notify = false, bool fatal = false);
 void _err_print_index_error(const char *p_function, const char *p_file, int p_line, int64_t p_index, int64_t p_size, const char *p_index_str, const char *p_size_str, const String &p_message, bool p_editor_notify = false, bool fatal = false);
+void _err_flush_stdout();
 
 #ifdef __GNUC__
 //#define FUNCTION_STR __PRETTY_FUNCTION__ - too annoying
@@ -789,6 +790,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 #define CRASH_NOW()                                                                           \
 	if (true) {                                                                               \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: Method/function failed."); \
+		_err_flush_stdout();                                                                  \
 		GENERATE_TRAP();                                                                      \
 	} else                                                                                    \
 		((void)0)
@@ -801,6 +803,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 #define CRASH_NOW_MSG(m_msg)                                                                         \
 	if (true) {                                                                                      \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: Method/function failed.", m_msg); \
+		_err_flush_stdout();                                                                         \
 		GENERATE_TRAP();                                                                             \
 	} else                                                                                           \
 		((void)0)

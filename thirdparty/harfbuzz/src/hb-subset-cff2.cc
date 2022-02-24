@@ -233,29 +233,6 @@ struct cff2_subr_subsetter_t : subr_subsetter_t<cff2_subr_subsetter_t, CFF2Subrs
 };
 
 struct cff2_subset_plan {
-  cff2_subset_plan ()
-    : orig_fdcount (0),
-      subset_fdcount(1),
-      subset_fdselect_size (0),
-      subset_fdselect_format (0),
-      drop_hints (false),
-      desubroutinize (false)
-  {
-    subset_fdselect_ranges.init ();
-    fdmap.init ();
-    subset_charstrings.init ();
-    subset_globalsubrs.init ();
-    subset_localsubrs.init ();
-  }
-
-  ~cff2_subset_plan ()
-  {
-    subset_fdselect_ranges.fini ();
-    fdmap.fini ();
-    subset_charstrings.fini_deep ();
-    subset_globalsubrs.fini_deep ();
-    subset_localsubrs.fini_deep ();
-  }
 
   bool create (const OT::cff2::accelerator_subset_t &acc,
 	      hb_subset_plan_t *plan)
@@ -320,10 +297,10 @@ struct cff2_subset_plan {
 
   cff2_sub_table_info_t info;
 
-  unsigned int    orig_fdcount;
-  unsigned int    subset_fdcount;
-  unsigned int	  subset_fdselect_size;
-  unsigned int    subset_fdselect_format;
+  unsigned int    orig_fdcount = 0;
+  unsigned int    subset_fdcount = 1;
+  unsigned int	  subset_fdselect_size = 0;
+  unsigned int    subset_fdselect_format = 0;
   hb_vector_t<code_pair_t>   subset_fdselect_ranges;
 
   hb_inc_bimap_t   fdmap;
@@ -332,8 +309,8 @@ struct cff2_subset_plan {
   str_buff_vec_t	    subset_globalsubrs;
   hb_vector_t<str_buff_vec_t> subset_localsubrs;
 
-  bool	    drop_hints;
-  bool	    desubroutinize;
+  bool	    drop_hints = false;
+  bool	    desubroutinize = false;
 };
 
 static bool _serialize_cff2 (hb_serialize_context_t *c,
@@ -473,12 +450,8 @@ _hb_subset_cff2 (const OT::cff2::accelerator_subset_t  &acc,
 bool
 hb_subset_cff2 (hb_subset_context_t *c)
 {
-  OT::cff2::accelerator_subset_t acc;
-  acc.init (c->plan->source);
-  bool result = likely (acc.is_valid ()) && _hb_subset_cff2 (acc, c);
-  acc.fini ();
-
-  return result;
+  OT::cff2::accelerator_subset_t acc (c->plan->source);
+  return acc.is_valid () && _hb_subset_cff2 (acc, c);
 }
 
 #endif

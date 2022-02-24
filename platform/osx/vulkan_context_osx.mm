@@ -44,7 +44,7 @@ Error VulkanContextOSX::window_create(DisplayServer::WindowID p_window_id, Displ
 	createInfo.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
 	createInfo.pNext = nullptr;
 	createInfo.flags = 0;
-	createInfo.pView = p_window;
+	createInfo.pView = (__bridge const void *)p_window;
 
 	VkSurfaceKHR surface;
 	VkResult err = vkCreateMacOSSurfaceMVK(get_instance(), &createInfo, nullptr, &surface);

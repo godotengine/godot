@@ -56,14 +56,14 @@ protected:
 	virtual void _create_resource() override;
 
 public:
-	LightOccluder2DEditor(EditorNode *p_editor);
+	LightOccluder2DEditor();
 };
 
 class LightOccluder2DEditorPlugin : public AbstractPolygon2DEditorPlugin {
 	GDCLASS(LightOccluder2DEditorPlugin, AbstractPolygon2DEditorPlugin);
 
 public:
-	LightOccluder2DEditorPlugin(EditorNode *p_node);
+	LightOccluder2DEditorPlugin();
 };
 
 #endif // LIGHT_OCCLUDER_2D_EDITOR_PLUGIN_H

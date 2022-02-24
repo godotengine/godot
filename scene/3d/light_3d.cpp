@@ -177,12 +177,11 @@ void Light3D::_update_visibility() {
 }
 
 void Light3D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		_update_visibility();
-	}
-
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		_update_visibility();
+	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED:
+		case NOTIFICATION_ENTER_TREE: {
+			_update_visibility();
+		} break;
 	}
 }
 

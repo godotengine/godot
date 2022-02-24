@@ -58,6 +58,7 @@ bool RectangleShape2D::_get(const StringName &p_name, Variant &r_property) const
 #endif // DISABLE_DEPRECATED
 
 void RectangleShape2D::set_size(const Vector2 &p_size) {
+	ERR_FAIL_COND_MSG(p_size.x < 0 || p_size.y < 0, "RectangleShape2D size cannot be negative.");
 	size = p_size;
 	_update_shape();
 }

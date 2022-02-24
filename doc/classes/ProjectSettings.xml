@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ProjectSettings" inherits="Object" version="4.0">
+<class name="ProjectSettings" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Contains global variables accessible from everywhere.
 	</brief_description>
@@ -356,6 +356,8 @@
 		<member name="debug/gdscript/warnings/incompatible_ternary" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when a ternary operator may emit values with incompatible types.
 		</member>
+		<member name="debug/gdscript/warnings/int_assigned_to_enum" type="bool" setter="" getter="" default="true">
+		</member>
 		<member name="debug/gdscript/warnings/integer_division" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when dividing an integer by another integer (the decimal part will be discarded).
 		</member>
@@ -561,6 +563,15 @@
 		</member>
 		<member name="gui/theme/custom_font" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to a custom [Font] resource to use as default for all GUI elements of the project.
+		</member>
+		<member name="gui/theme/default_font_antialiased" type="bool" setter="" getter="" default="true">
+			If set to [code]true[/code], default font uses 8-bit anitialiased glyph rendering.  See [member FontData.antialiased].
+		</member>
+		<member name="gui/theme/default_font_hinting" type="int" setter="" getter="" default="1">
+			Default font hinting mode. See [member FontData.hinting].
+		</member>
+		<member name="gui/theme/default_font_subpixel_positioning" type="int" setter="" getter="" default="1">
+			Default font glyph sub-pixel positioning mode. See [member FontData.subpixel_positioning].
 		</member>
 		<member name="gui/theme/default_theme_scale" type="float" setter="" getter="" default="1.0">
 		</member>
@@ -1412,8 +1423,8 @@
 			Sets which physics engine to use for 2D physics.
 			"DEFAULT" and "GodotPhysics2D" are the same, as there is currently no alternative 2D physics server implemented.
 		</member>
-		<member name="physics/2d/run_on_thread" type="bool" setter="" getter="" default="false">
-			Sets whether 2D physics is run on the main thread or a separate one. Running the server on a thread increases performance, but restricts API access to only physics process.
+		<member name="physics/2d/run_on_separate_thread" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the 2D physics server runs on a separate thread, making better use of multi-core CPUs. If [code]false[/code], the 2D physics server runs on the main thread. Running the physics server on a separate thread can increase performance, but restricts API access to only physics process.
 		</member>
 		<member name="physics/2d/sleep_threshold_angular" type="float" setter="" getter="" default="0.139626">
 			Threshold angular velocity under which a 2D physics body will be considered inactive. See [constant PhysicsServer2D.SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD].
@@ -1484,8 +1495,8 @@
 			Sets which physics engine to use for 3D physics.
 			"DEFAULT" is currently the [url=https://bulletphysics.org]Bullet[/url] physics engine. The "GodotPhysics3D" engine is still supported as an alternative.
 		</member>
-		<member name="physics/3d/run_on_thread" type="bool" setter="" getter="" default="false">
-			Sets whether 3D physics is run on the main thread or a separate one. Running the server on a thread increases performance, but restricts API access to only physics process.
+		<member name="physics/3d/run_on_separate_thread" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the 3D physics server runs on a separate thread, making better use of multi-core CPUs. If [code]false[/code], the 3D physics server runs on the main thread. Running the physics server on a separate thread can increase performance, but restricts API access to only physics process.
 		</member>
 		<member name="physics/3d/sleep_threshold_angular" type="float" setter="" getter="" default="0.139626">
 			Threshold angular velocity under which a 3D physics body will be considered inactive. See [constant PhysicsServer3D.SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD].
@@ -1694,13 +1705,13 @@
 			If [code]true[/code], renders [VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) buffers at halved resolution (e.g. 960×540 when the viewport size is 1920×1080). This improves performance significantly when VoxelGI or SDFGI is enabled, at the cost of artifacts that may be visible on polygon edges. The loss in quality becomes less noticeable as the viewport resolution increases. [LightmapGI] rendering is not affected by this setting.
 			[b]Note:[/b] This property is only read when the project starts. To set half-resolution GI at run-time, call [method RenderingServer.gi_set_use_half_resolution] instead.
 		</member>
-		<member name="rendering/global_illumination/sdfgi/frames_to_converge" type="int" setter="" getter="" default="4">
+		<member name="rendering/global_illumination/sdfgi/frames_to_converge" type="int" setter="" getter="" default="5">
 		</member>
 		<member name="rendering/global_illumination/sdfgi/frames_to_update_lights" type="int" setter="" getter="" default="2">
 		</member>
 		<member name="rendering/global_illumination/sdfgi/probe_ray_count" type="int" setter="" getter="" default="1">
 		</member>
-		<member name="rendering/global_illumination/voxel_gi/quality" type="int" setter="" getter="" default="1">
+		<member name="rendering/global_illumination/voxel_gi/quality" type="int" setter="" getter="" default="0">
 		</member>
 		<member name="rendering/lightmapping/bake_performance/max_rays_per_pass" type="int" setter="" getter="" default="32">
 		</member>
@@ -1744,10 +1755,14 @@
 			[b]Note:[/b] This property is only read when the project starts. To adjust the automatic LOD threshold at runtime, set [member Viewport.mesh_lod_threshold] on the root [Viewport].
 		</member>
 		<member name="rendering/occlusion_culling/bvh_build_quality" type="int" setter="" getter="" default="2">
+			The [url=https://en.wikipedia.org/wiki/Bounding_volume_hierarchy]BVH[/url] quality to use when rendering the occlusion culling buffer. Higher values will result in more accurate occlusion culling, at the cost of higher CPU usage.
 		</member>
 		<member name="rendering/occlusion_culling/occlusion_rays_per_thread" type="int" setter="" getter="" default="512">
+			Higher values will result in more accurate occlusion culling, at the cost of higher CPU usage. The occlusion culling buffer's pixel count is roughly equal to [code]occlusion_rays_per_thread * number_of_logical_cpu_cores[/code], so it will depend on the system's CPU. Therefore, CPUs with fewer cores will use a lower resolution to attempt keeping performance costs even across devices.
 		</member>
 		<member name="rendering/occlusion_culling/use_occlusion_culling" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], [OccluderInstance3D] nodes will be usable for occlusion culling in 3D in the root viewport. In custom viewports, [member Viewport.use_occlusion_culling] must be set to [code]true[/code] instead.
+			[b]Note:[/b] Enabling occlusion culling has a cost on the CPU. Only enable occlusion culling if you actually plan to use it. Large open scenes with few or no objects blocking the view will generally not benefit much from occlusion culling. Large open scenes generally benefit more from mesh LOD and visibility ranges ([member GeometryInstance3D.visibility_range_begin] and [member GeometryInstance3D.visibility_range_end]) compared to occlusion culling.
 		</member>
 		<member name="rendering/reflections/reflection_atlas/reflection_count" type="int" setter="" getter="" default="64">
 			Number of cubemaps to store in the reflection atlas. The number of [ReflectionProbe]s in a scene will be limited by this amount. A higher number requires more VRAM.
@@ -1761,10 +1776,10 @@
 		<member name="rendering/reflections/sky_reflections/fast_filter_high_quality" type="bool" setter="" getter="" default="false">
 			Use a higher quality variant of the fast filtering algorithm. Significantly slower than using default quality, but results in smoother reflections. Should only be used when the scene is especially detailed.
 		</member>
-		<member name="rendering/reflections/sky_reflections/ggx_samples" type="int" setter="" getter="" default="1024">
+		<member name="rendering/reflections/sky_reflections/ggx_samples" type="int" setter="" getter="" default="32">
 			Sets the number of samples to take when using importance sampling for [Sky]s and [ReflectionProbe]s. A higher value will result in smoother, higher quality reflections, but increases time to calculate radiance maps. In general, fewer samples are needed for simpler, low dynamic range environments while more samples are needed for HDR environments and environments with a high level of detail.
 		</member>
-		<member name="rendering/reflections/sky_reflections/ggx_samples.mobile" type="int" setter="" getter="" default="128">
+		<member name="rendering/reflections/sky_reflections/ggx_samples.mobile" type="int" setter="" getter="" default="16">
 			Lower-end override for [member rendering/reflections/sky_reflections/ggx_samples] on mobile devices, due to performance concerns or driver support.
 		</member>
 		<member name="rendering/reflections/sky_reflections/roughness_layers" type="int" setter="" getter="" default="8">
@@ -1798,12 +1813,6 @@
 		</member>
 		<member name="rendering/shader_compiler/shader_cache/use_zstd_compression" type="bool" setter="" getter="" default="true">
 		</member>
-		<member name="rendering/shading/overrides/force_blinn_over_ggx" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], uses faster but lower-quality Blinn model to generate blurred reflections instead of the GGX model.
-		</member>
-		<member name="rendering/shading/overrides/force_blinn_over_ggx.mobile" type="bool" setter="" getter="" default="true">
-			Lower-end override for [member rendering/shading/overrides/force_blinn_over_ggx] on mobile devices, due to performance concerns or driver support.
-		</member>
 		<member name="rendering/shading/overrides/force_lambert_over_burley" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses faster but lower-quality Lambert material lighting model instead of Burley.
 		</member>
@@ -1824,7 +1833,7 @@
 		<member name="rendering/shadows/directional_shadow/size.mobile" type="int" setter="" getter="" default="2048">
 			Lower-end override for [member rendering/shadows/directional_shadow/size] on mobile devices, due to performance concerns or driver support.
 		</member>
-		<member name="rendering/shadows/directional_shadow/soft_shadow_quality" type="int" setter="" getter="" default="3">
+		<member name="rendering/shadows/directional_shadow/soft_shadow_quality" type="int" setter="" getter="" default="2">
 			Quality setting for shadows cast by [DirectionalLight3D]s. Higher quality settings use more samples when reading from shadow maps and are thus slower. Low quality settings may result in shadows looking grainy.
 			[b]Note:[/b] The Soft Very Low setting will automatically multiply [i]constant[/i] shadow blur by 0.75x to reduce the amount of noise visible. This automatic blur change only affects the constant blur factor defined in [member Light3D.shadow_blur], not the variable blur performed by [DirectionalLight3D]s' [member Light3D.light_angular_distance].
 			[b]Note:[/b] The Soft High and Soft Ultra settings will automatically multiply [i]constant[/i] shadow blur by 1.5× and 2× respectively to make better use of the increased sample count. This increased blur also improves stability of dynamic object shadows.
@@ -1852,7 +1861,7 @@
 		<member name="rendering/shadows/shadow_atlas/size.mobile" type="int" setter="" getter="" default="2048">
 			Lower-end override for [member rendering/shadows/shadow_atlas/size] on mobile devices, due to performance concerns or driver support.
 		</member>
-		<member name="rendering/shadows/shadows/soft_shadow_quality" type="int" setter="" getter="" default="3">
+		<member name="rendering/shadows/shadows/soft_shadow_quality" type="int" setter="" getter="" default="2">
 			Quality setting for shadows cast by [OmniLight3D]s and [SpotLight3D]s. Higher quality settings use more samples when reading from shadow maps and are thus slower. Low quality settings may result in shadows looking grainy.
 			[b]Note:[/b] The Soft Very Low setting will automatically multiply [i]constant[/i] shadow blur by 0.75x to reduce the amount of noise visible. This automatic blur change only affects the constant blur factor defined in [member Light3D.shadow_blur], not the variable blur performed by [DirectionalLight3D]s' [member Light3D.light_angular_distance].
 			[b]Note:[/b] The Soft High and Soft Ultra settings will automatically multiply shadow blur by 1.5× and 2× respectively to make better use of the increased sample count. This increased blur also improves stability of dynamic object shadows.
@@ -1906,8 +1915,23 @@
 		</member>
 		<member name="rendering/vulkan/staging_buffer/texture_upload_region_size_px" type="int" setter="" getter="" default="64">
 		</member>
-		<member name="rendering/xr/enabled" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], XR support is enabled in Godot, this ensures required shaders are compiled.
+		<member name="xr/openxr/default_action_map" type="String" setter="" getter="" default="&quot;res://default_action_map.tres&quot;">
+			Action map configuration to load by default.
+		</member>
+		<member name="xr/openxr/enabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code] Godot will setup and initialise OpenXR on startup.
+		</member>
+		<member name="xr/openxr/form_factor" type="int" setter="" getter="" default="&quot;0&quot;">
+			Specify whether OpenXR should be configured for an HMD or a hand held device.
+		</member>
+		<member name="xr/openxr/reference_space" type="int" setter="" getter="" default="&quot;1&quot;">
+			Specify the default reference space.
+		</member>
+		<member name="xr/openxr/view_configuration" type="int" setter="" getter="" default="&quot;1&quot;">
+			Specify the view configuration with which to configure OpenXR settting up either Mono or Stereo rendering.
+		</member>
+		<member name="xr/shaders/enabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], Godot will compile shaders required for XR.
 		</member>
 	</members>
 </class>

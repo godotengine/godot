@@ -31,10 +31,11 @@
 #ifndef OCCLUDER_INSTANCE_3D_EDITOR_PLUGIN_H
 #define OCCLUDER_INSTANCE_3D_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/3d/occluder_instance_3d.h"
 #include "scene/resources/material.h"
+
+class EditorFileDialog;
 
 class OccluderInstance3DEditorPlugin : public EditorPlugin {
 	GDCLASS(OccluderInstance3DEditorPlugin, EditorPlugin);
@@ -42,7 +43,6 @@ class OccluderInstance3DEditorPlugin : public EditorPlugin {
 	OccluderInstance3D *occluder_instance;
 
 	Button *bake;
-	EditorNode *editor;
 
 	EditorFileDialog *file_dialog;
 
@@ -59,7 +59,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	OccluderInstance3DEditorPlugin(EditorNode *p_node);
+	OccluderInstance3DEditorPlugin();
 	~OccluderInstance3DEditorPlugin();
 };
 

@@ -36,9 +36,7 @@
 #include "scene/gui/graph_node.h"
 #include "scene/gui/label.h"
 #include "scene/gui/scroll_bar.h"
-#include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
-#include "scene/gui/texture_rect.h"
 
 class GraphEdit;
 class ViewPanner;

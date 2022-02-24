@@ -141,10 +141,13 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 			}
 		} break;
 		case GDScriptParser::DataType::ENUM:
-		case GDScriptParser::DataType::ENUM_VALUE:
 			result.has_type = true;
 			result.kind = GDScriptDataType::BUILTIN;
-			result.builtin_type = Variant::INT;
+			if (p_datatype.is_meta_type) {
+				result.builtin_type = Variant::DICTIONARY;
+			} else {
+				result.builtin_type = Variant::INT;
+			}
 			break;
 		case GDScriptParser::DataType::UNRESOLVED: {
 			ERR_PRINT("Parser bug: converting unresolved type.");
@@ -469,7 +472,14 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 		} break;
 		case GDScriptParser::Node::CAST: {
 			const GDScriptParser::CastNode *cn = static_cast<const GDScriptParser::CastNode *>(p_expression);
-			GDScriptDataType cast_type = _gdtype_from_datatype(cn->cast_type->get_datatype());
+			GDScriptParser::DataType og_cast_type = cn->cast_type->get_datatype();
+			GDScriptDataType cast_type = _gdtype_from_datatype(og_cast_type);
+
+			if (og_cast_type.kind == GDScriptParser::DataType::ENUM) {
+				// Enum types are usually treated as dictionaries, but in this case we want to cast to an integer.
+				cast_type.kind = GDScriptDataType::BUILTIN;
+				cast_type.builtin_type = Variant::INT;
+			}
 
 			// Create temporary for result first since it will be deleted last.
 			GDScriptCodeGenerator::Address result = codegen.add_temporary(cast_type);

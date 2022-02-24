@@ -33,10 +33,10 @@
 
 #include "core/object/undo_redo.h"
 #include "core/templates/list.h"
-#include "core/templates/pair.h"
-#include "editor/editor_plugin.h"
-#include "editor/plugins/script_editor_plugin.h"
 #include "scene/resources/texture.h"
+
+class ConfigFile;
+class EditorPlugin;
 
 class EditorHistory {
 	enum {
@@ -58,8 +58,6 @@ class EditorHistory {
 
 	Vector<History> history;
 	int current;
-
-	//Vector<EditorPlugin*> editor_plugins;
 
 	struct PropertyData {
 		String name;
@@ -181,6 +179,8 @@ public:
 	Variant instance_custom_type(const String &p_type, const String &p_inherits);
 	void remove_custom_type(const String &p_type);
 	const Map<String, Vector<CustomType>> &get_custom_types() const { return custom_types; }
+
+	void instantiate_object_properties(Object *p_object);
 
 	int add_edited_scene(int p_at_pos);
 	void move_edited_scene_index(int p_idx, int p_to_idx);

@@ -98,6 +98,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 	font->set_antialiased(false);
 	font->set_multichannel_signed_distance_field(false);
 	font->set_fixed_size(base_size);
+	font->set_subpixel_positioning(TextServer::SUBPIXEL_POSITIONING_DISABLED);
 	font->set_force_autohinter(false);
 	font->set_hinting(TextServer::HINTING_NONE);
 	font->set_oversampling(1.0f);

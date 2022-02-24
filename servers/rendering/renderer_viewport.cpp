@@ -548,7 +548,6 @@ void RendererViewport::draw_viewports() {
 
 	// get our xr interface in case we need it
 	Ref<XRInterface> xr_interface;
-
 	XRServer *xr_server = XRServer::get_singleton();
 	if (xr_server != nullptr) {
 		// let our XR server know we're about to render our frames so we can get our frame timing
@@ -822,7 +821,7 @@ void RendererViewport::viewport_set_active(RID p_viewport, bool p_active) {
 	ERR_FAIL_COND(!viewport);
 
 	if (p_active) {
-		ERR_FAIL_COND_MSG(active_viewports.find(viewport) != -1, "Can't make active a Viewport that is already active.");
+		ERR_FAIL_COND_MSG(active_viewports.has(viewport), "Can't make active a Viewport that is already active.");
 		viewport->occlusion_buffer_dirty = true;
 		active_viewports.push_back(viewport);
 	} else {

@@ -34,16 +34,20 @@
 #include "core/io/config_file.h"
 #include "core/io/file_access.h"
 #include "core/os/main_loop.h"
-#include "editor_node.h"
-#include "editor_scale.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "scene/gui/margin_container.h"
 
 void EditorPluginSettings::_notification(int p_what) {
-	if (p_what == NOTIFICATION_WM_WINDOW_FOCUS_IN) {
-		update_plugins();
-	} else if (p_what == Node::NOTIFICATION_READY) {
-		plugin_config_dialog->connect("plugin_ready", Callable(EditorNode::get_singleton(), "_on_plugin_ready"));
-		plugin_list->connect("button_pressed", callable_mp(this, &EditorPluginSettings::_cell_button_pressed));
+	switch (p_what) {
+		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
+			update_plugins();
+		} break;
+
+		case Node::NOTIFICATION_READY: {
+			plugin_config_dialog->connect("plugin_ready", Callable(EditorNode::get_singleton(), "_on_plugin_ready"));
+			plugin_list->connect("button_pressed", callable_mp(this, &EditorPluginSettings::_cell_button_pressed));
+		} break;
 	}
 }
 

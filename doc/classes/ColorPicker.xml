@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ColorPicker" inherits="BoxContainer" version="4.0">
+<class name="ColorPicker" inherits="BoxContainer" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Color picker control.
 	</brief_description>
@@ -115,8 +115,6 @@
 		</theme_item>
 		<theme_item name="color_hue" data_type="icon" type="Texture2D">
 			Custom texture for the hue selection slider on the right.
-		</theme_item>
-		<theme_item name="color_sample" data_type="icon" type="Texture2D">
 		</theme_item>
 		<theme_item name="overbright_indicator" data_type="icon" type="Texture2D">
 			The indicator used to signalize that the color value is outside the 0-1 range.

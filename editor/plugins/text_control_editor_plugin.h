@@ -34,8 +34,8 @@
 #include "canvas_item_editor_plugin.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_inspector.h"
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
+#include "scene/gui/color_picker.h"
 #include "scene/gui/color_rect.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
@@ -62,14 +62,11 @@ class TextControlEditor : public HBoxContainer {
 	ColorPickerButton *outline_color_picker = nullptr;
 	Button *clear_formatting = nullptr;
 
-	Control *edited_control = nullptr;
-	String edited_color;
-	String edited_font;
-	String edited_font_size;
+	Vector<Control *> edited_controls;
 	Ref<Font> custom_font;
 
 protected:
-	void _notification(int p_notification);
+	void _notification(int p_what);
 	static void _bind_methods();
 
 	void _find_resources(EditorFileSystemDirectory *p_dir);
@@ -106,7 +103,6 @@ class TextControlEditorPlugin : public EditorPlugin {
 	GDCLASS(TextControlEditorPlugin, EditorPlugin);
 
 	TextControlEditor *text_ctl_editor;
-	EditorNode *editor;
 
 public:
 	virtual String get_name() const override { return "TextControlFontEditor"; }
@@ -115,7 +111,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	TextControlEditorPlugin(EditorNode *p_node);
+	TextControlEditorPlugin();
 };
 
 #endif // TEXT_CONTROL_EDITOR_PLUGIN_H

@@ -1475,12 +1475,12 @@ void ArrayMesh::add_blend_shape(const StringName &p_name) {
 
 	StringName name = p_name;
 
-	if (blend_shapes.find(name) != -1) {
+	if (blend_shapes.has(name)) {
 		int count = 2;
 		do {
 			name = String(p_name) + " " + itos(count);
 			count++;
-		} while (blend_shapes.find(name) != -1);
+		} while (blend_shapes.has(name));
 	}
 
 	blend_shapes.push_back(name);

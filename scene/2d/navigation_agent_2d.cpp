@@ -31,6 +31,7 @@
 #include "navigation_agent_2d.h"
 
 #include "core/math/geometry_2d.h"
+#include "scene/resources/world_2d.h"
 #include "servers/navigation_server_2d.h"
 
 void NavigationAgent2D::_bind_methods() {
@@ -96,10 +97,12 @@ void NavigationAgent2D::_notification(int p_what) {
 			}
 			set_physics_process_internal(true);
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			agent_parent = nullptr;
 			set_physics_process_internal(false);
 		} break;
+
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (agent_parent) {
 				NavigationServer2D::get_singleton()->agent_set_position(agent, agent_parent->get_global_position());

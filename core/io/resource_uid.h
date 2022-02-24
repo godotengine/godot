@@ -35,7 +35,6 @@
 #include "core/string/string_name.h"
 #include "core/templates/ordered_hash_map.h"
 
-class Crypto;
 class ResourceUID : public Object {
 	GDCLASS(ResourceUID, Object)
 public:
@@ -47,7 +46,7 @@ public:
 	static String get_cache_file();
 
 private:
-	mutable Ref<Crypto> crypto;
+	void *crypto; // CryptoCore::RandomGenerator (avoid including crypto_core.h)
 	Mutex mutex;
 	struct Cache {
 		CharString cs;
@@ -67,7 +66,7 @@ public:
 	String id_to_text(ID p_id) const;
 	ID text_to_id(const String &p_text) const;
 
-	ID create_id() const;
+	ID create_id();
 	bool has_id(ID p_id) const;
 	void add_id(ID p_id, const String &p_path);
 	void set_id(ID p_id, const String &p_path);

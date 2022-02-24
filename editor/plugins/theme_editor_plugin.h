@@ -31,16 +31,20 @@
 #ifndef THEME_EDITOR_PLUGIN_H
 #define THEME_EDITOR_PLUGIN_H
 
+#include "editor/editor_plugin.h"
+#include "editor/plugins/theme_editor_preview.h"
+#include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/item_list.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/tab_bar.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/gui/tree.h"
 #include "scene/resources/theme.h"
-#include "theme_editor_preview.h"
 
-#include "editor/editor_node.h"
+class EditorFileDialog;
 
 class ThemeItemImportTree : public VBoxContainer {
 	GDCLASS(ThemeItemImportTree, VBoxContainer);
@@ -188,7 +192,11 @@ class ThemeItemEditorDialog : public AcceptDialog {
 
 	TabContainer *tc;
 
-	ItemList *edit_type_list;
+	enum TypesTreeAction {
+		TYPES_TREE_REMOVE_ITEM,
+	};
+
+	Tree *edit_type_list;
 	LineEdit *edit_add_type_value;
 	String edited_item_type;
 
@@ -240,13 +248,15 @@ class ThemeItemEditorDialog : public AcceptDialog {
 
 	void _dialog_about_to_show();
 	void _update_edit_types();
-	void _edited_type_selected(int p_item_idx);
+	void _edited_type_selected();
+	void _edited_type_button_pressed(Object *p_item, int p_column, int p_id);
 
 	void _update_edit_item_tree(String p_item_type);
 	void _item_tree_button_pressed(Object *p_item, int p_column, int p_id);
 
 	void _add_theme_type(const String &p_new_text);
 	void _add_theme_item(Theme::DataType p_data_type, String p_item_name, String p_item_type);
+	void _remove_theme_type(const String &p_theme_type);
 	void _remove_data_type_items(Theme::DataType p_data_type, String p_item_type);
 	void _remove_class_items();
 	void _remove_custom_items();
@@ -443,7 +453,6 @@ class ThemeEditorPlugin : public EditorPlugin {
 	GDCLASS(ThemeEditorPlugin, EditorPlugin);
 
 	ThemeEditor *theme_editor;
-	EditorNode *editor;
 	Button *button;
 
 public:
@@ -453,7 +462,7 @@ public:
 	virtual bool handles(Object *p_node) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	ThemeEditorPlugin(EditorNode *p_node);
+	ThemeEditorPlugin();
 };
 
 #endif // THEME_EDITOR_PLUGIN_H

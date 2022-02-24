@@ -31,6 +31,8 @@
 #include "gdnative/vector3.h"
 
 #include "core/math/vector3.h"
+#include "core/math/vector3i.h"
+#include "core/os/memory.h"
 
 static_assert(sizeof(godot_vector3) == sizeof(Vector3), "Vector3 size mismatch");
 static_assert(sizeof(godot_vector3i) == sizeof(Vector3i), "Vector3i size mismatch");

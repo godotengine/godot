@@ -429,7 +429,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 						memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], &value, 4);
 					}
-				} else { // if (type == Variant::PACKED_FLOAT64_ARRAY)
+				} else { // PACKED_FLOAT64_ARRAY
 					Vector<double> array = p_arrays[ai];
 					ERR_FAIL_COND_V(array.size() != p_vertex_array_len * 4, ERR_INVALID_PARAMETER);
 					const double *src = array.ptr();
@@ -573,7 +573,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 							memcpy(&sw[p_offsets[ai] + i * p_skin_stride], data, 2 * bone_count);
 						}
 					}
-				} else { // if (type == Variant::PACKED_FLOAT64_ARRAY)
+				} else { // PACKED_FLOAT64_ARRAY
 					Vector<double> array = p_arrays[ai];
 					ERR_FAIL_COND_V(array.size() != (int32_t)(p_vertex_array_len * bone_count), ERR_INVALID_PARAMETER);
 					const double *src = array.ptr();
@@ -933,7 +933,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 				}
 			}
 
-			ERR_FAIL_COND_V_MSG((bsformat & RS::ARRAY_FORMAT_BLEND_SHAPE_MASK) != (format & RS::ARRAY_FORMAT_BLEND_SHAPE_MASK), ERR_INVALID_PARAMETER, "Blend shape format must match the main array format for Vertex, Normal and Tangent arrays.");
+			ERR_FAIL_COND_V_MSG(bsformat != (format & RS::ARRAY_FORMAT_BLEND_SHAPE_MASK), ERR_INVALID_PARAMETER, "Blend shape format must match the main array format for Vertex, Normal and Tangent arrays.");
 		}
 	}
 
@@ -2388,9 +2388,9 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(ENV_SSIL_QUALITY_HIGH);
 	BIND_ENUM_CONSTANT(ENV_SSIL_QUALITY_ULTRA);
 
-	BIND_ENUM_CONSTANT(ENV_SDFGI_Y_SCALE_DISABLED);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_Y_SCALE_75_PERCENT);
 	BIND_ENUM_CONSTANT(ENV_SDFGI_Y_SCALE_50_PERCENT);
+	BIND_ENUM_CONSTANT(ENV_SDFGI_Y_SCALE_75_PERCENT);
+	BIND_ENUM_CONSTANT(ENV_SDFGI_Y_SCALE_100_PERCENT);
 
 	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_4);
 	BIND_ENUM_CONSTANT(ENV_SDFGI_RAY_COUNT_8);
@@ -2830,12 +2830,12 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/shadows/directional_shadow/size", 4096);
 	GLOBAL_DEF("rendering/shadows/directional_shadow/size.mobile", 2048);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/directional_shadow/size", PropertyInfo(Variant::INT, "rendering/shadows/directional_shadow/size", PROPERTY_HINT_RANGE, "256,16384"));
-	GLOBAL_DEF("rendering/shadows/directional_shadow/soft_shadow_quality", 3);
+	GLOBAL_DEF("rendering/shadows/directional_shadow/soft_shadow_quality", 2);
 	GLOBAL_DEF("rendering/shadows/directional_shadow/soft_shadow_quality.mobile", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/directional_shadow/soft_shadow_quality", PropertyInfo(Variant::INT, "rendering/shadows/directional_shadow/soft_shadow_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Very Low (Faster),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"));
 	GLOBAL_DEF("rendering/shadows/directional_shadow/16_bits", true);
 
-	GLOBAL_DEF("rendering/shadows/shadows/soft_shadow_quality", 3);
+	GLOBAL_DEF("rendering/shadows/shadows/soft_shadow_quality", 2);
 	GLOBAL_DEF("rendering/shadows/shadows/soft_shadow_quality.mobile", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadows/soft_shadow_quality", PropertyInfo(Variant::INT, "rendering/shadows/shadows/soft_shadow_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Very Low (Faster),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"));
 
@@ -2860,11 +2860,11 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/shader_compiler/shader_cache/strip_debug", false);
 	GLOBAL_DEF("rendering/shader_compiler/shader_cache/strip_debug.release", true);
 
-	GLOBAL_DEF("rendering/reflections/sky_reflections/roughness_layers", 8);
+	GLOBAL_DEF_RST("rendering/reflections/sky_reflections/roughness_layers", 8); // Assumes a 256x256 cubemap
 	GLOBAL_DEF_RST("rendering/reflections/sky_reflections/texture_array_reflections", true);
 	GLOBAL_DEF("rendering/reflections/sky_reflections/texture_array_reflections.mobile", false);
-	GLOBAL_DEF("rendering/reflections/sky_reflections/ggx_samples", 1024);
-	GLOBAL_DEF("rendering/reflections/sky_reflections/ggx_samples.mobile", 128);
+	GLOBAL_DEF_RST("rendering/reflections/sky_reflections/ggx_samples", 32);
+	GLOBAL_DEF("rendering/reflections/sky_reflections/ggx_samples.mobile", 16);
 	GLOBAL_DEF("rendering/reflections/sky_reflections/fast_filter_high_quality", false);
 	GLOBAL_DEF("rendering/reflections/reflection_atlas/reflection_size", 256);
 	GLOBAL_DEF("rendering/reflections/reflection_atlas/reflection_size.mobile", 128);
@@ -2872,15 +2872,13 @@ RenderingServer::RenderingServer() {
 
 	GLOBAL_DEF("rendering/global_illumination/gi/use_half_resolution", false);
 
-	GLOBAL_DEF("rendering/global_illumination/voxel_gi/quality", 1);
+	GLOBAL_DEF("rendering/global_illumination/voxel_gi/quality", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/global_illumination/voxel_gi/quality", PropertyInfo(Variant::INT, "rendering/global_illumination/voxel_gi/quality", PROPERTY_HINT_ENUM, "Low (4 Cones - Fast),High (6 Cones - Slow)"));
 
 	GLOBAL_DEF("rendering/shading/overrides/force_vertex_shading", false);
 	GLOBAL_DEF("rendering/shading/overrides/force_vertex_shading.mobile", true);
 	GLOBAL_DEF("rendering/shading/overrides/force_lambert_over_burley", false);
 	GLOBAL_DEF("rendering/shading/overrides/force_lambert_over_burley.mobile", true);
-	GLOBAL_DEF("rendering/shading/overrides/force_blinn_over_ggx", false);
-	GLOBAL_DEF("rendering/shading/overrides/force_blinn_over_ggx.mobile", true);
 
 	GLOBAL_DEF("rendering/driver/depth_prepass/enable", true);
 
@@ -2979,7 +2977,7 @@ RenderingServer::RenderingServer() {
 
 	GLOBAL_DEF("rendering/global_illumination/sdfgi/probe_ray_count", 1);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/global_illumination/sdfgi/probe_ray_count", PropertyInfo(Variant::INT, "rendering/global_illumination/sdfgi/probe_ray_count", PROPERTY_HINT_ENUM, "8 (Fastest),16,32,64,96,128 (Slowest)"));
-	GLOBAL_DEF("rendering/global_illumination/sdfgi/frames_to_converge", 4);
+	GLOBAL_DEF("rendering/global_illumination/sdfgi/frames_to_converge", 5);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/global_illumination/sdfgi/frames_to_converge", PropertyInfo(Variant::INT, "rendering/global_illumination/sdfgi/frames_to_converge", PROPERTY_HINT_ENUM, "5 (Less Latency but Lower Quality),10,15,20,25,30 (More Latency but Higher Quality)"));
 	GLOBAL_DEF("rendering/global_illumination/sdfgi/frames_to_update_lights", 2);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/global_illumination/sdfgi/frames_to_update_lights", PropertyInfo(Variant::INT, "rendering/global_illumination/sdfgi/frames_to_update_lights", PROPERTY_HINT_ENUM, "1 (Slower),2,4,8,16 (Faster)"));
@@ -3001,7 +2999,7 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/limits/cluster_builder/max_clustered_elements", 512);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/cluster_builder/max_clustered_elements", PropertyInfo(Variant::FLOAT, "rendering/limits/cluster_builder/max_clustered_elements", PROPERTY_HINT_RANGE, "32,8192,1"));
 
-	GLOBAL_DEF_RST("rendering/xr/enabled", false);
+	GLOBAL_DEF_RST_BASIC("xr/shaders/enabled", false);
 
 	GLOBAL_DEF_RST("rendering/2d/options/use_software_skinning", true);
 	GLOBAL_DEF_RST("rendering/2d/options/ninepatch_mode", 1);

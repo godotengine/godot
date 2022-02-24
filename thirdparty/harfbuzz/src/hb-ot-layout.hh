@@ -482,10 +482,9 @@ _hb_glyph_info_get_lig_num_comps (const hb_glyph_info_t *info)
 }
 
 static inline uint8_t
-_hb_allocate_lig_id (hb_buffer_t *buffer) {
+_hb_allocate_lig_id (hb_buffer_t *buffer)
+{
   uint8_t lig_id = buffer->next_serial () & 0x07;
-  if (unlikely (!lig_id))
-    lig_id = _hb_allocate_lig_id (buffer); /* in case of overflow */
   return lig_id;
 }
 

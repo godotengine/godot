@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "platform/javascript/display_server_javascript.h"
+#include "display_server_javascript.h"
 
 #ifdef GLES3_ENABLED
 #include "drivers/gles3/rasterizer_gles3.h"
@@ -325,12 +325,13 @@ void DisplayServerJavaScript::cursor_set_custom_image(const RES &p_cursor, Curso
 
 		image = image->duplicate();
 
-		if (atlas_texture.is_valid())
+		if (atlas_texture.is_valid()) {
 			image->crop_from_point(
 					atlas_rect.position.x,
 					atlas_rect.position.y,
 					texture_size.width,
 					texture_size.height);
+		}
 
 		if (image->get_format() != Image::FORMAT_RGBA8) {
 			image->convert(Image::FORMAT_RGBA8);
@@ -618,8 +619,9 @@ void DisplayServerJavaScript::set_icon(const Ref<Image> &p_icon) {
 		ERR_FAIL_COND(icon->decompress() != OK);
 	}
 	if (icon->get_format() != Image::FORMAT_RGBA8) {
-		if (icon == p_icon)
+		if (icon == p_icon) {
 			icon = icon->duplicate();
+		}
 		icon->convert(Image::FORMAT_RGBA8);
 	}
 
@@ -663,7 +665,7 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 	godot_js_config_canvas_id_get(canvas_id, 256);
 
 	// Handle contextmenu, webglcontextlost
-	godot_js_display_setup_canvas(p_resolution.x, p_resolution.y, p_window_mode == WINDOW_MODE_FULLSCREEN, OS::get_singleton()->is_hidpi_allowed() ? 1 : 0);
+	godot_js_display_setup_canvas(p_resolution.x, p_resolution.y, (p_window_mode == WINDOW_MODE_FULLSCREEN || p_window_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN), OS::get_singleton()->is_hidpi_allowed() ? 1 : 0);
 
 	// Check if it's windows.
 	swap_cancel_ok = godot_js_display_is_swap_ok_cancel() == 1;
@@ -794,6 +796,10 @@ float DisplayServerJavaScript::screen_get_scale(int p_screen) const {
 	return godot_js_display_pixel_ratio_get();
 }
 
+float DisplayServerJavaScript::screen_get_refresh_rate(int p_screen) const {
+	return SCREEN_REFRESH_RATE_FALLBACK; // Javascript doesn't have much of a need for the screen refresh rate, and there's no native way to do so.
+}
+
 Vector<DisplayServer::WindowID> DisplayServerJavaScript::get_window_list() const {
 	Vector<WindowID> ret;
 	ret.push_back(MAIN_WINDOW_ID);
@@ -887,8 +893,9 @@ Size2i DisplayServerJavaScript::window_get_real_size(WindowID p_window) const {
 }
 
 void DisplayServerJavaScript::window_set_mode(WindowMode p_mode, WindowID p_window) {
-	if (window_mode == p_mode)
+	if (window_mode == p_mode) {
 		return;
+	}
 
 	switch (p_mode) {
 		case WINDOW_MODE_WINDOWED: {
@@ -897,6 +904,7 @@ void DisplayServerJavaScript::window_set_mode(WindowMode p_mode, WindowID p_wind
 			}
 			window_mode = WINDOW_MODE_WINDOWED;
 		} break;
+		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
 		case WINDOW_MODE_FULLSCREEN: {
 			int result = godot_js_display_fullscreen_request();
 			ERR_FAIL_COND_MSG(result, "The request was denied. Remember that enabling fullscreen is only possible from an input callback for the HTML5 platform.");

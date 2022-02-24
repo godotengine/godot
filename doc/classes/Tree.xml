@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Tree" inherits="Control" version="4.0">
+<class name="Tree" inherits="Control" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Control to show a tree of items.
 	</brief_description>
@@ -70,6 +70,13 @@
 				Makes the currently focused cell visible.
 				This will scroll the tree if necessary. In [constant SELECT_ROW] mode, this will not do horizontal scrolling, as all the cells in the selected row is focused logically.
 				[b]Note:[/b] Despite the name of this method, the focus cursor itself is only visible in [constant SELECT_MULTI] mode.
+			</description>
+		</method>
+		<method name="get_button_id_at_position" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="position" type="Vector2" />
+			<description>
+				Returns the button id at [code]position[/code], or -1 if no button is there.
 			</description>
 		</method>
 		<method name="get_column_at_position" qualifiers="const">
@@ -240,6 +247,7 @@
 		<method name="scroll_to_item">
 			<return type="void" />
 			<argument index="0" name="item" type="TreeItem" />
+			<argument index="1" name="center_on_item" type="bool" default="false" />
 			<description>
 				Causes the [Tree] to jump to the specified [TreeItem].
 			</description>

@@ -123,7 +123,7 @@ Node3D *EditorSceneFormatImporterFBX::import_scene(const String &p_path, uint32_
 		bool corrupt = false;
 
 		// safer to check this way as there can be different formatted headers
-		if (fbx_header_string.find("Kaydara FBX Binary", 0) != -1) {
+		if (fbx_header_string.contains("Kaydara FBX Binary")) {
 			is_binary = true;
 			print_verbose("[doc] is binary");
 

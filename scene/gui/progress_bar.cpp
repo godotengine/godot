@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "progress_bar.h"
+
 #include "scene/resources/text_line.h"
 
 Size2 ProgressBar::get_minimum_size() const {
@@ -52,36 +53,38 @@ Size2 ProgressBar::get_minimum_size() const {
 }
 
 void ProgressBar::_notification(int p_what) {
-	if (p_what == NOTIFICATION_DRAW) {
-		Ref<StyleBox> bg = get_theme_stylebox(SNAME("bg"));
-		Ref<StyleBox> fg = get_theme_stylebox(SNAME("fg"));
-		Ref<Font> font = get_theme_font(SNAME("font"));
-		int font_size = get_theme_font_size(SNAME("font_size"));
-		Color font_color = get_theme_color(SNAME("font_color"));
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
+			Ref<StyleBox> bg = get_theme_stylebox(SNAME("bg"));
+			Ref<StyleBox> fg = get_theme_stylebox(SNAME("fg"));
+			Ref<Font> font = get_theme_font(SNAME("font"));
+			int font_size = get_theme_font_size(SNAME("font_size"));
+			Color font_color = get_theme_color(SNAME("font_color"));
 
-		draw_style_box(bg, Rect2(Point2(), get_size()));
-		float r = get_as_ratio();
-		int mp = fg->get_minimum_size().width;
-		int p = r * (get_size().width - mp);
-		if (p > 0) {
-			if (is_layout_rtl()) {
-				draw_style_box(fg, Rect2(Point2(p, 0), Size2(fg->get_minimum_size().width, get_size().height)));
-			} else {
-				draw_style_box(fg, Rect2(Point2(0, 0), Size2(p + fg->get_minimum_size().width, get_size().height)));
+			draw_style_box(bg, Rect2(Point2(), get_size()));
+			float r = get_as_ratio();
+			int mp = fg->get_minimum_size().width;
+			int p = r * (get_size().width - mp);
+			if (p > 0) {
+				if (is_layout_rtl()) {
+					draw_style_box(fg, Rect2(Point2(p, 0), Size2(fg->get_minimum_size().width, get_size().height)));
+				} else {
+					draw_style_box(fg, Rect2(Point2(0, 0), Size2(p + fg->get_minimum_size().width, get_size().height)));
+				}
 			}
-		}
 
-		if (percent_visible) {
-			String txt = TS->format_number(itos(int(get_as_ratio() * 100))) + TS->percent_sign();
-			TextLine tl = TextLine(txt, font, font_size);
-			Vector2 text_pos = (Point2(get_size().width - tl.get_size().x, get_size().height - tl.get_size().y) / 2).round();
-			Color font_outline_color = get_theme_color(SNAME("font_outline_color"));
-			int outline_size = get_theme_constant(SNAME("outline_size"));
-			if (outline_size > 0 && font_outline_color.a > 0) {
-				tl.draw_outline(get_canvas_item(), text_pos, outline_size, font_outline_color);
+			if (percent_visible) {
+				String txt = TS->format_number(itos(int(get_as_ratio() * 100))) + TS->percent_sign();
+				TextLine tl = TextLine(txt, font, font_size);
+				Vector2 text_pos = (Point2(get_size().width - tl.get_size().x, get_size().height - tl.get_size().y) / 2).round();
+				Color font_outline_color = get_theme_color(SNAME("font_outline_color"));
+				int outline_size = get_theme_constant(SNAME("outline_size"));
+				if (outline_size > 0 && font_outline_color.a > 0) {
+					tl.draw_outline(get_canvas_item(), text_pos, outline_size, font_outline_color);
+				}
+				tl.draw(get_canvas_item(), text_pos, font_color);
 			}
-			tl.draw(get_canvas_item(), text_pos, font_color);
-		}
+		} break;
 	}
 }
 

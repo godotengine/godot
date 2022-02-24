@@ -41,7 +41,7 @@
 
 // Push Constant
 
-layout(push_constant, binding = 0, std430) uniform DrawData {
+layout(push_constant, std430) uniform DrawData {
 	vec2 world_x;
 	vec2 world_y;
 	vec2 world_ofs;

@@ -631,7 +631,7 @@ hb_font_funcs_destroy (hb_font_funcs_t *ffuncs)
  * @destroy: (nullable): A callback to call when @data is not needed anymore
  * @replace: Whether to replace an existing data with the same key
  *
- * Attaches a user-data key/data pair to the specified font-functions structure. 
+ * Attaches a user-data key/data pair to the specified font-functions structure.
  *
  * Return value: %true if success, %false otherwise
  *
@@ -821,7 +821,7 @@ hb_font_get_glyph (hb_font_t      *font,
  * @glyph: (out): The glyph ID retrieved
  *
  * Fetches the nominal glyph ID for a Unicode code point in the
- * specified font. 
+ * specified font.
  *
  * This version of the function should not be used to fetch glyph IDs
  * for code points modified by variation selectors. For variation-selector
@@ -940,7 +940,7 @@ hb_font_get_glyph_v_advance (hb_font_t      *font,
  * @advance_stride: The stride between successive advances
  *
  * Fetches the advances for a sequence of glyph IDs in the specified
- * font, for horizontal text segments. 
+ * font, for horizontal text segments.
  *
  * Since: 1.8.6
  **/
@@ -964,7 +964,7 @@ hb_font_get_glyph_h_advances (hb_font_t*            font,
  * @advance_stride: (out): The stride between successive advances
  *
  * Fetches the advances for a sequence of glyph IDs in the specified
- * font, for vertical text segments.  
+ * font, for vertical text segments.
  *
  * Since: 1.8.6
  **/
@@ -1278,7 +1278,7 @@ hb_font_get_glyph_origin_for_direction (hb_font_t      *font,
  * @font: #hb_font_t to work upon
  * @glyph: The glyph ID to query
  * @direction: The direction of the text segment
- * @x: (inout): Input = The original X coordinate 
+ * @x: (inout): Input = The original X coordinate
  *     Output = The X coordinate plus the X-coordinate of the origin
  * @y: (inout): Input = The original Y coordinate
  *     Output = The Y coordinate plus the Y-coordinate of the origin
@@ -1306,7 +1306,7 @@ hb_font_add_glyph_origin_for_direction (hb_font_t      *font,
  * @font: #hb_font_t to work upon
  * @glyph: The glyph ID to query
  * @direction: The direction of the text segment
- * @x: (inout): Input = The original X coordinate 
+ * @x: (inout): Input = The original X coordinate
  *     Output = The X coordinate minus the X-coordinate of the origin
  * @y: (inout): Input = The original Y coordinate
  *     Output = The Y coordinate minus the Y-coordinate of the origin
@@ -1477,6 +1477,8 @@ DEFINE_NULL_INSTANCE (hb_font_t) =
 
   1000, /* x_scale */
   1000, /* y_scale */
+  0., /* slant */
+  0., /* slant_xy; */
   1<<16, /* x_mult */
   1<<16, /* y_mult */
 
@@ -1521,6 +1523,13 @@ _hb_font_create (hb_face_t *face)
  *
  * Constructs a new font object from the specified face.
  *
+ * <note>Note: If @face's index value (as passed to hb_face_create()
+ * has non-zero top 16-bits, those bits minus one are passed to
+ * hb_font_set_var_named_instance(), effectively loading a named-instance
+ * of a variable font, instead of the default-instance.  This allows
+ * specifying which named-instance to load by default when creating the
+ * face.</note>
+ *
  * Return value: (transfer full): The new font object
  *
  * Since: 0.9.2
@@ -1533,6 +1542,11 @@ hb_font_create (hb_face_t *face)
 #ifndef HB_NO_OT_FONT
   /* Install our in-house, very lightweight, funcs. */
   hb_ot_font_set_funcs (font);
+#endif
+
+#ifndef HB_NO_VAR
+  if (face && face->index >> 16)
+    hb_font_set_var_named_instance (font, (face->index >> 16) - 1);
 #endif
 
   return font;
@@ -1578,6 +1592,7 @@ hb_font_create_sub_font (hb_font_t *parent)
 
   font->x_scale = parent->x_scale;
   font->y_scale = parent->y_scale;
+  font->slant = parent->slant;
   font->mults_changed ();
   font->x_ppem = parent->x_ppem;
   font->y_ppem = parent->y_ppem;
@@ -1668,12 +1683,12 @@ hb_font_destroy (hb_font_t *font)
 /**
  * hb_font_set_user_data: (skip)
  * @font: #hb_font_t to work upon
- * @key: The user-data key 
+ * @key: The user-data key
  * @data: A pointer to the user data
  * @destroy: (nullable): A callback to call when @data is not needed anymore
  * @replace: Whether to replace an existing data with the same key
  *
- * Attaches a user-data key/data pair to the specified font object. 
+ * Attaches a user-data key/data pair to the specified font object.
  *
  * Return value: %true if success, %false otherwise
  *
@@ -1875,7 +1890,7 @@ hb_font_set_funcs (hb_font_t         *font,
  * @font_data: (destroy destroy) (scope notified): Data to attach to @font
  * @destroy: (nullable): The function to call when @font_data is not needed anymore
  *
- * Replaces the user data attached to a font, updating the font's 
+ * Replaces the user data attached to a font, updating the font's
  * @destroy callback.
  *
  * Since: 0.9.2
@@ -1949,7 +1964,7 @@ hb_font_get_scale (hb_font_t *font,
  * @x_ppem: Horizontal ppem value to assign
  * @y_ppem: Vertical ppem value to assign
  *
- * Sets the horizontal and vertical pixels-per-em (ppem) of a font. 
+ * Sets the horizontal and vertical pixels-per-em (ppem) of a font.
  *
  * Since: 0.9.2
  **/
@@ -1971,7 +1986,7 @@ hb_font_set_ppem (hb_font_t    *font,
  * @x_ppem: (out): Horizontal ppem value
  * @y_ppem: (out): Vertical ppem value
  *
- * Fetches the horizontal and vertical points-per-em (ppem) of a font. 
+ * Fetches the horizontal and vertical points-per-em (ppem) of a font.
  *
  * Since: 0.9.2
  **/
@@ -2015,12 +2030,55 @@ hb_font_set_ptem (hb_font_t *font,
  *
  * Return value: Point size.  A value of zero means "not set."
  *
- * Since: 0.9.2
+ * Since: 1.6.0
  **/
 float
 hb_font_get_ptem (hb_font_t *font)
 {
   return font->ptem;
+}
+
+/**
+ * hb_font_set_synthetic_slant:
+ * @font: #hb_font_t to work upon
+ * @slant: synthetic slant value.
+ *
+ * Sets the "synthetic slant" of a font.  By default is zero.
+ * Synthetic slant is the graphical skew that the renderer
+ * applies to the font at rendering time.
+ *
+ * HarfBuzz needs to know this value to adjust shaping results,
+ * metrics, and style values to match the slanted rendering.
+ *
+ * <note>Note: The slant value is a ratio.  For example, a
+ * 20% slant would be represented as a 0.2 value.</note>
+ *
+ * Since: 3.3.0
+ **/
+HB_EXTERN void
+hb_font_set_synthetic_slant (hb_font_t *font, float slant)
+{
+  if (hb_object_is_immutable (font))
+    return;
+
+  font->slant = slant;
+  font->mults_changed ();
+}
+
+/**
+ * hb_font_get_synthetic_slant:
+ * @font: #hb_font_t to work upon
+ *
+ * Fetches the "synthetic slant" of a font.
+ *
+ * Return value: Synthetic slant.  By default is zero.
+ *
+ * Since: 3.3.0
+ **/
+HB_EXTERN float
+hb_font_get_synthetic_slant (hb_font_t *font)
+{
+  return font->slant;
 }
 
 #ifndef HB_NO_VAR
@@ -2035,6 +2093,10 @@ hb_font_get_ptem (hb_font_t *font)
  * @variations_length: Number of variations to apply
  *
  * Applies a list of font-variation settings to a font.
+ *
+ * Note that this overrides all existing variations set on @font.
+ * Axes not included in @variations will be effectively set to their
+ * default values.
  *
  * Since: 1.4.2
  */
@@ -2090,6 +2152,10 @@ hb_font_set_variations (hb_font_t            *font,
  *
  * Applies a list of variation coordinates (in design-space units)
  * to a font.
+ *
+ * Note that this overrides all existing variations set on @font.
+ * Axes not included in @coords will be effectively set to their
+ * default values.
  *
  * Since: 1.4.2
  */
@@ -2154,6 +2220,10 @@ hb_font_set_var_named_instance (hb_font_t *font,
  * Applies a list of variation coordinates (in normalized units)
  * to a font.
  *
+ * Note that this overrides all existing variations set on @font.
+ * Axes not included in @coords will be effectively set to their
+ * default values.
+ *
  * <note>Note: Coordinates should be normalized to 2.14.</note>
  *
  * Since: 1.4.2
@@ -2196,13 +2266,18 @@ hb_font_set_var_coords_normalized (hb_font_t    *font,
 /**
  * hb_font_get_var_coords_normalized:
  * @font: #hb_font_t to work upon
- * @length: Number of coordinates retrieved
+ * @length: (out): Number of coordinates retrieved
  *
  * Fetches the list of normalized variation coordinates currently
  * set on a font.
  *
+ * Note that this returned array may only contain values for some
+ * (or none) of the axes; omitted axes effectively have zero values.
+ *
  * Return value is valid as long as variation coordinates of the font
  * are not modified.
+ *
+ * Return value: coordinates array
  *
  * Since: 1.4.2
  */
@@ -2216,18 +2291,24 @@ hb_font_get_var_coords_normalized (hb_font_t    *font,
   return font->coords;
 }
 
-#ifdef HB_EXPERIMENTAL_API
 /**
  * hb_font_get_var_coords_design:
  * @font: #hb_font_t to work upon
- * @length: (out): number of coordinates
+ * @length: (out): Number of coordinates retrieved
+ *
+ * Fetches the list of variation coordinates (in design-space units) currently
+ * set on a font.
+ *
+ * Note that this returned array may only contain values for some
+ * (or none) of the axes; omitted axes effectively have their default
+ * values.
  *
  * Return value is valid as long as variation coordinates of the font
  * are not modified.
  *
  * Return value: coordinates array
  *
- * Since: EXPERIMENTAL
+ * Since: 3.3.0
  */
 const float *
 hb_font_get_var_coords_design (hb_font_t *font,
@@ -2238,7 +2319,6 @@ hb_font_get_var_coords_design (hb_font_t *font,
 
   return font->design_coords;
 }
-#endif
 #endif
 
 #ifndef HB_DISABLE_DEPRECATED

@@ -30,6 +30,7 @@
 
 #include "window.h"
 
+#include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/string/translation.h"
 #include "scene/gui/control.h"
@@ -254,6 +255,7 @@ void Window::_make_window() {
 #endif
 	DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
 	DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
+	DisplayServer::get_singleton()->window_set_exclusive(window_id, exclusive);
 
 	_update_window_size();
 
@@ -338,9 +340,11 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 		case DisplayServer::WINDOW_EVENT_MOUSE_ENTER: {
 			_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_ENTER);
 			emit_signal(SNAME("mouse_entered"));
+			notification(NOTIFICATION_VP_MOUSE_ENTER);
 			DisplayServer::get_singleton()->cursor_set_shape(DisplayServer::CURSOR_ARROW); //restore cursor shape
 		} break;
 		case DisplayServer::WINDOW_EVENT_MOUSE_EXIT: {
+			notification(NOTIFICATION_VP_MOUSE_EXIT);
 			_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_EXIT);
 			emit_signal(SNAME("mouse_exited"));
 		} break;
@@ -521,6 +525,10 @@ void Window::set_exclusive(bool p_exclusive) {
 	}
 
 	exclusive = p_exclusive;
+
+	if (!embedder && window_id != DisplayServer::INVALID_WINDOW_ID) {
+		DisplayServer::get_singleton()->window_set_exclusive(window_id, exclusive);
+	}
 
 	if (transient_parent) {
 		if (p_exclusive && is_inside_tree() && is_visible()) {
@@ -732,18 +740,16 @@ void Window::_notification(int p_what) {
 			bool embedded = false;
 			{
 				embedder = _get_embedder();
-
 				if (embedder) {
 					embedded = true;
-
 					if (!visible) {
-						embedder = nullptr; //not yet since not visible
+						embedder = nullptr; // Not yet since not visible.
 					}
 				}
 			}
 
 			if (embedded) {
-				//create as embedded
+				// Create as embedded.
 				if (embedder) {
 					embedder->_sub_window_register(this);
 					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
@@ -751,22 +757,22 @@ void Window::_notification(int p_what) {
 				}
 
 			} else {
-				if (get_parent() == nullptr) {
-					//it's the root window!
-					visible = true; //always visible
+				if (!get_parent()) {
+					// It's the root window!
+					visible = true; // Always visible.
 					window_id = DisplayServer::MAIN_WINDOW_ID;
 					DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
 					_update_from_window();
-					//since this window already exists (created on start), we must update pos and size from it
+					// Since this window already exists (created on start), we must update pos and size from it.
 					{
 						position = DisplayServer::get_singleton()->window_get_position(window_id);
 						size = DisplayServer::get_singleton()->window_get_size(window_id);
 					}
-					_update_viewport_size(); //then feed back to the viewport
+					_update_viewport_size(); // Then feed back to the viewport.
 					_update_window_callbacks();
 					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_VISIBLE);
 				} else {
-					//create
+					// Create.
 					if (visible) {
 						_make_window();
 					}
@@ -782,11 +788,13 @@ void Window::_notification(int p_what) {
 				RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
 			}
 		} break;
+
 		case NOTIFICATION_READY: {
 			if (wrap_controls) {
 				_update_child_controls();
 			}
 		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			if (embedder) {
 				embedder->_sub_window_update(this);
@@ -805,6 +813,7 @@ void Window::_notification(int p_what) {
 
 			child_controls_changed();
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			if (transient) {
 				_clear_transient();
@@ -1614,6 +1623,7 @@ void Window::_bind_methods() {
 	BIND_ENUM_CONSTANT(MODE_MINIMIZED);
 	BIND_ENUM_CONSTANT(MODE_MAXIMIZED);
 	BIND_ENUM_CONSTANT(MODE_FULLSCREEN);
+	BIND_ENUM_CONSTANT(MODE_EXCLUSIVE_FULLSCREEN);
 
 	BIND_ENUM_CONSTANT(FLAG_RESIZE_DISABLED);
 	BIND_ENUM_CONSTANT(FLAG_BORDERLESS);

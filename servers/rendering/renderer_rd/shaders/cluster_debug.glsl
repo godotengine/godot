@@ -40,7 +40,7 @@ const vec3 usage_gradient[33] = vec3[]( // 1 (none) + 32
 		vec3(0.83, 0.22, 0.27),
 		vec3(0.83, 0.22, 0.32),
 		vec3(1.00, 0.63, 0.70));
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	uvec2 screen_size;
 	uvec2 cluster_screen_size;
 

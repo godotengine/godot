@@ -93,7 +93,7 @@ Variant PluginScript::_new(const Variant **p_args, int p_argcount, Callable::Cal
 	REF ref;
 	Object *owner = nullptr;
 
-	if (get_instance_base_type() == "") {
+	if (get_instance_base_type() == StringName()) {
 		owner = memnew(RefCounted);
 	} else {
 		owner = ClassDB::instantiate(get_instance_base_type());

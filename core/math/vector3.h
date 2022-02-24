@@ -31,11 +31,13 @@
 #ifndef VECTOR3_H
 #define VECTOR3_H
 
+#include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
-#include "core/math/vector2.h"
-#include "core/math/vector3i.h"
-#include "core/string/ustring.h"
-class Basis;
+
+class String;
+struct Basis;
+struct Vector2;
+struct Vector3i;
 
 struct _NO_DISCARD_ Vector3 {
 	static const int AXIS_COUNT = 3;
@@ -103,30 +105,8 @@ struct _NO_DISCARD_ Vector3 {
 	Vector3 cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight) const;
 	Vector3 move_toward(const Vector3 &p_to, const real_t p_delta) const;
 
-	_FORCE_INLINE_ Vector2 octahedron_encode() const {
-		Vector3 n = *this;
-		n /= Math::abs(n.x) + Math::abs(n.y) + Math::abs(n.z);
-		Vector2 o;
-		if (n.z >= 0.0) {
-			o.x = n.x;
-			o.y = n.y;
-		} else {
-			o.x = (1.0 - Math::abs(n.y)) * (n.x >= 0.0 ? 1.0 : -1.0);
-			o.y = (1.0 - Math::abs(n.x)) * (n.y >= 0.0 ? 1.0 : -1.0);
-		}
-		o.x = o.x * 0.5 + 0.5;
-		o.y = o.y * 0.5 + 0.5;
-		return o;
-	}
-
-	static _FORCE_INLINE_ Vector3 octahedron_decode(const Vector2 &p_oct) {
-		Vector2 f(p_oct.x * 2.0 - 1.0, p_oct.y * 2.0 - 1.0);
-		Vector3 n(f.x, f.y, 1.0f - Math::abs(f.x) - Math::abs(f.y));
-		float t = CLAMP(-n.z, 0.0, 1.0);
-		n.x += n.x >= 0 ? -t : t;
-		n.y += n.y >= 0 ? -t : t;
-		return n.normalized();
-	}
+	Vector2 octahedron_encode() const;
+	static Vector3 octahedron_decode(const Vector2 &p_oct);
 
 	_FORCE_INLINE_ Vector3 cross(const Vector3 &p_with) const;
 	_FORCE_INLINE_ real_t dot(const Vector3 &p_with) const;
@@ -182,16 +162,9 @@ struct _NO_DISCARD_ Vector3 {
 	_FORCE_INLINE_ bool operator>=(const Vector3 &p_v) const;
 
 	operator String() const;
-	_FORCE_INLINE_ operator Vector3i() const {
-		return Vector3i(x, y, z);
-	}
+	operator Vector3i() const;
 
 	_FORCE_INLINE_ Vector3() {}
-	_FORCE_INLINE_ Vector3(const Vector3i &p_ivec) {
-		x = p_ivec.x;
-		y = p_ivec.y;
-		z = p_ivec.z;
-	}
 	_FORCE_INLINE_ Vector3(const real_t p_x, const real_t p_y, const real_t p_z) {
 		x = p_x;
 		y = p_y;
@@ -242,7 +215,7 @@ Vector3 Vector3::lerp(const Vector3 &p_to, const real_t p_weight) const {
 Vector3 Vector3::slerp(const Vector3 &p_to, const real_t p_weight) const {
 	real_t start_length_sq = length_squared();
 	real_t end_length_sq = p_to.length_squared();
-	if (unlikely(start_length_sq == 0.0 || end_length_sq == 0.0)) {
+	if (unlikely(start_length_sq == 0.0f || end_length_sq == 0.0f)) {
 		// Zero length vectors have no angle, so the best we can do is either lerp or throw an error.
 		return lerp(p_to, p_weight);
 	}
@@ -341,6 +314,9 @@ Vector3 &Vector3::operator*=(const real_t p_scalar) {
 	z *= p_scalar;
 	return *this;
 }
+
+// Multiplication operators required to workaround issues with LLVM using implicit conversion
+// to Vector3i instead for integers where it should not.
 
 _FORCE_INLINE_ Vector3 operator*(const float p_scalar, const Vector3 &p_vec) {
 	return p_vec * p_scalar;
@@ -473,7 +449,7 @@ bool Vector3::is_normalized() const {
 }
 
 Vector3 Vector3::inverse() const {
-	return Vector3(1.0 / x, 1.0 / y, 1.0 / z);
+	return Vector3(1.0f / x, 1.0f / y, 1.0f / z);
 }
 
 void Vector3::zero() {
@@ -496,7 +472,7 @@ Vector3 Vector3::reflect(const Vector3 &p_normal) const {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V_MSG(!p_normal.is_normalized(), Vector3(), "The normal Vector3 must be normalized.");
 #endif
-	return 2.0 * p_normal * this->dot(p_normal) - *this;
+	return 2.0f * p_normal * this->dot(p_normal) - *this;
 }
 
 #endif // VECTOR3_H

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RayCast2D" inherits="Node2D" version="4.0">
+<class name="RayCast2D" inherits="Node2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Query the closest object intersecting a ray.
 	</brief_description>
@@ -16,9 +16,9 @@
 	<methods>
 		<method name="add_exception">
 			<return type="void" />
-			<argument index="0" name="node" type="Object" />
+			<argument index="0" name="node" type="CollisionObject2D" />
 			<description>
-				Adds a collision exception so the ray does not report collisions with the specified node.
+				Adds a collision exception so the ray does not report collisions with the specified [CollisionObject2D] node.
 			</description>
 		</method>
 		<method name="add_exception_rid">
@@ -81,9 +81,9 @@
 		</method>
 		<method name="remove_exception">
 			<return type="void" />
-			<argument index="0" name="node" type="Object" />
+			<argument index="0" name="node" type="CollisionObject2D" />
 			<description>
-				Removes a collision exception so the ray does report collisions with the specified node.
+				Removes a collision exception so the ray does report collisions with the specified [CollisionObject2D] node.
 			</description>
 		</method>
 		<method name="remove_exception_rid">
