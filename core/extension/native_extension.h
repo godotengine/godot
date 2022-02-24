@@ -68,12 +68,14 @@ public:
 	void close_library();
 
 	enum InitializationLevel {
-		INITIALIZATION_LEVEL_CORE,
+		INITIALIZATION_LEVEL_CORE = 0,
 		INITIALIZATION_LEVEL_SERVERS,
 		INITIALIZATION_LEVEL_SCENE,
 		INITIALIZATION_LEVEL_EDITOR,
 		INITIALIZATION_LEVEL_DRIVER,
+		INITIALIZATION_LEVEL_MAX,
 	};
+	static constexpr bool skippable[INITIALIZATION_LEVEL_MAX] = { 0, 0, 0, 1, 0 };
 
 	bool is_library_open() const;
 

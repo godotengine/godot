@@ -40,7 +40,8 @@ NativeExtensionManager::LoadStatus NativeExtensionManager::load_extension(const 
 		return LOAD_STATUS_FAILED;
 	}
 
-	if (level >= 0) { // Already initialized up to some level.
+	if (initialized_level_index >= 0) { // Already initialized up to some level.
+		int32_t level = initialized_levels[initialized_level_index];
 		int32_t minimum_level = extension->get_minimum_library_initialization_level();
 		if (minimum_level < MIN(level, NativeExtension::INITIALIZATION_LEVEL_SCENE)) {
 			return LOAD_STATUS_NEEDS_RESTART;
@@ -64,7 +65,8 @@ NativeExtensionManager::LoadStatus NativeExtensionManager::unload_extension(cons
 
 	Ref<NativeExtension> extension = native_extension_map[p_path];
 
-	if (level >= 0) { // Already initialized up to some level.
+	if (initialized_level_index >= 0) { // Already initialized up to some level.
+		int32_t level = initialized_levels[initialized_level_index];
 		int32_t minimum_level = extension->get_minimum_library_initialization_level();
 		if (minimum_level < MIN(level, NativeExtension::INITIALIZATION_LEVEL_SCENE)) {
 			return LOAD_STATUS_NEEDS_RESTART;
@@ -96,19 +98,30 @@ Ref<NativeExtension> NativeExtensionManager::get_extension(const String &p_path)
 }
 
 void NativeExtensionManager::initialize_extensions(NativeExtension::InitializationLevel p_level) {
-	ERR_FAIL_COND(int32_t(p_level) - 1 != level);
+	int32_t level = initialized_level_index >= 0 ? initialized_levels[initialized_level_index] : -1;
+	ERR_FAIL_COND(int32_t(p_level) < level + 1);
+	if (int32_t(p_level) > level + 1) {
+		for (int i = level + 1; i < p_level; i++) {
+			ERR_FAIL_COND_MSG(!NativeExtension::skippable[i], vformat("Native extension initialization missed the non-skippable step #%d", i));
+		}
+	}
+
 	for (KeyValue<String, Ref<NativeExtension>> &E : native_extension_map) {
 		E.value->initialize_library(p_level);
 	}
-	level = p_level;
+
+	initialized_level_index++;
+	initialized_levels[initialized_level_index] = p_level;
 }
 
 void NativeExtensionManager::deinitialize_extensions(NativeExtension::InitializationLevel p_level) {
-	ERR_FAIL_COND(int32_t(p_level) != level);
+	ERR_FAIL_COND(initialized_level_index < 0);
+	ERR_FAIL_COND(int32_t(p_level) != initialized_levels[initialized_level_index]);
 	for (KeyValue<String, Ref<NativeExtension>> &E : native_extension_map) {
 		E.value->deinitialize_library(p_level);
 	}
-	level = int32_t(p_level) - 1;
+
+	initialized_level_index--;
 }
 
 void NativeExtensionManager::load_extensions() {
