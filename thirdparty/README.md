@@ -690,10 +690,10 @@ Files extracted from upstream source:
 SDK release: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/layers/generated/vk_enum_string_helper.h
 
 `vk_mem_alloc.h` is taken from https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
-Version: 3.0.0-development (2022-02-08), commit `a1895bc76547370564d604faa27e0b73de747df1`
+Version: 3.0.0-development (2022-02-24), commit `dc3f6bb9159df22ceed69c7765ddfb4fbb1b6ed0`
 `vk_mem_alloc.cpp` is a Godot file and should be preserved on updates.
 
-Patches in the `patches` directory should be re-applied after updates (order must be followed among the number-prefixed ones).
+Patches in the `patches` directory should be re-applied after updates.
 
 
 ## wslay
