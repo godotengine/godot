@@ -454,7 +454,7 @@ Collection of single-file libraries used in Godot components.
   * License: Public Domain or MIT
 - `stb_rect_pack.h`
   * Upstream: https://github.com/nothings/stb
-  * Version: 1.00 (2bb4a0accd4003c1db4c24533981e01b1adfd656, 2019)
+  * Version: 1.01 (af1a5bc352164740c1cc1354942b1c6b72eacb8a, 2021)
   * License: Public Domain or Unlicense or MIT
 - `yuv2rgb.h`
   * Upstream: http://wss.co.uk/pinknoise/yuv2rgb/ (to check)
