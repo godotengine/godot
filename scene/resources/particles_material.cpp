@@ -731,7 +731,7 @@ void ParticlesMaterial::_update_shader() {
 		code += "	}";
 	}
 
-	code += "	if (CUSTOM.y > CUSTOM.w) {\n";
+	code += "	if ((CUSTOM.y + DELTA / LIFETIME) > CUSTOM.w) {\n";
 	code += "		ACTIVE = false;\n";
 	code += "	}\n";
 	code += "}\n";
