@@ -275,6 +275,22 @@
 				Sets the volume of the bus at index [code]bus_idx[/code] to [code]volume_db[/code].
 			</description>
 		</method>
+		<method name="start_playback_stream">
+			<return type="void" />
+			<argument index="0" name="arg0" type="AudioStreamPlayback" />
+			<argument index="1" name="arg1" type="StringName" />
+			<argument index="2" name="arg2" type="PackedVector2Array" />
+			<argument index="3" name="arg3" type="float" default="0" />
+			<argument index="4" name="arg4" type="float" default="1" />
+			<description>
+			</description>
+		</method>
+		<method name="stop_playback_stream">
+			<return type="void" />
+			<argument index="0" name="arg0" type="AudioStreamPlayback" />
+			<description>
+			</description>
+		</method>
 		<method name="swap_bus_effects">
 			<return type="void" />
 			<argument index="0" name="bus_idx" type="int" />

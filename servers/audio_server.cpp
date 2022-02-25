@@ -1114,6 +1114,20 @@ float AudioServer::get_playback_speed_scale() const {
 	return playback_speed_scale;
 }
 
+void AudioServer::_start_playback_stream_binding(Ref<AudioStreamPlayback> p_playback, StringName p_bus, PackedVector2Array p_volume_db_vector, float p_start_time, float p_pitch_scale) {
+	ERR_FAIL_COND(p_playback.is_null());
+	ERR_FAIL_COND(p_volume_db_vector.size() % sizeof(AudioFrame) != 0);
+
+	const int length = p_volume_db_vector.size();
+	Vector<AudioFrame> volumes;
+	volumes.resize(length);
+	for (int i = 0; i < length; ++i) {
+		volumes.write[i] = AudioFrame(p_volume_db_vector[i]);
+	}
+
+	start_playback_stream(p_playback, p_bus, volumes, p_start_time, p_pitch_scale);
+}
+
 void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, StringName p_bus, Vector<AudioFrame> p_volume_db_vector, float p_start_time, float p_pitch_scale) {
 	ERR_FAIL_COND(p_playback.is_null());
 
@@ -1728,6 +1742,9 @@ void AudioServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_bus_layout", "bus_layout"), &AudioServer::set_bus_layout);
 	ClassDB::bind_method(D_METHOD("generate_bus_layout"), &AudioServer::generate_bus_layout);
+
+	ClassDB::bind_method(D_METHOD("start_playback_stream", "playback", "bus", "volume_db_vector", "start_time", "pitch_scale"), &AudioServer::_start_playback_stream_binding, DEFVAL(0), DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("stop_playback_stream", "playback"), &AudioServer::stop_playback_stream);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bus_count"), "set_bus_count", "get_bus_count");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "device"), "set_device", "get_device");
