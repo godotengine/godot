@@ -253,18 +253,6 @@ TEST_CASE("[Rect2i] Has point") {
 			!rect.has_point(rect.position + Vector2i(10, rect.size.y)),
 			"has_point() with point located on bottom edge should return false.");
 
-	/*
-	// FIXME: Disabled for now until GH-37617 is fixed one way or another.
-	// More tests should then be written like for the positive size case.
-	rect = Rect2i(0, 100, -1280, -720);
-	CHECK_MESSAGE(
-			rect.has_point(rect.position),
-			"has_point() with negative size should include `position`.");
-	CHECK_MESSAGE(
-			!rect.has_point(rect.position + rect.size),
-			"has_point() with negative size should not include `position + size`.");
-	*/
-
 	rect = Rect2i(-4000, -200, 1280, 720);
 	CHECK_MESSAGE(
 			rect.has_point(rect.position + Vector2i(0, 10)),
