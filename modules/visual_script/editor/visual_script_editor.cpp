@@ -1102,6 +1102,7 @@ void VisualScriptEditor::_update_members() {
 
 	List<StringName> var_names;
 	script->get_variable_list(&var_names);
+	var_names.sort_custom<StringName::AlphCompare>();
 	for (const StringName &E : var_names) {
 		TreeItem *ti = members->create_item(variables);
 
