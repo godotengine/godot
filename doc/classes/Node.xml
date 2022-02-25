@@ -908,6 +908,12 @@
 		<constant name="PAUSE_MODE_PROCESS" value="2" enum="PauseMode">
 			Continue to process regardless of the [SceneTree] pause state.
 		</constant>
+		<constant name="PAUSE_MODE_STOP_ALWAYS" value="3" enum="PauseMode">
+			Stops processing regardless of the [SceneTree] pause state.
+		</constant>
+		<constant name="PAUSE_MODE_PROCESS_PAUSED" value="4" enum="PauseMode">
+			Process only when the [SceneTree] is paused.
+		</constant>
 		<constant name="DUPLICATE_SIGNALS" value="1" enum="DuplicateFlags">
 			Duplicate the node's signals.
 		</constant>
