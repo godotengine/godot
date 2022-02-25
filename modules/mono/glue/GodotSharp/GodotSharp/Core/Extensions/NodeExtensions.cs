@@ -129,7 +129,8 @@ namespace Godot
         /// </returns>
         public T GetChildOrNull<T>(int idx, bool includeInternal = false) where T : class
         {
-            return GetChild(idx, includeInternal) as T;
+            int count = GetChildCount(includeInternal);
+            return idx >= -count && idx < count ? GetChild(idx, includeInternal) as T : null;
         }
 
         /// <summary>
