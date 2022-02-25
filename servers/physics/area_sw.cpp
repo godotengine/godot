@@ -200,76 +200,74 @@ void AreaSW::set_monitorable(bool p_monitorable) {
 
 void AreaSW::call_queries() {
 	if (monitor_callback_id && !monitored_bodies.empty()) {
-		Variant res[5];
-		Variant *resptr[5];
-		for (int i = 0; i < 5; i++) {
-			resptr[i] = &res[i];
-		}
-
 		Object *obj = ObjectDB::get_instance(monitor_callback_id);
-		if (!obj) {
-			monitored_bodies.clear();
-			monitor_callback_id = 0;
-			return;
-		}
+		if (obj) {
+			Variant res[5];
+			Variant *resptr[5];
+			for (int i = 0; i < 5; i++) {
+				resptr[i] = &res[i];
+			}
 
-		for (Map<BodyKey, BodyState>::Element *E = monitored_bodies.front(); E;) {
-			if (E->get().state == 0) { // Nothing happened
+			for (Map<BodyKey, BodyState>::Element *E = monitored_bodies.front(); E;) {
+				if (E->get().state == 0) { // Nothing happened
+					Map<BodyKey, BodyState>::Element *next = E->next();
+					monitored_bodies.erase(E);
+					E = next;
+					continue;
+				}
+
+				res[0] = E->get().state > 0 ? PhysicsServer::AREA_BODY_ADDED : PhysicsServer::AREA_BODY_REMOVED;
+				res[1] = E->key().rid;
+				res[2] = E->key().instance_id;
+				res[3] = E->key().body_shape;
+				res[4] = E->key().area_shape;
+
 				Map<BodyKey, BodyState>::Element *next = E->next();
 				monitored_bodies.erase(E);
 				E = next;
-				continue;
+
+				Variant::CallError ce;
+				obj->call(monitor_callback_method, (const Variant **)resptr, 5, ce);
 			}
-
-			res[0] = E->get().state > 0 ? PhysicsServer::AREA_BODY_ADDED : PhysicsServer::AREA_BODY_REMOVED;
-			res[1] = E->key().rid;
-			res[2] = E->key().instance_id;
-			res[3] = E->key().body_shape;
-			res[4] = E->key().area_shape;
-
-			Map<BodyKey, BodyState>::Element *next = E->next();
-			monitored_bodies.erase(E);
-			E = next;
-
-			Variant::CallError ce;
-			obj->call(monitor_callback_method, (const Variant **)resptr, 5, ce);
+		} else {
+			monitored_bodies.clear();
+			monitor_callback_id = 0;
 		}
 	}
 
 	if (area_monitor_callback_id && !monitored_areas.empty()) {
-		Variant res[5];
-		Variant *resptr[5];
-		for (int i = 0; i < 5; i++) {
-			resptr[i] = &res[i];
-		}
-
 		Object *obj = ObjectDB::get_instance(area_monitor_callback_id);
-		if (!obj) {
-			monitored_areas.clear();
-			area_monitor_callback_id = 0;
-			return;
-		}
+		if (obj) {
+			Variant res[5];
+			Variant *resptr[5];
+			for (int i = 0; i < 5; i++) {
+				resptr[i] = &res[i];
+			}
 
-		for (Map<BodyKey, BodyState>::Element *E = monitored_areas.front(); E;) {
-			if (E->get().state == 0) { // Nothing happened
+			for (Map<BodyKey, BodyState>::Element *E = monitored_areas.front(); E;) {
+				if (E->get().state == 0) { // Nothing happened
+					Map<BodyKey, BodyState>::Element *next = E->next();
+					monitored_areas.erase(E);
+					E = next;
+					continue;
+				}
+
+				res[0] = E->get().state > 0 ? PhysicsServer::AREA_BODY_ADDED : PhysicsServer::AREA_BODY_REMOVED;
+				res[1] = E->key().rid;
+				res[2] = E->key().instance_id;
+				res[3] = E->key().body_shape;
+				res[4] = E->key().area_shape;
+
 				Map<BodyKey, BodyState>::Element *next = E->next();
 				monitored_areas.erase(E);
 				E = next;
-				continue;
+
+				Variant::CallError ce;
+				obj->call(area_monitor_callback_method, (const Variant **)resptr, 5, ce);
 			}
-
-			res[0] = E->get().state > 0 ? PhysicsServer::AREA_BODY_ADDED : PhysicsServer::AREA_BODY_REMOVED;
-			res[1] = E->key().rid;
-			res[2] = E->key().instance_id;
-			res[3] = E->key().body_shape;
-			res[4] = E->key().area_shape;
-
-			Map<BodyKey, BodyState>::Element *next = E->next();
-			monitored_areas.erase(E);
-			E = next;
-
-			Variant::CallError ce;
-			obj->call(area_monitor_callback_method, (const Variant **)resptr, 5, ce);
+		} else {
+			monitored_areas.clear();
+			area_monitor_callback_id = 0;
 		}
 	}
 }
