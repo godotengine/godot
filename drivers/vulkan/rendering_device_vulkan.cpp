@@ -5441,7 +5441,6 @@ RID RenderingDeviceVulkan::storage_buffer_create(uint32_t p_size_bytes, const Ve
 	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
 
 	Buffer buffer;
-	buffer.usage = p_usage;
 	uint32_t flags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 	if (p_usage & STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT) {
 		flags |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
@@ -8299,7 +8298,7 @@ void RenderingDeviceVulkan::compute_list_dispatch_indirect(ComputeListID p_list,
 	Buffer *buffer = storage_buffer_owner.get_or_null(p_buffer);
 	ERR_FAIL_COND(!buffer);
 
-	ERR_FAIL_COND_MSG(!(buffer->usage & STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT), "Buffer provided was not created to do indirect dispatch.");
+	ERR_FAIL_COND_MSG(!(buffer->usage & VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT), "Buffer provided was not created to do indirect dispatch.");
 
 	ERR_FAIL_COND_MSG(p_offset + 12 > buffer->size, "Offset provided (+12) is past the end of buffer.");
 
