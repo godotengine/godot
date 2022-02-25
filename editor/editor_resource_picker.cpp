@@ -958,7 +958,7 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 
 	if (!p_hide_assign_button_controls) {
 		preview_rect = memnew(TextureRect);
-		preview_rect->set_ignore_texture_size(true);
+		preview_rect->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 		preview_rect->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 		preview_rect->set_offset(SIDE_TOP, 1);
 		preview_rect->set_offset(SIDE_BOTTOM, -1);

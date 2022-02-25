@@ -798,7 +798,7 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	variables->connect("cell_selected", callable_mp(this, &EditorVisualProfiler::_item_selected));
 
 	graph = memnew(TextureRect);
-	graph->set_ignore_texture_size(true);
+	graph->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 	graph->set_mouse_filter(MOUSE_FILTER_STOP);
 	graph->connect("draw", callable_mp(this, &EditorVisualProfiler::_graph_tex_draw));
 	graph->connect("gui_input", callable_mp(this, &EditorVisualProfiler::_graph_tex_input));

@@ -178,7 +178,7 @@ void GradientTexture2DEditorRect::_notification(int p_what) {
 GradientTexture2DEditorRect::GradientTexture2DEditorRect() {
 	checkerboard = memnew(TextureRect);
 	checkerboard->set_stretch_mode(TextureRect::STRETCH_TILE);
-	checkerboard->set_ignore_texture_size(true);
+	checkerboard->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 	checkerboard->set_draw_behind_parent(true);
 	add_child(checkerboard, false, INTERNAL_MODE_FRONT);
 
