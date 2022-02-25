@@ -324,27 +324,39 @@ void DisplayServerOSX::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 		Variant ret;
 		Callable::CallError ce;
 
+		{
+			List<WindowID>::Element *E = popup_list.front();
+			if (E && Object::cast_to<InputEventKey>(*p_event)) {
+				// Redirect keyboard input to active popup.
+				if (windows.has(E->get())) {
+					Callable callable = windows[E->get()].input_event_callback;
+					if (callable.is_valid()) {
+						callable.call((const Variant **)&evp, 1, ret, ce);
+					}
+				}
+				in_dispatch_input_event = false;
+				return;
+			}
+		}
+
 		Ref<InputEventFromWindow> event_from_window = p_event;
 		if (event_from_window.is_valid() && event_from_window->get_window_id() != INVALID_WINDOW_ID) {
 			// Send to a window.
 			if (windows.has(event_from_window->get_window_id())) {
 				Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
-				if (callable.is_null()) {
-					return;
+				if (callable.is_valid()) {
+					callable.call((const Variant **)&evp, 1, ret, ce);
 				}
-				callable.call((const Variant **)&evp, 1, ret, ce);
 			}
 		} else {
 			// Send to all windows.
-			for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-				Callable callable = E->get().input_event_callback;
-				if (callable.is_null()) {
-					continue;
+			for (KeyValue<WindowID, WindowData> &E : windows) {
+				Callable callable = E.value.input_event_callback;
+				if (callable.is_valid()) {
+					callable.call((const Variant **)&evp, 1, ret, ce);
 				}
-				callable.call((const Variant **)&evp, 1, ret, ce);
 			}
 		}
-
 		in_dispatch_input_event = false;
 	}
 }
@@ -513,6 +525,9 @@ DisplayServerOSX::WindowData &DisplayServerOSX::get_window(WindowID p_window) {
 }
 
 void DisplayServerOSX::send_event(NSEvent *p_event) {
+	if ([p_event type] == NSEventTypeLeftMouseDown || [p_event type] == NSEventTypeRightMouseDown || [p_event type] == NSEventTypeOtherMouseDown) {
+		mouse_process_popups();
+	}
 	// Special case handling of command-period, which is traditionally a special
 	// shortcut in macOS and doesn't arrive at our regular keyDown handler.
 	if ([p_event type] == NSEventTypeKeyDown) {
@@ -1366,7 +1381,8 @@ DisplayServer::WindowID DisplayServerOSX::create_sub_window(WindowMode p_mode, V
 void DisplayServerOSX::show_window(WindowID p_id) {
 	WindowData &wd = windows[p_id];
 
-	if (wd.no_focus) {
+	popup_open(p_id);
+	if (wd.no_focus || wd.is_popup) {
 		[wd.window_object orderFront:nil];
 	} else {
 		[wd.window_object makeKeyAndOrderFront:nil];
@@ -1809,7 +1825,7 @@ void DisplayServerOSX::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 			}
 			_update_window_style(wd);
 			if ([wd.window_object isVisible]) {
-				if (wd.no_focus) {
+				if (wd.no_focus || wd.is_popup) {
 					[wd.window_object orderFront:nil];
 				} else {
 					[wd.window_object makeKeyAndOrderFront:nil];
@@ -1837,6 +1853,11 @@ void DisplayServerOSX::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
 			wd.no_focus = p_enabled;
+		} break;
+		case WINDOW_FLAG_POPUP: {
+			ERR_FAIL_COND_MSG(p_window == MAIN_WINDOW_ID, "Main window can't be popup.");
+			ERR_FAIL_COND_MSG([wd.window_object isVisible] && (wd.is_popup != p_enabled), "Pupup flag can't changed while window is opened.");
+			wd.is_popup = p_enabled;
 		} break;
 		default: {
 		}
@@ -1869,6 +1890,9 @@ bool DisplayServerOSX::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 		case WINDOW_FLAG_NO_FOCUS: {
 			return wd.no_focus;
 		} break;
+		case WINDOW_FLAG_POPUP: {
+			return wd.is_popup;
+		} break;
 		default: {
 		}
 	}
@@ -1888,7 +1912,7 @@ void DisplayServerOSX::window_move_to_foreground(WindowID p_window) {
 	const WindowData &wd = windows[p_window];
 
 	[[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
-	if (wd.no_focus) {
+	if (wd.no_focus || wd.is_popup) {
 		[wd.window_object orderFront:nil];
 	} else {
 		[wd.window_object makeKeyAndOrderFront:nil];
@@ -2444,6 +2468,120 @@ Vector<String> DisplayServerOSX::get_rendering_drivers_func() {
 
 void DisplayServerOSX::register_osx_driver() {
 	register_create_function("osx", create_func, get_rendering_drivers_func);
+}
+
+DisplayServer::WindowID DisplayServerOSX::window_get_active_popup() const {
+	const List<WindowID>::Element *E = popup_list.back();
+	if (E) {
+		return E->get();
+	} else {
+		return INVALID_WINDOW_ID;
+	}
+}
+
+void DisplayServerOSX::window_set_popup_safe_rect(WindowID p_window, const Rect2i &p_rect) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+	wd.parent_safe_rect = p_rect;
+}
+
+Rect2i DisplayServerOSX::window_get_popup_safe_rect(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V(!windows.has(p_window), Rect2i());
+	const WindowData &wd = windows[p_window];
+	return wd.parent_safe_rect;
+}
+
+void DisplayServerOSX::popup_open(WindowID p_window) {
+	WindowData &wd = windows[p_window];
+	if (wd.is_popup) {
+		bool was_empty = popup_list.is_empty();
+		// Close all popups, up to current popup parent, or every popup if new window is not transient.
+		List<WindowID>::Element *E = popup_list.back();
+		while (E) {
+			if (wd.transient_parent != E->get() || wd.transient_parent == INVALID_WINDOW_ID) {
+				send_window_event(windows[E->get()], DisplayServerOSX::WINDOW_EVENT_CLOSE_REQUEST);
+				List<WindowID>::Element *F = E->prev();
+				popup_list.erase(E);
+				E = F;
+			} else {
+				break;
+			}
+		}
+
+		if (was_empty && popup_list.is_empty()) {
+			// Inform OS that popup was opened, to close other native popups.
+			[[NSDistributedNotificationCenter defaultCenter] postNotificationName:@"com.apple.HIToolbox.beginMenuTrackingNotification" object:@"org.godotengine.godot.popup_window"];
+		}
+		time_since_popup = OS::get_singleton()->get_ticks_msec();
+		popup_list.push_back(p_window);
+	}
+}
+
+void DisplayServerOSX::popup_close(WindowID p_window) {
+	bool was_empty = popup_list.is_empty();
+	List<WindowID>::Element *E = popup_list.find(p_window);
+	while (E) {
+		send_window_event(windows[E->get()], DisplayServerOSX::WINDOW_EVENT_CLOSE_REQUEST);
+		List<WindowID>::Element *F = E->next();
+		popup_list.erase(E);
+		E = F;
+	}
+	if (!was_empty && popup_list.is_empty()) {
+		// Inform OS that all popups are closed.
+		[[NSDistributedNotificationCenter defaultCenter] postNotificationName:@"com.apple.HIToolbox.endMenuTrackingNotification" object:@"org.godotengine.godot.popup_window"];
+	}
+}
+
+void DisplayServerOSX::mouse_process_popups(bool p_close) {
+	_THREAD_SAFE_METHOD_
+
+	bool was_empty = popup_list.is_empty();
+	if (p_close) {
+		// Close all popups.
+		List<WindowID>::Element *E = popup_list.front();
+		while (E) {
+			send_window_event(windows[E->get()], DisplayServerOSX::WINDOW_EVENT_CLOSE_REQUEST);
+			List<WindowID>::Element *F = E->next();
+			popup_list.erase(E);
+			E = F;
+		}
+		if (!was_empty) {
+			// Inform OS that all popups are closed.
+			[[NSDistributedNotificationCenter defaultCenter] postNotificationName:@"com.apple.HIToolbox.endMenuTrackingNotification" object:@"org.godotengine.godot.popup_window"];
+		}
+	} else {
+		uint64_t delta = OS::get_singleton()->get_ticks_msec() - time_since_popup;
+		if (delta < 250) {
+			return;
+		}
+
+		Point2i pos = mouse_get_position();
+		List<WindowID>::Element *E = popup_list.back();
+		while (E) {
+			// Popup window area.
+			Rect2i win_rect = Rect2i(window_get_position(E->get()), window_get_size(E->get()));
+			// Area of the parent window, which responsible for opening sub-menu.
+			Rect2i safe_rect = window_get_popup_safe_rect(E->get());
+			if (win_rect.has_point(pos)) {
+				break;
+			} else if (safe_rect != Rect2i() && safe_rect.has_point(pos)) {
+				break;
+			} else {
+				send_window_event(windows[E->get()], DisplayServerOSX::WINDOW_EVENT_CLOSE_REQUEST);
+				List<WindowID>::Element *F = E->prev();
+				popup_list.erase(E);
+				E = F;
+			}
+		}
+		if (!was_empty && popup_list.is_empty()) {
+			// Inform OS that all popups are closed.
+			[[NSDistributedNotificationCenter defaultCenter] postNotificationName:@"com.apple.HIToolbox.endMenuTrackingNotification" object:@"org.godotengine.godot.popup_window"];
+		}
+	}
 }
 
 DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {

@@ -1239,6 +1239,7 @@ void Viewport::_gui_show_tooltip() {
 
 	panel->set_transient(true);
 	panel->set_flag(Window::FLAG_NO_FOCUS, true);
+	panel->set_flag(Window::FLAG_POPUP, false);
 	panel->set_wrap_controls(true);
 	panel->add_child(base_tooltip);
 
@@ -1268,7 +1269,10 @@ void Viewport::_gui_show_tooltip() {
 	gui.tooltip_popup->set_position(r.position);
 	gui.tooltip_popup->set_size(r.size);
 
-	gui.tooltip_popup->show();
+	DisplayServer::WindowID active_popup = DisplayServer::get_singleton()->window_get_active_popup();
+	if (active_popup == DisplayServer::INVALID_WINDOW_ID || active_popup == window->get_window_id()) {
+		gui.tooltip_popup->show();
+	}
 	gui.tooltip_popup->child_controls_changed();
 }
 

@@ -4024,7 +4024,7 @@ TileMapEditor::TileMapEditor() {
 	// Layer selector.
 	layers_selection_popup = memnew(PopupMenu);
 	layers_selection_popup->connect("id_pressed", callable_mp(this, &TileMapEditor::_layers_selection_id_pressed));
-	layers_selection_popup->set_close_on_parent_focus(false);
+	layers_selection_popup->set_flag(Window::FLAG_POPUP, false);
 
 	layers_selection_button = memnew(Button);
 	layers_selection_button->set_toggle_mode(true);

@@ -205,7 +205,6 @@ void PopupMenu::_activate_submenu(int p_over) {
 		submenu_pos.x = this_pos.x - submenu_size.width;
 	}
 
-	submenu_popup->set_close_on_parent_focus(false);
 	submenu_popup->set_position(submenu_pos);
 
 	PopupMenu *submenu_pum = Object::cast_to<PopupMenu>(submenu_popup);
@@ -222,6 +221,11 @@ void PopupMenu::_activate_submenu(int p_over) {
 	submenu_pum->popup();
 
 	// Set autohide areas.
+
+	Rect2 safe_area = this_rect;
+	safe_area.position.y += items[p_over]._ofs_cache + scroll_offset + style->get_offset().height - vsep / 2;
+	safe_area.size.y = items[p_over]._height_cache;
+	DisplayServer::get_singleton()->window_set_popup_safe_rect(submenu_popup->get_window_id(), safe_area);
 
 	// Make the position of the parent popup relative to submenu popup.
 	this_rect.position = this_rect.position - submenu_pum->get_position();

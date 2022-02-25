@@ -104,7 +104,13 @@ public:
 		bool borderless = false;
 		bool resize_disabled = false;
 		bool no_focus = false;
+		bool is_popup = false;
+
+		Rect2i parent_safe_rect;
 	};
+
+	List<WindowID> popup_list;
+	uint64_t time_since_popup = 0;
 
 private:
 #if defined(GLES3_ENABLED)
@@ -197,6 +203,9 @@ public:
 	void push_to_key_event_buffer(const KeyEvent &p_event);
 	void update_im_text(const Point2i &p_selection, const String &p_text);
 	void set_last_focused_window(WindowID p_window);
+	void mouse_process_popups(bool p_close = false);
+	void popup_open(WindowID p_window);
+	void popup_close(WindowID p_window);
 
 	void window_update(WindowID p_window);
 	void window_destroy(WindowID p_window);
@@ -258,6 +267,10 @@ public:
 	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i()) override;
 	virtual void show_window(WindowID p_id) override;
 	virtual void delete_sub_window(WindowID p_id) override;
+
+	virtual WindowID window_get_active_popup() const override;
+	virtual void window_set_popup_safe_rect(WindowID p_window, const Rect2i &p_rect) override;
+	virtual Rect2i window_get_popup_safe_rect(WindowID p_window) const override;
 
 	virtual void window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_set_window_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
