@@ -241,7 +241,7 @@
 			<description>
 				Returns a child node by its index (see [method get_child_count]). This method is often used for iterating all children of a node.
 				Negative indices access the children from the last one.
-				If [param include_internal] is [code]true[/code], internal children are skipped (see [code]internal[/code] parameter in [method add_child]).
+				If [param include_internal] is [code]false[/code], internal children are skipped (see [code]internal[/code] parameter in [method add_child]).
 				To access a child node via its name, use [method get_node].
 			</description>
 		</method>
