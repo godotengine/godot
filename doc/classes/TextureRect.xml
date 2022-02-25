@@ -10,14 +10,14 @@
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
 	<members>
+		<member name="expand_mode" type="int" setter="set_expand_mode" getter="get_expand_mode" enum="TextureRect.ExpandMode" default="0">
+			Defines how minimum size is determined based on the texture's size. See [enum ExpandMode] for options.
+		</member>
 		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" default="false">
 			If [code]true[/code], texture is flipped horizontally.
 		</member>
 		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v" default="false">
 			If [code]true[/code], texture is flipped vertically.
-		</member>
-		<member name="ignore_texture_size" type="bool" setter="set_ignore_texture_size" getter="get_ignore_texture_size" default="false">
-			If [code]true[/code], the size of the texture won't be considered for minimum size calculation, so the [TextureRect] can be shrunk down past the texture size. Useful for preventing [TextureRect]s from breaking GUI layout regardless of their texture size.
 		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="1" />
 		<member name="stretch_mode" type="int" setter="set_stretch_mode" getter="get_stretch_mode" enum="TextureRect.StretchMode" default="0">
@@ -28,6 +28,24 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="EXPAND_KEEP_SIZE" value="0" enum="ExpandMode">
+			The minimum size will be equal to texture size, i.e. [TextureRect] can't be smaller than the texture.
+		</constant>
+		<constant name="EXPAND_IGNORE_SIZE" value="1" enum="ExpandMode">
+			The size of the texture won't be considered for minimum size calculation, so the [TextureRect] can be shrunk down past the texture size.
+		</constant>
+		<constant name="EXPAND_FIT_WIDTH" value="2" enum="ExpandMode">
+			The height of the texture will be ignored. Minimum width will be equal to the current height. Useful for horizontal layouts, e.g. inside [HBoxContainer].
+		</constant>
+		<constant name="EXPAND_FIT_WIDTH_PROPORTIONAL" value="3" enum="ExpandMode">
+			Same as [constant EXPAND_FIT_WIDTH], but keeps texture's aspect ratio.
+		</constant>
+		<constant name="EXPAND_FIT_HEIGHT" value="4" enum="ExpandMode">
+			The width of the texture will be ignored. Minimum height will be equal to the current width. Useful for vertical layouts, e.g. inside [VBoxContainer].
+		</constant>
+		<constant name="EXPAND_FIT_HEIGHT_PROPORTIONAL" value="5" enum="ExpandMode">
+			Same as [constant EXPAND_FIT_HEIGHT], but keeps texture's aspect ratio.
+		</constant>
 		<constant name="STRETCH_SCALE" value="0" enum="StretchMode">
 			Scale to fit the node's bounding rectangle.
 		</constant>

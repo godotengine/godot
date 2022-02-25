@@ -293,7 +293,7 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 
 	preview = memnew(TextureRect);
 	previews_vbox->add_child(preview);
-	preview->set_ignore_texture_size(true);
+	preview->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 	preview->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
 	preview->set_custom_minimum_size(Size2(640 * EDSCALE, 345 * EDSCALE));
 	preview->set_v_size_flags(Control::SIZE_EXPAND_FILL);

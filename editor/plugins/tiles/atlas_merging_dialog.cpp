@@ -300,7 +300,7 @@ AtlasMergingDialog::AtlasMergingDialog() {
 	preview = memnew(TextureRect);
 	preview->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	preview->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	preview->set_ignore_texture_size(true);
+	preview->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 	preview->hide();
 	preview->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
 	atlas_merging_right_panel->add_child(preview);

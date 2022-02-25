@@ -37,6 +37,15 @@ class TextureRect : public Control {
 	GDCLASS(TextureRect, Control);
 
 public:
+	enum ExpandMode {
+		EXPAND_KEEP_SIZE,
+		EXPAND_IGNORE_SIZE,
+		EXPAND_FIT_WIDTH,
+		EXPAND_FIT_WIDTH_PROPORTIONAL,
+		EXPAND_FIT_HEIGHT,
+		EXPAND_FIT_HEIGHT_PROPORTIONAL,
+	};
+
 	enum StretchMode {
 		STRETCH_SCALE,
 		STRETCH_TILE,
@@ -48,10 +57,10 @@ public:
 	};
 
 private:
-	bool ignore_texture_size = false;
 	bool hflip = false;
 	bool vflip = false;
 	Ref<Texture2D> texture;
+	ExpandMode expand_mode = EXPAND_KEEP_SIZE;
 	StretchMode stretch_mode = STRETCH_SCALE;
 
 	void _texture_changed();
@@ -65,8 +74,8 @@ public:
 	void set_texture(const Ref<Texture2D> &p_tex);
 	Ref<Texture2D> get_texture() const;
 
-	void set_ignore_texture_size(bool p_ignore);
-	bool get_ignore_texture_size() const;
+	void set_expand_mode(ExpandMode p_mode);
+	ExpandMode get_expand_mode() const;
 
 	void set_stretch_mode(StretchMode p_mode);
 	StretchMode get_stretch_mode() const;
@@ -81,6 +90,7 @@ public:
 	~TextureRect();
 };
 
+VARIANT_ENUM_CAST(TextureRect::ExpandMode);
 VARIANT_ENUM_CAST(TextureRect::StretchMode);
 
 #endif // TEXTURE_RECT_H
