@@ -118,6 +118,9 @@ struct ReflectionProbe {
 	bool interior = false;
 	bool box_projection = false;
 	bool enable_shadows = false;
+	bool distance_fade = false;
+	float distance_fade_begin = 40.0;
+	float distance_fade_length = 10.0;
 	uint32_t cull_mask = (1 << 20) - 1;
 	float mesh_lod_threshold = 0.01;
 	float baked_exposure = 1.0;
@@ -337,6 +340,7 @@ public:
 	virtual void reflection_probe_set_as_interior(RID p_probe, bool p_enable) override;
 	virtual void reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) override;
 	virtual void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) override;
+	virtual void reflection_probe_set_distance_fade(RID p_probe, bool p_enable, float p_begin, float p_length) override;
 	virtual void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) override;
 	virtual void reflection_probe_set_resolution(RID p_probe, int p_resolution) override;
 	virtual void reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio) override;
