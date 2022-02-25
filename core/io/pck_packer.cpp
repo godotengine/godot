@@ -154,13 +154,11 @@ Error PCKPacker::flush(bool p_verbose) {
 		src->close();
 		memdelete(src);
 		count += 1;
-		if (p_verbose && files.size() > 0) {
-			if (count % 100 == 0) {
-				printf("%i/%i (%.2f)\r", count, files.size(), float(count) / files.size() * 100);
-				fflush(stdout);
-			};
-		};
-	};
+		const int file_num = files.size();
+		if (p_verbose && (file_num > 0)) {
+			print_line(vformat("[%d/%d - %d%%] PCKPacker flush: %s -> %s", count, file_num, float(count) / file_num * 100, files[i].src_path, files[i].path));
+		}
+	}
 
 	if (p_verbose) {
 		printf("\n");
