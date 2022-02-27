@@ -28,7 +28,7 @@ def configure(env, env_mono):
     if env["tools"]:
         env_mono.Append(CPPDEFINES=["GD_MONO_HOT_RELOAD"])
 
-    dotnet_version = "5.0"
+    dotnet_version = "6.0"
 
     dotnet_root = env["dotnet_root"]
 

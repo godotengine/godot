@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Text;
 using GodotTools.Internals;
 
@@ -131,43 +132,34 @@ namespace GodotTools.Utils
             new[] { Names.MacOS, Names.Server, Names.Haiku, Names.Android, Names.iOS }
                 .Concat(LinuxBSDPlatforms).ToArray();
 
-        private static readonly Lazy<bool> _isWindows = new Lazy<bool>(() => IsOS(Names.Windows));
-        private static readonly Lazy<bool> _isMacOS = new Lazy<bool>(() => IsOS(Names.MacOS));
-        private static readonly Lazy<bool> _isLinuxBSD = new Lazy<bool>(() => IsAnyOS(LinuxBSDPlatforms));
-        private static readonly Lazy<bool> _isServer = new Lazy<bool>(() => IsOS(Names.Server));
-        private static readonly Lazy<bool> _isUWP = new Lazy<bool>(() => IsOS(Names.UWP));
-        private static readonly Lazy<bool> _isHaiku = new Lazy<bool>(() => IsOS(Names.Haiku));
-        private static readonly Lazy<bool> _isAndroid = new Lazy<bool>(() => IsOS(Names.Android));
-        private static readonly Lazy<bool> _isiOS = new Lazy<bool>(() => IsOS(Names.iOS));
-        private static readonly Lazy<bool> _isHTML5 = new Lazy<bool>(() => IsOS(Names.HTML5));
-        private static readonly Lazy<bool> _isUnixLike = new Lazy<bool>(() => IsAnyOS(UnixLikePlatforms));
+        private static readonly Lazy<bool> _isWindows = new(() => IsOS(Names.Windows));
+        private static readonly Lazy<bool> _isMacOS = new(() => IsOS(Names.MacOS));
+        private static readonly Lazy<bool> _isLinuxBSD = new(() => IsAnyOS(LinuxBSDPlatforms));
+        private static readonly Lazy<bool> _isServer = new(() => IsOS(Names.Server));
+        private static readonly Lazy<bool> _isUWP = new(() => IsOS(Names.UWP));
+        private static readonly Lazy<bool> _isHaiku = new(() => IsOS(Names.Haiku));
+        private static readonly Lazy<bool> _isAndroid = new(() => IsOS(Names.Android));
+        private static readonly Lazy<bool> _isiOS = new(() => IsOS(Names.iOS));
+        private static readonly Lazy<bool> _isHTML5 = new(() => IsOS(Names.HTML5));
+        private static readonly Lazy<bool> _isUnixLike = new(() => IsAnyOS(UnixLikePlatforms));
 
-        // TODO SupportedOSPlatformGuard once we target .NET 6
-        // [SupportedOSPlatformGuard("windows")]
-        public static bool IsWindows => _isWindows.Value || IsUWP;
+        [SupportedOSPlatformGuard("windows")] public static bool IsWindows => _isWindows.Value || IsUWP;
 
-        // [SupportedOSPlatformGuard("osx")]
-        public static bool IsMacOS => _isMacOS.Value;
+        [SupportedOSPlatformGuard("osx")] public static bool IsMacOS => _isMacOS.Value;
 
-        // [SupportedOSPlatformGuard("linux")]
-        public static bool IsLinuxBSD => _isLinuxBSD.Value;
+        [SupportedOSPlatformGuard("linux")] public static bool IsLinuxBSD => _isLinuxBSD.Value;
 
-        // [SupportedOSPlatformGuard("linux")]
-        public static bool IsServer => _isServer.Value;
+        [SupportedOSPlatformGuard("linux")] public static bool IsServer => _isServer.Value;
 
-        // [SupportedOSPlatformGuard("windows")]
-        public static bool IsUWP => _isUWP.Value;
+        [SupportedOSPlatformGuard("windows")] public static bool IsUWP => _isUWP.Value;
 
         public static bool IsHaiku => _isHaiku.Value;
 
-        // [SupportedOSPlatformGuard("android")]
-        public static bool IsAndroid => _isAndroid.Value;
+        [SupportedOSPlatformGuard("android")] public static bool IsAndroid => _isAndroid.Value;
 
-        // [SupportedOSPlatformGuard("ios")]
-        public static bool IsiOS => _isiOS.Value;
+        [SupportedOSPlatformGuard("ios")] public static bool IsiOS => _isiOS.Value;
 
-        // [SupportedOSPlatformGuard("browser")]
-        public static bool IsHTML5 => _isHTML5.Value;
+        [SupportedOSPlatformGuard("browser")] public static bool IsHTML5 => _isHTML5.Value;
         public static bool IsUnixLike => _isUnixLike.Value;
 
         public static char PathSep => IsWindows ? ';' : ':';
@@ -204,7 +196,7 @@ namespace GodotTools.Utils
 
             string nameExt = Path.GetExtension(name);
             bool hasPathExt = !string.IsNullOrEmpty(nameExt) &&
-                windowsExts.Contains(nameExt, StringComparer.OrdinalIgnoreCase);
+                              windowsExts.Contains(nameExt, StringComparer.OrdinalIgnoreCase);
 
             searchDirs.Add(System.IO.Directory.GetCurrentDirectory()); // last in the list
 

@@ -61,19 +61,17 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 #define INDENT2 INDENT1 INDENT1
 #define INDENT3 INDENT2 INDENT1
 #define INDENT4 INDENT3 INDENT1
-#define INDENT5 INDENT4 INDENT1
 
-#define MEMBER_BEGIN "\n" INDENT2
+#define MEMBER_BEGIN "\n" INDENT1
 
 #define OPEN_BLOCK "{\n"
 #define CLOSE_BLOCK "}\n"
 
 #define OPEN_BLOCK_L1 INDENT1 OPEN_BLOCK
 #define OPEN_BLOCK_L2 INDENT2 OPEN_BLOCK
-#define OPEN_BLOCK_L3 INDENT3 OPEN_BLOCK
+#define CLOSE_BLOCK_L1 INDENT1 CLOSE_BLOCK
 #define CLOSE_BLOCK_L2 INDENT2 CLOSE_BLOCK
 #define CLOSE_BLOCK_L3 INDENT3 CLOSE_BLOCK
-#define CLOSE_BLOCK_L4 INDENT4 CLOSE_BLOCK
 
 #define BINDINGS_GLOBAL_SCOPE_CLASS "GD"
 #define BINDINGS_NATIVE_NAME_FIELD "NativeName"
@@ -804,44 +802,44 @@ Error BindingsGenerator::_populate_method_icalls_table(const TypeInterface &p_it
 }
 
 void BindingsGenerator::_generate_array_extensions(StringBuilder &p_output) {
+	p_output.append("namespace " BINDINGS_NAMESPACE ";\n\n");
 	p_output.append("using System;\n\n");
-	p_output.append("namespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
 	// The class where we put the extensions doesn't matter, so just use "GD".
-	p_output.append(INDENT1 "public static partial class " BINDINGS_GLOBAL_SCOPE_CLASS "\n" INDENT1 "{");
+	p_output.append("public static partial class " BINDINGS_GLOBAL_SCOPE_CLASS "\n{");
 
 #define ARRAY_IS_EMPTY(m_type)                                                                          \
-	p_output.append("\n" INDENT2 "/// <summary>\n");                                                    \
-	p_output.append(INDENT2 "/// Returns true if this " #m_type " array is empty or doesn't exist.\n"); \
-	p_output.append(INDENT2 "/// </summary>\n");                                                        \
-	p_output.append(INDENT2 "/// <param name=\"instance\">The " #m_type " array check.</param>\n");     \
-	p_output.append(INDENT2 "/// <returns>Whether or not the array is empty.</returns>\n");             \
-	p_output.append(INDENT2 "public static bool IsEmpty(this " #m_type "[] instance)\n");               \
-	p_output.append(OPEN_BLOCK_L2);                                                                     \
-	p_output.append(INDENT3 "return instance == null || instance.Length == 0;\n");                      \
-	p_output.append(INDENT2 CLOSE_BLOCK);
+	p_output.append("\n" INDENT1 "/// <summary>\n");                                                    \
+	p_output.append(INDENT1 "/// Returns true if this " #m_type " array is empty or doesn't exist.\n"); \
+	p_output.append(INDENT1 "/// </summary>\n");                                                        \
+	p_output.append(INDENT1 "/// <param name=\"instance\">The " #m_type " array check.</param>\n");     \
+	p_output.append(INDENT1 "/// <returns>Whether or not the array is empty.</returns>\n");             \
+	p_output.append(INDENT1 "public static bool IsEmpty(this " #m_type "[] instance)\n");               \
+	p_output.append(OPEN_BLOCK_L1);                                                                     \
+	p_output.append(INDENT2 "return instance == null || instance.Length == 0;\n");                      \
+	p_output.append(INDENT1 CLOSE_BLOCK);
 
 #define ARRAY_JOIN(m_type)                                                                                          \
-	p_output.append("\n" INDENT2 "/// <summary>\n");                                                                \
-	p_output.append(INDENT2 "/// Converts this " #m_type " array to a string delimited by the given string.\n");    \
-	p_output.append(INDENT2 "/// </summary>\n");                                                                    \
-	p_output.append(INDENT2 "/// <param name=\"instance\">The " #m_type " array to convert.</param>\n");            \
-	p_output.append(INDENT2 "/// <param name=\"delimiter\">The delimiter to use between items.</param>\n");         \
-	p_output.append(INDENT2 "/// <returns>A single string with all items.</returns>\n");                            \
-	p_output.append(INDENT2 "public static string Join(this " #m_type "[] instance, string delimiter = \", \")\n"); \
-	p_output.append(OPEN_BLOCK_L2);                                                                                 \
-	p_output.append(INDENT3 "return String.Join(delimiter, instance);\n");                                          \
-	p_output.append(INDENT2 CLOSE_BLOCK);
+	p_output.append("\n" INDENT1 "/// <summary>\n");                                                                \
+	p_output.append(INDENT1 "/// Converts this " #m_type " array to a string delimited by the given string.\n");    \
+	p_output.append(INDENT1 "/// </summary>\n");                                                                    \
+	p_output.append(INDENT1 "/// <param name=\"instance\">The " #m_type " array to convert.</param>\n");            \
+	p_output.append(INDENT1 "/// <param name=\"delimiter\">The delimiter to use between items.</param>\n");         \
+	p_output.append(INDENT1 "/// <returns>A single string with all items.</returns>\n");                            \
+	p_output.append(INDENT1 "public static string Join(this " #m_type "[] instance, string delimiter = \", \")\n"); \
+	p_output.append(OPEN_BLOCK_L1);                                                                                 \
+	p_output.append(INDENT2 "return String.Join(delimiter, instance);\n");                                          \
+	p_output.append(INDENT1 CLOSE_BLOCK);
 
 #define ARRAY_STRINGIFY(m_type)                                                                          \
-	p_output.append("\n" INDENT2 "/// <summary>\n");                                                     \
-	p_output.append(INDENT2 "/// Converts this " #m_type " array to a string with brackets.\n");         \
-	p_output.append(INDENT2 "/// </summary>\n");                                                         \
-	p_output.append(INDENT2 "/// <param name=\"instance\">The " #m_type " array to convert.</param>\n"); \
-	p_output.append(INDENT2 "/// <returns>A single string with all items.</returns>\n");                 \
-	p_output.append(INDENT2 "public static string Stringify(this " #m_type "[] instance)\n");            \
-	p_output.append(OPEN_BLOCK_L2);                                                                      \
-	p_output.append(INDENT3 "return \"[\" + instance.Join() + \"]\";\n");                                \
-	p_output.append(INDENT2 CLOSE_BLOCK);
+	p_output.append("\n" INDENT1 "/// <summary>\n");                                                     \
+	p_output.append(INDENT1 "/// Converts this " #m_type " array to a string with brackets.\n");         \
+	p_output.append(INDENT1 "/// </summary>\n");                                                         \
+	p_output.append(INDENT1 "/// <param name=\"instance\">The " #m_type " array to convert.</param>\n"); \
+	p_output.append(INDENT1 "/// <returns>A single string with all items.</returns>\n");                 \
+	p_output.append(INDENT1 "public static string Stringify(this " #m_type "[] instance)\n");            \
+	p_output.append(OPEN_BLOCK_L1);                                                                      \
+	p_output.append(INDENT2 "return \"[\" + instance.Join() + \"]\";\n");                                \
+	p_output.append(INDENT1 CLOSE_BLOCK);
 
 #define ARRAY_ALL(m_type)  \
 	ARRAY_IS_EMPTY(m_type) \
@@ -865,18 +863,18 @@ void BindingsGenerator::_generate_array_extensions(StringBuilder &p_output) {
 #undef ARRAY_JOIN
 #undef ARRAY_STRINGIFY
 
-	p_output.append(INDENT1 CLOSE_BLOCK); // End of GD class.
-	p_output.append(CLOSE_BLOCK); // End of namespace.
+	p_output.append(CLOSE_BLOCK); // End of GD class.
 }
 
 void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 	// Constants (in partial GD class)
 
+	p_output.append("namespace " BINDINGS_NAMESPACE ";\n\n");
+
 	p_output.append("\n#pragma warning disable CS1591 // Disable warning: "
 					"'Missing XML comment for publicly visible type or member'\n");
 
-	p_output.append("namespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
-	p_output.append(INDENT1 "public static partial class " BINDINGS_GLOBAL_SCOPE_CLASS "\n" INDENT1 "{");
+	p_output.append("public static partial class " BINDINGS_GLOBAL_SCOPE_CLASS "\n{");
 
 	for (const ConstantInterface &iconstant : global_constants) {
 		if (iconstant.const_doc && iconstant.const_doc->description.size()) {
@@ -887,12 +885,12 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 				p_output.append(MEMBER_BEGIN "/// <summary>\n");
 
 				for (int i = 0; i < summary_lines.size(); i++) {
-					p_output.append(INDENT2 "/// ");
+					p_output.append(INDENT1 "/// ");
 					p_output.append(summary_lines[i]);
 					p_output.append("\n");
 				}
 
-				p_output.append(INDENT2 "/// </summary>");
+				p_output.append(INDENT1 "/// </summary>");
 			}
 		}
 
@@ -907,7 +905,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 		p_output.append("\n");
 	}
 
-	p_output.append(INDENT1 CLOSE_BLOCK); // end of GD class
+	p_output.append(CLOSE_BLOCK); // end of GD class
 
 	// Enums
 
@@ -927,14 +925,14 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 
 			_log("Declaring global enum '%s' inside static class '%s'\n", enum_proxy_name.utf8().get_data(), enum_class_name.utf8().get_data());
 
-			p_output.append("\n" INDENT1 "public static partial class ");
+			p_output.append("\npublic static partial class ");
 			p_output.append(enum_class_name);
-			p_output.append("\n" OPEN_BLOCK_L1);
+			p_output.append("\n" OPEN_BLOCK);
 		}
 
-		p_output.append("\n" INDENT1 "public enum ");
+		p_output.append("\npublic enum ");
 		p_output.append(enum_proxy_name);
-		p_output.append("\n" OPEN_BLOCK_L1);
+		p_output.append("\n" OPEN_BLOCK);
 
 		const ConstantInterface &last = ienum.constants.back()->get();
 		for (const ConstantInterface &iconstant : ienum.constants) {
@@ -943,33 +941,31 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 				Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
 				if (summary_lines.size()) {
-					p_output.append(INDENT2 "/// <summary>\n");
+					p_output.append(INDENT1 "/// <summary>\n");
 
 					for (int i = 0; i < summary_lines.size(); i++) {
-						p_output.append(INDENT2 "/// ");
+						p_output.append(INDENT1 "/// ");
 						p_output.append(summary_lines[i]);
 						p_output.append("\n");
 					}
 
-					p_output.append(INDENT2 "/// </summary>\n");
+					p_output.append(INDENT1 "/// </summary>\n");
 				}
 			}
 
-			p_output.append(INDENT2);
+			p_output.append(INDENT1);
 			p_output.append(iconstant.proxy_name);
 			p_output.append(" = ");
 			p_output.append(itos(iconstant.value));
 			p_output.append(&iconstant != &last ? ",\n" : "\n");
 		}
 
-		p_output.append(INDENT1 CLOSE_BLOCK);
+		p_output.append(CLOSE_BLOCK);
 
 		if (enum_in_static_class) {
-			p_output.append(INDENT1 CLOSE_BLOCK);
+			p_output.append(CLOSE_BLOCK);
 		}
 	}
-
-	p_output.append(CLOSE_BLOCK); // end of namespace
 
 	p_output.append("\n#pragma warning restore CS1591\n");
 }
@@ -1045,17 +1041,17 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 
 	StringBuilder cs_icalls_content;
 
+	cs_icalls_content.append("namespace " BINDINGS_NAMESPACE ";\n\n");
 	cs_icalls_content.append("using System;\n"
 							 "using System.Diagnostics.CodeAnalysis;\n"
 							 "using System.Runtime.InteropServices;\n"
 							 "using Godot.NativeInterop;\n"
 							 "\n");
-	cs_icalls_content.append("namespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
-	cs_icalls_content.append(INDENT1 "[SuppressMessage(\"ReSharper\", \"InconsistentNaming\")]\n");
-	cs_icalls_content.append(INDENT1 "[SuppressMessage(\"ReSharper\", \"RedundantUnsafeContext\")]\n");
-	cs_icalls_content.append(INDENT1 "[SuppressMessage(\"ReSharper\", \"RedundantNameQualifier\")]\n");
-	cs_icalls_content.append(INDENT1 "[System.Runtime.CompilerServices.SkipLocalsInit]\n");
-	cs_icalls_content.append(INDENT1 "internal static class " BINDINGS_CLASS_NATIVECALLS "\n" INDENT1 "{");
+	cs_icalls_content.append("[SuppressMessage(\"ReSharper\", \"InconsistentNaming\")]\n");
+	cs_icalls_content.append("[SuppressMessage(\"ReSharper\", \"RedundantUnsafeContext\")]\n");
+	cs_icalls_content.append("[SuppressMessage(\"ReSharper\", \"RedundantNameQualifier\")]\n");
+	cs_icalls_content.append("[System.Runtime.CompilerServices.SkipLocalsInit]\n");
+	cs_icalls_content.append("internal static class " BINDINGS_CLASS_NATIVECALLS "\n{");
 
 	cs_icalls_content.append(MEMBER_BEGIN "internal static ulong godot_api_hash = ");
 	cs_icalls_content.append(String::num_uint64(ClassDB::get_api_hash(ClassDB::API_CORE)) + ";\n");
@@ -1070,7 +1066,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 		}
 	}
 
-	cs_icalls_content.append(INDENT1 CLOSE_BLOCK CLOSE_BLOCK);
+	cs_icalls_content.append(CLOSE_BLOCK);
 
 	String internal_methods_file = path::join(base_gen_dir, BINDINGS_CLASS_NATIVECALLS ".cs");
 
@@ -1150,19 +1146,19 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 
 	StringBuilder cs_icalls_content;
 
+	cs_icalls_content.append("namespace " BINDINGS_NAMESPACE ";\n\n");
 	cs_icalls_content.append("using System;\n"
 							 "using System.Diagnostics.CodeAnalysis;\n"
 							 "using System.Runtime.InteropServices;\n"
 							 "using Godot.NativeInterop;\n"
 							 "\n");
-	cs_icalls_content.append("namespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
-	cs_icalls_content.append(INDENT1 "[SuppressMessage(\"ReSharper\", \"InconsistentNaming\")]\n");
-	cs_icalls_content.append(INDENT1 "[SuppressMessage(\"ReSharper\", \"RedundantUnsafeContext\")]\n");
-	cs_icalls_content.append(INDENT1 "[SuppressMessage(\"ReSharper\", \"RedundantNameQualifier\")]\n");
-	cs_icalls_content.append(INDENT1 "[System.Runtime.CompilerServices.SkipLocalsInit]\n");
-	cs_icalls_content.append(INDENT1 "internal static class " BINDINGS_CLASS_NATIVECALLS_EDITOR "\n" OPEN_BLOCK_L1);
+	cs_icalls_content.append("[SuppressMessage(\"ReSharper\", \"InconsistentNaming\")]\n");
+	cs_icalls_content.append("[SuppressMessage(\"ReSharper\", \"RedundantUnsafeContext\")]\n");
+	cs_icalls_content.append("[SuppressMessage(\"ReSharper\", \"RedundantNameQualifier\")]\n");
+	cs_icalls_content.append("[System.Runtime.CompilerServices.SkipLocalsInit]\n");
+	cs_icalls_content.append("internal static class " BINDINGS_CLASS_NATIVECALLS_EDITOR "\n" OPEN_BLOCK);
 
-	cs_icalls_content.append(INDENT2 "internal static ulong godot_api_hash = ");
+	cs_icalls_content.append(INDENT1 "internal static ulong godot_api_hash = ");
 	cs_icalls_content.append(String::num_uint64(ClassDB::get_api_hash(ClassDB::API_EDITOR)) + ";\n");
 	cs_icalls_content.append("\n");
 
@@ -1176,7 +1172,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 		}
 	}
 
-	cs_icalls_content.append(INDENT1 CLOSE_BLOCK CLOSE_BLOCK);
+	cs_icalls_content.append(CLOSE_BLOCK);
 
 	String internal_methods_file = path::join(base_gen_dir, BINDINGS_CLASS_NATIVECALLS_EDITOR ".cs");
 
@@ -1276,6 +1272,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 	StringBuilder output;
 
+	output.append("namespace " BINDINGS_NAMESPACE ";\n\n");
+
 	output.append("using System;\n"); // IntPtr
 	output.append("using System.Diagnostics;\n"); // DebuggerBrowsable
 	output.append("using Godot.NativeInterop;\n");
@@ -1288,8 +1286,6 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 	output.append("\n#nullable disable\n");
 
-	output.append("\nnamespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
-
 	const DocData::ClassDoc *class_doc = itype.class_doc;
 
 	if (class_doc && class_doc->description.size()) {
@@ -1297,15 +1293,15 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
 		if (summary_lines.size()) {
-			output.append(INDENT1 "/// <summary>\n");
+			output.append("/// <summary>\n");
 
 			for (int i = 0; i < summary_lines.size(); i++) {
-				output.append(INDENT1 "/// ");
+				output.append("/// ");
 				output.append(summary_lines[i]);
 				output.append("\n");
 			}
 
-			output.append(INDENT1 "/// </summary>\n");
+			output.append("/// </summary>\n");
 		}
 	}
 
@@ -1313,10 +1309,10 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	// generated C# class name. This allows introspection code to find the name associated with
 	// the class. If the attribute is not present, the C# class name can be used instead.
 	if (itype.name != itype.proxy_name) {
-		output << INDENT1 "[GodotClassName(\"" << itype.name << "\")]\n";
+		output << "[GodotClassName(\"" << itype.name << "\")]\n";
 	}
 
-	output.append(INDENT1 "public ");
+	output.append("public ");
 	if (itype.is_singleton) {
 		output.append("static partial class ");
 	} else {
@@ -1338,7 +1334,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		}
 	}
 
-	output.append("\n" INDENT1 "{");
+	output.append("\n{");
 
 	// Add constants
 
@@ -1351,12 +1347,12 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				output.append(MEMBER_BEGIN "/// <summary>\n");
 
 				for (int i = 0; i < summary_lines.size(); i++) {
-					output.append(INDENT2 "/// ");
+					output.append(INDENT1 "/// ");
 					output.append(summary_lines[i]);
 					output.append("\n");
 				}
 
-				output.append(INDENT2 "/// </summary>");
+				output.append(INDENT1 "/// </summary>");
 			}
 		}
 
@@ -1387,26 +1383,26 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
 				if (summary_lines.size()) {
-					output.append(INDENT3 "/// <summary>\n");
+					output.append(INDENT2 "/// <summary>\n");
 
 					for (int i = 0; i < summary_lines.size(); i++) {
-						output.append(INDENT3 "/// ");
+						output.append(INDENT2 "/// ");
 						output.append(summary_lines[i]);
 						output.append("\n");
 					}
 
-					output.append(INDENT3 "/// </summary>\n");
+					output.append(INDENT2 "/// </summary>\n");
 				}
 			}
 
-			output.append(INDENT3);
+			output.append(INDENT2);
 			output.append(iconstant.proxy_name);
 			output.append(" = ");
 			output.append(itos(iconstant.value));
 			output.append(&iconstant != &last ? ",\n" : "\n");
 		}
 
-		output.append(INDENT2 CLOSE_BLOCK);
+		output.append(INDENT1 CLOSE_BLOCK);
 	}
 
 	// Add properties
@@ -1423,11 +1419,11 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		output.append(MEMBER_BEGIN "private static Godot.Object singleton;\n");
 
-		output << MEMBER_BEGIN "public static Godot.Object " CS_PROPERTY_SINGLETON "\n" INDENT2 "{\n"
-			   << INDENT3 "get\n" INDENT3 "{\n" INDENT4 "if (singleton == null)\n"
-			   << INDENT5 "singleton = " C_METHOD_ENGINE_GET_SINGLETON "(typeof("
+		output << MEMBER_BEGIN "public static Godot.Object " CS_PROPERTY_SINGLETON "\n" INDENT1 "{\n"
+			   << INDENT2 "get\n" INDENT2 "{\n" INDENT3 "if (singleton == null)\n"
+			   << INDENT4 "singleton = " C_METHOD_ENGINE_GET_SINGLETON "(typeof("
 			   << itype.proxy_name
-			   << ").Name);\n" INDENT4 "return singleton;\n" INDENT3 "}\n" INDENT2 "}\n";
+			   << ").Name);\n" INDENT3 "return singleton;\n" INDENT2 "}\n" INDENT1 "}\n";
 
 		output.append(MEMBER_BEGIN "private static readonly StringName " BINDINGS_NATIVE_NAME_FIELD " = \"");
 		output.append(itype.name);
@@ -1453,7 +1449,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			// Add native constructor static field
 
 			output << MEMBER_BEGIN << "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
-				   << INDENT2 "private static readonly unsafe delegate* unmanaged<IntPtr> "
+				   << INDENT1 "private static readonly unsafe delegate* unmanaged<IntPtr> "
 				   << CS_STATIC_FIELD_NATIVE_CTOR " = " ICALL_CLASSDB_GET_CONSTRUCTOR
 				   << "(" BINDINGS_NATIVE_NAME_FIELD ");\n";
 		}
@@ -1462,12 +1458,12 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			// Add default constructor
 			if (itype.is_instantiable) {
 				output << MEMBER_BEGIN "public " << itype.proxy_name << "() : this("
-					   << (itype.memory_own ? "true" : "false") << ")\n" OPEN_BLOCK_L2
-					   << INDENT3 "unsafe\n" INDENT3 OPEN_BLOCK
-					   << INDENT4 "_ConstructAndInitialize(" CS_STATIC_FIELD_NATIVE_CTOR ", "
+					   << (itype.memory_own ? "true" : "false") << ")\n" OPEN_BLOCK_L1
+					   << INDENT2 "unsafe\n" INDENT2 OPEN_BLOCK
+					   << INDENT3 "_ConstructAndInitialize(" CS_STATIC_FIELD_NATIVE_CTOR ", "
 					   << BINDINGS_NATIVE_NAME_FIELD ", CachedType, refCounted: "
 					   << (itype.is_ref_counted ? "true" : "false") << ");\n"
-					   << CLOSE_BLOCK_L3 CLOSE_BLOCK_L2;
+					   << CLOSE_BLOCK_L2 CLOSE_BLOCK_L1;
 			} else {
 				// Hide the constructor
 				output.append(MEMBER_BEGIN "internal ");
@@ -1510,14 +1506,14 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			}
 
 			output << MEMBER_BEGIN "// ReSharper disable once InconsistentNaming\n"
-				   << INDENT2 "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
-				   << INDENT2 "private static readonly StringName "
+				   << INDENT1 "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
+				   << INDENT1 "private static readonly StringName "
 				   << CS_STATIC_FIELD_METHOD_NAME_PREFIX << imethod.name
 				   << " = \"" << imethod.name << "\";\n";
 
 			output << MEMBER_BEGIN "// ReSharper disable once InconsistentNaming\n"
-				   << INDENT2 "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
-				   << INDENT2 "private static readonly StringName "
+				   << INDENT1 "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
+				   << INDENT1 "private static readonly StringName "
 				   << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name
 				   << " = \"" << imethod.proxy_name << "\";\n";
 		}
@@ -1529,7 +1525,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		output << MEMBER_BEGIN "protected internal " << (is_derived_type ? "override" : "virtual")
 			   << " bool " CS_METHOD_INVOKE_GODOT_CLASS_METHOD "(in godot_string_name method, "
 			   << "NativeVariantPtrArgs args, int argCount, out godot_variant ret)\n"
-			   << INDENT2 "{\n";
+			   << INDENT1 "{\n";
 
 		for (const MethodInterface &imethod : itype.methods) {
 			if (!imethod.is_virtual) {
@@ -1537,15 +1533,15 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			}
 
 			// We check both native names (snake_case) and proxy names (PascalCase)
-			output << INDENT3 "if ((method == " << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name
+			output << INDENT2 "if ((method == " << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name
 				   << " || method == " << CS_STATIC_FIELD_METHOD_NAME_PREFIX << imethod.name
 				   << ") && argCount == " << itos(imethod.arguments.size()) << ")\n"
-				   << INDENT3 "{\n";
+				   << INDENT2 "{\n";
 
 			if (imethod.return_type.cname != name_cache.type_void) {
-				output << INDENT4 "var callRet = ";
+				output << INDENT3 "var callRet = ";
 			} else {
-				output << INDENT4;
+				output << INDENT3;
 			}
 
 			output << imethod.proxy_name << "(";
@@ -1570,32 +1566,32 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				const TypeInterface *return_type = _get_type_or_null(imethod.return_type);
 				ERR_FAIL_NULL_V(return_type, ERR_BUG); // Return type not found
 
-				output << INDENT4 "ret = "
+				output << INDENT3 "ret = "
 					   << sformat(return_type->cs_managed_to_variant, "callRet", return_type->cs_type, return_type->name)
 					   << ";\n"
-					   << INDENT4 "return true;\n";
+					   << INDENT3 "return true;\n";
 			} else {
-				output << INDENT4 "ret = default;\n"
-					   << INDENT4 "return true;\n";
+				output << INDENT3 "ret = default;\n"
+					   << INDENT3 "return true;\n";
 			}
 
-			output << INDENT3 "}\n";
+			output << INDENT2 "}\n";
 		}
 
 		if (is_derived_type) {
-			output << INDENT3 "return base." CS_METHOD_INVOKE_GODOT_CLASS_METHOD "(method, args, argCount, out ret);\n";
+			output << INDENT2 "return base." CS_METHOD_INVOKE_GODOT_CLASS_METHOD "(method, args, argCount, out ret);\n";
 		} else {
-			output << INDENT3 "ret = default;\n"
-				   << INDENT3 "return false;\n";
+			output << INDENT2 "ret = default;\n"
+				   << INDENT2 "return false;\n";
 		}
 
-		output << INDENT2 "}\n";
+		output << INDENT1 "}\n";
 
 		// Generate HasGodotClassMethod
 
 		output << MEMBER_BEGIN "protected internal " << (is_derived_type ? "override" : "virtual")
 			   << " bool " CS_METHOD_HAS_GODOT_CLASS_METHOD "(in godot_string_name method)\n"
-			   << INDENT2 "{\n";
+			   << INDENT1 "{\n";
 
 		for (const MethodInterface &imethod : itype.methods) {
 			if (!imethod.is_virtual) {
@@ -1606,26 +1602,25 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			// again, but this time with the respective proxy name (PascalCase). It's the job of
 			// user derived classes to override the method and check for those. Our C# source
 			// generators take care of generating those override methods.
-			output << INDENT3 "if (method == " << CS_STATIC_FIELD_METHOD_NAME_PREFIX << imethod.name
-				   << ")\n" INDENT3 "{\n"
-				   << INDENT4 "if (" CS_METHOD_HAS_GODOT_CLASS_METHOD "("
+			output << INDENT2 "if (method == " << CS_STATIC_FIELD_METHOD_NAME_PREFIX << imethod.name
+				   << ")\n" INDENT2 "{\n"
+				   << INDENT3 "if (" CS_METHOD_HAS_GODOT_CLASS_METHOD "("
 				   << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name
-				   << ".NativeValue.DangerousSelfRef))\n" INDENT4 "{\n"
-				   << INDENT5 "return true;\n"
-				   << INDENT4 "}\n" INDENT3 "}\n";
+				   << ".NativeValue.DangerousSelfRef))\n" INDENT3 "{\n"
+				   << INDENT4 "return true;\n"
+				   << INDENT3 "}\n" INDENT2 "}\n";
 		}
 
 		if (is_derived_type) {
-			output << INDENT3 "return base." CS_METHOD_HAS_GODOT_CLASS_METHOD "(method);\n";
+			output << INDENT2 "return base." CS_METHOD_HAS_GODOT_CLASS_METHOD "(method);\n";
 		} else {
-			output << INDENT3 "return false;\n";
+			output << INDENT2 "return false;\n";
 		}
 
-		output << INDENT2 "}\n";
+		output << INDENT1 "}\n";
 	}
 
-	output.append(INDENT1 CLOSE_BLOCK /* class */
-					CLOSE_BLOCK /* namespace */);
+	output.append(CLOSE_BLOCK /* class */);
 
 	output.append("\n"
 				  "#pragma warning restore CS1591\n"
@@ -1704,12 +1699,12 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 			p_output.append(MEMBER_BEGIN "/// <summary>\n");
 
 			for (int i = 0; i < summary_lines.size(); i++) {
-				p_output.append(INDENT2 "/// ");
+				p_output.append(INDENT1 "/// ");
 				p_output.append(summary_lines[i]);
 				p_output.append("\n");
 			}
 
-			p_output.append(INDENT2 "/// </summary>");
+			p_output.append(INDENT1 "/// </summary>");
 		}
 	}
 
@@ -1722,15 +1717,15 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 	p_output.append(prop_itype->cs_type);
 	p_output.append(" ");
 	p_output.append(p_iprop.proxy_name);
-	p_output.append("\n" OPEN_BLOCK_L2);
+	p_output.append("\n" OPEN_BLOCK_L1);
 
 	if (getter) {
-		p_output.append(INDENT3 "get\n"
+		p_output.append(INDENT2 "get\n"
 
 								// TODO Remove this once we make accessor methods private/internal (they will no longer be marked as obsolete after that)
 								"#pragma warning disable CS0618 // Disable warning about obsolete method\n"
 
-				OPEN_BLOCK_L3 INDENT4);
+				OPEN_BLOCK_L2 INDENT3);
 
 		p_output.append("return ");
 		p_output.append(getter->proxy_name + "(");
@@ -1747,19 +1742,19 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 		}
 		p_output.append(");\n"
 
-				CLOSE_BLOCK_L3
+				CLOSE_BLOCK_L2
 
 						// TODO Remove this once we make accessor methods private/internal (they will no longer be marked as obsolete after that)
 						"#pragma warning restore CS0618\n");
 	}
 
 	if (setter) {
-		p_output.append(INDENT3 "set\n"
+		p_output.append(INDENT2 "set\n"
 
 								// TODO Remove this once we make accessor methods private/internal (they will no longer be marked as obsolete after that)
 								"#pragma warning disable CS0618 // Disable warning about obsolete method\n"
 
-				OPEN_BLOCK_L3 INDENT4);
+				OPEN_BLOCK_L2 INDENT3);
 
 		p_output.append(setter->proxy_name + "(");
 		if (p_iprop.index != -1) {
@@ -1775,13 +1770,13 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 		}
 		p_output.append("value);\n"
 
-				CLOSE_BLOCK_L3
+				CLOSE_BLOCK_L2
 
 						// TODO Remove this once we make accessor methods private/internal (they will no longer be marked as obsolete after that)
 						"#pragma warning restore CS0618\n");
 	}
 
-	p_output.append(CLOSE_BLOCK_L2);
+	p_output.append(CLOSE_BLOCK_L1);
 
 	return OK;
 }
@@ -1809,7 +1804,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 	if (p_itype.cs_in.size()) {
 		cs_in_statements << sformat(p_itype.cs_in, p_itype.c_type, "this",
-				String(), String(), String(), INDENT3);
+				String(), String(), String(), INDENT2);
 	}
 
 	icall_params += sformat(p_itype.cs_in_expr, "this");
@@ -1874,7 +1869,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			String arg_or_defval_local = iarg.name;
 			arg_or_defval_local += "OrDefVal";
 
-			cs_in_statements << INDENT3 << arg_type->cs_type << " " << arg_or_defval_local << " = " << iarg.name;
+			cs_in_statements << INDENT2 << arg_type->cs_type << " " << arg_or_defval_local << " = " << iarg.name;
 
 			if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
 				cs_in_statements << ".HasValue ? ";
@@ -1901,7 +1896,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 			if (arg_type->cs_in.size()) {
 				cs_in_statements << sformat(arg_type->cs_in, arg_type->c_type, arg_or_defval_local,
-						String(), String(), String(), INDENT3);
+						String(), String(), String(), INDENT2);
 			}
 
 			if (arg_type->cs_in_expr.is_empty()) {
@@ -1919,7 +1914,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		} else {
 			if (arg_type->cs_in.size()) {
 				cs_in_statements << sformat(arg_type->cs_in, arg_type->c_type, iarg.name,
-						String(), String(), String(), INDENT3);
+						String(), String(), String(), INDENT2);
 			}
 
 			icall_params += arg_type->cs_in_expr.is_empty() ? iarg.name : sformat(arg_type->cs_in_expr, iarg.name, arg_type->c_type);
@@ -1932,7 +1927,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 	{
 		if (!p_imethod.is_virtual && !p_imethod.requires_object_call) {
 			p_output << MEMBER_BEGIN "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
-					 << INDENT2 "private static readonly IntPtr " << method_bind_field << " = ";
+					 << INDENT1 "private static readonly IntPtr " << method_bind_field << " = ";
 
 			if (p_itype.is_singleton) {
 				// Singletons are static classes. They don't derive Godot.Object,
@@ -1953,12 +1948,12 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 				p_output.append(MEMBER_BEGIN "/// <summary>\n");
 
 				for (int i = 0; i < summary_lines.size(); i++) {
-					p_output.append(INDENT2 "/// ");
+					p_output.append(INDENT1 "/// ");
 					p_output.append(summary_lines[i]);
 					p_output.append("\n");
 				}
 
-				p_output.append(INDENT2 "/// </summary>");
+				p_output.append(INDENT1 "/// </summary>");
 			}
 		}
 
@@ -1991,15 +1986,15 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 		p_output.append(return_type->cs_type + " ");
 		p_output.append(p_imethod.proxy_name + "(");
-		p_output.append(arguments_sig + ")\n" OPEN_BLOCK_L2);
+		p_output.append(arguments_sig + ")\n" OPEN_BLOCK_L1);
 
 		if (p_imethod.is_virtual) {
 			// Godot virtual method must be overridden, therefore we return a default value by default.
 
 			if (return_type->cname == name_cache.type_void) {
-				p_output.append(CLOSE_BLOCK_L2);
+				p_output.append(CLOSE_BLOCK_L1);
 			} else {
-				p_output.append(INDENT3 "return default;\n" CLOSE_BLOCK_L2);
+				p_output.append(INDENT2 "return default;\n" CLOSE_BLOCK_L1);
 			}
 
 			return OK; // Won't increment method bind count
@@ -2008,7 +2003,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		if (p_imethod.requires_object_call) {
 			// Fallback to Godot's object.Call(string, params)
 
-			p_output.append(INDENT3 CS_METHOD_CALL "(\"");
+			p_output.append(INDENT2 CS_METHOD_CALL "(\"");
 			p_output.append(p_imethod.name);
 			p_output.append("\"");
 
@@ -2017,7 +2012,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 				p_output.append(iarg.name);
 			}
 
-			p_output.append(");\n" CLOSE_BLOCK_L2);
+			p_output.append(");\n" CLOSE_BLOCK_L1);
 
 			return OK; // Won't increment method bind count
 		}
@@ -2036,16 +2031,16 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		}
 
 		if (return_type->cname == name_cache.type_void) {
-			p_output << INDENT3 << im_call << "(" << icall_params << ");\n";
+			p_output << INDENT2 << im_call << "(" << icall_params << ");\n";
 		} else if (return_type->cs_out.is_empty()) {
-			p_output << INDENT3 "return " << im_call << "(" << icall_params << ");\n";
+			p_output << INDENT2 "return " << im_call << "(" << icall_params << ");\n";
 		} else {
 			p_output.append(sformat(return_type->cs_out, im_call, icall_params,
-					return_type->cs_type, return_type->c_type_out, String(), INDENT3));
+					return_type->cs_type, return_type->c_type_out, String(), INDENT2));
 			p_output.append("\n");
 		}
 
-		p_output.append(CLOSE_BLOCK_L2);
+		p_output.append(CLOSE_BLOCK_L1);
 	}
 
 	p_method_bind_count++;
@@ -2092,12 +2087,12 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 				p_output.append(MEMBER_BEGIN "/// <summary>\n");
 
 				for (int i = 0; i < summary_lines.size(); i++) {
-					p_output.append(INDENT2 "/// ");
+					p_output.append(INDENT1 "/// ");
 					p_output.append(summary_lines[i]);
 					p_output.append("\n");
 				}
 
-				p_output.append(INDENT2 "/// </summary>");
+				p_output.append(INDENT1 "/// </summary>");
 			}
 		}
 
@@ -2127,7 +2122,7 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 
 		// Cached signal name (StringName)
 		p_output.append(MEMBER_BEGIN "// ReSharper disable once InconsistentNaming\n");
-		p_output.append(INDENT2 "[DebuggerBrowsable(DebuggerBrowsableState.Never)]" MEMBER_BEGIN
+		p_output.append(INDENT1 "[DebuggerBrowsable(DebuggerBrowsableState.Never)]" MEMBER_BEGIN
 								"private static readonly StringName " CS_STATIC_FIELD_SIGNAL_NAME_PREFIX);
 		p_output.append(p_isignal.name);
 		p_output.append(" = \"");
@@ -2145,7 +2140,7 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 		p_output.append(delegate_name);
 		p_output.append(" ");
 		p_output.append(p_isignal.proxy_name);
-		p_output.append("\n" OPEN_BLOCK_L2 INDENT3);
+		p_output.append("\n" OPEN_BLOCK_L1 INDENT2);
 
 		if (p_itype.is_singleton) {
 			p_output.append("add => " CS_PROPERTY_SINGLETON ".Connect(" CS_STATIC_FIELD_SIGNAL_NAME_PREFIX);
@@ -2157,14 +2152,14 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 		p_output.append(", new Callable(value));\n");
 
 		if (p_itype.is_singleton) {
-			p_output.append(INDENT3 "remove => " CS_PROPERTY_SINGLETON ".Disconnect(" CS_STATIC_FIELD_SIGNAL_NAME_PREFIX);
+			p_output.append(INDENT2 "remove => " CS_PROPERTY_SINGLETON ".Disconnect(" CS_STATIC_FIELD_SIGNAL_NAME_PREFIX);
 		} else {
-			p_output.append(INDENT3 "remove => Disconnect(" CS_STATIC_FIELD_SIGNAL_NAME_PREFIX);
+			p_output.append(INDENT2 "remove => Disconnect(" CS_STATIC_FIELD_SIGNAL_NAME_PREFIX);
 		}
 
 		p_output.append(p_isignal.name);
 		p_output.append(", new Callable(value));\n");
-		p_output.append(CLOSE_BLOCK_L2);
+		p_output.append(CLOSE_BLOCK_L1);
 	}
 
 	return OK;
@@ -2203,8 +2198,8 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 
 				c_in_statements
 						<< sformat(c_in_vararg, return_type->c_type, c_param_name,
-								   String(), String(), String(), INDENT4)
-						<< INDENT4 C_LOCAL_PTRCALL_ARGS "[" << itos(i)
+								   String(), String(), String(), INDENT3)
+						<< INDENT3 C_LOCAL_PTRCALL_ARGS "[" << itos(i)
 						<< "] = new IntPtr(&" << c_param_name << "_in);\n";
 			}
 		} else {
@@ -2213,7 +2208,7 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 			}
 			if (arg_type->c_in.size()) {
 				c_in_statements << sformat(arg_type->c_in, arg_type->c_type, c_param_name,
-						String(), String(), String(), INDENT3);
+						String(), String(), String(), INDENT2);
 			}
 			c_args_var_content << sformat(arg_type->c_arg_in, c_param_name);
 		}
@@ -2241,7 +2236,7 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 			ptrcall_return_type = return_type->c_type;
 		}
 
-		r_output << INDENT3;
+		r_output << INDENT2;
 
 		if (return_type->is_ref_counted || return_type->c_type_is_disposable_struct) {
 			r_output << "using ";
@@ -2254,8 +2249,8 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 		r_output << ptrcall_return_type << " " C_LOCAL_RET << initialization << ";\n";
 	}
 
-	r_output << INDENT3 "if (" CS_PARAM_INSTANCE " == IntPtr.Zero)\n"
-			 << INDENT4 "throw new ArgumentNullException(nameof(" CS_PARAM_INSTANCE "));\n";
+	r_output << INDENT2 "if (" CS_PARAM_INSTANCE " == IntPtr.Zero)\n"
+			 << INDENT3 "throw new ArgumentNullException(nameof(" CS_PARAM_INSTANCE "));\n";
 
 	String argc_str = itos(p_icall.get_arguments_count());
 
@@ -2317,47 +2312,47 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 
 			p_icall.get_arguments_count();
 
-			r_output << INDENT3 "int vararg_length = " << vararg_arg << ".Length;\n"
-					 << INDENT3 "int total_length = " << real_argc_str << " + vararg_length;\n";
+			r_output << INDENT2 "int vararg_length = " << vararg_arg << ".Length;\n"
+					 << INDENT2 "int total_length = " << real_argc_str << " + vararg_length;\n";
 
-			r_output << INDENT3 "Span<godot_variant.movable> varargs_span = vararg_length <= 5 ?\n"
-					 << INDENT4 "stackalloc godot_variant.movable[vararg_length].Cleared() :\n"
-					 << INDENT4 "new godot_variant.movable[vararg_length];\n";
+			r_output << INDENT2 "Span<godot_variant.movable> varargs_span = vararg_length <= 5 ?\n"
+					 << INDENT3 "stackalloc godot_variant.movable[vararg_length].Cleared() :\n"
+					 << INDENT3 "new godot_variant.movable[vararg_length];\n";
 
-			r_output << INDENT3 "Span<IntPtr> " C_LOCAL_PTRCALL_ARGS "_span = total_length <= 10 ?\n"
-					 << INDENT4 "stackalloc IntPtr[total_length] :\n"
-					 << INDENT4 "new IntPtr[total_length];\n";
+			r_output << INDENT2 "Span<IntPtr> " C_LOCAL_PTRCALL_ARGS "_span = total_length <= 10 ?\n"
+					 << INDENT3 "stackalloc IntPtr[total_length] :\n"
+					 << INDENT3 "new IntPtr[total_length];\n";
 
-			r_output << INDENT3 "using var variantSpanDisposer = new VariantSpanDisposer(varargs_span);\n";
+			r_output << INDENT2 "using var variantSpanDisposer = new VariantSpanDisposer(varargs_span);\n";
 
-			r_output << INDENT3 "fixed (godot_variant* varargs = &MemoryMarshal.GetReference(varargs_span).DangerousSelfRef)\n"
-					 << INDENT3 "fixed (IntPtr* " C_LOCAL_PTRCALL_ARGS " = "
+			r_output << INDENT2 "fixed (godot_variant* varargs = &MemoryMarshal.GetReference(varargs_span).DangerousSelfRef)\n"
+					 << INDENT2 "fixed (IntPtr* " C_LOCAL_PTRCALL_ARGS " = "
 								"&MemoryMarshal.GetReference(" C_LOCAL_PTRCALL_ARGS "_span))\n"
-					 << OPEN_BLOCK_L3;
+					 << OPEN_BLOCK_L2;
 
 			r_output << c_in_statements.as_string();
 
-			r_output << INDENT4 "for (int i = 0; i < vararg_length; i++) " OPEN_BLOCK
-					 << INDENT5 "varargs[i] = " C_METHOD_MANAGED_TO_VARIANT "(" << vararg_arg << "[i]);\n"
-					 << INDENT5 C_LOCAL_PTRCALL_ARGS "[" << real_argc_str << " + i] = new IntPtr(&varargs[i]);\n"
-					 << CLOSE_BLOCK_L4;
+			r_output << INDENT3 "for (int i = 0; i < vararg_length; i++) " OPEN_BLOCK
+					 << INDENT4 "varargs[i] = " C_METHOD_MANAGED_TO_VARIANT "(" << vararg_arg << "[i]);\n"
+					 << INDENT4 C_LOCAL_PTRCALL_ARGS "[" << real_argc_str << " + i] = new IntPtr(&varargs[i]);\n"
+					 << CLOSE_BLOCK_L3;
 
-			generate_call_and_return_stmts(INDENT4);
+			generate_call_and_return_stmts(INDENT3);
 
-			r_output << CLOSE_BLOCK_L3;
+			r_output << CLOSE_BLOCK_L2;
 		} else {
 			r_output << c_in_statements.as_string();
 
-			r_output << INDENT3 "void** " C_LOCAL_PTRCALL_ARGS " = stackalloc void*["
+			r_output << INDENT2 "void** " C_LOCAL_PTRCALL_ARGS " = stackalloc void*["
 					 << argc_str << "] { " << c_args_var_content.as_string() << " };\n";
 
-			generate_call_and_return_stmts(INDENT3);
+			generate_call_and_return_stmts(INDENT2);
 		}
 	} else {
-		generate_call_and_return_stmts(INDENT3);
+		generate_call_and_return_stmts(INDENT2);
 	}
 
-	r_output << CLOSE_BLOCK_L2;
+	r_output << CLOSE_BLOCK_L1;
 
 	return OK;
 }
