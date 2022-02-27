@@ -285,7 +285,7 @@ GD_PINVOKE_EXPORT void godotsharp_internal_tie_native_managed_to_unmanaged(GCHan
 	CSharpLanguage::tie_native_managed_to_unmanaged(p_gchandle_intptr, p_unmanaged, p_native_name, p_ref_counted);
 }
 
-GD_PINVOKE_EXPORT void godotsharp_internal_tie_user_managed_to_unmanaged(GCHandleIntPtr p_gchandle_intptr, Object *p_unmanaged, CSharpScript *p_script, bool p_ref_counted) {
+GD_PINVOKE_EXPORT void godotsharp_internal_tie_user_managed_to_unmanaged(GCHandleIntPtr p_gchandle_intptr, Object *p_unmanaged, Ref<CSharpScript> *p_script, bool p_ref_counted) {
 	CSharpLanguage::tie_user_managed_to_unmanaged(p_gchandle_intptr, p_unmanaged, p_script, p_ref_counted);
 }
 
@@ -293,10 +293,13 @@ GD_PINVOKE_EXPORT void godotsharp_internal_tie_managed_to_unmanaged_with_pre_set
 	CSharpLanguage::tie_managed_to_unmanaged_with_pre_setup(p_gchandle_intptr, p_unmanaged);
 }
 
-GD_PINVOKE_EXPORT CSharpScript *godotsharp_internal_new_csharp_script() {
-	CSharpScript *script = memnew(CSharpScript);
-	CRASH_COND(!script);
-	return script;
+GD_PINVOKE_EXPORT void godotsharp_internal_new_csharp_script(Ref<CSharpScript> *r_dest) {
+	memnew_placement(r_dest, Ref<CSharpScript>(memnew(CSharpScript)));
+}
+
+GD_PINVOKE_EXPORT void godotsharp_internal_reload_registered_script(CSharpScript *p_script) {
+	CRASH_COND(!p_script);
+	CSharpScript::reload_registered_script(Ref<CSharpScript>(p_script));
 }
 
 GD_PINVOKE_EXPORT void godotsharp_array_filter_godot_objects_by_native(StringName *p_native_name, const Array *p_input, Array *r_output) {
@@ -319,6 +322,10 @@ GD_PINVOKE_EXPORT void godotsharp_array_filter_godot_objects_by_non_native(const
 			r_output->push_back(p_input[i]);
 		}
 	}
+}
+
+GD_PINVOKE_EXPORT void godotsharp_ref_new_from_ref_counted_ptr(Ref<RefCounted> *r_dest, RefCounted *p_ref_counted_ptr) {
+	memnew_placement(r_dest, Ref<RefCounted>(p_ref_counted_ptr));
 }
 
 GD_PINVOKE_EXPORT void godotsharp_ref_destroy(Ref<RefCounted> *p_instance) {
@@ -1281,7 +1288,7 @@ GD_PINVOKE_EXPORT void godotsharp_object_to_string(Object *p_ptr, godot_string *
 #endif
 
 // We need this to prevent the functions from being stripped.
-void *godotsharp_pinvoke_funcs[179] = {
+void *godotsharp_pinvoke_funcs[181] = {
 	(void *)godotsharp_method_bind_get_method,
 	(void *)godotsharp_get_class_constructor,
 	(void *)godotsharp_engine_get_singleton,
@@ -1297,8 +1304,10 @@ void *godotsharp_pinvoke_funcs[179] = {
 	(void *)godotsharp_internal_tie_user_managed_to_unmanaged,
 	(void *)godotsharp_internal_tie_managed_to_unmanaged_with_pre_setup,
 	(void *)godotsharp_internal_new_csharp_script,
+	(void *)godotsharp_internal_reload_registered_script,
 	(void *)godotsharp_array_filter_godot_objects_by_native,
 	(void *)godotsharp_array_filter_godot_objects_by_non_native,
+	(void *)godotsharp_ref_new_from_ref_counted_ptr,
 	(void *)godotsharp_ref_destroy,
 	(void *)godotsharp_string_name_new_from_string,
 	(void *)godotsharp_node_path_new_from_string,

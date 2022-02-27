@@ -49,10 +49,9 @@
 #include <coreclr_delegates.h>
 #include <hostfxr.h>
 
-#warning TODO mobile
+// TODO mobile
 #if 0
 #ifdef ANDROID_ENABLED
-#include "android_mono_config.h"
 #include "support/android_support.h"
 #elif defined(IOS_ENABLED)
 #include "support/ios_support.h"
@@ -60,75 +59,6 @@
 #endif
 
 GDMono *GDMono::singleton = nullptr;
-
-namespace {
-
-#warning "TODO .NET debugging and profiling. What's needed?"
-#if 0
-void gd_mono_profiler_init() {
-	String profiler_args = GLOBAL_DEF("mono/profiler/args", "log:calls,alloc,sample,output=output.mlpd");
-	bool profiler_enabled = GLOBAL_DEF("mono/profiler/enabled", false);
-	if (profiler_enabled) {
-		mono_profiler_load(profiler_args.utf8());
-		return;
-	}
-
-	const String env_var_name = "MONO_ENV_OPTIONS";
-	if (OS::get_singleton()->has_environment(env_var_name)) {
-		const String mono_env_ops = OS::get_singleton()->get_environment(env_var_name);
-		// Usually MONO_ENV_OPTIONS looks like:   --profile=jb:prof=timeline,ctl=remote,host=127.0.0.1:55467
-		const String prefix = "--profile=";
-		if (mono_env_ops.begins_with(prefix)) {
-			const String ops = mono_env_ops.substr(prefix.length(), mono_env_ops.length());
-			mono_profiler_load(ops.utf8());
-		}
-	}
-}
-
-void gd_mono_debug_init() {
-	CharString da_args = OS::get_singleton()->get_environment("GODOT_MONO_DEBUGGER_AGENT").utf8();
-
-	if (da_args.length()) {
-		OS::get_singleton()->set_environment("GODOT_MONO_DEBUGGER_AGENT", String());
-	}
-
-#ifdef TOOLS_ENABLED
-	int da_port = GLOBAL_DEF("mono/debugger_agent/port", 23685);
-	bool da_suspend = GLOBAL_DEF("mono/debugger_agent/wait_for_debugger", false);
-	int da_timeout = GLOBAL_DEF("mono/debugger_agent/wait_timeout", 3000);
-
-	if (Engine::get_singleton()->is_editor_hint() ||
-			ProjectSettings::get_singleton()->get_resource_path().is_empty() ||
-			Engine::get_singleton()->is_project_manager_hint()) {
-		if (da_args.size() == 0) {
-			return;
-		}
-	}
-
-	if (da_args.length() == 0) {
-		da_args = String("--debugger-agent=transport=dt_socket,address=127.0.0.1:" + itos(da_port) +
-				",embedding=1,server=y,suspend=" + (da_suspend ? "y,timeout=" + itos(da_timeout) : "n"))
-						  .utf8();
-	}
-#else
-	if (da_args.length() == 0) {
-		return; // Exported games don't use the project settings to setup the debugger agent
-	}
-#endif
-
-	// Debugging enabled
-
-	mono_debug_init(MONO_DEBUG_FORMAT_MONO);
-
-	// --debugger-agent=help
-	const char *options[] = {
-		"--soft-breakpoints",
-		da_args.get_data()
-	};
-	mono_jit_parse_options(2, (char **)options);
-}
-#endif
-} // namespace
 
 namespace {
 hostfxr_initialize_for_dotnet_command_line_fn hostfxr_initialize_for_dotnet_command_line = nullptr;

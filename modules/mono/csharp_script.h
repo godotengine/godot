@@ -134,7 +134,6 @@ private:
 
 	// Do not use unless you know what you are doing
 	static void update_script_class_info(Ref<CSharpScript> p_script);
-	static void initialize_for_managed_type(Ref<CSharpScript> p_script);
 
 protected:
 	static void _bind_methods();
@@ -144,6 +143,8 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_properties) const;
 
 public:
+	static void reload_registered_script(Ref<CSharpScript> p_script);
+
 	bool can_instantiate() const override;
 	StringName get_instance_base_type() const override;
 	ScriptInstance *instance_create(Object *p_this) override;
@@ -460,7 +461,7 @@ public:
 	bool setup_csharp_script_binding(CSharpScriptBinding &r_script_binding, Object *p_object);
 
 	static void tie_native_managed_to_unmanaged(GCHandleIntPtr p_gchandle_intptr, Object *p_unmanaged, const StringName *p_native_name, bool p_ref_counted);
-	static void tie_user_managed_to_unmanaged(GCHandleIntPtr p_gchandle_intptr, Object *p_unmanaged, CSharpScript *p_script, bool p_ref_counted);
+	static void tie_user_managed_to_unmanaged(GCHandleIntPtr p_gchandle_intptr, Object *p_unmanaged, Ref<CSharpScript> *p_script, bool p_ref_counted);
 	static void tie_managed_to_unmanaged_with_pre_setup(GCHandleIntPtr p_gchandle_intptr, Object *p_unmanaged);
 
 #warning TODO

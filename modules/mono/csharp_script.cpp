@@ -104,7 +104,7 @@ Error CSharpLanguage::execute_file(const String &p_path) {
 	return OK;
 }
 
-extern void *godotsharp_pinvoke_funcs[179];
+extern void *godotsharp_pinvoke_funcs[181];
 [[maybe_unused]] volatile void **do_not_strip_godotsharp_pinvoke_funcs;
 #ifdef TOOLS_ENABLED
 extern void *godotsharp_editor_pinvoke_funcs[30];
@@ -793,6 +793,20 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 	// (while hot-reload is not yet implemented)
 	gdmono->initialize_load_assemblies();
 
+	{
+		MutexLock lock(script_instances_mutex);
+
+		for (SelfList<CSharpScript> *elem = script_list.first(); elem; elem = elem->next()) {
+			Ref<CSharpScript> script(elem->self());
+
+			script->exports_invalidated = true;
+
+			if (!script->get_path().is_empty()) {
+				script->reload(p_soft_reload);
+			}
+		}
+	}
+
 #if 0
 	// There is no soft reloading with Mono. It's always hard reloading.
 
@@ -1010,7 +1024,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 			GDMonoClass *native = GDMonoUtils::get_class_native_base(script_class);
 
-			CSharpScript::initialize_for_managed_type(script, script_class, native);
+			CSharpScript::reload_registered_script(script, script_class, native);
 		}
 
 		StringName native_name = NATIVE_GDMONOCLASS_NAME(script->native);
@@ -1563,8 +1577,12 @@ void CSharpLanguage::tie_native_managed_to_unmanaged(GCHandleIntPtr p_gchandle_i
 	CSharpLanguage::set_instance_binding(p_unmanaged, data);
 }
 
-void CSharpLanguage::tie_user_managed_to_unmanaged(GCHandleIntPtr p_gchandle_intptr, Object *p_unmanaged, CSharpScript *p_script, bool p_ref_counted) {
+void CSharpLanguage::tie_user_managed_to_unmanaged(GCHandleIntPtr p_gchandle_intptr, Object *p_unmanaged, Ref<CSharpScript> *p_script, bool p_ref_counted) {
 	// This method should not fail
+
+	Ref<CSharpScript> script = *p_script;
+	// We take care of destructing this reference here, so the managed code won't need to do another P/Invoke call
+	p_script->~Ref();
 
 	CRASH_COND(!p_unmanaged);
 
@@ -1578,11 +1596,7 @@ void CSharpLanguage::tie_user_managed_to_unmanaged(GCHandleIntPtr p_gchandle_int
 	MonoGCHandleData gchandle = MonoGCHandleData(p_gchandle_intptr,
 			p_ref_counted ? gdmono::GCHandleType::WEAK_HANDLE : gdmono::GCHandleType::STRONG_HANDLE);
 
-	Ref<CSharpScript> script = p_script;
-
 	CRASH_COND(script.is_null());
-
-	CSharpScript::initialize_for_managed_type(script);
 
 	CSharpInstance *csharp_instance = CSharpInstance::create_for_managed_type(p_unmanaged, script.ptr(), gchandle);
 
@@ -2345,12 +2359,17 @@ void CSharpScript::_bind_methods() {
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &CSharpScript::_new, MethodInfo("new"));
 }
 
-void CSharpScript::initialize_for_managed_type(Ref<CSharpScript> p_script) {
+void CSharpScript::reload_registered_script(Ref<CSharpScript> p_script) {
 	// IMPORTANT:
 	// This method must be called only after the CSharpScript and its associated type
 	// have been added to the script bridge map in the ScriptManagerBridge C# class.
+	// Other than that, it's the same as `CSharpScript::reload`.
 
-	// This method should not fail, only assertions allowed
+	// This method should not fail, only assertions allowed.
+
+	// Unlike `reload`, we print an error rather than silently returning,
+	// as we can assert this won't be called a second time until invalidated.
+	ERR_FAIL_COND(!p_script->reload_invalidated);
 
 	p_script->valid = true;
 	p_script->reload_invalidated = false;
@@ -2607,9 +2626,6 @@ Error CSharpScript::reload(bool p_keep_state) {
 
 	String script_path = get_path();
 
-	// In case it was already added by a previous reload
-	GDMonoCache::managed_callbacks.ScriptManagerBridge_RemoveScriptBridge(this);
-
 	valid = GDMonoCache::managed_callbacks.ScriptManagerBridge_AddScriptBridge(this, &script_path);
 
 	if (valid) {
@@ -2817,9 +2833,13 @@ Ref<Resource> ResourceFormatLoaderCSharpScript::load(const String &p_path, const
 
 	// TODO ignore anything inside bin/ and obj/ in tools builds?
 
-	CSharpScript *script = memnew(CSharpScript);
+	Ref<CSharpScript> script;
 
-	Ref<CSharpScript> scriptres(script);
+	if (GDMonoCache::godot_api_cache_updated) {
+		GDMonoCache::managed_callbacks.ScriptManagerBridge_GetOrCreateScriptBridgeForPath(&p_path, &script);
+	} else {
+		script = Ref<CSharpScript>(memnew(CSharpScript));
+	}
 
 #if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	Error err = script->load_source_code(p_path);
@@ -2834,7 +2854,7 @@ Ref<Resource> ResourceFormatLoaderCSharpScript::load(const String &p_path, const
 		*r_error = OK;
 	}
 
-	return scriptres;
+	return script;
 }
 
 void ResourceFormatLoaderCSharpScript::get_recognized_extensions(List<String> *p_extensions) const {
