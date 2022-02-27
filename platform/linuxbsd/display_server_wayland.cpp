@@ -865,9 +865,29 @@ Rect2i DisplayServerWayland::screen_get_usable_rect(int p_screen) const {
 }
 
 int DisplayServerWayland::screen_get_dpi(int p_screen) const {
-	// TODO
-	print_verbose("wayland stub screen_get_dpi");
-	return 0;
+	MutexLock mutex_lock(wls.mutex);
+
+	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
+		p_screen = window_get_current_screen();
+	}
+
+	// Invalid screen?
+	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), 0);
+
+	ScreenData &sd = *wls.screens[p_screen];
+
+	int width_mm = sd.physical_size.width;
+	int height_mm = sd.physical_size.height;
+
+	double xdpi = (width_mm ? sd.size.width / (double)width_mm * 25.4 : 0);
+	double ydpi = (height_mm ? sd.size.height / (double)height_mm * 25.4 : 0);
+
+	if (xdpi || ydpi) {
+		return (xdpi + ydpi) / (xdpi && ydpi ? 2 : 1);
+	}
+
+	// Could not get DPI.
+	return 96;
 }
 
 float DisplayServerWayland::screen_get_refresh_rate(int p_screen) const {
