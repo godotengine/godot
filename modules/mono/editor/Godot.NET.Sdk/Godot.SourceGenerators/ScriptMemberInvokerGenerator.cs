@@ -105,8 +105,6 @@ namespace Godot.SourceGenerators
 
             var members = symbol.GetMembers();
 
-            // TODO: Static static marshaling (no reflection, no runtime type checks)
-
             var methodSymbols = members
                 .Where(s => !s.IsStatic && s.Kind == SymbolKind.Method && !s.IsImplicitlyDeclared)
                 .Cast<IMethodSymbol>()
@@ -182,7 +180,7 @@ namespace Godot.SourceGenerators
                             continue;
 
                         GeneratePropertySetter(property.PropertySymbol.Name,
-                            property.PropertySymbol.Type.FullQualifiedName(), source, isFirstEntry);
+                            property.PropertySymbol.Type, property.Type, source, isFirstEntry);
                         isFirstEntry = false;
                     }
 
@@ -192,7 +190,7 @@ namespace Godot.SourceGenerators
                             continue;
 
                         GeneratePropertySetter(field.FieldSymbol.Name,
-                            field.FieldSymbol.Type.FullQualifiedName(), source, isFirstEntry);
+                            field.FieldSymbol.Type, field.Type, source, isFirstEntry);
                         isFirstEntry = false;
                     }
 
@@ -209,13 +207,15 @@ namespace Godot.SourceGenerators
                 isFirstEntry = true;
                 foreach (var property in godotClassProperties)
                 {
-                    GeneratePropertyGetter(property.PropertySymbol.Name, source, isFirstEntry);
+                    GeneratePropertyGetter(property.PropertySymbol.Name,
+                        property.Type, source, isFirstEntry);
                     isFirstEntry = false;
                 }
 
                 foreach (var field in godotClassFields)
                 {
-                    GeneratePropertyGetter(field.FieldSymbol.Name, source, isFirstEntry);
+                    GeneratePropertyGetter(field.FieldSymbol.Name,
+                        field.Type, source, isFirstEntry);
                     isFirstEntry = false;
                 }
 
@@ -278,7 +278,7 @@ namespace Godot.SourceGenerators
             source.Append(") {\n");
 
             if (method.RetType != null)
-                source.Append("            object retBoxed = ");
+                source.Append("            var callRet = ");
             else
                 source.Append("            ");
 
@@ -290,25 +290,19 @@ namespace Godot.SourceGenerators
                 if (i != 0)
                     source.Append(", ");
 
-                // TODO: static marshaling (no reflection, no runtime type checks)
-
-                string paramTypeQualifiedName = method.ParamTypeSymbols[i].FullQualifiedName();
-
-                source.Append("(");
-                source.Append(paramTypeQualifiedName);
-                source.Append(")Marshaling.ConvertVariantToManagedObjectOfType(args[");
-                source.Append(i);
-                source.Append("], typeof(");
-                source.Append(paramTypeQualifiedName);
-                source.Append("))");
+                source.AppendVariantToManagedExpr(string.Concat("args[", i.ToString(), "]"),
+                    method.ParamTypeSymbols[i], method.ParamTypes[i]);
             }
 
             source.Append(");\n");
 
             if (method.RetType != null)
             {
-                // TODO: static marshaling (no reflection, no runtime type checks)
-                source.Append("            ret = Marshaling.ConvertManagedObjectToVariant(retBoxed);\n");
+                source.Append("            ret = ");
+
+                source.AppendManagedToVariantExpr("callRet", method.RetType.Value);
+                source.Append(";\n");
+
                 source.Append("            return true;\n");
             }
             else
@@ -322,56 +316,49 @@ namespace Godot.SourceGenerators
 
         private static void GeneratePropertySetter(
             string propertyMemberName,
-            string propertyTypeQualifiedName,
+            ITypeSymbol propertyTypeSymbol,
+            MarshalType propertyMarshalType,
             StringBuilder source,
             bool isFirstEntry
         )
         {
             source.Append("        ");
+
             if (!isFirstEntry)
                 source.Append("else ");
-            source.Append("if (name == GodotInternal.PropName_");
-            source.Append(propertyMemberName);
-            source.Append(") {\n");
 
-            source.Append("            ");
-            source.Append(propertyMemberName);
-            source.Append(" = ");
-
-            // TODO: static marshaling (no reflection, no runtime type checks)
-
-            source.Append("(");
-            source.Append(propertyTypeQualifiedName);
-            source.Append(")Marshaling.ConvertVariantToManagedObjectOfType(value, typeof(");
-            source.Append(propertyTypeQualifiedName);
-            source.Append("));\n");
-
-            source.Append("            return true;\n");
-
-            source.Append("        }\n");
+            source.Append("if (name == GodotInternal.PropName_")
+                .Append(propertyMemberName)
+                .Append(") {\n")
+                .Append("            ")
+                .Append(propertyMemberName)
+                .Append(" = ")
+                .AppendVariantToManagedExpr("value", propertyTypeSymbol, propertyMarshalType)
+                .Append(";\n")
+                .Append("            return true;\n")
+                .Append("        }\n");
         }
 
         private static void GeneratePropertyGetter(
             string propertyMemberName,
+            MarshalType propertyMarshalType,
             StringBuilder source,
             bool isFirstEntry
         )
         {
             source.Append("        ");
+
             if (!isFirstEntry)
                 source.Append("else ");
-            source.Append("if (name == GodotInternal.PropName_");
-            source.Append(propertyMemberName);
-            source.Append(") {\n");
 
-            // TODO: static marshaling (no reflection, no runtime type checks)
-
-            source.Append("            value = Marshaling.ConvertManagedObjectToVariant(");
-            source.Append(propertyMemberName);
-            source.Append(");\n");
-            source.Append("            return true;\n");
-
-            source.Append("        }\n");
+            source.Append("if (name == GodotInternal.PropName_")
+                .Append(propertyMemberName)
+                .Append(") {\n")
+                .Append("            value = ")
+                .AppendManagedToVariantExpr(propertyMemberName, propertyMarshalType)
+                .Append(";\n")
+                .Append("            return true;\n")
+                .Append("        }\n");
         }
 
         private static void GenerateHasMethodEntry(

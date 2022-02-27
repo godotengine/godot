@@ -184,6 +184,7 @@ namespace Godot.SourceGenerators
         {
             foreach (var method in methods)
             {
+                var retSymbol = method.ReturnType;
                 var retType = method.ReturnsVoid ?
                     null :
                     MarshalUtils.ConvertManagedTypeToMarshalType(method.ReturnType, typeCache);
@@ -206,7 +207,7 @@ namespace Godot.SourceGenerators
                     continue; // Ignore incompatible method
 
                 yield return new GodotMethodData(method, paramTypes, parameters
-                    .Select(p => p.Type).ToImmutableArray(), retType);
+                    .Select(p => p.Type).ToImmutableArray(), retType, retSymbol);
             }
         }
 

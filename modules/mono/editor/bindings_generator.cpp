@@ -1543,7 +1543,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				   << INDENT3 "{\n";
 
 			if (imethod.return_type.cname != name_cache.type_void) {
-				output << INDENT4 "object retBoxed = ";
+				output << INDENT4 "var callRet = ";
 			} else {
 				output << INDENT4;
 			}
@@ -1560,20 +1560,23 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 					output << ", ";
 				}
 
-				// TODO: static marshaling (no reflection, no runtime type checks)
-				output << "(" << arg_type->cs_type << ")Marshaling.ConvertVariantToManagedObjectOfType(args["
-					   << itos(i) << "], typeof(" << arg_type->cs_type << "))";
+				output << sformat(arg_type->cs_variant_to_managed,
+						"args[" + itos(i) + "]", arg_type->cs_type, arg_type->name);
 			}
 
 			output << ");\n";
 
 			if (imethod.return_type.cname != name_cache.type_void) {
-				// TODO: static marshaling (no reflection, no runtime type checks)
-				output << INDENT4 "ret = Marshaling.ConvertManagedObjectToVariant(retBoxed);\n";
-				output << INDENT4 "return true;\n";
+				const TypeInterface *return_type = _get_type_or_null(imethod.return_type);
+				ERR_FAIL_NULL_V(return_type, ERR_BUG); // Return type not found
+
+				output << INDENT4 "ret = "
+					   << sformat(return_type->cs_managed_to_variant, "callRet", return_type->cs_type, return_type->name)
+					   << ";\n"
+					   << INDENT4 "return true;\n";
 			} else {
-				output << INDENT4 "ret = default;\n";
-				output << INDENT4 "return true;\n";
+				output << INDENT4 "ret = default;\n"
+					   << INDENT4 "return true;\n";
 			}
 
 			output << INDENT3 "}\n";
@@ -2192,7 +2195,7 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 				String c_in_vararg = arg_type->c_in_vararg;
 
 				if (arg_type->is_object_type) {
-					c_in_vararg = "%5using godot_variant %1_in = VariantUtils.CreateFromGodotObject(%1);\n";
+					c_in_vararg = "%5using godot_variant %1_in = VariantUtils.CreateFromGodotObjectPtr(%1);\n";
 				}
 
 				ERR_FAIL_COND_V_MSG(c_in_vararg.is_empty(), ERR_BUG,
@@ -2565,6 +2568,9 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		itype.is_instantiable = class_info->creation_func && !itype.is_singleton;
 		itype.is_ref_counted = ClassDB::is_parent_class(type_cname, name_cache.type_RefCounted);
 		itype.memory_own = itype.is_ref_counted;
+
+		itype.cs_variant_to_managed = "(%1)VariantUtils.ConvertToGodotObject(%0)";
+		itype.cs_managed_to_variant = "VariantUtils.CreateFromGodotObject(%0)";
 
 		itype.c_out = "%5return ";
 		itype.c_out += C_METHOD_UNMANAGED_GET_MANAGED;
@@ -2949,6 +2955,8 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			enum_itype.cname = StringName(enum_itype.name);
 			enum_itype.proxy_name = itype.proxy_name + "." + enum_proxy_name;
 			TypeInterface::postsetup_enum_type(enum_itype);
+			enum_itype.cs_variant_to_managed = "(%1)VariantUtils.ConvertToInt32(%0)";
+			enum_itype.cs_managed_to_variant = "VariantUtils.CreateFromInt((int)%0)";
 			enum_types.insert(enum_itype.cname, enum_itype);
 		}
 
@@ -3155,14 +3163,16 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 
 	TypeInterface itype;
 
-#define INSERT_STRUCT_TYPE(m_type)                                 \
-	{                                                              \
-		itype = TypeInterface::create_value_type(String(#m_type)); \
-		itype.c_type_in = #m_type "*";                             \
-		itype.c_type_out = itype.cs_type;                          \
-		itype.cs_in_expr = "&%0";                                  \
-		itype.cs_in_expr_is_unsafe = true;                         \
-		builtin_types.insert(itype.cname, itype);                  \
+#define INSERT_STRUCT_TYPE(m_type)                                     \
+	{                                                                  \
+		itype = TypeInterface::create_value_type(String(#m_type));     \
+		itype.c_type_in = #m_type "*";                                 \
+		itype.c_type_out = itype.cs_type;                              \
+		itype.cs_in_expr = "&%0";                                      \
+		itype.cs_in_expr_is_unsafe = true;                             \
+		itype.cs_variant_to_managed = "VariantUtils.ConvertTo%2(%0)";  \
+		itype.cs_managed_to_variant = "VariantUtils.CreateFrom%2(%0)"; \
+		builtin_types.insert(itype.cname, itype);                      \
 	}
 
 	INSERT_STRUCT_TYPE(Vector2)
@@ -3190,13 +3200,15 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.c_type_out = itype.c_type;
 	itype.c_arg_in = "&%s";
 	itype.c_in_vararg = "%5using godot_variant %1_in = VariantUtils.CreateFromBool(%1);\n";
+	itype.cs_variant_to_managed = "VariantUtils.ConvertToBool(%0)";
+	itype.cs_managed_to_variant = "VariantUtils.CreateFromBool(%0)";
 	builtin_types.insert(itype.cname, itype);
 
 	// Integer types
 	{
 		// C interface for 'uint32_t' is the same as that of enums. Remember to apply
 		// any of the changes done here to 'TypeInterface::postsetup_enum_type' as well.
-#define INSERT_INT_TYPE(m_name)                                                                \
+#define INSERT_INT_TYPE(m_name, m_int_struct_name)                                             \
 	{                                                                                          \
 		itype = TypeInterface::create_value_type(String(m_name));                              \
 		if (itype.name != "long" && itype.name != "ulong") {                                   \
@@ -3210,22 +3222,24 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 		itype.c_type_in = itype.name;                                                          \
 		itype.c_type_out = itype.name;                                                         \
 		itype.c_in_vararg = "%5using godot_variant %1_in = VariantUtils.CreateFromInt(%1);\n"; \
+		itype.cs_variant_to_managed = "VariantUtils.ConvertTo" m_int_struct_name "(%0)";       \
+		itype.cs_managed_to_variant = "VariantUtils.CreateFromInt(%0)";                        \
 		builtin_types.insert(itype.cname, itype);                                              \
 	}
 
 		// The expected type for all integers in ptrcall is 'int64_t', so that's what we use for 'c_type'
 
-		INSERT_INT_TYPE("sbyte");
-		INSERT_INT_TYPE("short");
-		INSERT_INT_TYPE("int");
-		INSERT_INT_TYPE("long");
-		INSERT_INT_TYPE("byte");
-		INSERT_INT_TYPE("ushort");
-		INSERT_INT_TYPE("uint");
-		INSERT_INT_TYPE("ulong");
-	}
+		INSERT_INT_TYPE("sbyte", "Int8");
+		INSERT_INT_TYPE("short", "Int16");
+		INSERT_INT_TYPE("int", "Int32");
+		INSERT_INT_TYPE("long", "Int64");
+		INSERT_INT_TYPE("byte", "UInt8");
+		INSERT_INT_TYPE("ushort", "UInt16");
+		INSERT_INT_TYPE("uint", "UInt32");
+		INSERT_INT_TYPE("ulong", "UInt64");
 
 #undef INSERT_INT_TYPE
+	}
 
 	// Floating point types
 	{
@@ -3245,6 +3259,8 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 		itype.c_type_in = itype.proxy_name;
 		itype.c_type_out = itype.proxy_name;
 		itype.c_in_vararg = "%5using godot_variant %1_in = VariantUtils.CreateFromFloat(%1);\n";
+		itype.cs_variant_to_managed = "VariantUtils.ConvertToFloat32(%0)";
+		itype.cs_managed_to_variant = "VariantUtils.CreateFromFloat(%0)";
 		builtin_types.insert(itype.cname, itype);
 
 		// double
@@ -3258,6 +3274,8 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 		itype.c_type_in = itype.proxy_name;
 		itype.c_type_out = itype.proxy_name;
 		itype.c_in_vararg = "%5using godot_variant %1_in = VariantUtils.CreateFromFloat(%1);\n";
+		itype.cs_variant_to_managed = "VariantUtils.ConvertToFloat64(%0)";
+		itype.cs_managed_to_variant = "VariantUtils.CreateFromFloat(%0)";
 		builtin_types.insert(itype.cname, itype);
 	}
 
@@ -3274,7 +3292,9 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.c_type_in = itype.cs_type;
 	itype.c_type_out = itype.cs_type;
 	itype.c_type_is_disposable_struct = true;
-	itype.c_in_vararg = "%5using godot_variant %1_in = VariantUtils.CreateFromStringTakingOwnershipOfDisposableValue(" C_METHOD_MONOSTR_TO_GODOT "(%1));\n";
+	itype.c_in_vararg = "%5using godot_variant %1_in = VariantUtils.CreateFromString(%1);\n";
+	itype.cs_variant_to_managed = "VariantUtils.ConvertToStringObject(%0)";
+	itype.cs_managed_to_variant = "VariantUtils.CreateFromString(%0)";
 	builtin_types.insert(itype.cname, itype);
 
 	// StringName
@@ -3291,6 +3311,8 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.c_type_in = itype.c_type;
 	itype.c_type_out = itype.cs_type;
 	itype.c_in_vararg = "%5using godot_variant %1_in = VariantUtils.CreateFromStringName(%1);\n";
+	itype.cs_variant_to_managed = "VariantUtils.ConvertToStringNameObject(%0)";
+	itype.cs_managed_to_variant = "VariantUtils.CreateFromStringName(%0)";
 	builtin_types.insert(itype.cname, itype);
 
 	// NodePath
@@ -3306,6 +3328,8 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.c_type = "godot_node_path";
 	itype.c_type_in = itype.c_type;
 	itype.c_type_out = itype.cs_type;
+	itype.cs_variant_to_managed = "VariantUtils.ConvertToNodePathObject(%0)";
+	itype.cs_managed_to_variant = "VariantUtils.CreateFromNodePath(%0)";
 	builtin_types.insert(itype.cname, itype);
 
 	// RID
@@ -3318,6 +3342,8 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.c_type = itype.cs_type;
 	itype.c_type_in = itype.c_type;
 	itype.c_type_out = itype.c_type;
+	itype.cs_variant_to_managed = "VariantUtils.ConvertToRID(%0)";
+	itype.cs_managed_to_variant = "VariantUtils.CreateFromRID(%0)";
 	builtin_types.insert(itype.cname, itype);
 
 	// Variant
@@ -3333,18 +3359,22 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.c_type_in = itype.cs_type;
 	itype.c_type_out = itype.cs_type;
 	itype.c_type_is_disposable_struct = true;
+	itype.cs_variant_to_managed = C_METHOD_MANAGED_FROM_VARIANT "(%0)";
+	itype.cs_managed_to_variant = C_METHOD_MANAGED_TO_VARIANT "(%0)";
 	builtin_types.insert(itype.cname, itype);
 
 	// Callable
 	itype = TypeInterface::create_value_type(String("Callable"));
-	itype.cs_in_expr = "ref %0";
-	itype.c_in = "%5using %0 %1_in = " C_METHOD_MANAGED_TO_CALLABLE "(ref %1);\n";
+	itype.cs_in_expr = "%0";
+	itype.c_in = "%5using %0 %1_in = " C_METHOD_MANAGED_TO_CALLABLE "(in %1);\n";
 	itype.c_out = "%5return " C_METHOD_MANAGED_FROM_CALLABLE "(in %1);\n";
 	itype.c_arg_in = "&%s_in";
 	itype.c_type = "godot_callable";
-	itype.c_type_in = "ref " + itype.cs_type;
+	itype.c_type_in = "in " + itype.cs_type;
 	itype.c_type_out = itype.cs_type;
 	itype.c_type_is_disposable_struct = true;
+	itype.cs_variant_to_managed = "VariantUtils.ConvertToCallableManaged(%0)";
+	itype.cs_managed_to_variant = "VariantUtils.CreateFromCallable(%0)";
 	builtin_types.insert(itype.cname, itype);
 
 	// Signal
@@ -3353,14 +3383,16 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.cname = itype.name;
 	itype.proxy_name = "SignalInfo";
 	itype.cs_type = itype.proxy_name;
-	itype.cs_in_expr = "ref %0";
-	itype.c_in = "%5using %0 %1_in = " C_METHOD_MANAGED_TO_SIGNAL "(ref %1);\n";
+	itype.cs_in_expr = "%0";
+	itype.c_in = "%5using %0 %1_in = " C_METHOD_MANAGED_TO_SIGNAL "(in %1);\n";
 	itype.c_out = "%5return " C_METHOD_MANAGED_FROM_SIGNAL "(&%1);\n";
 	itype.c_arg_in = "&%s_in";
 	itype.c_type = "godot_signal";
-	itype.c_type_in = "ref " + itype.cs_type;
+	itype.c_type_in = "in " + itype.cs_type;
 	itype.c_type_out = itype.cs_type;
 	itype.c_type_is_disposable_struct = true;
+	itype.cs_variant_to_managed = "VariantUtils.ConvertToSignalInfo(%0)";
+	itype.cs_managed_to_variant = "VariantUtils.CreateFromSignalInfo(%0)";
 	builtin_types.insert(itype.cname, itype);
 
 	// VarArg (fictitious type to represent variable arguments)
@@ -3374,6 +3406,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	// c_out and c_type_out are not applicable to VarArg.
 	itype.c_arg_in = "&%s_in";
 	itype.c_type_in = "object[]";
+	itype.cs_variant_to_managed = "VariantUtils.ConvertToSystemArray(%0)";
 	builtin_types.insert(itype.cname, itype);
 
 #define INSERT_ARRAY_FULL(m_name, m_type, m_managed_type, m_proxy_t)                \
@@ -3390,6 +3423,8 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 		itype.c_type_in = itype.proxy_name;                                         \
 		itype.c_type_out = itype.proxy_name;                                        \
 		itype.c_type_is_disposable_struct = true;                                   \
+		itype.cs_variant_to_managed = "VariantUtils.ConvertAs%2ToSystemArray(%0)";  \
+		itype.cs_managed_to_variant = "VariantUtils.CreateFrom%2(%0)";              \
 		builtin_types.insert(itype.name, itype);                                    \
 	}
 
@@ -3422,6 +3457,8 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.c_type = "godot_array";
 	itype.c_type_in = itype.c_type;
 	itype.c_type_out = itype.cs_type;
+	itype.cs_variant_to_managed = "VariantUtils.ConvertToArrayObject(%0)";
+	itype.cs_managed_to_variant = "VariantUtils.CreateFromArray(%0)";
 	builtin_types.insert(itype.cname, itype);
 
 	// Dictionary
@@ -3436,6 +3473,8 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.c_type = "godot_dictionary";
 	itype.c_type_in = itype.c_type;
 	itype.c_type_out = itype.cs_type;
+	itype.cs_variant_to_managed = "VariantUtils.ConvertToDictionaryObject(%0)";
+	itype.cs_managed_to_variant = "VariantUtils.CreateFromDictionary(%0)";
 	builtin_types.insert(itype.cname, itype);
 
 	// void (fictitious type to represent the return type of methods that do not return anything)
@@ -3500,6 +3539,8 @@ void BindingsGenerator::_populate_global_constants() {
 			enum_itype.cname = ienum.cname;
 			enum_itype.proxy_name = enum_itype.name;
 			TypeInterface::postsetup_enum_type(enum_itype);
+			enum_itype.cs_variant_to_managed = "(%1)VariantUtils.ConvertToInt32(%0)";
+			enum_itype.cs_managed_to_variant = "VariantUtils.CreateFromInt((int)%0)";
 			enum_types.insert(enum_itype.cname, enum_itype);
 
 			int prefix_length = _determine_enum_prefix(ienum);
@@ -3532,6 +3573,8 @@ void BindingsGenerator::_populate_global_constants() {
 		enum_itype.cname = enum_cname;
 		enum_itype.proxy_name = enum_itype.name;
 		TypeInterface::postsetup_enum_type(enum_itype);
+		enum_itype.cs_variant_to_managed = "(%1)VariantUtils.ConvertToInt32(%0)";
+		enum_itype.cs_managed_to_variant = "VariantUtils.CreateFromInt((int)%0)";
 		enum_types.insert(enum_itype.cname, enum_itype);
 	}
 }

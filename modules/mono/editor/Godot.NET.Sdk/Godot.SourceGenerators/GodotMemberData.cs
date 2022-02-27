@@ -6,18 +6,20 @@ namespace Godot.SourceGenerators
     public struct GodotMethodData
     {
         public GodotMethodData(IMethodSymbol method, ImmutableArray<MarshalType> paramTypes,
-            ImmutableArray<ITypeSymbol> paramTypeSymbols, MarshalType? retType)
+            ImmutableArray<ITypeSymbol> paramTypeSymbols, MarshalType? retType, ITypeSymbol? retSymbol)
         {
             Method = method;
             ParamTypes = paramTypes;
             ParamTypeSymbols = paramTypeSymbols;
             RetType = retType;
+            RetSymbol = retSymbol;
         }
 
         public IMethodSymbol Method { get; }
         public ImmutableArray<MarshalType> ParamTypes { get; }
         public ImmutableArray<ITypeSymbol> ParamTypeSymbols { get; }
         public MarshalType? RetType { get; }
+        public ITypeSymbol? RetSymbol { get; }
     }
 
     public struct GodotPropertyData

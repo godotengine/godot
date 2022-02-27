@@ -150,7 +150,7 @@ namespace Godot.SourceGenerators
 
             if (godotClassProperties.Length > 0 || godotClassFields.Length > 0)
             {
-                string dictionaryType = "System.Collections.Generic.List<Godot.Bridge.PropertyInfo>";
+                string dictionaryType = "System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>";
 
                 source.Append("    internal static ")
                     .Append(dictionaryType)
@@ -210,7 +210,7 @@ namespace Godot.SourceGenerators
 
         private static void AppendPropertyInfo(StringBuilder source, PropertyInfo propertyInfo)
         {
-            source.Append("        properties.Add(new Godot.Bridge.PropertyInfo(type: (Godot.Variant.Type)")
+            source.Append("        properties.Add(new(type: (Godot.Variant.Type)")
                 .Append((int)propertyInfo.Type)
                 .Append(", name: GodotInternal.PropName_")
                 .Append(propertyInfo.Name)
