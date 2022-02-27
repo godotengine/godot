@@ -4696,6 +4696,8 @@ Dictionary SpatialEditor::get_state() const {
 	d["viewports"] = vpdata;
 
 	d["show_grid"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_GRID));
+    d["show_grid_xy"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_GRID_XY));
+    d["show_grid_yz"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_GRID_YZ));
 	d["show_origin"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN));
 	d["fov"] = get_fov();
 	d["znear"] = get_znear();
@@ -5094,21 +5096,17 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(p_option), origin_enabled);
 		} break;
 		case MENU_VIEW_GRID: {
-			bool is_checked = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(p_option));
-
-			grid_enabled = !is_checked;
-
-			for (int i = 0; i < 3; ++i) {
-				if (grid_enable[i]) {
-					grid_visible[i] = grid_enabled;
-				}
-			}
-			_finish_grid();
-			_init_grid();
-
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(p_option), grid_enabled);
-
+			
+            _toggle_view_grid_plane_options(p_option, grid_enabled);
 		} break;
+        case MENU_VIEW_GRID_XY: {
+            
+            _toggle_view_grid_plane_options(p_option, grid_enable[0], "editors/3d/grid_xy_plane");
+        } break;
+        case MENU_VIEW_GRID_YZ: {
+            
+            _toggle_view_grid_plane_options(p_option, grid_enable[1], "editors/3d/grid_yz_plane");
+        } break;
 		case MENU_VIEW_PORTAL_CULLING: {
 			bool is_checked = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(p_option));
 			RoomManager::static_rooms_set_active(!is_checked);
@@ -5751,6 +5749,22 @@ void SpatialEditor::_update_gizmos_menu_theme() {
 				break;
 		}
 	}
+}
+
+void SpatialEditor::_toggle_view_grid_plane_options(int p_option, bool &p_grid_plane_option, String p_editor_path) {
+    bool is_checked = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(p_option));
+
+    p_grid_plane_option = !is_checked;
+    if (p_editor_path.length()) EditorSettings::get_singleton()->set(p_editor_path, p_grid_plane_option);
+    for (int i = 0; i < 3; ++i) {
+        if (grid_enable[i]) {
+            grid_visible[i] = grid_enable[i];
+        }
+    }
+    _finish_grid();
+    _init_grid();
+
+    view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(p_option), p_grid_plane_option);
 }
 
 void SpatialEditor::_init_grid() {
@@ -6619,6 +6633,8 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	p->add_separator();
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_origin", TTR("View Origin")), MENU_VIEW_ORIGIN);
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_grid", TTR("View Grid"), KEY_MASK_CMD + KEY_G), MENU_VIEW_GRID);
+    p->add_check_shortcut(ED_SHORTCUT("editors/3d/grid_xy_plane", TTR("Grid Xy Plane"), KEY_MASK_CMD + KEY_BRACKETLEFT), MENU_VIEW_GRID_XY);
+	p->add_check_shortcut(ED_SHORTCUT("editors/3d/grid_yz_plane", TTR("Grid Yz Plane"), KEY_MASK_CMD + KEY_BRACKETRIGHT), MENU_VIEW_GRID_YZ);
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_portal_culling", TTR("View Portal Culling"), KEY_MASK_ALT | KEY_P), MENU_VIEW_PORTAL_CULLING);
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_occlusion_culling", TTR("View Occlusion Culling")), MENU_VIEW_OCCLUSION_CULLING);
 

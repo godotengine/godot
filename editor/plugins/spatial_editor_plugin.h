@@ -652,6 +652,8 @@ private:
 		MENU_VIEW_USE_4_VIEWPORTS,
 		MENU_VIEW_ORIGIN,
 		MENU_VIEW_GRID,
+        MENU_VIEW_GRID_XY,
+        MENU_VIEW_GRID_YZ,
 		MENU_VIEW_PORTAL_CULLING,
 		MENU_VIEW_OCCLUSION_CULLING,
 		MENU_VIEW_GIZMOS_3D_ICONS,
@@ -717,6 +719,7 @@ private:
 	void _update_context_menu_stylebox();
 	void _update_gizmos_menu();
 	void _update_gizmos_menu_theme();
+    void _toggle_view_grid_plane_options(int p_option, bool &p_grid_plane_option, String p_editor_path ="");
 	void _init_grid();
 	void _finish_indicators();
 	void _finish_grid();
