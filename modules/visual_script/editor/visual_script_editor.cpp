@@ -3536,6 +3536,16 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 		print_error("Category not handled: " + p_category.quote());
 	}
 
+	int new_id = script->get_available_id();
+	undo_redo->create_action(TTR("Add Node"));
+	undo_redo->add_do_method(script.ptr(), "add_node", new_id, vnode, pos);
+	undo_redo->add_undo_method(script.ptr(), "remove_node", new_id);
+	undo_redo->add_do_method(this, "_update_graph", new_id);
+	undo_redo->add_undo_method(this, "_update_graph", new_id);
+	undo_redo->commit_action();
+
+	port_action_new_node = new_id;
+
 	if (Object::cast_to<VisualScriptFunctionCall>(vnode.ptr()) && p_category != "Class" && p_category != "VisualScriptNode") {
 		Vector<String> property_path = p_text.split(":");
 		String class_of_method = property_path[0];
@@ -3640,16 +3650,6 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 		print_error("Not able to create node from category: \"" + p_category + "\" and text \"" + p_text + "\" Not created");
 		return;
 	}
-
-	int new_id = script->get_available_id();
-	undo_redo->create_action(TTR("Add Node"));
-	undo_redo->add_do_method(script.ptr(), "add_node", new_id, vnode, pos);
-	undo_redo->add_undo_method(script.ptr(), "remove_node", new_id);
-	undo_redo->add_do_method(this, "_update_graph", new_id);
-	undo_redo->add_undo_method(this, "_update_graph", new_id);
-	undo_redo->commit_action();
-
-	port_action_new_node = new_id;
 
 	String base_script = "";
 	String base_type = "";
