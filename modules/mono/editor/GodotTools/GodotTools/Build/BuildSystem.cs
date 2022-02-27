@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -42,9 +41,9 @@ namespace GodotTools.Build
             var process = new Process { StartInfo = startInfo };
 
             if (stdOutHandler != null)
-                process.OutputDataReceived += (s, e) => stdOutHandler.Invoke(e.Data);
+                process.OutputDataReceived += (_, e) => stdOutHandler.Invoke(e.Data);
             if (stdErrHandler != null)
-                process.ErrorDataReceived += (s, e) => stdErrHandler.Invoke(e.Data);
+                process.ErrorDataReceived += (_, e) => stdErrHandler.Invoke(e.Data);
 
             process.Start();
 
@@ -102,9 +101,9 @@ namespace GodotTools.Build
             var process = new Process { StartInfo = startInfo };
 
             if (stdOutHandler != null)
-                process.OutputDataReceived += (s, e) => stdOutHandler.Invoke(e.Data);
+                process.OutputDataReceived += (_, e) => stdOutHandler.Invoke(e.Data);
             if (stdErrHandler != null)
-                process.ErrorDataReceived += (s, e) => stdErrHandler.Invoke(e.Data);
+                process.ErrorDataReceived += (_, e) => stdErrHandler.Invoke(e.Data);
 
             process.Start();
 

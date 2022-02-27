@@ -99,9 +99,6 @@ namespace GodotTools.Internals
         private static extern void godot_icall_Internal_FullExportTemplatesDir(out godot_string dest);
 
         [DllImport(GodotDllName)]
-        private static extern void godot_icall_Internal_SimplifyGodotPath(in godot_string path, out godot_string dest);
-
-        [DllImport(GodotDllName)]
         private static extern bool godot_icall_Internal_IsMacOSAppBundleInstalled(in godot_string bundleId);
 
         [DllImport(GodotDllName)]

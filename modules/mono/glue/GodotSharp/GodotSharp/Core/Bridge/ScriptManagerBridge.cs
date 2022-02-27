@@ -706,11 +706,7 @@ namespace Godot.Bridge
                 }
                 else
                 {
-#if NET6_0_OR_GREATER
-                    interopProperties = ((godotsharp_property_info*)NativeMemory.Alloc(length))!;
-#else
-                    interopProperties = ((godotsharp_property_info*)Marshal.AllocHGlobal(length))!;
-#endif
+                    interopProperties = ((godotsharp_property_info*)NativeMemory.Alloc((nuint)length))!;
                 }
 
                 try
@@ -746,13 +742,7 @@ namespace Godot.Bridge
                         interopProperties[i].Dispose();
 
                     if (!useStack)
-                    {
-#if NET6_0_OR_GREATER
                         NativeMemory.Free(interopProperties);
-#else
-                        Marshal.FreeHGlobal((IntPtr)interopProperties);
-#endif
-                    }
                 }
             }
             catch (Exception e)
@@ -836,11 +826,7 @@ namespace Godot.Bridge
                 }
                 else
                 {
-#if NET6_0_OR_GREATER
-                    interopDefaultValues = ((godotsharp_property_def_val_pair*)NativeMemory.Alloc(length))!;
-#else
-                    interopDefaultValues = ((godotsharp_property_def_val_pair*)Marshal.AllocHGlobal(length))!;
-#endif
+                    interopDefaultValues = ((godotsharp_property_def_val_pair*)NativeMemory.Alloc((nuint)length))!;
                 }
 
                 try
@@ -871,13 +857,7 @@ namespace Godot.Bridge
                         interopDefaultValues[i].Dispose();
 
                     if (!useStack)
-                    {
-#if NET6_0_OR_GREATER
                         NativeMemory.Free(interopDefaultValues);
-#else
-                        Marshal.FreeHGlobal((IntPtr)interopDefaultValues);
-#endif
-                    }
                 }
             }
             catch (Exception e)

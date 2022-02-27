@@ -1603,7 +1603,7 @@ namespace Godot
         /// <seealso cref="XMLUnescape(string)"/>
         /// <param name="instance">The string to escape.</param>
         /// <returns>The escaped string.</returns>
-        public static string? XMLEscape(this string instance)
+        public static string XMLEscape(this string instance)
         {
             return SecurityElement.Escape(instance);
         }

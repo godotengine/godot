@@ -105,7 +105,7 @@ jobs:
         uses: actions/setup-dotnet@v1
         if: ${{ matrix.build-mono }}
         with:
-          dotnet-version: '5.0.x'
+          dotnet-version: '6.0.x'
 
       - name: Compilation
         uses: ./.github/actions/godot-build

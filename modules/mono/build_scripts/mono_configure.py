@@ -77,7 +77,7 @@ def configure(env, env_mono):
 
 
 def find_dotnet_app_host_dir(env):
-    dotnet_version = "5.0"
+    dotnet_version = "6.0"
 
     dotnet_root = env["dotnet_root"]
 
