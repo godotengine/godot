@@ -772,8 +772,7 @@ private:
 		float camera_z_far;
 
 		uint32_t orthogonal;
-		uint32_t filter;
-		uint32_t pad[2];
+		uint32_t pad[3];
 	};
 
 	struct ScreenSpaceReflectionScale {

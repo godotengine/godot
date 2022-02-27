@@ -607,7 +607,6 @@ void EffectsRD::screen_space_reflection(RID p_diffuse, RID p_normal_roughness, R
 		ssr_scale.push_constant.camera_z_far = p_camera.get_z_far();
 		ssr_scale.push_constant.camera_z_near = p_camera.get_z_near();
 		ssr_scale.push_constant.orthogonal = p_camera.is_orthogonal();
-		ssr_scale.push_constant.filter = false; //enabling causes arctifacts
 		ssr_scale.push_constant.screen_size[0] = p_screen_size.x;
 		ssr_scale.push_constant.screen_size[1] = p_screen_size.y;
 
