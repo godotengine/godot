@@ -77,6 +77,9 @@
 		<member name="wheel_radius" type="float" setter="set_radius" getter="get_radius" default="0.5">
 			The radius of the wheel in meters.
 		</member>
+		<member name="wheel_width" type="float" setter="set_width" getter="get_width" default="0.3">
+			The width of the wheel in meters.
+		</member>
 		<member name="wheel_rest_length" type="float" setter="set_suspension_rest_length" getter="get_suspension_rest_length" default="0.15">
 			This is the distance in meters the wheel is lowered from its origin point. Don't set this to 0.0 and move the wheel into position, instead move the origin point of your wheel (the gizmo in Godot) to the position the wheel will take when bottoming out, then use the rest length to move the wheel down to the position it should be in when the car is in rest.
 		</member>
