@@ -42,7 +42,8 @@ namespace Godot.NativeInterop
         internal static extern void godotsharp_internal_object_disposed(IntPtr ptr, IntPtr gcHandleToFree);
 
         [DllImport(GodotDllName)]
-        internal static extern void godotsharp_internal_refcounted_disposed(IntPtr ptr, IntPtr gcHandleToFree, godot_bool isFinalizer);
+        internal static extern void godotsharp_internal_refcounted_disposed(IntPtr ptr, IntPtr gcHandleToFree,
+            godot_bool isFinalizer);
 
         [DllImport(GodotDllName)]
         internal static extern void godotsharp_internal_object_connect_event_signal(IntPtr obj,
@@ -59,7 +60,7 @@ namespace Godot.NativeInterop
 
         [DllImport(GodotDllName)]
         internal static extern void godotsharp_internal_tie_user_managed_to_unmanaged(IntPtr gcHandleIntPtr,
-            IntPtr unmanaged, IntPtr scriptPtr, godot_bool refCounted);
+            IntPtr unmanaged, godot_ref* scriptPtr, godot_bool refCounted);
 
         [DllImport(GodotDllName)]
         internal static extern void godotsharp_internal_tie_managed_to_unmanaged_with_pre_setup(
@@ -77,7 +78,10 @@ namespace Godot.NativeInterop
             IntPtr oldGCHandlePtr);
 
         [DllImport(GodotDllName)]
-        internal static extern IntPtr godotsharp_internal_new_csharp_script();
+        internal static extern void godotsharp_internal_new_csharp_script(godot_ref* r_script);
+
+        [DllImport(GodotDllName)]
+        internal static extern void godotsharp_internal_reload_registered_script(IntPtr scriptPtr);
 
         [DllImport(GodotDllName)]
         internal static extern void godotsharp_array_filter_godot_objects_by_native(in godot_string_name p_native_name,
@@ -86,6 +90,9 @@ namespace Godot.NativeInterop
         [DllImport(GodotDllName)]
         internal static extern void godotsharp_array_filter_godot_objects_by_non_native(in godot_array p_input,
             out godot_array r_output);
+
+        [DllImport(GodotDllName)]
+        public static extern void godotsharp_ref_new_from_ref_counted_ptr(out godot_ref r_dest, IntPtr p_ref_counted_ptr);
 
         [DllImport(GodotDllName)]
         public static extern void godotsharp_ref_destroy(ref godot_ref p_instance);

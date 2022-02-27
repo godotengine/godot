@@ -21,6 +21,7 @@ namespace Godot.Bridge
         public delegate* unmanaged<IntPtr, godot_string*, godot_bool> ScriptManagerBridge_HasScriptSignal;
         public delegate* unmanaged<IntPtr, IntPtr, godot_bool> ScriptManagerBridge_ScriptIsOrInherits;
         public delegate* unmanaged<IntPtr, godot_string*, godot_bool> ScriptManagerBridge_AddScriptBridge;
+        public delegate* unmanaged<godot_string*, godot_ref*, void> ScriptManagerBridge_GetOrCreateScriptBridgeForPath;
         public delegate* unmanaged<IntPtr, void> ScriptManagerBridge_RemoveScriptBridge;
         public delegate* unmanaged<IntPtr, godot_bool*, godot_dictionary*, void> ScriptManagerBridge_UpdateScriptClassInfo;
         public delegate* unmanaged<IntPtr, IntPtr*, godot_bool, godot_bool> ScriptManagerBridge_SwapGCHandleForType;
@@ -56,6 +57,7 @@ namespace Godot.Bridge
                 ScriptManagerBridge_HasScriptSignal = &ScriptManagerBridge.HasScriptSignal,
                 ScriptManagerBridge_ScriptIsOrInherits = &ScriptManagerBridge.ScriptIsOrInherits,
                 ScriptManagerBridge_AddScriptBridge = &ScriptManagerBridge.AddScriptBridge,
+                ScriptManagerBridge_GetOrCreateScriptBridgeForPath = &ScriptManagerBridge.GetOrCreateScriptBridgeForPath,
                 ScriptManagerBridge_RemoveScriptBridge = &ScriptManagerBridge.RemoveScriptBridge,
                 ScriptManagerBridge_UpdateScriptClassInfo = &ScriptManagerBridge.UpdateScriptClassInfo,
                 ScriptManagerBridge_SwapGCHandleForType = &ScriptManagerBridge.SwapGCHandleForType,

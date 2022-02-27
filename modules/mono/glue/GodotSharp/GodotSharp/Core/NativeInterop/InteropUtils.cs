@@ -60,13 +60,17 @@ namespace Godot.NativeInterop
             }
             else
             {
-                IntPtr scriptPtr = NativeFuncs.godotsharp_internal_new_csharp_script();
+                unsafe
+                {
+                    // We don't dispose `script` ourselves here.
+                    // `tie_user_managed_to_unmanaged` does it for us to avoid another P/Invoke call.
+                    godot_ref script;
+                    ScriptManagerBridge.GetOrCreateScriptBridgeForType(type, &script);
 
-                ScriptManagerBridge.AddScriptBridgeWithType(scriptPtr, type);
-
-                // IMPORTANT: This must be called after AddScriptWithTypeBridge
-                NativeFuncs.godotsharp_internal_tie_user_managed_to_unmanaged(
-                    GCHandle.ToIntPtr(gcHandle), unmanaged, scriptPtr, refCounted.ToGodotBool());
+                    // IMPORTANT: This must be called after GetOrCreateScriptBridgeForType
+                    NativeFuncs.godotsharp_internal_tie_user_managed_to_unmanaged(
+                        GCHandle.ToIntPtr(gcHandle), unmanaged, &script, refCounted.ToGodotBool());
+                }
             }
         }
 
