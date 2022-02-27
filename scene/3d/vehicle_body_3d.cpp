@@ -391,9 +391,7 @@ void VehicleBody3D::_update_wheel(int p_idx, PhysicsDirectBodyState3D *s) {
 			right[0], up[0], wheel.m_wheelFwd[0],
 			right[1], up[1], wheel.m_wheelFwd[1],
 			right[2], up[2], wheel.m_wheelFwd[2]);
-	
 	wheel.m_wheelFwd.rotate(up, wheel.m_steering);
-
 	wheel.m_worldTransform.set_basis(steeringMat * rotatingMat * basis2);
 	//wheel.m_worldTransform.set_basis(basis2 * (steeringMat * rotatingMat));
 	wheel.m_worldTransform.set_origin(
@@ -413,10 +411,18 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 
 	PhysicsDirectSpaceState3D::RayResult  collision_ray_result;
 
-	// loop through casts, then we choose the one that affects the suspension the most. 
+// loop through casts, then we choose the one that affects the suspension the most.
 	for(int i = 0; i < N_CASTS; i++)
 	{
-		for(int j = -1; j < 2; j++)
+		int _start = -1;
+		int _end = 2;
+		if(wheel.m_wheelWidth == 0)
+		{
+			_start = 0;
+			_end = 1;
+		}
+		
+		for(int j = _start; j < _end; j++)
 		{
 			real_t x_val = -(wheel.m_wheelRadius) + i * ((wheel.m_wheelRadius) / ((N_CASTS -1 )/2));
 			real_t y_val = sqrtf(powf(wheel.m_wheelRadius, 2) - powf(x_val, 2));
@@ -506,9 +512,7 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 	}
 	else{
 		wheel.m_raycastInfo.m_isInContact = false;
-		
 		wheel.m_raycastInfo.m_contactPointWS = wheel.m_raycastInfo.m_hardPointWS + wheel.m_raycastInfo.m_wheelDirectionWS * (wheel.m_suspensionRestLength + wheel.m_wheelRadius);
-
 		//put wheel info as in rest position
 		wheel.m_raycastInfo.m_suspensionLength = wheel.m_suspensionRestLength;
 		wheel.m_suspensionRelativeVelocity = real_t(0.0);
