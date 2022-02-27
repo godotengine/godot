@@ -134,7 +134,16 @@ namespace GodotTools.Export
                 throw new Exception("Failed to build project");
             }
 
-            if (!File.Exists(Path.Combine(publishOutputTempDir, $"{GodotSharpEditor.ProjectAssemblyName}.dll")))
+            string soExt = ridOS switch
+            {
+                OS.DotNetOS.Win or OS.DotNetOS.Win10 => "dll",
+                OS.DotNetOS.OSX or OS.DotNetOS.iOS => "dylib",
+                _ => "so"
+            };
+
+            if (!File.Exists(Path.Combine(publishOutputTempDir, $"{GodotSharpEditor.ProjectAssemblyName}.dll"))
+                // NativeAOT shared library output
+                && !File.Exists(Path.Combine(publishOutputTempDir, $"{GodotSharpEditor.ProjectAssemblyName}.{soExt}")))
             {
                 throw new NotSupportedException(
                     "Publish succeeded but project assembly not found in the output directory");

@@ -61,6 +61,7 @@ class GDMono {
 	bool finalizing_scripts_domain;
 
 	void *hostfxr_dll_handle = nullptr;
+	bool is_native_aot = false;
 
 #ifdef TOOLS_ENABLED
 	bool _load_project_assembly();

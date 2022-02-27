@@ -44,7 +44,7 @@ namespace GodotTools.Utils
             public const string HTML5 = "javascript";
         }
 
-        private static class DotNetOS
+        public static class DotNetOS
         {
             public const string Win = "win";
             public const string OSX = "osx";
