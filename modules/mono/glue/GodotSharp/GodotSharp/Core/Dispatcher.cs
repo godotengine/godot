@@ -8,18 +8,8 @@ namespace Godot
     {
         internal static GodotTaskScheduler DefaultGodotTaskScheduler;
 
-        [UnmanagedCallersOnly]
         internal static void InitializeDefaultGodotTaskScheduler()
-        {
-            try
-            {
-                DefaultGodotTaskScheduler = new GodotTaskScheduler();
-            }
-            catch (Exception e)
-            {
-                ExceptionUtils.DebugUnhandledException(e);
-            }
-        }
+            => DefaultGodotTaskScheduler = new GodotTaskScheduler();
 
         public static GodotSynchronizationContext SynchronizationContext => DefaultGodotTaskScheduler.Context;
     }

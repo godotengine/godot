@@ -39,7 +39,7 @@ namespace Godot.Bridge
             }
             catch (Exception e)
             {
-                ExceptionUtils.DebugPrintUnhandledException(e);
+                ExceptionUtils.LogException(e);
                 *ret = default;
                 return false.ToGodotBool();
             }
@@ -69,7 +69,7 @@ namespace Godot.Bridge
             }
             catch (Exception e)
             {
-                ExceptionUtils.DebugPrintUnhandledException(e);
+                ExceptionUtils.LogException(e);
                 return false.ToGodotBool();
             }
         }
@@ -107,7 +107,7 @@ namespace Godot.Bridge
             }
             catch (Exception e)
             {
-                ExceptionUtils.DebugPrintUnhandledException(e);
+                ExceptionUtils.LogException(e);
                 *outRet = default;
                 return false.ToGodotBool();
             }
@@ -127,7 +127,7 @@ namespace Godot.Bridge
             }
             catch (Exception e)
             {
-                ExceptionUtils.DebugPrintUnhandledException(e);
+                ExceptionUtils.LogException(e);
             }
         }
 
@@ -159,7 +159,7 @@ namespace Godot.Bridge
             }
             catch (Exception e)
             {
-                ExceptionUtils.DebugPrintUnhandledException(e);
+                ExceptionUtils.LogException(e);
                 *outRes = default;
                 *outValid = false.ToGodotBool();
             }
@@ -179,7 +179,7 @@ namespace Godot.Bridge
             }
             catch (Exception e)
             {
-                ExceptionUtils.DebugPrintUnhandledException(e);
+                ExceptionUtils.LogException(e);
                 return false.ToGodotBool();
             }
         }

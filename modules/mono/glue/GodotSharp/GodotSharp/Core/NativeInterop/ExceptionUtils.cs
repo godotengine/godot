@@ -1,4 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text;
+
+#nullable enable
 
 namespace Godot.NativeInterop
 {
@@ -11,20 +16,101 @@ namespace Godot.NativeInterop
 
         private static void OnExceptionLoggerException(Exception loggerException, Exception exceptionToLog)
         {
-            // This better not throw
-            PushError("Exception thrown when trying to log another exception...");
-            PushError("Exception:");
-            PushError(exceptionToLog.ToString());
-            PushError("Logger exception:");
-            PushError(loggerException.ToString());
+            try
+            {
+                // This better not throw
+                PushError(string.Concat("Exception thrown while trying to log another exception...",
+                    "\n### Exception ###\n", exceptionToLog.ToString(),
+                    "\n### Logger exception ###\n", loggerException.ToString()));
+            }
+            catch (Exception)
+            {
+                // Well, too bad...
+            }
         }
 
-        public static void DebugPrintUnhandledException(Exception e)
+        private record struct StackInfoTuple(string? File, string Func, int Line);
+
+        private static void CollectExceptionInfo(Exception exception, List<StackInfoTuple> globalFrames,
+            StringBuilder excMsg)
+        {
+            if (excMsg.Length > 0)
+                excMsg.Append(" ---> ");
+            excMsg.Append(exception.GetType().FullName);
+            excMsg.Append(": ");
+            excMsg.Append(exception.Message);
+
+            var innerExc = exception.InnerException;
+
+            if (innerExc != null)
+            {
+                CollectExceptionInfo(innerExc, globalFrames, excMsg);
+                globalFrames.Add(new("", "--- End of inner exception stack trace ---", 0));
+            }
+
+            var stackTrace = new StackTrace(exception, fNeedFileInfo: true);
+
+            foreach (StackFrame frame in stackTrace.GetFrames())
+            {
+                DebuggingUtils.GetStackFrameMethodDecl(frame, out string methodDecl);
+                globalFrames.Add(new(frame.GetFileName(), methodDecl, frame.GetFileLineNumber()));
+            }
+        }
+
+        private static void SendToScriptDebugger(Exception e)
+        {
+            var globalFrames = new List<StackInfoTuple>();
+
+            var excMsg = new StringBuilder();
+
+            CollectExceptionInfo(e, globalFrames, excMsg);
+
+            string file = globalFrames.Count > 0 ? globalFrames[0].File ?? "" : "";
+            string func = globalFrames.Count > 0 ? globalFrames[0].Func : "";
+            int line = globalFrames.Count > 0 ? globalFrames[0].Line : 0;
+            string errorMsg = "Exception";
+
+            using godot_string nFile = Marshaling.ConvertStringToNative(file);
+            using godot_string nFunc = Marshaling.ConvertStringToNative(func);
+            using godot_string nErrorMsg = Marshaling.ConvertStringToNative(errorMsg);
+            using godot_string nExcMsg = Marshaling.ConvertStringToNative(excMsg.ToString());
+
+            using DebuggingUtils.godot_stack_info_vector stackInfoVector = default;
+
+            stackInfoVector.Resize(globalFrames.Count);
+
+            unsafe
+            {
+                for (int i = 0; i < globalFrames.Count; i++)
+                {
+                    DebuggingUtils.godot_stack_info* stackInfo = &stackInfoVector.Elements[i];
+
+                    var globalFrame = globalFrames[i];
+
+                    // Assign directly to element in Vector. This way we don't need to worry
+                    // about disposal if an exception is thrown. The Vector takes care of it.
+                    stackInfo->File = Marshaling.ConvertStringToNative(globalFrame.File);
+                    stackInfo->Func = Marshaling.ConvertStringToNative(globalFrame.Func);
+                    stackInfo->Line = globalFrame.Line;
+                }
+
+                NativeFuncs.godotsharp_internal_script_debugger_send_error(nFunc, nFile, line,
+                    nErrorMsg, nExcMsg, p_warning: false.ToGodotBool(), stackInfoVector);
+            }
+        }
+
+        public static void LogException(Exception e)
         {
             try
             {
-                // TODO Not implemented (debug_print_unhandled_exception)
-                GD.PushError(e.ToString());
+                if (NativeFuncs.godotsharp_internal_script_debugger_is_active())
+                {
+                    SendToScriptDebugger(e);
+                }
+                else
+                {
+                    GD.PushError(e.ToString());
+                }
             }
             catch (Exception unexpected)
             {
@@ -32,38 +118,17 @@ namespace Godot.NativeInterop
             }
         }
 
-        public static void DebugSendUnhandledExceptionError(Exception e)
+        public static void LogUnhandledException(Exception e)
         {
             try
             {
-                // TODO Not implemented (debug_send_unhandled_exception_error)
-                GD.PushError(e.ToString());
-            }
-            catch (Exception unexpected)
-            {
-                OnExceptionLoggerException(unexpected, e);
-            }
-        }
+                if (NativeFuncs.godotsharp_internal_script_debugger_is_active())
+                {
+                    SendToScriptDebugger(e);
+                }
 
-        public static void DebugUnhandledException(Exception e)
-        {
-            try
-            {
-                // TODO Not implemented (debug_unhandled_exception)
-                GD.PushError(e.ToString());
-            }
-            catch (Exception unexpected)
-            {
-                OnExceptionLoggerException(unexpected, e);
-            }
-        }
-
-        public static void PrintUnhandledException(Exception e)
-        {
-            try
-            {
-                // TODO Not implemented (print_unhandled_exception)
-                GD.PushError(e.ToString());
+                // In this case, print it as well in addition to sending it to the script debugger
+                GD.PushError("Unhandled exception\n" + e);
             }
             catch (Exception unexpected)
             {

@@ -22,7 +22,7 @@ namespace Godot
             }
             catch (Exception e)
             {
-                ExceptionUtils.DebugUnhandledException(e);
+                ExceptionUtils.LogException(e);
                 return false.ToGodotBool();
             }
         }
@@ -58,7 +58,7 @@ namespace Godot
             }
             catch (Exception e)
             {
-                ExceptionUtils.DebugPrintUnhandledException(e);
+                ExceptionUtils.LogException(e);
                 *outRet = default;
             }
         }

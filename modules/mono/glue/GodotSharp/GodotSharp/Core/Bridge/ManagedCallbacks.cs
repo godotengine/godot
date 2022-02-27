@@ -34,9 +34,9 @@ namespace Godot.Bridge
         public delegate* unmanaged<IntPtr, godot_string*, godot_bool*, void> CSharpInstanceBridge_CallToString;
         public delegate* unmanaged<IntPtr, godot_string_name*, godot_bool> CSharpInstanceBridge_HasMethodUnknownParams;
         public delegate* unmanaged<IntPtr, void> GCHandleBridge_FreeGCHandle;
-        public delegate* unmanaged<void> DebuggingUtils_InstallTraceListener;
-        public delegate* unmanaged<void> Dispatcher_InitializeDefaultGodotTaskScheduler;
+        public delegate* unmanaged<void*, void> DebuggingUtils_GetCurrentStackInfo;
         public delegate* unmanaged<void> DisposablesTracker_OnGodotShuttingDown;
+        public delegate* unmanaged<godot_bool, void> GD_OnCoreApiAssemblyLoaded;
         // @formatter:on
 
         public static ManagedCallbacks Create()
@@ -70,9 +70,9 @@ namespace Godot.Bridge
                 CSharpInstanceBridge_CallToString = &CSharpInstanceBridge.CallToString,
                 CSharpInstanceBridge_HasMethodUnknownParams = &CSharpInstanceBridge.HasMethodUnknownParams,
                 GCHandleBridge_FreeGCHandle = &GCHandleBridge.FreeGCHandle,
-                DebuggingUtils_InstallTraceListener = &DebuggingUtils.InstallTraceListener,
-                Dispatcher_InitializeDefaultGodotTaskScheduler = &Dispatcher.InitializeDefaultGodotTaskScheduler,
+                DebuggingUtils_GetCurrentStackInfo = &DebuggingUtils.GetCurrentStackInfo,
                 DisposablesTracker_OnGodotShuttingDown = &DisposablesTracker.OnGodotShuttingDown,
+                GD_OnCoreApiAssemblyLoaded = &GD.OnCoreApiAssemblyLoaded,
                 // @formatter:on
             };
         }

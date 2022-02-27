@@ -35,6 +35,23 @@ namespace Godot.NativeInterop
         [DllImport(GodotDllName)]
         public static extern IntPtr godotsharp_engine_get_singleton(in godot_string p_name);
 
+
+        [DllImport(GodotDllName)]
+        internal static extern Error godotsharp_stack_info_vector_resize(
+            ref DebuggingUtils.godot_stack_info_vector p_stack_info_vector, int p_size);
+
+        [DllImport(GodotDllName)]
+        internal static extern void godotsharp_stack_info_vector_destroy(
+            ref DebuggingUtils.godot_stack_info_vector p_stack_info_vector);
+
+        [DllImport(GodotDllName)]
+        internal static extern void godotsharp_internal_script_debugger_send_error(in godot_string p_func,
+            in godot_string p_file, int p_line, in godot_string p_err, in godot_string p_descr,
+            godot_bool p_warning, in DebuggingUtils.godot_stack_info_vector p_stack_info_vector);
+
+        [DllImport(GodotDllName)]
+        internal static extern bool godotsharp_internal_script_debugger_is_active();
+
         [DllImport(GodotDllName)]
         internal static extern IntPtr godotsharp_internal_object_get_associated_gchandle(IntPtr ptr);
 
@@ -92,7 +109,8 @@ namespace Godot.NativeInterop
             out godot_array r_output);
 
         [DllImport(GodotDllName)]
-        public static extern void godotsharp_ref_new_from_ref_counted_ptr(out godot_ref r_dest, IntPtr p_ref_counted_ptr);
+        public static extern void godotsharp_ref_new_from_ref_counted_ptr(out godot_ref r_dest,
+            IntPtr p_ref_counted_ptr);
 
         [DllImport(GodotDllName)]
         public static extern void godotsharp_ref_destroy(ref godot_ref p_instance);

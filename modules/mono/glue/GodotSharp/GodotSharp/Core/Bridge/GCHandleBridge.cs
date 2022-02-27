@@ -15,7 +15,7 @@ namespace Godot.Bridge
             }
             catch (Exception e)
             {
-                ExceptionUtils.DebugPrintUnhandledException(e);
+                ExceptionUtils.LogException(e);
             }
         }
     }
