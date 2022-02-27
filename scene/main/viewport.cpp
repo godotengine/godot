@@ -527,6 +527,11 @@ void Viewport::_process_picking() {
 	if (to_screen_rect != Rect2i() && Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
 		return;
 	}
+	if (!gui.mouse_in_viewport) {
+		// Clear picking events if mouse has left viewport.
+		physics_picking_events.clear();
+		return;
+	}
 
 	_drop_physics_mouseover(true);
 
