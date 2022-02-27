@@ -400,7 +400,7 @@ void VehicleBody3D::_update_wheel(int p_idx, PhysicsDirectBodyState3D *s) {
 			wheel.m_raycastInfo.m_hardPointWS + wheel.m_raycastInfo.m_wheelDirectionWS * wheel.m_raycastInfo.m_suspensionLength);
 }
 
-#define N_CASTS 11 // Number used is actually 3 times this with the current implementation
+#define N_CASTS 21 // Number used is actually 3 times this with the current implementation
 
 real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 	VehicleWheel3D &wheel = *wheels[p_idx];
