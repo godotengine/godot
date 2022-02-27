@@ -305,7 +305,7 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 	for (uint64_t i = 0; i < swapchain_length; i++) {
 		images[i].type = XR_TYPE_SWAPCHAIN_IMAGE_VULKAN_KHR;
 		images[i].next = nullptr;
-		images[i].image = nullptr;
+		images[i].image = VK_NULL_HANDLE;
 	}
 
 	result = xrEnumerateSwapchainImages(p_swapchain, swapchain_length, &swapchain_length, (XrSwapchainImageBaseHeader *)images);
