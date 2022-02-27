@@ -20,22 +20,26 @@ namespace GodotPlugins
             AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly()) ??
             AssemblyLoadContext.Default;
 
+        private static DllImportResolver? _dllImportResolver;
+
         // Right now we do it this way for simplicity as hot-reload is disabled. It will need to be changed later.
         [UnmanagedCallersOnly]
         // ReSharper disable once UnusedMember.Local
-        private static unsafe godot_bool InitializeFromEngine(godot_bool editorHint,
+        private static unsafe godot_bool InitializeFromEngine(IntPtr godotDllHandle, godot_bool editorHint,
             PluginsCallbacks* pluginsCallbacks, ManagedCallbacks* managedCallbacks)
         {
             try
             {
+                _dllImportResolver = new GodotDllImportResolver(godotDllHandle).OnResolveDllImport;
+
                 SharedAssemblies.Add(CoreApiAssembly.GetName());
-                NativeLibrary.SetDllImportResolver(CoreApiAssembly, GodotDllImportResolver.OnResolveDllImport);
+                NativeLibrary.SetDllImportResolver(CoreApiAssembly, _dllImportResolver);
 
                 if (editorHint.ToBool())
                 {
                     _editorApiAssembly = Assembly.Load("GodotSharpEditor");
                     SharedAssemblies.Add(_editorApiAssembly.GetName());
-                    NativeLibrary.SetDllImportResolver(_editorApiAssembly, GodotDllImportResolver.OnResolveDllImport);
+                    NativeLibrary.SetDllImportResolver(_editorApiAssembly, _dllImportResolver);
                 }
 
                 *pluginsCallbacks = new()
@@ -97,7 +101,7 @@ namespace GodotPlugins
 
                 var assembly = LoadPlugin(assemblyPath);
 
-                NativeLibrary.SetDllImportResolver(assembly, GodotDllImportResolver.OnResolveDllImport);
+                NativeLibrary.SetDllImportResolver(assembly, _dllImportResolver!);
 
                 var method = assembly.GetType("GodotTools.GodotSharpEditor")?
                     .GetMethod("InternalCreateInstance",

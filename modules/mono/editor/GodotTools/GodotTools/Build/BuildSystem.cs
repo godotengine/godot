@@ -197,10 +197,6 @@ namespace GodotTools.Build
             // Logger
             AddLoggerArgument(buildInfo, arguments);
 
-            // Trimming is not supported for dynamically loaded assemblies, as is our case with self hosting:
-            // https://github.com/dotnet/runtime/blob/main/docs/design/features/native-hosting.md#incompatible-with-trimming
-            arguments.Add("-p:PublishTrimmed=false");
-
             // Custom properties
             foreach (string customProperty in buildInfo.CustomProperties)
             {

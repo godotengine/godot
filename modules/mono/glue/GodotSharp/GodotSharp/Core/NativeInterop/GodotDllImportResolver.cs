@@ -6,9 +6,16 @@ using System.Runtime.InteropServices;
 
 namespace Godot.NativeInterop
 {
-    public static class GodotDllImportResolver
+    public class GodotDllImportResolver
     {
-        public static IntPtr OnResolveDllImport(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
+        private IntPtr _internalHandle;
+
+        public GodotDllImportResolver(IntPtr internalHandle)
+        {
+            _internalHandle = internalHandle;
+        }
+
+        public IntPtr OnResolveDllImport(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
         {
             if (libraryName == "__Internal")
             {
@@ -18,7 +25,7 @@ namespace Godot.NativeInterop
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    return Linux.dlopen(IntPtr.Zero, Linux.RTLD_LAZY);
+                    return _internalHandle;
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
@@ -33,18 +40,6 @@ namespace Godot.NativeInterop
         private static class MacOS
         {
             private const string SystemLibrary = "/usr/lib/libSystem.dylib";
-
-            public const int RTLD_LAZY = 1;
-
-            [DllImport(SystemLibrary)]
-            public static extern IntPtr dlopen(IntPtr path, int mode);
-        }
-
-        private static class Linux
-        {
-            // libdl.so was resulting in DllNotFoundException, for some reason...
-            // libcoreclr.so should work with both CoreCLR and the .NET Core version of Mono.
-            private const string SystemLibrary = "libcoreclr.so";
 
             public const int RTLD_LAZY = 1;
 

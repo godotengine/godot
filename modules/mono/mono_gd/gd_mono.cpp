@@ -48,6 +48,9 @@
 
 #include <coreclr_delegates.h>
 #include <hostfxr.h>
+#ifdef UNIX_ENABLED
+#include <dlfcn.h>
+#endif
 
 // TODO mobile
 #if 0
@@ -168,17 +171,23 @@ String find_hostfxr() {
 #else
 
 #if defined(WINDOWS_ENABLED)
-	return GodotSharpDirs::get_api_assemblies_dir()
-			.plus_file("hostfxr.dll");
+	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
+								.plus_file("hostfxr.dll");
 #elif defined(MACOS_ENABLED)
-	return GodotSharpDirs::get_api_assemblies_dir()
-			.plus_file("libhostfxr.dylib");
+	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
+								.plus_file("libhostfxr.dylib");
 #elif defined(UNIX_ENABLED)
-	return GodotSharpDirs::get_api_assemblies_dir()
-			.plus_file("libhostfxr.so");
+	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
+								.plus_file("libhostfxr.so");
 #else
 #error "Platform not supported (yet?)"
 #endif
+
+	if (FileAccess::exists(probe_path)) {
+		return probe_path;
+	}
+
+	return String();
 
 #endif
 }
@@ -285,10 +294,20 @@ load_assembly_and_get_function_pointer_fn initialize_hostfxr_self_contained(
 #endif
 
 #ifdef TOOLS_ENABLED
-using godot_plugins_initialize_fn = bool (*)(bool, gdmono::PluginCallbacks *, GDMonoCache::ManagedCallbacks *);
+using godot_plugins_initialize_fn = bool (*)(void *, bool, gdmono::PluginCallbacks *, GDMonoCache::ManagedCallbacks *);
 #else
-using godot_plugins_initialize_fn = bool (*)(GDMonoCache::ManagedCallbacks *);
+using godot_plugins_initialize_fn = bool (*)(void *, GDMonoCache::ManagedCallbacks *);
 #endif
+
+static String get_assembly_name() {
+	String appname = ProjectSettings::get_singleton()->get("application/config/name");
+	String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
+	if (appname_safe.is_empty()) {
+		appname_safe = "UnnamedProject";
+	}
+
+	return appname_safe;
+}
 
 #ifdef TOOLS_ENABLED
 godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime_initialized) {
@@ -320,15 +339,9 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 }
 #else
 godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime_initialized) {
-	String appname = ProjectSettings::get_singleton()->get("application/config/name");
-	String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
-	if (appname_safe.is_empty()) {
-		appname_safe = "UnnamedProject";
-	}
-
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
 
-	String assembly_name = appname_safe;
+	String assembly_name = get_assembly_name();
 
 	HostFxrCharString assembly_path = str_to_hostfxr(GodotSharpDirs::get_api_assemblies_dir()
 															 .plus_file(assembly_name + ".dll"));
@@ -350,6 +363,38 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 	ERR_FAIL_COND_V_MSG(rc != 0, nullptr, ".NET: Failed to get GodotPlugins initialization function pointer");
 
 	return godot_plugins_initialize;
+}
+
+godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle) {
+	String assembly_name = get_assembly_name();
+
+#if defined(WINDOWS_ENABLED)
+	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().plus_file(assembly_name + ".dll");
+#elif defined(MACOS_ENABLED)
+	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().plus_file(assembly_name + ".dylib");
+#elif defined(UNIX_ENABLED)
+	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().plus_file(assembly_name + ".so");
+#else
+#error "Platform not supported (yet?)"
+#endif
+
+	if (FileAccess::exists(native_aot_so_path)) {
+		Error err = OS::get_singleton()->open_dynamic_library(native_aot_so_path, r_aot_dll_handle);
+
+		if (err != OK) {
+			return nullptr;
+		}
+
+		void *lib = r_aot_dll_handle;
+
+		void *symbol = nullptr;
+
+		err = OS::get_singleton()->get_dynamic_library_symbol_handle(lib, "godotsharp_game_main_init", symbol);
+		ERR_FAIL_COND_V(err != OK, nullptr);
+		return (godot_plugins_initialize_fn)symbol;
+	}
+
+	return nullptr;
 }
 #endif
 
@@ -377,25 +422,46 @@ void GDMono::initialize() {
 
 	_init_godot_api_hashes();
 
+	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
+
 	if (!load_hostfxr(hostfxr_dll_handle)) {
+#if !defined(TOOLS_ENABLED)
+		godot_plugins_initialize = try_load_native_aot_library(hostfxr_dll_handle);
+
+		if (godot_plugins_initialize != nullptr) {
+			is_native_aot = true;
+		} else {
+			ERR_FAIL_MSG(".NET: Failed to load hostfxr");
+		}
+#else
 		ERR_FAIL_MSG(".NET: Failed to load hostfxr");
+#endif
 	}
 
-	godot_plugins_initialize_fn godot_plugins_initialize =
-			initialize_hostfxr_and_godot_plugins(runtime_initialized);
-	ERR_FAIL_NULL(godot_plugins_initialize);
+	if (!is_native_aot) {
+		godot_plugins_initialize = initialize_hostfxr_and_godot_plugins(runtime_initialized);
+		ERR_FAIL_NULL(godot_plugins_initialize);
+	}
 
 	GDMonoCache::ManagedCallbacks managed_callbacks;
 
+	void *godot_dll_handle = nullptr;
+
+#if defined(UNIX_ENABLED) && !defined(MACOS_ENABLED) && !defined(IOS_ENABLED)
+	// Managed code can access it on its own on other platforms
+	godot_dll_handle = dlopen(nullptr, RTLD_NOW);
+#endif
+
 #ifdef TOOLS_ENABLED
 	gdmono::PluginCallbacks plugin_callbacks_res;
-	bool init_ok = godot_plugins_initialize(Engine::get_singleton()->is_editor_hint(),
+	bool init_ok = godot_plugins_initialize(godot_dll_handle,
+			Engine::get_singleton()->is_editor_hint(),
 			&plugin_callbacks_res, &managed_callbacks);
 	ERR_FAIL_COND_MSG(!init_ok, ".NET: GodotPlugins initialization failed");
 
 	plugin_callbacks = plugin_callbacks_res;
 #else
-	bool init_ok = godot_plugins_initialize(&managed_callbacks);
+	bool init_ok = godot_plugins_initialize(godot_dll_handle, &managed_callbacks);
 	ERR_FAIL_COND_MSG(!init_ok, ".NET: GodotPlugins initialization failed");
 #endif
 

@@ -26,14 +26,16 @@ namespace GodotPlugins.Game
 {
     internal static partial class Main
     {
-        [UnmanagedCallersOnly]
-        private static godot_bool InitializeFromGameProject(IntPtr outManagedCallbacks)
+        [UnmanagedCallersOnly(EntryPoint = ""godotsharp_game_main_init"")]
+        private static godot_bool InitializeFromGameProject(IntPtr godotDllHandle, IntPtr outManagedCallbacks)
         {
             try
             {
+                DllImportResolver dllImportResolver = new GodotDllImportResolver(godotDllHandle).OnResolveDllImport;
+
                 var coreApiAssembly = typeof(Godot.Object).Assembly;
 
-                NativeLibrary.SetDllImportResolver(coreApiAssembly, GodotDllImportResolver.OnResolveDllImport);
+                NativeLibrary.SetDllImportResolver(coreApiAssembly, dllImportResolver);
 
                 ManagedCallbacks.Create(outManagedCallbacks);
 
