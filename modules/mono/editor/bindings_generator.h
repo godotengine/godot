@@ -385,6 +385,22 @@ class BindingsGenerator {
 		 */
 		String cs_type;
 
+		/**
+		 * Formatting elements:
+		 * %0: input expression of type `in godot_variant`
+		 * %1: [cs_type] of this type
+		 * %2: [name] of this type
+		 */
+		String cs_variant_to_managed;
+
+		/**
+		 * Formatting elements:
+		 * %0: input expression
+		 * %1: [cs_type] of this type
+		 * %2: [name] of this type
+		 */
+		String cs_managed_to_variant;
+
 		const DocData::ClassDoc *class_doc = nullptr;
 
 		List<ConstantInterface> constants;

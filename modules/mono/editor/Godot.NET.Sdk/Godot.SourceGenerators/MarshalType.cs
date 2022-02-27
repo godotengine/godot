@@ -46,14 +46,15 @@ namespace Godot.SourceGenerators
         ByteArray,
         Int32Array,
         Int64Array,
-        SingleArray,
-        DoubleArray,
+        Float32Array,
+        Float64Array,
         StringArray,
         Vector2Array,
         Vector3Array,
         ColorArray,
         GodotObjectOrDerivedArray,
         SystemObjectArray,
+        SystemArrayOfSupportedType,
 
         // Generics
         GodotGenericDictionary,

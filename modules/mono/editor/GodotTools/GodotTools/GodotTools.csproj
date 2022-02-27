@@ -3,7 +3,7 @@
     <ProjectGuid>{27B00618-A6F2-4828-B922-05CAEB08C286}</ProjectGuid>
     <TargetFramework>net5.0</TargetFramework>
     <EnableDynamicLoading>true</EnableDynamicLoading>
-    <LangVersion>8</LangVersion>
+    <LangVersion>9</LangVersion>
     <!-- The Godot editor uses the Debug Godot API assemblies -->
     <GodotApiConfiguration>Debug</GodotApiConfiguration>
     <GodotSourceRootPath>$(SolutionDir)/../../../../</GodotSourceRootPath>

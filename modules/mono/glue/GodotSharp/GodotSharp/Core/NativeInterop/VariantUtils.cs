@@ -1,6 +1,10 @@
 using System;
+using System.Runtime.CompilerServices;
+using Godot.Collections;
 
 // ReSharper disable InconsistentNaming
+
+#nullable enable
 
 namespace Godot.NativeInterop
 {
@@ -94,13 +98,27 @@ namespace Godot.NativeInterop
         public static godot_variant CreateFromCallableTakingOwnershipOfDisposableValue(godot_callable from)
             => new() { Type = Variant.Type.Callable, Callable = from };
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static godot_variant CreateFromCallable(Callable from)
+            => CreateFromCallableTakingOwnershipOfDisposableValue(
+                Marshaling.ConvertCallableToNative(from));
+
         // Explicit name to make it very clear
         public static godot_variant CreateFromSignalTakingOwnershipOfDisposableValue(godot_signal from)
             => new() { Type = Variant.Type.Signal, Signal = from };
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static godot_variant CreateFromSignalInfo(SignalInfo from)
+            => CreateFromSignalTakingOwnershipOfDisposableValue(
+                Marshaling.ConvertSignalToNative(from));
+
         // Explicit name to make it very clear
         public static godot_variant CreateFromStringTakingOwnershipOfDisposableValue(godot_string from)
             => new() { Type = Variant.Type.String, String = from };
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static godot_variant CreateFromString(string? from)
+            => CreateFromStringTakingOwnershipOfDisposableValue(Marshaling.ConvertStringToNative(from));
 
         public static godot_variant CreateFromPackedByteArray(in godot_packed_byte_array from)
         {
@@ -156,10 +174,114 @@ namespace Godot.NativeInterop
             return ret;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static godot_variant CreateFromPackedByteArray(Span<byte> from)
+            => CreateFromPackedByteArray(Marshaling.ConvertSystemArrayToNativePackedByteArray(from));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static godot_variant CreateFromPackedInt32Array(Span<int> from)
+            => CreateFromPackedInt32Array(Marshaling.ConvertSystemArrayToNativePackedInt32Array(from));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static godot_variant CreateFromPackedInt64Array(Span<long> from)
+            => CreateFromPackedInt64Array(Marshaling.ConvertSystemArrayToNativePackedInt64Array(from));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static godot_variant CreateFromPackedFloat32Array(Span<float> from)
+            => CreateFromPackedFloat32Array(Marshaling.ConvertSystemArrayToNativePackedFloat32Array(from));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static godot_variant CreateFromPackedFloat64Array(Span<double> from)
+            => CreateFromPackedFloat64Array(Marshaling.ConvertSystemArrayToNativePackedFloat64Array(from));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static godot_variant CreateFromPackedStringArray(Span<string> from)
+            => CreateFromPackedStringArray(Marshaling.ConvertSystemArrayToNativePackedStringArray(from));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static godot_variant CreateFromPackedVector2Array(Span<Vector2> from)
+            => CreateFromPackedVector2Array(Marshaling.ConvertSystemArrayToNativePackedVector2Array(from));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static godot_variant CreateFromPackedVector3Array(Span<Vector3> from)
+            => CreateFromPackedVector3Array(Marshaling.ConvertSystemArrayToNativePackedVector3Array(from));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static godot_variant CreateFromPackedColorArray(Span<Color> from)
+            => CreateFromPackedColorArray(Marshaling.ConvertSystemArrayToNativePackedColorArray(from));
+
+        public static godot_variant CreateFromSystemArrayOfSupportedType<T>(T[]? from)
+        {
+            if (from == null)
+                return default; // Nil
+            using godot_array array = Marshaling.ConvertSystemArrayToNativeGodotArray(from);
+            return CreateFromArray(array);
+        }
+
+        // ReSharper disable once RedundantNameQualifier
+        public static godot_variant CreateFromSystemArrayOfGodotObject(Godot.Object[]? from)
+        {
+            if (from == null)
+                return default; // Nil
+            using godot_array array = Marshaling.ConvertSystemArrayToNativeGodotArray(from);
+            return CreateFromArray(array);
+        }
+
+        public static godot_variant CreateFromSystemArrayOfVariant(object[]? from)
+        {
+            if (from == null)
+                return default; // Nil
+            using godot_array array = Marshaling.ConvertSystemArrayToNativeGodotArray(from);
+            return CreateFromArray(array);
+        }
+
         public static godot_variant CreateFromArray(godot_array from)
         {
             NativeFuncs.godotsharp_variant_new_array(out godot_variant ret, from);
             return ret;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static godot_variant CreateFromArray(Collections.Array? from)
+            => from != null ? CreateFromArray((godot_array)from.NativeValue) : default;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // ReSharper disable once RedundantNameQualifier
+        public static godot_variant CreateFromArray<T>(Collections.Array<T>? from)
+            => from != null ? CreateFromArray((godot_array)((Collections.Array)from).NativeValue) : default;
+
+        public static godot_variant CreateFromSystemICollection(System.Collections.ICollection? from)
+        {
+            if (from == null)
+                return default; // Nil
+            using var nativeGodotArray = Marshaling.ConvertICollectionToNativeGodotArray(from);
+            return CreateFromArray(nativeGodotArray);
+        }
+
+        public static godot_variant CreateFromSystemGenericICollection<T>(
+            System.Collections.Generic.ICollection<T>? from)
+        {
+            if (from == null)
+                return default; // Nil
+            using var nativeGodotArray = Marshaling.ConvertGenericICollectionToNativeGodotArray(from);
+            return CreateFromArray(nativeGodotArray);
+        }
+
+        public static godot_variant CreateFromSystemIEnumerable(System.Collections.IEnumerable? from)
+        {
+            if (from == null)
+                return default; // Nil
+            using var nativeGodotArray = Marshaling.ConvertIEnumerableToNativeGodotArray(from);
+            return CreateFromArray(nativeGodotArray);
+        }
+
+        public static godot_variant CreateFromSystemGenericIEnumerable<T>(
+            System.Collections.Generic.IEnumerable<T>? from)
+        {
+            if (from == null)
+                return default; // Nil
+            using var nativeGodotArray = Marshaling.ConvertGenericIEnumerableToNativeGodotArray(from);
+            return CreateFromArray(nativeGodotArray);
         }
 
         public static godot_variant CreateFromDictionary(godot_dictionary from)
@@ -168,11 +290,64 @@ namespace Godot.NativeInterop
             return ret;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static godot_variant CreateFromDictionary(Dictionary? from)
+            => from != null ? CreateFromDictionary((godot_dictionary)from.NativeValue) : default;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static godot_variant CreateFromDictionary<TKey, TValue>(Dictionary<TKey, TValue>? from)
+            => from != null ? CreateFromDictionary((godot_dictionary)((Dictionary)from).NativeValue) : default;
+
+        public static godot_variant CreateFromSystemDictionary<TKey, TValue>(
+            System.Collections.Generic.Dictionary<TKey, TValue>? from) where TKey : notnull
+        {
+            if (from == null)
+                return default; // Nil
+
+            var godotDict = new Dictionary();
+
+            foreach (var entry in from)
+                godotDict.Add(entry.Key, entry.Value);
+
+            return CreateFromDictionary(godotDict);
+        }
+
+        public static godot_variant CreateFromSystemIDictionary(System.Collections.IDictionary? from)
+        {
+            if (from == null)
+                return default; // Nil
+
+            var godotDict = new Dictionary();
+
+            foreach (var entry in from)
+                godotDict.Add(entry, entry);
+
+            return CreateFromDictionary(godotDict);
+        }
+
+        public static godot_variant CreateFromSystemGenericIDictionary<TKey, TValue>(
+            System.Collections.Generic.IDictionary<TKey, TValue>? from)
+        {
+            if (from == null)
+                return default; // Nil
+
+            var godotDict = new Dictionary<TKey, TValue>();
+
+            foreach (var entry in from)
+                godotDict.Add(entry.Key, entry.Value);
+
+            return CreateFromDictionary(godotDict);
+        }
+
         public static godot_variant CreateFromStringName(godot_string_name from)
         {
             NativeFuncs.godotsharp_variant_new_string_name(out godot_variant ret, from);
             return ret;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static godot_variant CreateFromStringName(StringName? from)
+            => from != null ? CreateFromStringName((godot_string_name)from.NativeValue) : default;
 
         public static godot_variant CreateFromNodePath(godot_node_path from)
         {
@@ -180,13 +355,22 @@ namespace Godot.NativeInterop
             return ret;
         }
 
-        public static godot_variant CreateFromGodotObject(IntPtr from)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static godot_variant CreateFromNodePath(NodePath? from)
+            => from != null ? CreateFromNodePath((godot_node_path)from.NativeValue) : default;
+
+        public static godot_variant CreateFromGodotObjectPtr(IntPtr from)
         {
             if (from == IntPtr.Zero)
                 return new godot_variant();
             NativeFuncs.godotsharp_variant_new_object(out godot_variant ret, from);
             return ret;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // ReSharper disable once RedundantNameQualifier
+        public static godot_variant CreateFromGodotObject(Godot.Object? from)
+            => from != null ? CreateFromGodotObjectPtr(Object.GetPtr(from)) : default;
 
         // We avoid the internal call if the stored type is the same we want.
 
@@ -328,32 +512,201 @@ namespace Godot.NativeInterop
                 p_var.Plane :
                 NativeFuncs.godotsharp_variant_as_plane(p_var);
 
-        public static IntPtr ConvertToGodotObject(in godot_variant p_var)
-            => p_var.Type == Variant.Type.Object ? p_var.Object : IntPtr.Zero;
-
         public static RID ConvertToRID(in godot_variant p_var)
             => p_var.Type == Variant.Type.Rid ?
                 p_var.RID :
                 NativeFuncs.godotsharp_variant_as_rid(p_var);
+
+        public static IntPtr ConvertToGodotObjectPtr(in godot_variant p_var)
+            => p_var.Type == Variant.Type.Object ? p_var.Object : IntPtr.Zero;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // ReSharper disable once RedundantNameQualifier
+        public static Godot.Object ConvertToGodotObject(in godot_variant p_var)
+            => InteropUtils.UnmanagedGetManaged(ConvertToGodotObjectPtr(p_var));
+
+        public static string ConvertToStringObject(in godot_variant p_var)
+        {
+            switch (p_var.Type)
+            {
+                case Variant.Type.Nil:
+                    return ""; // Otherwise, Variant -> String would return the string "Null"
+                case Variant.Type.String:
+                {
+                    // We avoid the internal call if the stored type is the same we want.
+                    return Marshaling.ConvertStringToManaged(p_var.String);
+                }
+                default:
+                {
+                    using godot_string godotString = NativeFuncs.godotsharp_variant_as_string(p_var);
+                    return Marshaling.ConvertStringToManaged(godotString);
+                }
+            }
+        }
 
         public static godot_string_name ConvertToStringName(in godot_variant p_var)
             => p_var.Type == Variant.Type.StringName ?
                 NativeFuncs.godotsharp_string_name_new_copy(p_var.StringName) :
                 NativeFuncs.godotsharp_variant_as_string_name(p_var);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static StringName ConvertToStringNameObject(in godot_variant p_var)
+            => StringName.CreateTakingOwnershipOfDisposableValue(ConvertToStringName(p_var));
+
         public static godot_node_path ConvertToNodePath(in godot_variant p_var)
             => p_var.Type == Variant.Type.NodePath ?
                 NativeFuncs.godotsharp_node_path_new_copy(p_var.NodePath) :
                 NativeFuncs.godotsharp_variant_as_node_path(p_var);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static NodePath ConvertToNodePathObject(in godot_variant p_var)
+            => NodePath.CreateTakingOwnershipOfDisposableValue(ConvertToNodePath(p_var));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static godot_callable ConvertToCallable(in godot_variant p_var)
+            => NativeFuncs.godotsharp_variant_as_callable(p_var);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Callable ConvertToCallableManaged(in godot_variant p_var)
+            => Marshaling.ConvertCallableToManaged(ConvertToCallable(p_var));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static godot_signal ConvertToSignal(in godot_variant p_var)
+            => NativeFuncs.godotsharp_variant_as_signal(p_var);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static SignalInfo ConvertToSignalInfo(in godot_variant p_var)
+            => Marshaling.ConvertSignalToManaged(ConvertToSignal(p_var));
 
         public static godot_array ConvertToArray(in godot_variant p_var)
             => p_var.Type == Variant.Type.Array ?
                 NativeFuncs.godotsharp_array_new_copy(p_var.Array) :
                 NativeFuncs.godotsharp_variant_as_array(p_var);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Collections.Array ConvertToArrayObject(in godot_variant p_var)
+            => Collections.Array.CreateTakingOwnershipOfDisposableValue(ConvertToArray(p_var));
+
         public static godot_dictionary ConvertToDictionary(in godot_variant p_var)
             => p_var.Type == Variant.Type.Dictionary ?
                 NativeFuncs.godotsharp_dictionary_new_copy(p_var.Dictionary) :
                 NativeFuncs.godotsharp_variant_as_dictionary(p_var);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Dictionary ConvertToDictionaryObject(in godot_variant p_var)
+            => Dictionary.CreateTakingOwnershipOfDisposableValue(ConvertToDictionary(p_var));
+
+        public static byte[] ConvertAsPackedByteArrayToSystemArray(in godot_variant p_var)
+        {
+            using var packedArray = NativeFuncs.godotsharp_variant_as_packed_byte_array(p_var);
+            return Marshaling.ConvertNativePackedByteArrayToSystemArray(packedArray);
+        }
+
+        public static int[] ConvertAsPackedInt32ArrayToSystemArray(in godot_variant p_var)
+        {
+            using var packedArray = NativeFuncs.godotsharp_variant_as_packed_int32_array(p_var);
+            return Marshaling.ConvertNativePackedInt32ArrayToSystemArray(packedArray);
+        }
+
+        public static long[] ConvertAsPackedInt64ArrayToSystemArray(in godot_variant p_var)
+        {
+            using var packedArray = NativeFuncs.godotsharp_variant_as_packed_int64_array(p_var);
+            return Marshaling.ConvertNativePackedInt64ArrayToSystemArray(packedArray);
+        }
+
+        public static float[] ConvertAsPackedFloat32ArrayToSystemArray(in godot_variant p_var)
+        {
+            using var packedArray = NativeFuncs.godotsharp_variant_as_packed_float32_array(p_var);
+            return Marshaling.ConvertNativePackedFloat32ArrayToSystemArray(packedArray);
+        }
+
+        public static double[] ConvertAsPackedFloat64ArrayToSystemArray(in godot_variant p_var)
+        {
+            using var packedArray = NativeFuncs.godotsharp_variant_as_packed_float64_array(p_var);
+            return Marshaling.ConvertNativePackedFloat64ArrayToSystemArray(packedArray);
+        }
+
+        public static string[] ConvertAsPackedStringArrayToSystemArray(in godot_variant p_var)
+        {
+            using var packedArray = NativeFuncs.godotsharp_variant_as_packed_string_array(p_var);
+            return Marshaling.ConvertNativePackedStringArrayToSystemArray(packedArray);
+        }
+
+        public static Vector2[] ConvertAsPackedVector2ArrayToSystemArray(in godot_variant p_var)
+        {
+            using var packedArray = NativeFuncs.godotsharp_variant_as_packed_vector2_array(p_var);
+            return Marshaling.ConvertNativePackedVector2ArrayToSystemArray(packedArray);
+        }
+
+        public static Vector3[] ConvertAsPackedVector3ArrayToSystemArray(in godot_variant p_var)
+        {
+            using var packedArray = NativeFuncs.godotsharp_variant_as_packed_vector3_array(p_var);
+            return Marshaling.ConvertNativePackedVector3ArrayToSystemArray(packedArray);
+        }
+
+        public static Color[] ConvertAsPackedColorArrayToSystemArray(in godot_variant p_var)
+        {
+            using var packedArray = NativeFuncs.godotsharp_variant_as_packed_color_array(p_var);
+            return Marshaling.ConvertNativePackedColorArrayToSystemArray(packedArray);
+        }
+
+        public static T[] ConvertToSystemArrayOfSupportedType<T>(in godot_variant p_var)
+        {
+            using var godotArray = NativeFuncs.godotsharp_variant_as_array(p_var);
+            return Marshaling.ConvertNativeGodotArrayToSystemArrayOfType<T>(godotArray);
+        }
+
+        public static T[] ConvertToSystemArrayOfGodotObject<T>(in godot_variant p_var)
+            // ReSharper disable once RedundantNameQualifier
+            where T : Godot.Object
+        {
+            using var godotArray = NativeFuncs.godotsharp_variant_as_array(p_var);
+            return Marshaling.ConvertNativeGodotArrayToSystemArrayOfGodotObjectType<T>(godotArray);
+        }
+
+        // ReSharper disable once RedundantNameQualifier
+        public static Godot.Object[] ConvertToSystemArrayOfGodotObject(in godot_variant p_var, Type type)
+        {
+            using var godotArray = NativeFuncs.godotsharp_variant_as_array(p_var);
+            return Marshaling.ConvertNativeGodotArrayToSystemArrayOfGodotObjectType(godotArray, type);
+        }
+
+        public static object[] ConvertToSystemArrayOfVariant(in godot_variant p_var)
+        {
+            using var godotArray = NativeFuncs.godotsharp_variant_as_array(p_var);
+            return Marshaling.ConvertNativeGodotArrayToSystemArray(godotArray);
+        }
+
+        public static Array<T> ConvertToGenericArrayObject<T>(in godot_variant p_var) =>
+            new(ConvertToArrayObject(p_var));
+
+        public static Dictionary<TKey, TValue> ConvertToGenericDictionaryObject<TKey, TValue>(in godot_variant p_var) =>
+            new(ConvertToDictionaryObject(p_var));
+
+        public static System.Collections.Generic.List<T> ConvertToSystemGenericList<T>(in godot_variant p_var)
+        {
+            var godotArray = ConvertToArrayObject(p_var);
+
+            var res = new System.Collections.Generic.List<T>(godotArray.Count);
+
+            foreach (object elem in godotArray)
+                res.Add((T)elem);
+
+            return res;
+        }
+
+        public static System.Collections.Generic.Dictionary<TKey, TValue>
+            ConvertToSystemGenericDictionary<TKey, TValue>(in godot_variant p_var)
+            where TKey : notnull
+        {
+            var godotDictionary = ConvertToDictionaryObject(p_var);
+
+            var res = new System.Collections.Generic.Dictionary<TKey, TValue>(godotDictionary.Count);
+
+            foreach (System.Collections.Generic.KeyValuePair<TKey, TValue> pair in godotDictionary)
+                res.Add(pair.Key, pair.Value);
+
+            return res;
+        }
     }
 }

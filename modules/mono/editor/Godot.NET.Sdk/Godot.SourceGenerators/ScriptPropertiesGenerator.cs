@@ -152,7 +152,7 @@ namespace Godot.SourceGenerators
             {
                 source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
 
-                string dictionaryType = "System.Collections.Generic.List<Godot.Bridge.PropertyInfo>";
+                string dictionaryType = "System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>";
 
                 source.Append("    internal new static ")
                     .Append(dictionaryType)
@@ -214,7 +214,7 @@ namespace Godot.SourceGenerators
 
         private static void AppendPropertyInfo(StringBuilder source, PropertyInfo propertyInfo)
         {
-            source.Append("        properties.Add(new Godot.Bridge.PropertyInfo(type: (Godot.Variant.Type)")
+            source.Append("        properties.Add(new(type: (Godot.Variant.Type)")
                 .Append((int)propertyInfo.Type)
                 .Append(", name: GodotInternal.PropName_")
                 .Append(propertyInfo.Name)

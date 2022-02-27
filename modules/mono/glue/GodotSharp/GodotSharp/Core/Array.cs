@@ -320,6 +320,37 @@ namespace Godot.Collections
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal object GetAtAsType(int index, Type type)
+        {
+            GetVariantBorrowElementAt(index, out godot_variant borrowElem);
+            return Marshaling.ConvertVariantToManagedObjectOfType(borrowElem, type);
+        }
+
+        internal void CopyToGeneric<T>(T[] array, int arrayIndex, Type type = null)
+        {
+            if (array == null)
+                throw new ArgumentNullException(nameof(array), "Value cannot be null.");
+
+            if (arrayIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(arrayIndex),
+                    "Number was less than the array's lower bound in the first dimension.");
+
+            var typeOfElements = type ?? typeof(T);
+
+            int count = Count;
+
+            if (array.Length < (arrayIndex + count))
+                throw new ArgumentException(
+                    "Destination array was not long enough. Check destIndex and length, and the array's lower bounds.");
+
+            for (int i = 0; i < count; i++)
+            {
+                array[arrayIndex] = (T)GetAtAsType(i, typeOfElements);
+                arrayIndex++;
+            }
+        }
+
         // IEnumerable
 
         /// <summary>
@@ -517,11 +548,7 @@ namespace Godot.Collections
         /// <value>The value at the given <paramref name="index"/>.</value>
         public T this[int index]
         {
-            get
-            {
-                _underlyingArray.GetVariantBorrowElementAt(index, out godot_variant borrowElem);
-                return (T)Marshaling.ConvertVariantToManagedObjectOfType(borrowElem, TypeOfElements);
-            }
+            get => (T)_underlyingArray.GetAtAsType(index, TypeOfElements);
             set => _underlyingArray[index] = value;
         }
 
@@ -604,27 +631,8 @@ namespace Godot.Collections
         /// </summary>
         /// <param name="array">The C# array to copy to.</param>
         /// <param name="arrayIndex">The index to start at.</param>
-        public void CopyTo(T[] array, int arrayIndex)
-        {
-            if (array == null)
-                throw new ArgumentNullException(nameof(array), "Value cannot be null.");
-
-            if (arrayIndex < 0)
-                throw new ArgumentOutOfRangeException(nameof(arrayIndex),
-                    "Number was less than the array's lower bound in the first dimension.");
-
-            int count = _underlyingArray.Count;
-
-            if (array.Length < (arrayIndex + count))
-                throw new ArgumentException(
-                    "Destination array was not long enough. Check destIndex and length, and the array's lower bounds.");
-
-            for (int i = 0; i < count; i++)
-            {
-                array[arrayIndex] = this[i];
-                arrayIndex++;
-            }
-        }
+        public void CopyTo(T[] array, int arrayIndex) =>
+            _underlyingArray.CopyToGeneric<T>(array, arrayIndex, TypeOfElements);
 
         /// <summary>
         /// Removes the first occurrence of the specified value
