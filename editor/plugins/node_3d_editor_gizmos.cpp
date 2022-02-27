@@ -2488,8 +2488,10 @@ void VehicleWheel3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
 		Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
 
-		points.push_back(Vector3(0, a.x, a.y));
-		points.push_back(Vector3(0, b.x, b.y));
+		points.push_back(Vector3(car_wheel->get_width()/2, a.x, a.y));
+		points.push_back(Vector3(car_wheel->get_width()/2, b.x, b.y));
+		points.push_back(Vector3(-car_wheel->get_width()/2, a.x, a.y));
+		points.push_back(Vector3(-car_wheel->get_width()/2, b.x, b.y));
 
 		const int springsec = 4;
 

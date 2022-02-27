@@ -215,6 +215,15 @@ real_t VehicleWheel3D::get_roll_influence() const {
 	return m_rollInfluence;
 }
 
+void VehicleWheel3D::set_width(real_t p_value) {
+	m_wheelWidth = p_value;
+	update_gizmos();
+}
+
+real_t VehicleWheel3D::get_width() const {
+	return m_wheelWidth;
+}
+
 bool VehicleWheel3D::is_in_contact() const {
 	return m_raycastInfo.m_isInContact;
 }
@@ -273,6 +282,9 @@ void VehicleWheel3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_steering", "steering"), &VehicleWheel3D::set_steering);
 	ClassDB::bind_method(D_METHOD("get_steering"), &VehicleWheel3D::get_steering);
 
+	ClassDB::bind_method(D_METHOD("set_width", "length"), &VehicleWheel3D::set_width);
+	ClassDB::bind_method(D_METHOD("get_width"), &VehicleWheel3D::get_width);
+
 	ADD_GROUP("Per-Wheel Motion", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "engine_force", PROPERTY_HINT_RANGE, "-1024,1024.0,0.01,or_greater"), "set_engine_force", "get_engine_force");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "brake", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_brake", "get_brake");
@@ -283,6 +295,7 @@ void VehicleWheel3D::_bind_methods() {
 	ADD_GROUP("Wheel", "wheel_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wheel_roll_influence"), "set_roll_influence", "get_roll_influence");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wheel_radius"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wheel_width"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wheel_rest_length"), "set_suspension_rest_length", "get_suspension_rest_length");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wheel_friction_slip"), "set_friction_slip", "get_friction_slip");
 	ADD_GROUP("Suspension", "suspension_");
@@ -367,23 +380,27 @@ void VehicleBody3D::_update_wheel(int p_idx, PhysicsDirectBodyState3D *s) {
 
 	Vector3 up = -wheel.m_raycastInfo.m_wheelDirectionWS;
 	const Vector3 &right = wheel.m_raycastInfo.m_wheelAxleWS;
-	Vector3 fwd = up.cross(right);
-	fwd = fwd.normalized();
+	wheel.m_wheelFwd = up.cross(right);
+	wheel.m_wheelFwd = wheel.m_wheelFwd.normalized();
 
 	Basis steeringMat(up, wheel.m_steering);
 
 	Basis rotatingMat(right, wheel.m_rotation);
 
 	Basis basis2(
-			right[0], up[0], fwd[0],
-			right[1], up[1], fwd[1],
-			right[2], up[2], fwd[2]);
+			right[0], up[0], wheel.m_wheelFwd[0],
+			right[1], up[1], wheel.m_wheelFwd[1],
+			right[2], up[2], wheel.m_wheelFwd[2]);
+	
+	wheel.m_wheelFwd.rotate(up, wheel.m_steering);
 
 	wheel.m_worldTransform.set_basis(steeringMat * rotatingMat * basis2);
 	//wheel.m_worldTransform.set_basis(basis2 * (steeringMat * rotatingMat));
 	wheel.m_worldTransform.set_origin(
 			wheel.m_raycastInfo.m_hardPointWS + wheel.m_raycastInfo.m_wheelDirectionWS * wheel.m_raycastInfo.m_suspensionLength);
 }
+
+#define N_CASTS 11 // Number used is actually 3 times this with the current implementation
 
 real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 	VehicleWheel3D &wheel = *wheels[p_idx];
@@ -392,41 +409,66 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 
 	real_t depth = -1;
 
-	real_t raylen = wheel.m_suspensionRestLength + wheel.m_wheelRadius;
+	real_t suspension_length = wheel.m_suspensionRestLength;
 
-	Vector3 rayvector = wheel.m_raycastInfo.m_wheelDirectionWS * (raylen);
-	Vector3 source = wheel.m_raycastInfo.m_hardPointWS;
-	wheel.m_raycastInfo.m_contactPointWS = source + rayvector;
-	const Vector3 &target = wheel.m_raycastInfo.m_contactPointWS;
-	source -= wheel.m_wheelRadius * wheel.m_raycastInfo.m_wheelDirectionWS;
+	PhysicsDirectSpaceState3D::RayResult  collision_ray_result;
 
-	real_t param = real_t(0.);
+	// loop through casts, then we choose the one that affects the suspension the most. 
+	for(int i = 0; i < N_CASTS; i++)
+	{
+		for(int j = -1; j < 2; j++)
+		{
+			real_t x_val = -(wheel.m_wheelRadius) + i * ((wheel.m_wheelRadius) / ((N_CASTS -1 )/2));
+			real_t y_val = sqrtf(powf(wheel.m_wheelRadius, 2) - powf(x_val, 2));
+			real_t raylen = wheel.m_suspensionRestLength + y_val;
+			
+			Vector3 offset = (wheel.m_wheelFwd * x_val) + (wheel.m_worldTransform.basis.get_axis(0) * (real_t)j * wheel.m_wheelWidth/2 );
+			Vector3 rayvector = (wheel.m_raycastInfo.m_wheelDirectionWS ) * (raylen); //offset?
+			Vector3 source = wheel.m_raycastInfo.m_hardPointWS + offset;
 
-	PhysicsDirectSpaceState3D::RayResult rr;
+			const Vector3 &target = source + rayvector;
+			source -= y_val * wheel.m_raycastInfo.m_wheelDirectionWS;
+			real_t param = real_t(0.);
 
-	PhysicsDirectSpaceState3D *ss = s->get_space_state();
+			PhysicsDirectSpaceState3D::RayResult rr;
+			PhysicsDirectSpaceState3D *ss = s->get_space_state();
+			PhysicsDirectSpaceState3D::RayParameters ray_params;
+			ray_params.from = source;
+			ray_params.to = target;
+			ray_params.exclude = exclude;
+			ray_params.collision_mask = get_collision_mask();
 
-	PhysicsDirectSpaceState3D::RayParameters ray_params;
-	ray_params.from = source;
-	ray_params.to = target;
-	ray_params.exclude = exclude;
-	ray_params.collision_mask = get_collision_mask();
+			wheel.m_raycastInfo.m_groundObject = nullptr;
+			bool col = ss->intersect_ray(ray_params, rr);
 
-	wheel.m_raycastInfo.m_groundObject = nullptr;
-	bool col = ss->intersect_ray(ray_params, rr);
+			if (col) 
+			{
+				param = source.distance_to(rr.position) / source.distance_to(target);
+				real_t hitDistance = raylen * param;
+				wheel.m_raycastInfo.m_isInContact = true;
+				real_t predicted_suspension_length = hitDistance - y_val;
+				//Select the cast with the "most affect" on suspension
+				if(predicted_suspension_length <= suspension_length)
+				{
+					suspension_length = predicted_suspension_length;
+					collision_ray_result = rr;
+					depth = raylen * param; 
+				}
+			}
+		}
+	}
 
-	if (col) {
-		param = source.distance_to(rr.position) / source.distance_to(target);
-		depth = raylen * param;
-		wheel.m_raycastInfo.m_contactNormalWS = rr.normal;
+	// Use the collision
+	if(wheel.m_raycastInfo.m_isInContact)
+	{
+		wheel.m_raycastInfo.m_contactNormalWS = collision_ray_result.normal;
 
 		wheel.m_raycastInfo.m_isInContact = true;
-		if (rr.collider) {
-			wheel.m_raycastInfo.m_groundObject = Object::cast_to<PhysicsBody3D>(rr.collider);
+		if (collision_ray_result.collider) {
+			wheel.m_raycastInfo.m_groundObject = Object::cast_to<PhysicsBody3D>(collision_ray_result.collider);
 		}
 
-		real_t hitDistance = param * raylen;
-		wheel.m_raycastInfo.m_suspensionLength = hitDistance - wheel.m_wheelRadius;
+		wheel.m_raycastInfo.m_suspensionLength = suspension_length;
 		//clamp on max suspension travel
 
 		real_t minSuspensionLength = wheel.m_suspensionRestLength - wheel.m_maxSuspensionTravelCm * real_t(0.01);
@@ -438,7 +480,7 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 			wheel.m_raycastInfo.m_suspensionLength = maxSuspensionLength;
 		}
 
-		wheel.m_raycastInfo.m_contactPointWS = rr.position;
+		wheel.m_raycastInfo.m_contactPointWS = collision_ray_result.position;
 
 		real_t denominator = wheel.m_raycastInfo.m_contactNormalWS.dot(wheel.m_raycastInfo.m_wheelDirectionWS);
 
@@ -461,8 +503,12 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 			wheel.m_clippedInvContactDotSuspension = inv;
 		}
 
-	} else {
+	}
+	else{
 		wheel.m_raycastInfo.m_isInContact = false;
+		
+		wheel.m_raycastInfo.m_contactPointWS = wheel.m_raycastInfo.m_hardPointWS + wheel.m_raycastInfo.m_wheelDirectionWS * (wheel.m_suspensionRestLength + wheel.m_wheelRadius);
+
 		//put wheel info as in rest position
 		wheel.m_raycastInfo.m_suspensionLength = wheel.m_suspensionRestLength;
 		wheel.m_suspensionRelativeVelocity = real_t(0.0);
@@ -472,6 +518,7 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 
 	return depth;
 }
+
 
 void VehicleBody3D::_update_suspension(PhysicsDirectBodyState3D *s) {
 	real_t chassisMass = get_mass();

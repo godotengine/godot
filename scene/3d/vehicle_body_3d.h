@@ -52,6 +52,7 @@ class VehicleWheel3D : public Node3D {
 	real_t m_suspensionRestLength = 0.15;
 	real_t m_maxSuspensionTravelCm = 500.0;
 	real_t m_wheelRadius = 0.5;
+	real_t m_wheelWidth = 0.3;
 
 	real_t m_suspensionStiffness = 5.88;
 	real_t m_wheelsDampingCompression = 0.83;
@@ -77,6 +78,8 @@ class VehicleWheel3D : public Node3D {
 	//calculated by suspension
 	real_t m_wheelsSuspensionForce = 0.0;
 	real_t m_skidInfo = 0.0;
+
+	Vector3 m_wheelFwd;
 
 	struct RaycastInfo {
 		//set by raycaster
@@ -146,6 +149,9 @@ public:
 
 	void set_steering(real_t p_steering);
 	real_t get_steering() const;
+
+	void set_width(real_t p_wheel_width);
+	real_t get_width() const;
 
 	TypedArray<String> get_configuration_warnings() const override;
 
