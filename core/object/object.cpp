@@ -624,7 +624,7 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 	}
 
 	if (_extension) {
-        auto current_extension = _extension;
+        const ObjectNativeExtension *current_extension = _extension;
         while (current_extension) {
             p_list->push_back(PropertyInfo(Variant::NIL, current_extension->class_name, PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));
             ClassDB::get_property_list(current_extension->class_name, p_list, true, this);
