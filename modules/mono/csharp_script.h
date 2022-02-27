@@ -116,7 +116,6 @@ private:
 	bool placeholder_fallback_enabled = false;
 	bool exports_invalidated = true;
 	void _update_exports_values(HashMap<StringName, Variant> &values, List<PropertyInfo> &propnames);
-	void _update_member_info_no_exports();
 	void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override;
 #endif
 
@@ -129,14 +128,6 @@ private:
 	void _clear();
 
 	bool _update_exports(PlaceHolderScriptInstance *p_instance_to_update = nullptr);
-
-#warning TODO
-#if 0
-	bool _get_member_export(IMonoClassMember *p_member, bool p_inspect_export, PropertyInfo &r_prop_info, bool &r_exported);
-#ifdef TOOLS_ENABLED
-	static int _try_get_member_export_hint(IMonoClassMember *p_member, ManagedType p_type, Variant::Type p_variant_type, bool p_allow_generics, PropertyHint &r_hint, String &r_hint_string);
-#endif
-#endif
 
 	CSharpInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_is_ref_counted, Callable::CallError &r_error);
 	Variant _new(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
@@ -261,13 +252,13 @@ public:
 	bool has_method(const StringName &p_method) const override;
 	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
-	void mono_object_disposed();
+	void mono_object_disposed(GCHandleIntPtr p_gchandle_to_free);
 
 	/*
 	 * If 'r_delete_owner' is set to true, the caller must memdelete the script instance's owner. Otherwise, if
 	 * 'r_remove_script_instance' is set to true, the caller must destroy the script instance by removing it from its owner.
 	 */
-	void mono_object_disposed_baseref(bool p_is_finalizer, bool &r_delete_owner, bool &r_remove_script_instance);
+	void mono_object_disposed_baseref(GCHandleIntPtr p_gchandle_to_free, bool p_is_finalizer, bool &r_delete_owner, bool &r_remove_script_instance);
 
 	void connect_event_signal(const StringName &p_event_signal);
 	void disconnect_event_signals();
@@ -384,7 +375,8 @@ public:
 #endif
 
 	static void release_script_gchandle(MonoGCHandleData &p_gchandle);
-	static void release_script_gchandle(void *p_expected_mono_obj_unused, MonoGCHandleData &p_gchandle);
+	static void release_script_gchandle_thread_safe(GCHandleIntPtr p_gchandle_to_free, MonoGCHandleData &r_gchandle);
+	static void release_binding_gchandle_thread_safe(GCHandleIntPtr p_gchandle_to_free, CSharpScriptBinding &r_script_binding);
 
 	bool debug_break(const String &p_error, bool p_allow_continue = true);
 	bool debug_break_parse(const String &p_file, int p_line, const String &p_error);

@@ -513,20 +513,23 @@ namespace GodotTools
 
         protected override void Dispose(bool disposing)
         {
-            base.Dispose(disposing);
-
-            if (_exportPluginWeak != null)
+            if (disposing)
             {
-                // We need to dispose our export plugin before the editor destroys EditorSettings.
-                // Otherwise, if the GC disposes it at a later time, EditorExportPlatformAndroid
-                // will be freed after EditorSettings already was, and its device polling thread
-                // will try to access the EditorSettings singleton, resulting in null dereferencing.
-                (_exportPluginWeak.GetRef() as ExportPlugin)?.Dispose();
+                if (IsInstanceValid(_exportPluginWeak))
+                {
+                    // We need to dispose our export plugin before the editor destroys EditorSettings.
+                    // Otherwise, if the GC disposes it at a later time, EditorExportPlatformAndroid
+                    // will be freed after EditorSettings already was, and its device polling thread
+                    // will try to access the EditorSettings singleton, resulting in null dereferencing.
+                    (_exportPluginWeak.GetRef() as ExportPlugin)?.Dispose();
 
-                _exportPluginWeak.Dispose();
+                    _exportPluginWeak.Dispose();
+                }
+
+                GodotIdeManager?.Dispose();
             }
 
-            GodotIdeManager?.Dispose();
+            base.Dispose(disposing);
         }
 
         public void OnBeforeSerialize()

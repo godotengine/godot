@@ -7,6 +7,8 @@
   <PropertyGroup>
     <!-- $(GodotProjectDir) would normally be defined by the Godot.NET.Sdk -->
     <GodotProjectDir>$(MSBuildProjectDirectory)</GodotProjectDir>
+    <!-- For compiling GetGodotPropertyDefaultValues. -->
+    <DefineConstants>$(DefineConstants);TOOLS</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>

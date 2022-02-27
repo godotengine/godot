@@ -81,7 +81,7 @@ GD_PINVOKE_EXPORT Object *godotsharp_engine_get_singleton(const String *p_name) 
 	return Engine::get_singleton()->get_singleton_object(*p_name);
 }
 
-GD_PINVOKE_EXPORT void godotsharp_internal_object_disposed(Object *p_ptr) {
+GD_PINVOKE_EXPORT GCHandleIntPtr godotsharp_internal_object_get_associated_gchandle(Object *p_ptr) {
 #ifdef DEBUG_ENABLED
 	CRASH_COND(p_ptr == nullptr);
 #endif
@@ -90,7 +90,35 @@ GD_PINVOKE_EXPORT void godotsharp_internal_object_disposed(Object *p_ptr) {
 		CSharpInstance *cs_instance = CAST_CSHARP_INSTANCE(p_ptr->get_script_instance());
 		if (cs_instance) {
 			if (!cs_instance->is_destructing_script_instance()) {
-				cs_instance->mono_object_disposed();
+				return cs_instance->get_gchandle_intptr();
+			}
+			return { nullptr };
+		}
+	}
+
+	void *data = CSharpLanguage::get_existing_instance_binding(p_ptr);
+
+	if (data) {
+		CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->get();
+		if (script_binding.inited) {
+			MonoGCHandleData &gchandle = script_binding.gchandle;
+			return !gchandle.is_released() ? gchandle.get_intptr() : GCHandleIntPtr{ nullptr };
+		}
+	}
+
+	return { nullptr };
+}
+
+GD_PINVOKE_EXPORT void godotsharp_internal_object_disposed(Object *p_ptr, GCHandleIntPtr p_gchandle_to_free) {
+#ifdef DEBUG_ENABLED
+	CRASH_COND(p_ptr == nullptr);
+#endif
+
+	if (p_ptr->get_script_instance()) {
+		CSharpInstance *cs_instance = CAST_CSHARP_INSTANCE(p_ptr->get_script_instance());
+		if (cs_instance) {
+			if (!cs_instance->is_destructing_script_instance()) {
+				cs_instance->mono_object_disposed(p_gchandle_to_free);
 				p_ptr->set_script_instance(nullptr);
 			}
 			return;
@@ -102,16 +130,14 @@ GD_PINVOKE_EXPORT void godotsharp_internal_object_disposed(Object *p_ptr) {
 	if (data) {
 		CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->get();
 		if (script_binding.inited) {
-			MonoGCHandleData &gchandle = script_binding.gchandle;
-			if (!gchandle.is_released()) {
-				CSharpLanguage::release_script_gchandle(nullptr, gchandle);
-				script_binding.inited = false;
+			if (!script_binding.gchandle.is_released()) {
+				CSharpLanguage::release_binding_gchandle_thread_safe(p_gchandle_to_free, script_binding);
 			}
 		}
 	}
 }
 
-GD_PINVOKE_EXPORT void godotsharp_internal_refcounted_disposed(Object *p_ptr, bool p_is_finalizer) {
+GD_PINVOKE_EXPORT void godotsharp_internal_refcounted_disposed(Object *p_ptr, GCHandleIntPtr p_gchandle_to_free, bool p_is_finalizer) {
 #ifdef DEBUG_ENABLED
 	CRASH_COND(p_ptr == nullptr);
 	// This is only called with RefCounted derived classes
@@ -127,7 +153,8 @@ GD_PINVOKE_EXPORT void godotsharp_internal_refcounted_disposed(Object *p_ptr, bo
 				bool delete_owner;
 				bool remove_script_instance;
 
-				cs_instance->mono_object_disposed_baseref(p_is_finalizer, delete_owner, remove_script_instance);
+				cs_instance->mono_object_disposed_baseref(p_gchandle_to_free, p_is_finalizer,
+						delete_owner, remove_script_instance);
 
 				if (delete_owner) {
 					memdelete(rc);
@@ -150,10 +177,8 @@ GD_PINVOKE_EXPORT void godotsharp_internal_refcounted_disposed(Object *p_ptr, bo
 		if (data) {
 			CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->get();
 			if (script_binding.inited) {
-				MonoGCHandleData &gchandle = script_binding.gchandle;
-				if (!gchandle.is_released()) {
-					CSharpLanguage::release_script_gchandle(nullptr, gchandle);
-					script_binding.inited = false;
+				if (!script_binding.gchandle.is_released()) {
+					CSharpLanguage::release_binding_gchandle_thread_safe(p_gchandle_to_free, script_binding);
 				}
 			}
 		}
@@ -188,7 +213,7 @@ GD_PINVOKE_EXPORT GCHandleIntPtr godotsharp_internal_unmanaged_get_script_instan
 	}
 
 	*r_has_cs_script_instance = false;
-	return GCHandleIntPtr();
+	return { nullptr };
 }
 
 GD_PINVOKE_EXPORT GCHandleIntPtr godotsharp_internal_unmanaged_get_instance_binding_managed(Object *p_unmanaged) {
@@ -197,9 +222,9 @@ GD_PINVOKE_EXPORT GCHandleIntPtr godotsharp_internal_unmanaged_get_instance_bind
 #endif
 
 	void *data = CSharpLanguage::get_instance_binding(p_unmanaged);
-	ERR_FAIL_NULL_V(data, GCHandleIntPtr());
+	ERR_FAIL_NULL_V(data, { nullptr });
 	CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->value();
-	ERR_FAIL_COND_V(!script_binding.inited, GCHandleIntPtr());
+	ERR_FAIL_COND_V(!script_binding.inited, { nullptr });
 
 	return script_binding.gchandle.get_intptr();
 }
@@ -210,9 +235,9 @@ GD_PINVOKE_EXPORT GCHandleIntPtr godotsharp_internal_unmanaged_instance_binding_
 #endif
 
 	void *data = CSharpLanguage::get_instance_binding(p_unmanaged);
-	ERR_FAIL_NULL_V(data, GCHandleIntPtr());
+	ERR_FAIL_NULL_V(data, { nullptr });
 	CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->value();
-	ERR_FAIL_COND_V(!script_binding.inited, GCHandleIntPtr());
+	ERR_FAIL_COND_V(!script_binding.inited, { nullptr });
 
 	MonoGCHandleData &gchandle = script_binding.gchandle;
 
@@ -229,14 +254,14 @@ GD_PINVOKE_EXPORT GCHandleIntPtr godotsharp_internal_unmanaged_instance_binding_
 #endif
 
 	bool parent_is_object_class = ClassDB::is_parent_class(p_unmanaged->get_class_name(), script_binding.type_name);
-	ERR_FAIL_COND_V_MSG(!parent_is_object_class, GCHandleIntPtr(),
+	ERR_FAIL_COND_V_MSG(!parent_is_object_class, { nullptr },
 			"Type inherits from native type '" + script_binding.type_name + "', so it can't be instantiated in object of type: '" + p_unmanaged->get_class() + "'.");
 
 	GCHandleIntPtr strong_gchandle =
 			GDMonoCache::managed_callbacks.ScriptManagerBridge_CreateManagedForGodotObjectBinding(
 					&script_binding.type_name, p_unmanaged);
 
-	ERR_FAIL_NULL_V(strong_gchandle.value, GCHandleIntPtr());
+	ERR_FAIL_NULL_V(strong_gchandle.value, { nullptr });
 
 	gchandle = MonoGCHandleData(strong_gchandle, gdmono::GCHandleType::STRONG_HANDLE);
 	script_binding.inited = true;
@@ -420,25 +445,25 @@ GD_PINVOKE_EXPORT bool godotsharp_callable_get_data_for_marshalling(const Callab
 			return true;
 		} else if (compare_equal_func == SignalAwaiterCallable::compare_equal_func_ptr) {
 			SignalAwaiterCallable *signal_awaiter_callable = static_cast<SignalAwaiterCallable *>(custom);
-			*r_delegate_handle = GCHandleIntPtr();
+			*r_delegate_handle = { nullptr };
 			*r_object = ObjectDB::get_instance(signal_awaiter_callable->get_object());
 			memnew_placement(r_name, StringName(signal_awaiter_callable->get_signal()));
 			return true;
 		} else if (compare_equal_func == EventSignalCallable::compare_equal_func_ptr) {
 			EventSignalCallable *event_signal_callable = static_cast<EventSignalCallable *>(custom);
-			*r_delegate_handle = GCHandleIntPtr();
+			*r_delegate_handle = { nullptr };
 			*r_object = ObjectDB::get_instance(event_signal_callable->get_object());
 			memnew_placement(r_name, StringName(event_signal_callable->get_signal()));
 			return true;
 		}
 
 		// Some other CallableCustom. We only support ManagedCallable.
-		*r_delegate_handle = GCHandleIntPtr();
+		*r_delegate_handle = { nullptr };
 		*r_object = nullptr;
 		memnew_placement(r_name, StringName());
 		return false;
 	} else {
-		*r_delegate_handle = GCHandleIntPtr();
+		*r_delegate_handle = { nullptr };
 		*r_object = ObjectDB::get_instance(p_callable->get_object_id());
 		memnew_placement(r_name, StringName(p_callable->get_method()));
 		return true;
@@ -1256,10 +1281,11 @@ GD_PINVOKE_EXPORT void godotsharp_object_to_string(Object *p_ptr, godot_string *
 #endif
 
 // We need this to prevent the functions from being stripped.
-void *godotsharp_pinvoke_funcs[178] = {
+void *godotsharp_pinvoke_funcs[179] = {
 	(void *)godotsharp_method_bind_get_method,
 	(void *)godotsharp_get_class_constructor,
 	(void *)godotsharp_engine_get_singleton,
+	(void *)godotsharp_internal_object_get_associated_gchandle,
 	(void *)godotsharp_internal_object_disposed,
 	(void *)godotsharp_internal_refcounted_disposed,
 	(void *)godotsharp_internal_object_connect_event_signal,

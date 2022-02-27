@@ -1407,6 +1407,13 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		}
 	}
 
+	// We generate a `GodotClassName` attribute if the engine class name is not the same as the
+	// generated C# class name. This allows introspection code to find the name associated with
+	// the class. If the attribute is not present, the C# class name can be used instead.
+	if (itype.name != itype.proxy_name) {
+		output << INDENT1 "[GodotClassName(\"" << itype.name << "\")]\n";
+	}
+
 	output.append(INDENT1 "public ");
 	if (itype.is_singleton) {
 		output.append("static partial class ");

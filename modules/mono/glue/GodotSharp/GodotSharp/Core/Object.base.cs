@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Godot.NativeInterop;
 
 namespace Godot
@@ -121,23 +122,35 @@ namespace Godot
             if (_disposed)
                 return;
 
+            _disposed = true;
+
             if (NativePtr != IntPtr.Zero)
             {
+                IntPtr gcHandleToFree = NativeFuncs.godotsharp_internal_object_get_associated_gchandle(NativePtr);
+
+                if (gcHandleToFree != IntPtr.Zero)
+                {
+                    object target = GCHandle.FromIntPtr(gcHandleToFree).Target;
+                    // The GC handle may have been replaced in another thread. Release it only if
+                    // it's associated to this managed instance, or if the target is no longer alive.
+                    if (target != this && target != null)
+                        gcHandleToFree = IntPtr.Zero;
+                }
+
                 if (_memoryOwn)
                 {
-                    NativeFuncs.godotsharp_internal_refcounted_disposed(NativePtr, (!disposing).ToGodotBool());
+                    NativeFuncs.godotsharp_internal_refcounted_disposed(NativePtr, gcHandleToFree,
+                        (!disposing).ToGodotBool());
                 }
                 else
                 {
-                    NativeFuncs.godotsharp_internal_object_disposed(NativePtr);
+                    NativeFuncs.godotsharp_internal_object_disposed(NativePtr, gcHandleToFree);
                 }
 
                 NativePtr = IntPtr.Zero;
             }
 
             DisposablesTracker.UnregisterGodotObject(_weakReferenceToSelf);
-
-            _disposed = true;
         }
 
         /// <summary>

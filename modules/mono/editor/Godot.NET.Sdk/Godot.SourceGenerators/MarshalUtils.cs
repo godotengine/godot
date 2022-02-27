@@ -1,9 +1,10 @@
 using System;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace Godot.SourceGenerators
 {
-    public static class MarshalUtils
+    internal static class MarshalUtils
     {
         public class TypeCache
         {
@@ -35,7 +36,73 @@ namespace Godot.SourceGenerators
             }
         }
 
-        public static MarshalType? ConvertManagedTypeToVariantType(ITypeSymbol type, TypeCache typeCache)
+        public static VariantType? ConvertMarshalTypeToVariantType(MarshalType marshalType)
+            => marshalType switch
+            {
+                MarshalType.Boolean => VariantType.Bool,
+                MarshalType.Char => VariantType.Int,
+                MarshalType.SByte => VariantType.Int,
+                MarshalType.Int16 => VariantType.Int,
+                MarshalType.Int32 => VariantType.Int,
+                MarshalType.Int64 => VariantType.Int,
+                MarshalType.Byte => VariantType.Int,
+                MarshalType.UInt16 => VariantType.Int,
+                MarshalType.UInt32 => VariantType.Int,
+                MarshalType.UInt64 => VariantType.Int,
+                MarshalType.Single => VariantType.Float,
+                MarshalType.Double => VariantType.Float,
+                MarshalType.String => VariantType.String,
+                MarshalType.Vector2 => VariantType.Vector2,
+                MarshalType.Vector2i => VariantType.Vector2i,
+                MarshalType.Rect2 => VariantType.Rect2,
+                MarshalType.Rect2i => VariantType.Rect2i,
+                MarshalType.Transform2D => VariantType.Transform2d,
+                MarshalType.Vector3 => VariantType.Vector3,
+                MarshalType.Vector3i => VariantType.Vector3i,
+                MarshalType.Basis => VariantType.Basis,
+                MarshalType.Quaternion => VariantType.Quaternion,
+                MarshalType.Transform3D => VariantType.Transform3d,
+                MarshalType.Vector4 => VariantType.Vector4,
+                MarshalType.Vector4i => VariantType.Vector4i,
+                MarshalType.Projection => VariantType.Projection,
+                MarshalType.AABB => VariantType.Aabb,
+                MarshalType.Color => VariantType.Color,
+                MarshalType.Plane => VariantType.Plane,
+                MarshalType.Callable => VariantType.Callable,
+                MarshalType.SignalInfo => VariantType.Signal,
+                MarshalType.Enum => VariantType.Int,
+                MarshalType.ByteArray => VariantType.PackedByteArray,
+                MarshalType.Int32Array => VariantType.PackedInt32Array,
+                MarshalType.Int64Array => VariantType.PackedInt64Array,
+                MarshalType.SingleArray => VariantType.PackedFloat32Array,
+                MarshalType.DoubleArray => VariantType.PackedFloat64Array,
+                MarshalType.StringArray => VariantType.PackedStringArray,
+                MarshalType.Vector2Array => VariantType.PackedVector2Array,
+                MarshalType.Vector3Array => VariantType.PackedVector3Array,
+                MarshalType.ColorArray => VariantType.PackedColorArray,
+                MarshalType.GodotObjectOrDerivedArray => VariantType.Array,
+                MarshalType.SystemObjectArray => VariantType.Array,
+                MarshalType.GodotGenericDictionary => VariantType.Dictionary,
+                MarshalType.GodotGenericArray => VariantType.Array,
+                MarshalType.SystemGenericDictionary => VariantType.Dictionary,
+                MarshalType.SystemGenericList => VariantType.Array,
+                MarshalType.GenericIDictionary => VariantType.Dictionary,
+                MarshalType.GenericICollection => VariantType.Array,
+                MarshalType.GenericIEnumerable => VariantType.Array,
+                MarshalType.SystemObject => VariantType.Nil,
+                MarshalType.GodotObjectOrDerived => VariantType.Object,
+                MarshalType.StringName => VariantType.StringName,
+                MarshalType.NodePath => VariantType.NodePath,
+                MarshalType.RID => VariantType.Rid,
+                MarshalType.GodotDictionary => VariantType.Dictionary,
+                MarshalType.GodotArray => VariantType.Array,
+                MarshalType.IDictionary => VariantType.Dictionary,
+                MarshalType.ICollection => VariantType.Array,
+                MarshalType.IEnumerable => VariantType.Array,
+                _ => null
+            };
+
+        public static MarshalType? ConvertManagedTypeToMarshalType(ITypeSymbol type, TypeCache typeCache)
         {
             var specialType = type.SpecialType;
 
@@ -69,39 +136,44 @@ namespace Godot.SourceGenerators
                     return MarshalType.String;
                 case SpecialType.System_Object:
                     return MarshalType.SystemObject;
-                case SpecialType.System_ValueType:
-                {
-                    if (type.ContainingAssembly.Name == "GodotSharp" &&
-                        type.ContainingNamespace.Name == "Godot")
-                    {
-                        return type switch
-                        {
-                            { Name: "Vector2" } => MarshalType.Vector2,
-                            { Name: "Vector2i" } => MarshalType.Vector2i,
-                            { Name: "Rect2" } => MarshalType.Rect2,
-                            { Name: "Rect2i" } => MarshalType.Rect2i,
-                            { Name: "Transform2D" } => MarshalType.Transform2D,
-                            { Name: "Vector3" } => MarshalType.Vector3,
-                            { Name: "Vector3i" } => MarshalType.Vector3i,
-                            { Name: "Basis" } => MarshalType.Basis,
-                            { Name: "Quaternion" } => MarshalType.Quaternion,
-                            { Name: "Transform3D" } => MarshalType.Transform3D,
-                            { Name: "AABB" } => MarshalType.AABB,
-                            { Name: "Color" } => MarshalType.Color,
-                            { Name: "Plane" } => MarshalType.Plane,
-                            { Name: "RID" } => MarshalType.RID,
-                            { Name: "Callable" } => MarshalType.Callable,
-                            { Name: "SignalInfo" } => MarshalType.SignalInfo,
-                            { TypeKind: TypeKind.Enum } => MarshalType.Enum,
-                            _ => null
-                        };
-                    }
-
-                    return null;
-                }
                 default:
                 {
-                    if (type.TypeKind == TypeKind.Array)
+                    var typeKind = type.TypeKind;
+
+                    if (typeKind == TypeKind.Enum)
+                        return MarshalType.Enum;
+
+                    if (typeKind == TypeKind.Struct)
+                    {
+                        if (type.ContainingAssembly.Name == "GodotSharp" &&
+                            type.ContainingNamespace.Name == "Godot")
+                        {
+                            return type switch
+                            {
+                                { Name: "Vector2" } => MarshalType.Vector2,
+                                { Name: "Vector2i" } => MarshalType.Vector2i,
+                                { Name: "Rect2" } => MarshalType.Rect2,
+                                { Name: "Rect2i" } => MarshalType.Rect2i,
+                                { Name: "Transform2D" } => MarshalType.Transform2D,
+                                { Name: "Vector3" } => MarshalType.Vector3,
+                                { Name: "Vector3i" } => MarshalType.Vector3i,
+                                { Name: "Basis" } => MarshalType.Basis,
+                                { Name: "Quaternion" } => MarshalType.Quaternion,
+                                { Name: "Transform3D" } => MarshalType.Transform3D,
+                                { Name: "Vector4" } => MarshalType.Vector4,
+                                { Name: "Vector4i" } => MarshalType.Vector4i,
+                                { Name: "Projection" } => MarshalType.Projection,
+                                { Name: "AABB" } => MarshalType.AABB,
+                                { Name: "Color" } => MarshalType.Color,
+                                { Name: "Plane" } => MarshalType.Plane,
+                                { Name: "RID" } => MarshalType.RID,
+                                { Name: "Callable" } => MarshalType.Callable,
+                                { Name: "SignalInfo" } => MarshalType.SignalInfo,
+                                _ => null
+                            };
+                        }
+                    }
+                    else if (typeKind == TypeKind.Array)
                     {
                         var arrayType = (IArrayTypeSymbol)type;
                         var elementType = arrayType.ElementType;
@@ -127,17 +199,24 @@ namespace Godot.SourceGenerators
                         if (elementType.SimpleDerivesFrom(typeCache.GodotObjectType))
                             return MarshalType.GodotObjectOrDerivedArray;
 
-                        if (type.ContainingAssembly.Name == "GodotSharp" &&
-                            type.ContainingNamespace.Name == "Godot")
+                        if (elementType.ContainingAssembly.Name == "GodotSharp" &&
+                            elementType.ContainingNamespace.Name == "Godot")
                         {
-                            return elementType switch
+                            switch (elementType)
                             {
-                                { Name: "Vector2" } => MarshalType.Vector2Array,
-                                { Name: "Vector3" } => MarshalType.Vector3Array,
-                                { Name: "Color" } => MarshalType.ColorArray,
-                                _ => null
-                            };
+                                case { Name: "Vector2" }:
+                                    return MarshalType.Vector2Array;
+                                case { Name: "Vector3" }:
+                                    return MarshalType.Vector3Array;
+                                case { Name: "Color" }:
+                                return MarshalType.ColorArray;
+                            }
                         }
+
+                        if (ConvertManagedTypeToMarshalType(elementType, typeCache) != null)
+                            return MarshalType.GodotArray;
+
+                        return null;
                     }
                     else if (type is INamedTypeSymbol { IsGenericType: true } genericType)
                     {
@@ -190,7 +269,10 @@ namespace Godot.SourceGenerators
                                         { Name: "NodePath" } => MarshalType.NodePath,
                                         _ => null
                                     };
-                                case "Godot.Collections" when !(type is INamedTypeSymbol { IsGenericType: true }):
+                                case "Collections"
+                                    when !(type is INamedTypeSymbol { IsGenericType: true }) &&
+                                         type.ContainingNamespace.FullQualifiedName() ==
+                                         "Godot.Collections":
                                     return type switch
                                     {
                                         { Name: "Dictionary" } => MarshalType.GodotDictionary,
@@ -219,6 +301,20 @@ namespace Godot.SourceGenerators
             }
 
             return false;
+        }
+
+        public static ITypeSymbol? GetArrayElementType(ITypeSymbol typeSymbol)
+        {
+            if (typeSymbol.TypeKind == TypeKind.Array)
+            {
+                var arrayType = (IArrayTypeSymbol)typeSymbol;
+                return arrayType.ElementType;
+            }
+
+            if (typeSymbol is INamedTypeSymbol { IsGenericType: true } genericType)
+                return genericType.TypeArguments.FirstOrDefault();
+
+            return null;
         }
     }
 }

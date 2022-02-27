@@ -6,7 +6,7 @@ namespace Godot
     /// An attribute used to export objects.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
-    public class ExportAttribute : Attribute
+    public sealed class ExportAttribute : Attribute
     {
         private PropertyHint hint;
         private string hintString;

@@ -1,6 +1,8 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using Godot.Collections;
@@ -523,7 +525,7 @@ namespace Godot.Bridge
 
                 Dictionary<string, Dictionary> rpcFunctions = new();
 
-                Type top = _scriptBridgeMap[scriptPtr];
+                Type top = scriptType;
                 Type native = Object.InternalGetClassNativeBase(top);
 
                 while (top != null && top != native)
@@ -600,6 +602,257 @@ namespace Godot.Bridge
                 ExceptionUtils.DebugUnhandledException(e);
                 *outNewGCHandlePtr = IntPtr.Zero;
                 return false.ToGodotBool();
+            }
+        }
+
+        // ReSharper disable once InconsistentNaming
+        [SuppressMessage("ReSharper", "NotAccessedField.Local")]
+        [StructLayout(LayoutKind.Sequential)]
+        private ref struct godotsharp_property_info
+        {
+            // Careful with padding...
+            public godot_string_name Name; // Not owned
+            public godot_string HintString;
+            public int Type;
+            public int Hint;
+            public int Usage;
+            public godot_bool Exported;
+
+            public void Dispose()
+            {
+                HintString.Dispose();
+            }
+        }
+
+        [UnmanagedCallersOnly]
+        internal static unsafe void GetPropertyInfoList(IntPtr scriptPtr,
+            delegate* unmanaged<IntPtr, godot_string*, void*, int, void> addPropInfoFunc)
+        {
+            try
+            {
+                Type scriptType = _scriptBridgeMap[scriptPtr];
+                GetPropertyInfoListForType(scriptType, scriptPtr, addPropInfoFunc);
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.DebugUnhandledException(e);
+            }
+        }
+
+        private static unsafe void GetPropertyInfoListForType(Type type, IntPtr scriptPtr,
+            delegate* unmanaged<IntPtr, godot_string*, void*, int, void> addPropInfoFunc)
+        {
+            try
+            {
+                var getGodotPropertiesMetadataMethod = type.GetMethod(
+                    "GetGodotPropertiesMetadata",
+                    BindingFlags.DeclaredOnly | BindingFlags.Static |
+                    BindingFlags.NonPublic | BindingFlags.Public);
+
+                if (getGodotPropertiesMetadataMethod == null)
+                    return;
+
+                var properties = (System.Collections.Generic.List<PropertyInfo>)
+                    getGodotPropertiesMetadataMethod.Invoke(null, null);
+
+                if (properties == null || properties.Count <= 0)
+                    return;
+
+                int length = properties.Count;
+
+                // There's no recursion here, so it's ok to go with a big enough number for most cases
+                // stackMaxSize = stackMaxLength * sizeof(godotsharp_property_info)
+                const int stackMaxLength = 32;
+                bool useStack = length < stackMaxLength;
+
+                godotsharp_property_info* interopProperties;
+
+                if (useStack)
+                {
+                    // Weird limitation, hence the need for aux:
+                    // "In the case of pointer types, you can use a stackalloc expression only in a local variable declaration to initialize the variable."
+                    var aux = stackalloc godotsharp_property_info[length];
+                    interopProperties = aux;
+                }
+                else
+                {
+#if NET6_0_OR_GREATER
+                    interopProperties = ((godotsharp_property_info*)NativeMemory.Alloc(length))!;
+#else
+                    interopProperties = ((godotsharp_property_info*)Marshal.AllocHGlobal(length))!;
+#endif
+                }
+
+                try
+                {
+                    for (int i = 0; i < length; i++)
+                    {
+                        var property = properties[i];
+
+                        godotsharp_property_info interopProperty = new()
+                        {
+                            Type = (int)property.Type,
+                            Name = (godot_string_name)property.Name.NativeValue, // Not owned
+                            Hint = (int)property.Hint,
+                            HintString = Marshaling.ConvertStringToNative(property.HintString),
+                            Usage = (int)property.Usage,
+                            Exported = property.Exported.ToGodotBool()
+                        };
+
+                        interopProperties[i] = interopProperty;
+                    }
+
+                    using godot_string currentClassName = Marshaling.ConvertStringToNative(type.Name);
+
+                    addPropInfoFunc(scriptPtr, &currentClassName, interopProperties, length);
+
+                    // We're borrowing the StringName's without making an owning copy, so the
+                    // managed collection needs to be kept alive until `addPropInfoFunc` returns.
+                    GC.KeepAlive(properties);
+                }
+                finally
+                {
+                    for (int i = 0; i < length; i++)
+                        interopProperties[i].Dispose();
+
+                    if (!useStack)
+                    {
+#if NET6_0_OR_GREATER
+                        NativeMemory.Free(interopProperties);
+#else
+                        Marshal.FreeHGlobal((IntPtr)interopProperties);
+#endif
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.DebugUnhandledException(e);
+            }
+        }
+
+        // ReSharper disable once InconsistentNaming
+        [SuppressMessage("ReSharper", "NotAccessedField.Local")]
+        [StructLayout(LayoutKind.Sequential)]
+        private ref struct godotsharp_property_def_val_pair
+        {
+            // Careful with padding...
+            public godot_string_name Name; // Not owned
+            public godot_variant Value;
+
+            public void Dispose()
+            {
+                Value.Dispose();
+            }
+        }
+
+        [UnmanagedCallersOnly]
+        internal static unsafe void GetPropertyDefaultValues(IntPtr scriptPtr,
+            delegate* unmanaged<IntPtr, void*, int, void> addDefValFunc)
+        {
+            try
+            {
+                Type top = _scriptBridgeMap[scriptPtr];
+                Type native = Object.InternalGetClassNativeBase(top);
+
+                while (top != null && top != native)
+                {
+                    GetPropertyDefaultValuesForType(top, scriptPtr, addDefValFunc);
+
+                    top = top.BaseType;
+                }
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.DebugUnhandledException(e);
+            }
+        }
+
+        [SkipLocalsInit]
+        private static unsafe void GetPropertyDefaultValuesForType(Type type, IntPtr scriptPtr,
+            delegate* unmanaged<IntPtr, void*, int, void> addDefValFunc)
+        {
+            try
+            {
+                var getGodotPropertyDefaultValuesMethod = type.GetMethod(
+                    "GetGodotPropertyDefaultValues",
+                    BindingFlags.DeclaredOnly | BindingFlags.Static |
+                    BindingFlags.NonPublic | BindingFlags.Public);
+
+                if (getGodotPropertyDefaultValuesMethod == null)
+                    return;
+
+                var defaultValues = (System.Collections.Generic.Dictionary<StringName, object>)
+                    getGodotPropertyDefaultValuesMethod.Invoke(null, null);
+
+                if (defaultValues == null || defaultValues.Count <= 0)
+                    return;
+
+                int length = defaultValues.Count;
+
+                // There's no recursion here, so it's ok to go with a big enough number for most cases
+                // stackMaxSize = stackMaxLength * sizeof(godotsharp_property_def_val_pair)
+                const int stackMaxLength = 32;
+                bool useStack = length < stackMaxLength;
+
+                godotsharp_property_def_val_pair* interopDefaultValues;
+
+                if (useStack)
+                {
+                    // Weird limitation, hence the need for aux:
+                    // "In the case of pointer types, you can use a stackalloc expression only in a local variable declaration to initialize the variable."
+                    var aux = stackalloc godotsharp_property_def_val_pair[length];
+                    interopDefaultValues = aux;
+                }
+                else
+                {
+#if NET6_0_OR_GREATER
+                    interopDefaultValues = ((godotsharp_property_def_val_pair*)NativeMemory.Alloc(length))!;
+#else
+                    interopDefaultValues = ((godotsharp_property_def_val_pair*)Marshal.AllocHGlobal(length))!;
+#endif
+                }
+
+                try
+                {
+                    int i = 0;
+                    foreach (var defaultValuePair in defaultValues)
+                    {
+                        godotsharp_property_def_val_pair interopProperty = new()
+                        {
+                            Name = (godot_string_name)defaultValuePair.Key.NativeValue, // Not owned
+                            Value = Marshaling.ConvertManagedObjectToVariant(defaultValuePair.Value)
+                        };
+
+                        interopDefaultValues[i] = interopProperty;
+
+                        i++;
+                    }
+
+                    addDefValFunc(scriptPtr, interopDefaultValues, length);
+
+                    // We're borrowing the StringName's without making an owning copy, so the
+                    // managed collection needs to be kept alive until `addDefValFunc` returns.
+                    GC.KeepAlive(defaultValues);
+                }
+                finally
+                {
+                    for (int i = 0; i < length; i++)
+                        interopDefaultValues[i].Dispose();
+
+                    if (!useStack)
+                    {
+#if NET6_0_OR_GREATER
+                        NativeMemory.Free(interopDefaultValues);
+#else
+                        Marshal.FreeHGlobal((IntPtr)interopDefaultValues);
+#endif
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.DebugUnhandledException(e);
             }
         }
     }

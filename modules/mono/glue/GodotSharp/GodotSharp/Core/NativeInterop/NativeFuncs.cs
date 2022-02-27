@@ -36,10 +36,13 @@ namespace Godot.NativeInterop
         public static extern IntPtr godotsharp_engine_get_singleton(in godot_string p_name);
 
         [DllImport(GodotDllName)]
-        internal static extern void godotsharp_internal_object_disposed(IntPtr ptr);
+        internal static extern IntPtr godotsharp_internal_object_get_associated_gchandle(IntPtr ptr);
 
         [DllImport(GodotDllName)]
-        internal static extern void godotsharp_internal_refcounted_disposed(IntPtr ptr, godot_bool isFinalizer);
+        internal static extern void godotsharp_internal_object_disposed(IntPtr ptr, IntPtr gcHandleToFree);
+
+        [DllImport(GodotDllName)]
+        internal static extern void godotsharp_internal_refcounted_disposed(IntPtr ptr, IntPtr gcHandleToFree, godot_bool isFinalizer);
 
         [DllImport(GodotDllName)]
         internal static extern void godotsharp_internal_object_connect_event_signal(IntPtr obj,

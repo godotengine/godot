@@ -104,7 +104,7 @@ Error CSharpLanguage::execute_file(const String &p_path) {
 	return OK;
 }
 
-extern void *godotsharp_pinvoke_funcs[178];
+extern void *godotsharp_pinvoke_funcs[179];
 [[maybe_unused]] volatile void **do_not_strip_godotsharp_pinvoke_funcs;
 #ifdef TOOLS_ENABLED
 extern void *godotsharp_editor_pinvoke_funcs[30];
@@ -1263,17 +1263,24 @@ void CSharpLanguage::release_script_gchandle(MonoGCHandleData &p_gchandle) {
 	}
 }
 
-void CSharpLanguage::release_script_gchandle(void *p_expected_mono_obj_unused, MonoGCHandleData &p_gchandle) {
-#warning KNOWN BUG. DO NOT USE THIS IN PRODUCTION
-	// KNOWN BUG:
-	//  I removed the patch from commit e558e1ec09aa27852426bbd24dfa21e9b60cfbfc.
-	//  This may cause data races. Re-implementing it without the Mono embedding API would be
-	//  too painful and would make the code even more of a mess than it already was.
-	//  We will switch from scripts to the new extension system before a release with .NET 6 support.
-	//  The problem the old patch was working around won't be present at all with the new extension system.
+void CSharpLanguage::release_script_gchandle_thread_safe(GCHandleIntPtr p_gchandle_to_free, MonoGCHandleData &r_gchandle) {
+	if (!r_gchandle.is_released() && r_gchandle.get_intptr() == p_gchandle_to_free) { // Do not lock unnecessarily
+		MutexLock lock(get_singleton()->script_gchandle_release_mutex);
+		if (!r_gchandle.is_released() && r_gchandle.get_intptr() == p_gchandle_to_free) {
+			r_gchandle.release();
+		}
+	}
+}
 
-	(void)p_expected_mono_obj_unused;
-	return release_script_gchandle(p_gchandle);
+void CSharpLanguage::release_binding_gchandle_thread_safe(GCHandleIntPtr p_gchandle_to_free, CSharpScriptBinding &r_script_binding) {
+	MonoGCHandleData &gchandle = r_script_binding.gchandle;
+	if (!gchandle.is_released() && gchandle.get_intptr() == p_gchandle_to_free) { // Do not lock unnecessarily
+		MutexLock lock(get_singleton()->script_gchandle_release_mutex);
+		if (!gchandle.is_released() && gchandle.get_intptr() == p_gchandle_to_free) {
+			gchandle.release();
+			r_script_binding.inited = false; // Here too, to be thread safe
+		}
+	}
 }
 
 CSharpLanguage::CSharpLanguage() {
@@ -1308,6 +1315,10 @@ bool CSharpLanguage::setup_csharp_script_binding(CSharpScriptBinding &r_script_b
 	bool parent_is_object_class = ClassDB::is_parent_class(p_object->get_class_name(), type_name);
 	ERR_FAIL_COND_V_MSG(!parent_is_object_class, false,
 			"Type inherits from native type '" + type_name + "', so it can't be instantiated in object of type: '" + p_object->get_class() + "'.");
+
+#ifdef DEBUG_ENABLED
+	CRASH_COND(!r_script_binding.gchandle.is_released());
+#endif
 
 	GCHandleIntPtr strong_gchandle =
 			GDMonoCache::managed_callbacks.ScriptManagerBridge_CreateManagedForGodotObjectBinding(&type_name, p_object);
@@ -1419,9 +1430,9 @@ GDNativeBool CSharpLanguage::_instance_binding_reference_callback(void *p_token,
 			// Release the current weak handle and replace it with a strong handle.
 
 			GCHandleIntPtr old_gchandle = gchandle.get_intptr();
-			gchandle.handle = GCHandleIntPtr(); // No longer owns the handle (released by swap function)
+			gchandle.handle = { nullptr }; // No longer owns the handle (released by swap function)
 
-			GCHandleIntPtr new_gchandle;
+			GCHandleIntPtr new_gchandle = { nullptr };
 			bool create_weak = false;
 			bool target_alive = GDMonoCache::managed_callbacks.ScriptManagerBridge_SwapGCHandleForType(
 					old_gchandle, &new_gchandle, create_weak);
@@ -1443,9 +1454,9 @@ GDNativeBool CSharpLanguage::_instance_binding_reference_callback(void *p_token,
 			// Release the current strong handle and replace it with a weak handle.
 
 			GCHandleIntPtr old_gchandle = gchandle.get_intptr();
-			gchandle.handle = GCHandleIntPtr(); // No longer owns the handle (released by swap function)
+			gchandle.handle = { nullptr }; // No longer owns the handle (released by swap function)
 
-			GCHandleIntPtr new_gchandle;
+			GCHandleIntPtr new_gchandle = { nullptr };
 			bool create_weak = true;
 			bool target_alive = GDMonoCache::managed_callbacks.ScriptManagerBridge_SwapGCHandleForType(
 					old_gchandle, &new_gchandle, create_weak);
@@ -1569,9 +1580,9 @@ void CSharpLanguage::tie_user_managed_to_unmanaged(GCHandleIntPtr p_gchandle_int
 
 	Ref<CSharpScript> script = p_script;
 
-	CSharpScript::initialize_for_managed_type(script);
-
 	CRASH_COND(script.is_null());
+
+	CSharpScript::initialize_for_managed_type(script);
 
 	CSharpInstance *csharp_instance = CSharpInstance::create_for_managed_type(p_unmanaged, script.ptr(), gchandle);
 
@@ -1920,7 +1931,7 @@ bool CSharpInstance::_internal_new_managed() {
 	return true;
 }
 
-void CSharpInstance::mono_object_disposed() {
+void CSharpInstance::mono_object_disposed(GCHandleIntPtr p_gchandle_to_free) {
 	// Must make sure event signals are not left dangling
 	disconnect_event_signals();
 
@@ -1928,10 +1939,10 @@ void CSharpInstance::mono_object_disposed() {
 	CRASH_COND(base_ref_counted);
 	CRASH_COND(gchandle.is_released());
 #endif
-	CSharpLanguage::get_singleton()->release_script_gchandle(nullptr, gchandle);
+	CSharpLanguage::get_singleton()->release_script_gchandle_thread_safe(p_gchandle_to_free, gchandle);
 }
 
-void CSharpInstance::mono_object_disposed_baseref(bool p_is_finalizer, bool &r_delete_owner, bool &r_remove_script_instance) {
+void CSharpInstance::mono_object_disposed_baseref(GCHandleIntPtr p_gchandle_to_free, bool p_is_finalizer, bool &r_delete_owner, bool &r_remove_script_instance) {
 #ifdef DEBUG_ENABLED
 	CRASH_COND(!base_ref_counted);
 	CRASH_COND(gchandle.is_released());
@@ -1947,7 +1958,7 @@ void CSharpInstance::mono_object_disposed_baseref(bool p_is_finalizer, bool &r_d
 		r_delete_owner = true;
 	} else {
 		r_delete_owner = false;
-		CSharpLanguage::get_singleton()->release_script_gchandle(nullptr, gchandle);
+		CSharpLanguage::get_singleton()->release_script_gchandle_thread_safe(p_gchandle_to_free, gchandle);
 
 		if (!p_is_finalizer) {
 			// If the native instance is still alive and Dispose() was called
@@ -2000,9 +2011,9 @@ void CSharpInstance::refcount_incremented() {
 		// Release the current weak handle and replace it with a strong handle.
 
 		GCHandleIntPtr old_gchandle = gchandle.get_intptr();
-		gchandle.handle = GCHandleIntPtr(); // No longer owns the handle (released by swap function)
+		gchandle.handle = { nullptr }; // No longer owns the handle (released by swap function)
 
-		GCHandleIntPtr new_gchandle;
+		GCHandleIntPtr new_gchandle = { nullptr };
 		bool create_weak = false;
 		bool target_alive = GDMonoCache::managed_callbacks.ScriptManagerBridge_SwapGCHandleForType(
 				old_gchandle, &new_gchandle, create_weak);
@@ -2032,9 +2043,9 @@ bool CSharpInstance::refcount_decremented() {
 		// Release the current strong handle and replace it with a weak handle.
 
 		GCHandleIntPtr old_gchandle = gchandle.get_intptr();
-		gchandle.handle = GCHandleIntPtr(); // No longer owns the handle (released by swap function)
+		gchandle.handle = { nullptr }; // No longer owns the handle (released by swap function)
 
-		GCHandleIntPtr new_gchandle;
+		GCHandleIntPtr new_gchandle = { nullptr };
 		bool create_weak = true;
 		bool target_alive = GDMonoCache::managed_callbacks.ScriptManagerBridge_SwapGCHandleForType(
 				old_gchandle, &new_gchandle, create_weak);
@@ -2207,62 +2218,6 @@ void CSharpScript::_update_exports_values(HashMap<StringName, Variant> &values, 
 		base_cache->_update_exports_values(values, propnames);
 	}
 }
-
-void CSharpScript::_update_member_info_no_exports() {
-	if (exports_invalidated) {
-		exports_invalidated = false;
-
-		member_info.clear();
-
-#warning TODO
-#if 0
-		GDMonoClass *top = script_class;
-		List<PropertyInfo> props;
-
-		while (top && top != native) {
-			PropertyInfo prop_info;
-			bool exported;
-
-			const Vector<GDMonoField *> &fields = top->get_all_fields();
-
-			for (int i = fields.size() - 1; i >= 0; i--) {
-				GDMonoField *field = fields[i];
-
-				if (_get_member_export(field, /* inspect export: */ false, prop_info, exported)) {
-					StringName member_name = field->get_name();
-
-					member_info[member_name] = prop_info;
-					props.push_front(prop_info);
-					exported_members_defval_cache[member_name] = Variant();
-				}
-			}
-
-			const Vector<GDMonoProperty *> &properties = top->get_all_properties();
-
-			for (int i = properties.size() - 1; i >= 0; i--) {
-				GDMonoProperty *property = properties[i];
-
-				if (_get_member_export(property, /* inspect export: */ false, prop_info, exported)) {
-					StringName member_name = property->get_name();
-
-					member_info[member_name] = prop_info;
-					props.push_front(prop_info);
-					exported_members_defval_cache[member_name] = Variant();
-				}
-			}
-
-			exported_members_cache.push_back(PropertyInfo(Variant::NIL, top->get_name(), PROPERTY_HINT_NONE, get_path(), PROPERTY_USAGE_CATEGORY));
-			for (const PropertyInfo &E : props) {
-				exported_members_cache.push_back(E);
-			}
-
-			props.clear();
-
-			top = top->get_parent_class();
-		}
-#endif
-	}
-}
 #endif
 
 bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_update) {
@@ -2282,170 +2237,61 @@ bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_upda
 	if (exports_invalidated)
 #endif
 	{
-#warning TODO
-#if 0
-		GD_MONO_SCOPE_THREAD_ATTACH;
+		exports_invalidated = false;
 
 		changed = true;
 
 		member_info.clear();
 
 #ifdef TOOLS_ENABLED
-		MonoObject *tmp_object = nullptr;
-		Object *tmp_native = nullptr;
-		uint32_t tmp_pinned_gchandle = 0;
-
-		if (is_editor) {
-			exports_invalidated = false;
-
-			exported_members_cache.clear();
-			exported_members_defval_cache.clear();
-
-			// Here we create a temporary managed instance of the class to get the initial values
-			tmp_object = mono_object_new(mono_domain_get(), script_class->get_mono_ptr());
-
-			if (!tmp_object) {
-				ERR_PRINT("Failed to allocate temporary MonoObject.");
-				return false;
-			}
-
-			tmp_pinned_gchandle = GDMonoUtils::new_strong_gchandle_pinned(tmp_object); // pin it (not sure if needed)
-
-			GDMonoMethod *ctor = script_class->get_method(CACHED_STRING_NAME(dotctor), 0);
-
-			ERR_FAIL_NULL_V_MSG(ctor, false,
-					"Cannot construct temporary MonoObject because the class does not define a parameterless constructor: '" + get_path() + "'.");
-
-			MonoException *ctor_exc = nullptr;
-			ctor->invoke(tmp_object, nullptr, &ctor_exc);
-
-			tmp_native = GDMonoMarshal::unbox<Object *>(GDMonoCache::cached_data.field_GodotObject_ptr->get_value(tmp_object));
-
-			if (ctor_exc) {
-				// TODO: Should we free 'tmp_native' if the exception was thrown after its creation?
-
-				GDMonoUtils::free_gchandle(tmp_pinned_gchandle);
-				tmp_object = nullptr;
-
-				ERR_PRINT("Exception thrown from constructor of temporary MonoObject:");
-				GDMonoUtils::debug_print_unhandled_exception(ctor_exc);
-				return false;
-			}
-		}
+		exported_members_cache.clear();
+		exported_members_defval_cache.clear();
 #endif
 
-		GDMonoClass *top = script_class;
-		List<PropertyInfo> props;
-
-		while (top && top != native) {
-			PropertyInfo prop_info;
-			bool exported;
-
-			const Vector<GDMonoField *> &fields = top->get_all_fields();
-
-			for (int i = fields.size() - 1; i >= 0; i--) {
-				GDMonoField *field = fields[i];
-
-				if (_get_member_export(field, /* inspect export: */ true, prop_info, exported)) {
-					StringName member_name = field->get_name();
-
-					member_info[member_name] = prop_info;
-
-					if (exported) {
+		if (GDMonoCache::godot_api_cache_updated) {
+			GDMonoCache::managed_callbacks.ScriptManagerBridge_GetPropertyInfoList(this,
+					[](CSharpScript *p_script, const String *p_current_class_name, GDMonoCache::godotsharp_property_info *p_props, int32_t p_count) {
 #ifdef TOOLS_ENABLED
-						if (is_editor) {
-							props.push_front(prop_info);
+						p_script->exported_members_cache.push_back(PropertyInfo(
+								Variant::NIL, *p_current_class_name, PROPERTY_HINT_NONE,
+								p_script->get_path(), PROPERTY_USAGE_CATEGORY));
+#endif
 
-							if (tmp_object) {
-								exported_members_defval_cache[member_name] = GDMonoMarshal::mono_object_to_variant(field->get_value(tmp_object));
-							}
-						}
+						for (int i = 0; i < p_count; i++) {
+							const GDMonoCache::godotsharp_property_info &prop = p_props[i];
+
+							StringName name = *reinterpret_cast<const StringName *>(&prop.name);
+							String hint_string = *reinterpret_cast<const String *>(&prop.hint_string);
+
+							PropertyInfo pinfo(prop.type, name, prop.hint, hint_string, prop.usage);
+
+							p_script->member_info[name] = pinfo;
+
+							if (prop.exported) {
+
+#ifdef TOOLS_ENABLED
+								p_script->exported_members_cache.push_back(pinfo);
 #endif
 
 #if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
-						exported_members_names.insert(member_name);
+								p_script->exported_members_names.insert(name);
 #endif
-					}
-				}
-			}
-
-			const Vector<GDMonoProperty *> &properties = top->get_all_properties();
-
-			for (int i = properties.size() - 1; i >= 0; i--) {
-				GDMonoProperty *property = properties[i];
-
-				if (_get_member_export(property, /* inspect export: */ true, prop_info, exported)) {
-					StringName member_name = property->get_name();
-
-					member_info[member_name] = prop_info;
-
-					if (exported) {
-#ifdef TOOLS_ENABLED
-						if (is_editor) {
-							props.push_front(prop_info);
-							if (tmp_object) {
-								MonoException *exc = nullptr;
-								MonoObject *ret = property->get_value(tmp_object, &exc);
-								if (exc) {
-									exported_members_defval_cache[member_name] = Variant();
-									GDMonoUtils::debug_print_unhandled_exception(exc);
-								} else {
-									exported_members_defval_cache[member_name] = GDMonoMarshal::mono_object_to_variant(ret);
-								}
 							}
 						}
-#endif
+					});
 
-#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
-						exported_members_names.insert(member_name);
-#endif
-					}
-				}
-			}
+			GDMonoCache::managed_callbacks.ScriptManagerBridge_GetPropertyDefaultValues(this,
+					[](CSharpScript *p_script, GDMonoCache::godotsharp_property_def_val_pair *p_def_vals, int32_t p_count) {
+						for (int i = 0; i < p_count; i++) {
+							const GDMonoCache::godotsharp_property_def_val_pair &def_val_pair = p_def_vals[i];
 
-#ifdef TOOLS_ENABLED
-			exported_members_cache.push_back(PropertyInfo(Variant::NIL, top->get_name(), PROPERTY_HINT_NONE, get_path(), PROPERTY_USAGE_CATEGORY));
+							StringName name = *reinterpret_cast<const StringName *>(&def_val_pair.name);
+							Variant value = *reinterpret_cast<const Variant *>(&def_val_pair.value);
 
-			for (const PropertyInfo &E : props) {
-				exported_members_cache.push_back(E);
-			}
-
-			props.clear();
-#endif // TOOLS_ENABLED
-
-			top = top->get_parent_class();
+							p_script->exported_members_defval_cache[name] = value;
+						}
+					});
 		}
-
-#ifdef TOOLS_ENABLED
-		if (is_editor) {
-			// Need to check this here, before disposal
-			bool base_ref_counted = Object::cast_to<RefCounted>(tmp_native) != nullptr;
-
-			// Dispose the temporary managed instance
-
-			MonoException *exc = nullptr;
-			GDMonoUtils::dispose(tmp_object, &exc);
-
-			if (exc) {
-				ERR_PRINT("Exception thrown from method Dispose() of temporary MonoObject:");
-				GDMonoUtils::debug_print_unhandled_exception(exc);
-			}
-
-			GDMonoUtils::free_gchandle(tmp_pinned_gchandle);
-			tmp_object = nullptr;
-
-			if (tmp_native && !base_ref_counted) {
-				Node *node = Object::cast_to<Node>(tmp_native);
-				if (node && node->is_inside_tree()) {
-					ERR_PRINT("Temporary instance was added to the scene tree.");
-				} else {
-					memdelete(tmp_native);
-				}
-			}
-		}
-#endif
-
-#endif // #if 0
 	}
 
 #ifdef TOOLS_ENABLED
@@ -2471,237 +2317,6 @@ bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_upda
 
 	return changed;
 }
-
-#warning TODO
-#if 0
-/**
- * Returns false if there was an error, otherwise true.
- * If there was an error, r_prop_info and r_exported are not assigned any value.
- */
-bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect_export, PropertyInfo &r_prop_info, bool &r_exported) {
-	GD_MONO_ASSERT_THREAD_ATTACHED;
-
-	// Goddammit, C++. All I wanted was some nested functions.
-#define MEMBER_FULL_QUALIFIED_NAME(m_member) \
-	(m_member->get_enclosing_class()->get_full_name() + "." + (String)m_member->get_name())
-
-	if (p_member->is_static()) {
-#ifdef TOOLS_ENABLED
-		if (p_member->has_attribute(GDMonoCache::cached_data.class_ExportAttribute)) {
-			ERR_PRINT("Cannot export member because it is static: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
-		}
-#endif
-		return false;
-	}
-
-	if (member_info.has(p_member->get_name())) {
-		return false;
-	}
-
-	ManagedType type;
-
-	if (p_member->get_member_type() == IMonoClassMember::MEMBER_TYPE_FIELD) {
-		type = static_cast<GDMonoField *>(p_member)->get_type();
-	} else if (p_member->get_member_type() == IMonoClassMember::MEMBER_TYPE_PROPERTY) {
-		type = static_cast<GDMonoProperty *>(p_member)->get_type();
-	} else {
-		CRASH_NOW();
-	}
-
-	bool exported = p_member->has_attribute(GDMonoCache::cached_data.class_ExportAttribute);
-
-	if (p_member->get_member_type() == IMonoClassMember::MEMBER_TYPE_PROPERTY) {
-		GDMonoProperty *property = static_cast<GDMonoProperty *>(p_member);
-		if (!property->has_getter()) {
-#ifdef TOOLS_ENABLED
-			if (exported) {
-				ERR_PRINT("Cannot export a property without a getter: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
-			}
-#endif
-			return false;
-		}
-		if (!property->has_setter()) {
-#ifdef TOOLS_ENABLED
-			if (exported) {
-				ERR_PRINT("Cannot export a property without a setter: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
-			}
-#endif
-			return false;
-		}
-	}
-
-	bool nil_is_variant = false;
-	Variant::Type variant_type = GDMonoMarshal::managed_to_variant_type(type, &nil_is_variant);
-
-	if (!p_inspect_export || !exported) {
-		r_prop_info = PropertyInfo(variant_type, (String)p_member->get_name(), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_SCRIPT_VARIABLE);
-		r_exported = false;
-		return true;
-	}
-
-#ifdef TOOLS_ENABLED
-	MonoObject *attr = p_member->get_attribute(GDMonoCache::cached_data.class_ExportAttribute);
-#endif
-
-	PropertyHint hint = PROPERTY_HINT_NONE;
-	String hint_string;
-
-	if (variant_type == Variant::NIL && !nil_is_variant) {
-#ifdef TOOLS_ENABLED
-		ERR_PRINT("Unknown exported member type: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
-#endif
-		return false;
-	}
-
-#ifdef TOOLS_ENABLED
-	int hint_res = _try_get_member_export_hint(p_member, type, variant_type, /* allow_generics: */ true, hint, hint_string);
-
-	ERR_FAIL_COND_V_MSG(hint_res == -1, false,
-			"Error while trying to determine information about the exported member: '" +
-					MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
-
-	if (hint_res == 0) {
-		hint = PropertyHint(GDMonoCache::cached_data.field_ExportAttribute_hint->get_int_value(attr));
-		hint_string = GDMonoCache::cached_data.field_ExportAttribute_hintString->get_string_value(attr);
-	}
-#endif
-
-	uint32_t prop_usage = PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE;
-
-	if (variant_type == Variant::NIL) {
-		// System.Object (Variant)
-		prop_usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
-	}
-
-	r_prop_info = PropertyInfo(variant_type, (String)p_member->get_name(), hint, hint_string, prop_usage);
-	r_exported = true;
-
-	return true;
-
-#undef MEMBER_FULL_QUALIFIED_NAME
-}
-
-#ifdef TOOLS_ENABLED
-int CSharpScript::_try_get_member_export_hint(IMonoClassMember *p_member, ManagedType p_type, Variant::Type p_variant_type, bool p_allow_generics, PropertyHint &r_hint, String &r_hint_string) {
-	if (p_variant_type == Variant::NIL) {
-		// System.Object (Variant)
-		return 1;
-	}
-
-	GD_MONO_ASSERT_THREAD_ATTACHED;
-
-	if (p_variant_type == Variant::INT && p_type.type_encoding == MONO_TYPE_VALUETYPE && mono_class_is_enum(p_type.type_class->get_mono_ptr())) {
-		MonoReflectionType *reftype = mono_type_get_object(mono_domain_get(), p_type.type_class->get_mono_type());
-		r_hint = GDMonoUtils::Marshal::type_has_flags_attribute(reftype) ? PROPERTY_HINT_FLAGS : PROPERTY_HINT_ENUM;
-
-		Vector<MonoClassField *> fields = p_type.type_class->get_enum_fields();
-
-		MonoType *enum_basetype = mono_class_enum_basetype(p_type.type_class->get_mono_ptr());
-
-		String name_only_hint_string;
-
-		// True: enum Foo { Bar, Baz, Quux }
-		// True: enum Foo { Bar = 0, Baz = 1, Quux = 2 }
-		// False: enum Foo { Bar = 0, Baz = 7, Quux = 5 }
-		bool uses_default_values = true;
-
-		for (int i = 0; i < fields.size(); i++) {
-			MonoClassField *field = fields[i];
-
-			if (i > 0) {
-				r_hint_string += ",";
-				name_only_hint_string += ",";
-			}
-
-			String enum_field_name = String::utf8(mono_field_get_name(field));
-			r_hint_string += enum_field_name;
-			name_only_hint_string += enum_field_name;
-
-			// TODO:
-			// Instead of using mono_field_get_value_object, we can do this without boxing. Check the
-			// internal mono functions: ves_icall_System_Enum_GetEnumValuesAndNames and the get_enum_field.
-
-			MonoObject *val_obj = mono_field_get_value_object(mono_domain_get(), field, nullptr);
-
-			ERR_FAIL_NULL_V_MSG(val_obj, -1, "Failed to get '" + enum_field_name + "' constant enum value.");
-
-			bool r_error;
-			uint64_t val = GDMonoUtils::unbox_enum_value(val_obj, enum_basetype, r_error);
-			ERR_FAIL_COND_V_MSG(r_error, -1, "Failed to unbox '" + enum_field_name + "' constant enum value.");
-
-			unsigned int expected_val = r_hint == PROPERTY_HINT_FLAGS ? 1 << i : i;
-			if (val != expected_val) {
-				uses_default_values = false;
-			}
-
-			r_hint_string += ":";
-			r_hint_string += String::num_uint64(val);
-		}
-
-		if (uses_default_values) {
-			// If we use the format NAME:VAL, that's what the editor displays.
-			// That's annoying if the user is not using custom values for the enum constants.
-			// This may not be needed in the future if the editor is changed to not display values.
-			r_hint_string = name_only_hint_string;
-		}
-	} else if (p_variant_type == Variant::OBJECT && GDMonoCache::cached_data.class_GodotResource->is_assignable_from(p_type.type_class)) {
-		GDMonoClass *field_native_class = GDMonoUtils::get_class_native_base(p_type.type_class);
-		CRASH_COND(field_native_class == nullptr);
-
-		r_hint = PROPERTY_HINT_RESOURCE_TYPE;
-		r_hint_string = String(NATIVE_GDMONOCLASS_NAME(field_native_class));
-	} else if (p_variant_type == Variant::OBJECT && CACHED_CLASS(Node)->is_assignable_from(p_type.type_class)) {
-		GDMonoClass *field_native_class = GDMonoUtils::get_class_native_base(p_type.type_class);
-		CRASH_COND(field_native_class == nullptr);
-
-		r_hint = PROPERTY_HINT_NODE_TYPE;
-		r_hint_string = String(NATIVE_GDMONOCLASS_NAME(field_native_class));
-	} else if (p_allow_generics && p_variant_type == Variant::ARRAY) {
-		// Nested arrays are not supported in the inspector
-
-		ManagedType elem_type;
-
-		if (!GDMonoMarshal::try_get_array_element_type(p_type, elem_type)) {
-			return 0;
-		}
-
-		Variant::Type elem_variant_type = GDMonoMarshal::managed_to_variant_type(elem_type);
-
-		PropertyHint elem_hint = PROPERTY_HINT_NONE;
-		String elem_hint_string;
-
-		ERR_FAIL_COND_V_MSG(elem_variant_type == Variant::NIL, -1, "Unknown array element type.");
-
-		bool preset_hint = false;
-		if (elem_variant_type == Variant::STRING) {
-			MonoObject *attr = p_member->get_attribute(CACHED_CLASS(ExportAttribute));
-			if (PropertyHint(CACHED_FIELD(ExportAttribute, hint)->get_int_value(attr)) == PROPERTY_HINT_ENUM) {
-				r_hint_string = itos(elem_variant_type) + "/" + itos(PROPERTY_HINT_ENUM) + ":" + CACHED_FIELD(ExportAttribute, hintString)->get_string_value(attr);
-				preset_hint = true;
-			}
-		}
-
-		if (!preset_hint) {
-			int hint_res = _try_get_member_export_hint(p_member, elem_type, elem_variant_type, /* allow_generics: */ false, elem_hint, elem_hint_string);
-
-			ERR_FAIL_COND_V_MSG(hint_res == -1, -1, "Error while trying to determine information about the array element type.");
-
-			// Format: type/hint:hint_string
-			r_hint_string = itos(elem_variant_type) + "/" + itos(elem_hint) + ":" + elem_hint_string;
-		}
-
-		r_hint = PROPERTY_HINT_TYPE_STRING;
-
-	} else if (p_allow_generics && p_variant_type == Variant::DICTIONARY) {
-		// TODO: Dictionaries are not supported in the inspector
-	} else {
-		return 0;
-	}
-
-	return 1;
-}
-#endif
-#endif
 
 bool CSharpScript::_get(const StringName &p_name, Variant &r_ret) const {
 	if (p_name == CSharpLanguage::singleton->string_names._script_source) {
@@ -2742,9 +2357,7 @@ void CSharpScript::initialize_for_managed_type(Ref<CSharpScript> p_script) {
 
 	update_script_class_info(p_script);
 
-#ifdef TOOLS_ENABLED
-	p_script->_update_member_info_no_exports();
-#endif
+	p_script->_update_exports();
 }
 
 // Extract information about the script using the mono class.
@@ -3125,7 +2738,7 @@ void CSharpScript::get_script_property_list(List<PropertyInfo> *r_list) const {
 	for (const KeyValue<StringName, PropertyInfo> &E : member_info) {
 		props.push_front(E.value);
 	}
-#endif // TOOLS_ENABLED
+#endif
 
 	for (const PropertyInfo &prop : props) {
 		r_list->push_back(prop);

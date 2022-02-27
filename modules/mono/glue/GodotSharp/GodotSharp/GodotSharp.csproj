@@ -41,6 +41,7 @@
     <Compile Include="Core\Bridge\CSharpInstanceBridge.cs" />
     <Compile Include="Core\Bridge\GCHandleBridge.cs" />
     <Compile Include="Core\Bridge\ManagedCallbacks.cs" />
+    <Compile Include="Core\Bridge\PropertyInfo.cs" />
     <Compile Include="Core\Bridge\ScriptManagerBridge.cs" />
     <Compile Include="Core\Callable.cs" />
     <Compile Include="Core\Color.cs" />
@@ -63,7 +64,6 @@
     <Compile Include="Core\Interfaces\IAwaitable.cs" />
     <Compile Include="Core\Interfaces\IAwaiter.cs" />
     <Compile Include="Core\Interfaces\ISerializationListener.cs" />
-    <Compile Include="Core\MarshalUtils.cs" />
     <Compile Include="Core\Mathf.cs" />
     <Compile Include="Core\MathfEx.cs" />
     <Compile Include="Core\NativeInterop\ExceptionUtils.cs" />
