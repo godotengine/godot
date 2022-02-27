@@ -195,7 +195,7 @@ def run_msbuild(tools: ToolsLocation, sln: str, msbuild_args: [str] = None):
     return subprocess.call(args, env=msbuild_env)
 
 
-def build_godot_api(msbuild_tool, module_dir, output_dir):
+def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local):
     target_filenames = [
         "GodotSharp.dll",
         "GodotSharp.pdb",
@@ -213,11 +213,15 @@ def build_godot_api(msbuild_tool, module_dir, output_dir):
 
         targets = [os.path.join(editor_api_dir, filename) for filename in target_filenames]
 
+        args = ["/restore", "/t:Build", "/p:Configuration=" + build_config, "/p:NoWarn=1591"]
+        if push_nupkgs_local:
+            args += ["/p:ClearNuGetLocalCache=true", "/p:PushNuGetToLocalSource=" + push_nupkgs_local]
+
         sln = os.path.join(module_dir, "glue/GodotSharp/GodotSharp.sln")
         exit_code = run_msbuild(
             msbuild_tool,
             sln=sln,
-            msbuild_args=["/restore", "/t:Build", "/p:Configuration=" + build_config, "/p:NoWarn=1591"],
+            msbuild_args=args,
         )
         if exit_code != 0:
             return exit_code
@@ -252,9 +256,9 @@ def build_godot_api(msbuild_tool, module_dir, output_dir):
     return 0
 
 
-def build_all(msbuild_tool, module_dir, output_dir, dev_debug, godot_platform):
+def build_all(msbuild_tool, module_dir, output_dir, godot_platform, dev_debug, push_nupkgs_local):
     # Godot API
-    exit_code = build_godot_api(msbuild_tool, module_dir, output_dir)
+    exit_code = build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local)
     if exit_code != 0:
         return exit_code
 
@@ -263,13 +267,18 @@ def build_all(msbuild_tool, module_dir, output_dir, dev_debug, godot_platform):
     args = ["/restore", "/t:Build", "/p:Configuration=" + ("Debug" if dev_debug else "Release")] + (
         ["/p:GodotPlatform=" + godot_platform] if godot_platform else []
     )
+    if push_nupkgs_local:
+        args += ["/p:ClearNuGetLocalCache=true", "/p:PushNuGetToLocalSource=" + push_nupkgs_local]
     exit_code = run_msbuild(msbuild_tool, sln=sln, msbuild_args=args)
     if exit_code != 0:
         return exit_code
 
     # Godot.NET.Sdk
+    args = ["/restore", "/t:Build", "/p:Configuration=Release"]
+    if push_nupkgs_local:
+        args += ["/p:ClearNuGetLocalCache=true", "/p:PushNuGetToLocalSource=" + push_nupkgs_local]
     sln = os.path.join(module_dir, "editor/Godot.NET.Sdk/Godot.NET.Sdk.sln")
-    exit_code = run_msbuild(msbuild_tool, sln=sln, msbuild_args=["/restore", "/t:Build", "/p:Configuration=Release"])
+    exit_code = run_msbuild(msbuild_tool, sln=sln, msbuild_args=args)
     if exit_code != 0:
         return exit_code
 
@@ -290,6 +299,7 @@ def main():
     )
     parser.add_argument("--godot-platform", type=str, default="")
     parser.add_argument("--mono-prefix", type=str, default="")
+    parser.add_argument("--push-nupkgs-local", type=str, default="")
 
     args = parser.parse_args()
 
@@ -304,7 +314,14 @@ def main():
         print("Unable to find MSBuild")
         sys.exit(1)
 
-    exit_code = build_all(msbuild_tool, module_dir, output_dir, args.godot_platform, args.dev_debug)
+    exit_code = build_all(
+        msbuild_tool,
+        module_dir,
+        output_dir,
+        args.godot_platform,
+        args.dev_debug,
+        args.push_nupkgs_local,
+    )
     sys.exit(exit_code)
 
 
