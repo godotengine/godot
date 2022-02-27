@@ -464,13 +464,6 @@ public:
 	static void tie_user_managed_to_unmanaged(GCHandleIntPtr p_gchandle_intptr, Object *p_unmanaged, Ref<CSharpScript> *p_script, bool p_ref_counted);
 	static void tie_managed_to_unmanaged_with_pre_setup(GCHandleIntPtr p_gchandle_intptr, Object *p_unmanaged);
 
-#warning TODO
-#if 0
-#ifdef DEBUG_ENABLED
-	Vector<StackInfo> stack_trace_get_info(MonoObject *p_stack_trace);
-#endif
-#endif
-
 	void post_unsafe_reference(Object *p_obj);
 	void pre_unsafe_unreference(Object *p_obj);
 

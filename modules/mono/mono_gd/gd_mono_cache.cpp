@@ -38,8 +38,14 @@ ManagedCallbacks managed_callbacks;
 bool godot_api_cache_updated = false;
 
 void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks) {
-#define CHECK_CALLBACK_NOT_NULL_IMPL(m_var, m_class, m_method) ERR_FAIL_COND_MSG(m_var == nullptr, \
-		"Mono Cache: Managed callback for '" #m_class "_" #m_method "' is null.")
+	int checked_count = 0;
+
+#define CHECK_CALLBACK_NOT_NULL_IMPL(m_var, m_class, m_method)                             \
+	{                                                                                      \
+		ERR_FAIL_COND_MSG(m_var == nullptr,                                                \
+				"Mono Cache: Managed callback for '" #m_class "_" #m_method "' is null."); \
+		checked_count += 1;                                                                \
+	}
 
 #define CHECK_CALLBACK_NOT_NULL(m_class, m_method) CHECK_CALLBACK_NOT_NULL_IMPL(p_managed_callbacks.m_class##_##m_method, m_class, m_method)
 
@@ -56,9 +62,12 @@ void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks) {
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, HasScriptSignal);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, ScriptIsOrInherits);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, AddScriptBridge);
+	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, GetOrCreateScriptBridgeForPath);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, RemoveScriptBridge);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, UpdateScriptClassInfo);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, SwapGCHandleForType);
+	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, GetPropertyInfoList);
+	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, GetPropertyDefaultValues);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, Call);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, Set);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, Get);
@@ -66,11 +75,17 @@ void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks) {
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, CallToString);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, HasMethodUnknownParams);
 	CHECK_CALLBACK_NOT_NULL(GCHandleBridge, FreeGCHandle);
-	CHECK_CALLBACK_NOT_NULL(DebuggingUtils, InstallTraceListener);
-	CHECK_CALLBACK_NOT_NULL(Dispatcher, InitializeDefaultGodotTaskScheduler);
+	CHECK_CALLBACK_NOT_NULL(DebuggingUtils, GetCurrentStackInfo);
 	CHECK_CALLBACK_NOT_NULL(DisposablesTracker, OnGodotShuttingDown);
+	CHECK_CALLBACK_NOT_NULL(GD, OnCoreApiAssemblyLoaded);
 
 	managed_callbacks = p_managed_callbacks;
+
+	// It's easy to forget to add new callbacks here, so this should help
+	if (checked_count * sizeof(void *) != sizeof(ManagedCallbacks)) {
+		int missing_count = (sizeof(ManagedCallbacks) / sizeof(void *)) - checked_count;
+		WARN_PRINT("The presence of " + itos(missing_count) + " callback(s) was not validated");
+	}
 
 	godot_api_cache_updated = true;
 }

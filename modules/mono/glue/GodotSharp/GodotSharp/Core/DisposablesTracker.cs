@@ -24,7 +24,7 @@ namespace Godot
             }
             catch (Exception e)
             {
-                ExceptionUtils.DebugUnhandledException(e);
+                ExceptionUtils.LogException(e);
             }
         }
 

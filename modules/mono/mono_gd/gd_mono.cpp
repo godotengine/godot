@@ -360,12 +360,14 @@ static bool _on_core_api_assembly_loaded() {
 		return false;
 	}
 
-	GDMonoCache::managed_callbacks.Dispatcher_InitializeDefaultGodotTaskScheduler();
-
+	bool debug;
 #ifdef DEBUG_ENABLED
-	// Install the trace listener now before the project assembly is loaded
-	GDMonoCache::managed_callbacks.DebuggingUtils_InstallTraceListener();
+	debug = true;
+#else
+	debug = false;
 #endif
+
+	GDMonoCache::managed_callbacks.GD_OnCoreApiAssemblyLoaded(debug);
 
 	return true;
 }
@@ -532,26 +534,6 @@ Error GDMono::reload_scripts_domain() {
 	return OK;
 }
 #endif
-#endif
-
-#warning TODO Reimplement in C#
-#if 0
-void GDMono::unhandled_exception_hook(MonoObject *p_exc, void *) {
-	// This method will be called by the runtime when a thrown exception is not handled.
-	// It won't be called when we manually treat a thrown exception as unhandled.
-	// We assume the exception was already printed before calling this hook.
-
-#ifdef DEBUG_ENABLED
-	GDMonoUtils::debug_send_unhandled_exception_error((MonoException *)p_exc);
-	if (EngineDebugger::is_active()) {
-		EngineDebugger::get_singleton()->poll_events(false);
-	}
-#endif
-
-	exit(mono_environment_exitcode_get());
-
-	GD_UNREACHABLE();
-}
 #endif
 
 GDMono::GDMono() {

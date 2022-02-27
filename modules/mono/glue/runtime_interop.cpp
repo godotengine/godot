@@ -29,6 +29,8 @@
 /*************************************************************************/
 
 #include "core/config/engine.h"
+#include "core/debugger/engine_debugger.h"
+#include "core/debugger/script_debugger.h"
 #include "core/io/marshalls.h"
 #include "core/object/class_db.h"
 #include "core/object/method_bind.h"
@@ -79,6 +81,27 @@ GD_PINVOKE_EXPORT godotsharp_class_creation_func godotsharp_get_class_constructo
 
 GD_PINVOKE_EXPORT Object *godotsharp_engine_get_singleton(const String *p_name) {
 	return Engine::get_singleton()->get_singleton_object(*p_name);
+}
+
+GD_PINVOKE_EXPORT int32_t godotsharp_stack_info_vector_resize(
+		Vector<ScriptLanguage::StackInfo> *p_stack_info_vector, int p_size) {
+	return (int32_t)p_stack_info_vector->resize(p_size);
+}
+
+GD_PINVOKE_EXPORT void godotsharp_stack_info_vector_destroy(
+		Vector<ScriptLanguage::StackInfo> *p_stack_info_vector) {
+	p_stack_info_vector->~Vector();
+}
+
+GD_PINVOKE_EXPORT void godotsharp_internal_script_debugger_send_error(const String *p_func,
+		const String *p_file, int32_t p_line, const String *p_err, const String *p_descr,
+		bool p_warning, const Vector<ScriptLanguage::StackInfo> *p_stack_info_vector) {
+	EngineDebugger::get_script_debugger()->send_error(*p_func, *p_file, p_line, *p_err, *p_descr,
+			true, p_warning ? ERR_HANDLER_WARNING : ERR_HANDLER_ERROR, *p_stack_info_vector);
+}
+
+GD_PINVOKE_EXPORT bool godotsharp_internal_script_debugger_is_active() {
+	return EngineDebugger::is_active();
 }
 
 GD_PINVOKE_EXPORT GCHandleIntPtr godotsharp_internal_object_get_associated_gchandle(Object *p_ptr) {
@@ -1288,10 +1311,14 @@ GD_PINVOKE_EXPORT void godotsharp_object_to_string(Object *p_ptr, godot_string *
 #endif
 
 // We need this to prevent the functions from being stripped.
-void *godotsharp_pinvoke_funcs[181] = {
+void *godotsharp_pinvoke_funcs[185] = {
 	(void *)godotsharp_method_bind_get_method,
 	(void *)godotsharp_get_class_constructor,
 	(void *)godotsharp_engine_get_singleton,
+	(void *)godotsharp_stack_info_vector_resize,
+	(void *)godotsharp_stack_info_vector_destroy,
+	(void *)godotsharp_internal_script_debugger_send_error,
+	(void *)godotsharp_internal_script_debugger_is_active,
 	(void *)godotsharp_internal_object_get_associated_gchandle,
 	(void *)godotsharp_internal_object_disposed,
 	(void *)godotsharp_internal_refcounted_disposed,

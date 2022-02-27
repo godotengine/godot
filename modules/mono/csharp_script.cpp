@@ -104,7 +104,7 @@ Error CSharpLanguage::execute_file(const String &p_path) {
 	return OK;
 }
 
-extern void *godotsharp_pinvoke_funcs[181];
+extern void *godotsharp_pinvoke_funcs[185];
 [[maybe_unused]] volatile void **do_not_strip_godotsharp_pinvoke_funcs;
 #ifdef TOOLS_ENABLED
 extern void *godotsharp_editor_pinvoke_funcs[30];
@@ -592,8 +592,6 @@ String CSharpLanguage::debug_get_stack_level_source(int p_level) const {
 	return String();
 }
 
-#warning TODO
-#if 0
 Vector<ScriptLanguage::StackInfo> CSharpLanguage::debug_get_current_stack_info() {
 #ifdef DEBUG_ENABLED
 	// Printing an error here will result in endless recursion, so we must be careful
@@ -606,91 +604,21 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::debug_get_current_stack_info()
 		_recursion_flag_ = false;
 	};
 
-	GD_MONO_SCOPE_THREAD_ATTACH;
-
-	if (!gdmono->is_runtime_initialized() || !GDMono::get_singleton()->get_core_api_assembly() || !GDMonoCache::cached_data.corlib_cache_updated) {
+	if (!gdmono->is_runtime_initialized()) {
 		return Vector<StackInfo>();
 	}
 
-	MonoObject *stack_trace = mono_object_new(mono_domain_get(), CACHED_CLASS(System_Diagnostics_StackTrace)->get_mono_ptr());
-
-	MonoBoolean need_file_info = true;
-	void *ctor_args[1] = { &need_file_info };
-
-	CACHED_METHOD(System_Diagnostics_StackTrace, ctor_bool)->invoke_raw(stack_trace, ctor_args);
-
 	Vector<StackInfo> si;
-	si = stack_trace_get_info(stack_trace);
+
+	if (GDMonoCache::godot_api_cache_updated) {
+		GDMonoCache::managed_callbacks.DebuggingUtils_GetCurrentStackInfo(&si);
+	}
 
 	return si;
 #else
 	return Vector<StackInfo>();
 #endif
 }
-
-#ifdef DEBUG_ENABLED
-Vector<ScriptLanguage::StackInfo> CSharpLanguage::stack_trace_get_info(MonoObject *p_stack_trace) {
-	// Printing an error here will result in endless recursion, so we must be careful
-	static thread_local bool _recursion_flag_ = false;
-	if (_recursion_flag_) {
-		return Vector<StackInfo>();
-	}
-	_recursion_flag_ = true;
-	SCOPE_EXIT {
-		_recursion_flag_ = false;
-	};
-
-	GD_MONO_SCOPE_THREAD_ATTACH;
-
-	MonoException *exc = nullptr;
-
-	MonoArray *frames = CACHED_METHOD_THUNK(System_Diagnostics_StackTrace, GetFrames).invoke(p_stack_trace, &exc);
-
-	if (exc) {
-		GDMonoUtils::debug_print_unhandled_exception(exc);
-		return Vector<StackInfo>();
-	}
-
-	int frame_count = mono_array_length(frames);
-
-	if (frame_count <= 0) {
-		return Vector<StackInfo>();
-	}
-
-	Vector<StackInfo> si;
-	si.resize(frame_count);
-
-	for (int i = 0; i < frame_count; i++) {
-		StackInfo &sif = si.write[i];
-		MonoObject *frame = mono_array_get(frames, MonoObject *, i);
-
-		MonoString *file_name;
-		int file_line_num;
-		MonoString *method_decl;
-		CACHED_METHOD_THUNK(DebuggingUtils, GetStackFrameInfo).invoke(frame, &file_name, &file_line_num, &method_decl, &exc);
-
-		if (exc) {
-			GDMonoUtils::debug_print_unhandled_exception(exc);
-			return Vector<StackInfo>();
-		}
-
-		// TODO
-		// what if the StackFrame method is null (method_decl is empty). should we skip this frame?
-		// can reproduce with a MissingMethodException on internal calls
-
-		sif.file = GDMonoMarshal::mono_string_to_godot(file_name);
-		sif.line = file_line_num;
-		sif.func = GDMonoMarshal::mono_string_to_godot(method_decl);
-	}
-
-	return si;
-}
-#endif
-#else
-Vector<ScriptLanguage::StackInfo> CSharpLanguage::debug_get_current_stack_info() {
-	return Vector<StackInfo>();
-}
-#endif
 
 void CSharpLanguage::post_unsafe_reference(Object *p_obj) {
 #ifdef DEBUG_ENABLED

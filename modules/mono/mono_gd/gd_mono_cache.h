@@ -97,9 +97,9 @@ struct ManagedCallbacks {
 	using FuncCSharpInstanceBridge_CallToString = void(GD_CLR_STDCALL *)(GCHandleIntPtr, String *, bool *);
 	using FuncCSharpInstanceBridge_HasMethodUnknownParams = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *);
 	using FuncGCHandleBridge_FreeGCHandle = void(GD_CLR_STDCALL *)(GCHandleIntPtr);
-	using FuncDebuggingUtils_InstallTraceListener = void(GD_CLR_STDCALL *)();
-	using FuncDispatcher_InitializeDefaultGodotTaskScheduler = void(GD_CLR_STDCALL *)();
+	using FuncDebuggingUtils_GetCurrentStackInfo = void(GD_CLR_STDCALL *)(Vector<ScriptLanguage::StackInfo> *);
 	using FuncDisposablesTracker_OnGodotShuttingDown = void(GD_CLR_STDCALL *)();
+	using FuncGD_OnCoreApiAssemblyLoaded = void(GD_CLR_STDCALL *)(bool);
 
 	FuncSignalAwaiter_SignalCallback SignalAwaiter_SignalCallback;
 	FuncDelegateUtils_InvokeWithVariantArgs DelegateUtils_InvokeWithVariantArgs;
@@ -127,9 +127,9 @@ struct ManagedCallbacks {
 	FuncCSharpInstanceBridge_CallToString CSharpInstanceBridge_CallToString;
 	FuncCSharpInstanceBridge_HasMethodUnknownParams CSharpInstanceBridge_HasMethodUnknownParams;
 	FuncGCHandleBridge_FreeGCHandle GCHandleBridge_FreeGCHandle;
-	FuncDebuggingUtils_InstallTraceListener DebuggingUtils_InstallTraceListener;
-	FuncDispatcher_InitializeDefaultGodotTaskScheduler Dispatcher_InitializeDefaultGodotTaskScheduler;
+	FuncDebuggingUtils_GetCurrentStackInfo DebuggingUtils_GetCurrentStackInfo;
 	FuncDisposablesTracker_OnGodotShuttingDown DisposablesTracker_OnGodotShuttingDown;
+	FuncGD_OnCoreApiAssemblyLoaded GD_OnCoreApiAssemblyLoaded;
 };
 
 extern ManagedCallbacks managed_callbacks;

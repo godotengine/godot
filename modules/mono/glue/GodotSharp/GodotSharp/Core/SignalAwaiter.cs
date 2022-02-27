@@ -58,7 +58,7 @@ namespace Godot
             }
             catch (Exception e)
             {
-                ExceptionUtils.DebugPrintUnhandledException(e);
+                ExceptionUtils.LogException(e);
                 *outAwaiterIsNull = false.ToGodotBool();
             }
         }
