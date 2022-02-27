@@ -220,14 +220,13 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 	}
 
 	if (strcmp(interface, wl_output_interface.name) == 0) {
-		ScreenData sd;
-		sd.wl_output = (struct wl_output *)wl_registry_bind(wl_registry, name, &wl_output_interface, 3);
-		sd.wl_output_name = name;
+		ScreenData *sd = memnew(ScreenData);
+		sd->wl_output = (struct wl_output *)wl_registry_bind(wl_registry, name, &wl_output_interface, 3);
+		sd->wl_output_name = name;
 
 		wls->screens.push_back(sd);
 
-		// `LocalVector` copies the value, so we have to pass its new reference.
-		wl_output_add_listener(sd.wl_output, &wl_output_listener, &wls->screens[wls->screens.size() - 1]);
+		wl_output_add_listener(sd->wl_output, &wl_output_listener, sd);
 
 		return;
 	}
@@ -271,10 +270,11 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 
 	// FIXME: This is a very bruteforce approach.
 	for (int i = 0; i < (int)wls->screens.size(); i++) {
-		ScreenData &sd = wls->screens[i];
+		ScreenData *sd = wls->screens[i];
 
-		if (sd.wl_output_name == name) {
-			wl_output_destroy(sd.wl_output);
+		if (sd->wl_output_name == name) {
+			wl_output_destroy(sd->wl_output);
+			memfree(wls->screens[i]);
 			wls->screens.remove_at(i);
 			return;
 		}
@@ -282,31 +282,9 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 }
 
 void DisplayServerWayland::_wl_surface_on_enter(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {
-	WindowData *wd = (WindowData *)data;
-
-	wd->current_outputs.push_back(wl_output);
 }
 
 void DisplayServerWayland::_wl_surface_on_leave(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {
-	WindowData *wd = (WindowData *)data;
-
-	if (wd->current_outputs.size() != 0) {
-		// Thing that should allow to get somewhat on which screen the window is on.
-		//
-		// Due to the way Wayland isolates its windows from everything else, we can't
-		// accurately determine whether a window covers mostly one screen or the
-		// other. The closest way is to have a list for the outputs to pile up and
-		// pop either its head or tail depending on whether we're leaving the current
-		// (first in the queue) output or another one.
-		//
-		// This still has limitations, mind you, but I don't think that more can be
-		// done, at least not without another specialized protocol.
-		if (wd->current_outputs[0] == wl_output) {
-			wd->current_outputs.pop_front();
-		} else {
-			wd->current_outputs.pop_back();
-		}
-	}
 }
 
 void DisplayServerWayland::_wl_output_on_geometry(void *data, struct wl_output *wl_output, int32_t x, int32_t y, int32_t physical_width, int32_t physical_height, int32_t subpixel, const char *make, const char *model, int32_t transform) {
@@ -869,7 +847,7 @@ Point2i DisplayServerWayland::screen_get_position(int p_screen) const {
 
 	ERR_FAIL_INDEX_V(p_screen, (int)wls.screens.size(), Point2i());
 
-	return wls.screens[p_screen].position;
+	return wls.screens[p_screen]->position;
 }
 
 Size2i DisplayServerWayland::screen_get_size(int p_screen) const {
@@ -877,7 +855,7 @@ Size2i DisplayServerWayland::screen_get_size(int p_screen) const {
 
 	ERR_FAIL_INDEX_V(p_screen, (int)wls.screens.size(), Size2i());
 
-	return wls.screens[p_screen].size;
+	return wls.screens[p_screen]->size;
 }
 
 Rect2i DisplayServerWayland::screen_get_usable_rect(int p_screen) const {
@@ -901,7 +879,7 @@ float DisplayServerWayland::screen_get_refresh_rate(int p_screen) const {
 
 	ERR_FAIL_INDEX_V(p_screen, (int)wls.screens.size(), -1);
 
-	return wls.screens[p_screen].refresh_rate;
+	return wls.screens[p_screen]->refresh_rate;
 }
 
 bool DisplayServerWayland::screen_is_touchscreen(int p_screen) const {
@@ -1030,28 +1008,12 @@ void DisplayServerWayland::window_set_drop_files_callback(const Callable &p_call
 }
 
 int DisplayServerWayland::window_get_current_screen(DisplayServer::WindowID p_window) const {
-	MutexLock mutex_lock(wls.mutex);
-
-	// We've got only one screen, we don't need to even bother about which screen
-	// this window is on.
-	if (wls.screens.size() < 2) {
-		return 0;
-	}
-
-	const WindowData &wd = wls.windows[p_window];
-
-	if (wd.current_outputs.size() == 0) {
-		return 0;
-	}
-
-	// TODO: Perhaps cache this value at the time the window enters into a screen.
-	for (int i = 0; i < (int)wls.screens.size(); i++) {
-		if (wls.screens[i].wl_output == wd.current_outputs[0]) {
-			return i;
-		}
-	}
-
-	ERR_FAIL_V_MSG(0, "Window is on invalid screen.");
+	// TODO: Implement this somehow.
+	// I've tried to do it before, but since we can only register window
+	// entering/leaving from a screen, it would be too complex for the little
+	// accuracy and usefulness we would get from it, as such, I've purposely left
+	// this method as a stub, for now.
+	return 0;
 }
 
 void DisplayServerWayland::window_set_current_screen(int p_screen, DisplayServer::WindowID p_window) {
@@ -1509,6 +1471,12 @@ DisplayServerWayland::~DisplayServerWayland() {
 	// Destroy all windows.
 	for (KeyValue<WindowID, WindowData> &E : wls.windows) {
 		_destroy_window(E.key);
+	}
+
+	// Free all screens.
+	for (int i = 0; i < (int)wls.screens.size(); i++) {
+		memfree(wls.screens[i]);
+		wls.screens[i] = nullptr;
 	}
 
 	// Wait for all events to be handled, and in turn unblock the events thread.

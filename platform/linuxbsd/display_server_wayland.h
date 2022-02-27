@@ -99,8 +99,6 @@ class DisplayServerWayland : public DisplayServer {
 		struct xdg_surface *xdg_surface = nullptr;
 		struct xdg_toplevel *xdg_toplevel = nullptr;
 
-		List<wl_output *> current_outputs;
-
 		bool buffer_created = false;
 
 		VSyncMode vsync_mode;
@@ -119,7 +117,7 @@ class DisplayServerWayland : public DisplayServer {
 	};
 
 	struct ScreenData {
-		struct wl_output *wl_output;
+		struct wl_output *wl_output = nullptr;
 		uint32_t wl_output_name = 0;
 
 		// Geometry data.
@@ -131,8 +129,8 @@ class DisplayServerWayland : public DisplayServer {
 		Size2i size;
 		Size2i physical_size;
 
-		float refresh_rate;
-		int scale;
+		float refresh_rate = 0;
+		int scale = 0;
 	};
 
 	struct PointerData {
@@ -200,7 +198,7 @@ class DisplayServerWayland : public DisplayServer {
 		WindowID window_id_counter = MAIN_WINDOW_ID;
 		Map<WindowID, WindowData> windows;
 
-		LocalVector<ScreenData> screens;
+		LocalVector<ScreenData *> screens;
 
 		PointerState pointer_state;
 		KeyboardState keyboard_state;
