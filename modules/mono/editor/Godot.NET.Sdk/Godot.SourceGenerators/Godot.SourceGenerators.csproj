@@ -30,12 +30,4 @@
     <!-- Package the props file -->
     <None Include="Godot.SourceGenerators.props" Pack="true" PackagePath="build" Visible="true" />
   </ItemGroup>
-
-  <Target Name="CopyNupkgToSConsOutputDir" AfterTargets="Pack">
-    <PropertyGroup>
-      <GodotSourceRootPath>$(SolutionDir)\..\..\..\..\</GodotSourceRootPath>
-      <GodotOutputDataDir>$(GodotSourceRootPath)\bin\GodotSharp\</GodotOutputDataDir>
-    </PropertyGroup>
-    <Copy SourceFiles="$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg" DestinationFolder="$(GodotOutputDataDir)Tools\nupkgs\" />
-  </Target>
 </Project>

@@ -19,4 +19,10 @@
   <ItemGroup Condition=" '$(DisableImplicitGodotGeneratorReferences)' != 'true' ">
     <PackageReference Include="Godot.SourceGenerators" Version="$(PackageFloatingVersion_Godot)" />
   </ItemGroup>
+
+  <!-- Godot API references -->
+  <ItemGroup Condition=" '$(DisableImplicitGodotSharpReferences)' != 'true' ">
+    <PackageReference Include="GodotSharp" Version="$(PackageVersion_GodotSharp)" />
+    <PackageReference Include="GodotSharpEditor" Version="$(PackageVersion_GodotSharp)" Condition=" '$(Configuration)' == 'Debug' " />
+  </ItemGroup>
 </Project>
