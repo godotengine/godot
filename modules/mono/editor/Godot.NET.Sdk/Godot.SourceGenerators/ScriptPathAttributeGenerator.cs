@@ -90,21 +90,14 @@ namespace Godot.SourceGenerators
                 attributes.Append(@""")]");
             }
 
-            string className = symbol.Name;
-
             INamespaceSymbol namespaceSymbol = symbol.ContainingNamespace;
             string classNs = namespaceSymbol != null && !namespaceSymbol.IsGlobalNamespace ?
                 namespaceSymbol.FullQualifiedName() :
                 string.Empty;
             bool hasNamespace = classNs.Length != 0;
 
-            var uniqueName = new StringBuilder();
-            if (hasNamespace)
-                uniqueName.Append($"{classNs}.");
-            uniqueName.Append(className);
-            if (symbol.IsGenericType)
-                uniqueName.Append($"Of{string.Join(string.Empty, symbol.TypeParameters)}");
-            uniqueName.Append("_ScriptPath_Generated");
+            var uniqueHint = symbol.FullQualifiedName().SanitizeQualifiedNameForUniqueHint()
+                             + "_ScriptPath_Generated";
 
             var source = new StringBuilder();
 
@@ -124,10 +117,8 @@ namespace Godot.SourceGenerators
             }
 
             source.Append(attributes);
-            source.Append("\n    partial class ");
-            source.Append(className);
-            if (symbol.IsGenericType)
-                source.Append($"<{string.Join(", ", symbol.TypeParameters)}>");
+            source.Append("\npartial class ");
+            source.Append(symbol.NameWithTypeParameters());
             source.Append("\n{\n}\n");
 
             if (hasNamespace)
@@ -135,7 +126,7 @@ namespace Godot.SourceGenerators
                 source.Append("\n}\n");
             }
 
-            context.AddSource(uniqueName.ToString(), SourceText.From(source.ToString(), Encoding.UTF8));
+            context.AddSource(uniqueHint.ToString(), SourceText.From(source.ToString(), Encoding.UTF8));
         }
 
         private static void AddScriptTypesAssemblyAttr(GeneratorExecutionContext context,

@@ -96,7 +96,7 @@ void ManagedCallable::call(const Variant **p_arguments, int p_argcount, Variant 
 void ManagedCallable::release_delegate_handle() {
 	if (delegate_handle.value) {
 		GDMonoCache::managed_callbacks.GCHandleBridge_FreeGCHandle(delegate_handle);
-		delegate_handle = GCHandleIntPtr();
+		delegate_handle = { nullptr };
 	}
 }
 
