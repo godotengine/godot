@@ -215,8 +215,10 @@
 		<method name="get_meta" qualifiers="const">
 			<return type="Variant" />
 			<argument index="0" name="name" type="String" />
+			<argument index="1" name="default" type="Variant" default="null" />
 			<description>
 				Returns the object's metadata entry for the given [code]name[/code].
+				Throws error if the entry does not exist, unless [code]default[/code] is not [code]null[/code] (in which case the default value will be returned).
 			</description>
 		</method>
 		<method name="get_meta_list" qualifiers="const">
