@@ -3071,22 +3071,22 @@ void RendererSceneRenderRD::shadows_quality_set(RS::ShadowQuality p_quality) {
 				soft_shadow_samples = 0;
 				shadows_quality_radius = 1.0;
 			} break;
-			case RS::SHADOW_QUALITY_SOFT_VERY_LOW: {
+			case RS::SHADOW_QUALITY_SOFT_LOW: {
 				penumbra_shadow_samples = 4;
 				soft_shadow_samples = 1;
 				shadows_quality_radius = 1.5;
 			} break;
-			case RS::SHADOW_QUALITY_SOFT_LOW: {
+			case RS::SHADOW_QUALITY_SOFT_MEDIUM: {
 				penumbra_shadow_samples = 8;
 				soft_shadow_samples = 4;
 				shadows_quality_radius = 2.0;
 			} break;
-			case RS::SHADOW_QUALITY_SOFT_MEDIUM: {
+			case RS::SHADOW_QUALITY_SOFT_HIGH: {
 				penumbra_shadow_samples = 12;
 				soft_shadow_samples = 8;
 				shadows_quality_radius = 2.0;
 			} break;
-			case RS::SHADOW_QUALITY_SOFT_HIGH: {
+			case RS::SHADOW_QUALITY_SOFT_VERY_HIGH: {
 				penumbra_shadow_samples = 24;
 				soft_shadow_samples = 16;
 				shadows_quality_radius = 3.0;
@@ -3118,22 +3118,22 @@ void RendererSceneRenderRD::directional_shadow_quality_set(RS::ShadowQuality p_q
 				directional_soft_shadow_samples = 0;
 				directional_shadow_quality_radius = 1.0;
 			} break;
-			case RS::SHADOW_QUALITY_SOFT_VERY_LOW: {
+			case RS::SHADOW_QUALITY_SOFT_LOW: {
 				directional_penumbra_shadow_samples = 4;
 				directional_soft_shadow_samples = 1;
 				directional_shadow_quality_radius = 1.5;
 			} break;
-			case RS::SHADOW_QUALITY_SOFT_LOW: {
+			case RS::SHADOW_QUALITY_SOFT_MEDIUM: {
 				directional_penumbra_shadow_samples = 8;
 				directional_soft_shadow_samples = 4;
 				directional_shadow_quality_radius = 2.0;
 			} break;
-			case RS::SHADOW_QUALITY_SOFT_MEDIUM: {
+			case RS::SHADOW_QUALITY_SOFT_HIGH: {
 				directional_penumbra_shadow_samples = 12;
 				directional_soft_shadow_samples = 8;
 				directional_shadow_quality_radius = 2.0;
 			} break;
-			case RS::SHADOW_QUALITY_SOFT_HIGH: {
+			case RS::SHADOW_QUALITY_SOFT_VERY_HIGH: {
 				directional_penumbra_shadow_samples = 24;
 				directional_soft_shadow_samples = 16;
 				directional_shadow_quality_radius = 3.0;

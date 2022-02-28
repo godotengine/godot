@@ -477,10 +477,10 @@ public:
 
 	enum ShadowQuality {
 		SHADOW_QUALITY_HARD,
-		SHADOW_QUALITY_SOFT_VERY_LOW,
 		SHADOW_QUALITY_SOFT_LOW,
 		SHADOW_QUALITY_SOFT_MEDIUM,
 		SHADOW_QUALITY_SOFT_HIGH,
+		SHADOW_QUALITY_SOFT_VERY_HIGH,
 		SHADOW_QUALITY_SOFT_ULTRA,
 		SHADOW_QUALITY_MAX
 	};
@@ -1010,9 +1010,9 @@ public:
 
 	enum EnvironmentSSRRoughnessQuality {
 		ENV_SSR_ROUGNESS_QUALITY_DISABLED,
-		ENV_SSR_ROUGNESS_QUALITY_LOW,
 		ENV_SSR_ROUGNESS_QUALITY_MEDIUM,
 		ENV_SSR_ROUGNESS_QUALITY_HIGH,
+		ENV_SSR_ROUGNESS_QUALITY_ULTRA,
 	};
 
 	virtual void environment_set_ssr_roughness_quality(EnvironmentSSRRoughnessQuality p_quality) = 0;
@@ -1097,9 +1097,9 @@ public:
 
 	enum SubSurfaceScatteringQuality {
 		SUB_SURFACE_SCATTERING_QUALITY_DISABLED,
-		SUB_SURFACE_SCATTERING_QUALITY_LOW,
 		SUB_SURFACE_SCATTERING_QUALITY_MEDIUM,
 		SUB_SURFACE_SCATTERING_QUALITY_HIGH,
+		SUB_SURFACE_SCATTERING_QUALITY_ULTRA,
 	};
 
 	virtual void sub_surface_scattering_set_quality(SubSurfaceScatteringQuality p_quality) = 0;
@@ -1110,10 +1110,10 @@ public:
 	virtual RID camera_effects_create() = 0;
 
 	enum DOFBlurQuality {
-		DOF_BLUR_QUALITY_VERY_LOW,
 		DOF_BLUR_QUALITY_LOW,
 		DOF_BLUR_QUALITY_MEDIUM,
 		DOF_BLUR_QUALITY_HIGH,
+		DOF_BLUR_QUALITY_ULTRA,
 	};
 
 	virtual void camera_effects_set_dof_blur_quality(DOFBlurQuality p_quality, bool p_use_jitter) = 0;

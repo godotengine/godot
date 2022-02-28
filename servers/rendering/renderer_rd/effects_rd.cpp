@@ -675,13 +675,13 @@ void EffectsRD::screen_space_reflection(RID p_diffuse, RID p_normal_roughness, R
 		ssr_filter.push_constant.proj_info[2] = (1.0f - p_camera.matrix[0][2]) / p_camera.matrix[0][0];
 		ssr_filter.push_constant.proj_info[3] = (1.0f + p_camera.matrix[1][2]) / p_camera.matrix[1][1];
 		ssr_filter.push_constant.vertical = 0;
-		if (p_roughness_quality == RS::ENV_SSR_ROUGNESS_QUALITY_LOW) {
+		if (p_roughness_quality == RS::ENV_SSR_ROUGNESS_QUALITY_MEDIUM) {
 			ssr_filter.push_constant.steps = p_max_steps / 3;
 			ssr_filter.push_constant.increment = 3;
-		} else if (p_roughness_quality == RS::ENV_SSR_ROUGNESS_QUALITY_MEDIUM) {
+		} else if (p_roughness_quality == RS::ENV_SSR_ROUGNESS_QUALITY_HIGH) {
 			ssr_filter.push_constant.steps = p_max_steps / 2;
 			ssr_filter.push_constant.increment = 2;
-		} else {
+		} else { // RS::ENV_SSR_ROUGNESS_QUALITY_ULTRA
 			ssr_filter.push_constant.steps = p_max_steps;
 			ssr_filter.push_constant.increment = 1;
 		}
@@ -1073,7 +1073,7 @@ void EffectsRD::bokeh_dof(const BokehBuffers &p_buffers, bool p_dof_far, float p
 
 		bokeh.push_constant.steps = quality_samples[p_quality];
 
-		if (p_quality == RS::DOF_BLUR_QUALITY_VERY_LOW || p_quality == RS::DOF_BLUR_QUALITY_LOW) {
+		if (p_quality == RS::DOF_BLUR_QUALITY_LOW || p_quality == RS::DOF_BLUR_QUALITY_MEDIUM) {
 			//box and hexagon are more or less the same, and they can work in either half (very low and low quality) or full (medium and high quality_ sizes)
 
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_buffers.half_texture[0]), 0);
@@ -1098,7 +1098,7 @@ void EffectsRD::bokeh_dof(const BokehBuffers &p_buffers, bool p_dof_far, float p
 		//third pass
 		bokeh.push_constant.second_pass = true;
 
-		if (p_quality == RS::DOF_BLUR_QUALITY_VERY_LOW || p_quality == RS::DOF_BLUR_QUALITY_LOW) {
+		if (p_quality == RS::DOF_BLUR_QUALITY_LOW || p_quality == RS::DOF_BLUR_QUALITY_MEDIUM) {
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_buffers.half_texture[1]), 0);
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_buffers.half_texture[0]), 1);
 		} else {
@@ -1111,8 +1111,8 @@ void EffectsRD::bokeh_dof(const BokehBuffers &p_buffers, bool p_dof_far, float p
 		RD::get_singleton()->compute_list_dispatch_threads(compute_list, bokeh.push_constant.size[0], bokeh.push_constant.size[1], 1);
 		RD::get_singleton()->compute_list_add_barrier(compute_list);
 
-		if (p_quality == RS::DOF_BLUR_QUALITY_VERY_LOW || p_quality == RS::DOF_BLUR_QUALITY_LOW) {
-			//forth pass, upscale for low quality
+		if (p_quality == RS::DOF_BLUR_QUALITY_LOW || p_quality == RS::DOF_BLUR_QUALITY_MEDIUM) {
+			//forth pass, upscale for low and medium quality
 
 			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.compute_pipelines[BOKEH_COMPOSITE]);
 
@@ -1221,8 +1221,8 @@ void EffectsRD::bokeh_dof_raster(const BokehBuffers &p_buffers, bool p_dof_far, 
 			// double pass approach
 			BokehMode mode = p_bokeh_shape == RS::DOF_BOKEH_BOX ? BOKEH_GEN_BOKEH_BOX : BOKEH_GEN_BOKEH_HEXAGONAL;
 
-			if (p_quality == RS::DOF_BLUR_QUALITY_VERY_LOW || p_quality == RS::DOF_BLUR_QUALITY_LOW) {
-				//box and hexagon are more or less the same, and they can work in either half (very low and low quality) or full (medium and high quality_ sizes)
+			if (p_quality == RS::DOF_BLUR_QUALITY_LOW || p_quality == RS::DOF_BLUR_QUALITY_MEDIUM) {
+				//box and hexagon are more or less the same, and they can work in either half (low and medium quality) or full (high and ultra quality_ sizes)
 				bokeh.push_constant.size[0] = p_buffers.base_texture_size.x >> 1;
 				bokeh.push_constant.size[1] = p_buffers.base_texture_size.y >> 1;
 				bokeh.push_constant.half_size = true;
