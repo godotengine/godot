@@ -36,6 +36,7 @@
 #include "dictionary_property_edit.h"
 #include "editor_feature_profile.h"
 #include "editor_node.h"
+#include "editor_property_name_processor.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
 #include "multi_node_edit.h"
@@ -1551,11 +1552,11 @@ void EditorInspector::update_tree() {
 			if (dot != -1) {
 				String ov = name.right(dot);
 				name = name.substr(0, dot);
-				name = name.capitalize();
+				name = EditorPropertyNameProcessor::get_singleton()->process_name(name);
 				name += ov;
 
 			} else {
-				name = name.capitalize();
+				name = EditorPropertyNameProcessor::get_singleton()->process_name(name);
 			}
 		}
 
@@ -1565,7 +1566,7 @@ void EditorInspector::update_tree() {
 			String cat = path;
 
 			if (capitalize_paths) {
-				cat = cat.capitalize();
+				cat = EditorPropertyNameProcessor::get_singleton()->process_name(cat);
 			}
 
 			if (!filter.is_subsequence_ofi(cat) && !filter.is_subsequence_ofi(name) && property_prefix.to_lower().find(filter.to_lower()) == -1) {
@@ -1594,13 +1595,15 @@ void EditorInspector::update_tree() {
 					current_vbox->add_child(section);
 					sections.push_back(section);
 
+					String label = path_name;
 					if (capitalize_paths) {
-						path_name = path_name.capitalize();
+						label = EditorPropertyNameProcessor::get_singleton()->process_name(label);
 					}
 
 					Color c = sscolor;
 					c.a /= level;
-					section->setup(acc_path, path_name, object, c, use_folding);
+					section->setup(acc_path, label, object, c, use_folding);
+					section->set_tooltip(EditorPropertyNameProcessor::get_singleton()->make_tooltip_for_name(path_name));
 
 					VBoxContainer *vb = section->get_vbox();
 					item_path[acc_path] = vb;
