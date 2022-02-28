@@ -186,6 +186,10 @@ void Joint3D::set_exclude_nodes_from_collision(bool p_enable) {
 	if (exclude_from_collision == p_enable) {
 		return;
 	}
+	if (is_configured()) {
+		_disconnect_signals();
+	}
+	_update_joint(true);
 	exclude_from_collision = p_enable;
 	_update_joint();
 }
