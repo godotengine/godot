@@ -2,6 +2,7 @@
 
 import fnmatch
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -31,6 +32,15 @@ for root, dirnames, filenames in os.walk("."):
 matches.sort()
 
 
+remaps = {}
+remap_re = re.compile(r'capitalize_string_remaps\["(.+)"\] = "(.+)";')
+with open("editor/editor_property_name_processor.cpp") as f:
+    for line in f:
+        m = remap_re.search(line)
+        if m:
+            remaps[m.group(1)] = m.group(2)
+
+
 unique_str = []
 unique_loc = {}
 main_po = """
@@ -50,6 +60,36 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\\n"
 "Content-Transfer-Encoding: 8-bit\\n"\n
 """
+
+
+message_patterns = {
+    re.compile(r'RTR\("(([^"\\]|\\.)*)"\)'): False,
+    re.compile(r'TTR\("(([^"\\]|\\.)*)"\)'): False,
+    re.compile(r'TTRC\("(([^"\\]|\\.)*)"\)'): False,
+    re.compile(r'_initial_set\("([^"]+?)",'): True,
+    re.compile(r'GLOBAL_DEF(?:_RST)?\("([^".]+?)",'): True,
+    re.compile(r'EDITOR_DEF(?:_RST)?\("([^"]+?)",'): True,
+    re.compile(r'ADD_PROPERTY\(PropertyInfo\(Variant::[A-Z]+,\s*"([^"]+?)",'): True,
+    re.compile(r'ADD_GROUP\("([^"]+?)",'): False,
+}
+
+
+# See String::camelcase_to_underscore().
+capitalize_re = re.compile(r"(?<=\D)(?=\d)|(?<=\d)(?=\D([a-z]|\d))")
+
+
+def _process_editor_string(name):
+    # See String::capitalize().
+    # fmt: off
+    capitalized = " ".join(
+        part.title()
+        for part in capitalize_re.sub("_", name).replace("_", " ").split()
+    )
+    # fmt: on
+    # See EditorStringProcessor::process_string().
+    for key, value in remaps.items():
+        capitalized = capitalized.replace(key, value)
+    return capitalized
 
 
 def _write_translator_comment(msg, translator_comment):
@@ -149,11 +189,6 @@ def _extract_translator_comment(line, is_block_translator_comment):
 
 
 def process_file(f, fname):
-
-    global main_po, unique_str, unique_loc
-
-    patterns = ['RTR("', 'TTR("', 'TTRC("']
-
     l = f.readline()
     lc = 1
     reading_translator_comment = False
@@ -176,47 +211,46 @@ def process_file(f, fname):
             if not reading_translator_comment:
                 translator_comment = translator_comment[:-1]  # Remove extra \n at the end.
 
-        idx = 0
-        pos = 0
+        if not reading_translator_comment:
+            for pattern, is_property_path in message_patterns.items():
+                for m in pattern.finditer(l):
+                    location = os.path.relpath(fname).replace("\\", "/")
+                    if line_nb:
+                        location += ":" + str(lc)
 
-        while not reading_translator_comment and pos >= 0:
-            pos = l.find(patterns[idx], pos)
-            if pos == -1:
-                if idx < len(patterns) - 1:
-                    idx += 1
-                    pos = 0
-                continue
-            pos += len(patterns[idx])
+                    msg = m.group(1)
 
-            msg = ""
-            while pos < len(l) and (l[pos] != '"' or l[pos - 1] == "\\"):
-                msg += l[pos]
-                pos += 1
+                    if is_property_path:
+                        for part in msg.split("/"):
+                            _add_message(_process_editor_string(part), location, translator_comment)
+                    else:
+                        _add_message(msg, location, translator_comment)
 
-            location = os.path.relpath(fname).replace("\\", "/")
-            if line_nb:
-                location += ":" + str(lc)
-
-            # Write translator comment.
-            _write_translator_comment(msg, translator_comment)
             translator_comment = ""
-
-            if not msg in unique_str:
-                main_po += "#: " + location + "\n"
-                main_po += 'msgid "' + msg + '"\n'
-                main_po += 'msgstr ""\n\n'
-                unique_str.append(msg)
-                unique_loc[msg] = [location]
-            elif not location in unique_loc[msg]:
-                # Add additional location to previous occurrence too
-                msg_pos = main_po.find('\nmsgid "' + msg + '"')
-                if msg_pos == -1:
-                    print("Someone apparently thought writing Python was as easy as GDScript. Ping Akien.")
-                main_po = main_po[:msg_pos] + " " + location + main_po[msg_pos:]
-                unique_loc[msg].append(location)
 
         l = f.readline()
         lc += 1
+
+
+def _add_message(msg, location, translator_comment):
+    global main_po, unique_str, unique_loc
+
+    # Write translator comment.
+    _write_translator_comment(msg, translator_comment)
+
+    if not msg in unique_str:
+        main_po += "#: " + location + "\n"
+        main_po += 'msgid "' + msg + '"\n'
+        main_po += 'msgstr ""\n\n'
+        unique_str.append(msg)
+        unique_loc[msg] = [location]
+    elif not location in unique_loc[msg]:
+        # Add additional location to previous occurrence too
+        msg_pos = main_po.find('\nmsgid "' + msg + '"')
+        if msg_pos == -1:
+            print("Someone apparently thought writing Python was as easy as GDScript. Ping Akien.")
+        main_po = main_po[:msg_pos] + " " + location + main_po[msg_pos:]
+        unique_loc[msg].append(location)
 
 
 print("Updating the editor.pot template...")
