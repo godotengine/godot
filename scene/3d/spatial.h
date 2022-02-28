@@ -55,10 +55,11 @@ class Spatial : public Node {
 	// optionally stored if we need to do interpolation
 	// client side (i.e. not in VisualServer) so interpolated transforms
 	// can be read back with get_global_transform_interpolated()
-	struct PhysicsInterpolationData {
+	struct ClientPhysicsInterpolationData {
 		Transform global_xform_curr;
 		Transform global_xform_prev;
 		uint64_t current_physics_tick = 0;
+		uint64_t timeout_physics_tick = 0;
 	};
 
 	enum TransformDirty {
@@ -69,6 +70,7 @@ class Spatial : public Node {
 	};
 
 	mutable SelfList<Node> xform_change;
+	SelfList<Spatial> _client_physics_interpolation_spatials_list;
 
 	struct Data {
 		mutable Transform global_transform;
@@ -101,7 +103,7 @@ class Spatial : public Node {
 		List<Spatial *> children;
 		List<Spatial *>::Element *C;
 
-		PhysicsInterpolationData *physics_interpolation_data;
+		ClientPhysicsInterpolationData *client_physics_interpolation_data;
 
 #ifdef TOOLS_ENABLED
 		Ref<SpatialGizmo> gizmo;
@@ -121,10 +123,10 @@ protected:
 	_FORCE_INLINE_ void set_ignore_transform_notification(bool p_ignore) { data.ignore_notification = p_ignore; }
 	_FORCE_INLINE_ void _update_local_transform() const;
 
-	void _update_physics_interpolation_data();
 	void _set_vi_visible(bool p_visible);
 	bool _is_vi_visible() const { return data.vi_visible; }
 	Transform _get_global_transform_interpolated(real_t p_interpolation_fraction);
+	void _disable_client_physics_interpolation();
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -162,6 +164,7 @@ public:
 	Transform get_transform() const;
 	Transform get_global_transform() const;
 	Transform get_global_transform_interpolated();
+	bool update_client_physics_interpolation_data();
 
 #ifdef TOOLS_ENABLED
 	virtual Transform get_global_gizmo_transform() const;
