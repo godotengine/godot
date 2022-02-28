@@ -166,15 +166,18 @@ int Joint3D::get_solver_priority() const {
 
 void Joint3D::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_READY: {
+		case NOTIFICATION_POST_ENTER_TREE: {
+			if (is_configured()) {
+				_disconnect_signals();
+			}
 			_update_joint();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
 			if (is_configured()) {
 				_disconnect_signals();
-				_update_joint(true);
 			}
+			_update_joint(true);
 		} break;
 	}
 }
