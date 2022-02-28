@@ -36,6 +36,12 @@
 
 static ErrorHandlerList *error_handler_list = nullptr;
 
+// This has to be accessible from low level headers,
+// and cannot be in Engine or OS to avoid circular includes.
+namespace Godot {
+bool g_leak_reporting_enabled = true;
+}
+
 void add_error_handler(ErrorHandlerList *p_handler) {
 	_global_lock();
 	p_handler->next = error_handler_list;

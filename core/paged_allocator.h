@@ -32,7 +32,7 @@
 #define PAGED_ALLOCATOR_H
 
 #include "core/os/memory.h"
-#include "core/os/spin_lock.h"
+#include "core/os/mutex.h"
 #include "core/typedefs.h"
 
 #include <type_traits>
@@ -47,12 +47,12 @@ class PagedAllocator {
 	uint32_t page_shift = 0;
 	uint32_t page_mask = 0;
 	uint32_t page_size = 0;
-	SpinLock spin_lock;
+	Mutex mutex;
 
 public:
 	T *alloc() {
 		if (thread_safe) {
-			spin_lock.lock();
+			mutex.lock();
 		}
 		if (unlikely(allocs_available == 0)) {
 			uint32_t pages_used = pages_allocated;
@@ -73,7 +73,7 @@ public:
 		allocs_available--;
 		T *alloc = available_pool[allocs_available >> page_shift][allocs_available & page_mask];
 		if (thread_safe) {
-			spin_lock.unlock();
+			mutex.unlock();
 		}
 		memnew_placement(alloc, T);
 		return alloc;
@@ -81,14 +81,14 @@ public:
 
 	void free(T *p_mem) {
 		if (thread_safe) {
-			spin_lock.lock();
+			mutex.lock();
 		}
 		p_mem->~T();
 		available_pool[allocs_available >> page_shift][allocs_available & page_mask] = p_mem;
-		if (thread_safe) {
-			spin_lock.unlock();
-		}
 		allocs_available++;
+		if (thread_safe) {
+			mutex.unlock();
+		}
 	}
 
 	void reset(bool p_allow_unfreed = false) {
@@ -125,7 +125,12 @@ public:
 	}
 
 	~PagedAllocator() {
-		ERR_FAIL_COND_MSG(allocs_available < pages_allocated * page_size, "Pages in use exist at exit in PagedAllocator");
+		if (allocs_available < pages_allocated * page_size) {
+			if (Godot::g_leak_reporting_enabled) {
+				ERR_FAIL_COND_MSG(allocs_available < pages_allocated * page_size, "Pages in use exist at exit in PagedAllocator");
+			}
+			return;
+		}
 		reset();
 	}
 };

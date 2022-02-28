@@ -40,6 +40,13 @@
 #include "scene/gui/control.h"
 #include "scene/main/node.h"
 
+// We can use lowest common multiple to find multiples of 4096 page size.
+// (note the structure sizes will be double when real_t is double)
+PagedAllocator<Transform, true> Variant::_pool_transforms(256); // 256 * 48 bytes = 4096 * 3
+PagedAllocator<Transform2D, true> Variant::_pool_transform2ds(512); // 512 * 24 bytes = 4096 * 3
+PagedAllocator<::AABB, true> Variant::_pool_aabbs(512); // 512 * 24 bytes = 4096 * 3
+PagedAllocator<Basis, true> Variant::_pool_bases(1024); // 1024 * 36 bytes = 4096 * 9
+
 String Variant::get_type_name(Variant::Type p_type) {
 	switch (p_type) {
 		case NIL: {
@@ -890,7 +897,8 @@ void Variant::reference(const Variant &p_variant) {
 			memnew_placement(_data._mem, Rect2(*reinterpret_cast<const Rect2 *>(p_variant._data._mem)));
 		} break;
 		case TRANSFORM2D: {
-			_data._transform2d = memnew(Transform2D(*p_variant._data._transform2d));
+			_data._transform2d = _pool_transform2ds.alloc();
+			*_data._transform2d = *p_variant._data._transform2d;
 		} break;
 		case VECTOR3: {
 			memnew_placement(_data._mem, Vector3(*reinterpret_cast<const Vector3 *>(p_variant._data._mem)));
@@ -900,18 +908,21 @@ void Variant::reference(const Variant &p_variant) {
 		} break;
 
 		case AABB: {
-			_data._aabb = memnew(::AABB(*p_variant._data._aabb));
+			_data._aabb = _pool_aabbs.alloc();
+			*_data._aabb = *p_variant._data._aabb;
 		} break;
 		case QUAT: {
 			memnew_placement(_data._mem, Quat(*reinterpret_cast<const Quat *>(p_variant._data._mem)));
 
 		} break;
 		case BASIS: {
-			_data._basis = memnew(Basis(*p_variant._data._basis));
+			_data._basis = _pool_bases.alloc();
+			*_data._basis = *p_variant._data._basis;
 
 		} break;
 		case TRANSFORM: {
-			_data._transform = memnew(Transform(*p_variant._data._transform));
+			_data._transform = _pool_transforms.alloc();
+			*_data._transform = *p_variant._data._transform;
 		} break;
 
 		// misc types
@@ -1027,16 +1038,16 @@ void Variant::clear() {
 		RECT2
 	*/
 		case TRANSFORM2D: {
-			memdelete(_data._transform2d);
+			_pool_transform2ds.free(_data._transform2d);
 		} break;
 		case AABB: {
-			memdelete(_data._aabb);
+			_pool_aabbs.free(_data._aabb);
 		} break;
 		case BASIS: {
-			memdelete(_data._basis);
+			_pool_bases.free(_data._basis);
 		} break;
 		case TRANSFORM: {
-			memdelete(_data._transform);
+			_pool_transforms.free(_data._transform);
 		} break;
 
 		// misc types
@@ -2112,12 +2123,14 @@ Variant::Variant(const Plane &p_plane) {
 }
 Variant::Variant(const ::AABB &p_aabb) {
 	type = AABB;
-	_data._aabb = memnew(::AABB(p_aabb));
+	_data._aabb = _pool_aabbs.alloc();
+	*_data._aabb = p_aabb;
 }
 
 Variant::Variant(const Basis &p_matrix) {
 	type = BASIS;
-	_data._basis = memnew(Basis(p_matrix));
+	_data._basis = _pool_bases.alloc();
+	*_data._basis = p_matrix;
 }
 
 Variant::Variant(const Quat &p_quat) {
@@ -2126,12 +2139,14 @@ Variant::Variant(const Quat &p_quat) {
 }
 Variant::Variant(const Transform &p_transform) {
 	type = TRANSFORM;
-	_data._transform = memnew(Transform(p_transform));
+	_data._transform = _pool_transforms.alloc();
+	*_data._transform = p_transform;
 }
 
 Variant::Variant(const Transform2D &p_transform) {
 	type = TRANSFORM2D;
-	_data._transform2d = memnew(Transform2D(p_transform));
+	_data._transform2d = _pool_transform2ds.alloc();
+	*_data._transform2d = p_transform;
 }
 Variant::Variant(const Color &p_color) {
 	type = COLOR;

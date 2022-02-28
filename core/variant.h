@@ -45,6 +45,7 @@
 #include "core/math/vector3.h"
 #include "core/node_path.h"
 #include "core/object_id.h"
+#include "core/paged_allocator.h"
 #include "core/pool_vector.h"
 #include "core/ref_ptr.h"
 #include "core/rid.h"
@@ -161,6 +162,12 @@ private:
 		void *_ptr; //generic pointer
 		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t) * 4) ? sizeof(ObjData) : (sizeof(real_t) * 4)];
 	} _data GCC_ALIGNED_8;
+
+	// Use memory pools for larger attached types, this is crucial as alloc / frees are done frequently
+	static PagedAllocator<Transform, true> _pool_transforms;
+	static PagedAllocator<Transform2D, true> _pool_transform2ds;
+	static PagedAllocator<::AABB, true> _pool_aabbs;
+	static PagedAllocator<Basis, true> _pool_bases;
 
 	void reference(const Variant &p_variant);
 	void clear();
