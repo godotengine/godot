@@ -61,6 +61,8 @@
 #include "scene/main/window.h"
 #include "scene/register_scene_types.h"
 #include "scene/resources/packed_scene.h"
+#include "servers/accessibility/accessibility_server_dummy.h"
+#include "servers/accessibility_server.h"
 #include "servers/audio_server.h"
 #include "servers/camera_server.h"
 #include "servers/display_server.h"
@@ -120,6 +122,7 @@ static RenderingServer *rendering_server = nullptr;
 static CameraServer *camera_server = nullptr;
 static XRServer *xr_server = nullptr;
 static TextServerManager *tsman = nullptr;
+static AccessibilityServerManager *acman = nullptr;
 static PhysicsServer3D *physics_server = nullptr;
 static PhysicsServer2D *physics_2d_server = nullptr;
 static NavigationServer3D *navigation_server = nullptr;
@@ -131,8 +134,10 @@ static bool _start_success = false;
 
 String tablet_driver = "";
 String text_driver = "";
+String accessibility_driver = "";
 String rendering_driver = "";
 static int text_driver_idx = -1;
+static int accessibility_driver_idx = -1;
 static int display_driver_idx = -1;
 static int audio_driver_idx = -1;
 
@@ -235,7 +240,6 @@ void finalize_physics() {
 void finalize_display() {
 	rendering_server->finish();
 	memdelete(rendering_server);
-
 	memdelete(display_server);
 }
 
@@ -322,6 +326,8 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --gpu-index <device_index>                   Use a specific GPU (run with --verbose to get available device list).\n");
 	OS::get_singleton()->print("  --text-driver <driver>                       Text driver (Fonts, BiDi, shaping)\n");
 	OS::get_singleton()->print("  --tablet-driver <driver>                     Pen tablet input driver.\n");
+	OS::get_singleton()->print("  --accessibility-driver <driver>              Accessibility driver\n");
+
 	OS::get_singleton()->print("  --headless                                   Enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script.\n");
 
 	OS::get_singleton()->print("\n");
@@ -399,6 +405,13 @@ Error Main::test_setup() {
 
 	translation_server = memnew(TranslationServer);
 	tsman = memnew(TextServerManager);
+	acman = memnew(AccessibilityServerManager);
+
+	if (acman) {
+		Ref<AccessibilityServerDummy> ac;
+		ac.instantiate();
+		acman->add_interface(ac);
+	}
 
 	if (tsman) {
 		Ref<TextServerDummy> ts;
@@ -463,6 +476,9 @@ Error Main::test_setup() {
 		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "TextServer: Unable to create TextServer interface.");
 	}
 
+	ERR_FAIL_COND_V(AccessibilityServerManager::get_singleton()->get_interface_count() == 0, ERR_CANT_CREATE);
+	AccessibilityServerManager::get_singleton()->set_primary_interface(AccessibilityServerManager::get_singleton()->get_interface(0));
+
 	ClassDB::set_current_api(ClassDB::API_NONE);
 
 	_start_success = true;
@@ -495,6 +511,9 @@ void Main::test_cleanup() {
 	}
 	if (tsman) {
 		memdelete(tsman);
+	}
+	if (acman) {
+		memdelete(acman);
 	}
 	if (globals) {
 		memdelete(globals);
@@ -717,7 +736,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing text driver argument, aborting.\n");
 				goto error;
 			}
-
+		} else if (I->get() == "--accessibility-driver") {
+			if (I->next()) {
+				accessibility_driver = I->next()->get();
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing accessibility driver argument, aborting.\n");
+				goto error;
+			}
 		} else if (I->get() == "--display-driver") { // force video driver
 
 			if (I->next()) {
@@ -1501,6 +1527,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 error:
 
 	text_driver = "";
+	accessibility_driver = "";
 	display_driver = "";
 	audio_driver = "";
 	tablet_driver = "";
@@ -1557,6 +1584,13 @@ error:
 
 Error Main::setup2(Thread::ID p_main_tid_override) {
 	tsman = memnew(TextServerManager);
+	acman = memnew(AccessibilityServerManager);
+
+	if (acman) {
+		Ref<AccessibilityServerDummy> ac;
+		ac.instantiate();
+		acman->add_interface(ac);
+	}
 
 	if (tsman) {
 		Ref<TextServerDummy> ts;
@@ -1851,6 +1885,56 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	ResourceLoader::load_translation_remaps(); //load remaps for resources
 
 	ResourceLoader::load_path_remaps();
+
+	MAIN_PRINT("Main: Load AccessibilityServer");
+
+	/* Enum accessibility drivers */
+	GLOBAL_DEF("accessibility/accessibility_driver", "");
+	String accessibility_driver_options;
+	for (int i = 0; i < AccessibilityServerManager::get_singleton()->get_interface_count(); i++) {
+		if (i > 0) {
+			accessibility_driver_options += ",";
+		}
+		accessibility_driver_options += AccessibilityServerManager::get_singleton()->get_interface(i)->get_name();
+	}
+	ProjectSettings::get_singleton()->set_custom_property_info("accessibility/accessibility_driver", PropertyInfo(Variant::STRING, "accessibility/accessibility_driver", PROPERTY_HINT_ENUM, accessibility_driver_options));
+
+	/* Determine accessibility driver */
+	if (accessibility_driver.is_empty()) {
+		accessibility_driver = GLOBAL_GET("accessibility/accessibility_driver");
+	}
+
+	if (!accessibility_driver.is_empty()) {
+		/* Load user selected accessibility server. */
+		for (int i = 0; i < AccessibilityServerManager::get_singleton()->get_interface_count(); i++) {
+			if (AccessibilityServerManager::get_singleton()->get_interface(i)->get_name() == accessibility_driver) {
+				accessibility_driver_idx = i;
+				break;
+			}
+		}
+	}
+
+	if (accessibility_driver_idx < 0) {
+		/* If not selected, use one with the most features available. */
+		int max_features = 0;
+		for (int i = 0; i < AccessibilityServerManager::get_singleton()->get_interface_count(); i++) {
+			uint32_t features = AccessibilityServerManager::get_singleton()->get_interface(i)->get_features();
+			int feature_number = 0;
+			while (features) {
+				feature_number += features & 1;
+				features >>= 1;
+			}
+			if (feature_number >= max_features) {
+				max_features = feature_number;
+				accessibility_driver_idx = i;
+			}
+		}
+	}
+	if (accessibility_driver_idx >= 0) {
+		AccessibilityServerManager::get_singleton()->set_primary_interface(AccessibilityServerManager::get_singleton()->get_interface(accessibility_driver_idx));
+	} else {
+		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "AccessibilityServer: Unable to create AccessibilityServer interface.");
+	}
 
 	MAIN_PRINT("Main: Load TextServer");
 
@@ -2884,6 +2968,9 @@ void Main::cleanup(bool p_force) {
 	}
 	if (translation_server) {
 		memdelete(translation_server);
+	}
+	if (acman) {
+		memdelete(acman);
 	}
 	if (tsman) {
 		memdelete(tsman);

@@ -76,6 +76,11 @@ void Node::_notification(int p_notification) {
 				data.process_owner = this;
 			}
 
+			if (data.parent) {
+				get_viewport()->accessibility_data_updated(data.parent->get_instance_id());
+			}
+			get_viewport()->accessibility_data_updated(get_instance_id());
+
 			if (data.input) {
 				add_to_group("_vp_input" + itos(get_viewport()->get_instance_id()));
 			}
@@ -93,6 +98,10 @@ void Node::_notification(int p_notification) {
 		case NOTIFICATION_EXIT_TREE: {
 			ERR_FAIL_COND(!get_viewport());
 			ERR_FAIL_COND(!get_tree());
+
+			if (data.parent) {
+				get_viewport()->accessibility_data_updated(data.parent->get_instance_id());
+			}
 
 			get_tree()->node_count--;
 			orphan_node_count++;
@@ -902,6 +911,69 @@ void Node::set_name(const String &p_name) {
 		get_tree()->node_renamed(this);
 		get_tree()->tree_changed();
 	}
+}
+
+AccessibilityServer::Role Node::get_accessibility_role() const {
+	return data.ac_role;
+}
+
+void Node::set_accessibility_role(AccessibilityServer::Role p_role) {
+	if (data.ac_role != p_role) {
+		data.ac_role = p_role;
+		if (is_inside_tree() && get_viewport()) {
+			get_viewport()->accessibility_data_updated(get_instance_id());
+		}
+	}
+}
+
+String Node::get_accessibility_name() const {
+	return data.ac_name;
+}
+
+void Node::set_accessibility_name(const String &p_name) {
+	if (data.ac_name != p_name) {
+		data.ac_name = p_name;
+		if (is_inside_tree() && get_viewport()) {
+			get_viewport()->accessibility_data_updated(get_instance_id());
+		}
+	}
+}
+
+String Node::get_accessibility_description() const {
+	return data.ac_description;
+}
+
+void Node::set_accessibility_description(const String &p_description) {
+	if (data.ac_description != p_description) {
+		data.ac_description = p_description;
+		if (is_inside_tree() && get_viewport()) {
+			get_viewport()->accessibility_data_updated(get_instance_id());
+		}
+	}
+}
+
+TypedArray<NodePath> Node::get_accessibility_related_nodes(AccessibilityServer::NodeRelation p_rel) const {
+	TypedArray<NodePath> ret;
+	if (GDVIRTUAL_CALL(_get_accessibility_related_nodes, p_rel, ret)) {
+		return ret;
+	}
+	return TypedArray<NodePath>();
+}
+
+int64_t Node::get_accessibility_action_count() const {
+	int64_t ret;
+	if (GDVIRTUAL_CALL(_get_accessibility_action_count, ret)) {
+		return ret;
+	}
+	return 0;
+}
+
+StringName Node::get_accessibility_action(int64_t p_index) const {
+	StringName ret;
+	if (GDVIRTUAL_CALL(_get_accessibility_action, p_index, ret)) {
+		return ret;
+	}
+	return StringName();
 }
 
 static SafeRefCount node_hrcr_count;
@@ -2641,6 +2713,10 @@ void Node::unhandled_input(const Ref<InputEvent> &p_event) {
 void Node::unhandled_key_input(const Ref<InputEvent> &p_key_event) {
 }
 
+void Node::accessibility_action(const StringName &p_action, const Variant &p_data) {
+	GDVIRTUAL_CALL(_accessibility_action, p_action, p_data);
+}
+
 void Node::_bind_methods() {
 	GLOBAL_DEF("editor/node_naming/name_num_separator", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("editor/node_naming/name_num_separator", PropertyInfo(Variant::INT, "editor/node_naming/name_num_separator", PROPERTY_HINT_ENUM, "None,Space,Underscore,Dash"));
@@ -2651,6 +2727,18 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Node::set_name);
 	ClassDB::bind_method(D_METHOD("get_name"), &Node::get_name);
+
+	ClassDB::bind_method(D_METHOD("set_accessibility_role", "role"), &Node::set_accessibility_role);
+	ClassDB::bind_method(D_METHOD("get_accessibility_role"), &Node::get_accessibility_role);
+	ClassDB::bind_method(D_METHOD("set_accessibility_name", "name"), &Node::set_accessibility_name);
+	ClassDB::bind_method(D_METHOD("get_accessibility_name"), &Node::get_accessibility_name);
+	ClassDB::bind_method(D_METHOD("set_accessibility_description", "description"), &Node::set_accessibility_description);
+	ClassDB::bind_method(D_METHOD("get_accessibility_description"), &Node::get_accessibility_description);
+
+	ClassDB::bind_method(D_METHOD("get_accessibility_related_nodes", "relation"), &Node::get_accessibility_related_nodes);
+	ClassDB::bind_method(D_METHOD("get_accessibility_action_count"), &Node::get_accessibility_action_count);
+	ClassDB::bind_method(D_METHOD("get_accessibility_action", "index"), &Node::get_accessibility_action);
+
 	ClassDB::bind_method(D_METHOD("add_child", "node", "legible_unique_name", "internal"), &Node::add_child, DEFVAL(false), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("remove_child", "node"), &Node::remove_child);
 	ClassDB::bind_method(D_METHOD("get_child_count", "include_internal"), &Node::get_child_count, DEFVAL(false)); // Note that the default value bound for include_internal is false, while the method is declared with true. This is because internal nodes are irrelevant for GDSCript.
@@ -2849,6 +2937,15 @@ void Node::_bind_methods() {
 	ADD_GROUP("Editor Description", "editor_");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT), "set_editor_description", "get_editor_description");
 
+	ADD_GROUP("Accessibility", "accessibility_");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "accessibility_name"), "set_accessibility_name", "get_accessibility_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "accessibility_description", PROPERTY_HINT_MULTILINE_TEXT), "set_accessibility_description", "get_accessibility_description");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "accessibility_role", PROPERTY_HINT_ENUM, "Unknown,Button,Check Box,Check Button,Container,Item List,Item List Item,Label,Line Edit,Link,Menu Button,Option Button,Progress Bar,Rich Text,Scroll Bar,Scroll Container,Slider,Spin_Box,Tab_Bar,Tab,Text_Edit,Tree,Tree_Item,Window"), "set_accessibility_role", "get_accessibility_role");
+
+	GDVIRTUAL_BIND(_get_accessibility_related_nodes);
+	GDVIRTUAL_BIND(_get_accessibility_action_count);
+	GDVIRTUAL_BIND(_get_accessibility_action, "index");
+
 	GDVIRTUAL_BIND(_process, "delta");
 	GDVIRTUAL_BIND(_physics_process, "delta");
 	GDVIRTUAL_BIND(_enter_tree);
@@ -2858,6 +2955,7 @@ void Node::_bind_methods() {
 	GDVIRTUAL_BIND(_input, "event");
 	GDVIRTUAL_BIND(_unhandled_input, "event");
 	GDVIRTUAL_BIND(_unhandled_key_input, "event");
+	GDVIRTUAL_BIND(_accessibility_action, "action", "data");
 }
 
 String Node::_get_name_num_separator() {

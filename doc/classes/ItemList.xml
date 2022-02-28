@@ -358,6 +358,7 @@
 		</method>
 	</methods>
 	<members>
+		<member name="accessibility_role" type="int" setter="set_accessibility_role" getter="get_accessibility_role" overrides="Node" enum="AccessibilityServer.Role" default="5" />
 		<member name="allow_reselect" type="bool" setter="set_allow_reselect" getter="get_allow_reselect" default="false">
 			If [code]true[/code], the currently selected item can be selected again.
 		</member>

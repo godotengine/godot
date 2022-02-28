@@ -40,6 +40,7 @@
 		</method>
 	</methods>
 	<members>
+		<member name="accessibility_role" type="int" setter="set_accessibility_role" getter="get_accessibility_role" overrides="Node" enum="AccessibilityServer.Role" default="4" />
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="1" />
 	</members>
 	<signals>

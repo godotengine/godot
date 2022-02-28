@@ -32,6 +32,7 @@
 
 #include "display_server_osx.h"
 #include "key_mapping_osx.h"
+#include "servers/accessibility_server.h"
 
 @implementation GodotContentView
 
@@ -57,6 +58,43 @@
 
 - (void)setWindowID:(DisplayServerOSX::WindowID)wid {
 	window_id = wid;
+}
+
+// MARK: Accessibility
+
+- (id)childAccessibleElement {
+	DisplayServerOSX *ds = (DisplayServerOSX *)DisplayServer::get_singleton();
+	if (!ds || !ds->has_window(window_id)) {
+		return nil;
+	}
+	DisplayServerOSX::WindowData &wd = ds->get_window(window_id);
+
+	if (ACS->has_feature(AccessibilityServer::FEATURE_USE_NATIVE_CB)) {
+		void *ptr = (__bridge void *)wd.window_view;
+		return (__bridge id)(void *)ACS->native_window_callback((int64_t)ptr, 0, 0, window_id);
+	} else {
+		return nil;
+	}
+}
+
+- (BOOL)accessibilityIsIgnored {
+	return YES;
+}
+
+- (id)accessibilityAttributeValue:(NSString *)attribute {
+	if ([attribute isEqualToString:NSAccessibilityChildrenAttribute]) {
+		return NSAccessibilityUnignoredChildrenForOnlyChild([self childAccessibleElement]);
+	} else {
+		return [super accessibilityAttributeValue:attribute];
+	}
+}
+
+- (id)accessibilityHitTest:(NSPoint)point {
+	return [[self childAccessibleElement] accessibilityHitTest:point];
+}
+
+- (id)accessibilityFocusedUIElement {
+	return [[self childAccessibleElement] accessibilityFocusedUIElement];
 }
 
 // MARK: Backing Layer

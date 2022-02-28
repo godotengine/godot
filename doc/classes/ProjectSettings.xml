@@ -193,6 +193,8 @@
 		</method>
 	</methods>
 	<members>
+		<member name="accessibility/accessibility_driver" type="String" setter="" getter="" default="&quot;&quot;">
+		</member>
 		<member name="application/boot_splash/bg_color" type="Color" setter="" getter="" default="Color(0.14, 0.14, 0.14, 1)">
 			Background color for the boot splash.
 		</member>

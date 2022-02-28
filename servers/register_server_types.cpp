@@ -33,6 +33,9 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 
+#include "accessibility/accessibility_server_dummy.h"
+#include "accessibility/accessibility_server_extension.h"
+#include "accessibility_server.h"
 #include "audio/audio_effect.h"
 #include "audio/audio_stream.h"
 #include "audio/effects/audio_effect_amplify.h"
@@ -120,6 +123,13 @@ void preregister_server_types() {
 	GDREGISTER_NATIVE_STRUCT(CaretInfo, "Rect2 leading_caret;Rect2 trailing_caret;TextServer::Direction leading_direction;TextServer::Direction trailing_direction");
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("TextServerManager", TextServerManager::get_singleton(), "TextServerManager"));
+
+	GDREGISTER_CLASS(AccessibilityServerManager);
+	GDREGISTER_ABSTRACT_CLASS(AccessibilityServer);
+	GDREGISTER_VIRTUAL_CLASS(AccessibilityServerExtension);
+	GDREGISTER_CLASS(AccessibilityServerDummy);
+
+	Engine::get_singleton()->add_singleton(Engine::Singleton("AccessibilityServerManager", AccessibilityServerManager::get_singleton(), "AccessibilityServerManager"));
 }
 
 void register_server_types() {

@@ -128,6 +128,7 @@ bool CheckBox::is_radio() {
 CheckBox::CheckBox(const String &p_text) :
 		Button(p_text) {
 	set_toggle_mode(true);
+	set_accessibility_role(AccessibilityServer::ROLE_CHECK_BOX);
 
 	set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 

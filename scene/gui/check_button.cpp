@@ -117,6 +117,7 @@ CheckButton::CheckButton(const String &p_text) :
 
 	set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 
+	set_accessibility_role(AccessibilityServer::ROLE_CHECK_BUTTON);
 	if (is_layout_rtl()) {
 		_set_internal_margin(SIDE_LEFT, get_icon_size().width);
 	} else {

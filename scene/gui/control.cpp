@@ -1494,6 +1494,8 @@ void Control::_size_changed() {
 		if (pos_changed && !size_changed) {
 			_update_canvas_item_transform(); //move because it won't be updated
 		}
+
+		get_viewport()->accessibility_data_updated(get_instance_id());
 	}
 }
 

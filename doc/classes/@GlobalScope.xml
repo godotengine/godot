@@ -1083,6 +1083,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="AccessibilityServerManager" type="AccessibilityServerManager" setter="" getter="">
+			The [AccessibilityServerManager] singleton.
+		</member>
 		<member name="AudioServer" type="AudioServer" setter="" getter="">
 			The [AudioServer] singleton.
 		</member>

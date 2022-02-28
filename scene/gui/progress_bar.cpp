@@ -105,6 +105,7 @@ void ProgressBar::_bind_methods() {
 }
 
 ProgressBar::ProgressBar() {
+	set_accessibility_role(AccessibilityServer::ROLE_PROGRESS_BAR);
 	set_v_size_flags(0);
 	set_step(0.01);
 }

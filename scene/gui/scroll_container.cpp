@@ -593,6 +593,8 @@ void ScrollContainer::_bind_methods() {
 };
 
 ScrollContainer::ScrollContainer() {
+	set_accessibility_role(AccessibilityServer::ROLE_SCROLL_CONTAINER);
+
 	h_scroll = memnew(HScrollBar);
 	h_scroll->set_name("_h_scroll");
 	add_child(h_scroll, false, INTERNAL_MODE_BACK);

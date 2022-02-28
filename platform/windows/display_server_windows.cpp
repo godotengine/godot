@@ -35,6 +35,7 @@
 #include "main/main.h"
 #include "os_windows.h"
 #include "scene/resources/texture.h"
+#include "servers/accessibility_server.h"
 
 #include <avrt.h>
 
@@ -2180,6 +2181,11 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 	// Process window messages.
 	switch (uMsg) {
+		case WM_GETOBJECT: {
+			if (ACS.is_valid() && ACS->has_feature(AccessibilityServer::FEATURE_USE_NATIVE_CB)) {
+				return (LRESULT)ACS->native_window_callback((int64_t)hWnd, (int64_t)wParam, (int64_t)lParam, window_id);
+			}
+		} break;
 		case WM_MOUSEACTIVATE: {
 			if (windows[window_id].no_focus) {
 				return MA_NOACTIVATEANDEAT; // Do not activate, and discard mouse messages.

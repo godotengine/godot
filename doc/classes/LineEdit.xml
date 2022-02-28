@@ -159,6 +159,7 @@
 		</method>
 	</methods>
 	<members>
+		<member name="accessibility_role" type="int" setter="set_accessibility_role" getter="get_accessibility_role" overrides="Node" enum="AccessibilityServer.Role" default="8" />
 		<member name="alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
 			Text alignment as defined in the [enum HorizontalAlignment] enum.
 		</member>

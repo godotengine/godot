@@ -100,6 +100,11 @@
 				Returns the visible rectangle in global screen coordinates.
 			</description>
 		</method>
+		<method name="get_window_id" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="gui_get_drag_data" qualifiers="const">
 			<return type="Variant" />
 			<description>
@@ -179,6 +184,7 @@
 		</method>
 	</methods>
 	<members>
+		<member name="accessibility_role" type="int" setter="set_accessibility_role" getter="get_accessibility_role" overrides="Node" enum="AccessibilityServer.Role" default="23" />
 		<member name="audio_listener_enable_2d" type="bool" setter="set_as_audio_listener_2d" getter="is_audio_listener_2d" default="false">
 			If [code]true[/code], the viewport will process 2D audio streams.
 		</member>

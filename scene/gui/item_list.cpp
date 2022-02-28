@@ -1755,6 +1755,7 @@ void ItemList::_bind_methods() {
 }
 
 ItemList::ItemList() {
+	set_accessibility_role(AccessibilityServer::ROLE_ITEM_LIST);
 	scroll_bar = memnew(VScrollBar);
 	add_child(scroll_bar, false, INTERNAL_MODE_FRONT);
 

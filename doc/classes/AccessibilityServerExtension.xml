@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AccessibilityServerExtension" inherits="AccessibilityServer" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_create_window_context" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="window" type="int" />
+			<argument index="1" name="root_node" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_destroy_window_context" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="window" type="int" />
+			<argument index="1" name="root_node" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_features" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_name" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_has_feature" qualifiers="virtual const">
+			<return type="bool" />
+			<argument index="0" name="feature" type="int" enum="AccessibilityServer.Feature" />
+			<description>
+			</description>
+		</method>
+		<method name="_native_window_callback" qualifiers="virtual">
+			<return type="int" />
+			<argument index="0" name="object" type="int" />
+			<argument index="1" name="wparam" type="int" />
+			<argument index="2" name="lparam" type="int" />
+			<argument index="3" name="window" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_post_tree_update" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="update_data" type="PackedInt64Array" />
+			<argument index="1" name="root_node" type="int" />
+			<argument index="2" name="kbd_focus" type="int" />
+			<argument index="3" name="mouse_focus" type="int" />
+			<argument index="4" name="window" type="int" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

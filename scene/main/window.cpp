@@ -35,6 +35,7 @@
 #include "core/string/translation.h"
 #include "scene/gui/control.h"
 #include "scene/scene_string_names.h"
+#include "servers/accessibility_server.h"
 
 void Window::set_title(const String &p_title) {
 	title = p_title;
@@ -407,16 +408,20 @@ void Window::set_visible(bool p_visible) {
 
 	if (!embedder_vp) {
 		if (!p_visible && window_id != DisplayServer::INVALID_WINDOW_ID) {
+			ACS->destroy_window_context(window_id, get_instance_id());
 			_clear_window();
 		}
 		if (p_visible && window_id == DisplayServer::INVALID_WINDOW_ID) {
 			_make_window();
+			ACS->create_window_context(window_id, get_instance_id());
+			invalidate_accessibility_data();
 		}
 	} else {
 		if (visible) {
 			embedder = embedder_vp;
 			embedder->_sub_window_register(this);
 			RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
+			invalidate_accessibility_data();
 		} else {
 			embedder->_sub_window_remove(this);
 			embedder = nullptr;
@@ -757,6 +762,7 @@ void Window::_notification(int p_what) {
 				if (embedder) {
 					embedder->_sub_window_register(this);
 					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
+					invalidate_accessibility_data();
 					_update_window_size();
 				}
 
@@ -766,6 +772,8 @@ void Window::_notification(int p_what) {
 					visible = true; // Always visible.
 					window_id = DisplayServer::MAIN_WINDOW_ID;
 					DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
+					ACS->create_window_context(DisplayServer::MAIN_WINDOW_ID, get_instance_id());
+					invalidate_accessibility_data();
 					_update_from_window();
 					// Since this window already exists (created on start), we must update pos and size from it.
 					{
@@ -779,6 +787,8 @@ void Window::_notification(int p_what) {
 					// Create.
 					if (visible) {
 						_make_window();
+						ACS->create_window_context(window_id, get_instance_id());
+						invalidate_accessibility_data();
 					}
 				}
 			}
@@ -825,9 +835,11 @@ void Window::_notification(int p_what) {
 
 			if (!is_embedded() && window_id != DisplayServer::INVALID_WINDOW_ID) {
 				if (window_id == DisplayServer::MAIN_WINDOW_ID) {
+					ACS->destroy_window_context(DisplayServer::MAIN_WINDOW_ID, get_instance_id());
 					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
 					_update_window_callbacks();
 				} else {
+					ACS->destroy_window_context(window_id, get_instance_id());
 					_clear_window();
 				}
 			} else {
@@ -1647,6 +1659,7 @@ void Window::_bind_methods() {
 }
 
 Window::Window() {
+	set_accessibility_role(AccessibilityServer::ROLE_WINDOW);
 	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
 }
 

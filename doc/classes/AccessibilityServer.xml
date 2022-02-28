@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AccessibilityServer" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="create_window_context">
+			<return type="void" />
+			<argument index="0" name="window" type="int" />
+			<argument index="1" name="arg1" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="destroy_window_context">
+			<return type="void" />
+			<argument index="0" name="window" type="int" />
+			<argument index="1" name="arg1" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_features" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_name" qualifiers="const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="has_feature" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="feature" type="int" enum="AccessibilityServer.Feature" />
+			<description>
+			</description>
+		</method>
+		<method name="post_tree_update">
+			<return type="void" />
+			<argument index="0" name="update_data" type="PackedInt64Array" />
+			<argument index="1" name="kdb_focused" type="int" />
+			<argument index="2" name="mouse_focus" type="int" />
+			<argument index="3" name="window" type="int" />
+			<argument index="4" name="arg4" type="int" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="ROLE_UNKNOWN" value="0" enum="Role">
+		</constant>
+		<constant name="ROLE_BUTTON" value="1" enum="Role">
+		</constant>
+		<constant name="ROLE_CHECK_BOX" value="2" enum="Role">
+		</constant>
+		<constant name="ROLE_CHECK_BUTTON" value="3" enum="Role">
+		</constant>
+		<constant name="ROLE_CONTAINER" value="4" enum="Role">
+		</constant>
+		<constant name="ROLE_ITEM_LIST" value="5" enum="Role">
+		</constant>
+		<constant name="ROLE_ITEM_LIST_ITEM" value="6" enum="Role">
+		</constant>
+		<constant name="ROLE_LABEL" value="7" enum="Role">
+		</constant>
+		<constant name="ROLE_LINE_EDIT" value="8" enum="Role">
+		</constant>
+		<constant name="ROLE_LINK" value="9" enum="Role">
+		</constant>
+		<constant name="ROLE_MENU_BUTTON" value="10" enum="Role">
+		</constant>
+		<constant name="ROLE_OPTION_BUTTON" value="11" enum="Role">
+		</constant>
+		<constant name="ROLE_PROGRESS_BAR" value="12" enum="Role">
+		</constant>
+		<constant name="ROLE_RICH_TEXT" value="13" enum="Role">
+		</constant>
+		<constant name="ROLE_SCROLL_BAR" value="14" enum="Role">
+		</constant>
+		<constant name="ROLE_SCROLL_CONTAINER" value="15" enum="Role">
+		</constant>
+		<constant name="ROLE_SLIDER" value="16" enum="Role">
+		</constant>
+		<constant name="ROLE_SPIN_BOX" value="17" enum="Role">
+		</constant>
+		<constant name="ROLE_TAB_BAR" value="18" enum="Role">
+		</constant>
+		<constant name="ROLE_TAB" value="19" enum="Role">
+		</constant>
+		<constant name="ROLE_TEXT_EDIT" value="20" enum="Role">
+		</constant>
+		<constant name="ROLE_TREE" value="21" enum="Role">
+		</constant>
+		<constant name="ROLE_TREE_ITEM" value="22" enum="Role">
+		</constant>
+		<constant name="ROLE_WINDOW" value="23" enum="Role">
+		</constant>
+		<constant name="NODE_RELATION_INDIRECT_CHILD" value="0" enum="NodeRelation">
+		</constant>
+		<constant name="NODE_RELATION_ERROR_MESSAGE" value="1" enum="NodeRelation">
+		</constant>
+		<constant name="NODE_RELATION_LINK_TARGET" value="2" enum="NodeRelation">
+		</constant>
+		<constant name="NODE_RELATION_GROUP_MEMBER" value="3" enum="NodeRelation">
+		</constant>
+		<constant name="NODE_RELATION_POPUP" value="4" enum="NodeRelation">
+		</constant>
+		<constant name="NODE_RELATION_CONTROLS" value="5" enum="NodeRelation">
+		</constant>
+		<constant name="NODE_RELATION_DETAILS" value="6" enum="NodeRelation">
+		</constant>
+		<constant name="NODE_RELATION_DESCRIBED" value="7" enum="NodeRelation">
+		</constant>
+		<constant name="NODE_RELATION_FLOW_TO" value="8" enum="NodeRelation">
+		</constant>
+		<constant name="NODE_RELATION_LABELLED" value="9" enum="NodeRelation">
+		</constant>
+		<constant name="NODE_RELATION_RADIO_GROUP_MEMBER" value="10" enum="NodeRelation">
+		</constant>
+		<constant name="FEATURE_SCREEN_READER_SUPPORT" value="1" enum="Feature">
+		</constant>
+		<constant name="FEATURE_USE_NATIVE_CB" value="2" enum="Feature">
+		</constant>
+		<constant name="FEATURE_USE_TREE_UPDATES" value="4" enum="Feature">
+		</constant>
+	</constants>
+</class>

@@ -6593,6 +6593,8 @@ TextEdit::TextEdit(const String &p_placeholder) {
 	_update_caches();
 	set_default_cursor_shape(CURSOR_IBEAM);
 
+	set_accessibility_role(AccessibilityServer::ROLE_TEXT_EDIT);
+
 	text.set_tab_size(text.get_tab_size());
 
 	h_scroll = memnew(HScrollBar);

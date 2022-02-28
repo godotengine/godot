@@ -40,6 +40,7 @@
 		</method>
 	</methods>
 	<members>
+		<member name="accessibility_role" type="int" setter="set_accessibility_role" getter="get_accessibility_role" overrides="Node" enum="AccessibilityServer.Role" default="15" />
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="follow_focus" type="bool" setter="set_follow_focus" getter="is_following_focus" default="false">
 			If [code]true[/code], the ScrollContainer will automatically scroll to focused children (including indirect children) to make sure they are fully visible.

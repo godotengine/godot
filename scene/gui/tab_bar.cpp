@@ -1548,6 +1548,7 @@ void TabBar::_bind_methods() {
 }
 
 TabBar::TabBar() {
+	set_accessibility_role(AccessibilityServer::ROLE_TAB_BAR);
 	set_size(Size2(get_size().width, get_minimum_size().height));
 	connect("mouse_exited", callable_mp(this, &TabBar::_on_mouse_exited));
 }

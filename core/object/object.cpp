@@ -1741,13 +1741,16 @@ uint32_t Object::get_edited_version() const {
 
 void Object::set_instance_binding(void *p_token, void *p_binding, const GDNativeInstanceBindingCallbacks *p_callbacks) {
 	// This is only meant to be used on creation by the binder.
-	ERR_FAIL_COND(_instance_bindings != nullptr);
-	_instance_bindings = (InstanceBinding *)memalloc(sizeof(InstanceBinding));
-	_instance_bindings[0].binding = p_binding;
-	_instance_bindings[0].free_callback = p_callbacks->free_callback;
-	_instance_bindings[0].reference_callback = p_callbacks->reference_callback;
-	_instance_bindings[0].token = p_token;
-	_instance_binding_count = 1;
+	//ERR_FAIL_COND(_instance_bindings != nullptr);
+	// TODO FIX, seems to be called every time after object is wrapped by get_instance_binding
+	if (_instance_bindings == nullptr) {
+		_instance_bindings = (InstanceBinding *)memalloc(sizeof(InstanceBinding));
+		_instance_bindings[0].binding = p_binding;
+		_instance_bindings[0].free_callback = p_callbacks->free_callback;
+		_instance_bindings[0].reference_callback = p_callbacks->reference_callback;
+		_instance_bindings[0].token = p_token;
+		_instance_binding_count = 1;
+	}
 }
 
 void *Object::get_instance_binding(void *p_token, const GDNativeInstanceBindingCallbacks *p_callbacks) {

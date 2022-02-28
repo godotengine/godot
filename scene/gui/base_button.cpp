@@ -475,6 +475,7 @@ void BaseButton::_bind_methods() {
 }
 
 BaseButton::BaseButton() {
+	set_accessibility_role(AccessibilityServer::ROLE_BUTTON);
 	set_focus_mode(FOCUS_ALL);
 }
 

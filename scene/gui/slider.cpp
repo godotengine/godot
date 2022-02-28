@@ -285,4 +285,5 @@ void Slider::_bind_methods() {
 Slider::Slider(Orientation p_orientation) {
 	orientation = p_orientation;
 	set_focus_mode(FOCUS_ALL);
+	set_accessibility_role(AccessibilityServer::ROLE_SLIDER);
 }

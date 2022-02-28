@@ -35,6 +35,7 @@
 #include "core/templates/map.h"
 #include "core/variant/typed_array.h"
 #include "scene/main/scene_tree.h"
+#include "servers/accessibility_server.h"
 
 class Viewport;
 class SceneState;
@@ -96,6 +97,10 @@ private:
 		String scene_file_path;
 		Ref<SceneState> instance_state;
 		Ref<SceneState> inherited_state;
+
+		AccessibilityServer::Role ac_role = AccessibilityServer::ROLE_UNKNOWN;
+		String ac_name;
+		String ac_description;
 
 		Node *parent = nullptr;
 		Node *owner = nullptr;
@@ -291,6 +296,27 @@ public:
 
 	StringName get_name() const;
 	void set_name(const String &p_name);
+
+	virtual AccessibilityServer::Role get_accessibility_role() const;
+	virtual void set_accessibility_role(AccessibilityServer::Role p_role);
+
+	virtual String get_accessibility_name() const;
+	virtual void set_accessibility_name(const String &p_name);
+
+	virtual String get_accessibility_description() const;
+	virtual void set_accessibility_description(const String &p_description);
+
+	virtual TypedArray<NodePath> get_accessibility_related_nodes(AccessibilityServer::NodeRelation p_rel) const;
+	GDVIRTUAL1RC(TypedArray<NodePath>, _get_accessibility_related_nodes, AccessibilityServer::NodeRelation);
+
+	virtual void accessibility_action(const StringName &p_action, const Variant &p_data);
+	GDVIRTUAL2(_accessibility_action, const StringName &, const Variant &)
+
+	virtual int64_t get_accessibility_action_count() const;
+	GDVIRTUAL0RC(int64_t, _get_accessibility_action_count)
+
+	virtual StringName get_accessibility_action(int64_t p_index) const;
+	GDVIRTUAL1RC(StringName, _get_accessibility_action, int64_t)
 
 	void add_child(Node *p_child, bool p_legible_unique_name = false, InternalMode p_internal = INTERNAL_MODE_DISABLED);
 	void add_sibling(Node *p_sibling, bool p_legible_unique_name = false);

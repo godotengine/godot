@@ -951,6 +951,7 @@ void Label::_bind_methods() {
 }
 
 Label::Label(const String &p_text) {
+	set_accessibility_role(AccessibilityServer::ROLE_LABEL);
 	text_rid = TS->create_shaped_text();
 
 	set_mouse_filter(MOUSE_FILTER_IGNORE);

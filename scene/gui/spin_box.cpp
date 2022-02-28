@@ -318,6 +318,7 @@ void SpinBox::_bind_methods() {
 SpinBox::SpinBox() {
 	line_edit = memnew(LineEdit);
 	add_child(line_edit, false, INTERNAL_MODE_FRONT);
+	set_accessibility_role(AccessibilityServer::ROLE_SPIN_BOX);
 
 	line_edit->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	line_edit->set_mouse_filter(MOUSE_FILTER_PASS);

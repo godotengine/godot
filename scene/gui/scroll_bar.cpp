@@ -627,6 +627,7 @@ void ScrollBar::_bind_methods() {
 
 ScrollBar::ScrollBar(Orientation p_orientation) {
 	orientation = p_orientation;
+	set_accessibility_role(AccessibilityServer::ROLE_SCROLL_BAR);
 
 	if (focus_by_default) {
 		set_focus_mode(FOCUS_ALL);

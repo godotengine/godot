@@ -663,4 +663,5 @@ void TextureProgressBar::_bind_methods() {
 
 TextureProgressBar::TextureProgressBar() {
 	set_mouse_filter(MOUSE_FILTER_PASS);
+	set_accessibility_role(AccessibilityServer::ROLE_PROGRESS_BAR);
 }

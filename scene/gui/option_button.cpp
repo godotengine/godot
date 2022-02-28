@@ -425,6 +425,7 @@ void OptionButton::_bind_methods() {
 OptionButton::OptionButton(const String &p_text) :
 		Button(p_text) {
 	set_toggle_mode(true);
+	set_accessibility_role(AccessibilityServer::ROLE_OPTION_BUTTON);
 	set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 	if (is_layout_rtl()) {
 		if (has_theme_icon(SNAME("arrow"))) {

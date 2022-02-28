@@ -370,6 +370,28 @@ void Viewport::_sub_window_remove(Window *p_window) {
 	RenderingServer::get_singleton()->viewport_set_parent_viewport(p_window->viewport, p_window->parent ? p_window->parent->viewport : RID());
 }
 
+void Viewport::accessibility_data_updated(const ObjectID &p_object) {
+	pending_ac_tree_updates.insert(p_object);
+}
+
+void Viewport::invalidate_accessibility_data() {
+	ac_tree_valid = false;
+}
+
+void Viewport::_ac_node_add_data(const Node *p_node, bool p_recursive, PackedInt64Array &r_update) {
+	const Window *w = Object::cast_to<Window>(p_node);
+	if (w && !w->is_embedded()) {
+		return; // Do not add root windows to the update tree.
+	}
+	r_update.push_back(p_node->get_instance_id());
+	if (p_recursive) {
+		int children = p_node->get_child_count(true);
+		for (int i = 0; i < children; i++) {
+			_ac_node_add_data(p_node->get_child(i, true), true, r_update);
+		}
+	}
+}
+
 void Viewport::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -406,6 +428,7 @@ void Viewport::_notification(int p_what) {
 #endif // _3D_DISABLED
 				set_physics_process_internal(true);
 			}
+			set_process_internal(true);
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -461,6 +484,29 @@ void Viewport::_notification(int p_what) {
 
 			RS::get_singleton()->viewport_set_active(viewport, false);
 			RenderingServer::get_singleton()->viewport_set_parent_viewport(viewport, RID());
+		} break;
+
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			// Process accessibility data update.
+			if (ACS->has_feature(AccessibilityServer::FEATURE_USE_TREE_UPDATES) && (get_window_id() != DisplayServer::INVALID_WINDOW_ID)) {
+				PackedInt64Array update_data;
+				if (ac_tree_valid) {
+					for (Set<ObjectID>::Element *E = pending_ac_tree_updates.front(); E; E = E->next()) {
+						update_data.push_back(E->get());
+					}
+				} else {
+					// Full tree update.
+					_ac_node_add_data(this, true, update_data);
+					ac_tree_valid = true;
+				}
+
+				if (!update_data.is_empty()) {
+					ObjectID kbd_id = gui.key_focus ? gui.key_focus->get_instance_id() : ObjectID();
+					ObjectID mouse_id = gui.mouse_focus ? gui.mouse_focus->get_instance_id() : ObjectID();
+					ACS->post_tree_update(update_data, get_instance_id(), kbd_id, mouse_id, get_window_id());
+				}
+			}
+			pending_ac_tree_updates.clear();
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
@@ -1473,6 +1519,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			} else {
 				gui.mouse_focus = gui_find_control(pos);
 				gui.last_mouse_focus = gui.mouse_focus;
+				if (gui.mouse_focus) {
+					accessibility_data_updated(gui.mouse_focus->get_instance_id());
+				}
 
 				if (!gui.mouse_focus) {
 					gui.mouse_focus_mask = MouseButton::NONE;
@@ -1599,6 +1648,10 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				gui.forced_mouse_focus = false;
 			}
 
+			if (mouse_focus) {
+				accessibility_data_updated(mouse_focus->get_instance_id());
+			}
+
 			if (mouse_focus && mouse_focus->can_process()) {
 				_gui_call_input(mouse_focus, mb);
 			}
@@ -1653,6 +1706,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 								gui.mouse_focus = nullptr;
 								gui.forced_mouse_focus = false;
 								gui.mouse_focus_mask = MouseButton::NONE;
+								accessibility_data_updated(control->get_instance_id());
 								break;
 							} else {
 								Control *drag_preview = _gui_get_drag_preview();
@@ -2062,6 +2116,7 @@ void Viewport::_gui_force_drag(Control *p_base, const Variant &p_data, Control *
 
 	if (p_control) {
 		_gui_set_drag_preview(p_base, p_control);
+		accessibility_data_updated(p_control->get_instance_id());
 	}
 	_propagate_viewport_notification(this, NOTIFICATION_DRAG_BEGIN);
 }
@@ -2147,6 +2202,9 @@ void Viewport::_gui_remove_control(Control *p_control) {
 	if (gui.tooltip_control == p_control) {
 		gui.tooltip_control = nullptr;
 	}
+	if (p_control) {
+		accessibility_data_updated(p_control->get_instance_id());
+	}
 }
 
 Window *Viewport::get_base_window() const {
@@ -2181,6 +2239,8 @@ void Viewport::_gui_control_grab_focus(Control *p_control) {
 	emit_signal(SNAME("gui_focus_changed"), p_control);
 	p_control->notification(Control::NOTIFICATION_FOCUS_ENTER);
 	p_control->update();
+
+	accessibility_data_updated(p_control->get_instance_id());
 }
 
 void Viewport::_gui_accept_event() {
@@ -2203,6 +2263,9 @@ void Viewport::_drop_mouse_focus() {
 	gui.mouse_focus = nullptr;
 	gui.forced_mouse_focus = false;
 	gui.mouse_focus_mask = MouseButton::NONE;
+	if (c) {
+		accessibility_data_updated(c->get_instance_id());
+	}
 
 	for (int i = 0; i < 3; i++) {
 		if ((int)mask & (1 << i)) {
@@ -2343,6 +2406,10 @@ void Viewport::_post_gui_grab_click_focus() {
 				mb->set_pressed(true);
 				MessageQueue::get_singleton()->push_callable(callable_mp(gui.mouse_focus, &Control::_call_gui_input), mb);
 			}
+		}
+
+		if (focus_grabber) {
+			accessibility_data_updated(focus_grabber->get_instance_id());
 		}
 	}
 }
@@ -2824,6 +2891,10 @@ void Viewport::gui_release_focus() {
 		gui.key_focus = nullptr;
 		f->notification(Control::NOTIFICATION_FOCUS_EXIT, true);
 		f->update();
+
+		if (f) {
+			accessibility_data_updated(f->get_instance_id());
+		}
 	}
 }
 
@@ -3083,6 +3154,8 @@ void Viewport::pass_mouse_focus_to(Viewport *p_viewport, Control *p_control) {
 		gui.mouse_focus = nullptr;
 		gui.forced_mouse_focus = false;
 		gui.mouse_focus_mask = MouseButton::NONE;
+
+		accessibility_data_updated(p_control->get_instance_id());
 	}
 }
 
@@ -3702,6 +3775,8 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_fsr_mipmap_bias", "fsr_mipmap_bias"), &Viewport::set_fsr_mipmap_bias);
 	ClassDB::bind_method(D_METHOD("get_fsr_mipmap_bias"), &Viewport::get_fsr_mipmap_bias);
+
+	ClassDB::bind_method(D_METHOD("get_window_id"), &Viewport::get_window_id);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_3d"), "set_disable_3d", "is_3d_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_xr"), "set_use_xr", "is_using_xr");

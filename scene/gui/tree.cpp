@@ -4959,6 +4959,7 @@ Tree::Tree() {
 	columns.resize(1);
 
 	set_focus_mode(FOCUS_ALL);
+	set_accessibility_role(AccessibilityServer::ROLE_TREE);
 
 	popup_menu = memnew(PopupMenu);
 	popup_menu->hide();

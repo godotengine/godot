@@ -4720,6 +4720,8 @@ Dictionary RichTextLabel::parse_expressions_for_values(Vector<String> p_expressi
 }
 
 RichTextLabel::RichTextLabel(const String &p_text) {
+	set_accessibility_role(AccessibilityServer::ROLE_RICH_TEXT);
+
 	main = memnew(ItemFrame);
 	main->index = 0;
 	current = main;

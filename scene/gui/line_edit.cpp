@@ -2438,6 +2438,7 @@ void LineEdit::_ensure_menu() {
 }
 
 LineEdit::LineEdit(const String &p_placeholder) {
+	set_accessibility_role(AccessibilityServer::ROLE_LINE_EDIT);
 	text_rid = TS->create_shaped_text();
 	_create_undo_state();
 

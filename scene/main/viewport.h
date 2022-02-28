@@ -33,6 +33,7 @@
 
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
+#include "servers/accessibility_server.h"
 
 #ifndef _3D_DISABLED
 class Camera3D;
@@ -204,6 +205,9 @@ private:
 	AudioListener2D *audio_listener_2d = nullptr;
 	Camera2D *camera_2d = nullptr;
 	Set<CanvasLayer *> canvas_layers;
+
+	bool ac_tree_valid = false;
+	Set<ObjectID> pending_ac_tree_updates;
 
 	RID viewport;
 	RID current_canvas;
@@ -460,6 +464,8 @@ protected:
 	Size2i _get_size_2d_override() const;
 	bool _is_size_allocated() const;
 
+	void _ac_node_add_data(const Node *p_node, bool p_recursive, PackedInt64Array &r_update);
+
 	void _notification(int p_what);
 	void _process_picking();
 	static void _bind_methods();
@@ -473,6 +479,9 @@ public:
 	bool is_audio_listener_2d() const;
 
 	void update_canvas_items();
+
+	void accessibility_data_updated(const ObjectID &p_object);
+	void invalidate_accessibility_data();
 
 	Rect2 get_visible_rect() const;
 	RID get_viewport_rid() const;
