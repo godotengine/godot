@@ -128,7 +128,7 @@ void Joint2D::set_node_a(const NodePath &p_node_a) {
 		return;
 	}
 
-	if (joint.is_valid()) {
+	if (is_configured()) {
 		_disconnect_signals();
 	}
 
@@ -145,7 +145,7 @@ void Joint2D::set_node_b(const NodePath &p_node_b) {
 		return;
 	}
 
-	if (joint.is_valid()) {
+	if (is_configured()) {
 		_disconnect_signals();
 	}
 
@@ -164,7 +164,7 @@ void Joint2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			if (joint.is_valid()) {
+			if (is_configured()) {
 				_disconnect_signals();
 				_update_joint(true);
 			}
