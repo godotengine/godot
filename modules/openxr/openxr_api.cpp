@@ -819,7 +819,7 @@ bool OpenXRAPI::create_swapchain(int64_t p_swapchain_format, uint32_t p_width, u
 		return false;
 	}
 
-	if (!graphics_extension->get_swapchain_image_data(new_swapchain, p_swapchain_format, p_width, p_height, p_array_size, p_array_size, r_swapchain_graphics_data)) {
+	if (!graphics_extension->get_swapchain_image_data(new_swapchain, p_swapchain_format, p_width, p_height, p_sample_count, p_array_size, r_swapchain_graphics_data)) {
 		xrDestroySwapchain(new_swapchain);
 		return false;
 	}
