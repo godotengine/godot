@@ -509,6 +509,32 @@ Variant EditorData::instance_custom_type(const String &p_type, const String &p_i
 	return Variant();
 }
 
+const EditorData::CustomType *EditorData::get_custom_type_by_name(const String &p_type) const {
+	for (const KeyValue<String, Vector<CustomType>> &E : custom_types) {
+		for (const CustomType &F : E.value) {
+			if (F.name == p_type) {
+				return &F;
+			}
+		}
+	}
+	return nullptr;
+}
+
+const EditorData::CustomType *EditorData::get_custom_type_by_path(const String &p_path) const {
+	for (const KeyValue<String, Vector<CustomType>> &E : custom_types) {
+		for (const CustomType &F : E.value) {
+			if (F.script->get_path() == p_path) {
+				return &F;
+			}
+		}
+	}
+	return nullptr;
+}
+
+bool EditorData::is_type_recognized(const String &p_type) const {
+	return ClassDB::class_exists(p_type) || ScriptServer::is_global_class(p_type) || get_custom_type_by_name(p_type);
+}
+
 void EditorData::remove_custom_type(const String &p_type) {
 	for (KeyValue<String, Vector<CustomType>> &E : custom_types) {
 		for (int i = 0; i < E.value.size(); i++) {
