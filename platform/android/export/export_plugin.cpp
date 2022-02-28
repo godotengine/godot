@@ -2203,9 +2203,7 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 		bool godot_google_play_billing_enabled = p_preset->get("plugins/GodotGooglePlayBilling");
 		if (!godot_google_play_billing_enabled) {
 			valid = false;
-			err += TTR("Invalid \"GodotPaymentV3\" module included in the \"android/modules\" project setting (changed in Godot 3.2.2).\n"
-					   "Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
-					   "Note that the singleton was also renamed from \"GodotPayments\" to \"GodotGooglePlayBilling\".");
+			err += TTR("Invalid \"GodotPaymentV3\" module included in the \"android/modules\" project setting (changed in Godot 3.2.2).\nReplace it with the first-party \"GodotGooglePlayBilling\" plugin.\nNote that the singleton was also renamed from \"GodotPayments\" to \"GodotGooglePlayBilling\".");
 			err += "\n";
 		}
 	}
