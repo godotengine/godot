@@ -4763,19 +4763,22 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 					for (uint32_t j = 0; j < sc_count; j++) {
 						int32_t existing = -1;
 						RenderingDeviceVulkanShaderBinarySpecializationConstant sconst;
-						sconst.constant_id = spec_constants[j]->constant_id;
-						switch (spec_constants[j]->constant_type) {
+						SpvReflectSpecializationConstant *spc = spec_constants[j];
+
+						sconst.constant_id = spc->constant_id;
+						sconst.int_value = 0.0; // clear previous value JIC
+						switch (spc->constant_type) {
 							case SPV_REFLECT_SPECIALIZATION_CONSTANT_BOOL: {
 								sconst.type = PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
-								sconst.bool_value = spec_constants[j]->default_value.int_bool_value != 0;
+								sconst.bool_value = spc->default_value.int_bool_value != 0;
 							} break;
 							case SPV_REFLECT_SPECIALIZATION_CONSTANT_INT: {
 								sconst.type = PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT;
-								sconst.int_value = spec_constants[j]->default_value.int_bool_value;
+								sconst.int_value = spc->default_value.int_bool_value;
 							} break;
 							case SPV_REFLECT_SPECIALIZATION_CONSTANT_FLOAT: {
 								sconst.type = PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT;
-								sconst.float_value = spec_constants[j]->default_value.float_value;
+								sconst.float_value = spc->default_value.float_value;
 							} break;
 						}
 						sconst.stage_flags = 1 << p_spirv[i].shader_stage;
