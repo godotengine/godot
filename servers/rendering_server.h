@@ -1009,10 +1009,10 @@ public:
 	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_in, float p_fade_out, float p_depth_tolerance) = 0;
 
 	enum EnvironmentSSRRoughnessQuality {
-		ENV_SSR_ROUGNESS_QUALITY_DISABLED,
-		ENV_SSR_ROUGNESS_QUALITY_LOW,
-		ENV_SSR_ROUGNESS_QUALITY_MEDIUM,
-		ENV_SSR_ROUGNESS_QUALITY_HIGH,
+		ENV_SSR_ROUGHNESS_QUALITY_DISABLED,
+		ENV_SSR_ROUGHNESS_QUALITY_LOW,
+		ENV_SSR_ROUGHNESS_QUALITY_MEDIUM,
+		ENV_SSR_ROUGHNESS_QUALITY_HIGH,
 	};
 
 	virtual void environment_set_ssr_roughness_quality(EnvironmentSSRRoughnessQuality p_quality) = 0;
