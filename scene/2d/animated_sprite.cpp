@@ -364,14 +364,14 @@ void AnimatedSprite::_notification(int p_what) {
 				return;
 			}
 
-			float speed = frames->get_animation_speed(animation) * speed_scale;
-			if (speed == 0) {
-				return; //do nothing
-			}
-
 			float remaining = get_process_delta_time();
 
 			while (remaining) {
+				float speed = frames->get_animation_speed(animation) * speed_scale;
+				if (speed == 0) {
+					return; //do nothing
+				}
+
 				if (timeout <= 0) {
 					timeout = _get_frame_duration();
 
