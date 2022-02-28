@@ -158,14 +158,14 @@ void AnimatedSprite2D::_notification(int p_what) {
 				return;
 			}
 
-			double speed = frames->get_animation_speed(animation) * speed_scale;
-			if (speed == 0) {
-				return; //do nothing
-			}
-
 			double remaining = get_process_delta_time();
 
 			while (remaining) {
+				double speed = frames->get_animation_speed(animation) * speed_scale;
+				if (speed == 0) {
+					return; // Do nothing.
+				}
+
 				if (timeout <= 0) {
 					timeout = _get_frame_duration();
 
