@@ -348,6 +348,7 @@
 		<signal name="files_dropped">
 			<argument index="0" name="files" type="PackedStringArray" />
 			<description>
+				Emitted when files are dragged from the OS file manager and dropped in the game window. The argument is a list of file paths.
 			</description>
 		</signal>
 		<signal name="focus_entered">
