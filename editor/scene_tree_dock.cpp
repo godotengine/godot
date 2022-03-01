@@ -907,13 +907,21 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				new_scene_from_dialog->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
 			}
 
-			String existing;
 			if (extensions.size()) {
-				String root_name(tocopy->get_name());
-				existing = root_name + "." + extensions.front()->get().to_lower();
+				String root_name = tocopy->get_name();
+				switch (ProjectSettings::get_singleton()->get("editor/scene/scene_naming").operator int()) {
+					case 0: //SCENE_NAME_CASING_AUTO:
+						// Use casing of the root node.
+						break;
+					case 1: //SCENE_NAME_CASING_PASCAL_CASE:
+						root_name = root_name.capitalize().replace(" ", "");
+						break;
+					case 2: //SCENE_NAME_CASING_SNAKE_CASE:
+						root_name = root_name.capitalize().replace(" ", "").replace("-", "_").camelcase_to_underscore();
+						break;
+				}
+				new_scene_from_dialog->set_current_path(root_name + "." + extensions.front()->get().to_lower());
 			}
-			new_scene_from_dialog->set_current_path(existing);
-
 			new_scene_from_dialog->set_title(TTR("Save New Scene As..."));
 			new_scene_from_dialog->popup_file_dialog();
 		} break;

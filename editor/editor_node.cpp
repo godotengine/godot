@@ -2612,18 +2612,17 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					case SCENE_NAME_CASING_AUTO:
 						// Use casing of the root node.
 						break;
-					case SCENE_NAME_CASING_PASCAL_CASE: {
+					case SCENE_NAME_CASING_PASCAL_CASE:
 						root_name = root_name.capitalize().replace(" ", "");
-					} break;
+						break;
 					case SCENE_NAME_CASING_SNAKE_CASE:
 						root_name = root_name.capitalize().replace(" ", "").replace("-", "_").camelcase_to_underscore();
 						break;
 				}
 				file->set_current_path(root_name + "." + extensions.front()->get().to_lower());
 			}
-			file->popup_file_dialog();
 			file->set_title(TTR("Save Scene As..."));
-
+			file->popup_file_dialog();
 		} break;
 
 		case FILE_SAVE_ALL_SCENES: {
