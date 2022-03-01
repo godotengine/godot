@@ -58,6 +58,7 @@ private:
 	bool local_coords;
 	int fixed_fps;
 	bool fractional_delta;
+	bool interpolate = true;
 #ifdef TOOLS_ENABLED
 	bool show_visibility_rect;
 #endif
@@ -132,6 +133,9 @@ public:
 
 	void set_fractional_delta(bool p_enable);
 	bool get_fractional_delta() const;
+
+	void set_interpolate(bool p_enable);
+	bool get_interpolate() const;
 
 	void set_draw_order(DrawOrder p_order);
 	DrawOrder get_draw_order() const;
