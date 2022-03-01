@@ -625,12 +625,12 @@ void AStar2D::connect_points(int p_id, int p_with_id, bool p_bidirectional) {
 	astar.connect_points(p_id, p_with_id, p_bidirectional);
 }
 
-void AStar2D::disconnect_points(int p_id, int p_with_id) {
-	astar.disconnect_points(p_id, p_with_id);
+void AStar2D::disconnect_points(int p_id, int p_with_id, bool p_bidirectional) {
+	astar.disconnect_points(p_id, p_with_id, p_bidirectional);
 }
 
-bool AStar2D::are_points_connected(int p_id, int p_with_id) const {
-	return astar.are_points_connected(p_id, p_with_id);
+bool AStar2D::are_points_connected(int p_id, int p_with_id, bool p_bidirectional) const {
+	return astar.are_points_connected(p_id, p_with_id, p_bidirectional);
 }
 
 int AStar2D::get_point_count() const {
@@ -866,8 +866,8 @@ void AStar2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_point_disabled", "id"), &AStar2D::is_point_disabled);
 
 	ClassDB::bind_method(D_METHOD("connect_points", "id", "to_id", "bidirectional"), &AStar2D::connect_points, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("disconnect_points", "id", "to_id"), &AStar2D::disconnect_points);
-	ClassDB::bind_method(D_METHOD("are_points_connected", "id", "to_id"), &AStar2D::are_points_connected);
+	ClassDB::bind_method(D_METHOD("disconnect_points", "id", "to_id", "bidirectional"), &AStar2D::disconnect_points, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("are_points_connected", "id", "to_id", "bidirectional"), &AStar2D::are_points_connected, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("get_point_count"), &AStar2D::get_point_count);
 	ClassDB::bind_method(D_METHOD("get_point_capacity"), &AStar2D::get_point_capacity);
