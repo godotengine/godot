@@ -2151,14 +2151,6 @@ bool PhysicalBone3D::JointData::_get(const StringName &p_name, Variant &r_ret) c
 void PhysicalBone3D::JointData::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
-void PhysicalBone3D::apply_central_impulse(const Vector3 &p_impulse) {
-	PhysicsServer3D::get_singleton()->body_apply_central_impulse(get_rid(), p_impulse);
-}
-
-void PhysicalBone3D::apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position) {
-	PhysicsServer3D::get_singleton()->body_apply_impulse(get_rid(), p_impulse, p_position);
-}
-
 void PhysicalBone3D::reset_physics_simulation_state() {
 	if (simulate_physics) {
 		_start_physics_simulation();
@@ -2857,15 +2849,17 @@ void PhysicalBone3D::_notification(int p_what) {
 	}
 }
 
-void PhysicalBone3D::_body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state) {
+void PhysicalBone3D::_bone_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state) {
 	PhysicalBone3D *bone = (PhysicalBone3D *)p_instance;
-	bone->_body_state_changed(p_state);
+	bone->_bone_state_changed(p_state);
 }
 
-void PhysicalBone3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
+void PhysicalBone3D::_bone_state_changed(PhysicsDirectBodyState3D *p_state) {
 	if (!simulate_physics || !_internal_simulate_physics) {
 		return;
 	}
+
+	RigidDynamicBody3D::_body_state_changed(p_state);
 
 	/// Update bone transform.
 
@@ -2885,9 +2879,6 @@ void PhysicalBone3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 }
 
 void PhysicalBone3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("apply_central_impulse", "impulse"), &PhysicalBone3D::apply_central_impulse);
-	ClassDB::bind_method(D_METHOD("apply_impulse", "impulse", "position"), &PhysicalBone3D::apply_impulse, Vector3());
-
 	ClassDB::bind_method(D_METHOD("set_joint_type", "joint_type"), &PhysicalBone3D::set_joint_type);
 	ClassDB::bind_method(D_METHOD("get_joint_type"), &PhysicalBone3D::get_joint_type);
 
@@ -2905,52 +2896,12 @@ void PhysicalBone3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_bone_id"), &PhysicalBone3D::get_bone_id);
 
-	ClassDB::bind_method(D_METHOD("set_mass", "mass"), &PhysicalBone3D::set_mass);
-	ClassDB::bind_method(D_METHOD("get_mass"), &PhysicalBone3D::get_mass);
-
-	ClassDB::bind_method(D_METHOD("set_friction", "friction"), &PhysicalBone3D::set_friction);
-	ClassDB::bind_method(D_METHOD("get_friction"), &PhysicalBone3D::get_friction);
-
-	ClassDB::bind_method(D_METHOD("set_bounce", "bounce"), &PhysicalBone3D::set_bounce);
-	ClassDB::bind_method(D_METHOD("get_bounce"), &PhysicalBone3D::get_bounce);
-
-	ClassDB::bind_method(D_METHOD("set_gravity_scale", "gravity_scale"), &PhysicalBone3D::set_gravity_scale);
-	ClassDB::bind_method(D_METHOD("get_gravity_scale"), &PhysicalBone3D::get_gravity_scale);
-
-	ClassDB::bind_method(D_METHOD("set_linear_damp_mode", "linear_damp_mode"), &PhysicalBone3D::set_linear_damp_mode);
-	ClassDB::bind_method(D_METHOD("get_linear_damp_mode"), &PhysicalBone3D::get_linear_damp_mode);
-
-	ClassDB::bind_method(D_METHOD("set_angular_damp_mode", "angular_damp_mode"), &PhysicalBone3D::set_angular_damp_mode);
-	ClassDB::bind_method(D_METHOD("get_angular_damp_mode"), &PhysicalBone3D::get_angular_damp_mode);
-
-	ClassDB::bind_method(D_METHOD("set_linear_damp", "linear_damp"), &PhysicalBone3D::set_linear_damp);
-	ClassDB::bind_method(D_METHOD("get_linear_damp"), &PhysicalBone3D::get_linear_damp);
-
-	ClassDB::bind_method(D_METHOD("set_angular_damp", "angular_damp"), &PhysicalBone3D::set_angular_damp);
-	ClassDB::bind_method(D_METHOD("get_angular_damp"), &PhysicalBone3D::get_angular_damp);
-
-	ClassDB::bind_method(D_METHOD("set_can_sleep", "able_to_sleep"), &PhysicalBone3D::set_can_sleep);
-	ClassDB::bind_method(D_METHOD("is_able_to_sleep"), &PhysicalBone3D::is_able_to_sleep);
-
 	ADD_GROUP("Joint", "joint_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "joint_type", PROPERTY_HINT_ENUM, "None,PinJoint,ConeJoint,HingeJoint,SliderJoint,6DOFJoint"), "set_joint_type", "get_joint_type");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "joint_offset"), "set_joint_offset", "get_joint_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "joint_rotation", PROPERTY_HINT_RANGE, "-360,360,0.01,or_lesser,or_greater,radians"), "set_joint_rotation", "get_joint_rotation");
 
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "body_offset"), "set_body_offset", "get_body_offset");
-
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mass", PROPERTY_HINT_RANGE, "0.01,1000,0.01,or_greater,exp"), "set_mass", "get_mass");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "friction", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_friction", "get_friction");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bounce", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_bounce", "get_bounce");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_scale", PROPERTY_HINT_RANGE, "-10,10,0.01"), "set_gravity_scale", "get_gravity_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "linear_damp_mode", PROPERTY_HINT_ENUM, "Combine,Replace"), "set_linear_damp_mode", "get_linear_damp_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_linear_damp", "get_linear_damp");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "angular_damp_mode", PROPERTY_HINT_ENUM, "Combine,Replace"), "set_angular_damp_mode", "get_angular_damp_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_angular_damp", "get_angular_damp");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "can_sleep"), "set_can_sleep", "is_able_to_sleep");
-
-	BIND_ENUM_CONSTANT(DAMP_MODE_COMBINE);
-	BIND_ENUM_CONSTANT(DAMP_MODE_REPLACE);
 
 	BIND_ENUM_CONSTANT(JOINT_TYPE_NONE);
 	BIND_ENUM_CONSTANT(JOINT_TYPE_PIN);
@@ -3208,98 +3159,7 @@ const String &PhysicalBone3D::get_bone_name() const {
 	return bone_name;
 }
 
-void PhysicalBone3D::set_mass(real_t p_mass) {
-	ERR_FAIL_COND(p_mass <= 0);
-	mass = p_mass;
-	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_MASS, mass);
-}
-
-real_t PhysicalBone3D::get_mass() const {
-	return mass;
-}
-
-void PhysicalBone3D::set_friction(real_t p_friction) {
-	ERR_FAIL_COND(p_friction < 0 || p_friction > 1);
-
-	friction = p_friction;
-	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_FRICTION, friction);
-}
-
-real_t PhysicalBone3D::get_friction() const {
-	return friction;
-}
-
-void PhysicalBone3D::set_bounce(real_t p_bounce) {
-	ERR_FAIL_COND(p_bounce < 0 || p_bounce > 1);
-
-	bounce = p_bounce;
-	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_BOUNCE, bounce);
-}
-
-real_t PhysicalBone3D::get_bounce() const {
-	return bounce;
-}
-
-void PhysicalBone3D::set_gravity_scale(real_t p_gravity_scale) {
-	gravity_scale = p_gravity_scale;
-	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_GRAVITY_SCALE, gravity_scale);
-}
-
-real_t PhysicalBone3D::get_gravity_scale() const {
-	return gravity_scale;
-}
-
-void PhysicalBone3D::set_linear_damp_mode(DampMode p_mode) {
-	linear_damp_mode = p_mode;
-	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_LINEAR_DAMP_MODE, linear_damp_mode);
-}
-
-PhysicalBone3D::DampMode PhysicalBone3D::get_linear_damp_mode() const {
-	return linear_damp_mode;
-}
-
-void PhysicalBone3D::set_angular_damp_mode(DampMode p_mode) {
-	angular_damp_mode = p_mode;
-	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_ANGULAR_DAMP_MODE, angular_damp_mode);
-}
-
-PhysicalBone3D::DampMode PhysicalBone3D::get_angular_damp_mode() const {
-	return angular_damp_mode;
-}
-
-void PhysicalBone3D::set_linear_damp(real_t p_linear_damp) {
-	ERR_FAIL_COND(p_linear_damp < 0);
-
-	linear_damp = p_linear_damp;
-	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_LINEAR_DAMP, linear_damp);
-}
-
-real_t PhysicalBone3D::get_linear_damp() const {
-	return linear_damp;
-}
-
-void PhysicalBone3D::set_angular_damp(real_t p_angular_damp) {
-	ERR_FAIL_COND(p_angular_damp < 0);
-
-	angular_damp = p_angular_damp;
-	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_ANGULAR_DAMP, angular_damp);
-}
-
-real_t PhysicalBone3D::get_angular_damp() const {
-	return angular_damp;
-}
-
-void PhysicalBone3D::set_can_sleep(bool p_active) {
-	can_sleep = p_active;
-	PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PhysicsServer3D::BODY_STATE_CAN_SLEEP, p_active);
-}
-
-bool PhysicalBone3D::is_able_to_sleep() const {
-	return can_sleep;
-}
-
-PhysicalBone3D::PhysicalBone3D() :
-		PhysicsBody3D(PhysicsServer3D::BODY_MODE_STATIC) {
+PhysicalBone3D::PhysicalBone3D() {
 	joint = PhysicsServer3D::get_singleton()->joint_create();
 	reset_physics_simulation_state();
 }
@@ -3359,7 +3219,7 @@ void PhysicalBone3D::_start_physics_simulation() {
 	set_body_mode(PhysicsServer3D::BODY_MODE_DYNAMIC);
 	PhysicsServer3D::get_singleton()->body_set_collision_layer(get_rid(), get_collision_layer());
 	PhysicsServer3D::get_singleton()->body_set_collision_mask(get_rid(), get_collision_mask());
-	PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), this, _body_state_changed_callback);
+	PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), this, _bone_state_changed_callback);
 	set_as_top_level(true);
 	_internal_simulate_physics = true;
 }

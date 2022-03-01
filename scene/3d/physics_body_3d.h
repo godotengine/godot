@@ -516,8 +516,8 @@ public:
 	Vector3 get_collider_velocity(int p_collision_index = 0) const;
 };
 
-class PhysicalBone3D : public PhysicsBody3D {
-	GDCLASS(PhysicalBone3D, PhysicsBody3D);
+class PhysicalBone3D : public RigidDynamicBody3D {
+	GDCLASS(PhysicalBone3D, RigidDynamicBody3D);
 
 public:
 	enum DampMode {
@@ -659,25 +659,14 @@ private:
 	int bone_id = -1;
 
 	String bone_name;
-	real_t bounce = 0.0;
-	real_t mass = 1.0;
-	real_t friction = 1.0;
-	real_t gravity_scale = 1.0;
-	bool can_sleep = true;
-
-	DampMode linear_damp_mode = DAMP_MODE_COMBINE;
-	DampMode angular_damp_mode = DAMP_MODE_COMBINE;
-
-	real_t linear_damp = 0.0;
-	real_t angular_damp = 0.0;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _notification(int p_what);
-	static void _body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state);
-	void _body_state_changed(PhysicsDirectBodyState3D *p_state);
+	static void _bone_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state);
+	void _bone_state_changed(PhysicsDirectBodyState3D *p_state);
 
 	static void _bind_methods();
 
@@ -721,33 +710,6 @@ public:
 	void set_bone_name(const String &p_name);
 	const String &get_bone_name() const;
 
-	void set_mass(real_t p_mass);
-	real_t get_mass() const;
-
-	void set_friction(real_t p_friction);
-	real_t get_friction() const;
-
-	void set_bounce(real_t p_bounce);
-	real_t get_bounce() const;
-
-	void set_gravity_scale(real_t p_gravity_scale);
-	real_t get_gravity_scale() const;
-
-	void set_linear_damp_mode(DampMode p_mode);
-	DampMode get_linear_damp_mode() const;
-
-	void set_angular_damp_mode(DampMode p_mode);
-	DampMode get_angular_damp_mode() const;
-
-	void set_linear_damp(real_t p_linear_damp);
-	real_t get_linear_damp() const;
-
-	void set_angular_damp(real_t p_angular_damp);
-	real_t get_angular_damp() const;
-
-	void set_can_sleep(bool p_active);
-	bool is_able_to_sleep() const;
-
 	void apply_central_impulse(const Vector3 &p_impulse);
 	void apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3());
 
@@ -766,6 +728,5 @@ private:
 };
 
 VARIANT_ENUM_CAST(PhysicalBone3D::JointType);
-VARIANT_ENUM_CAST(PhysicalBone3D::DampMode);
 
 #endif // PHYSICS_BODY__H
