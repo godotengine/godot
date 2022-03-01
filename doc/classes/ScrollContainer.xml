@@ -20,6 +20,12 @@
 				yield(get_tree(), "idle_frame")
 				ensure_control_visible(child_node)
 				[/codeblock]
+				[b]Note:[/b] When using the low processor mode this will not work reliable. Since the editor uses it a workaround must be used for editor plugins:
+				[codeblock]
+				add_child(child_node)
+				yield(get_tree().create_timer(0.0), "timeout")
+				ensure_control_visible(child_node)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_h_scrollbar">
