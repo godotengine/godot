@@ -2040,9 +2040,10 @@ void RoomManager::_flip_portals_recursive(Spatial *p_node) {
 }
 
 void RoomManager::_set_owner_recursive(Node *p_node, Node *p_owner) {
-	if (p_node != p_owner) {
+	if (!p_node->get_owner() && (p_node != p_owner)) {
 		p_node->set_owner(p_owner);
 	}
+
 	for (int n = 0; n < p_node->get_child_count(); n++) {
 		_set_owner_recursive(p_node->get_child(n), p_owner);
 	}
