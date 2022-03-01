@@ -46,8 +46,9 @@
 			<return type="bool" />
 			<argument index="0" name="id" type="int" />
 			<argument index="1" name="to_id" type="int" />
+			<argument index="2" name="bidirectional" type="bool" default="true" />
 			<description>
-				Returns whether there is a connection/segment between the given points.
+				Returns whether there is a connection/segment between the given points. If [code]bidirectional[/code] is [code]false[/code], returns whether movement from [code]id[/code] to [code]to_id[/code] is possible through this segment.
 			</description>
 		</method>
 		<method name="clear">
@@ -75,8 +76,9 @@
 			<return type="void" />
 			<argument index="0" name="id" type="int" />
 			<argument index="1" name="to_id" type="int" />
+			<argument index="2" name="bidirectional" type="bool" default="true" />
 			<description>
-				Deletes the segment between the given points.
+				Deletes the segment between the given points. If [code]bidirectional[/code] is [code]false[/code], only movement from [code]id[/code] to [code]to_id[/code] is prevented, and a unidirectional segment possibly remains.
 			</description>
 		</method>
 		<method name="get_available_point_id" qualifiers="const">
