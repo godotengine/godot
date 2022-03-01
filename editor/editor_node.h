@@ -470,7 +470,9 @@ private:
 	String _tmp_import_path;
 	String external_file;
 	String open_navigate;
+
 	String run_custom_filename;
+	String run_current_filename;
 
 	DynamicFontImportSettings *fontdata_import_settings = nullptr;
 	SceneImportSettings *scene_import_settings = nullptr;
@@ -580,6 +582,7 @@ private:
 
 	void _run(bool p_current = false, const String &p_custom = "");
 	void _run_native(const Ref<EditorExportPreset> &p_preset);
+	void _reset_play_buttons();
 
 	void _add_to_recent_scenes(const String &p_scene);
 	void _update_recent_scenes();
