@@ -174,10 +174,15 @@ Vector2 Transform2D::xform(const Vector2 &p_vec) const {
 
 Vector2 Transform2D::xform_inv(const Vector2 &p_vec) const {
 	Vector2 v = p_vec - elements[2];
+	real_t det = basis_determinant();
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V(det == 0, Vector2());
+#endif
+	real_t idet = 1.0f / det;
 
 	return Vector2(
-			elements[0].dot(v),
-			elements[1].dot(v));
+			elements[1][1] * idet * v.x + elements[1][0] * -idet * v.y,
+			elements[0][1] * -idet * v.x + elements[0][0] * idet * v.y);
 }
 
 Rect2 Transform2D::xform(const Rect2 &p_rect) const {
