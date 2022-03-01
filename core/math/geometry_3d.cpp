@@ -879,7 +879,7 @@ Vector<Vector3> Geometry3D::compute_convex_mesh_points(const Plane *p_planes, in
 					for (int n = 0; n < p_plane_count; n++) {
 						if (n != i && n != j && n != k) {
 							real_t dp = p_planes[n].normal.dot(convex_shape_point);
-							if (dp - p_planes[n].d > CMP_EPSILON) {
+							if (dp - p_planes[n].d > (real_t)CMP_EPSILON) {
 								excluded = true;
 								break;
 							}
