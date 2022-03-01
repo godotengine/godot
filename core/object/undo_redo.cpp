@@ -34,6 +34,20 @@
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
 
+void UndoRedo::Operation::delete_reference() {
+	if (type != Operation::TYPE_REFERENCE) {
+		return;
+	}
+	if (ref.is_valid()) {
+		ref.unref();
+	} else {
+		Object *obj = ObjectDB::get_instance(object);
+		if (obj) {
+			memdelete(obj);
+		}
+	}
+}
+
 void UndoRedo::_discard_redo() {
 	if (current_action == actions.size() - 1) {
 		return;
@@ -41,16 +55,7 @@ void UndoRedo::_discard_redo() {
 
 	for (int i = current_action + 1; i < actions.size(); i++) {
 		for (Operation &E : actions.write[i].do_ops) {
-			if (E.type == Operation::TYPE_REFERENCE) {
-				if (E.ref.is_valid()) {
-					E.ref.unref();
-				} else {
-					Object *obj = ObjectDB::get_instance(E.object);
-					if (obj) {
-						memdelete(obj);
-					}
-				}
-			}
+			E.delete_reference();
 		}
 		//ERASE do data
 	}
@@ -97,13 +102,7 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
 				for (unsigned int i = 0; i < to_remove.size(); i++) {
 					List<Operation>::Element *E = to_remove[i];
 					// Delete all object references
-					if (E->get().type == Operation::TYPE_REFERENCE) {
-						Object *obj = ObjectDB::get_instance(E->get().object);
-
-						if (obj) {
-							memdelete(obj);
-						}
-					}
+					E->get().delete_reference();
 					E->erase();
 				}
 			}
@@ -270,16 +269,7 @@ void UndoRedo::_pop_history_tail() {
 	}
 
 	for (Operation &E : actions.write[0].undo_ops) {
-		if (E.type == Operation::TYPE_REFERENCE) {
-			if (E.ref.is_valid()) {
-				E.ref.unref();
-			} else {
-				Object *obj = ObjectDB::get_instance(E.object);
-				if (obj) {
-					memdelete(obj);
-				}
-			}
-		}
+		E.delete_reference();
 	}
 
 	actions.remove_at(0);

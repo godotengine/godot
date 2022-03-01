@@ -646,13 +646,13 @@ void EffectsRD::screen_space_reflection(RID p_diffuse, RID p_normal_roughness, R
 		ssr.push_constant.metallic_mask[3] = CLAMP(p_metallic_mask.a * 255.0, 0, 255);
 		store_camera(p_camera, ssr.push_constant.projection);
 
-		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssr.pipelines[(p_roughness_quality != RS::ENV_SSR_ROUGNESS_QUALITY_DISABLED) ? SCREEN_SPACE_REFLECTION_ROUGH : SCREEN_SPACE_REFLECTION_NORMAL]);
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssr.pipelines[(p_roughness_quality != RS::ENV_SSR_ROUGHNESS_QUALITY_DISABLED) ? SCREEN_SPACE_REFLECTION_ROUGH : SCREEN_SPACE_REFLECTION_NORMAL]);
 
 		RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssr.push_constant, sizeof(ScreenSpaceReflectionPushConstant));
 
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_image_pair(p_output_blur, p_scale_depth), 0);
 
-		if (p_roughness_quality != RS::ENV_SSR_ROUGNESS_QUALITY_DISABLED) {
+		if (p_roughness_quality != RS::ENV_SSR_ROUGHNESS_QUALITY_DISABLED) {
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_image_pair(p_output, p_blur_radius), 1);
 		} else {
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_output), 1);
@@ -663,7 +663,7 @@ void EffectsRD::screen_space_reflection(RID p_diffuse, RID p_normal_roughness, R
 		RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_screen_size.width, p_screen_size.height, 1);
 	}
 
-	if (p_roughness_quality != RS::ENV_SSR_ROUGNESS_QUALITY_DISABLED) {
+	if (p_roughness_quality != RS::ENV_SSR_ROUGHNESS_QUALITY_DISABLED) {
 		//blur
 
 		RD::get_singleton()->compute_list_add_barrier(compute_list);
@@ -675,10 +675,10 @@ void EffectsRD::screen_space_reflection(RID p_diffuse, RID p_normal_roughness, R
 		ssr_filter.push_constant.proj_info[2] = (1.0f - p_camera.matrix[0][2]) / p_camera.matrix[0][0];
 		ssr_filter.push_constant.proj_info[3] = (1.0f + p_camera.matrix[1][2]) / p_camera.matrix[1][1];
 		ssr_filter.push_constant.vertical = 0;
-		if (p_roughness_quality == RS::ENV_SSR_ROUGNESS_QUALITY_LOW) {
+		if (p_roughness_quality == RS::ENV_SSR_ROUGHNESS_QUALITY_LOW) {
 			ssr_filter.push_constant.steps = p_max_steps / 3;
 			ssr_filter.push_constant.increment = 3;
-		} else if (p_roughness_quality == RS::ENV_SSR_ROUGNESS_QUALITY_MEDIUM) {
+		} else if (p_roughness_quality == RS::ENV_SSR_ROUGHNESS_QUALITY_MEDIUM) {
 			ssr_filter.push_constant.steps = p_max_steps / 2;
 			ssr_filter.push_constant.increment = 2;
 		} else {

@@ -103,7 +103,7 @@
 #endif
 
 #ifndef SIGN
-#define SIGN(m_v) (((m_v) == 0) ? (0.0) : (((m_v) < 0) ? (-1.0) : (+1.0)))
+#define SIGN(m_v) (((m_v) == 0) ? (0.0f) : (((m_v) < 0) ? (-1.0f) : (+1.0f)))
 #endif
 
 #ifndef MIN

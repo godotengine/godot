@@ -154,6 +154,8 @@ static const float earth_gravity = 9.80665;
 
 	[self initTouches];
 
+	self.multipleTouchEnabled = YES;
+
 	// Configure and start accelerometer
 	if (!self.motionManager) {
 		self.motionManager = [[CMMotionManager alloc] init];

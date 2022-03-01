@@ -1649,14 +1649,6 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 					}
 				}
 
-				if (generate_lods) {
-					src_mesh_node->get_mesh()->generate_lods(merge_angle, split_angle);
-				}
-
-				if (create_shadow_meshes) {
-					src_mesh_node->get_mesh()->create_shadow_mesh();
-				}
-
 				if (bake_lightmaps) {
 					Transform3D xf;
 					Node3D *n = src_mesh_node;
@@ -1687,6 +1679,14 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 							}
 						}
 					}
+				}
+
+				if (generate_lods) {
+					src_mesh_node->get_mesh()->generate_lods(merge_angle, split_angle);
+				}
+
+				if (create_shadow_meshes) {
+					src_mesh_node->get_mesh()->create_shadow_mesh();
 				}
 
 				if (!save_to_file.is_empty()) {

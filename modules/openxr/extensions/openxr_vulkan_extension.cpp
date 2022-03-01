@@ -305,7 +305,7 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 	for (uint64_t i = 0; i < swapchain_length; i++) {
 		images[i].type = XR_TYPE_SWAPCHAIN_IMAGE_VULKAN_KHR;
 		images[i].next = nullptr;
-		images[i].image = nullptr;
+		images[i].image = VK_NULL_HANDLE;
 	}
 
 	result = xrEnumerateSwapchainImages(p_swapchain, swapchain_length, &swapchain_length, (XrSwapchainImageBaseHeader *)images);
@@ -325,9 +325,64 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 	*r_swapchain_graphics_data = data;
 	data->is_multiview = (p_array_size > 1);
 
-	RenderingDevice::DataFormat format = RenderingDevice::DATA_FORMAT_R8G8B8A8_SRGB; // TODO set this based on p_swapchain_format
-	RenderingDevice::TextureSamples samples = RenderingDevice::TEXTURE_SAMPLES_1; // TODO set this based on p_sample_count
+	RenderingDevice::DataFormat format = RenderingDevice::DATA_FORMAT_R8G8B8A8_SRGB;
+	RenderingDevice::TextureSamples samples = RenderingDevice::TEXTURE_SAMPLES_1;
 	uint64_t usage_flags = RenderingDevice::TEXTURE_USAGE_SAMPLING_BIT | RenderingDevice::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+
+	switch (p_swapchain_format) {
+		case VK_FORMAT_R8G8B8A8_SRGB:
+			// Even though this is an sRGB framebuffer format we're using UNORM here.
+			// The reason here is because Godot does a linear to sRGB conversion while
+			// with the sRGB format, this conversion would be doubled by the hardware.
+			// This also means we're reading the values as is for our preview on screen.
+			// The OpenXR runtime however is still treating this as an sRGB format and
+			// will thus do an sRGB -> Linear conversion as expected.
+			// format = RenderingDevice::DATA_FORMAT_R8G8B8A8_SRGB;
+			format = RenderingDevice::DATA_FORMAT_R8G8B8A8_UNORM;
+			break;
+		case VK_FORMAT_B8G8R8A8_SRGB:
+			// format = RenderingDevice::DATA_FORMAT_B8G8R8A8_SRGB;
+			format = RenderingDevice::DATA_FORMAT_B8G8R8A8_UNORM;
+			break;
+		case VK_FORMAT_R8G8B8A8_UINT:
+			format = RenderingDevice::DATA_FORMAT_R8G8B8A8_UINT;
+			break;
+		case VK_FORMAT_B8G8R8A8_UINT:
+			format = RenderingDevice::DATA_FORMAT_B8G8R8A8_UINT;
+			break;
+		default:
+			// continue with our default value
+			print_line("Unsupported swapchain format ", p_swapchain_format);
+			break;
+	}
+
+	switch (p_sample_count) {
+		case 1:
+			samples = RenderingDevice::TEXTURE_SAMPLES_1;
+			break;
+		case 2:
+			samples = RenderingDevice::TEXTURE_SAMPLES_2;
+			break;
+		case 4:
+			samples = RenderingDevice::TEXTURE_SAMPLES_4;
+			break;
+		case 8:
+			samples = RenderingDevice::TEXTURE_SAMPLES_8;
+			break;
+		case 16:
+			samples = RenderingDevice::TEXTURE_SAMPLES_16;
+			break;
+		case 32:
+			samples = RenderingDevice::TEXTURE_SAMPLES_32;
+			break;
+		case 64:
+			samples = RenderingDevice::TEXTURE_SAMPLES_64;
+			break;
+		default:
+			// continue with our default value
+			print_line("Unsupported sample count ", p_sample_count);
+			break;
+	}
 
 	Vector<RID> image_rids;
 	Vector<RID> framebuffers;

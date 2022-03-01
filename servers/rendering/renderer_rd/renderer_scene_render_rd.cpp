@@ -1980,7 +1980,7 @@ void RendererSceneRenderRD::_process_ssr(RID p_render_buffers, RID p_dest_frameb
 		rb->ssr.normal_scaled = RD::get_singleton()->texture_create(tf, RD::TextureView());
 	}
 
-	if (ssr_roughness_quality != RS::ENV_SSR_ROUGNESS_QUALITY_DISABLED && !rb->ssr.blur_radius[0].is_valid()) {
+	if (ssr_roughness_quality != RS::ENV_SSR_ROUGHNESS_QUALITY_DISABLED && !rb->ssr.blur_radius[0].is_valid()) {
 		RD::TextureFormat tf;
 		tf.format = RD::DATA_FORMAT_R8_UNORM;
 		tf.width = rb->internal_width / 2;

@@ -401,7 +401,7 @@
 		<member name="select_mode" type="int" setter="set_select_mode" getter="get_select_mode" enum="ItemList.SelectMode" default="0">
 			Allows single or multiple item selection. See the [enum SelectMode] constants.
 		</member>
-		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="TextParagraph.OverrunBehavior" default="0">
+		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="TextParagraph.OverrunBehavior" default="3">
 			Sets the clipping behavior when the text exceeds an item's bounding rectangle. See [enum TextParagraph.OverrunBehavior] for a description of all modes.
 		</member>
 	</members>
