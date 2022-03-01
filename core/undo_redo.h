@@ -64,6 +64,8 @@ private:
 		ObjectID object;
 		String name;
 		Variant args[VARIANT_ARG_MAX];
+
+		void delete_reference();
 	};
 
 	struct Action {
