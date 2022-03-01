@@ -99,7 +99,7 @@ private:
 	SelectMode select_mode = SELECT_SINGLE;
 	IconMode icon_mode = ICON_MODE_LEFT;
 	VScrollBar *scroll_bar;
-	TextParagraph::OverrunBehavior text_overrun_behavior = TextParagraph::OVERRUN_NO_TRIMMING;
+	TextParagraph::OverrunBehavior text_overrun_behavior = TextParagraph::OVERRUN_TRIM_ELLIPSIS;
 
 	uint64_t search_time_msec = 0;
 	String search_string;
