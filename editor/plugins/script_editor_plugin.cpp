@@ -2340,6 +2340,22 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 					se->ensure_focus();
 				}
 
+				if (p_col > 0) {
+					CodeEdit *code_editor = Object::cast_to<CodeEdit>(se->get_base_editor());
+					
+
+					int column_offset = 0;
+					String line = code_editor->get_line(p_line-1);
+					code_editor->set_caret_column(0);
+					for (int i = 0; i <= p_col; i++) {
+						if (line[i] != '\t') {
+							column_offset += 1;
+						}
+					}
+					code_editor->set_caret_column(column_offset);
+					code_editor->update();
+				}
+
 				if (p_line > 0) {
 					se->goto_line(p_line - 1);
 				}

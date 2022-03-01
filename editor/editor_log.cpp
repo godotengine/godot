@@ -280,7 +280,35 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		log->pop();
 	}
 
-	log->add_text(p_message.text);
+	// Search for resource paths
+	Array resource_paths = resource_path_regex.search_all(p_message.text);
+	if (!resource_paths.is_empty()) {
+		// For each resource path, check if file exists and add meta tag.
+		int start = 0;
+		for (int i = 0; i < resource_paths.size(); i++) {
+			Ref<RegExMatch> current_path = static_cast<Ref<RegExMatch>>(resource_paths[i]);
+			String path_str = current_path->get_string(0);
+			String path_base = path_str.split(":")[1]; // Get file path without line numbers, in case it has them.
+
+			log->add_text(p_message.text.substr(start, current_path->get_start(0) - start));
+			if (EditorFileSystem::get_singleton()->find_file("res:" + path_base, nullptr)) {
+				log->push_meta(path_str);
+				log->add_text(path_str);
+				log->pop();
+			} else {
+				log->add_text(path_str);
+			}
+
+			if (i < resource_paths.size() - 1) {
+				start = current_path->get_end(0);
+			} else {
+				log->add_text(p_message.text.substr(current_path->get_end(0), -1));
+			}
+		}
+
+	} else { // If no resource paths were found, add text.
+		log->add_text(p_message.text);
+	}
 
 	// Need to use pop() to exit out of the RichTextLabels current "push" stack.
 	// We only "push" in the above switch when message type != STD, so only pop when that is the case.
@@ -315,6 +343,65 @@ void EditorLog::_reset_message_counts() {
 	}
 }
 
+void EditorLog::_resource_path_clicked(Variant path) {
+	if (path.get_type() == Variant::Type::STRING) {
+		String path_str = static_cast<String>(path);
+
+		PackedStringArray split_by_colon = path_str.split(":");
+
+		String file_path = "res:" + split_by_colon[1];
+		String file_type = EditorFileSystem::get_singleton()->get_file_type(file_path);
+
+		if (file_type == "PackedScene") {
+			// If file is a scene, open.
+			EditorNode::get_singleton()->open_request(file_path);
+		} else {
+			if (file_type.contains("Script")) {
+				/*
+					Check if file extension contains line number
+					Example:
+					res://path.gd:5
+					(get_extension will return ".gd:5")
+				*/
+
+				if (path_str.get_extension().contains(":")) {
+					/*
+					  split_by_colon
+					  value - index
+
+					  res://path.gd:number:number
+
+					  res - 0
+					  //path.gd - 1
+					  number - 2 (Line Number)
+					  number - 3 (Line Column)
+					*/
+
+					int size = split_by_colon.size() - 1; // Subtracting 1 for readability in if statements below
+					int line = 1;
+					int column = 0;
+
+					if (size >= 2) { // Check if index 2 (Line Number) exists
+						line = split_by_colon[2].to_int();
+						if (size >= 3) { // Check if index 3 (Line Column) exists
+							column = split_by_colon[3].to_int();
+						}
+					}
+					
+					RES script = ScriptEditor::get_singleton()->open_file(file_path);
+
+					InspectorDock::get_singleton()->edit_resource(script);
+					ScriptEditor::get_singleton()->edit(script, line, column);
+				} else { // If the path does not contain line number, just open the script.
+					EditorNode::get_singleton()->load_resource(file_path, true);
+				}
+			} else { // If the file is not a Script or Scene, select in File System.
+				FileSystemDock::get_singleton()->select_file(file_path);
+			}
+		}
+	}
+}
+
 void EditorLog::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("clear_request"));
 	ADD_SIGNAL(MethodInfo("copy_request"));
@@ -342,6 +429,7 @@ EditorLog::EditorLog() {
 	log->set_focus_mode(FOCUS_CLICK);
 	log->set_v_size_flags(SIZE_EXPAND_FILL);
 	log->set_h_size_flags(SIZE_EXPAND_FILL);
+	log->connect("meta_clicked", callable_mp(this, &EditorLog::_resource_path_clicked));
 	vb_left->add_child(log);
 
 	// Search box
@@ -437,6 +525,9 @@ EditorLog::EditorLog() {
 	current = Thread::get_caller_id();
 
 	EditorNode::get_undo_redo()->set_commit_notify_callback(_undo_redo_cbk, this);
+
+	// Initialize RegEx for resource path detection
+	resource_path_regex.compile(R"(\bres://[^.]+[.]\S+)");
 }
 
 void EditorLog::deinit() {
