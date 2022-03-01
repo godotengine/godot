@@ -48,9 +48,6 @@ static void _draw_shadowed_line(Control *p_control, const Point2 &p_from, const 
 	p_control->draw_line(p_from + p_shadow_offset, p_from + p_size + p_shadow_offset, p_shadow_color);
 }
 
-void SpriteFramesEditor::gui_input(const Ref<InputEvent> &p_event) {
-}
-
 void SpriteFramesEditor::_open_sprite_sheet() {
 	file_split_sheet->clear_filters();
 	List<String> extensions;

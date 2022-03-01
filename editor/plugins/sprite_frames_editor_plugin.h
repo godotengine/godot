@@ -170,7 +170,6 @@ class SpriteFramesEditor : public HSplitContainer {
 
 protected:
 	void _notification(int p_what);
-	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	static void _bind_methods();
 
 public:
