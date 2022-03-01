@@ -2374,7 +2374,7 @@ void TextEdit::_do_backspace(bool p_word, bool p_all_to_left) {
 
 	if (p_all_to_left) {
 		int caret_current_column = caret.column;
-		caret.column = 0;
+		set_caret_column(0);
 		_remove_text(caret.line, 0, caret.line, caret_current_column);
 		return;
 	}
@@ -2920,15 +2920,20 @@ void TextEdit::_clear() {
 		end_complex_operation();
 		return;
 	}
+	// Cannot merge with above, as we are not part of the tree on creation.
+	int old_text_size = text.size();
+
 	clear_undo_history();
 	text.clear();
-	caret.column = 0;
-	caret.line = 0;
+	set_caret_line(0, false);
+	set_caret_column(0);
 	caret.x_ofs = 0;
 	caret.line_ofs = 0;
 	caret.wrap_ofs = 0;
 	caret.last_fit_x = 0;
 	selection.active = false;
+
+	emit_signal(SNAME("lines_edited_from"), old_text_size, 0);
 }
 
 void TextEdit::set_text(const String &p_text) {
@@ -2987,14 +2992,16 @@ void TextEdit::set_line(int p_line, const String &p_new_text) {
 	if (p_line < 0 || p_line >= text.size()) {
 		return;
 	}
+	begin_complex_operation();
 	_remove_text(p_line, 0, p_line, text[p_line].length());
 	_insert_text(p_line, 0, p_new_text);
-	if (caret.line == p_line) {
-		caret.column = MIN(caret.column, p_new_text.length());
+	if (caret.line == p_line && caret.column > p_new_text.length()) {
+		set_caret_column(MIN(caret.column, p_new_text.length()), false);
 	}
 	if (has_selection() && p_line == selection.to_line && selection.to_column > text[p_line].length()) {
 		selection.to_column = text[p_line].length();
 	}
+	end_complex_operation();
 }
 
 String TextEdit::get_line(int p_line) const {
@@ -3049,8 +3056,10 @@ void TextEdit::swap_lines(int p_from_line, int p_to_line) {
 
 	String tmp = get_line(p_from_line);
 	String tmp2 = get_line(p_to_line);
+	begin_complex_operation();
 	set_line(p_to_line, tmp);
 	set_line(p_from_line, tmp2);
+	end_complex_operation();
 }
 
 void TextEdit::insert_line_at(int p_at, const String &p_text) {
@@ -3059,7 +3068,7 @@ void TextEdit::insert_line_at(int p_at, const String &p_text) {
 	_insert_text(p_at, 0, p_text + "\n");
 	if (caret.line >= p_at) {
 		// offset caret when located after inserted line
-		++caret.line;
+		set_caret_line(caret.line + 1, false);
 	}
 	if (has_selection()) {
 		if (selection.from_line >= p_at) {
@@ -3964,6 +3973,7 @@ void TextEdit::set_caret_line(int p_line, bool p_adjust_viewport, bool p_can_be_
 			}
 		}
 	}
+	bool caret_moved = caret.line != p_line;
 	caret.line = p_line;
 
 	int n_col = _get_char_pos_for_line(caret.last_fit_x, p_line, p_wrap_index);
@@ -3977,15 +3987,16 @@ void TextEdit::set_caret_line(int p_line, bool p_adjust_viewport, bool p_can_be_
 			n_col -= 1;
 		}
 	}
+	caret_moved = (caret_moved || caret.column != n_col);
 	caret.column = n_col;
 
-	if (p_adjust_viewport) {
+	if (is_inside_tree() && p_adjust_viewport) {
 		adjust_viewport_to_caret();
 	}
 
 	setting_caret_line = false;
 
-	if (!caret_pos_dirty) {
+	if (caret_moved && !caret_pos_dirty) {
 		if (is_inside_tree()) {
 			MessageQueue::get_singleton()->push_call(this, "_emit_caret_changed");
 		}
@@ -4002,6 +4013,7 @@ void TextEdit::set_caret_column(int p_col, bool p_adjust_viewport) {
 		p_col = 0;
 	}
 
+	bool caret_moved = caret.column != p_col;
 	caret.column = p_col;
 	if (caret.column > get_line(caret.line).length()) {
 		caret.column = get_line(caret.line).length();
@@ -4009,11 +4021,11 @@ void TextEdit::set_caret_column(int p_col, bool p_adjust_viewport) {
 
 	caret.last_fit_x = _get_column_x_offset_for_line(caret.column, caret.line);
 
-	if (p_adjust_viewport) {
+	if (is_inside_tree() && p_adjust_viewport) {
 		adjust_viewport_to_caret();
 	}
 
-	if (!caret_pos_dirty) {
+	if (caret_moved && !caret_pos_dirty) {
 		if (is_inside_tree()) {
 			MessageQueue::get_singleton()->push_call(this, "_emit_caret_changed");
 		}
