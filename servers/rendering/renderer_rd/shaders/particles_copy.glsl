@@ -209,13 +209,7 @@ void main() {
 
 		txform = transpose(txform);
 	} else {
-		// Even being inactive, its position still needs to preserved as it might be used by trails.
-		txform = particles.data[particle].xform;
-
-		// Set scale zero to make it invisible.
-		txform[0].xyz = vec3(0);
-
-		txform = transpose(txform);
+		txform = mat4(vec4(0.0), vec4(0.0), vec4(0.0), vec4(0.0)); //zero scale, becomes invisible
 	}
 
 	if (params.copy_mode_2d) {
