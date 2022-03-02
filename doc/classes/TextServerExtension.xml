@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TextServerExtension" inherits="TextServer" version="4.0">
+<class name="TextServerExtension" inherits="TextServer" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for TextServer custom implementations (plugins).
 	</brief_description>
@@ -202,7 +202,7 @@
 			</description>
 		</method>
 		<method name="_font_get_hinting" qualifiers="virtual const">
-			<return type="int" />
+			<return type="int" enum="TextServer.Hinting" />
 			<argument index="0" name="font_rid" type="RID" />
 			<description>
 				Returns the font hinting mode. Used by dynamic fonts only.
@@ -326,6 +326,13 @@
 			<argument index="0" name="font_rid" type="RID" />
 			<description>
 				Returns font style name.
+			</description>
+		</method>
+		<method name="_font_get_subpixel_positioning" qualifiers="virtual const">
+			<return type="int" enum="TextServer.SubpixelPositioning" />
+			<argument index="0" name="font_rid" type="RID" />
+			<description>
+				Returns font sub-pixel glyph positioning mode.
 			</description>
 		</method>
 		<method name="_font_get_supported_chars" qualifiers="virtual const">
@@ -557,7 +564,7 @@
 			<argument index="0" name="font_rid" type="RID" />
 			<argument index="1" name="force_autohinter" type="bool" />
 			<description>
-				If set to [code]true[/code] auto-hinting is preffered over font built-in hinting.
+				If set to [code]true[/code] auto-hinting is preferred over font built-in hinting.
 			</description>
 		</method>
 		<method name="_font_set_global_oversampling" qualifiers="virtual">
@@ -738,6 +745,14 @@
 				Sets the font style name.
 			</description>
 		</method>
+		<method name="_font_set_subpixel_positioning" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="font_rid" type="RID" />
+			<argument index="1" name="subpixel_positioning" type="int" enum="TextServer.SubpixelPositioning" />
+			<description>
+				Sets font sub-pixel glyph positioning mode.
+			</description>
+		</method>
 		<method name="_font_set_texture_image" qualifiers="virtual">
 			<return type="void" />
 			<argument index="0" name="font_rid" type="RID" />
@@ -904,6 +919,32 @@
 				[b]Note:[/b] This function is used by during project export, to include TextServer database.
 			</description>
 		</method>
+		<method name="_shaped_get_span_count" qualifiers="virtual const">
+			<return type="int" />
+			<argument index="0" name="shaped" type="RID" />
+			<description>
+				Returns number of text spans added using [method _shaped_text_add_string] or [method _shaped_text_add_object].
+			</description>
+		</method>
+		<method name="_shaped_get_span_meta" qualifiers="virtual const">
+			<return type="Variant" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="index" type="int" />
+			<description>
+				Returns text span metadata.
+			</description>
+		</method>
+		<method name="_shaped_set_span_update_font" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="index" type="int" />
+			<argument index="2" name="fonts" type="Array" />
+			<argument index="3" name="size" type="int" />
+			<argument index="4" name="opentype_features" type="Dictionary" />
+			<description>
+				Changes text span font, font size and OpenType features, without changing the text.
+			</description>
+		</method>
 		<method name="_shaped_text_add_object" qualifiers="virtual">
 			<return type="bool" />
 			<argument index="0" name="shaped" type="RID" />
@@ -923,6 +964,7 @@
 			<argument index="3" name="size" type="int" />
 			<argument index="4" name="opentype_features" type="Dictionary" />
 			<argument index="5" name="language" type="String" />
+			<argument index="6" name="meta" type="Variant" />
 			<description>
 				Adds text span and font to draw it to the text buffer.
 			</description>
@@ -1001,7 +1043,7 @@
 			</description>
 		</method>
 		<method name="_shaped_text_get_direction" qualifiers="virtual const">
-			<return type="int" />
+			<return type="int" enum="TextServer.Direction" />
 			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns direction of the text.
@@ -1024,9 +1066,8 @@
 			</description>
 		</method>
 		<method name="_shaped_text_get_ellipsis_glyphs" qualifiers="virtual const">
-			<return type="void" />
+			<return type="Glyph*" />
 			<argument index="0" name="shaped" type="RID" />
-			<argument index="1" name="r_glyphs" type="void*" />
 			<description>
 				Returns array of the glyphs in the ellipsis.
 			</description>
@@ -1046,9 +1087,8 @@
 			</description>
 		</method>
 		<method name="_shaped_text_get_glyphs" qualifiers="virtual const">
-			<return type="void" />
+			<return type="Glyph*" />
 			<argument index="0" name="shaped" type="RID" />
-			<argument index="1" name="r_glyphs" type="void*" />
 			<description>
 				Copies text glyphs in the visual order, into preallocated array of the size returned by [method _shaped_text_get_glyph_count].
 			</description>
@@ -1062,7 +1102,7 @@
 			</description>
 		</method>
 		<method name="_shaped_text_get_inferred_direction" qualifiers="virtual const">
-			<return type="int" />
+			<return type="int" enum="TextServer.Direction" />
 			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns direction of the text, inferred by the BiDi algorithm.
@@ -1105,7 +1145,7 @@
 			</description>
 		</method>
 		<method name="_shaped_text_get_orientation" qualifiers="virtual const">
-			<return type="int" />
+			<return type="int" enum="TextServer.Orientation" />
 			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns text orientation.
@@ -1310,9 +1350,8 @@
 			</description>
 		</method>
 		<method name="_shaped_text_sort_logical" qualifiers="virtual">
-			<return type="void" />
+			<return type="Glyph*" />
 			<argument index="0" name="shaped" type="RID" />
-			<argument index="1" name="r_glyphs" type="void*" />
 			<description>
 				Copies text glyphs in the logical order, into preallocated array of the size returned by [method _shaped_text_get_glyph_count].
 			</description>

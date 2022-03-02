@@ -32,8 +32,6 @@
 #define SCRIPT_CREATE_DIALOG_H
 
 #include "core/object/script_language.h"
-#include "editor/editor_file_dialog.h"
-#include "editor/editor_settings.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/grid_container.h"
@@ -42,6 +40,7 @@
 #include "scene/gui/panel_container.h"
 
 class CreateDialog;
+class EditorFileDialog;
 
 class ScriptCreateDialog : public ConfirmationDialog {
 	GDCLASS(ScriptCreateDialog, ConfirmationDialog);
@@ -116,7 +115,6 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	virtual void ok_pressed() override;
 	void _create_new();
 	void _load_exist();
-	Vector<String> get_hierarchy(String p_object) const;
 	void _msg_script_valid(bool valid, const String &p_msg = String());
 	void _msg_path_valid(bool valid, const String &p_msg = String());
 	void _update_template_menu();

@@ -78,6 +78,7 @@ void Button::_notification(int p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			update();
 		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			xl_text = atr(text);
 			_shape();
@@ -85,12 +86,14 @@ void Button::_notification(int p_what) {
 			update_minimum_size();
 			update();
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			_shape();
 
 			update_minimum_size();
 			update();
 		} break;
+
 		case NOTIFICATION_DRAW: {
 			RID ci = get_canvas_item();
 			Size2 size = get_size();
@@ -197,6 +200,8 @@ void Button::_notification(int p_what) {
 					color = get_theme_color(SNAME("font_disabled_color"));
 					if (has_theme_color(SNAME("icon_disabled_color"))) {
 						color_icon = get_theme_color(SNAME("icon_disabled_color"));
+					} else {
+						color_icon.a = 0.4;
 					}
 
 				} break;
@@ -232,9 +237,6 @@ void Button::_notification(int p_what) {
 			}
 			if (!_icon.is_null()) {
 				int valign = size.height - style->get_minimum_size().y;
-				if (is_disabled()) {
-					color_icon.a = 0.4;
-				}
 
 				float icon_ofs_region = 0.0;
 				Point2 style_offset;

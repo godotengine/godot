@@ -141,6 +141,20 @@ String OS_LinuxBSD::get_unique_id() const {
 	return machine_id;
 }
 
+String OS_LinuxBSD::get_processor_name() const {
+	FileAccessRef f = FileAccess::open("/proc/cpuinfo", FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(!f, "", String("Couldn't open `/proc/cpuinfo` to get the CPU model name. Returning an empty string."));
+
+	while (!f->eof_reached()) {
+		const String line = f->get_line();
+		if (line.find("model name") != -1) {
+			return line.split(":")[1].strip_edges();
+		}
+	}
+
+	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name from `/proc/cpuinfo`. Returning an empty string."));
+}
+
 void OS_LinuxBSD::finalize() {
 	if (main_loop) {
 		memdelete(main_loop);
@@ -342,7 +356,7 @@ void OS_LinuxBSD::run() {
 		if (Main::iteration()) {
 			break;
 		}
-	};
+	}
 
 	main_loop->finalize();
 }

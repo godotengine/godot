@@ -31,10 +31,12 @@
 #ifndef MULTIMESH_EDITOR_PLUGIN_H
 #define MULTIMESH_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/3d/multimesh_instance_3d.h"
+#include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
+
+class SceneTreeDialog;
 
 class MultiMeshEditor : public Control {
 	GDCLASS(MultiMeshEditor, Control);
@@ -84,7 +86,6 @@ class MultiMeshEditorPlugin : public EditorPlugin {
 	GDCLASS(MultiMeshEditorPlugin, EditorPlugin);
 
 	MultiMeshEditor *multimesh_editor;
-	EditorNode *editor;
 
 public:
 	virtual String get_name() const override { return "MultiMesh"; }
@@ -93,7 +94,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	MultiMeshEditorPlugin(EditorNode *p_node);
+	MultiMeshEditorPlugin();
 	~MultiMeshEditorPlugin();
 };
 

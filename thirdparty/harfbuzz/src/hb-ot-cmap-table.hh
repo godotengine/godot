@@ -369,7 +369,6 @@ struct CmapSubtableFormat4
   {
     accelerator_t () {}
     accelerator_t (const CmapSubtableFormat4 *subtable) { init (subtable); }
-    ~accelerator_t () { fini (); }
 
     void init (const CmapSubtableFormat4 *subtable)
     {
@@ -381,7 +380,6 @@ struct CmapSubtableFormat4
       glyphIdArray = idRangeOffset + segCount;
       glyphIdArrayLength = (subtable->length - 16 - 8 * segCount) / 2;
     }
-    void fini () {}
 
     bool get_glyph (hb_codepoint_t codepoint, hb_codepoint_t *glyph) const
     {
@@ -1607,7 +1605,7 @@ struct cmap
       unsigned format = (this + _.subtable).u.format;
       if (format == 12) has_format12 = true;
 
-      const EncodingRecord *table = hb_addressof (_);
+      const EncodingRecord *table = std::addressof (_);
       if      (_.platformID == 0 && _.encodingID ==  3) unicode_bmp = table;
       else if (_.platformID == 0 && _.encodingID ==  4) unicode_ucs4 = table;
       else if (_.platformID == 3 && _.encodingID ==  1) ms_bmp = table;
@@ -1665,7 +1663,7 @@ struct cmap
 
   struct accelerator_t
   {
-    void init (hb_face_t *face)
+    accelerator_t (hb_face_t *face)
     {
       this->table = hb_sanitize_context_t ().reference_table<cmap> (face);
       bool symbol;
@@ -1700,8 +1698,7 @@ struct cmap
 	}
       }
     }
-
-    void fini () { this->table.destroy (); }
+    ~accelerator_t () { this->table.destroy (); }
 
     bool get_nominal_glyph (hb_codepoint_t  unicode,
 			    hb_codepoint_t *glyph) const
@@ -1863,7 +1860,9 @@ struct cmap
   DEFINE_SIZE_ARRAY (4, encodingRecord);
 };
 
-struct cmap_accelerator_t : cmap::accelerator_t {};
+struct cmap_accelerator_t : cmap::accelerator_t {
+  cmap_accelerator_t (hb_face_t *face) : cmap::accelerator_t (face) {}
+};
 
 } /* namespace OT */
 

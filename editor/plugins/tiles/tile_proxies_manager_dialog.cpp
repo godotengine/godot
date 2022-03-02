@@ -30,6 +30,7 @@
 
 #include "tile_proxies_manager_dialog.h"
 
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 
 void TileProxiesManagerDialog::_right_clicked(int p_item, Vector2 p_local_mouse_pos, Object *p_item_list) {
@@ -312,6 +313,8 @@ void TileProxiesManagerDialog::update_tile_set(Ref<TileSet> p_tile_set) {
 }
 
 TileProxiesManagerDialog::TileProxiesManagerDialog() {
+	undo_redo = EditorNode::get_singleton()->get_undo_redo();
+
 	// Tile proxy management window.
 	set_title(TTR("Tile Proxies Management"));
 	set_process_unhandled_key_input(true);

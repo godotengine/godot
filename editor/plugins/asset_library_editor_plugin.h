@@ -316,7 +316,6 @@ class AssetLibraryEditorPlugin : public EditorPlugin {
 	GDCLASS(AssetLibraryEditorPlugin, EditorPlugin);
 
 	EditorAssetLibrary *addon_library;
-	EditorNode *editor;
 
 public:
 	virtual String get_name() const override { return "AssetLib"; }
@@ -328,7 +327,7 @@ public:
 	//virtual Dictionary get_state() const;
 	//virtual void set_state(const Dictionary& p_state);
 
-	AssetLibraryEditorPlugin(EditorNode *p_node);
+	AssetLibraryEditorPlugin();
 	~AssetLibraryEditorPlugin();
 };
 

@@ -46,6 +46,9 @@ protected:
 	virtual void move_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 
+	GDVIRTUAL0RC(Vector<int>, _get_allowed_size_flags_horizontal)
+	GDVIRTUAL0RC(Vector<int>, _get_allowed_size_flags_vertical)
+
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -56,6 +59,9 @@ public:
 	};
 
 	void fit_child_in_rect(Control *p_child, const Rect2 &p_rect);
+
+	virtual Vector<int> get_allowed_size_flags_horizontal() const;
+	virtual Vector<int> get_allowed_size_flags_vertical() const;
 
 	TypedArray<String> get_configuration_warnings() const override;
 

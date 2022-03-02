@@ -33,7 +33,6 @@
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 #include "core/version.h"
-#include "core/version_hash.gen.h"
 #include "main/main.h"
 
 #include <string.h>
@@ -90,14 +89,15 @@ static void handle_crash(int sig) {
 	fprintf(stderr, "\n================================================================\n");
 	fprintf(stderr, "%s: Program crashed with signal %d\n", __FUNCTION__, sig);
 
-	if (OS::get_singleton()->get_main_loop())
+	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_CRASH);
+	}
 
 	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
-	if (String(VERSION_HASH).length() != 0) {
-		fprintf(stderr, "Engine version: " VERSION_FULL_NAME " (" VERSION_HASH ")\n");
+	if (String(VERSION_HASH).is_empty()) {
+		fprintf(stderr, "Engine version: %s\n", VERSION_FULL_NAME);
 	} else {
-		fprintf(stderr, "Engine version: " VERSION_FULL_NAME "\n");
+		fprintf(stderr, "Engine version: %s (%s)\n", VERSION_FULL_NAME, VERSION_HASH);
 	}
 	fprintf(stderr, "Dumping the backtrace. %s\n", msg.utf8().get_data());
 	char **strings = backtrace_symbols(bt_buffer, size);
@@ -120,8 +120,9 @@ static void handle_crash(int sig) {
 						snprintf(fname, 1024, "%s", demangled);
 					}
 
-					if (demangled)
+					if (demangled) {
 						free(demangled);
+					}
 				}
 			}
 
@@ -178,8 +179,9 @@ CrashHandler::~CrashHandler() {
 }
 
 void CrashHandler::disable() {
-	if (disabled)
+	if (disabled) {
 		return;
+	}
 
 #ifdef CRASH_HANDLER_ENABLED
 	signal(SIGSEGV, nullptr);

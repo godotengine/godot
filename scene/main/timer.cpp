@@ -43,6 +43,7 @@ void Timer::_notification(int p_what) {
 				autostart = false;
 			}
 		} break;
+
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (!processing || timer_process_callback == TIMER_PROCESS_PHYSICS || !is_processing_internal()) {
 				return;
@@ -58,8 +59,8 @@ void Timer::_notification(int p_what) {
 
 				emit_signal(SNAME("timeout"));
 			}
-
 		} break;
+
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (!processing || timer_process_callback == TIMER_PROCESS_IDLE || !is_physics_processing_internal()) {
 				return;
@@ -74,7 +75,6 @@ void Timer::_notification(int p_what) {
 				}
 				emit_signal(SNAME("timeout"));
 			}
-
 		} break;
 	}
 }

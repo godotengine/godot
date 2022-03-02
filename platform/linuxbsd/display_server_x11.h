@@ -133,7 +133,6 @@ class DisplayServerX11 : public DisplayServer {
 
 		ObjectID instance_id;
 
-		bool menu_type = false;
 		bool no_focus = false;
 
 		//better to guess on the fly, given WM can change it
@@ -143,13 +142,24 @@ class DisplayServerX11 : public DisplayServer {
 		bool borderless = false;
 		bool resize_disabled = false;
 		Vector2i last_position_before_fs;
-		bool focused = false;
+		bool focused = true;
 		bool minimized = false;
+		bool is_popup = false;
+
+		Rect2i parent_safe_rect;
 
 		unsigned int focus_order = 0;
 	};
 
 	Map<WindowID, WindowData> windows;
+
+	unsigned int last_mouse_monitor_mask = 0;
+	Vector2i last_mouse_monitor_pos;
+	uint64_t time_since_popup = 0;
+
+	List<WindowID> popup_list;
+
+	WindowID last_focused_window = INVALID_WINDOW_ID;
 
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
@@ -281,6 +291,10 @@ protected:
 	void _window_changed(XEvent *event);
 
 public:
+	void mouse_process_popups();
+	void popup_open(WindowID p_window);
+	void popup_close(WindowID p_window);
+
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;
 
@@ -301,6 +315,7 @@ public:
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 
 #if defined(DBUS_ENABLED)
@@ -313,6 +328,10 @@ public:
 	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i()) override;
 	virtual void show_window(WindowID p_id) override;
 	virtual void delete_sub_window(WindowID p_id) override;
+
+	virtual WindowID window_get_active_popup() const override;
+	virtual void window_set_popup_safe_rect(WindowID p_window, const Rect2i &p_rect) override;
+	virtual Rect2i window_get_popup_safe_rect(WindowID p_window) const override;
 
 	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const override;
 

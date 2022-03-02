@@ -92,8 +92,9 @@ jobject GodotJavaWrapper::get_activity() {
 
 jobject GodotJavaWrapper::get_member_object(const char *p_name, const char *p_class, JNIEnv *p_env) {
 	if (godot_class) {
-		if (p_env == nullptr)
+		if (p_env == nullptr) {
 			p_env = get_jni_env();
+		}
 
 		ERR_FAIL_COND_V(p_env == nullptr, nullptr);
 
@@ -129,8 +130,9 @@ GodotJavaViewWrapper *GodotJavaWrapper::get_godot_view() {
 
 void GodotJavaWrapper::on_video_init(JNIEnv *p_env) {
 	if (_on_video_init) {
-		if (p_env == nullptr)
+		if (p_env == nullptr) {
 			p_env = get_jni_env();
+		}
 		ERR_FAIL_COND(p_env == nullptr);
 
 		p_env->CallVoidMethod(godot_instance, _on_video_init);
@@ -158,8 +160,9 @@ void GodotJavaWrapper::on_godot_main_loop_started(JNIEnv *p_env) {
 
 void GodotJavaWrapper::restart(JNIEnv *p_env) {
 	if (_restart) {
-		if (p_env == nullptr)
+		if (p_env == nullptr) {
 			p_env = get_jni_env();
+		}
 		ERR_FAIL_COND(p_env == nullptr);
 
 		p_env->CallVoidMethod(godot_instance, _restart);
@@ -168,8 +171,9 @@ void GodotJavaWrapper::restart(JNIEnv *p_env) {
 
 void GodotJavaWrapper::force_quit(JNIEnv *p_env) {
 	if (_finish) {
-		if (p_env == nullptr)
+		if (p_env == nullptr) {
 			p_env = get_jni_env();
+		}
 		ERR_FAIL_COND(p_env == nullptr);
 
 		p_env->CallVoidMethod(godot_instance, _finish);

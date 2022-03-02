@@ -31,8 +31,10 @@
 #ifndef TYPED_ARRAY_H
 #define TYPED_ARRAY_H
 
+#include "core/object/object.h"
 #include "core/variant/array.h"
 #include "core/variant/method_ptrcall.h"
+#include "core/variant/type_info.h"
 #include "core/variant/variant.h"
 
 template <class T>

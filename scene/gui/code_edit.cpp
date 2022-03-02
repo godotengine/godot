@@ -34,14 +34,6 @@
 #include "core/string/string_builder.h"
 #include "core/string/ustring.h"
 
-static bool _is_whitespace(char32_t c) {
-	return c == '\t' || c == ' ';
-}
-
-static bool _is_char(char32_t c) {
-	return !is_symbol(c);
-}
-
 void CodeEdit::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED:
@@ -82,6 +74,7 @@ void CodeEdit::_notification(int p_what) {
 
 			line_length_guideline_color = get_theme_color(SNAME("line_length_guideline_color"));
 		} break;
+
 		case NOTIFICATION_DRAW: {
 			RID ci = get_canvas_item();
 			const Size2 size = get_size();
@@ -92,7 +85,7 @@ void CodeEdit::_notification(int p_what) {
 			if (line_length_guideline_columns.size() > 0) {
 				const int xmargin_beg = style_normal->get_margin(SIDE_LEFT) + get_total_gutter_width();
 				const int xmargin_end = size.width - style_normal->get_margin(SIDE_RIGHT) - (is_drawing_minimap() ? get_minimap_width() : 0);
-				const int char_size = Math::round(font->get_char_size('0', 0, font_size).width);
+				const float char_size = font->get_char_size('0', 0, font_size).width;
 
 				for (int i = 0; i < line_length_guideline_columns.size(); i++) {
 					const int xoffset = xmargin_beg + char_size * (int)line_length_guideline_columns[i] - get_h_scroll();
@@ -232,7 +225,7 @@ void CodeEdit::_notification(int p_what) {
 
 					int begin = 0;
 					int end = 0;
-					if (line.find(String::chr(0xFFFF)) != -1) {
+					if (line.contains(String::chr(0xFFFF))) {
 						begin = font->get_string_size(line.substr(0, line.find(String::chr(0xFFFF))), font_size).x;
 						end = font->get_string_size(line.substr(0, line.rfind(String::chr(0xFFFF))), font_size).x;
 					}
@@ -571,6 +564,8 @@ Control::CursorShape CodeEdit::get_cursor_shape(const Point2 &p_pos) const {
 // Overridable actions
 void CodeEdit::_handle_unicode_input_internal(const uint32_t p_unicode) {
 	bool had_selection = has_selection();
+	String selection_text = (had_selection ? get_selected_text() : "");
+
 	if (had_selection) {
 		begin_complex_operation();
 		delete_selection();
@@ -591,27 +586,38 @@ void CodeEdit::_handle_unicode_input_internal(const uint32_t p_unicode) {
 	if (auto_brace_completion_enabled) {
 		int cl = get_caret_line();
 		int cc = get_caret_column();
-		int caret_move_offset = 1;
 
-		int post_brace_pair = cc < get_line(cl).length() ? _get_auto_brace_pair_close_at_pos(cl, cc) : -1;
-
-		if (has_string_delimiter(chr) && cc > 0 && _is_char(get_line(cl)[cc - 1]) && post_brace_pair == -1) {
-			insert_text_at_caret(chr);
-		} else if (cc < get_line(cl).length() && _is_char(get_line(cl)[cc])) {
-			insert_text_at_caret(chr);
-		} else if (post_brace_pair != -1 && auto_brace_completion_pairs[post_brace_pair].close_key[0] == chr[0]) {
-			caret_move_offset = auto_brace_completion_pairs[post_brace_pair].close_key.length();
-		} else if (is_in_comment(cl, cc) != -1 || (is_in_string(cl, cc) != -1 && has_string_delimiter(chr))) {
-			insert_text_at_caret(chr);
-		} else {
+		if (had_selection) {
 			insert_text_at_caret(chr);
 
-			int pre_brace_pair = _get_auto_brace_pair_open_at_pos(cl, cc + 1);
-			if (pre_brace_pair != -1) {
-				insert_text_at_caret(auto_brace_completion_pairs[pre_brace_pair].close_key);
+			String close_key = get_auto_brace_completion_close_key(chr);
+			if (!close_key.is_empty()) {
+				insert_text_at_caret(selection_text + close_key);
+				set_caret_column(get_caret_column() - 1);
 			}
+		} else {
+			int caret_move_offset = 1;
+
+			int post_brace_pair = cc < get_line(cl).length() ? _get_auto_brace_pair_close_at_pos(cl, cc) : -1;
+
+			if (has_string_delimiter(chr) && cc > 0 && !is_symbol(get_line(cl)[cc - 1]) && post_brace_pair == -1) {
+				insert_text_at_caret(chr);
+			} else if (cc < get_line(cl).length() && !is_symbol(get_line(cl)[cc])) {
+				insert_text_at_caret(chr);
+			} else if (post_brace_pair != -1 && auto_brace_completion_pairs[post_brace_pair].close_key[0] == chr[0]) {
+				caret_move_offset = auto_brace_completion_pairs[post_brace_pair].close_key.length();
+			} else if (is_in_comment(cl, cc) != -1 || (is_in_string(cl, cc) != -1 && has_string_delimiter(chr))) {
+				insert_text_at_caret(chr);
+			} else {
+				insert_text_at_caret(chr);
+
+				int pre_brace_pair = _get_auto_brace_pair_open_at_pos(cl, cc + 1);
+				if (pre_brace_pair != -1) {
+					insert_text_at_caret(auto_brace_completion_pairs[pre_brace_pair].close_key);
+				}
+			}
+			set_caret_column(cc + caret_move_offset);
 		}
-		set_caret_column(cc + caret_move_offset);
 	} else {
 		insert_text_at_caret(chr);
 	}
@@ -988,7 +994,7 @@ void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 			}
 
 			/* Make sure this is the last char, trailing whitespace or comments are okay. */
-			if (should_indent && (!_is_whitespace(c) && is_in_comment(cl, cc) == -1)) {
+			if (should_indent && (!is_whitespace(c) && is_in_comment(cl, cc) == -1)) {
 				should_indent = false;
 			}
 		}
@@ -1804,7 +1810,7 @@ void CodeEdit::request_code_completion(bool p_force) {
 	String line = get_line(get_caret_line());
 	int ofs = CLAMP(get_caret_column(), 0, line.length());
 
-	if (ofs > 0 && (is_in_string(get_caret_line(), ofs) != -1 || _is_char(line[ofs - 1]) || code_completion_prefixes.has(line[ofs - 1]))) {
+	if (ofs > 0 && (is_in_string(get_caret_line(), ofs) != -1 || !is_symbol(line[ofs - 1]) || code_completion_prefixes.has(line[ofs - 1]))) {
 		emit_signal(SNAME("code_completion_requested"));
 	} else if (ofs > 1 && line[ofs - 1] == ' ' && code_completion_prefixes.has(line[ofs - 2])) {
 		emit_signal(SNAME("code_completion_requested"));
@@ -1913,7 +1919,7 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 
 		if (merge_text) {
 			for (; caret_col < line.length(); caret_col++) {
-				if (!_is_char(line[caret_col])) {
+				if (is_symbol(line[caret_col])) {
 					break;
 				}
 			}
@@ -2549,7 +2555,7 @@ int CodeEdit::_is_in_delimiter(int p_line, int p_column, DelimiterType p_type) c
 			region = E->value();
 			in_region = true;
 			for (int i = E->key() - 2; i >= 0; i--) {
-				if (!_is_whitespace(line[i])) {
+				if (!is_whitespace(line[i])) {
 					return -1;
 				}
 			}
@@ -2568,7 +2574,7 @@ int CodeEdit::_is_in_delimiter(int p_line, int p_column, DelimiterType p_type) c
 		}
 
 		for (int i = end_col; i < line.length(); i++) {
-			if (!_is_whitespace(line[i])) {
+			if (!is_whitespace(line[i])) {
 				return -1;
 			}
 		}
@@ -2784,11 +2790,11 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 		while (ofs > 0 && line[ofs] == ' ') {
 			ofs--;
 		}
-		prev_is_word = _is_char(line[ofs]);
+		prev_is_word = !is_symbol(line[ofs]);
 		/* Otherwise get current word and set cofs to the start. */
 	} else {
 		int start_cofs = cofs;
-		while (cofs > 0 && line[cofs - 1] > 32 && (line[cofs - 1] == '/' || _is_char(line[cofs - 1]))) {
+		while (cofs > 0 && line[cofs - 1] > 32 && (line[cofs - 1] == '/' || !is_symbol(line[cofs - 1]))) {
 			cofs--;
 		}
 		string_to_complete = line.substr(cofs, start_cofs - cofs);

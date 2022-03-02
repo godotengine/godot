@@ -192,21 +192,24 @@ Light2D::BlendMode Light2D::get_blend_mode() const {
 }
 
 void Light2D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		RS::get_singleton()->canvas_light_attach_to_canvas(canvas_light, get_canvas());
-		_update_light_visibility();
-	}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			RS::get_singleton()->canvas_light_attach_to_canvas(canvas_light, get_canvas());
+			_update_light_visibility();
+		} break;
 
-	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
-		RS::get_singleton()->canvas_light_set_transform(canvas_light, get_global_transform());
-	}
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		_update_light_visibility();
-	}
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			RS::get_singleton()->canvas_light_set_transform(canvas_light, get_global_transform());
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		RS::get_singleton()->canvas_light_attach_to_canvas(canvas_light, RID());
-		_update_light_visibility();
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			_update_light_visibility();
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			RS::get_singleton()->canvas_light_attach_to_canvas(canvas_light, RID());
+			_update_light_visibility();
+		} break;
 	}
 }
 

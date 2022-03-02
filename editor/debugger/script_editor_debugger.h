@@ -35,12 +35,10 @@
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/editor_debugger_server.h"
-#include "editor/editor_file_dialog.h"
 #include "scene/gui/button.h"
 #include "scene/gui/margin_container.h"
 
 class Tree;
-class EditorNode;
 class LineEdit;
 class TabContainer;
 class RichTextLabel;
@@ -50,6 +48,7 @@ class TreeItem;
 class HSplitContainer;
 class ItemList;
 class EditorProfiler;
+class EditorFileDialog;
 class EditorVisualProfiler;
 class EditorNetworkProfiler;
 class EditorPerformanceProfiler;
@@ -154,8 +153,6 @@ private:
 	EditorVisualProfiler *visual_profiler;
 	EditorNetworkProfiler *network_profiler;
 	EditorPerformanceProfiler *performance_profiler;
-
-	EditorNode *editor;
 
 	OS::ProcessID remote_pid = 0;
 	bool breaked = false;
@@ -298,7 +295,7 @@ public:
 	void unregister_message_capture(const StringName &p_name);
 	bool has_capture(const StringName &p_name);
 
-	ScriptEditorDebugger(EditorNode *p_editor = nullptr);
+	ScriptEditorDebugger();
 	~ScriptEditorDebugger();
 };
 

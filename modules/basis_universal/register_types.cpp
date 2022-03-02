@@ -32,7 +32,6 @@
 
 #include "core/os/os.h"
 #include "servers/rendering_server.h"
-#include "texture_basisu.h"
 
 #ifdef TOOLS_ENABLED
 #include <encoder/basisu_comp.h>
@@ -272,7 +271,6 @@ void register_basis_universal_types() {
 	Image::basis_universal_packer = basis_universal_packer;
 #endif
 	Image::basis_universal_unpacker = basis_universal_unpacker;
-	//GDREGISTER_CLASS(TextureBasisU);
 }
 
 void unregister_basis_universal_types() {

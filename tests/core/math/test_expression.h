@@ -137,7 +137,7 @@ TEST_CASE("[Expression] Scientific notation") {
 			expression.parse("2e5") == OK,
 			"The expression should parse successfully.");
 	CHECK_MESSAGE(
-			Math::is_equal_approx(double(expression.execute()), 25),
+			Math::is_equal_approx(double(expression.execute()), 2e5),
 			"The expression should return the expected result.");
 
 	CHECK_MESSAGE(

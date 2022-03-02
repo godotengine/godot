@@ -33,13 +33,11 @@
 
 #if TOOLS_ENABLED
 #include "editor/editor_plugin.h"
-
 #include "editor_scene_importer_gltf.h"
 
 class SceneExporterGLTFPlugin : public EditorPlugin {
 	GDCLASS(SceneExporterGLTFPlugin, EditorPlugin);
 
-	EditorNode *editor = nullptr;
 	EditorFileDialog *file_export_lib = nullptr;
 	void _gltf2_dialog_action(String p_file);
 	void convert_scene_to_gltf2();
@@ -47,7 +45,7 @@ class SceneExporterGLTFPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const override;
 	bool has_main_screen() const override;
-	SceneExporterGLTFPlugin(class EditorNode *p_node);
+	SceneExporterGLTFPlugin();
 };
 #endif // TOOLS_ENABLED
 #endif // EDITOR_SCENE_EXPORTER_GLTF_PLUGIN_H

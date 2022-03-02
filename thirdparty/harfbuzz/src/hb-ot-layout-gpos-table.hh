@@ -706,7 +706,7 @@ struct MarkArray : Array16Of<MarkRecord>	/* Array of MarkRecords--in Coverage or
 
     float mark_x, mark_y, base_x, base_y;
 
-    buffer->unsafe_to_break (glyph_pos, buffer->idx);
+    buffer->unsafe_to_break (glyph_pos, buffer->idx + 1);
     mark_anchor.get_anchor (c, buffer->cur().codepoint, &mark_x, &mark_y);
     glyph_anchor.get_anchor (c, buffer->info[glyph_pos].codepoint, &base_x, &base_y);
 
@@ -1235,6 +1235,7 @@ struct PairSet
       buffer->idx = pos;
       return_trace (true);
     }
+    buffer->unsafe_to_concat (buffer->idx, pos + 1);
     return_trace (false);
   }
 
@@ -1362,7 +1363,12 @@ struct PairPosFormat1
 
     hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
     skippy_iter.reset (buffer->idx, 1);
-    if (!skippy_iter.next ()) return_trace (false);
+    unsigned unsafe_to;
+    if (!skippy_iter.next (&unsafe_to))
+    {
+      buffer->unsafe_to_concat (buffer->idx, unsafe_to);
+      return_trace (false);
+    }
 
     return_trace ((this+pairSet[index]).apply (c, valueFormat, skippy_iter.idx));
   }
@@ -1555,7 +1561,12 @@ struct PairPosFormat2
 
     hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
     skippy_iter.reset (buffer->idx, 1);
-    if (!skippy_iter.next ()) return_trace (false);
+    unsigned unsafe_to;
+    if (!skippy_iter.next (&unsafe_to))
+    {
+      buffer->unsafe_to_concat (buffer->idx, unsafe_to);
+      return_trace (false);
+    }
 
     unsigned int len1 = valueFormat1.get_len ();
     unsigned int len2 = valueFormat2.get_len ();
@@ -1563,13 +1574,89 @@ struct PairPosFormat2
 
     unsigned int klass1 = (this+classDef1).get_class (buffer->cur().codepoint);
     unsigned int klass2 = (this+classDef2).get_class (buffer->info[skippy_iter.idx].codepoint);
-    if (unlikely (klass1 >= class1Count || klass2 >= class2Count)) return_trace (false);
+    if (unlikely (klass1 >= class1Count || klass2 >= class2Count))
+    {
+      buffer->unsafe_to_concat (buffer->idx, skippy_iter.idx + 1);
+      return_trace (false);
+    }
 
     const Value *v = &values[record_len * (klass1 * class2Count + klass2)];
-    bool applied_first = valueFormat1.apply_value (c, this, v, buffer->cur_pos());
-    bool applied_second = valueFormat2.apply_value (c, this, v + len1, buffer->pos[skippy_iter.idx]);
+
+    bool applied_first = false, applied_second = false;
+
+
+    /* Isolate simple kerning and apply it half to each side.
+     * Results in better cursor positinoing / underline drawing.
+     *
+     * Disabled, because causes issues... :-(
+     * https://github.com/harfbuzz/harfbuzz/issues/3408
+     * https://github.com/harfbuzz/harfbuzz/pull/3235#issuecomment-1029814978
+     */
+#ifndef HB_SPLIT_KERN
+    if (0)
+#endif
+    {
+      if (!len2)
+      {
+	const hb_direction_t dir = buffer->props.direction;
+	const bool horizontal = HB_DIRECTION_IS_HORIZONTAL (dir);
+	const bool backward = HB_DIRECTION_IS_BACKWARD (dir);
+	unsigned mask = horizontal ? ValueFormat::xAdvance : ValueFormat::yAdvance;
+	if (backward)
+	  mask |= mask >> 2; /* Add eg. xPlacement in RTL. */
+	/* Add Devices. */
+	mask |= mask << 4;
+
+	if (valueFormat1 & ~mask)
+	  goto bail;
+
+	/* Is simple kern. Apply value on an empty position slot,
+	 * then split it between sides. */
+
+	hb_glyph_position_t pos{};
+	if (valueFormat1.apply_value (c, this, v, pos))
+	{
+	  hb_position_t *src  = &pos.x_advance;
+	  hb_position_t *dst1 = &buffer->cur_pos().x_advance;
+	  hb_position_t *dst2 = &buffer->pos[skippy_iter.idx].x_advance;
+	  unsigned i = horizontal ? 0 : 1;
+
+	  hb_position_t kern  = src[i];
+	  hb_position_t kern1 = kern >> 1;
+	  hb_position_t kern2 = kern - kern1;
+
+	  if (!backward)
+	  {
+	    dst1[i] += kern1;
+	    dst2[i] += kern2;
+	    dst2[i + 2] += kern2;
+	  }
+	  else
+	  {
+	    dst1[i] += kern1;
+	    dst1[i + 2] += src[i + 2] - kern2;
+	    dst2[i] += kern2;
+	  }
+
+	  applied_first = applied_second = kern != 0;
+	  goto success;
+	}
+	goto boring;
+      }
+    }
+    bail:
+
+
+    applied_first = valueFormat1.apply_value (c, this, v, buffer->cur_pos());
+    applied_second = valueFormat2.apply_value (c, this, v + len1, buffer->pos[skippy_iter.idx]);
+
+    success:
     if (applied_first || applied_second)
       buffer->unsafe_to_break (buffer->idx, skippy_iter.idx + 1);
+    else
+    boring:
+      buffer->unsafe_to_concat (buffer->idx, skippy_iter.idx + 1);
+
 
     buffer->idx = skippy_iter.idx;
     if (len2)
@@ -1799,10 +1886,19 @@ struct CursivePosFormat1
 
     hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
     skippy_iter.reset (buffer->idx, 1);
-    if (!skippy_iter.prev ()) return_trace (false);
+    unsigned unsafe_from;
+    if (!skippy_iter.prev (&unsafe_from))
+    {
+      buffer->unsafe_to_concat_from_outbuffer (unsafe_from, buffer->idx + 1);
+      return_trace (false);
+    }
 
     const EntryExitRecord &prev_record = entryExitRecord[(this+coverage).get_coverage  (buffer->info[skippy_iter.idx].codepoint)];
-    if (!prev_record.exitAnchor) return_trace (false);
+    if (!prev_record.exitAnchor)
+    {
+      buffer->unsafe_to_concat_from_outbuffer (skippy_iter.idx, buffer->idx + 1);
+      return_trace (false);
+    }
 
     unsigned int i = skippy_iter.idx;
     unsigned int j = buffer->idx;
@@ -2066,7 +2162,13 @@ struct MarkBasePosFormat1
     skippy_iter.reset (buffer->idx, 1);
     skippy_iter.set_lookup_props (LookupFlag::IgnoreMarks);
     do {
-      if (!skippy_iter.prev ()) return_trace (false);
+      unsigned unsafe_from;
+      if (!skippy_iter.prev (&unsafe_from))
+      {
+	buffer->unsafe_to_concat_from_outbuffer (unsafe_from, buffer->idx + 1);
+	return_trace (false);
+      }
+
       /* We only want to attach to the first of a MultipleSubst sequence.
        * https://github.com/harfbuzz/harfbuzz/issues/740
        * Reject others...
@@ -2089,7 +2191,11 @@ struct MarkBasePosFormat1
     //if (!_hb_glyph_info_is_base_glyph (&buffer->info[skippy_iter.idx])) { return_trace (false); }
 
     unsigned int base_index = (this+baseCoverage).get_coverage  (buffer->info[skippy_iter.idx].codepoint);
-    if (base_index == NOT_COVERED) return_trace (false);
+    if (base_index == NOT_COVERED)
+    {
+      buffer->unsafe_to_concat_from_outbuffer (skippy_iter.idx, buffer->idx + 1);
+      return_trace (false);
+    }
 
     return_trace ((this+markArray).apply (c, mark_index, base_index, this+baseArray, classCount, skippy_iter.idx));
   }
@@ -2320,21 +2426,34 @@ struct MarkLigPosFormat1
     hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
     skippy_iter.reset (buffer->idx, 1);
     skippy_iter.set_lookup_props (LookupFlag::IgnoreMarks);
-    if (!skippy_iter.prev ()) return_trace (false);
+    unsigned unsafe_from;
+    if (!skippy_iter.prev (&unsafe_from))
+    {
+      buffer->unsafe_to_concat_from_outbuffer (unsafe_from, buffer->idx + 1);
+      return_trace (false);
+    }
 
     /* Checking that matched glyph is actually a ligature by GDEF is too strong; disabled */
     //if (!_hb_glyph_info_is_ligature (&buffer->info[skippy_iter.idx])) { return_trace (false); }
 
     unsigned int j = skippy_iter.idx;
     unsigned int lig_index = (this+ligatureCoverage).get_coverage  (buffer->info[j].codepoint);
-    if (lig_index == NOT_COVERED) return_trace (false);
+    if (lig_index == NOT_COVERED)
+    {
+      buffer->unsafe_to_concat_from_outbuffer (skippy_iter.idx, buffer->idx + 1);
+      return_trace (false);
+    }
 
     const LigatureArray& lig_array = this+ligatureArray;
     const LigatureAttach& lig_attach = lig_array[lig_index];
 
     /* Find component to attach to */
     unsigned int comp_count = lig_attach.rows;
-    if (unlikely (!comp_count)) return_trace (false);
+    if (unlikely (!comp_count))
+    {
+      buffer->unsafe_to_concat_from_outbuffer (skippy_iter.idx, buffer->idx + 1);
+      return_trace (false);
+    }
 
     /* We must now check whether the ligature ID of the current mark glyph
      * is identical to the ligature ID of the found ligature.  If yes, we
@@ -2517,9 +2636,18 @@ struct MarkMarkPosFormat1
     hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
     skippy_iter.reset (buffer->idx, 1);
     skippy_iter.set_lookup_props (c->lookup_props & ~LookupFlag::IgnoreFlags);
-    if (!skippy_iter.prev ()) return_trace (false);
+    unsigned unsafe_from;
+    if (!skippy_iter.prev (&unsafe_from))
+    {
+      buffer->unsafe_to_concat_from_outbuffer (unsafe_from, buffer->idx + 1);
+      return_trace (false);
+    }
 
-    if (!_hb_glyph_info_is_mark (&buffer->info[skippy_iter.idx])) { return_trace (false); }
+    if (!_hb_glyph_info_is_mark (&buffer->info[skippy_iter.idx]))
+    {
+      buffer->unsafe_to_concat_from_outbuffer (skippy_iter.idx, buffer->idx + 1);
+      return_trace (false);
+    }
 
     unsigned int j = skippy_iter.idx;
 
@@ -2544,11 +2672,16 @@ struct MarkMarkPosFormat1
     }
 
     /* Didn't match. */
+    buffer->unsafe_to_concat_from_outbuffer (skippy_iter.idx, buffer->idx + 1);
     return_trace (false);
 
     good:
     unsigned int mark2_index = (this+mark2Coverage).get_coverage  (buffer->info[j].codepoint);
-    if (mark2_index == NOT_COVERED) return_trace (false);
+    if (mark2_index == NOT_COVERED)
+    {
+      buffer->unsafe_to_concat_from_outbuffer (skippy_iter.idx, buffer->idx + 1);
+      return_trace (false);
+    }
 
     return_trace ((this+mark1Array).apply (c, mark1_index, mark2_index, this+mark2Array, classCount, j));
   }
@@ -2951,7 +3084,7 @@ GPOS::position_finish_advances (hb_font_t *font HB_UNUSED, hb_buffer_t *buffer H
 }
 
 void
-GPOS::position_finish_offsets (hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
+GPOS::position_finish_offsets (hb_font_t *font, hb_buffer_t *buffer)
 {
   _hb_buffer_assert_gsubgpos_vars (buffer);
 
@@ -2961,12 +3094,21 @@ GPOS::position_finish_offsets (hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
 
   /* Handle attachments */
   if (buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT)
-    for (unsigned int i = 0; i < len; i++)
+    for (unsigned i = 0; i < len; i++)
       propagate_attachment_offsets (pos, len, i, direction);
+
+  if (unlikely (font->slant))
+  {
+    for (unsigned i = 0; i < len; i++)
+      if (unlikely (pos[i].y_offset))
+        pos[i].x_offset += _hb_roundf (font->slant_xy * pos[i].y_offset);
+  }
 }
 
 
-struct GPOS_accelerator_t : GPOS::accelerator_t {};
+struct GPOS_accelerator_t : GPOS::accelerator_t {
+  GPOS_accelerator_t (hb_face_t *face) : GPOS::accelerator_t (face) {}
+};
 
 
 /* Out-of-class implementation for methods recursing */

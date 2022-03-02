@@ -34,7 +34,6 @@
 #include "core/io/dir_access.h"
 #include "core/os/thread.h"
 #include "editor/editor_export.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_properties.h"
@@ -53,7 +52,7 @@
 #include "scene/gui/tree.h"
 #include "scene/main/timer.h"
 
-class EditorNode;
+class EditorFileDialog;
 
 class ProjectExportDialog : public ConfirmationDialog {
 	GDCLASS(ProjectExportDialog, ConfirmationDialog);
@@ -84,8 +83,6 @@ private:
 
 	Label *include_label;
 	MarginContainer *include_margin;
-
-	StringName editor_icons;
 
 	Button *export_button;
 	Button *export_all_button;

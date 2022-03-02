@@ -49,16 +49,11 @@ public:
 private:
 	typedef DebuggerMarshalls::OutputError ErrorMessage;
 
-	struct NetworkProfiler;
-	struct ServersProfiler;
-	struct ScriptsProfiler;
-	struct VisualProfiler;
-	struct PerformanceProfiler;
+	class MultiplayerProfiler;
+	class PerformanceProfiler;
 
-	NetworkProfiler *network_profiler = nullptr;
-	ServersProfiler *servers_profiler = nullptr;
-	VisualProfiler *visual_profiler = nullptr;
-	PerformanceProfiler *performance_profiler = nullptr;
+	Ref<MultiplayerProfiler> multiplayer_profiler;
+	Ref<PerformanceProfiler> performance_profiler;
 
 	Ref<RemoteDebuggerPeer> peer;
 
@@ -97,7 +92,6 @@ private:
 	bool is_peer_connected() { return peer->is_peer_connected(); }
 	void flush_output();
 
-	void _send_resource_usage();
 	void _send_stack_vars(List<String> &p_names, List<Variant> &p_vals, int p_type);
 
 	Error _profiler_capture(const String &p_cmd, const Array &p_data, bool &r_captured);

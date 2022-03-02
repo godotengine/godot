@@ -45,17 +45,20 @@ GDScriptLanguageServer::GDScriptLanguageServer() {
 
 void GDScriptLanguageServer::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_ENTER_TREE: {
 			start();
-			break;
-		case NOTIFICATION_EXIT_TREE:
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
 			stop();
-			break;
+		} break;
+
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (started && !use_thread) {
 				protocol.poll();
 			}
 		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			String host = String(_EDITOR_GET("network/language_server/remote_host"));
 			int port = (int)_EDITOR_GET("network/language_server/remote_port");

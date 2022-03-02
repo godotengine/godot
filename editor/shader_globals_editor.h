@@ -36,7 +36,6 @@
 #include "editor/editor_data.h"
 #include "editor/editor_plugin_settings.h"
 #include "editor/editor_sectioned_inspector.h"
-#include "scene/gui/dialogs.h"
 #include "scene/gui/tab_container.h"
 
 class ShaderGlobalsEditorInterface;

@@ -226,6 +226,14 @@ public class GodotIO {
 		return (int)(metrics.density * 160f);
 	}
 
+	public double getScreenRefreshRate(double fallback) {
+		Display display = activity.getWindowManager().getDefaultDisplay();
+		if (display != null) {
+			return display.getRefreshRate();
+		}
+		return fallback;
+	}
+
 	public int[] screenGetUsableRect() {
 		DisplayMetrics metrics = activity.getResources().getDisplayMetrics();
 		Display display = activity.getWindowManager().getDefaultDisplay();

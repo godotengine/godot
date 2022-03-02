@@ -180,6 +180,24 @@ namespace Godot
         }
 
         /// <summary>
+        /// Cubic interpolates between two values by a normalized value with pre and post values.
+        /// </summary>
+        /// <param name="from">The start value for interpolation.</param>
+        /// <param name="to">The destination value for interpolation.</param>
+        /// <param name="pre">The value which before "from" value for interpolation.</param>
+        /// <param name="post">The value which after "to" value for interpolation.</param>
+        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
+        /// <returns>The resulting value of the interpolation.</returns>
+        public static real_t CubicInterpolate(real_t from, real_t to, real_t pre, real_t post, real_t weight)
+        {
+            return 0.5f *
+                    ((from * 2.0f) +
+                            (-pre + to) * weight +
+                            (2.0f * pre - 5.0f * from + 4.0f * to - post) * (weight * weight) +
+                            (-pre + 3.0f * from - 3.0f * to + post) * (weight * weight * weight));
+        }
+
+        /// <summary>
         /// Converts an angle expressed in degrees to radians.
         /// </summary>
         /// <param name="deg">An angle expressed in degrees.</param>

@@ -35,7 +35,6 @@
 #include "editor/editor_data.h"
 #include "editor/groups_editor.h"
 #include "editor/quick_open.h"
-#include "editor/rename_dialog.h"
 #include "editor/reparent_dialog.h"
 #include "editor/script_create_dialog.h"
 #include "scene/animation/animation_player.h"
@@ -48,8 +47,10 @@
 #include "scene_tree_editor.h"
 
 #include "modules/modules_enabled.gen.h" // For regex.
+#ifdef MODULE_REGEX_ENABLED
+class RenameDialog;
+#endif // MODULE_REGEX_ENABLED
 
-class EditorNode;
 class ShaderCreateDialog;
 
 class SceneTreeDock : public VBoxContainer {
@@ -171,7 +172,6 @@ class SceneTreeDock : public VBoxContainer {
 	void _do_create(Node *p_parent);
 	Node *scene_root;
 	Node *edited_scene;
-	EditorNode *editor;
 
 	VBoxContainer *create_root_dialog;
 	String selected_favorite_root;
@@ -319,7 +319,7 @@ public:
 
 	ScriptCreateDialog *get_script_create_dialog() { return script_create_dialog; }
 
-	SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSelection *p_editor_selection, EditorData &p_editor_data);
+	SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selection, EditorData &p_editor_data);
 	~SceneTreeDock();
 };
 

@@ -656,31 +656,37 @@ void LineEdit::_notification(int p_what) {
 			}
 		} break;
 #endif
+
 		case NOTIFICATION_RESIZED: {
 			_fit_to_width();
 			scroll_offset = 0;
 			set_caret_column(get_caret_column());
 		} break;
+
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
 			_shape();
 			update();
 		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			placeholder_translated = atr(placeholder);
 			_shape();
 			update();
 		} break;
+
 		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
 			window_has_focus = true;
 			draw_caret = true;
 			update();
 		} break;
+
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
 			window_has_focus = false;
 			draw_caret = false;
 			update();
 		} break;
+
 		case NOTIFICATION_DRAW: {
 			if ((!has_focus() && !(menu && menu->has_focus()) && !caret_force_displayed) || !window_has_focus) {
 				draw_caret = false;
@@ -752,7 +758,7 @@ void LineEdit::_notification(int p_what) {
 
 			// Draw placeholder color.
 			if (using_placeholder) {
-				font_color.a *= placeholder_alpha;
+				font_color = get_theme_color(SNAME("font_placeholder_color"));
 			}
 
 			bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
@@ -923,6 +929,7 @@ void LineEdit::_notification(int p_what) {
 				}
 			}
 		} break;
+
 		case NOTIFICATION_FOCUS_ENTER: {
 			if (!caret_force_displayed) {
 				if (caret_blink_enabled) {
@@ -942,6 +949,7 @@ void LineEdit::_notification(int p_what) {
 
 			show_virtual_keyboard();
 		} break;
+
 		case NOTIFICATION_FOCUS_EXIT: {
 			if (caret_blink_enabled && !caret_force_displayed) {
 				caret_blink_timer->stop();
@@ -964,6 +972,7 @@ void LineEdit::_notification(int p_what) {
 				deselect();
 			}
 		} break;
+
 		case MainLoop::NOTIFICATION_OS_IME_UPDATE: {
 			if (has_focus()) {
 				ime_text = DisplayServer::get_singleton()->ime_get_text();
@@ -974,10 +983,12 @@ void LineEdit::_notification(int p_what) {
 				update();
 			}
 		} break;
-		case Control::NOTIFICATION_DRAG_BEGIN: {
+
+		case NOTIFICATION_DRAG_BEGIN: {
 			drag_action = true;
 		} break;
-		case Control::NOTIFICATION_DRAG_END: {
+
+		case NOTIFICATION_DRAG_END: {
 			if (is_drag_successful()) {
 				if (selection.drag_attempt) {
 					selection.drag_attempt = false;
@@ -1476,15 +1487,6 @@ String LineEdit::get_placeholder() const {
 	return placeholder;
 }
 
-void LineEdit::set_placeholder_alpha(float p_alpha) {
-	placeholder_alpha = p_alpha;
-	update();
-}
-
-float LineEdit::get_placeholder_alpha() const {
-	return placeholder_alpha;
-}
-
 void LineEdit::set_caret_column(int p_column) {
 	if (p_column > (int)text.length()) {
 		p_column = text.length();
@@ -1615,7 +1617,7 @@ Size2 LineEdit::get_minimum_size() const {
 	Size2 min_size;
 
 	// Minimum size of text.
-	int em_space_size = font->get_char_size('M', 0, font_size).x;
+	float em_space_size = font->get_char_size('M', 0, font_size).x;
 	min_size.width = get_theme_constant(SNAME("minimum_character_width")) * em_space_size;
 
 	if (expand_to_text_length) {
@@ -2245,8 +2247,6 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override_options"), &LineEdit::get_structured_text_bidi_override_options);
 	ClassDB::bind_method(D_METHOD("set_placeholder", "text"), &LineEdit::set_placeholder);
 	ClassDB::bind_method(D_METHOD("get_placeholder"), &LineEdit::get_placeholder);
-	ClassDB::bind_method(D_METHOD("set_placeholder_alpha", "alpha"), &LineEdit::set_placeholder_alpha);
-	ClassDB::bind_method(D_METHOD("get_placeholder_alpha"), &LineEdit::get_placeholder_alpha);
 	ClassDB::bind_method(D_METHOD("set_caret_column", "position"), &LineEdit::set_caret_column);
 	ClassDB::bind_method(D_METHOD("get_caret_column"), &LineEdit::get_caret_column);
 	ClassDB::bind_method(D_METHOD("get_scroll_offset"), &LineEdit::get_scroll_offset);
@@ -2328,6 +2328,7 @@ void LineEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(MENU_MAX);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text"), "set_text", "get_text");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "placeholder_text"), "set_placeholder", "get_placeholder");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_length", PROPERTY_HINT_RANGE, "0,1000,1,or_greater"), "set_max_length", "get_max_length");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
@@ -2349,9 +2350,6 @@ void LineEdit::_bind_methods() {
 	ADD_GROUP("Structured Text", "structured_text_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "structured_text_bidi_override", PROPERTY_HINT_ENUM, "Default,URI,File,Email,List,None,Custom"), "set_structured_text_bidi_override", "get_structured_text_bidi_override");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "structured_text_bidi_override_options"), "set_structured_text_bidi_override_options", "get_structured_text_bidi_override_options");
-	ADD_GROUP("Placeholder", "placeholder_");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "placeholder_text"), "set_placeholder", "get_placeholder");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "placeholder_alpha", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_placeholder_alpha", "get_placeholder_alpha");
 	ADD_GROUP("Caret", "caret_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_blink"), "set_caret_blink_enabled", "is_caret_blink_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "caret_blink_speed", PROPERTY_HINT_RANGE, "0.1,10,0.01"), "set_caret_blink_speed", "get_caret_blink_speed");

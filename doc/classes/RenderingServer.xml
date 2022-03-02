@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RenderingServer" inherits="Object" version="4.0">
+<class name="RenderingServer" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Server for anything visible.
 	</brief_description>
@@ -1455,6 +1455,9 @@
 			<argument index="1" name="transparency" type="float" />
 			<description>
 				Sets the transparency for the given geometry instance. Equivalent to [member GeometryInstance3D.transparency].
+				A transparency of [code]0.0[/code] is fully opaque, while [code]1.0[/code] is fully transparent. Values greater than [code]0.0[/code] (exclusive) will force the geometry's materials to go through the transparent pipeline, which is slower to render and can exhibit rendering issues due to incorrect transparency sorting. However, unlike using a transparent material, setting [code]transparency[/code] to a value greater than [code]0.0[/code] (exclusive) will [i]not[/i] disable shadow rendering.
+				In spatial shaders, [code]1.0 - transparency[/code] is set as the default value of the [code]ALPHA[/code] built-in.
+				[b]Note:[/b] [code]transparency[/code] is clamped between [code]0.0[/code] and [code]1.0[/code], so this property cannot be used to make transparent materials more opaque than they originally are.
 			</description>
 		</method>
 		<method name="instance_geometry_set_visibility_range">
@@ -3626,7 +3629,7 @@
 		<constant name="ARRAY_FORMAT_INDEX" value="4096" enum="ArrayFormat">
 			Flag used to mark an index array.
 		</constant>
-		<constant name="ARRAY_FORMAT_BLEND_SHAPE_MASK" value="2147475463" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_BLEND_SHAPE_MASK" value="7" enum="ArrayFormat">
 		</constant>
 		<constant name="ARRAY_FORMAT_CUSTOM_BASE" value="13" enum="ArrayFormat">
 		</constant>
@@ -4143,13 +4146,17 @@
 		<constant name="ENV_TONE_MAPPER_ACES" value="3" enum="EnvironmentToneMapper">
 			Use the ACES tonemapper.
 		</constant>
-		<constant name="ENV_SSR_ROUGNESS_QUALITY_DISABLED" value="0" enum="EnvironmentSSRRoughnessQuality">
+		<constant name="ENV_SSR_ROUGHNESS_QUALITY_DISABLED" value="0" enum="EnvironmentSSRRoughnessQuality">
+			Lowest quality of roughness filter for screen-space reflections. Rough materials will not have blurrier screen-space reflections compared to smooth (non-rough) materials. This is the fastest option.
 		</constant>
-		<constant name="ENV_SSR_ROUGNESS_QUALITY_LOW" value="1" enum="EnvironmentSSRRoughnessQuality">
+		<constant name="ENV_SSR_ROUGHNESS_QUALITY_LOW" value="1" enum="EnvironmentSSRRoughnessQuality">
+			Low quality of roughness filter for screen-space reflections.
 		</constant>
-		<constant name="ENV_SSR_ROUGNESS_QUALITY_MEDIUM" value="2" enum="EnvironmentSSRRoughnessQuality">
+		<constant name="ENV_SSR_ROUGHNESS_QUALITY_MEDIUM" value="2" enum="EnvironmentSSRRoughnessQuality">
+			Medium quality of roughness filter for screen-space reflections.
 		</constant>
-		<constant name="ENV_SSR_ROUGNESS_QUALITY_HIGH" value="3" enum="EnvironmentSSRRoughnessQuality">
+		<constant name="ENV_SSR_ROUGHNESS_QUALITY_HIGH" value="3" enum="EnvironmentSSRRoughnessQuality">
+			High quality of roughness filter for screen-space reflections. This is the slowest option.
 		</constant>
 		<constant name="ENV_SSAO_QUALITY_VERY_LOW" value="0" enum="EnvironmentSSAOQuality">
 			Lowest quality of screen-space ambient occlusion.
@@ -4181,11 +4188,11 @@
 		<constant name="ENV_SSIL_QUALITY_ULTRA" value="4" enum="EnvironmentSSILQuality">
 			Highest quality screen-space indirect lighting. Uses the adaptive target setting which can be dynamically adjusted to smoothly balance performance and visual quality.
 		</constant>
-		<constant name="ENV_SDFGI_Y_SCALE_DISABLED" value="0" enum="EnvironmentSDFGIYScale">
+		<constant name="ENV_SDFGI_Y_SCALE_50_PERCENT" value="0" enum="EnvironmentSDFGIYScale">
 		</constant>
 		<constant name="ENV_SDFGI_Y_SCALE_75_PERCENT" value="1" enum="EnvironmentSDFGIYScale">
 		</constant>
-		<constant name="ENV_SDFGI_Y_SCALE_50_PERCENT" value="2" enum="EnvironmentSDFGIYScale">
+		<constant name="ENV_SDFGI_Y_SCALE_100_PERCENT" value="2" enum="EnvironmentSDFGIYScale">
 		</constant>
 		<constant name="ENV_SDFGI_RAY_COUNT_4" value="0" enum="EnvironmentSDFGIRayCount">
 		</constant>

@@ -32,6 +32,9 @@
 
 #include "canvas_item_editor_plugin.h"
 #include "core/io/image_loader.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
+#include "editor/scene_tree_dock.h"
 #include "scene/2d/cpu_particles_2d.h"
 #include "scene/gui/separator.h"
 #include "scene/resources/particles_material.h"
@@ -58,7 +61,7 @@ void GPUParticles2DEditorPlugin::_file_selected(const String &p_file) {
 }
 
 void GPUParticles2DEditorPlugin::_selection_changed() {
-	List<Node *> selected_nodes = editor->get_editor_selection()->get_selected_node_list();
+	List<Node *> selected_nodes = EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list();
 
 	if (selected_particles.is_empty() && selected_nodes.is_empty()) {
 		return;
@@ -351,21 +354,22 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 }
 
 void GPUParticles2DEditorPlugin::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		menu->get_popup()->connect("id_pressed", callable_mp(this, &GPUParticles2DEditorPlugin::_menu_callback));
-		menu->set_icon(menu->get_theme_icon(SNAME("GPUParticles2D"), SNAME("EditorIcons")));
-		file->connect("file_selected", callable_mp(this, &GPUParticles2DEditorPlugin::_file_selected));
-		EditorNode::get_singleton()->get_editor_selection()->connect("selection_changed", callable_mp(this, &GPUParticles2DEditorPlugin::_selection_changed));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			menu->get_popup()->connect("id_pressed", callable_mp(this, &GPUParticles2DEditorPlugin::_menu_callback));
+			menu->set_icon(menu->get_theme_icon(SNAME("GPUParticles2D"), SNAME("EditorIcons")));
+			file->connect("file_selected", callable_mp(this, &GPUParticles2DEditorPlugin::_file_selected));
+			EditorNode::get_singleton()->get_editor_selection()->connect("selection_changed", callable_mp(this, &GPUParticles2DEditorPlugin::_selection_changed));
+		} break;
 	}
 }
 
 void GPUParticles2DEditorPlugin::_bind_methods() {
 }
 
-GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin(EditorNode *p_node) {
+GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 	particles = nullptr;
-	editor = p_node;
-	undo_redo = editor->get_undo_redo();
+	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	toolbar = memnew(HBoxContainer);
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_MENU, toolbar);

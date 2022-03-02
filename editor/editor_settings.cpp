@@ -31,18 +31,22 @@
 #include "editor_settings.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input_event.h"
 #include "core/input/input_map.h"
+#include "core/input/shortcut.h"
 #include "core/io/certs_compressed.gen.h"
-#include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/ip.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "core/string/translation.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_translation.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
@@ -369,7 +373,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 			// Skip locales which we can't render properly (see above comment).
 			// Test against language code without regional variants (e.g. ur_PK).
 			String lang_code = locale.get_slice("_", 0);
-			if (locales_to_skip.find(lang_code) != -1) {
+			if (locales_to_skip.has(lang_code)) {
 				continue;
 			}
 
@@ -415,6 +419,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 #else
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/font_hinting", 0, "Auto (Light),None,Light,Normal")
 #endif
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/font_subpixel_positioning", 1, "Disabled,Auto,One half of a pixel,One quarter of a pixel")
+
 	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/editor/main_font", "", "*.ttf,*.otf")
 	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/editor/main_font_bold", "", "*.ttf,*.otf")
 	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "interface/editor/code_font", "", "*.ttf,*.otf")
@@ -741,7 +747,7 @@ void EditorSettings::_load_godot2_text_editor_theme() {
 	_initial_set("text_editor/theme/highlighting/completion_background_color", Color(0.17, 0.16, 0.2));
 	_initial_set("text_editor/theme/highlighting/completion_selected_color", Color(0.26, 0.26, 0.27));
 	_initial_set("text_editor/theme/highlighting/completion_existing_color", Color(0.87, 0.87, 0.87, 0.13));
-	_initial_set("text_editor/theme/highlighting/completion_scroll_color", Color(1, 1, 1));
+	_initial_set("text_editor/theme/highlighting/completion_scroll_color", Color(1, 1, 1, 0.29));
 	_initial_set("text_editor/theme/highlighting/completion_font_color", Color(0.67, 0.67, 0.67));
 	_initial_set("text_editor/theme/highlighting/text_color", Color(0.67, 0.67, 0.67));
 	_initial_set("text_editor/theme/highlighting/line_number_color", Color(0.67, 0.67, 0.67, 0.4));
@@ -845,7 +851,7 @@ void EditorSettings::create() {
 
 		singleton->setup_language();
 		singleton->setup_network();
-		singleton->load_favorites();
+		singleton->load_favorites_and_recent_dirs();
 		singleton->list_text_editor_themes();
 
 		return;
@@ -1103,7 +1109,13 @@ Variant EditorSettings::get_project_metadata(const String &p_section, const Stri
 
 void EditorSettings::set_favorites(const Vector<String> &p_favorites) {
 	favorites = p_favorites;
-	FileAccess *f = FileAccess::open(get_project_settings_dir().plus_file("favorites"), FileAccess::WRITE);
+	String favorites_file;
+	if (Engine::get_singleton()->is_project_manager_hint()) {
+		favorites_file = EditorPaths::get_singleton()->get_config_dir().plus_file("favorite_dirs");
+	} else {
+		favorites_file = get_project_settings_dir().plus_file("favorites");
+	}
+	FileAccess *f = FileAccess::open(favorites_file, FileAccess::WRITE);
 	if (f) {
 		for (int i = 0; i < favorites.size(); i++) {
 			f->store_line(favorites[i]);
@@ -1118,7 +1130,13 @@ Vector<String> EditorSettings::get_favorites() const {
 
 void EditorSettings::set_recent_dirs(const Vector<String> &p_recent_dirs) {
 	recent_dirs = p_recent_dirs;
-	FileAccess *f = FileAccess::open(get_project_settings_dir().plus_file("recent_dirs"), FileAccess::WRITE);
+	String recent_dirs_file;
+	if (Engine::get_singleton()->is_project_manager_hint()) {
+		recent_dirs_file = EditorPaths::get_singleton()->get_config_dir().plus_file("recent_dirs");
+	} else {
+		recent_dirs_file = get_project_settings_dir().plus_file("recent_dirs");
+	}
+	FileAccess *f = FileAccess::open(recent_dirs_file, FileAccess::WRITE);
 	if (f) {
 		for (int i = 0; i < recent_dirs.size(); i++) {
 			f->store_line(recent_dirs[i]);
@@ -1131,8 +1149,17 @@ Vector<String> EditorSettings::get_recent_dirs() const {
 	return recent_dirs;
 }
 
-void EditorSettings::load_favorites() {
-	FileAccess *f = FileAccess::open(get_project_settings_dir().plus_file("favorites"), FileAccess::READ);
+void EditorSettings::load_favorites_and_recent_dirs() {
+	String favorites_file;
+	String recent_dirs_file;
+	if (Engine::get_singleton()->is_project_manager_hint()) {
+		favorites_file = EditorPaths::get_singleton()->get_config_dir().plus_file("favorite_dirs");
+		recent_dirs_file = EditorPaths::get_singleton()->get_config_dir().plus_file("recent_dirs");
+	} else {
+		favorites_file = get_project_settings_dir().plus_file("favorites");
+		recent_dirs_file = get_project_settings_dir().plus_file("recent_dirs");
+	}
+	FileAccess *f = FileAccess::open(favorites_file, FileAccess::READ);
 	if (f) {
 		String line = f->get_line().strip_edges();
 		while (!line.is_empty()) {
@@ -1142,7 +1169,7 @@ void EditorSettings::load_favorites() {
 		memdelete(f);
 	}
 
-	f = FileAccess::open(get_project_settings_dir().plus_file("recent_dirs"), FileAccess::READ);
+	f = FileAccess::open(recent_dirs_file, FileAccess::READ);
 	if (f) {
 		String line = f->get_line().strip_edges();
 		while (!line.is_empty()) {

@@ -29,6 +29,8 @@
 /*************************************************************************/
 
 #include "csg_gizmos.h"
+
+#include "editor/editor_settings.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
 
@@ -419,7 +421,7 @@ void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	}
 }
 
-EditorPluginCSG::EditorPluginCSG(EditorNode *p_editor) {
+EditorPluginCSG::EditorPluginCSG() {
 	Ref<CSGShape3DGizmoPlugin> gizmo_plugin = Ref<CSGShape3DGizmoPlugin>(memnew(CSGShape3DGizmoPlugin));
 	Node3DEditor::get_singleton()->add_gizmo_plugin(gizmo_plugin);
 }

@@ -392,7 +392,7 @@ public:
 		return voxel_gi->texture;
 	};
 
-	RS::VoxelGIQuality voxel_gi_quality = RS::VOXEL_GI_QUALITY_HIGH;
+	RS::VoxelGIQuality voxel_gi_quality = RS::VOXEL_GI_QUALITY_LOW;
 
 	/* SDFGI */
 
@@ -504,12 +504,12 @@ public:
 		RID cascades_ubo;
 
 		bool uses_occlusion = false;
-		float bounce_feedback = 0.0;
-		bool reads_sky = false;
+		float bounce_feedback = 0.5;
+		bool reads_sky = true;
 		float energy = 1.0;
 		float normal_bias = 1.1;
 		float probe_bias = 1.1;
-		RS::EnvironmentSDFGIYScale y_scale_mode = RS::ENV_SDFGI_Y_SCALE_DISABLED;
+		RS::EnvironmentSDFGIYScale y_scale_mode = RS::ENV_SDFGI_Y_SCALE_75_PERCENT;
 
 		float y_mult = 1.0;
 
@@ -536,7 +536,7 @@ public:
 	};
 
 	RS::EnvironmentSDFGIRayCount sdfgi_ray_count = RS::ENV_SDFGI_RAY_COUNT_16;
-	RS::EnvironmentSDFGIFramesToConverge sdfgi_frames_to_converge = RS::ENV_SDFGI_CONVERGE_IN_10_FRAMES;
+	RS::EnvironmentSDFGIFramesToConverge sdfgi_frames_to_converge = RS::ENV_SDFGI_CONVERGE_IN_30_FRAMES;
 	RS::EnvironmentSDFGIFramesToUpdateLight sdfgi_frames_to_update_light = RS::ENV_SDFGI_UPDATE_LIGHT_IN_4_FRAMES;
 
 	float sdfgi_solid_cell_ratio = 0.25;

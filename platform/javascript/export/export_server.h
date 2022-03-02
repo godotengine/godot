@@ -36,7 +36,7 @@
 #include "core/io/tcp_server.h"
 #include "core/io/zip_io.h"
 #include "editor/editor_export.h"
-#include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 
 class EditorHTTPServer : public RefCounted {
 private:

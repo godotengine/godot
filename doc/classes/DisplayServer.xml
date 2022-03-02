@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="DisplayServer" inherits="Object" version="4.0">
+<class name="DisplayServer" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -399,6 +399,20 @@
 			<description>
 			</description>
 		</method>
+		<method name="screen_get_refresh_rate" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="screen" type="int" default="-1" />
+			<description>
+				Returns the current refresh rate of the specified screen. If [code]screen[/code] is [constant SCREEN_OF_MAIN_WINDOW] (the default value), a screen with the main window will be used.
+				[b]Note:[/b] Returns [code]-1.0[/code] if the DisplayServer fails to find the refresh rate for the specified screen. On HTML5, [method screen_get_refresh_rate] will always return [code]-1.0[/code] as there is no way to retrieve the refresh rate on that platform.
+				To fallback to a default refresh rate if the method fails, try:
+				[codeblock]
+				var refresh_rate = DisplayServer.screen_get_refresh_rate()
+				if refresh_rate &lt; 0:
+				    refresh_rate = 60.0
+				[/codeblock]
+			</description>
+		</method>
 		<method name="screen_get_scale" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="screen" type="int" default="-1" />
@@ -501,7 +515,7 @@
 		<method name="virtual_keyboard_show">
 			<return type="void" />
 			<argument index="0" name="existing_text" type="String" />
-			<argument index="1" name="position" type="Rect2" default="Rect2i(0, 0, 0, 0)" />
+			<argument index="1" name="position" type="Rect2" default="Rect2(0, 0, 0, 0)" />
 			<argument index="2" name="multiline" type="bool" default="false" />
 			<argument index="3" name="max_length" type="int" default="-1" />
 			<argument index="4" name="cursor_start" type="int" default="-1" />
@@ -528,6 +542,12 @@
 			<return type="bool" />
 			<argument index="0" name="window_id" type="int" default="0" />
 			<description>
+			</description>
+		</method>
+		<method name="window_get_active_popup" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns ID of the active popup window, or [constant INVALID_WINDOW_ID] if there is none.
 			</description>
 		</method>
 		<method name="window_get_attached_instance_id" qualifiers="const">
@@ -576,6 +596,13 @@
 			<description>
 				Returns internal structure pointers for use in plugins.
 				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="window_get_popup_safe_rect" qualifiers="const">
+			<return type="Rect2i" />
+			<argument index="0" name="window" type="int" />
+			<description>
+				Returns the bounding box of control, or menu item that was used to open the popup window, in the screen coordinate system.
 			</description>
 		</method>
 		<method name="window_get_position" qualifiers="const">
@@ -628,6 +655,16 @@
 			<argument index="0" name="callback" type="Callable" />
 			<argument index="1" name="window_id" type="int" default="0" />
 			<description>
+			</description>
+		</method>
+		<method name="window_set_exclusive">
+			<return type="void" />
+			<argument index="0" name="window_id" type="int" />
+			<argument index="1" name="exclusive" type="bool" />
+			<description>
+				If set to [code]true[/code], this window will always stay on top of its parent window, parent window will ignore input while this window is opened.
+				[b]Note:[/b] On macOS, exclusive windows are confined to the same space (virtual desktop or screen) as the parent window.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
 		<method name="window_set_flag">
@@ -723,6 +760,14 @@
 				[/codeblocks]
 				[b]Note:[/b] On Windows, the portion of a window that lies outside the region is not drawn, while on Linux and macOS it is.
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="window_set_popup_safe_rect">
+			<return type="void" />
+			<argument index="0" name="window" type="int" />
+			<argument index="1" name="rect" type="Rect2i" />
+			<description>
+				Sets the bounding box of control, or menu item that was used to open the popup window, in the screen coordinate system. Clicking this area will not auto-close this popup.
 			</description>
 		</method>
 		<method name="window_set_position">
@@ -900,17 +945,30 @@
 			Fullscreen window mode. Note that this is not [i]exclusive[/i] fullscreen. On Windows and Linux, a borderless window is used to emulate fullscreen. On macOS, a new desktop is used to display the running project.
 			Regardless of the platform, enabling fullscreen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling fullscreen mode.
 		</constant>
+		<constant name="WINDOW_MODE_EXCLUSIVE_FULLSCREEN" value="4" enum="WindowMode">
+			Exclusive fullscreen window mode. This mode is implemented on Windows only. On other platforms, it is equivalent to [constant WINDOW_MODE_FULLSCREEN].
+			Only one window in exclusive fullscreen mode can be visible on a given screen at a time. If multiple windows are in exclusive fullscreen mode for the same screen, the last one being set to this mode takes precedence.
+			Regardless of the platform, enabling fullscreen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling fullscreen mode.
+		</constant>
 		<constant name="WINDOW_FLAG_RESIZE_DISABLED" value="0" enum="WindowFlags">
+			Window can't be resizing by dragging its resize grip. It's still possible to resize the window using [method window_set_size]. This flag is ignored for full screen windows.
 		</constant>
 		<constant name="WINDOW_FLAG_BORDERLESS" value="1" enum="WindowFlags">
+			Window do not have native title bar and other decorations. This flag is ignored for full-screen windows.
 		</constant>
 		<constant name="WINDOW_FLAG_ALWAYS_ON_TOP" value="2" enum="WindowFlags">
+			Window is floating above other regular windows. This flag is ignored for full-screen windows.
 		</constant>
 		<constant name="WINDOW_FLAG_TRANSPARENT" value="3" enum="WindowFlags">
+			Window is will be destroyed with its transient parent and displayed on top of non-exclusive full-screen parent window. Transient windows can't enter full-screen mode.
 		</constant>
 		<constant name="WINDOW_FLAG_NO_FOCUS" value="4" enum="WindowFlags">
+			Window can't be focused. No-focus window will ignore all input, except mouse clicks.
 		</constant>
-		<constant name="WINDOW_FLAG_MAX" value="5" enum="WindowFlags">
+		<constant name="WINDOW_FLAG_POPUP" value="5" enum="WindowFlags">
+			Window is part of menu or [OptionButton] dropdown. This flag can't be changed when window is visible. An active popup window will exclusivly receive all input, without stealing focus from its parent. Popup windows are automatically closed when uses click outside it, or when an application is switched. Popup window must have [constant WINDOW_FLAG_TRANSPARENT] set.
+		</constant>
+		<constant name="WINDOW_FLAG_MAX" value="6" enum="WindowFlags">
 		</constant>
 		<constant name="WINDOW_EVENT_MOUSE_ENTER" value="0" enum="WindowEvent">
 		</constant>

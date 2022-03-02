@@ -106,8 +106,7 @@ public:
 			NATIVE,
 			SCRIPT,
 			CLASS, // GDScript.
-			ENUM, // Full enumeration.
-			ENUM_VALUE, // Value from enumeration.
+			ENUM, // Enumeration.
 			VARIANT, // Can be any type.
 			UNRESOLVED,
 		};
@@ -185,8 +184,6 @@ public:
 					return builtin_type == p_other.builtin_type;
 				case NATIVE:
 				case ENUM:
-					return native_type == p_other.native_type;
-				case ENUM_VALUE:
 					return native_type == p_other.native_type && enum_type == p_other.enum_type;
 				case SCRIPT:
 					return script_type == p_other.script_type;

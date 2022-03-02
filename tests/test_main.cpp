@@ -48,6 +48,7 @@
 #include "tests/core/math/test_math.h"
 #include "tests/core/math/test_random_number_generator.h"
 #include "tests/core/math/test_rect2.h"
+#include "tests/core/math/test_rect2i.h"
 #include "tests/core/math/test_vector2.h"
 #include "tests/core/math/test_vector2i.h"
 #include "tests/core/math/test_vector3.h"
@@ -72,6 +73,7 @@
 #include "tests/core/variant/test_array.h"
 #include "tests/core/variant/test_dictionary.h"
 #include "tests/core/variant/test_variant.h"
+#include "tests/scene/test_animation.h"
 #include "tests/scene/test_code_edit.h"
 #include "tests/scene/test_curve.h"
 #include "tests/scene/test_gradient.h"
@@ -89,6 +91,11 @@
 #include "tests/test_macros.h"
 
 #include "scene/resources/default_theme/default_theme.h"
+#include "servers/navigation_server_2d.h"
+#include "servers/navigation_server_3d.h"
+#include "servers/physics_server_2d.h"
+#include "servers/physics_server_3d.h"
+#include "servers/rendering/rendering_server_default.h"
 
 int test_main(int argc, char *argv[]) {
 	bool run_tests = true;
@@ -154,10 +161,6 @@ int test_main(int argc, char *argv[]) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "servers/navigation_server_2d.h"
-#include "servers/navigation_server_3d.h"
-#include "servers/rendering/rendering_server_default.h"
-
 struct GodotTestCaseListener : public doctest::IReporter {
 	GodotTestCaseListener(const doctest::ContextOptions &p_in) {}
 
@@ -203,7 +206,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			memnew(InputMap);
 			InputMap::get_singleton()->load_default();
 
-			make_default_theme(1.0, Ref<Font>());
+			make_default_theme(1.0, Ref<Font>(), TextServer::SUBPIXEL_POSITIONING_AUTO, TextServer::HINTING_LIGHT, true);
 
 			memnew(SceneTree);
 			SceneTree::get_singleton()->initialize();

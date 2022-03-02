@@ -42,7 +42,7 @@ int Face3::split_by_plane(const Plane &p_plane, Face3 p_res[3], bool p_is_point_
 	int below_count = 0;
 
 	for (int i = 0; i < 3; i++) {
-		if (p_plane.has_point(vertex[i], CMP_EPSILON)) { // point is in plane
+		if (p_plane.has_point(vertex[i], (real_t)CMP_EPSILON)) { // point is in plane
 
 			ERR_FAIL_COND_V(above_count >= 4, 0);
 			above[above_count++] = vertex[i];
@@ -117,7 +117,7 @@ bool Face3::intersects_segment(const Vector3 &p_from, const Vector3 &p_dir, Vect
 
 bool Face3::is_degenerate() const {
 	Vector3 normal = vec3_cross(vertex[0] - vertex[1], vertex[0] - vertex[2]);
-	return (normal.length_squared() < CMP_EPSILON2);
+	return (normal.length_squared() < (real_t)CMP_EPSILON2);
 }
 
 Face3::Side Face3::get_side_of(const Face3 &p_face, ClockDirection p_clock_dir) const {
@@ -157,7 +157,7 @@ Vector3 Face3::get_random_point_inside() const {
 		SWAP(a, b);
 	}
 
-	return vertex[0] * a + vertex[1] * (b - a) + vertex[2] * (1.0 - b);
+	return vertex[0] * a + vertex[1] * (b - a) + vertex[2] * (1.0f - b);
 }
 
 Plane Face3::get_plane(ClockDirection p_dir) const {
@@ -165,11 +165,11 @@ Plane Face3::get_plane(ClockDirection p_dir) const {
 }
 
 Vector3 Face3::get_median_point() const {
-	return (vertex[0] + vertex[1] + vertex[2]) / 3.0;
+	return (vertex[0] + vertex[1] + vertex[2]) / 3.0f;
 }
 
 real_t Face3::get_area() const {
-	return vec3_cross(vertex[0] - vertex[1], vertex[0] - vertex[2]).length() * 0.5;
+	return vec3_cross(vertex[0] - vertex[1], vertex[0] - vertex[2]).length() * 0.5f;
 }
 
 ClockDirection Face3::get_clock_dir() const {
@@ -223,7 +223,7 @@ bool Face3::intersects_aabb(const AABB &p_aabb) const {
 
 			Vector3 axis = vec3_cross(e1, e2);
 
-			if (axis.length_squared() < 0.0001) {
+			if (axis.length_squared() < 0.0001f) {
 				continue; // coplanar
 			}
 			axis.normalize();

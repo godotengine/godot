@@ -31,8 +31,8 @@
 #ifndef TEXTURE_LAYERED_EDITOR_PLUGIN_H
 #define TEXTURE_LAYERED_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
+#include "scene/gui/spin_box.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
 
@@ -90,7 +90,7 @@ class TextureLayeredEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const override { return "TextureLayered"; }
 
-	TextureLayeredEditorPlugin(EditorNode *p_node);
+	TextureLayeredEditorPlugin();
 };
 
 #endif // TEXTURE_EDITOR_PLUGIN_H

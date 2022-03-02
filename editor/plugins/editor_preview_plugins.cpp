@@ -30,10 +30,11 @@
 
 #include "editor_preview_plugins.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/file_access_memory.h"
 #include "core/io/resource_loader.h"
 #include "core/os/os.h"
-#include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "scene/resources/bit_map.h"
@@ -188,7 +189,7 @@ bool EditorImagePreviewPlugin::generate_small_preview_automatically() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////
+
 bool EditorBitmapPreviewPlugin::handles(const String &p_type) const {
 	return ClassDB::is_parent_class(p_type, "BitMap");
 }
@@ -308,7 +309,7 @@ void EditorMaterialPreviewPlugin::_preview_done() {
 }
 
 bool EditorMaterialPreviewPlugin::handles(const String &p_type) const {
-	return ClassDB::is_parent_class(p_type, "Material"); //any material
+	return ClassDB::is_parent_class(p_type, "Material"); // Any material.
 }
 
 bool EditorMaterialPreviewPlugin::generate_small_preview_automatically() const {
@@ -462,10 +463,6 @@ EditorMaterialPreviewPlugin::~EditorMaterialPreviewPlugin() {
 
 ///////////////////////////////////////////////////////////////////////////
 
-static bool _is_text_char(char32_t c) {
-	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
-}
-
 bool EditorScriptPreviewPlugin::handles(const String &p_type) const {
 	return ClassDB::is_parent_class(p_type, "Script");
 }
@@ -538,15 +535,15 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size
 				if (in_comment) {
 					color = comment_color;
 				} else {
-					if (c != '_' && ((c >= '!' && c <= '/') || (c >= ':' && c <= '@') || (c >= '[' && c <= '`') || (c >= '{' && c <= '~') || c == '\t')) {
+					if (is_symbol(c)) {
 						//make symbol a little visible
 						color = symbol_color;
 						in_control_flow_keyword = false;
 						in_keyword = false;
-					} else if (!prev_is_text && _is_text_char(c)) {
+					} else if (!prev_is_text && is_ascii_identifier_char(c)) {
 						int pos = i;
 
-						while (_is_text_char(code[pos])) {
+						while (is_ascii_identifier_char(code[pos])) {
 							pos++;
 						}
 						String word = code.substr(i, pos - i);
@@ -556,7 +553,7 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size
 							in_keyword = true;
 						}
 
-					} else if (!_is_text_char(c)) {
+					} else if (!is_ascii_identifier_char(c)) {
 						in_keyword = false;
 					}
 
@@ -571,7 +568,7 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size
 				img->set_pixel(col, y0 + line * 2, bg_color.blend(ul));
 				img->set_pixel(col, y0 + line * 2 + 1, color);
 
-				prev_is_text = _is_text_char(c);
+				prev_is_text = is_ascii_identifier_char(c);
 			}
 			col++;
 		} else {
@@ -703,7 +700,7 @@ void EditorMeshPreviewPlugin::_preview_done() {
 }
 
 bool EditorMeshPreviewPlugin::handles(const String &p_type) const {
-	return ClassDB::is_parent_class(p_type, "Mesh"); //any Mesh
+	return ClassDB::is_parent_class(p_type, "Mesh"); // Any mesh.
 }
 
 Ref<Texture2D> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {

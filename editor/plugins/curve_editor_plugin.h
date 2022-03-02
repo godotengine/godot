@@ -31,7 +31,6 @@
 #ifndef CURVE_EDITOR_PLUGIN_H
 #define CURVE_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_resource_preview.h"
 #include "scene/resources/curve.h"
@@ -129,7 +128,7 @@ class CurveEditorPlugin : public EditorPlugin {
 	GDCLASS(CurveEditorPlugin, EditorPlugin);
 
 public:
-	CurveEditorPlugin(EditorNode *p_node);
+	CurveEditorPlugin();
 
 	virtual String get_name() const override { return "Curve"; }
 };

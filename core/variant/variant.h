@@ -39,8 +39,12 @@
 #include "core/math/face3.h"
 #include "core/math/plane.h"
 #include "core/math/quaternion.h"
+#include "core/math/rect2.h"
+#include "core/math/rect2i.h"
 #include "core/math/transform_2d.h"
 #include "core/math/transform_3d.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
 #include "core/math/vector3.h"
 #include "core/math/vector3i.h"
 #include "core/object/object_id.h"
@@ -212,6 +216,7 @@ private:
 	} _data alignas(8);
 
 	void reference(const Variant &p_variant);
+	static bool initialize_ref(Object *p_object);
 
 	void _clear_internal();
 

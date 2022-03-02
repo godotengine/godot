@@ -139,9 +139,6 @@ public:
 	float get_value(const StringName &p_name) const;
 	Vector2 get_axis(const StringName &p_name) const;
 
-	real_t get_rumble() const;
-	void set_rumble(real_t p_rumble);
-
 	XRPositionalTracker::TrackerHand get_tracker_hand() const;
 
 	XRController3D() {}

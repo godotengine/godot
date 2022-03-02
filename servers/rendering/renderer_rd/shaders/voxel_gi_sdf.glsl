@@ -33,7 +33,7 @@ cell_data;
 
 layout(r8ui, set = 0, binding = 3) uniform restrict writeonly uimage3D sdf_tex;
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	uint offset;
 	uint end;
 	uint pad0;
@@ -66,7 +66,7 @@ void main() {
 }
 
 #if 0
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	ivec3 limits;
 	uint stack_size;
 }

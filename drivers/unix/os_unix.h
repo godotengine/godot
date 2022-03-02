@@ -43,7 +43,6 @@ protected:
 
 	virtual void initialize_core();
 	virtual int unix_initialize_audio(int p_audio_driver);
-	//virtual Error initialize(int p_video_driver,int p_audio_driver);
 
 	virtual void finalize_core() override;
 
@@ -54,15 +53,7 @@ public:
 
 	virtual String get_stdin_string(bool p_block) override;
 
-	//virtual void set_mouse_show(bool p_show);
-	//virtual void set_mouse_grab(bool p_grab);
-	//virtual bool is_mouse_grab_enabled() const = 0;
-	//virtual void get_mouse_position(int &x, int &y) const;
-	//virtual void set_window_title(const String& p_title);
-
-	//virtual void set_video_mode(const VideoMode& p_video_mode);
-	//virtual VideoMode get_video_mode() const;
-	//virtual void get_fullscreen_mode_list(List<VideoMode> *p_list) const;
+	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override; // Should return cryptographycally-safe random bytes.
 
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false) override;
 	virtual Error close_dynamic_library(void *p_library_handle) override;

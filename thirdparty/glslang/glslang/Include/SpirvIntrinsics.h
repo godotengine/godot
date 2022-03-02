@@ -65,7 +65,7 @@ struct TSpirvExecutionMode {
     // spirv_execution_mode
     TMap<int, TVector<const TIntermConstantUnion*>> modes;
     // spirv_execution_mode_id
-    TMap<int, TVector<const TIntermConstantUnion*> > modeIds;
+    TMap<int, TVector<const TIntermTyped*> > modeIds;
 };
 
 // SPIR-V decorations
@@ -75,7 +75,7 @@ struct TSpirvDecorate {
     // spirv_decorate
     TMap<int, TVector<const TIntermConstantUnion*> > decorates;
     // spirv_decorate_id
-    TMap<int, TVector<const TIntermConstantUnion*> > decorateIds;
+    TMap<int, TVector<const TIntermTyped*>> decorateIds;
     // spirv_decorate_string
     TMap<int, TVector<const TIntermConstantUnion*> > decorateStrings;
 };
@@ -98,20 +98,12 @@ struct TSpirvInstruction {
 struct TSpirvTypeParameter {
     POOL_ALLOCATOR_NEW_DELETE(GetThreadPoolAllocator())
 
-    TSpirvTypeParameter(const TIntermConstantUnion* arg) { isConstant = true; constant = arg; }
-    TSpirvTypeParameter(const TType* arg) { isConstant = false; type = arg; }
+    TSpirvTypeParameter(const TIntermConstantUnion* arg) { constant = arg; }
 
-    bool operator==(const TSpirvTypeParameter& rhs) const
-    {
-        return isConstant == rhs.isConstant && ((isConstant && constant == rhs.constant) || (!isConstant && type == rhs.type));
-    }
+    bool operator==(const TSpirvTypeParameter& rhs) const { return constant == rhs.constant; }
     bool operator!=(const TSpirvTypeParameter& rhs) const { return !operator==(rhs); }
 
-    bool isConstant;
-    union {
-        const TIntermConstantUnion* constant;
-        const TType* type;
-    };
+    const TIntermConstantUnion* constant;
 };
 
 typedef TVector<TSpirvTypeParameter> TSpirvTypeParameters;

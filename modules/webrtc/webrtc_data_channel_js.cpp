@@ -31,6 +31,7 @@
 #ifdef JAVASCRIPT_ENABLED
 
 #include "webrtc_data_channel_js.h"
+
 #include "emscripten.h"
 
 extern "C" {
@@ -104,8 +105,9 @@ int WebRTCDataChannelJS::get_available_packet_count() const {
 Error WebRTCDataChannelJS::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 	ERR_FAIL_COND_V(get_ready_state() != STATE_OPEN, ERR_UNCONFIGURED);
 
-	if (queue_count == 0)
+	if (queue_count == 0) {
 		return ERR_UNAVAILABLE;
+	}
 
 	uint32_t to_read = 0;
 	uint32_t left = 0;

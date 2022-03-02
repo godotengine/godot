@@ -33,6 +33,7 @@
 #include "canvas_item_editor_plugin.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 
 bool AbstractPolygon2DEditor::Vertex::operator==(const AbstractPolygon2DEditor::Vertex &p_vertex) const {
@@ -153,6 +154,7 @@ void AbstractPolygon2DEditor::_notification(int p_what) {
 			button_edit->set_icon(get_theme_icon(SNAME("CurveEdit"), SNAME("EditorIcons")));
 			button_delete->set_icon(get_theme_icon(SNAME("CurveDelete"), SNAME("EditorIcons")));
 		} break;
+
 		case NOTIFICATION_READY: {
 			disable_polygon_editing(false, String());
 
@@ -242,6 +244,10 @@ void AbstractPolygon2DEditor::disable_polygon_editing(bool p_disable, String p_r
 
 bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 	if (!_get_node() || !_polygon_editing_enabled) {
+		return false;
+	}
+
+	if (!_get_node()->is_visible_in_tree()) {
 		return false;
 	}
 
@@ -478,6 +484,10 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 		return;
 	}
 
+	if (!_get_node()->is_visible_in_tree()) {
+		return;
+	}
+
 	Transform2D xform = canvas_item_editor->get_canvas_transform() * _get_node()->get_global_transform();
 	// All polygon points are sharp, so use the sharp handle icon
 	const Ref<Texture2D> handle = get_theme_icon(SNAME("EditorPathSharpHandle"), SNAME("EditorIcons"));
@@ -693,9 +703,8 @@ AbstractPolygon2DEditor::PosVertex AbstractPolygon2DEditor::closest_edge_point(c
 	return closest;
 }
 
-AbstractPolygon2DEditor::AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wip_destructive) {
+AbstractPolygon2DEditor::AbstractPolygon2DEditor(bool p_wip_destructive) {
 	canvas_item_editor = nullptr;
-	editor = p_editor;
 	undo_redo = EditorNode::get_undo_redo();
 
 	wip_active = false;
@@ -749,9 +758,8 @@ void AbstractPolygon2DEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-AbstractPolygon2DEditorPlugin::AbstractPolygon2DEditorPlugin(EditorNode *p_node, AbstractPolygon2DEditor *p_polygon_editor, String p_class) :
+AbstractPolygon2DEditorPlugin::AbstractPolygon2DEditorPlugin(AbstractPolygon2DEditor *p_polygon_editor, String p_class) :
 		polygon_editor(p_polygon_editor),
-		editor(p_node),
 		klass(p_class) {
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(polygon_editor);
 	polygon_editor->hide();

@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "box_container.h"
+
 #include "label.h"
 #include "margin_container.h"
 
@@ -294,9 +295,11 @@ void BoxContainer::_notification(int p_what) {
 		case NOTIFICATION_SORT_CHILDREN: {
 			_resort();
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			update_minimum_size();
 		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			queue_sort();
@@ -329,6 +332,30 @@ Control *BoxContainer::add_spacer(bool p_begin) {
 	}
 
 	return c;
+}
+
+Vector<int> BoxContainer::get_allowed_size_flags_horizontal() const {
+	Vector<int> flags;
+	flags.append(SIZE_FILL);
+	if (!vertical) {
+		flags.append(SIZE_EXPAND);
+	}
+	flags.append(SIZE_SHRINK_BEGIN);
+	flags.append(SIZE_SHRINK_CENTER);
+	flags.append(SIZE_SHRINK_END);
+	return flags;
+}
+
+Vector<int> BoxContainer::get_allowed_size_flags_vertical() const {
+	Vector<int> flags;
+	flags.append(SIZE_FILL);
+	if (vertical) {
+		flags.append(SIZE_EXPAND);
+	}
+	flags.append(SIZE_SHRINK_BEGIN);
+	flags.append(SIZE_SHRINK_CENTER);
+	flags.append(SIZE_SHRINK_END);
+	return flags;
 }
 
 BoxContainer::BoxContainer(bool p_vertical) {

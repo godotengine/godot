@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Object" version="4.0">
+<class name="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for all non-built-in types.
 	</brief_description>
@@ -490,7 +490,7 @@
 			<argument index="0" name="property" type="String" />
 			<argument index="1" name="value" type="Variant" />
 			<description>
-				Assigns a new value to the given property. If the [code]property[/code] does not exist, nothing will happen.
+				Assigns a new value to the given property. If the [code]property[/code] does not exist or the given value's type doesn't match, nothing will happen.
 				[b]Note:[/b] In C#, the property name must be specified as snake_case if it is defined by a built-in Godot node. This doesn't apply to user-defined properties where you should use the same convention as in the C# source (typically PascalCase).
 			</description>
 		</method>

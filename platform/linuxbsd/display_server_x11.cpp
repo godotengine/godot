@@ -33,6 +33,7 @@
 #ifdef X11_ENABLED
 
 #include "core/config/project_settings.h"
+#include "core/math/math_funcs.h"
 #include "core/string/print_string.h"
 #include "core/string/ustring.h"
 #include "detect_prime_x11.h"
@@ -323,20 +324,21 @@ void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 	if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
 		//flush pending motion events
 		_flush_mouse_motion();
-		WindowData &main_window = windows[MAIN_WINDOW_ID];
+		WindowID window_id = windows.has(last_focused_window) ? last_focused_window : MAIN_WINDOW_ID;
+		WindowData &window = windows[window_id];
 
 		if (XGrabPointer(
-					x11_display, main_window.x11_window, True,
+					x11_display, window.x11_window, True,
 					ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
-					GrabModeAsync, GrabModeAsync, windows[MAIN_WINDOW_ID].x11_window, None, CurrentTime) != GrabSuccess) {
+					GrabModeAsync, GrabModeAsync, window.x11_window, None, CurrentTime) != GrabSuccess) {
 			ERR_PRINT("NO GRAB");
 		}
 
 		if (mouse_mode == MOUSE_MODE_CAPTURED) {
-			center.x = main_window.size.width / 2;
-			center.y = main_window.size.height / 2;
+			center.x = window.size.width / 2;
+			center.y = window.size.height / 2;
 
-			XWarpPointer(x11_display, None, main_window.x11_window,
+			XWarpPointer(x11_display, None, window.x11_window,
 					0, 0, 0, 0, (int)center.x, (int)center.y);
 
 			Input::get_singleton()->set_mouse_position(center);
@@ -358,7 +360,8 @@ void DisplayServerX11::mouse_warp_to_position(const Point2i &p_to) {
 	if (mouse_mode == MOUSE_MODE_CAPTURED) {
 		last_mouse_pos = p_to;
 	} else {
-		XWarpPointer(x11_display, None, windows[MAIN_WINDOW_ID].x11_window,
+		WindowID window_id = windows.has(last_focused_window) ? last_focused_window : MAIN_WINDOW_ID;
+		XWarpPointer(x11_display, None, windows[window_id].x11_window,
 				0, 0, 0, 0, (int)p_to.x, (int)p_to.y);
 	}
 }
@@ -1052,6 +1055,67 @@ int DisplayServerX11::screen_get_dpi(int p_screen) const {
 	return 96;
 }
 
+float DisplayServerX11::screen_get_refresh_rate(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
+		p_screen = window_get_current_screen();
+	}
+
+	//invalid screen?
+	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), SCREEN_REFRESH_RATE_FALLBACK);
+
+	//Use xrandr to get screen refresh rate.
+	if (xrandr_ext_ok) {
+		XRRScreenResources *screen_info = XRRGetScreenResources(x11_display, windows[MAIN_WINDOW_ID].x11_window);
+		if (screen_info) {
+			RRMode current_mode = 0;
+			xrr_monitor_info *monitors = nullptr;
+
+			if (xrr_get_monitors) {
+				int count = 0;
+				monitors = xrr_get_monitors(x11_display, windows[MAIN_WINDOW_ID].x11_window, true, &count);
+				ERR_FAIL_INDEX_V(p_screen, count, SCREEN_REFRESH_RATE_FALLBACK);
+			} else {
+				ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
+				return SCREEN_REFRESH_RATE_FALLBACK;
+			}
+
+			bool found_active_mode = false;
+			for (int crtc = 0; crtc < screen_info->ncrtc; crtc++) { // Loop through outputs to find which one is currently outputting.
+				XRRCrtcInfo *monitor_info = XRRGetCrtcInfo(x11_display, screen_info, screen_info->crtcs[crtc]);
+				if (monitor_info->x != monitors[p_screen].x || monitor_info->y != monitors[p_screen].y) { // If X and Y aren't the same as the monitor we're looking for, this isn't the right monitor. Continue.
+					continue;
+				}
+
+				if (monitor_info->mode != None) {
+					current_mode = monitor_info->mode;
+					found_active_mode = true;
+					break;
+				}
+			}
+
+			if (found_active_mode) {
+				for (int mode = 0; mode < screen_info->nmode; mode++) {
+					XRRModeInfo m_info = screen_info->modes[mode];
+					if (m_info.id == current_mode) {
+						// Snap to nearest 0.01 to stay consistent with other platforms.
+						return Math::snapped((float)m_info.dotClock / ((float)m_info.hTotal * (float)m_info.vTotal), 0.01);
+					}
+				}
+			}
+
+			ERR_PRINT("An error occurred while trying to get the screen refresh rate."); // We should have returned the refresh rate by now. An error must have occurred.
+			return SCREEN_REFRESH_RATE_FALLBACK;
+		} else {
+			ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
+			return SCREEN_REFRESH_RATE_FALLBACK;
+		}
+	}
+	ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
+	return SCREEN_REFRESH_RATE_FALLBACK;
+}
+
 bool DisplayServerX11::screen_is_touchscreen(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
@@ -1109,6 +1173,7 @@ void DisplayServerX11::show_window(WindowID p_id) {
 	_THREAD_SAFE_METHOD_
 
 	const WindowData &wd = windows[p_id];
+	popup_open(p_id);
 
 	DEBUG_LOG_X11("show_window: %lu (%u) \n", wd.x11_window, p_id);
 
@@ -1119,7 +1184,9 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_id));
-	ERR_FAIL_COND_MSG(p_id == MAIN_WINDOW_ID, "Main window can't be deleted"); //ma
+	ERR_FAIL_COND_MSG(p_id == MAIN_WINDOW_ID, "Main window can't be deleted");
+
+	popup_close(p_id);
 
 	WindowData &wd = windows[p_id];
 
@@ -1394,8 +1461,8 @@ void DisplayServerX11::window_set_transient(WindowID p_window, WindowID p_parent
 		// Set focus to parent sub window to avoid losing all focus when closing a nested sub-menu.
 		// RevertToPointerRoot is used to make sure we don't lose all focus in case
 		// a subwindow and its parent are both destroyed.
-		if (wd_window.menu_type && !wd_window.no_focus && wd_window.focused) {
-			if (!wd_parent.no_focus) {
+		if (!wd_window.no_focus && !wd_window.is_popup && wd_window.focused) {
+			if (!wd_parent.no_focus && !wd_window.is_popup) {
 				XSetInputFocus(x11_display, wd_parent.x11_window, RevertToPointerRoot, CurrentTime);
 			}
 		}
@@ -1771,7 +1838,7 @@ void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled) {
 		Hints hints;
 		Atom property;
 		hints.flags = 2;
-		hints.decorations = window_get_flag(WINDOW_FLAG_BORDERLESS, p_window) ? 0 : 1;
+		hints.decorations = wd.borderless ? 0 : 1;
 		property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
 		if (property != None) {
 			XChangeProperty(x11_display, wd.x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
@@ -1823,6 +1890,7 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 
 			XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
 		} break;
+		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
 		case WINDOW_MODE_FULLSCREEN: {
 			//Remove full-screen
 			wd.fullscreen = false;
@@ -1875,6 +1943,7 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 
 			XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
 		} break;
+		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
 		case WINDOW_MODE_FULLSCREEN: {
 			wd.last_position_before_fs = wd.position;
 
@@ -2007,6 +2076,18 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 		case WINDOW_FLAG_TRANSPARENT: {
 			//todo reimplement
 		} break;
+		case WINDOW_FLAG_NO_FOCUS: {
+			wd.no_focus = p_enabled;
+		} break;
+		case WINDOW_FLAG_POPUP: {
+			XWindowAttributes xwa;
+			XSync(x11_display, False);
+			XGetWindowAttributes(x11_display, wd.x11_window, &xwa);
+
+			ERR_FAIL_COND_MSG(p_window == MAIN_WINDOW_ID, "Main window can't be popup.");
+			ERR_FAIL_COND_MSG((xwa.map_state == IsViewable) && (wd.is_popup != p_enabled), "Pupup flag can't changed while window is opened.");
+			wd.is_popup = p_enabled;
+		} break;
 		default: {
 		}
 	}
@@ -2047,6 +2128,12 @@ bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
 			//todo reimplement
+		} break;
+		case WINDOW_FLAG_NO_FOCUS: {
+			return wd.no_focus;
+		} break;
+		case WINDOW_FLAG_POPUP: {
+			return wd.is_popup;
 		} break;
 		default: {
 		}
@@ -2415,7 +2502,7 @@ Key DisplayServerX11::keyboard_get_keycode_from_physical(Key p_keycode) const {
 	Key keycode_no_mod = p_keycode & KeyModifierMask::CODE_MASK;
 	unsigned int xkeycode = KeyMappingX11::get_xlibcode(keycode_no_mod);
 	KeySym xkeysym = XkbKeycodeToKeysym(x11_display, xkeycode, 0, 0);
-	if (xkeysym >= 'a' && xkeysym <= 'z') {
+	if (is_ascii_lower_case(xkeysym)) {
 		xkeysym -= ('a' - 'A');
 	}
 
@@ -2962,23 +3049,36 @@ void DisplayServerX11::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 	Variant ret;
 	Callable::CallError ce;
 
-	Ref<InputEventFromWindow> event_from_window = p_event;
-	if (event_from_window.is_valid() && event_from_window->get_window_id() != INVALID_WINDOW_ID) {
-		//send to a window
-		ERR_FAIL_COND(!windows.has(event_from_window->get_window_id()));
-		Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
-		if (callable.is_null()) {
+	{
+		List<WindowID>::Element *E = popup_list.front();
+		if (E && Object::cast_to<InputEventKey>(*p_event)) {
+			// Redirect keyboard input to active popup.
+			if (windows.has(E->get())) {
+				Callable callable = windows[E->get()].input_event_callback;
+				if (callable.is_valid()) {
+					callable.call((const Variant **)&evp, 1, ret, ce);
+				}
+			}
 			return;
 		}
-		callable.call((const Variant **)&evp, 1, ret, ce);
+	}
+
+	Ref<InputEventFromWindow> event_from_window = p_event;
+	if (event_from_window.is_valid() && event_from_window->get_window_id() != INVALID_WINDOW_ID) {
+		// Send to a single window.
+		if (windows.has(event_from_window->get_window_id())) {
+			Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
+			if (callable.is_valid()) {
+				callable.call((const Variant **)&evp, 1, ret, ce);
+			}
+		}
 	} else {
-		//send to all windows
+		// Send to all windows.
 		for (KeyValue<WindowID, WindowData> &E : windows) {
 			Callable callable = E.value.input_event_callback;
-			if (callable.is_null()) {
-				continue;
+			if (callable.is_valid()) {
+				callable.call((const Variant **)&evp, 1, ret, ce);
 			}
-			callable.call((const Variant **)&evp, 1, ret, ce);
 		}
 	}
 }
@@ -3070,6 +3170,108 @@ void DisplayServerX11::_check_pending_events(LocalVector<XEvent> &r_events) {
 	}
 }
 
+DisplayServer::WindowID DisplayServerX11::window_get_active_popup() const {
+	const List<WindowID>::Element *E = popup_list.back();
+	if (E) {
+		return E->get();
+	} else {
+		return INVALID_WINDOW_ID;
+	}
+}
+
+void DisplayServerX11::window_set_popup_safe_rect(WindowID p_window, const Rect2i &p_rect) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+	wd.parent_safe_rect = p_rect;
+}
+
+Rect2i DisplayServerX11::window_get_popup_safe_rect(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V(!windows.has(p_window), Rect2i());
+	const WindowData &wd = windows[p_window];
+	return wd.parent_safe_rect;
+}
+
+void DisplayServerX11::popup_open(WindowID p_window) {
+	WindowData &wd = windows[p_window];
+	if (wd.is_popup) {
+		// Close all popups, up to current popup parent, or every popup if new window is not transient.
+		List<WindowID>::Element *E = popup_list.back();
+		while (E) {
+			if (wd.transient_parent != E->get() || wd.transient_parent == INVALID_WINDOW_ID) {
+				_send_window_event(windows[E->get()], DisplayServerX11::WINDOW_EVENT_CLOSE_REQUEST);
+				List<WindowID>::Element *F = E->prev();
+				popup_list.erase(E);
+				E = F;
+			} else {
+				break;
+			}
+		}
+
+		time_since_popup = OS::get_singleton()->get_ticks_msec();
+		popup_list.push_back(p_window);
+	}
+}
+
+void DisplayServerX11::popup_close(WindowID p_window) {
+	List<WindowID>::Element *E = popup_list.find(p_window);
+	while (E) {
+		_send_window_event(windows[E->get()], DisplayServerX11::WINDOW_EVENT_CLOSE_REQUEST);
+		List<WindowID>::Element *F = E->next();
+		popup_list.erase(E);
+		E = F;
+	}
+}
+
+void DisplayServerX11::mouse_process_popups() {
+	if (popup_list.is_empty()) {
+		return;
+	}
+
+	uint64_t delta = OS::get_singleton()->get_ticks_msec() - time_since_popup;
+	if (delta < 250) {
+		return;
+	}
+
+	int number_of_screens = XScreenCount(x11_display);
+	for (int i = 0; i < number_of_screens; i++) {
+		Window root, child;
+		int root_x, root_y, win_x, win_y;
+		unsigned int mask;
+		if (XQueryPointer(x11_display, XRootWindow(x11_display, i), &root, &child, &root_x, &root_y, &win_x, &win_y, &mask)) {
+			XWindowAttributes root_attrs;
+			XGetWindowAttributes(x11_display, root, &root_attrs);
+			Vector2i pos = Vector2i(root_attrs.x + root_x, root_attrs.y + root_y);
+			if ((pos != last_mouse_monitor_pos) || (mask != last_mouse_monitor_mask)) {
+				if (((mask & Button1Mask) || (mask & Button2Mask) || (mask & Button3Mask) || (mask & Button4Mask) || (mask & Button5Mask))) {
+					List<WindowID>::Element *E = popup_list.back();
+					while (E) {
+						// Popup window area.
+						Rect2i win_rect = Rect2i(window_get_position(E->get()), window_get_size(E->get()));
+						// Area of the parent window, which responsible for opening sub-menu.
+						Rect2i safe_rect = window_get_popup_safe_rect(E->get());
+						if (win_rect.has_point(pos)) {
+							break;
+						} else if (safe_rect != Rect2i() && safe_rect.has_point(pos)) {
+							break;
+						} else {
+							_send_window_event(windows[E->get()], DisplayServerX11::WINDOW_EVENT_CLOSE_REQUEST);
+							List<WindowID>::Element *F = E->prev();
+							popup_list.erase(E);
+							E = F;
+						}
+					}
+				}
+			}
+			last_mouse_monitor_mask = mask;
+			last_mouse_monitor_pos = pos;
+		}
+	}
+}
+
 void DisplayServerX11::process_events() {
 	_THREAD_SAFE_METHOD_
 
@@ -3077,6 +3279,8 @@ void DisplayServerX11::process_events() {
 	static int frame = 0;
 	++frame;
 #endif
+
+	mouse_process_popups();
 
 	if (app_focused) {
 		//verify that one of the windows has focus, else send focus out notification
@@ -3308,7 +3512,7 @@ void DisplayServerX11::process_events() {
 				// Set focus when menu window is started.
 				// RevertToPointerRoot is used to make sure we don't lose all focus in case
 				// a subwindow and its parent are both destroyed.
-				if (wd.menu_type && !wd.no_focus) {
+				if (!wd.no_focus && !wd.is_popup) {
 					XSetInputFocus(x11_display, wd.x11_window, RevertToPointerRoot, CurrentTime);
 				}
 			} break;
@@ -3353,7 +3557,7 @@ void DisplayServerX11::process_events() {
 				DEBUG_LOG_X11("[%u] FocusIn window=%lu (%u), mode='%u' \n", frame, event.xfocus.window, window_id, event.xfocus.mode);
 
 				WindowData &wd = windows[window_id];
-
+				last_focused_window = window_id;
 				wd.focused = true;
 
 				if (wd.xic) {
@@ -3454,7 +3658,7 @@ void DisplayServerX11::process_events() {
 				// Set focus when menu window is re-used.
 				// RevertToPointerRoot is used to make sure we don't lose all focus in case
 				// a subwindow and its parent are both destroyed.
-				if (wd.menu_type && !wd.no_focus) {
+				if (!wd.no_focus && !wd.is_popup) {
 					XSetInputFocus(x11_display, wd.x11_window, RevertToPointerRoot, CurrentTime);
 				}
 
@@ -3495,7 +3699,7 @@ void DisplayServerX11::process_events() {
 					// Ensure window focus on click.
 					// RevertToPointerRoot is used to make sure we don't lose all focus in case
 					// a subwindow and its parent are both destroyed.
-					if (!wd.no_focus) {
+					if (!wd.no_focus && !wd.is_popup) {
 						XSetInputFocus(x11_display, wd.x11_window, RevertToPointerRoot, CurrentTime);
 					}
 
@@ -3553,9 +3757,9 @@ void DisplayServerX11::process_events() {
 				// The X11 API requires filtering one-by-one through the motion
 				// notify events, in order to figure out which event is the one
 				// generated by warping the mouse pointer.
-
+				WindowID focused_window_id = windows.has(last_focused_window) ? last_focused_window : MAIN_WINDOW_ID;
 				while (true) {
-					if (mouse_mode == MOUSE_MODE_CAPTURED && event.xmotion.x == windows[MAIN_WINDOW_ID].size.width / 2 && event.xmotion.y == windows[MAIN_WINDOW_ID].size.height / 2) {
+					if (mouse_mode == MOUSE_MODE_CAPTURED && event.xmotion.x == windows[focused_window_id].size.width / 2 && event.xmotion.y == windows[focused_window_id].size.height / 2) {
 						//this is likely the warp event since it was warped here
 						center = Vector2(event.xmotion.x, event.xmotion.y);
 						break;
@@ -3630,9 +3834,8 @@ void DisplayServerX11::process_events() {
 				// Reset to prevent lingering motion
 				xi.relative_motion.x = 0;
 				xi.relative_motion.y = 0;
-
 				if (mouse_mode == MOUSE_MODE_CAPTURED) {
-					pos = Point2i(windows[MAIN_WINDOW_ID].size.width / 2, windows[MAIN_WINDOW_ID].size.height / 2);
+					pos = Point2i(windows[focused_window_id].size.width / 2, windows[focused_window_id].size.height / 2);
 				}
 
 				Ref<InputEventMouseMotion> mm;
@@ -4056,13 +4259,12 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 	WindowID id = window_id_counter++;
 	WindowData &wd = windows[id];
 
-	if ((id != MAIN_WINDOW_ID) && (p_flags & WINDOW_FLAG_BORDERLESS_BIT)) {
-		wd.menu_type = true;
+	if (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) {
+		wd.no_focus = true;
 	}
 
-	if (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) {
-		wd.menu_type = true;
-		wd.no_focus = true;
+	if (p_flags & WINDOW_FLAG_POPUP_BIT) {
+		wd.is_popup = true;
 	}
 
 	// Setup for menu subwindows:
@@ -4070,7 +4272,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 	//   handling decorations and placement.
 	//   On the other hand, focus changes need to be handled manually when this is set.
 	// - save_under is a hint for the WM to keep the content of windows behind to avoid repaint.
-	if (wd.menu_type) {
+	if (wd.is_popup || wd.no_focus) {
 		windowAttributes.override_redirect = True;
 		windowAttributes.save_under = True;
 		valuemask |= CWOverrideRedirect | CWSaveUnder;
@@ -4081,7 +4283,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 
 		// Enable receiving notification when the window is initialized (MapNotify)
 		// so the focus can be set at the right time.
-		if (wd.menu_type && !wd.no_focus) {
+		if (!wd.no_focus && !wd.is_popup) {
 			XSelectInput(x11_display, wd.x11_window, StructureNotifyMask);
 		}
 
@@ -4178,7 +4380,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 			}
 		}
 
-		if (wd.menu_type) {
+		if (wd.is_popup || wd.no_focus) {
 			// Set Utility type to disable fade animations.
 			Atom type_atom = XInternAtom(x11_display, "_NET_WM_WINDOW_TYPE_UTILITY", False);
 			Atom wt_atom = XInternAtom(x11_display, "_NET_WM_WINDOW_TYPE", False);
@@ -4729,7 +4931,7 @@ DisplayServerX11::~DisplayServerX11() {
 		if (img[i] != nullptr) {
 			XcursorImageDestroy(img[i]);
 		}
-	};
+	}
 
 	if (xim) {
 		XCloseIM(xim);

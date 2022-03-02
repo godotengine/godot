@@ -36,6 +36,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
+#include "core/multiplayer/multiplayer_api.h"
 #include "core/object/message_queue.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -43,10 +44,13 @@
 #include "node.h"
 #include "scene/animation/tween.h"
 #include "scene/debugger/scene_debugger.h"
+#include "scene/main/viewport.h"
 #include "scene/resources/font.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/resources/world_2d.h"
+#include "scene/resources/world_3d.h"
 #include "scene/scene_string_names.h"
 #include "servers/display_server.h"
 #include "servers/navigation_server_3d.h"
@@ -130,7 +134,7 @@ SceneTree::Group *SceneTree::add_to_group(const StringName &p_group, Node *p_nod
 		E = group_map.insert(p_group, Group());
 	}
 
-	ERR_FAIL_COND_V_MSG(E->get().nodes.find(p_node) != -1, &E->get(), "Already in group: " + p_group + ".");
+	ERR_FAIL_COND_V_MSG(E->get().nodes.has(p_node), &E->get(), "Already in group: " + p_group + ".");
 	E->get().nodes.push_back(p_node);
 	//E->get().last_tree_version=0;
 	E->get().changed = true;
@@ -612,6 +616,7 @@ void SceneTree::_notification(int p_notification) {
 				get_root()->propagate_notification(p_notification);
 			}
 		} break;
+
 		case NOTIFICATION_OS_MEMORY_WARNING:
 		case NOTIFICATION_OS_IME_UPDATE:
 		case NOTIFICATION_WM_ABOUT:
@@ -620,13 +625,11 @@ void SceneTree::_notification(int p_notification) {
 		case NOTIFICATION_APPLICATION_PAUSED:
 		case NOTIFICATION_APPLICATION_FOCUS_IN:
 		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
-			get_root()->propagate_notification(p_notification); //pass these to nodes, since they are mirrored
+			// Pass these to nodes, since they are mirrored.
+			get_root()->propagate_notification(p_notification);
 		} break;
-
-		default:
-			break;
-	};
-};
+	}
+}
 
 void SceneTree::set_auto_accept_quit(bool p_enable) {
 	accept_quit = p_enable;
@@ -1164,7 +1167,7 @@ void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {
 	ERR_FAIL_COND(!p_multiplayer.is_valid());
 
 	multiplayer = p_multiplayer;
-	multiplayer->set_root_node(root);
+	multiplayer->set_root_path("/" + root->get_name());
 }
 
 void SceneTree::_bind_methods() {
@@ -1252,8 +1255,6 @@ void SceneTree::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("process_frame"));
 	ADD_SIGNAL(MethodInfo("physics_frame"));
-
-	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files"), PropertyInfo(Variant::INT, "screen")));
 
 	BIND_ENUM_CONSTANT(GROUP_CALL_DEFAULT);
 	BIND_ENUM_CONSTANT(GROUP_CALL_REVERSE);

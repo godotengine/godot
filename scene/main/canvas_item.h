@@ -32,10 +32,8 @@
 #define CANVAS_ITEM_H
 
 #include "scene/main/node.h"
-#include "scene/main/scene_tree.h"
 #include "scene/resources/canvas_item_material.h"
 #include "scene/resources/font.h"
-#include "servers/text_server.h"
 
 class CanvasLayer;
 class MultiMesh;
@@ -45,6 +43,8 @@ class World2D;
 
 class CanvasItem : public Node {
 	GDCLASS(CanvasItem, Node);
+
+	friend class CanvasLayer;
 
 public:
 	enum TextureFilter {
@@ -85,6 +85,7 @@ private:
 	Window *window = nullptr;
 	bool first_draw = false;
 	bool visible = true;
+	bool parent_visible_in_tree = false;
 	bool clip_children = false;
 	bool pending_update = false;
 	bool top_level = false;
@@ -107,7 +108,8 @@ private:
 
 	void _top_level_raise_self();
 
-	void _propagate_visibility_changed(bool p_visible);
+	void _propagate_visibility_changed(bool p_parent_visible_in_tree);
+	void _handle_visibility_change(bool p_visible);
 
 	void _update_callback();
 

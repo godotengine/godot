@@ -2,7 +2,7 @@
 #define FLAG_USE_ORTHOGONAL_PROJECTION (1 << 1)
 #define FLAG_GLOW_FIRST_PASS (1 << 2)
 
-layout(push_constant, binding = 1, std430) uniform Blur {
+layout(push_constant, std430) uniform Blur {
 	vec2 pixel_size;
 	uint flags;
 	uint pad;

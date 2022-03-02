@@ -50,6 +50,11 @@ enum FilterOption {
 class ProjectManager : public Control {
 	GDCLASS(ProjectManager, Control);
 
+	Map<String, Ref<Texture2D>> icon_type_cache;
+	void _build_icon_type_cache(Ref<Theme> p_theme);
+
+	static ProjectManager *singleton;
+
 	TabContainer *tabs;
 
 	ProjectList *_project_list;
@@ -67,7 +72,7 @@ class ProjectManager : public Control {
 
 	EditorAssetLibrary *asset_library;
 
-	FileDialog *scan_dir;
+	EditorFileDialog *scan_dir;
 	ConfirmationDialog *language_restart_ask;
 
 	ConfirmationDialog *erase_ask;
@@ -129,11 +134,15 @@ class ProjectManager : public Control {
 	void _on_tab_changed(int p_tab);
 	void _on_search_term_changed(const String &p_term);
 
+	static Ref<Texture2D> _file_dialog_get_icon(const String &p_path);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
+	static ProjectManager *get_singleton() { return singleton; }
+
 	ProjectManager();
 	~ProjectManager();
 };

@@ -31,6 +31,7 @@
 #include "ray_cast_2d.h"
 
 #include "collision_object_2d.h"
+#include "scene/resources/world_2d.h"
 
 void RayCast2D::set_target_position(const Vector2 &p_point) {
 	target_position = p_point;
@@ -149,11 +150,11 @@ void RayCast2D::_notification(int p_what) {
 				}
 			}
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			if (enabled) {
 				set_physics_process_internal(false);
 			}
-
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -162,16 +163,13 @@ void RayCast2D::_notification(int p_what) {
 				break;
 			}
 			_draw_debug_shape();
-
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (!enabled) {
 				break;
 			}
-
 			_update_raycast_state();
-
 		} break;
 	}
 }
@@ -263,30 +261,29 @@ void RayCast2D::add_exception_rid(const RID &p_rid) {
 	exclude.insert(p_rid);
 }
 
-void RayCast2D::add_exception(const Object *p_object) {
-	ERR_FAIL_NULL(p_object);
-	const CollisionObject2D *co = Object::cast_to<CollisionObject2D>(p_object);
-	if (!co) {
-		return;
-	}
-	add_exception_rid(co->get_rid());
+void RayCast2D::add_exception(const CollisionObject2D *p_node) {
+	ERR_FAIL_NULL_MSG(p_node, "The passed Node must be an instance of CollisionObject2D.");
+	add_exception_rid(p_node->get_rid());
 }
 
 void RayCast2D::remove_exception_rid(const RID &p_rid) {
 	exclude.erase(p_rid);
 }
 
-void RayCast2D::remove_exception(const Object *p_object) {
-	ERR_FAIL_NULL(p_object);
-	const CollisionObject2D *co = Object::cast_to<CollisionObject2D>(p_object);
-	if (!co) {
-		return;
-	}
-	remove_exception_rid(co->get_rid());
+void RayCast2D::remove_exception(const CollisionObject2D *p_node) {
+	ERR_FAIL_NULL_MSG(p_node, "The passed Node must be an instance of CollisionObject2D.");
+	remove_exception_rid(p_node->get_rid());
 }
 
 void RayCast2D::clear_exceptions() {
 	exclude.clear();
+
+	if (exclude_parent_body && is_inside_tree()) {
+		CollisionObject2D *parent = Object::cast_to<CollisionObject2D>(get_parent());
+		if (parent) {
+			exclude.insert(parent->get_rid());
+		}
+	}
 }
 
 void RayCast2D::set_collide_with_areas(bool p_enabled) {

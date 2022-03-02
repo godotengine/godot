@@ -34,7 +34,6 @@
 #include "core/io/file_access.h"
 #include "core/os/os.h"
 #include "editor/editor_export.h"
-#include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "platform/windows/logo.gen.h"
 
@@ -47,6 +46,7 @@ public:
 	virtual Error sign_shared_object(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path) override;
 	virtual void get_export_options(List<ExportOption> *r_options) override;
 	virtual bool get_export_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const override;
+	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;
 };
 
 #endif

@@ -7,7 +7,7 @@
 
 #include "decal_data_inc.glsl"
 
-#if !defined(MODE_RENDER_DEPTH) || defined(MODE_RENDER_MATERIAL) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED)
+#if !defined(MODE_RENDER_DEPTH) || defined(MODE_RENDER_MATERIAL) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 #ifndef NORMAL_USED
 #define NORMAL_USED
 #endif
@@ -15,7 +15,7 @@
 
 /* don't exceed 128 bytes!! */
 /* put instance data into our push content, not a array */
-layout(push_constant, binding = 0, std430) uniform DrawCall {
+layout(push_constant, std430) uniform DrawCall {
 	highp mat4 transform; // 64 - 64
 	uint flags; // 04 - 68
 	uint instance_uniforms_ofs; //base offset in global buffer for instance variables	// 04 - 72

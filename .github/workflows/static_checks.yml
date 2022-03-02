@@ -24,7 +24,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt-get install -qq dos2unix recode clang-format-13
+          sudo apt-get install -qq dos2unix recode clang-format-13 libxml2-utils
           sudo update-alternatives --remove-all clang-format
           sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-13 100
           sudo pip3 install black==21.10b0 pygments
@@ -47,6 +47,10 @@ jobs:
           npm ci
           npm run lint
           npm run docs -- -d dry-run
+
+      - name: Class reference schema checks
+        run: |
+          xmllint --noout --schema doc/class.xsd doc/classes/*.xml modules/*/doc_classes/*.xml
 
       - name: Documentation checks
         run: |

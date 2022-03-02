@@ -33,8 +33,8 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "editor/editor_file_system.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
-#include "editor_scale.h"
 #include "servers/display_server.h"
 
 void EditorDirDialog::_update_dir(TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path) {
@@ -79,29 +79,31 @@ void EditorDirDialog::reload(const String &p_path) {
 }
 
 void EditorDirDialog::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &EditorDirDialog::reload), make_binds(""));
-		reload();
-
-		if (!tree->is_connected("item_collapsed", callable_mp(this, &EditorDirDialog::_item_collapsed))) {
-			tree->connect("item_collapsed", callable_mp(this, &EditorDirDialog::_item_collapsed), varray(), CONNECT_DEFERRED);
-		}
-
-		if (!EditorFileSystem::get_singleton()->is_connected("filesystem_changed", callable_mp(this, &EditorDirDialog::reload))) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
 			EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &EditorDirDialog::reload), make_binds(""));
-		}
-	}
-
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (EditorFileSystem::get_singleton()->is_connected("filesystem_changed", callable_mp(this, &EditorDirDialog::reload))) {
-			EditorFileSystem::get_singleton()->disconnect("filesystem_changed", callable_mp(this, &EditorDirDialog::reload));
-		}
-	}
-
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (must_reload && is_visible()) {
 			reload();
-		}
+
+			if (!tree->is_connected("item_collapsed", callable_mp(this, &EditorDirDialog::_item_collapsed))) {
+				tree->connect("item_collapsed", callable_mp(this, &EditorDirDialog::_item_collapsed), varray(), CONNECT_DEFERRED);
+			}
+
+			if (!EditorFileSystem::get_singleton()->is_connected("filesystem_changed", callable_mp(this, &EditorDirDialog::reload))) {
+				EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &EditorDirDialog::reload), make_binds(""));
+			}
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			if (EditorFileSystem::get_singleton()->is_connected("filesystem_changed", callable_mp(this, &EditorDirDialog::reload))) {
+				EditorFileSystem::get_singleton()->disconnect("filesystem_changed", callable_mp(this, &EditorDirDialog::reload));
+			}
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (must_reload && is_visible()) {
+				reload();
+			}
+		} break;
 	}
 }
 

@@ -33,11 +33,11 @@
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "scene/main/window.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
 #endif
-#include "scene/main/window.h"
 
 List<Color> ColorPicker::preset_cache;
 
@@ -45,7 +45,6 @@ void ColorPicker::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_update_color();
-
 #ifdef TOOLS_ENABLED
 			if (Engine::get_singleton()->is_editor_hint()) {
 				if (preset_cache.is_empty()) {
@@ -1347,17 +1346,18 @@ void ColorPickerButton::_notification(int p_what) {
 				draw_texture(Control::get_theme_icon(SNAME("overbright_indicator"), SNAME("ColorPicker")), normal->get_offset());
 			}
 		} break;
+
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
 			if (popup) {
 				popup->hide();
 			}
 		} break;
-	}
 
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (popup && !is_visible_in_tree()) {
-			popup->hide();
-		}
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (popup && !is_visible_in_tree()) {
+				popup->hide();
+			}
+		} break;
 	}
 }
 

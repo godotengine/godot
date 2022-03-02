@@ -153,7 +153,7 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 			RES res = ResourceLoader::load_threaded_get(path);
 			if (res.is_null()) {
 				if (ResourceLoader::get_abort_on_missing_resources()) {
-					error = ERR_FILE_CORRUPT;
+					error = ERR_FILE_MISSING_DEPENDENCIES;
 					error_text = "[ext_resource] referenced nonexistent resource at: " + path;
 					_printerr();
 					return error;
@@ -165,7 +165,7 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 				r_res = res;
 			}
 		} else {
-			error = ERR_FILE_CORRUPT;
+			error = ERR_FILE_MISSING_DEPENDENCIES;
 			error_text = "[ext_resource] referenced non-loaded resource at: " + path;
 			_printerr();
 			return error;
@@ -265,7 +265,9 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 				error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &parser);
 
 				if (error) {
-					if (error != ERR_FILE_EOF) {
+					if (error == ERR_FILE_MISSING_DEPENDENCIES) {
+						// Resource loading error, just skip it.
+					} else if (error != ERR_FILE_EOF) {
 						_printerr();
 						return Ref<PackedScene>();
 					} else {
@@ -430,7 +432,7 @@ Error ResourceLoaderText::load() {
 			}
 		}
 
-		if (path.find("://") == -1 && path.is_relative_path()) {
+		if (!path.contains("://") && path.is_relative_path()) {
 			// path is relative to file being loaded, so convert to a resource path
 			path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 		}
@@ -774,7 +776,7 @@ void ResourceLoaderText::get_dependencies(FileAccess *p_f, List<String> *p_depen
 			}
 		}
 
-		if (!using_uid && path.find("://") == -1 && path.is_relative_path()) {
+		if (!using_uid && !path.contains("://") && path.is_relative_path()) {
 			// path is relative to file being loaded, so convert to a resource path
 			path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 		}
@@ -1951,7 +1953,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 }
 
 Error ResourceFormatSaverText::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
-	if (p_path.ends_with(".sct") && p_resource->get_class() != "PackedScene") {
+	if (p_path.ends_with(".tscn") && !Ref<PackedScene>(p_resource).is_valid()) {
 		return ERR_FILE_UNRECOGNIZED;
 	}
 
@@ -1960,14 +1962,14 @@ Error ResourceFormatSaverText::save(const String &p_path, const RES &p_resource,
 }
 
 bool ResourceFormatSaverText::recognize(const RES &p_resource) const {
-	return true; // all recognized!
+	return true; // All resources recognized!
 }
 
 void ResourceFormatSaverText::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
-	if (p_resource->get_class() == "PackedScene") {
-		p_extensions->push_back("tscn"); //text scene
+	if (Ref<PackedScene>(p_resource).is_valid()) {
+		p_extensions->push_back("tscn"); // Text scene.
 	} else {
-		p_extensions->push_back("tres"); //text resource
+		p_extensions->push_back("tres"); // Text resource.
 	}
 }
 

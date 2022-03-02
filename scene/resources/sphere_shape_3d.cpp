@@ -63,6 +63,7 @@ void SphereShape3D::_update_shape() {
 }
 
 void SphereShape3D::set_radius(float p_radius) {
+	ERR_FAIL_COND_MSG(p_radius < 0, "SphereShape3D radius cannot be negative.");
 	radius = p_radius;
 	_update_shape();
 	notify_change_to_owners();

@@ -31,7 +31,6 @@
 #ifndef ANIMATION_TREE_EDITOR_PLUGIN_H
 #define ANIMATION_TREE_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/property_editor.h"
 #include "scene/animation/animation_tree.h"
@@ -39,6 +38,8 @@
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
+
+class EditorFileDialog;
 
 class AnimationTreeNodeEditorPlugin : public VBoxContainer {
 	GDCLASS(AnimationTreeNodeEditorPlugin, VBoxContainer);
@@ -96,7 +97,6 @@ class AnimationTreeEditorPlugin : public EditorPlugin {
 	GDCLASS(AnimationTreeEditorPlugin, EditorPlugin);
 
 	AnimationTreeEditor *anim_tree_editor;
-	EditorNode *editor;
 	Button *button;
 
 public:
@@ -106,7 +106,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	AnimationTreeEditorPlugin(EditorNode *p_node);
+	AnimationTreeEditorPlugin();
 	~AnimationTreeEditorPlugin();
 };
 

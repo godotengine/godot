@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorInspector" inherits="ScrollContainer" version="4.0">
+<class name="EditorInspector" inherits="ScrollContainer" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A tab used to edit properties of the selected node.
 	</brief_description>
@@ -59,8 +59,8 @@
 			</description>
 		</signal>
 		<signal name="resource_selected">
-			<argument index="0" name="res" type="Object" />
-			<argument index="1" name="prop" type="String" />
+			<argument index="0" name="resource" type="Resource" />
+			<argument index="1" name="path" type="String" />
 			<description>
 				Emitted when a resource is selected in the inspector.
 			</description>

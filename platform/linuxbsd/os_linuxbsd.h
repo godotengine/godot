@@ -39,8 +39,6 @@
 #include "drivers/unix/os_unix.h"
 #include "joypad_linux.h"
 #include "servers/audio_server.h"
-#include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering_server.h"
 
 class OS_LinuxBSD : public OS_Unix {
 	virtual void delete_main_loop() override;
@@ -89,6 +87,7 @@ public:
 	virtual Error shell_open(String p_uri) override;
 
 	virtual String get_unique_id() const override;
+	virtual String get_processor_name() const override;
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 

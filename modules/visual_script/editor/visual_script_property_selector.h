@@ -96,16 +96,16 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 
 	EditorHelpBit *help_bit;
 
-	bool properties;
-	bool visual_script_generic;
-	bool connecting;
+	bool properties = false;
+	bool visual_script_generic = false;
+	bool connecting = false;
 	String selected;
 	Variant::Type type;
 	String base_type;
 	String base_script;
 	ObjectID script;
 	Object *instance;
-	bool virtuals_only;
+	bool virtuals_only = false;
 	VBoxContainer *vbox;
 
 protected:

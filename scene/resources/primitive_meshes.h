@@ -106,8 +106,8 @@ class CapsuleMesh : public PrimitiveMesh {
 	GDCLASS(CapsuleMesh, PrimitiveMesh);
 
 private:
-	float radius = 1.0;
-	float height = 3.0;
+	float radius = 0.5;
+	float height = 2.0;
 	int radial_segments = 64;
 	int rings = 8;
 
@@ -138,7 +138,7 @@ class BoxMesh : public PrimitiveMesh {
 	GDCLASS(BoxMesh, PrimitiveMesh);
 
 private:
-	Vector3 size = Vector3(2.0, 2.0, 2.0);
+	Vector3 size = Vector3(1, 1, 1);
 	int subdivide_w = 0;
 	int subdivide_h = 0;
 	int subdivide_d = 0;
@@ -171,8 +171,8 @@ class CylinderMesh : public PrimitiveMesh {
 	GDCLASS(CylinderMesh, PrimitiveMesh);
 
 private:
-	float top_radius = 1.0;
-	float bottom_radius = 1.0;
+	float top_radius = 0.5;
+	float bottom_radius = 0.5;
 	float height = 2.0;
 	int radial_segments = 64;
 	int rings = 4;

@@ -44,10 +44,8 @@
 #include <algorithm>
 
 #include "SpvBuilder.h"
-
 #include "spirv.hpp"
-#include "GlslangToSpv.h"
-#include "SpvBuilder.h"
+
 namespace spv {
     #include "GLSL.std.450.h"
     #include "GLSL.ext.KHR.h"
@@ -113,8 +111,6 @@ void Builder::postProcessType(const Instruction& inst, Id typeId)
             }
         }
         break;
-    case OpAccessChain:
-    case OpPtrAccessChain:
     case OpCopyObject:
         break;
     case OpFConvert:
@@ -161,26 +157,43 @@ void Builder::postProcessType(const Instruction& inst, Id typeId)
         switch (inst.getImmediateOperand(1)) {
         case GLSLstd450Frexp:
         case GLSLstd450FrexpStruct:
-            if (getSpvVersion() < glslang::EShTargetSpv_1_3 && containsType(typeId, OpTypeInt, 16))
+            if (getSpvVersion() < spv::Spv_1_3 && containsType(typeId, OpTypeInt, 16))
                 addExtension(spv::E_SPV_AMD_gpu_shader_int16);
             break;
         case GLSLstd450InterpolateAtCentroid:
         case GLSLstd450InterpolateAtSample:
         case GLSLstd450InterpolateAtOffset:
-            if (getSpvVersion() < glslang::EShTargetSpv_1_3 && containsType(typeId, OpTypeFloat, 16))
+            if (getSpvVersion() < spv::Spv_1_3 && containsType(typeId, OpTypeFloat, 16))
                 addExtension(spv::E_SPV_AMD_gpu_shader_half_float);
             break;
         default:
             break;
         }
         break;
+    case OpAccessChain:
+    case OpPtrAccessChain:
+        if (isPointerType(typeId))
+            break;
+        if (basicTypeOp == OpTypeInt) {
+            if (width == 16)
+                addCapability(CapabilityInt16);
+            else if (width == 8)
+                addCapability(CapabilityInt8);
+        }
     default:
-        if (basicTypeOp == OpTypeFloat && width == 16)
-            addCapability(CapabilityFloat16);
-        if (basicTypeOp == OpTypeInt && width == 16)
-            addCapability(CapabilityInt16);
-        if (basicTypeOp == OpTypeInt && width == 8)
-            addCapability(CapabilityInt8);
+        if (basicTypeOp == OpTypeInt) {
+            if (width == 16)
+                addCapability(CapabilityInt16);
+            else if (width == 8)
+                addCapability(CapabilityInt8);
+            else if (width == 64)
+                addCapability(CapabilityInt64);
+        } else if (basicTypeOp == OpTypeFloat) {
+            if (width == 16)
+                addCapability(CapabilityFloat16);
+            else if (width == 64)
+                addCapability(CapabilityFloat64);
+        }
         break;
     }
 }

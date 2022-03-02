@@ -39,15 +39,18 @@ void EditorNetworkProfiler::_bind_methods() {
 }
 
 void EditorNetworkProfiler::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
-		clear_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
-		incoming_bandwidth_text->set_right_icon(get_theme_icon(SNAME("ArrowDown"), SNAME("EditorIcons")));
-		outgoing_bandwidth_text->set_right_icon(get_theme_icon(SNAME("ArrowUp"), SNAME("EditorIcons")));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
+			clear_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
+			incoming_bandwidth_text->set_right_icon(get_theme_icon(SNAME("ArrowDown"), SNAME("EditorIcons")));
+			outgoing_bandwidth_text->set_right_icon(get_theme_icon(SNAME("ArrowUp"), SNAME("EditorIcons")));
 
-		// This needs to be done here to set the faded color when the profiler is first opened
-		incoming_bandwidth_text->add_theme_color_override("font_uneditable_color", get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.5));
-		outgoing_bandwidth_text->add_theme_color_override("font_uneditable_color", get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.5));
+			// This needs to be done here to set the faded color when the profiler is first opened
+			incoming_bandwidth_text->add_theme_color_override("font_uneditable_color", get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.5));
+			outgoing_bandwidth_text->add_theme_color_override("font_uneditable_color", get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.5));
+		} break;
 	}
 }
 
@@ -56,7 +59,7 @@ void EditorNetworkProfiler::_update_frame() {
 
 	TreeItem *root = counters_display->create_item();
 
-	for (const KeyValue<ObjectID, DebuggerMarshalls::MultiplayerNodeInfo> &E : nodes_data) {
+	for (const KeyValue<ObjectID, SceneDebugger::RPCNodeInfo> &E : nodes_data) {
 		TreeItem *node = counters_display->create_item(root);
 
 		for (int j = 0; j < counters_display->get_columns(); ++j) {
@@ -65,9 +68,7 @@ void EditorNetworkProfiler::_update_frame() {
 
 		node->set_text(0, E.value.node_path);
 		node->set_text(1, E.value.incoming_rpc == 0 ? "-" : itos(E.value.incoming_rpc));
-		node->set_text(2, E.value.incoming_rset == 0 ? "-" : itos(E.value.incoming_rset));
-		node->set_text(3, E.value.outgoing_rpc == 0 ? "-" : itos(E.value.outgoing_rpc));
-		node->set_text(4, E.value.outgoing_rset == 0 ? "-" : itos(E.value.outgoing_rset));
+		node->set_text(2, E.value.outgoing_rpc == 0 ? "-" : itos(E.value.outgoing_rpc));
 	}
 }
 
@@ -91,14 +92,12 @@ void EditorNetworkProfiler::_clear_pressed() {
 	}
 }
 
-void EditorNetworkProfiler::add_node_frame_data(const DebuggerMarshalls::MultiplayerNodeInfo p_frame) {
+void EditorNetworkProfiler::add_node_frame_data(const SceneDebugger::RPCNodeInfo p_frame) {
 	if (!nodes_data.has(p_frame.node)) {
 		nodes_data.insert(p_frame.node, p_frame);
 	} else {
 		nodes_data[p_frame.node].incoming_rpc += p_frame.incoming_rpc;
-		nodes_data[p_frame.node].incoming_rset += p_frame.incoming_rset;
 		nodes_data[p_frame.node].outgoing_rpc += p_frame.outgoing_rpc;
-		nodes_data[p_frame.node].outgoing_rset += p_frame.outgoing_rset;
 	}
 
 	if (frame_delay->is_stopped()) {
@@ -174,7 +173,7 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	counters_display->set_v_size_flags(SIZE_EXPAND_FILL);
 	counters_display->set_hide_folding(true);
 	counters_display->set_hide_root(true);
-	counters_display->set_columns(5);
+	counters_display->set_columns(3);
 	counters_display->set_column_titles_visible(true);
 	counters_display->set_column_title(0, TTR("Node"));
 	counters_display->set_column_expand(0, true);
@@ -184,18 +183,10 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	counters_display->set_column_expand(1, false);
 	counters_display->set_column_clip_content(1, true);
 	counters_display->set_column_custom_minimum_width(1, 120 * EDSCALE);
-	counters_display->set_column_title(2, TTR("Incoming RSET"));
+	counters_display->set_column_title(2, TTR("Outgoing RPC"));
 	counters_display->set_column_expand(2, false);
 	counters_display->set_column_clip_content(2, true);
 	counters_display->set_column_custom_minimum_width(2, 120 * EDSCALE);
-	counters_display->set_column_title(3, TTR("Outgoing RPC"));
-	counters_display->set_column_expand(3, false);
-	counters_display->set_column_clip_content(3, true);
-	counters_display->set_column_custom_minimum_width(3, 120 * EDSCALE);
-	counters_display->set_column_title(4, TTR("Outgoing RSET"));
-	counters_display->set_column_expand(4, false);
-	counters_display->set_column_clip_content(4, true);
-	counters_display->set_column_custom_minimum_width(4, 120 * EDSCALE);
 	add_child(counters_display);
 
 	frame_delay = memnew(Timer);

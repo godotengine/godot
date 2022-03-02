@@ -287,7 +287,7 @@ void Collada::_parse_image(XMLParser &parser) {
 	if (state.version < State::Version(1, 4, 0)) {
 		/* <1.4 */
 		String path = parser.get_attribute_value("source").strip_edges();
-		if (path.find("://") == -1 && path.is_relative_path()) {
+		if (!path.contains("://") && path.is_relative_path()) {
 			// path is relative to file being loaded, so convert to a resource path
 			image.path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir().plus_file(path.uri_decode()));
 		}
@@ -300,7 +300,7 @@ void Collada::_parse_image(XMLParser &parser) {
 					parser.read();
 					String path = parser.get_node_data().strip_edges().uri_decode();
 
-					if (path.find("://") == -1 && path.is_relative_path()) {
+					if (!path.contains("://") && path.is_relative_path()) {
 						// path is relative to file being loaded, so convert to a resource path
 						path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir().plus_file(path));
 
@@ -1009,11 +1009,6 @@ void Collada::_parse_mesh_geometry(XMLParser &parser, String p_id, String p_name
 							String source = _uri_to_id(parser.get_attribute_value("source"));
 
 							if (semantic == "TEXCOORD") {
-								/*
-								if (parser.has_attribute("set"))// a texcoord
-									semantic+=parser.get_attribute_value("set");
-								else
-									semantic="TEXCOORD0";*/
 								semantic = "TEXCOORD" + itos(last_ref++);
 							}
 							int offset = parser.get_attribute_value("offset").to_int();
@@ -1194,11 +1189,6 @@ void Collada::_parse_skin_controller(XMLParser &parser, String p_id) {
 
 				skindata.weights = weights;
 			}
-			/*
-			else if (!parser.is_empty())
-				parser.skip_section();
-			*/
-
 		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "skin") {
 			break;
 		}
@@ -1258,19 +1248,8 @@ void Collada::_parse_morph_controller(XMLParser &parser, String p_id) {
 				}
 			} else if (section == "Name_array" || section == "IDREF_array") {
 				// create a new array and read it.
-
-				/*
-				if (section=="IDREF_array")
-					morphdata.use_idrefs=true;
-				*/
 				if (morphdata.sources.has(current_source)) {
 					morphdata.sources[current_source].sarray = _read_string_array(parser);
-					/*
-					if (section=="IDREF_array") {
-						Vector<String> sa = morphdata.sources[current_source].sarray;
-						for(int i=0;i<sa.size();i++)
-							state.idref_joints.insert(sa[i]);
-					}*/
 					COLLADA_PRINT("section: " + current_source + " read " + itos(morphdata.sources[current_source].array.size()) + " values.");
 				}
 			} else if (section == "technique_common") {
@@ -1303,11 +1282,6 @@ void Collada::_parse_morph_controller(XMLParser &parser, String p_id) {
 					}
 				}
 			}
-			/*
-			else if (!parser.is_empty())
-				parser.skip_section();
-			*/
-
 		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "morph") {
 			break;
 		}
@@ -1832,10 +1806,10 @@ void Collada::_parse_animation(XMLParser &parser) {
 				}
 			}
 
-			if (target.find("/") != -1) { //transform component
+			if (target.contains("/")) { //transform component
 				track.target = target.get_slicec('/', 0);
 				track.param = target.get_slicec('/', 1);
-				if (track.param.find(".") != -1) {
+				if (track.param.contains(".")) {
 					track.component = track.param.get_slice(".", 1).to_upper();
 				}
 				track.param = track.param.get_slice(".", 0);

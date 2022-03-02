@@ -31,8 +31,8 @@
 #include "node_dock.h"
 
 #include "connections_dialog.h"
-#include "editor_node.h"
-#include "editor_scale.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 
 void NodeDock::show_groups() {
 	groups_button->set_pressed(true);
@@ -52,9 +52,12 @@ void NodeDock::_bind_methods() {
 }
 
 void NodeDock::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		connections_button->set_icon(get_theme_icon(SNAME("Signals"), SNAME("EditorIcons")));
-		groups_button->set_icon(get_theme_icon(SNAME("Groups"), SNAME("EditorIcons")));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			connections_button->set_icon(get_theme_icon(SNAME("Signals"), SNAME("EditorIcons")));
+			groups_button->set_icon(get_theme_icon(SNAME("Groups"), SNAME("EditorIcons")));
+		} break;
 	}
 }
 
@@ -113,7 +116,7 @@ NodeDock::NodeDock() {
 	mode_hb->add_child(groups_button);
 	groups_button->connect("pressed", callable_mp(this, &NodeDock::show_groups));
 
-	connections = memnew(ConnectionsDock(EditorNode::get_singleton()));
+	connections = memnew(ConnectionsDock);
 	connections->set_undoredo(EditorNode::get_undo_redo());
 	add_child(connections);
 	connections->set_v_size_flags(SIZE_EXPAND_FILL);

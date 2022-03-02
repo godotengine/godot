@@ -31,7 +31,6 @@
 #ifndef EDITOR_ABOUT_H
 #define EDITOR_ABOUT_H
 
-#include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/link_button.h"
@@ -43,7 +42,7 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
-#include "editor_scale.h"
+#include "editor/editor_scale.h"
 
 /**
  * NOTE: Do not assume the EditorNode singleton to be available in this class' methods.

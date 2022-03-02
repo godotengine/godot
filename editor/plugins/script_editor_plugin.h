@@ -47,6 +47,8 @@
 #include "scene/main/timer.h"
 #include "scene/resources/text_file.h"
 
+class EditorFileDialog;
+
 class EditorSyntaxHighlighter : public SyntaxHighlighter {
 	GDCLASS(EditorSyntaxHighlighter, SyntaxHighlighter)
 
@@ -186,7 +188,6 @@ class FindInFilesPanel;
 class ScriptEditor : public PanelContainer {
 	GDCLASS(ScriptEditor, PanelContainer);
 
-	EditorNode *editor;
 	enum {
 		FILE_NEW,
 		FILE_NEW_TEXTFILE,
@@ -418,7 +419,7 @@ class ScriptEditor : public PanelContainer {
 
 	void _tree_changed();
 
-	void _script_split_dragged(float);
+	void _split_dragged(float);
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
@@ -520,7 +521,7 @@ public:
 
 	static void register_create_script_editor_function(CreateScriptEditorFunc p_func);
 
-	ScriptEditor(EditorNode *p_editor);
+	ScriptEditor();
 	~ScriptEditor();
 };
 
@@ -528,7 +529,6 @@ class ScriptEditorPlugin : public EditorPlugin {
 	GDCLASS(ScriptEditorPlugin, EditorPlugin);
 
 	ScriptEditor *script_editor;
-	EditorNode *editor;
 
 public:
 	virtual String get_name() const override { return "Script"; }
@@ -551,7 +551,7 @@ public:
 
 	virtual void edited_scene_changed() override;
 
-	ScriptEditorPlugin(EditorNode *p_node);
+	ScriptEditorPlugin();
 	~ScriptEditorPlugin();
 };
 

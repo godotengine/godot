@@ -153,7 +153,7 @@ VARIANT_ENUM_CAST(EditorScenePostImportPlugin::InternalImportCategory)
 class ResourceImporterScene : public ResourceImporter {
 	GDCLASS(ResourceImporterScene, ResourceImporter);
 
-	Set<Ref<EditorSceneFormatImporter>> importers;
+	Vector<Ref<EditorSceneFormatImporter>> importers;
 
 	static ResourceImporterScene *singleton;
 
@@ -176,6 +176,12 @@ class ResourceImporterScene : public ResourceImporter {
 		NAVMESH_DISABLED,
 		NAVMESH_MESH_AND_NAVMESH,
 		NAVMESH_NAVMESH_ONLY,
+	};
+
+	enum OccluderMode {
+		OCCLUDER_DISABLED,
+		OCCLUDER_MESH_AND_OCCLUDER,
+		OCCLUDER_OCCLUDER_ONLY,
 	};
 
 	enum MeshOverride {
@@ -224,13 +230,13 @@ class ResourceImporterScene : public ResourceImporter {
 public:
 	static ResourceImporterScene *get_singleton() { return singleton; }
 
-	void add_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin) { post_importer_plugins.push_back(p_plugin); }
-	void remove_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin) { post_importer_plugins.erase(p_plugin); }
+	void add_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin, bool p_first_priority = false);
+	void remove_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin);
 
-	const Set<Ref<EditorSceneFormatImporter>> &get_importers() const { return importers; }
+	const Vector<Ref<EditorSceneFormatImporter>> &get_importers() const { return importers; }
 
-	void add_importer(Ref<EditorSceneFormatImporter> p_importer) { importers.insert(p_importer); }
-	void remove_importer(Ref<EditorSceneFormatImporter> p_importer) { importers.erase(p_importer); }
+	void add_importer(Ref<EditorSceneFormatImporter> p_importer, bool p_first_priority = false);
+	void remove_importer(Ref<EditorSceneFormatImporter> p_importer);
 
 	virtual String get_importer_name() const override;
 	virtual String get_visible_name() const override;
@@ -261,8 +267,8 @@ public:
 	// Import scenes *after* everything else (such as textures).
 	virtual int get_import_order() const override { return ResourceImporter::IMPORT_ORDER_SCENE; }
 
-	Node *_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, List<Pair<NodePath, Node *>> &r_node_renames);
-	Node *_post_fix_node(Node *p_node, Node *p_root, Map<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Set<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps);
+	Node *_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &r_collision_map, Pair<PackedVector3Array, PackedInt32Array> *r_occluder_arrays, List<Pair<NodePath, Node *>> &r_node_renames);
+	Node *_post_fix_node(Node *p_node, Node *p_root, Map<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, Set<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps);
 
 	Ref<Animation> _save_animation_to_file(Ref<Animation> anim, bool p_save_to_file, String p_save_to_path, bool p_keep_custom_tracks);
 	void _create_clips(AnimationPlayer *anim, const Array &p_clips, bool p_bake_all);

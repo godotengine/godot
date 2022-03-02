@@ -303,6 +303,9 @@ hb_ot_var_normalize_variations (hb_face_t            *face,
  * values for the axis are mapped to the interval [-1,1], with the default
  * axis value mapped to 0.
  *
+ * The normalized values have 14 bits of fixed-point sub-integer precision as per
+ * OpenType specification.
+ *
  * Any additional scaling defined in the face's `avar` table is also
  * applied, as described at https://docs.microsoft.com/en-us/typography/opentype/spec/avar
  *

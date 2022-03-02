@@ -239,7 +239,7 @@ class CSGBox3D : public CSGPrimitive3D {
 	virtual CSGBrush *_build_brush() override;
 
 	Ref<Material> material;
-	Vector3 size = Vector3(2, 2, 2);
+	Vector3 size = Vector3(1, 1, 1);
 
 protected:
 	static void _bind_methods();

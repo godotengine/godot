@@ -81,42 +81,50 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void BaseButton::_notification(int p_what) {
-	if (p_what == NOTIFICATION_MOUSE_ENTER) {
-		status.hovering = true;
-		update();
-	}
+	switch (p_what) {
+		case NOTIFICATION_MOUSE_ENTER: {
+			status.hovering = true;
+			update();
+		} break;
 
-	if (p_what == NOTIFICATION_MOUSE_EXIT) {
-		status.hovering = false;
-		update();
-	}
-	if (p_what == NOTIFICATION_DRAG_BEGIN || p_what == NOTIFICATION_SCROLL_BEGIN) {
-		if (status.press_attempt) {
+		case NOTIFICATION_MOUSE_EXIT: {
+			status.hovering = false;
+			update();
+		} break;
+
+		case NOTIFICATION_DRAG_BEGIN:
+		case NOTIFICATION_SCROLL_BEGIN: {
+			if (status.press_attempt) {
+				status.press_attempt = false;
+				update();
+			}
+		} break;
+
+		case NOTIFICATION_FOCUS_ENTER: {
+			update();
+		} break;
+
+		case NOTIFICATION_FOCUS_EXIT: {
+			if (status.press_attempt) {
+				status.press_attempt = false;
+				update();
+			} else if (status.hovering) {
+				update();
+			}
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED:
+		case NOTIFICATION_EXIT_TREE: {
+			if (p_what == NOTIFICATION_VISIBILITY_CHANGED && is_visible_in_tree()) {
+				break;
+			}
+			if (!toggle_mode) {
+				status.pressed = false;
+			}
+			status.hovering = false;
 			status.press_attempt = false;
-			update();
-		}
-	}
-
-	if (p_what == NOTIFICATION_FOCUS_ENTER) {
-		update();
-	}
-
-	if (p_what == NOTIFICATION_FOCUS_EXIT) {
-		if (status.press_attempt) {
-			status.press_attempt = false;
-			update();
-		} else if (status.hovering) {
-			update();
-		}
-	}
-
-	if (p_what == NOTIFICATION_EXIT_TREE || (p_what == NOTIFICATION_VISIBILITY_CHANGED && !is_visible_in_tree())) {
-		if (!toggle_mode) {
-			status.pressed = false;
-		}
-		status.hovering = false;
-		status.press_attempt = false;
-		status.pressing_inside = false;
+			status.pressing_inside = false;
+		} break;
 	}
 }
 
@@ -403,7 +411,7 @@ bool BaseButton::_is_focus_owner_in_shorcut_context() const {
 	}
 
 	Node *ctx_node = get_shortcut_context();
-	Control *vp_focus = get_focus_owner();
+	Control *vp_focus = get_viewport() ? get_viewport()->gui_get_focus_owner() : nullptr;
 
 	// If the context is valid and the viewport focus is valid, check if the context is the focus or is a parent of it.
 	return ctx_node && vp_focus && (ctx_node == vp_focus || ctx_node->is_ancestor_of(vp_focus));
@@ -444,6 +452,7 @@ void BaseButton::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("button_up"));
 	ADD_SIGNAL(MethodInfo("button_down"));
 	ADD_SIGNAL(MethodInfo("toggled", PropertyInfo(Variant::BOOL, "button_pressed")));
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_in_tooltip"), "set_shortcut_in_tooltip", "is_shortcut_in_tooltip_enabled");
@@ -503,7 +512,8 @@ BaseButton *ButtonGroup::get_pressed_button() {
 void ButtonGroup::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pressed_button"), &ButtonGroup::get_pressed_button);
 	ClassDB::bind_method(D_METHOD("get_buttons"), &ButtonGroup::_get_buttons);
-	ADD_SIGNAL(MethodInfo("pressed", PropertyInfo(Variant::OBJECT, "button")));
+
+	ADD_SIGNAL(MethodInfo("pressed", PropertyInfo(Variant::OBJECT, "button", PROPERTY_HINT_RESOURCE_TYPE, "BaseButton")));
 }
 
 ButtonGroup::ButtonGroup() {

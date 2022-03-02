@@ -102,11 +102,11 @@ void LightOccluder2DEditor::_create_resource() {
 	_menu_option(MODE_CREATE);
 }
 
-LightOccluder2DEditor::LightOccluder2DEditor(EditorNode *p_editor) :
-		AbstractPolygon2DEditor(p_editor) {
+LightOccluder2DEditor::LightOccluder2DEditor() :
+		AbstractPolygon2DEditor() {
 	node = nullptr;
 }
 
-LightOccluder2DEditorPlugin::LightOccluder2DEditorPlugin(EditorNode *p_node) :
-		AbstractPolygon2DEditorPlugin(p_node, memnew(LightOccluder2DEditor(p_node)), "LightOccluder2D") {
+LightOccluder2DEditorPlugin::LightOccluder2DEditorPlugin() :
+		AbstractPolygon2DEditorPlugin(memnew(LightOccluder2DEditor), "LightOccluder2D") {
 }

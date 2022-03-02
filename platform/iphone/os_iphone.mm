@@ -31,6 +31,7 @@
 #ifdef IPHONE_ENABLED
 
 #include "os_iphone.h"
+
 #import "app_delegate.h"
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
@@ -45,6 +46,7 @@
 #import <AudioToolbox/AudioServices.h>
 #import <UIKit/UIKit.h>
 #import <dlfcn.h>
+#include <sys/sysctl.h>
 
 #if defined(VULKAN_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
@@ -168,7 +170,7 @@ void OSIPhone::delete_main_loop() {
 	if (main_loop) {
 		main_loop->finalize();
 		memdelete(main_loop);
-	};
+	}
 
 	main_loop = nullptr;
 }
@@ -197,7 +199,7 @@ void OSIPhone::finalize() {
 	deinitialize_modules();
 
 	// Already gets called
-	//    delete_main_loop();
+	//delete_main_loop();
 }
 
 // MARK: Dynamic Libraries
@@ -230,12 +232,13 @@ Error OSIPhone::get_dynamic_library_symbol_handle(void *p_library_handle, const 
 
 String OSIPhone::get_name() const {
 	return "iOS";
-};
+}
 
 String OSIPhone::get_model_name() const {
 	String model = ios->get_model();
-	if (model != "")
+	if (model != "") {
 		return model;
+	}
 
 	return OS_Unix::get_model_name();
 }
@@ -253,7 +256,7 @@ Error OSIPhone::shell_open(String p_uri) {
 	[[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
 
 	return OK;
-};
+}
 
 void OSIPhone::set_user_data_dir(String p_dir) {
 	DirAccess *da = DirAccess::open(p_dir);
@@ -285,6 +288,15 @@ String OSIPhone::get_locale() const {
 String OSIPhone::get_unique_id() const {
 	NSString *uuid = [UIDevice currentDevice].identifierForVendor.UUIDString;
 	return String::utf8([uuid UTF8String]);
+}
+
+String OSIPhone::get_processor_name() const {
+	char buffer[256];
+	size_t buffer_len = 256;
+	if (sysctlbyname("machdep.cpu.brand_string", &buffer, &buffer_len, NULL, 0) == 0) {
+		return String::utf8(buffer, buffer_len);
+	}
+	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
 }
 
 void OSIPhone::vibrate_handheld(int p_duration_ms) {

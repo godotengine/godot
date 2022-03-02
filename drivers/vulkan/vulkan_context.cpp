@@ -46,6 +46,8 @@
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #define APP_SHORT_NAME "GodotEngine"
 
+VulkanHooks *VulkanContext::vulkan_hooks = nullptr;
+
 VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(
 		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 		VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -273,9 +275,9 @@ Error VulkanContext::_obtain_vulkan_version() {
 		uint32_t api_version;
 		VkResult res = func(&api_version);
 		if (res == VK_SUCCESS) {
-			vulkan_major = VK_VERSION_MAJOR(api_version);
-			vulkan_minor = VK_VERSION_MINOR(api_version);
-			vulkan_patch = VK_VERSION_PATCH(api_version);
+			vulkan_major = VK_API_VERSION_MAJOR(api_version);
+			vulkan_minor = VK_API_VERSION_MINOR(api_version);
+			vulkan_patch = VK_API_VERSION_PATCH(api_version);
 		} else {
 			// according to the documentation this shouldn't fail with anything except a memory allocation error
 			// in which case we're in deep trouble anyway
@@ -514,45 +516,62 @@ Error VulkanContext::_check_capabilities() {
 	subgroup_capabilities.supportedStages = 0;
 	subgroup_capabilities.supportedOperations = 0;
 	subgroup_capabilities.quadOperationsInAllStages = false;
+	shader_capabilities.shader_float16_is_supported = false;
+	shader_capabilities.shader_int8_is_supported = false;
+	storage_buffer_capabilities.storage_buffer_16_bit_access_is_supported = false;
+	storage_buffer_capabilities.uniform_and_storage_buffer_16_bit_access_is_supported = false;
+	storage_buffer_capabilities.storage_push_constant_16_is_supported = false;
+	storage_buffer_capabilities.storage_input_output_16 = false;
 
 	// check for extended features
-	PFN_vkGetPhysicalDeviceFeatures2 device_features_func = (PFN_vkGetPhysicalDeviceFeatures2)vkGetInstanceProcAddr(inst, "vkGetPhysicalDeviceFeatures2");
-	if (device_features_func == nullptr) {
+	PFN_vkGetPhysicalDeviceFeatures2 vkGetPhysicalDeviceFeatures2_func = (PFN_vkGetPhysicalDeviceFeatures2)vkGetInstanceProcAddr(inst, "vkGetPhysicalDeviceFeatures2");
+	if (vkGetPhysicalDeviceFeatures2_func == nullptr) {
 		// In Vulkan 1.0 might be accessible under its original extension name
-		device_features_func = (PFN_vkGetPhysicalDeviceFeatures2)vkGetInstanceProcAddr(inst, "vkGetPhysicalDeviceFeatures2KHR");
+		vkGetPhysicalDeviceFeatures2_func = (PFN_vkGetPhysicalDeviceFeatures2)vkGetInstanceProcAddr(inst, "vkGetPhysicalDeviceFeatures2KHR");
 	}
-	if (device_features_func != nullptr) {
+	if (vkGetPhysicalDeviceFeatures2_func != nullptr) {
 		// check our extended features
-		VkPhysicalDeviceMultiviewFeatures multiview_features;
-		multiview_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
-		multiview_features.pNext = nullptr;
+		VkPhysicalDeviceShaderFloat16Int8FeaturesKHR shader_features = {
+			/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR,
+			/*pNext*/ nullptr,
+			/*shaderFloat16*/ false,
+			/*shaderInt8*/ false,
+		};
+
+		VkPhysicalDevice16BitStorageFeaturesKHR storage_feature = {
+			/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR,
+			/*pNext*/ &shader_features,
+			/*storageBuffer16BitAccess*/ false,
+			/*uniformAndStorageBuffer16BitAccess*/ false,
+			/*storagePushConstant16*/ false,
+			/*storageInputOutput16*/ false,
+		};
+
+		VkPhysicalDeviceMultiviewFeatures multiview_features = {
+			/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES,
+			/*pNext*/ &storage_feature,
+			/*multiview*/ false,
+			/*multiviewGeometryShader*/ false,
+			/*multiviewTessellationShader*/ false,
+		};
 
 		VkPhysicalDeviceFeatures2 device_features;
 		device_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
 		device_features.pNext = &multiview_features;
 
-		device_features_func(gpu, &device_features);
+		vkGetPhysicalDeviceFeatures2_func(gpu, &device_features);
+
 		multiview_capabilities.is_supported = multiview_features.multiview;
 		multiview_capabilities.geometry_shader_is_supported = multiview_features.multiviewGeometryShader;
 		multiview_capabilities.tessellation_shader_is_supported = multiview_features.multiviewTessellationShader;
 
-		VkPhysicalDeviceShaderFloat16Int8FeaturesKHR shader_features;
-		shader_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR;
-		shader_features.pNext = nullptr;
-
-		device_features.pNext = &shader_features;
-
-		device_features_func(gpu, &device_features);
 		shader_capabilities.shader_float16_is_supported = shader_features.shaderFloat16;
+		shader_capabilities.shader_int8_is_supported = shader_features.shaderInt8;
 
-		VkPhysicalDevice16BitStorageFeaturesKHR storage_feature;
-		storage_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR;
-		storage_feature.pNext = nullptr;
-
-		device_features.pNext = &storage_feature;
-
-		device_features_func(gpu, &device_features);
 		storage_buffer_capabilities.storage_buffer_16_bit_access_is_supported = storage_feature.storageBuffer16BitAccess;
+		storage_buffer_capabilities.uniform_and_storage_buffer_16_bit_access_is_supported = storage_feature.uniformAndStorageBuffer16BitAccess;
+		storage_buffer_capabilities.storage_push_constant_16_is_supported = storage_feature.storagePushConstant16;
+		storage_buffer_capabilities.storage_input_output_16 = storage_feature.storageInputOutput16;
 	}
 
 	// check extended properties
@@ -678,19 +697,27 @@ Error VulkanContext::_create_instance() {
 		inst_info.pNext = &dbg_report_callback_create_info;
 	}
 
-	VkResult err = vkCreateInstance(&inst_info, nullptr, &inst);
-	ERR_FAIL_COND_V_MSG(err == VK_ERROR_INCOMPATIBLE_DRIVER, ERR_CANT_CREATE,
-			"Cannot find a compatible Vulkan installable client driver (ICD).\n\n"
-			"vkCreateInstance Failure");
-	ERR_FAIL_COND_V_MSG(err == VK_ERROR_EXTENSION_NOT_PRESENT, ERR_CANT_CREATE,
-			"Cannot find a specified extension library.\n"
-			"Make sure your layers path is set appropriately.\n"
-			"vkCreateInstance Failure");
-	ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE,
-			"vkCreateInstance failed.\n\n"
-			"Do you have a compatible Vulkan installable client driver (ICD) installed?\n"
-			"Please look at the Getting Started guide for additional information.\n"
-			"vkCreateInstance Failure");
+	VkResult err;
+
+	if (vulkan_hooks) {
+		if (!vulkan_hooks->create_vulkan_instance(&inst_info, &inst)) {
+			return ERR_CANT_CREATE;
+		}
+	} else {
+		err = vkCreateInstance(&inst_info, nullptr, &inst);
+		ERR_FAIL_COND_V_MSG(err == VK_ERROR_INCOMPATIBLE_DRIVER, ERR_CANT_CREATE,
+				"Cannot find a compatible Vulkan installable client driver (ICD).\n\n"
+				"vkCreateInstance Failure");
+		ERR_FAIL_COND_V_MSG(err == VK_ERROR_EXTENSION_NOT_PRESENT, ERR_CANT_CREATE,
+				"Cannot find a specified extension library.\n"
+				"Make sure your layers path is set appropriately.\n"
+				"vkCreateInstance Failure");
+		ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE,
+				"vkCreateInstance failed.\n\n"
+				"Do you have a compatible Vulkan installable client driver (ICD) installed?\n"
+				"Please look at the Getting Started guide for additional information.\n"
+				"vkCreateInstance Failure");
+	}
 
 	inst_initialized = true;
 
@@ -803,107 +830,122 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 		{ 0, nullptr },
 	};
 
-	// TODO: At least on Linux Laptops integrated GPUs fail with Vulkan in many instances.
-	//   The device should really be a preference, but for now choosing a discrete GPU over the
-	//   integrated one is better than the default.
-
 	int32_t device_index = -1;
-	int type_selected = -1;
-	print_verbose("Vulkan devices:");
-	for (uint32_t i = 0; i < gpu_count; ++i) {
-		VkPhysicalDeviceProperties props;
-		vkGetPhysicalDeviceProperties(physical_devices[i], &props);
-
-		bool present_supported = false;
-
-		uint32_t device_queue_family_count = 0;
-		vkGetPhysicalDeviceQueueFamilyProperties(physical_devices[i], &device_queue_family_count, nullptr);
-		VkQueueFamilyProperties *device_queue_props = (VkQueueFamilyProperties *)malloc(device_queue_family_count * sizeof(VkQueueFamilyProperties));
-		vkGetPhysicalDeviceQueueFamilyProperties(physical_devices[i], &device_queue_family_count, device_queue_props);
-		for (uint32_t j = 0; j < device_queue_family_count; j++) {
-			VkBool32 supports;
-			vkGetPhysicalDeviceSurfaceSupportKHR(physical_devices[i], j, p_surface, &supports);
-			if (supports && ((device_queue_props[j].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0)) {
-				present_supported = true;
-			} else {
-				continue;
-			}
+	if (vulkan_hooks) {
+		if (!vulkan_hooks->get_physical_device(&gpu)) {
+			return ERR_CANT_CREATE;
 		}
-		String name = props.deviceName;
-		String vendor = "Unknown";
-		String dev_type;
-		switch (props.deviceType) {
-			case VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU: {
-				dev_type = "Discrete";
-			} break;
-			case VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU: {
-				dev_type = "Integrated";
-			} break;
-			case VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU: {
-				dev_type = "Virtual";
-			} break;
-			case VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_CPU: {
-				dev_type = "CPU";
-			} break;
-			default: {
-				dev_type = "Other";
-			} break;
-		}
-		uint32_t vendor_idx = 0;
-		while (vendor_names[vendor_idx].name != nullptr) {
-			if (props.vendorID == vendor_names[vendor_idx].id) {
-				vendor = vendor_names[vendor_idx].name;
+
+		// not really needed but nice to print the correct entry
+		for (uint32_t i = 0; i < gpu_count; ++i) {
+			if (physical_devices[i] == gpu) {
+				device_index = i;
 				break;
 			}
-			vendor_idx++;
 		}
-		free(device_queue_props);
-		print_verbose("  #" + itos(i) + ": " + vendor + " " + name + " - " + (present_supported ? "Supported" : "Unsupported") + ", " + dev_type);
+	} else {
+		// TODO: At least on Linux Laptops integrated GPUs fail with Vulkan in many instances.
+		//   The device should really be a preference, but for now choosing a discrete GPU over the
+		//   integrated one is better than the default.
 
-		if (present_supported) { // Select first supported device of preffered type: Discrete > Integrated > Virtual > CPU > Other.
+		int type_selected = -1;
+		print_verbose("Vulkan devices:");
+		for (uint32_t i = 0; i < gpu_count; ++i) {
+			VkPhysicalDeviceProperties props;
+			vkGetPhysicalDeviceProperties(physical_devices[i], &props);
+
+			bool present_supported = false;
+
+			uint32_t device_queue_family_count = 0;
+			vkGetPhysicalDeviceQueueFamilyProperties(physical_devices[i], &device_queue_family_count, nullptr);
+			VkQueueFamilyProperties *device_queue_props = (VkQueueFamilyProperties *)malloc(device_queue_family_count * sizeof(VkQueueFamilyProperties));
+			vkGetPhysicalDeviceQueueFamilyProperties(physical_devices[i], &device_queue_family_count, device_queue_props);
+			for (uint32_t j = 0; j < device_queue_family_count; j++) {
+				VkBool32 supports;
+				vkGetPhysicalDeviceSurfaceSupportKHR(physical_devices[i], j, p_surface, &supports);
+				if (supports && ((device_queue_props[j].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0)) {
+					present_supported = true;
+				} else {
+					continue;
+				}
+			}
+			String name = props.deviceName;
+			String vendor = "Unknown";
+			String dev_type;
 			switch (props.deviceType) {
 				case VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU: {
-					if (type_selected < 4) {
-						type_selected = 4;
-						device_index = i;
-					}
+					dev_type = "Discrete";
 				} break;
 				case VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU: {
-					if (type_selected < 3) {
-						type_selected = 3;
-						device_index = i;
-					}
+					dev_type = "Integrated";
 				} break;
 				case VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU: {
-					if (type_selected < 2) {
-						type_selected = 2;
-						device_index = i;
-					}
+					dev_type = "Virtual";
 				} break;
 				case VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_CPU: {
-					if (type_selected < 1) {
-						type_selected = 1;
-						device_index = i;
-					}
+					dev_type = "CPU";
 				} break;
 				default: {
-					if (type_selected < 0) {
-						type_selected = 0;
-						device_index = i;
-					}
+					dev_type = "Other";
 				} break;
 			}
+			uint32_t vendor_idx = 0;
+			while (vendor_names[vendor_idx].name != nullptr) {
+				if (props.vendorID == vendor_names[vendor_idx].id) {
+					vendor = vendor_names[vendor_idx].name;
+					break;
+				}
+				vendor_idx++;
+			}
+			free(device_queue_props);
+			print_verbose("  #" + itos(i) + ": " + vendor + " " + name + " - " + (present_supported ? "Supported" : "Unsupported") + ", " + dev_type);
+
+			if (present_supported) { // Select first supported device of preffered type: Discrete > Integrated > Virtual > CPU > Other.
+				switch (props.deviceType) {
+					case VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU: {
+						if (type_selected < 4) {
+							type_selected = 4;
+							device_index = i;
+						}
+					} break;
+					case VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU: {
+						if (type_selected < 3) {
+							type_selected = 3;
+							device_index = i;
+						}
+					} break;
+					case VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU: {
+						if (type_selected < 2) {
+							type_selected = 2;
+							device_index = i;
+						}
+					} break;
+					case VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_CPU: {
+						if (type_selected < 1) {
+							type_selected = 1;
+							device_index = i;
+						}
+					} break;
+					default: {
+						if (type_selected < 0) {
+							type_selected = 0;
+							device_index = i;
+						}
+					} break;
+				}
+			}
 		}
+
+		int32_t user_device_index = Engine::get_singleton()->get_gpu_index(); // Force user selected GPU.
+		if (user_device_index >= 0 && user_device_index < (int32_t)gpu_count) {
+			device_index = user_device_index;
+		}
+
+		ERR_FAIL_COND_V_MSG(device_index == -1, ERR_CANT_CREATE, "None of Vulkan devices supports both graphics and present queues.");
+
+		gpu = physical_devices[device_index];
 	}
 
-	int32_t user_device_index = Engine::get_singleton()->get_gpu_index(); // Force user selected GPU.
-	if (user_device_index >= 0 && user_device_index < (int32_t)gpu_count) {
-		device_index = user_device_index;
-	}
-
-	ERR_FAIL_COND_V_MSG(device_index == -1, ERR_CANT_CREATE, "None of Vulkan devices supports both graphics and present queues.");
-
-	gpu = physical_devices[device_index];
 	free(physical_devices);
 
 	/* Look for device extensions */
@@ -1057,9 +1099,61 @@ Error VulkanContext::_create_device() {
 	queues[0].pQueuePriorities = queue_priorities;
 	queues[0].flags = 0;
 
+	// Before we retrieved what is supported, here we tell Vulkan we want to enable these features using the same structs.
+	void *nextptr = nullptr;
+
+	VkPhysicalDeviceShaderFloat16Int8FeaturesKHR shader_features = {
+		/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR,
+		/*pNext*/ nextptr,
+		/*shaderFloat16*/ shader_capabilities.shader_float16_is_supported,
+		/*shaderInt8*/ shader_capabilities.shader_int8_is_supported,
+	};
+	nextptr = &shader_features;
+
+	VkPhysicalDeviceVulkan11Features vulkan11features;
+	VkPhysicalDevice16BitStorageFeaturesKHR storage_feature;
+	VkPhysicalDeviceMultiviewFeatures multiview_features;
+	if (vulkan_major > 1 || vulkan_minor >= 2) {
+		// In Vulkan 1.2 and newer we use a newer struct to enable various features
+
+		vulkan11features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+		vulkan11features.pNext = nextptr;
+		vulkan11features.storageBuffer16BitAccess = storage_buffer_capabilities.storage_buffer_16_bit_access_is_supported;
+		vulkan11features.uniformAndStorageBuffer16BitAccess = storage_buffer_capabilities.uniform_and_storage_buffer_16_bit_access_is_supported;
+		vulkan11features.storagePushConstant16 = storage_buffer_capabilities.storage_push_constant_16_is_supported;
+		vulkan11features.storageInputOutput16 = storage_buffer_capabilities.storage_input_output_16;
+		vulkan11features.multiview = multiview_capabilities.is_supported;
+		vulkan11features.multiviewGeometryShader = multiview_capabilities.geometry_shader_is_supported;
+		vulkan11features.multiviewTessellationShader = multiview_capabilities.tessellation_shader_is_supported;
+		vulkan11features.variablePointersStorageBuffer = 0;
+		vulkan11features.variablePointers = 0;
+		vulkan11features.protectedMemory = 0;
+		vulkan11features.samplerYcbcrConversion = 0;
+		vulkan11features.shaderDrawParameters = 0;
+		nextptr = &vulkan11features;
+	} else {
+		// On Vulkan 1.0 and 1.1 we use our older structs to initialise these features
+		storage_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR;
+		storage_feature.pNext = nextptr;
+		storage_feature.storageBuffer16BitAccess = storage_buffer_capabilities.storage_buffer_16_bit_access_is_supported;
+		storage_feature.uniformAndStorageBuffer16BitAccess = storage_buffer_capabilities.uniform_and_storage_buffer_16_bit_access_is_supported;
+		storage_feature.storagePushConstant16 = storage_buffer_capabilities.storage_push_constant_16_is_supported;
+		storage_feature.storageInputOutput16 = storage_buffer_capabilities.storage_input_output_16;
+		nextptr = &storage_feature;
+
+		if (vulkan_major == 1 && vulkan_minor == 1) {
+			multiview_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
+			multiview_features.pNext = nextptr;
+			multiview_features.multiview = multiview_capabilities.is_supported;
+			multiview_features.multiviewGeometryShader = multiview_capabilities.geometry_shader_is_supported;
+			multiview_features.multiviewTessellationShader = multiview_capabilities.tessellation_shader_is_supported;
+			nextptr = &multiview_features;
+		}
+	}
+
 	VkDeviceCreateInfo sdevice = {
 		/*sType*/ VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-		/*pNext*/ nullptr,
+		/*pNext*/ nextptr,
 		/*flags*/ 0,
 		/*queueCreateInfoCount*/ 1,
 		/*pQueueCreateInfos*/ queues,
@@ -1068,7 +1162,6 @@ Error VulkanContext::_create_device() {
 		/*enabledExtensionCount*/ enabled_extension_count,
 		/*ppEnabledExtensionNames*/ (const char *const *)extension_names,
 		/*pEnabledFeatures*/ &physical_device_features, // If specific features are required, pass them in here
-
 	};
 	if (separate_present_queue) {
 		queues[1].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -1080,38 +1173,14 @@ Error VulkanContext::_create_device() {
 		sdevice.queueCreateInfoCount = 2;
 	}
 
-	VkPhysicalDeviceVulkan11Features vulkan11features;
-	VkPhysicalDeviceMultiviewFeatures multiview_features;
-	if (vulkan_major > 1 || vulkan_minor >= 2) {
-		vulkan11features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
-		vulkan11features.pNext = nullptr;
-		// !BAS! Need to figure out which ones of these we want enabled...
-		vulkan11features.storageBuffer16BitAccess = 0;
-		vulkan11features.uniformAndStorageBuffer16BitAccess = 0;
-		vulkan11features.storagePushConstant16 = 0;
-		vulkan11features.storageInputOutput16 = 0;
-		vulkan11features.multiview = multiview_capabilities.is_supported;
-		vulkan11features.multiviewGeometryShader = multiview_capabilities.geometry_shader_is_supported;
-		vulkan11features.multiviewTessellationShader = multiview_capabilities.tessellation_shader_is_supported;
-		vulkan11features.variablePointersStorageBuffer = 0;
-		vulkan11features.variablePointers = 0;
-		vulkan11features.protectedMemory = 0;
-		vulkan11features.samplerYcbcrConversion = 0;
-		vulkan11features.shaderDrawParameters = 0;
-
-		sdevice.pNext = &vulkan11features;
-	} else if (vulkan_major == 1 && vulkan_minor == 1) {
-		multiview_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
-		multiview_features.pNext = nullptr;
-		multiview_features.multiview = multiview_capabilities.is_supported;
-		multiview_features.multiviewGeometryShader = multiview_capabilities.geometry_shader_is_supported;
-		multiview_features.multiviewTessellationShader = multiview_capabilities.tessellation_shader_is_supported;
-
-		sdevice.pNext = &multiview_features;
+	if (vulkan_hooks) {
+		if (!vulkan_hooks->create_vulkan_device(&sdevice, &device)) {
+			return ERR_CANT_CREATE;
+		}
+	} else {
+		err = vkCreateDevice(gpu, &sdevice, nullptr, &device);
+		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 	}
-
-	err = vkCreateDevice(gpu, &sdevice, nullptr, &device);
-	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 	return OK;
 }
@@ -1348,6 +1417,12 @@ int VulkanContext::window_get_height(DisplayServer::WindowID p_window) {
 	return windows[p_window].height;
 }
 
+bool VulkanContext::window_is_valid_swapchain(DisplayServer::WindowID p_window) {
+	ERR_FAIL_COND_V(!windows.has(p_window), false);
+	Window *w = &windows[p_window];
+	return w->swapchain_image_resources != VK_NULL_HANDLE;
+}
+
 VkRenderPass VulkanContext::window_get_render_pass(DisplayServer::WindowID p_window) {
 	ERR_FAIL_COND_V(!windows.has(p_window), VK_NULL_HANDLE);
 	Window *w = &windows[p_window];
@@ -1360,7 +1435,11 @@ VkFramebuffer VulkanContext::window_get_framebuffer(DisplayServer::WindowID p_wi
 	ERR_FAIL_COND_V(!buffers_prepared, VK_NULL_HANDLE);
 	Window *w = &windows[p_window];
 	//vulkan use of currentbuffer
-	return w->swapchain_image_resources[w->current_buffer].framebuffer;
+	if (w->swapchain_image_resources != VK_NULL_HANDLE) {
+		return w->swapchain_image_resources[w->current_buffer].framebuffer;
+	} else {
+		return VK_NULL_HANDLE;
+	}
 }
 
 void VulkanContext::window_destroy(DisplayServer::WindowID p_window_id) {
@@ -1930,24 +2009,25 @@ Error VulkanContext::swap_buffers() {
 	}
 
 	VkSemaphore *semaphores_to_acquire = (VkSemaphore *)alloca(windows.size() * sizeof(VkSemaphore));
+	VkPipelineStageFlags *pipe_stage_flags = (VkPipelineStageFlags *)alloca(windows.size() * sizeof(VkPipelineStageFlags));
 	uint32_t semaphores_to_acquire_count = 0;
 
 	for (KeyValue<int, Window> &E : windows) {
 		Window *w = &E.value;
 
 		if (w->semaphore_acquired) {
-			semaphores_to_acquire[semaphores_to_acquire_count++] = w->image_acquired_semaphores[frame_index];
+			semaphores_to_acquire[semaphores_to_acquire_count] = w->image_acquired_semaphores[frame_index];
+			pipe_stage_flags[semaphores_to_acquire_count] = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			semaphores_to_acquire_count++;
 		}
 	}
 
-	VkPipelineStageFlags pipe_stage_flags;
 	VkSubmitInfo submit_info;
 	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submit_info.pNext = nullptr;
-	submit_info.pWaitDstStageMask = &pipe_stage_flags;
-	pipe_stage_flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	submit_info.waitSemaphoreCount = semaphores_to_acquire_count;
 	submit_info.pWaitSemaphores = semaphores_to_acquire;
+	submit_info.pWaitDstStageMask = pipe_stage_flags;
 	submit_info.commandBufferCount = commands_to_submit;
 	submit_info.pCommandBuffers = commands_ptr;
 	submit_info.signalSemaphoreCount = 1;
@@ -1963,7 +2043,7 @@ Error VulkanContext::swap_buffers() {
 		// present queue before presenting, waiting for the draw complete
 		// semaphore and signalling the ownership released semaphore when finished
 		VkFence nullFence = VK_NULL_HANDLE;
-		pipe_stage_flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		pipe_stage_flags[0] = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		submit_info.waitSemaphoreCount = 1;
 		submit_info.pWaitSemaphores = &draw_complete_semaphores[frame_index];
 		submit_info.commandBufferCount = 0;

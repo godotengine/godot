@@ -210,7 +210,8 @@ private:
 		int size() const { return text.size(); }
 		void clear();
 
-		void invalidate_cache(int p_line, int p_column = -1, const String &p_ime_text = String(), const Array &p_bidi_override = Array());
+		void invalidate_cache(int p_line, int p_column = -1, bool p_text_changed = false, const String &p_ime_text = String(), const Array &p_bidi_override = Array());
+		void invalidate_font();
 		void invalidate_all();
 		void invalidate_all_lines();
 
@@ -251,8 +252,6 @@ private:
 	Point2 ime_selection;
 
 	// Placeholder
-	float placeholder_alpha = 0.6;
-
 	String placeholder_text = "";
 	Array placeholder_bidi_override;
 	Ref<TextParagraph> placeholder_data_buf;
@@ -525,6 +524,7 @@ private:
 	int font_size = 16;
 	Color font_color = Color(1, 1, 1);
 	Color font_readonly_color = Color(1, 1, 1);
+	Color font_placeholder_color = Color(1, 1, 1, 0.6);
 
 	int outline_size = 0;
 	Color outline_color = Color(1, 1, 1);
@@ -683,9 +683,6 @@ public:
 
 	void set_placeholder(const String &p_text);
 	String get_placeholder() const;
-
-	void set_placeholder_alpha(float p_alpha);
-	float get_placeholder_alpha() const;
 
 	void set_line(int p_line, const String &p_new_text);
 	String get_line(int p_line) const;

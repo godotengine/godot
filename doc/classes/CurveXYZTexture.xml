@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CurveXYZTexture" inherits="Texture2D" version="4.0">
+<class name="CurveXYZTexture" inherits="Texture2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -13,7 +13,7 @@
 		</member>
 		<member name="curve_z" type="Curve" setter="set_curve_z" getter="get_curve_z">
 		</member>
-		<member name="width" type="int" setter="set_width" getter="get_width" default="2048">
+		<member name="width" type="int" setter="set_width" getter="get_width" default="256">
 		</member>
 	</members>
 </class>

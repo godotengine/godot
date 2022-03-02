@@ -39,10 +39,10 @@
 #include "core/os/os.h"
 #include "core/string/optimized_translation.h"
 #include "core/version_generated.gen.h"
-#include "editor_data.h"
-#include "editor_node.h"
-#include "editor_scale.h"
-#include "editor_settings.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/scroll_container.h"
@@ -61,6 +61,7 @@ void ProjectExportDialog::_notification(int p_what) {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "export", Rect2(get_position(), get_size()));
 			}
 		} break;
+
 		case NOTIFICATION_READY: {
 			duplicate_preset->set_icon(presets->get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")));
 			delete_preset->set_icon(presets->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
@@ -1274,8 +1275,6 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_pck_zip->get_vbox()->add_child(export_pck_zip_debug);
 
 	set_hide_on_ok(false);
-
-	editor_icons = "EditorIcons";
 
 	default_filename = EditorSettings::get_singleton()->get_project_metadata("export_options", "default_filename", "");
 	// If no default set, use project name

@@ -39,7 +39,7 @@
 #ifndef TOOLS_ENABLED
 #if defined _MSC_VER
 #pragma section("pck", read)
-__declspec(allocate("pck")) static char dummy[8] = { 0 };
+__declspec(allocate("pck")) static const char dummy[8] = { 0 };
 #elif defined __GNUC__
 static const char dummy[8] __attribute__((section("pck"), used)) = { 0 };
 #endif
@@ -140,6 +140,11 @@ int widechar_main(int argc, wchar_t **argv) {
 
 	setlocale(LC_CTYPE, "");
 
+#ifndef TOOLS_ENABLED
+	// Workaround to prevent LTCG (MSVC LTO) from removing "pck" section
+	const char *dummy_guard = dummy;
+#endif
+
 	char **argv_utf8 = new char *[argc];
 
 	for (int i = 0; i < argc; ++i) {
@@ -158,8 +163,9 @@ int widechar_main(int argc, wchar_t **argv) {
 		return 255;
 	}
 
-	if (Main::start())
+	if (Main::start()) {
 		os.run();
+	}
 	Main::cleanup();
 
 	for (int i = 0; i < argc; ++i) {
@@ -168,7 +174,7 @@ int widechar_main(int argc, wchar_t **argv) {
 	delete[] argv_utf8;
 
 	return os.get_exit_code();
-};
+}
 
 int _main() {
 	LPWSTR *wc_argv;

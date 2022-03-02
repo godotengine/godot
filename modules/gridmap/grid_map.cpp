@@ -703,8 +703,8 @@ void GridMap::_notification(int p_what) {
 				RS::get_singleton()->instance_set_scenario(baked_meshes[i].instance, get_world_3d()->get_scenario());
 				RS::get_singleton()->instance_set_transform(baked_meshes[i].instance, get_global_transform());
 			}
-
 		} break;
+
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			Transform3D new_xform = get_global_transform();
 			if (new_xform == last_transform) {
@@ -721,6 +721,7 @@ void GridMap::_notification(int p_what) {
 				RS::get_singleton()->instance_set_transform(baked_meshes[i].instance, get_global_transform());
 			}
 		} break;
+
 		case NOTIFICATION_EXIT_WORLD: {
 			for (const KeyValue<OctantKey, Octant *> &E : octant_map) {
 				_octant_exit_world(E.key);
@@ -732,8 +733,8 @@ void GridMap::_notification(int p_what) {
 			for (int i = 0; i < baked_meshes.size(); i++) {
 				RS::get_singleton()->instance_set_scenario(baked_meshes[i].instance, RID());
 			}
-
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			_update_visibility();
 		} break;
@@ -813,6 +814,7 @@ void GridMap::_update_octants_callback() {
 	}
 
 	while (to_delete.front()) {
+		memdelete(octant_map[to_delete.front()->get()]);
 		octant_map.erase(to_delete.front()->get());
 		to_delete.pop_front();
 	}
@@ -877,6 +879,7 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &GridMap::clear);
 
 	ClassDB::bind_method(D_METHOD("get_used_cells"), &GridMap::get_used_cells);
+	ClassDB::bind_method(D_METHOD("get_used_cells_by_item", "item"), &GridMap::get_used_cells_by_item);
 
 	ClassDB::bind_method(D_METHOD("get_meshes"), &GridMap::get_meshes);
 	ClassDB::bind_method(D_METHOD("get_bake_meshes"), &GridMap::get_bake_meshes);
@@ -944,6 +947,18 @@ Array GridMap::get_used_cells() const {
 	for (const KeyValue<IndexKey, Cell> &E : cell_map) {
 		Vector3 p(E.key.x, E.key.y, E.key.z);
 		a[i++] = p;
+	}
+
+	return a;
+}
+
+Array GridMap::get_used_cells_by_item(int p_item) const {
+	Array a;
+	for (const KeyValue<IndexKey, Cell> &E : cell_map) {
+		if (E.value.item == p_item) {
+			Vector3 p(E.key.x, E.key.y, E.key.z);
+			a.push_back(p);
+		}
 	}
 
 	return a;

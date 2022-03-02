@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Window" inherits="Viewport" version="4.0">
+<class name="Window" inherits="Viewport" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for all windows.
 	</brief_description>
@@ -306,6 +306,8 @@
 			Set's the window's current mode.
 			[b]Note:[/b] Fullscreen mode is not exclusive fullscreen on Windows and Linux.
 		</member>
+		<member name="popup_window" type="bool" setter="set_flag" getter="get_flag" default="false">
+		</member>
 		<member name="position" type="Vector2i" setter="set_position" getter="get_position" default="Vector2i(0, 0)">
 			The window's position in pixels.
 		</member>
@@ -346,6 +348,7 @@
 		<signal name="files_dropped">
 			<argument index="0" name="files" type="PackedStringArray" />
 			<description>
+				Emitted when files are dragged from the OS file manager and dropped in the game window. The argument is a list of file paths.
 			</description>
 		</signal>
 		<signal name="focus_entered">
@@ -398,6 +401,11 @@
 			Fullscreen window mode. Note that this is not [i]exclusive[/i] fullscreen. On Windows and Linux, a borderless window is used to emulate fullscreen. On macOS, a new desktop is used to display the running project.
 			Regardless of the platform, enabling fullscreen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling fullscreen mode.
 		</constant>
+		<constant name="MODE_EXCLUSIVE_FULLSCREEN" value="4" enum="Mode">
+			Exclusive fullscreen window mode. This mode is implemented on Windows only. On other platforms, it is equivalent to [constant MODE_FULLSCREEN].
+			Only one window in exclusive fullscreen mode can be visible on a given screen at a time. If multiple windows are in exclusive fullscreen mode for the same screen, the last one being set to this mode takes precedence.
+			Regardless of the platform, enabling fullscreen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling fullscreen mode.
+		</constant>
 		<constant name="FLAG_RESIZE_DISABLED" value="0" enum="Flags">
 			The window's ability to be resized.
 		</constant>
@@ -411,7 +419,9 @@
 		</constant>
 		<constant name="FLAG_NO_FOCUS" value="4" enum="Flags">
 		</constant>
-		<constant name="FLAG_MAX" value="5" enum="Flags">
+		<constant name="FLAG_POPUP" value="5" enum="Flags">
+		</constant>
+		<constant name="FLAG_MAX" value="6" enum="Flags">
 		</constant>
 		<constant name="CONTENT_SCALE_MODE_DISABLED" value="0" enum="ContentScaleMode">
 		</constant>
@@ -430,7 +440,7 @@
 		<constant name="CONTENT_SCALE_ASPECT_EXPAND" value="4" enum="ContentScaleAspect">
 		</constant>
 		<constant name="LAYOUT_DIRECTION_INHERITED" value="0" enum="LayoutDirection">
-			Automatic layout direction, determined from the parent control layout direction.
+			Automatic layout direction, determined from the parent window layout direction.
 		</constant>
 		<constant name="LAYOUT_DIRECTION_LOCALE" value="1" enum="LayoutDirection">
 			Automatic layout direction, determined from the current locale.

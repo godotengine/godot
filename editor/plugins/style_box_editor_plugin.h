@@ -32,7 +32,7 @@
 #define STYLE_BOX_EDITOR_PLUGIN_H
 
 #include "editor/editor_inspector.h"
-#include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/style_box.h"
@@ -69,7 +69,7 @@ class StyleBoxEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const override { return "StyleBox"; }
 
-	StyleBoxEditorPlugin(EditorNode *p_node);
+	StyleBoxEditorPlugin();
 };
 
 #endif // STYLE_BOX_EDITOR_PLUGIN_H

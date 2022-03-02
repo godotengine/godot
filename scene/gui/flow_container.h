@@ -31,7 +31,7 @@
 #ifndef FLOW_CONTAINER_H
 #define FLOW_CONTAINER_H
 
-class Container;
+#include "scene/gui/container.h"
 
 class FlowContainer : public Container {
 	GDCLASS(FlowContainer, Container);
@@ -53,6 +53,9 @@ public:
 	int get_line_count() const;
 
 	virtual Size2 get_minimum_size() const override;
+
+	virtual Vector<int> get_allowed_size_flags_horizontal() const override;
+	virtual Vector<int> get_allowed_size_flags_vertical() const override;
 
 	FlowContainer(bool p_vertical = false);
 };

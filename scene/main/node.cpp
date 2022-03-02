@@ -30,8 +30,10 @@
 
 #include "node.h"
 
+#include "core/config/project_settings.h"
 #include "core/core_string_names.h"
 #include "core/io/resource_loader.h"
+#include "core/multiplayer/multiplayer_api.h"
 #include "core/object/message_queue.h"
 #include "core/string/print_string.h"
 #include "instance_placeholder.h"
@@ -52,12 +54,12 @@ void Node::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_PROCESS: {
 			GDVIRTUAL_CALL(_process, get_process_delta_time());
-
 		} break;
+
 		case NOTIFICATION_PHYSICS_PROCESS: {
 			GDVIRTUAL_CALL(_physics_process, get_physics_process_delta_time());
-
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			ERR_FAIL_COND(!get_viewport());
 			ERR_FAIL_COND(!get_tree());
@@ -86,8 +88,8 @@ void Node::_notification(int p_notification) {
 
 			get_tree()->node_count++;
 			orphan_node_count--;
-
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			ERR_FAIL_COND(!get_viewport());
 			ERR_FAIL_COND(!get_tree());
@@ -110,16 +112,15 @@ void Node::_notification(int p_notification) {
 				memdelete(data.path_cache);
 				data.path_cache = nullptr;
 			}
-			if (data.scene_file_path.length()) {
-				get_multiplayer()->scene_enter_exit_notify(data.scene_file_path, this, false);
-			}
 		} break;
+
 		case NOTIFICATION_PATH_RENAMED: {
 			if (data.path_cache) {
 				memdelete(data.path_cache);
 				data.path_cache = nullptr;
 			}
 		} break;
+
 		case NOTIFICATION_READY: {
 			if (GDVIRTUAL_IS_OVERRIDDEN(_input)) {
 				set_process_input(true);
@@ -141,16 +142,12 @@ void Node::_notification(int p_notification) {
 			}
 
 			GDVIRTUAL_CALL(_ready);
-
-			if (data.scene_file_path.length()) {
-				ERR_FAIL_COND(!is_inside_tree());
-				get_multiplayer()->scene_enter_exit_notify(data.scene_file_path, this, true);
-			}
-
 		} break;
+
 		case NOTIFICATION_POSTINITIALIZE: {
 			data.in_constructor = false;
 		} break;
+
 		case NOTIFICATION_PREDELETE: {
 			if (data.parent) {
 				data.parent->remove_child(this);
@@ -210,6 +207,12 @@ void Node::_propagate_enter_tree() {
 	emit_signal(SceneStringNames::get_singleton()->tree_entered);
 
 	data.tree->node_added(this);
+
+	if (data.parent) {
+		Variant c = this;
+		const Variant *cptr = &c;
+		data.parent->emit_signal(SNAME("child_entered_tree"), &cptr, 1);
+	}
 
 	data.blocked++;
 	//block while adding children
@@ -279,6 +282,12 @@ void Node::_propagate_exit_tree() {
 	notification(NOTIFICATION_EXIT_TREE, true);
 	if (data.tree) {
 		data.tree->node_removed(this);
+	}
+
+	if (data.parent) {
+		Variant c = this;
+		const Variant *cptr = &c;
+		data.parent->emit_signal(SNAME("child_exited_tree"), &cptr, 1);
 	}
 
 	// exit groups
@@ -608,14 +617,15 @@ Variant Node::_rpc_bind(const Variant **p_args, int p_argcount, Callable::CallEr
 		return Variant();
 	}
 
-	if (p_args[0]->get_type() != Variant::STRING_NAME) {
+	Variant::Type type = p_args[0]->get_type();
+	if (type != Variant::STRING_NAME && type != Variant::STRING) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING_NAME;
 		return Variant();
 	}
 
-	StringName method = *p_args[0];
+	StringName method = (*p_args[0]).operator StringName();
 
 	rpcp(0, method, &p_args[1], p_argcount - 1);
 
@@ -637,7 +647,8 @@ Variant Node::_rpc_id_bind(const Variant **p_args, int p_argcount, Callable::Cal
 		return Variant();
 	}
 
-	if (p_args[1]->get_type() != Variant::STRING_NAME) {
+	Variant::Type type = p_args[1]->get_type();
+	if (type != Variant::STRING_NAME && type != Variant::STRING) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
 		r_error.expected = Variant::STRING_NAME;
@@ -645,7 +656,7 @@ Variant Node::_rpc_id_bind(const Variant **p_args, int p_argcount, Callable::Cal
 	}
 
 	int peer_id = *p_args[0];
-	StringName method = *p_args[1];
+	StringName method = (*p_args[1]).operator StringName();
 
 	rpcp(peer_id, method, &p_args[2], p_argcount - 2);
 
@@ -1049,7 +1060,7 @@ void Node::_generate_serial_child_name(const Node *p_child, StringName &name) co
 	String nums;
 	for (int i = name_string.length() - 1; i >= 0; i--) {
 		char32_t n = name_string[i];
-		if (n >= '0' && n <= '9') {
+		if (is_digit(n)) {
 			nums = String::chr(name_string[i]) + nums;
 		} else {
 			break;
@@ -1333,27 +1344,45 @@ bool Node::has_node(const NodePath &p_path) const {
 	return get_node_or_null(p_path) != nullptr;
 }
 
-Node *Node::find_node(const String &p_mask, bool p_recursive, bool p_owned) const {
+TypedArray<Node> Node::find_nodes(const String &p_mask, const String &p_type, bool p_recursive, bool p_owned) const {
+	TypedArray<Node> ret;
+	ERR_FAIL_COND_V(p_mask.is_empty() && p_type.is_empty(), ret);
+
 	Node *const *cptr = data.children.ptr();
 	int ccount = data.children.size();
 	for (int i = 0; i < ccount; i++) {
 		if (p_owned && !cptr[i]->data.owner) {
 			continue;
 		}
-		if (cptr[i]->data.name.operator String().match(p_mask)) {
-			return cptr[i];
+
+		if (!p_mask.is_empty()) {
+			if (!cptr[i]->data.name.operator String().match(p_mask)) {
+				continue;
+			} else if (p_type.is_empty()) {
+				ret.append(cptr[i]);
+			}
 		}
 
-		if (!p_recursive) {
-			continue;
+		if (cptr[i]->is_class(p_type)) {
+			ret.append(cptr[i]);
+		} else if (cptr[i]->get_script_instance()) {
+			Ref<Script> script = cptr[i]->get_script_instance()->get_script();
+			while (script.is_valid()) {
+				if ((ScriptServer::is_global_class(p_type) && ScriptServer::get_global_class_path(p_type) == script->get_path()) || p_type == script->get_path()) {
+					ret.append(cptr[i]);
+					break;
+				}
+
+				script = script->get_base_script();
+			}
 		}
 
-		Node *ret = cptr[i]->find_node(p_mask, true, p_owned);
-		if (ret) {
-			return ret;
+		if (p_recursive) {
+			ret.append_array(cptr[i]->find_nodes(p_mask, p_type, true, p_owned));
 		}
 	}
-	return nullptr;
+
+	return ret;
 }
 
 Node *Node::get_parent() const {
@@ -2695,7 +2724,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_node", "path"), &Node::get_node);
 	ClassDB::bind_method(D_METHOD("get_node_or_null", "path"), &Node::get_node_or_null);
 	ClassDB::bind_method(D_METHOD("get_parent"), &Node::get_parent);
-	ClassDB::bind_method(D_METHOD("find_node", "mask", "recursive", "owned"), &Node::find_node, DEFVAL(true), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("find_nodes", "mask", "type", "recursive", "owned"), &Node::find_nodes, DEFVAL(""), DEFVAL(true), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("find_parent", "mask"), &Node::find_parent);
 	ClassDB::bind_method(D_METHOD("has_node_and_resource", "path"), &Node::has_node_and_resource);
 	ClassDB::bind_method(D_METHOD("get_node_and_resource", "path"), &Node::_get_node_and_resource);
@@ -2834,6 +2863,9 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_WM_CLOSE_REQUEST);
 	BIND_CONSTANT(NOTIFICATION_WM_GO_BACK_REQUEST);
 	BIND_CONSTANT(NOTIFICATION_WM_SIZE_CHANGED);
+	BIND_CONSTANT(NOTIFICATION_WM_DPI_CHANGE);
+	BIND_CONSTANT(NOTIFICATION_VP_MOUSE_ENTER);
+	BIND_CONSTANT(NOTIFICATION_VP_MOUSE_EXIT);
 	BIND_CONSTANT(NOTIFICATION_OS_MEMORY_WARNING);
 	BIND_CONSTANT(NOTIFICATION_TRANSLATION_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_WM_ABOUT);
@@ -2865,6 +2897,8 @@ void Node::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tree_entered"));
 	ADD_SIGNAL(MethodInfo("tree_exiting"));
 	ADD_SIGNAL(MethodInfo("tree_exited"));
+	ADD_SIGNAL(MethodInfo("child_entered_tree", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
+	ADD_SIGNAL(MethodInfo("child_exited_tree", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "scene_file_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_scene_file_path", "get_scene_file_path");

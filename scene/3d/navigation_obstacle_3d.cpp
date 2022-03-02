@@ -63,17 +63,21 @@ void NavigationObstacle3D::_notification(int p_what) {
 			}
 			set_physics_process_internal(true);
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			parent_node3d = nullptr;
 			set_physics_process_internal(false);
 		} break;
+
 		case NOTIFICATION_PARENTED: {
 			parent_node3d = Object::cast_to<Node3D>(get_parent());
 			reevaluate_agent_radius();
 		} break;
+
 		case NOTIFICATION_UNPARENTED: {
 			parent_node3d = nullptr;
 		} break;
+
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (parent_node3d) {
 				NavigationServer3D::get_singleton()->agent_set_position(agent, parent_node3d->get_global_transform().origin);

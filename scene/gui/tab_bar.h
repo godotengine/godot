@@ -63,12 +63,11 @@ private:
 
 		Ref<TextLine> text_buf;
 		Ref<Texture2D> icon;
-		int ofs_cache = 0;
 		bool disabled = false;
+		bool hidden = false;
+		int ofs_cache = 0;
 		int size_cache = 0;
 		int size_text = 0;
-		int x_cache = 0;
-		int x_size_cache = 0;
 
 		Ref<Texture2D> right_button;
 		Rect2 rb_rect;
@@ -102,6 +101,7 @@ private:
 	int min_width = 0;
 	bool scrolling_enabled = true;
 	bool drag_to_rearrange_enabled = false;
+	bool scroll_to_selected = true;
 	int tabs_rearrange_group = -1;
 
 	int get_tab_width(int p_idx) const;
@@ -150,8 +150,11 @@ public:
 	void set_tab_disabled(int p_tab, bool p_disabled);
 	bool is_tab_disabled(int p_tab) const;
 
-	void set_tab_right_button(int p_tab, const Ref<Texture2D> &p_right_button);
-	Ref<Texture2D> get_tab_right_button(int p_tab) const;
+	void set_tab_hidden(int p_tab, bool p_hidden);
+	bool is_tab_hidden(int p_tab) const;
+
+	void set_tab_button_icon(int p_tab, const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_tab_button_icon(int p_tab) const;
 
 	void set_tab_alignment(AlignmentMode p_alignment);
 	AlignmentMode get_tab_alignment() const;
@@ -186,6 +189,9 @@ public:
 	bool get_drag_to_rearrange_enabled() const;
 	void set_tabs_rearrange_group(int p_group_id);
 	int get_tabs_rearrange_group() const;
+
+	void set_scroll_to_selected(bool p_enabled);
+	bool get_scroll_to_selected() const;
 
 	void set_select_with_rmb(bool p_enabled);
 	bool get_select_with_rmb() const;

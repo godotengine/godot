@@ -2320,22 +2320,12 @@ Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a
 
 	if (vformat == ((1 << Variant::INT) | (1 << Variant::FLOAT)) || vformat == (1 << Variant::FLOAT)) {
 		//mix of real and int
+		real_t a = p_a;
+		real_t b = p_b;
+		real_t pa = p_pre_a;
+		real_t pb = p_post_b;
 
-		real_t p0 = p_pre_a;
-		real_t p1 = p_a;
-		real_t p2 = p_b;
-		real_t p3 = p_post_b;
-
-		real_t t = p_c;
-		real_t t2 = t * t;
-		real_t t3 = t2 * t;
-
-		return 0.5f *
-				((p1 * 2.0f) +
-						(-p0 + p2) * t +
-						(2.0f * p0 - 5.0f * p1 + 4 * p2 - p3) * t2 +
-						(-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
-
+		return Math::cubic_interpolate(a, b, pa, pb, p_c);
 	} else if ((vformat & (vformat - 1))) {
 		return p_a; //can't interpolate, mix of types
 	}
@@ -2423,7 +2413,7 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, double p_time, Interpol
 	real_t c = 0.0;
 	// prepare for all cases of interpolation
 
-	if ((loop_mode == LOOP_LINEAR || loop_mode == LOOP_PINGPONG) && p_loop_wrap) {
+	if (loop_mode == LOOP_LINEAR && p_loop_wrap) {
 		// loop
 		if (!p_backward) {
 			// no backward
@@ -2577,11 +2567,19 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, double p_time, Interpol
 		case INTERPOLATION_CUBIC: {
 			int pre = idx - 1;
 			if (pre < 0) {
-				pre = 0;
+				if (loop_mode == LOOP_LINEAR && p_loop_wrap) {
+					pre = len - 1;
+				} else {
+					pre = 0;
+				}
 			}
 			int post = next + 1;
 			if (post >= len) {
-				post = next;
+				if (loop_mode == LOOP_LINEAR && p_loop_wrap) {
+					post = 0;
+				} else {
+					post = next;
+				}
 			}
 
 			return _cubic_interpolate(p_keys[pre].value, p_keys[idx].value, p_keys[next].value, p_keys[post].value, c);

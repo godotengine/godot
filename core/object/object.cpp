@@ -402,13 +402,9 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 #endif
 	}
 
-	//try built-in setgetter
+	// Try built-in setter.
 	{
 		if (ClassDB::set_property(this, p_name, p_value, r_valid)) {
-			/*
-			if (r_valid)
-				*r_valid=true;
-			*/
 			return;
 		}
 	}
@@ -421,7 +417,6 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 		return;
 
 	} else if (p_name == CoreStringNames::get_singleton()->_meta) {
-		//set_meta(p_name,p_value);
 		metadata = p_value.duplicate();
 		if (r_valid) {
 			*r_valid = true;
@@ -429,7 +424,7 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 		return;
 	}
 
-	//something inside the object... :|
+	// Something inside the object... :|
 	bool success = _setv(p_name, p_value);
 	if (success) {
 		if (r_valid) {
@@ -485,7 +480,7 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 #endif
 	}
 
-	//try built-in setgetter
+	// Try built-in getter.
 	{
 		if (ClassDB::get_property(const_cast<Object *>(this), p_name, ret)) {
 			if (r_valid) {
@@ -510,7 +505,7 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 		return ret;
 
 	} else {
-		//something inside the object... :|
+		// Something inside the object... :|
 		bool success = _getv(p_name, ret);
 		if (success) {
 			if (r_valid) {

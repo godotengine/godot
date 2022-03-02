@@ -37,6 +37,7 @@
 #include "core/crypto/aes_context.h"
 #include "core/crypto/crypto.h"
 #include "core/crypto/hashing_context.h"
+#include "core/debugger/engine_profiler.h"
 #include "core/extension/native_extension.h"
 #include "core/extension/native_extension_manager.h"
 #include "core/input/input.h"
@@ -69,7 +70,6 @@
 #include "core/math/triangle_mesh.h"
 #include "core/multiplayer/multiplayer_api.h"
 #include "core/multiplayer/multiplayer_peer.h"
-#include "core/multiplayer/multiplayer_replicator.h"
 #include "core/object/class_db.h"
 #include "core/object/undo_redo.h"
 #include "core/os/main_loop.h"
@@ -107,6 +107,8 @@ extern void register_global_constants();
 extern void unregister_global_constants();
 
 static ResourceUID *resource_uid = nullptr;
+
+static bool _is_core_extensions_registered = false;
 
 void register_core_types() {
 	//consistency check
@@ -200,7 +202,6 @@ void register_core_types() {
 
 	GDREGISTER_VIRTUAL_CLASS(MultiplayerPeer);
 	GDREGISTER_CLASS(MultiplayerPeerExtension);
-	GDREGISTER_VIRTUAL_CLASS(MultiplayerReplicator);
 	GDREGISTER_CLASS(MultiplayerAPI);
 	GDREGISTER_CLASS(MainLoop);
 	GDREGISTER_CLASS(Translation);
@@ -238,6 +239,8 @@ void register_core_types() {
 	GDREGISTER_VIRTUAL_CLASS(NativeExtensionManager);
 
 	GDREGISTER_VIRTUAL_CLASS(ResourceUID);
+
+	GDREGISTER_CLASS(EngineProfiler);
 
 	resource_uid = memnew(ResourceUID);
 
@@ -313,11 +316,16 @@ void register_core_extensions() {
 	NativeExtension::initialize_native_extensions();
 	native_extension_manager->load_extensions();
 	native_extension_manager->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_CORE);
+	_is_core_extensions_registered = true;
+}
+
+void unregister_core_extensions() {
+	if (_is_core_extensions_registered) {
+		native_extension_manager->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_CORE);
+	}
 }
 
 void unregister_core_types() {
-	native_extension_manager->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_CORE);
-
 	memdelete(native_extension_manager);
 
 	memdelete(resource_uid);

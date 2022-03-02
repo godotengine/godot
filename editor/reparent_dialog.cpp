@@ -35,12 +35,14 @@
 #include "scene/gui/label.h"
 
 void ReparentDialog::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		connect("confirmed", callable_mp(this, &ReparentDialog::_reparent));
-	}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			connect("confirmed", callable_mp(this, &ReparentDialog::_reparent));
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		disconnect("confirmed", callable_mp(this, &ReparentDialog::_reparent));
+		case NOTIFICATION_EXIT_TREE: {
+			disconnect("confirmed", callable_mp(this, &ReparentDialog::_reparent));
+		} break;
 	}
 }
 

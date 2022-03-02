@@ -40,8 +40,6 @@
 #include "drivers/winmidi/midi_driver_winmidi.h"
 #include "key_mapping_windows.h"
 #include "servers/audio_server.h"
-#include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering_server.h"
 #ifdef XAUDIO2_ENABLED
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #endif
@@ -108,6 +106,8 @@ protected:
 public:
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
+	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
+
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false) override;
 	virtual Error close_dynamic_library(void *p_library_handle) override;
 	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false) override;
@@ -142,6 +142,7 @@ public:
 	virtual String get_locale() const override;
 
 	virtual int get_processor_count() const override;
+	virtual String get_processor_name() const override;
 
 	virtual String get_config_path() const override;
 	virtual String get_data_path() const override;

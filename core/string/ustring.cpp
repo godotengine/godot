@@ -54,33 +54,13 @@
 
 static const int MAX_DECIMALS = 32;
 
-static _FORCE_INLINE_ bool is_digit(char32_t c) {
-	return (c >= '0' && c <= '9');
-}
-
-static _FORCE_INLINE_ bool is_hex_digit(char32_t c) {
-	return (is_digit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
-}
-
-static _FORCE_INLINE_ bool is_upper_case(char32_t c) {
-	return (c >= 'A' && c <= 'Z');
-}
-
-static _FORCE_INLINE_ bool is_lower_case(char32_t c) {
-	return (c >= 'a' && c <= 'z');
-}
-
 static _FORCE_INLINE_ char32_t lower_case(char32_t c) {
-	return (is_upper_case(c) ? (c + ('a' - 'A')) : c);
+	return (is_ascii_upper_case(c) ? (c + ('a' - 'A')) : c);
 }
 
 const char CharString::_null = 0;
 const char16_t Char16String::_null = 0;
 const char32_t String::_null = 0;
-
-bool is_symbol(char32_t c) {
-	return c != '_' && ((c >= '!' && c <= '/') || (c >= ':' && c <= '@') || (c >= '[' && c <= '`') || (c >= '{' && c <= '~') || c == '\t' || c == ' ');
-}
 
 bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end) {
 	const String &s = p_s;
@@ -123,9 +103,12 @@ bool Char16String::operator<(const Char16String &p_right) const {
 }
 
 Char16String &Char16String::operator+=(char16_t p_char) {
-	resize(size() ? size() + 1 : 2);
-	set(length(), 0);
-	set(length() - 1, p_char);
+	const int lhs_len = length();
+	resize(lhs_len + 2);
+
+	char16_t *dst = ptrw();
+	dst[lhs_len] = p_char;
+	dst[lhs_len + 1] = 0;
 
 	return *this;
 }
@@ -178,9 +161,12 @@ bool CharString::operator<(const CharString &p_right) const {
 }
 
 CharString &CharString::operator+=(char p_char) {
-	resize(size() ? size() + 1 : 2);
-	set(length(), 0);
-	set(length() - 1, p_char);
+	const int lhs_len = length();
+	resize(lhs_len + 2);
+
+	char *dst = ptrw();
+	dst[lhs_len] = p_char;
+	dst[lhs_len + 1] = 0;
 
 	return *this;
 }
@@ -324,11 +310,7 @@ void String::copy_from(const char *p_cstr) {
 		return;
 	}
 
-	int len = 0;
-	const char *ptr = p_cstr;
-	while (*(ptr++) != 0) {
-		len++;
-	}
+	const size_t len = strlen(p_cstr);
 
 	if (len == 0) {
 		resize(0);
@@ -339,7 +321,7 @@ void String::copy_from(const char *p_cstr) {
 
 	char32_t *dst = this->ptrw();
 
-	for (int i = 0; i < len + 1; i++) {
+	for (size_t i = 0; i <= len; i++) {
 		dst[i] = p_cstr[i];
 	}
 }
@@ -394,13 +376,14 @@ void String::copy_from(const wchar_t *p_cstr, const int p_clip_to) {
 
 void String::copy_from(const char32_t &p_char) {
 	resize(2);
+	char32_t *dst = ptrw();
 	if ((p_char >= 0xd800 && p_char <= 0xdfff) || (p_char > 0x10ffff)) {
 		print_error("Unicode parsing error: Invalid unicode codepoint " + num_int64(p_char, 16) + ".");
-		set(0, 0xfffd);
+		dst[0] = 0xfffd;
 	} else {
-		set(0, p_char);
+		dst[0] = p_char;
 	}
-	set(1, 0);
+	dst[1] = 0;
 }
 
 void String::copy_from(const char32_t *p_cstr) {
@@ -449,9 +432,8 @@ void String::copy_from(const char32_t *p_cstr, const int p_clip_to) {
 // p_length <= p_char strlen
 void String::copy_from_unchecked(const char32_t *p_char, const int p_length) {
 	resize(p_length + 1);
-	set(p_length, 0);
-
 	char32_t *dst = ptrw();
+	dst[p_length] = 0;
 
 	for (int i = 0; i < p_length; i++) {
 		if ((p_char[i] >= 0xd800 && p_char[i] <= 0xdfff) || (p_char[i] > 0x10ffff)) {
@@ -504,27 +486,23 @@ String operator+(char32_t p_chr, const String &p_str) {
 }
 
 String &String::operator+=(const String &p_str) {
-	if (is_empty()) {
+	const int lhs_len = length();
+	if (lhs_len == 0) {
 		*this = p_str;
 		return *this;
 	}
 
-	if (p_str.is_empty()) {
+	const int rhs_len = p_str.length();
+	if (rhs_len == 0) {
 		return *this;
 	}
 
-	int from = length();
-
-	resize(length() + p_str.size());
+	resize(lhs_len + rhs_len + 1);
 
 	const char32_t *src = p_str.get_data();
-	char32_t *dst = ptrw();
+	char32_t *dst = ptrw() + lhs_len;
 
-	set(length(), 0);
-
-	for (int i = 0; i < p_str.length(); i++) {
-		dst[from + i] = src[i];
-	}
+	memcpy(dst, src, (rhs_len + 1) * sizeof(char32_t));
 
 	return *this;
 }
@@ -534,22 +512,15 @@ String &String::operator+=(const char *p_str) {
 		return *this;
 	}
 
-	int src_len = 0;
-	const char *ptr = p_str;
-	while (*(ptr++) != 0) {
-		src_len++;
-	}
+	const int lhs_len = length();
+	const size_t rhs_len = strlen(p_str);
 
-	int from = length();
+	resize(lhs_len + rhs_len + 1);
 
-	resize(from + src_len + 1);
+	char32_t *dst = ptrw() + lhs_len;
 
-	char32_t *dst = ptrw();
-
-	set(length(), 0);
-
-	for (int i = 0; i < src_len; i++) {
-		dst[from + i] = p_str[i];
+	for (size_t i = 0; i <= rhs_len; i++) {
+		dst[i] = p_str[i];
 	}
 
 	return *this;
@@ -572,14 +543,16 @@ String &String::operator+=(const char32_t *p_str) {
 }
 
 String &String::operator+=(char32_t p_char) {
-	resize(size() ? size() + 1 : 2);
-	set(length(), 0);
+	const int lhs_len = length();
+	resize(lhs_len + 2);
+	char32_t *dst = ptrw();
 	if ((p_char >= 0xd800 && p_char <= 0xdfff) || (p_char > 0x10ffff)) {
 		print_error("Unicode parsing error: Invalid unicode codepoint " + num_int64(p_char, 16) + ".");
-		set(length() - 1, 0xfffd);
+		dst[lhs_len] = 0xfffd;
 	} else {
-		set(length() - 1, p_char);
+		dst[lhs_len] = p_char;
 	}
+	dst[lhs_len + 1] = 0;
 
 	return *this;
 }
@@ -974,21 +947,21 @@ String String::camelcase_to_underscore(bool lowercase) const {
 	int start_index = 0;
 
 	for (int i = 1; i < this->size(); i++) {
-		bool is_upper = is_upper_case(cstr[i]);
+		bool is_upper = is_ascii_upper_case(cstr[i]);
 		bool is_number = is_digit(cstr[i]);
 
 		bool are_next_2_lower = false;
 		bool is_next_lower = false;
 		bool is_next_number = false;
-		bool was_precedent_upper = is_upper_case(cstr[i - 1]);
+		bool was_precedent_upper = is_ascii_upper_case(cstr[i - 1]);
 		bool was_precedent_number = is_digit(cstr[i - 1]);
 
 		if (i + 2 < this->size()) {
-			are_next_2_lower = is_lower_case(cstr[i + 1]) && is_lower_case(cstr[i + 2]);
+			are_next_2_lower = is_ascii_lower_case(cstr[i + 1]) && is_ascii_lower_case(cstr[i + 2]);
 		}
 
 		if (i + 1 < this->size()) {
-			is_next_lower = is_lower_case(cstr[i + 1]);
+			is_next_lower = is_ascii_lower_case(cstr[i + 1]);
 			is_next_number = is_digit(cstr[i + 1]);
 		}
 
@@ -2212,7 +2185,7 @@ bool String::is_numeric() const {
 				return false;
 			}
 			dot = true;
-		} else if (c < '0' || c > '9') {
+		} else if (!is_digit(c)) {
 			return false;
 		}
 	}
@@ -3691,7 +3664,7 @@ bool String::is_valid_identifier() const {
 			}
 		}
 
-		bool valid_char = is_digit(str[i]) || is_lower_case(str[i]) || is_upper_case(str[i]) || str[i] == '_';
+		bool valid_char = is_ascii_identifier_char(str[i]);
 
 		if (!valid_char) {
 			return false;
@@ -3716,7 +3689,7 @@ String String::uri_encode() const {
 	String res;
 	for (int i = 0; i < temp.length(); ++i) {
 		char ord = temp[i];
-		if (ord == '.' || ord == '-' || ord == '_' || ord == '~' || is_lower_case(ord) || is_upper_case(ord) || is_digit(ord)) {
+		if (ord == '.' || ord == '-' || ord == '~' || is_ascii_identifier_char(ord)) {
 			res += ord;
 		} else {
 			char h_Val[3];
@@ -3738,9 +3711,9 @@ String String::uri_decode() const {
 	for (int i = 0; i < src.length(); ++i) {
 		if (src[i] == '%' && i + 2 < src.length()) {
 			char ord1 = src[i + 1];
-			if (is_digit(ord1) || is_upper_case(ord1)) {
+			if (is_digit(ord1) || is_ascii_upper_case(ord1)) {
 				char ord2 = src[i + 2];
-				if (is_digit(ord2) || is_upper_case(ord2)) {
+				if (is_digit(ord2) || is_ascii_upper_case(ord2)) {
 					char bytes[3] = { (char)ord1, (char)ord2, 0 };
 					res += (char)strtol(bytes, nullptr, 16);
 					i += 2;
@@ -3867,7 +3840,7 @@ static _FORCE_INLINE_ int _xml_unescape(const char32_t *p_src, int p_src_len, ch
 					for (int i = 2; i < p_src_len; i++) {
 						eat = i + 1;
 						char32_t ct = p_src[i];
-						if (ct == ';' || ct < '0' || ct > '9') {
+						if (ct == ';' || !is_digit(ct)) {
 							break;
 						}
 					}
@@ -3997,7 +3970,7 @@ String String::pad_zeros(int p_digits) const {
 
 	int begin = 0;
 
-	while (begin < end && (s[begin] < '0' || s[begin] > '9')) {
+	while (begin < end && !is_digit(s[begin])) {
 		begin++;
 	}
 
@@ -4042,7 +4015,7 @@ bool String::is_valid_int() const {
 	}
 
 	for (int i = from; i < len; i++) {
-		if (operator[](i) < '0' || operator[](i) > '9') {
+		if (!is_digit(operator[](i))) {
 			return false; // no start with number plz
 		}
 	}

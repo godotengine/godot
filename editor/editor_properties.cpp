@@ -30,11 +30,13 @@
 
 #include "editor_properties.h"
 
+#include "core/config/project_settings.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
+#include "editor/editor_properties_array_dict.h"
 #include "editor/editor_resource_preview.h"
+#include "editor/editor_scale.h"
 #include "editor/filesystem_dock.h"
-#include "editor_node.h"
-#include "editor_properties_array_dict.h"
-#include "editor_scale.h"
 #include "scene/2d/gpu_particles_2d.h"
 #include "scene/3d/fog_volume.h"
 #include "scene/3d/gpu_particles_3d.h"
@@ -164,7 +166,6 @@ void EditorPropertyMultilineText::_notification(int p_what) {
 			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
 			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 			text->set_custom_minimum_size(Vector2(0, font->get_height(font_size) * 6));
-
 		} break;
 	}
 }
@@ -292,11 +293,11 @@ void EditorPropertyTextEnum::_bind_methods() {
 void EditorPropertyTextEnum::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_THEME_CHANGED: {
 			edit_button->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
 			accept_button->set_icon(get_theme_icon(SNAME("ImportCheck"), SNAME("EditorIcons")));
 			cancel_button->set_icon(get_theme_icon(SNAME("ImportFail"), SNAME("EditorIcons")));
-			break;
+		} break;
 	}
 }
 
@@ -372,8 +373,11 @@ void EditorPropertyLocale::setup(const String &p_hint_text) {
 }
 
 void EditorPropertyLocale::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		locale_edit->set_icon(get_theme_icon(SNAME("Translation"), SNAME("EditorIcons")));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			locale_edit->set_icon(get_theme_icon(SNAME("Translation"), SNAME("EditorIcons")));
+		} break;
 	}
 }
 
@@ -465,8 +469,11 @@ void EditorPropertyPath::set_save_mode() {
 }
 
 void EditorPropertyPath::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		path_edit->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			path_edit->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
+		} break;
 	}
 }
 
@@ -592,7 +599,7 @@ void EditorPropertyMember::_property_select() {
 	} else if (hint == MEMBER_PROPERTY_OF_VARIANT_TYPE) {
 		Variant::Type type = Variant::NIL;
 		String tname = hint_text;
-		if (tname.find(".") != -1) {
+		if (tname.contains(".")) {
 			tname = tname.get_slice(".", 0);
 		}
 		for (int i = 0; i < Variant::VARIANT_MAX; i++) {
@@ -809,7 +816,7 @@ void EditorPropertyLayersGrid::_rename_operation_confirm() {
 	if (new_name.length() == 0) {
 		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
 		return;
-	} else if (new_name.find("/") != -1 || new_name.find("\\") != -1 || new_name.find(":") != -1) {
+	} else if (new_name.contains("/") || new_name.contains("\\") || new_name.contains(":")) {
 		EditorNode::get_singleton()->show_warning(TTR("Name contains invalid characters."));
 		return;
 	}
@@ -1063,9 +1070,6 @@ void EditorPropertyLayersGrid::_notification(int p_what) {
 				update();
 			}
 		} break;
-
-		default:
-			break;
 	}
 }
 
@@ -1617,11 +1621,14 @@ void EditorPropertyVector2::update_property() {
 }
 
 void EditorPropertyVector2::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		const Color *colors = _get_property_colors();
-		for (int i = 0; i < 2; i++) {
-			spin[i]->set_custom_label_color(true, colors[i]);
-		}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			const Color *colors = _get_property_colors();
+			for (int i = 0; i < 2; i++) {
+				spin[i]->set_custom_label_color(true, colors[i]);
+			}
+		} break;
 	}
 }
 
@@ -1708,11 +1715,14 @@ void EditorPropertyRect2::update_property() {
 }
 
 void EditorPropertyRect2::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		const Color *colors = _get_property_colors();
-		for (int i = 0; i < 4; i++) {
-			spin[i]->set_custom_label_color(true, colors[i % 2]);
-		}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			const Color *colors = _get_property_colors();
+			for (int i = 0; i < 4; i++) {
+				spin[i]->set_custom_label_color(true, colors[i % 2]);
+			}
+		} break;
 	}
 }
 
@@ -1834,11 +1844,14 @@ Vector3 EditorPropertyVector3::get_vector() {
 }
 
 void EditorPropertyVector3::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		const Color *colors = _get_property_colors();
-		for (int i = 0; i < 3; i++) {
-			spin[i]->set_custom_label_color(true, colors[i]);
-		}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			const Color *colors = _get_property_colors();
+			for (int i = 0; i < 3; i++) {
+				spin[i]->set_custom_label_color(true, colors[i]);
+			}
+		} break;
 	}
 }
 
@@ -1921,11 +1934,14 @@ void EditorPropertyVector2i::update_property() {
 }
 
 void EditorPropertyVector2i::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		const Color *colors = _get_property_colors();
-		for (int i = 0; i < 2; i++) {
-			spin[i]->set_custom_label_color(true, colors[i]);
-		}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			const Color *colors = _get_property_colors();
+			for (int i = 0; i < 2; i++) {
+				spin[i]->set_custom_label_color(true, colors[i]);
+			}
+		} break;
 	}
 }
 
@@ -2012,11 +2028,14 @@ void EditorPropertyRect2i::update_property() {
 }
 
 void EditorPropertyRect2i::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		const Color *colors = _get_property_colors();
-		for (int i = 0; i < 4; i++) {
-			spin[i]->set_custom_label_color(true, colors[i % 2]);
-		}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			const Color *colors = _get_property_colors();
+			for (int i = 0; i < 4; i++) {
+				spin[i]->set_custom_label_color(true, colors[i % 2]);
+			}
+		} break;
 	}
 }
 
@@ -2111,11 +2130,14 @@ void EditorPropertyVector3i::update_property() {
 }
 
 void EditorPropertyVector3i::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		const Color *colors = _get_property_colors();
-		for (int i = 0; i < 3; i++) {
-			spin[i]->set_custom_label_color(true, colors[i]);
-		}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			const Color *colors = _get_property_colors();
+			for (int i = 0; i < 3; i++) {
+				spin[i]->set_custom_label_color(true, colors[i]);
+			}
+		} break;
 	}
 }
 
@@ -2201,11 +2223,14 @@ void EditorPropertyPlane::update_property() {
 }
 
 void EditorPropertyPlane::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		const Color *colors = _get_property_colors();
-		for (int i = 0; i < 4; i++) {
-			spin[i]->set_custom_label_color(true, colors[i]);
-		}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			const Color *colors = _get_property_colors();
+			for (int i = 0; i < 4; i++) {
+				spin[i]->set_custom_label_color(true, colors[i]);
+			}
+		} break;
 	}
 }
 
@@ -2292,11 +2317,14 @@ void EditorPropertyQuaternion::update_property() {
 }
 
 void EditorPropertyQuaternion::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		const Color *colors = _get_property_colors();
-		for (int i = 0; i < 4; i++) {
-			spin[i]->set_custom_label_color(true, colors[i]);
-		}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			const Color *colors = _get_property_colors();
+			for (int i = 0; i < 4; i++) {
+				spin[i]->set_custom_label_color(true, colors[i]);
+			}
+		} break;
 	}
 }
 
@@ -2386,11 +2414,14 @@ void EditorPropertyAABB::update_property() {
 }
 
 void EditorPropertyAABB::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		const Color *colors = _get_property_colors();
-		for (int i = 0; i < 6; i++) {
-			spin[i]->set_custom_label_color(true, colors[i % 3]);
-		}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			const Color *colors = _get_property_colors();
+			for (int i = 0; i < 6; i++) {
+				spin[i]->set_custom_label_color(true, colors[i % 3]);
+			}
+		} break;
 	}
 }
 
@@ -2467,16 +2498,19 @@ void EditorPropertyTransform2D::update_property() {
 }
 
 void EditorPropertyTransform2D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		const Color *colors = _get_property_colors();
-		for (int i = 0; i < 6; i++) {
-			// For Transform2D, use the 4th color (cyan) for the origin vector.
-			if (i % 3 == 2) {
-				spin[i]->set_custom_label_color(true, colors[3]);
-			} else {
-				spin[i]->set_custom_label_color(true, colors[i % 3]);
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			const Color *colors = _get_property_colors();
+			for (int i = 0; i < 6; i++) {
+				// For Transform2D, use the 4th color (cyan) for the origin vector.
+				if (i % 3 == 2) {
+					spin[i]->set_custom_label_color(true, colors[3]);
+				} else {
+					spin[i]->set_custom_label_color(true, colors[i % 3]);
+				}
 			}
-		}
+		} break;
 	}
 }
 
@@ -2560,11 +2594,14 @@ void EditorPropertyBasis::update_property() {
 }
 
 void EditorPropertyBasis::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		const Color *colors = _get_property_colors();
-		for (int i = 0; i < 9; i++) {
-			spin[i]->set_custom_label_color(true, colors[i % 3]);
-		}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			const Color *colors = _get_property_colors();
+			for (int i = 0; i < 9; i++) {
+				spin[i]->set_custom_label_color(true, colors[i % 3]);
+			}
+		} break;
 	}
 }
 
@@ -2654,11 +2691,14 @@ void EditorPropertyTransform3D::update_using_transform(Transform3D p_transform) 
 }
 
 void EditorPropertyTransform3D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		const Color *colors = _get_property_colors();
-		for (int i = 0; i < 12; i++) {
-			spin[i]->set_custom_label_color(true, colors[i % 4]);
-		}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			const Color *colors = _get_property_colors();
+			for (int i = 0; i < 12; i++) {
+				spin[i]->set_custom_label_color(true, colors[i % 4]);
+			}
+		} break;
 	}
 }
 
@@ -2883,7 +2923,7 @@ void EditorPropertyNodePath::update_property() {
 	Node *target_node = base_node->get_node(p);
 	ERR_FAIL_COND(!target_node);
 
-	if (String(target_node->get_name()).find("@") != -1) {
+	if (String(target_node->get_name()).contains("@")) {
 		assign->set_icon(Ref<Texture2D>());
 		assign->set_text(p);
 		return;
@@ -2900,9 +2940,12 @@ void EditorPropertyNodePath::setup(const NodePath &p_base_hint, Vector<StringNam
 }
 
 void EditorPropertyNodePath::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Ref<Texture2D> t = get_theme_icon(SNAME("Clear"), SNAME("EditorIcons"));
-		clear->set_icon(t);
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			Ref<Texture2D> t = get_theme_icon(SNAME("Clear"), SNAME("EditorIcons"));
+			clear->set_icon(t);
+		} break;
 	}
 }
 
@@ -3318,9 +3361,9 @@ struct EditorPropertyRangeHint {
 	bool angle_in_degrees = false;
 	bool greater = true;
 	bool lesser = true;
-	double min = -99999;
-	double max = 99999;
-	double step = 0;
+	double min = -99999.0;
+	double max = 99999.0;
+	double step = 1.0;
 	String suffix;
 	bool exp_range = false;
 	bool hide_slider = true;
@@ -3331,18 +3374,25 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 	EditorPropertyRangeHint hint;
 	hint.step = p_default_step;
 	bool degrees = false;
-	if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
-		hint.greater = false; //if using ranged, assume false by default
+
+	if (p_hint == PROPERTY_HINT_RANGE) {
+		Vector<String> slices = p_hint_text.split(",");
+		ERR_FAIL_COND_V_MSG(slices.size() < 2, hint,
+				vformat("Invalid PROPERTY_HINT_RANGE with hint \"%s\": Missing required min and/or max values.", p_hint_text));
+
+		hint.greater = false; // If using ranged, assume false by default.
 		hint.lesser = false;
 
-		hint.min = p_hint_text.get_slice(",", 0).to_float();
-		hint.max = p_hint_text.get_slice(",", 1).to_float();
-		if (p_hint_text.get_slice_count(",") >= 3) {
-			hint.step = p_hint_text.get_slice(",", 2).to_float();
+		hint.min = slices[0].to_float();
+		hint.max = slices[1].to_float();
+
+		if (slices.size() >= 3 && slices[2].is_valid_float()) {
+			// Step is optional, could be something else if not a number.
+			hint.step = slices[2].to_float();
 		}
 		hint.hide_slider = false;
-		for (int i = 2; i < p_hint_text.get_slice_count(","); i++) {
-			String slice = p_hint_text.get_slice(",", i).strip_edges();
+		for (int i = 2; i < slices.size(); i++) {
+			String slice = slices[i].strip_edges();
 			if (slice == "radians") {
 				hint.radians = true;
 			} else if (slice == "degrees") {
@@ -3364,6 +3414,9 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 	if ((hint.radians || degrees) && hint.suffix.is_empty()) {
 		hint.suffix = U"\u00B0";
 	}
+
+	ERR_FAIL_COND_V_MSG(hint.step == 0, hint,
+			vformat("Invalid PROPERTY_HINT_RANGE with hint \"%s\": Step cannot be 0.", p_hint_text));
 
 	return hint;
 }
@@ -3435,7 +3488,6 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
 
 				EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
-
 				editor->setup(hint.min, hint.max, hint.step, hint.greater, hint.lesser);
 
 				return editor;

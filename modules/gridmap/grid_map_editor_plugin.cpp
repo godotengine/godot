@@ -30,6 +30,7 @@
 
 #include "grid_map_editor_plugin.h"
 #include "core/input/input.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
@@ -923,7 +924,7 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 	_update_selection_transform();
 	_update_paste_indicator();
 
-	spatial_editor = Object::cast_to<Node3DEditorPlugin>(editor->get_editor_plugin_screen());
+	spatial_editor = Object::cast_to<Node3DEditorPlugin>(EditorNode::get_singleton()->get_editor_plugin_screen());
 
 	if (!node) {
 		set_process(false);
@@ -1159,9 +1160,8 @@ void GridMapEditor::_bind_methods() {
 	ClassDB::bind_method("_set_selection", &GridMapEditor::_set_selection);
 }
 
-GridMapEditor::GridMapEditor(EditorNode *p_editor) {
-	editor = p_editor;
-	undo_redo = p_editor->get_undo_redo();
+GridMapEditor::GridMapEditor() {
+	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	int mw = EDITOR_DEF("editors/grid_map/palette_min_width", 230);
 	Control *ec = memnew(Control);
@@ -1456,15 +1456,17 @@ GridMapEditor::~GridMapEditor() {
 }
 
 void GridMapEditorPlugin::_notification(int p_what) {
-	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		switch ((int)EditorSettings::get_singleton()->get("editors/grid_map/editor_side")) {
-			case 0: { // Left.
-				Node3DEditor::get_singleton()->move_control_to_left_panel(grid_map_editor);
-			} break;
-			case 1: { // Right.
-				Node3DEditor::get_singleton()->move_control_to_right_panel(grid_map_editor);
-			} break;
-		}
+	switch (p_what) {
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			switch ((int)EditorSettings::get_singleton()->get("editors/grid_map/editor_side")) {
+				case 0: { // Left.
+					Node3DEditor::get_singleton()->move_control_to_left_panel(grid_map_editor);
+				} break;
+				case 1: { // Right.
+					Node3DEditor::get_singleton()->move_control_to_right_panel(grid_map_editor);
+				} break;
+			}
+		} break;
 	}
 }
 
@@ -1489,13 +1491,11 @@ void GridMapEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-GridMapEditorPlugin::GridMapEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
-
+GridMapEditorPlugin::GridMapEditorPlugin() {
 	EDITOR_DEF("editors/grid_map/editor_side", 1);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "editors/grid_map/editor_side", PROPERTY_HINT_ENUM, "Left,Right"));
 
-	grid_map_editor = memnew(GridMapEditor(editor));
+	grid_map_editor = memnew(GridMapEditor);
 	switch ((int)EditorSettings::get_singleton()->get("editors/grid_map/editor_side")) {
 		case 0: { // Left.
 			Node3DEditor::get_singleton()->add_control_to_left_panel(grid_map_editor);

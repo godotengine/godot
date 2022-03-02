@@ -28,12 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "editor/editor_node.h"
+#include "editor_toaster.h"
+
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
+#include "scene/gui/button.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel_container.h"
-
-#include "editor_toaster.h"
 
 EditorToaster *EditorToaster::singleton = nullptr;
 
@@ -103,6 +104,7 @@ void EditorToaster::_notification(int p_what) {
 				main_button->update();
 			}
 		} break;
+
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (vbox_container->is_visible()) {
@@ -113,32 +115,31 @@ void EditorToaster::_notification(int p_what) {
 			disable_notifications_button->set_icon(get_theme_icon(SNAME("NotificationDisabled"), SNAME("EditorIcons")));
 
 			// Styleboxes background.
-			info_panel_style_background->set_bg_color(get_theme_color("base_color", "Editor"));
+			info_panel_style_background->set_bg_color(get_theme_color(SNAME("base_color"), SNAME("Editor")));
 
-			warning_panel_style_background->set_bg_color(get_theme_color("base_color", "Editor"));
-			warning_panel_style_background->set_border_color(get_theme_color("warning_color", "Editor"));
+			warning_panel_style_background->set_bg_color(get_theme_color(SNAME("base_color"), SNAME("Editor")));
+			warning_panel_style_background->set_border_color(get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 
-			error_panel_style_background->set_bg_color(get_theme_color("base_color", "Editor"));
-			error_panel_style_background->set_border_color(get_theme_color("error_color", "Editor"));
+			error_panel_style_background->set_bg_color(get_theme_color(SNAME("base_color"), SNAME("Editor")));
+			error_panel_style_background->set_border_color(get_theme_color(SNAME("error_color"), SNAME("Editor")));
 
 			// Styleboxes progress.
-			info_panel_style_progress->set_bg_color(get_theme_color("base_color", "Editor").lightened(0.03));
+			info_panel_style_progress->set_bg_color(get_theme_color(SNAME("base_color"), SNAME("Editor")).lightened(0.03));
 
-			warning_panel_style_progress->set_bg_color(get_theme_color("base_color", "Editor").lightened(0.03));
-			warning_panel_style_progress->set_border_color(get_theme_color("warning_color", "Editor"));
+			warning_panel_style_progress->set_bg_color(get_theme_color(SNAME("base_color"), SNAME("Editor")).lightened(0.03));
+			warning_panel_style_progress->set_border_color(get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 
-			error_panel_style_progress->set_bg_color(get_theme_color("base_color", "Editor").lightened(0.03));
-			error_panel_style_progress->set_border_color(get_theme_color("error_color", "Editor"));
+			error_panel_style_progress->set_bg_color(get_theme_color(SNAME("base_color"), SNAME("Editor")).lightened(0.03));
+			error_panel_style_progress->set_border_color(get_theme_color(SNAME("error_color"), SNAME("Editor")));
 
 			main_button->update();
 			disable_notifications_button->update();
 		} break;
+
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			_update_vbox_position();
 			_update_disable_notifications_button();
 		} break;
-		default:
-			break;
 	}
 }
 
@@ -256,13 +257,13 @@ void EditorToaster::_draw_button() {
 	real_t button_radius = main_button->get_size().x / 8;
 	switch (highest_severity) {
 		case SEVERITY_INFO:
-			color = get_theme_color("accent_color", "Editor");
+			color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 			break;
 		case SEVERITY_WARNING:
-			color = get_theme_color("warning_color", "Editor");
+			color = get_theme_color(SNAME("warning_color"), SNAME("Editor"));
 			break;
 		case SEVERITY_ERROR:
-			color = get_theme_color("error_color", "Editor");
+			color = get_theme_color(SNAME("error_color"), SNAME("Editor"));
 			break;
 		default:
 			break;
@@ -360,7 +361,7 @@ Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_
 	if (p_time > 0.0) {
 		Button *close_button = memnew(Button);
 		close_button->set_flat(true);
-		close_button->set_icon(get_theme_icon("Close", "EditorIcons"));
+		close_button->set_icon(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
 		close_button->connect("pressed", callable_bind(callable_mp(this, &EditorToaster::close), panel));
 		close_button->connect("theme_changed", callable_bind(callable_mp(this, &EditorToaster::_close_button_theme_changed), close_button));
 		hbox_container->add_child(close_button);
@@ -442,7 +443,7 @@ void EditorToaster::close(Control *p_control) {
 void EditorToaster::_close_button_theme_changed(Control *p_close_button) {
 	Button *close_button = Object::cast_to<Button>(p_close_button);
 	if (close_button) {
-		close_button->set_icon(get_theme_icon("Close", "EditorIcons"));
+		close_button->set_icon(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
 	}
 }
 

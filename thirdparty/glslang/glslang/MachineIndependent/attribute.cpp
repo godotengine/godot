@@ -347,7 +347,7 @@ void TParseContext::handleLoopAttributes(const TAttributes& attributes, TIntermN
 //
 // Function attributes
 //
-void TParseContext::handleFunctionAttributes(const TSourceLoc& loc, const TAttributes& attributes, TFunction* function)
+void TParseContext::handleFunctionAttributes(const TSourceLoc& loc, const TAttributes& attributes)
 {
     for (auto it = attributes.begin(); it != attributes.end(); ++it) {
         if (it->size() > 0) {

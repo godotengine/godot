@@ -30,7 +30,11 @@
 
 #include "camera_matrix.h"
 
+#include "core/math/aabb.h"
 #include "core/math/math_funcs.h"
+#include "core/math/plane.h"
+#include "core/math/rect2.h"
+#include "core/math/transform_3d.h"
 #include "core/string/print_string.h"
 
 float CameraMatrix::determinant() const {
@@ -432,9 +436,7 @@ void CameraMatrix::invert() {
 	int pvt_i[4], pvt_j[4]; /* Locations of pivot matrix */
 	real_t pvt_val; /* Value of current pivot element */
 	real_t hold; /* Temporary storage */
-	real_t determinat; /* Determinant */
-
-	determinat = 1.0;
+	real_t determinant = 1.0f;
 	for (k = 0; k < 4; k++) {
 		/** Locate k'th pivot element **/
 		pvt_val = matrix[k][k]; /** Initialize for search **/
@@ -442,7 +444,7 @@ void CameraMatrix::invert() {
 		pvt_j[k] = k;
 		for (i = k; i < 4; i++) {
 			for (j = k; j < 4; j++) {
-				if (Math::absd(matrix[i][j]) > Math::absd(pvt_val)) {
+				if (Math::abs(matrix[i][j]) > Math::abs(pvt_val)) {
 					pvt_i[k] = i;
 					pvt_j[k] = j;
 					pvt_val = matrix[i][j];
@@ -451,9 +453,9 @@ void CameraMatrix::invert() {
 		}
 
 		/** Product of pivots, gives determinant when finished **/
-		determinat *= pvt_val;
-		if (Math::absd(determinat) < 1e-7) {
-			return; //(false);  /** Matrix is singular (zero determinant). **/
+		determinant *= pvt_val;
+		if (Math::is_zero_approx(determinant)) {
+			return; /** Matrix is singular (zero determinant). **/
 		}
 
 		/** "Interchange" rows (with sign change stuff) **/

@@ -61,47 +61,53 @@ Size2 CheckButton::get_minimum_size() const {
 }
 
 void CheckButton::_notification(int p_what) {
-	if ((p_what == NOTIFICATION_THEME_CHANGED) || (p_what == NOTIFICATION_LAYOUT_DIRECTION_CHANGED) || (p_what == NOTIFICATION_TRANSLATION_CHANGED)) {
-		if (is_layout_rtl()) {
-			_set_internal_margin(SIDE_LEFT, get_icon_size().width);
-			_set_internal_margin(SIDE_RIGHT, 0.f);
-		} else {
-			_set_internal_margin(SIDE_LEFT, 0.f);
-			_set_internal_margin(SIDE_RIGHT, get_icon_size().width);
-		}
-	} else if (p_what == NOTIFICATION_DRAW) {
-		RID ci = get_canvas_item();
-		bool rtl = is_layout_rtl();
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (is_layout_rtl()) {
+				_set_internal_margin(SIDE_LEFT, get_icon_size().width);
+				_set_internal_margin(SIDE_RIGHT, 0.f);
+			} else {
+				_set_internal_margin(SIDE_LEFT, 0.f);
+				_set_internal_margin(SIDE_RIGHT, get_icon_size().width);
+			}
+		} break;
 
-		Ref<Texture2D> on;
-		if (rtl) {
-			on = Control::get_theme_icon(is_disabled() ? "on_disabled_mirrored" : "on_mirrored");
-		} else {
-			on = Control::get_theme_icon(is_disabled() ? "on_disabled" : "on");
-		}
-		Ref<Texture2D> off;
-		if (rtl) {
-			off = Control::get_theme_icon(is_disabled() ? "off_disabled_mirrored" : "off_mirrored");
-		} else {
-			off = Control::get_theme_icon(is_disabled() ? "off_disabled" : "off");
-		}
+		case NOTIFICATION_DRAW: {
+			RID ci = get_canvas_item();
+			bool rtl = is_layout_rtl();
 
-		Ref<StyleBox> sb = get_theme_stylebox(SNAME("normal"));
-		Vector2 ofs;
-		Size2 tex_size = get_icon_size();
+			Ref<Texture2D> on;
+			if (rtl) {
+				on = Control::get_theme_icon(is_disabled() ? "on_disabled_mirrored" : "on_mirrored");
+			} else {
+				on = Control::get_theme_icon(is_disabled() ? "on_disabled" : "on");
+			}
+			Ref<Texture2D> off;
+			if (rtl) {
+				off = Control::get_theme_icon(is_disabled() ? "off_disabled_mirrored" : "off_mirrored");
+			} else {
+				off = Control::get_theme_icon(is_disabled() ? "off_disabled" : "off");
+			}
 
-		if (rtl) {
-			ofs.x = sb->get_margin(SIDE_LEFT);
-		} else {
-			ofs.x = get_size().width - (tex_size.width + sb->get_margin(SIDE_RIGHT));
-		}
-		ofs.y = (get_size().height - tex_size.height) / 2 + get_theme_constant(SNAME("check_vadjust"));
+			Ref<StyleBox> sb = get_theme_stylebox(SNAME("normal"));
+			Vector2 ofs;
+			Size2 tex_size = get_icon_size();
 
-		if (is_pressed()) {
-			on->draw(ci, ofs);
-		} else {
-			off->draw(ci, ofs);
-		}
+			if (rtl) {
+				ofs.x = sb->get_margin(SIDE_LEFT);
+			} else {
+				ofs.x = get_size().width - (tex_size.width + sb->get_margin(SIDE_RIGHT));
+			}
+			ofs.y = (get_size().height - tex_size.height) / 2 + get_theme_constant(SNAME("check_vadjust"));
+
+			if (is_pressed()) {
+				on->draw(ci, ofs);
+			} else {
+				off->draw(ci, ofs);
+			}
+		} break;
 	}
 }
 
