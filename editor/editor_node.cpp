@@ -313,6 +313,7 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 	}
 }
 
+// TODO: This REALLY should be done in a better way than replacing all tabs after almost EVERY action.
 void EditorNode::_update_scene_tabs() {
 	bool show_rb = EditorSettings::get_singleton()->get("interface/scene_tabs/show_script_button");
 
@@ -329,6 +330,9 @@ void EditorNode::_update_scene_tabs() {
 	}
 
 	disambiguate_filenames(full_path_names, disambiguated_scene_names);
+
+	// Workaround to ignore the tab_changed signal from the first added tab.
+	scene_tabs->disconnect("tab_changed", callable_mp(this, &EditorNode::_scene_tab_changed));
 
 	scene_tabs->clear_tabs();
 	Ref<Texture2D> script_icon = gui_base->get_theme_icon(SNAME("Script"), SNAME("EditorIcons"));
@@ -388,6 +392,9 @@ void EditorNode::_update_scene_tabs() {
 			scene_tab_add->set_position(Point2(last_tab.position.x + last_tab.size.width + hsep, last_tab.position.y));
 		}
 	}
+
+	// Reconnect after everything is done.
+	scene_tabs->connect("tab_changed", callable_mp(this, &EditorNode::_scene_tab_changed));
 }
 
 void EditorNode::_version_control_menu_option(int p_idx) {
@@ -4226,7 +4233,7 @@ void EditorNode::_dock_floating_close_request(Control *p_control) {
 
 	p_control->get_parent()->remove_child(p_control);
 	dock_slot[window_slot]->add_child(p_control);
-	dock_slot[window_slot]->move_child(p_control, MIN((int)window->get_meta("dock_index"), dock_slot[window_slot]->get_child_count()));
+	dock_slot[window_slot]->move_child(p_control, MIN((int)window->get_meta("dock_index"), dock_slot[window_slot]->get_tab_count()));
 	dock_slot[window_slot]->set_current_tab(window->get_meta("dock_index"));
 
 	window->queue_delete();
@@ -4466,13 +4473,13 @@ void EditorNode::_dock_select_draw() {
 
 		if (i == dock_select_rect_over) {
 			dock_select->draw_rect(r, used_selected);
-		} else if (dock_slot[i]->get_child_count() == 0) {
+		} else if (dock_slot[i]->get_tab_count() == 0) {
 			dock_select->draw_rect(r, unused);
 		} else {
 			dock_select->draw_rect(r, used);
 		}
 
-		for (int j = 0; j < MIN(3, dock_slot[i]->get_child_count()); j++) {
+		for (int j = 0; j < MIN(3, dock_slot[i]->get_tab_count()); j++) {
 			int xofs = (r.size.width / 3) * j;
 			Color c = used;
 			if (i == dock_popup_selected && (dock_slot[i]->get_current_tab() > 3 || dock_slot[i]->get_current_tab() == j)) {
@@ -4584,7 +4591,7 @@ void EditorNode::_update_dock_slots_visibility() {
 		for (int i = 0; i < DOCK_SLOT_MAX; i++) {
 			int tabs_visible = 0;
 			for (int j = 0; j < dock_slot[i]->get_tab_count(); j++) {
-				if (!dock_slot[i]->get_tab_hidden(j)) {
+				if (!dock_slot[i]->is_tab_hidden(j)) {
 					tabs_visible++;
 				}
 			}
@@ -5648,11 +5655,11 @@ void EditorNode::_feature_profile_changed() {
 	TabContainer *node_tabs = cast_to<TabContainer>(NodeDock::get_singleton()->get_parent());
 	TabContainer *fs_tabs = cast_to<TabContainer>(FileSystemDock::get_singleton()->get_parent());
 	if (profile.is_valid()) {
-		node_tabs->set_tab_hidden(NodeDock::get_singleton()->get_index(), profile->is_feature_disabled(EditorFeatureProfile::FEATURE_NODE_DOCK));
+		node_tabs->set_tab_hidden(node_tabs->get_tab_idx_from_control(NodeDock::get_singleton()), profile->is_feature_disabled(EditorFeatureProfile::FEATURE_NODE_DOCK));
 		// The Import dock is useless without the FileSystem dock. Ensure the configuration is valid.
 		bool fs_dock_disabled = profile->is_feature_disabled(EditorFeatureProfile::FEATURE_FILESYSTEM_DOCK);
-		fs_tabs->set_tab_hidden(FileSystemDock::get_singleton()->get_index(), fs_dock_disabled);
-		import_tabs->set_tab_hidden(ImportDock::get_singleton()->get_index(), fs_dock_disabled || profile->is_feature_disabled(EditorFeatureProfile::FEATURE_IMPORT_DOCK));
+		fs_tabs->set_tab_hidden(fs_tabs->get_tab_idx_from_control(FileSystemDock::get_singleton()), fs_dock_disabled);
+		import_tabs->set_tab_hidden(import_tabs->get_tab_idx_from_control(ImportDock::get_singleton()), fs_dock_disabled || profile->is_feature_disabled(EditorFeatureProfile::FEATURE_IMPORT_DOCK));
 
 		main_editor_buttons[EDITOR_3D]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D));
 		main_editor_buttons[EDITOR_SCRIPT]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT));
@@ -5665,9 +5672,9 @@ void EditorNode::_feature_profile_changed() {
 			_editor_select(EDITOR_2D);
 		}
 	} else {
-		import_tabs->set_tab_hidden(ImportDock::get_singleton()->get_index(), false);
-		node_tabs->set_tab_hidden(NodeDock::get_singleton()->get_index(), false);
-		fs_tabs->set_tab_hidden(FileSystemDock::get_singleton()->get_index(), false);
+		import_tabs->set_tab_hidden(import_tabs->get_tab_idx_from_control(ImportDock::get_singleton()), false);
+		node_tabs->set_tab_hidden(node_tabs->get_tab_idx_from_control(NodeDock::get_singleton()), false);
+		fs_tabs->set_tab_hidden(fs_tabs->get_tab_idx_from_control(FileSystemDock::get_singleton()), false);
 		ImportDock::get_singleton()->set_visible(true);
 		NodeDock::get_singleton()->set_visible(true);
 		FileSystemDock::get_singleton()->set_visible(true);
@@ -6205,7 +6212,7 @@ EditorNode::EditorNode() {
 		dock_slot[i]->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		dock_slot[i]->set_popup(dock_select_popup);
 		dock_slot[i]->connect("pre_popup_pressed", callable_mp(this, &EditorNode::_dock_pre_popup), varray(i));
-		dock_slot[i]->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
+		dock_slot[i]->set_tab_alignment(TabBar::ALIGNMENT_LEFT);
 		dock_slot[i]->set_drag_to_rearrange_enabled(true);
 		dock_slot[i]->set_tabs_rearrange_group(1);
 		dock_slot[i]->connect("tab_changed", callable_mp(this, &EditorNode::_dock_tab_changed));
@@ -6714,23 +6721,23 @@ EditorNode::EditorNode() {
 
 	// Scene: Top left
 	dock_slot[DOCK_SLOT_LEFT_UR]->add_child(SceneTreeDock::get_singleton());
-	dock_slot[DOCK_SLOT_LEFT_UR]->set_tab_title(SceneTreeDock::get_singleton()->get_index(), TTR("Scene"));
+	dock_slot[DOCK_SLOT_LEFT_UR]->set_tab_title(dock_slot[DOCK_SLOT_LEFT_UR]->get_tab_idx_from_control(SceneTreeDock::get_singleton()), TTR("Scene"));
 
 	// Import: Top left, behind Scene
 	dock_slot[DOCK_SLOT_LEFT_UR]->add_child(ImportDock::get_singleton());
-	dock_slot[DOCK_SLOT_LEFT_UR]->set_tab_title(ImportDock::get_singleton()->get_index(), TTR("Import"));
+	dock_slot[DOCK_SLOT_LEFT_UR]->set_tab_title(dock_slot[DOCK_SLOT_LEFT_UR]->get_tab_idx_from_control(ImportDock::get_singleton()), TTR("Import"));
 
 	// FileSystem: Bottom left
 	dock_slot[DOCK_SLOT_LEFT_BR]->add_child(FileSystemDock::get_singleton());
-	dock_slot[DOCK_SLOT_LEFT_BR]->set_tab_title(FileSystemDock::get_singleton()->get_index(), TTR("FileSystem"));
+	dock_slot[DOCK_SLOT_LEFT_BR]->set_tab_title(dock_slot[DOCK_SLOT_LEFT_BR]->get_tab_idx_from_control(FileSystemDock::get_singleton()), TTR("FileSystem"));
 
 	// Inspector: Full height right
 	dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(InspectorDock::get_singleton());
-	dock_slot[DOCK_SLOT_RIGHT_UL]->set_tab_title(InspectorDock::get_singleton()->get_index(), TTR("Inspector"));
+	dock_slot[DOCK_SLOT_RIGHT_UL]->set_tab_title(dock_slot[DOCK_SLOT_RIGHT_UL]->get_tab_idx_from_control(InspectorDock::get_singleton()), TTR("Inspector"));
 
 	// Node: Full height right, behind Inspector
 	dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(NodeDock::get_singleton());
-	dock_slot[DOCK_SLOT_RIGHT_UL]->set_tab_title(NodeDock::get_singleton()->get_index(), TTR("Node"));
+	dock_slot[DOCK_SLOT_RIGHT_UL]->set_tab_title(dock_slot[DOCK_SLOT_RIGHT_UL]->get_tab_idx_from_control(NodeDock::get_singleton()), TTR("Node"));
 
 	// Hide unused dock slots and vsplits
 	dock_slot[DOCK_SLOT_LEFT_UL]->hide();

@@ -1887,7 +1887,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	theme_type_editor = p_theme_type_editor;
 
 	tc = memnew(TabContainer);
-	tc->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
+	tc->set_tab_alignment(TabBar::ALIGNMENT_LEFT);
 	add_child(tc);
 
 	// Edit Items tab.

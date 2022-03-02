@@ -43,20 +43,6 @@
 				Returns the number of tabs.
 			</description>
 		</method>
-		<method name="get_tab_disabled" qualifiers="const">
-			<return type="bool" />
-			<argument index="0" name="tab_idx" type="int" />
-			<description>
-				Returns [code]true[/code] if the tab at index [code]tab_idx[/code] is disabled.
-			</description>
-		</method>
-		<method name="get_tab_hidden" qualifiers="const">
-			<return type="bool" />
-			<argument index="0" name="tab_idx" type="int" />
-			<description>
-				Returns [code]true[/code] if the tab at index [code]tab_idx[/code] is hidden.
-			</description>
-		</method>
 		<method name="get_tab_icon" qualifiers="const">
 			<return type="Texture2D" />
 			<argument index="0" name="tab_idx" type="int" />
@@ -69,6 +55,13 @@
 			<argument index="0" name="point" type="Vector2" />
 			<description>
 				Returns the index of the tab at local coordinates [code]point[/code]. Returns [code]-1[/code] if the point is outside the control boundaries or if there's no tab at the queried position.
+			</description>
+		</method>
+		<method name="get_tab_idx_from_control" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="control" type="Control" />
+			<description>
+				Returns the index of the tab tied to the given [code]control[/code]. The control must be a child of the [TabContainer].
 			</description>
 		</method>
 		<method name="get_tab_title" qualifiers="const">
@@ -84,11 +77,25 @@
 				Returns the [TabContainer] rearrange group id.
 			</description>
 		</method>
+		<method name="is_tab_disabled" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="tab_idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the tab at index [code]tab_idx[/code] is disabled.
+			</description>
+		</method>
+		<method name="is_tab_hidden" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="tab_idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the tab at index [code]tab_idx[/code] is hidden.
+			</description>
+		</method>
 		<method name="set_popup">
 			<return type="void" />
 			<argument index="0" name="popup" type="Node" />
 			<description>
-				If set on a [Popup] node instance, a popup menu icon appears in the top-right corner of the [TabContainer]. Clicking it will expand the [Popup] node.
+				If set on a [Popup] node instance, a popup menu icon appears in the top-right corner of the [TabContainer] (setting it to [code]null[/code] will make it go away). Clicking it will expand the [Popup] node.
 			</description>
 		</method>
 		<method name="set_tab_disabled">
@@ -120,7 +127,7 @@
 			<argument index="0" name="tab_idx" type="int" />
 			<argument index="1" name="title" type="String" />
 			<description>
-				Sets a title for the tab at index [code]tab_idx[/code]. Tab titles default to the name of the indexed child node.
+				Sets a custom title for the tab at index [code]tab_idx[/code] (tab titles default to the name of the indexed child node). Set it to blank to make it the child's name again.
 			</description>
 		</method>
 		<method name="set_tabs_rearrange_group">
@@ -135,13 +142,17 @@
 		<member name="all_tabs_in_front" type="bool" setter="set_all_tabs_in_front" getter="is_all_tabs_in_front" default="false">
 			If [code]true[/code], all tabs are drawn in front of the panel. If [code]false[/code], inactive tabs are drawn behind the panel.
 		</member>
+		<member name="clip_tabs" type="bool" setter="set_clip_tabs" getter="get_clip_tabs" default="true">
+			If [code]true[/code], tabs overflowing this node's width will be hidden, displaying two navigation buttons instead. Otherwise, this node's minimum size is updated so that all tabs are visible.
+		</member>
 		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab" default="0">
 			The current tab index. When set, this index's [Control] node's [code]visible[/code] property is set to [code]true[/code] and all others are set to [code]false[/code].
 		</member>
 		<member name="drag_to_rearrange_enabled" type="bool" setter="set_drag_to_rearrange_enabled" getter="get_drag_to_rearrange_enabled" default="false">
 			If [code]true[/code], tabs can be rearranged with mouse drag.
 		</member>
-		<member name="tab_alignment" type="int" setter="set_tab_alignment" getter="get_tab_alignment" enum="TabContainer.AlignmentMode" default="1">
+		<member name="tab_alignment" type="int" setter="set_tab_alignment" getter="get_tab_alignment" enum="TabBar.AlignmentMode" default="1">
+			Sets the position at which tabs will be placed. See [enum TabBar.AlignmentMode] for details.
 		</member>
 		<member name="tabs_visible" type="bool" setter="set_tabs_visible" getter="are_tabs_visible" default="true">
 			If [code]true[/code], tabs are visible. If [code]false[/code], tabs' content and titles are hidden.
@@ -169,14 +180,6 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="ALIGNMENT_LEFT" value="0" enum="AlignmentMode">
-		</constant>
-		<constant name="ALIGNMENT_CENTER" value="1" enum="AlignmentMode">
-		</constant>
-		<constant name="ALIGNMENT_RIGHT" value="2" enum="AlignmentMode">
-		</constant>
-	</constants>
 	<theme_items>
 		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
 			Font color of disabled tabs.
@@ -197,7 +200,8 @@
 			The size of the tab text outline.
 		</theme_item>
 		<theme_item name="side_margin" data_type="constant" type="int" default="8">
-			The space at the left and right edges of the tab bar.
+			The space at the left or right edges of the tab bar, accordingly with the current [member tab_alignment].
+			The margin is ignored with [code]ALIGNMENT_RIGHT[/code] if the tabs are clipped (see [member clip_tabs]) or a popup has been set (see [method set_popup]). The margin is always ignored with [code]ALIGNMENT_CENTER[/code].
 		</theme_item>
 		<theme_item name="font" data_type="font" type="Font">
 			The font used to draw tab names.

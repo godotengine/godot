@@ -559,7 +559,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	data = p_data;
 
 	tab_container = memnew(TabContainer);
-	tab_container->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
+	tab_container->set_tab_alignment(TabBar::ALIGNMENT_LEFT);
 	tab_container->set_use_hidden_tabs_for_min_size(true);
 	add_child(tab_container);
 
