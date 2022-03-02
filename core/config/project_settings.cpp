@@ -1240,6 +1240,9 @@ ProjectSettings::ProjectSettings() {
 	custom_prop_info["rendering/driver/threads/thread_model"] = PropertyInfo(Variant::INT, "rendering/driver/threads/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");
 	GLOBAL_DEF("physics/2d/run_on_separate_thread", false);
 	GLOBAL_DEF("physics/3d/run_on_separate_thread", false);
+	// Required to make the project setting appear even if the physics engine is GodotPhysics,
+	// while also making it appear in the ProjectSettings class documentation.
+	GLOBAL_DEF("physics/3d/smooth_trimesh_collision", false);
 
 	GLOBAL_DEF("debug/settings/profiler/max_functions", 16384);
 	custom_prop_info["debug/settings/profiler/max_functions"] = PropertyInfo(Variant::INT, "debug/settings/profiler/max_functions", PROPERTY_HINT_RANGE, "128,65535,1");
