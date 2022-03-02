@@ -248,6 +248,8 @@ void CanvasItem::_enter_canvas() {
 		RenderingServer::get_singleton()->canvas_item_set_draw_index(canvas_item, get_index());
 	}
 
+	RenderingServer::get_singleton()->canvas_item_set_visible(canvas_item, is_visible_in_tree());
+
 	pending_update = false;
 	update();
 
