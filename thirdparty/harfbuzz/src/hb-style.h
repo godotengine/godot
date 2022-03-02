@@ -43,8 +43,10 @@ HB_BEGIN_DECLS
  * @HB_STYLE_TAG_SLANT_ANGLE: Used to vary between upright and slanted text. Values
  * must be greater than -90 and less than +90. Values can be interpreted as
  * the angle, in counter-clockwise degrees, of oblique slant from whatever the
- * designer considers to be upright for that font design.
+ * designer considers to be upright for that font design. Typical right-leaning
+ * Italic fonts have a negative slant angle (typically around -12)
  * @HB_STYLE_TAG_SLANT_RATIO: same as @HB_STYLE_TAG_SLANT_ANGLE expression as ratio.
+ * Typical right-leaning Italic fonts have a positive slant ratio (typically around 0.2)
  * @HB_STYLE_TAG_WIDTH: Used to vary width of text from narrower to wider.
  * Non-zero. Values can be interpreted as a percentage of whatever the font
  * designer considers “normal width” for that font design.
