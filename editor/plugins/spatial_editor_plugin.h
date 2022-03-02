@@ -285,6 +285,7 @@ private:
 
 	VBoxContainer *top_right_vbox;
 	ViewportRotationControl *rotation_control;
+	Gradient *frame_time_gradient;
 	Label *fps_label;
 
 	struct _RayResult {
@@ -487,6 +488,7 @@ public:
 	Camera *get_camera() { return camera; } // return the default camera object.
 
 	SpatialEditorViewport(SpatialEditor *p_spatial_editor, EditorNode *p_editor, int p_index);
+	~SpatialEditorViewport();
 };
 
 class SpatialEditorSelectedItem : public Object {
