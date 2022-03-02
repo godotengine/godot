@@ -1404,9 +1404,9 @@ SceneTree::SceneTree() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadow_atlas/size", PropertyInfo(Variant::INT, "rendering/shadows/shadow_atlas/size", PROPERTY_HINT_RANGE, "256,16384"));
 	GLOBAL_DEF("rendering/shadows/shadow_atlas/size.mobile", 2048);
 	bool shadowmap_16_bits = GLOBAL_DEF("rendering/shadows/shadow_atlas/16_bits", true);
-	int atlas_q0 = GLOBAL_DEF("rendering/shadows/shadow_atlas/quadrant_0_subdiv", 2);
-	int atlas_q1 = GLOBAL_DEF("rendering/shadows/shadow_atlas/quadrant_1_subdiv", 2);
-	int atlas_q2 = GLOBAL_DEF("rendering/shadows/shadow_atlas/quadrant_2_subdiv", 3);
+	int atlas_q0 = GLOBAL_DEF("rendering/shadows/shadow_atlas/quadrant_0_subdiv", 3);
+	int atlas_q1 = GLOBAL_DEF("rendering/shadows/shadow_atlas/quadrant_1_subdiv", 3);
+	int atlas_q2 = GLOBAL_DEF("rendering/shadows/shadow_atlas/quadrant_2_subdiv", 4);
 	int atlas_q3 = GLOBAL_DEF("rendering/shadows/shadow_atlas/quadrant_3_subdiv", 4);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadow_atlas/quadrant_0_subdiv", PropertyInfo(Variant::INT, "rendering/shadows/shadow_atlas/quadrant_0_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadow_atlas/quadrant_1_subdiv", PropertyInfo(Variant::INT, "rendering/shadows/shadow_atlas/quadrant_1_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));

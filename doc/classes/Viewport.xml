@@ -251,16 +251,16 @@
 		<member name="shadow_atlas_16_bits" type="bool" setter="set_shadow_atlas_16_bits" getter="get_shadow_atlas_16_bits" default="true">
 		</member>
 		<member name="shadow_atlas_quad_0" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="2">
-			The subdivision amount of the first quadrant on the shadow atlas.
+			Subdivision quadrant size for the first (and highest quality) quadrant used for [OmniLight3D] and [SpotLight3D] shadows. Higher values result in worse shadow resolution, but allow you to have more positional lights with shadows enabled until shadow quality degrades. See also [member ProjectSettings.rendering/shadows/shadow_atlas/quadrant_0_subdiv].
 		</member>
 		<member name="shadow_atlas_quad_1" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="2">
-			The subdivision amount of the second quadrant on the shadow atlas.
+			Subdivision quadrant size for the second quadrant used for [OmniLight3D] and [SpotLight3D] shadows. Higher values result in worse shadow resolution, but allow you to have more positional lights with shadows enabled until shadow quality degrades.  See also [member ProjectSettings.rendering/shadows/shadow_atlas/quadrant_1_subdiv].
 		</member>
 		<member name="shadow_atlas_quad_2" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="3">
-			The subdivision amount of the third quadrant on the shadow atlas.
+			Subdivision quadrant size for the third quadrant used for [OmniLight3D] and [SpotLight3D] shadows. Higher values result in worse shadow resolution, but allow you to have more positional lights with shadows enabled until shadow quality degrades.  See also [member ProjectSettings.rendering/shadows/shadow_atlas/quadrant_2_subdiv].
 		</member>
 		<member name="shadow_atlas_quad_3" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="4">
-			The subdivision amount of the fourth quadrant on the shadow atlas.
+			Subdivision quadrant size for the fourth (and lowest quality) quadrant used for [OmniLight3D] and [SpotLight3D] shadows. Higher values result in worse shadow resolution, but allow you to have more positional lights with shadows enabled until shadow quality degrades. See also [member ProjectSettings.rendering/shadows/shadow_atlas/quadrant_3_subdiv].
 		</member>
 		<member name="shadow_atlas_size" type="int" setter="set_shadow_atlas_size" getter="get_shadow_atlas_size" default="2048">
 			The shadow atlas' resolution (used for omni and spot lights). The value will be rounded up to the nearest power of 2.

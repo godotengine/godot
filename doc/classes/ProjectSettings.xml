@@ -1852,17 +1852,21 @@
 		</member>
 		<member name="rendering/shadows/shadow_atlas/16_bits" type="bool" setter="" getter="" default="true">
 		</member>
-		<member name="rendering/shadows/shadow_atlas/quadrant_0_subdiv" type="int" setter="" getter="" default="2">
-			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+		<member name="rendering/shadows/shadow_atlas/quadrant_0_subdiv" type="int" setter="" getter="" default="3">
+			Subdivision quadrant size for the first (and highest quality) quadrant used for [OmniLight3D] and [SpotLight3D] shadows. Higher values result in worse shadow resolution, but allow you to have more positional lights with shadows enabled until shadow quality degrades.
+			[b]Note:[/b] This property is only read when the project starts, and it only affects the root viewport's settings. To change this value at run-time, set [member Viewport.shadow_atlas_quad_0] on the root [Viewport] instead. Custom [Viewport]s must have their shadow quadrant properties set accordingly this way if needed.
 		</member>
-		<member name="rendering/shadows/shadow_atlas/quadrant_1_subdiv" type="int" setter="" getter="" default="2">
-			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+		<member name="rendering/shadows/shadow_atlas/quadrant_1_subdiv" type="int" setter="" getter="" default="3">
+			Subdivision quadrant size for the second quadrant used for [OmniLight3D] and [SpotLight3D] shadows. Higher values result in worse shadow resolution, but allow you to have more positional lights with shadows enabled until shadow quality degrades.
+			[b]Note:[/b] This property is only read when the project starts, and it only affects the root viewport's settings. To change this value at run-time, set [member Viewport.shadow_atlas_quad_1] on the root [Viewport] instead. Custom [Viewport]s must have their shadow quadrant properties set accordingly this way if needed.
 		</member>
-		<member name="rendering/shadows/shadow_atlas/quadrant_2_subdiv" type="int" setter="" getter="" default="3">
-			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+		<member name="rendering/shadows/shadow_atlas/quadrant_2_subdiv" type="int" setter="" getter="" default="4">
+			Subdivision quadrant size for the third quadrant used for [OmniLight3D] and [SpotLight3D] shadows. Higher values result in worse shadow resolution, but allow you to have more positional lights with shadows enabled until shadow quality degrades.
+			[b]Note:[/b] This property is only read when the project starts, and it only affects the root viewport's settings. To change this value at run-time, set [member Viewport.shadow_atlas_quad_2] on the root [Viewport] instead. Custom [Viewport]s must have their shadow quadrant properties set accordingly this way if needed.
 		</member>
 		<member name="rendering/shadows/shadow_atlas/quadrant_3_subdiv" type="int" setter="" getter="" default="4">
-			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+			Subdivision quadrant size for the fourth (and lowest quality) quadrant used for [OmniLight3D] and [SpotLight3D] shadows. Higher values result in worse shadow resolution, but allow you to have more positional lights with shadows enabled until shadow quality degrades.
+			[b]Note:[/b] This property is only read when the project starts, and it only affects the root viewport's settings. To change this value at run-time, set [member Viewport.shadow_atlas_quad_3] on the root [Viewport] instead. Custom [Viewport]s must have their shadow quadrant properties set accordingly this way if needed.
 		</member>
 		<member name="rendering/shadows/shadow_atlas/size" type="int" setter="" getter="" default="4096">
 			Size for shadow atlas (used for OmniLights and SpotLights). See documentation.
