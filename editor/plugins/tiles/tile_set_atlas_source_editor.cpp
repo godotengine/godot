@@ -108,7 +108,7 @@ void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_id", "id"), &TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::set_id);
 	ClassDB::bind_method(D_METHOD("get_id"), &TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::get_id);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "id"), "set_id", "get_id");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_RANGE, "0," + itos(INT_MAX) + ",1"), "set_id", "get_id");
 
 	ADD_SIGNAL(MethodInfo("changed", PropertyInfo(Variant::STRING, "what")));
 }

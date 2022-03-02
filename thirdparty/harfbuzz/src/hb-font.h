@@ -511,6 +511,25 @@ typedef hb_bool_t (*hb_font_get_glyph_from_name_func_t) (hb_font_t *font, void *
 							 hb_codepoint_t *glyph,
 							 void *user_data);
 
+/**
+ * hb_font_get_glyph_shape_func_t:
+ * @font: #hb_font_t to work upon
+ * @font_data: @font user data pointer
+ * @glyph: The glyph ID to query
+ * @draw_funcs: The draw functions to send the shape data to
+ * @draw_data: The data accompanying the draw functions
+ * @user_data: User data pointer passed by the caller
+ *
+ * A virtual method for the #hb_font_funcs_t of an #hb_font_t object.
+ *
+ * Since: 4.0.0
+ *
+ **/
+typedef void (*hb_font_get_glyph_shape_func_t) (hb_font_t *font, void *font_data,
+						hb_codepoint_t glyph,
+						hb_draw_funcs_t *draw_funcs, void *draw_data,
+						void *user_data);
+
 
 /* func setters */
 
@@ -770,6 +789,22 @@ hb_font_funcs_set_glyph_from_name_func (hb_font_funcs_t *ffuncs,
 					hb_font_get_glyph_from_name_func_t func,
 					void *user_data, hb_destroy_func_t destroy);
 
+/**
+ * hb_font_funcs_set_glyph_shape_func:
+ * @ffuncs: A font-function structure
+ * @func: (closure user_data) (destroy destroy) (scope notified): The callback function to assign
+ * @user_data: Data to pass to @func
+ * @destroy: (nullable): The function to call when @user_data is not needed anymore
+ *
+ * Sets the implementation function for #hb_font_get_glyph_shape_func_t.
+ *
+ * Since: 4.0.0
+ **/
+HB_EXTERN void
+hb_font_funcs_set_glyph_shape_func (hb_font_funcs_t *ffuncs,
+				    hb_font_get_glyph_shape_func_t func,
+				    void *user_data, hb_destroy_func_t destroy);
+
 /* func dispatch */
 
 HB_EXTERN hb_bool_t
@@ -849,6 +884,11 @@ HB_EXTERN hb_bool_t
 hb_font_get_glyph_from_name (hb_font_t *font,
 			     const char *name, int len, /* -1 means nul-terminated */
 			     hb_codepoint_t *glyph);
+
+HB_EXTERN void
+hb_font_get_glyph_shape (hb_font_t *font,
+			 hb_codepoint_t glyph,
+			 hb_draw_funcs_t *dfuncs, void *draw_data);
 
 
 /* high-level funcs, with fallback */
@@ -1056,11 +1096,6 @@ HB_EXTERN void
 hb_font_set_var_named_instance (hb_font_t *font,
 				unsigned instance_index);
 
-#ifdef HB_EXPERIMENTAL_API
-HB_EXTERN hb_bool_t
-hb_font_draw_glyph (hb_font_t *font, hb_codepoint_t glyph,
-		    const hb_draw_funcs_t *funcs, void *user_data);
-#endif
 
 HB_END_DECLS
 

@@ -497,12 +497,12 @@ _hb_ot_shape_fallback_kern (const hb_ot_shape_plan_t *plan,
 #endif
 
 #ifndef HB_DISABLE_DEPRECATED
-  if (!buffer->message (font, "start fallback kern"))
-    return;
-
   if (HB_DIRECTION_IS_HORIZONTAL (buffer->props.direction) ?
       !font->has_glyph_h_kerning_func () :
       !font->has_glyph_v_kerning_func ())
+    return;
+
+  if (!buffer->message (font, "start fallback kern"))
     return;
 
   bool reverse = HB_DIRECTION_IS_BACKWARD (buffer->props.direction);
