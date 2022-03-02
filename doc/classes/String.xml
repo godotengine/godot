@@ -188,7 +188,10 @@
 		<method name="bigrams">
 			<return type="PoolStringArray" />
 			<description>
-				Returns the bigrams (pairs of consecutive letters) of this string.
+				Returns an array containing the bigrams (pairs of consecutive letters) of this string.
+				[codeblock]
+				print("Bigrams".bigrams()) # Prints "[Bi, ig, gr, ra, am, ms]"
+				[/codeblock]
 			</description>
 		</method>
 		<method name="c_escape">
@@ -434,7 +437,14 @@
 		<method name="is_valid_float">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this string contains a valid float.
+				Returns [code]true[/code] if this string contains a valid float. This is inclusive of integers, and also supports exponents:
+				[codeblock]
+				print("1.7".is_valid_float()) # Prints "true"
+				print("24".is_valid_float()) # Prints "true"
+				print("7e3".is_valid_float()) # Prints "true"
+				print("24".is_valid_float()) # Prints "true"
+				print("Hello".is_valid_float()) # Prints "false"
+				[/codeblock]
 			</description>
 		</method>
 		<method name="is_valid_hex_number">
@@ -454,12 +464,24 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this string is a valid identifier. A valid identifier may contain only letters, digits and underscores ([code]_[/code]) and the first character may not be a digit.
+				[codeblock]
+				print("good_ident_1".is_valid_identifier()) # Prints "true"
+				print("1st_bad_ident".is_valid_identifier()) # Prints "false"
+				print("bad_ident_#2".is_valid_identifier()) # Prints "false"
+				[/codeblock]
 			</description>
 		</method>
 		<method name="is_valid_integer">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this string contains a valid integer.
+				[codeblock]
+				print("7".is_valid_int()) # Prints "true"
+				print("14.6".is_valid_int()) # Prints "false"
+				print("L".is_valid_int()) # Prints "false"
+				print("+3".is_valid_int()) # Prints "true"
+				print("-12".is_valid_int()) # Prints "true"
+				[/codeblock]
 			</description>
 		</method>
 		<method name="is_valid_ip_address">
@@ -499,14 +521,14 @@
 			<return type="bool" />
 			<argument index="0" name="expr" type="String" />
 			<description>
-				Does a simple case-sensitive expression match, where [code]"*"[/code] matches zero or more arbitrary characters and [code]"?"[/code] matches any single character except a period ([code]"."[/code]).
+				Does a simple case-sensitive expression match, where [code]"*"[/code] matches zero or more arbitrary characters and [code]"?"[/code] matches any single character except a period ([code]"."[/code]). An empty string or empty expression always evaluates to [code]false[/code].
 			</description>
 		</method>
 		<method name="matchn">
 			<return type="bool" />
 			<argument index="0" name="expr" type="String" />
 			<description>
-				Does a simple case-insensitive expression match, where [code]"*"[/code] matches zero or more arbitrary characters and [code]"?"[/code] matches any single character except a period ([code]"."[/code]).
+				Does a simple case-insensitive expression match, where [code]"*"[/code] matches zero or more arbitrary characters and [code]"?"[/code] matches any single character except a period ([code]"."[/code]). An empty string or empty expression always evaluates to [code]false[/code].
 			</description>
 		</method>
 		<method name="md5_buffer">
@@ -683,7 +705,13 @@
 			<return type="float" />
 			<argument index="0" name="text" type="String" />
 			<description>
-				Returns the similarity index of the text compared to this string. 1 means totally similar and 0 means totally dissimilar.
+				Returns the similarity index ([url=https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient]Sorensen-Dice coefficient[/url]) this string compared to another. 1.0 means totally similar and 0.0 means totally dissimilar.
+				[codeblock]
+				print("ABC123".similarity("ABC123")) # Prints "1"
+				print("ABC123".similarity("XYZ456")) # Prints "0"
+				print("ABC123".similarity("123ABC")) # Prints "0.8"
+				print("ABC123".similarity("abc123")) # Prints "0.4"
+				[/codeblock]
 			</description>
 		</method>
 		<method name="simplify_path">
